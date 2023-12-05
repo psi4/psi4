@@ -166,7 +166,7 @@ void MP2F12::form_D(einsums::Tensor<double, 4> *D, einsums::Tensor<double, 2> *f
 
 void MP2F12::form_f12_energy(einsums::Tensor<double,4> *V, einsums::Tensor<double,4> *X,
                              einsums::Tensor<double,4> *C, einsums::Tensor<double,4> *B,
-                             einsums::Tensor<double,2> *f, einsums::Tensor<double,4> G_,
+                             einsums::Tensor<double,2> *f, einsums::Tensor<double,4> *G_,
                              einsums::Tensor<double,4> *D)
 {
     using namespace einsums;
@@ -195,8 +195,8 @@ void MP2F12::form_f12_energy(einsums::Tensor<double,4> *V, einsums::Tensor<doubl
             // Getting V_Tilde and B_Tilde
             Tensor V_ = TensorView<double, 2>{(*V), Dim<2>{nocc_, nocc_}, Offset<4>{i, j, 0, 0},
                                             Stride<2>{(*V).stride(2), (*V).stride(3)}};
-            auto K_ = TensorView<double, 2>{G_, Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
-                                            Stride<2>{G_.stride(2), G_.stride(3)}};
+            auto K_ = TensorView<double, 2>{(*G_), Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
+                                            Stride<2>{(*G_).stride(2), (*G_).stride(3)}};
             auto D_ = TensorView<double, 2>{(*D), Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
                                             Stride<2>{(*D).stride(2), (*D).stride(3)}};
             auto VT = V_Tilde(V_, C, K_, D_, i, j);
@@ -275,153 +275,103 @@ double MP2F12::compute_energy()
     timer_off("OBS and CABS");
 
     outfile->Printf("\n ===> Forming the Integrals <===");
-    outfile->Printf("\n No screening will be used to compute integrals\n\n");
+    outfile->Printf("\n No screening will be used to compute integrals");
 
-    /* Form the one-electron integrals */
+    /* Form the Fock Matrix */
+    timer_on("Fock Matrix");
     auto h = std::make_unique<Tensor<double, 2>>("MO One-Electron Integrals", nri_, nri_);
-    timer_on("OEINTS");
     form_oeints(h.get());
-    timer_off("OEINTS");
-
-    /* Form the two-electron integrals */
-    std::vector<std::string> teint = {"FG","Uf","G","F","F2"};
-
-    // Two-Electron Integrals
-    auto G = std::make_unique<Tensor<double, 4>>("MO G Tensor", nocc_, nocc_, nobs_, nri_);
-    auto F = std::make_unique<Tensor<double, 4>>("MO F12 Tensor", nocc_, nocc_, nri_, nri_);
-    auto F2 = std::make_unique<Tensor<double, 4>>("MO F12_Squared Tensor", nocc_, nocc_, nocc_, nri_);
-    auto FG = std::make_unique<Tensor<double, 4>>("MO F12G12 Tensor", nocc_, nocc_, nocc_, nocc_);
-    auto Uf = std::make_unique<Tensor<double, 4>>("MO F12_DoubleCommutator Tensor", nocc_, nocc_, nocc_, nocc_);
-
-    // Fock Matrices
+    outfile->Printf("   Fock Matrix\n");
     auto f = std::make_unique<Tensor<double, 2>>("Fock Matrix", nri_, nri_);
     auto k = std::make_unique<Tensor<double, 2>>("Exchange MO Integral", nri_, nri_);
-    auto fk = std::make_unique<Tensor<double, 2>>("Fock-Exchange Matrix", nri_, nri_);
-
     if (use_df_) {
-        // [J_AB]^{-1}(B|PQ)
-        auto Metric = std::make_unique<Tensor<double, 3>>("Metric MO", naux_, nocc_, nri_);
-        form_metric_ints(Metric.get(), false);
-
-        outfile->Printf("   Fock Matrix\n");
-        timer_on("Fock Matrix");
-        form_df_fock(f.get(), k.get(), fk.get(), h.get());
-        timer_off("Fock Matrix");
-        h.reset();
-
-        for (int i = 0; i < teint.size(); i++){
-            if ( teint[i] == "F" ){
-                outfile->Printf("   F Integral\n");
-                timer_on("F_12 Integral");
-                form_df_teints(teint[i], F.get(), Metric.get());
-                timer_off("F_12 Integral");
-            } else if ( teint[i] == "FG" ){
-                outfile->Printf("   FG Integral\n");
-                timer_on("FG_12 Integral");
-                form_df_teints(teint[i], FG.get(), Metric.get());
-                timer_off("FG_12 Integral");
-            } else if ( teint[i] == "F2" ){
-                outfile->Printf("   F Squared Integral\n");
-                timer_on("F^2_12 Integral");
-                form_df_teints(teint[i], F2.get(), Metric.get());
-                timer_off("F^2_12 Integral");
-            } else if ( teint[i] == "Uf" ){
-                outfile->Printf("   F Double Commutator Integral\n");
-                timer_on("U^F_12 Integral");
-                form_df_teints(teint[i], Uf.get(), Metric.get());
-                timer_off("U^F_12 Integral");
-            } else {
-                outfile->Printf("   G Integral\n");
-                timer_on("G Integral");
-                form_df_teints(teint[i], G.get(), Metric.get());
-                timer_off("G Integral");
-            }
-        }
+        form_df_fock(f.get(), k.get(), h.get());
     } else {
-        outfile->Printf("   Fock Matrix\n");
-        timer_on("Fock Matrix");
-        form_fock(f.get(), k.get(), fk.get(), h.get());
-        timer_off("Fock Matrix");
-        h.reset();
-
-        for (int i = 0; i < teint.size(); i++){
-            if ( teint[i] == "F" ){
-                outfile->Printf("   F Integral\n");
-                timer_on("F_12 Integral");
-                form_teints(teint[i], F.get());
-                timer_off("F_12 Integral");
-            } else if ( teint[i] == "FG" ){
-                outfile->Printf("   FG Integral\n");
-                timer_on("FG_12 Integral");
-                form_teints(teint[i], FG.get());
-                timer_off("FG_12 Integral");
-            } else if ( teint[i] == "F2" ){
-                outfile->Printf("   F Squared Integral\n");
-                timer_on("F^2_12 Integral");
-                form_teints(teint[i], F2.get());
-                timer_off("F^2_12 Integral");
-            } else if ( teint[i] == "Uf" ){
-                outfile->Printf("   F Double Commutator Integral\n");
-                timer_on("U^F_12 Integral");
-                form_teints(teint[i], Uf.get());
-                timer_off("U^F_12 Integral");
-            } else {
-                outfile->Printf("   G Integral\n");
-                timer_on("G Integral");
-                form_teints(teint[i], G.get());
-                timer_off("G Integral");
-            }
-        }
+        form_fock(f.get(), k.get(), h.get());
     }
+    h.reset();
+    timer_off("Fock Matrix");
 
-    /* Form the F12 Matrices */
+    /* Form the F12 Intermediates */
     outfile->Printf("\n ===> Forming the F12 Intermediate Tensors <===\n");
     auto V = std::make_unique<Tensor<double, 4>>("V Intermediate Tensor", nocc_, nocc_, nocc_, nocc_);
     auto X = std::make_unique<Tensor<double, 4>>("X Intermediate Tensor", nocc_, nocc_, nocc_, nocc_);
     auto C = std::make_unique<Tensor<double, 4>>("C Intermediate Tensor", nocc_, nocc_, nvir_, nvir_);
     auto B = std::make_unique<Tensor<double, 4>>("B Intermediate Tensor", nocc_, nocc_, nocc_, nocc_);
     auto D = std::make_unique<Tensor<double, 4>>("D Tensor", nocc_, nocc_, nvir_, nvir_);
+    auto G_ijab = std::make_unique<Tensor<double, 4>>("ERI <ij|ab>", nocc_, nocc_, nvir_, nvir_);
 
-    outfile->Printf("   V Intermediate\n");
-    timer_on("V Intermediate");
-    form_V_or_X(V.get(), F.get(), G.get(), FG.get());
-    timer_off("V Intermediate");
-    FG.reset();
+    if (use_df_) {
+        outfile->Printf("   [J_AB]^(-1)\n");
+        timer_on("Metric Integrals");
+        auto J_inv_AB = std::make_unique<Tensor<double, 3>>("Metric MO ([J_AB]^{-1})", naux_, nocc_, nri_);
+        form_metric_ints(J_inv_AB.get(), false);
+        timer_off("Metric Integrals");
 
-    outfile->Printf("   X Intermediate\n");
-    timer_on("X Intermediate");
-    form_V_or_X(X.get(), F.get(), F.get(), F2.get());
-    timer_off("X Intermediate");
+        outfile->Printf("   V Intermediate\n");
+        outfile->Printf("   X Intermediate\n");
+        timer_on("V and X Intermediate");
+        form_df_V_X(V.get(), X.get(), J_inv_AB.get());
+        timer_off("V and X Intermediate");
 
-    outfile->Printf("   C Intermediate\n");
-    timer_on("C Intermediate");
-    form_C(C.get(), F.get(), f.get());
-    timer_off("C Intermediate");
+        outfile->Printf("   C Intermediate\n");
+        timer_on("C Intermediate");
+        form_df_C(C.get(), f.get(), J_inv_AB.get());
+        timer_off("C Intermediate");
 
-    outfile->Printf("   B Intermediate\n");
-    timer_on("B Intermediate");
-    form_B(B.get(), Uf.get(), F2.get(), F.get(), f.get(), fk.get(), k.get());
-    timer_off("B Intermediate");
-    Uf.reset();
-    F2.reset();
-    F.reset();
-    fk.reset();
+        outfile->Printf("   B Intermediate\n");
+        timer_on("B Intermediate");
+        form_df_B(B.get(), f.get(), k.get(), J_inv_AB.get());
+        k.reset();
+        timer_off("B Intermediate");
 
-    timer_on("Energy Denom");
-    form_D(D.get(), f.get());
-    timer_off("Energy Denom");
+        timer_on("Energy Denom");
+        form_D(D.get(), f.get());
+        timer_off("Energy Denom");
+
+        timer_on("ERI <ij|ab>");
+        auto G = Tensor<double, 4>{"MO G Tensor", nocc_, nocc_, nobs_, nobs_};
+        form_df_teints("G", &G, J_inv_AB.get(), {'o', 'O', 'o', 'O'});
+        (*G_ijab) = G(Range{0, nocc_}, Range{0, nocc_}, Range{nocc_, nobs_}, Range{nocc_, nobs_});
+        timer_off("ERI <ij|ab>");
+    } else {
+        outfile->Printf("   V Intermediate\n");
+        outfile->Printf("   X Intermediate\n");
+        timer_on("V and X Intermediate");
+        form_V_X(V.get(), X.get());
+        timer_off("V and X Intermediate");
+
+        outfile->Printf("   C Intermediate\n");
+        timer_on("C Intermediate");
+        form_C(C.get(), f.get());
+        timer_off("C Intermediate");
+
+        outfile->Printf("   B Intermediate\n");
+        timer_on("B Intermediate");
+        form_B(B.get(), f.get(), k.get());
+        k.reset();
+        timer_off("B Intermediate");
+
+        timer_on("Energy Denom");
+        form_D(D.get(), f.get());
+        timer_off("Energy Denom");
+
+        timer_on("ERI <ij|ab>");
+        auto G = Tensor<double, 4>{"MO G Tensor", nocc_, nocc_, nobs_, nobs_};
+        form_teints("G", &G, {'o', 'o', 'O', 'O'});
+        (*G_ijab) = G(Range{0, nocc_}, Range{0, nocc_}, Range{nocc_, nobs_}, Range{nocc_, nobs_});
+        timer_off("ERI <ij|ab>");
+    }
 
     /* Compute the MP2F12/3C Energy */
     outfile->Printf("\n ===> Computing F12/3C(FIX) Energy Correction <===\n");
     timer_on("F12 Energy Correction");
-    Tensor G_ijab = (*G)(Range{0, nocc_}, Range{0, nocc_}, Range{nocc_, nobs_}, Range{nocc_, nobs_});
-    G.reset();
-
-    form_f12_energy(V.get(), X.get(), C.get(), B.get(), f.get(), G_ijab, D.get());
+    form_f12_energy(V.get(), X.get(), C.get(), B.get(), f.get(), G_ijab.get(), D.get());
     V.reset();
     X.reset();
     C.reset();
     B.reset();
+    G_ijab.reset();
     D.reset();
     timer_off("F12 Energy Correction");
 
@@ -432,7 +382,10 @@ double MP2F12::compute_energy()
     }
 
     print_results();
-    //timer::report();
+
+    if (print_ > 2) {
+        timer::report();
+    }
     timer::finalize();
 
     // Typically you would build a new wavefunction and populate it with data
@@ -542,7 +495,9 @@ std::pair<double, double> MP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, eins
     return {B_s, B_t};
 }
 
-/* Disk Algorithm */
+////////////////////////////////
+//* Disk Algorithm (CONV/DF) *//
+////////////////////////////////
 
 DiskMP2F12::DiskMP2F12(SharedWavefunction reference_wavefunction, Options& options):
     MP2F12(reference_wavefunction, options) {
@@ -731,10 +686,6 @@ double DiskMP2F12::compute_energy()
     auto fk = std::make_unique<DiskTensor<double, 2>>(state::data, "Fock-Exchange Matrix", nri_, nri_);
 
     if (use_df_) {
-        // [J_AB]^{-1}(B|PQ)
-        auto Metric = std::make_unique<Tensor<double, 3>>("Metric MO", naux_, nocc_, nri_);
-        form_metric_ints(Metric.get(), false);
-
         outfile->Printf("   Fock Matrix\n");
         if (!(*f).existed() && !(*k).existed() && !(*fk).existed()) {
             timer_on("Fock Matrix");
@@ -742,31 +693,36 @@ double DiskMP2F12::compute_energy()
             timer_off("Fock Matrix");
         }
 
+        timer_on("Metric Integrals");
+        auto J_inv_AB = std::make_unique<Tensor<double, 3>>("Metric MO ([J_AB]^{-1})", naux_, nocc_, nri_);
+        form_metric_ints(J_inv_AB.get(), false);
+        timer_off("Metric Integrals");
+
         for (int i = 0; i < teint.size(); i++){
             if ( teint[i] == "F" ){
                 outfile->Printf("   F Integral\n");
                 timer_on("F_12 Integral");
-                form_df_teints(teint[i], F.get(), Metric.get());
+                form_df_teints(teint[i], F.get(), J_inv_AB.get());
                 timer_off("F_12 Integral");
             } else if ( teint[i] == "FG" ){
                 outfile->Printf("   FG Integral\n");
                 timer_on("FG_12 Integral");
-                form_df_teints(teint[i], FG.get(), Metric.get());
+                form_df_teints(teint[i], FG.get(), J_inv_AB.get());
                 timer_off("FG_12 Integral");
             } else if ( teint[i] == "F2" ){
                 outfile->Printf("   F Squared Integral\n");
                 timer_on("F^2_12 Integral");
-                form_df_teints(teint[i], F2.get(), Metric.get());
+                form_df_teints(teint[i], F2.get(), J_inv_AB.get());
                 timer_off("F^2_12 Integral");
             } else if ( teint[i] == "Uf" ){
                 outfile->Printf("   F Double Commutator Integral\n");
                 timer_on("U^F_12 Integral");
-                form_df_teints(teint[i], Uf.get(), Metric.get());
+                form_df_teints(teint[i], Uf.get(), J_inv_AB.get());
                 timer_off("U^F_12 Integral");
             } else {
                 outfile->Printf("   G Integral\n");
                 timer_on("G Integral");
-                form_df_teints(teint[i], G.get(), Metric.get());
+                form_df_teints(teint[i], G.get(), J_inv_AB.get());
                 timer_off("G Integral");
             }
         }
@@ -819,14 +775,14 @@ double DiskMP2F12::compute_energy()
     outfile->Printf("   V Intermediate\n");
     if (!(*V).existed()) {
         timer_on("V Intermediate");
-        form_V_or_X(V.get(), F.get(), G.get(), FG.get());
+        form_V_X(V.get(), F.get(), G.get(), FG.get());
         timer_off("V Intermediate");
     }
 
     outfile->Printf("   X Intermediate\n");
     if (!(*X).existed()) {
         timer_on("X Intermediate");
-        form_V_or_X(X.get(), F.get(), F.get(), F2.get());
+        form_V_X(X.get(), F.get(), F.get(), F2.get());
         timer_off("X Intermediate");
     }
 

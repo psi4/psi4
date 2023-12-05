@@ -268,34 +268,18 @@ void MP2F12::form_oeints(einsums::Tensor<double, 2> *h)
     } // end for loop
 }
 
-void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4> *ERI)
+void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4> *ERI, std::vector<char> order)
 {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
-    // In <PQ|RS> ordering
-    std::vector<char> order = {'o', 'o', 'o', 'o'};
-    if ( int_type == "F" ) {
-        order = {'o', 'o', 'O', 'O',
-                 'o', 'o', 'O', 'C',
-                 'o', 'o', 'C', 'C'};
-    } else if ( int_type == "F2" ) {
-        order = {'o', 'o', 'o', 'O',
-                 'o', 'o', 'o', 'C'};
-    } else if ( int_type == "G" ) {
-        order = {'o', 'o', 'O', 'O',
-                 'o', 'o', 'O', 'C'};
-    } else if ( int_type == "J" ) {
-        order = {'O', 'o', 'O', 'o',
-                 'O', 'o', 'C', 'o',
-                 'C', 'o', 'C', 'o'};
-    } else if ( int_type == "K" ) {
-        order = {'O', 'o', 'o', 'O',
-                 'O', 'o', 'o', 'C',
-                 'C', 'o', 'o', 'C'};
+    bool use_offset = true;
+    if (order.size() == 4) {
+        use_offset = false;
     }
 
+    // In <PQ|RS> ordering
     int nmo1, nmo2, nmo3, nmo4;
     int off1, off2, off3, off4;
     int o1, o2, o3, o4;
@@ -369,15 +353,21 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
 
         // Stitch into ERI Tensor
         {
-            (o1 == 1) ? off1 = nobs_ : off1 = 0;
-            (o2 == 1) ? off2 = nobs_ : off2 = 0;
-            (o3 == 1) ? off3 = nobs_ : off3 = 0;
-            (o4 == 1) ? off4 = nobs_ : off4 = 0;
+            off1 = 0;
+            off2 = 0;
+            off3 = 0;
+            off4 = 0;
+            if (use_offset) {
+                if (o1 == 1) off1 = nobs_;
+                if (o2 == 1) off2 = nobs_;
+                if (o3 == 1) off3 = nobs_;
+                if (o4 == 1) off4 = nobs_;
+            }
 
             TensorView<double, 4> ERI_PQRS{*ERI, Dim<4>{nmo1, nmo2, nmo3, nmo4}, Offset<4>{off1, off2, off3, off4}};
             set_ERI(ERI_PQRS, PQRS.get());
 
-            if (nbf4 != nbf1 && nbf4 != nbf2 && nbf4 != nbf3 && int_type == "F") {
+            if (nbf3 != nbf1 && nbf3 != nbf2 && nbf3 != nbf4 && int_type == "F") {
                 Tensor<double, 4> QPSR{"QPSR", nmo2, nmo1, nmo4, nmo3};
                 sort(Indices{Q, P, index::S, R}, &QPSR, Indices{P, Q, R, index::S}, PQRS);
                 TensorView<double, 4> ERI_QPSR{*ERI, Dim<4>{nmo2, nmo1, nmo4, nmo3}, Offset<4>{off2, off1, off4, off3}};
@@ -602,27 +592,19 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
     }
 }
 
-void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double, 4> *ERI, einsums::Tensor<double, 3> *Metric)
+void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double, 4> *ERI,
+                         einsums::Tensor<double, 3> *J_inv_AB, std::vector<char> order)
 {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
-    // In (PQ|RS) ordering
-    std::vector<char> order = {'o', 'o', 'o', 'o'};
-    if ( int_type == "G" ) {
-        order = {'o', 'O', 'o', 'O',
-                 'o', 'O', 'o', 'C'};
-    } else if ( int_type == "F" ) {
-        order = {'o', 'O', 'o', 'O',
-                 'o', 'O', 'o', 'C',
-                 'o', 'C', 'o', 'O',
-                 'o', 'C', 'o', 'C',};
-    } else if ( int_type == "F2" ) {
-        order = {'o', 'o', 'o', 'O',
-                 'o', 'o', 'o', 'C',};
+    bool use_offset = true;
+    if (order.size() == 4) {
+        use_offset = false;
     }
 
+    // In (PQ|RS) ordering
     int off1, off2, off3, off4;
     int nmo1, nmo2, nmo3, nmo4;
     for (int idx = 0; idx < (order.size()/4); idx++) {
@@ -644,13 +626,13 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
             form_oper_ints(int_type, ARPQ.get());
 
             // Term 1
-            Tensor left_metric  = (*Metric)(All, Range{off1, nmo1 + off1}, Range{off2, nmo2 + off2});
+            Tensor left_metric  = (*J_inv_AB)(All, Range{off1, nmo1 + off1}, Range{off2, nmo2 + off2});
             Tensor right_oper = (*ARPQ)(All, Range{off3, nmo3 + off3}, Range{off4, nmo4 + off4});
             einsum(Indices{p, q, r, s}, &chem_robust, Indices{A, p, q}, left_metric, Indices{A, r, s}, right_oper);
 
             if ( int_type != "G" ) {
                 // Term 2
-                Tensor right_metric = (*Metric)(All, Range{off3, nmo3 + off3}, Range{off4, nmo4 + off4});
+                Tensor right_metric = (*J_inv_AB)(All, Range{off3, nmo3 + off3}, Range{off4, nmo4 + off4});
                 {
                     Tensor left_oper  = (*ARPQ)(All, Range{off1, nmo1 + off1}, Range{off2, nmo2 + off2});
                     einsum(1.0, Indices{p, q, r, s}, &chem_robust,
@@ -669,17 +651,27 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
                 }
             }
 
+            // Switch to <PR|QS> ordering
             sort(Indices{p, r, q, s}, &phys_robust, Indices{p, q, r, s}, chem_robust);
         }
 
         {
+            if (!use_offset){
+                off1 = 0;
+                off2 = 0;
+                off3 = 0;
+                off4 = 0;
+            }
+
             TensorView<double, 4> ERI_PRQS{(*ERI), Dim<4>{nmo1, nmo3, nmo2, nmo4}, Offset<4>{off1, off3, off2, off4}};
             set_ERI(ERI_PRQS, phys_robust.get());
         }
     } // end of for loop
 }
 
-/* Disk Algorithm */
+////////////////////////////////
+//* Disk Algorithm (CONV/DF) *//
+////////////////////////////////
 
 void DiskMP2F12::set_ERI(einsums::DiskView<double, 2, 4>& ERI_Slice, einsums::TensorView<double, 2>& Slice)
 {
@@ -909,7 +901,8 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
     } // end of for loop
 }
 
-void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor<double, 4> *ERI, einsums::Tensor<double, 3> *Metric)
+void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor<double, 4> *ERI,
+                                einsums::Tensor<double, 3> *J_inv_AB)
 {
     using namespace einsums;
     using namespace tensor_algebra;
@@ -952,13 +945,13 @@ void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor
             form_oper_ints(int_type, ARPQ.get());
 
             // Term 1
-            Tensor left_metric  = (*Metric)(All, Range{P, nmo1 + P}, Range{Q, nmo2 + Q});
+            Tensor left_metric  = (*J_inv_AB)(All, Range{P, nmo1 + P}, Range{Q, nmo2 + Q});
             Tensor right_oper = (*ARPQ)(All, Range{R, nmo3 + R}, Range{S, nmo4 + S});
             einsum(Indices{p, q, r, s}, &chem_robust, Indices{A, p, q}, left_metric, Indices{A, r, s}, right_oper);
 
             if ( int_type != "G" ) {
                 // Term 2
-                Tensor right_metric = (*Metric)(All, Range{R, nmo3 + R}, Range{S, nmo4 + S});
+                Tensor right_metric = (*J_inv_AB)(All, Range{R, nmo3 + R}, Range{S, nmo4 + S});
                 {
                     Tensor left_oper  = (*ARPQ)(All, Range{P, nmo1 + P}, Range{Q, nmo2 + Q});
                     einsum(1.0, Indices{p, q, r, s}, &chem_robust,
