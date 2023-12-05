@@ -223,7 +223,7 @@ available only through the ``DFTD3`` or ``DFTD4`` programs. Once installed, the
 ``dftd3``/|PSIfour| and ``dftd4``/|PSIfour| interfaces are transparent, and all corrections are
 interfaced exactly alike.
 The -D3 interface can use classic or simple-dftd3 programs interchangeably and will prefer the latter.
-Starting in v1.9, the classic program is no longer supported or tested, though it won't be deliberately disabled.
+Starting in v1.9, the classic program is no longer supported or tested, though it isn't deliberately disabled.
 
 Despite different defaults in these programs when run independently,
 when run through |PSIfour| as EmpiricalDispersion engine, each should

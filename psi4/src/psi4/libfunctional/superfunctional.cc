@@ -100,7 +100,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
     sup->set_x_beta(xc_func->lr_exchange());
 
     // User tweakers
-    if (tweakers_->size()) {
+    if (tweakers_.value().size()) {
         xc_func->set_tweak(tweakers_.value(), true);
     }
 
