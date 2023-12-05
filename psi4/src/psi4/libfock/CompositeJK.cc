@@ -79,7 +79,6 @@ void CompositeJK::common_init() {
         throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
     }
 
-    computed_shells_per_iter_["Quartets"] = {};
     
     // derive separate J+K algorithms from scf_type
     auto jk_type = options_.get_str("SCF_TYPE");
@@ -143,10 +142,12 @@ void CompositeJK::common_init() {
     if (k_type == "LINK") {
         k_algo_ = std::make_shared<LinK>(primary_, options_);
 
+        computed_shells_per_iter_["Quartets"] = {};
     // COSX
     } else if (k_type == "COSX") {
         k_algo_ = std::make_shared<COSK>(primary_, options_);
-
+        
+        computed_shells_per_iter_["Pairs"] = {};
     // sn-LinK (via GauXC) 
     } else if (k_type == "SNLINK") {
         k_algo_ = std::make_shared<snLinK>(primary_, options_);
@@ -304,10 +305,16 @@ void CompositeJK::compute_JK() {
     if (do_J_) {
         timer_on("CompositeJK: " + j_algo_->name());
 
+        // actual J construction
         j_algo_->build_G_component(D_ref_, J_ao_, eri_computers_["3-Center"]);
 
+        // retrieve shell screening statistics if desired
         if (get_bench()) {
-            computed_shells_per_iter_["Triplets"].push_back(j_algo_->num_computed_shells());
+            if (j_algo_->name() == "DF-DirJ") {
+                computed_shells_per_iter_["Triplets"].push_back(j_algo_->num_computed_shells()); 
+            } else {                 
+                computed_shells_per_iter_["Quartets"].push_back(j_algo_->num_computed_shells()); 
+            }
         }
  
         timer_off("CompositeJK: " + j_algo_->name());
@@ -315,6 +322,7 @@ void CompositeJK::compute_JK() {
 
     // Exchange Matrix
     if (do_K_) {
+        // turn on timers
         timer_on("CompositeJK: " + k_algo_->name());
 
         if (k_algo_->name() == "COSX") {
@@ -322,12 +330,19 @@ void CompositeJK::compute_JK() {
             timer_on("COSX " + gridname + " Grid");
         }
 
+        // actual K construction
         k_algo_->build_G_component(D_ref_, K_ao_, eri_computers_["4-Center"]);
 
+        // retrieve shell screening statistics if desired
         if (get_bench()) {
-            computed_shells_per_iter_["Quartets"].push_back(k_algo_->num_computed_shells());
+            if (k_algo_->name() == "COSX") {
+                computed_shells_per_iter_["Pairs"].push_back(k_algo_->num_computed_shells()); 
+            } else {                    
+                computed_shells_per_iter_["Quartets"].push_back(k_algo_->num_computed_shells()); 
+            }
         }
 
+        // turn off timers
         if (k_algo_->name() == "COSX") {
             std::string gridname = get_COSX_grid();
             timer_off("COSX " + gridname + " Grid");
