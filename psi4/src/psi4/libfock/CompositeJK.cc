@@ -100,8 +100,6 @@ void CompositeJK::common_init() {
     } else {
         set_cutoff(options_.get_double("INTS_TOLERANCE"));
     }
-    
-    early_screening_ = k_type_ == "COSX" ? true : false;
 
     // pre-construct per-thread TwoBodyAOInt objects for computing 3- and 4-index ERIs
     timer_on("CompositeJK: ERI Computers");
