@@ -419,6 +419,8 @@ def test_none_quartets_composite(scf_type):
         "df_scf_guess" : False,
         "integral_package": 'libint2',
         "ints_tolerance" : 0.0,
+        "link_ints_tolerance" : 0.0,
+        "cosx_ints_tolerance" : 0.0,
         "save_jk": True,
         "bench" : 1
     })
@@ -431,6 +433,8 @@ def test_none_quartets_composite(scf_type):
         "df_scf_guess" : False,
         "integral_package": 'libint2',
         "ints_tolerance" : 1E-6,
+        "link_ints_tolerance" : 1e-6,
+        "cosx_ints_tolerance" : 1e-6,
         "save_jk": True,
         "bench" : 1
     })
