@@ -328,7 +328,7 @@ def write_and_run_vmd_script(options,cube_files):
 
     # Define a map that contains all the values of the VMD parameters
     replacement_map = {}
-    for k,v in options.iteritems():
+    for k,v in options.items():
         key = "PARAM_" + k.upper()
         replacement_map[key] = v[0]
 
