@@ -91,15 +91,24 @@ void DirectJK::common_init() {
     if (options_.get_int("INCFOCK_FULL_FOCK_EVERY") <= 0) {
         throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
     }
-    density_screening_ = options_.get_str("SCREENING") == "DENSITY";
 
+    // other options
+    auto screening_type = options_.get_str("SCREENING");
+    density_screening_ = screening_type == "DENSITY";
+/*
+    if (screening_type == "NONE") {
+        set_cutoff(0.0);
+    } else {
+        set_cutoff(options_.get_double("INTS_TOLERANCE"));
+    }
+*/
     computed_shells_per_iter_["Quartets"] = {};
-    
-    set_cutoff(options_.get_double("INTS_TOLERANCE"));
 }
+
 size_t DirectJK::num_computed_shells() { 
     return num_computed_shells_; 
 }
+
 size_t DirectJK::memory_estimate() {
     return 0;  // Effectively
 }
