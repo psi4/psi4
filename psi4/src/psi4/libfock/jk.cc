@@ -57,7 +57,8 @@ namespace psi {
 
 template <class T>
 void _set_dfjk_options(std::shared_ptr<T> jk, Options& options) {
-    if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+    double cutoff = options.get_str("SCREENING") == "NONE" ? 0.0 : options.get_double("INTS_TOLERANCE");
+    if (options["INTS_TOLERANCE"].has_changed() || options.get_str("SCREENING") == "NONE") jk->set_cutoff(cutoff);
     if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
     if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
     if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
@@ -106,7 +107,10 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
    
         throw PSIEXCEPTION(error_message);
     }
-    
+   
+    // set up ERI cutoff value
+    double cutoff = options.get_str("SCREENING") == "NONE" ? 0.0 : options.get_double("INTS_TOLERANCE");
+ 
     // Throw small DF warning
     if (jk_type == "DF") {
         outfile->Printf("\n  Warning: JK type 'DF' found in simple constructor, defaulting to DiskDFJK.\n");
@@ -117,8 +121,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
     if (jk_type == "CD") {
         auto jk = std::make_shared<CDJK>(primary, options, options.get_double("CHOLESKY_TOLERANCE"));
-
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["INTS_TOLERANCE"].has_changed() || options.get_str("SCREENING") == "NONE") jk->set_cutoff(cutoff);
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
@@ -148,7 +151,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
     } else if (jk_type == "PK") {
         auto jk = std::make_shared<PKJK>(primary, options);
 
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["INTS_TOLERANCE"].has_changed() || options.get_str("SCREENING") == "NONE") jk->set_cutoff(cutoff);
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
@@ -158,7 +161,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
     } else if (jk_type == "OUT_OF_CORE") {
         auto jk = std::make_shared<DiskJK>(primary, options);
 
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["INTS_TOLERANCE"].has_changed() || options.get_str("SCREENING") == "NONE") jk->set_cutoff(cutoff);
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
@@ -168,8 +171,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
     } else if (jk_type == "DIRECT") {
         auto jk = std::make_shared<DirectJK>(primary, options);
+        if (options["INTS_TOLERANCE"].has_changed() || options.get_str("SCREENING") == "NONE") jk->set_cutoff(cutoff);
 
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
@@ -182,6 +185,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
     /// handle composite methods
     } else if (is_composite) {
         auto jk = std::make_shared<CompositeJK>(primary, auxiliary, options);
+        if (options["INTS_TOLERANCE"].has_changed() || options.get_str("SCREENING") == "NONE") jk->set_cutoff(cutoff);
 
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
