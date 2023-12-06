@@ -183,8 +183,8 @@ def test_schwarz_vs_csam_energy():
 
     assert compare_values(e_schwarz, e_csam, 11, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
 
-def test_schwarz_vs_density_vs_none_quartets():
-    """Checks difference between the number of shell quartets computed with Schwarz, Density, and no screening.
+def test_schwarz_vs_density_vs_none_quartets_direct():
+    """Checks difference between the number of shell quartets computed with Schwarz, Density, and no screening for DirectJK.
     Default threshhold of 1.0E-12 is used"""
 
     mol = psi4.geometry("""
@@ -394,10 +394,10 @@ def test_schwarz_vs_none_energy():
 
     assert compare_values(e_schwarz, e_none, 11, 'Schwarz vs None Screening, Cutoff 1.0e-12')
 
-@pytest.mark.parametrize("scf_type", [ "DFDIRJ+LINK", "DFDIRJ+COSX" ])
-def test_none_quartets_composite(scf_type):
-    """Cross-checks the number of shell quartets computed with two different methods of no screening for composite methods.
-    The two methods should match."""
+@pytest.mark.parametrize("scf_type", [ "PK", "DIRECT", "OUT_OF_CORE", "DISK_DF", "MEM_DF", "DFDIRJ+LINK", "DFDIRJ+COSX" ])
+def test_schwarz_vs_none_quartets(scf_type):
+    """Cross-checks the number of shell quartets computed with multiple different methods of no screening.
+    The two screening methods should match."""
 
     mol = psi4.geometry("""
         0 1
