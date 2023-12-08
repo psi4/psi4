@@ -202,10 +202,8 @@ class MOInfo : public MOInfoBase {
     double get_sign_internal_excitation(int i, int j);
 
    private:
-    void tuning();
     void read_info();
     void read_mo_spaces();
-    void read_mo_spaces2();
     void compute_mo_mappings();
     void print_info();
     void print_mo();
