@@ -34,13 +34,6 @@
     \brief   This class stores all the basic info regarding MOs
 */
 
-#define PSI_nullptr(args) args = nullptr;
-#define PSI_FREE(args) \
-    if (args != nullptr) free(args);
-#define PSI_DELETE(args) \
-    if (args != nullptr) delete args;
-#define PSI_DELETE_ARRAY(args) \
-    if (args != nullptr) delete[] args;
 #define IOFF 5000000
 
 #include <string>
