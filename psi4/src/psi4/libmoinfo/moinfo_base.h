@@ -39,10 +39,9 @@
 #include <string>
 #include <vector>
 
-typedef std::vector<int> intvec;
-typedef std::vector<bool> boolvec;
-
 namespace psi {
+using intvec = std::vector<int>;
+using boolvec = std::vector<bool>;
 
 class Options;
 class Wavefunction;
