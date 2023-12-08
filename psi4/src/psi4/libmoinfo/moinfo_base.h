@@ -78,7 +78,6 @@ class MOInfoBase {
     intvec convert_int_array_to_vector(int n, const int* array);
 
     void startup();
-    void cleanup();
 
     Wavefunction& ref_wfn;
     Options& options;

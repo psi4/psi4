@@ -48,7 +48,7 @@ MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_)
     multiplicity = ref_wfn.molecule()->multiplicity();
 }
 
-MOInfoBase::~MOInfoBase() { cleanup(); }
+MOInfoBase::~MOInfoBase() { }
 
 void MOInfoBase::startup() {
     nso = 0;
@@ -63,8 +63,6 @@ void MOInfoBase::startup() {
 
     guess_occupation = true;
 }
-
-void MOInfoBase::cleanup() {} 
 
 void MOInfoBase::read_data() {
     nirreps = ref_wfn.nirrep();
