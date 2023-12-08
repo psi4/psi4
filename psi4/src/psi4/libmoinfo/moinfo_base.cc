@@ -62,7 +62,6 @@ void MOInfoBase::startup() {
     wfn_sym = 0;
 
     guess_occupation = true;
-    compute_ioff();
 }
 
 void MOInfoBase::cleanup() {}
@@ -89,12 +88,6 @@ void MOInfoBase::compute_number_of_electrons() {
     if (((nel + 1 - multiplicity) % 2) != 0) throw PSIEXCEPTION("\n\n  MOInfoBase: Wrong multiplicity.\n\n");
     nael = (nel + multiplicity - 1) / 2;
     nbel = nel - nael;
-}
-
-void MOInfoBase::compute_ioff() {
-    ioff.resize(IOFF);
-    ioff[0] = 0;
-    for (size_t i = 1; i < IOFF; i++) ioff[i] = ioff[i - 1] + i;
 }
 
 void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, std::string labels) {
