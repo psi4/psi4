@@ -370,7 +370,7 @@ void CCIndex::print() {
     outfile->Printf("\n---------------------------------");
     int index = 0;
     for (int h = 0; h < nirreps; h++) {
-        if (tuplespi[h] > 0) outfile->Printf("\n\t%s", wfn_->moinfo()->get_irr_labs(h).c_str());
+        if (tuplespi[h] > 0) outfile->Printf("\n\t%s", wfn_->moinfo()->get_irr_lab(h).c_str());
         for (size_t tuple = 0; tuple < tuplespi[h]; ++tuple) {
             outfile->Printf("\n\t\t( ");
             for (int k = 0; k < nelements; k++) outfile->Printf("%d ", tuples[index][k]);
