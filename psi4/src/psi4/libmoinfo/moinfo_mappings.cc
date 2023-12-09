@@ -30,9 +30,8 @@
 
 namespace psi {
 
-/*!
- * \fn MOInfo::compute_mo_mappings()
- */
+/// @brief       Build the arrays that connect the subspaces of the non-frozen MOs to the the non-frozen list of MOs in
+/// Pitzer. This is what you need in all computations.
 void MOInfo::compute_mo_mappings() {
     //
     //  ------------------------------------------------------------------------------
@@ -46,12 +45,7 @@ void MOInfo::compute_mo_mappings() {
     //  |                                     mo                                     |
     //  |----------------------------------------------------------------------------|
     //
-
     /********************************************************
-      Build the arrays that connect the subspaces of the
-      non-frozen MOs to the the non-frozen list of MOs
-      in Pitzer. This is what you need in all computations.
-
       For the example above:
 
       docc_to_mo = (4 5 6 7 18 19 20)

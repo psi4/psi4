@@ -106,10 +106,8 @@ MOInfo::MOInfo(Wavefunction& ref_wfn_, Options& options_, bool silent_) : MOInfo
 
 MOInfo::~MOInfo() { free_memory(); }
 
+/// @brief Read Nuclear, SCF and other stuff
 void MOInfo::read_info() {
-    /*
-     * Read Nuclear, SCF and other stuff
-     */
     read_data();
     nmo = ref_wfn.nmo();
     compute_number_of_electrons();
@@ -205,9 +203,6 @@ void MOInfo::setup_model_space() {
     make_internal_excitations();
 }
 
-/*!
-    \fn MOInfo::print_info()
- */
 void MOInfo::print_info() {
     outfile->Printf("\n");
     outfile->Printf("\n  ==============================================================================");
@@ -424,9 +419,7 @@ void MOInfo::read_mo_spaces() {
     //  }
 }
 
-/**
-    MOInfo::print_mo_spaces()
- */
+/// @brief MOInfo::print_mo_spaces()
 void MOInfo::print_mo() {
     /// @todo implement me
     outfile->Printf("\n");
@@ -447,9 +440,6 @@ void MOInfo::print_mo() {
     print_mo_space(nfvir, fvir, "Frozen Virtual                  ");
 }
 
-/**
- *   MOInfo::free_memory()
- */
 void MOInfo::free_memory() {
     if (scf != nullptr) free_block(scf);
     for (int i = 0; i < nirreps; i++) free_block(scf_irrep[i]);
