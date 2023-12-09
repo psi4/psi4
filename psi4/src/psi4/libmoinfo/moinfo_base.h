@@ -41,9 +41,6 @@ namespace psi {
 using intvec = std::vector<int>;
 using boolvec = std::vector<bool>;
 
-class Options;
-class Wavefunction;
-
 class MOInfoBase {
    public:
     MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_ = false);
