@@ -48,7 +48,6 @@ class MOInfoBase {
 
     double get_nuclear_energy() const { return (nuclear_energy); }
 
-    std::vector<std::string> get_irr_labs() const { return (irr_labs); }
     std::string get_irr_labs(int i) const { return (irr_labs[i]); }
 
     int get_nirreps() const { return (nirreps); }
