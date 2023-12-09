@@ -49,21 +49,35 @@ class MOInfoBase {
    public:
     MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_ = false);
 
-    /// @brief Get the nuclear energy stored in the MOInfoBase class
+    /// @brief Get the nuclear energy stored in an MOInfoBase object (or an object derived from MOInfoBase).
     /// @return The nuclear repulsion energy
     double get_nuclear_energy() const { return (nuclear_energy); }
 
-    /// @brief Get one of the irrep labels that are stored in the MOInfoBase class. Not bounds-checked.
+    /// @brief Get one of the irrep labels that are stored in an MOInfoBase object (or an object derived from MOInfoBase). Not bounds-checked.
     /// @param i : Index of the irrep label
     /// @return The selected irrep label
     std::string get_irr_lab(size_t i) const { return (irr_labs[i]); }
 
+    /// @brief Get the number of irreps an MOInfoBase object (or an object derived from MOInfoBase) has been constructed with.
+    /// @return The number of irreps
     int get_nirreps() const { return (nirreps); }
+
+    /// @brief Get the PSI nso value (number of symmetry-adapted atomic orbitals) that is strored in an MOInfoBase object (or an object derived from MOInfoBase).
+    /// @return The number of symmetry-adapted atomic orbitals
     int get_nso() const { return (nso); }
 
+    /// @brief Get a copy of the array holding the numbers of SOs per irrep, from an MOInfoBase object (or an object derived from MOInfoBase).
+    /// @return A copy of the array holding the numbers of SOs per irrep
     intvec get_sopi() const { return (sopi); }
+
+    /// @brief Get a copy of the array holding the numbers of doubly occupied orbitals (DOCC) per irrep, from an MOInfoBase object (or an object derived from MOInfoBase).
+    /// @return A copy of the array holding the numbers of doubly occupied orbitals (DOCC) per irrep
     intvec get_docc() const { return (docc); }
+
+    /// @brief Get a copy of the array holding the numbers of active orbitals per irrep, from an MOInfoBase object (or an object derived from MOInfoBase).
+    /// @return A copy of the array holding the numbers of active orbitals per irrep
     intvec get_actv() const { return (actv); }
+
     bool get_guess_occupation() const { return (guess_occupation); }
     int get_ndocc() const { return (ndocc); }
     int get_nactv() const { return (nactv); }
@@ -97,9 +111,9 @@ class MOInfoBase {
     int nactive_ael;
     int nactive_bel;
 
-    intvec sopi;
-    intvec docc;
-    intvec actv;
+    intvec sopi; //Array holding the numbers of SOs per irrep
+    intvec docc; //Array holding the numbers of doubly occupied orbitals (DOCC) per irrep
+    intvec actv; //Array holding the numbers of active orbitals per irrep
     bool guess_occupation;
     bool silent;
 
