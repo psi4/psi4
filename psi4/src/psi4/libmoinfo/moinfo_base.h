@@ -92,7 +92,7 @@ class MOInfoBase {
     void compute_number_of_electrons();
     void correlate(char* ptgrp, int irrep, int& nirreps_old, int& nirreps_new, int*& correlation);
     void read_mo_space(int nirreps_ref, int& n, intvec& mo, std::string labels);
-    void print_mo_space(int& nmo, intvec& mo, std::string labels);
+    void print_mo_space(int nmo, intvec& mo, std::string labels);
     intvec convert_int_array_to_vector(int n, const int* array);
 
     Wavefunction& ref_wfn;
