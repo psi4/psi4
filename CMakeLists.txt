@@ -25,6 +25,7 @@ set(psi4_DESCRIPTION "Open-Source Quantum Chemistry")
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATOR}")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 ################  Options: Overview and Not Otherwise Mentioned  ###############
 
