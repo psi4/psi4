@@ -58,12 +58,12 @@ class MOInfoBase {
     /// @return The selected irrep label
     std::string get_irr_lab(size_t i) const { return (irr_labs[i]); }
 
-    /// @brief Get the number of irreps an MOInfoBase object (or an object derived from MOInfoBase) has been constructed with.
-    /// @return The number of irreps
+    /// @brief Get the # of irreps an MOInfoBase object (or an object derived from MOInfoBase) has been constructed with.
+    /// @return The # of irreps
     int get_nirreps() const { return (nirreps); }
 
-    /// @brief Get the PSI nso value (number of symmetry-adapted atomic orbitals) that is strored in an MOInfoBase object (or an object derived from MOInfoBase).
-    /// @return The number of symmetry-adapted atomic orbitals
+    /// @brief Get the PSI nso value (# of symmetry-adapted atomic orbitals) that is stored in an MOInfoBase object (or an object derived from MOInfoBase).
+    /// @return The # of symmetry-adapted atomic orbitals
     int get_nso() const { return (nso); }
 
     /// @brief Get a copy of the array holding the numbers of SOs per irrep, from an MOInfoBase object (or an object derived from MOInfoBase).
@@ -80,10 +80,17 @@ class MOInfoBase {
 
     bool get_guess_occupation() const { return (guess_occupation); }
 
+    /// @brief Get the total # of active orbitals that is stored in an MOInfoBase object (or an object derived from MOInfoBase).
+    /// @return Total # of active orbitals across all irreps
     int get_nactv() const { return (nactv); }
 
-    int get_nael() const { return (nael); }  // # of alpha electrons including frozen
-    int get_nbel() const { return (nbel); }  // # of  beta electrons including frozen
+    /// @brief Get the # of alpha electrons (including frozen) that is stored in an MOInfoBase object (or an object derived from MOInfoBase).
+    /// @return The # of alpha electrons (including frozen)
+    int get_nael() const { return (nael); }
+
+    /// @brief Get the # of beta electrons (including frozen) that is stored in an MOInfoBase object (or an object derived from MOInfoBase).
+    /// @return The # of beta electrons (including frozen)
+    int get_nbel() const { return (nbel); }
 
     double** get_scf_mos() const { return (scf); }
 
@@ -97,17 +104,17 @@ class MOInfoBase {
 
     Wavefunction& ref_wfn;
     Options& options;
-    const int nirreps; //The number of irreps this object has been constructed with
+    const int nirreps; //The # of irreps this object has been constructed with
     int wfn_sym;
     const int charge; //The charge this object has been constructed with
     int multiplicity;
 
-    int nso;  // PSI nso (number of symmetry-adapted atomic orbitals)
-    int nmo;  // Psi nmo (number of molecular orbitals, including frozen core and frozen virtual)
+    int nso;  // PSI nso (# of symmetry-adapted atomic orbitals)
+    int nmo;  // Psi nmo (# of molecular orbitals, including frozen core and frozen virtual)
     int ndocc;
-    int nactv;
-    int nael;
-    int nbel;
+    int nactv; //Total # of active orbitals across all irreps
+    int nael; // The # of alpha electrons (including frozen)
+    int nbel; // The # of beta electrons (including frozen)
     int nactive_ael;
     int nactive_bel;
 
