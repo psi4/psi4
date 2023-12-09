@@ -130,7 +130,6 @@ class MOInfo : public MOInfoBase {
     int get_nocc() const { return (nocc); }
     int get_nvir() const { return (nvir); }
 
-    intvec get_sopi() const { return (sopi); }
     intvec get_mopi() const { return (mopi); }
     intvec get_docc() const { return (docc); }
     intvec get_actv() const { return (actv); }
