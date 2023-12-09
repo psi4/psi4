@@ -78,9 +78,9 @@ class MOInfoBase {
 
     Wavefunction& ref_wfn;
     Options& options;
-    const int nirreps;
+    const int nirreps; //The number of irreps this object has been constructed with
     int wfn_sym;
-    int charge;
+    const int charge; //The charge this object has been constructed with
     int multiplicity;
 
     int nso;  // PSI nso (number of symmetry-adapted atomic orbitals)

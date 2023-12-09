@@ -42,7 +42,11 @@
 namespace psi {
 
 MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_)
-    : options(options_), silent(silent_), ref_wfn(ref_wfn_), nirreps(ref_wfn_.nirrep()) {
+    : options(options_),
+      silent(silent_),
+      ref_wfn(ref_wfn_),
+      nirreps(ref_wfn_.nirrep()),
+      charge(ref_wfn_.molecule()->molecular_charge()) {
     nso = 0;
     nmo = 0;
     ndocc = 0;
@@ -54,7 +58,6 @@ MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_)
     wfn_sym = 0;
     guess_occupation = true;
 
-    charge = ref_wfn.molecule()->molecular_charge();
     multiplicity = ref_wfn.molecule()->multiplicity();
 }
 
