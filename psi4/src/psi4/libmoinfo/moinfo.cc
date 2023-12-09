@@ -249,16 +249,16 @@ void MOInfo::read_mo_spaces() {
         // Read the dimensioning information for the subgroup from the wfn object
         if (nirreps != ref_wfn.frzcpi().n())
             throw PSIEXCEPTION(
-                "MOInfo::read_mo_spaces(): Suspicious condition! The number of irreps in the reference wavefunction is not "
-                "equal to the size of the number of frozen core orbitals per irrep array.");
+                "MOInfo::read_mo_spaces(): Suspicious condition! The number of irreps in the reference wavefunction is "
+                "not equal to the size of the number of frozen core orbitals per irrep array.");
         if (nirreps != ref_wfn.doccpi().n())
             throw PSIEXCEPTION(
-                "MOInfo::read_mo_spaces(): Suspicious condition! The number of irreps in the reference wavefunction is not "
-                "equal to the size of the DOCC per irrep array.");
+                "MOInfo::read_mo_spaces(): Suspicious condition! The number of irreps in the reference wavefunction is "
+                "not equal to the size of the DOCC per irrep array.");
         if (nirreps != ref_wfn.soccpi().n())
             throw PSIEXCEPTION(
-                "MOInfo::read_mo_spaces(): Suspicious condition! The number of irreps in the reference wavefunction is not "
-                "equal to the size of the SOCC per irrep array.");
+                "MOInfo::read_mo_spaces(): Suspicious condition! The number of irreps in the reference wavefunction is "
+                "not equal to the size of the SOCC per irrep array.");
         focc_ref = ref_wfn.frzcpi().blocks();
         docc_ref = ref_wfn.doccpi().blocks();
         actv_ref = ref_wfn.soccpi().blocks();
@@ -302,16 +302,16 @@ void MOInfo::read_mo_spaces() {
 
         if (nirreps != ref_wfn.frzcpi().n())
             throw PSIEXCEPTION(
-                "MOInfo::read_mo_spaces(): Suspicious condition! The number of irreps in the reference wavefunction is not "
-                "equal to the size of the number of frozen core orbitals per irrep array.");
+                "MOInfo::read_mo_spaces(): Suspicious condition! The number of irreps in the reference wavefunction is "
+                "not equal to the size of the number of frozen core orbitals per irrep array.");
         if (nirreps != ref_wfn.doccpi().n())
             throw PSIEXCEPTION(
-                "MOInfo::read_mo_spaces(): Suspicious condition! The number of irreps in the reference wavefunction is not "
-                "equal to the size of the DOCC per irrep array.");
+                "MOInfo::read_mo_spaces(): Suspicious condition! The number of irreps in the reference wavefunction is "
+                "not equal to the size of the DOCC per irrep array.");
         if (nirreps != ref_wfn.soccpi().n())
             throw PSIEXCEPTION(
-                "MOInfo::read_mo_spaces(): Suspicious condition! The number of irreps in the reference wavefunction is not "
-                "equal to the size of the SOCC per irrep array.");
+                "MOInfo::read_mo_spaces(): Suspicious condition! The number of irreps in the reference wavefunction is "
+                "not equal to the size of the SOCC per irrep array.");
         focc = ref_wfn.frzcpi().blocks();
         docc = ref_wfn.doccpi().blocks();
         actv = ref_wfn.soccpi().blocks();
