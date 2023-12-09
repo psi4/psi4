@@ -59,7 +59,14 @@ void MOInfoBase::read_data() {
     nirreps = ref_wfn.nirrep();
     nso = ref_wfn.nso();
     // Read sopi and save as a STL vector
-    sopi = convert_int_array_to_vector(nirreps, ref_wfn.nsopi());
+    if (ref_wfn.nirrep() != ref_wfn.nsopi().n()) {
+        const std::string msg =
+            "MOInfoBase::read_data(): Suspicious condition! The number of irreps in the reference wavefunction is not "
+            "equal to the size of the number of SOs per irrep array. Invalid ref_wfn?\n";
+        outfile->Printf(msg.c_str());
+        throw PSIEXCEPTION(msg);
+    }
+    sopi = ref_wfn.nsopi().blocks();
     irr_labs = ref_wfn.molecule()->irrep_labels();
     nuclear_energy = ref_wfn.molecule()->nuclear_repulsion_energy(ref_wfn.get_dipole_field_strength());
 }
