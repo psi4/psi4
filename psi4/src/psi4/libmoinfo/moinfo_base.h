@@ -58,7 +58,7 @@ class MOInfoBase {
     intvec get_docc() const { return (docc); }
     intvec get_actv() const { return (actv); }
     bool get_guess_occupation() const { return (guess_occupation); }
-    int get_ndocc() const { return (ndocc); }
+
     int get_nactv() const { return (nactv); }
 
     int get_nael() const { return (nael); }  // # of alpha electrons including frozen
