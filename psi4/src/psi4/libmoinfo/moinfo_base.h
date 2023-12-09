@@ -94,6 +94,10 @@ class MOInfoBase {
     int get_nbel() const { return (nbel); }
 
    protected:
+    /// @brief Get an element of the array holding the numbers of SOs per irrep, from an MOInfoBase object (or derived object). Not bounds-checked!
+    /// @return The i-th number of SOs per irrep
+    int get_sopi(size_t i) const { return sopi[i]; }
+
     void read_data();
     void compute_number_of_electrons();
     void read_mo_space(const int nirreps_ref, int& n, intvec& mo, const std::string& labels);
@@ -114,7 +118,6 @@ class MOInfoBase {
     int nactive_ael;
     int nactive_bel;
 
-    intvec sopi;  // Array holding the numbers of SOs per irrep
     intvec docc;  // Array holding the numbers of doubly occupied orbitals (DOCC) per irrep
     intvec actv;  // Array holding the numbers of active orbitals per irrep
     bool guess_occupation;
@@ -128,6 +131,7 @@ class MOInfoBase {
 
     private:
     const int charge; // Molecular charge
+    intvec sopi;  // Array holding the numbers of SOs per irrep
 };
 
 }  // namespace psi

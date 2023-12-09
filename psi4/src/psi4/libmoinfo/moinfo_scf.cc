@@ -133,7 +133,7 @@ void MOInfoSCF::print_mo() {
     for (int i = 0; i < nirreps; i++) outfile->Printf("  %s", irr_labs[i].c_str());
     outfile->Printf(" Total");
     outfile->Printf("\n  ----------------------------------------------------------------------------");
-    print_mo_space(nso, sopi, "Total                         ");
+    print_mo_space(nso, get_sopi(), "Total                         ");
     if (!guess_occupation) {
         print_mo_space(ndocc, docc, "Doubly Occupied               ");
         print_mo_space(nactv, actv, "Active/Singly Occupied        ");
