@@ -52,7 +52,7 @@ class MOInfoBase {
 
     /// @brief Get the nuclear energy stored in an MOInfoBase object (or derived object).
     /// @return The nuclear repulsion energy
-    double get_nuclear_energy() const { return (nuclear_energy); }
+    double get_nuc_E() const { return (nuclear_energy); }
 
     /// @brief Get one of the irrep labels that are stored in an MOInfoBase object (or derived object). Not bounds-checked!
     /// @param i : Index of the irrep label
@@ -122,14 +122,13 @@ class MOInfoBase {
     bool guess_occupation;
     bool silent;
 
-    double nuclear_energy; // The nuclear repulsion energy
-
     double*** scf_irrep;  // MO coefficients
 
-    std::vector<std::string> irr_labs; // Array of the irrep labels
-
     private:
+    double nuclear_energy; // The nuclear repulsion energy
     const int charge; // Molecular charge
+
+    std::vector<std::string> irr_labs; // Array of the irrep labels
     int nso;  // The # of symmetry-adapted atomic orbitals
     intvec sopi;  // Array holding the numbers of SOs per irrep
 };
