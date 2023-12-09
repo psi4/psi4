@@ -41,6 +41,10 @@
 
 namespace psi {
 
+/// @brief Constructor for MOInfoBase class
+/// @param ref_wfn_ 
+/// @param options_ 
+/// @param silent_ 
 MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_)
     : options(options_),
       silent(silent_),
