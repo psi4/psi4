@@ -222,18 +222,10 @@ void MOInfo::print_info() {
     outfile->Printf("\n  ------------------------------------------------------------------------------");
 }
 
-/*!
-    \fn MOInfo::read_mo_spaces()
- */
+/// @brief      See if we're in a subgroup for finite difference calculations, by looking to see what OptKing has
+/// written to the checkpoint file. Reassign the occupation vectors as appropriate. N.B. the SOCC and DOCC are handled
+/// by Input (ACS)
 void MOInfo::read_mo_spaces() {
-    /*****************************************************
-     See if we're in a subgroup for finite difference
-     calculations, by looking to see what OptKing has
-     written to the checkpoint file.  Reassign the
-     occupation vectors as appropriate.  N.B. the
-     SOCC and DOCC are handled by Input (ACS)
-  *****************************************************/
-
     focc.assign(nirreps, 0);
     docc.assign(nirreps, 0);
     actv.assign(nirreps, 0);
