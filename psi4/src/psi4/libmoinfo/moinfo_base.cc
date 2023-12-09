@@ -122,7 +122,7 @@ void MOInfoBase::read_mo_space(const int nirreps_ref, int& n, intvec& mo, const 
     }
 }
 
-void MOInfoBase::print_mo_space(int& n, intvec& mo, std::string labels) {
+void MOInfoBase::print_mo_space(int n, const intvec& mo, const std::string& labels) {
     outfile->Printf("\n  %s", labels.c_str());
 
     for (int i = nirreps; i < 8; i++) outfile->Printf("     ");
