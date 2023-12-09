@@ -36,8 +36,6 @@
 
 #include "moinfo_base.h"
 
-#define size_det 2048
-
 namespace psi {
 
 enum ReferenceType { AllRefs, UniqueRefs, ClosedShellRefs, UniqueOpenShellRefs };
@@ -74,7 +72,7 @@ class MOInfo : public MOInfoBase {
         const MOInfo* moinfo;
 
        public:
-        typedef std::bitset<size_det> bitdet;
+        typedef std::bitset<2048> bitdet;
         SlaterDeterminant(const MOInfo*);
         ~SlaterDeterminant();
         void set(int n) { bits.set(n); }
