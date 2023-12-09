@@ -48,7 +48,7 @@ MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_)
     multiplicity = ref_wfn.molecule()->multiplicity();
 }
 
-MOInfoBase::~MOInfoBase() { }
+MOInfoBase::~MOInfoBase() {}
 
 void MOInfoBase::startup() {
     nso = 0;
@@ -68,7 +68,11 @@ void MOInfoBase::read_data() {
     nirreps = ref_wfn.nirrep();
     nso = ref_wfn.nso();
     // Read sopi and save as a STL vector
-    sopi = convert_int_array_to_vector(nirreps, ref_wfn.nsopi());
+    if (nirreps != ref_wfn.nsopi().n())
+        throw PSIEXCEPTION(
+            "\n\n  MOInfoBase::read_data(): Suspicious condition! The number of irreps in the reference wavefunction "
+            "is not equal to the size of the number of SOs per irrep array.\n\n");
+    sopi = ref_wfn.nsopi().blocks();
     irr_labs = ref_wfn.molecule()->irrep_labels();
     nuclear_energy = ref_wfn.molecule()->nuclear_repulsion_energy(ref_wfn.get_dipole_field_strength());
 }
