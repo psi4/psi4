@@ -48,7 +48,7 @@ class MOInfoBase {
 
     double get_nuclear_energy() const { return (nuclear_energy); }
 
-    std::string get_irr_labs(int i) const { return (irr_labs[i]); }
+    std::string get_irr_lab(int i) const { return (irr_labs[i]); }
 
     int get_nirreps() const { return (nirreps); }
     int get_nso() const { return (nso); }
