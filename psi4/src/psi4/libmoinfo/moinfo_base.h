@@ -134,17 +134,16 @@ class MOInfoBase {
     bool guess_occupation;
     bool silent;
 
-    double nuclear_energy;  // The nuclear repulsion energy
-
     double** scf;         // MO coefficients
     double*** scf_irrep;  // MO coefficients
-
-    std::vector<std::string> irr_labs;
 
    private:
     intvec convert_int_array_to_vector(int n, const int* array);
 
+    double nuclear_energy;  // The nuclear repulsion energy
     const int charge;  // The charge this object has been constructed with
+
+    std::vector<std::string> irr_labs; // Array of the irrep labels
     int nso;  // PSI nso (# of symmetry-adapted atomic orbitals)
     intvec sopi;  // Array holding the numbers of SOs per irrep
 };
