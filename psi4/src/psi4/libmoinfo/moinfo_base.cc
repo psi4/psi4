@@ -42,7 +42,7 @@
 namespace psi {
 
 MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_)
-    : options(options_), silent(silent_), ref_wfn(ref_wfn_) {
+    : options(options_), silent(silent_), ref_wfn(ref_wfn_), nirreps(ref_wfn.nirrep()) {
     startup();
     charge = ref_wfn.molecule()->molecular_charge();
     multiplicity = ref_wfn.molecule()->multiplicity();
@@ -65,7 +65,6 @@ void MOInfoBase::startup() {
 }
 
 void MOInfoBase::read_data() {
-    nirreps = ref_wfn.nirrep();
     nso = ref_wfn.nso();
     // Read sopi and save as a STL vector
     if (nirreps != ref_wfn.nsopi().n())
