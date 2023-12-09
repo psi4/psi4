@@ -99,7 +99,6 @@ class MOInfoBase {
     void compute_number_of_electrons();
     void read_mo_space(int nirreps_ref, int& n, intvec& mo, std::string labels);
     void print_mo_space(int nmo, intvec& mo, std::string labels);
-    intvec convert_int_array_to_vector(int n, const int* array);
 
     Wavefunction& ref_wfn;
     Options& options;
@@ -129,6 +128,9 @@ class MOInfoBase {
     double*** scf_irrep;  // MO coefficients
 
     std::vector<std::string> irr_labs;
+
+   private:
+    intvec convert_int_array_to_vector(int n, const int* array);
 };
 
 }  // namespace psi
