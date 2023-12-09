@@ -120,7 +120,7 @@ class MOInfoBase {
     int wfn_sym;
     int multiplicity;
 
-    int nso;  // PSI nso (# of symmetry-adapted atomic orbitals)
+
     int nmo;  // Psi nmo (# of molecular orbitals, including frozen core and frozen virtual)
     int ndocc;
     int nactv;  // Total # of active orbitals across all irreps
@@ -145,6 +145,7 @@ class MOInfoBase {
     intvec convert_int_array_to_vector(int n, const int* array);
 
     const int charge;  // The charge this object has been constructed with
+    int nso;  // PSI nso (# of symmetry-adapted atomic orbitals)
     intvec sopi;  // Array holding the numbers of SOs per irrep
 };
 
