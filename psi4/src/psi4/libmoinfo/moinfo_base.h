@@ -47,7 +47,6 @@ class Wavefunction;
 class MOInfoBase {
    public:
     MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_ = false);
-    ~MOInfoBase();
 
     double get_nuclear_energy() const { return (nuclear_energy); }
 

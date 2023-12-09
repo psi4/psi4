@@ -58,8 +58,6 @@ MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_)
     multiplicity = ref_wfn.molecule()->multiplicity();
 }
 
-MOInfoBase::~MOInfoBase() {}
-
 void MOInfoBase::read_data() {
     nso = ref_wfn.nso();
     // Read sopi and save as a STL vector
