@@ -110,7 +110,6 @@ class MOInfoBase {
     int wfn_sym;
     int multiplicity;
 
-    int nso;  // The # of symmetry-adapted atomic orbitals
     int ndocc;
     int nactv;  // Total # of active orbitals across all irreps
     int nael;   // The # of alpha electrons (including frozen)
@@ -131,6 +130,7 @@ class MOInfoBase {
 
     private:
     const int charge; // Molecular charge
+    int nso;  // The # of symmetry-adapted atomic orbitals
     intvec sopi;  // Array holding the numbers of SOs per irrep
 };
 

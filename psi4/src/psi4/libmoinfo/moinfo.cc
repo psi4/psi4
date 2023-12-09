@@ -114,7 +114,7 @@ void MOInfo::read_info() {
     scf_energy = ref_wfn.energy();
     mopi = convert_int_array_to_vector(nirreps, ref_wfn.nmopi());
     SharedMatrix matCa = ref_wfn.Ca();
-    scf = block_matrix(nso, nmo);
+    scf = block_matrix(get_nso(), nmo);
     size_t soOffset = 0;
     size_t moOffset = 0;
     for (int h = 0; h < nirreps; ++h) {
@@ -210,7 +210,7 @@ void MOInfo::print_info() {
     outfile->Printf("\n  MOs and Symmetry:");
     outfile->Printf("\n  ------------------------------------------------------------------------------");
     outfile->Printf("\n  nirreps          = %-10d       root             = %-10d", nirreps, root);
-    outfile->Printf("\n  nso              = %-10d       nmo              = %-10d", nso, nmo);
+    outfile->Printf("\n  nso              = %-10d       nmo              = %-10d", get_nso(), nmo);
     outfile->Printf("\n  nael             = %-10d       nbel             = %-10d", nael, nbel);
     outfile->Printf("\n  nactive_ael      = %-10d       nactive_bel      = %-10d", nactive_ael, nactive_bel);
     outfile->Printf("\n");
