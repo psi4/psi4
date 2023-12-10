@@ -154,7 +154,7 @@ void SCF::iterate_scf_equations() {
         outfile->Printf("]");
     }
 
-    if (moinfo_scf->get_guess_occupation()) {
+    if (moinfo_scf->get_guess_occupation_flag()) {
         outfile->Printf("\n  Final occupation");
         outfile->Printf("\n  docc = [");
         for (int h = 0; h < nirreps; ++h) {

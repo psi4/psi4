@@ -122,7 +122,7 @@ void MOInfoSCF::read_mo_spaces() {
     nactive_ael = nael - ndocc;
     nactive_bel = nbel - ndocc;
 
-    if ((ndocc > 0) || (nactv > 0)) guess_occupation = false;
+    if ((ndocc > 0) || (nactv > 0)) set_guess_occupation_flag(false);
 }
 
 void MOInfoSCF::print_mo() {
@@ -134,12 +134,12 @@ void MOInfoSCF::print_mo() {
     outfile->Printf(" Total");
     outfile->Printf("\n  ----------------------------------------------------------------------------");
     print_mo_space(get_nso(), get_sopi(), "Total                         ");
-    if (!guess_occupation) {
+    if (!get_guess_occupation_flag()) {
         print_mo_space(ndocc, docc, "Doubly Occupied               ");
         print_mo_space(nactv, actv, "Active/Singly Occupied        ");
     }
     outfile->Printf("\n  ----------------------------------------------------------------------------");
-    if (guess_occupation) outfile->Printf("\n\n  Guessing orbital occupation");
+    if (get_guess_occupation_flag()) outfile->Printf("\n\n  Guessing orbital occupation");
 }
 
 }  // namespace psi

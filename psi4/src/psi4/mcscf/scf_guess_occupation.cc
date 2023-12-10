@@ -43,7 +43,7 @@ namespace psi {
 namespace mcscf {
 
 void SCF::guess_occupation() {
-    if (moinfo_scf->get_guess_occupation()) {
+    if (moinfo_scf->get_guess_occupation_flag()) {
         // Assumes the eigenvalues of some Fock operator
         // are in the SBlockVector epsilon
         std::vector<std::pair<double, int> > evals;
