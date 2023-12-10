@@ -75,7 +75,6 @@ namespace psi {
 PSI_API [[nodiscard]] double **block_matrix(size_t n, size_t m, bool memlock) {
     double **A = nullptr;
     double *B = nullptr;
-    size_t i;
 
     if (!m || !n) return (static_cast<double **>(nullptr));
 
@@ -96,7 +95,7 @@ PSI_API [[nodiscard]] double **block_matrix(size_t n, size_t m, bool memlock) {
     }
     memset(static_cast<void *>(B), 0, m * n * sizeof(double));
 
-    for (i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         A[i] = &(B[i * m]);
     }
 
