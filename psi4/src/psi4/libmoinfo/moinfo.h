@@ -200,7 +200,6 @@ class MOInfo : public MOInfoBase {
     void compute_mo_mappings();
     void print_info();
     void print_mo();
-    void free_memory();
 
     // Model space functions
     void print_model_space();
