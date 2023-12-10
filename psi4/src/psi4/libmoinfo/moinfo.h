@@ -134,11 +134,9 @@ class MOInfo : public MOInfoBase {
     using MOInfoBase::get_docc;
     using MOInfoBase::get_actv;
     intvec get_focc() const { return (focc); }
-    intvec get_extr() const { return (extr); }
     intvec get_fvir() const { return (fvir); }
     intvec get_occ() const { return (occ); }
     intvec get_vir() const { return (vir); }
-    intvec get_all() const { return (all); }
 
     int get_docc(size_t i) const { return (docc[i]); }
     int get_actv(size_t i) const { return (actv[i]); }
