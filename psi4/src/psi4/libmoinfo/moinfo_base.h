@@ -109,7 +109,7 @@ class MOInfoBase {
     void read_mo_space(const int nirreps_ref, int& n, intvec& mo, const std::string& labels);
     void print_mo_space(int nmo, const intvec& mo, const std::string& labels);
 
-    Wavefunction& ref_wfn;
+    const Wavefunction& ref_wfn;
     Options& options;
     const int nirreps;  // The # of irreps this object has been constructed with
     int wfn_sym;
