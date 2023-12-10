@@ -84,14 +84,16 @@ PSI_API [[nodiscard]] double **block_matrix(size_t n, size_t m, bool memlock) {
     if (A == nullptr) {
         outfile->Printf("block_matrix: trouble allocating memory \n");
         outfile->Printf("n = %ld\n", n);
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Could not allocate memory in block_matrix! Tried to allocate " +
+                           std::to_string(n * sizeof(double *)) + " bytes.");
     }
 
     B = new double[n * m];
     if (B == nullptr) {
         outfile->Printf("block_matrix: trouble allocating memory \n");
         outfile->Printf("m = %ld\n", m);
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Could not allocate memory in block_matrix! Tried to allocate " +
+                           std::to_string(n * m * sizeof(double)) + " bytes.");
     }
     memset(static_cast<void *>(B), 0, m * n * sizeof(double));
 
