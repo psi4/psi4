@@ -47,9 +47,9 @@
 namespace psi {
 
 /*!
-** block_matrix(): Allocate a 2D array of doubles using contiguous memory
+** \brief block_matrix() allocates a 2D array of doubles using contiguous memory.
 **
-** Allocates a contiguous block of memory for an array of
+** \details Allocates a contiguous block of memory for an array of
 ** doubles, allocates an array of pointers to the beginning of each row and
 ** returns the pointer to the first row pointer.  This allows transparent
 ** 2d-array style access, but keeps memory together such that the matrix
@@ -64,15 +64,14 @@ namespace psi {
 **   into physical RAM or not, and available only where _POSIX_MEMLOCK
 **   is defined. Defaults to false if not specified.
 **
-** Returns: double star pointer to newly allocated matrix
+** \return double star pointer to newly allocated matrix
 **
-** T. Daniel Crawford
-** Sometime in 1994
+** \author T. Daniel Crawford
+** \date Sometime in 1994
 **
-** Based on init_matrix() from libciomr
+** \remark Based on init_matrix() from libciomr
 ** \ingroup CIOMR
 */
-
 PSI_API [[nodiscard]] double **block_matrix(size_t n, size_t m, bool memlock) {
     double **A = nullptr;
     double *B = nullptr;
@@ -152,4 +151,4 @@ void PSI_API free_block(double **array) {
     delete[] array[0];
     delete[] array;
 }
-}
+}  // namespace psi
