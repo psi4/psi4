@@ -122,7 +122,7 @@ void CCTransform::transform_oei_so_integrals() {
     int nmo = wfn_->nmo();
 
     std::vector<std::vector<double>> A(nso, std::vector<double>(nmo, 0));
-    auto C = wfn_->moinfo()->get_scf_mos();
+    const auto C = wfn_->moinfo()->get_scf_mos();
 
     // A(q,i) = H(q,p) * C(p,i)
     /*#ifdef CCTRANSFORM_USE_BLAS
