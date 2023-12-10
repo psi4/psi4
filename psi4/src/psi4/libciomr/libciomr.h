@@ -111,7 +111,7 @@ PSI_API void print_long_int_mat(long int **a, int m, int n, std::string out);
 PSI_API size_t *init_size_t_array(int size);
 
 /* Functions in block_matrix.c */
-PSI_API double **block_matrix(size_t n, size_t m, bool mlock = false);
+PSI_API [[nodiscard]] double **block_matrix(size_t n, size_t m, bool mlock = false);
 PSI_API void free_block(double **array);
 
 /* Functions in fndcor */
