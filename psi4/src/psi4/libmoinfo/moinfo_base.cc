@@ -41,8 +41,8 @@
 
 namespace psi {
 
-MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_)
-    : options(options_), silent(silent_), ref_wfn(ref_wfn_), charge(ref_wfn_.molecule()->molecular_charge()) {
+MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_)
+    : options(options_), ref_wfn(ref_wfn_), charge(ref_wfn_.molecule()->molecular_charge()) {
     nso = 0;
     ndocc = 0;
     nactv = 0;

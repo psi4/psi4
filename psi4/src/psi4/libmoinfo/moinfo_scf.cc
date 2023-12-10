@@ -42,8 +42,8 @@
 
 namespace psi {
 
-MOInfoSCF::MOInfoSCF(Wavefunction& ref_wfn_, Options& options_, bool silent_)
-    : MOInfoBase(ref_wfn_, options_, silent_) {
+MOInfoSCF::MOInfoSCF(Wavefunction& ref_wfn_, Options& options_)
+    : MOInfoBase(ref_wfn_, options_) {
     read_data();
     // Determine the wave function irrep
     // The first irrep is 0

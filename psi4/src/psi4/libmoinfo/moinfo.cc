@@ -49,7 +49,7 @@
 
 namespace psi {
 
-MOInfo::MOInfo(Wavefunction& ref_wfn_, Options& options_, bool silent_) : MOInfoBase(ref_wfn_, options_, silent_) {
+MOInfo::MOInfo(Wavefunction& ref_wfn_, Options& options_, bool silent_/* = false*/) : MOInfoBase(ref_wfn_, options_) {
     /***************
     Set defaults
   ***************/
@@ -94,7 +94,7 @@ MOInfo::MOInfo(Wavefunction& ref_wfn_, Options& options_, bool silent_) : MOInfo
     read_mo_spaces();
     compute_mo_mappings();
 
-    if (!silent) {
+    if (!silent_) {
         print_info();
         print_mo();
     }
