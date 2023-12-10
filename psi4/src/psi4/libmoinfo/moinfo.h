@@ -35,7 +35,6 @@
 #include <utility>
 
 #include "moinfo_base.h"
-#include "psi4/libmints/wavefunction.h"
 
 namespace psi {
 

@@ -36,6 +36,8 @@
 
 #include <string>
 #include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/liboptions/liboptions.h"
 
 namespace psi {
 using intvec = std::vector<int>;

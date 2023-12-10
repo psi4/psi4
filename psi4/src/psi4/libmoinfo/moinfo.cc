@@ -37,7 +37,6 @@
 #include <numeric>
 
 // PSI Libraries
-#include "psi4/liboptions/liboptions.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/psi4-dec.h"
