@@ -60,7 +60,6 @@ MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_)
     nactive_ael = 0;
     nactive_bel = 0;
     wfn_sym = 0;
-    guess_occupation = true;
 
     multiplicity = ref_wfn.molecule()->multiplicity();
 }

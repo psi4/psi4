@@ -81,8 +81,6 @@ class MOInfoBase {
     /// @return A copy of the array holding the numbers of active orbitals per irrep
     intvec get_actv() const { return (actv); }
 
-    bool get_guess_occupation_flag() const { return (guess_occupation); }
-
     /// @brief Get the total # of active orbitals that is stored in an MOInfoBase object (or an object derived from
     /// MOInfoBase).
     /// @return Total # of active orbitals across all irreps
@@ -111,8 +109,6 @@ class MOInfoBase {
     void read_mo_space(int nirreps_ref, int& n, intvec& mo, std::string labels);
     void print_mo_space(int nmo, const intvec& mo, const std::string& labels);
 
-    void set_guess_occupation_flag(bool value) { guess_occupation = value; }
-
     Wavefunction& ref_wfn;
     Options& options;
     const int nirreps;  // The # of irreps this object has been constructed with
@@ -137,8 +133,6 @@ class MOInfoBase {
 
    private:
     intvec convert_int_array_to_vector(int n, const int* array);
-
-    bool guess_occupation;
 
     double nuclear_energy;  // The nuclear repulsion energy
     const int charge;  // The charge this object has been constructed with

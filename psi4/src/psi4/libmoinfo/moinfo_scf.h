@@ -46,9 +46,12 @@ class MOInfoSCF : public MOInfoBase {
     MOInfoSCF(Wavefunction& ref_wfn_, Options& options_, bool silent_ = false);
     ~MOInfoSCF();
 
+    bool get_guess_occupation_flag() const { return (guess_occupation_flag); }
+
    private:
     void read_mo_spaces();
     void print_mo();
+    bool guess_occupation_flag;
 };
 
 extern MOInfoSCF* moinfo_scf;
