@@ -115,7 +115,6 @@ class MOInfoBase {
     int wfn_sym;
     int multiplicity;
 
-    int nmo;  // Psi nmo (# of molecular orbitals, including frozen core and frozen virtual)
     int ndocc;
     int nactv;  // Total # of active orbitals across all irreps
     int nael;   // The # of alpha electrons (including frozen)

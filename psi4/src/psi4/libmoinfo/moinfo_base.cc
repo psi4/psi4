@@ -50,7 +50,6 @@ MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_)
       nirreps(ref_wfn_.nirrep()),
       charge(ref_wfn_.molecule()->molecular_charge()) {
     nso = 0;
-    nmo = 0;
     ndocc = 0;
     nactv = 0;
     nael = 0;

@@ -232,6 +232,7 @@ class MOInfo : public MOInfoBase {
     int nvir;        // Generalized virtual (actv + extr)
     int nall;        // Non-frozen MOs (docc + actv + extr)
     int nextr;       // Non-frozen external orbitals (extr)
+    int nmo;  // Psi nmo (# of molecular orbitals, including frozen core and frozen virtual)
 
     // Orbitals arrays
     intvec focc;
