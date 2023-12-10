@@ -106,6 +106,8 @@ class MOInfo : public MOInfoBase {
     MOInfo(Wavefunction& ref_wf_, Options& options_, bool silent_ = false);
     ~MOInfo();
 
+    const double** get_scf_mos() const { return (scf); }
+
     // DGEMM timing
     void set_dgemm_timing(double value) { dgemm_timing = value; }
     void add_dgemm_timing(double value) { dgemm_timing += value; }
@@ -211,6 +213,8 @@ class MOInfo : public MOInfoBase {
 
     double scf_energy;
     double fzcore_energy;
+
+    double** scf;         // MO coefficients
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     double dgemm_timing;

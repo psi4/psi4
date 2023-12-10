@@ -96,8 +96,6 @@ class MOInfoBase {
     /// @return The # of beta electrons (including frozen)
     int get_nbel() const { return (nbel); }
 
-    double** get_scf_mos() const { return (scf); }
-
    protected:
     /// @brief Get a const & to an element of the array holding the numbers of SOs per irrep, from an MOInfoBase object (or an object
     /// derived from MOInfoBase).
@@ -115,7 +113,6 @@ class MOInfoBase {
     int wfn_sym;
     int multiplicity;
 
-
     int nmo;  // Psi nmo (# of molecular orbitals, including frozen core and frozen virtual)
     int ndocc;
     int nactv;  // Total # of active orbitals across all irreps
@@ -128,7 +125,6 @@ class MOInfoBase {
     intvec actv;  // Array holding the numbers of active orbitals per irrep
     bool silent;
 
-    double** scf;         // MO coefficients
     double*** scf_irrep;  // MO coefficients
 
    private:
