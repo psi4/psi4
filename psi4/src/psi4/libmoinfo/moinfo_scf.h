@@ -43,7 +43,7 @@ namespace psi {
 
 class MOInfoSCF : public MOInfoBase {
    public:
-    MOInfoSCF(Wavefunction& ref_wfn_, Options& options_, bool silent_ = false);
+    MOInfoSCF(Wavefunction& ref_wfn_, Options& options_);
     ~MOInfoSCF();
 
     bool get_guess_occupation_flag() const { return (guess_occupation_flag); }

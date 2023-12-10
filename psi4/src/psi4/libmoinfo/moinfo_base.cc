@@ -44,10 +44,8 @@ namespace psi {
 /// @brief Constructor for MOInfoBase class
 /// @param ref_wfn_
 /// @param options_
-/// @param silent_
-MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_)
+MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_)
     : options(options_),
-      silent(silent_),
       ref_wfn(ref_wfn_),
       nirreps(ref_wfn_.nirrep()),
       charge(ref_wfn_.molecule()->molecular_charge()) {

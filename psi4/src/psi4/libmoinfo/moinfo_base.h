@@ -46,7 +46,7 @@ using boolvec = std::vector<bool>;
 /// @brief This class stores all the basic info regarding MOs
 class MOInfoBase {
    public:
-    MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_ = false);
+    MOInfoBase(Wavefunction& ref_wfn_, Options& options_);
 
     /// @brief Get the nuclear energy stored in an MOInfoBase object (or an object derived from MOInfoBase).
     /// @return The nuclear repulsion energy
@@ -125,7 +125,6 @@ class MOInfoBase {
 
     intvec docc;  // Array holding the numbers of doubly occupied orbitals (DOCC) per irrep
     intvec actv;  // Array holding the numbers of active orbitals per irrep
-    bool silent;
 
     double*** scf_irrep;  // MO coefficients
 
