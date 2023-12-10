@@ -93,8 +93,6 @@ class MOInfoBase {
     /// @return The # of beta electrons (including frozen)
     int get_nbel() const { return (nbel); }
 
-    double** get_scf_mos() const { return (scf); }
-
    protected:
     void read_data();
     void compute_number_of_electrons();
@@ -128,7 +126,6 @@ class MOInfoBase {
 
     double nuclear_energy;
 
-    double** scf;         // MO coefficients
     double*** scf_irrep;  // MO coefficients
 
     std::vector<std::string> irr_labs;
