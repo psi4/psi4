@@ -131,8 +131,8 @@ class MOInfo : public MOInfoBase {
     int get_nvir() const { return (nvir); }
 
     intvec get_mopi() const { return (mopi); }
-    intvec get_docc() const { return (docc); }
-    intvec get_actv() const { return (actv); }
+    using MOInfoBase::get_docc;
+    using MOInfoBase::get_actv;
     intvec get_focc() const { return (focc); }
     intvec get_extr() const { return (extr); }
     intvec get_fvir() const { return (fvir); }
@@ -140,12 +140,9 @@ class MOInfo : public MOInfoBase {
     intvec get_vir() const { return (vir); }
     intvec get_all() const { return (all); }
 
-    int get_mopi(size_t i) const { return (mopi[i]); }
-    int get_focc(size_t i) const { return (focc[i]); }
     int get_docc(size_t i) const { return (docc[i]); }
     int get_actv(size_t i) const { return (actv[i]); }
     int get_extr(size_t h) const { return (extr[h]); }
-    int get_fvir(size_t i) const { return (fvir[i]); }
 
     // Mapping functions
     intvec get_focc_to_mo() const { return (focc_to_mo); }
