@@ -1108,7 +1108,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
             for (size_t j = 0; j <= i; ++j) {
                 int RR = sh_pairs[j].first;
                 int SS = sh_pairs[j].second;
-                if (shell_significant(PP, QQ, RR, SS, eri())) {
+                if (shell_significant(PP, QQ, RR, SS, tb[thread])) {
                     int P = PP;
                     int Q = QQ;
                     int R = RR;
@@ -1147,7 +1147,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
             for (size_t j = 0; j <= i; ++j) {
                 int RR = sh_pairs[j].first;
                 int SS = sh_pairs[j].second;
-                if (shell_significant(PP, QQ, RR, SS, eri())) {
+                if (shell_significant(PP, QQ, RR, SS, tb[thread])) {
                     int P = PP;
                     int Q = QQ;
                     int R = RR;
