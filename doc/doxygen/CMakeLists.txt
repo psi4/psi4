@@ -1,5 +1,5 @@
 find_package(Doxygen QUIET)
-if(NOT DOXYGEN_FOUND)
+if(NOT TARGET Doxygen::doxygen)
    message(STATUS "No Doxygen, no docs.")
 else()
     message(STATUS "Documentation targets available: doxyman (html)")
@@ -13,7 +13,7 @@ else()
 
     add_custom_target(doxyman
                       VERBATIM
-                      COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doxygen.cfg
+                      COMMAND Doxygen::doxygen ${CMAKE_CURRENT_BINARY_DIR}/doxygen.cfg
                       COMMENT "Build Doxygen html documentation ...")
 endif()
 

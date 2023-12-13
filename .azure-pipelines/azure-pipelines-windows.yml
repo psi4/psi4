@@ -107,11 +107,14 @@ jobs:
 
       # Configure Miniconda
       #    conda config --append channels conda-forge
+      #    conda=23.10 forced a bugfix at conda-build stage
       - script: |
           conda config --set always_yes yes
           conda config --add channels conda-forge/label/libint_dev
+          conda config --add channels psi4/label/testing
           conda config --set channel_priority strict
           conda config --set solver libmamba
+          conda install conda=23.10 -n base -c conda-forge
           conda info
           conda list
         displayName: "Configure Miniconda"
@@ -122,7 +125,9 @@ jobs:
       - script: |
           conda install cmake ^
                         anaconda-project ^
+                        anaconda-client ^
                         conda-build ^
+                        m2-sed ^
                         eigen ^
                         libboost-headers ^
                         conda-verify ^
@@ -142,17 +147,17 @@ jobs:
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
-                        libint=2.7.3dev1 ^
+                        libint=2.8.0dev2 ^
                         qcelemental ^
                         qcengine ^
                         pydantic=1.10.13 ^
                         optking ^
                         scipy
-          conda install --only-deps anaconda-client
-          pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
           which anaconda
           conda list
         displayName: "Install conda packages"
+          #conda install --only-deps anaconda-client
+          #pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
 
       # Install LLVM
       # Note: LLVM distributed by conda is too old
@@ -270,6 +275,7 @@ jobs:
       # Build package
       - script: |
           set INSTALL_DIR=$(Build.BinariesDirectory)\install
+          conda config --set channel_priority flexible
           conda build --python %PYTHON_VERSION% ^
                       conda\win
           copy /y C:\tools\miniforge3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)

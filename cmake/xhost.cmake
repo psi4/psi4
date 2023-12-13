@@ -2,7 +2,8 @@
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
   option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-xHost")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
-  option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-xHost")
+  # mavx is a ruse for icx that temporarily? doesn't accept xHost. Prevents warning when C & CXX enabled.
+  option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-xHost" "-mavx")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-march=native")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")

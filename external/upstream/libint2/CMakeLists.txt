@@ -46,6 +46,34 @@ find_package(
      eri_c4_d2_l2              eri_c3_d2_l3 eri_c2_d2_l3
   )
 
+# If L2 v2.8.0 (1) exported CMake components and (2) libint2-config.cmake actually
+#   checked, the below is the new find_package call.
+#if (${MAX_AM_ERI} GREATER 8)
+#    set(amchar "llll")
+#elseif (${MAX_AM_ERI} EQUAL 7)
+#    set(amchar "kkkk")
+#elseif (${MAX_AM_ERI} EQUAL 6)
+#    set(amchar "iiii")
+#elseif (${MAX_AM_ERI} EQUAL 5)
+#    set(amchar "hhhh")
+#elseif (${MAX_AM_ERI} LESS_EQUAL 4)
+#    set(amchar "gggg")
+#endif()
+#find_package(
+#  Libint2
+#  2.8.0
+#  CONFIG
+#  COMPONENTS
+#    ss
+#    CXX_ho
+#    impure_sh
+#    "eri_${amchar}_d0" eri_ggg_d0 eri_gg_d0 onebody_g_d0
+#     eri_dddd_d1       eri_fff_d1 eri_ff_d1 onebody_f_d1
+#                                            onebody_f_d2
+#  OPTIONAL_COMPONENTS
+#     eri_dddd_d2       eri_fff_d2 eri_ff_d2
+#  )
+
 if (TARGET Libint2::cxx)
     get_target_property(_loc Libint2::int2 LOCATION)
     get_target_property(Libint2_VERSION Libint2::int2 Libint2_VERSION)
@@ -56,6 +84,11 @@ if (TARGET Libint2::cxx)
         message(WARNING "Libint2 detected but missing ERI 2nd derivative integrals (components eri_c4_d2_l2 eri_c3_d2_l3 eri_c2_d2_l3). Psi4 will automatically fall back to finite difference.")
     endif()
     add_library(libint2_external INTERFACE)  # dummy
+
+    if(${CMAKE_INSIST_FIND_PACKAGE_Libint2})
+        message(VERBOSE "Suitable Libint2 located externally as user insists")
+    endif()
+
 else()
     if(${CMAKE_INSIST_FIND_PACKAGE_Libint2})
         message(FATAL_ERROR "Suitable Libint2 could not be externally located as user insists")
@@ -108,7 +141,9 @@ else()
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-                             -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
+                             -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1})
 
     else()
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2${ColourReset} from generator source instead.")
@@ -157,6 +192,8 @@ else()
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
                              -DWITH_ERI_MAX_AM:STRING=3;2;2
                              -DWITH_ERI3_MAX_AM:STRING=4;3;3
                              -DWITH_ERI2_MAX_AM:STRING=4;3;3

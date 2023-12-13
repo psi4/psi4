@@ -4,6 +4,11 @@ if(${gau2grid_FOUND})
     get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
     message(STATUS "${Cyan}Found gau2grid${ColourReset}: ${_loc} (found version ${gau2grid_VERSION})")
     add_library(gau2grid_external INTERFACE)  # dummy
+
+    if(${CMAKE_INSIST_FIND_PACKAGE_gau2grid})
+        message(VERBOSE "Suitable gau2grid located externally as user insists")
+    endif()
+
 else()
     if(${CMAKE_INSIST_FIND_PACKAGE_gau2grid})
         message(FATAL_ERROR "Suitable gau2grid could not be externally located as user insists")
@@ -34,7 +39,8 @@ else()
                    -DPython_LIBRARY=${Python_LIBRARIES}
                    -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                    -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
-        CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
+        CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                         -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1})
 
     set(gau2grid_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gau2grid CACHE PATH "path to internally built gau2gridConfig.cmake" FORCE)
 endif()

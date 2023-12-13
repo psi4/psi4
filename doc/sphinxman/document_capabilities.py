@@ -96,8 +96,8 @@ def fheader(head, width, contrast=False):
     trans = {
         # eghs
         "energy": ["|energy_fn|", "Energy", "E"],
-        "gradient": [f"|gradient_fn|\ [#{fn_lbl}3]_", "Gradient", "G"],
-        "hessian": [f"|hessian_fn|\ [#{fn_lbl}4]_", "Hessian", "H"],
+        "gradient": [rf"|gradient_fn|\ [#{fn_lbl}3]_", "Gradient", "G"],
+        "hessian": [rf"|hessian_fn|\ [#{fn_lbl}4]_", "Hessian", "H"],
         # fcae
         "ae": ["All-Electron", "AE", "A"],
         "fc": ["Frozen-Core", "FC", "F"],
@@ -239,10 +239,10 @@ notes_holder = {
     ("b3lyp", None): (", Hybrid DFT", None, None),
     ("wb97x", None): (", LRC DFT", None, None),
     ("b2plyp", None): (", DH DFT", "DH-DFT only available with DF-MP2", None),
-    ("cisd", None): (", ci\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", ["fnocc"]),
-    ("zapt2", None): (", zapt\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", None),
-    ("mp4", None): (", mp\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", ["fnocc"]),
-    ("ccsd(t)", "CCENERGY"): ("FN", "Analytic gradients for conventional all-electron RHF/UHF computations can be requested through |globals__qc_module|\ ``=ccenergy``, but their scaling is best suited to small molecules.", None),
+    ("cisd", None): (r", ci\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", ["fnocc"]),
+    ("zapt2", None): (r", zapt\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", None),
+    ("mp4", None): (r", mp\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", ["fnocc"]),
+    ("ccsd(t)", "CCENERGY"): ("FN", r"Analytic gradients for conventional all-electron RHF/UHF computations can be requested through |globals__qc_module|\ ``=ccenergy``, but their scaling is best suited to small molecules.", None),
 }
 
 
@@ -264,7 +264,7 @@ def method_title_append(mtd, mod):
                 notes.append(note)
                 notes = unique(notes)
                 idx = notes.index(note) + 10
-                mtd += f"\ [#{fn_lbl}{idx}]_"
+                mtd += rf"\ [#{fn_lbl}{idx}]_"
 
     return mtd
 
@@ -284,7 +284,7 @@ def module_title_append(mtd, mod):
                 notes.append(note)
                 notes = unique(notes)
                 idx = notes.index(note) + 10
-                mod += f"\ [#{fn_lbl}{idx}]_"
+                mod += rf"\ [#{fn_lbl}{idx}]_"
 
     return mod
 
@@ -343,8 +343,8 @@ def table_builder__ref_driver_type_fcae():
     # column headers
     referenceh = "|scf__reference| " + right_arrow
     driverh = ""
-    typeh = f"type\ [#{fn_lbl}1]_ " + down_arrow + " " + right_arrow
-    fcaeh = f"|freeze_core|\ [#{fn_lbl}2]_\ " + right_arrow
+    typeh = rf"type\ [#{fn_lbl}1]_ " + down_arrow + " " + right_arrow
+    fcaeh = rf"|freeze_core|\ [#{fn_lbl}2]_\ " + right_arrow
 
     lines = []
 
@@ -437,9 +437,9 @@ def table_builder__ref_driver_type_fcae():
         legend_lines.append(f"""Single underline "{trans_cell['(pass)'][args.sphinx]}" is default module when |globals__qc_module| unspecified.""")
 
     if args.mode in ["details", "summary"]:
-        legend_lines.append(f"""Double underline "{trans_cell['[pass]'][args.sphinx]}" or "{trans_cell['[fd]'][args.sphinx]}" is default algorithm type when type selector (e.g., |globals__cc_type|\ ) unspecified.""")
+        legend_lines.append(rf"""Double underline "{trans_cell['[pass]'][args.sphinx]}" or "{trans_cell['[fd]'][args.sphinx]}" is default algorithm type when type selector (e.g., |globals__cc_type|\ ) unspecified.""")
     else:
-        legend_lines.append(f"""Double underline "{trans_cell['[pass]'][args.sphinx]}" is default algorithm type when type selector (e.g., |globals__cc_type|\ ) unspecified.""")
+        legend_lines.append(rf"""Double underline "{trans_cell['[pass]'][args.sphinx]}" is default algorithm type when type selector (e.g., |globals__cc_type|\ ) unspecified.""")
 
     lines.append("")
     lines.append(" ".join(legend_lines))
@@ -522,7 +522,7 @@ def table_builder__ref_driver_type_fcae():
         spacer = "  " if args.mode in ["dfmp2", "fnocc"] else ""  # avoid aligned delimiters
 
         lines.append(fline_fill(dashh, dashh, dashh, [dashh] * ncol))
-        lines.append(fline_data(place, blank, place, [f"{spacer}{qcmoduleh[:-2]}\ ={module_caption} Capabilities"], span=ncol))
+        lines.append(fline_data(place, blank, place, [rf"{spacer}{qcmoduleh[:-2]}\ ={module_caption} Capabilities"], span=ncol))
         lines.append(fline_fill(blank, blank, blank, [dashh] * ncol))
         lines.append(fline_data(place, blank, referenceh, refs, span=len(fcaes)*len(corl_types)*len(eghs)))
         lines.append(fline_fill(blank, blank, blank, [dashh] * ncol))

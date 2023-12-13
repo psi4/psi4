@@ -7,6 +7,10 @@ if(${qcelemental_FOUND})
     message(STATUS "${Cyan}Found qcelemental${ColourReset}: ${PY_qcelemental} (found version ${qcelemental_VERSION})")
     add_library(qcelemental_external INTERFACE)  # dummy
 
+    if(${CMAKE_INSIST_FIND_PACKAGE_qcelemental})
+        message(VERBOSE "Suitable qcelemental located externally as user insists")
+    endif()
+
 else()
     if(${CMAKE_INSIST_FIND_PACKAGE_qcelemental})
         message(FATAL_ERROR "Suitable qcelemental could not be externally located as user insists")

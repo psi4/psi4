@@ -32,6 +32,8 @@
 #include <pybind11/stl_bind.h>
 #include <pybind11/operators.h>
 
+#include <libint2.hpp>
+
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/deriv.h"
@@ -319,8 +321,8 @@ void export_mints(py::module& m) {
     typedef void (Vector::*vector_three)(double alpha, double beta, const Vector &other);
 
     py::class_<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
-        .def(py::init<int>())
-        .def(py::init<int, const std::string&>())
+        .def(py::init<size_t>())
+        .def(py::init<size_t, const std::string&>())
         .def(py::init<const std::vector<int>&>())
         .def("print_out", &Dimension::print, "Print out the dimension object to the output file")
         .def("init", &Dimension::init, "Re-initializes the dimension object")
@@ -1640,6 +1642,7 @@ void export_mints(py::module& m) {
              "Append a vector of charge tuples to a current ExternalPotential")
         .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions iwth Df coefficients",
              "basis"_a, "coefs"_a)
+        .def("gradient_on_charges", &ExternalPotential::gradient_on_charges, "Get the gradient on the embedded charges")
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")
         .def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix,
              "Compute the external potential matrix in the given basis set", "basis"_a)

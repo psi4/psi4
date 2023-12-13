@@ -48,6 +48,7 @@ count = 0
 
 print(" Testing polar coordinates") #TEST
 
+import math
 for R in Rvals:
     for A in Avals:
         molecule h2o {

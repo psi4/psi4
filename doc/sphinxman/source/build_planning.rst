@@ -37,7 +37,9 @@ Compiling and Installing from Source
 .. warning:: As of v1.8, primary binary distribution has moved from
    the psi4 channel to the conda-forge channel. Neither install docs
    for users nor compile docs for developers have been updated yet to
-   reflect new patterns. Please consult :psicode:`psicode downloads
+   reflect new patterns. Please consult :source:`conda/psi4-path-advisor.py`
+   (extensive help menu at ``conda/psi4-path-advisor.py -h``)
+   or :psicode:`psicode downloads
    page <installs/latest/>` for the latest guides.
 
 This section fulfills the duty of every Linux project to have an INSTALL
@@ -203,6 +205,8 @@ practically everything (including Python, CMake, NumPy, BLAS/LAPACK,
 Libint, and even C++ compilers on Linux and Mac) can be
 satisfied through conda. The links below give examples of how to configure
 that software for |PSIfour| and any notes and warnings pertaining to it.
+
+See :source:`codedeps.yaml` for a structured listing and history of dependencies.
 
 * :ref:`C++ and C Compilers <cmake:cxx>` (C++17 compliant)
 

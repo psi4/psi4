@@ -36,6 +36,9 @@ if(${ENABLE_v2rdm_casscf})
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
+                             -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}
                              -DCMAKE_PREFIX_PATH:PATH=${STAGED_INSTALL_PREFIX})
 
         set(v2rdm_casscf_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/v2rdm_casscf CACHE PATH "path to internally built v2rdm_casscfConfig.cmake" FORCE)

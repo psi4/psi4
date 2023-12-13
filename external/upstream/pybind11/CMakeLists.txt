@@ -7,6 +7,11 @@ endif()
 if(${pybind11_FOUND})
     message(STATUS "${Cyan}Found pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION})")
     add_library(pybind11_external INTERFACE)  # dummy
+
+    if(${CMAKE_INSIST_FIND_PACKAGE_pybind11})
+        message(VERBOSE "Suitable pybind11 located externally as user insists")
+    endif()
+
 else()
     if(${CMAKE_INSIST_FIND_PACKAGE_pybind11})
         message(FATAL_ERROR "Suitable pybind11 could not be externally located as user insists")
@@ -25,7 +30,8 @@ else()
                    -DPYBIND11_TEST=OFF
                    -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                    -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
-        CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
+        CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                         -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1})
 
     set(pybind11_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/pybind11 CACHE PATH "path to internally built pybind11Config.cmake" FORCE)
 endif()

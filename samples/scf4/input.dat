@@ -39,6 +39,7 @@ for R in Rvals:
 count = 0
 
 
+import math
 for R in Rvals:
     for A in Avals:
         molecule h2o {

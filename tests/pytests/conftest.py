@@ -48,6 +48,7 @@ def tear_down():
         "grid*",
         "pytest_output.*h5",
         "pytest_output.dat",
+        "pytest_output.log",
         "pytest_output.*grad",
         "*pcmsolver.inp",
         "PEDRA.OUT*",

@@ -883,7 +883,7 @@ def plump_qcvar(
     elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         reshaper = tuple([3] * _multipole_order.index(p[0]))
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES", "SCF TOTAL ENERGIES"]:
         reshaper = (-1, )
     elif "GRADIENT" in key.upper():
         reshaper = (-1, 3)
@@ -929,7 +929,7 @@ def _qcvar_reshape_set(key: str, val: np.ndarray) -> np.ndarray:
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         val = _multipole_compressor(val, _multipole_order.index(p[0]))
         reshaper = (1, -1)
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES", "SCF TOTAL ENERGIES"]:
         reshaper = (1, -1)
 
     if reshaper:
@@ -965,9 +965,8 @@ def _qcvar_reshape_get(key: str, val: core.Matrix) -> Union[core.Matrix, np.ndar
     elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(p[0]))
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES", "SCF TOTAL ENERGIES"]:
         reshaper = (-1, )
-
     if reshaper:
         return val.np.reshape(reshaper)
     else:
@@ -1383,52 +1382,44 @@ def _core_get_variable(key):
     """
     .. deprecated:: 1.4
        Use :py:func:`psi4.core.variable` instead.
+    .. versionchanged:: 1.9
+       Errors rather than warn-and-forward.
 
     """
-    warnings.warn(
-        "Using `psi4.core.get_variable` instead of `psi4.core.variable` (or `psi4.core.scalar_variable` for scalar variables only) is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return core.scalar_variable(key)
+    raise UpgradeHelper("psi4.core.get_variable", "psi4.core.variable", 1.9, f" Replace `get_variable` with `variable` (or `scalar_variable` for scalar variables only).")
 
 
 def _core_get_variables():
     """
     .. deprecated:: 1.4
        Use :py:func:`psi4.core.variables` instead.
+    .. versionchanged:: 1.9
+       Errors rather than warn-and-forward.
 
     """
-    warnings.warn(
-        "Using `psi4.core.get_variables` instead of `psi4.core.variables` (or `psi4.core.scalar_variables` for scalar variables only) is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return core.scalar_variables()
+    raise UpgradeHelper("psi4.core.get_variables", "psi4.core.variables", 1.9, f" Replace `psi4.core.get_variables` with `psi4.core.variables` (or `psi4.core.scalar_variables` for scalar variables only).")
 
 
 def _core_get_array_variable(key):
     """
     .. deprecated:: 1.4
        Use :py:func:`psi4.core.variable` instead.
+    .. versionchanged:: 1.9
+       Errors rather than warn-and-forward.
 
     """
-    warnings.warn(
-        "Using `psi4.core.get_array_variable` instead of `psi4.core.variable` (or `psi4.core.array_variable` for array variables only) is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return core.array_variable(key)
+    raise UpgradeHelper("psi4.core.get_array_variable", "psi4.core.variable", 1.9, f" Replace `psi4.core.get_array_variable` with `psi4.core.variable` (or `psi4.core.array_variable` for array variables only).")
 
 
 def _core_get_array_variables():
     """
     .. deprecated:: 1.4
        Use :py:func:`psi4.core.variables` instead.
+    .. versionchanged:: 1.9
+       Errors rather than warn-and-forward.
 
     """
-    warnings.warn(
-        "Using `psi4.core.get_array_variables` instead of `psi4.core.variables` (or `psi4.core.array_variables` for array variables only) is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return core.array_variables()
+    raise UpgradeHelper("psi4.core.get_array_variables", "psi4.core.variables", 1.9, f" Replace `psi4.core.get_array_variables` with `psi4.core.variables` (or `psi4.core.array_variables` for array variables only).")
 
 
 core.get_variable = _core_get_variable
@@ -1441,52 +1432,44 @@ def _core_wavefunction_get_variable(cls, key):
     """
     .. deprecated:: 1.4
        Use :py:func:`psi4.core.Wavefunction.variable` instead.
+    .. versionchanged:: 1.9
+       Errors rather than warn-and-forward.
 
     """
-    warnings.warn(
-        "Using `psi4.core.Wavefunction.get_variable` instead of `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.scalar_variable` for scalar variables only) is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return cls.scalar_variable(key)
+    raise UpgradeHelper("psi4.core.Wavefunction.get_variable", "psi4.core.Wavefunction.variable", 1.9, f" Replace `psi4.core.Wavefunction.get_variable` with `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.scalar_variable` for scalar variables only).")
 
 
 def _core_wavefunction_get_array(cls, key):
     """
     .. deprecated:: 1.4
        Use :py:func:`psi4.core.Wavefunction.variable` instead.
+    .. versionchanged:: 1.9
+       Errors rather than warn-and-forward.
 
     """
-    warnings.warn(
-        "Using `psi4.core.Wavefunction.get_array` instead of `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.array_variable` for array variables only) is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return cls.array_variable(key)
+    raise UpgradeHelper("psi4.core.Wavefunction.get_array", "psi4.core.Wavefunction.variable", 1.9, f" Replace `psi4.core.Wavefunction.get_array` with `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.array_variable` for array variables only).")
 
 
 def _core_wavefunction_set_array(cls, key, val):
     """
     .. deprecated:: 1.4
        Use :py:func:`psi4.core.Wavefunction.set_variable` instead.
+    .. versionchanged:: 1.9
+       Errors rather than warn-and-forward.
 
     """
-    warnings.warn(
-        "Using `psi4.core.Wavefunction.set_array` instead of `psi4.core.Wavefunction.set_variable` (or `psi4.core.Wavefunction.set_array_variable` for array variables only) is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return cls.set_array_variable(key, val)
+    raise UpgradeHelper("psi4.core.Wavefunction.set_array", "psi4.core.Wavefunction.set_variable", 1.9, f" Replace `psi4.core.Wavefunction.set_array` with `psi4.core.Wavefunction.set_variable` (or `psi4.core.Wavefunction.set_array_variable` for array variables only).")
 
 
 def _core_wavefunction_arrays(cls):
     """
     .. deprecated:: 1.4
        Use :py:func:`psi4.core.Wavefunction.variables` instead.
+    .. versionchanged:: 1.9
+       Errors rather than warn-and-forward.
 
     """
-    warnings.warn(
-        "Using `psi4.core.Wavefunction.arrays` instead of `psi4.core.Wavefunction.variables` (or `psi4.core.Wavefunction.array_variables` for array variables only) is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return cls.array_variables()
+    raise UpgradeHelper("psi4.core.Wavefunction.arrays", "psi4.core.Wavefunction.variables", 1.9, f" Replace `psi4.core.Wavefunction.arrays` with `psi4.core.Wavefunction.variables` (or `psi4.core.Wavefunction.array_variables` for array variables only).")
 
 
 core.Wavefunction.get_variable = _core_wavefunction_get_variable

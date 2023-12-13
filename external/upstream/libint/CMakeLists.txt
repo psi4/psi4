@@ -30,7 +30,9 @@ else()
                    -DLIBC_INTERJECT=${LIBC_INTERJECT}
                    -DMERGE_LIBDERIV_INCLUDEDIR=OFF
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-                         -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
+                         -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                         -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+                         -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1})
 
     set(Libint_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/Libint CACHE PATH "path to internally built LibintConfig.cmake" FORCE)
 endif()

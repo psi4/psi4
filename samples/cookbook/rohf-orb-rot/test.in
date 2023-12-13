@@ -70,6 +70,7 @@ compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 
 # Rotate HOMO and SOMO by 90 degrees to obtain guess for A state of HO2 in C1.
 # N.B. the orbitals are numbered using zero based indexing.
+import math
 ccsd_wfn.Ca().rotate_columns(0, 7, 8, math.pi / 2.0)
 
 # Serialize the wavefunction so that the SCF code can read it as a guess.

@@ -6,6 +6,11 @@ if(${ENABLE_GTFock})
         message(STATUS "${Cyan}Found GTFock${ColourReset}: ${_loc} (found version ${GTFock_VERSION})")
         message(FATAL_ERROR "GTFock has not been hooked back in after the inversion.")
         add_library(gtfock_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_GTFock})
+            message(VERBOSE "Suitable GTFock located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_GTFock})
             message(FATAL_ERROR "Suitable GTFock could not be externally located as user insists")
@@ -33,7 +38,8 @@ if(${ENABLE_GTFock})
                        -DLIBC_INTERJECT=${LIBC_INTERJECT}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
-            CMAKE_CACHE_ARGS -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS})
+            CMAKE_CACHE_ARGS -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
+                             -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1})
 
         set(GTFock_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/GTFock CACHE PATH "path to internally built GTFockConfig.cmake" FORCE)
     endif()

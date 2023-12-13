@@ -61,6 +61,8 @@ class PSI_API ExternalPotential {
     std::vector<std::tuple<double, double, double, double> > charges_;
     /// Auxiliary basis sets (with accompanying molecules and coefs) of diffuse charges
     std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > bases_;
+    /// Gradient, if available, as number of charges x 3 SharedMatrix
+    SharedMatrix gradient_on_charges_;
 
    public:
     /// Constructur, does nothing
@@ -100,6 +102,9 @@ class PSI_API ExternalPotential {
 
     // Compute the interaction of this potential with an external potential
     double computeExternExternInteraction(std::shared_ptr<ExternalPotential> other_extern);
+
+    /// Returns the gradient on the external potential point charges from the wfn-extern interaction
+    SharedMatrix gradient_on_charges();
 
     /// Print a trace of the external potential
     void print(const std::string& out_fname = "outfile") const;

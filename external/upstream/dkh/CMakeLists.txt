@@ -5,6 +5,11 @@ if(${ENABLE_dkh})
         get_property(_loc TARGET dkh::dkh PROPERTY LOCATION)
         message(STATUS "${Cyan}Found dkh${ColourReset}: ${_loc} (found version ${dkh_VERSION})")
         add_library(dkh_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_dkh})
+            message(VERBOSE "Suitable dkh located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_dkh})
             message(FATAL_ERROR "Suitable dkh could not be externally located as user insists")
@@ -36,7 +41,9 @@ if(${ENABLE_dkh})
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
-                             -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
+                             -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                             -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1})
 
         set(dkh_DIR ${STAGED_INSTALL_PREFIX}/${_dkh_dir} CACHE PATH "path to internally built dkhConfig.cmake" FORCE)
     endif()

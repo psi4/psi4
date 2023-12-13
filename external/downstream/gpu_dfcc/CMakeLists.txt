@@ -35,6 +35,8 @@ if(${ENABLE_gpu_dfcc})
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_CUDA_FLAGS:STRING=${CMAKE_CUDA_FLAGS}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                              -DCMAKE_PREFIX_PATH:PATH=${STAGED_INSTALL_PREFIX})
 
         set(gpu_dfcc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gpu_dfcc CACHE PATH "path to internally built gpu_dfccConfig.cmake" FORCE)

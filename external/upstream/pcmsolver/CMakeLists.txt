@@ -5,6 +5,11 @@
         get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)
         message(STATUS "${Cyan}Found PCMSolver${ColourReset}: ${_loc} (found version ${PCMSolver_VERSION})")
         add_library(pcmsolver_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_PCMSolver})
+            message(VERBOSE "Suitable PCMSolver located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_PCMSolver})
             message(FATAL_ERROR "Suitable PCMSolver could not be externally located as user insists")
@@ -57,7 +62,10 @@
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-                             -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS})
+                             -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
+                             -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1})
 
         set(PCMSolver_DIR ${STAGED_INSTALL_PREFIX}/${_pcmsolver_dir} CACHE PATH "path to internally built PCMSolverConfig.cmake" FORCE)
     endif()

@@ -163,7 +163,6 @@ _addons_ = {
     "snsmp2": which_import("snsmp2", return_bool=True),
     "resp": which_import("resp", return_bool=True),
     "psi4fockci": which_import("psi4fockci", return_bool=True),
-    "adcc": which_import("adcc", return_bool=True),
     "mdi": which_import("mdi", return_bool=True),
     "cct3": which_import("cct3", return_bool=True),
     "dftd4": which_import("dftd4", return_bool=True),
@@ -226,7 +225,7 @@ def test(extent: str = "full", extras: List = None) -> int:
         raise RuntimeError('Testing module `pytest` is not installed. Run `conda install pytest`')
     abs_test_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "tests"])
 
-    command = ['-rws', '-v']
+    command = ['-rws', '-v', '--color', 'yes']
     if extent.lower() == 'smoke':
         command.extend(['-m', 'smoke'])
     elif extent.lower() == 'quick':

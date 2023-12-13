@@ -17,27 +17,29 @@ molecule h2o {
 set basis cc-pVDZ
 ans = -76.0266327341067125
 
-energy('scf')
+largs = {"protocols": {"stdout": False}, "tag": "test1"}
 
-gradient('scf')
+energy('scf', **largs)
+
+gradient('scf', **largs)
 
 if distributed:
-    plan = gradient('scf', dertype=0, return_plan=True)
+    plan = gradient('scf', dertype=0, return_plan=True, **largs)
     plan.compute(client)
     snowflake.await_results()
     plan.get_psi_results(client)
 else:
-    gradient('scf', dertype=0)
+    gradient('scf', dertype=0, **largs)
 
-hessian('scf')
+hessian('scf', **largs)
 
 if distributed:
-    plan = hessian('scf', dertype=1, return_plan=True)
+    plan = hessian('scf', dertype=1, return_plan=True, **largs)
     plan.compute(client)
     snowflake.await_results()
     plan.get_psi_results(client)
 else:
-    hessian('scf', dertype=1)
+    hessian('scf', dertype=1, **largs)
 
 #if distributed:
 #    plan = hessian('scf', dertype=0, return_plan=True)
