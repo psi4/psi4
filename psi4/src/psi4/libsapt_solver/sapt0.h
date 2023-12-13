@@ -135,8 +135,8 @@ class SAPT0 : public SAPT {
     bool do_e20disp_;
 
     int maxiter_;
-    double e_conv_;
-    double d_conv_;
+    double cphf_e_conv_;
+    double cphf_r_conv_;
 
     double e_elst10_;
     double e_exch10_;

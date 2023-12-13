@@ -142,11 +142,8 @@ void SAPT0::ind20rA_B() {
     E_old = 0.0;
     conv = 1.0;
 
-    if (debug_) {
-        outfile->Printf("\n    Maxiter = %d\n", maxiter_);
-        outfile->Printf("    D converge = %lE\n", d_conv_);
-        outfile->Printf("    E converge = %lE\n", e_conv_);
-    }
+    outfile->Printf("\n    Maxiter = %d\n", maxiter_);
+    outfile->Printf("    CPHF R converge = %lE\n", cphf_r_conv_);
 
     if (print_) outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]\n");
 
@@ -271,13 +268,13 @@ void SAPT0::ind20rA_B() {
         iter++;
         stop = std::time(nullptr);
         if (print_) {
-            outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n", iter, E * 1000.0, dE * 1000.0, conv * 1000.0,
+            outfile->Printf("    %4d %16.8lf %17.9lf %16.6e    %10ld\n", iter, E * 1000.0, dE * 1000.0, conv,
                             stop - start);
         }
         E_old = E;
-    } while ((conv > d_conv_ || std::fabs(dE) > e_conv_) && iter < maxiter_);
+    } while (conv > cphf_r_conv_ && iter < maxiter_);
 
-    if ((conv <= d_conv_) && (std::fabs(dE) <= e_conv_)) {
+    if (conv <= cphf_r_conv_) {
         if (print_) outfile->Printf("\n    CHF Iterations converged\n\n");
     } else {
         outfile->Printf("\n    CHF Iterations did not converge\n\n");
@@ -331,11 +328,8 @@ void SAPT0::ind20rB_A() {
     E_old = 0.0;
     conv = 1.0;
 
-    if (debug_) {
-        outfile->Printf("    Maxiter = %d\n", maxiter_);
-        outfile->Printf("    D converge = %lE\n", d_conv_);
-        outfile->Printf("    E converge = %lE\n", e_conv_);
-    }
+    outfile->Printf("    Maxiter = %d\n", maxiter_);
+    outfile->Printf("    CPHF R converge = %lE\n", cphf_r_conv_);
 
     if (print_) outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]\n");
 
@@ -460,13 +454,13 @@ void SAPT0::ind20rB_A() {
         iter++;
         stop = std::time(nullptr);
         if (print_) {
-            outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n", iter, E * 1000.0, dE * 1000.0, conv * 1000.0,
+            outfile->Printf("    %4d %16.8lf %17.9lf %16.6e    %10ld\n", iter, E * 1000.0, dE * 1000.0, conv,
                             stop - start);
         }
         E_old = E;
-    } while ((conv > d_conv_ || std::fabs(dE) > e_conv_) && iter < maxiter_);
+    } while (conv > cphf_r_conv_ && iter < maxiter_);
 
-    if ((conv <= d_conv_) && (std::fabs(dE) <= e_conv_)) {
+    if (conv <= cphf_r_conv_) {
         if (print_) outfile->Printf("\n    CHF Iterations converged\n\n");
     } else {
         outfile->Printf("\n    CHF Iterations did not converge\n\n");
@@ -520,11 +514,8 @@ void SAPT0::ind20rA_B_aio() {
     E_old = 0.0;
     conv = 1.0;
 
-    if (debug_) {
-        outfile->Printf("\n    Maxiter = %d\n", maxiter_);
-        outfile->Printf("    D converge = %lE\n", d_conv_);
-        outfile->Printf("    E converge = %lE\n", e_conv_);
-    }
+    outfile->Printf("\n    Maxiter = %d\n", maxiter_);
+    outfile->Printf("    CPHF R converge = %lE\n", cphf_r_conv_);
 
     if (print_) outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]\n");
 
@@ -685,13 +676,13 @@ void SAPT0::ind20rA_B_aio() {
         iter++;
         stop = std::time(nullptr);
         if (print_) {
-            outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n", iter, E * 1000.0, dE * 1000.0, conv * 1000.0,
+            outfile->Printf("    %4d %16.8lf %17.9lf %16.6e    %10ld\n", iter, E * 1000.0, dE * 1000.0, conv,
                             stop - start);
         }
         E_old = E;
-    } while ((conv > d_conv_ || std::fabs(dE) > e_conv_) && iter < maxiter_);
+    } while (conv > cphf_r_conv_ && iter < maxiter_);
 
-    if ((conv <= d_conv_) && (std::fabs(dE) <= e_conv_)) {
+    if (conv <= cphf_r_conv_) {
         if (print_) outfile->Printf("\n    CHF Iterations converged\n\n");
     } else {
         outfile->Printf("\n    CHF Iterations did not converge\n\n");
@@ -745,11 +736,8 @@ void SAPT0::ind20rB_A_aio() {
     E_old = 0.0;
     conv = 1.0;
 
-    if (debug_) {
-        outfile->Printf("    Maxiter = %d\n", maxiter_);
-        outfile->Printf("    D converge = %lE\n", d_conv_);
-        outfile->Printf("    E converge = %lE\n", e_conv_);
-    }
+    outfile->Printf("    Maxiter = %d\n", maxiter_);
+    outfile->Printf("    CPHF R converge = %lE\n", cphf_r_conv_);
 
     if (print_) outfile->Printf("\n    Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]\n");
 
@@ -910,13 +898,13 @@ void SAPT0::ind20rB_A_aio() {
         iter++;
         stop = std::time(nullptr);
         if (print_) {
-            outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n", iter, E * 1000.0, dE * 1000.0, conv * 1000.0,
+            outfile->Printf("    %4d %16.8lf %17.9lf %16.6e    %10ld\n", iter, E * 1000.0, dE * 1000.0, conv,
                             stop - start);
         }
         E_old = E;
-    } while ((conv > d_conv_ || std::fabs(dE) > e_conv_) && iter < maxiter_);
+    } while (conv > cphf_r_conv_ && iter < maxiter_);
 
-    if ((conv <= d_conv_) && (std::fabs(dE) <= e_conv_)) {
+    if (conv <= cphf_r_conv_) {
         if (print_) outfile->Printf("\n    CHF Iterations converged\n\n");
     } else {
         outfile->Printf("\n    CHF Iterations did not converge\n\n");
