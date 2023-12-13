@@ -72,7 +72,7 @@ namespace psi {
 ** \remark Based on init_matrix() from libciomr
 ** \ingroup CIOMR
 */
-PSI_API [[nodiscard]] double **block_matrix(size_t n, size_t m, bool memlock) {
+[[nodiscard]] PSI_API double **block_matrix(size_t n, size_t m, bool memlock) {
     double **A = nullptr;
     double *B = nullptr;
 
