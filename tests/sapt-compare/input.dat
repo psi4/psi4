@@ -33,8 +33,6 @@ set {
     d_convergence 1e-8
 
     SAPT_DFT_FUNCTIONAL HF
-    CPHF_E_CONVERGENCE 1e-8
-    CPHF_R_CONVERGENCE 1e-8
 }
 
 energy('sapt0', molecule=dimer)
