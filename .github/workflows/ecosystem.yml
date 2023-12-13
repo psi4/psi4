@@ -151,7 +151,7 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           :
-          sed -E -i.bak "s;- conda-forge/label/libint_dev::libint==2.7.3dev1;- psi4/label/testing::libint=2.8.0dev2;g" env_p4build.yaml
+          #sed -E -i.bak "s;- conda-forge/label/libint_dev::libint==2.7.3dev1;- psi4/label/testing::libint=2.8.0dev2;g" env_p4build.yaml
           # sed -E -i.bak "s;;;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then

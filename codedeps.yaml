@@ -461,9 +461,9 @@ data:
     #    - onebody_d1_l3
     #    - onebody_d2_l3
     conda:
-      channel: conda-forge/label/libint_dev
+      channel: psi4/label/testing
       name: libint
-      constraint: "==2.7.3dev1"
+      constraint: "==2.8.0"
       constraint_note: "v2.7.3dev1 provides rt-switchable ordering (src) and derivative integrals (build)."
       aux_build_names:
         - //psi4/label/testing::libint2

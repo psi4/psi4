@@ -76,8 +76,8 @@ find_package(
 
 if (TARGET Libint2::cxx)
     get_target_property(_loc Libint2::int2 LOCATION)
-    get_target_property(Libint2_VERSION Libint2::int2 Libint2_VERSION)
-    get_target_property(Libint2_MAX_AM_ERI Libint2::int2 Libint2_MAX_AM_ERI)
+    # defer until upstream provides full-dress targets get_target_property(Libint2_VERSION Libint2::int2 Libint2_VERSION)
+    # defer until upstream provides full-dress targets get_target_property(Libint2_MAX_AM_ERI Libint2::int2 Libint2_MAX_AM_ERI)
     get_target_property(Libint2_CONFIGURATION Libint2::int2 Libint2_CONFIGURATION)
     message(STATUS "${Cyan}Found Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (found version ${Libint2_VERSION})")
     if (NOT eri_c4_d2_l2 IN_LIST Libint2_CONFIGURATION)
