@@ -141,12 +141,10 @@ class MP2F12 : public Wavefunction {
                                 einsums::Tensor<double, 3> *J_inv_AB, std::vector<char> order);
     
     /* Form the Fock matrix */
-    virtual void form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k,
-                           einsums::Tensor<double, 2> *h);
+    virtual void form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k);
 
     /* Form the density-fitted Fock matrix */
-    virtual void form_df_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k, 
-                              einsums::Tensor<double, 2> *h);
+    virtual void form_df_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k);
 
     /* Form the $V^{ij}_{kl}$ or $X^{ij}_{kl}$ tensor */
     virtual void form_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 4> *X);
@@ -242,11 +240,11 @@ class DiskMP2F12 : public MP2F12 {
 
     /* Form the Fock matrix */
     void form_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTensor<double, 2> *k,
-                   einsums::DiskTensor<double, 2> *fk, einsums::DiskTensor<double, 2> *h);
+                   einsums::DiskTensor<double, 2> *fk);
 
     /* Form the DF Fock matrix */
     void form_df_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTensor<double, 2> *k,
-                      einsums::DiskTensor<double, 2> *fk, einsums::DiskTensor<double, 2> *h);
+                      einsums::DiskTensor<double, 2> *fk);
 
     /* Form the $V^{ij}_{kl}$ or $X^{ij}_{kl}$ tensor */
     void form_V_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTensor<double, 4> *F,

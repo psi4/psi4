@@ -34,36 +34,38 @@
 
 namespace psi { namespace mp2f12 {
 
-void MP2F12::form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k,
-                       einsums::Tensor<double, 2> *h)
+void MP2F12::form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k)
 {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
-    (*f) = (*h)(All, All);
+    form_oeints(f);
+
     Tensor Id = create_identity_tensor("I", nocc_, nocc_);
     {
         outfile->Printf("     Forming J\n");
-        Tensor<double, 4> J{"Coulomb", nri_, nocc_, nri_, nocc_};
-        form_teints("J", &J, {'O', 'o', 'O', 'o',
-                              'O', 'o', 'C', 'o',
-                              'C', 'o', 'C', 'o'});
+        auto J = std::make_unique<Tensor<double, 4>>("Coulomb", nri_, nocc_, nri_, nocc_);
+        form_teints("J", J.get(), {'O', 'o', 'O', 'o',
+                                   'O', 'o', 'C', 'o',
+                                   'C', 'o', 'C', 'o'});
 
         Tensor<double, 4> J_sorted{"pqiI", nri_, nri_, nocc_, nocc_};
         sort(Indices{p, q, i, I}, &J_sorted, Indices{p, i, q, I}, J);
+        J.reset();
         einsum(1.0, Indices{p, q}, &(*f), 2.0, Indices{p, q, i, I}, J_sorted, Indices{i, I}, Id);
     }
 
     {
         outfile->Printf("     Forming K\n");
-        Tensor<double, 4> K{"Exhange", nri_, nocc_, nocc_, nri_};
-        form_teints("K", &K, {'O', 'o', 'o', 'O',
-                              'O', 'o', 'o', 'C',
-                              'C', 'o', 'o', 'C'});
+        auto K = std::make_unique<Tensor<double, 4>>("Exhange", nri_, nocc_, nocc_, nri_);
+        form_teints("K", K.get(), {'O', 'o', 'o', 'O',
+                                   'O', 'o', 'o', 'C',
+                                   'C', 'o', 'o', 'C'});
 
         Tensor<double, 4> K_sorted{"pqiI", nri_, nri_, nocc_, nocc_};
         sort(Indices{p, q, i, I}, &K_sorted, Indices{p, i, I, q}, K);
+        K.reset();
         einsum(Indices{p, q}, &(*k), Indices{p, q, i, I}, K_sorted, Indices{i, I}, Id);
     }
 
@@ -72,14 +74,14 @@ void MP2F12::form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2>
                             &(*f), *k);
 }
 
-void MP2F12::form_df_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k,
-                          einsums::Tensor<double, 2> *h)
+void MP2F12::form_df_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k)
 {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
-    (*f) = (*h)(All, All);
+    form_oeints(f);
+
     {
         auto Metric = std::make_unique<Tensor<double, 3>>("(B|PQ) MO", naux_, nri_, nri_);
         form_metric_ints(Metric.get(), true);
@@ -491,17 +493,14 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
 ////////////////////////////////
 
 void DiskMP2F12::form_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTensor<double, 2> *k,
-                       einsums::DiskTensor<double, 2> *fk, einsums::DiskTensor<double, 2> *h)
+                           einsums::DiskTensor<double, 2> *fk)
 {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
+    form_oeints(f);
     auto f_view = (*f)(All, All);
-    {
-        auto h_view = (*h)(All, All);
-        sort(Indices{p, q}, &f_view.get(), Indices{p, q}, h_view.get());
-    }
 
     {
         outfile->Printf("     Forming J\n");
@@ -533,17 +532,14 @@ void DiskMP2F12::form_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTenso
 }
 
 void DiskMP2F12::form_df_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTensor<double, 2> *k,
-                       einsums::DiskTensor<double, 2> *fk, einsums::DiskTensor<double, 2> *h)
+                              einsums::DiskTensor<double, 2> *fk)
 {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
+    form_oeints(f);
     auto f_view = (*f)(All, All);
-    {
-        auto h_view = (*h)(All, All);
-        sort(Indices{p, q}, &f_view.get(), Indices{p, q}, h_view.get());
-    }
 
     {
         auto Metric = std::make_unique<Tensor<double, 3>>("(B|PQ) MO", naux_, nri_, nri_);
