@@ -275,21 +275,18 @@ double MP2F12::compute_energy()
     timer_off("OBS and CABS");
 
     outfile->Printf("\n ===> Forming the Integrals <===");
-    outfile->Printf("\n No screening will be used to compute integrals");
+    outfile->Printf("\n No screening will be used to compute integrals\n");
 
     /* Form the Fock Matrix */
-    timer_on("Fock Matrix");
-    auto h = std::make_unique<Tensor<double, 2>>("MO One-Electron Integrals", nri_, nri_);
-    form_oeints(h.get());
     outfile->Printf("   Fock Matrix\n");
     auto f = std::make_unique<Tensor<double, 2>>("Fock Matrix", nri_, nri_);
     auto k = std::make_unique<Tensor<double, 2>>("Exchange MO Integral", nri_, nri_);
+    timer_on("Fock Matrix");
     if (use_df_) {
-        form_df_fock(f.get(), k.get(), h.get());
+        form_df_fock(f.get(), k.get());
     } else {
-        form_fock(f.get(), k.get(), h.get());
+        form_fock(f.get(), k.get());
     }
-    h.reset();
     timer_off("Fock Matrix");
 
     /* Form the F12 Intermediates */
@@ -303,8 +300,8 @@ double MP2F12::compute_energy()
 
     if (use_df_) {
         outfile->Printf("   [J_AB]^(-1)\n");
-        timer_on("Metric Integrals");
         auto J_inv_AB = std::make_unique<Tensor<double, 3>>("Metric MO ([J_AB]^{-1})", naux_, nocc_, nri_);
+        timer_on("Metric Integrals");
         form_metric_ints(J_inv_AB.get(), false);
         timer_off("Metric Integrals");
 
@@ -329,8 +326,8 @@ double MP2F12::compute_energy()
         form_D(D.get(), f.get());
         timer_off("Energy Denom");
 
-        timer_on("ERI <ij|ab>");
         auto G = Tensor<double, 4>{"MO G Tensor", nocc_, nocc_, nobs_, nobs_};
+        timer_on("ERI <ij|ab>");
         form_df_teints("G", &G, J_inv_AB.get(), {'o', 'O', 'o', 'O'});
         (*G_ijab) = G(Range{0, nocc_}, Range{0, nocc_}, Range{nocc_, nobs_}, Range{nocc_, nobs_});
         timer_off("ERI <ij|ab>");
@@ -356,8 +353,8 @@ double MP2F12::compute_energy()
         form_D(D.get(), f.get());
         timer_off("Energy Denom");
 
-        timer_on("ERI <ij|ab>");
         auto G = Tensor<double, 4>{"MO G Tensor", nocc_, nocc_, nobs_, nobs_};
+        timer_on("ERI <ij|ab>");
         form_teints("G", &G, {'o', 'o', 'O', 'O'});
         (*G_ijab) = G(Range{0, nocc_}, Range{0, nocc_}, Range{nocc_, nobs_}, Range{nocc_, nobs_});
         timer_off("ERI <ij|ab>");
@@ -571,11 +568,11 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double,4> *V, einsums::Disk
 
             // Computing the energy
             ( i == j ) ? ( kd = 1 ) : ( kd = 2 );
-            auto E_s = kd * (VT.first + BT.first);
+            auto E_s = kd * (2 * VT.first + BT.first);
             E_f12_s += E_s;
             auto E_t = 0.0;
             if ( i != j ) {
-                E_t = 3.0 * kd * (VT.second + BT.second);
+                E_t = 3.0 * kd * (2 * VT.second + BT.second);
                 E_f12_t += E_t;
             }
             auto E_f = E_s + E_t;
@@ -656,14 +653,6 @@ double DiskMP2F12::compute_energy()
     outfile->Printf("\n ===> Forming the Integrals <===");
     outfile->Printf("\n No screening will be used to compute integrals\n\n");
 
-    /* Form the one-electron integrals */
-    auto h = std::make_unique<DiskTensor<double, 2>>(state::data, "MO One-Electron Integrals", nri_, nri_);
-    if (!(*h).existed()) {
-        timer_on("OEINTS");
-        form_oeints(h.get());
-        timer_off("OEINTS");
-    }
-
     /* Form the two-electron integrals */
     // Two-Electron Integrals
     auto G = std::make_unique<DiskTensor<double, 4>>(state::data, "MO G Tensor", nocc_, nocc_, nobs_, nri_);
@@ -689,7 +678,7 @@ double DiskMP2F12::compute_energy()
         outfile->Printf("   Fock Matrix\n");
         if (!(*f).existed() && !(*k).existed() && !(*fk).existed()) {
             timer_on("Fock Matrix");
-            form_df_fock(f.get(), k.get(), fk.get(), h.get());
+            form_df_fock(f.get(), k.get(), fk.get());
             timer_off("Fock Matrix");
         }
 
@@ -730,7 +719,7 @@ double DiskMP2F12::compute_energy()
         outfile->Printf("   Fock Matrix\n");
         if (!(*f).existed() && !(*k).existed() && !(*fk).existed()) {
             timer_on("Fock Matrix");
-            form_fock(f.get(), k.get(), fk.get(), h.get());
+            form_fock(f.get(), k.get(), fk.get());
             timer_off("Fock Matrix");
         }
 

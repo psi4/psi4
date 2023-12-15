@@ -32,6 +32,10 @@
 #include <omp.h>
 #endif
 
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libqt/qt.h"
+
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
@@ -296,10 +300,12 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
 
         // Create ERI AO Tensor
         auto GAO = std::make_unique<Tensor<double, 4>>("ERI AO", nbf1, nbf2, nbf3, nbf4);
+        timer_on("Two-Body AO Integrals");
         {
             two_body_ao_computer(int_type, GAO.get(), bs_[o1].basisset(), bs_[o2].basisset(),
                                  bs_[o3].basisset(), bs_[o4].basisset());
         }
+        timer_off("Two-Body AO Integrals");
 	
         // Convert all Psi4 C Matrices to einsums Tensor<double, 2>
         ( order[i] == 'C' ) ? nmo1 = ncabs_ : ( order[i] == 'O' ) ? nmo1 = nobs_ : nmo1 = nocc_;
@@ -320,6 +326,7 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
 	
         // Transform ERI AO Tensor to ERI MO Tensor
         auto PQRS = std::make_unique<Tensor<double, 4>>("PQRS", nmo1, nmo2, nmo3, nmo4);
+        timer_on("MO Transformation");
         {
             // C1
             auto Pqrs = std::make_unique<Tensor<double, 4>>("Pqrs", nmo1, nbf2, nbf3, nbf4);
@@ -350,8 +357,10 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
             PQRs.reset();
             C4.reset();
         }
+        timer_off("MO Transformation");
 
         // Stitch into ERI Tensor
+        timer_on("Set in ERI");
         {
             off1 = 0;
             off2 = 0;
@@ -370,6 +379,7 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
             if (nbf3 != nbf1 && nbf3 != nbf2 && nbf3 != nbf4 && int_type == "F") {
                 Tensor<double, 4> QPSR{"QPSR", nmo2, nmo1, nmo4, nmo3};
                 sort(Indices{Q, P, index::S, R}, &QPSR, Indices{P, Q, R, index::S}, PQRS);
+                PQRS.reset();
                 TensorView<double, 4> ERI_QPSR{*ERI, Dim<4>{nmo2, nmo1, nmo4, nmo3}, Offset<4>{off2, off1, off4, off3}};
                 set_ERI(ERI_QPSR, &QPSR);
             } // end of if statement
@@ -377,6 +387,7 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
             if (nbf3 != nbf1 && nbf3 != nbf2 && nbf3 != nbf4 && int_type == "J") {
                 Tensor<double, 4> RSPQ{"RSPQ", nmo3, nmo4, nmo1, nmo2};
                 sort(Indices{R, index::S, P, Q}, &RSPQ, Indices{P, Q, R, index::S}, PQRS);
+                PQRS.reset();
                 TensorView<double, 4> ERI_RSPQ{*ERI, Dim<4>{nmo3, nmo4, nmo1, nmo2}, Offset<4>{off3, off4, off1, off2}};
                 set_ERI(ERI_RSPQ, &RSPQ);
             } // end of if statement
@@ -384,10 +395,12 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
             if (nbf4 != nbf1 && nbf4 != nbf2 && nbf4 != nbf3 && int_type == "K") {
                 Tensor<double, 4> SRQP{"SRQP", nmo4, nmo3, nmo2, nmo1};
                 sort(Indices{index::S, R, Q, P}, &SRQP, Indices{P, Q, R, index::S}, PQRS);
+                PQRS.reset();
                 TensorView<double, 4> ERI_SRQP{*ERI, Dim<4>{nmo4, nmo3, nmo2, nmo1}, Offset<4>{off4, off3, off2, off1}};
                 set_ERI(ERI_SRQP, &SRQP);
             } // end of if statement
         }
+        timer_off("Set in ERI");
     } // end of for loop
 }
 
@@ -497,9 +510,11 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
         auto nbf2 = bs_[o2].basisset()->nbf();
 
         auto Bpq = std::make_unique<Tensor<double, 3>>("(B|R|pq) AO", naux_, nbf1, nbf2);
+        timer_on("Three-Center AO Integrals");
         {
             three_index_ao_computer(int_type, Bpq.get(), bs_[o1].basisset(), bs_[o2].basisset());
         }
+        timer_off("Three-Center AO Integrals");
 
         // Convert all Psi4 C Matrices to einsums Tensor<double, 2>
         ( order[i] == 'C' ) ? nmo1 = ncabs_ : ( order[i] == 'O' ) ? nmo1 = nobs_ : nmo1 = nocc_;
@@ -513,6 +528,7 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
         }
 
         auto BPQ = std::make_unique<Tensor<double, 3>>("BPQ", naux_, nmo1, nmo2);
+        timer_on("MO Transformation");
         {
             // C2
             Tensor<double, 3> BpQ{"BpQ", naux_, nbf1, nmo2};
@@ -527,7 +543,9 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
             C1.reset();
             sort(Indices{B, P, Q}, &BPQ, Indices{B, Q, P}, BQP);
         }
+        timer_off("MO Transformation");
 
+        timer_on("Set in ERI");
         {
             (o1 == 1) ? R = nobs_ : R = 0;
             (o2 == 1) ? S = nobs_ : S = 0;
@@ -535,6 +553,7 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
             TensorView<double, 3> ERI_BPQ{*DF_ERI, Dim<3>{naux_, nmo1, nmo2}, Offset<3>{0, R, S}};
             set_ERI(ERI_BPQ, BPQ.get());
         }
+        timer_off("Set in ERI");
     } // end of for loop
 }
 
@@ -622,6 +641,7 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
         {
             Tensor<double, 4> chem_robust("(PQ|F12|RS) MO", nmo1, nmo2, nmo3, nmo4);
 
+            timer_on("Robust DF Procedure");
             auto ARPQ = std::make_unique<Tensor<double, 3>>("(A|R|PQ) MO", naux_, nocc_, nri_);
             form_oper_ints(int_type, ARPQ.get());
 
@@ -650,11 +670,13 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
                            -1.0, Indices{A, p, q}, left_metric, Indices{A, r, s}, tmp);
                 }
             }
+            timer_off("Robust DF Procedure");
 
             // Switch to <PR|QS> ordering
             sort(Indices{p, r, q, s}, &phys_robust, Indices{p, q, r, s}, chem_robust);
         }
 
+        timer_on("Set in ERI");
         {
             if (!use_offset){
                 off1 = 0;
@@ -666,6 +688,7 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
             TensorView<double, 4> ERI_PRQS{(*ERI), Dim<4>{nmo1, nmo3, nmo2, nmo4}, Offset<4>{off1, off3, off2, off4}};
             set_ERI(ERI_PRQS, phys_robust.get());
         }
+        timer_off("Set in ERI");
     } // end of for loop
 }
 
