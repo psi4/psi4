@@ -100,13 +100,13 @@ void MP2F12::print_header()
         outfile->Printf("             Density-Fitted Explicitly Correlated           \n");
         outfile->Printf("               2nd Order Moeller-Plesset Theory             \n");
         outfile->Printf("                RMP2 Wavefunction, %2d Threads              \n\n", nthreads_);
-        outfile->Printf("               Erica Mitchell and Justin Turney             \n");
+        outfile->Printf("                        Erica Mitchell                      \n");
     } else {
         outfile->Printf("                        MP2-F12/3C(FIX)                     \n");
         outfile->Printf("                     Explicitly Correlated                  \n");
         outfile->Printf("               2nd Order Moeller-Plesset Theory             \n");
         outfile->Printf("                RMP2 Wavefunction, %2d Threads              \n\n", nthreads_);
-        outfile->Printf("               Erica Mitchell and Justin Turney             \n");
+        outfile->Printf("                        Erica Mitchell                      \n");
     }
     outfile->Printf(" -----------------------------------------------------------\n\n");
     outfile->Printf(" Using %s algorithm \n\n", f12_type_.c_str());
