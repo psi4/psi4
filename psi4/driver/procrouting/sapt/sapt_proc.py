@@ -180,7 +180,7 @@ def run_sapt_dft(name, **kwargs):
                                           sapt_jk,
                                           True,
                                           maxiter=core.get_option("SAPT", "MAXITER"),
-                                          conv=core.get_option("SAPT", "D_CONVERGENCE"),
+                                          conv=core.get_option("SAPT", "CPHF_R_CONVERGENCE"),
                                           Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"))
             hf_data.update(ind)
             core.timer_off("SAPT(HF):ind")
@@ -393,7 +393,7 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, do_dft=True, sapt_jk=None, sapt_jk_B=None,
                                   True,
                                   sapt_jk_B=sapt_jk_B,
                                   maxiter=core.get_option("SAPT", "MAXITER"),
-                                  conv=core.get_option("SAPT", "D_CONVERGENCE"),
+                                  conv=core.get_option("SAPT", "CPHF_R_CONVERGENCE"),
                                   Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"))
     data.update(ind)
 
