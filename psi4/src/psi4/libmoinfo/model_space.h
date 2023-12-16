@@ -57,9 +57,6 @@ class ModelSpace {
     std::vector<int> unique_to_all;  // spin-unique  determinants
     MOInfo* moinfo_obj;
 };
-
-extern ModelSpace* model_space;
-
 }  // namespace psi
 
 #endif  // _psi_src_lib_libmoinfo_model_space_h_
