@@ -44,7 +44,8 @@
 
 namespace psi {
 
-PSI_API int psi_start(FILE **infile, FILE **outfile, char **psi_file_prefix, int argc, char *argv[], int overwrite_output);
+PSI_API int psi_start(FILE **infile, FILE **outfile, char **psi_file_prefix, int argc, char *argv[],
+                      int overwrite_output);
 PSI_API int psi_stop(FILE *infile, FILE *outfile, char *psi_file_prefix);
 PSI_API char *psi_ifname();
 PSI_API char *psi_ofname();
