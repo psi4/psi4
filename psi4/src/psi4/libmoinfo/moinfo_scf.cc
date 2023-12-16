@@ -33,11 +33,9 @@
 
 #include "psi4/libmints/corrtab.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 
 #include "moinfo_scf.h"
