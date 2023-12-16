@@ -44,7 +44,6 @@
 #define IOFF 5000000
 
 #include <string>
-#include "psi4/libpsi4util/libpsi4util.h"
 
 typedef std::vector<int> intvec;
 typedef std::vector<bool> boolvec;
