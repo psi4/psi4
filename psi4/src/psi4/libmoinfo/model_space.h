@@ -35,11 +35,9 @@
 */
 
 #include "slater_determinant.h"
+#include "moinfo.h"
 
 namespace psi {
-
-class MOInfo;
-
 class ModelSpace {
    public:
     ModelSpace(MOInfo* moinfo_obj_);
