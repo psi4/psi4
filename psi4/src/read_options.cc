@@ -1578,6 +1578,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SCF_INITIAL_FINISH_DIIS_TRANSITION", 1.0E-4);
         /*- Do perform incremental Fock build? -*/
         options.add_bool("INCFOCK", false);
+        /*- Use a fixed reference in the incremental Fock build? -*/
+        options.add_bool("INCFOCK_FIXED_REFERENCE", false);
         /*- Frequency with which to compute the full Fock matrix if using |scf__incfock| . 
         N means rebuild every N SCF iterations to avoid accumulating error from the incremental procedure. -*/
         options.add_int("INCFOCK_FULL_FOCK_EVERY", 5);

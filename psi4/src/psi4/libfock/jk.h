@@ -250,8 +250,8 @@ class PSI_API JK {
     std::vector<bool> input_symmetry_cast_map_;
     /// Number of ERI shell quartets computed, i.e., not screened out
     size_t num_computed_shells_;
-    /// Tally of ERI shell n-lets (triplets, quartets) computed per SCF iteration 
-    std::unordered_map<std::string, std::vector<size_t> > computed_shells_per_iter_;
+    /// Tally of ERI shell n-lets (triplets, quartets) computed per SCF iteration
+    std::unordered_map<std::string, std::vector<size_t>> computed_shells_per_iter_;
 
     // => Tasks <= //
 
@@ -350,8 +350,8 @@ class PSI_API JK {
     /// Zero out all J, K, and wK matrices
     void zero();
     /**
-    * Return number of ERI shell quartets computed during the JK build process.
-    */
+     * Return number of ERI shell quartets computed during the JK build process.
+     */
     virtual size_t num_computed_shells();
 
    public:
@@ -376,12 +376,12 @@ class PSI_API JK {
     virtual ~JK();
 
     /**
-    * Static instance constructor, used to get prebuilt DiskDFJK/DirectJK objects
-    * using knobs in options.
-    * Nmat and sym are options for GTFock
-    * sym means that all density matrices will be symmetric
-    * @return abstract JK object, tuned in with preset options
-    */
+     * Static instance constructor, used to get prebuilt DiskDFJK/DirectJK objects
+     * using knobs in options.
+     * Nmat and sym are options for GTFock
+     * sym means that all density matrices will be symmetric
+     * @return abstract JK object, tuned in with preset options
+     */
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                         Options& options);
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
@@ -437,50 +437,50 @@ class PSI_API JK {
     void set_bench(int bench) { bench_ = bench; }
     int get_bench() const { return bench_; }
     /**
-    * Set to do J tasks
-    * @param do_J do J matrices or not,
-    *        defaults to true
-    */
+     * Set to do J tasks
+     * @param do_J do J matrices or not,
+     *        defaults to true
+     */
     void set_do_J(bool do_J) { do_J_ = do_J; }
     /**
-    * Set to do K tasks
-    * @param do_K do K matrices or not,
-    *        defaults to true
-    */
+     * Set to do K tasks
+     * @param do_K do K matrices or not,
+     *        defaults to true
+     */
     virtual void set_do_K(bool do_K) { do_K_ = do_K; }
     /**
-    * Set to do wK tasks
-    * @param do_wK do wK matrices or not,
-    *        defaults to false
-    */
+     * Set to do wK tasks
+     * @param do_wK do wK matrices or not,
+     *        defaults to false
+     */
     virtual void set_do_wK(bool do_wK) { do_wK_ = do_wK; }
-    bool get_do_wK() {return do_wK_;}
+    bool get_do_wK() { return do_wK_; }
     /**
-    * Set to combine wK integral tensors
-    * @param wcombine do we combine wK matrices?
-    *        defaults to false unless MemDFJK
-    */
+     * Set to combine wK integral tensors
+     * @param wcombine do we combine wK matrices?
+     *        defaults to false unless MemDFJK
+     */
     virtual void set_wcombine(bool wcombine);
     bool get_wcombine() { return wcombine_; }
 
     /**
-    * Set the omega value for wK
-    * @param omega range-separation parameter
-    */
+     * Set the omega value for wK
+     * @param omega range-separation parameter
+     */
     void set_omega(double omega) { omega_ = omega; }
     double get_omega() { return omega_; }
 
     /**
-    * Set the alpha value for w exchange: weight for HF Term                
-    * @param omega_alpha HF-Exchange weight
-    */
+     * Set the alpha value for w exchange: weight for HF Term
+     * @param omega_alpha HF-Exchange weight
+     */
     virtual void set_omega_alpha(double alpha) { omega_alpha_ = alpha; }
-    double get_omega_alpha() {return omega_alpha_; }
+    double get_omega_alpha() { return omega_alpha_; }
 
     /**
-    * Set the beta value for w exchange: weight for dampened Term                
-    * @param omega_beta Dampened Exchange weight
-    */
+     * Set the beta value for w exchange: weight for dampened Term
+     * @param omega_beta Dampened Exchange weight
+     */
     virtual void set_omega_beta(double beta) { omega_beta_ = beta; }
     double get_omega_beta() { return omega_beta_; }
 
@@ -573,15 +573,15 @@ class PSI_API JK {
     const std::vector<SharedMatrix>& D() const { return D_; }
 
     /**
-    * Return number of ERI shell n-lets (triplets, quartets) computed per SCF iteration during the JK build process.
-    */
-    const std::unordered_map<std::string, std::vector<size_t> >& computed_shells_per_iter();
+     * Return number of ERI shell n-lets (triplets, quartets) computed per SCF iteration during the JK build process.
+     */
+    const std::unordered_map<std::string, std::vector<size_t>>& computed_shells_per_iter();
     const std::vector<size_t>& computed_shells_per_iter(const std::string& n_let);
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     virtual void print_header() const = 0;
 };
 
@@ -634,9 +634,9 @@ class PSI_API DiskJK : public JK {
     // => Accessors <= //
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     void print_header() const override;
 };
 
@@ -647,7 +647,6 @@ class PSI_API DiskJK : public JK {
  * integral technology
  */
 class PSI_API PKJK : public JK {
-
     std::string name() override { return "PKJK"; }
     size_t memory_estimate() override;
 
@@ -703,9 +702,9 @@ class PSI_API PKJK : public JK {
     // => Accessors <= //
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     void print_header() const override;
 };
 
@@ -734,21 +733,27 @@ class PSI_API DirectJK : public JK {
     bool density_screening_;
 
     // => Incremental Fock build variables <= //
-    
+
     /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
+    /// Use fixed reference density and J and K matrices insted of updating them every iteration? (default false)
+    bool fixed_reference_;
     /// The number of times INCFOCK has been performed (includes resets)
     int incfock_count_;
     bool do_incfock_iter_;
+    bool update_reference_;
 
-    /// Previous iteration pseudo-density matrix
-    std::vector<SharedMatrix> D_prev_;
+    /// Reference pseudo-density matrix
+    std::vector<SharedMatrix> D_reference_;
+    /// Reference Coulomb matrix
+    std::vector<SharedMatrix> J_reference_;
+    /// Reference exchange matrix
+    std::vector<SharedMatrix> K_reference_;
+    /// Reference range-separated exchange matrix
+    std::vector<SharedMatrix> wK_reference_;
 
     /// Pseudo-density matrix to be used this iteration
-    std::vector<SharedMatrix> D_ref_;
-
-    // Is the JK currently on the first SCF iteration of this SCF cycle?
-    bool initial_iteration_ = true;
+    std::vector<SharedMatrix> D_current_;
 
     std::string name() override { return "DirectJK"; }
     size_t memory_estimate() override;
@@ -778,15 +783,15 @@ class PSI_API DirectJK : public JK {
      * @param K The list of AO K matrices to build (Same size as D, 0 if no matrices are to be built)
      */
     void build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
-                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K);
+                           std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K);
 
     /// Common initialization
     void common_init();
 
     /**
-    * Return number of ERI shell quartets computed during the JK build process.
-    */
-    size_t num_computed_shells() override; 
+     * Return number of ERI shell quartets computed during the JK build process.
+     */
+    size_t num_computed_shells() override;
 
    public:
     // => Constructors < = //
@@ -814,9 +819,9 @@ class PSI_API DirectJK : public JK {
     bool do_incfock_iter() { return do_incfock_iter_; }
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     void print_header() const override;
 };
 
@@ -870,9 +875,9 @@ class GTFockJK : public JK {
      */
     GTFockJK(std::shared_ptr<psi::BasisSet> Primary, size_t NMats, bool AreSymm);
     /** \brief Your interface to GTFock that works well with libfock
-    *   GTFock needs number of densities and symmetric at initialization
-    *   This code calls GTFock once the number of densities was read from jk object
-    */
+     *   GTFock needs number of densities and symmetric at initialization
+     *   This code calls GTFock once the number of densities was read from jk object
+     */
     GTFockJK(std::shared_ptr<psi::BasisSet> Primary);
 };
 
@@ -1038,9 +1043,9 @@ class PSI_API DiskDFJK : public JK {
     // => Accessors <= //
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     void print_header() const override;
 };
 /**
@@ -1074,9 +1079,9 @@ class PSI_API CDJK : public DiskDFJK {
     // => Accessors <= //
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     void print_header() const override;
 
    public:
@@ -1170,17 +1175,17 @@ class PSI_API MemDFJK : public JK {
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
 
     /**
- * A set_do_wK function that affects the dfhelper object.
- * used to control wK workflow.
- */
+     * A set_do_wK function that affects the dfhelper object.
+     * used to control wK workflow.
+     */
     void set_do_wK(bool do_wK) override;
 
     // => Accessors <= //
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     void print_header() const override;
 
     void set_omega_alpha(double alpha) override;
@@ -1194,7 +1199,7 @@ class PSI_API MemDFJK : public JK {
 };
 
 /**
- * Class CompositeJK 
+ * Class CompositeJK
  *
  * JK implementation framework enabling arbitrary mixing and matching
  * of separate J and K construction algorithms.
@@ -1205,7 +1210,6 @@ class PSI_API MemDFJK : public JK {
  */
 class PSI_API CompositeJK : public JK {
    protected:
-
     /// The number of threads to be used for integral computation
     int nthreads_;
     /// Options object
@@ -1223,7 +1227,7 @@ class PSI_API CompositeJK : public JK {
     bool density_screening_;
 
     // => Incremental Fock build variables <= //
-    
+
     /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
     /// The number of times INCFOCK has been performed (includes resets)
@@ -1238,7 +1242,7 @@ class PSI_API CompositeJK : public JK {
 
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
-  
+
     size_t memory_estimate() override;
 
     // => Required Algorithm-Specific Methods <= //
@@ -1261,8 +1265,8 @@ class PSI_API CompositeJK : public JK {
     void common_init();
 
     /**
-    * Return number of ERI shell quartets computed during the JK build process.
-    */
+     * Return number of ERI shell quartets computed during the JK build process.
+     */
     size_t num_computed_shells() override;
 
    public:
@@ -1284,33 +1288,32 @@ class PSI_API CompositeJK : public JK {
     /**
      * Clear D_prev_
      */
-    void clear_D_prev() { D_prev_.clear();}
+    void clear_D_prev() { D_prev_.clear(); }
 
     // => Knobs <= //
     std::string name() override { return "CompositeJK"; }
 
     /**
-    * Set to do K tasks
-    * @param do_K do K matrices or not,
-    *        defaults to true
-    */
+     * Set to do K tasks
+     * @param do_K do K matrices or not,
+     *        defaults to true
+     */
     virtual void set_do_K(bool do_K) override;
 
     /**
-    * Knobs for getting and setting current COSX grid for this SCF iteration, if COSX is used
-    * throws by default, if COSX is not used
-    */
+     * Knobs for getting and setting current COSX grid for this SCF iteration, if COSX is used
+     * throws by default, if COSX is not used
+     */
     void set_COSX_grid(std::string current_grid) { return k_algo_->set_COSX_grid(current_grid); }
     std::string get_COSX_grid() { return k_algo_->get_COSX_grid(); }
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     void print_header() const override;
 };
 
-}
+}  // namespace psi
 
 #endif
-
