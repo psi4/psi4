@@ -31,7 +31,6 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include "psi4/psifiles.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/libpsi4util.h"
@@ -189,7 +188,7 @@ void MOInfo::build_model_space() {
         outfile->Printf("\n  3) Charge and multiplicity");
         outfile->Printf("\n\n  PSIMRCC will end the computation.\n");
 
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("MOInfo found no reference in the model space");
     }
 }
 
