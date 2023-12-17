@@ -44,6 +44,7 @@
 #define IOFF 5000000
 
 #include <string>
+#include <vector>
 
 typedef std::vector<int> intvec;
 typedef std::vector<bool> boolvec;
