@@ -91,7 +91,7 @@ void MOInfoSCF::read_mo_spaces() {
     // Map the symmetry of the input occupations, to account for displacements
     auto ps = options.get_str("PARENT_SYMMETRY");
     if (ps != "") {
-        auto old_pg = std::make_shared<PointGroup> (ps);
+        auto old_pg = std::make_shared<PointGroup>(ps);
         // This is one of a series of displacements;  check the dimension against the parent point group
         int nirreps_ref = old_pg->char_table().nirrep();
 
@@ -102,7 +102,7 @@ void MOInfoSCF::read_mo_spaces() {
         read_mo_space(nirreps_ref, nactv, actv_ref, "SOCC");
 
         // Build the correlation table between full, and subgroup
-        auto full = std::make_shared<PointGroup> (options.get_str("PARENT_SYMMETRY"));
+        auto full = std::make_shared<PointGroup>(options.get_str("PARENT_SYMMETRY"));
         std::shared_ptr<PointGroup> sub = ref_wfn.molecule()->point_group();
         CorrelationTable corrtab(full, sub);
 
