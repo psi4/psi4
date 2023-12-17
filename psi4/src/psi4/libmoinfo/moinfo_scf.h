@@ -50,7 +50,7 @@ class MOInfoSCF : public MOInfoBase {
     void print_mo();
 };
 
-extern MOInfoSCF* moinfo_scf;
+extern MOInfoSCF* moinfo_scf; // Unfortunate, but psi::mcscf assumes that this is declared.
 
 }  // namespace psi
 
