@@ -64,7 +64,7 @@ void MOInfoBase::startup() {
     guess_occupation = true;
 }
 
-void MOInfoBase::cleanup() {} 
+void MOInfoBase::cleanup() {}
 
 void MOInfoBase::read_data() {
     nirreps = ref_wfn.nirrep();
