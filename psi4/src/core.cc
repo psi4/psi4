@@ -558,6 +558,21 @@ void throw_deprecation_errors(std::string const& key, std::string const& module 
     if (module == "SCF" && key == "PK_ALGO") {
         py_psi_print_out("WARNING!\n\tRemove keyword PK_ALGO! PK_ALGO has been replaced by the SCF_SUBTYPE=YOSHIMINE_OUT_OF_CORE and REORDER_OUT_OF_CORE options. Using PK_ALGO will raise an error in v1.8.\n");
     }
+    if (module == "SAPT" && key == "E_CONVERGENCE") {
+        throw PsiException(
+        "Remove keyword " + key + " for module " + module + ". This convergence control and keyword were removed in v1.10.",
+            __FILE__, __LINE__);
+    }
+    if (module == "SAPT" && key == "D_CONVERGENCE") {
+        throw PsiException(
+        "Rename keyword " + key + " for module " + module + " to CPHF_R_CONVERGENCE. The keyword was renamed in v1.10.",
+            __FILE__, __LINE__);
+    }
+    if (module == "FISAPT" && key == "D_CONVERGENCE") {
+        throw PsiException(
+        "Rename keyword " + key + " for module " + module + " to CPHF_R_CONVERGENCE. The keyword was renamed in v1.10.",
+            __FILE__, __LINE__);
+    }
 }
 
 Options& py_psi_get_options() { return Process::environment.options; }

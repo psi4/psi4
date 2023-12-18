@@ -485,8 +485,7 @@ Basic SAPT0 Keywords
 .. include:: autodir_options_c/sapt__df_basis_sapt.rst
 .. include:: autodir_options_c/sapt__df_basis_elst.rst
 .. include:: autodir_options_c/sapt__freeze_core.rst
-.. include:: autodir_options_c/sapt__d_convergence.rst
-.. include:: autodir_options_c/sapt__e_convergence.rst
+.. include:: autodir_options_c/sapt__cphf_r_convergence.rst
 .. include:: autodir_options_c/sapt__maxiter.rst
 .. include:: autodir_options_c/sapt__print.rst
 

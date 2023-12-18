@@ -66,8 +66,7 @@ SAPT0::SAPT0(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefu
     }
 
     maxiter_ = options_.get_int("MAXITER");
-    e_conv_ = options_.get_double("E_CONVERGENCE");
-    d_conv_ = options_.get_double("D_CONVERGENCE");
+    cphf_r_conv_ = options_.get_double("CPHF_R_CONVERGENCE");
     no_response_ = !options_.get_bool("COUPLED_INDUCTION");
     aio_cphf_ = options_.get_bool("AIO_CPHF");
     aio_dfints_ = options_.get_bool("AIO_DF_INTS");

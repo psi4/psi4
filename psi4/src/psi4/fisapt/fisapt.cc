@@ -6565,7 +6565,7 @@ void FISAPT::find() {
             auto cphf = std::make_shared<CPHF_FISAPT>();
 
             // Effective constructor
-            cphf->delta_ = options_.get_double("D_CONVERGENCE");
+            cphf->delta_ = options_.get_double("CPHF_R_CONVERGENCE");
             cphf->maxiter_ = options_.get_int("MAXITER");
             cphf->jk_ = jk;
 

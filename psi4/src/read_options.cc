@@ -1010,14 +1010,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         be computed even if they are not needed for the requested term !expert -*/
         options.add_bool("SAPT0_E20DISP", false);
 
-        /*- Convergence criterion for energy (change) in the SAPT
-        $E@@{ind,resp}^{(20)}$ term during solution of the CPHF equations. -*/
-
-        options.add_double("E_CONVERGENCE", 1e-10);
-
-        /*- Convergence criterion for residual of the CPHF coefficients in the SAPT
-        $E@@{ind,resp}^{(20)}$ term. -*/
-        options.add_double("D_CONVERGENCE", 1e-8);
+        /*- Convergence criterion for residual of the CPHF/CPKS coefficients
+          in the SAPT $E@@{ind,resp}^{(20)}$ term. This applies to
+          wavefunction-based SAPT or SAPT(DFT). See |fisapt__cphf_r_convergence| for 
+          fragment-partitioned or intramolecular SAPT. -*/
+        options.add_double("CPHF_R_CONVERGENCE", 1e-8);
 
         /*- Solve the CPHF equations to compute coupled induction and
             exchange-induction. These are not available for ROHF, and
@@ -1167,7 +1164,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("FISAPT_MEM_SAFETY_FACTOR", 0.9);
         /*- Convergence criterion for residual of the CPHF coefficients in the SAPT
         $E@@{ind,resp}^{(20)}$ term. -*/
-        options.add_double("D_CONVERGENCE", 1E-8);
+        options.add_double("CPHF_R_CONVERGENCE", 1E-8);
         /*- Maximum number of iterations for CPHF -*/
         options.add_int("MAXITER", 50);
         /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
