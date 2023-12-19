@@ -1728,7 +1728,7 @@ void export_mints(py::module& m) {
         characteristics of the linked Libint2. Prefer the processed libint2_configuration function.");
 
     m.def("libint2_solid_harmonics_ordering", []() {
-            const std::string SHOrderingsList[] = {"Standard", "Gaussian"};
+            const std::string SHOrderingsList[] = {"null", "Standard", "Gaussian"};
             std::string sho = SHOrderingsList[int(libint2::solid_harmonics_ordering())];
             return sho;
         },
