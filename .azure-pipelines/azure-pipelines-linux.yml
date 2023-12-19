@@ -102,7 +102,6 @@ jobs:
       sed -i "s;- conda-forge/label/libint_dev;#- conda-forge/label/libint_dev;g" env_p4env.yaml
       sed -i "s;#- psi4/label/testing::libint2;- psi4/label/testing::libint=2.8.0dev2;g" env_p4env.yaml
       echo "  - einsums" >> env_p4env.yaml
-      echo "  - openblas" >> env_p4env.yaml
       echo "  - range-v3" >> env_p4env.yaml
       echo "  - zlib" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
