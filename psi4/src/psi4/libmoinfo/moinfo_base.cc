@@ -105,8 +105,8 @@ void MOInfoBase::read_mo_space(const int nirreps_ref, int& n, intvec& mo, const 
         if (read) {
             outfile->Printf("\n\n  libmoinfo has found a redundancy in the input keywords %s , please fix it!",
                             labels.c_str());
-
-            exit(1);
+            throw PSIEXCEPTION("libmoinfo has found a redundancy in the input keywords " + labels +
+                               " , please fix it!");
         } else {
             read = true;
         }
@@ -120,8 +120,9 @@ void MOInfoBase::read_mo_space(const int nirreps_ref, int& n, intvec& mo, const 
                 "\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input "
                 "file",
                 label_vec[k].c_str(), size, nirreps_ref);
-
-            exit(1);
+            throw PSIEXCEPTION("The size of the " + label_vec[k] + " array (" + std::to_string(size) +
+                               ") does not match the number of irreps (" + std::to_string(nirreps_ref) +
+                               "), please fix the input file");
         }
     }
 }
@@ -156,7 +157,7 @@ void MOInfoBase::correlate(char* ptgrp, int irrep, int& nirreps_old, int& nirrep
         nirreps_old = 8;
     else {
         outfile->Printf("point group %s unknown.\n", ptgrp);
-        exit(1);
+        throw PSIEXCEPTION("point group " + std::string(ptgrp) + " unknown.");
     }
 
     arr = new int[nirreps_old];
