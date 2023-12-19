@@ -29,7 +29,6 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
-#include <cstdio>
 
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/liboptions/liboptions.h"
