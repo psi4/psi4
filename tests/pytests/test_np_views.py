@@ -73,32 +73,32 @@ def build_copy_mat():
 
 @uusing("memory_profiler")
 def test_build_mat():
-    assert(check_leak(build_mat))
+    assert check_leak(build_mat)
 
 
 @uusing("memory_profiler")
 def test_build_view_mat():
-    assert(check_leak(build_view_mat))
+    assert check_leak(build_view_mat)
 
 
 @uusing("memory_profiler")
 def test_build_viewh_mat():
-    assert(check_leak(build_viewh_mat))
+    assert check_leak(build_viewh_mat)
 
 
 @uusing("memory_profiler")
 def test_build_view_set_mat():
-    assert(check_leak(build_view_set_mat))
+    assert check_leak(build_view_set_mat)
 
 
 @uusing("memory_profiler")
 def test_build_arr_mat():
-    assert(check_leak(build_arr_mat))
+    assert check_leak(build_arr_mat)
 
 
 @uusing("memory_profiler")
 def test_build_copy_mat():
-    assert(check_leak(build_copy_mat))
+    assert check_leak(build_copy_mat)
 
 
 @uusing("memory_profiler")

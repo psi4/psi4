@@ -945,7 +945,8 @@ data:
       commit: 6.2.2
     #cmake:
     #  name: Libxc
-    #  constraint: 6.0.0
+    #  constraint: 6.1.0
+    #  constraint_note: "v6.1.0 required for HYB_MGGA_XC_R2SCAN0, etc."
     #  target: Libxc::xc
       components:
         - C
