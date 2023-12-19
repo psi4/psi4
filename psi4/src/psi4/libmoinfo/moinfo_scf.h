@@ -34,8 +34,6 @@
     \brief   This class stores all the basic info regarding MOs
 */
 
-#include <string>
-
 #include "moinfo_base.h"
 
 namespace psi {
