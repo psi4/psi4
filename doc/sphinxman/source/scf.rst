@@ -684,7 +684,7 @@ DIRECT
     up to 1500 basis functions, uses zero disk (if DF pre-iterations are
     turned off), and can obtain significant
     speedups with negligible error loss if |scf__ints_tolerance|
-    is set to 1.0E-8 or so.
+    is set to 1.0E-8 or so. See the :ref:`sec:directscf` section for more information.
 DF [:ref:`Default <table:conv_scf>`]
     A density-fitted algorithm designed for computations with thousands of
     basis functions. This algorithm is highly optimized, and is threaded
@@ -717,18 +717,18 @@ composite algorithms can be accessed by setting |globals__scf_type| to ``J_alg+K
 where *J_alg* and *K_alg* are the names of the separate Coulomb
 and Exchange construction algorithms to use, respectively. Alternatively, if one is using
 DFT with non-hybrid functionals, a composite Coulomb construction algorithm can be
-specified solo by setting |globals__scf_type| to ``J_alg``, without the need to set 
+specified solo by setting |globals__scf_type| to ``J_alg``, without the need to set
 an associated ``K_alg``.
 
-Specialized algorithms available to construct the Coulomb term within a composite framework 
+Specialized algorithms available to construct the Coulomb term within a composite framework
 are as follows:
 
 DFDIRJ
     An integral-direct algorithm constructing the Coulomb term based on [Weigend:2002:4285]_
-    The DFDIRJ algorithm combines the benefits of integral-direct SCF approaches 
-    with that of density-fitting. Specifically, DFJ utilizes no I/O and displays 
-    strong performance with large system size through a combination of 
-    effective parallelization and utilization of density-fitting to minimize 
+    The DFDIRJ algorithm combines the benefits of integral-direct SCF approaches
+    with that of density-fitting. Specifically, DFJ utilizes no I/O and displays
+    strong performance with large system size through a combination of
+    effective parallelization and utilization of density-fitting to minimize
     ERI computational cost. See the :ref:`sec:scfddfj` section for more information.
 
 Specialized algorithms available to construct the Exchange term within a composite framework
@@ -742,11 +742,11 @@ COSX
     large systems and multi-core CPUs. See :ref:`sec:scfcosx` for more information.
 LINK
     An implementation of the linear-scaling "Linear Exchange" (LinK)
-    algorithm described in [Ochsenfeld:1998:1663]_. The LINK algorithm provides 
-    many of the benefits of integral-direct SCF algorithms, including no disk I/O, 
+    algorithm described in [Ochsenfeld:1998:1663]_. The LINK algorithm provides
+    many of the benefits of integral-direct SCF algorithms, including no disk I/O,
     low memory usage, and effective parallelization. Additionally, the
-    LINK implementation scales well with system size 
-    while simultaneously providing a formally-exact computation of the 
+    LINK implementation scales well with system size
+    while simultaneously providing a formally-exact computation of the
     Exchange term. See :ref:`sec:scflink` for more information.
 
 In some cases the above algorithms have multiple implementations that return
@@ -769,20 +769,20 @@ algorithm is chosen. It is therefore highly recommended that the keyword "DF"
 be selected in all cases so that the correct implementation can be selected by
 |PSIfours| internal routines. Expert users can manually switch between MEM_DF and
 DISK_DF; however, they may find documented exceptions during use as several
-post SCF algorithms require a specific implementation. Additionally, expert users 
-can manually switch between the in-memory and on-disk options *within* MEM_DF or DISK_DF using 
-the |scf__scf_subtype| option. Using ``SCF_SUBTYPE = AUTO``, where |PSIfour| 
-automatically selects the in-memory or on-disk option for MEM_DF/DISK_DF based on memory and molecule, is the default 
+post SCF algorithms require a specific implementation. Additionally, expert users
+can manually switch between the in-memory and on-disk options *within* MEM_DF or DISK_DF using
+the |scf__scf_subtype| option. Using ``SCF_SUBTYPE = AUTO``, where |PSIfour|
+automatically selects the in-memory or on-disk option for MEM_DF/DISK_DF based on memory and molecule, is the default
 and recommended option. However, the in-memory or on-disk algorithms for MEM_DF and DISK_DF can be forced by using
 ``SCF_SUBTYPE = INCORE`` or ``SCF_SUBTYPE = OUT_OF_CORE``, respectively.
-Note that an exception will be thrown if 
-``SCF_SUBTYPE = INCORE`` is used without allocating sufficient memory to 
+Note that an exception will be thrown if
+``SCF_SUBTYPE = INCORE`` is used without allocating sufficient memory to
 |PSIfour|.
 
 For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate
 sieving, set the |scf__ints_tolerance| keyword to your desired cutoff
-(1.0E-12 is recommended for most applications). To choose the type of sieving, set 
+(1.0E-12 is recommended for most applications). To choose the type of sieving, set
 the |globals__screening| keyword to your desired option. For Schwarz screening, set it
 to ``SCHWARZ``, for CSAM, ``CSAM``, and for density matrix-based screening, ``DENSITY``.
 
@@ -816,6 +816,55 @@ To avoid this, either set |scf__df_basis_scf| to an auxiliary
 basis set defined for all atoms in the system, or set |scf__df_scf_guess|
 to false, which disables this acceleration entirely.
 
+.. _`sec:directscf`:
+
+Integral-Direct Self-Consistent Field
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The integral-direct SCF algorithm [Almloef:1982:385]_ computes the
+exact Fock matrix by recomputing integrals on the fly at every
+iteration and contracting them with the density matrix. As the
+electron density changes very little in later iterations, the direct
+SCF method often employs incremental formation for the Fock matrix:
+since the Fock matrix is linear in the density, one does not have to
+compute the full matrix at every iteration, only the change from a
+previously computed Fock matrix.  This behavior is toggled by the
+|scf__incfock| keyword. Because the elements in the difference density
+matrix are much smaller than the elements in the density matrix, this
+makes the screening of the integrals much tighter, reducing the number
+of integrals that need to be calculated.
+
+The typical implementation of incremental Fock matrix formation
+updates the reference at every iteration. This makes the screening
+better and better as the wave function converges, because the density
+changes less and less. But, since small changes can accumulate to a
+non-negligible outcome over many iterations, this procedure is
+susceptible to creeping numerical error. For this reason, a fresh Fock
+matrix needs to be rebuilt every ``N`` iterations
+(|scf__incfock_full_every|, defaults to 5). In addition, due to the
+danger of the creepup of small errors, the iterative formation is
+turned off when a sufficiently tight convergence
+(|scf__incfock_convergence|, defaults to ``1e-5``) has been reached,
+so that the final iterations are performed without deleterious
+screening.
+
+Psi4 also implements a different type of algorithm, where a fixed
+reference density and Fock matrix is employed (see
+[Parrish:2016:131101]_ for inspiration). Because the reference is
+fixed, there is no danger of incremental creepup of numerical noise;
+however, the flip side is that roughly the same number of integrals
+need to be computed for every incremental step. This algorithm is used
+instead of the typical algorithm discussed above, if
+|scf__incfock_fixed_reference| is ``true``.
+
+
+It has the following options
+
+  |scf__incfock|: Toggles incremental formation of the Fock matrix. Defaults to ``true``.
+  |scf__incfock_fixed_reference|: Chooses the algorithm: use a fixed reference Fock matrix instead of updating it every iteration? Defaults to ``false``.
+  |scf__incfock_full_every|: The number of iterations between full rebuilds of the Fock matrix. Defaults to ``5``.
+  |scf__incfock_convergence|: The convergence threshold to turn off incremental formation of the Fock matrix. Defaults to ``1e-5``.
+
 .. _`sec:scfddfj`:
 
 Integral-Direct Density-Fitted Coulomb Construction
@@ -823,16 +872,16 @@ Integral-Direct Density-Fitted Coulomb Construction
 
 The Resolution of the Identity (RI) can be used to decompose the normally 4-center ERI tensor into a combination of 3-center and 2-center components.
 By reducing the dimensionality of the ERI tensor, application of the RI (often referred to as density-fitting, or DF) can be used to greatly speed up
-SCF calculations. The reduction in ERI tensor rank also makes DF an appealing option for conventional SCF calculations, where the ERIs are stored 
+SCF calculations. The reduction in ERI tensor rank also makes DF an appealing option for conventional SCF calculations, where the ERIs are stored
 in core or on disk. However, even when using DF, I/O becomes a significant bottleneck for systems of a sufficient size when performing conventional SCF
 calculations. In principle, though, DF approaches can be utilized in an integral-direct context, gaining the benefits of DF methods without suffering the
 I/O bottlenecks that conventional DF methods will eventually run into. One such approach, outlined by Weigend in [Weigend:2002:4285]_,
-is available for use in Psi4 for the separate construction of the Coulomb contribution to the Fock matrix.  This implementation can be used alongside 
-Psi4's separate Exchange construction algorithms for composite Fock matrix construction by using the keyword DFDIRJ as the Coulomb construction 
-algorithm when specifying |globals__scf_type| to use a composite algorithm combination (``DFDIRJ+K_alg`` in general, 
-or ``DFDIRJ`` for DFT with non-hybrid functionals). 
+is available for use in Psi4 for the separate construction of the Coulomb contribution to the Fock matrix.  This implementation can be used alongside
+Psi4's separate Exchange construction algorithms for composite Fock matrix construction by using the keyword DFDIRJ as the Coulomb construction
+algorithm when specifying |globals__scf_type| to use a composite algorithm combination (``DFDIRJ+K_alg`` in general,
+or ``DFDIRJ`` for DFT with non-hybrid functionals).
 
-DFDIRJ supports multiple capabilities to improve performance. Specifically, DFDIRJ allows for a combination of density-matrix based ERI 
+DFDIRJ supports multiple capabilities to improve performance. Specifically, DFDIRJ allows for a combination of density-matrix based ERI
 screening (set |globals__screening| to ``DENSITY``) and incremental Fock matrix construction (set |scf__incfock| to ``TRUE``). These two, when combined,
 enable more aggressive screening of ERI contributions to the Coulomb matrix and thus greatly improve performance.
 
@@ -843,7 +892,7 @@ COSX Exchange
 
 The semi-numerical COSX algorithm described in [Neese:2009:98]_ evaluates
 two-electron ERIs analytically over one electron coordinate and numerically
-over the other electron coordinate, and belongs to the family of pseudospectral 
+over the other electron coordinate, and belongs to the family of pseudospectral
 methods originally suggested by Friesner. In COSX, numerical integration is performed on standard
 DFT quadrature grids, which are described in :ref:`sec:dft`.
 Both the accuracy of the COSX algorithm and also the computational
@@ -897,7 +946,7 @@ LinK is most competitive when used with non-diffuse orbital basis sets, since or
 LinK is especially powerful when combined with density-matrix based ERI screening (set |globals__screening| to ``DENSITY``) and incremental Fock builds (set |scf__incfock| to ``TRUE``), which decrease the number of significant two-electron integrals to calculate.
 
 To control the LinK algorithm, here are the list of options provided.
-  
+
   |scf__linK_ints_tolerance|: The integral screening tolerance used for sparsity-prep in the LinK algorithm. Defaults to the |scf__ints_tolerance| option.
 
 .. index::
