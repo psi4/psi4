@@ -1425,6 +1425,7 @@ data:
       aux_build_names:
         - range-v3
         - zlib
+        - mkl=2023*
         #- openblas
       skip_win: true
       cmake:
