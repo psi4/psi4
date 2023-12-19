@@ -37,6 +37,9 @@
 #include "moinfo_base.h"
 
 namespace psi {
+
+enum ReferenceType { AllRefs, UniqueRefs, ClosedShellRefs, UniqueOpenShellRefs };
+
 class MOInfo : public MOInfoBase {
     typedef std::vector<std::string> strvec;
     typedef std::vector<std::pair<int, int> > intpairvec;
@@ -65,7 +68,6 @@ class MOInfo : public MOInfoBase {
       4) Uses
         STL vector
     *********************************************************/
-    enum ReferenceType { AllRefs, UniqueRefs, ClosedShellRefs, UniqueOpenShellRefs };
     class SlaterDeterminant {
         const MOInfo* moinfo;
 
