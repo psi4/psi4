@@ -33,7 +33,6 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 
-#include <cstdio>
 namespace psi {
 
 void ModelSpace::build() {
