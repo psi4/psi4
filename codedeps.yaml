@@ -461,10 +461,11 @@ data:
     #    - onebody_d1_l3
     #    - onebody_d2_l3
     conda:
-      channel: psi4/label/testing
+      channel: conda-forge
       name: libint
-      constraint: "==2.8.0"
-      constraint_note: "v2.7.3dev1 provides rt-switchable ordering (src) and derivative integrals (build)."
+      name_note: "On the psi4 channel, libint/libint2 were used c.2021-23 to distinguish v1/v2. c-f always used libint as the package name. Starting with the v2.8 reunification with upstream, the supplementary 'bigAM' packages published on the psi4 channel will use the name libint for consistency with c-f."
+      constraint: null
+      constraint_note: "v2.8.0 provides rt-switchable ordering (src) and derivative integrals (build)."
       aux_build_names:
         - //psi4/label/testing::libint2
         - libboost-headers
@@ -1424,7 +1425,7 @@ data:
       aux_build_names:
         - range-v3
         - zlib
-        - openblas
+        #- openblas
       skip_win: true
       cmake:
         ENABLE_Einsums: true

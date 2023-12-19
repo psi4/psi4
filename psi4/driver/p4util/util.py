@@ -413,11 +413,10 @@ def _l2_config_style_eri_c4():
 def libint2_print_out() -> None:
     ams = libint2_configuration()
     # excluding sph_emultipole
-    sho = {1: 'standard', 2: 'gaussian'}[core._libint2_solid_harmonics_ordering()]
     core.print_out("   => Libint2 <=\n\n");
 
     core.print_out(f"    Primary   basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['eri'])}\n")
     core.print_out(f"    Auxiliary basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['eri3'])}\n")
     core.print_out(f"    Onebody   basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['onebody'])}\n")
-    core.print_out(f"    Solid Harmonics ordering:            {sho}\n")
+    core.print_out(f"    Solid Harmonics ordering:            {core.libint2_solid_harmonics_ordering()}\n")
 

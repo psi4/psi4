@@ -1727,6 +1727,10 @@ void export_mints(py::module& m) {
         "Returns string with codes detailing the integral classes, angular momenta, and ordering \
         characteristics of the linked Libint2. Prefer the processed libint2_configuration function.");
 
-    m.def("_libint2_solid_harmonics_ordering", []() { return int(libint2::solid_harmonics_ordering()); },
-        "Libint2 SH setting");
+    m.def("libint2_solid_harmonics_ordering", []() {
+            const std::string SHOrderingsList[] = {"Standard", "Gaussian"};
+            std::string sho = SHOrderingsList[int(libint2::solid_harmonics_ordering())];
+            return sho;
+        },
+        "The solid harmonics setting of Libint2 currently active for Psi4");
 }

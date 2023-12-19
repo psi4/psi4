@@ -102,6 +102,9 @@ jobs:
       sed -i "s;- conda-forge/label/libint_dev;#- psi4/label/testing;g" env_p4env.yaml
       #sed -i "s;- conda-forge/label/libint_dev;#- conda-forge/label/libint_dev;g" env_p4env.yaml
       #sed -i "s;#- psi4/label/testing::libint2;- psi4/label/testing::libint=2.8.0dev2;g" env_p4env.yaml
+      echo "  - einsums" >> env_p4env.yaml
+      echo "  - range-v3" >> env_p4env.yaml
+      echo "  - zlib" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
@@ -129,6 +132,7 @@ jobs:
         -D CMAKE_Fortran_COMPILER=${F_COMPILER} \
         -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -D ENABLE_PLUGIN_TESTING=ON \
+        -D ENABLE_Einsums=ON \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
