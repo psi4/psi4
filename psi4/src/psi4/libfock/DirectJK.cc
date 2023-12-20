@@ -161,6 +161,24 @@ void DirectJK::incfock_postiter() {
             if (do_wK_) wK_ao_[jki]->add(wK_reference_[jki]);
         }
 
+        // If we do the typical algorithm, we update the references
+        // here
+        if(not fixed_reference_) {
+          D_reference_.clear();
+          for (auto const& Di : D_ao_) {
+            D_reference_.push_back(Di->clone());
+          }
+
+          J_reference_.clear();
+          K_reference_.clear();
+          wK_reference_.clear();
+          for (size_t jki = 0; jki < njk; jki++) {
+            if (do_J_) J_ao_[jki]->add(J_reference_[jki]);
+            if (do_K_) K_ao_[jki]->add(K_reference_[jki]);
+            if (do_wK_) wK_ao_[jki]->add(wK_reference_[jki]);
+          }
+        }
+
         // If we don't do incremental formation, we can update the reference
     } else {
         // Save a copy of the density for the next iteration
