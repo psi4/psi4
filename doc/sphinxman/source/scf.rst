@@ -837,7 +837,7 @@ of integrals that need to be calculated.
 The typical implementation of incremental Fock matrix formation
 updates the reference at every iteration. This makes the screening
 better and better as the wave function converges, because the density
-changes less and less. But, since small changes can accumulate to a
+changes between SCF iterations go to zero as convergence is approached. But, since small changes can accumulate to a
 non-negligible outcome over many iterations, this procedure is
 susceptible to creeping numerical error. For this reason, a fresh Fock
 matrix needs to be rebuilt every ``N`` iterations
