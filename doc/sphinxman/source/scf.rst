@@ -831,7 +831,7 @@ compute the full matrix at every iteration, only the change from a
 previously computed Fock matrix.  This behavior is toggled by the
 |scf__incfock| keyword. Because the elements in the difference density
 matrix are much smaller than the elements in the density matrix, this
-makes the screening of the integrals much tighter, reducing the number
+makes the screening of the integrals much tighter when density-based screening is used, reducing the number
 of integrals that need to be calculated.
 
 The typical implementation of incremental Fock matrix formation
