@@ -841,7 +841,7 @@ changes between SCF iterations go to zero as convergence is approached. But, sin
 non-negligible outcome over many iterations, this procedure is
 susceptible to creeping numerical error. For this reason, a fresh Fock
 matrix needs to be rebuilt every ``N`` iterations
-(|scf__incfock_full_every|, defaults to 5). In addition, due to the
+(|scf__incfock_full_fock_every|, defaults to 5). In addition, due to the
 danger of the creepup of small errors, the iterative formation is
 turned off when a sufficiently tight convergence
 (|scf__incfock_convergence|, defaults to ``1e-5``) has been reached,
