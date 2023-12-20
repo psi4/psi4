@@ -151,55 +151,51 @@ void DirectJK::incfock_setup() {
     }
 }
 
+void DirectJK::add_reference_contribution() {
+    size_t njk = D_ao_.size();
+    for (size_t jki = 0; jki < njk; jki++) {
+        if (do_J_) J_ao_[jki]->add(J_reference_[jki]);
+        if (do_K_) K_ao_[jki]->add(K_reference_[jki]);
+        if (do_wK_) wK_ao_[jki]->add(wK_reference_[jki]);
+    }
+}
+
+void DirectJK::update_reference() {
+    // Update the reference density
+    D_reference_.clear();
+    for (auto const& Di : D_ao_) {
+        D_reference_.push_back(Di->clone());
+    }
+
+    // Update the reference J, K, and wK matrices
+    J_reference_.clear();
+    for (auto const& Ji : J_ao_) {
+        J_reference_.push_back(Ji->clone());
+    }
+    K_reference_.clear();
+    for (auto const& Ki : K_ao_) {
+        K_reference_.push_back(Ki->clone());
+    }
+    wK_reference_.clear();
+    for (auto const& wKi : wK_ao_) {
+        wK_reference_.push_back(wKi->clone());
+    }
+}
+
 void DirectJK::incfock_postiter() {
-    // Add in the reference J and K
+    size_t njk = D_ao_.size();
     if (do_incfock_iter_) {
-        size_t njk = D_ao_.size();
-        for (size_t jki = 0; jki < njk; jki++) {
-            if (do_J_) J_ao_[jki]->add(J_reference_[jki]);
-            if (do_K_) K_ao_[jki]->add(K_reference_[jki]);
-            if (do_wK_) wK_ao_[jki]->add(wK_reference_[jki]);
+        // Add in the reference J and K
+        add_reference_contribution();
+
+        // In the typical algorithm, we update the reference at every iteration.
+        if (not fixed_reference_) {
+            update_reference();
         }
 
-        // If we do the typical algorithm, we update the references
-        // here
-        if(not fixed_reference_) {
-          D_reference_.clear();
-          for (auto const& Di : D_ao_) {
-            D_reference_.push_back(Di->clone());
-          }
-
-          J_reference_.clear();
-          K_reference_.clear();
-          wK_reference_.clear();
-          for (size_t jki = 0; jki < njk; jki++) {
-            if (do_J_) J_ao_[jki]->add(J_reference_[jki]);
-            if (do_K_) K_ao_[jki]->add(K_reference_[jki]);
-            if (do_wK_) wK_ao_[jki]->add(wK_reference_[jki]);
-          }
-        }
-
-        // If we don't do incremental formation, we can update the reference
     } else {
-        // Save a copy of the density for the next iteration
-        D_reference_.clear();
-        for (auto const& Di : D_ao_) {
-            D_reference_.push_back(Di->clone());
-        }
-
-        // Save the J and K
-        J_reference_.clear();
-        for (auto const& Ji : J_ao_) {
-            J_reference_.push_back(Ji->clone());
-        }
-        K_reference_.clear();
-        for (auto const& Ki : K_ao_) {
-            K_reference_.push_back(Ki->clone());
-        }
-        wK_reference_.clear();
-        for (auto const& wKi : wK_ao_) {
-            wK_reference_.push_back(wKi->clone());
-        }
+        // We have not done an incremental build, so we just update the reference.
+        update_reference();
     }
 }
 

@@ -769,6 +769,11 @@ class PSI_API DirectJK : public JK {
     /// Delete integrals, files, etc
     void postiterations() override;
 
+    /// Add the reference contribution to the Fock matrix terms
+    void add_reference_contribution();
+    /// Update the reference terms
+    void update_reference();
+
     /// Set up Incfock variables per iteration
     void incfock_setup();
     /// Post-iteration Incfock processing
