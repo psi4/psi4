@@ -860,10 +860,10 @@ instead of the typical algorithm discussed above, if
 
 It has the following options
 
-  |scf__incfock|: Toggles incremental formation of the Fock matrix. Defaults to ``true``.
-  |scf__incfock_fixed_reference|: Chooses the algorithm: use a fixed reference Fock matrix instead of updating it every iteration? Defaults to ``false``.
-  |scf__incfock_full_fock_every|: The number of iterations between full rebuilds of the Fock matrix. Defaults to ``5``.
-  |scf__incfock_convergence|: The convergence threshold to turn off incremental formation of the Fock matrix. Defaults to ``1e-5``.
+.. include:: autodir_options_c/scf__incfock.rst
+.. include:: autodir_options_c/scf__incfock_fixed_reference.rst
+.. include:: autodir_options_c/scf__incfock_full_fock_every.rst
+.. include:: autodir_options_c/scf__incfock_convergence.rst
 
 .. _`sec:scfddfj`:
 
