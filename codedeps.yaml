@@ -429,7 +429,7 @@ data:
   - project: libint
     use:
       added: "1.0"
-      added_note: "Switched from Libint1 to C++11 intf of Libint2 at 1.4."
+      added_note: "Switched from Libint1 to C++11 intf of Libint2 at 1.4. Can use upstream Libint2 v2.8.0 at 1.9."
       required: true
       buildable: true
       buildtime: true
@@ -437,9 +437,8 @@ data:
     repository:
       host: github
       account: evaleev
-      #account: loriab  # TODO using evaleev for license but commit only at loriab
       name: libint
-      commit: 0eca57e
+      commit: v2.8.1
     #cmake:
     #  name: Libint2
     #  constraint:
@@ -467,11 +466,11 @@ data:
       constraint: null
       constraint_note: "v2.8.0 provides rt-switchable ordering (src) and derivative integrals (build)."
       aux_build_names:
-        - //psi4/label/testing::libint2
+        - //psi4::libint
         - libboost-headers
         - eigen
       aux_build_names_note:
-        "//psi4/label/testing::libint2": "Optionally for linux-64, an AM=7 build is available here."
+        "//psi4::libint": "Optionally for linux-64, an AM=7 build is available here."
       cmake:
         BOOST_ROOT:
           unix: ${CONDA_PREFIX}
@@ -1421,7 +1420,7 @@ data:
       channel: conda-forge
       name: einsums
       constraint: "=*=mkl*"
-      # todo: weird to be targeting the openblas einsums variant (instead of constraint: "=*=mkl*") but right now with blas-devel only for 2023 yet packages only for 2022 AND needing to find clas.h, this is the only way it will solve. also, tie einsums variant to libblas selection.
+      # todo: tie einsums variant to libblas selection, rather than mkl constraint above.
       aux_build_names:
         - range-v3
         - zlib

@@ -99,9 +99,8 @@ jobs:
         echo "  - psi4::gcp" >> env_p4env.yaml
         echo "  - psi4::dftd3" >> env_p4env.yaml
       fi
-      sed -i "s;- conda-forge/label/libint_dev;#- psi4/label/testing;g" env_p4env.yaml
-      #sed -i "s;- conda-forge/label/libint_dev;#- conda-forge/label/libint_dev;g" env_p4env.yaml
-      #sed -i "s;#- psi4/label/testing::libint2;- psi4/label/testing::libint=2.8.0dev2;g" env_p4env.yaml
+      sed -i "s;- libint;#- libint;g" env_p4env.yaml
+      sed -i "s;#- psi4::libint;- psi4::libint=2.8.1;g" env_p4env.yaml
       echo "  - einsums" >> env_p4env.yaml
       echo "  - range-v3" >> env_p4env.yaml
       echo "  - zlib" >> env_p4env.yaml

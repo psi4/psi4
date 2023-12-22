@@ -1733,4 +1733,16 @@ void export_mints(py::module& m) {
             return sho;
         },
         "The solid harmonics setting of Libint2 currently active for Psi4");
+
+    // when psi4 requires >=v2.8.0
+    // m.def("libint2_supports", [](const std::string& comp) { return libint2::supports(comp); },
+        "Whether the linked Libint2 supports a particular ordering or integral type/derivative/AM. Use maximally uniform AM for latter.");
+
+    // when L2 is pure cmake
+    // m.def("libint2_citation", []() {
+    //        const std::string cit = "    Version " + libint2::libint_version_string(true) + "\n    " +
+    //            "Edward F. Valeev, http://libint.valeyev.net/" + " (" + libint2::libint_reference_doi() + ")";
+    //        return cit;
+    //    },
+    //    "Citation blurb for Libint2");
 }
