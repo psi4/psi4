@@ -1736,7 +1736,7 @@ void export_mints(py::module& m) {
 
     // when psi4 requires >=v2.8.0
     // m.def("libint2_supports", [](const std::string& comp) { return libint2::supports(comp); },
-        "Whether the linked Libint2 supports a particular ordering or integral type/derivative/AM. Use maximally uniform AM for latter.");
+    //    "Whether the linked Libint2 supports a particular ordering or integral type/derivative/AM. Use maximally uniform AM for latter.");
 
     // when L2 is pure cmake
     // m.def("libint2_citation", []() {
