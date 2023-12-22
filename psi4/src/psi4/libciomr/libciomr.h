@@ -94,7 +94,8 @@ void tstop();
 PSI_API void zero_arr(double *a, int size);
 PSI_API void zero_mat(double **a, int rows, int cols);
 
-/* Functions in int_array.c */
+/* Functions from int_array.c */
+
 PSI_API int *init_int_array(int size);
 PSI_API void zero_int_array(int *a, int size);
 PSI_API int **init_int_matrix(int rows, int cols);
@@ -103,6 +104,7 @@ PSI_API void zero_int_matrix(int **array, int rows, int cols);
 PSI_API void print_int_mat(int **a, int m, int n, std::string out);
 
 /* Functions in long_int_array.c */
+
 PSI_API long int *init_long_int_array(int size);
 PSI_API void zero_long_int_array(long int *a, int size);
 PSI_API long int **init_long_int_matrix(int rows, int cols);

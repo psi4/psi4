@@ -55,9 +55,9 @@ namespace psi {
 **
 ** \param size = length of array to allocate
 **
-** Returns: pointer to new array
+** \returns pointer to new array
 **
-** C. David Sherrill
+** \author C. David Sherrill
 ** \ingroup CIOMR
 */
 PSI_API int *init_int_array(int size) {
