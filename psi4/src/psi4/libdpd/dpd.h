@@ -324,6 +324,8 @@ class PSI_API DPD {
 
     ~DPD();
 
+    int init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+             dpd_file4_cache_entry *priority, int num_subspaces, ...);
     void init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
              dpd_file4_cache_entry *priority, int num_subspaces, const std::vector<std::vector<int>>& spaceArrays);
 
