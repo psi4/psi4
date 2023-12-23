@@ -746,11 +746,7 @@ def process_input(raw_input: str, print_level: int = 1) -> str:
     else:
         psirc = ''
 
-    blank_mol = 'geometry("""\n'
-    blank_mol += '0 1\nH 0 0 0\nH 0.74 0 0\n'
-    blank_mol += '""","blank_molecule_psi4_yo")\n'
-
-    temp = imports + psirc + blank_mol + temp
+    temp = imports + psirc + temp
 
     # Move up the psi4.core namespace
     for func in dir(core):
