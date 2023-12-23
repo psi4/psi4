@@ -114,7 +114,9 @@ DPD::DPD()
       params4(nullptr) {}
 
 DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays) {
+         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays_in) {
+    std::vector<std::vector<int>> spaceArrays;
+    for (const auto& arr : spaceArrays_in) spaceArrays.emplace_back(arr, arr + nirreps);
     init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
 }
 
@@ -141,25 +143,6 @@ DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefil
     }
 
     init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
-}
-
-/* This is the original function call, but is now just a wrapper to the same function
- * that takes the spaces in a vector instead of using variable argument lists */
-int DPD::init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-              dpd_file4_cache_entry *priority, int num_subspaces, ...) {
-    std::vector<int *> spaceArrays;
-    va_list ap;
-    int *tmparray;
-
-    va_start(ap, num_subspaces);
-    for (int i = 0; i < num_subspaces; i++) {
-        tmparray = va_arg(ap, int *);
-        spaceArrays.push_back(tmparray);
-        tmparray = va_arg(ap, int *);
-        spaceArrays.push_back(tmparray);
-    }
-    va_end(ap);
-    return init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
 }
 
 /* This is the original function code, but modified to take a vector of the orbital
