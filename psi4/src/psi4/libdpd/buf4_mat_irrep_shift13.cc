@@ -36,6 +36,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/exception.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -57,7 +58,7 @@ int DPD::buf4_mat_irrep_shift13(dpdbuf4 *Buf, int buf_block) {
 
     if (Buf->shift.shift_type) {
         outfile->Printf("\n\tShift is already on! %d\n", Buf->shift.shift_type);
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Shift is already on! " + std::to_string(Buf->shift.shift_type));
     } else
         Buf->shift.shift_type = 13;
 

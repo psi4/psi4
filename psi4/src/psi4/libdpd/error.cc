@@ -34,13 +34,15 @@
 #include <cstdlib>
 #include "dpd.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
+
 namespace psi {
 
 void DPD::dpd_error(const char *caller, std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("Error in: %s\n", caller);
     dpd_close(dpd_default);
-    exit(PSI_RETURN_FAILURE);
+    throw PSIEXCEPTION("Error in: " + std::string(caller));
 }
 
 }  // namespace psi
