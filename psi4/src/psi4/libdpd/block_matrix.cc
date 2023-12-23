@@ -50,7 +50,7 @@
 ** zero-priority entries remain), there is still insufficient memory
 ** available to satisfy the request, a nullptr pointer is returned to the
 ** caller, indicating that either an out-of-core algorithm must be
-** used, or the caller must exit().
+** used, or the caller must throw PSIEXCEPTION("").
 **
 ** TDC, 6/24/00
 */
@@ -64,6 +64,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/exception.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -120,7 +121,10 @@ double **DPD::dpd_block_matrix(size_t n, size_t m) {
     if ((A = (double **)malloc(n * sizeof(double *))) == nullptr) {
         outfile->Printf("dpd_block_matrix: trouble allocating memory \n");
         outfile->Printf("n = %zd  m = %zd\n", n, m);
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION(
+            "dpd_block_matrix: trouble allocating memory \n"
+            "n = " + std::to_string(n) + " m = " + std::to_string(n)
+        );
     }
 
     /* Allocate the main block here */
