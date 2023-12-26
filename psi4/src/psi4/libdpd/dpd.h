@@ -317,15 +317,15 @@ class PSI_API DPD {
     DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
     DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-        dpd_file4_cache_entry *priority, int num_subspaces, const std::vector<std::vector<int>>& spaceArrays);
-    DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<DPDMOSpace> &moSpaces);
     DPD();
 
     ~DPD();
 
-    void init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-             dpd_file4_cache_entry *priority, int num_subspaces, const std::vector<std::vector<int>>& spaceArrays);
+    int init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+             dpd_file4_cache_entry *priority, int num_subspaces, ...);
+    int init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+             dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
 
     void dpd_error(const char *caller, std::string out_fname);
 
@@ -527,8 +527,6 @@ extern DPD *dpd_list[2];
 extern PSI_API int dpd_set_default(int dpd_num);
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
-extern void dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-                    dpd_file4_cache_entry *priority, int num_subspaces, const std::vector<std::vector<int>>& spaceArrays);
 extern int dpd_close(int dpd_num);
 extern long int PSI_API dpd_memfree();
 extern void dpd_memset(long int memory);

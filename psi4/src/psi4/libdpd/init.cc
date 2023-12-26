@@ -73,16 +73,6 @@ extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, in
     return 0;
 }
 
-extern void dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-                    dpd_file4_cache_entry *priority, int num_subspaces, const std::vector<std::vector<int>>& spaceArrays) {
-    if (dpd_list[dpd_num])
-        throw PSIEXCEPTION("Attempting to initialize new DPD instance before the old one was freed.");
-    dpd_list[dpd_num] =
-        new DPD(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
-    dpd_default = dpd_num;
-    global_dpd_ = dpd_list[dpd_num];
-}
-
 extern int dpd_close(int dpd_num) {
     if (dpd_list[dpd_num] == 0) throw PSIEXCEPTION("Attempting to close a non-existent DPD instance.");
     delete dpd_list[dpd_num];
@@ -114,30 +104,24 @@ DPD::DPD()
       params4(nullptr) {}
 
 DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays_in) {
-    std::vector<std::vector<int>> spaceArrays;
-    for (const auto& arr : spaceArrays_in) spaceArrays.emplace_back(arr, arr + nirreps);
+         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays) {
     init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
-}
-
-DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-         dpd_file4_cache_entry *priority, int num_subspaces, const std::vector<std::vector<int>> &spaceArrays_in) {
-    init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays_in);
 }
 
 /* Another constructor to use new DPDMOSpaces for determining pair indices directly from strings */
 DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
          dpd_file4_cache_entry *priority, int num_subspaces, std::vector<DPDMOSpace> &spaces) {
-    std::vector<std::vector<int>> spaceArrays;
+    std::vector<int *> spaceArrays;
+    int *tmparray;
 
     for (int i = 0; i < num_subspaces; i++) {
-        if (spaces[i].orbPI().size() != spaces[i].nIrrep()) throw PSIEXCEPTION("Tried to construct DPD object from an inconsistent DPDMOSpace object: orbPI().size() != nIrrep()");
-        if (nirreps != spaces[i].nIrrep()) throw PSIEXCEPTION("Tried to construct DPD object with incompatible nirreps/spaces arguments: nirreps != spaces[" + std::to_string(i) + "].nIrrep()");
-        spaceArrays.emplace_back(spaces[i].orbPI());
+        tmparray = init_int_array(nirreps);
+        for (int j = 0; j < spaces[i].nIrrep(); j++) tmparray[j] = spaces[i].orbPI()[j];
+        spaceArrays.push_back(tmparray);
 
-        if (spaces[i].nOrb() != spaces[i].orbSym().size()) throw PSIEXCEPTION("Tried to construct DPD object from an inconsistent DPDMOSpace object: nOrb() != orbSym().size()");
-        if (nirreps != spaces[i].orbSym().size()) throw PSIEXCEPTION("Tried to construct DPD object with incompatible nirreps/spaces arguments: nirreps != spaces[" + std::to_string(i) + "].orbSym().size()");
-        spaceArrays.emplace_back(spaces[i].orbSym());
+        tmparray = init_int_array(spaces[i].nOrb());
+        for (int j = 0; j < spaces[i].nOrb(); j++) tmparray[j] = spaces[i].orbSym()[j];
+        spaceArrays.push_back(tmparray);
 
         moSpaces.push_back(spaces[i]);
     }
@@ -145,14 +129,34 @@ DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefil
     init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
 }
 
+/* This is the original function call, but is now just a wrapper to the same function
+ * that takes the spaces in a vector instead of using variable argument lists */
+int DPD::init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+              dpd_file4_cache_entry *priority, int num_subspaces, ...) {
+    std::vector<int *> spaceArrays;
+    va_list ap;
+    int *tmparray;
+
+    va_start(ap, num_subspaces);
+    for (int i = 0; i < num_subspaces; i++) {
+        tmparray = va_arg(ap, int *);
+        spaceArrays.push_back(tmparray);
+        tmparray = va_arg(ap, int *);
+        spaceArrays.push_back(tmparray);
+    }
+    va_end(ap);
+    return init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
+}
+
 /* This is the original function code, but modified to take a vector of the orbital
  * space information arrays, rather than a variable argument list; the former is
  * easier to construct for some code that creates an arbitrary number of spaces */
-void DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_in, int *cachefiles_in,
+int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_in, int *cachefiles_in,
               int **cachelist_in, dpd_file4_cache_entry *priority_in, int num_subspaces_in,
-              const std::vector<std::vector<int>>& spaceArrays_in) {
+              std::vector<int *> &spaceArrays_in) {
     int h, h0, h1, cnt, ***dp, l_irrep, r_irrep, p, q;
     int i, j, k, l, *count, offset1, offset2;
+    int *tmparray;
     dpdpair *pairs;
     int nump, nrows, Gp, offset;
 
@@ -190,20 +194,16 @@ void DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype
     numorbs = (int *)malloc(num_subspaces * sizeof(int));
     for (i = 0; i < num_subspaces; i++) {
         orbspi[i] = (int *)malloc(sizeof(int) * nirreps);
-        {
-            const std::vector<int>& tmparray = spaceArrays_in[2 * i];
-            for (j = 0; j < nirreps; j++) orbspi[i][j] = tmparray[j];
-        }
+        tmparray = spaceArrays_in[2 * i];
+        for (j = 0; j < nirreps; j++) orbspi[i][j] = tmparray[j];
 
         /* Compute the number of orbitals in this subspace */
         numorbs[i] = 0;
         for (h = 0; h < nirreps; h++) numorbs[i] += orbspi[i][h];
 
         orbsym[i] = (int *)malloc(sizeof(int) * numorbs[i]);
-        {
-            const std::vector<int>& tmparray = spaceArrays_in[2 * i + 1];
-            for (j = 0; j < numorbs[i]; j++) orbsym[i][j] = tmparray[j];
-        }
+        tmparray = spaceArrays_in[2 * i + 1];
+        for (j = 0; j < numorbs[i]; j++) orbsym[i][j] = tmparray[j];
     }
 
     /* Compute the orbital offset arrays */
@@ -690,6 +690,8 @@ void DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype
     /* Init the Cache Linked Lists */
     file2_cache_init();
     file4_cache_init();
+
+    return 0;
 }
 
 }  // namespace psi
