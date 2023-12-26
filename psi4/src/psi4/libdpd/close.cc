@@ -101,8 +101,6 @@ DPD::~DPD() {
 
     if (pairtot) free_int_matrix(pairtot);
 
-    if (numorbs) free(numorbs);
-
     if (params4) {
         for (i = 0; i < num_pairs; i++) free(params4[i]);
         free(params4);
