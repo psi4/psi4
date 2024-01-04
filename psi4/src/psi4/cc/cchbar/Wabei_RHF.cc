@@ -275,8 +275,7 @@ void Wabei_RHF() {
             coltot = F.params->coltot[h];
             if (coltot) maxrows = DPD_BIGNUM / coltot;
             if (maxrows < 1) {
-                outfile->Printf("\nWabei_RHF Error: A single row of ovvv > 2 GW.\n");
-                exit(PSI_RETURN_FAILURE);
+                throw std::runtime_error("\nWabei_RHF Error: A single row of ovvv > 2 GW.\n");
             } else
                 maxrows = DPD_BIGNUM;
             rowtot = F.params->rowtot[h];

@@ -34,6 +34,7 @@
 #include <cstdio>
 #include <cmath>
 #include <cstring>
+#include <sstream>
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libciomr/libciomr.h"
@@ -210,8 +211,9 @@ void precondition_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, double eval) {
                 ii = i * nocc + i;
 
                 if (!local.pairdom_len[ii]) {
-                    outfile->Printf("\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n", ii);
-                    exit(2);
+                    std::ostringstream oss;
+                    oss << "local_filter_T1: Pair ii = " << ii << "  is zero-length, which makes no sense.\n";
+                    throw std::logic_error(oss.str());
                 }
 
                 T1tilde = init_array(local.pairdom_len[ii]);

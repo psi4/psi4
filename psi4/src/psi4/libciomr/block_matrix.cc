@@ -80,18 +80,16 @@ namespace psi {
 
     A = new double *[n];
     if (A == nullptr) {
-        outfile->Printf("block_matrix: trouble allocating memory \n");
-        outfile->Printf("n = %ld\n", n);
-        throw PSIEXCEPTION("Could not allocate memory in block_matrix! Tried to allocate " +
-                           std::to_string(n * sizeof(double *)) + " bytes.");
+        std::ostringstream oss;
+        oss << "block_matrix: trouble allocating memory, n = " << n << "\n";
+        throw PSIEXCEPTION(oss.str());
     }
 
     B = new double[n * m];
     if (B == nullptr) {
-        outfile->Printf("block_matrix: trouble allocating memory \n");
-        outfile->Printf("m = %ld\n", m);
-        throw PSIEXCEPTION("Could not allocate memory in block_matrix! Tried to allocate " +
-                           std::to_string(n * m * sizeof(double)) + " bytes.");
+        std::ostringstream oss;
+        oss << "block_matrix: trouble allocating memory, n = " << n << " m = " << m << "\n";
+        throw PSIEXCEPTION(oss.str());
     }
     memset(static_cast<void *>(B), 0, m * n * sizeof(double));
 
@@ -112,9 +110,7 @@ namespace psi {
         size += page_offset; /* Adjust size with page_offset */
 
         if (mlock(addr, size)) { /* Lock the memory */
-            outfile->Printf("block_matrix: trouble locking memory \n");
-            fflush(stderr);
-            exit(PSI_RETURN_FAILURE);
+            throw std::runtime_error("block_matrix: trouble locking memory \n");
         }
 
         addr = (char *)A;
@@ -126,9 +122,7 @@ namespace psi {
         size += page_offset; /* Adjust size with page_offset */
 
         if (mlock(addr, size)) { /* Lock the memory */
-            outfile->Printf("block_matrix: trouble locking memory \n");
-            fflush(stderr);
-            exit(PSI_RETURN_FAILURE);
+            throw std::runtime_error("block_matrix: trouble locking memory \n");
         }
     }
 #endif

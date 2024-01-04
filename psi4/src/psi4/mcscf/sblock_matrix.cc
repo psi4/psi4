@@ -40,7 +40,8 @@ namespace mcscf {
 
 SBlockMatrix::SBlockMatrix() : block_matrix_(nullptr) {}
 
-SBlockMatrix::SBlockMatrix(std::string label, int nirreps, size_t*& rows_size, size_t*& cols_size) : block_matrix_(nullptr) {
+SBlockMatrix::SBlockMatrix(std::string label, int nirreps, size_t*& rows_size, size_t*& cols_size)
+    : block_matrix_(nullptr) {
     block_matrix_ = new BlockMatrix(label, nirreps, rows_size, cols_size);
     block_matrix_->add_reference();
 }
@@ -50,7 +51,8 @@ SBlockMatrix::SBlockMatrix(std::string label, int nirreps, int*& rows_size, int*
     block_matrix_->add_reference();
 }
 
-SBlockMatrix::SBlockMatrix(std::string label, int nirreps, vecint& rows_size, vecint& cols_size) : block_matrix_(nullptr) {
+SBlockMatrix::SBlockMatrix(std::string label, int nirreps, vecint& rows_size, vecint& cols_size)
+    : block_matrix_(nullptr) {
     block_matrix_ = new BlockMatrix(label, nirreps, rows_size, cols_size);
     block_matrix_->add_reference();
 }
@@ -135,9 +137,8 @@ double dot(SBlockMatrix& A, SBlockMatrix& B) {
 
 void SBlockMatrix::check(const char* cstr) {
     if (!is_allocated()) {
-        outfile->Printf("\n\n  Error: SBlockMatrix operation '%s' is using an uninitialized matrix", cstr);
-
-        exit(PSI_RETURN_FAILURE);
+        throw std::runtime_error("Error: SBlockMatrix operation '" + std::string(cstr) +
+                                 "' is using an uninitialized matrix\n");
     }
 }
 

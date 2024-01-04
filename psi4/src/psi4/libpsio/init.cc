@@ -48,7 +48,6 @@ std::shared_ptr<PSIO> _default_psio_lib_;
 std::shared_ptr<PSIOManager> _default_psio_manager_;
 std::string PSIO::default_namespace_;
 
-int PSIO::_error_exit_code_ = 1;
 psio_address PSIO_ZERO = {0, 0};
 
 PSIO::PSIO() {
@@ -62,7 +61,7 @@ PSIO::PSIO() {
     state_ = 1;
 
     if (psio_unit == nullptr) {
-      throw std::runtime_error("Error in PSIO_INIT()!\n");
+        throw std::runtime_error("Error in PSIO_INIT()!\n");
     }
 
     for (i = 0; i < PSIO_MAXUNIT; i++) {
@@ -114,14 +113,14 @@ int psio_init() {
         auto temp = std::make_shared<PSIO>();
         _default_psio_lib_ = temp;
         if (_default_psio_lib_ == 0) {
-          throw std::runtime_error("LIBPSIO::init() -- failed to allocate the memory\n");
+            throw std::runtime_error("LIBPSIO::init() -- failed to allocate the memory\n");
         }
     }
     if (_default_psio_manager_.get() == 0) {
         auto temp = std::make_shared<PSIOManager>();
         _default_psio_manager_ = temp;
         if (_default_psio_manager_ == 0) {
-          throw std::runtime_error("LIBPSIO::init() -- failed to allocate the memory\n");
+            throw std::runtime_error("LIBPSIO::init() -- failed to allocate the memory\n");
         }
     }
 

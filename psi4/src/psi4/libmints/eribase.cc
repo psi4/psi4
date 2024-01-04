@@ -1822,8 +1822,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
         else if (deriv_ == 2)
             init_libderiv12(&libderiv_, max_am, max_nprim, max_cart_);
     } catch (std::bad_alloc &e) {
-        outfile->Printf("Error allocating memory for libint/libderiv.\n");
-        exit(EXIT_FAILURE);
+        throw std::bad_alloc("Error allocating memory for libint/libderiv.\n" + e.what());
     }
     size_t size = INT_NCART(basis1()->max_am()) * INT_NCART(basis2()->max_am()) * INT_NCART(basis3()->max_am()) *
                   INT_NCART(basis4()->max_am());
@@ -1832,8 +1831,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
     try {
         tformbuf_ = new double[size];
     } catch (std::bad_alloc &e) {
-        outfile->Printf("Error allocating tformbuf_.\n%s\n", e.what());
-        exit(EXIT_FAILURE);
+        throw std::bad_alloc("Error allocating tformbuf_.\n" + e.what());
     }
     memset(tformbuf_, 0, sizeof(double) * size);
 
@@ -1844,8 +1842,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
         target_full_ = new double[size];
         target_ = target_full_;
     } catch (std::bad_alloc &e) {
-        outfile->Printf("Error allocating target_.\n%s\n", e.what());
-        exit(EXIT_FAILURE);
+        throw std::bad_alloc("Error allocating target_.\n" + e.what());
     }
     memset(target_, 0, sizeof(double) * size);
 
@@ -1853,8 +1850,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
         source_full_ = new double[size];
         source_ = source_full_;
     } catch (std::bad_alloc &e) {
-        outfile->Printf("Error allocating source_.\n%s\n", e.what());
-        exit(EXIT_FAILURE);
+        throw std::bad_alloc("Error allocating source_.\n" + e.what());
     }
     memset(source_, 0, sizeof(double) * size);
 
@@ -2056,10 +2052,10 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4) {
 
     // TODO: Check this!
     //	if (c1 == c2 && c1 == c3 && c1 && c4 && temp % 2 != 0) {
-    //#ifdef MINTS_TIMER
+    // #ifdef MINTS_TIMER
     //		timer_off("reorder");
     //		timer_off("ERI::compute_shell");
-    //#endif
+    // #endif
     //		return 0;
     //	}
 
@@ -3076,19 +3072,21 @@ Libint2TwoElectronInt::Libint2TwoElectronInt(const IntegralFactory *integral, in
 
     // Make sure there's enough space for the sieve generation.  This array is used to return an array of
     // zeros back to the caller if libint2 gave us nullptr, so the caller doesn't have to check.
-    size_t sieve_size =  std::max(
-                           basis1()->max_function_per_shell() * basis2()->max_function_per_shell() *
-                           basis1()->max_function_per_shell() * basis2()->max_function_per_shell(),
-                           basis3()->max_function_per_shell() * basis4()->max_function_per_shell() *
-                           basis3()->max_function_per_shell() * basis4()->max_function_per_shell());
-    size_t size = std::max((size_t) basis1()->max_function_per_shell() * basis2()->max_function_per_shell() *
-                           basis3()->max_function_per_shell() * basis4()->max_function_per_shell(), sieve_size);
+    size_t sieve_size = std::max(basis1()->max_function_per_shell() * basis2()->max_function_per_shell() *
+                                     basis1()->max_function_per_shell() * basis2()->max_function_per_shell(),
+                                 basis3()->max_function_per_shell() * basis4()->max_function_per_shell() *
+                                     basis3()->max_function_per_shell() * basis4()->max_function_per_shell());
+    size_t size = std::max((size_t)basis1()->max_function_per_shell() * basis2()->max_function_per_shell() *
+                               basis3()->max_function_per_shell() * basis4()->max_function_per_shell(),
+                           sieve_size);
     zero_vec_ = std::vector<double>(size, 0.0);
 }
 
 Libint2TwoElectronInt::Libint2TwoElectronInt(const Libint2TwoElectronInt &rhs)
-    : TwoBodyAOInt(rhs), schwarz_engine_(rhs.schwarz_engine_), braket_(rhs.braket_), use_shell_pairs_(rhs.use_shell_pairs_)
-{
+    : TwoBodyAOInt(rhs),
+      schwarz_engine_(rhs.schwarz_engine_),
+      braket_(rhs.braket_),
+      use_shell_pairs_(rhs.use_shell_pairs_) {
     pairs12_ = rhs.pairs12_;
     pairs34_ = rhs.pairs34_;
     zero_vec_ = rhs.zero_vec_;
@@ -3142,7 +3140,7 @@ void Libint2TwoElectronInt::common_init() {
 
     size_t npairs = shell_pairs_bra_.size();
     pairs12_.resize(npairs);
-//#pragma omp parallel for
+    // #pragma omp parallel for
     for (int pair = 0; pair < npairs; ++pair) {
         auto s1 = shell_pairs_bra_[pair].first;
         auto s2 = shell_pairs_bra_[pair].second;
@@ -3151,7 +3149,7 @@ void Libint2TwoElectronInt::common_init() {
     }
     npairs = shell_pairs_ket_.size();
     pairs34_.resize(npairs);
-//#pragma omp parallel for
+    // #pragma omp parallel for
     for (int pair = 0; pair < npairs; ++pair) {
         auto s3 = shell_pairs_ket_[pair].first;
         auto s4 = shell_pairs_ket_[pair].second;
@@ -3232,7 +3230,6 @@ size_t Libint2TwoElectronInt::compute_shell_deriv1(int s1, int s2, int s3, int s
     const auto &sh4 = bs4_->l2_shell(s4);
 
     libint2_wrapper1(sh1, sh2, sh3, sh4);
-
 
     size_t ntot = 0;
     bool none_computed = engines_[1].results()[0] == nullptr;
