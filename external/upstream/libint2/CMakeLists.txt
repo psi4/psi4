@@ -48,7 +48,7 @@ find_package(
      eri_c4_d2_l2              eri_c3_d2_l3 eri_c2_d2_l3
   )
 
-# If L2 v2.8.0 (1) exported CMake components and (2) libint2-config.cmake actually
+# If L2 v2.8.1 (1) exported CMake components and (2) libint2-config.cmake actually
 #   checked, the below is the new find_package call.
 #if (${MAX_AM_ERI} GREATER 8)
 #    set(amchar "llll")
@@ -63,7 +63,7 @@ find_package(
 #endif()
 #find_package(
 #  Libint2
-#  2.8.0
+#  2.8.1
 #  CONFIG
 #  COMPONENTS
 #    ss
