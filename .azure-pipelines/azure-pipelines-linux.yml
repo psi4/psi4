@@ -9,13 +9,13 @@ jobs:
   strategy:
     maxParallel: 8
     matrix:
-      gcc_10:
-        CXX_COMPILER: 'g++-10'
+      gcc_7:
+        CXX_COMPILER: 'g++-7'
         PYTHON_VER: '3.8'
-        C_COMPILER: 'gcc-10'
+        C_COMPILER: 'gcc-7'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran gcc-10 g++-10'
+        APT_INSTALL: 'gfortran gcc-7 g++-7'
         vmImage: 'ubuntu-20.04'
         PYTEST_MARKER_EXPR: "quick"
 
