@@ -182,8 +182,8 @@ find_package(
      eri_c4_d2_l2              eri_c3_d2_l3 eri_c2_d2_l3
   )
 get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
-get_property(Libint2_VERSION_ver TARGET Libint2::int2 PROPERTY Libint2_VERSION)
-get_property(Libint2_MAX_AM_ERI TARGET Libint2::int2 PROPERTY Libint2_MAX_AM_ERI)
+# defer until upstream provides full-dress targets get_property(Libint2_VERSION TARGET Libint2::int2 PROPERTY Libint2_VERSION)
+# defer until upstream provides full-dress targets get_property(Libint2_MAX_AM_ERI TARGET Libint2::int2 PROPERTY Libint2_MAX_AM_ERI)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint2_VERSION})")
 

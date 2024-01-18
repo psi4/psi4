@@ -1727,6 +1727,22 @@ void export_mints(py::module& m) {
         "Returns string with codes detailing the integral classes, angular momenta, and ordering \
         characteristics of the linked Libint2. Prefer the processed libint2_configuration function.");
 
-    m.def("_libint2_solid_harmonics_ordering", []() { return int(libint2::solid_harmonics_ordering()); },
-        "Libint2 SH setting");
+    m.def("libint2_solid_harmonics_ordering", []() {
+            const std::string SHOrderingsList[] = {"null", "Standard", "Gaussian"};
+            std::string sho = SHOrderingsList[int(libint2::solid_harmonics_ordering())];
+            return sho;
+        },
+        "The solid harmonics setting of Libint2 currently active for Psi4");
+
+    // when psi4 requires >=v2.8.0
+    // m.def("libint2_supports", [](const std::string& comp) { return libint2::supports(comp); },
+    //    "Whether the linked Libint2 supports a particular ordering or integral type/derivative/AM. Use maximally uniform AM for latter.");
+
+    // when L2 is pure cmake
+    // m.def("libint2_citation", []() {
+    //        const std::string cit = "    Version " + libint2::libint_version_string(true) + "\n    " +
+    //            "Edward F. Valeev, http://libint.valeyev.net/" + " (" + libint2::libint_reference_doi() + ")";
+    //        return cit;
+    //    },
+    //    "Citation blurb for Libint2");
 }
