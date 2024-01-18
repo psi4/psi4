@@ -80,7 +80,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
 #    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
-#                         qcelemental, qcengine, optking, simint, Libxc, IntegratorXX
+#                         qcelemental, qcengine, optking, simint, Libxc, IntegratorXX, ExchCXX, gauxc
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -120,6 +120,8 @@ option(ENABLE_ecpint "Enables libecpint for effective core potentials (ECP)" OFF
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
+option(ENABLE_gauxc "Enables use of GauXC density functional library" OFF)
+option(ENABLE_ExchCXX "Enables use of ExchCXX exchange computation library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
@@ -252,7 +254,11 @@ ExternalProject_Add(psi4-core
            libxc_external
            mdi_external
            brianqc_external
+           #highfive_external
            integratorxx_external
+           #exchcxx_external
+           gauxc_external
+ 
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -285,7 +291,10 @@ ExternalProject_Add(psi4-core
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
               -DENABLE_cppe=${ENABLE_cppe}
               -DENABLE_dkh=${ENABLE_dkh}
+              #-DENABLE_HighFive=${ENABLE_HighFive}
               -DENABLE_IntegratorXX=${ENABLE_IntegratorXX}
+              -DENABLE_gauxc=${ENABLE_gauxc}
+              #-DENABLE_ExchCXX=${ENABLE_ExchCXX}
               -DENABLE_ecpint=${ENABLE_ecpint}
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_Einsums=${ENABLE_Einsums}
@@ -311,7 +320,10 @@ ExternalProject_Add(psi4-core
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dmdi_DIR=${mdi_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
+              -DHighFive_DIR=${HighFive_DIR}
               -DIntegratorXX_DIR=${IntegratorXX_DIR}
+              -Dgauxc_DIR=${gauxc_DIR}
+              -DExchCXX_DIR=${ExchCXX_DIR}
               -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
               -DLibxc_DIR=${Libxc_DIR}
