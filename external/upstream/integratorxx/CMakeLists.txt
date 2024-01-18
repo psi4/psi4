@@ -1,10 +1,9 @@
-
 if(${ENABLE_IntegratorXX})
     find_package(IntegratorXX CONFIG)
 
     if(${IntegratorXX_FOUND})
         get_property(_loc TARGET IntegratorXX::IntegratorXX PROPERTY LOCATION)
-        message(STATUS "${Cyan}Found Integratxx${ColourReset}: ${_loc} (found version ${IntegratorXX_VERSION})")
+        message(STATUS "${Cyan}Found IntegratorXX${ColourReset}: ${_loc} (found version ${IntegratorXX_VERSION})")
         add_library(integratorxx_external INTERFACE)  # dummy
     else()
 
