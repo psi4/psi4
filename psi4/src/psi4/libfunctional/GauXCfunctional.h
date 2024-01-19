@@ -35,6 +35,7 @@
 #include <map>
 
 #include <gauxc/types.hpp>
+#include <gauxc/xc_integrator.hpp>
 
 /**
  * GauXC functional wrapper
