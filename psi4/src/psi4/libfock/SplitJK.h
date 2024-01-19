@@ -372,6 +372,8 @@ class PSI_API snLinK : public SplitJK {
     bool overlap_fitted_;
 
     // => Psi4 -> GauXC conversion functions <= // 
+    GauXC::Molecule psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule);
+    //GauXC::BasisSet psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset);
     Eigen::MatrixXd psi4_to_eigen_matrix(SharedMatrix psi4_matrix);
 
    public:
