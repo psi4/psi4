@@ -53,7 +53,24 @@ using namespace psi;
 
 namespace psi {
 
-// converts a Psi4::Matrix to an Eigen::Mat
+// convers a Psi4::Molecule object to a GauXC::Molecule object
+GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule) {
+    GauXC::Molecule gauxc_molecule;
+ 
+    // TODO: Check if Bohr/Angstrom conversion is needed
+    for (size_t iatom = 0; iatom != psi4_molecule->natom(); ++iatom) {
+        gauxc_molecule.emplace_back(
+            GauXC::AtomicNumber(psi4_molecule->true_atomic_number(iatom)), 
+            psi4_molecule->x(iatom),
+            psi4_molecule->y(iatom),
+            psi4_molecule->z(iatom)
+        );
+    }
+
+    return gauxc_molecule;
+}
+
+// converts a Psi4::Matrix to an Eigen::MatrixXd
 Eigen::MatrixXd snLinK::psi4_to_eigen_matrix(SharedMatrix psi4_matrix) {
     if (psi4_matrix->nirrep() != 1) {
         throw PSIEXCEPTION("Psi4:: Matrix must be in C1 symmetry to be transformed into Eigen::MatrixXd!");
@@ -77,6 +94,10 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     ex_ = std::make_unique<GauXC::ExecutionSpace>(GauXC::ExecutionSpace::Host); 
     rt_ = std::make_unique<GauXC::RuntimeEnvironment>(GAUXC_MPI_CODE(MPI_COMM_WORLD));
 
+    // convert Psi4 Molecule to GauXC molecule
+    gauxc_mol_ = psi4_to_gauxc_molecule(primary_->molecule());
+    // convert Psi4 basis set to GauXC basis set
+    
     // construct load balancer
     const std::string load_balancer_kernel = "Default";
     gauxc_load_balancer_factory_ = std::make_unique<GauXC::LoadBalancerFactory>(*ex_, load_balancer_kernel);
