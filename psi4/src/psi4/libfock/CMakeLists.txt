@@ -12,6 +12,7 @@ list(APPEND sources
   PKJK.cc
   PK_workers.cc
   PKmanagers.cc
+  snLinK.cc
   SplitJK.cc
   apps.cc
   cubature.cc
@@ -40,6 +41,18 @@ target_link_libraries(fock
     pybind11::headers
     Libint2::cxx  # for <libint2/config.h>
   )
+
+if(TARGET gauxc::gauxc)
+  target_include_directories(fock
+    PUBLIC
+      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
+      #/storage/home/hhive1/dpoole34/data/Codes/GauXC/include/ 
+    )
+  target_link_libraries(fock
+    PUBLIC 
+      gauxc::gauxc 
+    )
+endif()
 
 if(TARGET IntegratorXX::IntegratorXX)
   target_link_libraries(fock

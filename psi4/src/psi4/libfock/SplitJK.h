@@ -31,6 +31,16 @@
 
 #include <vector>
 
+#include <gauxc/types.hpp>
+
+#include <gauxc/xc_integrator.hpp>
+#include <gauxc/xc_integrator/impl.hpp>
+#include <gauxc/xc_integrator/integrator_factory.hpp>
+
+#include <gauxc/molecular_weights.hpp>
+
+#include <eigen3/Eigen/Core>
+
 #include "psi4/pragma.h"
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
@@ -299,6 +309,111 @@ class PSI_API COSK : public SplitJK {
     void set_grid(std::string current_grid) { current_grid_ = current_grid; };
     std::string get_grid() { return current_grid_; };
 };
+
+/**
+ * @brief constructs the K matrix using the GauXC implementation of the 
+ * seminumerical Linear Exchange (sn-LinK) algorithm, 
+ * described in XXX
+ * doi: XXX 
+ */
+class PSI_API snLinK : public SplitJK {
+
+    // => General GauXC settings <= // 
+    
+    // always executing on host (i.e., CPU) for now
+    std::unique_ptr<GauXC::ExecutionSpace> ex_;
+    std::unique_ptr<GauXC::RuntimeEnvironment> rt_; 
+    
+    // use Eigen for matrix inputs to GauXC
+    // perhaps this can be changed later
+    using matrix_type = Eigen::MatrixXd;
+
+    // => GauXC base objects <= //
+    // can convert from Psi4!
+
+    // TODO: enable Psi4 conversions to these: 
+    GauXC::Molecule gauxc_mol_;
+    GauXC::BasisSet<double> gauxc_primary_;
+     
+    // => Semi-Numerical Stuff <= //
+
+    /// snLinK grid (Psi4 format)
+    std::shared_ptr<DFTGrid> psi4_grid_;
+    /// snLinK grid (GauXC format)
+    std::shared_ptr<GauXC::MolGrid> gauxc_grid_;
+
+    /// GauXC "Load Balancer"
+    //const std::string load_balancer_kernel_; 
+    std::unique_ptr<GauXC::LoadBalancerFactory> gauxc_load_balancer_factory_;
+    //GauXC::LoadBalancer gauxc_load_balancer_;
+
+    /// GauXC "Weights Module"
+    //const std::string mol_weights_kernel_; 
+    std::unique_ptr<GauXC::MolecularWeightsFactory> gauxc_mol_weights_factory_;
+    //std::unique_ptr<GauXC::MolecularWeights> gauxc_mol_weights_;
+
+    /// GauXC integrator for actually performing snLinK
+    //const std::string integrator_input_type_; 
+    //const std::string integrator_kernel_; 
+    //const std::string reduction_kernel_; 
+    //const std::string lwd_kernel_;
+    //const std::string dummy_func_; // dummy functional for integrator; exact exchange is calculated regardless
+    //const ExchCXX::Functional dummy_func_; 
+    std::unique_ptr<GauXC::XCIntegratorFactory<matrix_type> > integrator_factory_;
+    GauXC::XCIntegrator<matrix_type> integrator_;
+  
+    // integral cutoff
+    double kscreen_;
+    // density element cutoff
+    double dscreen_;
+    // basis cutoff
+    double basis_tol_;
+    /// use overlap-fitted COSX algo?
+    bool overlap_fitted_;
+
+    // => Psi4 -> GauXC conversion functions <= // 
+    Eigen::MatrixXd psi4_to_eigen_matrix(SharedMatrix psi4_matrix);
+
+   public:
+    // => Constructors < = //
+
+    /**
+     * @param primary primary basis set for this system.
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     */
+    snLinK(std::shared_ptr<BasisSet> primary, Options& options);
+    /// Destructor
+    ~snLinK() override;
+
+    /// Build the exchange (K) matrix using COSX
+    /// primary reference is https://doi.org/10.1016/j.chemphys.2008.10.036
+    /// overlap fitting is discussed in https://doi.org/10.1063/1.3646921
+    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
+                 std::vector<std::shared_ptr<Matrix> >& G_comp,
+         std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
+
+    // => Knobs <= //
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    void print_header() const override;
+
+    /**
+    * Return number of ERI shell quartets computed during the SplitJK build process.
+    */
+    size_t num_computed_shells() override;
+
+    /**
+    * print name of method
+    */
+    std::string name() override { return "sn-LinK"; }
+};
+
+
 
 }
 
