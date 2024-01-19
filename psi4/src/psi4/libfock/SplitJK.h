@@ -37,6 +37,8 @@
 #include <gauxc/xc_integrator/impl.hpp>
 #include <gauxc/xc_integrator/integrator_factory.hpp>
 
+#include <gauxc/molgrid/defaults.hpp>
+
 #include <gauxc/molecular_weights.hpp>
 
 #include <eigen3/Eigen/Core>
@@ -340,7 +342,7 @@ class PSI_API snLinK : public SplitJK {
     /// snLinK grid (Psi4 format)
     std::shared_ptr<DFTGrid> psi4_grid_;
     /// snLinK grid (GauXC format)
-    std::shared_ptr<GauXC::MolGrid> gauxc_grid_;
+    std::unique_ptr<GauXC::MolGrid> gauxc_grid_;
 
     /// GauXC "Load Balancer"
     //const std::string load_balancer_kernel_; 
@@ -360,7 +362,7 @@ class PSI_API snLinK : public SplitJK {
     //const std::string dummy_func_; // dummy functional for integrator; exact exchange is calculated regardless
     //const ExchCXX::Functional dummy_func_; 
     std::unique_ptr<GauXC::XCIntegratorFactory<matrix_type> > integrator_factory_;
-    GauXC::XCIntegrator<matrix_type> integrator_;
+    std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_;
   
     // integral cutoff
     double kscreen_;
@@ -373,8 +375,11 @@ class PSI_API snLinK : public SplitJK {
 
     // => Psi4 -> GauXC conversion functions <= // 
     GauXC::Molecule psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule);
-    //GauXC::BasisSet psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset);
+    template<typename T> GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset);
+    //GauXC::MolGrid psi4_to_gauxc_grid();
+    void psi4_to_gauxc_grid();
     Eigen::MatrixXd psi4_to_eigen_matrix(SharedMatrix psi4_matrix);
+    void eigen_to_psi4_matrix(SharedMatrix psi4_matrix, const Eigen::MatrixXd& eigen_matrix);
 
    public:
     // => Constructors < = //
@@ -420,4 +425,5 @@ class PSI_API snLinK : public SplitJK {
 }
 
 #endif
+
 
