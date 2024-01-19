@@ -46,6 +46,21 @@ set_source_files_properties(
     COMPILE_FLAGS -O3
   )
 psi4_add_module(bin detci sources)
+
+if(TARGET gauxc::gauxc)
+  target_include_directories(detci
+    PUBLIC
+      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
+      #/storage/home/hhive1/dpoole34/data/Codes/GauXC/include/ 
+    )
+  target_link_libraries(detci
+    PUBLIC 
+      gauxc::gauxc 
+    )
+endif()
+
+
+
 target_link_libraries(detci
   PRIVATE
     pybind11::module
