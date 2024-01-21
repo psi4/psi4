@@ -35,6 +35,7 @@
 
 #include <cstdlib>
 #include <vector>
+#include <iostream>
 
 namespace psi {
 
@@ -82,6 +83,7 @@ PsiException::PsiException(std::string msg, const char *_file, int _line) noexce
 #endif
 
     msg_ = message.str();
+    std::cerr << msg_ << std::endl;
 }
 
 PsiException::PsiException(const PsiException &copy) noexcept

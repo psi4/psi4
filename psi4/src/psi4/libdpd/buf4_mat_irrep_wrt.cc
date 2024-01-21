@@ -35,6 +35,7 @@
 #include "psi4/libqt/qt.h"
 #include "dpd.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/exception.h"
 namespace psi {
 
 /* dpd_buf4_mat_irrep_wrt(): Writes an entire irrep from disk into a dpd
@@ -92,7 +93,7 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
     if (Buf->anti) {
         printf("\n\tCannot write antisymmetrized buffer\n");
         printf("\tback to original DPD file!\n");
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Cannot write antisymmetrized buffer back to original DPD file!");
     }
 
     if ((b_perm_pq == f_perm_pq) && (b_perm_rs == f_perm_rs) && (b_peq == f_peq) && (b_res == f_res))
@@ -104,7 +105,7 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
             method = 23;
         else {
             printf("\n\tInvalid second-level method!\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Invalid second-level method!");
         }
     } else if ((b_perm_pq == f_perm_pq) && (b_perm_rs != f_perm_rs) && (b_peq == f_peq)) {
         if (f_perm_rs && !b_perm_rs)
@@ -113,7 +114,7 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
             method = 33;
         else {
             printf("\n\tInvalid third-level method!\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Invalid third-level method!");
         }
     } else if ((b_perm_pq != f_perm_pq) && (b_perm_rs != f_perm_rs)) {
         if (f_perm_pq && !b_perm_pq) {
@@ -128,11 +129,11 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
                 method = 45;
         } else {
             printf("\n\tInvalid fourth-level method!\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Invalid fourth-level method!");
         }
     } else {
         printf("\n\tInvalid method in dpd_buf_mat_irrep_rd!\n");
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Invalid method in dpd_buf_mat_irrep_rd!");
     }
 
     switch (method) {
@@ -192,7 +193,7 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
         case 23: /* Unpack pq; no change in rs */
             /* I don't know if I'll ever use this, so I'll avoid it for now */
             printf("\n\tShould you be using method %d?\n", method);
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Should you be using method " + std::to_string(method) + "?");
             /* Prepare the output buffer for the output DPD file */
             file4_mat_irrep_row_init(&(Buf->file), irrep);
 
@@ -258,7 +259,7 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
         case 33: /* No change in pq; unpack rs */
             /* I'm not sure if I'll ever need this, so I'm removing it for now */
             printf("\n\tShould you be using method %d?\n", method);
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Should you be using method " + std::to_string(method) + "?");
             /* Prepare the output buffer for the output DPD file */
             file4_mat_irrep_row_init(&(Buf->file), irrep);
 
@@ -322,18 +323,18 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
             break;
         case 42: /* Pack pq; unpack rs */
             printf("\n\tHaven't programmed method 42 yet!\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Haven't programmed method 42 yet!");
 
             break;
         case 43: /* Unpack pq; pack rs */
             printf("\n\tHaven't programmed method 43 yet!\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Haven't programmed method 43 yet!");
 
             break;
         case 45: /* Unpack pq and rs */
             /* I'm not sure if I'll ever need this, so I'm removing it for now */
             printf("\n\tShould you be using method %d?\n", method);
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Should you be using method " + std::to_string(method) + "?");
             /* Prepare the output buffer for the output DPD file */
             file4_mat_irrep_row_init(&(Buf->file), irrep);
 
@@ -367,7 +368,7 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
             break;
         default: /* Error trapping */
             printf("\n\tInvalid switch case in dpd_buf_mat_irrep_rd!\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Invalid switch case in dpd_buf_mat_irrep_rd!");
             break;
     }
 

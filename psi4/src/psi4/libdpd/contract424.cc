@@ -36,6 +36,7 @@
 #include "psi4/libqt/qt.h"
 #include "dpd.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
 
 namespace psi {
 
@@ -95,7 +96,7 @@ int DPD::contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X, int sum_Y, 
         symlink = GY;
     } else {
         outfile->Printf("Junk Y index %d\n", sum_Y);
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Junk Y index " + std::to_string(sum_Y));
     }
 
     if ((sum_X == 1) || (sum_X == 2)) trans4_init(&Xt, X);

@@ -44,6 +44,7 @@
 #include "dpd.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
 // MKL Header
 #ifdef USING_LAPACK_MKL
 #include <mkl.h>
@@ -117,7 +118,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj, int d
     GS = SIjAb->file.my_irrep;
     if (GS != (GX3 ^ GW)) {
         outfile->Printf("problem with irreps in cc3_sigma_RHF()\n");
-        exit(1);
+        throw PSIEXCEPTION("problem with irreps in cc3_sigma_RHF()");
     }
 
     if (do_singles) {
