@@ -34,6 +34,7 @@ set {
     dft_radial_scheme em 
     snlink_radial_points 35
     snlink_spherical_points 110
+    snlink_use_gpu false 
     #print 7
     #debug 7
     #maxiter 4
