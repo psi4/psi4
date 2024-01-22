@@ -66,7 +66,7 @@ GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_mo
         auto x_coord = psi4_molecule->x(iatom);
         auto y_coord = psi4_molecule->y(iatom);
         auto z_coord = psi4_molecule->z(iatom);
-        outfile->Printf(" Atom #%i: %f, %f, %f\n", atomic_number, x_coord, y_coord, z_coord); 
+        outfile->Printf("  Atom #%i: %f, %f, %f\n", atomic_number, x_coord, y_coord, z_coord); 
         
         gauxc_molecule.emplace_back(GauXC::AtomicNumber(atomic_number), x_coord, y_coord, z_coord);
     }
@@ -81,7 +81,9 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
     using cart_array = typename GauXC::Shell<T>::cart_array;
 
     GauXC::BasisSet<T> gauxc_basisset;
-  
+ 
+    outfile->Printf("snLinK::psi4_to_gauxc_basisset\n");
+    outfile->Printf("------------------------------\n");
     for (size_t ishell = 0; ishell != psi4_basisset->nshell(); ++ishell) {
         auto psi4_shell = psi4_basisset->shell(ishell);
        
@@ -89,10 +91,14 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         prim_array alpha; 
         prim_array coeff;
 
+        outfile->Printf("  Shell #%i (AM %i): %i primitives\n", ishell, psi4_shell.am(), psi4_shell.nprimitive());
         //TODO: Ensure normalization is okay
+        // Maybe? We need to turn explicit normalization off for the Psi4-to-GauXC interface, since Psi4 
+        // basis set object contains normalized coefficients already
         for (size_t iprim = 0; iprim != psi4_shell.nprimitive(); ++iprim) {
             alpha.at(iprim) = psi4_shell.exp(iprim);
             coeff.at(iprim) = psi4_shell.coef(iprim);
+            outfile->Printf("    Primitive #%i: %f, %f\n", iprim, psi4_shell.exp(iprim), psi4_shell.coef(iprim));
         }
 
         auto psi4_shell_center = psi4_shell.center();
@@ -104,7 +110,8 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
             GauXC::SphericalType(!(psi4_shell.is_cartesian())),
             alpha,
             coeff,
-            center
+            center,
+            false // do not normalize shell via GauXC; it is normalized via Psi4
         );
     }
     
