@@ -21,16 +21,22 @@ molecule mol {
 }
 
 set {
-    scf_type dfdirj+cosx
+    scf_type dfdirj+snlink 
+    guess sad 
     df_scf_guess false
-    basis 6-31g(d) 
+    basis 6-31++g(d,p)
     e_convergence 1.0e-10
-    screening density
-    incfock true
+    screening schwarz
+    incfock true 
     ints_tolerance 1.0e-12
     linK_ints_tolerance 1.0e-12
+    snlink_pruning_scheme robust 
+    dft_radial_scheme em 
+    #print 7
+    #debug 7
+    #maxiter 4
 }
 
-linK_energy = energy('pbe0')
+linK_energy = energy('scf')
 psi4.compare_values(ref_energy, linK_energy, 8, "B3LYP Energy (using LinK algo)")
 compare(1, variable("SCF ITERATIONS") < 13.0, "LinK Incfock Efficient")

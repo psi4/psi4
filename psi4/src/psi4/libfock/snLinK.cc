@@ -53,6 +53,19 @@ using namespace psi;
 
 namespace psi {
 
+// creates maps for translating Psi4 option inputs to GauXC enums
+void snLinK::generate_enum_mappings() {
+    // generate map for grid pruning schemes 
+    pruning_scheme_map_["ROBUST"] = GauXC::PruningScheme::Robust;
+    pruning_scheme_map_["TREUTLER"] = GauXC::PruningScheme::Treutler;
+    pruning_scheme_map_["NONE"] = GauXC::PruningScheme::Unpruned;
+
+    // generate map for radial quadrature schemes 
+    radial_scheme_map_["TREUTLER"] = GauXC::RadialQuad::TreutlerAldrichs;
+    radial_scheme_map_["MURA"] = GauXC::RadialQuad::MuraKnowles;
+    radial_scheme_map_["EM"] = GauXC::RadialQuad::MurrayHandyLaming; //TODO: confirm the correctness of this specific mapping
+}
+
 // converts a Psi4::Molecule object to a GauXC::Molecule object
 GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule) {
     GauXC::Molecule gauxc_molecule;
@@ -116,7 +129,7 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
     }
     
     for (auto& sh : gauxc_basisset) {
-        sh.set_shell_tolerance(std::numeric_limits<double>::epsilon()); 
+        sh.set_shell_tolerance(basis_tol_); 
     }
 
     return std::move(gauxc_basisset);
@@ -130,7 +143,7 @@ void snLinK::psi4_to_gauxc_grid() {
 
     // create Psi4 grid  
     std::map<std::string, std::string> grid_str_options = {
-        {"DFT_PRUNING_SCHEME", options_.get_str("COSX_PRUNING_SCHEME")},
+        {"DFT_PRUNING_SCHEME", options_.get_str("SNLINK_PRUNING_SCHEME")},
         {"DFT_RADIAL_SCHEME",  "TREUTLER"},
         {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
         {"DFT_GRID_NAME",      ""},
@@ -138,14 +151,14 @@ void snLinK::psi4_to_gauxc_grid() {
     };
 
     std::map<std::string, int> grid_int_options = {
-        {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS_FINAL")},
-        {"DFT_RADIAL_POINTS",    options_.get_int("COSX_RADIAL_POINTS_FINAL")},
+        {"DFT_SPHERICAL_POINTS", options_.get_int("SNLINK_SPHERICAL_POINTS")},
+        {"DFT_RADIAL_POINTS",    options_.get_int("SNLINK_RADIAL_POINTS")},
         {"DFT_BLOCK_MIN_POINTS", 100},
         {"DFT_BLOCK_MAX_POINTS", 256},
     };
 
     std::map<std::string, double> grid_float_options = {
-        {"DFT_BASIS_TOLERANCE",   options_.get_double("COSX_BASIS_TOLERANCE")},
+        {"DFT_BASIS_TOLERANCE",   options_.get_double("SNLINK_BASIS_TOLERANCE")},
         {"DFT_BS_RADIUS_ALPHA",   1.0},
         {"DFT_PRUNING_ALPHA",     1.0},
         {"DFT_BLOCK_MAX_RADIUS",  3.0},
@@ -204,23 +217,57 @@ void snLinK::eigen_to_psi4_matrix(SharedMatrix psi4_matrix, const Eigen::MatrixX
 }
 
 snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primary, options) {
+   
+    // set Psi4-specific parameters
+    basis_tol_ = options.get_double("SNLINK_BASIS_TOLERANCE");
+
+    generate_enum_mappings();
+
+    // define and sanity-check grid pruning scheme
+    pruning_scheme_ = options_.get_str("SNLINK_PRUNING_SCHEME");
+    
+    std::array<std::string, 3> valid_pruning_schemes = { "ROBUST", "TREUTLER", "NONE" };
+    bool is_valid_pruning_scheme = std::any_of(
+      valid_pruning_schemes.cbegin(),
+      valid_pruning_schemes.cend(),
+      [&](std::string valid_pruning_scheme) { return pruning_scheme_.find(valid_pruning_scheme) != std::string::npos; }
+    );
+
+    if (!is_valid_pruning_scheme) {
+        throw PSIEXCEPTION("Invalid grid pruning scheme selected for snLinK! Please set SNLINK_PRUNING_SCHEME to either ROBUST, TREUTLER, or NONE.");
+    }
+
+    // define and sanity-check radial quadrature scheme
+    radial_scheme_ = options_.get_str("DFT_RADIAL_SCHEME");
+    
+    std::array<std::string, 3> valid_radial_schemes = { "TREUTLER", "MURA", "EM" };
+    bool is_valid_radial_scheme = std::any_of(
+      valid_radial_schemes.cbegin(),
+      valid_radial_schemes.cend(),
+      [&](std::string valid_radial_scheme) { return radial_scheme_.find(valid_radial_scheme) != std::string::npos; }
+    );
+
+    if (!is_valid_radial_scheme) {
+        throw PSIEXCEPTION("Invalid radial quadrature scheme selected for snLinK! Please set DFT_RADIAL_SCHEME to either TREUTLER, MURA, or EM.");
+    }
 
     // always executing on host (i.e., CPU) for now
     ex_ = std::make_unique<GauXC::ExecutionSpace>(GauXC::ExecutionSpace::Host); 
     rt_ = std::make_unique<GauXC::RuntimeEnvironment>(GAUXC_MPI_CODE(MPI_COMM_WORLD));
 
     // convert Psi4 fundamental quantities to GauXC 
-    gauxc_mol_ = psi4_to_gauxc_molecule(primary_->molecule());
-    gauxc_primary_ = psi4_to_gauxc_basisset<double>(primary_);
+    auto gauxc_mol_ = psi4_to_gauxc_molecule(primary_->molecule());
+    auto gauxc_primary_ = psi4_to_gauxc_basisset<double>(primary_);
     
     // create snLinK grid for GauXC
     //gauxc_grid_ = psi4_to_gauxc_grid();  
+    
     gauxc_grid_ = std::make_unique<GauXC::MolGrid>(
         GauXC::MolGridFactory::create_default_molgrid(
             gauxc_mol_, 
-            GauXC::PruningScheme::Robust,
+            pruning_scheme_map_[pruning_scheme_],
             GauXC::BatchSize(512), 
-            GauXC::RadialQuad::MuraKnowles, 
+            radial_scheme_map_[radial_scheme_], 
             GauXC::AtomicGridSizeDefault::UltraFineGrid
         )
     );
@@ -258,7 +305,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     integrator_ = integrator_factory_->get_shared_instance(dummy_func, *gauxc_load_balancer); 
 
     // sanity-check integrator
-    
+     
 }
 
 snLinK::~snLinK() {}
@@ -267,11 +314,11 @@ void snLinK::print_header() const {
     if (print_) {
         outfile->Printf("\n");
         outfile->Printf("  ==> snLinK: GauXC Semi-Numerical Linear Exchange K <==\n\n");
-
+        
         //outfile->Printf("    K Screening Cutoff: %11.0E\n", kscreen_);
         //outfile->Printf("    K Density Cutoff:   %11.0E\n", dscreen_);
-        //outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
-        //outfile->Printf("    K Overlap Fitting:  %11s\n", (overlap_fitted_ ? "Yes" : "No"));
+        //outfile->Printf("    K Grid Pruning Scheme:     %s\n", pruning_scheme_.c_str());
+        outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
     }
 }
 

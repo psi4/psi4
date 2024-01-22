@@ -1713,6 +1713,21 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do reduce numerical COSX errors with overlap fitting? !expert -*/
         options.add_bool("COSX_OVERLAP_FITTING", true);
 
+        /*- SUBSECTION snLinK Algorithm -*/
+
+        /*- Number of spherical points in initial snLinK grid. -*/
+        options.add_int("SNLINK_SPHERICAL_POINTS", 50);
+        /*- Number of radial points in initial snLinK grid. -*/
+        options.add_int("SNLINK_RADIAL_POINTS", 25);
+        /*- Screening criteria for integrals and intermediates in snLinK -*/
+        options.add_double("SNLINK_INTS_TOLERANCE", 1.0E-11);
+        /*- Screening criteria for shell-pair densities in snLinK !expert -*/
+        options.add_double("SNLINK_DENSITY_TOLERANCE", 1.0E-10);
+        /*- Screening criteria for basis function values on snLinK grids !expert -*/
+        options.add_double("SNLINK_BASIS_TOLERANCE", 1.0E-10);
+        /*- Pruning scheme for snLinK grids !expert -*/
+        options.add_str("SNLINK_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE");
+ 
         /*- SUBSECTION SAD Guess Algorithm -*/
 
         /*- The amount of SAD information to print to the output !expert -*/
