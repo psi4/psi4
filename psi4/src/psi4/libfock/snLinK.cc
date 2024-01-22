@@ -287,7 +287,14 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         auto K_eigen = integrator_->eval_exx(D_eigen);
 
         // convert result to Psi4 matrix
-        eigen_to_psi4_matrix(K[iD], K_eigen);
+        if (incfock_iter_) { 
+            auto delta_K = std::make_shared<Matrix>(K[iD]->nrow(), K[iD]->ncol());
+            eigen_to_psi4_matrix(delta_K, K_eigen);
+
+            K[iD]->add(delta_K);
+        } else {
+            eigen_to_psi4_matrix(K[iD], K_eigen);
+        }
     }
     
     return;
