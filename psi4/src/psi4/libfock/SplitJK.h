@@ -149,6 +149,10 @@ class PSI_API SplitJK {
     virtual std::string get_COSX_grid() {
         throw PSIEXCEPTION("SplitJK::get_COSX_grid was called, but COSX is not being used!");
     };
+
+    virtual void set_snLinK_incfock_iter(bool incfock_iter) {
+        throw PSIEXCEPTION("SplitJK::set_snLinK_incfock_iter was called, but snLinK is not being used!");
+    }
 };
 
 // ==> Start SplitJK Coulomb (J) Algorithms here <== //
@@ -380,6 +384,10 @@ class PSI_API snLinK : public SplitJK {
     Eigen::MatrixXd psi4_to_eigen_matrix(SharedMatrix psi4_matrix);
     void eigen_to_psi4_matrix(SharedMatrix psi4_matrix, const Eigen::MatrixXd& eigen_matrix);
 
+    // => other useful variables <= //
+    // are we doing an incremental Fock build this iteration?
+    bool incfock_iter_;
+
    public:
     // => Constructors < = //
 
@@ -412,9 +420,10 @@ class PSI_API snLinK : public SplitJK {
     * print name of method
     */
     std::string name() override { return "sn-LinK"; }
+
+    // setters and getters
+    void set_snLinK_incfock_iter(bool incfock_iter) override { incfock_iter_ = incfock_iter; }
 };
-
-
 
 }
 
