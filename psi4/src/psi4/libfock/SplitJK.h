@@ -331,9 +331,6 @@ class PSI_API snLinK : public SplitJK {
     using matrix_type = Eigen::MatrixXd;
 
     // => GauXC base objects <= //
-    // can convert from Psi4!
-
-    // TODO: enable Psi4 conversions to these: 
     GauXC::Molecule gauxc_mol_;
     GauXC::BasisSet<double> gauxc_primary_;
      
@@ -364,15 +361,6 @@ class PSI_API snLinK : public SplitJK {
     std::unique_ptr<GauXC::XCIntegratorFactory<matrix_type> > integrator_factory_;
     std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_;
   
-    // integral cutoff
-    double kscreen_;
-    // density element cutoff
-    double dscreen_;
-    // basis cutoff
-    double basis_tol_;
-    /// use overlap-fitted COSX algo?
-    bool overlap_fitted_;
-
     // => Psi4 -> GauXC conversion functions <= // 
     GauXC::Molecule psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule);
     template<typename T> GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset);
@@ -408,11 +396,6 @@ class PSI_API snLinK : public SplitJK {
     * type on output file
     */
     void print_header() const override;
-
-    /**
-    * Return number of ERI shell quartets computed during the SplitJK build process.
-    */
-    size_t num_computed_shells() override;
 
     /**
     * print name of method

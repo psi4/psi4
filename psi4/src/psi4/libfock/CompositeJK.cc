@@ -145,6 +145,10 @@ void CompositeJK::common_init() {
     // COSX
     } else if (k_type == "COSX") {
         k_algo_ = std::make_shared<COSK>(primary_, options_);
+
+    // sn-LinK (via GauXC) 
+    } else if (k_type == "SNLINK") {
+        k_algo_ = std::make_shared<snLinK>(primary_, options_);
     
     // No K algorithm specified in SCF_TYPE
     } else if (k_type == "NONE") {
