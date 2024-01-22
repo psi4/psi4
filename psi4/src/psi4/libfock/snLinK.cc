@@ -186,22 +186,11 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     basis_tol_ = options.get_double("SNLINK_BASIS_TOLERANCE");
 
     generate_enum_mappings();
-
-    // define and sanity-check grid pruning scheme
+    
     pruning_scheme_ = options_.get_str("SNLINK_PRUNING_SCHEME");
     
-    std::array<std::string, 3> valid_pruning_schemes = { "ROBUST", "TREUTLER", "NONE" };
-    bool is_valid_pruning_scheme = std::any_of(
-      valid_pruning_schemes.cbegin(),
-      valid_pruning_schemes.cend(),
-      [&](std::string valid_pruning_scheme) { return pruning_scheme_.find(valid_pruning_scheme) != std::string::npos; }
-    );
-
-    if (!is_valid_pruning_scheme) {
-        throw PSIEXCEPTION("Invalid grid pruning scheme selected for snLinK! Please set SNLINK_PRUNING_SCHEME to either ROBUST, TREUTLER, or NONE.");
-    }
-
     // define and sanity-check radial quadrature scheme
+    // sanity-checking needed because generalist DFT_RADIAL_SCHEME is used here
     radial_scheme_ = options_.get_str("DFT_RADIAL_SCHEME");
     
     std::array<std::string, 3> valid_radial_schemes = { "TREUTLER", "MURA", "EM" };
@@ -215,8 +204,15 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
         throw PSIEXCEPTION("Invalid radial quadrature scheme selected for snLinK! Please set DFT_RADIAL_SCHEME to either TREUTLER, MURA, or EM.");
     }
 
+    // define execution space
+    use_gpu_ = options_.get_bool("SNLINK_USE_GPU"); 
+    auto ex = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;  
+    // only running on host (i.e., GPU disabled) for the moment
+    if (ex == GauXC::ExecutionSpace::Device) {
+        throw PSIEXCEPTION("GauXC GPU support has not yet been implemented in Psi4!");
+    }
+   
     // always executing on host (i.e., CPU) for now
-    ex_ = std::make_unique<GauXC::ExecutionSpace>(GauXC::ExecutionSpace::Host); 
     rt_ = std::make_unique<GauXC::RuntimeEnvironment>(GAUXC_MPI_CODE(MPI_COMM_WORLD));
 
     // convert Psi4 fundamental quantities to GauXC 
@@ -241,12 +237,12 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     const std::string load_balancer_kernel = "Default";
     const size_t quad_pad_value = 1;
 
-    gauxc_load_balancer_factory_ = std::make_unique<GauXC::LoadBalancerFactory>(*ex_, load_balancer_kernel);
+    gauxc_load_balancer_factory_ = std::make_unique<GauXC::LoadBalancerFactory>(ex, load_balancer_kernel);
     std::shared_ptr<GauXC::LoadBalancer> gauxc_load_balancer = gauxc_load_balancer_factory_->get_shared_instance(*rt_, gauxc_mol_, *gauxc_grid_, gauxc_primary_, quad_pad_value);
     
     // construct weights module
     const std::string mol_weights_kernel = "Default";
-    gauxc_mol_weights_factory_ = std::make_unique<GauXC::MolecularWeightsFactory>(*ex_, mol_weights_kernel, GauXC::MolecularWeightsSettings{});
+    gauxc_mol_weights_factory_ = std::make_unique<GauXC::MolecularWeightsFactory>(ex, mol_weights_kernel, GauXC::MolecularWeightsSettings{});
     std::shared_ptr<GauXC::MolecularWeights> gauxc_mol_weights = gauxc_mol_weights_factory_->get_shared_instance();
 
     // apply partition weights
@@ -266,7 +262,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     ExchCXX::XCFunctional dummy_func = { ExchCXX::Backend::builtin, dummy_func_key, spin };  
    
     // actually construct integrator 
-    integrator_factory_ = std::make_unique<GauXC::XCIntegratorFactory<matrix_type> >(*ex_, integrator_input_type, integrator_kernel, lwd_kernel, reduction_kernel);
+    integrator_factory_ = std::make_unique<GauXC::XCIntegratorFactory<matrix_type> >(ex, integrator_input_type, integrator_kernel, lwd_kernel, reduction_kernel);
     integrator_ = integrator_factory_->get_shared_instance(dummy_func, *gauxc_load_balancer); 
 
     // sanity-check integrator
