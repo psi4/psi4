@@ -327,8 +327,17 @@ class PSI_API COSK : public SplitJK {
  */
 class PSI_API snLinK : public SplitJK {
 
+    // => general Psi4 settings <= //
+    // what grid pruning scheme is being used?
+    std::string pruning_scheme_;
+    // what radial quadrature scheme is being used?
+    std::string radial_scheme_;
+    // basis cutoff
+    double basis_tol_;
+    // are we doing an incremental Fock build this iteration?
+    bool incfock_iter_;
+
     // => General GauXC settings <= // 
-    
     // always executing on host (i.e., CPU) for now
     std::unique_ptr<GauXC::ExecutionSpace> ex_;
     std::unique_ptr<GauXC::RuntimeEnvironment> rt_; 
@@ -376,9 +385,11 @@ class PSI_API snLinK : public SplitJK {
     Eigen::MatrixXd psi4_to_eigen_matrix(SharedMatrix psi4_matrix);
     void eigen_to_psi4_matrix(SharedMatrix psi4_matrix, const Eigen::MatrixXd& eigen_matrix);
 
-    // => other useful variables <= //
-    // are we doing an incremental Fock build this iteration?
-    bool incfock_iter_;
+    // => Psi4 -> GauXC enum mappings <= //
+    std::unordered_map<std::string, GauXC::PruningScheme> pruning_scheme_map_; 
+    std::unordered_map<std::string, GauXC::RadialQuad> radial_scheme_map_; 
+    //std::unordered_map<std::string, GauXC::PruningScheme> execution_space_map; 
+    void generate_enum_mappings();
 
    public:
     // => Constructors < = //
