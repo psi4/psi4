@@ -328,12 +328,6 @@ class PSI_API COSK : public SplitJK {
 class PSI_API snLinK : public SplitJK {
 
     // => general Psi4 settings <= //
-    // what grid pruning scheme is being used?
-    std::string pruning_scheme_;
-    // what radial quadrature scheme is being used?
-    std::string radial_scheme_;
-    // basis cutoff
-    double basis_tol_;
     // are we doing an incremental Fock build this iteration?
     bool incfock_iter_;
 
@@ -352,10 +346,19 @@ class PSI_API snLinK : public SplitJK {
      
     // => Semi-Numerical Stuff <= //
 
-    /// snLinK grid (Psi4 format)
-    std::shared_ptr<DFTGrid> psi4_grid_;
     /// snLinK grid (GauXC format)
     std::unique_ptr<GauXC::MolGrid> gauxc_grid_;
+
+    // what grid pruning scheme is being used?
+    std::string pruning_scheme_;
+    // what radial quadrature scheme is being used?
+    std::string radial_scheme_;
+    // how many radial points for the grid?
+    size_t radial_points_; 
+    // how many spherical/angular points for the grid?
+    size_t spherical_points_; 
+    // basis cutoff
+    double basis_tol_;
 
     /// GauXC "Load Balancer"
     //const std::string load_balancer_kernel_; 
@@ -380,8 +383,6 @@ class PSI_API snLinK : public SplitJK {
     // => Psi4 -> GauXC conversion functions <= // 
     GauXC::Molecule psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule);
     template<typename T> GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset);
-    //GauXC::MolGrid psi4_to_gauxc_grid();
-    void psi4_to_gauxc_grid();
     Eigen::MatrixXd psi4_to_eigen_matrix(SharedMatrix psi4_matrix);
     void eigen_to_psi4_matrix(SharedMatrix psi4_matrix, const Eigen::MatrixXd& eigen_matrix);
 

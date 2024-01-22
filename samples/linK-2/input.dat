@@ -32,6 +32,8 @@ set {
     linK_ints_tolerance 1.0e-12
     snlink_pruning_scheme robust 
     dft_radial_scheme em 
+    snlink_radial_points 35
+    snlink_spherical_points 110
     #print 7
     #debug 7
     #maxiter 4
