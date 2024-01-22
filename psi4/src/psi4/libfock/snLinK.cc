@@ -57,17 +57,21 @@ namespace psi {
 GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule) {
     GauXC::Molecule gauxc_molecule;
  
-    // TODO: Check if Bohr/Angstrom conversion is needed
+    outfile->Printf("snLinK::psi4_to_gauxc_molecule\n");
+    outfile->Printf("------------------------------\n");
+    // TODO: Check if Bohr/Angstrom conversion is needed 
+    // Answer: Nope! 
     for (size_t iatom = 0; iatom != psi4_molecule->natom(); ++iatom) {
-        gauxc_molecule.emplace_back(
-            GauXC::AtomicNumber(psi4_molecule->true_atomic_number(iatom)), 
-            psi4_molecule->x(iatom),
-            psi4_molecule->y(iatom),
-            psi4_molecule->z(iatom)
-        );
+        auto atomic_number = psi4_molecule->true_atomic_number(iatom);
+        auto x_coord = psi4_molecule->x(iatom);
+        auto y_coord = psi4_molecule->y(iatom);
+        auto z_coord = psi4_molecule->z(iatom);
+        outfile->Printf(" Atom #%i: %f, %f, %f\n", atomic_number, x_coord, y_coord, z_coord); 
+        
+        gauxc_molecule.emplace_back(GauXC::AtomicNumber(atomic_number), x_coord, y_coord, z_coord);
     }
 
-    return gauxc_molecule;
+    return std::move(gauxc_molecule);
 }
 
 // converts a Psi4::BasisSet object to a GauXC::BasisSet object
@@ -108,7 +112,7 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         sh.set_shell_tolerance(std::numeric_limits<double>::epsilon()); 
     }
 
-    return gauxc_basisset;
+    return std::move(gauxc_basisset);
 }
 
 // create GauXC grid using Psi4 option parameters
@@ -219,15 +223,15 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     const size_t quad_pad_value = 1;
 
     gauxc_load_balancer_factory_ = std::make_unique<GauXC::LoadBalancerFactory>(*ex_, load_balancer_kernel);
-    GauXC::LoadBalancer gauxc_load_balancer = gauxc_load_balancer_factory_->get_instance(*rt_, gauxc_mol_, *gauxc_grid_, gauxc_primary_, quad_pad_value);
+    std::shared_ptr<GauXC::LoadBalancer> gauxc_load_balancer = gauxc_load_balancer_factory_->get_shared_instance(*rt_, gauxc_mol_, *gauxc_grid_, gauxc_primary_, quad_pad_value);
     
     // construct weights module
     const std::string mol_weights_kernel = "Default";
     gauxc_mol_weights_factory_ = std::make_unique<GauXC::MolecularWeightsFactory>(*ex_, mol_weights_kernel, GauXC::MolecularWeightsSettings{});
-    GauXC::MolecularWeights gauxc_mol_weights = gauxc_mol_weights_factory_->get_instance();
+    std::shared_ptr<GauXC::MolecularWeights> gauxc_mol_weights = gauxc_mol_weights_factory_->get_shared_instance();
 
     // apply partition weights
-    gauxc_mol_weights.modify_weights(gauxc_load_balancer);
+    gauxc_mol_weights->modify_weights(*gauxc_load_balancer);
     
     // set integrator options 
     const std::string integrator_input_type = "Replicated";
@@ -244,7 +248,10 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
    
     // actually construct integrator 
     integrator_factory_ = std::make_unique<GauXC::XCIntegratorFactory<matrix_type> >(*ex_, integrator_input_type, integrator_kernel, lwd_kernel, reduction_kernel);
-    integrator_ = integrator_factory_->get_shared_instance(dummy_func, gauxc_load_balancer); 
+    integrator_ = integrator_factory_->get_shared_instance(dummy_func, *gauxc_load_balancer); 
+
+    // sanity-check integrator
+    
 }
 
 snLinK::~snLinK() {}
@@ -252,7 +259,7 @@ snLinK::~snLinK() {}
 void snLinK::print_header() const {
     if (print_) {
         outfile->Printf("\n");
-        outfile->Printf("  ==> snLinK: Semi-Numerical Linear Exchange K <==\n\n");
+        outfile->Printf("  ==> snLinK: GauXC Semi-Numerical Linear Exchange K <==\n\n");
 
         //outfile->Printf("    K Screening Cutoff: %11.0E\n", kscreen_);
         //outfile->Printf("    K Density Cutoff:   %11.0E\n", dscreen_);
