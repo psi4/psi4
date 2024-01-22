@@ -1727,6 +1727,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SNLINK_BASIS_TOLERANCE", 1.0E-10);
         /*- Pruning scheme for snLinK grids !expert -*/
         options.add_str("SNLINK_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE");
+        /*- Use GPU for GauXC? -*/
+        options.add_bool("SNLINK_USE_GPU", false);
  
         /*- SUBSECTION SAD Guess Algorithm -*/
 
