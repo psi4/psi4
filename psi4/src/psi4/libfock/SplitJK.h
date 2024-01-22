@@ -330,10 +330,9 @@ class PSI_API snLinK : public SplitJK {
     // => general Psi4 settings <= //
     // are we doing an incremental Fock build this iteration?
     bool incfock_iter_;
-
     // => General GauXC settings <= // 
-    // always executing on host (i.e., CPU) for now
-    std::unique_ptr<GauXC::ExecutionSpace> ex_;
+    // are we running snLinK on GPUs?
+    bool use_gpu_; 
     std::unique_ptr<GauXC::RuntimeEnvironment> rt_; 
     
     // use Eigen for matrix inputs to GauXC
@@ -389,7 +388,6 @@ class PSI_API snLinK : public SplitJK {
     // => Psi4 -> GauXC enum mappings <= //
     std::unordered_map<std::string, GauXC::PruningScheme> pruning_scheme_map_; 
     std::unordered_map<std::string, GauXC::RadialQuad> radial_scheme_map_; 
-    //std::unordered_map<std::string, GauXC::PruningScheme> execution_space_map; 
     void generate_enum_mappings();
 
    public:
