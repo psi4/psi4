@@ -41,10 +41,11 @@
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include <unordered_set>
-#include <vector>
-#include <map>
 #include <algorithm>
+#include <map>
+#include <unordered_set>
+#include <variant>
+#include <vector>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -135,45 +136,6 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
     return std::move(gauxc_basisset);
 }
 
-// create GauXC grid using Psi4 option parameters
-// TODO: This! 
-//GauXC::MolGrid snLinK::psi4_to_gauxc_grid() {
-void snLinK::psi4_to_gauxc_grid() {
-    using atomic_grid_map = std::unordered_map< GauXC::AtomicNumber, GauXC::Grid >;
-
-    // create Psi4 grid  
-    std::map<std::string, std::string> grid_str_options = {
-        {"DFT_PRUNING_SCHEME", options_.get_str("SNLINK_PRUNING_SCHEME")},
-        {"DFT_RADIAL_SCHEME",  "TREUTLER"},
-        {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
-        {"DFT_GRID_NAME",      ""},
-        {"DFT_BLOCK_SCHEME",   "OCTREE"},
-    };
-
-    std::map<std::string, int> grid_int_options = {
-        {"DFT_SPHERICAL_POINTS", options_.get_int("SNLINK_SPHERICAL_POINTS")},
-        {"DFT_RADIAL_POINTS",    options_.get_int("SNLINK_RADIAL_POINTS")},
-        {"DFT_BLOCK_MIN_POINTS", 100},
-        {"DFT_BLOCK_MAX_POINTS", 256},
-    };
-
-    std::map<std::string, double> grid_float_options = {
-        {"DFT_BASIS_TOLERANCE",   options_.get_double("SNLINK_BASIS_TOLERANCE")},
-        {"DFT_BS_RADIUS_ALPHA",   1.0},
-        {"DFT_PRUNING_ALPHA",     1.0},
-        {"DFT_BLOCK_MAX_RADIUS",  3.0},
-        {"DFT_WEIGHTS_TOLERANCE", 1e-15},
-    };
-
-    psi4_grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_int_options, grid_str_options, grid_float_options, options_);
-
-    // interpret Psi4 options for GauXC
-    atomic_grid_map atom_grids; 
-    
-    //std::unique_ptr<GauXC::MolGrid> gauxc_molgrid;
-    return;
-}
-
 // converts a Psi4::Matrix to an Eigen::MatrixXd
 Eigen::MatrixXd snLinK::psi4_to_eigen_matrix(SharedMatrix psi4_matrix) {
     // Sanity checks
@@ -219,6 +181,8 @@ void snLinK::eigen_to_psi4_matrix(SharedMatrix psi4_matrix, const Eigen::MatrixX
 snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primary, options) {
    
     // set Psi4-specific parameters
+    radial_points_ = options_.get_int("SNLINK_RADIAL_POINTS");
+    spherical_points_ = options_.get_int("SNLINK_SPHERICAL_POINTS");
     basis_tol_ = options.get_double("SNLINK_BASIS_TOLERANCE");
 
     generate_enum_mappings();
@@ -268,7 +232,8 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
             pruning_scheme_map_[pruning_scheme_],
             GauXC::BatchSize(512), 
             radial_scheme_map_[radial_scheme_], 
-            GauXC::AtomicGridSizeDefault::UltraFineGrid
+            GauXC::RadialSize(radial_points_),
+            GauXC::AngularSize(spherical_points_)
         )
     );
   
@@ -315,10 +280,13 @@ void snLinK::print_header() const {
         outfile->Printf("\n");
         outfile->Printf("  ==> snLinK: GauXC Semi-Numerical Linear Exchange K <==\n\n");
         
-        //outfile->Printf("    K Screening Cutoff: %11.0E\n", kscreen_);
-        //outfile->Printf("    K Density Cutoff:   %11.0E\n", dscreen_);
-        //outfile->Printf("    K Grid Pruning Scheme:     %s\n", pruning_scheme_.c_str());
+        outfile->Printf("    K Grid Radial Points: %i\n", radial_points_);
+        outfile->Printf("    K Grid Spherical/Angular Points: %i\n", spherical_points_);
         outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
+        if (debug_) {
+          outfile->Printf("    (Debug) K Grid Pruning Scheme:     %s\n", pruning_scheme_.c_str());
+          outfile->Printf("    (Debug) K Radial Quadrature Scheme:     %s\n", radial_scheme_.c_str());
+        }
     }
 }
 
