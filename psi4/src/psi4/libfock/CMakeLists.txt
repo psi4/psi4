@@ -25,16 +25,6 @@ list(APPEND sources
   wrapper.cc
   )
 
-if(TARGET gauxc::gauxc)
-  list(APPEND sources
-    snLinK.cc
-  )
-else()
-  list(APPEND sources
-    snLinK_stub.cc
-  )
-endif()
-
 psi4_add_module(lib fock sources)
 
 target_compile_definitions(fock
@@ -44,14 +34,6 @@ target_compile_definitions(fock
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
 
-if(TARGET gauxc::gauxc)
-  target_compile_definitions(fock
-    PRIVATE
-      "restrict=${RESTRICT_KEYWORD}"
-      $<$<BOOL:${ENABLE_GAUXC}>:ENABLE_GAUXC>
-    )
-endif()
-
 target_link_libraries(fock
   PRIVATE
     gau2grid::gg
@@ -60,6 +42,19 @@ target_link_libraries(fock
   )
 
 if(TARGET gauxc::gauxc)
+  target_sources(fock
+    PRIVATE
+      snLinK.cc
+    )
+  target_compile_definitions(fock
+    PUBLIC
+      USING_gauxc
+    )
+  #target_compile_definitions(fock
+  #  PRIVATE
+  #    "restrict=${RESTRICT_KEYWORD}"
+  #    $<$<BOOL:${ENABLE_GAUXC}>:ENABLE_GAUXC>
+  #  )
   target_include_directories(fock
     PUBLIC
       $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
@@ -68,6 +63,11 @@ if(TARGET gauxc::gauxc)
   target_link_libraries(fock
     PUBLIC 
       gauxc::gauxc 
+    )
+else()
+  target_sources(fock
+    PRIVATE
+      snLinK_stub.cc
     )
 endif()
 

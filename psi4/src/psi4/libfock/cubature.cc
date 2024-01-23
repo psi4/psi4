@@ -29,7 +29,7 @@
 #include "cubature.h"
 #include "gridblocker.h"
 
-#include <integratorxx/quadrature.hpp>
+//#include <integratorxx/quadrature.hpp>
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
