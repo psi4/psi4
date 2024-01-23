@@ -31,17 +31,19 @@
 
 #include <vector>
 
-#include <gauxc/types.hpp>
+#ifdef ENABLE_GAUXC
+  #include <gauxc/types.hpp>
 
-#include <gauxc/xc_integrator.hpp>
-#include <gauxc/xc_integrator/impl.hpp>
-#include <gauxc/xc_integrator/integrator_factory.hpp>
+  #include <gauxc/xc_integrator.hpp>
+  #include <gauxc/xc_integrator/impl.hpp>
+  #include <gauxc/xc_integrator/integrator_factory.hpp>
 
-#include <gauxc/molgrid/defaults.hpp>
+  #include <gauxc/molgrid/defaults.hpp>
 
-#include <gauxc/molecular_weights.hpp>
+  #include <gauxc/molecular_weights.hpp>
 
-#include <eigen3/Eigen/Core>
+  #include <eigen3/Eigen/Core>
+#endif
 
 #include "psi4/pragma.h"
 PRAGMA_WARNING_PUSH
@@ -319,6 +321,7 @@ class PSI_API COSK : public SplitJK {
     std::string get_grid() { return current_grid_; };
 };
 
+
 /**
  * @brief constructs the K matrix using the GauXC implementation of the 
  * seminumerical Linear Exchange (sn-LinK) algorithm, 
@@ -326,10 +329,11 @@ class PSI_API COSK : public SplitJK {
  * doi: XXX 
  */
 class PSI_API snLinK : public SplitJK {
-
     // => general Psi4 settings <= //
     // are we doing an incremental Fock build this iteration?
     bool incfock_iter_;
+
+  #ifdef ENABLE_GAUXC
     // => General GauXC settings <= // 
     // are we running snLinK on GPUs?
     bool use_gpu_; 
@@ -389,7 +393,8 @@ class PSI_API snLinK : public SplitJK {
     std::unordered_map<std::string, GauXC::PruningScheme> pruning_scheme_map_; 
     std::unordered_map<std::string, GauXC::RadialQuad> radial_scheme_map_; 
     void generate_enum_mappings();
-
+   #endif
+   
    public:
     // => Constructors < = //
 
