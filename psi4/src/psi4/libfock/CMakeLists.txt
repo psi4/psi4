@@ -12,7 +12,6 @@ list(APPEND sources
   PKJK.cc
   PK_workers.cc
   PKmanagers.cc
-  snLinK.cc
   SplitJK.cc
   apps.cc
   cubature.cc
@@ -26,6 +25,16 @@ list(APPEND sources
   wrapper.cc
   )
 
+if(TARGET gauxc::gauxc)
+  list(APPEND sources
+    snLinK.cc
+  )
+else()
+  list(APPEND sources
+    snLinK_stub.cc
+  )
+endif()
+
 psi4_add_module(lib fock sources)
 
 target_compile_definitions(fock
@@ -34,6 +43,14 @@ target_compile_definitions(fock
     $<$<BOOL:${ENABLE_GTFOCK}>:ENABLE_GTFOCK>
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
+
+if(TARGET gauxc::gauxc)
+  target_compile_definitions(fock
+    PRIVATE
+      "restrict=${RESTRICT_KEYWORD}"
+      $<$<BOOL:${ENABLE_GAUXC}>:ENABLE_GAUXC>
+    )
+endif()
 
 target_link_libraries(fock
   PRIVATE
