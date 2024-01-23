@@ -31,7 +31,7 @@
 
 #include <vector>
 
-#ifdef ENABLE_GAUXC
+#ifdef USING_gauxc
   #include <gauxc/types.hpp>
 
   #include <gauxc/xc_integrator.hpp>
@@ -333,7 +333,7 @@ class PSI_API snLinK : public SplitJK {
     // are we doing an incremental Fock build this iteration?
     bool incfock_iter_;
 
-  #ifdef ENABLE_GAUXC
+  #ifdef USING_gauxc
     // => General GauXC settings <= // 
     // are we running snLinK on GPUs?
     bool use_gpu_; 
@@ -393,9 +393,9 @@ class PSI_API snLinK : public SplitJK {
     std::unordered_map<std::string, GauXC::PruningScheme> pruning_scheme_map_; 
     std::unordered_map<std::string, GauXC::RadialQuad> radial_scheme_map_; 
     void generate_enum_mappings();
-   #endif
+  #endif
    
-   public:
+  public:
     // => Constructors < = //
 
     /**
