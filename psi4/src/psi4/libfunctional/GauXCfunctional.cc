@@ -26,6 +26,8 @@
  * @END LICENSE
  */
 
+#ifdef ENABLE_GAUXC
+
 #include "functional.h"
 #include "GauXCfunctional.h"
 
@@ -65,3 +67,5 @@ void GauXCFunctional::compute_functional(const std::map<std::string, SharedVecto
 }
 
 }  // namespace psi
+
+#endif

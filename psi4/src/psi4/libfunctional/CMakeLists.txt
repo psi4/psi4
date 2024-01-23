@@ -5,9 +5,26 @@ list(APPEND sources
   functional.cc
   superfunctional.cc
   )
+
+if(TARGET gauxc::gauxc)
+  list(APPEND sources
+    GauXCfunctional.cc
+  )
+endif()
+
+
 psi4_add_module(lib functional sources)
+
 target_link_libraries(functional
   PUBLIC
     Libxc::xc
-    gauxc::gauxc
   )
+
+if(TARGET gauxc::gauxc)
+  target_link_libraries(fock
+    PUBLIC 
+      gauxc::gauxc 
+    )
+endif()
+
+
