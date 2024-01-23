@@ -105,7 +105,9 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         prim_array alpha; 
         prim_array coeff;
 
-        outfile->Printf("  Shell #%i (AM %i): %i primitives\n", ishell, psi4_shell.am(), psi4_shell.nprimitive());
+        outfile->Printf("  ");
+        outfile->Printf("%s", (psi4_shell.is_cartesian()) ? "Cartesian" : "Spherical");
+        outfile->Printf(" Shell #%i (AM %i): %i primitives\n", ishell, psi4_shell.am(), psi4_shell.nprimitive());
         //TODO: Ensure normalization is okay
         // Maybe? We need to turn explicit normalization off for the Psi4-to-GauXC interface, since Psi4 
         // basis set object contains normalized coefficients already
@@ -122,6 +124,7 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
             nprim, 
             GauXC::AngularMomentum(psi4_shell.am()), //TODO: check if am() is 0-indexed
             GauXC::SphericalType(!(psi4_shell.is_cartesian())),
+            //GauXC::SphericalType(false),
             alpha,
             coeff,
             center,
@@ -297,6 +300,11 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         auto D_eigen = psi4_to_eigen_matrix(D[iD]);    
         auto K_eigen = integrator_->eval_exx(D_eigen);
 
+        //Eigen::IOFormat HeavyFmt(Eigen::FullPrecision, 0, ", ", ";\n", "[", "]", "[", "]");
+       
+        //auto K_eigen_block = K_eigen.block<20, 20>(0, 0); 
+        //std::cout << K_eigen_block.format(HeavyFmt) << std::endl;
+ 
         // convert result to Psi4 matrix
         if (incfock_iter_) { 
             auto delta_K = std::make_shared<Matrix>(K[iD]->nrow(), K[iD]->ncol());
