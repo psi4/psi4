@@ -29,6 +29,8 @@
 #ifndef GauXC_FUNCTIONAL_H
 #define GauXC_FUNCTIONAL_H
 
+#ifdef ENABLE_GAUXC
+
 #include "psi4/libfunctional/functional.h"
 #include "psi4/libmints/typedefs.h"
 
@@ -60,5 +62,7 @@ class GauXCFunctional : public Functional {
 
 };
 }  // namespace psi
+
+#endif 
 
 #endif
