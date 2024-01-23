@@ -26,6 +26,6 @@ set {
     #maxiter 2
 }
 
-linK_energy = energy('scf')
+linK_energy = energy('b3lyp')
 psi4.compare_values(ref_energy, linK_energy, 9, "HF Energy (Using LinK algo)")
 compare(1, variable("SCF ITERATIONS") < 12.0, "LinK Incfock Efficient")

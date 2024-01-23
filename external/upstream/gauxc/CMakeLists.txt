@@ -1,4 +1,7 @@
 if(${ENABLE_gauxc})
+    if(${psi4_SHGAUSS_ORDERING} STREQUAL gaussian)
+        message(FATAL_ERROR "Psi4 with the GauXC interface must be compiled using psi4_SHGAUSS_ORDERING=standard.")
+    endif()
     #list(PREPEND CMAKE_PREFIX_PATH ${gauxc_DIR}/../_deps/exchcxx-build/src)
     
     #message("${CMAKE_MODULE_PATH}")
@@ -44,11 +47,10 @@ if(${ENABLE_gauxc})
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                       # OpenMP relevant but always ON and handled by gauxc
-                       # xHost handled through SIMINT_VECTOR. default sse equiv to XHOST=OFF
                        -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+                       -DGAUXC_ENABLE_CUDA=${gauxc_ENABLE_GPU}
                        -DGAUXC_ENABLE_MPI=OFF
                        -DGAUXC_ENABLE_TESTS=OFF
                        -DGAUXC_ENABLE_HDF5=OFF
