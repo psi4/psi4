@@ -221,18 +221,19 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     }
    
     // always executing on host (i.e., CPU) for now
-    rt_ = std::make_unique<GauXC::RuntimeEnvironment>(GAUXC_MPI_CODE(MPI_COMM_WORLD));
+    auto rt = GauXC::RuntimeEnvironment( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
 
     // convert Psi4 fundamental quantities to GauXC 
-    auto gauxc_mol_ = psi4_to_gauxc_molecule(primary_->molecule());
-    auto gauxc_primary_ = psi4_to_gauxc_basisset<double>(primary_);
+    auto gauxc_mol = psi4_to_gauxc_molecule(primary_->molecule());
+    auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_);
     
     // create snLinK grid for GauXC
     //gauxc_grid_ = psi4_to_gauxc_grid();  
     
+   /*
     gauxc_grid_ = std::make_unique<GauXC::MolGrid>(
         GauXC::MolGridFactory::create_default_molgrid(
-            gauxc_mol_, 
+            gauxc_mol, 
             pruning_scheme_map_[pruning_scheme_],
             GauXC::BatchSize(512), 
             radial_scheme_map_[radial_scheme_], 
@@ -240,13 +241,22 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
             GauXC::AngularSize(spherical_points_)
         )
     );
+    */
+    auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
+        gauxc_mol, 
+        pruning_scheme_map_[pruning_scheme_],
+        GauXC::BatchSize(512), 
+        radial_scheme_map_[radial_scheme_], 
+        GauXC::RadialSize(radial_points_),
+        GauXC::AngularSize(spherical_points_)
+    );
   
     // construct load balancer
     const std::string load_balancer_kernel = "Default";
     const size_t quad_pad_value = 1;
 
     gauxc_load_balancer_factory_ = std::make_unique<GauXC::LoadBalancerFactory>(ex, load_balancer_kernel);
-    std::shared_ptr<GauXC::LoadBalancer> gauxc_load_balancer = gauxc_load_balancer_factory_->get_shared_instance(*rt_, gauxc_mol_, *gauxc_grid_, gauxc_primary_, quad_pad_value);
+    std::shared_ptr<GauXC::LoadBalancer> gauxc_load_balancer = gauxc_load_balancer_factory_->get_shared_instance(rt, gauxc_mol, gauxc_grid, gauxc_primary, quad_pad_value);
     
     // construct weights module
     const std::string mol_weights_kernel = "Default";
