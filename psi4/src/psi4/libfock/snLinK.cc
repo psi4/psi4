@@ -43,6 +43,7 @@
 
 #include <algorithm>
 #include <map>
+#include <tuple>
 #include <unordered_set>
 #include <variant>
 #include <vector>
@@ -55,19 +56,28 @@ using namespace psi;
 namespace psi {
 
 // creates maps for translating Psi4 option inputs to GauXC enums
-void snLinK::generate_enum_mappings() {
+std::tuple<
+    std::unordered_map<std::string, GauXC::PruningScheme>, 
+    std::unordered_map<std::string, GauXC::RadialQuad> 
+> snLinK::generate_enum_mappings() {
     // generate map for grid pruning schemes 
-    pruning_scheme_map_["ROBUST"] = GauXC::PruningScheme::Robust;
-    pruning_scheme_map_["TREUTLER"] = GauXC::PruningScheme::Treutler;
-    pruning_scheme_map_["NONE"] = GauXC::PruningScheme::Unpruned;
+    std::unordered_map<std::string, GauXC::PruningScheme> pruning_scheme_map; 
+    pruning_scheme_map["ROBUST"] = GauXC::PruningScheme::Robust;
+    pruning_scheme_map["TREUTLER"] = GauXC::PruningScheme::Treutler;
+    pruning_scheme_map["NONE"] = GauXC::PruningScheme::Unpruned;
 
     // generate map for radial quadrature schemes 
-    radial_scheme_map_["TREUTLER"] = GauXC::RadialQuad::TreutlerAldrichs;
-    radial_scheme_map_["MURA"] = GauXC::RadialQuad::MuraKnowles;
+    std::unordered_map<std::string, GauXC::RadialQuad> radial_scheme_map; 
+    radial_scheme_map["TREUTLER"] = GauXC::RadialQuad::TreutlerAldrichs;
+    radial_scheme_map["MURA"] = GauXC::RadialQuad::MuraKnowles;
     // TODO: confirm the correctness of this specific mapping
     // Answer: Yep, it is! The Murray, Handy, Laming literature reference
     // is mentioned in cubature.cc
-    radial_scheme_map_["EM"] = GauXC::RadialQuad::MurrayHandyLaming; 
+    radial_scheme_map["EM"] = GauXC::RadialQuad::MurrayHandyLaming; 
+
+    // we are done
+    //return std::move(pruning_scheme_map), std::move(radial_scheme_map);
+    return std::make_tuple(pruning_scheme_map, radial_scheme_map);
 }
 
 // converts a Psi4::Molecule object to a GauXC::Molecule object
@@ -193,7 +203,6 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     spherical_points_ = options_.get_int("SNLINK_SPHERICAL_POINTS");
     basis_tol_ = options.get_double("SNLINK_BASIS_TOLERANCE");
 
-    generate_enum_mappings();
     
     pruning_scheme_ = options_.get_str("SNLINK_PRUNING_SCHEME");
     
@@ -212,41 +221,29 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
         throw PSIEXCEPTION("Invalid radial quadrature scheme selected for snLinK! Please set DFT_RADIAL_SCHEME to either TREUTLER, MURA, or EM.");
     }
 
+    // create mappings for GauXC pruning and radial scheme enums
+    auto [ pruning_scheme_map, radial_scheme_map ] = generate_enum_mappings();
+
     // define execution space
+    auto rt = GauXC::RuntimeEnvironment( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
+    
     use_gpu_ = options_.get_bool("SNLINK_USE_GPU"); 
     auto ex = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;  
     // only running on host (i.e., GPU disabled) for the moment
     if (ex == GauXC::ExecutionSpace::Device) {
         throw PSIEXCEPTION("GauXC GPU support has not yet been implemented in Psi4!");
     }
-   
-    // always executing on host (i.e., CPU) for now
-    auto rt = GauXC::RuntimeEnvironment( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
 
     // convert Psi4 fundamental quantities to GauXC 
     auto gauxc_mol = psi4_to_gauxc_molecule(primary_->molecule());
     auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_);
     
     // create snLinK grid for GauXC
-    //gauxc_grid_ = psi4_to_gauxc_grid();  
-    
-   /*
-    gauxc_grid_ = std::make_unique<GauXC::MolGrid>(
-        GauXC::MolGridFactory::create_default_molgrid(
-            gauxc_mol, 
-            pruning_scheme_map_[pruning_scheme_],
-            GauXC::BatchSize(512), 
-            radial_scheme_map_[radial_scheme_], 
-            GauXC::RadialSize(radial_points_),
-            GauXC::AngularSize(spherical_points_)
-        )
-    );
-    */
     auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
         gauxc_mol, 
-        pruning_scheme_map_[pruning_scheme_],
+        pruning_scheme_map[pruning_scheme_],
         GauXC::BatchSize(512), 
-        radial_scheme_map_[radial_scheme_], 
+        radial_scheme_map[radial_scheme_], 
         GauXC::RadialSize(radial_points_),
         GauXC::AngularSize(spherical_points_)
     );
@@ -256,15 +253,15 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     const size_t quad_pad_value = 1;
 
     gauxc_load_balancer_factory_ = std::make_unique<GauXC::LoadBalancerFactory>(ex, load_balancer_kernel);
-    std::shared_ptr<GauXC::LoadBalancer> gauxc_load_balancer = gauxc_load_balancer_factory_->get_shared_instance(rt, gauxc_mol, gauxc_grid, gauxc_primary, quad_pad_value);
+    auto gauxc_load_balancer = gauxc_load_balancer_factory_->get_instance(rt, gauxc_mol, gauxc_grid, gauxc_primary, quad_pad_value);
     
     // construct weights module
     const std::string mol_weights_kernel = "Default";
     gauxc_mol_weights_factory_ = std::make_unique<GauXC::MolecularWeightsFactory>(ex, mol_weights_kernel, GauXC::MolecularWeightsSettings{});
-    std::shared_ptr<GauXC::MolecularWeights> gauxc_mol_weights = gauxc_mol_weights_factory_->get_shared_instance();
+    auto gauxc_mol_weights = gauxc_mol_weights_factory_->get_instance();
 
     // apply partition weights
-    gauxc_mol_weights->modify_weights(*gauxc_load_balancer);
+    gauxc_mol_weights.modify_weights(gauxc_load_balancer);
     
     // set integrator options 
     bool do_no_screen = options.get_str("SCREENING") == "NONE";
@@ -290,7 +287,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
    
     // actually construct integrator 
     integrator_factory_ = std::make_unique<GauXC::XCIntegratorFactory<matrix_type> >(ex, integrator_input_type, integrator_kernel, lwd_kernel, reduction_kernel);
-    integrator_ = integrator_factory_->get_shared_instance(dummy_func, *gauxc_load_balancer); 
+    integrator_ = integrator_factory_->get_shared_instance(dummy_func, gauxc_load_balancer); 
 
     // sanity-check integrator
      

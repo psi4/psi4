@@ -334,24 +334,14 @@ class PSI_API snLinK : public SplitJK {
     bool incfock_iter_;
 
   #ifdef USING_gauxc
-    // => General GauXC settings <= // 
-    // are we running snLinK on GPUs?
-    bool use_gpu_; 
-    
     // use Eigen for matrix inputs to GauXC
     // perhaps this can be changed later
     using matrix_type = Eigen::MatrixXd;
 
-    // => GauXC base objects <= //
-    //GauXC::Molecule gauxc_mol_;
-    //GauXC::BasisSet<double> gauxc_primary_;
-     
     // => Semi-Numerical Stuff <= //
-
-    /// snLinK grid (GauXC format)
-    //std::unique_ptr<GauXC::MolGrid> gauxc_grid_;
-
-   // what grid pruning scheme is being used?
+    // are we running snLinK on GPUs?
+    bool use_gpu_; 
+    // what grid pruning scheme is being used?
     std::string pruning_scheme_;
     // what radial quadrature scheme is being used?
     std::string radial_scheme_;
@@ -362,24 +352,14 @@ class PSI_API snLinK : public SplitJK {
     // basis cutoff
     double basis_tol_;
 
-    /// GauXC "Load Balancer"
-    //const std::string load_balancer_kernel_; 
+    /// Factory for generating GauXC "Load Balancer" objects
     std::unique_ptr<GauXC::LoadBalancerFactory> gauxc_load_balancer_factory_;
-    //GauXC::LoadBalancer gauxc_load_balancer_;
 
-    /// GauXC "Weights Module"
-    //const std::string mol_weights_kernel_; 
+    /// Factory for generating GauXC "Weights Module" objects
     std::unique_ptr<GauXC::MolecularWeightsFactory> gauxc_mol_weights_factory_;
-    //std::unique_ptr<GauXC::MolecularWeights> gauxc_mol_weights_;
 
     /// GauXC integrator for actually performing snLinK
-    //const std::string integrator_input_type_; 
-    //const std::string integrator_kernel_; 
-    //const std::string reduction_kernel_; 
-    //const std::string lwd_kernel_;
-    //const std::string dummy_func_; // dummy functional for integrator; exact exchange is calculated regardless
     GauXC::IntegratorSettingsSNLinK integrator_settings_;
-    //const ExchCXX::Functional dummy_func_; 
     std::unique_ptr<GauXC::XCIntegratorFactory<matrix_type> > integrator_factory_;
     std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_;
   
@@ -390,9 +370,10 @@ class PSI_API snLinK : public SplitJK {
     void eigen_to_psi4_matrix(SharedMatrix psi4_matrix, const Eigen::MatrixXd& eigen_matrix);
 
     // => Psi4 -> GauXC enum mappings <= //
-    std::unordered_map<std::string, GauXC::PruningScheme> pruning_scheme_map_; 
-    std::unordered_map<std::string, GauXC::RadialQuad> radial_scheme_map_; 
-    void generate_enum_mappings();
+    std::tuple<
+        std::unordered_map<std::string, GauXC::PruningScheme>, 
+        std::unordered_map<std::string, GauXC::RadialQuad> 
+    > generate_enum_mappings();
   #endif
    
   public:
