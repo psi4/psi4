@@ -352,7 +352,7 @@ class PSI_API snLinK : public SplitJK {
     /// snLinK grid (GauXC format)
     std::unique_ptr<GauXC::MolGrid> gauxc_grid_;
 
-    // what grid pruning scheme is being used?
+   // what grid pruning scheme is being used?
     std::string pruning_scheme_;
     // what radial quadrature scheme is being used?
     std::string radial_scheme_;
@@ -379,6 +379,7 @@ class PSI_API snLinK : public SplitJK {
     //const std::string reduction_kernel_; 
     //const std::string lwd_kernel_;
     //const std::string dummy_func_; // dummy functional for integrator; exact exchange is calculated regardless
+    GauXC::IntegratorSettingsSNLinK integrator_settings_;
     //const ExchCXX::Functional dummy_func_; 
     std::unique_ptr<GauXC::XCIntegratorFactory<matrix_type> > integrator_factory_;
     std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_;
