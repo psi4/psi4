@@ -77,7 +77,7 @@ std::tuple<
 
     // we are done
     //return std::move(pruning_scheme_map), std::move(radial_scheme_map);
-    return std::make_tuple(pruning_scheme_map, radial_scheme_map);
+    return std::move(std::make_tuple(pruning_scheme_map, radial_scheme_map));
 }
 
 // converts a Psi4::Molecule object to a GauXC::Molecule object
