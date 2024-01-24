@@ -171,7 +171,7 @@ Eigen::MatrixXd snLinK::psi4_to_eigen_matrix(SharedMatrix psi4_matrix) {
         }
     }
 
-    return eigen_matrix;
+    return std::move(eigen_matrix);
 }
 
 // converts an Eigen MatrixXd object to a Psi4::Matrix 
@@ -203,13 +203,10 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     spherical_points_ = options_.get_int("SNLINK_SPHERICAL_POINTS");
     basis_tol_ = options.get_double("SNLINK_BASIS_TOLERANCE");
 
-    
     pruning_scheme_ = options_.get_str("SNLINK_PRUNING_SCHEME");
-    
-    // define and sanity-check radial quadrature scheme
-    // sanity-checking needed because generalist DFT_RADIAL_SCHEME is used here
     radial_scheme_ = options_.get_str("DFT_RADIAL_SCHEME");
     
+    // sanity-checking of radial scheme needed because generalist DFT_RADIAL_SCHEME option is used 
     std::array<std::string, 3> valid_radial_schemes = { "TREUTLER", "MURA", "EM" };
     bool is_valid_radial_scheme = std::any_of(
       valid_radial_schemes.cbegin(),
@@ -224,11 +221,12 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // create mappings for GauXC pruning and radial scheme enums
     auto [ pruning_scheme_map, radial_scheme_map ] = generate_enum_mappings();
 
-    // define execution space
+    // define runtime environment and execution space
     auto rt = GauXC::RuntimeEnvironment( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
     
     use_gpu_ = options_.get_bool("SNLINK_USE_GPU"); 
     auto ex = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;  
+    
     // only running on host (i.e., GPU disabled) for the moment
     if (ex == GauXC::ExecutionSpace::Device) {
         throw PSIEXCEPTION("GauXC GPU support has not yet been implemented in Psi4!");
@@ -278,7 +276,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     const std::string lwd_kernel = "Default";
     
     // construct dummy functional
-    // note that the snLinK used by the eventually-called eval_exx is agnostic to the input functional!
+    // note that the snLinK used by the eventually-called eval_exx function is agnostic to the input functional!
     const std::string dummy_func_str = "B3LYP";
     auto spin = options_.get_str("REFERENCE") == "UHF" ? ExchCXX::Spin::Polarized : ExchCXX::Spin::Unpolarized;
 
@@ -288,9 +286,6 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // actually construct integrator 
     integrator_factory_ = std::make_unique<GauXC::XCIntegratorFactory<matrix_type> >(ex, integrator_input_type, integrator_kernel, lwd_kernel, reduction_kernel);
     integrator_ = integrator_factory_->get_shared_instance(dummy_func, gauxc_load_balancer); 
-
-    // sanity-check integrator
-     
 }
 
 snLinK::~snLinK() {}
