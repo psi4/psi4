@@ -64,7 +64,10 @@ void snLinK::generate_enum_mappings() {
     // generate map for radial quadrature schemes 
     radial_scheme_map_["TREUTLER"] = GauXC::RadialQuad::TreutlerAldrichs;
     radial_scheme_map_["MURA"] = GauXC::RadialQuad::MuraKnowles;
-    radial_scheme_map_["EM"] = GauXC::RadialQuad::MurrayHandyLaming; //TODO: confirm the correctness of this specific mapping
+    // TODO: confirm the correctness of this specific mapping
+    // Answer: Yep, it is! The Murray, Handy, Laming literature reference
+    // is mentioned in cubature.cc
+    radial_scheme_map_["EM"] = GauXC::RadialQuad::MurrayHandyLaming; 
 }
 
 // converts a Psi4::Molecule object to a GauXC::Molecule object
@@ -74,7 +77,8 @@ GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_mo
     outfile->Printf("snLinK::psi4_to_gauxc_molecule\n");
     outfile->Printf("------------------------------\n");
     // TODO: Check if Bohr/Angstrom conversion is needed 
-    // Answer: Nope! 
+    // Answer: Nope! GauXC accepts input in Bohrs, and Psi4 coords are in Bohr
+    // at this point. 
     for (size_t iatom = 0; iatom != psi4_molecule->natom(); ++iatom) {
         auto atomic_number = psi4_molecule->true_atomic_number(iatom);
         auto x_coord = psi4_molecule->x(iatom);
@@ -109,7 +113,7 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         outfile->Printf("%s", (psi4_shell.is_cartesian()) ? "Cartesian" : "Spherical");
         outfile->Printf(" Shell #%i (AM %i): %i primitives\n", ishell, psi4_shell.am(), psi4_shell.nprimitive());
         //TODO: Ensure normalization is okay
-        // Maybe? We need to turn explicit normalization off for the Psi4-to-GauXC interface, since Psi4 
+        // It seems so! We need to turn explicit normalization off for the Psi4-to-GauXC interface, since Psi4 
         // basis set object contains normalized coefficients already
         for (size_t iprim = 0; iprim != psi4_shell.nprimitive(); ++iprim) {
             alpha.at(iprim) = psi4_shell.exp(iprim);
@@ -121,10 +125,11 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         cart_array center = { psi4_shell_center[0], psi4_shell_center[1], psi4_shell_center[2] };
 
         gauxc_basisset.emplace_back(
-            nprim, 
-            GauXC::AngularMomentum(psi4_shell.am()), //TODO: check if am() is 0-indexed
+            nprim,
+            // TODO: check if am() is 0-indexed
+            // Answer: It is! See tests/basisset_test.cxx in GauXC
+            GauXC::AngularMomentum(psi4_shell.am()), 
             GauXC::SphericalType(!(psi4_shell.is_cartesian())),
-            //GauXC::SphericalType(false),
             alpha,
             coeff,
             center,
@@ -252,12 +257,21 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     gauxc_mol_weights->modify_weights(*gauxc_load_balancer);
     
     // set integrator options 
+    bool do_no_screen = options.get_str("SCREENING") == "NONE";
+    integrator_settings_.screen_ek = (do_no_screen || cutoff_ == 0.0) ? false : true;
+    
+    // TODO: Check correctness of these mappings
+    auto ints_tol = options.get_double("SNLINK_INTS_TOLERANCE");
+    integrator_settings_.energy_tol = ints_tol; 
+    integrator_settings_.k_tol = ints_tol;
+
     const std::string integrator_input_type = "Replicated";
     const std::string integrator_kernel = "Default";
     const std::string reduction_kernel = "Default";
     const std::string lwd_kernel = "Default";
     
     // construct dummy functional
+    // note that the snLinK used by the eventually-called eval_exx is agnostic to the input functional!
     const std::string dummy_func_str = "B3LYP";
     auto spin = options_.get_str("REFERENCE") == "UHF" ? ExchCXX::Spin::Polarized : ExchCXX::Spin::Unpolarized;
 
@@ -281,7 +295,9 @@ void snLinK::print_header() const {
         
         outfile->Printf("    K Grid Radial Points: %i\n", radial_points_);
         outfile->Printf("    K Grid Spherical/Angular Points: %i\n", spherical_points_);
+        outfile->Printf("    K Screening?:     %s\n", (integrator_settings_.screen_ek) ? "Yes" : "No");
         outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
+        outfile->Printf("    K Ints Cutoff:     %11.0E\n", integrator_settings_.energy_tol);
         if (debug_) {
           outfile->Printf("    (Debug) K Grid Pruning Scheme:     %s\n", pruning_scheme_.c_str());
           outfile->Printf("    (Debug) K Radial Quadrature Scheme:     %s\n", radial_scheme_.c_str());
@@ -298,7 +314,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     for (int iD = 0; iD != D.size(); ++iD) {
         // compute K for density Di using GauXC
         auto D_eigen = psi4_to_eigen_matrix(D[iD]);    
-        auto K_eigen = integrator_->eval_exx(D_eigen);
+        auto K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
 
         //Eigen::IOFormat HeavyFmt(Eigen::FullPrecision, 0, ", ", ";\n", "[", "]", "[", "]");
        
