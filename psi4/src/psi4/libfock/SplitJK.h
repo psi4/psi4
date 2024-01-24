@@ -337,20 +337,19 @@ class PSI_API snLinK : public SplitJK {
     // => General GauXC settings <= // 
     // are we running snLinK on GPUs?
     bool use_gpu_; 
-    std::unique_ptr<GauXC::RuntimeEnvironment> rt_; 
     
     // use Eigen for matrix inputs to GauXC
     // perhaps this can be changed later
     using matrix_type = Eigen::MatrixXd;
 
     // => GauXC base objects <= //
-    GauXC::Molecule gauxc_mol_;
-    GauXC::BasisSet<double> gauxc_primary_;
+    //GauXC::Molecule gauxc_mol_;
+    //GauXC::BasisSet<double> gauxc_primary_;
      
     // => Semi-Numerical Stuff <= //
 
     /// snLinK grid (GauXC format)
-    std::unique_ptr<GauXC::MolGrid> gauxc_grid_;
+    //std::unique_ptr<GauXC::MolGrid> gauxc_grid_;
 
    // what grid pruning scheme is being used?
     std::string pruning_scheme_;
