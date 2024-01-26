@@ -257,7 +257,7 @@ ExternalProject_Add(psi4-core
            brianqc_external
            #highfive_external
            integratorxx_external
-           #exchcxx_external
+           exchcxx_external
            gauxc_external
  
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
@@ -295,7 +295,7 @@ ExternalProject_Add(psi4-core
               #-DENABLE_HighFive=${ENABLE_HighFive}
               -DENABLE_IntegratorXX=${ENABLE_IntegratorXX}
               -DENABLE_gauxc=${ENABLE_gauxc}
-              #-DENABLE_ExchCXX=${ENABLE_ExchCXX}
+              -DENABLE_ExchCXX=${ENABLE_ExchCXX}
               -DENABLE_ecpint=${ENABLE_ecpint}
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_Einsums=${ENABLE_Einsums}
