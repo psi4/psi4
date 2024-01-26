@@ -1,9 +1,10 @@
 if(${ENABLE_gauxc})
+    #== GauXC requires Psi4 to have standard integral ordering rather than gaussian ==#
     if(${psi4_SHGAUSS_ORDERING} STREQUAL gaussian)
         message(FATAL_ERROR "Psi4 with the GauXC interface must be compiled using psi4_SHGAUSS_ORDERING=standard.")
     endif()
     #list(PREPEND CMAKE_PREFIX_PATH ${gauxc_DIR}/../_deps/exchcxx-build/src)
-    
+  
     #message("${CMAKE_MODULE_PATH}")
     message("Finding gauxc...")
     find_package(gauxc 0.0.1 CONFIG) 
