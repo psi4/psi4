@@ -26,7 +26,7 @@ foreach(dir
   ddx
   #highfive
   integratorxx
-  #exchcxx 
+  exchcxx 
   gauxc 
   )
   add_subdirectory(${dir})
