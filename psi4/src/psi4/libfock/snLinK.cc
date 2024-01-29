@@ -155,6 +155,7 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
 }
 
 // converts a Psi4::Matrix to an Eigen::MatrixXd
+/*
 Eigen::MatrixXd snLinK::psi4_to_eigen_matrix(SharedMatrix psi4_matrix) {
     // Sanity checks
     if (psi4_matrix->nirrep() != 1) {
@@ -172,6 +173,17 @@ Eigen::MatrixXd snLinK::psi4_to_eigen_matrix(SharedMatrix psi4_matrix) {
     }
 
     return std::move(eigen_matrix);
+}
+*/
+
+// converts a Psi4::Matrix to an Eigen::MatrixXd map
+Eigen::Map<Eigen::MatrixXd> snLinK::psi4_to_eigen_map(SharedMatrix psi4_matrix) {
+    // Sanity checks
+    if (psi4_matrix->nirrep() != 1) {
+        throw PSIEXCEPTION("Psi4::Matrix must be in C1 symmetry to be transformed into Eigen::MatrixXd!");
+    }
+
+    return std::move(Eigen::Map<Eigen::MatrixXd>(psi4_matrix->pointer()[0], psi4_matrix->nrow(), psi4_matrix->ncol()));
 }
 
 // converts an Eigen MatrixXd object to a Psi4::Matrix 
@@ -322,7 +334,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     
     for (int iD = 0; iD != D.size(); ++iD) {
         // compute K for density Di using GauXC
-        auto D_eigen = psi4_to_eigen_matrix(D[iD]);    
+        auto D_eigen = psi4_to_eigen_map(D[iD]);    
         auto K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
 
         //Eigen::IOFormat HeavyFmt(Eigen::FullPrecision, 0, ", ", ";\n", "[", "]", "[", "]");

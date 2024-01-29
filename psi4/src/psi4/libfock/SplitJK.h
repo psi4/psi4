@@ -366,7 +366,8 @@ class PSI_API snLinK : public SplitJK {
     // => Psi4 -> GauXC conversion functions <= // 
     GauXC::Molecule psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule);
     template<typename T> GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset);
-    Eigen::MatrixXd psi4_to_eigen_matrix(SharedMatrix psi4_matrix);
+    //Eigen::MatrixXd psi4_to_eigen_matrix(SharedMatrix psi4_matrix);
+    Eigen::Map<Eigen::MatrixXd> psi4_to_eigen_map(SharedMatrix psi4_matrix);
     void eigen_to_psi4_matrix(SharedMatrix psi4_matrix, const Eigen::MatrixXd& eigen_matrix);
 
     // => Psi4 -> GauXC enum mappings <= //
