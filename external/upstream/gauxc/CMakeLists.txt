@@ -37,11 +37,12 @@ if(${ENABLE_gauxc})
         #FetchContent_MakeAvailable( gauxc )
 
         include(ExternalProject)
-        ExternalProject_Add(gauxc_external
-            GIT_REPOSITORY https://github.com/wavefunction91/gauxc.git
-            GIT_TAG master
-            UPDATE_COMMAND ""
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
+        if (${gauxc_ENABLE_GPU})
+            ExternalProject_Add(gauxc_external
+                GIT_REPOSITORY https://github.com/wavefunction91/gauxc.git
+                GIT_TAG master
+                UPDATE_COMMAND ""
+                CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -55,11 +56,36 @@ if(${ENABLE_gauxc})
                        -DGAUXC_ENABLE_MPI=OFF
                        -DGAUXC_ENABLE_TESTS=OFF
                        -DGAUXC_ENABLE_HDF5=OFF
-            CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                       -DCMAKE_CUDA_ARCHITECTURES=70
+                       -DGAUXC_ENABLE_MAGMA=OFF
+                CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
                              -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1})
-
+        else()
+            ExternalProject_Add(gauxc_external
+                GIT_REPOSITORY https://github.com/wavefunction91/gauxc.git
+                GIT_TAG master
+                UPDATE_COMMAND ""
+                CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
+                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                       -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                       -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
+                       -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                       -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
+                       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+                       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+                       -DGAUXC_ENABLE_CUDA=${gauxc_ENABLE_GPU}
+                       -DGAUXC_ENABLE_MPI=OFF
+                       -DGAUXC_ENABLE_TESTS=OFF
+                       -DGAUXC_ENABLE_HDF5=OFF
+                CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                             -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1})
+        endif()
         set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
     endif()
 else()

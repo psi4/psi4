@@ -23,6 +23,7 @@ if(${ENABLE_gpu_dfcc})
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                        -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                        -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+                       -DCMAKE_CUDA_ARCHITECTURES=70
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
                        -DENABLE_XHOST=${ENABLE_XHOST}
