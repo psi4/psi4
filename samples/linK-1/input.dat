@@ -21,7 +21,7 @@ set {
     incfock_full_fock_every 4
     ints_tolerance 1.0e-12
     linK_ints_tolerance 1.0e-12
-    snlink_use_gpu true 
+    snlink_use_gpu false 
     #print 7
     #debug 7
     #maxiter 2

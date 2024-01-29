@@ -154,28 +154,6 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
     return std::move(gauxc_basisset);
 }
 
-// converts a Psi4::Matrix to an Eigen::MatrixXd
-/*
-Eigen::MatrixXd snLinK::psi4_to_eigen_matrix(SharedMatrix psi4_matrix) {
-    // Sanity checks
-    if (psi4_matrix->nirrep() != 1) {
-        throw PSIEXCEPTION("Psi4::Matrix must be in C1 symmetry to be transformed into Eigen::MatrixXd!");
-    }
-
-    Eigen::MatrixXd eigen_matrix(psi4_matrix->nrow(), psi4_matrix->ncol());
-
-    // equate matrices
-    auto psi4_matrix_p = psi4_matrix->pointer(); 
-    for (size_t irow = 0; irow != psi4_matrix->nrow(); ++irow) {
-        for (size_t icol = 0; icol != psi4_matrix->ncol(); ++icol) {
-            eigen_matrix(irow, icol) = psi4_matrix_p[irow][icol]; //TODO: check that Psi4::Matrix is column-major
-        }
-    }
-
-    return std::move(eigen_matrix);
-}
-*/
-
 // converts a Psi4::Matrix to an Eigen::MatrixXd map
 Eigen::Map<Eigen::MatrixXd> snLinK::psi4_to_eigen_map(SharedMatrix psi4_matrix) {
     // Sanity checks
@@ -183,29 +161,13 @@ Eigen::Map<Eigen::MatrixXd> snLinK::psi4_to_eigen_map(SharedMatrix psi4_matrix) 
         throw PSIEXCEPTION("Psi4::Matrix must be in C1 symmetry to be transformed into Eigen::MatrixXd!");
     }
 
-    return std::move(Eigen::Map<Eigen::MatrixXd>(psi4_matrix->pointer()[0], psi4_matrix->nrow(), psi4_matrix->ncol()));
-}
-
-// converts an Eigen MatrixXd object to a Psi4::Matrix 
-void snLinK::eigen_to_psi4_matrix(SharedMatrix psi4_matrix, const Eigen::MatrixXd& eigen_matrix) {
-    // Sanity checks
-    if (psi4_matrix->nirrep() != 1) {
-        throw PSIEXCEPTION("Psi4::Matrix must be in C1 symmetry to be transformed into Eigen::MatrixXd!");
-    }
-
-    if (psi4_matrix->nrow() != eigen_matrix.rows()) {
-        throw PSIEXCEPTION("Input matrix row counts don't match in snLinK::eigen_to_psi4_matrix!");
-    } else if (psi4_matrix->ncol() != eigen_matrix.cols()) {
-        throw PSIEXCEPTION("Input matrix column counts don't match in snLinK::eigen_to_psi4_matrix!");
-    }
-    
-    // equate matrices
-    auto psi4_matrix_p = psi4_matrix->pointer(); 
-    for (size_t irow = 0; irow != psi4_matrix->nrow(); ++irow) {
-        for (size_t icol = 0; icol != psi4_matrix->ncol(); ++icol) {
-            psi4_matrix_p[irow][icol] = eigen_matrix(irow, icol); //TODO: check that Psi4::Matrix is column-major
-        }
-    }
+    // create Eigen matrix "map" using Psi4 matrix data array directly
+    return std::move(
+        Eigen::Map<Eigen::MatrixXd>(
+            psi4_matrix->pointer()[0], // pointer to first element of underlying Psi4::Matrix data array
+            psi4_matrix->nrow(), psi4_matrix->ncol()
+        )
+    );
 }
 
 snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primary, options) {
@@ -240,6 +202,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     std::unique_ptr<GauXC::RuntimeEnvironment> rt = nullptr; 
     if (use_gpu_) {
+        // 0.9 indicates to use maximum 90% of maximum GPU memory, I think?
         rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.9 );
     } else { 
         rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
@@ -258,14 +221,14 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
         GauXC::RadialSize(radial_points_),
         GauXC::AngularSize(spherical_points_)
     );
-  
+
     // construct load balancer
     const std::string load_balancer_kernel = "Default";
     const size_t quad_pad_value = 1;
 
     gauxc_load_balancer_factory_ = std::make_unique<GauXC::LoadBalancerFactory>(ex, load_balancer_kernel);
     auto gauxc_load_balancer = gauxc_load_balancer_factory_->get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary, quad_pad_value);
-    
+
     // construct weights module
     const std::string mol_weights_kernel = "Default";
     gauxc_mol_weights_factory_ = std::make_unique<GauXC::MolecularWeightsFactory>(ex, mol_weights_kernel, GauXC::MolecularWeightsSettings{});
@@ -273,11 +236,11 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // apply partition weights
     gauxc_mol_weights.modify_weights(gauxc_load_balancer);
-    
+
     // set integrator options 
     bool do_no_screen = options.get_str("SCREENING") == "NONE";
     integrator_settings_.screen_ek = (do_no_screen || cutoff_ == 0.0) ? false : true;
-    
+
     // TODO: Check correctness of these mappings
     auto ints_tol = options.get_double("SNLINK_INTS_TOLERANCE");
     integrator_settings_.energy_tol = ints_tol; 
@@ -287,7 +250,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     const std::string integrator_kernel = "Default";
     const std::string reduction_kernel = "Default";
     const std::string lwd_kernel = "Default";
-    
+
     // construct dummy functional
     // note that the snLinK used by the eventually-called eval_exx function is agnostic to the input functional!
     const std::string dummy_func_str = "B3LYP";
@@ -295,15 +258,10 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     ExchCXX::Functional dummy_func_key = ExchCXX::functional_map.value(dummy_func_str);
     ExchCXX::XCFunctional dummy_func = { ExchCXX::Backend::builtin, dummy_func_key, spin };  
-   
+
     // actually construct integrator 
     integrator_factory_ = std::make_unique<GauXC::XCIntegratorFactory<matrix_type> >(ex, integrator_input_type, integrator_kernel, lwd_kernel, reduction_kernel);
     integrator_ = integrator_factory_->get_shared_instance(dummy_func, gauxc_load_balancer); 
-
-    // only running on host (i.e., GPU disabled) for the moment
-    //if (ex == GauXC::ExecutionSpace::Device) {
-    //    throw PSIEXCEPTION("GauXC GPU support has not yet been implemented in Psi4!");
-    //}
 }
 
 snLinK::~snLinK() {}
@@ -326,30 +284,22 @@ void snLinK::print_header() const {
     }
 }
 
-// build the K matrix using Neeses's Chain-of-Spheres Exchange algorithm
-// algorithm is originally proposed in https://doi.org/10.1016/j.chemphys.2008.10.036
-// overlap fitting is discussed in https://doi.org/10.1063/1.3646921
+// build the K matrix using Ochsenfeld's sn-LinK algorithm
+// Implementation is provided by the external GauXC library 
 void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K,
     std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
-    
+
+    // compute K for density Di using GauXC
     for (int iD = 0; iD != D.size(); ++iD) {
-        // compute K for density Di using GauXC
+        // map Psi4 matrices to Eigen matrix maps
         auto D_eigen = psi4_to_eigen_map(D[iD]);    
-        auto K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
+        auto K_eigen = psi4_to_eigen_map(K[iD]); 
 
-        //Eigen::IOFormat HeavyFmt(Eigen::FullPrecision, 0, ", ", ";\n", "[", "]", "[", "]");
-       
-        //auto K_eigen_block = K_eigen.block<20, 20>(0, 0); 
-        //std::cout << K_eigen_block.format(HeavyFmt) << std::endl;
- 
-        // convert result to Psi4 matrix
+        // compute K contribution
         if (incfock_iter_) { 
-            auto delta_K = std::make_shared<Matrix>(K[iD]->nrow(), K[iD]->ncol());
-            eigen_to_psi4_matrix(delta_K, K_eigen);
-
-            K[iD]->add(delta_K);
+            K_eigen += integrator_->eval_exx(D_eigen, integrator_settings_);
         } else {
-            eigen_to_psi4_matrix(K[iD], K_eigen);
+            K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
         }
     }
     
