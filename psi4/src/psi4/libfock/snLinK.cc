@@ -227,11 +227,6 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     use_gpu_ = options_.get_bool("SNLINK_USE_GPU"); 
     auto ex = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;  
     
-    // only running on host (i.e., GPU disabled) for the moment
-    if (ex == GauXC::ExecutionSpace::Device) {
-        throw PSIEXCEPTION("GauXC GPU support has not yet been implemented in Psi4!");
-    }
-
     // convert Psi4 fundamental quantities to GauXC 
     auto gauxc_mol = psi4_to_gauxc_molecule(primary_->molecule());
     auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_);
@@ -286,6 +281,11 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // actually construct integrator 
     integrator_factory_ = std::make_unique<GauXC::XCIntegratorFactory<matrix_type> >(ex, integrator_input_type, integrator_kernel, lwd_kernel, reduction_kernel);
     integrator_ = integrator_factory_->get_shared_instance(dummy_func, gauxc_load_balancer); 
+
+    // only running on host (i.e., GPU disabled) for the moment
+    if (ex == GauXC::ExecutionSpace::Device) {
+        throw PSIEXCEPTION("GauXC GPU support has not yet been implemented in Psi4!");
+    }
 }
 
 snLinK::~snLinK() {}
