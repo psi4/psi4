@@ -222,10 +222,16 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     auto [ pruning_scheme_map, radial_scheme_map ] = generate_enum_mappings();
 
     // define runtime environment and execution space
-    auto rt = GauXC::RuntimeEnvironment( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
-    
+   
     use_gpu_ = options_.get_bool("SNLINK_USE_GPU"); 
     auto ex = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;  
+
+    std::unique_ptr<GauXC::RuntimeEnvironment> rt = nullptr; 
+    if (use_gpu_) {
+        rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.9 );
+    } else { 
+        rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
+    }
     
     // convert Psi4 fundamental quantities to GauXC 
     auto gauxc_mol = psi4_to_gauxc_molecule(primary_->molecule());
@@ -246,7 +252,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     const size_t quad_pad_value = 1;
 
     gauxc_load_balancer_factory_ = std::make_unique<GauXC::LoadBalancerFactory>(ex, load_balancer_kernel);
-    auto gauxc_load_balancer = gauxc_load_balancer_factory_->get_instance(rt, gauxc_mol, gauxc_grid, gauxc_primary, quad_pad_value);
+    auto gauxc_load_balancer = gauxc_load_balancer_factory_->get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary, quad_pad_value);
     
     // construct weights module
     const std::string mol_weights_kernel = "Default";
@@ -283,9 +289,9 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     integrator_ = integrator_factory_->get_shared_instance(dummy_func, gauxc_load_balancer); 
 
     // only running on host (i.e., GPU disabled) for the moment
-    if (ex == GauXC::ExecutionSpace::Device) {
-        throw PSIEXCEPTION("GauXC GPU support has not yet been implemented in Psi4!");
-    }
+    //if (ex == GauXC::ExecutionSpace::Device) {
+    //    throw PSIEXCEPTION("GauXC GPU support has not yet been implemented in Psi4!");
+    //}
 }
 
 snLinK::~snLinK() {}
@@ -295,6 +301,7 @@ void snLinK::print_header() const {
         outfile->Printf("\n");
         outfile->Printf("  ==> snLinK: GauXC Semi-Numerical Linear Exchange K <==\n\n");
         
+        outfile->Printf("    K Execution Space: %s\n", (use_gpu_) ? "Device" : "Host");
         outfile->Printf("    K Grid Radial Points: %i\n", radial_points_);
         outfile->Printf("    K Grid Spherical/Angular Points: %i\n", spherical_points_);
         outfile->Printf("    K Screening?:     %s\n", (integrator_settings_.screen_ek) ? "Yes" : "No");
