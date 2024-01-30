@@ -201,13 +201,17 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     auto ex = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;  
 
     std::unique_ptr<GauXC::RuntimeEnvironment> rt = nullptr; 
+#ifdef USING_gauxc_GPU
     if (use_gpu_) {
         // 0.9 indicates to use maximum 90% of maximum GPU memory, I think?
         rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.9 );
     } else { 
         rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
     }
-    
+#else
+        rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
+#endif
+
     // convert Psi4 fundamental quantities to GauXC 
     auto gauxc_mol = psi4_to_gauxc_molecule(primary_->molecule());
     auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_);
@@ -289,19 +293,33 @@ void snLinK::print_header() const {
 void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K,
     std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
 
+    outfile->Printf("Start snLinK::build_G_component\n");
+
     // compute K for density Di using GauXC
     for (int iD = 0; iD != D.size(); ++iD) {
+        outfile->Printf("  Density %i\n", iD);
         // map Psi4 matrices to Eigen matrix maps
+        
+        outfile->Printf("    Constructing density map... ");   
         auto D_eigen = psi4_to_eigen_map(D[iD]);    
+        outfile->Printf("    Done.\n");   
+        
+        outfile->Printf("    Constructing exchange map... ");   
         auto K_eigen = psi4_to_eigen_map(K[iD]); 
+        outfile->Printf("    Done.\n");   
 
         // compute K contribution
         if (incfock_iter_) { 
+            outfile->Printf("    Computing deltaK... ");   
             K_eigen += integrator_->eval_exx(D_eigen, integrator_settings_);
+            outfile->Printf("    Done.\n");   
         } else {
+            outfile->Printf("    Computing K... ");   
             K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
+            outfile->Printf("    Done.\n");   
         }
     }
+    outfile->Printf("End snLinK::build_G_component\n");
     
     return;
 }

@@ -50,15 +50,17 @@ if(TARGET gauxc::gauxc)
     PUBLIC
       USING_gauxc
     )
-  #target_compile_definitions(fock
-  #  PRIVATE
-  #    "restrict=${RESTRICT_KEYWORD}"
-  #    $<$<BOOL:${ENABLE_GAUXC}>:ENABLE_GAUXC>
-  #  )
+
+  if(${gauxc_ENABLE_GPU})
+    target_compile_definitions(fock
+      PUBLIC
+        USING_gauxc_GPU
+      )
+  endif()
+
   target_include_directories(fock
     PUBLIC
       $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
-      #/storage/home/hhive1/dpoole34/data/Codes/GauXC/include/ 
     )
   target_link_libraries(fock
     PUBLIC 
