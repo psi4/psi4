@@ -433,7 +433,7 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
     // Loop it
 #pragma omp parallel for schedule(guided) num_threads(nthread_)
     for (size_t p = 0; p < n_pairs; ++p) {
-        size_t rank = 0;
+        int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
@@ -448,11 +448,16 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
         const auto *ints_buff = ints[rank]->buffers()[0];
 
         size_t index = 0;
-        for (size_t mu = index_mu; mu < (index_mu + num_mu); ++mu) {
-            for (size_t nu = index_nu; nu < (index_nu + num_nu); ++nu) {
-                outp[mu][nu] = ints_buff[index++];
-                if (symm) {
-                    outp[nu][mu] = outp[mu][nu];
+        if (symm) {
+            for (size_t mu = index_mu; mu < (index_mu + num_mu); ++mu) {
+                for (size_t nu = index_nu; nu < (index_nu + num_nu); ++nu) {
+                    outp[nu][mu] = outp[mu][nu] = ints_buff[index++];
+                }
+            }
+        } else {
+            for (size_t mu = index_mu; mu < (index_mu + num_mu); ++mu) {
+                for (size_t nu = index_nu; nu < (index_nu + num_nu); ++nu) {
+                    outp[mu][nu] = ints_buff[index++];
                 }
             }
         }
@@ -487,7 +492,7 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
     // Loop it
 #pragma omp parallel for schedule(guided) num_threads(nthread)
     for (size_t p = 0; p < n_pairs; ++p) {
-        size_t rank = 0;
+        int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
@@ -793,7 +798,7 @@ SharedMatrix MintsHelper::ao_helper(const std::string &label, std::vector<std::s
         for (int N = 0; N < bs2->nshell(); N++) {
             for (int P = 0; P < bs3->nshell(); P++) {
                 for (int Q = 0; Q < bs4->nshell(); Q++) {
-                    size_t rank = 0;
+                    int rank = 0;
 #ifdef _OPENMP
                     rank = omp_get_thread_num();
 #endif
@@ -835,12 +840,10 @@ SharedMatrix MintsHelper::ao_shell_getter(const std::string &label, std::shared_
     ints->compute_shell(M, N, P, Q);
     const double *buffer = ints->buffer();
 
-#pragma omp parallel for collapse(4) num_threads(nthread_)
-    for (int m = 0; m < mfxn; m++) {
+    for (int m = 0, index = 0; m < mfxn; m++) {
         for (int n = 0; n < nfxn; n++) {
             for (int p = 0; p < pfxn; p++) {
-                for (int q = 0; q < qfxn; q++) {
-                    int index = m + mfxn * (n + nfxn * (p + pfxn * q));
+                for (int q = 0; q < qfxn; q++, index++) {
                     Ip[m * nfxn + n][p * qfxn + q] = buffer[index];
                 }
             }
@@ -1035,7 +1038,7 @@ SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::vec
     for (int M = 0; M < bs1->nshell(); M++) {
         for (int N = 0; N < bs2->nshell(); N++) {
             for (int P = 0; P < bs3->nshell(); P++) {
-                size_t rank = 0;
+                int rank = 0;
 #ifdef _OPENMP
                 rank = omp_get_thread_num();
 #endif
@@ -1171,7 +1174,6 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, Share
     auto I4 = std::make_shared<Matrix>("MO ERI Tensor", nso * n1, n3 * nso);
     double **I4p = I4->pointer();
 
-#pragma omp parallel for collapse(4) num_threads(nthread_)
     for (int i = 0; i < n1; i++) {
         for (int j = 0; j < n3; j++) {
             for (int m = 0; m < nso; m++) {
@@ -1199,7 +1201,6 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, Share
     auto Imo = std::make_shared<Matrix>("MO ERI Tensor", n1 * n2, n3 * n4);
     double **Imop = Imo->pointer();
 
-#pragma omp parallel for collapse(4) num_threads(nthread_)
     for (int i = 0; i < n1; i++) {
         for (int j = 0; j < n3; j++) {
             for (int a = 0; a < n2; a++) {
@@ -1241,7 +1242,6 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, Share
     auto I4 = std::make_shared<Matrix>("MO ERI Tensor", nso * nocc, nocc * nso);
     double **I4p = I4->pointer();
 
-#pragma omp parallel for collapse(4) num_threads(nthread_)
     for (int i = 0; i < nocc; i++) {
         for (int j = 0; j < nocc; j++) {
             for (int m = 0; m < nso; m++) {
@@ -1269,7 +1269,6 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, Share
     auto Imo = std::make_shared<Matrix>("MO ERI Tensor", nocc * nvir, nocc * nvir);
     double **Imop = Imo->pointer();
 
-#pragma omp parallel for collapse(4) num_threads(nthread_)
     for (int i = 0; i < nocc; i++) {
         for (int j = 0; j < nocc; j++) {
             for (int a = 0; a < nvir; a++) {
@@ -1304,16 +1303,17 @@ SharedMatrix MintsHelper::mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2) {
     auto Ispin = std::make_shared<Matrix>("MO ERI Tensor", 4 * n1 * n1, 4 * n2 * n2);
     double **Ispinp = Ispin->pointer();
 
-#pragma omp parallel for collapse(4) num_threads(nthread_)
+    double first, second;
+    int mask1, mask2;
     for (int i = 0; i < n12; i++) {
         for (int j = 0; j < n12; j++) {
             for (int k = 0; k < n22; k++) {
                 for (int l = 0; l < n22; l++) {
-                    int mask1 = (i % 2 == k % 2) * (j % 2 == l % 2);
-                    int mask2 = (i % 2 == l % 2) * (j % 2 == k % 2);
+                    mask1 = (i % 2 == k % 2) * (j % 2 == l % 2);
+                    mask2 = (i % 2 == l % 2) * (j % 2 == k % 2);
 
-                    double first = Isop[i / 2 * n2 + k / 2][j / 2 * n2 + l / 2];
-                    double second = Isop[i / 2 * n2 + l / 2][j / 2 * n2 + k / 2];
+                    first = Isop[i / 2 * n2 + k / 2][j / 2 * n2 + l / 2];
+                    second = Isop[i / 2 * n2 + l / 2][j / 2 * n2 + k / 2];
                     Ispinp[i * n12 + j][k * n22 + l] = first * mask1 - second * mask2;
                 }
             }
@@ -2069,7 +2069,7 @@ SharedMatrix MintsHelper::potential_grad(SharedMatrix D) {
         size_t P = shell_pairs[PQ].first;
         size_t Q = shell_pairs[PQ].second;
 
-        size_t rank = 0;
+        int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
@@ -2240,7 +2240,7 @@ SharedMatrix MintsHelper::effective_core_potential_grad(SharedMatrix D) {
         size_t P = PQ_pairs[PQ].first;
         size_t Q = PQ_pairs[PQ].second;
 
-        size_t rank = 0;
+        int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
