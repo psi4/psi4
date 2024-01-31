@@ -157,6 +157,8 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
 // converts a Psi4::Matrix to an Eigen::MatrixXd map
 Eigen::Map<Eigen::MatrixXd> snLinK::psi4_to_eigen_map(SharedMatrix psi4_matrix) {
     // Sanity checks
+    // only works for C1 symmetry at the moment
+    // could be improved if symmetry is utilized in JK builds in the future
     if (psi4_matrix->nirrep() != 1) {
         throw PSIEXCEPTION("Psi4::Matrix must be in C1 symmetry to be transformed into Eigen::MatrixXd!");
     }
@@ -217,24 +219,25 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_);
     
     // create snLinK grid for GauXC
+    auto grid_batch_size = options_.get_int("SNLINK_GRID_BATCH_SIZE");
     auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
         gauxc_mol, 
         pruning_scheme_map[pruning_scheme_],
-        GauXC::BatchSize(512), 
+        GauXC::BatchSize(grid_batch_size), 
         radial_scheme_map[radial_scheme_], 
         GauXC::RadialSize(radial_points_),
         GauXC::AngularSize(spherical_points_)
     );
 
     // construct load balancer
-    const std::string load_balancer_kernel = "Default";
+    const std::string load_balancer_kernel = options_.get_str("SNLINK_LOAD_BALANCER_KERNEL"); 
     const size_t quad_pad_value = 1;
 
     gauxc_load_balancer_factory_ = std::make_unique<GauXC::LoadBalancerFactory>(ex, load_balancer_kernel);
     auto gauxc_load_balancer = gauxc_load_balancer_factory_->get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary, quad_pad_value);
 
     // construct weights module
-    const std::string mol_weights_kernel = "Default";
+    const std::string mol_weights_kernel = options_.get_str("SNLINK_MOL_WEIGHTS_KERNEL");
     gauxc_mol_weights_factory_ = std::make_unique<GauXC::MolecularWeightsFactory>(ex, mol_weights_kernel, GauXC::MolecularWeightsSettings{});
     auto gauxc_mol_weights = gauxc_mol_weights_factory_->get_instance();
 
@@ -251,9 +254,9 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     integrator_settings_.k_tol = ints_tol;
 
     const std::string integrator_input_type = "Replicated";
-    const std::string integrator_kernel = "Default";
-    const std::string reduction_kernel = "Default";
-    const std::string lwd_kernel = "Default";
+    const std::string integrator_kernel = options_.get_str("SNLINK_INTEGRATOR_KERNEL");  
+    const std::string reduction_kernel = options_.get_str("SNLINK_REDUCTION_KERNEL");  
+    const std::string lwd_kernel = options_.get_str("SNLINK_LWD_KERNEL");  
 
     // construct dummy functional
     // note that the snLinK used by the eventually-called eval_exx function is agnostic to the input functional!
@@ -281,9 +284,21 @@ void snLinK::print_header() const {
         outfile->Printf("    K Screening?:     %s\n", (integrator_settings_.screen_ek) ? "Yes" : "No");
         outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
         outfile->Printf("    K Ints Cutoff:     %11.0E\n", integrator_settings_.energy_tol);
-        if (debug_) {
+        //if (debug_) {
+        if (true) {
+          outfile->Printf("\n");    
           outfile->Printf("    (Debug) K Grid Pruning Scheme:     %s\n", pruning_scheme_.c_str());
           outfile->Printf("    (Debug) K Radial Quadrature Scheme:     %s\n", radial_scheme_.c_str());
+          outfile->Printf("    (Debug) K Grid Batch Size:     %i\n\n", options_.get_int("SNLINK_GRID_BATCH_SIZE"));
+          
+          outfile->Printf("    (Debug) K Load Balancer Kernel:     %s\n", options_.get_str("SNLINK_LOAD_BALANCER_KERNEL").c_str());
+          outfile->Printf("    (Debug) K Mol. Weights Kernel:     %s\n\n", options_.get_str("SNLINK_MOL_WEIGHTS_KERNEL").c_str());
+          
+          outfile->Printf("    (Debug) K Integrator Type:     %s\n", "Replicated");
+          outfile->Printf("    (Debug) K Integrator Kernel:     %s\n", options_.get_str("SNLINK_INTEGRATOR_KERNEL").c_str());
+          outfile->Printf("    (Debug) K Reduction Kernel:     %s\n", options_.get_str("SNLINK_REDUCTION_KERNEL").c_str());
+          outfile->Printf("    (Debug) K LWD Kernel:     %s\n\n", options_.get_str("SNLINK_LWD_KERNEL").c_str());
+
         }
     }
 }
