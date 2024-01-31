@@ -35,7 +35,8 @@ if(${ENABLE_gauxc})
         include(ExternalProject)
         ExternalProject_Add(gauxc_external
             GIT_REPOSITORY https://github.com/wavefunction91/gauxc.git
-            GIT_TAG master
+            #GIT_TAG master
+            GIT_TAG hotfix/small_primpair_max_override 
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -53,6 +54,7 @@ if(${ENABLE_gauxc})
                    -DGAUXC_ENABLE_TESTS=OFF
                    -DGAUXC_ENABLE_HDF5=OFF
                    -DGAUXC_ENABLE_MAGMA=OFF
+                   -DGAUXC_SHELLPAIR_PRIMPAIR_MAX=256
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                          -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
