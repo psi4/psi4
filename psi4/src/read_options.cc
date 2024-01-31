@@ -1719,6 +1719,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("SNLINK_SPHERICAL_POINTS", 50);
         /*- Number of radial points in initial snLinK grid. -*/
         options.add_int("SNLINK_RADIAL_POINTS", 25);
+        /*- Use GPU for GauXC? -*/
+        options.add_bool("SNLINK_USE_GPU", false);
         /*- Screening criteria for integrals and intermediates in snLinK -*/
         options.add_double("SNLINK_INTS_TOLERANCE", 1.0E-11);
         /*- Screening criteria for shell-pair densities in snLinK !expert -*/
@@ -1727,9 +1729,19 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SNLINK_BASIS_TOLERANCE", 1.0E-10);
         /*- Pruning scheme for snLinK grids !expert -*/
         options.add_str("SNLINK_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE");
-        /*- Use GPU for GauXC? -*/
-        options.add_bool("SNLINK_USE_GPU", false);
- 
+        /*- Number of grid points per batch for GauXC !expert -*/ 
+        options.add_int("SNLINK_GRID_BATCH_SIZE", 512);
+        /*- Load Balancer kernel for snLinK !expert -*/
+        options.add_str("SNLINK_LOAD_BALANCER_KERNEL", "DEFAULT", "DEFAULT REPLICATED REPLICATED-PETITE REPLICATED-FILLIN");
+        /*- Molecular Weights kernel for snLinK !expert -*/
+        options.add_str("SNLINK_MOL_WEIGHTS_KERNEL", "DEFAULT", "DEFAULT");
+        /*- Integrator execution kernel for snLinK !expert -*/
+        options.add_str("SNLINK_INTEGRATOR_KERNEL", "DEFAULT", "DEFAULT INCORE SHELLBATCHED");
+        /*- Integrator reduction kernel for snLinK !expert -*/
+        options.add_str("SNLINK_REDUCTION_KERNEL", "DEFAULT", "DEFAULT BASICMPI NCCL");
+        /*- Integrator local work driver kernel for snLinK !expert -*/
+        options.add_str("SNLINK_LWD_KERNEL", "DEFAULT", "DEFAULT REFERENCE SCHEME1 SCHEME1-MAGMA SCHEME1-CUTLASS");
+
         /*- SUBSECTION SAD Guess Algorithm -*/
 
         /*- The amount of SAD information to print to the output !expert -*/
