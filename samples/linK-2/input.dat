@@ -36,8 +36,8 @@ set {
     scf_type dfdirj+snlink
     guess sad 
     df_scf_guess false
-    #basis jun-cc-pVTZ 
-    basis 6-311++g(3df, 2pd) 
+    basis aug-cc-pVTZ 
+    #basis 6-311++g(3df, 2pd) 
     e_convergence 1.0e-10
     screening schwarz
     incfock false 
@@ -49,7 +49,7 @@ set {
     snlink_spherical_points 110
     snlink_use_gpu false 
     #print 7
-    #debug 7
+    #debug 1
     #maxiter 3
 }
 
