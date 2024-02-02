@@ -321,6 +321,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
 
     outfile->Printf("Start snLinK::build_G_component\n");
 
+    auto is_spherical_basis = primary_->has_puream();
     // compute K for density Di using GauXC
     for (int iD = 0; iD != D.size(); ++iD) {
         outfile->Printf("  Density %i\n", iD);
@@ -330,7 +331,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         outfile->Printf("    Constructing density map... ");
  
         SharedMatrix D_temp = nullptr; 
-        if (force_cartesian_) {
+        if (force_cartesian_ && is_spherical_basis) {
             D_temp = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
             D_temp->transform(D[iD], sph_to_cart_matrix_);
         } else {
@@ -344,7 +345,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         // buffer can be either K itself or a cartesian representation of K
         outfile->Printf("    Constructing exchange map... ");   
         SharedMatrix K_temp = nullptr; 
-        if (force_cartesian_) {
+        if (force_cartesian_ && is_spherical_basis) {
             K_temp = std::make_shared<Matrix>(sph_to_cart_matrix_->ncol(), sph_to_cart_matrix_->ncol());
         } else {
             K_temp = K[iD];
@@ -357,16 +358,18 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             outfile->Printf("    Computing deltaK... ");   
 
             // if cartesian transformation is forced, K_eigen is delta K and must be added to Psi4 K separately...
-            if (force_cartesian_) {
+            if (force_cartesian_ && is_spherical_basis) {
                 K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
- 
-                SharedMatrix K_temp2 = nullptr; 
-                if (primary_->has_puream()) {
-                    K_temp2 = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
-                    K_temp2->back_transform(K_temp, sph_to_cart_matrix_);
-                } else {
-                    K_temp2 = K_temp;
-                }
+                
+                SharedMatrix K_temp2 = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
+                K_temp2->back_transform(K_temp, sph_to_cart_matrix_);
+                //SharedMatrix K_temp2 = nullptr; 
+                //if (is_spherical_basis) {
+                //    K_temp2 = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
+                //    K_temp2->back_transform(K_temp, sph_to_cart_matrix_);
+                //} else {
+                //    K_temp2 = K_temp;
+                //}
 
                 K[iD]->add(K_temp2);
             // ... otherwise the computation and addition can be bundled together 
@@ -381,7 +384,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
 
             K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
             
-            if (force_cartesian_ && primary_->has_puream()) {
+            if (force_cartesian_ && is_spherical_basis) {
                 K[iD]->back_transform(K_temp, sph_to_cart_matrix_);          
             }
 
