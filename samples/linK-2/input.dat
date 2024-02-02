@@ -25,6 +25,7 @@ set {
     guess sad 
     df_scf_guess false
     #basis aug-cc-pVTZ 
+    #basis 6-31g(d) 
     basis 6-311++g(3df, 2pd) 
     e_convergence 1.0e-10
     screening schwarz
