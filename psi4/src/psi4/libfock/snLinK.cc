@@ -324,9 +324,11 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     // compute K for density Di using GauXC
     for (int iD = 0; iD != D.size(); ++iD) {
         outfile->Printf("  Density %i\n", iD);
-        // map Psi4 matrices to Eigen matrix maps
         
-        outfile->Printf("    Constructing density map... "); 
+        // map Psi4 density matrix to Eigen matrix map
+        // also includes spherical->cartesian transformation if specified
+        outfile->Printf("    Constructing density map... ");
+ 
         SharedMatrix D_temp = nullptr; 
         if (force_cartesian_) {
             D_temp = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
@@ -335,30 +337,56 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             D_temp = D[iD];
         }
         auto D_eigen = psi4_to_eigen_map(D_temp);    
+
         outfile->Printf("    Done.\n");   
-        
+
+        // map Psi4 exchange matrix buffer to Eigen matrix map
+        // buffer can be either K itself or a cartesian representation of K
         outfile->Printf("    Constructing exchange map... ");   
         SharedMatrix K_temp = nullptr; 
         if (force_cartesian_) {
-            K_temp = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
-            K_temp->transform(K[iD], sph_to_cart_matrix_);
+            K_temp = std::make_shared<Matrix>(sph_to_cart_matrix_->ncol(), sph_to_cart_matrix_->ncol());
         } else {
             K_temp = K[iD];
         }
         auto K_eigen = psi4_to_eigen_map(K_temp); 
         outfile->Printf("    Done.\n");   
 
-        // compute K contribution
+        // compute delta K if incfock iteration... 
         if (incfock_iter_) { 
             outfile->Printf("    Computing deltaK... ");   
-            K_eigen += integrator_->eval_exx(D_eigen, integrator_settings_);
+
+            // if cartesian transformation is forced, K_eigen is delta K and must be added to Psi4 K separately...
+            if (force_cartesian_) {
+                K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
+ 
+                SharedMatrix K_temp2 = nullptr; 
+                if (primary_->has_puream()) {
+                    K_temp2 = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
+                    K_temp2->back_transform(K_temp, sph_to_cart_matrix_);
+                } else {
+                    K_temp2 = K_temp;
+                }
+
+                K[iD]->add(K_temp2);
+            // ... otherwise the computation and addition can be bundled together 
+            } else {
+                K_eigen += integrator_->eval_exx(D_eigen, integrator_settings_);
+            }
             outfile->Printf("    Done.\n");   
+        
+        // ... else compute full K 
         } else {
             outfile->Printf("    Computing K... ");   
+
             K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
+            
+            if (force_cartesian_ && primary_->has_puream()) {
+                K[iD]->back_transform(K_temp, sph_to_cart_matrix_);          
+            }
+
             outfile->Printf("    Done.\n");   
         }
-        if (force_cartesian_) K[iD]->back_transform(K_temp, sph_to_cart_matrix_);
     }
     outfile->Printf("End snLinK::build_G_component\n");
     
