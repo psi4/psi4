@@ -25,8 +25,8 @@ set {
     guess sad 
     df_scf_guess false
     #basis aug-cc-pVTZ 
-    #basis 6-31g(d) 
-    basis 6-311++g(3df, 2pd) 
+    basis 6-31g(d) 
+    #basis 6-311++g(3df, 2pd) 
     e_convergence 1.0e-10
     screening schwarz
     incfock true 
@@ -37,7 +37,7 @@ set {
     snlink_radial_points  35 
     snlink_spherical_points 110
     snlink_use_gpu false 
-    snlink_force_cartesian false 
+    snlink_force_cartesian true 
     #print 7
     #debug 1
     #maxiter 3
