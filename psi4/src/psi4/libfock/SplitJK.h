@@ -338,6 +338,14 @@ class PSI_API snLinK : public SplitJK {
     // perhaps this can be changed later
     using matrix_type = Eigen::MatrixXd;
 
+    // => Cartesian-Spherical Transformation stuff <= // 
+    // force basis set to cartesian coordinates?
+    // needed for GPU sn-LinK impl in GauXC
+    bool force_cartesian_;
+    /// The AO->CartAO transformation matrix, which is used for transforming
+    /// matrices between pure and Cartesian representations.
+    SharedMatrix sph_to_cart_matrix_;
+
     // => Semi-Numerical Stuff <= //
     // are we running snLinK on GPUs?
     bool use_gpu_; 
@@ -351,7 +359,8 @@ class PSI_API snLinK : public SplitJK {
     size_t spherical_points_; 
     // basis cutoff
     double basis_tol_;
-
+   
+   
     /// Factory for generating GauXC "Load Balancer" objects
     std::unique_ptr<GauXC::LoadBalancerFactory> gauxc_load_balancer_factory_;
 
