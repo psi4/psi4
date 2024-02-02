@@ -37,6 +37,7 @@
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/petitelist.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -120,7 +121,7 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         prim_array coeff;
 
         outfile->Printf("  ");
-        outfile->Printf("%s", (psi4_shell.is_cartesian()) ? "Cartesian" : "Spherical");
+        outfile->Printf("%s", (force_cartesian_ || psi4_shell.is_cartesian()) ? "Cartesian" : "Spherical");
         outfile->Printf(" Shell #%i (AM %i): %i primitives\n", ishell, psi4_shell.am(), psi4_shell.nprimitive());
         //TODO: Ensure normalization is okay
         // It seems so! We need to turn explicit normalization off for the Psi4-to-GauXC interface, since Psi4 
@@ -139,7 +140,7 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
             // TODO: check if am() is 0-indexed
             // Answer: It is! See tests/basisset_test.cxx in GauXC
             GauXC::AngularMomentum(psi4_shell.am()), 
-            GauXC::SphericalType(!(psi4_shell.is_cartesian())),
+            (force_cartesian_ ? GauXC::SphericalType(false) : GauXC::SphericalType(!(psi4_shell.is_cartesian())) ),
             alpha,
             coeff,
             center,
@@ -181,7 +182,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     pruning_scheme_ = options_.get_str("SNLINK_PRUNING_SCHEME");
     radial_scheme_ = options_.get_str("DFT_RADIAL_SCHEME");
-    
+  
     // sanity-checking of radial scheme needed because generalist DFT_RADIAL_SCHEME option is used 
     std::array<std::string, 3> valid_radial_schemes = { "TREUTLER", "MURA", "EM" };
     bool is_valid_radial_scheme = std::any_of(
@@ -198,7 +199,6 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     auto [ pruning_scheme_map, radial_scheme_map ] = generate_enum_mappings();
 
     // define runtime environment and execution space
-   
     use_gpu_ = options_.get_bool("SNLINK_USE_GPU"); 
     auto ex = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;  
 
@@ -213,6 +213,17 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 #else
         rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
 #endif
+
+    // set whether we force use of cartesian coordinates or not
+    // this is required for GPU execution when using spherical harmonic basis sets
+    force_cartesian_ = options_.get_bool("SNLINK_FORCE_CARTESIAN"); 
+    if (use_gpu_ && !force_cartesian_ && primary_->has_puream()) {
+        throw PSIEXCEPTION("GPU snLinK must be executed with SNLINK_FORCE_CARTESIAN=true when using spherical harmonic basis sets!");  
+    }
+
+    const auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary);
+    PetiteList petite(primary_, factory, true);
+    sph_to_cart_matrix_ = petite.aotoso()->transpose();
 
     // convert Psi4 fundamental quantities to GauXC 
     auto gauxc_mol = psi4_to_gauxc_molecule(primary_->molecule());
@@ -315,12 +326,26 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         outfile->Printf("  Density %i\n", iD);
         // map Psi4 matrices to Eigen matrix maps
         
-        outfile->Printf("    Constructing density map... ");   
-        auto D_eigen = psi4_to_eigen_map(D[iD]);    
+        outfile->Printf("    Constructing density map... "); 
+        SharedMatrix D_temp = nullptr; 
+        if (force_cartesian_) {
+            D_temp = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
+            D_temp->transform(D[iD], sph_to_cart_matrix_);
+        } else {
+            D_temp = D[iD];
+        }
+        auto D_eigen = psi4_to_eigen_map(D_temp);    
         outfile->Printf("    Done.\n");   
         
         outfile->Printf("    Constructing exchange map... ");   
-        auto K_eigen = psi4_to_eigen_map(K[iD]); 
+        SharedMatrix K_temp = nullptr; 
+        if (force_cartesian_) {
+            K_temp = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
+            K_temp->transform(K[iD], sph_to_cart_matrix_);
+        } else {
+            K_temp = K[iD];
+        }
+        auto K_eigen = psi4_to_eigen_map(K_temp); 
         outfile->Printf("    Done.\n");   
 
         // compute K contribution
@@ -333,6 +358,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
             outfile->Printf("    Done.\n");   
         }
+        if (force_cartesian_) K[iD]->back_transform(K_temp, sph_to_cart_matrix_);
     }
     outfile->Printf("End snLinK::build_G_component\n");
     

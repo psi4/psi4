@@ -51,6 +51,7 @@ class Options;
 class PSIO;
 class DFHelper;
 class DFTGrid;
+class PetiteList;
 
 namespace pk {
 class PKManager;
