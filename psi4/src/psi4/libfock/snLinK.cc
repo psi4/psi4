@@ -361,17 +361,8 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             if (force_cartesian_ && is_spherical_basis) {
                 K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
                 
-                SharedMatrix K_temp2 = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
-                K_temp2->back_transform(K_temp, sph_to_cart_matrix_);
-                //SharedMatrix K_temp2 = nullptr; 
-                //if (is_spherical_basis) {
-                //    K_temp2 = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
-                //    K_temp2->back_transform(K_temp, sph_to_cart_matrix_);
-                //} else {
-                //    K_temp2 = K_temp;
-                //}
-
-                K[iD]->add(K_temp2);
+                K_temp->back_transform(sph_to_cart_matrix_);
+                K[iD]->add(K_temp);
             // ... otherwise the computation and addition can be bundled together 
             } else {
                 K_eigen += integrator_->eval_exx(D_eigen, integrator_settings_);
