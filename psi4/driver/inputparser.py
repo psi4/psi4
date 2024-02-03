@@ -567,8 +567,7 @@ def process_multiline_arrays(inputfile):
 
 
 def process_input(raw_input: str, print_level: int = 1) -> str:
-    """Function to preprocess *raw input*, the text of the input file, then
-    parse it, validate it for format, and convert it into legitimate Python.
+    """Function to preprocess *raw input*, the text of the input file, then parse it, validate it for format, and convert it into legitimate Python.
 
     Does a series of regular expression filters, where the matching portion of the
     input is replaced by the output of the corresponding function (in this

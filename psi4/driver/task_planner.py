@@ -55,8 +55,7 @@ TaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceCompute
 
 
 def expand_cbs_methods(method: str, basis: str, driver: DriverEnum, **kwargs) -> Tuple[str, str, Dict]:
-    """Sort out the user input method string into recognized fields.
-    Handles cases like:
+    """Sort out the user input method string into recognized fields. Handles cases like:
 
     (i) ``"mp2"`` -- passes through;
     (ii) ``"mp2/cc-pvdz"`` -- broken into method and basis fields;
