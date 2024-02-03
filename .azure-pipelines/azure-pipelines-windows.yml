@@ -139,7 +139,7 @@ jobs:
                         numpy ^
                         pint ^
                         pybind11 ^
-                        pytest<8 ^
+                        pytest=7 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
                         dftd3-python ^
