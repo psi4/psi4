@@ -144,7 +144,9 @@ def format_molecule_for_input(
     mol: Union[str, core.Molecule],
     name: str = '',
     forcexyz: bool = False) -> str:
-    """Function to return a string of the output of
+    """Old function for input string from molecule.
+
+    Function to return a string of the output of
     :py:func:`~psi4.driver.inputparser.process_input` applied to the XYZ
     format of molecule, passed as either fragmented
     geometry string *mol* or molecule instance *mol*.

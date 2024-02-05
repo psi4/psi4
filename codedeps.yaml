@@ -778,7 +778,7 @@ data:
     conda:
       channel: conda-forge
       name: pytest
-      constraint: null
+      constraint: "<8"
       aux_run_names:
         - pytest-xdist
       aux_run_names_note:

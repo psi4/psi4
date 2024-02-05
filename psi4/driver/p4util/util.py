@@ -357,7 +357,7 @@ def libint2_configuration() -> Dict[str, List[int]]:
 
 def _l2_config_style_eri_llll():
     skel = {"onebody_": [], "eri_c4_": [], "eri_c3_": [], "eri_c2_": []}
-    skel_re = {"onebody_": "onebody_\w_d\d", "eri_c4_": "eri_\w..._d\d", "eri_c3_":  "eri_\w.._d\d", "eri_c2_": "eri_\w._d\d"}
+    skel_re = {"onebody_": r"onebody_\w_d\d", "eri_c4_": r"eri_\w..._d\d", "eri_c3_":  r"eri_\w.._d\d", "eri_c2_": r"eri_\w._d\d"}
 
     amstr = "SPDFGHIKLMNOPQRTUVWXYZ"
     libint2_configuration = core._libint2_configuration()

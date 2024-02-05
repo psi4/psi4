@@ -21,8 +21,8 @@ dependencies:
   - python
     # qc buildtime required
   - gau2grid
-  - conda-forge/label/libint_dev::libint==2.7.3dev1
-  #- psi4/label/testing::libint2  # opt'l with libint; Optionally for linux-64, an AM=7 build is available here.
+  #- psi4::libint              # opt'l with libint; Optionally for linux-64, an AM=7 build is available here.
+  - libint
   - libxc-c
   - optking
   - qcelemental
@@ -32,5 +32,5 @@ dependencies:
   - networkx                  # req'd with qcelemental
   - scipy
     # test
-  - pytest
+  - pytest<8
   - pytest-xdist              # req'd with pytest; Parallel runner not strictly needed but very handy.
