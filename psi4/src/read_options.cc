@@ -1737,12 +1737,17 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("SNLINK_LOAD_BALANCER_KERNEL", "DEFAULT", "DEFAULT REPLICATED REPLICATED-PETITE REPLICATED-FILLIN");
         /*- Molecular Weights kernel for snLinK !expert -*/
         options.add_str("SNLINK_MOL_WEIGHTS_KERNEL", "DEFAULT", "DEFAULT");
-        /*- Integrator execution kernel for snLinK !expert -*/
-        options.add_str("SNLINK_INTEGRATOR_KERNEL", "DEFAULT", "DEFAULT INCORE SHELLBATCHED");
-        /*- Integrator reduction kernel for snLinK !expert -*/
-        options.add_str("SNLINK_REDUCTION_KERNEL", "DEFAULT", "DEFAULT BASICMPI NCCL");
-        /*- Integrator local work driver kernel for snLinK !expert -*/
-        options.add_str("SNLINK_LWD_KERNEL", "DEFAULT", "DEFAULT REFERENCE SCHEME1 SCHEME1-MAGMA SCHEME1-CUTLASS");
+        /*- Integrator execution kernel for snLinK !expert 
+        GauXC also has SHELLBATCHED, but it is incompatible with Psi4 due to not 
+        being yet implemented with sn-LinK. -*/
+        options.add_str("SNLINK_INTEGRATOR_KERNEL", "DEFAULT", "DEFAULT INCORE");
+        /*- Integrator reduction kernel for snLinK !expert 
+        GauXC also has NCCL, but it is incompatible with Psi4 due to requiring MPI. -*/
+        options.add_str("SNLINK_REDUCTION_KERNEL", "DEFAULT", "DEFAULT BASICMPI");
+        /*- Integrator local work driver kernel for snLinK !expert 
+        GauXC also has SCHEME1-CUTLASS, but it is disabled in Psi4 for now 
+        due to compile-time issues and requiring very modern CUDA CCs (>=80) -*/
+        options.add_str("SNLINK_LWD_KERNEL", "DEFAULT", "DEFAULT REFERENCE SCHEME1 SCHEME1-MAGMA") 
 
         /*- SUBSECTION SAD Guess Algorithm -*/
 
