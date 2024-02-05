@@ -30,6 +30,8 @@
 #   edit the CMake to use a gss.
 # * Upon additions to the Libint2 API to allow runtime SHGAUSS switching, Psi4 can no longer be adapted to use a libtool+cmake source.
 # * Libraries of different AM are not hot-swappable in a Psi4 build, but they only require a relinking.
+# [Jan 2024]
+# * As of v1.9, Psi4 can use an upstream v2.8 Libint2. This is a libtool+cmake build, so `find_package(Libint2 ... COMPONENTS ...)` has no components to check.
 
 find_package(
   Libint2
@@ -46,7 +48,7 @@ find_package(
      eri_c4_d2_l2              eri_c3_d2_l3 eri_c2_d2_l3
   )
 
-# If L2 v2.8.0 (1) exported CMake components and (2) libint2-config.cmake actually
+# If L2 v2.8.1 (1) exported CMake components and (2) libint2-config.cmake actually
 #   checked, the below is the new find_package call.
 #if (${MAX_AM_ERI} GREATER 8)
 #    set(amchar "llll")
@@ -61,7 +63,7 @@ find_package(
 #endif()
 #find_package(
 #  Libint2
-#  2.8.0
+#  2.8.1
 #  CONFIG
 #  COMPONENTS
 #    ss
@@ -76,13 +78,14 @@ find_package(
 
 if (TARGET Libint2::cxx)
     get_target_property(_loc Libint2::int2 LOCATION)
-    get_target_property(Libint2_VERSION Libint2::int2 Libint2_VERSION)
-    get_target_property(Libint2_MAX_AM_ERI Libint2::int2 Libint2_MAX_AM_ERI)
+    # defer until upstream provides full-dress targets get_target_property(Libint2_VERSION Libint2::int2 Libint2_VERSION)
+    # defer until upstream provides full-dress targets get_target_property(Libint2_MAX_AM_ERI Libint2::int2 Libint2_MAX_AM_ERI)
     get_target_property(Libint2_CONFIGURATION Libint2::int2 Libint2_CONFIGURATION)
     message(STATUS "${Cyan}Found Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (found version ${Libint2_VERSION})")
-    if (NOT eri_c4_d2_l2 IN_LIST Libint2_CONFIGURATION)
-        message(WARNING "Libint2 detected but missing ERI 2nd derivative integrals (components eri_c4_d2_l2 eri_c3_d2_l3 eri_c2_d2_l3). Psi4 will automatically fall back to finite difference.")
-    endif()
+    # TODO revive this message. For now, can't tell if cmake build missing Hessian ints or libtool build w/o component info.
+    # if (NOT eri_c4_d2_l2 IN_LIST Libint2_CONFIGURATION)
+    #     message(WARNING "Libint2 detected but missing ERI 2nd derivative integrals (components eri_c4_d2_l2 eri_c3_d2_l3 eri_c2_d2_l3). Psi4 will automatically fall back to finite difference.")
+    # endif()
     add_library(libint2_external INTERFACE)  # dummy
 
     if(${CMAKE_INSIST_FIND_PACKAGE_Libint2})
@@ -104,12 +107,12 @@ else()
 
     if(NOT ${BUILD_Libint2_GENERATOR})
         if (${MAX_AM_ERI} GREATER 5)
-            set(_url_am_src "7-7-4-7-7-5")  # passes E&G 7z conv and 6z df, H Qz conv and df. covers all internal basis sets for energy and gradient
+            set(_url_am_src "7-7-4-12-7-5")  # passes E&G 7z conv and 6z df, H Qz conv and df. covers all internal basis sets for energy and gradient
         elseif (${MAX_AM_ERI} LESS_EQUAL 5)
             set(_url_am_src "5-4-3-6-5-4")  # passes full. production Mac, temp production Linux
         endif()
 
-        set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/libint-2.7.2-post1-${_url_am_src}_mm4f12ob2_1.tgz")
+        set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/libint-2.8.1-${_url_am_src}_mm10f12ob2_0.tgz")
 
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2 ${_url_am_src}${ColourReset} instead.")
 
@@ -133,10 +136,9 @@ else()
                        -DEigen3_DIR=${Eigen3_DIR}
                        -DEigen3_ROOT=${Eigen3_ROOT}
                        -DBUILD_SHARED_LIBS=${_build_shared_libs}
-                       -DLIBINT2_REQUIRE_CXX_API=ON
-                       -DLIBINT2_REQUIRE_CXX_API_COMPILED=OFF
-                       -DLIBINT2_ENABLE_FORTRAN=OFF
-                       -DLIBINT2_ENABLE_PYTHON=OFF
+                       -DREQUIRE_CXX_API=ON
+                       -DENABLE_FORTRAN=OFF
+                       -DLIBINT2_PYTHON=OFF
                        -DENABLE_XHOST=${ENABLE_XHOST}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
@@ -145,9 +147,13 @@ else()
                              -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1})
 
+                       #-DLIBINT2_REQUIRE_CXX_API=ON
+                       #-DLIBINT2_REQUIRE_CXX_API_COMPILED=OFF
+                       #-DLIBINT2_ENABLE_FORTRAN=OFF
+                       #-DLIBINT2_ENABLE_PYTHON=OFF
     else()
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2${ColourReset} from generator source instead.")
-        message(WARNING "${Yellow}Libint2 generator source build requires Ninja (not Makefile) builder and Boost, Eigen, and GMPXX dependencies. The build will be very long for non-trivial AM, and parallelism won't help for the generation phase. Edit external/upstream/libint2/CMakeLists.txt for AM, derivative, and integral classes settings.${ColourReset}")
+        message(WARNING "${Yellow}Libint2 generator source build requires Ninja (not Makefile) builder and Boost, Eigen, and GMPXX dependencies. The build will be very long for non-trivial AM, and parallelism won't help for the generation phase. Edit external/upstream/libint2/CMakeLists.txt for AM, derivative, and integral classes settings. This is also building v2.7, not v2.8 Libint2.${ColourReset}")
 
         if (MSVC)
             message(FATAL_ERROR "${Red}Libint2 generator source build faulty on Windows.${ColourReset}")

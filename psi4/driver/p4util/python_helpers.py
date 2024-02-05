@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -1044,8 +1044,7 @@ def _multipole_plumper(compressed: np.ndarray, order: int) -> np.ndarray:
 
 
 def _core_has_variable(key: str) -> bool:
-    """Whether scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key*
-    has been set in global memory.
+    """Whether scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key* has been set in global memory.
 
     Parameters
     ----------
@@ -1058,8 +1057,7 @@ def _core_has_variable(key: str) -> bool:
 
 
 def _core_wavefunction_has_variable(self: core.Wavefunction, key: str) -> bool:
-    """Whether scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key*
-    has been set on *self*.
+    """Whether scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key* has been set on *self*.
 
     Parameters
     ----------
@@ -1176,8 +1174,7 @@ def _core_wavefunction_variable(self: core.Wavefunction, key: str) -> Union[floa
 
 
 def _core_set_variable(key: str, val: Union[core.Matrix, np.ndarray, float]) -> None:
-    """Sets scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key* to
-    *val* in global memory.
+    """Sets scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key* to *val* in global memory.
 
     Parameters
     ----------
@@ -1217,8 +1214,7 @@ def _core_set_variable(key: str, val: Union[core.Matrix, np.ndarray, float]) -> 
 
 
 def _core_wavefunction_set_variable(self: core.Wavefunction, key: str, val: Union[core.Matrix, np.ndarray, float]) -> None:
-    """Sets scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key* to
-    *val* on *self*.
+    """Sets scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key* to *val* on *self*.
 
     Parameters
     ----------
@@ -1264,8 +1260,7 @@ def _core_wavefunction_set_variable(self: core.Wavefunction, key: str, val: Unio
 
 
 def _core_del_variable(key: str) -> None:
-    """Removes scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key*
-    from global memory if present.
+    """Removes scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key* from global memory if present.
 
     Parameters
     ----------
@@ -1281,8 +1276,7 @@ def _core_del_variable(key: str) -> None:
 
 
 def _core_wavefunction_del_variable(self: core.Wavefunction, key: str) -> None:
-    """Removes scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key*
-    from *self* if present.
+    """Removes scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key* from *self* if present.
 
     Parameters
     ----------
