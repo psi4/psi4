@@ -47,9 +47,9 @@
 namespace psi {
 
 /*!
-** block_matrix(): Allocate a 2D array of doubles using contiguous memory
+** \brief block_matrix() allocates a 2D array of doubles using contiguous memory.
 **
-** Allocates a contiguous block of memory for an array of
+** \details Allocates a contiguous block of memory for an array of
 ** doubles, allocates an array of pointers to the beginning of each row and
 ** returns the pointer to the first row pointer.  This allows transparent
 ** 2d-array style access, but keeps memory together such that the matrix
@@ -64,19 +64,17 @@ namespace psi {
 **   into physical RAM or not, and available only where _POSIX_MEMLOCK
 **   is defined. Defaults to false if not specified.
 **
-** Returns: double star pointer to newly allocated matrix
+** \return double star pointer to newly allocated matrix
 **
-** T. Daniel Crawford
-** Sometime in 1994
+** \author T. Daniel Crawford
+** \date Sometime in 1994
 **
-** Based on init_matrix() from libciomr
+** \remark Based on init_matrix() from libciomr
 ** \ingroup CIOMR
 */
-
-PSI_API double **block_matrix(size_t n, size_t m, bool memlock) {
+[[nodiscard]] PSI_API double **block_matrix(size_t n, size_t m, bool memlock) {
     double **A = nullptr;
     double *B = nullptr;
-    size_t i;
 
     if (!m || !n) return (static_cast<double **>(nullptr));
 
@@ -84,18 +82,20 @@ PSI_API double **block_matrix(size_t n, size_t m, bool memlock) {
     if (A == nullptr) {
         outfile->Printf("block_matrix: trouble allocating memory \n");
         outfile->Printf("n = %ld\n", n);
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Could not allocate memory in block_matrix! Tried to allocate " +
+                           std::to_string(n * sizeof(double *)) + " bytes.");
     }
 
     B = new double[n * m];
     if (B == nullptr) {
         outfile->Printf("block_matrix: trouble allocating memory \n");
         outfile->Printf("m = %ld\n", m);
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Could not allocate memory in block_matrix! Tried to allocate " +
+                           std::to_string(n * m * sizeof(double)) + " bytes.");
     }
     memset(static_cast<void *>(B), 0, m * n * sizeof(double));
 
-    for (i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         A[i] = &(B[i * m]);
     }
 
@@ -150,4 +150,4 @@ void PSI_API free_block(double **array) {
     delete[] array[0];
     delete[] array;
 }
-}
+}  // namespace psi
