@@ -107,6 +107,17 @@ else()
 endif()
 
 if(${ENABLE_gauxc})
+    #== perhaps ExchCXX and IntegratorXX were built alongside GauXC, check for this ==#
+    if(NOT "${gauxc_DIR}" STREQUAL "")
+        if("${IntegratorXX_DIR}" STREQUAL "") 
+           set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
+        endif()
+ 
+        if("${ExchCXX_DIR}" STREQUAL "") 
+           set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
+        endif()
+    endif()
+
     find_package(gauxc 0.0.1 CONFIG REQUIRED)
     get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
@@ -124,15 +135,6 @@ endif()
 #else()
 #    message(STATUS "Disabled HighFive ${HighFive_DIR}")
 #endif()
-
-if(${ENABLE_ExchCXX})
-    find_package(ExchCXX CONFIG REQUIRED PATH "${gauxc_DIR}/../ExchCXX")
-    get_property(_loc TARGET ExchCXX::ExchCXX PROPERTY IMPORTED_LOCATION_RELWITHDEBINFO)
-    list(APPEND _addons ${_loc})
-    message(STATUS "${Cyan}Using ExchCXX${ColourReset} (version ${ExchCXX_VERSION})")
-else()
-    message(STATUS "Disabled ExchCXX ${ExchCXX_DIR}")
-endif()
 
 if(${ENABLE_ecpint})
     find_package(ecpint 1.0.7 CONFIG REQUIRED)
