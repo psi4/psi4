@@ -121,7 +121,6 @@ option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gauxc "Enables use of GauXC density functional library" OFF)
-option(ENABLE_ExchCXX "Enables use of ExchCXX exchange computation library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
@@ -295,7 +294,6 @@ ExternalProject_Add(psi4-core
               #-DENABLE_HighFive=${ENABLE_HighFive}
               -DENABLE_IntegratorXX=${ENABLE_IntegratorXX}
               -DENABLE_gauxc=${ENABLE_gauxc}
-              -DENABLE_ExchCXX=${ENABLE_ExchCXX}
               -DENABLE_ecpint=${ENABLE_ecpint}
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_Einsums=${ENABLE_Einsums}
@@ -321,7 +319,7 @@ ExternalProject_Add(psi4-core
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dmdi_DIR=${mdi_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
-              -DHighFive_DIR=${HighFive_DIR}
+              #-DHighFive_DIR=${HighFive_DIR}
               -DIntegratorXX_DIR=${IntegratorXX_DIR}
               -Dgauxc_DIR=${gauxc_DIR}
               -Dgauxc_ENABLE_GPU=${gauxc_ENABLE_GPU}
