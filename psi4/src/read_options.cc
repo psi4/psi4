@@ -1747,7 +1747,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Integrator local work driver kernel for snLinK !expert 
         GauXC also has SCHEME1-CUTLASS, but it is disabled in Psi4 for now 
         due to compile-time issues and requiring very modern CUDA CCs (>=80) -*/
-        options.add_str("SNLINK_LWD_KERNEL", "DEFAULT", "DEFAULT REFERENCE SCHEME1 SCHEME1-MAGMA") 
+        options.add_str("SNLINK_LWD_KERNEL", "DEFAULT", "DEFAULT REFERENCE SCHEME1 SCHEME1-MAGMA"); 
 
         /*- SUBSECTION SAD Guess Algorithm -*/
 

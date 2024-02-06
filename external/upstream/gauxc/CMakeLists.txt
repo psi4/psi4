@@ -3,7 +3,19 @@ if(${ENABLE_gauxc})
     if(${psi4_SHGAUSS_ORDERING} STREQUAL gaussian)
         message(FATAL_ERROR "Psi4 with the GauXC interface must be compiled using psi4_SHGAUSS_ORDERING=standard.")
     endif()
-  
+
+    #== perhaps ExchCXX and IntegratorXX were built alongside GauXC, check for this ==#
+    if((NOT ${gauxc_DISABLE_FIND_PACKAGE}) AND (NOT "${gauxc_DIR}" STREQUAL ""))
+        if("${IntegratorXX_DIR}" STREQUAL "") 
+           set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
+        endif()
+ 
+        if("${ExchCXX_DIR}" STREQUAL "") 
+           set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
+        endif()
+    endif()
+
+    #== now search for package ==#
     find_package(gauxc 0.0.1 CONFIG) 
 
     if(${gauxc_FOUND})
