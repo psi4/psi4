@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -36,6 +36,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "dpd.h"
+#include "psi4/libpsi4util/exception.h"
 
 namespace psi {
 
@@ -97,7 +98,7 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y, 
         symlink = GX;
     } else {
         outfile->Printf("Junk X index %d\n", sum_X);
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Junk X index " + std::to_string(sum_X));
     }
 
     if ((sum_Y == 1) || (sum_Y == 2)) trans4_init(&Yt, Y);

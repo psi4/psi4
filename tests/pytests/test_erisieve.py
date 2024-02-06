@@ -234,8 +234,8 @@ def test_schwarz_vs_density_quartets():
 
     # compare iteration counts of runs with computed shell quartet array lengths
     # iteration_+1 is used to account for computed_shells arrays including SAD guess results
-    assert(len(schwarz_computed_shells_expected) == schwarz_wfn.iteration_+1)
-    assert(len(density_computed_shells_expected) == density_wfn.iteration_+1)
+    assert len(schwarz_computed_shells_expected) == schwarz_wfn.iteration_+1
+    assert len(density_computed_shells_expected) == density_wfn.iteration_+1
 
     # actually compare results with expected values
     assert compare(schwarz_computed_shells_expected, schwarz_computed_shells, 'Schwarz Computed Shells Count, Cutoff 1.0e-12')
@@ -294,8 +294,8 @@ def test_rhf_vs_uhf_screening():
 
     # compare iteration counts of runs with computed shell quartet array lengths
     # iteration_+1 is used to account for computed_shells arrays including SAD guess results
-    assert(len(computed_shells_expected) == rhf_wfn.iteration_+1)
-    assert(len(computed_shells_expected) == uhf_wfn.iteration_+1)
+    assert len(computed_shells_expected) == rhf_wfn.iteration_+1
+    assert len(computed_shells_expected) == uhf_wfn.iteration_+1
 
     # actually compare results with expected values
     assert compare(computed_shells_expected, rhf_computed_shells, 'Schwarz Computed Shells Count, Cutoff 1.0e-12')

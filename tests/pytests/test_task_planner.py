@@ -398,9 +398,9 @@ def test_findif_1_0(mtd, kw):
         assert plan2.method == mtd
         assert plan2.driver == "energy"
         assert np.allclose(plan2.molecule.geometry().np, displacements[k2])
-        assert plan2.keywords["SCF__E_CONVERGENCE"] == 1.0e-10
-        assert plan2.keywords["SCF__D_CONVERGENCE"] == 1.0e-10
-        assert plan2.keywords["E_CONVERGENCE"] == 1.0e-8
+        assert psi4.compare_values(1.0e-10, plan2.keywords["SCF__E_CONVERGENCE"], atol=1.0e-14)
+        assert psi4.compare_values(1.0e-10, plan2.keywords["SCF__D_CONVERGENCE"], atol=1.e-14)
+        assert psi4.compare_values(1.0e-8, plan2.keywords["E_CONVERGENCE"], atol=1.e-14)
 
 
 @pytest.mark.parametrize("kw, pts", [({"ref_gradient": np.zeros((2, 3))}, 3), ({}, 5)])
@@ -435,8 +435,8 @@ def test_findif_2_1(kw, pts):
         assert plan2.method == "mp2"
         assert plan2.driver == "gradient"
         assert np.allclose(plan2.molecule.geometry().np, displacements[k2])
-        assert plan2.keywords["SCF__D_CONVERGENCE"] == 1.0e-10
-        assert plan2.keywords["E_CONVERGENCE"] == 1.0e-6
+        assert psi4.compare_values(1.0e-10, plan2.keywords["SCF__D_CONVERGENCE"], atol=1.e-14)
+        assert psi4.compare_values(1.0e-6, plan2.keywords["E_CONVERGENCE"], atol=1.e-14)
 
 
 @pytest.mark.parametrize("kw, pts", [({"ref_gradient": np.zeros((2, 3))}, 5), ({}, 9)])
@@ -475,6 +475,6 @@ def test_findif_2_0(kw, pts):
         assert plan2.method == "mp2"
         assert plan2.driver == "energy"
         assert np.allclose(plan2.molecule.geometry().np, displacements[k2])
-        assert plan2.keywords["SCF__E_CONVERGENCE"] == 1.0e-6
-        assert plan2.keywords["SCF__D_CONVERGENCE"] == 1.0e-11
-        assert plan2.keywords["E_CONVERGENCE"] == 1.0e-10
+        assert psi4.compare_values(1.0e-6, plan2.keywords["SCF__E_CONVERGENCE"], atol=1.e-14)
+        assert psi4.compare_values(1.0e-11, plan2.keywords["SCF__D_CONVERGENCE"], atol=1.e-14)
+        assert psi4.compare_values(1.0e-10, plan2.keywords["E_CONVERGENCE"], atol=1.e-14)

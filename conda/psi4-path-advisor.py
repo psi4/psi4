@@ -1007,6 +1007,15 @@ elif args.subparser_name in ["bulletin"]:
 
     notes = f"""
 
+  * [21 Dec 2023] The Psi4 source can use most any Libint packaged as psi4*::libint2
+    in 2023, as conda-forge/label/libint_dev::libint in 2023 or
+    conda-forge::libint>=2.8.0 . They may not detect the same with CMake, but at
+    runtime, as far as Psi4 uses the library, they're the same. You are encouraged
+    to upgrade to v2.8.1 soon, as the master branch will start to require it in
+    early 2024. AM5 production builds are available from conda-forge, and an AM7
+    is available for Linux from psi4. Henceforth, all packages will be named
+    "libint", not "libint2".
+
   * [15 Nov 2023] If ever you are building from git source and the version is
     undefined (shows up in CMake output, too), the solution is to pull tags:
     `git fetch upstream "refs/tags/*:refs/tags/*"`, then recompile (trivial).

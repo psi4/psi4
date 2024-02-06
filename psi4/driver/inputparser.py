@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -567,8 +567,7 @@ def process_multiline_arrays(inputfile):
 
 
 def process_input(raw_input: str, print_level: int = 1) -> str:
-    """Function to preprocess *raw input*, the text of the input file, then
-    parse it, validate it for format, and convert it into legitimate Python.
+    """Function to preprocess *raw input*, the text of the input file, then parse it, validate it for format, and convert it into legitimate Python.
 
     Does a series of regular expression filters, where the matching portion of the
     input is replaced by the output of the corresponding function (in this
@@ -746,11 +745,7 @@ def process_input(raw_input: str, print_level: int = 1) -> str:
     else:
         psirc = ''
 
-    blank_mol = 'geometry("""\n'
-    blank_mol += '0 1\nH 0 0 0\nH 0.74 0 0\n'
-    blank_mol += '""","blank_molecule_psi4_yo")\n'
-
-    temp = imports + psirc + blank_mol + temp
+    temp = imports + psirc + temp
 
     # Move up the psi4.core namespace
     for func in dir(core):

@@ -110,7 +110,6 @@ jobs:
       #    conda=23.10 forced a bugfix at conda-build stage
       - script: |
           conda config --set always_yes yes
-          conda config --add channels conda-forge/label/libint_dev
           conda config --add channels psi4/label/testing
           conda config --set channel_priority strict
           conda config --set solver libmamba
@@ -140,14 +139,14 @@ jobs:
                         numpy ^
                         pint ^
                         pybind11 ^
-                        pytest>=7.0.1 ^
+                        pytest=7 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
                         dftd3-python ^
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
-                        libint=2.8.0dev2 ^
+                        libint ^
                         qcelemental ^
                         qcengine ^
                         pydantic=1.10.13 ^

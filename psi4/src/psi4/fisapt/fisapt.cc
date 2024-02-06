@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -6565,7 +6565,7 @@ void FISAPT::find() {
             auto cphf = std::make_shared<CPHF_FISAPT>();
 
             // Effective constructor
-            cphf->delta_ = options_.get_double("D_CONVERGENCE");
+            cphf->delta_ = options_.get_double("CPHF_R_CONVERGENCE");
             cphf->maxiter_ = options_.get_int("MAXITER");
             cphf->jk_ = jk;
 

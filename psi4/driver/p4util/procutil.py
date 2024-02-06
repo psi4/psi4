@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -144,7 +144,9 @@ def format_molecule_for_input(
     mol: Union[str, core.Molecule],
     name: str = '',
     forcexyz: bool = False) -> str:
-    """Function to return a string of the output of
+    """Old function for input string from molecule.
+
+    Function to return a string of the output of
     :py:func:`~psi4.driver.inputparser.process_input` applied to the XYZ
     format of molecule, passed as either fragmented
     geometry string *mol* or molecule instance *mol*.

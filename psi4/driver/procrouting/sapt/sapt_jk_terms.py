@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -518,7 +518,9 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
     if do_response:
         core.print_out("\n   => Coupled Induction <= \n\n")
 
-        x_B_MOA, x_A_MOB = _sapt_cpscf_solve(cache, jk, w_B_MOA, w_A_MOB, 20, 1.e-6, sapt_jk_B=sapt_jk_B)
+        cphf_r_convergence = core.get_option("SAPT", "CPHF_R_CONVERGENCE")
+
+        x_B_MOA, x_A_MOB = _sapt_cpscf_solve(cache, jk, w_B_MOA, w_A_MOB, 20, cphf_r_convergence, sapt_jk_B=sapt_jk_B)
 
         ind_ab = 2.0 * x_B_MOA.vector_dot(w_B_MOA)
         ind_ba = 2.0 * x_A_MOB.vector_dot(w_A_MOB)

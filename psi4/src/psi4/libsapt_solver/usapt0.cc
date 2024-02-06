@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -58,7 +58,7 @@ USAPT0::USAPT0(SharedWavefunction d, SharedWavefunction mA, SharedWavefunction m
     memory_ = (size_t)(Process::environment.get_memory() * options_.get_double("SAPT_MEM_FACTOR") * 0.125);
 
     cpks_maxiter_ = options_.get_int("MAXITER");
-    cpks_delta_ = options_.get_double("D_CONVERGENCE");
+    cpks_delta_ = options_.get_double("CPHF_R_CONVERGENCE");
 
     dimer_ = d->molecule();
     monomer_A_ = mA->molecule();
@@ -1574,7 +1574,7 @@ void CPKS_USAPT0::compute_cpks() {
     outfile->Printf("  ==> CPKS Iterations <==\n\n");
 
     outfile->Printf("    Maxiter     = %11d\n", maxiter_);
-    outfile->Printf("    Convergence = %11.3E\n", delta_);
+    outfile->Printf("    CPHF R converge = %11.3E\n", delta_);
     outfile->Printf("\n");
 
     std::time_t start;

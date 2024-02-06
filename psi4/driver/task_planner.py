@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -55,8 +55,7 @@ TaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceCompute
 
 
 def expand_cbs_methods(method: str, basis: str, driver: DriverEnum, **kwargs) -> Tuple[str, str, Dict]:
-    """Sort out the user input method string into recognized fields.
-    Handles cases like:
+    """Sort out the user input method string into recognized fields. Handles cases like:
 
     (i) ``"mp2"`` -- passes through;
     (ii) ``"mp2/cc-pvdz"`` -- broken into method and basis fields;

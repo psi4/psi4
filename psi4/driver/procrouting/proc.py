@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -4669,8 +4669,7 @@ def run_sapt(name, **kwargs):
         core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
     core.IO.set_default_namespace('dimer')
-    core.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
-    core.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
+    # core.set_local_option('SAPT', 'CPHF_R_CONVERGENCE', 10e-10)
     if name in ['sapt0', 'ssapt0']:
         core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT0')
     elif name == 'sapt2':
@@ -4825,8 +4824,7 @@ def run_sapt_ct(name, **kwargs):
     monomerBm_wfn = scf_helper('RHF', molecule=monomerBm, **kwargs)
 
     core.IO.set_default_namespace('dimer')
-    core.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
-    core.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
+    # core.set_local_option('SAPT', 'CPHF_R_CONVERGENCE', 10e-10)
     if name == 'sapt0-ct':
         core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT0')
     elif name == 'sapt2-ct':
