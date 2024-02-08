@@ -266,7 +266,7 @@ session.
             scf_type = pk
             e_convergence =  1.e-5
             soscf = True
-            optking__geom_maxiter = 50
+            geom_maxiter = 50
         }
 
    .. code-tab:: py PsiAPI
@@ -275,7 +275,7 @@ session.
             'scf_type': 'pk',
             'e_convergence': 1.e-5,
             'soscf': True,
-            'optking__geom_maxiter': 50
+            'geom_maxiter': 50
         })
 
 Basis Sets
@@ -318,7 +318,7 @@ H\ :sub:`2` and H atom
         h_energy = energy('scf')
         
         D_e = psi_hartree2kcalmol * (2*h_energy - h2_energy)
-        print "De = %f" % D_e
+        print ("De = %f" % D_e)
 
    .. code-tab:: py PsiAPI
 
@@ -680,7 +680,7 @@ do the extrapolation).  For example,
 
       # all equivalent
 
-      energy('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
+      energy('mp2', corl_basis='cc-pv[dt]z', corl_scheme='corl_xtpl_helgaker_2')
 
       energy('mp2/cc-pv[dt]z')
 
@@ -688,7 +688,7 @@ do the extrapolation).  For example,
 
       # all equivalent
 
-      psi4.energy('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
+      psi4.energy('mp2', corl_basis='cc-pv[dt]z', corl_scheme='corl_xtpl_helgaker_2')
 
       psi4.energy('mp2/cc-pv[dt]z')
 
