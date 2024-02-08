@@ -27,27 +27,29 @@ def _build_system(basis):
     return basis, aux
 
 
-@pytest.mark.parametrize("basis,jk_type,estimate",[
+@pytest.mark.parametrize("basis,jk_type,estimate,name",[
 
     # Zero temps
-    ["cc-pvdz", "DIRECT",  0],
-    ["cc-pvdz", "OUT_OF_CORE",  0],
+    ["cc-pvdz", "DIRECT",  0, "DirectJK"],
+    ["cc-pvdz", "OUT_OF_CORE",  0, "DiskJK"],
 
     # pvdz tests
-    ["cc-pvdz", "MEM_DF",  1590520],
-    ["cc-pvdz", "DISK_DF", 1286244],
-    ["cc-pvdz", "CD",      2916000],
-    ["cc-pvdz", "PK",      65610000],
+    ["cc-pvdz", "MEM_DF",  1590520, "MemDFJK"],
+    ["cc-pvdz", "DISK_DF", 1286244, "DiskDFJK"],
+    ["cc-pvdz", "CD",      2916000, "CDJK"],
+    ["cc-pvdz", "PK",      65610000, "PKJK"],
 
     # 5z tests
-    ["cc-pv5z", "MEM_DF",  57020770],
-    ["cc-pv5z", "DISK_DF", 26984120],
+    ["cc-pv5z", "MEM_DF",  57020770, "MemDFJK"],
+    ["cc-pv5z", "DISK_DF", 26984120, "DiskDFJK"],
 ]) # yapf: disable
 
-def test_jk_memory_estimate(basis, jk_type, estimate):
+def test_jk_memory_estimate(basis, jk_type, estimate, name):
+    psi4.set_memory("5 gb")
 
     basis, aux = _build_system(basis)
     jk = psi4.core.JK.build(basis, aux=aux, jk_type=jk_type, do_wK=False, memory=1e9)
 
+    assert compare(name, jk.name(), f"{jk_type} algorithm name")
     assert compare_integers(estimate, jk.memory_estimate(), "{} memory estimate".format(jk_type))
 
