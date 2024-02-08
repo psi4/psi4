@@ -346,6 +346,13 @@ class PSI_API snLinK : public SplitJK {
     /// matrices between pure and Cartesian representations.
     SharedMatrix sph_to_cart_matrix_;
 
+    // => Gaussian-CCA Transformation stuff <= //
+    //Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix_;
+    matrix_type permutation_matrix_;
+    //template<typename T> Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(const GauXC::BasisSet<T>& gauxc_basisset);
+    template<typename T> matrix_type generate_permutation_matrix(const GauXC::BasisSet<T>& gauxc_basisset);
+    bool force_permute_;
+
     // => Semi-Numerical Stuff <= //
     // are we running snLinK on GPUs?
     bool use_gpu_; 
@@ -359,7 +366,6 @@ class PSI_API snLinK : public SplitJK {
     size_t spherical_points_; 
     // basis cutoff
     double basis_tol_;
-   
    
     /// Factory for generating GauXC "Load Balancer" objects
     std::unique_ptr<GauXC::LoadBalancerFactory> gauxc_load_balancer_factory_;
@@ -375,7 +381,7 @@ class PSI_API snLinK : public SplitJK {
     // => Psi4 -> GauXC conversion functions <= // 
     GauXC::Molecule psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule);
     template<typename T> GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset);
-    Eigen::Map<Eigen::MatrixXd> psi4_to_eigen_map(SharedMatrix psi4_matrix);
+    Eigen::Map<matrix_type> psi4_to_eigen_map(SharedMatrix psi4_matrix);
 
     // => Psi4 -> GauXC enum mappings <= //
     std::tuple<
@@ -383,8 +389,12 @@ class PSI_API snLinK : public SplitJK {
         std::unordered_map<std::string, GauXC::RadialQuad> 
     > generate_enum_mappings();
     
+    // => Other useful stuff <= //
     /// Eigen matrix printout format    
-    //Eigen::IOFormat HeavyFmt(Eigen::FullPrecision, 0, ", ", ";\n", "[", "]", "[", "]");
+    //Eigen::IOFormat HeavyFmt_(Eigen::FullPrecision, 0, ", ", ";\n", "[", "]", "[", "]");
+    //Eigen::IOFormat CleanFmt_(4, 0, ", ", "\n", "[", "]");
+    Eigen::IOFormat format_;
+
   #endif
    
   public:
