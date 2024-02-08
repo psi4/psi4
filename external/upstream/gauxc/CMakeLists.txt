@@ -1,7 +1,8 @@
 if(${ENABLE_gauxc})
     #== GauXC requires Psi4 to have standard integral ordering rather than gaussian ==#
     if(${psi4_SHGAUSS_ORDERING} STREQUAL gaussian)
-        message(FATAL_ERROR "Psi4 with the GauXC interface must be compiled using psi4_SHGAUSS_ORDERING=standard.")
+        #message(FATAL_ERROR "Psi4 with the GauXC interface must be compiled using psi4_SHGAUSS_ORDERING=standard.")
+        message(WARNING "Psi4 with the GauXC interface use different integral ordering standards! Expect incorrect answers.") 
     endif()
 
     #== perhaps ExchCXX and IntegratorXX were built alongside GauXC, check for this ==#
