@@ -43,6 +43,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <algorithm>
+#include <iostream>
 #include <map>
 #include <tuple>
 #include <unordered_set>
@@ -81,6 +82,18 @@ std::tuple<
     return std::move(std::make_tuple(pruning_scheme_map, radial_scheme_map));
 }
 
+template <typename T>
+//Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permutation_matrix(const GauXC::BasisSet<T>& gauxc_basisset) {
+Eigen::MatrixXd snLinK::generate_permutation_matrix(const GauXC::BasisSet<T>& gauxc_basisset) {
+  auto nbf = primary_->nbf(); 
+
+  Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix;
+
+  permutation_matrix.setIdentity(nbf); 
+
+  return std::move(permutation_matrix.toDenseMatrix().cast<double>());
+}
+
 // converts a Psi4::Molecule object to a GauXC::Molecule object
 GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule) {
     GauXC::Molecule gauxc_molecule;
@@ -111,8 +124,8 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
 
     GauXC::BasisSet<T> gauxc_basisset;
  
-    outfile->Printf("snLinK::psi4_to_gauxc_basisset\n");
-    outfile->Printf("------------------------------\n");
+    outfile->Printf("snLinK::psi4_to_gauxc_basisset (Psi-side)\n");
+    outfile->Printf("-----------------------------------------\n");
     for (size_t ishell = 0; ishell != psi4_basisset->nshell(); ++ishell) {
         auto psi4_shell = psi4_basisset->shell(ishell);
        
@@ -152,6 +165,24 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         sh.set_shell_tolerance(basis_tol_); 
     }
 
+    outfile->Printf("snLinK::psi4_to_gauxc_basisset (GauXC-side)\n");
+    outfile->Printf("-------------------------------------------\n");
+    for (int ish = 0; ish != gauxc_basisset.size(); ++ish) {
+      auto& sh = gauxc_basisset[ish];
+
+      auto alpha = sh.alpha();
+      auto coeff = sh.coeff();
+      assert(alpha.size() == coeff.size());
+      assert(alpha.size() == sh.nprim());
+
+      outfile->Printf("  ");
+      outfile->Printf("  %s", (!sh.pure() ? "Cartesian" : "Spherical"));
+      outfile->Printf(" Shell #%i (AM %i): %i primitives\n", ish, sh.l(), sh.nprim());
+      for (size_t iprim = 0; iprim != sh.nprim(); ++iprim) {
+        outfile->Printf("      Primitive #%i: %f, %f\n", iprim, alpha.at(iprim), coeff.at(iprim));
+      }
+    }
+ 
     return std::move(gauxc_basisset);
 }
 
@@ -182,7 +213,9 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     pruning_scheme_ = options_.get_str("SNLINK_PRUNING_SCHEME");
     radial_scheme_ = options_.get_str("DFT_RADIAL_SCHEME");
-  
+ 
+    format_ = Eigen::IOFormat(4, 0, ", ", "\n", "[", "]");
+    
     // sanity-checking of radial scheme needed because generalist DFT_RADIAL_SCHEME option is used 
     std::array<std::string, 3> valid_radial_schemes = { "TREUTLER", "MURA", "EM" };
     bool is_valid_radial_scheme = std::any_of(
@@ -228,7 +261,15 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // convert Psi4 fundamental quantities to GauXC 
     auto gauxc_mol = psi4_to_gauxc_molecule(primary_->molecule());
     auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_);
-    
+
+    // create permutation matrix to handle integral ordering
+    permutation_matrix_ = generate_permutation_matrix(gauxc_primary);
+    force_permute_ = options_.get_bool("SNLINK_FORCE_PERMUTE"); 
+ 
+    std::cout << "Permutation Matrix (" << permutation_matrix_.rows() << ", " << permutation_matrix_.cols() << "):" << std::endl;
+    std::cout << "----------------------------  " << std::endl;
+    std::cout << permutation_matrix_ << std::endl << std::endl;
+
     // create snLinK grid for GauXC
     auto grid_batch_size = options_.get_int("SNLINK_GRID_BATCH_SIZE");
     auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
@@ -238,6 +279,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
         radial_scheme_map[radial_scheme_], 
         GauXC::RadialSize(radial_points_),
         GauXC::AngularSize(spherical_points_)
+        //GauXC::AtomicGridSizeDefault::UltraFineGrid
     );
 
     // construct load balancer
@@ -332,7 +374,16 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             D_temp = D[iD];
         }
         auto D_eigen = psi4_to_eigen_map(D_temp);    
-
+        assert(D_eigen.rows() == permutation_matrix_.rows());
+        assert(D_eigen.cols() == permutation_matrix_.cols());
+        std::cout << "D_eigen pre-permute(" << D_eigen.rows() << ", " << D_eigen.cols() << "): " << std::endl;
+        std::cout << "----------------------------  " << std::endl;
+        std::cout << D_eigen << std::endl << std::endl;
+        if (force_permute_ && is_spherical_basis) D_eigen = permutation_matrix_ * D_eigen * permutation_matrix_;
+        std::cout << "D_eigen post-permute(" << D_eigen.rows() << ", " << D_eigen.cols() << "): " << std::endl;
+        std::cout << "----------------------------  " << std::endl;
+        std::cout << D_eigen << std::endl << std::endl;
+ 
         // map Psi4 exchange matrix buffer to Eigen matrix map
         // buffer can be either K itself or a cartesian representation of K
         SharedMatrix K_temp = nullptr; 
@@ -342,35 +393,52 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             K_temp = K[iD];
         }
         auto K_eigen = psi4_to_eigen_map(K_temp); 
-
+        assert(K_eigen.rows() == permutation_matrix_.rows());
+        assert(K_eigen.cols() == permutation_matrix_.cols());
+        std::cout << "K_eigen pre-permute: " << std::endl;
+        std::cout << "-------------------- " << std::endl;
+        std::cout << K_eigen << std::endl << std::endl;
+        if (force_permute_ && is_spherical_basis) K_eigen = permutation_matrix_ * K_eigen * permutation_matrix_;
+        std::cout << "K_eigen post-permute: " << std::endl;
+        std::cout << "-------------------- " << std::endl;
+        std::cout << K_eigen << std::endl << std::endl;
+ 
         // compute delta K if incfock iteration... 
         if (incfock_iter_) { 
             // if cartesian transformation is forced, K_eigen is delta K and must be added to Psi4 K separately...
             if (force_cartesian_ && is_spherical_basis) {
                 K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
-                
+               
                 K_temp->back_transform(sph_to_cart_matrix_);
                 K[iD]->add(K_temp);
             // ... otherwise the computation and addition can be bundled together 
             } else {
                 K_eigen += integrator_->eval_exx(D_eigen, integrator_settings_);
-            }
+
+           }
         
         // ... else compute full K 
         } else {
-            K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
-            
+            K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);        
+
             if (force_cartesian_ && is_spherical_basis) {
                 K[iD]->back_transform(K_temp, sph_to_cart_matrix_);          
             }
+        }
+
+        if (force_permute_ && is_spherical_basis) {
+            D_eigen = permutation_matrix_ * D_eigen * permutation_matrix_;
+            K_eigen = permutation_matrix_ * K_eigen * permutation_matrix_;
         }
 
         // symmetrize K if applicable
         if (lr_symmetric_) {
             K[iD]->hermitivitize();
         }
+        
+        //outfile->Printf("K[%i] norm: %f \n", iD, K[iD]->norm());   
     }
-    
+   
     return;
 }
 
