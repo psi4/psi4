@@ -12,22 +12,22 @@ molecule mol {
 }
 
 set {
-    scf_type dfdirj+snlink 
+    scf_type direct 
     guess sad 
     df_scf_guess false
     basis 6-311g(d) 
     e_convergence 1.0e-10
     screening schwarz
-    incfock false 
+    incfock true 
     incfock_full_fock_every 4
     ints_tolerance 1.0e-12
     linK_ints_tolerance 1.0e-12
     snlinK_ints_tolerance 1.0e-12
     snlink_use_gpu false 
-    snlink_force_cartesian true 
+    snlink_force_cartesian false 
     #maxiter 3
-    print 7
-    debug 7
+    #print 7
+    #debug 7
     snlink_radial_points 70
     snlink_spherical_points 302
     cosx_radial_points_initial 70
