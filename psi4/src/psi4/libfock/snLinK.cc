@@ -82,8 +82,10 @@ std::tuple<
     return std::move(std::make_tuple(pruning_scheme_map, radial_scheme_map));
 }
 
+// constructs a permutation matrix for converting matrices to and from GauXC's integral ordering standard 
 template <typename T>
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permutation_matrix(const GauXC::BasisSet<T>& gauxc_basisset) {
+  // general array for how to reorder integrals 
   constexpr int max_am = 7;
   std::array<int, 2*max_am + 1> cca_integral_order; 
  
@@ -93,6 +95,7 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
     cca_integral_order.at(l+1) = -val;
   }
  
+  // actually create permutation matrix 
   Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(primary_->nbf());
 
   for (int ish = 0, ibf = 0; ish != gauxc_basisset.size(); ++ish) {
@@ -388,17 +391,9 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             D_temp = D[iD];
         }
         auto D_eigen = psi4_to_eigen_map(D_temp);    
-        assert(D_eigen.rows() == permutation_matrix_.rows());
-        assert(D_eigen.cols() == permutation_matrix_.cols());
-        //std::cout << "D_eigen pre-permute(" << D_eigen.rows() << ", " << D_eigen.cols() << "): " << std::endl;
-        //std::cout << "----------------------------  " << std::endl;
-        //std::cout << D_eigen << std::endl << std::endl;
         if (force_permute_ && is_spherical_basis) {
             D_eigen = permutation_matrix_ * D_eigen * permutation_matrix_.transpose();
         }
-        //std::cout << "D_eigen post-permute(" << D_eigen.rows() << ", " << D_eigen.cols() << "): " << std::endl;
-        //std::cout << "----------------------------  " << std::endl;
-        //std::cout << D_eigen << std::endl << std::endl;
  
         // map Psi4 exchange matrix buffer to Eigen matrix map
         // buffer can be either K itself or a cartesian representation of K
@@ -409,17 +404,10 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             K_temp = K[iD];
         }
         auto K_eigen = psi4_to_eigen_map(K_temp); 
-        assert(K_eigen.rows() == permutation_matrix_.rows());
-        assert(K_eigen.cols() == permutation_matrix_.cols());
-        //std::cout << "K_eigen pre-permute: " << std::endl;
-        //std::cout << "-------------------- " << std::endl;
-        //std::cout << K_eigen << std::endl << std::endl;
+        
         if (force_permute_ && is_spherical_basis) {
             K_eigen = permutation_matrix_ * K_eigen * permutation_matrix_.transpose();
         }
-        //std::cout << "K_eigen post-permute: " << std::endl;
-        //std::cout << "-------------------- " << std::endl;
-        //std::cout << K_eigen << std::endl << std::endl;
  
         // compute delta K if incfock iteration... 
         if (incfock_iter_) { 
