@@ -224,6 +224,8 @@ Eigen::Map<Eigen::MatrixXd> snLinK::psi4_to_eigen_map(SharedMatrix psi4_matrix) 
 snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primary, options) {
    
     // set Psi4-specific parameters
+    incfock_iter_ = false;
+  
     radial_points_ = options_.get_int("SNLINK_RADIAL_POINTS");
     spherical_points_ = options_.get_int("SNLINK_SPHERICAL_POINTS");
     basis_tol_ = options.get_double("SNLINK_BASIS_TOLERANCE");
@@ -383,58 +385,79 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     for (int iD = 0; iD != D.size(); ++iD) {
         // map Psi4 density matrix to Eigen matrix map
         // also includes spherical->cartesian transformation if specified
-        SharedMatrix D_temp = nullptr; 
-        if (force_cartesian_ && is_spherical_basis) {
-            D_temp = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
-            D_temp->transform(D[iD], sph_to_cart_matrix_);
+        SharedMatrix D_eigen_buffer = nullptr; 
+        if (is_spherical_basis) {
+            auto D_order_shift_buffer = psi4_to_eigen_map(D[iD]);
+            D_order_shift_buffer = permutation_matrix_ * D_order_shift_buffer * permutation_matrix_.transpose();
+
+            if (force_cartesian_) {
+                D_eigen_buffer = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
+                D_eigen_buffer->transform(D[iD], sph_to_cart_matrix_);
+            } else {
+                D_eigen_buffer = D[iD];
+            }
         } else {
-            D_temp = D[iD];
+            D_eigen_buffer = D[iD];
         }
-        auto D_eigen = psi4_to_eigen_map(D_temp);    
-        if (force_permute_ && is_spherical_basis) {
-            D_eigen = permutation_matrix_ * D_eigen * permutation_matrix_.transpose();
-        }
+        auto D_eigen = psi4_to_eigen_map(D_eigen_buffer);    
  
         // map Psi4 exchange matrix buffer to Eigen matrix map
         // buffer can be either K itself or a cartesian representation of K
-        SharedMatrix K_temp = nullptr; 
-        if (force_cartesian_ && is_spherical_basis) {
-            K_temp = std::make_shared<Matrix>(sph_to_cart_matrix_->ncol(), sph_to_cart_matrix_->ncol());
+        SharedMatrix K_eigen_buffer = nullptr; 
+        if (is_spherical_basis) {
+            auto K_order_shift_buffer = psi4_to_eigen_map(K[iD]);
+            K_order_shift_buffer = permutation_matrix_ * K_order_shift_buffer * permutation_matrix_.transpose();
+ 
+            if (force_cartesian_) { 
+                K_eigen_buffer = std::make_shared<Matrix>(sph_to_cart_matrix_->ncol(), sph_to_cart_matrix_->ncol());
+            } else {
+                K_eigen_buffer = K[iD];
+            }
         } else {
-            K_temp = K[iD];
+            K_eigen_buffer = K[iD];
         }
-        auto K_eigen = psi4_to_eigen_map(K_temp); 
+        auto K_eigen = psi4_to_eigen_map(K_eigen_buffer); 
         
-        if (force_permute_ && is_spherical_basis) {
-            K_eigen = permutation_matrix_ * K_eigen * permutation_matrix_.transpose();
-        }
+        outfile->Printf("  Done.\n"); 
  
         // compute delta K if incfock iteration... 
         if (incfock_iter_) { 
             // if cartesian transformation is forced, K_eigen is delta K and must be added to Psi4 K separately...
             if (force_cartesian_ && is_spherical_basis) {
                 K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
-               
-                K_temp->back_transform(sph_to_cart_matrix_);
-                K[iD]->add(K_temp);
+                K_eigen_buffer->back_transform(sph_to_cart_matrix_);
+                K[iD]->add(K_eigen_buffer);
             // ... otherwise the computation and addition can be bundled together 
             } else {
                 K_eigen += integrator_->eval_exx(D_eigen, integrator_settings_);
+            }
 
-           }
-        
+            if (is_spherical_basis) {
+                //for (int i = 0; i != 5; ++i) { for (int j = 0; j != 5; ++j) { std::cout << K[iD]->get(i,j) << ", "; }; }; std::cout << std::endl << std::endl;
+                auto D_order_shift_buffer = psi4_to_eigen_map(D[iD]);
+                D_eigen = permutation_matrix_.transpose() * D_order_shift_buffer * permutation_matrix_; 
+                
+                auto K_order_shift_buffer = psi4_to_eigen_map(K[iD]);
+                K_order_shift_buffer = permutation_matrix_.transpose() * K_order_shift_buffer * permutation_matrix_; 
+                //for (int i = 0; i != 5; ++i) { for (int j = 0; j != 5; ++j) { std::cout << K[iD]->get(i,j) << ", "; }; }; std::cout << std::endl << std::endl;
+            }
         // ... else compute full K 
         } else {
             K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);        
 
-            if (force_cartesian_ && is_spherical_basis) {
-                K[iD]->back_transform(K_temp, sph_to_cart_matrix_);          
-            }
-        }
+            if (is_spherical_basis) {
+                if (force_cartesian_) {
+                    K[iD]->back_transform(K_eigen_buffer, sph_to_cart_matrix_);          
+                }
 
-        if (force_permute_ && is_spherical_basis) {
-            D_eigen = permutation_matrix_.transpose() * D_eigen * permutation_matrix_; 
-            K_eigen = permutation_matrix_.transpose() * K_eigen * permutation_matrix_; 
+                //for (int i = 0; i != 5; ++i) { for (int j = 0; j != 5; ++j) { std::cout << K[iD]->get(i,j) << ", "; }; }; std::cout << std::endl << std::endl;
+                auto D_order_shift_buffer = psi4_to_eigen_map(D[iD]);
+                D_eigen = permutation_matrix_.transpose() * D_order_shift_buffer * permutation_matrix_; 
+                
+                auto K_order_shift_buffer = psi4_to_eigen_map(K[iD]);
+                K_order_shift_buffer = permutation_matrix_.transpose() * K_order_shift_buffer * permutation_matrix_; 
+                //for (int i = 0; i != 5; ++i) { for (int j = 0; j != 5; ++j) { std::cout << K[iD]->get(i,j) << ", "; }; }; std::cout << std::endl << std::endl;
+            }
         }
 
         // symmetrize K if applicable

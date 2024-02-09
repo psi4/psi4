@@ -17,8 +17,8 @@ set {
     df_scf_guess false
     basis 6-311g(d) 
     e_convergence 1.0e-10
-    screening schwarz 
-    incfock false 
+    screening schwarz
+    incfock true 
     incfock_full_fock_every 4
     ints_tolerance 1.0e-12
     linK_ints_tolerance 1.0e-12
@@ -34,7 +34,7 @@ set {
     cosx_spherical_points_initial 302
     cosx_radial_points_final 70
     cosx_spherical_points_final 302
-    #snlink_force_permute true 
+    snlink_force_cartesian false 
 }
 
 linK_energy = energy('scf')
