@@ -347,10 +347,9 @@ class PSI_API snLinK : public SplitJK {
     SharedMatrix sph_to_cart_matrix_;
 
     // => Gaussian-CCA Transformation stuff <= //
-    //Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix_;
-    matrix_type permutation_matrix_;
-    //template<typename T> Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(const GauXC::BasisSet<T>& gauxc_basisset);
-    template<typename T> matrix_type generate_permutation_matrix(const GauXC::BasisSet<T>& gauxc_basisset);
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix_;
+    //matrix_type permutation_matrix_;
+    template<typename T> Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(const GauXC::BasisSet<T>& gauxc_basisset);
     bool force_permute_;
 
     // => Semi-Numerical Stuff <= //
