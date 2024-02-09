@@ -84,31 +84,24 @@ std::tuple<
 
 template <typename T>
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permutation_matrix(const GauXC::BasisSet<T>& gauxc_basisset) {
-  std::array<std::vector<int>, 5> am_to_mapping; // index i represents the shell of AM i
-  am_to_mapping[0] = { 0 }; // s
-  am_to_mapping[1] = { 0, 1, -1 }; // p
-  am_to_mapping[2] = { 0, 1, 2, -2, -1 }; // d
-
-  std::array<std::vector<int>, 7> am_to_mapping_auto; // index i represents the shell of AM i
-  for (size_t am = 0; am != am_to_mapping_auto.size(); ++am) {
-    am_to_mapping_auto[am] = std::vector<int>(2*am + 1, 0); // s
-    for (size_t l = 1; l < am_to_mapping_auto[am].size(); l += 2) {
-      am_to_mapping_auto[am][l] = l;
-      am_to_mapping_auto[am][l+1] = -l;
-    }
+  constexpr int max_am = 7;
+  std::array<int, 2*max_am + 1> cca_integral_order; 
+ 
+  cca_integral_order[0] = 0;
+  for (size_t l = 1, val = 1; l < cca_integral_order.size(); l += 2, ++val) {
+    cca_integral_order.at(l) = val;
+    cca_integral_order.at(l+1) = -val;
   }
-
+ 
   Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(primary_->nbf());
 
-  //permutation_matrix.setIdentity(nbf);
   for (int ish = 0, ibf = 0; ish != gauxc_basisset.size(); ++ish) {
       auto& sh = gauxc_basisset[ish];
-
-      auto sh_am_mapping = am_to_mapping[sh.l()];
+      auto am = sh.l();
 
       auto ibf_base = ibf;
-      for (int ishbf = 0; ishbf != sh_am_mapping.size(); ++ishbf, ++ibf) {
-        permutation_matrix.indices()[ibf] = ibf_base + sh_am_mapping[ishbf] + sh.l(); 
+      for (int ishbf = 0; ishbf != 2*am + 1; ++ishbf, ++ibf) {
+        permutation_matrix.indices()[ibf] = ibf_base + cca_integral_order[ishbf] + sh.l(); 
       }
   }
   
@@ -298,9 +291,9 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
         pruning_scheme_map[pruning_scheme_],
         GauXC::BatchSize(grid_batch_size), 
         radial_scheme_map[radial_scheme_], 
-        //GauXC::RadialSize(radial_points_),
-        //GauXC::AngularSize(spherical_points_)
-        GauXC::AtomicGridSizeDefault::UltraFineGrid
+        GauXC::RadialSize(radial_points_),
+        GauXC::AngularSize(spherical_points_)
+        //GauXC::AtomicGridSizeDefault::UltraFineGrid
     );
 
     // construct load balancer
@@ -401,8 +394,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         //std::cout << "----------------------------  " << std::endl;
         //std::cout << D_eigen << std::endl << std::endl;
         if (force_permute_ && is_spherical_basis) {
-            D_eigen = permutation_matrix_ * D_eigen; 
-            D_eigen = D_eigen * permutation_matrix_.transpose();
+            D_eigen = permutation_matrix_ * D_eigen * permutation_matrix_.transpose();
         }
         //std::cout << "D_eigen post-permute(" << D_eigen.rows() << ", " << D_eigen.cols() << "): " << std::endl;
         //std::cout << "----------------------------  " << std::endl;
@@ -423,8 +415,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         //std::cout << "-------------------- " << std::endl;
         //std::cout << K_eigen << std::endl << std::endl;
         if (force_permute_ && is_spherical_basis) {
-            K_eigen = permutation_matrix_ * K_eigen;
-            K_eigen = K_eigen * permutation_matrix_.transpose();
+            K_eigen = permutation_matrix_ * K_eigen * permutation_matrix_.transpose();
         }
         //std::cout << "K_eigen post-permute: " << std::endl;
         //std::cout << "-------------------- " << std::endl;
@@ -454,17 +445,14 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         }
 
         if (force_permute_ && is_spherical_basis) {
-            D_eigen = permutation_matrix_.transpose() * D_eigen;
-            D_eigen *= permutation_matrix_; 
-
-            K_eigen = permutation_matrix_.transpose() * K_eigen;
-            K_eigen = K_eigen * permutation_matrix_; 
+            D_eigen = permutation_matrix_.transpose() * D_eigen * permutation_matrix_; 
+            K_eigen = permutation_matrix_.transpose() * K_eigen * permutation_matrix_; 
         }
 
         // symmetrize K if applicable
-        //if (lr_symmetric_) {
-        //    K[iD]->hermitivitize();
-        //}
+        if (lr_symmetric_) {
+            K[iD]->hermitivitize();
+        }
 
         //outfile->Printf("K[%i] norm: %f \n", iD, K[iD]->norm());   
     }
