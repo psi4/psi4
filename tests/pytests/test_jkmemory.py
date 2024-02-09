@@ -45,7 +45,6 @@ def _build_system(basis):
 ]) # yapf: disable
 
 def test_jk_memory_estimate(basis, jk_type, estimate, name):
-    psi4.set_memory("5 gb")
 
     basis, aux = _build_system(basis)
     jk = psi4.core.JK.build(basis, aux=aux, jk_type=jk_type, do_wK=False, memory=1e9)
