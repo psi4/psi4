@@ -423,6 +423,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
  
         // compute delta K if incfock iteration... 
         if (incfock_iter_) { 
+            //throw PSIEXCEPTION("NOPE!");
             // if cartesian transformation is forced, K_eigen is delta K and must be added to Psi4 K separately...
             if (force_cartesian_ && is_spherical_basis) {
                 K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
@@ -445,10 +446,21 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         if (is_spherical_basis) {
             //for (int i = 0; i != 5; ++i) { for (int j = 0; j != 5; ++j) { std::cout << K[iD]->get(i,j) << ", "; }; }; std::cout << std::endl << std::endl;
             auto D_order_shift_buffer = psi4_to_eigen_map(D[iD]);
-            D_eigen = permutation_matrix_.transpose() * D_order_shift_buffer * permutation_matrix_; 
+            D_order_shift_buffer = permutation_matrix_.transpose() * D_order_shift_buffer * permutation_matrix_; 
+            //if (force_cartesian_) {
+            //    ;
+                //D_order_shift_buffer = permutation_matrix_.transpose() * D_order_shift_buffer * permutation_matrix_; 
+            //} else {
+                //D_order_shift_buffer = permutation_matrix_.transpose() * D_order_shift_buffer * permutation_matrix_; 
+            //}
             
-            auto K_order_shift_buffer = psi4_to_eigen_map(K[iD]);
-            K_order_shift_buffer = permutation_matrix_.transpose() * K_order_shift_buffer * permutation_matrix_; 
+            if (force_cartesian_) {
+                ;
+                //K_order_shift_buffer = permutation_matrix_.transpose() * K_order_shift_buffer * permutation_matrix_; 
+            } else {
+                auto K_order_shift_buffer = psi4_to_eigen_map(K[iD]);
+                K_order_shift_buffer = permutation_matrix_.transpose() * K_order_shift_buffer * permutation_matrix_; 
+            }
             //for (int i = 0; i != 5; ++i) { for (int j = 0; j != 5; ++j) { std::cout << K[iD]->get(i,j) << ", "; }; }; std::cout << std::endl << std::endl;
         }
  
