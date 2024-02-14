@@ -19,7 +19,7 @@ requirements:
     - msgpack-python
     - optking
     - gau2grid
-    - libint 2.7.3dev1
+    - libint
     - libxc-c
     - scipy
 
@@ -52,6 +52,7 @@ build:
 test:
   requires:
     - pytest-xdist
+    - pytest<8
     - dftd3-python
     - gcp-correction
   commands:
