@@ -50,6 +50,7 @@ A complete list of standard keywords is provided in Appendix
    dct
    dfmp2
    dlpnomp2
+   mp2-f12
    cc
    fnocc
    occ

@@ -600,6 +600,22 @@ Bibliography
    D. Liakos, M. Sparta, M. Kesharwani, J. Martin, and F. Neese,
    *J. Chem. Theory Comput.* **11**, 1525 (2015).
 
+.. [Dunlap:2000:2113]
+   B. Dunlap,
+   *Phys. Chem. Chem. Phys.* *2*, 2113-2116 (2000).
+
+.. [Tenno:2004:117]
+   S. Ten-no,
+   *J. Chem. Phys.* **121**, 117-129 (2004).
+
+.. [Valeev:2004:190]
+   E. Valeev,
+   *Chem. Phys. Lett.* **395**, 190-195 (2004).
+
+.. [Tew:2005:074101]
+   D. Tew and W. Klopper,
+   *J. Chem. Phys.* **123**, 074101 (2005).
+
 .. [Neese:2009:98]
    F. Neese, F. Wennmohs, and A. Hansen
    *Chem. Phys.* **356**, 98-109 (2009)
