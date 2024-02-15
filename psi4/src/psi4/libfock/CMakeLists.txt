@@ -58,6 +58,19 @@ if(TARGET gauxc::gauxc)
       )
   endif()
 
+  message("Shell ordering: ${psi4_SHGAUSS_ORDERING}")
+  if(${psi4_SHGAUSS_ORDERING} STREQUAL "gaussian")
+    target_compile_definitions(fock
+      PUBLIC
+        USING_gauxc_GAUSSIAN
+      )
+  elseif(${psi4_SHGAUSS_ORDERING} STREQUAL "standard")
+    target_compile_definitions(fock
+      PUBLIC
+        USING_gauxc_CCA
+      )
+  endif()
+
   target_include_directories(fock
     PUBLIC
       $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>

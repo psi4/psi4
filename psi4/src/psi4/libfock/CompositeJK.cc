@@ -149,7 +149,7 @@ void CompositeJK::common_init() {
     // sn-LinK (via GauXC) 
     } else if (k_type == "SNLINK") {
         k_algo_ = std::make_shared<snLinK>(primary_, options_);
-    
+        
     // No K algorithm specified in SCF_TYPE
     } else if (k_type == "NONE") {
         k_algo_ = nullptr;
@@ -309,6 +309,10 @@ void CompositeJK::compute_JK() {
         if (k_algo_->name() == "COSX") {
             std::string gridname = get_COSX_grid();
             timer_on("COSX " + gridname + " Grid");
+        }
+
+        if (k_algo_->name() == "sn-LinK") {
+            k_algo_->set_snLinK_S(S_);
         }
 
         k_algo_->build_G_component(D_ref_, K_ao_, eri_computers_["4-Center"]);
