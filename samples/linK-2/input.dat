@@ -3,18 +3,19 @@
 
 molecule mol {
     0 1
-    C    -6.0478252   -1.4216736    0.0000000
-    C    -6.4545034   -0.8554459    1.2062048
-    C    -6.4545034   -0.8554459   -1.2062048
-    C    -7.2667970    0.2771610    1.2069539
-    C    -7.6714781    0.8450211    0.0000000
-    C    -7.2667970    0.2771610   -1.2069539
-    H    -6.1338534   -1.2920593   -2.1423150
-    H    -7.5824943    0.7163066   -2.1437977
-    H    -8.3030422    1.7232700    0.0000000
-    H    -7.5824943    0.7163066    2.1437977
-    H    -6.1338534   -1.2920593    2.1423150
-    H    -5.4060253   -2.2919049    0.0000000
+    C  0.692768, -1.776560, 0.001402
+    C  3.351080, -1.776680, 0.002211
+    C  4.680350, 0.525219, 0.001225
+    C  3.351210, 2.827440, -0.000703
+    C  0.693087, 2.827560, -0.001559
+    C -0.636278, 0.525491, -0.000469
+    H -0.341271, -3.567590, 0.002213
+    H  4.384920, -3.567830, 0.003736
+    H  6.748440, 0.525274, 0.001880
+    H  4.385510, 4.618320, -0.001487
+    H -0.341001, 4.618570, -0.003056
+    H -2.704370, 0.525727, -0.001098
+    unit bohr
     symmetry c1
     no_reorient
     no_com
@@ -24,25 +25,26 @@ set {
     scf_type dfdirj+snlink 
     guess sad 
     df_scf_guess false
-    #basis aug-cc-pVDZ 
-    basis 6-31g(d) 
-    #basis 6-311++g(3df, 2pd) 
+    #basis bse:6-31+g* 
+    basis bse:6-311++g(2d,2p) 
+    #basis bse:cc-pVDZ
     e_convergence 1.0e-10
     screening schwarz
-    incfock true 
+    incfock false 
     ints_tolerance 1.0e-10
     snlink_ints_tolerance 1.0e-10
     snlink_pruning_scheme robust 
     dft_radial_scheme em 
-    snlink_radial_points  35 
-    snlink_spherical_points 110
+    snlink_radial_points  70 
+    snlink_spherical_points 302
     snlink_use_gpu false 
     snlink_force_cartesian false 
-    #print 7
-    #debug 1
-    #maxiter 3
+    snlink_force_permute false 
+    print 7
+    debug 7
+    maxiter 1
 }
 
-linK_energy = energy('pbe0')
+linK_energy = energy('scf')
 psi4.compare_values(ref_energy, linK_energy, 8, "B3LYP Energy (using LinK algo)")
 compare(1, variable("SCF ITERATIONS") < 13.0, "LinK Incfock Efficient")

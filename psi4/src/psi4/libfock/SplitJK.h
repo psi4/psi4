@@ -147,6 +147,10 @@ class PSI_API SplitJK {
     virtual void set_snLinK_incfock_iter(bool incfock_iter) {
         throw PSIEXCEPTION("SplitJK::set_snLinK_incfock_iter was called, but snLinK is not being used!");
     }
+
+    virtual void set_snLinK_S(SharedMatrix S) {
+        throw PSIEXCEPTION("SplitJK::set_snLinK_incfock_iter was called, but snLinK is not being used!");
+    }
 };
 
 // ==> Start SplitJK Coulomb (J) Algorithms here <== //
@@ -333,6 +337,8 @@ class PSI_API snLinK : public SplitJK {
     // are we doing an incremental Fock build this iteration?
     bool incfock_iter_;
 
+    SharedMatrix S_;
+
   #ifdef USING_gauxc
     // use Eigen for matrix inputs to GauXC
     // perhaps this can be changed later
@@ -349,8 +355,17 @@ class PSI_API snLinK : public SplitJK {
     // => Gaussian-CCA Transformation stuff <= //
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix_;
     //matrix_type permutation_matrix_;
-    template<typename T> Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(const GauXC::BasisSet<T>& gauxc_basisset);
+    //template<typename T> Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(const  gauxc_basisset);
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(const std::shared_ptr<BasisSet> gauxc_basisset);
     bool force_permute_;
+  #if defined(USING_gauxc_CCA)
+    //#error Shouldnt be here! We want standard ordering! 
+    static constexpr bool is_cca_ = true;
+  #elif defined(USING_gauxc_GAUSSIAN) 
+    static constexpr bool is_cca_ = false;
+  #else
+    #error Shouldnt be here! Invalid psi4_SHGAUSS_ORDERING perhaps?
+  #endif
 
     // => Semi-Numerical Stuff <= //
     // are we running snLinK on GPUs?
@@ -376,10 +391,11 @@ class PSI_API snLinK : public SplitJK {
     GauXC::IntegratorSettingsSNLinK integrator_settings_;
     std::unique_ptr<GauXC::XCIntegratorFactory<matrix_type> > integrator_factory_;
     std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_;
+    std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_spherical_;
   
     // => Psi4 -> GauXC conversion functions <= // 
     GauXC::Molecule psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule);
-    template<typename T> GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset);
+    template<typename T> GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset, bool force_cartesian);
     Eigen::Map<matrix_type> psi4_to_eigen_map(SharedMatrix psi4_matrix);
 
     // => Psi4 -> GauXC enum mappings <= //
@@ -431,6 +447,8 @@ class PSI_API snLinK : public SplitJK {
 
     // setters and getters
     void set_snLinK_incfock_iter(bool incfock_iter) override { incfock_iter_ = incfock_iter; }
+
+    void set_snLinK_S(SharedMatrix S) override { S_ = S; }
 };
 
 }

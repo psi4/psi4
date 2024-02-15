@@ -323,6 +323,7 @@ ExternalProject_Add(psi4-core
               -DIntegratorXX_DIR=${IntegratorXX_DIR}
               -Dgauxc_DIR=${gauxc_DIR}
               -Dgauxc_ENABLE_GPU=${gauxc_ENABLE_GPU}
+              -Dpsi4_SHGAUSS_ORDERING=${psi4_SHGAUSS_ORDERING}
               -DExchCXX_DIR=${ExchCXX_DIR}
               -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
