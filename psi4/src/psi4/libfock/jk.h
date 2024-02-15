@@ -292,7 +292,9 @@ class PSI_API JK {
     std::vector<SharedMatrix> K_;
     /// wK matrices: \f$K_{mn}(\omega)=(ml|\omega|ns)C_{li}^{left}C_{si}^{right}\f$
     std::vector<SharedMatrix> wK_;
-
+    // overlap matrix
+    SharedMatrix S_;
+    
     // => Microarchitecture-Level State Variables (No Spatial Symmetry) <= //
 
     /// Primary basis set
@@ -572,6 +574,9 @@ class PSI_API JK {
      * @return D vector of D matrices
      */
     const std::vector<SharedMatrix>& D() const { return D_; }
+    
+    const SharedMatrix S() const { return S_; }
+    void set_S(SharedMatrix S) { S_ = S; }
 
     /**
     * Return number of ERI shell n-lets (triplets, quartets) computed per SCF iteration during the JK build process.
