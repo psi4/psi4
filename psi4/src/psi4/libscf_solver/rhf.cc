@@ -191,7 +191,22 @@ void RHF::form_G() {
     C.push_back(Ca_subset("SO", "OCC"));
 
     // Run the JK object
+    jk_->set_S(S_);
     jk_->compute();
+
+    auto DS = linalg::doublet(jk_->D()[0], S(), false, false);
+    auto n_el2 = DS->trace();
+    outfile->Printf("  Integrator_den2: %f\n", n_el2);
+
+    auto DSb = linalg::doublet(Da_, S(), false, false); 
+    auto n_el2b = DSb->trace();
+    outfile->Printf("  Integrator_den2b: %f\n", n_el2b);
+
+    auto Dab = Da_->clone();
+    Dab->add(Db_); 
+    auto DSab = linalg::doublet(Dab, S(), false, false);
+    auto n_el2ab = DSab->trace();
+    outfile->Printf("  Integrator_den2ab: %f\n", n_el2ab);
 
     // Pull the J and K matrices off
     const std::vector<SharedMatrix>& J = jk_->J();
