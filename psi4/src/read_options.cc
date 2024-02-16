@@ -1750,6 +1750,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         GauXC also has SCHEME1-CUTLASS, but it is disabled in Psi4 for now 
         due to compile-time issues and requiring very modern CUDA CCs (>=80) -*/
         options.add_str("SNLINK_LWD_KERNEL", "DEFAULT", "DEFAULT REFERENCE SCHEME1 SCHEME1-MAGMA"); 
+        options.add_bool("SNLINK_PRINT_D", false);
+        options.add_bool("SNLINK_PRINT_K", false);
 
         /*- SUBSECTION SAD Guess Algorithm -*/
 
