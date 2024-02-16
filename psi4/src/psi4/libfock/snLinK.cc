@@ -112,8 +112,8 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
     throw PSIEXCEPTION("Shouldn't be here!");
 #endif
 
-    cca_integral_order[1] = { 1, -1, 0 };
-    //cca_integral_order[1] = { 0, 1, -1 };
+    //cca_integral_order[1] = { 1, -1, 0 }; // this is for representing P as cartesian in spherical harmonic basiss sets
+    cca_integral_order[1] = { 0, 1, -1 }; // this is for representing P as spherical in spherical harmonic basis sets
   }
  
   // d shells or larger
@@ -282,7 +282,6 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
             // TODO: check if am() is 0-indexed
             // Answer: It is! See tests/basisset_test.cxx in GauXC
             GauXC::AngularMomentum(psi4_shell.am()), 
-            //(force_cartesian ? GauXC::SphericalType(false) : GauXC::SphericalType( !(psi4_shell.is_cartesian()) && psi4_shell.am() >= 2) ),
             (force_cartesian ? GauXC::SphericalType(false) : GauXC::SphericalType( !(psi4_shell.is_cartesian()) ) ),
             alpha,
             coeff,
@@ -395,9 +394,8 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     force_permute_ = options_.get_bool("SNLINK_FORCE_PERMUTE"); 
 
     //if (force_cartesian_ && !is_cca_) {
-    //{
-    //    auto sph_to_cart_order_shift_buffer = psi4_to_eigen_map(sph_to_cart_matrix_);
-    //    sph_to_cart_order_shift_buffer = permutation_matrix_ * sph_to_cart_order_shift_buffer; 
+    //    auto sph_to_cart_eigen_permute = psi4_to_eigen_map(sph_to_cart_matrix_);
+    //    sph_to_cart_eigen_permute = permutation_matrix_ * sph_to_cart_eigen_permute; 
     //}
 
     // convert Psi4 fundamental quantities to GauXC 
@@ -507,21 +505,16 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     // much of the behavior here is influenced by this
     auto is_spherical_basis = primary_->has_puream();
    
-    constexpr bool print_D = false;
-    constexpr bool print_K = true;
+    const bool print_D = options_.get_bool("SNLINK_PRINT_D"); 
+    const bool print_K = options_.get_bool("SNLINK_PRINT_K"); 
  
     // compute K for density Di using GauXC
     for (int iD = 0; iD != D.size(); ++iD) {
-        if (integrator_spherical_ != nullptr) {
-        auto D_eigen_pre = psi4_to_eigen_map(D[iD]);    
+        auto Did_eigen = psi4_to_eigen_map(D[iD]);    
+        auto Kid_eigen = psi4_to_eigen_map(K[iD]);    
         
-        if constexpr(print_D) {
-        std::cout << "D_eigen (pre-reorder): " << std::endl;
-        std::cout << "------------------------- " << std::endl;
-        std::cout << D_eigen_pre.block<6, 6>(0,0) << std::endl;
-        }
-
-        auto n_el_pre_d = integrator_spherical_->integrate_den(D_eigen_pre);
+        if (integrator_spherical_ != nullptr) {
+        auto n_el_pre_d = integrator_spherical_->integrate_den(Did_eigen);
         outfile->Printf("  Integrator_den (pre-reorder): %f\n", n_el_pre_d);
 
         auto Db = D[iD]->clone();
@@ -531,21 +524,32 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         }
 
         // map Psi4 density matrix to Eigen matrix map
-        SharedMatrix D_eigen_buffer = nullptr; 
+        SharedMatrix D_buffer = nullptr; 
         if (is_spherical_basis) {
             // need to reorder Psi4 density matrix to CCA ordering if in spherical harmonics
             if constexpr (!is_cca_) {
-                auto D_order_shift_buffer = psi4_to_eigen_map(D[iD]);
-                D_order_shift_buffer = permutation_matrix_ * D_order_shift_buffer * permutation_matrix_.transpose();
+                auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
 
-                if (integrator_spherical_ != nullptr) {
-                if constexpr (print_D) {
-                std::cout << "D_eigen (post-reorder): " << std::endl;
+                if (print_D) {
+                std::cout << "D (pre-reorder): " << std::endl;
                 std::cout << "------------------------- " << std::endl;
-                std::cout << D_order_shift_buffer.block<6, 6>(0,0) << std::endl;
+                std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
+                std::cout << std::endl;
+                std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
                 }
 
-                auto n_el_post_a = integrator_spherical_->integrate_den(D_order_shift_buffer);
+                D_eigen_permute = permutation_matrix_ * D_eigen_permute * permutation_matrix_.transpose();
+
+                if (integrator_spherical_ != nullptr) {
+                if (print_D) {
+                std::cout << "D (post-reorder): " << std::endl;
+                std::cout << "------------------------- " << std::endl;
+                std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
+                std::cout << std::endl;
+                std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
+                }
+
+                auto n_el_post_a = integrator_spherical_->integrate_den(Did_eigen);
                 outfile->Printf("  Integrator_den (post-reorder): %f\n", n_el_post_a);
        
                 auto Dc = D[iD]->clone();
@@ -556,23 +560,35 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             }
             // also need to transform D to cartesian coordinates if requested/required
             if (force_cartesian_) {
-                D_eigen_buffer = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
-                D_eigen_buffer->transform(D[iD], sph_to_cart_matrix_);
+                D_buffer = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
+                  
+                if (print_D) {
+                std::cout << "D (pre-transform): " << std::endl;
+                std::cout << "------------------------- " << std::endl;
+                std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
+                std::cout << std::endl;
+                std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
+                }
+
+                D_buffer->transform(D[iD], sph_to_cart_matrix_);
             } else {
-                D_eigen_buffer = D[iD];
+                D_buffer = D[iD];
             }
         // natively-cartesian bases dont require the reordering/transforming above
         } else {
-            D_eigen_buffer = D[iD];
+            D_buffer = D[iD];
         }
-        auto D_eigen = psi4_to_eigen_map(D_eigen_buffer);    
-        if constexpr (print_D) {
-        std::cout << "D_eigen (post-transform): " << std::endl;
+        auto D_buffer_eigen = psi4_to_eigen_map(D_buffer);    
+        
+        if(print_D) {
+        std::cout << "D (post-transform): " << std::endl;
         std::cout << "------------------------- " << std::endl;
-        std::cout << D_eigen.block<6, 6>(0,0) << std::endl;
+        std::cout << D_buffer_eigen.block<6, 6>(0,0) << std::endl;
+        std::cout << std::endl;
+        std::cout << D_buffer_eigen.block<6, 6>(17,0) << std::endl;
         }
 
-        auto n_el_post_a = integrator_->integrate_den(D_eigen);
+        auto n_el_post_a = integrator_->integrate_den(D_buffer_eigen);
         outfile->Printf("  Integrator_den (post-transform): %f\n", n_el_post_a);
 
         auto Dc = D[iD]->clone();
@@ -582,64 +598,96 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         
         // map Psi4 exchange matrix buffer to Eigen matrix map
         // buffer can be either K itself or a cartesian representation of K
-        SharedMatrix K_eigen_buffer = nullptr; 
+        SharedMatrix K_buffer = nullptr; 
         if (is_spherical_basis) {
             // need to reorder Psi4 exchange matrix to CCA ordering if in spherical harmonics
             if constexpr (!is_cca_) {
-                auto K_order_shift_buffer = psi4_to_eigen_map(K[iD]);
-                K_order_shift_buffer = permutation_matrix_ * K_order_shift_buffer * permutation_matrix_.transpose();
+                auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
+
+                if(print_K) {
+                std::cout << "K (pre-reorder): " << std::endl;
+                std::cout << "------------------------- " << std::endl;
+                std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
+                std::cout << std::endl;
+                std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
+                }
+
+                K_eigen_permute = permutation_matrix_ * K_eigen_permute * permutation_matrix_.transpose();
+
+                if(print_K) {
+                std::cout << "K (post-reorder): " << std::endl;
+                std::cout << "------------------------- " << std::endl;
+                std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
+                std::cout << std::endl;
+                std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
+                }
             }
 
             // also need to transform D to cartesian coordinates if requested/required
             if (force_cartesian_) { 
-                K_eigen_buffer = std::make_shared<Matrix>(sph_to_cart_matrix_->ncol(), sph_to_cart_matrix_->ncol());
-                K_eigen_buffer->transform(K[iD], sph_to_cart_matrix_);
+                K_buffer = std::make_shared<Matrix>(sph_to_cart_matrix_->ncol(), sph_to_cart_matrix_->ncol());
+                
+                if(print_K) {
+                std::cout << "K (pre-transform): " << std::endl;
+                std::cout << "------------------------- " << std::endl;
+                std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
+                std::cout << std::endl;
+                std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
+                }
+
+                K_buffer->transform(K[iD], sph_to_cart_matrix_);
             } else {
-                K_eigen_buffer = K[iD];
+                K_buffer = K[iD];
             }
         // natively-cartesian bases dont require the reordering/transforming above
         } else {
-            K_eigen_buffer = K[iD];
+            K_buffer = K[iD];
         }
-        auto K_eigen = psi4_to_eigen_map(K_eigen_buffer); 
-        
-        outfile->Printf("  Done.\n"); 
- 
+        auto K_buffer_eigen = psi4_to_eigen_map(K_buffer); 
+
+        if(print_K) {
+        std::cout << "K (post-transform): " << std::endl;
+        std::cout << "------------------------- " << std::endl;
+        std::cout << K_buffer_eigen.block<6, 6>(0,0) << std::endl;
+        std::cout << std::endl;
+        std::cout << K_buffer_eigen.block<6, 6>(17,0) << std::endl;
+        }
+
         // compute delta K if incfock iteration... 
         if (incfock_iter_) { 
             //throw PSIEXCEPTION("NOPE!");
-            // if cartesian transformation is forced, K_eigen is delta K and must be added to Psi4 K separately...
+            // if cartesian transformation is forced, K_buffer is delta K and must be added to Psi4 K separately...
             if (force_cartesian_ && is_spherical_basis) {
-                K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);
-                K_eigen_buffer->back_transform(sph_to_cart_matrix_);
-                K[iD]->add(K_eigen_buffer);
+                K_buffer_eigen = integrator_->eval_exx(D_buffer_eigen, integrator_settings_);
+                K_buffer->back_transform(sph_to_cart_matrix_);
+                K[iD]->add(K_buffer);
             // ... otherwise the computation and addition can be bundled together 
             } else {
-                K_eigen += integrator_->eval_exx(D_eigen, integrator_settings_);
+                K_buffer_eigen += integrator_->eval_exx(D_buffer_eigen, integrator_settings_);
             }
 
         // ... else compute full K 
         } else {
-            K_eigen = integrator_->eval_exx(D_eigen, integrator_settings_);        
+            K_buffer_eigen = integrator_->eval_exx(D_buffer_eigen, integrator_settings_);        
        
-            if constexpr (print_K) { 
-            std::cout << "K_eigen (pre-transform): " << std::endl;
+            if(print_K) { 
+            std::cout << "K (pre-back-transform): " << std::endl;
             std::cout << "------------------------- " << std::endl;
-            std::cout << K_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << K_buffer_eigen.block<6, 6>(0,0) << std::endl;
             std::cout << std::endl;
-            std::cout << K_eigen.block<5, 5>(17,0) << std::endl;
+            std::cout << K_buffer_eigen.block<6, 6>(17,0) << std::endl;
             }
 
             if (force_cartesian_ && is_spherical_basis) {
-                K[iD]->back_transform(K_eigen_buffer, sph_to_cart_matrix_);          
+                K[iD]->back_transform(K_buffer, sph_to_cart_matrix_);          
             }
 
-            if constexpr (print_K) {
-            std::cout << "K_eigen (post-transform): " << std::endl;
+            if(print_K) {
+            std::cout << "K (post-back-transform): " << std::endl;
             std::cout << "------------------------- " << std::endl;
-            std::cout << K_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
             std::cout << std::endl;
-            std::cout << K_eigen.block<5, 5>(17,0) << std::endl;
+            std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
             }
         }
 
@@ -647,54 +695,77 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         if (is_spherical_basis) {
             //for (int i = 0; i != 5; ++i) { for (int j = 0; j != 5; ++j) { std::cout << K[iD]->get(i,j) << ", "; }; }; std::cout << std::endl << std::endl;
             if constexpr (!is_cca_) {
-                auto D_order_shift_buffer = psi4_to_eigen_map(D[iD]);
-                if constexpr (print_D) {
-                std::cout << "D_eigen (pre-back-reorder): " << std::endl;
+                if (print_D) {
+                std::cout << "D (pre-back-transform): " << std::endl;
                 std::cout << "------------------------- " << std::endl;
-                std::cout << D_order_shift_buffer.block<6, 6>(0,0) << std::endl;
-                }
- 
-                D_order_shift_buffer = permutation_matrix_.transpose() * D_order_shift_buffer * permutation_matrix_; 
-
-                if constexpr (print_D) {
-                std::cout << "D_eigen (post-back-reorder): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << D_order_shift_buffer.block<6, 6>(0,0) << std::endl;
+                std::cout << D_buffer_eigen.block<6, 6>(0,0) << std::endl;
+                std::cout << std::endl;
+                std::cout << D_buffer_eigen.block<6, 6>(17,0) << std::endl;
                 }
 
-                auto K_order_shift_buffer = psi4_to_eigen_map(K[iD]);
-                if constexpr (print_K) {
-                std::cout << "K_eigen (pre-back-reorder): " << std::endl;
+                //if (force_cartesian_ ) {
+                //    D[iD]->back_transform(D_buffer, sph_to_cart_matrix_);          
+               // }
+
+                if (print_D) {
+                std::cout << "D (post-back-transform): " << std::endl;
                 std::cout << "------------------------- " << std::endl;
-                std::cout << K_order_shift_buffer.block<6, 6>(0,0) << std::endl;
+                std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
                 std::cout << std::endl;
-                std::cout << K_eigen.block<5, 5>(17,0) << std::endl;
+                std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
+                }
+
+                auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
+                if (print_D) {
+                std::cout << "D (pre-back-reorder): " << std::endl;
+                std::cout << "------------------------- " << std::endl;
+                std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
+                std::cout << std::endl;
+                std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
                 }
  
-                //K_order_shift_buffer = permutation_matrix_ * K_order_shift_buffer * permutation_matrix_.transpose(); 
-                K_order_shift_buffer = permutation_matrix_.transpose() * K_order_shift_buffer * permutation_matrix_; 
-                if constexpr (print_K) {
-                std::cout << "K_eigen (post-back-reorder): " << std::endl;
+                D_eigen_permute = permutation_matrix_.transpose() * D_eigen_permute * permutation_matrix_; 
+
+                if (print_D) {
+                std::cout << "D (post-back-reorder): " << std::endl;
                 std::cout << "------------------------- " << std::endl;
-                std::cout << K_order_shift_buffer.block<6, 6>(0,0) << std::endl;
+                std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
                 std::cout << std::endl;
-                std::cout << K_eigen.block<5, 5>(17,0) << std::endl;
+                std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
+                }
+
+                auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
+                if(print_K) {
+                std::cout << "K (pre-back-reorder): " << std::endl;
+                std::cout << "------------------------- " << std::endl;
+                std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
+                std::cout << std::endl;
+                std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
+                }
+ 
+                if (!force_cartesian_) K_eigen_permute = permutation_matrix_.transpose() * K_eigen_permute * permutation_matrix_; 
+                if(print_K) {
+                std::cout << "K (post-back-reorder): " << std::endl;
+                std::cout << "------------------------- " << std::endl;
+                std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
+                std::cout << std::endl;
+                std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
                 }
             }
 
             //if (force_cartesian_) {
             //    ;
-                //D_order_shift_buffer = permutation_matrix_.transpose() * D_order_shift_buffer * permutation_matrix_; 
+                //D_permute_buffer = permutation_matrix_.transpose() * D_permute_buffer * permutation_matrix_; 
             //} else {
-                //D_order_shift_buffer = permutation_matrix_.transpose() * D_order_shift_buffer * permutation_matrix_; 
+                //D_permute_buffer = permutation_matrix_.transpose() * D_permute_buffer * permutation_matrix_; 
             //}
             
 //            if (force_cartesian_ || is_cca_) {
 //                ;
-                //K_order_shift_buffer = permutation_matrix_.transpose() * K_order_shift_buffer * permutation_matrix_; 
+                //K_permute_buffer = permutation_matrix_.transpose() * K_permute_buffer * permutation_matrix_; 
 //            } else {
-//                auto K_order_shift_buffer = psi4_to_eigen_map(K[iD]);
-//                K_order_shift_buffer = permutation_matrix_.transpose() * K_order_shift_buffer * permutation_matrix_; 
+//                auto K_permute_buffer = psi4_to_eigen_map(K[iD]);
+//                K_permute_buffer = permutation_matrix_.transpose() * K_permute_buffer * permutation_matrix_; 
 //            }
             //for (int i = 0; i != 5; ++i) { for (int j = 0; j != 5; ++j) { std::cout << K[iD]->get(i,j) << ", "; }; }; std::cout << std::endl << std::endl;
         }
