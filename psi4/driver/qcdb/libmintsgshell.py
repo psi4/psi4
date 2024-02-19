@@ -281,7 +281,7 @@ class ShellInfo(object):
 
     def amchar(self):
         """Return the character symbol for the angular momentum of the given contraction"""
-        return 'spdfghiklmnopqrtuvwxyz'[self.l]
+        return 'spdfghiklmnoqrtuvwxyz'[self.l]
 
     def AMCHAR(self):
         """Return the character symbol for the angular momentum of the given contraction (upper case)"""

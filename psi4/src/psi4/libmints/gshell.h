@@ -45,7 +45,7 @@ enum GaussianType { Cartesian = 0, Pure = 1 };
 enum ShellType { Gaussian = 0, ECPType1 = 1, ECPType2 = 2 };
 
 /** Angular momentum types */
-const std::string amtypes = "SPDFGHIKLMNOPQRTUVWXYZ";
+const std::string amtypes = "SPDFGHIKLMNOQRTUVWXYZ";
 
 /*! \ingroup MINTS
  *  \class ShellInfo
