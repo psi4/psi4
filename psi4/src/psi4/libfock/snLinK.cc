@@ -327,7 +327,7 @@ Eigen::Map<Eigen::MatrixXd> snLinK::psi4_to_eigen_map(SharedMatrix psi4_matrix) 
     // create Eigen matrix "map" using Psi4 matrix data array directly
     return std::move(
         Eigen::Map<Eigen::MatrixXd>(
-            psi4_matrix->pointer()[0], // pointer to first element of underlying Psi4::Matrix data array
+            psi4_matrix->get_pointer(), 
             psi4_matrix->nrow(), psi4_matrix->ncol()
         )
     );
@@ -388,7 +388,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     const auto factory = std::make_shared<IntegralFactory>(primary, primary, primary, primary);
     PetiteList petite(primary, factory, true);
     auto sph_to_cart_matrix_ref = petite.sotoao()->clone();
-   
+  /* 
     sph_to_cart_matrix_ = std::make_shared<Matrix>(sph_to_cart_matrix_ref->nrow(), sph_to_cart_matrix_ref->ncol()); 
     //sph_to_cart_matrix_ = sph_to_cart_matrix_ref->clone();
     sph_to_cart_matrix_->zero(); 
@@ -615,33 +615,192 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
   sph_to_cart_matrix_->set(219, 232, 1.0); 
   sph_to_cart_matrix_->set(220, 233, 1.0); 
   sph_to_cart_matrix_->set(221, 231, 1.0); 
-
-    cart_to_sph_matrix_ = sph_to_cart_matrix_->clone()->transpose();
+*/
 
     // create permutation matrix to handle integral ordering
     permutation_matrix_ = generate_permutation_matrix(primary_);
     force_permute_ = options_.get_bool("SNLINK_FORCE_PERMUTE"); 
 
-    auto sph_to_cart_eigen_permute = psi4_to_eigen_map(sph_to_cart_matrix_);
-    std::cout << "Sph-to-Cart Matrix (" << sph_to_cart_eigen_permute.rows() << ", " << sph_to_cart_eigen_permute.cols() << "):" << std::endl;
+    sph_to_cart_matrix_ = petite.sotoao()->clone(); 
+   
+    { 
+      auto permutation_dense = permutation_matrix_.toDenseMatrix();
+      auto sph_to_cart_permute = std::make_shared<Matrix>(permutation_dense.rows(), permutation_dense.cols());
+      
+      auto ptr = sph_to_cart_permute->pointer();
+      for (int irow = 0; irow != permutation_dense.rows(); ++irow) {
+        for (int icol = 0; icol != permutation_dense.cols(); ++icol) {  
+          ptr[irow][icol] = permutation_dense(irow, icol);
+        } 
+      }
+      sph_to_cart_matrix_ = linalg::doublet(sph_to_cart_permute, sph_to_cart_matrix_);
+    }
+
+    cart_to_sph_matrix_ = sph_to_cart_matrix_->clone()->transpose();
+
+/*
+//    { 
+//        auto sph_to_cart_ref2_eigen_permute = psi4_to_eigen_map(sph_to_cart_matrix_ref2);
+//        sph_to_cart_ref2_eigen_permute = permutation_matrix_ * sph_to_cart_ref2_eigen_permute; 
+//    }
+
+    std::cout << "Sph-to-Cart Matrix (" << sph_to_cart_matrix_->nrow() << ", " << sph_to_cart_matrix_->ncol() << "):" << std::endl;
     std::cout << "------------------------- " << std::endl;
-    std::cout << sph_to_cart_eigen_permute.block<23, 23>(0,0) << std::endl;
-    std::cout << std::endl;
-    for (int irow = 0; irow != sph_to_cart_eigen_permute.rows(); ++irow) {
-      for (int icol = 0; icol != sph_to_cart_eigen_permute.cols(); ++icol) {
+*/
+/*
+    constexpr size_t block_size = 10;
+    for (int irow = 0; irow != sph_to_cart_matrix_->nrow(); ++irow) {
+      for (int icol = 0; icol != sph_to_cart_matrix_->ncol(); ++icol) {
         double val_ref = sph_to_cart_matrix_ref->get(irow, icol); 
         double val = sph_to_cart_matrix_->get(irow, icol);  
-        //if (std::abs(val_ref - val) > 1e-6) throw PSIEXCEPTION("Invalid value!");
-        if (std::abs(val) > 0.0) {
-          std::cout << "  sph_to_cart_matrix_->set(" << irow << ", " << icol << ", " << std::setprecision(6) << double(val) << "); "; 
-        }
+        if (std::abs(val_ref - val) > 1e-6) {
+          std::cout << "Different value at (" << irow << ", " << icol << ")! " << val_ref << ", " << val << std::endl;          
+          auto& sh = primary->shell(primary->function_to_shell(irow));
+          std::cout << "  Shell: " << primary->function_to_shell(irow) << " -> " << sh.am() << std::endl; 
+        } 
+        //std::cout << val_ref << ", ";
+
+        //if (std::abs(val) > 0.0) {
+        //  std::cout << "  sph_to_cart_matrix_->set(" << irow << ", " << icol << ", " << std::setprecision(6) << double(val) << "); "; 
+        //}
         //if constexpr(is_cca_) {
         //  assert(val == sph_to_cart_matrix_ref->get(irow, icol));
         //}
       }
       std::cout << std::endl;
     }
-    
+    std::cout << std::endl;
+*/
+/*
+    int isph = 0;
+    int icart = 0;
+    for (int ish = 0, ibf = 0; ish != 10; ++ish) {
+      auto& sh = primary->shell(ish);
+      auto am = sh.am();
+      auto nsph = sh.nfunction(); 
+      auto ncart = sh.ncartesian(); 
+
+      for (int irow = isph; irow != isph + nsph; ++irow) {
+        for (int icol = icart; icol != icart + ncart; ++icol) {
+          double val_ref = sph_to_cart_matrix_ref->get(irow, icol); 
+          double val = sph_to_cart_matrix_->get(irow, icol);  
+          //if (std::abs(val_ref - val) > 1e-6) {
+          //  std::cout << "Different value at (" << irow << ", " << icol << ")! " << val_ref << ", " << val << std::endl;          
+          //  auto& sh = primary->shell(primary->function_to_shell(irow));
+          //  std::cout << "  Shell: " << primary->function_to_shell(irow) << " -> " << sh.am() << std::endl; 
+          //} 
+          std::cout << val_ref << ", ";
+        }
+        std::cout << std::endl; 
+      }
+      isph += nsph;
+      icart += ncart;
+      std::cout << std::endl; 
+    }
+    std::cout << std::endl;
+    std::cout << "------------------------- " << std::endl;
+    //std::cout << sph_to_cart_ref2_eigen_permute.block<10, 10>(0,0) << std::endl;
+    //std::cout << std::endl;
+    isph = 0;
+    icart = 0;
+    for (int ish = 0, ibf = 0; ish != 10; ++ish) {
+      auto& sh = primary->shell(ish);
+      auto am = sh.am();
+      auto nsph = sh.nfunction(); 
+      auto ncart = sh.ncartesian(); 
+
+      for (int irow = isph; irow != isph + nsph; ++irow) {
+        for (int icol = icart; icol != icart + ncart; ++icol) {
+          double val_ref2 = sph_to_cart_matrix_ref2->get(irow, icol); 
+          //double val_ref2b = sph_to_cart_ref2_eigen_permute(irow, icol); 
+          //if (std::abs(val_ref2 - val_ref2b) > 1e-6) {
+          //  std::cout << "Different value at (" << irow << ", " << icol << ")! " << val_ref2 << ", " << val_ref2b << std::endl;          
+          //  auto& sh = primary->shell(primary->function_to_shell(irow));
+          //  std::cout << "  Shell: " << primary->function_to_shell(irow) << " -> " << sh.am() << std::endl; 
+          //} 
+          std::cout << val_ref2 << ", ";
+        }
+        std::cout << std::endl; 
+      }
+      isph += nsph;
+      icart += ncart;
+      std::cout << std::endl; 
+    }
+    std::cout << std::endl;
+    std::cout << "------------------------- " << std::endl;
+
+    isph = 0;
+    icart = 0;
+    for (int ish = 0, ibf = 0; ish != 10; ++ish) {
+      auto& sh = primary->shell(ish);
+      auto am = sh.am();
+      auto nsph = sh.nfunction(); 
+      auto ncart = sh.ncartesian(); 
+
+      for (int irow = isph; irow != isph + nsph; ++irow) {
+        for (int icol = icart; icol != icart + ncart; ++icol) {
+          double val_ref = sph_to_cart_matrix_ref->get(irow, icol); 
+          double val = sph_to_cart_matrix_->get(irow, icol);  
+          //if (std::abs(val_ref - val) > 1e-6) {
+          //  std::cout << "Different value at (" << irow << ", " << icol << ")! " << val_ref << ", " << val << std::endl;          
+          //  auto& sh = primary->shell(primary->function_to_shell(irow));
+          //  std::cout << "  Shell: " << primary->function_to_shell(irow) << " -> " << sh.am() << std::endl; 
+          //} 
+          std::cout << val << ", ";
+        }
+        std::cout << std::endl; 
+      }
+      isph += nsph;
+      icart += ncart;
+      std::cout << std::endl; 
+    }
+    std::cout << std::endl;
+*/
+/*
+    for (int irow = 0; irow != sph_to_cart_matrix_->nrow(); ++irow) {
+      for (int icol = 0; icol != sph_to_cart_matrix_->ncol(); ++icol) {
+        double val_ref = sph_to_cart_matrix_ref->get(irow, icol); 
+        double val = sph_to_cart_matrix_->get(irow, icol);  
+        if (std::abs(val_ref - val) > 1e-6) {
+          std::cout << "Different value at (" << irow << ", " << icol << ")! " << val_ref << ", " << val << std::endl;          
+          auto& sh = primary->shell(primary->function_to_shell(irow));
+          std::cout << "  Shell: " << primary->function_to_shell(irow) << " -> " << sh.am() << std::endl; 
+        } 
+        //std::cout << val_ref << ", ";
+
+        //if (std::abs(val) > 0.0) {
+        //  std::cout << "  sph_to_cart_matrix_->set(" << irow << ", " << icol << ", " << std::setprecision(6) << double(val) << "); "; 
+        //}
+        //if constexpr(is_cca_) {
+        //  assert(val == sph_to_cart_matrix_ref->get(irow, icol));
+        //}
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+*/
+
+
+/*
+    for (int irow = 14; irow != 14 + block_size; ++irow) {
+      for (int icol = 0; icol != block_size; ++icol) {
+        double val_ref2 = sph_to_cart_matrix_ref2->get(irow, icol); 
+        std::cout << val_ref2 << ", ";
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+    for (int irow = 14; irow != 14 + block_size; ++irow) {
+      for (int icol = 0; icol != block_size; ++icol) {
+        double val_ref = sph_to_cart_matrix_ref->get(irow, icol); 
+        double val = sph_to_cart_matrix_->get(irow, icol);  
+        std::cout << val << ", ";
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+  */  
     //std::cout << sph_to_cart_eigen_permute.block<6, 6>(17,0) << std::endl;
 
     //if (force_cartesian_ && !is_cca_) {
