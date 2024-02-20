@@ -23,23 +23,22 @@ molecule mol {
 
 set {
     scf_type dfdirj+snlink 
-    guess core 
+    guess sad 
     df_scf_guess false
     #basis bse:6-31+g* 
     basis bse:6-311++g(2d,2p) 
     #basis bse:cc-pVDZ
     e_convergence 1.0e-10
     screening schwarz
-    incfock false
+    incfock true 
     ints_tolerance 1.0e-10
     snlink_ints_tolerance 1.0e-10
     snlink_pruning_scheme robust 
     dft_radial_scheme em 
-    snlink_radial_points  70 
-    snlink_spherical_points 302
+    snlink_radial_points  35 
+    snlink_spherical_points 110
     snlink_use_gpu false 
-    snlink_force_cartesian false 
-    snlink_force_permute false 
+    snlink_force_cartesian true 
 }
 
 linK_energy = energy('scf')
