@@ -385,17 +385,267 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     }
 
     // create matrix for spherical-to-cartesian matrix transformations
-    const auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary);
-    PetiteList petite(primary_, factory, true);
-    sph_to_cart_matrix_ = petite.aotoso()->clone()->transpose();
+    const auto factory = std::make_shared<IntegralFactory>(primary, primary, primary, primary);
+    PetiteList petite(primary, factory, true);
+    auto sph_to_cart_matrix_ref = petite.sotoao()->clone();
+   
+    sph_to_cart_matrix_ = std::make_shared<Matrix>(sph_to_cart_matrix_ref->nrow(), sph_to_cart_matrix_ref->ncol()); 
+    //sph_to_cart_matrix_ = sph_to_cart_matrix_ref->clone();
+    sph_to_cart_matrix_->zero(); 
+
+  sph_to_cart_matrix_->set(0, 0, 1.0); 
+  sph_to_cart_matrix_->set(1, 1, 1.0); 
+  sph_to_cart_matrix_->set(2, 3, 1.0); 
+  sph_to_cart_matrix_->set(3, 4, 1.0); 
+  sph_to_cart_matrix_->set(4, 2, 1.0); 
+  sph_to_cart_matrix_->set(5, 5, 1.0); 
+  sph_to_cart_matrix_->set(6, 7, 1.0); 
+  sph_to_cart_matrix_->set(7, 8, 1.0); 
+  sph_to_cart_matrix_->set(8, 6, 1.0); 
+  sph_to_cart_matrix_->set(9, 9, 1.0); 
+  sph_to_cart_matrix_->set(10, 11, 1.0); 
+  sph_to_cart_matrix_->set(11, 12, 1.0); 
+  sph_to_cart_matrix_->set(12, 10, 1.0); 
+  sph_to_cart_matrix_->set(13, 13, 1.0); 
+  sph_to_cart_matrix_->set(14, 15, 1.0); 
+  sph_to_cart_matrix_->set(15, 16, 1.0); 
+  sph_to_cart_matrix_->set(16, 14, 1.0); 
+  sph_to_cart_matrix_->set(17, 18, 1.73205); 
+  sph_to_cart_matrix_->set(18, 21, 1.73205); 
+  sph_to_cart_matrix_->set(19, 17, -0.5);   sph_to_cart_matrix_->set(19, 20, -0.5);   sph_to_cart_matrix_->set(19, 22, 1.0); 
+  sph_to_cart_matrix_->set(20, 19, 1.73205); 
+  sph_to_cart_matrix_->set(21, 17, 0.866025);   sph_to_cart_matrix_->set(21, 20, -0.866025); 
+  sph_to_cart_matrix_->set(22, 24, 1.73205); 
+  sph_to_cart_matrix_->set(23, 27, 1.73205); 
+  sph_to_cart_matrix_->set(24, 23, -0.5);   sph_to_cart_matrix_->set(24, 26, -0.5);   sph_to_cart_matrix_->set(24, 28, 1.0); 
+  sph_to_cart_matrix_->set(25, 25, 1.73205); 
+  sph_to_cart_matrix_->set(26, 23, 0.866025);   sph_to_cart_matrix_->set(26, 26, -0.866025); 
+  sph_to_cart_matrix_->set(27, 29, 1.0); 
+  sph_to_cart_matrix_->set(28, 30, 1.0); 
+  sph_to_cart_matrix_->set(29, 32, 1.0); 
+  sph_to_cart_matrix_->set(30, 33, 1.0); 
+  sph_to_cart_matrix_->set(31, 31, 1.0); 
+  sph_to_cart_matrix_->set(32, 34, 1.0); 
+  sph_to_cart_matrix_->set(33, 36, 1.0); 
+  sph_to_cart_matrix_->set(34, 37, 1.0); 
+  sph_to_cart_matrix_->set(35, 35, 1.0); 
+  sph_to_cart_matrix_->set(36, 38, 1.0); 
+  sph_to_cart_matrix_->set(37, 40, 1.0); 
+  sph_to_cart_matrix_->set(38, 41, 1.0); 
+  sph_to_cart_matrix_->set(39, 39, 1.0); 
+  sph_to_cart_matrix_->set(40, 42, 1.0); 
+  sph_to_cart_matrix_->set(41, 44, 1.0); 
+  sph_to_cart_matrix_->set(42, 45, 1.0); 
+  sph_to_cart_matrix_->set(43, 43, 1.0); 
+  sph_to_cart_matrix_->set(44, 47, 1.73205); 
+  sph_to_cart_matrix_->set(45, 50, 1.73205); 
+  sph_to_cart_matrix_->set(46, 46, -0.5);   sph_to_cart_matrix_->set(46, 49, -0.5);   sph_to_cart_matrix_->set(46, 51, 1.0); 
+  sph_to_cart_matrix_->set(47, 48, 1.73205); 
+  sph_to_cart_matrix_->set(48, 46, 0.866025);   sph_to_cart_matrix_->set(48, 49, -0.866025); 
+  sph_to_cart_matrix_->set(49, 53, 1.73205); 
+  sph_to_cart_matrix_->set(50, 56, 1.73205); 
+  sph_to_cart_matrix_->set(51, 52, -0.5);   sph_to_cart_matrix_->set(51, 55, -0.5);   sph_to_cart_matrix_->set(51, 57, 1.0); 
+  sph_to_cart_matrix_->set(52, 54, 1.73205); 
+  sph_to_cart_matrix_->set(53, 52, 0.866025);   sph_to_cart_matrix_->set(53, 55, -0.866025); 
+  sph_to_cart_matrix_->set(54, 58, 1.0); 
+  sph_to_cart_matrix_->set(55, 59, 1.0); 
+  sph_to_cart_matrix_->set(56, 61, 1.0); 
+  sph_to_cart_matrix_->set(57, 62, 1.0); 
+  sph_to_cart_matrix_->set(58, 60, 1.0); 
+  sph_to_cart_matrix_->set(59, 63, 1.0); 
+  sph_to_cart_matrix_->set(60, 65, 1.0); 
+  sph_to_cart_matrix_->set(61, 66, 1.0); 
+  sph_to_cart_matrix_->set(62, 64, 1.0); 
+  sph_to_cart_matrix_->set(63, 67, 1.0); 
+  sph_to_cart_matrix_->set(64, 69, 1.0); 
+  sph_to_cart_matrix_->set(65, 70, 1.0); 
+  sph_to_cart_matrix_->set(66, 68, 1.0); 
+  sph_to_cart_matrix_->set(67, 71, 1.0); 
+  sph_to_cart_matrix_->set(68, 73, 1.0); 
+  sph_to_cart_matrix_->set(69, 74, 1.0); 
+  sph_to_cart_matrix_->set(70, 72, 1.0); 
+  sph_to_cart_matrix_->set(71, 76, 1.73205); 
+  sph_to_cart_matrix_->set(72, 79, 1.73205); 
+  sph_to_cart_matrix_->set(73, 75, -0.5);   sph_to_cart_matrix_->set(73, 78, -0.5);   sph_to_cart_matrix_->set(73, 80, 1.0); 
+  sph_to_cart_matrix_->set(74, 77, 1.73205); 
+  sph_to_cart_matrix_->set(75, 75, 0.866025);   sph_to_cart_matrix_->set(75, 78, -0.866025); 
+  sph_to_cart_matrix_->set(76, 82, 1.73205); 
+  sph_to_cart_matrix_->set(77, 85, 1.73205); 
+  sph_to_cart_matrix_->set(78, 81, -0.5);   sph_to_cart_matrix_->set(78, 84, -0.5);   sph_to_cart_matrix_->set(78, 86, 1.0); 
+  sph_to_cart_matrix_->set(79, 83, 1.73205); 
+  sph_to_cart_matrix_->set(80, 81, 0.866025);   sph_to_cart_matrix_->set(80, 84, -0.866025); 
+  sph_to_cart_matrix_->set(81, 87, 1.0); 
+  sph_to_cart_matrix_->set(82, 88, 1.0); 
+  sph_to_cart_matrix_->set(83, 90, 1.0); 
+  sph_to_cart_matrix_->set(84, 91, 1.0); 
+  sph_to_cart_matrix_->set(85, 89, 1.0); 
+  sph_to_cart_matrix_->set(86, 92, 1.0); 
+  sph_to_cart_matrix_->set(87, 94, 1.0); 
+  sph_to_cart_matrix_->set(88, 95, 1.0); 
+  sph_to_cart_matrix_->set(89, 93, 1.0); 
+  sph_to_cart_matrix_->set(90, 96, 1.0); 
+  sph_to_cart_matrix_->set(91, 98, 1.0); 
+  sph_to_cart_matrix_->set(92, 99, 1.0); 
+  sph_to_cart_matrix_->set(93, 97, 1.0); 
+  sph_to_cart_matrix_->set(94, 100, 1.0); 
+  sph_to_cart_matrix_->set(95, 102, 1.0); 
+  sph_to_cart_matrix_->set(96, 103, 1.0); 
+  sph_to_cart_matrix_->set(97, 101, 1.0); 
+  sph_to_cart_matrix_->set(98, 105, 1.73205); 
+  sph_to_cart_matrix_->set(99, 108, 1.73205); 
+  sph_to_cart_matrix_->set(100, 104, -0.5);   sph_to_cart_matrix_->set(100, 107, -0.5);   sph_to_cart_matrix_->set(100, 109, 1.0); 
+  sph_to_cart_matrix_->set(101, 106, 1.73205); 
+  sph_to_cart_matrix_->set(102, 104, 0.866025);   sph_to_cart_matrix_->set(102, 107, -0.866025); 
+  sph_to_cart_matrix_->set(103, 111, 1.73205); 
+  sph_to_cart_matrix_->set(104, 114, 1.73205); 
+  sph_to_cart_matrix_->set(105, 110, -0.5);   sph_to_cart_matrix_->set(105, 113, -0.5);   sph_to_cart_matrix_->set(105, 115, 1.0); 
+  sph_to_cart_matrix_->set(106, 112, 1.73205); 
+  sph_to_cart_matrix_->set(107, 110, 0.866025);   sph_to_cart_matrix_->set(107, 113, -0.866025); 
+  sph_to_cart_matrix_->set(108, 116, 1.0); 
+  sph_to_cart_matrix_->set(109, 117, 1.0); 
+  sph_to_cart_matrix_->set(110, 119, 1.0); 
+  sph_to_cart_matrix_->set(111, 120, 1.0); 
+  sph_to_cart_matrix_->set(112, 118, 1.0); 
+  sph_to_cart_matrix_->set(113, 121, 1.0); 
+  sph_to_cart_matrix_->set(114, 123, 1.0); 
+  sph_to_cart_matrix_->set(115, 124, 1.0); 
+  sph_to_cart_matrix_->set(116, 122, 1.0); 
+  sph_to_cart_matrix_->set(117, 125, 1.0); 
+  sph_to_cart_matrix_->set(118, 127, 1.0); 
+  sph_to_cart_matrix_->set(119, 128, 1.0); 
+  sph_to_cart_matrix_->set(120, 126, 1.0); 
+  sph_to_cart_matrix_->set(121, 129, 1.0); 
+  sph_to_cart_matrix_->set(122, 131, 1.0); 
+  sph_to_cart_matrix_->set(123, 132, 1.0); 
+  sph_to_cart_matrix_->set(124, 130, 1.0); 
+  sph_to_cart_matrix_->set(125, 134, 1.73205); 
+  sph_to_cart_matrix_->set(126, 137, 1.73205); 
+  sph_to_cart_matrix_->set(127, 133, -0.5);   sph_to_cart_matrix_->set(127, 136, -0.5);   sph_to_cart_matrix_->set(127, 138, 1.0); 
+  sph_to_cart_matrix_->set(128, 135, 1.73205); 
+  sph_to_cart_matrix_->set(129, 133, 0.866025);   sph_to_cart_matrix_->set(129, 136, -0.866025); 
+  sph_to_cart_matrix_->set(130, 140, 1.73205); 
+  sph_to_cart_matrix_->set(131, 143, 1.73205); 
+  sph_to_cart_matrix_->set(132, 139, -0.5);   sph_to_cart_matrix_->set(132, 142, -0.5);   sph_to_cart_matrix_->set(132, 144, 1.0); 
+  sph_to_cart_matrix_->set(133, 141, 1.73205); 
+  sph_to_cart_matrix_->set(134, 139, 0.866025);   sph_to_cart_matrix_->set(134, 142, -0.866025); 
+  sph_to_cart_matrix_->set(135, 145, 1.0); 
+  sph_to_cart_matrix_->set(136, 146, 1.0); 
+  sph_to_cart_matrix_->set(137, 148, 1.0); 
+  sph_to_cart_matrix_->set(138, 149, 1.0); 
+  sph_to_cart_matrix_->set(139, 147, 1.0); 
+  sph_to_cart_matrix_->set(140, 150, 1.0); 
+  sph_to_cart_matrix_->set(141, 152, 1.0); 
+  sph_to_cart_matrix_->set(142, 153, 1.0); 
+  sph_to_cart_matrix_->set(143, 151, 1.0); 
+  sph_to_cart_matrix_->set(144, 154, 1.0); 
+  sph_to_cart_matrix_->set(145, 156, 1.0); 
+  sph_to_cart_matrix_->set(146, 157, 1.0); 
+  sph_to_cart_matrix_->set(147, 155, 1.0); 
+  sph_to_cart_matrix_->set(148, 158, 1.0); 
+  sph_to_cart_matrix_->set(149, 160, 1.0); 
+  sph_to_cart_matrix_->set(150, 161, 1.0); 
+  sph_to_cart_matrix_->set(151, 159, 1.0); 
+  sph_to_cart_matrix_->set(152, 163, 1.73205); 
+  sph_to_cart_matrix_->set(153, 166, 1.73205); 
+  sph_to_cart_matrix_->set(154, 162, -0.5);   sph_to_cart_matrix_->set(154, 165, -0.5);   sph_to_cart_matrix_->set(154, 167, 1.0); 
+  sph_to_cart_matrix_->set(155, 164, 1.73205); 
+  sph_to_cart_matrix_->set(156, 162, 0.866025);   sph_to_cart_matrix_->set(156, 165, -0.866025); 
+  sph_to_cart_matrix_->set(157, 169, 1.73205); 
+  sph_to_cart_matrix_->set(158, 172, 1.73205); 
+  sph_to_cart_matrix_->set(159, 168, -0.5);   sph_to_cart_matrix_->set(159, 171, -0.5);   sph_to_cart_matrix_->set(159, 173, 1.0); 
+  sph_to_cart_matrix_->set(160, 170, 1.73205); 
+  sph_to_cart_matrix_->set(161, 168, 0.866025);   sph_to_cart_matrix_->set(161, 171, -0.866025); 
+  sph_to_cart_matrix_->set(162, 174, 1.0); 
+  sph_to_cart_matrix_->set(163, 175, 1.0); 
+  sph_to_cart_matrix_->set(164, 176, 1.0); 
+  sph_to_cart_matrix_->set(165, 177, 1.0); 
+  sph_to_cart_matrix_->set(166, 179, 1.0); 
+  sph_to_cart_matrix_->set(167, 180, 1.0); 
+  sph_to_cart_matrix_->set(168, 178, 1.0); 
+  sph_to_cart_matrix_->set(169, 182, 1.0); 
+  sph_to_cart_matrix_->set(170, 183, 1.0); 
+  sph_to_cart_matrix_->set(171, 181, 1.0); 
+  sph_to_cart_matrix_->set(172, 184, 1.0); 
+  sph_to_cart_matrix_->set(173, 185, 1.0); 
+  sph_to_cart_matrix_->set(174, 186, 1.0); 
+  sph_to_cart_matrix_->set(175, 187, 1.0); 
+  sph_to_cart_matrix_->set(176, 189, 1.0); 
+  sph_to_cart_matrix_->set(177, 190, 1.0); 
+  sph_to_cart_matrix_->set(178, 188, 1.0); 
+  sph_to_cart_matrix_->set(179, 192, 1.0); 
+  sph_to_cart_matrix_->set(180, 193, 1.0); 
+  sph_to_cart_matrix_->set(181, 191, 1.0); 
+  sph_to_cart_matrix_->set(182, 194, 1.0); 
+  sph_to_cart_matrix_->set(183, 195, 1.0); 
+  sph_to_cart_matrix_->set(184, 196, 1.0); 
+  sph_to_cart_matrix_->set(185, 197, 1.0); 
+  sph_to_cart_matrix_->set(186, 199, 1.0); 
+  sph_to_cart_matrix_->set(187, 200, 1.0); 
+  sph_to_cart_matrix_->set(188, 198, 1.0); 
+  sph_to_cart_matrix_->set(189, 202, 1.0); 
+  sph_to_cart_matrix_->set(190, 203, 1.0); 
+  sph_to_cart_matrix_->set(191, 201, 1.0); 
+  sph_to_cart_matrix_->set(192, 204, 1.0); 
+  sph_to_cart_matrix_->set(193, 205, 1.0); 
+  sph_to_cart_matrix_->set(194, 206, 1.0); 
+  sph_to_cart_matrix_->set(195, 207, 1.0); 
+  sph_to_cart_matrix_->set(196, 209, 1.0); 
+  sph_to_cart_matrix_->set(197, 210, 1.0); 
+  sph_to_cart_matrix_->set(198, 208, 1.0); 
+  sph_to_cart_matrix_->set(199, 212, 1.0); 
+  sph_to_cart_matrix_->set(200, 213, 1.0); 
+  sph_to_cart_matrix_->set(201, 211, 1.0); 
+  sph_to_cart_matrix_->set(202, 214, 1.0); 
+  sph_to_cart_matrix_->set(203, 215, 1.0); 
+  sph_to_cart_matrix_->set(204, 216, 1.0); 
+  sph_to_cart_matrix_->set(205, 217, 1.0); 
+  sph_to_cart_matrix_->set(206, 219, 1.0); 
+  sph_to_cart_matrix_->set(207, 220, 1.0); 
+  sph_to_cart_matrix_->set(208, 218, 1.0); 
+  sph_to_cart_matrix_->set(209, 222, 1.0); 
+  sph_to_cart_matrix_->set(210, 223, 1.0); 
+  sph_to_cart_matrix_->set(211, 221, 1.0); 
+  sph_to_cart_matrix_->set(212, 224, 1.0); 
+  sph_to_cart_matrix_->set(213, 225, 1.0); 
+  sph_to_cart_matrix_->set(214, 226, 1.0); 
+  sph_to_cart_matrix_->set(215, 227, 1.0); 
+  sph_to_cart_matrix_->set(216, 229, 1.0); 
+  sph_to_cart_matrix_->set(217, 230, 1.0); 
+  sph_to_cart_matrix_->set(218, 228, 1.0); 
+  sph_to_cart_matrix_->set(219, 232, 1.0); 
+  sph_to_cart_matrix_->set(220, 233, 1.0); 
+  sph_to_cart_matrix_->set(221, 231, 1.0); 
+
+    cart_to_sph_matrix_ = sph_to_cart_matrix_->clone()->transpose();
 
     // create permutation matrix to handle integral ordering
     permutation_matrix_ = generate_permutation_matrix(primary_);
     force_permute_ = options_.get_bool("SNLINK_FORCE_PERMUTE"); 
 
+    auto sph_to_cart_eigen_permute = psi4_to_eigen_map(sph_to_cart_matrix_);
+    std::cout << "Sph-to-Cart Matrix (" << sph_to_cart_eigen_permute.rows() << ", " << sph_to_cart_eigen_permute.cols() << "):" << std::endl;
+    std::cout << "------------------------- " << std::endl;
+    std::cout << sph_to_cart_eigen_permute.block<23, 23>(0,0) << std::endl;
+    std::cout << std::endl;
+    for (int irow = 0; irow != sph_to_cart_eigen_permute.rows(); ++irow) {
+      for (int icol = 0; icol != sph_to_cart_eigen_permute.cols(); ++icol) {
+        double val_ref = sph_to_cart_matrix_ref->get(irow, icol); 
+        double val = sph_to_cart_matrix_->get(irow, icol);  
+        //if (std::abs(val_ref - val) > 1e-6) throw PSIEXCEPTION("Invalid value!");
+        if (std::abs(val) > 0.0) {
+          std::cout << "  sph_to_cart_matrix_->set(" << irow << ", " << icol << ", " << std::setprecision(6) << double(val) << "); "; 
+        }
+        //if constexpr(is_cca_) {
+        //  assert(val == sph_to_cart_matrix_ref->get(irow, icol));
+        //}
+      }
+      std::cout << std::endl;
+    }
+    
+    //std::cout << sph_to_cart_eigen_permute.block<6, 6>(17,0) << std::endl;
+
     //if (force_cartesian_ && !is_cca_) {
-    //    auto sph_to_cart_eigen_permute = psi4_to_eigen_map(sph_to_cart_matrix_);
-    //    sph_to_cart_eigen_permute = permutation_matrix_ * sph_to_cart_eigen_permute; 
+    //    sph_to_cart_eigen_permute = sph_to_cart_eigen_permute * permutation_matrix_; 
     //}
 
     // convert Psi4 fundamental quantities to GauXC 
@@ -526,29 +776,22 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         // map Psi4 density matrix to Eigen matrix map
         SharedMatrix D_buffer = nullptr; 
         if (is_spherical_basis) {
+            if (print_D) {
+            std::cout << "D (pre-reorder): " << std::endl;
+            std::cout << "------------------------- " << std::endl;
+            std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << std::endl;
+            std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
+            }
+
             // need to reorder Psi4 density matrix to CCA ordering if in spherical harmonics
             if constexpr (!is_cca_) {
-                auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
-
-                if (print_D) {
-                std::cout << "D (pre-reorder): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
-                std::cout << std::endl;
-                std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
+                {
+                    auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
+                    D_eigen_permute = permutation_matrix_ * D_eigen_permute * permutation_matrix_.transpose();
                 }
-
-                D_eigen_permute = permutation_matrix_ * D_eigen_permute * permutation_matrix_.transpose();
 
                 if (integrator_spherical_ != nullptr) {
-                if (print_D) {
-                std::cout << "D (post-reorder): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
-                std::cout << std::endl;
-                std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
-                }
-
                 auto n_el_post_a = integrator_spherical_->integrate_den(Did_eigen);
                 outfile->Printf("  Integrator_den (post-reorder): %f\n", n_el_post_a);
        
@@ -558,18 +801,26 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
                 outfile->Printf("  trace(DS) (post-reorder): %f\n", n_el_post_c);
                 }
             }
+
+            if (print_D) {
+            std::cout << "D (post-reorder): " << std::endl;
+            std::cout << "------------------------- " << std::endl;
+            std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << std::endl;
+            std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
+            }
+
+            if (print_D) {
+            std::cout << "D (pre-transform): " << std::endl;
+            std::cout << "------------------------- " << std::endl;
+            std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << std::endl;
+            std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
+            }
+ 
             // also need to transform D to cartesian coordinates if requested/required
             if (force_cartesian_) {
                 D_buffer = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
-                  
-                if (print_D) {
-                std::cout << "D (pre-transform): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
-                std::cout << std::endl;
-                std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
-                }
-
                 D_buffer->transform(D[iD], sph_to_cart_matrix_);
             } else {
                 D_buffer = D[iD];
@@ -600,41 +851,41 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         // buffer can be either K itself or a cartesian representation of K
         SharedMatrix K_buffer = nullptr; 
         if (is_spherical_basis) {
+            if(print_K) {
+            std::cout << "K (pre-reorder): " << std::endl;
+            std::cout << "------------------------- " << std::endl;
+            std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << std::endl;
+            std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
+            }
+
             // need to reorder Psi4 exchange matrix to CCA ordering if in spherical harmonics
             if constexpr (!is_cca_) {
-                auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
-
-                if(print_K) {
-                std::cout << "K (pre-reorder): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
-                std::cout << std::endl;
-                std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
+                {
+                    auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
+                    K_eigen_permute = permutation_matrix_ * K_eigen_permute * permutation_matrix_.transpose();
                 }
+            }
 
-                K_eigen_permute = permutation_matrix_ * K_eigen_permute * permutation_matrix_.transpose();
+            if(print_K) {
+            std::cout << "K (post-reorder): " << std::endl;
+            std::cout << "------------------------- " << std::endl;
+            std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << std::endl;
+            std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
+            }
 
-                if(print_K) {
-                std::cout << "K (post-reorder): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
-                std::cout << std::endl;
-                std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
-                }
+            if(print_K) {
+            std::cout << "K (pre-transform): " << std::endl;
+            std::cout << "------------------------- " << std::endl;
+            std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << std::endl;
+            std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
             }
 
             // also need to transform D to cartesian coordinates if requested/required
             if (force_cartesian_) { 
                 K_buffer = std::make_shared<Matrix>(sph_to_cart_matrix_->ncol(), sph_to_cart_matrix_->ncol());
-                
-                if(print_K) {
-                std::cout << "K (pre-transform): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
-                std::cout << std::endl;
-                std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
-                }
-
                 K_buffer->transform(K[iD], sph_to_cart_matrix_);
             } else {
                 K_buffer = K[iD];
@@ -659,7 +910,8 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             // if cartesian transformation is forced, K_buffer is delta K and must be added to Psi4 K separately...
             if (force_cartesian_ && is_spherical_basis) {
                 K_buffer_eigen = integrator_->eval_exx(D_buffer_eigen, integrator_settings_);
-                K_buffer->back_transform(sph_to_cart_matrix_);
+                //K_buffer->back_transform(sph_to_cart_matrix_);
+                K_buffer->transform(cart_to_sph_matrix_);
                 K[iD]->add(K_buffer);
             // ... otherwise the computation and addition can be bundled together 
             } else {
@@ -679,7 +931,8 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             }
 
             if (force_cartesian_ && is_spherical_basis) {
-                K[iD]->back_transform(K_buffer, sph_to_cart_matrix_);          
+                //K[iD]->back_transform(K_buffer, sph_to_cart_matrix_);          
+                K[iD]->transform(K_buffer, cart_to_sph_matrix_);          
             }
 
             if(print_K) {
@@ -693,66 +946,67 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
 
         // now we need to reverse the CCA reordering previously performed
         if (is_spherical_basis) {
-            //for (int i = 0; i != 5; ++i) { for (int j = 0; j != 5; ++j) { std::cout << K[iD]->get(i,j) << ", "; }; }; std::cout << std::endl << std::endl;
-            if constexpr (!is_cca_) {
-                if (print_D) {
-                std::cout << "D (pre-back-transform): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << D_buffer_eigen.block<6, 6>(0,0) << std::endl;
-                std::cout << std::endl;
-                std::cout << D_buffer_eigen.block<6, 6>(17,0) << std::endl;
-                }
+            if (print_D) {
+
+            std::cout << "D (pre-back-transform): " << std::endl;
+            std::cout << "------------------------- " << std::endl;
+            std::cout << D_buffer_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << std::endl;
+            std::cout << D_buffer_eigen.block<6, 6>(17,0) << std::endl;
+            }
 
                 //if (force_cartesian_ ) {
                 //    D[iD]->back_transform(D_buffer, sph_to_cart_matrix_);          
                // }
 
-                if (print_D) {
-                std::cout << "D (post-back-transform): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
-                std::cout << std::endl;
-                std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
-                }
-
-                auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
-                if (print_D) {
-                std::cout << "D (pre-back-reorder): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
-                std::cout << std::endl;
-                std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
-                }
- 
-                D_eigen_permute = permutation_matrix_.transpose() * D_eigen_permute * permutation_matrix_; 
-
-                if (print_D) {
-                std::cout << "D (post-back-reorder): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
-                std::cout << std::endl;
-                std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
-                }
-
-                auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
-                if(print_K) {
-                std::cout << "K (pre-back-reorder): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
-                std::cout << std::endl;
-                std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
-                }
- 
-                if (!force_cartesian_) K_eigen_permute = permutation_matrix_.transpose() * K_eigen_permute * permutation_matrix_; 
-                if(print_K) {
-                std::cout << "K (post-back-reorder): " << std::endl;
-                std::cout << "------------------------- " << std::endl;
-                std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
-                std::cout << std::endl;
-                std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
-                }
+            if (print_D) {
+            std::cout << "D (post-back-transform): " << std::endl;
+            std::cout << "------------------------- " << std::endl;
+            std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << std::endl;
+            std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
             }
 
+            if (print_D) {
+            std::cout << "D (pre-back-reorder): " << std::endl;
+            std::cout << "------------------------- " << std::endl;
+            std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << std::endl;
+            std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
+            }
+
+            if(print_K) {
+            std::cout << "K (pre-back-reorder): " << std::endl;
+            std::cout << "------------------------- " << std::endl;
+            std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << std::endl;
+            std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
+            }
+
+            if constexpr (!is_cca_) {
+                auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
+                D_eigen_permute = permutation_matrix_.transpose() * D_eigen_permute * permutation_matrix_; 
+
+                auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
+                K_eigen_permute = permutation_matrix_.transpose() * K_eigen_permute * permutation_matrix_; 
+            }
+
+            if (print_D) {
+            std::cout << "D (post-back-reorder): " << std::endl;
+            std::cout << "------------------------- " << std::endl;
+            std::cout << Did_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << std::endl;
+            std::cout << Did_eigen.block<6, 6>(17,0) << std::endl;
+            }
+
+            if(print_K) {
+            std::cout << "K (post-back-reorder): " << std::endl;
+            std::cout << "------------------------- " << std::endl;
+            std::cout << Kid_eigen.block<6, 6>(0,0) << std::endl;
+            std::cout << std::endl;
+            std::cout << Kid_eigen.block<6, 6>(17,0) << std::endl;
+            }
+ 
             //if (force_cartesian_) {
             //    ;
                 //D_permute_buffer = permutation_matrix_.transpose() * D_permute_buffer * permutation_matrix_; 
