@@ -351,6 +351,7 @@ class PSI_API snLinK : public SplitJK {
     /// The AO->CartAO transformation matrix, which is used for transforming
     /// matrices between pure and Cartesian representations.
     SharedMatrix sph_to_cart_matrix_;
+    SharedMatrix cart_to_sph_matrix_;
 
     // => Gaussian-CCA Transformation stuff <= //
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix_;
