@@ -311,10 +311,6 @@ void CompositeJK::compute_JK() {
             timer_on("COSX " + gridname + " Grid");
         }
 
-        if (k_algo_->name() == "sn-LinK") {
-            k_algo_->set_snLinK_S(S_);
-        }
-
         k_algo_->build_G_component(D_ref_, K_ao_, eri_computers_["4-Center"]);
 
         if (get_bench()) {
