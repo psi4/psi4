@@ -97,9 +97,6 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
 
   // p shell, actually convoluted
   if constexpr (is_cca_) {
-#ifndef USING_gauxc_CCA
-    throw PSIEXCEPTION("Shouldn't be here!");
-#endif
     // dont even know what this is, but it works I guess?
     // GauXC internally represents p shells as cartesians even in spherical
     // harmonic basis sets
@@ -108,10 +105,6 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
     // forced cartesian is usual CCA ordering
     if (force_cartesian_) cca_integral_order[1] = { -1, 0, 1 }; 
   } else {
-#ifndef USING_gauxc_GAUSSIAN
-    throw PSIEXCEPTION("Shouldn't be here!");
-#endif
-
     //cca_integral_order[1] = { 1, -1, 0 }; // this is for representing P as cartesian in spherical harmonic basiss sets
     cca_integral_order[1] = { 0, 1, -1 }; // this is for representing P as spherical in spherical harmonic basis sets
   }
@@ -256,6 +249,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
   
     radial_points_ = options_.get_int("SNLINK_RADIAL_POINTS");
     spherical_points_ = options_.get_int("SNLINK_SPHERICAL_POINTS");
+    use_grid_points_ = options_.get_bool("SNLINK_USE_POINTS");
     basis_tol_ = options.get_double("SNLINK_BASIS_TOLERANCE");
 
     pruning_scheme_ = options_.get_str("SNLINK_PRUNING_SCHEME");
@@ -330,15 +324,26 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // create snLinK grid for GauXC
     auto grid_batch_size = options_.get_int("SNLINK_GRID_BATCH_SIZE");
-    auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
-        gauxc_mol, 
-        pruning_scheme_map[pruning_scheme_],
-        GauXC::BatchSize(grid_batch_size), 
-        radial_scheme_map[radial_scheme_], 
-        GauXC::RadialSize(radial_points_),
-        GauXC::AngularSize(spherical_points_)
-        //GauXC::AtomicGridSizeDefault::UltraFineGrid
-    );
+    auto gauxc_grid = (use_grid_points_) ?
+        GauXC::MolGridFactory::create_default_molgrid(
+            gauxc_mol, 
+            pruning_scheme_map[pruning_scheme_],
+            GauXC::BatchSize(grid_batch_size), 
+            radial_scheme_map[radial_scheme_], 
+            GauXC::RadialSize(radial_points_),
+            GauXC::AngularSize(spherical_points_)
+            //GauXC::AtomicGridSizeDefault::UltraFineGrid
+        ) :
+        GauXC::MolGridFactory::create_default_molgrid(
+            gauxc_mol, 
+            pruning_scheme_map[pruning_scheme_],
+            GauXC::BatchSize(grid_batch_size), 
+            radial_scheme_map[radial_scheme_], 
+            //GauXC::RadialSize(radial_points_),
+            //GauXC::AngularSize(spherical_points_)
+            GauXC::AtomicGridSizeDefault::UltraFineGrid
+        ) 
+    ;
 
     // construct load balancer
     const std::string load_balancer_kernel = options_.get_str("SNLINK_LOAD_BALANCER_KERNEL"); 
@@ -390,8 +395,12 @@ void snLinK::print_header() const {
         outfile->Printf("  ==> snLinK: GauXC Semi-Numerical Linear Exchange K <==\n\n");
         
         outfile->Printf("    K Execution Space: %s\n", (use_gpu_) ? "Device" : "Host");
-        outfile->Printf("    K Grid Radial Points: %i\n", radial_points_);
-        outfile->Printf("    K Grid Spherical/Angular Points: %i\n", spherical_points_);
+        if (use_grid_points_) {
+            outfile->Printf("    K Grid Radial Points: %i\n", radial_points_);
+            outfile->Printf("    K Grid Spherical/Angular Points: %i\n", spherical_points_);
+        } else {
+            outfile->Printf("    K Grid Scheme: Ultrafine\n");
+        }
         outfile->Printf("    K Screening?:     %s\n", (integrator_settings_.screen_ek) ? "Yes" : "No");
         outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
         outfile->Printf("    K Ints Cutoff:     %11.0E\n", integrator_settings_.energy_tol);
@@ -433,10 +442,8 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         if (is_spherical_basis) {
             // need to reorder Psi4 density matrix to CCA ordering if in spherical harmonics
             if constexpr (!is_cca_) {
-                {
-                    auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
-                    D_eigen_permute = permutation_matrix_ * D_eigen_permute * permutation_matrix_.transpose();
-                }
+                auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
+                D_eigen_permute = permutation_matrix_ * D_eigen_permute * permutation_matrix_.transpose();
             }
             
             // also need to transform D to cartesian coordinates if requested/required
@@ -458,10 +465,8 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         if (is_spherical_basis) {
             // need to reorder Psi4 exchange matrix to CCA ordering if in spherical harmonics
             if constexpr (!is_cca_) {
-                {
-                    auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
-                    K_eigen_permute = permutation_matrix_ * K_eigen_permute * permutation_matrix_.transpose();
-                }
+                auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
+                K_eigen_permute = permutation_matrix_ * K_eigen_permute * permutation_matrix_.transpose();
             }
             
             // also need to transform D to cartesian coordinates if requested/required
@@ -498,20 +503,18 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         }
 
         // now we need to reverse the CCA reordering previously performed
-        if (is_spherical_basis) {
-            if constexpr (!is_cca_) {
-                auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
-                D_eigen_permute = permutation_matrix_.transpose() * D_eigen_permute * permutation_matrix_; 
+        if (is_spherical_basis && !is_cca_) {
+            auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
+            D_eigen_permute = permutation_matrix_.transpose() * D_eigen_permute * permutation_matrix_; 
 
-                auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
-                K_eigen_permute = permutation_matrix_.transpose() * K_eigen_permute * permutation_matrix_; 
-            }
+            auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
+            K_eigen_permute = permutation_matrix_.transpose() * K_eigen_permute * permutation_matrix_; 
         }
       
         // symmetrize K if applicable
-        if (lr_symmetric_) {
-            K[iD]->hermitivitize();
-        }
+        //if (lr_symmetric_) {
+        //    K[iD]->hermitivitize();
+        //}
     }
    
     return;

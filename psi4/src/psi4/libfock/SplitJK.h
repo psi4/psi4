@@ -373,6 +373,8 @@ class PSI_API snLinK : public SplitJK {
     size_t radial_points_; 
     // how many spherical/angular points for the grid?
     size_t spherical_points_; 
+    // use grid points or verbal description of grid?
+    bool use_grid_points_;
     // basis cutoff
     double basis_tol_;
    
