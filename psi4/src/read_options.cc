@@ -1719,6 +1719,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("SNLINK_SPHERICAL_POINTS", 50);
         /*- Number of radial points in initial snLinK grid. -*/
         options.add_int("SNLINK_RADIAL_POINTS", 25);
+        /*- Use grid point specifications for snLinK grid? -*/ 
+        options.add_bool("SNLINK_USE_POINTS", true);
         /*- Use GPU for GauXC? -*/
         options.add_bool("SNLINK_USE_GPU", false);
         /*- Screening criteria for integrals and intermediates in snLinK -*/

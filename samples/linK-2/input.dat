@@ -34,7 +34,8 @@ set {
     ints_tolerance 1.0e-10
     snlink_ints_tolerance 1.0e-10
     snlink_pruning_scheme robust 
-    dft_radial_scheme em 
+    dft_radial_scheme em
+    snlink_use_points false 
     snlink_radial_points  35 
     snlink_spherical_points 110
     snlink_use_gpu false 
