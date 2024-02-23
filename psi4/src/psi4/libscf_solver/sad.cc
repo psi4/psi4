@@ -41,6 +41,10 @@
 #include <vector>
 #include <utility>
 
+#ifdef USING_OpenOrbitalOptimizer
+#include <openorbitaloptimizer/scfsolver.hpp>
+#endif
+
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
