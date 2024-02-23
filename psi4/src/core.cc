@@ -201,6 +201,9 @@ SharedWavefunction psimrcc(SharedWavefunction, Options&);
 namespace dummy_einsums {
 SharedWavefunction dummy_einsums (SharedWavefunction, Options&);
 }
+namespace dummy_integratorxx {
+SharedWavefunction dummy_integratorxx(SharedWavefunction, Options&);
+}
 
 
 // Matrix returns
@@ -504,6 +507,17 @@ SharedWavefunction py_psi_dummy_einsums(SharedWavefunction ref_wfn) {
 #else
 double py_psi_dummy_einsums(SharedWavefunction ref_wfn) {
     throw PSIEXCEPTION("Einsums not enabled. Recompile with -DENABLE_Einsums");
+}
+#endif
+
+#ifdef USING_IntegratorXX
+SharedWavefunction py_psi_dummy_integratorxx(SharedWavefunction ref_wfn) {
+    py_psi_prepare_options_for_module("CCEOM");
+    return dummy_integratorxx::dummy_integratorxx(ref_wfn, Process::environment.options);
+}
+#else
+double py_psi_dummy_integratorxx(SharedWavefunction ref_wfn) {
+    throw PSIEXCEPTION("IntegratorXX not enabled. Recompile with -DENABLE_IntegratorXX");
 }
 #endif
 
@@ -1367,6 +1381,7 @@ PYBIND11_MODULE(core, core) {
     core.def("occ", py_psi_occ, "ref_wfn"_a, "Runs the orbital optimized CC codes.");
     core.def("dfocc", py_psi_dfocc, "ref_wfn"_a, "Runs the density-fitted orbital optimized CC codes.");
     core.def("dummy_einsums", py_psi_dummy_einsums, "ref_wfn"_a, "Runs the einsums placeholder code.");
+    core.def("dummy_integratorxx", py_psi_dummy_integratorxx, "ref_wfn"_a, "Runs the integratorxx placeholder code.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {
         if (ofname == "stdout") {

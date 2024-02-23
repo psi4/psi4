@@ -41,13 +41,6 @@ target_link_libraries(fock
     Libint2::cxx  # for <libint2/config.h>
   )
 
-if(TARGET IntegratorXX::IntegratorXX)
-  target_link_libraries(fock
-    PRIVATE
-      IntegratorXX::IntegratorXX
-    )
-endif()
-
 if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(fock
     PUBLIC

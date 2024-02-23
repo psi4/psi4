@@ -23,9 +23,11 @@ if(${ENABLE_IntegratorXX})
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
+                       -DINTEGRATORXX_ENABLE_TESTS=OFF
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
-            CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
+            CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1})
     
         set(IntegratorXX_DIR ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/cmake/IntegratorXX CACHE PATH "path to internally built IntegratorXXConfig.cmake" FORCE)
     endif()
