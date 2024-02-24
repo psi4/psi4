@@ -61,6 +61,9 @@ class SADGuess {
     void get_uhf_atomic_density(std::shared_ptr<BasisSet> atomic_basis, std::shared_ptr<BasisSet> fit_basis,
                                 SharedVector occ_a, SharedVector occ_b, SharedMatrix D, SharedMatrix Chuckel,
                                 SharedVector Ehuckel);
+    void get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> atomic_basis, std::shared_ptr<BasisSet> fit_basis,
+                                SharedVector occ_a, SharedVector occ_b, SharedMatrix D, SharedMatrix Chuckel,
+                                SharedVector Ehuckel);
     void form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedVector E, SharedMatrix Cocc,
                       SharedVector occ, SharedMatrix D);
 
