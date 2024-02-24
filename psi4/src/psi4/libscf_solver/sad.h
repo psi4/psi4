@@ -29,10 +29,21 @@
 #ifndef LIBSCF_SAD_H
 #define LIBSCF_SAD_H
 
+#ifdef USING_OpenOrbitalOptimizer
+#include <armadillo>
+#include <openorbitaloptimizer/scfsolver.hpp>
+#endif
+
+//namespace arma {
+// class mat;
+// class uvec;
+//}
+
 namespace psi {
 
 class BasisSet;
 class Molecule;
+class JK;
 
 namespace scf {
 
@@ -54,6 +65,8 @@ class SADGuess {
     SharedMatrix Ca_;
     SharedMatrix Cb_;
 
+    std::unique_ptr<JK> jk;
+
     void common_init();
 
     void run_atomic_calculations(SharedMatrix& D_AO, SharedMatrix& Huckel_C, SharedVector& Huckel_E);
@@ -69,6 +82,9 @@ class SADGuess {
 
     void form_D();
     void form_C();
+
+    //void set_jk(std::unique_ptr<JK> & jkin) { jk = jkin; }
+    std::pair<double, std::vector<arma::mat>> fock_builder(const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm, const std::vector<std::vector<arma::uvec>> & lm_indices, const std::vector<arma::mat> & X, const arma::mat & S, const arma::mat & coreH);
 
    public:
     SADGuess(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, Options& options);
@@ -86,6 +102,7 @@ class SADGuess {
     void set_atomic_fit_bases(std::vector<std::shared_ptr<BasisSet>> fit_bases) { atomic_fit_bases_ = fit_bases; }
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
+
 };
 }  // namespace scf
 }  // namespace psi

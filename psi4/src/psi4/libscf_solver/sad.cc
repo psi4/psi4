@@ -107,6 +107,55 @@ std::vector<std::vector<arma::uvec>> get_lm_indices(std::shared_ptr<BasisSet> ba
     return arma_lm_indices;
 }
 
+std::pair<arma::mat,arma::vec> expand_density(const std::vector<arma::mat> &C, const std::vector<arma::vec> & occs, const std::vector<std::vector<arma::uvec>> & lm_indices, const std::vector<arma::mat> & X, const arma::mat & S) {
+   // Count the number of orbitals
+   size_t Norb = 0;
+   for(size_t iblock=0; iblock<C.size(); iblock++)
+     Norb += (2*iblock+1)*C[iblock].n_cols;
+
+   size_t Nbf = 0;
+   for(size_t iblock=0; iblock<X.size(); iblock++)
+     Nbf += (2*iblock+1)*X[iblock].n_rows;
+
+   arma::mat Cret(Nbf,Norb,arma::fill::zeros);
+   arma::vec oret(Norb,arma::fill::zeros);
+
+   size_t iorb_out=0;
+   // Loop over orbital blocks
+   for(size_t iblock=0;iblock<lm_indices.size();iblock++) {
+     // Orbital coefficients in non-orthogonal basis
+     arma::mat Csub = X[iblock]*C[iblock];
+     for(size_t iorb_in=0; iorb_in<Csub.n_cols; iorb_in++) {
+       // Loop over m values
+       for(size_t im=0;im<lm_indices[iblock].size();im++) {
+         // Store occupation: equal occupation among all m channels
+         oret(iorb_out) = occs[iblock](iorb_in)/lm_indices[iblock].size();
+         // Store coefficients: loop over basis functions
+         for(size_t ibf=0;ibf<lm_indices[iblock][im].size();ibf++) {
+           Cret(lm_indices[iblock][im][ibf], iorb_out) = Csub(ibf, iorb_in);
+         }
+         iorb_out++;
+       }
+     }
+   }
+   if(iorb_out != Norb)
+     throw std::logic_error("iorb_out != Norb\n");
+
+   // Check that orbitals are orthonormal
+   arma::mat ovl = Cret.t() * S * Cret;
+   ovl -= arma::eye<arma::mat>(ovl.n_rows,ovl.n_cols);
+   double orth_error = arma::norm(ovl, "fro");
+   if(orth_error >= 1e-10) {
+     ovl.print("orbital orthonormality error\n");
+     fflush(stdout);
+     std::ostringstream oss;
+     oss << "Orbitals are not orthonormal: orthonormality error " << orth_error << "!\n";
+     throw std::logic_error(oss.str());
+   }
+   
+   return std::make_pair(Cret,oret);
+ };
+
 std::vector<arma::mat> extract_mat(const std::vector<std::vector<arma::uvec>> & lm_indices, const arma::mat & mat) {
     std::vector<arma::mat> ret(lm_indices.size());
     for(size_t iblock=0;iblock<lm_indices.size();iblock++) {
@@ -127,53 +176,64 @@ std::vector<arma::mat> extract_mat(const std::vector<std::vector<arma::uvec>> & 
     return ret;
 };
 
-#if 0
- std::function<std::pair<arma::mat,arma::vec>(const std::vector<arma::mat> &, const std::vector<arma::vec> &)> expand_density = [lm_indices, Nbf, X, S](const
- std::vector<arma::mat> &C, const std::vector<arma::vec> & occs) {
-    // Count the number of orbitals
-    size_t Norb = 0;
-    for(size_t iblock=0; iblock<C.size(); iblock++)
-      Norb += (2*iblock+1)*C[iblock].n_cols;
-    
-    arma::mat Cret(Nbf,Norb,arma::fill::zeros);
-    arma::vec oret(Norb,arma::fill::zeros);
+//OpenOrbitalOptimizer::FockBuilder<Torb, Tbase> fock_builder = [X, T_AO, V_AO, chol, Enucr, verbosity, expand_density, extract_fock](const OpenOrbitalOptimiz
 
-    size_t iorb_out=0;
-    // Loop over orbital blocks
-    for(size_t iblock=0;iblock<lm_indices.size();iblock++) {
-      // Orbital coefficients in non-orthogonal basis
-      arma::mat Csub = X[iblock]*C[iblock];
-      for(size_t iorb_in=0; iorb_in<Csub.n_cols; iorb_in++) {
-        // Loop over m values
-        for(size_t im=0;im<lm_indices[iblock].size();im++) {
-          // Store occupation: equal occupation among all m channels
-          oret(iorb_out) = occs[iblock](iorb_in)/lm_indices[iblock].size();
-          // Store coefficients: loop over basis functions
-          for(size_t ibf=0;ibf<lm_indices[iblock][im].size();ibf++) {
-            Cret(lm_indices[iblock][im][ibf], iorb_out) = Csub(ibf, iorb_in);
-          }
-          iorb_out++;
+std::pair<double, std::vector<arma::mat>> SADGuess::fock_builder(const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm, const std::vector<std::vector<arma::uvec>> & lm_indices, const std::vector<arma::mat> & X, const arma::mat & S, const arma::mat & coreH) {
+
+    std::vector<arma::mat> orbitals = dm.first;
+    std::vector<arma::vec> occupations = dm.second;
+
+    // Expand the density and orbitals in the non-orthonormal basis
+    arma::mat C_AO;
+    arma::vec occ;
+    std::tie(C_AO, occ) = expand_density(orbitals, occupations, lm_indices, X, S);
+
+    // Find nonzero occupations
+    arma::uvec nonzero_idx = arma::find(occ>0.0);
+    arma::mat Cp = C_AO.cols(nonzero_idx) * arma::diagmat(arma::sqrt(occ(nonzero_idx)));
+    auto psi_C = std::make_shared<Matrix>("Cp", Cp.n_rows, Cp.n_cols);
+    for (size_t ii=0; ii<Cp.n_rows; ii++) {
+        for (size_t jj=0; jj<Cp.n_cols; jj++) {
+            psi_C->set(ii, jj, Cp(ii, jj));
         }
-      }
-    }
-    if(iorb_out != Norb)
-      throw std::logic_error("iorb_out != Norb\n");
-
-    // Check that orbitals are orthonormal
-    arma::mat ovl = Cret.t() * S * Cret;
-    ovl -= arma::eye<arma::mat>(ovl.n_rows,ovl.n_cols);
-    double orth_error = arma::norm(ovl, "fro");
-    if(orth_error >= 1e-10) {
-      ovl.print("orbital orthonormality error\n");
-      fflush(stdout);
-      std::ostringstream oss;
-      oss << "Orbitals are not orthonormal: orthonormality error " << orth_error << "!\n";
-      throw std::logic_error(oss.str());
     }
     
-    return std::make_pair(Cret,oret);
+    //std::shared_ptr<Matrix> psi_Cp = 
+
+    // Compute the terms in the Fock matrices
+    // jk
+    std::vector<SharedMatrix>& jkC = jk->C_left();
+    jkC.clear();
+    jkC.push_back(psi_C);
+    jk->compute();
+    const std::vector<SharedMatrix>& Jvec = jk->J();
+    const std::vector<SharedMatrix>& Kvec = jk->K();
+    arma::mat J_AO(Jvec[0]->pointer()[0], Cp.n_rows, Cp.n_rows);
+    arma::mat K_AO(Kvec[0]->pointer()[0], Cp.n_rows, Cp.n_rows);
+    // Psi4 defines K without the minus sign
+    K_AO *= -1;
+ arma::mat P_AO(Cp * Cp.t());
+    
+//    arma::mat J_AO = chol.calcJ(P_AO);
+//    arma::mat K_AO = -chol.calcK(C_AO, occ);
+    
+    // Form the AO Fock matrix
+    arma::mat F_AO = coreH + J_AO + .5*K_AO;
+    // Extract the blocks in the orthonormal basis
+    std::vector<arma::mat> fock(extract_mat(lm_indices, F_AO));
+    for(size_t iblock=0; iblock<fock.size(); iblock++)
+      fock[iblock] = X[iblock].t() * fock[iblock] * X[iblock];
+
+    // Compute energy terms
+    double Ecore = arma::trace(P_AO*coreH);
+    double Ecoul = 0.5*arma::trace(J_AO*P_AO);
+    double Eexch = 0.25*arma::trace(K_AO*P_AO);
+    double Etot = Ecore+Ecoul+Eexch;
+
+    return std::make_pair(Etot,fock);
   };
-#endif
+
+
 
 // Parse options: either use DF or exact integrals.
 static bool SAD_use_fitting(const Options& opt) {
@@ -646,7 +706,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     diis_manager.set_vector_size(Fa.get(), Fb.get());
 
     // Setup JK
-    std::unique_ptr<JK> jk;
+//    std::unique_ptr<JK> jk;
     // Need a very special auxiliary basis here
     if (SAD_use_fitting(options_)) {
         auto dfjk = std::make_unique<MemDFJK>(bas, fit, options_);
@@ -668,6 +728,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     auto ints_tolerance_changed = Process::environment.options.use_local(ints_tolerance_key).has_changed();
     Process::environment.options.set_double("SCF", ints_tolerance_key, 0.0);
 
+//    set_jk(jk);
     jk->set_memory((size_t)(0.5 * (Process::environment.get_memory() / 8L)));
     jk->initialize();
     if (print_ > 1) jk->print_header();
@@ -909,7 +970,7 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
     diis_manager.set_vector_size(Fa.get(), Fb.get());
 
     // Setup JK
-    std::unique_ptr<JK> jk;
+//    std::unique_ptr<JK> jk;
     // Need a very special auxiliary basis here
     if (SAD_use_fitting(options_)) {
         auto dfjk = std::make_unique<MemDFJK>(bas, fit, options_);
@@ -931,6 +992,7 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
     auto ints_tolerance_changed = Process::environment.options.use_local(ints_tolerance_key).has_changed();
     Process::environment.options.set_double("SCF", ints_tolerance_key, 0.0);
 
+//    set_jk(jk);
     jk->set_memory((size_t)(0.5 * (Process::environment.get_memory() / 8L)));
     jk->initialize();
     if (print_ > 1) jk->print_header();
@@ -1031,14 +1093,15 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
 
 ///////////////
     // TODO uhf
-    arma::uvec number_of_blocks_per_particle_type({static_cast<unsigned int>(nbf)});  // {nbf, nbf}
-    arma::vec maximum_occupation(nbf);
-    for(size_t l=0; l<nbf; l++)
+    int nblocks = bas->max_am() + 1;
+    arma::uvec number_of_blocks_per_particle_type({static_cast<unsigned int>(nblocks)});  // {nbf, nbf}
+    arma::vec maximum_occupation(nblocks);
+    for(size_t l=0; l<nblocks; l++)
         maximum_occupation[l] = 2*(2*l+1);
     int Q = 0;  // TODO
     arma::vec number_of_particles({(double) (Z-Q)});
-    std::vector<std::string> block_descriptions({static_cast<unsigned int>(nbf)});  // 2*nbf
-    for(size_t l=0; l<nbf; l++) {
+    std::vector<std::string> block_descriptions({static_cast<unsigned int>(nblocks)});  // 2*nbf
+    for(size_t l=0; l<nblocks; l++) {
         std::ostringstream oss;
         oss << "alpha l=" << l;
         block_descriptions[l] = oss.str();
@@ -1063,20 +1126,45 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
             lm_indices[ism][ism2].print();
         }
     }
-    std::vector<arma::mat> avgd_coreH = extract_mat(lm_indices, coreH);
-    for(size_t ism=0; ism<avgd_coreH.size(); ism++) {
-            printf("avgd_coreH[%d] = \n", ism);
-            avgd_coreH[ism].print();
-    }
-//    std::vector<arma::mat> avgd_S = extract_mat(lm_indices, arma::mat(S->pointer()[0], S->rowdim(), S->coldim()));
+//    for(size_t ism=0; ism<avgd_coreH.size(); ism++) {
+//            printf("avgd_coreH[%d] = \n", ism);
+//            avgd_coreH[ism].print();
+//    }
+    arma::mat arma_S(S->pointer()[0], S->rowdim(), S->coldim());
+    std::vector<arma::mat> avgd_S = extract_mat(lm_indices, arma_S); //arma::mat(S->pointer()[0], S->rowdim(), S->coldim()));
+
+
+    std::vector<arma::mat> Xmat(avgd_S.size());
+    for(size_t iblock=0; iblock<Xmat.size(); iblock++) {
+        arma::vec Sval;
+        arma::mat Svec;
+    arma::eig_sym(Sval, Svec, avgd_S[iblock]);
+    arma::uvec idx = arma::find(Sval >= 1e-6);
+    Xmat[iblock] = Svec.cols(idx) * arma::diagmat(arma::pow(Sval(idx), -0.5));
+}
+
+    std::vector<arma::mat> fock_guess = extract_mat(lm_indices, coreH);
+    for(size_t iblock=0; iblock<Xmat.size(); iblock++) {
+    fock_guess[iblock] = Xmat[iblock].t() * fock_guess[iblock] * Xmat[iblock];
+}
+
+
+    OpenOrbitalOptimizer::FockBuilder<double, double> fock_builder_builder = [lm_indices, Xmat, this, arma_S, coreH](const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm) {
+        return fock_builder(dm, lm_indices, Xmat, arma_S, coreH);
+    };
+
+//std::pair<double, std::vector<arma::mat>> fock_builder(const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm, const std::vector<std::vector<arma::uvec>> & lm_indices, const std::vector<arma::mat> & X, std::unique_ptr<JK> & jk, const arma::mat & S, const arma::mat & coreH) {
+
+//std::pair<arma::mat,arma::vec> expand_density(const std::vector<arma::mat> &C, const std::vector<arma::vec> & occs, std::vector<std::vector<arma::uvec>> & lm_indices, const std::vector<arma::mat> & X, arma_S) {
 
 //typename Torb, typename Tbase> using DensityMatrix = std::pair<Orbitals<Torb>,OrbitalOccupations<Tbase>>
 
-//    OpenOrbitalOptimizer::SCFSolver scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);
-//      scfsolver.verbosity(10);  // mod
-//      scfsolver.convergence_threshold(E_tol);  // mod
-//      scfsolver.initialize_with_fock(fock_guess);
-//      scfsolver.run();
+
+    OpenOrbitalOptimizer::SCFSolver scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder_builder, block_descriptions);
+      scfsolver.verbosity(10);  // mod
+      scfsolver.convergence_threshold(E_tol);  // mod
+      scfsolver.initialize_with_fock(fock_guess);
+      scfsolver.run();
 //      //scfsolver.brute_force_search_for_lowest_configuration();
 //
 //      //if(core_excitation) {
