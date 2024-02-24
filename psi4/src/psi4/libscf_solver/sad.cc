@@ -99,7 +99,7 @@ std::vector<std::vector<arma::uvec>> get_lm_indices(std::shared_ptr<BasisSet> ba
     }
     std::vector<std::vector<arma::uvec>> arma_lm_indices(bas->max_am()+1);
     for (size_t is=0; is<arma_lm_indices.size(); is++) {
-        arma_lm_indices.resize(lm_indices.size());
+        arma_lm_indices[is].resize(lm_indices[is].size());
         for (size_t iss=0; iss<arma_lm_indices[is].size(); iss++) {
             arma_lm_indices[is][iss] = arma::conv_to<arma::uvec>::from(lm_indices[is][iss]);
         }
@@ -107,7 +107,7 @@ std::vector<std::vector<arma::uvec>> get_lm_indices(std::shared_ptr<BasisSet> ba
     return arma_lm_indices;
 }
 
-std::vector<arma::mat> extract_mat(const std::vector<std::vector<arma::uvec>> & lm_indices, const arma::mat & mat) { //fock = [lm_indices, X](const arma::mat &M) {
+std::vector<arma::mat> extract_mat(const std::vector<std::vector<arma::uvec>> & lm_indices, const arma::mat & mat) {
     std::vector<arma::mat> ret(lm_indices.size());
     for(size_t iblock=0;iblock<lm_indices.size();iblock++) {
       ret[iblock].zeros(lm_indices[iblock][0].size(),lm_indices[iblock][0].size());
@@ -1057,7 +1057,17 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
     coreH.print();
 
     std::vector<std::vector<arma::uvec>> lm_indices = get_lm_indices(bas);
+    for(size_t ism=0; ism<lm_indices.size(); ism++) {
+        for(size_t ism2=0; ism2<lm_indices[ism].size(); ism2++) {
+            printf("lm_indices[%d][%d] = \n", ism, ism2);
+            lm_indices[ism][ism2].print();
+        }
+    }
     std::vector<arma::mat> avgd_coreH = extract_mat(lm_indices, coreH);
+    for(size_t ism=0; ism<avgd_coreH.size(); ism++) {
+            printf("avgd_coreH[%d] = \n", ism);
+            avgd_coreH[ism].print();
+    }
 //    std::vector<arma::mat> avgd_S = extract_mat(lm_indices, arma::mat(S->pointer()[0], S->rowdim(), S->coldim()));
 
 //typename Torb, typename Tbase> using DensityMatrix = std::pair<Orbitals<Torb>,OrbitalOccupations<Tbase>>
