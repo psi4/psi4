@@ -176,7 +176,6 @@ std::vector<arma::mat> extract_mat(const std::vector<std::vector<arma::uvec>> & 
     return ret;
 };
 
-//OpenOrbitalOptimizer::FockBuilder<Torb, Tbase> fock_builder = [X, T_AO, V_AO, chol, Enucr, verbosity, expand_density, extract_fock](const OpenOrbitalOptimiz
 
 std::pair<double, std::vector<arma::mat>> SADGuess::fock_builder(const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm, const std::vector<std::vector<arma::uvec>> & lm_indices, const std::vector<arma::mat> & X, const arma::mat & S, const arma::mat & coreH) {
 
@@ -198,10 +197,7 @@ std::pair<double, std::vector<arma::mat>> SADGuess::fock_builder(const OpenOrbit
         }
     }
     
-    //std::shared_ptr<Matrix> psi_Cp = 
-
     // Compute the terms in the Fock matrices
-    // jk
     std::vector<SharedMatrix>& jkC = jk->C_left();
     jkC.clear();
     jkC.push_back(psi_C);
@@ -212,10 +208,7 @@ std::pair<double, std::vector<arma::mat>> SADGuess::fock_builder(const OpenOrbit
     arma::mat K_AO(Kvec[0]->pointer()[0], Cp.n_rows, Cp.n_rows);
     // Psi4 defines K without the minus sign
     K_AO *= -1;
- arma::mat P_AO(Cp * Cp.t());
-    
-//    arma::mat J_AO = chol.calcJ(P_AO);
-//    arma::mat K_AO = -chol.calcK(C_AO, occ);
+    arma::mat P_AO(Cp * Cp.t());
     
     // Form the AO Fock matrix
     arma::mat F_AO = coreH + J_AO + .5*K_AO;
@@ -1184,12 +1177,60 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
 //      //}
 //
 //      return scfsolver;
+
+    auto ooo_orbs = scfsolver.get_orbitals();
+    auto ooo_occs = scfsolver.get_orbital_occupations();
+    
+    arma::mat C_AO;
+    arma::vec occ;
+    std::tie(C_AO, occ) = expand_density(ooo_orbs, ooo_occs, lm_indices, Xmat, arma_S);
+
+    // Form density matrix
+    arma::mat P_AO = C_AO * arma::diagmat(occ) * C_AO.t();
+    // Get the occupied orbitals for the Huckel routines
+    arma::uvec occ_idx = arma::find(occ > 0.0);
+    arma::mat C_occ = C_AO.cols(occ_idx);
+    // Determine orbital energies for Huckel
+    arma::mat Cp2 = C_AO.cols(occ_idx) * arma::diagmat(arma::sqrt(occ(occ_idx)));
+    auto psi_C = std::make_shared<Matrix>("Cp", Cp2.n_rows, Cp2.n_cols);
+    for (size_t ii=0; ii<Cp2.n_rows; ii++) {
+        for (size_t jj=0; jj<Cp2.n_cols; jj++) {
+            psi_C->set(ii, jj, Cp2(ii, jj));
+        }
+    }
+    // TODO: Build Fock matrix
+    std::vector<SharedMatrix>& jkCC = jk->C_left();
+    jkCC.clear();
+    jkCC.push_back(psi_C);
+    jk->compute();
+    const std::vector<SharedMatrix>& JJvec = jk->J();
+    const std::vector<SharedMatrix>& KKvec = jk->K();
+    arma::mat JJ_AO(JJvec[0]->pointer()[0], Cp2.n_rows, Cp2.n_rows);
+    arma::mat KK_AO(KKvec[0]->pointer()[0], Cp2.n_rows, Cp2.n_rows);
+    // Psi4 defines K without the minus sign
+    KK_AO *= -1;
+    arma::mat F = coreH + JJ_AO + 0.5 * KK_AO;
+
+    // Orbital energies
+    arma::vec E_occ = arma::diagvec(C_occ.t() * F * C_occ);
+    //std::shared_ptr<Matrix> psi_Cp = 
+
+    // Compute the terms in the Fock matrices
+    // jk
+
 ////////////////
 
     if (converged && print_ > 1)
         outfile->Printf("  @Atomic UHF Final Energy for atom %s: %20.14f\n", mol->symbol(0).c_str(), E);
 
-    // Copy Huckel coefficients and energies
+// TODO save the energies (elements of E_occ) and orbitals (C_occ) and density (P_AO) onto the Chuckel object. but need to resize Chuckel & Ehuckel & density one (sq; atomic_D elsewhere; D (3rd to last) in this fn)
+   
+    for(int i=0; i<nbf; i++)
+    for(int j=0; j<nbf; j++)
+D->set(i, j, P_AO(i,j)); // /2
+
+#if 0
+ // Copy Huckel coefficients and energies
     double** Coccp = Chuckel->pointer();
     double** Cp = Ca->pointer();
     for (int i = 0; i < nbf; i++) {
@@ -1200,6 +1241,7 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
     for (int i = 0; i < occ_a->dim(); i++) {
         Eoccp[i] = Ep[i];
     }
+#endif
 }
 void SADGuess::form_gradient(SharedMatrix grad, SharedMatrix F, SharedMatrix D, SharedMatrix S, SharedMatrix X) {
     int nbf = X->rowdim();
