@@ -512,9 +512,9 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         }
       
         // symmetrize K if applicable
-        //if (lr_symmetric_) {
-        //    K[iD]->hermitivitize();
-        //}
+        if (lr_symmetric_) {
+            K[iD]->hermitivitize();
+        }
     }
    
     return;
