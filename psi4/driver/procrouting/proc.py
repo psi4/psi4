@@ -4428,11 +4428,21 @@ def run_mp2f12(name, **kwargs):
     p4util.banner('MP2-F12')
     core.print_out('\n')
 
+    # Defaults
+    OBS = core.get_global_option("BASIS")
+    CABS = core.get_local_option("MP2-F12", "CABS_BASIS")
+
+    if CABS == "" and "CC-PV" in OBS:
+        core.set_local_option("MP2-F12", "CABS_BASIS", OBS + "-OPTRI")
+        CABS = core.get_local_option("MP2-F12", "CABS_BASIS")
+    elif CABS == "":
+        raise ValidationError("""  No CABS_BASIS given!""")
+
     # Create CABS
     keys = ["BASIS","CABS_BASIS"]
-    targets = [core.get_global_option("BASIS"), core.get_local_option("MP2-F12", "CABS_BASIS")]
+    targets = [OBS, CABS]
     roles = ["ORBITAL","F12"]
-    others = [core.get_global_option("BASIS"), core.get_global_option("BASIS")]
+    others = [OBS, OBS]
 
     # Creates combined basis set in Python
     mol = ref_wfn.molecule()
