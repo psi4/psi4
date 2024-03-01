@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -355,7 +355,7 @@ double MP2F12::compute_energy()
 
         auto G = Tensor<double, 4>{"MO G Tensor", nocc_, nocc_, nobs_, nobs_};
         timer_on("ERI <ij|ab>");
-        form_teints("G", &G, {'o', 'o', 'O', 'O'});
+        form_teints("G", &G, {'o', 'O', 'o', 'O'});
         (*G_ijab) = G(Range{0, nocc_}, Range{0, nocc_}, Range{nocc_, nobs_}, Range{nocc_, nobs_});
         timer_off("ERI <ij|ab>");
     }
