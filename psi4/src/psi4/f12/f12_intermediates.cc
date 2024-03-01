@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -46,9 +46,9 @@ void MP2F12::form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2>
     {
         outfile->Printf("     Forming J\n");
         auto J = std::make_unique<Tensor<double, 4>>("Coulomb", nri_, nocc_, nri_, nocc_);
-        form_teints("J", J.get(), {'O', 'o', 'O', 'o',
-                                   'O', 'o', 'C', 'o',
-                                   'C', 'o', 'C', 'o'});
+        form_teints("J", J.get(), {'O', 'O', 'o', 'o',
+                                   'O', 'C', 'o', 'o',
+                                   'C', 'C', 'o', 'o'});
 
         Tensor<double, 4> J_sorted{"pqiI", nri_, nri_, nocc_, nocc_};
         sort(Indices{p, q, i, I}, &J_sorted, Indices{p, i, q, I}, J);
@@ -145,11 +145,11 @@ void MP2F12::form_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 4> 
 
     {
         Tensor<double, 4> F_oopq{"<oo|F|OO>", nocc_, nocc_, nobs_, nobs_};
-        form_teints("F", &F_oopq, {'o', 'o', 'O', 'O'});
+        form_teints("F", &F_oopq, {'o', 'O', 'o', 'O'});
         einsum(1.0, Indices{i, j, k, l}, &(*X), -1.0, Indices{i, j, p, q}, F_oopq, Indices{k, l, p, q}, F_oopq);
 
         Tensor<double, 4> G_oopq{"<oo|OO>", nocc_, nocc_, nobs_, nobs_};
-        form_teints("G", &G_oopq, {'o', 'o', 'O', 'O'});
+        form_teints("G", &G_oopq, {'o', 'O', 'o', 'O'});
         einsum(1.0, Indices{i, j, k, l}, &(*V), -1.0, Indices{i, j, p, q}, G_oopq, Indices{k, l, p, q}, F_oopq);
     }
 }
@@ -203,7 +203,7 @@ void MP2F12::form_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2> *f
     Tensor<double, 4> F_oovc{"<oo|F|vC>", nocc_, nocc_, nvir_, ncabs_};
     {
         Tensor<double, 4> F_oopc{"<oo|F|OC>", nocc_, nocc_, nobs_, ncabs_};
-        form_teints("F", &F_oopc, {'o', 'o', 'O', 'C'});
+        form_teints("F", &F_oopc, {'o', 'O', 'o', 'C'});
         F_oovc = F_oopc(All, All, Range{nocc_, nobs_}, All);
     }
 
@@ -269,9 +269,9 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
     tmp_1.reset();
 
     auto F = std::make_unique<Tensor<double, 4>>("<oo|F|11>", nocc_, nocc_, nri_, nri_);
-    form_teints("F", F.get(), {'o', 'o', 'O', 'O',
-                               'o', 'o', 'C', 'O',
-                               'o', 'o', 'C', 'C'});
+    form_teints("F", F.get(), {'o', 'O', 'o', 'O',
+                               'o', 'C', 'o', 'O',
+                               'o', 'C', 'o', 'C'});
 
     auto tmp_2 = std::make_unique<Tensor<double, 4>>("Temp 2", nocc_, nocc_, nocc_, nocc_);
     {
