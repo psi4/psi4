@@ -271,11 +271,11 @@ def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, nfrozen_A, nfrozen_
 
     # If frozen core, trim the appropriate matrices and vectors. We can do it with NumPy slicing.
     if nfrozen_A > 0:
-        matrix_cache["Caocc0A"] = psi4.core.Matrix.from_array(np.asarray(matrix_cache["Caocc0A"])[:,nfrozen_A:])
-        vector_cache["eps_aocc0A"] = psi4.core.Vector.from_array(np.asarray(vector_cache["eps_aocc0A"])[nfrozen_A:])
+        matrix_cache["Caocc0A"] = core.Matrix.from_array(np.asarray(matrix_cache["Caocc0A"])[:,nfrozen_A:])
+        vector_cache["eps_aocc0A"] = core.Vector.from_array(np.asarray(vector_cache["eps_aocc0A"])[nfrozen_A:])
     if nfrozen_B > 0:
-        matrix_cache["Caocc0B"] = psi4.core.Matrix.from_array(np.asarray(matrix_cache["Caocc0B"])[:,nfrozen_B:])
-        vector_cache["eps_aocc0B"] = psi4.core.Vector.from_array(np.asarray(vector_cache["eps_aocc0B"])[nfrozen_B:])
+        matrix_cache["Caocc0B"] = core.Matrix.from_array(np.asarray(matrix_cache["Caocc0B"])[:,nfrozen_B:])
+        vector_cache["eps_aocc0B"] = core.Vector.from_array(np.asarray(vector_cache["eps_aocc0B"])[nfrozen_B:])
 
     wfn.set_basisset("DF_BASIS_SAPT", auxiliary)
     fisapt = core.FISAPT(wfn)
