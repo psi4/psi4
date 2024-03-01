@@ -249,7 +249,7 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
     return {"Disp20,FDDS (unc)": Disp20_uc, "Disp20": Disp20_c}
 
 
-def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, do_print=True):
+def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, nfrozen_A, nfrozen_B, do_print=True):
 
     if do_print:
         core.print_out("\n  ==> E20 Dispersion (MP2) <== \n\n")
@@ -268,6 +268,14 @@ def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, do_print=True):
     df_vector_keys = ["eps_occ_A", "eps_vir_A", "eps_occ_B", "eps_vir_B"]
     df_vfisapt_keys = ["eps_aocc0A", "eps_vir0A", "eps_aocc0B", "eps_vir0B"]
     vector_cache = {fkey: cache[ckey] for ckey, fkey in zip(df_vector_keys, df_vfisapt_keys)}
+
+    # If frozen core, trim the appropriate matrices and vectors. We can do it with NumPy slicing.
+    if nfrozen_A > 0:
+        matrix_cache["Caocc0A"] = psi4.core.Matrix.from_array(np.asarray(matrix_cache["Caocc0A"])[:,nfrozen_A:])
+        vector_cache["eps_aocc0A"] = psi4.core.Vector.from_array(np.asarray(vector_cache["eps_aocc0A"])[nfrozen_A:])
+    if nfrozen_B > 0:
+        matrix_cache["Caocc0B"] = psi4.core.Matrix.from_array(np.asarray(matrix_cache["Caocc0B"])[:,nfrozen_B:])
+        vector_cache["eps_aocc0B"] = psi4.core.Vector.from_array(np.asarray(vector_cache["eps_aocc0B"])[nfrozen_B:])
 
     wfn.set_basisset("DF_BASIS_SAPT", auxiliary)
     fisapt = core.FISAPT(wfn)
