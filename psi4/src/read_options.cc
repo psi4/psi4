@@ -3256,7 +3256,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     }
     if (name == "MP2-F12" || options.read_globals()) {
         /*- Choose conventional or density-fitted. Default to CONV -*/
-        options.add_str("F12_TYPE", "CONV", "CONV DF DISK_CONV DISK_DF");
+        options.add_str("F12_TYPE", "DF", "CONV DF DISK_CONV DISK_DF");
         /*- Whether to restart calculation from stored integrals -*/
         options.add_bool("F12_INTS_RESTART", false);
         /*- Set contracted Gaussian-type geminal beta value -*/
