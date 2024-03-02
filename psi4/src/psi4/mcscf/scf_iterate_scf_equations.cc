@@ -135,10 +135,9 @@ void SCF::iterate_scf_equations() {
         }
 
         if (cycle > options_.get_int("MAXITER")) {
-            outfile->Printf("\n\n  The calculation did not converge in %d cycles", options_.get_int("MAXITER"));
-            outfile->Printf("\n  Quitting MCSCF.\n");
-
-            exit(1);
+            std::ostringstream oss;
+            oss << "The calculation did not converge in " << options_.get_int("MAXITER") << " cycles.\n";
+            throw std::runtime_error(oss.str());
         }
 
         cycle++;

@@ -557,8 +557,7 @@ void DFOCC::ccd_tpdm_pplA(SharedTensor2d& G, std::string amps) {
             Tau.reset();
         }
         else {
-             std::cout << "ccd_tpdm_pplA ---> Unrecognized amps, it should be T2 or Tau ! \n";
-             exit(1);
+             throw std::logic_error("ccd_tpdm_pplA ---> Unrecognized amps, it should be T2 or Tau ! \n");
         }
         Va = std::make_shared<Tensor2d>("(-)T[B] (F,M>=N)", navirA, ntri_ijAA);
         A = std::make_shared<Tensor2d>("A[B] (F,A>=E)", navirA, ntri_abAA);
@@ -639,8 +638,7 @@ void DFOCC::ccd_tpdm_pplA(SharedTensor2d& G, std::string amps) {
             Tau.reset();
         }
         else {
-             std::cout << "ccd_tpdm_pplA ---> Unrecognized amps, it should be T2 or Tau ! \n";
-             exit(1);
+             throw std::logic_error("ccd_tpdm_pplA ---> Unrecognized amps, it should be T2 or Tau ! \n");
         }
         Ts = std::make_shared<Tensor2d>("T[B] (Mn,f)", naoccA * naoccB, navirB);
         V = std::make_shared<Tensor2d>("V[B] (A,ef)", navirA, navirB * navirB);
@@ -716,8 +714,7 @@ void DFOCC::ccd_tpdm_pplB(SharedTensor2d& G, std::string amps) {
             Tau.reset();
         }
         else {
-             std::cout << "ccd_tpdm_pplB --> Unrecognized amps, it should be T2 or Tau ! \n";
-             exit(1);
+             throw std::logic_error("ccd_tpdm_pplB ---> Unrecognized amps, it should be T2 or Tau ! \n");
         }
         Va = std::make_shared<Tensor2d>("(-)T[b] (f,m>=n)", navirB, ntri_ijBB);
         A = std::make_shared<Tensor2d>("A[b] (f,a>=e)", navirB, ntri_abBB);
@@ -798,8 +795,7 @@ void DFOCC::ccd_tpdm_pplB(SharedTensor2d& G, std::string amps) {
             Tau.reset();
         }
         else {
-             std::cout << "ccd_tpdm_pplB ---> Unrecognized amps, it should be T2 or Tau ! \n";
-             exit(1);
+             throw std::logic_error("ccd_tpdm_pplB ---> Unrecognized amps, it should be T2 or Tau ! \n");
         }
         Ts = std::make_shared<Tensor2d>("T[b] (Mn,F)", naoccA * naoccB, navirA);
         V = std::make_shared<Tensor2d>("V[b] (Ea,F)", navirA * navirB, navirA);

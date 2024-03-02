@@ -44,15 +44,15 @@
 namespace psi {
 
 /**
-*  WARNING: Psi 3 init/free_matrix routines deprecated
-*  by Robert Parrish, robparrish@gmail.com
-*
-*  block_matrix() replaces this routine
-*
-*  the signature of this method remains the same
-*
-*  June 22, 2010
-**/
+ *  WARNING: Psi 3 init/free_matrix routines deprecated
+ *  by Robert Parrish, robparrish@gmail.com
+ *
+ *  block_matrix() replaces this routine
+ *
+ *  the signature of this method remains the same
+ *
+ *  June 22, 2010
+ **/
 /*!
 ** init_matrix(): Initialize an nxm matrix of doubles and return a pointer to
 ** the first row.  Note that this does not form a matrix which is
@@ -74,16 +74,16 @@ double **init_matrix(size_t n, size_t m) {
 
     //  if ((A = (double **) malloc(n * (size_t)sizeof(double *)))==nullptr) {
     if ((A = new double *[n]) == nullptr) {
-        outfile->Printf("block_matrix: trouble allocating memory \n");
-        outfile->Printf("n = %ld\n", n);
-        exit(PSI_RETURN_FAILURE);
+        std::ostringstream oss;
+        oss << "block_matrix: trouble allocating memory, n = " << n << "\n";
+        throw std::runtime_error(oss.str());
     }
 
     //  if ((B = (double *) malloc(m*n * (size_t)sizeof(double)))==nullptr) {
     if ((B = new double[n * m]) == nullptr) {
-        outfile->Printf("block_matrix: trouble allocating memory \n");
-        outfile->Printf("m = %ld\n", m);
-        exit(PSI_RETURN_FAILURE);
+        std::ostringstream oss;
+        oss << "block_matrix: trouble allocating memory, n = " << n << " m = " << m << "\n";
+        throw std::runtime_error(oss.str());
     }
 
     // bzero is not in the C standard, use memset instead.
@@ -95,44 +95,18 @@ double **init_matrix(size_t n, size_t m) {
     }
 
     return (A);
-    // <<<<<<<<<<<<<<<<<<<<<
-    // BEGIN DEPRECATED CODE
-    // <<<<<<<<<<<<<<<<<<<<<
-
-    /**
-    double **array=nullptr;
-    size_t i;
-
-    if ((array = (double **) malloc(n*(size_t)sizeof(double *)))
-      ==nullptr) {
-      outfile->Printf("init_matrix: trouble allocating memory \n");
-      outfile->Printf("n = %ld\n",n);
-      exit(PSI_RETURN_FAILURE);
-    }
-
-    for (i = 0; i < n; i++) {
-      if ((array[i] = (double *) malloc(m*(size_t)sizeof(double)))
-        ==nullptr) {
-        outfile->Printf("init_matrix: trouble allocating memory \n");
-        outfile->Printf("i = %ld m = %ld\n",i,m);
-        exit(PSI_RETURN_FAILURE);
-      }
-      bzero(array[i],m*(size_t)sizeof(double));
-    }
-    return(array);
-    **/
 }
 
 /**
-*  WARNING: Psi 3 init/free_matrix routines deprecated
-*  by Robert Parrish, robparrish@gmail.com
-*
-*  use block_matrix allocation/free calls instead
-*
-*  the signature of this method remains the same
-*
-*  June 22, 2010
-**/
+ *  WARNING: Psi 3 init/free_matrix routines deprecated
+ *  by Robert Parrish, robparrish@gmail.com
+ *
+ *  use block_matrix allocation/free calls instead
+ *
+ *  the signature of this method remains the same
+ *
+ *  June 22, 2010
+ **/
 /*!
 ** free_matrix(): Free a 2D matrix allocated with init_matrix().
 **
@@ -160,4 +134,4 @@ void free_matrix(double **array, size_t /*size*/) {
     free(array);
   **/
 }
-}
+}  // namespace psi

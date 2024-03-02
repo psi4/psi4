@@ -95,17 +95,15 @@ void CCMatrix::allocate_block(int h) {
                 matrix[h] = block_matrix(left_pairpi[h], right_pairpi[h]);
                 wfn_->free_memory_ -= memorypi2[h];
             } else {
-                outfile->Printf("\n\nNot enough memory to allocate irrep %d of %s\n", h, label.c_str());
-
-                exit(1);
+                std::ostringstream oss;
+                oss << "Not enough memory to allocate irrep " << h << " of " << label << "\n";
+                throw std::runtime_error(oss.str());
             }
         } else {
-            outfile->Printf(
-                "\n\nCCMatrix::allocate_block(): You are trying to allocate irrep %d of %s when is already "
-                "allocated!!!\n",
-                h, label.c_str());
-
-            exit(EXIT_FAILURE);
+            std::ostringstream oss;
+            oss << "CCMatrix::allocate_block(): You are trying to allocate irrep " << h << " of " << label
+                << " when it is already allocated!\n";
+            throw std::logic_error(oss.str());
         }
     }
 }
@@ -295,9 +293,7 @@ size_t CCMatrix::read_strip_from_disk(int h, int strip, double *buffer) {
     if (block_sizepi[h] > 0) {
         // for generic matrices read the entire symmetry block on disk
         if (!is_integral()) {
-            outfile->Printf("\nMatrix %s is not stored in strips!!!", label.c_str());
-
-            exit(EXIT_FAILURE);
+            throw std::logic_error("\nMatrix " + label + " is not stored in strips!\n");
         } else {
             // Read the number of strips
             int nstrips = 0;

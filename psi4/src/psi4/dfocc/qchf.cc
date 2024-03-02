@@ -351,9 +351,7 @@ void DFOCC::idp_hf() {
         }  // end if nidpA != 0
 
         else if (nidpA == 0) {
-            outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
-            tstop();
-            exit(EXIT_SUCCESS);
+            throw std::logic_error("There are no non-redundant orbital rotation pairs! \n");
         }
 
     }  // end if (reference_ == "RESTRICTED")
@@ -368,9 +366,7 @@ void DFOCC::idp_hf() {
         nidpB += nvirB * noccB;
 
         if (nidpA == 0 && nidpB == 0) {
-            outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
-            tstop();
-            exit(EXIT_SUCCESS);
+            throw std::logic_error("There are no non-redundant orbital rotation pairs! \n");
         }
 
         if (nidpA > 0) {

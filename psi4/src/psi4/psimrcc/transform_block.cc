@@ -74,13 +74,11 @@ int CCTransform::read_tei_mo_integrals_block(int first_irrep) {
 }
 
 /**
- * Allocate as many blocks of the tei_mo array and exit(EXIT_FAILURE) if there is not enough space
+ * Allocate as many blocks of the tei_mo array and throw error if there is not enough space
  */
 int CCTransform::allocate_tei_mo_block(int first_irrep) {
     if (first_irrep > wfn_->nirrep()) {
-        outfile->Printf("\n    Transform: allocate_tei_mo_block() was called with first_irrep > nirreps !");
-
-        exit(EXIT_FAILURE);
+        throw std::runtime_error("Transform: allocate_tei_mo_block() was called with first_irrep > nirreps !\n");
     }
 
     size_t available_transform_memory =
@@ -107,9 +105,7 @@ int CCTransform::allocate_tei_mo_block(int first_irrep) {
     }
     outfile->Printf("\n    Integrals from irreps %d -> %d will be read in core", first_irrep, last_irrep - 1);
     if (first_irrep == last_irrep) {
-        outfile->Printf("\n    CCTransform: allocate_tei_mo_block() has not enough memory!");
-
-        exit(EXIT_FAILURE);
+        throw std::runtime_error("CCTransform: allocate_tei_mo_block() does not have enough memory!\n");
     }
     first_irrep_in_core = first_irrep;
     last_irrep_in_core = last_irrep;

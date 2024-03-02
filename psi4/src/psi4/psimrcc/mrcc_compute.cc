@@ -96,10 +96,9 @@ double CCMRCC::compute_energy() {
         }
 
         if (cycle > options_.get_int("MAXITER")) {
-            outfile->Printf("\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",
-                            options_.get_int("MAXITER"));
-
-            exit(1);
+            std::ostringstream oss;
+            oss << "The calculation did not converge in " << options_.get_int("MAXITER") << " cycles.\n";
+            throw std::runtime_error(oss.str());
         }
         cycle++;
     }

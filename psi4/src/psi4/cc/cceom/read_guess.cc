@@ -62,8 +62,7 @@ void read_guess_init() {
     /* Read number of guess = number of final states to solve for */
     errcod = ip_count("EOM_GUESS_VECTORS", &num_vectors, 0);
     if (errcod != IPE_OK) {
-        outfile->Printf("\nread_guess(): Unable to read number of guesses from input.\n");
-        exit(2);
+        throw std::runtime_error("\nread_guess(): Unable to read number of guesses from input.\n");
     }
 
     for (k = 0; k < num_vectors; k++) {
@@ -76,8 +75,7 @@ void read_guess_init() {
             errcod = ip_data("EOM_GUESS_VECTORS", "%d", &spin, 4, k, l, 3);
 
             if ((spin != 0) && (params.eom_ref == 0)) {
-                outfile->Printf("only alpha guesses allowed for EOM_REF = RHF\n");
-                exit(1);
+                throw std::logic_error("only alpha guesses allowed for EOM_REF = RHF\n");
             }
 
             if (params.eom_ref == 0) {
@@ -87,8 +85,9 @@ void read_guess_init() {
                     eom_params.states_per_irrep[this_irrep ^ moinfo.sym] += 1;
                 } else { /* check consistency of other excitations */
                     if (moinfo.occ_sym[i] ^ moinfo.vir_sym[a] != this_irrep) {
-                        outfile->Printf("\nInconsistent symmetries in components of guess %d.\n", k);
-                        exit(2);
+                        std::ostringstream oss;
+                        oss << "Inconsistent symmetries in components of guess " << k << ".\n";
+                        throw std::logic_error(oss.str());
                     }
                 }
             } else {
@@ -103,13 +102,15 @@ void read_guess_init() {
                 } else { /* check consistency of other excitations */
                     if (spin == 0) {
                         if (moinfo.aocc_sym[i] ^ moinfo.avir_sym[a] != this_irrep) {
-                            outfile->Printf("\nInconsistent symmetries in components of guess %d.\n", k);
-                            exit(2);
+                            std::ostringstream oss;
+                            oss << "Inconsistent symmetries in components of guess " << k << ".\n";
+                            throw std::logic_error(oss.str());
                         }
                     } else {
                         if (moinfo.bocc_sym[i] ^ moinfo.bvir_sym[a] != this_irrep) {
-                            outfile->Printf("\nInconsistent symmetries in components of guess %d.\n", k);
-                            exit(2);
+                            std::ostringstream oss;
+                            oss << "Inconsistent symmetries in components of guess " << k << ".\n";
+                            throw std::logic_error(oss.str());
                         }
                     }
                 }
@@ -173,8 +174,9 @@ void read_guess(int C_irr) {
                     this_irrep = moinfo.occ_sym[i] ^ moinfo.vir_sym[a];
                 } else { /* check other excitations for consistency */
                     if (moinfo.occ_sym[i] ^ moinfo.vir_sym[a] != this_irrep) {
-                        outfile->Printf("\nInconsistent symmetries in components of guess %d.\n", k);
-                        exit(2);
+                        std::ostringstream oss;
+                        oss << "Inconsistent symmetries in components of guess " << k << ".\n";
+                        throw std::logic_error(oss.str());
                     }
                 }
             } else {
@@ -186,13 +188,15 @@ void read_guess(int C_irr) {
                 } else { /* check other excitations for consistency */
                     if (spin == 0) {
                         if (moinfo.aocc_sym[i] ^ moinfo.avir_sym[a] != this_irrep) {
-                            outfile->Printf("\nInconsistent symmetries in components of guess %d.\n", k);
-                            exit(2);
+                            std::ostringstream oss;
+                            oss << "Inconsistent symmetries in components of guess " << k << ".\n";
+                            throw std::logic_error(oss.str());
                         }
                     } else {
                         if (moinfo.bocc_sym[i] ^ moinfo.bvir_sym[a] != this_irrep) {
-                            outfile->Printf("\nInconsistent symmetries in components of guess %d.\n", k);
-                            exit(2);
+                            std::ostringstream oss;
+                            oss << "Inconsistent symmetries in components of guess " << k << ".\n";
+                            throw std::logic_error(oss.str());
                         }
                     }
                 }

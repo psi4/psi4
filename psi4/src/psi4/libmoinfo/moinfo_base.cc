@@ -65,7 +65,7 @@ void MOInfoBase::startup() {
     compute_ioff();
 }
 
-void MOInfoBase::cleanup() {} 
+void MOInfoBase::cleanup() {}
 
 void MOInfoBase::read_data() {
     nirreps = ref_wfn.nirrep();
@@ -110,10 +110,8 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, std::string 
         mo.assign(nirreps_ref, 0);
         n = 0;
         if (read) {
-            outfile->Printf("\n\n  libmoinfo has found a redundancy in the input keywords %s , please fix it!",
-                            labels.c_str());
-
-            exit(1);
+            throw std::runtime_error("libmoinfo has found a redundancy in the input keywords " + labels +
+                                     ", please fix it!\n");
         } else {
             read = true;
         }
@@ -123,12 +121,10 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, std::string 
                 n += mo[i];
             }
         } else {
-            outfile->Printf(
-                "\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input "
-                "file",
-                label_vec[k].c_str(), size, nirreps_ref);
-
-            exit(1);
+            std::ostringstream oss;
+            oss << "The size of the " << label_vec[k] << " array (" << size << ") does not match the number of irreps ("
+                << nirreps_ref << "), please fix the input\n";
+            throw std::runtime_error(oss.str());
         }
     }
 }
@@ -162,8 +158,9 @@ void MOInfoBase::correlate(char* ptgrp, int irrep, int& nirreps_old, int& nirrep
     else if (strcmp(ptgrp, "D2h") == 0)
         nirreps_old = 8;
     else {
-        outfile->Printf("point group %s unknown.\n", ptgrp);
-        exit(1);
+        std::ostringstream oss;
+        oss << "point group " << ptgrp << " is not recognized.\n";
+        throw std::logic_error(oss.str());
     }
 
     arr = new int[nirreps_old];
