@@ -134,7 +134,7 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
 // converts a Psi4::Molecule object to a GauXC::Molecule object
 GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule) {
     GauXC::Molecule gauxc_molecule;
- 
+
     //outfile->Printf("  snLinK::psi4_to_gauxc_molecule (GauXC-side)\n");
     //outfile->Printf("  -------------------------------------------\n");
     // TODO: Check if Bohr/Angstrom conversion is needed 
@@ -268,6 +268,10 @@ Eigen::Map<Eigen::MatrixXd> snLinK::psi4_to_eigen_map(SharedMatrix psi4_matrix) 
 }
 
 snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primary, options) {
+    timer_on("snLinK: Setup");
+
+    timer_on("snLinK: Options Processing");
+
     // set Psi4-specific parameters
     incfock_iter_ = false;
   
@@ -316,12 +320,11 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // set whether we force use of cartesian coordinates or not
     // this is required for GPU execution when using spherical harmonic basis sets
     force_cartesian_ = options_.get_bool("SNLINK_FORCE_CARTESIAN"); 
-    //if (use_gpu_ && !force_cartesian_ && primary_->has_puream()) {
-    if (true) {
+    if (use_gpu_ && !force_cartesian_ && primary_->has_puream()) {
         //throw PSIEXCEPTION("GPU snLinK must be executed with SNLINK_FORCE_CARTESIAN=true when using spherical harmonic basis sets!");  
         outfile->Printf("    INFO: GPU snLinK must be executed with SNLINK_FORCE_CARTESIAN=true when using spherical harmonic basis sets!\n");  
         outfile->Printf("    Enabling forced spherical-to-Cartesian transform...\n\n");  
-        //force_cartesian_ = true; 
+        force_cartesian_ = true; 
     }
 
     // create permutation matrix to handle integral ordering
@@ -351,7 +354,11 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
       }
       sph_to_cart_matrix_ = linalg::doublet(sph_to_cart_permute, sph_to_cart_matrix_);
     }
-
+    
+    timer_off("snLinK: Options Processing");
+    
+    timer_on("snLinK: Construct GauXC Integrator");
+    
     // convert Psi4 fundamental quantities to GauXC 
     auto gauxc_mol = psi4_to_gauxc_molecule(primary_->molecule());
     auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_, force_cartesian_);
@@ -419,6 +426,10 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // actually construct integrator 
     integrator_factory_ = std::make_unique<GauXC::XCIntegratorFactory<matrix_type> >(ex, integrator_input_type, integrator_kernel, lwd_kernel, reduction_kernel);
     integrator_ = integrator_factory_->get_shared_instance(dummy_func, gauxc_load_balancer); 
+    
+    timer_off("snLinK: Construct GauXC Integrator");
+    
+    timer_off("snLinK: Setup");
 }
 
 snLinK::~snLinK() {}
@@ -467,6 +478,8 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
    
     // compute K for density Di using GauXC
     for (int iD = 0; iD != D.size(); ++iD) {
+        timer_on("snLinK: Transform D");
+
         auto Did_eigen = psi4_to_eigen_map(D[iD]);    
         auto Kid_eigen = psi4_to_eigen_map(K[iD]);    
        
@@ -493,8 +506,11 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         }
         auto D_buffer_eigen = psi4_to_eigen_map(D_buffer);    
         
+        timer_off("snLinK: Transform D");
+        
         // map Psi4 exchange matrix buffer to Eigen matrix map
         // buffer can be either K itself or a cartesian representation of K
+        timer_on("snLinK: Transform K");
         SharedMatrix K_buffer = nullptr; 
         if (is_spherical_basis) {
             // need to reorder Psi4 exchange matrix to CCA ordering if in spherical harmonics
@@ -516,7 +532,9 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             K_buffer = K[iD];
         }
         auto K_buffer_eigen = psi4_to_eigen_map(K_buffer); 
+        timer_off("snLinK: Transform K");
         
+        timer_on("snLinK: Execute integrator");
         // compute delta K if incfock iteration... 
         if (incfock_iter_) { 
             // if cartesian transformation is forced, K_buffer is delta K and must be added to Psi4 K separately...
@@ -536,8 +554,10 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
                 K[iD]->back_transform(K_buffer, sph_to_cart_matrix_);          
             }
         }
+        timer_off("snLinK: Execute integrator");
 
         // now we need to reverse the CCA reordering previously performed
+        timer_on("snLinK: Back-transform D and K");
         if (permutation_matrix_.has_value()) {
             auto permutation_matrix_val = permutation_matrix_ .value();
             auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
@@ -546,6 +566,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
             K_eigen_permute = permutation_matrix_val.transpose() * K_eigen_permute * permutation_matrix_val; 
         }
+        timer_off("snLinK: Back-transform D and K");
       
         // symmetrize K if applicable
         if (lr_symmetric_) {
