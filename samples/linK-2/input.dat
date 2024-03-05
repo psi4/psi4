@@ -35,11 +35,12 @@ set {
     snlink_ints_tolerance 1.0e-10
     snlink_pruning_scheme robust 
     dft_radial_scheme em
-    snlink_use_points false 
-    snlink_radial_points  35 
-    snlink_spherical_points 110
+    snlink_use_points true 
+    snlink_radial_points  50 
+    snlink_spherical_points 146
     snlink_use_gpu false 
-    snlink_force_cartesian true 
+    snlink_force_cartesian false 
+    snlink_grid_batch_size 2048
 }
 
 linK_energy = energy('scf')

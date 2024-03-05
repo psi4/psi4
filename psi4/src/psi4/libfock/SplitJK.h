@@ -43,6 +43,8 @@
   #include <gauxc/molecular_weights.hpp>
 
   #include <eigen3/Eigen/Core>
+
+  #include <optional>
 #endif
 
 #include "psi4/pragma.h"
@@ -352,7 +354,7 @@ class PSI_API snLinK : public SplitJK {
     SharedMatrix cart_to_sph_matrix_;
 
     // => Gaussian-CCA Transformation stuff <= //
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix_;
+    std::optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> > permutation_matrix_;
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(const std::shared_ptr<BasisSet> psi4_basisset);
   #if defined(USING_gauxc_CCA)
     static constexpr bool is_cca_ = true;

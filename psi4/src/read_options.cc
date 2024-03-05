@@ -1715,26 +1715,30 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION snLinK Algorithm -*/
 
-        /*- Number of spherical points in initial snLinK grid. -*/
-        options.add_int("SNLINK_SPHERICAL_POINTS", 50);
-        /*- Number of radial points in initial snLinK grid. -*/
-        options.add_int("SNLINK_RADIAL_POINTS", 25);
-        /*- Use grid point specifications for snLinK grid? -*/ 
-        options.add_bool("SNLINK_USE_POINTS", true);
+        /*- Number of spherical points in snLinK grid. -*/
+        options.add_int("SNLINK_SPHERICAL_POINTS", 302);
+        /*- Number of radial points in snLinK grid. -*/
+        options.add_int("SNLINK_RADIAL_POINTS", 70);
+        /*- Radial Scheme for snLinK grid. 
+        MURA is default here as it matches the GauXC default option -*/
+        options.add_str("SNLINK_RADIAL_SCHEME", "MURA", "MURA TREUTLER EM");
         /*- Use GPU for GauXC? -*/
         options.add_bool("SNLINK_USE_GPU", false);
         /*- Screening criteria for integrals and intermediates in snLinK -*/
         options.add_double("SNLINK_INTS_TOLERANCE", 1.0E-11);
         /*- Screening criteria for shell-pair densities in snLinK !expert -*/
         options.add_double("SNLINK_DENSITY_TOLERANCE", 1.0E-10);
+        /*- Use grid point specifications for snLinK grid? 
+        If false, use GauXC's UltraFine grid specification instead. !expert-*/ 
+        options.add_bool("SNLINK_USE_POINTS", true);
         /*- Screening criteria for basis function values on snLinK grids !expert -*/
         options.add_double("SNLINK_BASIS_TOLERANCE", 1.0E-10);
         /*- Force snLinK to use cartesian coordinates !expert -*/
         options.add_bool("SNLINK_FORCE_CARTESIAN", false);
         /*- Pruning scheme for snLinK grids !expert -*/
         options.add_str("SNLINK_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE");
-        /*- Number of grid points per batch for GauXC !expert -*/ 
-        options.add_int("SNLINK_GRID_BATCH_SIZE", 512);
+        /*- Maximum number of grid points per grid block for GauXC !expert -*/ 
+        options.add_int("SNLINK_GRID_BATCH_SIZE", 2048);
         /*- Load Balancer kernel for snLinK !expert -*/
         options.add_str("SNLINK_LOAD_BALANCER_KERNEL", "DEFAULT", "DEFAULT REPLICATED REPLICATED-PETITE REPLICATED-FILLIN");
         /*- Molecular Weights kernel for snLinK !expert -*/
