@@ -135,8 +135,8 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
 GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule) {
     GauXC::Molecule gauxc_molecule;
  
-    outfile->Printf("  snLinK::psi4_to_gauxc_molecule (GauXC-side)\n");
-    outfile->Printf("  -------------------------------------------\n");
+    //outfile->Printf("  snLinK::psi4_to_gauxc_molecule (GauXC-side)\n");
+    //outfile->Printf("  -------------------------------------------\n");
     // TODO: Check if Bohr/Angstrom conversion is needed 
     // Answer: Nope! GauXC accepts input in Bohrs, and Psi4 coords are in Bohr
     // at this point. 
@@ -145,7 +145,7 @@ GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_mo
         auto x_coord = psi4_molecule->x(iatom);
         auto y_coord = psi4_molecule->y(iatom);
         auto z_coord = psi4_molecule->z(iatom);
-        outfile->Printf("  Atom #%i: %f, %f, %f\n", atomic_number, x_coord, y_coord, z_coord); 
+        //outfile->Printf("  Atom #%i: %f, %f, %f\n", atomic_number, x_coord, y_coord, z_coord); 
         
         gauxc_molecule.emplace_back(GauXC::AtomicNumber(atomic_number), x_coord, y_coord, z_coord);
     }
@@ -162,8 +162,8 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
     //GauXC::BasisSet<T> gauxc_basisset;
     GauXC::BasisSet<T> gauxc_basisset(psi4_basisset->nshell());
  
-    outfile->Printf("  snLinK::psi4_to_gauxc_basisset (Psi-side)\n");
-    outfile->Printf("  -----------------------------------------\n");
+    //outfile->Printf("  snLinK::psi4_to_gauxc_basisset (Psi-side)\n");
+    //outfile->Printf("  -----------------------------------------\n");
     for (size_t ishell = 0; ishell != psi4_basisset->nshell(); ++ishell) {
         auto psi4_shell = psi4_basisset->shell(ishell);
        
@@ -171,16 +171,16 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         prim_array alpha; 
         prim_array coeff;
 
-        outfile->Printf("  ");
-        outfile->Printf("%s", (force_cartesian || psi4_shell.is_cartesian()) ? "Cartesian" : "Spherical");
-        outfile->Printf(" Shell #%i (AM %i): %i primitives\n", ishell, psi4_shell.am(), psi4_shell.nprimitive());
+        //outfile->Printf("  ");
+        //outfile->Printf("%s", (force_cartesian || psi4_shell.is_cartesian()) ? "Cartesian" : "Spherical");
+        //outfile->Printf(" Shell #%i (AM %i): %i primitives\n", ishell, psi4_shell.am(), psi4_shell.nprimitive());
         //TODO: Ensure normalization is okay
         // It seems so! We need to turn explicit normalization off for the Psi4-to-GauXC interface, since Psi4 
         // basis set object contains normalized coefficients already
         for (size_t iprim = 0; iprim != psi4_shell.nprimitive(); ++iprim) {
             alpha.at(iprim) = psi4_shell.exp(iprim);
             coeff.at(iprim) = psi4_shell.coef(iprim);
-            outfile->Printf("    Primitive #%i: %f, %f\n", iprim, psi4_shell.exp(iprim), psi4_shell.coef(iprim));
+            //outfile->Printf("    Primitive #%i: %f, %f\n", iprim, psi4_shell.exp(iprim), psi4_shell.coef(iprim));
         }
 
         auto psi4_shell_center = psi4_shell.center();
@@ -204,22 +204,46 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         sh.set_shell_tolerance(basis_tol_); 
     }
 
-    outfile->Printf("  snLinK::psi4_to_gauxc_basisset (GauXC-side)\n");
-    outfile->Printf("  -------------------------------------------\n");
+    //outfile->Printf("  snLinK::psi4_to_gauxc_basisset (GauXC-side)\n");
+    //outfile->Printf("  -------------------------------------------\n");
     for (int ish = 0; ish != gauxc_basisset.size(); ++ish) {
       auto& sh = gauxc_basisset[ish];
 
       auto alpha = sh.alpha();
       auto coeff = sh.coeff();
-      assert(alpha.size() == coeff.size());
-      assert(alpha.size() == sh.nprim());
+      
+      if (alpha.size() != coeff.size()) {
+          std::string message = "Mismatch between exponent and coefficient size on shell #";
+          message += std::to_string(ish);
+          message += "! ";
+	
+	  message += std::to_string(alpha.size());
+          message += " vs. ";
+          message += std::to_string(coeff.size());
+          message += ".\n";
+ 
+          throw PSIEXCEPTION(message);
+      } else if (sh.nprim() != primary_->shell(ish).nprimitive()) {
+          std::string message = "Mismatch between GauXC and Psi4 internal primitive ccount on shell #";
+          message += std::to_string(ish);
+          message += "! ";
 
+          message += std::to_string(sh.nprim());
+          message += " vs. ";
+	  message += std::to_string(primary_->shell(ish).nprimitive());
+          message += ".\n";
+ 
+          throw PSIEXCEPTION(message);
+      };
+    
+      /*
       outfile->Printf("  ");
       outfile->Printf("  %s", (!sh.pure() ? "Cartesian" : "Spherical"));
       outfile->Printf(" Shell #%i (AM %i): %i primitives\n", ish, sh.l(), sh.nprim());
       for (size_t iprim = 0; iprim != sh.nprim(); ++iprim) {
         outfile->Printf("      Primitive #%i: %f, %f\n", iprim, alpha.at(iprim), coeff.at(iprim));
       }
+      */
     }
  
     return std::move(gauxc_basisset);
@@ -253,11 +277,12 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     basis_tol_ = options.get_double("SNLINK_BASIS_TOLERANCE");
 
     pruning_scheme_ = options_.get_str("SNLINK_PRUNING_SCHEME");
-    radial_scheme_ = options_.get_str("DFT_RADIAL_SCHEME");
+    radial_scheme_ = options_.get_str("SNLINK_RADIAL_SCHEME");
  
     format_ = Eigen::IOFormat(4, 0, ", ", "\n", "[", "]");
     
     // sanity-checking of radial scheme needed because generalist DFT_RADIAL_SCHEME option is used 
+/*
     std::array<std::string, 3> valid_radial_schemes = { "TREUTLER", "MURA", "EM" };
     bool is_valid_radial_scheme = std::any_of(
       valid_radial_schemes.cbegin(),
@@ -268,7 +293,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     if (!is_valid_radial_scheme) {
         throw PSIEXCEPTION("Invalid radial quadrature scheme selected for snLinK! Please set DFT_RADIAL_SCHEME to either TREUTLER, MURA, or EM.");
     }
-
+*/
     // create mappings for GauXC pruning and radial scheme enums
     auto [ pruning_scheme_map, radial_scheme_map ] = generate_enum_mappings();
 
@@ -291,22 +316,31 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // set whether we force use of cartesian coordinates or not
     // this is required for GPU execution when using spherical harmonic basis sets
     force_cartesian_ = options_.get_bool("SNLINK_FORCE_CARTESIAN"); 
-    if (use_gpu_ && !force_cartesian_ && primary_->has_puream()) {
-        throw PSIEXCEPTION("GPU snLinK must be executed with SNLINK_FORCE_CARTESIAN=true when using spherical harmonic basis sets!");  
+    //if (use_gpu_ && !force_cartesian_ && primary_->has_puream()) {
+    if (true) {
+        //throw PSIEXCEPTION("GPU snLinK must be executed with SNLINK_FORCE_CARTESIAN=true when using spherical harmonic basis sets!");  
+        outfile->Printf("    INFO: GPU snLinK must be executed with SNLINK_FORCE_CARTESIAN=true when using spherical harmonic basis sets!\n");  
+        outfile->Printf("    Enabling forced spherical-to-Cartesian transform...\n\n");  
+        //force_cartesian_ = true; 
     }
 
     // create permutation matrix to handle integral ordering
-    permutation_matrix_ = generate_permutation_matrix(primary_);
-
+    if (!is_cca_ && primary_->has_puream()) {
+        permutation_matrix_ = std::make_optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> >(
+            generate_permutation_matrix(primary_)
+        );
+    } else {
+        permutation_matrix_ = std::nullopt;
+    }
     // create matrix for spherical-to-cartesian matrix transformations
     const auto factory = std::make_shared<IntegralFactory>(primary, primary, primary, primary);
     PetiteList petite(primary, factory, true);
     sph_to_cart_matrix_ = petite.sotoao(); 
-  
+ 
     // for whatever reason, psi4_to_eigen_map doesnt seem to work specifically in the constructor
     // so we will create the Sph-to-Cart transform manually 
-    if constexpr (!is_cca_) { 
-      auto permutation_dense = permutation_matrix_.toDenseMatrix();
+    if (permutation_matrix_.has_value()) { 
+      auto permutation_dense = permutation_matrix_.value().toDenseMatrix();
       auto sph_to_cart_permute = std::make_shared<Matrix>(permutation_dense.rows(), permutation_dense.cols());
       
       auto ptr = sph_to_cart_permute->pointer();
@@ -404,8 +438,7 @@ void snLinK::print_header() const {
         outfile->Printf("    K Screening?:     %s\n", (integrator_settings_.screen_ek) ? "Yes" : "No");
         outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
         outfile->Printf("    K Ints Cutoff:     %11.0E\n", integrator_settings_.energy_tol);
-        //if (debug_) {
-        if (true) {
+        if (debug_) {
           outfile->Printf("\n");    
           outfile->Printf("    (Debug) K Grid Pruning Scheme:     %s\n", pruning_scheme_.c_str());
           outfile->Printf("    (Debug) K Radial Quadrature Scheme:     %s\n", radial_scheme_.c_str());
@@ -441,9 +474,10 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         SharedMatrix D_buffer = nullptr; 
         if (is_spherical_basis) {
             // need to reorder Psi4 density matrix to CCA ordering if in spherical harmonics
-            if constexpr (!is_cca_) {
+            if (permutation_matrix_.has_value()) {
+                auto permutation_matrix_val = permutation_matrix_.value();
                 auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
-                D_eigen_permute = permutation_matrix_ * D_eigen_permute * permutation_matrix_.transpose();
+                D_eigen_permute = permutation_matrix_val * D_eigen_permute * permutation_matrix_val.transpose();
             }
             
             // also need to transform D to cartesian coordinates if requested/required
@@ -464,9 +498,10 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         SharedMatrix K_buffer = nullptr; 
         if (is_spherical_basis) {
             // need to reorder Psi4 exchange matrix to CCA ordering if in spherical harmonics
-            if constexpr (!is_cca_) {
+            if (permutation_matrix_.has_value()) { 
+                auto permutation_matrix_val = permutation_matrix_ .value();
                 auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
-                K_eigen_permute = permutation_matrix_ * K_eigen_permute * permutation_matrix_.transpose();
+                K_eigen_permute = permutation_matrix_val * K_eigen_permute * permutation_matrix_val.transpose();
             }
             
             // also need to transform D to cartesian coordinates if requested/required
@@ -503,12 +538,13 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         }
 
         // now we need to reverse the CCA reordering previously performed
-        if (is_spherical_basis && !is_cca_) {
+        if (permutation_matrix_.has_value()) {
+            auto permutation_matrix_val = permutation_matrix_ .value();
             auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
-            D_eigen_permute = permutation_matrix_.transpose() * D_eigen_permute * permutation_matrix_; 
+            D_eigen_permute = permutation_matrix_val.transpose() * D_eigen_permute * permutation_matrix_val; 
 
             auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
-            K_eigen_permute = permutation_matrix_.transpose() * K_eigen_permute * permutation_matrix_; 
+            K_eigen_permute = permutation_matrix_val.transpose() * K_eigen_permute * permutation_matrix_val; 
         }
       
         // symmetrize K if applicable
