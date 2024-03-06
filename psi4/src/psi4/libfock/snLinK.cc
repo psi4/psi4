@@ -495,7 +495,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             
             // also need to transform D to cartesian coordinates if requested/required
             if (force_cartesian_) {
-                D_buffer = std::make_shared<Matrix>(sph_to_cart_matrix_->nrow(), sph_to_cart_matrix_->nrow());
+                D_buffer = std::make_shared<Matrix>();
                 D_buffer->transform(D[iD], sph_to_cart_matrix_);
             } else {
                 D_buffer = D[iD];
@@ -522,7 +522,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             
             // also need to transform D to cartesian coordinates if requested/required
             if (force_cartesian_) { 
-                K_buffer = std::make_shared<Matrix>(sph_to_cart_matrix_->ncol(), sph_to_cart_matrix_->ncol());
+                K_buffer = std::make_shared<Matrix>();
                 K_buffer->transform(K[iD], sph_to_cart_matrix_);
             } else {
                 K_buffer = K[iD];
@@ -537,7 +537,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         timer_on("snLinK: Execute integrator");
         // compute delta K if incfock iteration... 
         if (incfock_iter_) { 
-            // if cartesian transformation is forced, K_buffer is delta K and must be added to Psi4 K separately...
+            // K buffer (i.e., delta K) must be back-transformed and added to Psi4 K separately if cartesian transformation is forced...
             if (force_cartesian_ && is_spherical_basis) {
                 K_buffer_eigen = integrator_->eval_exx(D_buffer_eigen, integrator_settings_);
                 K_buffer->back_transform(sph_to_cart_matrix_);
