@@ -1502,8 +1502,15 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
     if ep is not None:
         _set_external_potentials_to_wavefunction(ep, wfn)
 
+    external_hamiltonian = kwargs.get("external_hamiltonian", None)
+    if external_hamiltonian is not None:
+        _set_external_hamiltonian_to_wavefunction(external_hamiltonian, wfn)
+
     return wfn
 
+def _set_external_hamiltonian_to_wavefunction(external_hamiltonian: np.ndarray, wfn: "core.Wavefunction"):
+    external_hamiltonian = core.Matrix.from_array(external_hamiltonian)
+    wfn.set_external_hamiltonian(external_hamiltonian)
 
 def _set_external_potentials_to_wavefunction(external_potential: Union[List, Dict[str, List]], wfn: "core.Wavefunction"):
     """Initialize :py:class:`psi4.core.ExternalPotential` object(s) from charges and locations and set on **wfn**.
