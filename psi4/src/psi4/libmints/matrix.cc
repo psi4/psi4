@@ -431,11 +431,12 @@ std::vector<Eigen::Map<Eigen::MatrixXd>> Matrix::eigen_maps() {
     std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps;
     eigen_maps.reserve(nirrep());
 
+    // create Eigen matrix "map"s for each irrep, 
+    // using Psi4 matrix data array directly
     for (int h = 0; h != nirrep(); ++h) {
         eigen_maps.emplace_back(get_pointer(h), rowdim(h), coldim(h));
     } 
     
-    // create Eigen matrix "map" using Psi4 matrix data array directly
     return std::move(eigen_maps);
 }
 
