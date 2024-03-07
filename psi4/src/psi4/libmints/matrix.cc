@@ -404,6 +404,41 @@ void Matrix::copy(const Matrix &cp) { copy(&cp); }
 
 void Matrix::copy(const SharedMatrix &cp) { copy(cp.get()); }
 
+// produces an Eigen::Map object mapping to the matrix data buffer 
+// of a matrix with a single irrep 
+Eigen::Map<Eigen::MatrixXd> Matrix::eigen_map() {
+    // Sanity checks
+    // only works for C1 symmetry at the moment
+    // could be improved if symmetry is utilized in JK builds in the future
+    if (nirrep() != 1) {
+        throw PSIEXCEPTION("Psi4::Matrix must be in C1 symmetry to be transformed into Eigen::MatrixXd!");
+    }
+
+    // create Eigen matrix "map" using Psi4 matrix data array directly
+    return std::move(
+        Eigen::Map<Eigen::MatrixXd>(
+            get_pointer(), nrow(), ncol()
+        )
+    );
+}
+
+// produces Eigen::Maps object mapping to the matrix data buffer
+// of a matrix with multiple irreps 
+// NOTE: this impl for mapping Psi4 matrices to Eigen maps
+// is currently experimental, as it is unused in the code 
+// currently
+std::vector<Eigen::Map<Eigen::MatrixXd>> Matrix::eigen_maps() {
+    std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps;
+    eigen_maps.reserve(nirrep());
+
+    for (int h = 0; h != nirrep(); ++h) {
+        eigen_maps.emplace_back(get_pointer(h), rowdim(h), coldim(h));
+    } 
+    
+    // create Eigen matrix "map" using Psi4 matrix data array directly
+    return std::move(eigen_maps);
+}
+
 void Matrix::alloc() {
     if (matrix_) release();
 
