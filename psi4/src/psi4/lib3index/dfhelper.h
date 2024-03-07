@@ -106,7 +106,7 @@ class PSI_API DFHelper {
     /// DFHelper will keep track of this memory.
     /// NOTE: DFHelper will automatically revert to on-disk if the
     /// sizes of the AO integrals is greater than 90% of the memory
-    /// it controlls.
+    /// it controls.
     ///
     void set_AO_core(bool core) { AO_core_ = core; }
     bool get_AO_core() { return AO_core_; }
