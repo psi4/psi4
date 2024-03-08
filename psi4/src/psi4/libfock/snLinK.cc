@@ -249,24 +249,6 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
     return std::move(gauxc_basisset);
 }
 
-// converts a Psi4::Matrix to an Eigen::MatrixXd map
-Eigen::Map<Eigen::MatrixXd> snLinK::psi4_to_eigen_map(SharedMatrix psi4_matrix) {
-    // Sanity checks
-    // only works for C1 symmetry at the moment
-    // could be improved if symmetry is utilized in JK builds in the future
-    if (psi4_matrix->nirrep() != 1) {
-        throw PSIEXCEPTION("Psi4::Matrix must be in C1 symmetry to be transformed into Eigen::MatrixXd!");
-    }
-
-    // create Eigen matrix "map" using Psi4 matrix data array directly
-    return std::move(
-        Eigen::Map<Eigen::MatrixXd>(
-            psi4_matrix->get_pointer(), 
-            psi4_matrix->nrow(), psi4_matrix->ncol()
-        )
-    );
-}
-
 snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primary, options) {
     timer_on("snLinK: Setup");
 
@@ -480,8 +462,8 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     for (int iD = 0; iD != D.size(); ++iD) {
         timer_on("snLinK: Transform D");
 
-        auto Did_eigen = psi4_to_eigen_map(D[iD]);    
-        auto Kid_eigen = psi4_to_eigen_map(K[iD]);    
+        auto Did_eigen = D[iD]->eigen_map();    
+        auto Kid_eigen = K[iD]->eigen_map();    
        
         // map Psi4 density matrix to Eigen matrix map
         SharedMatrix D_buffer = nullptr; 
@@ -489,7 +471,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             // need to reorder Psi4 density matrix to CCA ordering if in spherical harmonics
             if (permutation_matrix_.has_value()) {
                 auto permutation_matrix_val = permutation_matrix_.value();
-                auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
+                auto D_eigen_permute = D[iD]->eigen_map();
                 D_eigen_permute = permutation_matrix_val * D_eigen_permute * permutation_matrix_val.transpose();
             }
             
@@ -504,7 +486,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         } else {
             D_buffer = D[iD];
         }
-        auto D_buffer_eigen = psi4_to_eigen_map(D_buffer);    
+        auto D_buffer_eigen = D_buffer->eigen_map();    
         
         timer_off("snLinK: Transform D");
         
@@ -516,7 +498,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             // need to reorder Psi4 exchange matrix to CCA ordering if in spherical harmonics
             if (permutation_matrix_.has_value()) { 
                 auto permutation_matrix_val = permutation_matrix_ .value();
-                auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
+                auto K_eigen_permute = K[iD]->eigen_map();
                 K_eigen_permute = permutation_matrix_val * K_eigen_permute * permutation_matrix_val.transpose();
             }
             
@@ -531,7 +513,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         } else {
             K_buffer = K[iD];
         }
-        auto K_buffer_eigen = psi4_to_eigen_map(K_buffer); 
+        auto K_buffer_eigen = K_buffer->eigen_map(); 
         timer_off("snLinK: Transform K");
         
         timer_on("snLinK: Execute integrator");
@@ -560,10 +542,10 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         timer_on("snLinK: Back-transform D and K");
         if (permutation_matrix_.has_value()) {
             auto permutation_matrix_val = permutation_matrix_ .value();
-            auto D_eigen_permute = psi4_to_eigen_map(D[iD]);
+            auto D_eigen_permute = D[iD]->eigen_map();
             D_eigen_permute = permutation_matrix_val.transpose() * D_eigen_permute * permutation_matrix_val; 
 
-            auto K_eigen_permute = psi4_to_eigen_map(K[iD]);
+            auto K_eigen_permute = K[iD]->eigen_map();
             K_eigen_permute = permutation_matrix_val.transpose() * K_eigen_permute * permutation_matrix_val; 
         }
         timer_off("snLinK: Back-transform D and K");
