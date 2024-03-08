@@ -42,6 +42,8 @@
 
   #include <gauxc/molecular_weights.hpp>
 
+  #include <eigen3/Eigen/Core>
+
   #include <optional>
 #endif
 
