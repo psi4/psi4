@@ -140,6 +140,7 @@ void handleBrianOption(bool value) {
 void export_benchmarks(py::module&);
 void export_blas_lapack(py::module&);
 void export_cubeprop(py::module&);
+void export_options(py::module&);
 void export_dpd(py::module&);
 void export_fock(py::module&);
 void export_functional(py::module&);
@@ -150,7 +151,6 @@ void export_pcm(py::module&);
 void export_plugins(py::module&);
 void export_psio(py::module&);
 void export_wavefunction(py::module&);
-void export_options(py::module&);
 void export_trans(py::module&);
 
 // In export_plugins.cc
