@@ -43,6 +43,6 @@
 
 namespace py = pybind11;
 
-PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
+PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>)
 
 #endif  // PSI4_CORE_PYBIND11_H_H
