@@ -264,6 +264,7 @@ void MP2F12::form_cabs_singles(einsums::Tensor<double,2> *f)
 
 double MP2F12::compute_energy()
 {
+    timer_on("MP2-F12 Compute Energy");
     using namespace einsums;
     timer::initialize();
 
@@ -384,6 +385,7 @@ double MP2F12::compute_energy()
         timer::report();
     }
     timer::finalize();
+    timer_off("MP2-F12 Compute Energy");
 
     // Typically you would build a new wavefunction and populate it with data
     return E_f12_total_;
@@ -481,12 +483,12 @@ std::pair<double, double> MP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, eins
     ( i == j ) ? ( kd = 1 ) : ( kd = 2 );
 
     B_s += 0.125 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd 
-                 * (B_ij(i, j, i, j) + B_ij(j, i, i, j))
+                 * (B_ij(i, j, i, j) + B_ij(i, j, j, i))
                  * (t_(i, j, i, j) + t_(i, j, j, i)) * kd;
 
     if ( i != j ) {
         B_t += 0.125 * (t_(i, j, i, j) - t_(i, j, j, i)) * kd
-                     * (B_ij(i, j, i, j) - B_ij(j, i, i, j))
+                     * (B_ij(i, j, i, j) - B_ij(i, j, j, i))
                      * (t_(i, j, i, j) - t_(i, j, j, i)) * kd;
     }
     return {B_s, B_t};
@@ -887,12 +889,12 @@ std::pair<double, double> DiskMP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, 
     ( i == j ) ? ( kd = 1 ) : ( kd = 2 );
 
     B_s = 0.125 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd
-                 * (B_ij(i, j, i, j) + B_ij(j, i, i, j))
+                 * (B_ij(i, j, i, j) + B_ij(i, j, j, i))
                  * (t_(i, j, i, j) + t_(i, j, j, i)) * kd;
 
     if ( i != j ) {
         B_t = 0.125 * (t_(i, j, i, j) - t_(i, j, j, i)) * kd
-                     * (B_ij(i, j, i, j) - B_ij(j, i, i, j))
+                     * (B_ij(i, j, i, j) - B_ij(i, j, j, i))
                      * (t_(i, j, i, j) - t_(i, j, j, i)) * kd;
     }
     return {B_s, B_t};

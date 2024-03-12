@@ -301,45 +301,48 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
         const auto nmo2 = (order[i+1] == 'C') ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
         const auto nmo3 = (order[i+2] == 'C') ? ncabs_ : (order[i+2] == 'O') ? nobs_ : nocc_;
         const auto nmo4 = (order[i+3] == 'C') ? ncabs_ : (order[i+3] == 'O') ? nobs_ : nocc_;
-
-        auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
-        auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
-        auto C3 = std::make_unique<Tensor<double, 2>>("C3", nbf3, nmo3);
-        auto C4 = std::make_unique<Tensor<double, 2>>("C4", nbf4, nmo4);
-        convert_C(C1.get(), bs_[o1], nbf1, nmo1);
-        convert_C(C2.get(), bs_[o2], nbf2, nmo2);
-        convert_C(C3.get(), bs_[o3], nbf3, nmo3);
-        convert_C(C4.get(), bs_[o4], nbf4, nmo4);
 	
         // Transform ERI AO Tensor to ERI MO Tensor
         auto PRQS = std::make_unique<Tensor<double, 4>>("PQRS", nmo1, nmo3, nmo2, nmo4);
         timer_on("MO Transformation");
         {
             // C1
+            auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
+            convert_C(C1.get(), bs_[o1], nbf1, nmo1);
             auto Pqrs = std::make_unique<Tensor<double, 4>>("Pqrs", nmo1, nbf2, nbf3, nbf4);
             einsum(Indices{P, q, r, s}, &Pqrs, Indices{p, q, r, s}, GAO, Indices{p, P}, C1);
             GAO.reset();
             C1.reset();
 
-            // C3
+            // Sort
             auto rsPq = std::make_unique<Tensor<double, 4>>("rsPq", nbf3, nbf4, nmo1, nbf2);
             sort(Indices{r, s, P, q}, &rsPq, Indices{P, q, r, s}, Pqrs);
             Pqrs.reset();
+
+            // C3
+            auto C3 = std::make_unique<Tensor<double, 2>>("C3", nbf3, nmo3);
+            convert_C(C3.get(), bs_[o3], nbf3, nmo3);
             auto RsPq = std::make_unique<Tensor<double, 4>>("RsPq", nmo3, nbf4, nmo1, nbf2);
             einsum(Indices{R, s, P, q}, &RsPq, Indices{r, s, P, q}, rsPq, Indices{r, R}, C3);
             rsPq.reset();
             C3.reset();
 
             // C2
+            auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
+            convert_C(C2.get(), bs_[o2], nbf2, nmo2);
             auto RsPQ = std::make_unique<Tensor<double, 4>>("RsPQ", nmo3, nbf4, nmo1, nmo2);
             einsum(Indices{R, s, P, Q}, &RsPQ, Indices{R, s, P, q}, RsPq, Indices{q, Q}, C2);
             RsPq.reset();
             C2.reset();
 
-            // C4
+            // Sort
             auto PQRs = std::make_unique<Tensor<double, 4>>("PQRs", nmo1, nmo2, nmo3, nbf4);
             sort(Indices{P, Q, R, s}, &PQRs, Indices{R, s, P, Q}, RsPQ);
             RsPQ.reset();
+
+            // C4
+            auto C4 = std::make_unique<Tensor<double, 2>>("C4", nbf4, nmo4);
+            convert_C(C4.get(), bs_[o4], nbf4, nmo4);
             auto PQRS = std::make_unique<Tensor<double, 4>>("PQRS", nmo1, nmo2, nmo3, nmo4);
             einsum(Indices{P, Q, R, index::S}, &PQRS, Indices{P, Q, R, s}, PQRs, Indices{s, index::S}, C4);
             PQRs.reset();
@@ -421,26 +424,31 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3> *DF_ERI, bool is_fock)
         const auto nmo1 = ( order[i] == 'C' ) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
         const auto nmo2 = (order[i+1] == 'C') ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
 
-        auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
-        auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
-        convert_C(C1.get(), bs_[o1], nbf1, nmo1);
-        convert_C(C2.get(), bs_[o2], nbf2, nmo2);
-
         auto BPQ = std::make_unique<Tensor<double, 3>>("BPQ", naux_, nmo1, nmo2);
+        timer_on("MO Transformation");
         {
             // C2
+            auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
+            convert_C(C2.get(), bs_[o2], nbf2, nmo2);
             Tensor<double, 3> BpQ{"BpQ", naux_, nbf1, nmo2};
             einsum(Indices{B, p, Q}, &BpQ, Indices{B, p, q}, Bpq, Indices{q, Q}, C2);
             C2.reset();
 
-            // C1
+            // Sort
             Tensor<double, 3> BQp{"BQp", naux_, nmo2, nbf1};
             sort(Indices{B, Q, p}, &BQp, Indices{B, p, Q}, BpQ);
+
+            // C1
+            auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
+            convert_C(C1.get(), bs_[o1], nbf1, nmo1);
             Tensor<double, 3> BQP{"BQP", naux_, nmo2, nmo1};
             einsum(Indices{B, Q, P}, &BQP, Indices{B, Q, p}, BQp, Indices{p, P}, C1);
             C1.reset();
+
+            // Sort
             sort(Indices{B, P, Q}, &BPQ, Indices{B, Q, P}, BQP);
         }
+        timer_off("MO Transformation");
 
         auto APQ = std::make_unique<Tensor<double, 3>>("APQ", naux_, nmo1, nmo2);
         {
@@ -497,25 +505,28 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
         const auto nmo1 = ( order[i] == 'C' ) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
         const auto nmo2 = (order[i+1] == 'C') ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
 
-        auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
-        auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
-        convert_C(C1.get(), bs_[o1], nbf1, nmo1);
-        convert_C(C2.get(), bs_[o2], nbf2, nmo2);
-
         auto BPQ = std::make_unique<Tensor<double, 3>>("BPQ", naux_, nmo1, nmo2);
         timer_on("MO Transformation");
         {
             // C2
+            auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
+            convert_C(C2.get(), bs_[o2], nbf2, nmo2);
             Tensor<double, 3> BpQ{"BpQ", naux_, nbf1, nmo2};
             einsum(Indices{B, p, Q}, &BpQ, Indices{B, p, q}, Bpq, Indices{q, Q}, C2);
             C2.reset();
 
-            // C1
+            // Sort
             Tensor<double, 3> BQp{"BQp", naux_, nmo2, nbf1};
             sort(Indices{B, Q, p}, &BQp, Indices{B, p, Q}, BpQ);
+
+            // C1
+            auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
+            convert_C(C1.get(), bs_[o1], nbf1, nmo1);
             Tensor<double, 3> BQP{"BQP", naux_, nmo2, nmo1};
             einsum(Indices{B, Q, P}, &BQP, Indices{B, Q, p}, BQp, Indices{p, P}, C1);
             C1.reset();
+
+            // Sort
             sort(Indices{B, P, Q}, &BPQ, Indices{B, Q, P}, BQP);
         }
         timer_off("MO Transformation");
@@ -631,6 +642,7 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
                     einsum(1.0, Indices{p, q, r, s}, &chem_robust,
                            1.0, Indices{A, p, q}, left_oper, Indices{A, r, s}, right_metric);
                 }
+                ARPQ.reset();
 
                 // Term 3
                 {
@@ -639,6 +651,7 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
 
                     Tensor<double, 3> tmp{"Temp", naux_, nmo3, nmo4};
                     einsum(Indices{A, r, s}, &tmp, Indices{A, B}, ARB, Indices{B, r, s}, right_metric);
+                    ARB.reset();
                     einsum(1.0, Indices{p, q, r, s}, &chem_robust,
                            -1.0, Indices{A, p, q}, left_metric, Indices{A, r, s}, tmp);
                 }
@@ -794,44 +807,47 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
         const auto nmo3 = (order[i+2] == 'C') ? ncabs_ : (order[i+2] == 'O') ? nobs_ : nocc_;
         const auto nmo4 = (order[i+3] == 'C') ? ncabs_ : (order[i+3] == 'O') ? nobs_ : nocc_;
 
-        auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
-        auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
-        auto C3 = std::make_unique<Tensor<double, 2>>("C3", nbf3, nmo3);
-        auto C4 = std::make_unique<Tensor<double, 2>>("C4", nbf4, nmo4);
-        convert_C(C1.get(), bs_[o1], nbf1, nmo1);
-        convert_C(C2.get(), bs_[o2], nbf2, nmo2);
-        convert_C(C3.get(), bs_[o3], nbf3, nmo3);
-        convert_C(C4.get(), bs_[o4], nbf4, nmo4);
-
         // Transform ERI AO Tensor to ERI MO Tensor
         auto PRQS = std::make_unique<Tensor<double, 4>>("PQRS", nmo1, nmo3, nmo2, nmo4);
         timer_on("MO Transformation");
         {
             // C1
+            auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
+            convert_C(C1.get(), bs_[o1], nbf1, nmo1);
             auto Pqrs = std::make_unique<Tensor<double, 4>>("Pqrs", nmo1, nbf2, nbf3, nbf4);
             einsum(Indices{P, q, r, s}, &Pqrs, Indices{p, q, r, s}, GAO, Indices{p, P}, C1);
             GAO.reset();
             C1.reset();
 
-            // C3
+            // Sort
             auto rsPq = std::make_unique<Tensor<double, 4>>("rsPq", nbf3, nbf4, nmo1, nbf2);
             sort(Indices{r, s, P, q}, &rsPq, Indices{P, q, r, s}, Pqrs);
             Pqrs.reset();
+
+            // C3
+            auto C3 = std::make_unique<Tensor<double, 2>>("C3", nbf3, nmo3);
+            convert_C(C3.get(), bs_[o3], nbf3, nmo3);
             auto RsPq = std::make_unique<Tensor<double, 4>>("RsPq", nmo3, nbf4, nmo1, nbf2);
             einsum(Indices{R, s, P, q}, &RsPq, Indices{r, s, P, q}, rsPq, Indices{r, R}, C3);
             rsPq.reset();
             C3.reset();
 
             // C2
+            auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
+            convert_C(C2.get(), bs_[o2], nbf2, nmo2);
             auto RsPQ = std::make_unique<Tensor<double, 4>>("RsPQ", nmo3, nbf4, nmo1, nmo2);
             einsum(Indices{R, s, P, Q}, &RsPQ, Indices{R, s, P, q}, RsPq, Indices{q, Q}, C2);
             RsPq.reset();
             C2.reset();
 
-            // C4
+            // Sort
             auto PQRs = std::make_unique<Tensor<double, 4>>("PQRs", nmo1, nmo2, nmo3, nbf4);
             sort(Indices{P, Q, R, s}, &PQRs, Indices{R, s, P, Q}, RsPQ);
             RsPQ.reset();
+
+            // C4
+            auto C4 = std::make_unique<Tensor<double, 2>>("C4", nbf4, nmo4);
+            convert_C(C4.get(), bs_[o4], nbf4, nmo4);
             auto PQRS = std::make_unique<Tensor<double, 4>>("PQRS", nmo1, nmo2, nmo3, nmo4);
             einsum(Indices{P, Q, R, index::S}, &PQRS, Indices{P, Q, R, s}, PQRs, Indices{s, index::S}, C4);
             PQRs.reset();
