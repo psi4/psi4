@@ -48,9 +48,9 @@ SplitJK::SplitJK(std::shared_ptr<BasisSet> primary, Options& options) : primary_
     if (options["BENCH"].has_changed()) bench_ = options_.get_int("BENCH");
     if (options["DEBUG"].has_changed()) debug_ = options_.get_int("DEBUG");
     if (options["INTS_TOLERANCE"].has_changed()) cutoff_ = options_.get_double("INTS_TOLERANCE");
-};
+}
 
-SplitJK::~SplitJK() {};
+SplitJK::~SplitJK() {}
 
 size_t SplitJK::num_computed_shells() {
     outfile->Printf("WARNING: SplitJK::num_computed_shells() was called, but benchmarking is disabled for the chosen SplitJK algorithm.");
