@@ -37,7 +37,6 @@
 #include <memory>
 #include <algorithm>
 
-    ;
 using namespace psi;
 
 AOIntegralsIterator::AOIntegralsIterator(const GaussianShell& s1, const GaussianShell& s2, const GaussianShell& s3,

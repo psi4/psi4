@@ -36,8 +36,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/shellrotation.h"
 
-;
-
 namespace psi {
 
 // OperatorSymmetry::OperatorSymmetry(int order,

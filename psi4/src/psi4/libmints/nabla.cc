@@ -36,7 +36,6 @@
 #include <libint2/engine.h>
 
 using namespace psi;
-;
 
 // to compute the Nabla derivatives
 NablaInt::NablaInt(std::vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1,
