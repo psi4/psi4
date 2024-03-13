@@ -48,6 +48,7 @@ if(${ENABLE_gauxc})
             GIT_REPOSITORY https://github.com/wavefunction91/gauxc.git
             #GIT_TAG master
             GIT_TAG hotfix/small_primpair_max_override 
+            #GIT_TAG bugfix/cpu_os_higham
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

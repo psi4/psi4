@@ -488,6 +488,9 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         }
         auto D_buffer_eigen = D_buffer->eigen_map();    
         
+        auto n_el = integrator_->integrate_den(D_buffer_eigen);
+        outfile->Printf("  Integrate_den #%i: %f\n", iD, n_el);     
+   
         timer_off("snLinK: Transform D");
         
         // map Psi4 exchange matrix buffer to Eigen matrix map
