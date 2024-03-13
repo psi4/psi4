@@ -334,7 +334,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
           ptr[irow][icol] = permutation_dense(irow, icol);
         } 
       }
-      sph_to_cart_matrix_ = linalg::doublet(sph_to_cart_permute, sph_to_cart_matrix_);
+      sph_to_cart_matrix_ = linalg::doublet(sph_to_cart_permute, sph_to_cart_matrix_->to_block_sharedmatrix());
     }
     
     timer_off("snLinK: Options Processing");

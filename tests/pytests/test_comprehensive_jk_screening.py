@@ -2,10 +2,22 @@ import pytest
 import psi4
 import itertools
 from utils import compare, compare_integers, compare_values
+from addons import using
 
 pytestmark = [pytest.mark.psi, pytest.mark.api] 
 
-@pytest.mark.parametrize("scf_type", [ "PK", "DIRECT", "OUT_OF_CORE", "DISK_DF", "MEM_DF", "DFDIRJ+LINK", "DFDIRJ+COSX" ])
+@pytest.mark.parametrize(
+    "scf_type", [ 
+        pytest.param("PK"), 
+        pytest.param("DIRECT"), 
+        pytest.param("OUT_OF_CORE"), 
+        pytest.param("DISK_DF"), 
+        pytest.param("MEM_DF"), 
+        pytest.param("DFDIRJ+LINK"), 
+        pytest.param("DFDIRJ+COSX"),
+        pytest.param("DFDIRJ+SNLINK", marks=using('gauxc')),
+    ]
+)
 @pytest.mark.parametrize("scf_subtype", [ "AUTO", "INCORE", "OUT_OF_CORE", "YOSHIMINE_OUT_OF_CORE", "REORDER_OUT_OF_CORE" ])
 @pytest.mark.parametrize("screening", [ "SCHWARZ", "DENSITY", "CSAM", "NONE" ])
 def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
@@ -20,7 +32,8 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
             "DF"        : -149.58715054487624,
             "Composite": {
               "DFDIRJ+COSX"    : -149.58722317236171,
-              "DFDIRJ+LINK"    : -149.58726772171027
+              "DFDIRJ+SNLINK"  : -149.58726772171027, # CHANGE 
+              "DFDIRJ+LINK"    : -149.58726772171027,
             } 
         }
     }
@@ -56,7 +69,7 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
 
     #== certain combinations of SCF_TYPE and SCREENING should throw an exception by design ==#
     should_throw = False
-    #== specifically, non-integral-direct methods and DFDirJ+COSX with SCREENING = DENSITY... ==# 
+    #== specifically, non-integral-direct methods and DFDirJ+COSX/SNLINK with SCREENING = DENSITY... ==# 
     should_throw = should_throw or (scf_type not in [ "DIRECT", "DFDIRJ+LINK" ] and screening == "DENSITY")
     #== ... Composite methods with SCREENING=NONE... ==#
     should_throw = should_throw or (scf_type in Eref["Singlet"]["Composite"].keys() and screening == "NONE")
