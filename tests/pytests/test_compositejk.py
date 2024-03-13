@@ -1,7 +1,7 @@
 import pytest
 
 from utils import compare_values, compare
-from addons import using, uusing
+from addons import using
 
 import psi4
 
@@ -206,7 +206,18 @@ def test_seminum_incfock(inp, scf, mols, request):
     assert compare(True, abs(niter_inc - niter_noinc) <= 3, f'{test_id} IncFock efficient')
 
 @pytest.mark.parametrize("functional", [ "bp86", "b3lyp" ])
-@pytest.mark.parametrize("scf_type", [ "DFDIRJ", "LINK", "COSX", "DFDIRJ+COSX", "DFDIRJ+LINK" ])
+@pytest.mark.parametrize(
+    "scf_type", 
+    [ 
+        pytest.param("DFDIRJ"), 
+        pytest.param("LINK"),
+        pytest.param("COSX"),
+        pytest.param("SNLINK", marks=using('gauxc')),
+        pytest.param("DFDIRJ+LINK"),
+        pytest.param("DFDIRJ+COSX"),
+        pytest.param("DFDIRJ+SNLINK", marks=using('gauxc')),
+    ]
+)
 def test_dfdirj(functional, scf_type, mols):
     """Test the functionality of the SCF_TYPE keyword for CompositeJK methods under varying situations:
       - Using hybrid DFT functionals without specifying a K algorithm should cause a RuntimeError to be thrown.
@@ -215,11 +226,12 @@ def test_dfdirj(functional, scf_type, mols):
     composite_algo_to_matrix = {
         "DFDIRJ": "J",
         "LINK" : "K",
-        "COSX": "K"
+        "COSX": "K",
+        "SNLINK": "K",
     }
 
     molecule = mols["h2o"]
-    screening = "CSAM" if "COSX" in scf_type else "DENSITY"
+    screening = "CSAM" if any([ _ in scf_type for _ in [ "COSX", "SNLINK" ] ]) else "DENSITY"
     
     # if J algorithm isn't specified, code should throw here...
     if not any([ algo in scf_type for algo, matrix in composite_algo_to_matrix.items() if matrix == "J" ]):
@@ -252,13 +264,19 @@ def test_dfdirj(functional, scf_type, mols):
             assert compare(type(E), float, f'{scf_type}+{functional} executes')
 
 @pytest.mark.parametrize("j_algo", [ "DFDIRJ" ]) #to be extended in the future
+@pytest.mark.parametrize(
+    "k_algo", 
+    [ 
+        pytest.param("LINK"),
+        pytest.param("COSX"),
+        pytest.param("SNLINK", marks=using('gauxc')),
+    ]
+) 
 @pytest.mark.parametrize("df_basis_scf", [ "CC-PVDZ-JKFIT", "DEF2-UNIVERSAL-JFIT" ]) #to be extended in the future
-def test_j_algo_bp86(j_algo, df_basis_scf, mols):
+def test_j_algo_bp86(j_algo, k_algo, df_basis_scf, mols):
     """Test SCF_TYPE={J} and all SCF_TYPE={J}+{K} combinations for a BP86 calculation.
     They should all give the exact same answer (within tolerance).""" 
 
-    composite_K_algo = [ "LINK", "COSX" ]
-  
     molecule = mols["h2o"]
     
     # run base composite J algorithm 
@@ -266,11 +284,10 @@ def test_j_algo_bp86(j_algo, df_basis_scf, mols):
     energy_dfdirj = psi4.energy("bp86", molecule=molecule) 
     
     # compare composite combinations to base J algorithm
-    for k_algo in composite_K_algo:
-        scf_type = j_algo + "+" + k_algo    
-        screening = "CSAM" if "COSX" in scf_type else "DENSITY"
+    scf_type = j_algo + "+" + k_algo    
+    screening = "CSAM" if any([ _ in scf_type for _ in [ "COSX", "SNLINK" ] ]) else "DENSITY"
 
-        psi4.set_options({"scf_type" : scf_type, "reference": "rhf", "basis": "cc-pvdz", "df_basis_scf": df_basis_scf, "screening": screening})
-        energy_composite = psi4.energy("bp86", molecule=molecule) 
+    psi4.set_options({"scf_type" : scf_type, "reference": "rhf", "basis": "cc-pvdz", "df_basis_scf": df_basis_scf, "screening": screening})
+    energy_composite = psi4.energy("bp86", molecule=molecule) 
  
-        assert compare_values(energy_dfdirj, energy_composite, 6, f'BP86/{df_basis_scf} {scf_type} accurate to {j_algo} (1e-6 threshold)')
+    assert compare_values(energy_dfdirj, energy_composite, 6, f'BP86/{df_basis_scf} {scf_type} accurate to {j_algo} (1e-6 threshold)')
