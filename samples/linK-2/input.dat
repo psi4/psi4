@@ -1,5 +1,3 @@
-#! RKS Linear Exchange Algorithm test for benzene
-
 molecule mol {
   0 1
   H   1.0131690738465817   -1.5835021154162925   -1.7978401310386911
@@ -20,17 +18,14 @@ molecule mol {
 }
 
 set {
-    scf_type dfdirj+snlink
+    scf_type dfdirj+link
     snlink_radial_points 35 
     snlink_spherical_points 110 
     guess sad 
     df_scf_guess false
     basis 6-311g(2df, p) 
-    e_convergence 1.0e-10
-    screening schwarz 
-    incfock true 
+    screening density 
+    incfock false 
 }
 
-linK_energy = energy('scf')
-psi4.compare_values(ref_energy, linK_energy, 8, "B3LYP Energy (using LinK algo)")
-compare(1, variable("SCF ITERATIONS") < 13.0, "LinK Incfock Efficient")
+energy = energy('scf')

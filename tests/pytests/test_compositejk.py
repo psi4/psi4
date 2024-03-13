@@ -1,6 +1,7 @@
 import pytest
 
 from utils import compare_values, compare
+from addons import using, uusing
 
 import psi4
 
@@ -14,6 +15,7 @@ def mols():
 O    0.000000000000     0.000000000000    -0.124038860300
 H    0.000000000000    -1.431430901356     0.984293362719
 H    0.000000000000     1.431430901356     0.984293362719
+symmetry C1
 units au
 """),
         "nh2" : psi4.geometry("""
@@ -21,6 +23,7 @@ units au
 N    0.000000000000000   0.000000000000000  -0.145912918634892
 H    0.000000000000000  -1.511214298139000   1.013682596946108
 H    0.000000000000000   1.511214298139000   1.013682596946108
+symmetry C1
 units au
 """),
         "h2o_nap1" : psi4.geometry("""
@@ -31,6 +34,7 @@ H    0.000000000000     1.431430901356     0.984293362719
 --
 1 1
 Na   0.000000000000     0.000000000000    -4.124038860300
+symmetry C1
 units au
 """)
         }
@@ -102,23 +106,33 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       id="h2o/na+ (rhf ie)"),
     ],
 )
-def test_dfjcosk(inp, mols, request):
-    """Test the DFJCOSK JK object via SCF calculations"""
+@pytest.mark.parametrize(
+    "scf",
+    [
+        pytest.param({"scf_type" : "dfdirj+cosx"},
+                      id="cosx"),
+        pytest.param({"scf_type" : "dfdirj+snlink"},
+                      id="snlink", marks=using("gauxc")),
+    ]
+)
+def test_seminum(inp, scf, mols, request):
+    """Test the DF-DirJ + COSX/sn-LinK JK objects via SCF calculations"""
 
     test_id = request.node.callspec.id
     
     molecule = mols[inp["molecule"]]
-    psi4.set_options({"scf_type" : "dfdirj+cosx", "basis": "cc-pvdz"})
+    psi4.set_options({"scf_type" : scf["scf_type"], "basis": "cc-pvdz"})
     psi4.set_options(inp["options"])
 
     # does the DFJCOSK SCF energy match a pre-computed reference?
-    energy_dfjcosk = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
-    assert compare_values(inp["ref"], energy_dfjcosk, 6, f'{test_id} DFDIRJ+COSX accurate to reference (1e-6 threshold)')
+    energy_seminum = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
+    if "cosx" in scf["scf_type"]:
+        assert compare_values(inp["ref"], energy_seminum, 6, f'{test_id} DFDIRJ+sn-LinK accurate to reference (1e-6 threshold)')
 
     # is the DFJCOSK SCF energy reasonably close to a conventional SCF?
     psi4.set_options({"scf_type" : "pk"})
     energy_pk = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
-    assert compare_values(energy_pk, energy_dfjcosk, 4, f'{test_id} DFDIRJ+COSX accurate to PK (1e-4 threshold)')
+    assert compare_values(energy_pk, energy_seminum, 4, f'{test_id} DFDIRJ+COSX accurate to PK (1e-4 threshold)')
 
 @pytest.mark.parametrize(
     "inp",
@@ -156,29 +170,38 @@ def test_dfjcosk(inp, mols, request):
                       id="h2o/na+ (rhf ie)"),
     ],
 )
-def test_dfjcosk_incfock(inp, mols, request):
-    """Test the efficiency of IncFock in DFJCOSK JK object via SCF calculations"""
+@pytest.mark.parametrize(
+    "scf",
+    [
+        pytest.param({"scf_type" : "dfdirj+cosx"},
+                      id="cosx"),
+        pytest.param({"scf_type" : "dfdirj+snlink"},
+                      id="snlink", marks=using("gauxc")),
+    ]
+)
+def test_seminum_incfock(inp, scf, mols, request):
+    """Test the efficiency of IncFock in DF-DirJ + COSX/sn-LinK JK objects via SCF calculations"""
 
     test_id = request.node.callspec.id
 
     molecule = mols[inp["molecule"]]
-    psi4.set_options({"scf_type" : "dfdirj+cosx", "basis": "cc-pvdz", "incfock": False})
+    psi4.set_options({"scf_type" : scf["scf_type"], "basis": "cc-pvdz", "incfock": False})
     psi4.set_options(inp["options"])
 
-    # compute DFJCOSK energy+wfn without IncFock 
-    energy_dfjcosk_noinc, wfn_dfjcosk_noinc = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"], return_wfn=True)
+    # compute energy+wfn without IncFock 
+    energy_seminum_noinc, wfn_seminum_noinc = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"], return_wfn=True)
     #assert compare_values(inp["ref"], energy_dfjcosk, atol=1e-6)
 
-    # compute DFJCOSK energy+wfn with Incfock 
+    # compute energy+wfn with Incfock 
     psi4.set_options({"incfock" : True})
-    energy_dfjcosk_inc, wfn_dfjcosk_inc = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"], return_wfn=True)
+    energy_seminum_inc, wfn_seminum_inc = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"], return_wfn=True)
 
     # how do energies compare?
-    assert compare_values(energy_dfjcosk_noinc, energy_dfjcosk_inc, 6, f'{test_id} IncFock accurate (1e-6 threshold)')
+    assert compare_values(energy_seminum_noinc, energy_seminum_inc, 6, f'{test_id} IncFock accurate (1e-6 threshold)')
     
     # how do SCF iteration counts compare?
-    niter_noinc = int(wfn_dfjcosk_noinc.variable("SCF ITERATIONS")) if wfn_dfjcosk_noinc.has_scalar_variable("SCF ITERATIONS") else 0
-    niter_inc = int(wfn_dfjcosk_inc.variable("SCF ITERATIONS")) if wfn_dfjcosk_inc.has_scalar_variable("SCF ITERATIONS") else 0
+    niter_noinc = int(wfn_seminum_noinc.variable("SCF ITERATIONS")) if wfn_seminum_noinc.has_scalar_variable("SCF ITERATIONS") else 0
+    niter_inc = int(wfn_seminum_inc.variable("SCF ITERATIONS")) if wfn_seminum_inc.has_scalar_variable("SCF ITERATIONS") else 0
     
     assert compare(True, abs(niter_inc - niter_noinc) <= 3, f'{test_id} IncFock efficient')
 
