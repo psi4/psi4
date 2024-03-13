@@ -4276,7 +4276,8 @@ DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> p
     buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
 }
 DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
-                 std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, Options &options)
+                 std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map,
+                 Options &options)
     : MolecularGrid(molecule), primary_(primary), options_(options) {
     std::map<std::string, double> float_opts_map;
     buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
@@ -4322,12 +4323,9 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     }
 
     std::map<std::string, double> full_float_options;
-    std::vector<std::string> float_keys = {"DFT_BS_RADIUS_ALPHA",
-                                           "DFT_PRUNING_ALPHA",
-                                           "DFT_WEIGHTS_TOLERANCE",
-                                           "DFT_BLOCK_MAX_RADIUS",
-                                           "DFT_BASIS_TOLERANCE"};
-    for (const auto& key : float_keys) {
+    std::vector<std::string> float_keys = {"DFT_BS_RADIUS_ALPHA", "DFT_PRUNING_ALPHA", "DFT_WEIGHTS_TOLERANCE",
+                                           "DFT_BLOCK_MAX_RADIUS", "DFT_BASIS_TOLERANCE"};
+    for (const auto &key : float_keys) {
         if (float_opts_map.find(key) != float_opts_map.end()) {
             full_float_options[key] = float_opts_map[key];
         } else {
@@ -4449,11 +4447,14 @@ MolecularGrid::~MolecularGrid() {
 void MolecularGrid::block(int max_points, int min_points, double max_radius) {
     std::shared_ptr<GridBlocker> blocker;
     if (options_.blockscheme == "NAIVE") {
-        blocker = std::make_shared<NaiveGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_);
+        blocker =
+            std::make_shared<NaiveGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_);
     } else if (options_.blockscheme == "OCTREE") {
-        blocker = std::make_shared<OctreeGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_);
+        blocker =
+            std::make_shared<OctreeGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_);
     } else if (options_.blockscheme == "ATOMIC") {
-        blocker = std::make_shared<AtomicGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_, molecule_, atomic_grids_);
+        blocker = std::make_shared<AtomicGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius,
+                                                      extents_, molecule_, atomic_grids_);
     }
 
     blocker->set_print(options_.print);
@@ -4483,43 +4484,59 @@ void MolecularGrid::block(int max_points, int min_points, double max_radius) {
     }
 }
 
-void MolecularGrid::remove_distant_points(double Rmax) {
-    if (Rmax == std::numeric_limits<double>::max()) return;
+void MolecularGrid::remove_distant_points(double maximum_extent) {
+    // If the basis threshold is zero, there is nothing to screen
+    if (maximum_extent == std::numeric_limits<double>::max()) return;
 
-    int npoints2 = npoints_;
-    int offset = 0;
-    int point_index = 0;
-    std::vector<std::vector<MassPoint>> temp_grids(molecule_->natom());
-    for (int atom = 0; atom < atomic_grids_.size(); ++atom) {
-        for (int Q = 0; Q < atomic_grids_[atom].size(); ++Q) {
-            auto P = atomic_grids_[atom][Q];
-            Vector3 v = molecule_->xyz(atom);
-            double R = (P.x - v[0]) * (P.x - v[0]) + (P.y - v[1]) * (P.y - v[1]) + (P.z - v[2]) * (P.z - v[2]);
-            for (int A = 0; A < molecule_->natom(); A++) {
-                if (Q == A) continue;
-                v = molecule_->xyz(A);
-                double R2 = (P.x - v[0]) * (P.x - v[0]) + (P.y - v[1]) * (P.y - v[1]) + (P.z - v[2]) * (P.z - v[2]);
-                if (R > R2) {
-                    R = R2;
-                }
+    // Number of points that survive screening
+    int npoints_new = 0;
+
+    // Point_Out of points in output grid
+    int point_out = 0;
+    // Index of points in input grid
+    int point_in = 0;
+    std::vector<std::vector<MassPoint>> new_grids(molecule_->natom());
+
+    for (int iatom = 0; iatom < atomic_grids_.size(); ++iatom) {
+        for (int igrid = 0; igrid < atomic_grids_[iatom].size(); ++igrid) {
+            auto gridpoint = atomic_grids_[iatom][igrid];
+
+            // Helper for computing distances of grid points to nuclei
+            auto squared_distance = [](const MassPoint &pt, const Vector3 &vec) {
+                return std::pow(pt.x - vec[0], 2) + std::pow(pt.y - vec[1], 2) + std::pow(pt.z - vec[2], 2);
+            };
+
+            // TBD: This code should actually compare the distance to
+            // each atom to its shells' maximum extent. The current
+            // version is just checking if *some* nucleus is within
+            // the *maximal* extent of basis functions, which is a
+            // suboptimal check.
+
+            // Find minimal distance to a nucleus
+            double Rmin_squared = squared_distance(gridpoint, molecule_->xyz(0));
+            for (int A = 1; A < molecule_->natom(); A++) {
+                double R_squared = squared_distance(gridpoint, molecule_->xyz(A));
+                Rmin_squared = std::min(Rmin_squared, R_squared);
             }
-            if (R > Rmax * Rmax) {
-                npoints2--;
-            } else {
-                temp_grids[atom].push_back(P);
-                x_[offset] = x_[point_index];
-                y_[offset] = y_[point_index];
-                z_[offset] = z_[point_index];
-                w_[offset] = w_[point_index];
-                offset++;
+
+            // If this distance is smaller than the maximum extent,
+            // there may be shells that touch this grid point.
+            if (Rmin_squared <= std::pow(maximum_extent, 2)) {
+                new_grids[iatom].push_back(gridpoint);
+                x_[point_out] = x_[point_in];
+                y_[point_out] = y_[point_in];
+                z_[point_out] = z_[point_in];
+                w_[point_out] = w_[point_in];
+                point_out++;
+                npoints_new++;
             }
-            ++point_index;
+            ++point_in;
         }
     }
-    npoints_ = npoints2;
-    atomic_grids_ = temp_grids;
+    npoints_ = npoints_new;
+    atomic_grids_ = new_grids;
     // free up allocated storage capacity.
-    for (size_t i = 0; i < atomic_grids_.size(); i++){
+    for (size_t i = 0; i < atomic_grids_.size(); i++) {
         atomic_grids_[i].shrink_to_fit();
     }
 }
@@ -4659,7 +4676,6 @@ void AtomicGridBlocker::block() {
             max_functions_ = blocks_[A]->local_nbf();
         }
     }
-
 };
 
 NaiveGridBlocker::NaiveGridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref, double const *z_ref,
@@ -4699,7 +4715,6 @@ void NaiveGridBlocker::block() {
             max_functions_ = blocks_[A]->local_nbf();
         }
     }
-
 }
 OctreeGridBlocker::OctreeGridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref,
                                      double const *z_ref, double const *w_ref, const int max_points,
@@ -5066,12 +5081,10 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
 
 /// Grid npoints to order map
 std::map<int, int> SphericalGrid::lebedev_mapping_ = {
-    {6,1}, {14,2}, {26,3}, {38,4}, {50,5}, {74,6}, {86,7}, {110,8}, {146,9},
-    {170,10}, {194,11}, {230,12}, {266,13}, {302,14}, {350,15}, {434,17},
-    {590,20}, {770,23}, {974,26}, {1202,29}, {1454,32}, {1730,35}, {2030,38},
-    {2354,41}, {2702,44}, {3074,47}, {3470,50}, {3890,53}, {4334,56},
-    {4802,59}, {5294,62}, {5810,65}
-};
+    {6, 1},     {14, 2},    {26, 3},    {38, 4},    {50, 5},    {74, 6},    {86, 7},    {110, 8},
+    {146, 9},   {170, 10},  {194, 11},  {230, 12},  {266, 13},  {302, 14},  {350, 15},  {434, 17},
+    {590, 20},  {770, 23},  {974, 26},  {1202, 29}, {1454, 32}, {1730, 35}, {2030, 38}, {2354, 41},
+    {2702, 44}, {3074, 47}, {3470, 50}, {3890, 53}, {4334, 56}, {4802, 59}, {5294, 62}, {5810, 65}};
 
 SphericalGrid::SphericalGrid() : npoints_(0) {}
 SphericalGrid::~SphericalGrid() {
