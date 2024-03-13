@@ -39,8 +39,6 @@
 
 #include <algorithm>
 
-;
-
 namespace {
 
 static char direction(int xyz) {
