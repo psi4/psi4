@@ -18,13 +18,13 @@ molecule mol {
 }
 
 set {
-    scf_type dfdirj+link
+    scf_type dfdirj+snlink
     snlink_radial_points 35 
     snlink_spherical_points 110 
     guess sad 
     df_scf_guess false
     basis 6-311g(2df, p) 
-    screening density 
+    screening schwarz 
     incfock false 
 }
 
