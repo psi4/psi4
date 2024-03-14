@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-#error We shouldn't be here!
-
 #include "jk.h"
 #include "SplitJK.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
