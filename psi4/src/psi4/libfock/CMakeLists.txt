@@ -51,13 +51,6 @@ if(TARGET gauxc::gauxc)
       USING_gauxc
     )
 
-  if(${gauxc_ENABLE_GPU})
-    target_compile_definitions(fock
-      PUBLIC
-        USING_gauxc_GPU
-      )
-  endif()
-
   message("Shell ordering: ${psi4_SHGAUSS_ORDERING}")
   if(${psi4_SHGAUSS_ORDERING} STREQUAL "gaussian")
     target_compile_definitions(fock
