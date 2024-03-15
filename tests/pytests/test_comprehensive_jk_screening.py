@@ -67,10 +67,6 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
     elif scf_type in [ "DISK_DF", "MEM_DF"] and scf_subtype in [ "YOSHIMINE_OUT_OF_CORE", "REORDER_OUT_OF_CORE" ]:
         pytest.skip(f'Singlet {scf_type}({scf_subtype})+{screening}  skipped: redundant test') 
 
-    #== temporary measure: GauXC doesn't work with cc-pVTZ yet, so we skip this entirely ==#
-    if scf_type in [ "DFDIRJ+SNLINK"]:
-        pytest.skip(f'Singlet {scf_type}({scf_subtype})+{screening}  skipped: GauXC/TZ not yet implemented') 
-    
     #== certain combinations of SCF_TYPE and SCREENING should throw an exception by design ==#
     should_throw = False
     #== specifically, non-integral-direct methods and DFDirJ+COSX/SNLINK with SCREENING = DENSITY... ==# 
