@@ -89,32 +89,17 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
   Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(psi4_basisset->nbf());
   
   // general array for how to reorder integrals 
-  constexpr int max_am = 7;
-  std::array<std::vector<int>, max_am> cca_integral_order; 
+  constexpr int max_am = 10; 
+  std::array<int, 2*max_am + 1> cca_integral_order; 
 
   // s shell, easy
   cca_integral_order[0] = { 0 }; 
-
-  // p shell, actually convoluted
-  if constexpr (is_cca_) {
-    // dont even know what this is, but it works I guess?
-    // GauXC internally represents p shells as cartesians even in spherical
-    // harmonic basis sets
-    // perhaps we just disagree on cartesian ordering of p shells???
-    cca_integral_order[1] = { 1, -1, 0 }; 
-    // forced cartesian is usual CCA ordering
-    if (force_cartesian_) cca_integral_order[1] = { -1, 0, 1 }; 
-  } else {
-    //cca_integral_order[1] = { 1, -1, 0 }; // this is for representing P as cartesian in spherical harmonic basiss sets
-    cca_integral_order[1] = { 0, 1, -1 }; // this is for representing P as spherical in spherical harmonic basis sets
-  }
  
-  // d shells or larger
-  for (size_t l = 2; l != max_am; ++l) {
-    cca_integral_order[l] = std::vector<int>(2*l + 1, 0);
-    for (size_t idx = 1, val = 1; idx < cca_integral_order[l].size(); idx += 2, ++val) {
-      cca_integral_order.at(l)[idx] = val;
-      cca_integral_order.at(l)[idx + 1] = -val;
+  // p shells or larger
+  for (size_t l = 1; l != max_am; ++l) {
+    for (size_t idx = 1, val = 1; idx < cca_integral_order.size(); idx += 2, ++val) {
+      cca_integral_order[idx] = val;
+      cca_integral_order[idx + 1] = -val;
     }
   }
 
@@ -124,10 +109,10 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
 
     auto ibf_base = ibf;
     for (int ishbf = 0; ishbf != 2*am + 1; ++ishbf, ++ibf) {
-      permutation_matrix.indices()[ibf] = ibf_base + cca_integral_order[am][ishbf] + am;
+      permutation_matrix.indices()[ibf] = ibf_base + cca_integral_order[ishbf] + am;
     }
   }
- 
+
   return std::move(permutation_matrix);
 }
 
