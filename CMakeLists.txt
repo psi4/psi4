@@ -191,7 +191,6 @@ option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions"
 option_with_default(SPHINXMAN_STRICT "Turn warnings into errors for docs target sphinxman" OFF)
 option_with_default(BUILD_Libint2_GENERATOR "If prebuilt not found, don't build Libint2 from source tarball but instead build and run generator (several hours for production library). Edit angular momentum and integrals classes directly in `external/upstream/libint2/CMakeLists.txt` (requires Ninja)." OFF)
 option_with_default(psi4_SHGAUSS_ORDERING "Ordering for shells of solid harmonic Gaussians: standard -- standard ordering (-l, -l+1 ... l) -or- gaussian -- the Gaussian ordering (0, 1, -1, 2, -2, ... l, -l). Changing this is experimental, expert only, and not a future plan. Internal calculations should be correct and fchk files should be correct, but other exports like Molden and QCSchema.Wavefunction won't be." gaussian)
-option_with_default(gauxc_ENABLE_GPU "Enable GPU support for GauXC" OFF)
 include(custom_int_orderings)
 
 
@@ -322,7 +321,6 @@ ExternalProject_Add(psi4-core
               #-DHighFive_DIR=${HighFive_DIR}
               -DIntegratorXX_DIR=${IntegratorXX_DIR}
               -Dgauxc_DIR=${gauxc_DIR}
-              -Dgauxc_ENABLE_GPU=${gauxc_ENABLE_GPU}
               -Dpsi4_SHGAUSS_ORDERING=${psi4_SHGAUSS_ORDERING}
               -DExchCXX_DIR=${ExchCXX_DIR}
               -Dpylibefp_DIR=${pylibefp_DIR}
