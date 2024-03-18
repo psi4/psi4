@@ -1,0 +1,29 @@
+ref_energy = -155.05718342486921 # TEST (CSAM Screening)
+
+molecule {
+H         -1.94154        0.37711        0.00000
+O         -1.19295       -0.22119        0.00000
+C          0.00000        0.55670        0.00000
+C          1.17015       -0.40258        0.00000
+H          0.03989        1.20005        0.88560
+H          0.03989        1.20005       -0.88560
+H          2.11312        0.14575        0.00000
+H          1.13568       -1.03910       -0.88413
+H          1.13568       -1.03910        0.88413
+}
+
+set basis cc-pVTZ
+set df_scf_guess false
+set scf_type direct
+set incfock false
+noincfock_energy = energy('wb97x')
+psi4.compare_values(ref_energy, noincfock_energy, 9, "wB97X Total Energy, No Incremental Formation")
+
+set incfock true
+set incfock_fixed_reference true
+incfock_fixed_energy = energy('wb97x')
+psi4.compare_values(ref_energy, incfock_fixed_energy, 9, "wB97X Total Energy, Incremental Formation With Fixed Reference Density")
+
+set incfock_fixed_reference false
+incfock_update_energy = energy('wb97x')
+psi4.compare_values(ref_energy, incfock_update_energy, 9, "wB97X Total Energy, Incremental Formation With Updating Reference Density")
