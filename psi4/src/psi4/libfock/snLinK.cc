@@ -273,12 +273,16 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     auto ex = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;  
 
     std::unique_ptr<GauXC::RuntimeEnvironment> rt = nullptr; 
+#ifdef USING_gauxc_GPU
     if (use_gpu_) {
         // 0.9 indicates to use maximum 90% of maximum GPU memory, I think?
         rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.9 );
     } else { 
         rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
     }
+#else
+        rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
+#endif
 
     // set whether we force use of cartesian coordinates or not
     // this is required for GPU execution when using spherical harmonic basis sets
