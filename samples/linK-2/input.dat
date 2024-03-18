@@ -23,11 +23,9 @@ set {
     snlink_spherical_points 110 
     guess sad 
     df_scf_guess false
-    basis cc-pVTZ 
-    screening schwarz
-    incfock true 
-    snlink_use_gpu false 
-    snlink_force_cartesian true 
+    basis 6-311g(2df, p) 
+    screening schwarz 
+    incfock false 
 }
 
 energy = energy('scf')

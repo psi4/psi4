@@ -33,14 +33,6 @@ if(${ENABLE_gauxc})
 
         message(STATUS "Suitable gauxc could not be located, ${Magenta}Building gauxc${ColourReset} instead.")
 
-        #== do we want to build for GPU? ==#
-        find_package( CUDAToolkit )
-        if (${CUDAToolkit_FOUND}) 
-            message(STATUS "Building GauXC with GPU support.")
-        else()
-            message(STATUS "Building GauXC without GPU support.")
-        endif()
-
         #include(FetchContent)
         #set( GAUXC_ENABLE_TESTS OFF CACHE BOOL "" )
         #set( GAUXC_ENABLE_MPI OFF CACHE BOOL "" )
@@ -55,9 +47,8 @@ if(${ENABLE_gauxc})
         ExternalProject_Add(gauxc_external
             GIT_REPOSITORY https://github.com/wavefunction91/gauxc.git
             #GIT_TAG master
-            #GIT_TAG hotfix/small_primpair_max_override 
+            GIT_TAG hotfix/small_primpair_max_override 
             #GIT_TAG bugfix/cpu_os_higham
-            GIT_TAG issue_56_58/reduce_shell_pair_mem 
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -67,7 +58,7 @@ if(${ENABLE_gauxc})
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                    -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
-                   -DGAUXC_ENABLE_CUDA=${CUDAToolkit_FOUND}
+                   -DGAUXC_ENABLE_CUDA=${gauxc_ENABLE_GPU}
                    -DCMAKE_CUDA_ARCHITECTURES=70
                    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
                    -DBUILD_SHARED_LIBS=OFF
