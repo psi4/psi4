@@ -15,17 +15,16 @@ molecule mol {
     H    -2.5824943    0.7163066    2.1437977
     H    -1.1338534   -1.2920593    2.1423150
     H    -0.4060253   -2.2919049    0.0000000
-    symmetry c1
     no_reorient
     no_com
 }
 
 set {
-    scf_type dfdirj+cosx
+    scf_type dfdirj+snlink
     df_scf_guess false
     basis cc-pVTZ
     e_convergence 1.0e-10
-    screening schwarz
+    screening schwarz 
     incfock true
     ints_tolerance 1.0e-12
     linK_ints_tolerance 1.0e-12
