@@ -15,7 +15,6 @@ def mols():
 O    0.000000000000     0.000000000000    -0.124038860300
 H    0.000000000000    -1.431430901356     0.984293362719
 H    0.000000000000     1.431430901356     0.984293362719
-symmetry C1
 units au
 """),
         "nh2" : psi4.geometry("""
@@ -23,7 +22,6 @@ units au
 N    0.000000000000000   0.000000000000000  -0.145912918634892
 H    0.000000000000000  -1.511214298139000   1.013682596946108
 H    0.000000000000000   1.511214298139000   1.013682596946108
-symmetry C1
 units au
 """),
         "h2o_nap1" : psi4.geometry("""
@@ -34,7 +32,6 @@ H    0.000000000000     1.431430901356     0.984293362719
 --
 1 1
 Na   0.000000000000     0.000000000000    -4.124038860300
-symmetry C1
 units au
 """)
         }
@@ -77,31 +74,31 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o",
                       "bsse_type" : None,
-                      "ref" : -76.026780223322},
+                      },
                       id="h2o (rhf)"),
         pytest.param({"method" : "b3lyp",
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o",
                       "bsse_type" : None,
-                      "ref" : -76.420402720419},
+                      },
                       id="h2o (rks)"),
         pytest.param({"method" : "hf",
                       "options": {"reference" : "uhf"},
                       "molecule" : "nh2",
                       "bsse_type" : None,
-                      "ref" : -55.566890252551},
+                      },
                       id="nh2 (uhf)"),
         pytest.param({"method" : "hf",
                       "options": {"reference" : "rohf"},
                       "molecule" : "nh2",
                       "bsse_type" : None,
-                      "ref" : -55.562689948780},
+                      },
                       id="nh2 (rohf)"),
         pytest.param({"method" : "hf",
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
-                      "ref" :  -0.040121884077},
+                      },
                       marks=pytest.mark.nbody,
                       id="h2o/na+ (rhf ie)"),
     ],
@@ -109,9 +106,25 @@ def test_composite_call(j_algo, k_algo, mols, request):
 @pytest.mark.parametrize(
     "scf",
     [
-        pytest.param({"scf_type" : "dfdirj+cosx"},
+        pytest.param({"scf_type" : "dfdirj+cosx",
+                      "ref" : { 
+                          "h2o (rhf)" : -76.026780223322,
+                          "h2o (rks)" : -76.420402720419,
+                          "nh2 (uhf)" : -55.566890252551,
+                          "nh2 (rohf)" : -55.562689948780,
+                          "h2o/na+ (rhf ie)" : -0.040121884077,
+                      },
+                      },
                       id="cosx"),
-        pytest.param({"scf_type" : "dfdirj+snlink"},
+        pytest.param({"scf_type" : "dfdirj+snlink",
+                      "ref" : { 
+                          "h2o (rhf)" : -76.026788692185, 
+                          "h2o (rks)" : -76.420403557357,
+                          "nh2 (uhf)" : -55.566911357539,
+                          "nh2 (rohf)" : -55.562710424257,
+                          "h2o/na+ (rhf ie)" : -0.040118757043,
+                      },
+                      },
                       id="snlink", marks=using("gauxc")),
     ]
 )
@@ -124,12 +137,11 @@ def test_seminum(inp, scf, mols, request):
     psi4.set_options({"scf_type" : scf["scf_type"], "basis": "cc-pvdz"})
     psi4.set_options(inp["options"])
 
-    # does the DFJCOSK SCF energy match a pre-computed reference?
+    # does the SCF energy match a pre-computed reference?
     energy_seminum = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
-    if "cosx" in scf["scf_type"]:
-        assert compare_values(inp["ref"], energy_seminum, 6, f'{test_id} DFDIRJ+sn-LinK accurate to reference (1e-6 threshold)')
+    assert compare_values(scf["ref"][test_id.split("-")[1]], energy_seminum, 6, f'{test_id} {scf["scf_type"]} accurate to reference (1e-6 threshold)')
 
-    # is the DFJCOSK SCF energy reasonably close to a conventional SCF?
+    # is the SCF energy reasonably close to a conventional SCF?
     psi4.set_options({"scf_type" : "pk"})
     energy_pk = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
     assert compare_values(energy_pk, energy_seminum, 4, f'{test_id} DFDIRJ+COSX accurate to PK (1e-4 threshold)')
@@ -141,31 +153,31 @@ def test_seminum(inp, scf, mols, request):
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o",
                       "bsse_type" : None,
-                      "ref" : -76.026780223322},
+                      },
                       id="h2o (rhf)"),
         pytest.param({"method" : "b3lyp",
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o",
                       "bsse_type" : None,
-                      "ref" : -76.420402720419},
+                      },
                       id="h2o (rks)"),
         pytest.param({"method" : "hf",
                       "options": {"reference" : "uhf"},
                       "molecule" : "nh2",
                       "bsse_type" : None,
-                      "ref" : -55.566890252551},
+                      },
                       id="nh2 (uhf)"),
         pytest.param({"method" : "hf",
                       "options": {"reference" : "rohf"},
                       "molecule" : "nh2",
                       "bsse_type" : None,
-                      "ref" : -55.562689948780},
+                      },
                       id="nh2 (rohf)"),
         pytest.param({"method" : "hf",
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
-                      "ref" :  -0.040121884077},
+                      },
                       marks=pytest.mark.nbody,
                       id="h2o/na+ (rhf ie)"),
     ],

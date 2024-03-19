@@ -327,8 +327,7 @@ class PSI_API COSK : public SplitJK {
 /**
  * @brief constructs the K matrix using the GauXC implementation of the 
  * seminumerical Linear Exchange (sn-LinK) algorithm, 
- * described in XXX
- * doi: XXX 
+ * doi: https://doi.org/10.1063/5.0151070 
  */
 class PSI_API snLinK : public SplitJK {
     // => general Psi4 settings <= //
@@ -347,11 +346,8 @@ class PSI_API snLinK : public SplitJK {
     /// The AO->CartAO transformation matrix, which is used for transforming
     /// matrices between pure and Cartesian representations.
     SharedMatrix sph_to_cart_matrix_;
-    SharedMatrix cart_to_sph_matrix_;
 
     // => Gaussian-CCA Transformation stuff <= //
-    std::optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> > permutation_matrix_;
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(const std::shared_ptr<BasisSet> psi4_basisset);
   #if defined(USING_gauxc_CCA)
     static constexpr bool is_cca_ = true;
   #elif defined(USING_gauxc_GAUSSIAN) 
@@ -359,6 +355,9 @@ class PSI_API snLinK : public SplitJK {
   #else
     #error Shouldnt be here! Invalid psi4_SHGAUSS_ORDERING perhaps?
   #endif
+
+    std::optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> > permutation_matrix_;
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(const std::shared_ptr<BasisSet> psi4_basisset);
 
     // => Semi-Numerical Stuff <= //
     // are we running snLinK on GPUs?
@@ -371,8 +370,6 @@ class PSI_API snLinK : public SplitJK {
     size_t radial_points_; 
     // how many spherical/angular points for the grid?
     size_t spherical_points_; 
-    // use grid points or verbal description of grid?
-    bool use_grid_points_;
     // basis cutoff
     double basis_tol_;
    

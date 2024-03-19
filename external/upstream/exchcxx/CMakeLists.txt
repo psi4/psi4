@@ -1,21 +1,17 @@
 if(${ENABLE_ExchCXX})
-    #== GauXC requires Psi4 to have standard integral ordering rather than gaussian ==#
-    if(${psi4_SHGAUSS_ORDERING} STREQUAL gaussian)
-        message(FATAL_ERROR "Psi4 with the GauXC interface must be compiled using psi4_SHGAUSS_ORDERING=standard.")
-    endif()
-    #list(PREPEND CMAKE_PREFIX_PATH ${ExchCXX_DIR}/../_deps/exchcxx-build/src)
-  
     #== perhaps ExchCXX was bundled with a GauXC build ==#
     if(NOT DEFINED(${ExchCXX_DIR})) 
         if(${ENABLE_gauxc}) 
             set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX CACHE PATH "" FORCE)
+
+            if(${gauxc_ENABLE_GPU})
+                set(${ExchCXX_ENABLE_GPU} ON)
+            endif()
         endif() 
     endif()
 
-    #message("${CMAKE_MODULE_PATH}")
-    message("Finding ExchCXX...")
-    find_package(ExchCXX 0.0.1 CONFIG PATHS "${GAUXC_DIR}/../ExchCXX") 
-    message("GauXC Found?")
+    #find_package(ExchCXX 0.0.1 CONFIG PATHS "${GAUXC_DIR}/../ExchCXX") 
+    find_package(ExchCXX 0.0.1 CONFIG) 
 
     if(${ExchCXX_FOUND})
         get_property(_loc TARGET ExchCXX::ExchCXX PROPERTY IMPORTED_LOCATION_RELWITHDEBINFO)
@@ -32,16 +28,6 @@ if(${ENABLE_ExchCXX})
         endif()
 
         message(STATUS "Suitable ExchCXX could not be located, ${Magenta}Building ExchCXX${ColourReset} instead.")
-
-        #include(FetchContent)
-        #set( GAUXC_ENABLE_TESTS OFF CACHE BOOL "" )
-        #set( GAUXC_ENABLE_MPI OFF CACHE BOOL "" )
-        #set( GAUXC_ENABLE_HDF5 OFF CACHE BOOL "" )
-        #FetchContent_Declare( ExchCXX
-        #    GIT_REPOSITORY https://github.com/wavefunction91/GauXC.git
-        #    GIT_TAG master
-        # )
-        #FetchContent_MakeAvailable( ExchCXX )
 
         include(ExternalProject)
         ExternalProject_Add(exchcxx_external

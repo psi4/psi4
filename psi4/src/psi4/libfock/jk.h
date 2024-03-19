@@ -292,7 +292,7 @@ class PSI_API JK {
     std::vector<SharedMatrix> K_;
     /// wK matrices: \f$K_{mn}(\omega)=(ml|\omega|ns)C_{li}^{left}C_{si}^{right}\f$
     std::vector<SharedMatrix> wK_;
-    
+
     // => Microarchitecture-Level State Variables (No Spatial Symmetry) <= //
 
     /// Primary basis set
