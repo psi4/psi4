@@ -1728,9 +1728,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SNLINK_INTS_TOLERANCE", 1.0E-11);
         /*- Screening criteria for shell-pair densities in snLinK !expert -*/
         options.add_double("SNLINK_DENSITY_TOLERANCE", 1.0E-10);
-        /*- Use grid point specifications for snLinK grid? 
-        If false, use GauXC's UltraFine grid specification instead. !expert-*/ 
-        options.add_bool("SNLINK_USE_POINTS", true);
         /*- Screening criteria for basis function values on snLinK grids !expert -*/
         options.add_double("SNLINK_BASIS_TOLERANCE", 1.0E-10);
         /*- Force snLinK to use cartesian coordinates !expert -*/
