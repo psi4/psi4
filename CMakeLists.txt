@@ -254,7 +254,6 @@ ExternalProject_Add(psi4-core
            libxc_external
            mdi_external
            brianqc_external
-           #highfive_external
            integratorxx_external
            exchcxx_external
            gauxc_external
