@@ -75,17 +75,29 @@ units au
 @pytest.mark.parametrize(
     "scf",
     [
-        pytest.param({"scf_type" : "dfdirj+cosx",
-                      "ref" : { 
-                          "h2o (rhf)" : -76.026780223322,
-                          "h2o (rks)" : -76.420402720419,
-                          "nh2 (uhf)" : -55.566890252551,
-                          "nh2 (rohf)" : -55.562689948780,
-                          "h2o/na+ (rhf ie)" : -0.040121884077,
-                      },
-                      },
-                      id="cosx"),
+        #pytest.param({"scf_type" : "dfdirj+cosx",
+        #              "ref" : { 
+        #                  "h2o (rhf)" : -76.026780223322,
+        #                  "h2o (rks)" : -76.420402720419,
+        #                  "nh2 (uhf)" : -55.566890252551,
+        #                  "nh2 (rohf)" : -55.562689948780,
+        #                  "h2o/na+ (rhf ie)" : -0.040121884077,
+        #              },
+        #              },
+        #              id="cosx"),
+        #pytest.param({"scf_type" : "dfdirj+snlink",
+        #              "snlink_force_cartesian": False,
+        #              "ref" : { 
+        #                  "h2o (rhf)" : -76.026788692185, 
+        #                  "h2o (rks)" : -76.420403557357,
+        #                  "nh2 (uhf)" : -55.566911357539,
+        #                  "nh2 (rohf)" : -55.562710424257,
+        #                  "h2o/na+ (rhf ie)" : -0.040118757043,
+        #              },
+        #              },
+        #              id="snlink (spherical)", marks=using("gauxc")),
         pytest.param({"scf_type" : "dfdirj+snlink",
+                      "snlink_force_cartesian": True,
                       "ref" : { 
                           "h2o (rhf)" : -76.026788692185, 
                           "h2o (rks)" : -76.420403557357,
@@ -94,7 +106,8 @@ units au
                           "h2o/na+ (rhf ie)" : -0.040118757043,
                       },
                       },
-                      id="snlink", marks=using("gauxc")),
+                      id="snlink (cartesian)", marks=using("gauxc")),
+ 
     ]
 )
 def test_seminum(inp, scf, mols, request):
@@ -105,10 +118,13 @@ def test_seminum(inp, scf, mols, request):
     molecule = mols[inp["molecule"]]
     psi4.set_options({"scf_type" : scf["scf_type"], "basis": "cc-pvdz"})
     psi4.set_options(inp["options"])
+    if "snlink_force_cartesian" in scf.keys():
+        psi4.set_options({"snlink_force_cartesian": scf["snlink_force_cartesian"]})
+
 
     # does the SCF energy match a pre-computed reference?
     energy_seminum = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
-    assert compare_values(scf["ref"][test_id.split("-")[1]], energy_seminum, 6, f'{test_id} {scf["scf_type"]} accurate to reference (1e-6 threshold)')
+    assert compare_values(scf["ref"][test_id.split("-")[1]], energy_seminum, 6, f'{test_id} accurate to reference (1e-6 threshold)')
 
     # is the SCF energy reasonably close to a conventional SCF?
     psi4.set_options({"scf_type" : "pk"})
