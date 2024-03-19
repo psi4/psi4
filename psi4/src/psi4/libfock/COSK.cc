@@ -41,10 +41,11 @@
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include <algorithm>
+#include <limits>
+#include <map>
 #include <unordered_set>
 #include <vector>
-#include <map>
-#include <algorithm>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -234,7 +235,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
             auto npoints = grid->npoints();
             auto nblocks = grid->blocks().size();
             size_t max_block_size = 0;
-            size_t min_block_size = -1;
+            size_t min_block_size = std::numeric_limits<size_t>::max();
             for (const auto& block : grid->blocks()) {
                 max_block_size = std::max(max_block_size, block->npoints());
                 min_block_size = std::min(min_block_size, block->npoints());
