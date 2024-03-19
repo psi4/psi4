@@ -24,7 +24,6 @@ foreach(dir
   libxc
   brianqc
   ddx
-  #highfive
   integratorxx
   exchcxx 
   gauxc 

@@ -184,7 +184,6 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
   
     radial_points_ = options_.get_int("SNLINK_RADIAL_POINTS");
     spherical_points_ = options_.get_int("SNLINK_SPHERICAL_POINTS");
-    use_grid_points_ = options_.get_bool("SNLINK_USE_POINTS");
     basis_tol_ = options.get_double("SNLINK_BASIS_TOLERANCE");
 
     pruning_scheme_ = options_.get_str("SNLINK_PRUNING_SCHEME");
@@ -261,23 +260,14 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // create snLinK grid for GauXC
     auto grid_batch_size = options_.get_int("SNLINK_GRID_BATCH_SIZE");
-    auto gauxc_grid = (use_grid_points_) ?
-        GauXC::MolGridFactory::create_default_molgrid(
-            gauxc_mol, 
-            pruning_scheme_map[pruning_scheme_],
-            GauXC::BatchSize(grid_batch_size), 
-            radial_scheme_map[radial_scheme_], 
-            GauXC::RadialSize(radial_points_),
-            GauXC::AngularSize(spherical_points_)
-        ) :
-        GauXC::MolGridFactory::create_default_molgrid(
-            gauxc_mol, 
-            pruning_scheme_map[pruning_scheme_],
-            GauXC::BatchSize(grid_batch_size), 
-            radial_scheme_map[radial_scheme_], 
-            GauXC::AtomicGridSizeDefault::UltraFineGrid
-        ) 
-    ;
+    auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
+        gauxc_mol, 
+        pruning_scheme_map[pruning_scheme_],
+        GauXC::BatchSize(grid_batch_size), 
+        radial_scheme_map[radial_scheme_], 
+        GauXC::RadialSize(radial_points_),
+        GauXC::AngularSize(spherical_points_)
+    );
 
     // construct load balancer
     const std::string load_balancer_kernel = options_.get_str("SNLINK_LOAD_BALANCER_KERNEL"); 
@@ -333,12 +323,8 @@ void snLinK::print_header() const {
         outfile->Printf("  ==> snLinK: GauXC Semi-Numerical Linear Exchange K <==\n\n");
         
         outfile->Printf("    K Execution Space: %s\n", (use_gpu_) ? "Device" : "Host");
-        if (use_grid_points_) {
-            outfile->Printf("    K Grid Radial Points: %i\n", radial_points_);
-            outfile->Printf("    K Grid Spherical/Angular Points: %i\n", spherical_points_);
-        } else {
-            outfile->Printf("    K Grid Scheme: Ultrafine\n");
-        }
+        outfile->Printf("    K Grid Radial Points: %i\n", radial_points_);
+        outfile->Printf("    K Grid Spherical/Angular Points: %i\n\n", spherical_points_);
         outfile->Printf("    K Screening?:     %s\n", (integrator_settings_.screen_ek) ? "Yes" : "No");
         outfile->Printf("    K Ints Cutoff:     %11.0E\n", integrator_settings_.energy_tol);
         outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
