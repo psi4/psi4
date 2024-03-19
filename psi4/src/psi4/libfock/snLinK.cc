@@ -72,18 +72,15 @@ std::tuple<
     std::unordered_map<std::string, GauXC::RadialQuad> radial_scheme_map; 
     radial_scheme_map["TREUTLER"] = GauXC::RadialQuad::TreutlerAldrichs;
     radial_scheme_map["MURA"] = GauXC::RadialQuad::MuraKnowles;
-    // TODO: confirm the correctness of this specific mapping
-    // Answer: Yep, it is! The Murray, Handy, Laming literature reference
-    // is mentioned in cubature.cc
+    // The Murray, Handy, Laming literature reference is mentioned in cubature.cc
+    // with association to this keyword
     radial_scheme_map["EM"] = GauXC::RadialQuad::MurrayHandyLaming; 
 
     // we are done
-    //return std::move(pruning_scheme_map), std::move(radial_scheme_map);
     return std::move(std::make_tuple(pruning_scheme_map, radial_scheme_map));
 }
 
 // constructs a permutation matrix for converting matrices to and from GauXC's integral ordering standard 
-//template <typename T>
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permutation_matrix(const std::shared_ptr<BasisSet> psi4_basisset) {
   
   Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(psi4_basisset->nbf());
@@ -103,6 +100,7 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
     }
   }
 
+  // actually construct permutation matrix
   for (int ish = 0, ibf = 0; ish != psi4_basisset->nshell(); ++ish) {
     auto& sh = psi4_basisset->shell(ish);
     auto am = sh.am();
@@ -112,7 +110,8 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
       permutation_matrix.indices()[ibf] = ibf_base + cca_integral_order[ishbf] + am;
     }
   }
-
+ 
+  // we are done
   return std::move(permutation_matrix);
 }
 
@@ -120,17 +119,11 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
 GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule) {
     GauXC::Molecule gauxc_molecule;
 
-    //outfile->Printf("  snLinK::psi4_to_gauxc_molecule (GauXC-side)\n");
-    //outfile->Printf("  -------------------------------------------\n");
-    // TODO: Check if Bohr/Angstrom conversion is needed 
-    // Answer: Nope! GauXC accepts input in Bohrs, and Psi4 coords are in Bohr
-    // at this point. 
     for (size_t iatom = 0; iatom != psi4_molecule->natom(); ++iatom) {
         auto atomic_number = psi4_molecule->true_atomic_number(iatom);
         auto x_coord = psi4_molecule->x(iatom);
         auto y_coord = psi4_molecule->y(iatom);
         auto z_coord = psi4_molecule->z(iatom);
-        //outfile->Printf("  Atom #%i: %f, %f, %f\n", atomic_number, x_coord, y_coord, z_coord); 
         
         gauxc_molecule.emplace_back(GauXC::AtomicNumber(atomic_number), x_coord, y_coord, z_coord);
     }
@@ -144,11 +137,8 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
     using prim_array = typename GauXC::Shell<T>::prim_array;
     using cart_array = typename GauXC::Shell<T>::cart_array;
 
-    //GauXC::BasisSet<T> gauxc_basisset;
     GauXC::BasisSet<T> gauxc_basisset(psi4_basisset->nshell());
  
-    //outfile->Printf("  snLinK::psi4_to_gauxc_basisset (Psi-side)\n");
-    //outfile->Printf("  -----------------------------------------\n");
     for (size_t ishell = 0; ishell != psi4_basisset->nshell(); ++ishell) {
         auto psi4_shell = psi4_basisset->shell(ishell);
        
@@ -156,26 +146,16 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         prim_array alpha; 
         prim_array coeff;
 
-        //outfile->Printf("  ");
-        //outfile->Printf("%s", (force_cartesian || psi4_shell.is_cartesian()) ? "Cartesian" : "Spherical");
-        //outfile->Printf(" Shell #%i (AM %i): %i primitives\n", ishell, psi4_shell.am(), psi4_shell.nprimitive());
-        //TODO: Ensure normalization is okay
-        // It seems so! We need to turn explicit normalization off for the Psi4-to-GauXC interface, since Psi4 
-        // basis set object contains normalized coefficients already
         for (size_t iprim = 0; iprim != psi4_shell.nprimitive(); ++iprim) {
             alpha.at(iprim) = psi4_shell.exp(iprim);
             coeff.at(iprim) = psi4_shell.coef(iprim);
-            //outfile->Printf("    Primitive #%i: %f, %f\n", iprim, psi4_shell.exp(iprim), psi4_shell.coef(iprim));
         }
 
         auto psi4_shell_center = psi4_shell.center();
         cart_array center = { psi4_shell_center[0], psi4_shell_center[1], psi4_shell_center[2] };
 
-        //gauxc_basisset[permutation_matrix_.indices()[ishell]] = GauXC::Shell(
         gauxc_basisset[ishell] = GauXC::Shell(
             nprim,
-            // TODO: check if am() is 0-indexed
-            // Answer: It is! See tests/basisset_test.cxx in GauXC
             GauXC::AngularMomentum(psi4_shell.am()), 
             (force_cartesian ? GauXC::SphericalType(false) : GauXC::SphericalType( !(psi4_shell.is_cartesian()) ) ),
             alpha,
@@ -189,54 +169,14 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         sh.set_shell_tolerance(basis_tol_); 
     }
 
-    //outfile->Printf("  snLinK::psi4_to_gauxc_basisset (GauXC-side)\n");
-    //outfile->Printf("  -------------------------------------------\n");
-    for (int ish = 0; ish != gauxc_basisset.size(); ++ish) {
-      auto& sh = gauxc_basisset[ish];
-
-      auto alpha = sh.alpha();
-      auto coeff = sh.coeff();
-      
-      if (alpha.size() != coeff.size()) {
-          std::string message = "Mismatch between exponent and coefficient size on shell #";
-          message += std::to_string(ish);
-          message += "! ";
-	
-	  message += std::to_string(alpha.size());
-          message += " vs. ";
-          message += std::to_string(coeff.size());
-          message += ".\n";
- 
-          throw PSIEXCEPTION(message);
-      } else if (sh.nprim() != primary_->shell(ish).nprimitive()) {
-          std::string message = "Mismatch between GauXC and Psi4 internal primitive ccount on shell #";
-          message += std::to_string(ish);
-          message += "! ";
-
-          message += std::to_string(sh.nprim());
-          message += " vs. ";
-	  message += std::to_string(primary_->shell(ish).nprimitive());
-          message += ".\n";
- 
-          throw PSIEXCEPTION(message);
-      };
-    
-      /*
-      outfile->Printf("  ");
-      outfile->Printf("  %s", (!sh.pure() ? "Cartesian" : "Spherical"));
-      outfile->Printf(" Shell #%i (AM %i): %i primitives\n", ish, sh.l(), sh.nprim());
-      for (size_t iprim = 0; iprim != sh.nprim(); ++iprim) {
-        outfile->Printf("      Primitive #%i: %f, %f\n", iprim, alpha.at(iprim), coeff.at(iprim));
-      }
-      */
-    }
- 
     return std::move(gauxc_basisset);
 }
 
 snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primary, options) {
     timer_on("snLinK: Setup");
 
+    
+    // => Part #1: Options Processing <= //
     timer_on("snLinK: Options Processing");
 
     // set Psi4-specific parameters
@@ -252,19 +192,6 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
  
     format_ = Eigen::IOFormat(4, 0, ", ", "\n", "[", "]");
     
-    // sanity-checking of radial scheme needed because generalist DFT_RADIAL_SCHEME option is used 
-/*
-    std::array<std::string, 3> valid_radial_schemes = { "TREUTLER", "MURA", "EM" };
-    bool is_valid_radial_scheme = std::any_of(
-      valid_radial_schemes.cbegin(),
-      valid_radial_schemes.cend(),
-      [&](std::string valid_radial_scheme) { return radial_scheme_.find(valid_radial_scheme) != std::string::npos; }
-    );
-
-    if (!is_valid_radial_scheme) {
-        throw PSIEXCEPTION("Invalid radial quadrature scheme selected for snLinK! Please set DFT_RADIAL_SCHEME to either TREUTLER, MURA, or EM.");
-    }
-*/
     // create mappings for GauXC pruning and radial scheme enums
     auto [ pruning_scheme_map, radial_scheme_map ] = generate_enum_mappings();
 
@@ -288,13 +215,12 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // this is required for GPU execution when using spherical harmonic basis sets
     force_cartesian_ = options_.get_bool("SNLINK_FORCE_CARTESIAN"); 
     if (use_gpu_ && !force_cartesian_ && primary_->has_puream()) {
-        //throw PSIEXCEPTION("GPU snLinK must be executed with SNLINK_FORCE_CARTESIAN=true when using spherical harmonic basis sets!");  
         outfile->Printf("    INFO: GPU snLinK must be executed with SNLINK_FORCE_CARTESIAN=true when using spherical harmonic basis sets!\n");  
         outfile->Printf("    Enabling forced spherical-to-Cartesian transform...\n\n");  
         force_cartesian_ = true; 
     }
 
-    // create permutation matrix to handle integral ordering
+    // create ERI ordering permutation matrix to handle integral ordering
     if (!is_cca_ && primary_->has_puream()) {
         permutation_matrix_ = std::make_optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> >(
             generate_permutation_matrix(primary_)
@@ -302,13 +228,15 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     } else {
         permutation_matrix_ = std::nullopt;
     }
+
     // create matrix for spherical-to-cartesian matrix transformations
     const auto factory = std::make_shared<IntegralFactory>(primary, primary, primary, primary);
     PetiteList petite(primary, factory, true);
     sph_to_cart_matrix_ = petite.sotoao(); 
- 
-    // for whatever reason, psi4_to_eigen_map doesnt seem to work specifically in the constructor
-    // so we will create the Sph-to-Cart transform manually 
+
+    // if needed, we also need to transform the Spherical part of the permutation matrix itself
+    // For whatever reason, psi4_to_eigen_map doesnt seem to work specifically in the constructor
+    // this is the work-around 
     if (permutation_matrix_.has_value()) { 
       auto permutation_dense = permutation_matrix_.value().toDenseMatrix();
       auto sph_to_cart_permute = std::make_shared<Matrix>(permutation_dense.rows(), permutation_dense.cols());
@@ -324,6 +252,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     
     timer_off("snLinK: Options Processing");
     
+    // => Part #1: Construct GauXC Integrator <= //
     timer_on("snLinK: Construct GauXC Integrator");
     
     // convert Psi4 fundamental quantities to GauXC 
@@ -340,15 +269,12 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
             radial_scheme_map[radial_scheme_], 
             GauXC::RadialSize(radial_points_),
             GauXC::AngularSize(spherical_points_)
-            //GauXC::AtomicGridSizeDefault::UltraFineGrid
         ) :
         GauXC::MolGridFactory::create_default_molgrid(
             gauxc_mol, 
             pruning_scheme_map[pruning_scheme_],
             GauXC::BatchSize(grid_batch_size), 
             radial_scheme_map[radial_scheme_], 
-            //GauXC::RadialSize(radial_points_),
-            //GauXC::AngularSize(spherical_points_)
             GauXC::AtomicGridSizeDefault::UltraFineGrid
         ) 
     ;
@@ -368,15 +294,15 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // apply partition weights
     gauxc_mol_weights.modify_weights(gauxc_load_balancer);
 
-    // set integrator options 
+    // set integrator ERI screening options 
     bool do_no_screen = options.get_str("SCREENING") == "NONE";
     integrator_settings_.screen_ek = (do_no_screen || cutoff_ == 0.0) ? false : true;
 
-    // TODO: Check correctness of these mappings
     auto ints_tol = options.get_double("SNLINK_INTS_TOLERANCE");
     integrator_settings_.energy_tol = ints_tol; 
     integrator_settings_.k_tol = ints_tol;
 
+    // set other integrator options
     const std::string integrator_input_type = "Replicated";
     const std::string integrator_kernel = options_.get_str("SNLINK_INTEGRATOR_KERNEL");  
     const std::string reduction_kernel = options_.get_str("SNLINK_REDUCTION_KERNEL");  
@@ -414,22 +340,21 @@ void snLinK::print_header() const {
             outfile->Printf("    K Grid Scheme: Ultrafine\n");
         }
         outfile->Printf("    K Screening?:     %s\n", (integrator_settings_.screen_ek) ? "Yes" : "No");
-        outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
         outfile->Printf("    K Ints Cutoff:     %11.0E\n", integrator_settings_.energy_tol);
+        outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
         if (debug_) {
-          outfile->Printf("\n");    
-          outfile->Printf("    (Debug) K Grid Pruning Scheme:     %s\n", pruning_scheme_.c_str());
-          outfile->Printf("    (Debug) K Radial Quadrature Scheme:     %s\n", radial_scheme_.c_str());
-          outfile->Printf("    (Debug) K Grid Batch Size:     %i\n\n", options_.get_int("SNLINK_GRID_BATCH_SIZE"));
-          
-          outfile->Printf("    (Debug) K Load Balancer Kernel:     %s\n", options_.get_str("SNLINK_LOAD_BALANCER_KERNEL").c_str());
-          outfile->Printf("    (Debug) K Mol. Weights Kernel:     %s\n\n", options_.get_str("SNLINK_MOL_WEIGHTS_KERNEL").c_str());
-          
-          outfile->Printf("    (Debug) K Integrator Type:     %s\n", "Replicated");
-          outfile->Printf("    (Debug) K Integrator Kernel:     %s\n", options_.get_str("SNLINK_INTEGRATOR_KERNEL").c_str());
-          outfile->Printf("    (Debug) K Reduction Kernel:     %s\n", options_.get_str("SNLINK_REDUCTION_KERNEL").c_str());
-          outfile->Printf("    (Debug) K LWD Kernel:     %s\n\n", options_.get_str("SNLINK_LWD_KERNEL").c_str());
-
+            outfile->Printf("\n");    
+            outfile->Printf("    (Debug) K Grid Pruning Scheme:     %s\n", pruning_scheme_.c_str());
+            outfile->Printf("    (Debug) K Radial Quadrature Scheme:     %s\n", radial_scheme_.c_str());
+            outfile->Printf("    (Debug) K Grid Batch Size:     %i\n\n", options_.get_int("SNLINK_GRID_BATCH_SIZE"));
+            
+            outfile->Printf("    (Debug) K Load Balancer Kernel:     %s\n", options_.get_str("SNLINK_LOAD_BALANCER_KERNEL").c_str());
+            outfile->Printf("    (Debug) K Mol. Weights Kernel:     %s\n\n", options_.get_str("SNLINK_MOL_WEIGHTS_KERNEL").c_str());
+            
+            outfile->Printf("    (Debug) K Integrator Type:     %s\n", "Replicated");
+            outfile->Printf("    (Debug) K Integrator Kernel:     %s\n", options_.get_str("SNLINK_INTEGRATOR_KERNEL").c_str());
+            outfile->Printf("    (Debug) K Reduction Kernel:     %s\n", options_.get_str("SNLINK_REDUCTION_KERNEL").c_str());
+            outfile->Printf("    (Debug) K LWD Kernel:     %s\n\n", options_.get_str("SNLINK_LWD_KERNEL").c_str());
         }
     }
 }
@@ -439,7 +364,7 @@ void snLinK::print_header() const {
 void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K,
     std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
 
-    // we need to know fi we are using a spherical harmonic basis
+    // we need to know if we are using a spherical harmonic basis
     // much of the behavior here is influenced by this
     auto is_spherical_basis = primary_->has_puream();
    
@@ -473,19 +398,16 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         }
         auto D_buffer_eigen = D_buffer->eigen_map();    
         
-        auto n_el = integrator_->integrate_den(D_buffer_eigen);
-        outfile->Printf("  Integrate_den #%i: %f\n", iD, n_el);     
-   
         timer_off("snLinK: Transform D");
         
         // map Psi4 exchange matrix buffer to Eigen matrix map
-        // buffer can be either K itself or a cartesian representation of K
         timer_on("snLinK: Transform K");
+        
         SharedMatrix K_buffer = nullptr; 
         if (is_spherical_basis) {
             // need to reorder Psi4 exchange matrix to CCA ordering if in spherical harmonics
             if (permutation_matrix_.has_value()) { 
-                auto permutation_matrix_val = permutation_matrix_ .value();
+                auto permutation_matrix_val = permutation_matrix_.value();
                 auto K_eigen_permute = K[iD]->eigen_map();
                 K_eigen_permute = permutation_matrix_val * K_eigen_permute * permutation_matrix_val.transpose();
             }
