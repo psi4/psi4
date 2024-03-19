@@ -30,14 +30,12 @@
 #include "SplitJK.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-using namespace psi;
-
 // "stub" implementation for snLinK when GauXC isn't installed. 
 // Just throws on calling the constructor.
 namespace psi {
 
 snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primary, options) {
-    throw PSIEXCEPTION("snLinK was requested in SCF_TYPE, but GauXC is not installed! Please recompile Psi4 with ENABLE_GAUXC=True.");
+    throw PSIEXCEPTION("snLinK was requested in SCF_TYPE, but GauXC is not installed! Please recompile Psi4 with ENABLE_gauxc=ON.");
 }
 
 snLinK::~snLinK() {}

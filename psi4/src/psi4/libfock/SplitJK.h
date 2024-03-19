@@ -149,10 +149,6 @@ class PSI_API SplitJK {
     virtual void set_snLinK_incfock_iter(bool incfock_iter) {
         throw PSIEXCEPTION("SplitJK::set_snLinK_incfock_iter was called, but snLinK is not being used!");
     }
-
-    virtual void set_snLinK_S(SharedMatrix S) {
-        throw PSIEXCEPTION("SplitJK::set_snLinK_incfock_iter was called, but snLinK is not being used!");
-    }
 };
 
 // ==> Start SplitJK Coulomb (J) Algorithms here <== //
@@ -390,7 +386,6 @@ class PSI_API snLinK : public SplitJK {
     GauXC::IntegratorSettingsSNLinK integrator_settings_;
     std::unique_ptr<GauXC::XCIntegratorFactory<matrix_type> > integrator_factory_;
     std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_;
-    std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_spherical_;
   
     // => Psi4 -> GauXC conversion functions <= // 
     GauXC::Molecule psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule);
@@ -404,8 +399,6 @@ class PSI_API snLinK : public SplitJK {
     
     // => Other useful stuff <= //
     /// Eigen matrix printout format    
-    //Eigen::IOFormat HeavyFmt_(Eigen::FullPrecision, 0, ", ", ";\n", "[", "]", "[", "]");
-    //Eigen::IOFormat CleanFmt_(4, 0, ", ", "\n", "[", "]");
     Eigen::IOFormat format_;
 
   #endif

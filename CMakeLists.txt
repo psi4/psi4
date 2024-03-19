@@ -291,7 +291,6 @@ ExternalProject_Add(psi4-core
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
               -DENABLE_cppe=${ENABLE_cppe}
               -DENABLE_dkh=${ENABLE_dkh}
-              #-DENABLE_HighFive=${ENABLE_HighFive}
               -DENABLE_IntegratorXX=${ENABLE_IntegratorXX}
               -DENABLE_gauxc=${ENABLE_gauxc}
               -DENABLE_ecpint=${ENABLE_ecpint}
@@ -319,7 +318,6 @@ ExternalProject_Add(psi4-core
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dmdi_DIR=${mdi_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
-              #-DHighFive_DIR=${HighFive_DIR}
               -DIntegratorXX_DIR=${IntegratorXX_DIR}
               -Dgauxc_DIR=${gauxc_DIR}
               -Dgauxc_ENABLE_GPU=${gauxc_ENABLE_GPU}

@@ -1,8 +1,6 @@
 if(${ENABLE_gauxc})
     #== perhaps ExchCXX and IntegratorXX were built alongside GauXC, check for this ==#
     if(NOT "${gauxc_DIR}" STREQUAL "")
-        message("${IntegratorXX_DIR}")
-        message("${ExchCXX_DIR}")
         if("${IntegratorXX_DIR}" STREQUAL "")
            set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
         endif()
@@ -10,8 +8,6 @@ if(${ENABLE_gauxc})
         if("${ExchCXX_DIR}" STREQUAL "")
            set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
         endif()
-        message("${IntegratorXX_DIR}")
-        message("${ExchCXX_DIR}")
     endif()
 
     #== now search for package ==#
@@ -33,22 +29,10 @@ if(${ENABLE_gauxc})
 
         message(STATUS "Suitable gauxc could not be located, ${Magenta}Building gauxc${ColourReset} instead.")
 
-        #include(FetchContent)
-        #set( GAUXC_ENABLE_TESTS OFF CACHE BOOL "" )
-        #set( GAUXC_ENABLE_MPI OFF CACHE BOOL "" )
-        #set( GAUXC_ENABLE_HDF5 OFF CACHE BOOL "" )
-        #FetchContent_Declare( gauxc
-        #    GIT_REPOSITORY https://github.com/wavefunction91/GauXC.git
-        #    GIT_TAG master
-        # )
-        #FetchContent_MakeAvailable( gauxc )
-
         include(ExternalProject)
         ExternalProject_Add(gauxc_external
             GIT_REPOSITORY https://github.com/wavefunction91/gauxc.git
-            #GIT_TAG master
-            GIT_TAG hotfix/small_primpair_max_override 
-            #GIT_TAG bugfix/cpu_os_higham
+            GIT_TAG issue_56_58/reduce_shell_pair_mem  
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -66,7 +50,6 @@ if(${ENABLE_gauxc})
                    -DGAUXC_ENABLE_TESTS=OFF
                    -DGAUXC_ENABLE_HDF5=OFF
                    -DGAUXC_ENABLE_MAGMA=OFF
-                   -DGAUXC_SHELLPAIR_PRIMPAIR_MAX=256
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                          -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
