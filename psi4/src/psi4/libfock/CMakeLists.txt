@@ -58,7 +58,6 @@ if(TARGET gauxc::gauxc)
       )
   endif()
 
-  message("Shell ordering: ${psi4_SHGAUSS_ORDERING}")
   if(${psi4_SHGAUSS_ORDERING} STREQUAL "gaussian")
     target_compile_definitions(fock
       PUBLIC
