@@ -46,7 +46,7 @@
 
 #include "einsums.hpp"
 
-namespace psi { namespace mp2f12 {
+namespace psi { namespace f12 {
 
 void MP2F12::convert_C(einsums::Tensor<double,2> *C, OrbitalSpace bs, const int& dim1, const int& dim2)
 {
