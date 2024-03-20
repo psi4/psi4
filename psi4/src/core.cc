@@ -180,8 +180,8 @@ SharedWavefunction dfmp2(SharedWavefunction, Options&);
 namespace dlpno {
 SharedWavefunction dlpno(SharedWavefunction, Options&);
 }
-namespace mp2f12 {
-SharedWavefunction mp2f12(SharedWavefunction, Options&);
+namespace f12 {
+SharedWavefunction f12(SharedWavefunction, Options&);
 }
 namespace dfoccwave {
 SharedWavefunction dfoccwave(SharedWavefunction, Options&);
@@ -368,9 +368,9 @@ SharedWavefunction py_psi_dlpno(SharedWavefunction ref_wfn) {
     return dlpno::dlpno(ref_wfn, Process::environment.options);
 }
 
-SharedWavefunction py_psi_mp2f12(SharedWavefunction ref_wfn) {
-    py_psi_prepare_options_for_module("MP2-F12");
-    return mp2f12::mp2f12(ref_wfn, Process::environment.options);
+SharedWavefunction py_psi_f12(SharedWavefunction ref_wfn) {
+    py_psi_prepare_options_for_module("F12");
+    return f12::f12(ref_wfn, Process::environment.options);
 }
 
 double py_psi_sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB) {
@@ -1374,7 +1374,7 @@ PYBIND11_MODULE(core, core) {
     core.def("dct", py_psi_dct, "ref_wfn"_a, "Runs the density cumulant (functional) theory code.");
     core.def("dfmp2", py_psi_dfmp2, "ref_wfn"_a, "Runs the DF-MP2 code.");
     core.def("dlpno", py_psi_dlpno, "Runs the DLPNO codes.");
-    core.def("mp2f12", py_psi_mp2f12, "Runs the MP2-F12 codes.");
+    core.def("f12", py_psi_f12, "Runs the F12 codes.");
     core.def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     core.def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
     core.def("mrcc_load_densities", py_psi_mrcc_load_densities,

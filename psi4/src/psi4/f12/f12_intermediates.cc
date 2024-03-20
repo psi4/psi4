@@ -32,7 +32,7 @@
 
 #include "einsums.hpp"
 
-namespace psi { namespace mp2f12 {
+namespace psi { namespace f12 {
 
 void MP2F12::form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k)
 {
