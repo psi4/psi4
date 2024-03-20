@@ -3270,7 +3270,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do Cholesky decomposition of the ERI tensor -*/
         options.add_bool("CHOLESKY", false);
     }
-    if (name == "MP2-F12" || options.read_globals()) {
+    if (name == "F12" || options.read_globals()) {
+        /*- MODULEDESCRIPTION Performs F12 computations for RHF reference wavefunctions. -*/
+
+        /*- SUBSECTION General Options -*/
         /*- Choose conventional or density-fitted. Default to CONV -*/
         options.add_str("F12_TYPE", "DF", "CONV DF DISK_CONV DISK_DF");
         /*- Whether to restart calculation from stored integrals -*/
