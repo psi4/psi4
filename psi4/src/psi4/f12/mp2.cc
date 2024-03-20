@@ -46,11 +46,13 @@
 
 #include "einsums.hpp"
 
-namespace psi { namespace mp2f12 {
+namespace psi { namespace f12 {
 
-MP2F12::MP2F12(SharedWavefunction reference_wavefunction, Options& options):
+MP2F12::MP2F12(SharedWavefunction ref_wfn, Options& options):
     Wavefunction(options) {
-    reference_wavefunction_ = reference_wavefunction;
+    shallow_copy(ref_wfn);
+    reference_wavefunction_ = ref_wfn;
+
     common_init();
 }
 
@@ -388,7 +390,7 @@ double MP2F12::compute_energy()
     timer_off("MP2-F12 Compute Energy");
 
     // Typically you would build a new wavefunction and populate it with data
-    return E_f12_total_;
+    return E_mp2f12_;
 }
 
 void MP2F12::print_results()
@@ -402,12 +404,12 @@ void MP2F12::print_results()
     auto E_rhf = Process::environment.globals["CURRENT REFERENCE ENERGY"];
     auto E_mp2 = Process::environment.globals["MP2 CORRELATION ENERGY"];
 
-    E_f12_total_ = E_rhf + E_mp2 + E_f12_ + E_singles_;
+    E_mp2f12_ = E_rhf + E_mp2 + E_f12_ + E_singles_;
 
     if (use_df_) {
-        outfile->Printf("  Total DF-MP2-F12/3C(FIX) Energy:      %16.12f \n", E_f12_total_);
+        outfile->Printf("  Total DF-MP2-F12/3C(FIX) Energy:      %16.12f \n", E_mp2f12_);
     } else {
-        outfile->Printf("  Total MP2-F12/3C(FIX) Energy:         %16.12f \n", E_f12_total_);
+        outfile->Printf("  Total MP2-F12/3C(FIX) Energy:         %16.12f \n", E_mp2f12_);
     }
     outfile->Printf("     RHF Reference Energy:              %16.12f \n", E_rhf);
     outfile->Printf("     MP2 Correlation Energy:            %16.12f \n", E_mp2);
@@ -417,11 +419,12 @@ void MP2F12::print_results()
         outfile->Printf("     CABS Singles Correction:           %16.12f \n", E_singles_);
     }
 
-    set_scalar_variable("MP2-F12 CORRELATION ENERGY", E_f12_);
-    set_scalar_variable("MP2-F12 TOTAL ENERGY", E_f12_total_);
+    set_scalar_variable("F12 CORRELATION ENERGY", E_f12_ + E_singles_);
+    set_scalar_variable("MP2-F12 CORRELATION ENERGY", E_mp2 + E_f12_ + E_singles_);
+    set_scalar_variable("MP2-F12 TOTAL ENERGY", E_mp2f12_);
 
-    set_scalar_variable("MP2-F12 SINGLES ENERGY", E_singles_);
-    set_scalar_variable("MP2-F12 DOUBLES ENERGY", E_f12_);
+    set_scalar_variable("F12 SINGLES ENERGY", E_singles_);
+    set_scalar_variable("F12 DOUBLES ENERGY", E_f12_);
 }
 
 double MP2F12::t_(const int& p, const int& q, const int& r, const int& s)
@@ -817,7 +820,7 @@ double DiskMP2F12::compute_energy()
     timer::finalize();
 
     // Typically you would build a new wavefunction and populate it with data
-    return E_f12_total_;
+    return E_mp2f12_;
 }
 
 std::pair<double, double> DiskMP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, einsums::DiskTensor<double, 4> *C,

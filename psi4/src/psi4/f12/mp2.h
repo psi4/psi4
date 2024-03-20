@@ -38,7 +38,7 @@
 
 #include "einsums.hpp"
 
-namespace psi { namespace mp2f12 {
+namespace psi { namespace f12 {
 
 class MP2F12 : public Wavefunction {
    public: 
@@ -108,7 +108,7 @@ class MP2F12 : public Wavefunction {
     double E_singles_ = 0.0;
 
     /* Total MP2-F12/3C(FIX) Energy */
-    double E_f12_total_ = 0.0;
+    double E_mp2f12_ = 0.0;
 
     void common_init();
 
