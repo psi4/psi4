@@ -106,26 +106,6 @@ else()
     message(STATUS "Disabled IntegratorXX")
 endif()
 
-if(${ENABLE_gauxc})
-    #== perhaps ExchCXX and IntegratorXX were built alongside GauXC, check for this ==#
-    if(NOT "${gauxc_DIR}" STREQUAL "")
-        if("${IntegratorXX_DIR}" STREQUAL "") 
-           set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
-        endif()
- 
-        if("${ExchCXX_DIR}" STREQUAL "") 
-           set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
-        endif()
-    endif()
-
-    find_package(gauxc 0.0.1 CONFIG REQUIRED)
-    get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
-    list(APPEND _addons ${_loc})
-    message(STATUS "${Cyan}Using gauxc${ColourReset}: ${_loc} (version ${gauxc_VERSION})")
-else()
-    message(STATUS "Disabled GauXC ${gauxc_DIR}")
-endif()
-
 if(${ENABLE_ecpint})
     find_package(ecpint 1.0.7 CONFIG REQUIRED)
     get_property(_loc TARGET ECPINT::ecpint PROPERTY LOCATION)
@@ -167,6 +147,26 @@ find_package(gau2grid 2.0 CONFIG REQUIRED)
 get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using gau2grid${ColourReset}: ${_loc} (version ${gau2grid_VERSION})")
+
+if(${ENABLE_gauxc})
+    #== perhaps ExchCXX and IntegratorXX were built alongside GauXC, check for this ==#
+    if(NOT "${gauxc_DIR}" STREQUAL "")
+        if("${IntegratorXX_DIR}" STREQUAL "") 
+           set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
+        endif()
+ 
+        if("${ExchCXX_DIR}" STREQUAL "") 
+           set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
+        endif()
+    endif()
+
+    find_package(gauxc 0.0.1 CONFIG REQUIRED)
+    get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using gauxc${ColourReset}: ${_loc} (version ${gauxc_VERSION})")
+else()
+    message(STATUS "Disabled GauXC ${gauxc_DIR}")
+endif()
 
 if(${ENABLE_gdma})
     # neither gdma nor pygdma actually needed c-side; runtime detection would
