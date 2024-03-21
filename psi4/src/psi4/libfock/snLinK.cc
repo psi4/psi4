@@ -174,7 +174,6 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
 
 snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primary, options) {
     timer_on("snLinK: Setup");
-
     
     // => Part #1: Options Processing <= //
     timer_on("snLinK: Options Processing");
@@ -189,6 +188,16 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     pruning_scheme_ = options_.get_str("SNLINK_PRUNING_SCHEME");
     radial_scheme_ = options_.get_str("SNLINK_RADIAL_SCHEME");
  
+//#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+#if psi4_SHGSHELL_ORDERING == 1 
+    is_cca_ = true;
+//#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+#elif psi4_SHGSHELL_ORDERING == 2 
+    is_cca_ = false;
+#else
+    #error "unknown value of macro psi4_SHGSHELL_ORDERING"
+#endif
+
     format_ = Eigen::IOFormat(4, 0, ", ", "\n", "[", "]");
     
     // create mappings for GauXC pruning and radial scheme enums
@@ -217,6 +226,10 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
         outfile->Printf("    INFO: GPU snLinK must be executed with SNLINK_FORCE_CARTESIAN=true when using spherical harmonic basis sets!\n");  
         outfile->Printf("    Enabling forced spherical-to-Cartesian transform...\n\n");  
         force_cartesian_ = true; 
+    } else if (force_cartesian_ && !(primary_->has_puream())) {
+        outfile->Printf("    INFO: SNLINK_FORCE_CARTESIAN=true has no effect when using Cartesian basis sets!\n");  
+        //outfile->Printf("    Enabling forced spherical-to-Cartesian transform...\n\n");  
+        force_cartesian_ = false; 
     }
 
     // create ERI ordering permutation matrix to handle integral ordering
@@ -232,6 +245,16 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     const auto factory = std::make_shared<IntegralFactory>(primary, primary, primary, primary);
     PetiteList petite(primary, factory, true);
     sph_to_cart_matrix_ = petite.sotoao(); 
+
+    if (force_cartesian_ && sph_to_cart_matrix_->nirrep() != 1) {
+        auto point_group = primary->molecule()->point_group();
+        
+        std::string message = "SNLINK_FORCE_CARTESIAN only works with C1 symmetry! ";
+        message += "Current molecular point group is ";
+        message += point_group->symbol();   
+
+        throw PSIEXCEPTION(message);
+    }
 
     // if needed, we also need to transform the Spherical part of the permutation matrix itself
     // For whatever reason, psi4_to_eigen_map doesnt seem to work specifically in the constructor
