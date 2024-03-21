@@ -14,14 +14,22 @@ if(${ENABLE_gauxc})
     find_package(gauxc 0.0.1 CONFIG) 
 
     if(${gauxc_FOUND})
-        #== check if GPU-enabled GauXC is found, if GPU is specified ==#    
+        #== check if GPU-enabled GauXC is found, if GPU is specified ==#
+        # commented stuff is from manually-input exported properties modification, getting GPU info as a property of GauXC     
+        
+        #get_property(_gpu TARGET gauxc::gauxc PROPERTY GAUXC_GPU_ENABLED)
+        
+        #if(${gauxc_ENABLE_GPU} AND (NOT ${_gpu}))
         if(${gauxc_ENABLE_GPU} AND (NOT ${GAUXC_ENABLE_CUDA}))
            message(FATAL_ERROR "gauxc_ENABLE_GPU turned on, but selected GauXC install is not built for GPU support!")
+        #elseif((NOT ${gauxc_ENABLE_GPU}) AND ${_gpu})
         elseif((NOT ${gauxc_ENABLE_GPU}) AND ${GAUXC_ENABLE_CUDA})
            message(FATAL_ERROR "gauxc_ENABLE_GPU turned off, but selected GauXC install is built for GPU support!")
         endif()
 
+        #== normal print-out and library addition ==#
         get_property(_loc TARGET gauxc::gauxc PROPERTY IMPORTED_LOCATION_RELWITHDEBINFO)
+        #get_property(_loc TARGET gauxc::gauxc PROPERTY IMPORTED_LOCATION)
         message(STATUS "${Cyan}Found gauxc ${ColourReset}: ${_loc} (found version ${gauxc_VERSION})")
         add_library(gauxc_external INTERFACE)  # dummy
 
