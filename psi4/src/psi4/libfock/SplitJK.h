@@ -348,13 +348,7 @@ class PSI_API snLinK : public SplitJK {
     SharedMatrix sph_to_cart_matrix_;
 
     // => Gaussian-CCA Transformation stuff <= //
-  #if defined(USING_gauxc_CCA)
-    static constexpr bool is_cca_ = true;
-  #elif defined(USING_gauxc_GAUSSIAN) 
-    static constexpr bool is_cca_ = false;
-  #else
-    #error Shouldnt be here! Invalid psi4_SHGAUSS_ORDERING perhaps?
-  #endif
+    bool is_cca_;
 
     std::optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> > permutation_matrix_;
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(const std::shared_ptr<BasisSet> psi4_basisset);

@@ -127,17 +127,17 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       },
                       },
                       id="snlink (spherical)", marks=using("gauxc")),
-        #pytest.param({"scf_type" : "dfdirj+snlink",
-        #              "snlink_force_cartesian": True,
-        #              "ref" : { 
-        #                  "h2o (rhf)" : -76.026788692185, 
-        #                  "h2o (rks)" : -76.420403557357,
-        #                  "nh2 (uhf)" : -55.566911357539,
-        #                  "nh2 (rohf)" : -55.562710424257,
-        #                  "h2o/na+ (rhf ie)" : -0.040118757043,
-        #              },
-        #              },
-        #              id="snlink (cartesian)", marks=using("gauxc")),
+        pytest.param({"scf_type" : "dfdirj+snlink",
+                      "snlink_force_cartesian": True,
+                      "ref" : { 
+                          "h2o (rhf)" : -76.026788692185, 
+                          "h2o (rks)" : -76.420403557357,
+                          "nh2 (uhf)" : -55.566911357539,
+                          "nh2 (rohf)" : -55.562710424257,
+                          "h2o/na+ (rhf ie)" : -0.040118757043,
+                      },
+                      },
+                      id="snlink (cartesian)", marks=using("gauxc")),
  
     ]
 )
@@ -153,8 +153,7 @@ def test_seminum(inp, scf, mols, request):
         psi4.set_options({"snlink_force_cartesian": scf["snlink_force_cartesian"]})
 
         #SNLINK_FORCE_CARTESIAN doesnt work with symmetry currently
-        full_molecule = psi4.core.get_active_molecule()
-        full_molecule.reset_point_group("C1")
+        molecule.reset_point_group("C1")
 
     # does the SCF energy match a pre-computed reference?
     energy_seminum = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])

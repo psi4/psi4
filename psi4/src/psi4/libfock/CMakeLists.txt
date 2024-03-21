@@ -58,18 +58,6 @@ if(TARGET gauxc::gauxc)
       )
   endif()
 
-  if(${psi4_SHGAUSS_ORDERING} STREQUAL "gaussian")
-    target_compile_definitions(fock
-      PUBLIC
-        USING_gauxc_GAUSSIAN
-      )
-  elseif(${psi4_SHGAUSS_ORDERING} STREQUAL "standard")
-    target_compile_definitions(fock
-      PUBLIC
-        USING_gauxc_CCA
-      )
-  endif()
-
   target_include_directories(fock
     PUBLIC
       $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
@@ -84,6 +72,11 @@ else()
       snLinK_stub.cc
     )
 endif()
+
+target_compile_definitions(fock
+  PRIVATE
+    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
+  )
 
 if(TARGET IntegratorXX::IntegratorXX)
   target_link_libraries(fock
