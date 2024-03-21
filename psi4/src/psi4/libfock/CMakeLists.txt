@@ -51,6 +51,8 @@ if(TARGET gauxc::gauxc)
       USING_gauxc
     )
 
+  #get_property(_gpu TARGET gauxc::gauxc PROPERTY GAUXC_GPU_ENABLED)
+  #if(${_gpu})
   if(${gauxc_ENABLE_GPU})
     target_compile_definitions(fock
       PUBLIC
@@ -72,11 +74,6 @@ else()
       snLinK_stub.cc
     )
 endif()
-
-target_compile_definitions(fock
-  PRIVATE
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-  )
 
 if(TARGET IntegratorXX::IntegratorXX)
   target_link_libraries(fock
