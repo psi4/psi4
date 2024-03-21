@@ -14,6 +14,13 @@ if(${ENABLE_gauxc})
     find_package(gauxc 0.0.1 CONFIG) 
 
     if(${gauxc_FOUND})
+        #== check if GPU-enabled GauXC is found, if GPU is specified ==#    
+        if(${gauxc_ENABLE_GPU} AND (NOT ${GAUXC_ENABLE_CUDA}))
+           message(FATAL_ERROR "gauxc_ENABLE_GPU turned on, but selected GauXC install is not built for GPU support!")
+        elseif((NOT ${gauxc_ENABLE_GPU}) AND ${GAUXC_ENABLE_CUDA})
+           message(FATAL_ERROR "gauxc_ENABLE_GPU turned off, but selected GauXC install is built for GPU support!")
+        endif()
+
         get_property(_loc TARGET gauxc::gauxc PROPERTY IMPORTED_LOCATION_RELWITHDEBINFO)
         message(STATUS "${Cyan}Found gauxc ${ColourReset}: ${_loc} (found version ${gauxc_VERSION})")
         add_library(gauxc_external INTERFACE)  # dummy
@@ -31,9 +38,11 @@ if(${ENABLE_gauxc})
 
         include(ExternalProject)
         ExternalProject_Add(gauxc_external
-            DEPENDS gau2grid_external
-            GIT_REPOSITORY https://github.com/davpoolechem/gauxc.git
-            GIT_TAG issue_93/external_gau2grid 
+            #DEPENDS gau2grid_external 
+            URL https://github.com/wavefunction91/GauXC/archive/issue_56_58/reduce_shell_pair_mem.tar.gz 
+            #GIT_REPOSITORY https://github.com/wavefunction91/gauxc.git
+            #GIT_TAG issue_56_58/reduce_shell_pair_mem  
+            #GIT_TAG issue_93/external_gau2grid 
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
