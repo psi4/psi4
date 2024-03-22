@@ -12,7 +12,7 @@ if(${ENABLE_gauxc})
 
     if(${gauxc_FOUND})
         #== check if GPU-enabled GauXC is found, if GPU is specified ==#
-        get_property(_gpu TARGET gauxc::gauxc PROPERTY GAUXC_CUDA_ENABLED)
+        get_property(_gpu TARGET gauxc::gauxc PROPERTY GAUXC_ENABLE_CUDA)
         
         if(${gauxc_ENABLE_GPU} AND (NOT ${_gpu}))
            message(FATAL_ERROR "gauxc_ENABLE_GPU turned on, but selected GauXC install is not built for GPU support!")
