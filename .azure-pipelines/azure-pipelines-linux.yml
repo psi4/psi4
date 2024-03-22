@@ -132,6 +132,7 @@ jobs:
         -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -D ENABLE_PLUGIN_TESTING=ON \
         -D ENABLE_Einsums=ON \
+        -D ENABLE_IntegratorXX=ON \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 

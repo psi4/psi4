@@ -24,6 +24,8 @@ foreach(dir
   libxc
   brianqc
   ddx
+  integratorxx
+
   )
   add_subdirectory(${dir})
 endforeach()
