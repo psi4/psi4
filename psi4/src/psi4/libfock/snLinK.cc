@@ -207,7 +207,6 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     std::unique_ptr<GauXC::RuntimeEnvironment> rt = nullptr; 
 #ifdef USING_gauxc_GPU
-  #error "we made it!"
     if (use_gpu_) {
         // 0.9 indicates to use maximum 90% of maximum GPU memory, I think?
         rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.9 );
@@ -245,6 +244,8 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     PetiteList petite(primary, factory, true);
     sph_to_cart_matrix_ = petite.sotoao(); 
 
+    // SNLINK_FORCE_CARTESIAN only works with C1 symmtry currently
+    // TODO: Fix this!
     if (force_cartesian_ && sph_to_cart_matrix_->nirrep() != 1) {
         auto point_group = primary->molecule()->point_group();
         
