@@ -149,6 +149,10 @@ class PSI_API SplitJK {
     virtual void set_snLinK_incfock_iter(bool incfock_iter) {
         throw PSIEXCEPTION("SplitJK::set_snLinK_incfock_iter was called, but snLinK is not being used!");
     }
+
+    //virtual void set_snLinK_AO2USO(SharedMatrix AO2USO) {
+    //    throw PSIEXCEPTION("SplitJK::set_snLinK_AO2USO was called, but snLinK is not being used!");
+    //}
 };
 
 // ==> Start SplitJK Coulomb (J) Algorithms here <== //
@@ -333,7 +337,9 @@ class PSI_API snLinK : public SplitJK {
     // => general Psi4 settings <= //
     // are we doing an incremental Fock build this iteration?
     bool incfock_iter_;
-
+    /// AO2USO transformation matrix
+    //SharedMatrix AO2USO_;
+ 
   #ifdef USING_gauxc
     // use Eigen for matrix inputs to GauXC
     // perhaps this can be changed later
@@ -429,6 +435,7 @@ class PSI_API snLinK : public SplitJK {
 
     // setters and getters
     void set_snLinK_incfock_iter(bool incfock_iter) override { incfock_iter_ = incfock_iter; }
+    //void set_snLinK_AO2USO(SharedMatrix AO2USO) override { AO2USO_ = AO2USO; }
 };
 
 }
