@@ -149,13 +149,6 @@ list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using gau2grid${ColourReset}: ${_loc} (version ${gau2grid_VERSION})")
 
 if(${ENABLE_gauxc})
-    #== perhaps ExchCXX and IntegratorXX were built alongside GauXC, check for this ==#
-    if(NOT "${gauxc_DIR}" STREQUAL "")
-        if("${ExchCXX_DIR}" STREQUAL "") 
-           set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
-        endif()
-    endif()
-
     find_package(gauxc 0.0.1 CONFIG REQUIRED)
     get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
     list(APPEND _addons ${_loc})

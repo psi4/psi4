@@ -1,15 +1,4 @@
 if(${ENABLE_ExchCXX})
-    #== perhaps ExchCXX was bundled with a GauXC build ==#
-    if(NOT DEFINED(${ExchCXX_DIR})) 
-        if(${ENABLE_gauxc}) 
-            set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX CACHE PATH "" FORCE)
-
-            if(${gauxc_ENABLE_GPU})
-                set(${ExchCXX_ENABLE_GPU} ON)
-            endif()
-        endif() 
-    endif()
-
     #find_package(ExchCXX 0.0.1 CONFIG PATHS "${GAUXC_DIR}/../ExchCXX") 
     find_package(ExchCXX 0.0.1 CONFIG) 
 
@@ -44,7 +33,7 @@ if(${ENABLE_ExchCXX})
                        -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
-                       -DGAUXC_ENABLE_CUDA=${ExchCXX_ENABLE_GPU}
+                       -DGAUXC_ENABLE_CUDA=${gauxc_ENABLE_GPU}
                        -DGAUXC_ENABLE_MPI=OFF
                        -DGAUXC_ENABLE_TESTS=OFF
                        -DGAUXC_ENABLE_HDF5=OFF

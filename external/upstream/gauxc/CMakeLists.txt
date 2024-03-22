@@ -1,11 +1,4 @@
 if(${ENABLE_gauxc})
-    #== perhaps ExchCXX and IntegratorXX were built alongside GauXC, check for this ==#
-    if(NOT "${gauxc_DIR}" STREQUAL "")
-        if("${ExchCXX_DIR}" STREQUAL "")
-           set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
-        endif()
-    endif()
-
     #== now search for package ==#
     find_package(gauxc 0.0.1 CONFIG) 
 
@@ -42,7 +35,7 @@ if(${ENABLE_gauxc})
 
         include(ExternalProject)
         ExternalProject_Add(gauxc_external
-            DEPENDS integratorxx_external 
+            DEPENDS integratorxx_external exchcxx_external
             URL https://github.com/wavefunction91/GauXC/archive/issue_56_58/reduce_shell_pair_mem.tar.gz 
             #GIT_REPOSITORY https://github.com/wavefunction91/gauxc.git
             #GIT_TAG issue_56_58/reduce_shell_pair_mem  
