@@ -438,7 +438,7 @@ std::vector<Eigen::Map<Eigen::MatrixXd>> Matrix::eigen_maps() {
         eigen_maps.emplace_back(get_pointer(h), rowdim(h), coldim(h));
     } 
     
-    return std::move(eigen_maps);
+    return eigen_maps;
 }
 
 void Matrix::alloc() {
