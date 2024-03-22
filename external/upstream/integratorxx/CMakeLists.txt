@@ -1,11 +1,4 @@
 if(${ENABLE_IntegratorXX})
-    #== perhaps IntegratorXX was bundled with a GauXC build ==#
-    if(NOT DEFINED(${IntegratorXX_DIR})) 
-        if(${ENABLE_gauxc}) 
-            set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX CACHE PATH "" FORCE)
-        endif() 
-    endif()
-
     find_package(IntegratorXX CONFIG)
 
     if(${IntegratorXX_FOUND})

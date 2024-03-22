@@ -83,36 +83,36 @@ std::tuple<
 // constructs a permutation matrix for converting matrices to and from GauXC's integral ordering standard 
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permutation_matrix(const std::shared_ptr<BasisSet> psi4_basisset) {
   
-  Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(psi4_basisset->nbf());
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(psi4_basisset->nbf());
+    
+    // general array for how to reorder integrals 
+    constexpr int max_am = 10; 
+    std::array<int, 2*max_am + 1> cca_integral_order; 
   
-  // general array for how to reorder integrals 
-  constexpr int max_am = 10; 
-  std::array<int, 2*max_am + 1> cca_integral_order; 
-
-  // s shell, easy
-  cca_integral_order[0] = { 0 }; 
- 
-  // p shells or larger
-  for (size_t l = 1; l != max_am; ++l) {
-    for (size_t idx = 1, val = 1; idx < cca_integral_order.size(); idx += 2, ++val) {
-      cca_integral_order[idx] = val;
-      cca_integral_order[idx + 1] = -val;
+    // s shell, easy
+    cca_integral_order[0] = { 0 }; 
+   
+    // p shells or larger
+    for (size_t l = 1; l != max_am; ++l) {
+        for (size_t idx = 1, val = 1; idx < cca_integral_order.size(); idx += 2, ++val) {
+            cca_integral_order[idx] = val;
+            cca_integral_order[idx + 1] = -val;
+        }
     }
-  }
-
-  // actually construct permutation matrix
-  for (int ish = 0, ibf = 0; ish != psi4_basisset->nshell(); ++ish) {
-    auto& sh = psi4_basisset->shell(ish);
-    auto am = sh.am();
-
-    auto ibf_base = ibf;
-    for (int ishbf = 0; ishbf != 2*am + 1; ++ishbf, ++ibf) {
-      permutation_matrix.indices()[ibf] = ibf_base + cca_integral_order[ishbf] + am;
+  
+    // actually construct permutation matrix
+    for (int ish = 0, ibf = 0; ish != psi4_basisset->nshell(); ++ish) {
+        auto& sh = psi4_basisset->shell(ish);
+        auto am = sh.am();
+  
+        auto ibf_base = ibf;
+        for (int ishbf = 0; ishbf != 2*am + 1; ++ishbf, ++ibf) {
+            permutation_matrix.indices()[ibf] = ibf_base + cca_integral_order[ishbf] + am;
+        }
     }
-  }
- 
-  // we are done
-  return std::move(permutation_matrix);
+   
+    // we are done
+    return std::move(permutation_matrix);
 }
 
 // converts a Psi4::Molecule object to a GauXC::Molecule object
@@ -261,16 +261,16 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // For whatever reason, psi4_to_eigen_map doesnt seem to work specifically in the constructor
     // this is the work-around 
     if (permutation_matrix_.has_value()) { 
-      auto permutation_dense = permutation_matrix_.value().toDenseMatrix();
-      auto sph_to_cart_permute = std::make_shared<Matrix>(permutation_dense.rows(), permutation_dense.cols());
-      
-      auto ptr = sph_to_cart_permute->pointer();
-      for (int irow = 0; irow != permutation_dense.rows(); ++irow) {
-        for (int icol = 0; icol != permutation_dense.cols(); ++icol) {  
-          ptr[irow][icol] = permutation_dense(irow, icol);
-        } 
-      }
-      sph_to_cart_matrix_ = linalg::doublet(sph_to_cart_permute, sph_to_cart_matrix_->to_block_sharedmatrix());
+        auto permutation_dense = permutation_matrix_.value().toDenseMatrix();
+        auto sph_to_cart_permute = std::make_shared<Matrix>(permutation_dense.rows(), permutation_dense.cols());
+        
+        auto ptr = sph_to_cart_permute->pointer();
+        for (int irow = 0; irow != permutation_dense.rows(); ++irow) {
+            for (int icol = 0; icol != permutation_dense.cols(); ++icol) {  
+                ptr[irow][icol] = permutation_dense(irow, icol);
+            } 
+        }
+        sph_to_cart_matrix_ = linalg::doublet(sph_to_cart_permute, sph_to_cart_matrix_->to_block_sharedmatrix());
     }
     
     timer_off("snLinK: Options Processing");

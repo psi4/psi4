@@ -151,10 +151,6 @@ message(STATUS "${Cyan}Using gau2grid${ColourReset}: ${_loc} (version ${gau2grid
 if(${ENABLE_gauxc})
     #== perhaps ExchCXX and IntegratorXX were built alongside GauXC, check for this ==#
     if(NOT "${gauxc_DIR}" STREQUAL "")
-        if("${IntegratorXX_DIR}" STREQUAL "") 
-           set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
-        endif()
- 
         if("${ExchCXX_DIR}" STREQUAL "") 
            set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
         endif()
