@@ -72,7 +72,7 @@ class MOInfo : public MOInfoBase {
         const MOInfo* moinfo;
 
        public:
-        typedef std::bitset<2048> bitdet;
+        typedef std::bitset<2048> bitdet;  // adjust based on "size det"?
         SlaterDeterminant(const MOInfo*);
         ~SlaterDeterminant();
         void set(int n) { bits.set(n); }
