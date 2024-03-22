@@ -1,18 +1,22 @@
 if(${ENABLE_gauxc})
-    #== now search for package ==#
+    #== perhaps ExchCXX and IntegratorXX were built alongside GauXC, check for this ==#
+    if(NOT "${gauxc_DIR}" STREQUAL "")
+        if("${IntegratorXX_DIR}" STREQUAL "")
+           set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
+        endif()
+
+        set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
+    endif()
+
     find_package(gauxc 0.0.1 CONFIG) 
 
     if(${gauxc_FOUND})
         #== check if GPU-enabled GauXC is found, if GPU is specified ==#
-        # commented stuff is from manually-input exported properties modification, getting GPU info as a property of GauXC     
+        get_property(_gpu TARGET gauxc::gauxc PROPERTY GAUXC_CUDA_ENABLED)
         
-        #get_property(_gpu TARGET gauxc::gauxc PROPERTY GAUXC_GPU_ENABLED)
-        
-        #if(${gauxc_ENABLE_GPU} AND (NOT ${_gpu}))
-        if(${gauxc_ENABLE_GPU} AND (NOT ${GAUXC_ENABLE_CUDA}))
+        if(${gauxc_ENABLE_GPU} AND (NOT ${_gpu}))
            message(FATAL_ERROR "gauxc_ENABLE_GPU turned on, but selected GauXC install is not built for GPU support!")
-        #elseif((NOT ${gauxc_ENABLE_GPU}) AND ${_gpu})
-        elseif((NOT ${gauxc_ENABLE_GPU}) AND ${GAUXC_ENABLE_CUDA})
+        elseif((NOT ${gauxc_ENABLE_GPU}) AND ${_gpu})
            message(FATAL_ERROR "gauxc_ENABLE_GPU turned off, but selected GauXC install is built for GPU support!")
         endif()
 
@@ -36,10 +40,7 @@ if(${ENABLE_gauxc})
         include(ExternalProject)
         ExternalProject_Add(gauxc_external
             DEPENDS integratorxx_external exchcxx_external
-            URL https://github.com/wavefunction91/GauXC/archive/issue_56_58/reduce_shell_pair_mem.tar.gz 
-            #GIT_REPOSITORY https://github.com/wavefunction91/gauxc.git
-            #GIT_TAG issue_56_58/reduce_shell_pair_mem  
-            #GIT_TAG issue_93/external_gau2grid 
+            URL https://github.com/davpoolechem/GauXC/archive/properties-baseline.tar.gz 
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

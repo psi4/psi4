@@ -51,9 +51,7 @@ if(TARGET gauxc::gauxc)
       USING_gauxc
     )
 
-  #get_property(_gpu TARGET gauxc::gauxc PROPERTY GAUXC_GPU_ENABLED)
-  #if(${_gpu})
-  if(${gauxc_ENABLE_GPU})
+  if(${_gpu})
     target_compile_definitions(fock
       PUBLIC
         USING_gauxc_GPU
