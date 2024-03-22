@@ -58,8 +58,6 @@ if(TARGET gauxc::gauxc)
     )
 endif()
 
-
-
 target_link_libraries(detci
   PRIVATE
     pybind11::module

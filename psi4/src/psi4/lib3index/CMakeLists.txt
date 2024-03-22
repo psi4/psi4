@@ -17,5 +17,3 @@ if(TARGET gauxc::gauxc)
       gauxc::gauxc 
     )
 endif()
-
-
