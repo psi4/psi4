@@ -62,7 +62,6 @@ void MOInfoBase::startup() {
     wfn_sym = 0;
 
     guess_occupation = true;
-    compute_ioff();
 }
 
 void MOInfoBase::cleanup() {}
@@ -91,27 +90,23 @@ void MOInfoBase::compute_number_of_electrons() {
     nbel = nel - nael;
 }
 
-void MOInfoBase::compute_ioff() {
-    ioff.resize(IOFF);
-    ioff[0] = 0;
-    for (size_t i = 1; i < IOFF; i++) ioff[i] = ioff[i - 1] + i;
-}
-
-void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, std::string labels) {
+void MOInfoBase::read_mo_space(const int nirreps_ref, int& n, intvec& mo, const std::string& labels) {
     bool read = false;
 
-    std::vector<std::string> label_vec = split(labels);
+    const std::vector<std::string> label_vec = split(labels);
     for (size_t k = 0; k < label_vec.size(); ++k) {
         // Does the array exist in the input?
-        std::string& label = label_vec[k];
+        const std::string& label = label_vec[k];
         if (!options[label].has_changed()) continue;  // The user didn't specify this, it's just the default
         int size = options[label].size();
         // Defaults is to set all to zero
         mo.assign(nirreps_ref, 0);
         n = 0;
         if (read) {
-            throw std::runtime_error("libmoinfo has found a redundancy in the input keywords " + labels +
-                                     ", please fix it!\n");
+            outfile->Printf("\n\n  libmoinfo has found a redundancy in the input keywords %s , please fix it!",
+                            labels.c_str());
+            throw PSIEXCEPTION("libmoinfo has found a redundancy in the input keywords " + labels +
+                               " , please fix it!");
         } else {
             read = true;
         }
@@ -124,12 +119,12 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, std::string 
             std::ostringstream oss;
             oss << "The size of the " << label_vec[k] << " array (" << size << ") does not match the number of irreps ("
                 << nirreps_ref << "), please fix the input\n";
-            throw std::runtime_error(oss.str());
+            throw PSIEXCEPTION(oss.str());
         }
     }
 }
 
-void MOInfoBase::print_mo_space(int& n, intvec& mo, std::string labels) {
+void MOInfoBase::print_mo_space(int n, const intvec& mo, const std::string& labels) {
     outfile->Printf("\n  %s", labels.c_str());
 
     for (int i = nirreps; i < 8; i++) outfile->Printf("     ");
@@ -160,7 +155,7 @@ void MOInfoBase::correlate(char* ptgrp, int irrep, int& nirreps_old, int& nirrep
     else {
         std::ostringstream oss;
         oss << "point group " << ptgrp << " is not recognized.\n";
-        throw std::logic_error(oss.str());
+        throw PSIEXCEPTION(oss.str());
     }
 
     arr = new int[nirreps_old];

@@ -29,9 +29,7 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
-#include <cstdio>
 
-#include "psi4/psifiles.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/libpsi4util.h"
@@ -189,7 +187,7 @@ void MOInfo::build_model_space() {
             "\n  3) Charge and multiplicity"
             "\n\n  Ending the computation.\n";
         outfile->Printf(message);
-        throw std::logic_error(message);
+        throw PSIEXCEPTION(message);
     }
 }
 

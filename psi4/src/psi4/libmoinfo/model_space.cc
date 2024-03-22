@@ -27,12 +27,9 @@
  */
 
 #include "model_space.h"
-#include "moinfo.h"
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-
-#include <cstdio>
 
 namespace psi {
 

@@ -27,13 +27,12 @@
  */
 
 #include "model_space.h"
-#include "moinfo.h"
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/psifiles.h"
+#include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 
-#include <cstdio>
 namespace psi {
 
 void ModelSpace::build() {
@@ -125,7 +124,7 @@ void ModelSpace::build() {
     }
 
     if (determinants.size() == 0) {
-        std::string message =
+        const std::string message =
             "\n\n  No reference found in the model space"
             "\n  Please check the following:"
             "\n  1) Definition of FROZEN_DOCC, RESTRICTED_DOCC, ACTIVE, and FROZEN_UOCC"
@@ -134,7 +133,7 @@ void ModelSpace::build() {
             "\n\n  Ending the computation.\n";
         outfile->Printf(message);
 
-        throw std::logic_error(message);
+        throw PSIEXCEPTION(message);
     }
 }
 
