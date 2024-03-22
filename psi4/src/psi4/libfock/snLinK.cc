@@ -93,11 +93,9 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
     cca_integral_order[0] = { 0 }; 
    
     // p shells or larger
-    for (size_t l = 1; l != max_am; ++l) {
-        for (size_t idx = 1, val = 1; idx < cca_integral_order.size(); idx += 2, ++val) {
-            cca_integral_order[idx] = val;
-            cca_integral_order[idx + 1] = -val;
-        }
+    for (size_t l = 1, idx = 1; l != max_am; idx += 2, ++l) {
+        cca_integral_order[idx] = l;
+        cca_integral_order[idx + 1] = -l;
     }
   
     // actually construct permutation matrix

@@ -80,7 +80,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
 #    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
-#                         qcelemental, qcengine, optking, simint, Libxc, IntegratorXX, ExchCXX, gauxc
+#                         qcelemental, qcengine, optking, simint, Libxc, IntegratorXX, gauxc
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -320,7 +320,6 @@ ExternalProject_Add(psi4-core
               -DIntegratorXX_DIR=${IntegratorXX_DIR}
               -Dgauxc_DIR=${gauxc_DIR}
               -Dgauxc_ENABLE_GPU=${gauxc_ENABLE_GPU}
-              -DExchCXX_DIR=${ExchCXX_DIR}
               -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
               -DLibxc_DIR=${Libxc_DIR}
