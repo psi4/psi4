@@ -136,6 +136,13 @@ if(TARGET BrianQC::static_wrapper)
     )
 endif()
 
+if(TARGET IntegratorXX::IntegratorXX)
+  target_link_libraries(core
+    PRIVATE
+      IntegratorXX::IntegratorXX
+    )
+endif()
+
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   # Enable call to for_rtl_init_() which is required if using the
   # Intel fortran compiler

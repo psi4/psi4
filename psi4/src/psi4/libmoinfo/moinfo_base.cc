@@ -116,13 +116,10 @@ void MOInfoBase::read_mo_space(const int nirreps_ref, int& n, intvec& mo, const 
                 n += mo[i];
             }
         } else {
-            outfile->Printf(
-                "\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input "
-                "file",
-                label_vec[k].c_str(), size, nirreps_ref);
-            throw PSIEXCEPTION("The size of the " + label_vec[k] + " array (" + std::to_string(size) +
-                               ") does not match the number of irreps (" + std::to_string(nirreps_ref) +
-                               "), please fix the input file");
+            std::ostringstream oss;
+            oss << "The size of the " << label_vec[k] << " array (" << size << ") does not match the number of irreps ("
+                << nirreps_ref << "), please fix the input\n";
+            throw PSIEXCEPTION(oss.str());
         }
     }
 }
@@ -156,8 +153,9 @@ void MOInfoBase::correlate(char* ptgrp, int irrep, int& nirreps_old, int& nirrep
     else if (strcmp(ptgrp, "D2h") == 0)
         nirreps_old = 8;
     else {
-        outfile->Printf("point group %s unknown.\n", ptgrp);
-        throw PSIEXCEPTION("point group " + std::string(ptgrp) + " unknown.");
+        std::ostringstream oss;
+        oss << "point group " << ptgrp << " is not recognized.\n";
+        throw PSIEXCEPTION(oss.str());
     }
 
     arr = new int[nirreps_old];

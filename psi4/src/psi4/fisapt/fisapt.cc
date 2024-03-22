@@ -2469,40 +2469,40 @@ void FISAPT::exch() {
     // }
     // scalars_["Exch10(S^2)"] = Exch10_2;
     outfile->Printf("    Exch10(S^2) [MCBS]  = %18.12lf [Eh]\n",Exch10_2M);
-    // outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n",Exch10_2M);
+    outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n",Exch10_2M);
     // fflush(outfile);
 
     // ==> Exchange Terms (S^2, DCBS only) <== //
-
+    // DCBS is redundant because we have already computed MCBS. Commenting out code that computes DCBS below.
     // => K_AS <= //
 
-    std::shared_ptr<Matrix> C_AS = linalg::triplet(P_B, S, Cocc_A);
-    Cl.clear();
-    Cr.clear();
-    Cl.push_back(Cocc_A);
-    Cr.push_back(C_AS);
-    jk_->compute();
-    std::shared_ptr<Matrix> K_AS = K[0];
+    //std::shared_ptr<Matrix> C_AS = linalg::triplet(P_B, S, Cocc_A);
+    //Cl.clear();
+    //Cr.clear();
+    //Cl.push_back(Cocc_A);
+    //Cr.push_back(C_AS);
+    //jk_->compute();
+    //std::shared_ptr<Matrix> K_AS = K[0];
 
     // => Accumulation <= //
 
-    double Exch10_2 = 0.0;
-    std::vector<double> Exch10_2_terms;
-    Exch10_2_terms.resize(3);
-    Exch10_2_terms[0] -= 2.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, P_A)->vector_dot(V_B);
-    Exch10_2_terms[0] -= 4.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, P_A)->vector_dot(J_B);
-    Exch10_2_terms[1] -= 2.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, P_B)->vector_dot(V_A);
-    Exch10_2_terms[1] -= 4.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, P_B)->vector_dot(J_A);
-    Exch10_2_terms[2] -= 2.0 * linalg::triplet(P_A, S, D_B)->vector_dot(K_AS);
-    for (int k = 0; k < Exch10_2_terms.size(); k++) {
-        Exch10_2 += Exch10_2_terms[k];
-    }
-    for (int k = 0; k < Exch10_2_terms.size(); k++) {
-       outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2_terms[k]);
-    }
-    scalars_["Exch10(S^2)"] = Exch10_2;
-    outfile->Printf("    Exch10(S^2) [DCBS]  = %18.12lf [Eh]\n",Exch10_2);
-    outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n", Exch10_2);
+    //double Exch10_2 = 0.0;
+    //std::vector<double> Exch10_2_terms;
+    //Exch10_2_terms.resize(3);
+    //Exch10_2_terms[0] -= 2.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, P_A)->vector_dot(V_B);
+    //Exch10_2_terms[0] -= 4.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, P_A)->vector_dot(J_B);
+    //Exch10_2_terms[1] -= 2.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, P_B)->vector_dot(V_A);
+    //Exch10_2_terms[1] -= 4.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, P_B)->vector_dot(J_A);
+    //Exch10_2_terms[2] -= 2.0 * linalg::triplet(P_A, S, D_B)->vector_dot(K_AS);
+    //for (int k = 0; k < Exch10_2_terms.size(); k++) {
+    //    Exch10_2 += Exch10_2_terms[k];
+    //}
+    //for (int k = 0; k < Exch10_2_terms.size(); k++) {
+    //   outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2_terms[k]);
+    //}
+    //scalars_["Exch10(S^2)"] = Exch10_2;
+    //outfile->Printf("    Exch10(S^2) [DCBS]  = %18.12lf [Eh]\n",Exch10_2);
+    //outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n", Exch10_2);
     // fflush(outfile);
 
     // ==> Exchange Terms (S^\infty, MCBS or DCBS) <== //

@@ -28,6 +28,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <stdexcept>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
 
@@ -101,8 +102,7 @@ int **cacheprep_uhf(int level, int *cachefiles) {
 
         return cachelist;
     } else {
-        printf("Error: invalid cache level!\n");
-        exit(PSI_RETURN_FAILURE);
+        throw std::logic_error("Error: invalid cache level!\n");
     }
 }
 
@@ -159,8 +159,7 @@ int **cacheprep_rhf(int level, int *cachefiles) {
 
         return cachelist;
     } else {
-        printf("Error: invalid cache level!\n");
-        exit(PSI_RETURN_FAILURE);
+        throw std::logic_error("Error: invalid cache level!\n");
     }
 }
 

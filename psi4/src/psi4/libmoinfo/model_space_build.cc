@@ -124,15 +124,16 @@ void ModelSpace::build() {
     }
 
     if (determinants.size() == 0) {
-        outfile->Printf("\n\n  No reference found in the model space");
-        outfile->Printf("\n  Please check the following:");
-        outfile->Printf("\n  1) Definition of FROZEN_DOCC, RESTRICTED_DOCC, ACTIVE, and FROZEN_UOCC");
-        //    outfile->Printf("\n  1) Definition of FOCC, DOCC, ACTV, and FVIR");
-        outfile->Printf("\n  2) Symmetry of the wavefunction");
-        outfile->Printf("\n  3) Charge and multiplicity");
-        outfile->Printf("\n\n  Ending the computation.\n");
+        const std::string message =
+            "\n\n  No reference found in the model space"
+            "\n  Please check the following:"
+            "\n  1) Definition of FROZEN_DOCC, RESTRICTED_DOCC, ACTIVE, and FROZEN_UOCC"
+            "\n  2) Symmetry of the wavefunction"
+            "\n  3) Charge and multiplicity"
+            "\n\n  Ending the computation.\n";
+        outfile->Printf(message);
 
-        throw PSIEXCEPTION("No reference found in the model space");
+        throw PSIEXCEPTION(message);
     }
 }
 

@@ -205,8 +205,8 @@ void CCOperation::zero_target_block(int h) {
 void CCOperation::fail_to_compute() {
     outfile->Printf("\n\nSolve couldn't perform the operation ");
     print_operation();
-
-    exit(EXIT_FAILURE);
+    outfile->Flush();
+    throw std::runtime_error("Solve could not perform an operation (see log file for details).\n");
 }
 
 //   Timer zero_timer;

@@ -181,7 +181,8 @@ add_module_names = True
 show_authors = True
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+sys.path.append(os.path.abspath("."))
+pygments_style = 'psistyle.PsiStyle'
 
 highlight_language = "python"
 

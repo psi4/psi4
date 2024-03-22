@@ -168,8 +168,6 @@ void CharacterTable::common_init() {
     // rotation axis (nt), and the number of irreps (nirrep_)
 
     if (!symb.length()) {
-        // ExEnv::errn() << "CharacterTable::CharacterTable: null point group" << endl;
-        // exit(1);
         throw PSIEXCEPTION("CharacterTable::CharacterTable: null point group");
     }
 

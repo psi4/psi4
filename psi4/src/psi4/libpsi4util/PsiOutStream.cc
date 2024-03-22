@@ -89,4 +89,5 @@ void PsiOutStream::Printf(const char* format, ...) {
 }
 void PsiOutStream::Printf(std::string fp) { (*stream_) << fp << std::flush; }
 
-}  // End Psi Namespace
+void PsiOutStream::Flush() { stream_->flush(); }
+}  // namespace psi

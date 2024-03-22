@@ -96,10 +96,7 @@ void SCF::startup() {
         same_a_b_orbs_ = true;
         same_a_b_dens_ = false;
         if (moinfo_scf->get_guess_occupation()) {
-            printf("\n  ERROR:  MCSCF cannot guess the active orbital occupation\n");
-            outfile->Printf("\n\n  MCSCF cannot guess the active orbital occupation\n");
-
-            exit(1);
+            throw std::runtime_error("MCSCF cannot guess the active orbital occupation\n");
         }
     }
 

@@ -159,10 +159,7 @@ double get_number(const std::string& str) {
         if (unsigned_numerator.size() * denominator.size() != 0) {
             value = to_double(numerator) / to_double(denominator);
         } else {
-            outfile->Printf("\n\nSolve couldn't parse the numerical factor %s\n\n", str.c_str());
-            outfile->Printf("\n\nCritical Breakdown of the Program. Blame the programmers!!!\n\n");
-
-            exit(1);
+            throw std::runtime_error("Solve couldn't parse the numerical factor " + str + ".\n");
         }
 
     } else {

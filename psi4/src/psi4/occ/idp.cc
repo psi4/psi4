@@ -97,9 +97,7 @@ void OCCWave::idp() {
         }  // end if nidpA != 0
 
         else if (nidpA == 0) {
-            outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
-            tstop();
-            exit(EXIT_SUCCESS);
+            throw std::logic_error("There are no non-redundant orbital rotation pairs! \n");
         }
 
     }  // end if (reference_ == "RESTRICTED")
@@ -125,9 +123,7 @@ void OCCWave::idp() {
         outfile->Printf("\tNumber of beta independent-pairs :%3d\n", nidpB);
 
         if (nidpA == 0 && nidpB == 0) {
-            outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
-            tstop();
-            exit(EXIT_SUCCESS);
+            throw std::logic_error("There are no non-redundant orbital rotation pairs! \n");
         }
 
         if (nidpA != 0) {
@@ -215,5 +211,5 @@ void OCCWave::idp() {
     }  // end if (reference_ == "UNRESTRICTED")
 
 }  // end of main
-}
-}  // End Namespaces
+}  // namespace occwave
+}  // namespace psi

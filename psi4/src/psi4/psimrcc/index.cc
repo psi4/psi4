@@ -116,10 +116,8 @@ void CCIndex::init() {
             make_three_index();
             break;
         default: {
-            outfile->Printf("\n\n\tThe CCIndex class cannot handle %s because there are more than three indices!!!\n\n",
-                            label.c_str());
-
-            exit(1);
+            throw std::logic_error("The CCIndex class cannot handle " + label +
+                                   "  because there are more than three indices!\n");
         }
     }
 }
@@ -274,9 +272,7 @@ void CCIndex::make_two_index() {
 
 void CCIndex::make_three_index() {
     if (label.find(">") != std::string::npos) {
-        outfile->Printf("\n\n\tThe CCIndex class cannot handle restricted loops for triplets!!!\n\n");
-
-        exit(1);
+        throw std::logic_error("The CCIndex class cannot handle restricted loops for triplets!\n");
     }
 
     std::vector<std::vector<short>> pairs;  // The pairs ordered as a vector
