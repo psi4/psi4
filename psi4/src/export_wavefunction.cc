@@ -271,7 +271,9 @@ void export_wavefunction(py::module& m) {
         .def("compute_energy", &Wavefunction::compute_energy, "Computes the energy of the Wavefunction.")
         .def("compute_gradient", &Wavefunction::compute_gradient, "Computes the gradient of the Wavefunction")
         .def("compute_hessian", &Wavefunction::compute_hessian, "Computes the Hessian of the Wavefunction.")
+        .def("set_external_hamiltonian", &Wavefunction::set_external_hamiltonian, "Sets an optional external hamiltonian.")
         .def("set_external_potential", &Wavefunction::set_external_potential, "Sets the requested external potential.")
+        .def("external_hamiltonian", &Wavefunction::external_hamiltonian, "Gets the requested external hamiltonian.")
         .def("external_pot", &Wavefunction::external_pot, "Gets the requested external potential.")
         .def("has_scalar_variable", &Wavefunction::has_scalar_variable,
              "Is the double QC variable (case-insensitive) set? Prefer :meth:`~psi4.core.Wavefunction.has_variable`.")

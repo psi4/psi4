@@ -127,6 +127,11 @@ def energy(name, **kwargs):
 
         Existing files to be renamed and copied for calculation restart, e.g. a serialized wfn or module-specific binary data.
 
+    :type external_hamiltonian: np.array
+    :param external_hamiltonian: ``np.array([[1.0, 0.0, 0.0, ...],[0.0, 1.0, ...],...) ``
+
+        Additional additive term, which will be added to the hamiltonian.
+
     .. _`table:energy_gen`:
 
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
