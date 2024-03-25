@@ -149,7 +149,6 @@ void CompositeJK::common_init() {
     // sn-LinK (via GauXC) 
     } else if (k_type == "SNLINK") {
         k_algo_ = std::make_shared<snLinK>(primary_, options_);
-        //k_algo_->set_snLinK_AO2USO(AO2USO_);
  
     // No K algorithm specified in SCF_TYPE
     } else if (k_type == "NONE") {
