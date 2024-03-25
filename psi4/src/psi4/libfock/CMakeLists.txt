@@ -49,14 +49,8 @@ if(TARGET gauxc::gauxc)
   target_compile_definitions(fock
     PUBLIC
       USING_gauxc
+      $<TARGET_PROPERTY:gauxc::gauxc,GAUXC_ENABLE_CUDA>
     )
-
-  if(${_gpu})
-    target_compile_definitions(fock
-      PUBLIC
-        USING_gauxc_GPU
-      )
-  endif()
 
   target_include_directories(fock
     PUBLIC
