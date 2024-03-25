@@ -741,3 +741,16 @@ Bibliography
    *J. Chem. Phys.* **154**, 064103 (2021).
    https://doi.org/10.1063/5.0040021
 
+.. [Williams-Young:2023:234104]
+   "Distributed memory, GPU accelerated Fock construction for hybrid, Gaussian basis density functional theory"
+   D. B. Williams-Young and A. Asadchev and D. T. Popovici and D. Clark and J. Waldrop and T.L. Windus and E. F. Valeev and W. A. de Jong   
+   *J. Chem. Phys.* **158**, 234104 (2023).
+   https://doi.org/10.1063/5.0151070
+
+.. [Laqua:2020:1456]
+   "Highly Efficient, Linear-Scaling Seminumerical Exact-Exchange Method for Graphic Processing Units"
+   H. Laqua and T. H. Thompson and J. Kussmann and C. Ochsenfeld
+   *J. Chem. Theory Comput.* **16**, 1456-1468 (2020)
+   https://doi.org/10.1021/acs.jctc.9b00860
+
+

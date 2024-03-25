@@ -77,7 +77,8 @@ std::tuple<
     radial_scheme_map["EM"] = GauXC::RadialQuad::MurrayHandyLaming; 
 
     // we are done
-    return std::move(std::make_tuple(pruning_scheme_map, radial_scheme_map));
+    //return std::move(std::make_tuple(pruning_scheme_map, radial_scheme_map));
+    return std::make_tuple(pruning_scheme_map, radial_scheme_map);
 }
 
 // constructs a permutation matrix for converting matrices to and from GauXC's integral ordering standard 
@@ -110,7 +111,8 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
     }
    
     // we are done
-    return std::move(permutation_matrix);
+    //return std::move(permutation_matrix);
+    return permutation_matrix;
 }
 
 // converts a Psi4::Molecule object to a GauXC::Molecule object
@@ -126,7 +128,8 @@ GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_mo
         gauxc_molecule.emplace_back(GauXC::AtomicNumber(atomic_number), x_coord, y_coord, z_coord);
     }
 
-    return std::move(gauxc_molecule);
+    //return std::move(gauxc_molecule);
+    return gauxc_molecule;
 }
 
 // converts a Psi4::BasisSet object to a GauXC::BasisSet object
@@ -167,7 +170,8 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         sh.set_shell_tolerance(basis_tol_); 
     }
 
-    return std::move(gauxc_basisset);
+    //return std::move(gauxc_basisset);
+    return gauxc_basisset;
 }
 
 snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primary, options) {
@@ -206,7 +210,8 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     auto ex = use_gpu_ ? GauXC::ExecutionSpace::Device : GauXC::ExecutionSpace::Host;  
 
     std::unique_ptr<GauXC::RuntimeEnvironment> rt = nullptr; 
-#ifdef USING_gauxc_GPU
+//#ifdef USING_gauxc_GPU
+#ifdef GAUXC_ENABLE_CUDA 
     if (use_gpu_) {
         // 0.9 indicates to use maximum 90% of maximum GPU memory, I think?
         rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.9 );
