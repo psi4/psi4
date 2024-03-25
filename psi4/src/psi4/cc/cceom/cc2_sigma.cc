@@ -265,11 +265,9 @@ void cc2_sigma(int i, int C_irr) {
         global_dpd_->buf4_close(&Z);
         global_dpd_->buf4_close(&SIjAb);
     } else if (params.eom_ref == 1) { /* ROHF */
-        printf("ROHF EOM_CC2 is not currently implemented\n");
-        exit(PSI_RETURN_FAILURE);
+        throw std::logic_error("ROHF EOM_CC2 is not currently implemented\n");
     } else { /* UHF */
-        printf("UHF EOM_CC2 is not currently implemented\n");
-        exit(PSI_RETURN_FAILURE);
+        throw std::logic_error("UHF EOM_CC2 is not currently implemented\n");
     }
 }
 
@@ -318,11 +316,9 @@ void cc2_sigmaSS(int i, int C_irr) {
         global_dpd_->file2_close(&CME);
         global_dpd_->file2_close(&SIA);
     } else if (params.eom_ref == 1) { /* ROHF */
-        printf("ROHF CC2-LR is not currently implemented\n");
-        exit(PSI_RETURN_FAILURE);
+        throw std::logic_error("ROHF CC2-LR is not currently implemented\n");
     } else { /* UHF */
-        printf("UHF CC2-LR is not currently implemented\n");
-        exit(PSI_RETURN_FAILURE);
+        throw std::logic_error("UHF CC2-LR is not currently implemented\n");
     }
 }
 

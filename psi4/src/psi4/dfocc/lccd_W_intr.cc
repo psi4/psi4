@@ -938,7 +938,7 @@ void DFOCC::lccd_WabefT2AB() {
     T->read(psio_, PSIF_DFOCC_AMPS);
 
     // malloc
-    //J = std::make_shared<Tensor2d>("J[A] <E|bf>", navirA, navirB * navirB);
+    // J = std::make_shared<Tensor2d>("J[A] <E|bf>", navirA, navirB * navirB);
     J = std::make_shared<Tensor2d>("J[A] <E|b>=f>", navirA, ntri_abBB);
     I = std::make_shared<Tensor2d>("I[A] <b|Ef>", navirB, navirA * navirB);
     X = std::make_shared<Tensor2d>("T[A] <b|Ij>", navirB, naoccA * naoccB);
@@ -964,8 +964,8 @@ void DFOCC::lccd_WabefT2AB() {
         for (int b = 0; b < navirB; ++b) {
             for (int e = 0; e < navirA; ++e) {
                 for (int f = 0; f < navirB; ++f) {
-                    //int bf = f + (b * navirB);
-                    int bf = index2(b,f);
+                    // int bf = f + (b * navirB);
+                    int bf = index2(b, f);
                     int ef = ab_idxAB->get(e, f);
                     I->set(b, ef, J->get(e, bf));
                 }
@@ -1019,13 +1019,10 @@ void DFOCC::cc_WabefT2AA(std::string amps) {
     // (-)T(ij, ab) = 1/2 (T_ij^ab - T_ji^ab) * (2 - \delta_{ab})
     if (amps == "L") {
         X = std::make_shared<Tensor2d>("L2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
-    }
-    else if (amps == "T") {
+    } else if (amps == "T") {
         X = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
-    }
-    else {
-        std::cout << "cc_W_abefT2AA --> unrecognized AMPS, it can be T or L \n";
-        exit(1);
+    } else {
+        throw std::logic_error("cc_W_abefT2AA --> unrecognized AMPS, it can be T or L \n");
     }
     X->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     T = std::make_shared<Tensor2d>("(-)T [I>=J|A>=B]", ntri_ijAA, ntri_abAA);
@@ -1088,13 +1085,10 @@ void DFOCC::cc_WabefT2AA(std::string amps) {
     // T(ia,jb) <-- A(a>=b,i>=j)
     if (amps == "L") {
         Tnew = std::make_shared<Tensor2d>("New L2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
-    }
-    else if (amps == "T") {
+    } else if (amps == "T") {
         Tnew = std::make_shared<Tensor2d>("New T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
-    }
-    else {
-        std::cout << "cc_W_abefT2AA --> unrecognized AMPS, it can be T or L \n";
-        exit(1);
+    } else {
+        throw std::logic_error("cc_W_abefT2AA --> unrecognized AMPS, it can be T or L \n");
     }
     Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
 #pragma omp parallel for
@@ -1136,13 +1130,10 @@ void DFOCC::cc_WabefT2BB(std::string amps) {
     // (-)T(ij, ab) = 1/2 (T_ij^ab - T_ji^ab) * (2 - \delta_{ab})
     if (amps == "L") {
         X = std::make_shared<Tensor2d>("L2 <ij|ab>", naoccB, naoccB, navirB, navirB);
-    }
-    else if (amps == "T") {
+    } else if (amps == "T") {
         X = std::make_shared<Tensor2d>("T2 <ij|ab>", naoccB, naoccB, navirB, navirB);
-    }
-    else {
-        std::cout << "cc_W_abefT2AA --> unrecognized AMPS, it can be T or L \n";
-        exit(1);
+    } else {
+        throw std::logic_error("cc_W_abefT2AA --> unrecognized AMPS, it can be T or L \n");
     }
     X->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     T = std::make_shared<Tensor2d>("(-)T [I>=J|A>=B]", ntri_ijBB, ntri_abBB);
@@ -1205,11 +1196,9 @@ void DFOCC::cc_WabefT2BB(std::string amps) {
     // T(ia,jb) <-- A(a>=b,i>=j)
     if (amps == "L") {
         Tnew = std::make_shared<Tensor2d>("New L2 <ij|ab>", naoccB, naoccB, navirB, navirB);
-    }
-    else if (amps == "T") {
+    } else if (amps == "T") {
         Tnew = std::make_shared<Tensor2d>("New T2 <ij|ab>", naoccB, naoccB, navirB, navirB);
-    }
-    else {
+    } else {
         std::cout << "cc_W_abefT2AA --> unrecognized AMPS, it can be T or L \n";
         exit(1);
     }
@@ -1252,26 +1241,23 @@ void DFOCC::cc_WabefT2AB(std::string amps) {
     bQabB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ab)", nQ, ntri_abBB);
     bQabB->read(psio_, PSIF_DFOCC_INTS);
 
-
     // t_Ij^Ab <= \sum_{Ef} T_Ij^Ef <Ab|Ef>
     if (amps == "L") {
         Tnew = std::make_shared<Tensor2d>("New L2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         Tnew->read(psio_, PSIF_DFOCC_AMPS);
         T = std::make_shared<Tensor2d>("L2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
-    }
-    else if (amps == "T") {
+    } else if (amps == "T") {
         Tnew = std::make_shared<Tensor2d>("New T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         Tnew->read(psio_, PSIF_DFOCC_AMPS);
         T = std::make_shared<Tensor2d>("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
-    }
-    else {
+    } else {
         std::cout << "cc_W_abefT2AA --> unrecognized AMPS, it can be T or L \n";
         exit(1);
     }
     T->read(psio_, PSIF_DFOCC_AMPS);
 
     // malloc
-    //J = std::make_shared<Tensor2d>("J[A] <E|bf>", navirA, navirB * navirB);
+    // J = std::make_shared<Tensor2d>("J[A] <E|bf>", navirA, navirB * navirB);
     J = std::make_shared<Tensor2d>("J[A] <E|b>=f>", navirA, ntri_abBB);
     I = std::make_shared<Tensor2d>("I[A] <b|Ef>", navirB, navirA * navirB);
     X = std::make_shared<Tensor2d>("T[A] <b|Ij>", navirB, naoccA * naoccB);
@@ -1297,8 +1283,8 @@ void DFOCC::cc_WabefT2AB(std::string amps) {
         for (int b = 0; b < navirB; ++b) {
             for (int e = 0; e < navirA; ++e) {
                 for (int f = 0; f < navirB; ++f) {
-                    //int bf = f + (b * navirB);
-                    int bf = index2(b,f);
+                    // int bf = f + (b * navirB);
+                    int bf = index2(b, f);
                     int ef = ab_idxAB->get(e, f);
                     I->set(b, ef, J->get(e, bf));
                 }
@@ -1337,7 +1323,6 @@ void DFOCC::cc_WabefT2AB(std::string amps) {
     timer_off("WabefT2");
 
 }  // end cc_WabefT2AB
-
 
 }  // namespace dfoccwave
 }  // namespace psi

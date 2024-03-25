@@ -50,6 +50,7 @@ class PSI_API PsiOutStream {
     void Printf(const char* fmt, ...);
     void Printf(std::string fp);
     void MakeBanner(std::string header);
+    void Flush();
 
     std::ostream* stream() { return stream_; }
 
@@ -66,5 +67,5 @@ class PSI_API PsiOutStream {
     // }
 };
 
-}  // End Psi namespace
+}  // namespace psi
 #endif

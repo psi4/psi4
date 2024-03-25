@@ -67,6 +67,12 @@ DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
     if(Process::environment.options["SCF_SUBTYPE"].has_changed()) {
         subalgo_ = Process::environment.options.get_str("SCF_SUBTYPE");
     }
+    else {
+        // Default to in-core for MemDF b/c out-of-core is so slow we don't want it to be hit w/o explicit user SCF_SUBTYPE.
+        // By setting this, checks below will crash if memory is insufficient.
+        // Needed b/c the enough_mem ? mem : disk memory logic is slightly different from the DFHelper memory logic, so one can hit MemDF+Disk_algorithm by accident.
+        subalgo_ = "INCORE";
+    }
     
     nbf_ = primary_->nbf();
     naux_ = aux_->nbf();

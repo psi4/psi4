@@ -36,6 +36,8 @@
 
 #include "dimension.h"
 
+#include <eigen3/Eigen/Core>
+
 namespace psi {
 
 struct dpdfile2;
@@ -49,6 +51,7 @@ class Dimension;
 class Molecule;
 class Vector3;
 class Matrix;
+
 using SharedMatrix = std::shared_ptr<Matrix>;
 
 enum diagonalize_order { evals_only_ascending = 0, ascending = 1, evals_only_descending = 2, descending = 3 };
@@ -271,6 +274,10 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void copy(const Matrix& cp);
     void copy(const Matrix* cp);
     /** @} */
+
+    /// returns an Eigen::Map object to the underlying matrix data buffer
+    Eigen::Map<Eigen::MatrixXd> eigen_map();
+    std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps();
 
     /**
     ** For a matrix of 3D vectors (ncol==3), rotate a set of points around an

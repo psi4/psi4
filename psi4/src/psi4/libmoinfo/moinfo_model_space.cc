@@ -181,15 +181,15 @@ void MOInfo::build_model_space() {
     }
 
     if (references.size() == 0) {
-        outfile->Printf("\n\n  MOInfo found no reference in the model space");
-        outfile->Printf("\n  Please check the following:");
-        outfile->Printf("\n  1) Definition of FROZEN_DOCC, RESTRICTED_DOCC, ACTIVE, and FROZEN_UOCC");
-        //        outfile->Printf("\n  1) Definition of FOCC, DOCC, ACTV, and FVIR");
-        outfile->Printf("\n  2) Symmetry of the wavefunction");
-        outfile->Printf("\n  3) Charge and multiplicity");
-        outfile->Printf("\n\n  PSIMRCC will end the computation.\n");
-
-        exit(PSI_RETURN_FAILURE);
+        std::string message =
+            "\n\n  No reference found in the model space"
+            "\n  Please check the following:"
+            "\n  1) Definition of FROZEN_DOCC, RESTRICTED_DOCC, ACTIVE, and FROZEN_UOCC"
+            "\n  2) Symmetry of the wavefunction"
+            "\n  3) Charge and multiplicity"
+            "\n\n  Ending the computation.\n";
+        outfile->Printf(message);
+        throw std::logic_error(message);
     }
 }
 

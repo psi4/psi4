@@ -99,11 +99,7 @@ class PluginFileManager {
         std::string psiDataDirWithPlugin = (filesystem::path(psiDataDirName) / filesystem::path("plugin")).str();
 
         if (!filesystem::path(psiDataDirWithPlugin).is_directory()) {
-            printf(
-                "Unable to read the Psi4 plugin folder - check the PSIDATADIR environmental variable\n"
-                "      Current value of PSIDATADIR is %s\n",
-                psiDataDirName.c_str());
-            exit(1);
+            throw std::runtime_error("Unable to read the Psi4 plugin folder - check the PSIDATADIR environmental variable!\nCurrent value of PSIDATADIR is " + psiDataDirName + "\n");
         }
 
         // Make a faux camel-case of the name
@@ -129,8 +125,7 @@ class PluginFileManager {
             // Load in Makefile.template
             FILE *fp = fopen(source_name.c_str(), "r");
             if (fp == nullptr) {
-                printf("create_new_plugin: Unable to open %s template.\n", source_name.c_str());
-                exit(1);
+                throw std::runtime_error("create_new_plugin: Unable to open " + source_name + " template.\n");
             }
             // Stupid way to read in entire file.
             char line[256];
@@ -148,8 +143,7 @@ class PluginFileManager {
             fp = fopen(target_name.c_str(), "w");
             if (fp == 0) {
                 // boost::filesystem::remove_all(plugin_name_);
-                printf("Unable to create %s\n", target_name.c_str());
-                exit(1);
+                throw std::runtime_error("Unable to create " + target_name + "\n");
             }
             fputs(filestring.c_str(), fp);
             fclose(fp);
@@ -168,8 +162,7 @@ void create_new_plugin(std::string name, const std::string &template_name) {
     // Start == check to make sure the plugin name is valid
     std::string plugin_name = make_filename(name);
     if (!std::isalpha(plugin_name[0])) {
-        printf("Plugin name must begin with a letter.\n");
-        exit(1);
+        throw std::logic_error("Plugin name must begin with a letter.\n");
     }
     // End == check to make sure the plugin name is valid
 
@@ -177,8 +170,7 @@ void create_new_plugin(std::string name, const std::string &template_name) {
 
     // Make a directory with the name plugin_name
     if (!filesystem::create_directory(plugin_name)) {
-        printf("Plugin directory %s already exists.\n", plugin_name.c_str());
-        exit(1);
+        throw std::runtime_error("Plugin directory " + plugin_name + " already exists.\n");
     }
     printf("Created new plugin directory, %s, using '%s' template.\n", plugin_name.c_str(),
            template_name_lower.c_str());

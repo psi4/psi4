@@ -26,39 +26,19 @@
  * @END LICENSE
  */
 
-/*
-** \file
-** \brief Initialize an array of doubles
-** \ingroup CIOMR
-*/
-
-#include "psi4/psifiles.h"
-#include <cstdio>
+#include <cmath>
 #include <cstdlib>
-#include "psi4/psi4-dec.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
+
+#include <integratorxx/quadrature.hpp>
+
+#include "psi4/libmints/wavefunction.h"
+
 namespace psi {
+namespace dummy_integratorxx {
 
-/*!
-** init_array(): This function initializes an array of doubles of
-** length 'size' and returns a pointer to the first element
-**
-** \param size = length of array (size_t to allow large arrays)
-**
-** Returns: pointer to new array
-**
-** \ingroup CIOMR
-*/
-double *init_array(size_t size) {
-    double *array;
+SharedWavefunction dummy_intxx(SharedWavefunction ref_wfn, Options& options) {
 
-    if ((array = (double *)malloc(size * (size_t)sizeof(double))) == nullptr) {
-        std::ostringstream oss;
-        oss << "init_array: trouble allocating memory, size = " << size << "\n";
-        throw std::runtime_error(oss.str());
-    }
-    memset(array, 0, size * (size_t)sizeof(double));
-    return (array);
+    return ref_wfn;
 }
+}  // namespace dummy_integratorxx
 }  // namespace psi
