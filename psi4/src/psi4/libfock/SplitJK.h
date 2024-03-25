@@ -333,8 +333,6 @@ class PSI_API snLinK : public SplitJK {
     // => general Psi4 settings <= //
     // are we doing an incremental Fock build this iteration?
     bool incfock_iter_;
-    /// sn-LinK grid currently in use for this iteration
-    std::string current_grid_;
 
   #ifdef USING_gauxc
     // use Eigen for matrix inputs to GauXC
@@ -378,10 +376,7 @@ class PSI_API snLinK : public SplitJK {
     /// GauXC integrator for actually performing snLinK
     GauXC::IntegratorSettingsSNLinK integrator_settings_;
     std::unique_ptr<GauXC::XCIntegratorFactory<matrix_type> > integrator_factory_;
-    std::unordered_map<
-        std::string,
-        std::shared_ptr<GauXC::XCIntegrator<matrix_type>> 
-    > integrators_;
+    std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_;
   
     // => Psi4 -> GauXC conversion functions <= // 
     GauXC::Molecule psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule);
