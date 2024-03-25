@@ -65,8 +65,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-;
-
 namespace psi {
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -73,20 +73,20 @@ class PSI_API DIISManager {
     template <typename ... types>
     void set_error_vector_size(types ... arrays) {
         pydiis.attr("set_error_vector_size")(arrays...);
-    };
+    }
     template <typename ... types>
     void set_vector_size(types... arrays) {
         pydiis.attr("set_vector_size")(arrays...);
-    };
+    }
     template <typename... types>
     bool extrapolate(types... arrays) {
         return py::len(pydiis.attr("extrapolate")(arrays...));
-    };
+    }
     template <typename ... types>
     bool add_entry(types... arrays) {
         auto success = pydiis.attr("add_entry")(arrays...);
         return success.template cast<bool>();
-    };
+    }
 
     void delete_diis_file();
 
