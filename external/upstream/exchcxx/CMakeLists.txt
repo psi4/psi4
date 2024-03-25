@@ -1,5 +1,4 @@
 if(${ENABLE_ExchCXX})
-    #find_package(ExchCXX 0.0.1 CONFIG PATHS "${GAUXC_DIR}/../ExchCXX") 
     find_package(ExchCXX 0.0.1 CONFIG COMPONENTS IntegratorXX ExchCXX) 
 
     if(${ExchCXX_FOUND})

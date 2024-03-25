@@ -51,7 +51,6 @@ if(TARGET gauxc::gauxc)
       USING_gauxc
       $<TARGET_PROPERTY:gauxc::gauxc,GAUXC_ENABLE_CUDA>
     )
-
   target_include_directories(fock
     PUBLIC
       $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
