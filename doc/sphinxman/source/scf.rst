@@ -749,11 +749,11 @@ LINK
     Exchange term. See :ref:`sec:scflink` for more information.
 SNLINK
     An algorithm based on the "seminumerical Linear Exchange" (sn-LinK)
-    approach described in [Williams-Young:2023:234104]_. SNLINK is only available if |PSIfour| 
-    is compiled with the GauXC library. Algorithmically,
-    SNLINK is very similar to COSX, differing primarily in screening of the analytic
-    3-center integrals. In terms of implementation, SNLINK is more efficienct, owing
-    to more highly-optimized integral contraction kernels; and supports execution
+    approach described in [Laqua:2020:1456]_, SNLINK is only available if |PSIfour|
+    is compiled with the GauXC library, described in [Williams-Young:2023:234104]_.
+    Algorithmically, SNLINK is very similar to COSX, differing primarily in screening of
+    the analytic 3-center integrals. In terms of implementation, SNLINK is more efficiect, 
+    owing to more highly-optimized integral contraction kernels; and supports execution
     on Graphics Processing Units (GPUs). See :ref:`sec:scfsnlink` for more information.
 
 In some cases the above algorithms have multiple implementations that return
@@ -909,45 +909,52 @@ To control the LinK algorithm, here are the list of options provided.
 
 .. _`sec:scfsnlink`:
 
-Semi-numerical Linear Exchange
+Seminumerical Linear Exchange
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Similar to the COSX algorithm provided by Psi4, the Semi-numerical Linear Exchange (sn-LinK) algorithm, devised
-by Ochsenfeld in [Laqua:2020:1456], improves efficiency of the K construction process by
+Similar to the COSX algorithm provided by |PSIfour|, the seminumerical Linear Exchange (sn-LinK) algorithm, devised
+by Ochsenfeld in [Laqua:2020:1456]_, improves efficiency of the K construction process by
 decomposing computation of the ERI tensor into a series of contractions involving grid-computed basis
 function components and analytic 3-center integrals. As a "semi-numerical" Exchange construction method,
 sn-LinK is also comparable to the pseudospectral method of Friesner.
 
-sn-LinK and COSX have a number of significant differences in implementation details in Psi4, however.
-First and foremost, the COSX implementation is contained within Psi4 itself, and is thus always available
-for execution. On the other hand, the sn-LinK implementation in Psi4 is tied to the GauXC standalone
-library as discussed in [Williams-Young:2023:234104]_; thus, the Psi4-GauXC interface must be built
+sn-LinK and COSX have a number of significant differences in implementation details in |PSIfour|, however.
+First and foremost, the COSX implementation is contained within |PSIfour| itself, and is thus always available
+for execution. On the other hand, the sn-LinK implementation in |PSIfour| is tied to the GauXC standalone
+library discussed in [Williams-Young:2023:234104]_; thus, the |PSIfour|-GauXC interface must be built
 for sn-LinK to be used. Second, the GauXC sn-LinK interface is more
-efficient than the Psi4 COSX code on multiple levels. For CPU execution, GauXC's sn-LinK uses highly-optimized
-kernels for the contraction of the analytic integrals, whereas Psi4's COSX uses a less-optimized, more
+efficient than the |PSIfour| COSX code on multiple levels. For CPU execution, GauXC's sn-LinK uses highly-optimized
+kernels for the contraction of the analytic integrals, whereas |PSIfour|'s COSX uses a less-optimized, more
 general contraction kernel. Additionally, GauXC's sn-LinK code supports execution on GPUs, allowing for
-GPU-enabled construction of the Exchange matrix, while Psi4's COSX does not. In general,
+GPU-enabled construction of the Exchange matrix, while |PSIfour|'s COSX does not. In general,
 sn-LinK will provide better runtime performance for hitting a desired accuracy
-threshold compared to Psi4's COSX. Third, some low-level implementation details differ between the two.  
-For example, Psi4's COSX uses a dual-grid scheme similar to that originally proposed by Neese, converging the SCF 
-on a small grid, then running a number of SCF iterations, equal to the value set by the |scf__cosx_maxiter_final|, 
-on a larger grid. In contrast, sn-LinK only uses a single-grid scheme, simply converging the SCF on one grid. 
+threshold compared to |PSIfour|'s COSX. Third, some low-level implementation details differ between the two.  
+For example, |PSIfour|'s COSX uses a dual-grid scheme similar to that originally proposed by Neese, 
+converging the SCF on a small grid, then running a number of SCF iterations, 
+equal to the value set by the |scf__cosx_maxiter_final|, on a larger grid. 
+In contrast, sn-LinK only uses a single-grid scheme, simply converging the SCF on one grid. 
 As another example, while the COSX grid defaults are selected to emphasize speed over accuracy, 
-the defaults for sn-LinK are selected to achieve higher accuracy (~0.1 kcal/mol for interaction/conformer energies).
+the defaults for sn-LinK are selected to achieve higher accuracy (~0.1 kcal/mol error for interaction/conformer energies).
 
 To control compilation and linking of the optional GauXC dependency required for the sn-LinK algorithm, 
 here are the list of compile-time options provided.
   
-  :makevar:`ENABLE_gauxc`: Compile Psi4 with support for GauXC.
-  :makevar:`gauxc_DIR`: Location of the external GauXC install to compile Psi4 with, if using an external GauXC instance.
-  :makevar:`gauxc_ENABLE_GPU`: Enable GPU support for the Psi4-GauXC interface class. When building GauXC internally within Psi4, this keyword controls whether to enable GPU support on the internally-built GauXC instance. When using an external GauXC build, this keyword must align with the GPU capabilities of the external GauXC install.  
+* :makevar:`ENABLE_gauxc`: Compile Psi4 with support for GauXC.
+
+* :makevar:`gauxc_DIR`: Location of the external GauXC install to compile Psi4 with, if using an external GauXC instance.
+
+* :makevar:`gauxc_ENABLE_GPU`: Enable GPU support for the Psi4-GauXC interface class. When building GauXC internally within Psi4, this keyword controls whether to enable GPU support on the internally-built GauXC instance. When using an external GauXC build, this keyword must align with the GPU capabilities of the external GauXC install.  
 
 To control the sn-LinK algorithm, here are the list of options provided.
   
   |scf__snlinK_radial_points|: Number of radial points to use for the sn-LinK grid. Defaults to 70. 
+
   |scf__snlinK_spherical_points|: Number of spherical points to use for the sn-LinK grid. Defaults to 302.
+
   |scf__snlinK_radial_scheme|: Radial quadrature scheme to use for the sn-LinK grid. Defaults to ``MURA``. Note that, although different from the more common Psi4 radial quadrature scheme of ``TREUTLER``, the default of ``MURA`` matches the default radial quadrature scheme used by GauXC.
+
   |scf__snlinK_ints_tolerance|: The integral screening tolerance used in the sn-LinK algorithm. Defaults to the |scf__ints_tolerance| option.
+
   |scf__snlinK_use_gpu|: Select whether to execute the sn-LinK algorithm on GPU or not. Setting this option to ``true`` will fail unless the Psi4-GauXC interface is compiled with GPU support.
 
 
