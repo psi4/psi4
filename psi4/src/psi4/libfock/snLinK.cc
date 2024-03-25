@@ -134,7 +134,7 @@ GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_mo
 
 // converts a Psi4::BasisSet object to a GauXC::BasisSet object
 template <typename T>
-GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset, bool force_cartesian) {
+GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset, double basis_tol, bool force_cartesian) {
     using prim_array = typename GauXC::Shell<T>::prim_array;
     using cart_array = typename GauXC::Shell<T>::cart_array;
 
@@ -167,7 +167,7 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
     }
     
     for (auto& sh : gauxc_basisset) {
-        sh.set_shell_tolerance(basis_tol_); 
+        sh.set_shell_tolerance(basis_tol); 
     }
 
     //return std::move(gauxc_basisset);
@@ -180,16 +180,16 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // => Part #1: Options Processing <= //
     timer_on("snLinK: Options Processing");
 
-    // set Psi4-specific parameters
+    // set a few Psi4-specific parameters
     incfock_iter_ = false;
   
-    radial_points_ = options_.get_int("SNLINK_RADIAL_POINTS");
-    spherical_points_ = options_.get_int("SNLINK_SPHERICAL_POINTS");
     basis_tol_ = options.get_double("SNLINK_BASIS_TOLERANCE");
 
     pruning_scheme_ = options_.get_str("SNLINK_PRUNING_SCHEME");
     radial_scheme_ = options_.get_str("SNLINK_RADIAL_SCHEME");
  
+    current_grid_ = "Final"; // this is the only option for now 
+
 //#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
 #if psi4_SHGSHELL_ORDERING == 1 
     is_cca_ = true;
@@ -279,38 +279,19 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     
     timer_off("snLinK: Options Processing");
     
-    // => Part #1: Construct GauXC Integrator <= //
-    timer_on("snLinK: Construct GauXC Integrator");
+    // => Part #2: Construct GauXC Factories <= //
+    timer_on("snLinK: Construct GauXC Factories");
     
     // convert Psi4 fundamental quantities to GauXC 
     auto gauxc_mol = psi4_to_gauxc_molecule(primary_->molecule());
-    auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_, force_cartesian_);
+    auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_, basis_tol_, force_cartesian_);
 
-    // create snLinK grid for GauXC
-    auto grid_batch_size = options_.get_int("SNLINK_GRID_BATCH_SIZE");
-    auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
-        gauxc_mol, 
-        pruning_scheme_map[pruning_scheme_],
-        GauXC::BatchSize(grid_batch_size), 
-        radial_scheme_map[radial_scheme_], 
-        GauXC::RadialSize(radial_points_),
-        GauXC::AngularSize(spherical_points_)
-    );
-
-    // construct load balancer
+     // construct load balancer and molecular weights factory factories
     const std::string load_balancer_kernel = options_.get_str("SNLINK_LOAD_BALANCER_KERNEL"); 
-    const size_t quad_pad_value = 1;
-
     gauxc_load_balancer_factory_ = std::make_unique<GauXC::LoadBalancerFactory>(ex, load_balancer_kernel);
-    auto gauxc_load_balancer = gauxc_load_balancer_factory_->get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary, quad_pad_value);
-    
-    // construct weights module
+
     const std::string mol_weights_kernel = options_.get_str("SNLINK_MOL_WEIGHTS_KERNEL");
     gauxc_mol_weights_factory_ = std::make_unique<GauXC::MolecularWeightsFactory>(ex, mol_weights_kernel, GauXC::MolecularWeightsSettings{});
-    auto gauxc_mol_weights = gauxc_mol_weights_factory_->get_instance();
-
-    // apply partition weights
-    gauxc_mol_weights.modify_weights(gauxc_load_balancer);
 
     // set integrator ERI screening options 
     bool do_no_screen = options.get_str("SCREENING") == "NONE";
@@ -326,19 +307,54 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     const std::string reduction_kernel = options_.get_str("SNLINK_REDUCTION_KERNEL");  
     const std::string lwd_kernel = options_.get_str("SNLINK_LWD_KERNEL");  
 
-    // construct dummy functional
-    // note that the snLinK used by the eventually-called eval_exx function is agnostic to the input functional!
-    const std::string dummy_func_str = "B3LYP";
-    auto spin = options_.get_str("REFERENCE") == "UHF" ? ExchCXX::Spin::Polarized : ExchCXX::Spin::Unpolarized;
-
-    ExchCXX::Functional dummy_func_key = ExchCXX::functional_map.value(dummy_func_str);
-    ExchCXX::XCFunctional dummy_func = { ExchCXX::Backend::builtin, dummy_func_key, spin };  
-
-    // actually construct integrator 
+    // construct integrator factory 
     integrator_factory_ = std::make_unique<GauXC::XCIntegratorFactory<matrix_type> >(ex, integrator_input_type, integrator_kernel, lwd_kernel, reduction_kernel);
-    integrator_ = integrator_factory_->get_shared_instance(dummy_func, gauxc_load_balancer); 
+ 
+    timer_off("snLinK: Construct GauXC Factories");
     
-    timer_off("snLinK: Construct GauXC Integrator");
+    // => Part #3: Construct GauXC Integrators <= //
+    timer_on("snLinK: Construct GauXC Integrators");
+    
+    integrators_["Final"] = nullptr;
+
+    for (auto& [ integratorname, integrator ] : integrators_) {
+        auto radial_points = options_.get_int("SNLINK_RADIAL_POINTS");
+        auto spherical_points = options_.get_int("SNLINK_SPHERICAL_POINTS");
+
+        // create snLinK grid for GauXC
+        auto grid_batch_size = options_.get_int("SNLINK_GRID_BATCH_SIZE");
+        auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
+            gauxc_mol, 
+            pruning_scheme_map[pruning_scheme_],
+            GauXC::BatchSize(grid_batch_size), 
+            radial_scheme_map[radial_scheme_], 
+            GauXC::RadialSize(radial_points),
+            GauXC::AngularSize(spherical_points)
+        );
+   
+        // construct load balancer
+        const size_t quad_pad_value = 1;
+        auto gauxc_load_balancer = gauxc_load_balancer_factory_->get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary, quad_pad_value);
+        
+        // construct weights module
+        auto gauxc_mol_weights = gauxc_mol_weights_factory_->get_instance();
+
+        // apply partition weights
+        gauxc_mol_weights.modify_weights(gauxc_load_balancer);
+
+        // construct dummy functional
+        // note that the snLinK used by the eventually-called eval_exx function is agnostic to the input functional!
+        const std::string dummy_func_str = "B3LYP";
+        auto spin = options_.get_str("REFERENCE") == "UHF" ? ExchCXX::Spin::Polarized : ExchCXX::Spin::Unpolarized;
+    
+        ExchCXX::Functional dummy_func_key = ExchCXX::functional_map.value(dummy_func_str);
+        ExchCXX::XCFunctional dummy_func = { ExchCXX::Backend::builtin, dummy_func_key, spin };  
+
+        // construct integrator
+        integrator = integrator_factory_->get_shared_instance(dummy_func, gauxc_load_balancer); 
+    }
+ 
+    timer_off("snLinK: Construct GauXC Integrators");
     
     timer_off("snLinK: Setup");
 }
@@ -351,8 +367,8 @@ void snLinK::print_header() const {
         outfile->Printf("  ==> snLinK: GauXC Semi-Numerical Linear Exchange K <==\n\n");
         
         outfile->Printf("    K Execution Space: %s\n", (use_gpu_) ? "Device" : "Host");
-        outfile->Printf("    K Grid Radial Points: %i\n", radial_points_);
-        outfile->Printf("    K Grid Spherical/Angular Points: %i\n\n", spherical_points_);
+        //outfile->Printf("    K Grid Radial Points: %i\n", radial_points_);
+        //outfile->Printf("    K Grid Spherical/Angular Points: %i\n\n", spherical_points_);
         outfile->Printf("    K Screening?:     %s\n", (integrator_settings_.screen_ek) ? "Yes" : "No");
         outfile->Printf("    K Ints Cutoff:     %11.0E\n", integrator_settings_.energy_tol);
         outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
@@ -381,6 +397,9 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     // we need to know if we are using a spherical harmonic basis
     // much of the behavior here is influenced by this
     auto is_spherical_basis = primary_->has_puream();
+
+    // also, what integrator/grid are we using?
+    auto integrator = integrators_[current_grid_];
    
     // compute K for density Di using GauXC
     for (int iD = 0; iD != D.size(); ++iD) {
@@ -445,17 +464,17 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         if (incfock_iter_) { 
             // K buffer (i.e., delta K) must be back-transformed and added to Psi4 K separately if cartesian transformation is forced...
             if (force_cartesian_ && is_spherical_basis) {
-                K_buffer_eigen = integrator_->eval_exx(D_buffer_eigen, integrator_settings_);
+                K_buffer_eigen = integrator->eval_exx(D_buffer_eigen, integrator_settings_);
                 K_buffer->back_transform(sph_to_cart_matrix_);
                 K[iD]->add(K_buffer);
             // ... otherwise the computation and addition can be bundled together 
             } else {
-                K_buffer_eigen += integrator_->eval_exx(D_buffer_eigen, integrator_settings_);
+                K_buffer_eigen += integrator->eval_exx(D_buffer_eigen, integrator_settings_);
             }
 
         // ... else compute full K 
         } else {
-            K_buffer_eigen = integrator_->eval_exx(D_buffer_eigen, integrator_settings_);        
+            K_buffer_eigen = integrator->eval_exx(D_buffer_eigen, integrator_settings_);        
             if (force_cartesian_ && is_spherical_basis) {
                 K[iD]->back_transform(K_buffer, sph_to_cart_matrix_);          
             }
