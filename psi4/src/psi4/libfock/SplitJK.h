@@ -333,7 +333,9 @@ class PSI_API snLinK : public SplitJK {
     // => general Psi4 settings <= //
     // are we doing an incremental Fock build this iteration?
     bool incfock_iter_;
- 
+    /// sn-LinK grid currently in use for this iteration
+    std::string current_grid_;
+
   #ifdef USING_gauxc
     // use Eigen for matrix inputs to GauXC
     // perhaps this can be changed later
@@ -376,11 +378,14 @@ class PSI_API snLinK : public SplitJK {
     /// GauXC integrator for actually performing snLinK
     GauXC::IntegratorSettingsSNLinK integrator_settings_;
     std::unique_ptr<GauXC::XCIntegratorFactory<matrix_type> > integrator_factory_;
-    std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_;
+    std::unordered_map<
+        std::string,
+        std::shared_ptr<GauXC::XCIntegrator<matrix_type>> 
+    > integrators_;
   
     // => Psi4 -> GauXC conversion functions <= // 
     GauXC::Molecule psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule);
-    template<typename T> GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset, bool force_cartesian);
+    template<typename T> GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset, double basis_tol, bool force_cartesian);
 
     // => Psi4 -> GauXC enum mappings <= //
     std::tuple<
@@ -408,9 +413,8 @@ class PSI_API snLinK : public SplitJK {
     /// Destructor
     ~snLinK() override;
 
-    /// Build the exchange (K) matrix using COSX
-    /// primary reference is https://doi.org/10.1016/j.chemphys.2008.10.036
-    /// overlap fitting is discussed in https://doi.org/10.1063/1.3646921
+    /// Build the exchange (K) matrix using sn-LinK 
+    /// primary reference is https://doi.org/10.1063/5.0151070 
     void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& G_comp,
          std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
