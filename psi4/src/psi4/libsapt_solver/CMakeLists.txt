@@ -31,3 +31,16 @@ list(APPEND sources
   utils.cc
   )
 psi4_add_module(lib sapt_solver sources)
+
+if(TARGET gauxc::gauxc)
+  target_include_directories(sapt_solver
+    PUBLIC
+      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+  target_link_libraries(sapt_solver
+    PUBLIC 
+      gauxc::gauxc 
+    )
+endif()
+
+

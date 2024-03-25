@@ -146,7 +146,11 @@ void CompositeJK::common_init() {
     // COSX
     } else if (k_type == "COSX") {
         k_algo_ = std::make_shared<COSK>(primary_, options_);
-    
+
+    // sn-LinK (via GauXC) 
+    } else if (k_type == "SNLINK") {
+        k_algo_ = std::make_shared<snLinK>(primary_, options_);
+ 
     // No K algorithm specified in SCF_TYPE
     } else if (k_type == "NONE") {
         k_algo_ = nullptr;
@@ -264,6 +268,8 @@ void CompositeJK::compute_JK() {
         auto Dnorm = Process::environment.globals["SCF D NORM"];
         // Do IFB on this iteration?
         do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+
+        if (k_algo_->name() == "sn-LinK") k_algo_->set_snLinK_incfock_iter(do_incfock_iter_);
 
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
 

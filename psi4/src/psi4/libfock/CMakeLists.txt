@@ -41,6 +41,38 @@ target_link_libraries(fock
     Libint2::cxx  # for <libint2/config.h>
   )
 
+if(TARGET gauxc::gauxc)
+  target_sources(fock
+    PRIVATE
+      snLinK.cc
+    )
+  target_compile_definitions(fock
+    PUBLIC
+      USING_gauxc
+      $<TARGET_PROPERTY:gauxc::gauxc,GAUXC_ENABLE_CUDA>
+    )
+  target_include_directories(fock
+    PUBLIC
+      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+  target_link_libraries(fock
+    PUBLIC 
+      gauxc::gauxc 
+    )
+else()
+  target_sources(fock
+    PRIVATE
+      snLinK_stub.cc
+    )
+endif()
+
+if(TARGET IntegratorXX::IntegratorXX)
+  target_link_libraries(fock
+    PRIVATE
+      IntegratorXX::IntegratorXX
+    )
+endif()
+
 if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(fock
     PUBLIC

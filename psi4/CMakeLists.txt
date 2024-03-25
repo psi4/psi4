@@ -157,6 +157,23 @@ get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using gau2grid${ColourReset}: ${_loc} (version ${gau2grid_VERSION})")
 
+if(${ENABLE_gauxc})
+    if(NOT "${gauxc_DIR}" STREQUAL "")
+        if("${IntegratorXX_DIR}" STREQUAL "")
+           set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
+        endif()
+
+        set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
+    endif() 
+
+    find_package(gauxc 0.0.1 CONFIG REQUIRED COMPONENTS IntegratorXX ExchCXX)
+    get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using gauxc${ColourReset}: ${_loc} (version ${gauxc_VERSION})")
+else()
+    message(STATUS "Disabled GauXC ${gauxc_DIR}")
+endif()
+
 if(${ENABLE_gdma})
     # neither gdma nor pygdma actually needed c-side; runtime detection would
     #   do just as well. included for completeness and so gdma_PYMOD can be
