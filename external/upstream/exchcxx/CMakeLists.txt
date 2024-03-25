@@ -25,23 +25,17 @@ if(${ENABLE_ExchCXX})
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                       -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                       -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
+                       -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
+                       -DEXCHCXX_ENABLE_TESTS=OFF
+                       -DEXCHCXX_ENABLE_CUDA=${gauxc_ENABLE_GPU}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
-                       -DGAUXC_ENABLE_CUDA=${gauxc_ENABLE_GPU}
-                       -DGAUXC_ENABLE_MPI=OFF
-                       -DGAUXC_ENABLE_TESTS=OFF
-                       -DGAUXC_ENABLE_HDF5=OFF
-            CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-                             -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+            CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1})
-
+ 
         set(ExchCXX_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/ExchCXX CACHE PATH "path to internally built ExchCXXConfig.cmake" FORCE)
     endif()
 else()
