@@ -40,7 +40,7 @@ if(${ENABLE_gauxc})
         include(ExternalProject)
         ExternalProject_Add(gauxc_external
             DEPENDS integratorxx_external exchcxx_external
-            URL https://github.com/davpoolechem/GauXC/archive/properties-baseline.tar.gz 
+            URL https://github.com/davpoolechem/GauXC/archive/dpoole34/properties-baseline.tar.gz 
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
