@@ -368,10 +368,16 @@ SharedWavefunction py_psi_dlpno(SharedWavefunction ref_wfn) {
     return dlpno::dlpno(ref_wfn, Process::environment.options);
 }
 
+#ifdef USING_Einsums
 SharedWavefunction py_psi_f12(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("F12");
     return f12::f12(ref_wfn, Process::environment.options);
 }
+#else
+double py_psi_f12(SharedWavefunction ref_wfn) {
+    throw PSIEXCEPTION("Einsums not enabled. Recompile with -DENABLE_Einsums");
+}
+#endif
 
 double py_psi_sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB) {
     py_psi_prepare_options_for_module("SAPT");
