@@ -28,8 +28,6 @@
 
 #include "mp2.h"
 
-#include "psi4/libpsi4util/PsiOutStream.h"
-
 #include "einsums.hpp"
 
 namespace psi { namespace f12 {
