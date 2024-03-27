@@ -32,17 +32,10 @@
 #include <omp.h>
 #endif
 
-#include "psi4/libpsi4util/process.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libqt/qt.h"
-
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/dimension.h"
-#include "psi4/libmints/integralparameters.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
-#include "psi4/libmints/orbitalspace.h"
-#include "psi4/libmints/wavefunction.h"
 
 #include "einsums.hpp"
 

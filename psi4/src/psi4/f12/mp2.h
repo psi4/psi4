@@ -29,9 +29,11 @@
 #ifndef MP2F12_H
 #define MP2F12_H
 
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/integralparameters.h"
-#include "psi4/libmints/onebody.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libqt/qt.h"
+
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/liboptions/liboptions.h"
