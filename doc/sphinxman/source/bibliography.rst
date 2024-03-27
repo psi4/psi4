@@ -602,19 +602,19 @@ Bibliography
 
 .. [Dunlap:2000:2113]
    B. Dunlap,
-   *Phys. Chem. Chem. Phys.* *2*, 2113-2116 (2000).
+   *Phys. Chem. Chem. Phys.* *2*, 2113-2116 (2000), https://doi.org/10.1039/B000027M.
 
 .. [Tenno:2004:117]
    S. Ten-no,
-   *J. Chem. Phys.* **121**, 117-129 (2004).
+   *J. Chem. Phys.* **121**, 117-129 (2004), https://doi.org/10.1063/1.1757439.
 
 .. [Valeev:2004:190]
    E. Valeev,
-   *Chem. Phys. Lett.* **395**, 190-195 (2004).
+   *Chem. Phys. Lett.* **395**, 190-195 (2004), https://doi.org/10.1016/j.cplett.2004.07.061.
 
 .. [Tew:2005:074101]
    D. Tew and W. Klopper,
-   *J. Chem. Phys.* **123**, 074101 (2005).
+   *J. Chem. Phys.* **123**, 074101 (2005), https://doi.org/10.1063/1.1999632.
 
 .. [Neese:2009:98]
    F. Neese, F. Wennmohs, and A. Hansen
