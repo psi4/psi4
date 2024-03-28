@@ -68,12 +68,10 @@ An example input file is::
 
    set {
      basis         cc-pvtz-f12
-     freeze_core   True
-   }
-
-   set mp2-f12 {
      cabs_basis    cc-pvtz-f12-optri
-     f12_type      conv
+     df_basis_f12  aug-cc-pvtz-ri
+     freeze_core   True
+     f12_type      df
      f12_beta      1.0
      cabs_singles  True
    }
@@ -82,7 +80,7 @@ An example input file is::
 
 The ``energy('mp2-f12')`` call to :py:func:`~psi4.driver.energy` executes the predefined MP-F12 procedure, 
 first calling the SCF module with a default RHF reference. The two-electron integrals may be solved either with 
-or without DF, as specified with the ``F12_TYPE`` keyword. The general outline of an MP2-F12 computation is as follows:
+or without DF, as specified with ``F12_TYPE``. The general outline of an MP2-F12 computation is as follows:
 
     (1) Form the CABS AO to MO transformation matrix
     (2) Compute the one- and two-electron integrals
@@ -91,13 +89,13 @@ or without DF, as specified with the ``F12_TYPE`` keyword. The general outline o
 
 The results will then look something like::
 
-   ===> MP2-F12/3C(FIX) Energies <===
+   ===> DF-MP2-F12/3C(FIX) Energies <===
 
-    Total MP2-F12/3C(FIX) Energy:         -76.362465009228
-       RHF Reference Energy:              -76.059044958341
-       MP2 Correlation Energy:             -0.276482152374
-       F12/3C(FIX) Correlation Energy:     -0.025998112363
-       CABS Singles Correction:            -0.000939786150
+    Total DF-MP2-F12/3C(FIX) Energy:      -76.362440627264
+       RHF Reference Energy:              -76.059038661557
+       MP2 Correlation Energy:             -0.276433879145
+       F12/3C(FIX) Correlation Energy:     -0.026029803210
+       CABS Singles Correction:            -0.000938283352
 
 The theory and common keywords used in MP2-F12 are presented below. 
 
@@ -255,12 +253,12 @@ MP2-F12 is a complicated theory but the implemented module should be simple to u
 appropriately documented in the Appendix :ref:`apdx:f12` and care should be taken to read through 
 them before changing defaults. Some basic recommendations for running the module are included below:
 
-* MP2-F12 runs much faster with density-fitted integrals, in other words, set ``F12_TYPE  DF``. 
-  Unless high accuracy is needed, DF requires much less computational resources and still provides 
-  quality results. If DF is chosen, the HF and MP2 modules are also set to run DF. Choose a DF basis set 
-  with at least triple-zeta quality as the HF module performs poorly with lower quality DF basis sets. 
-  This module utilizes robust density-fitting [Dunlap:2000:2113]_ so answers may differ from other programs.
-  The default is ``F12_TYPE  DF``.
+* MP2-F12 runs much faster with density-fitted integrals. Unless high accuracy is needed, DF requires much 
+  less computational resources and still provides quality results. If DF is chosen, the HF and MP2 modules 
+  are also set to run DF. Choose a DF basis set with at least triple-zeta quality as 
+  |PSIfours| :ref:`DF-SCF <sec:scf>` module performs poorly with lower quality DF basis sets. 
+  This module utilizes robust density-fitting [Dunlap:2000:2113]_ so energies may differ from other programs.
+  The default ``F12_TYPE`` is ``DF``.
 
 * The length-scale parameter ``F12_BETA`` has been fiddled with in many past studies and they have determined 
   that the exponents 0.9, 1.0, and 1.0 :math:`a_0^{-1}` are recommended for cc-pVXZ-F12 where X = D, T, and Q, 
@@ -278,7 +276,7 @@ them before changing defaults. Some basic recommendations for running the module
 
 * MP2-F12 is not symmetry aware.
 
-* MP2-F12 cannot use Psi4's Schwarz screening due to the presence of mixed basis sets. This is a work in progress but 
-  siginificantly increases the computational prefactor.
+* MP2-F12 cannot use Psi4's Schwarz screening due to the presence of mixed basis sets. This is a work 
+  in progress but siginificantly increases the computational prefactor.
 
 * At the moment, the MP2-F12 code is only compatible with with RHF references.
