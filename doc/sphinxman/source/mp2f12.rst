@@ -120,9 +120,11 @@ correlated residual,
    :label: Residual_Conv
 
    R^{ij}_{ab} = G^{ij}_{ab} + (\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j) T^{ij}_{ab} + T^{ij}_{mn} C^{mn}_{ab}
+
 .. math::
    :label: Residual_F12
    R^{ij}_{kl} = V^{ij}_{kl} + C^{kl}_{ab} T^{ij}_{ab} + \left[ B_{kl,mn} - (\epsilon_i + \epsilon_j)X_{kl,mn} \right] T^{ij}_{mn}
+
 where the last term of the :ref:`conventional residual <Residual_Conv>` couples the two residuals. Within the 
 :ref:`explicitly correlated residual <Residual_F12>`, the correlation factor, :math:`f_{12}`, and the projector, :math:`\hat{Q}_{12}`, 
 are present in what are known as the F12 intermediates,
@@ -141,6 +143,7 @@ the :math:`f_{12}` is composed of multiple Gaussian-type geminals to imitate a S
    :label: Correlation_Factor
 
    f_{12} = \frac{1 - e^{-\beta r_{12}}{\beta} \approx \sum^6_{n=1} c_n e^{-\alpha_n r_{12}^2}
+
 where the coefficients and exponents are taken from Tew and Klopper [Tew:2005:074101]_ and can be scaled using the parameter :math:`\beta`.
 Secondly, the projector is what holds the chosen Ansatz. In other words, the projector determines the choice of orthogonalization between 
 the explicitly correlated functions and to the conventional doubly substituted determinants. The strongest orthogonality is observed with
@@ -148,6 +151,7 @@ the explicitly correlated functions and to the conventional doubly substituted d
    :label: Ansatz_3
 
    \hat{Q}_{12} = (1-\hat{O}_1)(1-\hat{O}_2) - \hat{V}_1 \hat{V}_2
+
 where :math:`\hat{O}` represents :math:`| i \rangle\langle i |` and :math:`\hat{V}` represents :math:`| a \rangle\langle a |`. This form of 
 the :ref:`projector <Ansatz_3>` is known as Ansatz 3.
 
@@ -180,6 +184,7 @@ expansions. Within Ansatz 3C, the F12 intermediates then take the form
                   \overline{f}^{ib'}_{mn}F^{j}_{i}\overline{f}^{kl}_{jb'} - \overline{f}^{pb}_{mn}F^{r}_{p}\overline{f}^{kl}_{rb} \\ \nonumber
                &- 2\hat{S}_{mn,kl}\left[ \overline{f}^{ib'}_{mn}F^{p'}_{i}\overline{f}^{kl}_{p'b'} + 
                   \overline{f}^{a'b}_{mn}F^{q}_{a'}\overline{f}^{kl}_{qb} \right]
+
 where the following integral types are revealed,
 .. math::
    :label: Integral_Types
@@ -198,6 +203,7 @@ the electronic cusp conditions so that the *s*- and *p*- wave coalesence conditi
    :label: Fixed_Amps
 
    T^{ij}_{kl} = \frac{3}{8}\delta_{ik}\delta{jl} + \frac{1}{8}\delta_{jk}\delta{il}
+
 which is denoted as the 3C(FIX) Ansatz. The 3C(FIX) Ansatz has the benefits that it is free from the geminal basis set superposition error, 
 orbital invariant, and diagonal. Since only diagonal terms are needed, the computational complexity reduces from :math:`{\cal O}(N^6)` with 
 the minimized amplitudes to :math:`{\cal O}(N^5)` with fixed amplitudes.
@@ -206,6 +212,7 @@ Finally, the F12/3C(FIX) energy correction can be expressed as
 .. math::
    :label: F12_Correction
    \Delta E_\mathrm{F12/3C(FIX)} = T^{ij}_{kl} \left( 2\Tilde{V}^{ij}_{kl} + \Tilde{B}^{ij}_{kl,mn} T^{ij}_{mn} \right)
+
 where :math:`\Tilde{V}^{ij}_{kl}` and :math:`\Tilde{B}^{ij}_{kl,mn}` are
 .. math::
    :label: Tilde_Intermediates
@@ -220,6 +227,7 @@ is reminiscent of the singles correction in MP2 without a RHF or UHF reference,
    :label: CABS_Singles
 
    \Delta E_\mathrm{CABS Singles} = \frac{|F_i^\alpha|^2}{\epsilon_\alpha - \epsilon_i}
+
 where :math:`\alpha` runs over all virtual orbitals, OBS virtuals and CABS.
 
 Therefore, the most accurate MP2-F12/3C(FIX) energy is given by
