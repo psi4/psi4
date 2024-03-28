@@ -4411,6 +4411,7 @@ def run_mp2f12(name, **kwargs):
         core.print_out("""    SCF Algorithm Type set to PK.\n""")
     else:
         dfbs = core.get_option("F12", "DF_BASIS_F12")
+        core.set_global_option('SCF_TYPE', 'DF')
         core.set_local_option("SCF", "DF_BASIS_SCF", dfbs)
 
     # Ensure RHF reference
