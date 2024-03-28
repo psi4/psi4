@@ -39,7 +39,7 @@ MP2-F12: Explicitly Correlated MP2
 .. codeauthor:: Erica Mitchell
 .. sectionauthor:: Erica Mitchell
 
-*Module:* :ref:`Keywords <apdx:mp2-f12>`, :ref:`PSI Variables <apdx:mp2-f12_psivar>`, :source:`MP2-F12 <psi4/src/psi4/f12>`
+*Module:* :ref:`Keywords <apdx:f12>`, :ref:`PSI Variables <apdx:f12_psivar>`, :source:`MP2-F12 <psi4/src/psi4/f12>`
 
 Introduction
 ------------
