@@ -6,9 +6,9 @@ list(APPEND sources
   )
 
 if(TARGET Einsums::einsums)
-    psi4_add_module(bin mp2f12 sources)
+    psi4_add_module(bin f12 sources)
     target_link_libraries(
-      mp2f12
+      f12
       PRIVATE
         Einsums::einsums
       )
@@ -22,7 +22,7 @@ if(TARGET Einsums::einsums)
             #   There's a CONDA_BACKUP_CONDA_TOOLCHAIN_BUILD envvar when not activated.
             #   So hopefully, this doesn't interfere with system compilers.
             target_compile_definitions(
-              dummy_einsums
+              f12
               PUBLIC
                 _LIBCPP_DISABLE_AVAILABILITY
                 H5CPP_USE_OMP_ALIGNED_ALLOC
