@@ -211,9 +211,6 @@ void MP2F12::form_f12_energy(einsums::Tensor<double,4> *V, einsums::Tensor<doubl
         }
     }
 
-    set_scalar_variable("MP2-F12 OPPOSITE-SPIN CORRELATION ENERGY", E_f12_s);
-    set_scalar_variable("MP2-F12 SAME-SPIN CORRELATION ENERGY", E_f12_t);
-
     E_f12_ = E_f12_s + E_f12_t;
 }
 
@@ -577,9 +574,6 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double,4> *V, einsums::Disk
             outfile->Printf("%3d %3d  |   %16.12f   %16.12f     %16.12f \n", i+1, j+1, E_s, E_t, E_f);
         }
     }
-
-    set_scalar_variable("MP2-F12 OPPOSITE-SPIN CORRELATION ENERGY", E_f12_s);
-    set_scalar_variable("MP2-F12 SAME-SPIN CORRELATION ENERGY", E_f12_t);
 
     E_f12_ = E_f12_s + E_f12_t;
 }

@@ -110,7 +110,7 @@ Theory
 In MP2-F12, the second-order MBPT energy may be determined by minimizing the Hylleraas functional,
 
 .. math::
-   :label: Hylleraas
+   :label: HylleraasFunctional
 
    E^{(2)} = \langle \psi^{(1)} | \hat{H}^{(0)} - E^{(0)} | \psi^{(1)} \rangle 
    + 2 \langle \psi^{(1)} | \hat{H}^{(1)} | \psi^{(0)} \rangle = = \min_{| \psi^{(1)} \rangle}
@@ -119,16 +119,13 @@ The resulting linear first-order equations can then be broken down into the conv
 correlated residual,
 
 .. math::
-   :label: Residual_Conv
+   :label: Residuals
 
-   R^{ij}_{ab} = G^{ij}_{ab} + (\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j) T^{ij}_{ab} + T^{ij}_{mn} C^{mn}_{ab}
-
-.. math::
-   :label: Residual_F12
+   R^{ij}_{ab} = G^{ij}_{ab} + (\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j) T^{ij}_{ab} + T^{ij}_{mn} C^{mn}_{ab} \\
    R^{ij}_{kl} = V^{ij}_{kl} + C^{kl}_{ab} T^{ij}_{ab} + \left[ B_{kl,mn} - (\epsilon_i + \epsilon_j)X_{kl,mn} \right] T^{ij}_{mn}
 
-where the last term of the :ref:`conventional residual <Residual_Conv>` couples the two residuals. Within the 
-:ref:`explicitly correlated residual <Residual_F12>`, the correlation factor, :math:`f_{12}`, and the projector, :math:`\hat{Q}_{12}`, 
+where the last term of the :math:`R^{ij}_{ab}` couples the two residuals. Within the 
+residuals, the correlation factor, :math:`f_{12}`, and the projector, :math:`\hat{Q}_{12}`, 
 are present in what are known as the F12 intermediates,
 
 .. math::
@@ -158,7 +155,7 @@ the explicitly correlated functions and to the conventional doubly substituted d
    \hat{Q}_{12} = (1-\hat{O}_1)(1-\hat{O}_2) - \hat{V}_1 \hat{V}_2
 
 where :math:`\hat{O}` represents :math:`| i \rangle\langle i |` and :math:`\hat{V}` represents :math:`| a \rangle\langle a |`. This form of 
-the :ref:`projector <Ansatz_3>` is known as Ansatz 3.
+the projector is known as Ansatz 3.
 
 Within modern F12 theory, the ansatz inherently holds the resolution-of-identity (RI). The RI can be taken as functions from the 
 orbital basis set (OBS) and a chosen auxiliary basis set (ABS). It was observed by Valeev [Valeev:2004:190]_ that the choice of ABS 
@@ -171,7 +168,7 @@ auxiliary basis set or CABS. The expanded Ansatz 3 projector with the RI and CAB
 
    \hat{Q}_{12} = 1 - | a'j \rangle\langle a'j | - | ib' \rangle\langle ib' | - | rs \rangle\langle rs |
 
-When applying the :ref:`projector <CABS_Ansatz_3>` to the F12 intermediates, the :math:`C` and :math:`B` intermediates contain terms which 
+When applying the projector within the CABS approach to the F12 intermediates, the :math:`C` and :math:`B` intermediates contain terms which 
 require commutation of the correlation factor, :math:`f_{12}`, and the Fock operator, :math:`\hat{F}`. To factorize these, there are three 
 different approaches, A, B, and C. In general, Ansatz 3 with approximation C, or Ansatz 3C, is computationally cheaper than ans{\"a}tze 3A 
 and 3B. In Ansatz 3C, the unit operator in the projector is treated with the commutator approach while the rest utilizes direct RI 
@@ -206,7 +203,7 @@ where the following integral types are revealed,
 Before the energy expression can be revealed, the choice of explicitly correlated amplitudes must be taken into account. Although the 
 residuals can both be set to zero to solve for the minimized amplitudes, it has been determined that the best approach is by utilizing 
 the electronic cusp conditions so that the *s*- and *p*- wave coalesence conditions are met [Tenno:2004:117]_. This results in only the 
-:ref:`conventional residual <Residual_Conv>` being minimized and the explicitly correlated amplitudes being
+conventional residual, :math:`R^{ij}_{ab}`,  being minimized and the explicitly correlated amplitudes being
 
 .. math::
    :label: Fixed_Amps
@@ -221,12 +218,14 @@ Finally, the F12/3C(FIX) energy correction can be expressed as
 
 .. math::
    :label: F12_Correction
+
    \Delta E_\mathrm{F12/3C(FIX)} = T^{ij}_{kl} \left( 2\Tilde{V}^{ij}_{kl} + \Tilde{B}^{ij}_{kl,mn} T^{ij}_{mn} \right)
 
 where :math:`\Tilde{V}^{ij}_{kl}` and :math:`\Tilde{B}^{ij}_{kl,mn}` are
 
 .. math::
    :label: Tilde_Intermediates
+
    \Tilde{V}^{ij}_{kl} &= V^{ij}_{kl} - \frac{C^{kl}_{ab} G^{ij}_{ab}}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j} \\
    \Tilde{B}^{ij}_{kl,mn} &= B_{kl,mn} - (\epsilon_i + \epsilon_j)X_{kl,mn} - \frac{C^{mn}_{ab} C^{kl}_{ab}}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j}
 
