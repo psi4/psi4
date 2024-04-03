@@ -1,9 +1,6 @@
 if(${ENABLE_gauxc})
-    #== perhaps ExchCXX and IntegratorXX were built alongside GauXC, check for this ==#
-    if(NOT "${gauxc_DIR}" STREQUAL "")
-        if("${IntegratorXX_DIR}" STREQUAL "")
-           set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
-        endif()
+    if((NOT "${gauxc_DIR}" STREQUAL "") AND "${IntegratorXX_DIR}" STREQUAL "")
+       set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
     endif()
 
     find_package(ExchCXX CONFIG PATHS ${gauxc_DIR}/../ExchCXX) 
