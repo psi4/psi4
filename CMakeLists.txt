@@ -255,7 +255,6 @@ ExternalProject_Add(psi4-core
            mdi_external
            brianqc_external
            integratorxx_external
-           exchcxx_external
            gauxc_external
  
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
