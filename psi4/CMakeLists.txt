@@ -153,10 +153,9 @@ if(${ENABLE_gauxc})
         if("${IntegratorXX_DIR}" STREQUAL "")
            set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
         endif()
-
-        set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
     endif() 
 
+    find_package(ExchCXX CONFIG REQUIRED PATHS ${gauxc_DIR}/../ExchCXX) 
     find_package(gauxc 0.0.1 CONFIG REQUIRED COMPONENTS IntegratorXX ExchCXX)
     get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
     list(APPEND _addons ${_loc})

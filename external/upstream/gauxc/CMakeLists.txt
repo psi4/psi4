@@ -4,10 +4,9 @@ if(${ENABLE_gauxc})
         if("${IntegratorXX_DIR}" STREQUAL "")
            set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
         endif()
-
-        set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
     endif()
 
+    find_package(ExchCXX CONFIG PATHS ${gauxc_DIR}/../ExchCXX) 
     find_package(gauxc 0.0.1 CONFIG) 
 
     if(${gauxc_FOUND})
