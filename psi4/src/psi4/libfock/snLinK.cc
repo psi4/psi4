@@ -77,7 +77,6 @@ std::tuple<
     radial_scheme_map["EM"] = GauXC::RadialQuad::MurrayHandyLaming; 
 
     // we are done
-    //return std::move(std::make_tuple(pruning_scheme_map, radial_scheme_map));
     return std::make_tuple(pruning_scheme_map, radial_scheme_map);
 }
 
@@ -111,7 +110,6 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
     }
    
     // we are done
-    //return std::move(permutation_matrix);
     return permutation_matrix;
 }
 
@@ -128,7 +126,6 @@ GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_mo
         gauxc_molecule.emplace_back(GauXC::AtomicNumber(atomic_number), x_coord, y_coord, z_coord);
     }
 
-    //return std::move(gauxc_molecule);
     return gauxc_molecule;
 }
 
@@ -170,7 +167,6 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
         sh.set_shell_tolerance(basis_tol); 
     }
 
-    //return std::move(gauxc_basisset);
     return gauxc_basisset;
 }
 
