@@ -21,8 +21,9 @@ molecule mol {
 }
 
 set {
-    scf_type dfdirj+snlink
-    df_scf_guess false
+    scf_type dfdirj+link 
+    df_scf_guess false 
+    scf_cosx_guess true 
     basis cc-pVTZ
     e_convergence 1.0e-10
     screening schwarz 
