@@ -59,8 +59,10 @@ def scf_compute_energy(self):
     returns the SCF energy computed by finalize_energy().
 
     """
-    if core.get_option('SCF', 'DF_SCF_GUESS') and (core.get_global_option('SCF_TYPE') == 'DIRECT'):
-        # speed up DIRECT algorithm (recomputes full (non-DF) integrals
+    if core.get_option('SCF', 'DF_SCF_GUESS') and core.get_option('SCF', 'SCF_COSX_GUESS') and any([ core.get_global_option('SCF_TYPE') == x for x in [ 'DIRECT', 'DFDIRJ+LINK' ] ]):
+        raise ValidationError("Both DF_SCF_GUESS and SCF_COSX_GUESS are set to True! Please only enable one at most.")
+    elif core.get_option('SCF', 'DF_SCF_GUESS') and any([ core.get_global_option('SCF_TYPE') == x for x in [ 'DIRECT', 'DFDIRJ+LINK' ] ]):
+        # speed up DIRECT/DF-DirJ+LinK algorithm (recomputes full (non-DF) integrals
         #   each iter) by first converging via fast DF iterations, then
         #   fully converging in fewer slow DIRECT iterations. aka Andy trick 2.0
         core.print_out("  Starting with a DF guess...\n\n")
@@ -78,8 +80,8 @@ def scf_compute_energy(self):
         if self.initialized_diis_manager_:
             self.diis_manager_.reset_subspace()
         self.initialize_jk(self.memory_jk_)
-    elif core.get_option('SCF', 'SCF_COSX_GUESS') and (core.get_global_option('SCF_TYPE') == 'DIRECT'):
-        # speed up DIRECT algorithm (recomputes full (non-DF) integrals
+    elif core.get_option('SCF', 'SCF_COSX_GUESS') and any([ core.get_global_option('SCF_TYPE') == x for x in [ 'DIRECT', 'DFDIRJ+LINK' ] ]):
+        # speed up DIRECT/DF-DirJ+LinK algorithm (recomputes full (non-DF) integrals
         #   each iter) by first converging via fast COSX iterations, then
         #   fully converging in fewer slow DIRECT iterations. aka David Poole/Phillip trick 
         core.print_out("  Starting with a COSX guess...\n\n")
@@ -308,8 +310,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     # maximum number of scf iterations to run after early screening is disabled
     scf_maxiter_post_screening = core.get_option('SCF', 'COSX_MAXITER_FINAL')
 
-    # account for DirectJK iterations post-COSX-guess if need be
-    if core.get_option('SCF', 'SCF_COSX_GUESS') and (core.get_global_option('SCF_TYPE') == 'DIRECT'):
+    # account for DirectJK/DF-DirJ+LinK iterations post-COSX-guess if need be
+    if core.get_option('SCF', 'SCF_COSX_GUESS') and any([ core.get_global_option('SCF_TYPE') == x for x in [ 'DIRECT', 'DFDIRJ+LINK' ] ]):
         early_screening = False 
 
         early_screening_disabled = True
