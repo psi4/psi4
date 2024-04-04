@@ -1436,3 +1436,24 @@ data:
         //CMAKE_INSIST_FIND_PACKAGE_Einsums: true
         //CMAKE_DISABLE_FIND_PACKAGE_Einsums: true
 
+  - project: gauxc 
+    use:
+      added: 1.10
+      required: false
+      required_note: "Allow using the GauXC density functional library."
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: wavefunction91
+      name: GauXC
+      commit: master
+    #cmake:
+    #  name: gauxc
+    #  constraint: null
+    #  target: gauxc::gauxc
+    #  components:
+    #  ENABLE_gauxc
+    #  gauxc_ENABLE_GPU 
+    conda: null
