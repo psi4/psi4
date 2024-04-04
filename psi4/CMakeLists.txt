@@ -154,7 +154,7 @@ if(${ENABLE_gauxc})
     endif()
 
     find_package(ExchCXX CONFIG REQUIRED PATHS ${gauxc_DIR}/../ExchCXX) 
-    find_package(gauxc 0.0.1 CONFIG REQUIRED COMPONENTS IntegratorXX ExchCXX)
+    find_package(gauxc CONFIG REQUIRED COMPONENTS IntegratorXX ExchCXX)
     get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using gauxc${ColourReset}: ${_loc} (version ${gauxc_VERSION})")
