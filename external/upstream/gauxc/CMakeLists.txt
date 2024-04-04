@@ -3,8 +3,8 @@ if(${ENABLE_gauxc})
        set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
     endif()
 
-    find_package(ExchCXX CONFIG PATHS ${gauxc_DIR}/../ExchCXX) 
-    find_package(gauxc 0.0.1 CONFIG) 
+    find_package(ExchCXX CONFIG REQUIRED PATHS ${gauxc_DIR}/../ExchCXX) 
+    find_package(gauxc CONFIG) 
 
     if(${gauxc_FOUND})
         #== check if GPU-enabled GauXC is found, if GPU is specified ==#
@@ -46,9 +46,9 @@ if(${ENABLE_gauxc})
                    -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                    -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
                    -DGAUXC_ENABLE_CUDA=${gauxc_ENABLE_GPU}
-                   -DCMAKE_CUDA_ARCHITECTURES=70
-                   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-                   -DBUILD_SHARED_LIBS=OFF
+                   -DCMAKE_CUDA_ARCHITECTURES=${CMAKE_CUDA_ARCHITECTURES}
+                   -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
+                   -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    -DGAUXC_ENABLE_MPI=OFF
                    -DGAUXC_ENABLE_TESTS=OFF
                    -DGAUXC_ENABLE_HDF5=OFF
