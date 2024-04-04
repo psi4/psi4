@@ -479,13 +479,8 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             K_eigen_permute = permutation_matrix_val.transpose() * K_eigen_permute * permutation_matrix_val; 
         }
         timer_off("snLinK: Back-transform D and K");
-      
-        // symmetrize K if applicable
-        if (lr_symmetric_) {
-            K[iD]->hermitivitize();
-        }
     }
-   
+
     return;
 }
 
