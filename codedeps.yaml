@@ -1410,10 +1410,10 @@ data:
       host: github
       account: Einsums
       name: Einsums
-      commit: v0.3
+      commit: v0.4
     #cmake:
     #  name:
-    #  constraint: 0.3
+    #  constraint: 0.4
     #  target: Einsums::einsums
     #  components:
     #  ENABLE_Einsums
