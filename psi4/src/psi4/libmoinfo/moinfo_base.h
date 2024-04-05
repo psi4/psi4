@@ -36,10 +36,11 @@
 
 #include <string>
 #include <vector>
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/liboptions/liboptions.h"
 
 namespace psi {
+
+class Options;
+class Wavefunction;
 using intvec = std::vector<int>;
 using boolvec = std::vector<bool>;
 
