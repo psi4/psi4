@@ -34,25 +34,15 @@
     \brief   This class stores all the basic info regarding MOs
 */
 
-#define PSI_nullptr(args) args = nullptr;
-#define PSI_FREE(args) \
-    if (args != nullptr) free(args);
-#define PSI_DELETE(args) \
-    if (args != nullptr) delete args;
-#define PSI_DELETE_ARRAY(args) \
-    if (args != nullptr) delete[] args;
-#define IOFF 5000000
-
 #include <string>
-#include "psi4/libpsi4util/libpsi4util.h"
-
-typedef std::vector<int> intvec;
-typedef std::vector<bool> boolvec;
+#include <vector>
 
 namespace psi {
 
 class Options;
 class Wavefunction;
+using intvec = std::vector<int>;
+using boolvec = std::vector<bool>;
 
 class MOInfoBase {
    public:
@@ -61,43 +51,33 @@ class MOInfoBase {
 
     double get_nuclear_energy() const { return (nuclear_energy); }
 
-    std::vector<std::string> get_irr_labs() const { return (irr_labs); }
-    std::string get_irr_labs(int i) const { return (irr_labs[i]); }
+    std::string get_irr_lab(int i) const { return (irr_labs[i]); }
 
     int get_nirreps() const { return (nirreps); }
     int get_nso() const { return (nso); }
 
-    const size_t* get_ioff() const { return (ioff.data()); }
     intvec get_sopi() const { return (sopi); }
     intvec get_docc() const { return (docc); }
     intvec get_actv() const { return (actv); }
     bool get_guess_occupation() const { return (guess_occupation); }
-    int get_ndocc() const { return (ndocc); }
+
     int get_nactv() const { return (nactv); }
 
     int get_nael() const { return (nael); }  // # of alpha electrons including frozen
     int get_nbel() const { return (nbel); }  // # of  beta electrons including frozen
 
     double** get_scf_mos() const { return (scf); }
-    double** get_scf_mos(int i) const { return (scf_irrep[i]); }
-    double get_scf_mos(int i, int j) const {
-        if ((i < nmo) && (j < nso))
-            return (scf[i][j]);
-        else
-            return (0.0);
-    }
 
    protected:
     void read_data();
     void compute_number_of_electrons();
     void correlate(char* ptgrp, int irrep, int& nirreps_old, int& nirreps_new, int*& correlation);
-    void read_mo_space(int nirreps_ref, int& n, intvec& mo, std::string labels);
-    void print_mo_space(int& nmo, intvec& mo, std::string labels);
+    void read_mo_space(const int nirreps_ref, int& n, intvec& mo, const std::string& labels);
+    void print_mo_space(int nmo, const intvec& mo, const std::string& labels);
     intvec convert_int_array_to_vector(int n, const int* array);
 
     void startup();
     void cleanup();
-    void compute_ioff();
 
     Wavefunction& ref_wfn;
     Options& options;
@@ -115,7 +95,6 @@ class MOInfoBase {
     int nactive_ael;
     int nactive_bel;
 
-    std::vector<size_t> ioff;
     intvec sopi;
     intvec docc;
     intvec actv;

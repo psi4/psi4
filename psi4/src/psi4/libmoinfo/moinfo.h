@@ -36,8 +36,6 @@
 
 #include "moinfo_base.h"
 
-#define size_det 2048
-
 namespace psi {
 
 enum ReferenceType { AllRefs, UniqueRefs, ClosedShellRefs, UniqueOpenShellRefs };
@@ -74,7 +72,7 @@ class MOInfo : public MOInfoBase {
         const MOInfo* moinfo;
 
        public:
-        typedef std::bitset<size_det> bitdet;
+        typedef std::bitset<2048> bitdet;  // adjust based on "size det"?
         SlaterDeterminant(const MOInfo*);
         ~SlaterDeterminant();
         void set(int n) { bits.set(n); }
@@ -132,24 +130,17 @@ class MOInfo : public MOInfoBase {
     int get_nocc() const { return (nocc); }
     int get_nvir() const { return (nvir); }
 
-    intvec get_sopi() const { return (sopi); }
     intvec get_mopi() const { return (mopi); }
     intvec get_docc() const { return (docc); }
     intvec get_actv() const { return (actv); }
     intvec get_focc() const { return (focc); }
-    intvec get_extr() const { return (extr); }
     intvec get_fvir() const { return (fvir); }
     intvec get_occ() const { return (occ); }
     intvec get_vir() const { return (vir); }
-    intvec get_all() const { return (all); }
 
-    int get_sopi(int i) const { return (sopi[i]); }
-    int get_mopi(int i) const { return (mopi[i]); }
-    int get_focc(int i) const { return (focc[i]); }
-    int get_docc(int i) const { return (docc[i]); }
-    int get_actv(int i) const { return (actv[i]); }
-    int get_extr(int h) const { return (extr[h]); }
-    int get_fvir(int i) const { return (fvir[i]); }
+    int get_docc(size_t i) const { return (docc[i]); }
+    int get_actv(size_t i) const { return (actv[i]); }
+    int get_extr(size_t h) const { return (extr[h]); }
 
     // Mapping functions
     intvec get_focc_to_mo() const { return (focc_to_mo); }
@@ -202,10 +193,8 @@ class MOInfo : public MOInfoBase {
     double get_sign_internal_excitation(int i, int j);
 
    private:
-    void tuning();
     void read_info();
     void read_mo_spaces();
-    void read_mo_spaces2();
     void compute_mo_mappings();
     void print_info();
     void print_mo();
