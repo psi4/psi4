@@ -16,15 +16,6 @@ if(${ENABLE_gauxc})
            message(FATAL_ERROR "gauxc_ENABLE_GPU turned off, but selected GauXC install is built for GPU support!")
         endif()
 
-        #== check if HDF5-enabled GauXC is found, if HDF5 is specified ==#
-        get_property(_hdf5 TARGET gauxc::gauxc PROPERTY GAUXC_HAS_HDF5)
-        
-        if(${gauxc_ENABLE_HDF5} AND (NOT ${_hdf5}))
-           message(FATAL_ERROR "gauxc_ENABLE_HDF5 turned on, but selected GauXC install is not built for HDF5 support!")
-        elseif((NOT ${gauxc_ENABLE_HDF5}) AND ${_hdf5})
-           message(FATAL_ERROR "gauxc_ENABLE_HDF5 turned off, but selected GauXC install is built for HDF5 support!")
-        endif()
-
         #== check if MAGMA-enabled GauXC is found, if MAGMA is specified ==#
         get_property(_magma TARGET gauxc::gauxc PROPERTY GAUXC_HAS_MAGMA)
         
@@ -74,7 +65,7 @@ if(${ENABLE_gauxc})
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    -DGAUXC_ENABLE_MPI=OFF
                    -DGAUXC_ENABLE_TESTS=OFF
-                   -DGAUXC_ENABLE_HDF5=${gauxc_ENABLE_HDF5}
+                   -DGAUXC_ENABLE_HDF5=OFF
                    -DGAUXC_ENABLE_MAGMA=${gauxc_ENABLE_MAGMA}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
