@@ -1,9 +1,11 @@
 if(${ENABLE_gauxc})
-    if((NOT "${gauxc_DIR}" STREQUAL "") AND "${IntegratorXX_DIR}" STREQUAL "")
-       set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
+    if(NOT "${gauxc_DIR}" STREQUAL "")
+        if("${IntegratorXX_DIR}" STREQUAL "")
+            set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
+        endif()
+        set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
     endif()
 
-    find_package(ExchCXX CONFIG REQUIRED PATHS ${gauxc_DIR}/../ExchCXX) 
     find_package(gauxc CONFIG) 
 
     if(${gauxc_FOUND})
