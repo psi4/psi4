@@ -209,6 +209,7 @@ jobs:
                 -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
                 -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON ^
                 -DBUILD_SHARED_LIBS=OFF ^
+                -DFORCE_PEDANTIC=ON ^
                 $(Build.SourcesDirectory)
         displayName: "Configure Psi4"
         workingDirectory: $(Build.BinariesDirectory)
