@@ -74,8 +74,8 @@ if(${ENABLE_gauxc})
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    -DGAUXC_ENABLE_MPI=OFF
                    -DGAUXC_ENABLE_TESTS=OFF
-                   -DGAUXC_ENABLE_HDF5=OFF
-                   -DGAUXC_ENABLE_MAGMA=OFF
+                   -DGAUXC_ENABLE_HDF5=${gauxc_ENABLE_HDF5}
+                   -DGAUXC_ENABLE_MAGMA=${gauxc_ENABLE_MAGMA}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                          -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
