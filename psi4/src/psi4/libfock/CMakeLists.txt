@@ -49,7 +49,7 @@ if(TARGET gauxc::gauxc)
   target_compile_definitions(fock
     PUBLIC
       USING_gauxc
-      $<TARGET_PROPERTY:gauxc::gauxc,GAUXC_HAS_CUDA>
+      $<TARGET_PROPERTY:gauxc::gauxc,GAUXC_HAS_DEVICE>
     )
   target_include_directories(fock
     PUBLIC
