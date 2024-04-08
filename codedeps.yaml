@@ -1448,8 +1448,8 @@ data:
       host: github
       account: wavefunction91
       name: GauXC
-      commit: master
-    #cmake:
+      commit: 7746c2c  
+    #cmake: 
     #  name: gauxc
     #  constraint: null
     #  target: gauxc::gauxc
