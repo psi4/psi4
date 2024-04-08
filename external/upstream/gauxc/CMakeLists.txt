@@ -16,6 +16,28 @@ if(${ENABLE_gauxc})
            message(FATAL_ERROR "gauxc_ENABLE_GPU turned off, but selected GauXC install is built for GPU support!")
         endif()
 
+        #== check if HDF5-enabled GauXC is found, if HDF5 is specified ==#
+        get_property(_hdf5 TARGET gauxc::gauxc PROPERTY GAUXC_HAS_HDF5)
+        
+        if(${gauxc_ENABLE_HDF5} AND (NOT ${_hdf5}))
+           message(FATAL_ERROR "gauxc_ENABLE_HDF5 turned on, but selected GauXC install is not built for HDF5 support!")
+        elseif((NOT ${gauxc_ENABLE_HDF5}) AND ${_hdf5})
+           message(FATAL_ERROR "gauxc_ENABLE_HDF5 turned off, but selected GauXC install is built for HDF5 support!")
+        endif()
+
+        #== check if MAGMA-enabled GauXC is found, if MAGMA is specified ==#
+        get_property(_magma TARGET gauxc::gauxc PROPERTY GAUXC_HAS_MAGMA)
+        
+        if(${gauxc_ENABLE_MAGMA} AND (NOT ${GAUXC_ENABLE_GPU}))
+           message(FATAL_ERROR "gauxc_ENABLE_MAGMA turned on, but gauxc_ENABLE_GPU is turned off! Magma only works with device-enabled GauXC instances.")
+        endif()
+        
+        if(${gauxc_ENABLE_MAGMA} AND (NOT ${_magma}))
+           message(FATAL_ERROR "gauxc_ENABLE_MAGMA turned on, but selected GauXC install is not built for MAGMA support!")
+        elseif((NOT ${gauxc_ENABLE_MAGMA}) AND ${_magma})
+           message(FATAL_ERROR "gauxc_ENABLE_MAGMA turned off, but selected GauXC install is built for MAGMA support!")
+        endif()
+
         #== normal print-out and library addition ==#
         get_property(_loc TARGET gauxc::gauxc PROPERTY IMPORTED_LOCATION_RELWITHDEBINFO)
         #get_property(_loc TARGET gauxc::gauxc PROPERTY IMPORTED_LOCATION)
