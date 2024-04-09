@@ -752,7 +752,7 @@ SNLINK
     approach described in [Laqua:2020:1456]_, SNLINK is only available if |PSIfour|
     is compiled with the GauXC library, described in [Williams-Young:2023:234104]_.
     Algorithmically, SNLINK is very similar to COSX, differing primarily in screening of
-    the analytic 3-center integrals. In terms of implementation, SNLINK is more efficiect, 
+    the analytic 3-center integrals. In terms of implementation, SNLINK is more efficient, 
     owing to more highly-optimized integral contraction kernels; and supports execution
     on Graphics Processing Units (GPUs). See :ref:`sec:scfsnlink` for more information.
 
