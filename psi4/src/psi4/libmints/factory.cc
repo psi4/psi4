@@ -39,7 +39,6 @@
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libciomr/libciomr.h"
 
-;
 using namespace psi;
 
 MatrixFactory::MatrixFactory() { nirrep_ = 0; }

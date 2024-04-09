@@ -37,7 +37,6 @@
 
 #include "libint2/shell.h"
 
-;
 using namespace psi;
 
 static void transform2e_1(int, SphericalTransformIter &, double *, double *, int);

@@ -53,7 +53,7 @@
 // The first derivatives are provided when second derivatives are asked
 // for.
 #define ERI_2DER_NTYPE (ERI_1DER_NTYPE + 45)
-;
+
 using namespace psi;
 
 namespace {

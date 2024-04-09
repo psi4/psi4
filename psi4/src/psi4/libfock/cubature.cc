@@ -128,7 +128,7 @@ double GetBSRadius(unsigned Z) {
         }
     else
         return 3.30; // just a guess
-};
+}
 
 // legacy BS radii
 // double GetBSRadius(unsigned Z) {
@@ -4660,7 +4660,7 @@ void AtomicGridBlocker::block() {
         }
     }
 
-};
+}
 
 NaiveGridBlocker::NaiveGridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref, double const *z_ref,
                                    double const *w_ref, const int max_points, const int min_points,

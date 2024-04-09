@@ -149,7 +149,7 @@ std::vector<std::pair<int, int>> build_shell_pair_list_no_spdata(std::shared_ptr
     }
 
     return threads_sp_list[0];
-};
+}
 
 OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms, std::shared_ptr<BasisSet> bs1,
                            std::shared_ptr<BasisSet> bs2, int deriv)

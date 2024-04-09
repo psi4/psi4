@@ -41,7 +41,6 @@
 
 #define RELVDEBUG 0
 
-;
 using namespace psi;
 
 // Initialize potential_recur_ to +1 basis set angular momentum

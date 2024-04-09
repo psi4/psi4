@@ -219,6 +219,9 @@ message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
 message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 add_subdirectory(external/common)
 add_subdirectory(external/upstream)
+# FORCE_PEDANTIC HAS to go here to avoid being applied to external projects
+option_with_flags(FORCE_PEDANTIC "Forces code to comply with the language standard." OFF
+                  "-pedantic-errors")
 
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
 include(custom_cxxstandard)
