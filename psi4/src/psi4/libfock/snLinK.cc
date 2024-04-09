@@ -313,13 +313,22 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // create snLinK grid for GauXC
     auto grid_batch_size = options_.get_int("SNLINK_GRID_BATCH_SIZE");
-    auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
+    auto use_debug_grid = options_.get_bool("SNLINK_USE_DEBUG_GRID");
+
+    auto gauxc_grid = !use_debug_grid ? GauXC::MolGridFactory::create_default_molgrid(
         gauxc_mol, 
         pruning_scheme_map[pruning_scheme_],
         GauXC::BatchSize(grid_batch_size), 
         radial_scheme_map[radial_scheme_], 
         GauXC::RadialSize(radial_points_),
         GauXC::AngularSize(spherical_points_)
+    ) :
+    GauXC::MolGridFactory::create_default_molgrid(
+        gauxc_mol, 
+        pruning_scheme_map[pruning_scheme_],
+        GauXC::BatchSize(grid_batch_size), 
+        radial_scheme_map[radial_scheme_], 
+        GauXC::AtomicGridSizeDefault::UltraFineGrid
     );
    
     // construct load balancer
