@@ -1448,7 +1448,7 @@ data:
       host: github
       account: wavefunction91
       name: GauXC
-      commit: 7746c2c  
+      commit: 567fdbe 
     #cmake: 
     #  name: gauxc
     #  constraint: null
