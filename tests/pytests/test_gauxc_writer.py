@@ -7,10 +7,12 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "test_gauxc_writer/")) 
 import gauxc_writer as gxcw 
 
-from utils import compare, compare_matrices
-from addons import using
+from utils import compare
+from addons import uusing
 
 import psi4 
+
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.long]
 
 @pytest.fixture
 def mols():
@@ -35,6 +37,7 @@ def mols():
             """),
     }
 
+@uusing("gauxc")
 @pytest.mark.parametrize( 
     "inp",
     [
@@ -56,8 +59,10 @@ def mols():
 #    ],
 #)
 def test_gauxc_writer(inp, basis, mols, request):
-    """Checks the energy values computed by different JK methods using different
-    screening types. The differences in energies should be insignificant.""" 
+    """Writes GauXC HDF5 data files using data from Psi4 calculations,
+    then compares the resulting files to reference GauXC data files.
+    All data (molecule, basis set, density, exchange) should match to
+    within tolerance."""
 
     psi4.core.be_quiet()
     
@@ -96,5 +101,3 @@ def test_gauxc_writer(inp, basis, mols, request):
     assert compare(basis_same, True, f'{test_id} same basis as reference')
     assert compare(D_same, True, f'{test_id} D matrices same within E-14 RMS tolerance')
     assert compare(K_same, True, f'{test_id} K matrices same within E-14 RMS tolerance')
-
-
