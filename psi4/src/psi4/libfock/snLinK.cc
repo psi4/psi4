@@ -217,15 +217,15 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // set whether we force use of cartesian coordinates or not
     // this is required for GPU execution when using spherical harmonic basis sets
-    force_cartesian_ = options_.get_bool("SNLINK_FORCE_CARTESIAN"); 
-    if (use_gpu_ && !force_cartesian_ && primary_->has_puream()) {
+    auto force_cartesian = options_.get_bool("SNLINK_FORCE_CARTESIAN"); 
+    if (use_gpu_ && !force_cartesian && primary_->has_puream()) {
         outfile->Printf("    INFO: GPU snLinK must be executed with SNLINK_FORCE_CARTESIAN=true when using spherical harmonic basis sets!\n");  
         outfile->Printf("    Enabling forced spherical-to-Cartesian transform...\n\n");  
-        force_cartesian_ = true; 
-    } else if (force_cartesian_ && !(primary_->has_puream())) {
+        force_cartesian = true; 
+    } else if (force_cartesian && !(primary_->has_puream())) {
         outfile->Printf("    INFO: SNLINK_FORCE_CARTESIAN=true has no effect when using Cartesian basis sets!\n");  
         //outfile->Printf("    Enabling forced spherical-to-Cartesian transform...\n\n");  
-        force_cartesian_ = false; 
+        force_cartesian = false; 
     }
 
     // create ERI ordering permutation matrix to handle integral ordering
@@ -238,38 +238,41 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     }
 
     // create matrix for spherical-to-cartesian matrix transformations
-    const auto factory = std::make_shared<IntegralFactory>(primary, primary, primary, primary);
-    PetiteList petite(primary, factory, true);
-    sph_to_cart_matrix_ = petite.sotoao(); 
+    if (force_cartesian && primary_->has_puream()) {
+        const auto factory = std::make_shared<IntegralFactory>(primary, primary, primary, primary);
+        PetiteList petite(primary, factory, true);
+        sph_to_cart_matrix_ = petite.sotoao(); 
 
-    // SNLINK_FORCE_CARTESIAN only works with C1 symmtry currently
-    // TODO: Fix this!
-    if (force_cartesian_ && sph_to_cart_matrix_->nirrep() != 1) {
-        auto point_group = primary->molecule()->point_group();
-        
-        std::string message = "SNLINK_FORCE_CARTESIAN only works with C1 symmetry! ";
-        message += "Current molecular point group is ";
-        message += point_group->symbol();   
+        // SNLINK_FORCE_CARTESIAN only works with C1 symmtry currently
+        // TODO: Fix this!
+        if (sph_to_cart_matrix_->nirrep() != 1) {
+            auto point_group = primary->molecule()->point_group();
+            
+            std::string message = "SNLINK_FORCE_CARTESIAN only works with C1 symmetry! ";
+            message += "Current molecular point group is ";
+            message += point_group->symbol();   
 
-        throw PSIEXCEPTION(message);
-    }
-
-    // if needed, we also need to transform the Spherical part of the permutation matrix itself
-    // For whatever reason, psi4_to_eigen_map doesnt seem to work specifically in the constructor
-    // this is the work-around 
-    if (permutation_matrix_.has_value()) { 
-        auto permutation_dense = permutation_matrix_.value().toDenseMatrix();
-        auto sph_to_cart_permute = std::make_shared<Matrix>(permutation_dense.rows(), permutation_dense.cols());
-        
-        auto ptr = sph_to_cart_permute->pointer();
-        for (int irow = 0; irow != permutation_dense.rows(); ++irow) {
-            for (int icol = 0; icol != permutation_dense.cols(); ++icol) {  
-                ptr[irow][icol] = permutation_dense(irow, icol);
-            } 
+            throw PSIEXCEPTION(message);
         }
-        sph_to_cart_matrix_ = linalg::doublet(sph_to_cart_permute, sph_to_cart_matrix_->to_block_sharedmatrix());
+
+        // if needed, we also need to transform the Spherical part of the permutation matrix itself
+        // For whatever reason, psi4_to_eigen_map doesnt seem to work specifically in the constructor
+        // this is the work-around 
+        if (permutation_matrix_.has_value()) { 
+            auto permutation_dense = permutation_matrix_.value().toDenseMatrix();
+            auto sph_to_cart_permute = std::make_shared<Matrix>(permutation_dense.rows(), permutation_dense.cols());
+            
+            auto ptr = sph_to_cart_permute->pointer();
+            for (int irow = 0; irow != permutation_dense.rows(); ++irow) {
+                for (int icol = 0; icol != permutation_dense.cols(); ++icol) {  
+                    ptr[irow][icol] = permutation_dense(irow, icol);
+                } 
+            }
+            sph_to_cart_matrix_ = linalg::doublet(sph_to_cart_permute, sph_to_cart_matrix_->to_block_sharedmatrix());
+        }
+    } else {
+        sph_to_cart_matrix_ = nullptr;
     }
-    
     timer_off("snLinK: Options Processing");
     
     // => Part #2: Construct GauXC Factories <= //
@@ -309,7 +312,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // convert Psi4 fundamental quantities to GauXC 
     auto gauxc_mol = psi4_to_gauxc_molecule(primary_->molecule());
-    auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_, basis_tol_, force_cartesian_);
+    auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_, basis_tol_, force_cartesian);
 
     // create snLinK grid for GauXC
     auto grid_batch_size = options_.get_int("SNLINK_GRID_BATCH_SIZE");
@@ -396,10 +399,11 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     // we need to know if we are using a spherical harmonic basis
     // much of the behavior here is influenced by this
     auto is_spherical_basis = primary_->has_puream();
-
+     
     // compute K for density Di using GauXC
     for (int iD = 0; iD != D.size(); ++iD) {
         timer_on("snLinK: Transform D");
+        outfile->Printf("snLinK: Transform D\n");
 
         auto Did_eigen = D[iD]->eigen_map();    
         auto Kid_eigen = K[iD]->eigen_map();    
@@ -415,7 +419,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             }
             
             // also need to transform D to cartesian coordinates if requested/required
-            if (force_cartesian_) {
+            if (sph_to_cart_matrix_ != nullptr) {
                 D_buffer = std::make_shared<Matrix>();
                 D_buffer->transform(D[iD], sph_to_cart_matrix_);
             } else {
@@ -431,6 +435,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         
         // map Psi4 exchange matrix buffer to Eigen matrix map
         timer_on("snLinK: Transform K");
+        outfile->Printf("snLinK: Transform K\n");
         
         SharedMatrix K_buffer = nullptr; 
         if (is_spherical_basis) {
@@ -442,7 +447,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
             }
             
             // also need to transform D to cartesian coordinates if requested/required
-            if (force_cartesian_) { 
+            if (sph_to_cart_matrix_ != nullptr) { 
                 K_buffer = std::make_shared<Matrix>();
                 K_buffer->transform(K[iD], sph_to_cart_matrix_);
             } else {
@@ -456,22 +461,26 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         timer_off("snLinK: Transform K");
         
         timer_on("snLinK: Execute integrator");
+        outfile->Printf("snLinK: Execute integrator\n");
         // compute delta K if incfock iteration... 
         if (incfock_iter_) { 
             // K buffer (i.e., delta K) must be back-transformed and added to Psi4 K separately if cartesian transformation is forced...
-            if (force_cartesian_ && is_spherical_basis) {
+            if ((sph_to_cart_matrix_ != nullptr) && is_spherical_basis) {
                 K_buffer_eigen = integrator_->eval_exx(D_buffer_eigen, integrator_settings_);
+                //K_buffer_eigen = K_buffer_eigen; 
                 K_buffer->back_transform(sph_to_cart_matrix_);
                 K[iD]->add(K_buffer);
             // ... otherwise the computation and addition can be bundled together 
             } else {
                 K_buffer_eigen += integrator_->eval_exx(D_buffer_eigen, integrator_settings_);
+                //K_buffer_eigen += K_buffer_eigen; 
             }
 
         // ... else compute full K 
         } else {
             K_buffer_eigen = integrator_->eval_exx(D_buffer_eigen, integrator_settings_);        
-            if (force_cartesian_ && is_spherical_basis) {
+            //K_buffer_eigen = K_buffer_eigen; 
+            if ((sph_to_cart_matrix_ != nullptr) && is_spherical_basis) {
                 K[iD]->back_transform(K_buffer, sph_to_cart_matrix_);          
             }
         }
@@ -479,6 +488,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
 
         // now we need to reverse the CCA reordering previously performed
         timer_on("snLinK: Back-transform D and K");
+        outfile->Printf("snLinK: Back-transform D and K\n");
         if (permutation_matrix_.has_value()) {
             auto permutation_matrix_val = permutation_matrix_ .value();
             auto D_eigen_permute = D[iD]->eigen_map();
