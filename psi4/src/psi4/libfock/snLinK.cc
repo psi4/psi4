@@ -243,7 +243,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
         PetiteList petite(primary, factory, true);
         sph_to_cart_matrix_ = petite.sotoao(); 
 
-        // SNLINK_FORCE_CARTESIAN only works with C1 symmtry currently
+        // SNLINK_FORCE_CARTESIAN only works with C1 symmetry currently
         // TODO: Fix this!
         if (sph_to_cart_matrix_->nirrep() != 1) {
             auto point_group = primary->molecule()->point_group();
@@ -398,8 +398,9 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
 
     // we need to know if we are using a spherical harmonic basis
     // much of the behavior here is influenced by this
-    auto is_spherical_basis = primary_->has_puream();
-     
+    auto do_reorder = permutation_matrix_.has_value(); 
+    auto force_cartesian = (sph_to_cart_matrix_ != nullptr); 
+
     // compute K for density Di using GauXC
     for (int iD = 0; iD != D.size(); ++iD) {
         timer_on("snLinK: Transform D");
@@ -408,24 +409,19 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         auto Did_eigen = D[iD]->eigen_map();    
         auto Kid_eigen = K[iD]->eigen_map();    
        
-        // map Psi4 density matrix to Eigen matrix map
-        SharedMatrix D_buffer = nullptr; 
-        if (is_spherical_basis) {
-            // need to reorder Psi4 density matrix to CCA ordering if in spherical harmonics
-            if (permutation_matrix_.has_value()) {
-                auto permutation_matrix_val = permutation_matrix_.value();
-                auto D_eigen_permute = D[iD]->eigen_map();
-                D_eigen_permute = permutation_matrix_val * D_eigen_permute * permutation_matrix_val.transpose();
-            }
+        // need to reorder Psi4 density matrix to CCA ordering if in spherical harmonics
+        if (do_reorder) {
+            auto permutation_matrix_val = permutation_matrix_.value();
+            auto D_eigen_permute = D[iD]->eigen_map();
+            D_eigen_permute = permutation_matrix_val * D_eigen_permute * permutation_matrix_val.transpose();
+        }
             
-            // also need to transform D to cartesian coordinates if requested/required
-            if (sph_to_cart_matrix_ != nullptr) {
-                D_buffer = std::make_shared<Matrix>();
-                D_buffer->transform(D[iD], sph_to_cart_matrix_);
-            } else {
-                D_buffer = D[iD];
-            }
-        // natively-cartesian bases dont require the reordering/transforming above
+        // map Psi4 density matrix to Eigen matrix map
+        // also need to transform D to cartesian coordinates if requested/required
+        SharedMatrix D_buffer = nullptr; 
+        if (force_cartesian) {
+            D_buffer = std::make_shared<Matrix>();
+            D_buffer->transform(D[iD], sph_to_cart_matrix_);
         } else {
             D_buffer = D[iD];
         }
@@ -433,31 +429,27 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         
         timer_off("snLinK: Transform D");
         
-        // map Psi4 exchange matrix buffer to Eigen matrix map
         timer_on("snLinK: Transform K");
         outfile->Printf("snLinK: Transform K\n");
         
-        SharedMatrix K_buffer = nullptr; 
-        if (is_spherical_basis) {
-            // need to reorder Psi4 exchange matrix to CCA ordering if in spherical harmonics
-            if (permutation_matrix_.has_value()) { 
-                auto permutation_matrix_val = permutation_matrix_.value();
-                auto K_eigen_permute = K[iD]->eigen_map();
-                K_eigen_permute = permutation_matrix_val * K_eigen_permute * permutation_matrix_val.transpose();
-            }
+        // need to reorder Psi4 exchange matrix to CCA ordering if in spherical harmonics
+        if (do_reorder) { 
+            auto permutation_matrix_val = permutation_matrix_.value();
+            auto K_eigen_permute = K[iD]->eigen_map();
+            K_eigen_permute = permutation_matrix_val * K_eigen_permute * permutation_matrix_val.transpose();
+        }
             
-            // also need to transform D to cartesian coordinates if requested/required
-            if (sph_to_cart_matrix_ != nullptr) { 
-                K_buffer = std::make_shared<Matrix>();
-                K_buffer->transform(K[iD], sph_to_cart_matrix_);
-            } else {
-                K_buffer = K[iD];
-            }
-        // natively-cartesian bases dont require the reordering/transforming above
+        // map Psi4 exchange matrix buffer to Eigen matrix map
+        // also need to transform D to cartesian coordinates if requested/required
+        SharedMatrix K_buffer = nullptr; 
+        if (force_cartesian) { 
+            K_buffer = std::make_shared<Matrix>();
+            K_buffer->transform(K[iD], sph_to_cart_matrix_);
         } else {
             K_buffer = K[iD];
         }
         auto K_buffer_eigen = K_buffer->eigen_map(); 
+        
         timer_off("snLinK: Transform K");
         
         timer_on("snLinK: Execute integrator");
@@ -465,7 +457,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         // compute delta K if incfock iteration... 
         if (incfock_iter_) { 
             // K buffer (i.e., delta K) must be back-transformed and added to Psi4 K separately if cartesian transformation is forced...
-            if ((sph_to_cart_matrix_ != nullptr) && is_spherical_basis) {
+            if (force_cartesian) {
                 K_buffer_eigen = integrator_->eval_exx(D_buffer_eigen, integrator_settings_);
                 //K_buffer_eigen = K_buffer_eigen; 
                 K_buffer->back_transform(sph_to_cart_matrix_);
@@ -480,7 +472,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         } else {
             K_buffer_eigen = integrator_->eval_exx(D_buffer_eigen, integrator_settings_);        
             //K_buffer_eigen = K_buffer_eigen; 
-            if ((sph_to_cart_matrix_ != nullptr) && is_spherical_basis) {
+            if (force_cartesian) {
                 K[iD]->back_transform(K_buffer, sph_to_cart_matrix_);          
             }
         }
@@ -489,7 +481,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         // now we need to reverse the CCA reordering previously performed
         timer_on("snLinK: Back-transform D and K");
         outfile->Printf("snLinK: Back-transform D and K\n");
-        if (permutation_matrix_.has_value()) {
+        if (do_reorder) {
             auto permutation_matrix_val = permutation_matrix_ .value();
             auto D_eigen_permute = D[iD]->eigen_map();
             D_eigen_permute = permutation_matrix_val.transpose() * D_eigen_permute * permutation_matrix_val; 
