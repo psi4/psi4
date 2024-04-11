@@ -61,6 +61,7 @@ _programs = {
     # non-QC
     "memory_profiler": which_import('memory_profiler', return_bool=True),
     "networkx": which_import("networkx", return_bool=True),
+    "h5py": which_import('h5py', return_bool=True),
 
     # QC
     "adcc": which_import("adcc", return_bool=True),

@@ -1457,3 +1457,21 @@ data:
     #  ENABLE_gauxc
     #  gauxc_ENABLE_GPU 
     conda: null
+
+  - project: h5py 
+    use:
+      added: 1.10
+      required: false
+      required_note: optional for GauXC interface tests
+      buildable: false
+      buildtime: false
+      cms: false
+      test_required: false
+    repository: null
+    cmake: null
+    conda:
+      channel: conda-forge
+      name: h5py
+      constraint: null
+      cmake: null
+      skip_win: true
