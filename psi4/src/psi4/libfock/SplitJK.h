@@ -340,9 +340,6 @@ class PSI_API snLinK : public SplitJK {
     using matrix_type = Eigen::MatrixXd;
 
     // => Cartesian-Spherical Transformation stuff <= // 
-    // force basis set to cartesian coordinates?
-    // needed for GPU sn-LinK impl in GauXC
-    bool force_cartesian_;
     /// The AO->CartAO transformation matrix, which is used for transforming
     /// matrices between pure and Cartesian representations.
     SharedMatrix sph_to_cart_matrix_;
