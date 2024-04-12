@@ -585,31 +585,45 @@ void DiskMP2F12::form_V_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTenso
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
-    Tensor<double, 0> tmp1{"F_oooc . G_F_oooc IJKL"};
-    Tensor<double, 0> tmp2{"F_oooc . G_F_oooc JILK"};
-    Tensor<double, 0> tmp3{"F_oopq . G_F_oopq IJKL"};
+    Tensor<double, 0> tmp1{"terms IJIJ"};
+    Tensor<double, 0> tmp2{"terms IJJI"};
 
     for (int I = 0; I < nocc_; I++) {
-        for (int J = 0; J < nocc_; J++) {
-            auto VX_IJ = (*VX)(All, All, I, J);
-            auto FG_F2_IJ = (*FG_F2)(I, J, All, All);
-            auto F_IJ_oc = (*F)(I, J, Range{0, nocc_}, Range{nobs_, nri_});
-            auto F_JI_oc = (*F)(J, I, Range{0, nocc_}, Range{nobs_, nri_});
-            auto F_pq = (*F)(I, J, Range{0, nobs_}, Range{0, nobs_});
+        for (int J = I; J < nocc_; J++) {
+            // Terms 2 and 3
+            {
+                auto G_F_IJ_oc = (*G_F)(I, J, Range{0, nocc_}, Range{nobs_, nri_});
+                auto G_F_JI_oc = (*G_F)(J, I, Range{0, nocc_}, Range{nobs_, nri_});
+                auto F_IJ_oc = (*F)(I, J, Range{0, nocc_}, Range{nobs_, nri_});
+                auto F_JI_oc = (*F)(J, I, Range{0, nocc_}, Range{nobs_, nri_});
 
-            for(int K = 0; K < nocc_; K++) {
-                for (int L = 0; L < nocc_; L++) {
-                    auto G_F_KL_oc = (*G_F)(K, L, Range{0, nocc_}, Range{nobs_, nri_});
-                    auto G_F_LK_oc = (*G_F)(L, K, Range{0, nocc_}, Range{nobs_, nri_});
-                    einsum(Indices{}, &tmp1, Indices{m, q}, F_IJ_oc.get(), Indices{m, q}, G_F_KL_oc.get());
-                    einsum(Indices{}, &tmp2, Indices{m, q}, G_F_LK_oc.get(), Indices{m, q}, F_JI_oc.get());
+                einsum(Indices{}, &tmp1, Indices{m, q}, G_F_IJ_oc.get(), Indices{m, q}, F_IJ_oc.get());
+                einsum(1.0, Indices{}, &tmp1, 1.0, Indices{m, q}, G_F_JI_oc.get(), Indices{m, q}, F_JI_oc.get());
 
-                    auto G_F_pq = (*G_F)(K, L, Range{0, nobs_}, Range{0, nobs_});
-                    einsum(Indices{}, &tmp3, Indices{p, q}, F_pq.get(), Indices{p, q}, G_F_pq.get());
-
-                    VX_IJ(K, L) = FG_F2_IJ(K, L) - tmp1 - tmp2 - tmp3;
+                if (I != J) {
+                    einsum(Indices{}, &tmp2, Indices{m, q}, G_F_IJ_oc.get(), Indices{m, q}, F_JI_oc.get());
+                    einsum(1.0, Indices{}, &tmp2, 1.0, Indices{m, q}, G_F_JI_oc.get(), Indices{m, q}, F_IJ_oc.get());
                 }
             }
+
+            // Term 4
+            {
+                auto G_F_IJ_pq = (*G_F)(I, J, Range{0, nobs_}, Range{0, nobs_});
+                auto G_F_JI_pq = (*G_F)(J, I, Range{0, nobs_}, Range{0, nobs_});
+                auto F_IJ_pq = (*F)(I, J, Range{0, nobs_}, Range{0, nobs_});
+
+                einsum(1.0, Indices{}, &tmp1, 1.0, Indices{p, q}, F_IJ_pq.get(), Indices{p, q}, G_F_IJ_pq.get());
+
+                if (I != J) {
+                    einsum(1.0, Indices{}, &tmp2, 1.0, Indices{p, q}, F_IJ_pq.get(), Indices{p, q}, G_F_JI_pq.get());
+                }
+            }
+
+            auto FG_F2_IJ = (*FG_F2)(I, J, All, All); // Term 1
+
+            auto VX_IJ = (*VX)(I, J, All, All);
+            VX_IJ(I, J) = FG_F2_IJ(I, J) - tmp1;
+            if (I != J) VX_IJ(J, I) = FG_F2_IJ(J, I) - tmp2;
         }
     }
 }
@@ -622,14 +636,26 @@ void DiskMP2F12::form_C(einsums::DiskTensor<double, 4> *C, einsums::DiskTensor<d
     using namespace tensor_algebra::index;
 
     auto f_vc = (*f)(Range{nocc_, nobs_}, Range{nobs_, nri_});
-    for(int K = 0; K < nocc_; K++) {
-        for (int L = 0; L < nocc_; L++) {
-            auto C_KL = (*C)(K, L, All, All);
-            auto F_KL_vc = (*F)(K, L, Range{nocc_, nobs_}, Range{nobs_, nri_});
-            auto F_LK_vc = (*F)(L, K, Range{nocc_, nobs_}, Range{nobs_, nri_});
+    f_vc.set_read_only(true);
 
-            einsum(Indices{a, b}, &C_KL.get(), Indices{a, q}, F_KL_vc.get(), Indices{b, q}, f_vc.get());
-            einsum(1.0, Indices{a, b}, &C_KL.get(), 1.0, Indices{a, q}, f_vc.get(), Indices{b, q}, F_LK_vc.get());
+    for (int I = 0; I < nocc_; I++) {
+        for (int J = I; J < nocc_; J++) {
+            auto F_IJ_vc = (*F)(I, J, Range{nocc_, nobs_}, Range{nobs_, nri_});
+            auto F_JI_vc = (*F)(J, I, Range{nocc_, nobs_}, Range{nobs_, nri_});
+
+            // IJAB
+            {
+                auto C_IJ = (*C)(I, J, All, All);
+                einsum(Indices{a, b}, &C_IJ.get(), Indices{a, q}, F_IJ_vc.get(), Indices{b, q}, f_vc.get());
+                einsum(1.0, Indices{a, b}, &C_IJ.get(), 1.0, Indices{a, q}, f_vc.get(), Indices{b, q}, F_JI_vc.get());
+            }
+
+            // JIAB
+            if (I != J) {
+                auto C_JI = (*C)(J, I, All, All);
+                einsum(Indices{a, b}, &C_JI.get(), Indices{a, q}, F_JI_vc.get(), Indices{b, q}, f_vc.get());
+                einsum(1.0, Indices{a, b}, &C_JI.get(), 1.0, Indices{a, q}, f_vc.get(), Indices{b, q}, F_IJ_vc.get());
+            }
         }
     }
 }
@@ -643,22 +669,41 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
-    DiskTensor<double, 4> B_nosymm{state::data, "B_klmn", nocc_, nocc_, nocc_, nocc_};
+    // Must fill IJIJ, IJJI and JIJI, JIIJ
+    Tensor<double, 0> tmp1{"terms IJIJ"};
+    Tensor<double, 0> tmp2{"terms IJJI"};
 
     // Term 1 and Term 2
     {
-        auto fk_o1   = (*fk)(Range{0, nocc_}, All);
-        for(int K = 0; K < nocc_; K++) {
-            for (int L = 0; L < nocc_; L++) {
-                auto B_KL = B_nosymm(K, L, All, All);
+        for (int I = 0; I < nocc_; I++) {
+            for (int J = I; J < nocc_; J++) {
+                auto fk_I_1 = (*fk)(I, All);
+                auto fk_J_1 = (*fk)(J, All);
 
-                auto Uf_KL = (*Uf)(K, L, All, All);
-                sort(Indices{m, n}, &B_KL.get(), Indices{m, n}, Uf_KL.get());
+                // IJIJ and JIJI
+                {
+                    auto F2_JIJ_1 = (*F2)(J, I, J, All);
+                    auto F2_IJI_1 = (*F2)(I, J, I, All);
 
-                auto F2_KL_o1 = (*F2)(K, L, Range{0, nocc_}, All);
-                auto F2_LK_o1 = (*F2)(L, K, Range{0, nocc_}, All);
-                einsum(1.0, Indices{m, n}, &B_KL.get(), 1.0, Indices{m, I}, fk_o1.get(), Indices{n, I}, F2_LK_o1.get());
-                einsum(1.0, Indices{m, n}, &B_KL.get(), 1.0, Indices{m, I}, F2_KL_o1.get(), Indices{n, I}, fk_o1.get());
+                    einsum(Indices{}, &tmp1, Indices{A}, fk_I_1.get(), Indices{A}, F2_JIJ_1.get());
+                    einsum(1.0, Indices{}, &tmp1, 1.0, Indices{A}, F2_IJI_1.get(), Indices{A}, fk_J_1.get());
+                }
+
+                // IJJI and JIIJ
+                if (I != J) {
+                    auto F2_IJJ_1 = (*F2)(I, J, J, All);
+                    auto F2_JII_1 = (*F2)(J, I, I, All);
+
+                    einsum(Indices{}, &tmp2, Indices{A}, fk_I_1.get(), Indices{A}, F2_IJJ_1.get());
+                    einsum(1.0, Indices{}, &tmp2, 1.0, Indices{A}, F2_JII_1.get(), Indices{A}, fk_J_1.get());
+                }
+
+                auto Uf_IJ = (*Uf)(I, J, All, All); // Term 1
+
+                auto B_IJ = (*B)(I, J, All, All);
+                auto B_JI = (*B)(J, I, All, All);
+                B_IJ(I, J) = B_JI(J, I) = Uf_IJ(I, J) + tmp1;
+                if (I != J) B_IJ(J, I) = B_JI(I, J) = Uf_IJ(J, I) + tmp2;
             }
         }
     }
@@ -666,28 +711,38 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     // Term 3
     {
         Tensor<double, 2> rank2{"Contraction 1", nri_, nri_};
-        Tensor<double, 0> tmp{"Contraction 2"};
         auto k_view = (*kk)(All, All);
+        k_view.set_read_only(true);
 
-        for(int K = 0; K < nocc_; K++) {
-            for (int L = 0; L < nocc_; L++) {
-                auto B_KL = B_nosymm(K, L, All, All);
-                auto F_KL_11 = (*F)(K, L, All, All);
-                auto F_LK_11 = (*F)(L, K, All, All);
+        for (int I = 0; I < nocc_; I++) {
+            for (int J = I; J < nocc_; J++) {
+                auto F_IJ_11 = (*F)(I, J, All, All);
+                auto F_JI_11 = (*F)(J, I, All, All);
 
-                for(int M = 0; M < nocc_; M++) {
-                    for (int N = 0; N < nocc_; N++) {
-                        auto F_MN_11 = (*F)(M, N, All, All);
-                        einsum(Indices{P, A}, &rank2, Indices{P, C}, F_KL_11.get(), Indices{C, A}, k_view.get());
-                        einsum(Indices{}, &tmp, Indices{P, A}, rank2, Indices{P, A}, F_MN_11.get());
-                        B_KL(M, N) -= tmp;
+                // IJIJ and IJJI
+                {
+                    einsum(Indices{P, Q}, &rank2, Indices{P, R}, F_IJ_11.get(), Indices{R, Q}, k_view.get());
+                    einsum(Indices{}, &tmp1, Indices{P, Q}, rank2, Indices{P, Q}, F_IJ_11.get());
 
-                        auto F_NM_11 = (*F)(N, M, All, All);
-                        einsum(Indices{P, A}, &rank2, Indices{P, C}, F_LK_11.get(), Indices{C, A}, k_view.get());
-                        einsum(Indices{}, &tmp, Indices{P, A}, rank2, Indices{P, A}, F_NM_11.get());
-                        B_KL(M, N) -= tmp;
+                    if (I != J) {
+                        einsum(Indices{}, &tmp2, Indices{P, Q}, rank2, Indices{P, Q}, F_JI_11.get());
                     }
                 }
+
+                // JIJI and JIIJ
+                {
+                    einsum(Indices{P, Q}, &rank2, Indices{P, R}, F_JI_11.get(), Indices{R, Q}, k_view.get());
+                    einsum(1.0, Indices{}, &tmp1, 1.0, Indices{P, Q}, rank2, Indices{P, Q}, F_JI_11.get());
+
+                    if (I != J) {
+                        einsum(1.0, Indices{}, &tmp2, 1.0, Indices{P, Q}, rank2, Indices{P, Q}, F_IJ_11.get());
+                    }
+                }
+
+                auto B_IJ = (*B)(I, J, All, All);
+                auto B_JI = (*B)(J, I, All, All);
+                B_IJ(I, J) = B_JI(J, I) -= tmp1;
+                if (I != J) B_IJ(J, I) = B_JI(I, J) -= tmp2;
             }
         }
     }
@@ -695,28 +750,38 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     // Term 4
     {
         Tensor<double, 2> rank2{"Contraction 1", nocc_, nri_};
-        Tensor<double, 0> tmp{"Contraction 2"};
         auto f_view = (*f)(All, All);
+        f_view.set_read_only(true);
 
-        for(int K = 0; K < nocc_; K++) {
-            for (int L = 0; L < nocc_; L++) {
-                auto B_KL = B_nosymm(K, L, All, All);
-                auto F_KL_o1 = (*F)(K, L, Range{0, nocc_}, All);
-                auto F_LK_o1 = (*F)(L, K, Range{0, nocc_}, All);
+        for (int I = 0; I < nocc_; I++) {
+            for (int J = I; J < nocc_; J++) {
+                auto F_IJ_o1 = (*F)(I, J, Range{0, nocc_}, All);
+                auto F_JI_o1 = (*F)(J, I, Range{0, nocc_}, All);
 
-                for(int M = 0; M < nocc_; M++) {
-                    for (int N = 0; N < nocc_; N++) {
-                        auto F_MN_o1 = (*F)(M, N, Range{0, nocc_}, All);
-                        einsum(Indices{j, A}, &rank2, Indices{j, C}, F_KL_o1.get(), Indices{C, A}, f_view.get());
-                        einsum(Indices{}, &tmp, Indices{j, A}, rank2, Indices{j, A}, F_MN_o1.get());
-                        B_KL(M, N) -= tmp;
+                // IJIJ and IJJI
+                {
+                    einsum(Indices{j, Q}, &rank2, Indices{j, R}, F_IJ_o1.get(), Indices{R, Q}, f_view.get());
+                    einsum(Indices{}, &tmp1, Indices{j, Q}, rank2, Indices{j, Q}, F_IJ_o1.get());
 
-                        auto F_NM_o1 = (*F)(N, M, Range{0, nocc_}, All);
-                        einsum(Indices{j, A}, &rank2, Indices{j, C}, F_LK_o1.get(), Indices{C, A}, f_view.get());
-                        einsum(Indices{}, &tmp, Indices{j, A}, rank2, Indices{j, A}, F_NM_o1.get());
-                        B_KL(M, N) -= tmp;
+                    if (I != J) {
+                        einsum(Indices{}, &tmp2, Indices{j, Q}, rank2, Indices{j, Q}, F_JI_o1.get());
                     }
                 }
+
+                // JIJI and JIIJ
+                {
+                    einsum(Indices{j, Q}, &rank2, Indices{j, R}, F_JI_o1.get(), Indices{R, Q}, f_view.get());
+                    einsum(1.0, Indices{}, &tmp1, 1.0, Indices{j, Q}, rank2, Indices{j, Q}, F_JI_o1.get());
+
+                    if (I != J) {
+                        einsum(1.0, Indices{}, &tmp2, 1.0, Indices{j, Q}, rank2, Indices{j, Q}, F_IJ_o1.get());
+                    }
+                }
+
+                auto B_IJ = (*B)(I, J, All, All);
+                auto B_JI = (*B)(J, I, All, All);
+                B_IJ(I, J) = B_JI(J, I) -= tmp1;
+                if (I != J) B_IJ(J, I) = B_JI(I, J) -= tmp2;
             }
         }
     }
@@ -724,43 +789,57 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     // Term 5 and Term 7
     {
         Tensor<double, 2> rank2{"Contraction 1", ncabs_, nocc_};
-        Tensor<double, 0> tmp{"Contraction 2"};
         auto f_oo = (*f)(Range{0, nocc_}, Range{0, nocc_});
         auto f_o1 = (*f)(Range{0, nocc_}, All);
+        f_oo.set_read_only(true);
+        f_o1.set_read_only(true);
 
-        for(int K = 0; K < nocc_; K++) {
-            for (int L = 0; L < nocc_; L++) {
-                auto B_KL = B_nosymm(K, L, All, All);
-                auto F_KL_co = (*F)(K, L, Range{nobs_, nri_}, Range{0, nocc_});
-                auto F_LK_co = (*F)(L, K, Range{nobs_, nri_}, Range{0, nocc_});
-                auto F_KL_c1 = (*F)(K, L, Range{nobs_, nri_}, All);
-                auto F_LK_c1 = (*F)(L, K, Range{nobs_, nri_}, All);
+        for (int I = 0; I < nocc_; I++) {
+            for (int J = I; J < nocc_; J++) {
+                auto F_IJ_co = (*F)(I, J, Range{nobs_, nri_}, Range{0, nocc_});
+                auto F_JI_co = (*F)(J, I, Range{nobs_, nri_}, Range{0, nocc_});
 
-                for(int M = 0; M < nocc_; M++) {
-                    for (int N = 0; N < nocc_; N++) {
-                        {
-                            auto F_MN_co = (*F)(M, N, Range{nobs_, nri_}, Range{0, nocc_});
-                            einsum(Indices{p, i}, &rank2, Indices{p, j}, F_KL_co.get(), Indices{i, j}, f_oo.get());
-                            einsum(Indices{}, &tmp, Indices{p, i}, rank2, Indices{p, i}, F_MN_co.get());
-                            B_KL(M, N) += tmp;
+                // Term 5
+                {
+                    einsum(Indices{p, i}, &rank2, Indices{p, j}, F_IJ_co.get(), Indices{i, j}, f_oo.get());
+                    einsum(Indices{}, &tmp1, Indices{p, i}, rank2, Indices{p, i}, F_IJ_co.get());
 
-                            einsum(Indices{p, j}, &rank2, Indices{p, I}, F_KL_c1.get(), Indices{j, I}, f_o1.get());
-                            einsum(Indices{}, &tmp, Indices{p, j}, rank2, Indices{p, j}, F_MN_co.get());
-                            B_KL(M, N) -= 2.0 * tmp;
-                        }
+                    if (I != J) {
+                        einsum(Indices{}, &tmp2, Indices{p, i}, rank2, Indices{p, i}, F_JI_co.get());
+                    }
 
-                        {
-                            auto F_NM_co = (*F)(N, M, Range{nobs_, nri_}, Range{0, nocc_});
-                            einsum(Indices{p, i}, &rank2, Indices{p, j}, F_LK_co.get(), Indices{i, j}, f_oo.get());
-                            einsum(Indices{}, &tmp, Indices{p, i}, rank2, Indices{p, i}, F_NM_co.get());
-                            B_KL(M, N) += tmp;
+                    einsum(Indices{p, i}, &rank2, Indices{p, j}, F_JI_co.get(), Indices{i, j}, f_oo.get());
+                    einsum(1.0, Indices{}, &tmp1, 1.0, Indices{p, i}, rank2, Indices{p, i}, F_JI_co.get());
 
-                            einsum(Indices{p, j}, &rank2, Indices{p, I}, F_LK_c1.get(), Indices{j, I}, f_o1.get());
-                            einsum(Indices{}, &tmp, Indices{p, j}, rank2, Indices{p, j}, F_NM_co.get());
-                            B_KL(M, N) -= 2.0 * tmp;
-                        }
+                    if (I != J) {
+                        einsum(1.0, Indices{}, &tmp2, 1.0, Indices{p, i}, rank2, Indices{p, i}, F_IJ_co.get());
                     }
                 }
+
+                // Term 7
+                {
+                    auto F_IJ_c1 = (*F)(I, J, Range{nobs_, nri_}, All);
+                    auto F_JI_c1 = (*F)(J, I, Range{nobs_, nri_}, All);
+
+                    einsum(Indices{p, j}, &rank2, Indices{p, A}, F_IJ_c1.get(), Indices{j, A}, f_o1.get());
+                    einsum(1.0, Indices{}, &tmp1, -2.0, Indices{p, j}, rank2, Indices{p, j}, F_IJ_co.get());
+
+                    if (I != J) {
+                        einsum(1.0, Indices{}, &tmp2, -2.0, Indices{p, j}, rank2, Indices{p, j}, F_JI_co.get());
+                    }
+
+                    einsum(Indices{p, j}, &rank2, Indices{p, A}, F_JI_c1.get(), Indices{j, A}, f_o1.get());
+                    einsum(1.0, Indices{}, &tmp1, -2.0, Indices{p, j}, rank2, Indices{p, j}, F_JI_co.get());
+
+                    if (I != J) {
+                        einsum(1.0, Indices{}, &tmp2, -2.0, Indices{p, j}, rank2, Indices{p, j}, F_IJ_co.get());
+                    }
+                }
+
+                auto B_IJ = (*B)(I, J, All, All);
+                auto B_JI = (*B)(J, I, All, All);
+                B_IJ(I, J) = B_JI(J, I) += tmp1;
+                if (I != J) B_IJ(J, I) = B_JI(I, J) += tmp2;
             }
         }
     }
@@ -768,56 +847,57 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     // Term 6 and Term 8
     {
         Tensor<double, 2> rank2{"Contraction 1", nvir_, nobs_};
-        Tensor<double, 0> tmp{"Contraction 2"};
         auto f_pq = (*f)(Range{0, nobs_}, Range{0, nobs_});
         auto f_pc   = (*f)(Range{0, nobs_}, Range{nobs_, nri_});
+        f_pq.set_read_only(true);
+        f_pc.set_read_only(true);
 
-        for(int K = 0; K < nocc_; K++) {
-            for (int L = 0; L < nocc_; L++) {
-                auto B_KL = B_nosymm(K, L, All, All);
-                auto F_KL_vq = (*F)(K, L, Range{nocc_, nobs_}, Range{0, nobs_});
-                auto F_LK_vq = (*F)(L, K, Range{nocc_, nobs_}, Range{0, nobs_});
-                auto F_KL_vc = (*F)(K, L, Range{nocc_, nobs_}, Range{nobs_, nri_});
-                auto F_LK_vc = (*F)(L, K, Range{nocc_, nobs_}, Range{nobs_, nri_});
+        for (int I = 0; I < nocc_; I++) {
+            for (int J = I; J < nocc_; J++) {
+                auto F_IJ_vq = (*F)(I, J, Range{nocc_, nobs_}, Range{0, nobs_});
+                auto F_JI_vq = (*F)(J, I, Range{nocc_, nobs_}, Range{0, nobs_});
 
-                for(int M = 0; M < nocc_; M++) {
-                    for (int N = 0; N < nocc_; N++) {
-                        {
-                            auto F_MN_vq = (*F)(M, N, Range{nocc_, nobs_}, Range{0, nobs_});
-                            einsum(Indices{b, q}, &rank2, Indices{b, p}, F_KL_vq.get(), Indices{p, q}, f_pq.get());
-                            einsum(Indices{}, &tmp, Indices{b, q}, rank2, Indices{b, q}, F_MN_vq.get());
-                            B_KL(M, N) -= tmp;
+                // Term 6
+                {
+                    einsum(Indices{b, q}, &rank2, Indices{b, p}, F_IJ_vq.get(), Indices{p, q}, f_pq.get());
+                    einsum(Indices{}, &tmp1, Indices{b, q}, rank2, Indices{b, q}, F_IJ_vq.get());
 
-                            einsum(Indices{b, q}, &rank2, Indices{b, w}, F_KL_vc.get(), Indices{q, w}, f_pc.get());
-                            einsum(Indices{}, &tmp, Indices{b, q}, rank2, Indices{b, q}, F_MN_vq.get());
-                            B_KL(M, N) -= 2.0 * tmp;
-                        }
+                    if (I != J) {
+                        einsum(Indices{}, &tmp2, Indices{b, q}, rank2, Indices{b, q}, F_JI_vq.get());
+                    }
 
-                        {
-                            auto F_NM_vq = (*F)(N, M, Range{nocc_, nobs_}, Range{0, nobs_});
-                            einsum(Indices{b, q}, &rank2, Indices{b, p}, F_LK_vq.get(), Indices{p, q}, f_pq.get());
-                            einsum(Indices{}, &tmp, Indices{b, q}, rank2, Indices{b, q}, F_NM_vq.get());
-                            B_KL(M, N) -= tmp;
+                    einsum(Indices{b, q}, &rank2, Indices{b, p}, F_JI_vq.get(), Indices{p, q}, f_pq.get());
+                    einsum(1.0, Indices{}, &tmp1, 1.0, Indices{b, q}, rank2, Indices{b, q}, F_JI_vq.get());
 
-                            einsum(Indices{b, q}, &rank2, Indices{b, w}, F_LK_vc.get(), Indices{q, w}, f_pc.get());
-                            einsum(Indices{}, &tmp, Indices{b, q}, rank2, Indices{b, q}, F_NM_vq.get());
-                            B_KL(M, N) -= 2.0 * tmp;
-                        }
+                    if (I != J) {
+                        einsum(1.0, Indices{}, &tmp2, 1.0, Indices{b, q}, rank2, Indices{b, q}, F_IJ_vq.get());
                     }
                 }
-            }
-        }
-    }
 
-    for(int K = 0; K < nocc_; K++) {
-        for (int L = 0; L < nocc_; L++) {
-            auto B_KL = (*B)(K, L, All, All);
-            auto B_klmn = B_nosymm(K, L, All, All);
-            auto B_mnkl = B_nosymm(All, All, K, L);
-            for(int M = 0; M < nocc_; M++) {
-                for (int N = 0; N < nocc_; N++) {
-                    B_KL(M, N) = 0.5 * (B_klmn(M, N) + B_mnkl(M, N));
+                // Term 8
+                {
+                    auto F_IJ_vc = (*F)(I, J, Range{nocc_, nobs_}, Range{nobs_, nri_});
+                    auto F_JI_vc = (*F)(J, I, Range{nocc_, nobs_}, Range{nobs_, nri_});
+
+                    einsum(Indices{b, q}, &rank2, Indices{b, w}, F_IJ_vc.get(), Indices{q, w}, f_pc.get());
+                    einsum(1.0, Indices{}, &tmp1, 2.0, Indices{b, q}, rank2, Indices{b, q}, F_IJ_vq.get());
+
+                    if (I != J) {
+                        einsum(1.0, Indices{}, &tmp2, 2.0, Indices{b, q}, rank2, Indices{b, q}, F_JI_vq.get());
+                    }
+
+                    einsum(Indices{b, q}, &rank2, Indices{b, w}, F_JI_vc.get(), Indices{q, w}, f_pc.get());
+                    einsum(1.0, Indices{}, &tmp1, 2.0, Indices{b, q}, rank2, Indices{b, q}, F_JI_vq.get());
+
+                    if (I != J) {
+                        einsum(1.0, Indices{}, &tmp2, 2.0, Indices{b, q}, rank2, Indices{b, q}, F_IJ_vq.get());
+                    }
                 }
+
+                auto B_IJ = (*B)(I, J, All, All);
+                auto B_JI = (*B)(J, I, All, All);
+                B_IJ(I, J) = B_JI(J, I) -= tmp1;
+                if (I != J) B_IJ(J, I) = B_JI(I, J) -= tmp2;
             }
         }
     }
