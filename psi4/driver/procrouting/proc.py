@@ -4404,7 +4404,7 @@ def run_mp2f12(name, **kwargs):
         ['CABS_BASIS'],
         ['DF_BASIS_F12'])
 
-    # Default SCF_TYPE to PK if F12_TYPE is CONV
+    # Default SCF_TYPE to PK if F12_TYPE is CONV and has not been changed
     if not core.has_global_option_changed('SCF_TYPE')\
         and "CONV" in core.get_option("F12", "F12_TYPE"):
         core.set_global_option('SCF_TYPE', 'PK')
