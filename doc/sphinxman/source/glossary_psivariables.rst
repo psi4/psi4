@@ -1136,7 +1136,6 @@ PSI Variables by Alpha
 
 .. psivar:: MP2-F12 TOTAL ENERGY
    MP2-F12 CORRELATION ENERGY
-   MP2 CORRELATION ENERGY
    F12 CORRELATION ENERGY
 
    The total electronic energy [E_h], total correlation energy component [E_h],
