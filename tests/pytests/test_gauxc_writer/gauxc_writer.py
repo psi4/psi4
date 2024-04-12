@@ -12,7 +12,7 @@ def write_results(run_name, wfn):
 
             molecule_dtype = {
                 'names': ['Atomic Number', 'X Coordinate', 'Y Coordinate', 'Z Coordinate'], 
-                'formats': ['<i4', '<f8', '<f8', '<f8'], 
+                'formats': ['<i8', '<f8', '<f8', '<f8'], 
                 'offsets': [0, 8, 16, 24], 
                 'itemsize': 32
             }
