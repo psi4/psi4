@@ -1,11 +1,7 @@
-#import numpy as np
 import pytest
 
 import os 
 import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "test_gauxc_writer/")) 
-import gauxc_writer as gxcw 
 
 from utils import compare
 from addons import uusing
@@ -65,9 +61,13 @@ def test_gauxc_writer(inp, basis, mols, request):
     All data (molecule, basis set, density, exchange) should match to
     within tolerance."""
 
+    #== have to import some modules here ==#
+    sys.path.append(os.path.join(os.path.dirname(__file__), "test_gauxc_writer/")) 
+    import gauxc_writer as gxcw 
+
+    #== initial set up ==#
     psi4.core.be_quiet()
     
-    #== initial set up ==#
     test_id = request.node.callspec.id
     
     psi4.set_options({
