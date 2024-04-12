@@ -45,7 +45,8 @@ def mols():
     "basis",
     [
         pytest.param("bse:cc-pVDZ", id="cc-pVDZ"),
-        #pytest.param("bse:cc-pVTZ", id="cc-pVTZ"),
+        pytest.param("bse:cc-pVTZ", id="cc-pVTZ"),
+        pytest.param("bse:cc-pVQZ", id="cc-pVQZ"),
     ],
 )
 #@pytest.mark.parametrize(
