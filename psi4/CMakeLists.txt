@@ -156,6 +156,8 @@ if(${ENABLE_gauxc})
         set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
     endif()
 
+    get_property(BLAS_LIBRARIES TARGET tgt::lapk PROPERTY INTERFACE_LINK_LIBRARIES)
+
     find_package(gauxc CONFIG REQUIRED COMPONENTS IntegratorXX ExchCXX)
     get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
