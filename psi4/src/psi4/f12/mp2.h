@@ -70,7 +70,7 @@ class MP2F12 : public Wavefunction {
     bool use_df_ = false;
 
     /* Bool to read in precomputed F12 integrals */
-    bool f12_restart_ = false;
+    bool f12_read_ints_ = false;
 
     /* List of orbital spaces: Orbital Basis Set (OBS) 
        and Complimentary Auxiliary Basis Set (CABS) */
@@ -128,7 +128,7 @@ class MP2F12 : public Wavefunction {
     /* Form the F12/3C(FIX) correlation energy */
     virtual void form_f12_energy(einsums::Tensor<double,4> *V, einsums::Tensor<double,4> *X,
                                  einsums::Tensor<double,4> *C, einsums::Tensor<double,4> *B,
-                                 einsums::Tensor<double,2> *f, einsums::Tensor<double,4> *G_,
+                                 einsums::Tensor<double,2> *f, einsums::Tensor<double,4> *G,
                                  einsums::Tensor<double,4> *D);
    
     /* Form the one-electron integrals H = T + V */
@@ -177,7 +177,7 @@ class MP2F12 : public Wavefunction {
 
     /* Form the $T^{ij}_{ij}\Tilde{V}^{ij}_{ij}$ contirbution to the energy */
     virtual std::pair<double, double> V_Tilde(einsums::Tensor<double, 2>& V_, einsums::Tensor<double, 4> *C,
-                                      einsums::TensorView<double, 2>& K_ij, einsums::TensorView<double, 2>& D_ij,
+                                      einsums::TensorView<double, 2>& G_ij, einsums::TensorView<double, 2>& D_ij,
                                       const int& i, const int& j);
 
     /* Form the $T^{ij}_{ij}\Tilde{B}^{ij}_{ij}T^{ij}_{ij}$ contirbution to the energy */
@@ -265,7 +265,7 @@ class DiskMP2F12 : public MP2F12 {
 
     /* Form the $T^{ij}_{ij}\Tilde{V}^{ij}_{ij}$ contirbution to the energy */
     std::pair<double, double> V_Tilde(einsums::Tensor<double, 2>& V_ij, einsums::DiskTensor<double, 4> *C,
-                              einsums::DiskView<double, 2, 4>& K_ij, einsums::DiskView<double, 2, 4>& D_ij,
+                              einsums::DiskView<double, 2, 4>& G_ij, einsums::DiskView<double, 2, 4>& D_ij,
                               const int& i, const int& j);
 
     /* Form the $T^{ij}_{ij}\Tilde{B}^{ij}_{ij}T^{ij}_{ij}$ contirbution to the energy */

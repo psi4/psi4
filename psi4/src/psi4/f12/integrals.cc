@@ -298,7 +298,7 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
         const auto nmo4 = (order[i+3] == 'C') ? ncabs_ : (order[i+3] == 'O') ? nobs_ : nocc_;
 	
         // Transform ERI AO Tensor to ERI MO Tensor
-        auto PRQS = std::make_unique<Tensor<double, 4>>("PQRS", nmo1, nmo3, nmo2, nmo4);
+        auto PRQS = std::make_unique<Tensor<double, 4>>("PRQS", nmo1, nmo3, nmo2, nmo4);
         timer_on("MO Transformation");
         {
             // C1
@@ -803,7 +803,7 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
         const auto nmo4 = (order[i+3] == 'C') ? ncabs_ : (order[i+3] == 'O') ? nobs_ : nocc_;
 
         // Transform ERI AO Tensor to ERI MO Tensor
-        auto PRQS = std::make_unique<Tensor<double, 4>>("PQRS", nmo1, nmo3, nmo2, nmo4);
+        auto PRQS = std::make_unique<Tensor<double, 4>>("PRQS", nmo1, nmo3, nmo2, nmo4);
         timer_on("MO Transformation");
         {
             // C1
@@ -942,10 +942,10 @@ void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor
         const auto nmo2 = ( order[i+1] == 'C' ) ? ncabs_ : ( order[i+1] == 'O' ) ? nobs_ : nocc_;
         const auto nmo3 = ( order[i+2] == 'C' ) ? ncabs_ : ( order[i+2] == 'O' ) ? nobs_ : nocc_;
         const auto nmo4 = ( order[i+3] == 'C' ) ? ncabs_ : ( order[i+3] == 'O' ) ? nobs_ : nocc_;
-        auto off1 = ( order[ i ] == 'C' ) ? nobs_ : 0;
-        auto off2 = ( order[i+1] == 'C' ) ? nobs_ : 0;
-        auto off3 = ( order[i+2] == 'C' ) ? nobs_ : 0;
-        auto off4 = ( order[i+3] == 'C' ) ? nobs_ : 0;
+        const auto off1 = ( order[ i ] == 'C' ) ? nobs_ : 0;
+        const auto off2 = ( order[i+1] == 'C' ) ? nobs_ : 0;
+        const auto off3 = ( order[i+2] == 'C' ) ? nobs_ : 0;
+        const auto off4 = ( order[i+3] == 'C' ) ? nobs_ : 0;
 
         // Dunlap's robust density-fitting
         auto phys_robust = std::make_unique<Tensor<double, 4>>("<PR|F12|QS> MO", nmo1, nmo3, nmo2, nmo4);
