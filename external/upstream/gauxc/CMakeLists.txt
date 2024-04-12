@@ -6,6 +6,9 @@ if(${ENABLE_gauxc})
         set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
     endif()
 
+    find_package(TargetLAPACK CONFIG) 
+    get_property(BLAS_LIBRARIES TARGET tgt::lapk PROPERTY INTERFACE_LINK_LIBRARIES)
+
     find_package(gauxc CONFIG) 
 
     if(${gauxc_FOUND})
@@ -50,6 +53,7 @@ if(${ENABLE_gauxc})
 
         include(ExternalProject)
         ExternalProject_Add(gauxc_external
+            DEPENDS lapack_external libxc_external gau2grid_external
             URL https://github.com/wavefunction91/GauXC/archive/567fdbe.tar.gz 
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
@@ -71,7 +75,8 @@ if(${ENABLE_gauxc})
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                          -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
-                         -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1})
+                         -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
+                         -DBLAS_LIBRARIES:STRING=${BLAS_LIBRARIES})
         set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
     endif()
 else()
