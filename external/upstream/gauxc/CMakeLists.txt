@@ -6,8 +6,7 @@ if(${ENABLE_gauxc})
         set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
     endif()
 
-    find_package(TargetLAPACK CONFIG) 
-    get_property(BLAS_LIBRARIES TARGET tgt::lapk PROPERTY INTERFACE_LINK_LIBRARIES)
+    get_property(BLAS_LIBRARIES TARGET lapk PROPERTY INTERFACE_LINK_LIBRARIES)
 
     find_package(gauxc CONFIG) 
 
