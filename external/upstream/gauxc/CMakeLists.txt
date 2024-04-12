@@ -68,6 +68,8 @@ if(${ENABLE_gauxc})
                    -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
                    -DGAUXC_ENABLE_CUDA=${gauxc_ENABLE_GPU}
                    -DCMAKE_CUDA_ARCHITECTURES=${CMAKE_CUDA_ARCHITECTURES}
+                   -DLibxc_DIR=${Libxc_DIR}
+                   -Dgau2grid_DIR=${gau2grid_DIR}
                    -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    -DGAUXC_ENABLE_MPI=OFF
