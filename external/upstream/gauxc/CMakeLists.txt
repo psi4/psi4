@@ -53,7 +53,9 @@ if(${ENABLE_gauxc})
 
         include(ExternalProject)
         ExternalProject_Add(gauxc_external
-            DEPENDS lapack_external libxc_external gau2grid_external
+            DEPENDS lapack_external 
+                    libxc_external
+                    gau2grid_external
             URL https://github.com/wavefunction91/GauXC/archive/567fdbe.tar.gz 
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
