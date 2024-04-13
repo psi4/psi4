@@ -47,7 +47,6 @@ using boolvec = std::vector<bool>;
 class MOInfoBase {
    public:
     MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_ = false);
-    ~MOInfoBase();
 
     double get_nuclear_energy() const { return (nuclear_energy); }
 
@@ -76,7 +75,6 @@ class MOInfoBase {
     intvec convert_int_array_to_vector(int n, const int* array);
 
     void startup();
-    void cleanup();
 
     Wavefunction& ref_wfn;
     Options& options;
