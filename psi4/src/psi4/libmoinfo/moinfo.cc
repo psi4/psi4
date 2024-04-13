@@ -105,10 +105,8 @@ MOInfo::~MOInfo() {
     delete[] scf_irrep;
 }
 
+/// @brief Read Nuclear, SCF and other stuff
 void MOInfo::read_info() {
-    /*
-     * Read Nuclear, SCF and other stuff
-     */
     read_data();
     nmo = ref_wfn.nmo();
     compute_number_of_electrons();
@@ -184,8 +182,8 @@ void MOInfo::read_info() {
     root = options.get_int("FOLLOW_ROOT") - 1;
 }
 
+/// @brief NB This code could be places elsewhere
 void MOInfo::setup_model_space() {
-    // NB This code could be places elsewhere
     references.clear();
     alpha_internal_excitations.clear();
     beta_internal_excitations.clear();
@@ -200,9 +198,7 @@ void MOInfo::setup_model_space() {
     make_internal_excitations();
 }
 
-/*!
-    \fn MOInfo::print_info()
- */
+/// @brief print_info
 void MOInfo::print_info() {
     outfile->Printf("\n");
     outfile->Printf("\n  ==============================================================================");
@@ -221,18 +217,10 @@ void MOInfo::print_info() {
     outfile->Printf("\n  ------------------------------------------------------------------------------");
 }
 
-/*!
-    \fn MOInfo::read_mo_spaces()
- */
+/// @brief See if we're in a subgroup for finite difference calculations, by looking to see what OptKing has
+/// written to the checkpoint file. Reassign the occupation vectors as appropriate. N.B. the SOCC and DOCC are handled
+/// by Input (ACS)
 void MOInfo::read_mo_spaces() {
-    /*****************************************************
-     See if we're in a subgroup for finite difference
-     calculations, by looking to see what OptKing has
-     written to the checkpoint file.  Reassign the
-     occupation vectors as appropriate.  N.B. the
-     SOCC and DOCC are handled by Input (ACS)
-  *****************************************************/
-
     focc.assign(nirreps, 0);
     docc.assign(nirreps, 0);
     actv.assign(nirreps, 0);
@@ -403,11 +391,9 @@ void MOInfo::read_mo_spaces() {
     //  }
 }
 
-/**
-    MOInfo::print_mo_spaces()
- */
+/// @brief print_mo
+/// @todo implement me
 void MOInfo::print_mo() {
-    /// @todo implement me
     outfile->Printf("\n");
     outfile->Printf("\n  MOs per irrep:                  ");
 
