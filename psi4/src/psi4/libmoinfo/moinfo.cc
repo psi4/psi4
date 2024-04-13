@@ -99,7 +99,11 @@ MOInfo::MOInfo(Wavefunction& ref_wfn_, Options& options_, bool silent_) : MOInfo
     }
 }
 
-MOInfo::~MOInfo() { free_memory(); }
+MOInfo::~MOInfo() {
+    if (scf != nullptr) free_block(scf);
+    for (int i = 0; i < nirreps; i++) free_block(scf_irrep[i]);
+    delete[] scf_irrep;
+}
 
 void MOInfo::read_info() {
     /*
@@ -420,15 +424,6 @@ void MOInfo::print_mo() {
     }
     print_mo_space(nextr, extr, "External                        ");
     print_mo_space(nfvir, fvir, "Frozen Virtual                  ");
-}
-
-/**
- *   MOInfo::free_memory()
- */
-void MOInfo::free_memory() {
-    if (scf != nullptr) free_block(scf);
-    for (int i = 0; i < nirreps; i++) free_block(scf_irrep[i]);
-    delete[] scf_irrep;
 }
 
 }  // namespace psi
