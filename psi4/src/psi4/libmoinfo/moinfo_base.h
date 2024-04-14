@@ -57,7 +57,7 @@ class MOInfoBase {
     /// @brief Get one of the irrep labels that are stored in an MOInfoBase object (or derived object). Not bounds-checked!
     /// @param i : Index of the irrep label
     /// @return The selected irrep label
-    std::string get_irr_lab(int i) const { return (irr_labs[i]); }
+    std::string get_irr_lab(size_t i) const { return (irr_labs[i]); }
 
     /// @brief FIXME(not const yet) Get the # of irreps an MOInfoBase object (or derived object) has been constructed with.
     /// @return The # of irreps
