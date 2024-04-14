@@ -104,7 +104,6 @@ class MOInfoBase {
     Options& options;
     int nirreps;
     int wfn_sym;
-    int charge; // Net charge
     int multiplicity;
 
     int nso;  // The # of symmetry-adapted atomic orbitals
@@ -126,6 +125,9 @@ class MOInfoBase {
     double*** scf_irrep;  // MO coefficients
 
     std::vector<std::string> irr_labs; // Array of the irrep labels
+
+    private:
+    const int charge; // Molecular charge
 };
 
 }  // namespace psi
