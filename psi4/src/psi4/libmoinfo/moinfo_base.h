@@ -44,26 +44,54 @@ class Wavefunction;
 using intvec = std::vector<int>;
 using boolvec = std::vector<bool>;
 
+/// @brief Stores all the basic info regarding MOs, at least for the parts of Psi4 that are using it.
+/// Mostly used for deriving other classes.
 class MOInfoBase {
    public:
     MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_ = false);
 
+    /// @brief Get the nuclear energy stored in an MOInfoBase object (or derived object).
+    /// @return The nuclear repulsion energy
     double get_nuclear_energy() const { return (nuclear_energy); }
 
+    /// @brief Get one of the irrep labels that are stored in an MOInfoBase object (or derived object). Not bounds-checked!
+    /// @param i : Index of the irrep label
+    /// @return The selected irrep label
     std::string get_irr_lab(int i) const { return (irr_labs[i]); }
 
+    /// @brief FIXME(not const yet) Get the # of irreps an MOInfoBase object (or derived object) has been constructed with.
+    /// @return The # of irreps
     int get_nirreps() const { return (nirreps); }
+
+    /// @brief Get the nso value (# of symmetry-adapted atomic orbitals) that is stored in an MOInfoBase object (or derived object).
+    /// @return The # of symmetry-adapted atomic orbitals
     int get_nso() const { return (nso); }
 
+    /// @brief Get a copy of the array holding the numbers of SOs per irrep, from an MOInfoBase object (or derived object).
+    /// @return A copy of the array holding the numbers of SOs per irrep
     intvec get_sopi() const { return (sopi); }
+
+    /// @brief Get a copy of the array holding the numbers of doubly occupied orbitals (DOCC) per irrep, from an
+    /// MOInfoBase object (or derived object).
+    /// @return A copy of the array holding the numbers of doubly occupied orbitals (DOCC) per irrep
     intvec get_docc() const { return (docc); }
+
+    /// @brief Get a copy of the array holding the numbers of active orbitals per irrep, from an MOInfoBase object (or derived object).
+    /// @return A copy of the array holding the numbers of active orbitals per irrep
     intvec get_actv() const { return (actv); }
     bool get_guess_occupation() const { return (guess_occupation); }
 
+    /// @brief Get the total # of active orbitals that is stored in an MOInfoBase object (or derived object).
+    /// @return Total # of active orbitals across all irreps
     int get_nactv() const { return (nactv); }
 
-    int get_nael() const { return (nael); }  // # of alpha electrons including frozen
-    int get_nbel() const { return (nbel); }  // # of  beta electrons including frozen
+    /// @brief Get the # of alpha electrons (including frozen) that is stored in an MOInfoBase object (or derived object).
+    /// @return The # of alpha electrons (including frozen)
+    int get_nael() const { return (nael); }
+
+    /// @brief Get the # of beta electrons (including frozen) that is stored in an MOInfoBase object (or derived object).
+    /// @return The # of beta electrons (including frozen)
+    int get_nbel() const { return (nbel); }
 
     double** get_scf_mos() const { return (scf); }
 

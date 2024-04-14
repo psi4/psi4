@@ -198,7 +198,7 @@ void MOInfo::setup_model_space() {
     make_internal_excitations();
 }
 
-/// @brief print_info
+/// @brief Prints some information about the system to the output file
 void MOInfo::print_info() {
     outfile->Printf("\n");
     outfile->Printf("\n  ==============================================================================");
