@@ -100,8 +100,6 @@ class MOInfoBase {
     void print_mo_space(int nmo, const intvec& mo, const std::string& labels);
     intvec convert_int_array_to_vector(int n, const int* array);
 
-    void startup();
-
     Wavefunction& ref_wfn;
     Options& options;
     int nirreps;
