@@ -59,7 +59,7 @@ class MOInfoBase {
     /// @return The selected irrep label
     std::string get_irr_lab(size_t i) const { return (irr_labs[i]); }
 
-    /// @brief FIXME(not const yet) Get the # of irreps an MOInfoBase object (or derived object) has been constructed with.
+    /// @brief Get the nirreps value (# of irreducible representations) that is stored in an MOInfoBase object (or derived object).
     /// @return The # of irreps
     int get_nirreps() const { return (nirreps); }
 
@@ -104,29 +104,29 @@ class MOInfoBase {
     Options& options;
     int nirreps;
     int wfn_sym;
-    int charge;
+    int charge; // Net charge
     int multiplicity;
 
-    int nso;  // PSI nso (number of symmetry-adapted atomic orbitals)
-    int nmo;  // Psi nmo (number of molecular orbitals, including frozen core and frozen virtual)
+    int nso;  // # of symmetry-adapted atomic orbitals
+    int nmo;  // # of molecular orbitals, including frozen core and frozen virtual
     int ndocc;
-    int nactv;
-    int nael;
-    int nbel;
+    int nactv;  // Total # of active orbitals across all irreps
+    int nael;   // The # of alpha electrons (including frozen)
+    int nbel;   // The # of beta electrons (including frozen)
     int nactive_ael;
     int nactive_bel;
 
-    intvec sopi;
-    intvec docc;
-    intvec actv;
+    intvec sopi;  // Array holding the numbers of SOs per irrep
+    intvec docc;  // Array holding the numbers of doubly occupied orbitals (DOCC) per irrep
+    intvec actv;  // Array holding the numbers of active orbitals per irrep
     bool guess_occupation;
     bool silent;
 
-    double nuclear_energy;
+    double nuclear_energy; // The nuclear repulsion energy
 
     double*** scf_irrep;  // MO coefficients
 
-    std::vector<std::string> irr_labs;
+    std::vector<std::string> irr_labs; // Array of the irrep labels
 };
 
 }  // namespace psi
