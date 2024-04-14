@@ -80,6 +80,7 @@ MOInfo::MOInfo(Wavefunction& ref_wfn_, Options& options_, bool silent_) : MOInfo
     dgemm_timing = 0.0;
     scf = nullptr;
 
+    nmo = 0;
     nfocc = 0;
     nfvir = 0;
     nactv_docc = 0;

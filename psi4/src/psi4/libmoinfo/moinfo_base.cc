@@ -44,7 +44,6 @@ namespace psi {
 MOInfoBase::MOInfoBase(Wavefunction& ref_wfn_, Options& options_, bool silent_)
     : options(options_), silent(silent_), ref_wfn(ref_wfn_) {
     nso = 0;
-    nmo = 0;
     ndocc = 0;
     nactv = 0;
     nael = 0;
