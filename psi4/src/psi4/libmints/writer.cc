@@ -45,8 +45,6 @@
 #include "psi4/libqt/qt.h"
 
 using namespace psi;
-;
-
 
 MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {
     outfile->Printf("\tConstructing a MoldenWriter and then calling write instead of using `wfn.write_molden(name)`\n");

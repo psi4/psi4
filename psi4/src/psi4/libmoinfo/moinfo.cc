@@ -28,7 +28,6 @@
 
 // Standard Libraries
 #include <cmath>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -40,15 +39,11 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/psi4-dec.h"
 #include "psi4/libmints/corrtab.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/psifiles.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
 
 #include "moinfo.h"
 
@@ -145,7 +140,7 @@ void MOInfo::read_info() {
 
     auto ps = options.get_str("PARENT_SYMMETRY");
     if (ps != "") {
-        auto old_pg = std::make_shared<PointGroup> (ps);
+        auto old_pg = std::make_shared<PointGroup>(ps);
         for (int h = 0; h < nirreps; ++h) {
             std::string irr_label_str = old_pg->char_table().gamma(h).symbol_ns();
             trim_spaces(irr_label_str);
@@ -247,7 +242,7 @@ void MOInfo::read_mo_spaces() {
     // Map the symmetry of the input occupations, to account for displacements
     auto ps = options.get_str("PARENT_SYMMETRY");
     if (ps != "") {
-        auto old_pg = std::make_shared<PointGroup> (ps);
+        auto old_pg = std::make_shared<PointGroup>(ps);
         // This is one of a series of displacements;  check the dimension against the parent point group
         int nirreps_ref = old_pg->char_table().nirrep();
         intvec focc_ref;
@@ -276,7 +271,7 @@ void MOInfo::read_mo_spaces() {
         read_mo_space(nirreps_ref, nactv, actv_ref, "ACTIVE");
         read_mo_space(nirreps_ref, nfvir, fvir_ref, "FROZEN_UOCC");
 
-        auto full = std::make_shared<PointGroup> (options.get_str("PARENT_SYMMETRY"));
+        auto full = std::make_shared<PointGroup>(options.get_str("PARENT_SYMMETRY"));
         std::shared_ptr<PointGroup> sub = ref_wfn.molecule()->point_group();
         // Build the correlation table between full, and subgroup
         CorrelationTable corrtab(full, sub);

@@ -32,7 +32,7 @@
 #include "psi4/libciomr/libciomr.h"
 
 #include "libint2/engine.h"
-;
+
 using namespace psi;
 
 // Initialize overlap_recur_ to +2 basis set angular momentum

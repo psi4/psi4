@@ -51,23 +51,16 @@ class CdSalcList;
 class RelPotentialInt : public OneBodyAOInt {
 
    protected:
+    /// The charges and locations that define the external potential
+    std::vector<std::pair<double, std::array<double, 3>>> Zxyz_;
 
-    /// Matrix of coordinates/charges of partial charges
-    SharedMatrix Zxyz_;
-
-    /// Computes integrals between two shell objects.
-    void compute_pair(const libint2::Shell&, const libint2::Shell&) override;
    public:
     /// Constructor. Assumes nuclear centers/charges as the potential
     RelPotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                     int deriv = 0);
-    ~RelPotentialInt() override;
 
     /// Set the field of charges
-    void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
-
-    /// Get the field of charges
-    SharedMatrix charge_field() const { return Zxyz_; }
+    void set_charge_field(const std::vector<std::pair<double, std::array<double, 3>>>& Zxyz);
 };
 
 class RelPotentialSOInt : public OneBodySOInt {

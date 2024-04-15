@@ -32,8 +32,6 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/psimath.h"
 
-;
-
 namespace psi {
 
 /// PSI_DGBMV, a wrapper to C_DGBMV using objects
