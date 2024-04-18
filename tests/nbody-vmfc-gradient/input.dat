@@ -29,6 +29,20 @@ vmfc_scheme = {'((1, 2), (1, 2))': 1, '((1, 3), (1, 3))': 1, '((2, 3), (2, 3))':
                '((2,), (2, 3))': -1, '((3,), (1, 3))': -1, '((3,), (2, 3))': -1, #TEST
                '((1,), (1,))': 1, '((2,), (2,))': 1, '((3,), (3,))': 1} #TEST
 
+vmfc_scheme_3b = {
+     "((1,), (1, 2, 3))": 1,
+     "((1, 2), (1, 2, 3))": -1,
+     "((1, 2, 3), (1, 2, 3))": 1,
+     "((1, 3), (1, 2, 3))": -1,
+     "((2,), (1, 2, 3))": 1,
+     "((2, 3), (1, 2, 3))": -1,
+     "((3,), (1, 2, 3))": 1,
+}
+
+import qcmanybody as qcmb  #TEST
+sz_dict = {1: 3, 2: 3, 3: 3}
+sl_dict = {1: slice(0, 3), 2: slice(3, 6), 3: slice(6, 9)}
+
 energy_dict, gradient_dict = {}, {} #TEST
 for i in vmfc_scheme: #TEST
     mol = water_trimer.extract_subsets(eval(i)[0], list(set(eval(i)[1]) - set(eval(i)[0]))) #TEST
@@ -36,28 +50,53 @@ for i in vmfc_scheme: #TEST
     energy_dict[i] = core.variable('CURRENT ENERGY') #TEST
     core.clean() #TEST
 
+    contracted_gradient = qcmb.resize_gradient(wfn.variable(f"GRADIENT 1_{i}").np, eval(i)[1], sz_dict, sl_dict, reverse=True)
     compare_values(energy_dict[i], wfn.variables()["1_"+i], 8, 'Energy of %s' %i) #TEST
-    compare_arrays(gradient_dict[i], wfn.variables()['GRADIENT %s' % "1_"+i], 8, 'Gradient of %s' %i) #TEST
+    compare_arrays(gradient_dict[i], contracted_gradient, 8, 'Gradient of %s' %i) #TEST
 
-ene, grad = 0, np.zeros((9, 3)) #TEST
+energy_dict_3b, gradient_dict_3b = {}, {} #TEST
+for i in vmfc_scheme_3b: #TEST
+    mol = water_trimer.extract_subsets(eval(i)[0], list(set(eval(i)[1]) - set(eval(i)[0]))) #TEST
+    gradient_dict_3b[i], wfn_mol = gradient('SCF/STO-3G', molecule=mol, return_wfn=True) #TEST
+    energy_dict_3b[i] = core.variable('CURRENT ENERGY') #TEST
+    core.clean() #TEST
+
+    compare_values(energy_dict_3b[i], wfn.variables()["1_"+i], 8, 'Energy of %s' %i) #TEST
+    compare_arrays(gradient_dict_3b[i], wfn.variables()['GRADIENT %s' % "1_"+i], 8, 'Gradient of %s' %i) #TEST
+
+ene, grad1b, grad2b, grad3b = 0, np.zeros((9, 3)), np.zeros((9, 3)), np.zeros((9, 3))  #TEST
 
 for i in vmfc_scheme: #TEST
     ene += vmfc_scheme[i] * energy_dict[i] #TEST
 
-compare_values(ene, wfn.variables()['2'], 8, 'VMFC-Corrected Energy') #TEST
+# renamed for v1.10
+# * '2' -> 'VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY'
+# * 'GRADIENT 1' -> 'VMFC-CORRECTED TOTAL GRADIENT THROUGH 1-BODY'
+# * 'GRADIENT 2' -> 'VMFC-CORRECTED TOTAL GRADIENT THROUGH 2-BODY'
+# * 'GRADIENT 3' -> 'VMFC-CORRECTED TOTAL GRADIENT THROUGH 3-BODY'
+
+compare_values(ene, wfn.variable('VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY'), 8, 'VMFC-Corrected Energy') #TEST
 
 for i in range(3): #TEST
     key = '((%i,), (%i,))' %(i + 1, i + 1) #TEST
-    grad[i*3: i*3 + 3, :] += vmfc_scheme.pop(key) * np.array(gradient_dict[key]) #TEST
+    print(key, i, i*3, ":", i*3+3)
+    grad1b[i*3: i*3 + 3, :] += vmfc_scheme.pop(key) * np.array(gradient_dict[key]) #TEST
 
 for key in vmfc_scheme: #TEST
     i, j = eval(key)[1][0]-1, eval(key)[1][1]-1 #TEST
     index = [i*3, i*3 + 1, i*3 + 2, j*3, j*3 + 1, j*3 + 2] #TEST
-    grad[index, :] += vmfc_scheme[key] * np.array(gradient_dict[key]) #TEST
- 
-compare_arrays(grad, wfn.variables()['GRADIENT 2'], 8, 'VMFC-Corrected Gradient') #TEST
+    grad2b[index, :] += vmfc_scheme[key] * np.array(gradient_dict[key]) #TEST
 
-grad_maxnb2 = np.array(
+compare_arrays(grad1b + grad2b, wfn.variable('VMFC-CORRECTED TOTAL GRADIENT THROUGH 2-BODY'), 8, 'VMFC-Corrected Gradient 2b') #TEST
+
+for key in vmfc_scheme_3b:  #TEST
+    i, j, k = eval(key)[1][0]-1, eval(key)[1][1]-1, eval(key)[1][2]-1  #TEST
+    index = [i*3, i*3 + 1, i*3 + 2, j*3, j*3 + 1, j*3 + 2, k*3, k*3 + 1, k*3 + 2]  #TEST
+    grad3b[index, :] += vmfc_scheme_3b[key] * np.array(gradient_dict_3b[key]) #TEST
+ 
+compare_arrays(grad1b + grad2b + grad3b, wfn.variable('VMFC-CORRECTED TOTAL GRADIENT THROUGH 3-BODY'), 8, 'VMFC-Corrected Gradient 3b') #TEST
+
+grad_maxnb2 = np.array(  # grad1b + grad2b
      [[ 0.002155804191, -0.029634185797,  0.032376607396],
       [-0.003170680084,  0.014254859601, -0.006078802815],
       [ 0.012483476168,  0.023203573171, -0.025365946635],
@@ -67,7 +106,7 @@ grad_maxnb2 = np.array(
       [-0.024435013809,  0.009777336603, -0.035394108341],
       [ 0.012544129973, -0.004104715215,  0.008163796645],
       [ 0.012926928671, -0.019819150657,  0.026894167812]])
-grad_maxnb3 = np.array(
+old_grad_maxnb3 = np.array(  # grad 2b + grad 3b
      [[ 0.002219694063,  0.009321053605, -0.006605392323],
       [ 0.004716622541, -0.000932172428,  0.004496896826],
       [ 0.001311905336, -0.002455421929,  0.003035312701],
@@ -77,6 +116,18 @@ grad_maxnb3 = np.array(
       [ 0.006639093791, -0.006637441486,  0.005420065144],
       [-0.003115962895, -0.004227261417, -0.002455116289],
       [-0.002491725232,  0.000538845348, -0.003216771551]])
+grad_maxnb3 = np.array(  # grad1b + grad2b + grad3b
+     [[ 0.00209757, -0.03193087,  0.03215398],
+      [-0.00614372,  0.01497593, -0.00602056],
+      [ 0.01229437,  0.0228884 , -0.0252066 ],
+      [ 0.02716011,  0.01757155,  0.03135191],
+      [-0.0266962 , -0.00140618, -0.02472782],
+      [-0.00974354, -0.01177298, -0.00729909],
+      [-0.02658095,  0.0110038 , -0.03520583],
+      [ 0.01481033, -0.00176671,  0.00820086],
+      [ 0.01280202, -0.01956295,  0.02675315]])
+
 compare_arrays(grad_maxnb3, g, 6, 'returned gradient')  #TEST
-compare_arrays(grad_maxnb2, wfn.variable("GRADIENT 2"), 6, '2-body gradient')  #TEST
-compare_arrays(grad_maxnb3, wfn.variable("GRADIENT 3"), 6, '3-body gradient')  #TEST
+compare_arrays(grad_maxnb2, wfn.variable("VMFC-CORRECTED TOTAL GRADIENT THROUGH 2-BODY"), 6, '2-body gradient')  #TEST
+compare_arrays(grad_maxnb3, wfn.variable("VMFC-CORRECTED TOTAL GRADIENT THROUGH 3-BODY"), 6, '3-body gradient')  #TEST
+compare_arrays(old_grad_maxnb3, wfn.variable("VMFC-CORRECTED TOTAL GRADIENT THROUGH 3-BODY").np - wfn.variable("VMFC-CORRECTED TOTAL GRADIENT THROUGH 1-BODY").np, 6, 'previous wrong 3-body gradient understood')  #TEST

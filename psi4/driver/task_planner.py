@@ -106,8 +106,8 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
     Parameters
     ----------
     driver
-        The resulting type of computation: e/g/h. Note for finite difference
-        that this should be the target driver, not the means driver.
+        The resulting type of computation: e/g/h. Note that for finite difference
+        this should be the target driver, not the means driver.
     method
         A string representation of the method such as "HF" or "B3LYP". Special
         cases are: "cbs".
