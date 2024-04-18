@@ -1561,6 +1561,87 @@ def test_dftd4():
     psi4.energy('wb97x-d')
     assert psi4.compare_values(-0.000834247063, psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene wb97x-d (chg)')
 
+@pytest.mark.smoke
+@uusing("dftd4")
+@pytest.mark.parametrize("dftd4_params", [
+     {
+        's8':1.61679827,
+        'a1':0.44959224,
+        'a2':3.35743605,
+        's6': 1.000,
+        's9': 1.000,
+        "d4_variant": "d4"
+    },
+    {
+        'a1': 0.2464,
+        'a2': 4.737,
+        's6': 1.000,
+        's8': 0.000,
+        's9': 1.000,
+        "d4_variant": "d4m"
+    },
+])
+def test_sapt0d4(dftd4_params):
+    """
+    Testing SAPT0-D4 and SAPT0-D4M to ensure dispersion energy is calculated correctly
+    """
+    import subprocess
+    import os
+    eneyne = psi4.geometry("""
+    C   0.000000  -0.667578  -2.124659
+    C   0.000000   0.667578  -2.124659
+    H   0.923621  -1.232253  -2.126185
+    H  -0.923621  -1.232253  -2.126185
+    H  -0.923621   1.232253  -2.126185
+    H   0.923621   1.232253  -2.126185
+    --
+    C   0.000000   0.000000   2.900503
+    C   0.000000   0.000000   1.693240
+    H   0.000000   0.000000   0.627352
+    H   0.000000   0.000000   3.963929
+    """)
+    fnames = ["eneyne.xyz", "t1.xyz", "t2.xyz"]
+    with open(fnames[0], "w") as f:
+        f.write(eneyne.to_string(dtype='xyz', units='Angstrom'))
+    f1 = eneyne.extract_subsets(1)
+    with open(fnames[1], "w") as f:
+        f.write(f1.to_string(dtype='xyz', units='Angstrom'))
+    f2 = eneyne.extract_subsets(2)
+    with open(fnames[2], "w") as f:
+        f.write(f2.to_string(dtype='xyz', units='Angstrom'))
+    disp_energies = []
+    for i in fnames:
+        args = [
+            "dftd4",
+            i,
+            "--property",
+            "--param",
+            str(dftd4_params['s6']),
+            str(dftd4_params['s8']),
+            str(dftd4_params['a1']),
+            str(dftd4_params['a2']),
+            "--mbdscale",
+            str(dftd4_params['s9']),
+            "-c",
+            "0",
+        ]
+        v = subprocess.call(
+            args=args,
+            shell=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT,
+        )
+        with open(".EDISP", "r") as f:
+            e = float(f.read()) # * psi4.constants.hartree2kcalmol
+        disp_energies.append(e)
+        os.remove(i)
+        os.remove(".EDISP")
+    print(disp_energies)
+    print(dftd4_params)
+    psi4.energy(f'SAPT0-{dftd4_params["d4_variant"]}/cc-pvdz')
+    d4_interaction_energy = (disp_energies[0] - disp_energies[1] - disp_energies[2])
+    assert psi4.compare_values(d4_interaction_energy, psi4.variable('DISPERSION CORRECTION ENERGY'), 5, f'ethene-ethyne sapt0-{dftd4_params["d4_variant"]}')
+
 
 @uusing("einsums")
 def test_einsums():
