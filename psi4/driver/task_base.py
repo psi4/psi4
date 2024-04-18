@@ -96,14 +96,17 @@ class AtomicComputer(BaseComputer):
     class Config(qcel.models.ProtoModel.Config):
         pass
 
+    # v2: @field_validator("basis")
     @validator("basis")
     def set_basis(cls, basis):
         return basis.lower()
 
+    # v2: @field_validator("method")
     @validator("method")
     def set_method(cls, method):
         return method.lower()
 
+    # v2: @field_validator("keywords")
     @validator("keywords")
     def set_keywords(cls, keywords):
         return copy.deepcopy(keywords)
