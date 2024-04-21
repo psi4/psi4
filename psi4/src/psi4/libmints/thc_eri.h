@@ -30,7 +30,9 @@
 #define PSI4_SRC_LIBMINTS_LS_THC_H_
 
 #include "basisset.h"
+#include "molecule.h"
 #include "matrix.h"
+#include "psi4/liboptions/liboptions.h"
 
 #include <vector>
 
@@ -42,6 +44,8 @@ class THC_Computer {
     std::shared_ptr<Molecule> molecule_;
     // The primary basis set
     std::shared_ptr<BasisSet> primary_;
+    // Options object
+    Options& options_;
 
     // THC Factor for first index
     SharedMatrix x1_;
@@ -52,14 +56,14 @@ class THC_Computer {
     // THC Factor for fourth index
     SharedMatrix x4_;
     // THC connecting factor
-    SharedMatrix Z_IJ_;
+    SharedMatrix Z_PQ_;
 
    public:
-    THC_Computer(std::shared_ptr<Molecule> molecule);
+    THC_Computer(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options);
     virtual ~THC_Computer();
 
     /// Compute THC Factors
-    void compute_thc_factorization();
+    virtual void compute_thc_factorization() = 0;
 
     /// Returns the molecule the THC factors are evaluated on
     std::shared_ptr<Molecule> molecule() const { return molecule_; }
@@ -71,20 +75,30 @@ class THC_Computer {
     SharedMatrix get_x3() const { return x3_; }
     /// Returns the THC factor for the fourth index
     SharedMatrix get_x4() const { return x4_; }
+    /// Returns the THC connecting factor
+    SharedMatrix get_Z() const { return Z_PQ_; }
 
 };
 
 // Least Squares Tensor Hypercontraction
 class LS_THC_Computer : public THC_Computer {
    protected:
-    /// Parrish LS-THC Algorithm X
-    void build_E_df();
-    /// Parrish LS-THC Algorithm Y
-    void build_E_exact();
+    /// Auxiliary basis set (null if not using DF approximation)
+    std::shared_ptr<BasisSet> auxiliary_;
+
+    /// Parrish LS-THC Procedure 2
+    SharedMatrix build_E_exact();
+    /// Parrish LS-THC Procedure 3
+    SharedMatrix build_E_df();
 
    public:
-    LS_THC_Computer(std::shared_ptr<Molecule> molecule);
+    LS_THC_Computer(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
     ~LS_THC_Computer() override;
+
+    /// Compute THC Factors using LS-THC factorization
+    void compute_thc_factorization() override;
 };
 
 }
+
+#endif

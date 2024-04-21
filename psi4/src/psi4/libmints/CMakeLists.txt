@@ -46,6 +46,7 @@ list(APPEND sources
   erd_eri.cc
   angularmomentum.cc
   orthog.cc
+  thc_eri.cc
   )
 
 # l2intf is a listing of all the files that include libint2's boys.h include (which is included in L2's engine.h).  they must

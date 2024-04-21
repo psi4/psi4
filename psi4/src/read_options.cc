@@ -269,7 +269,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc -*/
     options.add_str("PRINT_NOONS", "3");
 
-    ///MBIS Options (libmints/oeprop.cc)
+    /// Tensor Hypercontration (THC) Options (libmints/thc_eri.cc)
+
+    /*- Use DF approximation when computing LS-THC factorization? -*/
+    options.add_bool("LS_THC_DF", true);
+
+    /// MBIS Options (libmints/oeprop.cc)
 
     /*- Maximum Number of MBIS Iterations -*/
     options.add_int("MBIS_MAXITER", 500);
