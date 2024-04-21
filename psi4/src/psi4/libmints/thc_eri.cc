@@ -49,18 +49,124 @@ THC_Computer::THC_Computer(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
 THC_Computer::~THC_Computer() {}
 
 LS_THC_Computer::LS_THC_Computer(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, 
+                                    Options& options) : THC_Computer(molecule, primary, options) {
+    auxiliary_ = nullptr;
+}
+
+LS_THC_Computer::LS_THC_Computer(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, 
                                     std::shared_ptr<BasisSet> auxiliary, Options& options) : THC_Computer(molecule, primary, options) {
     auxiliary_ = auxiliary;
 }
 
 LS_THC_Computer::~LS_THC_Computer() {}
 
+void LS_THC_Computer::print_header() {
+    outfile->Printf("   --------------------------------------------\n");
+    outfile->Printf("       Least-Squares Tensor Hypercontraction   \n");
+    outfile->Printf("                   by Andy Jiang               \n");
+    outfile->Printf("              doi: 10.1063/1.4768233           \n");
+    outfile->Printf("   --------------------------------------------\n\n");
+    outfile->Printf("  Detailed LS-THC thresholds and cutoffs:\n");
+    outfile->Printf("    LS_THC_SPHERICAL_POINTS   =   %3d \n", options_.get_int("LS_THC_SPHERICAL_POINTS"));
+    outfile->Printf("    LS_THC_RADIAL_POINTS      =   %3d \n", options_.get_int("LS_THC_RADIAL_POINTS"));
+    outfile->Printf("    LS_THC_BASIS_TOLERANCE    = %6.3e \n", options_.get_double("LS_THC_BASIS_TOLERANCE"));
+    outfile->Printf("    LS_THC_WEIGHTS_TOLERANCE  = %6.3e \n", options_.get_double("LS_THC_WEIGHTS_TOLERANCE"));
+    outfile->Printf("    Using DF?                     %3s \n", use_df_ ? "Yes" : "No");
+    outfile->Printf("\n\n");
+}
+
 SharedMatrix LS_THC_Computer::build_E_exact() {
     /**
      * Parrish et al. 2012 Procedure 2
     */
 
-    throw PSIEXCEPTION("Error: Build E exact has not been implemented for LS-THC! Buy poor Andy a coffee!");
+    size_t nbf = primary_->nbf();
+    size_t rank = x1_->nrow();
+
+    int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
+    IntegralFactory factory(primary_);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri_computers(nthreads);
+
+    eri_computers[0] = std::shared_ptr<TwoBodyAOInt>(factory.eri());
+#pragma omp parallel for
+    for (int thread = 1; thread < nthreads; ++thread) {
+        eri_computers[thread] = std::shared_ptr<TwoBodyAOInt>(eri_computers[0]->clone());
+    }
+
+    size_t nshellpair = eri_computers[0]->shell_pairs().size();
+
+    SharedMatrix E_PQ = std::make_shared<Matrix>(rank, rank);
+
+#pragma omp parallel for
+    for (size_t MN = 0; MN < nshellpair; ++MN) {
+
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+
+        auto bra = eri_computers[thread]->shell_pairs()[MN];
+        size_t M = bra.first;
+        size_t N = bra.second;
+
+        int nm = primary_->shell(M).nfunction();
+        int mstart = primary_->shell(M).function_index();
+        int nn = primary_->shell(N).nfunction();
+        int nstart = primary_->shell(N).function_index();
+
+        SharedMatrix E_temp = std::make_shared<Matrix>(rank, nm * nn);
+
+        double prefactor1 = (M == N) ? 1.0 : 2.0;
+
+        for (size_t RS = 0; RS < nshellpair; ++RS) {
+
+            auto ket = eri_computers[thread]->shell_pairs()[RS];
+            size_t R = ket.first;
+            size_t S = ket.second;
+
+            int nr = primary_->shell(R).nfunction();
+            int rstart = primary_->shell(R).function_index();
+            int ns = primary_->shell(S).nfunction();
+            int sstart = primary_->shell(S).function_index();
+
+            // TODO: Implement screening to make this more efficient
+            eri_computers[thread]->compute_shell(M, N, R, S);
+            const auto &buffer = eri_computers[thread]->buffers()[0];
+
+            double prefactor2 = (R == S) ? 1.0 : 2.0;
+
+            for (size_t p = 0; p < rank; ++p) {
+                for (size_t dm = 0, index = 0; dm < nm; ++dm) {
+                    for (size_t dn = 0; dn < nn; ++dn) {
+                        for (size_t r = rstart; r < rstart + nr; ++r) {
+                            for (size_t s = sstart; s < sstart + ns; ++s, ++index) {
+                                (*E_temp)(p, dm * nn + dn) += prefactor2 * buffer[index] * (*x1_)(p, r) * (*x1_)(p, s);
+                            } // end s
+                        } // end r
+                    } // end dn
+                } // end dm
+            } // end p
+        } // end RS
+
+        for (size_t p = 0; p < rank; ++p) {
+            for (size_t q = 0; q < rank; ++q) {
+                for (size_t m = mstart; m < mstart + nm; ++m) {
+                    size_t dm = m - mstart;
+                    for (size_t n = nstart; n < nstart + nn; ++n) {
+                        size_t dn = n - nstart;
+    #pragma omp atomic
+                        (*E_PQ)(p, q) += prefactor1 * (*E_temp)(q, dm * nn + dn) * (*x1_)(p, m) * (*x1_)(p, n);
+                    } // end n
+                } // end m
+            } // end q
+        } // end p
+    } // end MN
+
+    return E_PQ;
 }
 
 SharedMatrix LS_THC_Computer::build_E_df() {
@@ -146,11 +252,43 @@ void LS_THC_Computer::compute_thc_factorization() {
      * Parrish et al. 2012 Procedure 1
     */
 
+    use_df_ = options_.get_bool("LS_THC_DF");
+    
+    if (!options_["LS_THC_DF"].has_changed() && !auxiliary_) {
+        outfile->Printf("    Warning: No auxiliary basis function specified for least-squares tensor hypercontraction... decomposing exact integrals!\n\n");
+        use_df_ = false;
+    } else if (options_.get_bool("LS_THC_DF") && !auxiliary_) {
+        throw PSIEXCEPTION("    Attempting to do LS-THC with DF integrals w/o specifed auxiliary basis set :(\n\n");
+    }
+
+    print_header();
+
     size_t nbf = primary_->nbf();
 
     timer_on("LS-THC: Build Grid");
 
-    DFTGrid grid(molecule_, primary_, options_);
+    // Create a grid for LS_THC
+    std::map<std::string, std::string> grid_init_str_options = {
+        {"DFT_PRUNING_SCHEME", options_.get_str("LS_THC_PRUNING_SCHEME")},
+        {"DFT_RADIAL_SCHEME",  "TREUTLER"},
+        {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
+        {"DFT_GRID_NAME",      ""},
+        {"DFT_BLOCK_SCHEME",   "OCTREE"},
+    };
+    std::map<std::string, int> grid_init_int_options = {
+        {"DFT_SPHERICAL_POINTS", options_.get_int("LS_THC_SPHERICAL_POINTS")}, 
+        {"DFT_RADIAL_POINTS",    options_.get_int("LS_THC_RADIAL_POINTS")},
+        {"DFT_BLOCK_MIN_POINTS", 100},
+        {"DFT_BLOCK_MAX_POINTS", 256},
+    };
+    std::map<std::string, double> grid_init_float_options = {
+        {"DFT_BASIS_TOLERANCE",   options_.get_double("LS_THC_BASIS_TOLERANCE")}, 
+        {"DFT_BS_RADIUS_ALPHA",   1.0},
+        {"DFT_PRUNING_ALPHA",     1.0},
+        {"DFT_BLOCK_MAX_RADIUS",  3.0},
+        {"DFT_WEIGHTS_TOLERANCE", options_.get_double("LS_THC_WEIGHTS_TOLERANCE")},
+    };
+    auto grid = DFTGrid(molecule_, primary_, grid_init_int_options, grid_init_str_options, grid_init_float_options, options_);
     size_t npoints = grid.npoints();
 
     x1_ = std::make_shared<Matrix>(npoints, nbf);
@@ -165,7 +303,7 @@ void LS_THC_Computer::compute_thc_factorization() {
 #pragma omp parallel for
         for (size_t p = 0; p < block->npoints(); ++p) {
             primary_->compute_phi(&(*x1_)(point_idx + p, 0), x[p], y[p], z[p]);
-            x1_->scale_row(0, point_idx + p, std::pow(w[p], 0.25));
+            x1_->scale_row(0, point_idx + p, std::pow(std::abs(w[p]), 0.25));
         }
 
         point_idx += block->npoints();
@@ -179,7 +317,7 @@ void LS_THC_Computer::compute_thc_factorization() {
     
     timer_on("LS-THC: Form E");
 
-    SharedMatrix E_PQ = options_.get_bool("LS_THC_DF") ? build_E_df() : build_E_exact();
+    SharedMatrix E_PQ = use_df_ ? build_E_df() : build_E_exact();
 
     timer_off("LS-THC: Form E");
 
@@ -205,6 +343,12 @@ void LS_THC_Computer::compute_thc_factorization() {
     Z_PQ_ = linalg::triplet(S_Qq_inv, E_PQ, S_Qq_inv);
 
     timer_off("LS-THC: Form Z");
+
+    outfile->Printf("    Tensor Hypercontraction Complete! \n\n");
+    outfile->Printf("    Number of Grid Points (Rank) : %6d (%3d per atom)\n\n", npoints, npoints / molecule_->natom());
+    outfile->Printf("    Memory Required to Store Exact Integrals : %6.3f [GiB]\n", (nbf * (nbf + 1) / 2) * (nbf * (nbf + 1) / 2 + 1) / 2 * pow(2.0, -30) * sizeof(double));
+    if (auxiliary_) outfile->Printf("    Memory Required to Store DF Integrals : %6.3f [GiB]\n", auxiliary_->nbf() * nbf * (nbf + 1) / 2 * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    Memory Required in LS-THC factored form  : %6.3f [GiB]\n\n", (npoints * (npoints + nbf)) * pow(2.0, -30) * sizeof(double));
 }
 
 }

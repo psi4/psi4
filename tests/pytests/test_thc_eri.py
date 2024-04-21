@@ -17,14 +17,15 @@ def test_ls_thc_df():
 
     psi4.set_options({'basis' : 'cc-pVDZ',
                     'ls_thc_df' : True,
-                    'dft_radial_points': 10,
-                    'dft_spherical_points': 26,
-                    'dft_weights_tolerance': 1.0e-12})
+                    'ls_thc_radial_points' : 10,
+                    'ls_thc_spherical_points' : 50,
+                    'ls_thc_basis_tolerance' : 1.0e-10,
+                    'ls_thc_weights_tolerance' : 1.0e-12})
 
     e, wfn = psi4.energy('scf', return_wfn=True)
 
     primary = wfn.basisset()
-    aux = psi4.core.BasisSet.build(mol, "DF_BASIS_SCF", "", "RIFIT", "cc-pVDZ")
+    aux = psi4.core.BasisSet.build(mol, "DF_BASIS_MP2", "", "RIFIT", "cc-pVDZ")
 
     ls_thc_computer = psi4.core.LS_THC_Computer(mol, primary, aux)
     ls_thc_computer.compute_thc_factorization()
@@ -46,5 +47,41 @@ def test_ls_thc_df():
     # AO 4-index ERIs
     I = np.array(mints.ao_eri(primary, primary, primary, primary))
 
-    assert(np.linalg.norm((I_guess_thc-I).flatten()) < 0.153)
-    assert(np.linalg.norm((I_guess_df-I).flatten()) < 0.152)
+    assert(np.sqrt(np.average(np.square(I_guess_thc-I))) < 3e-4)
+    assert(np.sqrt(np.average(np.square(I_guess_df-I))) < 3e-4)
+
+@pytest.mark.smoke
+def test_ls_thc_exact():
+    mol = psi4.geometry("""
+    0 1
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+    symmetry c1
+    """)
+
+    psi4.set_options({'basis' : 'cc-pVDZ',
+                    'ls_thc_df' : False,
+                    'ls_thc_radial_points' : 10,
+                    'ls_thc_spherical_points' : 50,
+                    'ls_thc_basis_tolerance' : 1.0e-10,
+                    'ls_thc_weights_tolerance' : 1.0e-12})
+
+    e, wfn = psi4.energy('scf', return_wfn=True)
+
+    primary = wfn.basisset()
+    aux = psi4.core.BasisSet.build(mol, "DF_BASIS_SCF", "", "RIFIT", "cc-pVDZ")
+
+    ls_thc_computer = psi4.core.LS_THC_Computer(mol, primary, None)
+    ls_thc_computer.compute_thc_factorization()
+
+    # THC-Factored ERI
+    Z_PQ = np.array(ls_thc_computer.get_Z())
+    x1 = np.array(ls_thc_computer.get_x1())
+    I_guess_thc = np.einsum('pu,pv,pq,qr,qt->uvrt', x1, x1, Z_PQ, x1, x1, optimize=True)
+
+    # AO 4-index ERIs
+    mints = psi4.core.MintsHelper(primary)
+    I = np.array(mints.ao_eri(primary, primary, primary, primary))
+
+    assert(np.sqrt(np.average(np.square(I_guess_thc-I))) < 1e-4)

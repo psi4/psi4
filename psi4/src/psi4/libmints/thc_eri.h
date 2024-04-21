@@ -81,10 +81,17 @@ class THC_Computer {
 };
 
 // Least Squares Tensor Hypercontraction
+// Derived from work of Parrish et al. 2012 (doi: 10.1063/1.4768233)
 class LS_THC_Computer : public THC_Computer {
    protected:
+    /// Use DF integrals to perform LS-THC ?
+    bool use_df_;
+    
     /// Auxiliary basis set (null if not using DF approximation)
     std::shared_ptr<BasisSet> auxiliary_;
+
+    /// Print options and other info for LS-THC decomposition
+    void print_header();
 
     /// Parrish LS-THC Procedure 2
     SharedMatrix build_E_exact();
@@ -92,6 +99,7 @@ class LS_THC_Computer : public THC_Computer {
     SharedMatrix build_E_df();
 
    public:
+    LS_THC_Computer(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options);
     LS_THC_Computer(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
     ~LS_THC_Computer() override;
 

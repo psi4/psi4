@@ -273,6 +273,17 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
     /*- Use DF approximation when computing LS-THC factorization? -*/
     options.add_bool("LS_THC_DF", true);
+    /*- Number of spherical points in LS-THC grid -*/
+    options.add_int("LS_THC_SPHERICAL_POINTS", 50);
+    /*- Number of radial points in LS-THC grid -*/
+    options.add_int("LS_THC_RADIAL_POINTS", 10);
+    /*- Screening criteria for basis function values on LS-THC grids !expert -*/
+    options.add_double("LS_THC_BASIS_TOLERANCE", 1.0E-10);
+    /*- Grid weights cutoff for LS-THC grids !expert -*/
+    options.add_double("LS_THC_WEIGHTS_TOLERANCE", 1.0E-12);
+    /*- Pruning scheme for LS-THC grids !expert -*/
+    options.add_str("LS_THC_PRUNING_SCHEME", "ROBUST", 
+                        "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
 
     /// MBIS Options (libmints/oeprop.cc)
 
