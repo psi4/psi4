@@ -118,20 +118,20 @@ void MOInfo::read_info() {
     size_t soOffset = 0;
     size_t moOffset = 0;
     for (int h = 0; h < nirreps; ++h) {
-        for (int so = 0; so < get_sopi(h); ++so) {
+        for (int so = 0; so < sopi_ref(h); ++so) {
             for (int mo = 0; mo < mopi[h]; ++mo) {
                 scf[so + soOffset][mo + moOffset] = matCa->get(h, so, mo);
             }
         }
-        soOffset += get_sopi(h);
+        soOffset += sopi_ref(h);
         moOffset += mopi[h];
     }
     scf_irrep = new double**[nirreps];
     for (int i = 0; i < nirreps; i++) {
         scf_irrep[i] = nullptr;
-        if (get_sopi(i) && mopi[i]) {
-            scf_irrep[i] = block_matrix(get_sopi(i), mopi[i]);
-            ::memcpy(scf_irrep[i][0], matCa->pointer(i)[0], sizeof(double) * mopi[i] * get_sopi(i));
+        if (sopi_ref(i) && mopi[i]) {
+            scf_irrep[i] = block_matrix(sopi_ref(i), mopi[i]);
+            ::memcpy(scf_irrep[i][0], matCa->pointer(i)[0], sizeof(double) * mopi[i] * sopi_ref(i));
         }
     }
 

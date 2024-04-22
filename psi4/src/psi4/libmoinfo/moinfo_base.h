@@ -94,9 +94,13 @@ class MOInfoBase {
     int get_nbel() const { return (nbel); }
 
    protected:
-    /// @brief Get an element of the array holding the numbers of SOs per irrep, from an MOInfoBase object (or derived object). Not bounds-checked!
-    /// @return The i-th number of SOs per irrep
-    int get_sopi(size_t i) const { return sopi[i]; }
+    /// @brief Get a const ref. to an element of the array holding the numbers of SOs per irrep, from an MOInfoBase object (or derived object). Not bounds-checked!
+    /// @return Const& of the selected number of SOs per irrep
+    const int& sopi_ref(size_t i) const { return sopi[i]; }
+
+    /// @brief Get a const ref. to the array holding the numbers of SOs per irrep, from an MOInfoBase object (or derived object)
+    /// @return Const& of the SOs per irrep array
+    const intvec& sopi_ref() const { return sopi; }
 
     /// @brief Get a const ref. to one of the irrep labels that are stored in an MOInfoBase object (or derived object). Not bounds-checked!
     /// @param i : Index of the irrep label
