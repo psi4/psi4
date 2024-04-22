@@ -98,6 +98,11 @@ class MOInfoBase {
     /// @return The i-th number of SOs per irrep
     int get_sopi(size_t i) const { return sopi[i]; }
 
+    /// @brief Get a const ref. to one of the irrep labels that are stored in an MOInfoBase object (or derived object). Not bounds-checked!
+    /// @param i : Index of the irrep label
+    /// @return The selected irrep label
+    const std::string& irr_lab_ref(size_t i) const { return (irr_labs[i]); }
+
     void read_data();
     void compute_number_of_electrons();
     void read_mo_space(const int nirreps_ref, int& n, intvec& mo, const std::string& labels);
