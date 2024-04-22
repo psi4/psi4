@@ -300,6 +300,7 @@ void LS_THC_Computer::compute_thc_factorization() {
 
     x1_ = std::make_shared<Matrix>(npoints, nbf);
 
+    // Parrish 2012, Equation 29
     size_t point_idx = 0;
     for (auto& block : grid.blocks()) {
         auto w = block->w();
@@ -324,6 +325,7 @@ void LS_THC_Computer::compute_thc_factorization() {
     
     timer_on("LS-THC: Form E");
 
+    // Parrish 2012, Equations 33-35
     SharedMatrix E_PQ = use_df_ ? build_E_df() : build_E_exact();
 
     timer_off("LS-THC: Form E");
@@ -333,6 +335,7 @@ void LS_THC_Computer::compute_thc_factorization() {
     SharedMatrix S_Qq = std::make_shared<Matrix>(npoints, npoints);
     SharedMatrix S_temp = linalg::doublet(x1_, x1_, false, true);
 
+    // Parrish 2012, Equation 28
 #pragma omp parallel for
     for (size_t p = 0; p < npoints; ++p) {
         for (size_t q = 0; q < npoints; ++q) {
@@ -340,6 +343,7 @@ void LS_THC_Computer::compute_thc_factorization() {
         }
     }
 
+    // Parrish 2012, Equation 30
     int nremoved = 0;
     SharedMatrix S_Qq_inv = S_Qq->pseudoinverse(options_.get_double("LS_THC_S_EPSILON"), nremoved);
 
@@ -347,6 +351,7 @@ void LS_THC_Computer::compute_thc_factorization() {
 
     timer_on("LS-THC: Form Z");
 
+    // Parrish 2012, Equation 36
     Z_PQ_ = linalg::triplet(S_Qq_inv, E_PQ, S_Qq_inv);
 
     timer_off("LS-THC: Form Z");
