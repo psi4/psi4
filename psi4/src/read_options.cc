@@ -284,6 +284,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Pruning scheme for LS-THC grids !expert -*/
     options.add_str("LS_THC_PRUNING_SCHEME", "ROBUST", 
                         "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
+    /*- Tolerance for pseudoinversion of grid point overlap matrix (Parrish 2012 eq. 30) !expert -*/
+    options.add_double("LS_THC_S_EPSILON", 1.0E-10);
 
     /// MBIS Options (libmints/oeprop.cc)
 

@@ -49,14 +49,10 @@ THC_Computer::THC_Computer(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
 THC_Computer::~THC_Computer() {}
 
 LS_THC_Computer::LS_THC_Computer(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, 
-                                    Options& options) : THC_Computer(molecule, primary, options) {
-    auxiliary_ = nullptr;
-}
+                                    Options& options) : THC_Computer(molecule, primary, options), auxiliary_(nullptr) {}
 
-LS_THC_Computer::LS_THC_Computer(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, 
-                                    std::shared_ptr<BasisSet> auxiliary, Options& options) : THC_Computer(molecule, primary, options) {
-    auxiliary_ = auxiliary;
-}
+LS_THC_Computer::LS_THC_Computer(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, 
+                                    Options& options) : THC_Computer(molecule, primary, options), auxiliary_(auxiliary) {}
 
 LS_THC_Computer::~LS_THC_Computer() {}
 
@@ -71,6 +67,7 @@ void LS_THC_Computer::print_header() {
     outfile->Printf("    LS_THC_RADIAL_POINTS      =   %3d \n", options_.get_int("LS_THC_RADIAL_POINTS"));
     outfile->Printf("    LS_THC_BASIS_TOLERANCE    = %6.3e \n", options_.get_double("LS_THC_BASIS_TOLERANCE"));
     outfile->Printf("    LS_THC_WEIGHTS_TOLERANCE  = %6.3e \n", options_.get_double("LS_THC_WEIGHTS_TOLERANCE"));
+    outfile->Printf("    LS_THC_S_EPSILON          = %6.3e \n", options_.get_double("LS_THC_S_EPSILON"));
     outfile->Printf("    Using DF?                     %3s \n", use_df_ ? "Yes" : "No");
     outfile->Printf("\n\n");
 }
@@ -101,6 +98,7 @@ SharedMatrix LS_THC_Computer::build_E_exact() {
 
     SharedMatrix E_PQ = std::make_shared<Matrix>(rank, rank);
 
+    // E^{PQ} = x_{m}^{P}x_{n}^{P}(mn|rs)x_{r}^{Q}x_{s}^{Q} (Parrish 2012 eq. 33)
 #pragma omp parallel for
     for (size_t MN = 0; MN < nshellpair; ++MN) {
 
@@ -139,6 +137,7 @@ SharedMatrix LS_THC_Computer::build_E_exact() {
 
             double prefactor2 = (R == S) ? 1.0 : 2.0;
 
+            // This loop is forming the intermediate (E')^{Q}_{mn} = (mn|rs)x_{r}^{Q}x_{s}^{Q}
             for (size_t p = 0; p < rank; ++p) {
                 for (size_t dm = 0, index = 0; dm < nm; ++dm) {
                     for (size_t dn = 0; dn < nn; ++dn) {
@@ -152,16 +151,19 @@ SharedMatrix LS_THC_Computer::build_E_exact() {
             } // end p
         } // end RS
 
+        // Final contractions E^{PQ} = x_{m}^{P}x_{n}^{P}(E')^{Q}_{mn}
         for (size_t p = 0; p < rank; ++p) {
             for (size_t q = 0; q < rank; ++q) {
+                double e_pq_cont = 0.0;
                 for (size_t m = mstart; m < mstart + nm; ++m) {
                     size_t dm = m - mstart;
                     for (size_t n = nstart; n < nstart + nn; ++n) {
                         size_t dn = n - nstart;
-    #pragma omp atomic
-                        (*E_PQ)(p, q) += prefactor1 * (*E_temp)(q, dm * nn + dn) * (*x1_)(p, m) * (*x1_)(p, n);
+                        e_pq_cont += prefactor1 * (*E_temp)(q, dm * nn + dn) * (*x1_)(p, m) * (*x1_)(p, n);
                     } // end n
                 } // end m
+#pragma omp atomic
+                (*E_PQ)(p, q) += e_pq_cont;
             } // end q
         } // end p
     } // end MN
@@ -199,6 +201,7 @@ SharedMatrix LS_THC_Computer::build_E_df() {
 
     SharedMatrix E_temp = std::make_shared<Matrix>(rank, naux);
 
+    // E^{IJ} = x_{m}^{I}x_{n}^{I}(mn|P)(P|Q)^{-1}(Q|rs)x_{r}^{J}x_{s}^{J} (Parrish 2012 eq. 34-35)
 #pragma omp parallel for
     for (size_t MNP = 0; MNP < nshelltriplet; ++MNP) {
 
@@ -225,18 +228,22 @@ SharedMatrix LS_THC_Computer::build_E_df() {
 
         double prefactor = (M == N) ? 1.0 : 2.0;
 
+        // This loop is forming the intermediate (E')^{IP} = x_{m}^{I}x_{n}^{I}(P|mn)
         for (size_t r = 0; r < rank; ++r) {
             for (size_t p = pstart, index = 0; p < pstart + np; ++p) {
+                double e_temp_cont = 0.0;
                 for (size_t m = mstart; m < mstart + nm; ++m) {
                     for (size_t n = nstart; n < nstart + nn; ++n, ++index) {
-#pragma omp atomic
-                        (*E_temp)(r, p) += prefactor * buffer[index] * (*x1_)(r, m) * (*x1_)(r, n);
+                        e_temp_cont += prefactor * buffer[index] * (*x1_)(r, m) * (*x1_)(r, n);
                     } // end n
                 } // end m
+#pragma omp atomic
+                (*E_temp)(r, p) += e_temp_cont;
             } // end p
         } // end r
     } // end MNP
 
+    // Final contractions: (E)^{IJ} = (E')^{IP}(P|Q)^{-1}(E')^{JQ}
     FittingMetric J_metric_obj(auxiliary_, true);
     J_metric_obj.form_fitting_metric();
     auto J_metric = J_metric_obj.get_metric();
@@ -334,7 +341,7 @@ void LS_THC_Computer::compute_thc_factorization() {
     }
 
     int nremoved = 0;
-    SharedMatrix S_Qq_inv = S_Qq->pseudoinverse(1.0e-10, nremoved);
+    SharedMatrix S_Qq_inv = S_Qq->pseudoinverse(options_.get_double("LS_THC_S_EPSILON"), nremoved);
 
     timer_off("LS-THC: Form S");
 
