@@ -76,14 +76,14 @@ def scf_compute_energy(self):
                 raise SCFConvergenceError("""SCF DF preiterations""", self.iteration_, self, 0, 0)
         core.print_out("\n  DF guess converged.\n\n")
 
-       # reset the DIIS & JK objects in prep for DIRECT
+        # reset the DIIS & JK objects in prep for DIRECT
         if self.initialized_diis_manager_:
             self.diis_manager_.reset_subspace()
         self.initialize_jk(self.memory_jk_)
     elif core.get_option('SCF', 'SCF_COSX_GUESS') and any([ core.get_global_option('SCF_TYPE') == x for x in [ 'DIRECT', 'DFDIRJ+LINK' ] ]):
         # speed up DIRECT/DF-DirJ+LinK algorithm (recomputes full (non-DF) integrals
         #   each iter) by first converging via fast COSX iterations, then
-        #   fully converging in fewer slow DIRECT iterations. aka David Poole/Phillip trick 
+        #   fully converging in fewer slow DIRECT iterations. aka Phillip Nelson/David Poole trick 
         core.print_out("  Starting with a COSX guess...\n\n")
         with p4util.OptionsStateCM(['SCF_TYPE', 'SCREENING']):
             core.set_global_option('SCF_TYPE', 'DFDIRJ+COSX')
