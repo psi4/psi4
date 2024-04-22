@@ -85,25 +85,37 @@ def scf_compute_energy(self):
         #   each iter) by first converging via fast COSX iterations, then
         #   fully converging in fewer slow DIRECT iterations. aka Phillip Nelson/David Poole trick 
         core.print_out("  Starting with a COSX guess...\n\n")
-        with p4util.OptionsStateCM(['SCF_TYPE', 'SCREENING']):
-            core.set_global_option('SCF_TYPE', 'DFDIRJ+COSX')
-            core.set_global_option('SCREENING', "SCHWARZ")
-            
-            # do COSX guess on single (20/50) grid
-            core.set_global_option('COSX_MAXITER_FINAL', 0)
-            core.set_global_option('COSX_RADIAL_POINTS_INITIAL', 20)
-            core.set_global_option('COSX_SPHERICAL_POINTS_INITIAL', 50)
+        optstash = p4util.OptionsState(
+            ['SCF_TYPE'], ['SCREENING'], 
+            ['SCF', 'COSX_MAXITER_FINAL'], 
+            ['SCF', 'COSX_RADIAL_POINTS_INITIAL'], 
+            ['SCF', 'COSX_SPHERICAL_POINTS_INITIAL']
+        )
 
-            self.initialize()
-            try:
-                self.iterations()
-            except SCFConvergenceError:
-                self.finalize()
-                raise SCFConvergenceError("""SCF COSX preiterations""", self.iteration_, self, 0, 0)
+        core.set_global_option('SCF_TYPE', 'DFDIRJ+COSX')
+        core.set_global_option('SCREENING', "SCHWARZ")
+      
+        # only use single COSX grid for guess 
+        core.set_local_option('SCF', 'COSX_MAXITER_FINAL', 0)
+        
+        # set grid to (20/50) unless otherwise specified 
+        if not core.has_option_changed("SCF", "COSX_RADIAL_POINTS_INITIAL"):
+          core.set_local_option('SCF', 'COSX_RADIAL_POINTS_INITIAL', 20)
+        if not core.has_option_changed("SCF", "COSX_SPHERICAL_POINTS_INITIAL"):
+          core.set_local_option('SCF', 'COSX_SPHERICAL_POINTS_INITIAL', 50)
+
+        self.initialize()
+        try:
+            self.iterations()
+        except SCFConvergenceError:
+            self.finalize()
+            raise SCFConvergenceError("""SCF COSX preiterations""", self.iteration_, self, 0, 0)
+
+        optstash.restore()
+
         core.print_out("\n  COSX guess converged.\n\n")
 
-       # reset the DIIS & JK objects in prep for DIRECT
-        core.set_global_option('SCF_TYPE', 'DIRECT')
+        # reset the DIIS & JK objects in prep for DIRECT
         if self.initialized_diis_manager_:
             self.diis_manager_.reset_subspace()
         self.initialize_jk(self.memory_jk_)
@@ -316,11 +328,19 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         early_screening_disabled = True
 
-        scf_maxiter_post_screening = 2 # run two DirectJK iterations with COSX guess
+        # two DirectJK/DF-DirJ+LinK iterations unless specified
+        if not core.has_option_changed("SCF", "COSX_MAXITER_FINAL"):
+          scf_maxiter_post_screening = 2 # run two iterations with COSX guess
+        else:
+          scf_maxiter_post_screening = core.get_option("SCF", "COSX_MAXITER_FINAL") # run COSX_MAXITER_FINAL # of DirectJK iterations with COSX guess
 
+    # sanity checking of COSX_MAXITER_FINAL
     if scf_maxiter_post_screening < -1:
         raise ValidationError('COSX_MAXITER_FINAL ({}) must be -1 or above. If you wish to attempt full SCF converge on the final COSX grid, set COSX_MAXITER_FINAL to -1.'.format(scf_maxiter_post_screening))
-
+    elif scf_maxiter_post_screening == 0 and early_screening_disabled and core.get_option("SCF", "SCF_COSX_GUESS"):
+        raise ValidationError('COSX_MAXITER_FINAL ({}) cannot be 0 when SCF_COSX_GUESS is enabled. Please set COSX_MAXITER_FINAL to a positive integer, or -1 if you wish to attempt full SCF converge on {}.'.format(scf_maxiter_post_screening, core.get_global_option("SCF_TYPE")))
+        
+    
     # SCF iterations!
     SCFE_old = 0.0
     Dnorm = 0.0
