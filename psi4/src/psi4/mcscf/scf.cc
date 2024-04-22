@@ -58,7 +58,7 @@ SCF::~SCF() {
 void SCF::startup() {
     nirreps = moinfo_scf->get_nirreps();
     nso = moinfo_scf->get_nso();
-    sopi = moinfo_scf->get_sopi();
+    sopi = moinfo_scf->sopi_ref();
 
     docc = moinfo_scf->get_docc();
     actv = moinfo_scf->get_actv();
