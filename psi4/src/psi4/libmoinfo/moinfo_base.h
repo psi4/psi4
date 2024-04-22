@@ -54,7 +54,7 @@ class MOInfoBase {
     /// @return The nuclear repulsion energy
     double get_nuc_E() const { return (nuclear_energy); }
 
-    /// @brief Get one of the irrep labels that are stored in an MOInfoBase object (or derived object). Not bounds-checked!
+    /// @brief Get a copy of one of the irrep labels that are stored in an MOInfoBase object (or derived object). Not bounds-checked!
     /// @param i : Index of the irrep label
     /// @return The selected irrep label
     std::string get_irr_lab(size_t i) const { return (irr_labs[i]); }
@@ -100,7 +100,7 @@ class MOInfoBase {
 
     /// @brief Get a const ref. to one of the irrep labels that are stored in an MOInfoBase object (or derived object). Not bounds-checked!
     /// @param i : Index of the irrep label
-    /// @return The selected irrep label
+    /// @return Const& of the selected irrep label
     const std::string& irr_lab_ref(size_t i) const { return (irr_labs[i]); }
 
     void read_data();
