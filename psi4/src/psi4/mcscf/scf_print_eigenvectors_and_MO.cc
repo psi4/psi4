@@ -52,13 +52,13 @@ void SCF::print_eigenvectors_and_MO() {
 
     for (int h = 0; h < nirreps; ++h)
         for (int i = 0; i < docc[h]; ++i)
-            docc_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->get_irr_lab(h)));
+            docc_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->irr_lab_ref(h)));
     for (int h = 0; h < nirreps; ++h)
         for (int i = docc[h]; i < docc[h] + actv[h]; ++i)
-            actv_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->get_irr_lab(h)));
+            actv_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->irr_lab_ref(h)));
     for (int h = 0; h < nirreps; ++h)
         for (int i = docc[h] + actv[h]; i < sopi[h]; ++i)
-            virt_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->get_irr_lab(h)));
+            virt_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->irr_lab_ref(h)));
 
     sort(docc_evals.begin(), docc_evals.end());
     sort(actv_evals.begin(), actv_evals.end());

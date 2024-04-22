@@ -54,10 +54,10 @@ class MOInfoBase {
     /// @return The nuclear repulsion energy
     double get_nuc_E() const { return (nuclear_energy); }
 
-    /// @brief Get a copy of one of the irrep labels that are stored in an MOInfoBase object (or derived object). Not bounds-checked!
+    /// @brief Get a const ref. to one of the irrep labels that are stored in an MOInfoBase object (or derived object). Not bounds-checked!
     /// @param i : Index of the irrep label
-    /// @return The selected irrep label
-    std::string get_irr_lab(size_t i) const { return (irr_labs[i]); }
+    /// @return Const& of the selected irrep label
+    const std::string& irr_lab_ref(size_t i) const { return (irr_labs[i]); }
 
     /// @brief Get the nirreps value (# of irreducible representations) that is stored in an MOInfoBase object (or derived object).
     /// @return The # of irreps
@@ -97,11 +97,6 @@ class MOInfoBase {
     /// @brief Get a const ref. to an element of the array holding the numbers of SOs per irrep, from an MOInfoBase object (or derived object). Not bounds-checked!
     /// @return Const& of the selected number of SOs per irrep
     const int& sopi_ref(size_t i) const { return sopi[i]; }
-
-    /// @brief Get a const ref. to one of the irrep labels that are stored in an MOInfoBase object (or derived object). Not bounds-checked!
-    /// @param i : Index of the irrep label
-    /// @return Const& of the selected irrep label
-    const std::string& irr_lab_ref(size_t i) const { return (irr_labs[i]); }
 
     void read_data();
     void compute_number_of_electrons();
