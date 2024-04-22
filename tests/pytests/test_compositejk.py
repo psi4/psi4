@@ -247,6 +247,73 @@ def test_seminum_incfock(inp, scf, mols, request):
     
     assert compare(True, abs(niter_inc - niter_noinc) <= 3, f'{test_id} IncFock efficient')
 
+@pytest.mark.parametrize(
+    "inp",
+    [
+        pytest.param({"method" : "hf",
+                      "options": {"reference" : "rhf"},
+                      "molecule" : "h2o",
+                      "bsse_type" : None,
+                      "ref" : -76.026780223322},
+                      id="h2o (rhf)"),
+        pytest.param({"method" : "b3lyp",
+                      "options": {"reference" : "rhf"},
+                      "molecule" : "h2o",
+                      "bsse_type" : None,
+                      "ref" : -76.420402720419},
+                      id="h2o (rks)"),
+        pytest.param({"method" : "hf",
+                      "options": {"reference" : "uhf"},
+                      "molecule" : "nh2",
+                      "bsse_type" : None,
+                      "ref" : -55.566890252551},
+                      id="nh2 (uhf)"),
+        pytest.param({"method" : "hf",
+                      "options": {"reference" : "rohf"},
+                      "molecule" : "nh2",
+                      "bsse_type" : None,
+                      "ref" : -55.562689948780},
+                      id="nh2 (rohf)"),
+        pytest.param({"method" : "hf",
+                      "options": {"reference" : "rhf"},
+                      "molecule" : "h2o_nap1",
+                      "bsse_type" : "CP",
+                      "ref" :  -0.040121884077},
+                      marks=pytest.mark.nbody,
+                      id="h2o/na+ (rhf ie)"),
+    ],
+)
+@pytest.mark.parametrize("scf_type", 
+    [
+        pytest.param("DIRECT"), 
+        pytest.param("DFDIRJ+LINK"), 
+    ], 
+)
+def test_scf_cos_guess(inp, mols, scf_type, request):
+    """Test the accuracy of the SCF_COSX_GUESS keyword via SCF calculations"""
+
+    test_id = request.node.callspec.id
+
+    molecule = mols[inp["molecule"]]
+    psi4.set_options({"scf_type": scf_type, 
+                      "screening": "density", 
+                      "basis": "cc-pvdz", 
+                      "incfock": True, 
+                      "df_scf_guess": False, 
+                      "scf_cosx_guess": False
+    })
+    psi4.set_options(inp["options"])
+
+    # compute energy+wfn without SCF_COSX_GUESS 
+    energy_noguess, wfn_noguess = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"], return_wfn=True)
+
+    # compute DFJCOSK energy+wfn with SCF_COSX_GUESS
+    psi4.set_options({"scf_cosx_guess" : True})
+    energy_guess, wfn_guess = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"], return_wfn=True)
+
+    # how do energies compare?
+    assert compare_values(energy_noguess, energy_guess, 6, f'{test_id} SCF_COSX_GUESS accurate (1e-6 threshold)')
+
 @pytest.mark.parametrize("functional", [ "bp86", "b3lyp" ])
 @pytest.mark.parametrize(
     "scf_type", 
