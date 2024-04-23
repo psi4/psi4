@@ -106,7 +106,7 @@ class MOInfo : public MOInfoBase {
     MOInfo(Wavefunction& ref_wf_, Options& options_, bool silent_ = false);
     ~MOInfo();
 
-    const double *const *const get_scf_mos() const { return (scf); }
+    const double* const* const get_scf_mos() const { return (scf); }
 
     // DGEMM timing
     void set_dgemm_timing(double value) { dgemm_timing = value; }
@@ -133,8 +133,8 @@ class MOInfo : public MOInfoBase {
     int get_nvir() const { return (nvir); }
 
     intvec get_mopi() const { return (mopi); }
-    using MOInfoBase::get_docc;
     using MOInfoBase::get_actv;
+    using MOInfoBase::get_docc;
     intvec get_focc() const { return (focc); }
     intvec get_fvir() const { return (fvir); }
     intvec get_occ() const { return (occ); }
@@ -193,11 +193,13 @@ class MOInfo : public MOInfoBase {
     double get_sign_internal_excitation(int i, int j);
 
    protected:
-    /// @brief Get a const ref. to an element of the array holding the numbers of doubly occupied orbitals (DOCC) per irrep, from an MOInfo object (or derived object).
+    /// @brief Get a const ref. to an element of the array holding the numbers of doubly occupied orbitals (DOCC) per
+    /// irrep, from an MOInfo object (or derived object). Not bounds-checked!
     /// @return Const& of the selected number of DOCCs per irrep
     const int& get_docc(size_t i) const { return docc[i]; }
 
-    /// @brief Get a const ref. to an element of the array holding the numbers of active orbitals per irrep, from an MOInfo object (or derived object). Not bounds-checked!
+    /// @brief Get a const ref. to an element of the array holding the numbers of active orbitals per irrep, from an
+    /// MOInfo object (or derived object). Not bounds-checked!
     /// @return Const& of the selected number of active orbitals per irrep
     const int& get_actv(size_t i) const { return actv[i]; }
 
@@ -220,7 +222,7 @@ class MOInfo : public MOInfoBase {
     double scf_energy;
     double fzcore_energy;
 
-    double** scf;         // MO coefficients
+    double** scf;  // MO coefficients
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     double dgemm_timing;
