@@ -149,74 +149,67 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
     current_findif_kwargs = {kw: kwargs.pop(kw) for kw in pertinent_findif_kwargs if kw in kwargs}
     # explicit: 'findif_mode'
 
+    pertinent_manybody_kwargs = ["bsse_type", "return_total_data", "max_nbody", "supersystem_ie_only", "embedding_charges", ] 
+    current_manybody_kwargs = {kw: kwargs.pop(kw) for kw in pertinent_manybody_kwargs if kw in kwargs}
+    # explicit: "levels"
+
     # Build a packet
     packet = {"molecule": molecule, "driver": driver, "method": method, "basis": basis, "keywords": keywords}
 
     # First check for BSSE type
-    if kwargs.get("bsse_type", None) is not None:
+    #if kwargs.get("bsse_type", None) is not None:
+    if current_manybody_kwargs.get("bsse_type", None) is not None:
         levels = kwargs.pop('levels', None)
+        dertype = kwargs.pop("dertype", None)
 
-        plan = ManyBodyComputer(**packet, **kwargs)
+        print("INTO ManyBodyComputer")
+        print("current_manybody_kwargs")
+        pp.pprint(current_manybody_kwargs)
+        print("packet and kwargs")
+        pp.pprint(packet)
+        pp.pprint(kwargs)
+        print("levels")
+        pp.pprint(levels)
+        plan = ManyBodyComputer.from_psi4_task_planner(levels=levels, **packet, **current_manybody_kwargs) #**kwargs)
+        #plan = ManyBodyComputer(**packet, **kwargs)
         original_molecule = packet.pop("molecule")
 
         # Add tasks for every nbody level requested
-        if levels is None:
-            levels = {plan.max_nbody: method}
-        else:
-            # rearrange bodies in order with supersystem last lest body count fail in organization loop below
-            levels = dict(sorted(levels.items(), key=lambda item: 1000 if item[0] == "supersystem" else item[0]))
+#        # Organize nbody calculations into modelchem levels
+#        # * expand keys of `levels` into full lists of nbodies covered. save to plan, resetting max_nbody accordingly
+#        # * below, process values of `levels`, which are modelchem strings, into kwargs specs
+#
+#        plan.max_nbody = max(nb for nb in levels if nb != "supersystem")
+#        plan.nbodies_per_mc_level = nbodies_per_mc_level
 
-            # We define cp as being a correction to only interaction energies
-            # If only doing cp, we need to ignore any user-specified 1st (monomer) level
-            if 'cp' in kwargs.get("bsse_type", None) and 'nocp' not in kwargs.get("bsse_type", None): 
-                if 1 in levels.keys():
-                    removed_level = levels.pop(1)
-                    logger.info("NOTE: User specified exclusively 'cp' correction, but provided level 1 details") 
-                    logger.info(f"NOTE: Removing level {removed_level}")
-                    logger.info("NOTE: For total energies, add 'nocp' to bsse_list")
-
-
-        # Organize nbody calculations into modelchem levels
-        # * expand keys of `levels` into full lists of nbodies covered. save to plan, resetting max_nbody accordingly
-        # * below, process values of `levels`, which are modelchem strings, into kwargs specs
-        nbodies_per_mc_level = []
-        prev_body = 0
-        for nb in levels:
-            nbodies = []
-            if nb == "supersystem":
-                nbodies.append(nb)
-            elif nb != (prev_body + 1):
-                for m in range(prev_body + 1, nb + 1):
-                    nbodies.append(m)
-            else:
-                nbodies.append(nb)
-            nbodies_per_mc_level.append(nbodies)
-            prev_body += 1
-
-        plan.max_nbody = max(nb for nb in levels if nb != "supersystem")
-        plan.nbodies_per_mc_level = nbodies_per_mc_level
-
-        for mc_level_idx, mtd in enumerate(levels.values()):
-            method, basis, cbsmeta = expand_cbs_methods(mtd, basis, driver, cbsmeta=cbsmeta, **kwargs)
+        for mc_level_idx, mtd in enumerate(plan.levels.values()):
+            mtdkey = plan.input_data.specification.specification[mtd].model.method
+            print(f"{mtdkey=}")
+            print(f"ENUM0 {mc_level_idx=} {mtd=} {method=} {basis=} {cbsmeta=} {kwargs=}")
+            mtdin = mtdkey if mtd == "(auto)" else mtd
+            #method, basis, cbsmeta = expand_cbs_methods(mtdkey, basis, driver, cbsmeta=cbsmeta, **kwargs)  # NEW mtd->mtdkey
+            #method, basis, cbsmeta = expand_cbs_methods(mtd, basis, driver, cbsmeta=cbsmeta, **kwargs)  # NEW mtd->mtdkey
+            method, basis, cbsmeta = expand_cbs_methods(mtdin, basis, driver, cbsmeta=cbsmeta, **kwargs)  # NEW mtd->mtdkey
             packet.update({'method': method, 'basis': basis})
+            print(f"ENUM {mc_level_idx=} {mtd=} {method=} {basis=} {cbsmeta=}")
 
             # Tell the task builder which level to add a task list for
             # * see https://github.com/psi4/psi4/pull/1351#issuecomment-549948276 for discussion of where build_tasks logic should live
             if method == "cbs":
                 # This CompositeComputer is discarded after being used for dermode.
                 simplekwargs = copy.deepcopy(kwargs)
-                simplekwargs.pop('dertype', None)
+#                simplekwargs.pop('dertype', None)
                 simplecbsmeta = copy.deepcopy(cbsmeta)
                 simplecbsmeta['verbose'] = 0
                 dummyplan = CompositeComputer(**packet, **simplecbsmeta, molecule=original_molecule, **simplekwargs)
 
                 methods = [sr.method for sr in dummyplan.task_list]
                 # TODO: pass more info, so fn can use for managed_methods -- ref, qc_module, fc/ae, conv/df
-                dermode = negotiate_derivative_type(driver, methods, kwargs.pop('dertype', None), verbose=1)
+                dermode = negotiate_derivative_type(driver, methods, dertype, verbose=1)
 
                 if dermode[0] == dermode[1]:  # analytic
-                    logger.info("PLANNING MB(CBS):  {mc_level_idx=} {packet=} {cbsmeta=} kw={kwargs}")
-                    plan.build_tasks(CompositeComputer, **packet, mc_level_idx=mc_level_idx, **cbsmeta, **kwargs)
+                    logger.info("PLANNING MB(CBS):  {mc_level_idx=} {packet=} {cbsmeta=} {dertype=} kw={kwargs}")
+                    plan.build_tasks_alt(CompositeComputer, **packet, mc_level_idx=mc_level_idx, **cbsmeta, **kwargs)  # TODO dertype expected in kwargs?
 
                 else:
                     logger.info(
@@ -230,22 +223,25 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
                                      **cbsmeta,
                                      **current_findif_kwargs,
                                      **kwargs)
+                                     # TODO dertype expected in kwargs?
 
             else:
-                dermode = negotiate_derivative_type(driver, method, kwargs.pop('dertype', None), verbose=1)
+                dermode = negotiate_derivative_type(driver, method, dertype, verbose=1)
                 if dermode[0] == dermode[1]:  # analytic
-                    logger.info(f"PLANNING MB:  {mc_level_idx=} {packet=}")
-                    plan.build_tasks(AtomicComputer, **packet, mc_level_idx=mc_level_idx, **kwargs)
+                    logger.info(f"PLANNING MB:  {mc_level_idx=} {packet=} {kwargs=}")
+                    plan.build_tasks_alt(AtomicComputer, **packet, mc_level_idx=mc_level_idx, **kwargs)
+                                     # TODO dertype expected in kwargs?
                 else:
                     logger.info(
                         f"PLANNING MB(FD):  {mc_level_idx=} {packet=} findif_kw={current_findif_kwargs} kw={kwargs}"
                     )
-                    plan.build_tasks(FiniteDifferenceComputer,
+                    plan.build_tasks_alt(FiniteDifferenceComputer,
                                      **packet,
                                      mc_level_idx=mc_level_idx,
                                      findif_mode=dermode,
                                      **current_findif_kwargs,
                                      **kwargs)
+                                     # TODO dertype expected in kwargs?
 
         return plan
 

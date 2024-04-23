@@ -172,7 +172,7 @@ class AtomicComputer(BaseComputer):
 
             return
 
-        logger.info(f'<<< JSON launch ... {self.molecule.schoenflies_symbol()} {self.molecule.nuclear_repulsion_energy()}')
+        logger.info(f'<<< JSON launch ... {self.method} {self.basis} {self.molecule.schoenflies_symbol()} {self.molecule.nuclear_repulsion_energy()}')
         gof = core.get_output_file()
 
         # EITHER ...

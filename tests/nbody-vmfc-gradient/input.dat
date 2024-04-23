@@ -50,8 +50,10 @@ for i in vmfc_scheme: #TEST
     energy_dict[i] = core.variable('CURRENT ENERGY') #TEST
     core.clean() #TEST
 
-    contracted_gradient = qcmb.resize_gradient(wfn.variable(f"GRADIENT 1_{i}").np, eval(i)[1], sz_dict, sl_dict, reverse=True)
-    compare_values(energy_dict[i], wfn.variables()["1_"+i], 8, 'Energy of %s' %i) #TEST
+    evar = wfn.variable(f"N-BODY 1_{eval(i)[0]}@{eval(i)[1]} TOTAL ENERGY".replace(",)", ")"))
+    gvar = wfn.variable(f"N-BODY 1_{eval(i)[0]}@{eval(i)[1]} TOTAL GRADIENT".replace(",)", ")"))
+    contracted_gradient = qcmb.resize_gradient(gvar.np, eval(i)[1], sz_dict, sl_dict, reverse=True)
+    compare_values(energy_dict[i], evar, 8, 'Energy of %s' %i) #TEST
     compare_arrays(gradient_dict[i], contracted_gradient, 8, 'Gradient of %s' %i) #TEST
 
 energy_dict_3b, gradient_dict_3b = {}, {} #TEST
@@ -61,8 +63,10 @@ for i in vmfc_scheme_3b: #TEST
     energy_dict_3b[i] = core.variable('CURRENT ENERGY') #TEST
     core.clean() #TEST
 
-    compare_values(energy_dict_3b[i], wfn.variables()["1_"+i], 8, 'Energy of %s' %i) #TEST
-    compare_arrays(gradient_dict_3b[i], wfn.variables()['GRADIENT %s' % "1_"+i], 8, 'Gradient of %s' %i) #TEST
+    evar = wfn.variable(f"N-BODY 1_{eval(i)[0]}@{eval(i)[1]} TOTAL ENERGY".replace(",)", ")"))
+    gvar = wfn.variable(f"N-BODY 1_{eval(i)[0]}@{eval(i)[1]} TOTAL GRADIENT".replace(",)", ")"))
+    compare_values(energy_dict_3b[i], evar, 8, 'Energy of %s' %i) #TEST
+    compare_arrays(gradient_dict_3b[i], gvar, 8, 'Gradient of %s' %i) #TEST
 
 ene, grad1b, grad2b, grad3b = 0, np.zeros((9, 3)), np.zeros((9, 3)), np.zeros((9, 3))  #TEST
 
