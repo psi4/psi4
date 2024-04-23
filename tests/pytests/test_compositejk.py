@@ -1,6 +1,6 @@
 import pytest
 
-from utils import compare_integers, compare_values, compare
+from utils import compare_integers, compare_strings, compare_values, compare
 from addons import using
 
 import psi4
@@ -195,6 +195,7 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
         "cosx_maxiter_final": cosx_maxiter_final, 
         "df_scf_guess": df_scf_guess, 
         "scf_cosx_guess": scf_cosx_guess, 
+        "save_jk": True
     })
     psi4.set_options(tests[inp]["options"])
     psi4.set_options(opts["options"])
@@ -241,12 +242,18 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
             # we keep this line just for printout purposes; should always pass if done correctly
             assert compare(type(e_info), pytest.ExceptionInfo, f'{test_id} throws exception')
         
-        # ... otherwise, test should run with correct number of iterations
+        # ... otherwise, test should run with correct number of SCF iterations and post-guess method
         else:
             E, wfn = psi4.energy(tests[inp]["method"], molecule=molecule, return_wfn=True)
-            
+   
+            # correct number of SCF iterations?            
             niter = wfn.variable("SCF ITERATIONS")
             assert compare_integers(niter, reference_iter, '{test_id} has correct number of SCF iterations')
+
+            # correct post-guess method?
+            clean_jk_name = wfn.jk().name().replace("-", "") # replace DF-DirJ with DFDirJ
+            clean_jk_name = clean_jk_name.replace("DirectJK", "Direct") # DirectJK should be Direct instead
+            assert compare_strings(opts["options"]["scf_type"].lower(), clean_jk_name.lower(), '{test_id} has correct end method')
 
 @pytest.mark.parametrize("inp", 
     [
