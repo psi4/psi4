@@ -502,11 +502,11 @@ void DiskMP2F12::form_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTenso
 
     {
         outfile->Printf("     Forming J\n");
-        auto J = DiskTensor<double, 4>{state::data, "Coulomb", nri_, nocc_, nri_, nocc_};
+        auto J = DiskTensor<double, 4>{state::data(), "Coulomb", nri_, nocc_, nri_, nocc_};
         if (!J.existed()) form_teints("J", &J);
 
         for (int i = 0; i < nocc_; i++) {
-            auto J_view = J(All, i, All, i);
+            auto J_view = J(All, i, All, i); J_view.set_read_only(true);
             sort(1.0, Indices{p, q}, &f_view.get(), 2.0, Indices{p, q}, J_view.get());
         }
 
@@ -516,12 +516,12 @@ void DiskMP2F12::form_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTenso
 
     {
         outfile->Printf("     Forming K\n");
-        auto K = DiskTensor<double, 4>{state::data, "Exchange", nri_, nocc_, nocc_, nri_};
+        auto K = DiskTensor<double, 4>{state::data(), "Exchange", nri_, nocc_, nocc_, nri_};
         if (!K.existed()) form_teints("K", &K);
 
         auto k_view = (*k)(All, All);
         for (int i = 0; i < nocc_; i++) {
-            auto K_view = K(All, i, i, All);
+            auto K_view = K(All, i, i, All); K_view.set_read_only(true);
             sort(1.0, Indices{p, q}, &k_view.get(), 1.0, Indices{p, q}, K_view.get());
         }
 
@@ -592,10 +592,10 @@ void DiskMP2F12::form_V_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTenso
         for (int J = I; J < nocc_; J++) {
             // Terms 2 and 3
             {
-                auto G_F_IJ_oc = (*G_F)(I, J, Range{0, nocc_}, Range{nobs_, nri_});
-                auto G_F_JI_oc = (*G_F)(J, I, Range{0, nocc_}, Range{nobs_, nri_});
-                auto F_IJ_oc = (*F)(I, J, Range{0, nocc_}, Range{nobs_, nri_});
-                auto F_JI_oc = (*F)(J, I, Range{0, nocc_}, Range{nobs_, nri_});
+                auto G_F_IJ_oc = (*G_F)(I, J, Range{0, nocc_}, Range{nobs_, nri_}); G_F_IJ_oc.set_read_only(true);
+                auto G_F_JI_oc = (*G_F)(J, I, Range{0, nocc_}, Range{nobs_, nri_}); G_F_JI_oc.set_read_only(true);
+                auto F_IJ_oc = (*F)(I, J, Range{0, nocc_}, Range{nobs_, nri_}); F_IJ_oc.set_read_only(true);
+                auto F_JI_oc = (*F)(J, I, Range{0, nocc_}, Range{nobs_, nri_}); F_JI_oc.set_read_only(true);
 
                 einsum(Indices{}, &tmp1, Indices{m, q}, G_F_IJ_oc.get(), Indices{m, q}, F_IJ_oc.get());
                 einsum(1.0, Indices{}, &tmp1, 1.0, Indices{m, q}, G_F_JI_oc.get(), Indices{m, q}, F_JI_oc.get());
@@ -608,9 +608,9 @@ void DiskMP2F12::form_V_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTenso
 
             // Term 4
             {
-                auto G_F_IJ_pq = (*G_F)(I, J, Range{0, nobs_}, Range{0, nobs_});
-                auto G_F_JI_pq = (*G_F)(J, I, Range{0, nobs_}, Range{0, nobs_});
-                auto F_IJ_pq = (*F)(I, J, Range{0, nobs_}, Range{0, nobs_});
+                auto G_F_IJ_pq = (*G_F)(I, J, Range{0, nobs_}, Range{0, nobs_}); G_F_IJ_pq.set_read_only(true);
+                auto G_F_JI_pq = (*G_F)(J, I, Range{0, nobs_}, Range{0, nobs_}); G_F_JI_pq.set_read_only(true);
+                auto F_IJ_pq = (*F)(I, J, Range{0, nobs_}, Range{0, nobs_}); F_IJ_pq.set_read_only(true);
 
                 einsum(1.0, Indices{}, &tmp1, 1.0, Indices{p, q}, F_IJ_pq.get(), Indices{p, q}, G_F_IJ_pq.get());
 
@@ -619,7 +619,7 @@ void DiskMP2F12::form_V_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTenso
                 }
             }
 
-            auto FG_F2_IJ = (*FG_F2)(I, J, All, All); // Term 1
+            auto FG_F2_IJ = (*FG_F2)(I, J, All, All); FG_F2_IJ.set_read_only(true); // Term 1
 
             auto VX_IJ = (*VX)(I, J, All, All);
             VX_IJ(I, J) = FG_F2_IJ(I, J) - tmp1;
@@ -635,13 +635,12 @@ void DiskMP2F12::form_C(einsums::DiskTensor<double, 4> *C, einsums::DiskTensor<d
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
-    auto f_vc = (*f)(Range{nocc_, nobs_}, Range{nobs_, nri_});
-    f_vc.set_read_only(true);
+    auto f_vc = (*f)(Range{nocc_, nobs_}, Range{nobs_, nri_}); f_vc.set_read_only(true);
 
     for (int I = 0; I < nocc_; I++) {
         for (int J = I; J < nocc_; J++) {
-            auto F_IJ_vc = (*F)(I, J, Range{nocc_, nobs_}, Range{nobs_, nri_});
-            auto F_JI_vc = (*F)(J, I, Range{nocc_, nobs_}, Range{nobs_, nri_});
+            auto F_IJ_vc = (*F)(I, J, Range{nocc_, nobs_}, Range{nobs_, nri_}); F_IJ_vc.set_read_only(true);
+            auto F_JI_vc = (*F)(J, I, Range{nocc_, nobs_}, Range{nobs_, nri_}); F_JI_vc.set_read_only(true);
 
             // IJAB
             {
@@ -677,13 +676,13 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     {
         for (int I = 0; I < nocc_; I++) {
             for (int J = I; J < nocc_; J++) {
-                auto fk_I_1 = (*fk)(I, All);
-                auto fk_J_1 = (*fk)(J, All);
+                auto fk_I_1 = (*fk)(I, All); fk_I_1.set_read_only(true);
+                auto fk_J_1 = (*fk)(J, All); fk_J_1.set_read_only(true);
 
                 // IJIJ and JIJI
                 {
-                    auto F2_JIJ_1 = (*F2)(J, I, J, All);
-                    auto F2_IJI_1 = (*F2)(I, J, I, All);
+                    auto F2_JIJ_1 = (*F2)(J, I, J, All); F2_JIJ_1.set_read_only(true);
+                    auto F2_IJI_1 = (*F2)(I, J, I, All); F2_IJI_1.set_read_only(true);
 
                     einsum(Indices{}, &tmp1, Indices{A}, fk_I_1.get(), Indices{A}, F2_JIJ_1.get());
                     einsum(1.0, Indices{}, &tmp1, 1.0, Indices{A}, F2_IJI_1.get(), Indices{A}, fk_J_1.get());
@@ -691,14 +690,14 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
 
                 // IJJI and JIIJ
                 if (I != J) {
-                    auto F2_IJJ_1 = (*F2)(I, J, J, All);
-                    auto F2_JII_1 = (*F2)(J, I, I, All);
+                    auto F2_IJJ_1 = (*F2)(I, J, J, All); F2_IJJ_1.set_read_only(true);
+                    auto F2_JII_1 = (*F2)(J, I, I, All); F2_JII_1.set_read_only(true);
 
                     einsum(Indices{}, &tmp2, Indices{A}, fk_I_1.get(), Indices{A}, F2_IJJ_1.get());
                     einsum(1.0, Indices{}, &tmp2, 1.0, Indices{A}, F2_JII_1.get(), Indices{A}, fk_J_1.get());
                 }
 
-                auto Uf_IJ = (*Uf)(I, J, All, All); // Term 1
+                auto Uf_IJ = (*Uf)(I, J, All, All); Uf_IJ.set_read_only(true); // Term 1
 
                 auto B_IJ = (*B)(I, J, All, All);
                 auto B_JI = (*B)(J, I, All, All);
@@ -711,13 +710,12 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     // Term 3
     {
         Tensor<double, 2> rank2{"Contraction 1", nri_, nri_};
-        auto k_view = (*kk)(All, All);
-        k_view.set_read_only(true);
+        auto k_view = (*kk)(All, All); k_view.set_read_only(true);
 
         for (int I = 0; I < nocc_; I++) {
             for (int J = I; J < nocc_; J++) {
-                auto F_IJ_11 = (*F)(I, J, All, All);
-                auto F_JI_11 = (*F)(J, I, All, All);
+                auto F_IJ_11 = (*F)(I, J, All, All); F_IJ_11.set_read_only(true);
+                auto F_JI_11 = (*F)(J, I, All, All); F_JI_11.set_read_only(true);
 
                 // IJIJ and IJJI
                 {
@@ -750,13 +748,12 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     // Term 4
     {
         Tensor<double, 2> rank2{"Contraction 1", nocc_, nri_};
-        auto f_view = (*f)(All, All);
-        f_view.set_read_only(true);
+        auto f_view = (*f)(All, All); f_view.set_read_only(true);
 
         for (int I = 0; I < nocc_; I++) {
             for (int J = I; J < nocc_; J++) {
-                auto F_IJ_o1 = (*F)(I, J, Range{0, nocc_}, All);
-                auto F_JI_o1 = (*F)(J, I, Range{0, nocc_}, All);
+                auto F_IJ_o1 = (*F)(I, J, Range{0, nocc_}, All); F_IJ_o1.set_read_only(true);
+                auto F_JI_o1 = (*F)(J, I, Range{0, nocc_}, All); F_JI_o1.set_read_only(true);
 
                 // IJIJ and IJJI
                 {
@@ -789,15 +786,13 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     // Term 5 and Term 7
     {
         Tensor<double, 2> rank2{"Contraction 1", ncabs_, nocc_};
-        auto f_oo = (*f)(Range{0, nocc_}, Range{0, nocc_});
-        auto f_o1 = (*f)(Range{0, nocc_}, All);
-        f_oo.set_read_only(true);
-        f_o1.set_read_only(true);
+        auto f_oo = (*f)(Range{0, nocc_}, Range{0, nocc_}); f_oo.set_read_only(true);
+        auto f_o1 = (*f)(Range{0, nocc_}, All); f_o1.set_read_only(true);
 
         for (int I = 0; I < nocc_; I++) {
             for (int J = I; J < nocc_; J++) {
-                auto F_IJ_co = (*F)(I, J, Range{nobs_, nri_}, Range{0, nocc_});
-                auto F_JI_co = (*F)(J, I, Range{nobs_, nri_}, Range{0, nocc_});
+                auto F_IJ_co = (*F)(I, J, Range{nobs_, nri_}, Range{0, nocc_}); F_IJ_co.set_read_only(true);
+                auto F_JI_co = (*F)(J, I, Range{nobs_, nri_}, Range{0, nocc_}); F_JI_co.set_read_only(true);
 
                 // Term 5
                 {
@@ -818,8 +813,8 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
 
                 // Term 7
                 {
-                    auto F_IJ_c1 = (*F)(I, J, Range{nobs_, nri_}, All);
-                    auto F_JI_c1 = (*F)(J, I, Range{nobs_, nri_}, All);
+                    auto F_IJ_c1 = (*F)(I, J, Range{nobs_, nri_}, All); F_IJ_c1.set_read_only(true);
+                    auto F_JI_c1 = (*F)(J, I, Range{nobs_, nri_}, All); F_JI_c1.set_read_only(true);
 
                     einsum(Indices{p, j}, &rank2, Indices{p, A}, F_IJ_c1.get(), Indices{j, A}, f_o1.get());
                     einsum(1.0, Indices{}, &tmp1, -2.0, Indices{p, j}, rank2, Indices{p, j}, F_IJ_co.get());
@@ -847,15 +842,13 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     // Term 6 and Term 8
     {
         Tensor<double, 2> rank2{"Contraction 1", nvir_, nobs_};
-        auto f_pq = (*f)(Range{0, nobs_}, Range{0, nobs_});
-        auto f_pc   = (*f)(Range{0, nobs_}, Range{nobs_, nri_});
-        f_pq.set_read_only(true);
-        f_pc.set_read_only(true);
+        auto f_pq = (*f)(Range{0, nobs_}, Range{0, nobs_}); f_pq.set_read_only(true);
+        auto f_pc   = (*f)(Range{0, nobs_}, Range{nobs_, nri_}); f_pc.set_read_only(true);
 
         for (int I = 0; I < nocc_; I++) {
             for (int J = I; J < nocc_; J++) {
-                auto F_IJ_vq = (*F)(I, J, Range{nocc_, nobs_}, Range{0, nobs_});
-                auto F_JI_vq = (*F)(J, I, Range{nocc_, nobs_}, Range{0, nobs_});
+                auto F_IJ_vq = (*F)(I, J, Range{nocc_, nobs_}, Range{0, nobs_}); F_IJ_vq.set_read_only(true);
+                auto F_JI_vq = (*F)(J, I, Range{nocc_, nobs_}, Range{0, nobs_}); F_JI_vq.set_read_only(true);
 
                 // Term 6
                 {
@@ -876,8 +869,8 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
 
                 // Term 8
                 {
-                    auto F_IJ_vc = (*F)(I, J, Range{nocc_, nobs_}, Range{nobs_, nri_});
-                    auto F_JI_vc = (*F)(J, I, Range{nocc_, nobs_}, Range{nobs_, nri_});
+                    auto F_IJ_vc = (*F)(I, J, Range{nocc_, nobs_}, Range{nobs_, nri_}); F_IJ_vc.set_read_only(true);
+                    auto F_JI_vc = (*F)(J, I, Range{nocc_, nobs_}, Range{nobs_, nri_}); F_JI_vc.set_read_only(true);
 
                     einsum(Indices{b, q}, &rank2, Indices{b, w}, F_IJ_vc.get(), Indices{q, w}, f_pc.get());
                     einsum(1.0, Indices{}, &tmp1, 2.0, Indices{b, q}, rank2, Indices{b, q}, F_IJ_vq.get());
