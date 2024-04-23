@@ -157,6 +157,27 @@ def test_composite_call(j_algo, k_algo, mols, request):
                            "scf_cosx_guess": 13, # assumes COSX_MAXITER_FINAL = -1   
                        },
                      }, id="DF-DirJ+LinK"),
+        pytest.param({ "options": { 
+                           "scf_type": "DFDIRJ+COSX",
+                           "screening": "schwarz",
+                           "maxiter": 30,
+                       },
+                       "ref_iter": {
+                           "base": 8, # for single initial COSX grid, i.e., COSX_MAXITER_FINAL = 0
+                           "scf_cosx_guess": 20, # for full convergence on both COSX grids, i.e., COSX_MAXITER_FINAL = -1   
+                       },
+                     }, id="DF-DirJ+COSX (MAXITER=30)"),
+        pytest.param({ "options": { 
+                           "scf_type": "DFDIRJ+COSX",
+                           "screening": "schwarz",
+                           "maxiter": 10,
+                       },
+                       "ref_iter": {
+                           "base": 8, # for single initial COSX grid, i.e., COSX_MAXITER_FINAL = 0
+                           "scf_cosx_guess": 20, # for full convergence on both COSX grids, i.e., COSX_MAXITER_FINAL = -1   
+                       },
+                     }, id="DF-DirJ+COSX (MAXITER=10)"),
+ 
     ], 
 )
 @pytest.mark.parametrize("cosx_maxiter_final", [ -1, 0, 1 ])
@@ -178,15 +199,19 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
     psi4.set_options(tests[inp]["options"])
     psi4.set_options(opts["options"])
 
+    # DFDIRJ+COSX doesn't support either DF_SCF_GUESS or SCF_COSX_GUESS, so skip these
+    if opts["options"]["scf_type"] == "DFDIRJ+COSX" and (scf_cosx_guess or df_scf_guess): 
+        pytest.skip(f'{test_id} skipped: DFDIRJ+COSX doesnt support JK guesses') 
+
     # if both guesses are set to True, run should throw exception... 
-    if scf_cosx_guess and df_scf_guess:
+    elif scf_cosx_guess and df_scf_guess:
         with pytest.raises(Exception) as e_info:
             E = psi4.energy(tests[inp]["method"], molecule=molecule)
 
         # we keep this line just for printout purposes; should always pass if done correctly
         assert compare(type(e_info), pytest.ExceptionInfo, f'{test_id} throws exception (both guesses are True)')
    
-    # ... and enabling SCF_COSX_GUESS with COSX_MAXITER_FINAL set to 0 should throw exception...
+    # ... and enabling SCF_COSX_GUESS with COSX_MAXITER_FINAL set to 0 should also throw exception...
     elif scf_cosx_guess and cosx_maxiter_final == 0: 
         with pytest.raises(Exception) as e_info:
             E = psi4.energy(tests[inp]["method"], molecule=molecule)
@@ -198,14 +223,14 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
     else:
         # determine number of SCF iterations we expect based on settings
         guess_type = "base" # baseline number of iterations 
-        if scf_cosx_guess and cosx_maxiter_final == -1:
+        if (opts["options"]["scf_type"] == "DFDIRJ+COSX" or scf_cosx_guess) and (cosx_maxiter_final == -1):
             guess_type = "scf_cosx_guess" # fully-converged SCF_COSX_GUESS (i.e., COSX_MAXITER_FINAL set to -1)
         elif df_scf_guess:
             guess_type = "df_scf_guess" # DF_SCF_GUESS enabled
         reference_iter = opts["ref_iter"][guess_type]
 
         # COSX_MAXITER_FINAL != -1 will add some number of iterations to baseline guess 
-        if scf_cosx_guess and cosx_maxiter_final != -1:
+        if (opts["options"]["scf_type"] == "DFDIRJ+COSX" or scf_cosx_guess) and cosx_maxiter_final != -1:
             reference_iter += cosx_maxiter_final 
        
         # if maxiter < expected number of SCF iterations, run should throw exception... 
