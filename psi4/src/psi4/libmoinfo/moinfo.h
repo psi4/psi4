@@ -133,14 +133,13 @@ class MOInfo : public MOInfoBase {
     int get_nvir() const { return (nvir); }
 
     intvec get_mopi() const { return (mopi); }
-    intvec get_docc() const { return (docc); }
+    using MOInfoBase::get_docc;
     intvec get_actv() const { return (actv); }
     intvec get_focc() const { return (focc); }
     intvec get_fvir() const { return (fvir); }
     intvec get_occ() const { return (occ); }
     intvec get_vir() const { return (vir); }
 
-    int get_docc(size_t i) const { return (docc[i]); }
     int get_actv(size_t i) const { return (actv[i]); }
     int get_extr(size_t h) const { return (extr[h]); }
 
@@ -193,6 +192,11 @@ class MOInfo : public MOInfoBase {
     intpairvec get_alpha_internal_excitation(int i, int j);
     intpairvec get_beta_internal_excitation(int i, int j);
     double get_sign_internal_excitation(int i, int j);
+
+   protected:
+    /// @brief Get a const ref. to an element of the array holding the numbers of doubly occupied orbitals (DOCC) per irrep, from an MOInfo object (or derived object).
+    /// @return Const& of the selected number of DOCCs per irrep
+    const int& get_docc(size_t i) const { return docc[i]; }
 
    private:
     void read_info();
