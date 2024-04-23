@@ -75,7 +75,7 @@ void CCIndex::init() {
             mospi.push_back(wfn_->moinfo()->get_fvir());
             indices_to_pitzer.push_back(wfn_->moinfo()->get_fvir_to_mo());
         } else if (label[i] == 's') {
-            mospi.push_back(wfn_->moinfo()->sopi_ref());
+            mospi.push_back(wfn_->moinfo()->get_sopi());
         } else if (label[i] == 'n') {
             mospi.push_back(wfn_->moinfo()->get_mopi());
         }
