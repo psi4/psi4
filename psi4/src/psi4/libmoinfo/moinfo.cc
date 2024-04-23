@@ -161,7 +161,7 @@ void MOInfo::read_info() {
         }
     } else {
         for (int h = 0; h < nirreps; ++h) {
-            std::string irr_label_str = irr_lab_ref(h);
+            std::string irr_label_str = get_irr_lab(h);
             trim_spaces(irr_label_str);
             to_upper(irr_label_str);
             if (wavefunction_sym_str == irr_label_str) {
@@ -399,7 +399,7 @@ void MOInfo::print_mo() {
     outfile->Printf("\n  MOs per irrep:                  ");
 
     for (int i = nirreps; i < 8; i++) outfile->Printf("     ");
-    for (int i = 0; i < nirreps; i++) outfile->Printf("  %s", irr_lab_ref(i).c_str());
+    for (int i = 0; i < nirreps; i++) outfile->Printf("  %s", get_irr_lab(i).c_str());
     outfile->Printf(" Total");
     outfile->Printf("\n  ------------------------------------------------------------------------------");
     print_mo_space(nmo, mopi, "Total                           ");

@@ -158,7 +158,7 @@ void SCF::startup() {
         outfile->Printf("\n  TWOCON MOs = [");
         for (int I = 0; I < nci; ++I)
             outfile->Printf("%d (%s)%s", tcscf_mos[I] + block_offset[tcscf_sym[I]],
-                            moinfo_scf->irr_lab_ref(tcscf_sym[I]).c_str(), I != nci - 1 ? "," : "");
+                            moinfo_scf->get_irr_lab(tcscf_sym[I]).c_str(), I != nci - 1 ? "," : "");
         outfile->Printf("]");
 
         Favg.allocate("Favg", nirreps, sopi, sopi);

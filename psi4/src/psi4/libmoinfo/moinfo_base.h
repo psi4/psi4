@@ -57,7 +57,7 @@ class MOInfoBase {
     /// @brief Get a const ref. to one of the irrep labels that are stored in an MOInfoBase object (or derived object). Not bounds-checked!
     /// @param i : Index of the irrep label
     /// @return Const& of the selected irrep label
-    const std::string& irr_lab_ref(size_t i) const { return (irr_labs[i]); }
+    const std::string& get_irr_lab(size_t i) const { return irr_labs[i]; }
 
     /// @brief Get the nirreps value (# of irreducible representations) that is stored in an MOInfoBase object (or derived object).
     /// @return The # of irreps
