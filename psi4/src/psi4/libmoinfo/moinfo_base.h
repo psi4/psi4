@@ -71,10 +71,9 @@ class MOInfoBase {
     /// @return Const& of the SOs per irrep array
     const intvec& sopi_ref() const { return sopi; }
 
-    /// @brief Get a copy of the array holding the numbers of doubly occupied orbitals (DOCC) per irrep, from an
-    /// MOInfoBase object (or derived object).
-    /// @return A copy of the array holding the numbers of doubly occupied orbitals (DOCC) per irrep
-    intvec get_docc() const { return (docc); }
+    /// @brief Get a const ref. to the array holding the numbers of doubly occupied orbitals (DOCC) per irrep, from an MOInfoBase object (or derived object).
+    /// @return Const& of the array holding the numbers of doubly occupied orbitals (DOCC) per irrep
+    const intvec& get_docc() const { return (docc); }
 
     /// @brief Get a copy of the array holding the numbers of active orbitals per irrep, from an MOInfoBase object (or derived object).
     /// @return A copy of the array holding the numbers of active orbitals per irrep
