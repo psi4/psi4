@@ -109,42 +109,125 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
     }
 
-#pragma omp parallel for collapse(4) schedule(guided) num_threads(nthreads_)
+    auto bs1_equiv_bs2 = (bs1 == bs2);
+    auto bs3_equiv_bs4 = (bs3 == bs4);
+
+#pragma omp parallel for collapse(2) schedule(guided) num_threads(nthreads_)
     for (size_t M = 0; M < bs1->nshell(); M++) {
         for (size_t N = 0; N < bs2->nshell(); N++) {
+            if (bs1_equiv_bs2 && N < M) continue; // Only loop over unique shells
+
+            const auto numM = bs1->shell(M).nfunction();
+            const auto numN = bs2->shell(N).nfunction();
+            const auto index_M = bs1->shell(M).function_index();
+            const auto index_N = bs2->shell(N).function_index();
+
             for (size_t P = 0; P < bs3->nshell(); P++) {
                 for (size_t Q = 0; Q < bs4->nshell(); Q++) {
+                    if (bs3_equiv_bs4 && Q < P) continue; // Only loop over unique shells
+
                     size_t rank = 0;
 #ifdef _OPENMP
                     rank = omp_get_thread_num();
 #endif
-                    const size_t numM = bs1->shell(M).nfunction();
-                    const size_t numN = bs2->shell(N).nfunction();
-                    const size_t numP = bs3->shell(P).nfunction();
-                    const size_t numQ = bs4->shell(Q).nfunction();
-                    const size_t index_M = bs1->shell(M).function_index();
-                    const size_t index_N = bs2->shell(N).function_index();
-                    const size_t index_P = bs3->shell(P).function_index();
-                    const size_t index_Q = bs4->shell(Q).function_index();
+                    const auto numP = bs3->shell(P).nfunction();
+                    const auto numQ = bs4->shell(Q).nfunction();
+                    const auto index_P = bs3->shell(P).function_index();
+                    const auto index_Q = bs4->shell(Q).function_index();
 
                     ints[rank]->compute_shell(M, N, P, Q);
                     const auto *ints_buff = ints[rank]->buffers()[0];
 
-                    size_t index = 0;
-                    for (size_t m = 0; m < numM; m++) {
-                        for (size_t n = 0; n < numN; n++) {
-                            for (size_t p = 0; p < numP; p++) {
-                                for (size_t q = 0; q < numQ; q++) {
-                                    (*GAO)(index_M + m, index_N + n,
-                                           index_P + p, index_Q + q) = ints_buff[index++];
+                    if (bs1_equiv_bs2 && M != N && bs3_equiv_bs4 && P != Q) {
+                        for (size_t m = 0, idx = 0; m < numM; m++) {
+                            const auto fxnM = index_M + m;
+                            for (size_t n = 0; n < numN; n++) {
+                                const auto fxnN = index_N + n;
+                                for (size_t p = 0; p < numP; p++) {
+                                    const auto fxnP = index_P + p;
+
+                                    double* targetMNPQ = &(*GAO)(fxnM, fxnN, fxnP, index_Q); // (mn|pq)
+                                    double* targetNMQP = &(*GAO)(fxnN, fxnM, index_Q, fxnP); // (nm|qp)
+                                    double* targetNMPQ = &(*GAO)(fxnN, fxnM, fxnP, index_Q); // (nm|pq)
+                                    double* targetMNQP = &(*GAO)(fxnM, fxnN, index_Q, fxnP); // (mn|qp)
+
+                                    for (size_t q = 0; q < numQ; q++, idx++) {
+                                        // const auto fxnQ = index_Q + q;
+
+                                        *targetMNPQ = *targetNMQP =
+                                            *targetNMPQ = *targetMNQP = ints_buff[idx];
+
+                                        targetMNPQ++;
+                                        targetNMQP += (*GAO).dim(3);
+                                        targetNMPQ++;
+                                        targetMNQP += (*GAO).dim(3);
+                                    }
+                                }
+                            }
+                        }
+                    } else if (bs1_equiv_bs2 && M != N) {
+                        for (size_t m = 0, idx = 0; m < numM; m++) {
+                            const auto fxnM = index_M + m;
+                            for (size_t n = 0; n < numN; n++) {
+                                const auto fxnN = index_N + n;
+                                for (size_t p = 0; p < numP; p++) {
+                                    const auto fxnP = index_P + p;
+
+                                    double* targetMN = &(*GAO)(fxnM, fxnN, fxnP, index_Q); // (mn|pq)
+                                    double* targetNM = &(*GAO)(fxnN, fxnM, fxnP, index_Q); // (nm|pq)
+
+                                    for (size_t q = 0; q < numQ; q++, idx++) {
+                                        *targetMN = *targetNM = ints_buff[idx];
+
+                                        targetMN++;
+                                        targetNM++;
+                                    }
+                                }
+                            }
+                        }
+                    } else if (bs3_equiv_bs4 && P != Q) {
+                        for (size_t m = 0, idx = 0; m < numM; m++) {
+                            const auto fxnM = index_M + m;
+                            for (size_t n = 0; n < numN; n++) {
+                                const auto fxnN = index_N + n;
+                                for (size_t p = 0; p < numP; p++) {
+                                    const auto fxnP = index_P + p;
+
+                                    double* targetPQ = &(*GAO)(fxnM, fxnN, fxnP, index_Q); // (mn|pq)
+                                    double* targetQP = &(*GAO)(fxnM, fxnN, index_Q, fxnP); // (mn|qp)
+
+                                    for (size_t q = 0; q < numQ; q++, idx++) {
+                                        *targetPQ = *targetQP = ints_buff[idx];
+
+                                        targetPQ++;
+                                        targetQP += (*GAO).dim(3);
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        for (size_t m = 0, idx = 0; m < numM; m++) {
+                            const auto fxnM = index_M + m;
+                            for (size_t n = 0; n < numN; n++) {
+                                const auto fxnN = index_N + n;
+                                for (size_t p = 0; p < numP; p++) {
+                                    const auto fxnP = index_P + p;
+
+                                    double* target = &(*GAO)(fxnM, fxnN, fxnP, index_Q); // (mn|pq)
+
+                                    for (size_t q = 0; q < numQ; q++, idx++) {
+                                        *target = ints_buff[idx];
+
+                                        *target++;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            }
-        }
-    }
+                } // bs4
+            } // bs3
+        } // bs2
+    } // bs1
 }
 
 void MP2F12::three_index_ao_computer(const std::string& int_type, einsums::Tensor<double, 3> *Bpq,
@@ -171,30 +254,58 @@ void MP2F12::three_index_ao_computer(const std::string& int_type, einsums::Tenso
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
     }
 
+    auto bs1_equiv_bs2 = bs1 == bs2;
+
 #pragma omp parallel for collapse(3) schedule(guided) num_threads(nthreads_)
     for (size_t B = 0; B < DFBS_->nshell(); B++) {
         for (size_t P = 0; P < bs1->nshell(); P++) {
             for (size_t Q = 0; Q < bs2->nshell(); Q++) {
+                if (bs1_equiv_bs2 && Q < P) continue; // Only loop over unique shells
+
                 size_t rank = 0;
 #ifdef _OPENMP
                 rank = omp_get_thread_num();
 #endif
-                const size_t numB = DFBS_->shell(B).nfunction();
-                const size_t numP = bs1->shell(P).nfunction();
-                const size_t numQ = bs2->shell(Q).nfunction();
-                const size_t index_B = DFBS_->shell(B).function_index();
-                const size_t index_P = bs1->shell(P).function_index();
-                const size_t index_Q = bs2->shell(Q).function_index();
+                const auto numB = DFBS_->shell(B).nfunction();
+                const auto numP = bs1->shell(P).nfunction();
+                const auto numQ = bs2->shell(Q).nfunction();
+                const auto index_B = DFBS_->shell(B).function_index();
+                const auto index_P = bs1->shell(P).function_index();
+                const auto index_Q = bs2->shell(Q).function_index();
 
                 ints[rank]->compute_shell(B, 0, P, Q);
                 const auto *ints_buff = ints[rank]->buffers()[0];
 
-                size_t index = 0;
-                for (size_t b = 0; b < numB; b++) {
-                    for (size_t p = 0; p < numP; p++) {
-                        for (size_t q = 0; q < numQ; q++) {
-                            (*Bpq)(index_B + b, index_P + p,
-                                   index_Q + q) = ints_buff[index++];
+                if (bs1_equiv_bs2 && P != Q) {
+                    for (size_t b = 0, idx = 0; b < numB; b++) {
+                        const auto fxnB = index_B + b;
+                        for (size_t p = 0; p < numP; p++) {
+                            const auto fxnP = index_P + p;
+
+                            double* targetPQ = &(*Bpq)(fxnB, fxnP, index_Q);
+                            double* targetQP = &(*Bpq)(fxnB, index_Q, fxnP);
+
+                            for (size_t q = 0; q < numQ; q++, idx++) {
+                                *targetPQ = *targetQP = ints_buff[idx];
+
+                                targetPQ++;
+                                targetQP += (*Bpq).dim(2);
+                            }
+                        }
+                    }
+                } else {
+                    for (size_t b = 0, index = 0; b < numB; b++) {
+                        const auto B_fxns = index_B + b;
+                        for (size_t p = 0; p < numP; p++) {
+                            const auto P_fxns = index_P + p;
+
+                            double* target = &(*Bpq)(B_fxns, P_fxns, index_Q);
+
+                            for (size_t q = 0; q < numQ; q++, index++) {
+                                *target = ints_buff[index];
+
+                                target++;
+                            }
                         }
                     }
                 }
@@ -292,10 +403,10 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
         timer_off("Two-Body AO Integrals");
 	
         // Convert all Psi4 C Matrices to einsums Tensor<double, 2>
-        const auto nmo1 = ( order[i] == 'C' ) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo2 = (order[i+1] == 'C') ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
-        const auto nmo3 = (order[i+2] == 'C') ? ncabs_ : (order[i+2] == 'O') ? nobs_ : nocc_;
-        const auto nmo4 = (order[i+3] == 'C') ? ncabs_ : (order[i+3] == 'O') ? nobs_ : nocc_;
+        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
+        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
+        const auto nmo3 = (o3) ? ncabs_ : (order[i+2] == 'O') ? nobs_ : nocc_;
+        const auto nmo4 = (o4) ? ncabs_ : (order[i+3] == 'O') ? nobs_ : nocc_;
 	
         // Transform ERI AO Tensor to ERI MO Tensor
         auto PRQS = std::make_unique<Tensor<double, 4>>("PRQS", nmo1, nmo3, nmo2, nmo4);
@@ -352,10 +463,10 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
         // Stitch into ERI Tensor
         timer_on("Set in ERI");
         {
-            const auto off1 = (use_offset && o1 == 1) ? nobs_ : 0;
-            const auto off2 = (use_offset && o2 == 1) ? nobs_ : 0;
-            const auto off3 = (use_offset && o3 == 1) ? nobs_ : 0;
-            const auto off4 = (use_offset && o4 == 1) ? nobs_ : 0;
+            const auto off1 = (use_offset && o1) ? nobs_ : 0;
+            const auto off2 = (use_offset && o2) ? nobs_ : 0;
+            const auto off3 = (use_offset && o3) ? nobs_ : 0;
+            const auto off4 = (use_offset && o4) ? nobs_ : 0;
 
             TensorView<double, 4> ERI_PRQS{*ERI, Dim<4>{nmo1, nmo3, nmo2, nmo4}, Offset<4>{off1, off3, off2, off4}};
             set_ERI(ERI_PRQS, PRQS.get());
@@ -416,8 +527,8 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3> *DF_ERI, bool is_fock)
         auto Bpq = std::make_unique<Tensor<double, 3>>("Metric AO", naux_, nbf1, nbf2);
         three_index_ao_computer("G", Bpq.get(), bs_[o1].basisset(), bs_[o2].basisset());
 
-        const auto nmo1 = ( order[i] == 'C' ) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo2 = (order[i+1] == 'C') ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
+        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
+        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
 
         auto BPQ = std::make_unique<Tensor<double, 3>>("BPQ", naux_, nmo1, nmo2);
         timer_on("MO Transformation");
@@ -463,8 +574,8 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3> *DF_ERI, bool is_fock)
         BPQ.reset();
 
         {
-            const auto R = (o1 == 1) ? nobs_ : 0;
-            const auto S = (o2 == 1) ? nobs_ : 0;
+            const auto R = (o1) ? nobs_ : 0;
+            const auto S = (o2) ? nobs_ : 0;
 
             TensorView<double, 3> ERI_APQ{*DF_ERI, Dim<3>{naux_, nmo1, nmo2}, Offset<3>{0, R, S}};
             set_ERI(ERI_APQ, APQ.get());
@@ -497,8 +608,8 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
         timer_off("Three-Center AO Integrals");
 
         // Convert all Psi4 C Matrices to einsums Tensor<double, 2>
-        const auto nmo1 = ( order[i] == 'C' ) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo2 = (order[i+1] == 'C') ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
+        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
+        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
 
         auto BPQ = std::make_unique<Tensor<double, 3>>("BPQ", naux_, nmo1, nmo2);
         timer_on("MO Transformation");
@@ -528,8 +639,8 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
 
         timer_on("Set in ERI");
         {
-            const auto R = (o1 == 1) ? nobs_ : 0;
-            const auto S = (o2 == 1) ? nobs_ : 0;
+            const auto R = (o1) ? nobs_ : 0;
+            const auto S = (o2) ? nobs_ : 0;
 
             TensorView<double, 3> ERI_BPQ{*DF_ERI, Dim<3>{naux_, nmo1, nmo2}, Offset<3>{0, R, S}};
             set_ERI(ERI_BPQ, BPQ.get());
@@ -797,10 +908,10 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
         timer_off("Two-Body AO Integrals");
 
         // Convert all Psi4 C Matrices to einsums Tensor<double, 2>
-        const auto nmo1 = ( order[i] == 'C' ) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo2 = (order[i+1] == 'C') ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
-        const auto nmo3 = (order[i+2] == 'C') ? ncabs_ : (order[i+2] == 'O') ? nobs_ : nocc_;
-        const auto nmo4 = (order[i+3] == 'C') ? ncabs_ : (order[i+3] == 'O') ? nobs_ : nocc_;
+        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
+        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
+        const auto nmo3 = (o3) ? ncabs_ : (order[i+2] == 'O') ? nobs_ : nocc_;
+        const auto nmo4 = (o4) ? ncabs_ : (order[i+3] == 'O') ? nobs_ : nocc_;
 
         // Transform ERI AO Tensor to ERI MO Tensor
         auto PRQS = std::make_unique<Tensor<double, 4>>("PRQS", nmo1, nmo3, nmo2, nmo4);
@@ -857,10 +968,10 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
         // Stitch into ERI Tensor
         timer_on("Set in ERI");
         {
-            const auto off1 = (o1 == 1) ? nobs_ : 0;
-            const auto off2 = (o2 == 1) ? nobs_ : 0;
-            const auto off3 = (o3 == 1) ? nobs_ : 0;
-            const auto off4 = (o4 == 1) ? nobs_ : 0;
+            const auto off1 = (o1) ? nobs_ : 0;
+            const auto off2 = (o2) ? nobs_ : 0;
+            const auto off3 = (o3) ? nobs_ : 0;
+            const auto off4 = (o4) ? nobs_ : 0;
 
             for (int p = 0; p < nmo1; p++) {
                 for (int r = 0; r < nmo3; r++) {
