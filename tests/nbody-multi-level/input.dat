@@ -36,9 +36,12 @@ else:
     e, wfn = energy('', molecule=h2o_trimer, bsse_type=['nocp', 'cp', 'vmfc'], return_total_data=True, return_wfn=True, levels=levels)
 clean()
 
+# * 2NOCP -> NOCP-CORRECTED TOTAL ENERGY THROUGH 2-BODY
+# * 1NOCP -> NOCP-CORRECTED TOTAL ENERGY THROUGH 1-BODY
+
 comparison_dict = {'nocp': -225.019408434635, 'cp': -225.000173661598, 'vmfc': -224.998744381484} #TEST
 for b, v in comparison_dict.items():                                                              #TEST
-    compare_values(v, wfn.variable('2'+b), 6, "[1] " + b + '-corrected multi-level energy')            #TEST
+    compare_values(v, wfn.variable(f"{b}-corrected total energy through 2-body"), 6, "[1] " + b + '-corrected multi-level energy')  #TEST
 
 comparison_dict_grad = {
     "nocp": np.array([
@@ -120,7 +123,7 @@ else:
 clean()
 comparison_dict = {'1': -224.998373505116, '3': -225.023509855159}                                #TEST
 for n, v in comparison_dict.items():                                                              #TEST  
-    compare_values(v, wfn.variable(n+'nocp'), 6, '[3] Supersystem multi-level energy')            #TEST
+    compare_values(v, wfn.variable(f"nocp-corrected total energy through {n}-body"), 6, '[3] Supersystem multi-level energy')            #TEST
 
 # Compute electrostatically embedded  many-body expansion energy.with TIP3P charges
 tip3p_charges = [-0.834, 0.417, 0.417]
@@ -136,6 +139,7 @@ else:
                 max_nbody=2, embedding_charges=embedding_charges)
 clean()
 comparison_dict = {'1': -224.940138148882, '2': -224.943882712817}                                #TEST
+comparison_dict = {f"vmfc-corrected total energy through {k}-body": v for k, v in comparison_dict.items()}  #TEST
 for n, v in comparison_dict.items():                                                              #TEST
     compare_values(v, wfn.variable(n), 6, '[4] Electrostatically embedded many-body expansion')   #TEST
 
@@ -166,8 +170,9 @@ else:
     e, wfn = energy('', molecule=h2o_trimer_ang, bsse_type='nocp', return_total_data=True, return_wfn=True, levels=levels)
 clean()
 comparison_dict = {'1': -224.998373505116, '3': -225.023509855159}                                #TEST
+comparison_dict = {f"nocp-corrected total energy through {k}-body": v for k, v in comparison_dict.items()}  #TEST
 for n, v in comparison_dict.items():                                                              #TEST
-    compare_values(v, wfn.variable(n+'nocp'), 6, '[5] Supersystem multi-level energy: Ang')           #TEST
+    compare_values(v, wfn.variable(n), 6, '[5] Supersystem multi-level energy: Ang')           #TEST
 
 if distributed:
     plan = energy('scf/sto-3g', molecule=h2o_trimer_ang, bsse_type='vmfc', return_total_data=True, return_plan=True,
@@ -180,6 +185,7 @@ else:
                 max_nbody=2, embedding_charges=embedding_charges)
 clean()
 comparison_dict = {'1': -224.940138148882, '2': -224.943882712817}                                #TEST
+comparison_dict = {f"vmfc-corrected total energy through {k}-body": v for k, v in comparison_dict.items()}  #TEST
 for n, v in comparison_dict.items():                                                              #TEST
     compare_values(v, wfn.variable(n), 6, '[6] Electrostatically embedded many-body expansion: Ang')  #TEST
 

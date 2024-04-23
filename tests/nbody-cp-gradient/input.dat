@@ -87,6 +87,8 @@ core.clean()
 # * '2' -> 'CP-CORRECTED TOTAL ENERGY THROUGH 2-BODY'
 # * '2CP' -> 'CP-CORRECTED TOTAL ENERGY THROUGH 2-BODY'
 # * 'GRADIENT 2' -> 'CP-CORRECTED TOTAL GRADIENT THROUGH 2-BODY'
+# * 'GRADIENT 1_((1, 2), (1, 2, 3))' -> 'N-BODY 1_(1, 2)@(1, 2, 3) TOTAL GRADIENT'
+# * '1_((1, 2), (1, 2, 3))' -> 'N-BODY 1_(1, 2)@(1, 2, 3) TOTAL ENERGY'
 
 # test fresh env
 for result in [  #TEST
@@ -137,7 +139,9 @@ for i in cp_scheme: #TEST
 
     for result in [
         energy_dict[i],
-        wfn.variable("1_"+i),
+        # parsing below turns the object-centric fragment notation of cp_scheme
+        #   keys into the clearer-for-eyes fragment notation in qcvars.
+        wfn.variable(f"N-BODY 1_{eval(i)[0]}@{eval(i)[1]} TOTAL ENERGY".replace(",)", ")")),
         wfn_mol.variable("CURRENT ENERGY"),
         variable("CURRENT ENERGY"),
     ]:
@@ -148,8 +152,9 @@ for i in cp_scheme: #TEST
         # contortion below is b/c the species gradient is padded with zeros into
         #   supersystem shape. So we need to convert it to ndarray, contract it
         #   down to species shape again, then reform psi4.Matrix for rms() check.
-        psi4.core.Matrix.from_array(qcmb.utils.resize_gradient(wfn.variable(f"GRADIENT 1_{i}").np,
-                                                               eval(i)[1], sz_dict, sl_dict, reverse=True)),
+        psi4.core.Matrix.from_array(qcmb.utils.resize_gradient(
+            wfn.variable(f"N-BODY 1_{eval(i)[0]}@{eval(i)[1]} TOTAL GRADIENT".replace(",)", ")")).np,
+            eval(i)[1], sz_dict, sl_dict, reverse=True)),
         wfn_mol.variable("CURRENT GRADIENT"),
         variable("CURRENT GRADIENT"),
     ]:

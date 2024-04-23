@@ -40,6 +40,8 @@ core.clean()
 # renamed for v1.10
 # * '2' -> 'VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY'
 # * 'HESSIAN 2' -> 'VMFC-CORRECTED TOTAL HESSIAN THROUGH 2-BODY'
+# * 'HESSIAN 1_((1, 2), (1, 2, 3))' -> 'N-BODY 1_(1, 2)@(1, 2, 3) TOTAL HESSIAN'
+# * '1_((1, 2), (1, 2, 3))' -> 'N-BODY 1_(1, 2)@(1, 2, 3) TOTAL ENERGY'
 
 vmfc_scheme = {'((1, 2), (1, 2))': 1, '((1, 3), (1, 3))': 1, '((2, 3), (2, 3))': 1, #TEST
                '((1,), (1, 2))': -1, '((1,), (1, 3))': -1, '((2,), (1, 2))': -1, #TEST
@@ -57,12 +59,15 @@ for i in vmfc_scheme: #TEST
     energy_dict[i] = core.variable('CURRENT ENERGY') #TEST
     core.clean() #TEST
 
-    compare_values(energy_dict[i], wfn.variable(f"1_{i}"), 8, 'Energy of %s' %i) #TEST
+    evar = wfn.variable(f"N-BODY 1_{eval(i)[0]}@{eval(i)[1]} TOTAL ENERGY".replace(",)", ")"))
+    hvar = wfn.variable(f"N-BODY 1_{eval(i)[0]}@{eval(i)[1]} TOTAL HESSIAN".replace(",)", ")"))
+
+    compare_values(energy_dict[i], evar, 8, 'Energy of %s' %i) #TEST
     # the hessian_dict is of natural size, while the variable HESSIAN is padded with zeros to
     #   supersystem size. so we'll test both and the qcmb.resize_hessian at the same time.
     expanded_hessian = qcmb.resize_hessian(hessian_dict[i].np, eval(i)[1], sz_dict, sl_dict)  #TEST
-    contracted_hessian = qcmb.resize_hessian(wfn.variable(f"HESSIAN 1_{i}").np, eval(i)[1], sz_dict, sl_dict, reverse=True)  #TEST
-    compare_arrays(expanded_hessian, wfn.variable(f"HESSIAN 1_{i}"), 2.e-8, 'Hessian of %s' %i) #TEST
+    contracted_hessian = qcmb.resize_hessian(hvar.np, eval(i)[1], sz_dict, sl_dict, reverse=True)  #TEST
+    compare_arrays(expanded_hessian, hvar, 2.e-8, 'Hessian of %s' %i) #TEST
     compare_arrays(hessian_dict[i], contracted_hessian, 2.e-8, 'Hessian of %s' %i) #TEST
 
 ene, hess = 0, np.zeros((9*3, 9*3)) #TEST

@@ -69,8 +69,8 @@ _stdouts = {
 \s*   ==> N-Body: Counterpoise Corrected \(CP\) energies <==
 \s*        n-Body     Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*             1  N/A                         0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN   2  N/A                        -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d
+\s*             1        N/A                   0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN   2        N/A                  -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d
 """,
     "uncp": r"""
 \s*   ==> N-Body: Non-Counterpoise Corrected \(NoCP\) energies <==
@@ -81,6 +81,7 @@ _stdouts = {
 """,
 }
 _stdouts["cpuncp"] = _stdouts["cp_T"] + _stdouts["uncp"]
+_stdouts["uncpcp"] = _stdouts["uncp"] + _stdouts["cp_T"]
 
 
 @pytest.mark.parametrize("driver,bsse_type,return_total_data,nbody_number,return_result,stdoutkey", [
@@ -93,9 +94,10 @@ _stdouts["cpuncp"] = _stdouts["cp_T"] + _stdouts["uncp"]
     ("energy",   ["cp", "nocp"], True , 5, _tot_cp_ene,   "cpuncp"),   # return CP tot         5
     ("energy",   ["cp", "nocp"], False, 5, _ie_cp_ene,    "cpuncp"),   # return CP IE          5
     ("energy",   ["cp", "nocp"], None , 5, _ie_cp_ene,    "cpuncp"),   # return CP IE          5
-    ("energy",   ["nocp", "cp"], True , 5, _tot_uncp_ene, "cpuncp"),   # return tot            5
-    ("energy",   ["nocp", "cp"], False, 5, _ie_uncp_ene,  "cpuncp"),   # return IE             5
-    ("energy",   ["nocp", "cp"], None , 5, _ie_uncp_ene,  "cpuncp"),   # return IE             5
+    ("energy",   ["nocp", "cp"], True , 5, _tot_uncp_ene, "uncpcp"),   # return tot            5
+    ("energy",   ["nocp", "cp"], False, 5, _ie_uncp_ene,  "uncpcp"),   # return IE             5
+    ("energy",   ["nocp", "cp"], None , 5, _ie_uncp_ene,  "uncpcp"),   # return IE             5
+    ("energy",   ["ssfc"],       None , 3, _ie_cp_ene,    "cp_F"),     # return CP IE          3
     ("gradient", ["cp"],         True , 5, _tot_cp_grad,   "cp_T"),    # return CP tot G       5
     ("gradient", ["cp"],         False, 3, _ie_cp_grad,    "cp_F"),    # return CP IE G        3
     ("gradient", ["cp"],         None , 5, _tot_cp_grad,   "cp_T"),    # return CP tot G       5
@@ -105,9 +107,10 @@ _stdouts["cpuncp"] = _stdouts["cp_T"] + _stdouts["uncp"]
     ("gradient", ["cp", "nocp"], True , 5, _tot_cp_grad,   "cpuncp"),  # return CP tot G       5
     ("gradient", ["cp", "nocp"], False, 5, _ie_cp_grad,    "cpuncp"),  # return CP IE G        5
     ("gradient", ["cp", "nocp"], None , 5, _tot_cp_grad,   "cpuncp"),  # return CP tot G       5
-    ("gradient", ["nocp", "cp"], True , 5, _tot_uncp_grad, "cpuncp"),  # return tot G          5
-    ("gradient", ["nocp", "cp"], False, 5, _ie_uncp_grad,  "cpuncp"),  # return IE G           5
-    ("gradient", ["nocp", "cp"], None , 5, _tot_uncp_grad, "cpuncp"),  # return tot G          5
+    ("gradient", ["nocp", "cp"], True , 5, _tot_uncp_grad, "uncpcp"),  # return tot G          5
+    ("gradient", ["nocp", "cp"], False, 5, _ie_uncp_grad,  "uncpcp"),  # return IE G           5
+    ("gradient", ["nocp", "cp"], None , 5, _tot_uncp_grad, "uncpcp"),  # return tot G          5
+    ("gradient", ["nocp", "ssfc"], None , 5, _tot_uncp_grad, "uncpcp"),  # return tot G          5
 ])
 def test_nbody_number(driver, bsse_type, return_total_data, nbody_number, return_result, stdoutkey):
 

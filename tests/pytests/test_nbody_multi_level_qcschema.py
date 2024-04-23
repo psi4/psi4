@@ -46,16 +46,23 @@ def base_schema():
 @pytest.mark.parametrize("inp,expected", [
     # Compute 1-body contribution with ccsd(t) and 2-body contribution with mp2
     pytest.param({'method': '', 'kfk': {'bsse_type': ['nocp', 'cp', 'vmfc'], 'return_total_data': True, 'levels': {1: 'mp2/sto-3g', 2: 'scf/sto-3g'}}},
-                 {'2NOCP': -225.019408434635, '2CP': -225.000173661598, '2VMFC': -224.998744381484},
+                 #{'2NOCP': -225.019408434635, '2CP': -225.000173661598, '2VMFC': -224.998744381484},
+                 {'NOCP-CORRECTED TOTAL ENERGY THROUGH 2-BODY': -225.019408434635,
+                  'CP-CORRECTED TOTAL ENERGY THROUGH 2-BODY': -225.000173661598,
+                  'VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY': -224.998744381484},
                  id='nbody-multilevel'),
     # Compute 1-body contribution with ccsd(t) and estimate all higher order contributions with scf
     pytest.param({'method': '', 'kfk': {'bsse_type': 'nocp', 'return_total_data': True, 'levels': {1: 'mp2/sto-3g', 'supersystem': 'scf/sto-3g'}}},
-                 {'1NOCP': -224.998373505116, '3NOCP': -225.023509855159},
+                 #{'1NOCP': -224.998373505116, '3NOCP': -225.023509855159},
+                 {'NOCP-CORRECTED TOTAL ENERGY THROUGH 1-BODY': -224.998373505116,
+                  'NOCP-CORRECTED TOTAL ENERGY THROUGH 3-BODY': -225.023509855159},
                  id='nbody-multilevel-supersys'),
     # Compute electrostatically embedded  many-body expansion energy.with TIP3P charges
     pytest.param({'method': 'scf/sto-3g', 'kfk': {'bsse_type': 'vmfc', 'return_total_data': True, 'levels': None, 'max_nbody': 2,
                                                   'embedding_charges': {i: [j for j in [-0.834, 0.417, 0.417]] for i in range(1, 4)}}},
-                 {'1': -224.940138148882, '2': -224.943882712817},
+                 #{'1': -224.940138148882, '2': -224.943882712817},
+                 {'VMFC-CORRECTED TOTAL ENERGY THROUGH 1-BODY': -224.940138148882,
+                  'VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY': -224.943882712817},
                  id='nbody-embedded', marks=pytest.mark.extern),
 ])
 def test_nbody_levels(inp, expected, base_schema):
