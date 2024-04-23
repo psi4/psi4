@@ -75,9 +75,9 @@ class MOInfoBase {
     /// @return Const& of the array holding the numbers of doubly occupied orbitals (DOCC) per irrep
     const intvec& get_docc() const { return (docc); }
 
-    /// @brief Get a copy of the array holding the numbers of active orbitals per irrep, from an MOInfoBase object (or derived object).
-    /// @return A copy of the array holding the numbers of active orbitals per irrep
-    intvec get_actv() const { return (actv); }
+    /// @brief Get a const ref. to the array holding the numbers of active orbitals per irrep, from an MOInfoBase object (or derived object).
+    /// @return Const& of the array holding the numbers of active orbitals per irrep
+    const intvec& get_actv() const { return actv; }
     bool get_guess_occupation() const { return (guess_occupation); }
 
     /// @brief Get the total # of active orbitals that is stored in an MOInfoBase object (or derived object).
