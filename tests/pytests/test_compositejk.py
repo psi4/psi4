@@ -1,6 +1,6 @@
 import pytest
 
-from utils import compare_values, compare
+from utils import compare_integers, compare_values, compare
 from addons import using
 
 import psi4
@@ -120,8 +120,114 @@ def test_composite_call(j_algo, k_algo, mols, request):
     [
         pytest.param("h2o (rhf)", marks=pytest.mark.quick),
         pytest.param("h2o (rks)", marks=pytest.mark.quick),
+    ], 
+)
+@pytest.mark.parametrize("opts", 
+    [
+        pytest.param({ "options": {
+                           "scf_type": "DIRECT",
+                           "screening": "density",
+                           "maxiter": 30,
+                       },
+                       "ref_iter": {
+                           "base": 8,
+                           "df_scf_guess": 11,   
+                           "scf_cosx_guess": 13, # assumes COSX_MAXITER_FINAL = -1   
+                       },
+                     }, id="DirectJK (MAXITER=30)"),
+        pytest.param({ "options": {
+                           "scf_type": "DIRECT",
+                           "screening": "density",
+                           "maxiter": 10,
+                       },
+                       "ref_iter": {
+                           "base": 8,
+                           "df_scf_guess": 11,   
+                           "scf_cosx_guess": 13, # assumes COSX_MAXITER_FINAL = -1   
+                       },
+                     }, id="DirectJK (MAXITER=10)"),
+        pytest.param({ "options": { 
+                           "scf_type": "DFDIRJ+LINK",
+                           "screening": "density",
+                           "maxiter": 30,
+                       },
+                       "ref_iter": {
+                           "base": 8,
+                           "df_scf_guess": 11,   
+                           "scf_cosx_guess": 13, # assumes COSX_MAXITER_FINAL = -1   
+                       },
+                     }, id="DF-DirJ+LinK"),
+    ], 
+)
+@pytest.mark.parametrize("cosx_maxiter_final", [ -1, 0, 1 ])
+@pytest.mark.parametrize("scf_cosx_guess", [ True, False ])
+@pytest.mark.parametrize("df_scf_guess", [ True, False ])
+def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_scf_guess, tests, mols, request):
+    """Test the COSX_MAXITER_FINAL keyword in various situations via SCF calculations"""
+
+    test_id = request.node.callspec.id
+    
+    # basic settings configuration
+    molecule = mols[tests[inp]["molecule"]]
+    psi4.set_options({
+        "basis": "cc-pvdz",
+        "cosx_maxiter_final": cosx_maxiter_final, 
+        "df_scf_guess": df_scf_guess, 
+        "scf_cosx_guess": scf_cosx_guess, 
+    })
+    psi4.set_options(tests[inp]["options"])
+    psi4.set_options(opts["options"])
+
+    # if both guesses are set to True, run should throw exception... 
+    if scf_cosx_guess and df_scf_guess:
+        with pytest.raises(Exception) as e_info:
+            E = psi4.energy(tests[inp]["method"], molecule=molecule)
+
+        # we keep this line just for printout purposes; should always pass if done correctly
+        assert compare(type(e_info), pytest.ExceptionInfo, f'{test_id} throws exception (both guesses are True)')
+   
+    # ... and enabling SCF_COSX_GUESS with COSX_MAXITER_FINAL set to 0 should throw exception...
+    elif scf_cosx_guess and cosx_maxiter_final == 0: 
+        with pytest.raises(Exception) as e_info:
+            E = psi4.energy(tests[inp]["method"], molecule=molecule)
+
+        # we keep this line just for printout purposes; should always pass if done correctly
+        assert compare(type(e_info), pytest.ExceptionInfo, f'{test_id} throws exception (invalid SCF_COSX_GUESS/COSX_MAXITER_FINAL combo)')
+
+    # ... else proceed as normal
+    else:
+        # determine number of SCF iterations we expect based on settings
+        guess_type = "base" # baseline number of iterations 
+        if scf_cosx_guess and cosx_maxiter_final == -1:
+            guess_type = "scf_cosx_guess" # fully-converged SCF_COSX_GUESS (i.e., COSX_MAXITER_FINAL set to -1)
+        elif df_scf_guess:
+            guess_type = "df_scf_guess" # DF_SCF_GUESS enabled
+        reference_iter = opts["ref_iter"][guess_type]
+
+        # COSX_MAXITER_FINAL != -1 will add some number of iterations to baseline guess 
+        if scf_cosx_guess and cosx_maxiter_final != -1:
+            reference_iter += cosx_maxiter_final 
+       
+        # if maxiter < expected number of SCF iterations, run should throw exception... 
+        if opts["options"]["maxiter"] < reference_iter: 
+            with pytest.raises(Exception) as e_info:
+                E = psi4.energy(tests[inp]["method"], molecule=molecule)
+    
+            # we keep this line just for printout purposes; should always pass if done correctly
+            assert compare(type(e_info), pytest.ExceptionInfo, f'{test_id} throws exception')
+        
+        # ... otherwise, test should run with correct number of iterations
+        else:
+            E, wfn = psi4.energy(tests[inp]["method"], molecule=molecule, return_wfn=True)
+            
+            niter = wfn.variable("SCF ITERATIONS")
+            assert compare_integers(niter, reference_iter, '{test_id} has correct number of SCF iterations')
+
+@pytest.mark.parametrize("inp", 
+    [
+        pytest.param("h2o (rhf)"),
+        pytest.param("h2o (rks)"),
         pytest.param("nh2 (uhf)"),
-        pytest.param("nh2 (rohf)"),
         pytest.param("nh2 (rohf)", marks=pytest.mark.nbody),
     ]
 @pytest.mark.parametrize(
