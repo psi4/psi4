@@ -125,7 +125,7 @@ class MOInfoBase {
 
     private:
     double nuclear_energy; // The nuclear repulsion energy
-    const int charge; // Molecular charge
+    const int charge; // The molecular charge this object has been constructed with
 
     std::vector<std::string> irr_labs; // Array of the irrep labels
     int nso;  // The # of symmetry-adapted atomic orbitals
