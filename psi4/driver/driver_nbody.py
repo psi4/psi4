@@ -196,8 +196,12 @@ from qcelemental.models import FailedOperation, Molecule, DriverEnum, ProtoModel
 import qcengine as qcng
 import qcmanybody as qcmb
 from qcmanybody.models import BsseEnum, ManyBodyKeywords, ManyBodyInput, ManyBodyResult, ManyBodyResultProperties
-from qcmanybody.models.manybody_pydv1 import AtomicSpecification
+try:
+    from qcmanybody.models.manybody_pydv1 import AtomicSpecification
+except ModuleNotFoundError:
+    from qcmanybody.models import AtomicSpecification, BsseEnum, ManyBodyKeywords, ManyBodyInput, ManyBodyResult, ManyBodyResultProperties
 from qcmanybody import ManyBodyCalculator
+from qcmanybody.qcng_computer import ManyBodyComputerQCNG
 from qcmanybody.utils import delabeler, provenance_stamp as qcmb_provenance_stamp
 
 if TYPE_CHECKING:
@@ -1643,74 +1647,7 @@ class replaced_in_p4_new_AtomicComputerQCNG(BaseComputer):
             return self.result
 
 
-#class new_ManyBodyComputerQCNG(BaseComputer):
-class ManyBodyComputer(BaseComputer):
-
-    input_data: ManyBodyInput = Field(
-        ...,
-        description="Input schema containing the relevant settings for performing the many body "
-            "expansion. This is entirely redundant with the piecemeal assembly of this Computer class "
-            "and is only stored to be available for error handling and exact reconstruction of ManyBodyResult.",
-    )
-    bsse_type: List[BsseEnum] = Field(
-        [BsseEnum.cp],
-        # v2: description=ManyBodyKeywords.model_fields["bsse_type"].description,
-        description=ManyBodyKeywords.__fields__["bsse_type"].field_info.description,
-    )
-    molecule: Molecule = Field(
-        ...,
-        description="Target molecule for many body expansion (MBE) or interaction energy (IE) analysis. "
-            "Fragmentation should already be defined in `fragments` and related fields.",
-    )
-    driver: DriverEnum = Field(
-        ...,
-        description="The computation driver; i.e., energy, gradient, hessian. In case of ambiguity (e.g., MBE gradient "
-            "through finite difference energies or MBE energy through composite method), this field refers to the "
-            "*target* derivative, not any *means* specification.",
-    )
-    embedding_charges: Dict[int, List[float]] = Field(
-        {},
-        description="Atom-centered point charges to be used on molecule fragments whose basis sets are not included in "
-            "the computation. Keys: 1-based index of fragment. Values: list of atom charges for that fragment.",
-        json_schema_extra={
-            "shape": ["nfr", "<varies: nat in ifr>"],
-        },
-    )
-    return_total_data: Optional[bool] = Field(  # after driver, embedding_charges
-        None,
-        validate_default=True,
-        # v2: description=ManyBodyKeywords.model_fields["return_total_data"].description,
-        description=ManyBodyKeywords.__fields__["return_total_data"].field_info.description,
-    )
-    levels: Optional[Dict[Union[int, Literal["supersystem"]], str]] = Field(
-        None,
-        validate_default=True,
-        # v2: description=ManyBodyKeywords.model_fields["levels"].description + \
-        description=ManyBodyKeywords.__fields__["levels"].field_info.description + \
-            "Examples above are processed in the ManyBodyComputer, and once processed, only the values should be used. "
-            "The keys turn into nbodies_per_mc_level, as notated below. "
-            "* {1: 'ccsd(t)', 2: 'mp2', 'supersystem': 'scf'} -> nbodies_per_mc_level=[[1], [2], ['supersystem']] "
-            "* {2: 'ccsd(t)/cc-pvdz', 3: 'mp2'} -> nbodies_per_mc_level=[[1, 2], [3]] ",
-    )
-    max_nbody: Optional[int] = Field(
-        None,
-        validate_default=True,
-        # v2: description=ManyBodyKeywords.model_fields["max_nbody"].description,
-        description=ManyBodyKeywords.__fields__["max_nbody"].field_info.description,
-    )
-    supersystem_ie_only: Optional[bool] = Field(  # after max_nbody
-        False,
-        validate_default=True,
-        # v2: description=ManyBodyKeywords.model_fields["supersystem_ie_only"].description,
-        description=ManyBodyKeywords.__fields__["supersystem_ie_only"].field_info.description,
-    )
-    task_list: Dict[str, Any] = {}  #MBETaskComputers] = {}
-    qcmb_calculator: Optional[Any] = None
-
-    # TODO @computed_field(description="Number of distinct fragments comprising full molecular supersystem.")
-    @property
-    def nfragments(self) -> int:
-        return len(self.molecule.fragments)
+class ManyBodyComputer(ManyBodyComputerQCNG):
 
     # v2, probably: @field_validator("molecule", mode="before")
     @validator("molecule", pre=True)
@@ -1720,183 +1657,6 @@ class ManyBodyComputer(BaseComputer):
             v = v.to_schema(dtype=2)
 
         return v
-
-    # v2: @field_validator("bsse_type", mode="before")
-    @validator("bsse_type", pre=True)
-    @classmethod
-    def set_bsse_type(cls, v: Any) -> List[BsseEnum]:
-        if not isinstance(v, list):
-            v = [v]
-        # emulate ordered set
-        # * bt.lower() as return (w/i `list(dict.fromkeys([bt.lower() ...`)
-        #   works until aliases added to BsseEnum
-        # * BsseEnum[bt].value as return works for good vals, but passing bad
-        #   vals through as bt lets pydantic raise a clearer error message
-        return list(dict.fromkeys([(BsseEnum[bt.lower()].value if bt.lower() in BsseEnum.__members__ else bt.lower()) for bt in v]))
-
-    # v2: @field_validator("embedding_charges")
-    @validator("embedding_charges", pre=True)
-    @classmethod
-    # v2: def set_embedding_charges(cls, v: Any, info: FieldValidationInfo) -> Dict[int, List[float]]:
-    def set_embedding_charges(cls, v, values): # -> Dict[int, List[float]]:
-        print(f"hit embedding_charges validator with {v}", end="")
-        # v2: if len(v) != info.data["nfragments"]:
-        nfr = len(values["molecule"].fragments)
-        if len(v) != nfr:
-            raise ValueError("embedding_charges dict should have entries for each 1-indexed fragment.")
-
-        print(f" ... setting embedding_charges={v}")
-        return v
-
-    # v2: @field_validator("return_total_data")
-    @validator("return_total_data", always=True)
-    @classmethod
-    # v2: def set_return_total_data(cls, v: Optional[bool], info: FieldValidationInfo) -> bool:
-    def set_return_total_data(cls, v: Optional[bool], values) -> bool:
-        print(f"hit return_total_data validator with {v}", end="")
-        if v is not None:
-            rtd = v
-        # v2: elif info.data["driver"] in ["gradient", "hessian"]:
-        elif values["driver"] in ["gradient", "hessian"]:
-            rtd = True
-        else:
-            rtd = False
-
-        # v2: if info.data.get("embedding_charges", False) and rtd is False:
-        if values.get("embedding_charges", False) and rtd is False:
-            raise ValueError("Cannot return interaction data when using embedding scheme.")
-
-        print(f" ... setting rtd={rtd}")
-        return rtd
-
-    # v2: @field_validator("levels")
-    @validator("levels", always=True)
-    @classmethod
-    # v2: def set_levels(cls, v: Any, info: FieldValidationInfo) -> Dict[Union[int, Literal["supersystem"]], str]:
-    def set_levels(cls, v: Any, values) -> Dict[Union[int, Literal["supersystem"]], str]:
-        print(f"hit levels validator with {v}", end="")
-
-        if v is None:
-            pass
-            # TODO levels = {plan.max_nbody: method}
-            #v = {info.data["nfragments"]: "???method???"}
-            #v = {len(info.data["molecule"].fragments): "???method???"}
-            # v2: v = {len(info.data["molecule"].fragments): "(auto)"}
-            v = {len(values["molecule"].fragments): "(auto)"}
-        else:
-            # rearrange bodies in order with supersystem last lest body count fail in organization loop below
-            v = dict(sorted(v.items(), key=lambda item: 1000 if item[0] == "supersystem" else item[0]))
-
-            # rm 1 for cp-only
-            # We define cp as being a correction to only interaction energies
-            # If only doing cp, we need to ignore any user-specified 1st (monomer) level
-            #if 'cp' in kwargs.get("bsse_type", None) and 'nocp' not in kwargs.get("bsse_type", None):
-            #    if 1 in levels.keys():
-            #        removed_level = levels.pop(1)
-            #        logger.info("NOTE: User specified exclusively 'cp' correction, but provided level 1 details")
-            #        logger.info(f"NOTE: Removing level {removed_level}")
-            #        logger.info("NOTE: For total energies, add 'nocp' to bsse_list")
-
-        print(f" ... setting levels={v}")
-        return v
-
-    # TODO @computed_field(
-    # TODO     description="Distribution of active n-body levels among model chemistry levels. All bodies in range "
-    # TODO         "[1, self.max_nbody] must be present exactly once. Number of items in outer list is how many different "
-    # TODO         "modelchems. Each inner list specifies what n-bodies to be run at the corresponding modelchem (e.g., "
-    # TODO         "`[[1, 2]]` has max_nbody=2 and 1-body and 2-body contributions computed at the same level of theory; "
-    # TODO         "`[[1], [2]]` has max_nbody=2 and 1-body and 2-body contributions computed at different levels of theory. "
-    # TODO         "An entry 'supersystem' means all higher order n-body effects up to the number of fragments. The n-body "
-    # TODO         "levels are effectively sorted in the outer list, and any 'supersystem' element is at the end.")
-        #json_schema_extra={
-        #    "shape": ["nmc", "<varies>"],
-        #},
-    @property
-    def nbodies_per_mc_level(self) -> List[List[Union[int, Literal["supersystem"]]]]:
-        print(f"hit nbodies_per_mc_level", end="")
-
-        # Organize nbody calculations into modelchem levels
-        # * expand keys of `levels` into full lists of nbodies covered. save to plan, resetting max_nbody accordingly
-        # * below, process values of `levels`, which are modelchem strings, into kwargs specs
-        nbodies_per_mc_level = []
-        prev_body = 0
-        print("\nAAA", self.levels)
-        for nb in self.levels:
-            nbodies = []
-            print("BBB bfore", nb, nbodies, prev_body)
-            if nb == "supersystem":
-                nbodies.append(nb)
-            elif nb != (prev_body + 1):
-                for m in range(prev_body + 1, nb + 1):
-                    nbodies.append(m)
-            else:
-                nbodies.append(nb)
-            print("BBB after", nb, nbodies)
-            nbodies_per_mc_level.append(nbodies)
-            prev_body = nb  # formerly buggy `+= 1`
-
-        print(f" ... setting nbodies_per_mc_level={nbodies_per_mc_level}")
-        return nbodies_per_mc_level
-
-    # v2: @field_validator("max_nbody")
-    @validator("max_nbody", always=True)
-    @classmethod
-    # v2: def set_max_nbody(cls, v: Any, info: FieldValidationInfo) -> int:
-    def set_max_nbody(cls, v: Any, values) -> int:
-        print(f"hit max_nbody validator with {v}", end="")
-        # v2: levels_max_nbody = max(nb for nb in info.data["levels"] if nb != "supersystem")
-        # v2: nfr = len(info.data["molecule"].fragments)
-        levels_max_nbody = max(nb for nb in values["levels"] if nb != "supersystem")
-        nfr = len(values["molecule"].fragments)
-        print(f" {levels_max_nbody=} {nfr=}", end="")
-
-        #ALT if v == -1:
-        if v is None:
-            v = levels_max_nbody
-        elif v < 0 or v > nfr:
-            raise ValueError(f"max_nbody={v} should be between 1 and {nfr}.")
-        elif v != levels_max_nbody:
-            #raise ValueError(f"levels={levels_max_nbody} contradicts user max_nbody={v}.")
-            # TODO reconsider logic. move this from levels to here?
-            # v2: info.data["levels"] = {v: "(auto)"}
-            values["levels"] = {v: "(auto)"}
-        else:
-            pass
-            # TODO once was           return min(v, nfragments)
-
-        print(f" ... setting max_nbody={v}")
-        return v
-
-#       levels          max_nbody           F-levels        F-max_nbody     result
-#
-#       {stuff}         None                {stuff}         set from stuff  all consistent; max_nbody from levels
-#       None            int                 {int: mtd}      int             all consistent; levels from max_nbody
-#       None            None                {nfr: mtd}      nfr             all consistent; any order
-#       {stuff}         int                 {stuff}         int             need to check consistency
-
-    # TODO also, perhaps change nbodies_per_mc_level into dict of lists so that pos'n/label indexing coincides
-
-    # v2: @field_validator("supersystem_ie_only")
-    @validator("supersystem_ie_only", always=True)
-    @classmethod
-    # v2: def set_supersystem_ie_only(cls, v: Optional[bool], info: FieldValidationInfo) -> bool:
-    def set_supersystem_ie_only(cls, v: Optional[bool], values) -> bool:
-        print(f"hit supersystem_ie_only validator with {v}", end="")
-        sio = v
-        # v2: _nfr = len(info.data["molecule"].fragments)
-        _nfr = len(values["molecule"].fragments)
-
-        # v2: _max_nbody = info.data["max_nbody"]
-        # get(..., None) b/c in v1, all fields processed even if max_nbody previously failed
-        _max_nbody = values.get("max_nbody", None)
-        if (sio is True) and (_max_nbody != _nfr):
-            raise ValueError(f"Cannot skip intermediate n-body jobs when max_nbody={_max_nbody} != nfragments={_nfr}.")
-
-        if (sio is True) and ("vmfc" in values["bsse_type"]):
-            raise ValueError(f"Cannot skip intermediate n-body jobs when VMFC in bsse_type={values['bsse_type']}. Use CP instead.")
-
-        print(f" ... setting {sio=}")
-        return sio
 
     @classmethod
     def from_psi4_task_planner(cls, *, molecule, method, basis, driver, keywords, **mbkwargs):
@@ -2129,18 +1889,6 @@ class ManyBodyComputer(BaseComputer):
             self.task_list[label] = mb_computer(**data)
             count += 1
 
-
-
-#1030                         charges.extend([[chg, i] for i, chg in zip(positions, self.embedding_charges[frag])])
-#1031                     data['keywords']['function_kwargs'].update({'external_potentials': charges})
-
-
-        return count
-
-    def plan(self):
-        # uncalled function
-        return [t.plan() for t in self.task_list.values()]
-
     def compute(self, client: Optional["qcportal.FractalClient"] = None):
         """Run quantum chemistry."""
 
@@ -2151,188 +1899,6 @@ class ManyBodyComputer(BaseComputer):
         with p4util.hold_options_state():
             for t in self.task_list.values():
                 t.compute(client=client)
-
-#    def defunct__prepare_results(
-#        self,
-#        results: Optional[Dict[str, "MBETaskComputers"]] = None,
-#        client: Optional["qcportal.FractalClient"] = None,
-#    ) -> Dict[str, Any]:
-#        """Process the results from all n-body component molecular systems and model chemistry levels into final quantities.
-#
-#        NOTE: client removed (compared to psi4.driver.ManyBodyComputer) (multilevel call, too)
-#
-#        Parameters
-#        ----------
-#        results
-#            A set of tasks to process instead of self.task_list. Used in multilevel processing to pass a subset of
-#            self.task_list filtered to only one modelchem level.
-#        client
-#            QCFractal client if using QCArchive for distributed compute.
-#
-#        Returns
-#        -------
-#        nbody_results
-#            When the ManyBodyComputer specifies a single model chemistry level (see self.nbodies_per_mc_level), the
-#            return is a dictionary, nbody_results, described in the table below. Many of the items are actually filled
-#            by successive calls to assemble_nbody_components(). When multiple model chemistry levels are specified, this
-#            function diverts its return to driver_nbody_multilevel.prepare_results() wherein each mc level calls this
-#            function again and collects separate nbody_results dictionaries and processes them into a final return that
-#            is a small subset of the table below.
-#
-#
-#                                       ptype_size = (1,)/(nat, 3)/(3 * nat, 3 * nat)
-#                                        e/g/h := energy or gradient or Hessian
-#                                        rtd := return_total_data
-#
-
-    def get_results(
-        self,
-        client: Optional["qcportal.FractalClient"] = None,
-        external_results: Optional[Dict] = None,
-    ) -> ManyBodyResult:
-        """Return results as ManyBody-flavored QCSchema.
-
-        NOTE: client removed (compared to psi4.driver.ManyBodyComputer)
-        """
-# qcng:        from psi4.driver.p4util import banner
-
-# qcng:        info = "\n" + banner(f" ManyBody Results ", strNotOutfile=True) + "\n"
-        #logger.info(info)
-
-        if external_results is None:
-            results = self.prepare_results(client=client)
-            ret_energy = results.pop("ret_energy")
-            ret_ptype = results.pop("ret_ptype")
-            ret_gradient = results.pop("ret_gradient", None)
-            nbody_number = len(self.task_list)
-        else:
-            ret_energy = external_results.pop("ret_energy")
-            ret_ptype = ret_energy if self.driver == "energy" else external_results.pop(f"ret_{self.driver.name}")
-            ret_gradient = external_results.pop("ret_gradient", None)
-            nbody_number = external_results.pop("nbody_number")
-            assert nbody_number == len(self.task_list), f"NBODY NUMBER inconsistent {nbody_number} != {len(self.task_list)}"
-            component_properties = external_results.pop("component_properties")
-            stdout = external_results.pop("stdout")
-
-        # load QCVariables
-        qcvars = {
-            'NUCLEAR REPULSION ENERGY': self.molecule.nuclear_repulsion_energy(),
-            'NBODY NUMBER': nbody_number,
-        }
-
-        properties = {
-            "calcinfo_nmc": len(self.nbodies_per_mc_level),
-            "calcinfo_nfr": self.nfragments,  # or len(self.molecule.fragments)
-            "calcinfo_natom": len(self.molecule.symbols),
-            "calcinfo_nmbe": nbody_number,
-            "nuclear_repulsion_energy": self.molecule.nuclear_repulsion_energy(),
-            "return_energy": ret_energy,
-        }
-
-        if external_results is None:
-            for k, val in results.items():
-                qcvars[k] = val
-        else:
-            for k, val in external_results.items():
-                if k == "results":
-                    k = "nbody"
-                qcvars[k] = val
-
-        qcvars['CURRENT ENERGY'] = ret_energy
-        if self.driver == 'gradient':
-            qcvars['CURRENT GRADIENT'] = ret_ptype
-            properties["return_gradient"] = ret_ptype
-        elif self.driver == 'hessian':
-            qcvars['CURRENT GRADIENT'] = ret_gradient
-            qcvars['CURRENT HESSIAN'] = ret_ptype
-            properties["return_gradient"] = ret_gradient
-            properties["return_hessian"] = ret_ptype
-
-#        build_out(qcvars)
-        atprop = build_manybodyproperties(qcvars["nbody"])
-        print("ATPROP")
-        # v2: pp.pprint(atprop.model_dump())
-        pp.pprint(atprop.dict())
-
-#        output_data = {
-#            "schema_version": 1,
-#            "molecule": gamessmol,  # overwrites with outfile Cartesians in case fix_*=F
-#            "extras": {**input_model.extras},
-#            "native_files": {k: v for k, v in outfiles.items() if v is not None},
-#            "properties": atprop,
-
-#####
-#        nbody_model = self.get_results(client=client)
-#        ret = nbody_model.return_result
-#
-#        wfn = core.Wavefunction.build(self.molecule, "def2-svp", quiet=True)
-#
-#        # TODO all besides nbody may be better candidates for extras than qcvars. energy/gradient/hessian_body_dict in particular are too simple for qcvars (e.g., "2")
-
-        print("QCVARS PRESCREEN")
-        pp.pprint(qcvars)
-
-        for qcv, val in qcvars.items():
-            if isinstance(val, dict):
-                if qcv in [
-#            #"energies",  # retired
-#            #"ptype",     # retired
-#            "intermediates",
-#            "intermediates_energy",  #"intermediates2",
-#            "intermediates_gradient",  #"intermediates_ptype",
-#            "intermediates_hessian",  #"intermediates_ptype",
-#            "energy_body_dict",
-#            "gradient_body_dict",  # ptype_body_dict
-#            "hessian_body_dict",  # ptype_body_dict
-#            "nbody",
-#            "cp_energy_body_dict",
-#            "nocp_energy_body_dict",
-#            "vmfc_energy_body_dict",
-#            "cp_gradient_body_dict",
-#            "nocp_gradient_body_dict",
-#            "vmfc_gradient_body_dict",
-#            "cp_hessian_body_dict",
-#            "nocp_hessian_body_dict",
-#            "vmfc_hessian_body_dict",
-                ]:
-                    for qcv2, val2 in val.items():
-#                        try:
-                            qcvars[str(qcv2)] = val2
-#                        except ValidationError:
-#                            obj.set_variable(f"{self.driver.name} {qcv2}", val2)
-            else:
-                qcvars[qcv] = val
-
-        # v2: component_results = self.model_dump()['task_list']  # TODO when/where include the indiv outputs
-        component_results = self.dict()['task_list']  # TODO when/where include the indiv outputs
-#        for k, val in component_results.items():
-#            val['molecule'] = val['molecule'].to_schema(dtype=2)
-
-        print("QCVARS")
-        pp.pprint(qcvars)
-
-        nbody_model = ManyBodyResult(
-            **{
-                'input_data': self.input_data,
-                #'molecule': self.molecule,
-                # v2: 'properties': {**atprop.model_dump(), **properties},
-                'properties': {**atprop.dict(), **properties},
-                'provenance': qcmb_provenance_stamp(__name__),
-                'extras': {
-                    'qcvars': qcvars,
-                },
-                'component_properties': component_properties,
-                'return_result': ret_ptype,
-                "stdout": stdout,
-                'success': True,
-            })
-
-        core.print_out(stdout)
-        logger.info('\nQCManyBody:\n' + stdout)
-        # v2: logger.debug('\nManyBodyResult QCSchema:\n' + pp.pformat(nbody_model.model_dump()))
-        logger.debug('\nManyBodyResult QCSchema:\n' + pp.pformat(nbody_model.dict()))
-
-        return nbody_model
 
     def get_psi_results(
         self,
@@ -2414,9 +1980,10 @@ class ManyBodyComputer(BaseComputer):
         pprint.pprint(nbody_model.dict(), width=200)
         print(f"{findif_number=}")
 
-#######################
-#######################
-
+        core.print_out(nbody_model.stdout)
+        logger.info('\nQCManyBody:\n' + nbody_model.stdout)
+        # v2: logger.debug('\nManyBodyResult QCSchema:\n' + pp.pformat(nbody_model.model_dump()))
+        logger.debug('\nManyBodyResult QCSchema:\n' + pp.pformat(nbody_model.dict()))
 
         qmol = core.Molecule.from_schema(self.molecule.dict())  # nonphy
         wfn = core.Wavefunction.build(qmol, "def2-svp", quiet=True)
@@ -2471,7 +2038,7 @@ class ManyBodyComputer(BaseComputer):
             available_properties = dval.dict().keys()
             for obj in [core, wfn]:
                 if "return_energy" in available_properties:
-                    obj.set_variable(f"N-BODY {psi_mcfragbas2} TOTAL ENERGY", dval.return_energy)  # TODO N-BODY prefix?
+                    obj.set_variable(f"N-BODY {psi_mcfragbas2} TOTAL ENERGY", dval.return_energy)
                 if "return_gradient" in available_properties:
                     obj.set_variable(f"N-BODY {psi_mcfragbas2} TOTAL GRADIENT", dval.return_gradient)
                 if "return_hessian" in available_properties:
@@ -2506,30 +2073,6 @@ def new_lab_labeler2(mc_level_idx: str, frag: Tuple, bas:Tuple) -> str:
     # returns "1_(1)@(1, 2)"
         #        return mc, ", ".join(map(str, frag)), ", ".join(map(str, bas))
         return f"{mc_level_idx + 1}_({', '.join(map(str, frag))})@({', '.join(map(str, bas))})"
-
-def new_lab_delabeler(item: str, return_obj: bool = False) -> Union[Tuple[str, str, str], Tuple[int, Tuple[int], Tuple[int]]]:
-    """Transform labels like string "1_((2,), (1, 2))" into string tuple ("1", "2", "1, 2") or
-    object tuple (1, (2,), (1, 2)).
-
-    """
-    mc, _, fragbas = item.partition("_")
-    frag, bas = literal_eval(fragbas)
-
-    if return_obj:
-        return int(mc), frag, bas
-    else:
-        return mc, ", ".join(map(str, frag)), ", ".join(map(str, bas))
-
-def delabeler_3(item: str, return_obj: bool = False) -> Union[Tuple[str, str, str], Tuple[int, Tuple[int], Tuple[int]]]:
-            """Transform labels like string "1_((2,), (1, 2))" into string tuple ("1", "2", "1, 2") or object tuple (1, (2,), (1, 2))."""
-
-            mc, _, fragbas = item.partition("_")
-            frag, bas = literal_eval(fragbas)
-
-            if return_obj:
-                return int(mc), frag, bas
-            else:
-                return mc, ", ".join(map(str, frag)), ", ".join(map(str, bas))
 
 
 qcvars_to_manybodyproperties = {}
