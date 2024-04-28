@@ -192,17 +192,6 @@ class MOInfo : public MOInfoBase {
     intpairvec get_beta_internal_excitation(int i, int j);
     double get_sign_internal_excitation(int i, int j);
 
-   protected:
-    /// @brief Get a const ref. to an element of the array holding the numbers of doubly occupied orbitals (DOCC) per
-    /// irrep, from an MOInfo object (or derived object). Not bounds-checked!
-    /// @return Const& of the selected number of DOCCs per irrep
-    const int& get_docc(size_t i) const { return docc[i]; }
-
-    /// @brief Get a const ref. to an element of the array holding the numbers of active orbitals per irrep, from an
-    /// MOInfo object (or derived object). Not bounds-checked!
-    /// @return Const& of the selected number of active orbitals per irrep
-    const int& get_actv(size_t i) const { return actv[i]; }
-
    private:
     void read_info();
     void read_mo_spaces();
