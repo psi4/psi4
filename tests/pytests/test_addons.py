@@ -1636,8 +1636,6 @@ def test_sapt0d4(dftd4_params):
         disp_energies.append(e)
         os.remove(i)
         os.remove(".EDISP")
-    print(disp_energies)
-    print(dftd4_params)
     psi4.energy(f'SAPT0-{dftd4_params["d4_variant"]}/cc-pvdz')
     d4_interaction_energy = (disp_energies[0] - disp_energies[1] - disp_energies[2])
     assert psi4.compare_values(d4_interaction_energy, psi4.variable('DISPERSION CORRECTION ENERGY'), 5, f'ethene-ethyne sapt0-{dftd4_params["d4_variant"]}')
