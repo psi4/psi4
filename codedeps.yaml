@@ -1410,7 +1410,7 @@ data:
       host: github
       account: Einsums
       name: Einsums
-      commit: v0.4
+      commit: v0.5
     #cmake:
     #  name:
     #  constraint: 0.4
