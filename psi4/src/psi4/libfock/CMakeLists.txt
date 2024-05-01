@@ -46,10 +46,12 @@ if(TARGET gauxc::gauxc)
     PRIVATE
       snLinK.cc
     )
+  get_property(_am TARGET gauxc::gauxc PROPERTY GAUXC_CPU_SNLINK_MAX_AM)
   target_compile_definitions(fock
     PUBLIC
       USING_gauxc
       $<TARGET_PROPERTY:gauxc::gauxc,GAUXC_HAS_DEVICE>
+      GAUXC_MAX_AM=${_am} 
     )
   target_include_directories(fock
     PUBLIC
