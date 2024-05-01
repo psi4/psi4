@@ -86,7 +86,7 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(psi4_basisset->nbf());
     
     // general array for how to reorder integrals 
-    constexpr int max_am = 10; 
+    constexpr int max_am = GAUXC_MAX_AM;
     std::array<int, 2*max_am + 1> cca_integral_order; 
   
     // s shell, easy
@@ -404,7 +404,6 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
     // compute K for density Di using GauXC
     for (int iD = 0; iD != D.size(); ++iD) {
         timer_on("snLinK: Transform D");
-        outfile->Printf("snLinK: Transform D\n");
 
         auto Did_eigen = D[iD]->eigen_map();    
         auto Kid_eigen = K[iD]->eigen_map();    
@@ -430,7 +429,6 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         timer_off("snLinK: Transform D");
         
         timer_on("snLinK: Transform K");
-        outfile->Printf("snLinK: Transform K\n");
         
         // need to reorder Psi4 exchange matrix to CCA ordering if in spherical harmonics
         if (do_reorder) { 
@@ -453,7 +451,6 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         timer_off("snLinK: Transform K");
         
         timer_on("snLinK: Execute integrator");
-        outfile->Printf("snLinK: Execute integrator\n");
         // compute delta K if incfock iteration... 
         if (incfock_iter_) { 
             // K buffer (i.e., delta K) must be back-transformed and added to Psi4 K separately if cartesian transformation is forced...
@@ -480,7 +477,6 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
 
         // now we need to reverse the CCA reordering previously performed
         timer_on("snLinK: Back-transform D and K");
-        outfile->Printf("snLinK: Back-transform D and K\n");
         if (do_reorder) {
             auto permutation_matrix_val = permutation_matrix_ .value();
             auto D_eigen_permute = D[iD]->eigen_map();
