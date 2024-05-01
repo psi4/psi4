@@ -206,8 +206,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     std::unique_ptr<GauXC::RuntimeEnvironment> rt = nullptr; 
 #ifdef GAUXC_HAS_DEVICE 
     if (use_gpu_) {
-        // 0.9 indicates to use maximum 90% of maximum GPU memory, I think?
-        rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.9 );
+        rt = std::make_unique<GauXC::DeviceRuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD,) 0.01*options_.get_int("SNLINK_GPU_MEM"));
     } else { 
         rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
     }

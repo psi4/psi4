@@ -1724,6 +1724,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("SNLINK_RADIAL_SCHEME", "MURA", "MURA TREUTLER EM");
         /*- Use GPU for GauXC? -*/
         options.add_bool("SNLINK_USE_GPU", false);
+        /*- Proportion (in %) of available GPU memory to allocate to snLinK. !expert-*/
+        options.add_bool("SNLINK_GPU_MEM", 90);
         /*- Screening criteria for integrals and intermediates in snLinK -*/
         options.add_double("SNLINK_INTS_TOLERANCE", 1.0E-11);
         /*- Screening criteria for shell-pair densities in snLinK !expert -*/
