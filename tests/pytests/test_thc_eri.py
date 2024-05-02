@@ -1,4 +1,5 @@
 import numpy as np
+from utils import compare
 import pytest
 
 import psi4
@@ -47,8 +48,8 @@ def test_ls_thc_df():
     # AO 4-index ERIs
     I = np.array(mints.ao_eri(primary, primary, primary, primary))
 
-    assert(np.sqrt(np.average(np.square(I_guess_thc-I))) < 3e-4)
-    assert(np.sqrt(np.average(np.square(I_guess_df-I))) < 3e-4)
+    assert compare(True, np.sqrt(np.average(np.square(I_guess_thc-I))) < 3e-4, 'LS_THC_DF ERIs accurate')
+    assert compare(True, np.sqrt(np.average(np.square(I_guess_df-I))) < 3e-4, 'DF ERIs accurate')  
 
 @pytest.mark.smoke
 def test_ls_thc_exact():
@@ -84,4 +85,4 @@ def test_ls_thc_exact():
     mints = psi4.core.MintsHelper(primary)
     I = np.array(mints.ao_eri(primary, primary, primary, primary))
 
-    assert(np.sqrt(np.average(np.square(I_guess_thc-I))) < 1e-4)
+    assert compare(True, np.sqrt(np.average(np.square(I_guess_thc-I))) < 1e-4, 'LS_THC_exact ERIs accurate')

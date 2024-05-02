@@ -96,6 +96,9 @@ SharedMatrix LS_THC_Computer::build_E_exact() {
 
     SharedMatrix E_PQ = std::make_shared<Matrix>(rank, rank);
 
+    auto E_PQ_p = E_PQ->pointer();
+    auto x1p = x1_->pointer();
+
     // E^{PQ} = x_{m}^{P}x_{n}^{P}(mn|rs)x_{r}^{Q}x_{s}^{Q} (Parrish 2012 eq. 33)
 #pragma omp parallel for
     for (size_t MN = 0; MN < nshellpair; ++MN) {
@@ -115,6 +118,8 @@ SharedMatrix LS_THC_Computer::build_E_exact() {
         int nstart = primary_->shell(N).function_index();
 
         SharedMatrix E_temp = std::make_shared<Matrix>(rank, nm * nn);
+
+        auto Etp = E_temp->pointer();
 
         double prefactor1 = (M == N) ? 1.0 : 2.0;
 
@@ -141,7 +146,7 @@ SharedMatrix LS_THC_Computer::build_E_exact() {
                     for (size_t dn = 0; dn < nn; ++dn) {
                         for (size_t r = rstart; r < rstart + nr; ++r) {
                             for (size_t s = sstart; s < sstart + ns; ++s, ++index) {
-                                (*E_temp)(p, dm * nn + dn) += prefactor2 * buffer[index] * (*x1_)(p, r) * (*x1_)(p, s);
+                                Etp[p][dm * nn + dn] += prefactor2 * buffer[index] * x1p[p][r] * x1p[p][s];
                             } // end s
                         } // end r
                     } // end dn
@@ -157,11 +162,11 @@ SharedMatrix LS_THC_Computer::build_E_exact() {
                     size_t dm = m - mstart;
                     for (size_t n = nstart; n < nstart + nn; ++n) {
                         size_t dn = n - nstart;
-                        e_pq_cont += prefactor1 * (*E_temp)(q, dm * nn + dn) * (*x1_)(p, m) * (*x1_)(p, n);
+                        e_pq_cont += prefactor1 * Etp[q][dm * nn + dn] * x1p[p][m] * x1p[p][n];
                     } // end n
                 } // end m
 #pragma omp atomic
-                (*E_PQ)(p, q) += e_pq_cont;
+                E_PQ_p[p][q] += e_pq_cont;
             } // end q
         } // end p
     } // end MN
@@ -200,6 +205,9 @@ SharedMatrix LS_THC_Computer::build_E_df() {
 
     SharedMatrix E_temp = std::make_shared<Matrix>(rank, naux);
 
+    auto Etp = E_temp->pointer();
+    auto x1p = x1_->pointer();
+
     // E^{IJ} = x_{m}^{I}x_{n}^{I}(mn|P)(P|Q)^{-1}(Q|rs)x_{r}^{J}x_{s}^{J} (Parrish 2012 eq. 34-35)
 #pragma omp parallel for
     for (size_t MNP = 0; MNP < nshelltriplet; ++MNP) {
@@ -233,11 +241,11 @@ SharedMatrix LS_THC_Computer::build_E_df() {
                 double e_temp_cont = 0.0;
                 for (size_t m = mstart; m < mstart + nm; ++m) {
                     for (size_t n = nstart; n < nstart + nn; ++n, ++index) {
-                        e_temp_cont += prefactor * buffer[index] * (*x1_)(r, m) * (*x1_)(r, n);
+                        e_temp_cont += prefactor * buffer[index] * x1p[r][m] * x1p[r][n];
                     } // end n
                 } // end m
 #pragma omp atomic
-                (*E_temp)(r, p) += e_temp_cont;
+                Etp[r][p] += e_temp_cont;
             } // end p
         } // end r
     } // end MNP
@@ -247,9 +255,8 @@ SharedMatrix LS_THC_Computer::build_E_df() {
     J_metric_obj.form_fitting_metric();
     auto J_metric = J_metric_obj.get_metric();
 
-    /// 1.0e-14 is around machine epsilon
     int nremoved = 0;
-    auto Jinv = J_metric->pseudoinverse(1.0e-14, nremoved);
+    auto Jinv = J_metric->pseudoinverse(PSI_ZERO, nremoved);
 
     return linalg::triplet(E_temp, Jinv, E_temp, false, false, true);
 }
@@ -333,11 +340,14 @@ void LS_THC_Computer::compute_thc_factorization() {
     SharedMatrix S_Qq = std::make_shared<Matrix>(npoints, npoints);
     SharedMatrix S_temp = linalg::doublet(x1_, x1_, false, true);
 
+    auto S_Qq_p = S_Qq->pointer();
+    auto Stp = S_temp->pointer();
+
     // Parrish 2012, Equation 28
 #pragma omp parallel for
     for (size_t p = 0; p < npoints; ++p) {
         for (size_t q = 0; q < npoints; ++q) {
-            (*S_Qq)(p, q) = (*S_temp)(p, q) * (*S_temp)(p, q);
+            S_Qq_p[p][q] = Stp[p][q] * Stp[p][q];
         }
     }
 
