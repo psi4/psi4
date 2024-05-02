@@ -72,10 +72,8 @@ void LS_THC_Computer::print_header() {
     outfile->Printf("\n\n");
 }
 
+/// @brief Builds the E intermediate using exact four-center two-electron integrals (Parrish et al. 2012 procedure 2)
 SharedMatrix LS_THC_Computer::build_E_exact() {
-    /**
-     * Parrish et al. 2012 Procedure 2
-    */
 
     size_t nbf = primary_->nbf();
     size_t rank = x1_->nrow();
@@ -171,6 +169,7 @@ SharedMatrix LS_THC_Computer::build_E_exact() {
     return E_PQ;
 }
 
+/// @brief Builds the E intermediate using the DF/RI approximation for ERIs (Parrish et al. 2012 procedure 3)
 SharedMatrix LS_THC_Computer::build_E_df() {
     /**
      * Parrish et al. 2012 Procedure 3
@@ -247,17 +246,16 @@ SharedMatrix LS_THC_Computer::build_E_df() {
     FittingMetric J_metric_obj(auxiliary_, true);
     J_metric_obj.form_fitting_metric();
     auto J_metric = J_metric_obj.get_metric();
-    
+
+    /// 1.0e-14 is around machine epsilon
     int nremoved = 0;
     auto Jinv = J_metric->pseudoinverse(1.0e-14, nremoved);
 
     return linalg::triplet(E_temp, Jinv, E_temp, false, false, true);
 }
 
+/// @brief Factors ERIs into a product of two-index tensors through LS-THC algorithm (Parrish et al. 2012 Procedure 1)
 void LS_THC_Computer::compute_thc_factorization() {
-    /**
-     * Parrish et al. 2012 Procedure 1
-    */
 
     use_df_ = options_.get_bool("LS_THC_DF");
     
