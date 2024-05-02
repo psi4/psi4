@@ -1420,8 +1420,8 @@ data:
     conda:
       channel: conda-forge
       name: einsums
-      constraint: "=*=mkl*"
-      # todo: tie einsums variant to libblas selection, rather than mkl constraint above.
+      constraint: null
+      # add a mkl constraint like "=*=mkl*" if the solver doesn't select correctly. (won't work for osx-arm64)
       aux_build_names:
         - range-v3
         - zlib
