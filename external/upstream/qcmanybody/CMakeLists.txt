@@ -21,16 +21,19 @@ else()
 
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}" _install_lib)
 
+    # Must have specialty egg to compute version correctly, so the URL is only grabbing a dummy file. It's
+    #   the pip command that's really selecting the source.
     ExternalProject_Add(qcmanybody_external
         DEPENDS qcelemental_external
+                qcengine_external
         BUILD_ALWAYS 1
-        URL https://github.com/MolSSI/QCManyBody/archive/main.tar.gz #v0.1.0.tar.gz
+        URL https://github.com/MolSSI/QCManyBody/archive/main.tar.gz
         DOWNLOAD_NO_EXTRACT 1
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ""
         BUILD_IN_SOURCE 1
-        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install <DOWNLOADED_FILE>
+        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCManyBody.git#egg=proj
                                                       --target=${_install_lib}
                                                       --no-deps
                                                       #-v
