@@ -1948,34 +1948,34 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 #                print(result.error.error_message)
 #                raise RuntimeError("Calculation did not succeed! Error:\n" + result.error.error_message)
 #
-        component_results = {}
+        component_properties = {}
         # pull out stuff
         props = {"energy", "gradient", "hessian"}
 
         for label, result in results_list.items():
-            component_results[label] = {}
+            component_properties[label] = {}
 
             for egh in props:
                 if hasattr(result.properties, f"return_{egh}"):
                     v = getattr(result.properties, f"return_{egh}")
                     # print(f"  {label} {egh}: {v}")
                     if v is not None:
-                        component_results[label][egh] = v
+                        component_properties[label][egh] = v
 
         #findif_number = set(res.extras["qcvars"].get("FINDIF NUMBER") for label, res in results_list.items())
         findif_number = {label: res.extras["qcvars"].get("FINDIF NUMBER") for label, res in results_list.items()}
         print(f"{findif_number=}")
 
-        print("\n<<<  (RRR 2) Psi4 ManyBodyComputer.get_psi_results component_results  >>>")
-        pprint.pprint(component_results, width=200)
+        print("\n<<<  (RRR 2) Psi4 ManyBodyComputer.get_psi_results component_properties  >>>")
+        pprint.pprint(component_properties, width=200)
 
         print("start to analyze")
-        analyze_back = self.qcmb_calculator.analyze(component_results)
-        analyze_back["nbody_number"] = len(component_results)
+        analyze_back = self.qcmb_calculator.analyze(component_properties)
+        analyze_back["nbody_number"] = len(component_properties)
         print("\n<<<  (RRR 3) Psi4 ManyBodyComputer.get_psi_results analyze_back  >>>")
         pprint.pprint(analyze_back, width=200)
 
-        nbody_model = self.get_results(external_results=analyze_back, client=client)
+        nbody_model = self.get_results(external_results=analyze_back, component_results=results_list, client=client)
         print("\n<<<  (RRR 4) Psi4 ManyBodyComputer.get_psi_results nbody_model  >>>")
         pprint.pprint(nbody_model.dict(), width=200)
         print(f"{findif_number=}")

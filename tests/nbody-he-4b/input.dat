@@ -216,8 +216,6 @@ for qcv, ref in {
 compare_values(ans, e, "[5] ans")
 compare(50, variable("NBODY NUMBER"), "[5] nmbe")
 
-if distributed:
-    snowflake.stop()
 
 ###
 if distributed:
@@ -248,9 +246,6 @@ for qcv, ref in {
 
 compare_values(ans, e, "[6] ans")
 compare(50, variable("NBODY NUMBER"), "[6] nmbe")
-
-if distributed:
-    snowflake.stop()
 
 ###
 if distributed:
@@ -415,4 +410,6 @@ compare(9, variable("NBODY NUMBER"), "[12] nmbe")
 
 clean_variables()
 
+if distributed:
+    snowflake.stop()
 
