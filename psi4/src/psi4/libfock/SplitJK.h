@@ -33,6 +33,7 @@
 
 #ifdef USING_gauxc
   #include <gauxc/types.hpp>
+  #include <gauxc/util/environment.hpp>
 
   #include <gauxc/xc_integrator.hpp>
   #include <gauxc/xc_integrator/impl.hpp>
@@ -348,7 +349,8 @@ class PSI_API snLinK : public SplitJK {
     bool is_cca_;
 
     std::optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> > permutation_matrix_;
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(const std::shared_ptr<BasisSet> psi4_basisset);
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(
+        const std::shared_ptr<BasisSet> psi4_basisset, GauXC::ExecutionSpace ex);
 
     // => Semi-Numerical Stuff <= //
     // are we running snLinK on GPUs?
@@ -388,7 +390,6 @@ class PSI_API snLinK : public SplitJK {
     // => Other useful stuff <= //
     /// Eigen matrix printout format    
     Eigen::IOFormat format_;
-
   #endif
    
   public:
