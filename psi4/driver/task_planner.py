@@ -215,7 +215,8 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
                     logger.info(
                         f"PLANNING MB(FD(CBS):  {mc_level_idx=} {packet=} {cbsmeta=} findif_kw={current_findif_kwargs} kw={kwargs}"
                     )
-                    plan.build_tasks(FiniteDifferenceComputer,
+                    # untested
+                    plan.build_tasks_alt(FiniteDifferenceComputer,
                                      **packet,
                                      mc_level_idx=mc_level_idx,
                                      findif_mode=dermode,
