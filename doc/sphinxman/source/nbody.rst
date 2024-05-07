@@ -34,6 +34,9 @@
    triple: setting; keywords; cp
    triple: setting; keywords; vmfc
    single: counterpoise correction
+   triple: setting; keywords; mbe
+   triple: setting; keywords; ssfc
+   single: QCManyBody
 
 .. _`sec:cp()`:
 
@@ -82,6 +85,8 @@ The nbody function computes counterpoise-corrected (CP), non-CP (noCP), and Vali
 
     # Returns the nocp energy as its first in the list
     energy('CCSD(T)', bsse_type=['nocp', 'cp', 'vmfc'], max_nbody=3)
+    # Calculate cp geometry optimization skipping the MBE intermediate levels
+    optimize("ccsd(t)/cc-pv[dt]z", bsse_type="cp", supersystem_ie_only=True)
 
 API
 ---
