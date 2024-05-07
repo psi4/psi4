@@ -137,11 +137,11 @@ ManyBodyComputer.get_psi_results()
 
 """
 
-#__all__ = [
-#    "BsseEnum",
-#    "ManyBodyComputer",
-#    "nbody",
-#]
+__all__ = [
+    "BsseEnum",
+    "ManyBodyComputer",
+    "nbody",
+]
 
 import copy
 import itertools
