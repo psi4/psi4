@@ -81,16 +81,27 @@ std::tuple<
 }
 
 // constructs a permutation matrix for converting matrices to and from GauXC's integral ordering standard 
-Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permutation_matrix(const std::shared_ptr<BasisSet> psi4_basisset) {
+Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permutation_matrix(
+    const std::shared_ptr<BasisSet> psi4_basisset, GauXC::ExecutionSpace ex) {
   
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(psi4_basisset->nbf());
+   
+    // get maximum supported AM for current GauXC instance 
+    int max_am = GauXC::gauxc_max_am(ex, GauXC::SupportedAlg::SNLINK);
+ 
+    // sanity checking of GauXC AM
+    if (psi4_basisset->max_am() > max_am) {
+        std::string message = "Selected basis set has higher-AM shells than supported by current GauXC instance!\n";
+        message += "Either reduce the size of your basis set, or use a GauXC install with a higher supported AM.";
+        
+        throw PSIEXCEPTION(message);
+    } 
     
     // general array for how to reorder integrals 
-    constexpr int max_am = GAUXC_MAX_AM;
-    std::array<int, 2*max_am + 1> cca_integral_order; 
+    std::vector<int> cca_integral_order(2*max_am + 1, 0); 
   
     // s shell, easy
-    cca_integral_order[0] = { 0 }; 
+    cca_integral_order[0] = 0; 
    
     // p shells or larger
     for (size_t l = 1, idx = 1; l != max_am; idx += 2, ++l) {
@@ -230,7 +241,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // create ERI ordering permutation matrix to handle integral ordering
     if (!is_cca_ && primary_->has_puream()) {
         permutation_matrix_ = std::make_optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> >(
-            generate_permutation_matrix(primary_)
+            generate_permutation_matrix(primary_, ex)
         );
     } else {
         permutation_matrix_ = std::nullopt;
