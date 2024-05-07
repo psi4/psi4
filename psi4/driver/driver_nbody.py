@@ -1900,32 +1900,11 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             for t in self.task_list.values():
                 t.compute(client=client)
 
-    def get_psi_results(
+    def get_results(
         self,
-        client: Optional["qcportal.FractalClient"] = None,
-        *,
-        return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
-        """Called by driver to assemble results into ManyBody-flavored QCSchema,
-        then reshape and return them in the customary Psi4 driver interface: ``(e/g/h, wfn)``.
-
-        Parameters
-        ----------
-        return_wfn
-            Whether to additionally return the dummy :py:class:`~psi4.core.Wavefunction`
-            calculation result as the second element of a tuple. Contents are:
-
-            - supersystem molecule
-            - dummy basis, def2-svp
-            - e/g/h member data
-            - QCVariables
-
-        Returns
-        -------
-        ret
-            Energy, gradient, or Hessian according to self.driver.
-        wfn
-            Wavefunction described above when *return_wfn* specified.
-
+        client: Optional["qcportal.FractalClient"] = None) -> "ManyBodyResult":
+        """
+        return back the model.
         """
         results_list = {k: v.get_results(client=client) for k, v in self.task_list.items()}
         print("RRRRR RESULTS_LIST")
@@ -1975,10 +1954,92 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         print("\n<<<  (RRR 3) Psi4 ManyBodyComputer.get_psi_results analyze_back  >>>")
         pprint.pprint(analyze_back, width=200)
 
-        nbody_model = self.get_results(external_results=analyze_back, component_results=results_list, client=client)
+        nbody_model = super().get_results(external_results=analyze_back, component_results=results_list, client=client)
+
+        return nbody_model
+
+    def get_psi_results(
+        self,
+        client: Optional["qcportal.FractalClient"] = None,
+        *,
+        return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
+        """Called by driver to assemble results into ManyBody-flavored QCSchema,
+        then reshape and return them in the customary Psi4 driver interface: ``(e/g/h, wfn)``.
+
+        Parameters
+        ----------
+        return_wfn
+            Whether to additionally return the dummy :py:class:`~psi4.core.Wavefunction`
+            calculation result as the second element of a tuple. Contents are:
+
+            - supersystem molecule
+            - dummy basis, def2-svp
+            - e/g/h member data
+            - QCVariables
+
+        Returns
+        -------
+        ret
+            Energy, gradient, or Hessian according to self.driver.
+        wfn
+            Wavefunction described above when *return_wfn* specified.
+
+        """
+#SEP        results_list = {k: v.get_results(client=client) for k, v in self.task_list.items()}
+#SEP        print("RRRRR RESULTS_LIST")
+#SEP        pprint.pprint(results_list, width=200)
+#SEP
+#SEP#        trove = {  # AtomicResult.properties return None if missing
+#SEP#            "energy": {k: v.properties.return_energy for k, v in results_list.items()},
+#SEP#            "gradient": {k: v.properties.return_gradient for k, v in results_list.items()},
+#SEP#            "hessian": {k: v.properties.return_hessian for k, v in results_list.items()},
+#SEP#        }
+#SEP        #findif_number = [for k, v in results_list.items()
+#SEP
+#SEP#        for chem, label, imol in calculator_cls.iterate_molecules():
+#SEP#            inp = AtomicInput(molecule=imol, **specifications[chem]["specification"])
+#SEP#
+#SEP#            _, real, bas = delabeler(label)
+#SEP#            result = qcng.compute(inp, specifications[chem]["program"])
+#SEP#
+#SEP#            if not result.success:
+#SEP#                print(result.error.error_message)
+#SEP#                raise RuntimeError("Calculation did not succeed! Error:\n" + result.error.error_message)
+#SEP#
+#SEP        component_properties = {}
+#SEP        # pull out stuff
+#SEP        props = {"energy", "gradient", "hessian"}
+#SEP
+#SEP        for label, result in results_list.items():
+#SEP            component_properties[label] = {}
+#SEP
+#SEP            for egh in props:
+#SEP                if hasattr(result.properties, f"return_{egh}"):
+#SEP                    v = getattr(result.properties, f"return_{egh}")
+#SEP                    # print(f"  {label} {egh}: {v}")
+#SEP                    if v is not None:
+#SEP                        component_properties[label][egh] = v
+#SEP
+#SEP        #findif_number = set(res.extras["qcvars"].get("FINDIF NUMBER") for label, res in results_list.items())
+#SEP        findif_number = {label: res.extras["qcvars"].get("FINDIF NUMBER") for label, res in results_list.items()}
+#SEP        print(f"{findif_number=}")
+#SEP
+#SEP        print("\n<<<  (RRR 2) Psi4 ManyBodyComputer.get_psi_results component_properties  >>>")
+#SEP        pprint.pprint(component_properties, width=200)
+#SEP
+#SEP        print("start to analyze")
+#SEP        analyze_back = self.qcmb_calculator.analyze(component_properties)
+#SEP        analyze_back["nbody_number"] = len(component_properties)
+#SEP        print("\n<<<  (RRR 3) Psi4 ManyBodyComputer.get_psi_results analyze_back  >>>")
+#SEP        pprint.pprint(analyze_back, width=200)
+#SEP
+#SEP        nbody_model = self.get_results(external_results=analyze_back, component_results=results_list, client=client)
+
+        nbody_model = self.get_results(client=client)
+
         print("\n<<<  (RRR 4) Psi4 ManyBodyComputer.get_psi_results nbody_model  >>>")
         pprint.pprint(nbody_model.dict(), width=200)
-        print(f"{findif_number=}")
+#SEP        print(f"{findif_number=}")
 
         core.print_out(nbody_model.stdout)
         logger.info('\nQCManyBody:\n' + nbody_model.stdout)
