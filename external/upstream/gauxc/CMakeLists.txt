@@ -48,6 +48,10 @@ if(${ENABLE_gauxc})
             message(FATAL_ERROR "Suitable gauxc could not be externally located as user insists")
         endif()
 
+        if(${gauxc_ENABLE_GPU} AND (NOT DEFINED ${CMAKE_CUDA_ARCHITECTURES}))
+           message(FATAL_ERROR "Internal GPU-enabled GauXC construction specified, but CMAKE_CUDA_ARCHITECTURES is not defined!")
+        endif()
+
         message(STATUS "Suitable gauxc could not be located, ${Magenta}Building gauxc${ColourReset} instead.")
 
         include(ExternalProject)
