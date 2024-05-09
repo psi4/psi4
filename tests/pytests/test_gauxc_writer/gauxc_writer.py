@@ -59,7 +59,7 @@ def write_results(run_name, wfn):
             initial_index = np.arange(basis.nbf())
             final_index = np.zeros(basis.nbf(), dtype=int)
             
-            max_am = wfn.jk().get_snLinK_max_am() 
+            max_am = wfn.jk().get_snLinK_max_am()
             cca_integral_order = [ [] for _ in np.arange(max_am) ] 
         
             # s shell, easy
