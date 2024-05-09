@@ -155,7 +155,6 @@ endif()
 include(psi4OptionsTools)
 option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
 option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
-option_with_default(CMAKE_CUDA_ARCHITECTURES "CUDA CCs to build GPU addons for" 70)
 include(xhost)  # defines: option(ENABLE_XHOST "Enable processor-specific optimization" ON)
 # below are uncommon to adjust
 option_with_print(ENABLE_OPENMP "Enables OpenMP parallelization" ON)
