@@ -354,7 +354,7 @@ class PSI_API snLinK : public SplitJK {
 
     std::optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> > permutation_matrix_;
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(
-        const std::shared_ptr<BasisSet> psi4_basisset, GauXC::ExecutionSpace ex);
+        const std::shared_ptr<BasisSet> psi4_basisset);
 
     // => Semi-Numerical Stuff <= //
     // are we running snLinK on GPUs?
@@ -394,11 +394,11 @@ class PSI_API snLinK : public SplitJK {
     // => Other useful stuff <= //
     /// Eigen matrix printout format    
     Eigen::IOFormat format_;
-  
-    // maximum supported AM for current GauXC instance 
-    int gauxc_max_am_; 
+
+    // maximum supported AM for current GauXC instance
+    int gauxc_max_am_;
   #endif
-   
+
   public:
     // => Constructors < = //
 
@@ -434,9 +434,9 @@ class PSI_API snLinK : public SplitJK {
     // setters and getters
     void set_snLinK_incfock_iter(bool incfock_iter) override { incfock_iter_ = incfock_iter; }
 
-    int get_snLinK_max_am() override { 
+    int get_snLinK_max_am() override {
       #ifdef USING_gauxc
-        return gauxc_max_am_; 
+        return gauxc_max_am_;
       #else
         throw PSIEXCEPTION("Psi4 is not installed with GauXC support!");
       #endif

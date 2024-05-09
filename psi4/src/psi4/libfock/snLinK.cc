@@ -82,22 +82,19 @@ std::tuple<
 
 // constructs a permutation matrix for converting matrices to and from GauXC's integral ordering standard 
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permutation_matrix(
-    const std::shared_ptr<BasisSet> psi4_basisset, GauXC::ExecutionSpace ex) {
-  
+    const std::shared_ptr<BasisSet> psi4_basisset) {
+
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(psi4_basisset->nbf());
-   
-    // general array for how to reorder integrals 
-    std::vector<int> cca_integral_order(2*gauxc_max_am_ + 1, 0); 
-  
-    // s shell, easy
-    cca_integral_order[0] = 0; 
+
+    // general array for how to reorder integrals
+    std::vector<int> cca_integral_order(2*gauxc_max_am_ + 1, 0);
    
     // p shells or larger
     for (size_t l = 1, idx = 1; l != gauxc_max_am_; idx += 2, ++l) {
         cca_integral_order[idx] = l;
         cca_integral_order[idx + 1] = -l;
     }
-  
+
     // actually construct permutation matrix
     for (int ish = 0, ibf = 0; ish != psi4_basisset->nshell(); ++ish) {
         auto& sh = psi4_basisset->shell(ish);
@@ -216,14 +213,16 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // get maximum supported AM for this GauXC instance
     gauxc_max_am_ = GauXC::gauxc_max_am(ex, GauXC::SupportedAlg::SNLINK);
-    
+
     // sanity checking of GauXC AM
     if (primary_->max_am() > gauxc_max_am_) {
-        std::string message = "Selected basis set has higher-AM shells than supported by current GauXC instance!\n";
+        std::string message = "Selected basis set has higher-AM shells than supported by current GauXC instance! \n";
         message += "Either reduce the size of your basis set, or use a GauXC install with a higher supported AM.";
-        
+
         throw PSIEXCEPTION(message);
-    } 
+    }
+
+    // TODO: Runtime Libint2 vs. GauXC AM checking
 
     // set whether we force use of cartesian coordinates or not
     // this is required for GPU execution when using spherical harmonic basis sets
@@ -241,7 +240,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // create ERI ordering permutation matrix to handle integral ordering
     if (!is_cca_ && primary_->has_puream()) {
         permutation_matrix_ = std::make_optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> >(
-            generate_permutation_matrix(primary_, ex)
+            generate_permutation_matrix(primary_)
         );
     } else {
         permutation_matrix_ = std::nullopt;
