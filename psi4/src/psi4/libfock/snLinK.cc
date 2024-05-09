@@ -86,25 +86,14 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
   
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(psi4_basisset->nbf());
    
-    // get maximum supported AM for current GauXC instance 
-    int max_am = GauXC::gauxc_max_am(ex, GauXC::SupportedAlg::SNLINK);
- 
-    // sanity checking of GauXC AM
-    if (psi4_basisset->max_am() > max_am) {
-        std::string message = "Selected basis set has higher-AM shells than supported by current GauXC instance!\n";
-        message += "Either reduce the size of your basis set, or use a GauXC install with a higher supported AM.";
-        
-        throw PSIEXCEPTION(message);
-    } 
-    
     // general array for how to reorder integrals 
-    std::vector<int> cca_integral_order(2*max_am + 1, 0); 
+    std::vector<int> cca_integral_order(2*gauxc_max_am_ + 1, 0); 
   
     // s shell, easy
     cca_integral_order[0] = 0; 
    
     // p shells or larger
-    for (size_t l = 1, idx = 1; l != max_am; idx += 2, ++l) {
+    for (size_t l = 1, idx = 1; l != gauxc_max_am_; idx += 2, ++l) {
         cca_integral_order[idx] = l;
         cca_integral_order[idx + 1] = -l;
     }
@@ -224,6 +213,17 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 #else
         rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
 #endif
+
+    // get maximum supported AM for this GauXC instance
+    gauxc_max_am_ = GauXC::gauxc_max_am(ex, GauXC::SupportedAlg::SNLINK);
+    
+    // sanity checking of GauXC AM
+    if (primary_->max_am() > gauxc_max_am_) {
+        std::string message = "Selected basis set has higher-AM shells than supported by current GauXC instance!\n";
+        message += "Either reduce the size of your basis set, or use a GauXC install with a higher supported AM.";
+        
+        throw PSIEXCEPTION(message);
+    } 
 
     // set whether we force use of cartesian coordinates or not
     // this is required for GPU execution when using spherical harmonic basis sets
