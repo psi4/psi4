@@ -200,7 +200,8 @@ void export_fock(py::module &m) {
         .def("do_incfock_iter", &CompositeJK::do_incfock_iter, "Was the last Fock build incremental?")
         .def("clear_D_prev", &CompositeJK::clear_D_prev, "Clear previous D matrices.")
         .def("set_COSX_grid", &CompositeJK::set_COSX_grid, "Set grid to use for COSX for this SCF iteration.")
-        .def("get_COSX_grid", &CompositeJK::get_COSX_grid, "Return grid used for COSX for this SCF iteration.");
+        .def("get_COSX_grid", &CompositeJK::get_COSX_grid, "Return grid used for COSX for this SCF iteration.")
+        .def("get_snLinK_max_am", &CompositeJK::get_snLinK_max_am, "Return maximum AM supported by current GauXC instance, if GauXC support is enabled.");
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",

@@ -11,27 +11,6 @@ if(${ENABLE_gauxc})
     find_package(gauxc CONFIG) 
 
     if(${gauxc_FOUND})
-        #== rediscover Libint2 to get its properties (specifically AM) ==#
-        # probably hacky; I'm guessing there's a more elegant sol'n
-        #find_package(
-        #    Libint2
-        #    2.8.1
-        #    CONFIG
-        #)
-
-        #== check that AMs of GauXC and Libint2 align ==#        
-        #get_property(_am TARGET gauxc::gauxc PROPERTY GAUXC_CPU_SNLINK_MAX_AM)
-        
-        #if (TARGET Libint2::cxx)
-        #    if(NOT (${Libint2_MAX_AM_ERI} EQUAL ${_am}))
-        #        message(FATAL_ERROR "The maximum AM values of GauXC (${_am}) and Libint2 (${Libint2_MAX_AM_ERI}) do not align!")
-        #    endif()
-        #else()
-        #    if(NOT (${MAX_AM_ERI} EQUAL ${_am}))
-        #        message(FATAL_ERROR "The maximum AM values of GauXC (${_am}) and Libint2 (${MAX_AM_ERI}) do not align!")
-        #    endif()
-        #endif()
-
         #== check if GPU-enabled GauXC is found, if GPU is specified ==#
         get_property(_gpu TARGET gauxc::gauxc PROPERTY GAUXC_HAS_DEVICE)
         
@@ -76,7 +55,7 @@ if(${ENABLE_gauxc})
             DEPENDS lapack_external 
                     libxc_external
                     gau2grid_external
-            URL https://github.com/wavefunction91/GauXC/archive/567fdbe.tar.gz 
+            URL https://github.com/wavefunction91/GauXC/archive/6a8f4bf.tar.gz 
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

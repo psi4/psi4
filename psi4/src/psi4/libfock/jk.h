@@ -1305,6 +1305,12 @@ class PSI_API CompositeJK : public JK {
     std::string get_COSX_grid();
 
     /**
+    * Get maximum AM for GauXC used for snLinK, if GauXC support is enabled
+    * Throws if GauXC is not installed or if snLinK is not being used
+    */
+    int get_snLinK_max_am() { return k_algo_->get_snLinK_max_am(); }
+
+    /**
     * Print header information regarding JK
     * type on output file
     */
