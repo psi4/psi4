@@ -87,7 +87,6 @@ SharedMatrix LS_THC_Computer::build_E_exact() {
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri_computers(nthreads);
 
     eri_computers[0] = std::shared_ptr<TwoBodyAOInt>(factory.eri());
-#pragma omp parallel for
     for (int thread = 1; thread < nthreads; ++thread) {
         eri_computers[thread] = std::shared_ptr<TwoBodyAOInt>(eri_computers[0]->clone());
     }
@@ -194,7 +193,6 @@ SharedMatrix LS_THC_Computer::build_E_df() {
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri_computers(nthreads);
 
     eri_computers[0] = std::shared_ptr<TwoBodyAOInt>(factory.eri());
-#pragma omp parallel for
     for (int thread = 1; thread < nthreads; ++thread) {
         eri_computers[thread] = std::shared_ptr<TwoBodyAOInt>(eri_computers[0]->clone());
     }
