@@ -41,6 +41,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/pybind11.h"
 
 #include <algorithm>
 #include <iostream>
@@ -53,7 +54,10 @@
 #include <omp.h>
 #endif
 
+#include <libint2.hpp>
+
 using namespace psi;
+namespace py = pybind11;
 
 namespace psi {
 
@@ -214,15 +218,25 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // get maximum supported AM for this GauXC instance
     gauxc_max_am_ = GauXC::gauxc_max_am(ex, GauXC::SupportedAlg::SNLINK);
 
-    // sanity checking of GauXC AM
+    // basis set shouldn't have higher AM shells than GauXC instance supports 
     if (primary_->max_am() > gauxc_max_am_) {
-        std::string message = "Selected basis set has higher-AM shells than supported by current GauXC instance! \n";
-        message += "Either reduce the size of your basis set, or use a GauXC install with a higher supported AM.";
+        std::string error_message = "Selected basis set has higher-AM shells than supported by current GauXC instance! \n";
+        error_message += "Either reduce the size of your basis set, or use a GauXC install with a higher supported AM.";
 
-        throw PSIEXCEPTION(message);
+        throw PSIEXCEPTION(error_message);
     }
 
-    // TODO: Runtime Libint2 vs. GauXC AM checking
+    // cross-check supported L2 and GauXC AMs
+    // yoinking L2 AM from psi4/driver/p4util/util.py's libint2_configuration() function 
+    auto p4util = py::module::import("psi4").attr("p4util"); // from psi4 import p4util
+    auto libint2_configuration = p4util.attr("libint2_configuration")(); // p4util.libint2_configuration
+    int l2_max_am = libint2_configuration["eri"][py::int_(0)].cast<int>();
+
+    if (l2_max_am != gauxc_max_am_) {
+        std::string error_message = "Libint2 and GauXC do not have equivalent maximum AM support!";
+
+        throw PSIEXCEPTION(error_message);
+    }
 
     // set whether we force use of cartesian coordinates or not
     // this is required for GPU execution when using spherical harmonic basis sets
