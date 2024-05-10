@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -275,8 +275,7 @@ void Wabei_RHF() {
             coltot = F.params->coltot[h];
             if (coltot) maxrows = DPD_BIGNUM / coltot;
             if (maxrows < 1) {
-                outfile->Printf("\nWabei_RHF Error: A single row of ovvv > 2 GW.\n");
-                exit(PSI_RETURN_FAILURE);
+                throw std::runtime_error("\nWabei_RHF Error: A single row of ovvv > 2 GW.\n");
             } else
                 maxrows = DPD_BIGNUM;
             rowtot = F.params->rowtot[h];

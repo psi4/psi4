@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -334,8 +334,7 @@ double Tensor1d::xay(const SharedTensor2d &a, const SharedTensor1d &y) {
 
 SharedTensor2d Tensor1d::to_2d(int row, int col) {
   if (row*col != dim1_) {
-      printf("Tensor1d-->to_2d dimensisons are not consistent!");
-      exit(1);
+      throw std::logic_error("Tensor1d-->to_2d dimensions are not consistent!\n");
   }
   auto temp = std::make_shared<Tensor2d>("Temp", row, col);
   C_DCOPY(dim1_, A1d_, 1, temp->A2d_[0], 1);

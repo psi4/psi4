@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -61,8 +61,8 @@ bool CCOperation::compatible_dot() {
     if (!same) {
         outfile->Printf("\n\nSolve couldn't perform the operation ");
         print_operation();
-
-        exit(1);
+        outfile->Flush();
+        throw std::runtime_error("Solve could not perform an operation, see log file for details\n");
     }
     return (same);
 }
@@ -94,8 +94,8 @@ bool CCOperation::compatible_element_by_element() {
         if ((B_left != C_left) || (B_right != C_right)) {
             outfile->Printf("\n\nSolve couldn't perform the operation ");
             print_operation();
-
-            exit(1);
+            outfile->Flush();
+            throw std::runtime_error("Solve could not perform an operation, see log file for details\n");
         }
     }
     return (same);
@@ -138,8 +138,8 @@ bool CCOperation::compatible_contract() {
     if (B_contracted != C_contracted) {
         outfile->Printf("\n\nSolve couldn't perform the operation ");
         print_operation();
-
-        exit(1);
+        outfile->Flush();
+        throw std::runtime_error("Solve could not perform an operation, see log file for details\n");
     }
     return (same);
 }

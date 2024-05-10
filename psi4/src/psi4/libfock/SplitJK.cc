@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -48,9 +48,9 @@ SplitJK::SplitJK(std::shared_ptr<BasisSet> primary, Options& options) : primary_
     if (options["BENCH"].has_changed()) bench_ = options_.get_int("BENCH");
     if (options["DEBUG"].has_changed()) debug_ = options_.get_int("DEBUG");
     if (options["INTS_TOLERANCE"].has_changed()) cutoff_ = options_.get_double("INTS_TOLERANCE");
-};
+}
 
-SplitJK::~SplitJK() {};
+SplitJK::~SplitJK() {}
 
 size_t SplitJK::num_computed_shells() {
     outfile->Printf("WARNING: SplitJK::num_computed_shells() was called, but benchmarking is disabled for the chosen SplitJK algorithm.");

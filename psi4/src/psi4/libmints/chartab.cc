@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -168,8 +168,6 @@ void CharacterTable::common_init() {
     // rotation axis (nt), and the number of irreps (nirrep_)
 
     if (!symb.length()) {
-        // ExEnv::errn() << "CharacterTable::CharacterTable: null point group" << endl;
-        // exit(1);
         throw PSIEXCEPTION("CharacterTable::CharacterTable: null point group");
     }
 

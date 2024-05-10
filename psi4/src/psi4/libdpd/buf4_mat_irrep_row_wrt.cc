@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -34,6 +34,7 @@
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -72,7 +73,7 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq) {
     if (Buf->anti) {
         outfile->Printf("\n\tCannot write antisymmetrized buffer\n");
         outfile->Printf("\tback to original DPD file!\n");
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Cannot write antisymmetrized buffer back to original DPD file!");
     }
 
     if ((b_perm_pq == f_perm_pq) && (b_perm_rs == f_perm_rs) && (b_peq == f_peq) && (b_res == f_res))
@@ -84,7 +85,7 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq) {
             method = 23;
         else {
             outfile->Printf("\n\tInvalid second-level method!\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Invalid second-level method!");
         }
     } else if ((b_perm_pq == f_perm_pq) && (b_perm_rs != f_perm_rs) && (b_peq == f_peq)) {
         if (f_perm_rs && !b_perm_rs)
@@ -93,7 +94,7 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq) {
             method = 33;
         else {
             outfile->Printf("\n\tInvalid third-level method!\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Invalid third-level method!");
         }
     } else if ((b_perm_pq != f_perm_pq) && (b_perm_rs != f_perm_rs)) {
         if (f_perm_pq && !b_perm_pq) {
@@ -108,11 +109,11 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq) {
                 method = 45;
         } else {
             outfile->Printf("\n\tInvalid fourth-level method!\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Invalid fourth-level method!");
         }
     } else {
         outfile->Printf("\n\tInvalid method in dpd_buf_mat_irrep_rd!\n");
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Invalid method in dpd_buf_mat_irrep_rd!");
     }
 
     switch (method) {
@@ -157,7 +158,7 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq) {
         case 23: /* Unpack pq; no change in rs */
             /* I don't know if I'll ever use this, so I'll avoid it for now */
             outfile->Printf("\n\tShould you be using method %d?\n", method);
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Should you be using method " + std::to_string(method) + "?");
 
             break;
         case 31: /* No change in pq; pack rs */
@@ -188,7 +189,7 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq) {
         case 33: /* No change in pq; unpack rs */
             /* I'm not sure if I'll ever need this, so I'm removing it for now */
             outfile->Printf("\n\tShould you be using method %d?\n", method);
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Should you be using method " + std::to_string(method) + "?");
 
             break;
         case 41: /* Pack pq and rs */
@@ -222,23 +223,23 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq) {
             break;
         case 42: /* Pack pq; unpack rs */
             outfile->Printf("\n\tHaven't programmed method 42 yet!\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Haven't programmed method 42 yet!");
 
             break;
         case 43: /* Unpack pq; pack rs */
             outfile->Printf("\n\tHaven't programmed method 43 yet!\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Haven't programmed method 43 yet!");
 
             break;
         case 45: /* Unpack pq and rs */
             /* I'm not sure if I'll ever need this, so I'm removing it for now */
             outfile->Printf("\n\tShould you be using method %d?\n", method);
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Should you be using method " + std::to_string(method) + "?");
 
             break;
         default: /* Error trapping */
             outfile->Printf("\n\tInvalid switch case in dpd_buf_mat_irrep_rd!\n");
-            exit(PSI_RETURN_FAILURE);
+            throw PSIEXCEPTION("Invalid switch case in dpd_buf_mat_irrep_rd!");
             break;
     }
 

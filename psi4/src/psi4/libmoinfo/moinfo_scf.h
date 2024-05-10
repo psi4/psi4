@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -34,9 +34,6 @@
     \brief   This class stores all the basic info regarding MOs
 */
 
-#include <string>
-
-#include "psi4/libmints/wavefunction.h"
 #include "moinfo_base.h"
 
 namespace psi {
@@ -51,7 +48,7 @@ class MOInfoSCF : public MOInfoBase {
     void print_mo();
 };
 
-extern MOInfoSCF* moinfo_scf;
+extern MOInfoSCF* moinfo_scf;  // Unfortunate, but psi::mcscf assumes that this is declared.
 
 }  // namespace psi
 

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -33,10 +33,10 @@
 
 #include "psi4/libmints/corrtab.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libciomr/libciomr.h"
+#include "psi4/libmints/wavefunction.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 
 #include "moinfo_scf.h"
 
@@ -91,7 +91,7 @@ void MOInfoSCF::read_mo_spaces() {
     // Map the symmetry of the input occupations, to account for displacements
     auto ps = options.get_str("PARENT_SYMMETRY");
     if (ps != "") {
-        auto old_pg = std::make_shared<PointGroup> (ps);
+        auto old_pg = std::make_shared<PointGroup>(ps);
         // This is one of a series of displacements;  check the dimension against the parent point group
         int nirreps_ref = old_pg->char_table().nirrep();
 
@@ -102,7 +102,7 @@ void MOInfoSCF::read_mo_spaces() {
         read_mo_space(nirreps_ref, nactv, actv_ref, "SOCC");
 
         // Build the correlation table between full, and subgroup
-        auto full = std::make_shared<PointGroup> (options.get_str("PARENT_SYMMETRY"));
+        auto full = std::make_shared<PointGroup>(options.get_str("PARENT_SYMMETRY"));
         std::shared_ptr<PointGroup> sub = ref_wfn.molecule()->point_group();
         CorrelationTable corrtab(full, sub);
 

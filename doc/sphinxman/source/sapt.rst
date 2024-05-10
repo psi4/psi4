@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2023 The Psi4 Developers.
+.. # Copyright (c) 2007-2024 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -485,8 +485,7 @@ Basic SAPT0 Keywords
 .. include:: autodir_options_c/sapt__df_basis_sapt.rst
 .. include:: autodir_options_c/sapt__df_basis_elst.rst
 .. include:: autodir_options_c/sapt__freeze_core.rst
-.. include:: autodir_options_c/sapt__d_convergence.rst
-.. include:: autodir_options_c/sapt__e_convergence.rst
+.. include:: autodir_options_c/sapt__cphf_r_convergence.rst
 .. include:: autodir_options_c/sapt__maxiter.rst
 .. include:: autodir_options_c/sapt__print.rst
 

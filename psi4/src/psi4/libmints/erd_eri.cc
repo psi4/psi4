@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -85,16 +85,14 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory *integral, int deriv,
     try {
         tformbuf_ = new double[max_cart];
     } catch (std::bad_alloc &e) {
-        outfile->Printf("Error allocating tformbuf_.\n%s\n", e.what());
-        exit(EXIT_FAILURE);
+        throw std::bad_alloc("Error allocating tformbuf_.\n" + e.what());
     }
     memset(tformbuf_, 0, sizeof(double) * max_cart);
 
     try {
         target_ = new double[max_cart];
     } catch (std::bad_alloc &e) {
-        outfile->Printf("Error allocating target_.\n%s\n", e.what());
-        exit(EXIT_FAILURE);
+        throw std::bad_alloc("Error allocating target_.\n" + e.what());
     }
     memset(target_, 0, sizeof(double) * max_cart);
 
@@ -159,16 +157,14 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory *integral, int deriv,
     try {
         dscratch_ = new double[d_buffer_size_];
     } catch (std::bad_alloc &e) {
-        outfile->Printf("Error allocating dscratch_.\n%s\n", e.what());
-        exit(EXIT_FAILURE);
+        throw std::bad_alloc("Error allocating dscratch_.\n" + e.what());
     }
     memset(dscratch_, 0, sizeof(double) * d_buffer_size_);
 
     try {
         iscratch_ = new F_INT[i_buffer_size_];
     } catch (std::bad_alloc &e) {
-        outfile->Printf("Error allocating iscratch.\n%s\n", e.what());
-        exit(EXIT_FAILURE);
+        throw std::bad_alloc("Error allocating iscratch_.\n" + e.what());
     }
 
     normalize_basis();

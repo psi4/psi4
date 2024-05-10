@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -298,7 +298,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
         const double *ref3 = buffers[3];
         const double *ref4 = buffers[4];
         const double *ref5 = buffers[5];
-        const double *refx[3*nextc];
+        std::vector<const double*> refx(3*nextc);
         for (int ext = 0; ext < nextc; ext++) {
             refx[ext*3] = buffers[ext*3 + 6];
             refx[ext*3 + 1] = buffers[ext*3 + 7];
@@ -313,10 +313,11 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
                 Vp[cQ][0] += Vval * (*ref3++);
                 Vp[cQ][1] += Vval * (*ref4++);
                 Vp[cQ][2] += Vval * (*ref5++);
+                const double** refxp = &refx[0];
                 for (int ext = 0; ext < nextc; ext++) {
-                    EVp[ext][0] += Vval * (*refx[ext*3]++);
-                    EVp[ext][1] += Vval * (*refx[ext*3 + 1]++);
-                    EVp[ext][2] += Vval * (*refx[ext*3 + 2]++);
+                    EVp[ext][0] += Vval * (*refxp[ext*3]++);
+                    EVp[ext][1] += Vval * (*refxp[ext*3 + 1]++);
+                    EVp[ext][2] += Vval * (*refxp[ext*3 + 2]++);
                 }
             }
         }

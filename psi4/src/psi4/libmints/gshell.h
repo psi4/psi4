@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -45,7 +45,7 @@ enum GaussianType { Cartesian = 0, Pure = 1 };
 enum ShellType { Gaussian = 0, ECPType1 = 1, ECPType2 = 2 };
 
 /** Angular momentum types */
-const std::string amtypes = "SPDFGHIKLMNOPQRTUVWXYZ";
+const std::string amtypes = "SPDFGHIKLMNOQRTUVWXYZ";
 
 /*! \ingroup MINTS
  *  \class ShellInfo

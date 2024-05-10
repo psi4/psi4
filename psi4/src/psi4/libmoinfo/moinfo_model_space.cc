@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -29,9 +29,7 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
-#include <cstdio>
 
-#include "psi4/psifiles.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/libpsi4util.h"
@@ -181,15 +179,15 @@ void MOInfo::build_model_space() {
     }
 
     if (references.size() == 0) {
-        outfile->Printf("\n\n  MOInfo found no reference in the model space");
-        outfile->Printf("\n  Please check the following:");
-        outfile->Printf("\n  1) Definition of FROZEN_DOCC, RESTRICTED_DOCC, ACTIVE, and FROZEN_UOCC");
-        //        outfile->Printf("\n  1) Definition of FOCC, DOCC, ACTV, and FVIR");
-        outfile->Printf("\n  2) Symmetry of the wavefunction");
-        outfile->Printf("\n  3) Charge and multiplicity");
-        outfile->Printf("\n\n  PSIMRCC will end the computation.\n");
-
-        exit(PSI_RETURN_FAILURE);
+        std::string message =
+            "\n\n  No reference found in the model space"
+            "\n  Please check the following:"
+            "\n  1) Definition of FROZEN_DOCC, RESTRICTED_DOCC, ACTIVE, and FROZEN_UOCC"
+            "\n  2) Symmetry of the wavefunction"
+            "\n  3) Charge and multiplicity"
+            "\n\n  Ending the computation.\n";
+        outfile->Printf(message);
+        throw std::logic_error(message);
     }
 }
 

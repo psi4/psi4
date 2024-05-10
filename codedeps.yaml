@@ -304,7 +304,7 @@ data:
     conda:
       channel: conda-forge
       name: dftd3-python
-      constraint: null
+      constraint: ">=1.0"
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
@@ -429,7 +429,7 @@ data:
   - project: libint
     use:
       added: "1.0"
-      added_note: "Switched from Libint1 to C++11 intf of Libint2 at 1.4."
+      added_note: "Switched from Libint1 to C++11 intf of Libint2 at 1.4. Can use upstream Libint2 v2.8.0 at 1.9."
       required: true
       buildable: true
       buildtime: true
@@ -437,9 +437,8 @@ data:
     repository:
       host: github
       account: evaleev
-      #account: loriab  # TODO using evaleev for license but commit only at loriab
       name: libint
-      commit: 0eca57e
+      commit: v2.8.1
     #cmake:
     #  name: Libint2
     #  constraint:
@@ -461,16 +460,17 @@ data:
     #    - onebody_d1_l3
     #    - onebody_d2_l3
     conda:
-      channel: conda-forge/label/libint_dev
+      channel: conda-forge
       name: libint
-      constraint: "==2.7.3dev1"
-      constraint_note: "v2.7.3dev1 provides rt-switchable ordering (src) and derivative integrals (build)."
+      name_note: "On the psi4 channel, libint/libint2 were used c.2021-23 to distinguish v1/v2. c-f always used libint as the package name. Starting with the v2.8 reunification with upstream, the supplementary 'bigAM' packages published on the psi4 channel will use the name libint for consistency with c-f."
+      constraint: null
+      constraint_note: "v2.8.0 provides rt-switchable ordering (src) and derivative integrals (build)."
       aux_build_names:
-        - //psi4/label/testing::libint2
+        - //psi4::libint
         - libboost-headers
         - eigen
       aux_build_names_note:
-        "//psi4/label/testing::libint2": "Optionally for linux-64, an AM=7 build is available here."
+        "//psi4::libint": "Optionally for linux-64, an AM=7 build is available here."
       cmake:
         BOOST_ROOT:
           unix: ${CONDA_PREFIX}
@@ -755,7 +755,7 @@ data:
     conda:
       channel: conda-forge
       name: pybind11
-      constraint: ">=2.10.*"
+      constraint: ">=2.10.*,<2.12.0"
       constraint_note: "Particularly for docs until FixedSize typing percolates upstream."
       cmake:
         pybind11_DIR:
@@ -778,7 +778,7 @@ data:
     conda:
       channel: conda-forge
       name: pytest
-      constraint: null
+      constraint: "<8"
       aux_run_names:
         - pytest-xdist
       aux_run_names_note:
@@ -945,7 +945,8 @@ data:
       commit: 6.2.2
     #cmake:
     #  name: Libxc
-    #  constraint: 6.0.0
+    #  constraint: 6.1.0
+    #  constraint_note: "v6.1.0 required for HYB_MGGA_XC_R2SCAN0, etc."
     #  target: Libxc::xc
       components:
         - C
@@ -1409,22 +1410,21 @@ data:
       host: github
       account: Einsums
       name: Einsums
-      commit: v0.3
+      commit: v0.5
     #cmake:
     #  name:
-    #  constraint: 0.3
+    #  constraint: 0.4
     #  target: Einsums::einsums
     #  components:
     #  ENABLE_Einsums
     conda:
       channel: conda-forge
       name: einsums
-      constraint: null
-      # todo: weird to be targeting the openblas einsums variant (instead of constraint: "=*=mkl*") but right now with blas-devel only for 2023 yet packages only for 2022 AND needing to find clas.h, this is the only way it will solve. also, tie einsums variant to libblas selection.
+      constraint: "=*=mkl*"
+      # todo: tie einsums variant to libblas selection, rather than mkl constraint above.
       aux_build_names:
         - range-v3
         - zlib
-        - openblas
       skip_win: true
       cmake:
         ENABLE_Einsums: true

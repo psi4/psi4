@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -72,10 +72,7 @@ double CCMatrix::get_two_address_element(short p, short q) {
         // Case C
         return (matrix[left->get_tuple_irrep(p)][left->get_tuple_rel_index(p)][right->get_tuple_rel_index(q)]);
     }
-    outfile->Printf("\n\n\tdouble CCMatrix::get_two_address_element(int p, int q) Critical Error!!!");
-
-    exit(1);
-    return (0.0);
+    throw std::logic_error("double CCMatrix::get_two_address_element(int p, int q) critical error!\n");
 }
 
 /**
@@ -186,10 +183,7 @@ double CCMatrix::get_four_address_element(short p, short q, short r, short s) {
         // Case C
         return (matrix[right->get_tuple_irrep(s)][left->get_tuple_rel_index(p, q, r)][right->get_tuple_rel_index(s)]);
     }
-    outfile->Printf("\n\n\tdouble CCMatrix::get_four_address_element(int p, int q, int r, int s) Critical Error!!!");
-
-    exit(1);
-    return (0.0);
+    throw std::logic_error("double CCMatrix::get_four_address_element(int p, int q, int r, int s) critical error!\n");
 }
 
 void CCMatrix::set_four_address_element(short p, short q, short r, short s, double value) {
@@ -633,32 +627,6 @@ void CCMatrix::add_six_address_element_Pi_jk_Pa_bc(short i, short j, short k, sh
     matrix[irrep][jik][cba] += value;
     matrix[irrep][kji][cba] += value;
 }
-
-/*
-double CCMatrix::get_two_address_element_check(short p, short q)
-{
-  if(left->get_nelements() == 2){
-    // Case A
-    outfile->Printf("double CCMatrix::get_two_address_element_check(int p, int q) Case A non implemented");
-
-    exit(1);
-  }else if (left->get_nelements() == 0){
-    // Case B
-    outfile->Printf("double CCMatrix::get_two_address_element_check(int p, int q) Case B non implemented");
-
-    exit(1);
-  }else if (left->get_nelements() == 1){
-    // Case C
-    if((left->get_tuple_rel_index(p)!=-1) && (right->get_tuple_rel_index(q)!=-1))
-      return(matrix[left->get_tuple_irrep(p)][left->get_tuple_rel_index(p)][right->get_tuple_rel_index(q)]);
-    else return(0.0);
-  }
-  outfile->Printf("\n\n\tdouble CCMatrix::get_two_address_element_check(int p, int q) Critical Error!!!");
-
-  exit(1);
-  return(0.0);
-}
-*/
 
 }  // namespace psimrcc
 }  // namespace psi

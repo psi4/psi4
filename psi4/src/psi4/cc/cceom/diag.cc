@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -61,15 +61,15 @@ namespace cceom {
 #include "psi4/psifiles.h"
 
 extern void test_dpd();
-extern void rzero(int C_irr, const std::vector<bool>& converged);
-extern void rzero_rhf(int C_irr, const std::vector<bool>& converged);
+extern void rzero(int C_irr, const std::vector<bool> &converged);
+extern void rzero_rhf(int C_irr, const std::vector<bool> &converged);
 void init_S1(int index, int irrep);
 void init_S2(int index, int irrep);
 void init_C1(int i, int C_irr);
 void init_C0(int i);
 void init_S0(int i);
 void init_C2(int index, int irrep);
-extern void write_Rs(int C_irr, const std::vector<double>& energies, const std::vector<bool>& converged);
+extern void write_Rs(int C_irr, const std::vector<double> &energies, const std::vector<bool> &converged);
 extern double norm_C(dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbuf4 *CMnEf);
 extern double norm_C_full(double C0, dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbuf4 *CMnEf);
 extern double norm_C_rhf(dpdfile2 *CME, dpdbuf4 *CMnEf, dpdbuf4 *CMnfE);
@@ -132,7 +132,7 @@ void amp_write_ROHF(dpdfile2 *, dpdfile2 *, dpdbuf4 *, dpdbuf4 *, dpdbuf4 *, int
 void overlap(int C_irr, int current);
 void overlap_stash(int C_irr);
 
-void diag(ccenergy::CCEnergyWavefunction& wfn) {
+void diag(ccenergy::CCEnergyWavefunction &wfn) {
     dpdfile2 CME, CME2, Cme, SIA, Sia, RIA, Ria, DIA, Dia, tIA, tia, LIA, Lia;
     dpdbuf4 CMNEF, Cmnef, CMnEf, SIJAB, Sijab, SIjAb, RIJAB, Rijab, RIjAb, RIjbA;
     dpdbuf4 CMnEf1, CMnfE1, CMnfE, CMneF, C2;
@@ -260,8 +260,7 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
                     }
 #endif
                 } else {
-                    outfile->Printf("Invalid initial guess method.\n");
-                    exit(PSI_RETURN_FAILURE);
+                    throw std::logic_error("Invalid initial guess method.\n");
                 }
             }
         }
@@ -418,7 +417,7 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
             if (ignore_G_old) {
                 already_sigma = 0;
             }
-            auto temp_slice = Slice(Dimension(std::vector<int> {0}), Dimension(std::vector<int> {already_sigma}));
+            auto temp_slice = Slice(Dimension(std::vector<int>{0}), Dimension(std::vector<int>{already_sigma}));
             G->set_block(temp_slice, *G_old->get_block(temp_slice));
 
             for (int i = 0; i < L; ++i) {
@@ -1043,7 +1042,6 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
 
                     // ===> Write wfn overlap, if requested <===
                     if (params.overlap) overlap(C_irr, i);
-
                 }
             }
         }
@@ -1052,7 +1050,7 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
         if (params.overlap) overlap_stash(C_irr);
 
         free_block(alpha_old);
-    } // End Master Loop
+    }  // End Master Loop
 
     // => Save Psivars <=
     // Edify the auto-docs.
@@ -1078,16 +1076,16 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
     std::sort(state_data.begin(), state_data.end());
     std::map<std::tuple<int, int>, int> state_idx_to_identifiers;
     for (int i = 0; i < state_data.size(); ++i) {
-        const auto& tuple = state_data[i];
+        const auto &tuple = state_data[i];
         auto total_energy = std::get<0>(tuple);
         auto trans_irrep_lbl = moinfo.irr_labs[std::get<1>(tuple)];
         auto target_irrep = moinfo.sym ^ std::get<1>(tuple);
         auto target_irrep_lbl = moinfo.irr_labs[moinfo.sym ^ std::get<1>(tuple)];
         auto corr_energy = std::get<2>(tuple);
         auto irrep_idx = irrep_counts[target_irrep_lbl];
-        const std::vector<std::string> names {"CC", short_name};
+        const std::vector<std::string> names{"CC", short_name};
         state_idx_to_identifiers[{irrep_idx, target_irrep}] = i;
-        for (const auto& name : names) {
+        for (const auto &name : names) {
             auto varname = name + " ROOT " + std::to_string(i) + " TOTAL ENERGY";
             Process::environment.globals[varname] = total_energy;
             varname = name + " ROOT " + std::to_string(i) + " CORRELATION ENERGY";
@@ -1251,5 +1249,5 @@ void init_S2(int i, int C_irr) {
     }
 }
 
-}
+}  // namespace cceom
 }  // namespace psi

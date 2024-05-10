@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -47,9 +47,9 @@
 namespace psi {
 
 /*!
-** block_matrix(): Allocate a 2D array of doubles using contiguous memory
+** \brief block_matrix() allocates a 2D array of doubles using contiguous memory.
 **
-** Allocates a contiguous block of memory for an array of
+** \details Allocates a contiguous block of memory for an array of
 ** doubles, allocates an array of pointers to the beginning of each row and
 ** returns the pointer to the first row pointer.  This allows transparent
 ** 2d-array style access, but keeps memory together such that the matrix
@@ -64,38 +64,36 @@ namespace psi {
 **   into physical RAM or not, and available only where _POSIX_MEMLOCK
 **   is defined. Defaults to false if not specified.
 **
-** Returns: double star pointer to newly allocated matrix
+** \return double star pointer to newly allocated matrix
 **
-** T. Daniel Crawford
-** Sometime in 1994
+** \author T. Daniel Crawford
+** \date Sometime in 1994
 **
-** Based on init_matrix() from libciomr
+** \remark Based on init_matrix() from libciomr
 ** \ingroup CIOMR
 */
-
-PSI_API double **block_matrix(size_t n, size_t m, bool memlock) {
+[[nodiscard]] PSI_API double **block_matrix(size_t n, size_t m, bool memlock) {
     double **A = nullptr;
     double *B = nullptr;
-    size_t i;
 
     if (!m || !n) return (static_cast<double **>(nullptr));
 
     A = new double *[n];
     if (A == nullptr) {
-        outfile->Printf("block_matrix: trouble allocating memory \n");
-        outfile->Printf("n = %ld\n", n);
-        exit(PSI_RETURN_FAILURE);
+        std::ostringstream oss;
+        oss << "block_matrix: trouble allocating memory, n = " << n << "\n";
+        throw PSIEXCEPTION(oss.str());
     }
 
     B = new double[n * m];
     if (B == nullptr) {
-        outfile->Printf("block_matrix: trouble allocating memory \n");
-        outfile->Printf("m = %ld\n", m);
-        exit(PSI_RETURN_FAILURE);
+        std::ostringstream oss;
+        oss << "block_matrix: trouble allocating memory, n = " << n << " m = " << m << "\n";
+        throw PSIEXCEPTION(oss.str());
     }
     memset(static_cast<void *>(B), 0, m * n * sizeof(double));
 
-    for (i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         A[i] = &(B[i * m]);
     }
 
@@ -112,9 +110,7 @@ PSI_API double **block_matrix(size_t n, size_t m, bool memlock) {
         size += page_offset; /* Adjust size with page_offset */
 
         if (mlock(addr, size)) { /* Lock the memory */
-            outfile->Printf("block_matrix: trouble locking memory \n");
-            fflush(stderr);
-            exit(PSI_RETURN_FAILURE);
+            throw std::runtime_error("block_matrix: trouble locking memory \n");
         }
 
         addr = (char *)A;
@@ -126,9 +122,7 @@ PSI_API double **block_matrix(size_t n, size_t m, bool memlock) {
         size += page_offset; /* Adjust size with page_offset */
 
         if (mlock(addr, size)) { /* Lock the memory */
-            outfile->Printf("block_matrix: trouble locking memory \n");
-            fflush(stderr);
-            exit(PSI_RETURN_FAILURE);
+            throw std::runtime_error("block_matrix: trouble locking memory \n");
         }
     }
 #endif
@@ -150,4 +144,4 @@ void PSI_API free_block(double **array) {
     delete[] array[0];
     delete[] array;
 }
-}
+}  // namespace psi

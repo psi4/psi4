@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -200,6 +200,9 @@ SharedWavefunction psimrcc(SharedWavefunction, Options&);
 }
 namespace dummy_einsums {
 SharedWavefunction dummy_einsums (SharedWavefunction, Options&);
+}
+namespace dummy_integratorxx {
+SharedWavefunction dummy_integratorxx(SharedWavefunction, Options&);
 }
 
 
@@ -507,6 +510,17 @@ double py_psi_dummy_einsums(SharedWavefunction ref_wfn) {
 }
 #endif
 
+#ifdef USING_IntegratorXX
+SharedWavefunction py_psi_dummy_integratorxx(SharedWavefunction ref_wfn) {
+    py_psi_prepare_options_for_module("CCEOM");
+    return dummy_integratorxx::dummy_integratorxx(ref_wfn, Process::environment.options);
+}
+#else
+double py_psi_dummy_integratorxx(SharedWavefunction ref_wfn) {
+    throw PSIEXCEPTION("IntegratorXX not enabled. Recompile with -DENABLE_IntegratorXX");
+}
+#endif
+
 void py_psi_clean() { PSIOManager::shared_object()->psiclean(); }
 
 void py_psi_print_options() { Process::environment.options.print(); }
@@ -557,6 +571,21 @@ void throw_deprecation_errors(std::string const& key, std::string const& module 
     }
     if (module == "SCF" && key == "PK_ALGO") {
         py_psi_print_out("WARNING!\n\tRemove keyword PK_ALGO! PK_ALGO has been replaced by the SCF_SUBTYPE=YOSHIMINE_OUT_OF_CORE and REORDER_OUT_OF_CORE options. Using PK_ALGO will raise an error in v1.8.\n");
+    }
+    if (module == "SAPT" && key == "E_CONVERGENCE") {
+        throw PsiException(
+        "Remove keyword " + key + " for module " + module + ". This convergence control and keyword were removed in v1.10.",
+            __FILE__, __LINE__);
+    }
+    if (module == "SAPT" && key == "D_CONVERGENCE") {
+        throw PsiException(
+        "Rename keyword " + key + " for module " + module + " to CPHF_R_CONVERGENCE. The keyword was renamed in v1.10.",
+            __FILE__, __LINE__);
+    }
+    if (module == "FISAPT" && key == "D_CONVERGENCE") {
+        throw PsiException(
+        "Rename keyword " + key + " for module " + module + " to CPHF_R_CONVERGENCE. The keyword was renamed in v1.10.",
+            __FILE__, __LINE__);
     }
 }
 
@@ -1352,6 +1381,7 @@ PYBIND11_MODULE(core, core) {
     core.def("occ", py_psi_occ, "ref_wfn"_a, "Runs the orbital optimized CC codes.");
     core.def("dfocc", py_psi_dfocc, "ref_wfn"_a, "Runs the density-fitted orbital optimized CC codes.");
     core.def("dummy_einsums", py_psi_dummy_einsums, "ref_wfn"_a, "Runs the einsums placeholder code.");
+    core.def("dummy_integratorxx", py_psi_dummy_integratorxx, "ref_wfn"_a, "Runs the integratorxx placeholder code.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {
         if (ofname == "stdout") {

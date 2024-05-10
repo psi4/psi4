@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -180,7 +180,7 @@ def run_sapt_dft(name, **kwargs):
                                           sapt_jk,
                                           True,
                                           maxiter=core.get_option("SAPT", "MAXITER"),
-                                          conv=core.get_option("SAPT", "D_CONVERGENCE"),
+                                          conv=core.get_option("SAPT", "CPHF_R_CONVERGENCE"),
                                           Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"))
             hf_data.update(ind)
             core.timer_off("SAPT(HF):ind")
@@ -393,7 +393,7 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, do_dft=True, sapt_jk=None, sapt_jk_B=None,
                                   True,
                                   sapt_jk_B=sapt_jk_B,
                                   maxiter=core.get_option("SAPT", "MAXITER"),
-                                  conv=core.get_option("SAPT", "D_CONVERGENCE"),
+                                  conv=core.get_option("SAPT", "CPHF_R_CONVERGENCE"),
                                   Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"))
     data.update(ind)
 
@@ -446,11 +446,20 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, do_dft=True, sapt_jk=None, sapt_jk_B=None,
             x_alpha = 0.0
         fdds_disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache, is_hybrid, x_alpha)
         data.update(fdds_disp)
+        nfrozen_A = 0
+        nfrozen_B = 0
         core.timer_off("FDDS disp")
+    else:
+# this is where we actually need to figure out the number of frozen-core orbitals
+# if SAPT_DFT_MP2_DISP_ALG == FISAPT, the code will not figure it out on its own
+        nfrozen_A = wfn_A.basisset().n_frozen_core(core.get_global_option("FREEZE_CORE"),wfn_A.molecule())
+        nfrozen_B = wfn_B.basisset().n_frozen_core(core.get_global_option("FREEZE_CORE"),wfn_B.molecule())
+        
     
     core.timer_on("MP2 disp")
     if core.get_option("SAPT", "SAPT_DFT_MP2_DISP_ALG") == "FISAPT":
-        mp2_disp = sapt_mp2_terms.df_mp2_fisapt_dispersion(wfn_A, primary_basis, aux_basis, cache, do_print=True)
+        mp2_disp = sapt_mp2_terms.df_mp2_fisapt_dispersion(wfn_A, primary_basis, aux_basis, 
+                                                           cache, nfrozen_A, nfrozen_B, do_print=True)
     else:
         mp2_disp = sapt_mp2_terms.df_mp2_sapt_dispersion(dimer_wfn,
                                                          wfn_A,

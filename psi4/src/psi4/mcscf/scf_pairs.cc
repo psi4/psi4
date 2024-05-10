@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -92,7 +92,7 @@ void SCF::generate_pairs() {
     }
 
     outfile->Printf("\n\n  Generated %d pairs\n  Distributed as ", npairs);
-    for (int h = 0; h < nirreps; ++h) outfile->Printf("[%d %s]", pairpi[h], moinfo_scf->get_irr_labs(h).c_str());
+    for (int h = 0; h < nirreps; ++h) outfile->Printf("[%d %s]", pairpi[h], moinfo_scf->get_irr_lab(h).c_str());
 }
 
 }  // namespace mcscf

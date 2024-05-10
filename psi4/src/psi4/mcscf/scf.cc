@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -96,10 +96,7 @@ void SCF::startup() {
         same_a_b_orbs_ = true;
         same_a_b_dens_ = false;
         if (moinfo_scf->get_guess_occupation()) {
-            printf("\n  ERROR:  MCSCF cannot guess the active orbital occupation\n");
-            outfile->Printf("\n\n  MCSCF cannot guess the active orbital occupation\n");
-
-            exit(1);
+            throw std::runtime_error("MCSCF cannot guess the active orbital occupation\n");
         }
     }
 
@@ -161,7 +158,7 @@ void SCF::startup() {
         outfile->Printf("\n  TWOCON MOs = [");
         for (int I = 0; I < nci; ++I)
             outfile->Printf("%d (%s)%s", tcscf_mos[I] + block_offset[tcscf_sym[I]],
-                            moinfo_scf->get_irr_labs(tcscf_sym[I]).c_str(), I != nci - 1 ? "," : "");
+                            moinfo_scf->get_irr_lab(tcscf_sym[I]).c_str(), I != nci - 1 ? "," : "");
         outfile->Printf("]");
 
         Favg.allocate("Favg", nirreps, sopi, sopi);
