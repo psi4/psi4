@@ -1,7 +1,7 @@
 if(${ENABLE_bse})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_bse}))
         include(FindPythonModule)
-        find_python_module(basis_set_exchange ATLEAST 0.9.0 QUIET)
+        find_python_module(basis_set_exchange ATLEAST 0.10.0 QUIET)  # 0.9 is fine
     endif()
     
     if(${basis_set_exchange_FOUND})
@@ -24,7 +24,7 @@ if(${ENABLE_bse})
     
         ExternalProject_Add(bse_external
             BUILD_ALWAYS 1
-            URL https://github.com/MolSSI-BSE/basis_set_exchange/archive/v0.9.tar.gz
+            URL https://github.com/MolSSI-BSE/basis_set_exchange/archive/v0.10.tar.gz
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
             BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
