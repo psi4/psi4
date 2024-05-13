@@ -1484,7 +1484,7 @@ data:
       channel: conda-forge
       name: qcmanybody
       constraint: null
-      cmake: null
+      cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
       cmake_note: "Primarily OTF runtime detected."
