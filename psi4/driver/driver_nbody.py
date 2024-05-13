@@ -213,7 +213,7 @@ FragBasIndex = Tuple[Tuple[int], Tuple[int]]
 
 SubTaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer]
 
-def old_nbody():
+def nbody():
     """
     Computes the nbody interaction energy, gradient, or Hessian depending on input.
     This is a generalized universal function for computing interaction and total quantities.
@@ -1695,10 +1695,10 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         )
         nb_per_mc = computer_model.nbodies_per_mc_level
 
-        print("\n<<<  (ZZZ 1) Psi4 harness ManyBodyComputer.from_psi4_task_planner  >>>")
+        # print("\n<<<  (ZZZ 1) Psi4 harness ManyBodyComputer.from_psi4_task_planner  >>>")
         # v2: pprint.pprint(computer_model.model_dump(), width=200)
-        pprint.pprint(computer_model.dict(), width=200)
-        print(f"nbodies_per_mc_level={nb_per_mc}")
+        # pprint.pprint(computer_model.dict(), width=200)
+        # print(f"nbodies_per_mc_level={nb_per_mc}")
 
 #        return computer_model
 
@@ -1707,7 +1707,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             for lvl1 in nb_per_mc[mc_level_idx]:
                 key = "supersystem" if lvl1 == "supersystem" else int(lvl1)
                 comp_levels[key] = mtd
-        print(f"{comp_levels=}")
+        # print(f"{comp_levels=}")
 
         specifications = {}
         for mtd, spec in computer_model.input_data.specification.specification.items():
@@ -1717,8 +1717,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             specifications[mtd]["specification"] = spec
             specifications[mtd]["specification"].pop("schema_name", None)
             specifications[mtd]["specification"].pop("protocols", None)
-        print("POST specifications")
-        pprint.pprint(specifications)
+        # print("POST specifications")
+        # pprint.pprint(specifications)
 
 # comp_levels={1: 'mp2/sto-3g', 2: 'scf/sto-3g'}
 # {'(auto)': {'program': 'psi4',
@@ -1739,12 +1739,12 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         )
         computer_model.qcmb_calculator = calculator_cls
 
-        print("\n<<<  (ZZZ 2) QCManyBody module ManyBodyCalculator  >>>")
-        print(dir(calculator_cls))
+        # print("\n<<<  (ZZZ 2) QCManyBody module ManyBodyCalculator  >>>")
+        # print(dir(calculator_cls))
 
         info, dcount = calculator_cls.format_calc_plan()
-        print(info)
-        pprint.pprint(dcount)
+        # print(info)
+        # pprint.pprint(dcount)
         logger.info(info)
         core.print_out("\n" + p4util.banner(f" ManyBody Setup: N-Body Levels {computer_model.max_nbody}", strNotOutfile=True) + "\n")
         core.print_out(info)
@@ -1752,7 +1752,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         component_results = {}
 
         for chem, label, imol in calculator_cls.iterate_molecules():
-            print(f"{chem=} {label=}, {imol=} {imol.extras=}")
+            # print(f"{chem=} {label=}, {imol=} {imol.extras=}")
+            pass
         #    inp = AtomicInput(molecule=imol, **specifications[chem]["specification"])
 
         #    _, real, bas = delabeler(label)
@@ -1823,9 +1824,9 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         # Get the n-body orders for this level. e.g., [1] or [2, 3] or ["supersystem"]
         nbodies = self.nbodies_per_mc_level[mc_level_idx]
-        print(f"{self.nbodies_per_mc_level=} {nbodies=} {mc_level_idx=}")
-        print(f"{self.levels=}")
-        print(f"{self.qcmb_calculator.nbodies_per_mc_level=}")
+        # print(f"{self.nbodies_per_mc_level=} {nbodies=} {mc_level_idx=}")
+        # print(f"{self.levels=}")
+        # print(f"{self.qcmb_calculator.nbodies_per_mc_level=}")
 
 #self.nbodies_per_mc_level=[[1], [2]] nbodies=[2] mc_level_idx=1
 #self.levels={1: 'mp2/sto-3g', 2: 'scf/sto-3g'}
@@ -1834,7 +1835,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             if nb_lst == nbodies:
                 filter_key = spec_key
         #filter_key = rev_nbpermclvl[self.nbodies_per_mc_level[mc_level_idx]]
-        print(f"{filter_key=}")
+        # print(f"{filter_key=}")
 
         for kwg in ['dft_functional']:
             if kwg in kwargs:
@@ -1863,16 +1864,16 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         def lab_labeler_alt(item) -> str:
             mckey, frag, bas = qcmb.delabeler(label)
-            print("parts", mckey, frag, bas)
+            # print("parts", mckey, frag, bas)
             # note 0-index to 1-index shift for label
             return f"{mc_level_idx + 1}_{item}"
 
         #print("HHHH", compute_dict)
         for chem, label, imol in self.qcmb_calculator.iterate_molecules():
             mckey, frag, bas = qcmb.delabeler(label)
-            print(f"{chem=} {label=}, {imol=}      {mckey=} {frag=} {bas=}    {imol.extras=}")
+            # print(f"{chem=} {label=}, {imol=}      {mckey=} {frag=} {bas=}    {imol.extras=}")
             lbl2 = lab_labeler_alt(label)
-            print(f"{lbl2=}")
+            # print(f"{lbl2=}")
             if mckey != filter_key:
                 continue
             # TODO probably haven't filtered by body
@@ -1885,7 +1886,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
                 charges = imol.extras.pop("embedding_charges")
                 data['keywords']['function_kwargs'].update({'external_potentials': charges})
 
-            print(f"ADDING TO TASKS {label=} {lbl2=} {data=} {template=}")
+            # print(f"ADDING TO TASKS {label=} {lbl2=} {data=} {template=}")
             self.task_list[label] = mb_computer(**data)
             count += 1
 
@@ -1907,8 +1908,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         return back the model.
         """
         results_list = {k: v.get_results(client=client) for k, v in self.task_list.items()}
-        print("RRRRR RESULTS_LIST")
-        pprint.pprint(results_list, width=200)
+        # print("RRRRR RESULTS_LIST")
+        # pprint.pprint(results_list, width=200)
 
 #        trove = {  # AtomicResult.properties return None if missing
 #            "energy": {k: v.properties.return_energy for k, v in results_list.items()},
@@ -1943,16 +1944,16 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         #findif_number = set(res.extras["qcvars"].get("FINDIF NUMBER") for label, res in results_list.items())
         findif_number = {label: res.extras["qcvars"].get("FINDIF NUMBER") for label, res in results_list.items()}
-        print(f"{findif_number=}")
+        # print(f"{findif_number=}")
 
-        print("\n<<<  (RRR 2) Psi4 ManyBodyComputer.get_psi_results component_properties  >>>")
-        pprint.pprint(component_properties, width=200)
+        # print("\n<<<  (RRR 2) Psi4 ManyBodyComputer.get_psi_results component_properties  >>>")
+        # pprint.pprint(component_properties, width=200)
 
-        print("start to analyze")
+        # print("start to analyze")
         analyze_back = self.qcmb_calculator.analyze(component_properties)
         analyze_back["nbody_number"] = len(component_properties)
-        print("\n<<<  (RRR 3) Psi4 ManyBodyComputer.get_psi_results analyze_back  >>>")
-        pprint.pprint(analyze_back, width=200)
+        # print("\n<<<  (RRR 3) Psi4 ManyBodyComputer.get_psi_results analyze_back  >>>")
+        # pprint.pprint(analyze_back, width=200)
 
         nbody_model = super().get_results(external_results=analyze_back, component_results=results_list, client=client)
 
@@ -2037,8 +2038,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         nbody_model = self.get_results(client=client)
 
-        print("\n<<<  (RRR 4) Psi4 ManyBodyComputer.get_psi_results nbody_model  >>>")
-        pprint.pprint(nbody_model.dict(), width=200)
+        # print("\n<<<  (RRR 4) Psi4 ManyBodyComputer.get_psi_results nbody_model  >>>")
+        # pprint.pprint(nbody_model.dict(), width=200)
 #SEP        print(f"{findif_number=}")
 
         core.print_out(nbody_model.stdout)
@@ -2085,13 +2086,13 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
                 for obj in [core, wfn]:
                     obj.set_variable(qcv, val)
 
-        print(f"{self.qcmb_calculator.levels=}")
+        # print(f"{self.qcmb_calculator.levels=}")
         mc_ordered_list = list(set(self.qcmb_calculator.levels.values()))
 
         for mcfragbas, dval in nbody_model.component_properties.items():
-            print(f"{mcfragbas=} {delabeler(mcfragbas)=}")
+            # print(f"{mcfragbas=} {delabeler(mcfragbas)=}")
             mckey, frag, bas = delabeler(mcfragbas)
-            print("DVAL", mckey, frag, bas, dval.dict())
+            # print("DVAL", mckey, frag, bas, dval.dict())
             psi_mcfragbas = new_lab_labeler(mc_ordered_list.index(mckey), frag, bas)
             psi_mcfragbas2 = new_lab_labeler2(mc_ordered_list.index(mckey), frag, bas)  # TODO CHOOSE
 
@@ -2116,10 +2117,10 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             wfn.set_hessian(ret)
             wfn.set_gradient(grad)
 
-        print('WFN')
-        pprint.pprint(wfn.variables(), width=200)
-        print('CORE')
-        pprint.pprint(core.variables(), width=200)
+        # print('WFN')
+        # pprint.pprint(wfn.variables(), width=200)
+        # print('CORE')
+        # pprint.pprint(core.variables(), width=200)
 
         if return_wfn:
             return (ret, wfn)

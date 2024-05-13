@@ -162,14 +162,6 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
         levels = kwargs.pop('levels', None)
         dertype = kwargs.pop("dertype", None)
 
-        print("INTO ManyBodyComputer")
-        print("current_manybody_kwargs")
-        pp.pprint(current_manybody_kwargs)
-        print("packet and kwargs")
-        pp.pprint(packet)
-        pp.pprint(kwargs)
-        print("levels")
-        pp.pprint(levels)
         plan = ManyBodyComputer.from_psi4_task_planner(levels=levels, **packet, **current_manybody_kwargs) #**kwargs)
         #plan = ManyBodyComputer(**packet, **kwargs)
         original_molecule = packet.pop("molecule")
@@ -184,14 +176,14 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
 
         for mc_level_idx, mtd in enumerate(plan.levels.values()):
             mtdkey = plan.input_data.specification.specification[mtd].model.method
-            print(f"{mtdkey=}")
-            print(f"ENUM0 {mc_level_idx=} {mtd=} {method=} {basis=} {cbsmeta=} {kwargs=}")
+            # print(f"{mtdkey=}")
+            # print(f"ENUM0 {mc_level_idx=} {mtd=} {method=} {basis=} {cbsmeta=} {kwargs=}")
             mtdin = mtdkey if mtd == "(auto)" else mtd
             #method, basis, cbsmeta = expand_cbs_methods(mtdkey, basis, driver, cbsmeta=cbsmeta, **kwargs)  # NEW mtd->mtdkey
             #method, basis, cbsmeta = expand_cbs_methods(mtd, basis, driver, cbsmeta=cbsmeta, **kwargs)  # NEW mtd->mtdkey
             method, basis, cbsmeta = expand_cbs_methods(mtdin, basis, driver, cbsmeta=cbsmeta, **kwargs)  # NEW mtd->mtdkey
             packet.update({'method': method, 'basis': basis})
-            print(f"ENUM {mc_level_idx=} {mtd=} {method=} {basis=} {cbsmeta=}")
+            # print(f"ENUM {mc_level_idx=} {mtd=} {method=} {basis=} {cbsmeta=}")
 
             # Tell the task builder which level to add a task list for
             # * see https://github.com/psi4/psi4/pull/1351#issuecomment-549948276 for discussion of where build_tasks logic should live

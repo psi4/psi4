@@ -1466,6 +1466,7 @@ data:
     use:
       added: "1.10"
       required: true
+      required_note: "Allows BSSE treatments and MBE analyses. Prior to v1.10, internal code was used."
       buildable: true
       buildtime: true
       buildtime_note: "buildtime for cmake checks; otherwise, runtime."
@@ -1474,7 +1475,7 @@ data:
       host: github
       account: MolSSI
       name: QCManyBody
-      commit: v0.1.0
+      commit: v0.2.0
     #cmake:
     #  name: qcmanybody
     #  constraint: ATLEAST 0.1.0
@@ -1484,7 +1485,7 @@ data:
       name: qcmanybody
       constraint: null
       cmake: null
-        # REDO WHEN AVAILABLE //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
-        # REDO WHEN AVAILABLE //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
+        //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
+        //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
       cmake_note: "Primarily OTF runtime detected."
 
