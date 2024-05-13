@@ -1799,17 +1799,17 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         Parameters
         ----------
-#        mb_computer
-#            Class of task computers to instantiate and add to self.task_list. Usually :class:`~psi4.driver.AtomicComputer` but may be other when wrappers are layered.
-#        mc_level_idx
-#            Position in field self.nbodies_per_mc_level used to obtain ``nbodies``, the list of n-body
-#            levels (e.g., `[1]` or `[1, 2]` or `["supersystem"]`) to which the modelchem specified in **kwargs** applies.
-#            That is, `nbodies = self.nbodies_per_mc_level[mc_level_idx]`.
-#            Note the natural 1-indexing of ``nbodies`` _contents_, so `[1]` covers one-body contributions.
-#            The corresponding user label is the 1-indexed counterpart, `mc_level_lbl = mc_level_idx + 1`
-#            Formerly nlevel as in `nbody = self.nbody_list[nbody_level=nlevel]`.
-#        kwargs
-#            Other arguments for initializing **mb_computer**. In particular, specifies model chemistry.
+        mb_computer
+            Class of task computers to instantiate and add to self.task_list. Usually :class:`~psi4.driver.AtomicComputer` but may be other when wrappers are layered.
+        mc_level_idx
+            Position in field self.nbodies_per_mc_level used to obtain ``nbodies``, the list of n-body
+            levels (e.g., `[1]` or `[1, 2]` or `["supersystem"]`) to which the modelchem specified in **kwargs** applies.
+            That is, `nbodies = self.nbodies_per_mc_level[mc_level_idx]`.
+            Note the natural 1-indexing of ``nbodies`` _contents_, so `[1]` covers one-body contributions.
+            The corresponding user label is the 1-indexed counterpart, `mc_level_lbl = mc_level_idx + 1`
+            Formerly nlevel as in `nbody = self.nbody_list[nbody_level=nlevel]`. (edit)
+        kwargs
+            Other arguments for initializing **mb_computer**. In particular, specifies model chemistry. (edit)
 
         Returns
         -------
