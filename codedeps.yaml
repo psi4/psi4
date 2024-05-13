@@ -1478,7 +1478,7 @@ data:
       commit: v0.2.0
     #cmake:
     #  name: qcmanybody
-    #  constraint: ATLEAST 0.1.0
+    #  constraint: ATLEAST 0.2.0
     #  target:
     conda:
       channel: conda-forge

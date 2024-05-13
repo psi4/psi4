@@ -149,6 +149,7 @@ jobs:
                         libint ^
                         qcelemental ^
                         qcengine ^
+                        qcmanybody ^
                         pydantic=1.10.13 ^
                         optking ^
                         scipy
