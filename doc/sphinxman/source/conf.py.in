@@ -456,6 +456,7 @@ intersphinx_mapping = {'python': ('https://docs.python.org/3.12', None),
                        "qcelemental": ("https://molssi.github.io/QCElemental/", None),
                        "qcengine": ("https://molssi.github.io/QCEngine/", None),
                        "qcfractal": ("https://molssi.github.io/QCFractal/", None),
+                       "qcmanybody": ("https://molssi.github.io/QCManyBody/", None),
                       }
 
 
