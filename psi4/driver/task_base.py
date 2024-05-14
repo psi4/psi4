@@ -131,7 +131,7 @@ class AtomicComputer(BaseComputer):
 
         return atomic_model
 
-    def compute(self, client: Optional["qcportal.client.FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.client.PortalClient"] = None):
         """Run quantum chemistry."""
         from psi4.driver import pp
 
@@ -202,7 +202,7 @@ class AtomicComputer(BaseComputer):
             core.print_out(_drink_filter(stdout))
         self.computed = True
 
-    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.client.PortalClient"] = None) -> AtomicResult:
         """Return results as Atomic-flavored QCSchema."""
 
         if self.result:
