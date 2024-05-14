@@ -1603,7 +1603,7 @@ class CompositeComputer(BaseComputer):
         # uncalled function
         return [t.plan() for t in self.task_list]
 
-    def compute(self, client: Optional["qcportal.FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.client.PortalClient"] = None):
         label = self.metameta['label']
         instructions = "\n" + p4util.banner(f" CBS Computations{':' + label if label else ''} ",
                                             strNotOutfile=True) + "\n"
@@ -1614,7 +1614,7 @@ class CompositeComputer(BaseComputer):
             for t in reversed(self.task_list):
                 t.compute(client=client)
 
-    def _prepare_results(self, client: Optional["qcportal.FractalClient"] = None):
+    def _prepare_results(self, client: Optional["qcportal.client.PortalClient"] = None):
         results_list = [x.get_results(client=client) for x in self.task_list]
 
         modules = [getattr(v.provenance, "module", None) for v in results_list]
@@ -1681,7 +1681,7 @@ class CompositeComputer(BaseComputer):
         cbs_results["module"] = modules
         return cbs_results
 
-    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.client.PortalClient"] = None) -> AtomicResult:
         """Return results as Composite-flavored QCSchema."""
 
         assembled_results = self._prepare_results(client=client)
@@ -1757,7 +1757,7 @@ class CompositeComputer(BaseComputer):
 
     def get_psi_results(
         self,
-        client: Optional["qcportal.FractalClient"] = None,
+        client: Optional["qcportal.client.PortalClient"] = None,
         *,
         return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
         """Called by driver to assemble results into Composite-flavored QCSchema,
