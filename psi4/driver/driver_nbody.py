@@ -195,13 +195,9 @@ except ImportError:
 from qcelemental.models import FailedOperation, Molecule, DriverEnum, ProtoModel, AtomicResult, AtomicInput
 import qcengine as qcng
 import qcmanybody as qcmb
-from qcmanybody.models import BsseEnum, ManyBodyKeywords, ManyBodyInput, ManyBodyResult, ManyBodyResultProperties
-try:
-    from qcmanybody.models.manybody_pydv1 import AtomicSpecification
-except ModuleNotFoundError:
-    from qcmanybody.models import AtomicSpecification, BsseEnum, ManyBodyKeywords, ManyBodyInput, ManyBodyResult, ManyBodyResultProperties
+from qcmanybody.models import AtomicSpecification, BsseEnum, ManyBodyKeywords, ManyBodyInput, ManyBodyResult, ManyBodyResultProperties
 from qcmanybody import ManyBodyCalculator
-from qcmanybody.qcng_computer import ManyBodyComputerQCNG
+from qcmanybody.computer import ManyBodyComputer as ManyBodyComputerQCNG
 from qcmanybody.utils import delabeler, provenance_stamp as qcmb_provenance_stamp
 
 if TYPE_CHECKING:
@@ -272,8 +268,10 @@ def nbody():
         Add atom-centered point charges for fragments whose basis sets are not included in the computation.
 
     """
+    pass
 
 
+hide_stuff = '''
 class old_BsseEnum(str, Enum):
     """Available basis-set superposition error (BSSE) treatments."""
 
@@ -1043,7 +1041,7 @@ class old_ManyBodyComputer(BaseComputer):
         # uncalled function
         return [t.plan() for t in self.task_list.values()]
 
-    def compute(self, client: Optional["qcportal.FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.client.PortalClient"] = None):
         """Run quantum chemistry."""
 
         info = "\n" + p4util.banner(f" ManyBody Computations ", strNotOutfile=True) + "\n"
@@ -1057,7 +1055,7 @@ class old_ManyBodyComputer(BaseComputer):
     def prepare_results(
         self,
         results: Optional[Dict[str, SubTaskComputers]] = None,
-        client: Optional["qcportal.FractalClient"] = None,
+        client: Optional["qcportal.client.PortalClient"] = None,
     ) -> Dict[str, Any]:
         """Process the results from all n-body component molecular systems and model chemistry levels into final quantities.
 
@@ -1393,7 +1391,7 @@ class old_ManyBodyComputer(BaseComputer):
 
         return nbody_results
 
-    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.client.PortalClient"] = None) -> AtomicResult:
         """Return results as ManyBody-flavored QCSchema."""
 
         info = "\n" + p4util.banner(f" ManyBody Results ", strNotOutfile=True) + "\n"
@@ -1458,7 +1456,7 @@ class old_ManyBodyComputer(BaseComputer):
 
     def get_psi_results(
         self,
-        client: Optional["qcportal.FractalClient"] = None,
+        client: Optional["qcportal.client.PortalClient"] = None,
         *,
         return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
         """Called by driver to assemble results into ManyBody-flavored QCSchema,
@@ -1615,7 +1613,7 @@ class replaced_in_p4_new_AtomicComputerQCNG(BaseComputer):
 
         return atomic_model
 
-    def compute(self, client: Optional["qcportal.FractalClient"] = None) -> None:
+    def compute(self, client: Optional["qcportal.client.PortalClient"] = None) -> None:
         """Run quantum chemistry single-point.
 
         NOTE: client logic removed (compared to psi4.driver.AtomicComputer)
@@ -1638,13 +1636,14 @@ class replaced_in_p4_new_AtomicComputerQCNG(BaseComputer):
         #logger.debug(pp.pformat(self.result.model_dump()))
         self.computed = True
 
-    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.client.PortalClient"] = None) -> AtomicResult:
         """Return results as Atomic-flavored QCSchema.
 
         NOTE: client removed (compared to psi4.driver.AtomicComputer)
         """
         if self.result:
             return self.result
+'''
 
 
 class ManyBodyComputer(ManyBodyComputerQCNG):
@@ -1890,7 +1889,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             self.task_list[label] = mb_computer(**data)
             count += 1
 
-    def compute(self, client: Optional["qcportal.FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.client.PortalClient"] = None):
         """Run quantum chemistry."""
 
         info = "\n" + p4util.banner(f" ManyBody Computations ", strNotOutfile=True) + "\n"
@@ -1903,7 +1902,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
     def get_results(
         self,
-        client: Optional["qcportal.FractalClient"] = None) -> "ManyBodyResult":
+        client: Optional["qcportal.client.PortalClient"] = None) -> ManyBodyResult:
         """
         return back the model.
         """
@@ -1961,7 +1960,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
     def get_psi_results(
         self,
-        client: Optional["qcportal.FractalClient"] = None,
+        client: Optional["qcportal.client.PortalClient"] = None,
         *,
         return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
         """Called by driver to assemble results into ManyBody-flavored QCSchema,

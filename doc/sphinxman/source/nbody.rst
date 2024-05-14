@@ -92,4 +92,7 @@ API
    :undoc-members:
 
 .. autopydantic_model:: psi4.driver.driver_nbody.ManyBodyComputer
+   :members:
+   :undoc-members:
+   :inherited-members: BaseModel, ProtoModel
 
