@@ -201,14 +201,14 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
 
                 if dermode[0] == dermode[1]:  # analytic
                     logger.info("PLANNING MB(CBS):  {mc_level_idx=} {packet=} {cbsmeta=} {dertype=} kw={kwargs}")
-                    plan.build_tasks_alt(CompositeComputer, **packet, mc_level_idx=mc_level_idx, **cbsmeta, **kwargs)  # TODO dertype expected in kwargs?
+                    plan.build_tasks(CompositeComputer, **packet, mc_level_idx=mc_level_idx, **cbsmeta, **kwargs)  # TODO dertype expected in kwargs?
 
                 else:
                     logger.info(
                         f"PLANNING MB(FD(CBS):  {mc_level_idx=} {packet=} {cbsmeta=} findif_kw={current_findif_kwargs} kw={kwargs}"
                     )
                     # untested
-                    plan.build_tasks_alt(FiniteDifferenceComputer,
+                    plan.build_tasks(FiniteDifferenceComputer,
                                      **packet,
                                      mc_level_idx=mc_level_idx,
                                      findif_mode=dermode,
@@ -222,13 +222,13 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
                 dermode = negotiate_derivative_type(driver, method, dertype, verbose=1)
                 if dermode[0] == dermode[1]:  # analytic
                     logger.info(f"PLANNING MB:  {mc_level_idx=} {packet=} {kwargs=}")
-                    plan.build_tasks_alt(AtomicComputer, **packet, mc_level_idx=mc_level_idx, **kwargs)
+                    plan.build_tasks(AtomicComputer, **packet, mc_level_idx=mc_level_idx, **kwargs)
                                      # TODO dertype expected in kwargs?
                 else:
                     logger.info(
                         f"PLANNING MB(FD):  {mc_level_idx=} {packet=} findif_kw={current_findif_kwargs} kw={kwargs}"
                     )
-                    plan.build_tasks_alt(FiniteDifferenceComputer,
+                    plan.build_tasks(FiniteDifferenceComputer,
                                      **packet,
                                      mc_level_idx=mc_level_idx,
                                      findif_mode=dermode,
