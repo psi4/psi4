@@ -498,24 +498,23 @@ void CIWavefunction::get_parameters(Options &options) {
     if (Parameters_->filter_guess == 1) {
         Parameters_->filter_guess_sign = options.get_int("FILTER_GUESS_SIGN");
         if (Parameters_->filter_guess_sign != 1 && Parameters_->filter_guess_sign != -1) {
-            outfile->Printf("FILTER_GUESS_SIGN should be 1 or -1 !\n");
-            abort();
+            const std::string msg = "FILTER_GUESS_SIGN should be 1 or -1 !\n";
+            outfile->Printf(msg.c_str());
+            throw PSIEXCEPTION(msg);
         }
 
         if (options["FILTER_GUESS_DET1"].size() != 2) {
-            outfile->Printf(
-                "Need to specify FILTER_GUESS_DET1 = "
-                "(alphastr betastr)\n");
-            abort();
+            const std::string msg = "Need to specify FILTER_GUESS_DET1 = (alphastr betastr)\n";
+            outfile->Printf(msg.c_str());
+            throw PSIEXCEPTION(msg);
         }
         Parameters_->filter_guess_Ia = options["FILTER_GUESS_DET1"][0].to_integer();
         Parameters_->filter_guess_Ib = options["FILTER_GUESS_DET1"][1].to_integer();
 
         if (options["FILTER_GUESS_DET2"].size() != 2) {
-            outfile->Printf(
-                "Need to specify FILTER_GUESS_DET2 = "
-                "(alphastr betastr)\n");
-            abort();
+            const std::string msg = "Need to specify FILTER_GUESS_DET2 = (alphastr betastr)\n";
+            outfile->Printf(msg.c_str());
+            throw PSIEXCEPTION(msg);
         }
         Parameters_->filter_guess_Ja = options["FILTER_GUESS_DET2"][0].to_integer();
         Parameters_->filter_guess_Jb = options["FILTER_GUESS_DET2"][1].to_integer();
@@ -532,10 +531,9 @@ void CIWavefunction::get_parameters(Options &options) {
     Parameters_->filter_zero_det = 0;
     if (options["FILTER_ZERO_DET"].has_changed()) {
         if (options["FILTER_ZERO_DET"].size() != 2) {
-            outfile->Printf(
-                "Need to specify FILTER_ZERO_DET = "
-                "(alphastr betastr)\n");
-            abort();
+            const std::string msg = "Need to specify FILTER_ZERO_DET = (alphastr betastr)\n";
+            outfile->Printf(msg.c_str());
+            throw PSIEXCEPTION(msg);
         }
         Parameters_->filter_zero_det = 1;
         Parameters_->filter_zero_det_Ia = options["FILTER_ZERO_DET"][0].to_integer();
@@ -607,21 +605,20 @@ void CIWavefunction::get_parameters(Options &options) {
         Parameters_->follow_vec_Ibc.resize(i);
         Parameters_->follow_vec_Iaridx.resize(i);
         Parameters_->follow_vec_Ibridx.resize(i);
+        const std::string err_msg = "Need format FOLLOW_VECTOR = [ [[alphastr_i, betastr_i], coeff_i], ... ]\n";
 
         /* now parse each piece */
         for (i = 0; i < Parameters_->follow_vec_num; i++) {
             int isize = options["FOLLOW_VECTOR"][i].size();
             if (isize != 2) {
-                outfile->Printf("Need format FOLLOW_VECTOR = \n");
-                outfile->Printf("  [ [[alphastr_i, betastr_i], coeff_i], ... ] \n");
-                abort();
+                outfile->Printf(err_msg.c_str());
+                throw PSIEXCEPTION(err_msg);
             }
 
             int iisize = options["FOLLOW_VECTOR"][i][0].size();
             if (iisize != 2) {
-                outfile->Printf("Need format FOLLOW_VECTOR = \n");
-                outfile->Printf("  [ [[alphastr_i, betastr_i], coeff_i], ... ] \n");
-                abort();
+                outfile->Printf(err_msg.c_str());
+                throw PSIEXCEPTION(err_msg);
             }
 
             Parameters_->follow_vec_Ia[i] = options["FOLLOW_VECTOR"][i][0][0].to_integer();
