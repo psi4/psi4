@@ -631,7 +631,7 @@ void CIWavefunction::get_parameters(Options &options) {
             Parameters_->follow_vec_coef[i] = options["FOLLOW_VECTOR"][i][1].to_double();
 
         } /* end loop over parsing */
-    }     /* end follow vector stuff */
+    } /* end follow vector stuff */
 
     /* make sure SA weights add up to 1.0 */
     for (i = 0, junk = 0.0; i < Parameters_->average_num; i++) {
@@ -688,7 +688,8 @@ void CIWavefunction::print_parameters() {
                     Parameters_->nprint);
     outfile->Printf("    NUM ROOTS      =   %6d      ICORE         =   %6d\n", Parameters_->num_roots,
                     Parameters_->icore);
-    outfile->Printf("    PRINT LVL      =   %6lu      FCI           =   %6s\n", print_, Parameters_->fci ? "YES" : "NO");
+    outfile->Printf("    PRINT LVL      =   %6lu      FCI           =   %6s\n", print_,
+                    Parameters_->fci ? "YES" : "NO");
     outfile->Printf("    R CONV         = %6.2e      MIXED         =   %6s\n", Parameters_->convergence,
                     Parameters_->mixed ? "YES" : "NO");
     outfile->Printf("    E CONV         = %6.2e      MIXED4        =   %6s\n", Parameters_->energy_convergence,
