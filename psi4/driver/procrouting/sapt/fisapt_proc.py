@@ -65,18 +65,39 @@ def fisapt_compute_energy(self, external_potentials=None):
     self.dHF()
     core.timer_off("FISAPT: Subsys E")
 
+    # perhaps inverted logic, but consistent with libsapt_solver/sapt0.cc
+    do_sapt0_e10elst = core.get_option("FISAPT", "SAPT0_E10ELST")
+    do_sapt0_e10exch = core.get_option("FISAPT", "SAPT0_E10EXCH")
+    do_sapt0_e20ind = core.get_option("FISAPT", "SAPT0_E20IND")
+    do_sapt0_e20disp = core.get_option("FISAPT", "SAPT0_E20DISP")
+
+    # If no specific term is requested, it means that we do everything
+    if (not do_sapt0_e10elst and not do_sapt0_e10exch and 
+        not do_sapt0_e20ind and not do_sapt0_e20disp):
+        do_sapt0_e10elst = True
+        do_sapt0_e10exch =  True
+        do_sapt0_e20ind = True
+        do_sapt0_e20disp = True
+
+    print(f"{do_sapt0_e10elst=}")
+    print(f"{do_sapt0_e10exch=}")
+    print(f"{do_sapt0_e20ind=}")
+    print(f"{do_sapt0_e20disp=}")
     # => SAPT0 <=
 
-    core.timer_on("FISAPT:SAPT:elst")
-    self.elst()
-    core.timer_off("FISAPT:SAPT:elst")
-    core.timer_on("FISAPT:SAPT:exch")
-    self.exch()
-    core.timer_off("FISAPT:SAPT:exch")
-    core.timer_on("FISAPT:SAPT:ind")
-    self.ind()
-    core.timer_off("FISAPT:SAPT:ind")
-    if not core.get_option("FISAPT", "FISAPT_DO_FSAPT"):
+    if do_sapt0_e10elst:
+        core.timer_on("FISAPT:SAPT:elst")
+        self.elst()
+        core.timer_off("FISAPT:SAPT:elst")
+    if do_sapt0_e10exch:
+        core.timer_on("FISAPT:SAPT:exch")
+        self.exch()
+        core.timer_off("FISAPT:SAPT:exch")
+    if do_sapt0_e20ind or do_sapt0_e20disp:
+        core.timer_on("FISAPT:SAPT:ind")
+        self.ind()
+        core.timer_off("FISAPT:SAPT:ind")
+    if do_sapt0_e20disp and (not core.get_option("FISAPT", "FISAPT_DO_FSAPT")):
         core.timer_on("FISAPT:SAPT:disp")
         self.disp(self.matrices(), self.vectors(), True)  # Expensive, only do if needed  # unteseted translation of below
         # self.disp(matrices_, vectors_, true)  # Expensive, only do if needed

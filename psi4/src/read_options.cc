@@ -1005,7 +1005,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         The integrals are computed before any terms, so all integrals will
         be computed even if they are not needed for the requested term !expert -*/
         options.add_bool("SAPT0_E20IND", false);
-        /*- For SAPT0 only, compute only second-order induction
+        /*- For SAPT0 only, compute only second-order dispersion
         The integrals are computed before any terms, so all integrals will
         be computed even if they are not needed for the requested term !expert -*/
         options.add_bool("SAPT0_E20DISP", false);
@@ -1172,6 +1172,23 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("MAXITER", 50);
         /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 0.0);
+        /*- For SAPT0 only, compute only first-order electrostatics.
+        |fisapt__sapt0_e10elst| (this option) True *and* |fisapt__sapt0_e10exch| True
+        are equivalent to |sapt__sapt0_e10| in wfn code.
+        Efficiency may improve in future as more pieces removed !expert -*/
+        options.add_bool("SAPT0_E10ELST", false);
+        /*- For SAPT0 only, compute only first-order exchange.
+        |fisapt__sapt0_e10elst| (this option) True *and* |fisapt__sapt0_e10exch| True
+        are equivalent to |sapt__sapt0_e10| in wfn code.
+        Efficiency may improve in future as more pieces removed !expert -*/
+        options.add_bool("SAPT0_E10EXCH", false);
+        /*- For SAPT0 only, compute only second-order induction.
+        Efficiency may improve in future as more pieces removed !expert -*/
+        options.add_bool("SAPT0_E20IND", false);
+        /*- For SAPT0 only, compute only second-order dispersion.
+        For now, also computes induction.
+        Efficiency may improve in future as more pieces removed !expert -*/
+        options.add_bool("SAPT0_E20DISP", false);
 
         // => ISAPT Zero-th Order Wavefunction Options <= //
 

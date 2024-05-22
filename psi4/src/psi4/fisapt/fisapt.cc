@@ -5171,23 +5171,52 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
 }
 
 void FISAPT::print_trailer() {
+
+    // perhaps inverted logic, but consistent with libsapt_solver/sapt0.cc
+    bool do_sapt0_e10elst = options_.get_bool("SAPT0_E10ELST");
+    bool do_sapt0_e10exch = options_.get_bool("SAPT0_E10EXCH");
+    bool do_sapt0_e20ind = options_.get_bool("SAPT0_E20IND");
+    bool do_sapt0_e20disp = options_.get_bool("SAPT0_E20DISP");
+    bool do_all = false;
+
+    // If no specific term is requested, it means that we do everything
+    if (!do_sapt0_e10elst && !do_sapt0_e10exch && !do_sapt0_e20ind && !do_sapt0_e20disp) {
+        do_sapt0_e10elst = true;
+        do_sapt0_e10exch =  true;
+        do_sapt0_e20ind = true;
+        do_sapt0_e20disp = true;
+        do_all = true;
+    }
+
+    if (do_sapt0_e10elst) {
     scalars_["Electrostatics"] = scalars_["Elst10,r"];
     if (reference_->has_potential_variable("A") && reference_->has_potential_variable("B")) {
         scalars_["Electrostatics"] += scalars_["Extern-Extern"];
     }
+    }
+    if (do_sapt0_e10exch) {
     scalars_["Exchange"] = scalars_["Exch10"];
+    }
+    if (do_sapt0_e20ind || do_sapt0_e20disp) {
     scalars_["Induction"] = scalars_["Ind20,r"] + scalars_["Exch-Ind20,r"] + scalars_["delta HF,r (2)"];
     scalars_["sInduction"] = scalars_["Ind20,r"] + scalars_["sExch-Ind20,r"] + scalars_["delta HF,r (2)"];
+    }
+    if (do_sapt0_e20disp) {
     scalars_["Dispersion"] = scalars_["Disp20"] + scalars_["Exch-Disp20"];
     scalars_["sDispersion"] = scalars_["Disp20"] + scalars_["sExch-Disp20"];
+    }
+    if (do_all) {
     scalars_["SAPT"] =
         scalars_["Electrostatics"] + scalars_["Exchange"] + scalars_["Induction"] + scalars_["Dispersion"];
     scalars_["sSAPT"] =
         scalars_["Electrostatics"] + scalars_["Exchange"] + scalars_["sInduction"] + scalars_["sDispersion"];
+    }
 
+    if (do_sapt0_e20ind || do_sapt0_e20disp) {
     double Sdelta = scalars_["Induction"] / (scalars_["Ind20,r"] + scalars_["Exch-Ind20,r"]);
     scalars_["Induction (A<-B)"] = Sdelta * (scalars_["Ind20,r (A<-B)"] + scalars_["Exch-Ind20,r (A<-B)"]);
     scalars_["Induction (B<-A)"] = Sdelta * (scalars_["Ind20,r (B<-A)"] + scalars_["Exch-Ind20,r (B<-A)"]);
+    }
 
     outfile->Printf("  ==> Results <==\n\n");
 
@@ -5195,6 +5224,7 @@ void FISAPT::print_trailer() {
     std::string scaled = "   ";
     outfile->Printf(
         "  --------------------------------------------------------------------------------------------------------\n");
+    if (do_sapt0_e10elst) {
     outfile->Printf("    Electrostatics            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
                     scalars_["Electrostatics"] * 1000.0, scalars_["Electrostatics"] * pc_hartree2kcalmol,
                     scalars_["Electrostatics"] * pc_hartree2kJmol);
@@ -5208,7 +5238,9 @@ void FISAPT::print_trailer() {
                         scalars_["Extern-Extern"] * pc_hartree2kJmol);
     }
     outfile->Printf("\n");
+    }
 
+    if (do_sapt0_e10exch) {
     outfile->Printf("    Exchange %3s              %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n", scaled.c_str(),
                     scalars_["Exchange"] * 1000.0, scalars_["Exchange"] * pc_hartree2kcalmol,
                     scalars_["Exchange"] * pc_hartree2kJmol);
@@ -5218,7 +5250,9 @@ void FISAPT::print_trailer() {
     outfile->Printf("      Exch10(S^2)             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n\n",
                     scalars_["Exch10(S^2)"] * 1000.0, scalars_["Exch10(S^2)"] * pc_hartree2kcalmol,
                     scalars_["Exch10(S^2)"] * pc_hartree2kJmol);
+    }
 
+    if (do_sapt0_e20ind || do_sapt0_e20disp) {
     outfile->Printf("    Induction %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n", scaled.c_str(),
                     scalars_["Induction"] * 1000.0, scalars_["Induction"] * pc_hartree2kcalmol,
                     scalars_["Induction"] * pc_hartree2kJmol);
@@ -5237,7 +5271,9 @@ void FISAPT::print_trailer() {
     outfile->Printf("      Induction (B<-A) %3s    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n\n",
                     scaled.c_str(), scalars_["Induction (B<-A)"] * 1000.0,
                     scalars_["Induction (B<-A)"] * pc_hartree2kcalmol, scalars_["Induction (B<-A)"] * pc_hartree2kJmol);
+    }
 
+    if (do_sapt0_e20disp) {
     outfile->Printf("    Dispersion %3s            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n", scaled.c_str(),
                     scalars_["Dispersion"] * 1000.0, scalars_["Dispersion"] * pc_hartree2kcalmol,
                     scalars_["Dispersion"] * pc_hartree2kJmol);
@@ -5247,7 +5283,9 @@ void FISAPT::print_trailer() {
     outfile->Printf("      Exch-Disp20 %3s         %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n\n",
                     scaled.c_str(), scalars_["Exch-Disp20"] * 1000.0, scalars_["Exch-Disp20"] * pc_hartree2kcalmol,
                     scalars_["Exch-Disp20"] * pc_hartree2kJmol);
+    }
 
+    if (do_all) {
     outfile->Printf("  Total HF                    %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
                     scalars_["HF"] * 1000.0, scalars_["HF"] * pc_hartree2kcalmol, scalars_["HF"] * pc_hartree2kJmol);
     outfile->Printf("  Total SAPT0 %3s             %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n", scaled.c_str(),
@@ -5258,6 +5296,7 @@ void FISAPT::print_trailer() {
                         scaled.c_str(), scalars_["sSAPT"] * 1000.0, scalars_["sSAPT"] * pc_hartree2kcalmol,
                         scalars_["sSAPT"] * pc_hartree2kJmol);
     }
+    }
     outfile->Printf("\n");
     outfile->Printf(
         "  --------------------------------------------------------------------------------------------------------\n");
@@ -5266,29 +5305,39 @@ void FISAPT::print_trailer() {
     outfile->Printf("    Luke Skywalker: Why didn't you say so before?\n");
     outfile->Printf("    Han Solo: I *did* say so before.\n");
 
+    if (do_sapt0_e10elst) {
     Process::environment.globals["SAPT ELST ENERGY"] = scalars_["Electrostatics"];
     Process::environment.globals["SAPT ELST10,R ENERGY"] = scalars_["Elst10,r"];
     if (reference_->has_potential_variable("A") && reference_->has_potential_variable("B")) {
         Process::environment.globals["SAPT ELST EXTERN-EXTERN ENERGY"] = scalars_["Extern-Extern"];
     }
+    }
 
+    if (do_sapt0_e10exch) {
     Process::environment.globals["SAPT EXCH ENERGY"] = scalars_["Exchange"];
     Process::environment.globals["SAPT EXCH10 ENERGY"] = scalars_["Exch10"];
     Process::environment.globals["SAPT EXCH10(S^2) ENERGY"] = scalars_["Exch10(S^2)"];
+    }
 
+    if (do_sapt0_e20ind || do_sapt0_e20disp) {
     Process::environment.globals["SAPT IND ENERGY"] = scalars_["Induction"];
     Process::environment.globals["SAPT IND20,R ENERGY"] = scalars_["Ind20,r"];
     Process::environment.globals["SAPT EXCH-IND20,R ENERGY"] = scalars_["Exch-Ind20,r"];
     Process::environment.globals["SAPT IND20,U ENERGY"] = scalars_["Ind20,u"];
     Process::environment.globals["SAPT EXCH-IND20,U ENERGY"] = scalars_["Exch-Ind20,u"];
+    }
 
+    if (do_sapt0_e20disp) {
     Process::environment.globals["SAPT DISP ENERGY"] = scalars_["Dispersion"];
     Process::environment.globals["SAPT DISP20 ENERGY"] = scalars_["Disp20"];
     Process::environment.globals["SAPT EXCH-DISP20 ENERGY"] = scalars_["Exch-Disp20"];
+    }
 
+    if (do_all) {
     Process::environment.globals["SAPT0 TOTAL ENERGY"] = scalars_["SAPT"];
     Process::environment.globals["SAPT TOTAL ENERGY"] = scalars_["SAPT"];
     Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT TOTAL ENERGY"];
+    }
 
     // Export the components of dHF to Psi4 variables
     Process::environment.globals["SAPT HF(2) ENERGY ABC(HF)"] = scalars_["E_ABC_HF"];
