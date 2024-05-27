@@ -32,6 +32,8 @@
 #include "psi4/libfunctional/functional.h"
 #include "psi4/libmints/typedefs.h"
 
+#include <xc.h>
+
 #include <map>
 
 struct xc_func_type;
@@ -99,6 +101,9 @@ class LibXCFunctional : public Functional {
     double vv10_b() { return vv10_b_; }
     double vv10_c() { return vv10_c_; }
     double density_cutoff() { return density_cutoff_; }
+    
+    // Information about what type of LibXC functional this is
+    int kind() { return xc_functional_->info->kind; }
 
     // Get libxc provenance stamp
     static std::string xclib_description();

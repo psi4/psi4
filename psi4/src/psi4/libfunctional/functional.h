@@ -34,6 +34,14 @@
 #include <vector>
 #include <string>
 
+#include <xc.h>
+
+// https://gitlab.com/libxc/libxc/-/blob/devel/src/xc.h#L37
+#define PSI4_EXCHANGE             XC_EXCHANGE             // 0
+#define PSI4_CORRELATION          XC_CORRELATION          // 1
+#define PSI4_EXCHANGE_CORRELATION XC_EXCHANGE_CORRELATION // 2
+#define PSI4_KINETIC              XC_KINETIC              // 3
+
 namespace psi {
 
 /**
@@ -148,6 +156,13 @@ class Functional {
     double meta_cutoff() const { return meta_cutoff_; }
     double density_cutoff() const { return density_cutoff_; }
     virtual double query_density_cutoff();
+
+    // Information about what type of functional this is (X, C, XC, K...)
+    virtual int kind() { return -1; }
+    bool is_x()  { return this->kind() == PSI4_EXCHANGE; }
+    bool is_c()  { return this->kind() == PSI4_CORRELATION; }
+    bool is_xc() { return this->kind() == PSI4_EXCHANGE; }
+    bool is_k()  { return this->kind() == PSI4_KINETIC; }
 
     // => Utility <= //
     virtual void print(std::string out_fname = "outfile", int print = 1) const;

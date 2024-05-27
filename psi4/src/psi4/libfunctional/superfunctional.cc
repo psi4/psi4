@@ -73,7 +73,7 @@ void SuperFunctional::common_init() {
     vv10_c_ = 0.0;
     vv10_beta_ = 0.0;
 
-    libxc_xc_func_ = false;
+    // libxc_xc_func_ = false; TODO
     locked_ = false;
     density_tolerance_ = 0.0;
 }
@@ -108,8 +108,8 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
         sup->set_vv10_b(xc_func->vv10_b());
         sup->set_vv10_c(xc_func->vv10_c());
     }
-    sup->add_c_functional(static_cast<std::shared_ptr<Functional>>(xc_func));
-    sup->libxc_xc_func_ = true;
+    sup->add_functional(static_cast<std::shared_ptr<Functional>>(xc_func));
+    // sup->libxc_xc_func_ = true; TODO
 
     return sup;
 }
@@ -118,16 +118,13 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_polarized() {
     auto sup = std::make_shared<SuperFunctional>();
 
     // Clone over parts
-    for (int i = 0; i < x_functionals_.size(); i++) {
-        sup->add_x_functional(x_functionals_[i]->build_polarized());
-    }
-    for (int i = 0; i < c_functionals_.size(); i++) {
-        sup->add_c_functional(c_functionals_[i]->build_polarized());
+    for (int i = 0; i < functionals_.size(); i++) {
+        sup->add_functional(functionals_[i]->build_polarized());
     }
 
     sup->deriv_ = deriv_;
     sup->max_points_ = max_points_;
-    sup->libxc_xc_func_ = libxc_xc_func_;
+    // sup->libxc_xc_func_ = libxc_xc_func_; TODO
     if (needs_vv10_) {
         sup->needs_vv10_ = true;
         sup->vv10_b_ = vv10_b_;
@@ -163,17 +160,14 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
     auto sup = std::make_shared<SuperFunctional>();
 
     // Clone over parts
-    for (int i = 0; i < x_functionals_.size(); i++) {
-        sup->add_x_functional(x_functionals_[i]->build_worker());
-    }
-    for (int i = 0; i < c_functionals_.size(); i++) {
-        sup->add_c_functional(c_functionals_[i]->build_worker());
+    for (int i = 0; i < functionals_.size(); i++) {
+        sup->add_functional(functionals_[i]->build_worker());
     }
 
     // Workers dont need omega or alpha
     sup->deriv_ = deriv_;
     sup->max_points_ = max_points_;
-    sup->libxc_xc_func_ = libxc_xc_func_;
+    //sup->libxc_xc_func_ = libxc_xc_func_; TODO
     if (needs_vv10_) {
         sup->needs_vv10_ = true;
         sup->vv10_b_ = vv10_b_;
@@ -220,107 +214,86 @@ void SuperFunctional::print(std::string out, int level) const {
                     ((is_c_lrc() || is_c_hybrid() || is_c_scs_hybrid()) ? "TRUE" : "FALSE"));
     printer->Printf("\n");
 
-    if (libxc_xc_func_) {
-        // Well thats nasty
-        std::vector<std::tuple<std::string, int, double>> mix_data =
-            dynamic_cast<LibXCFunctional*>(c_functionals_[0].get())->get_mix_data();
+    // Tuple is <fnctl name, fnctl kind (see functional.h), alpha, omega>
+    std::vector<std::tuple<const std::string, int, double, double>> mix_data;
 
-        int nxc = 0;
-        int nexch = 0;
-        int ncorr = 0;
+    for (int i = 0; i < functionals_.size(); i++) {
+        // TODO: We really should have a base class for functionals with multiple components
+        // Instead, try casting to a LibXC functional
+        Functional *fnc = functionals_[i].get();
+        LibXCFunctional *xcf = dynamic_cast<LibXCFunctional*>(fnc);
+
+        // If we don't have a LibXC functional, assume the fnctl has no sub-components...
+        if (xcf == nullptr) {
+            mix_data.push_back(std::make_tuple(fnc->name(), fnc->kind(), fnc->alpha(), fnc->omega()));
+        } else { // ...Otherwise, copy the mix data from LibXC:
+            // This vector is <name, type, alpha>. Add omega from the fnctl
+            std::vector<std::tuple<std::string, int, double>> data_tmp = xcf->get_mix_data();
+            for (int j = 0; j < data_tmp.size(); j++) {
+                std::string name; int kind; double alpha;
+                std::tie (name, kind, alpha) = data_tmp[j];
+                mix_data.push_back(std::make_tuple(name, kind, alpha, fnc->omega()));
+            }
+        }
+    }
+
+    // Count of functional types
+    int type_counts[3] = {0, 0, 0};
+    for (int i = 0; i < mix_data.size(); i++) {
+        if(std::get<1>(mix_data[i]) > 2 || std::get<1>(mix_data[i]) < 0) {
+            // Throw an exception if we're not dealing with an X, C, or XC fnctl
+            // Kinetic fnctls are not currently supported; To add, extend behavior here
+            // Then make appropriate changes to the DFT procrouting code (psi4/driver/procrouting/dft/*)
+            throw PSIEXCEPTION("Unsupported functional type");
+        }
+        type_counts[std::get<1>(mix_data[i])]++;
+    }
+
+    if (type_counts[PSI4_EXCHANGE_CORRELATION]) {
+        printer->Printf("   => Exchange-Correlation Functionals <=\n\n");
         for (int i = 0; i < mix_data.size(); i++) {
-            int val = std::get<1>(mix_data[i]);
-            if (val == 0) {
-                nexch++;
-            } else if (val == 1) {
-                ncorr++;
-            } else if (val == 2) {
-                nxc++;
-            } else {
-                throw PSIEXCEPTION("Functional type not understood");
-            }
-        }
+            if (std::get<1>(mix_data[i]) != PSI4_EXCHANGE_CORRELATION) continue;
 
-        if (nxc) {
-            printer->Printf("   => Exchange-Correlation Functionals <=\n\n");
-            for (int i = 0; i < mix_data.size(); i++) {
-                if (std::get<1>(mix_data[i]) != 2) continue;
-
-                printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]), std::get<0>(mix_data[i]).c_str());
-                printer->Printf("\n");
-            }
-            printer->Printf("\n");
-        }
-
-        if (nexch) {
-            printer->Printf("   => Exchange Functionals <=\n\n");
-            for (int i = 0; i < mix_data.size(); i++) {
-                if (std::get<1>(mix_data[i]) != 0) continue;
-
-                printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]), std::get<0>(mix_data[i]).c_str());
-                if (c_functionals_[0]->omega()) {
-                    printer->Printf(" [omega = %6.4f]", c_functionals_[0]->omega());
-                }
-                printer->Printf("\n");
-            }
-            printer->Printf("\n");
-        }
-
-        if ((x_omega_ + x_alpha_) > 0.0) {
-            printer->Printf("   => Exact (HF) Exchange <=\n\n");
-            if (x_omega_) {
-                printer->Printf("    %6.4f   %14s [omega = %6.4f]\n", (x_beta_), "HF,LR", x_omega_);
-            }
-            if (x_alpha_) {
-                printer->Printf("    %6.4f   %14s \n", x_alpha_, "HF");
-            }
-            printer->Printf("\n");
-        }
-
-        if (ncorr) {
-            printer->Printf("   => Correlation Functionals <=\n\n");
-            for (int i = 0; i < mix_data.size(); i++) {
-                if (std::get<1>(mix_data[i]) != 1) continue;
-
-                printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]), std::get<0>(mix_data[i]).c_str());
-                printer->Printf("\n");
-            }
-            printer->Printf("\n");
-        }
-
-    } else {
-        printer->Printf("   => Exchange Functionals <=\n\n");
-        for (int i = 0; i < x_functionals_.size(); i++) {
-            printer->Printf("    %6.4f   %14s", x_functionals_[i]->alpha(), x_functionals_[i]->name().c_str());
-            if (x_functionals_[i]->omega()) {
-                printer->Printf(" [omega = %6.4f]", x_functionals_[i]->omega());
-            }
-            printer->Printf("\n");
-        }
-        printer->Printf("\n");
-
-        if ((x_omega_ + x_alpha_) > 0.0) {
-            printer->Printf("   => Exact (HF) Exchange <=\n\n");
-            if (x_omega_) {
-                printer->Printf("    %6.4f   %14s [omega = %6.4f]\n", (x_beta_), "HF,LR", x_omega_);
-            }
-            if (x_alpha_) {
-                printer->Printf("    %6.4f   %14s \n", x_alpha_, "HF");
-            }
-            printer->Printf("\n");
-        }
-
-        printer->Printf("   => Correlation Functionals <=\n\n");
-        for (int i = 0; i < c_functionals_.size(); i++) {
-            printer->Printf("    %6.4f   %14s", c_functionals_[i]->alpha(), c_functionals_[i]->name().c_str());
-            if (c_functionals_[i]->omega()) {
-                printer->Printf(" [omega = %6.4f]", c_functionals_[i]->omega());
-            }
+            printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]), std::get<0>(mix_data[i]).c_str());
             printer->Printf("\n");
         }
         printer->Printf("\n");
     }
 
+    if (type_counts[PSI4_EXCHANGE]) {
+        printer->Printf("   => Exchange Functionals <=\n\n");
+        for (int i = 0; i < mix_data.size(); i++) {
+            if (std::get<1>(mix_data[i]) != PSI4_EXCHANGE) continue;
+
+            printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]), std::get<0>(mix_data[i]).c_str());
+            if (std::get<3>(mix_data[i])) {
+                printer->Printf(" [omega = %6.4f]", std::get<3>(mix_data[i]));
+            }
+            printer->Printf("\n");
+        }
+        printer->Printf("\n");
+    }
+    if ((x_omega_ + x_alpha_) > 0.0) {
+        printer->Printf("   => Exact (HF) Exchange <=\n\n");
+        if (x_omega_) {
+            printer->Printf("    %6.4f   %14s [omega = %6.4f]\n", (x_beta_), "HF,LR", x_omega_);
+        }
+        if (x_alpha_) {
+            printer->Printf("    %6.4f   %14s \n", x_alpha_, "HF");
+        }
+        printer->Printf("\n");
+    }
+
+    if (type_counts[PSI4_CORRELATION]) {
+        printer->Printf("   => Correlation Functionals <=\n\n");
+        for (int i = 0; i < mix_data.size(); i++) {
+            if (std::get<1>(mix_data[i]) != PSI4_CORRELATION) continue;
+
+            printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]), std::get<0>(mix_data[i]).c_str());
+            printer->Printf("\n");
+        }
+        printer->Printf("\n");
+    }
     if (is_c_lrc() || is_c_hybrid() || is_c_scs_hybrid()) {
         printer->Printf("   => MP2 Correlation <=\n\n");
         if (c_omega_) {
@@ -358,11 +331,8 @@ void SuperFunctional::print(std::string out, int level) const {
     }
 
     if (level > 1) {
-        for (int i = 0; i < x_functionals_.size(); i++) {
-            x_functionals_[i]->print(out, level);
-        }
-        for (int i = 0; i < c_functionals_.size(); i++) {
-            c_functionals_[i]->print(out, level);
+        for (int i = 0; i < functionals_.size(); i++) {
+            functionals_[i]->print(out, level);
         }
         if (needs_grac_) {
             if (grac_x_functional_) {
@@ -434,56 +404,68 @@ void SuperFunctional::set_c_os_alpha(double alpha) {
     can_edit();
     c_os_alpha_ = alpha;
 }
-void SuperFunctional::add_x_functional(std::shared_ptr<Functional> fun) {
-    can_edit();
-    x_functionals_.push_back(fun);
+std::vector<std::shared_ptr<Functional>>& SuperFunctional::x_functionals() {
+    // TODO find a better way
+    std::vector<std::shared_ptr<Functional>> out;
+    for (int i = 0; i < functionals_.size(); i++) {
+        if (functionals_[i]->is_x()) out.push_back(functionals_[i]);
+    }
+    return out;
 }
-void SuperFunctional::add_c_functional(std::shared_ptr<Functional> fun) {
+std::vector<std::shared_ptr<Functional>>& SuperFunctional::c_functionals() {
+    // TODO find a better way
+    std::vector<std::shared_ptr<Functional>> out;
+    for (int i = 0; i < functionals_.size(); i++) {
+        if (functionals_[i]->is_c()) out.push_back(functionals_[i]);
+    }
+    return out;
+}
+bool SuperFunctional::needs_xc() const {
+    bool has_x;
+    bool has_c;
+    for (int i = 0; i < functionals_.size(); i++) {
+        has_x |= functionals_[i]->is_x();
+        has_c |= functionals_[i]->is_c();
+        if (has_x && has_c) return true;
+    }
+    return false;
+}
+void SuperFunctional::add_functional(std::shared_ptr<Functional> fun) {
     can_edit();
-    c_functionals_.push_back(fun);
+    functionals_.push_back(fun);
 }
 void SuperFunctional::set_density_tolerance(double cut) {
     density_tolerance_ = cut;
-    for (int Q = 0; Q < c_functionals_.size(); Q++) {
-        c_functionals_[Q]->set_density_cutoff(density_tolerance_);
-    };
-    for (int Q = 0; Q < x_functionals_.size(); Q++) {
-        x_functionals_[Q]->set_density_cutoff(density_tolerance_);
-    };
+    for (int Q = 0; Q < functionals_.size(); Q++) {
+        functionals_[Q]->set_density_cutoff(density_tolerance_);
+    }
 }
 void SuperFunctional::print_density_threshold(std::string out, int level) const {
     if (level < 1) return;
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => LibXC Density Thresholds  <==\n\n");
     double val = 0.0;
-    for (int Q = 0; Q < c_functionals_.size(); Q++) {
-        val = c_functionals_[Q]->query_density_cutoff();
-        printer->Printf("    %s:  %6.2E \n", c_functionals_[Q]->name().c_str(), val);
-    };
-    for (int Q = 0; Q < x_functionals_.size(); Q++) {
-        val = x_functionals_[Q]->query_density_cutoff();
-        printer->Printf("    %s:  %6.2E \n", x_functionals_[Q]->name().c_str(), val);
+    for (int Q = 0; Q < functionals_.size(); Q++) {
+        val = functionals_[Q]->query_density_cutoff();
+        printer->Printf("    %s:  %6.2E \n", functionals_[Q]->name().c_str(), val);
     };
     printer->Printf("\n");
 }
 std::shared_ptr<Functional> SuperFunctional::c_functional(const std::string& name) {
-    for (int Q = 0; Q < c_functionals_.size(); Q++) {
-        if (name == c_functionals_[Q]->name()) return c_functionals_[Q];
+    for (int Q = 0; Q < functionals_.size(); Q++) {
+        if (functionals_[Q]->is_c() && name == functionals_[Q]->name()) return functionals_[Q];
     }
     throw PSIEXCEPTION("Functional not found within SuperFunctional");
 }
 std::shared_ptr<Functional> SuperFunctional::x_functional(const std::string& name) {
-    for (int Q = 0; Q < x_functionals_.size(); Q++) {
-        if (name == x_functionals_[Q]->name()) return x_functionals_[Q];
+    for (int Q = 0; Q < functionals_.size(); Q++) {
+        if (functionals_[Q]->is_x() && name == functionals_[Q]->name()) return functionals_[Q];
     }
     throw PSIEXCEPTION("Functional not found within SuperFunctional");
 }
 bool SuperFunctional::is_gga() const {
-    for (int i = 0; i < x_functionals_.size(); i++) {
-        if (x_functionals_[i]->is_gga()) return true;
-    }
-    for (int i = 0; i < c_functionals_.size(); i++) {
-        if (c_functionals_[i]->is_gga()) return true;
+    for (int i = 0; i < functionals_.size(); i++) {
+        if (functionals_[i]->is_gga()) return true;
     }
     if (needs_grac_ || needs_vv10_) {
         return true;
@@ -491,33 +473,21 @@ bool SuperFunctional::is_gga() const {
     return false;
 }
 bool SuperFunctional::is_meta() const {
-    for (int i = 0; i < x_functionals_.size(); i++) {
-        if (x_functionals_[i]->is_meta()) return true;
-    }
-    for (int i = 0; i < c_functionals_.size(); i++) {
-        if (c_functionals_[i]->is_meta()) return true;
+    for (int i = 0; i < functionals_.size(); i++) {
+        if (functionals_[i]->is_meta()) return true;
     }
     return false;
 }
 bool SuperFunctional::is_unpolarized() const {
     // Need to make sure they are all the same
-    std::vector<bool> bool_arr;
-
-    for (int i = 0; i < x_functionals_.size(); i++) {
-        bool_arr.push_back(x_functionals_[i]->is_unpolarized());
-    }
-    for (int i = 0; i < c_functionals_.size(); i++) {
-        bool_arr.push_back(c_functionals_[i]->is_unpolarized());
-    }
-
     size_t num_true = 0;
-    for (int i = 0; i < bool_arr.size(); i++) {
-        num_true += bool_arr[i];
+    for (int i = 0; i < functionals_.size(); i++) {
+        num_true += functionals_[i]->is_unpolarized() ? 1 : 0;
     }
 
     if (num_true == 0) {
         return false;
-    } else if (num_true == bool_arr.size()) {
+    } else if (num_true == functionals_.size()) {
         return true;
     } else {
         outfile->Printf("Mix of polarized and unpolarized functionals detected.\n");
@@ -734,11 +704,8 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
         kv.second->zero();
     }
 
-    for (int i = 0; i < x_functionals_.size(); i++) {
-        x_functionals_[i]->compute_functional(vals, values_, npoints, deriv_);
-    }
-    for (int i = 0; i < c_functionals_.size(); i++) {
-        c_functionals_[i]->compute_functional(vals, values_, npoints, deriv_);
+    for (int i = 0; i < functionals_.size(); i++) {
+        functionals_[i]->compute_functional(vals, values_, npoints, deriv_);
     }
 
     // Apply the grac shift, only valid for gradient computations
