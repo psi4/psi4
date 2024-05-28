@@ -169,7 +169,6 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
 
     // Set any other parameters
     user_omega_ = false;
-    density_cutoff_ = -1.0;
     exc_ = xc_functional_->info->flags & XC_FLAGS_HAVE_EXC;
     vxc_ = xc_functional_->info->flags & XC_FLAGS_HAVE_VXC;
     fxc_ = xc_functional_->info->flags & XC_FLAGS_HAVE_FXC;
@@ -194,11 +193,6 @@ std::shared_ptr<Functional> LibXCFunctional::build_polarized() {
     // User omega
     if (user_omega_) {
         func->set_omega(omega_);
-    } else {
-        // The only way we enter this branch is if Functional::set_omega
-        // was called on this object. I can think of no justification for that,
-        // but just in case...
-        Functional::set_omega(omega_);
     }
 
     // User tweakers
@@ -209,9 +203,7 @@ std::shared_ptr<Functional> LibXCFunctional::build_polarized() {
     func->set_alpha(alpha_);
     func->set_gga(gga_);
     func->set_meta(meta_);
-    func->set_lsda_cutoff(lsda_cutoff_);
-    func->set_meta_cutoff(meta_cutoff_);
-    func->set_density_cutoff(density_cutoff_);
+    func->set_density_cutoff(this->density_cutoff());
     func->exc_ = exc_;
     func->vxc_ = vxc_;
     func->fxc_ = fxc_;
@@ -240,9 +232,7 @@ std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     func->set_alpha(alpha_);
     func->set_gga(gga_);
     func->set_meta(meta_);
-    func->set_lsda_cutoff(lsda_cutoff_);
-    func->set_meta_cutoff(meta_cutoff_);
-    func->set_density_cutoff(density_cutoff_);
+    func->set_density_cutoff(this->density_cutoff());
     func->exc_ = exc_;
     func->vxc_ = vxc_;
     func->fxc_ = fxc_;
@@ -250,12 +240,10 @@ std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     return func;
 }
 void LibXCFunctional::set_density_cutoff(double cut) {
-    density_cutoff_ = cut;
-    if (density_cutoff_ > 0) {
+    if (cut > 0) {
         xc_func_set_dens_threshold(xc_functional_.get(), cut);
     }
 }
-double LibXCFunctional::query_density_cutoff() { return xc_functional_->dens_threshold; }
 void LibXCFunctional::set_omega(double omega) {
     omega_ = omega;
     user_omega_ = true;

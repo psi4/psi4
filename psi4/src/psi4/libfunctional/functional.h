@@ -72,25 +72,6 @@ class Functional {
     // Name, version, and citation of XC provider
     std::string xclib_description_;
 
-    // Is GGA?
-    bool gga_;
-    // Is Meta?
-    bool meta_;
-    // Is LRC?
-    bool lrc_;
-    // Unpolarized? (restricted)
-    bool unpolarized_;
-
-    // Parameter set
-    std::map<std::string, double> parameters_;
-
-    // Densty-based cutoff
-    double lsda_cutoff_;
-    // Tau-based cutoff
-    double meta_cutoff_;
-    // LibXC Densty-based cutoff
-    double density_cutoff_;
-
     // Initialize null functional
     void common_init();
 
@@ -114,28 +95,16 @@ class Functional {
     virtual void compute_functional(const std::map<std::string, SharedVector>& in,
                                     const std::map<std::string, SharedVector>& out, int npoints, int deriv) = 0;
 
-    // => Parameters <= //
-
-    const std::map<std::string, double>& parameters() { return parameters_; }
-    virtual void set_parameter(const std::string& key, double val);
-
     // => Setters <= //
 
-    void set_gga(bool gga) { gga_ = gga; }
-    void set_meta(bool meta) { meta_ = meta; }
     void set_alpha(double alpha) { alpha_ = alpha; }
-    void set_omega(double omega) {
-        omega_ = omega;
-        lrc_ = (omega_ != 0.0);
-    }
+    void set_omega(double omega) { omega_ = omega; }
     void set_name(const std::string& name) { name_ = name; }
     void set_description(const std::string& description) { description_ = description; }
     void set_citation(const std::string& citation) { citation_ = citation; }
     void set_xclib_description(const std::string& description) { xclib_description_ = description; }
 
-    void set_lsda_cutoff(double cut) { lsda_cutoff_ = cut; }
-    void set_meta_cutoff(double cut) { meta_cutoff_ = cut; }
-    virtual void set_density_cutoff(double cut);
+    virtual void set_density_cutoff(double cut) = 0;
 
     // => Accessors <= //
 
@@ -144,21 +113,18 @@ class Functional {
     std::string citation() const { return citation_; }
     std::string xclib_description() const { return xclib_description_; }
 
-    bool is_meta() const { return meta_; }
-    bool is_gga() const { return gga_; }
-    bool is_lrc() const { return lrc_; }
-    bool is_unpolarized() const { return unpolarized_; }
+    virtual bool is_meta() const = 0;
+    virtual bool is_gga() const = 0;
+    virtual bool is_lrc() const = 0;
+    virtual bool is_unpolarized() const = 0;
 
     double alpha() const { return alpha_; }
     double omega() const { return omega_; }
 
-    double lsda_cutoff() const { return lsda_cutoff_; }
-    double meta_cutoff() const { return meta_cutoff_; }
-    double density_cutoff() const { return density_cutoff_; }
-    virtual double query_density_cutoff();
+    virtual double density_cutoff() const = 0;
 
     // Information about what type of functional this is (X, C, XC, K...)
-    virtual int kind() { return -1; }
+    virtual int kind() = 0;
     bool is_x()  { return this->kind() == PSI4_EXCHANGE; }
     bool is_c()  { return this->kind() == PSI4_CORRELATION; }
     bool is_xc() { return this->kind() == PSI4_EXCHANGE; }

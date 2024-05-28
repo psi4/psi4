@@ -432,7 +432,7 @@ void SuperFunctional::print_density_threshold(std::string out, int level) const 
     printer->Printf("   => LibXC Density Thresholds  <==\n\n");
     double val = 0.0;
     for (int Q = 0; Q < functionals_.size(); Q++) {
-        val = functionals_[Q]->query_density_cutoff();
+        val = functionals_[Q]->density_cutoff();
         printer->Printf("    %s:  %6.2E \n", functionals_[Q]->name().c_str(), val);
     };
     printer->Printf("\n");
