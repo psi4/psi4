@@ -68,7 +68,7 @@ class SuperFunctional {
     std::string citation_;
     std::string xclib_description_;
     bool locked_;
-    
+
     // => Exchange and Correlation functionals <= //
     std::vector<std::shared_ptr<Functional>> functionals_; // Functionals merged for simplicity
 
@@ -85,7 +85,7 @@ class SuperFunctional {
 
     // => Asymptotic corrections <= //
     bool needs_grac_;
-    std::shared_ptr<Functional> grac_x_functional_; // TODO
+    std::shared_ptr<Functional> grac_x_functional_;
     std::shared_ptr<Functional> grac_c_functional_;
     double grac_shift_;
     double grac_alpha_;
@@ -98,7 +98,6 @@ class SuperFunctional {
     double vv10_beta_;
 
     // => Functional values and partials <= //
-    //bool libxc_xc_func_; TODO
     int max_points_;
     int deriv_;
     // For the functional itself. Each vector elt. is the contribution of a
@@ -197,13 +196,15 @@ class SuperFunctional {
     SharedVector value(const std::string& key) { return values_[key]; }
     SharedVector vv_value(const std::string& key) { return vv_values_[key]; }
 
-    std::vector<std::shared_ptr<Functional>>& x_functionals();
-    std::vector<std::shared_ptr<Functional>>& c_functionals();
+    std::vector<std::shared_ptr<Functional>> x_functionals();
+    std::vector<std::shared_ptr<Functional>> c_functionals();
+    std::vector<std::shared_ptr<Functional>>& functionals() { return functionals_; }
     std::shared_ptr<Functional> grac_x_functional() { return grac_x_functional_; }
     std::shared_ptr<Functional> grac_c_functional() { return grac_c_functional_; }
 
     std::shared_ptr<Functional> x_functional(const std::string& name);
     std::shared_ptr<Functional> c_functional(const std::string& name);
+    std::shared_ptr<Functional> functional(const std::string& name);
     void add_functional(std::shared_ptr<Functional> fun);
     void set_grac_x_functional(std::shared_ptr<Functional> fun) {
         needs_grac_ = true;
@@ -266,7 +267,7 @@ class SuperFunctional {
     double grac_beta() const { return grac_beta_; }
     double density_tolerance() const { return density_tolerance_; }
 
-    bool needs_xc() const;
+    bool needs_xc() const { return functionals_.size() > 0; }
     bool needs_vv10() const { return needs_vv10_; };
     bool needs_grac() const { return needs_grac_; };
     bool PSI_API is_unpolarized() const;
@@ -277,7 +278,6 @@ class SuperFunctional {
     bool is_x_hybrid() const { return x_alpha_ != 0.0; }
     bool is_c_hybrid() const { return c_alpha_ != 0.0; }
     bool is_c_scs_hybrid() const { return c_os_alpha_ != 0.0 || c_ss_alpha_ != 0.0; }
-    //bool is_libxc_func() const { return libxc_xc_func_; } TODO
 
     // => Utility <= //
 

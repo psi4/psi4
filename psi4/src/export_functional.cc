@@ -75,7 +75,12 @@ void export_functional(py::module &m) {
         .def("set_density_cutoff", &Functional::set_density_cutoff, "docstring")
         .def("set_parameter", &Functional::set_parameter, "docstring")
         .def("print_out", &Functional::py_print, "docstring")
-        .def("print_detail", &Functional::py_print_detail, "docstring");
+        .def("print_detail", &Functional::py_print_detail, "docstring")
+        .def("kind", &Functional::kind, "docstring")
+        .def("is_x", &Functional::is_x, "docstring")
+        .def("is_c", &Functional::is_c, "docstring")
+        .def("is_xc", &Functional::is_xc, "docstring")
+        .def("is_k", &Functional::is_k, "docstring");
 
     py::class_<BasisExtents, std::shared_ptr<BasisExtents>>(m, "BasisExtents", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, double>())
@@ -130,8 +135,10 @@ void export_functional(py::module &m) {
              "Computes the SuperFunctional.")
         .def("x_functional", &SuperFunctional::x_functional, "Returns the desired X Functional.")
         .def("c_functional", &SuperFunctional::c_functional, "Returns the desired C Functional.")
+        .def("functional", &SuperFunctional::functional, "Returns the desired Functional.")
         .def("x_functionals", &SuperFunctional::x_functionals, "Returns all X Functionals.")
         .def("c_functionals", &SuperFunctional::c_functionals, "Returns all C Functionals.")
+        .def("functionals", &SuperFunctional::functionals, "Returns all Functionals.")
         .def("add_functional", &SuperFunctional::add_functional, "Add a Functional (of any type).")
         .def("test_functional", &SuperFunctional::test_functional, "Quick testing capabilities.")
         .def("values", &SuperFunctional::values, "Return all internal values.")

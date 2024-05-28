@@ -73,7 +73,6 @@ void SuperFunctional::common_init() {
     vv10_c_ = 0.0;
     vv10_beta_ = 0.0;
 
-    // libxc_xc_func_ = false; TODO
     locked_ = false;
     density_tolerance_ = 0.0;
 }
@@ -109,7 +108,6 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
         sup->set_vv10_c(xc_func->vv10_c());
     }
     sup->add_functional(static_cast<std::shared_ptr<Functional>>(xc_func));
-    // sup->libxc_xc_func_ = true; TODO
 
     return sup;
 }
@@ -124,7 +122,6 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_polarized() {
 
     sup->deriv_ = deriv_;
     sup->max_points_ = max_points_;
-    // sup->libxc_xc_func_ = libxc_xc_func_; TODO
     if (needs_vv10_) {
         sup->needs_vv10_ = true;
         sup->vv10_b_ = vv10_b_;
@@ -167,7 +164,6 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
     // Workers dont need omega or alpha
     sup->deriv_ = deriv_;
     sup->max_points_ = max_points_;
-    //sup->libxc_xc_func_ = libxc_xc_func_; TODO
     if (needs_vv10_) {
         sup->needs_vv10_ = true;
         sup->vv10_b_ = vv10_b_;
@@ -404,7 +400,7 @@ void SuperFunctional::set_c_os_alpha(double alpha) {
     can_edit();
     c_os_alpha_ = alpha;
 }
-std::vector<std::shared_ptr<Functional>>& SuperFunctional::x_functionals() {
+std::vector<std::shared_ptr<Functional>> SuperFunctional::x_functionals() {
     // TODO find a better way
     std::vector<std::shared_ptr<Functional>> out;
     for (int i = 0; i < functionals_.size(); i++) {
@@ -412,23 +408,13 @@ std::vector<std::shared_ptr<Functional>>& SuperFunctional::x_functionals() {
     }
     return out;
 }
-std::vector<std::shared_ptr<Functional>>& SuperFunctional::c_functionals() {
+std::vector<std::shared_ptr<Functional>> SuperFunctional::c_functionals() {
     // TODO find a better way
     std::vector<std::shared_ptr<Functional>> out;
     for (int i = 0; i < functionals_.size(); i++) {
         if (functionals_[i]->is_c()) out.push_back(functionals_[i]);
     }
     return out;
-}
-bool SuperFunctional::needs_xc() const {
-    bool has_x;
-    bool has_c;
-    for (int i = 0; i < functionals_.size(); i++) {
-        has_x |= functionals_[i]->is_x();
-        has_c |= functionals_[i]->is_c();
-        if (has_x && has_c) return true;
-    }
-    return false;
 }
 void SuperFunctional::add_functional(std::shared_ptr<Functional> fun) {
     can_edit();
@@ -460,6 +446,12 @@ std::shared_ptr<Functional> SuperFunctional::c_functional(const std::string& nam
 std::shared_ptr<Functional> SuperFunctional::x_functional(const std::string& name) {
     for (int Q = 0; Q < functionals_.size(); Q++) {
         if (functionals_[Q]->is_x() && name == functionals_[Q]->name()) return functionals_[Q];
+    }
+    throw PSIEXCEPTION("Functional not found within SuperFunctional");
+}
+std::shared_ptr<Functional> SuperFunctional::functional(const std::string& name) {
+    for (int Q = 0; Q < functionals_.size(); Q++) {
+        if (name == functionals_[Q]->name()) return functionals_[Q];
     }
     throw PSIEXCEPTION("Functional not found within SuperFunctional");
 }
