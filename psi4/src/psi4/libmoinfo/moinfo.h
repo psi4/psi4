@@ -106,6 +106,8 @@ class MOInfo : public MOInfoBase {
     MOInfo(Wavefunction& ref_wf_, Options& options_, bool silent_ = false);
     ~MOInfo();
 
+    const double* const* const get_scf_mos() const { return (scf); }
+
     // DGEMM timing
     void set_dgemm_timing(double value) { dgemm_timing = value; }
     void add_dgemm_timing(double value) { dgemm_timing += value; }
@@ -131,15 +133,11 @@ class MOInfo : public MOInfoBase {
     int get_nvir() const { return (nvir); }
 
     intvec get_mopi() const { return (mopi); }
-    intvec get_docc() const { return (docc); }
-    intvec get_actv() const { return (actv); }
     intvec get_focc() const { return (focc); }
     intvec get_fvir() const { return (fvir); }
     intvec get_occ() const { return (occ); }
     intvec get_vir() const { return (vir); }
 
-    int get_docc(size_t i) const { return (docc[i]); }
-    int get_actv(size_t i) const { return (actv[i]); }
     int get_extr(size_t h) const { return (extr[h]); }
 
     // Mapping functions
@@ -198,7 +196,6 @@ class MOInfo : public MOInfoBase {
     void compute_mo_mappings();
     void print_info();
     void print_mo();
-    void free_memory();
 
     // Model space functions
     void print_model_space();
@@ -211,6 +208,8 @@ class MOInfo : public MOInfoBase {
 
     double scf_energy;
     double fzcore_energy;
+
+    double** scf;  // MO coefficients
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     double dgemm_timing;
@@ -228,6 +227,7 @@ class MOInfo : public MOInfoBase {
     int nvir;        // Generalized virtual (actv + extr)
     int nall;        // Non-frozen MOs (docc + actv + extr)
     int nextr;       // Non-frozen external orbitals (extr)
+    int nmo;         // The # of molecular orbitals, including frozen core and frozen virtual
 
     // Orbitals arrays
     intvec focc;

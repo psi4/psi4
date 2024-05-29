@@ -42,8 +42,7 @@
 
 namespace psi {
 
-MOInfoSCF::MOInfoSCF(Wavefunction& ref_wfn_, Options& options_, bool silent_)
-    : MOInfoBase(ref_wfn_, options_, silent_) {
+MOInfoSCF::MOInfoSCF(Wavefunction& ref_wfn_, Options& options_) : MOInfoBase(ref_wfn_, options_) {
     read_data();
     // Determine the wave function irrep
     // The first irrep is 0
@@ -51,7 +50,7 @@ MOInfoSCF::MOInfoSCF(Wavefunction& ref_wfn_, Options& options_, bool silent_)
     wfn_sym = 0;
     std::string wavefunction_sym_str = options.get_str("WFN_SYM");
     for (int h = 0; h < nirreps; ++h) {
-        std::string irr_label_str = irr_labs[h];
+        std::string irr_label_str = get_irr_lab(h);
         to_upper(irr_label_str);
         trim_spaces(irr_label_str);
         if (wavefunction_sym_str == irr_label_str) {
@@ -130,10 +129,10 @@ void MOInfoSCF::print_mo() {
     outfile->Printf("\n  MOs per irrep:                ");
 
     for (int i = nirreps; i < 8; i++) outfile->Printf("     ");
-    for (int i = 0; i < nirreps; i++) outfile->Printf("  %s", irr_labs[i].c_str());
+    for (int i = 0; i < nirreps; i++) outfile->Printf("  %s", get_irr_lab(i).c_str());
     outfile->Printf(" Total");
     outfile->Printf("\n  ----------------------------------------------------------------------------");
-    print_mo_space(nso, sopi, "Total                         ");
+    print_mo_space(get_nso(), get_sopi(), "Total                         ");
     if (!guess_occupation) {
         print_mo_space(ndocc, docc, "Doubly Occupied               ");
         print_mo_space(nactv, actv, "Active/Singly Occupied        ");

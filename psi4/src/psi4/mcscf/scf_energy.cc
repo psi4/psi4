@@ -49,7 +49,7 @@ double SCF::energy(int cycle, double old_energy) {
         electronic_energy += dot(Do, T);
     }
 
-    total_energy = electronic_energy + moinfo_scf->get_nuclear_energy();
+    total_energy = electronic_energy + moinfo_scf->get_nuc_E();
 
     if (reference == tcscf) {
         // Compute the CI gradient

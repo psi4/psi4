@@ -71,7 +71,7 @@ void SCF::construct_F() {
             Dsum[I] += Dtc[I];
             Ftc[I] = H;
             Ftc[I].scale(ci[I] * ci[I]);
-            H_tcscf[I][I] = 2.0 * dot(Dsum[I], H) + moinfo_scf->get_nuclear_energy();
+            H_tcscf[I][I] = 2.0 * dot(Dsum[I], H) + moinfo_scf->get_nuc_E();
             for (int J = I + 1; J < nci; ++J) H_tcscf[I][J] = H_tcscf[J][I] = 0.0;
         }
 

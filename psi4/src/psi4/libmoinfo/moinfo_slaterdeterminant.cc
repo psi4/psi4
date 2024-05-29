@@ -64,11 +64,11 @@ std::string MOInfo::SlaterDeterminant::get_label() {
     int counter = 0;
     for (int h = 0; h < moinfo->get_nirreps(); ++h) {
         label += "[";
-        for (int i = 0; i < moinfo->get_docc(h); ++i) {
+        for (int i = 0; i < moinfo->get_docc()[h]; ++i) {
             label += get_occupation_symbol(counter);
             counter++;
         }
-        for (int i = 0; i < moinfo->get_actv(h); ++i) {
+        for (int i = 0; i < moinfo->get_actv()[h]; ++i) {
             label += get_occupation_symbol(counter);
             counter++;
         }
