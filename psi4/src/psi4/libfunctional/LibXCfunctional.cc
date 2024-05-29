@@ -94,13 +94,13 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     }
 
     // Extract variables
+    lrc_ = false;
     if (xc_functional_->info->family == XC_FAMILY_HYB_GGA || xc_functional_->info->family == XC_FAMILY_HYB_MGGA
 #ifdef XC_FAMILY_HYB_LDA
         || xc_functional_->info->family == XC_FAMILY_HYB_LDA
 #endif
     ) {
         /* Range separation? */
-        lrc_ = false;
         if (xc_functional_->info->flags & XC_FLAGS_HYB_CAMY) {
             outfile->Printf("Functional '%s' is a HYB_CAMY functional which is not supported in Psi4\n",
                             xc_name.c_str());
@@ -156,6 +156,8 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     // Figure out the family
     int family = xc_functional_->info->family;
 
+    gga_ = false;
+    meta_ = false;
     std::vector<int> gga_vec = {XC_FAMILY_GGA, XC_FAMILY_HYB_GGA};
     if (std::find(gga_vec.begin(), gga_vec.end(), family) != gga_vec.end()) {
         gga_ = true;

@@ -73,8 +73,6 @@ class LibXCFunctional : public Functional {
     bool needs_vv10_;
     double vv10_b_;
     double vv10_c_;
-    // LibXC Densty-based cutoff
-    double density_cutoff_;
 
     // User defined tweakers
     // * Libxc needs all set at once as list c. v5.1.0, but store as richer map anyways
