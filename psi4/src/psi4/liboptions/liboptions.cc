@@ -842,7 +842,6 @@ Data& Options::use(std::string& key) {
                 choices_joined.append(" ");
             }
             choices_joined.append(s);
-            return 0;
         };
 
         printf("\nDid you mean? %s\n\n", choices_joined.c_str());
