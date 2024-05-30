@@ -57,8 +57,8 @@ namespace dct {
 bool DCTSolver::correct_mo_phases(bool dieOnError) {
     dct_timer_on("DCTSolver::correct_mo_phases()");
 
-    Matrix temp("temp", nirrep_, nsopi_, nmopi_);
-    Matrix overlap("Old - New Overlap", nirrep_, nmopi_, nmopi_);
+    Matrix temp("temp", nsopi_, nmopi_);
+    Matrix overlap("Old - New Overlap", nmopi_, nmopi_);
 
     bool error = correct_mo_phase_spincase(temp, overlap, *old_ca_, *Ca_, dieOnError);
     error = error && correct_mo_phase_spincase(temp, overlap, *old_cb_, *Cb_, dieOnError);
@@ -166,8 +166,8 @@ double DCTSolver::compute_scf_error_vector() {
 
     size_t nElements = 0;
     double sumOfSquares = 0.0;
-    auto tmp1 = Matrix("tmp1", nirrep_, nsopi_, nsopi_);
-    auto tmp2 = Matrix("tmp2", nirrep_, nsopi_, nsopi_);
+    auto tmp1 = Matrix("tmp1", nsopi_, nsopi_);
+    auto tmp2 = Matrix("tmp2", nsopi_, nsopi_);
     // form FDS
     tmp1.gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
     scf_error_a_->gemm(false, false, 1.0, Fa_, tmp1, 0.0);
@@ -741,7 +741,7 @@ void DCTSolver::update_fock() {
     moFb_->transform(Cb_);
 
     // We already have the gbar * tau contraction computed, so let's just add it in.
-    auto moG_tau = Matrix("GGamma in the MO basis", nirrep_, nmopi_, nmopi_);
+    auto moG_tau = Matrix("GGamma in the MO basis", nmopi_, nmopi_);
 
     // Alpha occupied
     global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "GGamma <O|O>");
