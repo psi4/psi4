@@ -837,7 +837,7 @@ Data& Options::use(std::string& key) {
         }
 
         std::string choices_joined;
-        std::accumulate(std::begin(choices), std::end(choices), 0, [&choices_joined](int&, std::string& s) {
+        std::accumulate(std::begin(choices), std::end(choices), 0, [&choices_joined](int, std::string& s) {
             if (!choices_joined.empty()) {
                 choices_joined.append(" ");
             }
@@ -906,7 +906,7 @@ Data Options::use(std::string& key) const {
         }
 
         std::string choices_joined;
-        std::accumulate(std::begin(choices), std::end(choices), 0, [&choices_joined](int&, std::string& s) {
+        std::accumulate(std::begin(choices), std::end(choices), 0, [&choices_joined](int, std::string& s) {
             if (!choices_joined.empty()) {
                 choices_joined.append(" ");
             }
