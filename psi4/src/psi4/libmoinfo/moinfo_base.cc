@@ -126,9 +126,4 @@ void MOInfoBase::print_mo_space(int n, const intvec& mo, const std::string& labe
     outfile->Printf("  %3d", n);
 }
 
-intvec MOInfoBase::convert_int_array_to_vector(int n, const int* array) {
-    // Read an integer array and save as a STL vector
-    return intvec(array, array + n);
-}
-
 }  // namespace psi
