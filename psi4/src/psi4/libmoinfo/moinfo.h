@@ -191,6 +191,7 @@ class MOInfo : public MOInfoBase {
     double get_sign_internal_excitation(int i, int j);
 
    private:
+    void read_mo_spaces_check_irrepcnt();
     void read_info();
     void read_mo_spaces();
     void compute_mo_mappings();
