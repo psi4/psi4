@@ -363,9 +363,9 @@ void DCTSolver::compute_lagrangian_VV_RHF(bool separate_gbargamma) {
 void DCTSolver::compute_ewdm_odc_RHF() {
     dpdfile2 X_OV, X_VO, X_OO, X_VV;
 
-    Matrix aW("Energy-weighted density matrix (Alpha)", nirrep_, nmopi_, nmopi_);
+    Matrix aW("Energy-weighted density matrix (Alpha)", nmopi_, nmopi_);
 
-    auto a_opdm = Matrix("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto a_opdm = Matrix("MO basis OPDM (Alpha)", nmopi_, nmopi_);
 
     const int *alpha_corr_to_pitzer = _ints->alpha_corr_to_pitzer();
     auto *alpha_pitzer_to_corr = new int[nmo_];
