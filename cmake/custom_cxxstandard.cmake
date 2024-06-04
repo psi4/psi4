@@ -2,9 +2,9 @@ cmake_policy(PUSH)
 cmake_policy(SET CMP0057 NEW)  # support IN_LISTS
 
 # We require C++20 support from the compiler and standard library.
-list(APPEND _allowed_cxx_standards 20 17)
+list(APPEND _allowed_cxx_standards 20)
 if(NOT psi4_CXX_STANDARD IN_LIST _allowed_cxx_standards)
-  message(FATAL_ERROR "Psi4 requires C++17 at least")
+  message(FATAL_ERROR "Psi4 requires C++20 at least")
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
