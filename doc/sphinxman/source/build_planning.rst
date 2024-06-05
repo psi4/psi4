@@ -208,7 +208,7 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 
 See :source:`codedeps.yaml` for a structured listing and history of dependencies.
 
-* :ref:`C++ and C Compilers <cmake:cxx>` (C++17 compliant)
+* :ref:`C++ and C Compilers <cmake:cxx>` (C++20 compliant)
 
 * :ref:`Optimized BLAS and LAPACK libraries <cmake:lapack>` (preferably NOT one supplied by a standard
   Linux distribution)
@@ -1073,13 +1073,12 @@ On Mac, the following work nicely.
   * Apple Clang: ``clang``, ``clang++``
   * Intel: ``icc``, ``icpc``
 
-|PSIfour| requires *full* C++11 compliance, meaning, most importantly, GCC
->= 4.9. This compliance is checked for at build-time with file
+|PSIfour| requires *full* C++20 compliance.
+This compliance is checked for at build-time with file
 :source:`cmake/custom_cxxstandard.cmake`, so either consult that file or
 try a test build to ensure your compiler is approved. Note that Intel
 compilers on Linux also rely on GCC, so both ``icpc`` and ``gcc`` versions are checked.
-Intel OneAPI Classic compilers work fine. OneAPI beta compilers build but have
-been only minimally tested.
+Intel OneAPI Classic compilers work fine, as do OneAPI Clang ``icpx`` compilers.
 
 * :ref:`faq:modgcc`
 
