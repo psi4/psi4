@@ -1164,7 +1164,7 @@ void DCTSolver::compute_unrelaxed_separable_density_VVVV() {
 
 Matrix DCTSolver::construct_oo_density(const Matrix& occtau, const Matrix& virtau, const Matrix& kappa,
                                        const Matrix& C) {
-    auto opdm = Matrix("MO basis OPDM", nirrep_, nmopi_, nmopi_);
+    auto opdm = Matrix("MO basis OPDM", nmopi_, nmopi_);
 
     auto occdim = occtau.rowspi();
     auto virdim = virtau.rowspi();

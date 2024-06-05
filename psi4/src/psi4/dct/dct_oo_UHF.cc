@@ -79,11 +79,11 @@ void DCTSolver::run_simult_dct_oo() {
         if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
             build_DF_tensors_UHF();
 
-            auto mo_h_A = Matrix("MO-based H Alpha", nirrep_, nmopi_, nmopi_);
+            auto mo_h_A = Matrix("MO-based H Alpha", nmopi_, nmopi_);
             mo_h_A.copy(so_h_);
             mo_h_A.transform(Ca_);
 
-            auto mo_h_B = Matrix("MO-based H Beta", nirrep_, nmopi_, nmopi_);
+            auto mo_h_B = Matrix("MO-based H Beta", nmopi_, nmopi_);
             mo_h_B.copy(so_h_);
             mo_h_B.transform(Cb_);
 
@@ -918,7 +918,7 @@ void DCTSolver::compute_orbital_rotation_jacobi() {
 
     // Determine the orbital rotation step
     // Alpha spin
-    auto X_a = Matrix("Alpha orbital step", nirrep_, nmopi_, nmopi_);
+    auto X_a = Matrix("Alpha orbital step", nmopi_, nmopi_);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = naoccpi_[h]; a < nmopi_[h]; ++a) {
@@ -931,7 +931,7 @@ void DCTSolver::compute_orbital_rotation_jacobi() {
     }
 
     // Beta spin
-    auto X_b = Matrix("Beta orbital step", nirrep_, nmopi_, nmopi_);
+    auto X_b = Matrix("Beta orbital step", nmopi_, nmopi_);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nboccpi_[h]; ++i) {
             for (int a = nboccpi_[h]; a < nmopi_[h]; ++a) {

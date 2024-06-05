@@ -33,8 +33,8 @@
 #include <cxxabi.h>
 #endif
 
+#include <array>
 #include <cstdlib>
-#include <vector>
 
 namespace psi {
 
@@ -49,13 +49,14 @@ PsiException::PsiException(std::string msg, const char *_file, int _line) noexce
 // Disable stack trace printing on Windows
 #ifndef _MSC_VER
 
-    std::vector<void *> Stack(5);
+    constexpr size_t stacksize = 5;
+    std::array<void *, stacksize> Stack;
     char **strings;
-    int size = backtrace(&Stack[0], 5);
+    int size = backtrace(Stack.data(), stacksize);
     int status = -1;
 
-    message << "The most recent " << (size < 5 ? size : 5) << " function calls were:" << std::endl << std::endl;
-    strings = backtrace_symbols(&Stack[0], size);
+    message << "The most recent " << (size < stacksize ? size : stacksize) << " function calls were:" << std::endl << std::endl;
+    strings = backtrace_symbols(Stack.data(), size);
 
     for (int i = 0; i < size; i++) {
         // This part from https://panthema.net/2008/0901-stacktrace-demangled/
