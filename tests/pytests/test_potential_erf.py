@@ -26,12 +26,12 @@ def test_potential_erf_integrals():
     # corner cases
     # erf(inf) = 1
     x = mints.ao_potential_erf(C, omega=1e20).np
-    y = mints.ao_multipole_potential(C, max_k=0)[0].np
+    y = mints.ao_multipole_potential(origin=C, order=0)[0].np
     np.testing.assert_allclose(x, y, atol=1e-14)
 
     # erfc(0) = 1
     x = mints.ao_potential_erf_complement(C, omega=0.0).np
-    y = mints.ao_multipole_potential(C, max_k=0)[0].np
+    y = mints.ao_multipole_potential(origin=C, order=0)[0].np
     np.testing.assert_allclose(x, y, atol=1e-14)
 
     # 1/R - erf(R)/R - erfc(R)/R = 0

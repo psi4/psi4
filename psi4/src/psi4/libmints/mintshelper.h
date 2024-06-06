@@ -248,7 +248,7 @@ class PSI_API MintsHelper {
     SharedMatrix ao_3coverlap();
     SharedMatrix ao_3coverlap(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                               std::shared_ptr<BasisSet> bs3);
-    
+
     /// Erf-attenuated Coulomb potential on origin
     SharedMatrix ao_potential_erf(const std::vector<double> &origin, double omega = 0.0, int deriv = 0);
     /// Erfc-attenuated Coulomb potential on origin
