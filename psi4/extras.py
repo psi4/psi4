@@ -84,6 +84,8 @@ def exit_printing(start_time: datetime.datetime = None, success: bool = None) ->
     if start_time is not None:
         run_time = end_time - start_time
         run_time = str(run_time).split('.')
+        # python "helpfully" truncates microseconds if zero. Undo that.
+        if len(run_time) == 1: run_time.append("000000")
         run_time = run_time[0] + '.' + run_time[1][:2]
         core.print_out("\n    Psi4 wall time for execution: {}\n".format(run_time))
 
