@@ -65,6 +65,7 @@ RelPotentialInt::RelPotentialInt(std::vector<SphericalTransform>& st, std::share
             {bs1_->molecule()->x(A), bs1_->molecule()->y(A), bs1_->molecule()->z(A)}});
     }
 
+    set_chunks(4);
     engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::opVop, max_nprim, max_am, 0);
     engine0_->set_params(params);
     // If you want derivatives of these integrals, just take the code from potential.cc's constructor
