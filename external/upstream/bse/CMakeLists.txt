@@ -22,14 +22,15 @@ if(${ENABLE_bse})
     
         file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}" _install_lib)
     
+        # See source note at qcmanybody/CMakeLists.txt
         ExternalProject_Add(bse_external
             BUILD_ALWAYS 1
-            URL https://github.com/MolSSI-BSE/basis_set_exchange/archive/v0.9.tar.gz
+            URL https://github.com/MolSSI-BSE/basis_set_exchange/archive/master.tar.gz
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
             BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
             BUILD_IN_SOURCE 1
-            INSTALL_COMMAND ${Python_EXECUTABLE} setup.py install
+            INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI-BSE/basis_set_exchange.git@v0.10#egg=proj
                                                           --record=record.txt
                                                           --single-version-externally-managed
                                                           --install-lib=${_install_lib})

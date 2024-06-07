@@ -43,3 +43,4 @@ thisenergy = optimize('scf')
 
 compare_values(nucenergy, allene.nuclear_repulsion_energy(), 2, "Nuclear repulsion energy")    #TEST
 compare_values(refenergy, thisenergy, 6, "Reference energy")                                   #TEST
+compare(True, int(variable("OPTIMIZATION ITERATIONS")) < 9, f"Opt iter={int(variable('OPTIMIZATION ITERATIONS'))}")  #TEST
