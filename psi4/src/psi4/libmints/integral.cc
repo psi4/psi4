@@ -50,7 +50,6 @@
 #include "psi4/libmints/ecpint.h"
 #endif
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/erd_eri.h"
 
 #ifdef USING_simint
 #include "psi4/libmints/siminteri.h"
@@ -199,22 +198,6 @@ std::unique_ptr<OneBodySOInt> IntegralFactory::so_traceless_quadrupole() {
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::electric_field(int deriv) {
     return  std::make_unique<ElectricFieldInt>(spherical_transforms_, bs1_, bs2_, deriv);
-}
-
-std::unique_ptr<TwoBodyAOInt> IntegralFactory::erd_eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
-    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
-    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-
-#ifdef USING_simint
-    if (deriv == 0 && integral_package == "SIMINT") return std::make_unique<SimintERI>(this, deriv, use_shell_pairs, needs_exchange);
-#endif
-    if (integral_package == "LIBINT2") return  std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
-    if (deriv > 0 && integral_package != "LIBINT2")
-        outfile->Printf("ERI derivative integrals only available using Libint");
-    if (integral_package == "SIMINT")
-        outfile->Printf("Chosen integral package " + integral_package +
-                        " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
-    throw PSIEXCEPTION("No ERI object to return.");
 }
 
 std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {

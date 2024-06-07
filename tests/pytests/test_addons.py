@@ -637,7 +637,7 @@ def test_pcmsolver(how, request):
 
 def _test_scf5():
     """scf5"""
-    #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set and using ERD integrals.
+    #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set
 
     print(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2')
     print('    -Integral package: {}'.format(psi4.core.get_global_option('integral_package')))
@@ -805,14 +805,6 @@ def _test_scf5():
     psi4.set_options({'scf__scf_type': 'df'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_rohf_df, E, 6, 'Triplet DF CUHF energy')
-
-
-@uusing("erd")
-def test_erd():
-    """erd/scf5"""
-
-    psi4.set_options({'integral_package': 'ERD'})
-    _test_scf5()
 
 
 @uusing("simint")

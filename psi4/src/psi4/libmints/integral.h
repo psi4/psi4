@@ -490,9 +490,6 @@ class PSI_API IntegralFactory {
     /// Returns an ERI integral object
     virtual std::unique_ptr<TwoBodyAOInt> eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
-    /// Returns an ERD ERI integral object, if available.  Otherwise returns a libint integral object
-    virtual std::unique_ptr<TwoBodyAOInt> erd_eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
-
     /// Returns an erf ERI integral object (omega integral)
     virtual std::unique_ptr<TwoBodyAOInt> erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
                                   bool needs_exchange = false);

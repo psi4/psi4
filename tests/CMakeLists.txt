@@ -201,13 +201,6 @@ if(ENABLE_libefp)
     message(STATUS "Adding test cases: Psi4 + libefp")
 endif()
 
-# <<<  ERD  >>>
-
-if(ENABLE_erd)
-    add_subdirectory(erd)
-    message(STATUS "Adding test cases: Psi4 + erd")
-endif()
-
 # <<<  gCP  >>>
 
 find_program(gCP_EXECUTABLE
