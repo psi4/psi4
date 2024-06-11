@@ -19,6 +19,7 @@ list(APPEND sources
   jk.cc
   points.cc
   sap.cc
+  snLinK.cc
   solver.cc
   soscf.cc
   v.cc
@@ -42,10 +43,6 @@ target_link_libraries(fock
   )
 
 if(TARGET gauxc::gauxc)
-  target_sources(fock
-    PRIVATE
-      snLinK.cc
-    )
   target_compile_definitions(fock
     PUBLIC
       USING_gauxc
@@ -58,11 +55,6 @@ if(TARGET gauxc::gauxc)
   target_link_libraries(fock
     PUBLIC 
       gauxc::gauxc 
-    )
-else()
-  target_sources(fock
-    PRIVATE
-      snLinK_stub.cc
     )
 endif()
 
