@@ -39,6 +39,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dftensor.h"
 
+#include <memory>
 #include <unordered_set>
 #include <vector>
 #include <map>
@@ -268,7 +269,10 @@ void CompositeJK::compute_JK() {
         // Do IFB on this iteration?
         do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
 
-        if (k_algo_->name() == "sn-LinK") k_algo_->set_snLinK_incfock_iter(do_incfock_iter_);
+        if (k_algo_->name() == "sn-LinK") {
+            auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_); 
+            k_algo_derived->set_incfock_iter(do_incfock_iter_);
+        }
 
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
 
@@ -355,6 +359,13 @@ std::string CompositeJK::get_COSX_grid() {
         return k_algo_derived->get_grid(); 
     } else {
         throw PSIEXCEPTION("CompositeJK::get_COSX_grid() was called, but COSX is not selected in SCF_TYPE!");
+
+int CompositeJK::get_snLinK_max_am() { 
+    if (k_algo_->name() == "sn-LinK") {
+        auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_); 
+        return k_algo_derived->get_max_am(); 
+    } else {
+        throw PSIEXCEPTION("CompositeJK::get_snLinK_max_am() was called, but snLinK is not selected in SCF_TYPE!");
     }
 }
 

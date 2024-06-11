@@ -147,13 +147,6 @@ class PSI_API SplitJK {
     /**
     * Method-specific knobs, if necessary
     */
-    virtual void set_snLinK_incfock_iter(bool incfock_iter) {
-        throw PSIEXCEPTION("SplitJK::set_snLinK_incfock_iter was called, but snLinK is not being used!");
-    }
-
-    virtual int get_snLinK_max_am() {
-        throw PSIEXCEPTION("SplitJK::get_snLinK_max_am was called, but snLinK is not being used!");
-    }
 };
 
 // ==> Start SplitJK Coulomb (J) Algorithms here <== //
@@ -432,9 +425,9 @@ class PSI_API snLinK : public SplitJK {
     std::string name() override { return "sn-LinK"; }
 
     // setters and getters
-    void set_snLinK_incfock_iter(bool incfock_iter) override { incfock_iter_ = incfock_iter; }
+    void set_incfock_iter(bool incfock_iter) { incfock_iter_ = incfock_iter; }
 
-    int get_snLinK_max_am() override {
+    int get_max_am() {
       #ifdef USING_gauxc
         return gauxc_max_am_;
       #else
