@@ -73,7 +73,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - Python_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, erd, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
+#    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
 #                         qcelemental, qcengine, optking, simint, Libxc, IntegratorXX
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
@@ -113,7 +113,6 @@ option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_ecpint "Enables libecpint for effective core potentials (ECP)" OFF)
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
-option(ENABLE_erd "Enables use of ERD instead of Libint (requires Fortran)" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
@@ -124,7 +123,6 @@ option(ENABLE_cct3 "Enables cct3 plugin (requires Fortran; can also be added at 
 option(ENABLE_gpu_dfcc "Enables GPU_DFCC plugin for gpu-accelerated df-cc (requires CUDA; can also be added at runtime)" OFF)
 option(ENABLE_mdi "Enables MolSSI driver interface" OFF)
 option(ENABLE_BrianQC "Enables the BrianQC GPU module (requires CUDA; requires separate installation and licensing of the BrianQC module)" OFF)
-option(ENABLE_Libint1t "Enables Libint1 in special _t variety" OFF)
 # These options are relevant to pasture, expert only
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
 option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
@@ -136,7 +134,7 @@ if(ENABLE_ccsort OR ENABLE_transqt2)
   message(STATUS "Enabling pasture plugins")
 endif()
 
-if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver)
+if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_PCMSolver)
   if(psi4_SKIP_ENABLE_Fortran)
     message(STATUS "NOT Enabling Fortran")
   else()
@@ -144,11 +142,6 @@ if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver)
     set(Fortran_ENABLED ON)  # communicate required languages with psi4-core
     message(STATUS "Enabling Fortran")
   endif()
-endif()
-
-if(ENABLE_erd)
-    message(FATAL_ERROR "The Psi4/ERD interface is broken, probably since spring 2017. It's toast (comment this line to try), but disabling for now.")
-    message(WARNING "ERD will build, link, and run in Psi4 just fine. However, it has not been hooked into Psi4 in all roles, notably gradients, LRC DFT energies, and ESP. So upon activating through ``set integral_package erd``, known failures will be caught and halted, but perhaps other types not tested and identified will give *wrong* answers. Consider this your warning.")
 endif()
 
 ############################  Options: Build How?  #############################
@@ -240,10 +233,8 @@ ExternalProject_Add(psi4-core
            ecpint_external
            libefp_external
            einsums_external
-           erd_external
            gau2grid_external
            gdma_external
-           libint_external
            libint2_external
            pcmsolver_external
            ddx_external
@@ -293,7 +284,6 @@ ExternalProject_Add(psi4-core
               -DENABLE_ecpint=${ENABLE_ecpint}
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_Einsums=${ENABLE_Einsums}
-              -DENABLE_erd=${ENABLE_erd}
               -DENABLE_simint=${ENABLE_simint}
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
@@ -310,10 +300,8 @@ ExternalProject_Add(psi4-core
               -Decpint_DIR=${ecpint_DIR}
               -Dlibefp_DIR=${libefp_DIR}
               -DEinsums_DIR=${Einsums_DIR}
-              -Derd_DIR=${erd_DIR}
               -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}
-              #-DLibint_DIR=${Libint_DIR}
               -DLibint2_DIR=${Libint2_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dmdi_DIR=${mdi_DIR}

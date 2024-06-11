@@ -43,7 +43,6 @@ list(APPEND sources
   pointgrp.cc
   rep.cc
   cdsalclist.cc
-  erd_eri.cc
   angularmomentum.cc
   orthog.cc
   )
@@ -98,13 +97,6 @@ target_link_libraries(mints
     Libint2::cxx
   )
 # Conditionally linked-to external projects
-if(TARGET Libint::libint)
-  target_link_libraries(mints
-    PUBLIC
-      Libint::libint
-    )
-endif()
-
 if(TARGET ECPINT::ecpint)
   target_sources(mints
     PRIVATE
@@ -155,13 +147,6 @@ if(TARGET PCMSolver::pcm)
   target_link_libraries(mints
     PUBLIC
       PCMSolver::pcm
-    )
-endif()
-
-if(TARGET erd::erd)
-  target_link_libraries(mints
-    PUBLIC
-      erd::erd
     )
 endif()
 
