@@ -110,7 +110,6 @@ class MOInfoBase {
     void compute_number_of_electrons();
     void read_mo_space(const int nirreps_ref, int& n, intvec& mo, const std::string& labels);
     void print_mo_space(int nmo, const intvec& mo, const std::string& labels);
-    intvec convert_int_array_to_vector(int n, const int* array);
 
     Wavefunction& ref_wfn;
     Options& options;
