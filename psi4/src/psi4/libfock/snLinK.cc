@@ -407,7 +407,7 @@ void snLinK::print_header() const {
         outfile->Printf("\n");
         outfile->Printf("  ==> snLinK: GauXC Semi-Numerical Linear Exchange K <==\n\n");
         
-        outfile->Printf("    K Execution Space: %s\n", (use_gpu_) ? "Device" : "Host");
+        outfile->Printf("    K Execution Space: %s\n", (use_gpu_) ? "Device (GPU)" : "Host (CPU)");
         outfile->Printf("    K Grid Radial Points: %i\n", radial_points_);
         outfile->Printf("    K Grid Spherical/Angular Points: %i\n\n", spherical_points_);
         outfile->Printf("    K Screening?:     %s\n", (integrator_settings_.screen_ek) ? "Yes" : "No");
