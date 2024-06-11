@@ -35,9 +35,7 @@
 
 #include <libint2/engine.h>
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-
-#define RELVDEBUG 0
+#include <algorithm>
 
 using namespace psi;
 
