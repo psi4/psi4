@@ -61,6 +61,10 @@ namespace py = pybind11;
 
 namespace psi {
 
+// ==> GauXC-specific functions go here <== //
+
+#ifdef USING_gauxc
+
 // creates maps for translating Psi4 option inputs to GauXC enums
 std::tuple<
     std::unordered_map<std::string, GauXC::PruningScheme>, 
@@ -171,7 +175,13 @@ GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4
     return gauxc_basisset;
 }
 
+#endif 
+
+// ==> SplitJK-inherited functions go here <== //
+
 snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primary, options) {
+
+#ifdef USING_gauxc
     timer_on("snLinK: Setup");
     
     // => Part #1: Options Processing <= //
@@ -382,11 +392,17 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     timer_off("snLinK: Construct GauXC Integrator");
     
     timer_off("snLinK: Setup");
+
+#else
+    throw PSIEXCEPTION("snLinK was requested in SCF_TYPE, but GauXC is not installed! Please recompile Psi4 with ENABLE_gauxc=ON.");
+#endif
 }
 
 snLinK::~snLinK() {}
 
 void snLinK::print_header() const {
+
+#ifdef USING_gauxc
     if (print_) {
         outfile->Printf("\n");
         outfile->Printf("  ==> snLinK: GauXC Semi-Numerical Linear Exchange K <==\n\n");
@@ -412,6 +428,9 @@ void snLinK::print_header() const {
             outfile->Printf("    (Debug) K LWD Kernel:     %s\n\n", options_.get_str("SNLINK_LWD_KERNEL").c_str());
         }
     }
+#endif
+
+    return;
 }
 
 // build the K matrix using Ochsenfeld's sn-LinK algorithm
@@ -419,6 +438,7 @@ void snLinK::print_header() const {
 void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K,
     std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
 
+#ifdef USING_gauxc
     // we need to know if we are using a spherical harmonic basis
     // much of the behavior here is influenced by this
     auto do_reorder = permutation_matrix_.has_value(); 
@@ -510,6 +530,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         }
         timer_off("snLinK: Back-transform D and K");
     }
+#endif
 
     return;
 }
