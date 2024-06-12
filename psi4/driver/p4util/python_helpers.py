@@ -37,7 +37,6 @@ Also, many Python extensions to core classes:
  - JK (constructor)
  - VBase (grid)
  - OEProp (avail prop)
- - ERISieve (constructor)
 """
 
 __all__ = [
@@ -1529,40 +1528,3 @@ core.Matrix.doublet = staticmethod(_core_doublet)
 core.Matrix.triplet = staticmethod(_core_triplet)
 
 
-@staticmethod
-def _core_erisieve_build(
-        orbital_basis: core.BasisSet,
-        cutoff: float = 0.0,
-        do_csam: bool = False
-    ) -> core.ERISieve:
-    """
-    This function previously constructed a Psi4 ERISieve object from an input basis set, with an optional cutoff threshold for
-    ERI screening and an optional input to enable CSAM screening (over Schwarz screening).
-
-    However, as the ERISieve class was removed from Psi4 in v1.9, the function now throws with an UpgradeHelper
-    exception, and lets the user know to use TwoBodyAOInt instead.
-
-    Parameters
-    ----------
-    orbital_basis
-        Basis set to use in the ERISieve object.
-    cutoff
-        Integral cutoff threshold to use for Schwarz/CSAM screening. Defaults to 0.0, disabling screening entirely.
-    do_csam
-        Use CSAM screening? If True, CSAM screening is used; else, Schwarz screening is used. By default,
-        Schwarz screening is utilized.
-
-    Returns
-    -------
-    ERISieve
-        Initialized ERISieve object.
-
-    Example
-    -------
-    >>> sieve = psi4.core.ERISieve.build(bas, cutoff, csam)
-    """
-
-    raise UpgradeHelper("ERISieve", "TwoBodyAOInt", 1.8, " The ERISieve class has been removed and replaced with the TwoBodyAOInt class. ERISieve.build(orbital_basis, cutoff, do_csam) can be replaced with the command sequence factory = psi4.core.IntegralFactory(basis); factory.eri(0).")
-
-
-core.ERISieve.build = _core_erisieve_build
