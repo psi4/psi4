@@ -24,6 +24,8 @@
 #   gdma - multipole library active
 #   pcmsolver - solvation library active
 #   simint - integrals library active
+#   einsums - tensor contraction library active
+#   gauxc - exact exchange library active 
 #
 #
 # Exported targets::
@@ -59,6 +61,8 @@ set (_valid_components
     gdma
     pcmsolver
     simint
+    einsums
+    gauxc
 )
 
 # location of script psi4
@@ -86,6 +90,8 @@ psi4_component(ecpint @ENABLE_ecpint@)
 psi4_component(gdma @ENABLE_gdma@)
 psi4_component(pcmsolver @ENABLE_PCMSolver@)
 psi4_component(simint @ENABLE_simint@)
+psi4_component(einsums @ENABLE_simint@)
+psi4_component(gauxc @ENABLE_simint@)
 
 foreach(_comp ${${PN}_FIND_COMPONENTS})
     if(${${PN}_${_comp}_FOUND})
