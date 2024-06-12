@@ -1473,4 +1473,5 @@ data:
       name: h5py
       constraint: null
       cmake: null
+      cmake_note: "Primarily OTF runtime detected."
       skip_win: true
