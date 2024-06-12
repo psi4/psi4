@@ -381,7 +381,17 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     // construct dummy functional
     // note that the snLinK used by the eventually-called eval_exx function is agnostic to the input functional!
     const std::string dummy_func_str = "B3LYP";
-    auto spin = options_.get_str("REFERENCE") == "UHF" ? ExchCXX::Spin::Polarized : ExchCXX::Spin::Unpolarized;
+
+    // technically, spin polarization is irrelevant here
+    // but lets be clear about it anyway 
+    std::array<std::string, 3> spin_polarized_refs = { "UHF", "ROHF", "UKS" };
+    bool is_spin_polarized = std::any_of(
+      spin_polarized_refs.cbegin(),
+      spin_polarized_refs.cend(),
+      [&](std::string spin_polarized_ref) { return options_.get_str("REFERENCE") == spin_polarized_ref; }
+    );
+ 
+    auto spin = is_spin_polarized ? ExchCXX::Spin::Polarized : ExchCXX::Spin::Unpolarized;
     
     ExchCXX::Functional dummy_func_key = ExchCXX::functional_map.value(dummy_func_str);
     ExchCXX::XCFunctional dummy_func = { ExchCXX::Backend::builtin, dummy_func_key, spin };  
