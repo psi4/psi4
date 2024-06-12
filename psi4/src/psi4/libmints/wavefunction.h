@@ -242,6 +242,9 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     // The external potential for the current wave function
     std::shared_ptr<ExternalPotential> external_pot_;
 
+    // An optional external hamiltonian contribution added statically to the base hamiltonian
+    SharedMatrix external_hamiltonian_;
+
     // Collection of scalar variables
     std::map<std::string, double> variables_;
 
@@ -666,8 +669,14 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     // Get the external potential
     std::shared_ptr<ExternalPotential> external_pot() const;
 
+    // Get the external hamiltonian
+    SharedMatrix external_hamiltonian() const;
+
     // Set the external potential
     void set_external_potential(std::shared_ptr<ExternalPotential> external) { external_pot_ = external; }
+
+    // Set a external hamiltonian
+    void set_external_hamiltonian(SharedMatrix external_hamiltonian) { external_hamiltonian_ = external_hamiltonian; }
 
     /// Get and set variables, arrays, and potentials dictionaries
     bool has_scalar_variable(const std::string& key);
