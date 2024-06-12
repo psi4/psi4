@@ -1462,7 +1462,7 @@ data:
     use:
       added: 1.10
       required: false
-      required_note: optional for GauXC interface tests
+      required_note: optional for extra tests of GauXC interface
       buildable: false
       buildtime: false
       cms: false
