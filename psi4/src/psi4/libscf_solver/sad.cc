@@ -523,7 +523,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     int iteration = 0;
 
     // Setup DIIS
-    DIISManager diis_manager(6, "SAD DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    DIISManager diis_manager(6, "SAD DIIS", DIISManager::RemovalPolicy::LargestError,
+                             DIISManager::StoragePolicy::InCore);
     diis_manager.set_error_vector_size(gradient_a.get(), gradient_b.get());
     diis_manager.set_vector_size(Fa.get(), Fb.get());
 
@@ -713,7 +714,7 @@ void SADGuess::form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, Shar
     }
     // Scale by sqrt(occ)
     for (int i = 0; i < nocc; i++) {
-      C_DSCAL(nbf, std::sqrt(occ->get(i)), &Coccp[0][i], nocc);
+        C_DSCAL(nbf, std::sqrt(occ->get(i)), &Coccp[0][i], nocc);
     }
     // Form D = Cocc*Cocc'
     D->gemm(false, true, 1.0, Cocc, Cocc, 0.0);
