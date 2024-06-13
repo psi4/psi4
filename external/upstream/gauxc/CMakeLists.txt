@@ -17,7 +17,7 @@ if(${ENABLE_gauxc})
         if(${gauxc_ENABLE_GPU} AND (NOT ${_gpu}))
            message(FATAL_ERROR "gauxc_ENABLE_GPU turned on, but selected GauXC install is not built for GPU support!")
         elseif((NOT ${gauxc_ENABLE_GPU}) AND ${_gpu})
-           message(FATAL_ERROR "gauxc_ENABLE_GPU turned off, but selected GauXC install is built for GPU support!")
+           message(WARNING "gauxc_ENABLE_GPU turned off, but selected GauXC install is built for GPU support! If you want GPU support for the Psi4/GauXC interface, make sure to explicitly turn on gauxc_ENABLE_GPU!")
         endif()
 
         #== check if MAGMA-enabled GauXC is found, if MAGMA is specified ==#
@@ -28,9 +28,9 @@ if(${ENABLE_gauxc})
         endif()
         
         if(${gauxc_ENABLE_MAGMA} AND (NOT ${_magma}))
-           message(FATAL_ERROR "gauxc_ENABLE_MAGMA turned on, but selected GauXC install is not built for MAGMA support!")
+           message(FATAL_ERROR "gauxc_ENABLE_MAGMA turned on, but selected GauXC install is not built for Magma support!")
         elseif((NOT ${gauxc_ENABLE_MAGMA}) AND ${_magma})
-           message(FATAL_ERROR "gauxc_ENABLE_MAGMA turned off, but selected GauXC install is built for MAGMA support!")
+           message(WARNING "gauxc_ENABLE_MAGMA turned off, but selected GauXC install is built for Magma support! If you want Magma support for the Psi4/GauXC interface, make sure to explicitly turn on gauxc_ENABLE_MAGMA!")
         endif()
 
         #== normal print-out and library addition ==#
