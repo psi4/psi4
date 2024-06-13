@@ -117,8 +117,8 @@ for result in [  #TEST
     compare_values(ref_2cp_ene + ref_disp_2cp_ene, result, 8, 'CP-Corrected Energy')  #TEST
 
 for result in [  #TEST
-    wfn.variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
-    variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
+    wfn.variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
+    variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
 ]:  #TEST
     compare_values(ref_2cp_ie + ref_disp_2cp_ie, result, 8, 'CP-Corrected Interaction Energy')  #TEST
 
@@ -191,7 +191,7 @@ for result in [  #TEST
     compare_values(ref_2cp_ene + ref_disp_2cp_ene, result, 8, 'CP-Corrected Energy')  #TEST
 
 for result in [  #TEST
-    wfn.variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
+    wfn.variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
 ]:  #TEST
     compare_values(ref_2cp_ie + ref_disp_2cp_ie, result, 8, 'CP-Corrected Interaction Energy')  #TEST
 
@@ -217,8 +217,8 @@ for result in [  #TEST
     compare_values(ref_2cp_ene + ref_disp_2cp_ene, result, 8, 'rtd=F CP-Corrected Energy')  #TEST
 
 for result in [  #TEST
-    wfn.variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
-    variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
+    wfn.variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
+    variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
     wfn.variable("CURRENT ENERGY"),  #TEST
     variable("CURRENT ENERGY"),  #TEST
 ]:  #TEST
