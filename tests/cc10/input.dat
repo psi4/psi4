@@ -13,7 +13,8 @@ set {
   basis       cc-pVDZ
   docc        [4, 0, 1, 1]
   socc        [1, 0, 0, 0]
-  freeze_core = true
+  freeze_core true
+  d_convergence 10
 }
 
 energy('ccsd')
