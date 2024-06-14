@@ -73,6 +73,7 @@
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
 #include "psi4/libmints/sieve.h"
+#include "psi4/libmints/thc_eri.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include <string>
 
@@ -1727,6 +1728,18 @@ void export_mints(py::module& m) {
             return sho;
         },
         "The solid harmonics setting of Libint2 currently active for Psi4");
+
+    py::class_<LS_THC_Computer, std::shared_ptr<LS_THC_Computer>>(m, "LS_THC_Computer",
+            "Computer class for grid-based tensor hypercontraction (THC) of two-electron integrals (Parrish 2012)")
+            .def(py::init([] (std::shared_ptr<Molecule> mol, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary) {
+                    return new LS_THC_Computer(mol, primary, auxiliary, Process::environment.options); 
+                    }))
+            .def("compute_thc_factorization", &LS_THC_Computer::compute_thc_factorization, "Compute the THC (x1, x2, Z, x3, x4) factors through grid based LS-THC")
+            .def("get_x1", &LS_THC_Computer::get_x1, "Returns x1 factor from LS-THC factorization")
+            .def("get_x2", &LS_THC_Computer::get_x2, "Returns x2 factor from LS-THC factorization")
+            .def("get_x3", &LS_THC_Computer::get_x3, "Returns x3 factor from LS-THC factorization")
+            .def("get_x4", &LS_THC_Computer::get_x4, "Returns x4 factor from LS-THC factorization")
+            .def("get_Z", &LS_THC_Computer::get_Z, "Returns Z factor from LS-THC factorization");
 
     // when psi4 requires >=v2.8.0
     // m.def("libint2_supports", [](const std::string& comp) { return libint2::supports(comp); },
