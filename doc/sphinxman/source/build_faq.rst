@@ -102,7 +102,6 @@ QC Dependencies and Extensions
 #. :ref:`faq:chemps2gccflto`
 #. :ref:`cmake:dkh`
 #. :ref:`cmake:libefp`
-#. :ref:`cmake:erd`
 #. :ref:`cmake:gdma`
 #. :ref:`cmake:libint`
 #. :ref:`cmake:pcmsolver`

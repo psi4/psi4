@@ -347,6 +347,7 @@ data:
     use:
       added: "1.0"  # external at 1.1
       deprecated: 1.2
+      deprecated_note: "Removed interface at 1.10."
     repository: null
     cmake: null
     conda: null

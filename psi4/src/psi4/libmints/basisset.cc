@@ -25,15 +25,13 @@
  *
  * @END LICENSE
  */
-// Need libint for maximum angular momentum
-#ifdef ENABLE_Libint1t
-#include <libint/libint.h>
-#endif
-#include <libint2/shell.h>
+
 /*!
     \defgroup MINTS libmints: Integral library
     \ingroup MINTS
 */
+
+#include <libint2/shell.h>
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"

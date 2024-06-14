@@ -9,10 +9,8 @@ foreach(dir
   ecpint
   libefp
   einsums
-  erd
   gau2grid
   gdma
-  libint
   libint2
   mdi
   pcmsolver

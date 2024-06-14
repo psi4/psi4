@@ -208,7 +208,7 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 
 See :source:`codedeps.yaml` for a structured listing and history of dependencies.
 
-* :ref:`C++ and C Compilers <cmake:cxx>` (C++17 compliant)
+* :ref:`C++ and C Compilers <cmake:cxx>` (C++20 compliant)
 
 * :ref:`Optimized BLAS and LAPACK libraries <cmake:lapack>` (preferably NOT one supplied by a standard
   Linux distribution)
@@ -302,8 +302,6 @@ are available pre-built from conda.
 
   * HDF5 https://support.hdfgroup.org/HDF5/
   * zlib http://www.zlib.net/
-
-.. * :ref:`erd <cmake:erd>` |w---w| :ref:`[what is this?] <sec:erd>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/erd/CMakeLists.txt#L2>`_
 
 ..  * :ref:`Fortran Compiler <cmake:fortran>`
 
@@ -1073,13 +1071,12 @@ On Mac, the following work nicely.
   * Apple Clang: ``clang``, ``clang++``
   * Intel: ``icc``, ``icpc``
 
-|PSIfour| requires *full* C++11 compliance, meaning, most importantly, GCC
->= 4.9. This compliance is checked for at build-time with file
+|PSIfour| requires *full* C++20 compliance.
+This compliance is checked for at build-time with file
 :source:`cmake/custom_cxxstandard.cmake`, so either consult that file or
 try a test build to ensure your compiler is approved. Note that Intel
 compilers on Linux also rely on GCC, so both ``icpc`` and ``gcc`` versions are checked.
-Intel OneAPI Classic compilers work fine. OneAPI beta compilers build but have
-been only minimally tested.
+Intel OneAPI Classic compilers work fine, as do OneAPI Clang ``icpx`` compilers.
 
 * :ref:`faq:modgcc`
 
@@ -1223,7 +1220,7 @@ How to configure Fortran compilers for building Psi4
 * Downstream Dependencies
 
   * |PSIfour| (\ |dr| optional) Fortran Compiler
-  * erd, dkh, gdma, PCMSolver |dr| Fortran Compiler
+  * dkh, gdma, PCMSolver |dr| Fortran Compiler
 
 **CMake Variables**
 
@@ -1796,7 +1793,6 @@ to run correctly); ``FAILED`` in red is bad. ::
     test_addons.py::test_dftd3 PASSED
     test_addons.py::test_libefp PASSED
     test_addons.py::test_pcmsolver PASSED
-    test_addons.py::test_erd PASSED
     test_addons.py::test_simint PASSED
     test_addons.py::test_json PASSED
     test_addons.py::test_cfour SKIPPED

@@ -35,8 +35,6 @@
 
 #include <libint2/engine.h>
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-
 using namespace psi;
 
 ElectricFieldInt::ElectricFieldInt(std::vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1,

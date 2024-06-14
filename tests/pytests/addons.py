@@ -72,7 +72,6 @@ _programs = {
     "dkh": psi4.addons("dkh"),
     "ecpint": psi4.addons("ecpint"),
     "libefp": which_import("pylibefp", return_bool=True),
-    "erd": psi4.addons("erd"),
     "fockci": which_import("psi4fockci", return_bool=True),  # package fockci, import psi4fockci
     "forte": which_import("forte", return_bool=True),
     "gdma": which_import("gdma", return_bool=True),  # package pygdma, import gdma

@@ -39,13 +39,8 @@
 
 #include <libint2/engine.h>
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-
-#define VDEBUG 1
-
 using namespace psi;
 
-// Initialize potential_recur_ to +1 basis set angular momentum
 PotentialInt::PotentialInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1,
                            std::shared_ptr<BasisSet> bs2, int deriv)
     : OneBodyAOInt(st, bs1, bs2, deriv) {

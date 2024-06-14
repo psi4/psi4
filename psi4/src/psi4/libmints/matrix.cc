@@ -70,9 +70,6 @@ extern int str_to_int(const std::string &s);
 
 extern double str_to_double(const std::string &s);
 
-#define MIN(x, y) ((x) < (y) ? (x) : (y))
-#define MAX(x, y) ((x) > (y) ? (x) : (y))
-
 Matrix::Matrix() {
     matrix_ = nullptr;
     nirrep_ = 0;
@@ -1045,7 +1042,7 @@ void Matrix::identity() {
 
         if (size) {
             memset(&(matrix_[h][0][0]), 0, size);
-            for (int i = 0; i < MIN(rowspi_[h], colspi_[h]); ++i) matrix_[h][i][i] = 1.0;
+            for (int i = 0; i < std::min(rowspi_[h], colspi_[h]); ++i) matrix_[h][i][i] = 1.0;
         }
     }
 }
@@ -1068,7 +1065,7 @@ void Matrix::zero_diagonal() {
     int h, i;
 
     for (h = 0; h < nirrep_; ++h) {
-        for (i = 0; i < MIN(rowspi_[h], colspi_[h]); ++i) {
+        for (i = 0; i < std::min(rowspi_[h], colspi_[h]); ++i) {
             matrix_[h][i][i] = 0.0;
         }
     }
@@ -1081,7 +1078,7 @@ double Matrix::trace() {
     double val = (double)0.0;
 
     for (h = 0; h < nirrep_; ++h) {
-        for (i = 0; i < MIN(rowspi_[h], colspi_[h]); ++i) {
+        for (i = 0; i < std::min(rowspi_[h], colspi_[h]); ++i) {
             val += matrix_[h][i][i];
         }
     }

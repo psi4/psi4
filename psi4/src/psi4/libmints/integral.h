@@ -450,6 +450,10 @@ class PSI_API IntegralFactory {
     virtual std::unique_ptr<OneBodyAOInt> ao_rel_potential(int deriv = 0);
     virtual std::unique_ptr<OneBodySOInt> so_rel_potential(int deriv = 0);
 
+    /// Returns the OneBodyInt that computes the erf/erfc-attenuated Coulomb potential on a given origin
+    virtual std::unique_ptr<OneBodyAOInt> ao_potential_erf(double omega = 0.0, int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_potential_erf_complement(double omega = 0.0, int deriv = 0);
+
     /// Returns an OneBodyInt that computes the dipole integral.
     virtual std::unique_ptr<OneBodyAOInt> ao_dipole(int deriv = 0);
     virtual std::unique_ptr<OneBodySOInt> so_dipole(int deriv = 0);
@@ -489,9 +493,6 @@ class PSI_API IntegralFactory {
 
     /// Returns an ERI integral object
     virtual std::unique_ptr<TwoBodyAOInt> eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
-
-    /// Returns an ERD ERI integral object, if available.  Otherwise returns a libint integral object
-    virtual std::unique_ptr<TwoBodyAOInt> erd_eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an erf ERI integral object (omega integral)
     virtual std::unique_ptr<TwoBodyAOInt> erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true,

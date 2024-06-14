@@ -1,15 +1,15 @@
 cmake_policy(PUSH)
 cmake_policy(SET CMP0057 NEW)  # support IN_LISTS
 
-# We require C++17 support from the compiler and standard library.
-list(APPEND _allowed_cxx_standards 17)
+# We require C++20 support from the compiler and standard library.
+list(APPEND _allowed_cxx_standards 20)
 if(NOT psi4_CXX_STANDARD IN_LIST _allowed_cxx_standards)
-  message(FATAL_ERROR "Psi4 requires C++17 at least")
+  message(FATAL_ERROR "Psi4 requires C++20 at least")
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
-        message(FATAL_ERROR "GCC version must be at least 7.0!")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
+        message(FATAL_ERROR "GCC version must be at least 10.0!")
     endif()
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
@@ -55,8 +55,8 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES AppleClang)
     endif()
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
-        message(FATAL_ERROR "CLANG version must be at least 5.0!")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11.0)
+        message(FATAL_ERROR "CLANG version must be at least 11.0!")
     endif()
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES MSVC)

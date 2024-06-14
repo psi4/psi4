@@ -115,9 +115,6 @@ def cubeprop(wfn: core.Wavefunction, **kwargs):
     if not core.has_global_option_changed('CUBEPROP_TASKS'):
         core.set_global_option('CUBEPROP_TASKS', ['ORBITALS'])
 
-    if ((core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and ('ESP' in core.get_global_option('CUBEPROP_TASKS'))):
-        raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with electrostatic potential, so stopping.')
-
     cp = core.CubeProperties(wfn)
     cp.compute_properties()
 

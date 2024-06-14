@@ -82,15 +82,15 @@ void CIWavefunction::parse_import_vector(SlaterDetSet *sdset, int *ialplist, int
 
     /* now figure out how the frozen stuff is going to map */
     if (CalcInfo_->num_drc_orbs > alphastrings->ndrc || CalcInfo_->num_drc_orbs > betastrings->ndrc) {
-        outfile->Printf(
-            "(parse_import_vector): Can't drop more orbitals now"
-            " than in the imported guess!\n");
-        abort();
+        const std::string msg = "(parse_import_vector): Can't drop more orbitals now than in the imported guess!\n";
+        outfile->Printf(msg.c_str());
+        throw PSIEXCEPTION(msg);
     }
 
     if (alphastrings->ndrc != betastrings->ndrc) {
-        outfile->Printf("(parse_import_vector): alpha ndrc != beta ndrc!\n");
-        abort();
+        const std::string msg = "(parse_import_vector): alpha ndrc != beta ndrc!\n";
+        outfile->Printf(msg.c_str());
+        throw PSIEXCEPTION(msg);
     }
 
     new_alphastr_list = init_int_array(alphastrings->size);
@@ -117,11 +117,12 @@ void CIWavefunction::parse_import_vector(SlaterDetSet *sdset, int *ialplist, int
         /* figure out what block we're in */
         j = CIblks_->decode[ialplist[i]][ibetlist[i]];
         if (j == -1) {
-            outfile->Printf("Import vector: can't find CI block!\n");
-            outfile->Printf("Determinant number %d\n", i);
-            outfile->Printf("\nialplist=%d, ialpidx=%d, ibetlist=%d, ibetidx=%d\n", ialplist[i], ialpidx[i],
-                            ibetlist[i], ibetidx[i]);
-            abort();
+            const std::string msg =
+                "Import vector: can't find CI block!\nDeterminant number " + std::to_string(i) +
+                "\nialplist=" + std::to_string(ialplist[i]) + ", ialpidx=" + std::to_string(ialpidx[i]) +
+                ", ibetlist=" + std::to_string(ibetlist[i]) + ", ibetidx=" + std::to_string(ibetidx[i]) + "\n";
+            outfile->Printf(msg.c_str());
+            throw PSIEXCEPTION(msg);
         } else
             blknums[i] = j;
     } /* end loop over determinants */
@@ -166,11 +167,9 @@ void stringset_translate_addr(StringSet *sset, int new_nel, int new_ndrc, int *p
     }
 
     if (num_former_drc + old_nel > new_nel) {
-        outfile->Printf(
-            "(stringset_translate_addr): num_former_drc + old_nel"
-            " > new_nel!\n");
-
-        abort();
+        const std::string msg = "(stringset_translate_addr): num_former_drc + old_nel > new_nel!\n";
+        outfile->Printf(msg.c_str());
+        throw PSIEXCEPTION(msg);
     }
 
     tmpocc = init_int_array(new_nel);
@@ -192,12 +191,10 @@ void stringset_translate_addr(StringSet *sset, int new_nel, int new_ndrc, int *p
         }
 
         if (l != new_nel) {
-            outfile->Printf(
-                "(stringset_translate_addr): Imported string has wrong"
-                " number of electrons, %d vs. %d\n",
-                l, new_nel);
-
-            abort();
+            const std::string msg = "(stringset_translate_addr): Imported string has wrong number of electrons, " +
+                                    std::to_string(l) + " vs. " + std::to_string(new_nel) + "\n";
+            outfile->Printf(msg.c_str());
+            throw PSIEXCEPTION(msg);
         }
 
         new_idx[s] = og_lex_addr(Graph, tmpocc, new_nel, &(new_list[s]));
