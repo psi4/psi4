@@ -231,3 +231,4 @@ double GaussianShell::evaluate(double r, int l) const {
 }
 
 const double *GaussianShell::center() const { return center_; }
+const double GaussianShell::coord(size_t icoord) const { return center_[icoord]; }
