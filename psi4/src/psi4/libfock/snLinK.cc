@@ -228,7 +228,11 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // basis set shouldn't have higher AM shells than GauXC instance supports 
     if (primary_->max_am() > gauxc_max_am_) {
-        std::string error_message = "Selected basis set has higher-AM shells than supported by current GauXC instance! \n";
+        std::string error_message = "Selected basis set has higher-AM shells (Max AM = "; 
+        error_message += std::to_string(primary_->max_am());
+        error_message += ") than supported by current GauXC instance (Max AM = ";
+        error_message += std::to_string(gauxc_max_am_);
+        error_message += ")!\n";
         error_message += "Either reduce the size of your basis set, or use a GauXC install with a higher supported AM.";
 
         throw PSIEXCEPTION(error_message);
