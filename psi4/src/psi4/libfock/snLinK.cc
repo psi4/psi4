@@ -529,7 +529,7 @@ void snLinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vec
         // now we need to reverse the CCA reordering previously performed
         timer_on("snLinK: Back-transform D and K");
         if (do_reorder) {
-            auto permutation_matrix_val = permutation_matrix_ .value();
+            auto permutation_matrix_val = permutation_matrix_.value();
             auto D_eigen_permute = D[iD]->eigen_map();
             D_eigen_permute = permutation_matrix_val.transpose() * D_eigen_permute * permutation_matrix_val; 
 
