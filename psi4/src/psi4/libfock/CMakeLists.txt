@@ -46,11 +46,6 @@ if(TARGET gauxc::gauxc)
   target_compile_definitions(fock
     PUBLIC
       USING_gauxc
-      $<TARGET_PROPERTY:gauxc::gauxc,GAUXC_HAS_DEVICE>
-    )
-  target_include_directories(fock
-    PUBLIC
-      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
     )
   target_link_libraries(fock
     PUBLIC 
