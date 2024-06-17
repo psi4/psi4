@@ -36,8 +36,16 @@ units au
 """)
         }
 
-@pytest.mark.parametrize("j_algo", [ "DFDIRJ" ]) #to be extended in the future
-@pytest.mark.parametrize("k_algo", [ "LINK", "COSX" ]) #to be extended in the future
+@pytest.mark.parametrize("j_algo", [ 
+        pytest.param("DFDIRJ") 
+    ]
+) #to be extended in the future
+@pytest.mark.parametrize("k_algo", [ 
+        pytest.param("LINK"),
+        pytest.param("COSX"),
+        pytest.param("SNLINK", marks=using('gauxc')),
+    ]
+) #to be extended in the future
 def test_composite_call(j_algo, k_algo, mols, request):
     """Test all SCF_TYPE={J}+{K} combinations for an HF calculation.
     The correct algorithm pair should be called in each case.""" 
@@ -50,7 +58,7 @@ def test_composite_call(j_algo, k_algo, mols, request):
     scf_type = f'{j_algo}+{k_algo}'
     psi4.set_options({ "scf_type" : f'{j_algo}+{k_algo}', "incfock": True, "save_jk": True })
   
-    if "COSX" in scf_type:
+    if any([ _ in scf_type for _ in ["COSX", "SNLINK"] ]): 
         psi4.set_options({ "screening" : "schwarz" })
     else:
         psi4.set_options({ "screening" : "density" })
@@ -65,6 +73,7 @@ def test_composite_call(j_algo, k_algo, mols, request):
     assert clean_j_name.lower() == j_algo.lower(), f'{test_id} has correct J build method'
 
     # check that correct K algo has been called
+    clean_k_name = clean_k_name.replace("-", "") # replace sn-LinK with snLinK
     assert clean_k_name.lower() == k_algo.lower(), f'{test_id} has correct K build method'
 
 @pytest.mark.parametrize(
