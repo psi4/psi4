@@ -195,11 +195,9 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     pruning_scheme_ = options_.get_str("SNLINK_PRUNING_SCHEME");
     radial_scheme_ = options_.get_str("SNLINK_RADIAL_SCHEME");
  
-//#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
-#if psi4_SHGSHELL_ORDERING == 1 
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
     is_cca_ = true;
-//#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
-#elif psi4_SHGSHELL_ORDERING == 2 
+#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
     is_cca_ = false;
 #else
     #error "unknown value of macro psi4_SHGSHELL_ORDERING"
