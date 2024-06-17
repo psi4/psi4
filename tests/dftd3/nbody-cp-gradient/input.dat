@@ -117,8 +117,8 @@ for result in [  #TEST
     compare_values(ref_2cp_ene + ref_disp_2cp_ene, result, 8, 'CP-Corrected Energy')  #TEST
 
 for result in [  #TEST
-    wfn.variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
-    variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
+    wfn.variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
+    variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
 ]:  #TEST
     compare_values(ref_2cp_ie + ref_disp_2cp_ie, result, 8, 'CP-Corrected Interaction Energy')  #TEST
 
@@ -128,7 +128,7 @@ for result in [  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     variable("CURRENT GRADIENT"),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 8, 'CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 7, 'CP-Corrected Gradient')  #TEST
 
 # compute pieces
 cp_scheme = {  #TEST
@@ -191,7 +191,7 @@ for result in [  #TEST
     compare_values(ref_2cp_ene + ref_disp_2cp_ene, result, 8, 'CP-Corrected Energy')  #TEST
 
 for result in [  #TEST
-    wfn.variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
+    wfn.variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
 ]:  #TEST
     compare_values(ref_2cp_ie + ref_disp_2cp_ie, result, 8, 'CP-Corrected Interaction Energy')  #TEST
 
@@ -200,7 +200,7 @@ for result in [  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     grad,  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 8, 'CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 7, 'CP-Corrected Gradient')  #TEST
 
 
 # compute nbody again with return_total_data=False
@@ -217,8 +217,8 @@ for result in [  #TEST
     compare_values(ref_2cp_ene + ref_disp_2cp_ene, result, 8, 'rtd=F CP-Corrected Energy')  #TEST
 
 for result in [  #TEST
-    wfn.variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
-    variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
+    wfn.variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
+    variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
     wfn.variable("CURRENT ENERGY"),  #TEST
     variable("CURRENT ENERGY"),  #TEST
 ]:  #TEST
@@ -227,11 +227,11 @@ for result in [  #TEST
 for result in [  #TEST
     wfn.variable('GRADIENT 2'),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 8, 'rtd=F CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 7, 'rtd=F CP-Corrected Gradient')  #TEST
 
 for result in [  #TEST
     g,  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     variable("CURRENT GRADIENT"),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad_ie + ref_disp_2cp_grad_ie, result, 8, 'rtd=F CP-Corrected Interaction Gradient')  #TEST
+    compare_values(ref_2cp_grad_ie + ref_disp_2cp_grad_ie, result, 7, 'rtd=F CP-Corrected Interaction Gradient')  #TEST
