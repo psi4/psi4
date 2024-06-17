@@ -244,8 +244,13 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     auto libint2_configuration = p4util.attr("libint2_configuration")(); // p4util.libint2_configuration
     int l2_max_am = libint2_configuration["eri"][py::int_(0)].cast<int>();
 
-    if (l2_max_am != gauxc_max_am_) {
-        std::string error_message = "Libint2 and GauXC do not have equivalent maximum AM support!";
+    if (l2_max_am < gauxc_max_am_) {
+        std::string error_message = "Libint2 (Max AM = "; 
+        error_message += std::to_string(l2_max_am);
+        error_message += ") and GauXC (Max AM = ";
+        error_message += std::to_string(gauxc_max_am_);
+        error_message += ") do not have compatible AM support!\n";
+        error_message += "Adjust your Psi4 build dependencies so that Libint2 max AM >= GauXC max AM.";
 
         throw PSIEXCEPTION(error_message);
     }
