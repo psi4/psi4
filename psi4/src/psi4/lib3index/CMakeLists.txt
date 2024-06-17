@@ -12,8 +12,4 @@ if(TARGET gauxc::gauxc)
     PUBLIC
       $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
     )
-  target_link_libraries(3index
-    PUBLIC 
-      gauxc::gauxc 
-    )
 endif()

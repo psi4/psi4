@@ -10,8 +10,4 @@ if(TARGET gauxc::gauxc)
     PUBLIC
       $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
     )
-  target_link_libraries(dfmp2
-    PUBLIC 
-      gauxc::gauxc 
-    )
 endif()

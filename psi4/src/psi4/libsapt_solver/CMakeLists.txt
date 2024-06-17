@@ -37,10 +37,6 @@ if(TARGET gauxc::gauxc)
     PUBLIC
       $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
     )
-  target_link_libraries(sapt_solver
-    PUBLIC 
-      gauxc::gauxc 
-    )
 endif()
 
 

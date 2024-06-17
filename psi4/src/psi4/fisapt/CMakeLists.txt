@@ -9,10 +9,6 @@ if(TARGET gauxc::gauxc)
     PUBLIC
       $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
     )
-  target_link_libraries(fisapt
-    PUBLIC 
-      gauxc::gauxc 
-    )
 endif()
 
 target_link_libraries(fisapt PUBLIC diis)

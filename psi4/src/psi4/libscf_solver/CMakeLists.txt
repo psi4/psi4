@@ -31,10 +31,6 @@ if(TARGET gauxc::gauxc)
     PUBLIC
       $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
     )
-  target_link_libraries(scf_solver
-    PUBLIC 
-      gauxc::gauxc 
-    )
 endif()
 
 if(TARGET BrianQC::static_wrapper)
