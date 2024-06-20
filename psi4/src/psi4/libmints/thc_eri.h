@@ -98,6 +98,7 @@ class LS_THC_Computer : public THC_Computer {
     /// Parrish LS-THC Procedure 3
     SharedMatrix build_E_df();
     /// Matthews 2020 SI Page 5 (returns S matrix using rank-reduced grid)
+    /// doi: 10.1021/acs.jctc.9b01205
     SharedMatrix prune_grid();
 
    public:
