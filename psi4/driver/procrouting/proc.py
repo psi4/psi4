@@ -4397,6 +4397,86 @@ def run_dlpnomp2(name, **kwargs):
     core.tstop()
     return dlpnomp2_wfn
 
+def run_mp2f12(name, **kwargs):
+    r"""Function encoding sequence of PSI module calls
+    for a MP2-F12/3C(FIX) calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF_TYPE'],
+        ['MP2_TYPE'],
+        ['CABS_BASIS'],
+        ['DF_BASIS_F12'])
+
+    # Default SCF_TYPE to PK if F12_TYPE is CONV and has not been changed
+    if not core.has_global_option_changed('SCF_TYPE')\
+        and "CONV" in core.get_option("F12", "F12_TYPE"):
+        core.set_global_option('SCF_TYPE', 'PK')
+        core.print_out("""    SCF Algorithm Type set to PK.\n""")
+    else:
+        dfbs = core.get_option("F12", "DF_BASIS_F12")
+        core.set_global_option('SCF_TYPE', 'DF')
+        core.set_local_option("SCF", "DF_BASIS_SCF", dfbs)
+
+    # Ensure RHF reference
+    if core.get_global_option('REFERENCE') != "RHF":
+        raise ValidationError("MP2-F12 is not available for %s references.",
+                              core.get_global_option('REFERENCE'))
+
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
+    if ref_wfn.molecule().schoenflies_symbol() != 'c1':
+        raise ValidationError("""  MP2-F12 does not make use of molecular symmetry: """
+                              """reference wavefunction must be C1.\n""")
+
+    # Default MP2_TYPE to CONV if F12_TYPE is CONV
+    if "CONV" in core.get_option("F12", "F12_TYPE"):
+        core.set_global_option("MP2_TYPE", "CONV")
+        ref_wfn = run_occ("mp2", ref_wfn=ref_wfn)
+    else:
+        core.set_local_option("DFMP2", "DF_BASIS_MP2", dfbs)
+        ref_wfn = run_dfmp2("dfmp2", ref_wfn=ref_wfn)
+ 
+    core.tstart()
+    core.print_out('\n')
+    p4util.banner('MP2-F12')
+    core.print_out('\n')
+
+    # Default CABS to OPTRI basis sets if available
+    OBS = core.get_global_option("BASIS")
+    CABS = core.get_option("F12", "CABS_BASIS")
+    if CABS == "" and "CC-PV" in OBS and ("AUG" in OBS or "F12" in OBS):
+        core.set_local_option("F12", "CABS_BASIS", OBS + "-OPTRI")
+        CABS = core.get_option("F12", "CABS_BASIS")
+    elif CABS == "":
+        raise ValidationError("""  No CABS_BASIS given!""")
+
+    # Create CABS
+    keys = ["BASIS","CABS_BASIS"]
+    targets = [OBS, CABS]
+    roles = ["ORBITAL","F12"]
+    others = [OBS, OBS]
+    mol = ref_wfn.molecule()
+    combined = qcdb.libmintsbasisset.BasisSet.pyconstruct_combined(mol.save_string_xyz(), keys, targets, roles, others)
+    cabs = core.BasisSet.construct_from_pydict(mol, combined, combined["puream"])
+    ref_wfn.set_basisset("CABS", cabs)
+
+    # Compute Energy
+    mp2f12_wfn = core.f12(ref_wfn)
+    mp2f12_wfn.compute_energy()
+
+    mp2f12_wfn.set_variable('CURRENT ENERGY', mp2f12_wfn.variable('MP2-F12 TOTAL ENERGY'))
+    mp2f12_wfn.set_variable('CURRENT CORRELATION ENERGY', mp2f12_wfn.variable('MP2-F12 CORRELATION ENERGY'))
+
+    # Shove variables into global space
+    for k, v in mp2f12_wfn.variables().items():
+        core.set_variable(k, v)
+
+    optstash.restore()
+    core.tstop()
+    return mp2f12_wfn
 
 def run_dmrgscf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
