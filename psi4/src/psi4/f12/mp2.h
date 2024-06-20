@@ -97,6 +97,9 @@ class MP2F12 : public Wavefunction {
     /* Number of frozen core orbitals */
     int nfrzn_;
 
+    /* Number of active orbitals */
+    int nact_;
+
     /* F12 Correlation Factor, Contracted Gaussian-Type Geminal */
     std::vector<std::pair<double, double>> cgtg_;
 
@@ -186,6 +189,8 @@ class MP2F12 : public Wavefunction {
                                       const int& i, const int& j);
 
     /* Converts the AO to MO matrices to einsum::Tensors */
+    void convert_C(einsums::Tensor<double,2> *C, OrbitalSpace bs, const int& dim1, const int& dim2,
+                   const bool use_frzn);
     void convert_C(einsums::Tensor<double,2> *C, OrbitalSpace bs, const int& dim1, const int& dim2);
 
     /* Places the computed integral in the einsum::Tensor */
