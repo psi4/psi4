@@ -97,6 +97,8 @@ class LS_THC_Computer : public THC_Computer {
     SharedMatrix build_E_exact();
     /// Parrish LS-THC Procedure 3
     SharedMatrix build_E_df();
+    /// Matthews 2020 SI Page 5 (returns S matrix using rank-reduced grid)
+    SharedMatrix prune_grid();
 
    public:
     LS_THC_Computer(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options);
