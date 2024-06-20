@@ -274,7 +274,7 @@ SharedMatrix LS_THC_Computer::prune_grid() {
     auto Stp = S_temp->pointer();
 
     // Parrish 2012, Equation 28
-#pragma omp parallel for
+#pragma omp parallel for collapse(2) schedule(guided)
     for (size_t p = 0; p < npoints; ++p) {
         for (size_t q = 0; q < npoints; ++q) {
             S_Qq_p[p][q] = Stp[p][q] * Stp[p][q];
@@ -290,10 +290,13 @@ SharedMatrix LS_THC_Computer::prune_grid() {
 
     // Update factor matrix
     auto x1_new = std::make_shared<Matrix>(rank, nbf);
-#pragma omp parallel for
+    auto x1_newp = x1_new->pointer();
+    auto x1p = x1_->pointer();
+
+#pragma omp parallel for collapse(2) schedule(guided)
     for (size_t r = 0; r < rank; ++r) {
         for (size_t u = 0; u < nbf; ++u) {
-            (*x1_new)(r, u) = (*x1_)(pivot[0][r], u);
+            x1_newp[r][u] = x1p[pivot[0][r]][u];
         }
     }
     x1_ = x1_new;
