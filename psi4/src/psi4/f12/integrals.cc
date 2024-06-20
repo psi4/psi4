@@ -43,6 +43,18 @@
 
 namespace psi { namespace f12 {
 
+void MP2F12::convert_C(einsums::Tensor<double,2> *C, OrbitalSpace bs, const int& dim1, const int& dim2,
+                       const bool use_frzn)
+{
+    const int start = (use_frzn) ? nfrzn_ : 0; // Fock building must use full space
+    const int stop = (use_frzn) ? dim2 + nfrzn_ : dim2;
+    for (int p = 0; p < dim1; p++) {
+        for (int q = start; q < stop; q++) {
+            (*C)(p, q - start) = bs.C()->get(p, q);
+        }
+    }
+}
+
 void MP2F12::convert_C(einsums::Tensor<double,2> *C, OrbitalSpace bs, const int& dim1, const int& dim2)
 {
     for (int p = 0; p < dim1; p++) {
@@ -152,8 +164,6 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
                                     double* targetMNQP = &(*GAO)(fxnM, fxnN, index_Q, fxnP); // (mn|qp)
 
                                     for (size_t q = 0; q < numQ; q++, idx++) {
-                                        // const auto fxnQ = index_Q + q;
-
                                         *targetMNPQ = *targetNMQP =
                                             *targetNMPQ = *targetMNQP = ints_buff[idx];
 
@@ -378,6 +388,10 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
+    const bool frz_bra = (nfrzn_ > 0) && ((*ERI).dim(0) == nact_) && ((*ERI).dim(1) == nact_); // No frozen in Fock Build
+    const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_); // No frozen in tensor contractions
+    const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_); // No frozen in tensor contractions
+
     bool use_offset = true;
     if (order.size() == 4) {
         use_offset = false;
@@ -403,60 +417,61 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
         timer_off("Two-Body AO Integrals");
 	
         // Convert all Psi4 C Matrices to einsums Tensor<double, 2>
-        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
-        const auto nmo3 = (o3) ? ncabs_ : (order[i+2] == 'O') ? nobs_ : nocc_;
-        const auto nmo4 = (o4) ? ncabs_ : (order[i+3] == 'O') ? nobs_ : nocc_;
-	
+        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : (frz_bra) ? nact_ : nocc_;
+        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : (frz_ket1) ? nact_ : nocc_;
+        const auto nmo3 = (o3) ? ncabs_ : (order[i+2] == 'O') ? nobs_ : (frz_bra) ? nact_ : nocc_;
+        const auto nmo4 = (o4) ? ncabs_ : (order[i+3] == 'O') ? nobs_ : (frz_ket2) ? nact_ : nocc_;
+
         // Transform ERI AO Tensor to ERI MO Tensor
         auto PRQS = std::make_unique<Tensor<double, 4>>("PRQS", nmo1, nmo3, nmo2, nmo4);
         timer_on("MO Transformation");
         {
-            // C1
-            auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
-            convert_C(C1.get(), bs_[o1], nbf1, nmo1);
-            auto Pqrs = std::make_unique<Tensor<double, 4>>("Pqrs", nmo1, nbf2, nbf3, nbf4);
-            einsum(Indices{P, q, r, s}, &Pqrs, Indices{p, q, r, s}, GAO, Indices{p, P}, C1);
-            GAO.reset();
-            C1.reset();
+            // C1: First Quarter Transformation
+            Tensor<double, 4> rsPQ{"rsPQ", nbf3, nbf4, nmo1, nmo2};
+            {
+                auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
+                convert_C(C1.get(), bs_[o1], nbf1, nmo1, frz_bra);
+                Tensor<double, 4> Pqrs{"Pqrs", nmo1, nbf2, nbf3, nbf4};
+                einsum(Indices{P, q, r, s}, &Pqrs, Indices{p, q, r, s}, GAO, Indices{p, P}, C1);
+                GAO.reset();
+                C1.reset();
 
-            // Sort
-            auto rsPq = std::make_unique<Tensor<double, 4>>("rsPq", nbf3, nbf4, nmo1, nbf2);
-            sort(Indices{r, s, P, q}, &rsPq, Indices{P, q, r, s}, Pqrs);
-            Pqrs.reset();
+                // C2: Second Quarter Transformation
+                {
+                    // Sort
+                    Tensor<double, 4> rsPq{"rsPq", nbf3, nbf4, nmo1, nbf2};
+                    sort(Indices{r, s, P, q}, &rsPq, Indices{P, q, r, s}, Pqrs);
 
-            // C3
-            auto C3 = std::make_unique<Tensor<double, 2>>("C3", nbf3, nmo3);
-            convert_C(C3.get(), bs_[o3], nbf3, nmo3);
-            auto RsPq = std::make_unique<Tensor<double, 4>>("RsPq", nmo3, nbf4, nmo1, nbf2);
-            einsum(Indices{R, s, P, q}, &RsPq, Indices{r, s, P, q}, rsPq, Indices{r, R}, C3);
-            rsPq.reset();
-            C3.reset();
+                    auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
+                    convert_C(C2.get(), bs_[o2], nbf2, nmo2, frz_ket1);
+                    einsum(Indices{r, s, P, Q}, &rsPQ, Indices{r, s, P, q}, rsPq, Indices{q, Q}, C2);
+                    C2.reset();
+                }
+            }
 
-            // C2
-            auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
-            convert_C(C2.get(), bs_[o2], nbf2, nmo2);
-            auto RsPQ = std::make_unique<Tensor<double, 4>>("RsPQ", nmo3, nbf4, nmo1, nmo2);
-            einsum(Indices{R, s, P, Q}, &RsPQ, Indices{R, s, P, q}, RsPq, Indices{q, Q}, C2);
-            RsPq.reset();
-            C2.reset();
+            // C3: Third Quarter Transformation
+            Tensor<double, 4> PQRS{"PQRS", nmo1, nmo2, nmo3, nmo4};
+            {
+                auto C3 = std::make_unique<Tensor<double, 2>>("C3", nbf3, nmo3);
+                convert_C(C3.get(), bs_[o3], nbf3, nmo3, frz_bra);
+                Tensor<double, 4> RsPQ{"RsPQ", nmo3, nbf4, nmo1, nmo2};
+                einsum(Indices{R, s, P, Q}, &RsPQ, Indices{r, s, P, Q}, rsPQ, Indices{r, R}, C3);
+                C3.reset();
 
-            // Sort
-            auto PQRs = std::make_unique<Tensor<double, 4>>("PQRs", nmo1, nmo2, nmo3, nbf4);
-            sort(Indices{P, Q, R, s}, &PQRs, Indices{R, s, P, Q}, RsPQ);
-            RsPQ.reset();
+                {
+                    // Sort
+                    Tensor<double, 4> PQRs{"PQRs", nmo1, nmo2, nmo3, nbf4};
+                    sort(Indices{P, Q, R, s}, &PQRs, Indices{R, s, P, Q}, RsPQ);
 
-            // C4
-            auto C4 = std::make_unique<Tensor<double, 2>>("C4", nbf4, nmo4);
-            convert_C(C4.get(), bs_[o4], nbf4, nmo4);
-            auto PQRS = std::make_unique<Tensor<double, 4>>("PQRS", nmo1, nmo2, nmo3, nmo4);
-            einsum(Indices{P, Q, R, index::S}, &PQRS, Indices{P, Q, R, s}, PQRs, Indices{s, index::S}, C4);
-            PQRs.reset();
-            C4.reset();
+                    auto C4 = std::make_unique<Tensor<double, 2>>("C4", nbf4, nmo4);
+                    convert_C(C4.get(), bs_[o4], nbf4, nmo4, frz_ket2);
+                    einsum(Indices{P, Q, R, index::S}, &PQRS, Indices{P, Q, R, s}, PQRs, Indices{s, index::S}, C4);
+                    C4.reset();
+                }
+            }
 
             // Switch from Chem to Phys
             sort(Indices{P, R, Q, index::S}, &PRQS, Indices{P, Q, R, index::S}, PQRS);
-            PQRS.reset();
         }
         timer_off("MO Transformation");
 
@@ -516,6 +531,8 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3> *DF_ERI, bool is_fock)
         order = {'o', 'O',
                  'o', 'C'};
     }
+
+    const bool use_frzn = !is_fock;
     
     for (int idx = 0; idx < (order.size()/2); idx++) {
         const int i = idx * 2;
@@ -527,8 +544,8 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3> *DF_ERI, bool is_fock)
         auto Bpq = std::make_unique<Tensor<double, 3>>("Metric AO", naux_, nbf1, nbf2);
         three_index_ao_computer("G", Bpq.get(), bs_[o1].basisset(), bs_[o2].basisset());
 
-        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
+        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : (use_frzn) ? nact_ : nocc_;
+        const auto nmo2 = (o2) ? ncabs_ : nobs_;
 
         auto BPQ = std::make_unique<Tensor<double, 3>>("BPQ", naux_, nmo1, nmo2);
         timer_on("MO Transformation");
@@ -546,7 +563,7 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3> *DF_ERI, bool is_fock)
 
             // C1
             auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
-            convert_C(C1.get(), bs_[o1], nbf1, nmo1);
+            convert_C(C1.get(), bs_[o1], nbf1, nmo1, use_frzn);
             Tensor<double, 3> BQP{"BQP", naux_, nmo2, nmo1};
             einsum(Indices{B, Q, P}, &BQP, Indices{B, Q, p}, BQp, Indices{p, P}, C1);
             C1.reset();
@@ -589,11 +606,20 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
+    const auto dim1 = (*DF_ERI).dim(1);
+    const auto dim2 = (*DF_ERI).dim(2);
+
     std::vector<char> order = {'o', 'o'};
-    if ( int_type != "Uf" || int_type != "FG" ) {
+    if (dim2 == nobs_) {
+        order = {'o', 'O'};
+    } else if (dim2 == nri_ || dim2 == ncabs_) {
         order = {'o', 'O',
                  'o', 'C'};
     }
+
+    const bool use_offset = (dim2 == nri_);
+    const bool frzn_1 = (dim1 == nact_);
+    const bool frzn_2 = (dim2 == nact_);
 
     for (int idx = 0; idx < (order.size()/2); idx++) {
         const int i = idx * 2;
@@ -608,15 +634,15 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
         timer_off("Three-Center AO Integrals");
 
         // Convert all Psi4 C Matrices to einsums Tensor<double, 2>
-        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
+        const auto nmo1 = dim1;
+        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : dim2;
 
         auto BPQ = std::make_unique<Tensor<double, 3>>("BPQ", naux_, nmo1, nmo2);
         timer_on("MO Transformation");
         {
             // C2
             auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
-            convert_C(C2.get(), bs_[o2], nbf2, nmo2);
+            convert_C(C2.get(), bs_[o2], nbf2, nmo2, frzn_2);
             Tensor<double, 3> BpQ{"BpQ", naux_, nbf1, nmo2};
             einsum(Indices{B, p, Q}, &BpQ, Indices{B, p, q}, Bpq, Indices{q, Q}, C2);
             C2.reset();
@@ -627,7 +653,7 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
 
             // C1
             auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
-            convert_C(C1.get(), bs_[o1], nbf1, nmo1);
+            convert_C(C1.get(), bs_[o1], nbf1, nmo1, frzn_1);
             Tensor<double, 3> BQP{"BQP", naux_, nmo2, nmo1};
             einsum(Indices{B, Q, P}, &BQP, Indices{B, Q, p}, BQp, Indices{p, P}, C1);
             C1.reset();
@@ -639,10 +665,10 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
 
         timer_on("Set in ERI");
         {
-            const auto R = (o1) ? nobs_ : 0;
-            const auto S = (o2) ? nobs_ : 0;
+            const auto off1 = (o1 && use_offset) ? nobs_ : 0;
+            const auto off2 = (o2 && use_offset) ? nobs_ : 0;
 
-            TensorView<double, 3> ERI_BPQ{*DF_ERI, Dim<3>{naux_, nmo1, nmo2}, Offset<3>{0, R, S}};
+            TensorView<double, 3> ERI_BPQ{*DF_ERI, Dim<3>{naux_, nmo1, nmo2}, Offset<3>{0, off1, off2}};
             set_ERI(ERI_BPQ, BPQ.get());
         }
         timer_off("Set in ERI");
@@ -710,41 +736,51 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
+    const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_); // No frozen in tensor contractions
+    const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_); // No frozen in tensor contractions
+
     bool use_offset = true;
     if (order.size() == 4) {
         use_offset = false;
     }
 
     // In (PQ|RS) ordering
+    int off1, off2, off3, off4;
     for (int idx = 0; idx < (order.size()/4); idx++) {
         const int i = idx * 4;
-        const auto nmo1 = ( order[ i ] == 'C' ) ? ncabs_ : ( order[ i ] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo2 = ( order[i+1] == 'C' ) ? ncabs_ : ( order[i+1] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo3 = ( order[i+2] == 'C' ) ? ncabs_ : ( order[i+2] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo4 = ( order[i+3] == 'C' ) ? ncabs_ : ( order[i+3] == 'O' ) ? nobs_ : nocc_;
-        auto off1 = ( order[ i ] == 'C' ) ? nobs_ : 0;
-        auto off2 = ( order[i+1] == 'C' ) ? nobs_ : 0;
-        auto off3 = ( order[i+2] == 'C' ) ? nobs_ : 0;
-        auto off4 = ( order[i+3] == 'C' ) ? nobs_ : 0;
+        const auto nmo1 = (order[ i ] == 'C') ? ncabs_ : (order[ i ] == 'O') ? nobs_ : nact_;
+        const auto nmo2 = (order[i+1] == 'C') ? ncabs_ : (order[i+1] == 'O') ? nobs_ : (frz_ket1) ? nact_ : nocc_;
+        const auto nmo3 = (order[i+2] == 'C') ? ncabs_ : (order[i+2] == 'O') ? nobs_ : nact_;
+        const auto nmo4 = (order[i+3] == 'C') ? ncabs_ : (order[i+3] == 'O') ? nobs_ : (frz_ket2) ? nact_ : nocc_;
+        auto off1 = (order[ i ] == 'C') ? nobs_ : 0;
+        auto off2 = (order[i+1] == 'C') ? nobs_ : 0;
+        auto off3 = (order[i+2] == 'C') ? nobs_ : 0;
+        auto off4 = (order[i+3] == 'C') ? nobs_ : 0;
 
+        // Dunlap's robust density-fitting
         auto phys_robust = std::make_unique<Tensor<double, 4>>("<PR|F12|QS> MO", nmo1, nmo3, nmo2, nmo4);
         {
             Tensor<double, 4> chem_robust("(PQ|F12|RS) MO", nmo1, nmo2, nmo3, nmo4);
 
             timer_on("Robust DF Procedure");
-            auto ARPQ = std::make_unique<Tensor<double, 3>>("(A|R|PQ) MO", naux_, nocc_, nri_);
+            const auto Q = (nmo4 == ncabs_ || nmo2 == ncabs_) ? nri_ : nmo4;
+            auto ARPQ = std::make_unique<Tensor<double, 3>>("(A|R|PQ) MO", naux_, nact_, Q);
             form_oper_ints(int_type, ARPQ.get());
 
             // Term 1
-            Tensor left_metric  = (*J_inv_AB)(All, Range{off1, nmo1 + off1}, Range{off2, nmo2 + off2});
-            Tensor right_oper = (*ARPQ)(All, Range{off3, nmo3 + off3}, Range{off4, nmo4 + off4});
+            auto offm2 = (frz_ket1) ? nfrzn_ : 0;
+            auto offm4 = (frz_ket2 && nmo4 != nact_) ? nfrzn_ : 0;
+            Tensor left_metric  = (*J_inv_AB)(All, Range{off1, nmo1 + off1}, Range{off2 + offm2, nmo2 + off2 + offm2});
+            Tensor right_oper = (*ARPQ)(All, Range{off3, nmo3 + off3}, Range{off4 + offm4, nmo4 + off4 + offm4});
             einsum(Indices{p, q, r, s}, &chem_robust, Indices{A, p, q}, left_metric, Indices{A, r, s}, right_oper);
 
             if ( int_type != "G" ) {
                 // Term 2
-                Tensor right_metric = (*J_inv_AB)(All, Range{off3, nmo3 + off3}, Range{off4, nmo4 + off4});
+                auto offm2 = (frz_ket1 && nmo4 != nact_) ? nfrzn_ : 0;
+                auto offm4 = (frz_ket2) ? nfrzn_ : 0;
+                Tensor right_metric = (*J_inv_AB)(All, Range{off3, nmo3 + off3}, Range{off4 + offm4, nmo4 + off4 + offm4});
                 {
-                    Tensor left_oper  = (*ARPQ)(All, Range{off1, nmo1 + off1}, Range{off2, nmo2 + off2});
+                    Tensor left_oper  = (*ARPQ)(All, Range{off1, nmo1 + off1}, Range{off2 + offm2, nmo2 + off2 + offm2});
                     einsum(1.0, Indices{p, q, r, s}, &chem_robust,
                            1.0, Indices{A, p, q}, left_oper, Indices{A, r, s}, right_metric);
                 }
@@ -888,6 +924,10 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
                  'C', 'o', 'o', 'C'};
     }
 
+    const bool frz_bra = (nfrzn_ > 0) && ((*ERI).dim(0) == nact_) && ((*ERI).dim(1) == nact_); // No frozen in Fock Build
+    const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_); // No frozen in tensor contractions
+    const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_); // No frozen in tensor contractions
+
     // (PQ|RS)
     for (int idx = 0; idx < (order.size()/4); idx++) {
         const int i = idx * 4;
@@ -908,60 +948,61 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
         timer_off("Two-Body AO Integrals");
 
         // Convert all Psi4 C Matrices to einsums Tensor<double, 2>
-        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : nocc_;
-        const auto nmo3 = (o3) ? ncabs_ : (order[i+2] == 'O') ? nobs_ : nocc_;
-        const auto nmo4 = (o4) ? ncabs_ : (order[i+3] == 'O') ? nobs_ : nocc_;
+        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : (frz_bra) ? nact_ : nocc_;
+        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : (frz_ket1) ? nact_ : nocc_;
+        const auto nmo3 = (o3) ? ncabs_ : (order[i+2] == 'O') ? nobs_ : (frz_bra) ? nact_ : nocc_;
+        const auto nmo4 = (o4) ? ncabs_ : (order[i+3] == 'O') ? nobs_ : (frz_ket2) ? nact_ : nocc_;
 
         // Transform ERI AO Tensor to ERI MO Tensor
         auto PRQS = std::make_unique<Tensor<double, 4>>("PRQS", nmo1, nmo3, nmo2, nmo4);
         timer_on("MO Transformation");
         {
-            // C1
-            auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
-            convert_C(C1.get(), bs_[o1], nbf1, nmo1);
-            auto Pqrs = std::make_unique<Tensor<double, 4>>("Pqrs", nmo1, nbf2, nbf3, nbf4);
-            einsum(Indices{P, q, r, s}, &Pqrs, Indices{p, q, r, s}, GAO, Indices{p, P}, C1);
-            GAO.reset();
-            C1.reset();
+            // C1: First Quarter Transformation
+            Tensor<double, 4> rsPQ{"rsPQ", nbf3, nbf4, nmo1, nmo2};
+            {
+                auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
+                convert_C(C1.get(), bs_[o1], nbf1, nmo1, frz_bra);
+                Tensor<double, 4> Pqrs{"Pqrs", nmo1, nbf2, nbf3, nbf4};
+                einsum(Indices{P, q, r, s}, &Pqrs, Indices{p, q, r, s}, GAO, Indices{p, P}, C1);
+                GAO.reset();
+                C1.reset();
 
-            // Sort
-            auto rsPq = std::make_unique<Tensor<double, 4>>("rsPq", nbf3, nbf4, nmo1, nbf2);
-            sort(Indices{r, s, P, q}, &rsPq, Indices{P, q, r, s}, Pqrs);
-            Pqrs.reset();
+                // C2: Second Quarter Transformation
+                {
+                    // Sort
+                    Tensor<double, 4> rsPq{"rsPq", nbf3, nbf4, nmo1, nbf2};
+                    sort(Indices{r, s, P, q}, &rsPq, Indices{P, q, r, s}, Pqrs);
 
-            // C3
-            auto C3 = std::make_unique<Tensor<double, 2>>("C3", nbf3, nmo3);
-            convert_C(C3.get(), bs_[o3], nbf3, nmo3);
-            auto RsPq = std::make_unique<Tensor<double, 4>>("RsPq", nmo3, nbf4, nmo1, nbf2);
-            einsum(Indices{R, s, P, q}, &RsPq, Indices{r, s, P, q}, rsPq, Indices{r, R}, C3);
-            rsPq.reset();
-            C3.reset();
+                    auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
+                    convert_C(C2.get(), bs_[o2], nbf2, nmo2, frz_ket1);
+                    einsum(Indices{r, s, P, Q}, &rsPQ, Indices{r, s, P, q}, rsPq, Indices{q, Q}, C2);
+                    C2.reset();
+                }
+            }
 
-            // C2
-            auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
-            convert_C(C2.get(), bs_[o2], nbf2, nmo2);
-            auto RsPQ = std::make_unique<Tensor<double, 4>>("RsPQ", nmo3, nbf4, nmo1, nmo2);
-            einsum(Indices{R, s, P, Q}, &RsPQ, Indices{R, s, P, q}, RsPq, Indices{q, Q}, C2);
-            RsPq.reset();
-            C2.reset();
+            // C3: Third Quarter Transformation
+            Tensor<double, 4> PQRS{"PQRS", nmo1, nmo2, nmo3, nmo4};
+            {
+                auto C3 = std::make_unique<Tensor<double, 2>>("C3", nbf3, nmo3);
+                convert_C(C3.get(), bs_[o3], nbf3, nmo3, frz_bra);
+                Tensor<double, 4> RsPQ{"RsPQ", nmo3, nbf4, nmo1, nmo2};
+                einsum(Indices{R, s, P, Q}, &RsPQ, Indices{r, s, P, Q}, rsPQ, Indices{r, R}, C3);
+                C3.reset();
 
-            // Sort
-            auto PQRs = std::make_unique<Tensor<double, 4>>("PQRs", nmo1, nmo2, nmo3, nbf4);
-            sort(Indices{P, Q, R, s}, &PQRs, Indices{R, s, P, Q}, RsPQ);
-            RsPQ.reset();
+                {
+                    // Sort
+                    Tensor<double, 4> PQRs{"PQRs", nmo1, nmo2, nmo3, nbf4};
+                    sort(Indices{P, Q, R, s}, &PQRs, Indices{R, s, P, Q}, RsPQ);
 
-            // C4
-            auto C4 = std::make_unique<Tensor<double, 2>>("C4", nbf4, nmo4);
-            convert_C(C4.get(), bs_[o4], nbf4, nmo4);
-            auto PQRS = std::make_unique<Tensor<double, 4>>("PQRS", nmo1, nmo2, nmo3, nmo4);
-            einsum(Indices{P, Q, R, index::S}, &PQRS, Indices{P, Q, R, s}, PQRs, Indices{s, index::S}, C4);
-            PQRs.reset();
-            C4.reset();
+                    auto C4 = std::make_unique<Tensor<double, 2>>("C4", nbf4, nmo4);
+                    convert_C(C4.get(), bs_[o4], nbf4, nmo4, frz_ket2);
+                    einsum(Indices{P, Q, R, index::S}, &PQRS, Indices{P, Q, R, s}, PQRs, Indices{s, index::S}, C4);
+                    C4.reset();
+                }
+            }
 
             // Switch from Chem to Phys
             sort(Indices{P, R, Q, index::S}, &PRQS, Indices{P, Q, R, index::S}, PQRS);
-            PQRS.reset();
         }
         timer_off("MO Transformation");
 
@@ -1046,37 +1087,40 @@ void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor
                  'o', 'o', 'o', 'C',};
     }
 
+    const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_); // No frozen in tensor contractions
+    const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_); // No frozen in tensor contractions
+
     // (PQ|RS)
     for (int idx = 0; idx < (order.size()/4); idx++) {
         const int i = idx * 4;
-        const auto nmo1 = ( order[ i ] == 'C' ) ? ncabs_ : ( order[ i ] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo2 = ( order[i+1] == 'C' ) ? ncabs_ : ( order[i+1] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo3 = ( order[i+2] == 'C' ) ? ncabs_ : ( order[i+2] == 'O' ) ? nobs_ : nocc_;
-        const auto nmo4 = ( order[i+3] == 'C' ) ? ncabs_ : ( order[i+3] == 'O' ) ? nobs_ : nocc_;
-        const auto off1 = ( order[ i ] == 'C' ) ? nobs_ : 0;
-        const auto off2 = ( order[i+1] == 'C' ) ? nobs_ : 0;
-        const auto off3 = ( order[i+2] == 'C' ) ? nobs_ : 0;
-        const auto off4 = ( order[i+3] == 'C' ) ? nobs_ : 0;
+        const auto nmo2 = (order[i+1] == 'C') ? ncabs_ : (order[i+1] == 'O') ? nobs_ : (frz_ket1) ? nact_ : nocc_;
+        const auto nmo4 = (order[i+3] == 'C') ? ncabs_ : (order[i+3] == 'O') ? nobs_ : (frz_ket2) ? nact_ : nocc_;
+        const auto off2 = (order[i+1] == 'C') ? nobs_ : 0;
+        const auto off4 = (order[i+3] == 'C') ? nobs_ : 0;
 
         // Dunlap's robust density-fitting
-        auto phys_robust = std::make_unique<Tensor<double, 4>>("<PR|F12|QS> MO", nmo1, nmo3, nmo2, nmo4);
+        auto phys_robust = std::make_unique<Tensor<double, 4>>("<PR|F12|QS> MO", nact_, nact_, nmo2, nmo4);
         {
-            Tensor<double, 4> chem_robust("(PQ|F12|RS) MO", nmo1, nmo2, nmo3, nmo4);
+            Tensor<double, 4> chem_robust("(PQ|F12|RS) MO", nact_, nmo2, nact_, nmo4);
 
             timer_on("Robust DF Procedure");
-            auto ARPQ = std::make_unique<Tensor<double, 3>>("(A|R|PQ) MO", naux_, nocc_, nri_);
+            auto ARPQ = std::make_unique<Tensor<double, 3>>("(A|R|PQ) MO", naux_, nact_, (*ERI).dim(3));
             form_oper_ints(int_type, ARPQ.get());
 
             // Term 1
-            Tensor left_metric  = (*J_inv_AB)(All, Range{off1, nmo1 + off1}, Range{off2, nmo2 + off2});
-            Tensor right_oper = (*ARPQ)(All, Range{off3, nmo3 + off3}, Range{off4, nmo4 + off4});
+            auto offm2 = (frz_ket1) ? nfrzn_ : 0;
+            auto offm4 = (frz_ket2 && nmo4 != nact_) ? nfrzn_ : 0;
+            Tensor left_metric  = (*J_inv_AB)(All, Range{0, nact_}, Range{off2 + offm2, nmo2 + off2 + offm2});
+            Tensor right_oper = (*ARPQ)(All, Range{0, nact_}, Range{off4 + offm4, nmo4 + off4 + offm4});
             einsum(Indices{p, q, r, s}, &chem_robust, Indices{A, p, q}, left_metric, Indices{A, r, s}, right_oper);
 
             if ( int_type != "G" ) {
                 // Term 2
-                Tensor right_metric = (*J_inv_AB)(All, Range{off3, nmo3 + off3}, Range{off4, nmo4 + off4});
+                auto offm2 = (frz_ket1 && nmo4 != nact_) ? nfrzn_ : 0;
+                auto offm4 = (frz_ket2) ? nfrzn_ : 0;
+                Tensor right_metric = (*J_inv_AB)(All, Range{0, nact_}, Range{off4 + offm4, nmo4 + off4 + offm4});
                 {
-                    Tensor left_oper  = (*ARPQ)(All, Range{off1, nmo1 + off1}, Range{off2, nmo2 + off2});
+                    Tensor left_oper  = (*ARPQ)(All, Range{0, nact_}, Range{off2 + offm2, nmo2 + off2 + offm2});
                     einsum(1.0, Indices{p, q, r, s}, &chem_robust,
                            1.0, Indices{A, p, q}, left_oper, Indices{A, r, s}, right_metric);
                 }
@@ -1087,7 +1131,7 @@ void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor
                     auto ARB = std::make_unique<Tensor<double, 2>>("(A|R|B) MO", naux_, naux_);
                     form_oper_ints(int_type, ARB.get());
 
-                    Tensor<double, 3> tmp{"Temp", naux_, nmo3, nmo4};
+                    Tensor<double, 3> tmp{"Temp", naux_, nact_, nmo4};
                     einsum(Indices{A, r, s}, &tmp, Indices{A, B}, ARB, Indices{B, r, s}, right_metric);
                     ARB.reset();
                     einsum(1.0, Indices{p, q, r, s}, &chem_robust,
@@ -1102,8 +1146,8 @@ void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor
 
         // Stitch into ERI Tensor
         timer_on("Set in ERI");
-        for (int p = off1; p < (off1 + nmo1); p++) {
-            for (int r = off3; r < (off3 + nmo3); r++) {
+        for (int p = 0; p < nact_; p++) {
+            for (int r = 0; r < nact_; r++) {
                 auto ERI_prQS = (*ERI)(p, r, Range{off2, off2 + nmo2}, Range{off4, off4 + nmo4});
                 auto prQS_view = (*phys_robust)(p, r, All, All);
                 set_ERI(ERI_prQS, prQS_view);
