@@ -70,6 +70,7 @@ void MP2F12::common_init()
     nocc_ = reference_wavefunction_->doccpi()[0];
     nvir_ = nobs_ - nocc_;
     nfrzn_ = reference_wavefunction_->frzcpi()[0];
+    nact_ = nocc_ - nfrzn_;
     naux_ = 0;
 
     if (f12_type_.find("DF") != std::string::npos) {
@@ -146,12 +147,12 @@ void MP2F12::form_D(einsums::Tensor<double, 4> *D, einsums::Tensor<double, 2> *f
     using namespace einsums;
 
 #pragma omp parallel for collapse(4) num_threads(nthreads_)
-    for (size_t i = 0; i < nocc_; i++) {
-        for (size_t j = 0; j < nocc_; j++) {
+    for (size_t i = nfrzn_; i < nocc_; i++) {
+        for (size_t j = nfrzn_; j < nocc_; j++) {
             for (size_t a = nocc_; a < nobs_; a++) {
                 for (size_t b = nocc_; b < nobs_; b++) {
                     auto denom = (*f)(a, a) + (*f)(b, b) - (*f)(i, i) - (*f)(j, j);
-                    (*D)(i, j, a - nocc_, b - nocc_) = (1 / denom);
+                    (*D)(i - nfrzn_, j - nfrzn_, a - nocc_, b - nocc_) = (1 / denom);
                 }
             }
         }
@@ -175,19 +176,19 @@ void MP2F12::form_f12_energy(einsums::Tensor<double,4> *V, einsums::Tensor<doubl
     outfile->Printf("  %1s   %1s  |     %14s     %14s     %12s \n",
                     "i", "j", "E_F12(Singlet)", "E_F12(Triplet)", "E_F12");
     outfile->Printf(" ----------------------------------------------------------------------\n");
-    for (size_t i = nfrzn_; i < nocc_; i++) {
-        for (size_t j = i; j < nocc_; j++) {
+    for (size_t i = 0; i < nact_; i++) {
+        for (size_t j = i; j < nact_; j++) {
             // Allocations
             Tensor B_ = (*B)(All, All, All, All);
             {
                 Tensor X_ = (*X)(All, All, All, All);
-                auto f_scale = (*f)(i, i) + (*f)(j, j);
+                auto f_scale = (*f)(i + nfrzn_, i + nfrzn_) + (*f)(j + nfrzn_, j + nfrzn_);
                 linear_algebra::scale(f_scale, &X_);
                 sort(1.0, Indices{k, l, m, n}, &B_, -1.0, Indices{k, l, m, n}, X_);
             }
 
             // Getting V_Tilde and B_Tilde
-            Tensor V_ = TensorView<double, 2>{(*V), Dim<2>{nocc_, nocc_}, Offset<4>{i, j, 0, 0},
+            Tensor V_ = TensorView<double, 2>{(*V), Dim<2>{nact_, nact_}, Offset<4>{i, j, 0, 0},
                                             Stride<2>{(*V).stride(2), (*V).stride(3)}};
             auto G_ = TensorView<double, 2>{(*G), Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
                                             Stride<2>{(*G).stride(2), (*G).stride(3)}};
@@ -206,7 +207,7 @@ void MP2F12::form_f12_energy(einsums::Tensor<double,4> *V, einsums::Tensor<doubl
                 E_f12_t += E_t;
             }
             auto E_f = E_s + E_t;
-            outfile->Printf("%3d %3d  |   %16.12f   %16.12f     %16.12f \n", i+1, j+1, E_s, E_t, E_f);
+            outfile->Printf("%3d %3d  |   %16.12f   %16.12f     %16.12f \n", i+nfrzn_+1, j+nfrzn_+1, E_s, E_t, E_f);
         }
     }
 
@@ -221,7 +222,7 @@ void MP2F12::form_cabs_singles(einsums::Tensor<double,2> *f)
     using namespace einsums;
     using namespace linear_algebra;
 
-    int all_vir = nri_ - nocc_;
+    int all_vir = nvir_ + ncabs_;
 
     // Diagonalize f_ij and f_AB
     Tensor<double, 2> C_ij{"occupied e-vecs", nocc_, nocc_};
@@ -286,16 +287,16 @@ double MP2F12::compute_energy()
 
     /* Form the F12 Intermediates */
     outfile->Printf("\n ===> Forming the F12 Intermediate Tensors <===\n");
-    auto V = std::make_unique<Tensor<double, 4>>("V Intermediate Tensor", nocc_, nocc_, nocc_, nocc_);
-    auto X = std::make_unique<Tensor<double, 4>>("X Intermediate Tensor", nocc_, nocc_, nocc_, nocc_);
-    auto C = std::make_unique<Tensor<double, 4>>("C Intermediate Tensor", nocc_, nocc_, nvir_, nvir_);
-    auto B = std::make_unique<Tensor<double, 4>>("B Intermediate Tensor", nocc_, nocc_, nocc_, nocc_);
-    auto D = std::make_unique<Tensor<double, 4>>("D Tensor", nocc_, nocc_, nvir_, nvir_);
-    auto G_ijab = std::make_unique<Tensor<double, 4>>("ERI <ij|ab>", nocc_, nocc_, nvir_, nvir_);
+    auto V = std::make_unique<Tensor<double, 4>>("V Intermediate Tensor", nact_, nact_, nact_, nact_);
+    auto X = std::make_unique<Tensor<double, 4>>("X Intermediate Tensor", nact_, nact_, nact_, nact_);
+    auto C = std::make_unique<Tensor<double, 4>>("C Intermediate Tensor", nact_, nact_, nvir_, nvir_);
+    auto B = std::make_unique<Tensor<double, 4>>("B Intermediate Tensor", nact_, nact_, nact_, nact_);
+    auto D = std::make_unique<Tensor<double, 4>>("D Tensor", nact_, nact_, nvir_, nvir_);
+    auto G_ijab = std::make_unique<Tensor<double, 4>>("ERI <ij|ab>", nact_, nact_, nvir_, nvir_);
 
     if (use_df_) {
         outfile->Printf("   [J_AB]^(-1)\n");
-        auto J_inv_AB = std::make_unique<Tensor<double, 3>>("Metric MO ([J_AB]^{-1})", naux_, nocc_, nri_);
+        auto J_inv_AB = std::make_unique<Tensor<double, 3>>("Metric MO ([J_AB]^{-1})", naux_, nact_, nri_);
         timer_on("Metric Integrals");
         form_metric_ints(J_inv_AB.get(), false);
         timer_off("Metric Integrals");
@@ -321,10 +322,10 @@ double MP2F12::compute_energy()
         form_D(D.get(), f.get());
         timer_off("Energy Denom");
 
-        auto G = Tensor<double, 4>{"MO G Tensor", nocc_, nocc_, nobs_, nobs_};
+        auto G = Tensor<double, 4>{"MO G Tensor", nact_, nact_, nobs_, nobs_};
         timer_on("ERI <ij|ab>");
         form_df_teints("G", &G, J_inv_AB.get(), {'o', 'O', 'o', 'O'});
-        (*G_ijab) = G(Range{0, nocc_}, Range{0, nocc_}, Range{nocc_, nobs_}, Range{nocc_, nobs_});
+        (*G_ijab) = G(Range{0, nact_}, Range{0, nact_}, Range{nocc_, nobs_}, Range{nocc_, nobs_});
         timer_off("ERI <ij|ab>");
     } else {
         outfile->Printf("   V Intermediate\n");
@@ -348,10 +349,10 @@ double MP2F12::compute_energy()
         form_D(D.get(), f.get());
         timer_off("Energy Denom");
 
-        auto G = Tensor<double, 4>{"MO G Tensor", nocc_, nocc_, nobs_, nobs_};
+        auto G = Tensor<double, 4>{"MO G Tensor", nact_, nact_, nobs_, nobs_};
         timer_on("ERI <ij|ab>");
         form_teints("G", &G, {'o', 'O', 'o', 'O'});
-        (*G_ijab) = G(Range{0, nocc_}, Range{0, nocc_}, Range{nocc_, nobs_}, Range{nocc_, nobs_});
+        (*G_ijab) = G(All, All, Range{nocc_, nobs_}, Range{nocc_, nobs_});
         timer_off("ERI <ij|ab>");
     }
 
@@ -469,7 +470,7 @@ std::pair<double, double> MP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, eins
     int kd;
 
     {
-        Tensor<double, 4> CD{"C_klab . D_ijab", nocc_, nocc_, nvir_, nvir_};
+        Tensor<double, 4> CD{"C_klab . D_ijab", nact_, nact_, nvir_, nvir_};
         einsum(Indices{k, l, a, b}, &CD, Indices{k, l, a, b}, *C, Indices{a, b}, D_ij);
         einsum(1.0, Indices{k, l, m, n}, &B_ij, -1.0, Indices{m, n, a, b}, *C,
                                                       Indices{k, l, a, b}, CD);
@@ -507,9 +508,9 @@ void DiskMP2F12::form_D(einsums::DiskTensor<double, 4> *D, einsums::DiskTensor<d
     auto f_view = (*f)(Range{0, nobs_}, Range{0, nobs_}); f_view.set_read_only(true);
 
 #pragma omp parallel for collapse(2) num_threads(nthreads_)
-    for (size_t i = 0; i < nocc_; i++) {
-        for (size_t j = 0; j < nocc_; j++) {
-            auto D_view = (*D)(i, j, All, All);
+    for (size_t i = nfrzn_; i < nocc_; i++) {
+        for (size_t j = nfrzn_; j < nocc_; j++) {
+            auto D_view = (*D)(i - nfrzn_, j - nfrzn_, All, All);
             double e_ij = -1.0 * (f_view(i, i) + f_view(j, j));
 
             for (size_t a = nocc_; a < nobs_; a++) {
@@ -534,7 +535,7 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double,4> *V, einsums::Disk
     auto E_f12_t = 0.0;
     int kd;
 
-    auto f_occ = (*f)(Range{0, nocc_}, Range{0, nocc_}); f_occ.set_read_only(true);
+    auto f_act = (*f)(Range{nfrzn_, nocc_}, Range{nfrzn_, nocc_}); f_act.set_read_only(true);
     auto X_klmn = (*X)(All, All, All, All); X_klmn.set_read_only(true);
     auto B_klmn = (*B)(All, All, All, All); B_klmn.set_read_only(true);
 
@@ -542,13 +543,13 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double,4> *V, einsums::Disk
     outfile->Printf("  %1s   %1s  |     %14s     %14s     %12s \n",
                     "i", "j", "E_F12(Singlet)", "E_F12(Triplet)", "E_F12");
     outfile->Printf(" ----------------------------------------------------------------------\n");
-    for (size_t i = nfrzn_; i < nocc_; i++) {
-        for (size_t j = i; j < nocc_; j++) {
+    for (size_t i = 0; i < nact_; i++) {
+        for (size_t j = i; j < nact_; j++) {
             // Building B
             Tensor B_ = B_klmn.get();
             {
                 Tensor X_ = X_klmn.get();
-                auto f_scale = f_occ(i, i) + f_occ(j, j);
+                auto f_scale = f_act(i, i) + f_act(j, j);
                 linear_algebra::scale(f_scale, &X_);
                 sort(1.0, Indices{k, l, m, n}, &B_, -1.0, Indices{k, l, m, n}, X_);
             }
@@ -585,7 +586,7 @@ void DiskMP2F12::form_cabs_singles(einsums::DiskTensor<double,2> *f)
     using namespace einsums;
     using namespace linear_algebra;
 
-    int all_vir = nri_ - nocc_;
+    int all_vir = nvir_ + ncabs_;
 
     // Diagonalize f_ij and f_AB
     Tensor<double, 1> e_ij{"occupied e-vals", nocc_};
@@ -649,11 +650,11 @@ double DiskMP2F12::compute_energy()
 
     /* Form the two-electron integrals */
     // Two-Electron Integrals
-    auto G = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO G Tensor", nocc_, nocc_, nobs_, nri_);
-    auto F = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO F12 Tensor", nocc_, nocc_, nri_, nri_);
-    auto F2 = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO F12_Squared Tensor", nocc_, nocc_, nocc_, nri_);
-    auto FG = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO F12G12 Tensor", nocc_, nocc_, nocc_, nocc_);
-    auto Uf = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO F12_DoubleCommutator Tensor", nocc_, nocc_, nocc_, nocc_);
+    auto G = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO G Tensor", nact_, nact_, nobs_, nri_);
+    auto F = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO F12 Tensor", nact_, nact_, nri_, nri_);
+    auto F2 = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO F12_Squared Tensor", nact_, nact_, nact_, nri_);
+    auto FG = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO F12G12 Tensor", nact_, nact_, nact_, nact_);
+    auto Uf = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO F12_DoubleCommutator Tensor", nact_, nact_, nact_, nact_);
 
     std::vector<std::string> teint = {};
     if (!(*FG).existed()) teint.push_back("FG");
@@ -665,7 +666,7 @@ double DiskMP2F12::compute_energy()
 
     // Fock Matrices
     auto f = std::make_unique<DiskTensor<double, 2>>(state::data(), "Fock Matrix", nri_, nri_);
-    auto k = std::make_unique<DiskTensor<double, 2>>(state::data(), "Exchange MO Integral", nri_, nri_);
+    auto k = std::make_unique<DiskTensor<double, 2>>(state::data(), "Exchange Matrix", nri_, nri_);
     auto fk = std::make_unique<DiskTensor<double, 2>>(state::data(), "Fock-Exchange Matrix", nri_, nri_);
 
     if (use_df_) {
@@ -677,7 +678,7 @@ double DiskMP2F12::compute_energy()
         }
 
         timer_on("Metric Integrals");
-        auto J_inv_AB = std::make_unique<Tensor<double, 3>>("Metric MO ([J_AB]^{-1})", naux_, nocc_, nri_);
+        auto J_inv_AB = std::make_unique<Tensor<double, 3>>("Metric MO ([J_AB]^{-1})", naux_, nact_, nri_);
         form_metric_ints(J_inv_AB.get(), false);
         timer_off("Metric Integrals");
 
@@ -749,11 +750,11 @@ double DiskMP2F12::compute_energy()
 
     /* Form the F12 Matrices */
     outfile->Printf("\n ===> Forming the F12 Intermediate Tensors <===\n");
-    auto V = std::make_unique<DiskTensor<double, 4>>(state::data(), "V Intermediate Tensor", nocc_, nocc_, nocc_, nocc_);
-    auto X = std::make_unique<DiskTensor<double, 4>>(state::data(), "X Intermediate Tensor", nocc_, nocc_, nocc_, nocc_);
-    auto C = std::make_unique<DiskTensor<double, 4>>(state::data(), "C Intermediate Tensor", nocc_, nocc_, nvir_, nvir_);
-    auto B = std::make_unique<DiskTensor<double, 4>>(state::data(), "B Intermediate Tensor", nocc_, nocc_, nocc_, nocc_);
-    auto D = std::make_unique<DiskTensor<double, 4>>(state::data(), "D Tensor", nocc_, nocc_, nvir_, nvir_);
+    auto V = std::make_unique<DiskTensor<double, 4>>(state::data(), "V Intermediate Tensor", nact_, nact_, nact_, nact_);
+    auto X = std::make_unique<DiskTensor<double, 4>>(state::data(), "X Intermediate Tensor", nact_, nact_, nact_, nact_);
+    auto C = std::make_unique<DiskTensor<double, 4>>(state::data(), "C Intermediate Tensor", nact_, nact_, nvir_, nvir_);
+    auto B = std::make_unique<DiskTensor<double, 4>>(state::data(), "B Intermediate Tensor", nact_, nact_, nact_, nact_);
+    auto D = std::make_unique<DiskTensor<double, 4>>(state::data(), "D Tensor", nact_, nact_, nvir_, nvir_);
 
     outfile->Printf("   V Intermediate\n");
     if (!(*V).existed()) {
@@ -824,12 +825,12 @@ std::pair<double, double> DiskMP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, 
     int kd;
 
     {
-        Tensor<double, 2> GD{"G_ijab . D_ijab", nvir_, nvir_}; GD.zero();
+        Tensor<double, 2> GD{"G_ijab . D_ijab", nvir_, nvir_};
         einsum(Indices{a, b}, &GD, Indices{a, b}, G_ij.get(), Indices{a, b}, D_ij.get());
 
         Tensor<double, 0> tmp{"tmp"};
-        for (int I = 0; I < nocc_; I++) {
-            for (int J = I; J < nocc_; J++) {
+        for (int I = 0; I < nact_; I++) {
+            for (int J = I; J < nact_; J++) {
                 auto C_IJ = (*C)(I, J, All, All); C_IJ.set_read_only(true);
                 einsum(Indices{}, &tmp, Indices{a, b}, C_IJ.get(), Indices{a, b}, GD);
                 V_ij(I, J) -= tmp;
@@ -866,8 +867,8 @@ std::pair<double, double> DiskMP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, 
     {
         Tensor<double, 2> rank2{"Contraction 1", nvir_, nvir_};
         Tensor<double, 0> tmp{"Contraction 2"};
-        for (int I = 0; I < nocc_; I++) {
-            for (int J = I; J < nocc_; J++) {
+        for (int I = 0; I < nact_; I++) {
+            for (int J = I; J < nact_; J++) {
                 auto C_IJ = (*C)(I, J, All, All); C_IJ.set_read_only(true);
                 einsum(Indices{a, b}, &rank2, Indices{a, b}, C_IJ.get(), Indices{a, b}, D_ij.get());
                 einsum(Indices{}, &tmp, Indices{a, b}, rank2, Indices{a, b}, C_IJ.get());
