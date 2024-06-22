@@ -282,7 +282,7 @@ SharedMatrix LS_THC_Computer::prune_grid() {
     }
 
     std::vector<std::vector<int>> pivot;
-    S_Qq->pivoted_cholesky(PSI_ZERO, pivot);
+    S_Qq->pivoted_cholesky(PSI_ZERO, pivot, true);
 
     // Update S_Qq (returned as upper Cholesky factor of dimension (npoints, rank))
     S_Qq = linalg::doublet(S_Qq, S_Qq, true, false);
