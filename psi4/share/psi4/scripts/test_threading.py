@@ -24,7 +24,7 @@ if sys.version_info <= (3, 0):
 import psi4
 import numpy as np
 
-psi4.set_memory("1 GB")
+psi4.set_memory("4 GB")
 
 def test_threaded_blas(args):
     threads = int(args.nthread)
