@@ -140,6 +140,9 @@ jobs:
   - bash: |
       cd build
       source activate p4env
+      python -V
+      python -c 'import numpy; print(numpy.version.version)'
+      python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
       ../devtools/scripts/ci_build.sh
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so
