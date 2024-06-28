@@ -741,8 +741,8 @@ Bibliography
    *J. Chem. Phys.* **154**, 064103 (2021).
    https://doi.org/10.1063/5.0040021
 
-.. [Parrish:2012:224106]
-   R. M. Parrish, E. G. Hohenstein, T. J. Martinez, C. D. Sherrill
-   *J. Chem. Phys.* **137**, 224106 (2012).
-   https://doi.org/10.1063/1.4768233
+.. not yet referenced [Parrish:2012:224106]
+.. not yet referenced    R. M. Parrish, E. G. Hohenstein, T. J. Martinez, C. D. Sherrill
+.. not yet referenced    *J. Chem. Phys.* **137**, 224106 (2012).
+.. not yet referenced    https://doi.org/10.1063/1.4768233
 
