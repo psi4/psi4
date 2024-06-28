@@ -56,7 +56,7 @@ jobs:
             #    -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
 
           - label: "LLVM clang-cl (W)"
-            runs-on: windows-latest
+            runs-on: windows-2019
             python-version: "3.12"
             mkl-version: "=2022.1"
             platform: win-64
@@ -64,6 +64,7 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
+              -D OpenMP_LIBRARY_DIRS="D:/a/psi4/psi4/iomp5md/conda/win/2019.1"
             # Notes:
             # * When not using cache file, need to additionally specify the following:
             #    -D CMAKE_C_COMPILER=clang-cl
@@ -117,8 +118,7 @@ jobs:
 
       # see OpenMP_LIBRARY_DIRS for use
     - name: Prepare OpenMP build environment, libiomp5md.lib (W)
-      if: false
-      #if: runner.os == 'Windows'
+      if: runner.os == 'Windows'
       run: git clone https://github.com/psi4/iomp5md.git
 
     - name: Write Conda environment files
@@ -145,7 +145,6 @@ jobs:
         #
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
-          sed -i "s;- numpy;- numpy=2.*;g" env_p4build.yaml
           # not for py312
           sed -i "s;- dftd4-python;#- dftd4-python;g" env_p4build.yaml
           sed -i "s;- cppe;#- cppe;g" env_p4build.yaml
