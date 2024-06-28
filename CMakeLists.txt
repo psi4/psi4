@@ -205,8 +205,7 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 
 set(Python_ADDITIONAL_VERSIONS 3.12 3.11 3.10 3.9 3.8)  # adjust with CMake minimum FindPythonInterp
 find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
-message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
-message(STATUS "NumPy: found: ${Python_NumPy_FOUND} include_dirs: ${Python_NumPy_INCLUDE_DIRS} version: ${Python_NumPy_VERSION}")
+message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION}; NumPy version: ${Python_NumPy_VERSION})")
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
 message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
