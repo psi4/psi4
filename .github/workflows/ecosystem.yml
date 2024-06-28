@@ -56,9 +56,10 @@ jobs:
             #    -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
 
           - label: "LLVM clang-cl (W)"
-            runs-on: windows-2019
+            runs-on: windows-latest
             python-version: "3.12"
             mkl-version: "=2022.1"
+            llvm-version: "17.0.6"
             platform: win-64
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             cmargs: >
@@ -116,6 +117,13 @@ jobs:
       with:
         arch: x64
 
+    - name: Choco LLVM downgrade
+      #if: runner.os == 'Windows'
+      if: false
+      uses: crazy-max/ghaction-chocolatey@v3
+      with:
+        args: install llvm --version {{ matrix.cfg.llvm-version }} --allow-downgrade --yes
+
       # see OpenMP_LIBRARY_DIRS for use
     - name: Prepare OpenMP build environment, libiomp5md.lib (W)
       if: runner.os == 'Windows'
@@ -155,6 +163,7 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
+          sed -i "s;#- dpcpp_linux-64;- clang 17.0.6;g" env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
 
