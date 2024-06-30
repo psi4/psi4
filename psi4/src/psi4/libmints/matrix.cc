@@ -2028,7 +2028,7 @@ void Matrix::cholesky_factorize() {
     zero_upper();
 }
 
-void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) {
+void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot, bool upper) {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::pivoted_cholesky: Matrix is non-totally symmetric.");
     }
@@ -2052,7 +2052,8 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) 
 
         // Perform decomposition. Since the matrix is symmetric, row vs column major ordering makes no difference.
         int rank;
-        int err = C_DPSTRF('L', rowspi_[h], matrix_[h][0], rowspi_[h], pivot[h].data(), &rank, tol, work.data());
+        int err = C_DPSTRF(upper ? 'U' : 'L', rowspi_[h], matrix_[h][0], rowspi_[h], pivot[h].data(), &rank, tol, work.data());
+        
         nchol[h] = rank;
 
         // Fix pivots, Fortran to C
@@ -2076,18 +2077,35 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) 
     }
 
     // Properly sized return matrix
-    auto L = std::make_shared<Matrix>("Cholesky decomposed matrix", nirrep_, rowspi_, nchol);
-    L->zero();
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int m = 0; m < rowspi_[h]; ++m) {
-            for (int n = 0; n < std::min(m + 1, nchol[h]); ++n) {
-                // Psi4 stores matrices as row major, LAPACK as column major
-                L->set(h, m, n, get(h, n, m));
+    Dimension zero(nirrep_);
+
+    if (upper) {
+        auto U = std::make_shared<Matrix>("Cholesky decomposed matrix", nirrep_, rowspi_, nchol);
+        U->zero();
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int m = 0; m < rowspi_[h]; ++m) {
+                for (int n = m; n < nchol[h]; ++n) {
+                    // Psi4 stores matrices as row major, LAPACK as column major
+                    U->set(h, m, n, get(h, n, m));
+                }
             }
         }
+        // Switch to the properly sized matrix
+        *this = *U;
+    } else {
+        auto L = std::make_shared<Matrix>("Cholesky decomposed matrix", nirrep_, rowspi_, nchol);
+        L->zero();
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int m = 0; m < rowspi_[h]; ++m) {
+                for (int n = 0; n < std::min(m + 1, nchol[h]); ++n) {
+                    // Psi4 stores matrices as row major, LAPACK as column major
+                    L->set(h, m, n, get(h, n, m));
+                }
+            }
+        }
+        // Switch to the properly sized matrix
+        *this = *L;
     }
-    // Switch to the properly sized matrix
-    *this = *L;
 }
 
 SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_negative) {

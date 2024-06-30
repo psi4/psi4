@@ -967,7 +967,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * This is the block version of the algorithm, calling Level 3
      * BLAS (dpstrf).
      */
-    void pivoted_cholesky(double tol, std::vector<std::vector<int>>& pivot);
+    void pivoted_cholesky(double tol, std::vector<std::vector<int>>& pivot, bool upper=false);
 
     /*! Computes the inverse of a real symmetric positive definite
      *  matrix A using the Cholesky factorization A = L*L**T
