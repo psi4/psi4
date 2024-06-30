@@ -2052,12 +2052,8 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot, 
 
         // Perform decomposition. Since the matrix is symmetric, row vs column major ordering makes no difference.
         int rank;
-        int err; 
-        if (upper) {
-            err = C_DPSTRF('U', rowspi_[h], matrix_[h][0], rowspi_[h], pivot[h].data(), &rank, tol, work.data());
-        } else {
-            err = C_DPSTRF('L', rowspi_[h], matrix_[h][0], rowspi_[h], pivot[h].data(), &rank, tol, work.data());
-        }
+        int err = C_DPSTRF(upper ? 'U' : 'L', rowspi_[h], matrix_[h][0], rowspi_[h], pivot[h].data(), &rank, tol, work.data());
+        
         nchol[h] = rank;
 
         // Fix pivots, Fortran to C
@@ -2081,6 +2077,8 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot, 
     }
 
     // Properly sized return matrix
+    Dimension zero(nirrep_);
+
     if (upper) {
         auto U = std::make_shared<Matrix>("Cholesky decomposed matrix", nirrep_, rowspi_, nchol);
         U->zero();
