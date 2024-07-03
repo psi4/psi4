@@ -69,7 +69,7 @@ SAPT::SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunc
 #endif
 
 #ifdef _OPENMP
-    omp_set_max_active_levels(1);
+//    omp_set_max_active_levels(1);
 #endif
 
     initialize(MonomerA, MonomerB);
