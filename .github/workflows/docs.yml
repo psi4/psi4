@@ -33,14 +33,14 @@ jobs:
     # fetch-depth: 0 gets git history so Psi4 version computable
     - name: Checkout
       if: ${{ github.repository == 'psi4/psi4' }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         path: code
 
     - name: Checkout website repo
       if: ${{ github.repository == 'psi4/psi4' }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: psi4/psi4docs
         path: docs
@@ -126,7 +126,7 @@ jobs:
 
     - name: Archive Docs Tarball
       if: ${{ github.repository == 'psi4/psi4' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: sphinxman-html
         path: |
