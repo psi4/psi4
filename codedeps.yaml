@@ -212,7 +212,8 @@ data:
     conda:
       channel: conda-forge
       name: cmake
-      constraint: null
+      constraint: "<3.30.0"
+      constraint_note: "On Mac, v3.30 FindPython not finding NumPy includes."
       cmake:
         -S: <src>
         -B: <bld>
