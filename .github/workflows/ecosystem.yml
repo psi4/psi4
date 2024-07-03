@@ -159,6 +159,7 @@ jobs:
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           :
           sed -E -i.bak "s;- pybind11;- pybind11=2.11;g" env_p4build.yaml
+          sed -E -i.bak "s;- cmake;- cmake=3.29;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
