@@ -10,7 +10,8 @@ if (POLICY CMP0144)
     cmake_policy(SET CMP0144 NEW)
 endif()
 if (POLICY CMP0167)
-    cmake_policy(SET CMP0167 NEW)
+    # L2 not prepared for BoostConfig instead of FindBoost
+    cmake_policy(SET CMP0167 OLD)
 endif ()
                                               # 3.15: useable FindPython with NumPy component and LOCATION
                                               # 3.8: CXX_STANDARD recognizes C++17
