@@ -112,8 +112,7 @@ jobs:
 
       # equivalent to `call vcvarsall.bat x64`. see Azure script to follow cmdline.
     - name: Prepare compiler environment, vcvarsall (W)
-      if: false
-      #if: runner.os == 'Windows'
+      if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
