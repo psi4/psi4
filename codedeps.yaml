@@ -748,7 +748,7 @@ data:
       host: github
       account: pybind
       name: pybind11
-      commit: v2.10.1
+      commit: v2.13.1
     #cmake:
     #  name: pybind11  # detect Python before pybind11
     #  constraint: 2.10.1
@@ -756,9 +756,8 @@ data:
     conda:
       channel: conda-forge
       name: pybind11
-      #constraint: ">=2.10.*,<2.12.0"
-      constraint: ">=2.12"
-      constraint_note: "Particularly for docs until FixedSize typing percolates upstream."
+      constraint: null
+      constraint_note: "Numpy v2 needs >=2.12. For docs, '>=2.10.*,<2.12.0' has adv; search FixedSize."
       cmake:
         pybind11_DIR:
           unix: ${CONDA_PREFIX}/share/cmake/pybind11
@@ -1005,7 +1004,7 @@ data:
       host: github
       account: MolSSI
       name: QCElemental
-      commit: v0.27.1
+      commit: v0.28.0
     #cmake:
     #  name:
     #  constraint: ATLEAST 0.24.0
@@ -1196,7 +1195,7 @@ data:
       host: github
       account: MolSSI
       name: QCEngine
-      commit: v0.29.0
+      commit: v0.30.0
     #cmake:
     #  name: qcengine
     #  constraint: ATLEAST 0.26.0

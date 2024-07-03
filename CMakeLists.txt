@@ -2,11 +2,16 @@
 cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 cmake_policy(SET CMP0094 NEW)
 cmake_policy(SET CMP0075 NEW)
-#  cmake_policy(SET CMP0144 NEW)
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+if (POLICY CMP0135)
     # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
     cmake_policy(SET CMP0135 NEW)
+endif ()
+if (POLICY CMP0144)
+    cmake_policy(SET CMP0144 NEW)
 endif()
+if (POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif ()
                                               # 3.15: useable FindPython with NumPy component and LOCATION
                                               # 3.8: CXX_STANDARD recognizes C++17
                                               # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
