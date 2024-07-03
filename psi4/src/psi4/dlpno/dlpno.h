@@ -26,19 +26,20 @@
  * @END LICENSE
  */
 
-#ifndef PSI4_SRC_DLPNO_MP2_H_
-#define PSI4_SRC_DLPNO_MP2_H_
-
-#include "sparse.h"
-
-#include "psi4/libmints/wavefunction.h"
+#ifndef PSI4_SRC_DLPNO_H_
+#define PSI4_SRC_DLPNO_H_
 
 namespace psi {
 namespace dlpno {
 
+#include "sparse.h"
+#include "psi4/libmints/wavefunction.h"
+
+enum AlgorithmType { MP2, CCSD, CCSD_T };
+
 // Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
 
-class DLPNOMP2 : public Wavefunction {
+class DLPNO : public Wavefunction {
    protected:
 
     /// threshold for PAO domain size
@@ -82,17 +83,13 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<double> de_pno_;   ///< PNO truncation energy error
     std::vector<double> de_pno_os_;   ///< opposite-spin contributions to de_pno_
     std::vector<double> de_pno_ss_;   ///< same-spin contributions to de_pno_
-    std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
-    std::vector<std::vector<SharedMatrix>> S_pno_ij_ik_; ///< pnooverlaps
 
     // final energies
     double de_dipole_; ///< energy correction for distant (LMO, LMO) pairs
     double de_pno_total_; ///< energy correction for PNO truncation
     double de_pno_total_os_; ///< energy correction for PNO truncation
     double de_pno_total_ss_; ///< energy correction for PNO truncation
-    double e_lmp2_; ///< raw (uncorrected) local MP2 correlation energy
-    double e_lmp2_ss_; ///< same-spin component of e_lmp2_
-    double e_lmp2_os_; ///< opposite-spin component of e_lmp2_
+    
 
     // => Sparse Maps <= //
 
@@ -143,6 +140,16 @@ class DLPNOMP2 : public Wavefunction {
 
     void common_init();
 
+    // Helper functions
+    void C_DGESV_wrapper(SharedMatrix A, SharedMatrix B);
+
+    std::pair<SharedMatrix, SharedVector> canonicalizer(SharedMatrix C, SharedMatrix F);
+    std::pair<SharedMatrix, SharedVector> orthocanonicalizer(SharedMatrix S, SharedMatrix F);
+
+    SharedVector flatten_mats(const std::vector<SharedMatrix>& mat_list);
+
+    void copy_flat_mats(SharedVector flat, std::vector<SharedMatrix>& mat_list);
+
     std::pair<SharedMatrix, SharedVector> orthocanonicalizer(SharedMatrix S, SharedMatrix F);
 
     /// Form LMOs, PAOs, etc.
@@ -167,9 +174,34 @@ class DLPNOMP2 : public Wavefunction {
     /// form pair exch operators (EQ 15) and SC amplitudes (EQ 18); transform to PNO basis
     void pno_transform();
 
-    /// compute PNO/PNO overlap matrices
-    void compute_pno_overlaps();
+    void print_aux_domains();
+    void print_pao_domains();
+    void print_lmo_domains();
+    void print_aux_pair_domains();
+    void print_pao_pair_domains();
+    void print_integral_sparsity();
 
+   public:
+    DLPNO(SharedWavefunction ref_wfn, Options& options);
+    ~DLPNO() override;
+
+    double compute_energy() override;
+};
+
+class DLPNOMP2 : public DLPNO {
+   protected:
+    // PNO overlap matrices
+    std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
+    std::vector<std::vector<SharedMatrix>> S_pno_ij_ik_; ///< pnooverlaps
+    
+    // final energies
+    double e_lmp2_; ///< raw (uncorrected) local MP2 correlation energy
+    double e_lmp2_ss_; ///< same-spin component of e_lmp2_
+    double e_lmp2_os_; ///< opposite-spin component of e_lmp2_
+
+    /// compute PNO/PNO overlap matrices for DLPNO-MP2
+    void compute_pno_overlaps();
+    
     /// compute MP2 correlation energy w/ current amplitudes (EQ 14)
     double compute_iteration_energy(const std::vector<SharedMatrix> &R_iajb);
 
@@ -177,12 +209,6 @@ class DLPNOMP2 : public Wavefunction {
     void lmp2_iterations();
 
     void print_header();
-    void print_aux_domains();
-    void print_pao_domains();
-    void print_lmo_domains();
-    void print_aux_pair_domains();
-    void print_pao_pair_domains();
-    void print_integral_sparsity();
     void print_results();
 
    public:
@@ -192,7 +218,5 @@ class DLPNOMP2 : public Wavefunction {
     double compute_energy() override;
 };
 
-}  // namespace dlpno
-}  // namespace psi
-
-#endif //PSI4_SRC_DLPNO_MP2_H_
+}
+}
