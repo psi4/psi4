@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#include "dlpno.h"
+#include "sparse.h"
+
 #include "psi4/lib3index/3index.h"
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libfock/cubature.h"
@@ -65,6 +68,12 @@ void DLPNO::common_init() {
 
     T_CUT_PNO_ = options_.get_double("T_CUT_PNO");
     T_CUT_DO_ = options_.get_double("T_CUT_DO");
+
+    if (options_.get_str("DLPNO_ALGORITHM") == "MP2") {
+        algorithm_ = MP2;
+    } else {
+        throw PSIEXCEPTION("Requested DLPNO algorithm has NOT been implemented yet");
+    }
 
     // did the user manually change expert level options?
     bool T_CUT_PNO_changed = options_["T_CUT_PNO"].has_changed();
@@ -1228,7 +1237,7 @@ void DLPNO::print_integral_sparsity() {
                     screened_memory * 100.0 / total_memory);
 }
 
-double DLPNO::compute_energy { return 0.0; }
+double DLPNO::compute_energy() { return 0.0; }
 
 }
 }

@@ -29,11 +29,22 @@
 #ifndef PSI4_SRC_DLPNO_H_
 #define PSI4_SRC_DLPNO_H_
 
+#include "sparse.h"
+
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsio/psio.h"
+#include "psi4/psifiles.h"
+
+#include <map>
+#include <tuple>
+#include <string>
+#include <unordered_map>
+
 namespace psi {
 namespace dlpno {
-
-#include "sparse.h"
-#include "psi4/libmints/wavefunction.h"
 
 enum AlgorithmType { MP2, CCSD, CCSD_T };
 
@@ -41,7 +52,9 @@ enum AlgorithmType { MP2, CCSD, CCSD_T };
 
 class DLPNO : public Wavefunction {
    protected:
-
+    /// what quantum chemistry module are we running
+    AlgorithmType algorithm_;
+    
     /// threshold for PAO domain size
     double T_CUT_DO_;
 
@@ -150,8 +163,6 @@ class DLPNO : public Wavefunction {
 
     void copy_flat_mats(SharedVector flat, std::vector<SharedMatrix>& mat_list);
 
-    std::pair<SharedMatrix, SharedVector> orthocanonicalizer(SharedMatrix S, SharedMatrix F);
-
     /// Form LMOs, PAOs, etc.
     void setup_orbitals();
     
@@ -220,3 +231,5 @@ class DLPNOMP2 : public DLPNO {
 
 }
 }
+
+#endif

@@ -55,7 +55,7 @@
 namespace psi {
 namespace dlpno {
 
-DLPNOMP2::DLPNOMP2(SharedWavefunction ref_wfn, Options& options) : DLPNOBase(ref_wfn, options) {}
+DLPNOMP2::DLPNOMP2(SharedWavefunction ref_wfn, Options& options) : DLPNO(ref_wfn, options) {}
 DLPNOMP2::~DLPNOMP2() {}
 
 void DLPNOMP2::compute_pno_overlaps() {
