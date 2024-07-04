@@ -148,6 +148,9 @@ jobs:
   - bash: |
       cd build
       source activate p4env
+      python -V
+      python -c 'import numpy; print(numpy.version.version)'
+      python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
 
