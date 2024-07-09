@@ -175,10 +175,9 @@ from qcelemental.models import FailedOperation, Molecule, DriverEnum, ProtoModel
 import qcengine as qcng
 
 import qcmanybody as qcmb
-from qcmanybody.models import AtomicSpecification, BsseEnum, ManyBodyKeywords, ManyBodyInput, ManyBodyResult, ManyBodyResultProperties
-from qcmanybody import ManyBodyCalculator
-from qcmanybody.computer import ManyBodyComputer as ManyBodyComputerQCNG
-from qcmanybody.utils import delabeler, provenance_stamp as qcmb_provenance_stamp
+from qcmanybody.models import AtomicSpecification, ManyBodyInput, ManyBodyResult
+from qcmanybody import ManyBodyCore, ManyBodyComputer as ManyBodyComputerQCNG
+from qcmanybody.utils import delabeler, provenance_stamp as qcmb_provenance_stamp, translate_qcvariables
 
 if TYPE_CHECKING:
     import qcportal
@@ -189,6 +188,7 @@ FragBasIndex = Tuple[Tuple[int], Tuple[int]]
 
 SubTaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer]
 
+# nbody function is here for the docstring
 def nbody():
     """
     Computes the nbody interaction energy, gradient, or Hessian depending on input.
@@ -233,6 +233,20 @@ def nbody():
         monomers in the monomer basis, hence specifying ``return_total_data = True``
         may carry out more computations than ``return_total_data = False``.
         For gradients and Hessians, ``return_total_data = False`` is rarely useful.
+
+    :type supersystem_ie_only: :ref:`boolean <op_py_boolean>`
+    :param supersystem_ie_only: ``'on'`` || |dl| ``'off'`` |dr|
+
+        Target the supersystem total/interaction energy (IE) data over the many-body expansion (MBE)
+        analysis, thereby omitting intermediate-body calculations. When False (default), compute each n-body level
+        in the MBE up through ``max_nbody``. When True (only allowed for ``max_nbody = nfragments`` ), only compute
+        enough for the overall interaction/total energy: max_nbody-body and 1-body. When True, properties
+        ``INTERACTION {driver} THROUGH {max_nbody}-BODY`` will always be available;
+        ``TOTAL {driver} THROUGH {max_nbody}-BODY`` will be available depending on ``return_total_data`` ; and
+        ``{max_nbody}-BODY CONTRIBUTION TO {driver}`` won't be available (except for dimers). This keyword produces
+        no savings for a two-fragment molecule. But for the interaction energy of a three-fragment molecule, for
+        example, 2-body subsystems can be skipped with ``supersystem_ie_only=True``. Do not use with ``vmfc`` in
+        ``bsse_type`` as it cannot produce savings.
 
     :type levels: dict
     :param levels: ``{1: 'ccsd(t)', 2: 'mp2', 'supersystem': 'scf'}`` || ``{1: 2, 2: 'ccsd(t)', 3: 'mp2'}`` || etc
@@ -821,17 +835,17 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         # print("POST specifications")
         # pprint.pprint(specifications)
 
-        calculator_cls = ManyBodyCalculator(
+        calculator_cls = ManyBodyCore(
             computer_model.molecule,
             computer_model.bsse_type,
             comp_levels,
-            computer_model.return_total_data,
-            computer_model.supersystem_ie_only,
-            computer_model.embedding_charges,
+            return_total_data=computer_model.return_total_data,
+            supersystem_ie_only=computer_model.supersystem_ie_only,
+            embedding_charges=computer_model.embedding_charges,
         )
         computer_model.qcmb_calculator = calculator_cls
 
-        # print("\n<<<  (ZZZ 2) QCManyBody module ManyBodyCalculator  >>>")
+        # print("\n<<<  (ZZZ 2) QCManyBody module ManyBodyCore  >>>")
         # print(dir(calculator_cls))
 
         info, dcount = calculator_cls.format_calc_plan()
@@ -1142,43 +1156,11 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         qmol = core.Molecule.from_schema(self.molecule.dict())  # nonphy
         wfn = core.Wavefunction.build(qmol, "def2-svp", quiet=True)
 
-#        # TODO all besides nbody may be better candidates for extras than qcvars. energy/gradient/hessian_body_dict in particular are too simple for qcvars (e.g., "2")
-        dicts = [
-#            #"energies",  # retired
-#            #"ptype",     # retired
-#            "intermediates",
-#            "intermediates_energy",  #"intermediates2",
-#            "intermediates_gradient",  #"intermediates_ptype",
-#            "intermediates_hessian",  #"intermediates_ptype",
-#            "energy_body_dict",
-#            "gradient_body_dict",  # ptype_body_dict
-#            "hessian_body_dict",  # ptype_body_dict
-            "nbody",
-#            "cp_energy_body_dict",
-#            "nocp_energy_body_dict",
-#            "vmfc_energy_body_dict",
-#            "cp_gradient_body_dict",
-#            "nocp_gradient_body_dict",
-#            "vmfc_gradient_body_dict",
-#            "cp_hessian_body_dict",
-#            "nocp_hessian_body_dict",
-#            "vmfc_hessian_body_dict",
-        ]
+        qcvars = translate_qcvariables(nbody_model.properties.dict())
+        for qcv, val in qcvars.items():
+            for obj in [core, wfn]:
+                obj.set_variable(qcv, val)
 
-        for qcv, val in nbody_model.extras['qcvars'].items():
-            if isinstance(val, dict):
-                if qcv in dicts:
-                    for qcv2, val2 in val.items():
-                        for obj in [core, wfn]:
-#                            try:
-                                obj.set_variable(str(qcv2), val2)
-#                            except ValidationError:
-#                                obj.set_variable(f"{self.driver.name} {qcv2}", val2)
-            else:
-                for obj in [core, wfn]:
-                    obj.set_variable(qcv, val)
-
-        # print(f"{self.qcmb_calculator.levels=}")
         mc_ordered_list = list(set(self.qcmb_calculator.levels.values()))
 
         for mcfragbas, dval in nbody_model.component_properties.items():
@@ -1227,36 +1209,3 @@ def new_lab_labeler2(mc_level_idx: str, frag: Tuple, bas:Tuple) -> str:
     # returns "1_(1)@(1, 2)"
         #        return mc, ", ".join(map(str, frag)), ", ".join(map(str, bas))
         return f"{mc_level_idx + 1}_({', '.join(map(str, frag))})@({', '.join(map(str, bas))})"
-
-
-qcvars_to_manybodyproperties = {}
-# v2: for skprop in ManyBodyResultProperties.model_fields.keys():
-for skprop in ManyBodyResultProperties.__fields__.keys():
-    qcvar = skprop.replace("_body", "-body").replace("_corr", "-corr").replace("_", " ").upper()
-    qcvars_to_manybodyproperties[qcvar] = skprop
-qcvars_to_manybodyproperties["CURRENT ENERGY"] = "return_energy"
-qcvars_to_manybodyproperties["CURRENT GRADIENT"] = "return_gradient"
-qcvars_to_manybodyproperties["CURRENT HESSIAN"] = "return_hessian"
-
-
-# TODO where does this live?
-def build_manybodyproperties(qcvars: Mapping) -> ManyBodyResultProperties:
-    """For results extracted from QC output in QCDB terminology, translate to QCSchema terminology.
-
-    Parameters
-    ----------
-    qcvars : PreservingDict
-        Dictionary of calculation information in QCDB QCVariable terminology.
-
-    Returns
-    -------
-    atprop : ManyBodyResultProperties
-        Object of calculation information in QCSchema ManyBodyResultProperties terminology.
-
-    """
-    atprop = {}
-    for pv, dpv in qcvars.items():
-        if pv in qcvars_to_manybodyproperties:
-            atprop[qcvars_to_manybodyproperties[pv]] = dpv
-
-    return ManyBodyResultProperties(**atprop)
