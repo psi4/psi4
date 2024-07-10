@@ -115,7 +115,6 @@ def test_composite_call(j_algo, k_algo, mols, request):
     clean_k_name = clean_k_name.replace("-", "") # replace sn-LinK with snLinK
     assert clean_k_name.lower() == k_algo.lower(), f'{test_id} has correct K build method'
 
-
 @pytest.mark.parametrize("inp", 
     [
         pytest.param("h2o (rhf)", marks=pytest.mark.quick),
