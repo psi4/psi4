@@ -34,7 +34,7 @@ jobs:
             #    -D ENABLE_XHOST=OFF
 
           - label: "Conda Clang (M)"
-            runs-on: macos-13  # ensures py!=27 in base OS
+            runs-on: macos-latest  #macos-13  # ensures py!=27 in base OS
             python-version: "3.9"
             mkl-version: ""
             platform: osx-64
