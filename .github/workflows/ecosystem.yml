@@ -44,7 +44,7 @@ jobs:
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
-              -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }}
+              -D CMAKE_OSX_DEPLOYMENT_TARGET=10.13
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
             #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
