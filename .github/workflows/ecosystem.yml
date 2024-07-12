@@ -39,11 +39,12 @@ jobs:
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            target-sdk: "10.10"
+            target-sdk: "10.13"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+              -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }}
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
             #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
