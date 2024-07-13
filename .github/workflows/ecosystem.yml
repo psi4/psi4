@@ -35,7 +35,7 @@ jobs:
 
           - label: "Conda Clang (M)"
             runs-on: macos-latest  #macos-13  # ensures py!=27 in base OS
-            python-version: "3.9"
+            python-version: "3.11"
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
