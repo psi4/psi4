@@ -166,7 +166,7 @@ jobs:
         echo "  - pygments" >> env_p4build.yaml
 
     - name: Setup Conda
-      uses: conda-incubator/setup-miniconda@v2
+      uses: conda-incubator/setup-miniconda@v3
       with:
         activate-environment: p4build
         environment-file: env_p4build.yaml
