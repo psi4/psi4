@@ -73,6 +73,7 @@
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
 #include "psi4/libmints/sieve.h"
+#include "psi4/libmints/thc_eri.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include <string>
 
@@ -968,10 +969,12 @@ void export_mints(py::module& m) {
              "Gets the multiplicity of each fragment")
         .def("atom_at_position", &Molecule::atom_at_position1,
              "Returns the index of the atom inside *tol* radius around *coord*. Returns -1 for no atoms, "
-             "throws an exception if more than one is found.", "coord"_a, "tol"_a)
+             "throws an exception if more than one is found.",
+             "coord"_a, "tol"_a)
         .def("atom_at_position", &Molecule::atom_at_position3,
              "Returns the index of the atom inside *tol* radius around *coord*. Returns -1 for no atoms, "
-             "throws an exception if more than one is found.", "coord"_a, "tol"_a)
+             "throws an exception if more than one is found.",
+             "coord"_a, "tol"_a)
         .def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units to output file")
         .def("print_out_in_bohr", &Molecule::print_in_bohr, "Prints the molecule in Cartesians in Bohr to output file")
         .def("print_out_in_angstrom", &Molecule::print_in_angstrom,
@@ -1311,19 +1314,6 @@ void export_mints(py::module& m) {
 
     py::class_<Libint2ERI, std::unique_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt,
                                                         "Computes normal two electron repulsion integrals");
-#ifdef ENABLE_Libint1t
-    py::class_<F12, std::shared_ptr<F12>>(m, "F12", pyTwoBodyAOInt, "Computes F12 electron repulsion integrals");
-    py::class_<F12G12, std::shared_ptr<F12G12>>(m, "F12G12", pyTwoBodyAOInt,
-                                                "Computes F12G12 electron repulsion integrals");
-    py::class_<F12Squared, std::shared_ptr<F12Squared>>(m, "F12Squared", pyTwoBodyAOInt,
-                                                        "Computes F12 Squared electron repulsion integrals");
-    py::class_<F12DoubleCommutator, std::shared_ptr<F12DoubleCommutator>>(
-        m, "F12DoubleCommutator", pyTwoBodyAOInt, "Computes F12 Double Commutator electron repulsion integrals");
-    py::class_<ErfERI, std::shared_ptr<ErfERI>>(m, "ErfERI", pyTwoBodyAOInt,
-                                                "Computes ERF electron repulsion integrals");
-    py::class_<ErfComplementERI, std::shared_ptr<ErfComplementERI>>(
-        m, "ErfComplementERI", pyTwoBodyAOInt, "Computes ERF complement electron repulsion integrals");
-#endif  // ENABLE_Libint1t
 
     py::class_<AOShellCombinationsIterator, std::shared_ptr<AOShellCombinationsIterator>>(m,
                                                                                           "AOShellCombinationsIterator")
@@ -1559,8 +1549,8 @@ void export_mints(py::module& m) {
 
         // Contracted gradient terms
         .def("dipole_grad", &MintsHelper::dipole_grad, "First nuclear derivative dipole integrals")
-        .def("multipole_grad", &MintsHelper::multipole_grad, "First nuclear derivative multipole integrals",
-             "D"_a, "order"_a, "origin"_a)
+        .def("multipole_grad", &MintsHelper::multipole_grad, "First nuclear derivative multipole integrals", "D"_a,
+             "order"_a, "origin"_a)
         .def("overlap_grad", &MintsHelper::overlap_grad, "First nuclear derivative overlap integrals")
         .def("kinetic_grad", &MintsHelper::kinetic_grad, "First nuclear derivative kinetic integrals")
         .def("potential_grad", &MintsHelper::potential_grad, "First nuclear derivative potential integrals")
@@ -1738,6 +1728,18 @@ void export_mints(py::module& m) {
             return sho;
         },
         "The solid harmonics setting of Libint2 currently active for Psi4");
+
+    py::class_<LS_THC_Computer, std::shared_ptr<LS_THC_Computer>>(m, "LS_THC_Computer",
+            "Computer class for grid-based tensor hypercontraction (THC) of two-electron integrals (Parrish 2012)")
+            .def(py::init([] (std::shared_ptr<Molecule> mol, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary) {
+                    return new LS_THC_Computer(mol, primary, auxiliary, Process::environment.options); 
+                    }))
+            .def("compute_thc_factorization", &LS_THC_Computer::compute_thc_factorization, "Compute the THC (x1, x2, Z, x3, x4) factors through grid based LS-THC")
+            .def("get_x1", &LS_THC_Computer::get_x1, "Returns x1 factor from LS-THC factorization")
+            .def("get_x2", &LS_THC_Computer::get_x2, "Returns x2 factor from LS-THC factorization")
+            .def("get_x3", &LS_THC_Computer::get_x3, "Returns x3 factor from LS-THC factorization")
+            .def("get_x4", &LS_THC_Computer::get_x4, "Returns x4 factor from LS-THC factorization")
+            .def("get_Z", &LS_THC_Computer::get_Z, "Returns Z factor from LS-THC factorization");
 
     // when psi4 requires >=v2.8.0
     // m.def("libint2_supports", [](const std::string& comp) { return libint2::supports(comp); },

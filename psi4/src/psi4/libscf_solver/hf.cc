@@ -730,6 +730,7 @@ void HF::form_Shalf() {
         if (print_) outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n", nso_ - nmo_, nso_);
 
         used_brian = true;
+    }
 #endif
 
     if (!used_brian) {

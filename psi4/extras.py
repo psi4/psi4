@@ -148,7 +148,6 @@ _addons_ = {
     "dkh": _CMake_to_Py_boolean("@ENABLE_dkh@"),
     "ecpint": _CMake_to_Py_boolean("@ENABLE_ecpint@"),
     "libefp": which_import("pylibefp", return_bool=True),
-    "erd": _CMake_to_Py_boolean("@ENABLE_erd@"),
     "gdma": which_import("gdma", return_bool=True),  # package pygdma, import gdma
     "ipi": which_import("ipi", return_bool=True),
     "pcmsolver": _CMake_to_Py_boolean("@ENABLE_PCMSolver@"),
