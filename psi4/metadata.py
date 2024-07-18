@@ -4,3 +4,6 @@ __version_upcoming_annotated_v_tag = '1.10a1'
 
 def version_formatter(dummy):
     return '(inplace)'
+
+def test_gha():
+    return False
