@@ -1081,10 +1081,10 @@ void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor
         order = {'o', 'O', 'o', 'O',
                  'o', 'O', 'o', 'C',
                  'o', 'C', 'o', 'O',
-                 'o', 'C', 'o', 'C',};
+                 'o', 'C', 'o', 'C'};
     } else if ( int_type == "F2" ) {
         order = {'o', 'o', 'o', 'O',
-                 'o', 'o', 'o', 'C',};
+                 'o', 'o', 'o', 'C'};
     }
 
     const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_); // No frozen in tensor contractions
