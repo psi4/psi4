@@ -33,13 +33,10 @@ set {
     d_convergence 1.e-10
 }
 
-# renamed for v1.10
-# * "N-BODY (1, 2)@(1, 2, 3) TOTAL ENERGY" -> "N-BODY 1_(1, 2)@(1, 2, 3) TOTAL ENERGY"
-
 energy('SCF/cc-pvdz', molecule=noble_trimer, bsse_type=['cp', 'nocp', 'vmfc'])
 
 for compl in comparison_dict.keys():
-    var_key = f"N-BODY 1_{compl} TOTAL ENERGY"  #TEST
-    computed_value = variable(var_key)                               #TEST
+    var_key = 'N-BODY %s TOTAL ENERGY' % compl                                #TEST
+    computed_value = psi4.variable(var_key)                               #TEST
     compare_values(comparison_dict[compl], computed_value, 8, var_key)        #TEST
 
