@@ -27,15 +27,15 @@ else()
         DEPENDS qcelemental_external
                 qcengine_external
         BUILD_ALWAYS 1
-        #URL https://github.com/MolSSI/QCManyBody/archive/main.tar.gz
-        URL https://github.com/loriab/QCManyBody/archive/modeltweaks.tar.gz
+        URL https://github.com/MolSSI/QCManyBody/archive/main.tar.gz
         DOWNLOAD_NO_EXTRACT 1
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ""
         BUILD_IN_SOURCE 1
         # master: INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCManyBody.git#egg=proj
-        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCManyBody.git@v0.2.1#egg=proj
+        #INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCManyBody.git@v0.2.1#egg=proj
+        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/loriab/QCManyBody.git@modeltweaks#egg=proj
                                                       --target=${_install_lib}
                                                       --no-deps
                                                       #-v
