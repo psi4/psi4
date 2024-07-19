@@ -554,7 +554,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             specifications[mtd]["specification"].pop("schema_name", None)
             specifications[mtd]["specification"].pop("protocols", None)
 
-        calculator_cls = ManyBodyCore(
+        computer_model.qcmb_core = ManyBodyCore(
             computer_model.molecule,
             computer_model.bsse_type,
             comp_levels,
@@ -562,9 +562,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             supersystem_ie_only=computer_model.supersystem_ie_only,
             embedding_charges=computer_model.embedding_charges,
         )
-        computer_model.qcmb_calculator = calculator_cls
 
-        info, dcount = calculator_cls.format_calc_plan()
+        info, dcount = computer_model.qcmb_core.format_calc_plan()
         logger.info(info)
         core.print_out("\n" + p4util.banner(f" ManyBody Setup: N-Body Levels {computer_model.max_nbody}", strNotOutfile=True) + "\n")
         core.print_out(info)
@@ -602,8 +601,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         Returns
         -------
         count : int
-            Number of new tasks planned by this call.
-            Formerly, didn't include supersystem in count.
+            Number of new tasks planned by this call including any supersystem.
 
         """
         # TODO method not coming from levels right
@@ -612,9 +610,9 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         nbodies = self.nbodies_per_mc_level[mc_level_idx]
         # print(f"{self.nbodies_per_mc_level=} {nbodies=} {mc_level_idx=}")
         # print(f"{self.levels=}")
-        # print(f"{self.qcmb_calculator.nbodies_per_mc_level=}")
+        # print(f"{self.qcmb_core.nbodies_per_mc_level=}")
 
-        for spec_key, nb_lst in self.qcmb_calculator.nbodies_per_mc_level.items():
+        for spec_key, nb_lst in self.qcmb_core.nbodies_per_mc_level.items():
             if nb_lst == nbodies:
                 filter_key = spec_key
         #filter_key = rev_nbpermclvl[self.nbodies_per_mc_level[mc_level_idx]]
@@ -628,7 +626,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         template = copy.deepcopy(kwargs)
         logger.info(f"TEMPLATE {template=}")
 
-        for chem, label, imol in self.qcmb_calculator.iterate_molecules():
+        for chem, label, imol in self.qcmb_core.iterate_molecules():
             mckey, frag, bas = delabeler(label)
             # print(f"{chem=} {label=}, {imol=}      {mckey=} {frag=} {bas=}    {imol.extras=}")
             if mckey != filter_key:
@@ -645,6 +643,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
             self.task_list[label] = mb_computer(**data)
             count += 1
+
+        return count
 
     def compute(self, client: Optional["qcportal.client.PortalClient"] = None):
         """Run quantum chemistry.
@@ -701,7 +701,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         # print("\n<<<  (RRR 2) Psi4 ManyBodyComputer.get_results component_properties  >>>")
         # pprint.pprint(component_properties, width=200)
 
-        analyze_back = self.qcmb_calculator.analyze(component_properties)
+        analyze_back = self.qcmb_core.analyze(component_properties)
         analyze_back["nbody_number"] = len(component_properties)
         # print("\n<<<  (RRR 3) Psi4 ManyBodyComputer.get_results analyze_back  >>>")
         # pprint.pprint(analyze_back, width=200)
@@ -758,7 +758,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             for obj in [core, wfn]:
                 obj.set_variable(qcv, val)
 
-        mc_labels = modelchem_labels(self.qcmb_calculator.nbodies_per_mc_level)
+        mc_labels = modelchem_labels(self.qcmb_core.nbodies_per_mc_level)
         full_to_ordinal_mc_lbl = {v[0]: v[1] for v in mc_labels.values()}
 
         for qcmb_label, dval in nbody_model.component_properties.items():
