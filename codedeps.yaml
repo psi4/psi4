@@ -1499,12 +1499,12 @@ data:
     #  name: qcmanybody
     #  constraint: ATLEAST 0.2.0
     #  target:
-    conda:
-      channel: conda-forge
-      name: qcmanybody
-      constraint: null
-      cmake:
-        //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
-        //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
-      cmake_note: "Primarily OTF runtime detected."
+    conda: null
+#      channel: conda-forge
+#      name: qcmanybody
+#      constraint: null
+#      cmake:
+#        //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
+#        //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
+#      cmake_note: "Primarily OTF runtime detected."
 

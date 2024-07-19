@@ -40,8 +40,8 @@ core.clean()
 # renamed for v1.10
 # * '2' -> 'VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY'
 # * 'HESSIAN 2' -> 'VMFC-CORRECTED TOTAL HESSIAN THROUGH 2-BODY'
-# * 'HESSIAN 1_((1, 2), (1, 2, 3))' -> 'N-BODY 1_(1, 2)@(1, 2, 3) TOTAL HESSIAN'
-# * '1_((1, 2), (1, 2, 3))' -> 'N-BODY 1_(1, 2)@(1, 2, 3) TOTAL ENERGY'
+# * 'HESSIAN 1_((1, 2), (1, 2, 3))' -> 'N-BODY (1, 2)@(1, 2, 3) TOTAL HESSIAN'
+# * '1_((1, 2), (1, 2, 3))' -> 'N-BODY (1, 2)@(1, 2, 3) TOTAL ENERGY'  # for multilevel, 'N-BODY §A_(1, 2)@(1, 2, 3) TOTAL ENERGY'
 
 vmfc_scheme = {'((1, 2), (1, 2))': 1, '((1, 3), (1, 3))': 1, '((2, 3), (2, 3))': 1, #TEST
                '((1,), (1, 2))': -1, '((1,), (1, 3))': -1, '((2,), (1, 2))': -1, #TEST
@@ -59,8 +59,8 @@ for i in vmfc_scheme: #TEST
     energy_dict[i] = core.variable('CURRENT ENERGY') #TEST
     core.clean() #TEST
 
-    evar = wfn.variable(f"N-BODY 1_{eval(i)[0]}@{eval(i)[1]} TOTAL ENERGY".replace(",)", ")"))
-    hvar = wfn.variable(f"N-BODY 1_{eval(i)[0]}@{eval(i)[1]} TOTAL HESSIAN".replace(",)", ")"))
+    evar = wfn.variable(f"N-BODY {eval(i)[0]}@{eval(i)[1]} TOTAL ENERGY".replace(",)", ")"))
+    hvar = wfn.variable(f"N-BODY {eval(i)[0]}@{eval(i)[1]} TOTAL HESSIAN".replace(",)", ")"))
 
     compare_values(energy_dict[i], evar, 8, 'Energy of %s' %i) #TEST
     # the hessian_dict is of natural size, while the variable HESSIAN is padded with zeros to
