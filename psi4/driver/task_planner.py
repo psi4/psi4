@@ -179,8 +179,6 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
             # print(f"{mtdkey=}")
             # print(f"ENUM0 {mc_level_idx=} {mtd=} {method=} {basis=} {cbsmeta=} {kwargs=}")
             mtdin = mtdkey if mtd == "(auto)" else mtd
-            #method, basis, cbsmeta = expand_cbs_methods(mtdkey, basis, driver, cbsmeta=cbsmeta, **kwargs)  # NEW mtd->mtdkey
-            #method, basis, cbsmeta = expand_cbs_methods(mtd, basis, driver, cbsmeta=cbsmeta, **kwargs)  # NEW mtd->mtdkey
             method, basis, cbsmeta = expand_cbs_methods(mtdin, basis, driver, cbsmeta=cbsmeta, **kwargs)  # NEW mtd->mtdkey
             packet.update({'method': method, 'basis': basis})
             # print(f"ENUM {mc_level_idx=} {mtd=} {method=} {basis=} {cbsmeta=}")
