@@ -66,7 +66,8 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
-              -D CMAKE_CXX_FLAGS="-IC:\Miniconda3\envs\p4build\opt\compiler\include"
+              
+            #  -D CMAKE_CXX_FLAGS="-IC:\Miniconda3\envs\p4build\opt\compiler\include"
 
             # Notes:
             # * When not using cache file, need to additionally specify the following:
@@ -157,8 +158,8 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           :
-          sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
-          sed -E -i.bak "s;- einsums;- llvm=18;g" env_p4build.yaml
+          sed -E -i.bak "s;- adcc;- llvm=18;g" env_p4build.yaml
+          sed -E -i.bak "s;- einsums;#- einsums;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
