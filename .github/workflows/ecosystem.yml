@@ -158,7 +158,7 @@ jobs:
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           :
           sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
-          sed -E -i.bak "s;- einsums;#- einsums;g" env_p4build.yaml
+          sed -E -i.bak "s;- einsums;- llvm=18;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
