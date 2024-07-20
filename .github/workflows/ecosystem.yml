@@ -158,12 +158,14 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           :
-          sed -E -i.bak "s;- adcc;- llvm=18;g" env_p4build.yaml
+          sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
           sed -E -i.bak "s;- einsums;#- einsums;g" env_p4build.yaml
+          sed -E -i bak "s;- cxx-compiler;- cxx-compiler=18;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
           sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
+          sed -i "s;- intel-openmp;- intel-openmp=2024.2.0=h57928b3_979;g" env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
 
