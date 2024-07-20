@@ -79,59 +79,17 @@ ManyBodyComputer.get_psi_results()
 
     Computer.get_results()
     ----------------------
+    * call get_results() for each job in task list
+    * assemble all the computed energies, all the computed gradients, and all the computed hessians
+    * call qcmb's core interface analyze() to sum assembled component results into MBE results
+    * call qcmb's high-lvl interface get_results() to transform MBE results into QCSchema model
+    * return MBE QCSchema model
 
-        Computer._prepare_results()
-        ---------------------------
-        * if multiple modelchems (multilevel):
-
-            multilevel.prepare_results()
-            ----------------------------
-            * from the pool of calcs, partition them by modelchem treatment and call _prepare_results on each subpool
-            * sums modelchem levels and returns small dict back to get_results()
-
-        * call get_results() for each job in task list
-        * assemble all the computed energies, all the computed gradients, and all the computed hessians
-        * for each available derivative, call:
-
-            assemble_nbody_components()
-            ---------------------------
-            * re-call build_nbody_compute_list to get the cp/nocp/vmfc lists again
-
-                build_nbody_compute_list()
-                --------------------------
-
-            * slice up the supersystem mol into fragment atom ranges to help g/h arrays build piecemeal
-            * prepare empty {bsse_type}_by_level and {bsse_type}_body_dict structs. the former have different contents for vmfc
-            * for cp and nocp, resort the build_nbody_compute_list returns into per-body lists suitable for summing
-            * note that nb loops often run over more than active nbodies_per_mc_level item due to 1-body for subtraction and multilevel complications
-            * for each possibly active n-body level and each active bsse_type, call _sum_cluster_ptype_data to build by_level structs
-
-                _sum_cluster_ptype_data()
-                -------------------------
-                * sum up ene, grad, or Hess in per-fragment pieces based on list of (frag, bas) subjobs active for that bsse treatment
-
-            * compute special case of monomers in monomer basis
-            * for each of cp/nocp/vmfc, apply appropriate formula to build each n-body level of cumulative total energy into body_dict
-            * for driver=energy, set several qcvars and call:
-
-                _print_nbody_energy()
-                ---------------------
-                * prints and logs formatted energy output. called separately for cp, nocp, vmfc
-
-            * collect qcvars and summed levels into a return dictionary with some extra aliases for target bsse_type and target driver
-
-        * merge all the assemble_nbody_components return dictionaries
-        * in struct["intermediates"], store dict of `"N-BODY (?)@(?) TOTAL ENERGY" = return_energy` for all in task_list or results kwarg
-        * in struct["intermediates_{ptype}"], store dict of `task_list key = return_{ptype}` for all in task_list or results kwarg. ptype=e/g/h
-          always for ptype=energy, as available for higher derivatives when driver=g/h
-
-    * form nbody qcvars and properties, inc'l number, current e/g/h as available
-    * pull results (incl dicts!) into qcvars
-    * form model, including copy of class with mols converted to qcsk at atomicresult.extras["component_results"]
-
-* collect ManyBody-flavored AtomicResult from self.get_results()
+* collect ManyBodyResult schema from self.get_results() (prior to v1.10, this was a ManyBody-flavored AtomicResult
+* collect text summary table from schema. Print and logs formatted energy output separately for cp, nocp, vmfc
 * build wfn from nbody mol and basis (always def2-svp)
-* push qcvars to P::e and wfn. push various internal dicts to qcvars, too
+* collect MBE properties from schema, translate them to qcvars, and push to P::e and wfn
+* collect subsystem components properties, and write them to qcvars
 * convert result to psi4.core.Matrix (non-energy) and set g/h on wfn
 * return e/g/h and wfn
 
@@ -145,11 +103,9 @@ __all__ = [
 
 import copy
 import logging
+import pprint
 # v2: from typing import TYPE_CHECKING, Any, ClassVar, Dict, Tuple, Union, Optional
 from typing import TYPE_CHECKING, Any, Dict, Tuple, Union, Optional
-
-# printing and logging formatting niceties
-import pprint
 
 from psi4 import core
 
@@ -703,8 +659,6 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         analyze_back = self.qcmb_core.analyze(component_properties)
         analyze_back["nbody_number"] = len(component_properties)
-        # print("\n<<<  (RRR 3) Psi4 ManyBodyComputer.get_results analyze_back  >>>")
-        # pprint.pprint(analyze_back, width=200)
 
         nbody_model = super().get_results(external_results=analyze_back, component_results=component_results, client=client)
 
