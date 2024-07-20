@@ -145,7 +145,7 @@ jobs:
           --python ${{ matrix.cfg.python-version }} \
           --disable docs \
           --offline-conda
-        echo "::group::View Env Spec File for Conda"
+        echo "::group::View Env Spec File for Conda (from advisor)"
         printf "\n<<<  env_p4build.yaml  >>>\n"
         cat env_p4build.yaml
         echo "::endgroup::"
@@ -160,13 +160,18 @@ jobs:
           sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
           sed -E -i.bak "s;- einsums;#- einsums;g" env_p4build.yaml
           sed -E -i bak "s;- cxx-compiler;- clangxx=18;g" env_p4build.yaml
+          sed -E -i bak "s;- c-compiler;- clang=18;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
           sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
-          sed -i "s;- intel-openmp;- intel-openmp=2024.2.0=h57928b3_979;g" env_p4build.yaml
+          sed -i "s;- intel-openmp;- intel-openmp=2024.2.0=h57928b3_978;g" env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
+        echo "::group::View Env Spec File for Conda (Edited)"
+        printf "\n<<<  env_p4build.yaml  >>>\n"
+        cat env_p4build.yaml
+        echo "::endgroup::"
 
     - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v3
