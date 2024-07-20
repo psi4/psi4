@@ -65,9 +65,8 @@ jobs:
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D psi4_SKIP_ENABLE_Fortran=ON
-              
-            #  -D CMAKE_CXX_FLAGS="-IC:\Miniconda3\envs\p4build\opt\compiler\include"
+              -D psi4_SKIP_ENABLE_Fortran=ON  
+              -D CMAKE_CXX_FLAGS="-IC:\Miniconda3\envs\p4build\opt\compiler\include"
 
             # Notes:
             # * When not using cache file, need to additionally specify the following:
@@ -160,7 +159,7 @@ jobs:
           :
           sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
           sed -E -i.bak "s;- einsums;#- einsums;g" env_p4build.yaml
-          sed -E -i bak "s;- cxx-compiler;- cxx-compiler=18;g" env_p4build.yaml
+          sed -E -i bak "s;- cxx-compiler;- clangxx=18;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
