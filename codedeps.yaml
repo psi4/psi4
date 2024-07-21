@@ -1494,17 +1494,17 @@ data:
       host: github
       account: MolSSI
       name: QCManyBody
-      commit: v0.2.1
+      commit: v0.3.0
     #cmake:
     #  name: qcmanybody
     #  constraint: ATLEAST 0.2.0
     #  target:
-    conda: null
-#      channel: conda-forge
-#      name: qcmanybody
-#      constraint: null
-#      cmake:
-#        //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
-#        //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
-#      cmake_note: "Primarily OTF runtime detected."
+    conda:
+      channel: conda-forge
+      name: qcmanybody
+      constraint: null
+      cmake:
+        //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
+        //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
+      cmake_note: "Primarily OTF runtime detected."
 
