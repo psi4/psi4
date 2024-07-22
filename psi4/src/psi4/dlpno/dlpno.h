@@ -46,14 +46,14 @@
 namespace psi {
 namespace dlpno {
 
-enum AlgorithmType { MP2, CCSD, CCSD_T };
+enum class DLPNOMethod { MP2, CCSD, CCSD_T };
 
 // Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
 
 class DLPNO : public Wavefunction {
    protected:
     /// what quantum chemistry module are we running
-    AlgorithmType algorithm_;
+    DLPNOMethod algorithm_;
     
     /// threshold for PAO domain size
     double T_CUT_DO_;

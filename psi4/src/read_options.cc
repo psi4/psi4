@@ -2549,7 +2549,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION Expert Options -*/
 
-        /*- Which DLPNO Algorithm to run (not set by user) !expert*/
+        /*- Which DLPNO Algorithm to run (not set by user) !expert -*/
         options.add_str("DLPNO_ALGORITHM", "MP2", "MP2");
         /*- Occupation number threshold for removing PNOs !expert -*/
         options.add_double("T_CUT_PNO", 1e-8);
@@ -2581,8 +2581,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Screening criteria for basis function values on DOI grids !expert -*/
         options.add_double("DOI_BASIS_TOLERANCE", 1.0E-10);
         /*- Pruning scheme for DOI grids !expert -*/
-        options.add_str("DOI_PRUNING_SCHEME", "ROBUST", 
-                        "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
+        options.add_str("DOI_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
     }
     if (name == "PSIMRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory

@@ -70,7 +70,7 @@ void DLPNO::common_init() {
     T_CUT_DO_ = options_.get_double("T_CUT_DO");
 
     if (options_.get_str("DLPNO_ALGORITHM") == "MP2") {
-        algorithm_ = MP2;
+        algorithm_ = DLPNOMethod::MP2;
     } else {
         throw PSIEXCEPTION("Requested DLPNO algorithm has NOT been implemented yet");
     }
@@ -80,7 +80,7 @@ void DLPNO::common_init() {
     bool T_CUT_DO_changed = options_["T_CUT_DO"].has_changed();
 
     // if not, values are determined by the user-friendly "PNO_CONVERGENCE"
-    if (algorithm_ == MP2) {
+    if (algorithm_ == DLPNOMethod::MP2) {
         if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-7;
             if (!T_CUT_DO_changed) T_CUT_DO_ = 2e-2;
@@ -91,8 +91,6 @@ void DLPNO::common_init() {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-9;
             if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
         }
-    } else {
-        throw PSIEXCEPTION("Requested DLPNO algorithm has NOT been implemented yet");
     }
 
     name_ = "DLPNO";
