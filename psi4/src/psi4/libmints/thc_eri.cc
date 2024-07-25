@@ -259,6 +259,54 @@ SharedMatrix LS_THC_Computer::build_E_df() {
     return linalg::triplet(E_temp, Jinv, E_temp, false, false, true);
 }
 
+/// @brief Drastically reduces the size of the grid using pivoted Cholesky decomposition (Parrish et al. 2012 procedure 2)
+SharedMatrix LS_THC_Computer::prune_grid() {
+
+    outfile->Printf("    Pruning grid using pivoted Cholesky (Matthews 2020)...\n");
+
+    size_t npoints = x1_->nrow();
+    size_t nbf = x1_->ncol();
+
+    SharedMatrix S_Qq = std::make_shared<Matrix>(npoints, npoints);
+    SharedMatrix S_temp = linalg::doublet(x1_, x1_, false, true);
+
+    auto S_Qq_p = S_Qq->pointer();
+    auto Stp = S_temp->pointer();
+
+    // Parrish 2012, Equation 28
+#pragma omp parallel for collapse(2) schedule(guided)
+    for (size_t p = 0; p < npoints; ++p) {
+        for (size_t q = 0; q < npoints; ++q) {
+            S_Qq_p[p][q] = Stp[p][q] * Stp[p][q];
+        }
+    }
+
+    std::vector<std::vector<int>> pivot;
+    S_Qq->pivoted_cholesky(PSI_ZERO, pivot, true);
+
+    // Update S_Qq (returned as upper Cholesky factor of dimension (npoints, rank))
+    S_Qq = linalg::doublet(S_Qq, S_Qq, true, false);
+    size_t rank = S_Qq->nrow();
+
+    // Update factor matrix
+    auto x1_new = std::make_shared<Matrix>(rank, nbf);
+    auto x1_newp = x1_new->pointer();
+    auto x1p = x1_->pointer();
+
+#pragma omp parallel for collapse(2) schedule(guided)
+    for (size_t r = 0; r < rank; ++r) {
+        for (size_t u = 0; u < nbf; ++u) {
+            x1_newp[r][u] = x1p[pivot[0][r]][u];
+        }
+    }
+    x1_ = x1_new;
+
+    outfile->Printf("      Initial Rank (From Grid)      : %6d \n", npoints);
+    outfile->Printf("      Final Rank (Pivoted Cholesky) : %6d \n\n", rank);
+
+    return S_Qq;
+}
+
 /// @brief Factors ERIs into a product of two-index tensors through LS-THC algorithm (Parrish et al. 2012 Procedure 1)
 void LS_THC_Computer::compute_thc_factorization() {
 
@@ -320,11 +368,20 @@ void LS_THC_Computer::compute_thc_factorization() {
         point_idx += block->npoints();
     }
 
+    timer_off("LS-THC: Build Grid");
+
+    timer_on("LS-THC: Prune Grid");
+
+    // Matthews 2020
+    auto S_Qq = prune_grid();
+    size_t rank = S_Qq->nrow();
+
+    // In AO basis, all factors are equal
     x2_ = x1_;
     x3_ = x1_;
     x4_ = x1_;
 
-    timer_off("LS-THC: Build Grid");
+    timer_off("LS-THC: Prune Grid");
     
     timer_on("LS-THC: Form E");
 
@@ -333,27 +390,13 @@ void LS_THC_Computer::compute_thc_factorization() {
 
     timer_off("LS-THC: Form E");
 
-    timer_on("LS-THC: Form S");
-
-    SharedMatrix S_Qq = std::make_shared<Matrix>(npoints, npoints);
-    SharedMatrix S_temp = linalg::doublet(x1_, x1_, false, true);
-
-    auto S_Qq_p = S_Qq->pointer();
-    auto Stp = S_temp->pointer();
-
-    // Parrish 2012, Equation 28
-#pragma omp parallel for
-    for (size_t p = 0; p < npoints; ++p) {
-        for (size_t q = 0; q < npoints; ++q) {
-            S_Qq_p[p][q] = Stp[p][q] * Stp[p][q];
-        }
-    }
+    timer_on("LS-THC: S Pseudoinverse");
 
     // Parrish 2012, Equation 30
     int nremoved = 0;
     SharedMatrix S_Qq_inv = S_Qq->pseudoinverse(options_.get_double("LS_THC_S_EPSILON"), nremoved);
 
-    timer_off("LS-THC: Form S");
+    timer_off("LS-THC: S Pseudoinverse");
 
     timer_on("LS-THC: Form Z");
 
@@ -363,10 +406,11 @@ void LS_THC_Computer::compute_thc_factorization() {
     timer_off("LS-THC: Form Z");
 
     outfile->Printf("    Tensor Hypercontraction Complete! \n\n");
-    outfile->Printf("    Number of Grid Points (Rank) : %6d (%3d per atom)\n\n", npoints, npoints / molecule_->natom());
+    outfile->Printf("    (Initial) Number of Grid Points : %6d (%3d per atom)\n", npoints, npoints / molecule_->natom());
+    outfile->Printf("    (Final) Number of Grid Points   : %6d (%3d per atom)\n\n", rank, rank / molecule_->natom());
     outfile->Printf("    Memory Required to Store Exact Integrals : %6.3f [GiB]\n", (nbf * (nbf + 1) / 2) * (nbf * (nbf + 1) / 2 + 1) / 2 * pow(2.0, -30) * sizeof(double));
     if (auxiliary_) outfile->Printf("    Memory Required to Store DF Integrals : %6.3f [GiB]\n", auxiliary_->nbf() * nbf * (nbf + 1) / 2 * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    Memory Required in LS-THC factored form  : %6.3f [GiB]\n\n", (npoints * (npoints + nbf)) * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    Memory Required in LS-THC factored form  : %6.3f [GiB]\n\n", (rank * (rank + nbf)) * pow(2.0, -30) * sizeof(double));
 }
 
 }
