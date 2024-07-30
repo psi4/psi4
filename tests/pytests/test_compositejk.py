@@ -1,6 +1,6 @@
 import pytest
 
-from utils import compare_integers, compare_strings, compare_values, compare
+from utils import compare_values, compare
 from addons import using
 
 import psi4
@@ -205,19 +205,23 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
 
     # if both guesses are set to True, run should throw exception... 
     elif scf_cosx_guess and df_scf_guess:
-        with pytest.raises(Exception) as e_info:
+        err_substr = "Please only enable one at most."
+        with pytest.raises(Exception) as e:
             E = psi4.energy(tests[inp]["method"], molecule=molecule)
-
+        assert err_substr in str(e.value)
+        
         # we keep this line just for printout purposes; should always pass if done correctly
-        assert compare(type(e_info), pytest.ExceptionInfo, f'{test_id} throws exception (both guesses are True)')
+        assert compare(type(e), pytest.ExceptionInfo, f'{test_id} throws exception (both guesses are True)')
    
     # ... and enabling SCF_COSX_GUESS with COSX_MAXITER_FINAL set to 0 should also throw exception...
     elif scf_cosx_guess and cosx_maxiter_final == 0: 
-        with pytest.raises(Exception) as e_info:
+        err_substr = "cannot be 0 when SCF_COSX_GUESS is enabled."
+        with pytest.raises(Exception) as e:
             E = psi4.energy(tests[inp]["method"], molecule=molecule)
+        assert err_substr in str(e.value)
 
         # we keep this line just for printout purposes; should always pass if done correctly
-        assert compare(type(e_info), pytest.ExceptionInfo, f'{test_id} throws exception (invalid SCF_COSX_GUESS/COSX_MAXITER_FINAL combo)')
+        assert compare(type(e), pytest.ExceptionInfo, f'{test_id} throws exception (invalid SCF_COSX_GUESS/COSX_MAXITER_FINAL combo)')
 
     # ... else proceed as normal
     else:
@@ -235,11 +239,11 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
        
         # if maxiter < expected number of SCF iterations, run should throw exception... 
         if opts["options"]["maxiter"] < reference_iter: 
-            with pytest.raises(Exception) as e_info:
+            with pytest.raises(psi4.SCFConvergenceError) as e:
                 E = psi4.energy(tests[inp]["method"], molecule=molecule)
-    
+
             # we keep this line just for printout purposes; should always pass if done correctly
-            assert compare(type(e_info), pytest.ExceptionInfo, f'{test_id} throws exception')
+            assert compare(type(e), pytest.ExceptionInfo, f'{test_id} throws exception')
         
         # ... otherwise, test should run with correct number of SCF iterations and post-guess method
         else:
@@ -247,12 +251,12 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
    
             # correct number of SCF iterations?            
             niter = wfn.variable("SCF ITERATIONS")
-            assert compare_integers(niter, reference_iter, '{test_id} has correct number of SCF iterations')
+            assert compare(niter, reference_iter, '{test_id} has correct number of SCF iterations')
 
             # correct post-guess method?
             clean_jk_name = wfn.jk().name().replace("-", "") # replace DF-DirJ with DFDirJ
             clean_jk_name = clean_jk_name.replace("DirectJK", "Direct") # DirectJK should be Direct instead
-            assert compare_strings(opts["options"]["scf_type"].lower(), clean_jk_name.lower(), '{test_id} has correct end method')
+            assert compare(opts["options"]["scf_type"].lower(), clean_jk_name.lower(), '{test_id} has correct end method')
 
 @pytest.mark.parametrize("inp", 
     [
