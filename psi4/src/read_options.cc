@@ -1706,7 +1706,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         Additionally controls SCF iteration behavior of DirectJK/DF-DirJ+LinK (4c-K) when SCF_COSX_GUESS is enabled.
         -1 fully converges the SCF on the final grid/4c-K method if possible, ending early if |scf__maxiter| total SCF iterations are reached (failure).
         0 disables the final COSX grid entirely, and throws an exception if SCF_COSX_GUESS is enabled.
-        n runs up to n iterations on the final COSX grid/4c-K method, ending early if SCF convergence is reached (success) or if |scf__maxiter| total SCF iterations are reached (failure). -*/
+        n runs up to n iterations on the final COSX grid/4c-K method, ending early if SCF convergence is reached (success) or if |scf__maxiter| total SCF iterations are reached (failure). 
+        Note that the default value switches to 2 when SCF_COSX_GUSS is enabled. -*/
         options.add_int("COSX_MAXITER_FINAL", 1);
         /*- Screening criteria for shell-pair densities in COSX !expert -*/
         options.add_double("COSX_DENSITY_TOLERANCE", 1.0E-10);
