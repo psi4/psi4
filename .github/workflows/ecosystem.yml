@@ -271,10 +271,10 @@ jobs:
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
       # step works but is redundant with next one; enable for debugging
-    - name: Test Addons with CTest
-      if: false
+    - name: Test Addons with CTest (M)
+      if: runner.os == 'macOS'
       working-directory: ./objdir
-      run: ctest -L smoke -LE d2ints -j2 --output-on-failure
+      run: ctest -L quick -j2 --output-on-failure  // `-LE d2ints` needed for Windows 
 
     - name: Test Addons with Pytest
       working-directory: ./objdir
