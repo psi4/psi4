@@ -161,7 +161,7 @@ jobs:
           sed -E -i.bak "s;- einsums;#- einsums;g" env_p4build.yaml
           sed -E -i.bak "s;- cxx-compiler;- clangxx=18;g" env_p4build.yaml
           sed -E -i.bak "s;- c-compiler;- clang=18;g" env_p4build.yaml
-          sed -E -i.bak "s;- libblas=*=*accelerate;- libblas=*=*openblas;g" env_p4build.yaml
+          sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
