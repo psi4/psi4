@@ -675,7 +675,7 @@ data:
     conda:
       channel: conda-forge
       name: sphinx
-      constraint: null
+      constraint: "<8"
       aux_build_names:
         - sphinx-automodapi
         - sphinx-autodoc-typehints
