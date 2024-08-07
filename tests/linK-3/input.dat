@@ -43,4 +43,4 @@ set reference rohf
 rohf_energy = energy('scf')
 psi4.compare_values(rohf_energy, rohf_ref, 8, "ROHF Energy (using LinK algo)")
 print(f'{variable("SCF ITERATIONS")=}')
-compare(1, variable("SCF ITERATIONS") <= 19.0, "ROHF LinK Incfock Efficient")
+compare(1, variable("SCF ITERATIONS") < 19.0, "ROHF LinK Incfock Efficient")
