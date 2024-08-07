@@ -348,7 +348,7 @@ std::string CompositeJK::get_COSX_grid() {
         auto k_algo_derived = std::dynamic_pointer_cast<COSK>(k_algo_); 
         return k_algo_derived->get_grid(); 
     } else {
-        throw PSIEXCEPTION("CompositeJK::set_COSX_grid() was called, but COSX is not selected in SCF_TYPE!");
+        throw PSIEXCEPTION("CompositeJK::get_COSX_grid() was called, but COSX is not selected in SCF_TYPE!");
     }
 }
 
