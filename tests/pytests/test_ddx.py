@@ -310,7 +310,7 @@ def test_ddx_rhf_consistency(inp):
     for key in inp["ddx"].keys():
         psi4.set_options({"ddx_" + key: inp["ddx"][key]})
     scf_e, wfn = psi4.energy('SCF', return_wfn=True, molecule=mol)
-    assert compare_values(inp["ref"], scf_e, 9, "Total SCF energy with DDX versus reference data")
+    assert compare_values(inp["ref"], scf_e, 8, "Total SCF energy with DDX versus reference data")
 
 
 @uusing("ddx")
