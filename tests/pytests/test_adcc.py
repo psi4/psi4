@@ -22,6 +22,9 @@ for case in reference_data:
     marks = [*using('adcc')]
     if config['label'] == 'quick':
         marks.append(pytest.mark.quick)
+    if config['label'] == 'smoke':
+        marks.append(pytest.mark.smoke)
+        marks.append(pytest.mark.quick) 
     # for easier manual test selection
     casename = "_".join([
         config['molname'], config['basis'],

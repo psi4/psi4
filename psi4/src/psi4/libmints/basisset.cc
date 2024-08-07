@@ -873,8 +873,12 @@ void BasisSet::update_l2_shells(bool embed_normalization) {
 
         auto offset = shell_first_exponent_[ishell];
         auto nprim = n_prim_per_shell_[ishell];
-        auto l2c = libint2::svector<double>(&uoriginal_coefficients_[offset], &uoriginal_coefficients_[offset + nprim]);
-        auto l2e = libint2::svector<double>(&uexponents_[offset], &uexponents_[offset + nprim]);
+        std::vector<double>::iterator c_first = uoriginal_coefficients_.begin() + offset;
+        std::vector<double>::iterator c_last = c_first + nprim;
+        auto l2c = libint2::svector<double>(c_first, c_last);
+        std::vector<double>::iterator e_first = uexponents_.begin() + offset;
+        std::vector<double>::iterator e_last = e_first + nprim;
+        auto l2e = libint2::svector<double>(e_first, e_last);
         l2_shells_[ishell] = libint2::Shell{l2e, {{am, puream_, l2c}}, {{xyz[0], xyz[1], xyz[2]}}, embed_normalization};
     }
 }

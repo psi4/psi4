@@ -746,3 +746,7 @@ Bibliography
 .. not yet referenced    *J. Chem. Phys.* **137**, 224106 (2012).
 .. not yet referenced    https://doi.org/10.1063/1.4768233
 
+.. not yet referenced [Matthews:2020:1382]
+.. not yet referenced   D. A. Matthews
+.. not yet referenced   *J. Chem. Theory Comput.* **16**, 1382 (2020).
+.. not yet referenced   https://doi.org/10.1021/acs.jctc.9b01205
