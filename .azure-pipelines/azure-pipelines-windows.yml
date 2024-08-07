@@ -248,7 +248,7 @@ jobs:
         workingDirectory: $(Build.BinariesDirectory)/build
 
       - script: |
-          objdump.exe -p D:/a/*/b/install/lib/psi4/core.*.pyd | grep dll
+          objdump.exe -p $(Build.BinariesDirectory)/install/lib/psi4/core.*.pyd | grep dll
         displayName: "Library dependencies"
 
       # Test (ctest)
