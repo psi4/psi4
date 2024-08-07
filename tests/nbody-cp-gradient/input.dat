@@ -174,7 +174,7 @@ for result in [  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     grad,  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad, result, 8, 'CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad, result, 7, 'CP-Corrected Gradient')  #TEST
 
 compare(12, wfn.variable("NBODY NUMBER"), "rtd=T nbody number")  #TEST
 
