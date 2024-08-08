@@ -637,7 +637,7 @@ def test_pcmsolver(how, request):
 
 def _test_scf5():
     """scf5"""
-    #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set and using ERD integrals.
+    #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set
 
     print(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2')
     print('    -Integral package: {}'.format(psi4.core.get_global_option('integral_package')))
@@ -805,14 +805,6 @@ def _test_scf5():
     psi4.set_options({'scf__scf_type': 'df'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_rohf_df, E, 6, 'Triplet DF CUHF energy')
-
-
-@uusing("erd")
-def test_erd():
-    """erd/scf5"""
-
-    psi4.set_options({'integral_package': 'ERD'})
-    _test_scf5()
 
 
 @uusing("simint")
@@ -1576,3 +1568,28 @@ def test_einsums():
     wfn = psi4.core.Wavefunction(mol, basis)
 
     psi4.core.dummy_einsums(wfn)
+
+
+@uusing("forte")
+def test_forte_fci_1():
+    """Test FCI on Li2/STO-3G"""
+    from forte.solvers import solver_factory, HF, ActiveSpaceSolver
+
+    ref_hf_energy = -14.54873910108353
+    ref_fci_energy = -14.595808852754054
+
+    # setup job
+    xyz = """
+    Li
+    Li 1 3.0
+    units bohr
+    """
+    input = solver_factory(molecule=xyz, basis='sto-3g')
+    state = input.state(charge=0, multiplicity=1, sym='ag')
+    hf = HF(input, state=state)
+    fci = ActiveSpaceSolver(hf, type='FCI', states=state)
+    fci.run()
+
+    # check results
+    assert hf.value('hf energy') == pytest.approx(ref_hf_energy, 1.0e-10)
+    assert fci.value('active space energy')[state] == pytest.approx([ref_fci_energy], 1.0e-10)

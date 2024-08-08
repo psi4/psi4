@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 cmake_policy(SET CMP0094 NEW)
 project(psi4-core
         LANGUAGES C CXX)
@@ -135,22 +135,13 @@ else()
 endif()
 
 if(${ENABLE_Einsums})
-    find_package(Einsums 0.4 CONFIG REQUIRED)
+    find_package(Einsums 0.5 CONFIG REQUIRED)
     get_property(_loc TARGET Einsums::einsums PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using Einsums${ColourReset}: ${_loc} (version ${Einsums_VERSION})")
 else()
     message(STATUS "Disabled Einsums ${Einsums_DIR}")
 endif ()
-
-if(${ENABLE_erd})
-    find_package(erd 3.0.6 CONFIG REQUIRED)
-    get_property(_loc TARGET erd::erd PROPERTY LOCATION)
-    list(APPEND _addons ${_loc})
-    message(STATUS "${Cyan}Using erd${ColourReset}: ${_loc} (version ${erd_VERSION})")
-else()
-    message(STATUS "Disabled erd ${erd_DIR}")
-endif()
 
 find_package(gau2grid 2.0 CONFIG REQUIRED)
 get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
@@ -166,13 +157,6 @@ if(${ENABLE_gdma})
     message(STATUS "${Cyan}Found gdma${ColourReset}: ${_loc} (version ${gdma_VERSION})")
 else()
     message(STATUS "Disabled gdma ${gdma_DIR}")
-endif()
-
-if(${ENABLE_Libint1t})
-find_package(Libint 1.2.0 CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
-get_property(_loc TARGET Libint::int PROPERTY LOCATION)
-list(APPEND _addons ${_loc})
-message(STATUS "${Cyan}Using Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint_VERSION})")
 endif()
 
 find_package(

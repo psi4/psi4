@@ -1,4 +1,5 @@
 list(APPEND sources
+  dlpno.cc
   mp2.cc
   wrapper.cc
   sparse.cc

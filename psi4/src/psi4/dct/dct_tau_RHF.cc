@@ -120,10 +120,10 @@ void DCTSolver::build_tau_R() {
 
     // Iteratively compute the exact Tau
 
-    auto aocc_tau_old = Matrix("MO basis Tau (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
-    auto avir_tau_old = Matrix("MO basis Tau (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
-    auto aocc_d = Matrix("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
-    auto avir_d = Matrix("Non-idempotency of OPDM (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
+    auto aocc_tau_old = Matrix("MO basis Tau (Alpha Occupied, old)", naoccpi_, naoccpi_);
+    auto avir_tau_old = Matrix("MO basis Tau (Alpha Virtual, old)", navirpi_, navirpi_);
+    auto aocc_d = Matrix("Non-idempotency of OPDM (Alpha Occupied, old)", naoccpi_, naoccpi_);
+    auto avir_d = Matrix("Non-idempotency of OPDM (Alpha Virtual, old)", navirpi_, navirpi_);
 
     bool converged = false;
     bool failed = false;

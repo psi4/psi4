@@ -230,7 +230,7 @@ def test_schwarz_vs_density_quartets():
     density_computed_shells = density_wfn.jk().computed_shells_per_iter("Quartets")
 
     schwarz_computed_shells_expected = [20290, 20290, 20290, 20290, 20290, 20290, 20290, 20290, 20290]
-    density_computed_shells_expected = [13171, 19618, 19665, 19657, 19661, 19661, 19663, 19663, 19663]
+    density_computed_shells_expected = [13187, 19683, 19644, 19663, 19661, 19661, 19663, 19663, 19663]
 
     # compare iteration counts of runs with computed shell quartet array lengths
     # iteration_+1 is used to account for computed_shells arrays including SAD guess results
@@ -290,7 +290,7 @@ def test_rhf_vs_uhf_screening():
     rhf_computed_shells = rhf_wfn.jk().computed_shells_per_iter("Quartets")
     uhf_computed_shells = uhf_wfn.jk().computed_shells_per_iter("Quartets")
     
-    computed_shells_expected = [13171, 19618, 19665, 19657, 19661, 19661, 19663, 19663, 19663]
+    computed_shells_expected = [13187, 19683, 19644, 19663, 19661, 19661, 19663, 19663, 19663]
 
     # compare iteration counts of runs with computed shell quartet array lengths
     # iteration_+1 is used to account for computed_shells arrays including SAD guess results

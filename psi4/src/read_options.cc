@@ -161,9 +161,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
     /*- Psi4 dies if energy does not converge. !expert -*/
     options.add_bool("DIE_IF_NOT_CONVERGED", true);
-    /*- Integral package to use. If compiled with ERD or Simint support, change this option to use them; LibInt is used
+    /*- Integral package to use. If compiled with Simint support, change this option to use them; LibInt2 is used
        otherwise. -*/
-    options.add_str("INTEGRAL_PACKAGE", "LIBINT2", "ERD LIBINT1 SIMINT LIBINT2");
+    options.add_str("INTEGRAL_PACKAGE", "LIBINT2", "LIBINT2 SIMINT");
 #ifdef USING_BrianQC
     /*- Whether to enable using the BrianQC GPU module -*/
     options.add_bool("BRIANQC_ENABLE", false);
@@ -269,7 +269,25 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc -*/
     options.add_str("PRINT_NOONS", "3");
 
-    ///MBIS Options (libmints/oeprop.cc)
+    /// Tensor Hypercontration (THC) Options (libmints/thc_eri.cc)
+
+    /*- Use DF approximation when computing LS-THC factorization? -*/
+    options.add_bool("LS_THC_DF", true);
+    /*- Number of spherical points in LS-THC grid -*/
+    options.add_int("LS_THC_SPHERICAL_POINTS", 50);
+    /*- Number of radial points in LS-THC grid -*/
+    options.add_int("LS_THC_RADIAL_POINTS", 10);
+    /*- Screening criteria for basis function values on LS-THC grids !expert -*/
+    options.add_double("LS_THC_BASIS_TOLERANCE", 1.0E-10);
+    /*- Grid weights cutoff for LS-THC grids !expert -*/
+    options.add_double("LS_THC_WEIGHTS_TOLERANCE", 1.0E-12);
+    /*- Pruning scheme for LS-THC grids !expert -*/
+    options.add_str("LS_THC_PRUNING_SCHEME", "ROBUST", 
+                        "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
+    /*- Tolerance for pseudoinversion of grid point overlap matrix (Parrish 2012 eq. 30) !expert -*/
+    options.add_double("LS_THC_S_EPSILON", 1.0E-10);
+
+    /// MBIS Options (libmints/oeprop.cc)
 
     /*- Maximum Number of MBIS Iterations -*/
     options.add_int("MBIS_MAXITER", 500);
@@ -2531,6 +2549,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION Expert Options -*/
 
+        /*- Which DLPNO Algorithm to run (not set by user) !expert -*/
+        options.add_str("DLPNO_ALGORITHM", "MP2", "MP2");
         /*- Occupation number threshold for removing PNOs !expert -*/
         options.add_double("T_CUT_PNO", 1e-8);
         /*- DOI threshold for including PAO (u) in domain of LMO (i) !expert -*/
@@ -2551,6 +2571,17 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("S_CUT", 1e-8);
         /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations !expert -*/
         options.add_double("F_CUT", 1e-5);
+
+        /*- SUBSECTION DOI Grid Options -*/
+
+        /*- Number of spherical points in DOI grid !expert -*/
+        options.add_int("DOI_SPHERICAL_POINTS", 50);
+        /*- Number of radial points in DOI grid !expert -*/
+        options.add_int("DOI_RADIAL_POINTS", 25);
+        /*- Screening criteria for basis function values on DOI grids !expert -*/
+        options.add_double("DOI_BASIS_TOLERANCE", 1.0E-10);
+        /*- Pruning scheme for DOI grids !expert -*/
+        options.add_str("DOI_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
     }
     if (name == "PSIMRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory

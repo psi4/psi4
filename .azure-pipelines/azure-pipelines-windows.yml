@@ -7,7 +7,7 @@ jobs:
       vmImage: 'windows-2022'
     timeoutInMinutes: 360
     variables:
-      llvm.version: '16.0.6'
+      llvm.version: '17.0.6'
       mkl.version: '2022.1.0'
       cmake.build_type: 'Release'
       conda.build: false
@@ -180,6 +180,7 @@ jobs:
 
       # Configure
       # call "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+      # -DPython_NumPy_INCLUDE_DIR="C:/tools/miniforge3/lib/site-packages/numpy/core/include" ^  _core for np v2
       - script: |
           setlocal EnableDelayedExpansion
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
@@ -200,7 +201,6 @@ jobs:
                 -DCMAKE_CXX_FLAGS="/arch:AVX" ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DPython_EXECUTABLE="C:/tools/miniforge3/python.exe" ^
-                -DPython_NumPy_INCLUDE_DIR="C:/tools/miniforge3/lib/site-packages/numpy/core/include" ^
                 -DEigen3_ROOT="C:/tools/miniforge3/Library" ^
                 -DBOOST_ROOT="C:/tools/miniforge3/Library" ^
                 -DMultiprecision_ROOT="C:/tools/miniforge3/Library" ^
@@ -248,7 +248,7 @@ jobs:
         workingDirectory: $(Build.BinariesDirectory)/build
 
       - script: |
-          objdump.exe -p D:/a/1/b/install/lib/psi4/core.*.pyd | grep dll
+          objdump.exe -p $(Build.BinariesDirectory)/install/lib/psi4/core.*.pyd | grep dll
         displayName: "Library dependencies"
 
       # Test (ctest)

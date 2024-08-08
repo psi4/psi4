@@ -243,7 +243,7 @@ void PKManager::compute_integrals(bool wK) {
         }
     } else {
         for (int i = 0; i < nthreads_; ++i) {
-            tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
+            tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->eri()));
         }
     }
 
@@ -1076,7 +1076,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
     std::vector<std::shared_ptr<TwoBodyAOInt>> tb;
     if (!wK) {
         for (int i = 0; i < nthreads(); ++i) {
-            tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
+            tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->eri()));
         }
     } else {
         for (int i = 0; i < nthreads(); ++i) {

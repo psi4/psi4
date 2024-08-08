@@ -1,12 +1,18 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 cmake_policy(SET CMP0094 NEW)
 cmake_policy(SET CMP0075 NEW)
-#  cmake_policy(SET CMP0144 NEW)
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+if (POLICY CMP0135)
     # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
     cmake_policy(SET CMP0135 NEW)
+endif ()
+if (POLICY CMP0144)
+    cmake_policy(SET CMP0144 NEW)
 endif()
+if (POLICY CMP0167)
+    # L2 not prepared for BoostConfig instead of FindBoost
+    cmake_policy(SET CMP0167 OLD)
+endif ()
                                               # 3.15: useable FindPython with NumPy component and LOCATION
                                               # 3.8: CXX_STANDARD recognizes C++17
                                               # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
@@ -41,7 +47,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #  <<<  Required build dependencies that Psi4 can't build itself  >>>
 #
 #    - CMake (e.g., `conda install cmake`)
-#    - C++ and C compilers (C++17 compliant)
+#    - C++ and C compilers (C++20 compliant)
 #    - BLAS/LAPACK (also runtime; e.g., `conda install mkl-devel`)
 #    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
 #    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
@@ -73,7 +79,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - Python_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, erd, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
+#    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
 #                         qcelemental, qcengine, optking, simint, Libxc, IntegratorXX
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
@@ -113,7 +119,6 @@ option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_ecpint "Enables libecpint for effective core potentials (ECP)" OFF)
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
-option(ENABLE_erd "Enables use of ERD instead of Libint (requires Fortran)" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
@@ -124,7 +129,6 @@ option(ENABLE_cct3 "Enables cct3 plugin (requires Fortran; can also be added at 
 option(ENABLE_gpu_dfcc "Enables GPU_DFCC plugin for gpu-accelerated df-cc (requires CUDA; can also be added at runtime)" OFF)
 option(ENABLE_mdi "Enables MolSSI driver interface" OFF)
 option(ENABLE_BrianQC "Enables the BrianQC GPU module (requires CUDA; requires separate installation and licensing of the BrianQC module)" OFF)
-option(ENABLE_Libint1t "Enables Libint1 in special _t variety" OFF)
 # These options are relevant to pasture, expert only
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
 option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
@@ -136,7 +140,7 @@ if(ENABLE_ccsort OR ENABLE_transqt2)
   message(STATUS "Enabling pasture plugins")
 endif()
 
-if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver)
+if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_PCMSolver)
   if(psi4_SKIP_ENABLE_Fortran)
     message(STATUS "NOT Enabling Fortran")
   else()
@@ -144,11 +148,6 @@ if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver)
     set(Fortran_ENABLED ON)  # communicate required languages with psi4-core
     message(STATUS "Enabling Fortran")
   endif()
-endif()
-
-if(ENABLE_erd)
-    message(FATAL_ERROR "The Psi4/ERD interface is broken, probably since spring 2017. It's toast (comment this line to try), but disabling for now.")
-    message(WARNING "ERD will build, link, and run in Psi4 just fine. However, it has not been hooked into Psi4 in all roles, notably gradients, LRC DFT energies, and ESP. So upon activating through ``set integral_package erd``, known failures will be caught and halted, but perhaps other types not tested and identified will give *wrong* answers. Consider this your warning.")
 endif()
 
 ############################  Options: Build How?  #############################
@@ -184,8 +183,8 @@ option_with_default(TargetLAPACK_INSTALL_CMAKEDIR "Directory to which psi4 CMake
 option_with_default(TargetHDF5_INSTALL_CMAKEDIR "Directory to which psi4 CMake config files installed." share/cmake/TargetHDF5)
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of language libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
-option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 17)
-option_with_default(psi4_CXX_STANDARD_Libint2 "Specify C++ standard for Psi4 files including Libint2 headers. Older (e.g., 2021.4) Intel compilers may need 14" 17)
+option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 20)
+option_with_default(psi4_CXX_STANDARD_Libint2 "Specify C++ standard for Psi4 files including Libint2 headers. Older (e.g., 2021.4) Intel compilers may need 14" 20)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
 option_with_default(SPHINXMAN_STRICT "Turn warnings into errors for docs target sphinxman" OFF)
@@ -212,8 +211,7 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 
 set(Python_ADDITIONAL_VERSIONS 3.12 3.11 3.10 3.9 3.8)  # adjust with CMake minimum FindPythonInterp
 find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
-message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
-
+message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION}; NumPy version: ${Python_NumPy_VERSION})")
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
 message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
@@ -240,10 +238,8 @@ ExternalProject_Add(psi4-core
            ecpint_external
            libefp_external
            einsums_external
-           erd_external
            gau2grid_external
            gdma_external
-           libint_external
            libint2_external
            pcmsolver_external
            ddx_external
@@ -293,7 +289,6 @@ ExternalProject_Add(psi4-core
               -DENABLE_ecpint=${ENABLE_ecpint}
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_Einsums=${ENABLE_Einsums}
-              -DENABLE_erd=${ENABLE_erd}
               -DENABLE_simint=${ENABLE_simint}
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
@@ -310,10 +305,8 @@ ExternalProject_Add(psi4-core
               -Decpint_DIR=${ecpint_DIR}
               -Dlibefp_DIR=${libefp_DIR}
               -DEinsums_DIR=${Einsums_DIR}
-              -Derd_DIR=${erd_DIR}
               -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}
-              #-DLibint_DIR=${Libint_DIR}
               -DLibint2_DIR=${Libint2_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dmdi_DIR=${mdi_DIR}
