@@ -963,6 +963,25 @@ data:
         //CMAKE_INSIST_FIND_PACKAGE_Libxc: true
         //CMAKE_DISABLE_FIND_PACKAGE_Libxc: true
 
+  - project: resp
+    use:
+      added: 1.2
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: cdsgroup
+      name: resp
+      commit: c5019bf
+    conda:
+      channel: conda-forge
+      name: resp
+      constraint: null
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+
   - project: openfermionpsi4
     use:
       added: 1.3
@@ -1435,4 +1454,32 @@ data:
           win-64: ${CONDA_PREFIX}/Library/share/cmake/Einsums
         //CMAKE_INSIST_FIND_PACKAGE_Einsums: true
         //CMAKE_DISABLE_FIND_PACKAGE_Einsums: true
+
+  - project: qcmanybody
+    use:
+      added: "1.10"
+      required: true
+      required_note: "Allows BSSE treatments and MBE analyses. Prior to v1.10, internal code was used."
+      buildable: true
+      buildtime: true
+      buildtime_note: "buildtime for cmake checks; otherwise, runtime."
+      cms: true
+    repository:
+      host: github
+      account: MolSSI
+      name: QCManyBody
+      commit: v0.3.0
+    #cmake:
+    #  name: qcmanybody
+    #  constraint: ATLEAST 0.2.0
+    #  target:
+    conda:
+      channel: conda-forge
+      name: qcmanybody
+      constraint: null
+      cmake:
+        //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
+        //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
+      cmake_note: "Primarily OTF runtime detected."
+
 

@@ -17,6 +17,7 @@ foreach(dir
   pylibefp
   qcelemental
   qcengine
+  qcmanybody
   optking
   simint
   libxc

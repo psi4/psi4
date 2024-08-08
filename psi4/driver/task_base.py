@@ -96,14 +96,17 @@ class AtomicComputer(BaseComputer):
     class Config(qcel.models.ProtoModel.Config):
         pass
 
+    # v2: @field_validator("basis")
     @validator("basis")
     def set_basis(cls, basis):
         return basis.lower()
 
+    # v2: @field_validator("method")
     @validator("method")
     def set_method(cls, method):
         return method.lower()
 
+    # v2: @field_validator("keywords")
     @validator("keywords")
     def set_keywords(cls, keywords):
         return copy.deepcopy(keywords)
@@ -128,7 +131,7 @@ class AtomicComputer(BaseComputer):
 
         return atomic_model
 
-    def compute(self, client: Optional["qcportal.client.FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.client.PortalClient"] = None):
         """Run quantum chemistry."""
         from psi4.driver import pp
 
@@ -169,7 +172,7 @@ class AtomicComputer(BaseComputer):
 
             return
 
-        logger.info(f'<<< JSON launch ... {self.molecule.schoenflies_symbol()} {self.molecule.nuclear_repulsion_energy()}')
+        logger.info(f'<<< JSON launch ... {self.method} {self.basis} {self.molecule.schoenflies_symbol()} {self.molecule.nuclear_repulsion_energy()}')
         gof = core.get_output_file()
 
         # EITHER ...
@@ -199,7 +202,7 @@ class AtomicComputer(BaseComputer):
             core.print_out(_drink_filter(stdout))
         self.computed = True
 
-    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.client.PortalClient"] = None) -> AtomicResult:
         """Return results as Atomic-flavored QCSchema."""
 
         if self.result:
