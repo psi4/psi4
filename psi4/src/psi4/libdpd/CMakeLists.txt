@@ -34,6 +34,7 @@ list(APPEND sources
   buf4_print.cc
   buf4_scm.cc
   buf4_scmcopy.cc
+  buf4_sort_incore_decide.cc
   buf4_sort.cc
   buf4_sort_axpy.cc
   buf4_sort_ooc.cc
