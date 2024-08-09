@@ -36,6 +36,7 @@ units au
 """)
         }
 
+@pytest.mark.smoke
 @pytest.mark.parametrize("j_algo", [ 
         pytest.param("DFDIRJ") 
     ]
@@ -84,12 +85,14 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       "molecule" : "h2o",
                       "bsse_type" : None,
                       },
+                      marks=pytest.mark.quick,
                       id="h2o (rhf)"),
         pytest.param({"method" : "b3lyp",
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o",
                       "bsse_type" : None,
                       },
+                      marks=pytest.mark.quick,
                       id="h2o (rks)"),
         pytest.param({"method" : "hf",
                       "options": {"reference" : "uhf"},
