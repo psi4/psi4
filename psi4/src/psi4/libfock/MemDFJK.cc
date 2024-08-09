@@ -152,4 +152,11 @@ void MemDFJK::set_wcombine(bool wcombine) {
         dfh_->set_wcombine(wcombine); 
     }
 }
+void MemDFJK::set_cutoff(double cutoff) { 
+    cutoff_ = cutoff;
+    if (dfh_) {
+        dfh_->set_schwarz_cutoff(cutoff); 
+    }
+}
+
 }  // namespace psi
