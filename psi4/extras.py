@@ -175,6 +175,7 @@ _addons_ = {
     #"mctc-gcp": psi4_which("mctc-gcp", return_bool=True),
     "bse": which_import("basis_set_exchange", return_bool=True),
     "einsums": _CMake_to_Py_boolean("@ENABLE_Einsums@"),
+    "gauxc": _CMake_to_Py_boolean("@ENABLE_gauxc@"),
 }
 
 

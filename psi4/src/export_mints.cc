@@ -1128,6 +1128,7 @@ void export_mints(py::module& m) {
                                "The character symbol for the angular momentum of the given contraction")
         .def_property_readonly("AMCHAR", py::cpp_function(&GaussianShell::AMCHAR),
                                "The upper-case character symbol for the angular momentum of the given contraction")
+        .def("coord", &GaussianShell::coord, "Returns ith coordinate this shell is on.") 
         .def_property_readonly("ncenter", py::cpp_function(&GaussianShell::ncenter),
                                "Returns atom number this shell is on")
         .def_property("function_index", py::cpp_function(&GaussianShell::function_index),

@@ -41,10 +41,11 @@
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include <algorithm>
+#include <limits>
+#include <map>
 #include <unordered_set>
 #include <vector>
-#include <map>
-#include <algorithm>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -182,6 +183,8 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
     overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
 
+    current_grid_ = "Final"; // default in case it is not explicitly set anywhere
+
     timer_on("COSK: COSX Grid Construction");
 
     // for now, we use two COSX grids:
@@ -231,12 +234,20 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
 
             auto npoints = grid->npoints();
             auto nblocks = grid->blocks().size();
+            size_t max_block_size = 0;
+            size_t min_block_size = std::numeric_limits<size_t>::max();
+            for (const auto& block : grid->blocks()) {
+                max_block_size = std::max(max_block_size, block->npoints());
+                min_block_size = std::min(min_block_size, block->npoints());
+            }
             auto natoms = primary_->molecule()->natom();
             double npoints_per_batch = static_cast<double>(npoints) / static_cast<double>(nblocks);
             double npoints_per_atom = static_cast<double>(npoints) / static_cast<double>(natoms);
 
             outfile->Printf("    Total number of grid points: %d \n", npoints);
             outfile->Printf("    Total number of batches: %d \n", nblocks);
+            outfile->Printf("    Maximum number of points in batch: %i \n", max_block_size);
+            outfile->Printf("    Minumum number of points in batch: %i \n", min_block_size);
             outfile->Printf("    Average number of points per batch: %f \n", npoints_per_batch);
             outfile->Printf("    Average number of grid points per atom: %f \n\n", npoints_per_atom);
         }
