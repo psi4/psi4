@@ -359,6 +359,8 @@ std::string CompositeJK::get_COSX_grid() {
         return k_algo_derived->get_grid(); 
     } else {
         throw PSIEXCEPTION("CompositeJK::get_COSX_grid() was called, but COSX is not selected in SCF_TYPE!");
+    }
+}
 
 int CompositeJK::get_snLinK_max_am() { 
     if (k_algo_->name() == "sn-LinK") {
