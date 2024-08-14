@@ -171,7 +171,7 @@ Transition States and Reaction Paths
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Optking currently has two transition state algorithms. The current default is the
-newer RS_I_RFO algorithm [Besalu:1998:265]. The old algorithm can be used by setting
+newer RS_I_RFO algorithm [Besalu:1998:265]_ . The old algorithm can be used by setting
 `STEP_TYPE P_RFO` for `OPT_TYPE TS`
 
 * Calculate a starting Hessian and optimize the "transition state" of
