@@ -170,6 +170,10 @@ The Hessian may be computed during an optimization using the
 Transition States and Reaction Paths
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Optking currently has two transition state algorithms. The current default is the
+newer RS_I_RFO algorithm [Besalu:1998:265]_ . The old algorithm can be used by setting
+`STEP_TYPE P_RFO` for `OPT_TYPE TS`
+
 * Calculate a starting Hessian and optimize the "transition state" of
   linear water (note that without a reasonable starting geometry and
   Hessian, such a straightforward search often fails)::

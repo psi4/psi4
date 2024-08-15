@@ -2696,12 +2696,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Specifies minimum search, transition-state search, or IRC following -*/
         options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
         /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
-        options.add_str("STEP_TYPE", "RFO", "RFO P_RFO NR SD LINESEARCH");
+        options.add_str("STEP_TYPE", "RFO", "RFO RS_I_RFO P_RFO NR SD LINESEARCH");
         /*- Geometry optimization coordinates to use.
             REDUNDANT and INTERNAL are synonyms and the default.
             CARTESIAN uses only cartesian coordinates.
             BOTH uses both redundant and cartesian coordinates.  -*/
-        options.add_str("OPT_COORDINATES", "INTERNAL", "REDUNDANT INTERNAL CARTESIAN BOTH");
+        options.add_str("OPT_COORDINATES", "INTERNAL", "REDUNDANT INTERNAL CARTESIAN BOTH CUSTOM");
         /*- Do follow the initial RFO vector after the first step? -*/
         options.add_bool("RFO_FOLLOW_ROOT", false);
         /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/
