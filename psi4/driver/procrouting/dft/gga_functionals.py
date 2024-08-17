@@ -132,6 +132,7 @@ funcs.append({
 
 funcs.append({
     "name": "PW91",
+    "alias": ["PWPW"],
     "x_functionals": {
         "GGA_X_PW91": {}
     },
@@ -144,6 +145,7 @@ funcs.append({
 
 funcs.append({
     "name": "mPWPW",
+    "alias": ["mPW91"],
     "x_functionals": {
         "GGA_X_mPW91": {}
     },

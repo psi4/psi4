@@ -99,7 +99,7 @@ funcs.append({
 
 funcs.append({
     "name": "mGGA_MS0",
-    "alias": ["MGGA-MS0"],
+    "alias": ["MGGA-MS0", "MS0"],
     "x_functionals": {
         "MGGA_X_MS0": {}
     },
@@ -112,7 +112,7 @@ funcs.append({
 
 funcs.append({
     "name": "mGGA_MS1",
-    "alias": ["MGGA-MS1"],
+    "alias": ["MGGA-MS1", "MS1"],
     "x_functionals": {
         "MGGA_X_MS1": {}
     },
@@ -125,7 +125,7 @@ funcs.append({
 
 funcs.append({
     "name": "mGGA_MS2",
-    "alias": ["MGGA-MS2"],
+    "alias": ["MGGA-MS2", "MS2"],
     "x_functionals": {
         "MGGA_X_MS2": {}
     },
@@ -138,7 +138,7 @@ funcs.append({
 
 funcs.append({
     "name": "mGGA_MVS",
-    "alias": ["MGGA-MVS"],
+    "alias": ["MGGA-MVS", "MVS"],
     "x_functionals": {
         "MGGA_X_MVS": {}
     },

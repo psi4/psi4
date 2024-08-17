@@ -50,6 +50,10 @@ The nbody function computes counterpoise-corrected (CP), non-CP (noCP), and Vali
 
 **Examples :** ::
 
+    set {
+      basis def2-svp
+    }
+
     # Counterpoise corrected CCSD(T) energies for the Helium dimer
     molecule mol {
       He

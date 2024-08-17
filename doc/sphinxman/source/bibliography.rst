@@ -149,6 +149,10 @@ Bibliography
    Bofill,
    *J. Comp. Chem.* **15**, 1-11 (1994).
 
+.. [Besalu:1998:265]
+   Besalú, E., Bofill, J.,
+   *Theor Chem Acc* **100**, 265–274 (1998)
+
 .. [Piecuch:1999:6103]
    P. Piecuch, S. A. Kicharski, and R. J. Bartlett,
    *J. Chem. Phys.* **110**, 6103 (1999).
