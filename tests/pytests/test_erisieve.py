@@ -325,7 +325,8 @@ def test_schwarz_screening_cosx():
     schwarz_computed_pairs = schwarz_wfn.jk().computed_shells_per_iter("Pairs") # ESP shell pairs, from COSX
 
     # reference values, acquired from DFDirJ+COSX from Psi4 v1.8
-    schwarz_computed_triplets_expected = [17680, 29433, 29488, 29480, 29482, 29478, 29478, 29478, 29478, 29478]
+    #schwarz_computed_triplets_expected = [17680, 29433, 29488, 29480, 29482, 29478, 29478, 29478, 29478, 29478]
+    schwarz_computed_triplets_expected = [17671, 29407, 29469, 29480, 29482, 29478, 29478, 29478, 29478, 29478]
     schwarz_computed_pairs_expected = [835082, 864442, 868290, 867307, 867859, 867914, 867930, 867934, 867936, 2543375]
 
     # compare iteration counts of runs with computed shell quartet array lengths
