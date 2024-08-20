@@ -162,6 +162,9 @@ option_with_print(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option_with_print(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
 option_with_print(ENABLE_PLUGIN_TESTING "Test the plugin templates build and run" OFF)
 option_with_print(ENABLE_CYTHONIZE "Compile each python file rather than plaintext (requires cython) !experimental!" OFF)
+# sadly, it seems FORCE_PEDANTIC runs into issues with GauXC when option_with_flag is used
+# option_with_default + setting -pedantic-errors in psi4/CMakeLists.txt seems to fix this
+option_with_print(FORCE_PEDANTIC "Forces code to comply with the language standard." OFF)
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
 option_with_flags(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF
@@ -193,9 +196,6 @@ option_with_default(BUILD_Libint2_GENERATOR "If prebuilt not found, don't build 
 option_with_default(psi4_SHGAUSS_ORDERING "Ordering for shells of solid harmonic Gaussians: standard -- standard ordering (-l, -l+1 ... l) -or- gaussian -- the Gaussian ordering (0, 1, -1, 2, -2, ... l, -l). Changing this is experimental, expert only, and not a future plan. Internal calculations should be correct and fchk files should be correct, but other exports like Molden and QCSchema.Wavefunction won't be." gaussian)
 option_with_default(gauxc_ENABLE_GPU "Enable GPU support for GauXC" OFF)
 option_with_default(gauxc_ENABLE_MAGMA "Enable MAGMA support for GauXC. Required GPU-enabled GauXC" OFF)
-# sadly, it seems FORCE_PEDANTIC runs into issues with GauXC when option_with_flag is used
-# option_with_default + setting -pedantic-errors in psi4/CMakeLists.txt seems to fix this
-option_with_default(FORCE_PEDANTIC "Forces code to comply with the language standard." OFF)
 
 include(custom_int_orderings)
 
