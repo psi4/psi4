@@ -246,6 +246,12 @@ elseif(UNIX)
     set(POST_LIBRARY_OPTION -Wl,--no-whole-archive)
 endif()
 
+# add -pedantic-errors flag here, if FORCE_PEDANTIC is enabled 
+if(${FORCE_PEDANTIC}) 
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic-errors")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
+endif()
+
 # <<<  Build  >>>
 
 if(MSVC)

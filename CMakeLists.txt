@@ -193,6 +193,10 @@ option_with_default(BUILD_Libint2_GENERATOR "If prebuilt not found, don't build 
 option_with_default(psi4_SHGAUSS_ORDERING "Ordering for shells of solid harmonic Gaussians: standard -- standard ordering (-l, -l+1 ... l) -or- gaussian -- the Gaussian ordering (0, 1, -1, 2, -2, ... l, -l). Changing this is experimental, expert only, and not a future plan. Internal calculations should be correct and fchk files should be correct, but other exports like Molden and QCSchema.Wavefunction won't be." gaussian)
 option_with_default(gauxc_ENABLE_GPU "Enable GPU support for GauXC" OFF)
 option_with_default(gauxc_ENABLE_MAGMA "Enable MAGMA support for GauXC. Required GPU-enabled GauXC" OFF)
+# sadly, it seems FORCE_PEDANTIC runs into issues with GauXC when option_with_flag is used
+# option_with_default + setting -pedantic-errors in psi4/CMakeLists.txt seems to fix this
+option_with_default(FORCE_PEDANTIC "Forces code to comply with the language standard." OFF)
+
 include(custom_int_orderings)
 
 
@@ -220,10 +224,6 @@ message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
 message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 add_subdirectory(external/common)
 add_subdirectory(external/upstream)
-# FORCE_PEDANTIC HAS to go here to avoid being applied to external projects
-option_with_flags(FORCE_PEDANTIC "Forces code to comply with the language standard." OFF
-                  "-pedantic-errors")
-
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
 include(custom_cxxstandard)
 include(custom_static_library)
@@ -269,6 +269,7 @@ ExternalProject_Add(psi4-core
               -Dpsi4_CXX_STANDARD_Libint2=${psi4_CXX_STANDARD_Libint2}
               -DCMAKE_CXX_STANDARD_REQUIRED=ON
               -DCMAKE_CXX_EXTENSIONS=OFF
+              -DFORCE_PEDANTIC=${FORCE_PEDANTIC}
               -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
               -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
               -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
