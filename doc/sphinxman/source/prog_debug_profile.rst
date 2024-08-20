@@ -37,7 +37,15 @@ Debugging and Profiling
 Debugging
 ---------
 
-Instructions on running Psi4 with a debugger.
+The preferred method for debugging C++ code in Psi4 is with gdb. To run Psi4 in this way, you must specify the Python executable as the program. Arguments are provided using the ``--args`` flag. Here's an example.::
+  $~> gdb /usr/bin/python3 --args /path/to/psi4 input.dat
+
+VSCode
+^^^^^^
+
+When using gdb wath VSCode, you should set the ``program`` entry to the Python executable, just as before. Arguments can then be placed in the ``args`` entry. If you are debugging a C++ plugin or backend code,
+the launch type should be ``cppdbg``.
+ 
 
 Profiling
 ---------
