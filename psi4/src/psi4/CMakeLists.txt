@@ -46,7 +46,6 @@ foreach(dir_name
   f12
   dummy_einsums
   dummy_integratorxx
-  f12
   )
   add_subdirectory(${dir_name})
 endforeach ()
