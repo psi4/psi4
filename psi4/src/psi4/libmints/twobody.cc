@@ -173,7 +173,7 @@ double TwoBodyAOInt::shell_pair_max_density(int i, int M, int N) const {
     }
 
     return max_dens_shell_pair_[i][M*nshell_ + N]; 
-};
+}
 
 bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) { 
     // Square of standard Cauchy-Schwarz Q_mu_nu terms (Eq. 1)
