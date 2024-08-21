@@ -8,7 +8,7 @@ from addons import uusing
 
 import psi4 
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.long]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.smoke]
 
 @pytest.fixture
 def mols():
