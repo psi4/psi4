@@ -2700,8 +2700,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Geometry optimization coordinates to use.
             REDUNDANT and INTERNAL are synonyms and the default.
             CARTESIAN uses only cartesian coordinates.
-            BOTH uses both redundant and cartesian coordinates.  -*/
+            BOTH uses both redundant and cartesian coordinates.
+            CUSTOM is not fully implemented yet - expected optking 0.3.1  -*/
         options.add_str("OPT_COORDINATES", "INTERNAL", "REDUNDANT INTERNAL CARTESIAN BOTH CUSTOM");
+        /*- A string formatted as a dicitonary containing a set of coordinates. Coordinates can be
+            appended to Optking's coordinate set or used on their own - expected optking 0.3.1. -*/
+        options.add_str("CUSTOM_COORDS", "")
         /*- Do follow the initial RFO vector after the first step? -*/
         options.add_bool("RFO_FOLLOW_ROOT", false);
         /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/
@@ -2757,6 +2761,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Specify range for the out-of-plane angles between atoms to be constrained to (eq. value specified)
             analogous to the old FIXED_<COORD> keyword-*/
         options.add_str("RANGED_OOFP", "");
+        /*- Freeze ALL dihedral angles -*/
+        options.add_bool("FREEZE_ALL_DIHEDRALS", false)
+        /*- Unfreeze a subset of dihedrals - meant for use with freeze_all_dihedrals -*/
+        options.add_str("UNFREEZE_DIHEDRALS", "")
 
         /*- Specify formula for external forces for the distance between atoms -*/
         options.add_str("EXT_FORCE_DISTANCE", "");
