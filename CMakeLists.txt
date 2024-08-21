@@ -163,7 +163,7 @@ option_with_print(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
 option_with_print(ENABLE_PLUGIN_TESTING "Test the plugin templates build and run" OFF)
 option_with_print(ENABLE_CYTHONIZE "Compile each python file rather than plaintext (requires cython) !experimental!" OFF)
 # sadly, it seems FORCE_PEDANTIC runs into issues with GauXC when option_with_flag is used
-# option_with_default + setting -pedantic-errors in psi4/CMakeLists.txt seems to fix this
+# option_with_print + setting -pedantic-errors in psi4/CMakeLists.txt seems to fix this
 option_with_print(FORCE_PEDANTIC "Forces code to comply with the language standard." OFF)
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
