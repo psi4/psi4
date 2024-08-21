@@ -2705,7 +2705,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("OPT_COORDINATES", "INTERNAL", "REDUNDANT INTERNAL CARTESIAN BOTH CUSTOM");
         /*- A string formatted as a dicitonary containing a set of coordinates. Coordinates can be
             appended to Optking's coordinate set or used on their own - expected optking 0.3.1. -*/
-        options.add_str("CUSTOM_COORDS", "")
+        options.add_str("CUSTOM_COORDS", "");
         /*- Do follow the initial RFO vector after the first step? -*/
         options.add_bool("RFO_FOLLOW_ROOT", false);
         /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/
@@ -2762,9 +2762,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             analogous to the old FIXED_<COORD> keyword-*/
         options.add_str("RANGED_OOFP", "");
         /*- Freeze ALL dihedral angles -*/
-        options.add_bool("FREEZE_ALL_DIHEDRALS", false)
+        options.add_bool("FREEZE_ALL_DIHEDRALS", false);
         /*- Unfreeze a subset of dihedrals - meant for use with freeze_all_dihedrals -*/
-        options.add_str("UNFREEZE_DIHEDRALS", "")
+        options.add_str("UNFREEZE_DIHEDRALS", "");
 
         /*- Specify formula for external forces for the distance between atoms -*/
         options.add_str("EXT_FORCE_DISTANCE", "");
