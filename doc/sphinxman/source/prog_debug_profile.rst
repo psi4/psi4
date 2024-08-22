@@ -46,7 +46,7 @@ inline function names.::
   $~> cmake [your options here] -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
 Certain symbols may not be output even with this flag set. In general, any template function used should be visible, and anything with the ``PSI_API`` modifier will be visible. Other variables, functions, and classes will
-likely be hidden from the user.
+likely be hidden from the user. To make these symbols visible, you must modify a few variables. For an example, see `TiborGY's debug branch <https://github.com/psi4/psi4/compare/master...TiborGY:psi4:toc_dbg>`_.
 
 VSCode
 ^^^^^^
