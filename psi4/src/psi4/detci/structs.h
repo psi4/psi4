@@ -391,9 +391,9 @@ struct calcinfo {
     int ref_bet_rel;                 /* relative index of reference beta string */
     int ref_sym;                     /* symmetry (irrep) of reference determinant */
     int spab;                        /* socc per alpha or beta, for singlet states */
-    int **ras_opi;                   /* num orbs per irr per ras space ras_opi[ras][irr] */
+    std::vector<Dimension> ras_opi;  /* num orbs per irr per ras space ras_opi[ras][irr] */
     int **ras_orbs[4];               /* ras_orbs[ras][irr][cnt] gives an orbital number */
-    int sigma_initialized;           /* has sigma_init been called yet? */
+    bool sigma_initialized;          /* has sigma_init been called yet? */
 };
 
 /*
