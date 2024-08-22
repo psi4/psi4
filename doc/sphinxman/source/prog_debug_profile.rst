@@ -38,7 +38,7 @@ Debugging
 ---------
 
 The preferred method for debugging C++ code in Psi4 is with gdb. To run Psi4 in this way, you must specify the Python executable as the program. Arguments are provided using the ``--args`` flag. Here's an example.::
-  $~> gdb /usr/bin/python3 --args /path/to/psi4 input.dat
+  $~> gdb --args /usr/bin/python3 /path/to/psi4 input.dat
 
 In order to debug properly, Psi4 needs to be built with the ``CMAKE_BUILD_TYPE`` variable set to either ``Debug`` or ``RelWithDebInfo``. These will output debugging symbols that will allow gdb to print line numbers and
 inline function names.::
