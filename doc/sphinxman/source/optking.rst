@@ -281,8 +281,7 @@ For bends, the corresponding keyword is "frozen_bend".
     breaking, while Cartesian constraints are active, symmetrization cannot occur and
     an error will be raised, prompting you to restart the job.
 
-* As a shortcut, the entire set of dihedral angles can be frozen. A subset can then be unfrozen if
-desired.
+* As a shortcut, the entire set of dihedral angles can be frozen. A subset can then be unfrozen if desired.
 
 .. code-block:: none
 
