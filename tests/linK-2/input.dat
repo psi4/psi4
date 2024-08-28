@@ -34,4 +34,7 @@ set {
 
 linK_energy = energy('b3lyp')
 psi4.compare_values(ref_energy, linK_energy, 8, "B3LYP Energy (using LinK algo)")
-compare(1, variable("SCF ITERATIONS") < 13.0, "LinK Incfock Efficient")
+# Really, what we'd love to test is that the value of SCF ITERATIONS is agnostic to incfock, but this test is long enough as-is.
+# Ensuring that property is exactly why we turn incfock off for small residuals.
+# We choose a number that'll be an upper bound, even under pessimistic assumptions on differences across machines.
+compare(1, variable("SCF ITERATIONS") < 15.0, "LinK Incfock Efficient")
