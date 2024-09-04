@@ -160,7 +160,8 @@ def validate_results(run_name, tol, *, write_output=False):
        dD_norm = np.linalg.norm(dD)
        dD_rms = np.sqrt(np.square(dD).mean())
        
-       D_same = abs(dD_rms) <= pow(10, -tol)
+       #D_same = abs(dD_rms) <= pow(10, -tol)
+       D_same = abs(dD_rms) <= 0.0 
  
        if write_output:
            outfile.write("                     DENSITY                      \n")
@@ -174,6 +175,25 @@ def validate_results(run_name, tol, *, write_output=False):
            outfile.write("Norm of Dref - Dref^T: " + str(np.linalg.norm(Dref - np.transpose(Dref))) + "\n")
            outfile.write("Norm of dD - dD^T: " + str(np.linalg.norm(dD - np.transpose(dD))) + "\n")
            outfile.write("\n\n")
+
+           if not D_same:
+               area = 2
+               outfile.write("D_same failed! Providing extra details...\n")
+               outfile.write(f'  Matrix: Drun\n')
+               for i in np.arange(dK_max_index[0] - area, dK_max_index[0] + area + 1):
+                   outfile.write("    ")
+                   for j in np.arange(dK_max_index[1] - area, dK_max_index[1] + area + 1):
+                       outfile.write(f'{Drun[i][j]}, ')
+                   outfile.write("\n")
+               outfile.write("\n\n")
+ 
+               outfile.write(f'  Matrix: Dref\n')
+               for i in np.arange(dK_max_index[0] - area, dK_max_index[0] + area + 1):
+                   outfile.write("    ")
+                   for j in np.arange(dK_max_index[1] - area, dK_max_index[1] + area + 1):
+                       outfile.write(f'{Dref[i][j]}, ')
+                   outfile.write("\n")
+               outfile.write("\n\n")
  
        #== process Exchange matrices ==#
        Krun_dset = run["/K"] 
@@ -186,7 +206,8 @@ def validate_results(run_name, tol, *, write_output=False):
        dK_norm = np.linalg.norm(dK) 
        dK_rms = np.sqrt(np.square(dK).mean())
        
-       K_same = abs(dK_rms) <= pow(10, -tol)
+       #K_same = abs(dK_rms) <= pow(10, -tol)
+       K_same = abs(dK_rms) <= 0.0 
  
        if write_output:
            outfile.write("                    EXCHANGE                     \n")
@@ -203,7 +224,26 @@ def validate_results(run_name, tol, *, write_output=False):
            outfile.write("Norm of Kref - Kref^T: " + str(np.linalg.norm(Kref - np.transpose(Kref))) + "\n")
            outfile.write("Norm of dK - dK^T: " + str(np.linalg.norm(dK - np.transpose(dK))) + "\n")
            outfile.write("\n")
-   
+  
+           if not K_same:
+               area = 2
+               outfile.write("K_same failed! Providing extra details...\n")
+               outfile.write(f'  Matrix: Krun\n')
+               for i in np.arange(dK_max_index[0] - area, dK_max_index[0] + area + 1):
+                   outfile.write("    ")
+                   for j in np.arange(dK_max_index[1] - area, dK_max_index[1] + area + 1):
+                       outfile.write(f'{Krun[i][j]}, ')
+                   outfile.write("\n")
+               outfile.write("\n\n")
+ 
+               outfile.write(f'  Matrix: Kref\n')
+               for i in np.arange(dK_max_index[0] - area, dK_max_index[0] + area + 1):
+                   outfile.write("    ")
+                   for j in np.arange(dK_max_index[1] - area, dK_max_index[1] + area + 1):
+                       outfile.write(f'{Kref[i][j]}, ')
+                   outfile.write("\n")
+               outfile.write("\n\n")
+           
            outfile.close()
  
     except:
