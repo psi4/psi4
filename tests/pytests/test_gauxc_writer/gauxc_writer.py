@@ -160,8 +160,7 @@ def validate_results(run_name, tol, *, write_output=False):
        dD_norm = np.linalg.norm(dD)
        dD_rms = np.sqrt(np.square(dD).mean())
        
-       #D_same = abs(dD_rms) <= pow(10, -tol)
-       D_same = abs(dD_rms) <= 0.0 
+       D_same = abs(dD_rms) <= pow(10, -tol)
  
        if write_output:
            outfile.write("                     DENSITY                      \n")
@@ -206,8 +205,7 @@ def validate_results(run_name, tol, *, write_output=False):
        dK_norm = np.linalg.norm(dK) 
        dK_rms = np.sqrt(np.square(dK).mean())
        
-       #K_same = abs(dK_rms) <= pow(10, -tol)
-       K_same = abs(dK_rms) <= 0.0 
+       K_same = abs(dK_rms) <= pow(10, -tol)
  
        if write_output:
            outfile.write("                    EXCHANGE                     \n")
