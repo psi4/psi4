@@ -44,9 +44,9 @@ def mols():
 @pytest.mark.parametrize(
     "basis",
     [
-        pytest.param("bse:cc-pVDZ", id="cc-pVDZ"),
-        pytest.param("bse:cc-pVTZ", id="cc-pVTZ"),
-        pytest.param("bse:cc-pVQZ", id="cc-pVQZ"),
+        pytest.param({"set": "bse:cc-pVDZ", "tol": 11}, id="cc-pVDZ"),
+        pytest.param({"set": "bse:cc-pVTZ", "tol": 11}, id="cc-pVTZ"),
+        pytest.param({"set": "bse:cc-pVQZ", "tol": 10}, id="cc-pVQZ"),
     ],
 )
 #@pytest.mark.parametrize(
@@ -73,7 +73,7 @@ def test_gauxc_writer(inp, basis, mols, request):
     
     psi4.set_options({
         "scf_type": "dfdirj+snlink",
-        "basis": basis,
+        "basis": basis["set"],
         "guess": "core",
         "df_scf_guess": False,
         "e_convergence": 1.0e-10,
@@ -98,12 +98,10 @@ def test_gauxc_writer(inp, basis, mols, request):
 
     #== cross-check against reference results ==#
     
-    # we would like the tolerance to be higher (e.g., 14)
+    # we would like the tolerances to be higher (e.g., 14)
     # but this causes CI to fail, presumably because different hardware provides slightly varying answers
     # so I guess we will use a looser tolerance
-    tolerance = 11
-    
-    mol_same, basis_same, D_same, K_same = gxcw.validate_results(test_id, tolerance, write_output=True)
+    mol_same, basis_same, D_same, K_same = gxcw.validate_results(test_id, basis["tol"], write_output=True)
 
     with open(os.path.join(os.path.dirname(__file__), "test_gauxc_writer", f'{test_id}.out'), "r") as outfile:
       for line in outfile:
