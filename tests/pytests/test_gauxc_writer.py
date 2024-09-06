@@ -101,7 +101,9 @@ def test_gauxc_writer(inp, basis, mols, request):
     # we would like the tolerances to be higher (e.g., 14)
     # but this causes CI to fail, presumably because different hardware provides slightly varying answers
     # so I guess we will use a looser tolerance
-    mol_same, basis_same, D_same, K_same = gxcw.validate_results(test_id, basis["tol"], write_output=True)
+    tolerance = basis["tol"]
+
+    mol_same, basis_same, D_same, K_same = gxcw.validate_results(test_id, tolerance, write_output=True)
 
     with open(os.path.join(os.path.dirname(__file__), "test_gauxc_writer", f'{test_id}.out'), "r") as outfile:
       for line in outfile:
