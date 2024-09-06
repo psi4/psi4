@@ -1570,7 +1570,8 @@ def test_dftd4():
         'a2':3.35743605,
         's6': 1.000,
         's9': 1.000,
-        "d4_variant": "d4"
+        "d4_variant": "d4",
+        "disp_energy": -0.0018586253175000003
     },
     {
         's8': 0.738,
@@ -1578,7 +1579,8 @@ def test_dftd4():
         'a2': 3.637,
         's6': 1.000,
         's9': 0.000,
-        "d4_variant": "d4m"
+        "d4_variant": "d4m",
+        "disp_energy": -0.0017167422058899998,
     },
 ])
 def test_sapt0d4(dftd4_params):
@@ -1587,6 +1589,7 @@ def test_sapt0d4(dftd4_params):
     """
     import subprocess
     import os
+    target_disp_energy = dftd4_params.pop("disp_energy")
     eneyne = psi4.geometry("""
     C   0.000000  -0.667578  -2.124659
     C   0.000000   0.667578  -2.124659
@@ -1632,13 +1635,15 @@ def test_sapt0d4(dftd4_params):
             stderr=subprocess.STDOUT,
         )
         with open(".EDISP", "r") as f:
-            e = float(f.read()) # * psi4.constants.hartree2kcalmol
+            e = float(f.read()) # energy in au
         disp_energies.append(e)
         os.remove(i)
         os.remove(".EDISP")
     psi4.energy(f'SAPT0-{dftd4_params["d4_variant"]}/cc-pvdz')
     d4_interaction_energy = (disp_energies[0] - disp_energies[1] - disp_energies[2])
+    print(d4_interaction_energy)
     assert psi4.compare_values(d4_interaction_energy, psi4.variable('DISPERSION CORRECTION ENERGY'), 5, f'ethene-ethyne sapt0-{dftd4_params["d4_variant"]}')
+    assert psi4.compare_values(d4_interaction_energy, target_disp_energy, 5, f'ethene-ethyne sapt0-{dftd4_params["d4_variant"]} fixed value')
 
 
 @uusing("einsums")
