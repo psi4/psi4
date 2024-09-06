@@ -302,7 +302,7 @@ jobs:
 
     - name: Test Addons with Pytest
       working-directory: ./objdir
-      run: PYTHONPATH=stage/lib pytest --cache-clear -rP --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }}" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }}" stage/lib/psi4/tests/
 
     - name: Write user Conda environment files
       run: |

@@ -179,17 +179,17 @@ def validate_results(run_name, tol, *, write_output=False):
                area = 2
                outfile.write("D_same failed! Providing extra details...\n")
                outfile.write(f'  Matrix: Drun\n')
-               for i in np.arange(dD_max_index[0] - area, dD_max_index[0] + area + 1):
+               for i in np.arange(dK_max_index[0] - area, dK_max_index[0] + area + 1):
                    outfile.write("    ")
-                   for j in np.arange(dD_max_index[1] - area, dD_max_index[1] + area + 1):
+                   for j in np.arange(dK_max_index[1] - area, dK_max_index[1] + area + 1):
                        outfile.write(f'{Drun[i][j]}, ')
                    outfile.write("\n")
                outfile.write("\n\n")
  
                outfile.write(f'  Matrix: Dref\n')
-               for i in np.arange(dD_max_index[0] - area, dD_max_index[0] + area + 1):
+               for i in np.arange(dK_max_index[0] - area, dK_max_index[0] + area + 1):
                    outfile.write("    ")
-                   for j in np.arange(dD_max_index[1] - area, dD_max_index[1] + area + 1):
+                   for j in np.arange(dK_max_index[1] - area, dK_max_index[1] + area + 1):
                        outfile.write(f'{Dref[i][j]}, ')
                    outfile.write("\n")
                outfile.write("\n\n")
