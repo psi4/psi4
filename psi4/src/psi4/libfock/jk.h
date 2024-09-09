@@ -51,6 +51,7 @@ class Options;
 class PSIO;
 class DFHelper;
 class DFTGrid;
+class PetiteList;
 
 namespace pk {
 class PKManager;
@@ -1302,6 +1303,12 @@ class PSI_API CompositeJK : public JK {
     */
     void set_COSX_grid(std::string current_grid);
     std::string get_COSX_grid();
+
+    /**
+    * Get maximum AM for GauXC used for snLinK, if GauXC support is enabled
+    * Throws if GauXC is not installed or if snLinK is not being used
+    */
+    int get_snLinK_max_am();
 
     /**
     * Print header information regarding JK
