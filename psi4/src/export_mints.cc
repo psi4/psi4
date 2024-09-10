@@ -72,7 +72,6 @@
 #include "psi4/libmints/quadrupole.h"
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libmints/thc_eri.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include <string>
@@ -1129,6 +1128,7 @@ void export_mints(py::module& m) {
                                "The character symbol for the angular momentum of the given contraction")
         .def_property_readonly("AMCHAR", py::cpp_function(&GaussianShell::AMCHAR),
                                "The upper-case character symbol for the angular momentum of the given contraction")
+        .def("coord", &GaussianShell::coord, "Returns ith coordinate this shell is on.") 
         .def_property_readonly("ncenter", py::cpp_function(&GaussianShell::ncenter),
                                "Returns atom number this shell is on")
         .def_property("function_index", py::cpp_function(&GaussianShell::function_index),
@@ -1711,10 +1711,6 @@ void export_mints(py::module& m) {
              "Returns the number of irreps in the low order group that an irrep \
              from the high order group can be reduced to.")
         .def("group", &CorrelationTable::gamma, "Returns the higher order point group");
-
-    py::class_<ERISieve, std::shared_ptr<ERISieve>>(m, "ERISieve", "docstring")
-        .def(py::init<std::shared_ptr<BasisSet>, double, bool>())
-        .def("shell_significant", &ERISieve::shell_significant);
 
     m.def("test_matrix_dpd_interface", &psi::test_matrix_dpd_interface);
 
