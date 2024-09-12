@@ -45,14 +45,12 @@ def tests():
                       "molecule" : "h2o",
                       "bsse_type" : None,
                       "ref" : -76.026780223322},
-                      marks=pytest.mark.quick,
         "h2o (rks)": {
                       "method" : "b3lyp",
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o",
                       "bsse_type" : None,
                       "ref" : -76.420402720419},
-                      marks=pytest.mark.quick,
         "nh2 (uhf)": {
                       "method" : "hf",
                       "options": {"reference" : "uhf"},
@@ -265,6 +263,7 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
         pytest.param("nh2 (uhf)"),
         pytest.param("nh2 (rohf)", marks=pytest.mark.nbody),
     ]
+)
 @pytest.mark.parametrize(
     "scf",
     [
@@ -320,7 +319,6 @@ def test_seminum(inp, scf, tests, mols, request):
     # does the SCF energy match a pre-computed reference?
     energy_seminum = psi4.energy(tests[inp]["method"], molecule=molecule, bsse_type=tests[inp]["bsse_type"])
     assert compare_values(scf["ref"][test_id.split("-")[1]], energy_seminum, 6, f'{test_id} accurate to reference (1e-6 threshold)')
-)
     
     # is the SCF energy reasonably close to a conventional SCF?
     psi4.set_options({"scf_type" : "pk"})
