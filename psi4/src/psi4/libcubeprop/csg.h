@@ -34,7 +34,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "psi4/pragma.h"
 
 namespace psi {
 
@@ -46,7 +45,7 @@ class Molecule;
 class Options;
 class RKSFunctions;
 
-class PSI_API CubicScalarGrid {
+class CubicScalarGrid {
    protected:
     // => Input Specification <= //
 
