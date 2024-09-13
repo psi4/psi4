@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -161,9 +161,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
     /*- Psi4 dies if energy does not converge. !expert -*/
     options.add_bool("DIE_IF_NOT_CONVERGED", true);
-    /*- Integral package to use. If compiled with ERD or Simint support, change this option to use them; LibInt is used
+    /*- Integral package to use. If compiled with Simint support, change this option to use them; LibInt2 is used
        otherwise. -*/
-    options.add_str("INTEGRAL_PACKAGE", "LIBINT2", "ERD LIBINT1 SIMINT LIBINT2");
+    options.add_str("INTEGRAL_PACKAGE", "LIBINT2", "LIBINT2 SIMINT");
 #ifdef USING_BrianQC
     /*- Whether to enable using the BrianQC GPU module -*/
     options.add_bool("BRIANQC_ENABLE", false);
@@ -192,7 +192,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -269,7 +269,25 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc -*/
     options.add_str("PRINT_NOONS", "3");
 
-    ///MBIS Options (libmints/oeprop.cc)
+    /// Tensor Hypercontration (THC) Options (libmints/thc_eri.cc)
+
+    /*- Use DF approximation when computing LS-THC factorization? -*/
+    options.add_bool("LS_THC_DF", true);
+    /*- Number of spherical points in LS-THC grid -*/
+    options.add_int("LS_THC_SPHERICAL_POINTS", 50);
+    /*- Number of radial points in LS-THC grid -*/
+    options.add_int("LS_THC_RADIAL_POINTS", 10);
+    /*- Screening criteria for basis function values on LS-THC grids !expert -*/
+    options.add_double("LS_THC_BASIS_TOLERANCE", 1.0E-10);
+    /*- Grid weights cutoff for LS-THC grids !expert -*/
+    options.add_double("LS_THC_WEIGHTS_TOLERANCE", 1.0E-12);
+    /*- Pruning scheme for LS-THC grids !expert -*/
+    options.add_str("LS_THC_PRUNING_SCHEME", "ROBUST", 
+                        "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
+    /*- Tolerance for pseudoinversion of grid point overlap matrix (Parrish 2012 eq. 30) !expert -*/
+    options.add_double("LS_THC_S_EPSILON", 1.0E-10);
+
+    /// MBIS Options (libmints/oeprop.cc)
 
     /*- Maximum Number of MBIS Iterations -*/
     options.add_int("MBIS_MAXITER", 500);
@@ -1010,14 +1028,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         be computed even if they are not needed for the requested term !expert -*/
         options.add_bool("SAPT0_E20DISP", false);
 
-        /*- Convergence criterion for energy (change) in the SAPT
-        $E@@{ind,resp}^{(20)}$ term during solution of the CPHF equations. -*/
-
-        options.add_double("E_CONVERGENCE", 1e-10);
-
-        /*- Convergence criterion for residual of the CPHF coefficients in the SAPT
-        $E@@{ind,resp}^{(20)}$ term. -*/
-        options.add_double("D_CONVERGENCE", 1e-8);
+        /*- Convergence criterion for residual of the CPHF/CPKS coefficients
+          in the SAPT $E@@{ind,resp}^{(20)}$ term. This applies to
+          wavefunction-based SAPT or SAPT(DFT). See |fisapt__cphf_r_convergence| for 
+          fragment-partitioned or intramolecular SAPT. -*/
+        options.add_double("CPHF_R_CONVERGENCE", 1e-8);
 
         /*- Solve the CPHF equations to compute coupled induction and
             exchange-induction. These are not available for ROHF, and
@@ -1167,7 +1182,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("FISAPT_MEM_SAFETY_FACTOR", 0.9);
         /*- Convergence criterion for residual of the CPHF coefficients in the SAPT
         $E@@{ind,resp}^{(20)}$ term. -*/
-        options.add_double("D_CONVERGENCE", 1E-8);
+        options.add_double("CPHF_R_CONVERGENCE", 1E-8);
         /*- Maximum number of iterations for CPHF -*/
         options.add_int("MAXITER", 50);
         /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
@@ -1656,7 +1671,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
         options.add_int("DF_INTS_NUM_THREADS", 0);
-        /*- IO caching for CP corrections, etc !expert -*/
+        /*- IO caching for CP corrections, etc. Changing this selects Disk_DF over Mem_DF. Note that setting this forces DiskDFJK when SCF_TYPE=DF. !expert -*/
         options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
         /*- Fitting Condition, i.e. eigenvalue threshold for RI basis. Analogous to S_TOLERANCE !expert -*/
         options.add_double("DF_FITTING_CONDITION", 1.0E-10);
@@ -1697,6 +1712,49 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
                         "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
         /*- Do reduce numerical COSX errors with overlap fitting? !expert -*/
         options.add_bool("COSX_OVERLAP_FITTING", true);
+
+        /*- SUBSECTION snLinK Algorithm -*/
+
+        /*- Number of spherical points in snLinK grid. -*/
+        options.add_int("SNLINK_SPHERICAL_POINTS", 302);
+        /*- Number of radial points in snLinK grid. -*/
+        options.add_int("SNLINK_RADIAL_POINTS", 70);
+        /*- Radial Scheme for snLinK grid. 
+        MURA is default here as it matches the GauXC default option -*/
+        options.add_str("SNLINK_RADIAL_SCHEME", "MURA", "MURA TREUTLER EM");
+        /*- Use GPU for GauXC? -*/
+        options.add_bool("SNLINK_USE_GPU", false);
+        /*- Proportion (in %) of available GPU memory to allocate to snLinK. !expert-*/
+        options.add_bool("SNLINK_GPU_MEM", 90);
+        /*- Screening criteria for integrals and intermediates in snLinK -*/
+        options.add_double("SNLINK_INTS_TOLERANCE", 1.0E-11);
+        /*- Screening criteria for shell-pair densities in snLinK !expert -*/
+        options.add_double("SNLINK_DENSITY_TOLERANCE", 1.0E-10);
+        /*- Screening criteria for basis function values on snLinK grids !expert -*/
+        options.add_double("SNLINK_BASIS_TOLERANCE", 1.0E-10);
+        /*- Force snLinK to use cartesian coordinates !expert -*/
+        options.add_bool("SNLINK_FORCE_CARTESIAN", false);
+        /*- Pruning scheme for snLinK grids !expert -*/
+        options.add_str("SNLINK_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE");
+        /*- Maximum number of grid points per grid block for GauXC !expert -*/ 
+        options.add_int("SNLINK_GRID_BATCH_SIZE", 2048);
+        /*- Load Balancer kernel for snLinK !expert -*/
+        options.add_str("SNLINK_LOAD_BALANCER_KERNEL", "DEFAULT", "DEFAULT REPLICATED REPLICATED-PETITE REPLICATED-FILLIN");
+        /*- Molecular Weights kernel for snLinK !expert -*/
+        options.add_str("SNLINK_MOL_WEIGHTS_KERNEL", "DEFAULT", "DEFAULT");
+        /*- Integrator execution kernel for snLinK !expert 
+        GauXC also has SHELLBATCHED, but it is incompatible with Psi4 due to not 
+        being yet implemented with sn-LinK. -*/
+        options.add_str("SNLINK_INTEGRATOR_KERNEL", "DEFAULT", "DEFAULT INCORE");
+        /*- Integrator reduction kernel for snLinK !expert 
+        GauXC also has NCCL, but it is incompatible with Psi4 due to requiring MPI. -*/
+        options.add_str("SNLINK_REDUCTION_KERNEL", "DEFAULT", "DEFAULT BASICMPI");
+        /*- Integrator local work driver kernel for snLinK !expert 
+        GauXC also has SCHEME1-CUTLASS, but it is disabled in Psi4 for now 
+        due to compile-time issues and requiring very modern CUDA CCs (>=80) -*/
+        options.add_str("SNLINK_LWD_KERNEL", "DEFAULT", "DEFAULT REFERENCE SCHEME1 SCHEME1-MAGMA"); 
+        /*- Overwrite sn-LinK grid options with debug grid matching GauXC's Ultrafine grid spec !expert -*/
+        options.add_int("SNLINK_USE_DEBUG_GRID", false);
 
         /*- SUBSECTION SAD Guess Algorithm -*/
 
@@ -1874,7 +1932,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("CPHF_MEM_SAFETY_FACTOR", 0.75);
         /*- SCF Type
          -*/
-        options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK DFDIRJ+COSX");
+        options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK DFDIRJ+SNLINK DFDIRJ+LINK DFDIRJ+COSX");
         /*- Auxiliary basis for SCF
          -*/
         options.add_str("DF_BASIS_SCF", "");
@@ -2534,6 +2592,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION Expert Options -*/
 
+        /*- Which DLPNO Algorithm to run (not set by user) !expert -*/
+        options.add_str("DLPNO_ALGORITHM", "MP2", "MP2");
         /*- Occupation number threshold for removing PNOs !expert -*/
         options.add_double("T_CUT_PNO", 1e-8);
         /*- DOI threshold for including PAO (u) in domain of LMO (i) !expert -*/
@@ -2554,6 +2614,17 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("S_CUT", 1e-8);
         /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations !expert -*/
         options.add_double("F_CUT", 1e-5);
+
+        /*- SUBSECTION DOI Grid Options -*/
+
+        /*- Number of spherical points in DOI grid !expert -*/
+        options.add_int("DOI_SPHERICAL_POINTS", 50);
+        /*- Number of radial points in DOI grid !expert -*/
+        options.add_int("DOI_RADIAL_POINTS", 25);
+        /*- Screening criteria for basis function values on DOI grids !expert -*/
+        options.add_double("DOI_BASIS_TOLERANCE", 1.0E-10);
+        /*- Pruning scheme for DOI grids !expert -*/
+        options.add_str("DOI_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
     }
     if (name == "PSIMRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory
@@ -2668,12 +2739,16 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Specifies minimum search, transition-state search, or IRC following -*/
         options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
         /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
-        options.add_str("STEP_TYPE", "RFO", "RFO P_RFO NR SD LINESEARCH");
+        options.add_str("STEP_TYPE", "RFO", "RFO RS_I_RFO P_RFO NR SD LINESEARCH");
         /*- Geometry optimization coordinates to use.
             REDUNDANT and INTERNAL are synonyms and the default.
             CARTESIAN uses only cartesian coordinates.
-            BOTH uses both redundant and cartesian coordinates.  -*/
-        options.add_str("OPT_COORDINATES", "INTERNAL", "REDUNDANT INTERNAL CARTESIAN BOTH");
+            BOTH uses both redundant and cartesian coordinates.
+            CUSTOM is not fully implemented yet - expected optking 0.3.1  -*/
+        options.add_str("OPT_COORDINATES", "INTERNAL", "REDUNDANT INTERNAL CARTESIAN BOTH CUSTOM");
+        /*- A string formatted as a dicitonary containing a set of coordinates. Coordinates can be
+            appended to Optking's coordinate set or used on their own - expected optking 0.3.1. -*/
+        options.add_str("CUSTOM_COORDS", "");
         /*- Do follow the initial RFO vector after the first step? -*/
         options.add_bool("RFO_FOLLOW_ROOT", false);
         /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/
@@ -2729,6 +2804,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Specify range for the out-of-plane angles between atoms to be constrained to (eq. value specified)
             analogous to the old FIXED_<COORD> keyword-*/
         options.add_str("RANGED_OOFP", "");
+        /*- Freeze ALL dihedral angles -*/
+        options.add_bool("FREEZE_ALL_DIHEDRALS", false);
+        /*- Unfreeze a subset of dihedrals - meant for use with freeze_all_dihedrals -*/
+        options.add_str("UNFREEZE_DIHEDRALS", "");
 
         /*- Specify formula for external forces for the distance between atoms -*/
         options.add_str("EXT_FORCE_DISTANCE", "");

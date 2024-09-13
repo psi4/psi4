@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -64,11 +64,11 @@ std::string MOInfo::SlaterDeterminant::get_label() {
     int counter = 0;
     for (int h = 0; h < moinfo->get_nirreps(); ++h) {
         label += "[";
-        for (int i = 0; i < moinfo->get_docc(h); ++i) {
+        for (int i = 0; i < moinfo->get_docc()[h]; ++i) {
             label += get_occupation_symbol(counter);
             counter++;
         }
-        for (int i = 0; i < moinfo->get_actv(h); ++i) {
+        for (int i = 0; i < moinfo->get_actv()[h]; ++i) {
             label += get_occupation_symbol(counter);
             counter++;
         }

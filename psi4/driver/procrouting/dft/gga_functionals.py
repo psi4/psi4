@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -132,6 +132,7 @@ funcs.append({
 
 funcs.append({
     "name": "PW91",
+    "alias": ["PWPW"],
     "x_functionals": {
         "GGA_X_PW91": {}
     },
@@ -144,6 +145,7 @@ funcs.append({
 
 funcs.append({
     "name": "mPWPW",
+    "alias": ["mPW91"],
     "x_functionals": {
         "GGA_X_mPW91": {}
     },
@@ -350,6 +352,28 @@ funcs.append({
     "description":
     '    BP86 GGA XC Functional based on VWN5 corr. & more accurate ftilde value\n',
 })
+
+# B97-3c = modified B97(GGA) + D3BJ + SRB(through mctc-gcp)
+funcs.append({
+    "name": "B973c",
+    "alias": ["B97-3c"],
+    "xc_functionals": {
+        "GGA_XC_B97_3C": {}
+    },
+    "description": '    B97-3c GGA-based 3C composite method with a TZ basis set, D3 and short-range basis set correction.\n',
+    "citation": '     J. G. Brandenburg, C.Bannwarth, A. Hansen, S. Grimme J. Chem. Phys. 148, 064104, 2018\n',
+    "doi": "10.1063/1.5012601",
+    "dispersion": {
+        "type": "d3bjatm",
+        "params": {
+            's6': 1.000,
+            's8': 1.500,
+            'a1': 0.370,
+            'a2': 4.100,
+        },
+    },
+})
+
 
 functional_list = {}
 for functional in funcs:

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -34,6 +34,7 @@
 #include <cstdio>
 #include <string>
 #include <cmath>
+#include <sstream>
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
@@ -243,8 +244,8 @@ void diagSS(int C_irr) {
 
         if (pf) outfile->Printf("%d initial single excitation guesses\n", C_index);
         if (C_index == 0) {
-            outfile->Printf("No initial guesses obtained for %s state \n", moinfo.irr_labs[moinfo.sym ^ C_irr].c_str());
-            exit(1);
+            throw std::runtime_error("No initial guesses obtained for " + moinfo.irr_labs[moinfo.sym ^ C_irr] +
+                                     " state.\n");
         }
     } else {
         C_index = eom_params.cs_per_irrep[0];
@@ -596,8 +597,9 @@ void precondition_SS_RHF(dpdfile2 *RIA, double eval) {
             ii = i * nocc + i;
 
             if (!local.pairdom_len[ii]) {
-                outfile->Printf("\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n", ii);
-                exit(2);
+                std::ostringstream oss;
+                oss << "local_filter_T1: Pair ii = " << ii << "  is zero-length, which makes no sense.\n";
+                throw std::logic_error(oss.str());
             }
 
             T1tilde = init_array(local.pairdom_len[ii]);
@@ -801,5 +803,5 @@ void restart_SS(double **alpha, int L, int num, int C_irr) {
     }
     return;
 }
-}
+}  // namespace cceom
 }  // namespace psi

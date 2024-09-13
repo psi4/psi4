@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -159,6 +159,30 @@ funcs.append({
     },
     "description": '    PBE Hybrid based 3C composite method with a small basis set, gCP and D3(BJ)\n',
     "citation": '    Grimme et. al., J. Chem. Phys., 143, 054107, 2015\n',
+})
+
+funcs.append({
+    "name": "wB97X3c",
+    "alias": ["wB97X-3C"],
+    "xc_functionals": {
+        "HYB_GGA_XC_WB97X_V": {}
+    },
+    "dispersion": {
+        "type": "d4bjeeqatm",
+        "nlc": False,
+        "params": {
+            'a1': 0.2464,
+            'a2': 4.737,
+            's6': 1.000,
+            's8': 0.000,
+            's9': 1.000,
+        },
+    },
+    "description":
+    '    wB97X basied 3C composite method with a small basis set, gCP and D4\n',
+    "citation":
+    '    M. Muller, A. Hansen, S. Grimme, J. Chem. Phys. 158, 014103 (2023)\n',
+    "doi": "10.1063/5.0133026",
 })
 
 funcs.append({

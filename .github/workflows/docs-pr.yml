@@ -7,8 +7,13 @@ on:
 jobs:
 
   docs:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cfg:
+          - runs-on: ubuntu-latest
+            python-version: "3.10"
     name: Propose Docs
+    runs-on: ${{ matrix.cfg.runs-on }}
     defaults:
       run:
         shell: bash -l {0}
@@ -18,30 +23,50 @@ jobs:
     # fetch-depth: 0 gets git history so Psi4 version computable
     - name: Checkout
       if: ${{ github.repository == 'psi4/psi4' }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         path: code
 
     - name: Checkout psi4/psi4docs Repo
       if: ${{ github.repository == 'psi4/psi4' }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: psi4/psi4docs
         path: docs
         ref: master
 
+    - name: Write Conda environment files
+      run: |
+        echo "::group::Prepare OS Python"
+        which python
+        python --version
+        pip install PyYAML
+        echo "::endgroup::"
+        #
+        code/conda/psi4-path-advisor.py \
+          env \
+          --name p4docs \
+          --python ${{ matrix.cfg.python-version }} \
+          --disable addons \
+          --offline-conda
+        #
+        echo "::group::View Env Spec File for Conda"
+        printf "\n<<<  env_p4docs.yaml  >>>\n"
+        pygmentize -g -O style=friendly,linenos=1 env_p4docs.yaml
+        echo "::endgroup::"
+
     - name: Create Conda Environment
       if: ${{ github.repository == 'psi4/psi4' }}
-      uses: conda-incubator/setup-miniconda@v2
+      uses: conda-incubator/setup-miniconda@v3
       with:
         miniforge-variant: Mambaforge
         use-mamba: true
-        activate-environment: test
+        activate-environment: p4docs
         add-pip-as-python-dependency: true
         auto-activate-base: false
         channels: conda-forge
-        environment-file: code/devtools/conda-envs/docs-cf.yaml
+        environment-file: env_p4docs.yaml
         show-channel-urls: true
 
     - name: Environment Information
@@ -51,53 +76,45 @@ jobs:
         conda list
         which conda python cmake $CXX
 
-    # This patch and the jinja2<3 restriction were needed as recently as March 2023, but when I try a py311 env with newest everything, both can be released.
-    #- name: Patch Sphinx for Pybind11
-    #  if: ${{ github.repository == 'psi4/psi4' }}
-    #  run: sed -i "s/app\.add_autodoc_attrgetter/# app.add_autodoc_attrgetter/g" ${CONDA_PREFIX}/lib/python3.10/site-packages/sphinx_automodapi/autodoc_enhancements.py
-
-    # docs are not Ninja ready
+    # docs are finally Ninja ready
     - name: Configure with CMake (Conda Gnu + MKL)
       if: ${{ github.repository == 'psi4/psi4' }}
       working-directory: ./code
       run: |
+        conda/psi4-path-advisor.py \
+          cache \
+          --objdir objdir \
+          --insist
+        echo "::group::View Cache File for CMake"
+        printf "\n<<<  cache_p4docs@objdir.cmake  >>>\n"
+        pygmentize -g -O style=colorful,linenos=1 cache_p4docs@objdir.cmake
+        echo "::endgroup::"
+        #
         cmake \
           -S. \
-          -Bobjdir \
-          -G"Unix Makefiles" \
-          -DCMAKE_BUILD_TYPE=Debug \
-          -DCMAKE_C_COMPILER=${CC} \
-          -DCMAKE_CXX_COMPILER=${CXX} \
-          -DCMAKE_CXX_FLAGS="-O0" \
-          -DCMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-          -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -DENABLE_ecpint=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_optking=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
-          -DSPHINXMAN_STRICT=ON \
-          -DSPHINX_ROOT=${CONDA_PREFIX}
+          -B objdir \
+          -G Ninja \
+          -C ${{ github.workspace }}/code/cache_p4docs@objdir.cmake \
+          -D CMAKE_BUILD_TYPE=Debug \
+          -D CMAKE_CXX_FLAGS="-O0" \
+          -D SPHINXMAN_STRICT=ON
 
     - name: Compile Psi4
       if: ${{ github.repository == 'psi4/psi4' }}
       working-directory: ./code
-      run: cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
+      run: CMAKE_BUILD_PARALLEL_LEVEL=1 cmake --build objdir
 
     - name: Compile & Pack Docs
       if: ${{ github.repository == 'psi4/psi4' }}
       working-directory: ./code
       run: |
-        cmake --build objdir --target sphinxman -j`getconf _NPROCESSORS_ONLN`
+        cmake --build objdir --target sphinxman
         cd objdir/doc/sphinxman
         tar -zcf sphinxman.tar.gz html/
 
     - name: Archive Docs Tarball
       if: (success() || failure()) && ${{ github.repository == 'psi4/psi4' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: sphinxman-html
         path: |
@@ -106,11 +123,13 @@ jobs:
 
     - name: Compare Docs (PR generated vs psi4/psi4docs)
       if: ${{ github.repository == 'psi4/psi4' }}
-      working-directory: ./docs
+      working-directory: ./docs/sphinxman
       id: compare-psi4docs
       run: |
-        cp -pR ../code/objdir/doc/sphinxman/html .
+        cp -pR ../../code/objdir/doc/sphinxman/html .
+        rm -rf master
+        mv html master
         echo "::group::Selective Git Diff"
-        git diff --color-words -I"Last updated on" -I"psi4/tree"
+        git diff --color-words -I"Last updated on" -I"psi4/tree" -I"documentation_options"
         echo "::endgroup::"
 

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -36,6 +36,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "dpd.h"
+#include "psi4/libpsi4util/exception.h"
 
 namespace psi {
 
@@ -56,7 +57,7 @@ int DPD::trans4_mat_irrep_shift13(dpdtrans4 *Trans, int buf_block) {
 
     if (Trans->shift.shift_type) {
         outfile->Printf("\n\tShift is already on! %d\n", Trans->shift.shift_type);
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Shift is already on! " + std::to_string(Trans->shift.shift_type));
     } else
         Trans->shift.shift_type = 13;
 

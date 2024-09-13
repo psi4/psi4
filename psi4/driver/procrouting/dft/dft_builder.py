@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -82,7 +82,7 @@ dict = {
 import collections
 import copy
 
-from qcengine.programs.empirical_dispersion_resources import dashcoeff, get_dispersion_aliases
+from qcengine.programs.empirical_dispersion_resources import dashcoeff, get_dispersion_aliases, new_d4_api
 
 from psi4 import core
 
@@ -97,6 +97,9 @@ dict_functionals.update(mgga_functionals.functional_list)
 dict_functionals.update(hyb_functionals.functional_list)
 dict_functionals.update(dh_functionals.functional_list)
 
+# remove r2scan-3c from dictionary if dftd4 <= v3.5.0
+if new_d4_api is False:
+    dict_functionals.pop("r2scan3c")
 
 def get_functional_aliases(functional_dict):
     if "alias" in functional_dict:
@@ -125,6 +128,10 @@ for functional_name in dict_functionals:
         for formal in functional_aliases:
             # "bless" the original functional dft/*_functionals dispersion definition including aliases
             dashcoeff_supplement[disp['type']]['definitions'][formal] = disp
+            # add omitted default parameters of the dispersion correction
+            for p,val in dashcoeff[disp['type']]['default'].items():
+                if p not in dashcoeff_supplement[disp['type']]['definitions'][formal]['params'].keys():
+                    dashcoeff_supplement[disp['type']]['definitions'][formal]['params'][p]=val
             # generate dispersion aliases for every functional alias
             for nominal_dispersion_level, resolved_dispersion_level in _dispersion_aliases.items():
                 if resolved_dispersion_level == disp["type"]:
@@ -235,7 +242,7 @@ def check_consistency(func_dictionary):
         allowed_params = sorted(dashcoeff[_dispersion_aliases[disp["type"]]]["default"].keys())
         if "params" not in disp or sorted(disp["params"].keys()) != allowed_params:
             raise ValidationError(
-                f"SCF: Dispersion params ({list(disp['params'].keys())}) must include all ({allowed_params})")
+                f"SCF: Dispersion params for {name} ({list(disp['params'].keys())}) must include all ({allowed_params})")
     # 3d) check formatting for dispersion citation
         if "citation" in disp:
             cit = disp["citation"]
@@ -258,7 +265,11 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
     if "xc_functionals" in func_dictionary:
         for xc_key in func_dictionary["xc_functionals"]:
             xc_name = ("XC_" + xc_key).upper()
-        sup = core.SuperFunctional.XC_build(xc_name, restricted)
+            xc_params = func_dictionary["xc_functionals"][xc_key]
+            if "tweak" in xc_params:
+                sup = core.SuperFunctional.XC_build(xc_name, restricted, xc_params["tweak"])
+            else:
+                sup = core.SuperFunctional.XC_build(xc_name, restricted)
         descr = "    " + func_dictionary["name"] + " "
         if sup.is_gga():
             if sup.x_alpha() > 0:
@@ -382,7 +393,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
         sup.set_citation(func_dictionary["citation"])
     if "description" in func_dictionary:
         if "doi" in func_dictionary:
-            sup.set_description(func_dictionary["description"] + "(" + func_dictionary["doi"] + ")")
+            sup.set_description(func_dictionary["description"].replace("\n", "") + "  (" + func_dictionary["doi"].lstrip() + ")")
         else:
             sup.set_description(func_dictionary["description"])
 

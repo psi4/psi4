@@ -8,6 +8,10 @@ if(${ENABLE_ddx})
         message(STATUS "${Cyan}Found ddx${ColourReset}: ${PY_pyddx} (found version ${pyddx_VERSION})")
         add_library(ddx_external INTERFACE)  # dummy
 
+        if(${CMAKE_INSIST_FIND_PACKAGE_ddx})
+            message(VERBOSE "Suitable ddx located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_ddx})
             message(FATAL_ERROR "Suitable ddx could not be externally located as user insists")
@@ -21,7 +25,7 @@ if(${ENABLE_ddx})
 
         ExternalProject_Add(ddx_external
             BUILD_ALWAYS 1
-            URL https://github.com/ddsolvation/ddX/archive/v0.4.2.tar.gz
+            URL https://github.com/ddsolvation/ddX/archive/v0.4.5.tar.gz
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
             BUILD_COMMAND ${Python_EXECUTABLE} setup.py build

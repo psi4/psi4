@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -49,7 +49,7 @@ double SCF::energy(int cycle, double old_energy) {
         electronic_energy += dot(Do, T);
     }
 
-    total_energy = electronic_energy + moinfo_scf->get_nuclear_energy();
+    total_energy = electronic_energy + moinfo_scf->get_nuc_E();
 
     if (reference == tcscf) {
         // Compute the CI gradient

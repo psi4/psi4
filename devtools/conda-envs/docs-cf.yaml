@@ -1,37 +1,45 @@
 name: test
 channels:
   - conda-forge
+  - nodefaults
 dependencies:
-  - libblas=*=*mkl
-  - mkl-devel
-  - pydantic=1  # to keep on v1 branch for autodoc-pydantic
     # build
+  - c-compiler
   - cmake
-  - doxygen
   - cxx-compiler
-    # core
-  - boost-cpp
-  - eigen
-  - networkx
-  - pybind11=2.10.*  # until FixedSize typing percolates upstream
-  - python=3.11.*
-    # qc
+  - ninja
+    # non-qc buildtime required
+  - blas-devel                # req'd with libblas
+  - eigen                     # req'd with libint
+  - libblas=*=*mkl
+  - libboost-headers          # req'd with libint
+  - llvm-openmp
+  - numpy
+  - pybind11>=2.10.*
+  - python
+    # qc buildtime required
   - gau2grid
-  - conda-forge/label/libint_dev::libint
+  - conda-forge/label/libint_dev::libint==2.7.3dev1
   - libxc-c
-  - psi4/label/dev::libecpint
   - optking
+  - qcelemental
   - qcengine
-  - qcportal=0.15.8
+    # runtime required
+  - msgpack-python            # req'd with qcelemental
+  - networkx                  # req'd with qcelemental
+  - scipy
+    # test
+  - pytest
+  - pytest-xdist              # req'd with pytest; Parallel runner not strictly needed but very handy.
     # docs
-  - ipykernel
-  - jupyter_client
+  - autodoc-pydantic=1        # req'd with sphinx
+  - doxygen
+  - ipykernel                 # req'd with nbsphinx
   - nbsphinx
   - python-graphviz
+  - qcportal                  # req'd with sphinx; Required for docs to resolve objects in pydantic classes.
   - sphinx
-  - sphinx-autodoc-typehints
-  - sphinx-automodapi
-  - psi4/label/dev::sphinx-psi-theme
-  - jinja2
-  - autodoc-pydantic
-
+  - sphinx-autodoc-typehints  # req'd with sphinx
+  - sphinx-automodapi         # req'd with sphinx
+  - psi4::sphinx-psi-theme
+  - sphinx-tabs               # req'd with sphinx

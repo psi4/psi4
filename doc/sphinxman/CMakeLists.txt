@@ -18,13 +18,18 @@ if(SPHINX_THEME STREQUAL sphinx_psi_theme)
     execute_process(COMMAND ${Python_EXECUTABLE} -c
         "import sphinx_psi_theme; import cloud_sptheme; import sphinx_automodapi; import graphviz"
         OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
+elseif(SPHINX_THEME STREQUAL basic)
+    # these themes are built-in to Sphinx
+    execute_process(COMMAND ${Python_EXECUTABLE} -c
+        "import sphinx_automodapi; import graphviz"
+        OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
 else()
     execute_process(COMMAND ${Python_EXECUTABLE} -c
         "import ${SPHINX_THEME}; import sphinx_automodapi; import graphviz"
         OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
 endif()
 if(_exec_python_err)
-    message(STATUS "No theme, no docs (try: conda install sphinx-psi-theme cloud_sptheme sphinx-automodapi sphinx-autodoc-typehints graphviz python-graphviz autodoc-pydantic -c conda-forge -c psi4)")
+    message(STATUS "No theme, no docs (try: conda install sphinx-psi-theme cloud_sptheme sphinx-automodapi sphinx-autodoc-typehints graphviz python-graphviz autodoc-pydantic sphinx-tabs -c conda-forge -c psi4)")
     set(SPHINX_STUFF_FOUND "OFF")
 
 else()
@@ -63,7 +68,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     cfour_table_grad.rst libefp.rst cppe.rst conda.rst pcmsolver.rst thermo.rst
     chemps2.rst fisapt.rst plugin_v2rdm_casscf.rst psi4api.rst
     manage_addon.rst numpy.rst build_planning.rst build_faq.rst
-    build_obtaining.rst libint.rst erd.rst simint.rst gcp.rst
+    build_obtaining.rst libint.rst simint.rst gcp.rst
     index_tutorials.rst prog_faq.rst manage_index.rst manage_git.rst
     prog_style_c.rst prog_blas.rst add_tests.rst plugin_snsmp2.rst dftnl.rst
     libxc.rst gau2grid.rst prog_conduct.rst prog_intro.rst prog_newcode.rst
@@ -113,7 +118,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
       psi4square.png
       favicon-psi4.ico
       AlphaMOs.png
-      gdma-2.2.06.pdf
+      gdma-2.3.pdf
       Total.png
       VA.png
       prflow.001.jpeg
@@ -126,12 +131,15 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/resources/${fl} ${CCBD}/source)
     endforeach()
 
+    # Extension files
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CCSD}/source/extensions ${CCBD}/source/extensions)
+
     # Autodoc basis sets
     add_custom_command(
         COMMAND ${PERL_EXECUTABLE} ${CCSD}/document_bases.pl ${CCSD}
         OUTPUT  ${CCBD}/source/autodoc_psi4bases.rst
         DEPENDS ${CCSD}/document_bases.pl
-                ${psi4_SOURCE_DIR}/psi4/share/psi4/basis/*.gbs
+                $<IF:$<STREQUAL:${CMAKE_GENERATOR},"Unix Makefiles">,${psi4_SOURCE_DIR}/psi4/share/psi4/basis/*.gbs,${psi4_SOURCE_DIR}/psi4/share/psi4/basis/cc-pvdz.gbs>
         COMMENT "Autodoc basis sets")
 
 
@@ -174,7 +182,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
         OUTPUT  ${CCBD}/source/autodoc_psivariables_bymodule.rst
                 ${CCBD}/source/autodir_psivariables/module__scf.rst  # representative
         DEPENDS ${CCSD}/document_psivariables.pl
-                ${psi4_SOURCE_DIR}/psi4/src/*/*/*.cc
+                $<IF:$<STREQUAL:${CMAKE_GENERATOR},"Unix Makefiles">,${psi4_SOURCE_DIR}/psi4/src/*/*/*.cc,${psi4_SOURCE_DIR}/psi4/src/psi4/fnocc/ccsd.cc>
         COMMENT "Autodoc PSI variables c-side")
 
 
@@ -194,7 +202,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
         COMMAND ${Python_EXECUTABLE} ${CCSD}/document_databases.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodoc_available_databases.rst
         DEPENDS ${CCSD}/document_databases.py
-                ${psi4_SOURCE_DIR}/psi4/share/psi4/databases/*.py
+                $<IF:$<STREQUAL:${CMAKE_GENERATOR},"Unix Makefiles">,${psi4_SOURCE_DIR}/psi4/share/psi4/databases/*.py,${psi4_SOURCE_DIR}/psi4/share/psi4/databases/S22.py>
         COMMENT "Autodoc databases")
 
 
@@ -204,8 +212,8 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
         OUTPUT  ${CCBD}/source/autodoc_testsuite_corepsi4.rst
                 ${CCBD}/source/autodoc_testsuite_dftd3.rst
         DEPENDS ${CCSD}/document_tests.pl
-                ${psi4_SOURCE_DIR}/tests/*/input.dat
-                ${psi4_SOURCE_DIR}/tests/*/*/input.dat
+                $<IF:$<STREQUAL:${CMAKE_GENERATOR},"Unix Makefiles">,${psi4_SOURCE_DIR}/tests/*/input.dat,${psi4_SOURCE_DIR}/tests/ghosts/input.dat>
+                $<IF:$<STREQUAL:${CMAKE_GENERATOR},"Unix Makefiles">,${psi4_SOURCE_DIR}/tests/*/*/input.dat,${psi4_SOURCE_DIR}/tests/dftd3/energy/input.dat>
         COMMENT "Autodoc test cases")
 
 
@@ -315,19 +323,18 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
 
     # Autodoc plugins
     #   Not at all in working order
-    add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E make_directory source/autodir_plugins
-        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_plugins.py ${CCSD}
-        OUTPUT  ${CCBD}/source/autodoc_abbr_options_plugins.rst
-                ${CCBD}/source/autodoc_available_plugins.rst
-                ${CCBD}/source/autodir_plugins/glossary__aointegrals.rst
-                ${CCBD}/source/autodir_plugins/module__aointegrals.rst
-                ${CCBD}/source/autodir_plugins/aointegrals__print.rst
-        DEPENDS ${CCSD}/document_plugins.py
-                ${psi4_SOURCE_DIR}/plugins/*/*.py
-                ${psi4_SOURCE_DIR}/plugins/*/doc.rst
-        COMMENT "Autodoc plugins")
-
+    #add_custom_command(
+    #    COMMAND ${CMAKE_COMMAND} -E make_directory source/autodir_plugins
+    #    COMMAND ${Python_EXECUTABLE} ${CCSD}/document_plugins.py ${CCSD}
+    #    OUTPUT  ${CCBD}/source/autodoc_abbr_options_plugins.rst
+    #            ${CCBD}/source/autodoc_available_plugins.rst
+    #            ${CCBD}/source/autodir_plugins/glossary__aointegrals.rst
+    #            ${CCBD}/source/autodir_plugins/module__aointegrals.rst
+    #            ${CCBD}/source/autodir_plugins/aointegrals__print.rst
+    #    DEPENDS ${CCSD}/document_plugins.py
+    #            ${psi4_SOURCE_DIR}/plugins/*/*.py
+    #            ${psi4_SOURCE_DIR}/plugins/*/doc.rst
+    #    COMMENT "Autodoc plugins")
 
     # Autodoc efp fragments
     if(${ENABLE_libefp})
@@ -335,7 +342,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
             COMMAND ${Python_EXECUTABLE} ${CCSD}/document_efpfrag.py ${CCSD}
             OUTPUT  ${CCBD}/source/autodoc_available_efpfrag.rst
             DEPENDS ${CCSD}/document_efpfrag.py
-                    ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag/*efp
+                    $<IF:$<STREQUAL:${CMAKE_GENERATOR},"Unix Makefiles">,${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag/*efp,${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag/h2o.efp>
             COMMENT "Autodoc efp fragments")
     else()
         file(WRITE ${CCBD}/source/autodoc_available_efpfrag.rst "")

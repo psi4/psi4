@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -36,6 +36,7 @@
 #include <string>
 #include <cstring>
 #include <cmath>
+#include <sstream>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libiwl/iwl.h"
@@ -220,8 +221,9 @@ void local_filter_T1(dpdfile2 *T1) {
         ii = i * nocc + i; /* diagonal element of pair matrices */
 
         if (!local.pairdom_len[ii]) {
-            outfile->Printf("\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n", ii);
-            exit(PSI_RETURN_FAILURE);
+            std::ostringstream oss;
+            oss << "local_filter_T1: Pair ii = " << ii << "  is zero-length, which makes no sense.\n";
+            throw std::logic_error(oss.str());
         }
 
         T1tilde = init_array(local.pairdom_len[ii]);

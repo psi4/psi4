@@ -8,10 +8,9 @@ foreach(dir
   dkh
   ecpint
   libefp
-  erd
+  einsums
   gau2grid
   gdma
-  libint
   libint2
   mdi
   pcmsolver
@@ -23,6 +22,8 @@ foreach(dir
   libxc
   brianqc
   ddx
+  integratorxx
+  gauxc  # keep this _after_ integratorxx as it's checking <project>_DIR
   )
   add_subdirectory(${dir})
 endforeach()

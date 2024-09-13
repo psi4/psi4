@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -243,7 +243,7 @@ void PKManager::compute_integrals(bool wK) {
         }
     } else {
         for (int i = 0; i < nthreads_; ++i) {
-            tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
+            tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->eri()));
         }
     }
 
@@ -1076,7 +1076,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
     std::vector<std::shared_ptr<TwoBodyAOInt>> tb;
     if (!wK) {
         for (int i = 0; i < nthreads(); ++i) {
-            tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->erd_eri()));
+            tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->eri()));
         }
     } else {
         for (int i = 0; i < nthreads(); ++i) {

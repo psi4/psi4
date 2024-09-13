@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -192,6 +192,8 @@ def load_basfam_other():
     basis_def2svp = BasisFamily('def2-SVP', zeta=2)
     basis_def2svpd = BasisFamily('def2-SVPD', zeta=2)
     basis_def2tzvp = BasisFamily('def2-TZVP', zeta=3)
+    basis_def2mtzvp = BasisFamily('def2-mTZVP', zeta=3)
+    basis_def2mtzvpp = BasisFamily('def2-mTZVPP', zeta=3)
     basis_def2tzvpd = BasisFamily('def2-TZVPD', zeta=3)
     basis_def2tzvpp = BasisFamily('def2-TZVPP', zeta=3)
     basis_def2tzvppd = BasisFamily('def2-TZVPPD', zeta=3)
@@ -205,6 +207,8 @@ def load_basfam_other():
     basis_def2svp.add_jfit('def2-universal-JFIT')
     basis_def2svpd.add_jfit('def2-universal-JFIT')
     basis_def2tzvp.add_jfit('def2-universal-JFIT')
+    basis_def2mtzvp.add_jfit('def2-universal-JFIT')
+    basis_def2mtzvpp.add_jfit('def2-universal-JFIT')
     basis_def2tzvpd.add_jfit('def2-universal-JFIT')
     basis_def2tzvpp.add_jfit('def2-universal-JFIT')
     basis_def2tzvppd.add_jfit('def2-universal-JFIT')
@@ -218,6 +222,8 @@ def load_basfam_other():
     basis_def2svp.add_jkfit('def2-universal-JKFIT')
     basis_def2svpd.add_jkfit('def2-universal-JKFIT')
     basis_def2tzvp.add_jkfit('def2-universal-JKFIT')
+    basis_def2mtzvp.add_jkfit('def2-universal-JKFIT')
+    basis_def2mtzvpp.add_jkfit('def2-universal-JKFIT')
     basis_def2tzvpd.add_jkfit('def2-universal-JKFIT')
     basis_def2tzvpp.add_jkfit('def2-universal-JKFIT')
     basis_def2tzvppd.add_jkfit('def2-universal-JKFIT')
@@ -231,6 +237,8 @@ def load_basfam_other():
     basis_def2svp.add_rifit('def2-SVP-RI')
     basis_def2svpd.add_rifit('def2-SVPD-RI')
     basis_def2tzvp.add_rifit('def2-TZVP-RI')
+    basis_def2mtzvp.add_rifit('def2-TZVP-RI')
+    basis_def2mtzvpp.add_rifit('def2-TZVPP-RI')
     basis_def2tzvpd.add_rifit('def2-TZVPD-RI')
     basis_def2tzvpp.add_rifit('def2-TZVPP-RI')
     basis_def2tzvppd.add_rifit('def2-TZVPPD-RI')
@@ -243,6 +251,8 @@ def load_basfam_other():
     basis_def2svp.add_guess('def2-SV(P)')
     basis_def2svpd.add_guess('def2-SV(P)')
     basis_def2tzvp.add_guess('def2-SV(P)')
+    basis_def2mtzvp.add_guess('def2-SV(P)')
+    basis_def2mtzvpp.add_guess('def2-SV(P)')
     basis_def2tzvpd.add_guess('def2-SV(P)')
     basis_def2tzvpp.add_guess('def2-SV(P)')
     basis_def2tzvppd.add_guess('def2-SV(P)')
@@ -256,6 +266,8 @@ def load_basfam_other():
     basisfamily_list.append(basis_def2svp)
     basisfamily_list.append(basis_def2svpd)
     basisfamily_list.append(basis_def2tzvp)
+    basisfamily_list.append(basis_def2mtzvp)
+    basisfamily_list.append(basis_def2mtzvpp)
     basisfamily_list.append(basis_def2tzvpd)
     basisfamily_list.append(basis_def2tzvpp)
     basisfamily_list.append(basis_def2tzvppd)
@@ -390,16 +402,22 @@ def load_basfam_other():
     basisfamily_list.append(basis_pcsseg3)
     basisfamily_list.append(basis_pcsseg4)
 
-    # Minix
+    # Minix, vDZP
     basis_minix = BasisFamily('minix', zeta=2)
-    
+    basis_vdzp = BasisFamily('vDZP', zeta=2)
+
     basis_minix.add_jfit('def2-universal-JFIT')
+    basis_vdzp.add_jfit('def2-universal-JFIT')
     basis_minix.add_jkfit('def2-universal-JKFIT')
+    basis_vdzp.add_jkfit('def2-universal-JKFIT')
     basis_minix.add_rifit('def2-SVP-RI')
-    # mixix too small for add_guess
-    
+    basis_vdzp.add_rifit('def2-SVP-RI')
+    # minix too small for add_guess
+    # vDZP too small for add_guess
+
     basisfamily_list.append(basis_minix)
-    
+    basisfamily_list.append(basis_vdzp)
+
     # Others
     basis_dz = BasisFamily('DZ')
     basis_dzp = BasisFamily('DZP')

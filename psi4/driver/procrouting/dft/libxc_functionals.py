@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -142,6 +142,9 @@ funcs.append({"name": "B97M-V"         , "xc_functionals": {"MGGA_XC_B97M_V"    
 funcs.append({"name": "B5050LYP"       , "xc_functionals": {"HYB_GGA_XC_B5050LYP"       : {}}})
 funcs.append({"name": "LC-BOP"         , "xc_functionals": {"HYB_GGA_XC_LC_BOP"         : {}}, "alias": ["LRC-BOP"]})
 funcs.append({"name": "KMLYP"          , "xc_functionals": {"HYB_GGA_XC_KMLYP"          : {}}})
+funcs.append({"name": "R2SCAN0"        , "xc_functionals": {"HYB_MGGA_XC_R2SCAN0"       : {}}})
+funcs.append({"name": "R2SCANh"        , "xc_functionals": {"HYB_MGGA_XC_R2SCANH"       : {}}})
+funcs.append({"name": "R2SCAN50"       , "xc_functionals": {"HYB_MGGA_XC_R2SCAN50"      : {}}})
 # yapf: enable
 
 functional_list = {}

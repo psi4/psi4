@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -40,6 +40,8 @@ PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/dimension.h"
 
+#include "psi4/libfock/SplitJK.h"
+
 namespace psi {
 class MinimalInterface;
 class BasisSet;
@@ -49,6 +51,7 @@ class Options;
 class PSIO;
 class DFHelper;
 class DFTGrid;
+class PetiteList;
 
 namespace pk {
 class PKManager;
@@ -246,8 +249,6 @@ class PSI_API JK {
     double do_csam_;
     /// Whether to all desymmetrization, for cases when it's already been performed elsewhere
     std::vector<bool> input_symmetry_cast_map_;
-    /// Use severe screening techniques? Useful in early SCF iterations (defaults to false)
-    bool early_screening_;
     /// Number of ERI shell quartets computed, i.e., not screened out
     size_t num_computed_shells_;
     /// Tally of ERI shell n-lets (triplets, quartets) computed per SCF iteration 
@@ -483,14 +484,6 @@ class PSI_API JK {
     */
     virtual void set_omega_beta(double beta) { omega_beta_ = beta; }
     double get_omega_beta() { return omega_beta_; }
-
-    /**
-    * Enable severe screening techniques, which can be useful in early 
-    *       SCF iterations.
-    * @param early_screening early screening status (defaults to false)
-    */
-    void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
-    bool get_early_screening() { return early_screening_; }
 
     // => Computers <= //
 
@@ -1206,11 +1199,10 @@ class PSI_API MemDFJK : public JK {
  *
  * JK implementation framework enabling arbitrary mixing and matching
  * of separate J and K construction algorithms.
- * Current algorithms in place:
- * J: Direct DF-J
+ * Current algorithms in place (via SplitJK):
+ * J: DF-DirJ
  * K: COSX, LinK
  *
- * TODO: Implement SplitJK companion framework for truly arbitrary mixing and matching
  */
 class PSI_API CompositeJK : public JK {
    protected:
@@ -1221,9 +1213,13 @@ class PSI_API CompositeJK : public JK {
     Options& options_;
 
     /// CompositeJK algorithm info
-    std::string j_type_;
-    std::string k_type_;
+    std::shared_ptr<SplitJK> j_algo_;
+    std::shared_ptr<SplitJK> k_algo_;
 
+    /// per-thread TwoBodyAOInt object (for computing three/four-center ERIs)
+    std::unordered_map<std::string, std::vector<std::shared_ptr<TwoBodyAOInt>>> eri_computers_;
+    /// Auxiliary basis set
+    std::shared_ptr<BasisSet> auxiliary_;
     // Perform Density matrix-based integral screening?
     bool density_screening_;
 
@@ -1244,32 +1240,6 @@ class PSI_API CompositeJK : public JK {
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
   
-    // => Density Fitting Stuff, for Direct DF-J <= //
-
-    /// Auxiliary basis set
-    std::shared_ptr<BasisSet> auxiliary_;
-    /// Coulomb Metric
-    SharedMatrix J_metric_;
-    /// per-thread TwoBodyAOInt object (for computing three/four-center ERIs)
-    std::unordered_map<std::string, std::vector<std::shared_ptr<TwoBodyAOInt>>> eri_computers_;
-
-    // => Semi-Numerical Stuff, for COSX <= //
-
-    /// Small DFTGrid for initial SCF iterations
-    std::shared_ptr<DFTGrid> grid_init_;
-    /// Large DFTGrid for the final SCF iteration
-    std::shared_ptr<DFTGrid> grid_final_;
-    /// Overlap fitting metric for grid_initial_
-    SharedMatrix Q_init_;
-    /// Overlap fitting metric for grid_final_
-    SharedMatrix Q_final_;
- 
-    // => LinK variables <= //
-
-    // Density-based ERI Screening tolerance to use in the LinK algorithm
-    double linK_ints_cutoff_;
-
-    std::string name() override { return "CompositeJK"; }
     size_t memory_estimate() override;
 
     // => Required Algorithm-Specific Methods <= //
@@ -1287,31 +1257,6 @@ class PSI_API CompositeJK : public JK {
     void incfock_setup();
     /// Post-iteration Incfock processing
     void incfock_postiter();
-
-    /// Build the coulomb (J) matrix using Direct DF-J
-    /// Reference is https://doi.org/10.1039/B204199P
-    void build_DirectDFJ(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& J);
-
-    /**
-     * @author Andy Jiang, Georgia Tech, December 2021
-     * 
-     * @brief constructs the K matrix using the LinK algorithm, described in [Ochsenfeld:1998:1663]_
-     * doi: 10.1063/1.476741
-     * 
-     * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
-     * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
-     * @param K The list of AO K matrices to build (Same size as D)
-     * 
-     */
-    void build_linK(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& K);
-
-    /// Build the exchange (K) matrix using COSX
-    // primary reference is https://doi.org/10.1016/j.chemphys.2008.10.036 
-    // overlap fitting is discussed in https://doi.org/10.1063/1.3646921
-    void build_COSK(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& K);
 
     /// Common initialization
     void common_init();
@@ -1343,6 +1288,8 @@ class PSI_API CompositeJK : public JK {
     void clear_D_prev() { D_prev_.clear();}
 
     // => Knobs <= //
+    std::string name() override { return j_algo_->name() + "+" + k_algo_->name(); }
+ 
     /**
     * Set to do K tasks
     * @param do_K do K matrices or not,
@@ -1351,14 +1298,23 @@ class PSI_API CompositeJK : public JK {
     virtual void set_do_K(bool do_K) override;
 
     /**
+    * Knobs for getting and setting current COSX grid for this SCF iteration, if COSX is used
+    * throws if COSX is not used
+    */
+    void set_COSX_grid(std::string current_grid);
+    std::string get_COSX_grid();
+
+    /**
+    * Get maximum AM for GauXC used for snLinK, if GauXC support is enabled
+    * Throws if GauXC is not installed or if snLinK is not being used
+    */
+    int get_snLinK_max_am();
+
+    /**
     * Print header information regarding JK
     * type on output file
     */
     void print_header() const override;
-
-    void print_DirectDFJ_header() const;
-    void print_linK_header() const;
-    void print_COSX_header() const;
 };
 
 }

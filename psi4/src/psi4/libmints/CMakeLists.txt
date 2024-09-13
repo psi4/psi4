@@ -6,7 +6,6 @@ list(APPEND sources
   oeprop.cc
   writer.cc
   transform.cc
-  sieve.cc
   multipolesymmetry.cc
   shellrotation.cc
   deriv.cc
@@ -43,9 +42,9 @@ list(APPEND sources
   pointgrp.cc
   rep.cc
   cdsalclist.cc
-  erd_eri.cc
   angularmomentum.cc
   orthog.cc
+  thc_eri.cc
   )
 
 # l2intf is a listing of all the files that include libint2's boys.h include (which is included in L2's engine.h).  they must
@@ -68,6 +67,7 @@ onebody.cc
 overlap.cc
 potential.cc
 potentialint.cc
+potential_erf.cc
 quadrupole.cc
 rel_potential.cc
 tracelessquadrupole.cc
@@ -97,13 +97,6 @@ target_link_libraries(mints
     Libint2::cxx
   )
 # Conditionally linked-to external projects
-if(TARGET Libint::libint)
-  target_link_libraries(mints
-    PUBLIC
-      Libint::libint
-    )
-endif()
-
 if(TARGET ECPINT::ecpint)
   target_sources(mints
     PRIVATE
@@ -154,13 +147,6 @@ if(TARGET PCMSolver::pcm)
   target_link_libraries(mints
     PUBLIC
       PCMSolver::pcm
-    )
-endif()
-
-if(TARGET erd::erd)
-  target_link_libraries(mints
-    PUBLIC
-      erd::erd
     )
 endif()
 

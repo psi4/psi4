@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -837,13 +837,12 @@ Data& Options::use(std::string& key) {
         }
 
         std::string choices_joined;
-        std::accumulate(std::begin(choices), std::end(choices), 0, [&choices_joined](int&, std::string& s) {
+        for (const std::string& s : choices) {
             if (!choices_joined.empty()) {
                 choices_joined.append(" ");
             }
             choices_joined.append(s);
-            return 0;
-        });
+        };
 
         printf("\nDid you mean? %s\n\n", choices_joined.c_str());
         outfile->Printf("\nDid you mean? %s\n\n", choices_joined.c_str());
@@ -906,13 +905,12 @@ Data Options::use(std::string& key) const {
         }
 
         std::string choices_joined;
-        std::accumulate(std::begin(choices), std::end(choices), 0, [&choices_joined](int&, std::string& s) {
+        for (const std::string& s : choices) {
             if (!choices_joined.empty()) {
                 choices_joined.append(" ");
             }
             choices_joined.append(s);
-            return 0;
-        });
+        };
 
         printf("\nDid you mean? %s\n\n", choices_joined.c_str());
         outfile->Printf("\nDid you mean? %s\n\n", choices_joined.c_str());

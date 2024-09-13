@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -968,7 +968,7 @@ void DCTSolver::build_DF_tensors_RHF() {
     build_gbarlambda_RHF_v3mem();
 
     // Build Tau matrix in MO basis (All)
-    mo_tauA_ = Matrix("MO basis Tau", nirrep_, nmopi_, nmopi_);
+    mo_tauA_ = Matrix("MO basis Tau", nmopi_, nmopi_);
 #pragma omp parallel for
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
@@ -1142,10 +1142,8 @@ void DCTSolver::build_gbarGamma_RHF() {
 #endif
 
     // Form gamma<R|S> = kappa<R|S> + tau<R|S>
-    mo_gammaA_ = Matrix("MO-basis Gamma", nirrep_, nmopi_, nmopi_);
-    //    mo_gammaA_->copy(kappa_mo_a_);
-    //    mo_gammaA_->add(mo_tauA_);
-    mo_gbarGamma_A_ = Matrix("MO-basis Gbar*Gamma", nirrep_, nmopi_, nmopi_);
+    mo_gammaA_ = Matrix("MO-basis Gamma", nmopi_, nmopi_);
+    mo_gbarGamma_A_ = Matrix("MO-basis Gbar*Gamma", nmopi_, nmopi_);
     mo_gammaA_.copy(mo_tauA_);
     mo_gammaA_.add(kappa_mo_a_);
 
@@ -1258,7 +1256,7 @@ void DCTSolver::build_DF_tensors_UHF() {
 
     // Build Tau matrix in MO basis (All)
     // Alpha-Alpha
-    mo_tauA_ = Matrix("MO basis Tau Alpha", nirrep_, nmopi_, nmopi_);
+    mo_tauA_ = Matrix("MO basis Tau Alpha", nmopi_, nmopi_);
 #pragma omp parallel for
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
@@ -1277,7 +1275,7 @@ void DCTSolver::build_DF_tensors_UHF() {
     }
 
     // Beta-Beta
-    mo_tauB_ = Matrix("MO basis Tau Beta", nirrep_, nmopi_, nmopi_);
+    mo_tauB_ = Matrix("MO basis Tau Beta", nmopi_, nmopi_);
 #pragma omp parallel for
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nboccpi_[h]; ++i) {
@@ -1701,10 +1699,10 @@ void DCTSolver::build_gbarGamma_UHF() {
 #endif
 
     // Form gamma<R|S> = kappa<R|S> + tau<R|S>
-    mo_gammaA_ = Matrix("MO-basis Gamma Alpha", nirrep_, nmopi_, nmopi_);
-    mo_gbarGamma_A_ = Matrix("MO-basis Gbar_Gamma_A", nirrep_, nmopi_, nmopi_);
-    mo_gammaB_ = Matrix("MO-basis Gamma Beta", nirrep_, nmopi_, nmopi_);
-    mo_gbarGamma_B_ = Matrix("MO-basis Gbar_Gamma_B", nirrep_, nmopi_, nmopi_);
+    mo_gammaA_ = Matrix("MO-basis Gamma Alpha", nmopi_, nmopi_);
+    mo_gbarGamma_A_ = Matrix("MO-basis Gbar_Gamma_A", nmopi_, nmopi_);
+    mo_gammaB_ = Matrix("MO-basis Gamma Beta", nmopi_, nmopi_);
+    mo_gbarGamma_B_ = Matrix("MO-basis Gbar_Gamma_B", nmopi_, nmopi_);
 
     mo_gammaA_.copy(mo_tauA_);
     mo_gammaA_.add(kappa_mo_a_);

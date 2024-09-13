@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -120,10 +120,10 @@ void DCTSolver::build_tau_R() {
 
     // Iteratively compute the exact Tau
 
-    auto aocc_tau_old = Matrix("MO basis Tau (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
-    auto avir_tau_old = Matrix("MO basis Tau (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
-    auto aocc_d = Matrix("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
-    auto avir_d = Matrix("Non-idempotency of OPDM (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
+    auto aocc_tau_old = Matrix("MO basis Tau (Alpha Occupied, old)", naoccpi_, naoccpi_);
+    auto avir_tau_old = Matrix("MO basis Tau (Alpha Virtual, old)", navirpi_, navirpi_);
+    auto aocc_d = Matrix("Non-idempotency of OPDM (Alpha Occupied, old)", naoccpi_, naoccpi_);
+    auto avir_d = Matrix("Non-idempotency of OPDM (Alpha Virtual, old)", navirpi_, navirpi_);
 
     bool converged = false;
     bool failed = false;

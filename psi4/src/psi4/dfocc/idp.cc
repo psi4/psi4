@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -144,9 +144,7 @@ void DFOCC::idp() {
         }  // end if nidpA != 0
 
         else if (nidpA == 0) {
-            outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
-            tstop();
-            exit(EXIT_SUCCESS);
+            throw std::logic_error("There is are no non-redundant orbital rotation pairs! \n");
         }
 
     }  // end if (reference_ == "RESTRICTED")
@@ -184,9 +182,7 @@ void DFOCC::idp() {
         outfile->Printf("\tNumber of beta independent-pairs :%3d\n", nidpB);
 
         if (nidpA == 0 && nidpB == 0) {
-            outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
-            tstop();
-            exit(EXIT_SUCCESS);
+            throw std::logic_error("There are no non-redundant orbital rotation pairs! \n");
         }
 
         if (nidpA > 0) {

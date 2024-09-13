@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -52,13 +52,13 @@ void SCF::print_eigenvectors_and_MO() {
 
     for (int h = 0; h < nirreps; ++h)
         for (int i = 0; i < docc[h]; ++i)
-            docc_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->get_irr_labs(h)));
+            docc_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->get_irr_lab(h)));
     for (int h = 0; h < nirreps; ++h)
         for (int i = docc[h]; i < docc[h] + actv[h]; ++i)
-            actv_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->get_irr_labs(h)));
+            actv_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->get_irr_lab(h)));
     for (int h = 0; h < nirreps; ++h)
         for (int i = docc[h] + actv[h]; i < sopi[h]; ++i)
-            virt_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->get_irr_labs(h)));
+            virt_evals.push_back(std::make_pair(epsilon->get(h, i), moinfo_scf->get_irr_lab(h)));
 
     sort(docc_evals.begin(), docc_evals.end());
     sort(actv_evals.begin(), actv_evals.end());

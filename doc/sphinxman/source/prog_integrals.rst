@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2023 The Psi4 Developers.
+.. # Copyright (c) 2007-2024 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -161,9 +161,9 @@ Sieving
 This is one of two breaking changes to the old style syntax.  Instead of
 constructing a sieve object, the integral object should be queried directly
 using the exact same syntax.  Requests for whether a shell is significant or a
-shell block is significant are both supported.  A sieve object is created if
-matching basis sets are found in either the bra or the ket.  For a density
-fitting integral (PQ|0A) where 0 is the null basis set and A is an auxiliary
+shell block is significant are both supported.  Sieving information is generated directly
+within the integral object if matching basis sets are found in either the bra or the ket.
+For a density fitting integral (PQ|0A) where 0 is the null basis set and A is an auxiliary
 basis set the (PQ| pair will be used to construct all of the sieving data.
 
 Buffer address

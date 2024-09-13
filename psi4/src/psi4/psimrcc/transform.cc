@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -118,11 +118,11 @@ void CCTransform::transform_oei_so_integrals() {
 
     allocate_oei_mo();
 
-    int nso = wfn_->nso();
-    int nmo = wfn_->nmo();
+    const int nso = wfn_->nso();
+    const int nmo = wfn_->nmo();
 
     std::vector<std::vector<double>> A(nso, std::vector<double>(nmo, 0));
-    auto C = wfn_->moinfo()->get_scf_mos();
+    const auto C = wfn_->moinfo()->get_scf_mos();
 
     // A(q,i) = H(q,p) * C(p,i)
     /*#ifdef CCTRANSFORM_USE_BLAS

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -507,8 +507,8 @@ void DCTSolver::form_density_weighted_fock() {
     global_dpd_->file2_init(&T_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
     // Copy Tau in MO basis from the DPD library
-    auto a_tau_mo = Matrix("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_);
-    auto b_tau_mo = Matrix("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_);
+    auto a_tau_mo = Matrix("Alpha Tau in the MO basis", nmopi_, nmopi_);
+    auto b_tau_mo = Matrix("Beta Tau in the MO basis", nmopi_, nmopi_);
 
     a_tau_mo.set_block(slices_.at("ACTIVE_OCC_A"), Matrix(&T_OO));
     a_tau_mo.set_block(slices_.at("ACTIVE_VIR_A"), Matrix(&T_VV));
@@ -520,8 +520,8 @@ void DCTSolver::form_density_weighted_fock() {
     global_dpd_->file2_close(&T_VV);
     global_dpd_->file2_close(&T_vv);
 
-    auto a_evecs = std::make_shared<Matrix>("Tau Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_);
-    auto b_evecs = std::make_shared<Matrix>("Tau Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_);
+    auto a_evecs = std::make_shared<Matrix>("Tau Eigenvectors (Alpha)", nmopi_, nmopi_);
+    auto b_evecs = std::make_shared<Matrix>("Tau Eigenvectors (Beta)", nmopi_, nmopi_);
     auto a_evals = std::make_shared<Vector>("Tau Eigenvalues (Alpha)",  nmopi_);
     auto b_evals = std::make_shared<Vector>("Tau Eigenvalues (Beta)", nmopi_);
 

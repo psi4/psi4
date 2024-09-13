@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -51,23 +51,16 @@ class CdSalcList;
 class RelPotentialInt : public OneBodyAOInt {
 
    protected:
+    /// The charges and locations that define the external potential
+    std::vector<std::pair<double, std::array<double, 3>>> Zxyz_;
 
-    /// Matrix of coordinates/charges of partial charges
-    SharedMatrix Zxyz_;
-
-    /// Computes integrals between two shell objects.
-    void compute_pair(const libint2::Shell&, const libint2::Shell&) override;
    public:
     /// Constructor. Assumes nuclear centers/charges as the potential
     RelPotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                     int deriv = 0);
-    ~RelPotentialInt() override;
 
     /// Set the field of charges
-    void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
-
-    /// Get the field of charges
-    SharedMatrix charge_field() const { return Zxyz_; }
+    void set_charge_field(const std::vector<std::pair<double, std::array<double, 3>>>& Zxyz);
 };
 
 class RelPotentialSOInt : public OneBodySOInt {

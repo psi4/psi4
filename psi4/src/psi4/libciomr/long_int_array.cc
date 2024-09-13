@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -62,9 +62,9 @@ long int *init_long_int_array(int size) {
     long int *array;
 
     if ((array = (long int *)malloc(sizeof(long int) * size)) == nullptr) {
-        outfile->Printf("init_array:  trouble allocating memory \n");
-        outfile->Printf("size = %d\n", size);
-        exit(PSI_RETURN_FAILURE);
+        std::ostringstream oss;
+        oss << "init_array: trouble allocating memory, size = " << size << "\n";
+        throw std::runtime_error(oss.str());
     }
     memset(array, 0, sizeof(long int) * size);
     return (array);
@@ -86,11 +86,11 @@ PSI_API size_t *init_size_t_array(int size) {
     size_t *array;
 
     if ((array = (size_t *)malloc(sizeof(size_t) * size)) == nullptr) {
-        outfile->Printf("init_size_t_array:  trouble allocating memory \n");
-        outfile->Printf("size = %d\n", size);
-        exit(PSI_RETURN_FAILURE);
+        std::ostringstream oss;
+        oss << "init_size_t_array: trouble allocating memory, size = " << size << "\n";
+        throw std::runtime_error(oss.str());
     }
     memset(array, 0, sizeof(size_t) * size);
     return (array);
 }
-}
+}  // namespace psi

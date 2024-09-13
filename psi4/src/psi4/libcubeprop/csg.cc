@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -260,9 +260,7 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name, const 
 
     // Is filepath a valid directory?
     if (filesystem::path(filepath_).make_absolute().is_directory() == false) {
-        printf("Filepath \"%s\" is not valid.  Please create this directory.\n", filepath_.c_str());
-        outfile->Printf("Filepath \"%s\" is not valid.  Please create this directory.\n", filepath_.c_str());
-        exit(Failure);
+        throw std::runtime_error("Filepath \"" + filepath_ + "\" is not valid.  Please create this directory.\n");
     }
 
     FILE* fh = fopen(ss.str().c_str(), "w");
@@ -642,17 +640,17 @@ void CubicScalarGrid::compute_difference(std::shared_ptr<Matrix> C, const std::v
     double* vp = v->pointer();
     add_orbitals(&v_tp[0], C2);
     for (int i = 0; i < npoints_; i++) {
-         if (square) {
-             v->set(0, i, (v_t->get(0,i) - v_t->get(1,i))*(v_t->get(0,i) + v_t->get(1,i)));
-         } else {
-             v->set(0, i, (v_t->get(0,i) - v_t->get(1,i)));
-         }
+        if (square) {
+            v->set(0, i, (v_t->get(0, i) - v_t->get(1, i)) * (v_t->get(0, i) + v_t->get(1, i)));
+        } else {
+            v->set(0, i, (v_t->get(0, i) - v_t->get(1, i)));
+        }
     }
     std::pair<double, double> isocontour_range = compute_isocontour_range(&vp[0], 2.0);
     double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
     std::stringstream comment;
-    comment << ". Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first
-            << "," << isocontour_range.second << ")";
+    comment << ". Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first << ","
+            << isocontour_range.second << ")";
     // Write to disk
     write_gen_file(&vp[0], label, type, comment.str());
 }
@@ -707,12 +705,12 @@ std::string CubicScalarGrid::ecp_header() {
         std::stringstream ecp_ncore;
         for (int A = 0; A < mol_->natom(); A++) {
             if (primary_->n_ecp_core(mol_->label(A)) > 0) {
-                ecp_atoms << A+1 << "[" << mol_->symbol(A) << "], ";
+                ecp_atoms << A + 1 << "[" << mol_->symbol(A) << "], ";
                 ecp_ncore << primary_->n_ecp_core(mol_->label(A)) << ", ";
             }
         }
-        ecp_head << ecp_atoms.str().substr(0,ecp_atoms.str().length()-2) << ") electrons ("
-                 << ecp_ncore.str().substr(0,ecp_ncore.str().length()-2) << ").";
+        ecp_head << ecp_atoms.str().substr(0, ecp_atoms.str().length() - 2) << ") electrons ("
+                 << ecp_ncore.str().substr(0, ecp_ncore.str().length() - 2) << ").";
     }
     return ecp_head.str();
 }

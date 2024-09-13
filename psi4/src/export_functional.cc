@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -122,7 +122,7 @@ void export_functional(py::module &m) {
 
         .def(py::init<>())
         .def_static("blank", &SuperFunctional::blank, "Initialize a blank SuperFunctional.")
-        .def_static("XC_build", &SuperFunctional::XC_build, "Builds a SuperFunctional from a XC string.")
+        .def_static("XC_build", &SuperFunctional::XC_build, "name"_a, "unpolarized"_a, "tweak"_a = py::dict{}, "Builds a SuperFunctional from a XC string.")
         .def("allocate", &SuperFunctional::allocate,
              "Allocates the vectors, should be called after ansatz or npoint changes.")
         .def("compute_functional", &SuperFunctional::compute_functional,

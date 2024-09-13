@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,59 +37,88 @@
 
 namespace psi {
 
+/// @brief Dimension object
+/// \ingroup MINTS
 class PSI_API Dimension {
    private:
     std::string name_;
     std::vector<int> blocks_;
 
    public:
+    /// @brief Constructs an empty Dimension object, with the name initialized to "(empty)"
     Dimension();
-    Dimension(int n, const std::string& name = "");
+
+    /// @brief Constructs a Dimension object with a specified number of block numbers and optionally a name. If no name
+    /// is given it will be a zero-length string.
+    /// @param n : number of blocks
+    /// @param name : (optional) name associated with this Dimension object
+    Dimension(size_t n, const std::string& name = "");
+
+    /// @brief Constructs a Dimension object from an std::vector<int> object, leaving the name a zero-length string.
+    /// @param other : object to copy the block numbers from
     Dimension(const std::vector<int>& other);
 
-    /// Assignment operator, this one can be very dangerous
+    /// @brief Assignment operator, this one can be very dangerous
+    PSI_DEPRECATED(
+        "The assignment operator for psi::Dimension is being deprecated. Unless someone speaks up, 1.10 may be the "
+        "last release to have it.")
     Dimension& operator=(const int* other);
 
     Dimension& operator+=(const Dimension& b);
     Dimension& operator-=(const Dimension& b);
 
-    /// Re-initializes the object
-    void init(int n, const std::string& name = "");
+    /// @brief Re-initializes the object. If no name is given it will be a zero-length string.
+    /// @param n : number of blocks
+    /// @param name : (optional) name associated with this Dimension object
+    void init(size_t n, const std::string& name = "");
 
-    /// Return the rank
-    int n() const { return static_cast<int>(blocks_.size()); }
+    /// @brief Return the rank (number of block numbers)
+    size_t n() const { return blocks_.size(); }
 
-    /// Return the name of the dimension
+    /// @brief Return the name of the Dimension object
     const std::string& name() const { return name_; }
 
-    /// Set the name of the dimension
+    /// @brief Set the name of the Dimension object
     void set_name(const std::string& name) { name_ = name; }
 
-    /// Blocks access
-    int& operator[](int i) { return blocks_[i]; }
-    const int& operator[](int i) const { return blocks_[i]; }
+    /// @brief Access a block number at a partcular index. Not bounds-checked.
+    int& operator[](size_t i) { return blocks_[i]; }
+
+    /// @brief Access a block number at a partcular index. Not bounds-checked.
+    const int& operator[](size_t i) const { return blocks_[i]; }
+
+    /// @brief Get a const reference to the std::vector storing the block numbers inside the Dimension object.
     const std::vector<int>& blocks() const { return blocks_; }
 
-    /// Casting operator to int*
+    /// @brief Casting operator to int*
+    PSI_DEPRECATED(
+        "Cast-to-pointer operators for psi::Dimension are being deprecated. Unless someone speaks up, 1.10 may be the "
+        "last release to have them.")
     operator int*() { return blocks_.data(); }
-    /// Casting operator to const int*
+
+    /// @brief Casting operator to const int*
+    PSI_DEPRECATED(
+        "Cast-to-pointer operators for psi::Dimension are being deprecated. Unless someone speaks up, 1.10 may be the "
+        "last release to have them.")
     operator const int*() const { return blocks_.data(); }
 
-    /// Return the sum of constituent dimensions
+    /// @brief Return the sum of constituent dimensions (block numbers)
     int sum() const;
+
+    /// @brief Return the maximum of constituent dimensions (block numbers)
     int max() const;
 
-    /// Zero all the elements
+    /// @brief Zero all the dimensions (block numbers)
     void zero();
 
-    /// Fill all elements in blocks_ with given value
+    /// @brief Fill all elements in blocks_ with given value
     void fill(int v);
 
     void print() const;
 
     // Only used for python
-    const int& get(int i) const { return blocks_[i]; }
-    void set(int i, int val) { blocks_[i] = val; }
+    const int& get(size_t i) const { return blocks_[i]; }
+    void set(size_t i, int val) { blocks_[i] = val; }
 
     PSI_API friend bool operator==(const Dimension& a, const Dimension& b);
     PSI_API friend bool operator!=(const Dimension& a, const Dimension& b);

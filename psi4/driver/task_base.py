@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -44,7 +44,7 @@ except ImportError:
 
 import qcelemental as qcel
 from qcelemental.models import AtomicInput, AtomicResult, DriverEnum
-
+from qcelemental.models.results import AtomicResultProtocols
 qcel.models.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries for high-res findif
 import qcengine as qcng
 
@@ -85,6 +85,10 @@ class AtomicComputer(BaseComputer):
     driver: DriverEnum = Field(..., description="The resulting type of computation: energy, gradient, hessian, properties."
         "Note for finite difference that this should be the target driver, not the means driver.")
     keywords: Dict[str, Any] = Field(default_factory=dict, description="The keywords to use in the computation.")
+    protocols: Optional[Union[AtomicResultProtocols, Dict[str, Any]]] = Field({"stdout": True}, description="Output modifications.")
+    tag: str = Field("*", description="The tags to pass along to compute managers.")
+    priority: str = Field(1, description="The priority of a Task; higher priority will be pulled first. {high:2, normal:1, low:0}")
+    owner_group: Optional[str] = Field(None, description="group in the chown sense.")
     computed: bool = Field(False, description="Whether quantum chemistry has been run on this task.")
     result: Any = Field(default_factory=dict, description=":py:class:`~qcelemental.models.AtomicResult` return.")
     result_id: Optional[str] = Field(None, description="The optional ID for the computation.")
@@ -115,9 +119,7 @@ class AtomicComputer(BaseComputer):
                 "basis": self.basis
             },
             "keywords": self.keywords,
-            "protocols": {
-                "stdout": True,
-            },
+            "protocols": self.protocols,
             "extras": {
                 "psiapi": True,
                 "wfn_qcvars_only": True,
@@ -136,63 +138,34 @@ class AtomicComputer(BaseComputer):
         if client:
             self.computed = True
 
-            try:
-                # QCFractal v0.15.8
-                from qcportal.models import KeywordSet, Molecule
-                qca_next_branch = False
-            except ImportError:
-                # QCFractal `next`
-                from qcelemental.models import Molecule
-                qca_next_branch = True
+            from qcelemental.models import Molecule
 
             # Build the molecule
             mol = Molecule(**self.molecule.to_schema(dtype=2))
 
-            if not qca_next_branch:
-                # QCFractal v0.15.8
-
-                # Build the keywords
-                keyword_id = client.add_keywords([KeywordSet(values=self.keywords)])[0]
-
-                r = client.add_compute("psi4", self.method, self.basis, self.driver, keyword_id, [mol])
-                self.result_id = r.ids[0]
-                # NOTE: The following will re-run errored jobs by default
-                if self.result_id in r.existing:
-                    ret = client.query_tasks(base_result=self.result_id)
-                    if ret:
-                        if ret[0].status == "ERROR":
-                            client.modify_tasks("restart", base_result=self.result_id)
-                            logger.info("Resubmitting Errored Job {}".format(self.result_id))
-                        elif ret[0].status == "COMPLETE":
-                            logger.debug("Job already completed {}".format(self.result_id))
-                    else:
-                        logger.debug("Job already completed {}".format(self.result_id))
-                else:
-                    logger.debug("Submitting AtomicResult {}".format(self.result_id))
-
+            meta, ids = client.add_singlepoints(
+                molecules=mol,
+                program="psi4",
+                driver=self.driver,
+                method=self.method,
+                basis=self.basis,
+                keywords=self.keywords,
+                protocols=self.protocols,
+                tag=self.tag,
+                priority=self.priority,
+                owner_group=self.owner_group,
+            )
+            self.result_id = ids[0]
+            # NOTE: The following will re-run errored jobs by default
+            if meta.existing_idx:
+                rec = client.get_singlepoints(self.result_id)
+                if rec.status == "error":
+                    client.reset_records(self.result_id)
+                    logger.info("Resubmitting Errored Job {}".format(self.result_id))
+                elif rec.status == "complete":
+                    logger.debug("Job already completed {}".format(self.result_id))
             else:
-                # QCFractal `next`
-
-                meta, ids = client.add_singlepoints(
-                    molecules=mol,
-                    program="psi4",
-                    driver=self.driver,
-                    method=self.method,
-                    basis=self.basis,
-                    keywords=self.keywords,
-                    # protocols,
-                )
-                self.result_id = ids[0]
-                # NOTE: The following will re-run errored jobs by default
-                if meta.existing_idx:
-                    rec = client.get_singlepoints(self.result_id)
-                    if rec.status == "error":
-                        client.reset_records(self.result_id)
-                        logger.info("Resubmitting Errored Job {}".format(self.result_id))
-                    elif rec.status == "complete":
-                        logger.debug("Job already completed {}".format(self.result_id))
-                else:
-                    logger.debug("Submitting AtomicResult {}".format(self.result_id))
+                logger.debug("Submitting AtomicResult {}".format(self.result_id))
 
             return
 
@@ -222,7 +195,8 @@ class AtomicComputer(BaseComputer):
         core.set_output_file(gof, True)
         core.reopen_outfile()
         logger.debug(pp.pformat(self.result.dict()))
-        core.print_out(_drink_filter(self.result.dict()["stdout"]))
+        if stdout := self.result.dict()["stdout"]:
+            core.print_out(_drink_filter(stdout))
         self.computed = True
 
     def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
@@ -232,30 +206,14 @@ class AtomicComputer(BaseComputer):
             return self.result
 
         if client:
-            try:
-                # QCFractal/QCPortal v0.15.8
-                result = client.query_results(id=self.result_id)
-                qca_next_branch = False
-            except AttributeError:
-                # QCFractal/QCPortal `next`
-                record = client.get_singlepoints(record_ids=self.result_id)
-                qca_next_branch = True
+            record = client.get_singlepoints(record_ids=self.result_id)
 
             logger.debug(f"Querying AtomicResult {self.result_id}")
 
-            if not qca_next_branch:
-                # QCFractal v0.15.8
-                if len(result) == 0:
-                    return self.result
+            if record.status != "complete":
+                return self.result
 
-                self.result = result[0]
-
-            else:
-                # QCFractal `next`
-                if record.status != "complete":
-                    return self.result
-
-                self.result = _singlepointrecord_to_atomicresult(record)
+            self.result = _singlepointrecord_to_atomicresult(record)
 
             return self.result
 
@@ -266,10 +224,33 @@ def _singlepointrecord_to_atomicresult(spr: "qcportal.singlepoint.SinglepointRec
     # QCFractal `next` database stores return_result, properties, and extras["qcvars"] merged
     #   together and with lowercase keys. `to_qcschema_result` partitions properties back out,
     #   but we need to restore qcvars keys, types, and dimensions.
+    # QCFractal v0.51 starts saving space by removing qcvars whose qcvar.lower().replace(" ", "_")
+    #   are defined, so we also need to reconstruct these.
+    shared_qcvars = {}
+    for pv, dpv in atres.properties.dict().items():
+        if dpv is None:
+            continue
+        if pv.startswith("return_") or pv.endswith("_moment"):
+            continue
+        if pv in [
+            "scf_one_electron_energy",
+            "scf_two_electron_energy",
+            "scf_vv10_energy",
+            "scf_xc_energy",
+            "scf_dispersion_correction_energy",
+            "mp2_same_spin_correlation_energy",
+            "mp2_opposite_spin_correlation_energy",
+            "ccsd_same_spin_correlation_energy",
+            "ccsd_opposite_spin_correlation_energy",
+            "ccsd_prt_pr_correlation_energy",
+            "ccsd_prt_pr_total_energy",
+        ]:
+            continue
+        shared_qcvars[pv.upper().replace("_", " ")] = dpv
     qcvars = atres.extras.pop("extra_properties")
     qcvars.pop("return_result")
     qcvars = {k.upper(): p4util.plump_qcvar(k, v) for k, v in qcvars.items()}
-    atres.extras["qcvars"] = qcvars
+    atres.extras["qcvars"] = {**qcvars, **shared_qcvars}
 
     return atres
 

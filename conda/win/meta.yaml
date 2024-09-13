@@ -14,12 +14,12 @@ requirements:
     - networkx
     - numpy
     - python={{ PY_VER }}
-    - qcelemental=0.26.0
-    - qcengine=0.27.0
+    - qcelemental=0.28.0
+    - qcengine=0.30.0
     - msgpack-python
     - optking
     - gau2grid
-    - libint 2.7.3dev1
+    - libint
     - libxc-c
     - scipy
 
@@ -28,6 +28,10 @@ build:
   script:
     - md {{ PREFIX }}\Scripts
     - copy /y {{ INSTALL_DIR }}\bin\psi4 {{ PREFIX }}\Scripts
+    - sed -i.bu "s;cmake_install_bindir = .*;cmake_install_bindir = 'Scripts';g" {{ PREFIX }}\Scripts\psi4
+    - sed -i.bu "s;cmake_install_datadir = .*;cmake_install_datadir = 'Library/share';g" {{ PREFIX }}\Scripts\psi4
+    - sed -i.bu "s;cmake_install_libdir = .*;cmake_install_libdir = 'Library/lib';g" {{ PREFIX }}\Scripts\psi4
+    - sed -i.bu "s;pymod_install_libdir = .*;pymod_install_libdir = '../../Lib/site-packages';g" {{ PREFIX }}\Scripts\psi4
     - echo __pycache__ > exclude.txt
     - xcopy /f /i /s /exclude:exclude.txt {{ INSTALL_DIR }}\lib\psi4 {{ SP_DIR }}\psi4
     - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\basis       {{ PREFIX }}\Lib\share\psi4\basis
@@ -42,13 +46,23 @@ build:
     - copy /y {{ SYSTEMROOT }}\System32\vcruntime140d.dll {{ PREFIX }}
     - copy /y {{ SYSTEMROOT }}\System32\ucrtbased.dll     {{ PREFIX }}
     {% endif %}
+    - type {{ PREFIX }}\Scripts\psi4
+    - type {{ SP_DIR }}\psi4\__init__.py
 
 test:
   requires:
-    - pytest>=7.0.1
+    - pytest-xdist
+    - pytest<8
     - dftd3-python
     - gcp-correction
   commands:
+    #- cat %PREFIX%\\Scripts\\psi4-script.py
+    #- cat %SP_DIR%\\psi4\\__init__.py
     - python -c "import psi4; print(psi4.__version__, psi4.__file__)"
+    - python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+    - python -c "import psi4;print(psi4.addons())"
+    - psi4.exe --version
+    - psi4.exe --module
     #- python -c "import psi4; assert psi4.test('quick') == 0"
     - psi4 --test smoke_not_d2ints -n2
+    #- pytest -rws -v --durations=20 --color yes -n auto %SP_DIR%\\psi4 -m "smoke and not d2ints"

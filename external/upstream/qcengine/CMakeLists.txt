@@ -7,6 +7,10 @@ if(${qcengine_FOUND})
     message(STATUS "${Cyan}Found qcengine${ColourReset}: ${PY_qcengine} (found version ${qcengine_VERSION})")
     add_library(qcengine_external INTERFACE)  # dummy
 
+    if(${CMAKE_INSIST_FIND_PACKAGE_qcengine})
+        message(VERBOSE "Suitable qcengine located externally as user insists")
+    endif()
+
 else()
     if(${CMAKE_INSIST_FIND_PACKAGE_qcengine})
         message(FATAL_ERROR "Suitable qcengine could not be externally located as user insists")
@@ -27,11 +31,14 @@ else()
     # Note: Without downgrading setuptools or `sed`ing "git_refnames" (_version.py for versioneer-generated),
     #   pip will strenuously resist ("Invalid version: <branch or commit>") arbitrary branch or commit refs from GH.
     #   Make a proper PEP440 tag (e.g., `git tag -a v0.26.0.dev1 -m "v0.26.0.dev1"`), push it, and use in URL below.
+    #
+    #   With downgrading to (setuptools"<66.0.0" packaging"<23.0" ; former vendors latter), one can use arbitrary
+    #   branch or commit tarballs without the tagging procedure described above.
 
     ExternalProject_Add(qcengine_external
         DEPENDS qcelemental_external
         BUILD_ALWAYS 1
-        URL https://github.com/MolSSI/QCEngine/archive/v0.28.1.tar.gz
+        URL https://github.com/MolSSI/QCEngine/archive/v0.30.0.tar.gz
         DOWNLOAD_NO_EXTRACT 1
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -1129,8 +1129,7 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, 
         double *work = init_array(lwork);
         int stat = C_DSYEV('v', 'u', nocc, T[0], nocc, eigval, work, lwork);
         if (stat != 0) {
-            outfile->Printf("C_DSYEV failed\n");
-            exit(PSI_RETURN_FAILURE);
+            throw std::runtime_error("C_DSYEV failed\n");
         }
         delete[] work;
 

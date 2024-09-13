@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -39,134 +39,6 @@ using namespace psi;
 /////////
 // Normal two-electron repulsion integrals
 /////////
-
-#ifdef ENABLE_Libint1
-ERI::ERI(const IntegralFactory *integral, int deriv, bool use_shell_pairs)
-    : TwoElectronInt(integral, deriv, use_shell_pairs) {
-    // The +1 is needed for derivatives to work.
-    fjt_ = new Taylor_Fjt(
-        basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1, 1e-15);
-    // form the blocking. We use the default
-    setup_sieve();
-    TwoBodyAOInt::create_blocks();
-}
-
-ERI::~ERI() { delete fjt_; }
-
-/////////
-// F12
-/////////
-
-F12::F12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
-    : TwoElectronInt(integral, deriv, use_shell_pairs) {
-    fjt_ = new F12Fundamental(
-        cf, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
-    // form the blocking. We use the default
-    setup_sieve();
-    TwoBodyAOInt::create_blocks();
-}
-
-F12::~F12() { delete fjt_; }
-
-/////////
-// F12Scaled
-/////////
-
-F12Scaled::F12Scaled(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv,
-                     bool use_shell_pairs)
-    : TwoElectronInt(integral, deriv, use_shell_pairs) {
-    fjt_ = new F12ScaledFundamental(
-        cf, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
-    // form the blocking. We use the default
-    setup_sieve();
-    TwoBodyAOInt::create_blocks();
-}
-
-F12Scaled::~F12Scaled() { delete fjt_; }
-
-/////////
-// F12 squared
-/////////
-
-F12Squared::F12Squared(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv,
-                       bool use_shell_pairs)
-    : TwoElectronInt(integral, deriv, use_shell_pairs) {
-    fjt_ = new F12SquaredFundamental(
-        cf, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
-    // form the blocking. We use the default
-    setup_sieve();
-    TwoBodyAOInt::create_blocks();
-}
-
-F12Squared::~F12Squared() { delete fjt_; }
-
-/////////
-// F12G12
-/////////
-
-F12G12::F12G12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
-    : TwoElectronInt(integral, deriv, use_shell_pairs) {
-    fjt_ = new F12G12Fundamental(
-        cf, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
-    // form the blocking. We use the default
-    setup_sieve();
-    TwoBodyAOInt::create_blocks();
-}
-
-F12G12::~F12G12() { delete fjt_; }
-
-/////////
-// F12DoubleCommutator
-/////////
-
-F12DoubleCommutator::F12DoubleCommutator(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral,
-                                         int deriv, bool use_shell_pairs)
-    : TwoElectronInt(integral, deriv, use_shell_pairs) {
-    fjt_ = new F12DoubleCommutatorFundamental(
-        cf, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
-    // form the blocking. We use the default
-    setup_sieve();
-    TwoBodyAOInt::create_blocks();
-}
-
-F12DoubleCommutator::~F12DoubleCommutator() { delete fjt_; }
-
-/////////
-// ErfERI
-/////////
-
-ErfERI::ErfERI(double omega, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
-    : TwoElectronInt(integral, deriv, use_shell_pairs) {
-    // The +1 is needed for derivatives to work.
-    fjt_ = new ErfFundamental(
-        omega, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
-    // form the blocking. We use the default
-    setup_sieve();
-    TwoBodyAOInt::create_blocks();
-}
-
-ErfERI::~ErfERI() { delete fjt_; }
-
-void ErfERI::setOmega(double omega) { (static_cast<ErfFundamental *>(fjt_))->setOmega(omega); }
-
-/////////
-// ErfComplementERI
-/////////
-
-ErfComplementERI::ErfComplementERI(double omega, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
-    : TwoElectronInt(integral, deriv, use_shell_pairs) {
-    // The +1 is needed for derivatives to work.
-    fjt_ = new ErfComplementFundamental(
-        omega, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
-    // form the blocking. We use the default
-    setup_sieve();
-    TwoBodyAOInt::create_blocks();
-}
-
-ErfComplementERI::~ErfComplementERI() { delete fjt_; }
-
-void ErfComplementERI::setOmega(double omega) { (static_cast<ErfComplementFundamental *>(fjt_))->setOmega(omega); }
-#endif  // ENABLE_Libint1
 
 //// Libint2 implementation
 Libint2ERI::Libint2ERI(const IntegralFactory *integral, double screening_threshold, int deriv, bool use_shell_pairs,
@@ -274,7 +146,7 @@ void Libint2ERI::libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shel
     }
 }
 
-Libint2ERI::~Libint2ERI(){};
+Libint2ERI::~Libint2ERI(){}
 
 Libint2ErfERI::Libint2ErfERI(double omega, const IntegralFactory *integral, double screening_threshold, int deriv,
                              bool use_shell_pairs, bool needs_exchange)
@@ -387,7 +259,7 @@ void Libint2ErfERI::libint2_wrapper2(const libint2::Shell &sh1, const libint2::S
     }
 }
 
-Libint2ErfERI::~Libint2ErfERI(){};
+Libint2ErfERI::~Libint2ErfERI(){}
 
 Libint2ErfComplementERI::Libint2ErfComplementERI(double omega, const IntegralFactory *integral,
                                                  double screening_threshold, int deriv, bool use_shell_pairs,
@@ -501,7 +373,7 @@ void Libint2ErfComplementERI::libint2_wrapper2(const libint2::Shell &sh1, const 
     }
 }
 
-Libint2ErfComplementERI::~Libint2ErfComplementERI(){};
+Libint2ErfComplementERI::~Libint2ErfComplementERI(){}
 
 //// Libint2 implementation
 Libint2YukawaERI::Libint2YukawaERI(double zeta, const IntegralFactory *integral, double screening_threshold, int deriv,
@@ -606,7 +478,7 @@ void Libint2YukawaERI::libint2_wrapper2(const libint2::Shell &sh1, const libint2
     }
 }
 
-Libint2YukawaERI::~Libint2YukawaERI(){};
+Libint2YukawaERI::~Libint2YukawaERI(){}
 
 /// F12
 
@@ -709,7 +581,7 @@ void Libint2F12::libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shel
     }
 }
 
-Libint2F12::~Libint2F12(){};
+Libint2F12::~Libint2F12(){}
 
 /// F12G12
 
@@ -825,7 +697,7 @@ void Libint2F12G12::libint2_wrapper2(const libint2::Shell &sh1, const libint2::S
     }
 }
 
-Libint2F12G12::~Libint2F12G12(){};
+Libint2F12G12::~Libint2F12G12(){}
 
 /// F12DoubleCommutator
 
@@ -941,4 +813,4 @@ void Libint2F12DoubleCommutator::libint2_wrapper2(const libint2::Shell &sh1, con
     }
 }
 
-Libint2F12DoubleCommutator::~Libint2F12DoubleCommutator(){};
+Libint2F12DoubleCommutator::~Libint2F12DoubleCommutator(){}

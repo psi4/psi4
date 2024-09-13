@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -159,10 +159,7 @@ double get_number(const std::string& str) {
         if (unsigned_numerator.size() * denominator.size() != 0) {
             value = to_double(numerator) / to_double(denominator);
         } else {
-            outfile->Printf("\n\nSolve couldn't parse the numerical factor %s\n\n", str.c_str());
-            outfile->Printf("\n\nCritical Breakdown of the Program. Blame the programmers!!!\n\n");
-
-            exit(1);
+            throw std::runtime_error("Solve couldn't parse the numerical factor " + str + ".\n");
         }
 
     } else {

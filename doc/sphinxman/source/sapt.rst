@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2023 The Psi4 Developers.
+.. # Copyright (c) 2007-2024 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -216,12 +216,12 @@ pair between monomers.
 
 The :math:`S^{2}` approximation is usually pretty good, but may 
 break down for short intermolecular distance, particularly in high-order
-terms. To compensate these deviations, Parker et al. [Parker:2014:094106]_ 
-recommend to scale all :math:`S^{2}` approximated exchange terms by the ratio:
+terms. To compensate for these deviations, in 2014 Parker et al. [Parker:2014:094106]_ 
+recommended to scale all :math:`S^{2}` approximated exchange terms by the ratio:
 
 .. math:: p_{EX}(\alpha) = \left( \frac{E_{exch}^{(10)}}{E_{exch}^{(10)}(S^{2})} \right)^{\alpha}
 
-where the recommended exponent is :math:`\alpha = 1`. To obtain SAPT energies with this scaling,
+and recommended using the ratio with exponent :math:`\alpha = 1`. To obtain SAPT energies with this scaling,
 simply set the keyword ``exch_scale_alpha true``. Alternatively, another value for :math:`\alpha`
 can be specified by setting |sapt__exch_scale_alpha| to a value. For example, ::
 
@@ -229,7 +229,15 @@ can be specified by setting |sapt__exch_scale_alpha| to a value. For example, ::
 
 will set :math:`\alpha = 1.0` and scale exchange energies with :math:`p_{EX}(1.0)`.
 
-Instead of this straightforward scaling, SAPT0 energies benefit from a slightly modified 
+However, as pointed out by Schaffer and Jansen [Schaffer:2013:2570]_
+in the context of DFT-based SAPT, the ratios :math:`E_{exch}^{(1)}(S^{2})/E_{exch}^{(1)}`,
+:math:`E_{\rm exch-ind}^{(2)}(S^2)/E_{\rm exch-ind}^{(2)}`, and 
+:math:`E_{\rm exch-disp}^{(2)}(S^2)/E_{\rm exch-disp}^{(2)}` are not very similar to
+each other.  Hence, in 2016 universal scaling of all :math:`S^{2}` approximated terms
+was turned off by default.
+
+Finally, in 2014 Parker et al. [Parker:2014:094106]_ empirically discovered that 
+SAPT0 energies for van der Waals dimers with close contacts benefit from a slightly modified 
 recipe that involves an empirically adjusted exponent :math:`\alpha = 3.0`. 
 To distinguish it from its unscaled counterpart, this energy is denoted sSAPT0 (see [Parker:2014:094106]_).
 
@@ -477,8 +485,7 @@ Basic SAPT0 Keywords
 .. include:: autodir_options_c/sapt__df_basis_sapt.rst
 .. include:: autodir_options_c/sapt__df_basis_elst.rst
 .. include:: autodir_options_c/sapt__freeze_core.rst
-.. include:: autodir_options_c/sapt__d_convergence.rst
-.. include:: autodir_options_c/sapt__e_convergence.rst
+.. include:: autodir_options_c/sapt__cphf_r_convergence.rst
 .. include:: autodir_options_c/sapt__maxiter.rst
 .. include:: autodir_options_c/sapt__print.rst
 

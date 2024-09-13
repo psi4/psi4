@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -59,7 +59,7 @@ void PSI_API F_DGEMM(char transa, char transb, integer m, integer n, integer k, 
 extern "C" {
 void dgemv(char &trans, integer &m, integer &n, doublereal &alpha, doublereal *A, integer &lda, doublereal *X,
            integer &incx, doublereal &beta, doublereal *Y, integer &incy);
-};
+}
 inline void DGEMV(char &trans, integer &m, integer &n, doublereal &alpha, doublereal *A, integer &lda, doublereal *X,
                   integer &incx, doublereal &beta, doublereal *Y, integer &incy) {
     dgemv(trans, m, n, alpha, A, lda, X, incx, beta, Y, incy);
@@ -70,17 +70,17 @@ inline void DGEMV(char &trans, integer &m, integer &n, doublereal &alpha, double
 extern "C" {
 void dgemm(char &transa, char &transb, integer &m, integer &n, integer &k, doublereal &alpha, doublereal *A,
            integer &lda, doublereal *B, integer &ldb, doublereal &beta, doublereal *C, integer &ldc);
-};
+}
 inline void DGEMM(char &transa, char &transb, integer &m, integer &n, integer &k, doublereal &alpha, doublereal *A,
                   integer &lda, doublereal *B, integer &ldb, doublereal &beta, doublereal *C, integer &ldc) {
     dgemm(transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
-};
+}
 /**
  * name mangling dcopy
  */
 extern "C" {
 void dcopy(integer &n, doublereal *dx, integer &incx, doublereal *dy, integer &incy);
-};
+}
 inline void DCOPY(integer &n, doublereal *dx, integer &incx, doublereal *dy, integer &incy) {
     dcopy(n, dx, incx, dy, incy);
 }
@@ -89,25 +89,25 @@ inline void DCOPY(integer &n, doublereal *dx, integer &incx, doublereal *dy, int
  */
 extern "C" {
 double dnrm2(integer &N, doublereal *X, integer &INCX);
-};
-inline double DNRM2(integer &N, doublereal *X, integer &INCX) { return dnrm2(N, X, INCX); };
+}
+inline double DNRM2(integer &N, doublereal *X, integer &INCX) { return dnrm2(N, X, INCX); }
 /**
  * name mangling dgesv
  */
 extern "C" {
 void dgesv(integer &N, integer &NRHS, doublereal *A, integer &LDA, integer *IPIV, doublereal *B, integer &LDB,
            integer &INFO);
-};
+}
 inline void DGESV(integer &N, integer &NRHS, doublereal *A, integer &LDA, integer *IPIV, doublereal *B, integer &LDB,
                   integer &INFO) {
     dgesv(N, NRHS, A, LDA, IPIV, B, LDB, INFO);
-};
+}
 /**
  * name mangling ddot
  */
 extern "C" {
 double ddot(integer &n, doublereal *dx, integer &incx, doublereal *dy, integer &incy);
-};
+}
 inline double DDOT(integer &n, doublereal *dx, integer &incx, doublereal *dy, integer &incy) {
     return ddot(n, dx, incx, dy, incy);
 }
@@ -122,7 +122,7 @@ void Diagonalize(integer N, doublereal *A, doublereal *W);
 extern "C" {
 void dsyev(char &JOBZ, char &UPLO, integer &N, doublereal *A, integer &LDA, doublereal *W, doublereal *WORK,
            integer &LWORK, integer &INFO);
-};
+}
 inline void DSYEV(char &JOBZ, char &UPLO, integer &N, doublereal *A, integer &LDA, doublereal *W, doublereal *WORK,
                   integer &LWORK, integer &INFO) {
     dsyev(JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, INFO);
@@ -137,7 +137,7 @@ void Diagonalize2(integer N, doublereal *AP, doublereal *W, doublereal *Z);
 extern "C" {
 void dspev(char &JOBZ, char &UPLO, integer &N, doublereal *AP, doublereal *W, doublereal *Z, integer &LDZ,
            doublereal *WORK, integer &INFO);
-};
+}
 inline void DSPEV(char &JOBZ, char &UPLO, integer &N, doublereal *AP, doublereal *W, doublereal *Z, integer &LDZ,
                   doublereal *WORK, integer &INFO) {
     dspev(JOBZ, UPLO, N, AP, W, Z, LDZ, WORK, INFO);
@@ -153,7 +153,7 @@ void SVD(integer M, integer N, doublereal *A, doublereal *U, doublereal *VT, dou
 extern "C" {
 void dgesvd(char &JOBU, char &JOBVT, integer &M, integer &N, doublereal *A, integer &LDA, doublereal *S, doublereal *U,
             integer &LDU, doublereal *VT, integer &LDVT, doublereal *WORK, integer &LWORK, integer &INFO);
-};
+}
 inline void DGESVD(char &JOBU, char &JOBVT, integer &M, integer &N, doublereal *A, integer &LDA, doublereal *S,
                    doublereal *U, integer &LDU, doublereal *VT, integer &LDVT, doublereal *WORK, integer &LWORK,
                    integer &INFO) {

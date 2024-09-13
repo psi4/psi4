@@ -1,20 +1,25 @@
 list(APPEND sources
   CDJK.cc
   CompositeJK.cc
+  COSK.cc
+  DirectDFJ.cc
   DirectJK.cc
   DiskDFJK.cc
   DiskJK.cc
   GTFockJK.cc
+  LinK.cc
   MemDFJK.cc
   PKJK.cc
   PK_workers.cc
   PKmanagers.cc
+  SplitJK.cc
   apps.cc
   cubature.cc
   hamiltonian.cc
   jk.cc
   points.cc
   sap.cc
+  snLinK.cc
   solver.cc
   soscf.cc
   v.cc
@@ -36,6 +41,24 @@ target_link_libraries(fock
     pybind11::headers
     Libint2::cxx  # for <libint2/config.h>
   )
+
+if(TARGET gauxc::gauxc)
+  target_compile_definitions(fock
+    PUBLIC
+      USING_gauxc
+    )
+  target_link_libraries(fock
+    PUBLIC 
+      gauxc::gauxc 
+    )
+endif()
+
+if(TARGET IntegratorXX::IntegratorXX)
+  target_link_libraries(fock
+    PRIVATE
+      IntegratorXX::IntegratorXX
+    )
+endif()
 
 if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(fock

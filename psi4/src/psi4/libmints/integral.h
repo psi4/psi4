@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -30,10 +30,7 @@
 #define _psi_src_lib_libmints_integral_h_
 
 #include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
-PRAGMA_WARNING_POP
 #include <vector>
 
 #include "onebody.h"
@@ -453,6 +450,10 @@ class PSI_API IntegralFactory {
     virtual std::unique_ptr<OneBodyAOInt> ao_rel_potential(int deriv = 0);
     virtual std::unique_ptr<OneBodySOInt> so_rel_potential(int deriv = 0);
 
+    /// Returns the OneBodyInt that computes the erf/erfc-attenuated Coulomb potential on a given origin
+    virtual std::unique_ptr<OneBodyAOInt> ao_potential_erf(double omega = 0.0, int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_potential_erf_complement(double omega = 0.0, int deriv = 0);
+
     /// Returns an OneBodyInt that computes the dipole integral.
     virtual std::unique_ptr<OneBodyAOInt> ao_dipole(int deriv = 0);
     virtual std::unique_ptr<OneBodySOInt> so_dipole(int deriv = 0);
@@ -492,9 +493,6 @@ class PSI_API IntegralFactory {
 
     /// Returns an ERI integral object
     virtual std::unique_ptr<TwoBodyAOInt> eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
-
-    /// Returns an ERD ERI integral object, if available.  Otherwise returns a libint integral object
-    virtual std::unique_ptr<TwoBodyAOInt> erd_eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an erf ERI integral object (omega integral)
     virtual std::unique_ptr<TwoBodyAOInt> erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true,

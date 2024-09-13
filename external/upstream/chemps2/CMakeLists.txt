@@ -6,6 +6,10 @@ if(${ENABLE_CheMPS2})
         message(STATUS "${Cyan}Found CheMPS2${ColourReset}: ${_loc} (found version ${CheMPS2_VERSION})")
         add_library(chemps2_external INTERFACE)  # dummy
 
+        if(${CMAKE_INSIST_FIND_PACKAGE_CheMPS2})
+            message(VERBOSE "Suitable CheMPS2 located externally as user insists")
+        endif()
+
         # reset below necessary as find_package clears it. better solution sought
         set(TargetHDF5_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5 CACHE PATH "path to externally detected CheMPS2Config.cmake" FORCE)
     else()
@@ -53,6 +57,8 @@ if(${ENABLE_CheMPS2})
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                              -DTargetOpenMP_FIND_COMPONENTS:STRING=C;CXX)
 
         set(CheMPS2_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/CheMPS2 CACHE PATH "path to internally built CheMPS2Config.cmake" FORCE)

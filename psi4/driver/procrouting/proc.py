@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -1736,6 +1736,12 @@ def scf_helper(name, post_scf=True, **kwargs):
             core.set_global_option('BASIS', 'minix')
         elif name in ['pbeh3c', 'pbeh-3c']:
             core.set_global_option('BASIS', 'def2-msvp')
+        elif name in ['r2scan3c', 'r2scan-3c']:
+            core.set_global_option('BASIS', 'def2-mTZVPP')
+        elif name in ['b973c', 'b97-3c']:
+            core.set_global_option('BASIS', 'def2-mTZVP')
+        elif name in ['wb97x3c', 'wb97x-3c']:
+            core.set_global_option('BASIS', 'vdzp')
 
     # the FIRST scf call
     if cast:
@@ -4549,16 +4555,21 @@ def run_sapt(name, **kwargs):
     dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
     core.timer_off("SAPT: Dimer SCF")
 
+    necp_ab = dimer_wfn.basisset().n_ecp_core()
+    share_df_ints = ((sapt_basis == 'dimer') and (ri == 'DF') and not (necp_ab and (os.name == 'nt')))
+    if (sapt_basis == 'dimer') and (ri == 'DF') and not share_df_ints:
+        core.print_out(f"\n  Turning off SAPT DF integrals sharing because of ECP: {necp_ab}\n\n")
+
     if do_delta_mp2:
         select_mp2("mp2", ref_wfn=dimer_wfn, **kwargs)
         mp2_corl_interaction_e = core.variable('MP2 CORRELATION ENERGY')
 
     optstash2.restore()
-    if (sapt_basis == 'dimer') and (ri == 'DF'):
+    if share_df_ints:
         core.set_global_option('DF_INTS_IO', 'LOAD')
 
     # Compute Monomer A wavefunction
-    if (sapt_basis == 'dimer') and (ri == 'DF'):
+    if share_df_ints:
         core.IO.change_file_namespace(97, 'dimer', 'monomerA')
 
     core.IO.set_default_namespace('monomerA')
@@ -4575,7 +4586,7 @@ def run_sapt(name, **kwargs):
         mp2_corl_interaction_e -= core.variable('MP2 CORRELATION ENERGY')
 
     # Compute Monomer B wavefunction
-    if (sapt_basis == 'dimer') and (ri == 'DF'):
+    if share_df_ints:
         core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     core.IO.set_default_namespace('monomerB')
     core.print_out('\n')
@@ -4598,8 +4609,7 @@ def run_sapt(name, **kwargs):
         core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
     core.IO.set_default_namespace('dimer')
-    core.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
-    core.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
+    # core.set_local_option('SAPT', 'CPHF_R_CONVERGENCE', 10e-10)
     if name in ['sapt0', 'ssapt0']:
         core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT0')
     elif name == 'sapt2':
@@ -4754,8 +4764,7 @@ def run_sapt_ct(name, **kwargs):
     monomerBm_wfn = scf_helper('RHF', molecule=monomerBm, **kwargs)
 
     core.IO.set_default_namespace('dimer')
-    core.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
-    core.set_local_option('SAPT', 'D_CONVERGENCE', 10e-10)
+    # core.set_local_option('SAPT', 'CPHF_R_CONVERGENCE', 10e-10)
     if name == 'sapt0-ct':
         core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT0')
     elif name == 'sapt2-ct':

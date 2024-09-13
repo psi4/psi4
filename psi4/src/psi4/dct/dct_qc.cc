@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -1884,7 +1884,7 @@ void DCTSolver::compute_orbital_rotation_nr() {
     int orbitals_address = 0;
     int idpcount = 0;
     // Alpha spin
-    auto X_a = Matrix("Alpha orbital step", nirrep_, nmopi_, nmopi_);
+    auto X_a = Matrix("Alpha orbital step", nmopi_, nmopi_);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = 0; a < navirpi_[h]; ++a) {
@@ -1900,7 +1900,7 @@ void DCTSolver::compute_orbital_rotation_nr() {
     }
 
     // Beta spin
-    auto X_b = Matrix("Beta orbital step", nirrep_, nmopi_, nmopi_);
+    auto X_b = Matrix("Beta orbital step", nmopi_, nmopi_);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nboccpi_[h]; ++i) {
             for (int a = 0; a < nbvirpi_[h]; ++a) {

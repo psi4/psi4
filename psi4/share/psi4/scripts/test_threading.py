@@ -140,6 +140,8 @@ def test_plugin_dfmp2(args):
     inputdat = """
 import %s
 
+memory 2 gb
+
 molecule {
 0 1
 C     0.0000000    0.0000000    1.0590353

@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2023 The Psi4 Developers.
+.. # Copyright (c) 2007-2024 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -60,6 +60,8 @@ Installation
 * There are two implementations of gCP; see :ref:`table:empdispimpl` . The newer
   "mctc" one is preferred, while the older "classic" one will work for the immediate future.
   |PSIfour| will automatically select whichever is available.
+  Starting with v1.9, only "mctc-gcp" is supported, though the now untested
+  "classic" continues to work for many applications.
 
 * gCP is available as a conda package for Linux and macOS and Windows.
 
@@ -98,15 +100,19 @@ Running gCP
 ~~~~~~~~~~~
 
 At present there is a limited interface to gCP that is used
-only to implement the "HF-3c" [Sure:2013:1672]_ and "PBEh-3c"
-[Grimme:2015:054107]_ methods (both energy and gradient). The interface
-can use classic or mctc-gcp executables interchangeably and will prefer the latter.
-A :ref:`DFTD3 <sec:dftd3>` executable, classic or simple-dftd3,
-must also be available for these methods to
-run. Unlike every other method in |PSIfour|, if a basis set has not been
-set, these will default to their intended basis sets: MINIX for HF-3c
-and def2-mSVP for PBEh-3c. If a basis has previously been set, but you
-want to use the default basis, use the slash syntax to "empty" the basis
+only to implement the "HF-3c" [Sure:2013:1672]_, "PBEh-3c"
+[Grimme:2015:054107]_, "B97-3c" [Brandenburg:2018:b973c]_, "r2SCAN-3c" [Grimme:2021:064103]_,
+and "wB97X-3c" [Muller:2023:014103]_ methods (both energy and gradient).
+The interface can use classic or mctc-gcp executables but only the latter implements "B97-3c" and "r2SCAN-3c".
+The newest wB97X-3c method doesn't use a gcp correction (it does use ECPs down to first row elements)
+but is listed here for completeness of the "3c" family.
+A :ref:`DFTD3 <sec:dftd3>` executable, classic or simple-dftd3, must also be available for
+the HF-3c, PBEh-3c, or B97-3c methods to run.
+A :ref:`DFTD4 <sec:dftd3>` python module must also be available for
+the r2SCAN-3c or wB97X-3c methods to run.
+These method are defined with their own basis set and thus no basis set should be set by the user.
+|PSIfour| will select the intended basis sets: HF-3c/MINIX, PBEh-3c/def2-mSVP, B97-3c/def2-mTZVP, r2SCAN-3c/def2-mTZVPP, wB97X-3c/vDZP.
+If a basis has previously been set for another calculation, use the slash syntax to "empty" the basis
 option for the scope of the current calculation, ``energy("hf3c/")``.
 
 A few practical examples:
@@ -119,15 +125,10 @@ A few practical examples:
 
    optimize('pbeh3c')
 
-* HF-3c with non-standard basis ::
+* r2SCAN-3c with default basis after basis set ::
 
    set basis cc-pvdz
-   energy('hf3c')
-
-* PBEh-3c with default basis after basis set ::
-
-   set basis cc-pvdz
-   energy('pbeh3c/')
+   energy('r2scan3c/')
 
 If only BSSE/basis set corrections (rather than total energies) are of
 interest, the ``gcp`` program can be run independently of the scf

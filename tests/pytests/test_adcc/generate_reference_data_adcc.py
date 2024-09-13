@@ -73,7 +73,7 @@ class AdccConfig:
 if __name__ == "__main__":
     psi4.core.be_quiet()
     configs = [
-        AdccConfig('adc(1)', 'cc-pvdz', molecules['cn'], 'cn', n_states=4, kind='any', reference='uhf', label='quick'),  # cn-adc1
+        AdccConfig('adc(1)', 'cc-pvdz', molecules['cn'], 'cn', n_states=4, kind='any', reference='uhf', label='smoke'),  # cn-adc1
         AdccConfig('adc(2)', 'cc-pvdz', molecules['cn'], 'cn', n_states=6, kind='any', reference='uhf'),  # cn-adc2
         AdccConfig('adc(1)', 'cc-pvdz', molecules['h2o'], 'h2o', n_states=10, kind='singlet', label='quick'),  # h2o-adc1
         AdccConfig('adc(2)', 'cc-pvdz', molecules['h2o'], 'h2o', n_states=10, kind='singlet'),  # h2o-adc2

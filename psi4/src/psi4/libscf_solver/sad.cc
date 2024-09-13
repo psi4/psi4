@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -523,7 +523,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     int iteration = 0;
 
     // Setup DIIS
-    DIISManager diis_manager(6, "SAD DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    DIISManager diis_manager(6, "SAD DIIS", DIISManager::RemovalPolicy::LargestError,
+                             DIISManager::StoragePolicy::InCore);
     diis_manager.set_error_vector_size(gradient_a.get(), gradient_b.get());
     diis_manager.set_vector_size(Fa.get(), Fb.get());
 
@@ -711,9 +712,9 @@ void SADGuess::form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, Shar
     for (int i = 0; i < nbf; i++) {
         C_DCOPY(nocc, Cp[i], 1, Coccp[i], 1);
     }
-    // Scale by occ
+    // Scale by sqrt(occ)
     for (int i = 0; i < nocc; i++) {
-        C_DSCAL(nbf, occ->get(i), &Coccp[0][i], nocc);
+        C_DSCAL(nbf, std::sqrt(occ->get(i)), &Coccp[0][i], nocc);
     }
     // Form D = Cocc*Cocc'
     D->gemm(false, true, 1.0, Cocc, Cocc, 0.0);

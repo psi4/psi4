@@ -1,0 +1,37 @@
+name: p4dev
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+    # build
+  - c-compiler
+  - cmake
+  - cxx-compiler
+  #- dpcpp_linux-64            # opt'l with cxx-compiler
+  - ninja
+    # non-qc buildtime required
+  - blas-devel                # req'd with libblas
+  - eigen                     # req'd with libint
+  - libblas=*=*accelerate
+  - libboost-headers          # req'd with libint
+  - llvm-openmp
+  - numpy
+  - pip                       # req'd with python; Package installer not strictly needed but needs to be tied to this python if used.
+  - pybind11>=2.10.*
+  - python
+    # qc buildtime required
+  - gau2grid
+  #- psi4::libint              # opt'l with libint; Optionally for linux-64, an AM=7 build is available here.
+  - libint
+  - libxc-c
+  - optking
+  - qcelemental
+  - qcengine
+    # runtime required
+  - msgpack-python            # req'd with qcelemental
+  - networkx                  # req'd with qcelemental
+  - scipy
+    # test
+  - memory_profiler
+  - pytest<8
+  - pytest-xdist              # req'd with pytest; Parallel runner not strictly needed but very handy.

@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2023 The Psi4 Developers.
+.. # Copyright (c) 2007-2024 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -705,17 +705,20 @@ CD
     vectors is not designed for computations with thousands of basis
     functions.
 
-|PSIfour| also features the capability to use "composite" Fock matrix build 
-algorithms - arbitrary combinations of specialized algorithms that construct 
-either the Coulomb or the Exchange matrix separately. In general, since 
-separate Coulomb and Exchange matrix build algorithms exploit properties specific to 
+|PSIfour| also features the capability to use "composite" Fock matrix build
+algorithms - arbitrary combinations of specialized algorithms that construct
+either the Coulomb or the Exchange matrix separately. In general, since
+separate Coulomb and Exchange matrix build algorithms exploit properties specific to
 their respective matrix, composite algorithms display lower
-scaling factors than their combined Fock build counterparts. However, composite algorithms also 
+scaling factors than their combined Fock build counterparts. However, composite algorithms also
 introduce redundant ERI computations into the calculation. Therefore, composite Fock build
-algorithms tend to perform better for larger systems, but worse for smaller systems. Arbitrary 
-composite algorithms can be accessed by setting |globals__scf_type| to ``J_alg+K_alg``, 
+algorithms tend to perform better for larger systems, but worse for smaller systems. Arbitrary
+composite algorithms can be accessed by setting |globals__scf_type| to ``J_alg+K_alg``,
 where *J_alg* and *K_alg* are the names of the separate Coulomb
-and Exchange construction algorithms to use, respectively.
+and Exchange construction algorithms to use, respectively. Alternatively, if one is using
+DFT with non-hybrid functionals, a composite Coulomb construction algorithm can be
+specified solo by setting |globals__scf_type| to ``J_alg``, without the need to set 
+an associated ``K_alg``.
 
 Specialized algorithms available to construct the Coulomb term within a composite framework 
 are as follows:
@@ -733,8 +736,7 @@ are as follows:
 
 COSX
     An algorithm based on the semi-numerical "chain of spheres exchange" (COSX)
-    approach described in [Neese:2009:98]_. The coulomb term is computed with a
-    direct density-fitting algorithm. The COSX algorithm uses no I/O, scales
+    approach described in [Neese:2009:98]_. The COSX algorithm uses no I/O, scales
     well with system size, and requires minimal memory, making it ideal for
     large systems and multi-core CPUs. See :ref:`sec:scfcosx` for more information.
 LINK
@@ -745,6 +747,14 @@ LINK
     LINK implementation scales well with system size 
     while simultaneously providing a formally-exact computation of the 
     Exchange term. See :ref:`sec:scflink` for more information.
+SNLINK
+    An algorithm based on the "seminumerical Linear Exchange" (sn-LinK)
+    approach described in [Laqua:2020:1456]_, SNLINK is only available if |PSIfour|
+    is compiled with the GauXC library, described in [Williams-Young:2023:234104]_.
+    Algorithmically, SNLINK is very similar to COSX, differing primarily in screening of
+    the analytic 3-center integrals. In terms of implementation, SNLINK is more efficient, 
+    owing to more highly-optimized integral contraction kernels; and supports execution
+    on Graphics Processing Units (GPUs). See :ref:`sec:scfsnlink` for more information.
 
 In some cases the above algorithms have multiple implementations that return
 the same result, but are optimal under different molecules sizes and hardware
@@ -826,7 +836,8 @@ calculations. In principle, though, DF approaches can be utilized in an integral
 I/O bottlenecks that conventional DF methods will eventually run into. One such approach, outlined by Weigend in [Weigend:2002:4285]_,
 is available for use in Psi4 for the separate construction of the Coulomb contribution to the Fock matrix.  This implementation can be used alongside 
 Psi4's separate Exchange construction algorithms for composite Fock matrix construction by using the keyword DFDIRJ as the Coulomb construction 
-algorithm when specifying |globals__scf_type| to use a composite algorithm combination (``DFDIRJ+K_alg``). 
+algorithm when specifying |globals__scf_type| to use a composite algorithm combination (``DFDIRJ+K_alg`` in general, 
+or ``DFDIRJ`` for DFT with non-hybrid functionals). 
 
 DFDIRJ supports multiple capabilities to improve performance. Specifically, DFDIRJ allows for a combination of density-matrix based ERI 
 screening (set |globals__screening| to ``DENSITY``) and incremental Fock matrix construction (set |scf__incfock| to ``TRUE``). These two, when combined,
@@ -856,8 +867,9 @@ for the SCF to fully converge on the larger grid, useful for the study of wavefu
 properties such as gradients. The size of the initial grid is controlled by the keywords
 |scf__cosx_radial_points_initial| and |scf__cosx_spherical_points_initial|.
 The final grid is controlled by |scf__cosx_radial_points_final| and
-|scf__cosx_spherical_points_final|. The defaults for both grids aim to balance
-cost and accuracy.
+|scf__cosx_spherical_points_final|. Currently, the default grids are very crude,
+allowing for high performance at the cost of accuracy. If high-accuracy calculations
+are desired with COSX, the grid sizes should be increased.
 
 Screening thresholds over integrals, densities, and basis extents are set
 with the |scf__cosx_ints_tolerance|, |scf__cosx_density_tolerance|, and
@@ -894,6 +906,57 @@ LinK is especially powerful when combined with density-matrix based ERI screenin
 To control the LinK algorithm, here are the list of options provided.
   
   |scf__linK_ints_tolerance|: The integral screening tolerance used for sparsity-prep in the LinK algorithm. Defaults to the |scf__ints_tolerance| option.
+
+.. _`sec:scfsnlink`:
+
+Seminumerical Linear Exchange
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Similar to the COSX algorithm provided by |PSIfour|, the seminumerical Linear Exchange (sn-LinK) algorithm, devised
+by Ochsenfeld in [Laqua:2020:1456]_, improves efficiency of the K construction process by
+decomposing computation of the ERI tensor into a series of contractions involving grid-computed basis
+function components and analytic 3-center integrals. As a "semi-numerical" Exchange construction method,
+sn-LinK is also comparable to the pseudospectral method of Friesner.
+
+sn-LinK and COSX have a number of significant differences in implementation details in |PSIfour|, however.
+First and foremost, the COSX implementation is contained within |PSIfour| itself, and is thus always available
+for execution. On the other hand, the sn-LinK implementation in |PSIfour| is tied to the GauXC standalone
+library discussed in [Williams-Young:2023:234104]_; thus, the |PSIfour|-GauXC interface must be built
+for sn-LinK to be used. Second, the GauXC sn-LinK interface is more
+efficient than the |PSIfour| COSX code on multiple levels. For CPU execution, GauXC's sn-LinK uses highly-optimized
+kernels for the contraction of the analytic integrals, whereas |PSIfour|'s COSX uses a less-optimized, more
+general contraction kernel. Additionally, GauXC's sn-LinK code supports execution on GPUs, allowing for
+GPU-enabled construction of the Exchange matrix, while |PSIfour|'s COSX does not. In general,
+sn-LinK will provide better runtime performance for hitting a desired accuracy
+threshold compared to |PSIfour|'s COSX. Third, some low-level implementation details differ between the two.  
+For example, |PSIfour|'s COSX uses a dual-grid scheme similar to that originally proposed by Neese, 
+converging the SCF on a small grid, then running a number of SCF iterations, 
+equal to the value set by the |scf__cosx_maxiter_final|, on a larger grid. 
+In contrast, sn-LinK only uses a single-grid scheme, simply converging the SCF on one grid. 
+As another example, while the COSX grid defaults are selected to emphasize speed over accuracy, 
+the defaults for sn-LinK are selected to achieve higher accuracy (~0.1 kcal/mol error for interaction/conformer energies).
+
+To control compilation and linking of the optional GauXC dependency required for the sn-LinK algorithm, 
+here are the list of compile-time options provided.
+  
+* :makevar:`ENABLE_gauxc`: Compile Psi4 with support for GauXC.
+
+* :makevar:`gauxc_DIR`: Location of the external GauXC install to compile Psi4 with, if using an external GauXC instance.
+
+* :makevar:`gauxc_ENABLE_GPU`: Enable GPU support for the Psi4-GauXC interface class. When building GauXC internally within Psi4, this keyword controls whether to enable GPU support on the internally-built GauXC instance. When using an external GauXC build, this keyword must align with the GPU capabilities of the external GauXC install.  
+
+To control the sn-LinK algorithm, here are the list of options provided.
+  
+  |scf__snlinK_radial_points|: Number of radial points to use for the sn-LinK grid. Defaults to 70. 
+
+  |scf__snlinK_spherical_points|: Number of spherical points to use for the sn-LinK grid. Defaults to 302.
+
+  |scf__snlinK_radial_scheme|: Radial quadrature scheme to use for the sn-LinK grid. Defaults to ``MURA``. Note that, although different from the more common Psi4 radial quadrature scheme of ``TREUTLER``, the default of ``MURA`` matches the default radial quadrature scheme used by GauXC.
+
+  |scf__snlinK_ints_tolerance|: The integral screening tolerance used in the sn-LinK algorithm. Defaults to the |scf__ints_tolerance| option.
+
+  |scf__snlinK_use_gpu|: Select whether to execute the sn-LinK algorithm on GPU or not. Setting this option to ``true`` will fail unless the Psi4-GauXC interface is compiled with GPU support.
+
 
 .. index::
     single: SOSCF

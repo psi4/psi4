@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -40,6 +40,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <sstream>
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
@@ -63,9 +64,9 @@ PSI_API int *init_int_array(int size) {
     int *array;
 
     if ((array = (int *)malloc(sizeof(int) * size)) == nullptr) {
-        outfile->Printf("init_array:  trouble allocating memory \n");
-        outfile->Printf("size = %d\n", size);
-        exit(PSI_RETURN_FAILURE);
+        std::ostringstream oss;
+        oss << "init_array: trouble allocating memory, size = " << size << "\n";
+        throw std::runtime_error(oss.str());
     }
     memset(array, 0, sizeof(int) * size);
     return (array);
@@ -102,15 +103,15 @@ PSI_API int **init_int_matrix(int rows, int cols) {
     int i;
 
     if ((array = (int **)malloc(sizeof(int *) * rows)) == nullptr) {
-        outfile->Printf("init_int_matrix: trouble allocating memory \n");
-        outfile->Printf("rows = %d\n", rows);
-        exit(PSI_RETURN_FAILURE);
+        std::ostringstream oss;
+        oss << "init_array: trouble allocating memory, rows = " << rows << "\n";
+        throw std::runtime_error(oss.str());
     }
 
     if ((array[0] = (int *)malloc(sizeof(int) * cols * rows)) == nullptr) {
-        outfile->Printf("init_int_matrix: trouble allocating memory \n");
-        outfile->Printf("rows = %d, cols = %d", rows, cols);
-        exit(PSI_RETURN_FAILURE);
+        std::ostringstream oss;
+        oss << "init_array: trouble allocating memory, rows = " << rows << " cols = " << cols << "\n";
+        throw std::runtime_error(oss.str());
     }
     for (i = 1; i < rows; i++) {
         array[i] = array[i - 1] + cols;
@@ -192,4 +193,4 @@ L200:
     ii = kk;
     goto L200;
 }
-}
+}  // namespace psi

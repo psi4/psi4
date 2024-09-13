@@ -14,49 +14,84 @@ jobs:
 
   ecosystem:
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         cfg:
 
-          - runs-on: ubuntu-latest
-            python-version: "3.10"
+          - label: "Conda GNU (L)"
+            runs-on: ubuntu-latest
+            python-version: "3.12"
             mkl-version: ""
-            base-channel: "conda-forge"
-            pytest-marker-expr: "addon and not long"
+            platform: linux-64
+            pytest-marker-expr: "addon and not (medlong or long)"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D BUILD_SHARED_LIBS=ON
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+            # Notes:
+            # * for all three lanes, can consider:
+            #    -D BUILD_SHARED_LIBS=ON
+            #    -D ENABLE_XHOST=OFF
 
-          - runs-on: macos-latest
+          - label: "Conda Clang (M-Intel)"
+            runs-on: macos-13  # ensures py!=27 in base OS
             python-version: "3.9"
             mkl-version: ""
-            base-channel: "conda-forge"
-            pytest-marker-expr: "addon and not long"
+            platform: osx-64
+            pytest-marker-expr: "addon and not (medlong or long)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D BUILD_SHARED_LIBS=ON
-              -D OpenMP_C_FLAG="-fopenmp=libiomp5"
-              -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
             # Notes:
-            # * libiomp5 is picking up naturally but left explicit as guide
+            # * libiomp5 is picking up naturally but left here as guide
+            #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
+            #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+            # * as long as we're using mac to test legacy QCFractal, stick with py39
+            # * Once upon a time, this GHA absolutely needed the SDK. I don't know
+            #   why not now, but left here in case it shows up again.
+            #    -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
+            #    -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
+            #    -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
 
-          - runs-on: windows-latest
-            python-version: "3.9"
-            mkl-version: "=2022.1"
-            base-channel: "conda-forge"
-            pytest-marker-expr: "addon and not long and not d2ints"
+          - label: "Conda Clang (M-Silicon)"
+            runs-on: macos-latest
+            python-version: "3.10"
+            mkl-version: ""
+            platform: osx-64
+            pytest-marker-expr: "addon and not (medlong or long)"
+            target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D BUILD_SHARED_LIBS=OFF
-              -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
-              -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
-              -D psi4_SKIP_ENABLE_Fortran=ON
-            # Notes:
-            # * See mkl-version notes at end
-            # * "not d2ints" allows Windows accessing c-f L2 to pass
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
 
-    name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
+          - label: "LLVM clang-cl (W)"
+            runs-on: windows-latest
+            python-version: "3.12"
+            mkl-version: "=2022.1"
+            llvm-version: "17.0.6"
+            platform: win-64
+            pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D psi4_SKIP_ENABLE_Fortran=ON
+              -D CMAKE_CXX_FLAGS="-IC:\Users\runneradmin\miniconda3\envs\p4build\opt\compiler\include"
+
+            # Notes:
+            # * When not using cache file, need to additionally specify the following:
+            #    -D CMAKE_C_COMPILER=clang-cl
+            #    -D CMAKE_CXX_COMPILER=clang-cl
+            # * "not d2ints" allows Windows accessing c-f L2 to pass
+            # * Older computers may need -D ENABLE_XHOST=OFF & -D CMAKE_CXX_FLAGS="/arch:AVX"
+            # * See mkl-version notes at end
+            # * If building certain addons from src (i.e., L2), need
+            #    -D BUILD_SHARED_LIBS=OFF
+            # * See OpenMP_LIBRARY_DIRS below. no longer needed
+            #    -D OpenMP_LIBRARY_DIRS="D:/a/psi4/psi4/iomp5md/conda/win/2019.1"
+
+    name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.label }}"
     runs-on: ${{ matrix.cfg.runs-on }}
     defaults:
       run:
@@ -66,14 +101,15 @@ jobs:
 
       # fetch-depth: 0 gets git history so Psi4 version is computable
     - name: Checkout Psi4
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
       # see CMAKE_OSX_SYSROOT and CMAKE_Fortran_FLAGS for use
       # mac_ver line returns, e.g., "10.15" for Catalina & "11.6" for Big Sur. but phracker doesn't support all minor, so some logic to hardcode.
     - name: Prepare compiler environment, SDK (M)
-      if: runner.os == 'macOS'
+      #if: runner.os == 'macOS'
+      if: false
       run: |
         macos_Mm=$(SYSTEM_VERSION_COMPAT=0 python -c "import platform; Mmp = platform.mac_ver()[0]; Mm = '.'.join(Mmp.split('.')[:2]); print(Mm)")
         macos_M=$(SYSTEM_VERSION_COMPAT=0 python -c "import platform; Mmp = platform.mac_ver()[0]; M = '.'.join(Mmp.split('.')[:1]); print(M)")
@@ -82,6 +118,8 @@ jobs:
             macos_Mm=11.3
         elif [[ "${macos_M}" == "12" ]]; then
             # until phracker merges and releases 12 via https://github.com/phracker/MacOSX-SDKs/pull/44
+            macos_Mm=11.3
+        elif [[ "${macos_M}" == "13" ]]; then
             macos_Mm=11.3
         fi
         echo $macos_Mm
@@ -95,169 +133,67 @@ jobs:
         arch: x64
 
       # see OpenMP_LIBRARY_DIRS for use
+      # no longer needed since intel-openmp conda package now provides dll & lib
     - name: Prepare OpenMP build environment, libiomp5md.lib (W)
-      if: runner.os == 'Windows'
+      #if: runner.os == 'Windows'
+      if: false
       run: git clone https://github.com/psi4/iomp5md.git
 
     - name: Write Conda environment files
       run: |
         #
-        # Buildtime (L, M, W)
+        # Buildtime/Runtime (L, M, W)
         #
-        cat > build.yaml <<EOF
-        name: baseenv
-        channels:
-          - ${{ matrix.cfg.base-channel }}
-          - nodefaults
-        dependencies:
-          - libblas=*=*mkl
-          - python=${{ matrix.cfg.python-version }}
-            # build
-          - boost-cpp
-          - cmake
-          - c-compiler
-          - cxx-compiler
-          - eigen
-          - fortran-compiler
-          - llvm-openmp
-          - mkl-devel${{ matrix.cfg.mkl-version }}
-          - ninja
-          - numpy
-          - pybind11
-          - pydantic<2.0
-            # qc req'd
-          - gau2grid
-          - conda-forge/label/libint_dev::libint=2.7.3dev1
-          - optking
-          - qcelemental
-          - qcengine
-          - libxc-c
-            # qc opt'l
-          # - psi4/label/dev::ambit
-          # - psi4/label/dev::chemps2
-          # - psi4/label/dev::libecpint
-          - dkh
-          - pygdma
-          # - psi4/label/dev::pcmsolver
-          # - psi4/label/dev::simint
-            # runtime
-            # pip
-            # * note that this is the reliable way to patch in dev versions of py deps,
-            #   as internal builds need path adjustments, force removals of conda version,
-            #   and can still be insufficient for qcfractal.
-          #- pip
-          #- pip:
-          #   - git+https://github.com/loriab/QCEngine.git@v0.28.1.dev6
-        EOF
+        echo "::group::Prepare OS Python"
+        which python
+        python --version
+        pip install PyYAML
+        echo "::endgroup::"
+        #
+        conda/psi4-path-advisor.py \
+          env \
+          --name p4build \
+          --python ${{ matrix.cfg.python-version }} \
+          --disable docs \
+          --offline-conda
+        echo "::group::View Env Spec File for Conda (from advisor)"
+        printf "\n<<<  env_p4build.yaml  >>>\n"
+        cat env_p4build.yaml
+        echo "::endgroup::"
+        #
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
-          # sed -i "s;;;g" build.yaml
+          # not for py312
+          sed -i "s;- cppe;#- cppe;g" env_p4build.yaml
         fi
-        if [[ "${{ runner.os }}" == "macOS" ]]; then
+        if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
-          # sed -E -i.bak "s;;;g" build.yaml
+          # sed -E -i.bak "s;;;g" env_p4build.yaml
+        fi
+        if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Silicon)" ]]; then
+          :
+          sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
+          sed -E -i.bak "s;- einsums;#- einsums;g" env_p4build.yaml
+          sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
+          sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
+          # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
-          sed -i "s;- fortran-compiler;;g" build.yaml
-          sed -i "s;- llvm-openmp;- intel-openmp;g" build.yaml
+          :
+          sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
+          #sed -i "s;- intel-openmp;- intel-openmp=2024.2.0=h57928b3_978;g" env_p4build.yaml
         fi
-        #
-        # Runtime for single-channel (L, M, W)
-        #
-        cat > run.yaml <<EOF
-        name: baseenv
-        channels:
-          - ${{ matrix.cfg.base-channel }}
-          - nodefaults
-        dependencies:
-            # non-qc req'd
-          - libblas=*=*mkl
-          - mkl${{ matrix.cfg.mkl-version }}
-          - msgpack-python
-          - networkx
-          - numpy
-          - python=${{ matrix.cfg.python-version }}
-          - scipy
-          - toml
-          - pydantic<2.0
-            # non-qc opt'l
-          - memory_profiler
-            # qc req'd
-          - gau2grid
-          - conda-forge/label/libint_dev::libint=2.7.3dev1
-          - optking
-          - qcelemental
-          - qcengine
-          - libxc-c
-            # qc req'd from buildtime
-          #- psi4/label/dev::ambit
-          #- psi4/label/dev::chemps2
-          - dkh
-          #- psi4/label/dev::libecpint
-          - pygdma
-          #- psi4/label/dev::pcmsolver
-          #- psi4/label/dev::simint
-            # qc opt'l
-          - adcc
-          - basis_set_exchange
-          - cppe
-          - dftd3-python
-          - dftd4-python
-          - pylibefp
-          #- psi4/label/dev::fockci
-          - gcp-correction
-          - geometric
-          #- psi4/label/dev::mp2d
-          - openfermion>=1.0
-          - openfermionpsi4
-          - pyddx
-          - pymdi
-          - qcfractal
-          - qcportal
-          #- psi4/label/dev::resp
-          #- psi4/label/dev::snsmp2
-          - tomli
-            # test
-          - pytest
-          - pytest-xdist
-            # pip
-          - pip
-          - pip:
-             - git+https://github.com/i-pi/i-pi.git@master-py3
-             #- git+https://github.com/loriab/QCEngine.git@v0.28.1.dev6
-
-        # toml needed for psi4 to load parameters from dftd4-python
-        # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
-        EOF
-        if [[ "${{ runner.os }}" == "Linux" ]]; then
-          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" run.yaml  # >=0.50b10
-          sed -i "s;- qcportal;- postgresql;g" run.yaml
-        fi
-        if [[ "${{ runner.os }}" == "macOS" ]]; then
-          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" run.yaml
-          sed -E -i.bak "s;- qcportal;- qcportal=0.15.8;g" run.yaml
-        fi
-        if [[ "${{ runner.os }}" == "Windows" ]]; then
-          # nyi
-          sed -i "s;- adcc;;g" run.yaml
-          sed -i "s;- pyddx;;g" run.yaml
-          sed -i "s;- cppe;;g" run.yaml
-          sed -i "s;- qcfractal;;g" run.yaml
-          sed -i "s;- qcportal;;g" run.yaml
-          sed -i "s;- openfermion>=1.0;;g" run.yaml
-          sed -i "s;- openfermionpsi4;;g" run.yaml
-          sed -i "s;- memory_profiler;;g" run.yaml
-        fi
-        printf "\n<<<  build.yaml  >>>\n"
-        cat build.yaml
-        printf "\n<<<  run.yaml  >>>\n"
-        cat run.yaml
+        echo "  - pygments" >> env_p4build.yaml
+        echo "::group::View Env Spec File for Conda (Edited)"
+        printf "\n<<<  env_p4build.yaml  >>>\n"
+        cat env_p4build.yaml
+        echo "::endgroup::"
 
     - name: Setup Conda
-      uses: conda-incubator/setup-miniconda@v2
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        activate-environment: baseenv
-        environment-file: build.yaml
+        activate-environment: p4build
+        environment-file: env_p4build.yaml
         show-channel-urls: true
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
@@ -271,126 +207,34 @@ jobs:
         mamba info
         mamba list
 
-    #- name: Switch to Mamba solver (L, M)
-    #  if: matrix.cfg.base-channel != 'conda-forge'
-    #  run: |
-    #    conda install -n base conda-libmamba-solver
-    #    conda config --set solver libmamba
-
-    - name: Configure Psi4, Conda defaults GNU (L)
-      if: runner.os == 'Linux'
+    - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
+        conda/psi4-path-advisor.py \
+          cache \
+          --objdir objdir \
+          --insist
+        echo "::group::View Cache File for CMake"
+        printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
+        pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
+        echo "::endgroup::"
+        #
+        # Note: using the cache file (-C below) is optional. See cmargs above.
+        #   The cache file is doing the -D ENABLE_<addon>=ON work.
         cmake \
           -S. \
           -B objdir \
           -G Ninja \
-          -D CMAKE_BUILD_TYPE=Release \
+          -C "${{ github.workspace }}/cache_p4build@objdir.cmake" \
           -D CMAKE_INSTALL_PREFIX=./install \
-          -D CMAKE_C_COMPILER=${CC} \
-          -D CMAKE_CXX_COMPILER=${CXX} \
-          -D CMAKE_Fortran_COMPILER=${FC} \
-          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-          -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -D ENABLE_ambit=OFF \
-          -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
-          -D ENABLE_CheMPS2=OFF \
-          -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
-          -D ENABLE_dkh=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
-          -D ENABLE_ecpint=OFF \
-          -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-          -D ENABLE_gdma=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
-          -D ENABLE_PCMSolver=OFF \
-          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=OFF \
-          -D ENABLE_simint=OFF \
-          -D SIMINT_VECTOR=sse \
-          -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
-          -D ENABLE_v2rdm_casscf=ON \
-          -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
-          -D ENABLE_OPENMP=ON \
-          -D ENABLE_XHOST=OFF \
-          ${{ matrix.cfg.cmargs }}
-
-    - name: Configure Psi4, Conda defaults Clang (M)
-      if: runner.os == 'macOS'
-      run: |
-        cmake \
-          -S. \
-          -B objdir \
-          -G Ninja \
-          -D CMAKE_BUILD_TYPE=Release \
-          -D CMAKE_INSTALL_PREFIX=./install \
-          -D CMAKE_C_COMPILER=${CC} \
-          -D CMAKE_CXX_COMPILER=${CXX} \
-          -D CMAKE_Fortran_COMPILER=${FC} \
-          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-          -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -D ENABLE_ambit=OFF \
-          -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
-          -D ENABLE_CheMPS2=OFF \
-          -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
-          -D ENABLE_dkh=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
-          -D ENABLE_ecpint=OFF \
-          -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-          -D ENABLE_gdma=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
-          -D ENABLE_PCMSolver=OFF \
-          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=OFF \
-          -D ENABLE_simint=OFF \
-          -D SIMINT_VECTOR=sse \
-          -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
-          -D ENABLE_v2rdm_casscf=ON \
-          -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
-          -D ENABLE_OPENMP=ON \
-          -D ENABLE_XHOST=OFF \
-          -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
-          -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
-          -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
-          ${{ matrix.cfg.cmargs }}
-
-    - name: Configure Psi4, LLVM clang-cl (W)
-      if: runner.os == 'Windows'
-      run: |
-        cmake \
-          -S . \
-          -B objdir \
-          -G Ninja \
-          -D CMAKE_BUILD_TYPE=Release \
-          -D CMAKE_INSTALL_PREFIX=./install \
-          -D CMAKE_C_COMPILER=clang-cl \
-          -D CMAKE_CXX_COMPILER=clang-cl \
-          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-          -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -D ENABLE_dkh=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
-          -D ENABLE_gdma=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
-          -D ENABLE_OPENMP=ON \
-          -D ENABLE_XHOST=OFF \
           ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4
-      run: cmake --build objdir --config Release --target install -j
+      run: |
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          # limit to avoid GHA OOM errors in libmints
+          export CMAKE_BUILD_PARALLEL_LEVEL=2
+        fi
+        cmake --build objdir --config Release --target install
 
     - name: Linked dependencies, ldd (L)
       if: runner.os == 'Linux'
@@ -405,36 +249,31 @@ jobs:
       shell: cmd /C CALL {0}
       run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
 
-      # Notes: This is clearing away the whole build environment (to make explicit the build and
-      #   runtime dependencies and addons). Then it's creating a new runtime environment based on
-      #   psi4 and base channel dependencies and addons. This is created at the same environment
-      #   name (so same location on disk as the build env) for non-relocatability reasons.
-    - name: Runtime Conda environment(s)
+    - name: Special Config - QCElemental Dep
+      if: false
       run: |
-        echo "::group::Prepare Environment"
-        conda deactivate
-        mamba remove -n baseenv --all
-        mamba env create --file run.yaml
-        #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        #conda env create --file aux.yaml
-        #fi
-        conda activate baseenv
-        echo "::endgroup::"
+        conda remove qcelemental --force
+        python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.29.0.dev2 --no-deps
+
+    - name: Special Config - QCFractal Dep
+      if: false
+      run: |
+        conda remove qcfractal --force
+        python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@main#egg=qcfractal&subdirectory=qcfractal'
+
+    - name: Special Config - Patch Legacy QCFractal for Python
+      if: false
+      run: |
+        sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /Users/runner/miniconda3/envs/p4build/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+
+    - name: Runtime Conda environment
+      run: |
         mamba info
-        mamba list -n baseenv
-        #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        #conda list -n auxenv
+        mamba list
         if [[ "${{ runner.os }}" != "Windows" ]]; then
           # on Windows, cmd varies: `qcengine.exe`
           qcengine info
         fi
-
-    - name: Patch QCFractal for Python
-      if: runner.os == 'macOS'
-      run: |
-        cat  /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
-        sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
-        cat  /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
 
     - name: Test OpenMP
       working-directory: ./install/lib
@@ -447,70 +286,22 @@ jobs:
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
-      # step works but is redundant with next two; enable for debugging
-    - name: Test Addons with CTest
-      if: false
+      # step works but is redundant with next one; enable for debugging
+    - name: Test Addons with CTest (M)
+      if: runner.os == 'macOS'
       working-directory: ./objdir
-      run: ctest -L addon -j2 --output-on-failure
+      run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows 
 
-    - name: "Test Addons with Pytest, base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev` (L, M, W)"
-      if: matrix.cfg.base-channel == 'conda-forge'
+    - name: Test Addons with Pytest
       working-directory: ./objdir
-      # (1st entry PYTHONPATH) need to find the Psi4 module
       run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }}" stage/lib/psi4/tests/
-      #run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long and not d2ints" stage/lib/psi4/tests/
-
-    #- name: "Test Addons with Pytest, base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge` (L, M)"
-    #  if: matrix.cfg.base-channel != 'conda-forge'
-    #  working-directory: ./objdir
-    #  run: |
-    #    conda activate --stack auxenv
-    #    printenv | grep CONDA_PREFIX
-    #    if [[ "${{ runner.os }}" == "Linux" ]]; then
-    #        # (1st entry) need to find the Psi4 module
-    #        # (2nd entry) Linux needs the baseenv (CONDA_PREFIX_1) to avoid dual OpenMP init since defaults mkl are intel/iomp5 and c-f mkl is llvm/omp
-    #        # (3rd entry) need to find the new addon modules in the auxenv (CONDA_PREFIX; stack activation only merges bin/)
-    #        export PYTHONPATH=stage/lib/:$CONDA_PREFIX_1/lib/python${{ matrix.cfg.python-version }}/site-packages:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
-    #    fi
-    #    if [[ "${{ runner.os }}" == "macOS" ]]; then
-    #        # (1st entry) need to find the Psi4 module
-    #        # (2nd entry) need to find the new addon modules in the auxenv (CONDA_PREFIX; stack activation only merges bin/)
-    #        export PYTHONPATH=stage/lib/:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
-    #    fi
-    #    echo $PYTHONPATH
-    #    pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long" stage/lib/psi4/tests/
 
     - name: Write user Conda environment files
       run: |
-        echo "::group::Prepare Environment"
-        mamba install ruamel_yaml -c ${{ matrix.cfg.base-channel }}
-        echo "::endgroup::"
-        cat > userenvs.py <<EOF
-        from pathlib import Path
-        from ruamel_yaml import YAML
-
-        file1 = Path("build.yaml")
-        yaml1 = YAML(typ="rt")
-        yaml1.indent(mapping=2, sequence=4, offset=2)
-        data1 = yaml1.load(file1)
-
-        file2 = Path("run.yaml")
-        yaml2 = YAML(typ="rt")
-        data2 = yaml2.load(file2)
-
-        for dep in data2["dependencies"]:
-            if dep not in data1["dependencies"]:
-                data1["dependencies"].append(dep)
-
-        outfile = Path("devtools") / "conda-envs" / "${{ runner.os }}-buildrun-maxeco.yaml"
-        yaml1.dump(data1, outfile)
-        EOF
-
-        python userenvs.py
-        cat devtools/conda-envs/${{ runner.os }}-buildrun-maxeco.yaml
-        #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        #cp aux.yaml devtools/conda-envs/${{ runner.os }}-aux-maxeco.yaml
-        #fi
+        pygmentize -g env_p4build.yaml
+        pygmentize -g cache_p4build@objdir.cmake
+        conda/psi4-path-advisor.py -vv
+        cp env_p4build.yaml "devtools/conda-envs/${{ matrix.cfg.platform }}-buildrun.yaml"
         git diff --color-words
 
 # Notes
@@ -525,6 +316,7 @@ jobs:
 # Soln:
 #   Have mkl-devel=<mkl-version> -or- mkl=<mkl-version> in runtime environment to match mkl-devel=<mkl-version> in build env.
 #   Having intel-openmp=<mkl-version> in build and run seems fine but not necessary.
+#   one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
 
 # Error: (W) "DLL load failed while importing _multiarray_umath: The specified module could not be found."
 # Soln: Add `C:\tools\miniconda3\Library\mingw-w64\bin` to PATH

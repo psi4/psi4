@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -131,6 +131,13 @@ void psio_error(size_t unit, size_t errval, std::string prev_msg /* = ""*/) {
                         " If you're a developer, get yourself some coffee.\n";
             break;
     }
+
+    prev_msg += "\n";
+    prev_msg += "Practical advice: This error is probably disk related. First, check that your scratch isn’t full.\n"; 
+    prev_msg += "Second, make sure that you’re setting scratch (\"psi4 -s\" or \"export PSI_SCRATCH\") rather than letting it \n"; 
+    prev_msg += "default to /tmp. Third, run the job again to see if the error is reproducible.\n"; 
+    prev_msg += "If it persists, finally, file an issue.\n";
+
     std::cerr << prev_msg << std::endl;
     throw PSIEXCEPTION(prev_msg);
 }

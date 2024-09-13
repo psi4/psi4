@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2023 The Psi4 Developers.
+.. # Copyright (c) 2007-2024 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -37,7 +37,9 @@ Compiling and Installing from Source
 .. warning:: As of v1.8, primary binary distribution has moved from
    the psi4 channel to the conda-forge channel. Neither install docs
    for users nor compile docs for developers have been updated yet to
-   reflect new patterns. Please consult :psicode:`psicode downloads
+   reflect new patterns. Please consult :source:`conda/psi4-path-advisor.py`
+   (extensive help menu at ``conda/psi4-path-advisor.py -h``)
+   or :psicode:`psicode downloads
    page <installs/latest/>` for the latest guides.
 
 This section fulfills the duty of every Linux project to have an INSTALL
@@ -204,7 +206,9 @@ Libint, and even C++ compilers on Linux and Mac) can be
 satisfied through conda. The links below give examples of how to configure
 that software for |PSIfour| and any notes and warnings pertaining to it.
 
-* :ref:`C++ and C Compilers <cmake:cxx>` (C++17 compliant)
+See :source:`codedeps.yaml` for a structured listing and history of dependencies.
+
+* :ref:`C++ and C Compilers <cmake:cxx>` (C++20 compliant)
 
 * :ref:`Optimized BLAS and LAPACK libraries <cmake:lapack>` (preferably NOT one supplied by a standard
   Linux distribution)
@@ -298,8 +302,6 @@ are available pre-built from conda.
 
   * HDF5 https://support.hdfgroup.org/HDF5/
   * zlib http://www.zlib.net/
-
-.. * :ref:`erd <cmake:erd>` |w---w| :ref:`[what is this?] <sec:erd>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/erd/CMakeLists.txt#L2>`_
 
 ..  * :ref:`Fortran Compiler <cmake:fortran>`
 
@@ -1069,13 +1071,12 @@ On Mac, the following work nicely.
   * Apple Clang: ``clang``, ``clang++``
   * Intel: ``icc``, ``icpc``
 
-|PSIfour| requires *full* C++11 compliance, meaning, most importantly, GCC
->= 4.9. This compliance is checked for at build-time with file
+|PSIfour| requires *full* C++20 compliance.
+This compliance is checked for at build-time with file
 :source:`cmake/custom_cxxstandard.cmake`, so either consult that file or
 try a test build to ensure your compiler is approved. Note that Intel
 compilers on Linux also rely on GCC, so both ``icpc`` and ``gcc`` versions are checked.
-Intel OneAPI Classic compilers work fine. OneAPI beta compilers build but have
-been only minimally tested.
+Intel OneAPI Classic compilers work fine, as do OneAPI Clang ``icpx`` compilers.
 
 * :ref:`faq:modgcc`
 
@@ -1219,7 +1220,7 @@ How to configure Fortran compilers for building Psi4
 * Downstream Dependencies
 
   * |PSIfour| (\ |dr| optional) Fortran Compiler
-  * erd, dkh, gdma, PCMSolver |dr| Fortran Compiler
+  * dkh, gdma, PCMSolver |dr| Fortran Compiler
 
 **CMake Variables**
 
@@ -1792,7 +1793,6 @@ to run correctly); ``FAILED`` in red is bad. ::
     test_addons.py::test_dftd3 PASSED
     test_addons.py::test_libefp PASSED
     test_addons.py::test_pcmsolver PASSED
-    test_addons.py::test_erd PASSED
     test_addons.py::test_simint PASSED
     test_addons.py::test_json PASSED
     test_addons.py::test_cfour SKIPPED

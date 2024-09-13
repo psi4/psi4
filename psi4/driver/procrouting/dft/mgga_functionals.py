@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -99,7 +99,7 @@ funcs.append({
 
 funcs.append({
     "name": "mGGA_MS0",
-    "alias": ["MGGA-MS0"],
+    "alias": ["MGGA-MS0", "MS0"],
     "x_functionals": {
         "MGGA_X_MS0": {}
     },
@@ -112,7 +112,7 @@ funcs.append({
 
 funcs.append({
     "name": "mGGA_MS1",
-    "alias": ["MGGA-MS1"],
+    "alias": ["MGGA-MS1", "MS1"],
     "x_functionals": {
         "MGGA_X_MS1": {}
     },
@@ -125,7 +125,7 @@ funcs.append({
 
 funcs.append({
     "name": "mGGA_MS2",
-    "alias": ["MGGA-MS2"],
+    "alias": ["MGGA-MS2", "MS2"],
     "x_functionals": {
         "MGGA_X_MS2": {}
     },
@@ -138,7 +138,7 @@ funcs.append({
 
 funcs.append({
     "name": "mGGA_MVS",
-    "alias": ["MGGA-MVS"],
+    "alias": ["MGGA-MVS", "MVS"],
     "x_functionals": {
         "MGGA_X_MVS": {}
     },
@@ -244,6 +244,45 @@ funcs.append({
     "description": '    Revised SCAN Meta-GGA XC Functional\n',
     "citation": '    P. D. Mezei, G. I. Csonka, M. Kallay J. Chem. Theory Comput. 14, 2469, 2018\n',
     "doi": "10.1021/acs.jctc.8b00072",
+})
+
+funcs.append({
+    "name": "R2SCAN3C",
+    "alias": ["R2SCAN-3C"],
+    "x_functionals": {
+        "MGGA_X_R2SCAN": {}
+    },
+    "c_functionals": {
+        "MGGA_C_R2SCAN": {}
+    },
+    "description": '    r2SCAN Meta-GGA based 3C composite method with a TZ basis set, gCP and D4\n',
+    "citation": '     S. Grimme,  A. Hansen,  S. Ehlert, J.-M. Mewes J. Chem. Phys. 154, 064103, 2021\n',
+    "doi": "10.1063/5.0040021",
+    "dispersion": {
+        "type": "d4bjeeqatm",
+        "params": {
+            'a1': 0.420,
+            'a2': 5.650,
+            's6': 1.000,
+            's8': 0.000,
+            's9': 2.000,
+            'ga': 2.000,
+            'gc': 1.000,
+        },
+    },
+})
+
+funcs.append({
+    "name": "R2SCAN",
+    "x_functionals": {
+        "MGGA_X_R2SCAN": {}
+    },
+    "c_functionals": {
+        "MGGA_C_R2SCAN": {}
+    },
+    "description": '    r2SCAN Meta-GGA XC Functional\n',
+    "citation": '    J. W. Furness, A. D. Kaplan, J. Ning, J. P. Perdew, J. Sun  J. Phys. Chem. Lett.  11, 8208–8215, 2020\n',
+    "doi": "0.1021/acs.jpclett.0c02405",
 })
 
 funcs.append({

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -116,10 +116,8 @@ void CCIndex::init() {
             make_three_index();
             break;
         default: {
-            outfile->Printf("\n\n\tThe CCIndex class cannot handle %s because there are more than three indices!!!\n\n",
-                            label.c_str());
-
-            exit(1);
+            throw std::logic_error("The CCIndex class cannot handle " + label +
+                                   "  because there are more than three indices!\n");
         }
     }
 }
@@ -274,9 +272,7 @@ void CCIndex::make_two_index() {
 
 void CCIndex::make_three_index() {
     if (label.find(">") != std::string::npos) {
-        outfile->Printf("\n\n\tThe CCIndex class cannot handle restricted loops for triplets!!!\n\n");
-
-        exit(1);
+        throw std::logic_error("The CCIndex class cannot handle restricted loops for triplets!\n");
     }
 
     std::vector<std::vector<short>> pairs;  // The pairs ordered as a vector
@@ -370,7 +366,7 @@ void CCIndex::print() {
     outfile->Printf("\n---------------------------------");
     int index = 0;
     for (int h = 0; h < nirreps; h++) {
-        if (tuplespi[h] > 0) outfile->Printf("\n\t%s", wfn_->moinfo()->get_irr_labs(h).c_str());
+        if (tuplespi[h] > 0) outfile->Printf("\n\t%s", wfn_->moinfo()->get_irr_lab(h).c_str());
         for (size_t tuple = 0; tuple < tuplespi[h]; ++tuple) {
             outfile->Printf("\n\t\t( ");
             for (int k = 0; k < nelements; k++) outfile->Printf("%d ", tuples[index][k]);

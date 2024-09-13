@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -109,8 +109,8 @@ void CCMatrix::print() {
     outfile->Printf("\n\n\t\t\t\t\t%s Matrix\n", label.c_str());
     for (int i = 0; i < nirreps; i++) {
         if (left->get_pairpi(i) * right->get_pairpi(i)) {
-            outfile->Printf("\nBlock %d (%s,%s)", i, wfn_->moinfo()->get_irr_labs(i).c_str(),
-                            wfn_->moinfo()->get_irr_labs(i).c_str());
+            outfile->Printf("\nBlock %d (%s,%s)", i, wfn_->moinfo()->get_irr_lab(i).c_str(),
+                            wfn_->moinfo()->get_irr_lab(i).c_str());
             print_dpdmatrix(i, "outfile");
         }
     }

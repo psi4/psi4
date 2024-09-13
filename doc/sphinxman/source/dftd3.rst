@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2023 The Psi4 Developers.
+.. # Copyright (c) 2007-2024 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -93,6 +93,7 @@ Installation
 * There are two implementations of DFTD3; see :ref:`table:empdispimpl` . The newer
   "s-dftd3" one is preferred, while the older "classic" one will work for the immediate future.
   |PSIfour| will automatically select whichever is available.
+  Starting with v1.9, only "s-dftd3" is supported, though the "classic" continues to work for many applications.
 
 * DFTD3 is available as a conda package for Linux and macOS and Windows.
 
@@ -222,6 +223,7 @@ available only through the ``DFTD3`` or ``DFTD4`` programs. Once installed, the
 ``dftd3``/|PSIfour| and ``dftd4``/|PSIfour| interfaces are transparent, and all corrections are
 interfaced exactly alike.
 The -D3 interface can use classic or simple-dftd3 programs interchangeably and will prefer the latter.
+Starting in v1.9, the classic program is no longer supported or tested, though it isn't deliberately disabled.
 
 Despite different defaults in these programs when run independently,
 when run through |PSIfour| as EmpiricalDispersion engine, each should
@@ -308,7 +310,7 @@ the ``dftd3``/|PSIfour| interface enables computations of three-body dispersion
 corrections. In ``DFT-D3``, three-body dispersion is approximated with the
 Axilrod-Teller-Muto model:
 
-.. math:: E_{disp}^{(3)}=-\frac{1}{6}\sum_{A\neqB\neqC}\frac{C_{9}^{ABC}(3\cos{\theta_a}\cos{\theta_b}\cos{\theta_c}+1)}{(r_{AB}r_{BC}r_{AC})^{3}}f_{damp}(\bar{r}_{ABC})
+.. math:: E_{disp}^{(3)}=-\frac{1}{6}\sum_{A\neq B\neq C}\frac{C_{9}^{ABC}(3\cos{\theta_a}\cos{\theta_b}\cos{\theta_c}+1)}{(r_{AB}r_{BC}r_{AC})^{3}}f_{damp}(\bar{r}_{ABC})
  
 where :math:`\theta_a` is the angle at atom A corresponding to the triangle formed by atoms A, B, and C,
 and :math:`\bar{r}_{ABC}` is the geometric mean of the corresponding atomic-pair distances.

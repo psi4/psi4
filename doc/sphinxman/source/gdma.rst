@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2023 The Psi4 Developers.
+.. # Copyright (c) 2007-2024 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -99,7 +99,7 @@ program takes as input a data file, and a Gaussian formatted checkpoint (see
 Section :ref:`FCHK <sec:fchk>`) file.  The simplest usage of the GDMA code is
 demonstrated below, along with a listing of the options supported; these
 options correspond to the options described in the 
-:download:`GDMA manual <gdma-2.2.06.pdf>`.
+:download:`GDMA manual <gdma-2.3.pdf>`.
 
 If more advanced usage is desired, which is not is permitted by the options
 listed below, the user may provide their own data file containing keywords to

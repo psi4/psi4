@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -74,7 +74,7 @@ def oeprop(wfn: core.Wavefunction, *args: List[str], **kwargs):
     if 'title' in kwargs:
         oe.set_title(kwargs['title'])
     for prop in args:
-        oe.add(prop)
+        oe.add(prop.upper())
 
         # If we're doing MBIS, we want the free-atom volumes
         # in order to compute volume ratios,
@@ -114,9 +114,6 @@ def cubeprop(wfn: core.Wavefunction, **kwargs):
     # By default compute the orbitals
     if not core.has_global_option_changed('CUBEPROP_TASKS'):
         core.set_global_option('CUBEPROP_TASKS', ['ORBITALS'])
-
-    if ((core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and ('ESP' in core.get_global_option('CUBEPROP_TASKS'))):
-        raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with electrostatic potential, so stopping.')
 
     cp = core.CubeProperties(wfn)
     cp.compute_properties()
@@ -349,6 +346,42 @@ def libint2_configuration() -> Dict[str, List[int]]:
         `{'eri': [5, 4, 3], 'eri2': [6, 5, 4], 'eri3': [6, 5, 4], 'onebody': [6, 5, 4]}`
 
     """
+    if "eri_c4_d0_l2" in core._libint2_configuration():
+        return _l2_config_style_eri_c4()
+    elif "eri_dddd_d0" in core._libint2_configuration():
+        return _l2_config_style_eri_llll()
+
+
+def _l2_config_style_eri_llll():
+    skel = {"onebody_": [], "eri_c4_": [], "eri_c3_": [], "eri_c2_": []}
+    skel_re = {"onebody_": r"onebody_\w_d\d", "eri_c4_": r"eri_\w..._d\d", "eri_c3_":  r"eri_\w.._d\d", "eri_c2_": r"eri_\w._d\d"}
+
+    amstr = "SPDFGHIKLMNOQRTUVWXYZ"
+    libint2_configuration = core._libint2_configuration()
+
+    for k, v in skel_re.items():
+        t = re.findall(v, libint2_configuration)
+        skel[k] = t
+
+    for cat in list(skel.keys()):
+        der_max_store = []
+        for der in ["d0", "d1", "d2"]:
+            lmax = -1
+            for itm2 in skel[cat]:
+                if itm2.endswith(der):
+                    lmax = max(amstr.index(itm2[-4].upper()), lmax)
+            der_max_store.append(None if lmax == -1 else lmax)
+        skel[cat] = der_max_store
+
+    # rename keys from components
+    skel["onebody"] = skel.pop("onebody_")
+    skel["eri"] = skel.pop("eri_c4_")
+    skel["eri3"] = skel.pop("eri_c3_")
+    skel["eri2"] = skel.pop("eri_c2_")
+    return skel
+
+
+def _l2_config_style_eri_c4():
     skel = {"onebody_": [], "eri_c4_": [], "eri_c3_": [], "eri_c2_": []}
 
     for itm in core._libint2_configuration().split(";"):
@@ -376,12 +409,12 @@ def libint2_configuration() -> Dict[str, List[int]]:
 
 def libint2_print_out() -> None:
     ams = libint2_configuration()
-    # excluding sph_emultipole
-    sho = {1: 'standard', 2: 'gaussian'}[core._libint2_solid_harmonics_ordering()]
     core.print_out("   => Libint2 <=\n\n");
+    # when L2 is pure cmake core.print_out(core.libint2_citation());
 
     core.print_out(f"    Primary   basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['eri'])}\n")
     core.print_out(f"    Auxiliary basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['eri3'])}\n")
     core.print_out(f"    Onebody   basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['onebody'])}\n")
-    core.print_out(f"    Solid Harmonics ordering:            {sho}\n")
+    # excluding sph_emultipole
+    core.print_out(f"    Solid Harmonics ordering:            {core.libint2_solid_harmonics_ordering()}\n")
 

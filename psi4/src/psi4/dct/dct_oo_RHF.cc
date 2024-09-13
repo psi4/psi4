@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -86,7 +86,7 @@ void DCTSolver::run_simult_dct_oo_RHF() {
         if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
             build_DF_tensors_RHF();
 
-            auto mo_h = Matrix("MO-based H", nirrep_, nmopi_, nmopi_);
+            auto mo_h = Matrix("MO-based H", nmopi_, nmopi_);
             mo_h.copy(so_h_);
             mo_h.transform(Ca_);
 
@@ -622,7 +622,7 @@ void DCTSolver::compute_orbital_rotation_jacobi_RHF() {
 
     // Determine the orbital rotation step
     // Alpha spin
-    auto X_a = Matrix("Alpha orbital step", nirrep_, nmopi_, nmopi_);
+    auto X_a = Matrix("Alpha orbital step", nmopi_, nmopi_);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = naoccpi_[h]; a < nmopi_[h]; ++a) {

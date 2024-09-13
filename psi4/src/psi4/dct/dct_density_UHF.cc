@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -1164,7 +1164,7 @@ void DCTSolver::compute_unrelaxed_separable_density_VVVV() {
 
 Matrix DCTSolver::construct_oo_density(const Matrix& occtau, const Matrix& virtau, const Matrix& kappa,
                                        const Matrix& C) {
-    auto opdm = Matrix("MO basis OPDM", nirrep_, nmopi_, nmopi_);
+    auto opdm = Matrix("MO basis OPDM", nmopi_, nmopi_);
 
     auto occdim = occtau.rowspi();
     auto virdim = virtau.rowspi();

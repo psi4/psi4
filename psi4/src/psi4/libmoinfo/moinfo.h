@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,8 +35,6 @@
 #include <utility>
 
 #include "moinfo_base.h"
-
-#define size_det 2048
 
 namespace psi {
 
@@ -74,7 +72,7 @@ class MOInfo : public MOInfoBase {
         const MOInfo* moinfo;
 
        public:
-        typedef std::bitset<size_det> bitdet;
+        typedef std::bitset<2048> bitdet;  // adjust based on "size det"?
         SlaterDeterminant(const MOInfo*);
         ~SlaterDeterminant();
         void set(int n) { bits.set(n); }
@@ -108,6 +106,8 @@ class MOInfo : public MOInfoBase {
     MOInfo(Wavefunction& ref_wf_, Options& options_, bool silent_ = false);
     ~MOInfo();
 
+    const double* const* const get_scf_mos() const { return (scf); }
+
     // DGEMM timing
     void set_dgemm_timing(double value) { dgemm_timing = value; }
     void add_dgemm_timing(double value) { dgemm_timing += value; }
@@ -132,24 +132,13 @@ class MOInfo : public MOInfoBase {
     int get_nocc() const { return (nocc); }
     int get_nvir() const { return (nvir); }
 
-    intvec get_sopi() const { return (sopi); }
     intvec get_mopi() const { return (mopi); }
-    intvec get_docc() const { return (docc); }
-    intvec get_actv() const { return (actv); }
     intvec get_focc() const { return (focc); }
-    intvec get_extr() const { return (extr); }
     intvec get_fvir() const { return (fvir); }
     intvec get_occ() const { return (occ); }
     intvec get_vir() const { return (vir); }
-    intvec get_all() const { return (all); }
 
-    int get_sopi(int i) const { return (sopi[i]); }
-    int get_mopi(int i) const { return (mopi[i]); }
-    int get_focc(int i) const { return (focc[i]); }
-    int get_docc(int i) const { return (docc[i]); }
-    int get_actv(int i) const { return (actv[i]); }
-    int get_extr(int h) const { return (extr[h]); }
-    int get_fvir(int i) const { return (fvir[i]); }
+    int get_extr(size_t h) const { return (extr[h]); }
 
     // Mapping functions
     intvec get_focc_to_mo() const { return (focc_to_mo); }
@@ -202,14 +191,12 @@ class MOInfo : public MOInfoBase {
     double get_sign_internal_excitation(int i, int j);
 
    private:
-    void tuning();
+    void read_mo_spaces_check_irrepcnt();
     void read_info();
     void read_mo_spaces();
-    void read_mo_spaces2();
     void compute_mo_mappings();
     void print_info();
     void print_mo();
-    void free_memory();
 
     // Model space functions
     void print_model_space();
@@ -222,6 +209,8 @@ class MOInfo : public MOInfoBase {
 
     double scf_energy;
     double fzcore_energy;
+
+    double** scf;  // MO coefficients
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     double dgemm_timing;
@@ -239,6 +228,7 @@ class MOInfo : public MOInfoBase {
     int nvir;        // Generalized virtual (actv + extr)
     int nall;        // Non-frozen MOs (docc + actv + extr)
     int nextr;       // Non-frozen external orbitals (extr)
+    int nmo;         // The # of molecular orbitals, including frozen core and frozen virtual
 
     // Orbitals arrays
     intvec focc;

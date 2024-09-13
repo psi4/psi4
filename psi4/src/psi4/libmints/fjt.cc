@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -65,7 +65,6 @@
 #include <cmath>
 
 using namespace psi;
-;
 
 const double oon[] = {0.0,       1.0,       1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0,  1.0 / 5.0,
                       1.0 / 6.0, 1.0 / 7.0, 1.0 / 8.0, 1.0 / 9.0, 1.0 / 10.0, 1.0 / 11.0};

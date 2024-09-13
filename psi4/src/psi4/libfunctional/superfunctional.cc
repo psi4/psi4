@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -78,7 +78,7 @@ void SuperFunctional::common_init() {
     density_tolerance_ = 0.0;
 }
 std::shared_ptr<SuperFunctional> SuperFunctional::blank() { return std::make_shared<SuperFunctional>(); }
-std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, bool unpolarized) {
+std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, bool unpolarized, const std::optional<std::map<std::string, double>>& tweakers_) {
     // Only allow build from full XC kernels
     if (name.find("XC_") == std::string::npos) {
         throw PSIEXCEPTION("XC_build requires full XC_ functional names");
@@ -98,6 +98,11 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
     sup->set_x_omega(xc_func->omega());
     sup->set_x_alpha(xc_func->global_exchange());
     sup->set_x_beta(xc_func->lr_exchange());
+
+    // User tweakers
+    if (tweakers_.value().size()) {
+        xc_func->set_tweak(tweakers_.value(), true);
+    }
 
     if (xc_func->needs_vv10()) {
         sup->set_vv10_b(xc_func->vv10_b());

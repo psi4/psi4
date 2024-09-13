@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -266,7 +266,7 @@ void CCManyBody::compute_reference_energy() {
     // Compute the zeroth-order energy for the unique references
     for (int n = 0; n < wfn_->moinfo()->get_nunique(); n++) {
         int unique_n = wfn_->moinfo()->get_ref_number(n, UniqueRefs);
-        double ref_energy = wfn_->moinfo()->get_nuclear_energy() + wfn_->moinfo()->get_fzcore_energy();
+        double ref_energy = wfn_->moinfo()->get_nuc_E() + wfn_->moinfo()->get_fzcore_energy();
         // Grab reference n and the list of occupied orbitals
         auto aocc = wfn_->moinfo()->get_aocc(n, UniqueRefs);
         auto bocc = wfn_->moinfo()->get_bocc(n, UniqueRefs);

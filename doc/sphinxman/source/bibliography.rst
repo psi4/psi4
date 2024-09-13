@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2023 The Psi4 Developers.
+.. # Copyright (c) 2007-2024 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -148,6 +148,10 @@ Bibliography
 .. [Bofill:1994:1]
    Bofill,
    *J. Comp. Chem.* **15**, 1-11 (1994).
+
+.. [Besalu:1998:265]
+   Besalú, E., Bofill, J.,
+   *Theor Chem Acc* **100**, 265–274 (1998)
 
 .. [Piecuch:1999:6103]
    P. Piecuch, S. A. Kicharski, and R. J. Bartlett,
@@ -467,7 +471,7 @@ Bibliography
 
 .. [Schaffer:2013:2570]
    R. Sch\ |a_dots|\ ffer and G. Jansen
-   *Mol. Phys.* **111**, 2570 (2013).
+   *Mol. Phys.* **111**, 2570 (2013), https://doi.org/10.1080/00268976.2013.827253 .
 
 .. [Laqua:2018:204111]
    H. Laqua, J. Kussmann and C. Ochsenfeld
@@ -725,3 +729,42 @@ Bibliography
    F. Weigend,
    *Phys. Chem. Chem. Phys.* **4**, 4285-4291 (2002).
    https://doi.org/10.1039/B204199P
+
+.. [Brandenburg:2018:b973c]
+   J. G. Brandenburg, C.Bannwarth, A. Hansen, S. Grimme,
+   *J. Chem. Phys.* **148**, 064104, (2018).
+   https://doi.org/10.1063/1.5012601
+
+.. [Muller:2023:014103]
+   M. M\ |u_dots|\ ller and A. Hansen and S. Grimme
+   *J. Chem. Phys.* **158**, 014103 (2023).
+   https://doi.org/10.1063/5.0133026
+
+.. [Grimme:2021:064103]
+   S. Grimme and A. Hansen and S. Ehlert and J.-M. Mewes
+   *J. Chem. Phys.* **154**, 064103 (2021).
+   https://doi.org/10.1063/5.0040021
+
+.. not yet referenced [Parrish:2012:224106]
+.. not yet referenced    R. M. Parrish, E. G. Hohenstein, T. J. Martinez, C. D. Sherrill
+.. not yet referenced    *J. Chem. Phys.* **137**, 224106 (2012).
+.. not yet referenced    https://doi.org/10.1063/1.4768233
+
+.. not yet referenced [Matthews:2020:1382]
+.. not yet referenced   D. A. Matthews
+.. not yet referenced   *J. Chem. Theory Comput.* **16**, 1382 (2020).
+.. not yet referenced   https://doi.org/10.1021/acs.jctc.9b01205
+
+.. [Williams-Young:2023:234104]
+   "Distributed memory, GPU accelerated Fock construction for hybrid, Gaussian basis density functional theory"
+   D. B. Williams-Young and A. Asadchev and D. T. Popovici and D. Clark and J. Waldrop and T.L. Windus and E. F. Valeev and W. A. de Jong   
+   *J. Chem. Phys.* **158**, 234104 (2023).
+   https://doi.org/10.1063/5.0151070
+
+.. [Laqua:2020:1456]
+   "Highly Efficient, Linear-Scaling Seminumerical Exact-Exchange Method for Graphic Processing Units"
+   H. Laqua and T. H. Thompson and J. Kussmann and C. Ochsenfeld
+   *J. Chem. Theory Comput.* **16**, 1456-1468 (2020)
+   https://doi.org/10.1021/acs.jctc.9b00860
+
+>>>>>>> Other build cleanups and documentation updates

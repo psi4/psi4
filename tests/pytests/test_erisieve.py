@@ -230,12 +230,12 @@ def test_schwarz_vs_density_quartets():
     density_computed_shells = density_wfn.jk().computed_shells_per_iter("Quartets")
 
     schwarz_computed_shells_expected = [20290, 20290, 20290, 20290, 20290, 20290, 20290, 20290, 20290]
-    density_computed_shells_expected = [13171, 19618, 19665, 19657, 19661, 19661, 19663, 19663, 19663]
+    density_computed_shells_expected = [13187, 19683, 19644, 19663, 19661, 19661, 19663, 19663, 19663]
 
     # compare iteration counts of runs with computed shell quartet array lengths
     # iteration_+1 is used to account for computed_shells arrays including SAD guess results
-    assert(len(schwarz_computed_shells_expected) == schwarz_wfn.iteration_+1)
-    assert(len(density_computed_shells_expected) == density_wfn.iteration_+1)
+    assert len(schwarz_computed_shells_expected) == schwarz_wfn.iteration_+1
+    assert len(density_computed_shells_expected) == density_wfn.iteration_+1
 
     # actually compare results with expected values
     assert compare(schwarz_computed_shells_expected, schwarz_computed_shells, 'Schwarz Computed Shells Count, Cutoff 1.0e-12')
@@ -290,12 +290,12 @@ def test_rhf_vs_uhf_screening():
     rhf_computed_shells = rhf_wfn.jk().computed_shells_per_iter("Quartets")
     uhf_computed_shells = uhf_wfn.jk().computed_shells_per_iter("Quartets")
     
-    computed_shells_expected = [13171, 19618, 19665, 19657, 19661, 19661, 19663, 19663, 19663]
+    computed_shells_expected = [13187, 19683, 19644, 19663, 19661, 19661, 19663, 19663, 19663]
 
     # compare iteration counts of runs with computed shell quartet array lengths
     # iteration_+1 is used to account for computed_shells arrays including SAD guess results
-    assert(len(computed_shells_expected) == rhf_wfn.iteration_+1)
-    assert(len(computed_shells_expected) == uhf_wfn.iteration_+1)
+    assert len(computed_shells_expected) == rhf_wfn.iteration_+1
+    assert len(computed_shells_expected) == uhf_wfn.iteration_+1
 
     # actually compare results with expected values
     assert compare(computed_shells_expected, rhf_computed_shells, 'Schwarz Computed Shells Count, Cutoff 1.0e-12')

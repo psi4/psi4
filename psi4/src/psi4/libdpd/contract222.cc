@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,6 +37,7 @@
 #include "dpd.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
 namespace psi {
 
 /* dpd_contract222(): Contracts a pair of two-index quantities to
@@ -88,7 +89,7 @@ int DPD::contract222(dpdfile2 *X, dpdfile2 *Y, dpdfile2 *Z, int target_X, int ta
         symlink = 0;
     } else {
         outfile->Printf("Junk X index %d in contract222\n", target_X);
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Junk X index " + std::to_string(target_X) + " in contract222");
     }
     if (target_Y == 0)
         Ytrans = 1;
@@ -96,7 +97,7 @@ int DPD::contract222(dpdfile2 *X, dpdfile2 *Y, dpdfile2 *Z, int target_X, int ta
         Ytrans = 0;
     else {
         outfile->Printf("Junk Y index %d in contract222\n", target_Y);
-        exit(PSI_RETURN_FAILURE);
+        throw PSIEXCEPTION("Junk Y index " + std::to_string(target_Y) + " in contract222");
     }
 
 #ifdef DPD_DEBUG

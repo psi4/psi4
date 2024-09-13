@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -74,8 +74,6 @@ void export_fock(py::module &m) {
         .def("get_omega_alpha", &JK::get_omega_alpha, "Weight for HF exchange term in range-separated DFT")
         .def("set_omega_beta", &JK::set_omega_beta, "Weight for dampened exchange term in range-separated DFT", "beta"_a)
         .def("get_omega_beta", &JK::get_omega_beta, "Weight for dampened exchange term in range-separated DFT")
-        .def("set_early_screening", &JK::set_early_screening, "Use severe screening techniques? Useful in early SCF iterations.", "early_screening"_a)
-        .def("get_early_screening", &JK::get_early_screening, "Use severe screening techniques? Useful in early SCF iterations.")
         .def("compute", &JK::compute)
         .def("finalize", &JK::finalize)
         .def("C_clear",
@@ -200,7 +198,10 @@ void export_fock(py::module &m) {
 
     py::class_<CompositeJK, std::shared_ptr<CompositeJK>, JK>(m, "CompositeJK", "docstring")
         .def("do_incfock_iter", &CompositeJK::do_incfock_iter, "Was the last Fock build incremental?")
-        .def("clear_D_prev", &CompositeJK::clear_D_prev, "Clear previous D matrices.");
+        .def("clear_D_prev", &CompositeJK::clear_D_prev, "Clear previous D matrices.")
+        .def("set_COSX_grid", &CompositeJK::set_COSX_grid, "Set grid to use for COSX for this SCF iteration.")
+        .def("get_COSX_grid", &CompositeJK::get_COSX_grid, "Return grid used for COSX for this SCF iteration.")
+        .def("get_snLinK_max_am", &CompositeJK::get_snLinK_max_am, "Return maximum AM supported by current GauXC instance, if GauXC support is enabled.");
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",

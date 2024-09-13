@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -77,37 +77,37 @@ void DCTSolver::init() {
         {"ACTIVE_VIR_B",  Slice(nbetapi_, nbetapi_ + nbvirpi_)}
     };
 
-    aocc_c_ = std::make_shared<Matrix>("Alpha Occupied MO Coefficients", nirrep_, nsopi_, naoccpi_);
-    bocc_c_ = std::make_shared<Matrix>("Beta Occupied MO Coefficients", nirrep_, nsopi_, nboccpi_);
-    avir_c_ = std::make_shared<Matrix>("Alpha Virtual MO Coefficients", nirrep_, nsopi_, navirpi_);
-    bvir_c_ = std::make_shared<Matrix>("Beta Virtual MO Coefficients", nirrep_, nsopi_, nbvirpi_);
-    scf_error_a_ = std::make_shared<Matrix>("Alpha SCF Error Vector", nirrep_, nsopi_, nsopi_);
-    scf_error_b_ = std::make_shared<Matrix>("Beta SCF Error Vector", nirrep_, nsopi_, nsopi_);
+    aocc_c_ = std::make_shared<Matrix>("Alpha Occupied MO Coefficients", nsopi_, naoccpi_);
+    bocc_c_ = std::make_shared<Matrix>("Beta Occupied MO Coefficients", nsopi_, nboccpi_);
+    avir_c_ = std::make_shared<Matrix>("Alpha Virtual MO Coefficients", nsopi_, navirpi_);
+    bvir_c_ = std::make_shared<Matrix>("Beta Virtual MO Coefficients", nsopi_, nbvirpi_);
+    scf_error_a_ = std::make_shared<Matrix>("Alpha SCF Error Vector", nsopi_, nsopi_);
+    scf_error_b_ = std::make_shared<Matrix>("Beta SCF Error Vector", nsopi_, nsopi_);
     Fa_ = reference_wavefunction_->Fa()->clone();
     Fb_ = reference_wavefunction_->Fb()->clone();
-    Ftilde_a_ = std::make_shared<Matrix>("Alpha MO Ftilde Matrix", nirrep_, nmopi_, nmopi_);
-    Ftilde_b_ = std::make_shared<Matrix>("Beta MO Ftilde Matrix", nirrep_, nmopi_, nmopi_);
-    Ca_ = std::make_shared<Matrix>("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_);
-    Cb_ = std::make_shared<Matrix>("Beta MO Coefficients", nirrep_, nsopi_, nsopi_);
-    moFa_ = std::make_shared<Matrix>("Alpha MO Fock Matrix", nirrep_, nmopi_, nmopi_);
-    moFb_ = std::make_shared<Matrix>("Beta MO Fock Matrix", nirrep_, nmopi_, nmopi_);
-    old_ca_ = std::make_shared<Matrix>("Old Alpha MO Coefficients", nirrep_, nsopi_, nsopi_);
-    old_cb_ = std::make_shared<Matrix>("Old Beta MO Coefficients", nirrep_, nsopi_, nsopi_);
-    kappa_so_a_ = std::make_shared<Matrix>("Alpha Kappa Matrix", nirrep_, nsopi_, nsopi_);
-    kappa_so_b_ = std::make_shared<Matrix>("Beta Kappa Matrix", nirrep_, nsopi_, nsopi_);
-    ao_s_ = std::make_shared<Matrix>("SO Basis Overlap Integrals", nirrep_, nsopi_, nsopi_);
-    so_h_ = Matrix("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_);
-    s_half_inv_ = std::make_shared<Matrix>("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_);
+    Ftilde_a_ = std::make_shared<Matrix>("Alpha MO Ftilde Matrix", nmopi_, nmopi_);
+    Ftilde_b_ = std::make_shared<Matrix>("Beta MO Ftilde Matrix", nmopi_, nmopi_);
+    Ca_ = std::make_shared<Matrix>("Alpha MO Coefficients", nsopi_, nsopi_);
+    Cb_ = std::make_shared<Matrix>("Beta MO Coefficients", nsopi_, nsopi_);
+    moFa_ = std::make_shared<Matrix>("Alpha MO Fock Matrix", nmopi_, nmopi_);
+    moFb_ = std::make_shared<Matrix>("Beta MO Fock Matrix", nmopi_, nmopi_);
+    old_ca_ = std::make_shared<Matrix>("Old Alpha MO Coefficients", nsopi_, nsopi_);
+    old_cb_ = std::make_shared<Matrix>("Old Beta MO Coefficients", nsopi_, nsopi_);
+    kappa_so_a_ = std::make_shared<Matrix>("Alpha Kappa Matrix", nsopi_, nsopi_);
+    kappa_so_b_ = std::make_shared<Matrix>("Beta Kappa Matrix", nsopi_, nsopi_);
+    ao_s_ = std::make_shared<Matrix>("SO Basis Overlap Integrals", nsopi_, nsopi_);
+    so_h_ = Matrix("SO basis one-electron integrals", nsopi_, nsopi_);
+    s_half_inv_ = std::make_shared<Matrix>("SO Basis Inverse Square Root Overlap Matrix", nsopi_, nsopi_);
     epsilon_a_ = std::make_shared<Vector>(nsopi_);
     epsilon_b_ = std::make_shared<Vector>(nsopi_);
-    kappa_mo_a_ = std::make_shared<Matrix>("MO basis Kappa (Alpha)", nirrep_, nmopi_, nmopi_);
-    kappa_mo_b_ = std::make_shared<Matrix>("MO basis Kappa (Beta)", nirrep_, nmopi_, nmopi_);
-    tau_so_a_ = std::make_shared<Matrix>("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_);
-    tau_so_b_ = std::make_shared<Matrix>("Beta Tau Matrix", nirrep_, nsopi_, nsopi_);
-    aocc_tau_ = Matrix("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
-    bocc_tau_ = Matrix("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
-    avir_tau_ = Matrix("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
-    bvir_tau_ = Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
+    kappa_mo_a_ = std::make_shared<Matrix>("MO basis Kappa (Alpha)", nmopi_, nmopi_);
+    kappa_mo_b_ = std::make_shared<Matrix>("MO basis Kappa (Beta)", nmopi_, nmopi_);
+    tau_so_a_ = std::make_shared<Matrix>("Alpha Tau Matrix", nsopi_, nsopi_);
+    tau_so_b_ = std::make_shared<Matrix>("Beta Tau Matrix", nsopi_, nsopi_);
+    aocc_tau_ = Matrix("MO basis Tau (Alpha Occupied)", naoccpi_, naoccpi_);
+    bocc_tau_ = Matrix("MO basis Tau (Beta Occupied)", nboccpi_, nboccpi_);
+    avir_tau_ = Matrix("MO basis Tau (Alpha Virtual)", navirpi_, navirpi_);
+    bvir_tau_ = Matrix("MO basis Tau (Beta Virtual)", nbvirpi_, nbvirpi_);
 
     // Compute MO offsets
     aocc_off_ = std::vector<int>(nirrep_);
@@ -182,9 +182,9 @@ void DCTSolver::init() {
     ao_s_->copy(mintshelper_->so_overlap());
 
     // Form S^(-1/2) matrix
-    Matrix eigvec(nirrep_, nsopi_, nsopi_);
-    Matrix eigtemp(nirrep_, nsopi_, nsopi_);
-    Matrix eigtemp2(nirrep_, nsopi_, nsopi_);
+    Matrix eigvec(nsopi_, nsopi_);
+    Matrix eigtemp(nsopi_, nsopi_);
+    Matrix eigtemp2(nsopi_, nsopi_);
     Vector eigval(nsopi_);
     ao_s_->diagonalize(eigvec, eigval);
     // Convert the eigenvales to 1/sqrt(eigenvalues)

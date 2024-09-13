@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -30,10 +30,7 @@
 #include <algorithm>
 
 #include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
-PRAGMA_WARNING_POP
 #include "psi4/libpsi4util/libpsi4util.h"
 
 #define CCTRANSFORM_USE_BLAS
@@ -77,13 +74,11 @@ int CCTransform::read_tei_mo_integrals_block(int first_irrep) {
 }
 
 /**
- * Allocate as many blocks of the tei_mo array and exit(EXIT_FAILURE) if there is not enough space
+ * Allocate as many blocks of the tei_mo array and throw error if there is not enough space
  */
 int CCTransform::allocate_tei_mo_block(int first_irrep) {
     if (first_irrep > wfn_->nirrep()) {
-        outfile->Printf("\n    Transform: allocate_tei_mo_block() was called with first_irrep > nirreps !");
-
-        exit(EXIT_FAILURE);
+        throw std::runtime_error("Transform: allocate_tei_mo_block() was called with first_irrep > nirreps !\n");
     }
 
     size_t available_transform_memory =
@@ -110,9 +105,7 @@ int CCTransform::allocate_tei_mo_block(int first_irrep) {
     }
     outfile->Printf("\n    Integrals from irreps %d -> %d will be read in core", first_irrep, last_irrep - 1);
     if (first_irrep == last_irrep) {
-        outfile->Printf("\n    CCTransform: allocate_tei_mo_block() has not enough memory!");
-
-        exit(EXIT_FAILURE);
+        throw std::runtime_error("CCTransform: allocate_tei_mo_block() does not have enough memory!\n");
     }
     first_irrep_in_core = first_irrep;
     last_irrep_in_core = last_irrep;

@@ -114,6 +114,13 @@ if(TARGET ECPINT::ecpint)
     )
 endif()
 
+if(TARGET Einsums::einsums)
+  target_compile_definitions(core
+    PRIVATE
+      USING_Einsums
+    )
+endif()
+
 if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(core
     PRIVATE
@@ -126,6 +133,13 @@ if(TARGET BrianQC::static_wrapper)
   target_link_libraries(core
     PRIVATE
       BrianQC::static_wrapper
+    )
+endif()
+
+if(TARGET IntegratorXX::IntegratorXX)
+  target_link_libraries(core
+    PRIVATE
+      IntegratorXX::IntegratorXX
     )
 endif()
 

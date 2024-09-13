@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -30,11 +30,9 @@
 
 namespace psi {
 
-/*!
- * \fn MOInfo::compute_mo_mappings()
- */
+/// @brief Build the arrays that connect the subspaces of the non-frozen MOs to the the non-frozen list of MOs in
+/// Pitzer. This is what you need in all computations.
 void MOInfo::compute_mo_mappings() {
-    //
     //  ------------------------------------------------------------------------------
     //  |0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15|16 17 18 19 20 21 22 23 24 25 26 27 28|
     //  ------------------------------------------------------------------------------
@@ -45,13 +43,7 @@ void MOInfo::compute_mo_mappings() {
     //  |-------|          all          |-----------|            all           |-----|
     //  |                                     mo                                     |
     //  |----------------------------------------------------------------------------|
-    //
-
     /********************************************************
-      Build the arrays that connect the subspaces of the
-      non-frozen MOs to the the non-frozen list of MOs
-      in Pitzer. This is what you need in all computations.
-
       For the example above:
 
       docc_to_mo = (4 5 6 7 18 19 20)
@@ -184,67 +176,3 @@ void MOInfo::compute_mo_mappings() {
 }
 
 }  // namespace psi
-
-// OBSOLETE CODE
-// first_occupied_mo[alpha] = new int[nirreps];
-// first_active_mo[alpha]   = new int[nirreps];
-// first_virtual_mo[alpha]  = new int[nirreps];
-// last_occupied_mo[alpha]  = new int[nirreps];
-// last_active_mo[alpha]    = new int[nirreps];
-// last_virtual_mo[alpha]   = new int[nirreps];
-
-/********************************************************
-  Build the first and last arrays. These quantities will
-  give the first and the last element of a mo space
-  (doubly occupied, active, external, occupied, virtual)
-  for a given irrep. For the example above:
-
-  first_occupied_mo[alpha] = (4 18)
-  first_active_mo[alpha]   = (8 21)
-  first_virtual_mo[alpha]  = (8 21)
-  last_occupied_mo[alpha]  = (10 23)
-  last_active_mo[alpha]    = (10 23)
-  last_virtual_mo[alpha]   = (14 27)
-********************************************************/
-
-// first_orbs_mo.resize(nirreps);
-// first_so_mo.resize(nirreps);
-// last_orbs_mo.resize(nirreps);
-// last_so_mo.resize(nirreps);
-//
-//
-//
-// int sum = 0;
-// for(int i=0;i<nirreps;i++){        //Loop over irreps
-//  sum+=focc[i];
-//  first_occupied_mo[alpha][i]=sum;
-//  last_occupied_mo[alpha][i]=sum+docc[i]+actv[i];
-//  sum+=docc[i];
-//  first_active_mo[alpha][i]=sum;
-//  last_active_mo[alpha][i]=sum+actv[i];
-//  first_virtual_mo[alpha][i]=sum;
-//  last_virtual_mo[alpha][i]= sum + actv[i] + extr[i];
-//  sum += actv[i] + extr[i] + fvir[i];
-//}
-// sum = 0;
-// for(int i=0;i<nirreps;i++){        //Loop over irreps
-//  first_orbs_mo[i]=sum;
-//  sum+=orbspi[i];
-//  last_orbs_mo[i]=sum;
-//}
-// sum = 0;
-// for(int i=0;i<nirreps;i++){        //Loop over irreps
-//  first_so_mo[i]=sum;
-//  sum+=sopi[i];
-//  last_so_mo[i]=sum;
-//}
-//
-//// Copy the alpha array to beta. This works only for MRCC
-// for(int i=0;i<nirreps;i++){        //Loop over irreps
-//  first_occupied_mo[beta] = first_occupied_mo[alpha];
-//  first_active_mo[beta]   = first_active_mo[alpha];
-//  first_virtual_mo[beta]  = first_virtual_mo[alpha];
-//  last_occupied_mo[beta]  = last_occupied_mo[alpha];
-//  last_active_mo[beta]    = last_active_mo[alpha];
-//  last_virtual_mo[beta]   = last_virtual_mo[alpha];
-//}

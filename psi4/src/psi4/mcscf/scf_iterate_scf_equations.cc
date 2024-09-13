@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -135,10 +135,9 @@ void SCF::iterate_scf_equations() {
         }
 
         if (cycle > options_.get_int("MAXITER")) {
-            outfile->Printf("\n\n  The calculation did not converge in %d cycles", options_.get_int("MAXITER"));
-            outfile->Printf("\n  Quitting MCSCF.\n");
-
-            exit(1);
+            std::ostringstream oss;
+            oss << "The calculation did not converge in " << options_.get_int("MAXITER") << " cycles.\n";
+            throw std::runtime_error(oss.str());
         }
 
         cycle++;

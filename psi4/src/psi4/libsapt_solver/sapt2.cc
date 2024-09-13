@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -67,8 +67,6 @@ SAPT2::SAPT2(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefu
     psio_->open(PSIF_SAPT_AMPS, PSIO_OPEN_NEW);
 
     maxiter_ = options_.get_int("MAXITER");
-    e_conv_ = options_.get_double("E_CONVERGENCE");
-    d_conv_ = options_.get_double("D_CONVERGENCE");
 
     nat_orbs_t3_ = options.get_bool("NAT_ORBS_T3");
     nat_orbs_t2_ = options.get_bool("NAT_ORBS_T2");

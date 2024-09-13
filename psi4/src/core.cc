@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -100,7 +100,7 @@ void brianInit() {
     if (brianCookie != 0) {
         throw PSIEXCEPTION("Attempting to reinitialize BrianQC without releasing it first");
     }
-    
+
     brianInt brianAPIVersionOfHost = BRIAN_API_VERSION;
     brianInt hostID = BRIAN_HOST_PSI4;
     brianCookie = brianAPIInit(&brianAPIVersionOfHost, &hostID);
@@ -113,7 +113,7 @@ void brianRelease()
     if (brianCookie == 0) {
         throw PSIEXCEPTION("Attempting to release the BrianQC module when it hasn't been initialized\n");
     }
-    
+
     outfile->Printf("Releasing the BrianQC module\n");
     brianAPIRelease(&brianCookie);
     brianCookie = 0;
@@ -198,6 +198,13 @@ SharedWavefunction mcscf(SharedWavefunction, Options&);
 namespace psimrcc {
 SharedWavefunction psimrcc(SharedWavefunction, Options&);
 }
+namespace dummy_einsums {
+SharedWavefunction dummy_einsums (SharedWavefunction, Options&);
+}
+namespace dummy_integratorxx {
+SharedWavefunction dummy_integratorxx(SharedWavefunction, Options&);
+}
+
 
 // Matrix returns
 namespace scfgrad {
@@ -492,6 +499,28 @@ SharedWavefunction py_psi_psimrcc(SharedWavefunction ref_wfn) {
     return psimrcc::psimrcc(ref_wfn, Process::environment.options);
 }
 
+#ifdef USING_Einsums
+SharedWavefunction py_psi_dummy_einsums(SharedWavefunction ref_wfn) {
+    py_psi_prepare_options_for_module("EINSUMS");
+    return dummy_einsums::dummy_einsums(ref_wfn, Process::environment.options);
+}
+#else
+double py_psi_dummy_einsums(SharedWavefunction ref_wfn) {
+    throw PSIEXCEPTION("Einsums not enabled. Recompile with -DENABLE_Einsums");
+}
+#endif
+
+#ifdef USING_IntegratorXX
+SharedWavefunction py_psi_dummy_integratorxx(SharedWavefunction ref_wfn) {
+    py_psi_prepare_options_for_module("CCEOM");
+    return dummy_integratorxx::dummy_integratorxx(ref_wfn, Process::environment.options);
+}
+#else
+double py_psi_dummy_integratorxx(SharedWavefunction ref_wfn) {
+    throw PSIEXCEPTION("IntegratorXX not enabled. Recompile with -DENABLE_IntegratorXX");
+}
+#endif
+
 void py_psi_clean() { PSIOManager::shared_object()->psiclean(); }
 
 void py_psi_print_options() { Process::environment.options.print(); }
@@ -542,6 +571,21 @@ void throw_deprecation_errors(std::string const& key, std::string const& module 
     }
     if (module == "SCF" && key == "PK_ALGO") {
         py_psi_print_out("WARNING!\n\tRemove keyword PK_ALGO! PK_ALGO has been replaced by the SCF_SUBTYPE=YOSHIMINE_OUT_OF_CORE and REORDER_OUT_OF_CORE options. Using PK_ALGO will raise an error in v1.8.\n");
+    }
+    if (module == "SAPT" && key == "E_CONVERGENCE") {
+        throw PsiException(
+        "Remove keyword " + key + " for module " + module + ". This convergence control and keyword were removed in v1.10.",
+            __FILE__, __LINE__);
+    }
+    if (module == "SAPT" && key == "D_CONVERGENCE") {
+        throw PsiException(
+        "Rename keyword " + key + " for module " + module + " to CPHF_R_CONVERGENCE. The keyword was renamed in v1.10.",
+            __FILE__, __LINE__);
+    }
+    if (module == "FISAPT" && key == "D_CONVERGENCE") {
+        throw PsiException(
+        "Rename keyword " + key + " for module " + module + " to CPHF_R_CONVERGENCE. The keyword was renamed in v1.10.",
+            __FILE__, __LINE__);
     }
 }
 
@@ -623,7 +667,7 @@ bool py_psi_set_global_option_string(std::string const& key, std::string const& 
         else
             throw std::domain_error("Required option type is boolean, no boolean specified");
     }
-    
+
 #ifdef USING_BrianQC
     if (nonconst_key == "BRIANQC_ENABLE") {
         if (to_upper(value) == "TRUE" || to_upper(value) == "YES" || to_upper(value) == "ON")
@@ -657,13 +701,13 @@ bool py_psi_set_global_option_int(std::string const& key, int value) {
     } else {
         Process::environment.options.set_global_int(nonconst_key, value);
     }
-    
+
 #ifdef USING_BrianQC
     if (nonconst_key == "BRIANQC_ENABLE") {
         handleBrianOption(value);
     }
 #endif
-    
+
     return true;
 }
 
@@ -990,7 +1034,19 @@ void py_psi_print_variable_map() {
              << std::fixed << std::setprecision(12) << it->second << std::endl;
     }
 
+
     outfile->Printf("\n\n  Variable Map:");
+    outfile->Printf("\n  ----------------------------------------------------------------------------\n");
+    outfile->Printf("%s\n\n", line.str().c_str());
+
+    line = std::stringstream();
+    for (std::map<std::string, SharedMatrix>::iterator it = Process::environment.arrays.begin();
+         it != Process::environment.arrays.end(); ++it) {
+        first_tmp = "\"" + it->first + "\"";
+        line << "  " << std::left << std::setw(largest_key) << first_tmp << " => " << std::setw(20) << std::right
+             << std::fixed << std::setprecision(12) << it->second->get(0,0) << " ... " << it->second->get(it->second->nrow()-1, it->second->ncol()-1) << " " << it->second->nrow() << " by " << it->second->ncol() << std::endl;
+    }
+    outfile->Printf("\n\n  Array Variable Map:");
     outfile->Printf("\n  ----------------------------------------------------------------------------\n");
     outfile->Printf("%s\n\n", line.str().c_str());
 }
@@ -1031,7 +1087,6 @@ bool psi4_python_module_initialize() {
     Process::environment.options.set_read_globals(false);
 
     // Setup Libint2
-    libint2::initialize();
 #if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
     libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Standard);
 #elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
@@ -1039,13 +1094,14 @@ bool psi4_python_module_initialize() {
 #else
 #  error "unknown value of macro psi4_SHGSHELL_ORDERING"
 #endif
+    libint2::initialize();
 
 #ifdef INTEL_Fortran_ENABLED
     static int argc = 1;
     static char* argv = (char*)"";
     for_rtl_init_(&argc, &argv);
 #endif
-    
+
 #ifdef USING_BrianQC
     const char* brianEnableEnv = getenv("BRIANQC_ENABLE");
     brianEnableEnvFound = (bool)brianEnableEnv;
@@ -1058,7 +1114,7 @@ bool psi4_python_module_initialize() {
             brianInit();
         }
     }
-    
+
     const char* brianEnableDFTEnv = getenv("BRIANQC_ENABLE_DFT");
     brianEnableDFT = brianEnableDFTEnv ? (bool)atoi(brianEnableDFTEnv) : true;
 #endif
@@ -1074,7 +1130,7 @@ void psi4_python_module_finalize() {
         brianRelease();
     }
 #endif
-    
+
 #ifdef INTEL_Fortran_ENABLED
     for_rtl_finish_();
 #endif
@@ -1324,6 +1380,8 @@ PYBIND11_MODULE(core, core) {
     core.def("cceom", py_psi_cceom, "ref_wfn"_a, "Runs the equation of motion coupled cluster code for excited states.");
     core.def("occ", py_psi_occ, "ref_wfn"_a, "Runs the orbital optimized CC codes.");
     core.def("dfocc", py_psi_dfocc, "ref_wfn"_a, "Runs the density-fitted orbital optimized CC codes.");
+    core.def("dummy_einsums", py_psi_dummy_einsums, "ref_wfn"_a, "Runs the einsums placeholder code.");
+    core.def("dummy_integratorxx", py_psi_dummy_integratorxx, "ref_wfn"_a, "Runs the integratorxx placeholder code.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {
         if (ofname == "stdout") {

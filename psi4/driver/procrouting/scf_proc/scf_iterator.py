@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -80,6 +80,7 @@ def scf_compute_energy(self):
         self.initialize_jk(self.memory_jk_)
     else:
         self.initialize()
+    self.iteration_energies = []
 
     try:
         self.iterations()
@@ -122,7 +123,7 @@ def initialize_jk(self, memory, jk=None):
     jk.set_omega(functional.x_omega())
 
     jk.set_omega_alpha(functional.x_alpha())
-    jk.set_omega_beta(functional.x_beta())   
+    jk.set_omega_beta(functional.x_beta())
 
     jk.initialize()
     jk.print_header()
@@ -225,7 +226,7 @@ def scf_initialize(self):
         optstash.restore()
 
         # Print out initial docc/socc/etc data
-        if self.get_print():                    
+        if self.get_print():
             lack_occupancy = core.get_local_option('SCF', 'GUESS') in ['SAD']
             if core.get_global_option('GUESS') in ['SAD']:
                 lack_occupancy = core.get_local_option('SCF', 'GUESS') in ['AUTO']
@@ -267,9 +268,14 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
+    cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
-    early_screening = self.jk().get_early_screening()
+    early_screening = False
+    if cosx_enabled:
+        early_screening = True
+        self.jk().set_COSX_grid("Initial")
+
     # maximum number of scf iterations to run after early screening is disabled
     scf_maxiter_post_screening = core.get_option('SCF', 'COSX_MAXITER_FINAL')
 
@@ -371,6 +377,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         self.set_energies("Total Energy", SCFE)
         core.set_variable("SCF ITERATION ENERGY", SCFE)
+        self.iteration_energies.append(SCFE)
+
         Ediff = SCFE - SCFE_old
         SCFE_old = SCFE
 
@@ -457,7 +465,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
                 if incfock_performed:
                     status.append("INCFOCK")
-                
+
                 # Reset occupations if necessary
                 if (self.iteration_ == 0) and self.reset_occ_:
                     self.reset_occupation()
@@ -502,7 +510,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if frac_enabled and not self.frac_performed_:
             continue
 
-        # have we completed our post-early screening SCF iterations? 
+        # have we completed our post-early screening SCF iterations?
         if early_screening_disabled:
             scf_iter_post_screening += 1
             if scf_iter_post_screening >= scf_maxiter_post_screening and scf_maxiter_post_screening > 0:
@@ -513,12 +521,15 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
             if early_screening:
 
-                # we've reached convergence with early screning enabled; disable it on the JK object
+                # we've reached convergence with early screning enabled; disable it
                 early_screening = False
-                self.jk().set_early_screening(early_screening)
 
-                # make note of the change to early screening; next SCF iteration will be the last
+                # make note of the change to early screening; next SCF iteration(s) will be the last
                 early_screening_disabled = True
+
+                # cosx uses the largest grid for its final SCF iteration(s)
+                if cosx_enabled:
+                    self.jk().set_COSX_grid("Final")
 
                 # clear any cached matrices associated with incremental fock construction
                 # the change in the screening spoils the linearity in the density matrix
@@ -679,6 +690,12 @@ def scf_finalize_energy(self):
     # }
     core.print_out("\n\n")
     self.print_energies()
+
+    # force list into Matrix for storage
+    iteration_energies = np.array(self.iteration_energies).reshape(-1, 1)
+    iteration_energies = core.Matrix.from_array(iteration_energies)
+    core.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
+    self.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
 
     self.clear_external_potentials()
     if core.get_option('SCF', 'PCM'):
@@ -845,6 +862,7 @@ core.HF.compute_energy = scf_compute_energy
 core.HF.finalize_energy = scf_finalize_energy
 core.HF.print_energies = scf_print_energies
 core.HF.print_preiterations = scf_print_preiterations
+core.HF.iteration_energies = []
 
 
 def _converged(e_delta, d_rms, e_conv=None, d_conv=None):

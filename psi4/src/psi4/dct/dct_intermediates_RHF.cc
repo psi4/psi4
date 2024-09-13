@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -253,8 +253,8 @@ void DCTSolver::form_density_weighted_fock_RHF() {
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
     // Copy Tau in MO basis from the DPD library
-    auto a_tau_mo = Matrix("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_);
-    auto b_tau_mo = Matrix("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_);
+    auto a_tau_mo = Matrix("Alpha Tau in the MO basis", nmopi_, nmopi_);
+    auto b_tau_mo = Matrix("Beta Tau in the MO basis", nmopi_, nmopi_);
 
     a_tau_mo.set_block(slices_.at("ACTIVE_OCC_A"), Matrix(&T_OO));
     a_tau_mo.set_block(slices_.at("ACTIVE_VIR_A"), Matrix(&T_VV));

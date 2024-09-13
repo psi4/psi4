@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -82,9 +82,11 @@ SCFDeriv::SCFDeriv(std::shared_ptr<scf::HF> ref_wfn, Options& options) :
     potential_ = ref_wfn->V_potential();
     if (ref_wfn->has_array_variable("-D Gradient")) {
         gradients_["-D Gradient"] = ref_wfn->array_variable("-D Gradient");
+        gradients_["-D Gradient"]->set_name("-D Gradient");
     }
     if (ref_wfn->has_array_variable("-D Hessian")) {
         hessians_["-D Hessian"] = ref_wfn->array_variable("-D Hessian");
+        hessians_["-D Hessian"]->set_name("-D Hessian");
     }
 
 }

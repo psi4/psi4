@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -38,19 +38,19 @@ import os
 from pathlib import Path
 psi4_module_loc = Path(__file__).resolve().parent
 
-prefix = Path("@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
-cmake_install_bindir = "@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
-cmake_install_datadir = "@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
-cmake_install_libdir = "@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
-pymod_install_libdir = "@PYMOD_INSTALL_LIBDIR@".lstrip("/")
+prefix = Path(r"@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
+cmake_install_bindir = r"@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
+cmake_install_datadir = r"@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
+cmake_install_libdir = r"@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
+pymod_install_libdir = r"@PYMOD_INSTALL_LIBDIR@".lstrip("/")
 full_pymod = (prefix / cmake_install_libdir / pymod_install_libdir / "psi4").resolve()
-full_data = prefix / cmake_install_datadir / "psi4"
-full_bin = prefix / cmake_install_bindir
+full_data = (prefix / cmake_install_datadir / "psi4").resolve()
+full_bin = (prefix / cmake_install_bindir).resolve()
 rel_data = os.path.relpath(full_data, start=full_pymod)
 rel_bin = os.path.relpath(full_bin, start=full_pymod)
 
 executable = psi4_module_loc.joinpath(rel_bin, "psi4")
-executable_exe = (Path("/opt/anaconda1anaconda2anaconda3") / "Scripts" / "psi4.exe").resolve(strict=False)
+executable_exe = (Path(r"/opt/anaconda1anaconda2anaconda3") / "Scripts" / "psi4.exe").resolve(strict=False)
 if executable_exe.exists():
     # Win conda-build generates this unbeknownst to CMake
     executable = executable_exe
@@ -110,15 +110,17 @@ from psi4.core import variable, set_variable
 #   rather than letting PYTHONPATH rule for the few.
 import sys
 if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # PCMSolver
-    sys.path.insert(1, "@PCMSolver_PYMOD@")
+    sys.path.insert(1, r"@PCMSolver_PYMOD@")
 if "@ENABLE_cppe@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # cppe
-    sys.path.insert(1, "@cppe_PYMOD@")
+    sys.path.insert(1, r"@cppe_PYMOD@")
 if "@ENABLE_ddx@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pyddx
-    sys.path.insert(1, "@pyddx_PYMOD@")
+    sys.path.insert(1, r"@pyddx_PYMOD@")
 if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
-    sys.path.insert(1, "@pylibefp_PYMOD@")
+    sys.path.insert(1, r"@pylibefp_PYMOD@")
 if "@ENABLE_gdma@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # gdma
-    sys.path.insert(1, "@gdma_PYMOD@")
+    sys.path.insert(1, r"@gdma_PYMOD@")
+if "@ENABLE_bse@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # bse
+    sys.path.insert(1, r"@bse_PYMOD@")
 
 # Create a custom logger
 import logging

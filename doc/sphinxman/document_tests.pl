@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -59,7 +59,6 @@ my %ExeFolder = (
    "chemps2/"   => "chemps2",
    "gdma/"      => "gdma",
    "dkh/"       => "dkh",
-   "erd/"       => "erd",
    "v2rdm_casscf/" => "v2rdm_casscf",
    "snsmp2/"    => "snsmp2",
    "simint/"    => "simint",
@@ -93,7 +92,6 @@ foreach my $File(readdir SAMPLES){
     next if $File =~ /^chemps2$/;
     next if $File =~ /^gdma$/;
     next if $File =~ /^dkh$/;
-    next if $File =~ /^erd$/;
     next if $File =~ /^v2rdm_casscf$/;
     next if $File =~ /^snsmp2$/;
     next if $File =~ /^simint$/;

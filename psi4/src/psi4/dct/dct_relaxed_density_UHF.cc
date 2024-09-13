@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -740,10 +740,10 @@ void DCTSolver::compute_relaxed_density_VVVV() {
 }
 
 void DCTSolver::dc06_compute_relaxed_density_1PDM() {
-    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
-    auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
-    auto a_zia = Matrix("MO basis Orbital Response (Alpha)", nirrep_, nmopi_, nmopi_);
-    auto b_zia = Matrix("MO basis Orbital Response (Beta)", nirrep_, nmopi_, nmopi_);
+    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nmopi_, nmopi_);
+    auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nmopi_, nmopi_);
+    auto a_zia = Matrix("MO basis Orbital Response (Alpha)", nmopi_, nmopi_);
+    auto b_zia = Matrix("MO basis Orbital Response (Beta)", nmopi_, nmopi_);
 
     dpdfile2 z_OV;
 

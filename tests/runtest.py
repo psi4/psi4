@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -116,7 +116,7 @@ elif os.path.isfile(infile.replace(".dat", ".py")):
     else:
         os.environ["PYTHONPATH"] = psilibdir
     outfile = os.path.dirname(infile) + os.path.sep + outfile
-    pyexitcode = backtick(["python", infile, " > ", outfile])
+    pyexitcode = backtick([sys.executable, infile, " > ", outfile])
 else:
     raise Exception("\n\nError: Input file %s not found\n" % infile)
 

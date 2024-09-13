@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -73,9 +73,6 @@ def build_superfunctional(name, restricted, npoints=None, deriv=1):
     else:
         raise ValidationError("SCF: Functional (%s) not found!" % name)
 
-    if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc() or sup[0].is_c_lrc()):
-        raise ValidationError("INTEGRAL_PACKAGE ERD does not play nicely with omega ERI's, so stopping.")
-
     # Lock and unlock the functional
     sup[0].set_lock(False)
 
@@ -138,9 +135,6 @@ def build_superfunctional(name, restricted, npoints=None, deriv=1):
         raise ValidationError(
             "SCF: SCF_TYPE (%s) not supported for range-separated functionals, plese use SCF_TYPE = 'DF' to automatically select the correct JK build."
             % core.get_global_option("SCF_TYPE"))
-
-    if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc()):
-        raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with LRC DFT functionals, so stopping.')
 
     sup[0].set_lock(True)
 

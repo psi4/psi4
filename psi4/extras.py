@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -84,6 +84,8 @@ def exit_printing(start_time: datetime.datetime = None, success: bool = None) ->
     if start_time is not None:
         run_time = end_time - start_time
         run_time = str(run_time).split('.')
+        # python "helpfully" truncates microseconds if zero. Undo that.
+        if len(run_time) == 1: run_time.append("000000")
         run_time = run_time[0] + '.' + run_time[1][:2]
         core.print_out("\n    Psi4 wall time for execution: {}\n".format(run_time))
 
@@ -146,7 +148,6 @@ _addons_ = {
     "dkh": _CMake_to_Py_boolean("@ENABLE_dkh@"),
     "ecpint": _CMake_to_Py_boolean("@ENABLE_ecpint@"),
     "libefp": which_import("pylibefp", return_bool=True),
-    "erd": _CMake_to_Py_boolean("@ENABLE_erd@"),
     "gdma": which_import("gdma", return_bool=True),  # package pygdma, import gdma
     "ipi": which_import("ipi", return_bool=True),
     "pcmsolver": _CMake_to_Py_boolean("@ENABLE_PCMSolver@"),
@@ -163,7 +164,6 @@ _addons_ = {
     "snsmp2": which_import("snsmp2", return_bool=True),
     "resp": which_import("resp", return_bool=True),
     "psi4fockci": which_import("psi4fockci", return_bool=True),
-    "adcc": which_import("adcc", return_bool=True),
     "mdi": which_import("mdi", return_bool=True),
     "cct3": which_import("cct3", return_bool=True),
     "dftd4": which_import("dftd4", return_bool=True),
@@ -174,6 +174,8 @@ _addons_ = {
     "psixas": which_import("psixas", return_bool=True),
     #"mctc-gcp": psi4_which("mctc-gcp", return_bool=True),
     "bse": which_import("basis_set_exchange", return_bool=True),
+    "einsums": _CMake_to_Py_boolean("@ENABLE_Einsums@"),
+    "gauxc": _CMake_to_Py_boolean("@ENABLE_gauxc@"),
 }
 
 
@@ -225,7 +227,7 @@ def test(extent: str = "full", extras: List = None) -> int:
         raise RuntimeError('Testing module `pytest` is not installed. Run `conda install pytest`')
     abs_test_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "tests"])
 
-    command = ['-rws', '-v']
+    command = ['-rws', '-v', '--color', 'yes']
     if extent.lower() == 'smoke':
         command.extend(['-m', 'smoke'])
     elif extent.lower() == 'quick':

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,6 +35,7 @@
 #include <vector>
 #include <cstdlib>
 #include <string>
+#include <optional>
 namespace psi {
 
 class Functional;
@@ -159,7 +160,7 @@ class SuperFunctional {
 
     // Build a blank superfunctional
     static std::shared_ptr<SuperFunctional> blank();
-    static std::shared_ptr<SuperFunctional> XC_build(std::string name, bool unpolarized);
+    static std::shared_ptr<SuperFunctional> XC_build(std::string name, bool unpolarized, const std::optional<std::map<std::string, double>>& );
 
     // Clones a *polarized*, complete superfunctional. Used, e.g., in spin-symmetry-
     // breaking eigenvectors of the MO hessian or linear response eigenproblem.

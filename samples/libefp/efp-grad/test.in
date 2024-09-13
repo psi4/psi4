@@ -75,6 +75,6 @@ energy('efp')
 compare_values(0.0, efp_spec.nuclear_repulsion_energy(), 6, "NRE")  #TEST
 compare_values(-0.0066095987170644, variable('CURRENT ENERGY'), 5, 'EFP Total')  #TEST
 
-torq = get_array_variable("EFP TORQUE")  # replaces get_efp_torque()
+torq = variable("EFP TORQUE")  # replaces get_efp_torque()
 compare_matrices(refEFP, torq, 6, "libefp printed gradients, vs. psi4 read-from-libefp gradients") #TEST
 

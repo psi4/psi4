@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2023 The Psi4 Developers.
+# Copyright (c) 2007-2024 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -33,6 +33,7 @@ import atexit
 import datetime
 import json
 import os
+import re
 import sys
 import warnings
 from pathlib import Path
@@ -61,9 +62,17 @@ parser.add_argument("-m", "--messy", action='store_true',
 # parser.add_argument("-d", "--debug", action='store_true', help="Flush the outfile at every print statement.")
 # parser.add_argument("-r", "--restart", action='store_true', help="Number to be used instead of process id.")
 # parser.add_argument("-p", "--prefix", help="Prefix name for psi files. Default psi")
+parser.add_argument("--psiapi", action='store_true',
+                    help="""Generates a one-line bash command (safe for command substitution) to source correct """
+                         """paths for Psi4 executable (`which psi4`) and module (`python -c "import psi4"`). """
+                         """This argument is a practical refinement of `--psiapi-path`. Differences are """
+                         """(1) this is one-line so can use cmd substitution and (2) this *doesn't* add the build-time """
+                         """Python interpreter to the path, as this is often controlled by other mechanisms."""
+                         """Also see: `--module`.""")
 parser.add_argument("--psiapi-path", action='store_true',
                     help="""Generates a bash command to source correct Python """
-                         """interpreter and path for ``python -c "import psi4"``""")
+                         """interpreter and path for `python -c "import psi4"` and `which psi4`. """
+                         """Also see: `--psiapi` and `--module`.""")
 parser.add_argument("--module", action='store_true',
                     help="""Generates the path to PsiAPI loading. That is, the following file exists: `psi4 --module`/psi4/__init__.py . Also, adding `psi4 --module` to PYTHONPATH allows "import psi4".""")
 parser.add_argument("-v", "--verbose", action='store_true', help="Prints Psithon to Python translation.")
@@ -118,16 +127,16 @@ args = args.__dict__  # Namespace object seems silly
 executable = Path(__file__).resolve()
 psi4_exe_loc = executable.parent
 
-prefix = Path("@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
-cmake_install_bindir = "@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
-cmake_install_datadir = "@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
-cmake_install_libdir = "@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
-pymod_install_libdir = "@PYMOD_INSTALL_LIBDIR@".lstrip("/")
-psi4_install_cmakedir = "@psi4_INSTALL_CMAKEDIR@".replace("\\", "/")
+prefix = Path(r"@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
+cmake_install_bindir = r"@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
+cmake_install_datadir = r"@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
+cmake_install_libdir = r"@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
+pymod_install_libdir = r"@PYMOD_INSTALL_LIBDIR@".lstrip("/")
+psi4_install_cmakedir = r"@psi4_INSTALL_CMAKEDIR@".replace("\\", "/")
 full_pymod = (prefix / cmake_install_libdir / pymod_install_libdir / "psi4").resolve()
-full_data = prefix / cmake_install_datadir / "psi4"
-full_bin = prefix / cmake_install_bindir
-full_cmake = prefix / psi4_install_cmakedir
+full_data = (prefix / cmake_install_datadir / "psi4").resolve()
+full_bin = (prefix / cmake_install_bindir).resolve()
+full_cmake = (prefix / psi4_install_cmakedir).resolve()
 rel_pymod = os.path.relpath(full_pymod, start=full_bin)
 rel_data = os.path.relpath(full_data, start=full_bin)
 rel_cmake = os.path.relpath(full_cmake, start=full_bin)
@@ -186,9 +195,13 @@ if args['plugin_compile']:
         print("""Install "psi4-dev" via `conda install psi4-dev -c psi4[/label/dev]`, then reissue command.""")
 
 if args['psiapi_path']:
-    pyexe_dir = os.path.dirname("@Python_EXECUTABLE@")
+    pyexe_dir = os.path.dirname(r"@Python_EXECUTABLE@")
     print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
     # TODO Py not quite right on conda Windows and Psi include %PREFIX$. but maybe not appropriate for Win anyways
+    sys.exit()
+
+if args['psiapi']:
+    print(f"""export PATH={bin_dir}:$PATH PYTHONPATH={lib_dir}:$PYTHONPATH""")
     sys.exit()
 
 if args["module"]:
@@ -199,6 +212,12 @@ if args["module"]:
 if args["psidatadir"] is not None:
     data_dir = os.path.abspath(os.path.expanduser(args["psidatadir"]))
     os.environ["PSIDATADIR"] = data_dir
+
+if args["version"]:
+    with (psi4_module_loc / "metadata.py").open() as fp: verline = fp.readline()
+    __version__ = re.match(r"__version__ = ['\"](?P<ver>.*)['\"]", verline).group("ver")
+    print(__version__)
+    sys.exit()
 
 ### Actually import psi4 and apply setup ###
 
@@ -211,10 +230,6 @@ warnings.formatwarning = custom_formatwarning
 # Import installed psi4
 sys.path.insert(1, lib_dir)
 import psi4  # isort:skip
-
-if args["version"]:
-    print(psi4.__version__)
-    sys.exit()
 
 # Prevents a poor option combination
 if args['plugin_template'] and (not args['plugin_name']):

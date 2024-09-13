@@ -9,23 +9,25 @@ jobs:
   strategy:
     maxParallel: 8
     matrix:
-      gcc_7:
-        CXX_COMPILER: 'g++-7'
+      gcc_10:
+        CXX_COMPILER: 'g++-10'
         PYTHON_VER: '3.8'
-        C_COMPILER: 'gcc-7'
+        C_COMPILER: 'gcc-10'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran gcc-7 g++-7'
+        APT_INSTALL: 'gfortran gcc-10 g++-10'
         vmImage: 'ubuntu-20.04'
+        PYTEST_MARKER_EXPR: "quick"
 
       gcc_latest:
         CXX_COMPILER: 'g++'
-        PYTHON_VER: '3.9'
+        PYTHON_VER: '3.12'
         C_COMPILER: 'gcc'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran'
-        vmImage: 'ubuntu-20.04'
+        vmImage: 'ubuntu-latest'
+        PYTEST_MARKER_EXPR: 'api and not stdsuite and not (smoke or quick or medlong or long)'
 
       clang_latest:
         CXX_COMPILER: 'clang++'
@@ -35,10 +37,11 @@ jobs:
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran clang-6.0'
         vmImage: 'ubuntu-20.04'
+        PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
 
   pool:
     vmImage: $(vmImage)
-  
+
   steps:
   - bash: |
       [[ "${APT_REPOSITORY}" ]] && echo "Add Repo ${APT_REPOSITORY}" && sudo add-apt-repository "${APT_REPOSITORY}"
@@ -79,32 +82,33 @@ jobs:
   - bash: |
         echo "##vso[task.prependpath]$CONDA/bin"
         conda config --set always_yes yes
+        conda config --set solver libmamba
     displayName: "Add Conda to PATH"
 
   - bash: |
-      conda create -q \
-        -n p4env \
-        python=$PYTHON_VER \
-        psi4/label/dev::gau2grid \
-        psi4/label/testing::libint2=2.7.2=h2fe1556_0 \
-        psi4/label/dev::libxc=5 \
-        psi4/label/dev::dftd3 \
-        psi4/label/dev::gcp \
-        psi4/label/dev::pybind11-headers \
-        blas=*=mkl \
-        mkl-include \
-        networkx \
-        pytest>=7.0.1 \
-        eigen \
-        boost-cpp \
-        pytest-xdist \
-        msgpack-python \
-        conda-forge::qcelemental \
-        conda-forge::qcengine \
-        conda-forge::optking \
-        scipy
+      conda install pyyaml -c conda-forge
+      conda/psi4-path-advisor.py \
+        env \
+        --name p4env \
+        --python $PYTHON_VER \
+        --disable compilers addons docs
+      echo "\n<<<  env_p4env.yaml  >>>\n"
+      cat env_p4env.yaml
+      # test some alternative packages
+      if [[ "${PYTHON_VER}" != "3.12" ]]; then
+        echo "  - psi4::gcp" >> env_p4env.yaml
+        echo "  - psi4::dftd3" >> env_p4env.yaml
+      fi
+      sed -i "s;- libint;#- libint;g" env_p4env.yaml
+      sed -i "s;#- psi4::libint;- psi4::libint=2.8.1;g" env_p4env.yaml
+      echo "  - einsums=*=mkl*" >> env_p4env.yaml
+      echo "  - range-v3" >> env_p4env.yaml
+      echo "  - zlib" >> env_p4env.yaml
+      echo "\n<<<  env_p4env.yaml  >>>\n"
+      cat env_p4env.yaml
+      conda env create -n p4env -f env_p4env.yaml
       source activate p4env
-      which python
+      conda info
       conda list
     displayName: 'Build Environment'
 
@@ -112,28 +116,26 @@ jobs:
       source activate p4env
       python -V
       python -c 'import numpy; print(numpy.version.version)'
-      export CXX=${CXX_COMPILER}
-      export CC=${C_COMPILER}
-      export FC=${F_COMPILER}
-      # * can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver, v2rdm)
-      #   b/c their c++ symbols don't mix with the different Travis compilers. for other
-      #   reasons, pkgs are being compiled less statically, sad for CI.
-      # * can't enable trivial plugins b/c no psi4 for them to detect at start (e.g., snsmp2)
-      cmake -Bbuild -S. \
-        -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
-        -DCMAKE_C_COMPILER=${C_COMPILER} \
-        -DCMAKE_Fortran_COMPILER=${F_COMPILER} \
-        -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-        -DMAX_AM_ERI=5 \
-        -DCMAKE_PREFIX_PATH=${CONDA}/envs/p4env \
-        -DPython_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
-        -DMPFR_ROOT=${CONDA}/envs/p4env \
-        -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-        -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-        -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-        -DENABLE_PLUGIN_TESTING=ON \
-        -DBUILD_Libint2_GENERATOR=OFF \
-        -DCMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
+      conda/psi4-path-advisor.py \
+        cmake \
+        --objdir build \
+        --insist
+      echo "\n<<<  cache_p4env@build.cmake  >>>\n"
+      cat cache_p4env@build.cmake
+      cmake \
+        -S. \
+        -B build \
+        -C $(Build.SourcesDirectory)/cache_p4env@build.cmake \
+        -D CMAKE_CXX_COMPILER=${CXX_COMPILER} \
+        -D CMAKE_C_COMPILER=${C_COMPILER} \
+        -D CMAKE_Fortran_COMPILER=${F_COMPILER} \
+        -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
+        -D ENABLE_PLUGIN_TESTING=ON \
+        -D ENABLE_Einsums=ON \
+        -D ENABLE_IntegratorXX=ON \
+        -D ENABLE_gauxc=ON \
+        -D FORCE_PEDANTIC=ON \
+        -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
   - bash: |
@@ -147,6 +149,9 @@ jobs:
   - bash: |
       cd build
       source activate p4env
+      python -V
+      python -c 'import numpy; print(numpy.version.version)'
+      python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
 
@@ -160,5 +165,7 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -n 2 -m 'quick' stage/lib/psi4/tests/
+      PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 --durations-min=40 --strict-markers --color yes -n 2 -m "$PYTEST_MARKER_EXPR" stage/lib/psi4/tests/
     displayName: 'PyTest Tests'
+
+# setuptools v66 (vendors packaging v23) incompatible with arb. tarballs. thinks the branch names are versions

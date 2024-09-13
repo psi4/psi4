@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2024 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -473,10 +473,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
     outfile->Printf("\tFrozen core energy     =  %20.14f\n", efzc);
 
     if (nfzc && (std::fabs(efzc) < 1e-7)) {
-        outfile->Printf("\tCCSORT Error: Orbitals are frozen in input,\n");
-        outfile->Printf("\tbut frozen core energy is small!\n");
-        outfile->Printf("\tCalculation will be aborted...\n");
-        exit(PSI_RETURN_FAILURE);
+        throw std::runtime_error("CCSORT Error: Orbitals are frozen in input, but frozen core energy is small!\n");
     } else if (!nfzc && std::fabs(efzc)) {
         outfile->Printf("\tCCSORT Warning: No orbitals are frozen,\n");
         outfile->Printf("\tbut the frozen-core energy in wfn is non-zero.\n");
