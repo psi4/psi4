@@ -44,13 +44,27 @@ def tests():
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o",
                       "bsse_type" : None,
-                      "ref" : -76.026780223322},
+                      "ref" : -76.026780223322,
+                      "ref_iter": { # for test_cosx_maxiter_final
+                          "base": 8,
+                          "df_scf_guess": 11,   
+                          "scf_cosx_guess": 13, # assumes COSX_MAXITER_FINAL = -1 
+                          "full_cosx": 20, # for full convergence on both COSX grids, i.e., COSX_MAXITER_FINAL = -1  
+                      },
+                     },
         "h2o (rks)": {
                       "method" : "b3lyp",
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o",
                       "bsse_type" : None,
-                      "ref" : -76.420402720419},
+                      "ref" : -76.420402720419,
+                      "ref_iter": { # for test_cosx_maxiter_final
+                          "base": 7,
+                          "df_scf_guess": 9,   
+                          "scf_cosx_guess": 11, # assumes COSX_MAXITER_FINAL = -1 
+                          "full_cosx": 19, # for full convergence on both COSX grids, i.e., COSX_MAXITER_FINAL = -1  
+                      },  
+                     },
         "nh2 (uhf)": {
                       "method" : "hf",
                       "options": {"reference" : "uhf"},
@@ -126,35 +140,11 @@ def test_composite_call(j_algo, k_algo, mols, request):
                            "screening": "density",
                            "maxiter": 30,
                        },
-                       "ref_iter": {
-                           "b3lyp": {
-                               "base": 7,
-                               "df_scf_guess": 9,   
-                               "scf_cosx_guess": 11, # assumes COSX_MAXITER_FINAL = -1 
-                           },  
-                           "hf": {
-                               "base": 8,
-                               "df_scf_guess": 11,   
-                               "scf_cosx_guess": 13, # assumes COSX_MAXITER_FINAL = -1 
-                           },  
-                       },
                      }, id="DirectJK (MAXITER=30)"),
         pytest.param({ "options": {
                            "scf_type": "DIRECT",
                            "screening": "density",
                            "maxiter": 10,
-                       },
-                       "ref_iter": {
-                           "b3lyp": {
-                               "base": 7,
-                               "df_scf_guess": 9,   
-                               "scf_cosx_guess": 11, # assumes COSX_MAXITER_FINAL = -1 
-                           },  
-                           "hf": {
-                               "base": 8,
-                               "df_scf_guess": 11,   
-                               "scf_cosx_guess": 13, # assumes COSX_MAXITER_FINAL = -1 
-                           },  
                        },
                      }, id="DirectJK (MAXITER=10)"),
         pytest.param({ "options": { 
@@ -162,50 +152,18 @@ def test_composite_call(j_algo, k_algo, mols, request):
                            "screening": "density",
                            "maxiter": 30,
                        },
-                       "ref_iter": {
-                           "b3lyp": {
-                               "base": 7,
-                               "df_scf_guess": 9,   
-                               "scf_cosx_guess": 11, # assumes COSX_MAXITER_FINAL = -1 
-                           },  
-                           "hf": {
-                               "base": 8,
-                               "df_scf_guess": 11,   
-                               "scf_cosx_guess": 13, # assumes COSX_MAXITER_FINAL = -1 
-                           },  
-                       },
-                     }, id="DF-DirJ+LinK"),
+                    }, id="DF-DirJ+LinK"),
         pytest.param({ "options": { 
                            "scf_type": "DFDIRJ+COSX",
                            "screening": "schwarz",
                            "maxiter": 30,
                        },
-                       "ref_iter": {
-                           "b3lyp": {
-                               "base": 7,
-                               "scf_cosx_guess": 19, # for full convergence on both COSX grids, i.e., COSX_MAXITER_FINAL = -1  
-                           },  
-                           "hf": {
-                               "base": 8,
-                               "scf_cosx_guess": 20, # for full convergence on both COSX grids, i.e., COSX_MAXITER_FINAL = -1   
-                           }, 
-                       }, 
                      }, id="DF-DirJ+COSX (MAXITER=30)"),
         pytest.param({ "options": { 
                            "scf_type": "DFDIRJ+COSX",
                            "screening": "schwarz",
                            "maxiter": 10,
                        },
-                       "ref_iter": {
-                           "b3lyp": {
-                               "base": 7,
-                               "scf_cosx_guess": 19, # for full convergence on both COSX grids, i.e., COSX_MAXITER_FINAL = -1  
-                           },  
-                           "hf": {
-                               "base": 8,
-                               "scf_cosx_guess": 20, # for full convergence on both COSX grids, i.e., COSX_MAXITER_FINAL = -1   
-                           }, 
-                       }, 
                      }, id="DF-DirJ+COSX (MAXITER=10)"),
     ], 
 )
@@ -256,13 +214,14 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
     # ... else proceed as normal
     else:
         guess_type = "base" # baseline number of iterations 
-        if (opts["options"]["scf_type"] == "DFDIRJ+COSX" or scf_cosx_guess) and (cosx_maxiter_final == -1):
+        if opts["options"]["scf_type"] == "DFDIRJ+COSX" and cosx_maxiter_final == -1:
+            guess_type = "full_cosx" # fully-converged COSX on both grids (i.e., COSX_MAXITER_FINAL set to -1)
+        elif scf_cosx_guess and cosx_maxiter_final == -1:
             guess_type = "scf_cosx_guess" # fully-converged SCF_COSX_GUESS (i.e., COSX_MAXITER_FINAL set to -1)
         elif df_scf_guess:
             guess_type = "df_scf_guess" # DF_SCF_GUESS enabled
         
-        method = tests[inp]["method"]
-        reference_iter = opts["ref_iter"][method][guess_type]
+        reference_iter = tests[inp]["ref_iter"][guess_type]
       
         # COSX_MAXITER_FINAL != -1 will add some number of iterations to baseline guess 
         if (opts["options"]["scf_type"] == "DFDIRJ+COSX" or scf_cosx_guess) and cosx_maxiter_final != -1:
