@@ -44,7 +44,7 @@ def tests():
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o",
                       "bsse_type" : None,
-                      "ref" : -76.026780223322,
+                      "ref_E" : -76.026780223322,
                       "ref_iter": { # for test_cosx_maxiter_final
                           "base": 8,
                           "df_scf_guess": 11,   
@@ -57,7 +57,7 @@ def tests():
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o",
                       "bsse_type" : None,
-                      "ref" : -76.420402720419,
+                      "ref_E" : -76.420402720419,
                       "ref_iter": { # for test_cosx_maxiter_final
                           "base": 7,
                           "df_scf_guess": 9,   
@@ -70,19 +70,19 @@ def tests():
                       "options": {"reference" : "uhf"},
                       "molecule" : "nh2",
                       "bsse_type" : None,
-                      "ref" : -55.566890252551},
+                      "ref_E" : -55.566890252551},
         "nh2 (rohf)": {
                       "method" : "hf",
                       "options": {"reference" : "rohf"},
                       "molecule" : "nh2",
                       "bsse_type" : None,
-                      "ref" : -55.562689948780},
+                      "ref_E" : -55.562689948780},
         "h2o/na+ (rhf ie)": {
                       "method" : "hf",
                       "options": {"reference" : "rhf"},
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
-                      "ref" :  -0.040121884077},
+                      "ref_E" :  -0.040121884077},
     }
 
 
@@ -260,7 +260,7 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
     "scf",
     [
         pytest.param({"scf_type" : "dfdirj+cosx",
-                      "ref" : { 
+                      "ref_E" : { 
                           "h2o (rhf)" : -76.026780223322,
                           "h2o (rks)" : -76.420402720419,
                           "nh2 (uhf)" : -55.566890252551,
@@ -271,7 +271,7 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
                       id="cosx"),
         pytest.param({"scf_type" : "dfdirj+snlink",
                       "snlink_force_cartesian": False,
-                      "ref" : { 
+                      "ref_E" : { 
                           "h2o (rhf)" : -76.026788692185, 
                           "h2o (rks)" : -76.420403557357,
                           "nh2 (uhf)" : -55.566911357539,
@@ -282,7 +282,7 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
                       id="snlink (spherical)", marks=using("gauxc")),
         pytest.param({"scf_type" : "dfdirj+snlink",
                       "snlink_force_cartesian": True,
-                      "ref" : { 
+                      "ref_E" : { 
                           "h2o (rhf)" : -76.026788692185, 
                           "h2o (rks)" : -76.420403557357,
                           "nh2 (uhf)" : -55.566911357539,
@@ -310,7 +310,7 @@ def test_seminum(inp, scf, tests, mols, request):
 
     # does the SCF energy match a pre-computed reference?
     energy_seminum = psi4.energy(tests[inp]["method"], molecule=molecule, bsse_type=tests[inp]["bsse_type"])
-    assert compare_values(scf["ref"][test_id.split("-")[1]], energy_seminum, 6, f'{test_id} accurate to reference (1e-6 threshold)')
+    assert compare_values(scf["ref_E"][test_id.split("-")[1]], energy_seminum, 6, f'{test_id} accurate to reference (1e-6 threshold)')
     
     # is the SCF energy reasonably close to a conventional SCF?
     psi4.set_options({"scf_type" : "pk"})
@@ -347,8 +347,6 @@ def test_seminum_incfock(inp, scf, tests, mols, request):
     # compute energy+wfn without IncFock 
     energy_seminum_noinc, wfn_seminum_noinc = psi4.energy(tests[inp]["method"], molecule=molecule, bsse_type=tests[inp]["bsse_type"], return_wfn=True)
     
-    #assert compare_values(inp["ref"], energy_dfjcosk, atol=1e-6)
-
     # compute energy+wfn with Incfock 
     psi4.set_options({"incfock" : True})
     energy_seminum_inc, wfn_seminum_inc = psi4.energy(tests[inp]["method"], molecule=molecule, bsse_type=tests[inp]["bsse_type"], return_wfn=True)
