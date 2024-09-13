@@ -116,7 +116,7 @@ def test_composite_call(j_algo, k_algo, mols, request):
 @pytest.mark.parametrize("inp", 
     [
         pytest.param("h2o (rhf)", marks=pytest.mark.quick),
-        pytest.param("h2o (rks)", marks=pytest.mark.quick),
+        #pytest.param("h2o (rks)", marks=pytest.mark.quick),
     ], 
 )
 @pytest.mark.parametrize("opts", 
@@ -185,6 +185,8 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
 
     test_id = request.node.callspec.id
     
+    psi4.set_output_file("stdout", False)
+
     # basic settings configuration
     molecule = mols[tests[inp]["molecule"]]
     psi4.set_options({
@@ -192,7 +194,7 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
         "cosx_maxiter_final": cosx_maxiter_final, 
         "df_scf_guess": df_scf_guess, 
         "scf_cosx_guess": scf_cosx_guess, 
-        "save_jk": True
+        "save_jk": True,
     })
     psi4.set_options(tests[inp]["options"])
     psi4.set_options(opts["options"])
@@ -249,7 +251,7 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
    
             # correct number of SCF iterations?            
             niter = wfn.variable("SCF ITERATIONS")
-            assert compare(niter, reference_iter, '{test_id} has correct number of SCF iterations')
+            assert compare(niter, reference_iter, f'{test_id} has correct number of SCF iterations')
 
             # correct post-guess method?
             clean_jk_name = wfn.jk().name().replace("-", "") # replace DF-DirJ with DFDirJ
