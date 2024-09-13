@@ -143,7 +143,7 @@ class DIIS:
             elif isinstance(copy, core.Matrix):
                 copy.save(psio, psif.PSIF_LIBDIIS, core.SaveType.SubBlocks)
             elif isinstance(copy, ambit.BlockedTensor):
-                filename = f"libdiis.{copy.name}"
+                filename = f"{core.IOManager.shared_object().get_default_path()}/libdiis.{copy.name}"
                 copy.save(filename)
                 self.created_files.add(filename)
             else:
@@ -180,7 +180,7 @@ class DIIS:
             elif which_import("ambit", return_bool=True):
                 import ambit
                 if template_object == ambit.BlockedTensor:
-                    quantity = ambit.BlockedTensor.load_and_build(f"libdiis.{full_name}")
+                    quantity = ambit.BlockedTensor.load_and_build(f"{core.IOManager.shared_object().get_default_path()}/libdiis.{full_name}")
         else:
             raise Exception(f"StoragePolicy {self.storage_policy} not recognized. This is a bug: contact developers.")
 
