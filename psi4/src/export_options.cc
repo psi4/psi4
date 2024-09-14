@@ -27,12 +27,52 @@
  */
 
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/liboptions/options.h"
 #include "psi4/pybind11.h"
 
 #include <string>
 
 using namespace psi;
+using namespace pybind11::literals;
 
+void export_foptions(py::module& m) {
+    py::class_<FOptions>(m, "FOptions", "docstring", py::dynamic_attr())
+        .def(py::init<>())
+        .def("get_group", &FOptions::get_group, "Get the options group.")
+        .def("set_group", &FOptions::set_group, "Set the options group.")
+        .def("add_bool", &FOptions::add_bool, "Add a Boolean option.", "label"_a, "default_value"_a, "description"_a = "")
+        .def("add_int", &FOptions::add_int, "Add an int option.", "label"_a, "default_value"_a, "description"_a = "")
+        .def("add_double", &FOptions::add_double, "Add a double option.", "label"_a, "default_value"_a, "description"_a = "")
+        .def("add_str",
+             (void(FOptions::*)(const std::string&, py::object, const std::string&)) &
+                 FOptions::add_str,
+             "Add a string option", "label"_a, "default_value"_a, "description"_a = "")
+        .def("add_str",
+             (void(FOptions::*)(const std::string&, py::object, const std::vector<std::string>&,
+                                    const std::string&)) &
+                 FOptions::add_str,
+             "Add a string option", "label"_a, "default_value"_a, "allowed_values"_a, "description"_a = "")
+        .def("add_int_list", &FOptions::add_int_array, "Add a list of integers option", "label"_a, "description"_a = "")
+        .def("add_double_list", &FOptions::add_double_array, "Add a list of doubles option", "label"_a, "description"_a = "")
+        .def("add_list", &FOptions::add_array, "Add an array option for general elements", "label"_a, "description"_a = "")
+        .def("get_bool", &FOptions::get_bool, "Get a Boolean option.")
+        .def("get_int", &FOptions::get_int, "Get an int option.")
+        .def("get_double", &FOptions::get_double, "Get a double option.")
+        .def("get_str", &FOptions::get_str, "Get a string option.")
+        .def("get_int_list", &FOptions::get_int_list, "Get a list of integers option")
+        .def("get_double_list", &FOptions::get_double_list,
+             "Get a vector of doubles (py::float) option")
+        .def("get_list", &FOptions::get_gen_list, "Get a general list")
+        .def("set_bool", &FOptions::set_bool, "Set a Boolean option.")
+        .def("set_int", &FOptions::set_int, "Set an int option.")
+        .def("set_double", &FOptions::set_double, "Set a double option.")
+        .def("set_str", &FOptions::set_str, "Set a string option.")
+        .def("set_int_list", &FOptions::set_int_list, "Set a vector of integers option")
+        .def("set_double_list", &FOptions::set_double_list,
+             "Set a vector of doubles (py::float) option")
+        .def("set_list", &FOptions::set_gen_list,
+             "Set a vector of python objects (py::object) option");
+}
 void export_options(py::module& m) {
     py::class_<Options>(m, "Options", "docstring", py::dynamic_attr())
         .def("add_bool", &Options::add_bool, "add bool option")

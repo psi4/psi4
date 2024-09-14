@@ -151,6 +151,7 @@ void export_plugins(py::module&);
 void export_psio(py::module&);
 void export_wavefunction(py::module&);
 void export_options(py::module&);
+void export_foptions(py::module&);
 void export_trans(py::module&);
 
 // In export_plugins.cc
@@ -1194,6 +1195,7 @@ PYBIND11_MODULE(core, core) {
     export_trans(core);
     export_wavefunction(core);
     export_options(core);
+    export_foptions(core);
     export_dpd(core);
 
     // Plugins
