@@ -136,7 +136,6 @@ jobs:
         -D ENABLE_PLUGIN_TESTING=ON \
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=ON \
-        -D ENABLE_gauxc=ON \
         -D FORCE_PEDANTIC=ON \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
