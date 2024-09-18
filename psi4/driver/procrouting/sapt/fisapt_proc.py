@@ -116,7 +116,11 @@ def fisapt_compute_energy(self, external_potentials=None):
         #    text.append("\n    Empirical Dispersion Energy [Eh] =     {:24.16f}\n".format(Edisp))
         #    text.append('\n')
         #    core.print_out('\n'.join(text))
-        self.fdrop(external_potentials)
+        if core.get_option("FISAPT", "FISAPT_FSAPT_PSI_VARIABLES"):
+            self.save_fsapt_variables(external_potentials)
+        else:
+            self.fdrop(external_potentials)
+
 
     # => Scalar-Field Analysis <=
 
@@ -211,6 +215,49 @@ def fisapt_fdrop(self, external_potentials=None):
             matrices["sDisp_AB"].name = "Disp"
             _drop(matrices["sDisp_AB"], ssapt_filepath)
 
+def fisapt_save_fsapt_variables(self, external_potentials=None):
+    core.print_out("  ==> F-SAPT Output (to psi vars) <==\n\n")
+
+    # write external potential geometries
+    external_pot_str = ""
+    if external_potentials is not None and isinstance(external_potentials, dict):
+        for frag in "ABC":
+            potential = external_potentials.get(frag, None)
+            if potential is not None:
+                xyz = str(len(potential)) + "\n\n"
+                for qxyz in potential:
+                    if len(qxyz) == 2:
+                        xyz += "Ch %f %f %f\n" % (qxyz[1][0], qxyz[1][1], qxyz[1][2])
+                    elif len(qxyz) == 4:
+                        xyz += "Ch %f %f %f\n" % (qxyz[1], qxyz[2], qxyz[3])
+                    else:
+                        raise ValidationError(f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'")
+                external_pot_str += xyz
+
+    vectors = self.vectors()
+    matrices = self.matrices()
+
+    core.set_variable("QA", matrices["Qocc0A"].to_array())
+    core.set_variable("QB", matrices["Qocc0B"].to_array())
+    core.set_variable("Elst_AB", matrices["Elst_AB"].to_array())
+    core.set_variable("Exch_AB", matrices["Exch_AB"].to_array())
+    core.set_variable("IndAB_AB", matrices["IndAB_AB"].to_array())
+    core.set_variable("IndBA_AB", matrices["IndBA_AB"].to_array())
+
+    if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
+        matrices["Disp_AB"].name = "Disp"
+        core.set_variable("Disp_AB", matrices["Disp_AB"].to_array())
+
+    if core.get_option("FISAPT", "SSAPT0_SCALE"):
+        matrices["sIndAB_AB"].name = "IndAB"
+        matrices["sIndBA_AB"].name = "IndBA"
+        core.set_variable("sIndAB_AB", matrices["sIndAB_AB"].to_array())
+        core.set_variable("sIndBA_AB", matrices["sIndBA_AB"].to_array())
+
+        if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
+            matrices["sDisp_AB"].name = "Disp"
+            core.set_variable("sDisp_AB", matrices["sDisp_AB"].to_array())
+
 def fisapt_plot(self):
     """Filesystem wrapper for FISAPT::plot."""
 
@@ -253,3 +300,4 @@ def _drop(array, filepath):
 core.FISAPT.compute_energy = fisapt_compute_energy
 core.FISAPT.fdrop = fisapt_fdrop
 core.FISAPT.plot = fisapt_plot
+core.FISAPT.save_fsapt_variables = fisapt_save_fsapt_variables

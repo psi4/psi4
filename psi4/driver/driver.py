@@ -799,6 +799,7 @@ def properties(*args, **kwargs):
         return core.variable('CURRENT ENERGY')
 
 
+
 def optimize_geometric(name, **kwargs):
 
     import qcelemental as qcel
@@ -2098,6 +2099,31 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
 
 def tdscf(wfn, **kwargs):
     return proc.run_tdscf_excitations(wfn,**kwargs)
+
+
+def analysis(name, **kwargs):
+    r"""Function to perform a variety of analyses on psi4.core.variable() data.
+
+    :examples:
+    """
+
+    kwargs = p4util.kwargs_lower(kwargs)
+    basisstash = p4util.OptionsState(['BASIS'])
+
+    # Make sure the molecule the user provided is the active one
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
+    molecule.update_geometry()
+
+    # * Trip on function or alias as name
+    lowername = driver_util.upgrade_interventions(name)
+    # _filter_renamed_methods("gradient", lowername)
+
+    # Are we planning?
+    logger.debug('ANALYSIS')
+    # core.clean_variables()
+    wfn = procedures['analysis'][lowername](lowername, molecule=molecule, **kwargs)
+    basisstash.restore()
+    return
 
 
 # Aliases

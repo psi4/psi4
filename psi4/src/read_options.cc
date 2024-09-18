@@ -1229,6 +1229,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SSAPT0_SCALE", false);
         /*- Filepath to drop sSAPT0 exchange-scaling F-SAPT data within input file directory -*/
         options.add_str_i("FISAPT_FSSAPT_FILEPATH", "s-fsapt/");
+        /*- FISAPT_FSAPT_PSI_VARIABLES will set FISAPT_FSAPT_FILEPATH to None and set FSAPT results to psi_variables -*/
+        options.add_bool("FISAPT_FSAPT_PSI_VARIABLES", false);
+
 
         // => CubicScalarGrid options <= //
 
