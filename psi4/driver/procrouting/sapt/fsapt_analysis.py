@@ -35,6 +35,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 from qcelemental import constants
 from psi4 import core
+from pprint import pprint
 
 # => Global Data <= #
 
@@ -141,6 +142,9 @@ def read_fragments(filename):
         fragkeys.append(key)
 
     return [frags, fragkeys]
+
+def parse_fragments(fragments):
+    return
 
 def get_natoms(frags: Dict[str, Dict[str, List[int]]]) -> Dict[str, int]:
     """Given dictionary with fragment information, returns dict with number of atoms in monomers
@@ -389,6 +393,57 @@ def print_fragments(geom, Z, Q, fragkeys, frags, nuclear_ws, orbital_ws, filenam
     fh.write('\n')
 
     fh.close()
+
+def extract_osapt_data_from_vars():
+    """ Reads the F-SAPT component files
+
+    Arguments
+    ---------
+    filepath : str
+        Path to directory containing the F-SAPT energy component files
+
+    Returns
+    -------
+    vals : Dict[str, np.ndarray]
+        Dictionary of the F-SAPT0 components decomposed to orbital, nuclear, and external
+        potential contributions
+    """
+
+    # matrices["Qocc0A"].name = "QA"
+    # matrices["Qocc0B"].name = "QB"
+    # matrices["Elst_AB"].name = "Elst"
+    # matrices["Exch_AB"].name = "Exch"
+    # matrices["IndAB_AB"].name = "IndAB"
+    # matrices["IndBA_AB"].name = "IndBA"
+
+    vals = {}
+    vals['Elst']  = core.variable("Elst_AB").to_array()  * H_to_kcal_
+    vals['Exch']  = core.variable("Exch_AB").to_array()  * H_to_kcal_
+    vals['IndAB'] = core.variable("IndAB_AB").to_array() * H_to_kcal_
+    vals['IndBA'] = core.variable("IndBA_AB").to_array() * H_to_kcal_
+    # Read exact F-SAPT0 dispersion data
+    try:
+        # vals['Disp'] = read_block('%s/Disp.dat'  % filepath, H_to_kcal_)
+        vals['Disp'] = core.variable("Disp_AB").to_array() * H_to_kcal_
+    except FileNotFoundError:
+        print('No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.\n')
+        vals['Disp'] = np.zeros_like(np.array(vals['Elst']))
+
+    # Read empirical F-SAPT0-D dispersion data
+    try:
+        # vals['EDisp'] = read_block('%s/Empirical_Disp.dat'  % filepath, H_to_kcal_)
+        vals['eDisp'] = core.variable("EDisp").to_array() * H_to_kcal_
+    except (Exception):
+        vals['EDisp'] = np.zeros_like(np.array(vals['Elst']))
+
+    # For total, only include exact terms
+    vals['Total'] = [[0.0 for x in vals['Elst'][0]] for x2 in vals['Elst']]
+    for key in ['Elst', 'Exch', 'IndAB', 'IndBA', 'Disp']:
+        for k in range(len(vals['Total'])):
+            for l in range(len(vals['Total'][0])):
+                vals['Total'][k][l] += vals[key][k][l]
+
+    return vals
 
 def extract_osapt_data(filepath):
     """ Reads the F-SAPT component files
@@ -778,7 +833,170 @@ def diff_order2(order2P, order2M):
 
     return vals
 
-def compute_fsapt(dirname, links5050, completeness = 0.85):
+def compute_fsapt_psi_vars(molecule, holder, links5050=False, completeness = 0.85):
+
+    monomer_slices = molecule.get_fragments()
+    R, _, _, Z, _ = molecule.to_arrays()
+    geom = np.hstack((Z.reshape(-1, 1), R))
+
+    print(monomer_slices)
+    Zs = {
+        'A': Z[monomer_slices[0][0]:monomer_slices[0][1]].tolist(),
+        'B': Z[monomer_slices[1][0]:monomer_slices[1][1]].tolist()
+    }
+    lenA = len(Zs['A'])
+    lenB = len(Zs['B'])
+    # Zeros added to work with fsapt.py original code
+    Zs['A'].extend([0.0 for x in range(lenB)])
+    Zs['B'] = [0.0 for x in range(lenA)] + Zs['B']
+    pprint(Zs)
+
+    fragkeys = {}
+    fragkeys['A'] = holder['A'][1]
+    fragkeys['B'] = holder['B'][1]
+
+    frags = {}
+    frags['A'] = holder['A'][0]
+    frags['B'] = holder['B'][0]
+
+    print(Zs['A'], frags['A'])
+
+    check_fragments(geom, Zs['A'], frags['A'])
+    check_fragments(geom, Zs['B'], frags['B'])
+
+    Qs = {}
+    Qs['A'] = core.variable("QA").to_array()
+    Qs['B'] = core.variable("QB").to_array()
+
+    holder1 = partition_fragments(fragkeys['A'], frags['A'], Zs['A'], Qs['A'], completeness)
+    holder2 = partition_fragments(fragkeys['B'], frags['B'], Zs['B'], Qs['B'], completeness)
+
+    fragkeysr = {}
+    fragkeysr['A'] = fragkeys['A']
+    fragkeysr['B'] = fragkeys['B']
+
+    fragkeys['A'] = holder1[0]
+    fragkeys['B'] = holder2[0]
+
+    frags['A']    = holder1[1]
+    frags['B']    = holder2[1]
+
+    nuclear_ws = {}
+    nuclear_ws['A'] = holder1[2]
+    nuclear_ws['B'] = holder2[2]
+
+    orbital_ws = {}
+    orbital_ws['A'] = holder1[3]
+    orbital_ws['B'] = holder2[3]
+
+    total_ws = {}
+    total_ws['A'] = holder1[4]
+    total_ws['B'] = holder2[4]
+
+    print_fragments(geom, Zs['A'], Qs['A'], fragkeys['A'], frags['A'], nuclear_ws['A'], orbital_ws['A'], 'fragA.dat')
+    print_fragments(geom, Zs['B'], Qs['B'], fragkeys['B'], frags['B'], nuclear_ws['B'], orbital_ws['B'], 'fragB.dat')
+
+    # osapt = extract_osapt_data(dirname)
+    osapt = extract_osapt_data_from_vars()
+
+    # For I-SAPT/SAOn and I-SAPT/SIAOn, we need to add one extra orbital weight for the reassigned link orbital. It belongs
+    # to the atom of A/B directly connected to the linker C. The user needs to supply a file link_siao.dat that has two lines
+    #   A (atomnumber)
+    #   B (atomnumber)
+    # to specify the numbers of atoms which are connected to C. We will now check if this file exists and read it.
+    if os.path.exists("%s/link_siao.dat" % dirname):
+        (fragsiao,keyssiao) = read_fragments("%s/link_siao.dat" % dirname)
+        if ("A" not in keyssiao) or ("B" not in keyssiao):
+            raise Exception('Invalid syntax of the link_siao.dat file')
+        linkAC = fragsiao["A"][0]
+        linkBC = fragsiao["B"][0]
+        print("\n Extra SAOn/SIAOn link orbitals assigned to atoms",linkAC,"and",linkBC,"\n")
+ 
+    # We add zero entry for all the fragments, making place for the reassigned link orbital
+        for val in total_ws['A'].values():
+            val.append(0.0)
+ 
+        for val in total_ws['B'].values():
+            val.append(0.0)
+
+        for key in fragkeys['A']:
+            if len(key) > 4 and key[:4] == 'Link':
+                continue
+            if linkAC in frags['A'][key]:
+                total_ws['A'][key][-1] = 1.0
+
+        for key in fragkeys['B']:
+            if len(key) > 4 and key[:4] == 'Link':
+                continue
+            if linkBC in frags['B'][key]:
+                total_ws['B'][key][-1] = 1.0
+    # Finished adding an extra entry for I-SAPT/SAOn and I-SAPT/SIAOn
+
+    # In F/I-SAPT, the point charges can be either in the interacting subsystems A and B or the environment C
+    # The interaction between the point charges in A and fragment B enters the SAPT0 interaction energy, especially
+    # in the electrostatics and induction components. Similarly, the interaction between the charges in B and fragment A
+    # enters the SAPT0 interaction energy. By contrast, when the point charges are assigned to subsystem C, the point
+    # charges in C polarize the orbitals in both fragment A and B. However, the presence of charges in C does not
+    # directly contribute to the SAPT0 interaction energy, which is computed between A and B only.
+
+    # Now process the point charge data for the interacting fragments A and B
+    # We need to analyze the interaction between the point charges in one fragment and the other fragment
+    # Add external potential data for A
+
+    # We add zero entry for all the fragments that are not associated with the external potential
+    for val in total_ws['A'].values():
+        val.append(0.0)
+
+    for val in total_ws['B'].values():
+        val.append(0.0)
+
+    if os.path.exists("%s/Extern_A.xyz" % dirname):
+        fragkeys['A'].append("Extern-A")
+        fragkeysr['A'].append("Extern-A")
+        orbital_ws['A']['Extern-A'] = [0.0 for i in range(len(Qs['A']))]
+        total_ws['A']['Extern-A'] = [0.0 for i in range(len(osapt['Elst']))]
+        total_ws['A']['Extern-A'][-1] = 1.0
+        geom_extern_A = read_xyz('%s/Extern_A.xyz' % dirname)
+        for a in geom_extern_A:
+            geom.append(a)
+        frags['A']['Extern-A'] = list(range(len(Zs['A']), len(Zs['A']) + len(geom_extern_A)))
+
+    # Add external potential data for B
+    if os.path.exists("%s/Extern_B.xyz" % dirname):
+        fragkeys['B'].append("Extern-B")
+        fragkeysr['B'].append("Extern-B")
+        orbital_ws['B']['Extern-B'] = [0.0 for i in range(len(Qs['B']))]
+        total_ws['B']['Extern-B'] = [0.0 for i in range(len(osapt['Elst'][0]))]
+        total_ws['B']['Extern-B'][-1] = 1.0
+        geom_extern_B = read_xyz('%s/Extern_B.xyz' % dirname)
+        for b in geom_extern_B:
+            geom.append(b)
+        if os.path.exists("%s/Extern_A.xyz" % dirname):
+            frags['B']['Extern-B'] = list(range(len(Zs['A']) + len(geom_extern_A),
+                                                len(Zs['A']) + len(geom_extern_A) + len(geom_extern_B)))
+        else:
+            frags['B']['Extern-B'] = list(range(len(Zs['B']), len(Zs['B']) + len(geom_extern_B)))
+
+    # Add external potential data for C
+    # The point charges in C do not explicitly enter the SAPT0 interaction energy
+    if os.path.exists("%s/Extern_C.xyz" % dirname):
+        geom_extern_C = read_xyz('%s/Extern_C.xyz' % dirname)
+        for c in geom_extern_C:
+            geom.append(c)
+
+    order2  = extract_order2_fsapt(osapt, total_ws['A'], total_ws['B'], frags)
+    order2r = collapse_links(order2, frags, Qs, orbital_ws, links5050)
+
+    stuff = {}
+    stuff['order2'] = order2
+    stuff['fragkeys'] = fragkeys
+    stuff['order2r'] = order2r
+    stuff['fragkeysr'] = fragkeysr
+    stuff['frags'] = frags
+    stuff['geom'] = geom
+    return stuff
+
+def compute_fsapt(dirname, links5050=False, completeness = 0.85):
 
     geom = read_xyz('%s/geom.xyz' % dirname)
 
@@ -1063,11 +1281,23 @@ def print_order1(dirname, order2, pdb, frags, reA = r'\S+', reB = r'\S+', saptke
 
 # => Driver Code <= #
 
-def run_fsapt_analysis(method, molecule):
+def run_fsapt_analysis(method, molecule, **kwargs):
     print('  ==> F-ISAPT: Analysis Start <==\n')
-    QA = core.variable("QA")
-    print(QA)
+    print(kwargs)
+    fragA = kwargs.get('fragments_a', None)
+    fragB = kwargs.get('fragments_b', None)
+    if fragA is None or fragB is None:
+        raise Exception("""F-ISAPT requires the specification of 'fragments_a' and 'fragments_b'.
+'fragment_a' should be a dictionary of the form {'fragment_name': [atom_indices], ...} where atom_indices are 0-indexed.
+""")
+    print(f"fA: {fragA}\nfB: {fragB}\n")
+    holder = {
+        "A": [fragA, list(fragA.keys())],
+        "B": [fragB, list(fragB.keys())],
+    }
+    compute_fsapt_psi_vars(molecule, holder)
     return
+
 
 if __name__ == '__main__':
 
