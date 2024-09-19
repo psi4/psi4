@@ -2121,9 +2121,9 @@ def analysis(name, **kwargs):
     # Are we planning?
     logger.debug('ANALYSIS')
     # core.clean_variables()
-    wfn = procedures['analysis'][lowername](lowername, molecule=molecule, **kwargs)
+    results = procedures['analysis'][lowername](lowername, molecule=molecule, **kwargs)
     basisstash.restore()
-    return
+    return results
 
 
 # Aliases
