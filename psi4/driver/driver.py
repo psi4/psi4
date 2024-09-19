@@ -2110,10 +2110,6 @@ def analysis(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
     basisstash = p4util.OptionsState(['BASIS'])
 
-    # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
-    molecule.update_geometry()
-
     # * Trip on function or alias as name
     lowername = driver_util.upgrade_interventions(name)
     # _filter_renamed_methods("gradient", lowername)
@@ -2121,7 +2117,7 @@ def analysis(name, **kwargs):
     # Are we planning?
     logger.debug('ANALYSIS')
     # core.clean_variables()
-    results = procedures['analysis'][lowername](lowername, molecule=molecule, **kwargs)
+    results = procedures['analysis'][lowername](lowername, **kwargs)
     basisstash.restore()
     return results
 

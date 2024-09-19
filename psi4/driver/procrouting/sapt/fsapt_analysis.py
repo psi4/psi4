@@ -35,7 +35,6 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 from qcelemental import constants
 from psi4 import core
-from pprint import pprint
 import pandas as pd
 
 # => Global Data <= #
@@ -110,8 +109,7 @@ def write_xyz(filename, geom):
     fh = open(filename, "w")
     fh.write("%d\n\n" % len(geom))
     for line in geom:
-        fh.write("%6s %14.10f %14.10f %14.10f\n" %
-                 (line[0], line[1], line[2], line[3]))
+        fh.write("%6s %14.10f %14.10f %14.10f\n" % (line[0], line[1], line[2], line[3]))
     fh.close()
 
 
@@ -249,8 +247,7 @@ def check_fragments(geom, Zs, frags):
     for ind in range(len(geom)):
         if (ind in taken) and (Zs[ind] == 0.0):
             raise Exception(
-                "Atom %d has charge 0.0, should not be in fragments." % (
-                    ind + 1)
+                "Atom %d has charge 0.0, should not be in fragments." % (ind + 1)
             )
         elif (ind not in taken) and (Zs[ind] != 0.0):
             raise Exception(
@@ -414,8 +411,7 @@ def print_fragments(geom, Z, Q, fragkeys, frags, nuclear_ws, orbital_ws, filenam
         )
         for k in range(len(nuclear_ws[key])):
             if nuclear_ws[key][k] != 0.0:
-                fh.write("%3d (%11.3f) " %
-                         ((k + 1), nuclear_ws[key][k] * Z[k]))
+                fh.write("%3d (%11.3f) " % ((k + 1), nuclear_ws[key][k] * Z[k]))
         fh.write("\n")
     fh.write("\n")
 
@@ -531,8 +527,7 @@ def extract_osapt_data(filepath):
 
     # Read empirical F-SAPT0-D dispersion data
     try:
-        vals["EDisp"] = read_block(
-            "%s/Empirical_Disp.dat" % filepath, H_to_kcal_)
+        vals["EDisp"] = read_block("%s/Empirical_Disp.dat" % filepath, H_to_kcal_)
     except (FileNotFoundError, OSError):
         vals["EDisp"] = np.zeros_like(np.array(vals["Elst"]))
 
@@ -910,16 +905,12 @@ def diff_order2(order2P, order2M):
 
 
 def compute_fsapt_psi_vars(
-    molecule, holder, links5050=False, completeness=0.85, dirname="."
+    geom, Z, monomer_slices, holder, links5050=False, completeness=0.85, dirname="."
 ):
 
-    monomer_slices = molecule.get_fragments()
-    R, _, _, Z, _ = molecule.to_arrays()
-    geom = np.hstack((Z.reshape(-1, 1), R))
-
     Zs = {
-        "A": Z[monomer_slices[0][0]: monomer_slices[0][1]].tolist(),
-        "B": Z[monomer_slices[1][0]: monomer_slices[1][1]].tolist(),
+        "A": Z[monomer_slices[0][0] : monomer_slices[0][1]].tolist(),
+        "B": Z[monomer_slices[1][0] : monomer_slices[1][1]].tolist(),
     }
     lenA = len(Zs["A"])
     lenB = len(Zs["B"])
@@ -934,7 +925,6 @@ def compute_fsapt_psi_vars(
     frags = {}
     frags["A"] = holder["A"][0]
     frags["B"] = holder["B"][0]
-
 
     check_fragments(geom, Zs["A"], frags["A"])
     check_fragments(geom, Zs["B"], frags["B"])
@@ -1456,9 +1446,31 @@ def print_order1(
 # => Driver Code <= #
 
 
-def run_fsapt_analysis(method, molecule, **kwargs):
+def run_fsapt_analysis(method, **kwargs):
     print("  ==> F-ISAPT: Analysis Start <==\n")
-    opts = core.get_options()
+    atomic_results = kwargs.get("atomic_results", None)
+    molecule = kwargs.get("molecule", None)
+    if atomic_results is None and molecule is None:
+        raise Exception(
+            "Atomic results or molecule object after running psi4.energy('fisapt0') must be provided."
+        )
+    if atomic_results is not None:
+        molecule = atomic_results.molecule
+        R = molecule.geometry
+        Z = molecule.atomic_numbers
+        geom = np.hstack((Z.reshape(-1, 1), R))
+        monomer_slices = [
+            (0, molecule.fragments_[1][0]),
+            (molecule.fragments_[1][0], molecule.fragments_[1][-1] + 1),
+        ]
+        qcvars = atomic_results.extras["qcvars"]
+        for key, value in qcvars.items():
+            core.set_variable(key, value)
+    else:
+        monomer_slices = molecule.get_fragments()
+        R, _, _, Z, _ = molecule.to_arrays()
+        geom = np.hstack((Z.reshape(-1, 1), R))
+
     pdb_dir = kwargs.get("pdb_dir", None)
     analysis_type = kwargs.get("analysis_type", "reduced")  # full or reduced
     links5050 = kwargs.get("links5050", True)  # True or False
@@ -1481,24 +1493,22 @@ def run_fsapt_analysis(method, molecule, **kwargs):
         print("  ==> Full Analysis <==\n")
         print(f"     Links 50-50: {links5050}\n")
         results = compute_fsapt_psi_vars(
-            molecule, holder, links5050=links5050, dirname=dirname
+            geom, Z, monomer_slices, holder, links5050=links5050, dirname=dirname
         )
         data = print_order2(results["order2"], results["fragkeys"])
-        results_tag = 'order2'
+        results_tag = "order2"
         df = pd.DataFrame(data)
     elif analysis_type == "reduced":
         print("  ==> Reduced Analysis <==\n")
         print(f"     Links 50-50: {links5050}\n")
         results = compute_fsapt_psi_vars(
-            molecule, holder, links5050=links5050, dirname=dirname
+            geom, Z, monomer_slices, holder, links5050=links5050, dirname=dirname
         )
-        results_tag = 'order2r'
+        results_tag = "order2r"
         data = print_order2(results["order2r"], results["fragkeysr"])
         df = pd.DataFrame(data)
     else:
-        raise Exception(
-            "Invalid analysis type. Please specify 'full' or 'reduced'."
-        )
+        raise Exception("Invalid analysis type. Please specify 'full' or 'reduced'.")
     if pdb_dir is not None:
         print("  ==> Writing PDB Files <==\n")
         print(f"     {pdb_dir = } \n")
