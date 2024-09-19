@@ -1432,6 +1432,7 @@ def print_order1(
     dirname, order2, pdb, frags, reA=r"\S+", reB=r"\S+", saptkeys=saptkeys_
 ):
 
+    print(saptkeys)
     for saptkey in saptkeys:
         E = [0.0 for x in pdb.atoms]
         for keyA in order2[saptkey].keys():
@@ -1458,7 +1459,7 @@ def print_order1(
 def run_fsapt_analysis(method, molecule, **kwargs):
     print("  ==> F-ISAPT: Analysis Start <==\n")
     opts = core.get_options()
-    pdb_file = kwargs.get("pbd_file", None)
+    pdb_dir = kwargs.get("pdb_dir", None)
     analysis_type = kwargs.get("analysis_type", "reduced")  # full or reduced
     links5050 = kwargs.get("links5050", True)  # True or False
     fragA = kwargs.get("fragments_a", None)
@@ -1498,8 +1499,11 @@ def run_fsapt_analysis(method, molecule, **kwargs):
         raise Exception(
             "Invalid analysis type. Please specify 'full' or 'reduced'."
         )
-    if pdb_file is not None:
-        print_order1(dirname, results[results_tag], pdb_file, results["frags"])
+    if pdb_dir is not None:
+        print("  ==> Writing PDB Files <==\n")
+        print(f"     {pdb_dir = } \n")
+        pdb = PDB.from_geom(results["geom"])
+        print_order1(dirname, results[results_tag], pdb, results["frags"])
     return df
 
 

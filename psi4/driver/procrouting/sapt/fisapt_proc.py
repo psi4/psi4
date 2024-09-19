@@ -33,6 +33,7 @@ import numpy as np
 from psi4 import core
 
 from .. import empirical_dispersion
+from psi4.driver.qcdb import ValidationError
 
 
 def fisapt_compute_energy(self, external_potentials=None):
@@ -241,7 +242,6 @@ def fisapt_save_fsapt_variables(self, external_potentials=None):
                         )
                 external_pot_str += xyz
 
-    vectors = self.vectors()
     matrices = self.matrices()
 
     core.set_variable("QA", matrices["Qocc0A"].to_array())
