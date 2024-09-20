@@ -69,73 +69,83 @@ void check_options_none(py::object obj, const std::string& type, const std::stri
     }   
 }  
 
-bool FOptions::exists(const std::string& label) const {
-    const auto label_uc = to_upper_copy(label);
-    return dict_.contains(label_uc.c_str());
+void FOptions::set_group(const std::string& group) {
+    group_ = to_upper_copy(group);
 }   
 
-void FOptions::add(const std::string& label, const std::string& type, py::object default_value,
+bool FOptions::exists(const std::string& group, const std::string& label) const {
+    const auto group_uc = to_upper_copy(group);
+    const auto label_uc = to_upper_copy(label);
+    auto tuple = py::make_tuple(group_uc, label_uc);
+    return dict_.contains(tuple);
+}   
+
+void FOptions::add(const std::string& group, const std::string& label, const std::string& type, py::object default_value,
                    const std::string& description) {
+    const auto group_uc = to_upper_copy(group);
     const auto label_uc = to_upper_copy(label);
-    if (exists(label_uc)) {
+    if (exists(group_uc, label_uc)) {
         std::string msg = "Called FOptions::add_" +type + "(" + label +
                           ") but this option name is already used.";
         throw std::runtime_error(msg);
     }
-    dict_[label_uc.c_str()] = make_dict_entry(type, group_, default_value, description);
+    auto tuple = py::make_tuple(group_uc, label_uc);
+    dict_[tuple] = make_dict_entry(type, group_uc, default_value, description);
 }
 
-void FOptions::add(const std::string& label, const std::string& type, py::object default_value,
+void FOptions::add(const std::string& group, const std::string& label, const std::string& type, py::object default_value,
                    py::list allowed_values, const std::string& description) {
+    const auto group_uc = to_upper_copy(group);
     const auto label_uc = to_upper_copy(label);
-    if (exists(label_uc)) {
+    if (exists(group_uc, label_uc)) {
         std::string msg = "Called FOptions::add_" +type + "(" + label +
                           ") but this option name is already used.";
         throw std::runtime_error(msg);
     }
-    dict_[label_uc.c_str()] =
-        make_dict_entry(type, group_, default_value, allowed_values, description);
+    auto tuple = py::make_tuple(group_uc, label_uc);
+    dict_[tuple] =
+        make_dict_entry(type, group_uc, default_value, allowed_values, description);
 }
 
-void FOptions::add_bool(const std::string& label, py::object default_value,
+void FOptions::add_bool(const std::string& group, const std::string& label, py::object default_value,
                         const std::string& description) {
     if (default_value.is_none()) {
-        add(label, "bool", py::none(), description);
+        add(group, label, "bool", py::none(), description);
     } else {
-        add(label, "bool", py::bool_(default_value), description);
+        add(group, label, "bool", py::bool_(default_value), description);
     }
 }
 
 
-void FOptions::add_int(const std::string& label, py::object default_value,
+void FOptions::add_int(const std::string& group, const std::string& label, py::object default_value,
                        const std::string& description) {
     if (default_value.is_none()) {
-        add(label, "int", py::none(), description);
+        add(group, label, "int", py::none(), description);
     } else {
-        add(label, "int", py::int_(default_value), description);
+        add(group, label, "int", py::int_(default_value), description);
     }                        
 }
 
-void FOptions::add_double(const std::string& label, py::object default_value,
+void FOptions::add_double(const std::string& group, const std::string& label, py::object default_value,
                           const std::string& description) {
     if (default_value.is_none()) {
-        add(label, "float", py::none(), description);
+        add(group, label, "float", py::none(), description);
     } else {
-        add(label, "float", py::float_(default_value), description);
+        add(group, label, "float", py::float_(default_value), description);
     }
 } 
 
-void FOptions::add_str(const std::string& label, py::object default_value,
+void FOptions::add_str(const std::string& group, const std::string& label, py::object default_value,
                        const std::string& description) {
     if (default_value.is_none()) {
-        add(label, "str", py::none(), description);
+        add(group, label, "str", py::none(), description);
     } else {
         auto upper_ver = to_upper_copy(py::cast<std::string>(default_value));
-        add(label, "str", py::str(upper_ver), description);
+        add(group, label, "str", py::str(upper_ver), description);
     }           
 }
                 
-void FOptions::add_str(const std::string& label, py::object default_value,
+void FOptions::add_str(const std::string& group, const std::string& label, py::object default_value,
                        const std::vector<std::string>& allowed_values,
                        const std::string& description) {
     auto allowed_values_list = py::list();
@@ -143,30 +153,32 @@ void FOptions::add_str(const std::string& label, py::object default_value,
         allowed_values_list.append(py::str(s)); 
     }               
     if (default_value.is_none()) {
-        add(label, "str", py::none(), allowed_values_list, description);
+        add(group, label, "str", py::none(), allowed_values_list, description);
     } else {    
-        add(label, "str", py::str(default_value), allowed_values_list, description);
+        add(group, label, "str", py::str(default_value), allowed_values_list, description);
     }   
 }      
 
-void FOptions::add_array(const std::string& label, const std::string& description) {
-    add(label, "gen_list", py::list(), description);
+void FOptions::add_array(const std::string& group, const std::string& label, const std::string& description) {
+    add(group, label, "gen_list", py::list(), description);
 }
 
-void FOptions::add_int_array(const std::string& label, const std::string& description) {
-    add(label, "int_list", py::list(), description);
+void FOptions::add_int_array(const std::string& group, const std::string& label, const std::string& description) {
+    add(group, label, "int_list", py::list(), description);
 }
 
-void FOptions::add_double_array(const std::string& label, const std::string& description) {
-    add(label, "float_list", py::list(), description);
+void FOptions::add_double_array(const std::string& group, const std::string& label, const std::string& description) {
+    add(group, label, "float_list", py::list(), description);
 }
 
 
-std::pair<py::object, std::string> FOptions::get(const std::string& label) const {
+std::pair<py::object, std::string> FOptions::get(const std::string& group, const std::string& label) const {
     auto label_uc = to_upper_copy(label);
+    auto group_uc = to_upper_copy(group);
     auto result = std::make_pair(py::cast<py::object>(Py_None), std::string("None"));
-    if (dict_.contains(label_uc.c_str())) {
-        auto dict_entry = dict_[label_uc.c_str()];
+    auto tuple = py::make_tuple(group_uc, label_uc);
+    if (dict_.contains(tuple)) {
+        auto dict_entry = dict_[tuple];
         result = std::make_pair(dict_entry["value"], py::cast<std::string>(dict_entry["type"]));
     } else {
         std::string msg = "Called FOptions::get(" + label + ") this option is not registered.";
@@ -175,8 +187,8 @@ std::pair<py::object, std::string> FOptions::get(const std::string& label) const
     return result;
 }
 
-bool FOptions::get_bool(const std::string& label) const {
-    auto value_type = get(label);
+bool FOptions::get_bool(const std::string& group, const std::string& label) const {
+    auto value_type = get(group, label);
     check_options_none(value_type.first, "bool", label);
     if (value_type.second == "bool") {
         return py::cast<bool>(value_type.first);
@@ -185,8 +197,8 @@ bool FOptions::get_bool(const std::string& label) const {
     return false;   
 }   
 
-int FOptions::get_int(const std::string& label) const {
-    auto value_type = get(label);
+int FOptions::get_int(const std::string& group, const std::string& label) const {
+    auto value_type = get(group, label);
     check_options_none(value_type.first, "int", label);
     if (value_type.second == "int") {
         return py::cast<int>(value_type.first);
@@ -195,8 +207,8 @@ int FOptions::get_int(const std::string& label) const {
     return 0;
 }
 
-double FOptions::get_double(const std::string& label) const {
-    auto value_type = get(label);
+double FOptions::get_double(const std::string& group, const std::string& label) const {
+    auto value_type = get(group, label);
     check_options_none(value_type.first, "double", label);
     if (value_type.second == "float") { 
         return py::cast<double>(value_type.first);
@@ -205,8 +217,8 @@ double FOptions::get_double(const std::string& label) const {
     return 0.0; 
 }
 
-std::string FOptions::get_str(const std::string& label) const {
-    auto value_type = get(label);
+std::string FOptions::get_str(const std::string& group, const std::string& label) const {
+    auto value_type = get(group, label);
     check_options_none(value_type.first, "str", label);
     if (value_type.second == "str") {
         return py::cast<std::string>(value_type.first);
@@ -215,8 +227,8 @@ std::string FOptions::get_str(const std::string& label) const {
     return std::string();
 }
 
-py::list FOptions::get_gen_list(const std::string& label) const {
-    auto value_type = get(label);
+py::list FOptions::get_gen_list(const std::string& group, const std::string& label) const {
+    auto value_type = get(group, label);
     check_options_none(value_type.first, "gen_list", label);
     if (value_type.second == "gen_list") {
         return value_type.first;
@@ -225,9 +237,9 @@ py::list FOptions::get_gen_list(const std::string& label) const {
     return py::list();
 }
 
-std::vector<int> FOptions::get_int_list(const std::string& label) const {
+std::vector<int> FOptions::get_int_list(const std::string& group, const std::string& label) const {
     std::vector<int> result;
-    auto value_type = get(label);
+    auto value_type = get(group, label);
     check_options_none(value_type.first, "int_vec", label);
     if (value_type.second == "int_list") {
         for (const auto& s : value_type.first) {
@@ -239,9 +251,9 @@ std::vector<int> FOptions::get_int_list(const std::string& label) const {
     return result;
 }
 
-std::vector<double> FOptions::get_double_list(const std::string& label) const {
+std::vector<double> FOptions::get_double_list(const std::string& group, const std::string& label) const {
     std::vector<double> result;
-    auto value_type = get(label);
+    auto value_type = get(group, label);
     check_options_none(value_type.first, "double_vec", label);
     if (value_type.second == "float_list") {
         for (const auto& s : value_type.first) {
@@ -254,10 +266,12 @@ std::vector<double> FOptions::get_double_list(const std::string& label) const {
     return result;
 }
 
-void FOptions::set(const std::string& label, const py::object val) {
+void FOptions::set(const std::string& group, const std::string& label, const py::object val) {
     auto label_uc = to_upper_copy(label);
-    if (dict_.contains(label_uc.c_str())) {
-        auto dict_entry = dict_[label_uc.c_str()];
+    auto group_uc = to_upper_copy(group);
+    auto tuple = py::make_tuple(group_uc, label_uc);
+    if (dict_.contains(tuple)) {
+        auto dict_entry = dict_[tuple];
         // Validate allowed_values.
         if (dict_entry.contains("allowed_values")) {
              const auto type = py::cast<std::string>(dict_entry["type"]);
@@ -290,10 +304,10 @@ void FOptions::set(const std::string& label, const py::object val) {
     }
 }
 
-void FOptions::set_bool(const std::string& label, bool val) {
-    auto value_type = get(label);
+void FOptions::set_bool(const std::string& group, const std::string& label, bool val) {
+    auto value_type = get(group, label);
     if (value_type.second == "bool") {
-        set(label, py::bool_(val));
+        set(group, label, py::bool_(val));
     } else {
         std::string msg = "Called FOptions::set_bool(" + label +
                           ") but the type for this option is " + value_type.second;
@@ -301,10 +315,10 @@ void FOptions::set_bool(const std::string& label, bool val) {
     }
 }
 
-void FOptions::set_int(const std::string& label, int val) {
-    auto value_type = get(label);
+void FOptions::set_int(const std::string& group, const std::string& label, int val) {
+    auto value_type = get(group, label);
     if (value_type.second == "int") {
-        set(label, py::int_(val));
+        set(group, label, py::int_(val));
     } else {
         std::string msg = "Called FOptions::set_int(" + label +
                           ") but the type for this option is " + value_type.second;
@@ -312,10 +326,10 @@ void FOptions::set_int(const std::string& label, int val) {
     }
 }   
 
-void FOptions::set_double(const std::string& label, double val) {
-    auto value_type = get(label);
+void FOptions::set_double(const std::string& group, const std::string& label, double val) {
+    auto value_type = get(group, label);
     if (value_type.second == "float") {
-        set(label, py::float_(val));
+        set(group, label, py::float_(val));
     } else {
         std::string msg = "Called FOptions::set_double(" + label +
                           ") but the type for this option is " + value_type.second;
@@ -323,11 +337,11 @@ void FOptions::set_double(const std::string& label, double val) {
     }
 }
 
-void FOptions::set_str(const std::string& label, const std::string& val) {
-    auto value_type = get(label);
+void FOptions::set_str(const std::string& group, const std::string& label, const std::string& val) {
+    auto value_type = get(group, label);
     if (value_type.second == "str") {
         auto ucase_val = to_upper_copy(val);
-        set(label, py::str(ucase_val));
+        set(group, label, py::str(ucase_val));
     } else {
         std::string msg = "Called FOptions::set_str(" + label +
                           ") but the type for this option is " + value_type.second;
@@ -335,10 +349,10 @@ void FOptions::set_str(const std::string& label, const std::string& val) {
     }
 }  
 
-void FOptions::set_gen_list(const std::string& label, py::list val) {
-    auto value_type = get(label);
+void FOptions::set_gen_list(const std::string& group, const std::string& label, py::list val) {
+    auto value_type = get(group, label);
     if (value_type.second == "gen_list") {
-        set(label, val);
+        set(group, label, val);
     } else {
         std::string msg = "Called ForteOptions::set_gen_list(" + label +
                           ") but the type for this option is " + value_type.second;
@@ -346,11 +360,11 @@ void FOptions::set_gen_list(const std::string& label, py::list val) {
     }
 }
 
-void FOptions::set_int_list(const std::string& label, const std::vector<int>& val) {
+void FOptions::set_int_list(const std::string& group, const std::string& label, const std::vector<int>& val) {
     std::vector<int> result;
-    auto value_type = get(label);
+    auto value_type = get(group, label);
     if (value_type.second == "int_list") {
-        set(label, py::cast(val));
+        set(group, label, py::cast(val));
     } else {
         std::string msg = "Called ForteOptions::get_int_list(" + label +
                           ") but the type for this option is " + value_type.second;
@@ -358,11 +372,11 @@ void FOptions::set_int_list(const std::string& label, const std::vector<int>& va
     }
 }
 
-void FOptions::set_double_list(const std::string& label, const std::vector<double>& val) {
+void FOptions::set_double_list(const std::string& group, const std::string& label, const std::vector<double>& val) {
     std::vector<double> result;
-    auto value_type = get(label);
+    auto value_type = get(group, label);
     if (value_type.second == "float_list") {
-        set(label, py::cast(val));
+        set(group, label, py::cast(val));
     } else {
         std::string msg = "Called ForteOptions::set_double_list(" + label +
                           ") but the type for this option is " + value_type.second;

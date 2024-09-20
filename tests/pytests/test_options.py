@@ -7,7 +7,7 @@ def test_option_group():
     options = psi4.core.FOptions()
     groupname = "groupname"
     options.set_group(groupname)
-    assert options.get_group() == groupname
+    assert options.get_group() == groupname.upper()
 
 def test_option_addgetset():
     options = psi4.core.FOptions()
@@ -59,6 +59,61 @@ def test_option_addgetset():
     options.add_double_list("key_double_list")
     options.set_double_list("key_double_list", [1.0, 2.0])
     assert options.get_double_list("key_double_list") == [1.0, 2.0]
+
+def test_option_addgetset_group():
+    options = psi4.core.FOptions()
+
+    # None
+    options.add_bool("MyGroup", "key1", None)
+    options.add_bool("MyGroup", "key2", None, "description")
+    options.set_bool("MyGroup", "key1", True)
+    assert options.get_bool("MyGroup", "key1") is True
+
+    # bool
+    options.add_bool("MyGroup", "key3", True)
+    options.add_bool("MyGroup", "key4", False, "description")
+    options.add_bool("MyGroup", "key5", 42)
+    options.add_bool("MyGroup", "key6", [], "description")
+    assert options.get_bool("MyGroup", "key3") is True
+    assert options.get_bool("MyGroup", "key4") is False
+    assert options.get_bool("MyGroup", "key5") is True
+    assert options.get_bool("MyGroup", "key6") is False
+    options.set_group("MyGroupZ")   
+    options.add_bool("key3", True)
+    assert options.get_bool("key3") is True
+    assert options.get_bool("MyGroupZ", "key3") is True
+ 
+    # int
+    options.add_int("MyGroup", "key_int", 42)
+    assert options.get_int("MyGroup", "key_int") == 42
+    options.set_int("MyGroup", "key_int", 43)
+    assert options.get_int("MyGroup", "key_int") == 43
+    
+    # double
+    options.add_double("MyGroup", "key_double", 42.0)
+    assert options.get_double("MyGroup", "key_double") == 42.0
+    options.set_double("MyGroup", "key_double", 43.0)
+    assert options.get_double("MyGroup", "key_double") == 43.0
+
+    # str
+    options.add_str("MyGroup", "key_str", "foo")
+    assert options.get_str("MyGroup", "key_str") == "FOO"
+    options.set_str("MyGroup", "key_str", "bar")
+    assert options.get_str("MyGroup", "key_str") == "BAR"
+    
+    options.add_str("MyGroup", "key_str2", None, ["DCT", "OCC", "SCF"])
+    options.set_str("MyGroup", "key_str2", "dct")
+    assert options.get_str("MyGroup", "key_str2") == "DCT"
+
+    # int list
+    options.add_int_list("MyGroup", "key_int_list")
+    options.set_int_list("MyGroup", "key_int_list", [1, 2])
+    assert options.get_int_list("MyGroup", "key_int_list") == [1, 2]
+
+    # double list
+    options.add_double_list("MyGroup", "key_double_list")
+    options.set_double_list("MyGroup", "key_double_list", [1.0, 2.0])
+    assert options.get_double_list("MyGroup", "key_double_list") == [1.0, 2.0]
 
 def test_option_errors():
     options = psi4.core.FOptions()
@@ -132,3 +187,17 @@ def test_option_errors():
     
     assert 'in allowed_values' in str(err.value)
 
+def test_group_errors():
+    options = psi4.core.FOptions()
+
+    # correct group necessary to find option
+    options.add_bool("key1", False)
+    with pytest.raises(RuntimeError) as err:
+        options.get_bool("foo", "key1")
+    assert 'not registered' in str(err.value)
+    options.set_group("foo")
+    with pytest.raises(RuntimeError) as err:
+        options.get_bool("key1")
+    assert 'not registered' in str(err.value)
+    
+    
