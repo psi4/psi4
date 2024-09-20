@@ -232,11 +232,7 @@ procedures = {
         'cvs-adc(2)'   : proc.run_adcc_property,
         'cvs-adc(2)-x' : proc.run_adcc_property,
         'cvs-adc(3)'   : proc.run_adcc_property,
-    },
-    "analysis" : {
-        "fsapt" : sapt.fsapt_analysis.run_fsapt_analysis,
-    }
-} # yapf: disable
+    }} # yapf: disable
 
 # Will only allow energy to be run for the following methods
 energy_only_methods = [x for x in procedures['energy'].keys() if 'sapt' in x]

@@ -120,10 +120,7 @@ def fisapt_compute_energy(self, external_potentials=None):
         #    text.append("\n    Empirical Dispersion Energy [Eh] =     {:24.16f}\n".format(Edisp))
         #    text.append('\n')
         #    core.print_out('\n'.join(text))
-        if core.get_option("FISAPT", "FISAPT_FSAPT_PSI_VARIABLES"):
-            self.save_fsapt_variables(external_potentials)
-        else:
-            self.fdrop(external_potentials)
+        self.fdrop(external_potentials)
 
     # => Scalar-Field Analysis <=
 
@@ -170,6 +167,7 @@ def fisapt_fdrop(self, external_potentials=None):
 
                 with open(filepath + os.sep + "Extern_%s.xyz" % frag, "w") as fh:
                     fh.write(xyz)
+    write_output_files = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH").lower() != "none"
 
     vectors = self.vectors()
     matrices = self.matrices()
@@ -180,45 +178,61 @@ def fisapt_fdrop(self, external_potentials=None):
     matrices["Exch_AB"].name = "Exch"
     matrices["IndAB_AB"].name = "IndAB"
     matrices["IndBA_AB"].name = "IndBA"
+    core.set_variable("FSAPT_QA", matrices["Qocc0A"])
+    core.set_variable("FSAPT_QB", matrices["Qocc0B"])
+    core.set_variable("FSAPT_ELST_AB", matrices["Elst_AB"])
+    core.set_variable("FSAPT_EXCH_AB", matrices["Exch_AB"])
+    core.set_variable("FSAPT_INDAB_AB", matrices["IndAB_AB"])
+    core.set_variable("FSAPT_INDBA_AB", matrices["IndBA_AB"])
 
-    _drop(vectors["ZA"], filepath)
-    _drop(vectors["ZB"], filepath)
-    _drop(matrices["Qocc0A"], filepath)
-    _drop(matrices["Qocc0B"], filepath)
-    _drop(matrices["Elst_AB"], filepath)
-    _drop(matrices["Exch_AB"], filepath)
-    _drop(matrices["IndAB_AB"], filepath)
-    _drop(matrices["IndBA_AB"], filepath)
+    if write_output_files:
+        _drop(vectors["ZA"], filepath)
+        _drop(vectors["ZB"], filepath)
+        _drop(matrices["Qocc0A"], filepath)
+        _drop(matrices["Qocc0B"], filepath)
+        _drop(matrices["Elst_AB"], filepath)
+        _drop(matrices["Exch_AB"], filepath)
+        _drop(matrices["IndAB_AB"], filepath)
+        _drop(matrices["IndBA_AB"], filepath)
 
     if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
         matrices["Disp_AB"].name = "Disp"
-        _drop(matrices["Disp_AB"], filepath)
+        core.set_variable("FSAPT_DISP_AB", matrices["Disp_AB"])
+        if write_output_files:
+            _drop(matrices["Disp_AB"], filepath)
 
     if core.get_option("FISAPT", "SSAPT0_SCALE"):
+        # NOTE: do same as above for conditionally writing
         ssapt_filepath = core.get_option("FISAPT", "FISAPT_FSSAPT_FILEPATH")
-        os.makedirs(ssapt_filepath, exist_ok=True)
+        write_ssapt_files = ssapt_filepath.lower() != "none"
 
-        core.print_out("    sF-SAPT Data Filepath = {}\n\n".format(ssapt_filepath))
-
-        geomfile = ssapt_filepath + os.sep + "geom.xyz"
-        with open(geomfile, "w") as fh:
-            fh.write(xyz)
+        if write_ssapt_files:
+            os.makedirs(ssapt_filepath, exist_ok=True)
+            core.print_out("    sF-SAPT Data Filepath = {}\n\n".format(ssapt_filepath))
+            geomfile = ssapt_filepath + os.sep + "geom.xyz"
+            with open(geomfile, "w") as fh:
+                fh.write(xyz)
 
         matrices["sIndAB_AB"].name = "IndAB"
         matrices["sIndBA_AB"].name = "IndBA"
+        core.set_variable("FSAPT_SINDAB_AB", matrices["sIndAB_AB"])
+        core.set_variable("FSAPT_SINDBA_AB", matrices["sIndBA_AB"])
 
-        _drop(vectors["ZA"], ssapt_filepath)
-        _drop(vectors["ZB"], ssapt_filepath)
-        _drop(matrices["Qocc0A"], ssapt_filepath)
-        _drop(matrices["Qocc0B"], ssapt_filepath)
-        _drop(matrices["Elst_AB"], ssapt_filepath)
-        _drop(matrices["Exch_AB"], ssapt_filepath)
-        _drop(matrices["sIndAB_AB"], ssapt_filepath)
-        _drop(matrices["sIndBA_AB"], ssapt_filepath)
+        if write_ssapt_files:
+            _drop(vectors["ZA"], ssapt_filepath)
+            _drop(vectors["ZB"], ssapt_filepath)
+            _drop(matrices["Qocc0A"], ssapt_filepath)
+            _drop(matrices["Qocc0B"], ssapt_filepath)
+            _drop(matrices["Elst_AB"], ssapt_filepath)
+            _drop(matrices["Exch_AB"], ssapt_filepath)
+            _drop(matrices["sIndAB_AB"], ssapt_filepath)
+            _drop(matrices["sIndBA_AB"], ssapt_filepath)
 
         if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
             matrices["sDisp_AB"].name = "Disp"
-            _drop(matrices["sDisp_AB"], ssapt_filepath)
+            core.set_variable("FSAPT_SDISP_AB", matrices["sDisp_AB"])
+            if write_ssapt_files:
+                _drop(matrices["sDisp_AB"], ssapt_filepath)
 
 
 def fisapt_save_fsapt_variables(self, external_potentials=None):
@@ -244,26 +258,27 @@ def fisapt_save_fsapt_variables(self, external_potentials=None):
 
     matrices = self.matrices()
 
-    core.set_variable("QA", matrices["Qocc0A"].to_array())
-    core.set_variable("QB", matrices["Qocc0B"].to_array())
-    core.set_variable("Elst_AB", matrices["Elst_AB"].to_array())
-    core.set_variable("Exch_AB", matrices["Exch_AB"].to_array())
-    core.set_variable("IndAB_AB", matrices["IndAB_AB"].to_array())
-    core.set_variable("IndBA_AB", matrices["IndBA_AB"].to_array())
+    # NOTE: removed to_array() and will need to do in fsapt
+    core.set_variable("FSAPT_QA", matrices["Qocc0A"])
+    core.set_variable("FSAPT_QB", matrices["Qocc0B"])
+    core.set_variable("FSAPT_ELST_AB", matrices["Elst_AB"])
+    core.set_variable("FSAPT_EXCH_AB", matrices["Exch_AB"])
+    core.set_variable("FSAPT_INDAB_AB", matrices["IndAB_AB"])
+    core.set_variable("FSAPT_INDBA_AB", matrices["IndBA_AB"])
 
     if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
-        matrices["Disp_AB"].name = "Disp"
-        core.set_variable("Disp_AB", matrices["Disp_AB"].to_array())
+        matrices["FSAPT_DISP_AB"].name = "Disp"
+        core.set_variable("FSAPT_DISP_AB", matrices["Disp_AB"])
 
     if core.get_option("FISAPT", "SSAPT0_SCALE"):
         matrices["sIndAB_AB"].name = "IndAB"
         matrices["sIndBA_AB"].name = "IndBA"
-        core.set_variable("sIndAB_AB", matrices["sIndAB_AB"].to_array())
-        core.set_variable("sIndBA_AB", matrices["sIndBA_AB"].to_array())
+        core.set_variable("FSAPT_SINDAB_AB", matrices["sIndAB_AB"])
+        core.set_variable("FSAPT_SINDBA_AB", matrices["sIndBA_AB"])
 
         if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
             matrices["sDisp_AB"].name = "Disp"
-            core.set_variable("sDisp_AB", matrices["sDisp_AB"].to_array())
+            core.set_variable("FSAPT_SDISP_AB", matrices["sDisp_AB"])
 
 
 def fisapt_plot(self):

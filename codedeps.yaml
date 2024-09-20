@@ -1476,3 +1476,21 @@ data:
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
       skip_win: true
+
+  - project: pandas
+    use:
+      added: 1.10
+      required: false
+      required_note: optional for extra tests
+      buildable: false
+      buildtime: false
+      cms: false
+      test_required: false
+    repository: null
+    cmake: null
+    conda:
+      channel: conda-forge
+      name: pandas
+      constraint: null
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."

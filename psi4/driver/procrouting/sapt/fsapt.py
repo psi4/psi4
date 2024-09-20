@@ -35,7 +35,6 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 from qcelemental import constants
 from psi4 import core
-import pandas as pd
 
 # => Global Data <= #
 
@@ -225,11 +224,6 @@ def collapse_rows(vals):
         for k in range(len(row)):
             vals2[k] += row[k]
 
-    return vals2
-
-
-def collapse_columns(val):
-    vals2 = [sum(x) for x in vals]
     return vals2
 
 
@@ -465,14 +459,14 @@ def extract_osapt_data_from_vars():
     # matrices["IndBA_AB"].name = "IndBA"
 
     vals = {}
-    vals["Elst"] = core.variable("Elst_AB").to_array() * H_to_kcal_
-    vals["Exch"] = core.variable("Exch_AB").to_array() * H_to_kcal_
-    vals["IndAB"] = core.variable("IndAB_AB").to_array() * H_to_kcal_
-    vals["IndBA"] = core.variable("IndBA_AB").to_array() * H_to_kcal_
+    vals["Elst"] = core.variable("FSAPT_ELST_AB").to_array() * H_to_kcal_
+    vals["Exch"] = core.variable("FSAPT_EXCH_AB").to_array() * H_to_kcal_
+    vals["IndAB"] = core.variable("FSAPT_INDAB_AB").to_array() * H_to_kcal_
+    vals["IndBA"] = core.variable("FSAPT_INDBA_AB").to_array() * H_to_kcal_
     # Read exact F-SAPT0 dispersion data
     try:
         # vals['Disp'] = read_block('%s/Disp.dat'  % filepath, H_to_kcal_)
-        vals["Disp"] = core.variable("Disp_AB").to_array() * H_to_kcal_
+        vals["Disp"] = core.variable("FSAPT_DISP_AB").to_array() * H_to_kcal_
     except FileNotFoundError:
         print(
             "No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.\n"
@@ -482,7 +476,7 @@ def extract_osapt_data_from_vars():
     # Read empirical F-SAPT0-D dispersion data
     try:
         # vals['EDisp'] = read_block('%s/Empirical_Disp.dat'  % filepath, H_to_kcal_)
-        vals["eDisp"] = core.variable("EDisp").to_array() * H_to_kcal_
+        vals["eDisp"] = core.variable("FSAPT_EDISP").to_array() * H_to_kcal_
     except Exception:
         vals["EDisp"] = np.zeros_like(np.array(vals["Elst"]))
 
@@ -930,8 +924,8 @@ def compute_fsapt_psi_vars(
     check_fragments(geom, Zs["B"], frags["B"])
 
     Qs = {}
-    Qs["A"] = core.variable("QA").to_array()
-    Qs["B"] = core.variable("QB").to_array()
+    Qs["A"] = core.variable("FSAPT_QA").to_array()
+    Qs["B"] = core.variable("FSAPT_QB").to_array()
 
     holder1 = partition_fragments(
         fragkeys["A"], frags["A"], Zs["A"], Qs["A"], completeness
@@ -1443,13 +1437,16 @@ def print_order1(
         pdb2.write("%s.pdb" % (saptkey))
 
 
-# => Driver Code <= #
-
-
-def run_fsapt_analysis(method, **kwargs):
+def run_fsapt_analysis(
+    fragments_a: dict[str, list[int]],
+    fragments_b: dict[str, list[int]],
+    molecule,
+    atomic_results,
+    pdb_dir,
+    analysis_type,
+    links5050,
+):
     print("  ==> F-ISAPT: Analysis Start <==\n")
-    atomic_results = kwargs.get("atomic_results", None)
-    molecule = kwargs.get("molecule", None)
     if atomic_results is None and molecule is None:
         raise Exception(
             "Atomic results or molecule object after running psi4.energy('fisapt0') must be provided."
@@ -1471,20 +1468,15 @@ def run_fsapt_analysis(method, **kwargs):
         R, _, _, Z, _ = molecule.to_arrays()
         geom = np.hstack((Z.reshape(-1, 1), R))
 
-    pdb_dir = kwargs.get("pdb_dir", None)
-    analysis_type = kwargs.get("analysis_type", "reduced")  # full or reduced
-    links5050 = kwargs.get("links5050", True)  # True or False
-    fragA = kwargs.get("fragments_a", None)
-    fragB = kwargs.get("fragments_b", None)
-    if fragA is None or fragB is None:
+    if fragments_a is None or fragments_b is None:
         raise Exception(
             """F-ISAPT requires the specification of 'fragments_a' and 'fragments_b'.
 'fragment_a' should be a dictionary of the form {'fragment_name': [atom_indices], ...} where atom_indices are 0-indexed.
 """
         )
     holder = {
-        "A": [fragA, list(fragA.keys())],
-        "B": [fragB, list(fragB.keys())],
+        "A": [fragments_a, list(fragments_a.keys())],
+        "B": [fragments_b, list(fragments_b.keys())],
     }
     dirname = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
     if dirname is None:
@@ -1497,7 +1489,6 @@ def run_fsapt_analysis(method, **kwargs):
         )
         data = print_order2(results["order2"], results["fragkeys"])
         results_tag = "order2"
-        df = pd.DataFrame(data)
     elif analysis_type == "reduced":
         print("  ==> Reduced Analysis <==\n")
         print(f"     Links 50-50: {links5050}\n")
@@ -1506,7 +1497,6 @@ def run_fsapt_analysis(method, **kwargs):
         )
         results_tag = "order2r"
         data = print_order2(results["order2r"], results["fragkeysr"])
-        df = pd.DataFrame(data)
     else:
         raise Exception("Invalid analysis type. Please specify 'full' or 'reduced'.")
     if pdb_dir is not None:
@@ -1514,19 +1504,10 @@ def run_fsapt_analysis(method, **kwargs):
         print(f"     {pdb_dir = } \n")
         pdb = PDB.from_geom(results["geom"])
         print_order1(dirname, results[results_tag], pdb, results["frags"])
-    return df
+    return data
 
 
-if __name__ == "__main__":
-
-    # > Working Dirname < #
-
-    if len(sys.argv) == 1:
-        dirname = "."
-    elif len(sys.argv) == 2:
-        dirname = sys.argv[1]
-    else:
-        raise Exception("Usage: fsapt.py [dirname]")
+def run_from_output(dirname="./fsapt"):
 
     # > Order-2 Analysis < #
 
@@ -1545,11 +1526,11 @@ if __name__ == "__main__":
     print("  ==> F-ISAPT: Links 50-50 <==\n")
     stuff = compute_fsapt(dirname, True)
 
-    saptkeys_ = stuff["order2r"].keys()
+    saptkeys_local = stuff["order2r"].keys()
     print("   => Full Analysis <=\n")
-    print_order2(stuff["order2"], stuff["fragkeys"])
+    print_order2(stuff["order2"], stuff["fragkeys"], saptkeys=saptkeys_local)
     print("   => Reduced Analysis <=\n")
-    print_order2(stuff["order2r"], stuff["fragkeysr"])
+    print_order2(stuff["order2r"], stuff["fragkeysr"], saptkeys=saptkeys_local)
 
     fh, sys.stdout = sys.stdout, fh
     fh.close()
@@ -1557,4 +1538,17 @@ if __name__ == "__main__":
     # > Order-1 PBD Files < #
 
     pdb = PDB.from_geom(stuff["geom"])
-    print_order1(dirname, stuff["order2r"], pdb, stuff["frags"])
+    print_order1(dirname, stuff["order2r"], pdb, stuff["frags"], saptkeys=saptkeys_local)
+    return
+
+
+if __name__ == "__main__":
+
+    # > Working Dirname < #
+    if len(sys.argv) == 1:
+        dirname = "."
+    elif len(sys.argv) == 2:
+        dirname = sys.argv[1]
+    else:
+        raise Exception("Usage: fsapt.py [dirname]")
+    run_from_output(dirname)
