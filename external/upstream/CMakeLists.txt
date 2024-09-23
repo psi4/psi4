@@ -1,5 +1,4 @@
 # Note: order is important as some projects might be interdependent
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 foreach(dir
   pybind11
   ambit
