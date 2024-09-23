@@ -138,36 +138,43 @@ def fisapt_fdrop(self, external_potentials=None):
     """Drop output files from FSAPT calculation. FISAPT::fdrop"""
 
     core.print_out("  ==> F-SAPT Output <==\n\n")
+    write_output_files = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH").lower() != "none"
 
-    filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
-    os.makedirs(filepath, exist_ok=True)
+    if write_output_files:
+        filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
+        os.makedirs(filepath, exist_ok=True)
 
-    core.print_out("    F-SAPT Data Filepath = {}\n\n".format(filepath))
+        core.print_out("    F-SAPT Data Filepath = {}\n\n".format(filepath))
 
-    geomfile = filepath + os.sep + "geom.xyz"
-    xyz = self.molecule().to_string(dtype="xyz", units="Angstrom")
-    with open(geomfile, "w") as fh:
-        fh.write(xyz)
+        geomfile = filepath + os.sep + "geom.xyz"
+        xyz = self.molecule().to_string(dtype="xyz", units="Angstrom")
+        with open(geomfile, "w") as fh:
+            fh.write(xyz)
 
     # write external potential geometries
     if external_potentials is not None and isinstance(external_potentials, dict):
         for frag in "ABC":
             potential = external_potentials.get(frag, None)
             if potential is not None:
+                print(potential)
                 xyz = str(len(potential)) + "\n\n"
+                potential_lst = []
                 for qxyz in potential:
                     if len(qxyz) == 2:
                         xyz += "Ch %f %f %f\n" % (qxyz[1][0], qxyz[1][1], qxyz[1][2])
+                        potential_lst.append(qxyz[1])
                     elif len(qxyz) == 4:
                         xyz += "Ch %f %f %f\n" % (qxyz[1], qxyz[2], qxyz[3])
+                        potential_lst.append(qxyz[1:])
                     else:
                         raise ValidationError(
                             f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'"
                         )
-
-                with open(filepath + os.sep + "Extern_%s.xyz" % frag, "w") as fh:
-                    fh.write(xyz)
-    write_output_files = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH").lower() != "none"
+                potential_lst = np.array(potential_lst)
+                core.set_variable("FSAPT_EXTERN_POTENTIAL_{}".format(frag), potential_lst)
+                if write_output_files:
+                    with open(filepath + os.sep + "Extern_%s.xyz" % frag, "w") as fh:
+                        fh.write(xyz)
 
     vectors = self.vectors()
     matrices = self.matrices()
@@ -316,7 +323,6 @@ def _drop(array, filepath):
 
     """
     filename = filepath + os.sep + array.name + ".dat"
-    core.set_variable("FSAPT_" + array.name.upper(), array)
     with open(filename, "wb") as handle:
         np.savetxt(handle, array.to_array(), fmt="%24.16E", delimiter=" ", newline="\n")
 

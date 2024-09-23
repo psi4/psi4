@@ -39,6 +39,8 @@ import numpy as np
 from qcelemental import constants
 from psi4 import core
 
+# from psi4.driver.p4util.exceptions import KeyError
+
 # => Global Data <= #
 
 # H to kcal constant
@@ -886,8 +888,15 @@ def diff_order2(order2P, order2M):
 
 
 def compute_fsapt_qcvars(
-    geom, Z, monomer_slices, holder, links5050=False, completeness=0.85, dirname="."
+    geom,
+    Z,
+    monomer_slices,
+    holder,
+    links5050=False,
+    completeness=0.85,
+    dirname=".",
 ):
+    geom = geom.tolist()
 
     Zs = {
         "A": Z[monomer_slices[0][0] : monomer_slices[0][1]].tolist(),
@@ -896,8 +905,12 @@ def compute_fsapt_qcvars(
     lenA = len(Zs["A"])
     lenB = len(Zs["B"])
     # Zeros added to work with fsapt.py original code
-    Zs["A"].extend([0.0 for x in range(lenB)])
-    Zs["B"] = [0.0 for x in range(lenA)] + Zs["B"]
+    Zs["A"].extend([0.0 for x in range(len(geom) - lenA)])
+    Zs["B"] = (
+        [0.0 for x in range(lenA)]
+        + Zs["B"]
+        + [0.0 for x in range(len(geom) - lenA - lenB)]
+    )
 
     fragkeys = {}
     fragkeys["A"] = holder["A"][1]
@@ -1021,30 +1034,42 @@ def compute_fsapt_qcvars(
     for val in total_ws["B"].values():
         val.append(0.0)
 
-    if os.path.exists("%s/Extern_A.xyz" % dirname):
+    geom_extern_A = None
+    geom_extern_B = None
+    geom_extern_C = None
+    try:
+        geom_extern_A = core.variable("FSAPT_EXTERN_POTENTIAL_A").to_array()
+        geom_extern_A = np.hstack(
+            (np.zeros((len(geom_extern_A), 1)), geom_extern_A)
+        ).tolist()
+        print(f"geom_extern_A: {geom_extern_A}")
         fragkeys["A"].append("Extern-A")
         fragkeysr["A"].append("Extern-A")
         orbital_ws["A"]["Extern-A"] = [0.0 for i in range(len(Qs["A"]))]
         total_ws["A"]["Extern-A"] = [0.0 for i in range(len(osapt["Elst"]))]
         total_ws["A"]["Extern-A"][-1] = 1.0
-        geom_extern_A = read_xyz("%s/Extern_A.xyz" % dirname)
         for a in geom_extern_A:
             geom.append(a)
         frags["A"]["Extern-A"] = list(
             range(len(Zs["A"]), len(Zs["A"]) + len(geom_extern_A))
         )
+    except KeyError:
+        print("No external potential data for A")
+        pass
 
-    # Add external potential data for B
-    if os.path.exists("%s/Extern_B.xyz" % dirname):
+    try:
+        geom_extern_B = core.variable("FSAPT_EXTERN_POTENTIAL_B").to_array()
+        geom_extern_B = np.hstack(
+            (np.zeros((len(geom_extern_B), 1)), geom_extern_B)
+        ).tolist()
         fragkeys["B"].append("Extern-B")
         fragkeysr["B"].append("Extern-B")
         orbital_ws["B"]["Extern-B"] = [0.0 for i in range(len(Qs["B"]))]
-        total_ws["B"]["Extern-B"] = [0.0 for i in range(len(osapt["Elst"][0]))]
+        total_ws["B"]["Extern-B"] = [0.0 for i in range(len(osapt["Elst"]))]
         total_ws["B"]["Extern-B"][-1] = 1.0
-        geom_extern_B = read_xyz("%s/Extern_B.xyz" % dirname)
         for b in geom_extern_B:
             geom.append(b)
-        if os.path.exists("%s/Extern_A.xyz" % dirname):
+        if geom_extern_A is not None:
             frags["B"]["Extern-B"] = list(
                 range(
                     len(Zs["A"]) + len(geom_extern_A),
@@ -1056,12 +1081,22 @@ def compute_fsapt_qcvars(
                 range(len(Zs["B"]), len(Zs["B"]) + len(geom_extern_B))
             )
 
+    except KeyError:
+        print("No external potential data for B")
+        pass
+
     # Add external potential data for C
     # The point charges in C do not explicitly enter the SAPT0 interaction energy
-    if os.path.exists("%s/Extern_C.xyz" % dirname):
-        geom_extern_C = read_xyz("%s/Extern_C.xyz" % dirname)
+    try:
+        geom_extern_C = core.variable("FSAPT_EXTERN_POTENTIAL_C").to_array()
+        geom_extern_C = np.hstack(
+            (np.zeros((len(geom_extern_C), 1)), geom_extern_C)
+        ).tolist()
         for c in geom_extern_C:
             geom.append(c)
+    except KeyError:
+        print("No external potential data for C")
+        pass
 
     order2 = extract_order2_fsapt(osapt, total_ws["A"], total_ws["B"], frags)
     order2r = collapse_links(order2, frags, Qs, orbital_ws, links5050)
