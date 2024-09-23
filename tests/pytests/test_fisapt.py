@@ -37,7 +37,7 @@ no_com"""
             "scf_type": "df",
             "guess": "sad",
             "freeze_core": "true",
-            "FISAPT_FSAPT_FILEPATH": 'none',
+            "FISAPT_FSAPT_FILEPATH": "none",
         }
     )
     psi4.core.be_quiet()
@@ -66,10 +66,10 @@ no_com"""
         molecule=mol,
         # NOTE: make 1-indexed since user facing is generally 1-indexed
         fragments_a={
-            "MethylA": [0, 1, 2, 3, 4],
+            "MethylA": [1, 2, 3, 4, 5],
         },
         fragments_b={
-            "MethylB": [5, 6, 7, 8, 9],
+            "MethylB": [6, 7, 8, 9, 10],
         },
     )
     fEnergies.pop("Frag1")
@@ -86,8 +86,93 @@ no_com"""
     }
 
     # python iterate over zip dictionary keys and values
-    for (key1, key2) in zip(fEref.keys(), fEnergies.keys()):
+    for key1, key2 in zip(fEref.keys(), fEnergies.keys()):
         compare_values(fEref[key1], fEnergies[key2][0], 2, key1)
+
+
+@pytest.mark.fsapt
+def test_fsaptd_psivars_dict():
+    """
+    fsapt-psivars: calling fsapt_analysis with psi4 variables after running an
+    fisapt0 calcluation requires the user to pass the molecule object
+    """
+    mol = psi4.geometry(
+        """
+0 1
+C 0.00000000 0.00000000 0.00000000
+H 1.09000000 0.00000000 0.00000000
+H -0.36333333 0.83908239 0.59332085
+H -0.36333333 0.09428973 -1.02332709
+H -0.36333333 -0.93337212 0.43000624
+--
+0 1
+C 6.44536662 -0.26509169 -0.00000000
+H 7.53536662 -0.26509169 -0.00000000
+H 6.08203329 0.57399070 0.59332085
+H 6.08203329 -0.17080196 -1.02332709
+H 6.08203329 -1.19846381 0.43000624
+symmetry c1
+no_reorient
+no_com
+"""
+    )
+    psi4.set_options(
+        {
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+            "FISAPT_FSAPT_FILEPATH": "none",
+        }
+    )
+    psi4.core.be_quiet()
+    psi4.energy("fisapt0-d3m")
+    keys = ["Enuc", "Eelst", "Eexch", "Eind", "Eedisp", "Etot"]
+    Eref = {
+        "Enuc": 35.07529824960602,
+        "Eelst": -3.8035153870907834e-06,
+        "Eexch": 1.7912112685446533e-07,
+        "Eind": -3.833795151474493e-08,
+        "Eedisp": -0.00005312000,
+        "Etot": -0.00005678273,
+    }
+    Epsi = {
+        "Enuc": mol.nuclear_repulsion_energy(),
+        "Eelst": variable("SAPT ELST ENERGY"),
+        "Eexch": variable("SAPT EXCH ENERGY"),
+        "Eind": variable("SAPT IND ENERGY"),
+        "Eedisp": variable("FISAPT0-D DISP ENERGY"),
+        "Etot": variable("FISAPT0-D TOTAL ENERGY"),
+    }
+
+    for key in keys:
+        compare_values(Eref[key], Epsi[key], 6, key)
+    fEnergies = psi4.fsapt_analysis(
+        molecule=mol,
+        # NOTE: make 1-indexed since user facing is generally 1-indexed
+        fragments_a={
+            "MethylA": [1, 2, 3, 4, 5],
+        },
+        fragments_b={
+            "MethylB": [6, 7, 8, 9, 10],
+        },
+    )
+    fEnergies.pop("Frag1")
+    fEnergies.pop("Frag2")
+    fEref = {
+        "fEelst": -0.002,
+        "fEexch": 0.000,
+        "fEindAB": -0.000,
+        "fEindBA": -0.000,
+        "fEdisp": 0.000,
+        "fEedisp": -0.033,
+        "fEtot": -0.036,
+    }
+
+    # python iterate over zip dictionary keys and values
+    for key1, key2 in zip(fEref.keys(), fEnergies.keys()):
+        compare_values(fEref[key1], fEnergies[key2][0], 2, key1)
+
 
 @pytest.mark.fsapt
 @uusing("pandas")
@@ -97,6 +182,7 @@ def test_fsapt_psivars():
     fisapt0 calcluation requires the user to pass the molecule object
     """
     import pandas as pd
+
     mol = psi4.geometry(
         """0 1
 C 0.00000000 0.00000000 0.00000000
@@ -121,7 +207,7 @@ no_com"""
             "scf_type": "df",
             "guess": "sad",
             "freeze_core": "true",
-            "FISAPT_FSAPT_FILEPATH": 'none',
+            "FISAPT_FSAPT_FILEPATH": "none",
         }
     )
     psi4.core.be_quiet()
@@ -150,10 +236,10 @@ no_com"""
         molecule=mol,
         # NOTE: make 1-indexed since user facing is generally 1-indexed
         fragments_a={
-            "MethylA": [0, 1, 2, 3, 4],
+            "MethylA": [1, 2, 3, 4, 5],
         },
         fragments_b={
-            "MethylB": [5, 6, 7, 8, 9],
+            "MethylB": [6, 7, 8, 9, 10],
         },
     )
     df = pd.DataFrame(data)
@@ -195,6 +281,7 @@ def test_fsapt_AtomicOutput():
     fsapt-atomicOutput: calling fsapt_analysis with atomic results
     """
     import pandas as pd
+
     mol = psi4.geometry(
         """0 1
 C 0.00000000 0.00000000 0.00000000
@@ -219,7 +306,7 @@ no_com"""
             "scf_type": "df",
             "guess": "sad",
             "freeze_core": "true",
-            "FISAPT_FSAPT_FILEPATH": 'none',
+            "FISAPT_FSAPT_FILEPATH": "none",
         }
     )
     psi4.core.be_quiet()
@@ -253,10 +340,10 @@ no_com"""
     print("Analysis")
     data = psi4.fsapt_analysis(
         fragments_a={
-            "MethylA": [0, 1, 2, 3, 4],
+            "MethylA": [1, 2, 3, 4, 5],
         },
         fragments_b={
-            "MethylB": [5, 6, 7, 8, 9],
+            "MethylB": [6, 7, 8, 9, 10],
         },
         atomic_results=atomic_result,
     )

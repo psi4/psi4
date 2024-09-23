@@ -454,7 +454,7 @@ def extract_osapt_data_from_vars():
     try:
         # vals['Disp'] = read_block('%s/Disp.dat'  % filepath, H_to_kcal_)
         vals["Disp"] = core.variable("FSAPT_DISP_AB").to_array() * H_to_kcal_
-    except FileNotFoundError:
+    except Exception:
         print(
             "No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.\n"
         )
@@ -463,7 +463,7 @@ def extract_osapt_data_from_vars():
     # Read empirical F-SAPT0-D dispersion data
     try:
         # vals['EDisp'] = read_block('%s/Empirical_Disp.dat'  % filepath, H_to_kcal_)
-        vals["eDisp"] = core.variable("FSAPT_EDISP").to_array() * H_to_kcal_
+        vals["EDisp"] = core.variable("FSAPT_EMPIRICAL_DISP").to_array() * H_to_kcal_
     except Exception:
         vals["EDisp"] = np.zeros_like(np.array(vals["Elst"]))
 
@@ -1457,9 +1457,13 @@ def run_fsapt_analysis(
     if fragments_a is None or fragments_b is None:
         raise Exception(
             """F-ISAPT requires the specification of 'fragments_a' and 'fragments_b'.
-'fragment_a' should be a dictionary of the form {'fragment_name': [atom_indices], ...} where atom_indices are 0-indexed.
+'fragment_a' should be a dictionary of the form {'fragment_name': [atom_indices], ...} where atom_indices are 1-indexed.
 """
         )
+    for key, value in fragments_a.items():
+        fragments_a[key] = [x - 1 for x in value]
+    for key, value in fragments_b.items():
+        fragments_b[key] = [x - 1 for x in value]
     holder = {
         "A": [fragments_a, list(fragments_a.keys())],
         "B": [fragments_b, list(fragments_b.keys())],
