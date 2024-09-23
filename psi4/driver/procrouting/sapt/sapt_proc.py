@@ -93,7 +93,6 @@ def run_sapt_dft(name, **kwargs):
         sapt_dimer, "dimer"
     )
 
-
     # Print out the title and some information
     core.print_out("\n")
     core.print_out(
@@ -113,17 +112,14 @@ def run_sapt_dft(name, **kwargs):
     )
 
     core.print_out("  ==> Algorithm <==\n\n")
-    core.print_out("   SAPT DFT Functional     %12s\n" %
-                   str(sapt_dft_functional))
+    core.print_out("   SAPT DFT Functional     %12s\n" % str(sapt_dft_functional))
     core.print_out("   Monomer A GRAC Shift    %12.6f\n" % mon_a_shift)
     core.print_out("   Monomer B GRAC Shift    %12.6f\n" % mon_b_shift)
     core.print_out(
-        "   Delta HF                %12s\n" % (
-            "True" if do_delta_hf else "False")
+        "   Delta HF                %12s\n" % ("True" if do_delta_hf else "False")
     )
     core.print_out(
-        "   JK Algorithm            %12s\n" % core.get_global_option(
-            "SCF_TYPE")
+        "   JK Algorithm            %12s\n" % core.get_global_option("SCF_TYPE")
     )
     core.print_out("\n")
     core.print_out("   Required computations:\n")
@@ -141,6 +137,7 @@ def run_sapt_dft(name, **kwargs):
             core.get_option("SAPT", "SAPT_DFT_GRAC_CONVERGENCE_TIER"),
             "Monomer A",
         )
+        mon_a_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_A")
     if do_mon_grac_shift_B:
         core.print_out("     GRAC(Monomer B)\n")
         compute_GRAC_shift(
@@ -148,6 +145,7 @@ def run_sapt_dft(name, **kwargs):
             core.get_option("SAPT", "SAPT_DFT_GRAC_CONVERGENCE_TIER"),
             "Monomer B",
         )
+        mon_b_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_B")
     core.print_out("\n")
 
     if do_dft and ((mon_a_shift == 0.0) or (mon_b_shift == 0.0)):
@@ -222,8 +220,7 @@ def run_sapt_dft(name, **kwargs):
             )
             core.print_out("\n")
             core.print_out(
-                "         " +
-                "by Daniel G. A. Smith and Rob Parrish".center(58) + "\n"
+                "         " + "by Daniel G. A. Smith and Rob Parrish".center(58) + "\n"
             )
             core.print_out(
                 "         ---------------------------------------------------------\n"
@@ -261,8 +258,7 @@ def run_sapt_dft(name, **kwargs):
             core.timer_off("SAPT(HF):ind")
 
             dhf_value = (
-                hf_data["HF DIMER"] - hf_data["HF MONOMER A"] -
-                hf_data["HF MONOMER B"]
+                hf_data["HF DIMER"] - hf_data["HF MONOMER A"] - hf_data["HF MONOMER B"]
             )
 
             core.print_out("\n")
@@ -281,14 +277,12 @@ def run_sapt_dft(name, **kwargs):
             data["DFT MONOMER A"] = hf_data["HF MONOMER A"]
             data["DFT MONOMER B"] = hf_data["HF MONOMER B"]
             dhf_value = (
-                hf_data["HF DIMER"] - hf_data["HF MONOMER A"] -
-                hf_data["HF MONOMER B"]
+                hf_data["HF DIMER"] - hf_data["HF MONOMER A"] - hf_data["HF MONOMER B"]
             )
             data["DHF VALUE"] = dhf_value
 
     if hf_wfn_dimer is None:
-        dimer_wfn = core.Wavefunction.build(
-            sapt_dimer, core.get_global_option("BASIS"))
+        dimer_wfn = core.Wavefunction.build(sapt_dimer, core.get_global_option("BASIS"))
     else:
         dimer_wfn = hf_wfn_dimer
 
@@ -348,8 +342,7 @@ def run_sapt_dft(name, **kwargs):
     # Write out header
     scf_alg = core.get_global_option("SCF_TYPE")
     sapt_dft_header(
-        sapt_dft_functional, mon_a_shift, mon_b_shift, bool(
-            do_delta_hf), scf_alg
+        sapt_dft_functional, mon_a_shift, mon_b_shift, bool(do_delta_hf), scf_alg
     )
 
     # Compute Delta HF for SAPT(HF)?
@@ -381,12 +374,14 @@ def run_sapt_dft(name, **kwargs):
 
 def sapt_dft_grac_convergence_tier_options():
     return {
-        "SINGLE": [{
-            # "level_shift": 0.01,
-            # "level_shift_cutoff": 0.01,
-            "SCF_INITIAL_ACCELERATOR": "ADIIS",
-            # "MAXITER": 200,
-        }],
+        "SINGLE": [
+            {
+                # "level_shift": 0.01,
+                # "level_shift_cutoff": 0.01,
+                "SCF_INITIAL_ACCELERATOR": "ADIIS",
+                # "MAXITER": 200,
+            }
+        ],
         # "medium": {},
         # "high": {},
     }
@@ -405,17 +400,21 @@ def compute_GRAC_shift(
     dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
     scf_reference = core.get_option("SCF", "REFERENCE")
 
-    for i in sapt_dft_grac_convergence_tier_options()[sap_dft_grac_convergence_tier.upper()]:
-        # for k, v in i.items():
-        #     core.set_global_option(k, v)
+    for i in sapt_dft_grac_convergence_tier_options()[
+        sap_dft_grac_convergence_tier.upper()
+    ]:
         core.set_local_option("SCF", "REFERENCE", "UHF")
         # Need to get the neutral and cation to estimate ionization energy for GRAC shift
         mol_qcel_dict = molecule.to_schema(dtype=2)
         print(f"{mol_qcel_dict = }")
+        # mol_qcel_dict["geometry"] = [
+        #     i / constants.bohr2angstroms for i in mol_qcel_dict["geometry"]
+        # ]
         del mol_qcel_dict["fragment_charges"]
         del mol_qcel_dict["fragment_multiplicities"]
         del mol_qcel_dict["molecular_multiplicity"]
         mol_qcel_dict["molecular_charge"] = 0
+
         mol_qcel = qcel.models.Molecule(**mol_qcel_dict)
         mol_neutral = core.Molecule.from_schema(mol_qcel.dict())
 
@@ -426,32 +425,42 @@ def compute_GRAC_shift(
         wfn_neutral = scf_helper(
             "SCF",
             molecule=mol_neutral,
+            functional=dft_functional,
             banner=f"GRAC Shift: Neutral {label}",
+        )
+        wfn_cation = scf_helper(
+            "SCF",
+            molecule=mol_cation,
+            functional=dft_functional,
+            banner=f"GRAC Shift: Cation {label}",
         )
         occ_neutral = wfn_neutral.epsilon_a_subset(basis="SO", subset="OCC").to_array(
             dense=True
         )
         HOMO = np.amax(occ_neutral)
-        wfn_cation = scf_helper(
-            "SCF",
-            molecule=mol_cation,
-            banner=f"GRAC Shift: Cation {label}",
-        )
 
-        e_neutral = wfn_neutral.energy()
-        e_cation = wfn_cation.energy()
-        print(f"{e_neutral = }, {e_cation = }, {HOMO = }")
-        grac = e_cation - e_neutral + HOMO
+        neut_geom = mol_neutral.to_arrays()[0]
+        cati_geom = mol_cation.to_arrays()[0]
+        print(neut_geom)
+        print(cati_geom)
+        E_neutral = wfn_neutral.energy()
+        E_cation = wfn_cation.energy()
+        print(f"{E_neutral = }, {E_cation = }, {HOMO = }")
+        grac = E_neutral - E_cation - HOMO
         print(f"{grac = }")
+        if grac >= 1 or grac <= -1:
+            print(f"{grac = }")
+            raise Exception("Grac appears wrong...")
         if label == "Monomer A":
-            core.set_global_option("SAPT", "SAPT_DFT_GRAC_SHIFT_A", grac)
             core.set_global_option("SAPT_DFT_GRAC_SHIFT_A", grac)
             core.set_variable("SAPT_DFT_GRAC_SHIFT_A", grac)
         elif label == "Monomer B":
             core.set_global_option("SAPT_DFT_GRAC_SHIFT_B", grac)
             core.set_variable("SAPT_DFT_GRAC_SHIFT_B", grac)
         else:
-            raise ValueError("Only Monomer A and Monomer B are valid GRAC shift options")
+            raise ValueError(
+                "Only Monomer A and Monomer B are valid GRAC shift options"
+            )
     core.set_local_option("SCF", "REFERENCE", scf_reference)
     optstash.restore()
     return
@@ -470,8 +479,7 @@ def sapt_dft_header(
         "         ---------------------------------------------------------\n"
     )
     core.print_out(
-        "         " +
-        "SAPT(DFT): Intermolecular Interaction Segment".center(58) + "\n"
+        "         " + "SAPT(DFT): Intermolecular Interaction Segment".center(58) + "\n"
     )
     core.print_out("\n")
     core.print_out(
@@ -483,8 +491,7 @@ def sapt_dft_header(
     core.print_out("\n")
 
     core.print_out("  ==> Algorithm <==\n\n")
-    core.print_out("   SAPT DFT Functional     %12s\n" %
-                   str(sapt_dft_functional))
+    core.print_out("   SAPT DFT Functional     %12s\n" % str(sapt_dft_functional))
     if mon_a_shift:
         core.print_out("   Monomer A GRAC Shift    %12.6f\n" % mon_a_shift)
     if mon_b_shift:
@@ -559,8 +566,7 @@ def sapt_dft(
             wfn_A.functional().x_omega() != wfn_B.functional().x_omega()
         ):
             core.print_out("   => Monomer B: Building SAPT JK object <= \n\n")
-            core.print_out(
-                "      Reason: MonomerA Omega != MonomerB Omega\n\n")
+            core.print_out("      Reason: MonomerA Omega != MonomerB Omega\n\n")
             sapt_jk_B = core.JK.build(dimer_wfn.basisset())
             sapt_jk_B.set_do_J(True)
             sapt_jk_B.set_do_K(True)
@@ -606,8 +612,7 @@ def sapt_dft(
     # Set Delta HF for SAPT(HF)
     if delta_hf:
         total_sapt = (
-            data["Elst10,r"] + data["Exch10"] +
-            data["Ind20,r"] + data["Exch-Ind20,r"]
+            data["Elst10,r"] + data["Exch10"] + data["Ind20,r"] + data["Exch-Ind20,r"]
         )
         sapt_hf_delta = data["DHF VALUE"] - total_sapt
         core.set_variable("SAPT(DFT) Delta HF", sapt_hf_delta)
@@ -689,25 +694,20 @@ def sapt_dft(
 
     # Exchange-dispersion scaling
     if do_dft:
-        exch_disp_scheme = core.get_option(
-            "SAPT", "SAPT_DFT_EXCH_DISP_SCALE_SCHEME")
-        core.print_out("    %-33s % s\n" %
-                       ("Scaling Scheme", exch_disp_scheme))
+        exch_disp_scheme = core.get_option("SAPT", "SAPT_DFT_EXCH_DISP_SCALE_SCHEME")
+        core.print_out("    %-33s % s\n" % ("Scaling Scheme", exch_disp_scheme))
         if exch_disp_scheme == "NONE":
             data["Exch-Disp20,r"] = data["Exch-Disp20,u"]
         elif exch_disp_scheme == "FIXED":
-            exch_disp_scale = core.get_option(
-                "SAPT", "SAPT_DFT_EXCH_DISP_FIXED_SCALE")
-            core.print_out("    %-28s % 10.3f\n" %
-                           ("Scaling Factor", exch_disp_scale))
+            exch_disp_scale = core.get_option("SAPT", "SAPT_DFT_EXCH_DISP_FIXED_SCALE")
+            core.print_out("    %-28s % 10.3f\n" % ("Scaling Factor", exch_disp_scale))
             data["Exch-Disp20,r"] = exch_disp_scale * data["Exch-Disp20,u"]
         elif exch_disp_scheme == "DISP":
             exch_disp_scale = data["Disp20"] / data["Disp20,u"]
             data["Exch-Disp20,r"] = exch_disp_scale * data["Exch-Disp20,u"]
         if exch_disp_scheme != "NONE":
             core.print_out(
-                print_sapt_var("Est. Exch-Disp20,r",
-                               data["Exch-Disp20,r"], short=True)
+                print_sapt_var("Est. Exch-Disp20,r", data["Exch-Disp20,r"], short=True)
                 + "\n"
             )
 
@@ -759,8 +759,7 @@ def run_sf_sapt(name, **kwargs):
     core.print_out("         " + "Spin-Flip SAPT Procedure".center(58) + "\n")
     core.print_out("\n")
     core.print_out(
-        "         " +
-        "by Daniel G. A. Smith and Konrad Patkowski".center(58) + "\n"
+        "         " + "by Daniel G. A. Smith and Konrad Patkowski".center(58) + "\n"
     )
     core.print_out(
         "         ---------------------------------------------------------\n"
@@ -769,8 +768,7 @@ def run_sf_sapt(name, **kwargs):
 
     core.print_out("  ==> Algorithm <==\n\n")
     core.print_out(
-        "   JK Algorithm            %12s\n" % core.get_option(
-            "SCF", "SCF_TYPE")
+        "   JK Algorithm            %12s\n" % core.get_option("SCF", "SCF_TYPE")
     )
     core.print_out("\n")
     core.print_out("   Required computations:\n")
@@ -806,13 +804,11 @@ def run_sf_sapt(name, **kwargs):
         "         ---------------------------------------------------------\n"
     )
     core.print_out(
-        "         " +
-        "Spin-Flip SAPT Exchange and Electrostatics".center(58) + "\n"
+        "         " + "Spin-Flip SAPT Exchange and Electrostatics".center(58) + "\n"
     )
     core.print_out("\n")
     core.print_out(
-        "         " +
-        "by Daniel G. A. Smith and Konrad Patkowski".center(58) + "\n"
+        "         " + "by Daniel G. A. Smith and Konrad Patkowski".center(58) + "\n"
     )
     core.print_out(
         "         ---------------------------------------------------------\n"
