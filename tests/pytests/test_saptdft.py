@@ -25,16 +25,10 @@ units angstrom
     )
     psi4.set_options(
         {
-            # "basis": "sto-3g",
             "level_shift": 0.060000000000000005,
             "level_shift_cutoff": 0.001,
-            "E_CONVERGENCE": 5,
-            "D_CONVERGENCE": 5,
-            # "reference": "uhf",
             "MAXITER": 300,
             "SCF_INITIAL_ACCELERATOR": "ADIIS",
-            # "e_convergence": 1e-8,
-            # "d_convergence": 1e-8,
             "basis": "aug-cc-pvdz",
             "sapt_dft_grac_shift_a": -99,
             "sapt_dft_grac_shift_b": -99,
@@ -43,11 +37,18 @@ units angstrom
     )
     psi4.energy("SAPT(DFT)", molecule=mol_dimer)
     compare_values(
-        0.13053423593332453,
+        0.13053068183319516,
         psi4.core.variable("SAPT_DFT_GRAC_SHIFT_A"),
         6,
         "SAPT_DFT_GRAC_SHIFT_A",
     )
+    compare_values(
+        0.13063798506967816,
+        psi4.core.variable("SAPT_DFT_GRAC_SHIFT_B"),
+        6,
+        "SAPT_DFT_GRAC_SHIFT_B",
+    )
+    return
 
 
 @pytest.mark.saptdft
@@ -69,6 +70,7 @@ units angstrom
         }
     )
     psi4.energy("SAPT(DFT)", molecule=mol)
+    return
 
 
 if __name__ == "__main__":

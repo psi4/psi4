@@ -34,7 +34,7 @@ from ... import p4util
 from ...constants import constants
 from ...p4util.exceptions import *
 from .. import proc_util
-from ..proc import scf_helper
+from ..proc import scf_helper, run_scf
 from . import sapt_jk_terms, sapt_mp2_terms, sapt_sf_terms
 from .sapt_util import print_sapt_dft_summary, print_sapt_hf_summary, print_sapt_var
 import qcelemental as qcel
@@ -406,10 +406,6 @@ def compute_GRAC_shift(
         core.set_local_option("SCF", "REFERENCE", "UHF")
         # Need to get the neutral and cation to estimate ionization energy for GRAC shift
         mol_qcel_dict = molecule.to_schema(dtype=2)
-        print(f"{mol_qcel_dict = }")
-        # mol_qcel_dict["geometry"] = [
-        #     i / constants.bohr2angstroms for i in mol_qcel_dict["geometry"]
-        # ]
         del mol_qcel_dict["fragment_charges"]
         del mol_qcel_dict["fragment_multiplicities"]
         del mol_qcel_dict["molecular_multiplicity"]
@@ -422,32 +418,24 @@ def compute_GRAC_shift(
         mol_qcel = qcel.models.Molecule(**mol_qcel_dict)
         mol_cation = core.Molecule.from_schema(mol_qcel.dict())
 
-        wfn_neutral = scf_helper(
-            "SCF",
+        wfn_neutral = run_scf(
+            dft_functional.lower(),
             molecule=mol_neutral,
-            functional=dft_functional,
-            banner=f"GRAC Shift: Neutral {label}",
+            # banner=f"GRAC Shift: Neutral {label}",
         )
-        wfn_cation = scf_helper(
-            "SCF",
+        wfn_cation = run_scf(
+            dft_functional.lower(),
             molecule=mol_cation,
-            functional=dft_functional,
-            banner=f"GRAC Shift: Cation {label}",
+            # banner=f"GRAC Shift: Cation {label}",
         )
         occ_neutral = wfn_neutral.epsilon_a_subset(basis="SO", subset="OCC").to_array(
             dense=True
         )
         HOMO = np.amax(occ_neutral)
 
-        neut_geom = mol_neutral.to_arrays()[0]
-        cati_geom = mol_cation.to_arrays()[0]
-        print(neut_geom)
-        print(cati_geom)
         E_neutral = wfn_neutral.energy()
         E_cation = wfn_cation.energy()
-        print(f"{E_neutral = }, {E_cation = }, {HOMO = }")
-        grac = E_neutral - E_cation - HOMO
-        print(f"{grac = }")
+        grac = E_cation - E_neutral + HOMO
         if grac >= 1 or grac <= -1:
             print(f"{grac = }")
             raise Exception("Grac appears wrong...")
