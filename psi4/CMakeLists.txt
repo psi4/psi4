@@ -391,6 +391,10 @@ install(DIRECTORY share/psi4/
         PATTERN "*.bin" EXCLUDE
         PATTERN "*.pyc" EXCLUDE)
 
+install(FILES driver/procrouting/sapt/fsapt.py 
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/fsapt
+)
+
 install(FILES share/psi4/quadratures/1_x/R_avail${_endian_ext}.bin
         RENAME quadratures/1_x/R_avail.bin
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4)

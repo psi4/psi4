@@ -160,3 +160,4 @@ GPATH
 GRTAGS
 Pipfile.lock
 tmp
+pytest_output.*
