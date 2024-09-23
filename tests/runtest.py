@@ -116,7 +116,7 @@ elif os.path.isfile(infile.replace(".dat", ".py")):
     else:
         os.environ["PYTHONPATH"] = psilibdir
     outfile = os.path.dirname(infile) + os.path.sep + outfile
-    pyexitcode = backtick(["python", infile, " > ", outfile])
+    pyexitcode = backtick([sys.executable, infile, " > ", outfile])
 else:
     raise Exception("\n\nError: Input file %s not found\n" % infile)
 

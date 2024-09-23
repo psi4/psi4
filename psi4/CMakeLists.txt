@@ -148,6 +148,24 @@ get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using gau2grid${ColourReset}: ${_loc} (version ${gau2grid_VERSION})")
 
+if(${ENABLE_gauxc})
+    if(NOT "${gauxc_DIR}" STREQUAL "")
+        if("${IntegratorXX_DIR}" STREQUAL "")
+            set(IntegratorXX_DIR ${gauxc_DIR}/../IntegratorXX)
+        endif()
+        set(ExchCXX_DIR ${gauxc_DIR}/../ExchCXX)
+    endif()
+
+    get_property(BLAS_LIBRARIES TARGET tgt::lapk PROPERTY INTERFACE_LINK_LIBRARIES)
+
+    find_package(gauxc CONFIG REQUIRED COMPONENTS IntegratorXX ExchCXX)
+    get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using gauxc${ColourReset}: ${_loc} (version ${gauxc_VERSION})")
+else()
+    message(STATUS "Disabled GauXC ${gauxc_DIR}")
+endif()
+
 if(${ENABLE_gdma})
     # neither gdma nor pygdma actually needed c-side; runtime detection would
     #   do just as well. included for completeness and so gdma_PYMOD can be
@@ -226,6 +244,12 @@ if(APPLE)
 elseif(UNIX)
     set(PRE_LIBRARY_OPTION -Wl,--whole-archive)
     set(POST_LIBRARY_OPTION -Wl,--no-whole-archive)
+endif()
+
+# add -pedantic-errors flag here, if FORCE_PEDANTIC is enabled 
+if(${FORCE_PEDANTIC}) 
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic-errors")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
 endif()
 
 # <<<  Build  >>>
@@ -323,6 +347,7 @@ install(
 install(
   DIRECTORY
     ../tests/pytests/test_fchk_writer
+    ../tests/pytests/test_gauxc_writer
     ../tests/pytests/test_molden_writer
     ../tests/pytests/test_psi4_qcschema
   DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/

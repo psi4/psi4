@@ -238,7 +238,11 @@ size_t Libint2TwoElectronInt::compute_shell_deriv1(int s1, int s2, int s3, int s
         }
     } else {
         for (int i = 0; i < 12; ++i) {
-            buffers_[i] = engines_[1].results()[i];
+            if (i < engines_[1].results().size()) {
+                buffers_[i] = engines_[1].results()[i];
+            } else {
+                buffers_[i] = zero_vec_.data();
+            }
         }
         ntot = 12 * sh1.size() * sh2.size() * sh3.size() * sh4.size();
     }
@@ -269,7 +273,11 @@ size_t Libint2TwoElectronInt::compute_shell_deriv2(int s1, int s2, int s3, int s
         }
     } else {
         for (int i = 0; i < 78; ++i) {
-            buffers_[i] = engines_[2].results()[i];
+            if (i < engines_[2].results().size()) {
+                buffers_[i] = engines_[2].results()[i];
+            } else {
+                buffers_[i] = zero_vec_.data();
+            }
         }
         ntot = 78 * sh1.size() * sh2.size() * sh3.size() * sh4.size();
     }

@@ -80,7 +80,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
 #    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
-#                         qcelemental, qcengine, optking, simint, Libxc, IntegratorXX
+#                         qcelemental, qcengine, optking, simint, Libxc, IntegratorXX, gauxc
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -120,6 +120,7 @@ option(ENABLE_ecpint "Enables libecpint for effective core potentials (ECP)" OFF
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
+option(ENABLE_gauxc "Enables use of GauXC density functional library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
@@ -161,6 +162,9 @@ option_with_print(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option_with_print(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
 option_with_print(ENABLE_PLUGIN_TESTING "Test the plugin templates build and run" OFF)
 option_with_print(ENABLE_CYTHONIZE "Compile each python file rather than plaintext (requires cython) !experimental!" OFF)
+# sadly, it seems FORCE_PEDANTIC runs into issues with GauXC when option_with_flag is used
+# option_with_print + setting -pedantic-errors in psi4/CMakeLists.txt seems to fix this
+option_with_print(FORCE_PEDANTIC "Forces code to comply with the language standard." OFF)
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
 option_with_flags(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF
@@ -190,6 +194,9 @@ option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions"
 option_with_default(SPHINXMAN_STRICT "Turn warnings into errors for docs target sphinxman" OFF)
 option_with_default(BUILD_Libint2_GENERATOR "If prebuilt not found, don't build Libint2 from source tarball but instead build and run generator (several hours for production library). Edit angular momentum and integrals classes directly in `external/upstream/libint2/CMakeLists.txt` (requires Ninja)." OFF)
 option_with_default(psi4_SHGAUSS_ORDERING "Ordering for shells of solid harmonic Gaussians: standard -- standard ordering (-l, -l+1 ... l) -or- gaussian -- the Gaussian ordering (0, 1, -1, 2, -2, ... l, -l). Changing this is experimental, expert only, and not a future plan. Internal calculations should be correct and fchk files should be correct, but other exports like Molden and QCSchema.Wavefunction won't be." gaussian)
+option_with_default(gauxc_ENABLE_GPU "Enable GPU support for GauXC" OFF)
+option_with_default(gauxc_ENABLE_MAGMA "Enable MAGMA support for GauXC. Required GPU-enabled GauXC" OFF)
+
 include(custom_int_orderings)
 
 
@@ -217,10 +224,6 @@ message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
 message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 add_subdirectory(external/common)
 add_subdirectory(external/upstream)
-# FORCE_PEDANTIC HAS to go here to avoid being applied to external projects
-option_with_flags(FORCE_PEDANTIC "Forces code to comply with the language standard." OFF
-                  "-pedantic-errors")
-
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
 include(custom_cxxstandard)
 include(custom_static_library)
@@ -253,6 +256,8 @@ ExternalProject_Add(psi4-core
            mdi_external
            brianqc_external
            integratorxx_external
+           gauxc_external
+ 
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -264,6 +269,7 @@ ExternalProject_Add(psi4-core
               -Dpsi4_CXX_STANDARD_Libint2=${psi4_CXX_STANDARD_Libint2}
               -DCMAKE_CXX_STANDARD_REQUIRED=ON
               -DCMAKE_CXX_EXTENSIONS=OFF
+              -DFORCE_PEDANTIC=${FORCE_PEDANTIC}
               -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
               -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
               -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
@@ -286,6 +292,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_cppe=${ENABLE_cppe}
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_IntegratorXX=${ENABLE_IntegratorXX}
+              -DENABLE_gauxc=${ENABLE_gauxc}
               -DENABLE_ecpint=${ENABLE_ecpint}
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_Einsums=${ENABLE_Einsums}
@@ -312,6 +319,7 @@ ExternalProject_Add(psi4-core
               -Dmdi_DIR=${mdi_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
               -DIntegratorXX_DIR=${IntegratorXX_DIR}
+              -Dgauxc_DIR=${gauxc_DIR}
               -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
               -DLibxc_DIR=${Libxc_DIR}

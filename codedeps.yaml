@@ -1436,3 +1436,43 @@ data:
         //CMAKE_INSIST_FIND_PACKAGE_Einsums: true
         //CMAKE_DISABLE_FIND_PACKAGE_Einsums: true
 
+  - project: gauxc 
+    use:
+      added: 1.10
+      required: false
+      required_note: "Allow using the GauXC density functional library for LinK (not DFT)."
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: wavefunction91
+      name: GauXC
+      commit: 6a8f4bf
+    #cmake: 
+    #  name: gauxc
+    #  constraint: null
+    #  target: gauxc::gauxc
+    #  components:
+    #  ENABLE_gauxc
+    #  gauxc_ENABLE_GPU 
+    conda: null
+
+  - project: h5py 
+    use:
+      added: 1.10
+      required: false
+      required_note: optional for extra tests of GauXC interface
+      buildable: false
+      buildtime: false
+      cms: false
+      test_required: false
+    repository: null
+    cmake: null
+    conda:
+      channel: conda-forge
+      name: h5py
+      constraint: null
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+      skip_win: true
