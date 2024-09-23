@@ -27,4 +27,4 @@
 #
 
 from .sapt_proc import run_sapt_dft, run_sf_sapt, sapt_dft
-from . import fsapt_analysis
+from . import fsapt
