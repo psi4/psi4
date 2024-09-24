@@ -1148,7 +1148,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- SAPT_DFT_GRAC_CONVERGENCE_TIER will specify how hard psi4 should
           try to converge the cation for a GRAC shift before failing the
           calculation completely -*/
-        options.add_str("SAPT_DFT_GRAC_CONVERGENCE_TIER", "single", "single medium high");
+        options.add_str("SAPT_DFT_GRAC_CONVERGENCE_TIER", "SINGLE", "SINGLE ITERATIVE");
         /*- Compute the Delta-HF correction? -*/
         options.add_bool("SAPT_DFT_DO_DHF", true);
         /*- Enables the hybrid xc kernel in dispersion? !expert -*/
