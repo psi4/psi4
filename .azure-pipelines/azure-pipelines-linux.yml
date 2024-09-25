@@ -18,7 +18,7 @@ jobs:
         APT_INSTALL: 'gfortran gcc-11 g++-11'
         vmImage: 'ubuntu-22.04'
         PYTEST_MARKER_EXPR: "quick"
-        ENABLE_Einsums: 'ON'
+        ENABLE_EINSUMS: "ON"
 
       gcc_latest:
         CXX_COMPILER: 'g++'
@@ -29,7 +29,7 @@ jobs:
         APT_INSTALL: 'gfortran'
         vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: 'api and not stdsuite and not (smoke or quick or medlong or long)'
-        ENABLE_Einsums: 'ON'
+        ENABLE_EINSUMS: "ON"
 
       clang_latest:
         CXX_COMPILER: 'clang++'
@@ -40,7 +40,7 @@ jobs:
         APT_INSTALL: 'gfortran clang-6.0'
         vmImage: 'ubuntu-20.04'
         PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
-        ENABLE_Einsums: 'OFF'
+        ENABLE_EINSUMS: "OFF"
 
   pool:
     vmImage: $(vmImage)
@@ -134,7 +134,7 @@ jobs:
         -D CMAKE_Fortran_COMPILER=${F_COMPILER} \
         -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -D ENABLE_PLUGIN_TESTING=ON \
-        -D ENABLE_Einsums="${ENABLE_Einsums}" \
+        -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=ON \
         -D ENABLE_gauxc=ON \
         -D FORCE_PEDANTIC=ON \
