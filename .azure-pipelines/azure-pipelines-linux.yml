@@ -134,7 +134,7 @@ jobs:
         -D CMAKE_Fortran_COMPILER=${F_COMPILER} \
         -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -D ENABLE_PLUGIN_TESTING=ON \
-        -D ENABLE_Einsums=${ENABLE_Einsums} \
+        -D ENABLE_Einsums="${ENABLE_Einsums}" \
         -D ENABLE_IntegratorXX=ON \
         -D ENABLE_gauxc=ON \
         -D FORCE_PEDANTIC=ON \
