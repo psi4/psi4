@@ -51,6 +51,10 @@ inline function names.:
 Certain symbols may not be output even with this flag set. In general, any template function used should be visible, and anything with the ``PSI_API`` modifier will be visible. Other variables, functions, and classes will
 likely be hidden from the user. To make these symbols visible, you must modify a few variables. For an example, see `TiborGY's debug branch <https://github.com/psi4/psi4/compare/master...TiborGY:psi4:toc_dbg>`_.
 
+Also see :ref:`more debugger directions <faq:gdblldb>` 
+and a `[presentation] <https://github.com/psi4/PsiCon2020/blob/master/PsiCon2017/Turney-C%2B%2B.pdf>`_ .
+If building using ``psi4-path-advisor cmake``, one should run it straight, not within ``eval $(...)``, note the usage command it outputs, then edit the cache file it has produced to change ``CMAKE_BUILD_TYPE`` to ``Debug`` and ``CMAKE_CXX_FLAGS`` to ``-O0``, then execute the noted ``cmake ... -C cache`` command to configure. 
+
 VSCode
 ^^^^^^
 
