@@ -264,6 +264,8 @@ class PSI_API GaussianShell {
 
     /// Returns the center of the Molecule this shell is on
     const double* center() const;
+    /// Returns the icoord'th coordinate of the center of the Molecule this shell is on
+    const double coord(size_t icoord) const;
     /// Returns the atom number this shell is on. Used by integral derivatives for indexing.
     int ncenter() const { return nc_; }
     /// Returns the first basis function in this shell

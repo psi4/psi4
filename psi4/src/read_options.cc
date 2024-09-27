@@ -192,7 +192,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -1713,6 +1713,49 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do reduce numerical COSX errors with overlap fitting? !expert -*/
         options.add_bool("COSX_OVERLAP_FITTING", true);
 
+        /*- SUBSECTION snLinK Algorithm -*/
+
+        /*- Number of spherical points in snLinK grid. -*/
+        options.add_int("SNLINK_SPHERICAL_POINTS", 302);
+        /*- Number of radial points in snLinK grid. -*/
+        options.add_int("SNLINK_RADIAL_POINTS", 70);
+        /*- Radial Scheme for snLinK grid. 
+        MURA is default here as it matches the GauXC default option -*/
+        options.add_str("SNLINK_RADIAL_SCHEME", "MURA", "MURA TREUTLER EM");
+        /*- Use GPU for GauXC? -*/
+        options.add_bool("SNLINK_USE_GPU", false);
+        /*- Proportion (in %) of available GPU memory to allocate to snLinK. !expert-*/
+        options.add_bool("SNLINK_GPU_MEM", 90);
+        /*- Screening criteria for integrals and intermediates in snLinK -*/
+        options.add_double("SNLINK_INTS_TOLERANCE", 1.0E-11);
+        /*- Screening criteria for shell-pair densities in snLinK !expert -*/
+        options.add_double("SNLINK_DENSITY_TOLERANCE", 1.0E-10);
+        /*- Screening criteria for basis function values on snLinK grids !expert -*/
+        options.add_double("SNLINK_BASIS_TOLERANCE", 1.0E-10);
+        /*- Force snLinK to use cartesian coordinates !expert -*/
+        options.add_bool("SNLINK_FORCE_CARTESIAN", false);
+        /*- Pruning scheme for snLinK grids !expert -*/
+        options.add_str("SNLINK_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE");
+        /*- Maximum number of grid points per grid block for GauXC !expert -*/ 
+        options.add_int("SNLINK_GRID_BATCH_SIZE", 2048);
+        /*- Load Balancer kernel for snLinK !expert -*/
+        options.add_str("SNLINK_LOAD_BALANCER_KERNEL", "DEFAULT", "DEFAULT REPLICATED REPLICATED-PETITE REPLICATED-FILLIN");
+        /*- Molecular Weights kernel for snLinK !expert -*/
+        options.add_str("SNLINK_MOL_WEIGHTS_KERNEL", "DEFAULT", "DEFAULT");
+        /*- Integrator execution kernel for snLinK !expert 
+        GauXC also has SHELLBATCHED, but it is incompatible with Psi4 due to not 
+        being yet implemented with sn-LinK. -*/
+        options.add_str("SNLINK_INTEGRATOR_KERNEL", "DEFAULT", "DEFAULT INCORE");
+        /*- Integrator reduction kernel for snLinK !expert 
+        GauXC also has NCCL, but it is incompatible with Psi4 due to requiring MPI. -*/
+        options.add_str("SNLINK_REDUCTION_KERNEL", "DEFAULT", "DEFAULT BASICMPI");
+        /*- Integrator local work driver kernel for snLinK !expert 
+        GauXC also has SCHEME1-CUTLASS, but it is disabled in Psi4 for now 
+        due to compile-time issues and requiring very modern CUDA CCs (>=80) -*/
+        options.add_str("SNLINK_LWD_KERNEL", "DEFAULT", "DEFAULT REFERENCE SCHEME1 SCHEME1-MAGMA"); 
+        /*- Overwrite sn-LinK grid options with debug grid matching GauXC's Ultrafine grid spec !expert -*/
+        options.add_int("SNLINK_USE_DEBUG_GRID", false);
+
         /*- SUBSECTION SAD Guess Algorithm -*/
 
         /*- The amount of SAD information to print to the output !expert -*/
@@ -1889,7 +1932,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("CPHF_MEM_SAFETY_FACTOR", 0.75);
         /*- SCF Type
          -*/
-        options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK DFDIRJ+LINK DFDIRJ+COSX");
+        options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK DFDIRJ+SNLINK DFDIRJ+LINK DFDIRJ+COSX");
         /*- Auxiliary basis for SCF
          -*/
         options.add_str("DF_BASIS_SCF", "");
@@ -2700,8 +2743,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Geometry optimization coordinates to use.
             REDUNDANT and INTERNAL are synonyms and the default.
             CARTESIAN uses only cartesian coordinates.
-            BOTH uses both redundant and cartesian coordinates.  -*/
+            BOTH uses both redundant and cartesian coordinates.
+            CUSTOM is not fully implemented yet - expected optking 0.3.1  -*/
         options.add_str("OPT_COORDINATES", "INTERNAL", "REDUNDANT INTERNAL CARTESIAN BOTH CUSTOM");
+        /*- A string formatted as a dicitonary containing a set of coordinates. Coordinates can be
+            appended to Optking's coordinate set or used on their own - expected optking 0.3.1. -*/
+        options.add_str("CUSTOM_COORDS", "");
         /*- Do follow the initial RFO vector after the first step? -*/
         options.add_bool("RFO_FOLLOW_ROOT", false);
         /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/
@@ -2757,6 +2804,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Specify range for the out-of-plane angles between atoms to be constrained to (eq. value specified)
             analogous to the old FIXED_<COORD> keyword-*/
         options.add_str("RANGED_OOFP", "");
+        /*- Freeze ALL dihedral angles -*/
+        options.add_bool("FREEZE_ALL_DIHEDRALS", false);
+        /*- Unfreeze a subset of dihedrals - meant for use with freeze_all_dihedrals -*/
+        options.add_str("UNFREEZE_DIHEDRALS", "");
 
         /*- Specify formula for external forces for the distance between atoms -*/
         options.add_str("EXT_FORCE_DISTANCE", "");

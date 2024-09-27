@@ -281,6 +281,16 @@ For bends, the corresponding keyword is "frozen_bend".
     breaking, while Cartesian constraints are active, symmetrization cannot occur and
     an error will be raised, prompting you to restart the job.
 
+* As a shortcut, the entire set of dihedral angles can be frozen. A subset can then be unfrozen if desired.
+
+.. code-block:: none
+
+	set {
+		freeze_all_dihedrals true
+		unfreeze_dihedrals "1 2 3 4"
+	}
+
+
 * To scan the potential energy surface by optimizing at several fixed values
   of the dihedral angle of HOOH.
 
