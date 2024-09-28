@@ -1239,6 +1239,8 @@ void Wavefunction::set_hessian(SharedMatrix hess) { set_array_variable("CURRENT 
 
 void Wavefunction::save() const {}
 
+SharedMatrix Wavefunction::external_hamiltonian() const { return external_hamiltonian_; }
+
 std::shared_ptr<ExternalPotential> Wavefunction::external_pot() const { return external_pot_; }
 
 std::shared_ptr<Vector> Wavefunction::get_esp_at_nuclei() const {

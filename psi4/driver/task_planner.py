@@ -130,6 +130,9 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
     if "external_potentials" in kwargs:
         keywords["function_kwargs"].update({"external_potentials": kwargs.pop("external_potentials")})
 
+    if "external_hamiltonian" in kwargs:
+        keywords["function_kwargs"].update({"external_hamiltonian": kwargs.pop("external_hamiltonian")})
+
     # Need to add full path to pcm file
     if "PCM__PCMSOLVER_PARSED_FNAME" in keywords.keys():
         fname = keywords["PCM__PCMSOLVER_PARSED_FNAME"]

@@ -678,6 +678,9 @@ void HF::form_H() {
         nuclearrep_ += enuc2;
 
     }  // end external
+    if (external_hamiltonian_) {
+        V_->add(external_hamiltonian_);
+    }
 
     // Save perturbed V_ for future (e.g. correlated) calcs
     V_->save(psio_, PSIF_OEI);
