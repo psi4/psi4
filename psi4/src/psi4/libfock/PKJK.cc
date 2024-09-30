@@ -83,6 +83,13 @@ void PKJK::print_header() const {
     }
 }
 
+bool PKJK::shell_significant(int M, int N, int R, int S,
+    const std::shared_ptr<TwoBodyAOInt> ints, 
+    const std::vector<SharedMatrix>& D) 
+{
+    return PKmanager_->shell_significant(M, N, R, S, ints, D);
+} 
+
 void PKJK::preiterations() {
     // Build PKManager to get proper algorithm set up
     Options& options = Process::environment.options;
