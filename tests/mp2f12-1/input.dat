@@ -1,5 +1,6 @@
 #! comparison of MP2-F12 with MPQC4
 #! Note: MPQC4 does not use robust DF for DF-MP2-F12
+#! MP2 convergence requires that e_conv and d_conv are 1e-10
 
 ref_scf               =  -76.058488530572234       # TEST
 ref_mp2_corl          =  -0.24116949213204231      # TEST
@@ -25,9 +26,11 @@ symmetry c1
 }
 
 set {
-  basis        cc-pvdz-f12
-  freeze_core  True
-  f12_type     conv
+  basis          cc-pvdz-f12
+  freeze_core    True
+  f12_type       conv
+  e_convergence  1e-10
+  d_convergence  1e-10
 }
 
 print('   Testing MP2-F12/3C(FIX) ...')
@@ -46,9 +49,11 @@ compare_values(ref_mp2f12_total, val, 9, 'mp2-f12 return')                      
 clean()
 
 set {
-  scf_type df
-  f12_type df
-  df_basis_f12 aug-cc-pvdz-ri
+  scf_type       df
+  f12_type       df
+  df_basis_f12   aug-cc-pvdz-ri
+  e_convergence  1e-10
+  d_convergence  1e-10
 }
 
 print('   Testing DF-MP2-F12/3C(FIX) ...')
