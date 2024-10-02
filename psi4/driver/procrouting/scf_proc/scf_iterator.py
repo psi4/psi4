@@ -309,7 +309,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.H().add(Vefp)
 
         SCFE = 0.0
-        self.clear_external_potentials()
+#       self.clear_external_potentials()
 
         # Two-electron contribution to Fock matrix from self.jk()
         core.timer_on("HF: Form G")
