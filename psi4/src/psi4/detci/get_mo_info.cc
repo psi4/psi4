@@ -66,7 +66,7 @@ namespace detci {
 ** options = Options object used to parse user input
 */
 void CIWavefunction::get_mo_info() {
-    CalcInfo_->sigma_initialized = 0;
+    CalcInfo_->sigma_initialized = false;
 
     // Initial guess will overwrite some of this later.
     CalcInfo_->nirreps = nirrep();
@@ -98,7 +98,9 @@ void CIWavefunction::get_mo_info() {
 
     // these are all initialized to zero at this point
     CalcInfo_->reorder.resize(CalcInfo_->nmo);
-    CalcInfo_->ras_opi = init_int_matrix(4, CalcInfo_->nirreps);
+    for (int i = 0; i < MAX_RAS_SPACES; i++) {
+        CalcInfo_->ras_opi.push_back(Dimension(CalcInfo_->nirreps));
+    }
 
     CalcInfo_->frozen_docc = Dimension(CalcInfo_->nirreps, "Frozen doubly occupied orbitals");
     CalcInfo_->rstr_docc = Dimension(CalcInfo_->nirreps, "Restricted doubly occupied orbitals");
@@ -111,10 +113,10 @@ void CIWavefunction::get_mo_info() {
     Dimension frzcpi = reference_wavefunction_->frzcpi();
     // This routine sets all orbital subspace arrays properly given
     // some minimal starting information and an Options object
-    if (!ras_set3(CalcInfo_->nirreps, CalcInfo_->nmo, nmopi_, CalcInfo_->docc, CalcInfo_->socc, CalcInfo_->frozen_docc,
-                  CalcInfo_->frozen_uocc, CalcInfo_->rstr_docc, CalcInfo_->rstr_uocc, CalcInfo_->ras_opi, frzcpi,
-                  CalcInfo_->reorder.data(), 1, (Parameters_->mcscf ? true : false), options_)) {
-        throw PsiException("Error in ras_set3(). Aborting.", __FILE__, __LINE__);
+    if (!ras_set(nmopi_, CalcInfo_->docc, CalcInfo_->socc, CalcInfo_->frozen_docc,
+                 CalcInfo_->frozen_uocc, CalcInfo_->rstr_docc, CalcInfo_->rstr_uocc, CalcInfo_->ras_opi, frzcpi,
+                 CalcInfo_->reorder.data(), 1, (Parameters_->mcscf ? true : false), options_)) {
+        throw PsiException("Error in ras_set(). Aborting.", __FILE__, __LINE__);
     }
 
     CalcInfo_->dropped_docc = CalcInfo_->frozen_docc + CalcInfo_->rstr_docc;
