@@ -1459,8 +1459,8 @@ def print_order1(
 
 
 def run_fsapt_analysis(
-    fragments_a: dict[str, list[int]],
-    fragments_b: dict[str, list[int]],
+    fragments_a: Dict[str, list[int]],
+    fragments_b: Dict[str, list[int]],
     molecule,
     atomic_results,
     pdb_dir,
