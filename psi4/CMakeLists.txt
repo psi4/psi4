@@ -406,7 +406,8 @@ install(FILES share/psi4/quadratures/1_x/error${_endian_ext}.bin
 install(DIRECTORY include/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
 
-install(FILES ${CMAKE_SOURCE_DIR}/driver/procrouting/sapt/fsapt.py 
+# install(FILES ${CMAKE_SOURCE_DIR}/driver/procrouting/sapt/fsapt.py 
+install(FILES driver/procrouting/sapt/fsapt.py 
     DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/fsapt
 )
 
