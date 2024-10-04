@@ -174,6 +174,9 @@ def _molecule_from_arrays(cls,
 
     qmol = core.Molecule.from_dict(molrec)
     geom = np.array(molrec["geom"]).reshape((-1, 3))
+    if molrec["units"] == "Angstrom":
+        # beware if qcel and psi4 choose different sets of constants
+        geom = geom / constants.bohr2angstroms
     qmol._initial_cartesian = core.Matrix.from_array(geom)
 
     if return_dict:
@@ -211,6 +214,9 @@ def _molecule_from_schema(cls, molschema: Dict, return_dict: bool = False, nonph
 
     qmol = core.Molecule.from_dict(molrec)
     geom = np.array(molrec["geom"]).reshape((-1, 3))
+    if molrec["units"] == "Angstrom":
+        # beware if qcel and psi4 choose different sets of constants
+        geom = geom / constants.bohr2angstroms
     qmol._initial_cartesian = core.Matrix.from_array(geom)
 
     if return_dict:
