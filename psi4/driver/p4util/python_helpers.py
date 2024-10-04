@@ -165,7 +165,7 @@ def _pybuild_basis(
         atom_basis_list = []
         for atbs in basisdict:
             atommol = core.Molecule.from_dict(atbs['molecule'])
-            lmbs = core.BasisSet.construct_from_pydict(atommol, atbs, puream)
+            lmbs = core.BasisSet.construct_from_pydict(atommol, atbs, puream, False)
             atom_basis_list.append(lmbs)
         return atom_basis_list
     if isinstance(resolved_target, str):
