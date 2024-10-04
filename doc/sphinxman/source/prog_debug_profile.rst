@@ -37,7 +37,30 @@ Debugging and Profiling
 Debugging
 ---------
 
-Instructions on running Psi4 with a debugger.
+The preferred method for debugging C++ code in Psi4 is with gdb. To run Psi4 in this way, you must specify the Python executable as the program. Arguments are provided using the ``--args`` flag. Here's an example.::
+  $~> gdb --args /usr/bin/python3 /path/to/psi4 input.dat
+
+In order to debug properly, Psi4 needs to be built with the ``CMAKE_BUILD_TYPE`` variable set to either ``Debug`` or ``RelWithDebInfo``. These will output debugging symbols that will allow gdb to print line numbers and
+inline function names.:
+
+.. code-block:: bash
+
+   > cmake [your options here] -DCMAKE_BUILD_TYPE=Debug
+   > cmake [your options here] -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+Certain symbols may not be output even with this flag set. In general, any template function used should be visible, and anything with the ``PSI_API`` modifier will be visible. Other variables, functions, and classes will
+likely be hidden from the user. To make these symbols visible, you must modify a few variables. For an example, see `TiborGY's debug branch <https://github.com/psi4/psi4/compare/master...TiborGY:psi4:toc_dbg>`_.
+
+Also see :ref:`more debugger directions <faq:gdblldb>` 
+and a `[presentation] <https://github.com/psi4/PsiCon2020/blob/master/PsiCon2017/Turney-C%2B%2B.pdf>`_ .
+If building using ``psi4-path-advisor cmake``, one should run it straight, not within ``eval $(...)``, note the usage command it outputs, then edit the cache file it has produced to change ``CMAKE_BUILD_TYPE`` to ``Debug`` and ``CMAKE_CXX_FLAGS`` to ``-O0``, then execute the noted ``cmake ... -C cache`` command to configure. 
+
+VSCode
+^^^^^^
+
+When using gdb wath VSCode, you should set the ``program`` entry to the Python executable, just as before. Arguments can then be placed in the ``args`` entry. If you are debugging a C++ plugin or backend code,
+the launch type should be ``cppdbg``.
+ 
 
 Profiling
 ---------
