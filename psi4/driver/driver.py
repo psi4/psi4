@@ -2104,8 +2104,8 @@ def tdscf(wfn, **kwargs):
 
 
 def fsapt_analysis(
-    fragments_a: dict[str, list[int]],
-    fragments_b: dict[str, list[int]],
+    fragments_a: Dict,
+    fragments_b: Dict,
     molecule=None,
     atomic_results=None,  # :AtomicResults,
     pdb_dir: str = None,

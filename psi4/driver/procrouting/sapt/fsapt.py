@@ -1459,13 +1459,14 @@ def print_order1(
 
 
 def run_fsapt_analysis(
-    fragments_a: Dict[str, list[int]],
-    fragments_b: Dict[str, list[int]],
-    molecule,
-    atomic_results,
-    pdb_dir,
-    analysis_type,
-    links5050,
+    fragments_a: Dict,
+    fragments_b: Dict,
+    molecule=None,
+    atomic_results=None,
+    pdb_dir: str = None,
+    analysis_type: str = "reduced",
+    links5050: bool = True,
+    dirname: str = "./fsapt",
 ):
     print("  ==> F-ISAPT: Analysis Start <==\n")
     if atomic_results is None and molecule is None:
