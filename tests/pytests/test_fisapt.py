@@ -41,7 +41,6 @@ no_com"""
             "FISAPT_FSAPT_FILEPATH": "none",
         }
     )
-    psi4.core.be_quiet()
     psi4.energy("fisapt0")
     keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
     Eref = {
@@ -146,7 +145,6 @@ no_com
             [0.417, np.array([2.6619, 1.7546, -0.2910]) / psi_bohr2angstroms],
         ],
     }
-    psi4.core.be_quiet()
     psi4.energy("fisapt0", external_potentials=external_potentials)
     print(psi4.core.variables())
     keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
@@ -231,7 +229,6 @@ no_com"""
             "FISAPT_FSAPT_FILEPATH": "none",
         }
     )
-    psi4.core.be_quiet()
     psi4.energy("fisapt0")
     keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
     Eref = {
@@ -330,7 +327,6 @@ no_com"""
             "FISAPT_FSAPT_FILEPATH": "none",
         }
     )
-    psi4.core.be_quiet()
     plan = psi4.energy("fisapt0", return_plan=True)
     atomic_result = psi4.schema_wrapper.run_qcschema(
         plan.plan(wfn_qcvars_only=False),
@@ -428,7 +424,6 @@ no_com"""
             "freeze_core": "true",
         }
     )
-    psi4.core.be_quiet()
     psi4.energy("fisapt0")
     keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
     Eref = {
