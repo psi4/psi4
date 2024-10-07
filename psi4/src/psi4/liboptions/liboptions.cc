@@ -837,13 +837,12 @@ Data& Options::use(std::string& key) {
         }
 
         std::string choices_joined;
-        std::accumulate(std::begin(choices), std::end(choices), 0, [&choices_joined](int&, std::string& s) {
+        for (const std::string& s : choices) {
             if (!choices_joined.empty()) {
                 choices_joined.append(" ");
             }
             choices_joined.append(s);
-            return 0;
-        });
+        };
 
         printf("\nDid you mean? %s\n\n", choices_joined.c_str());
         outfile->Printf("\nDid you mean? %s\n\n", choices_joined.c_str());
@@ -906,13 +905,12 @@ Data Options::use(std::string& key) const {
         }
 
         std::string choices_joined;
-        std::accumulate(std::begin(choices), std::end(choices), 0, [&choices_joined](int&, std::string& s) {
+        for (const std::string& s : choices) {
             if (!choices_joined.empty()) {
                 choices_joined.append(" ");
             }
             choices_joined.append(s);
-            return 0;
-        });
+        };
 
         printf("\nDid you mean? %s\n\n", choices_joined.c_str());
         outfile->Printf("\nDid you mean? %s\n\n", choices_joined.c_str());

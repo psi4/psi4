@@ -61,6 +61,7 @@ _programs = {
     # non-QC
     "memory_profiler": which_import('memory_profiler', return_bool=True),
     "networkx": which_import("networkx", return_bool=True),
+    "h5py": which_import('h5py', return_bool=True),
 
     # QC
     "adcc": which_import("adcc", return_bool=True),
@@ -72,7 +73,6 @@ _programs = {
     "dkh": psi4.addons("dkh"),
     "ecpint": psi4.addons("ecpint"),
     "libefp": which_import("pylibefp", return_bool=True),
-    "erd": psi4.addons("erd"),
     "fockci": which_import("psi4fockci", return_bool=True),  # package fockci, import psi4fockci
     "forte": which_import("forte", return_bool=True),
     "gdma": which_import("gdma", return_bool=True),  # package pygdma, import gdma
@@ -92,6 +92,7 @@ _programs = {
     "qcportal": which_import("qcportal", return_bool=True),
     "bse": which_import("basis_set_exchange", return_bool=True),
     "einsums": psi4.addons("einsums"),
+    "gauxc": psi4.addons("gauxc"),
 }
 
 

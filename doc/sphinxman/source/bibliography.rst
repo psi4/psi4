@@ -149,6 +149,10 @@ Bibliography
    Bofill,
    *J. Comp. Chem.* **15**, 1-11 (1994).
 
+.. [Besalu:1998:265]
+   Besalú, E., Bofill, J.,
+   *Theor Chem Acc* **100**, 265–274 (1998)
+
 .. [Piecuch:1999:6103]
    P. Piecuch, S. A. Kicharski, and R. J. Bartlett,
    *J. Chem. Phys.* **110**, 6103 (1999).
@@ -741,3 +745,26 @@ Bibliography
    *J. Chem. Phys.* **154**, 064103 (2021).
    https://doi.org/10.1063/5.0040021
 
+.. not yet referenced [Parrish:2012:224106]
+.. not yet referenced    R. M. Parrish, E. G. Hohenstein, T. J. Martinez, C. D. Sherrill
+.. not yet referenced    *J. Chem. Phys.* **137**, 224106 (2012).
+.. not yet referenced    https://doi.org/10.1063/1.4768233
+
+.. not yet referenced [Matthews:2020:1382]
+.. not yet referenced   D. A. Matthews
+.. not yet referenced   *J. Chem. Theory Comput.* **16**, 1382 (2020).
+.. not yet referenced   https://doi.org/10.1021/acs.jctc.9b01205
+
+.. [Williams-Young:2023:234104]
+   "Distributed memory, GPU accelerated Fock construction for hybrid, Gaussian basis density functional theory"
+   D. B. Williams-Young and A. Asadchev and D. T. Popovici and D. Clark and J. Waldrop and T.L. Windus and E. F. Valeev and W. A. de Jong   
+   *J. Chem. Phys.* **158**, 234104 (2023).
+   https://doi.org/10.1063/5.0151070
+
+.. [Laqua:2020:1456]
+   "Highly Efficient, Linear-Scaling Seminumerical Exact-Exchange Method for Graphic Processing Units"
+   H. Laqua and T. H. Thompson and J. Kussmann and C. Ochsenfeld
+   *J. Chem. Theory Comput.* **16**, 1456-1468 (2020)
+   https://doi.org/10.1021/acs.jctc.9b00860
+
+>>>>>>> Other build cleanups and documentation updates

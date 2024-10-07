@@ -249,10 +249,10 @@ void DCTSolver::compute_gradient_UHF() {
 
 void DCTSolver::dc06_response_init() {
     // Allocate memory for the global objects
-    aocc_ptau_ = Matrix("MO basis Perturbed Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
-    bocc_ptau_ = Matrix("MO basis Perturbed Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
-    avir_ptau_ = Matrix("MO basis Perturbed Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
-    bvir_ptau_ = Matrix("MO basis Perturbed Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
+    aocc_ptau_ = Matrix("MO basis Perturbed Tau (Alpha Occupied)", naoccpi_, naoccpi_);
+    bocc_ptau_ = Matrix("MO basis Perturbed Tau (Beta Occupied)", nboccpi_, nboccpi_);
+    avir_ptau_ = Matrix("MO basis Perturbed Tau (Alpha Virtual)", navirpi_, navirpi_);
+    bvir_ptau_ = Matrix("MO basis Perturbed Tau (Beta Virtual)", nbvirpi_, nbvirpi_);
 
     // Transform the two-electron integrals to the (VO|OO) and (OV|VV) subspaces in chemists' notation
 
@@ -3550,8 +3550,8 @@ void DCTSolver::compute_lagrangian_VV(bool separate_gbargamma) {
 void DCTSolver::compute_ewdm_dc() {
     dpdfile2 zI_OV, zI_VO, X_OV, X_VO, zI_OO, zI_VV, X_OO, X_VV;
 
-    Matrix aW("Energy-weighted density matrix (Alpha)", nirrep_, nmopi_, nmopi_);
-    Matrix bW("Energy-weighted density matrix (Beta)", nirrep_, nmopi_, nmopi_);
+    Matrix aW("Energy-weighted density matrix (Alpha)", nmopi_, nmopi_);
+    Matrix bW("Energy-weighted density matrix (Beta)", nmopi_, nmopi_);
 
     const int *alpha_corr_to_pitzer = _ints->alpha_corr_to_pitzer();
     auto *alpha_pitzer_to_corr = new int[nmo_];
@@ -4430,11 +4430,11 @@ void DCTSolver::compute_ewdm_dc() {
 void DCTSolver::compute_ewdm_odc() {
     dpdfile2 X_OV, X_VO, X_OO, X_VV;
 
-    Matrix aW("Energy-weighted density matrix (Alpha)", nirrep_, nmopi_, nmopi_);
-    Matrix bW("Energy-weighted density matrix (Beta)", nirrep_, nmopi_, nmopi_);
+    Matrix aW("Energy-weighted density matrix (Alpha)", nmopi_, nmopi_);
+    Matrix bW("Energy-weighted density matrix (Beta)", nmopi_, nmopi_);
 
-    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
-    auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
+    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nmopi_, nmopi_);
+    auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nmopi_, nmopi_);
 
     const int *alpha_corr_to_pitzer = _ints->alpha_corr_to_pitzer();
     auto *alpha_pitzer_to_corr = new int[nmo_];

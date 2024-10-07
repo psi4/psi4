@@ -170,6 +170,10 @@ The Hessian may be computed during an optimization using the
 Transition States and Reaction Paths
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Optking currently has two transition state algorithms. The current default is the
+newer RS_I_RFO algorithm [Besalu:1998:265]_ . The old algorithm can be used by setting
+`STEP_TYPE P_RFO` for `OPT_TYPE TS`
+
 * Calculate a starting Hessian and optimize the "transition state" of
   linear water (note that without a reasonable starting geometry and
   Hessian, such a straightforward search often fails)::
@@ -276,6 +280,16 @@ For bends, the corresponding keyword is "frozen_bend".
     requires Cartesian molecule input. If numerical errors results in symmetry 
     breaking, while Cartesian constraints are active, symmetrization cannot occur and
     an error will be raised, prompting you to restart the job.
+
+* As a shortcut, the entire set of dihedral angles can be frozen. A subset can then be unfrozen if desired.
+
+.. code-block:: none
+
+	set {
+		freeze_all_dihedrals true
+		unfreeze_dihedrals "1 2 3 4"
+	}
+
 
 * To scan the potential energy surface by optimizing at several fixed values
   of the dihedral angle of HOOH.
