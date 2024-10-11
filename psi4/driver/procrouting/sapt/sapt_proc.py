@@ -396,7 +396,7 @@ def sapt_dft_grac_convergence_tier_options():
                 "LEVEL_SHIFT": 0.01,
                 "LEVEL_SHIFT_CUTOFF": 0.01,
                 "SCF_INITIAL_ACCELERATOR": "ADIIS",
-                "MAXITER": 100,
+                "MAXITER": 200,
             },
             {
                 "LEVEL_SHIFT": 0.02,
@@ -422,9 +422,11 @@ def compute_GRAC_shift(
     scf_reference = core.get_option("SCF", "REFERENCE")
 
     print(f"Computing GRAC shift for {label} using {sapt_dft_grac_convergence_tier}...")
-    for options in sapt_dft_grac_convergence_tier_options()[
+    grac_options = sapt_dft_grac_convergence_tier_options()[
         sapt_dft_grac_convergence_tier.upper()
-    ]:
+    ]
+    print(f"{grac_options = }")
+    for options in grac_options:
         for key, val in options.items():
             core.set_local_option("SCF", key, val)
         core.set_local_option("SCF", "REFERENCE", "UHF")
@@ -455,6 +457,13 @@ def compute_GRAC_shift(
                 molecule=mol_cation,
             )
         except ConvergenceError:
+            if len(options) == 1:
+                raise Exception(
+                    "Convergence error in GRAC shift calculation, please try a different convergence tier."
+                )
+            else:
+                print("Convergence error, trying next GRAC iteration...")
+                print(f"{options = }")
             continue
         occ_neutral = wfn_neutral.epsilon_a_subset(basis="SO", subset="OCC").to_array(
             dense=True
@@ -466,7 +475,7 @@ def compute_GRAC_shift(
         grac = E_cation - E_neutral + HOMO
         if grac >= 1 or grac <= -1:
             print(f"{grac = }")
-            raise Exception("Grac appears wrong...")
+            raise Exception("Invalid GRAC")
         if label == "Monomer A":
             core.set_global_option("SAPT_DFT_GRAC_SHIFT_A", grac)
             core.set_variable("SAPT_DFT_GRAC_SHIFT_A", grac)

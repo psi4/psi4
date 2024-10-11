@@ -1,4 +1,4 @@
-import pytest
+import pytest 
 import psi4
 from qcelemental import constants
 from psi4 import compare_values
@@ -25,11 +25,6 @@ units angstrom
     )
     psi4.set_options(
         {
-            # "level_shift": 0.060000000000000005,
-            # "level_shift_cutoff": 0.001,
-            # "MAXITER": 300,
-            # "SCF_INITIAL_ACCELERATOR": "ADIIS",
-            # "basis": "aug-cc-pvdz",
             "basis": "STO-3G",
             "sapt_dft_grac_shift_a": -99,
             "sapt_dft_grac_shift_b": -99,
@@ -62,10 +57,9 @@ units angstrom
 def test_saptdft_auto_grac_iterative():
     mol_dimer = psi4.geometry(
         """
-0 1
+-1 1
 8   -0.702196054   -0.056060256   0.009942262
 1   -1.022193224   0.846775782   -0.011488714
-1   0.257521062   0.042121496   0.005218999
 --
 0 1
 8   2.268880784   0.026340101   0.000508029
@@ -106,5 +100,4 @@ units angstrom
 
 
 if __name__ == "__main__":
-    # test_saptdft_auto_grac()
     test_saptdft_auto_grac_iterative()
