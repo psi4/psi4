@@ -1,4 +1,8 @@
-find_package(Libxc 6.1.0 CONFIG QUIET COMPONENTS C)
+find_package(Libxc 7.0.0 CONFIG QUIET COMPONENTS C)
+if(NOT ${Libxc_FOUND})
+    # LibxcConfig.cmake encodes searching only within major version, so need two calls to allow v6 or v7
+    find_package(Libxc 6.1.0 CONFIG QUIET COMPONENTS C)
+endif()
 
 if(${Libxc_FOUND})
     get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
