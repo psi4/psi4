@@ -266,8 +266,8 @@ jobs:
 
     - name: Runtime Conda environment
       run: |
-        mamba info
-        mamba list
+        conda info
+        conda list
         if [[ "${{ runner.os }}" != "Windows" ]]; then
           # on Windows, cmd varies: `qcengine.exe`
           qcengine info
