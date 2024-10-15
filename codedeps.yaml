@@ -944,7 +944,7 @@ data:
       host: gitlab
       account: libxc
       name: libxc
-      commit: 6.2.2
+      commit: 7.0.0
     #cmake:
     #  name: Libxc
     #  constraint: 6.1.0
