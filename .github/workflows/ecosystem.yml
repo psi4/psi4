@@ -197,15 +197,13 @@ jobs:
         show-channel-urls: true
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
-        miniforge-variant: Mambaforge
-        use-mamba: true
         add-pip-as-python-dependency: true
         channels: conda-forge
 
     - name: Buildtime Conda environment
       run: |
-        mamba info
-        mamba list
+        conda info
+        conda list
 
     - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
