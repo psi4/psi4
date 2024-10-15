@@ -41,12 +41,12 @@
 
 #include "einsums.hpp"
 
-namespace psi { namespace f12 {
+namespace psi {
+namespace f12 {
 
-void MP2F12::convert_C(einsums::Tensor<double,2> *C, OrbitalSpace bs, const int& dim1, const int& dim2,
-                       const bool use_frzn)
-{
-    const int start = (use_frzn) ? nfrzn_ : 0; // Fock building must use full space
+void MP2F12::convert_C(einsums::Tensor<double, 2>* C, OrbitalSpace bs, const int& dim1, const int& dim2,
+                       const bool use_frzn) {
+    const int start = (use_frzn) ? nfrzn_ : 0;  // Fock building must use full space
     const int stop = (use_frzn) ? dim2 + nfrzn_ : dim2;
     for (int p = 0; p < dim1; p++) {
         for (int q = start; q < stop; q++) {
@@ -55,8 +55,7 @@ void MP2F12::convert_C(einsums::Tensor<double,2> *C, OrbitalSpace bs, const int&
     }
 }
 
-void MP2F12::convert_C(einsums::Tensor<double,2> *C, OrbitalSpace bs, const int& dim1, const int& dim2)
-{
+void MP2F12::convert_C(einsums::Tensor<double, 2>* C, OrbitalSpace bs, const int& dim1, const int& dim2) {
     for (int p = 0; p < dim1; p++) {
         for (int q = 0; q < dim2; q++) {
             (*C)(p, q) = bs.C()->get(p, q);
@@ -64,17 +63,16 @@ void MP2F12::convert_C(einsums::Tensor<double,2> *C, OrbitalSpace bs, const int&
     }
 }
 
-void MP2F12::set_ERI(einsums::TensorView<double, 4>& ERI_Slice, einsums::Tensor<double, 4> *Slice)
-{
+void MP2F12::set_ERI(einsums::TensorView<double, 4>& ERI_Slice, einsums::Tensor<double, 4>* Slice) {
     const auto dim1 = (*Slice).dim(0);
     const auto dim2 = (*Slice).dim(1);
     const auto dim3 = (*Slice).dim(2);
     const auto dim4 = (*Slice).dim(3);
 
-    for (int p = 0; p < dim1; p++){
-        for (int q = 0; q < dim2; q++){
-            for (int r = 0; r < dim3; r++){
-                for (int s = 0; s < dim4; s++){
+    for (int p = 0; p < dim1; p++) {
+        for (int q = 0; q < dim2; q++) {
+            for (int r = 0; r < dim3; r++) {
+                for (int s = 0; s < dim4; s++) {
                     ERI_Slice(p, q, r, s) = (*Slice)(p, q, r, s);
                 }
             }
@@ -82,35 +80,33 @@ void MP2F12::set_ERI(einsums::TensorView<double, 4>& ERI_Slice, einsums::Tensor<
     }
 }
 
-void MP2F12::set_ERI(einsums::TensorView<double, 3>& ERI_Slice, einsums::Tensor<double, 3> *Slice)
-{
-    const auto naux_= (*Slice).dim(0);
+void MP2F12::set_ERI(einsums::TensorView<double, 3>& ERI_Slice, einsums::Tensor<double, 3>* Slice) {
+    const auto naux_ = (*Slice).dim(0);
     const auto dim1 = (*Slice).dim(1);
     const auto dim2 = (*Slice).dim(2);
 
-    for (int A = 0; A < naux_; A++){
-        for (int p = 0; p < dim1; p++){
-            for (int q = 0; q < dim2; q++){
+    for (int A = 0; A < naux_; A++) {
+        for (int p = 0; p < dim1; p++) {
+            for (int q = 0; q < dim2; q++) {
                 ERI_Slice(A, p, q) = (*Slice)(A, p, q);
             }
         }
     }
 }
 
-void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<double, 4> *GAO,
+void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<double, 4>* GAO,
                                   std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
-                                  std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4)
-{
+                                  std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
     std::shared_ptr<IntegralFactory> intf(new IntegralFactory(bs1, bs2, bs3, bs4));
 
     std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
-    if ( int_type == "F" ){
+    if (int_type == "F") {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->f12(cgtg_)));
-    } else if ( int_type == "FG" ){
+    } else if (int_type == "FG") {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->f12g12(cgtg_)));
-    } else if ( int_type == "F2" ){
+    } else if (int_type == "F2") {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->f12_squared(cgtg_)));
-    } else if ( int_type == "Uf" ){
+    } else if (int_type == "Uf") {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->f12_double_commutator(cgtg_)));
     } else {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->eri()));
@@ -127,7 +123,7 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
 #pragma omp parallel for collapse(2) schedule(guided) num_threads(nthreads_)
     for (size_t M = 0; M < bs1->nshell(); M++) {
         for (size_t N = 0; N < bs2->nshell(); N++) {
-            if (bs1_equiv_bs2 && N < M) continue; // Only loop over unique shells
+            if (bs1_equiv_bs2 && N < M) continue;  // Only loop over unique shells
 
             const auto numM = bs1->shell(M).nfunction();
             const auto numN = bs2->shell(N).nfunction();
@@ -136,7 +132,7 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
 
             for (size_t P = 0; P < bs3->nshell(); P++) {
                 for (size_t Q = 0; Q < bs4->nshell(); Q++) {
-                    if (bs3_equiv_bs4 && Q < P) continue; // Only loop over unique shells
+                    if (bs3_equiv_bs4 && Q < P) continue;  // Only loop over unique shells
 
                     size_t rank = 0;
 #ifdef _OPENMP
@@ -148,7 +144,7 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
                     const auto index_Q = bs4->shell(Q).function_index();
 
                     ints[rank]->compute_shell(M, N, P, Q);
-                    const auto *ints_buff = ints[rank]->buffers()[0];
+                    const auto* ints_buff = ints[rank]->buffers()[0];
 
                     if (bs1_equiv_bs2 && M != N && bs3_equiv_bs4 && P != Q) {
                         for (size_t m = 0, idx = 0; m < numM; m++) {
@@ -158,14 +154,13 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
                                 for (size_t p = 0; p < numP; p++) {
                                     const auto fxnP = index_P + p;
 
-                                    double* targetMNPQ = &(*GAO)(fxnM, fxnN, fxnP, index_Q); // (mn|pq)
-                                    double* targetNMQP = &(*GAO)(fxnN, fxnM, index_Q, fxnP); // (nm|qp)
-                                    double* targetNMPQ = &(*GAO)(fxnN, fxnM, fxnP, index_Q); // (nm|pq)
-                                    double* targetMNQP = &(*GAO)(fxnM, fxnN, index_Q, fxnP); // (mn|qp)
+                                    double* targetMNPQ = &(*GAO)(fxnM, fxnN, fxnP, index_Q);  // (mn|pq)
+                                    double* targetNMQP = &(*GAO)(fxnN, fxnM, index_Q, fxnP);  // (nm|qp)
+                                    double* targetNMPQ = &(*GAO)(fxnN, fxnM, fxnP, index_Q);  // (nm|pq)
+                                    double* targetMNQP = &(*GAO)(fxnM, fxnN, index_Q, fxnP);  // (mn|qp)
 
                                     for (size_t q = 0; q < numQ; q++, idx++) {
-                                        *targetMNPQ = *targetNMQP =
-                                            *targetNMPQ = *targetMNQP = ints_buff[idx];
+                                        *targetMNPQ = *targetNMQP = *targetNMPQ = *targetMNQP = ints_buff[idx];
 
                                         targetMNPQ++;
                                         targetNMQP += (*GAO).dim(3);
@@ -183,8 +178,8 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
                                 for (size_t p = 0; p < numP; p++) {
                                     const auto fxnP = index_P + p;
 
-                                    double* targetMN = &(*GAO)(fxnM, fxnN, fxnP, index_Q); // (mn|pq)
-                                    double* targetNM = &(*GAO)(fxnN, fxnM, fxnP, index_Q); // (nm|pq)
+                                    double* targetMN = &(*GAO)(fxnM, fxnN, fxnP, index_Q);  // (mn|pq)
+                                    double* targetNM = &(*GAO)(fxnN, fxnM, fxnP, index_Q);  // (nm|pq)
 
                                     for (size_t q = 0; q < numQ; q++, idx++) {
                                         *targetMN = *targetNM = ints_buff[idx];
@@ -203,8 +198,8 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
                                 for (size_t p = 0; p < numP; p++) {
                                     const auto fxnP = index_P + p;
 
-                                    double* targetPQ = &(*GAO)(fxnM, fxnN, fxnP, index_Q); // (mn|pq)
-                                    double* targetQP = &(*GAO)(fxnM, fxnN, index_Q, fxnP); // (mn|qp)
+                                    double* targetPQ = &(*GAO)(fxnM, fxnN, fxnP, index_Q);  // (mn|pq)
+                                    double* targetQP = &(*GAO)(fxnM, fxnN, index_Q, fxnP);  // (mn|qp)
 
                                     for (size_t q = 0; q < numQ; q++, idx++) {
                                         *targetPQ = *targetQP = ints_buff[idx];
@@ -223,7 +218,7 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
                                 for (size_t p = 0; p < numP; p++) {
                                     const auto fxnP = index_P + p;
 
-                                    double* target = &(*GAO)(fxnM, fxnN, fxnP, index_Q); // (mn|pq)
+                                    double* target = &(*GAO)(fxnM, fxnN, fxnP, index_Q);  // (mn|pq)
 
                                     for (size_t q = 0; q < numQ; q++, idx++) {
                                         *target = ints_buff[idx];
@@ -234,26 +229,25 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
                             }
                         }
                     }
-                } // bs4
-            } // bs3
-        } // bs2
-    } // bs1
+                }  // bs4
+            }  // bs3
+        }  // bs2
+    }  // bs1
 }
 
-void MP2F12::three_index_ao_computer(const std::string& int_type, einsums::Tensor<double, 3> *Bpq,
-                                     std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2)
-{
+void MP2F12::three_index_ao_computer(const std::string& int_type, einsums::Tensor<double, 3>* Bpq,
+                                     std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2) {
     std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
     std::shared_ptr<IntegralFactory> intf(new IntegralFactory(DFBS_, zero, bs1, bs2));
 
     std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
-    if ( int_type == "F" ){
+    if (int_type == "F") {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->f12(cgtg_)));
-    } else if ( int_type == "FG" ){
+    } else if (int_type == "FG") {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->f12g12(cgtg_)));
-    } else if ( int_type == "F2" ){
+    } else if (int_type == "F2") {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->f12_squared(cgtg_)));
-    } else if ( int_type == "Uf" ){
+    } else if (int_type == "Uf") {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->f12_double_commutator(cgtg_)));
     } else {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->eri()));
@@ -270,7 +264,7 @@ void MP2F12::three_index_ao_computer(const std::string& int_type, einsums::Tenso
     for (size_t B = 0; B < DFBS_->nshell(); B++) {
         for (size_t P = 0; P < bs1->nshell(); P++) {
             for (size_t Q = 0; Q < bs2->nshell(); Q++) {
-                if (bs1_equiv_bs2 && Q < P) continue; // Only loop over unique shells
+                if (bs1_equiv_bs2 && Q < P) continue;  // Only loop over unique shells
 
                 size_t rank = 0;
 #ifdef _OPENMP
@@ -284,7 +278,7 @@ void MP2F12::three_index_ao_computer(const std::string& int_type, einsums::Tenso
                 const auto index_Q = bs2->shell(Q).function_index();
 
                 ints[rank]->compute_shell(B, 0, P, Q);
-                const auto *ints_buff = ints[rank]->buffers()[0];
+                const auto* ints_buff = ints[rank]->buffers()[0];
 
                 if (bs1_equiv_bs2 && P != Q) {
                     for (size_t b = 0, idx = 0; b < numB; b++) {
@@ -324,20 +318,17 @@ void MP2F12::three_index_ao_computer(const std::string& int_type, einsums::Tenso
     }
 }
 
-void MP2F12::form_oeints(einsums::Tensor<double, 2> *h)
-{ 
+void MP2F12::form_oeints(einsums::Tensor<double, 2>* h) {
     using namespace einsums;
 
     outfile->Printf("   One-Electron Integrals\n");
 
-    std::vector<char> order = {'O', 'O',
-                               'O', 'C',
-                               'C', 'C'};
+    std::vector<char> order = {'O', 'O', 'O', 'C', 'C', 'C'};
 
-    for (int idx = 0; idx < (order.size()/2); idx++) {
+    for (int idx = 0; idx < (order.size() / 2); idx++) {
         const int i = idx * 2;
-        const int o1 = ( order[i]  == 'C') ? 1 : 0;
-        const int o2 = (order[i+1] == 'C') ? 1 : 0;
+        const int o1 = (order[i] == 'C') ? 1 : 0;
+        const int o2 = (order[i + 1] == 'C') ? 1 : 0;
         const int nmo1 = (o1 == 1) ? ncabs_ : nobs_;
         const int nmo2 = (o2 == 1) ? ncabs_ : nobs_;
         const int M = (o1 == 1) ? nobs_ : 0;
@@ -370,27 +361,27 @@ void MP2F12::form_oeints(einsums::Tensor<double, 2> *h)
                 }
             }
 
-            if ( o1 != o2 ) {
+            if (o1 != o2) {
                 TensorView<double, 2> h_nm{*h, Dim<2>{nmo2, nmo1}, Offset<2>{N, M}};
                 for (int n = 0; n < nmo2; n++) {
                     for (int m = 0; m < nmo1; m++) {
                         h_nm(n, m) = t_mo->get(m, n) + v_mo->get(m, n);
                     }
                 }
-            } // end of if statement
+            }  // end of if statement
         }
-    } // end for loop
+    }  // end for loop
 }
 
-void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4> *ERI, std::vector<char> order)
-{
+void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>* ERI, std::vector<char> order) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
-    const bool frz_bra = (nfrzn_ > 0) && ((*ERI).dim(0) == nact_) && ((*ERI).dim(1) == nact_); // No frozen in Fock Build
-    const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_); // No frozen in tensor contractions
-    const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_); // No frozen in tensor contractions
+    const bool frz_bra =
+        (nfrzn_ > 0) && ((*ERI).dim(0) == nact_) && ((*ERI).dim(1) == nact_);  // No frozen in Fock Build
+    const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_);            // No frozen in tensor contractions
+    const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_);            // No frozen in tensor contractions
 
     bool use_offset = true;
     if (order.size() == 4) {
@@ -398,12 +389,12 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
     }
 
     // (PQ|RS)
-    for (int idx = 0; idx < (order.size()/4); idx++) {
+    for (int idx = 0; idx < (order.size() / 4); idx++) {
         const int i = idx * 4;
-        const int o1 = ( order[i]  == 'C') ? 1 : 0;
-        const int o2 = (order[i+1] == 'C') ? 1 : 0;
-        const int o3 = (order[i+2] == 'C') ? 1 : 0;
-        const int o4 = (order[i+3] == 'C') ? 1 : 0;
+        const int o1 = (order[i] == 'C') ? 1 : 0;
+        const int o2 = (order[i + 1] == 'C') ? 1 : 0;
+        const int o3 = (order[i + 2] == 'C') ? 1 : 0;
+        const int o4 = (order[i + 3] == 'C') ? 1 : 0;
         const auto nbf1 = bs_[o1].basisset()->nbf();
         const auto nbf2 = bs_[o2].basisset()->nbf();
         const auto nbf3 = bs_[o3].basisset()->nbf();
@@ -412,15 +403,15 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
         // Create ERI AO Tensor
         auto GAO = std::make_unique<Tensor<double, 4>>("ERI AO", nbf1, nbf2, nbf3, nbf4);
         timer_on("Two-Body AO Integrals");
-        two_body_ao_computer(int_type, GAO.get(), bs_[o1].basisset(), bs_[o2].basisset(),
-                                                  bs_[o3].basisset(), bs_[o4].basisset());
+        two_body_ao_computer(int_type, GAO.get(), bs_[o1].basisset(), bs_[o2].basisset(), bs_[o3].basisset(),
+                             bs_[o4].basisset());
         timer_off("Two-Body AO Integrals");
-	
+
         // Convert all Psi4 C Matrices to einsums Tensor<double, 2>
-        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : (frz_bra) ? nact_ : nocc_;
-        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : (frz_ket1) ? nact_ : nocc_;
-        const auto nmo3 = (o3) ? ncabs_ : (order[i+2] == 'O') ? nobs_ : (frz_bra) ? nact_ : nocc_;
-        const auto nmo4 = (o4) ? ncabs_ : (order[i+3] == 'O') ? nobs_ : (frz_ket2) ? nact_ : nocc_;
+        const auto nmo1 = (o1) ? ncabs_ : (order[i] == 'O') ? nobs_ : (frz_bra) ? nact_ : nocc_;
+        const auto nmo2 = (o2) ? ncabs_ : (order[i + 1] == 'O') ? nobs_ : (frz_ket1) ? nact_ : nocc_;
+        const auto nmo3 = (o3) ? ncabs_ : (order[i + 2] == 'O') ? nobs_ : (frz_bra) ? nact_ : nocc_;
+        const auto nmo4 = (o4) ? ncabs_ : (order[i + 3] == 'O') ? nobs_ : (frz_ket2) ? nact_ : nocc_;
 
         // Transform ERI AO Tensor to ERI MO Tensor
         auto PRQS = std::make_unique<Tensor<double, 4>>("PRQS", nmo1, nmo3, nmo2, nmo4);
@@ -492,7 +483,7 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
                 PRQS.reset();
                 TensorView<double, 4> ERI_RPSQ{*ERI, Dim<4>{nmo3, nmo1, nmo4, nmo2}, Offset<4>{off3, off1, off4, off2}};
                 set_ERI(ERI_RPSQ, &RPSQ);
-            } // end of if statement
+            }  // end of if statement
 
             if (nbf2 != nbf1 && nbf2 != nbf3 && nbf2 != nbf4 && int_type == "J") {
                 Tensor<double, 4> QSPR{"QSPR", nmo2, nmo4, nmo1, nmo3};
@@ -500,7 +491,7 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
                 PRQS.reset();
                 TensorView<double, 4> ERI_QSPR{*ERI, Dim<4>{nmo2, nmo4, nmo1, nmo3}, Offset<4>{off2, off4, off1, off3}};
                 set_ERI(ERI_QSPR, &QSPR);
-            } // end of if statement
+            }  // end of if statement
 
             if (nbf4 != nbf1 && nbf4 != nbf2 && nbf4 != nbf3 && int_type == "K") {
                 Tensor<double, 4> SQRP{"SQRP", nmo4, nmo2, nmo3, nmo1};
@@ -508,14 +499,13 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
                 PRQS.reset();
                 TensorView<double, 4> ERI_SQRP{*ERI, Dim<4>{nmo4, nmo2, nmo3, nmo1}, Offset<4>{off4, off2, off3, off1}};
                 set_ERI(ERI_SQRP, &SQRP);
-            } // end of if statement
+            }  // end of if statement
         }
         timer_off("Set in ERI");
-    } // end of for loop
+    }  // end of for loop
 }
 
-void MP2F12::form_metric_ints(einsums::Tensor<double, 3> *DF_ERI, bool is_fock)
-{
+void MP2F12::form_metric_ints(einsums::Tensor<double, 3>* DF_ERI, bool is_fock) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -523,28 +513,24 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3> *DF_ERI, bool is_fock)
     std::vector<char> order;
 
     if (is_fock) {
-        order = {'O', 'O',
-                 'O', 'C',
-                 'C', 'O',
-                 'C', 'C'};
+        order = {'O', 'O', 'O', 'C', 'C', 'O', 'C', 'C'};
     } else {
-        order = {'o', 'O',
-                 'o', 'C'};
+        order = {'o', 'O', 'o', 'C'};
     }
 
     const bool use_frzn = !is_fock;
-    
-    for (int idx = 0; idx < (order.size()/2); idx++) {
+
+    for (int idx = 0; idx < (order.size() / 2); idx++) {
         const int i = idx * 2;
-        const int o1 = ( order[i]  == 'C') ? 1 : 0;
-        const int o2 = (order[i+1] == 'C') ? 1 : 0;
+        const int o1 = (order[i] == 'C') ? 1 : 0;
+        const int o2 = (order[i + 1] == 'C') ? 1 : 0;
         const auto nbf1 = bs_[o1].basisset()->nbf();
         const auto nbf2 = bs_[o2].basisset()->nbf();
 
         auto Bpq = std::make_unique<Tensor<double, 3>>("Metric AO", naux_, nbf1, nbf2);
         three_index_ao_computer("G", Bpq.get(), bs_[o1].basisset(), bs_[o2].basisset());
 
-        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : (use_frzn) ? nact_ : nocc_;
+        const auto nmo1 = (o1) ? ncabs_ : (order[i] == 'O') ? nobs_ : (use_frzn) ? nact_ : nocc_;
         const auto nmo2 = (o2) ? ncabs_ : nobs_;
 
         auto BPQ = std::make_unique<Tensor<double, 3>>("BPQ", naux_, nmo1, nmo2);
@@ -597,11 +583,10 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3> *DF_ERI, bool is_fock)
             TensorView<double, 3> ERI_APQ{*DF_ERI, Dim<3>{naux_, nmo1, nmo2}, Offset<3>{0, R, S}};
             set_ERI(ERI_APQ, APQ.get());
         }
-    } // end of for loop
+    }  // end of for loop
 }
 
-void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double, 3> *DF_ERI)
-{
+void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double, 3>* DF_ERI) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -613,18 +598,17 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
     if (dim2 == nobs_) {
         order = {'o', 'O'};
     } else if (dim2 == nri_ || dim2 == ncabs_) {
-        order = {'o', 'O',
-                 'o', 'C'};
+        order = {'o', 'O', 'o', 'C'};
     }
 
     const bool use_offset = (dim2 == nri_);
     const bool frzn_1 = (dim1 == nact_);
     const bool frzn_2 = (dim2 == nact_);
 
-    for (int idx = 0; idx < (order.size()/2); idx++) {
+    for (int idx = 0; idx < (order.size() / 2); idx++) {
         const int i = idx * 2;
-        const int o1 = ( order[i]  == 'C') ? 1 : 0;
-        const int o2 = (order[i+1] == 'C') ? 1 : 0;
+        const int o1 = (order[i] == 'C') ? 1 : 0;
+        const int o2 = (order[i + 1] == 'C') ? 1 : 0;
         const auto nbf1 = bs_[o1].basisset()->nbf();
         const auto nbf2 = bs_[o2].basisset()->nbf();
 
@@ -635,7 +619,7 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
 
         // Convert all Psi4 C Matrices to einsums Tensor<double, 2>
         const auto nmo1 = dim1;
-        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : dim2;
+        const auto nmo2 = (o2) ? ncabs_ : (order[i + 1] == 'O') ? nobs_ : dim2;
 
         auto BPQ = std::make_unique<Tensor<double, 3>>("BPQ", naux_, nmo1, nmo2);
         timer_on("MO Transformation");
@@ -672,11 +656,10 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
             set_ERI(ERI_BPQ, BPQ.get());
         }
         timer_off("Set in ERI");
-    } // end of for loop
+    }  // end of for loop
 }
 
-void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double, 2> *DF_ERI)
-{
+void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double, 2>* DF_ERI) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -686,13 +669,13 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
     std::shared_ptr<IntegralFactory> intf(new IntegralFactory(DFBS_, zero, DFBS_, zero));
 
     std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
-    if ( int_type == "F" ){
+    if (int_type == "F") {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->f12(cgtg_)));
-    } else if ( int_type == "FG" ){
+    } else if (int_type == "FG") {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->f12g12(cgtg_)));
-    } else if ( int_type == "F2" ){
+    } else if (int_type == "F2") {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->f12_squared(cgtg_)));
-    } else if ( int_type == "Uf" ){
+    } else if (int_type == "Uf") {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->f12_double_commutator(cgtg_)));
     } else {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->eri()));
@@ -716,28 +699,26 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
             const size_t index_B = DFBS_->shell(B).function_index();
 
             ints[rank]->compute_shell(A, 0, B, 0);
-            const auto *ints_buff = ints[rank]->buffers()[0];
+            const auto* ints_buff = ints[rank]->buffers()[0];
 
             size_t index = 0;
             for (size_t a = 0; a < numA; a++) {
                 for (size_t b = 0; b < numB; b++) {
-                    (*DF_ERI)(index_A + a,
-                          index_B + b) = ints_buff[index++];
+                    (*DF_ERI)(index_A + a, index_B + b) = ints_buff[index++];
                 }
             }
         }
     }
 }
 
-void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double, 4> *ERI,
-                         einsums::Tensor<double, 3> *J_inv_AB, std::vector<char> order)
-{
+void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double, 4>* ERI,
+                            einsums::Tensor<double, 3>* J_inv_AB, std::vector<char> order) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
-    const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_); // No frozen in tensor contractions
-    const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_); // No frozen in tensor contractions
+    const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_);  // No frozen in tensor contractions
+    const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_);  // No frozen in tensor contractions
 
     bool use_offset = true;
     if (order.size() == 4) {
@@ -746,16 +727,16 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
 
     // In (PQ|RS) ordering
     int off1, off2, off3, off4;
-    for (int idx = 0; idx < (order.size()/4); idx++) {
+    for (int idx = 0; idx < (order.size() / 4); idx++) {
         const int i = idx * 4;
-        const auto nmo1 = (order[ i ] == 'C') ? ncabs_ : (order[ i ] == 'O') ? nobs_ : nact_;
-        const auto nmo2 = (order[i+1] == 'C') ? ncabs_ : (order[i+1] == 'O') ? nobs_ : (frz_ket1) ? nact_ : nocc_;
-        const auto nmo3 = (order[i+2] == 'C') ? ncabs_ : (order[i+2] == 'O') ? nobs_ : nact_;
-        const auto nmo4 = (order[i+3] == 'C') ? ncabs_ : (order[i+3] == 'O') ? nobs_ : (frz_ket2) ? nact_ : nocc_;
-        auto off1 = (order[ i ] == 'C') ? nobs_ : 0;
-        auto off2 = (order[i+1] == 'C') ? nobs_ : 0;
-        auto off3 = (order[i+2] == 'C') ? nobs_ : 0;
-        auto off4 = (order[i+3] == 'C') ? nobs_ : 0;
+        const auto nmo1 = (order[i] == 'C') ? ncabs_ : (order[i] == 'O') ? nobs_ : nact_;
+        const auto nmo2 = (order[i + 1] == 'C') ? ncabs_ : (order[i + 1] == 'O') ? nobs_ : (frz_ket1) ? nact_ : nocc_;
+        const auto nmo3 = (order[i + 2] == 'C') ? ncabs_ : (order[i + 2] == 'O') ? nobs_ : nact_;
+        const auto nmo4 = (order[i + 3] == 'C') ? ncabs_ : (order[i + 3] == 'O') ? nobs_ : (frz_ket2) ? nact_ : nocc_;
+        auto off1 = (order[i] == 'C') ? nobs_ : 0;
+        auto off2 = (order[i + 1] == 'C') ? nobs_ : 0;
+        auto off3 = (order[i + 2] == 'C') ? nobs_ : 0;
+        auto off4 = (order[i + 3] == 'C') ? nobs_ : 0;
 
         // Dunlap's robust density-fitting
         auto phys_robust = std::make_unique<Tensor<double, 4>>("<PR|F12|QS> MO", nmo1, nmo3, nmo2, nmo4);
@@ -770,19 +751,20 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
             // Term 1
             auto offm2 = (frz_ket1) ? nfrzn_ : 0;
             auto offm4 = (frz_ket2 && nmo4 != nact_) ? nfrzn_ : 0;
-            Tensor left_metric  = (*J_inv_AB)(All, Range{off1, nmo1 + off1}, Range{off2 + offm2, nmo2 + off2 + offm2});
+            Tensor left_metric = (*J_inv_AB)(All, Range{off1, nmo1 + off1}, Range{off2 + offm2, nmo2 + off2 + offm2});
             Tensor right_oper = (*ARPQ)(All, Range{off3, nmo3 + off3}, Range{off4 + offm4, nmo4 + off4 + offm4});
             einsum(Indices{p, q, r, s}, &chem_robust, Indices{A, p, q}, left_metric, Indices{A, r, s}, right_oper);
 
-            if ( int_type != "G" ) {
+            if (int_type != "G") {
                 // Term 2
                 auto offm2 = (frz_ket1 && nmo4 != nact_) ? nfrzn_ : 0;
                 auto offm4 = (frz_ket2) ? nfrzn_ : 0;
-                Tensor right_metric = (*J_inv_AB)(All, Range{off3, nmo3 + off3}, Range{off4 + offm4, nmo4 + off4 + offm4});
+                Tensor right_metric =
+                    (*J_inv_AB)(All, Range{off3, nmo3 + off3}, Range{off4 + offm4, nmo4 + off4 + offm4});
                 {
-                    Tensor left_oper  = (*ARPQ)(All, Range{off1, nmo1 + off1}, Range{off2 + offm2, nmo2 + off2 + offm2});
-                    einsum(1.0, Indices{p, q, r, s}, &chem_robust,
-                           1.0, Indices{A, p, q}, left_oper, Indices{A, r, s}, right_metric);
+                    Tensor left_oper = (*ARPQ)(All, Range{off1, nmo1 + off1}, Range{off2 + offm2, nmo2 + off2 + offm2});
+                    einsum(1.0, Indices{p, q, r, s}, &chem_robust, 1.0, Indices{A, p, q}, left_oper, Indices{A, r, s},
+                           right_metric);
                 }
                 ARPQ.reset();
 
@@ -794,8 +776,8 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
                     Tensor<double, 3> tmp{"Temp", naux_, nmo3, nmo4};
                     einsum(Indices{A, r, s}, &tmp, Indices{A, B}, ARB, Indices{B, r, s}, right_metric);
                     ARB.reset();
-                    einsum(1.0, Indices{p, q, r, s}, &chem_robust,
-                           -1.0, Indices{A, p, q}, left_metric, Indices{A, r, s}, tmp);
+                    einsum(1.0, Indices{p, q, r, s}, &chem_robust, -1.0, Indices{A, p, q}, left_metric,
+                           Indices{A, r, s}, tmp);
                 }
             }
             timer_off("Robust DF Procedure");
@@ -806,7 +788,7 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
 
         timer_on("Set in ERI");
         {
-            if (!use_offset){
+            if (!use_offset) {
                 off1 = 0;
                 off2 = 0;
                 off3 = 0;
@@ -817,41 +799,37 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
             set_ERI(ERI_PRQS, phys_robust.get());
         }
         timer_off("Set in ERI");
-    } // end of for loop
+    }  // end of for loop
 }
 
 ////////////////////////////////
 //* Disk Algorithm (CONV/DF) *//
 ////////////////////////////////
 
-void DiskMP2F12::set_ERI(einsums::DiskView<double, 2, 4>& ERI_Slice, einsums::TensorView<double, 2>& Slice)
-{
+void DiskMP2F12::set_ERI(einsums::DiskView<double, 2, 4>& ERI_Slice, einsums::TensorView<double, 2>& Slice) {
     using namespace einsums;
 
     const auto dim1 = Slice.dim(0);
     const auto dim2 = Slice.dim(1);
 
-    for (int p = 0; p < dim1; p++){
-        for (int q = 0; q < dim2; q++){
+    for (int p = 0; p < dim1; p++) {
+        for (int q = 0; q < dim2; q++) {
             ERI_Slice(p, q) = Slice(p, q);
         }
     }
 }
 
-void DiskMP2F12::form_oeints(einsums::DiskTensor<double, 2> *h)
-{
+void DiskMP2F12::form_oeints(einsums::DiskTensor<double, 2>* h) {
     using namespace einsums;
 
     outfile->Printf("   One-Electron Integrals\n");
 
-    std::vector<char> order = {'O', 'O',
-                               'O', 'C',
-                               'C', 'C'};
+    std::vector<char> order = {'O', 'O', 'O', 'C', 'C', 'C'};
 
-    for (int idx = 0; idx < (order.size()/2); idx++) {
+    for (int idx = 0; idx < (order.size() / 2); idx++) {
         int i = idx * 2;
-        int o1 = ( order[i]  == 'C') ? 1 : 0;
-        int o2 = (order[i+1] == 'C') ? 1 : 0;
+        int o1 = (order[i] == 'C') ? 1 : 0;
+        int o2 = (order[i + 1] == 'C') ? 1 : 0;
         int nmo1 = (o1 == 1) ? ncabs_ : nobs_;
         int nmo2 = (o2 == 1) ? ncabs_ : nobs_;
         int M = (o1 == 1) ? nobs_ : 0;
@@ -884,57 +862,49 @@ void DiskMP2F12::form_oeints(einsums::DiskTensor<double, 2> *h)
                 }
             }
 
-            if ( o1 != o2 ) {
+            if (o1 != o2) {
                 for (int n = 0; n < nmo2; n++) {
                     auto h_view = (*h)(n + N, All);
                     for (int m = 0; m < nmo1; m++) {
                         h_view(m + M) = t_mo->get(m, n) + v_mo->get(m, n);
                     }
                 }
-            } // end of if statement
+            }  // end of if statement
         }
-    } // end for loop
+    }  // end for loop
 }
 
-void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<double, 4> *ERI)
-{
+void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<double, 4>* ERI) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
     // In (PQ|RS) ordering
     std::vector<char> order = {'o', 'o', 'o', 'o'};
-    if ( int_type == "F" ) {
-        order = {'o', 'O', 'o', 'O',
-                 'o', 'O', 'o', 'C',
-                 'o', 'C', 'o', 'C'};
-    } else if ( int_type == "F2" ) {
-        order = {'o', 'o', 'o', 'O',
-                 'o', 'o', 'o', 'C'};
-    } else if ( int_type == "G" ) {
-        order = {'o', 'O', 'o', 'O',
-                 'o', 'O', 'o', 'C'};
-    } else if ( int_type == "J" ) {
-        order = {'O', 'O', 'o', 'o',
-                 'O', 'C', 'o', 'o',
-                 'C', 'C', 'o', 'o'};
-    } else if ( int_type == "K" ) {
-        order = {'O', 'o', 'o', 'O',
-                 'O', 'o', 'o', 'C',
-                 'C', 'o', 'o', 'C'};
+    if (int_type == "F") {
+        order = {'o', 'O', 'o', 'O', 'o', 'O', 'o', 'C', 'o', 'C', 'o', 'C'};
+    } else if (int_type == "F2") {
+        order = {'o', 'o', 'o', 'O', 'o', 'o', 'o', 'C'};
+    } else if (int_type == "G") {
+        order = {'o', 'O', 'o', 'O', 'o', 'O', 'o', 'C'};
+    } else if (int_type == "J") {
+        order = {'O', 'O', 'o', 'o', 'O', 'C', 'o', 'o', 'C', 'C', 'o', 'o'};
+    } else if (int_type == "K") {
+        order = {'O', 'o', 'o', 'O', 'O', 'o', 'o', 'C', 'C', 'o', 'o', 'C'};
     }
 
-    const bool frz_bra = (nfrzn_ > 0) && ((*ERI).dim(0) == nact_) && ((*ERI).dim(1) == nact_); // No frozen in Fock Build
-    const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_); // No frozen in tensor contractions
-    const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_); // No frozen in tensor contractions
+    const bool frz_bra =
+        (nfrzn_ > 0) && ((*ERI).dim(0) == nact_) && ((*ERI).dim(1) == nact_);  // No frozen in Fock Build
+    const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_);            // No frozen in tensor contractions
+    const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_);            // No frozen in tensor contractions
 
     // (PQ|RS)
-    for (int idx = 0; idx < (order.size()/4); idx++) {
+    for (int idx = 0; idx < (order.size() / 4); idx++) {
         const int i = idx * 4;
-        const int o1 = ( order[i]  == 'C') ? 1 : 0;
-        const int o2 = (order[i+1] == 'C') ? 1 : 0;
-        const int o3 = (order[i+2] == 'C') ? 1 : 0;
-        const int o4 = (order[i+3] == 'C') ? 1 : 0;
+        const int o1 = (order[i] == 'C') ? 1 : 0;
+        const int o2 = (order[i + 1] == 'C') ? 1 : 0;
+        const int o3 = (order[i + 2] == 'C') ? 1 : 0;
+        const int o4 = (order[i + 3] == 'C') ? 1 : 0;
         const auto nbf1 = bs_[o1].basisset()->nbf();
         const auto nbf2 = bs_[o2].basisset()->nbf();
         const auto nbf3 = bs_[o3].basisset()->nbf();
@@ -943,15 +913,15 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
         // Create ERI AO Tensor
         auto GAO = std::make_unique<Tensor<double, 4>>("ERI AO", nbf1, nbf2, nbf3, nbf4);
         timer_on("Two-Body AO Integrals");
-        two_body_ao_computer(int_type, GAO.get(), bs_[o1].basisset(), bs_[o2].basisset(),
-                                                  bs_[o3].basisset(), bs_[o4].basisset());
+        two_body_ao_computer(int_type, GAO.get(), bs_[o1].basisset(), bs_[o2].basisset(), bs_[o3].basisset(),
+                             bs_[o4].basisset());
         timer_off("Two-Body AO Integrals");
 
         // Convert all Psi4 C Matrices to einsums Tensor<double, 2>
-        const auto nmo1 = (o1) ? ncabs_ : ( order[i] == 'O' ) ? nobs_ : (frz_bra) ? nact_ : nocc_;
-        const auto nmo2 = (o2) ? ncabs_ : (order[i+1] == 'O') ? nobs_ : (frz_ket1) ? nact_ : nocc_;
-        const auto nmo3 = (o3) ? ncabs_ : (order[i+2] == 'O') ? nobs_ : (frz_bra) ? nact_ : nocc_;
-        const auto nmo4 = (o4) ? ncabs_ : (order[i+3] == 'O') ? nobs_ : (frz_ket2) ? nact_ : nocc_;
+        const auto nmo1 = (o1) ? ncabs_ : (order[i] == 'O') ? nobs_ : (frz_bra) ? nact_ : nocc_;
+        const auto nmo2 = (o2) ? ncabs_ : (order[i + 1] == 'O') ? nobs_ : (frz_ket1) ? nact_ : nocc_;
+        const auto nmo3 = (o3) ? ncabs_ : (order[i + 2] == 'O') ? nobs_ : (frz_bra) ? nact_ : nocc_;
+        const auto nmo4 = (o4) ? ncabs_ : (order[i + 3] == 'O') ? nobs_ : (frz_ket2) ? nact_ : nocc_;
 
         // Transform ERI AO Tensor to ERI MO Tensor
         auto PRQS = std::make_unique<Tensor<double, 4>>("PRQS", nmo1, nmo3, nmo2, nmo4);
@@ -1033,7 +1003,7 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
                         set_ERI(ERI_rpSQ, rpSQ_view);
                     }
                 }
-            } // end of if statement
+            }  // end of if statement
 
             if (nbf2 != nbf1 && nbf2 != nbf3 && nbf2 != nbf4 && int_type == "J") {
                 Tensor<double, 4> QSPR{"QSPR", nmo2, nmo4, nmo1, nmo3};
@@ -1046,7 +1016,7 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
                         set_ERI(ERI_qsPR, qsPR_view);
                     }
                 }
-            } // end of if statement
+            }  // end of if statement
 
             if (nbf4 != nbf1 && nbf4 != nbf2 && nbf4 != nbf3 && int_type == "K") {
                 Tensor<double, 4> SQRP{"SQRP", nmo4, nmo2, nmo3, nmo1};
@@ -1059,44 +1029,38 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
                         set_ERI(ERI_sqRP, sqRP_view);
                     }
                 }
-            } // end of if statement
+            }  // end of if statement
         }
-    timer_off("Set in ERI");
-    } // end of for loop
+        timer_off("Set in ERI");
+    }  // end of for loop
 }
 
-void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor<double, 4> *ERI,
-                                einsums::Tensor<double, 3> *J_inv_AB)
-{
+void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor<double, 4>* ERI,
+                                einsums::Tensor<double, 3>* J_inv_AB) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
     // In (PQ|RS) ordering
     std::vector<char> order = {'o', 'o', 'o', 'o'};
-    if ( int_type == "G" ) {
-        order = {'o', 'O', 'o', 'O',
-                 'o', 'O', 'o', 'C'};
-    } else if ( int_type == "F" ) {
-        order = {'o', 'O', 'o', 'O',
-                 'o', 'O', 'o', 'C',
-                 'o', 'C', 'o', 'O',
-                 'o', 'C', 'o', 'C'};
-    } else if ( int_type == "F2" ) {
-        order = {'o', 'o', 'o', 'O',
-                 'o', 'o', 'o', 'C'};
+    if (int_type == "G") {
+        order = {'o', 'O', 'o', 'O', 'o', 'O', 'o', 'C'};
+    } else if (int_type == "F") {
+        order = {'o', 'O', 'o', 'O', 'o', 'O', 'o', 'C', 'o', 'C', 'o', 'O', 'o', 'C', 'o', 'C'};
+    } else if (int_type == "F2") {
+        order = {'o', 'o', 'o', 'O', 'o', 'o', 'o', 'C'};
     }
 
-    const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_); // No frozen in tensor contractions
-    const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_); // No frozen in tensor contractions
+    const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_);  // No frozen in tensor contractions
+    const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_);  // No frozen in tensor contractions
 
     // (PQ|RS)
-    for (int idx = 0; idx < (order.size()/4); idx++) {
+    for (int idx = 0; idx < (order.size() / 4); idx++) {
         const int i = idx * 4;
-        const auto nmo2 = (order[i+1] == 'C') ? ncabs_ : (order[i+1] == 'O') ? nobs_ : (frz_ket1) ? nact_ : nocc_;
-        const auto nmo4 = (order[i+3] == 'C') ? ncabs_ : (order[i+3] == 'O') ? nobs_ : (frz_ket2) ? nact_ : nocc_;
-        const auto off2 = (order[i+1] == 'C') ? nobs_ : 0;
-        const auto off4 = (order[i+3] == 'C') ? nobs_ : 0;
+        const auto nmo2 = (order[i + 1] == 'C') ? ncabs_ : (order[i + 1] == 'O') ? nobs_ : (frz_ket1) ? nact_ : nocc_;
+        const auto nmo4 = (order[i + 3] == 'C') ? ncabs_ : (order[i + 3] == 'O') ? nobs_ : (frz_ket2) ? nact_ : nocc_;
+        const auto off2 = (order[i + 1] == 'C') ? nobs_ : 0;
+        const auto off4 = (order[i + 3] == 'C') ? nobs_ : 0;
 
         // Dunlap's robust density-fitting
         auto phys_robust = std::make_unique<Tensor<double, 4>>("<PR|F12|QS> MO", nact_, nact_, nmo2, nmo4);
@@ -1110,19 +1074,19 @@ void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor
             // Term 1
             auto offm2 = (frz_ket1) ? nfrzn_ : 0;
             auto offm4 = (frz_ket2 && nmo4 != nact_) ? nfrzn_ : 0;
-            Tensor left_metric  = (*J_inv_AB)(All, Range{0, nact_}, Range{off2 + offm2, nmo2 + off2 + offm2});
+            Tensor left_metric = (*J_inv_AB)(All, Range{0, nact_}, Range{off2 + offm2, nmo2 + off2 + offm2});
             Tensor right_oper = (*ARPQ)(All, Range{0, nact_}, Range{off4 + offm4, nmo4 + off4 + offm4});
             einsum(Indices{p, q, r, s}, &chem_robust, Indices{A, p, q}, left_metric, Indices{A, r, s}, right_oper);
 
-            if ( int_type != "G" ) {
+            if (int_type != "G") {
                 // Term 2
                 auto offm2 = (frz_ket1 && nmo4 != nact_) ? nfrzn_ : 0;
                 auto offm4 = (frz_ket2) ? nfrzn_ : 0;
                 Tensor right_metric = (*J_inv_AB)(All, Range{0, nact_}, Range{off4 + offm4, nmo4 + off4 + offm4});
                 {
-                    Tensor left_oper  = (*ARPQ)(All, Range{0, nact_}, Range{off2 + offm2, nmo2 + off2 + offm2});
-                    einsum(1.0, Indices{p, q, r, s}, &chem_robust,
-                           1.0, Indices{A, p, q}, left_oper, Indices{A, r, s}, right_metric);
+                    Tensor left_oper = (*ARPQ)(All, Range{0, nact_}, Range{off2 + offm2, nmo2 + off2 + offm2});
+                    einsum(1.0, Indices{p, q, r, s}, &chem_robust, 1.0, Indices{A, p, q}, left_oper, Indices{A, r, s},
+                           right_metric);
                 }
                 ARPQ.reset();
 
@@ -1134,8 +1098,8 @@ void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor
                     Tensor<double, 3> tmp{"Temp", naux_, nact_, nmo4};
                     einsum(Indices{A, r, s}, &tmp, Indices{A, B}, ARB, Indices{B, r, s}, right_metric);
                     ARB.reset();
-                    einsum(1.0, Indices{p, q, r, s}, &chem_robust,
-                           -1.0, Indices{A, p, q}, left_metric, Indices{A, r, s}, tmp);
+                    einsum(1.0, Indices{p, q, r, s}, &chem_robust, -1.0, Indices{A, p, q}, left_metric,
+                           Indices{A, r, s}, tmp);
                 }
             }
             timer_off("Robust DF Procedure");
@@ -1154,7 +1118,8 @@ void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor
             }
         }
         timer_off("Set in ERI");
-    } // end of for loop
+    }  // end of for loop
 }
 
-}} // End namespaces
+}  // namespace f12
+}  // namespace psi

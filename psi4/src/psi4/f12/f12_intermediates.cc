@@ -30,10 +30,10 @@
 
 #include "einsums.hpp"
 
-namespace psi { namespace f12 {
+namespace psi {
+namespace f12 {
 
-void MP2F12::form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k)
-{
+void MP2F12::form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -44,9 +44,7 @@ void MP2F12::form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2>
     {
         outfile->Printf("     Forming J\n");
         auto J = std::make_unique<Tensor<double, 4>>("Coulomb", nri_, nocc_, nri_, nocc_);
-        form_teints("J", J.get(), {'O', 'O', 'o', 'o',
-                                   'O', 'C', 'o', 'o',
-                                   'C', 'C', 'o', 'o'});
+        form_teints("J", J.get(), {'O', 'O', 'o', 'o', 'O', 'C', 'o', 'o', 'C', 'C', 'o', 'o'});
 
         Tensor<double, 4> J_sorted{"pqiI", nri_, nri_, nocc_, nocc_};
         sort(Indices{p, q, i, I}, &J_sorted, Indices{p, i, q, I}, J);
@@ -57,9 +55,7 @@ void MP2F12::form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2>
     {
         outfile->Printf("     Forming K\n");
         auto K = std::make_unique<Tensor<double, 4>>("Exhange", nri_, nocc_, nocc_, nri_);
-        form_teints("K", K.get(), {'O', 'o', 'o', 'O',
-                                   'O', 'o', 'o', 'C',
-                                   'C', 'o', 'o', 'C'});
+        form_teints("K", K.get(), {'O', 'o', 'o', 'O', 'O', 'o', 'o', 'C', 'C', 'o', 'o', 'C'});
 
         Tensor<double, 4> K_sorted{"pqiI", nri_, nri_, nocc_, nocc_};
         sort(Indices{p, q, i, I}, &K_sorted, Indices{p, i, I, q}, K);
@@ -67,13 +63,10 @@ void MP2F12::form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2>
         einsum(Indices{p, q}, &(*k), Indices{p, q, i, I}, K_sorted, Indices{i, I}, Id);
     }
 
-    tensor_algebra::element([](double const &val1, double const &val2)
-                            -> double { return val1 - val2; },
-                            &(*f), *k);
+    tensor_algebra::element([](double const &val1, double const &val2) -> double { return val1 - val2; }, &(*f), *k);
 }
 
-void MP2F12::form_df_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k)
-{
+void MP2F12::form_df_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -108,13 +101,10 @@ void MP2F12::form_df_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double,
         }
     }
 
-    tensor_algebra::element([](double const &val1, double const &val2)
-                            -> double { return val1 - val2; },
-                            &(*f), *k);
+    tensor_algebra::element([](double const &val1, double const &val2) -> double { return val1 - val2; }, &(*f), *k);
 }
 
-void MP2F12::form_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 4> *X)
-{
+void MP2F12::form_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 4> *X) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -153,8 +143,7 @@ void MP2F12::form_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 4> 
 }
 
 void MP2F12::form_df_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 4> *X,
-                         einsums::Tensor<double, 3> *J_inv_AB)
-{
+                         einsums::Tensor<double, 3> *J_inv_AB) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -192,8 +181,7 @@ void MP2F12::form_df_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 
     }
 }
 
-void MP2F12::form_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2> *f)
-{
+void MP2F12::form_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2> *f) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -214,8 +202,7 @@ void MP2F12::form_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2> *f
 }
 
 void MP2F12::form_df_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2> *f,
-                       einsums::Tensor<double, 3> *J_inv_AB)
-{
+                       einsums::Tensor<double, 3> *J_inv_AB) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -235,9 +222,7 @@ void MP2F12::form_df_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2>
     sort(1.0, Indices{k, l, a, b}, &(*C), 1.0, Indices{l, k, b, a}, tmp);
 }
 
-void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f,
-                    einsums::Tensor<double, 2> *k)
-{
+void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -247,16 +232,15 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
     Tensor<double, 4> tmp{"klmn | lkmn", nact_, nact_, nact_, nact_};
     {
         Tensor<double, 4> F2_ooo1{"<oo|F2|o1>", nact_, nact_, nact_, nri_};
-        form_teints("F2", &F2_ooo1, {'o', 'o', 'o', 'O',
-                                     'o', 'o', 'o', 'C'});
+        form_teints("F2", &F2_ooo1, {'o', 'o', 'o', 'O', 'o', 'o', 'o', 'C'});
 
         Tensor<double, 2> fk_o1{"Fock-Exchange Matrix", nact_, nri_};
         {
             auto f_o1 = (*f)(Range{nfrzn_, nocc_}, All);
             auto k_o1 = (*k)(Range{nfrzn_, nocc_}, All);
-            tensor_algebra::element([](double const &val1, double const &val2, double const &val3)
-                                    -> double { return val2 + val3; },
-                                    &fk_o1, f_o1, k_o1);
+            tensor_algebra::element(
+                [](double const &val1, double const &val2, double const &val3) -> double { return val2 + val3; },
+                &fk_o1, f_o1, k_o1);
         }
 
         einsum(Indices{l, k, n, m}, &tmp, Indices{l, k, n, I}, F2_ooo1, Indices{m, I}, fk_o1);
@@ -265,9 +249,7 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
     }
 
     auto F = std::make_unique<Tensor<double, 4>>("<oo|F|11>", nact_, nact_, nri_, nri_);
-    form_teints("F", F.get(), {'o', 'O', 'o', 'O',
-                               'o', 'C', 'o', 'O',
-                               'o', 'C', 'o', 'C'});
+    form_teints("F", F.get(), {'o', 'O', 'o', 'O', 'o', 'C', 'o', 'O', 'o', 'C', 'o', 'C'});
 
     {
         Tensor<double, 4> rank4{"Contraction 1", nact_, nact_, nri_, nri_};
@@ -291,7 +273,7 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
     TensorView<double, 4> F_ooco_temp{(*F), Dim<4>{nact_, nact_, ncabs_, nocc_}, Offset<4>{0, 0, nobs_, 0}};
     {
         Tensor F_ooco = F_ooco_temp;
-        Tensor f_oo   = (*f)(Range{0, nocc_}, Range{0, nocc_});
+        Tensor f_oo = (*f)(Range{0, nocc_}, Range{0, nocc_});
         Tensor<double, 4> rank4{"Contraction 1", nact_, nact_, ncabs_, nocc_};
 
         einsum(Indices{l, k, p, i}, &rank4, Indices{l, k, p, j}, F_ooco, Indices{j, i}, f_oo);
@@ -299,7 +281,6 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
         sort(1.0, Indices{k, l, m, n}, &(*B), 1.0, Indices{k, l, m, n}, tmp);
         sort(1.0, Indices{k, l, m, n}, &(*B), 1.0, Indices{l, k, n, m}, tmp);
     }
-
 
     TensorView<double, 4> F_oovq_temp{(*F), Dim<4>{nact_, nact_, nvir_, nobs_}, Offset<4>{0, 0, nocc_, 0}};
     {
@@ -316,7 +297,7 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
     {
         Tensor F_ooco = F_ooco_temp;
         Tensor F_ooc1 = (*F)(All, All, Range{nobs_, nri_}, All);
-        Tensor f_o1   = (*f)(Range{0, nocc_}, All);
+        Tensor f_o1 = (*f)(Range{0, nocc_}, All);
         Tensor<double, 4> rank4{"Contraction 1", nact_, nact_, ncabs_, nocc_};
 
         einsum(Indices{l, k, p, j}, &rank4, Indices{l, k, p, I}, F_ooc1, Indices{j, I}, f_o1);
@@ -328,7 +309,7 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
     {
         Tensor F_oovq = F_oovq_temp;
         Tensor F_oovc = (*F)(All, All, Range{nocc_, nobs_}, Range{nobs_, nri_});
-        Tensor f_pc   = (*f)(Range{0, nobs_}, Range{nobs_, nri_});
+        Tensor f_pc = (*f)(Range{0, nobs_}, Range{nobs_, nri_});
         Tensor<double, 4> rank4{"Contraction 1", nact_, nact_, nvir_, ncabs_};
 
         einsum(Indices{l, k, b, q}, &rank4, Indices{l, k, b, r}, F_oovq, Indices{r, q}, f_pc);
@@ -341,9 +322,8 @@ void MP2F12::form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f
     sort(0.5, Indices{m, n, k, l}, &(*B), 0.5, Indices{k, l, m, n}, B_nosymm);
 }
 
-void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f,
-                       einsums::Tensor<double, 2> *k, einsums::Tensor<double, 3> *J_inv_AB)
-{
+void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k,
+                       einsums::Tensor<double, 3> *J_inv_AB) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -353,16 +333,15 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
     Tensor<double, 4> tmp{"klmn | lkmn", nact_, nact_, nact_, nact_};
     {
         Tensor<double, 4> F2_ooo1{"<oo|F2|o1>", nact_, nact_, nact_, nri_};
-        form_df_teints("F2", &F2_ooo1, J_inv_AB, {'o', 'o', 'o', 'O',
-                                                  'o', 'o', 'o', 'C'});
+        form_df_teints("F2", &F2_ooo1, J_inv_AB, {'o', 'o', 'o', 'O', 'o', 'o', 'o', 'C'});
 
         Tensor<double, 2> fk_o1{"Fock-Exchange Matrix", nact_, nri_};
         {
             auto f_o1 = (*f)(Range{nfrzn_, nocc_}, All);
             auto k_o1 = (*k)(Range{nfrzn_, nocc_}, All);
-            tensor_algebra::element([](double const &val1, double const &val2, double const &val3)
-                                    -> double { return val2 + val3; },
-                                    &fk_o1, f_o1, k_o1);
+            tensor_algebra::element(
+                [](double const &val1, double const &val2, double const &val3) -> double { return val2 + val3; },
+                &fk_o1, f_o1, k_o1);
         }
 
         einsum(Indices{l, k, n, m}, &tmp, Indices{l, k, n, I}, F2_ooo1, Indices{m, I}, fk_o1);
@@ -371,10 +350,8 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
     }
 
     auto F = std::make_unique<Tensor<double, 4>>("<oo|F|11>", nact_, nact_, nri_, nri_);
-    form_df_teints("F", F.get(), J_inv_AB, {'o', 'O', 'o', 'O',
-                                            'o', 'O', 'o', 'C',
-                                            'o', 'C', 'o', 'O',
-                                            'o', 'C', 'o', 'C'});
+    form_df_teints("F", F.get(), J_inv_AB,
+                   {'o', 'O', 'o', 'O', 'o', 'O', 'o', 'C', 'o', 'C', 'o', 'O', 'o', 'C', 'o', 'C'});
 
     {
         Tensor<double, 4> rank4{"Contraction 1", nact_, nact_, nri_, nri_};
@@ -398,7 +375,7 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
     TensorView<double, 4> F_ooco_temp{(*F), Dim<4>{nact_, nact_, ncabs_, nocc_}, Offset<4>{0, 0, nobs_, 0}};
     {
         Tensor F_ooco = F_ooco_temp;
-        Tensor f_oo   = (*f)(Range{0, nocc_}, Range{0, nocc_});
+        Tensor f_oo = (*f)(Range{0, nocc_}, Range{0, nocc_});
         Tensor<double, 4> rank4{"Contraction 1", nact_, nact_, ncabs_, nocc_};
 
         einsum(Indices{l, k, p, i}, &rank4, Indices{l, k, p, j}, F_ooco, Indices{j, i}, f_oo);
@@ -406,7 +383,6 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
         sort(1.0, Indices{k, l, m, n}, &(*B), 1.0, Indices{k, l, m, n}, tmp);
         sort(1.0, Indices{k, l, m, n}, &(*B), 1.0, Indices{l, k, n, m}, tmp);
     }
-
 
     TensorView<double, 4> F_oovq_temp{(*F), Dim<4>{nact_, nact_, nvir_, nobs_}, Offset<4>{0, 0, nocc_, 0}};
     {
@@ -423,7 +399,7 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
     {
         Tensor F_ooco = F_ooco_temp;
         Tensor F_ooc1 = (*F)(All, All, Range{nobs_, nri_}, All);
-        Tensor f_o1   = (*f)(Range{0, nocc_}, All);
+        Tensor f_o1 = (*f)(Range{0, nocc_}, All);
         Tensor<double, 4> rank4{"Contraction 1", nact_, nact_, ncabs_, nocc_};
 
         einsum(Indices{l, k, p, j}, &rank4, Indices{l, k, p, I}, F_ooc1, Indices{j, I}, f_o1);
@@ -435,7 +411,7 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
     {
         Tensor F_oovq = F_oovq_temp;
         Tensor F_oovc = (*F)(All, All, Range{nocc_, nobs_}, Range{nobs_, nri_});
-        Tensor f_pc   = (*f)(Range{0, nobs_}, Range{nobs_, nri_});
+        Tensor f_pc = (*f)(Range{0, nobs_}, Range{nobs_, nri_});
         Tensor<double, 4> rank4{"Contraction 1", nact_, nact_, nvir_, ncabs_};
 
         einsum(Indices{l, k, b, q}, &rank4, Indices{l, k, b, r}, F_oovq, Indices{r, q}, f_pc);
@@ -453,8 +429,7 @@ void MP2F12::form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2>
 ////////////////////////////////
 
 void DiskMP2F12::form_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTensor<double, 2> *k,
-                           einsums::DiskTensor<double, 2> *fk)
-{
+                           einsums::DiskTensor<double, 2> *fk) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -468,7 +443,8 @@ void DiskMP2F12::form_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTenso
         if (!J.existed()) form_teints("J", &J);
 
         for (int i = 0; i < nocc_; i++) {
-            auto J_view = J(All, i, All, i); J_view.set_read_only(true);
+            auto J_view = J(All, i, All, i);
+            J_view.set_read_only(true);
             sort(1.0, Indices{p, q}, &f_view.get(), 2.0, Indices{p, q}, J_view.get());
         }
 
@@ -483,7 +459,8 @@ void DiskMP2F12::form_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTenso
 
         auto k_view = (*k)(All, All);
         for (int i = 0; i < nocc_; i++) {
-            auto K_view = K(All, i, i, All); K_view.set_read_only(true);
+            auto K_view = K(All, i, i, All);
+            K_view.set_read_only(true);
             sort(1.0, Indices{p, q}, &k_view.get(), 1.0, Indices{p, q}, K_view.get());
         }
 
@@ -492,8 +469,7 @@ void DiskMP2F12::form_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTenso
 }
 
 void DiskMP2F12::form_df_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTensor<double, 2> *k,
-                              einsums::DiskTensor<double, 2> *fk)
-{
+                              einsums::DiskTensor<double, 2> *fk) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -541,8 +517,7 @@ void DiskMP2F12::form_df_fock(einsums::DiskTensor<double, 2> *f, einsums::DiskTe
 }
 
 void DiskMP2F12::form_V_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTensor<double, 4> *F,
-                          einsums::DiskTensor<double, 4> *G_F, einsums::DiskTensor<double, 4> *FG_F2)
-{
+                          einsums::DiskTensor<double, 4> *G_F, einsums::DiskTensor<double, 4> *FG_F2) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -554,10 +529,14 @@ void DiskMP2F12::form_V_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTenso
         for (int J = I; J < nact_; J++) {
             // Terms 2 and 3
             {
-                auto G_F_IJ_oc = (*G_F)(I, J, Range{0, nocc_}, Range{nobs_, nri_}); G_F_IJ_oc.set_read_only(true);
-                auto G_F_JI_oc = (*G_F)(J, I, Range{0, nocc_}, Range{nobs_, nri_}); G_F_JI_oc.set_read_only(true);
-                auto F_IJ_oc = (*F)(I, J, Range{0, nocc_}, Range{nobs_, nri_}); F_IJ_oc.set_read_only(true);
-                auto F_JI_oc = (*F)(J, I, Range{0, nocc_}, Range{nobs_, nri_}); F_JI_oc.set_read_only(true);
+                auto G_F_IJ_oc = (*G_F)(I, J, Range{0, nocc_}, Range{nobs_, nri_});
+                G_F_IJ_oc.set_read_only(true);
+                auto G_F_JI_oc = (*G_F)(J, I, Range{0, nocc_}, Range{nobs_, nri_});
+                G_F_JI_oc.set_read_only(true);
+                auto F_IJ_oc = (*F)(I, J, Range{0, nocc_}, Range{nobs_, nri_});
+                F_IJ_oc.set_read_only(true);
+                auto F_JI_oc = (*F)(J, I, Range{0, nocc_}, Range{nobs_, nri_});
+                F_JI_oc.set_read_only(true);
 
                 einsum(Indices{}, &tmp1, Indices{m, q}, G_F_IJ_oc.get(), Indices{m, q}, F_IJ_oc.get());
                 einsum(1.0, Indices{}, &tmp1, 1.0, Indices{m, q}, G_F_JI_oc.get(), Indices{m, q}, F_JI_oc.get());
@@ -570,9 +549,12 @@ void DiskMP2F12::form_V_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTenso
 
             // Term 4
             {
-                auto G_F_IJ_pq = (*G_F)(I, J, Range{0, nobs_}, Range{0, nobs_}); G_F_IJ_pq.set_read_only(true);
-                auto G_F_JI_pq = (*G_F)(J, I, Range{0, nobs_}, Range{0, nobs_}); G_F_JI_pq.set_read_only(true);
-                auto F_IJ_pq = (*F)(I, J, Range{0, nobs_}, Range{0, nobs_}); F_IJ_pq.set_read_only(true);
+                auto G_F_IJ_pq = (*G_F)(I, J, Range{0, nobs_}, Range{0, nobs_});
+                G_F_IJ_pq.set_read_only(true);
+                auto G_F_JI_pq = (*G_F)(J, I, Range{0, nobs_}, Range{0, nobs_});
+                G_F_JI_pq.set_read_only(true);
+                auto F_IJ_pq = (*F)(I, J, Range{0, nobs_}, Range{0, nobs_});
+                F_IJ_pq.set_read_only(true);
 
                 einsum(1.0, Indices{}, &tmp1, 1.0, Indices{p, q}, F_IJ_pq.get(), Indices{p, q}, G_F_IJ_pq.get());
 
@@ -582,8 +564,11 @@ void DiskMP2F12::form_V_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTenso
             }
 
             int start = 0, stop = nact_;
-            if ((*VX).name() == "X Intermediate Tensor") { start = nfrzn_, stop = nocc_; }
-            auto FG_F2_IJ = (*FG_F2)(I, J, All, Range{start, stop}); FG_F2_IJ.set_read_only(true); // Term 1
+            if ((*VX).name() == "X Intermediate Tensor") {
+                start = nfrzn_, stop = nocc_;
+            }
+            auto FG_F2_IJ = (*FG_F2)(I, J, All, Range{start, stop});
+            FG_F2_IJ.set_read_only(true);  // Term 1
 
             auto VX_IJ = (*VX)(I, J, All, All);
             VX_IJ(I, J) = FG_F2_IJ(I, J) - tmp1;
@@ -593,18 +578,20 @@ void DiskMP2F12::form_V_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTenso
 }
 
 void DiskMP2F12::form_C(einsums::DiskTensor<double, 4> *C, einsums::DiskTensor<double, 4> *F,
-                    einsums::DiskTensor<double, 2> *f)
-{
+                        einsums::DiskTensor<double, 2> *f) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
 
-    auto f_vc = (*f)(Range{nocc_, nobs_}, Range{nobs_, nri_}); f_vc.set_read_only(true);
+    auto f_vc = (*f)(Range{nocc_, nobs_}, Range{nobs_, nri_});
+    f_vc.set_read_only(true);
 
     for (int I = 0; I < nact_; I++) {
         for (int J = I; J < nact_; J++) {
-            auto F_IJ_vc = (*F)(I, J, Range{nocc_, nobs_}, Range{nobs_, nri_}); F_IJ_vc.set_read_only(true);
-            auto F_JI_vc = (*F)(J, I, Range{nocc_, nobs_}, Range{nobs_, nri_}); F_JI_vc.set_read_only(true);
+            auto F_IJ_vc = (*F)(I, J, Range{nocc_, nobs_}, Range{nobs_, nri_});
+            F_IJ_vc.set_read_only(true);
+            auto F_JI_vc = (*F)(J, I, Range{nocc_, nobs_}, Range{nobs_, nri_});
+            F_JI_vc.set_read_only(true);
 
             // IJAB
             {
@@ -624,10 +611,9 @@ void DiskMP2F12::form_C(einsums::DiskTensor<double, 4> *C, einsums::DiskTensor<d
 }
 
 void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<double, 4> *Uf,
-                    einsums::DiskTensor<double, 4> *F2, einsums::DiskTensor<double, 4> *F,
-                    einsums::DiskTensor<double, 2> *f, einsums::DiskTensor<double, 2> *fk,
-                    einsums::DiskTensor<double, 2> *kk)
-{
+                        einsums::DiskTensor<double, 4> *F2, einsums::DiskTensor<double, 4> *F,
+                        einsums::DiskTensor<double, 2> *f, einsums::DiskTensor<double, 2> *fk,
+                        einsums::DiskTensor<double, 2> *kk) {
     using namespace einsums;
     using namespace tensor_algebra;
     using namespace tensor_algebra::index;
@@ -640,13 +626,17 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     {
         for (int I = 0; I < nact_; I++) {
             for (int J = I; J < nact_; J++) {
-                auto fk_I_1 = (*fk)(I + nfrzn_, All); fk_I_1.set_read_only(true);
-                auto fk_J_1 = (*fk)(J + nfrzn_, All); fk_J_1.set_read_only(true);
+                auto fk_I_1 = (*fk)(I + nfrzn_, All);
+                fk_I_1.set_read_only(true);
+                auto fk_J_1 = (*fk)(J + nfrzn_, All);
+                fk_J_1.set_read_only(true);
 
                 // IJIJ and JIJI
                 {
-                    auto F2_JIJ_1 = (*F2)(J, I, J, All); F2_JIJ_1.set_read_only(true);
-                    auto F2_IJI_1 = (*F2)(I, J, I, All); F2_IJI_1.set_read_only(true);
+                    auto F2_JIJ_1 = (*F2)(J, I, J, All);
+                    F2_JIJ_1.set_read_only(true);
+                    auto F2_IJI_1 = (*F2)(I, J, I, All);
+                    F2_IJI_1.set_read_only(true);
 
                     einsum(Indices{}, &tmp1, Indices{A}, fk_I_1.get(), Indices{A}, F2_JIJ_1.get());
                     einsum(1.0, Indices{}, &tmp1, 1.0, Indices{A}, F2_IJI_1.get(), Indices{A}, fk_J_1.get());
@@ -654,14 +644,17 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
 
                 // IJJI and JIIJ
                 if (I != J) {
-                    auto F2_IJJ_1 = (*F2)(I, J, J, All); F2_IJJ_1.set_read_only(true);
-                    auto F2_JII_1 = (*F2)(J, I, I, All); F2_JII_1.set_read_only(true);
+                    auto F2_IJJ_1 = (*F2)(I, J, J, All);
+                    F2_IJJ_1.set_read_only(true);
+                    auto F2_JII_1 = (*F2)(J, I, I, All);
+                    F2_JII_1.set_read_only(true);
 
                     einsum(Indices{}, &tmp2, Indices{A}, fk_I_1.get(), Indices{A}, F2_IJJ_1.get());
                     einsum(1.0, Indices{}, &tmp2, 1.0, Indices{A}, F2_JII_1.get(), Indices{A}, fk_J_1.get());
                 }
 
-                auto Uf_IJ = (*Uf)(I, J, All, All); Uf_IJ.set_read_only(true); // Term 1
+                auto Uf_IJ = (*Uf)(I, J, All, All);
+                Uf_IJ.set_read_only(true);  // Term 1
 
                 auto B_IJ = (*B)(I, J, All, All);
                 auto B_JI = (*B)(J, I, All, All);
@@ -674,12 +667,15 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     // Term 3
     {
         Tensor<double, 2> rank2{"Contraction 1", nri_, nri_};
-        auto k_view = (*kk)(All, All); k_view.set_read_only(true);
+        auto k_view = (*kk)(All, All);
+        k_view.set_read_only(true);
 
         for (int I = 0; I < nact_; I++) {
             for (int J = I; J < nact_; J++) {
-                auto F_IJ_11 = (*F)(I, J, All, All); F_IJ_11.set_read_only(true);
-                auto F_JI_11 = (*F)(J, I, All, All); F_JI_11.set_read_only(true);
+                auto F_IJ_11 = (*F)(I, J, All, All);
+                F_IJ_11.set_read_only(true);
+                auto F_JI_11 = (*F)(J, I, All, All);
+                F_JI_11.set_read_only(true);
 
                 // IJIJ and IJJI
                 {
@@ -712,12 +708,15 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     // Term 4
     {
         Tensor<double, 2> rank2{"Contraction 1", nocc_, nri_};
-        auto f_view = (*f)(All, All); f_view.set_read_only(true);
+        auto f_view = (*f)(All, All);
+        f_view.set_read_only(true);
 
         for (int I = 0; I < nact_; I++) {
             for (int J = I; J < nact_; J++) {
-                auto F_IJ_o1 = (*F)(I, J, Range{0, nocc_}, All); F_IJ_o1.set_read_only(true);
-                auto F_JI_o1 = (*F)(J, I, Range{0, nocc_}, All); F_JI_o1.set_read_only(true);
+                auto F_IJ_o1 = (*F)(I, J, Range{0, nocc_}, All);
+                F_IJ_o1.set_read_only(true);
+                auto F_JI_o1 = (*F)(J, I, Range{0, nocc_}, All);
+                F_JI_o1.set_read_only(true);
 
                 // IJIJ and IJJI
                 {
@@ -750,13 +749,17 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     // Term 5 and Term 7
     {
         Tensor<double, 2> rank2{"Contraction 1", ncabs_, nocc_};
-        auto f_oo = (*f)(Range{0, nocc_}, Range{0, nocc_}); f_oo.set_read_only(true);
-        auto f_o1 = (*f)(Range{0, nocc_}, All); f_o1.set_read_only(true);
+        auto f_oo = (*f)(Range{0, nocc_}, Range{0, nocc_});
+        f_oo.set_read_only(true);
+        auto f_o1 = (*f)(Range{0, nocc_}, All);
+        f_o1.set_read_only(true);
 
         for (int I = 0; I < nact_; I++) {
             for (int J = I; J < nact_; J++) {
-                auto F_IJ_co = (*F)(I, J, Range{nobs_, nri_}, Range{0, nocc_}); F_IJ_co.set_read_only(true);
-                auto F_JI_co = (*F)(J, I, Range{nobs_, nri_}, Range{0, nocc_}); F_JI_co.set_read_only(true);
+                auto F_IJ_co = (*F)(I, J, Range{nobs_, nri_}, Range{0, nocc_});
+                F_IJ_co.set_read_only(true);
+                auto F_JI_co = (*F)(J, I, Range{nobs_, nri_}, Range{0, nocc_});
+                F_JI_co.set_read_only(true);
 
                 // Term 5
                 {
@@ -777,8 +780,10 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
 
                 // Term 7
                 {
-                    auto F_IJ_c1 = (*F)(I, J, Range{nobs_, nri_}, All); F_IJ_c1.set_read_only(true);
-                    auto F_JI_c1 = (*F)(J, I, Range{nobs_, nri_}, All); F_JI_c1.set_read_only(true);
+                    auto F_IJ_c1 = (*F)(I, J, Range{nobs_, nri_}, All);
+                    F_IJ_c1.set_read_only(true);
+                    auto F_JI_c1 = (*F)(J, I, Range{nobs_, nri_}, All);
+                    F_JI_c1.set_read_only(true);
 
                     einsum(Indices{p, j}, &rank2, Indices{p, A}, F_IJ_c1.get(), Indices{j, A}, f_o1.get());
                     einsum(1.0, Indices{}, &tmp1, -2.0, Indices{p, j}, rank2, Indices{p, j}, F_IJ_co.get());
@@ -806,13 +811,17 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     // Term 6 and Term 8
     {
         Tensor<double, 2> rank2{"Contraction 1", nvir_, nobs_};
-        auto f_pq = (*f)(Range{0, nobs_}, Range{0, nobs_}); f_pq.set_read_only(true);
-        auto f_pc   = (*f)(Range{0, nobs_}, Range{nobs_, nri_}); f_pc.set_read_only(true);
+        auto f_pq = (*f)(Range{0, nobs_}, Range{0, nobs_});
+        f_pq.set_read_only(true);
+        auto f_pc = (*f)(Range{0, nobs_}, Range{nobs_, nri_});
+        f_pc.set_read_only(true);
 
         for (int I = 0; I < nact_; I++) {
             for (int J = I; J < nact_; J++) {
-                auto F_IJ_vq = (*F)(I, J, Range{nocc_, nobs_}, Range{0, nobs_}); F_IJ_vq.set_read_only(true);
-                auto F_JI_vq = (*F)(J, I, Range{nocc_, nobs_}, Range{0, nobs_}); F_JI_vq.set_read_only(true);
+                auto F_IJ_vq = (*F)(I, J, Range{nocc_, nobs_}, Range{0, nobs_});
+                F_IJ_vq.set_read_only(true);
+                auto F_JI_vq = (*F)(J, I, Range{nocc_, nobs_}, Range{0, nobs_});
+                F_JI_vq.set_read_only(true);
 
                 // Term 6
                 {
@@ -833,8 +842,10 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
 
                 // Term 8
                 {
-                    auto F_IJ_vc = (*F)(I, J, Range{nocc_, nobs_}, Range{nobs_, nri_}); F_IJ_vc.set_read_only(true);
-                    auto F_JI_vc = (*F)(J, I, Range{nocc_, nobs_}, Range{nobs_, nri_}); F_JI_vc.set_read_only(true);
+                    auto F_IJ_vc = (*F)(I, J, Range{nocc_, nobs_}, Range{nobs_, nri_});
+                    F_IJ_vc.set_read_only(true);
+                    auto F_JI_vc = (*F)(J, I, Range{nocc_, nobs_}, Range{nobs_, nri_});
+                    F_JI_vc.set_read_only(true);
 
                     einsum(Indices{b, q}, &rank2, Indices{b, w}, F_IJ_vc.get(), Indices{q, w}, f_pc.get());
                     einsum(1.0, Indices{}, &tmp1, 2.0, Indices{b, q}, rank2, Indices{b, q}, F_IJ_vq.get());
@@ -860,4 +871,5 @@ void DiskMP2F12::form_B(einsums::DiskTensor<double, 4> *B, einsums::DiskTensor<d
     }
 }
 
-}} // end namespaces
+}  // namespace f12
+}  // namespace psi
