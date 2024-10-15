@@ -40,11 +40,12 @@
 
 #include "einsums.hpp"
 
-namespace psi { namespace f12 {
+namespace psi {
+namespace f12 {
 
 class MP2F12 : public Wavefunction {
-   public: 
-    MP2F12(SharedWavefunction reference_wavefunction, Options& options);
+   public:
+    MP2F12(SharedWavefunction reference_wavefunction, Options &options);
     ~MP2F12() override;
 
     /* Compute the total MP2-F12/3C(FIX) Energy */
@@ -72,7 +73,7 @@ class MP2F12 : public Wavefunction {
     /* Bool to read in precomputed F12 integrals */
     bool f12_read_ints_ = false;
 
-    /* List of orbital spaces: Orbital Basis Set (OBS) 
+    /* List of orbital spaces: Orbital Basis Set (OBS)
        and Complimentary Auxiliary Basis Set (CABS) */
     std::vector<OrbitalSpace> bs_;
 
@@ -126,25 +127,24 @@ class MP2F12 : public Wavefunction {
     virtual void form_D(einsums::Tensor<double, 4> *D, einsums::Tensor<double, 2> *f);
 
     /* Form the CABS Singles correction $\frac{|f^{a'}_{i}}|^2}{e_{a'} - e_{i}}$ */
-    virtual void form_cabs_singles(einsums::Tensor<double,2> *f);
+    virtual void form_cabs_singles(einsums::Tensor<double, 2> *f);
 
     /* Form the F12/3C(FIX) correlation energy */
-    virtual void form_f12_energy(einsums::Tensor<double,4> *V, einsums::Tensor<double,4> *X,
-                                 einsums::Tensor<double,4> *C, einsums::Tensor<double,4> *B,
-                                 einsums::Tensor<double,2> *f, einsums::Tensor<double,4> *G,
-                                 einsums::Tensor<double,4> *D);
-   
+    virtual void form_f12_energy(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 4> *X,
+                                 einsums::Tensor<double, 4> *C, einsums::Tensor<double, 4> *B,
+                                 einsums::Tensor<double, 2> *f, einsums::Tensor<double, 4> *G,
+                                 einsums::Tensor<double, 4> *D);
+
     /* Form the one-electron integrals H = T + V */
     virtual void form_oeints(einsums::Tensor<double, 2> *h);
 
     /* Form the convetional two-electron integrals */
-    virtual void form_teints(const std::string& int_type, einsums::Tensor<double, 4> *ERI,
-                             std::vector<char> order);
-    
+    virtual void form_teints(const std::string &int_type, einsums::Tensor<double, 4> *ERI, std::vector<char> order);
+
     /* Form the density-fitted two-electron integrals */
-    virtual void form_df_teints(const std::string& int_type, einsums::Tensor<double, 4> *ERI,
+    virtual void form_df_teints(const std::string &int_type, einsums::Tensor<double, 4> *ERI,
                                 einsums::Tensor<double, 3> *J_inv_AB, std::vector<char> order);
-    
+
     /* Form the Fock matrix */
     virtual void form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k);
 
@@ -157,66 +157,64 @@ class MP2F12 : public Wavefunction {
     /* Form the density-fitted $V^{ij}_{kl}$ or $X^{ij}_{kl}$ tensor */
     virtual void form_df_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 4> *X,
                              einsums::Tensor<double, 3> *J_inv_AB);
-    
+
     /* Form the $C^{kl}_{ab}$ tensor */
     virtual void form_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2> *f);
 
     /* Form the density-fitted $C^{kl}_{ab}$ tensor */
     virtual void form_df_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2> *f,
                            einsums::Tensor<double, 3> *J_inv_AB);
-    
+
     /* Form the $B^{kl}_{mn}$ tensor */
-    virtual void form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f,
-                        einsums::Tensor<double, 2> *k);
+    virtual void form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k);
 
     /* Form the density-fitted $B^{kl}_{mn}$ tensor */
-    virtual void form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f,
-                           einsums::Tensor<double, 2> *k, einsums::Tensor<double, 3> *J_inv_AB);
+    virtual void form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k,
+                           einsums::Tensor<double, 3> *J_inv_AB);
 
     void print_results();
 
     /* Returns the fixed amplitudes value */
-    double t_(const int& p, const int& q, const int& r, const int& s);
+    double t_(const int &p, const int &q, const int &r, const int &s);
 
     /* Form the $T^{ij}_{ij}\Tilde{V}^{ij}_{ij}$ contirbution to the energy */
-    virtual std::pair<double, double> V_Tilde(einsums::Tensor<double, 2>& V_, einsums::Tensor<double, 4> *C,
-                                      einsums::TensorView<double, 2>& G_ij, einsums::TensorView<double, 2>& D_ij,
-                                      const int& i, const int& j);
+    virtual std::pair<double, double> V_Tilde(einsums::Tensor<double, 2> &V_, einsums::Tensor<double, 4> *C,
+                                              einsums::TensorView<double, 2> &G_ij,
+                                              einsums::TensorView<double, 2> &D_ij, const int &i, const int &j);
 
     /* Form the $T^{ij}_{ij}\Tilde{B}^{ij}_{ij}T^{ij}_{ij}$ contirbution to the energy */
-    virtual std::pair<double, double> B_Tilde(einsums::Tensor<double, 4>& B, einsums::Tensor<double, 4> *C,
-                                      einsums::TensorView<double, 2>& D_ij,
-                                      const int& i, const int& j);
+    virtual std::pair<double, double> B_Tilde(einsums::Tensor<double, 4> &B, einsums::Tensor<double, 4> *C,
+                                              einsums::TensorView<double, 2> &D_ij, const int &i, const int &j);
 
     /* Converts the AO to MO matrices to einsum::Tensors */
-    void convert_C(einsums::Tensor<double,2> *C, OrbitalSpace bs, const int& dim1, const int& dim2,
+    void convert_C(einsums::Tensor<double, 2> *C, OrbitalSpace bs, const int &dim1, const int &dim2,
                    const bool use_frzn);
-    void convert_C(einsums::Tensor<double,2> *C, OrbitalSpace bs, const int& dim1, const int& dim2);
+    void convert_C(einsums::Tensor<double, 2> *C, OrbitalSpace bs, const int &dim1, const int &dim2);
 
     /* Places the computed integral in the einsum::Tensor */
-    virtual void set_ERI(einsums::TensorView<double, 4>& ERI_Slice, einsums::Tensor<double, 4> *Slice);
-    void set_ERI(einsums::TensorView<double, 3>& ERI_Slice, einsums::Tensor<double, 3> *Slice);
+    virtual void set_ERI(einsums::TensorView<double, 4> &ERI_Slice, einsums::Tensor<double, 4> *Slice);
+    void set_ERI(einsums::TensorView<double, 3> &ERI_Slice, einsums::Tensor<double, 3> *Slice);
 
     /* Computes the conventional two-body integrals */
-    void two_body_ao_computer(const std::string& int_type, einsums::Tensor<double, 4> *GAO,
+    void two_body_ao_computer(const std::string &int_type, einsums::Tensor<double, 4> *GAO,
                               std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                               std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
 
     /* Computes the DF three-index integrals */
-    void three_index_ao_computer(const std::string& int_type, einsums::Tensor<double, 3> *Bpq,
+    void three_index_ao_computer(const std::string &int_type, einsums::Tensor<double, 3> *Bpq,
                                  std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2);
 
     /* Form the integrals containing the DF metric [J_AB]^{-1}(B|PQ) */
     void form_metric_ints(einsums::Tensor<double, 3> *DF_ERI, bool is_fock);
-    
+
     /* Form the integrals containing the explicit correlation (B|\hat{A}_{12}|PQ) */
-    void form_oper_ints(const std::string& int_type, einsums::Tensor<double, 3> *DF_ERI);
-    void form_oper_ints(const std::string& int_type, einsums::Tensor<double, 2> *DF_ERI);
+    void form_oper_ints(const std::string &int_type, einsums::Tensor<double, 3> *DF_ERI);
+    void form_oper_ints(const std::string &int_type, einsums::Tensor<double, 2> *DF_ERI);
 };
 
 class DiskMP2F12 : public MP2F12 {
    public:
-    DiskMP2F12(SharedWavefunction reference_wavefunction, Options& options);
+    DiskMP2F12(SharedWavefunction reference_wavefunction, Options &options);
     ~DiskMP2F12() override;
 
     /* Compute the total MP2-F12/3C(FIX) Energy */
@@ -226,23 +224,23 @@ class DiskMP2F12 : public MP2F12 {
     /* Form the energy denominator */
     void form_D(einsums::DiskTensor<double, 4> *D, einsums::DiskTensor<double, 2> *f);
 
-   //  /* Form the CABS Singles correction $\frac{|f^{a'}_{i}}|^2}{e_{a'} - e_{i}}$ */
-    void form_cabs_singles(einsums::DiskTensor<double,2> *f);
+    //  /* Form the CABS Singles correction $\frac{|f^{a'}_{i}}|^2}{e_{a'} - e_{i}}$ */
+    void form_cabs_singles(einsums::DiskTensor<double, 2> *f);
 
     /* Form the F12/3C(FIX) correlation energy */
-    void form_f12_energy(einsums::DiskTensor<double,4> *V, einsums::DiskTensor<double,4> *X,
-                         einsums::DiskTensor<double,4> *C, einsums::DiskTensor<double,4> *B,
-                         einsums::DiskTensor<double,2> *f, einsums::DiskTensor<double,4> *G,
-                         einsums::DiskTensor<double,4> *D);
+    void form_f12_energy(einsums::DiskTensor<double, 4> *V, einsums::DiskTensor<double, 4> *X,
+                         einsums::DiskTensor<double, 4> *C, einsums::DiskTensor<double, 4> *B,
+                         einsums::DiskTensor<double, 2> *f, einsums::DiskTensor<double, 4> *G,
+                         einsums::DiskTensor<double, 4> *D);
 
     /* Form the one-electron integrals H = T + V */
     void form_oeints(einsums::DiskTensor<double, 2> *h);
 
     /* Form the convetional two-electron integrals */
-    void form_teints(const std::string& int_type, einsums::DiskTensor<double, 4> *ERI);
+    void form_teints(const std::string &int_type, einsums::DiskTensor<double, 4> *ERI);
 
     /* Form the density-fitted two-electron integrals */
-    void form_df_teints(const std::string& int_type, einsums::DiskTensor<double, 4> *ERI,
+    void form_df_teints(const std::string &int_type, einsums::DiskTensor<double, 4> *ERI,
                         einsums::Tensor<double, 3> *Metric);
 
     /* Form the Fock matrix */
@@ -255,7 +253,7 @@ class DiskMP2F12 : public MP2F12 {
 
     /* Form the $V^{ij}_{kl}$ or $X^{ij}_{kl}$ tensor */
     void form_V_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTensor<double, 4> *F,
-                     einsums::DiskTensor<double, 4> *G_F, einsums::DiskTensor<double, 4> *FG_F2);
+                  einsums::DiskTensor<double, 4> *G_F, einsums::DiskTensor<double, 4> *FG_F2);
 
     /* Form the $C^{kl}_{ab}$ tensor */
     void form_C(einsums::DiskTensor<double, 4> *C, einsums::DiskTensor<double, 4> *F,
@@ -267,19 +265,19 @@ class DiskMP2F12 : public MP2F12 {
                 einsums::DiskTensor<double, 2> *f, einsums::DiskTensor<double, 2> *fk,
                 einsums::DiskTensor<double, 2> *kk);
 
-
     /* Form the $T^{ij}_{ij}\Tilde{V}^{ij}_{ij}$ contirbution to the energy */
-    std::pair<double, double> V_Tilde(einsums::Tensor<double, 2>& V_ij, einsums::DiskTensor<double, 4> *C,
-                              einsums::DiskView<double, 2, 4>& G_ij, einsums::DiskView<double, 2, 4>& D_ij,
-                              const int& i, const int& j);
+    std::pair<double, double> V_Tilde(einsums::Tensor<double, 2> &V_ij, einsums::DiskTensor<double, 4> *C,
+                                      einsums::DiskView<double, 2, 4> &G_ij, einsums::DiskView<double, 2, 4> &D_ij,
+                                      const int &i, const int &j);
 
     /* Form the $T^{ij}_{ij}\Tilde{B}^{ij}_{ij}T^{ij}_{ij}$ contirbution to the energy */
-    std::pair<double, double> B_Tilde(einsums::Tensor<double, 4>& B_ij, einsums::DiskTensor<double, 4> *C,
-                                      einsums::DiskView<double, 2, 4>& D_ij, const int& i, const int& j);
+    std::pair<double, double> B_Tilde(einsums::Tensor<double, 4> &B_ij, einsums::DiskTensor<double, 4> *C,
+                                      einsums::DiskView<double, 2, 4> &D_ij, const int &i, const int &j);
 
     /* Places the computed integral in the einsum::DiskTensor */
-    void set_ERI(einsums::DiskView<double, 2, 4>& ERI_Slice, einsums::TensorView<double, 2>& Slice);
+    void set_ERI(einsums::DiskView<double, 2, 4> &ERI_Slice, einsums::TensorView<double, 2> &Slice);
 };
 
-}} // end namespaces
+}  // namespace f12
+}  // namespace psi
 #endif

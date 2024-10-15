@@ -28,11 +28,10 @@
 
 #include "mp2.h"
 
-namespace psi { namespace f12 {
+namespace psi {
+namespace f12 {
 
-SharedWavefunction f12(SharedWavefunction ref_wfn, Options& options)
-{
-
+SharedWavefunction f12(SharedWavefunction ref_wfn, Options& options) {
     std::shared_ptr<Wavefunction> f12;
     if (options.get_str("F12_TYPE").find("DISK") != std::string::npos) {
         f12 = std::make_shared<DiskMP2F12>(ref_wfn, options);
@@ -43,4 +42,5 @@ SharedWavefunction f12(SharedWavefunction ref_wfn, Options& options)
     return f12;
 }
 
-}} // End namespaces
+}  // namespace f12
+}  // namespace psi
