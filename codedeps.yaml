@@ -1288,7 +1288,7 @@ data:
     cmake:
       name: pyddx
       constraint: ATLEAST 0.4.2
-      target:
+      target: null
       enable: ENABLE_ddx
     conda:
       channel: conda-forge
