@@ -77,7 +77,7 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
-              -D CMAKE_CXX_FLAGS="-IC:\Users\runneradmin\miniconda3\envs\p4build\opt\compiler\include"
+              -D CMAKE_CXX_FLAGS="-IC:\Miniconda\envs\p4build\opt\compiler\include"
 
             # Notes:
             # * When not using cache file, need to additionally specify the following:
@@ -197,15 +197,13 @@ jobs:
         show-channel-urls: true
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
-        miniforge-variant: Mambaforge
-        use-mamba: true
         add-pip-as-python-dependency: true
         channels: conda-forge
 
     - name: Buildtime Conda environment
       run: |
-        mamba info
-        mamba list
+        conda info
+        conda list
 
     - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
@@ -268,8 +266,8 @@ jobs:
 
     - name: Runtime Conda environment
       run: |
-        mamba info
-        mamba list
+        conda info
+        conda list
         if [[ "${{ runner.os }}" != "Windows" ]]; then
           # on Windows, cmd varies: `qcengine.exe`
           qcengine info

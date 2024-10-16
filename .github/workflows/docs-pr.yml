@@ -60,8 +60,6 @@ jobs:
       if: ${{ github.repository == 'psi4/psi4' }}
       uses: conda-incubator/setup-miniconda@v3
       with:
-        miniforge-variant: Mambaforge
-        use-mamba: true
         activate-environment: p4docs
         add-pip-as-python-dependency: true
         auto-activate-base: false
