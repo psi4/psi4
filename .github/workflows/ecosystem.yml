@@ -77,7 +77,7 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
-              -D CMAKE_CXX_FLAGS="-IC:\Users\runneradmin\miniconda3\envs\p4build\opt\compiler\include"
+              -D CMAKE_CXX_FLAGS="-IC:\Miniconda\envs\p4build\opt\compiler\include"
 
             # Notes:
             # * When not using cache file, need to additionally specify the following:
