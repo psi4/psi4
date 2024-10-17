@@ -60,6 +60,10 @@ vwidths_ref = np.array([  #TEST
  [0.4199382],             #TEST
  [0.4140744]])            #TEST
 
+vcharges_ref = np.array([ #TEST
+ [-7.558524],
+ [-0.808223]])
+
 vratios_ref = np.array([
 [1.568969],
 [0.457094]])
@@ -92,6 +96,7 @@ quadrupoles = wfn.variable("MBIS QUADRUPOLES")
 octupoles = wfn.variable("MBIS OCTUPOLES")
 avols = wfn.variable("MBIS RADIAL MOMENTS <R^3>")
 vwidths = wfn.variable("MBIS VALENCE WIDTHS")
+vcharges = wfn.variable("MBIS VALENCE CHARGES")
 vratios = wfn.variable("MBIS VOLUME RATIOS")
 
 compare_values(charges_ref, charges, "MBIS Charges", atol=1.e-5)             #TEST
@@ -100,4 +105,5 @@ compare_values(quadrupoles_ref, quadrupoles, "MBIS Quadrupoles", atol=1.e-5) #TE
 compare_values(octupoles_ref, octupoles, "MBIS Octupoles", atol=1.e-5)       #TEST
 compare_values(avols_ref, avols, "MBIS Radial Moments <r^3>", atol=1.e-5)    #TEST
 compare_values(vwidths_ref, vwidths, "MBIS Valence Widths", atol=1.e-5)      #TEST
+compare_values(vcharges_ref, vcharges, "MBIS Valence Charges", atol=1.e-5)    #TEST
 compare_values(vratios_ref, vratios, "MBIS Volume Ratios", atol=1.e-5)      #TEST
