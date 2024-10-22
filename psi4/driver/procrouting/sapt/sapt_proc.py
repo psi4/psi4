@@ -106,17 +106,15 @@ def run_sapt_dft(name, **kwargs):
 
     core.IO.set_default_namespace('dimer')
     data = {}
-
-    if (core.get_global_option('SCF_TYPE') == 'DF'):
+    if (core.get_global_option('SCF_TYPE') == 'DISK_DF'):
         # core.set_global_option('DF_INTS_IO', 'LOAD')
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # Compute dimer wavefunction
     hf_wfn_dimer = None
     if do_delta_hf:
-        if (core.get_global_option('SCF_TYPE') == 'DF'):
+        if (core.get_global_option('SCF_TYPE') == 'DISK_DF'):
             core.set_global_option('DF_INTS_IO', 'SAVE')
-
         core.timer_on("SAPT(DFT):Dimer SCF")
         hf_data = {}
         hf_wfn_dimer = scf_helper("SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
@@ -541,7 +539,7 @@ def run_sf_sapt(name, **kwargs):
     core.IO.set_default_namespace('dimer')
     data = {}
 
-    if (core.get_global_option('SCF_TYPE') == 'DF'):
+    if (core.get_global_option('SCF_TYPE') == 'DISK_DF'):
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # Compute dimer wavefunction
