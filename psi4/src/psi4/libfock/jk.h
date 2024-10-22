@@ -1289,7 +1289,7 @@ class PSI_API CompositeJK : public JK {
 
     // => Knobs <= //
     std::string name() override { return j_algo_->name() + "+" + k_algo_->name(); }
- 
+
     /**
     * Set to do K tasks
     * @param do_K do K matrices or not,
