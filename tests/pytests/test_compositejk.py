@@ -129,8 +129,8 @@ def test_composite_call(j_algo, k_algo, mols, request):
 
 @pytest.mark.parametrize("inp", 
     [
-        pytest.param("h2o (rhf)", marks=pytest.mark.quick),
-        pytest.param("h2o (rks)", marks=pytest.mark.quick),
+        pytest.param("h2o (rhf)"),
+        pytest.param("h2o (rks)"),
     ], 
 )
 @pytest.mark.parametrize("opts", 
@@ -140,31 +140,36 @@ def test_composite_call(j_algo, k_algo, mols, request):
                            "screening": "density",
                            "maxiter": 30,
                        },
-                     }, id="DirectJK (MAXITER=30)"),
+                     }, id="DirectJK (MAXITER=30)",
+                     marks=pytest.mark.quick),
         pytest.param({ "options": {
                            "scf_type": "DIRECT",
                            "screening": "density",
                            "maxiter": 10,
                        },
-                     }, id="DirectJK (MAXITER=10)"),
+                     }, id="DirectJK (MAXITER=10)",
+                     marks=pytest.mark.quick),
         pytest.param({ "options": { 
                            "scf_type": "DFDIRJ+LINK",
                            "screening": "density",
                            "maxiter": 30,
                        },
-                    }, id="DF-DirJ+LinK"),
+                    }, id="DF-DirJ+LinK",
+                     marks=pytest.mark.medlong),
         pytest.param({ "options": { 
                            "scf_type": "DFDIRJ+COSX",
                            "screening": "schwarz",
                            "maxiter": 30,
                        },
-                     }, id="DF-DirJ+COSX (MAXITER=30)"),
+                     }, id="DF-DirJ+COSX (MAXITER=30)",
+                     marks=pytest.mark.medlong),
         pytest.param({ "options": { 
                            "scf_type": "DFDIRJ+COSX",
                            "screening": "schwarz",
                            "maxiter": 10,
                        },
-                     }, id="DF-DirJ+COSX (MAXITER=10)"),
+                     }, id="DF-DirJ+COSX (MAXITER=10)",
+                     marks=pytest.mark.medlong),
     ], 
 )
 @pytest.mark.parametrize("cosx_maxiter_final", [ -1, 0, 1 ])
@@ -253,7 +258,8 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
         pytest.param("h2o (rhf)"),
         pytest.param("h2o (rks)"),
         pytest.param("nh2 (uhf)"),
-        pytest.param("nh2 (rohf)", marks=pytest.mark.nbody),
+        #pytest.param("nh2 (rohf)"),
+        pytest.param("nh2 (rohf)", marks=[pytest.mark.nbody, pytest.mark.medlong]),
     ]
 )
 @pytest.mark.parametrize(
@@ -290,7 +296,8 @@ def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_sc
                           "h2o/na+ (rhf ie)" : -0.040118757043,
                       },
                       },
-                      id="snlink (cartesian)", marks=using("gauxc")),
+                      id="snlink (cartesian)", 
+                      marks=using("gauxc")),
  
     ]
 )
@@ -323,7 +330,7 @@ def test_seminum(inp, scf, tests, mols, request):
         pytest.param("h2o (rks)"),
         pytest.param("nh2 (uhf)"),
         pytest.param("nh2 (rohf)"),
-        pytest.param("nh2 (rohf)", marks=pytest.mark.nbody),
+        pytest.param("nh2 (rohf)", marks=[pytest.mark.nbody, pytest.mark.medlong]),
     ], 
 )
 @pytest.mark.parametrize(
@@ -366,7 +373,7 @@ def test_seminum_incfock(inp, scf, tests, mols, request):
         pytest.param("h2o (rks)"),
         pytest.param("nh2 (uhf)"),
         pytest.param("nh2 (rohf)"),
-        pytest.param("nh2 (rohf)", marks=pytest.mark.nbody),
+        pytest.param("nh2 (rohf)", marks=[pytest.mark.nbody, pytest.mark.medlong]),
     ], 
 )
 @pytest.mark.parametrize("scf_type", 
