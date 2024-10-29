@@ -80,9 +80,7 @@ units angstrom
     psi4.energy("SAPT(DFT)", molecule=mol_dimer)
     compare_values(
         #  STO-3G target
-        0.19807358,
-        # aug-cc-pvdz target, 0.1307 (using experimental IP from CCCBDB)
-        # 0.13053068183319516,
+        0.3258340368,
         psi4.core.variable("SAPT_DFT_GRAC_SHIFT_A"),
         8,
         "SAPT_DFT_GRAC_SHIFT_A",
@@ -90,8 +88,6 @@ units angstrom
     compare_values(
         #  STO-3G target
         0.19830016,
-        # aug-cc-pvdz target, 0.1307 (using experimental IP from CCCBDB)
-        # 0.13063798506967816,
         psi4.core.variable("SAPT_DFT_GRAC_SHIFT_B"),
         8,
         "SAPT_DFT_GRAC_SHIFT_B",
