@@ -131,7 +131,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     |globals__freeze_core| is set to ``POLICY``. -*/
     options.add("FREEZE_CORE_POLICY", new ArrayType());
 
-    options.add("NUM_GPUS", 1);
+    options.add_int("NUM_GPUS", 1);
     /*- Do use pure angular momentum basis functions?
     If not explicitly set, the default comes from the basis set.
     **Cfour Interface:** Keyword translates into |cfour__cfour_spherical|. -*/
