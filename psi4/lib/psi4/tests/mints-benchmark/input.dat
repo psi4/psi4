@@ -1,0 +1,6 @@
+#! run some BLAS benchmarks
+psi4.core.benchmark_blas1(10, 0.01)
+psi4.core.benchmark_blas2(1, 0.01)
+psi4.core.benchmark_blas3(10, 0.01, 1)
+psi4.core.benchmark_disk(10, 0.01)
+psi4.core.benchmark_math(0.01)

@@ -1,0 +1,27 @@
+#! BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
+
+
+
+
+molecule bh_h2p {
+1 2
+B     0.10369114     0.00000000     0.00000000
+H    -1.13269886     0.00000000     0.00000000
+H     3.00000000     0.37149000     0.00000000
+H     3.00000000    -0.37149000     0.00000000
+}
+
+set {
+  reference     rohf
+  basis         cc-pVDZ 
+  docc          [3,0,0,0]
+  socc          [1,0,0,0]
+  freeze_core   true
+  num_roots     2
+}
+
+set scf d_convergence 10
+set detci e_convergence 8
+
+thisenergy = prop('fci', properties=['DIPOLE', 'QUADRUPOLE', 'TRANSITION_DIPOLE', 'TRANSITION_QUADRUPOLE'])
+

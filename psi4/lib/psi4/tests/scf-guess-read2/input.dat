@@ -1,0 +1,55 @@
+#! Test if the the guess read in the same basis converges. 
+
+molecule oxygen {
+    0 1
+    O
+    O 1 1.2
+}
+
+set reference rhf
+set basis cc-pVDZ
+set guess sad
+set d_convergence 10
+energy('scf')
+compare_values(-149.54395801861, variable('SCF TOTAL ENERGY'), 6, 'RHF SCF energy')  #TEST
+
+set guess read
+energy('scf')
+compare_values(-149.54395801861, variable('SCF TOTAL ENERGY'), 6, 'RHF SCF energy, read-in guess')  #TEST
+compare_values(1, variable('SCF ITERATIONS'), 1, 'RHF Iterations, read-in guess')  #TEST
+
+### Open-shell section
+oxygen.set_multiplicity(3)
+
+# ROHF
+set reference rohf
+set guess sad
+energy('scf')
+compare_values(-149.60909083608954, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF energy')  #TEST
+
+set guess read
+energy('scf')
+compare_values(-149.60909083608954, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF energy, read-in guess')  #TEST
+compare_values(1, variable('SCF ITERATIONS'), 1, 'ROHF Iterations, read-in guess')  #TEST
+
+# CUHF
+set reference cuhf
+set guess sad
+energy('scf')
+compare_values(-149.60909083608954, variable('SCF TOTAL ENERGY'), 6, 'CUHF SCF energy')  #TEST
+
+set guess read
+energy('scf')
+compare_values(-149.60909083608954, variable('SCF TOTAL ENERGY'), 6, 'CUHF SCF energy, read-in guess')  #TEST
+compare_values(1, variable('SCF ITERATIONS'), 1, 'CUHF Iterations, read-in guess')  #TEST
+
+# UHF
+set reference uhf
+set guess sad
+energy('scf')
+compare_values(-149.6286212486728004, variable('SCF TOTAL ENERGY'), 6, 'UHF SCF energy')  #TEST
+
+set guess read
+energy('scf')
+compare_values(-149.6286212486728004, variable('SCF TOTAL ENERGY'), 6, 'UHF SCF energy, read-in guess')  #TEST
+compare_values(1, variable('SCF ITERATIONS'), 1, 'UHF Iterations, read-in guess')  #TEST

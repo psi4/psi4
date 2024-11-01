@@ -1,0 +1,79 @@
+#! Tests RHF/ROHF/UHF SCF gradients
+
+molecule h2o {
+0 1
+O
+H 1 R
+H 1 R 2 A
+
+R = 1.0
+A = 104.5
+}
+
+set {
+   reference rhf
+   basis cc-pvdz
+   e_convergence 8
+   d_convergence 8
+}
+
+analytic = gradient('scf')
+
+set findif points 3
+findif = gradient('scf', dertype=0)
+
+
+set findif points 5
+findif = gradient('scf', dertype=0)
+
+
+molecule h2o {
+0 3
+O
+H 1 R
+H 1 R 2 A
+
+R = 1.0
+A = 104.5
+}
+
+set {
+   reference rohf
+   basis cc-pvdz
+}
+
+analytic = gradient('scf')
+
+set findif points 3
+findif = gradient('scf', dertype=0)
+
+
+set findif points 5
+findif = gradient('scf', dertype=0)
+
+
+molecule h2o {
+0 3
+O
+H 1 R
+H 1 R 2 A
+
+R = 1.0
+A = 104.5
+}
+
+set {
+   reference uhf
+   basis cc-pvdz
+}
+
+analytic = gradient('scf')
+
+set findif points 3
+findif = gradient('scf', dertype=0)
+
+
+set findif points 5
+findif = gradient('scf', dertype=0)
+
+

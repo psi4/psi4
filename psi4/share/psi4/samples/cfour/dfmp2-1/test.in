@@ -1,0 +1,32 @@
+#! MP2/cc-PVDZ computation of formic acid dimer binding energy
+#! using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
+
+Enuc = 235.94662124     #TEST
+Ecp = -0.0224253222183  #TEST
+
+molecule formic_dim {
+   0 1
+   C  -1.888896  -0.179692   0.000000
+   O  -1.493280   1.073689   0.000000
+   O  -1.170435  -1.166590   0.000000
+   H  -2.979488  -0.258829   0.000000
+   H  -0.498833   1.107195   0.000000
+   --
+   0 1
+   C   1.888896   0.179692   0.000000
+   O   1.493280  -1.073689   0.000000
+   O   1.170435   1.166590   0.000000
+   H   2.979488   0.258829   0.000000
+   H   0.498833  -1.107195   0.000000
+   symmetry c1
+}
+
+set globals {
+   basis cc-pvdz
+   d_convergence 11
+}
+
+e_cp = energy('c4-mp2', bsse_type='cp')
+
+compare_values(Enuc, formic_dim.nuclear_repulsion_energy(), 7, "Nuclear Repulsion Energy")  #TEST
+compare_values(Ecp, e_cp, 5, "CP Corrected cc-pVDZ/cc-pVDZ-RI DFMP2")                       #TEST

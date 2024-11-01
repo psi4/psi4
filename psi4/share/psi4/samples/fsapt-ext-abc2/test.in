@@ -1,0 +1,104 @@
+#! FSAPT with external charge on dimer
+
+memory 1 GB
+
+# water prism: https://science.sciencemag.org/content/sci/suppl/2012/05/16/336.6083.897.DC1/Perez_SM.pdf
+# Table S43
+molecule mol {
+H  0.0290 -1.1199 -1.5243
+O  0.9481 -1.3990 -1.3587
+H  1.4371 -0.5588 -1.3099
+H -0.5496 -0.6026  1.5720
+O -1.4545 -0.1932  1.4677
+H -1.9361 -0.4028  2.2769
+--
+H 1.0088 -1.5240 0.5086
+O 1.0209 -1.1732 1.4270
+H 1.5864 -0.3901 1.3101
+symmetry c1
+no_reorient
+no_com
+}
+
+Chrgfield_B = np.array([
+ 0.417, -2.5628, -0.8269, -1.6696,
+-0.834, -1.7899, -0.4027, -1.2768,
+ 0.417, -1.8988, -0.4993, -0.3072]).reshape((-1, 4))
+Chrgfield_B[:,[1,2,3]] /= psi_bohr2angstroms
+
+Chrgfield_C = np.array([
+ 0.417,  1.1270, 1.5527, -0.1658,
+-0.834,  1.9896, 1.0738, -0.1673,
+ 0.417,  2.6619, 1.7546, -0.2910,
+ 0.417, -1.0231, 1.6243, -0.8743,
+-0.834, -0.5806, 2.0297, -0.1111,
+ 0.417, -0.9480, 1.5096,  0.6281]).reshape((-1, 4))
+Chrgfield_C[:,[1,2,3]] /= psi_bohr2angstroms
+
+external_potentials = {
+                       'B': Chrgfield_B,
+                       'C': Chrgfield_C,
+                      }
+
+set {
+basis jun-cc-pvdz
+scf_type df
+guess sad
+freeze_core true
+}
+
+energy('fisapt0', external_potentials=external_potentials)
+
+keys = ['Enuc', 'Eelst', 'Eexch', 'Eind', 'Edisp', 'Etot']  #TEST
+
+Eref = {  #TEST
+    'Enuc'  : 80.357929856092450000, #TEST
+    'Eelst' : -0.061262716670782424, #TEST
+    'Eexch' :  0.048715473856967020, #TEST
+    'Eind'  : -0.018741875450993330, #TEST
+    'Edisp' : -0.006800048725741773, #TEST
+    'Etot'  : -0.038089166990550510, #TEST
+    }
+
+Epsi = {  #TEST
+    'Enuc'  : mol.nuclear_repulsion_energy(),  #TEST
+    'Eelst' : variable("SAPT ELST ENERGY"),    #TEST
+    'Eexch' : variable("SAPT EXCH ENERGY"),    #TEST
+    'Eind'  : variable("SAPT IND ENERGY"),     #TEST
+    'Edisp' : variable("SAPT DISP ENERGY"),    #TEST
+    'Etot'  : variable("SAPT0 TOTAL ENERGY"),  #TEST
+    }  #TEST
+
+for key in keys:  #TEST
+    compare_values(Eref[key], Epsi[key], 6, key)  #TEST
+
+
+import os
+import sys
+import subprocess
+
+os.chdir('fsapt')
+with open('fA.dat', 'w') as fA: fA.write("w1 1 2 3 4 5 6")
+with open('fB.dat', 'w') as fB: fB.write("w3 7 8 9")
+subprocess.run([sys.executable, os.path.join('..', 'fsapt.py')], check=True)
+
+fEnergies = {}
+fkeys = ['fEelst', 'fEexch', 'fEindAB', 'fEindBA', 'fEdisp', 'fEedisp', 'fEtot']    #TEST
+
+with open('fsapt.dat', 'r') as fsapt:                                    #TEST
+    Energies = [float(x) for x in fsapt.readlines()[-2].split()[2:]]     #TEST
+
+for pair in zip(fkeys,Energies):            #TEST
+    fEnergies[pair[0]] = pair[1] #TEST
+
+fEref = {               #TEST
+    'fEelst' : -38.443, #TEST
+    'fEexch' :  30.569, #TEST
+    'fEindAB':  -5.828, #TEST
+    'fEindBA':  -5.933, #TEST
+    'fEdisp' :  -4.267, #TEST
+    'fEedisp':   0.000, #TEST
+    'fEtot'  : -23.901} #TEST
+
+for key in fkeys:                                      #TEST
+    compare_values(fEref[key], fEnergies[key], 2, key) #TEST

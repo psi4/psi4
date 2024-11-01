@@ -1,0 +1,21 @@
+#! Test G2 method for H2O
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+}
+set {
+    e_convergence 1e-10
+    d_convergence 1e-10
+    r_convergence 1e-10
+    g_convergence gau_verytight
+}
+energy('g2')
+refg2    = -76.332048079709 #TEST
+refgibbs = -76.349644857811 #TEST
+
+compare_values(refg2, variable("G2 TOTAL ENERGY"), 7, "G2 energy (0 K)") #TEST
+compare_values(refgibbs, variable("G2 FREE ENERGY"), 7, "G2 free energy (298 K)") #TEST
+
+clean()

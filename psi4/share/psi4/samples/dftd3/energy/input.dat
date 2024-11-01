@@ -1,0 +1,129 @@
+#! Exercises the various DFT-D corrections, both through python directly and through c++
+
+
+
+
+molecule eneyne {
+C   0.000000  -0.667578  -2.124659
+C   0.000000   0.667578  -2.124659
+H   0.923621  -1.232253  -2.126185
+H  -0.923621  -1.232253  -2.126185
+H  -0.923621   1.232253  -2.126185
+H   0.923621   1.232253  -2.126185
+--
+C   0.000000   0.000000   2.900503
+C   0.000000   0.000000   1.693240
+H   0.000000   0.000000   0.627352
+H   0.000000   0.000000   3.963929
+}
+
+eneyne.update_geometry()
+mA = eneyne.extract_subsets(1)
+mB = eneyne.extract_subsets(2)
+
+import qcengine as qcng
+d3_engine = psi4.driver.EmpiricalDispersion(name_hint="b3lyp", level_hint="d3bj").engine
+
+if d3_engine == "dftd3":
+    E, G = eneyne.run_dftd3('b3lyp', 'd2')
+    E, G = mA.run_dftd3('b3lyp', 'd2')
+    E, G = mB.run_dftd3('b3lyp', 'd2')
+
+    E, G = eneyne.run_dftd3('b3lyp', 'd3zero')
+    mA = eneyne.extract_subsets(1)
+    E, G = mA.run_dftd3('b3lyp', 'd3zero')
+    mB = eneyne.extract_subsets(2)
+    E, G = mB.run_dftd3('b3lyp', 'd3zero')
+
+    E, G = eneyne.run_dftd3('b3lyp', 'd3bj')
+    mA = eneyne.extract_subsets(1)
+    E, G = mA.run_dftd3('b3lyp', 'd3bj')
+    mB = eneyne.extract_subsets(2)
+    E, G = mB.run_dftd3('b3lyp', 'd3bj')
+
+    try:
+        E, G = eneyne.run_dftd4('b3lyp', 'd4')
+    except qcng.exceptions.ResourceError:
+        pass
+    E, G = eneyne.run_dftd3('b3lyp', 'd3zero')
+    E, G = eneyne.run_dftd3('b3lyp', 'd3')
+    E, G = eneyne.run_dftd3('b3lyp', 'd')
+    E, G = eneyne.run_dftd3('b3lyp', 'd2')
+
+set basis sto-3g
+set scf_type df
+set dft_radial_points 50  # use really bad grid for speed since all we want is the -D value
+set dft_spherical_points 110
+#set scf print 3  # will print dftd3 program output to psi4 output file
+
+
+activate(mA)
+energy('b3lyp-d2', engine='libdisp')
+if d3_engine == "dftd3":
+    energy('b3lyp-d2', engine='dftd3')
+energy('b3lyp-d3zero2b')
+if d3_engine == "dftd3":
+    try:
+        energy('b3lyp-d3zeroatm')
+    except qcng.exceptions.ResourceError as exc:
+        pass
+else:
+    energy('b3lyp-d3zeroatm')
+energy('b3lyp-d3zero')
+energy('b3lyp-d3bj')
+
+energy('b3lyp-d2')
+energy('b3lyp-d3')
+energy('b3lyp-d')
+energy('wb97x-d')
+
+activate(mB)
+set dft_dispersion_parameters [0.75]
+energy('b3lyp-d', engine='libdisp')
+set dft_dispersion_parameters [0.75, 20.0]
+if d3_engine == "dftd3":
+    energy('b3lyp-d2', engine='dftd3')
+set dft_dispersion_parameters [1.0,  0.722, 1.217, 14.0]
+energy('b3lyp-d3zero')
+set dft_dispersion_parameters [1.000, 0.7875, 0.4289, 4.4407]
+energy('b3lyp-d3(bj)')
+
+set dft_dispersion_parameters [0.75]
+energy('b3lyp-d2')
+set dft_dispersion_parameters [1.0,  0.722, 1.217, 14.0]
+energy('b3lyp-d3')
+set dft_dispersion_parameters [0.75]
+energy('b3lyp-d')
+activate(mA)
+set dft_dispersion_parameters [1.0]
+energy('wb97x-d')
+
+if d3_engine == "dftd3":
+    eneyne.update_geometry()
+    eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
+    mA = eneyne.extract_subsets(1)
+    mA.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
+    mB = eneyne.extract_subsets(2)
+    mB.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
+
+    eneyne.run_dftd3('b3lyp', 'd3zero', {'s6': 1.0,  's8': 0.722, 'sr6': 1.217, 'alpha6': 14.0})
+    mA = eneyne.extract_subsets(1)
+    mA.run_dftd3('b3lyp', 'd3zero', {'s6': 1.0,  's8': 0.722, 'sr6': 1.217, 'alpha6': 14.0})
+    mB = eneyne.extract_subsets(2)
+    mB.run_dftd3('b3lyp', 'd3zero', {'s6': 1.0,  's8': 0.722, 'sr6': 1.217, 'alpha6': 14.0})
+
+    eneyne.run_dftd3('b3lyp', 'd3bj', {'s6': 1.000, 's8':  0.7875, 'a1':  0.4289, 'a2': 4.4407})
+    mA = eneyne.extract_subsets(1)
+    mA.run_dftd3('b3lyp', 'd3bj', {'s6': 1.000, 's8':  0.7875, 'a1':  0.4289, 'a2': 4.4407})
+    mB = eneyne.extract_subsets(2)
+    mB.run_dftd3('b3lyp', 'd3bj', {'s6': 1.000, 's8':  0.7875, 'a1':  0.4289, 'a2': 4.4407})
+
+    eneyne.run_dftd3('b3lyp', 'd3', {'s6': 1.0,  's8': 0.722, 'sr6': 1.217, 'alpha6': 14.0})
+    eneyne.run_dftd3('b3lyp', 'd', {'s6': 0.75})
+    eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
+
+mB = eneyne.extract_subsets(2)
+set basis_guess sto-3g
+energy('b3lyp-d3bj')
+
+

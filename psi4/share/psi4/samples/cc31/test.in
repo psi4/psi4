@@ -1,0 +1,87 @@
+#! CCSD/sto-3g optical rotation calculation (both gauges) at two frequencies on methyloxirane
+
+molecule smo { #structure from Pederson et al., CPL
+  C     0.210991841737     0.047663662717     0.483960886619
+  C    -0.960965312103     0.688519555303    -0.115848688934
+  C     1.558206749694     0.047460114159    -0.180267436891
+  O    -0.815251456906    -0.734986972268    -0.138532905591
+  H     0.223550547304    -0.045637654519     1.567373484970
+  H    -1.759483315918     1.063259112311     0.516330435381
+  H    -0.862256972568     1.177986074652    -1.079897880020
+  H     2.088617117792    -0.883541600456     0.026321487274
+  H     2.169362364888     0.872235726981     0.192209317060
+  H     1.455347299576     0.149768052462    -1.260354487995
+noreorient
+}
+
+set {
+  omega [633, 355, nm]
+  gauge both
+  freeze_core true
+  basis STO-3G
+}
+
+wfn = properties('ccsd',properties=['rotation'], return_wfn=True)[1]
+
+refnre = 124.7885346117614489                     # TEST
+refscf = -189.5134172371027432                    # TEST
+refccsd = -189.769498615773671                    # TEST
+refoverlap = 0.86083040761                        # TEST
+
+compare_values(refnre, smo.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refccsd, wfn.variable("CCSD TOTAL ENERGY"), 6, "CCSD Energy") # TEST
+compare_values(refoverlap, wfn.variable("Left-Right CCSD Eigenvector Overlap"), 5, "Left-Right CCSD Overlap") # TEST
+
+reflen_633   =   - 38.80516  # TEST
+refvel_633   =   -227.15486  # TEST
+refmvg_633   =   - 37.65886  # TEST
+reflen_355   =   -130.56371  # TEST
+refvel_355   =   -315.91237  # TEST
+refmvg_355   =   -126.41637  # TEST
+
+compare_values(reflen_633,   variable("CCSD SPECIFIC ROTATION (LEN) @ 633NM"),  3, "CCSD rotation @ 633nm in length gauge") # TEST
+compare_values(refvel_633,   variable("CCSD SPECIFIC ROTATION (VEL) @ 633NM"),  3, "CCSD rotation @ 633nm in velocity gauge") # TEST
+compare_values(refmvg_633,   variable("CCSD SPECIFIC ROTATION (MVG) @ 633NM"),  3, "CCSD rotation @ 633nm in modified velocity gauge") # TEST
+compare_values(reflen_355,   variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CCSD rotation @ 355nm in length gauge") # TEST
+compare_values(refvel_355,   variable("CCSD SPECIFIC ROTATION (VEL) @ 355NM"),  3, "CCSD rotation @ 355nm in velocity gauge") # TEST
+compare_values(refmvg_355,   variable("CCSD SPECIFIC ROTATION (MVG) @ 355NM"),  3, "CCSD rotation @ 355nm in modified velocity gauge") # TEST
+
+reflenT_633 = psi4.core.Matrix.from_list(                           # TEST
+   [[ 0.098201230346588, -0.123180765268778, -0.033202860408370],   # TEST
+    [-0.005923371966114,  0.050810741960975, -0.134824732104666],   # TEST
+    [-0.167593930849691,  0.178586259349292, -0.134493401988516]])  # TEST
+refvelT_633 = psi4.core.Matrix.from_list(                           # TEST
+   [[ 0.611826438096400,  0.042104354406328,  0.269204668983963],   # TEST
+    [-0.001881374198956,  0.199307809647702, -1.347788237786721],   # TEST
+    [-1.408413496046997,  1.440039972795156, -0.805016827624951]])  # TEST
+refmvgT_633 = psi4.core.Matrix.from_list(                           # TEST
+   [[ 0.006536799678022, -0.006636387222268, -0.001869064564921],   # TEST
+    [-0.000345166068812,  0.002677012803966, -0.005906141827644],   # TEST
+    [-0.010273983239371,  0.009171871884792, -0.008199636329113]])  # TEST
+reflenT_355 = psi4.core.Matrix.from_list(                           # TEST
+   [[ 0.180382563931018, -0.231277802328236, -0.067393276664578],   # TEST
+    [-0.011460339705177,  0.093901050342530, -0.240574201690026],   # TEST
+    [-0.302759285560133,  0.322187347251788, -0.246887974136872]])  # TEST
+refvelT_355 = psi4.core.Matrix.from_list(                           # TEST
+   [[ 0.626853571405267,  0.026579259245708,  0.264461312410130],   # TEST
+    [-0.002704223756090,  0.205427072281929, -1.360524938977117],   # TEST
+    [-1.431576592421170,  1.460380568022664, -0.823772929067628]])  # TEST
+refmvgT_355 = psi4.core.Matrix.from_list(                           # TEST
+   [[ 0.021563932986889, -0.022161482382888, -0.006612421138754],   # TEST
+    [-0.001168015625946,  0.008796275438193, -0.018642843018040],   # TEST
+    [-0.033437079613543,  0.029512467112300, -0.026955737771790]])  # TEST
+
+compare_values(reflenT_633,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 633NM"),  3, "CCSD rotation tensor @ 633nm in length gauge") # TEST
+compare_values(refvelT_633,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (VEL) @ 633NM"),  3, "CCSD rotation tensor @ 633nm in velocity gauge") # TEST
+compare_values(refmvgT_633,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (MVG) @ 633NM"),  3, "CCSD rotation tensor @ 633nm in modified velocity gauge") # TEST
+compare_values(reflenT_355,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 355NM"),  3, "CCSD rotation tensor @ 355nm in length gauge") # TEST
+compare_values(refvelT_355,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (VEL) @ 355NM"),  3, "CCSD rotation tensor @ 355nm in velocity gauge") # TEST
+compare_values(refmvgT_355,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (MVG) @ 355NM"),  3, "CCSD rotation tensor @ 355nm in modified velocity gauge") # TEST
+
+refdep_633 = psi4.core.Matrix.from_list([[-1.53, 0.59, - 3.27]]) # TEST
+refdep_355 = psi4.core.Matrix.from_list([[-5.21, 2.23, -11.10]]) # TEST
+
+compare_values(refdep_633, wfn.variable("CCSD ROTATION (LEN) ORIGIN-DEPENDENCE @ 633NM"), 2, "CCSD rotation origin-dependence @ 633nm in length gauge") # TEST
+compare_values(refdep_355, wfn.variable("CCSD ROTATION (LEN) ORIGIN-DEPENDENCE @ 355NM"), 2, "CCSD rotation origin-dependence @ 355nm in length gauge") # TEST
+

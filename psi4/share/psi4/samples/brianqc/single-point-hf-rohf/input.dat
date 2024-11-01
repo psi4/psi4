@@ -1,0 +1,21 @@
+#! Hydroxyl with sto-3g
+
+refenergy = -74.36156196571
+
+molecule hydroxyl {
+    symmetry c1
+    0 2
+    O  0.0574960500  0.000000000  0.000000000
+    H -0.9125040246  0.000000000  0.000000000
+}
+
+set = {
+    basis sto-3g
+    reference rohf
+    scf_type direct
+    df_scf_guess False
+    brianqc_enable True
+}
+
+thisenergy = energy('scf')
+

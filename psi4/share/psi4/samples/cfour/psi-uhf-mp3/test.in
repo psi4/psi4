@@ -1,0 +1,61 @@
+#! UHF MP3 energy components. Checks that converted
+#! identically between cfour and psi4
+
+store = {}  #TEST
+test_psivars = ['nuclear repulsion energy', 'scf total energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'current energy', 'current correlation energy', 'current reference energy']  #TEST
+
+print('    <<<  UHF  >>>')
+
+cfour {
+ROHF-MP3 energy calculation 
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=MP3,BASIS=AUG-PVDZ
+MULT=2,REF=UHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+CC_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+for vari in test_psivars:  #TEST
+    store[vari] = variable(vari)  #TEST
+    set_variable(vari, 0.0)  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+molecule nh2 {
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set basis aug-cc-pvdz
+set reference uhf
+set docc [3, 0, 0, 1]
+set socc [0, 0, 1, 0]  #OCCUPATION=3-1-1-0/3-0-1-0
+set mp_type conv
+
+energy('mp3')
+
+print(test_psivars)  #TEST
+print_variables()
+for vari in test_psivars:  #TEST
+    if vari == 'nuclear repulsion energy':  #TEST
+        compare_values(store[vari], variable(vari), 4, vari.upper())  #TEST
+    else:  #TEST
+        compare_values(store[vari], variable(vari), 6, vari.upper())  #TEST
+
+

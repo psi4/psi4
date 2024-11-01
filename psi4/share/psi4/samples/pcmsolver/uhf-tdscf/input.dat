@@ -1,0 +1,55 @@
+#! UHF PCM TDSCF 
+# comparison against other implementations:
+#CPCM solvation model excitation energies of NH2 radical [eV]:
+#(Same radii, epsilon, refraction index, probe radius in each program)
+#
+#state	PSI4	ORCA	G09
+#1	2.43618	2.457	2.4411
+#2	7.39834	7.203	7.3993
+#3	9.11054	8.991	9.1777
+#4	10.1063	9.848	10.1017
+#5	10.2178	10.365	10.3305
+
+
+
+
+r_calc = []
+e_calc = []
+
+set = {
+    reference uhf
+    scf_type   pk
+    basis      def2-SVP
+    e_convergence 8
+    pcm true
+    maxiter 50
+    tdscf_states 5
+}
+
+pcm = {
+   Units=Angstrom
+   Medium {
+   SolverType = IEFPCM
+   Solvent = Water
+   Nonequilibrium = True
+   }
+
+   Cavity {
+   radiiset= uff
+   Type = GePol
+   Area = 0.3
+   Mode = Implicit
+   }
+}
+
+
+molecule NH2 {
+0, 2
+N  0.000000000000     0.000000000000    -0.079859033927
+H  0.000000000000    -0.803611003426     0.554794694632
+H  0.000000000000     0.803611003426     0.554794694632
+}
+scf_energy = energy("TD-SCF")
+for i in range(5):
+    e_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'))
+    r_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A TRANSITION'))

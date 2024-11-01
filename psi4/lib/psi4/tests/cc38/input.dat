@@ -1,0 +1,31 @@
+#! RHF-CC2-LR/cc-pVDZ static polarizabilities of HOF molecule.
+
+molecule hof {
+  0 1
+  O
+  H 1 0.97
+  F 1 0.97 2 103.0
+}
+
+set {
+  basis "cc-pVDZ"
+}
+
+wfn = properties('cc2',properties=['polarizability'], return_wfn=True)[1]
+
+refnre = 46.7803586698948592                    # TEST
+refscf = -174.4184331818589726                  # TEST
+refcc2 =  -174.776517181907735                  # TEST
+ref_overlap = 0.92825717854                     # TEST
+ref_static_polar = 5.240960398531               # TEST
+ref_static_tensor = psi4.core.Matrix.from_list( # TEST
+   [[4.827201889090836, -1.312098227560841, 0], # TEST
+    [-1.312098227560841, 7.705535172467799, 0], # TEST
+    [0, 0, 3.190144058362017]])                 # TEST
+
+compare_values(refnre, hof.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refcc2, wfn.variable("CC2 TOTAL ENERGY"), 6, "CC2 Energy") # TEST
+compare_values(ref_overlap, wfn.variable("LEFT-RIGHT CC2 EIGENVECTOR OVERLAP"), 5, "Left-Right CC2 Overlap") # TEST
+compare_values(ref_static_tensor, wfn.variable("CC2 DIPOLE POLARIZABILITY TENSOR @ INF NM"),  3, "CC2 polarizability tensor  @ Inf nm") #TEST
+compare_values(ref_static_polar, variable("CC2 DIPOLE POLARIZABILITY @ INF NM"),  3, "CC2 polarizability @ Inf nm") #TEST

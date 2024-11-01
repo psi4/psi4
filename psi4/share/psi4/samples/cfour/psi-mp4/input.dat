@@ -1,0 +1,128 @@
+#! MP4 energy components. Checks that computed identically
+#! between cfour and psi4
+
+
+print('    <<<  RHF  >>>')
+
+cfour {
+MP4 single-point energy calculation
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=MP4,BASIS=AUG-PVDZ
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+print_variables()
+clean()
+
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set basis aug-cc-pvdz
+set e_convergence 10
+#set mp2_type conv
+
+energy('mp4')
+print_variables()
+clean()
+
+
+
+#print '    <<<  UHF  >>>'
+#
+#cfour {
+#ROHF-MP4 energy calculation 
+#N
+#H 1 R
+#H 1 R 2 A
+#
+#R=1.008
+#A=105.0
+#
+#*ACES2(CALC=MP4,BASIS=AUG-PVDZ
+#MULT=2,REF=UHF
+#OCCUPATION=3-1-1-0/3-0-1-0
+#SCF_CONV=12
+#CC_CONV=12
+#MEMORY=20000000)
+#}
+#
+#energy('cfour')
+#
+#for vari in test_psivars:
+#    store[vari] = variable(vari)
+#    set_variable(vari, 0.0)
+#
+#molecule nh2 {
+#N
+#H 1 R
+#H 1 R 2 A
+#
+#R=1.008
+#A=105.0
+#}
+#
+#set basis aug-cc-pvdz
+#set reference uhf
+#set docc [3, 0, 0, 1]
+#set socc [0, 0, 1, 0]  #OCCUPATION=3-1-1-0/3-0-1-0
+#
+#
+#
+#energy('mp4')
+#print_variables()
+#clean()
+#
+#for vari in test_psivars:
+#    compare_values(store[vari], variable(vari), 6, vari.upper())
+#
+#
+#print '    <<<  ROHF  >>>'
+#
+#cfour {
+#ROHF-MP4 energy calculation 
+#N
+#H 1 R
+#H 1 R 2 A
+#
+#R=1.008
+#A=105.0
+#
+#*ACES2(CALC=MP4,BASIS=AUG-PVDZ
+#MULT=2,REF=ROHF
+#OCCUPATION=3-1-1-0/3-0-1-0
+#SCF_CONV=12
+#CC_CONV=12
+#MEMORY=20000000)
+#}
+#
+#energy('cfour')
+#
+#for vari in test_psivars:
+#    store[vari] = variable(vari)
+#    set_variable(vari, 0.0)
+#
+#set reference rohf
+#
+#energy('mp4')
+#print_variables()
+#clean()
+#
+#for vari in test_psivars:
+#    compare_values(store[vari], variable(vari), 6, vari.upper())
+##print store
+#

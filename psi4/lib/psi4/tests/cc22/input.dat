@@ -1,0 +1,28 @@
+#! ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in $^{3}B@@1$ CH2.
+
+molecule ch2 {
+  0 3
+  c
+  h 1 r
+  h 1 r 2 a
+  r = 1.1
+  a = 109.0
+}
+
+set {
+  reference rohf
+  basis DZ
+  roots_per_irrep [1, 0, 0, 1]
+}
+
+energy('eom-ccsd')
+
+escf = -38.904170464925                                                    #TEST
+eccsd = -38.98782404003                                                    #TEST
+eeom_ccsd = [ (-38.7169665265, "B2", 0), (-38.6330680540, "A1", 0)]                              #TEST
+compare_values(escf, variable("SCF TOTAL ENERGY"), 7, "SCF energy")        #TEST
+compare_values(eccsd, variable("CCSD TOTAL ENERGY"), 7, "CCSD energy")     #TEST
+for (ref, h, i) in eeom_ccsd: # TEST
+    val = variable(f"CCSD ROOT {i} (IN {h}) TOTAL ENERGY")                                 #TEST
+    compare_values(ref, val, 6, f"EOM-CCSD root {i} (IN {h})")                                #TEST
+

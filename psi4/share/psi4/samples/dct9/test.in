@@ -1,0 +1,56 @@
+#! UHF-ODC-12 and RHF-ODC-12 single-point energy for H2O.
+#! This performs a simultaneous update of orbitals and cumulants, using DIIS extrapolation.
+#! Four-virtual integrals are handled in the AO basis, where integral transformation is avoided.
+#!
+#! In the next RHF-ODC-12 computation, AO_BASIS=NONE is used, where four-virtual integrals
+#! are transformed into MO basis.
+
+# UHF-ODC-12                            #TEST
+refscf_uhf      = -76.0266030961285679  #TEST
+refmp2_uhf      = -76.230809106995821   #TEST
+refodc12_uhf    = -76.241636548124134   #TEST
+
+# RHF-ODC-12                            #TEST
+refscf_rhf      = -76.02660309612853    #TEST
+refmp2_rhf      = -76.230809106995864   #TEST
+refodc12_rhf    = -76.241636548124106   #TEST 
+
+molecule h2o {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+}
+
+set {
+    r_convergence 12
+    d_convergence 12
+    algorithm   simultaneous
+    basis       cc-pvdz
+    dct_functional odc-12
+}
+
+set reference uhf
+set ao_basis disk
+energy('dct')
+compare_values(refscf_uhf, variable("SCF TOTAL ENERGY"), 10, "UHF Energy");                                       #TEST
+compare_values(refmp2_uhf, variable("MP2 TOTAL ENERGY"), 10, "UHF-MP2 Energy");                                             #TEST
+compare_values(refodc12_uhf, variable("CURRENT ENERGY"), 10, "UHF-ODC-12 Total Energy (simultaneous, ao_basis=disk)");     #TEST
+clean()
+
+set reference rhf
+set ao_basis disk
+energy('dct')
+compare_values(refscf_rhf, variable("SCF TOTAL ENERGY"), 10, "RHF Energy");                                       #TEST
+compare_values(refmp2_rhf, variable("MP2 TOTAL ENERGY"), 10, "RHF-MP2 Energy");                                             #TEST
+compare_values(refodc12_rhf, variable("CURRENT ENERGY"), 10, "RHF-ODC-12 Total Energy (simultaneous, ao_basis=disk)");     #TEST
+clean()
+
+set reference rhf
+set ao_basis none
+energy('dct')
+compare_values(refscf_rhf, variable("SCF TOTAL ENERGY"), 10, "RHF Energy");                                       #TEST
+compare_values(refmp2_rhf, variable("MP2 TOTAL ENERGY"), 10, "RHF-MP2 Energy");                                             #TEST
+compare_values(refodc12_rhf, variable("CURRENT ENERGY"), 10, "RHF-ODC-12 Total Energy (simultaneous, ao_basis=none)");     #TEST
+clean()
+

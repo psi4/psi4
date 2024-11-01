@@ -1,0 +1,57 @@
+#! check nonphysical masses possible
+
+import psi4
+
+set reference uhf
+set g_convergence gau_verytight
+rOH = 1.81009942
+
+plain = psi4.core.Molecule.from_arrays(
+    geom=[0, 0, 0, 0, 0, rOH],
+    elbl=['O', 'H'],
+    units='Bohr',
+)
+
+weird = psi4.core.Molecule.from_arrays(
+    geom=[0, 0, 0, 0, 0, rOH],
+    elbl=['O', 'H@1000.0'],
+    units='Bohr',
+    nonphysical=True,
+)
+
+mO = 15.994914619570
+mH = 1.007825032230
+mu_plain = mO * mH / (mO + mH)
+mu_weird = mO * 1000. / (mO + 1000.)
+
+
+ene, wfn = frequencies('hf/cc-pvdz', molecule=plain, return_wfn=True, dertype=2)
+masses = [plain.mass(iat) for iat in range(plain.natom())]
+p_freq = wfn.frequencies().np[0]
+compare_values(mH, masses[1], "normal H mass", atol=1.e-6)
+compare_values(4009.919, p_freq, "normal freq", atol=1.0)
+
+clean()
+clean_variables()
+
+ene, wwfn = frequencies('hf/cc-pvdz', molecule=weird, return_wfn=True, dertype=2)
+masses = [weird.mass(iat) for iat in range(weird.natom())]
+w_freq = wwfn.frequencies().np[0]  # 984.044
+compare_values(1000., masses[1], "weird H mass", atol=1.e-6)
+import math
+compare_values(math.sqrt(mu_weird / mu_plain), p_freq / w_freq, "HbyH sqrt(mu):freq ratio", atol=1.e-6)
+
+clean()
+clean_variables()
+
+ene, wwfn = frequencies('hf/cc-pvdz', molecule=weird, return_wfn=True, dertype=1)
+w_freq = wwfn.frequencies().np[0]
+compare_values(math.sqrt(mu_weird / mu_plain), p_freq / w_freq, "HbyG sqrt(mu):freq ratio", atol=1.e-5)
+
+clean()
+clean_variables()
+
+ene, wwfn = frequencies('hf/cc-pvdz', molecule=weird, return_wfn=True, dertype=0)
+w_freq = wwfn.frequencies().np[0]
+compare_values(math.sqrt(mu_weird / mu_plain), p_freq / w_freq, "HbyE sqrt(mu):freq ratio", atol=1.e-5)
+

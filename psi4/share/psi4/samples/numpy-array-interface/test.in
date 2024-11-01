@@ -1,0 +1,226 @@
+#! Numpy interface testing
+
+import numpy as np
+
+# Matrix from array
+arr_matrix = np.random.rand(2, 2)
+arr_matrix_value = arr_matrix[0, 0]
+
+mat1 = psi4.Matrix.from_array(arr_matrix)
+mat2 = psi4.Matrix.from_array([arr_matrix, arr_matrix+3])
+
+compare_values(mat1.get(0,0), arr_matrix[0,0], 9, "Non-irreped psi4.Matrix Build")     #TEST
+compare_values(mat2.get(1,0,0), arr_matrix[0,0]+3, 9, "Irreped psi4.Matrix Build")     #TEST
+
+
+# Array from matrix
+np_mat1 = mat1.to_array()
+np_mat2 = mat2.to_array()
+np_mat1_ex = np.array(mat1)
+compare_arrays(np_mat1, np_mat1_ex, 9, "Explicit Non-irreped Array conversion")     #TEST
+compare_arrays(np_mat1, mat1.np, 9, "Implicit Non-irreped Array conversion")     #TEST
+
+for h in range(mat2.nirrep()):
+    compare_arrays(np_mat2[h], mat2.nph[h], 9, "Implicit Irreped (%d) Array conversion" % h)     #TEST
+
+np_mat1_view = mat1.to_array(copy=False)
+np_mat2_view = mat2.to_array(copy=False)
+mat1.set(0, 0, 13)
+mat2.set(0, 0, 0, 13)
+
+compare_values(np_mat1[0,0], arr_matrix_value, 9, "Non-irreped NumPy Array Matrix Build")     #TEST
+compare_values(np_mat2[0][0,0], arr_matrix_value, 9, "Irreped NumPy Array Matrix Build")     #TEST
+
+compare_values(np_mat1_view[0,0], 13, 9, "Non-irreped NumPy View Matrix Build")     #TEST
+compare_values(np_mat2_view[0][0,0], 13, 9, "Irreped NumPy View Matrix Build")     #TEST
+
+
+# Vector from array
+arr_vector = np.random.rand(4)
+arr_vec_value = arr_vector[0]
+
+vec1 = psi4.Vector.from_array(arr_vector)
+vec2 = psi4.Vector.from_array([arr_vector, arr_vector])
+
+compare_values(vec1.get(0), arr_vector[0], 9, "Non-irreped psi4.Vector Build")     #TEST
+compare_values(vec2.get(1,0), arr_vector[0], 9, "Irreped psi4.Vector Build")     #TEST
+
+
+# Array from Vector
+np_vec1 = vec1.to_array()
+np_vec2 = vec2.to_array()
+
+np_vec1_view = vec1.to_array(copy=False)
+np_vec2_view = vec2.to_array(copy=False)
+vec1.set(0, 13)
+vec2.set(0, 0, 13)
+
+compare_values(np_vec1[0], arr_vec_value, 9, "Non-irreped NumPy Array Vector Build")     #TEST
+compare_values(np_vec2[0][0], arr_vec_value, 9, "Irreped NumPy Array Vector Build")     #TEST
+
+compare_values(np_vec1_view[0], 13, 9, "Non-irreped NumPy View Vector Build")     #TEST
+compare_values(np_vec2_view[0][0], 13, 9, "Irreped NumPy View Vector Build")     #TEST
+
+# Test blank irreps
+dim1 = Dimension(3)     #TEST
+dim2 = Dimension(3)     #TEST
+
+dim1[0] = 3     #TEST
+dim1[1] = 0     #TEST
+dim1[2] = 0     #TEST
+
+dim2[0] = 3     #TEST
+dim2[1] = 0     #TEST
+dim2[2] = 2     #TEST
+
+
+dim1_match = dim1.to_tuple() == (3, 0, 0)     #TEST
+dim2_match = dim2.to_tuple() == (3, 0, 2)     #TEST
+compare_values(True, dim1_match, 9, "Dimension to tuple test 1")     #TEST
+compare_values(True, dim2_match, 9, "Dimension to tuple test 2")     #TEST
+
+dim1_match = list(dim1) == list(dim1.to_tuple())
+dim2_match = list(dim2) == list(dim2.to_tuple())
+compare_values(True, dim1_match, 9, "Dimension to list test 1")     #TEST
+compare_values(True, dim2_match, 9, "Dimension to list test 2")     #TEST
+
+dim1_test = Dimension.from_list((3, 0, 0))     #TEST
+dim2_test = Dimension.from_list((3, 0, 2))     #TEST
+dim1_pass_test = Dimension.from_list(dim1)     #TEST
+
+dim1_match = True     #TEST
+dim2_match = True     #TEST
+dim1_pass_match = True     #TEST
+
+for x in range(3):     #TEST
+    dim1_match &= dim1[x] == dim1_test[x]     #TEST
+    dim2_match &= dim2[x] == dim2_test[x]     #TEST
+    dim1_pass_match &= dim1[x] == dim1_pass_test[x]     #TEST
+
+compare_values(dim1_match, True, 9, "Dimension from list test 1")     #TEST
+compare_values(dim2_match, True, 9, "Dimension from list test 2")     #TEST
+compare_values(dim1_pass_match, True, 9, "Dimension from dimension test")     #TEST
+
+irrep_mat = Matrix("Matrix with two zero irreps", dim1, dim2)
+irrep_mat.set(0, 0, 0, 4)
+irrep_mat.set(0, 0, 1, 3)
+irrep_mat.set(0, 1, 0, -5)
+
+arr = irrep_mat.to_array()
+compare_values(arr[1].shape[0], 0, 9, "Irrep shape with zero element arrays, dimension[1,0]")     #TEST
+compare_values(arr[1].shape[1], 0, 9, "Irrep shape with zero element arrays, dimension[1,1]")     #TEST
+compare_values(arr[2].shape[1], 2, 9, "Irrep shape with zero element arrays, dimension[2,1]")     #TEST
+
+new_mat = Matrix.from_array(arr)
+compare_values(new_mat.rowdim()[1], 0, 9, "Irrep shape with zero element psi4.Matrix, dimension[1,0]")     #TEST
+compare_values(new_mat.coldim()[1], 0, 9, "Irrep shape with zero element psi4.Matrix, dimension[1,1]")     #TEST
+compare_values(new_mat.coldim()[2], 2, 9, "Irrep shape with zero element psi4.Matrix, dimension[2,1]")     #TEST
+
+
+irrep_vec = Vector("Vector with two zero irreps", dim2)
+
+arr = irrep_vec.to_array()
+compare_values(arr[0].shape[0], 3, 9, "Irrep shape with zero element arrays, dimension[0]")     #TEST
+compare_values(arr[1].shape[0], 0, 9, "Irrep shape with zero element arrays, dimension[1]")     #TEST
+compare_values(arr[2].shape[0], 2, 9, "Irrep shape with zero element arrays, dimension[2]")     #TEST
+
+new_vec = Vector.from_array(arr)
+compare_values(new_vec.dim(0), 3, 9, "Irrep shape with zero element psi4.Vector, dimension[0]")     #TEST
+compare_values(new_vec.dim(1), 0, 9, "Irrep shape with zero element psi4.Vector, dimension[1]")     #TEST
+compare_values(new_vec.dim(2), 2, 9, "Irrep shape with zero element psi4.Vector, dimension[2]")     #TEST
+
+# Test dense conversion
+dense_vec = irrep_vec.to_array(dense=True)
+compare_values(dense_vec.shape[0], 5, 9, "psi4.Vector to dense array shape test")     #TEST
+compare_arrays(np.zeros((5)), dense_vec, 9, "psi4.Vector to dense array value test")     #TEST
+
+dense_mat = irrep_mat.to_array(dense=True)
+compare_values(dense_mat.shape[0], 3, 9, "psi4.Matrix to dense array shape1 test")     #TEST
+compare_values(dense_mat.shape[1], 3, 9, "psi4.Matrix to dense array shape2 test")     #TEST
+compare_arrays(irrep_mat.nph[0], dense_mat, 9, "psi4.Matrix to dense array value test")     #TEST
+
+
+irreped_mat = Matrix.from_array([np.random.rand(1,4), np.empty(shape=(0,3)), np.random.rand(2,1)])
+dense_arr = irreped_mat.to_array(dense=True)
+irreped_mat2 = Matrix.from_array(dense_arr, dim1=(1, 0, 2), dim2=(4, 3, 1))
+compare_matrices(irreped_mat, irreped_mat2, 9, "Irreped psi4.Matrix to dense array and back test")     #TEST
+
+irreped_arr = irreped_mat2.to_array()
+compare_arrays(irreped_arr[0], dense_arr[:1, :4], 9, "Dense vs irreped array psi4.Matrix comparison, dimension 1")     #TEST
+compare_arrays(irreped_arr[1], np.empty((0,3)), 9, "Dense vs irreped array psi4.Matrix comparison, dimension 2")     #TEST
+compare_arrays(irreped_arr[2], dense_arr[1:, 4:], 9, "Dense vs irreped array psi4.Matrix comparison, dimension 3")     #TEST
+
+irreped_vec = Vector.from_array([np.random.rand(1), np.empty(shape=(0)), np.random.rand(2)])
+dense_arr = irreped_vec.to_array(dense=True)
+irreped_vec2 = Vector.from_array(dense_arr, dim1=(1, 0, 2))
+compare_vectors(irreped_vec, irreped_vec2, 9, "Irreped psi4.Vector to dense array and back test")     #TEST
+
+irreped_arr = irreped_vec2.to_array()
+compare_arrays(irreped_arr[0], dense_arr[:1], 9, "Dense vs irreped array psi4.Vector comparison, dimension 1")     #TEST
+compare_arrays(irreped_arr[1], np.empty((0)), 9, "Dense vs irreped array psi4.Vector comparison, dimension 2")     #TEST
+compare_arrays(irreped_arr[2], dense_arr[1:], 9, "Dense vs irreped array psi4.Vector comparison, dimension 3")     #TEST
+
+# Test save
+irreped_mat.np_write("irreped_mat")
+read_irreped_mat = psi4.Matrix.np_read("irreped_mat")
+compare_matrices(irreped_mat, read_irreped_mat, 9, "Irreped psi4.Matrix np read and write.")     #TEST
+
+irreped_vec.np_write("irreped_vec")
+read_irreped_vec = psi4.Vector.np_read("irreped_vec")
+compare_vectors(irreped_vec, read_irreped_vec, 9, "Irreped psi4.Vector np read and write.")     #TEST
+
+
+fkeys = irreped_mat.np_write(prefix='mat ')
+fkeys.update(irreped_vec.np_write(prefix='vec '))
+np.savez("compound", **fkeys)
+
+read_irreped_mat = psi4.Matrix.np_read("compound", prefix='mat ')
+compare_matrices(irreped_mat, read_irreped_mat, 9, "Irreped psi4.Matrix np compound read and write.")     #TEST
+
+read_irreped_vec = psi4.Vector.np_read("compound", prefix='vec ')
+compare_vectors(irreped_vec, read_irreped_vec, 9, "Irreped psi4.Vector np compound read and write.")     #TEST
+
+
+# Make sure our pointers are being tracked correctly
+tmp = []
+for n in range(1000):
+    tmp.append(np.asarray(Matrix(3, 3)))
+residual = sum(np.sum(x) for x in tmp)
+
+compare_values(0, residual, 9, "View pointers are correctly assigned.")     #TEST
+
+tmp = []
+for n in range(1000):
+    view = Matrix(3, 3).np
+    view[:] = 1
+    tmp.append(view)
+residual = sum(np.sum(x) for x in tmp)
+
+compare_values(9000, residual, 9, "Object lifetimes are correctly tied together.")     #TEST
+
+
+# Try out JSON serialization
+json_data = irreped_vec.to_serial()
+json_vec = psi4.Vector.from_serial(json_data)
+compare_vectors(json_vec, irreped_vec, 9, "Irreped psi4.Vector serialized read/write.")     #TEST
+
+json_data = irreped_mat.to_serial()
+json_vec = psi4.Matrix.from_serial(json_data)
+compare_matrices(json_vec, irreped_mat, 9, "Irreped psi4.Vector serialized read/write.")     #TEST
+
+# Test out chain_dot
+A = psi4.core.Matrix.from_array(np.random.rand(4, 3))
+B = psi4.core.Matrix.from_array(np.random.rand(3, 5))
+C = psi4.core.Matrix.from_array(np.random.rand(5, 5))
+D = psi4.core.Matrix.from_array(np.random.rand(5, 2))
+
+### Make sure chain dot works
+numpy_result = np.dot(A, B).dot(C).dot(D)
+psi_result = psi4.core.Matrix.chain_dot(A, B, C, D)
+compare_arrays(numpy_result, psi_result, 9, "Chain dot test 1.")     #TEST
+
+numpy_result = np.dot(A, B).dot(C.np.T).dot(D)
+psi_result = psi4.core.Matrix.chain_dot(A, B, C, D, trans=[False, False, True, False])
+compare_arrays(numpy_result, psi_result, 9, "Chain dot test 2.")     #TEST
+
+

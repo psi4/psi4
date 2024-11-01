@@ -1,0 +1,34 @@
+#! wB97X-D test for a large UKS molecule
+#! update ref gradient due to new BraggSlater radii
+
+
+
+
+molecule {
+  -1 1
+  C         0.00000000     0.00000000     2.13868804
+  N         0.00000000     0.00000000     4.42197911
+  C         0.00000000     0.00000000    -0.46134192
+  C        -1.47758582     0.00000000    -2.82593059
+  C         1.47758582     0.00000000    -2.82593059
+  H        -2.41269553    -1.74021190    -3.52915989
+  H        -2.41269553     1.74021190    -3.52915989
+  H         2.41269553     1.74021190    -3.52915989
+  H         2.41269553    -1.74021190    -3.52915989
+  units bohr
+}
+
+
+set {
+    reference             uks
+    scf_type              df
+    basis                 cc-pvdz
+    points 5
+    dft_radial_points     160
+    dft_spherical_points  590
+}
+
+
+anl_grad = gradient('wB97X-D', dertype=1)
+
+#fd_grad = gradient('wB97X-D', dertype=1)

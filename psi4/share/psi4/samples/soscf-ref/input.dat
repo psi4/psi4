@@ -1,0 +1,66 @@
+#! Triple and Singlet Oxygen energy SOSCF, also tests non-symmetric density matrices
+
+#### UHF Triplet Oxygen energy, triplet
+molecule mol {
+    0 3
+    O
+    O 1 1.2
+}
+
+# DF case
+set {
+    basis cc-pVDZ
+    guess sad
+    soscf true
+    scf_type df
+    reference uhf
+}
+
+df_uhf_energy = energy('SCF')
+
+# Non-DF case
+set scf_type out_of_core
+uhf_energy = energy('SCF')
+
+set scf_type pk
+uhf_energy = energy('SCF')
+
+
+# ROHF Triplet
+set {
+    reference rohf
+    scf_type df
+}
+
+df_rohf_energy = energy('SCF')
+
+# Non-DF case
+set scf_type out_of_core
+rohf_energy = energy('SCF')
+
+set scf_type pk
+
+
+
+#### RHF Singlet Oxygen energy, singlet
+molecule mol {
+    0 1
+    O
+    O 1 1.2
+}
+
+# DF case
+set {
+    scf_type df
+    reference rhf
+}
+
+df_rhf_energy = energy('SCF')
+
+# Non-DF case
+
+set scf_type out_of_core
+uhf_energy = energy('SCF')
+
+set scf_type pk
+uhf_energy = energy('SCF')

@@ -1,0 +1,65 @@
+#! dipole moment for HF and B3LYP in presence of perturbation
+#! updated B3LYP values due to new BraggSlater radii
+
+               }
+# Reference values, in atomic units, for finite difference formulas
+# * adjusted after PEDRA pruning in v1.2.3
+          }
+          }
+
+molecule h2o {
+0 1
+O
+H 1 r
+H 1 r 2 a
+a         =  106.0916395530
+r         =    0.9584490557
+}
+pert = 0.001
+lambdas = [pert, -pert, 2.0*pert, -2.0*pert]
+set {
+    basis        6-31G*
+    e_convergence   10
+    scf_type pk
+    pcm true
+    pcm_scf_type total
+}
+pcm = {
+   Units = Angstrom
+   Medium {
+   SolverType = CPCM
+   Solvent = water
+   }
+   Cavity {
+   RadiiSet = UFF
+   Type = GePol
+   Scaling = False
+   Area = 0.3
+   }
+}
+
+for m in ['HF', 'B3LYP']:
+    energies = []
+    for l in lambdas:
+        set perturb_h true
+        set perturb_with dipole
+        set perturb_dipole [0, 0, $l]
+        energies.append(energy(m))
+
+    # Now use 3- and 5-point finite difference formulae to compute the dipole
+    dm_z_3point = (energies[0] - energies[1]) / (2.0*pert)
+    dm_z_5point = (8.0*energies[0] - 8.0*energies[1] - energies[2] + energies[3]) / (12.0*pert)
+    # The a.u. to Debye conversion factor is automatically available in Psithon as psi_dipmom_au2debye
+    # Tabulate the results of the energy computation
+    for val in range(len(lambdas)):
+        print_out("Perturbation strength = %7.4f, %s computed energy = %16.10f\n" % (lambdas[val], m, energies[val]))
+    print_out("Total dipoles\n")
+    print_out("%s 3-point stencil: mu(z) = %10.10f ea0, %10.10f Debye\n" % (m, dm_z_3point, dm_z_3point*psi_dipmom_au2debye))
+    print_out("%s 5-point stencil: mu(z) = %10.10f ea0, %10.10f Debye\n" % (m, dm_z_5point, dm_z_5point*psi_dipmom_au2debye))
+
+    # So we can get the analytic result to compare to
+    set perturb_h false
+    e, wfn = energy(m, return_wfn=True)
+    oeprop(wfn, 'MULTIPOLES(1)')
+    analytic = variable('SCF DIPOLE')
+

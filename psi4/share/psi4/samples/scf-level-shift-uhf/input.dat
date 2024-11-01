@@ -1,0 +1,19 @@
+#! SCF level shift on a UHF computation
+
+molecule {
+0 2
+O          1.14394        0.07535        0.00000
+O          0.00000        0.57695        0.00000
+O         -1.08211       -0.49387        0.00000
+H         -0.49463       -1.26742        0.00000
+}
+
+set basis pcseg-0
+set reference uhf
+set level_shift 0.5
+set level_shift_cutoff 1e-5
+set diis false
+set maxiter 1000
+
+energy('scf')
+

@@ -1,0 +1,59 @@
+#! Various constrained energy minimizations of HOOH with cc-pvdz RHF.
+#! For "fixed" coordinates, the final value is provided by the user.
+
+
+set {
+  diis false
+  basis cc-pvdz
+  g_convergence gau_tight
+}
+
+# Constrained minimization with O-H bonds fixed to reach equilibrium at 0.950 Angstroms.
+molecule {
+  H
+  O 1 0.90
+  O 2 1.40 1 100.0 
+  H 3 0.90 2 100.0 1 115.0
+}
+
+set optking {
+  ranged_distance = ("
+    1  2 0.9500 0.9501
+    3  4 0.9500 0.9501
+  ")
+}
+thisenergy = optimize('scf')
+
+# Constrained minimization with O-O-H angles fixed to reach eq. at 105.0 degrees.
+molecule {
+  H
+  O 1 0.90
+  O 2 1.40 1 100.0
+  H 3 0.90 2 100.0 1 115.0
+}
+
+set optking {
+  ranged_distance = (" ")
+  ranged_bend = ("
+    1 2 3 105.000 105.0001
+    2 3 4 105.000 105.0001
+  ")
+}
+thisenergy = optimize('scf')
+
+# Constrained minimization with H-O-O-H dihedral fixed to 120.0 degrees.
+molecule {
+  H
+  O 1 0.90
+  O 2 1.40 1 100.0
+  H 3 0.90 2 100.0 1 115.0
+}
+
+set optking {
+  ranged_bend = (" ")
+  ranged_dihedral = ("
+    1 2 3 4 120.000 120.0001
+  ")
+}
+thisenergy = optimize('scf')
+

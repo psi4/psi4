@@ -1,0 +1,31 @@
+#! RHF-CCSD/cc-pVDZ energy of H2O partitioned into pair energy contributions.
+
+molecule h2o {
+  0 1
+  O
+  H 1 0.957119
+  H 1 0.957119 2 104.225
+}
+
+set {
+  basis "cc-pVDZ"
+  freeze_core true
+  pair_energies_print true
+}
+
+wfn = energy('ccsd', return_wfn=True)[1]
+
+ref3MP2 = refAAMP2.clone()
+ref3MP2.scale(1.5)
+ref3CC = refAACC.clone()
+ref3CC.scale(1.5)
+ref1MP2 = refABMP2.clone()
+ref1MP2.scale(2)
+ref1MP2.axpy(-1/2, refAAMP2)
+ref1MP2.np[np.diag_indices_from(ref1MP2.np)] *= 1/2
+ref1CC = refABCC.clone()
+ref1CC.scale(2)
+ref1CC.axpy(-1/2, refAACC)
+ref1CC.np[np.diag_indices_from(ref1CC.np)] *= 1/2
+
+

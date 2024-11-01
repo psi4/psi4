@@ -1,0 +1,16 @@
+#! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
+
+molecule h2o {
+    O
+    H 1 0.97
+    H 1 0.97 2 103.0
+}
+
+set {
+    basis 6-31G**
+}
+
+wfn = optimize('ccsd', return_wfn=True)[1]
+
+
+

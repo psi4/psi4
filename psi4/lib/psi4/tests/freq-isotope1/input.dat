@@ -1,0 +1,135 @@
+#! Vibrational and thermo analysis of several water isotopologs.
+#! Demonstrates Hessian reuse for different temperatures and pressures
+#! but not for different isotopologs.
+
+# all reference values from NWChem (see other files in this dir) unless otherwise notated
+
+molecule h2o {
+  units au
+  O      0.00000000    0.00000000    0.00000000
+  H      0.00000000    1.93042809   -1.10715266
+  H      0.00000000   -1.93042809   -1.10715266
+}
+
+#VALID BUT OUTDATED molecule d2o {
+#VALID BUT OUTDATED   units au
+#VALID BUT OUTDATED   O                  0.00000000    0.00000000    0.00000000
+#VALID BUT OUTDATED   H@2.014101779      0.00000000    1.93042809   -1.10715266
+#VALID BUT OUTDATED   H@2.014101779      0.00000000   -1.93042809   -1.10715266
+#VALID BUT OUTDATED }
+#VALID BUT OUTDATED
+#VALID BUT OUTDATED molecule hdo {
+#VALID BUT OUTDATED   units au
+#VALID BUT OUTDATED   O                  0.00000000    0.00000000    0.00000000
+#VALID BUT OUTDATED   H@2.014101779      0.00000000    1.93042809   -1.10715266
+#VALID BUT OUTDATED   H                  0.00000000   -1.93042809   -1.10715266
+#VALID BUT OUTDATED }
+#VALID BUT OUTDATED
+#VALID BUT OUTDATED molecule dto {
+#VALID BUT OUTDATED   units au
+#VALID BUT OUTDATED   O                  0.00000000    0.00000000    0.00000000
+#VALID BUT OUTDATED   H@2.014101779      0.00000000    1.93042809   -1.10715266
+#VALID BUT OUTDATED   H@3.01604927       0.00000000   -1.93042809   -1.10715266
+#VALID BUT OUTDATED }
+
+set basis sto-3g
+set e_convergence 9
+set g_convergence gau_verytight
+set scf_type pk
+
+optimize('hf', molecule=h2o)
+
+#VALID BUT OUTDATED # can't currently update masses with set_mass() in the mols and redetect the right symmetry
+#VALID BUT OUTDATED #   so have to create as as above and update the geometry
+#VALID BUT OUTDATED ogeo = h2o.geometry()
+#VALID BUT OUTDATED d2o.update_geometry()
+#VALID BUT OUTDATED d2o.set_geometry(ogeo)
+#VALID BUT OUTDATED hdo.update_geometry()
+#VALID BUT OUTDATED hdo.set_geometry(ogeo)
+#VALID BUT OUTDATED dto.update_geometry()
+#VALID BUT OUTDATED dto.set_geometry(ogeo)
+
+d2o = h2o.clone()
+d2o.set_mass(1, 2.014101779)
+d2o.set_mass(2, 2.014101779)
+
+hdo = h2o.clone()
+hdo.set_mass(1, 2.014101779)
+
+dto = h2o.clone()
+dto.set_mass(1, 2.014101779)
+dto.set_mass(2, 3.01604927)
+
+e, wfn = freq('hf', molecule=h2o, return_wfn=True)
+compare_values(-74.96590119, variable('current energy'), 6, 'H2O E0')  #TEST
+compare_values(0.024367, variable('ZPVE'), 4, 'H2O ZPVE')  #TEST
+compare_values(0.027199, variable('thermal energy correction'), 4, 'H2O dE')  #TEST
+compare_values(0.028143, variable('enthalpy correction'), 4, 'H2O dH')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(45.283, entropy, 2, 'H2O S')  # molpro  #TEST
+
+clean()
+
+set t 400.0
+
+vibanal_wfn(wfn)
+compare_values(-74.96590119, variable('current energy'), 6, 'H2O E0 @400K')  #TEST
+compare_values(0.024367, variable('ZPVE'), 4, 'H2O ZPVE @400K')  #TEST
+compare_values(0.028170, variable('thermal energy correction'), 4, 'H2O dE @400K')  #TEST
+compare_values(0.029436, variable('enthalpy correction'), 4, 'H2O dH @400K')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(47.603, entropy, 1, 'H2O S @400K')  #TEST
+
+clean()
+
+set t 298.15
+
+freq('hf', molecule=d2o)
+compare_values(-74.96590119, variable('current energy'), 6, 'D2O E0')  #TEST
+compare_values(0.017731, variable('ZPVE'), 4, 'D2O ZPVE')  #TEST
+compare_values(0.020566, variable('thermal energy correction'), 4, 'D2O dE')  #TEST
+compare_values(0.021510, variable('enthalpy correction'), 4, 'D2O dH')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(47.525, entropy, 2, 'D2O S')  # molpro  #TEST
+
+clean()
+
+e, wfn = freq('hf', molecule=hdo, return_wfn=True)
+compare_values(-74.96590119, variable('current energy'), 6, 'HDO E0')  #TEST
+compare_values(0.021103, variable('ZPVE'), 4, 'HDO ZPVE')  #TEST
+compare_values(0.023935, variable('thermal energy correction'), 4, 'HDO dE')  #TEST
+compare_values(0.024878, variable('enthalpy correction'), 4, 'HDO dH')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(47.828, entropy, 2, 'HDO S')  # molpro sym=cs #TEST
+
+# For a symmetry-lowering isotopic substitution like HDO, psi4 recomputes
+#  the rotational symmetry number with the lower point group. This only
+#  affects rotational entropy. That's why the above (non-default) molpro
+#  value from the above was computed with sym=cs. To replicate molpro &
+#  qchem's default, have to set rotational_symmetry_number to H2O value.
+
+set rotational_symmetry_number 2
+
+vibanal_wfn(wfn)
+compare_values(-74.96590119, variable('current energy'), 6, 'HDO E0')  #TEST
+compare_values(0.021103, variable('ZPVE'), 4, 'HDO ZPVE')  #TEST
+compare_values(0.023935, variable('thermal energy correction'), 4, 'HDO dE')  #TEST
+compare_values(0.024878, variable('enthalpy correction'), 4, 'HDO dH')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(46.450, entropy, 2, 'HDO S')  # molpro default #TEST
+
+clean()
+
+# Could just reset the symmetry number to 1 since that's the correct
+#  value for DTO. But the below will calculate the default.
+
+psi4.revoke_global_option_changed('rotational_symmetry_number')
+
+freq('hf', molecule=dto)
+compare_values(-74.96590119, variable('current energy'), 6, 'DTO E0')  #TEST
+compare_values(0.016317, variable('ZPVE'), 4, 'DTO ZPVE')  #TEST
+compare_values(0.019154, variable('thermal energy correction'), 4, 'DTO dE')  #TEST
+compare_values(0.020098, variable('enthalpy correction'), 4, 'DTO dH')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(49.603, entropy, 2, 'DTO S')  # molpro sym=cs #TEST
+

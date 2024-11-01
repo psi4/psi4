@@ -1,0 +1,123 @@
+#! check all variety of options parsing
+
+var = 'E_CONVERGENCE'
+descrip = 'global conv double kw '
+
+set E_CONVERGENCE 5.5e-4
+set E_CONVERGENCE .00055
+set E_CONVERGENCE 0.00055
+set E_CONVERGENCE 5e-4
+set E_CONVERGENCE 4
+set E_CONVERGENCE 1
+set E_CONVERGENCE 0
+set E_CONVERGENCE 0.0
+
+
+var = 'CHOLESKY_TOLERANCE'
+descrip = 'local conv double kw '
+
+set scf CHOLESKY_TOLERANCE 5.5e-4
+set scf CHOLESKY_TOLERANCE .00055
+set scf CHOLESKY_TOLERANCE 0.00055
+set scf CHOLESKY_TOLERANCE 5e-4
+set scf CHOLESKY_TOLERANCE 4
+set scf CHOLESKY_TOLERANCE 1
+set scf CHOLESKY_TOLERANCE 0
+set scf CHOLESKY_TOLERANCE 0.0
+
+
+var = 'SCF_MEM_SAFETY_FACTOR'
+descrip = 'global double kw '
+
+set SCF_MEM_SAFETY_FACTOR 5.5e-4
+set SCF_MEM_SAFETY_FACTOR .00055
+set SCF_MEM_SAFETY_FACTOR 0.00055
+set SCF_MEM_SAFETY_FACTOR 5e-4
+set SCF_MEM_SAFETY_FACTOR 4
+set SCF_MEM_SAFETY_FACTOR 0
+set SCF_MEM_SAFETY_FACTOR 0.0
+
+
+var = 'DIIS_MAX_VECS'
+descrip = 'global int kw '
+
+set DIIS_MAX_VECS 4
+set DIIS_MAX_VECS 0
+set DIIS_MAX_VECS -2
+set DIIS_MAX_VECS 4.0
+set DIIS_MAX_VECS 0.0
+set DIIS_MAX_VECS -2.0
+
+
+var = 'GUESS'
+descrip = 'global string kw '
+
+set GUESS AUTO
+set guess gwh
+
+var = 'SOSCF'
+descrip = 'global bool kw '
+
+set soscf true
+set soscf True
+set soscf 1
+set soscf yes
+set soscf ON
+set soscf false
+set soscf False
+set soscf 0
+set soscf NO
+set soscf off
+
+
+var = 'MOM_OCC'
+descrip = 'global single array kw '
+
+set mom_occ [1, 2.0, 'cat', dog, 5e-2]
+asdf = get_option('SCF', var)
+print(asdf, type(asdf), [type(v) for v in asdf])
+
+
+var = 'MOM_OCC'
+descrip = 'global nested array kw '
+
+set mom_occ [[1, 2.0, 'cat', dog, 5e-2], [1, 2, 7, 8]]
+asdf = get_option('SCF', var)
+print(asdf, type(asdf), [type(v) for v in asdf[0]])
+
+# Boost:  [[1, 2.0, 'CAT', 'DOG', 0.05], [1, 2, 7, 8]]        <type 'list'> [<type 'int'>,  <type 'float'>, <type 'str'>,     <type 'str'>,     <type 'float'>]
+# Pybind: [[1L, 2.0, u'CAT', u'DOG', 0.05], [1L, 2L, 7L, 8L]] <type 'list'> [<type 'long'>, <type 'float'>, <type 'unicode'>, <type 'unicode'>, <type 'float'>]
+
+# check clean_options() is doing its job
+
+set basis cc-pvtz
+set scf_type df
+set scf soscf_max_iter 8
+
+clean_options()
+
+# check set_memory() wrapper
+testm = {800000000: 800000000,
+         2004088624.9: 2004088624,
+         1.0e9: 1000000000,
+         '600 mb': 600000000,
+         '600.0 MiB': 629145600,
+         '.6 Gb': 600000000,
+         '0.48828125GB': 488281250,
+         ' 100000000kB ': 100000000000,
+         '2 eb': 2000000000000000000}
+for t in testm:
+    fn_says = set_memory(t)
+    p4_says = get_memory()
+    compare_integers(testm[t], fn_says, '{}: {} == set == ret'.format(t, testm[t]))
+    compare_integers(testm[t], p4_says, '{}: {} == set == get'.format(t, testm[t]))
+
+teste = [{}, [], "50 dogs", "4 giib", "1e5 gb", "5e5", 2000, "-4 GB", -5e5, '', '21986']
+for t in teste:
+    works = 1
+    try:
+        fn_says = set_memory(t)
+    except ValidationError as e:
+        print(str(e))
+        works = 0
+    compare_integers(0, works, '{} no good as mem setting'.format(t))

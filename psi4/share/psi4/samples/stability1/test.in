@@ -1,0 +1,94 @@
+#! UHF->UHF stability analysis test for BH with cc-pVDZ
+#! Test direct SCF with and without symmetry, test PK without symmetry
+
+ref_vals_sym = [ 0.163530, 0.385029, 0.000000, 0.523085,   #TEST 
+               -0.131403, 0.390496, 0.248212, 0.493736 ]   #TEST
+
+nirrep = 4                                                 #TEST
+rows = psi4.Dimension(nirrep)                              #TEST
+col = psi4.Dimension(nirrep)                               #TEST
+
+for i in range(0,nirrep):                                  #TEST
+    col[i] = 1                                             #TEST  
+    rows[i] = 2                                            #TEST 
+
+ref = psi4.Matrix("Refs values",rows,col)                  #TEST
+
+for h in range(0,4):                                       #TEST
+    for i in range(0,2):                                   #TEST
+      ref.set(h,i,0,ref_vals_sym[h * 2 + i])               #TEST
+
+nucenergy =   2.6458860533      #TEST
+refenergy =  -24.65621856015634 #TEST
+
+molecule bh {
+    1  2
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+}
+
+set = {
+    reference uhf
+    scf_type   direct
+    basis      cc-pVDZ
+    docc [2,0,0,0]   # B1 and B2 are degenerate, we fix occupations
+    socc [0,0,1,0]   # for testing purposes
+    e_convergence 10
+    stability_analysis follow
+    solver_n_guess 6
+    solver_n_root 2
+}
+
+thisenergy = energy('scf')
+
+stab = variable("SCF STABILITY EIGENVALUES")
+
+compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
+compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")                   #TEST
+
+ref_vals_sym = [ [ 0.128037 ],             #TEST 
+                 [ 0.128037 ],             #TEST
+               ]                           #TEST
+
+ref = psi4.Matrix.from_list(ref_vals_sym)  #TEST
+
+refenergy =  -24.78964070773015 #TEST
+
+molecule bh {
+    1  2
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+symmetry c1
+}
+
+set = {
+    reference uhf
+    scf_type   direct
+    basis      cc-pVDZ
+    docc [2]   # B1 and B2 are degenerate, we fix occupations
+    socc [1]   # for testing purposes
+    e_convergence 10
+    stability_analysis follow
+    solver_n_guess 6
+    solver_n_root 2
+}
+
+thisenergy = energy('scf')
+
+stab = variable("SCF STABILITY EIGENVALUES")
+
+compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
+compare_matrices(ref, stab, 5, "Stability eigenvalues without symmetry")                #TEST
+
+set scf_type pk
+
+thisenergy = energy('scf')
+
+stab = variable("SCF STABILITY EIGENVALUES")
+
+compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
+compare_matrices(ref, stab, 5, "Stability eigenvalues without symmetry")                #TEST
+

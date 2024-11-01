@@ -1,0 +1,31 @@
+#! CCSD(T) cc-pVDZ geometry optimization for the H2O molecule using MRCC.
+
+molecule h2o {
+    o
+    h 1 1.0
+    h 1 1.0 2 104.5
+}
+
+set {
+    basis cc-pvdz
+    freeze_core true
+    qc_module mrcc
+}
+
+try:
+    # cc6 is unmanaged
+    frequency('mrcc6')
+except UpgradeHelper:
+    pass
+
+try:
+    # ccsd(t) is managed
+    optimize('mrccsd(t)')
+except UpgradeHelper:
+    pass
+
+optimize("ccsd(t)")
+
+compare_values(9.115333820319844, variable("NUCLEAR REPULSION ENERGY"), 4, 'nre')  #TEST
+compare_values(-76.2413050123293, variable('CCSD(T) TOTAL ENERGY'), 6, 'ccsd(t)')  #TEST
+

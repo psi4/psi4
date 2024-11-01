@@ -1,0 +1,15 @@
+#! OMP3 cc-pCVDZ energy with ROHF initial guess for the NO radical
+
+
+molecule no {
+0 2
+n
+o 1 1.158
+}
+
+set {
+  basis cc-pcvdz
+  reference rohf
+}
+energy('omp3')
+

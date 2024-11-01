@@ -1,0 +1,28 @@
+#! A general test of the MintsHelper function
+
+molecule mol {
+O
+H 1 1.1
+H 1 1.1 2 104
+}
+
+scf_e, scf_wfn = energy("SCF/6-31G", return_wfn=True)
+
+Cocc = scf_wfn.Ca_subset("AO", "OCC")
+Cvir = scf_wfn.Ca_subset("AO", "VIR")
+
+mints = MintsHelper(scf_wfn.basisset())
+
+# Let us simply run several of ERI functions
+I = mints.ao_eri()
+Ierf = mints.ao_erf_eri(0.4)
+ovlp3 = mints.ao_3coverlap()
+
+# Transform ERI's
+I_iaia1 = mints.mo_eri(Cocc, Cvir, Cocc, Cvir)
+I_iaia2 = mints.mo_transform(I, Cocc, Cvir, Cocc, Cvir)
+
+compare_matrices(I_iaia1, I_iaia2, 8, "(ia|ia) transform comparison")  #TEST
+
+# Build a spin ERI
+I_iaia_spin = mints.mo_spin_eri(Cocc, Cvir)

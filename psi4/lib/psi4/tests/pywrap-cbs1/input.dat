@@ -1,0 +1,138 @@
+#! Various basis set extrapolation tests
+
+molecule {
+Li
+}
+
+set {
+    reference rohf
+    scf_type pk
+    df_scf_guess false
+}
+
+e_cbs = energy('cbs',
+            scf_wfn='scf',
+            scf_basis='aug-cc-pV[DTQ]Z',
+            scf_scheme='scf_xtpl_helgaker_3')
+
+compare_values(-7.4326961561955551, e_cbs, 7, "[1] Li ROHF extrapolated energy")  #TEST
+compare(3, variable('cbs number'), '[1b]')  #TEST
+clean()
+
+
+# Here's another example
+molecule h2 {
+H
+H 1 R
+
+R = 1
+}
+
+set {
+    reference rhf
+    guess core
+    mp2_type conv
+    df_scf_guess true
+}
+
+e_cbs = energy('cbs',
+            corl_wfn='mp2',
+            corl_basis='cc-pV[TQ]Z',
+            corl_scheme='corl_xtpl_helgaker_2',
+            delta_wfn='ccsd',
+            delta_basis='cc-pV[DT]Z',
+            delta_scheme='corl_xtpl_helgaker_2')
+compare_values(-1.148287763304, e_cbs, 7, "[2] H2 mp2 extrapolated energy with ccsd delta correction")  #TEST
+compare(3, variable('cbs number'), '[2b]')  #TEST
+clean()
+
+
+# One final example
+molecule {
+He
+}
+
+set {
+    reference rhf
+    df_scf_guess false
+}
+
+e_cbs = energy('cbs',
+            scf_basis='aug-cc-pV[DTQ]Z',
+            scf_scheme='scf_xtpl_helgaker_3',
+            corl_wfn='ccsd',
+            corl_basis='aug-cc-pV[DT]Z',
+            corl_scheme='corl_xtpl_helgaker_2')
+
+compare_values(-2.9033043421572055642, e_cbs, 7, "[3] He ccsd extrapolated energy")  #TEST
+compare(3, variable('cbs number'), '[3b]')  #TEST
+clean()
+
+# Example with default extrapolation schemes
+e_cbs = energy('cbs',
+            corl_wfn='mp2',
+            corl_basis='cc-pv[dt]z',
+            delta_wfn='mp5',
+            delta_basis='cc-pVDZ')
+
+compare_values(-2.90394676, e_cbs, 6, '[4] MP5: minimal info')  #TEST
+compare(2, variable('cbs number'), '[4b]')  #TEST
+clean()
+
+
+def myownmy_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+    """Note that the _2 is necessary to signal this is a fn involving 2 zeta-levels.
+    Yes, this fn is just the corl_xtpl_helgaker_2 w/o error checking and printing.
+
+    """
+    if isinstance(valueLO, float):
+        value = (valueHI * zHI ** 3 - valueLO * zLO ** 3) / (zHI ** 3 - zLO ** 3)
+        beta = (valueHI - valueLO) / (zHI ** (-3) - zLO ** (-3))
+
+        return value
+
+    elif isinstance(valueLO, np.ndarray):
+        # use extra section like this in case numpy arrays need different code than scalars
+        value = (valueHI * zHI ** 3 - valueLO * zLO ** 3) / (zHI ** 3 - zLO ** 3)
+        beta = (valueHI - valueLO) / (zHI ** (-3) - zLO ** (-3))
+
+        return value
+
+    elif isinstance(valueLO, (core.Matrix, core.Vector)):
+        # legacy/unneeded -- much nicer to work in ndarray like above
+
+        beta = valueHI.clone()
+        beta.subtract(valueLO)
+        beta.scale(1 / (zHI ** (-3) - zLO ** (-3)))
+        beta.name = 'Helgaker SCF (%s, %s) beta' % (zLO, zHI)
+
+        value = valueHI.clone()
+        value.scale(zHI ** 3)
+
+        tmp = valueLO.clone()
+        tmp.scale(zLO ** 3)
+        value.subtract(tmp)
+
+        value.scale(1 / (zHI ** 3 - zLO ** 3))
+        value.name = 'Helgaker Corr (%s, %s) data' % (zLO, zHI)
+
+        return value
+
+    else:
+        raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
+
+h2.R = 0.747953788665
+# 5a is equivalent specification to 5b
+#e_cbs = energy('cbs',
+#            molecule=h2,
+#            corl_wfn='mp2',
+#            corl_basis='aug-cc-pv[t,Q]z',
+#            delta_scheme=myownmy_2,
+#            delta_wfn='ccsd(t)',
+#            delta_basis='cc-pV[dt]Z')
+#compare_values(-1.17505568495, e_cbs, 6, "[5a] user-def xtpl cbs()")
+
+
+register_xtpl_function(myownmy_2)
+e_cbs = energy('MP2/aug-cc-pV[T,Q]Z + D:CCSD(T)/cc-pv[dt]z', delta_scheme='myownmy_2', molecule=h2)
+compare_values(-1.17505568495, e_cbs, 6, "[5b] user-def xtpl energy(cbs)")  #TEST

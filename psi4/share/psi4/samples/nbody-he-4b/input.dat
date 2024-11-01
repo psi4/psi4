@@ -1,0 +1,160 @@
+#! MP2/aug-cc-pvDZ many body energies of an arbitrary Helium complex, addressing 4-body formulas
+
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
+molecule he_tetramer {
+He 0 0 0
+--
+He 0 0 2
+--
+He 0 2 0
+--
+He 0 2 2
+}
+
+set {
+    e_convergence 1.e-10
+    d_convergence 1.e-10
+}
+
+if distributed:
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type=["nocp", "cp", "vmfc"], return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type=["nocp", "cp", "vmfc"], return_wfn=True)
+
+for k, v in sorted(psi4.core.variables().items()):
+    print("QCVariable:", k, v)
+
+he4_refs = {
+    "CP-CORRECTED TOTAL ENERGY THROUGH 1-BODY":          -11.530751941948,
+    "CP-CORRECTED TOTAL ENERGY THROUGH 2-BODY":          -11.522403579651,
+    "CP-CORRECTED TOTAL ENERGY THROUGH 3-BODY":          -11.522640167467,
+    "CP-CORRECTED TOTAL ENERGY THROUGH 4-BODY":          -11.522576639404,
+    "CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY":      0.008348362297,
+    "CP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY":      0.008111774481,
+    "CP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY":      0.008175302544,
+    "CP-CORRECTED 2-BODY CONTRIBUTION TO ENERGY":          0.008348362297,
+    "CP-CORRECTED 3-BODY CONTRIBUTION TO ENERGY":         -0.000236587816,
+    "CP-CORRECTED 4-BODY CONTRIBUTION TO ENERGY":          0.000063528063,
+
+    "NOCP-CORRECTED TOTAL ENERGY THROUGH 1-BODY":        -11.530751941948,
+    "NOCP-CORRECTED TOTAL ENERGY THROUGH 2-BODY":        -11.522760073327,
+    "NOCP-CORRECTED TOTAL ENERGY THROUGH 3-BODY":        -11.523005411447,
+    "NOCP-CORRECTED TOTAL ENERGY THROUGH 4-BODY":        -11.522948420000,
+    "NOCP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY":    0.007991868621,
+    "NOCP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY":    0.007746530501,
+    "NOCP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY":    0.007803521948,
+    "NOCP-CORRECTED 2-BODY CONTRIBUTION TO ENERGY":        0.007991868621,
+    "NOCP-CORRECTED 3-BODY CONTRIBUTION TO ENERGY":       -0.000245338120,
+    "NOCP-CORRECTED 4-BODY CONTRIBUTION TO ENERGY":        0.000056991448,
+
+    "VMFC-CORRECTED TOTAL ENERGY THROUGH 1-BODY":        -11.530751941948,
+    "VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY":        -11.522390319401,
+    "VMFC-CORRECTED TOTAL ENERGY THROUGH 3-BODY":        -11.522627256726,
+    "VMFC-CORRECTED TOTAL ENERGY THROUGH 4-BODY":        -11.522563728663,
+    "VMFC-CORRECTED INTERACTION ENERGY THROUGH 2-BODY":    0.008361622547,
+    "VMFC-CORRECTED INTERACTION ENERGY THROUGH 3-BODY":    0.008124685222,
+    "VMFC-CORRECTED INTERACTION ENERGY THROUGH 4-BODY":    0.008188213285,
+    "VMFC-CORRECTED 2-BODY CONTRIBUTION TO ENERGY":        0.008361622547,
+    "VMFC-CORRECTED 3-BODY CONTRIBUTION TO ENERGY":       -0.000236937325,
+    "VMFC-CORRECTED 4-BODY CONTRIBUTION TO ENERGY":        0.000063528063,
+}
+
+for qcv, ref in he4_refs.items():
+
+for qcv, ref in {
+    "NOCP-CORRECTED TOTAL ENERGY": he4_refs["NOCP-CORRECTED TOTAL ENERGY THROUGH 4-BODY"],
+    "NOCP-CORRECTED INTERACTION ENERGY": he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"],
+    "CP-CORRECTED TOTAL ENERGY": he4_refs["CP-CORRECTED TOTAL ENERGY THROUGH 4-BODY"],
+    "CP-CORRECTED INTERACTION ENERGY": he4_refs["CP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"],
+    "VMFC-CORRECTED TOTAL ENERGY": he4_refs["VMFC-CORRECTED TOTAL ENERGY THROUGH 4-BODY"],
+    "VMFC-CORRECTED INTERACTION ENERGY": he4_refs["VMFC-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"],
+    "CURRENT ENERGY": he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"],
+}.items():
+        compare_values(ref, variable(qcv), 8, "[1] core " + qcv)
+        compare_values(ref, wfn.variable(qcv), 8, "[1] wfn  " + qcv)
+
+clean_variables()
+
+###
+if distributed:
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="nocp", return_plan=True, max_nbody=3)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="nocp", return_wfn=True, max_nbody=3)
+
+
+for qcv, ref in {
+    "NOCP-CORRECTED TOTAL ENERGY": he4_refs["NOCP-CORRECTED TOTAL ENERGY THROUGH 3-BODY"],
+    "NOCP-CORRECTED INTERACTION ENERGY": he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+    "CURRENT ENERGY": he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+}.items():
+        compare_values(ref, variable(qcv), 8, "[2] core " + qcv)
+        compare_values(ref, wfn.variable(qcv), 8, "[2] wfn  " + qcv)
+
+clean_variables()
+
+###
+if distributed:
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="cp", return_plan=True, max_nbody=3, return_total_data=True)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="cp", return_wfn=True, max_nbody=3, return_total_data=True)
+
+
+for qcv, ref in {
+    "CP-CORRECTED TOTAL ENERGY": he4_refs["CP-CORRECTED TOTAL ENERGY THROUGH 3-BODY"],
+    "CP-CORRECTED INTERACTION ENERGY": he4_refs["CP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+    "CURRENT ENERGY": he4_refs["CP-CORRECTED TOTAL ENERGY THROUGH 3-BODY"],
+}.items():
+
+clean_variables()
+
+###
+if distributed:
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="cp", return_plan=True, max_nbody=3, return_total_data=False)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="cp", return_wfn=True, max_nbody=3, return_total_data=False)
+
+
+for qcv, ref in {
+    "CP-CORRECTED INTERACTION ENERGY": he4_refs["CP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+    "CURRENT ENERGY": he4_refs["CP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+}.items():
+
+clean_variables()
+
+###
+if distributed:
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="vmfc", return_plan=True, max_nbody=3)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="vmfc", return_wfn=True, max_nbody=3)
+
+for qcv, ref in he4_refs.items():
+    if "4-BODY" not in qcv and qcv.startswith("VMFC-"):
+
+for qcv, ref in {
+    "VMFC-CORRECTED TOTAL ENERGY": he4_refs["VMFC-CORRECTED TOTAL ENERGY THROUGH 3-BODY"],
+    "VMFC-CORRECTED INTERACTION ENERGY": he4_refs["VMFC-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+    "CURRENT ENERGY": he4_refs["VMFC-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+}.items():
+
+if distributed:
+    snowflake.stop()

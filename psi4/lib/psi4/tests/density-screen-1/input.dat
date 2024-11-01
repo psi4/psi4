@@ -1,0 +1,28 @@
+#! RHF Density Matrix based-Integral Screening Test for water
+
+ref_energy = -76.04125669409474 # TEST (Compare to CSAM Screening)
+
+molecule mol {
+    0 1
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+    symmetry c1
+    no_reorient
+    no_com
+}
+
+set {
+    scf_type direct
+    df_scf_guess false
+    basis aug-cc-pVDZ
+    ints_tolerance 1.0e-12
+    e_convergence 1.0e-10
+    d_convergence 1.0e-6
+    screening density
+    incfock true
+    incfock_full_fock_every 4
+}
+
+ds_energy = energy('scf')
+psi4.compare_values(ref_energy, ds_energy, 9, "HF Density Screening Energy")

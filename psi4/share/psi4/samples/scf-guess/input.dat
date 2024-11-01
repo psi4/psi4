@@ -1,0 +1,130 @@
+#! Test initial SCF guesses on FH and FH+ in cc-pVTZ basis
+
+
+molecule no {
+0 1
+F
+H 1 0.9015
+}
+
+set {
+  basis cc-pvtz
+  reference rhf
+  scf_type pk
+  df_scf_guess false
+  guess core
+  docc [ 3, 0, 1, 1 ]
+}
+energy('scf')
+
+set guess gwh
+energy('scf')
+
+set guess sad
+energy('scf')
+
+set guess sadno
+energy('scf')
+
+set guess huckel
+energy('scf')
+
+set guess modhuckel
+energy('scf')
+
+set guess sap
+energy('scf')
+
+set guess sapgau
+energy('scf')
+
+molecule nocat {
+1 2
+F
+H 1 0.9015
+}
+
+set {
+  reference uhf
+  guess core
+  docc [ 3, 0, 0, 1 ]
+  socc [ 0, 0, 1, 0 ]
+}
+energy('scf')
+
+set guess gwh
+energy('scf')
+
+set guess sad
+energy('scf')
+
+set guess sadno
+energy('scf')
+
+set guess huckel
+energy('scf')
+
+set guess modhuckel
+energy('scf')
+
+set guess sap
+energy('scf')
+
+set guess sapgau
+energy('scf')
+
+
+set {
+  reference rohf
+  guess core
+}
+energy('scf')
+
+set guess gwh
+energy('scf')
+
+set guess sad
+energy('scf')
+
+set guess sadno
+energy('scf')
+
+set guess huckel
+energy('scf')
+
+set guess modhuckel
+energy('scf')
+
+set guess sap
+energy('scf')
+
+set guess sapgau
+energy('scf')
+
+
+set {
+  reference cuhf
+  guess core
+}
+energy('scf')
+
+set guess gwh
+energy('scf')
+
+set guess sad
+energy('scf')
+
+set guess sadno
+energy('scf')
+
+set guess huckel
+energy('scf')
+
+set guess modhuckel
+energy('scf')
+
+set guess sap
+energy('scf')
+
+set guess sapgau
+energy('scf')

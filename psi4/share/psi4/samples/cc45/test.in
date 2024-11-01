@@ -1,0 +1,30 @@
+#! RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
+
+molecule h2o {
+  0 1
+  H
+  O 1 0.9
+  H 2 0.9 1 104.0
+}
+
+set {
+  basis "cc-pVDZ"
+  roots_per_irrep [2, 2, 2, 2]
+}
+
+energy('eom-cc2')
+
+scf_0   =   -76.02170971655195                                                        #TEST
+cc2_0   =   -76.22253325763003                                                        #TEST
+eomcc_0 = [ (-75.809233678819, "A1", 1), (-75.534141615619, "A1", 2), (-75.826553933384, "A2", 0), (-75.381447128586, "A2", 1),   #TEST
+            (-75.904202214316, "B1", 0), (-75.295956806957, "B1", 1), (-75.729129680049, "B2", 0), (-75.642857468928, "B2", 1) ]  #TEST
+
+compare_values(scf_0, variable("SCF TOTAL ENERGY"), 6, "SCF energy") #TEST
+compare_values(cc2_0, variable("CC2 TOTAL ENERGY"), 6, "CC2 energy") #TEST
+
+for (ref, h, i) in eomcc_0: # TEST
+    val = variable(f"CC2 ROOT {i} (IN {h}) TOTAL ENERGY")                                    #TEST
+    compare_values(ref, val, 6, f"EOM-CC2 root {i} (IN {h})")                                #TEST
+    val = variable(f"CC ROOT {i} (IN {h}) TOTAL ENERGY")                                     #TEST
+    compare_values(ref, val, 6, f"EOM-CC2 root {i} (IN {h})")                                #TEST
+

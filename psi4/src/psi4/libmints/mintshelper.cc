@@ -27,6 +27,7 @@
  */
 
 #include "x2cint.h"
+#include "gau2grid/gau2grid.h"
 
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
@@ -64,6 +65,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <libint2/config.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -2121,36 +2123,43 @@ SharedMatrix MintsHelper::overlap_grad(SharedMatrix D) {
     return overlap_mat;
 }
 SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
-    double xlambda = 0.0;
-    double ylambda = 0.0;
-    double zlambda = 0.0;
-
+    int natoms = basisset_->molecule()->natom();
+    auto perturbation_gradient = std::make_shared<Matrix>("Perturbation Gradient", natoms, 3);
+    
     std::string perturb_with = options_.get_str("PERTURB_WITH");
-    if (perturb_with == "DIPOLE_X")
-        xlambda = options_.get_double("PERTURB_MAGNITUDE");
-    else if (perturb_with == "DIPOLE_Y")
-        ylambda = options_.get_double("PERTURB_MAGNITUDE");
-    else if (perturb_with == "DIPOLE_Z")
-        zlambda = options_.get_double("PERTURB_MAGNITUDE");
-    else if (perturb_with == "DIPOLE") {
-        if (options_["PERTURB_DIPOLE"].size() != 3)
-            throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
-        xlambda = options_["PERTURB_DIPOLE"][0].to_double();
-        ylambda = options_["PERTURB_DIPOLE"][1].to_double();
-        zlambda = options_["PERTURB_DIPOLE"][2].to_double();
+    
+    if (perturb_with == "DIPOLE" || perturb_with == "DIPOLE_X" ||
+        perturb_with == "DIPOLE_Y" || perturb_with == "DIPOLE_Z") {
+        double xlambda = 0.0;
+        double ylambda = 0.0;
+        double zlambda = 0.0;
+
+        if (perturb_with == "DIPOLE_X")
+            xlambda = options_.get_double("PERTURB_MAGNITUDE");
+        else if (perturb_with == "DIPOLE_Y")
+            ylambda = options_.get_double("PERTURB_MAGNITUDE");
+        else if (perturb_with == "DIPOLE_Z")
+            zlambda = options_.get_double("PERTURB_MAGNITUDE");
+        else if (perturb_with == "DIPOLE") {
+            if (options_["PERTURB_DIPOLE"].size() != 3)
+                throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
+            xlambda = options_["PERTURB_DIPOLE"][0].to_double();
+            ylambda = options_["PERTURB_DIPOLE"][1].to_double();
+            zlambda = options_["PERTURB_DIPOLE"][2].to_double();
+        } 
+
+        auto dipole_gradients = dipole_grad(D);
+        double lambdas[3] = {xlambda, ylambda, zlambda};
+        C_DGEMM('n', 't', 3 * natoms, 1, 3, 1.0, dipole_gradients->pointer()[0], 3, &lambdas[0], 3, 0.0,
+                perturbation_gradient->pointer()[0], 1);
+    } else if (perturb_with == "EMBPOT") {
+        perturbation_gradient->add(embpot_grad(D));
     } else {
         std::string msg("Gradients for a ");
         msg += perturb_with;
         msg += " perturbation are not available yet.\n";
         throw PSIEXCEPTION(msg);
     }
-
-    int natoms = basisset_->molecule()->natom();
-    auto perturbation_gradient = std::make_shared<Matrix>("Perturbation Gradient", natoms, 3);
-    auto dipole_gradients = dipole_grad(D);
-    double lambdas[3] = {xlambda, ylambda, zlambda};
-    C_DGEMM('n', 't', 3 * natoms, 1, 3, 1.0, dipole_gradients->pointer()[0], 3, &lambdas[0], 3, 0.0,
-            perturbation_gradient->pointer()[0], 1);
     return perturbation_gradient;
 }
 
@@ -2422,6 +2431,106 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
         gradient_contributions[kv.first] = gradient_contribution;
     }
     return gradient_contributions;
+}
+
+SharedMatrix MintsHelper::embpot_grad(SharedMatrix D) {
+    // Computes skeleton (Hellman-Feynman like) derivatives for an arbitrary potential
+    int natom = molecule_->natom();
+    bool puream = basisset_->has_puream();
+
+    auto ret = std::make_shared<Matrix>("EMBPOT dervatives (i.e. Nx3)", natom, 3);
+    double **Gp = ret->pointer();
+    double **Dp = D->pointer();
+
+    FILE* input = fopen("EMBPOT", "r");
+    int npoints;
+    int statusvalue = fscanf(input, "%d", &npoints);
+    double x, y, z, w, v;
+    std::vector<double> xyz(npoints * 3);
+    std::vector<double> w_vec(npoints);
+    std::vector<double> v_vec(npoints);
+
+    // Pull out data
+    for (int k = 0; k < npoints; k++) {
+        statusvalue = fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
+        xyz[k*3] = x;
+        xyz[k*3 + 1] = y;
+        xyz[k*3 + 2] = z;
+        w_vec[k] = w;
+        v_vec[k] = v;
+    }
+
+    // Declare tmps
+    std::vector<double> center(3, 0.0);
+
+    for (int P = 0; P < basisset_->nshell(); P++) {
+        const GaussianShell& Pshell = basisset_->shell(P);
+        Vector3 temp = Pshell.center();
+        int L = Pshell.am();
+        int nprim = Pshell.nprimitive();
+        int nP = Pshell.nfunction();
+        int oP = Pshell.function_index();
+        int atom = Pshell.ncenter();
+        const double* alpha = Pshell.exps();
+        const double* norm = Pshell.coefs();
+
+        // Copy over centerp to a double*
+        center[0] = temp[0];
+        center[1] = temp[1];
+        center[2] = temp[2];
+
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+        const int order = (int)puream ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
+#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+        const int order = (int)puream ? GG_SPHERICAL_GAUSSIAN : GG_CARTESIAN_CCA;
+#else
+#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
+#endif
+
+        double phi[nP*npoints] = {0};
+        double phi_x[nP*npoints] = {0};
+        double phi_y[nP*npoints] = {0};
+        double phi_z[nP*npoints] = {0};
+
+        gg_collocation_deriv1(L, npoints, xyz.data(), 3,
+                              nprim, norm, alpha, center.data(), order,
+                              phi, phi_x, phi_y, phi_z);
+
+        for (int Q = 0; Q < basisset_->nshell(); Q++) {
+            const GaussianShell& Qshell = basisset_->shell(Q);
+            Vector3 temp = Qshell.center();
+            int L = Qshell.am();
+            int nprim = Qshell.nprimitive();
+            int nQ = Qshell.nfunction();
+            int oQ = Qshell.function_index();
+            const double* alpha = Qshell.exps();
+            const double* norm = Qshell.coefs();
+
+            // Copy over centerp to a double*
+            center[0] = temp[0];
+            center[1] = temp[1];
+            center[2] = temp[2];
+
+            double phi[nQ*npoints] = {0};
+
+            gg_collocation(L, npoints, xyz.data(), 3,
+                           nprim, norm, alpha, center.data(), order,
+                           phi);
+    
+            // Loop over points in EMBPOT
+            for (int k = 0; k < npoints; k++) {
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Gp[atom][0] += -2*Dp[p + oP][q + oQ]*v_vec[k]*w_vec[k]*phi[q*npoints + k]*phi_x[p*npoints + k];
+                        Gp[atom][1] += -2*Dp[p + oP][q + oQ]*v_vec[k]*w_vec[k]*phi[q*npoints + k]*phi_y[p*npoints + k];
+                        Gp[atom][2] += -2*Dp[p + oP][q + oQ]*v_vec[k]*w_vec[k]*phi[q*npoints + k]*phi_z[p*npoints + k];
+                    }
+                }
+            }
+        }
+    }
+    fclose(input);
+    return ret;
 }
 
 // TODO: DFMP2 might be able to use this, if we resolve the following:

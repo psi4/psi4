@@ -1,0 +1,35 @@
+#! usapt example with empty beta
+
+memory 1024 MB
+
+molecule dimer {
+0 2
+Li 0.000 0.000 -1.000
+--
+0 2
+H  0.000 0.000 +1.000
+
+no_reorient
+no_com
+units angstrom
+symmetry c1
+}
+
+set {
+    basis aug-cc-pvdz
+    reference uhf
+    basis_guess 3-21g
+    guess sad
+    scf_type mem_df
+    e_convergence 1e-12,
+    d_convergence 1e-12,
+}
+
+ene, wfn = psi4.energy("sapt0", return_wfn=True, molecule=dimer)
+
+compare_values(0.01417236585, ene, 6, "SAPT0 tot")
+compare_values(-0.00812748122, variable("SAPT ELST ENERGY"), 6, "SAPT0 elst")
+compare_values(0.04066764554, variable("SAPT EXCH ENERGY"), 6, "SAPT0 exch")
+compare_values(-0.01571323800, variable("SAPT IND ENERGY"), 6, "SAPT0 ind")
+compare_values(-0.00265456046, variable("SAPT DISP ENERGY"), 6, "SAPT0 disp")
+

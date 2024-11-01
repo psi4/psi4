@@ -1,0 +1,81 @@
+#! Various DCT analytic gradients for the O2 molecule with 6-31G basis set
+
+
+molecule o2 {
+0 3
+O
+O 1 R
+
+units bohr
+R = 2.400
+}
+
+set {
+  basis           6-31G
+  r_convergence   8
+  diis_start_convergence 1e-2
+  qc_coupling     true
+  reference       uhf
+}
+
+#AO_BASIS = NONE
+set ao_basis        none
+set dct_functional dc-06
+set algorithm       simultaneous
+grad_sim = gradient('dct')
+
+set ao_basis        none
+set dct_functional dc-06
+set algorithm       qc
+grad_qc = gradient('dct')
+
+set ao_basis        none
+set dct_functional odc-06
+set algorithm simultaneous
+grad_odc06 = gradient('dct')
+
+set ao_basis        none
+set dct_functional odc-06
+set algorithm       qc
+grad_odc06 = gradient('dct')
+
+set ao_basis        none
+set dct_functional odc-12
+set algorithm       simultaneous
+grad_odc12 = gradient('dct')
+
+set ao_basis        none
+set dct_functional odc-12
+set algorithm       qc
+grad_odc12 = gradient('dct')
+
+set ao_basis        none
+set dct_functional odc-13
+set algorithm       simultaneous
+grad_odc13 = gradient('dct')
+
+set ao_basis        none
+set dct_functional odc-13
+set algorithm       qc
+grad_odc13 = gradient('dct')
+
+#AO_BASIS = DISK 
+set ao_basis        disk
+set dct_functional dc-06
+set algorithm       simultaneous
+grad_sim = gradient('dct')
+
+set ao_basis        disk
+set dct_functional odc-06
+set algorithm simultaneous
+grad_odc06 = gradient('dct')
+
+set ao_basis        disk
+set dct_functional odc-12
+set algorithm       simultaneous
+grad_odc12 = gradient('dct')
+
+set ao_basis        disk
+set dct_functional odc-13
+set algorithm       simultaneous
+grad_odc13 = gradient('dct')

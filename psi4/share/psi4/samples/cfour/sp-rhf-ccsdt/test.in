@@ -1,0 +1,58 @@
+#! single-point CCSDT/qz2p on water
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+CCSDT energy calculation 
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=CCSDT,BASIS=qz2p
+SCF_CONV=12
+CC_CONV=12
+MEMORY=20000000)
+
+}
+
+energy('cfour')
+
+compare_values(-76.062748460117, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-76.332940127333, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-0.283033259502, variable('ccsdt correlation energy'), 6, 'CCSDT corl')  #TEST
+compare_values(-76.345781719619, variable('ccsdt total energy'), 6, 'CCSDT')  #TEST
+compare_values(-0.283033259502, variable('current correlation energy'), 6, 'Current corl')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_CALC_level=CCSDT
+cfour_BASIS=qz2p
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('cfour')
+
+compare_values(-76.062748460117, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-76.332940127333, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-0.283033259502, variable('ccsdt correlation energy'), 6, 'CCSDT corl')  #TEST
+compare_values(-76.345781719619, variable('ccsdt total energy'), 6, 'CCSDT')  #TEST
+compare_values(-0.283033259502, variable('current correlation energy'), 6, 'Current corl')  #TEST
+

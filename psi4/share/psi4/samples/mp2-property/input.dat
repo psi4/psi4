@@ -1,0 +1,25 @@
+#! MP2 cc-pvDZ properties for Nitrogen oxide
+
+molecule nos {
+   O 0 0 0
+   N 0 0 1.18
+   N 0 0 2.21
+#symmetry c1
+}
+
+set {
+    basis cc-pvdz
+    e_convergence 10
+}
+
+nos.update_geometry()
+nos.print_out()
+
+props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
+         'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',
+         'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
+         'MULTIPOLE(3)', 'NO_OCCUPATIONS']
+
+mp2_e, mp2_wfn = prop('MP2', properties = props, return_wfn=True)
+
+compare_values(np.array([0, 0, -0.9526489, 0, 0, 0, -0.9526489, 0, 0, 0, 0, 0, 0, 0, -0.9526489, 0, -0.9526489, 0, -0.9526489, 0, 0, 0, -0.9526489, 0, 0, 0, -6.8644462]).reshape((3, 3, 3)),

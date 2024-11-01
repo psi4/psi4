@@ -1,0 +1,48 @@
+#! optimization MP2/cc-pvtz on water
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+Geometry optimization of H2O at MP2 level
+O
+H 1 R*
+H 1 R* 2 A*
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=MP2,BASIS=PVTZ
+GEO_CONV=10
+SCF_CONV=12)
+}
+
+energy('cfour')
+
+
+clean()
+clean_variables()
+cfour {}  # clear literal block since running sequentially
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+memory 600 mb
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_CALC_level=MP2
+cfour_BASIS=PVTZ
+cfour_SCF_CONV=12
+rms_force_g_convergence 6
+}
+
+optimize('cfour')
+
+

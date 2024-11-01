@@ -1,0 +1,26 @@
+#! Test SFX2C-1e with a static electric field on He aug-cc-pVTZ
+
+eref_x2c_0 = -2.8613053511779594
+eref_x2c_p = -2.8679759489083452
+
+molecule {
+  0 1
+  He 0.0 0.0 0.0
+  symmetry c1  # field breaks symmetry
+}
+
+set {
+  reference      rhf
+  basis          aug-cc-pvtz
+  relativistic   x2c
+}
+
+x2c_0 = energy('scf')
+
+set {
+  perturb_dipole [0.0, 0.0, 0.1]
+  perturb_h      true
+  perturb_with   dipole
+}
+
+x2c_p = energy('scf')

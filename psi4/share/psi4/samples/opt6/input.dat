@@ -1,0 +1,59 @@
+#! Various constrained energy minimizations of HOOH with cc-pvdz RHF
+#! Internal-coordinate constraints in internal-coordinate optimizations.
+
+
+set {
+  diis false
+  basis cc-pvdz
+}
+
+# Constrained minimization with O-H bonds frozen.
+molecule {
+  H
+  O 1 0.90
+  O 2 1.40 1 100.0 
+  H 3 0.90 2 100.0 1 115.0
+}
+
+set optking {
+  frozen_distance = ("
+    1  2
+    3  4
+  ")
+}
+thisenergy = optimize('scf')
+
+# Constrained minimization with O-O-H angles frozen.
+molecule {
+  H
+  O 1 0.90
+  O 2 1.40 1 100.0
+  H 3 0.90 2 100.0 1 115.0
+}
+
+set optking {
+  frozen_distance = ""  # here, it's been previous used, so must be blanked
+  frozen_bend = ("
+    1 2 3
+    2 3 4
+  ")
+}
+thisenergy = optimize('scf')
+
+# Constrained minimization with H-O-O-H dihedral frozen.
+molecule {
+  H
+  O 1 0.90
+  O 2 1.40 1 100.0
+  H 3 0.90 2 100.0 1 115.0
+}
+
+set optking {
+  frozen_distance = ""   # here, it's been previous used, so must be blanked
+  frozen_bend =     ""
+  frozen_dihedral = ("
+    1 2 3 4
+  ")
+}
+thisenergy = optimize('scf')
+

@@ -1,0 +1,69 @@
+#! RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates
+#! using Python's built-in loop mechanisms.  The geometry is specified using a Z-matrix with variables
+#! that are updated during the potential energy surface scan, and then the same procedure is performed
+#! using polar coordinates, converted to Cartesian coordinates.
+
+refENuc = [ 9.78588587740,  9.780670144878629, 8.807297289661147,     #TEST
+             8.802603130390768, 8.006633899691952,  8.002366482173423 ] #TEST
+
+refSCF  = [ -76.02132544702374, -76.02170973231352, -76.02148196912412,  #TEST
+            -76.0214579633461369, -75.99010402473729, -75.98979578728871 ] #TEST
+
+# Define the points on the potential energy surface using standard Python list functions
+Rvals = [ 0.9, 1.0, 1.1 ]
+Avals = range(102, 106, 2)
+
+
+# Start with a potential energy scan in Z-matrix coordinates
+molecule h2o {
+    O
+    H 1 R
+    H 1 R 2 A
+}
+
+print(" Testing Z-matrix coordinates") #TEST
+
+count = 0
+
+set basis cc-pvdz
+set scf e_convergence = 11
+set scf_type pk
+
+for R in Rvals:
+    h2o.R = R
+    for A in Avals:
+        h2o.A = A
+        thisenergy = energy('scf')
+        compare_values(refENuc[count], h2o.nuclear_repulsion_energy(),                 #TEST
+                       10, "Nuclear repulsion energy %d" % count)                      #TEST
+        compare_values(refSCF[count], thisenergy, 10, "Reference energy %d" % count)   #TEST
+        count = count + 1
+
+# And now the same thing, using Python's trigonometry functions, and Cartesian input.  This time
+# we want to reset the Cartesian positions every time the angles and bond lengths change, so we
+# define the geometry inside the loops.  N.B. this requires the basis set to be re-specified after
+# every change of geometry
+
+count = 0
+
+print(" Testing polar coordinates") #TEST
+
+import math
+for R in Rvals:
+    for A in Avals:
+        molecule h2o {
+            O   0.0    0.0    0.0
+            H   0.0      R    0.0
+            H   0.0  RCosA  RSinA
+        }
+        # The non-numeric entries above just define placeholders with names.  They still need
+        # to be set, which we do below.
+        h2o.R = R
+        h2o.RCosA = R * math.cos(math.radians(A))
+        h2o.RSinA = R * math.sin(math.radians(A))
+        set basis cc-pvdz
+        thisenergy = energy('scf')
+        compare_values(refENuc[count], h2o.nuclear_repulsion_energy(),                 #TEST
+                       10, "Nuclear repulsion energy %d" % count)                      #TEST
+        compare_values(refSCF[count], thisenergy, 10, "Reference energy %d" % count)   #TEST
+        count = count + 1

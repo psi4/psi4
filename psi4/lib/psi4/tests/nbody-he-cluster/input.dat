@@ -1,0 +1,72 @@
+#! MP2/aug-cc-pv[DT]Z many body energies of an arbitrary Helium complex
+#! Size vs cost tradeoff is rough here
+
+comparison_dict = {}                                                     #TEST
+comparison_dict['CP'] =   {2: -2.43090282019e-05, 3: -2.43315337922e-05} #TEST
+comparison_dict['NOCP'] = {2: -2.74246625658e-05, 3: -2.58619907516e-05} #TEST
+comparison_dict['VMFC'] = {2: -2.59875102735e-05, 3: -2.60100158638e-05} #TEST
+
+molecule he_trimer {
+He 0 0 0
+--
+He 0 0 4
+--
+He 0 4 0
+}
+
+set {
+    e_convergence 1.e-10
+    d_convergence 1.e-10
+}
+
+energy('MP2/aug-cc-pV[D,T]Z', molecule=he_trimer, bsse_type=['cp', 'nocp', 'vmfc'])
+
+for k, v in sorted(psi4.core.variables().items()):
+    print("QCVariable:", k, v)
+
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")  # use old qcvar name here for continuity but escape warning
+
+    for bsse_type in ['CP', 'NOCP', 'VMFC']:                                          #TEST
+        for n in [2, 3]:                                                              #TEST
+            var_key = bsse_type + ('-CORRECTED %d-BODY INTERACTION ENERGY' % n)       #TEST
+            computed_value = psi4.variable(var_key)                               #TEST
+            compare_values(comparison_dict[bsse_type][n], computed_value, 8, var_key) #TEST
+
+for qcv, ref in {
+    # Total E column in print-out
+    "CP-CORRECTED TOTAL ENERGY THROUGH 1-BODY": -8.692850924096,  # aka 1CP
+    "CP-CORRECTED TOTAL ENERGY THROUGH 2-BODY": -8.692875233130,  # aka 2CP
+    "CP-CORRECTED TOTAL ENERGY THROUGH 3-BODY": -8.692875255632,  # aka 3CP
+    # IE column in print-out
+    "CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY": -0.000024309034,
+    "CP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY": -0.000024331536,
+    # Delta/Contrib column in print-out
+    "CP-CORRECTED 2-BODY CONTRIBUTION TO ENERGY": -0.000024309034,
+    "CP-CORRECTED 3-BODY CONTRIBUTION TO ENERGY": -0.000000022502,
+
+    # Total E column in print-out
+    "NOCP-CORRECTED TOTAL ENERGY THROUGH 1-BODY": -8.692850924096,  # aka 1NOCP
+    "NOCP-CORRECTED TOTAL ENERGY THROUGH 2-BODY": -8.692878348760,  # aka 2NOCP
+    "NOCP-CORRECTED TOTAL ENERGY THROUGH 3-BODY": -8.692876786087,  # aka 3NOCP
+    # IE column in print-out
+    "NOCP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY": -0.000027424663,
+    "NOCP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY": -0.000025861991,
+    # Delta/Contrib column in print-out
+    "NOCP-CORRECTED 2-BODY CONTRIBUTION TO ENERGY": -0.000027424663,
+    "NOCP-CORRECTED 3-BODY CONTRIBUTION TO ENERGY":  0.000001562672,
+
+    # Total E column in print-out
+    "VMFC-CORRECTED TOTAL ENERGY THROUGH 1-BODY": -8.692850924096,  # aka 1VMFC
+    "VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY": -8.692876911612,  # aka 2VMFC
+    "VMFC-CORRECTED TOTAL ENERGY THROUGH 3-BODY": -8.692876934114,  # aka 3VMFC
+    # IE column in print-out
+    "VMFC-CORRECTED INTERACTION ENERGY THROUGH 2-BODY": -0.000025987516,
+    "VMFC-CORRECTED INTERACTION ENERGY THROUGH 3-BODY": -0.000026010018,
+    # Delta/Contrib column in print-out
+    "VMFC-CORRECTED 2-BODY CONTRIBUTION TO ENERGY": -0.000025987516,
+    "VMFC-CORRECTED 3-BODY CONTRIBUTION TO ENERGY": -0.000000022502,
+}.items():
+    compare_values(ref, variable(qcv), 8, qcv)
+

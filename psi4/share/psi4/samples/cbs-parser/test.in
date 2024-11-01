@@ -1,0 +1,32 @@
+#! mtd/basis syntax examples
+
+molecule ne2 {
+    0 1
+    Ne 0 0 0
+    --
+    0 1
+    Ne 2 0 0
+}
+
+# Use DF to save some time
+set {
+    scf_type      df
+    mp2_type      df
+    e_convergence 7
+    basis cc-pvdz
+}
+
+ne2.update_geometry()
+
+sapt_global = energy("sapt2+(3)", molecule=ne2)
+
+sapt_explicit, wfn = energy("sapt2+(3)/cc-pvdz", molecule=ne2, return_wfn=True)
+
+compare_values(sapt_global, sapt_explicit, 9, "SAPT2+(3)/cc-pVDZ in method/basis vs global syntax")          #TEST
+
+cbs_string = energy("mp2/6-311++G** + D:ccsd/6-311+G")
+
+cbs_direct = energy("cbs", corl_wfn="mp2", corl_basis="6-311++G**", delta_wfn="ccsd", delta_basis="6-311+G")
+
+compare_values(cbs_string, cbs_direct, 9, "HF/6-311++G** + D:MP2/6-311+G in method/basis vs explicit syntax") #TEST
+

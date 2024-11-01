@@ -1,0 +1,47 @@
+#! comparison of DF-MP2 and DLPNO-MP2 with a CBS extrapolation
+
+ref_scf                  =    -76.0648475978853              #TEST
+                              
+ref_dfmp2_corl           =     -0.2983537611221              #TEST
+ref_dfmp2_tot            =    -76.3632013590074              #TEST
+                                               
+ref_dlpnomp2_corl        =     -0.2983320108291              #TEST
+ref_dlpnomp2_tot         =    -76.3631796087154              #TEST
+ref_dlpnomp2_corl += 0.000020259  # after https://github.com/psi4/psi4/pull/2707
+ref_dlpnomp2_tot  += 0.000020259  # after https://github.com/psi4/psi4/pull/2707
+
+molecule h2o {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set freeze_core True
+set scf_type df
+set mp2_type df
+
+print('   Testing DF-MP2 ...')
+val = energy('mp2/cc-pv[tq]z')
+
+compare_values(ref_scf, variable('CBS REFERENCE ENERGY'), 7, 'mp2 ref')                    #TEST
+compare_values(ref_dfmp2_corl, variable('CBS CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
+compare_values(ref_dfmp2_tot, variable('CBS TOTAL ENERGY'), 7, 'mp2 tot')                  #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
+compare_values(ref_dfmp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')      #TEST
+compare_values(ref_dfmp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                    #TEST
+compare_values(ref_dfmp2_tot, val, 7, 'mp2 return')                                        #TEST
+clean()
+
+print('   Testing DLPNO-MP2 ...')
+val = energy('dlpno-mp2/cc-pv[tq]z')
+
+# The DLPNO-MP2 energy is close to the DF-MP2 energy, but not exactly the same
+compare_values(ref_scf, variable('CBS REFERENCE ENERGY'), 7, 'mp2 ref')                        #TEST
+compare_values(ref_dlpnomp2_corl, variable('CBS CORRELATION ENERGY'), 7, 'mp2 corl')       #TEST
+compare_values(ref_dlpnomp2_tot, variable('CBS TOTAL ENERGY'), 7, 'mp2 tot')               #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
+compare_values(ref_dlpnomp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')   #TEST
+compare_values(ref_dlpnomp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                 #TEST
+compare_values(ref_dlpnomp2_tot, val, 7, 'mp2 return')                                     #TEST
+clean()

@@ -1,0 +1,52 @@
+#! Test FNO-DF-CCSD(T) energy
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+set {
+  basis aug-cc-pvdz
+  freeze_core         true
+  e_convergence      1e-12
+  d_convergence      1e-12
+  r_convergence      1e-12
+  cholesky_tolerance 1e-12
+  nat_orbs            true
+  occ_tolerance       1e-4
+  scf_type cd
+  cc_type cd
+  docc 5
+}
+energy('ccsd(t)')
+edfccsd  = variable("CCSD CORRELATION ENERGY")
+edfccsdt = variable("CCSD(T) CORRELATION ENERGY")
+
+
+
+
+# Verify pair energies for no natural orbitals.
+set nat_orbs false
+
+energy('ccsd')
+
+
+# verify that DFCC and DFMP2 give the same MP2 results
+set scf_type df
+set cc_type df
+set df_basis_cc  aug-cc-pvdz-ri
+set df_basis_mp2 aug-cc-pvdz-ri
+set nat_orbs false
+set fnocc {
+    e_convergence 1e1
+    r_convergence 1e1
+}
+energy('ccsd')
+emp2    = variable("MP2 CORRELATION ENERGY")
+clean()
+energy('mp2')
+emp2_2  = variable("MP2 CORRELATION ENERGY")
+
+clean()

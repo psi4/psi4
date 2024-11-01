@@ -1,0 +1,45 @@
+#! PCM dipole polarizabilities. Ref. values from lsdaton test case: static_alpha_hf_H2O_eq_pcmsolver.out
+#
+#                 Ex               Ey               Ez
+# Ex        0.99108595       -0.13669621E-13   -0.45966098E-15
+# Ey       -0.15737411E-13     1.4563089       -0.10039107E-14
+# Ez       -0.17942065E-15   -0.61346419E-15     1.4456338
+
+alpha_diag = [0.99108595,  1.4563089, 1.4456338] 
+
+# fix orientation to match reference data
+
+molecule bh {
+unit bohr
+  O     0.00000   0.00000   0.00000
+  H     0.55168   0.77340   0.00000
+  H     0.55168  -0.77340   0.00000
+symmetry c1
+no_reorient
+}
+
+set = {
+    scf_type   pk
+    basis      3-21G
+    e_convergence 8
+    pcm true
+    maxiter 50
+}
+
+pcm = {
+   Units=Angstrom
+   Medium {
+   SolverType = IEFPCM
+   Solvent = Water
+   }
+
+   Cavity {
+   Type = GePol
+   Area = 0.3
+   Mode = Implicit
+   }
+}
+
+properties("SCF", properties=["DIPOLE_POLARIZABILITIES"])
+print_variables()
+

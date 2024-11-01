@@ -1,0 +1,27 @@
+#! DFT Functional Test
+
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set {
+print 6
+#debug 0
+basis sto-3g
+guess core
+scf_type direct
+dft_spherical_points 302
+dft_radial_points 100
+dft_block_max_points 400
+dft_basis_tolerance 1.0E-10
+reference rks
+}
+
+V11 = energy('b97-0')
+
+set dft_block_scheme octree
+V11 = energy('b97-0')

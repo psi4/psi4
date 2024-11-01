@@ -1,0 +1,37 @@
+#! cc-pvdz N2 (6,6) active space Test DQG
+
+# job description:
+print('        N2 / cc-pVDZ / DQG(6,6), geometry optimization')
+
+sys.path.insert(0, '../../..')
+import v2rdm_casscf
+
+molecule n2 {
+0 1
+n
+n 1 1.1
+}
+
+set {
+  basis cc-pvdz
+  scf_type pk
+  d_convergence      1e-10
+  maxiter 500
+  restricted_docc [ 2, 0, 0, 0, 0, 2, 0, 0 ]
+  active          [ 1, 0, 1, 1, 0, 1, 1, 1 ]
+}
+
+set v2rdm_casscf {
+  positivity dqg
+  r_convergence  1e-5
+  e_convergence  1e-5
+  orbopt_gradient_convergence 1e-8
+  maxiter 20000
+}
+
+activate(n2)
+
+optimize('v2rdm-casscf')
+
+
+

@@ -1,0 +1,42 @@
+#! UHF and ROHF Linear Exchange Algorithm test for benzyl cation
+
+
+molecule mol {
+    1 2
+    C    -1.0478252   -1.4216736    0.0000000
+    C    -1.4545034   -0.8554459    1.2062048
+    C    -1.4545034   -0.8554459   -1.2062048
+    C    -2.2667970    0.2771610    1.2069539
+    C    -2.6714781    0.8450211    0.0000000
+    C    -2.2667970    0.2771610   -1.2069539
+    H    -1.1338534   -1.2920593   -2.1423150
+    H    -2.5824943    0.7163066   -2.1437977
+    H    -3.3030422    1.7232700    0.0000000
+    H    -2.5824943    0.7163066    2.1437977
+    H    -1.1338534   -1.2920593    2.1423150
+    H    -0.4060253   -2.2919049    0.0000000
+    symmetry c1
+    no_reorient
+    no_com
+}
+
+set {
+    reference uhf
+    scf_type dfdirj+link
+    df_scf_guess false
+    basis 6-31G*
+    e_convergence 1.0e-10
+    screening density
+    incfock true
+    ints_tolerance 1.0e-12
+    linK_ints_tolerance 1.0e-12
+}
+
+uhf_energy = energy('scf')
+psi4.compare_values(uhf_energy, uhf_ref, 8, "UHF Energy (using LinK algo)")
+compare(1, variable("SCF ITERATIONS") < 19.0, "UHF LinK Incfock Efficient")
+
+set reference rohf
+rohf_energy = energy('scf')
+psi4.compare_values(rohf_energy, rohf_ref, 8, "ROHF Energy (using LinK algo)")
+compare(1, variable("SCF ITERATIONS") < 19.0, "ROHF LinK Incfock Efficient")

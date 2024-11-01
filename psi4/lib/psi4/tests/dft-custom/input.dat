@@ -1,0 +1,130 @@
+#! DFT custom functional test
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set {
+print 2
+basis sto-3g
+dft_spherical_points 302
+dft_radial_points 99
+reference rks
+}
+
+def build_pbe0_superfunctional(name, npoints, deriv, restricted):
+
+    # Build a empty superfunctional
+    sup = core.SuperFunctional.blank()
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('PBE0')
+    sup.set_description('    PBE0 Hyb-GGA Exchange-Correlation Functional\n')
+
+    # Add member functionals
+
+    # 100% PBE correlation
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
+
+    # 25% PBE exchange
+    pbe_x = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
+    pbe_x.set_alpha(0.75)
+    sup.add_x_functional(pbe_x)
+
+    # Add 25% exact exchange
+    sup.set_x_alpha(0.25)
+
+    return sup
+
+
+reference_pbe0 = -75.25216293143556 #TEST
+
+dft_call = energy("PBE0") #TEST
+compare_values(reference_pbe0, dft_call, 6, "Reference PBE0")  #TEST
+
+scf_call = energy('SCF', dft_functional="pbe0")  #TEST
+compare_values(reference_pbe0, scf_call, 6, "PBE0 by dft_functional name")  #TEST
+
+func_call = energy('SCF', dft_functional=build_pbe0_superfunctional) #TEST
+compare_values(reference_pbe0, func_call, 6, "PBE0 by dft_functional function")  #TEST
+
+
+reference_wpbe_4 = -75.27504649361143 #TEST
+reference_wpbe_5 = -75.28530313989565 #TEST
+reference_wpbe_6 = -75.29249565176227 #TEST
+
+set dft_omega 0.4
+func_call = energy('SCF', dft_functional="wPBE") #TEST
+compare_values(reference_wpbe_4, func_call, 6, "wPBE0 omega=0.4")  #TEST
+
+set dft_omega 0.5
+func_call = energy('SCF', dft_functional="wPBE") #TEST
+compare_values(reference_wpbe_5, func_call, 6, "wPBE0 omega=0.5")  #TEST
+
+set dft_omega 0.6
+func_call = energy('SCF', dft_functional="wPBE") #TEST
+compare_values(reference_wpbe_6, func_call, 6, "wPBE0 omega=0.6")  #TEST
+
+clean()
+
+my_pbe = {
+    "name": "MY PBE",
+    "x_functionals": {"GGA_X_PBE": {}},
+    "c_functionals": {"GGA_C_PBE": {}}
+}
+
+reference_pbe = -76.3217615448049145
+
+set basis pcseg-1
+set basis_guess pcseg-0
+E_mypbe = energy('scf', dft_functional=my_pbe, mol=h2o)                               #TEST
+compare_values(reference_pbe, E_mypbe, 6, "PBE by dft_functional dict + basis_guess") #TEST
+
+clean()
+clean_options()
+
+set {
+print 2
+basis sto-3g
+dft_spherical_points 302
+dft_radial_points 99
+reference rks
+}
+
+def build_pbe0d2_superfunctional(name, npoints, deriv, restricted):
+
+    # Build a empty superfunctional
+    sup = core.SuperFunctional.blank()
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('PBE0')
+    sup.set_description('    PBE0 Hyb-GGA Exchange-Correlation Functional\n')
+
+    # Add member functionals
+
+    # 100% PBE correlation
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
+
+    # 25% PBE exchange
+    pbe_x = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
+    pbe_x.set_alpha(0.75)
+    sup.add_x_functional(pbe_x)
+
+    # Add 25% exact exchange
+    sup.set_x_alpha(0.25)
+
+    params = dict(s6 = 0.6, alpha6 = 20.0, sr6 =  1.1)
+    disp = dict(type = "d2", params = params)
+    return (sup, disp)
+
+
+dft_call = energy("PBE0-D2") #TEST
+
+scf_call = energy('SCF', dft_functional="pbe0-D2")  #TEST
+compare_values(dft_call, scf_call, 6, "PBE0-D2 by dft_functional name")  #TEST
+
+func_call = energy('SCF', dft_functional=build_pbe0d2_superfunctional) #TEST
+compare_values(dft_call, func_call, 6, "PBE0-D2 by dft_functional function")  #TEST

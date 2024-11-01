@@ -1,0 +1,112 @@
+#! EOM-CC2/cc-pVDZ on H2O2 with two excited states in each irrep
+
+d2au = 1 / constants.dipmom_au2debye  #TEST
+q2au = d2au / constants.bohr2angstroms  #TEST
+
+molecule h2o2 {
+  0 1
+  O
+  O 1 1.39
+  H 1 0.94 2 102.3
+  H 2 0.94 1 102.3 3 -50.0
+}
+
+set {
+  basis cc-pVDZ
+  freeze_core true
+  roots_per_irrep [2, 2]
+}
+set cclambda {
+  r_convergence 4
+}
+set cceom {
+  r_convergence 4
+  e_convergence 5
+}
+
+cc_energy, wfn = properties('eom-cc2', properties=['dipole','quadrupole'],return_wfn=True)
+
+
+gs_refs = {
+        "CC2 DIPOLE X":                 0.0000,
+        "CC2 DIPOLE Y":                 0.0000,
+        "CC2 DIPOLE Z":                 2.8972,
+        "CC2 QUADRUPOLE XX":          -11.6671,
+        "CC2 QUADRUPOLE XY":           -1.4071,
+        "CC2 QUADRUPOLE XZ":            0.0000,
+        "CC2 QUADRUPOLE YY":          -11.0457,
+        "CC2 QUADRUPOLE YZ":            0.0000,
+        "CC2 QUADRUPOLE ZZ":           -9.3692
+        }
+gs_refs_arr = {}
+pole = [gs_refs["CC2 DIPOLE " + cart] for cart in "XYZ"]  #TEST
+gs_refs_arr["CC2 DIPOLE"] = np.array(pole).reshape((3,)) * d2au  #TEST
+pole = [gs_refs["CC2 QUADRUPOLE " + cart] for cart in ["XX", "XY", "XZ", "XY", "YY", "YZ", "XZ", "YZ", "ZZ"]]  #TEST
+gs_refs_arr["CC2 QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
+
+root_refs = {
+        "CC ROOT 1 DIPOLE X":          0.0000,
+        "CC ROOT 1 DIPOLE Y":          0.0000,
+        "CC ROOT 1 DIPOLE Z":         -1.4128,
+        "CC ROOT 1 QUADRUPOLE XX":   -13.9067,
+        "CC ROOT 1 QUADRUPOLE XY":     0.2628,
+        "CC ROOT 1 QUADRUPOLE XZ":     0.0000,
+        "CC ROOT 1 QUADRUPOLE YY":   -13.2865,
+        "CC ROOT 1 QUADRUPOLE YZ":     0.0000,
+        "CC ROOT 1 QUADRUPOLE ZZ":   -16.4603,
+        "CC ROOT 2 DIPOLE X":          0.0000,
+        "CC ROOT 2 DIPOLE Y":          0.0000,
+        "CC ROOT 2 DIPOLE Z":          1.9830,
+        "CC ROOT 2 QUADRUPOLE XX":   -11.5842,
+        "CC ROOT 2 QUADRUPOLE XY":    -0.4562,
+        "CC ROOT 2 QUADRUPOLE XZ":     0.0000,
+        "CC ROOT 2 QUADRUPOLE YY":   -13.9751,
+        "CC ROOT 2 QUADRUPOLE YZ":     0.0000,
+        "CC ROOT 2 QUADRUPOLE ZZ":   -10.6229,
+        "CC ROOT 3 DIPOLE X":          0.0000,
+        "CC ROOT 3 DIPOLE Y":          0.0000,
+        "CC ROOT 3 DIPOLE Z":         -1.3387,
+        "CC ROOT 3 QUADRUPOLE XX":   -14.2850,
+        "CC ROOT 3 QUADRUPOLE XY":    -0.0453,
+        "CC ROOT 3 QUADRUPOLE XZ":     0.0000,
+        "CC ROOT 3 QUADRUPOLE YY":   -13.5795,
+        "CC ROOT 3 QUADRUPOLE YZ":     0.0000,
+        "CC ROOT 3 QUADRUPOLE ZZ":   -15.3582,
+        "CC ROOT 4 DIPOLE X":          0.0000,
+        "CC ROOT 4 DIPOLE Y":          0.0000,
+        "CC ROOT 4 DIPOLE Z":          1.7559,
+        "CC ROOT 4 QUADRUPOLE XX":   -12.1976,
+        "CC ROOT 4 QUADRUPOLE XY":    -0.9808,
+        "CC ROOT 4 QUADRUPOLE XZ":     0.0000,
+        "CC ROOT 4 QUADRUPOLE YY":   -13.9980,
+        "CC ROOT 4 QUADRUPOLE YZ":     0.0000,
+        "CC ROOT 4 QUADRUPOLE ZZ":    -9.7604,
+}
+root_refs_arr = {}
+for root in range(1, 5):
+    pole = [root_refs[f"CC ROOT {root} DIPOLE {cart}"] for cart in "XYZ"]  #TEST
+    root_refs_arr[f"CC ROOT {root} DIPOLE"] = np.array(pole).reshape((3,)) * d2au  #TEST
+    pole = [root_refs[f"CC ROOT {root} QUADRUPOLE {cart}"] for cart in ["XX", "XY", "XZ", "XY", "YY", "YZ", "XZ", "YZ", "ZZ"]]  #TEST
+    root_refs_arr[f"CC ROOT {root} QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
+
+
+compare_values(psi4.variable("CC ROOT 0 DIPOLE"), psi4.variable("CC DIPOLE"), 6, "CC ROOT 0 vs CC Dipole")
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+
+    # check ground state
+    for tag,refval in gs_refs_arr.items():  #TEST
+        compare_values(refval, psi4.variable(tag), 4, tag)                          #TEST
+
+    # check eom roots
+    for tag,refval in root_refs_arr.items():  #TEST
+        compare_values(refval, psi4.variable(tag), 4, tag)                          #TEST
+
+
+    # Checking that the wfn.Da/Db have been set by ccdensity
+    oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="CCDENSITY-SET-WFN-TEST CC2")
+    for tag,refval in gs_refs_arr.items():
+        oeprop_val = psi4.variable("CCDENSITY-SET-WFN-TEST {}".format(tag))
+        compare_values(refval, oeprop_val, 4, "CCDENSITY-SET-WFN-TEST {}".format(tag))   #TEST
+

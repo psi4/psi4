@@ -1,0 +1,23 @@
+#! Hydroxyl with sto-3g, b3lyp with sg1 grid
+
+refenergy = -74.65828
+
+molecule hydroxyl {
+    symmetry c1
+    0 2
+    O  0.0574960500  0.000000000  0.000000000
+    H -0.9125040246  0.000000000  0.000000000
+}
+
+set = {
+    basis sto-3g
+    reference uhf
+    dft_grid_name sg1
+    scf_type direct
+    df_scf_guess False
+    brianqc_enable True
+}
+
+thisenergy = energy('scf', dft_functional = 'b3lyp')
+
+compare_values(refenergy, thisenergy, 5, "Reference energy")                            #TEST

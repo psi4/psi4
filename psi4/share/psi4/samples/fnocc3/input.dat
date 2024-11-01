@@ -1,0 +1,20 @@
+#! Test FNO-QCISD(T) computation
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+}
+set {
+    basis aug-cc-pvdz
+    freeze_core true
+    nat_orbs true
+    occ_tolerance 1e-4
+    e_convergence 1e-10
+    d_convergence 1e-10
+    r_convergence 1e-10
+}
+energy('qcisd(t)')
+
+
+clean()

@@ -1,0 +1,41 @@
+#! RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input.
+#! After the computation, the checkpoint file is renamed, using the PSIO handler.
+
+refnuc   =   2.645886053350000 #TEST
+refscf   = -25.103546895776532 #TEST
+refccsd  =  -0.100265803933538 #TEST
+ref_t    =  -0.002090933450070 #TEST
+reftotal = -25.205903633160133 #TEST
+
+molecule bh {
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+}
+
+set {
+   docc [3, 0, 0, 0]
+   basis cc-pvqz
+   freeze_core true
+   df_scf_guess false
+   scf_type pk
+   r_convergence 10
+   e_convergence 10
+   d_convergence 10
+}
+
+energy('ccsd(t)')
+
+compare_values(refnuc,   bh.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   variable("SCF total energy"),        9, "SCF energy")               #TEST
+compare_values(refccsd,  variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
+compare_values(ref_t,    variable("(T) correction energy"),   9, "(T) contribution")         #TEST
+compare_values(reftotal, variable("Current energy"),          9, "Total energy")             #TEST
+compare_values(0.012982, variable("CC T1 DIAGNOSTIC"),         5, "CC T1 Diagnostic")             #TEST
+compare_values(0.025595, variable("CC D1 DIAGNOSTIC"),         5, "CC D1 Diagnostic")             #TEST
+compare_values(0.025595, variable("CC NEW D1 DIAGNOSTIC"),     5, "CC NEW D1 Diagnostic")             #TEST
+compare_values(0.267312, variable("CC D2 DIAGNOSTIC"),         5, "CC D2 Diagnostic")             #TEST
+
+#Here's a demonstration of how to print an manipulate the files used by Psi
+psi4_io.print_out()
+psi4.IO.change_file_namespace(32, 'bh', 'cool')
+psi4_io.print_out()

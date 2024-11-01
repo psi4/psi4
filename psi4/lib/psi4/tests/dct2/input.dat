@@ -1,0 +1,33 @@
+#! DC-06 calculation for the He dimer. This performs a
+#! two-step update of the orbitals and cumulant, using DIIS extrapolation.
+#! Four-virtual integrals are handled in the MO Basis.
+
+refnuc      =  0.66147151334    #TEST
+refscf      = -5.71032245823742 #TEST
+refmp2      = -5.76128209224125 #TEST
+refdctscf  = -5.62714230598082 #TEST
+refdct     = -5.77531659914793 #TEST
+
+molecule he2 {
+    He
+    He 1 3.2
+}
+
+set {
+    r_convergence 11
+    e_convergence 11
+    ao_basis    none
+    algorithm   twostep
+    basis       6-31G**
+    df_scf_guess false
+    reference   uhf
+}
+
+set dct_functional dc-06
+energy('dct')
+
+compare_values(refnuc, he2.nuclear_repulsion_energy(), 10, "Nuclear Repulsion Energy"); #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 10, "SCF Energy");            #TEST
+compare_values(refmp2, variable("MP2 TOTAL ENERGY"), 8, "MP2 Energy");                   #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), 8, "DC-06 Energy");                #TEST
+compare_values(refdctscf, variable("DCT SCF ENERGY"), 8, "DC-06 SCF Energy");     #TEST

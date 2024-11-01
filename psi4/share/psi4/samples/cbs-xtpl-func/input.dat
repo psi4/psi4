@@ -1,0 +1,54 @@
+#! optimization with method defined via cbs
+
+# NOTE: gradient calcs accessed through an alias to cbs (e.g., sherrill_gold_standard) aren't matching direct calls to cbs
+
+molecule mol {
+O
+H 1 R
+H 1 R 2 A
+}
+
+mol.R = 1.0
+mol.A = 90.0
+
+set g_convergence gau_verytight
+
+E0 = -76.36457925
+E1 = energy("cbs", corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g')
+compare_values(E0, E1, 5, '[1a]')
+E2 = energy('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
+
+# findif
+# analytic
+
+
+G1 = gradient("cbs", cbs_metadata=[{"wfn": "mp2", "basis": 'cc-pV[DT]Z'}, {"wfn": 'ccsd(t)', "basis": '3-21g', "options": {'qc_module': 'ccenergy'}}])
+G2 = gradient('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g', delta_options={'qc_module': 'ccenergy'})
+
+# findif
+# analytic
+
+basfams = psi4.driver.qcdb.basislist.load_basis_families()
+for fam in basfams:
+    if fam.ornate == "3-21G":
+        fam.add_rifit("def2-qzvpp-ri")
+
+# Reset mol geometries
+mol.R = 1.0
+mol.A = 100.0
+E = optimize("cbs", cbs_metadata=[{"wfn": "mp2", "basis": "cc-pV[DT]Z"}, {"wfn": "ccsd(t)", "basis": "3-21g", "options": {"qc_module": "ccenergy"}}])
+
+# Reset mol geometries
+mol.R = 1.0
+mol.A = 100.0
+E = optimize('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g', delta_options={"qc_module": "ccenergy"})
+
+
+# Note (Nov 2019 impl; May 2022 merged): leaving above note for historical reasons. With
+#   the DDD way of turning custom functions directly to cbs calls, the cbs
+#   analytic deriv machinery kicks in and can run analytic. The above work
+#   if change all to G_by_E, but that's off from analytic by about 1.e-5,
+#   so for speed, resetting refs and running all analytically.
+
+# Note (Oct 2021): analytic and findif references were computed when the 3-21G aux was def2-qzvpp-ri.
+#   The present svp-ri default changes the final energy by ~3.e-5, so reset default aux above.

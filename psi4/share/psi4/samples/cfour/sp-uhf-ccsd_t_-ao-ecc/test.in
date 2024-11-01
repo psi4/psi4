@@ -1,0 +1,104 @@
+#! single-point CCSD(T)/qz2p on NH2 with ecc, aobasis
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+UHF-CCSD(T) energy calculation using xecc together with partial AO algorithms
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=CCSD(T),BASIS=qz2p
+CC_PROG=ECC,ABCDTYPE=AOBASIS
+MULT=2,REF=UHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+CC_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.195530391306, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-0.2132980551718224, variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
+compare_values(-55.807811611842, variable('ccsd(t) total energy'), 6, 'CCSD(T)')  #TEST
+compare_values(-0.005166587884, variable('(t) correction energy'), 6, '(T)')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+banner('UHF-CCSD(T) energy calculation using xecc together with partial AO algorithms')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=CCSD(T)
+cfour_BASIS=qz2p
+cfour_CC_PROGram=ECC
+cfour_ABCDTYPE=AOBASIS
+cfour_REFerence=UHF
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('cfour')
+
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.195530391306, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-0.2132980551718224, variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
+compare_values(-55.807811611842, variable('ccsd(t) total energy'), 6, 'CCSD(T)')  #TEST
+compare_values(-0.005166587884, variable('(t) correction energy'), 6, '(T)')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+banner('UHF-CCSD(T) energy calculation using xecc together with partial AO algorithms')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=CCSD(T)
+cfour_BASIS=qz2p
+cfour_CC_PROGram=ECC
+cfour_ABCDTYPE=AOBASIS
+cfour_REFerence=UHF
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('cfour')
+
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.195530391306, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-0.2132980551718224, variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
+compare_values(-55.807811611842, variable('ccsd(t) total energy'), 6, 'CCSD(T)')  #TEST
+compare_values(-0.005166587884, variable('(t) correction energy'), 6, '(T)')  #TEST
+

@@ -1,0 +1,113 @@
+#! Test FNO-DF-CCSD(T) energy
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+set {
+  basis aug-cc-pvdz
+  freeze_core         true
+  e_convergence      1e-12
+  d_convergence      1e-12
+  r_convergence      1e-12
+  cholesky_tolerance 1e-12
+  nat_orbs            true
+  occ_tolerance       1e-4
+  scf_type cd
+  cc_type cd
+  docc 5
+}
+energy('ccsd(t)')
+edfccsd  = variable("CCSD CORRELATION ENERGY")
+edfccsdt = variable("CCSD(T) CORRELATION ENERGY")
+
+refscf   = -76.03568944758564 #TEST
+refccsd  = -0.230820828839    #TEST
+refccsdt = -0.236177474967    #TEST
+
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 8, "SCF energy")  #TEST
+compare_values(refccsd, edfccsd, 8, "DF-CCSD correlation energy")          #TEST 
+compare_values(refccsdt, edfccsdt, 8, "DF-CCSD(T) correlation energy")     #TEST 
+
+MP2_AA = psi4.core.Matrix.from_list([                                              # TEST
+    [ 0.00000000000000, -0.00428398478272, -0.00419570592503, -0.00430641391483],  # TEST
+    [-0.00428398478272,  0.00000000000000, -0.01396452488975, -0.01477587852741],  # TEST
+    [-0.00419570592503, -0.01396452488975,  0.00000000000000, -0.01514257170829],  # TEST
+    [-0.00430641391483, -0.01477587852741, -0.01514257170829,  0.00000000000000]]) # TEST
+MP2_AB = psi4.core.Matrix.from_list([                                              # TEST
+    [-0.00920558388349, -0.01503064230884, -0.01247437691960, -0.01249609327967],  # TEST
+    [-0.01503064230884, -0.02086763069309, -0.02150550984680, -0.01769376267564],  # TEST
+    [-0.01247437691960, -0.02150550984680, -0.01928028171317, -0.01903616354256],  # TEST
+    [-0.01249609327967, -0.01769376267564, -0.01903616354256, -0.01888836910298]]) # TEST
+CC_AA = psi4.core.Matrix.from_list([                                               # TEST
+    [ 0.00000000000000, -0.00355325408348, -0.00358389639617, -0.00365479361718],  # TEST
+    [-0.00355325408348, -0.00000000000000, -0.01222161746842, -0.01311838524115],  # TEST
+    [-0.00358389639617, -0.01222161746842, -0.00000000000000, -0.01350166123234],  # TEST
+    [-0.00365479361718, -0.01311838524115, -0.01350166123234,  0.00000000000000]]) # TEST
+CC_AB = psi4.core.Matrix.from_list([                                               # TEST
+    [-0.01028999575996, -0.01755171682158, -0.01438899948556, -0.01424600571311],  # TEST
+    [-0.01755171682158, -0.02315756485360, -0.02282862604693, -0.01781214608581],  # TEST
+    [-0.01438899948556, -0.02282862604693, -0.02115512456820, -0.01927033525107],  # TEST
+    [-0.01424600571311, -0.01781214608581, -0.01927033525107, -0.02048670587858]]) # TEST
+compare_values(MP2_AA, variable("MP2 ALPHA-ALPHA PAIR ENERGIES"), 6, "MP2 pair energies")  #TEST
+compare_values(MP2_AB, variable("MP2 ALPHA-BETA PAIR ENERGIES"), 6, "MP2 pair energies")  #TEST
+compare_values(CC_AA, variable("CC ALPHA-ALPHA PAIR ENERGIES"), 6, "CC pair energies")  #TEST
+compare_values(CC_AB, variable("CC ALPHA-BETA PAIR ENERGIES"), 6, "CC pair energies")  #TEST
+
+# Verify pair energies for no natural orbitals.
+set nat_orbs false
+
+energy('ccsd')
+
+CC_AA = psi4.core.Matrix.from_list([                                               # TEST
+    [-0.00000000000000, -0.00355379712454, -0.00358451923023, -0.00365634304187],  # TEST
+    [-0.00355379712454, -0.00000000000000, -0.01222425439601, -0.01311878137478],  # TEST
+    [-0.00358451923023, -0.01222425439601,  0.00000000000000, -0.01350117726968],  # TEST
+    [-0.00365634304187, -0.01311878137478, -0.01350117726968, -0.00000000000000]]) # TEST
+CC_AB = psi4.core.Matrix.from_list([                                               # TEST
+    [-0.01029665497950, -0.01754100889471, -0.01438482159887, -0.01425347793138],  # TEST
+    [-0.01754100889471, -0.02310833912592, -0.02278359107810, -0.01780363338693],  # TEST
+    [-0.01438482159887, -0.02278359107810, -0.02113799784891, -0.01926310603607],  # TEST
+    [-0.01425347793138, -0.01780363338693, -0.01926310603607, -0.02048597205351]]) # TEST
+compare_values(MP2_AA, variable("MP2 ALPHA-ALPHA PAIR ENERGIES"), 6, "MP2 pair energies")  #TEST
+compare_values(MP2_AB, variable("MP2 ALPHA-BETA PAIR ENERGIES"), 6, "MP2 pair energies")  #TEST
+compare_values(CC_AA, variable("CC ALPHA-ALPHA PAIR ENERGIES"), 6, "CC pair energies")  #TEST
+compare_values(CC_AB, variable("CC ALPHA-BETA PAIR ENERGIES"), 6, "CC pair energies")  #TEST
+ref3MP2 = MP2_AA.clone()                                # TEST
+ref3MP2.scale(1.5)                                      # TEST
+ref3CC = CC_AA.clone()                                  # TEST
+ref3CC.scale(1.5)                                       # TEST
+ref1MP2 = MP2_AB.clone()                                # TEST
+ref1MP2.scale(2)                                        # TEST
+ref1MP2.axpy(-1/2, MP2_AA)                              # TEST
+ref1MP2.np[np.diag_indices_from(ref1MP2.np)] *= 1/2     # TEST
+ref1CC = CC_AB.clone()                                  # TEST
+ref1CC.scale(2)                                         # TEST
+ref1CC.axpy(-1/2, CC_AA)                                # TEST
+ref1CC.np[np.diag_indices_from(ref1CC.np)] *= 1/2       # TEST
+compare_values(ref1MP2, variable("MP2 SINGLET PAIR ENERGIES"), 5, "MP2 Singlet Pairs") # TEST
+compare_values(ref1CC, variable("CC SINGLET PAIR ENERGIES"), 5, "CC Singlet Pairs") # TEST
+compare_values(ref3MP2, variable("MP2 TRIPLET PAIR ENERGIES"), 5, "MP2 Triplet Pairs") # TEST
+compare_values(ref3CC, variable("CC TRIPLET PAIR ENERGIES"), 5, "CC Triplet Pairs") # TEST
+
+# verify that DFCC and DFMP2 give the same MP2 results
+set scf_type df
+set cc_type df
+set df_basis_cc  aug-cc-pvdz-ri
+set df_basis_mp2 aug-cc-pvdz-ri
+set nat_orbs false
+set fnocc {
+    e_convergence 1e1
+    r_convergence 1e1
+}
+energy('ccsd')
+emp2    = variable("MP2 CORRELATION ENERGY")
+clean()
+energy('mp2')
+emp2_2  = variable("MP2 CORRELATION ENERGY")
+compare_values(emp2, emp2_2, 8, "MP2 correlation energy (DFMP2 vs. DFCC)")     #TEST 
+
+clean()

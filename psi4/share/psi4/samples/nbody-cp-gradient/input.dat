@@ -1,0 +1,138 @@
+#! Computation of CP-corrected water trimer gradient (geometry from J. Chem. Theory Comput. 11, 2126-2136 (2015))
+
+ref = {
+"((1, 2, 3), (1, 2, 3))": (-224.91552989393287, 0.021848793840945943),
+"((1, 2), (1, 2, 3))": ( -149.94054830838144, 0.019116371778589655),
+"((1, 3), (1, 2, 3))": ( -149.94197668297062, 0.019002088007756268),
+"((2, 3), (1, 2, 3))": ( -149.94128152394086, 0.018939268786499593),
+"((1,), (1, 2, 3))": ( -74.97042065760473, 0.01477882932339267),
+"((2,), (1, 2, 3))": ( -74.96989892034797, 0.014675968393825936),
+"((3,), (1, 2, 3))": ( -74.97068360217213, 0.014481558269032477),
+"((1,), (1,))": ( -74.96340208276189, 0.024143516023737103),
+"((2,), (2,))": ( -74.96344779298651, 0.02398186931473767),
+"((3,), (3,))": ( -74.9635436680525, 0.02366990762961269),
+}
+
+ref_1cp_ene = -224.89039354380088
+
+ref_2cp_ene = -224.89219369884412
+ref_2cp_ie = -0.0018001550432131808
+ref_2cp_grad_rms = 0.01980609842746601
+ref_2cp_grad = [
+ [ 0.00179202, -0.03056288,  0.03218533],
+ [-0.00454805,  0.01423947, -0.00599154],
+ [ 0.01247021,  0.02299029, -0.0252948 ],
+ [ 0.02617686,  0.016441  ,  0.03146165],
+ [-0.02681671, -0.00129816, -0.02476424],
+ [-0.01001904, -0.00981053, -0.00733503],
+ [-0.02512132,  0.0105838 , -0.03520996],
+ [ 0.01328911, -0.00287095,  0.00811787],
+ [ 0.01277691, -0.01971204,  0.02683072]]
+ref_2cp_grad_ie = [
+ [ 0.001914149972,  0.01068903513 , -0.006574033629],
+ [ 0.00631228486 , -0.001668628285,  0.004525915615],
+ [ 0.001487748144, -0.002353528775,  0.002947106938],
+ [-0.010001441334, -0.00344793594 , -0.006693231883],
+ [ 0.001300152922,  0.002153765772,  0.00298506444 ],
+ [-0.001957602879,  0.00662647921 ,  0.003070555568],
+ [ 0.008098722312, -0.007057436202,  0.005415930792],
+ [-0.004637182641, -0.005331508324, -0.002538110932],
+ [-0.002516831355,  0.000389757415, -0.003139196908]]
+
+ref_3cp_ie = -0.004526713808019167
+ref_3cp_ene = -224.8949202576089
+
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
+import numpy as np
+
+molecule water_trimer {
+O      -2.76373224  -1.24377706  -0.15444566
+H      -1.12357791  -2.06227970  -0.05243799
+H      -3.80792362  -2.08705525   1.06090407
+--
+O       2.46924614  -1.75437739  -0.17092884
+H       3.76368260  -2.21425403   1.00846104
+H       2.30598330   0.07098445  -0.03942473
+--
+O       0.29127930   3.00875625   0.20308515
+H      -1.21253048   1.95820900   0.10303324
+H       0.10002049   4.24958115  -1.10222079
+no_reorient
+no_com
+symmetry c1
+units bohr
+}
+
+set d_convergence 9
+
+# compute nbody
+if distributed:
+    plan = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='cp', max_nbody=2,
+                                      return_total_data=True, return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    g, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    g, wfn = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='cp', max_nbody=2,
+                                      return_total_data=True, return_wfn=True)
+core.clean()
+
+# test fresh env
+
+
+
+# compute pieces
+
+
+    for result in [
+        energy_dict[i],
+        wfn.variable("1_"+i),
+        wfn_mol.variable("CURRENT ENERGY"),
+        variable("CURRENT ENERGY"),
+    ]:
+
+    for result in [
+        gradient_dict[i],
+        wfn.variable(f"GRADIENT 1_{i}"),
+        wfn_mol.variable("CURRENT GRADIENT"),
+        variable("CURRENT GRADIENT"),
+    ]:
+
+
+# recompute from pieces
+
+
+
+
+# test
+
+
+
+
+
+# compute nbody again with return_total_data=False
+# * note CURRENT ENERGY moved from first to second testing block
+if distributed:
+    plan = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type=['cp','nocp'], max_nbody=2,
+                                      return_total_data=False, return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    g, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    g, wfn = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type=['cp','nocp'], max_nbody=2,
+                                      return_total_data=False, return_wfn=True)
+core.clean()
+
+# test fresh env
+
+
+
+
+
+if distributed:
+    snowflake.stop()

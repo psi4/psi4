@@ -1,0 +1,24 @@
+#! External potential calculation with one Ghost atom and one point charge at the same position.
+
+molecule mol {
+  @N 0. 0. 1.
+  N 0. 0. 0.
+  no_reorient
+  no_com
+  symmetry c1
+  -7 1
+}
+
+# Define point charge on top of first Ghost atom
+# Apr 2022: QMMM object directly is outdated -- instead pass list in Bohr as kwarg
+#Chrgfield = QMMM()
+#Chrgfield.extern.addCharge(7.05, 0., 0., 1.)
+#psi4.set_global_option_python('EXTERN', Chrgfield.extern)
+
+external_potentials = np.array([7.05, 0., 0., 1.]).reshape((-1, 4))
+external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
+
+set basis 6-31G
+set reference rhf
+e = energy('pbe', external_potentials=external_potentials)
+compare_values(-110.2168666458496773, e, 6, 'Total energy') #TEST

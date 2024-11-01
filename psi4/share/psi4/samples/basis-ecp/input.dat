@@ -1,0 +1,52 @@
+#! check mixing ECP and non-ECP orbital/fitting basis sets in a session
+
+memory 1000 mb
+
+set df_fitting_condition 1e-12
+
+molecule {
+-1 1
+ I
+}
+
+set basis def2-tzvppd
+
+ene, wfn = energy('scf', return_wfn=True)
+
+clean()
+
+set basis 3-21g
+
+ene, wfn = energy('scf', return_wfn=True)
+
+clean()
+
+set basis def2-tzvppd
+set basis_guess true
+
+ene, wfn = energy('scf', return_wfn=True)
+
+clean()
+
+basis {
+   assign I def2-tzvppd
+}
+set basis_guess def2-SV(P)
+
+ene, wfn = energy('scf', return_wfn=True)
+
+clean()
+
+set basis_guess 3-21g
+
+try:
+    energy('scf')
+except ValidationError as e:
+
+
+# this won't work with basis_guess yet
+#basis {
+#   assign I def2-tzvppd
+#}
+
+

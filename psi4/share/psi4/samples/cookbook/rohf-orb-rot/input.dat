@@ -1,0 +1,80 @@
+#!   Test if DGAS's orbital rotation code matches expected values.
+#!   The first two calculations compute the X (symm A'') and A (symm A') states of HO2 in Cs
+#! by restricting the occupations of the two states.
+#!   The second two calculations compute the X and A states of HO2 in C1. Computation
+#! of the A state requires a rotation of the HOMO and SOMO by 90 degrees
+#! (i.e., by swapping these two orbitals). The orb_rotate() function accomplishes this.
+
+# Restrict occupations to compute CCSD/6-31G energy of X state (symm A'') of HO2 in Cs.
+set { 
+    basis 6-31G
+    reference rohf
+    maxiter 500
+    e_convergence 10
+    d_convergence 10
+    r_convergence 10
+    freeze_core True
+    scf_type pk
+    docc [7, 1]
+    socc [0, 1]
+}
+
+molecule ho2 {
+    0 2
+    O -0.6937342972  0.0081785728  0.0000000000
+    O  0.6354757377 -0.0626608366  0.0000000000
+    H  0.9246056151  0.8646730647  0.0000000000
+}
+
+ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
+scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
+
+
+clean()
+
+# Restrict occupations to compute CCSD/6-31G energy of A state (symm A') of HO2 in Cs.
+set {
+    docc [6, 2]
+    socc [1, 0]
+}
+
+ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
+scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
+
+
+clean()
+
+# Compute CCSD/6-31G energy of X state of HO2 in C1.
+set {
+    docc [8]
+    socc [1]
+}
+
+molecule ho2 {
+    0 2
+    O -0.6937342972  0.0081785728  0.0000000000
+    O  0.6354757377 -0.0626608366  0.0000000000
+    H  0.9246056151  0.8646730647  0.0000000000
+    symmetry c1
+}
+
+ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
+scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
+
+
+# Rotate HOMO and SOMO by 90 degrees to obtain guess for A state of HO2 in C1.
+# N.B. the orbitals are numbered using zero based indexing.
+import math
+ccsd_wfn.Ca().rotate_columns(0, 7, 8, math.pi / 2.0)
+
+# Serialize the wavefunction so that the SCF code can read it as a guess.
+ccsd_wfn.to_file(ccsd_wfn.get_scratch_filename(180))
+
+# Read in rotated guess and compute CCSD/6-31G energy of A state of HO2 in C1.
+set {
+    guess read
+}
+
+ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
+scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
+

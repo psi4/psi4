@@ -1,0 +1,54 @@
+#! SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy, using the cc-pVDZ-JKFIT RI basis for SCF
+#! and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
+
+Eref = [ 85.1890645313,  -0.00359915058,  0.00362911158,  #TEST
+         -0.00083137117,      -0.00150542374, -0.00230683391 ] #TEST
+
+molecule ethene_ethyne {
+     0 1
+     C     0.000000    -0.667578    -2.124659
+     C     0.000000     0.667578    -2.124659
+     H     0.923621    -1.232253    -2.126185
+     H    -0.923621    -1.232253    -2.126185
+     H    -0.923621     1.232253    -2.126185
+     H     0.923621     1.232253    -2.126185
+     --
+     0 1
+     C     0.000000     0.000000     2.900503
+     C     0.000000     0.000000     1.693240
+     H     0.000000     0.000000     0.627352
+     H     0.000000     0.000000     3.963929
+     units angstrom
+}
+
+# this molecule will crash test if molecule passing broken
+molecule barrier {
+ 0 1
+ He  0, 0 0
+}
+
+set {
+    basis         cc-pvdz
+    guess         sad
+    scf_type      df
+    sad_print     2
+    d_convergence 11
+    puream        true
+    print         1
+    df_basis_elst cc-pvdz-ri
+}
+
+energy('sapt0', molecule=ethene_ethyne)
+
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT0 TOTAL ENERGY")
+
+compare_values(Eref[0], ethene_ethyne.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy") #TEST
+compare_values(Eref[1], Eelst, 6, "SAPT0 Eelst")                                                 #TEST
+compare_values(Eref[2], Eexch, 6, "SAPT0 Eexch")                                                 #TEST
+compare_values(Eref[3], Eind, 6, "SAPT0 Eind")                                                   #TEST
+compare_values(Eref[4], Edisp, 6, "SAPT0 Edisp")                                                 #TEST
+compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                                   #TEST

@@ -1,0 +1,31 @@
+#! DF-CCSD(T) cc-pVDZ gradients for the H2O molecule.
+
+ref = psi4.Matrix.from_list([
+             [  0.00000000000000,     0.00000000029972,     0.01440760527896],  #TEST
+             [  0.00000000000000,     0.00336448046007,    -0.00720380252340],  #TEST
+             [  0.00000000000000,    -0.00336448075979,    -0.00720380275556]   #TEST
+           ])                                                             #TEST
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  guess sad
+  scf_type df
+  freeze_core true
+  cc_type df
+}
+
+grad = gradient('ccsd(t)')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
+
+

@@ -1,0 +1,76 @@
+#! test FCIDUMP functionality for rhf/uhf
+
+molecule ne {
+  Ne  0  0  0
+}
+
+set {
+  basis 6-311g
+  scf_type pk
+  reference rhf
+  d_convergence 1e-8
+  e_convergence 1e-8
+}
+
+scf_e, scf_wfn = energy('SCF', return_wfn=True)
+fcidump(scf_wfn, fname='Ne.6311G.INTDUMP', oe_ints=['EIGENVALUES'])
+compare_fcidumps('Ne.6311G.INTDUMP.ref', 'Ne.6311G.INTDUMP', 'Ne, 6-311g, integrals in FCIDUMP format') # TEST
+clean()
+
+set {
+  basis 6-311g
+  scf_type pk
+  reference rhf
+  d_convergence 1e-8
+  e_convergence 1e-8
+  num_frozen_docc 2
+  num_frozen_uocc 4
+}
+
+scf_e, scf_wfn = energy('SCF', return_wfn=True)
+fcidump(scf_wfn, fname='Ne.6311G.frozen.INTDUMP', oe_ints=['EIGENVALUES'])
+compare_fcidumps('Ne.6311G.frozen.INTDUMP.ref', 'Ne.6311G.frozen.INTDUMP', 'Ne, 6-311g, some frozen core and virtual orbitals, integrals in FCIDUMP format') # TEST
+clean()
+
+set {
+  basis cc-pvdz
+  scf_type pk
+  reference uhf
+  d_convergence 1e-8
+  e_convergence 1e-8
+  num_frozen_docc 0
+  num_frozen_uocc 0
+}
+
+scf_e, scf_wfn = energy('SCF', return_wfn=True)
+fcidump(scf_wfn, fname='Ne.cc-pVDZ.UHF.INTDUMP', oe_ints=['EIGENVALUES'])
+compare_fcidumps('Ne.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.cc-pVDZ.UHF.INTDUMP', 'Ne, cc-pVDZ, UHF reference, integrals in FCIDUMP format') # TEST
+clean()
+
+# Now run without symmetry
+ne.reset_point_group('C1')
+
+set {
+  basis 6-311g
+  scf_type pk
+  reference rhf
+  d_convergence 1e-8
+  e_convergence 1e-8
+}
+
+scf_e, scf_wfn = energy('SCF', return_wfn=True)
+fcidump(scf_wfn, fname='Ne.C1.6311G.INTDUMP', oe_ints=['EIGENVALUES'])
+compare_fcidumps('Ne.C1.6311G.INTDUMP.ref', 'Ne.C1.6311G.INTDUMP', 'Ne, C1, 6-311g, integrals in FCIDUMP format')  # TEST
+clean()
+
+set {
+  basis cc-pvdz
+  scf_type pk
+  reference uhf
+  d_convergence 1e-8
+  e_convergence 1e-8
+}
+
+scf_e, scf_wfn = energy('SCF', return_wfn=True)
+fcidump(scf_wfn, fname='Ne.C1.cc-pVDZ.UHF.INTDUMP', oe_ints=['EIGENVALUES'])
+compare_fcidumps('Ne.C1.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.C1.cc-pVDZ.UHF.INTDUMP', 'Ne, C1, cc-pVDZ, UHF reference, integrals in FCIDUMP format') # TEST

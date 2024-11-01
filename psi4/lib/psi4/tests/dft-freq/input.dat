@@ -1,0 +1,18 @@
+#! Frequencies for H2O B3LYP/6-31G* at optimized geometry
+
+molecule h2o {
+  O
+  H 1 0.96864
+  H 1 0.96864 2 103.586
+}
+
+set basis 6-31G*
+scf_e, scf_wfn = frequencies('b3lyp', return_wfn=True)
+
+ref_freqs = psi4.Vector(3) #TEST
+ref_freqs.set(0, 0, 1713.39) #TEST
+ref_freqs.set(0, 1, 3728.54) #TEST
+ref_freqs.set(0, 2, 3850.17) #TEST
+
+fd_freqs = scf_wfn.frequencies() #TEST
+compare_vectors(ref_freqs, fd_freqs, "Reference vs computed frequencies to 0.2 cm^-1", atol=0.2)  #TEST

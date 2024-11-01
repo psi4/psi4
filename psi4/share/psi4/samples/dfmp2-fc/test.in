@@ -1,0 +1,44 @@
+#! Kr--Kr nocp energies with all-electron basis set to check frozen core
+
+molecule {
+0 1
+Kr 0 0 0
+--
+0 1
+Kr 3 0 0 
+no_reorient
+no_com
+}
+
+set globals {
+scf_type df
+mp2_type df
+e_convergence 1.0e-10
+d_convergence 1.0e-10
+}
+
+ref_0 = 0.012274322894882062                                                       #TEST
+ref_1 = 0.012873836410108197                                                       #TEST
+ref_2 = 0.012305539379667607                                                       #TEST
+ref_3 = 0.012274501504180080                                                       #TEST
+
+set freeze_core 0
+E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
+compare_values(ref_0, E, 8, "Kr--Kr nocp MP2 interaction energy, freeze_core 0  ") #TEST
+
+set freeze_core 1
+E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
+compare_values(ref_1, E, 8, "Kr--Kr nocp MP2 interaction energy, freeze_core 1  ") #TEST
+
+set freeze_core -1
+E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
+compare_values(ref_1, E, 8, "Kr--Kr nocp MP2 interaction energy, freeze_core -1 ") #TEST
+
+set freeze_core -2
+E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
+compare_values(ref_2, E, 8, "Kr--Kr nocp MP2 interaction energy, freeze_core -2 ") #TEST
+
+set freeze_core -3
+E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
+compare_values(ref_3, E, 8, "Kr--Kr nocp MP2 interaction energy, freeze_core -3 ") #TEST
+

@@ -1,0 +1,35 @@
+#! UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Z-matrix input.
+
+molecule CN {
+  0 2
+  C
+  N 1 R
+
+  R = 1.175
+}
+
+set {
+  reference   uhf
+  basis       cc-pVDZ
+  docc        [4, 0, 1, 1]
+  socc        [1, 0, 0, 0]
+  freeze_core true
+
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
+}
+
+energy('ccsd(t)')
+
+refnuc  =  18.91527050905531  # TEST
+refscf  = -92.21277694979756  # TEST
+refccsd = -92.47683016412106  # TEST
+e_total = -92.48929141166354  # TEST
+
+compare_values(refnuc, CN.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refscf, variable("SCF total energy"), 7, "SCF energy") #TEST
+compare_values(refccsd, variable("CCSD total energy"), 7, "CCSD energy") #TEST
+compare_values(e_total, variable("CCSD(T) total energy"), 7, "CCSD(T) energy") #TEST
+compare_values(e_total, variable("Current energy"), 7, "CCSD(T) energy") #TEST
+

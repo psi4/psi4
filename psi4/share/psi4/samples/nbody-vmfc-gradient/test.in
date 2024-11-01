@@ -1,0 +1,82 @@
+#! Computation of VMFC-corrected water trimer gradient (geometry from J. Chem. Theory Comput. 11, 2126-2136 (2015))
+
+import numpy as np
+
+molecule water_trimer {
+O      -2.76373224  -1.24377706  -0.15444566
+H      -1.12357791  -2.06227970  -0.05243799
+H      -3.80792362  -2.08705525   1.06090407
+--
+O       2.46924614  -1.75437739  -0.17092884
+H       3.76368260  -2.21425403   1.00846104
+H       2.30598330   0.07098445  -0.03942473
+--
+O       0.29127930   3.00875625   0.20308515
+H      -1.21253048   1.95820900   0.10303324
+H       0.10002049   4.24958115  -1.10222079
+no_reorient
+no_com
+symmetry c1
+units bohr
+}
+
+g, wfn = psi4.gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='vmfc',
+                                      return_total_data=True, return_wfn=True)
+core.clean()
+
+vmfc_scheme = {'((1, 2), (1, 2))': 1, '((1, 3), (1, 3))': 1, '((2, 3), (2, 3))': 1, #TEST
+               '((1,), (1, 2))': -1, '((1,), (1, 3))': -1, '((2,), (1, 2))': -1, #TEST
+               '((2,), (2, 3))': -1, '((3,), (1, 3))': -1, '((3,), (2, 3))': -1, #TEST
+               '((1,), (1,))': 1, '((2,), (2,))': 1, '((3,), (3,))': 1} #TEST
+
+energy_dict, gradient_dict = {}, {} #TEST
+for i in vmfc_scheme: #TEST
+    mol = water_trimer.extract_subsets(eval(i)[0], list(set(eval(i)[1]) - set(eval(i)[0]))) #TEST
+    gradient_dict[i], wfn_mol = gradient('SCF/STO-3G', molecule=mol, return_wfn=True) #TEST
+    energy_dict[i] = core.variable('CURRENT ENERGY') #TEST
+    core.clean() #TEST
+
+    compare_values(energy_dict[i], wfn.variables()["1_"+i], 8, 'Energy of %s' %i) #TEST
+    compare_arrays(gradient_dict[i], wfn.variables()['GRADIENT %s' % "1_"+i], 8, 'Gradient of %s' %i) #TEST
+
+ene, grad = 0, np.zeros((9, 3)) #TEST
+
+for i in vmfc_scheme: #TEST
+    ene += vmfc_scheme[i] * energy_dict[i] #TEST
+
+compare_values(ene, wfn.variables()['2'], 8, 'VMFC-Corrected Energy') #TEST
+
+for i in range(3): #TEST
+    key = '((%i,), (%i,))' %(i + 1, i + 1) #TEST
+    grad[i*3: i*3 + 3, :] += vmfc_scheme.pop(key) * np.array(gradient_dict[key]) #TEST
+
+for key in vmfc_scheme: #TEST
+    i, j = eval(key)[1][0]-1, eval(key)[1][1]-1 #TEST
+    index = [i*3, i*3 + 1, i*3 + 2, j*3, j*3 + 1, j*3 + 2] #TEST
+    grad[index, :] += vmfc_scheme[key] * np.array(gradient_dict[key]) #TEST
+ 
+compare_arrays(grad, wfn.variables()['GRADIENT 2'], 8, 'VMFC-Corrected Gradient') #TEST
+
+grad_maxnb2 = np.array(
+     [[ 0.002155804191, -0.029634185797,  0.032376607396],
+      [-0.003170680084,  0.014254859601, -0.006078802815],
+      [ 0.012483476168,  0.023203573171, -0.025365946635],
+      [ 0.025226012667,  0.016325441914,  0.031594301626],
+      [-0.027006236709, -0.001406222833, -0.024814674937],
+      [-0.010724421068, -0.008596936788, -0.007375340751],
+      [-0.024435013809,  0.009777336603, -0.035394108341],
+      [ 0.012544129973, -0.004104715215,  0.008163796645],
+      [ 0.012926928671, -0.019819150657,  0.026894167812]])
+grad_maxnb3 = np.array(
+     [[ 0.002219694063,  0.009321053605, -0.006605392323],
+      [ 0.004716622541, -0.000932172428,  0.004496896826],
+      [ 0.001311905336, -0.002455421929,  0.003035312701],
+      [-0.009018191555, -0.002317388378, -0.00680297185 ],
+      [ 0.001420670764,  0.002045748088,  0.003021479389],
+      [-0.001682106814,  0.004664038597,  0.003106497953],
+      [ 0.006639093791, -0.006637441486,  0.005420065144],
+      [-0.003115962895, -0.004227261417, -0.002455116289],
+      [-0.002491725232,  0.000538845348, -0.003216771551]])
+compare_arrays(grad_maxnb3, g, 6, 'returned gradient')  #TEST
+compare_arrays(grad_maxnb2, wfn.variable("GRADIENT 2"), 6, '2-body gradient')  #TEST
+compare_arrays(grad_maxnb3, wfn.variable("GRADIENT 3"), 6, '3-body gradient')  #TEST

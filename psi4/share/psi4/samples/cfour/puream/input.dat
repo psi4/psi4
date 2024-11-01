@@ -1,0 +1,79 @@
+#! Basis set spherical/Cartesian behavior in cfour
+
+
+sph_ccpvdz = -76.2307777348
+cart_ccpvdz = -76.2346763972
+cart_631gs = -76.1990355202
+sph_631gs = -76.1953470892
+
+cfour {
+MP2 single-point energy calculation
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=MP2,BASIS=PVDZ
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+clean()
+clean_variables()
+cfour {}
+
+cfour {
+MP2 single-point energy calculation
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=MP2,BASIS=6-31G*
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+clean()
+clean_variables()
+cfour {}
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set cfour_CALC_level=MP2
+set basis 6-31g*
+
+energy('cfour')
+
+clean()
+clean_variables()
+cfour {}
+
+set basis cc-pvdz
+
+energy('cfour')
+
+clean()
+clean_variables()
+cfour {}
+
+#set cfour_spherical false  # This doesn't work b/c competing instructions
+set puream false
+
+energy('cfour')
+

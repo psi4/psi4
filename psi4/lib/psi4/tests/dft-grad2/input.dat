@@ -1,0 +1,33 @@
+#! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+#! updated ref gradient due to new BraggSlater radii
+
+ref = psi4.Matrix.from_list([                                       #TEST
+ [ 0.015033129841, -0.012524850969,  0.000000000000], #TEST
+ [ 0.010601799998, -0.004332935762,  0.000000000000], #TEST
+ [-0.025634252994,  0.016856185570,  0.000000000000]  #TEST
+])                                                                  #TEST
+
+molecule {
+0 2
+S
+H 1 r1
+S 1 r2 2 a1
+
+r1=1.4
+r2=2.1
+a1=110.0
+}
+
+set {
+    scf_type              df
+    basis                 cc-pvdz
+    dft_radial_points     99
+    dft_spherical_points  302
+    e_convergence         8
+    d_convergence         8
+    reference             uks
+}
+
+grad = gradient('bp86-d')
+compare_matrices(ref, grad, 7, "Analytic uks dft gradients")    #TEST
+

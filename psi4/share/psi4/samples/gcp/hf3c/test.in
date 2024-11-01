@@ -1,0 +1,123 @@
+#! Verify HF-3c method over S22
+
+def ie(es):
+    return es[0] - es[1] - es[2]
+
+import os
+import sys
+psidatadir = psi4.core.get_datadir()
+sys.path.append("""{}/databases""".format(psidatadir))
+qcdbpath = os.path.dirname(os.path.dirname(qcdb.__file__))
+sys.path.append(qcdbpath)
+
+import S22
+
+d3_engine = psi4.driver.EmpiricalDispersion(name_hint="b3lyp", level_hint="d3bj").engine
+
+set scf_type pk
+digits = 6
+
+#set scf_type df  # max IE error 0.03 kcal/mol
+#digits = 3
+
+# from suppmat of Grimme's HF-3c paper
+# Table S6 file:///Users/loriab/Downloads/jz5021313_si_001.pdf
+ans22 = [2.64, 5.93, 18.05, 15.47, 20.75, 18.07, 17.27, 0.56, 1.73, 1.57,
+         3.47, 4.64, 8.40, 4.82, 10.43, 1.64, 3.52, 2.55, 3.92, 2.82, 5.57, 7.98]
+ans22 = [-x for x in ans22]
+
+ans66 = [-5.78, -5.81, -7.64, -7.93, -6.13, -8.58, -8.05, -5.92, -3.26, -4.06,
+         -5.13, -7.12, -6.32, -8.23, -8.26, -5.64, -17.28, -6.75, -7.33, -18.29,
+        -15.53, -19.33, -19.17, -3.48, -4.44, -8.40, -4.00, -5.58, -6.30, -1.91,
+         -3.08, -3.15, -2.34, -4.63, -3.19, -2.20, -3.19, -3.43, -4.06, -3.55,
+         -4.80, -3.96, -3.22, -2.56, -1.86, -4.14, -3.08, -3.42, -3.36, -2.52,
+         -1.36, -4.69, -3.68, -3.52, -4.26, -3.50, -5.42, -3.85, -2.18, -4.26,
+         -2.94, -3.48, -3.68, -2.55, -4.66, -3.71]
+
+#from plain "!HF-3c" Orca job. IE in E_h
+orca22 = [-0.00412642, -0.00912312, -0.02876673, -0.02466090, -0.03306319,
+          -0.02880296, -0.02758575, -0.00090665, -0.00278176, -0.00251225,
+          -0.00554136, -0.00739721, -0.01338844, -0.00794078, -0.01662261,
+          -0.00240232, -0.00554145, -0.00399651, -0.00625213, -0.00442947,
+          -0.00893338, -0.01263399]
+
+orcad3 = [-0.002505085, -0.002161393, -0.007432571, -0.006924418, -0.00826834,
+          -0.009320689, -0.009750695, -0.001512312, -0.004154426, -0.003971029,
+          -0.010583255, -0.011394872, -0.016138638, -0.015279486, -0.022658823,
+          -0.001980869, -0.004462745, -0.004228139, -0.005994321, -0.006746989,
+          -0.009716987, -0.008176339]
+
+orcahfminix = [-0.002505085, -0.002161393, -0.007432571, -0.006924418, -0.00826834,
+               -0.009320689, -0.009750695, -0.001512312, -0.004154426, -0.003971029,
+               -0.010583255, -0.011394872, -0.016138638, -0.015279486, -0.022658823,
+               -0.001980869, -0.004462745, -0.004228139, -0.005994321, -0.006746989,
+               -0.009716987, -0.008176339]
+
+orcagcp = [0.001123689, 0.002365521, 0.007369389, 0.005255831, 0.005826216,
+           0.004724168, 0.004954962, 0.000237522, 0.000705801, 0.000587939,
+           0.000774531, 0.001336877, 0.00401026, 0.001260855, 0.004269944,
+           0.00030467, 0.001044991, 0.000758185, 0.001013116, 0.000894935,
+           0.001610777, 0.003529167]
+
+print("""{:4} {:16} {:8} {:8} {:10} : {:8} {:8} {:8}""".format(
+      'rxn', 'HF-3c', 'HF-3c [kc]', 'orca', 'err', 'gcp', 'd3', 'hf'))
+
+#for rxn in range(1, 23):
+for rxn in [4, 8, 16, 20]:
+    ans = ans22
+    di = geometry(S22.GEOS['S22-{}-dimer'.format(rxn)].create_psi4_string_from_molecule())
+    ma = geometry(S22.GEOS['S22-{}-monoA-unCP'.format(rxn)].create_psi4_string_from_molecule())
+    mb = geometry(S22.GEOS['S22-{}-monoB-unCP'.format(rxn)].create_psi4_string_from_molecule())
+
+    di.update_geometry()
+    ma.update_geometry()
+    mb.update_geometry()
+
+    if d3_engine == "dftd3":
+        E, G = di.run_dftd3('hf3c', 'd3bj', verbose=True)
+        E1, G2 = ma.run_dftd3('hf3c', 'd3bj', verbose=True)
+        E2, G2 = mb.run_dftd3('hf3c', 'd3bj', verbose=True)
+        hf3c_d3 = [E, E1, E2]
+
+        if rxn == 4:
+            compare_values(-0.03764556, E, digits, 'S22-4 di d3bj')  #TEST  # from orca
+            compare_values(-0.015360571, E1, digits, 'S22-4 ma d3bj')  #TEST  # from orca
+            compare_values(-0.015360571, E2, digits, 'S22-4 mb d3bj')  #TEST  # from orca
+
+    E, G = di.run_gcp(func='HF3c', verbose=True)
+    E1, G1 = ma.run_gcp(func='HF3c', verbose=True)
+    E2, G2 = mb.run_gcp(func='HF3c', verbose=True)
+    hf3c_gcp = [E, E1, E2]
+
+    if rxn == 4:
+        compare_values(-0.098273107, E, digits, 'S22-4 di gcp')  #TEST  # from orca
+        compare_values(-0.051764469, E1, digits, 'S22-4 ma gcp')  #TEST  # from orca
+        compare_values(-0.051764469, E2, digits, 'S22-4 mb gcp')  #TEST  # from orca
+
+    clean()
+    E = energy('hf/minix', molecule=di)
+    E1 = energy('hf/minix', molecule=ma)
+    E2 = energy('hf/minix', molecule=mb)
+    hf3c_hf = [E, E1, E2]
+
+    if rxn == 4:
+        compare_values(-335.4935181, E, digits, 'S22-4 di hf/minix')  #TEST   # from orca
+        compare_values(-167.7352629, E1, digits, 'S22-4 ma hf/minix')  #TEST   # from orca
+        compare_values(-167.7352629, E2, digits, 'S22-4 mb hf/minix')  #TEST   # from orca
+
+    if d3_engine == "dftd3":
+        hf3c = ie(hf3c_gcp) + ie(hf3c_d3) + ie(hf3c_hf)
+
+        print("""{:4} {:16.8f} {:8.3f} {:8.2f} {:10.4f} : {:8.2f} {:8.2f} {:8.2f}""".format(
+            rxn, hf3c, hf3c * 627.5095, orca22[rxn-1] * 627.5095, (hf3c - orca22[rxn-1]) * 627.5095,
+            627.5095 * ie(hf3c_gcp),
+            627.5095 * ie(hf3c_d3),
+            627.5095 * ie(hf3c_hf)))
+
+        compare_values(orca22[rxn-1], hf3c, digits, 'HF-3c for S22-{}'.format(rxn))  #TEST
+
+    if rxn == 8:
+        EE = energy('hf3c', molecule=di, bsse_type='nocp')
+        compare_values(orca22[rxn-1], EE, digits, ' " hf-3c')  #TEST
+        EE = energy('hf3c/minix', molecule=di, bsse_type='nocp')
+        compare_values(orca22[rxn-1], EE, digits, ' " hf-3c/minix')  #TEST

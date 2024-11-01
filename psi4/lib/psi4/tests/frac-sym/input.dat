@@ -1,0 +1,19 @@
+#! Fractional occupation with symmetry
+
+molecule {
+0 2
+F
+}
+
+set frac_occ [ +3, +4, +5, -3, -4, -5 ]
+set frac_val [ 1.0, 1.0, 1.0, 6.666666666666666e-01, 6.666666666666666e-01, 6.666666666666666e-01 ]
+set frac_start 1
+set scf_type direct
+set df_scf_guess false
+set reference uhf
+set basis sto-6g
+set e_convergence 8
+
+computed_energy = energy('scf')
+
+compare_values(-98.6343474374526465, computed_energy, 8, "Fractional occupation energy")  #TEST

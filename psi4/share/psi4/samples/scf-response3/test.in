@@ -1,0 +1,53 @@
+#! UHF Dipole Polarizability Test
+
+molecule {
+1 2
+H    0.7493682    0.1000000    0.4424329
+O    0.0000000    0.2000000   -0.1653507
+H   -0.7493682    0.0000000    0.4424329
+no_com
+no_reorient
+symmetry c1
+}
+
+set reference uhf
+set scf_type pk
+
+psi4.properties("scf/cc-pVDZ", properties=["DIPOLE_POLARIZABILITIES"])
+
+# Reference created with G16
+alpha_ref = [
+    0.479960e+01,
+    0.140151e+00,
+    0.288132e+01,
+   -0.309146e-01,
+   -0.237089e+00,
+    0.376576e+01,
+]
+labels = ['XX', 'XY', 'YY', 'XZ', 'YZ', 'ZZ']
+
+for i, l in enumerate(labels):
+    compare_values(alpha_ref[i], variable(f'DIPOLE POLARIZABILITY {l}'), 5, f'UHF DIPOLE POLARIZABILITY {l}') #TEST
+
+
+### UHF and RHF Polarizability must agree for closed-shell molecule
+molecule {
+0 1
+H    0.7493682    0.1000000    0.4424329
+O    0.0000000    0.2000000   -0.1653507
+H   -0.7493682    0.0000000    0.4424329
+no_com
+no_reorient
+symmetry c1
+}
+
+set reference rhf
+psi4.properties("scf/cc-pVDZ", properties=["DIPOLE_POLARIZABILITIES"])
+alpha_rhf = [variable(f'DIPOLE POLARIZABILITY {l}') for l in labels]
+
+set reference uhf
+psi4.properties("scf/cc-pVDZ", properties=["DIPOLE_POLARIZABILITIES"])
+alpha_uhf = [variable(f'DIPOLE POLARIZABILITY {l}') for l in labels]
+
+for i, l in enumerate(labels):
+    compare_values(alpha_rhf[i], alpha_uhf[i], 10, f'UHF vs RHF DIPOLE POLARIZABILITY {l}') #TEST

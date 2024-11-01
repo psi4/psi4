@@ -1,0 +1,107 @@
+#! DFT custom functional test
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set {
+print 2
+basis sto-3g
+dft_spherical_points 302
+dft_radial_points 99
+reference rks
+}
+
+def build_pbe0_superfunctional(name, npoints, deriv, restricted):
+
+    # Build a empty superfunctional
+    sup = core.SuperFunctional.blank()
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('PBE0')
+    sup.set_description('    PBE0 Hyb-GGA Exchange-Correlation Functional\n')
+
+    # Add member functionals
+
+    # 100% PBE correlation
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
+
+    # 25% PBE exchange
+    pbe_x = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
+    pbe_x.set_alpha(0.75)
+    sup.add_x_functional(pbe_x)
+
+    # Add 25% exact exchange
+    sup.set_x_alpha(0.25)
+
+    return sup
+
+
+
+
+
+
+
+
+set dft_omega 0.4
+
+set dft_omega 0.5
+
+set dft_omega 0.6
+
+clean()
+
+my_pbe = {
+    "name": "MY PBE",
+    "x_functionals": {"GGA_X_PBE": {}},
+    "c_functionals": {"GGA_C_PBE": {}}
+}
+
+reference_pbe = -76.3217615448049145
+
+set basis pcseg-1
+set basis_guess pcseg-0
+
+clean()
+clean_options()
+
+set {
+print 2
+basis sto-3g
+dft_spherical_points 302
+dft_radial_points 99
+reference rks
+}
+
+def build_pbe0d2_superfunctional(name, npoints, deriv, restricted):
+
+    # Build a empty superfunctional
+    sup = core.SuperFunctional.blank()
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('PBE0')
+    sup.set_description('    PBE0 Hyb-GGA Exchange-Correlation Functional\n')
+
+    # Add member functionals
+
+    # 100% PBE correlation
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
+
+    # 25% PBE exchange
+    pbe_x = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
+    pbe_x.set_alpha(0.75)
+    sup.add_x_functional(pbe_x)
+
+    # Add 25% exact exchange
+    sup.set_x_alpha(0.25)
+
+    params = dict(s6 = 0.6, alpha6 = 20.0, sr6 =  1.1)
+    disp = dict(type = "d2", params = params)
+    return (sup, disp)
+
+
+
+

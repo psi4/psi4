@@ -1,0 +1,96 @@
+#! single-point MP2/qz2p on NH2
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+UHF-MP2 energy calculation 
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=MP2,BASIS=qz2p
+MULT=2,REF=UHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-55.784877360093, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-0.195530391306, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-0.0416164, variable('mp2 same-spin correlation energy'), 6, 'MP2 SS corl')  #TEST
+compare_values(-0.1539141, variable('mp2 opposite-spin correlation energy'), 6, 'MP2 OS corl')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+banner('UHF-MP2 energy calculation ')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=MP2
+cfour_BASIS=qz2p
+cfour_REFerence=UHF
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+}
+
+energy('cfour')
+
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-55.784877360093, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-0.195530391306, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-0.0416164, variable('mp2 same-spin correlation energy'), 6, 'MP2 SS corl')  #TEST
+compare_values(-0.1539141, variable('mp2 opposite-spin correlation energy'), 6, 'MP2 OS corl')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+banner('UHF-MP2 energy calculation ')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=MP2
+cfour_BASIS=qz2p
+cfour_REFerence=UHF
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+}
+
+energy('cfour')
+
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-55.784877360093, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-0.195530391306, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-0.0416164, variable('mp2 same-spin correlation energy'), 6, 'MP2 SS corl')  #TEST
+compare_values(-0.1539141, variable('mp2 opposite-spin correlation energy'), 6, 'MP2 OS corl')  #TEST
+

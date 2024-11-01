@@ -1,0 +1,17 @@
+#! TD-HF test variable access
+molecule h2o {
+  1 2 
+  O
+  H 1 0.9 
+  H 1 0.9 2 104.0
+}
+
+set {
+  reference uhf 
+  basis cc-pVDZ
+  tdscf_states [1, 1, 1, 1]
+}
+
+wfn = energy('td-hf', return_wfn=True)[1]
+
+

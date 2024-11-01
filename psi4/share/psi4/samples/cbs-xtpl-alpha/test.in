@@ -1,0 +1,89 @@
+#! Extrapolated water energies
+import numpy as np
+
+scf_dtz_default_ref          = -76.0581961549    #TEST
+scf_dtz_a_1_400_ref          = -76.0606709175    #TEST
+scf_dtz_truhlar_ref          = -76.0609512019    #TEST
+# old, wrong karton refs pre-Apr 2022
+#scf_dtz_karton_ref           = -76.0507952348    #TEST
+#scf_def2_a_0_5_ref           = -76.0596925496    #TEST
+scf_dtz_karton_ref           = -76.055604665     #TEST
+scf_def2_a_0_5_ref           = -76.082654803     #TEST
+mp2_corl_a_3_0_ref           =  -0.3049557793    #TEST
+mp2_corl_a_2_4_ref           =  -0.3159281582    #TEST
+corl_delta_a_2_4_ref         =  -0.3203639699    #TEST
+scf_123_aug_pcsseg_ref       = -76.0611194710    #TEST
+
+molecule h2o {
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+}
+
+# Use DF to save some time
+set {
+    scf_type      df
+    mp2_type      df
+    e_convergence 7
+    reference     rhf
+}
+
+h2o.update_geometry()
+
+E = energy("cbs", scf_wfn='scf', scf_basis='cc-pv[dt]z', scf_scheme='scf_xtpl_helgaker_2')
+compare_values(scf_dtz_default_ref, E, 7, "SCF/cc-[DT] with scf_xtpl_helgaker")                 #TEST
+
+E = energy("cbs", scf_wfn='scf', scf_basis='cc-pv[dt]z', scf_scheme='scf_xtpl_helgaker_2', scf_alpha=1.4)
+compare_values(scf_dtz_a_1_400_ref, E, 7, "SCF/cc-[DT] with scf_xtpl_helgaker, alpha = 1.4")    #TEST
+
+E = energy("cbs", scf_wfn='scf', scf_basis='cc-pv[dt]z', scf_scheme='scf_xtpl_truhlar_2')
+compare_values(scf_dtz_truhlar_ref, E, 7, "SCF/cc-[DT] with scf_xtpl_truhlar")                  #TEST
+
+E = energy("cbs", scf_wfn='scf', scf_basis='cc-pv[dt]z', scf_scheme='scf_xtpl_karton_2')
+compare_values(scf_dtz_karton_ref, E, 7, "SCF/cc-[DT] with scf_xtpl_karton")                    #TEST
+
+E = energy("cbs", scf_wfn='scf', scf_basis='def2-[tq]zvppd', scf_scheme='scf_xtpl_karton_2', scf_alpha=0.5)
+compare_values(scf_def2_a_0_5_ref, E, 7, "SCF/def2-[TQ] with scf_xtpl_karton, alpha = 0.5")     #TEST
+
+E = energy("SCF/aug-pcsseg-[123]")
+compare_values(scf_123_aug_pcsseg_ref, E, 7, "SCF/aug-pcsseg-[123] with scf_xtpl_helgaker_3")   #TEST
+
+E = energy("cbs", scf_wfn='scf', scf_basis='def2-[st]zvpd', scf_scheme='scf_xtpl_helgaker_2',
+               corl_wfn='mp2', corl_basis='def2-[st]zvpd', corl_scheme='corl_xtpl_helgaker_2')
+c = variable("CBS CORRELATION ENERGY")
+compare_values(mp2_corl_a_3_0_ref, c, 7, "MP2/def2-[st]zvpd correlation E")                #TEST
+
+E = energy("cbs", scf_wfn='scf', scf_basis='def2-[st]zvpd', scf_scheme='scf_xtpl_helgaker_2',
+               corl_wfn='mp2', corl_basis='def2-[st]zvpd', corl_scheme='corl_xtpl_helgaker_2', corl_alpha=2.4)
+c = variable("CBS CORRELATION ENERGY")
+compare_values(mp2_corl_a_2_4_ref, c, 7, "MP2/def2-[st]zvpd correlation E, alpha = 2.4")   #TEST
+
+E = energy("cbs", scf_wfn='scf', scf_basis='cc-pv[dt]z', scf_scheme='scf_xtpl_helgaker_2',
+               corl_wfn='mp2', corl_basis='cc-pv[dt]z', corl_scheme='corl_xtpl_helgaker_2', corl_alpha=3.1,
+              delta_wfn='ccsd(t)', delta_basis='cc-pv[dt]z', delta_scheme='corl_xtpl_helgaker_2', delta_alpha=2.4)
+c = variable("CBS CORRELATION ENERGY")
+compare_values(corl_delta_a_2_4_ref, c, 7, "MP2 + D:CCSD(T)/cc-[DT] correlation E, alphas = (3.1,2.4)")   #TEST
+
+
+set scf_type pk
+set mp2_type conv
+set e_convergence 8
+set d_convergence 8
+
+G = gradient("cbs", cbs_metadata = [
+    {"wfn": "scf", "basis": "cc-pv[dt]z", "scheme": "scf_xtpl_helgaker_2"},
+    {"wfn": "mp2", "basis": "cc-pv[dt]z", "scheme": "corl_xtpl_helgaker_2"},
+    {"wfn": "ccsd(t)", "basis": "cc-pv[dt]z", "scheme": "corl_xtpl_helgaker_2", "options": {"qc_module": "ccenergy"}}])
+ans = np.array([[-2.46932535e-31,  0.00000000e+00, -4.34164354e-02],
+                [ 1.01731831e-18, -3.32281375e-02,  2.17082177e-02],
+                [-1.01731831e-18,  3.32281375e-02,  2.17082177e-02]])
+compare_arrays(ans, np.asarray(G), 4, 'MP2 + D:CCSD(T)/cc-[DT] gradient, alphas = (None)')
+
+G = gradient("cbs", cbs_metadata = [
+    {"wfn": "scf", "basis": "cc-pv[dt]z", "scheme": "scf_xtpl_helgaker_2"},
+    {"wfn": "mp2", "basis": "cc-pv[dt]z", "scheme": "corl_xtpl_helgaker_2", "alpha": 3.1},
+    {"wfn": "ccsd(t)", "basis": "cc-pv[dt]z", "scheme": "corl_xtpl_helgaker_2", "options": {"qc_module": "ccenergy"}, "alpha": 2.4}])
+ans = np.array([[-2.96240837e-31,  0.00000000e+00, -4.36667999e-02],
+                [ 1.02198395e-18, -3.33805291e-02,  2.18334000e-02],
+                [-1.02198395e-18,  3.33805291e-02,  2.18334000e-02]])
+compare_arrays(ans, np.asarray(G), 4, 'MP2 + D:CCSD(T)/cc-[DT] gradient, alphas = (3.1, 2.4)')

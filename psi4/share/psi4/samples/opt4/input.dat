@@ -1,0 +1,23 @@
+#! SCF cc-pVTZ geometry optimzation, with Z-matrix input
+
+# These values are from a tightly converged QChem run
+
+molecule h2o {
+     O
+     H 1 1.0
+     H 1 1.0 2 104.5
+# QChem optimized geometry
+#  O           0.000000    0.000000    0.091671
+#  H          -0.751206    0.000000   -0.474387
+#  H           0.751206    0.000000   -0.474387
+}
+
+set {
+  basis cc-pvtz
+  e_convergence 10
+  d_convergence 10
+  scf_type pk
+}
+
+thisenergy = optimize('scf')
+

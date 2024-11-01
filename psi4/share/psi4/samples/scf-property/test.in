@@ -1,0 +1,58 @@
+#! UFH and B3LYP cc-pVQZ properties for the CH2 molecule.
+
+import warnings  #TEST
+import numpy as np  #TEST
+from psi4.driver import constants  #TEST
+ref_hf_di_au = np.array([0.0, 0.0, 0.22531665104559076])  #TEST
+ref_hf_quad_au = np.array([[-5.69804565317, 0.0, 0.0], [0.0, -4.53353128969, 0.0], [0.0, 0.0, -5.25978856037]])  #TEST
+ref_b3lyp_di_au = np.array([0.0, 0.0, 0.252480541747])  #TEST
+ref_b3lyp_quad_au = np.array([[-5.66266837697, 0.0, 0.0], [0.0, -4.46523692003, 0.0], [0.0, 0.0, -5.22054902407]])  #TEST
+
+ref_hf_di_debye = ref_hf_di_au * constants.dipmom_au2debye  #TEST
+ref_hf_quad_debye = ref_hf_quad_au * constants.dipmom_au2debye * constants.bohr2angstroms  #TEST
+ref_b3lyp_di_debye = ref_b3lyp_di_au * constants.dipmom_au2debye  #TEST
+ref_b3lyp_quad_debye = ref_b3lyp_quad_au * constants.dipmom_au2debye * constants.bohr2angstroms  #TEST
+
+molecule ch2 {
+    0 3
+    c
+    h 1 b1
+    h 1 b1 2 a1
+
+    b1 = 1.0
+    a1 = 125.0
+}
+
+# Get a reasonable guess, to save some iterations
+set globals = {
+    scf_type   pk
+    basis      6-31G**
+    e_convergence 8
+    docc      [2, 0, 0, 1]
+    socc      [1, 0, 1, 0]
+    reference uhf
+}
+
+ch2.update_geometry()
+compare_values(6.6484189450, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+
+props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
+         'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',
+         'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
+         'MULTIPOLE(5)', 'NO_OCCUPATIONS']
+
+properties('scf', properties=props)
+
+compare_values(-38.91591819679808, psi4.variable("CURRENT ENERGY"), 6, "SCF energy")         #TEST
+compare_values(-38.91591819679808, psi4.variable("HF TOTAL ENERGY"), 6, "SCF energy")         #TEST
+
+compare_values(ref_hf_di_au, psi4.variable('SCF DIPOLE'), 4, "SCF DIPOLE")  #TEST
+compare_values(ref_hf_quad_au, psi4.variable('SCF QUADRUPOLE'), 4, "SCF QUADRUPOLE")  #TEST
+
+properties('B3LYP', properties=props)
+
+compare_values(-39.14134740550916, variable('CURRENT ENERGY'), 6, "B3LYP energy")    #TEST
+#compare_values(-39.14134740550916, variable('B3LYP TOTaL ENERGY'), 6, "B3LYP energy")    #TEST  # waiting for dft fctl psivars
+
+compare_values(ref_b3lyp_di_au, psi4.variable('B3LYP DIPOLE'), 4, "B3LYP DIPOLE")  #TEST
+compare_values(ref_b3lyp_quad_au, psi4.variable('B3LYP QUADRUPOLE'), 4, "B3LYP QUADRUPOLE")  #TEST

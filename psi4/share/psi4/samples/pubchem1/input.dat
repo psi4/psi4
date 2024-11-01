@@ -1,0 +1,39 @@
+#! Benzene vertical singlet-triplet energy difference computation, using the
+#! PubChem database to obtain the initial geometry, which is optimized at the HF/STO-3G
+#! level, before computing single point energies at the RHF, UHF and ROHF levels of theory.
+
+molecule benz{
+    pubchem:benzene
+}
+
+set {
+   basis     sto-3g
+   reference rhf
+   max_energy_g_convergence 8
+   df_basis_scf cc-pvdz-ri
+}
+
+optimize('scf')
+
+set basis cc-pvdz
+set df_basis_scf cc-pvdz-jkfit
+e_sing_rhf = energy('scf')
+
+benz.set_multiplicity(3)
+#
+# We could have specified a triplet C6H6 molecule with the following
+#
+#molecule benz {
+#    0 3
+#    pubchem:benzene
+#}
+set reference rohf
+e_trip_rohf = energy('scf')
+set reference uhf
+e_trip_uhf  = energy('scf')
+
+vertical_uhf  = psi_hartree2ev * (e_trip_uhf  - e_sing_rhf)
+vertical_rohf = psi_hartree2ev * (e_trip_rohf - e_sing_rhf)
+print_out("\nSinglet-Triplet gap (vertical, UHF)   = %8.2f eV\n" % vertical_uhf)
+print_out("\nSinglet-Triplet gap (vertical, ROHF)  = %8.2f eV\n" % vertical_rohf)
+

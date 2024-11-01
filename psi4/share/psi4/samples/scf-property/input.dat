@@ -1,0 +1,38 @@
+#! UFH and B3LYP cc-pVQZ properties for the CH2 molecule.
+
+
+
+molecule ch2 {
+    0 3
+    c
+    h 1 b1
+    h 1 b1 2 a1
+
+    b1 = 1.0
+    a1 = 125.0
+}
+
+# Get a reasonable guess, to save some iterations
+set globals = {
+    scf_type   pk
+    basis      6-31G**
+    e_convergence 8
+    docc      [2, 0, 0, 1]
+    socc      [1, 0, 1, 0]
+    reference uhf
+}
+
+ch2.update_geometry()
+
+props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
+         'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',
+         'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
+         'MULTIPOLE(5)', 'NO_OCCUPATIONS']
+
+properties('scf', properties=props)
+
+
+
+properties('B3LYP', properties=props)
+
+

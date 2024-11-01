@@ -1,0 +1,99 @@
+#! Extrapolated water energies
+import numpy as np
+
+nucenergy_ref =   8.8014655646    #TEST
+scf_dz_ref    = -76.0213974638      #TEST
+scf_adtz_ref  = -76.059124724830    #TEST
+mp2_addz_ref  = -76.261216702741    #TEST
+mp2_atz_ref   = -76.341088480148    #TEST
+mp2_adtz_ref  = -76.3667778886      #TEST
+cbs_ref       = -76.371589026502    #TEST
+ae_ref        = -76.34300450653124  #TEST
+b_lo_ref      = -76.3482732705      #TEST
+fc_dtz_ref    = -76.368558833602    #TEST
+
+
+molecule h2o {
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+}
+
+# Use DF to save some time
+set {
+    scf_type      df
+    mp2_type      df
+    cc_type       df
+    e_convergence 7
+    reference     rhf
+}
+
+h2o.update_geometry()
+compare_values(nucenergy_ref, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+
+# SCF TESTS
+scf_dz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "cc-pVDZ"}])
+compare_values(scf_dz_ref, scf_dz, 6, "[1] SCF/DZ Energy Check")  #TEST
+compare(1, variable('cbs number'), '[1] no')  #TEST
+
+scf_adtz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "aug-cc-pV[2T]Z"}])
+compare_values(scf_adtz_ref, scf_adtz, 6, "[2] SCF/a[DT]Z Energy Check")  #TEST
+compare(2, variable('cbs number'), '[2] no')  #TEST
+
+
+# MP2 TESTS
+mp2_atz, wfn = energy("cbs", cbs_metadata = [{"wfn": "mp2", "basis": "aug-cc-pVTZ"}], return_wfn=True)
+compare_values(mp2_atz_ref, mp2_atz, 6, "[3] MP2/aTZ Energy Check")  #TEST
+compare(1, variable('cbs number'), '[3] no')  #TEST
+compare("dfmp2", wfn.module(), "[3] module")  #TEST
+
+mp2_adtz, wfn = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "aug-cc-pvtz"},
+                                       {"wfn": "mp2", "basis": "aug-cc-pv[dt]z"}], return_wfn=True)
+compare_values(mp2_adtz_ref, mp2_adtz, 6, "[4] MP2/a[DT]Z Energy Check")  #TEST
+compare(2, variable('cbs number'), '[4] no')  #TEST
+compare("dfmp2", wfn.module(), "[4] module")  #TEST
+
+# D:CCSD(T) TESTS
+
+cbs_dtz, wfn = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
+                                      {"wfn": "mp2", "basis": "cc-pv[dt]z"},
+                                      {"wfn": "ccsd(t)", "basis": "cc-pvdz"}],
+                                        return_wfn=True)
+compare_values(cbs_ref, cbs_dtz, 6, "[5] MP2/[DT]Z + D:CCSD(T)/DZ Energy Check")  #TEST
+compare(2, variable('cbs number'), '[5] no')  #TEST
+compare("(mixed)", wfn.module(), "[5] module")  #TEST
+
+cbs_no_scf = energy("cbs", cbs_metadata=[{"wfn": "mp2", "basis": "cc-pv[dt]z"},
+                                       {"wfn": "ccsd(t)", "basis": "cc-pvdz"}])
+compare_values(cbs_ref, cbs_no_scf, 6, "[6] MP2/[DT]Z + D:CCSD(T)/DZ without explicit SCF stage") #TEST
+compare(2, variable('cbs number'), '[6] no')  #TEST
+
+
+# Options test
+set freeze_core True
+
+ae_dtz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
+                                      {"wfn": "mp2", "basis": "cc-pv[dt]z"},
+                                      {"wfn": "mp2", "basis": "cc-pvdz",
+                                       "options": {"freeze_core": "False"}}])
+
+compare_values(ae_ref, ae_dtz, 6, "[7] MP2/[DT]Z + D:(AE-FC)MP2/DZ Energy Check")  #TEST
+compare(3, variable('cbs number'), '[7] no')  #TEST
+
+# Basis_lo check
+b_lo  = energy("cbs", cbs_metadata = [{"wfn": "mp2", "basis": "cc-pvtz", "stage": "corr"},
+                                    {"wfn": "mp2", "wfn_lo": "mp2",
+                                     "basis": "aug-cc-pvdz", "basis_lo": "cc-pvdz", "stage": "diff"}])
+compare_values(b_lo_ref, b_lo, 6, "[8] MP2/TZ + D:MP2/(aDZ-DZ) (basis_lo check)")  #TEST
+compare(3, variable('cbs number'), '[8] no')  #TEST
+
+# Options check (FC-CCSD - FC-MP2) as a last stage in an otherwise AE calculation
+set freeze_core False
+fc_dtz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
+                                     {"wfn": "mp2", "basis": "cc-pv[dt]z"},
+                                     {"wfn": "ccsd", "basis": "cc-pvdz",
+                                      "options": {"freeze_core": "True"},
+                                      "wfn_lo": "mp2", "basis_lo": "cc-pvdz",
+                                      "options_lo": {"freeze_core": "True"}}])
+compare_values(fc_dtz_ref, fc_dtz, 6, "[9] MP2/[DT]Z + D:FC-CCSD/DZ (options_lo check)")  #TEST
+compare(3, variable('cbs number'), '[9] no')  #TEST

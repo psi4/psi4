@@ -1,0 +1,127 @@
+#! single-point CC3/qz2p on NH2
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+UHF-CC3 energy calculation 
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=CC3,BASIS=qz2p
+MULT=2,REF=UHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+CC_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-55.784877360093, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-55.807963384933, variable('cc3 total energy'), 6, 'CC3')  #TEST
+compare_values(-0.218616416146, variable('current correlation energy'), 6, 'Current corl')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+banner('UHF-CC3 energy calculation')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=CC3
+cfour_BASIS=qz2p
+cfour_REFerence=UHF
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('cfour')
+
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-55.784877360093, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-55.807963384933, variable('cc3 total energy'), 6, 'CC3')  #TEST
+compare_values(-0.218616416146, variable('current correlation energy'), 6, 'Current corl')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Thorough Psi4 format >>>')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_BASIS=qz2p
+reference uhf
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('c4-cc3')
+
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-55.784877360093, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-55.807963384933, variable('cc3 total energy'), 6, 'CC3')  #TEST
+compare_values(-0.218616416146, variable('current correlation energy'), 6, 'Current corl')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+banner('UHF-CC3 energy calculation')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=CC3
+cfour_BASIS=qz2p
+cfour_REFerence=UHF
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('cfour')
+
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-55.784877360093, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-55.807963384933, variable('cc3 total energy'), 6, 'CC3')  #TEST
+compare_values(-0.218616416146, variable('current correlation energy'), 6, 'Current corl')  #TEST
+

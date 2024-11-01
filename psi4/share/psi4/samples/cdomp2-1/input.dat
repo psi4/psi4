@@ -1,0 +1,28 @@
+#! OMP2 cc-pVDZ energy for the H2O molecule.
+
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  guess sad
+  freeze_core true
+  scf_type cd
+  mp2_type cd
+}
+energy('omp2')
+
+
+clean()
+set scf_type df
+ene = energy("qchf")
+
+clean()
+set scf_type cd
+ene = energy("qchf")
+

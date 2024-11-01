@@ -1,0 +1,21 @@
+#! Generation of NBO file
+
+molecule {
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set scf_type pk
+set basis cc-pvdz
+set r_convergence 12
+
+wfn = energy('hf', return_wfn = True)[1]
+wfn.write_nbo('input.47')
+compare_values( -76.02141844, variable('current energy'), 6, 'WATER: SPHERICAL')  #TEST
+
+set basis 6-31+G(d)
+
+wfn = energy('hf', return_wfn = True)[1]
+wfn.write_nbo('cartesian.47')
+compare_values( -76.0125142358969015, variable('current energy'), 6, 'WATER: CARTESIAN') # TEST

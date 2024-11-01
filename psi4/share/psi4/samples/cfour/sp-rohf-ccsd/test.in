@@ -1,0 +1,116 @@
+#! single-point CCSD/qz2p on NH2
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+ROHF-CCSD energy calculation 
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=CCSD,BASIS=qz2p
+MULT=2,REF=ROHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+PRINT=2
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+compare_values(-55.5847372601, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.002983751786, variable('mp2 singles energy'), 6, 'MP2 singles')  #TEST
+compare_values(-0.155770420921, variable('mp2 opposite-spin correlation energy'), 6, 'MP2 OS corl')  #TEST
+compare_values(-0.041785354569, variable('mp2 same-spin correlation energy'), 6, 'MP2 SS corl')  #TEST
+compare_values(-0.200539527276, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-55.785276787341, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-0.1745752, variable('ccsd opposite-spin correlation energy'), 6, 'CCSD OS corl')  #TEST
+#compare_values(-0.0432743, variable('ccsd same-spin correlation energy'), 6, 'CCSD SS corl')  #TEST
+compare_values(-0.217849506326, variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
+compare_values(-55.802586766392, variable('ccsd total energy'), 6, 'CCSD')  #TEST
+compare_values(-0.217849506326, variable('current correlation energy'), 6, 'Current corl')  #TEST
+compare_values(-55.802586766392, variable('current energy'), 6, 'Current')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=CCSD
+cfour_BASIS=qz2p
+cfour_REFerence=ROHF
+cfour_OCCUPATION= [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+cfour_PRINT=2
+}
+
+energy('cfour')
+
+compare_values(-55.5847372601, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.002983751786, variable('mp2 singles energy'), 6, 'MP2 singles')  #TEST
+compare_values(-0.155770420921, variable('mp2 opposite-spin correlation energy'), 6, 'MP2 OS corl')  #TEST
+compare_values(-0.041785354569, variable('mp2 same-spin correlation energy'), 6, 'MP2 SS corl')  #TEST
+compare_values(-0.200539527276, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-55.785276787341, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-0.1745752, variable('ccsd opposite-spin correlation energy'), 6, 'CCSD OS corl')  #TEST
+#compare_values(-0.0432743, variable('ccsd same-spin correlation energy'), 6, 'CCSD SS corl')  #TEST
+compare_values(-0.217849506326, variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
+compare_values(-55.802586766392, variable('ccsd total energy'), 6, 'CCSD')  #TEST
+compare_values(-0.217849506326, variable('current correlation energy'), 6, 'Current corl')  #TEST
+compare_values(-55.802586766392, variable('current energy'), 6, 'Current')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=CCSD
+cfour_BASIS=qz2p
+cfour_REFerence=ROHF
+cfour_OCCUPATION= [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+cfour_PRINT=2
+}
+
+energy('cfour')
+
+compare_values(-55.5847372601, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.002983751786, variable('mp2 singles energy'), 6, 'MP2 singles')  #TEST
+compare_values(-0.155770420921, variable('mp2 opposite-spin correlation energy'), 6, 'MP2 OS corl')  #TEST
+compare_values(-0.041785354569, variable('mp2 same-spin correlation energy'), 6, 'MP2 SS corl')  #TEST
+compare_values(-0.200539527276, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-55.785276787341, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-0.1745752, variable('ccsd opposite-spin correlation energy'), 6, 'CCSD OS corl')  #TEST
+#compare_values(-0.0432743, variable('ccsd same-spin correlation energy'), 6, 'CCSD SS corl')  #TEST
+compare_values(-0.217849506326, variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
+compare_values(-55.802586766392, variable('ccsd total energy'), 6, 'CCSD')  #TEST
+compare_values(-0.217849506326, variable('current correlation energy'), 6, 'Current corl')  #TEST
+compare_values(-55.802586766392, variable('current energy'), 6, 'Current')  #TEST
+

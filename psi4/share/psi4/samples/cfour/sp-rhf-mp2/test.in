@@ -1,0 +1,78 @@
+#! single-point MP2/qz2p on water
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+MP2 single-point energy calculation
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=MP2,BASIS=qz2p
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+compare_values(-76.0627484601, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.270191667216, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-76.332940127333, variable('mp2 total energy'), 6, 'MP2')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_CALC_level=MP2
+cfour_BASIS=qz2p
+cfour_SCF_CONV=12
+}
+
+energy('cfour')
+
+compare_values(-76.0627484601, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.270191667216, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-76.332940127333, variable('mp2 total energy'), 6, 'MP2')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_CALC_level=MP2
+cfour_BASIS=qz2p
+cfour_SCF_CONV=12
+}
+
+energy('cfour')
+
+compare_values(-76.0627484601, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.270191667216, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-76.332940127333, variable('mp2 total energy'), 6, 'MP2')  #TEST
+

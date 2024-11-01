@@ -1,0 +1,26 @@
+#! Gradient regularized asymptotic correction (GRAC) test.
+
+molecule ne {
+  0 1
+  Ne
+  symmetry c1
+}
+
+eps_ref = np.array([-31.2934, -1.69773, -0.78812, -0.78812, -0.78812, -0.00242, 0.06701, 0.06701, # TEST
+                      0.06701, 1.31568,  1.31568,  1.31568,  1.31568,  1.31568, 1.46385, 1.46385, # TEST
+                      1.46385, 2.22174,  5.68265,  5.68265,  5.68265,  5.68265, 5.68265])         # TEST
+
+set basis aug-cc-pVDZ
+set dft_grac_shift 0.203293
+
+scf_e, scf_wfn = energy("PBE0", return_wfn=True)
+eps = scf_wfn.epsilon_a_subset("AO", "ALL")
+
+compare_values(-128.8204559732359087, scf_e, 6, "Ne PBE0AC Energy") #TEST
+
+eps = np.array(scf_wfn.epsilon_a())                                            # TEST
+scf_homo = eps[4]
+scf_lumo = eps[5]
+for x in range(eps_ref.shape[0]):                                              # TEST
+    compare_values(eps_ref[x], eps[x], 4, ("Eigenvalue %2d Energy" % (x + 1))) # TEST
+

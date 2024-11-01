@@ -1,0 +1,141 @@
+#! pcm
+
+
+
+molecule NH3 {
+N     -0.0000000001    -0.1040380466      0.0000000000
+H     -0.9015844116     0.4818470201     -1.5615900098
+H     -0.9015844116     0.4818470201      1.5615900098
+H      1.8031688251     0.4818470204      0.0000000000
+units bohr
+}
+
+set {
+  basis STO-3G
+  scf_type pk
+  pcm true
+  pcm_scf_type total
+}
+
+pcm = {
+   Units = Angstrom
+   Medium {
+   SolverType = IEFPCM
+   Solvent = Water
+   }
+
+   Cavity {
+   RadiiSet = UFF
+   Type = GePol
+   Scaling = False
+   Area = 0.3
+   Mode = Implicit
+   }
+}
+
+print_out('PK-RHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+set pcm_scf_type separate
+print_out('PK-RHF-PCM, separate algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of UHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference uhf
+print_out('PK-UHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of ROHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference rohf
+print_out('PK-ROHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Check SCF_TYPE OUT_OF_CORE
+set reference rhf
+set scf_type out_of_core
+print_out('OUT_OF_CORE-RHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+set pcm_scf_type separate
+print_out('OUT_OF_CORE-RHF-PCM, separate algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of UHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference uhf
+print_out('OUT_OF_CORE-UHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of ROHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference rohf
+print_out('OUT_OF_CORE-ROHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Check SCF_TYPE DIRECT
+set reference rhf
+set scf_type direct
+print_out('DIRECT-RHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+set pcm_scf_type separate
+print_out('DIRECT-RHF-PCM, separate algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of UHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference uhf
+print_out('DIRECT-UHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of ROHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference rohf
+print_out('DIRECT-ROHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Check SCF_TYPE DF
+set reference rhf
+set scf_type df
+print_out('DF-RHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+set pcm_scf_type separate
+print_out('DF-RHF-PCM, separate algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of UHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference uhf
+print_out('DF-UHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of ROHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference rohf
+print_out('DF-ROHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Check SCF_TYPE CD
+set reference rhf
+set scf_type cd
+print_out('CD-RHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+set pcm_scf_type separate
+print_out('CD-RHF-PCM, separate algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of UHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference uhf
+print_out('CD-UHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of ROHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference rohf
+print_out('CD-ROHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)

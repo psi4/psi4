@@ -1,0 +1,29 @@
+#! RHF Linear Exchange Algorithm test for water
+
+ref_energy = -76.0412801462671837 # TEST, compared to previously-devleoped DDFJ+LinK impl 
+
+molecule mol {
+    0 1
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+    symmetry c1
+    no_reorient
+    no_com
+}
+
+set {
+    scf_type dfdirj+link
+    df_scf_guess false
+    basis aug-cc-pVDZ
+    e_convergence 1.0e-10
+    screening density
+    incfock true
+    incfock_full_fock_every 4
+    ints_tolerance 1.0e-12
+    linK_ints_tolerance 1.0e-12
+}
+
+linK_energy = energy('scf')
+psi4.compare_values(ref_energy, linK_energy, 9, "HF Energy (Using LinK algo)")
+compare(1, variable("SCF ITERATIONS") < 12.0, "LinK Incfock Efficient")

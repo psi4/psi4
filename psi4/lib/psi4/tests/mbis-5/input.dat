@@ -1,0 +1,81 @@
+#! MBIS calculation on ZnO
+
+charges_ref = psi4.Matrix.from_list([ #TEST
+ [ 0.58383761],    #TEST
+ [-0.58387688]])   #TEST
+
+dipoles_ref = psi4.Matrix.from_list([ #TEST
+ [-7.54944433e-07, -1.50455124e-07, -2.17358440e-02],  #TEST
+ [-1.68613574e-07, -3.36035112e-08,  2.59064354e-01]]) #TEST
+
+quadrupoles_ref = psi4.Matrix.from_list([ #TEST
+ [-9.07105295e+00,  1.13798162e-11,  2.11585798e-07, -9.07105295e+00,
+   4.21674745e-08, -9.20896159e+00],      #TEST
+ [-4.84268258e+00,  3.95401901e-12, -5.96720590e-07, -4.84268258e+00,
+  -1.18922187e-07, -4.08661242e+00]])     #TEST
+
+octupoles_ref = psi4.Matrix.from_list([ #TEST
+ [-7.60058555e-06, -5.04913195e-07,  4.03517260e-01, -2.53352310e-06,
+   3.25545161e-12, -2.18608318e-06, -1.51474301e-06,  4.03517260e-01,
+  -4.35670964e-07,  1.08247060e+00],    #TEST
+ [-9.89676088e-07, -6.57469240e-08,  4.45294729e-01, -3.29900820e-07,
+  -2.23989073e-12, -4.92237390e-07, -1.97235542e-07,  4.45294729e-01,
+  -9.80994678e-08,  1.24298633e+00]])   #TEST
+
+# Reference Atomic Volumes from Horton
+# Zn 63.44244885428372
+# O  27.11773534802673
+
+avols_ref = psi4.Matrix.from_list([  #TEST
+ [63.44245356],    #TEST
+ [27.11771735]])   #TEST
+
+# Reference Valence Widths from Horton
+# Zn 0.7055868992061838
+# O 0.40965750899754616
+
+vwidths_ref = psi4.Matrix.from_list([  #TEST
+ [0.70558769],     #TEST
+ [0.40965805]])    #TEST
+
+vratios_ref = psi4.Matrix.from_list([  #TEST
+[0.652824],
+[1.379211]])
+
+molecule mol {
+  0 1
+  Zn 0.00 0.00 0.00
+  O  0.00 0.00 1.98
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 10
+  e_convergence 10
+  mbis_radial_points 99
+  mbis_spherical_points 350
+  max_radial_moment 4
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+oeprop(wfn, 'MBIS_VOLUME_RATIOS', title='ZnO SCF')
+
+#NOTE: wfn.array_variable gives you flattened atomic multipole arrays; for expanded arrays, use wfn.variable
+charges = wfn.array_variable('MBIS CHARGES')
+dipoles = wfn.array_variable('MBIS DIPOLES')
+quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
+octupoles = wfn.array_variable('MBIS OCTUPOLES')
+avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vratios = wfn.array_variable('MBIS VOLUME RATIOS')
+
+compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
+compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
+compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
+compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
+compare_matrices(avols_ref, avols, 5, "MBIS Radial Moments <r^3>")    #TEST
+compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
+compare_matrices(vratios_ref, vratios, 5, "MBIS Volume Ratios")      #TEST

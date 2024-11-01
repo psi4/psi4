@@ -1,0 +1,25 @@
+#! CC2(RHF)/cc-pVDZ energy of H2O.
+
+# H2O Re geom from Olsen et al., JCP 104, 8007 (1996)
+molecule h2o {
+  0 1
+  O 0.0  0.00000000 -0.00900000
+  H 0.0 -1.51526300 -1.05889800
+  H 0.0  1.51526300 -1.05889800
+  units bohr
+}
+
+set {
+  basis "cc-pVDZ"
+}
+
+energy('cc2')
+
+enuc =   9.00935422966266 # TEST
+escf = -76.02403851151333 # TEST
+ecc2 = -76.22960579193078 # TEST
+
+compare_values(enuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(escf, variable("SCF TOTAL ENERGY"), 7, "SCF energy") #TEST
+compare_values(ecc2, variable("CC2 TOTAL ENERGY"), 7, "CC2 energy") #TEST
+

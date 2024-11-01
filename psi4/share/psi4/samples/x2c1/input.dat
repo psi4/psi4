@@ -1,0 +1,73 @@
+#! Test of SFX2C-1e on water uncontracted cc-pVDZ-DK
+#! The reference numbers are from Lan Cheng's implementation in Cfour
+
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R = 2.0
+A = 104.5
+units bohr
+}
+
+set {
+  scf_type pk
+  e_convergence 12
+}
+
+basis adecon {
+spherical
+****
+H     0
+S   1   1.00
+     13.0100000              1.0000000
+S   1   1.00
+      1.9620000              1.0000000
+S   1   1.00
+      0.4446000              1.0000000
+S   1   1.00
+      0.1220000              1.0000000
+P   1   1.00
+      0.7270000              1.0000000
+****
+O     0
+S   1   1.00
+  11720.0000000              1.0000000
+S   1   1.00
+   1759.0000000              1.0000000
+S   1   1.00
+    400.8000000              1.0000000
+S   1   1.00
+    113.7000000              1.0000000
+S   1   1.00
+     37.0300000              1.0000000
+S   1   1.00
+     13.2700000              1.0000000
+S   1   1.00
+      5.0250000              1.0000000
+S   1   1.00
+      1.0130000              1.0000000
+S   1   1.00
+      0.3023000              1.0000000
+P   1   1.00
+     17.7000000              1.0000000
+P   1   1.00
+      3.8540000              1.0000000
+P   1   1.00
+      1.0460000              1.0000000
+P   1   1.00
+      0.2753000              1.0000000
+D   1   1.00
+      1.1850000              1.0000000
+****
+}
+
+ccsd_nr_energy = energy('ccsd')
+scf_nr_energy = psi4.variable("HF TOTAL ENERGY")
+set relativistic x2c
+set basis_relativistic adecon  # shouldn't need to specify
+ccsd_rel_energy = energy('ccsd')
+scf_rel_energy = psi4.variable("HF TOTAL ENERGY")
+

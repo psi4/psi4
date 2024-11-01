@@ -1,0 +1,109 @@
+#! Various basis set extrapolation tests only in Cfour instead of Psi4
+
+molecule {
+0 2
+Li
+
+}
+
+set cfour_reference rohf
+
+e_cbs = energy("cbs",
+            scf_wfn='c4-hf',
+            scf_basis='aug-cc-pV[DTQ]Z',
+            scf_scheme="scf_xtpl_helgaker_3")
+
+clean()
+
+
+# Here's another example
+molecule h2 {
+H
+H 1 R
+
+R = 1
+}
+
+set cfour_reference rhf
+
+e_cbs = energy("cbs",
+            corl_wfn='c4-mp2',
+            corl_basis='cc-pV[TQ]Z',
+            corl_scheme="corl_xtpl_helgaker_2",
+            delta_wfn='c4-ccsd',
+            delta_basis='cc-pV[DT]Z',
+            delta_scheme="corl_xtpl_helgaker_2")
+clean()
+
+
+# One final example
+molecule {
+He
+}
+
+set scf_type = pk
+
+e_cbs = energy("cbs",
+            scf_basis='aug-cc-pV[DTQ]Z',
+            scf_scheme="scf_xtpl_helgaker_3",
+            corl_wfn='c4-ccsd',
+            corl_basis='aug-cc-pV[DT]Z',
+            corl_scheme="corl_xtpl_helgaker_2")
+
+clean()
+
+# Example with default extrapolation schemes
+e_cbs = energy("cbs",
+            corl_wfn='c4-mp2',
+            corl_basis='cc-pv[dt]z',
+            delta_wfn='mp5',
+            delta_basis='cc-pVDZ')
+
+clean()
+
+def myownmy_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+    """Note that the _2 is necessary to signal this is a fn involving 2 zeta-levels.
+    Yes, this fn is just the corl_xtpl_helgaker_2 w/o error checking and printing.
+
+    """
+    if isinstance(valueLO, float):
+        value = (valueHI * zHI ** 3 - valueLO * zLO ** 3) / (zHI ** 3 - zLO ** 3)
+        beta = (valueHI - valueLO) / (zHI ** (-3) - zLO ** (-3))
+
+        return value
+
+    elif isinstance(valueLO, (core.Matrix, core.Vector)):
+        beta = valueHI.clone()
+        beta.subtract(valueLO)
+        beta.scale(1 / (zHI ** (-3) - zLO ** (-3)))
+        beta.name = 'Helgaker SCF (%s, %s) beta' % (zLO, zHI)
+
+        value = valueHI.clone()
+        value.scale(zHI ** 3)
+
+        tmp = valueLO.clone()
+        tmp.scale(zLO ** 3)
+        value.subtract(tmp)
+
+        value.scale(1 / (zHI ** 3 - zLO ** 3))
+        value.name = 'Helgaker Corr (%s, %s) data' % (zLO, zHI)
+
+        return value
+
+    else:
+        raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
+
+h2.R = 0.747953788665
+# 5a is equivalent specification to 5b
+#e_cbs = energy(cbs,
+#            molecule=h2,
+#            corl_wfn='c4-mp2',
+#            corl_basis='aug-cc-pv[t,Q]z',
+#            delta_scheme=myownmy_2,
+#            delta_wfn='c4-ccsd(t)',
+#            delta_basis='cc-pV[dt]Z')
+#compare_values(-1.17505568495, e_cbs, 6, "[5a] user-def xtpl cbs()")
+
+register_xtpl_function(myownmy_2)
+e_cbs = energy('c4-MP2/aug-cc-pV[T,Q]Z + D:c4-CCSD(T)/cc-pv[dt]z', delta_scheme="myownmy_2", molecule=h2)
+

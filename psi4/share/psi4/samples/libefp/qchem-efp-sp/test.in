@@ -1,0 +1,28 @@
+#! EFP-only single-point, all components for benzene dimer
+
+molecule bz2 {
+efp C6H6 -0.30448173 -2.24210052 -0.29383131 -0.642499 1.534222 -0.568147
+--
+efp C6H6 -0.60075437  1.36443336  0.78647823  3.137879 1.557344 -2.568550
+}
+
+set EFP_DISP_DAMPING tt  # q-chem and psi4 have different defaults for this option
+energy('efp')
+
+# values copied from q-chem output file  #TEST
+compare_values( 0.0, bz2.nuclear_repulsion_energy(), 6, 'NRE')  #TEST
+compare_values(-0.006945881265, variable('efp elst energy'), 6, 'EFP-EFP Elst')  #TEST
+compare_values( 0.046915489574, variable('efp exch energy'), 6, 'EFP-EFP Exch')  #TEST
+compare_values(-0.000675030191, variable('efp ind energy'), 6, 'EFP-EFP Ind')  #TEST
+compare_values(-0.021092526180, variable('efp disp energy'), 6, 'EFP-EFP Disp')  #TEST
+compare_values( 0.018202051938, variable('current energy'), 6, 'EFP-EFP Total')  #TEST
+
+molecule h2 {
+H 0. 0. 0.
+H 0. 0. 1.
+}
+
+try:
+    energy('efp')
+except ValidationError:
+    compare_integers(1, 1, 'Handled no EFP system')  #TEST

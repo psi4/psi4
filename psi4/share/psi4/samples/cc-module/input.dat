@@ -1,0 +1,48 @@
+#! check that CC is returning the same values btwn CC*, FNOCC, and DFOCC modules
+
+molecule hf {
+H
+F 1 0.917
+}
+
+# refs[cc_type][fc][psivar]
+refs = {
+    "conv": {
+        "true": {
+        },
+        "false": {
+        }
+    },
+    "cd": {
+        "true": {
+        },
+        "false": {
+        }
+    },
+    "df": {
+        "true": {
+        },
+        "false": {
+        }
+    }
+}
+
+
+def do_check(module, cc_typ, fc):
+    set_options(
+        dict(qc_module=module, cc_type=cc_typ, freeze_core=fc, basis='cc-pvdz', e_convergence=10, d_convergence=8))
+    ret_e = energy('ccsd(t)', molecule=hf)
+    for var_name, ref_val in refs[cc_typ][fc].items():
+        compare_values(ref_val, variable(var_name), 7, "{}/{} (fc={}) [{}]".format(cc_typ, module, fc,  var_name))
+    compare_values(refs[cc_typ][fc]['CCSD(T) TOTAL ENERGY'],
+            ret_e, 7, "{}/{} (fc={}) [{}]".format(cc_typ, module, fc, 'return value'))
+    clean_variables()
+    clean()
+
+modules_for_cctype = {'conv': ['ccenergy', 'fnocc'], 'cd': ['fnocc', 'occ'], 'df': ['fnocc', 'occ']}
+
+for cc_t, modules in modules_for_cctype.items():
+    for fc in ['true', 'false']:
+        for module in modules:
+            do_check(module, cc_t, fc)
+

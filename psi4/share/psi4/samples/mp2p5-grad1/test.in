@@ -1,0 +1,25 @@
+#! MP2.5 cc-pVDZ gradient for the H2O molecule.
+
+ref = psi4.Matrix.from_list([                                      #TEST
+             [ 0.000000000000,  0.000000000000,  0.010370724082],  #TEST
+             [ 0.000000000000,  0.001046486798, -0.005185362041],  #TEST
+             [ 0.000000000000, -0.001046486798, -0.005185362041]   #TEST
+           ])                                                      #TEST
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  mp_type conv
+}
+
+grad = gradient('mp2.5')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
+
+

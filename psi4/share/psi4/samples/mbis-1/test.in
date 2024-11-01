@@ -1,0 +1,99 @@
+#! MBIS calculation on H2O
+
+charges_ref = psi4.Matrix.from_list([ #TEST
+ [-0.84572442],  #TEST
+ [ 0.42286136],  #TEST
+ [ 0.42286136]]) #TEST
+
+
+dipoles_ref = psi4.Matrix.from_list([ #TEST
+ [ 2.31640762e-15,  4.30280895e-14, -1.69806726e-01],   #TEST
+ [ 8.34760121e-16, -3.05701468e-02,  7.96317835e-03],   #TEST
+ [-1.05846518e-16,  3.05701468e-02,  7.96317835e-03]])  #TEST
+
+quadrupoles_ref = psi4.Matrix.from_list([ #TEST
+ [-4.70466222e+00,  3.55109157e-15, -2.69579127e-16, -4.49125694e+00,
+  -7.39003831e-15, -4.60614604e+00],   #TEST
+ [-2.98291759e-01, -1.79082958e-15,  5.03774016e-16, -2.88023807e-01,
+  -1.70119477e-03, -2.83741122e-01],   #TEST
+ [-2.98291759e-01,  1.44161522e-16,  1.82009240e-17, -2.88023807e-01,
+   1.70119477e-03, -2.83741122e-01]])  #TEST
+
+octupoles_ref = psi4.Matrix.from_list([ #TEST
+ [-1.90477405e-14,  1.59689768e-14, -1.57031738e-01,  2.01689537e-15,
+  -2.21853785e-15,  6.81706215e-16,  1.44997125e-13, -4.56516484e-01,
+   3.96695424e-14, -6.49908786e-01], #TEST
+ [ 1.09183508e-15, -1.04989006e-02,  8.86795891e-04,  5.68508999e-15,
+  -2.20560386e-15, -5.29485868e-16, -3.24182338e-02, -1.86102449e-03,
+  -1.44283651e-02, -6.08715345e-03], #TEST
+ [ 2.77280153e-16,  1.04989006e-02,  8.86795891e-04,  1.96061810e-17,
+   3.67553844e-17,  7.58633642e-17,  3.24182338e-02, -1.86102449e-03,
+   1.44283651e-02, -6.08715345e-03]]) #TEST
+
+# Reference Atomic Volumes From Horton
+# O 26.33864405917908
+# H 1.5096257589296491
+# H 1.5094431403157609
+
+avols_ref = psi4.Matrix.from_list([ # TEST
+ [26.33765183],   #TEST
+ [ 1.50946513],   #TEST
+ [ 1.50946513]])  #TEST
+
+vratios_ref = psi4.Matrix.from_list([
+[1.339537], 
+[0.206664],
+[0.206664]])
+
+
+# Reference Valence Widths From Horton
+# O 0.40355537630901217
+# H 0.35780574579137503
+# H 0.3577956925992588
+
+vwidths_ref = psi4.Matrix.from_list([ # TEST
+ [0.40355308],   #TEST
+ [0.35779695],   #TEST
+ [0.35779695]])  #TEST
+
+molecule mol {
+  0 1
+  O
+  H 1 1.0
+  H 1 1.0 2 104.5
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 10
+  mbis_radial_points 99
+  mbis_spherical_points 350
+  max_radial_moment 4
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+oeprop(wfn, 'MBIS_CHARGES', title='H20 SCF')
+
+#NOTE: wfn.array_variable gives you flattened atomic multipole arrays; for expanded arrays, use wfn.variable
+charges = wfn.array_variable('MBIS CHARGES')
+dipoles = wfn.array_variable('MBIS DIPOLES')
+quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
+octupoles = wfn.array_variable('MBIS OCTUPOLES')
+avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+
+compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
+compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
+compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
+compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
+compare_matrices(avols_ref, avols, 5, "MBIS Radial Moments <r^3>")    #TEST
+compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
+
+oeprop(wfn, "MBIS_VOLUME_RATIOS", title='H20 SCF')
+
+vratios = wfn.array_variable('MBIS VOLUME RATIOS')
+compare_matrices(vratios_ref, vratios, 5, "MBIS Volume Ratios")       #TEST

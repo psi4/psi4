@@ -1,0 +1,77 @@
+#! EOM-CCSD/6-31g excited state transition data for water cation
+
+molecule h2o {
+  1 2 
+  O
+  H 1 1 
+  H 1 1 2 104.5
+}
+
+set {
+  reference uhf 
+  basis cc-pVDZ
+  freeze_core true
+  roots_per_irrep [0, 1, 1, 0]
+}
+
+wfn = properties('eom-ccsd', properties=['dipole', 'oscillator_strength'], return_wfn=True)[1]
+
+### ccdensity checks
+
+refnre     =   8.8014655645673745 # TEST
+refscf     = -75.6332569214465593 # TEST
+refccsd    = -75.803716136508982  # TEST
+refoverlap =   0.95259415503      # TEST
+
+compare_values(refnre, h2o.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refccsd, wfn.variable("CCSD TOTAL ENERGY"), 6, "CCSD Energy") # TEST
+compare_values(refoverlap, wfn.variable("LEFT-RIGHT CCSD EIGENVECTOR OVERLAP"), 5, "Left-Right CCSD Overlap") # TEST
+
+### Excitation energy checks
+
+ref1B1 = -75.325751117648 # TEST
+ref0A2 = -75.260476163556 # TEST
+
+compare_values(ref1B1, core.variable("CCSD ROOT 1 (IN B1) TOTAL ENERGY"), 6, "Root 1 (A1) Energy") # TEST
+compare_values(ref0A2, core.variable("CCSD ROOT 0 (IN A2) TOTAL ENERGY"), 6, "Root 0 (A2) Energy") # TEST
+
+### Dipole check - validated against CFOUR 12/22
+
+test_data = {                   # TEST
+(0, "B1", 0, "A1"):  0.9924065, # TEST
+(1, "B1", 1, "A1"): -0.1336723, # TEST
+(0, "A2", 2, "B2"): -0.0430842, # TEST
+}                               # TEST
+
+for transition, value in test_data.items(): # TEST
+    for name in {"CC", "CCSD"}: # TEST
+        prop1 = f"{name} ROOT {transition[0]} (IN {transition[1]}) DIPOLE" # TEST
+        prop2 = f"{name} ROOT {transition[2]} DIPOLE" # TEST
+        prop3 = f"{name} ROOT {transition[2]} DIPOLE - {transition[3]} TRANSITION" # TEST
+        prop4 = f"{name} ROOT {transition[2]} ({transition[1]}) DIPOLE" # TEST
+        for propstring in {prop1, prop2, prop3, prop4}: # TEST
+            compare_values(value, wfn.variable(propstring)[2], 6, propstring) # TEST
+
+### Transition checks
+
+test_data = { # TEST
+(0, "B1", 0, 0, "A2", 2, "B2"): {"OSCILLATOR STRENGTH (LEN)": 0.00407528, "EINSTEIN A (LEN)": 3.86413231e+07, "EINSTEIN B (LEN)": 1.36907729e+18}, # TEST
+(0, "B1", 0, 1, "B1", 1, "A1"): {"OSCILLATOR STRENGTH (LEN)": 0.00317063, "EINSTEIN A (LEN)": 2.32728034e+07, "EINSTEIN B (LEN)": 1.21063018e+18}, # TEST
+(1, "B1", 1, 0, "A2", 2, "B2"): {"OSCILLATOR STRENGTH (LEN)": 0.09372883, "EINSTEIN A (LEN)": 1.28314944e+07, "EINSTEIN B (LEN)": 2.62052705e+20}, # TEST
+}
+
+for transition, data in test_data.items(): # TEST
+    for property, value in data.items(): # TEST
+        for name in {"CC", "CCSD"}: # TEST
+            prop1 = f"{name} ROOT {transition[0]} (IN {transition[1]}) -> ROOT {transition[3]} (IN {transition[4]}) {property}" # TEST
+            prop2 = f"{name} ROOT {transition[2]} -> ROOT {transition[5]} {property}" # TEST
+            prop3 = f"{name} ROOT {transition[2]} -> ROOT {transition[5]} {property} - {transition[6]} TRANSITION" # TEST
+            prop4 = f"{name} ROOT {transition[2]} ({transition[1]}) -> ROOT {transition[5]} ({transition[4]}) {property}" # TEST
+            for propstring in {prop1, prop2, prop3, prop4}: # TEST
+                # Change these numbers to 6 ASAP # TEST
+                if "EINSTEIN" not in property: # TEST
+                    compare_values(value, wfn.variable(propstring), 4, propstring) # TEST
+                else: # TEST 
+                    # Large numbers need "special" testing. # TEST
+                    compare_values(value, wfn.variable(propstring), propstring, atol=1e-6, rtol=1e-4) # TEST

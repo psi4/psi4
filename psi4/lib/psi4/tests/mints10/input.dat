@@ -1,0 +1,46 @@
+#! H2 with tiny basis set, to test basis set parser's handling of integers
+
+refSCF = -1.11734903507032  #TEST
+
+molecule h2 {
+    H
+    H 1 0.7
+}
+
+set scf_type pk # Avoid using DF, for simplicity
+
+basis {
+    [ sto-3g ]
+    cartesian
+    ****
+    H     0
+    S   1   1.00
+          3.0       1.0
+    S   1   1.00
+          1.0       1.0
+    S   1   1.00
+          0.1       1.0
+    ****
+}
+
+set basis sto-3g
+thisSCF = energy('scf')
+compare_values(refSCF, thisSCF, 10, "Reference energy (float input)")         #TEST
+
+basis {
+    [ sto-3g ]
+    cartesian
+    ****
+    H     0
+    S   1   1.00
+          3         1.0
+    S   1   1.00
+          1.0       1
+    S   1   1.00
+          0.1       1.0
+    ****
+}
+
+set basis sto-3g
+thisSCF = energy('scf')
+compare_values(refSCF, thisSCF, 10, "Reference energy (integer input)")       #TEST

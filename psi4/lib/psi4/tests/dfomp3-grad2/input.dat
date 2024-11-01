@@ -1,0 +1,31 @@
+#! DF-OMP3 cc-pVDZ gradients for the H2O+ cation.
+
+ref = psi4.Matrix.from_list([                                       #TEST
+        [ 0.000000000000,     0.000000000000,     0.046731651884],  #TEST
+        [ 0.000000000000,     0.040508286319,    -0.023365825942],  #TEST
+        [ 0.000000000000,    -0.040508286319,    -0.023365825942]   #TEST
+      ])                                                            #TEST
+
+molecule h2o {
+1 2
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  scf_type df
+  guess gwh
+  freeze_core true
+  reference uhf
+  mp_type df
+}
+
+grad = gradient('omp3')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
+
+

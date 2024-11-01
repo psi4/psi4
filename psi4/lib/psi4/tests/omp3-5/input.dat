@@ -1,0 +1,23 @@
+#! SOS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
+
+refnuc      =  9.11294430202143 #TEST
+refscf      = -76.02611710513384 #TEST
+refsosomp3  = -76.22772062866821 #TEST
+
+molecule h2o { 
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+    basis cc-pvdz
+}
+
+thisenergy = optimize('sos-omp3')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 5, "Nuclear Repulsion Energy (a.u.)"); #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");             #TEST
+compare_values(refsosomp3, thisenergy, 6, "SOS-OMP3 Total Energy (a.u.)");                #TEST
+

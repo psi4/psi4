@@ -1,0 +1,45 @@
+#! Extrapolated energies with delta correction
+
+nucenergy_ref =   5.1767335826  #TEST
+
+molecule hf {
+    F
+    H 1 0.92
+}
+
+# Get a reasonable guess, to save some iterations
+set {
+    scf_type      df
+    mp2_type      df
+    e_convergence 7
+    reference     rhf
+}
+
+hf.update_geometry()
+compare_values(nucenergy_ref, hf.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+
+# Equivalence tests
+mp3_energy = energy('MP3/cc-pVDZ')
+mp3_energy_delta = energy('MP2/cc-pVDZ + D:MP3/cc-pVDZ')
+compare_values(mp3_energy_delta, mp3_energy, 6, 'MP3 Energy Call vs Delta Check')  #TEST
+
+ccsd_energy_delta = energy('MP2/cc-pVDZ + D:CCSD/cc-pVDZ')
+ccsd_energy = energy('CCSD/cc-pVDZ')
+compare_values(ccsd_energy_delta, ccsd_energy, 6, 'CCSD Energy Call vs Delta Check')  #TEST
+
+ccsd_t_energy_delta = energy('CCSD/cc-pVDZ + D:CCSD(T)/cc-pVDZ')
+ccsd_t_energy = energy('CCSD(T)/cc-pVDZ')
+compare_values(ccsd_t_energy_delta, ccsd_t_energy, 6, 'CCSD(T) Energy Call vs Delta Check')  #TEST
+
+ccsd_t_energy_delta = energy('CCSD/cc-pV[DT]Z + D:CCSD(T)/cc-pV[DT]Z')
+ccsd_t_energy = energy('CCSD(T)/cc-pV[DT]Z')
+compare_values(ccsd_t_energy_delta, ccsd_t_energy, 6, 'CCSD(T) Energy Call vs Delta Check')  #TEST
+
+# Extrapolation test
+cbs1_energy = energy('MP2/cc-pV[DT]Z + D:CCSD(T)/cc-pVDZ')
+compare_values(-100.383956631, cbs1_energy, 6, 'MP2/cc-pV[DT]Z + D:CCSD(T)/cc-pVDZ Energy')  #TEST
+
+compare_values(-0.00689863, variable('CBS DELTA1 TOTAL ENERGY'), 6, 'CBS Delta Variable Check')  #TEST
+
+# Need higher angular momentum to do more
+

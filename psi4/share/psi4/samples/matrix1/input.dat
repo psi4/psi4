@@ -1,0 +1,97 @@
+#! An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating
+#! matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition.
+#! These operations are performed on vectors and matrices provided from the Psi library.
+
+# Example of matrix multiplication
+print_out('\n  ==> Matrix Multiplication <== \n\n')
+
+n = 3
+A = psi4.Matrix(n, n)
+B = psi4.Matrix(n, n)
+C = psi4.Matrix(n, n)
+A.name = 'A'
+B.name = 'B'
+C.name = 'C'
+
+# The matrix set method takes 4 arguments: irrep, row, col, value
+# Values are initialized to 0 by default
+B.set(0, 0, 1, 1.0)
+B.set(0, 1, 0, 2.0)
+B.set(0, 2, 0, 3.0)
+
+A.set(0, 0, 0, 2.0)
+A.set(0, 1, 1, 2.0)
+A.set(0, 2, 2, 2.0)
+
+A.print_out()
+B.print_out()
+
+psi4.DGEMM(0, 'N', 'N', n, n, n, 1.0, A, n, B, n, 0.0, C, n)
+C.print_out()
+
+
+print_out('\n  ==> Eigendecomposition (Hilbert Matrix) <== \n\n')
+
+n = 4;
+A = psi4.Matrix(n,n)
+for i in range(1,n+1):
+    for j in range(1,n+1):
+        A.set(0, i-1, j-1, 1.0/(i + j - 1))
+A.name = 'Hilbert Matrix'
+A.print_out();
+
+# Allocate a work array and some storage for the eigenvalues
+W = psi4.Vector(4*n);
+D = psi4.Vector(n);
+# On input, A is the matrix and on output it contains the eigenvectors
+info = psi4.DSYEV(0, 'V','U', n, A, n, D, W, 4*n)
+A.name = "Eigenvectors"
+
+# Make first element of eigenvector positive if desired
+for i in range(0,n):
+    if A.get(i,0) < 0 :
+        A.scale_row(0, i, -1)
+
+print_out('  Eigenvalues')
+D.print_out()
+A.print_out()
+
+
+print_out('\n  ==> Cholesky Decomposition (Hilbert Matrix) <== \n\n')
+
+n = 4
+A = psi4.Matrix(n,n)
+for i in range(1,n+1):
+    for j in range(1,n+1):
+        A.set(0, i-1, j-1, 1.0/(i + j - 1))
+
+A.name = 'Hilbert Matrix'
+A.print_out()
+
+info = psi4.DPOTRF(0, 'U', n, A, n)
+for i in range(0,n):
+    for j in range(i+1,n):
+        A.set(0, i, j, 0.0)
+
+
+A.name = 'Hilbert Matrix Cholesky Decomposition (T)'
+A.print_out()
+
+
+print_out('\n  ==> LU Decomposition (Hilbert Matrix) <== \n\n')
+
+n = 4;
+A = psi4.Matrix(n,n)
+piv = psi4.IntVector(n)
+for i in range(1,n+1):
+    for j in range(1,n+1):
+        A.set(0, i-1, j-1, 1.0/(i + j - 1))
+
+A.name = 'Hilbert Matrix'
+A.print_out();
+
+info = psi4.DGETRF(0, n, n, A, n, piv)
+
+
+A.name = 'Hilbert Matrix LU Decomposition (T)'
+A.print_out()

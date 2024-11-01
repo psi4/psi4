@@ -1,0 +1,46 @@
+#! Advanced python example sets different sets of scf/post-scf conv crit
+#! and check to be sure computation has actually converged to the expected
+#! accuracy.
+
+molecule h2o {
+O 0.0 0.0 0.0
+H 1.0 0.0 0.0
+H 0.0 1.0 0.0
+}
+
+set basis 6-31g
+set guess core
+
+
+# first three are e_conv: global, scf module, detci module
+# next three are expected accuracy: scf sp, scf under post-scf, post-scf sp
+
+convmat = [
+    [0, 0, 0,  6, 8, 6],
+    [4, 0, 0,  4, 4, 4],
+    [0, 4, 0,  4, 4, 6],
+    [4, 5, 0,  5, 5, 4],
+    [0, 0, 4,  6, 8, 4],
+    [4, 0, 5,  4, 4, 5],
+    [0, 4, 5,  4, 4, 5],
+    ]
+
+set qc_module detci
+for convcrit in convmat:
+    if convcrit[0] != 0:
+        set_global_option('E_CONVERGENCE', convcrit[0])
+    if convcrit[1] != 0:
+        set_local_option('SCF', 'E_CONVERGENCE', convcrit[1])
+    if convcrit[2] != 0:
+        set_local_option('DETCI', 'E_CONVERGENCE', convcrit[2])
+    
+    energy('scf')
+    clean()
+
+    energy('cisd')
+    clean()
+    
+    revoke_global_option_changed('E_CONVERGENCE')
+    revoke_local_option_changed('SCF', 'E_CONVERGENCE')
+    revoke_local_option_changed('DETCI', 'E_CONVERGENCE')
+

@@ -1,0 +1,56 @@
+#! RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
+
+ref_energies = [  -74.9652300618, -74.9665748439,           #TEST
+                  -74.9645615224, -74.9672510783 ]          #TEST
+ref_3pt = 0.672391029                                       #TEST
+ref_5pt = 0.672391714                                       #TEST
+
+molecule h2o {
+0 1
+O
+H 1 r
+H 1 r 2 a
+
+r=0.98944
+a=100.047
+}
+
+pert = 0.001
+lambdas = [pert, -pert, 2.0*pert, -2.0*pert]
+
+set {
+    basis        sto-3g
+    e_convergence   10
+    scf_type pk
+}
+
+energies = []
+for l in lambdas:
+    set perturb_h true
+    set perturb_with dipole
+    set perturb_dipole [0, 0, $l]
+    energies.append(energy('scf'))
+
+# Now use 3- and 5-point finite difference formulae to compute the dipole
+dm_z_3point = (energies[0] - energies[1]) / (2.0*pert)
+dm_z_5point = (8.0*energies[0] - 8.0*energies[1] - energies[2] + energies[3]) / (12.0*pert)
+
+set perturb_h false
+# Compute the analytic dipoles, for comparison
+e,wfn = energy('scf', return_wfn=True)
+oeprop(wfn, "MULTIPOLES(1)")
+analytic = variable("SCF DIPOLE")[2]
+
+# Tabulate the results of the energy computation
+for val in range(len(lambdas)):
+    print_out("Perturbation strength = %7.4f, computed energy = %16.10f\n" % (lambdas[val], energies[val]))
+    compare_values(ref_energies[val], energies[val], 8, "Energy for displacement %d" % val)  #TEST
+
+# The a.u. to Debye conversion factor is automatically available in Psithon as psi_dipmom_au2debye
+print_out("Total dipoles\n")
+print_out("3 Point formula: mu(z) = %10.6f ea0, %10.6f Debye\n" % (dm_z_3point, dm_z_3point*psi_dipmom_au2debye))
+print_out("5 Point formula: mu(z) = %10.6f ea0, %10.6f Debye\n" % (dm_z_5point, dm_z_5point*psi_dipmom_au2debye))
+
+compare_values(ref_3pt, dm_z_3point, 8, "Z dipole, using 3 point formula")     #TEST
+compare_values(ref_5pt, dm_z_5point, 8, "Z dipole, using 5 point formula")     #TEST
+compare_values(ref_5pt, analytic, 8, "Z dipole, analytic vs. 5 point formula") #TEST

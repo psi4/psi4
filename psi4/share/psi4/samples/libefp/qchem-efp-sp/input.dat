@@ -1,0 +1,20 @@
+#! EFP-only single-point, all components for benzene dimer
+
+molecule bz2 {
+efp C6H6 -0.30448173 -2.24210052 -0.29383131 -0.642499 1.534222 -0.568147
+--
+efp C6H6 -0.60075437  1.36443336  0.78647823  3.137879 1.557344 -2.568550
+}
+
+set EFP_DISP_DAMPING tt  # q-chem and psi4 have different defaults for this option
+energy('efp')
+
+
+molecule h2 {
+H 0. 0. 0.
+H 0. 0. 1.
+}
+
+try:
+    energy('efp')
+except ValidationError:

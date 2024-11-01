@@ -1,0 +1,408 @@
+#! checks that all SAPT physical components (elst, exch, indc, disp) and
+#! total IE are being computed correctly for SAPT2+3(CCD)dMP2/aug-cc-pvdz and
+#! all lesser methods thereof.
+
+h2kc = psi_hartree2kcalmol
+digits = 3
+
+def_mem = get_memory()
+compare_integers(524288000, def_mem, 'Default mem set correctly')
+set_memory('600.0 MB')
+set_mem = get_memory()
+compare_integers(600000000, set_mem, 'Given MiB mem set correctly by fn')
+memory 600.0 mib
+set_mem2 = get_memory()
+compare_integers(629145600, set_mem2, 'Given MiB mem set correctly by parse')
+
+#set print 3  # shows psivars being computed
+
+molecule s222 {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+units angstrom
+}
+
+
+set basis aug-cc-pvdz
+set freeze_core true
+#set nat_orbs_t2 true  # this trio now default
+#set nat_orbs_t3 true
+#set nat_orbs_v4 true
+set occ_tolerance 1.0e-6
+set do_mbpt_disp true
+
+# extracted from psi4 screen output.
+#   a1 matches sapt benchmark paper
+#   a0 reduces from a1 formulas
+refs = {}
+refs['a0'] = {}
+refs['a1'] = {}
+refs['a0']['HF'] = {}
+refs['a1']['HF'] = {}
+refs['a0']['SAPT0'] = {}
+refs['a1']['SAPT0'] = {}
+refs['a0']['SAPT0']['ELST ENERGY'] =   -8.39320863
+refs['a0']['SAPT0']['EXCH ENERGY'] =    7.03954672
+refs['a0']['SAPT0']['IND ENERGY' ] =   -2.21474970
+refs['a0']['SAPT0']['DISP ENERGY'] =   -1.81818625
+refs['a1']['SAPT0']['ELST ENERGY'] =   -8.39320863
+refs['a1']['SAPT0']['EXCH ENERGY'] =    7.03954672
+refs['a1']['SAPT0']['IND ENERGY' ] =   -2.21474970
+refs['a1']['SAPT0']['DISP ENERGY'] =   -1.81526996
+
+refs['a1']['SSAPT0'] = {}  # really a3
+refs['a1']['SSAPT0']['ELST ENERGY'] =   -8.39320863
+refs['a1']['SSAPT0']['EXCH ENERGY'] =    7.03954672
+refs['a1']['SSAPT0']['IND ENERGY' ] =   -2.18091513
+refs['a1']['SSAPT0']['DISP ENERGY'] =   -1.80937423
+refs['a1']['SSAPT0']['TOTAL ENERGY'] =  -5.34395126
+refs['a0']['SSAPT0'] = refs['a1']['SSAPT0']
+
+refs['a0']['SAPT2'] = {}
+refs['a1']['SAPT2'] = {}
+refs['a0']['SAPT2']['ELST ENERGY'] =   -8.36503179
+refs['a0']['SAPT2']['EXCH ENERGY'] =    8.41972860
+refs['a0']['SAPT2']['IND ENERGY' ] =   -2.45553242
+refs['a0']['SAPT2']['DISP ENERGY'] =   -1.81818625
+refs['a1']['SAPT2']['ELST ENERGY'] =   -8.36503179
+refs['a1']['SAPT2']['EXCH ENERGY'] =    8.42966618
+refs['a1']['SAPT2']['IND ENERGY' ] =   -2.45348353
+refs['a1']['SAPT2']['DISP ENERGY'] =   -1.81526996
+refs['a0']['SAPT2+'] = {}
+refs['a1']['SAPT2+'] = {}
+refs['a0']['SAPT2+']['ELST ENERGY'] =  -8.36503179
+refs['a0']['SAPT2+']['EXCH ENERGY'] =   8.41972860
+refs['a0']['SAPT2+']['IND ENERGY' ] =  -2.45553242
+refs['a0']['SAPT2+']['DISP ENERGY'] =  -2.20135127
+refs['a1']['SAPT2+']['ELST ENERGY'] =  -8.36503179
+refs['a1']['SAPT2+']['EXCH ENERGY'] =   8.42966618
+refs['a1']['SAPT2+']['IND ENERGY' ] =  -2.45348353
+refs['a1']['SAPT2+']['DISP ENERGY'] =  -2.19843498
+refs['a0']['SAPT2+(CCD)'] = {}
+refs['a1']['SAPT2+(CCD)'] = {}
+refs['a0']['SAPT2+(CCD)']['ELST ENERGY'] =  -8.36503179
+refs['a0']['SAPT2+(CCD)']['EXCH ENERGY'] =   8.41972860
+refs['a0']['SAPT2+(CCD)']['IND ENERGY' ] =  -2.45553242
+refs['a0']['SAPT2+(CCD)']['DISP ENERGY'] =  -2.17849352
+refs['a1']['SAPT2+(CCD)']['ELST ENERGY'] =  -8.36503179
+refs['a1']['SAPT2+(CCD)']['EXCH ENERGY'] =   8.42966618
+refs['a1']['SAPT2+(CCD)']['IND ENERGY' ] =  -2.45348353
+refs['a1']['SAPT2+(CCD)']['DISP ENERGY'] =  -2.17557722
+refs['a0']['SAPT2+DMP2'] = {}
+refs['a1']['SAPT2+DMP2'] = {}
+refs['a0']['SAPT2+DMP2']['ELST ENERGY'] =  -8.36503179
+refs['a0']['SAPT2+DMP2']['EXCH ENERGY'] =   8.41972860
+refs['a0']['SAPT2+DMP2']['IND ENERGY' ] =  -2.60204338
+refs['a0']['SAPT2+DMP2']['DISP ENERGY'] =  -2.20135127
+refs['a1']['SAPT2+DMP2']['ELST ENERGY'] =  -8.36503179
+refs['a1']['SAPT2+DMP2']['EXCH ENERGY'] =   8.42966618
+refs['a1']['SAPT2+DMP2']['IND ENERGY' ] =  -2.61489725
+refs['a1']['SAPT2+DMP2']['DISP ENERGY'] =  -2.19843498
+refs['a0']['SAPT2+(CCD)DMP2'] = {}
+refs['a1']['SAPT2+(CCD)DMP2'] = {}
+refs['a0']['SAPT2+(CCD)DMP2']['ELST ENERGY'] =  -8.36503179
+refs['a0']['SAPT2+(CCD)DMP2']['EXCH ENERGY'] =   8.41972860
+refs['a0']['SAPT2+(CCD)DMP2']['IND ENERGY' ] =  -2.60204338
+refs['a0']['SAPT2+(CCD)DMP2']['DISP ENERGY'] =  -2.17849352
+refs['a1']['SAPT2+(CCD)DMP2']['ELST ENERGY'] =  -8.36503179
+refs['a1']['SAPT2+(CCD)DMP2']['EXCH ENERGY'] =   8.42966618
+refs['a1']['SAPT2+(CCD)DMP2']['IND ENERGY' ] =  -2.61489725
+refs['a1']['SAPT2+(CCD)DMP2']['DISP ENERGY'] =  -2.17557722
+refs['a0']['SAPT2+(3)'] = {}
+refs['a1']['SAPT2+(3)'] = {}
+refs['a0']['SAPT2+(3)']['ELST ENERGY'] =   -8.19846855
+refs['a0']['SAPT2+(3)']['EXCH ENERGY'] =    8.41972860
+refs['a0']['SAPT2+(3)']['IND ENERGY' ] =   -2.45553242
+refs['a0']['SAPT2+(3)']['DISP ENERGY'] =   -2.16395183
+refs['a1']['SAPT2+(3)']['ELST ENERGY'] =   -8.19846855
+refs['a1']['SAPT2+(3)']['EXCH ENERGY'] =    8.42966618
+refs['a1']['SAPT2+(3)']['IND ENERGY' ] =   -2.45348353
+refs['a1']['SAPT2+(3)']['DISP ENERGY'] =   -2.16103554
+refs['a0']['SAPT2+(3)(CCD)'] = {}
+refs['a1']['SAPT2+(3)(CCD)'] = {}
+refs['a0']['SAPT2+(3)(CCD)']['ELST ENERGY'] =   -8.19846855
+refs['a0']['SAPT2+(3)(CCD)']['EXCH ENERGY'] =    8.41972860
+refs['a0']['SAPT2+(3)(CCD)']['IND ENERGY' ] =   -2.45553242
+refs['a0']['SAPT2+(3)(CCD)']['DISP ENERGY'] =   -2.14109407
+refs['a1']['SAPT2+(3)(CCD)']['ELST ENERGY'] =   -8.19846855
+refs['a1']['SAPT2+(3)(CCD)']['EXCH ENERGY'] =    8.42966618
+refs['a1']['SAPT2+(3)(CCD)']['IND ENERGY' ] =   -2.45348353
+refs['a1']['SAPT2+(3)(CCD)']['DISP ENERGY'] =   -2.13817778
+refs['a0']['SAPT2+(3)DMP2'] = {}
+refs['a1']['SAPT2+(3)DMP2'] = {}
+refs['a0']['SAPT2+(3)DMP2']['ELST ENERGY'] =   -8.19846855
+refs['a0']['SAPT2+(3)DMP2']['EXCH ENERGY'] =    8.41972860
+refs['a0']['SAPT2+(3)DMP2']['IND ENERGY' ] =   -2.60204338
+refs['a0']['SAPT2+(3)DMP2']['DISP ENERGY'] =   -2.16395183
+refs['a1']['SAPT2+(3)DMP2']['ELST ENERGY'] =   -8.19846855
+refs['a1']['SAPT2+(3)DMP2']['EXCH ENERGY'] =    8.42966618
+refs['a1']['SAPT2+(3)DMP2']['IND ENERGY' ] =   -2.61489725
+refs['a1']['SAPT2+(3)DMP2']['DISP ENERGY'] =   -2.16103554
+refs['a0']['SAPT2+(3)(CCD)DMP2'] = {}
+refs['a1']['SAPT2+(3)(CCD)DMP2'] = {}
+refs['a0']['SAPT2+(3)(CCD)DMP2']['ELST ENERGY'] =   -8.19846855
+refs['a0']['SAPT2+(3)(CCD)DMP2']['EXCH ENERGY'] =    8.41972860
+refs['a0']['SAPT2+(3)(CCD)DMP2']['IND ENERGY' ] =   -2.60204338
+refs['a0']['SAPT2+(3)(CCD)DMP2']['DISP ENERGY'] =   -2.14109407
+refs['a1']['SAPT2+(3)(CCD)DMP2']['ELST ENERGY'] =   -8.19846855
+refs['a1']['SAPT2+(3)(CCD)DMP2']['EXCH ENERGY'] =    8.42966618
+refs['a1']['SAPT2+(3)(CCD)DMP2']['IND ENERGY' ] =   -2.61489725
+refs['a1']['SAPT2+(3)(CCD)DMP2']['DISP ENERGY'] =   -2.13817778
+refs['a0']['SAPT2+3'] = {}
+refs['a1']['SAPT2+3'] = {}
+refs['a0']['SAPT2+3']['ELST ENERGY'] =   -8.19846855
+refs['a0']['SAPT2+3']['EXCH ENERGY'] =    8.41972860
+refs['a0']['SAPT2+3']['IND ENERGY' ] =   -2.45553242
+refs['a0']['SAPT2+3']['DISP ENERGY'] =   -2.27158925
+refs['a1']['SAPT2+3']['ELST ENERGY'] =   -8.19846855
+refs['a1']['SAPT2+3']['EXCH ENERGY'] =    8.42966618
+refs['a1']['SAPT2+3']['IND ENERGY' ] =   -2.45348353
+refs['a1']['SAPT2+3']['DISP ENERGY'] =   -2.26529951
+refs['a0']['SAPT2+3(CCD)'] = {}
+refs['a1']['SAPT2+3(CCD)'] = {}
+refs['a0']['SAPT2+3(CCD)']['ELST ENERGY'] =   -8.19846855
+refs['a0']['SAPT2+3(CCD)']['EXCH ENERGY'] =    8.41972860
+refs['a0']['SAPT2+3(CCD)']['IND ENERGY' ] =   -2.45553242
+refs['a0']['SAPT2+3(CCD)']['DISP ENERGY'] =   -2.24873150
+refs['a1']['SAPT2+3(CCD)']['ELST ENERGY'] =   -8.19846855
+refs['a1']['SAPT2+3(CCD)']['EXCH ENERGY'] =    8.42966618
+refs['a1']['SAPT2+3(CCD)']['IND ENERGY' ] =   -2.45348353
+refs['a1']['SAPT2+3(CCD)']['DISP ENERGY'] =   -2.24244175
+refs['a0']['SAPT2+3DMP2'] = {}
+refs['a1']['SAPT2+3DMP2'] = {}
+refs['a0']['SAPT2+3DMP2']['ELST ENERGY'] =   -8.19846855
+refs['a0']['SAPT2+3DMP2']['EXCH ENERGY'] =    8.41972860
+refs['a0']['SAPT2+3DMP2']['IND ENERGY' ] =   -2.50584803
+refs['a0']['SAPT2+3DMP2']['DISP ENERGY'] =   -2.27158925
+refs['a1']['SAPT2+3DMP2']['ELST ENERGY'] =   -8.19846855
+refs['a1']['SAPT2+3DMP2']['EXCH ENERGY'] =    8.42966618
+refs['a1']['SAPT2+3DMP2']['IND ENERGY' ] =   -2.52215774
+refs['a1']['SAPT2+3DMP2']['DISP ENERGY'] =   -2.26529951
+refs['a0']['SAPT2+3(CCD)DMP2'] = {}
+refs['a1']['SAPT2+3(CCD)DMP2'] = {}
+refs['a0']['SAPT2+3(CCD)DMP2']['ELST ENERGY'] =   -8.19846855
+refs['a0']['SAPT2+3(CCD)DMP2']['EXCH ENERGY'] =    8.41972860
+refs['a0']['SAPT2+3(CCD)DMP2']['IND ENERGY' ] =   -2.50584803
+refs['a0']['SAPT2+3(CCD)DMP2']['DISP ENERGY'] =   -2.24873150
+refs['a1']['SAPT2+3(CCD)DMP2']['ELST ENERGY'] =   -8.19846855
+refs['a1']['SAPT2+3(CCD)DMP2']['EXCH ENERGY'] =    8.42966618
+refs['a1']['SAPT2+3(CCD)DMP2']['IND ENERGY' ] =   -2.52215774
+refs['a1']['SAPT2+3(CCD)DMP2']['DISP ENERGY'] =   -2.24244175
+
+refs['a0']['HF']['TOTAL ENERGY'] =  -3.56841161
+refs['a0']['SAPT0']['TOTAL ENERGY'] =  -5.38659786
+refs['a0']['SAPT2']['TOTAL ENERGY'] =  -4.21902186
+refs['a0']['SAPT2+']['TOTAL ENERGY'] =  -4.60218688
+refs['a0']['SAPT2+(3)']['TOTAL ENERGY'] =  -4.39822419
+refs['a0']['SAPT2+3']['TOTAL ENERGY'] =  -4.50586162
+refs['a0']['SAPT2+DMP2']['TOTAL ENERGY'] =  -4.74869784
+refs['a0']['SAPT2+(3)DMP2']['TOTAL ENERGY'] =  -4.54473516
+refs['a0']['SAPT2+3DMP2']['TOTAL ENERGY'] =  -4.55617723
+refs['a0']['SAPT2+(CCD)']['TOTAL ENERGY'] =  -4.57932912
+refs['a0']['SAPT2+(3)(CCD)']['TOTAL ENERGY'] =  -4.37536644
+refs['a0']['SAPT2+3(CCD)']['TOTAL ENERGY'] =  -4.48300386
+refs['a0']['SAPT2+(CCD)DMP2']['TOTAL ENERGY'] =  -4.72584008
+refs['a0']['SAPT2+(3)(CCD)DMP2']['TOTAL ENERGY'] =  -4.52187740
+refs['a0']['SAPT2+3(CCD)DMP2']['TOTAL ENERGY'] =  -4.53331948
+
+refs['a1']['HF']['TOTAL ENERGY'] =  -3.56841161
+refs['a1']['SAPT0']['TOTAL ENERGY'] =  -5.38368157
+refs['a1']['SAPT2']['TOTAL ENERGY'] =  -4.20411910
+refs['a1']['SAPT2+']['TOTAL ENERGY'] =  -4.58728412
+refs['a1']['SAPT2+(3)']['TOTAL ENERGY'] =  -4.38332144
+refs['a1']['SAPT2+3']['TOTAL ENERGY'] =  -4.48758541
+refs['a1']['SAPT2+DMP2']['TOTAL ENERGY'] =  -4.74869784
+refs['a1']['SAPT2+(3)DMP2']['TOTAL ENERGY'] =  -4.54473516
+refs['a1']['SAPT2+3DMP2']['TOTAL ENERGY'] =  -4.55625962
+refs['a1']['SAPT2+(CCD)']['TOTAL ENERGY'] =  -4.56442636
+refs['a1']['SAPT2+(3)(CCD)']['TOTAL ENERGY'] =  -4.36046368
+refs['a1']['SAPT2+3(CCD)']['TOTAL ENERGY'] =  -4.46472765
+refs['a1']['SAPT2+(CCD)DMP2']['TOTAL ENERGY'] =  -4.72584008
+refs['a1']['SAPT2+(3)(CCD)DMP2']['TOTAL ENERGY'] =  -4.52187740
+refs['a1']['SAPT2+3(CCD)DMP2']['TOTAL ENERGY'] =  -4.53340186
+
+
+# alpha=1 vals from perl scripts & sapt benchmarking paper --> qcdb scripts
+#   these are same as 'a1' above
+refs['qa1'] = {}
+# SAPT0
+refs['qa1']['SAPT0'] = {}  # SAPT0-SA-adz  #TEST
+refs['qa1']['SAPT0']['ELST ENERGY' ] =  -8.3932
+refs['qa1']['SAPT0']['EXCH ENERGY' ] =   7.0396
+refs['qa1']['SAPT0']['IND ENERGY'  ] =  -2.2148
+refs['qa1']['SAPT0']['DISP ENERGY' ] =  -1.8153
+refs['qa1']['SAPT0']['TOTAL ENERGY'] =  -5.3837
+# sSAPT0
+refs['qa1']['SSAPT0'] = {}  # SAPT0S-SA-adz  #TEST
+refs['qa1']['SSAPT0']['ELST ENERGY' ] =  -8.3932
+refs['qa1']['SSAPT0']['EXCH ENERGY' ] =   7.0396
+refs['qa1']['SSAPT0']['IND ENERGY'  ] =  -2.1809
+refs['qa1']['SSAPT0']['DISP ENERGY' ] =  -1.8094
+refs['qa1']['SSAPT0']['TOTAL ENERGY'] =  -5.3440
+# SCS-SAPT0
+# scs-sapt0 has a definition and we check it here but that shouldn't be
+#   taken for evidence that the method is any good whatsoever or that we
+#   endorse it.
+refs['qa1']['SCS-SAPT0'] = {}  # SAPTSCS-SA-adz  #TEST
+refs['qa1']['SCS-SAPT0']['ELST ENERGY' ] =  -8.3932
+refs['qa1']['SCS-SAPT0']['EXCH ENERGY' ] =   7.0396
+refs['qa1']['SCS-SAPT0']['IND ENERGY'  ] =  -2.2148
+refs['qa1']['SCS-SAPT0']['DISP ENERGY' ] =  -1.7171
+refs['qa1']['SCS-SAPT0']['TOTAL ENERGY'] =  -5.2855
+# SAPT2
+refs['qa1']['SAPT2'] = {}  # SAPT2-SA-adz  #TEST
+refs['qa1']['SAPT2']['ELST ENERGY' ] =  -8.3650
+refs['qa1']['SAPT2']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2']['IND ENERGY'  ] =  -2.4535
+refs['qa1']['SAPT2']['DISP ENERGY' ] =  -1.8153
+refs['qa1']['SAPT2']['TOTAL ENERGY'] =  -4.2041
+# SAPT2+
+refs['qa1']['SAPT2+'] = {}  # SAPT2P-SA-adz  #TEST
+refs['qa1']['SAPT2+']['ELST ENERGY' ] =  -8.3650
+refs['qa1']['SAPT2+']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2+']['IND ENERGY'  ] =  -2.4535
+refs['qa1']['SAPT2+']['DISP ENERGY' ] =  -2.1984
+refs['qa1']['SAPT2+']['TOTAL ENERGY'] =  -4.5873
+refs['qa1']['SAPT2+(CCD)'] = {}  # SAPT2PC-SA-adz  #TEST
+refs['qa1']['SAPT2+(CCD)']['ELST ENERGY' ] =  -8.3650
+refs['qa1']['SAPT2+(CCD)']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2+(CCD)']['IND ENERGY'  ] =  -2.4535
+refs['qa1']['SAPT2+(CCD)']['DISP ENERGY' ] =  -2.1758
+refs['qa1']['SAPT2+(CCD)']['TOTAL ENERGY'] =  -4.5646
+refs['qa1']['SAPT2+DMP2'] = {}  # SAPT2PM-SA-adz  #TEST
+refs['qa1']['SAPT2+DMP2']['ELST ENERGY' ] =  -8.3650
+refs['qa1']['SAPT2+DMP2']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2+DMP2']['IND ENERGY'  ] =  -2.6152
+refs['qa1']['SAPT2+DMP2']['DISP ENERGY' ] =  -2.1984
+refs['qa1']['SAPT2+DMP2']['TOTAL ENERGY'] =  -4.7490
+refs['qa1']['SAPT2+(CCD)DMP2'] = {}  # SAPT2PCM-SA-adz  #TEST
+refs['qa1']['SAPT2+(CCD)DMP2']['ELST ENERGY' ] =  -8.3650
+refs['qa1']['SAPT2+(CCD)DMP2']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2+(CCD)DMP2']['IND ENERGY'  ] =  -2.6152
+refs['qa1']['SAPT2+(CCD)DMP2']['DISP ENERGY' ] =  -2.1758
+refs['qa1']['SAPT2+(CCD)DMP2']['TOTAL ENERGY'] =  -4.7264
+# SAPT2+(3)
+refs['qa1']['SAPT2+(3)'] = {}  # SAPT3-SA-adz  #TEST
+refs['qa1']['SAPT2+(3)']['ELST ENERGY' ] =  -8.1985
+refs['qa1']['SAPT2+(3)']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2+(3)']['IND ENERGY'  ] =  -2.4535
+refs['qa1']['SAPT2+(3)']['DISP ENERGY' ] =  -2.1610
+refs['qa1']['SAPT2+(3)']['TOTAL ENERGY'] =  -4.3833
+refs['qa1']['SAPT2+(3)(CCD)'] = {}  # SAPT3C-SA-adz  #TEST
+refs['qa1']['SAPT2+(3)(CCD)']['ELST ENERGY' ] =  -8.1985
+refs['qa1']['SAPT2+(3)(CCD)']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2+(3)(CCD)']['IND ENERGY'  ] =  -2.4535
+refs['qa1']['SAPT2+(3)(CCD)']['DISP ENERGY' ] =  -2.1384
+refs['qa1']['SAPT2+(3)(CCD)']['TOTAL ENERGY'] =  -4.3607
+refs['qa1']['SAPT2+(3)DMP2'] = {}  # SAPT3M-SA-adz  #TEST
+refs['qa1']['SAPT2+(3)DMP2']['ELST ENERGY' ] =  -8.1985
+refs['qa1']['SAPT2+(3)DMP2']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2+(3)DMP2']['IND ENERGY'  ] =  -2.6152
+refs['qa1']['SAPT2+(3)DMP2']['DISP ENERGY' ] =  -2.1610
+refs['qa1']['SAPT2+(3)DMP2']['TOTAL ENERGY'] =  -4.5450
+refs['qa1']['SAPT2+(3)(CCD)DMP2'] = {}  # SAPT3CM-SA-adz  #TEST
+refs['qa1']['SAPT2+(3)(CCD)DMP2']['ELST ENERGY' ] =  -8.1985
+refs['qa1']['SAPT2+(3)(CCD)DMP2']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2+(3)(CCD)DMP2']['IND ENERGY'  ] =  -2.6152
+refs['qa1']['SAPT2+(3)(CCD)DMP2']['DISP ENERGY' ] =  -2.1384
+refs['qa1']['SAPT2+(3)(CCD)DMP2']['TOTAL ENERGY'] =  -4.5224
+# SAPT2+3
+refs['qa1']['SAPT2+3'] = {}  # SAPT3F-SA-adz  #TEST
+refs['qa1']['SAPT2+3']['ELST ENERGY' ] =  -8.1985
+refs['qa1']['SAPT2+3']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2+3']['IND ENERGY'  ] =  -2.4535
+refs['qa1']['SAPT2+3']['DISP ENERGY' ] =  -2.2653
+refs['qa1']['SAPT2+3']['TOTAL ENERGY'] =  -4.4876
+refs['qa1']['SAPT2+3(CCD)'] = {}  # SAPT3FC-SA-adz (SAPTCCD)  #TEST
+refs['qa1']['SAPT2+3(CCD)']['ELST ENERGY' ] =  -8.1985
+refs['qa1']['SAPT2+3(CCD)']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2+3(CCD)']['IND ENERGY'  ] =  -2.4535
+refs['qa1']['SAPT2+3(CCD)']['DISP ENERGY' ] =  -2.2427
+refs['qa1']['SAPT2+3(CCD)']['TOTAL ENERGY'] =  -4.4649
+refs['qa1']['SAPT2+3DMP2'] = {}  # SAPT3FM-SA-adz  #TEST
+refs['qa1']['SAPT2+3DMP2']['ELST ENERGY' ] =  -8.1985
+refs['qa1']['SAPT2+3DMP2']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2+3DMP2']['IND ENERGY'  ] =  -2.5225
+refs['qa1']['SAPT2+3DMP2']['DISP ENERGY' ] =  -2.2653
+refs['qa1']['SAPT2+3DMP2']['TOTAL ENERGY'] =  -4.5566
+refs['qa1']['SAPT2+3(CCD)DMP2'] = {}  # SAPT3FCM-SA-adz (SAPTCCDM)  #TEST
+refs['qa1']['SAPT2+3(CCD)DMP2']['ELST ENERGY' ] =  -8.1985
+refs['qa1']['SAPT2+3(CCD)DMP2']['EXCH ENERGY' ] =   8.4297
+refs['qa1']['SAPT2+3(CCD)DMP2']['IND ENERGY'  ] =  -2.5225
+refs['qa1']['SAPT2+3(CCD)DMP2']['DISP ENERGY' ] =  -2.2427
+refs['qa1']['SAPT2+3(CCD)DMP2']['TOTAL ENERGY'] =  -4.5339
+
+
+# define what free sapt methods may be expected from first method
+codes = [
+['SAPT0', 'SCS-SAPT0', 'SSAPT0'],
+['SSAPT0', 'SCS-SAPT0', 'SAPT0'],
+['SAPT2', 'SAPT0', 'SSAPT0'],
+['SAPT2+', 'SAPT0', 'SSAPT0', 'SAPT2', 'SAPT2+'],
+['SAPT2+(CCD)', 'SAPT0', 'SSAPT0', 'SAPT2', 'SAPT2+'],
+['SAPT2+DMP2', 'SAPT0', 'SSAPT0', 'SAPT2', 'SAPT2+'],
+['SAPT2+(CCD)DMP2', 'SAPT0', 'SSAPT0', 'SAPT2', 'SAPT2+', 'SAPT2+(CCD)', 'SAPT2+DMP2'],
+['SAPT2+(3)', 'SAPT0', 'SSAPT0', 'SAPT2', 'SAPT2+'],
+['SAPT2+(3)(CCD)', 'SAPT0', 'SSAPT0', 'SAPT2', 'SAPT2+', 'SAPT2+(CCD)', 'SAPT2+(3)'],
+['SAPT2+(3)DMP2', 'SAPT0', 'SSAPT0', 'SAPT2', 'SAPT2+', 'SAPT2+DMP2', 'SAPT2+(3)'],
+['SAPT2+(3)(CCD)DMP2', 'SAPT0', 'SSAPT0', 'SAPT2', 'SAPT2+', 'SAPT2+(CCD)', 'SAPT2+DMP2', 'SAPT2+(CCD)DMP2', 'SAPT2+(3)', 'SAPT2+(3)(CCD)', 'SAPT2+(3)DMP2'],
+['SAPT2+3', 'SAPT0', 'SSAPT0', 'SAPT2', 'SAPT2+', 'SAPT2+(3)'],
+['SAPT2+3(CCD)', 'SAPT0', 'SSAPT0', 'SAPT2', 'SAPT2+', 'SAPT2+(CCD)', 'SAPT2+(3)', 'SAPT2+(3)(CCD)', 'SAPT2+3'],
+['SAPT2+3DMP2', 'SAPT0', 'SSAPT0', 'SAPT2', 'SAPT2+', 'SAPT2+DMP2', 'SAPT2+(3)', 'SAPT2+(3)DMP2', 'SAPT2+3'],
+['SAPT2+3(CCD)DMP2', 'SAPT0', 'SSAPT0', 'SAPT2', 'SAPT2+', 'SAPT2+(CCD)', 'SAPT2+DMP2', 'SAPT2+(CCD)DMP2', 'SAPT2+(3)', 'SAPT2+(3)(CCD)', 'SAPT2+(3)DMP2', 'SAPT2+(3)(CCD)DMP2', 'SAPT2+3', 'SAPT2+3(CCD)', 'SAPT2+3DMP2'],
+]
+
+# test with alpha = 1.0 against sapt benchmarking paper refs
+set EXCH_SCALE_ALPHA 1.0
+alpha = 'qa1'
+
+# May 2022: codes[0] removed from codelist iter
+for codelist in [codes[2], codes[6], codes[14]]:
+    method = codelist[0]
+    energy(method)
+    print('        <<< %s >>>' % method)
+    for subcode in codelist:
+        for term in ['ELST ENERGY', 'EXCH ENERGY', 'IND ENERGY', 'DISP ENERGY', 'TOTAL ENERGY']:
+            pv = ' '.join([subcode, term])
+            compare_values(refs[alpha][subcode][term], h2kc * variable(pv), digits, pv)  #TEST
+            if subcode == method:
+                gpv = ' '.join(['SAPT', term])
+                compare_values(refs[alpha][subcode][term], h2kc * variable(gpv), digits, gpv)  #TEST
+    compare_values(refs[alpha][method]['TOTAL ENERGY'], h2kc * variable('CURRENT ENERGY'), digits, 'CURRENT ENERGY')  #TEST
+
+    clean()
+    clean_variables()
+
+# test with alpha = 0.0 against current JG sapt output
+set EXCH_SCALE_ALPHA 0.0
+alpha = 'a0'
+
+# May 2022: codes[1] removed from codelist iter
+for codelist in [codes[3], codes[9]]:
+    method = codelist[0]
+    energy(method)
+    print('        <<< %s >>>' % method)
+    for subcode in codelist:
+        if subcode == 'SCS-SAPT0':
+            continue
+        for term in ['ELST ENERGY', 'EXCH ENERGY', 'IND ENERGY', 'DISP ENERGY', 'TOTAL ENERGY']:
+            pv = ' '.join([subcode, term])
+            compare_values(refs[alpha][subcode][term], h2kc * variable(pv), digits, pv)  #TEST
+            if subcode == method:
+                gpv = ' '.join(['SAPT', term])
+                compare_values(refs[alpha][subcode][term], h2kc * variable(gpv), digits, gpv)  #TEST
+    compare_values(refs[alpha][method]['TOTAL ENERGY'], h2kc * variable('CURRENT ENERGY'), digits, 'CURRENT ENERGY')  #TEST
+
+    clean()
+    clean_variables()
+
+# May 2022: energy("SAPT0") and energy("sSAPT0") removed from tests
+#   since their default aux basis changed to no longer coincide with higher-order sapt.
+#   file w/o removals can also pass with `set df_basis_elst aug-cc-pvdz-ri`.

@@ -1,0 +1,23 @@
+#! Tests DF-MP2 gradient in the presence of a dipole field
+
+molecule h2o {
+  0 1
+  O    0.000000000000     0.000000000000    -0.071143036192 
+  H    0.000000000000    -0.758215806856     0.564545805801 
+  H    0.000000000000     0.758215806856     0.564545805801 
+}
+
+set {
+    basis    cc-pvdz
+    d_convergence   10
+}
+
+set perturb_h true
+set perturb_with dipole
+set perturb_dipole [0, 0, 0.01]
+
+analytic = gradient('mp2')
+
+set findif points 5
+findif = gradient('mp2', dertype=0)
+

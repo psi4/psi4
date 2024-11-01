@@ -1,0 +1,38 @@
+#! Translating psi4 options to cfour, part ii
+
+from psi4.driver.procrouting.interface_cfour import P4C4_INFO
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set basis cc-pvdz
+
+energy('c4-scf')
+clean()
+clean_variables()
+
+set d_convergence 5
+
+energy('c4-scf')
+clean()
+clean_variables()
+
+set scf d_convergence 5e-7
+
+energy('c4-scf')
+clean()
+clean_variables()
+
+set cfour_scf_conv 6
+set d_convergence 8
+
+energy('c4-scf')
+clean()
+clean_variables()
+

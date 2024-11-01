@@ -1,0 +1,25 @@
+#! Compute three IP and 2 EA's for the PH3 molecule
+
+molecule mol {
+  P    0.0000000000    0.0000000000    0.0000000000
+  H    1.1930135422    0.0000000000   -0.7734797316
+  H   -0.5965067711   -1.0331800346   -0.7734797316
+  H   -0.5965067711    1.0331800346   -0.7734797316
+}
+
+set BASIS      CC-PVDZ
+set EP2_NUM_EA 2
+
+energy('EP2')
+
+
+    
+    # Set variable to zero for future tests
+
+
+# Ensure EP2_ORBITALS pass in works 
+set EP2_NUM_EA 0
+set EP2_ORBITALS [[5, 6, 7], [1, 2]]
+
+energy('EP2')
+

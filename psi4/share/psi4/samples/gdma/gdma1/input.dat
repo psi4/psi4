@@ -1,0 +1,26 @@
+#! Water RHF/cc-pVTZ distributed multipole analysis
+
+molecule water {
+    O  0.000000  0.000000  0.117176
+    H -0.000000 -0.756950 -0.468706
+    H -0.000000  0.756950 -0.468706
+ noreorient # These are not needed, but are used here to guarantee that the
+ nocom      # GDMA origin placement defined below is at the O atom.
+}
+
+set {
+    scf_type pk
+    basis cc-pvtz
+    d_convergence 10
+    gdma_switch   0
+    gdma_radius   [ "H", 0.65 ]
+    gdma_limit    2
+    gdma_origin   [ 0.000000,  0.000000,  0.117176 ]
+}
+
+energy, wfn = energy('scf', return_wfn=True)
+
+gdma(wfn)
+dmavals = variable("DMA DISTRIBUTED MULTIPOLES")
+totvals = variable("DMA TOTAL MULTIPOLES")
+totvals_wfn = wfn.variable("DMA TOTAL MULTIPOLES")

@@ -1,0 +1,72 @@
+#! RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = both, omega =
+#! (589 355 nm)
+
+molecule h2o2 {
+  0 1
+  O
+  O 1 1.39
+  H 1 0.94 2 102.3
+  H 2 0.94 1 102.3 3 -50.0
+}
+
+set {
+  basis "cc-pVDZ"
+  freeze_core true
+  gauge both
+  omega [589, 355, nm]
+}
+
+wfn = properties('cc2',properties=['rotation'], return_wfn=True)[1]
+
+reflen_589   =    -83.11386  # TEST
+refvel_589   =    982.51558  # TEST
+refmvg_589   =   -197.35740  # TEST
+reflen_355   =   -237.12775  # TEST
+refvel_355   =    454.52398  # TEST
+refmvg_355   =   -725.34899  # TEST
+
+compare_values(reflen_589,   variable("CC2 SPECIFIC ROTATION (LEN) @ 589NM"),  3, "CC2 rotation @ 589nm in length gauge") # TEST
+compare_values(refvel_589,   variable("CC2 SPECIFIC ROTATION (VEL) @ 589NM"),  3, "CC2 rotation @ 589nm in velocity gauge") # TEST
+compare_values(refmvg_589,   variable("CC2 SPECIFIC ROTATION (MVG) @ 589NM"),  3, "CC2 rotation @ 589nm in modified velocity gauge") # TEST
+compare_values(reflen_355,   variable("CC2 SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CC2 rotation @ 355nm in length gauge") # TEST
+compare_values(refvel_355,   variable("CC2 SPECIFIC ROTATION (VEL) @ 355NM"),  3, "CC2 rotation @ 355nm in velocity gauge") # TEST
+compare_values(refmvg_355,   variable("CC2 SPECIFIC ROTATION (MVG) @ 355NM"),  3, "CC2 rotation @ 355nm in modified velocity gauge") # TEST
+
+reflenT_589 = psi4.core.Matrix.from_list(         # TEST
+   [[0.158728294540701, -0.066346094594991, 0],   # TEST
+    [-0.272773167750650, -0.014108130360913, 0],  # TEST
+    [0, 0, -0.127667932425137]])                  # TEST
+refvelT_589 = psi4.core.Matrix.from_list(         # TEST
+   [[0.374037560356785, -0.355326606656807, 0],   # TEST
+    [-0.077531897839243, -0.006930950258526, 0],  # TEST
+    [0, 0, -0.382608807749249]])                  # TEST
+refmvgT_589 = psi4.core.Matrix.from_list(         # TEST
+   [[0.012678493985368, -0.011363545769106 , 0],  # TEST
+    [-0.021830696459189, -0.000817002475772, 0],  # TEST
+    [0, 0, -0.008747573002912]])                  # TEST
+reflenT_355 = psi4.core.Matrix.from_list(         # TEST
+   [[0.279315257113958, -0.123252236365767, 0],   # TEST
+    [-0.488104244073309, -0.028164898177789, 0],  # TEST
+    [0, 0, -0.221999666122911]])                  # TEST
+refvelT_355 = psi4.core.Matrix.from_list(         # TEST
+   [[0.399325680015961, -0.379486455965609, 0],   # TEST
+    [-0.120585417980021, -0.008851315481181, 0],  # TEST
+    [0, 0, -0.397645874903806]])                  # TEST
+refmvgT_355 = psi4.core.Matrix.from_list(         # TEST
+   [[0.037966613644544, -0.035523395077908, 0],   # TEST
+    [-0.064884216599966, -0.002737367698427, 0],  # TEST
+    [0, 0, -0.023784640157469]])                  # TEST
+
+compare_values(reflenT_589,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (LEN) @ 589NM"),  3, "CC2 rotation tensor @ 589nm in length gauge") # TEST
+compare_values(refvelT_589,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (VEL) @ 589NM"),  3, "CC2 rotation tensor @ 589nm in velocity gauge") # TEST
+compare_values(refmvgT_589,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (MVG) @ 589NM"),  3, "CC2 rotation tensor @ 589nm in modified velocity gauge") # TEST
+compare_values(reflenT_355,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (LEN) @ 355NM"),  3, "CC2 rotation tensor @ 355nm in length gauge") # TEST
+compare_values(refvelT_355,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (VEL) @ 355NM"),  3, "CC2 rotation tensor @ 355nm in velocity gauge") # TEST
+compare_values(refmvgT_355,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (MVG) @ 355NM"),  3, "CC2 rotation tensor @ 355nm in modified velocity gauge") # TEST
+
+refdep_589 = psi4.core.Matrix.from_list([[0, 0, -19.67]]) # TEST
+refdep_355 = psi4.core.Matrix.from_list([[0, 0, -73.01]]) # TEST
+
+compare_values(refdep_589, wfn.variable("CC2 ROTATION (LEN) ORIGIN-DEPENDENCE @ 589NM"), 2, "CC2 rotation origin-dependence @ 589nm in length gauge") # TEST
+compare_values(refdep_355, wfn.variable("CC2 ROTATION (LEN) ORIGIN-DEPENDENCE @ 355NM"), 2, "CC2 rotation origin-dependence @ 355nm in length gauge") # TEST
+

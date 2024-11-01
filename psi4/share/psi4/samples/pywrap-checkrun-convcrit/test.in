@@ -1,0 +1,56 @@
+#! Advanced python example sets different sets of scf/post-scf conv crit
+#! and check to be sure computation has actually converged to the expected
+#! accuracy.
+
+molecule h2o {
+O 0.0 0.0 0.0
+H 1.0 0.0 0.0
+H 0.0 1.0 0.0
+}
+
+set basis 6-31g
+set d_convergence 3  #TEST
+set r_convergence 3  #TEST
+set guess core
+
+e_dfscf = -75.96968520716484  #TEST
+e_pkscf = -75.96970096208790  #TEST
+#e_cisd  = -76.1047781401318  #TEST
+e_cisd = -0.1350772  #TEST
+
+# first three are e_conv: global, scf module, detci module
+# next three are expected accuracy: scf sp, scf under post-scf, post-scf sp
+
+convmat = [
+    [0, 0, 0,  6, 8, 6],
+    [4, 0, 0,  4, 4, 4],
+    [0, 4, 0,  4, 4, 6],
+    [4, 5, 0,  5, 5, 4],
+    [0, 0, 4,  6, 8, 4],
+    [4, 0, 5,  4, 4, 5],
+    [0, 4, 5,  4, 4, 5],
+    ]
+
+set qc_module detci
+for convcrit in convmat:
+    if convcrit[0] != 0:
+        set_global_option('E_CONVERGENCE', convcrit[0])
+    if convcrit[1] != 0:
+        set_local_option('SCF', 'E_CONVERGENCE', convcrit[1])
+    if convcrit[2] != 0:
+        set_local_option('DETCI', 'E_CONVERGENCE', convcrit[2])
+    
+    print('')  #TEST
+    energy('scf')
+    compare_values(e_dfscf, variable('CURRENT ENERGY'), convcrit[3], '  scf sp %d %d %d to %d %d %d' % (convcrit[0], convcrit[1], convcrit[2], convcrit[3], convcrit[4], convcrit[5]))  #TEST
+    clean()
+
+    energy('cisd')
+    compare_values(e_pkscf, variable('CURRENT REFERENCE ENERGY'), convcrit[4], 'cisd scf %d %d %d to %d %d %d' % (convcrit[0], convcrit[1], convcrit[2], convcrit[3], convcrit[4], convcrit[5]))  #TEST
+    clean()
+    compare_values(e_cisd, variable('CURRENT CORRELATION ENERGY'), convcrit[5], ' cisd sp %d %d %d to %d %d %d' % (convcrit[0], convcrit[1], convcrit[2], convcrit[3], convcrit[4], convcrit[5]))  #TEST
+    
+    revoke_global_option_changed('E_CONVERGENCE')
+    revoke_local_option_changed('SCF', 'E_CONVERGENCE')
+    revoke_local_option_changed('DETCI', 'E_CONVERGENCE')
+

@@ -1,0 +1,31 @@
+#! RHF CCSD(T) cc-pVDZ frozen-core energy of C4NH4 Anion
+
+molecule C4NH4 {
+  -1 1
+  C         0.00000000     0.00000000     2.13868804
+  N         0.00000000     0.00000000     4.42197911
+  C         0.00000000     0.00000000    -0.46134192
+  C        -1.47758582     0.00000000    -2.82593059
+  C         1.47758582     0.00000000    -2.82593059
+  H        -2.41269553    -1.74021190    -3.52915989
+  H        -2.41269553     1.74021190    -3.52915989
+  H         2.41269553     1.74021190    -3.52915989
+  H         2.41269553    -1.74021190    -3.52915989
+  units bohr
+}
+
+set {
+  docc        [10, 1, 4, 3]
+  basis       cc-pVDZ
+  freeze_core true
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
+}
+
+energy('ccsd(t)')
+
+
+# A previous version of this test used aug-cc-pvtz, but was deemed to expensive
+# for testing. Reference values for aug-cc-pvtz are:
+

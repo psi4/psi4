@@ -1,0 +1,30 @@
+#! Test of SFX2C-1e on Water uncontracted cc-pVDZ
+#! The reference numbers are from Lan Cheng's implementation in Cfour
+
+ref_nuc_energy =  8.316179709840201 #TEST
+ref_nr_energy  = -76.00090503998709 #TEST 
+ref_rel_energy = -76.05804725008076 #TEST
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R = 2.0
+A = 104.5
+units bohr
+}
+
+set {
+  basis cc-pVDZ-DK
+  basis_relativistic cc-pVDZ-DK
+  scf_type pk
+}
+
+testnr = energy('scf')
+set relativistic x2c
+testrel = energy('scf')
+
+compare_values(ref_nuc_energy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(ref_nr_energy,testnr, 9, "Non-relativistic SCF energy")                  #TEST
+compare_values(ref_rel_energy,testrel, 9, "X2C relativistic SCF energy")                #TEST

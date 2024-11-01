@@ -1,0 +1,44 @@
+#! SAPT(DFT) aug-cc-pVDZ interaction energy between Ne and Ar atoms.
+
+Eref = {"SAPT ELST ENERGY":  -0.12885645, #TEST
+        "SAPT EXCH ENERGY":   0.48043027, #TEST
+        "SAPT IND ENERGY":    0.00398419, #TEST
+        "SAPT DISP ENERGY":  -0.23304893, #TEST
+        "CURRENT ENERGY":     0.12250908} #TEST
+
+
+molecule dimer {
+  Ne
+  --
+  Ar 1 6.5
+  units bohr
+}
+
+# Set options
+set {
+    basis         aug-cc-pvdz
+    scf_type      df
+}
+
+# Disable scaling exch-disp
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
+
+# Prepare the fragments
+sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(dimer, "dimer")
+
+# Run the first monomer
+set DFT_OMEGA 0.3
+energyA, wfnA = energy("wB97", molecule=monomerA, return_wfn=True)
+
+# Run the second monomer
+set DFT_OMEGA 0.4
+energyB, wfnB = energy("wB97", molecule=monomerB, return_wfn=True)
+
+# Build a blank dimer wavefunction
+wfnD = core.Wavefunction.build(sapt_dimer) 
+
+# Compute SAPT(DFT) from the provided wavefunctions
+data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
+
+for k, v in Eref.items():                                  #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST

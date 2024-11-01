@@ -1,0 +1,35 @@
+#! RHF-CCSD-LR/cc-pVDZ static polarizability of HOF
+
+molecule hof {
+          O          -0.947809457408    -0.132934425181     0.000000000000
+          H          -1.513924046286     1.610489987673     0.000000000000
+          F           0.878279174340     0.026485523618     0.000000000000
+unit bohr
+noreorient
+}
+
+set {
+   basis cc-pVDZ
+}
+
+wfn = properties('ccsd', properties=['polarizability'], return_wfn=True)[1]
+
+refnuc = 46.780362058359806     #TEST
+refscf = -174.41843300162472    #TEST
+refccsd = -0.368843103062227    #TEST
+reftotal = -174.787276104686754 #TEST
+refpolar = 5.124724706689 # TEST
+refoverlap = 0.92327310262 # TEST
+reftensor = psi4.core.Matrix.from_list(          # TEST
+   [[5.725437022190079, -1.786158517444678, 0],  # TEST
+   [-1.786158517444678, 6.486317384450757, 0],   # TEST
+   [0, 0, 3.162419713425239]])                   # TEST
+
+compare_values(refnuc, hof.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST
+compare_values(refscf, variable("SCF total energy"),         9, "SCF energy")               #TEST
+compare_values(refccsd, variable("CCSD correlation energy"), 8, "CCSD correlation energy")  #TEST
+compare_values(reftotal, variable("Current energy"),         8, "CCSD total energy")        #TEST
+
+compare_values(reftensor, wfn.variable("CCSD DIPOLE POLARIZABILITY TENSOR @ INF NM"), 5, "Dipole Polarizability Tensor") # TEST
+compare_values(refpolar, variable("CCSD DIPOLE POLARIZABILITY @ INF NM"), 5, "Dipole Polarizability") # TEST
+compare_values(refoverlap, wfn.variable("Left-Right CCSD Eigenvector Overlap"), 5, "Left-Right CCSD Overlap") # TEST

@@ -1,0 +1,22 @@
+#! Matches Table II a-CCSD(T)/cc-pVDZ H2O @ 2.5 * Re value from Crawford and Stanton, 
+#! IJQC 98, 601-611 (1998).
+molecule h2o {
+0 1
+O          0.000000000000     0.000000000000    -0.146874550000
+H          0.000000000000     1.894076960000     1.165502580000
+H          0.000000000000    -1.894076960000     1.165502580000
+units bohr
+}
+
+set { 
+  basis "cc-pVDZ"
+  r_convergence 13
+  d_convergence 13
+  e_convergence 13
+  reference rhf
+}
+
+energy('ccsd(at)')
+
+
+

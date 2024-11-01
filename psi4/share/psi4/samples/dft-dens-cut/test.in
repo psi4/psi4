@@ -1,0 +1,129 @@
+#! LibXC density screening test. Tests empty, C-only, X-only and XC superfunctionals.
+#! 'super_mix' showcases how to use different screening values for X and C parts.
+#! SCF will fail or crash (nans) without screening!
+
+molecule h2o {
+0 2
+H
+}
+
+set {
+print 1
+basis sto-3g
+dft_spherical_points 302
+dft_radial_points 50
+dft_pruning_scheme treutler
+reference uks
+}
+
+cut_val = 1e-10
+set DFT_DENSITY_TOLERANCE $cut_val
+
+
+# build the various functionals.
+def super(name, npoints, deriv, restricted):
+    sup = core.SuperFunctional.blank()
+    sup.set_name('test')
+    sup.set_description('   Empty SuperFunctional\n')
+    return sup
+
+
+def super_c(name, npoints, deriv, restricted):
+    sup = core.SuperFunctional.blank()
+    sup.set_name('test')
+    sup.set_description('   C-only SuperFunctional\n')
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_TPSS', restricted))
+    return sup
+
+
+def super_x(name, npoints, deriv, restricted):
+    sup = core.SuperFunctional.blank()
+    sup.set_name('test')
+    sup.set_description('   X-only SuperFunctional\n')
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_TPSS', restricted))
+    return sup
+
+
+def super_xc(name, npoints, deriv, restricted):
+    sup = core.SuperFunctional.blank()
+    sup.set_name('test')
+    sup.set_description('   XC SuperFunctional\n')
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_TPSS', restricted))
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_TPSS', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_TPSS', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_TPSS', restricted))
+    return sup
+
+
+# LibXCFunctional PsiAPI test. Custom thresholds.
+def super_mix(name, npoints, deriv, restricted):
+    sup = core.SuperFunctional.blank()
+    sup.set_name('test')
+    sup.set_description('   XC SuperFunctional\n')
+    Cfun = core.LibXCFunctional('XC_MGGA_C_TPSS', restricted)
+    Cfun.set_density_cutoff(1e-9)
+    Xfun = core.LibXCFunctional('XC_MGGA_X_TPSS', restricted)
+    Xfun2 = core.LibXCFunctional('XC_LDA_X', restricted)
+    Xfun.set_density_cutoff(1e-8)
+    sup.add_c_functional(Cfun)
+    sup.add_x_functional(Xfun)
+    sup.add_x_functional(Xfun2)
+    return sup
+
+
+ref_vals = { #TEST
+    'WB97X-V':-0.4650551043168708, #TEST
+    'EMPTY': -0.0794260295393005, #TEST
+    'Conly': -0.0794260295393005, #TEST
+    'Xonly': -0.4667410699056061, #TEST
+    'XC': -0.8540561102719116, #TEST
+    'MIX': -0.7988413011640255, #TEST
+    'CUT_C': 1.0E-9.as_integer_ratio(), #TEST
+    'CUT_X': 1.0E-8.as_integer_ratio(), #TEST
+} #TEST
+
+
+# libxc-defined functional
+func_call, wfn1 = energy('WB97X-V',return_wfn=True)
+func = wfn1.V_potential().functional()
+cut = func.density_tolerance()
+compare_values(ref_vals["WB97X-V"], func_call, 6, "is_libxc SuperFunctional")  #TEST
+compare_integers(cut_val.as_integer_ratio(), cut.as_integer_ratio(), "is_libxc density_tolerance")
+
+# empty functional (=HF)
+func_call = energy('SCF', dft_functional=super)
+compare_values(ref_vals["EMPTY"], func_call, 6, "Empty SuperFunctional")  #TEST
+
+# C-only functional
+func_call, wfn = energy('SCF', dft_functional=super_c, return_wfn=True)
+compare_values(ref_vals["Conly"], func_call, 6, "C-only SuperFunctional")  #TEST
+
+# test the PsiAPI
+func = wfn.V_potential().functional()
+func.print_density_threshold()
+density_cutoff = func.c_functionals()[0].density_cutoff()
+compare_values(cut_val.as_integer_ratio(), density_cutoff.as_integer_ratio(),
+               "LibXCFunctional density_cutoff")  #TEST
+density_tolerance = func.density_tolerance()
+compare_integers(cut_val.as_integer_ratio(), density_tolerance.as_integer_ratio(),
+               "SuperFunctional density_tolerance")  #TEST
+
+# X-only
+func_call = energy('SCF', dft_functional=super_x)
+compare_values(ref_vals["Xonly"], func_call, 6, "X-only SuperFunctional")  #TEST
+
+# XC (normal case)
+func_call = energy('SCF', dft_functional=super_xc)
+compare_values(ref_vals["XC"], func_call, 6, "normal XC SuperFunctional")  #TEST
+
+# turn off default screening for next test to allow custom values
+set DFT_DENSITY_TOLERANCE -1.0
+
+# custom XC with different sceening values for X and C
+func_call, wfn_mix = energy('SCF', dft_functional=super_mix,return_wfn=True)
+compare_values(ref_vals["MIX"], func_call, 6, "individual screening")  #TEST
+func = wfn_mix.V_potential().functional()
+cut_c = func.c_functionals()[0].density_cutoff()
+cut_x = func.x_functionals()[0].density_cutoff()
+compare_integers(ref_vals["CUT_C"],cut_c.as_integer_ratio(),"screening value C")  #TEST
+compare_integers(ref_vals["CUT_X"],cut_x.as_integer_ratio(),"screening value X")  #TEST

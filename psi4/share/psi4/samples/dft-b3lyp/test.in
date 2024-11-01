@@ -1,0 +1,112 @@
+#! Check flavors of B3LYP (b3lyp3/b3lyp5) against other programs
+
+# all non-psi4 references from http://forum.psicode.org/t/b3lyp-defect-compatibility-with-gamess-and-gaussian/193
+# also see discussion in https://github.com/psi4/psi4/pull/339
+
+# @loriab conditions  #TEST
+
+set scf_type pk
+set e_convergence 9
+set dft_spherical_points 590
+set dft_radial_points 99
+set print 2
+
+set basis aug-cc-pvdz
+
+molecule cswater {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+}
+
+oswater = cswater.clone()
+oswater.set_multiplicity(2)
+oswater.set_molecular_charge(1)
+
+e = energy('b3lyp', molecule=cswater)
+compare_values(-76.444577160243, e, 5, 'clsd-shell: b3lyp (vwn3rpa) vs NWChem (vwn_1_rpa; default)')  #TEST
+
+set reference uhf
+e = energy('b3lyp', molecule=oswater)
+compare_values(-75.974154693676, e, 5, 'open-shell: b3lyp (vwn3rpa) vs NWChem (vwn_1_rpa; default)')  #TEST
+compare_values(-75.97415476252, e, 5, 'open-shell: b3lyp (vwn3rpa) vs Turbomole (vwn3)')  #TEST
+compare_values(-75.9741544303, e, 5, 'open-shell: b3lyp (vwn3rpa) vs Gaussian (default)')  #TEST
+
+set reference rks
+e = energy('b3lyp5', molecule=cswater)
+compare_values(-76.407526614389, e, 5, 'clsd-shell: b3lyp5 (vwn5) vs NWChem (vwn_3)')  #TEST
+
+set reference uks
+e = energy('b3lyp5', molecule=oswater)
+compare_values(-75.940741067166, e, 4, 'open-shell: b3lyp5 (vwn5) vs NWChem (vwn_3)')  #TEST
+compare_values(-75.94075271487, e, 5, 'open-shell: b3lyp5 (vwn5) vs Turbomole (vwn5; default)')  #TEST
+# this one doesn't match quite so well
+
+# @jamont conditions  #TEST
+
+molecule {
+0 1
+O
+H 1 rOH
+H 1 rOH 2 aHOH
+
+rOH = 0.9622
+aHOH = 103.84
+}
+
+set basis 6-311g(d)
+
+e = energy('b3lyp')
+compare_values(-76.4338100903, e, 7, 'clsd-shell: b3lyp (vwn3rpa) vs Gaussian (default)')  #TEST
+compare_values(-76.4338100577, e, 7, 'clsd-shell: b3lyp (vwn3rpa) vs Gamess (b3lypv1r)')  #TEST
+
+# all the below pass just fine but redundant for test-case purposes
+
+### clean()
+### 
+### # @drhaney conditions  #TEST
+### 
+### set basis 6-31G(2df,p)
+### 
+### e = energy('b3lyp')
+### compare_values(-76.4293315991, e, 5, 'b3lyp3 vs Gamess')  #TEST
+### # GAMESS-VWNrpa_1  -76.4293 3159 91  #TEST
+### # Psi4-VWNrpa_3    -76.4293 5426 98  #TEST
+### # Gaussian-09      -76.4256 2566 74  #TEST
+### # LAB psi4         -76.4293 4111 93  # large grid  VWN3RPA_C  VWN5RPA_C  #TEST
+### 
+### e = energy('b3lyp5')
+### compare_values(-76.39221287, e, 5, 'b3lyp5 vs NWChem')  #TEST
+### # GAMESS-VWN_5     -76.3922 0295 70  #TEST
+### # Nchem-VWN_3      -76.3922 1287   #TEST
+### # Psi4-VWN_3       -76.3922 2551 29  #TEST
+### # LAB psi4         -76.3922 1237 09  # large grid  VWN3_C     VWN5_C  #TEST
+### 
+### clean()
+### 
+### # @hokru conditions  #TEST
+### 
+### molecule {
+### O -1.769142 -0.076181 0.000000
+### H -2.065745 0.837492 0.000000
+### H -0.809034 0.001317 0.000000
+### }
+### 
+### set basis def2-tzvp
+### 
+### e = energy('b3lyp')
+### compare_values(-76.46290368244, e, 5, 'b3lyp3 vs Turbomole')  #TEST
+### #For VWN3 (same as Gaussian) I get  #TEST
+### #-76.46290368244 (Turbomole "B3LYP_Gaussian")  #TEST
+### #-76.46290355576 (psi4 energy('b3lyp'))  #TEST
+### #-76.46290344335 (nwchem default vnw-1-rpa)  #TEST
+### #VNW-1-rpa in nwchem seems to be VWN3 in Turbomole/Gaussian  #TEST
+###   #TEST
+### e = energy('b3lyp5')
+### compare_values(-76.42582290565, e, 5, 'b3lyp5 vs Turbomole')  #TEST
+### #and VWN5  #TEST
+### #-76.42582290565 (Turbomole default )  #TEST
+### #-76.42582303608 (psi4 energy('b3lyp5') with VWN5_C not VWN5RPA_C , needs to be changed!)  #TEST
+### #-76.42582292329 (nwchem VWN_5)  #TEST
+

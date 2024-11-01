@@ -1,0 +1,90 @@
+#! RHF-CC2-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge =
+#! both, omega = (589 355 nm)
+
+molecule smo {
+  0 1
+# structure from Pederson et al., CPL, submitted
+  C  0.152133 -0.035800  0.485797
+  C -1.039475  0.615938 -0.061249
+  C  1.507144  0.097806 -0.148460
+  O -0.828215 -0.788248 -0.239431
+  H  0.153725 -0.249258  1.552136
+  H -1.863178  0.881921  0.593333
+  H -0.949807  1.214210 -0.962771
+  H  2.076806 -0.826189 -0.036671
+  H  2.074465  0.901788  0.325106
+  H  1.414895  0.315852 -1.212218
+}
+
+set {
+  basis "STO-3G"
+  freeze_core true
+  gauge both
+  omega [589, 355, nm]
+}
+
+wfn = properties('cc2',properties=['rotation'], return_wfn=True)[1]
+
+refnre = 124.7885346117614489                     # TEST
+refscf = -189.5134172371027432                    # TEST
+refcc2 = -189.713535666603491                     # TEST
+refoverlap = 0.91534388636                        # TEST
+
+compare_values(refnre, smo.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refcc2, wfn.variable("CC2 TOTAL ENERGY"), 6, "CC2 Energy") # TEST
+compare_values(refoverlap, wfn.variable("LEFT-RIGHT CC2 EIGENVECTOR OVERLAP"), 5, "Left-Right CC2 Overlap") # TEST
+
+reflen_589   =   - 49.62374  # TEST
+refvel_589   =   -460.77957  # TEST
+refmvg_589   =   - 48.55572  # TEST
+reflen_355   =   -144.48473  # TEST
+refvel_355   =   -553.01496  # TEST
+refmvg_355   =   -140.79111  # TEST
+
+compare_values(reflen_589,   variable("CC2 SPECIFIC ROTATION (LEN) @ 589NM"),  3, "CC2 rotation @ 589nm in length gauge") # TEST
+compare_values(refvel_589,   variable("CC2 SPECIFIC ROTATION (VEL) @ 589NM"),  3, "CC2 rotation @ 589nm in velocity gauge") # TEST
+compare_values(refmvg_589,   variable("CC2 SPECIFIC ROTATION (MVG) @ 589NM"),  3, "CC2 rotation @ 589nm in modified velocity gauge") # TEST
+compare_values(reflen_355,   variable("CC2 SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CC2 rotation @ 355nm in length gauge") # TEST
+compare_values(refvel_355,   variable("CC2 SPECIFIC ROTATION (VEL) @ 355NM"),  3, "CC2 rotation @ 355nm in velocity gauge") # TEST
+compare_values(refmvg_355,   variable("CC2 SPECIFIC ROTATION (MVG) @ 355NM"),  3, "CC2 rotation @ 355nm in modified velocity gauge") # TEST
+
+reflenT_589 = psi4.core.Matrix.from_list(                           # TEST
+   [[ 0.116653158229350, -0.136050294376206, -0.040317663907168],   # TEST
+    [ 0.020178810546506,  0.045708806213428, -0.130530471978785],   # TEST
+    [-0.189602214456136,  0.207372491035560, -0.145086273406846]])  # TEST
+refvelT_589 = psi4.core.Matrix.from_list(                           # TEST
+   [[ 0.607184272100687, -0.014351253052431,  0.352297892486086],   # TEST
+    [ 0.196734697210492,  0.182867445331297, -1.194452120951323],   # TEST
+    [-1.408568812154372,  1.458658663542952, -0.777642639902373]])  # TEST
+refmvgT_589 = psi4.core.Matrix.from_list(                           # TEST
+   [[ 0.007766563749858, -0.007587975298368, -0.002301328744680],   # TEST
+    [ 0.001276539644967,  0.002413940682745, -0.005820228531856],   # TEST
+    [-0.011727270788564,  0.011129268808152, -0.008872868908358]])  # TEST
+reflenT_355 = psi4.core.Matrix.from_list(                           # TEST
+   [[ 0.199315154624056, -0.236145103741689, -0.075627033594829],   # TEST
+    [ 0.033233678887394,  0.078305709057096, -0.216237850819074],   # TEST
+    [-0.318543397461720,  0.348340079668771, -0.247304234462590]])  # TEST
+refvelT_355 = psi4.core.Matrix.from_list(                           # TEST
+   [[ 0.621533097518789, -0.028559761973954,  0.347561390418394],   # TEST
+    [ 0.199001621185504,  0.187293746140686, -1.204490301047244],   # TEST
+    [-1.429769521594709,  1.478547845609324, -0.793933810267318]])  # TEST
+refmvgT_355 = psi4.core.Matrix.from_list(                           # TEST
+   [[ 0.022115389167960, -0.021796484219892, -0.007037830812372 ],   # TEST
+    [ 0.003543463619979,  0.006840241492134, -0.015858408627777 ],   # TEST
+    [-0.032927980228900,  0.031018450874523, -0.025164039273303 ]])  # TEST
+
+compare_values(reflenT_589,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (LEN) @ 589NM"),  3, "CC2 rotation tensor @ 589nm in length gauge") # TEST
+compare_values(refvelT_589,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (VEL) @ 589NM"),  3, "CC2 rotation tensor @ 589nm in velocity gauge") # TEST
+compare_values(refmvgT_589,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (MVG) @ 589NM"),  3, "CC2 rotation tensor @ 589nm in modified velocity gauge") # TEST
+compare_values(reflenT_355,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (LEN) @ 355NM"),  3, "CC2 rotation tensor @ 355nm in length gauge") # TEST
+compare_values(refvelT_355,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (VEL) @ 355NM"),  3, "CC2 rotation tensor @ 355nm in velocity gauge") # TEST
+compare_values(refmvgT_355,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (MVG) @ 355NM"),  3, "CC2 rotation tensor @ 355nm in modified velocity gauge") # TEST
+
+refdep_589 = psi4.core.Matrix.from_list([[-1.64, 2.79, -3.24]]) # TEST
+refdep_355 = psi4.core.Matrix.from_list([[-4.82, 8.29, -9.48]]) # TEST
+
+compare_values(refdep_589, wfn.variable("CC2 ROTATION (LEN) ORIGIN-DEPENDENCE @ 589NM"), 2, "CC2 rotation origin-dependence @ 589nm in length gauge") # TEST
+compare_values(refdep_355, wfn.variable("CC2 ROTATION (LEN) ORIGIN-DEPENDENCE @ 355NM"), 2, "CC2 rotation origin-dependence @ 355nm in length gauge") # TEST
+
+

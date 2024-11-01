@@ -1,0 +1,38 @@
+#! sapt example with orbital freezing with alkali metal and dMP2
+
+memory 1024 MB
+molecule mol {
+1 1
+Na     -0.62134778     -0.83649140     -0.10392252
+--
+0 1
+O      0.72608003      0.97874806      0.12101240
+H      1.68902363      0.99417362      0.17325772
+H      0.47192348      1.90746586      0.17792570
+units angstrom
+no_reorient
+symmetry c1
+}
+set {
+basis aug-cc-pvtz
+freeze_core true
+guess sad 
+scf_type df
+maxiter 100 
+}
+
+basis{
+assign aug-cc-pvtz
+assign Na def2-tzvpp
+}
+
+
+ene, wfn = psi4.energy("sapt2+dmp2", return_wfn=True, molecule=mol)
+
+# no frozen core results
+compare_values(-0.03772670, variable("SAPT ELST ENERGY"), 6, "SAPT0 elst")
+compare_values( 0.01152246, variable("SAPT EXCH ENERGY"), 6, "SAPT0 exch")
+compare_values(-0.00973470, variable("SAPT IND ENERGY"), 6, "SAPT0 ind")
+compare_values(-0.00142653, variable("SAPT DISP ENERGY"), 6, "SAPT0 disp")
+compare_values(-0.0373654, variable("SAPT TOTAL ENERGY"), 6, "SAPT total")
+

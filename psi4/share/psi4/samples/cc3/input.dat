@@ -1,0 +1,27 @@
+#! cc3: RHF-CCSD/6-31G** H2O geometry optimization and vibrational frequency
+#! analysis by finite-differences of gradients
+
+molecule h2o {
+  0 1
+  O 
+  H 1 0.97
+  H 1 0.97 2 103.0
+}
+
+set {
+  basis 6-31G**
+  r_convergence 10
+  e_convergence 10
+}
+
+optimize('ccsd')
+
+
+
+ccsd_e, ccsd_wfn = frequencies('ccsd', dertype=1, return_wfn=True)
+fd_freqs_grad = ccsd_wfn.frequencies()
+
+ccsd_e, ccsd_wfn, frequencies('ccsd', dertype=0, return_wfn=True)
+fd_freqs_energy = ccsd_wfn.frequencies()
+
+

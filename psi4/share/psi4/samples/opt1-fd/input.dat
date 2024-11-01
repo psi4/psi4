@@ -1,0 +1,21 @@
+#! SCF STO-3G geometry optimzation, with Z-matrix input, by finite-differences
+
+# Same test case as scf5
+
+molecule h2o {
+     O
+     H 1 1.0
+     H 1 1.0 2 104.5
+}
+
+set {
+  diis false
+  basis sto-3g
+  e_convergence 10
+  d_convergence 10
+  points 3
+  scf_type pk
+}
+
+thisenergy = optimize('scf', dertype = 0)
+

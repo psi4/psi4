@@ -1,0 +1,18 @@
+#! Test method/basis with disk_df
+
+molecule {
+O
+H 1 r
+H 1 r 2 a
+
+r=0.958
+a=104.5
+
+symmetry c1
+}
+
+set scf_type disk_df
+set cc_type df
+set df_ints_io save
+eng, wfn = psi4.energy('hf/cc-pvdz', return_wfn=True)
+cc_eng = psi4.energy('ccsd/cc-pvdz', ref_wfn=wfn)

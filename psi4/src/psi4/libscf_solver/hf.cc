@@ -581,15 +581,16 @@ void HF::form_H() {
                     statusvalue = fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
                     if (std::fabs(v) > max) max = std::fabs(v);
 
-                    basisset_->compute_phi(phi_ao.pointer(), x, y, z);
-                    // Transform phi_ao to SO basis
-                    phi_so.gemv(true, 1.0, u, phi_ao, 0.0);
-                    for (int i = 0; i < nso; i++)
-                        for (int j = 0; j < nso; j++) V_eff.add(i, j, w * v * phi_so[i] * phi_so[j]);
+                    basisset_->compute_phi(phi_so.pointer(), x, y, z);
+                    for (int i = 0; i < nso; i++) {
+                        for (int j = 0; j < nso; j++) {
+                            V_eff.add(i, j, w * v * phi_so[i] * phi_so[j]);
+                        }
+                    }
                 }  // npoints
-
                 outfile->Printf("  Max. embpot value = %20.10f\n", max);
                 fclose(input);
+
 
             }  // embpot
             else if (dipole_field_type_ == dx) {

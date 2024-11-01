@@ -1,0 +1,34 @@
+#! check that methods can act on single atom
+
+molecule {
+0 2
+H 0 0 0
+}
+
+set reference UHF
+scf = energy("hf/3-21g")
+mp2 = energy("mp2/3-21g")
+compare_values(scf, mp2, 7, "MP2 vs HF of H atom")
+
+exception = 0
+try:
+    gradient("mp2/3-21g")
+except Exception as e:
+    if "There are no occupied orbitals with beta spin." in str(e):
+        exception = 1
+compare_values(1, exception, 1, "UKS MP2 grad raises exception")
+
+ref_tot_dh = -0.4979584125381512
+ref_dh     =  0.0
+
+set reference UKS
+Edft = energy("b2plyp/def2-sv(p)")
+Edh  = variable("DOUBLE-HYBRID CORRECTION ENERGY")               #TEST
+
+compare_values(ref_tot_dh, Edft, 7, "B2PLYP total energy of H")  #TEST
+compare_values(ref_dh, Edh, 7, "B2PLYP correlated energy of H")  #TEST
+
+ref_grad = psi4.core.Matrix.from_list([[ 0.0,  0.0,   0.0]])     #TEST
+
+grad = gradient("b2plyp/def2-sv(p)")
+compare_matrices(ref_grad, grad, 7, "B2PLYP gradient of H")

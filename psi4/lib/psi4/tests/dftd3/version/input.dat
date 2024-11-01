@@ -1,0 +1,204 @@
+#! Exercises the various DFT-D corrections, both through python directly and through c++
+#! all dft values updated to new BraggSlater radii
+
+d3_engine = psi4.driver.EmpiricalDispersion(name_hint="b3lyp", level_hint="d3bj").engine
+
+# S22-9, B3LYP
+refs = {}  #TEST
+refs['d2'] = {}  #TEST
+refs['d2']['d'] = -0.00688145  #TEST
+refs['d2']['m'] = -0.00165209  #TEST
+refs['d3zero'] = {}  #TEST
+refs['d3zero']['d'] = -0.00506399  #TEST
+refs['d3zero']['m'] = -0.00084330  #TEST
+refs['d3bj'] = {}  #TEST
+refs['d3bj']['d'] = -0.01110403  #TEST
+refs['d3bj']['m'] = -0.00394342  #TEST
+refs['d3mzero'] = {}  #TEST
+refs['d3mzero']['d'] = -0.00636858  #TEST
+refs['d3mzero']['m'] = -0.00149749  #TEST
+refs['d3mbj'] = {}  #TEST
+refs['d3mbj']['d'] = -0.01326079  #TEST
+refs['d3mbj']['m'] = -0.00497578  #TEST
+refs['dft'] = {}  #TEST
+refs['dft']['d'] = -155.2455137399915 #TEST 
+refs['dft']['muncp'] =-77.62306905309855  #TEST
+refs['dft']['mcp'] =-77.62335197195613  #TEST
+
+# S22-9 monomer, all fctl
+refs2 = {}  #TEST
+refs2['dash'] = {}  #TEST
+refs2['dash']['b2plyp-d3mbj'] = -0.00287387  #TEST
+refs2['dash']['b2plyp-d3mzero'] = -0.00081828  #TEST
+refs2['dash']['b3lyp-d3mbj'] = -0.00497578  #TEST
+refs2['dash']['b3lyp-d3mzero'] = -0.00149749  #TEST
+refs2['dash']['b97-d3mbj'] = -0.01359656  #TEST
+refs2['dash']['b97-d3mzero'] = -0.00420819  #TEST
+refs2['dash']['blyp-d3mbj'] = -0.00744545  #TEST
+refs2['dash']['blyp-d3mzero'] = -0.00186831  #TEST
+refs2['dash']['bp86-d3mbj'] = -0.00433628  #TEST
+refs2['dash']['bp86-d3mzero'] = -0.00097330  #TEST
+refs2['dash']['pbe0-d3mbj'] = -0.00247043  #TEST
+refs2['dash']['pbe0-d3mzero'] = -0.00464499  #TEST
+refs2['dash']['pbe-d3mbj'] = -0.00281366  #TEST
+refs2['dash']['pbe-d3mzero'] = -0.00810989  #-0.00809474  #TEST
+refs2['dash']['wpbe-d3mbj'] = -0.00318894  #TEST
+refs2['dash']['wpbe-d3mzero'] = -0.00070448  #TEST
+refs2['dft'] = {}  #TEST
+refs2['dft']['blyp']   =  -77.56633838169991 #TEST
+refs2['dft']['b3lyp']  =  -77.62306905310584 #TEST
+refs2['dft']['b2plyp'] =  -77.47611926361498 #TEST
+refs2['dft']['bp86']   =  -77.62188101028227 #TEST
+refs2['dft']['pbe']    =  -77.50930706641002 #TEST
+refs2['dft']['pbe0']   =  -77.52836073109854 #TEST
+refs2['dft']['wpbe']   =  -77.56686976670161 #TEST
+refs2['dft']['b97']    =  -77.58852577708896 #TEST
+
+
+# <<<  Part 1  >>>
+
+molecule eeee {
+C  -0.471925  -0.471925  -1.859111
+C   0.471925   0.471925  -1.859111
+H  -0.872422  -0.872422  -0.936125
+H   0.872422   0.872422  -0.936125
+H  -0.870464  -0.870464  -2.783308
+H   0.870464   0.870464  -2.783308
+--
+0 1
+C  -0.471925   0.471925   1.859111
+C   0.471925  -0.471925   1.859111
+H  -0.872422   0.872422   0.936125
+H   0.872422  -0.872422   0.936125
+H  -0.870464   0.870464   2.783308
+H   0.870464  -0.870464   2.783308
+units angstrom
+}
+
+mAuncp = eeee.extract_subsets(1)
+mBuncp = eeee.extract_subsets(2)
+mAcp = eeee.extract_subsets(1, 2)
+mBcp = eeee.extract_subsets(2, 1)
+
+eeee.update_geometry()
+mAuncp.update_geometry()
+mBuncp.update_geometry()
+mAcp.update_geometry()
+mBcp.update_geometry()
+
+print('  Part I: -D correction from Py-side')  #TEST
+fctl = 'b3lyp'
+der = 0
+hasD3M = True
+if d3_engine == "dftd3":
+    try:
+        for dlvl in ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']:
+            E = eeee.run_dftd3(fctl, dlvl, dertype=der)
+            compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
+            E = mAuncp.run_dftd3(fctl, dlvl, dertype=der)
+            compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
+            E = mBcp.run_dftd3(fctl, dlvl, dertype=der)
+            compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
+    except qcdb.Dftd3Error as e:
+        print("""dftd3 version cannot compute some -D variants. some future tests will not be run""")
+        hasD3M = False
+
+#hasD3M = False  # temporary until fctl released into superfunctionals list
+# why have the hasD3M switch, you ask? why not just try catch throughout to
+#   accomodate old and new dftd3 exe? the answer is we can't catch from c-side.
+
+# <<<  Part 2  >>>
+
+set basis sto-3g
+set df_basis_scf cc-pvdz-ri
+set scf_type df
+set dft_radial_points 50  # use really bad grid for speed since all we want is the -D value
+set dft_spherical_points 110
+#set scf print 3  # will print dftd3 program output to psi4 output file
+
+print('  Part II: -D correction from C-side')  #TEST
+energy('b3lyp-d2', molecule=eeee)
+compare_values(refs['d2']['d'], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
+# single test below fails for mysterious dft reasons
+compare_values(refs['dft']['d'] + refs['d2']['d'], variable('DFT TOTAL ENERGY'), 5, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
+#compare_values(refs['dft']['d'] + refs['d2']['d'], variable('B3LYP-D2 TOTAL ENERGY'), 5, 'Ethene dimer -D2 (calling dftd3 -old)')  #TEST
+
+energy('b3lyp-d3', molecule=mAuncp)
+compare_values(refs['d3zero']['m'], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')  #TEST
+compare_values(refs['d3zero']['m'], variable('B3LYP-D3 DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')  #TEST
+compare_values(refs['dft']['muncp'] + refs['d3zero']['m'], variable('DFT TOTAL ENERGY'), 5, 'Ethene -D3 (calling dftd3 -zero)')  #TEST
+#compare_values(refs['dft']['muncp'] + refs['d3zero']['m'], variable('B3LYP-D2 TOTAL ENERGY'), 5, 'Ethene -D3 (calling dftd3 -zero)')  #TEST
+
+energy('b3lyp-d3bj', molecule=mAcp)
+compare_values(refs['d3bj']['m'], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3(BJ) (calling dftd3 -bj)')  #TEST
+compare_values(refs['dft']['mcp'] + refs['d3bj']['m'], variable('DFT TOTAL ENERGY'), 7, 'Ethene -D3(BJ) (calling dftd3 -bj)')  #TEST
+#compare_values(refs['dft']['mcp'] + refs['d3bj']['m'], variable('B3LYP-D3(BJ) TOTAL ENERGY'), 7, 'Ethene -D3(BJ) (calling dftd3 -bj)')  #TEST
+
+if hasD3M:
+    energy('b3lyp-d3m', molecule=mBuncp)
+    compare_values(refs['d3mzero']['m'], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3M (calling dftd3 -zerom)')  #TEST
+    compare_values(refs['dft']['muncp'] + refs['d3mzero']['m'], variable('DFT TOTAL ENERGY'), 7, 'Ethene -D3M (calling dftd3 -zerom)')  #TEST
+    #compare_values(refs['dft']['muncp'] + refs['d3mzero']['m'], variable('B3LYP-D3M TOTAL ENERGY'), 7, 'Ethene -D3M (calling dftd3 -zerom)')  #TEST
+    
+    energy('b3lyp-d3mbj', molecule=mBcp)
+    compare_values(refs['d3mbj']['m'], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3M(BJ) (calling dftd3 -bjm)')  #TEST
+    compare_values(refs['dft']['mcp'] + refs['d3mbj']['m'], variable('DFT TOTAL ENERGY'), 7, 'Ethene -D3M(BJ) (calling dftd3 -bjm)')  #TEST
+    #compare_values(refs['dft']['mcp'] + refs['d3mbj']['m'], variable('B3LYP-D3M(BJ) TOTAL ENERGY'), 7, 'Ethene -D3M(BJ) (calling dftd3 -bjm)')  #TEST
+
+
+# <<<  Part 3  >>>
+qeeee = qcdb.Molecule("""
+C  -0.471925  -0.471925  -1.859111
+C   0.471925   0.471925  -1.859111
+H  -0.872422  -0.872422  -0.936125
+H   0.872422   0.872422  -0.936125
+H  -0.870464  -0.870464  -2.783308
+H   0.870464   0.870464  -2.783308
+--
+0 1
+C  -0.471925   0.471925   1.859111
+C   0.471925  -0.471925   1.859111
+H  -0.872422   0.872422   0.936125
+H   0.872422  -0.872422   0.936125
+H  -0.870464   0.870464   2.783308
+H   0.870464  -0.870464   2.783308
+units angstrom
+""")
+
+# note that it's extract_fragments on a qcdb.Mol, not extract_subsets
+qmAuncp = qeeee.extract_fragments(1)
+qmBuncp = qeeee.extract_fragments(2)
+qmAcp = qeeee.extract_fragments(1, 2)
+qmBcp = qeeee.extract_fragments(2, 1)
+
+qeeee.update_geometry()
+qmAuncp.update_geometry()
+qmBuncp.update_geometry()
+qmAcp.update_geometry()
+qmBcp.update_geometry()
+
+print('  Part III: -D correction from Py-side on Py-mol')  #TEST
+levels = ['d2', 'd3zero', 'd3bj']
+if d3_engine == "dftd3":
+    if hasD3M:
+        levels.extend(['d3mzero', 'd3mbj'])
+    for dlvl in levels:
+            E = qeeee.run_dftd3(fctl, dlvl, dertype=der)
+            compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
+            E = qmAuncp.run_dftd3(fctl, dlvl, dertype=der)
+            compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
+            E = qmBcp.run_dftd3(fctl, dlvl, dertype=der)
+            compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
+
+
+# <<<  Part 4  >>>
+
+print('  Part IV: -D correction from C-side, all functionals')  #TEST
+set freeze_core false
+if hasD3M:
+    for fl in ['blyp', 'b3lyp', 'b2plyp', 'bp86', 'pbe', 'pbe0', 'b97', 'wpbe']:
+        energy(fl + '-d3mbj', molecule=mBuncp)
+        compare_values(refs2['dft'][fl] + refs2['dash'][fl + '-d3mbj'], variable('CURRENT ENERGY'), 5, fl + '-d3mbj')  #TEST
+        energy(fl + '-d3mzero', molecule=mBuncp)
+        compare_values(refs2['dft'][fl] + refs2['dash'][fl + '-d3mzero'], variable('CURRENT ENERGY'), 5, fl + '-d3m')  #TEST
+

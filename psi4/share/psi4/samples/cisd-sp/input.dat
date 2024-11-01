@@ -1,0 +1,34 @@
+#! 6-31G** H2O Test CISD Energy Point
+
+
+molecule h2o {
+    O
+    H 1 1.00
+    H 1 1.00 2 103.1
+}
+
+# Perform a detci calc using helper function
+set {
+  basis 6-31G**
+  hd_avg hd_kave
+  qc_module detci
+}
+
+thisenergy = energy('cisd')
+
+
+clean()
+
+# Perform same detci calc setting all options explicitly
+set {
+  wfn detci
+  basis 6-31G**
+}
+
+set detci {
+  hd_avg hd_kave
+  ex_level 2
+}
+
+thisenergy = energy('detci')
+

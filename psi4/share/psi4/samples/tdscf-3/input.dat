@@ -1,0 +1,43 @@
+#! td-wb97x excitation energies of singlet states of h2o, wfn passing
+
+rhf_wB97X_RPA_cc_pvdz = [0.24721269233329,
+                         0.31319977578113,
+                         0.34444772468718,
+                         0.41038703401580,
+                         0.45278105243050,
+                         0.56744628843739,
+                         0.71909971752194,
+                         0.75183601398849,
+                         0.82952408171446,
+                         0.84003438794418]
+
+
+
+
+molecule water{
+0 1
+
+O           0.000000    0.000000    0.135446
+H          -0.000000    0.866812   -0.541782
+H          -0.000000   -0.866812   -0.541782
+symmetry c1
+}
+
+set {
+    reference rhf
+    scf_type pk
+    e_convergence 8
+    d_convergence 8
+    TDSCF_STATES [10]
+}
+
+
+e, wfn = energy('wb97x/cc-pvdz', return_wfn=True)
+tdscf(wfn)
+
+for n, ref in enumerate(rhf_wB97X_RPA_cc_pvdz):
+    ex_en = wfn.variable(f"TD-wB97X ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")
+    compare_values(ref,ex_en, 4, f"TD-wB97X/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")
+    ex_en = wfn.variable(f"TD-DFT ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")
+    compare_values(ref,ex_en, 4, f"TD-wB97X/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")
+

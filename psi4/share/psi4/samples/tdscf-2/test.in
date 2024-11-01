@@ -1,0 +1,36 @@
+#! td-uhf test on triplet states of methylene (tda), wfn passing
+
+UHF_TDA_cc_pvdz = [0.24880026306449304,
+                   0.28968755925744966,
+                   0.32054964027744337,
+                   0.35741288565867185,
+                   0.39502214228627547,
+                   0.41144173957102564,
+                   0.4445528791268893,
+                   0.4535932124573471,
+                   0.48482278670215617]
+
+molecule ch2 {
+0 3
+
+C           0.000000    0.000000    0.159693
+H          -0.000000    0.895527   -0.479080
+H          -0.000000   -0.895527   -0.479080
+symmetry c1
+}
+
+set {
+    reference uhf
+    scf_type pk
+    e_convergence 8
+    d_convergence 8
+    TDSCF_STATES [9]
+    TDSCF_TDA true
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+tdscf(wfn)
+
+for n, ref in enumerate(UHF_TDA_cc_pvdz):
+    ex_en = wfn.variable(f"TD-HF ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")
+    compare_values(ref,ex_en, 4, f"TD-UHF/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")

@@ -1,0 +1,47 @@
+#! pcm
+#! updated totalenergy to new BraggSlater radii values
+
+
+molecule NH3 {
+N     -0.0000000001    -0.1040380466      0.0000000000
+H     -0.9015844116     0.4818470201     -1.5615900098
+H     -0.9015844116     0.4818470201      1.5615900098
+H      1.8031688251     0.4818470204      0.0000000000
+units bohr
+}
+
+set {
+  basis cc-pVDZ
+  scf_type pk
+  pcm true
+  pcm_scf_type total
+}
+
+pcm = {
+   Units = Angstrom
+   Medium {
+   SolverType = IEFPCM
+   Solvent = Water
+   }
+
+   Cavity {
+   RadiiSet = UFF
+   Type = GePol
+   Scaling = False
+   Area = 0.3
+   Mode = Implicit
+   }
+}
+
+print('RKS-PCM B3LYP, total algorithm')
+energy_scf1 = energy('b3lyp')
+
+set pcm_scf_type separate
+print('RKS-PCM B3LYP, separate algorithm')
+energy_scf2 = energy('b3lyp')
+
+# Now force use of UKS on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference uks
+print('UKS-PCM B3LYP, total algorithm')
+energy_scf3 = energy('b3lyp')

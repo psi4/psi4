@@ -1,0 +1,58 @@
+#! SAPT(DFT) aug-cc-pVDZ interaction energy between Ne and Ar atoms.
+
+# Note: Delta HF is turned off in this test, because the delta HF calculation is in the run_sapt_dft() call, while the purpose of this test is to verify the results of the sapt_dft() call.
+
+
+
+
+
+molecule dimer {
+  Ne
+  --
+  Ar 1 6.5
+  units bohr
+}
+
+# Set options
+set {
+    basis         aug-cc-pvdz
+    scf_type      df
+}
+
+# Prepare the fragments
+sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(dimer, "dimer")
+
+# Run the first monomer
+set DFT_GRAC_SHIFT 0.203293
+energyA, wfnA = energy("PBE0", molecule=monomerA, return_wfn=True)
+
+# Run the second monomer
+set DFT_GRAC_SHIFT 0.138264
+energyB, wfnB = energy("PBE0", molecule=monomerB, return_wfn=True)
+
+# Build a blank dimer wavefunction
+wfnD = core.Wavefunction.build(sapt_dimer) 
+
+# No hybrid kernel & exch-disp scaling
+set SAPT_DFT_DO_HYBRID False 
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
+
+# Compute SAPT(DFT) from the provided wavefunctions
+data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
+
+
+# Hybrid kernel & exch-disp scaling (DISP)
+set SAPT_DFT_DO_HYBRID True
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME disp 
+
+# Compute SAPT(DFT) from the provided wavefunctions
+data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
+
+
+# Hybrid kernel & exch-disp scaling (FIXED)
+set SAPT_DFT_DO_HYBRID True
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME fixed
+
+# Compute SAPT(DFT) from the provided wavefunctions
+data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
+

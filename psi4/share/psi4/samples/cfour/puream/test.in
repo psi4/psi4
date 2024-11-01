@@ -1,0 +1,86 @@
+#! Basis set spherical/Cartesian behavior in cfour
+
+store = {}  #TEST
+test_psivars = ['scf total energy', 'mp2 same-spin correlation energy', 'mp2 opposite-spin correlation energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'current reference energy', 'current correlation energy', 'current energy']  #TEST
+
+sph_ccpvdz = -76.2307777348
+cart_ccpvdz = -76.2346763972
+cart_631gs = -76.1990355202
+sph_631gs = -76.1953470892
+
+cfour {
+MP2 single-point energy calculation
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=MP2,BASIS=PVDZ
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+compare_values(sph_ccpvdz, variable('CURRENT ENERGY'), 6, 'cc-pVDZ Default (Sph)')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+cfour {
+MP2 single-point energy calculation
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=MP2,BASIS=6-31G*
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+compare_values(sph_631gs, variable('CURRENT ENERGY'), 6, '6-31G* Default (Sph)')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set cfour_CALC_level=MP2
+set basis 6-31g*
+
+energy('cfour')
+compare_values(cart_631gs, variable('CURRENT ENERGY'), 6, '6-31G* P4 Default (Cart)')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+set basis cc-pvdz
+
+energy('cfour')
+compare_values(sph_ccpvdz, variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Default (Sph)')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+#set cfour_spherical false  # This doesn't work b/c competing instructions
+set puream false
+
+energy('cfour')
+compare_values(cart_ccpvdz, variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Forced (Cart)')  #TEST
+

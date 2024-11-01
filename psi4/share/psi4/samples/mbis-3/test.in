@@ -1,0 +1,86 @@
+#! MBIS calculation on OH radical
+
+charges_ref = psi4.Matrix.from_list([ #TEST
+ [-0.38932401],   #TEST
+ [ 0.38932396]])  #TEST
+
+dipoles_ref = psi4.Matrix.from_list([ #TEST
+ [ 2.62316956e-15, -4.37369262e-15, -5.71221414e-02],   #TEST
+ [ 5.11886690e-16,  1.77066070e-16,  3.96528739e-02]]) #TEST
+
+quadrupoles_ref = psi4.Matrix.from_list([ #TEST
+ [-3.59110673e+00, -8.46263828e-02,  1.67782064e-15, -4.41021150e+00,
+  -3.92346955e-15, -4.14097649e+00],      #TEST
+ [-2.92979455e-01, -3.01966857e-03, -6.98507878e-16, -3.22207041e-01,
+  -4.23760130e-16, -2.90078485e-01]])     #TEST
+
+octupoles_ref = psi4.Matrix.from_list([ #TEST
+ [-8.13767090e-16, -9.46924685e-15, -6.27604568e-02, -1.01867189e-15,
+   8.62411686e-04, -1.36984114e-15, -9.33234424e-15, -5.44131328e-02,
+  -1.58918250e-15, -4.25447839e-01],    #TEST
+ [ 3.48194357e-16, -8.08804271e-16,  3.20162956e-03,  1.46422272e-16,
+   1.63782178e-03, -1.59837812e-15, -2.67426850e-15,  1.90542257e-02,
+  -5.65466436e-16,  4.40364069e-02]])   #TEST
+
+# Reference Values for Atomic Volumes from Horton
+# O 22.412796513635886
+# H 1.5466730155452373
+
+avols_ref = psi4.Matrix.from_list([    #TEST
+ [22.4122239 ],   #TEST
+ [ 1.54670646]])  #TEST
+
+# Reference Values for Valence Widths from Horton
+# O 0.3907094315779262
+# H 0.355789207347543
+
+vwidths_ref = psi4.Matrix.from_list([  #TEST
+ [0.39070772],    #TEST
+ [0.35579084]])   #TEST
+
+vratios_ref = psi4.Matrix.from_list([  #TEST
+[1.139889],
+[0.211763]])
+
+molecule mol {
+  0 2
+  O 0.0 0.0 0.0
+  H 0.0 0.0 1.0
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 10
+  reference uhf
+  mbis_radial_points 99
+  mbis_spherical_points 350
+  max_radial_moment 5
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+oeprop(wfn, 'MBIS_VOLUME_RATIOS', title='OH Radical SCF')
+
+#NOTE: wfn.array_variable gives you flattened atomic multipole arrays; for expanded arrays, use wfn.variable
+charges = wfn.array_variable('MBIS CHARGES')
+dipoles = wfn.array_variable('MBIS DIPOLES')
+quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
+octupoles = wfn.array_variable('MBIS OCTUPOLES')
+avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vratios = wfn.array_variable('MBIS VOLUME RATIOS')
+
+compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
+compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
+compare_matrices(avols_ref, avols, 5, "MBIS Radial Moments <r^3>")    #TEST
+compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
+compare_matrices(vratios, vratios, 5, "MBIS Volume Ratios")      #TEST
+
+# lands on different degenerate solutions due to high-symmetry wfn, so test stable values. (happens for molecular quadrupole, too, not just mbis.)
+compare_values(quadrupoles_ref.np[0, 5], quadrupoles.np[0, 5], 5, "MBIS Quadrupoles: ZZ of O") #TEST
+compare_values(quadrupoles_ref.np[1, 5], quadrupoles.np[1, 5], 5, "MBIS Quadrupoles: ZZ of H") #TEST
+compare_values(octupoles_ref.np[0, 9], octupoles.np[0, 9], 5, "MBIS Octupoles: ZZZ of O") #TEST
+compare_values(octupoles_ref.np[1, 9], octupoles.np[1, 9], 5, "MBIS Octupoles: ZZZ of H") #TEST

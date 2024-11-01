@@ -1,0 +1,50 @@
+#! Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets.
+#! Results are tabulated using the built in table functions by using the default options and by specifiying the format.
+
+# This will remove the 32 file in each iteration of the for loop 
+psi4_io.set_specific_retention(32,False)
+
+refnuc  = 0.587974678522222                            #TEST
+refscf  = [ -1.11639202566179, -1.11872756109405 ]     #TEST
+refmp2  = [ -1.1441651458266191, -1.1511940290102121 ] #TEST
+
+molecule h2 {
+   0 1
+   H
+   H 1 0.9
+}
+
+set {
+   scf_type   df
+   guess      sad
+   d_convergence 12
+   e_convergence 12
+}
+
+table = {}
+basissets = ["cc-pVDZ", "cc-pVTZ"]
+
+count = 0                                                                             #TEST
+
+for basisset in basissets:
+    set basis        $basisset
+    jkbasis = basisset + "-jkfit"
+    set df_basis_scf $jkbasis
+    ribasis = basisset + "-ri"
+    set df_basis_mp2 $ribasis
+    edfmp2 = energy('mp2')
+    edfscf = variable('SCF TOTAL ENERGY')
+    compare_values(edfscf, refscf[count], 10, basisset + " DF-SCF Energy")            #TEST
+    compare_values(edfmp2, refmp2[count], 10, basisset + " DF-MP2 Energy")            #TEST
+    count  = count + 1                                                                #TEST
+    # Store the computed values for table
+    table[basisset]     = [edfscf, edfmp2]
+    # We clean out the scratch files here because the dimensions of the basis set have
+    # changed, so we want to generate new files
+    clean()
+compare_values(refnuc, h2.nuclear_repulsion_energy(), 10, "Nuclear Repulsion Energy") #TEST
+
+print_out("\nSummary of results\n")
+print_out("     Basis           E(DF-SCF)            E(DF-MP2)\n")
+for basisset in table.keys():
+    print_out("{:>10}{:20.12f}{:20.12f}\n".format(basisset, table[basisset][0], table[basisset][1]))

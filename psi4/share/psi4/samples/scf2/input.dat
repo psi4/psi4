@@ -1,0 +1,30 @@
+#! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
+
+
+molecule h2o {
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+}
+
+set {
+  basis        cc-pVTZ
+  scf_type     df
+  e_convergence   10
+  maxiter  6
+}
+
+
+try:
+    energy('hf')
+except psi4.SCFConvergenceError as ex:
+    SCF_iter_6 = ex.wfn.get_energies("Total Energy")
+    SCF_error_iter = ex.iteration
+    SCF_e_conv = ex.e_conv
+    SCF_d_conv = ex.d_conv
+compare_values(-76.050986, SCF_iter_6, 5, "Energy at iter {}".format(SCF_error_iter))
+
+set maxiter 24
+
+thisenergy = energy('scf')
+

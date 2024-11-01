@@ -1,0 +1,92 @@
+#! DFT Functional Smoke Test
+
+test_dict = {                         #TEST
+          "B2PLYP":   -76.2924549107, #TEST
+       "CAM-B3LYP":   -76.3552628688, #TEST
+        "DLDF+D09":   -76.8410958136, #TEST
+ "DSD-PBEP86-D3BJ":   -76.2032218018, #TEST
+             "PBE":   -76.2994541311, #TEST
+            "WPBE":   -76.3341949067, #TEST
+}                                     #TEST
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+
+set basis 6-31g
+set dft_spherical_points 230
+set dft_radial_points 75
+set scf_type df
+
+for k, v in test_dict.items():
+    if k == 'DSD-PBEP86-D3BJ' and 'dftd3' not in psi4.addons():
+        continue
+    ret = energy(k)
+    compare_values(v, ret, 5, "RKS 0 1  %15s Energy" % k)
+
+pbe = {
+    "name": "PBE-TEST",
+    "x_functionals": { "GGA_X_PBE": {} },
+    "c_functionals": { "GGA_C_PBE": {} },
+}
+
+ret = energy("scf", dft_functional="PBE")
+compare_values(test_dict["PBE"], ret, 5, "RKS 0 1              PBE Energy, dft_functional='PBE'")  #TEST
+
+ret = energy("scf", dft_functional=pbe)
+compare_values(test_dict["PBE"], ret, 5, "RKS 0 1              PBE Energy, dft_functional=dict()") #TEST
+
+test_dict_dash = {
+    'E': {'075': -3.958e-05,
+          '100': -5.278e-05,
+          '200': -0.00010556
+         },
+    'G': {'075':
+[[ 0.00000000e+00,  0.00000000e+00,  1.54317695e-06],
+ [ 0.00000000e+00,  1.21681806e-04, -7.71588475e-07],
+ [ 0.00000000e+00, -1.21681806e-04, -7.71588475e-07]],
+          '100':
+[[ 0.00000000e+00,  0.00000000e+00,  2.05756927e-06],
+ [ 0.00000000e+00,  1.62242408e-04, -1.02878463e-06],
+ [ 0.00000000e+00, -1.62242408e-04, -1.02878463e-06]],
+          '200':
+[[ 0.00000000e+00,  0.00000000e+00,  4.11513853e-06],
+ [ 0.00000000e+00,  3.24484816e-04, -2.05756927e-06],
+ [ 0.00000000e+00, -3.24484816e-04, -2.05756927e-06]]
+        }
+}
+
+pbed2 = {
+    "name": "PBED2-TEST",
+    "x_functionals": { "GGA_X_PBE": {} },
+    "c_functionals": { "GGA_C_PBE": {} },
+    "dispersion": {
+        "type": "d",
+        "params": {"s6": 0.75,
+                   "sr6": 1.1,
+                   "alpha6": 20.0,
+        }
+    }
+}
+
+ret = energy('scf', dft_functional=pbed2)
+compare_values(test_dict['PBE'] + test_dict_dash['E']['075'], ret, 5, 'PBE-D2 Energy, dft_functional=dict(s6=native)')
+compare_values(test_dict_dash['E']['075'], variable('PBE-D2 dispersion correction energy'), 5, 'PBE-D2 Energy, dft_functional=dict(s6=native)')
+clean()
+
+import numpy as np
+pbed2['dispersion']['params']['s6'] = 1.0
+ret = energy('scf', dft_functional=pbed2)
+compare_values(test_dict['PBE'] + test_dict_dash['E']['100'], ret, 5, 'PBE-D2 Energy, dft_functional=dict(s6=1.0)')
+compare_values(test_dict_dash['E']['100'], variable('tpss-d2 dispersion correction energy'), 5, 'PBE-D2 Energy, dft_functional=dict(s6=1.0)')
+clean()
+
+set dft_dispersion_parameters [1.0]
+pbed2['dispersion']['params']['s6'] = 2.0
+ret = energy('scf', dft_functional=pbed2)
+compare_values(test_dict['PBE'] + test_dict_dash['E']['200'], ret, 5, 'user option s6 irrelevant to dft_functional')
+clean()

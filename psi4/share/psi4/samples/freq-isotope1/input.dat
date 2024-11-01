@@ -1,0 +1,105 @@
+#! Vibrational and thermo analysis of several water isotopologs.
+#! Demonstrates Hessian reuse for different temperatures and pressures
+#! but not for different isotopologs.
+
+# all reference values from NWChem (see other files in this dir) unless otherwise notated
+
+molecule h2o {
+  units au
+  O      0.00000000    0.00000000    0.00000000
+  H      0.00000000    1.93042809   -1.10715266
+  H      0.00000000   -1.93042809   -1.10715266
+}
+
+#VALID BUT OUTDATED molecule d2o {
+#VALID BUT OUTDATED   units au
+#VALID BUT OUTDATED   O                  0.00000000    0.00000000    0.00000000
+#VALID BUT OUTDATED   H@2.014101779      0.00000000    1.93042809   -1.10715266
+#VALID BUT OUTDATED   H@2.014101779      0.00000000   -1.93042809   -1.10715266
+#VALID BUT OUTDATED }
+#VALID BUT OUTDATED
+#VALID BUT OUTDATED molecule hdo {
+#VALID BUT OUTDATED   units au
+#VALID BUT OUTDATED   O                  0.00000000    0.00000000    0.00000000
+#VALID BUT OUTDATED   H@2.014101779      0.00000000    1.93042809   -1.10715266
+#VALID BUT OUTDATED   H                  0.00000000   -1.93042809   -1.10715266
+#VALID BUT OUTDATED }
+#VALID BUT OUTDATED
+#VALID BUT OUTDATED molecule dto {
+#VALID BUT OUTDATED   units au
+#VALID BUT OUTDATED   O                  0.00000000    0.00000000    0.00000000
+#VALID BUT OUTDATED   H@2.014101779      0.00000000    1.93042809   -1.10715266
+#VALID BUT OUTDATED   H@3.01604927       0.00000000   -1.93042809   -1.10715266
+#VALID BUT OUTDATED }
+
+set basis sto-3g
+set e_convergence 9
+set g_convergence gau_verytight
+set scf_type pk
+
+optimize('hf', molecule=h2o)
+
+#VALID BUT OUTDATED # can't currently update masses with set_mass() in the mols and redetect the right symmetry
+#VALID BUT OUTDATED #   so have to create as as above and update the geometry
+#VALID BUT OUTDATED ogeo = h2o.geometry()
+#VALID BUT OUTDATED d2o.update_geometry()
+#VALID BUT OUTDATED d2o.set_geometry(ogeo)
+#VALID BUT OUTDATED hdo.update_geometry()
+#VALID BUT OUTDATED hdo.set_geometry(ogeo)
+#VALID BUT OUTDATED dto.update_geometry()
+#VALID BUT OUTDATED dto.set_geometry(ogeo)
+
+d2o = h2o.clone()
+d2o.set_mass(1, 2.014101779)
+d2o.set_mass(2, 2.014101779)
+
+hdo = h2o.clone()
+hdo.set_mass(1, 2.014101779)
+
+dto = h2o.clone()
+dto.set_mass(1, 2.014101779)
+dto.set_mass(2, 3.01604927)
+
+e, wfn = freq('hf', molecule=h2o, return_wfn=True)
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+
+clean()
+
+set t 400.0
+
+vibanal_wfn(wfn)
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+
+clean()
+
+set t 298.15
+
+freq('hf', molecule=d2o)
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+
+clean()
+
+e, wfn = freq('hf', molecule=hdo, return_wfn=True)
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+
+# For a symmetry-lowering isotopic substitution like HDO, psi4 recomputes
+#  the rotational symmetry number with the lower point group. This only
+#  affects rotational entropy. That's why the above (non-default) molpro
+#  value from the above was computed with sym=cs. To replicate molpro &
+#  qchem's default, have to set rotational_symmetry_number to H2O value.
+
+set rotational_symmetry_number 2
+
+vibanal_wfn(wfn)
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+
+clean()
+
+# Could just reset the symmetry number to 1 since that's the correct
+#  value for DTO. But the below will calculate the default.
+
+psi4.revoke_global_option_changed('rotational_symmetry_number')
+
+freq('hf', molecule=dto)
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+

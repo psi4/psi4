@@ -1,0 +1,43 @@
+#! MP2 energy components. Checks that computed identically
+#! between cfour and psi4
+
+
+print('    <<<  RHF  >>>')
+
+cfour {
+MP2 single-point energy calculation
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=MP2,BASIS=AUG-PVDZ
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+print_variables()
+clean()
+
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set basis aug-cc-pvdz
+set e_convergence 10
+set mp2_type conv
+
+energy('mp2')
+
+print_variables()
+
+

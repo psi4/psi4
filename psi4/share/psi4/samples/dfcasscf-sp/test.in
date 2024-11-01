@@ -1,0 +1,21 @@
+#! CASSCF/6-31G** energy point
+
+molecule {
+O
+H 1 1.00
+H 1 1.00 2 103.1
+}
+
+set {
+    mcscf_type      df
+    basis           6-31G**
+    reference       rhf
+    restricted_docc [1, 0, 0, 0]
+    active          [3, 0, 1, 2] 
+    mcscf_algorithm ah
+}
+
+
+casscf_energy = energy('casscf')
+compare_values(-76.017259983350470, psi4.variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-76.073828605037164, casscf_energy, 6, 'CASSCF Energy')  #TEST

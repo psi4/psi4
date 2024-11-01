@@ -1,0 +1,109 @@
+#! DFT Functional Test
+#! all values update for new BraggSlater radii
+
+
+
+
+
+molecule h2o {
+0 1
+O 0.000000000000  0.000000000000 -0.068516219310
+H 0.000000000000 -0.790689573744  0.543701060724
+H 0.000000000000  0.790689573744  0.543701060724
+no_com
+no_reorient
+}
+
+set {
+    print 2
+    basis sto-3g
+    scf_type direct
+    dft_spherical_points 302
+    dft_radial_points 99
+    reference rks
+    e_convergence 1.e-8
+    d_convergence 1.e-8
+}
+
+V11 = energy('scf', dft_functional="svwn")
+
+V12 = energy('scf', dft_functional="b3lyp")
+
+V13 = energy('scf', dft_functional="wB97")
+
+V14 = energy('scf', dft_functional="wB97X")
+
+V15 = energy('scf', dft_functional="b86bpbe")
+
+V16 = energy('scf', dft_functional="pw86pbe")
+
+V17 = energy('scf', dft_functional="m05")
+
+V18 = energy('scf', dft_functional="spw92")
+
+set scf_type direct
+set reference uks
+
+V21 = energy('scf', dft_functional="svwn")
+
+V22 = energy('scf', dft_functional="b3lyp")
+
+V23 = energy('scf', dft_functional="wB97")
+
+V24 = energy('scf', dft_functional="wB97X")
+
+V25 = energy('scf', dft_functional="b86bpbe")
+
+V26 = energy('scf', dft_functional="pw86pbe")
+
+V27 = energy('scf', dft_functional="m05")
+
+V28 = energy('scf', dft_functional="spw92")
+
+molecule h2op {
+1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+V31 = energy('scf', dft_functional="svwn")
+
+V32 = energy('scf', dft_functional="b3lyp")
+
+V33 = energy('scf', dft_functional="wB97")
+
+V34 = energy('scf', dft_functional="wB97X")
+
+V35 = energy('scf', dft_functional="b86bpbe")
+
+V36 = energy('scf', dft_functional="pw86pbe")
+
+V37 = energy('scf', dft_functional="m05")
+
+V38 = energy('scf', dft_functional="spw92")
+
+molecule h2om {
+-1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set guess sad
+
+V41 = energy('scf', dft_functional="svwn")
+
+V42 = energy('scf', dft_functional="b3lyp")
+
+V43 = energy('scf', dft_functional="wB97")
+
+V44 = energy('scf', dft_functional="wB97X")
+
+V45 = energy('scf', dft_functional="b86bpbe")
+
+V46 = energy('scf', dft_functional="pw86pbe")
+
+V47 = energy('scf', dft_functional="m05")
+
+V48 = energy('scf', dft_functional="spw92")

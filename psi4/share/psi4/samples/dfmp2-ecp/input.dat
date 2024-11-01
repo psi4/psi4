@@ -1,0 +1,98 @@
+#! Ne-Xe dimer MP2 energies with ECP, with electrons correlated then frozen.
+
+
+molecule dimer {
+    0 1
+    Ne 0.0 0.0 0.0
+    --
+    0 1
+    Xe 0.0 0.0 3.0
+}
+
+set {
+    basis def2-svp
+    print 2
+}
+
+# All electrons on Ne correlated, all non-ECP electrons on Xe correlated
+Eall = energy('mp2')
+
+set freeze_core true
+set guess sad
+# [He] electrons on Ne frozen, [Kr] electrons on Xe frozen
+Efzc = energy('mp2')
+Eint = energy('mp2',bsse_type=['cp'])
+
+
+set freeze_core false
+set num_frozen_docc 1
+set guess read
+# [He] electrons on Ne frozen,  only ECP electrons on Xe frozen
+EfHe = energy('mp2')
+
+molecule ghne {
+    0 1
+    @Ne 0.0 0.0 0.0
+    --
+    0 1
+    Xe 0.0 0.0 3.0
+}
+
+molecule ghxe {
+    0 1
+    Ne 0.0 0.0 0.0
+    --
+    0 1
+    Gh(Xe) 0.0 0.0 3.0
+}
+
+set freeze_core true
+set num_frozen_docc 0
+set guess sad
+
+Eghne = energy('mp2', molecule=ghne)
+Eghxe = energy('mp2', molecule=ghxe)
+
+molecule sbh3 {
+0 1
+   Sb         0.00000000      0.76521375      0.00000000
+   H          1.43645600     -0.25507125      0.00000000
+   H         -0.71822800     -0.25507125      1.24400700
+   H         -0.71822800     -0.25507125     -1.24400700
+}
+
+set freeze_core 0
+E, wfn = energy("mp2/def2-svp", return_wfn=True, molecule=sbh3)
+
+compare_values(wfn.nfrzc(), 0, 1, "Number of frozen e- with freeze_core = 0")
+compare_values(sum(wfn.doccpi()), 13, 1, "Number of occupied orbitals with freeze_core = 0")
+
+set freeze_core 1
+E, wfn = energy("mp2/def2-svp", return_wfn=True, molecule=sbh3)
+compare_values(wfn.nfrzc(), 4, 1, "Number of frozen orbitals with freeze_core = 1")
+compare_values(sum(wfn.doccpi()), 13, 1, "Number of occupied orbitals with freeze_core = 1")
+
+set freeze_core policy
+# Our largest element is Z=51, but freeze_core_policy is 0-indexed (H=0, He=1, etc)
+core_policy = [0 for _ in range(51)]
+# So we need to set Z-1 here to set Sb, which is 50
+core_policy[50] = 5
+psi4.set_options({'freeze_core_policy': core_policy})
+E, wfn = energy("mp2/def2-svp", return_wfn=True, molecule=sbh3)
+
+compare_values(wfn.nfrzc(), 5, 1, "Number of frozen orbitals with freeze_core_policy = {H: 0, Sb: 5}")
+compare_values(sum(wfn.doccpi()), 13, 1, "Number of occupied orbitals with freeze_core_policy = {H: 0, Sb: 5}")
+
+molecule hi {
+  0 1
+  H 0 0 0
+  I 0 0 3
+}
+
+set freeze_core -2
+try:
+    energy("mp2/def2-svp", molecule=hi)
+    compare_values(0, 1, "Exception raised when ECP larger than requested freeze_core?")
+except RuntimeError as e:
+    compare_values(1, 1, "Exception raised when ECP larger than requested freeze_core?")
+

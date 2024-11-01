@@ -1,0 +1,69 @@
+#! SAPT2+(3) aug-cc-pVDZ computation of the formamide dimer interaction
+#! energy, using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI 
+#! for SAPT. This example uses frozen core as well as MP2 natural orbital 
+#! approximations.
+
+molecule formamide_dimer {
+     0 1
+     C  -2.018649   0.052883   0.000000
+     O  -1.452200   1.143634   0.000000
+     N  -1.407770  -1.142484   0.000000
+     H  -1.964596  -1.977036   0.000000
+     H  -0.387244  -1.207782   0.000000
+     H  -3.117061  -0.013701   0.000000
+     --
+     0 1
+     C   2.018649  -0.052883   0.000000
+     O   1.452200  -1.143634   0.000000
+     N   1.407770   1.142484   0.000000
+     H   1.964596   1.977036   0.000000
+     H   0.387244   1.207782   0.000000
+     H   3.117061   0.013701   0.000000
+     units angstrom
+}
+
+set {
+    basis         aug-cc-pvdz
+    df_basis_sapt aug-cc-pvdz-ri
+    df_basis_scf  aug-cc-pvdz-jkfit
+    guess         sad
+    scf_type      df
+    puream        true
+    print         1
+    basis_guess   true
+}
+
+set sapt {
+    freeze_core   true
+}
+
+energy('sapt2+(3)')
+
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ESAPT0 = psi4.variable("SAPT0 TOTAL ENERGY")
+ESAPT2 = psi4.variable("SAPT2 TOTAL ENERGY")
+ESAPT2p = psi4.variable("SAPT2+ TOTAL ENERGY")
+ESAPT2pp3 = psi4.variable("SAPT2+(3) TOTAL ENERGY")
+ESAPT = psi4.variable("SAPT TOTAL ENERGY")
+
+Eref = [ -0.04076062059,   #TEST
+          0.04625663134,   #TEST
+         -0.01803478948,   #TEST
+         -0.01182385927,   #TEST
+         -0.02947494369,   #TEST
+         -0.02287621746,   #TEST
+         -0.02461486146,   #TEST
+         -0.02436263800  ] #TEST
+
+compare_values(Eref[0], Eelst, 6, "SAPT Elst")           #TEST
+compare_values(Eref[1], Eexch, 6, "SAPT Exch")           #TEST
+compare_values(Eref[2], Eind, 6,  "SAPT Ind")            #TEST
+compare_values(Eref[3], Edisp, 6, "SAPT Disp")           #TEST
+compare_values(Eref[4], ESAPT0, 6, "SAPT0 total")        #TEST
+compare_values(Eref[5], ESAPT2, 6, "SAPT2 total")        #TEST
+compare_values(Eref[6], ESAPT2p, 6, "SAPT2+ total")      #TEST
+compare_values(Eref[7], ESAPT2pp3, 6, "SAPT2+(3) total") #TEST
+compare_values(Eref[7], ESAPT, 6, "SAPT total")          #TEST

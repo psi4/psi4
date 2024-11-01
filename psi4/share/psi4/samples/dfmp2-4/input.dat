@@ -1,0 +1,63 @@
+#! conventional and density-fitting mp2 test of mp2 itself and setting scs-mp2
+
+
+
+molecule h2o {
+O
+H 1 1.0
+H 1 1.0 2 90.0
+}
+
+set basis cc-pvdz
+
+print('   Testing mp2 (df) ...')
+val = energy('mp2')
+
+clean()
+
+set mp2_type conv
+
+print('   Testing mp2 (conv) ...')
+val = energy('mp2')
+
+clean()
+
+set mp2_os_scale 1.2
+set mp2_ss_scale 0.33333333333333333
+
+set mp2_type df
+
+print('   Testing explicit scs mp2 (df) ...')
+val = energy('mp2')
+
+clean()
+
+set mp2_type conv
+
+print('   Testing explicit mp2 (conv) ...')
+val = energy('mp2')
+
+clean()
+
+
+set mp2_os_scale 0.5
+set mp2_ss_scale 0.5
+
+set mp2_type df
+
+print('   Testing user-def scs mp2 (df) ...')
+val = energy('mp2')
+
+clean()
+
+# OCC has different keyword names from DFOCC. OCC's behavior should be the standard.
+set os_scale 0.5
+set ss_scale 0.5
+
+set mp2_type conv
+
+print('   Testing user-def scs mp2 (conv) ...')
+val = energy('mp2')
+
+clean()
+

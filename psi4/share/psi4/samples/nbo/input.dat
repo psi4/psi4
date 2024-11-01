@@ -1,0 +1,19 @@
+#! Generation of NBO file
+
+molecule {
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set scf_type pk
+set basis cc-pvdz
+set r_convergence 12
+
+wfn = energy('hf', return_wfn = True)[1]
+wfn.write_nbo('input.47')
+
+set basis 6-31+G(d)
+
+wfn = energy('hf', return_wfn = True)[1]
+wfn.write_nbo('cartesian.47')

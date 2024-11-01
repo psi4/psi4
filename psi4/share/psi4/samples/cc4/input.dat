@@ -1,0 +1,27 @@
+#! RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input.
+#! After the computation, the checkpoint file is renamed, using the PSIO handler.
+
+
+molecule bh {
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+}
+
+set {
+   docc [3, 0, 0, 0]
+   basis cc-pvqz
+   freeze_core true
+   df_scf_guess false
+   scf_type pk
+   r_convergence 10
+   e_convergence 10
+   d_convergence 10
+}
+
+energy('ccsd(t)')
+
+
+#Here's a demonstration of how to print an manipulate the files used by Psi
+psi4_io.print_out()
+psi4.IO.change_file_namespace(32, 'bh', 'cool')
+psi4_io.print_out()

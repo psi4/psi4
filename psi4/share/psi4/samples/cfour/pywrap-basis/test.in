@@ -1,0 +1,38 @@
+#! SAPT calculation on bimolecular complex where monomers are unspecified
+#! so driver auto-fragments it. Basis set and auxiliary basis sets are
+#! assigned by atom type.
+
+molecule dimer {
+0 1
+N  -1.578718  -0.046611   0.000000
+N   1.578718   0.046611   0.000000
+H  -2.158621   0.136396  -0.809565
+H   0.849471  -0.658193   0.000000
+H  -2.158621   0.136396   0.809565
+H  -0.849471   0.658193   0.000000
+H   2.158621  -0.136396  -0.809565
+H   2.158621  -0.136396   0.809565
+units angstrom
+}
+
+# Auto-fragment function acts on active molecule by default ane returns
+#   fragmented molecule which then needs to be activated
+activate(auto_fragments())
+
+# Effectively "set basis heavy-aug-cc-pvdz"
+basis {
+   assign   aug-cc-pvdz       # All atoms use this orbital basis now
+   assign H cc-pvdz           # H uses this orbital basis set, the other atoms retain their defaults
+}               
+df_basis_scf {
+   assign   aug-cc-pvdz-jkfit # All atoms use this RI basis for SCF now, too
+   assign H cc-pvdz-jkfit     # H uses this fitting basis for SCF, other atoms still use the aDZ-JKFIT
+}               
+df_basis_sapt {
+   assign   aug-cc-pvdz-ri    # All atoms use this RI basis for SAPT now, too
+   assign H cc-pvdz-ri        # H uses this fitting basis for SCF, other atoms still use the aDZ-RI
+}               
+
+energy('c4-scf')
+compare_values(-112.412159937, variable('current ENERGY'), 6, """[1] autofrag'd scf: explicit vs. custom haDZ""")  #TEST
+

@@ -1,0 +1,46 @@
+#! Example SAPT computation for ethene*ethine (i.e., ethylene*acetylene),
+#! test case 16 from the S22 database
+
+molecule dimer {
+0 1
+C   0.000000  -0.667578  -2.124659
+C   0.000000   0.667578  -2.124659
+H   0.923621  -1.232253  -2.126185
+H  -0.923621  -1.232253  -2.126185
+H  -0.923621   1.232253  -2.126185
+H   0.923621   1.232253  -2.126185
+--
+0 1
+C   0.000000   0.000000   2.900503
+C   0.000000   0.000000   1.693240
+H   0.000000   0.000000   0.627352
+H   0.000000   0.000000   3.963929
+units angstrom
+}
+
+set {
+    BASIS jun-cc-pVDZ
+    SCF_TYPE DF
+    FREEZE_CORE True
+    DF_BASIS_ELST jun-cc-pVDZ-RI
+}
+
+energy('sapt0')
+
+Eelst = psi4.variable("SAPT ELST ENERGY")   #TEST
+Eexch = psi4.variable("SAPT EXCH ENERGY")   #TEST
+Eind  = psi4.variable("SAPT IND ENERGY")    #TEST
+Edisp = psi4.variable("SAPT DISP ENERGY")   #TEST
+ET    = psi4.variable("SAPT0 TOTAL ENERGY")  #TEST
+
+Eref = [ 85.1890645313,  -0.003378388762,  0.003704416103,  #TEST
+         -0.000889316601,  -0.001672292164, -0.002235581423 ] #TEST
+
+#psi4.print_variables() #TEST
+
+compare_values(Eref[0], dimer.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy") #TEST
+compare_values(Eref[1], Eelst, 6, "SAPT0 Eelst") #TEST
+compare_values(Eref[2], Eexch, 6, "SAPT0 Eexch") #TEST
+compare_values(Eref[3], Eind, 6, "SAPT0 Eind")   #TEST
+compare_values(Eref[4], Edisp, 6, "SAPT0 Edisp") #TEST
+compare_values(Eref[5], ET, 6, "SAPT0 Etotal")   #TEST

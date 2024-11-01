@@ -1,0 +1,24 @@
+#! MP3 cc-pVDZ gradient for the H2O molecule.
+
+ref = psi4.Matrix.from_list([                                 #TEST
+        [ 0.000000000000,  0.000000000000,  0.008667249198],  #TEST
+        [ 0.000000000000,  0.000269094803, -0.004333624599],  #TEST
+        [ 0.000000000000, -0.000269094803, -0.004333624599]   #TEST
+      ])                                                      #TEST
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  mp_type conv
+}
+
+grad = gradient('mp3')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
+

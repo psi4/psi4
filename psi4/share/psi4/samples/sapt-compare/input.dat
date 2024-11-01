@@ -1,0 +1,54 @@
+#! SAPT0 aug-cc-pVDZ computation of the water-water interaction energy, using the three SAPT codes.
+
+memory 1250 mb
+
+
+Eref_longstanding_riri_egh = {
+    "SAPT DISP ENERGY": Eref["SAPT DISP ENERGY"],
+}
+
+molecule dimer {
+  O -2.930978458   -0.216411437    0.000000000
+  H -3.655219777    1.440921844    0.000000000
+  H -1.133225297    0.076934530    0.000000000
+   --
+  O  2.552311356    0.210645882    0.000000000
+  H  3.175492012   -0.706268134   -1.433472544
+  H  3.175492012   -0.706268134    1.433472544
+  units bohr
+  no_com
+  no_reorient
+}
+
+set {
+    basis         aug-cc-pvdz
+    e_convergence 1e-8
+    d_convergence 1e-8
+
+    SAPT_DFT_FUNCTIONAL HF
+}
+
+energy('sapt0', molecule=dimer)
+
+energy('fisapt0', molecule=dimer)
+
+energy('sapt(dft)', molecule=dimer)
+
+
+
+# May 2022: Longstanding SAPT (EGH; libsapt_solver) behavior was to
+#   use RIFIT basis for both DF_BASIS_SAPT and DF_BASIS_ELST. With that
+#   in place, compare_values agreement had to be set to 5 5 5; 4 5 5 for
+#   elst/exch/ind ; disp.
+#   Now, with libsapt_solver using DF_BASIS_ELST defaulted to JKFIT,
+#   agreement to 7 7 7; 7 7 7 can be achieved. The former values for SAPT0
+#   are reproduced below by forcibly setting DF_BASIS_ELST to the RIFIT of
+#   the current orbital basis
+
+clean()
+clean_variables()
+
+set df_basis_elst aug-cc-pvdz-ri
+
+e = energy("sapt0", molecule=dimer)
+

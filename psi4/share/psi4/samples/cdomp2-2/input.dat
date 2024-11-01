@@ -1,0 +1,20 @@
+#! OMP2 cc-pVDZ energy for the NO molecule.
+
+
+molecule {
+0 2
+N
+O 1 1.158
+}
+
+set {
+  basis cc-pvdz
+  guess sad
+  reference uhf
+  freeze_core true
+  scf_type cd
+  mp2_type cd
+}
+energy('omp2')
+
+

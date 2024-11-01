@@ -1,0 +1,216 @@
+from __future__ import print_function
+#! A test of the basis specification.  Various basis sets are specified outright and in blocks, both
+#! orbital and auxiliary. Constructs libmints BasisSet objects through the constructor that calls
+#! qcdb.BasisSet infrastructure. Checks that the resulting bases are of the right size and checks
+#! that symmetry of the Molecule observes the basis assignment to atoms.
+
+#           cc-pvdz                 aug-cc-pvdz
+# BASIS     H  5/ 5   C  14/15      H +4/ 4   C  +9/10
+# RIFIT     H 14/15   C  56/66      H +9/10   C +16/20
+# JKFIT     H 23/25   C  70/81      H +9/10   C +16/20
+
+
+molecule mymol {
+C    0.0  0.0 0.0
+O    1.4  0.0 0.0
+H_r -0.5 -0.7 0.0
+H_l -0.5  0.7 0.0
+}
+
+#set print 3
+set basis cc-pvdz
+
+print('[1]    <<<  uniform cc-pVDZ  >>>')
+wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+mymol.print_out()
+
+
+print('[2]        <<<  RIFIT (default)  >>>')
+wert = psi4.core.BasisSet.build(mymol, 'DF_BASIS_MP2', '', 'RIFIT', get_global_option('BASIS'))
+mymol.print_out()
+
+
+print('[3]    <<<  cc-pVDZ w/ aug-cc-pVDZ on C  >>>')
+basis dz_PLUS {  # basis block resets BASIS to DZ_PLUS
+    assign cc-pvdz
+    assign c aug-cc-pvdz
+}
+wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+mymol.print_out()
+
+
+print('[4]        <<<  RIFIT (default)  >>>')
+wert = psi4.core.BasisSet.build(mymol, 'DF_BASIS_MP2', '', 'RIFIT', get_global_option('BASIS'))
+mymol.print_out()
+
+
+print('[5]    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H_R  >>>')
+basis dz_PLUSplus {
+    assign cc-pvdz
+    assign c aug-cc-pvdz
+    assign h_r aug-cc-pvdz
+}
+wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+mymol.print_out()
+
+
+print('[6]    <<<  RIFIT (custom: force cc-pVDZ on H, default on C, O)  >>>')
+df_basis_mp2 dz_PLUSplusRI {
+    #assign aug-cc-pvdz-ri
+    assign h cc-pvdz-ri
+}
+#wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', 'dz_plusplusri', 'RIFIT', 'dz_plusplus')
+wert = psi4.core.BasisSet.build(mymol, 'DF_BASIS_MP2', get_global_option('DF_BASIS_MP2'), 'RIFIT', get_global_option('BASIS'))
+mymol.print_out()
+
+
+print('[7]    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>')
+basis dz_PLUSplusplus {
+    assign cc-pvdz
+    assign c aug-cc-pvdz
+    assign h aug-cc-pvdz
+}
+#wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', 'dz_plusplusplus')
+wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+mymol.print_out()
+
+
+print('[8]        <<<  JKFIT (default)  >>>')
+#wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_SCF', '', 'JKFIT', 'dz_plusplusplus')
+wert = psi4.core.BasisSet.build(mymol, 'DF_BASIS_SCF', '', 'JKFIT', get_global_option('BASIS'))
+mymol.print_out()
+
+set basis aug-cc-pvdz
+
+print('[9]    <<<  aug-cc-pVDZ  >>>')
+wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+mymol.print_out()
+
+
+print('[10]       <<<  JKFIT (default)  >>>')
+wert = psi4.core.BasisSet.build(mymol, 'DF_BASIS_SCF', '', 'JKFIT', get_global_option('BASIS'))
+mymol.print_out()
+
+
+molecule mymol2 {
+C    0.0  0.0 0.0
+O    1.4  0.0 0.0
+H_r -0.5 -0.6 0.3
+H_l -0.5  0.6 0.3
+H_c -0.5  0.0 0.7
+}
+
+set basis dz_plusplusplus
+
+print('[11]   <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>')
+wert = psi4.core.BasisSet.build(mymol2, 'BASIS', get_global_option('BASIS'))
+mymol2.print_out()
+
+molecule hene {
+He
+Ne 1 2.0
+}
+
+basis disguised5z {
+    assign cc-pv5z
+}
+
+set_global_option('DF_BASIS_MP2', '')  # clear df_basis_mp2 {...} to get autoaux below
+
+print('[12]   <<<  cc-pV5Z on HeNe  >>>')
+wert = psi4.core.BasisSet.build(hene, 'BASIS', get_global_option('BASIS'))
+hene.print_out()
+
+print('[13]   <<<  RI for cc-pV5Z on HeNe  >>>')
+wert = psi4.core.BasisSet.build(hene, 'DF_BASIS_MP2', '', 'RIFIT', get_global_option('BASIS'))
+hene.print_out()
+
+print('[14]   <<<  impossible JK for cc-pV5Z on HeNe  >>>')
+error_tripped = 0
+try:
+    wert = psi4.core.BasisSet.build(hene, 'DF_BASIS_SCF', '', 'JKFIT', get_global_option('BASIS'))
+except qcdb.BasisSetNotFound:
+    error_tripped = 1
+
+df_basis_scf uggh {
+    assign he DEF2-QZVPP-JKFIT
+}
+
+print('[15]   <<<  forced JK for cc-pV5Z on HeNe  >>>')
+wert = psi4.core.BasisSet.build(hene, 'DF_BASIS_SCF', '', 'JKFIT', get_global_option('BASIS'))
+hene.print_out()
+
+
+#  Basis Set: CC-PV5Z
+#    Blend: CC-PV5Z
+#    Number of shells: 15
+#    Number of basis function: 55
+#    Number of Cartesian functions: 70
+#    Spherical Harmonics?: true
+#    Max angular momentum: 4
+#  Basis Set: CC-PV5Z
+#    Blend: CC-PV5Z
+#    Number of shells: 21
+#    Number of basis function: 91
+#    Number of Cartesian functions: 126
+#    Spherical Harmonics?: true
+#    Max angular momentum: 5
+
+
+#  Basis Set: CC-PV5Z-RI
+#    Blend: CC-PV5Z-RI
+#    Number of shells: 21
+#    Number of basis function: 91
+#    Number of Cartesian functions: 126
+#    Spherical Harmonics?: true
+#    Max angular momentum: 5
+#  Basis Set: CC-PV5Z-RI
+#    Blend: CC-PV5Z-RI
+#    Number of shells: 39
+#    Number of basis function: 193
+#    Number of Cartesian functions: 287
+#    Spherical Harmonics?: true
+#    Max angular momentum: 6
+
+
+# No HE
+#  Basis Set: CC-PV5Z-JKFIT
+#    Blend: CC-PV5Z-JKFIT
+#    Number of shells: 32
+#    Number of basis function: 146
+#    Number of Cartesian functions: 216
+#    Spherical Harmonics?: true
+#    Max angular momentum: 6
+
+
+#  Basis Set: DEF2-QZVPP-JKFIT
+#    Blend: DEF2-QZVPP-JKFIT
+#    Number of shells: 9
+#    Number of basis function: 23
+#    Number of Cartesian functions: 25
+#    Spherical Harmonics?: true
+#    Max angular momentum: 2
+#  Basis Set: DEF2-QZVPP-JKFIT
+#    Blend: DEF2-QZVPP-JKFIT
+#    Number of shells: 25
+#    Number of basis function: 77
+#    Number of Cartesian functions: 93
+#    Spherical Harmonics?: true
+#    Max angular momentum: 4
+
+
+#  Basis Set: DEF2-QZVPP-RI
+#    Blend: DEF2-QZVPP-RI
+#    Number of shells: 15
+#    Number of basis function: 47
+#    Number of Cartesian functions: 56
+#    Spherical Harmonics?: true
+#    Max angular momentum: 3
+#  Basis Set: DEF2-QZVPP-RI
+#    Blend: DEF2-QZVPP-RI
+#    Number of shells: 33
+#    Number of basis function: 141
+#    Number of Cartesian functions: 191
+#    Spherical Harmonics?: true
+#    Max angular momentum: 5
+

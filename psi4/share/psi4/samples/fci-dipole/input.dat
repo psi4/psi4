@@ -1,0 +1,18 @@
+#! 6-31G H2O Test FCI Energy Point
+
+
+molecule h2o {
+    O   0.0000000000   0.0000000000  -0.1252739752
+    H   0.0000000000   1.4294907237   0.9940944482
+    H   0.0000000000  -1.4294907237   0.9940944482
+units bohr
+}
+
+set {
+  basis 6-31G
+  print 2
+}
+
+thisenergy = prop('fci')
+
+

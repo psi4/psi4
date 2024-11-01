@@ -1,0 +1,42 @@
+#! HF/cc-pVDZ many body energies of an arbitrary noble gas trimer complex
+#! Size vs cost tradeoff is rough here
+
+comparison_dict = {}                                         #TEST
+comparison_dict['(1)@(1)']             = -2.855188398727     #TEST
+comparison_dict['(1)@(1, 2)']          = -2.855193408416     #TEST
+comparison_dict['(1)@(1, 3)']          = -2.855188327730     #TEST
+comparison_dict['(1)@(1, 2, 3)']       = -2.855193382488     #TEST
+comparison_dict['(2)@(2)']             = -526.799868279148   #TEST
+comparison_dict['(2)@(1, 2)']          = -526.799874019979   #TEST
+comparison_dict['(2)@(2, 3)']          = -526.799868279016   #TEST
+comparison_dict['(2)@(1, 2, 3)']       = -526.799874020110   #TEST
+comparison_dict['(3)@(3)']             = -128.488796610297   #TEST
+comparison_dict['(3)@(1, 3)']          = -128.488796099865   #TEST
+comparison_dict['(3)@(2, 3)']          = -128.488795946988   #TEST
+comparison_dict['(3)@(1, 2, 3)']       = -128.488795694888   #TEST
+comparison_dict['(1, 2)@(1, 2)']       = -529.655058616585   #TEST
+comparison_dict['(2, 3)@(2, 3)']       = -655.288664747813   #TEST
+comparison_dict['(1, 2)@(1, 2, 3)']    = -529.655058639489   #TEST
+comparison_dict['(2, 3)@(1, 2, 3)']    = -655.288670135984   #TEST
+comparison_dict['(1, 2, 3)@(1, 2, 3)'] = -658.143852757683   #TEST
+
+molecule noble_trimer {
+He 0 0 0
+--
+Ar 0 0 4
+--
+Ne 0 4 0
+}
+
+set {
+    e_convergence 1.e-10
+    d_convergence 1.e-10
+}
+
+energy('SCF/cc-pvdz', molecule=noble_trimer, bsse_type=['cp', 'nocp', 'vmfc'])
+
+for compl in comparison_dict.keys():
+    var_key = 'N-BODY %s TOTAL ENERGY' % compl                                #TEST
+    computed_value = psi4.variable(var_key)                               #TEST
+    compare_values(comparison_dict[compl], computed_value, 8, var_key)        #TEST
+

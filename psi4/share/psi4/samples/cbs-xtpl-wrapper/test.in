@@ -1,0 +1,266 @@
+#! RHF aug-cc-pVQZ energy for the BH molecule, with Cartesian input.
+#! Various gradients for a strained helium dimer and water molecule
+import numpy as np
+
+# <<<  energies  >>>
+
+nucenergy_ref =   8.8014655646      #TEST
+scf_dz_ref =    -76.0213974638      #TEST
+scf_tzvp_ref =  -76.0531455176      #TEST
+scf_adtz_ref =  -76.059124724830    #TEST
+scf_atqz_ref =  -76.060985115229    #TEST
+scf_adtqz_ref = -76.061691654613    #TEST
+mp2_addz_ref =  -76.261216702741    #TEST
+mp2_atz_ref =   -76.341088480148    #TEST
+mp2_adtz_ref =  -76.3667778886      #TEST
+mp2_atqz_ref =  -76.4038500042      #TEST
+
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
+molecule h2o {
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+}
+
+# Get a reasonable guess, to save some iterations
+set globals = {
+    scf_type      df
+    mp2_type      df
+    e_convergence 7
+    reference     rhf
+}
+
+h2o.update_geometry()
+compare_values(nucenergy_ref, h2o.nuclear_repulsion_energy(), 9, "[0] Nuclear repulsion energy") #TEST
+
+# SCF TESTS
+
+if distributed:
+    plan = energy("cbs", scf_wfn='SCF', scf_basis='cc-pVDZ', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_dz = plan.get_psi_results(client)
+else:
+    scf_dz = energy("cbs", scf_wfn='SCF', scf_basis='cc-pVDZ')
+compare_values(scf_dz_ref, scf_dz, 6, "[1] SCF/DZ Energy Check")  #TEST
+compare(1, variable('cbs number'), '[1] no')  #TEST
+
+#scf_tzvp = energy("cbs", scf_basis='def2-TZVP')
+if distributed:
+    plan = energy("cbs", scf_wfn='SCF', scf_basis='def2-TZVP', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_tzvp = plan.get_psi_results(client)
+else:
+    scf_tzvp = energy("cbs", scf_wfn='SCF', scf_basis='def2-TZVP')
+compare_values(scf_tzvp_ref, scf_tzvp, 6, "[2] SCF/TZVP Energy Check")  #TEST
+compare(1, variable('cbs number'), '[2] no')  #TEST
+
+if distributed:
+    plan = energy("cbs", scf_wfn='SCF', scf_basis='aug-cc-pV[23]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_adtz = plan.get_psi_results(client)
+else:
+    scf_adtz = energy("cbs", scf_wfn='SCF', scf_basis='aug-cc-pV[23]Z')
+compare_values(scf_adtz_ref, scf_adtz, 6, "[3] SCF/a[DT]Z Energy Check")  #TEST
+compare(2, variable('cbs number'), '[3] no')  #TEST
+
+# Three point extrapolation
+if distributed:
+    plan = energy("cbs", scf_wfn='SCF', scf_basis='aug-cc-pV[D3Q]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_adtqz = plan.get_psi_results(client)
+else:
+    scf_adtqz = energy("cbs", scf_wfn='SCF', scf_basis='aug-cc-pV[D3Q]Z')
+compare_values(scf_adtqz_ref, scf_adtqz, 6, "[4] SCF/a[DTQ]Z Energy Check")  #TEST
+compare(3, variable('cbs number'), '[4] no')  #TEST
+
+
+# MP2 TESTS
+
+if distributed:
+    plan = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV(D+d)Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_addz = plan.get_psi_results(client)
+else:
+    mp2_addz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV(D+d)Z')
+compare_values(mp2_addz_ref, mp2_addz, 6, "[5] MP2/a(D+d)Z Energy Check")  #TEST
+compare(1, variable('cbs number'), '[5] no')  #TEST
+
+if distributed:
+    plan = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pVTZ', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_atz = plan.get_psi_results(client)
+else:
+    mp2_atz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pVTZ')
+compare_values(mp2_atz_ref, mp2_atz, 6, "[6] MP2/aTZ Energy Check")  #TEST
+compare(1, variable('cbs number'), '[6] no')  #TEST
+
+if distributed:
+    plan = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV[2T]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_adtz = plan.get_psi_results(client)
+else:
+    mp2_adtz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV[2T]Z')
+compare_values(mp2_adtz_ref, mp2_adtz, 6, "[7] MP2/a[DT]Z Energy Check")  #TEST
+compare(2, variable('cbs number'), '[7] no')  #TEST
+
+if distributed:
+    plan = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV[T,Q]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_atqz = plan.get_psi_results(client)
+else:
+    mp2_atqz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV[T,Q]Z')
+compare_values(mp2_atqz_ref, mp2_atqz, 6, "[8] MP2/a[TQ]Z Energy Check")  #TEST
+compare(2, variable('cbs number'), '[8] no')  #TEST
+
+
+# <<<  gradients  >>>
+
+ref_scf_dz = psi4.core.Matrix.from_list([  #TEST
+    [0.0, 0.0, 0.01233095],  #TEST
+    [0.0, 0.0, -0.01233095]  #TEST
+])  #TEST
+ref_scf_tz = psi4.core.Matrix.from_list([  #TEST
+    [0.0, 0.0, 0.01246097],  #TEST
+    [0.0, 0.0, -0.01246097]  #TEST
+])  #TEST
+ref_scf_dtz = psi4.core.Matrix.from_list([  #TEST
+    [0.0, 0.0, 0.01249265],  #TEST
+    [0.0, 0.0, -0.01249265]  #TEST
+])  #TEST
+ref_scf_dtqz = psi4.core.Matrix.from_list([  #TEST
+    [0.0, 0.0, 0.01244412],  #TEST
+    [0.0, 0.0, -0.01244412]  #TEST
+])  #TEST
+ref_mp2_dtz = psi4.core.Matrix.from_list([  #TEST
+    [0.0, 0.0, 0.01155124],  #TEST
+    [0.0, 0.0, -0.01155124]  #TEST
+])  #TEST
+
+nucenergy_ref = 1.1759493570
+
+molecule he_dimer {
+    He 0 0 0
+    He 0 0 1.8
+}
+
+# Get a reasonable guess, to save some iterations
+set globals = {
+    scf_type      pk
+    mp2_type      conv
+    reference     rhf
+}
+
+clean()
+
+he_dimer.update_geometry()
+compare_values(nucenergy_ref, he_dimer.nuclear_repulsion_energy(), 9, "[10] Nuclear repulsion energy") #TEST
+
+# SCF TESTS
+
+if distributed:
+    plan = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pVDZ', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_dz = plan.get_psi_results(client)
+else:
+    scf_dz = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pVDZ')
+compare_matrices(ref_scf_dz, scf_dz, 6, "[11] SCF/cc-pVDZ Gradient")  #TEST
+compare(1, variable('cbs number'), '[11] no')  #TEST
+
+if distributed:
+    plan = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pVTZ', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_tz = plan.get_psi_results(client)
+else:
+    scf_tz = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pVTZ')
+compare_matrices(ref_scf_tz, scf_tz, 6, "[12] SCF/cc-pVTZ Gradient")  #TEST
+compare(1, variable('cbs number'), '[12] no')  #TEST
+
+if distributed:
+    plan = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pV[23]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_dtz = plan.get_psi_results(client)
+else:
+    scf_dtz = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pV[23]Z')
+compare_matrices(ref_scf_dtz, scf_dtz, 6, "[13] SCF/cc-pV[DT]Z Gradient")  #TEST
+compare(2, variable('cbs number'), '[13] no')  #TEST
+
+if distributed:
+    plan = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pV[DTQ]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_dtqz, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    scf_dtqz, wfn = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pV[DTQ]Z', return_wfn=True)
+compare_matrices(ref_scf_dtqz, scf_dtqz, 6, "[14] SCF/cc-pV[DTQ]Z Gradient")  #TEST
+compare(3, variable('cbs number'), '[14] no')  #TEST
+compare("scf", wfn.module(), "[14] module")  #TEST
+
+
+# MP2 TESTS
+if distributed:
+    plan = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_dtz, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    mp2_dtz, wfn = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', return_wfn=True)
+compare_matrices(ref_mp2_dtz, mp2_dtz, 6, "[15] MP2/cc-pV[DT]Z Gradient")  #TEST
+compare(4, variable('cbs number'), '[15] no')  #TEST
+compare("occ", wfn.module(), "[15] module")  #TEST
+
+if distributed:
+    plan = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', dertype='energy', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_dtz, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    mp2_dtz, wfn = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', dertype='energy', return_wfn=True)
+compare_matrices(ref_mp2_dtz, mp2_dtz, 6, "[16] MP2/cc-pV[DT]Z Gradient, dertype=0")  #TEST
+compare(2, variable('cbs number'), '[16] no')  #TEST
+compare(3, variable('findif number'), '[16] no')  #TEST
+compare("occ", wfn.module(), "[16] module")  #TEST
+
+# <<<  optimize  >>>
+
+molecule h2 {
+    H
+    H 1 R
+    R = 1
+}
+
+# Conventional to keep angular momentum low
+set {
+    scf_type      pk
+    mp2_type      conv
+    g_convergence GAU_VERYTIGHT
+    e_convergence 1.e-10
+}
+
+h2.update_geometry()
+compare_values(0.5291772107, h2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+
+# optimize() not yet configured for qcfractal/ddd
+optimize("cbs", scf_wfn='SCF', scf_basis='cc-pvdz')
+compare_values(0.747953788665, h2.R, 4, "[17] SCF/cc-pVDZ Optimized R")  #TEST
+
+optimize("cbs", scf_wfn='SCF', scf_basis='cc-pV[DT]Z')
+compare_values(0.730953222371, h2.R, 4, "[18] SCF/cc-pV[DT]Z Optimized R")  #TEST
+
+if distributed:
+    snowflake.stop()

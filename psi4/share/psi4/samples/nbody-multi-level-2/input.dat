@@ -1,0 +1,75 @@
+#! many-body different levels of theory on each body of helium tetramer
+
+memory 300 mb
+
+molecule m {
+0 1
+He 0.0 0.0 0.0
+--
+0 1
+He 0.0 0.0 2.0
+--
+0 1
+He 0.0 2.0 2.0
+--
+0 1
+He 2.0 2.0 2.0
+}
+
+vars_1 = ["NOCP-CORRECTED TOTAL ENERGY", "CP-CORRECTED TOTAL ENERGY","VMFC-CORRECTED TOTAL ENERGY",
+        "NOCP-CORRECTED INTERACTION ENERGY", "CP-CORRECTED INTERACTION ENERGY","VMFC-CORRECTED INTERACTION ENERGY"]
+
+vars_2 = ["4NOCP", "4CP", "4VMFC"]
+vars_3 = ["3NOCP", "3CP", "3VMFC"]
+
+levels_1 = {4:'hf/6-31g'}
+levels_2 = {1:'ccsd/6-31g', 4:'hf/6-31g'}
+levels_3 = {1:'ccsd/6-31g',2:'mp2/6-31g', 3:'hf/6-31g'}
+levels_4 = {1:'ccsd/6-31g',2:'mp2/6-31g', 'supersystem':'hf/6-31g'}
+
+ref1 = {"NOCP-CORRECTED TOTAL ENERGY"       :-11.41443642869664,
+        "CP-CORRECTED TOTAL ENERGY"         :-11.41396811230203,
+        "VMFC-CORRECTED TOTAL ENERGY"       :-11.41403632520438,
+        "NOCP-CORRECTED INTERACTION ENERGY" :0.0062797056721848,
+        "CP-CORRECTED INTERACTION ENERGY"   :0.0067480220667928,
+        "VMFC-CORRECTED INTERACTION ENERGY" :0.0066798091644493}
+
+ref2 = {"4NOCP"  : -11.47436885006691,
+        "4CP"    : -11.47390053367237,
+        "4VMFC"  : -11.47396874657488}
+
+ref3 = {"3NOCP"  : -11.47411506642999,
+        "3CP"    : -11.47349141626227,
+        "3VMFC"  : -11.47357018907939}
+
+ref4 = {"4NOCP"  : -11.47411915928889,
+        "4CP"    : -11.47340919259218,
+        "4VMFC"  : -11.47348895385019}
+
+
+
+
+
+e, wfn = psi4.energy("", levels=levels_1, bsse_type=['cp','nocp','vmfc'], return_wfn=True, return_total_data=True)
+
+for var in vars_1:
+    energy = wfn.variable(var)
+
+clean_variables()
+
+e, wfn = psi4.energy("", levels=levels_2, bsse_type=['cp','nocp','vmfc'], return_wfn=True, return_total_data=True)
+for var in vars_2:
+    energy = wfn.variable(var)
+
+clean_variables()
+
+e, wfn = psi4.energy("", levels=levels_3, bsse_type=['cp','nocp','vmfc'], return_wfn=True, return_total_data=True)
+for var in vars_3:
+    energy = wfn.variable(var)
+
+clean_variables()
+
+e, wfn = psi4.energy("", levels=levels_4, bsse_type=['cp','nocp','vmfc'], return_wfn=True, return_total_data=True)
+for var in vars_2:
+    energy = wfn.variable(var)
+

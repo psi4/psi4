@@ -1,0 +1,33 @@
+#! DC-06 calculation for the O2 molecule (triplet ground state). This performs 
+#! geometry optimization using two-step and simultaneous solution of the 
+#! response equations for the analytic gradient.
+
+
+molecule O2 {
+0 3
+O
+O 1 R
+R = 1.230
+}
+
+set {
+    r_convergence            10
+    algorithm                twostep
+    response_algorithm       twostep
+    basis                    dzp
+    max_disp_g_convergence   1e-6
+    rms_force_g_convergence  1e-6
+    max_energy_g_convergence 1e-6
+    reference                uhf
+}
+
+set dct_functional dc-06
+optimize('dct')
+
+
+set response_algorithm simultaneous
+O2.R = 1.232
+
+optimize('dct')
+
+

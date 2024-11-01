@@ -1,0 +1,85 @@
+#! F-SAPT0/jun-cc-pvdz procedure for methane dimer 
+
+memory 1 GB
+
+molecule mol {
+0 1
+C 0.00000000 0.00000000 0.00000000
+H 1.09000000 0.00000000 0.00000000
+H -0.36333333 0.83908239 0.59332085
+H -0.36333333 0.09428973 -1.02332709
+H -0.36333333 -0.93337212 0.43000624
+--
+0 1
+C 6.44536662 -0.26509169 -0.00000000
+H 7.53536662 -0.26509169 -0.00000000
+H 6.08203329 0.57399070 0.59332085
+H 6.08203329 -0.17080196 -1.02332709
+H 6.08203329 -1.19846381 0.43000624
+symmetry c1
+no_reorient
+no_com
+}
+
+set {
+basis         jun-cc-pvdz
+scf_type df
+guess sad
+freeze_core true
+}
+
+energy('fisapt0-d3m')
+
+keys = ['Enuc', 'Eelst', 'Eexch', 'Eind', 'Eedisp', 'Etot']  #TEST
+
+Eref = {  #TEST
+    'Enuc'  : 35.07529824960602,        #TEST
+    'Eelst' : -3.8035153870907834e-06,  #TEST
+    'Eexch' : 1.7912112685446533e-07,   #TEST
+    'Eind'  : -3.833795151474493e-08,   #TEST
+    'Eedisp': -0.00005312000,           #TEST
+    'Etot'  : -0.00005678273            #TEST
+    }  #TEST
+
+
+Epsi = {  #TEST
+    'Enuc'  : mol.nuclear_repulsion_energy(),           #TEST
+    'Eelst' : variable("SAPT ELST ENERGY"),    #TEST
+    'Eexch' : variable("SAPT EXCH ENERGY"),    #TEST
+    'Eind'  : variable("SAPT IND ENERGY"),     #TEST
+    'Eedisp' : variable("FISAPT0-D DISP ENERGY"),    #TEST
+    'Etot'  : variable("FISAPT0-D TOTAL ENERGY"),  #TEST
+    }  #TEST
+
+for key in keys:  #TEST
+    compare_values(Eref[key], Epsi[key], 6, key)  #TEST
+
+import os
+import sys
+import subprocess
+
+os.chdir('fsapt')
+with open('fA.dat', 'w') as fA: fA.write("MethylA 1 2 3 4 5")
+with open('fB.dat', 'w') as fB: fB.write("MethylB 6 7 8 9 10")
+subprocess.run([sys.executable, os.path.join('..', 'fsapt.py')], check=True)
+
+fEnergies = {}
+fkeys = ['fEelst', 'fEexch', 'fEindAB', 'fEindBA', 'fEdisp', 'fEedisp', 'fEtot']    #TEST 
+
+with open('fsapt.dat', 'r') as fsapt:                                    #TEST
+    Energies = [float(x) for x in fsapt.readlines()[-2].split()[2:]]     #TEST
+
+for pair in zip(fkeys,Energies):            #TEST
+    fEnergies[pair[0]] = pair[1] #TEST
+
+fEref = {               #TEST
+    'fEelst' : -0.002,  #TEST 
+    'fEexch' :  0.000,  #TEST  
+    'fEindAB': -0.000,  #TEST 
+    'fEindBA': -0.000,  #TEST 
+    'fEdisp' :  0.000,  #TEST 
+    'fEedisp': -0.033,  #TEST 
+    'fEtot'  : -0.036}  #TEST
+
+for key in fkeys:                                      #TEST
+    compare_values(fEref[key], fEnergies[key], 2, key) #TEST                  

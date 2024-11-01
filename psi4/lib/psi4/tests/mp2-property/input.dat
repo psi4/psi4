@@ -1,0 +1,31 @@
+#! MP2 cc-pvDZ properties for Nitrogen oxide
+
+molecule nos {
+   O 0 0 0
+   N 0 0 1.18
+   N 0 0 2.21
+#symmetry c1
+}
+
+set {
+    basis cc-pvdz
+    e_convergence 10
+}
+
+nos.update_geometry()
+nos.print_out()
+compare_values(63.6969598646, nos.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+
+props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
+         'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',
+         'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
+         'MULTIPOLE(3)', 'NO_OCCUPATIONS']
+
+mp2_e, mp2_wfn = prop('MP2', properties = props, return_wfn=True)
+
+compare_values(-184.1840201594929454, psi4.variable('CURRENT ENERGY'), 6, "MP2 Energy") #TEST
+compare_values(np.array([0, 0, 0.234000203994]) / constants.dipmom_au2debye, variable("MP2 DIPOLE"), 4, "MP2 DIPOLE")  #TEST
+compare_values(np.array([[-14.731131601691, 0, 0], [0, -14.731131601691, 0], [0, 0, -19.287283345539]]) / (constants.dipmom_au2debye * constants.bohr2angstroms),  #TEST
+    variable("MP2 QUADRUPOLE"), 4, "MP2 QUADRUPOLE")  #TEST
+compare_values(np.array([0, 0, -0.9526489, 0, 0, 0, -0.9526489, 0, 0, 0, 0, 0, 0, 0, -0.9526489, 0, -0.9526489, 0, -0.9526489, 0, 0, 0, -0.9526489, 0, 0, 0, -6.8644462]).reshape((3, 3, 3)),
+    variable("MP2 OCTUPOLE"), 4, "MP2 OCTUPOLE")  #TEST

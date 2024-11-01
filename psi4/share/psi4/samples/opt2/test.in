@@ -1,0 +1,45 @@
+#! SCF DZ allene geometry optimization, with Cartesian input, first in c2v symmetry,
+#! then in Cs symmetry from a starting point with a non-linear central bond angle.
+
+nucenergy =   59.2532646680161                                                                 #TEST
+refenergy = -115.8302823663                                                                    #TEST
+
+# starting point is D2d/c2v
+molecule allene {
+ H  0.0  -0.92   -1.8
+ H  0.0   0.92   -1.8
+ C  0.0   0.00   -1.3
+ C  0.0   0.00    0.0
+ C  0.0   0.00    1.3
+ H  0.92  0.00    1.8
+ H -0.92  0.00    1.8
+}
+
+set {
+  basis DZ
+  e_convergence 10
+  d_convergence 10
+  scf_type pk
+}
+
+thisenergy = optimize('scf')
+
+compare_values(nucenergy, allene.nuclear_repulsion_energy(), 2, "Nuclear repulsion energy")    #TEST
+compare_values(refenergy, thisenergy, 6, "Reference energy")                                   #TEST
+
+# central C-C-C bond angle starts around 170 degrees to test the dynamic addition
+# of new linear bending coordinates, and the redefinition of dihedrals.
+molecule allene {
+ H  0.0  -0.92   -1.8
+ H  0.0   0.92   -1.8
+ C  0.0   0.00   -1.3
+ C  0.0   0.10    0.0
+ C  0.0   0.00    1.3
+ H  0.92  0.00    1.8
+ H -0.92  0.00    1.8
+}
+
+thisenergy = optimize('scf')
+
+compare_values(nucenergy, allene.nuclear_repulsion_energy(), 2, "Nuclear repulsion energy")    #TEST
+compare_values(refenergy, thisenergy, 6, "Reference energy")                                   #TEST

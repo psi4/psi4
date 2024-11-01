@@ -1,0 +1,46 @@
+#! ROHF frontier orbitals of CH2(s) and CH2(t).
+
+molecule ch2s {
+0 1
+ C
+ H 1 R
+ H 1 R 2 109.5
+}
+
+
+molecule ch2t {
+0 3
+ C
+ H 1 R
+ H 1 R 2 109.5
+}
+
+ch2s.R = 1.109 * 0.52917721067 / 0.52917720859
+ch2t.R = 1.109 * 0.52917721067 / 0.52917720859
+
+set basis cc-pvdz
+set df_scf_guess  false
+set scf_type pk
+set cubeprop_tasks ['frontier_orbitals']
+set cubic_grid_overage [1.0,1.0,1.0]
+set e_convergence 12
+set d_convergence 12
+set DOCC [3, 0, 0, 1]
+
+set reference rhf
+scf_e, scf_wfn = energy('scf', return_wfn=True, molecule=ch2s)
+cubeprop(scf_wfn)
+
+compare_cubes("CH2s_HOMO.cube.ref","Psi_a_4_3-A1_HOMO.cube", "Comparing singlet HOMO") #TEST
+compare_cubes("CH2s_LUMO.cube.ref","Psi_a_5_1-B1_LUMO.cube", "Comparing singlet LUMO") #TEST
+
+set reference rohf
+set DOCC [2, 0, 0, 1]
+set SOCC [1, 0, 1, 0]
+scf_e, scf_wfn = energy('scf', return_wfn=True, molecule=ch2t)
+cubeprop(scf_wfn)
+
+compare_cubes("CH2t_3_DOMO.cube.ref","Psi_a_3_1-B2_DOMO.cube", "Comparing triplet DOMO") #TEST
+compare_cubes("CH2t_4_SOMO.cube.ref","Psi_a_4_3-A1_SOMO.cube", "Comparing triplet SOMO") #TEST
+compare_cubes("CH2t_5_SOMO.cube.ref","Psi_a_5_1-B1_SOMO.cube", "Comparing triplet SOMO") #TEST
+compare_cubes("CH2t_6_LVMO.cube.ref","Psi_a_6_4-A1_LVMO.cube", "Comparing triplet LVMO") #TEST

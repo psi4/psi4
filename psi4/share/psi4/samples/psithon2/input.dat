@@ -1,0 +1,85 @@
+#! Accesses basis sets, databases, plugins, and executables in non-install locations
+
+import os
+os.environ['PSIPATH'] = os.path.pathsep.join(['psiaux1', 'psiaux2'])
+
+###########################
+molecule h2o {
+  O 
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+set basis cc-pVDZ
+energy('scf')
+
+clean()
+
+
+set {
+    BASIS sto-3g
+    DF_BASIS_SCF  cc-pVDZ-JKFIT
+    DF_BASIS_SAPT cc-pVDZ-RI
+    DF_BASIS_MP2  cc-pVDZ-RI
+    REFERENCE RHF
+    SCF_TYPE DF
+    PRINT 1
+    R_CONVERGENCE 11
+    JOBTYPE SP
+    GUESS CORE
+}
+
+S22mad = database('sapt0','s44',subset=[2,8],BENCHMARK='s22A')
+S22mad = database('sapt0','s22',subset=[2,8],BENCHMARK='s22A')
+clean()
+
+###########################
+# PYTHONPATH must include directory above plugin directory.
+#     Define either externally or here, then import plugin.
+#sys.path.insert(0, './..')
+import myplugin1
+
+molecule water {
+O
+H 1 R
+H 1 R 2 A
+
+R = .9
+A = 104.5
+symmetry c1
+}
+
+set {
+  basis sto-3g
+    DF_BASIS_SCF  cc-pVDZ-RI
+}
+
+set myplugin1 {
+  print 1
+}
+
+energy('myplugin1')
+
+clean()
+
+###########################
+set basis mysto3g
+set df_basis_scf myccpvdzri
+energy('scf')
+clean()
+
+###########################
+molecule h2o {
+  O 
+  H 1 0.96
+  H 1 0.96 2 104.5
+symmetry c1
+}
+
+set basis cc-pVDZ
+set df_basis_scf cc-pVDZ-JKFIT
+energy('scf')
+
+clean()
+
+

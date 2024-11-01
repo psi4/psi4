@@ -1,0 +1,92 @@
+#! Maximum Overlap Method (MOM) Test.
+#!
+#! MOM is designed to stabilize SCF convergence
+#! and to target excited Slater determinants directly.
+#
+# The latter is somewhat dicey, you never know what 
+# you are going to find.
+
+
+# Standard water molecule
+molecule water {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+
+# => Ground state SCF <= #
+
+# Occupied Orbitals:
+#  1 1A1 -20.55 
+#  2 2A1  -1.32
+#  3 1B2  -0.68 
+#  4 3A1  -0.56
+#  5 1B1  -0.49
+# ----------
+#  6 4A1   0.17
+#  7 2B2   0.25
+#  ......
+#
+#  Total Energy -76.021418
+
+set {
+basis cc-pvdz
+e_convergence 12
+d_convergence 10
+reference rhf
+scf_type pk
+}
+
+E = energy('scf')
+
+# => First excited singlet (AB 1B1->AB 4A1) <= #  
+
+# Total Energy -75.277551
+
+set {
+reference rhf
+# Give the ground-state orbitals 10 iterations to settle
+mom_start 10
+# Annihilate absolute orbital 5 (the HOMO)
+mom_occ [5]
+# Create absolute orbital 6 instead (the LUMO)
+mom_vir [6]
+}
+
+E = energy('scf')
+
+# => Core-excited singlet (AB 3A1->AB 4A1) <= #  
+
+# Total Energy -75.091928
+
+set {
+reference rhf
+mom_start 10
+# Annihilate absolute orbital 4 (the HOMO - 1)
+mom_occ [4]
+# Create absolute orbital 6 instead (the LUMO)
+mom_vir [6]
+}
+
+E = energy('scf')
+
+# => First excited triplet (B 1B1->A 4A1) <= #  
+
+# NOTE: - is used to index beta obitals in UHF
+#       + is used to index alpha orbitals in UHF
+
+# Total Energy -75.792007 
+
+set {
+# Use UHF for spin-flip
+reference uhf
+mom_start 10
+# Annihilate absolute beta orbital 5 (the HOMO)
+mom_occ [-5]
+# Create absolute alpha orbital 6 instead (the LUMO)
+mom_vir [6]
+}
+
+E = energy('scf')

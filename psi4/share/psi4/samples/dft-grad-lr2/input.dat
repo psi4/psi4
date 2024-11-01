@@ -1,0 +1,48 @@
+#! Tests CAM gradients with and without XC pieces to narrow grid error
+
+
+
+molecule {
+    H  0.000  0.000  0.000
+    F  0.000  0.000  1.100
+}
+
+
+set {
+    scf_type              df
+    basis                 cc-pvdz
+    dft_radial_points     120
+    dft_spherical_points  434
+    e_convergence         12
+    d_convergence         10
+    points 5
+}
+
+func = {
+    "name": "random",
+    "x_hf": {
+        "alpha": 0.6,
+        "beta": 0.9,
+        "omega": 0.2
+    },
+    "c_functionals": {}
+}
+
+anl_grad = gradient('scf', dft_functional=func, dertype=1)
+fd_grad = gradient('scf', dft_functional=func, dertype=0)
+
+anl_grad = gradient('scf', dft_functional="CAM-B3LYP", dertype=1)
+fd_grad = gradient('scf', dft_functional="CAM-B3LYP", dertype=0)
+
+molecule {
+    1 2
+    H  0.000  0.000  0.000
+    F  0.000  0.000  1.100
+}
+
+set reference uks
+fd_grad = gradient('scf', dft_functional=func, dertype=0)
+anl_grad = gradient('scf', dft_functional=func, dertype=1)
+
+anl_grad = gradient('scf', dft_functional="CAM-B3LYP", dertype=1)
+fd_grad = gradient('scf', dft_functional="CAM-B3LYP", dertype=0)

@@ -1,0 +1,27 @@
+#! RHF orbitals and density for water.
+
+molecule h2o {
+0 1
+#O
+#H 1 R
+#H 1 R 2 104.5
+O@15.99491461956
+H@1.00782503207  1 R
+H@1.00782503207  1 R 2 104.5
+}
+
+h2o.R = 0.52917721067 / 0.52917720859
+
+set basis cc-pvqz
+set cubeprop_tasks ['esp']
+set e_convergence 12
+set d_convergence 12
+
+e, wfn = energy('scf', return_wfn=True)
+cubeprop(wfn)
+
+for s in ['Dt', 'ESP']:
+    ref_cube = '%s.cube.ref' % s
+    this_cube = '%s.cube' % s
+    compare_cubes(ref_cube,this_cube,"Comparing %s" % s) #TEST
+

@@ -1,0 +1,50 @@
+#! Test SCF dipole derivatives against old Psi3 reference values
+
+ref_energy = -78.01198983530274                                        #TEST
+ref_dipder = np.array([                                                #TEST
+     [ -0.0841019829,       0.0000000000,       0.0000000000,          #TEST
+       -0.0841019829,       0.0000000000,       0.0000000000,          #TEST
+        0.0420509914,      -0.5105760573,       0.0000000000,          #TEST
+        0.0420509914,       0.5105760573,       0.0000000000,          #TEST
+        0.0420509914,       0.5105760573,       0.0000000000,          #TEST
+        0.0420509914,      -0.5105760573,       0.0000000000],         #TEST
+     [  0.0000000000,       0.8591577608,       0.0000000000,          #TEST
+        0.0000000000,       0.8591577608,       0.0000000000,          #TEST
+       -0.4230783027,      -0.4295788804,       0.0000000000,          #TEST
+        0.4230783027,      -0.4295788804,       0.0000000000,          #TEST
+        0.4230783027,      -0.4295788804,       0.0000000000,          #TEST
+       -0.4230783027,      -0.4295788804,       0.0000000000],         #TEST
+     [  0.0000000000,       0.0000000000,      -1.8293459180,          #TEST
+        0.0000000000,       0.0000000000,      -1.8293459180,          #TEST
+        0.0000000000,       0.0000000000,       0.9146729590,          #TEST
+        0.0000000000,       0.0000000000,       0.9146729590,          #TEST
+        0.0000000000,       0.0000000000,       0.9146729590,          #TEST
+        0.0000000000,       0.0000000000,       0.9146729590]])        #TEST
+ref_frequencies = np.array(                                            #TEST
+         [ 913.03885413, 1111.72520574, 1140.53100754, 1142.92951947,  #TEST
+          1356.13505719, 1491.23000869, 1613.9468836,  1808.84736263,  #TEST
+          3321.35225239, 3350.15280409, 3415.68299952, 3448.49429407]  #TEST
+)                                                                      #TEST
+
+molecule {
+    C       -1.2602962432        0.0000000000        0.0000000000
+    C        1.2602962432        0.0000000000        0.0000000000
+    H       -2.3303912628       -1.7258024530        0.0000000000
+    H        2.3303912628       -1.7258024530        0.0000000000
+    H       -2.3303912628        1.7258024530        0.0000000000
+    H        2.3303912628        1.7258024530        0.0000000000
+    units bohr
+}
+
+set scf_type pk
+set d_convergence 10
+
+e, wfn = frequency('SCF/DZ', return_wfn=True)
+
+# Convert dipole derivatives to Debye/Ang units
+dipder = wfn.variable('SCF DIPOLE GRADIENT').np * psi_dipmom_au2debye / psi_bohr2angstroms
+
+# The differences in values are due to updated CODATA physical constants
+compare_values(ref_energy, e, 1e-8, "SCF energy")                             #TEST
+compare_arrays(ref_frequencies, wfn.frequencies(), 1e-4, "SCF frequencies")   #TEST
+compare_arrays(ref_dipder.T, dipder, 1e-4, "SCF dipole derivatives")          #TEST

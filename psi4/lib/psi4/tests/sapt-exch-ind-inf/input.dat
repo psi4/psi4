@@ -1,0 +1,34 @@
+#! SAPT(DFT) aug-cc-pVDZ interaction energy between Ne and Ar atoms.
+
+Eref = {'Exch-Ind20,u (A<-B)':           0.00749283, # TEST
+        'Exch-Ind20,u (A->B)':           0.07674835, # TEST
+        'Exch-Ind20,u':                  0.08424119, # TEST
+        'Exch-Ind20,u (A<-B) (S^inf)':   0.00749701, # TEST
+        'Exch-Ind20,u (A->B) (S^inf)':   0.07677809, # TEST
+        'Exch-Ind20,u (S^inf)':          0.08427511, # TEST
+        'Exch-Ind20,r (A<-B)':           0.00838528, # TEST
+        'Exch-Ind20,r (A->B)':           0.08663184, # TEST
+        'Exch-Ind20,r':                  0.09501712, # TEST
+        'Exch-Ind20,r (A<-B) (S^inf)':   0.00839011, # TEST
+        'Exch-Ind20,r (A->B) (S^inf)':   0.08666563, # TEST
+        'Exch-Ind20,r (S^inf)':          0.09505574} # TEST
+
+
+molecule dimer {
+  Ne
+  --
+  Ar 1 6.5
+  units bohr
+}
+
+set {
+    basis              aug-cc-pvdz
+    scf_type           df
+    DO_IND_EXCH_SINF   True
+}
+
+set SAPT_DFT_FUNCTIONAL HF
+energy('sapt(dft)', molecule=dimer)
+
+for k, v in Eref.items():                                  # TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, k) # TEST

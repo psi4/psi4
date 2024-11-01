@@ -1,0 +1,27 @@
+#! SCF DZ allene geometry optimzation, with Cartesian input
+
+nucenergy =   59.2532646680161                                                                 #TEST
+refenergy = -115.8302823663                                                                    #TEST
+
+molecule allene {
+  H -2.0  0.0  1.0
+  H -2.0  0.0 -1.0
+  C -1.5  0.0  0.0
+  C  0.0  0.0  0.0
+  C  1.5  0.0  0.0
+  H  2.0  1.0  0.0
+  H  2.0 -1.0  0.0
+}
+
+set {
+  basis DZ
+  e_convergence 10
+  d_convergence 10
+  dertype none
+  scf_type pk
+}
+
+thisenergy = optimize('scf')
+
+compare_values(nucenergy, allene.nuclear_repulsion_energy(), 2, "Nuclear repulsion energy")    #TEST
+compare_values(refenergy, thisenergy, 2, "Reference energy")                                   #TEST

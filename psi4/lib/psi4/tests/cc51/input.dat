@@ -1,0 +1,25 @@
+#! EOM-CC3/cc-pVTZ on H2O
+
+molecule h2o {
+  0 1
+# H2O Re geom from Olsen et al., JCP 104, 8007 (1996)
+  O 0.0  0.00000000 -0.00900000
+  H 0.0 -1.51526300 -1.05889800
+  H 0.0  1.51526300 -1.05889800
+  units bohr
+}
+
+set {
+  basis "cc-pVTZ"
+  roots_per_irrep [0, 0, 1, 0]
+}
+
+scf_ref = -76.0544373134 # TEST
+cc3_ref = -76.3441289194 # TEST
+eom_ref = -76.0519836445 # TEST
+
+energy('eom-cc3')
+compare_values(scf_ref, variable("SCF TOTAL ENERGY"), 6, "SCF energy")              #TEST
+compare_values(cc3_ref, variable("CC3 TOTAL ENERGY"), 6, "CC3 energy")              #TEST
+compare_values(eom_ref, variable("CC ROOT 1 TOTAL ENERGY"), 6, "EOM-CC3 energy")    #TEST
+

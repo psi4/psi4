@@ -1,0 +1,48 @@
+#! BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
+
+d2au = 1 / constants.dipmom_au2debye  #TEST
+
+refnuc   =   4.9195382069     #TEST
+refscf   = -25.94361431841737 #TEST
+refci1   = -26.0272269243438  #TEST
+refcorr1 =  refci1 - refscf   #TEST
+refci2   = -25.8061525641285  #TEST
+refcorr2 =  refci2 - refscf   #TEST
+
+refDipHF  = -2.0382556540 #TEST
+refDipCI1 = -2.1107857680 #TEST
+refDipCI2 =  9.4163546404 #TEST
+refTDM    =  1.6045931018 #TEST
+
+molecule bh_h2p {
+1 2
+B     0.10369114     0.00000000     0.00000000
+H    -1.13269886     0.00000000     0.00000000
+H     3.00000000     0.37149000     0.00000000
+H     3.00000000    -0.37149000     0.00000000
+}
+
+set {
+  reference     rohf
+  basis         cc-pVDZ 
+  docc          [3,0,0,0]
+  socc          [1,0,0,0]
+  freeze_core   true
+  num_roots     2
+}
+
+set scf d_convergence 10
+set detci e_convergence 8
+
+thisenergy = prop('fci', properties=['DIPOLE', 'QUADRUPOLE', 'TRANSITION_DIPOLE', 'TRANSITION_QUADRUPOLE'])
+
+compare_values(refnuc, bh_h2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
+compare_values(refscf, variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
+compare_values(refci1, thisenergy,                      7, "CI ROOT 0 ENERGY") #TEST
+compare_values(refci2,   variable("CI ROOT 1 TOTAL ENERGY"),       7, "CI ROOT 1 ENERGY") #TEST
+compare_values(refcorr1, variable("CI ROOT 0 CORRELATION ENERGY"), 7, "CI ROOT 0 correlation energy")  #TEST
+compare_values(refcorr2, variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI ROOT 1 correlation energy")  #TEST
+compare_values(refDipHF * d2au, variable("SCF DIPOLE")[2], 3, "SCF Z Component of dipole")      #TEST
+compare_values(refDipCI1 * d2au, variable("CI ROOT 0 DIPOLE")[2], 3, "CI ROOT 0 Z Component of dipole")        #TEST
+compare_values(refDipCI2 * d2au, variable("CI ROOT 1 DIPOLE")[2], 3, "CI ROOT 1 Z Component of dipole")        #TEST
+compare_values(refTDM * d2au, abs(variable("CI ROOT 0 -> ROOT 1 DIPOLE")[2]), 3, "CI ROOT 0 -> ROOT 1 Z Component of dipole")        #TEST

@@ -1,0 +1,35 @@
+#! Tests the Psi4 SF-SAPT code
+
+molecule dimer {
+# Set the spin of A
+0 2
+Li   0.00    0.00    0.00
+--
+# Set the spin of B
+0 2
+H   0.000   0.00   10.00
+symmetry c1
+units bohr
+}
+
+set {
+basis cc-pVDZ
+scf_type pk
+e_convergence 1e-8
+d_convergence 1e-8
+reference rohf
+}
+
+
+compare_dict = { #TEST
+    "SAPT ELST ENERGY":                 -0.02368051, #TEST
+    "SAPT EXCH ENERGY":                  0.14186858, #TEST
+    "SAPT EXCH10(S^2),HIGHSPIN ENERGY":          0.14186858, #TEST
+    "SAPT EXCH10(S^2),DIAGONAL ENERGY":          0.00010209, #TEST
+    "SAPT EXCH10(S^2),OFF-DIAGONAL ENERGY":      0.14176648, #TEST
+} #TEST
+
+energy("SF-SAPT")
+
+for k, v in compare_dict.items():  #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, k)  #TEST

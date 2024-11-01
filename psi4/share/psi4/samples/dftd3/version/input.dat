@@ -1,0 +1,129 @@
+#! Exercises the various DFT-D corrections, both through python directly and through c++
+#! all dft values updated to new BraggSlater radii
+
+d3_engine = psi4.driver.EmpiricalDispersion(name_hint="b3lyp", level_hint="d3bj").engine
+
+# S22-9, B3LYP
+
+# S22-9 monomer, all fctl
+
+
+# <<<  Part 1  >>>
+
+molecule eeee {
+C  -0.471925  -0.471925  -1.859111
+C   0.471925   0.471925  -1.859111
+H  -0.872422  -0.872422  -0.936125
+H   0.872422   0.872422  -0.936125
+H  -0.870464  -0.870464  -2.783308
+H   0.870464   0.870464  -2.783308
+--
+0 1
+C  -0.471925   0.471925   1.859111
+C   0.471925  -0.471925   1.859111
+H  -0.872422   0.872422   0.936125
+H   0.872422  -0.872422   0.936125
+H  -0.870464   0.870464   2.783308
+H   0.870464  -0.870464   2.783308
+units angstrom
+}
+
+mAuncp = eeee.extract_subsets(1)
+mBuncp = eeee.extract_subsets(2)
+mAcp = eeee.extract_subsets(1, 2)
+mBcp = eeee.extract_subsets(2, 1)
+
+eeee.update_geometry()
+mAuncp.update_geometry()
+mBuncp.update_geometry()
+mAcp.update_geometry()
+mBcp.update_geometry()
+
+fctl = 'b3lyp'
+der = 0
+hasD3M = True
+if d3_engine == "dftd3":
+    try:
+        for dlvl in ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']:
+            E = eeee.run_dftd3(fctl, dlvl, dertype=der)
+            E = mAuncp.run_dftd3(fctl, dlvl, dertype=der)
+            E = mBcp.run_dftd3(fctl, dlvl, dertype=der)
+    except qcdb.Dftd3Error as e:
+        print("""dftd3 version cannot compute some -D variants. some future tests will not be run""")
+        hasD3M = False
+
+#hasD3M = False  # temporary until fctl released into superfunctionals list
+# why have the hasD3M switch, you ask? why not just try catch throughout to
+#   accomodate old and new dftd3 exe? the answer is we can't catch from c-side.
+
+# <<<  Part 2  >>>
+
+set basis sto-3g
+set df_basis_scf cc-pvdz-ri
+set scf_type df
+set dft_radial_points 50  # use really bad grid for speed since all we want is the -D value
+set dft_spherical_points 110
+#set scf print 3  # will print dftd3 program output to psi4 output file
+
+energy('b3lyp-d2', molecule=eeee)
+# single test below fails for mysterious dft reasons
+
+energy('b3lyp-d3', molecule=mAuncp)
+
+energy('b3lyp-d3bj', molecule=mAcp)
+
+if hasD3M:
+    energy('b3lyp-d3m', molecule=mBuncp)
+    
+    energy('b3lyp-d3mbj', molecule=mBcp)
+
+
+# <<<  Part 3  >>>
+qeeee = qcdb.Molecule("""
+C  -0.471925  -0.471925  -1.859111
+C   0.471925   0.471925  -1.859111
+H  -0.872422  -0.872422  -0.936125
+H   0.872422   0.872422  -0.936125
+H  -0.870464  -0.870464  -2.783308
+H   0.870464   0.870464  -2.783308
+--
+0 1
+C  -0.471925   0.471925   1.859111
+C   0.471925  -0.471925   1.859111
+H  -0.872422   0.872422   0.936125
+H   0.872422  -0.872422   0.936125
+H  -0.870464   0.870464   2.783308
+H   0.870464  -0.870464   2.783308
+units angstrom
+""")
+
+# note that it's extract_fragments on a qcdb.Mol, not extract_subsets
+qmAuncp = qeeee.extract_fragments(1)
+qmBuncp = qeeee.extract_fragments(2)
+qmAcp = qeeee.extract_fragments(1, 2)
+qmBcp = qeeee.extract_fragments(2, 1)
+
+qeeee.update_geometry()
+qmAuncp.update_geometry()
+qmBuncp.update_geometry()
+qmAcp.update_geometry()
+qmBcp.update_geometry()
+
+levels = ['d2', 'd3zero', 'd3bj']
+if d3_engine == "dftd3":
+    if hasD3M:
+        levels.extend(['d3mzero', 'd3mbj'])
+    for dlvl in levels:
+            E = qeeee.run_dftd3(fctl, dlvl, dertype=der)
+            E = qmAuncp.run_dftd3(fctl, dlvl, dertype=der)
+            E = qmBcp.run_dftd3(fctl, dlvl, dertype=der)
+
+
+# <<<  Part 4  >>>
+
+set freeze_core false
+if hasD3M:
+    for fl in ['blyp', 'b3lyp', 'b2plyp', 'bp86', 'pbe', 'pbe0', 'b97', 'wpbe']:
+        energy(fl + '-d3mbj', molecule=mBuncp)
+        energy(fl + '-d3mzero', molecule=mBuncp)
+

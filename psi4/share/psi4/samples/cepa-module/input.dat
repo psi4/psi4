@@ -1,0 +1,158 @@
+#! routing check on lccd, lccsd, cepa(0).
+
+
+
+molecule hf {
+H
+F 1 0.917
+}
+
+molecule bh_h2p {
+1 2
+B     0.10369114     0.00000000     0.00000000
+H    -1.13269886     0.00000000     0.00000000
+H     3.00000000     0.37149000     0.00000000
+H     3.00000000    -0.37149000     0.00000000
+}
+
+molecule interloper {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776
+}
+
+set basis cc-pvdz
+set scf_type df
+set guess sad
+set freeze_core true
+set e_convergence 8
+set d_convergence 7
+
+def labeler():
+    theme = """%s %s %s %s: %s""" % (name,
+                                     psi4.get_option('SCF', 'REFERENCE').lower(),
+                                     psi4.get_global_option('CC_TYPE').lower(),
+                                     'fc' if psi4.get_global_option('FREEZE_CORE') else 'nfc',
+                                     psi4.get_global_option('QC_MODULE').lower())
+    return theme
+
+def gogo(name, mol, theme):
+    retE = energy(name, molecule=mol)
+    clean_variables()
+    clean()
+
+# <<<  RHF CONV  >>>
+
+set reference rhf
+set cc_type conv
+
+# lccd occ rhf fc df+conv
+scftot =   -100.019400605629
+cepacorl =   -0.20794256795568
+cepatot =  -100.22734317358510
+
+set qc_module occ
+name = 'lccd'
+gogo(name, hf, labeler())
+
+set qc_module fnocc
+name = 'lccd'
+gogo(name, hf, labeler())
+
+# lccsd/cepa(0) fnocc rhf fc df+conv
+scftot =   -100.019400605629
+cepacorl =   -0.208775482279
+cepatot =  -100.228176087909
+
+set qc_module fnocc
+name = 'lccsd'
+gogo(name, hf, labeler())
+
+set qc_module fnocc
+name = 'cepa(0)'
+gogo(name, hf, labeler())
+
+# <<<  RHF DF  >>>
+
+set reference rhf
+set cc_type df
+
+# lccd occ rhf fc df+df
+scftot =   -100.019400605629
+cepacorl =   -0.20808608446611
+cepatot =  -100.22748669009535
+
+set qc_module occ
+name = 'lccd'
+gogo(name, hf, labeler())
+
+# <<<  RHF CD  >>>
+
+set reference rhf
+set cc_type cd
+
+# lccd occ rhf fc df+cd
+scftot =   -100.019400605629
+cepacorl =   -0.20794466673713
+cepatot =  -100.22734527236636
+
+set qc_module occ
+name = 'lccd'
+gogo(name, hf, labeler())
+
+# <<<  UHF CONV  >>>
+
+set reference uhf
+set cc_type conv
+
+scftot =    -25.945130559147
+cepacorl =   -0.08242634326720
+cepatot =   -26.02755690241560
+
+set qc_module occ
+name = 'lccd'
+gogo(name, bh_h2p, labeler())
+
+# <<<  UHF DF  >>>
+
+set reference uhf
+set cc_type df
+
+scftot =    -25.945130559147
+cepacorl =   -0.08249964216817
+cepatot =   -26.02763020131706
+
+set qc_module occ
+name = 'lccd'
+gogo(name, bh_h2p, labeler())
+
+# <<<  UHF CD  >>>
+
+set reference uhf
+set cc_type cd
+
+# lccd occ uhf fc df+cd
+scftot =   -25.94513055914890
+cepacorl =  -0.08242454526407
+cepatot =  -26.02755510441296
+
+set qc_module occ
+name = 'lccd'
+gogo(name, bh_h2p, labeler())
+
+# <<<  ROHF CONV  >>>
+
+set reference rohf
+set mp2_type conv
+
+# <<<  ROHF DF  >>>
+
+set reference rohf
+set mp2_type df
+
+# <<<  ROHF CD  >>>
+
+set reference rohf
+set mp2_type cd
+

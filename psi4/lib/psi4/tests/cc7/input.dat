@@ -1,0 +1,26 @@
+#! Tests CCENERGY's CCSD gradient in the presence of a dipole field
+
+molecule h2o {
+  0 1
+  O    0.000000000000     0.000000000000    -0.071143036192 
+  H    0.000000000000    -0.758215806856     0.564545805801 
+  H    0.000000000000     0.758215806856     0.564545805801 
+}
+
+set {
+    basis cc-pvdz
+    d_convergence   10
+}
+
+set perturb_h true
+set perturb_with dipole
+set perturb_dipole [0, 0, -0.05]
+set e_convergence 10
+set d_convergence 10
+set r_convergence 10
+analytic = gradient('ccsd')
+set findif points 5
+findif = gradient('ccsd', dertype=0)
+
+compare_matrices(analytic, findif, 7, "Perturbed CCSD finite-diff (5-pt) vs. analytic gradient to 10^-7") #TEST
+compare(13, variable("findif number"), "trans and rot NOT projected")  #TEST

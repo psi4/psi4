@@ -1,0 +1,20 @@
+#! CCSD/cc-pVDZ optical rotation calculation (length gauge only) on Z-mat H2O2
+
+molecule h2o2 {
+  o
+  o 1 1.39
+  h 1 0.94 2 102.3
+  h 2 0.94 1 102.3 3 -50.0
+}
+
+set {
+  gauge length
+  freeze_core true
+  omega [589, 355, nm]
+  basis cc-pVDZ
+}
+
+wfn = properties('ccsd', properties=['rotation'], return_wfn=True)[1]
+
+
+

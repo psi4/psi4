@@ -1,0 +1,20 @@
+#! CCSDT cc-pVDZ optimization and frequencies for the H2O molecule using MRCC
+
+molecule h2o {
+    o
+    h 1 1.0
+    h 1 1.0 2 104.5
+}
+
+set {
+    basis cc-pvdz
+    freeze_core true
+    qc_module mrcc
+}
+
+optimize('ccsdt')
+E, wfn = frequencies('ccsdt', return_wfn=True)
+
+
+
+

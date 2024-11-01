@@ -1,0 +1,23 @@
+#! SCS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
+
+refnuc      =  9.11180990045111 #TEST
+refscf      = -76.02608509946806 #TEST
+refscsomp2  = -76.22804532525168 #TEST
+
+molecule h2o { 
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+    basis cc-pvdz
+}
+
+thisenergy = optimize('scs-omp2')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 5, "Nuclear Repulsion Energy (a.u.)"); #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");             #TEST
+compare_values(refscsomp2, thisenergy, 6, "SCS-OMP2 Total Energy (a.u.)");                #TEST
+

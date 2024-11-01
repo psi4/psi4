@@ -1,0 +1,46 @@
+#! cc-pvdz N2 (6,6) active space Test DQG
+
+# job description:
+print('        N2 / cc-pVDZ / DQG(6,6), scf_type = CD / 1e-12, rNN = 0.5 A')
+
+sys.path.insert(0, '../../..')
+import v2rdm_casscf
+
+molecule n2 {
+0 1
+n
+n 1 r
+}
+
+molecule interloper {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 90.0
+}
+
+set {
+  basis cc-pvdz
+  scf_type cd
+  cholesky_tolerance 1e-12
+  d_convergence      1e-10
+  maxiter 500
+  restricted_docc [ 2, 0, 0, 0, 0, 2, 0, 0 ]
+  active          [ 1, 0, 1, 1, 0, 1, 1, 1 ]
+}
+set v2rdm_casscf {
+  positivity dqg
+  r_convergence  1e-5
+  e_convergence  1e-6
+  maxiter 20000
+  #orbopt_frequency    1000
+  #mu_update_frequency 1000
+}
+
+activate(n2)
+
+n2.r     = 0.5 * 0.52917721067 / 0.52917720859
+
+energy('v2rdm-casscf', molecule=n2)
+
+

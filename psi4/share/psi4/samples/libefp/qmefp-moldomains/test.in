@@ -1,0 +1,102 @@
+#! EFP on mixed QM and EFP systems, testing that right parts
+#! of molecule get activated.
+
+ref_qmefp_scf = -76.0139362744  #TEST
+ref_disp = -0.002198528427  #TEST
+ref_qmonly_scf = -76.0266518267  #TEST
+
+# Part 1
+molecule qmefp {
+    
+    0 1
+    O1    0         0     0.118720
+    H2   -0.753299, 0.0, -0.474880
+    H3    0.753299, 0.0, -0.474880
+    
+    --
+    efp h2o -2.12417561  1.22597097 -0.95332054 -2.902133 1.734999 -1.953647
+    --
+    efp NH3  1.04358758  1.90477190  2.88279926 -1.105309 2.033306 -1.488582
+    --
+    efp NH3 -4.16795656 -0.98129149 -1.27785935  2.526442 1.658262 -2.742084
+    
+}
+
+set basis 6-31g*
+set scf_type pk
+
+scf = energy('scf')
+compare_values(ref_qmefp_scf, scf, 6, 'EFP SCF')
+clean()
+
+# Part 2
+molecule qmefp2 {
+
+    0 1
+    O1    0         0     0.118720
+    H2   -0.753299, 0.0, -0.474880
+    H3    0.753299, 0.0, -0.474880
+    symmetry c1
+}
+
+set basis cc-pvdz
+set scf_type cd
+
+scf = energy('scf')
+compare_values(ref_qmonly_scf, scf, 6, 'Plain SCF')
+clean()
+
+# Part 3
+molecule qmefp3 {
+
+0 1
+O1    0         0     0.118720
+H2   -0.753299, 0.0, -0.474880
+H3    0.753299, 0.0, -0.474880
+
+--
+efp h2o -2.12417561  1.22597097 -0.95332054 -2.902133 1.734999 -1.953647
+--
+efp NH3  1.04358758  1.90477190  2.88279926 -1.105309 2.033306 -1.488582
+--
+efp NH3 -4.16795656 -0.98129149 -1.27785935  2.526442 1.658262 -2.742084
+
+}
+
+set basis 6-31g*
+set scf_type pk
+set efp_disp off
+
+scf = energy('scf')
+compare_values(ref_qmefp_scf - ref_disp, scf, 6, 'EFP SCF, diff opts')
+clean()
+
+# Part 4
+set basis cc-pvdz
+set scf_type cd
+activate(qmefp2)
+
+scf = energy('scf')
+compare_values(ref_qmonly_scf, scf, 6, 'Plain SCF, re-activated')
+clean()
+
+# Part 5
+molecule qmefp5 {
+efp cl2 0.0 0.0 0.0 0.0 0.0 0.0
+--
+efp cl2 4.0 4.0 4.0 0.0 0.0 0.0
+--
+O -1 -1 -6
+H -2 -1 -6
+H -1 -2 -6
+}
+
+set basis cc-pvdz
+set puream false
+set scf_type df
+set guess sad
+set efp_disp true
+
+scf = energy('scf')
+compare_values(-76.01726247192, scf, 5, 'EFP SCF, diatom')
+

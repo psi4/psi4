@@ -1,0 +1,31 @@
+#! MOM excitation from LUMO HOMO+3
+
+ref_E = -74.2377159209776494
+
+molecule water {
+0 1
+O
+H 1 0.939805
+H 1 0.939805 2 106.329475
+}
+
+set {
+    basis aug-cc-pvqz
+    e_convergence 7
+    d_convergence 7
+    guess sad 
+}
+
+energy('scf')
+
+water.set_multiplicity(2)
+water.set_molecular_charge(1)
+set scf reference uhf 
+set scf guess read
+set mom_start 10
+set mom_occ [2] 
+set mom_vir [7]
+
+E = energy('scf')
+
+compare_values(ref_E, E, 6, "Energy of Excited State")

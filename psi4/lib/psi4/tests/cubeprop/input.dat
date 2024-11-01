@@ -1,0 +1,34 @@
+#! RHF orbitals and density for water.
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set basis cc-pvqz
+set df_scf_guess  false
+set scf_type pk
+set cubeprop_tasks ['orbitals','density','frontier_orbitals','dual_descriptor']
+set cubeprop_orbitals [1,2,3,4,5,6]
+set cubic_grid_overage [1.0,1.0,1.0]
+set e_convergence 12
+set d_convergence 12
+
+scf_e, scf_wfn = energy('scf', return_wfn=True)
+cubeprop(scf_wfn)
+
+for n in ['1_1-A1','2_2-A1','3_1-B2','4_3-A1','5_1-B1']:
+    ref_cube = 'Psi_a_%s.cube.ref' % n
+    this_cube ='Psi_a_%s.cube' % n
+    compare_cubes(ref_cube,this_cube,"Comparing MO %s" % n) #TEST
+
+for s in ['Da','Db','Dt','Ds']:
+    ref_cube = '%s.cube.ref' % s
+    this_cube = '%s.cube' % s
+    compare_cubes(ref_cube,this_cube,"Comparing %s" % s) #TEST
+
+compare_cubes("Psi_a_5_1-B1.cube","Psi_a_5_1-B1_HOMO.cube", "Comparing HOMO") #TEST
+compare_cubes("Psi_a_6_4-A1.cube","Psi_a_6_4-A1_LUMO.cube", "Comparing LUMO") #TEST
+compare_cubes("DUAL.cube.ref","DUAL_6_LUMO-5_HOMO.cube", "Comparing dual descriptor") #TEST

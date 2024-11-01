@@ -1,0 +1,63 @@
+#! usapt example with empty beta due to frozen core
+
+memory 1024 MB
+
+molecule dimer {
+0 2
+Li 0.000 0.000 -3.000
+--
+0 2
+Li  0.000 0.000 +3.000
+
+no_reorient
+no_com
+units angstrom
+symmetry c1
+}
+
+set {
+    basis aug-cc-pvdz
+    reference uhf
+    basis_guess 3-21g
+    guess sad
+    scf_type mem_df
+    e_convergence 1e-12,
+    d_convergence 1e-12,
+}
+
+ene, wfn = psi4.energy("sapt0", return_wfn=True, molecule=dimer)
+
+# Hapka's 2012 reference implementation results (no-DF, no frozen core)
+# E10_elst       -0.123671620412935 mH
+# E10_exch        0.370642457333127 mH
+# E20_ind,r      -0.050851026195372 mH
+# E20_exch-ind,r  0.022220185333760 mH
+# E20_disp       -0.322636200938972 mH
+# E20_exch-disp   0.063810938821086 mH
+
+# no frozen core results
+compare_values(-0.00013456194, ene, 6, "SAPT0 tot")
+compare_values(-0.00012373875, variable("SAPT ELST ENERGY"), 6, "SAPT0 elst")
+compare_values(0.000376095572, variable("SAPT EXCH ENERGY"), 6, "SAPT0 exch")
+compare_values(-0.00012747623, variable("SAPT IND ENERGY"), 6, "SAPT0 ind")
+compare_values(-5.08231189211e-05, variable("SAPT IND20,r ENERGY"), 6, "SAPT0 ind20,r")
+compare_values(2.236695607111e-05, variable("SAPT EXCH-IND20,r ENERGY"), 6, "SAPT0 exch-ind20,r")
+compare_values(-0.00025944252, variable("SAPT DISP ENERGY"), 6, "SAPT0 disp")
+compare_values(-0.00032259705, variable("SAPT DISP20 ENERGY"), 6, "SAPT0 disp20")
+compare_values(6.315452392578e-05, variable("SAPT EXCH-DISP20 ENERGY"), 6, "SAPT0 exch-disp20")
+
+# freeze core resulting in empty beta blocks
+set {
+    freeze_core True
+}
+
+ene, wfn = psi4.energy("sapt0", return_wfn=True, molecule=dimer)
+# frozen core results
+compare_values(-0.00012373875, variable("SAPT ELST ENERGY"), 6, "SAPT0 elst")
+compare_values(0.000376095572, variable("SAPT EXCH ENERGY"), 6, "SAPT0 exch")
+compare_values(-0.00012747623, variable("SAPT IND ENERGY"), 6, "SAPT0 ind")
+# only this should change in freeze_core=True
+compare_values(-0.00013347757, ene, 6, "SAPT0 tot")
+compare_values(-0.00025835816, variable("SAPT DISP ENERGY"), 6, "SAPT0 disp")
+compare_values(-0.00032135293, variable("SAPT DISP20 ENERGY"), 6, "SAPT0 disp20")
+compare_values(6.299476745609e-05, variable("SAPT EXCH-DISP20 ENERGY"), 6, "SAPT0 exch-disp20")

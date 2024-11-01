@@ -1,0 +1,79 @@
+#! SAPT(DFT) aug-cc-pVDZ interaction energy between Ne and Ar atoms.
+
+# Note: Delta HF is turned off in this test, because the delta HF calculation is in the run_sapt_dft() call, while the purpose of this test is to verify the results of the sapt_dft() call.
+
+Eref_nh = {"SAPT ELST ENERGY":  -0.10190449, #TEST
+           "SAPT EXCH ENERGY":   0.36545706, #TEST
+           "SAPT IND ENERGY":    0.00349281, #TEST
+           "SAPT DISP ENERGY":  -0.24398704, #TEST
+           "CURRENT ENERGY":     0.02305835} #TEST
+
+Eref_h_disp = {"SAPT ELST ENERGY":  -0.10197194, #TEST
+               "SAPT EXCH ENERGY":   0.36569827, #TEST
+               "SAPT IND ENERGY":    0.00349368, #TEST
+               "SAPT DISP ENERGY":  -0.26658500, #TEST
+               "CURRENT ENERGY":     0.00063501} #TEST
+
+Eref_h_fixed = {"SAPT ELST ENERGY":  -0.10197194, #TEST
+                "SAPT EXCH ENERGY":   0.36569827, #TEST
+                "SAPT IND ENERGY":    0.00349368, #TEST
+                "SAPT DISP ENERGY":  -0.26605283, #TEST
+                "CURRENT ENERGY":     0.00116718} #TEST
+
+
+molecule dimer {
+  Ne
+  --
+  Ar 1 6.5
+  units bohr
+}
+
+# Set options
+set {
+    basis         aug-cc-pvdz
+    scf_type      df
+}
+
+# Prepare the fragments
+sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(dimer, "dimer")
+
+# Run the first monomer
+set DFT_GRAC_SHIFT 0.203293
+energyA, wfnA = energy("PBE0", molecule=monomerA, return_wfn=True)
+
+# Run the second monomer
+set DFT_GRAC_SHIFT 0.138264
+energyB, wfnB = energy("PBE0", molecule=monomerB, return_wfn=True)
+
+# Build a blank dimer wavefunction
+wfnD = core.Wavefunction.build(sapt_dimer) 
+
+# No hybrid kernel & exch-disp scaling
+set SAPT_DFT_DO_HYBRID False 
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
+
+# Compute SAPT(DFT) from the provided wavefunctions
+data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
+
+for k, v in Eref_nh.items(): #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, "!hyb, xd=none, !dHF:" + k) #TEST
+
+# Hybrid kernel & exch-disp scaling (DISP)
+set SAPT_DFT_DO_HYBRID True
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME disp 
+
+# Compute SAPT(DFT) from the provided wavefunctions
+data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
+
+for k, v in Eref_h_disp.items(): #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, "hyb, xd=disp, !dHF:" + k) #TEST
+
+# Hybrid kernel & exch-disp scaling (FIXED)
+set SAPT_DFT_DO_HYBRID True
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME fixed
+
+# Compute SAPT(DFT) from the provided wavefunctions
+data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
+
+for k, v in Eref_h_fixed.items(): #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, "hyb, xd=fixed, !dHF:" + k) #TEST

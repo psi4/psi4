@@ -1,0 +1,75 @@
+#! MP2 optimization of dimers with one momomer ghosted. Gradients
+#! after three opt cycles are compared with those from psi4.
+
+
+molecule watdim {
+0 1
+H  -1.934259   0.762503   0.000000
+O  -1.551007  -0.114520   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+@H   1.680398  -0.373741  -0.758561
+@O   1.350625   0.111469   0.000000
+@H   1.680398  -0.373741   0.758561
+}
+c4watdim = watdim.clone()
+
+molecule methdim {
+0 1
+@C   0.000000  -0.000140   1.859161
+@H  -0.888551   0.513060   1.494685
+@H   0.888551   0.513060   1.494685
+@H   0.000000  -1.026339   1.494868
+@H   0.000000   0.000089   2.948284
+--
+0 1
+C   0.000000   0.000140  -1.859161
+H   0.000000  -0.000089  -2.948284
+H  -0.888551  -0.513060  -1.494685
+H   0.888551  -0.513060  -1.494685
+H   0.000000   1.026339  -1.494868
+}
+c4methdim = methdim.clone()
+
+set basis 6-31g*
+set cfour_SCF_CONV=12
+set rms_force_g_convergence 6
+set geom_maxiter 3
+set mp2_type conv
+set scf_type pk
+
+try:
+    optimize('mp2', molecule=watdim)
+except psi4.OptimizationConvergenceError as oce:
+    grad_p4_mA = oce.wfn.gradient()
+
+clean()
+
+try:
+    optimize('c4-mp2', molecule=c4watdim)
+#except psi4.OptimizationConvergenceError as oce:
+except psi4.driver.qcdb.ValidationError:
+    #c4grad = wfn.gradient()
+    pass
+
+# ghost gradients no longer supported. Use QCEngine or QCDB instead.
+
+#
+#clean()
+#
+#activate(methdim)
+#try:
+#    optimize('mp2', return_wfn=True)
+#except psi4.OptimizationConvergenceError as oce:
+#    grad_p4_mB = oce.wfn.gradient()
+#
+#clean()
+#
+#activate(c4methdim)
+#try:
+#    optimize('c4-mp2')
+#except psi4.ConvergenceError:
+#    pass
+#
+

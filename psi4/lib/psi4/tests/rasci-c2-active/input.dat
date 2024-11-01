@@ -1,0 +1,54 @@
+#! 6-31G* C2 Test RASCI Energy Point, testing two different ways of
+#! specifying the active space, either with the ACTIVE keyword, or
+#! with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC
+
+refnuc   =  15.2403036673     #TEST
+refscf   = -75.3870408916852  #TEST
+refci    = -75.5535266390568  #TEST
+refcorr  = refci - refscf     #TEST
+
+molecule c2 {
+  C
+  C 1 1.25
+}
+
+set {
+  wfn detci
+  guess gwh
+  basis cc-pVDZ
+  e_convergence 10
+  d_convergence 10
+  restricted_docc [1, 0, 0, 0, 0, 1, 0, 0]
+  active          [2, 0, 1, 1, 0, 2, 1, 1]
+}
+
+thisenergy = energy('detci')
+
+compare_values(refnuc, c2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, variable("SCF total energy"),     9, "SCF energy") #TEST
+compare_values(refci, thisenergy,                      7, "CI energy") #TEST
+compare_values(refcorr, variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+
+clean()
+revoke_global_option_changed("ACTIVE")
+
+
+# The following is an alternative way of specifying exactly the same CI
+set {
+  wfn detci
+  basis cc-pVDZ
+  restricted_docc [1, 0, 0, 0, 0, 1, 0, 0]
+  restricted_uocc [4, 1, 2, 2, 1, 4, 2, 2]
+  ras1            [1, 0, 0, 0, 0, 1, 1, 1]
+  ras2            [1, 0, 1, 1, 0, 1, 0, 0]
+  ex_level 2
+  val_ex_level 6
+}
+
+thisenergy = energy('detci')
+
+compare_values(refnuc, c2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, variable("SCF total energy"),     9, "SCF energy") #TEST
+compare_values(refci, thisenergy,                      7, "CI energy") #TEST
+compare_values(refcorr, variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+

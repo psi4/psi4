@@ -1,0 +1,49 @@
+#! SAPT2+3(CCD) aug-cc-pVDZ+midbond computation of the water dimer interaction energy, 
+#! using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI for SAPT.
+
+memory 1 GB
+
+molecule dimer {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+--
+@He 0.321738   0.016205   0.000000
+}
+
+
+set {
+basis aug-cc-pvdz
+scf_type df
+e_convergence 10
+guess sad
+freeze_core true
+nat_orbs_t3 true
+}
+
+energy('sapt2+3(ccd)')
+
+ref_dict = { #TEST
+    "SAPT ELST ENERGY" : -0.0130799218, #TEST
+    "SAPT EXCH ENERGY" :  0.0134281026, #TEST
+    "SAPT IND ENERGY" : -0.0039857670, #TEST
+    "SAPT DISP ENERGY" : -0.0039040389, #TEST
+    "SAPT0 TOTAL ENERGY" : -0.0088460989, #TEST
+    "SAPT2 TOTAL ENERGY" : -0.0070471173, #TEST
+    "SAPT2+ TOTAL ENERGY" : -0.0077595114, #TEST
+    "SAPT2+(3) TOTAL ENERGY" : -0.0073764424, #TEST
+    "SAPT2+3 TOTAL ENERGY" : -0.0075701074, #TEST
+    "SAPT2+(CCD) TOTAL ENERGY" : -0.0077310292, #TEST
+    "SAPT2+(3)(CCD) TOTAL ENERGY" : -0.0073479602, #TEST
+    "SAPT2+3(CCD) TOTAL ENERGY" : -0.0075416252, #TEST
+} #TEST
+
+
+for key, ref in ref_dict.items():  #TEST
+    compare_values(ref, psi4.variable(key), 6, key)  #TEST

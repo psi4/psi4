@@ -1,0 +1,55 @@
+#! Compute the IRC for HCN <-> NCH interconversion at the RHF/DZP level of theory.
+# Print
+# the path to a trajectory file for visualization
+# in Jmol.
+# grep '@IRC' on the output to see a nice printout
+# of the progress of your IRC computation.
+
+# 1. compute Hessian
+
+molecule hcn {
+  H    -0.5958806528   0.9889214459   0.0000000000
+  C    -0.5958806528  -0.1660941336   0.0000000000
+  N     0.5535292657   0.0711607905   0.0000000000
+}
+
+set basis           dzp
+set hessian_write   true # write the hessian to a file for later use
+
+hessian('scf', dertype=1)
+
+
+#####################################################
+#### could split into separate input files here #####
+#####################################################
+
+
+# 2. read in Hessian and compute IRC
+
+molecule hcn {
+  H    -0.5958806528   0.9889214459   0.0000000000
+  C    -0.5958806528  -0.1660941336   0.0000000000
+  N     0.5535292657   0.0711607905   0.0000000000
+}
+
+# g_convergence needs to be tight for IRCs:
+# Updated comment AH: Old optking only used max and rms disp (not forces)
+# current optimizer will use forces as criteria for IRC points. IRC points don't
+# need to be converged that tightly. This test will struggle with gau_verytight
+# The current criteria replicates the disp of the old gau_verytight criteria
+
+set {
+  basis           dzp
+  opt_type        irc
+  geom_maxiter    200
+  irc_direction   backward
+  cart_hess_read  true  # read hessian back in from output.hcn.hess
+  max_disp_g_convergence 6e-6
+  rms_disp_g_convergence 4e-6
+  irc_points 25
+}
+
+energy = optimize('scf')
+
+# This test used to overshoot the endpoint. This should not longer be the case. Step 22 is now determined
+# to be the endpoint

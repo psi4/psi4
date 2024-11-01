@@ -1,0 +1,51 @@
+#! SCF STO-3G finite-difference tests
+
+molecule h2o {
+  symmetry c1
+  O
+  H 1 1.0
+  H 1 1.0 2 104.5
+}
+
+set { basis sto-3g }
+set findif { print 2 }
+
+# In C1, test gradients by 3-point formula ; default is disp_size = .005
+anal_grad = gradient('scf')
+
+set findif { points 3 }
+fd_grad = gradient('scf', dertype=0)
+
+compare_matrices(fd_grad, anal_grad, 4, "3-point finite-difference vs. analytic gradient to 10^-4 (C1)") #TEST
+compare(7, variable('findif number'), '3-point stencil points')  #TEST
+
+# Test gradient by 5-point formula
+set findif { points 5 }
+fd_grad = gradient('scf', dertype=0)
+
+compare_matrices(fd_grad, anal_grad, 8, "5-point finite-difference vs. analytic gradient to 10^-8 (C1)") #TEST
+compare(13, variable('findif number'), '5-point stencil points')  #TEST
+
+clean()
+
+molecule h2o {
+  O
+  H 1 1.0
+  H 1 1.0 2 104.5
+}
+
+set { basis sto-3g }
+
+# In C2v, test gradient by 3-point formula ; default is disp_size = .005
+set findif { points 3 }
+fd_grad = gradient('scf', dertype=0)
+
+compare_matrices(fd_grad, anal_grad, 4, "3-point finite-difference vs. analytic gradient to 10^-4 (C2v)") #TEST
+compare(5, variable('findif number'), '3-point stencil points')  #TEST
+
+# Test gradient by 5-point formula
+set findif { points 5 }
+fd_grad = gradient('scf', dertype=0)
+
+compare_matrices(fd_grad, anal_grad, 8, "5-point finite-difference vs. analytic gradient to 10^-8 (C2v)") #TEST
+compare(9, variable('findif number'), '5-point stencil points')  #TEST

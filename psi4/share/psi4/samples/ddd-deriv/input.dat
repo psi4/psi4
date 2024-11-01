@@ -1,0 +1,53 @@
+#! Sample HF/cc-pVDZ H2O computation all derivatives
+
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
+memory 600 mb
+
+molecule h2o {
+  O 
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+set basis cc-pVDZ
+ans = -76.0266327341067125
+
+largs = {"protocols": {"stdout": False}, "tag": "test1"}
+
+energy('scf', **largs)
+
+gradient('scf', **largs)
+
+if distributed:
+    plan = gradient('scf', dertype=0, return_plan=True, **largs)
+    plan.compute(client)
+    snowflake.await_results()
+    plan.get_psi_results(client)
+else:
+    gradient('scf', dertype=0, **largs)
+
+hessian('scf', **largs)
+
+if distributed:
+    plan = hessian('scf', dertype=1, return_plan=True, **largs)
+    plan.compute(client)
+    snowflake.await_results()
+    plan.get_psi_results(client)
+else:
+    hessian('scf', dertype=1, **largs)
+
+#if distributed:
+#    plan = hessian('scf', dertype=0, return_plan=True)
+#    plan.compute(client)
+#    snowflake.await_results()
+#    plan.get_psi_results(client)
+#else:
+#    hessian('scf', dertype=0)
+
+if distributed:
+    snowflake.stop()

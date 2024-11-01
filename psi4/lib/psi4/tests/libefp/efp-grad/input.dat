@@ -1,0 +1,80 @@
+#! EFP gradient many-EFP-fragment system (geom and E from libefp pol_3a test).
+#! Tests passing of efp torques.
+
+# If EFP potential was updated ref data needs updating too
+# Note: previous gradient that was here can't be matched,
+#   but Ilya had commented out the compare_matrices for it
+#   upon updating EFP potentials a couple years ago, so
+#   assuming ok, and copying in a new ref. --LAB
+
+refEFP = psi4.Matrix.from_list([
+    [-0.0014557485,    -0.0024650113,    -0.0007420245,     0.0018487317,    -0.0065430367,    -0.0003612802],  #TEST
+    [-0.0024798509,    -0.0002766252,     0.0029343456,    -0.0033124877,    -0.0048014449,    -0.0046442270],  #TEST
+    [ 0.0021341431,     0.0023700691,     0.0015655930,    -0.0005188401,    -0.0004406075,    -0.0016388193],  #TEST
+    [-0.0020017801,     0.0045394287,     0.0001140076,    -0.0011159049,     0.0021766586,    -0.0035556589],  #TEST
+    [-0.0004997047,     0.0037416773,    -0.0017226579,     0.0108138324,     0.0056465424,    -0.0031926302],  #TEST
+    [-0.0004161161,    -0.0046891120,    -0.0017098053,    -0.0023800599,     0.0042322597,     0.0105675357],  #TEST
+    [ 0.0007828963,     0.0001744122,    -0.0006861146,     0.0003752826,    -0.0032331154,    -0.0011471607],  #TEST
+    [ 0.0038830634,    -0.0039883720,    -0.0001194227,     0.0012427711,    -0.0026362462,    -0.0005023332],  #TEST
+    [ 0.0000530976,     0.0005935332,     0.0003660789,    -0.0015382262,    -0.0048146666,     0.0026841256]]) #TEST
+
+molecule efp_spec {
+efp h2o
+   -3.394    -1.900    -3.700
+   -3.524    -1.089    -3.147
+   -2.544    -2.340    -3.445
+--
+efp nh3
+   -5.515     1.083     0.968
+   -5.161     0.130     0.813
+   -4.833     1.766     0.609
+--
+efp nh3
+    1.848     0.114     0.130
+    1.966     0.674    -0.726
+    0.909     0.273     0.517
+--
+efp nh3
+   -1.111    -0.084    -4.017
+   -1.941     0.488    -3.813
+   -0.292     0.525    -4.138
+--
+efp ch3oh
+   -2.056     0.767    -0.301
+   -2.999    -0.274    -0.551
+   -1.201     0.360     0.258
+--
+efp h2o
+   -0.126    -2.228    -0.815
+    0.310    -2.476     0.037
+    0.053    -1.277    -1.011
+--
+efp h2o
+   -1.850     1.697     3.172
+   -1.050     1.592     2.599
+   -2.666     1.643     2.614
+--
+efp ch3oh
+    1.275    -2.447    -4.673
+0.709, 	-3.191,,-3.592   
+    2.213    -1.978    -4.343
+--
+efp h2o
+   -5.773    -1.738    -0.926
+   -5.017    -1.960    -1.522
+   -5.469    -1.766     0.014
+}
+
+set efp_disp no
+set efp_exch no
+set efp_elst_damping screen
+set efp_ind_damping off
+set efp dertype first
+
+energy('efp')
+compare_values(0.0, efp_spec.nuclear_repulsion_energy(), 6, "NRE")  #TEST
+compare_values(-0.0066095987170644, variable('CURRENT ENERGY'), 5, 'EFP Total')  #TEST
+
+torq = variable("EFP TORQUE")  # replaces get_efp_torque()
+compare_matrices(refEFP, torq, 6, "libefp printed gradients, vs. psi4 read-from-libefp gradients") #TEST
+

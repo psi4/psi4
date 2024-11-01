@@ -1,0 +1,18 @@
+#! SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
+
+# NRE and SCF aren't for tightly converged opt
+
+molecule h2o { 
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+    basis cc-pvdz
+}
+
+thisenergy = optimize('sos-omp2')
+
+

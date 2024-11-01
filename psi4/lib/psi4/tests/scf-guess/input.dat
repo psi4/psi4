@@ -1,0 +1,168 @@
+#! Test initial SCF guesses on FH and FH+ in cc-pVTZ basis
+
+refnuc       =    5.282967161430950  #TEST
+refneut_rhf  = -100.0584459442408587 #TEST
+refcat_uhf   =  -99.5312257221445549 #TEST
+refcat_rohf  =  -99.5261713512123976 #TEST
+refcat_cuhf  =  -99.5261713512123976 #TEST
+
+molecule no {
+0 1
+F
+H 1 0.9015
+}
+
+set {
+  basis cc-pvtz
+  reference rhf
+  scf_type pk
+  df_scf_guess false
+  guess core
+  docc [ 3, 0, 1, 1 ]
+}
+energy('scf')
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, CORE   guess (a.u.)");             #TEST
+
+set guess gwh
+energy('scf')
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, GWH    guess (a.u.)");             #TEST
+
+set guess sad
+energy('scf')
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD    guess (a.u.)");             #TEST
+
+set guess sadno
+energy('scf')
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SADNO  guess (a.u.)");             #TEST
+
+set guess huckel
+energy('scf')
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, HUCKEL guess (a.u.)");             #TEST
+
+set guess modhuckel
+energy('scf')
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, MODHUCKEL guess (a.u.)");             #TEST
+
+set guess sap
+energy('scf')
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAP    guess (a.u.)");             #TEST
+
+set guess sapgau
+energy('scf')
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAPGAU guess (a.u.)");             #TEST
+
+molecule nocat {
+1 2
+F
+H 1 0.9015
+}
+
+set {
+  reference uhf
+  guess core
+  docc [ 3, 0, 0, 1 ]
+  socc [ 0, 0, 1, 0 ]
+}
+energy('scf')
+compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, CORE   guess (a.u.)");             #TEST
+
+set guess gwh
+energy('scf')
+compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, GWH    guess (a.u.)");             #TEST
+
+set guess sad
+energy('scf')
+compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, SAD    guess (a.u.)");             #TEST
+
+set guess sadno
+energy('scf')
+compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, SADNO  guess (a.u.)");             #TEST
+
+set guess huckel
+energy('scf')
+compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, HUCKEL guess (a.u.)");             #TEST
+
+set guess modhuckel
+energy('scf')
+compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, MODHUCKEL guess (a.u.)");             #TEST
+
+set guess sap
+energy('scf')
+compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, SAP    guess (a.u.)");             #TEST
+
+set guess sapgau
+energy('scf')
+compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, SAPGAU guess (a.u.)");             #TEST
+
+
+set {
+  reference rohf
+  guess core
+}
+energy('scf')
+compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, CORE   guess (a.u.)");             #TEST
+
+set guess gwh
+energy('scf')
+compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, GWH    guess (a.u.)");             #TEST
+
+set guess sad
+energy('scf')
+compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, SAD    guess (a.u.)");             #TEST
+
+set guess sadno
+energy('scf')
+compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, SADNO  guess (a.u.)");             #TEST
+
+set guess huckel
+energy('scf')
+compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, HUCKEL guess (a.u.)");             #TEST
+
+set guess modhuckel
+energy('scf')
+compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, MODHUCKEL guess (a.u.)");             #TEST
+
+set guess sap
+energy('scf')
+compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, SAP    guess (a.u.)");             #TEST
+
+set guess sapgau
+energy('scf')
+compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, SAPGAU guess (a.u.)");             #TEST
+
+
+set {
+  reference cuhf
+  guess core
+}
+energy('scf')
+compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, CORE   guess (a.u.)");             #TEST
+
+set guess gwh
+energy('scf')
+compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, GWH    guess (a.u.)");             #TEST
+
+set guess sad
+energy('scf')
+compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, SAD    guess (a.u.)");             #TEST
+
+set guess sadno
+energy('scf')
+compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, SADNO  guess (a.u.)");             #TEST
+
+set guess huckel
+energy('scf')
+compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, HUCKEL guess (a.u.)");             #TEST
+
+set guess modhuckel
+energy('scf')
+compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, MODHUCKEL guess (a.u.)");             #TEST
+
+set guess sap
+energy('scf')
+compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, SAP    guess (a.u.)");             #TEST
+
+set guess sapgau
+energy('scf')
+compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, SAPGAU guess (a.u.)");             #TEST

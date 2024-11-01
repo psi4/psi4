@@ -1,0 +1,25 @@
+#! RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
+
+
+molecule bh {
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+}
+
+# Get a reasonable guess, to save some iterations
+set = {
+    scf_type   pk
+    basis      cc-pVQZ
+    df_scf_guess false
+    e_convergence 6
+}
+energy('scf')
+
+set = {
+    scf_type   direct
+    guess      read
+    e_convergence 10
+}
+
+thisenergy = energy('scf')
+

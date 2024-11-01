@@ -1,0 +1,42 @@
+#! CCSD/cc-pVDZ optical rotation calculation (length gauge only) on Z-mat H2O2
+
+molecule h2o2 {
+  o
+  o 1 1.39
+  h 1 0.94 2 102.3
+  h 2 0.94 1 102.3 3 -50.0
+}
+
+set {
+  gauge length
+  freeze_core true
+  omega [589, 355, nm]
+  basis cc-pVDZ
+}
+
+wfn = properties('ccsd', properties=['rotation'], return_wfn=True)[1]
+
+refnre = 38.2539685310425384                      # TEST
+refscf = -150.7791838721300337                    # TEST
+refccsd = -151.173863088601593                    # TEST
+refoverlap = 0.89177805643                        # TEST
+ref589tensor = psi4.core.Matrix.from_list(        # TEST
+   [[0.155734386263887, -0.064272428033447, 0],   # TEST
+    [-0.266268386856247, -0.012765731183706, 0],  # TEST
+    [0, 0, -0.127276954213308]])                  # TEST
+ref589rot = -76.93369                             # TEST
+ref355tensor = psi4.core.Matrix.from_list(        # TEST
+   [[0.273204707761102, -0.118930580636346, 0],   # TEST
+    [-0.474438446130291, -0.025397023393736, 0],  # TEST
+    [0, 0, -0.221410011414567]])                  # TEST
+ref355rot = -214.73317                            # TEST
+
+compare_values(refnre, h2o2.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refccsd, wfn.variable("CCSD TOTAL ENERGY"), 6, "CCSD Energy") # TEST
+compare_values(refoverlap, wfn.variable("LEFT-RIGHT CCSD EIGENVECTOR OVERLAP"), 5, "Left-Right CCSD Overlap") # TEST
+compare_values(ref589tensor, wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 589NM"), 5, "Optical Rotation Tensor (589nm)") # TEST
+compare_values(ref589rot, variable("CCSD SPECIFIC ROTATION (LEN) @ 589NM"), 5, "Specific Rotation (589nm)") # TEST
+compare_values(ref355tensor, wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 355NM"), 5, "Optical Rotation Tensor (355nm)") # TEST
+compare_values(ref355rot, variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"), 5, "Specific Rotation (355nm)") # TEST
+

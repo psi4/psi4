@@ -1,0 +1,26 @@
+#! 6-31G(d) optimization of SF4 starting from linear bond angle
+#! that is not linear in the optimized structure but is in a 
+#! symmetry plane of the molecule.
+
+SCF_E  = -795.1433964231258     #TEST
+
+molecule {
+0 1
+ S  0.00000000  0.00000000  0.00000000
+ F  0.03923814 -1.73955752  0.00000000
+ F -1.73955752 -0.03923814  0.00000000
+ F  1.73955752  0.03923814  0.00000000
+ F -0.01961907  0.86977876 -1.50688420
+}
+
+set {
+  scf_type pk
+  basis 6-31G(d)
+  reference rhf
+  ensure_bt_convergence True
+}
+
+thisenergy = optimize('SCF')
+
+compare_values(SCF_E, thisenergy, 5, "6-31G(D) SCF optimization of SF4") #TEST 
+

@@ -1,0 +1,18 @@
+#! H2O CISD/6-31G** Optimize Geometry by Energies
+
+
+molecule h2o {
+    O
+    H 1 1.00
+    H 1 1.00 2 103.1
+}
+
+set {
+  basis 6-31G**
+  max_force_g_convergence 0.000001
+  max_disp_g_convergence  0.0001
+}
+
+set qc_module detci
+thisenergy = optimize('cisd', dertype = 0)
+

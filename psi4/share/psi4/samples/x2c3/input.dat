@@ -1,0 +1,24 @@
+#! Test of SFX2C-1e on Water uncontracted cc-pVDZ
+#! The reference numbers are from Lan Cheng's implementation in Cfour
+
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R = 2.0
+A = 104.5
+units bohr
+}
+
+set {
+  basis cc-pVDZ-DK
+  basis_relativistic cc-pVDZ-DK
+  scf_type pk
+}
+
+testnr = energy('scf')
+set relativistic x2c
+testrel = energy('scf')
+

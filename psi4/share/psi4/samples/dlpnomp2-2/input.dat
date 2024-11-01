@@ -1,0 +1,28 @@
+#! comparison of DF-MP2 and DLPNO-MP2 with a CBS extrapolation
+
+                              
+                                               
+ref_dlpnomp2_corl += 0.000020259  # after https://github.com/psi4/psi4/pull/2707
+ref_dlpnomp2_tot  += 0.000020259  # after https://github.com/psi4/psi4/pull/2707
+
+molecule h2o {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set freeze_core True
+set scf_type df
+set mp2_type df
+
+print('   Testing DF-MP2 ...')
+val = energy('mp2/cc-pv[tq]z')
+
+clean()
+
+print('   Testing DLPNO-MP2 ...')
+val = energy('dlpno-mp2/cc-pv[tq]z')
+
+# The DLPNO-MP2 energy is close to the DF-MP2 energy, but not exactly the same
+clean()

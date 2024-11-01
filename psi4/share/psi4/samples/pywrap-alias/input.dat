@@ -1,0 +1,117 @@
+#! Test parsed and exotic calls to energy() like zapt4, mp2.5, and cisd are working
+
+molecule He2 {
+0 1
+He
+He 1 1.0
+}
+
+set {
+    basis 6-31g
+    g_convergence gau
+    mp2_type conv  # no fitting bases for helium
+    scf_type pk  # no fitting bases for helium
+    #df_scf_guess cc-pvdz-ri
+    df_scf_guess false
+    mp_type conv
+}
+
+set scf {
+    e_convergence 8
+}
+
+set occ do_scs on
+
+banner('gold standard')
+energy('sherrill_gold_standard')
+clean()
+
+#banner('scf')
+#energy('SCF')
+#clean()
+
+banner('mp2')
+energy('mp2')
+# this second check will fail if a request for a mp2 calc gets routed to detci, rather than the mp2 module
+clean()
+
+banner('mp3')
+energy('mp3')
+set reference uhf
+set_variable('MP3 TOTAL ENERGY',0.0)
+energy('mp3')
+set reference rhf
+clean()
+
+banner('mp4')
+energy('mp4')
+clean()
+
+banner('mp5')
+energy('mp5')
+clean()
+
+banner('mp11')
+energy('mp11')
+clean()
+
+banner('zapt4')
+try:
+    energy('zapt4')
+except psi4.UpgradeHelper:
+    pass
+set reference rohf
+energy('zapt4')
+set reference rhf
+clean()
+
+banner('fci')
+energy('fci')
+clean()
+
+banner('mp2.5')
+energy('mp2.5')
+clean()
+
+banner('cbs()')
+set scf_type pk
+energy('cbs', scf_type='scf', scf_basis='cc-pvdz')
+clean()
+
+set {
+    basis sto-3g
+    df_basis_scf cc-pVDZ-JKFIT
+    scf_type df
+    e_convergence 8
+}
+
+# Try something other than scf
+banner('db()')
+database('scf','S22',subset=[2,8],benchmark='S22A')
+clean()
+
+set {
+    basis 6-31g
+    scf_type pk
+}
+banner('cisd')
+energy('cisd',molecule=He2)
+clean()
+
+#banner('opt(cbs())')
+#optimize('scf',opt_func=cbs,scf_basis='sto-3g',scf_scheme=highest_1)
+#clean()
+
+#banner('opt(arbitraryorder())')
+#optimize('mp3')
+
+#molecule h2o {
+#     O
+#     H 1 1.0
+#     H 1 1.0 2 104.5
+#}
+
+#set basis sto-3g
+
+#energy('b3lyp-d')
+

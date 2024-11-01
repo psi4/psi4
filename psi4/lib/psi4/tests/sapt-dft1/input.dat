@@ -1,0 +1,69 @@
+#! SAPT(DFT) aug-cc-pVDZ interaction energy between Ne and Ar atoms.
+
+DHF = -0.01189736  #TEST
+
+Eref_nh = {"SAPT ELST ENERGY":  -0.10190449, #TEST
+           "SAPT EXCH ENERGY":   0.36545706, #TEST
+           "SAPT IND ENERGY":   -0.00840483, #TEST
+           "SAPT DISP ENERGY":  -0.24398704, #TEST
+           "CURRENT ENERGY":     0.01122234} #TEST
+
+Eref_h_disp = {"SAPT ELST ENERGY":  -0.10197193, #TEST
+               "SAPT EXCH ENERGY":   0.36569812, #TEST
+               "SAPT IND ENERGY":   -0.00840370, #TEST
+               "SAPT DISP ENERGY":  -0.26658499, #TEST
+               "CURRENT ENERGY":    -0.01126250} #TEST
+
+Eref_h_fixed = {"SAPT ELST ENERGY":  -0.10197193, #TEST
+                "SAPT EXCH ENERGY":   0.36569812, #TEST
+                "SAPT IND ENERGY":   -0.00840370, #TEST
+                "SAPT DISP ENERGY":  -0.26605283, #TEST
+                "CURRENT ENERGY":    -0.01073034} #TEST
+
+molecule dimer {
+  Ne
+  --
+  Ar 1 6.5
+  units bohr
+}
+
+set {
+    basis         aug-cc-pvdz
+    scf_type      df
+    sapt_dft_grac_shift_a 0.203293
+    sapt_dft_grac_shift_b 0.138264
+}
+
+# No hybrid kernel & no exch-disp scaling & no delta HF
+set SAPT_DFT_DO_DHF False
+set SAPT_DFT_DO_HYBRID False
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
+energy('sapt(dft)', molecule=dimer)
+for k, v in Eref_nh.items(): #TEST
+    if k in ["SAPT IND ENERGY", "CURRENT ENERGY"]:
+        ref = (v - DHF) / 1000.0
+    else:
+        ref = v / 1000.0
+    compare_values(ref, psi4.variable(k), 6, "!hyb, xd=none, !dHF: " + k) #TEST
+
+# No hybrid kernel & no exch-disp scaling 
+set SAPT_DFT_DO_DHF True
+set SAPT_DFT_DO_HYBRID False
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
+energy('sapt(dft)', molecule=dimer)
+for k, v in Eref_nh.items(): #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, "!hyb, xd=none, dHF: " + k) #TEST
+
+# Hybrid kernel & exch-disp scaling (DISP)
+set SAPT_DFT_DO_HYBRID True
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME disp
+energy('sapt(dft)', molecule=dimer)
+for k, v in Eref_h_disp.items(): #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, "hyb, xd=disp, dHF: " + k) #TEST
+
+# Hybrid kernel & exch-disp scaling (FIXED)
+set SAPT_DFT_DO_HYBRID True
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME fixed 
+energy('sapt(dft)', molecule=dimer)
+for k, v in Eref_h_fixed.items(): #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, "hyb, xd=fixed, dHF: " + k) #TEST

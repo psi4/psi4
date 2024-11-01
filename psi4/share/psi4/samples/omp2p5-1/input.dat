@@ -1,0 +1,16 @@
+#! OMP2.5 cc-pVDZ energy for the H2O molecule.
+
+molecule {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776
+}
+
+set {
+  basis cc-pvdz
+  guess sad
+}
+
+energy('omp2.5')
+

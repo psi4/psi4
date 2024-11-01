@@ -1,0 +1,50 @@
+#! RHF STO-3G (Cartesian) and cc-pVDZ (spherical) water Hessian test, against Psi3 reference values.
+
+ref_ene = -74.96590118978119
+
+molecule {
+units bohr
+nocom
+noreorient
+  O            0.134467872279     0.000255539126     0.000000000000
+  H           -1.069804624577     1.430455315728    -0.000000000000
+  H           -1.064298089419    -1.434510907104    -0.000000000000
+}
+
+set {
+  puream false
+  df_scf_guess false
+  scf_type pk
+  guess sad
+  basis sto-3g
+  d_convergence 10
+}
+
+psi4_hess, wfn = hessian('hf', return_wfn=True)
+
+
+# Clean out scratch files and go again with cc-pVDZ
+psi4.clean()
+
+
+set {
+  puream true
+  basis cc-pvdz
+}
+
+psi4_hess = hessian('scf')
+
+
+# Now repeat the test, permuting the first two atoms' coordinates;
+# this exposes a (now-fixed) bug in the overlap hessian.
+molecule {
+units bohr
+nocom
+noreorient
+  H           -1.069804624577     1.430455315728    -0.000000000000
+  O            0.134467872279     0.000255539126     0.000000000000
+  H           -1.064298089419    -1.434510907104    -0.000000000000
+}
+
+psi4_hess = hessian('scf')
+

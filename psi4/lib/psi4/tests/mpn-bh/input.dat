@@ -1,0 +1,48 @@
+#! MP(n)/aug-cc-pVDZ BH Energy Point, with n=2-19.  Compare against 
+#! M. L. Leininger et al., J. Chem. Phys. 112, 9213 (2000)
+
+# Test MP(10) at its equilibrium geometry
+refnuc      =   2.1101925680    #TEST
+refscf      = -25.1262628711449 #TEST
+refci_10    = -25.2183501083948 #TEST
+refcorr_10  = refci_10 - refscf #TEST
+
+
+molecule bh {
+    B
+    H 1 1.25386
+}
+
+set {
+  basis aug-cc-pVDZ
+  frozen_docc [1, 0, 0, 0]
+}
+
+thisenergy = energy('mp10')
+
+compare_values(refnuc, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, variable("SCF total energy"),     8, "SCF energy") #TEST
+compare_values(refci_10, thisenergy,                      8, "MP(10) energy") #TEST
+compare_values(refcorr_10, variable("CURRENT CORRELATION ENERGY"), 8, "MP(10) correlation energy") #TEST
+
+clean()
+
+# Now test MP(19) at its equilibrium geometry
+refnuc     =   2.1108491255    #TEST
+refscf     = -25.1262688035365 #TEST
+refci_19   = -25.2184321372791 #TEST
+refcorr_19 = refci_19 - refscf #TEST
+
+molecule bh {
+    B
+    H 1 1.25347
+}
+
+set basis aug-cc-pVDZ
+
+thisenergy = energy('mp19')
+
+compare_values(refnuc, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, variable("SCF total energy"),     8, "SCF energy") #TEST
+compare_values(refci_19, thisenergy,                      8, "MP(19) energy") #TEST
+compare_values(refcorr_19, variable("CURRENT CORRELATION ENERGY"), 8, "MP(19) correlation energy") #TEST

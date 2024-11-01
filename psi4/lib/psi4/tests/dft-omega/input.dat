@@ -1,0 +1,99 @@
+#! Test omega is setable
+#! updated wb97x_20,wb97x_03 to account for new BraggSlater radii
+
+# Psi4 1.0.24
+#   Note that 1.0 thinks x default omega is 0.4, not 0.3
+wb97_04 = -39.13588187279116
+#wb97x_04 = -39.1373952015
+wb97_20 = -39.130109569530745
+wb97x_20 = -39.155461727515664
+wb97x_03 = -39.1362770521167
+
+
+molecule ch2 {
+  0 3
+  C
+  H 1 R
+  H 1 R 2 A
+
+  R = 1.075
+  A = 133.93
+}
+
+set reference uhf
+set guess gwh
+set basis cc-pvdz
+set e_convergence 8
+
+E = energy('wb97')
+compare_values(wb97_04, E, 6, 'wB97 [omega=default=0.4]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_03, E, 6, 'wB97x [omega=default=0.3]')  #TEST
+
+set dft_omega 2.0
+
+E = energy('wb97')
+compare_values(wb97_20, E, 6, 'wB97 [omega=2.0]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_20, E, 6, 'wB97x [omega=2.0]')  #TEST
+
+revoke_global_option_changed('DFT_OMEGA')
+
+E = energy('wb97')
+compare_values(wb97_04, E, 6, 'wB97 [omega=rev]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_03, E, 6, 'wB97x [omega=rev]')  #TEST
+
+
+set scf_type disk_df
+
+E = energy('wb97')
+compare_values(wb97_04, E, 6, 'wB97 [omega=default=0.4]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_03, E, 6, 'wB97x [omega=default=0.3]')  #TEST
+
+set dft_omega 2.0
+
+E = energy('wb97')
+compare_values(wb97_20, E, 6, 'wB97 [omega=2.0]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_20, E, 6, 'wB97x [omega=2.0]')  #TEST
+
+revoke_global_option_changed('DFT_OMEGA')
+
+E = energy('wb97')
+compare_values(wb97_04, E, 6, 'wB97 [omega=rev]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_03, E, 6, 'wB97x [omega=rev]')  #TEST
+
+
+set scf_type mem_df
+
+E = energy('wb97')
+compare_values(wb97_04, E, 6, 'wB97 [omega=default=0.4]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_03, E, 6, 'wB97x [omega=default=0.3]')  #TEST
+
+set dft_omega 2.0
+
+E = energy('wb97')
+compare_values(wb97_20, E, 6, 'wB97 [omega=2.0]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_20, E, 6, 'wB97x [omega=2.0]')  #TEST
+
+revoke_global_option_changed('DFT_OMEGA')
+
+E = energy('wb97')
+compare_values(wb97_04, E, 6, 'wB97 [omega=rev]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_03, E, 6, 'wB97x [omega=rev]')  #TEST
+

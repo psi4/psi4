@@ -1,0 +1,96 @@
+#! Test individual integral objects for correctness.
+print(' Case Study Test of Integrals')
+
+molecule h2o {
+  o@15.99491461956
+  h@1.00782503207  1 R
+  h@1.00782503207  1 R 2 103.1
+}
+
+h2o.R = 0.52917721067 / 0.52917720859
+
+
+# NOTE: mints3 is expected to fail if psi4_SHGAUSS_ORDERING=standard
+#       To test with standard ordering, uncomment the following line:
+#input_directory = input_directory_sss
+
+
+set {
+  basis sto-3g
+}
+
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
+mints = MintsHelper(wfn.basisset())
+
+Li = mints.so_angular_momentum()
+
+
+
+
+
+set {
+  basis 6-311G**
+}
+
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
+mints = MintsHelper(wfn.basisset())
+
+Li = mints.so_angular_momentum()
+
+
+
+
+
+set {
+  basis cc-pVTZ
+}
+
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
+mints = MintsHelper(wfn.basisset())
+
+Li = mints.so_angular_momentum()
+
+
+
+
+
+
+set {
+  basis sto-3g
+}
+
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
+mints = MintsHelper(wfn.basisset())
+
+Pi = mints.so_nabla()
+
+
+
+
+
+set {
+  basis 6-311G**
+}
+
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
+mints = MintsHelper(wfn.basisset())
+
+Pi = mints.so_nabla()
+
+# edit matrix.cc to minimize format change: `static const char *str_block_format = "%3d %3d %3d % 16.12f\n";`
+
+
+
+
+set {
+  basis cc-pVTZ
+}
+
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
+mints = MintsHelper(wfn.basisset())
+
+Pi = mints.so_nabla()
+
+
+
+

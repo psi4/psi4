@@ -1,0 +1,36 @@
+#! Test case for some of the PSI4 out-of-core codes.  The code is given only
+#! 2.0 MB of memory, which is insufficient to hold either the A1 or B2
+#! blocks of an ovvv quantity in-core, but is sufficient to hold at least
+#! two copies of an oovv quantity in-core.
+
+molecule h2o {
+  0 1
+  H
+  O 1 0.9
+  H 2 0.9 1 104.0
+}
+
+# memory 2 mb
+# above will fail b/c below min mem. set core.set_memory(bytes) to bypass.
+set_memory_bytes(2000000)
+
+# note that this test will fail in parallel b/c of low memory and #2576
+
+set {
+  basis "aug-cc-pVTZ"
+  roots_per_irrep [1, 0, 0, 1]
+  cachelevel 0
+  scf_type out_of_core
+}
+
+energy('eom-ccsd')
+
+scf_0     =   -76.05675776144756                                            #TEST
+ccsd_0    =   -76.34161380738567                                            #TEST
+eomccsd_0 = [ (-75.961272583411, "A1", 1), (-75.898190749064, "B2", 0) ]                          #TEST
+
+compare_values(scf_0, variable("SCF TOTAL ENERGY"), 7, "SCF energy")    #TEST
+compare_values(ccsd_0, variable("CCSD TOTAL ENERGY"), 7, "CCSD energy") #TEST
+for (ref, h, i) in eomccsd_0: # TEST
+    val = variable(f"CCSD ROOT {i} (IN {h}) TOTAL ENERGY")                                 #TEST
+    compare_values(ref, val, 6, f"EOM-CCSD root {i} (IN {h})")                                #TEST

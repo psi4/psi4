@@ -1,0 +1,36 @@
+#! OMP2 cc-pVDZ energy for the H2O molecule.
+
+refnuc      =  9.18738642147759 #TEST
+refscf      = -76.02671607958911 #TEST
+refomp2     = -76.22932292357126 #TEST
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  guess sad
+  freeze_core true
+  scf_type cd
+  mp2_type cd
+}
+energy('omp2')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "CD-HF Energy (a.u.)");                        #TEST
+compare_values(refomp2, variable("OMP2 TOTAL ENERGY"), 6, "CD-OMP2 Total Energy (a.u.)");               #TEST
+
+clean()
+set scf_type df
+ene = energy("qchf")
+compare_values(-76.02674018, ene, 6, "DF-HF Energy (a.u.) from QCHF")  #TEST
+
+clean()
+set scf_type cd
+ene = energy("qchf")
+compare_values(refscf, ene, 6, "CD-HF Energy (a.u.) from QCHF")  #TEST
+

@@ -1,0 +1,50 @@
+#! check distributed driver is correctly passing function kwargs
+
+geometry("""
+O 0 0 0
+H 1 0 0
+H 0 1 0
+--
+O 0 0 3
+H 1 0 3
+H 0 1 3
+""")
+
+ene = energy(
+    #'b3lyp/def2-SVP',
+    'SCF/def2-SVP',
+    bsse_type=['cp','nocp'],
+    dft_functional="b3lyp",
+)
+
+print(ene)
+compare_values(0.0065076803, ene, 5, "b3lyp")
+
+grad = gradient(
+    #'b3lyp/def2-SVP',
+    'SCF/def2-SVP',
+    bsse_type=['cp','nocp'],
+    dft_functional="b3lyp",
+)
+
+print(grad.np)
+ref_grad = [
+ [-1.14697304e-19,  6.10529334e-03, -5.91820547e-02],
+ [-1.73890322e-03,  1.47355486e-04,  2.95943208e-02],
+ [ 1.73890322e-03,  1.47355486e-04,  2.95943208e-02],
+ [ 1.14697300e-19, -6.10529339e-03, -5.91820512e-02],
+ [-1.73890176e-03, -1.47355459e-04,  2.95943191e-02],
+ [ 1.73890176e-03, -1.47355459e-04,  2.95943191e-02]]
+compare_values(ref_grad, grad, 4, "b3lyp grad")
+
+grad_fd = gradient(
+    #'b3lyp/def2-SVP',
+    'SCF/def2-SVP',
+    bsse_type=['cp','nocp'],
+    dft_functional="b3lyp",
+    dertype=0,
+)
+compare_values(ref_grad, grad_fd, 3, "b3lyp grad findif")
+
+
+

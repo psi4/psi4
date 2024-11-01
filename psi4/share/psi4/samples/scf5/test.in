@@ -1,0 +1,283 @@
+#! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
+
+print(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2') #TEST
+
+#Ensure that the checkpoint file is always nuked
+psi4_io.set_specific_retention(32,False)
+
+Eref = {  
+    "Nuclear"       :   30.7884922572,     #TEST
+    "Singlet": {
+        "Canonical" : -149.58723684929720, #TEST
+        "DF"        : -149.58715054487624, #TEST
+        "Composite": {
+          "DFDirJ+COSX"    : -149.58722317236171, #TEST
+          "DFDirJ+LinK"    : -149.58726772171027  #TEST
+        } 
+    },
+    "Triplet UHF": {
+        "Canonical" : -149.67135517240553, #TEST
+        "DF"        : -149.67125624291961, #TEST
+        "Composite": {
+          "DFDirJ+COSX"    : -149.67132922581225, #TEST
+          "DFDirJ+LinK"    : -149.67137328005577  #TEST
+        }
+    },
+    "Triplet ROHF": {
+        "Canonical" : -149.65170765757173, #TEST
+        "DF"        : -149.65160796208073, #TEST
+        "Composite": {
+          "DFDirJ+COSX"    : -149.65168894156605, #TEST
+          "DFDirJ+LinK"    : -149.65172557470324  #TEST
+        }
+    }
+}
+
+molecule singlet_o2 {
+    0 1
+    O
+    O 1 1.1
+    units    angstrom
+}
+
+molecule triplet_o2 {
+    0 3
+    O
+    O 1 1.1
+    units    angstrom
+}
+singlet_o2.update_geometry()
+triplet_o2.update_geometry()
+
+print('   -Nuclear Repulsion:') #TEST
+compare_values(Eref["Nuclear"], triplet_o2.nuclear_repulsion_energy(), 9, "Triplet nuclear repulsion energy")  #TEST
+compare_values(Eref["Nuclear"], singlet_o2.nuclear_repulsion_energy(), 9, "Singlet nuclear repulsion energy")  #TEST
+
+activate(singlet_o2)
+set {
+    basis cc-pvtz
+    df_basis_scf cc-pvtz-jkfit
+    print 2
+}
+
+print('    -Singlet RHF:') #TEST
+set scf reference rhf
+set screening csam
+
+set scf_type pk
+E = energy('scf')
+compare_values(Eref["Singlet"]["Canonical"], E, 6, 'Singlet PK RHF energy') #TEST
+
+set scf_type direct
+E = energy('scf')
+compare_values(Eref["Singlet"]["Canonical"], E, 6, 'Singlet Direct RHF energy') #TEST
+
+set scf_type out_of_core
+E = energy('scf')
+compare_values(Eref["Singlet"]["Canonical"], E, 6, 'Singlet Disk RHF energy') #TEST
+
+set scf_type disk_df
+E = energy('scf')
+compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet DiskDF RHF energy') #TEST
+
+set scf_type mem_df
+E = energy('scf')
+compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF RHF energy') #TEST
+
+for method in Eref["Singlet"]["Composite"].keys():
+    set scf_type $method 
+    if method == "DFDirJ+COSX":
+      set screening csam
+    else:
+      set screening density
+
+    E = energy('scf')
+    compare_values(Eref["Singlet"]["Composite"][method], E, 6, f'Singlet {method} RHF energy') #TEST
+
+print('    -Singlet UHF:') #TEST
+set scf reference uhf
+set screening csam
+
+set scf_type pk
+E = energy('scf')
+compare_values(Eref["Singlet"]["Canonical"], E, 6, 'Singlet PK UHF energy') #TEST
+
+set scf_type direct
+E = energy('scf')
+compare_values(Eref["Singlet"]["Canonical"], E, 6, 'Singlet Direct UHF energy') #TEST
+
+set scf_type out_of_core
+E = energy('scf')
+compare_values(Eref["Singlet"]["Canonical"], E, 6, 'Singlet Disk UHF energy') #TEST
+
+set scf_type disk_df
+E = energy('scf')
+compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet DiskDF UHF energy') #TEST
+
+set scf_type mem_df
+E = energy('scf')
+compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF UHF energy') #TEST
+
+for method in Eref["Singlet"]["Composite"].keys():
+    set scf_type $method 
+    if method == "DFDirJ+COSX":
+      set screening csam
+    else:
+      set screening density
+
+    E = energy('scf')
+    compare_values(Eref["Singlet"]["Composite"][method], E, 6, f'Singlet {method} UHF energy') #TEST
+
+print('    -Singlet CUHF:') #TEST
+set scf reference cuhf
+set screening csam
+
+set scf_type pk
+E = energy('scf')
+compare_values(Eref["Singlet"]["Canonical"], E, 6, 'Singlet PK CUHF energy') #TEST
+
+set scf_type direct
+E = energy('scf')
+compare_values(Eref["Singlet"]["Canonical"], E, 6, 'Singlet Direct CUHF energy') #TEST
+
+set scf_type out_of_core
+E = energy('scf')
+compare_values(Eref["Singlet"]["Canonical"], E, 6, 'Singlet Disk CUHF energy') #TEST
+
+set scf_type disk_df
+E = energy('scf')
+compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet DiskDF CUHF energy') #TEST
+
+set scf_type mem_df
+E = energy('scf')
+compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF CUHF energy') #TEST
+
+for method in Eref["Singlet"]["Composite"].keys():
+    set scf_type $method 
+    if method == "DFDirJ+COSX":
+      set screening csam
+    else:
+      set screening density
+
+    E = energy('scf')
+    compare_values(Eref["Singlet"]["Composite"][method], E, 6, f'Singlet {method} CUHF energy') #TEST
+
+activate(triplet_o2)
+set {
+    basis cc-pvtz
+    df_basis_scf cc-pvtz-jkfit
+    guess core
+    print 2
+}
+
+print('    -Triplet UHF:') #TEST
+set scf reference uhf
+set screening csam
+
+set scf_type pk
+E = energy('scf')
+compare_values(Eref["Triplet UHF"]["Canonical"], E, 6, 'Triplet PK UHF energy') #TEST
+
+set scf_type direct
+E = energy('scf')
+compare_values(Eref["Triplet UHF"]["Canonical"], E, 6, 'Triplet Direct UHF energy') #TEST
+
+set scf_type out_of_core
+E = energy('scf')
+compare_values(Eref["Triplet UHF"]["Canonical"], E, 6, 'Triplet Disk UHF energy') #TEST
+
+set scf_type disk_df
+E = energy('scf')
+compare_values(Eref["Triplet UHF"]["DF"], E, 6, 'Triplet DiskDF UHF energy') #TEST
+
+set scf_type mem_df
+E = energy('scf')
+compare_values(Eref["Triplet UHF"]["DF"], E, 6, 'Triplet MemDF UHF energy') #TEST
+
+for method in Eref["Triplet UHF"]["Composite"].keys():
+    set scf_type $method 
+    if method == "DFDirJ+COSX":
+      set screening csam
+    else:
+      set screening density
+
+    E = energy('scf')
+    compare_values(Eref["Triplet UHF"]["Composite"][method], E, 6, f'Triplet {method} UHF energy') #TEST
+
+clean()
+
+print('    -Triplet ROHF:') #TEST
+set scf reference rohf
+set screening csam
+
+set scf_type pk
+E = energy('scf')
+compare_values(Eref["Triplet ROHF"]["Canonical"], E, 6, 'Triplet PK ROHF energy') #TEST
+clean()
+
+set scf_type direct
+E = energy('scf')
+compare_values(Eref["Triplet ROHF"]["Canonical"], E, 6, 'Triplet Direct ROHF energy') #TEST
+clean()
+
+set scf_type out_of_core
+E = energy('scf')
+compare_values(Eref["Triplet ROHF"]["Canonical"], E, 6, 'Triplet Disk ROHF energy') #TEST
+clean()
+
+set scf_type disk_df
+E = energy('scf')
+compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet DiskDF ROHF energy') #TEST
+
+set scf_type mem_df
+E = energy('scf')
+compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF ROHF energy') #TEST
+
+for method in Eref["Triplet ROHF"]["Composite"].keys():
+    set scf_type $method 
+    if method == "DFDirJ+COSX":
+      set screening csam
+    else:
+      set screening density
+
+    E = energy('scf')
+    compare_values(Eref["Triplet ROHF"]["Composite"][method], E, 6, f'Triplet {method} ROHF energy') #TEST
+
+clean()
+
+print('    -Triplet CUHF:') #TEST
+set scf reference cuhf
+set screening csam
+
+set scf_type pk
+E = energy('scf')
+compare_values(Eref["Triplet ROHF"]["Canonical"], E, 6, 'Triplet PK CUHF energy') #TEST
+clean()
+
+set scf_type direct
+E = energy('scf')
+compare_values(Eref["Triplet ROHF"]["Canonical"], E, 6, 'Triplet Direct CUHF energy') #TEST
+clean()
+
+set scf_type out_of_core
+E = energy('scf')
+compare_values(Eref["Triplet ROHF"]["Canonical"], E, 6, 'Triplet Disk CUHF energy') #TEST
+clean()
+
+set scf_type disk_df
+E = energy('scf')
+compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet DiskDF CUHF energy') #TEST
+
+set scf_type mem_df
+E = energy('scf')
+compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF CUHF energy') #TEST
+
+for method in Eref["Triplet ROHF"]["Composite"].keys():
+    set scf_type $method 
+    if method == "DFDirJ+COSX":
+      set screening csam
+    else:
+      set screening density
+
+    E = energy('scf')
+    compare_values(Eref["Triplet ROHF"]["Composite"][method], E, 6, f'Triplet {method} CUHF energy') #TEST

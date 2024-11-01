@@ -1,0 +1,20 @@
+#! Test LDA stability analysis against QChem.
+
+molecule bb {
+   0 3 
+   b   
+   b 1 R 
+   R = 1.587553
+symmetry c1
+}
+
+set {
+reference uks
+basis def2-svp
+STABILITY_ANALYSIS check
+solver_n_root 2
+scf_type pk
+}
+
+
+energy('svwn')

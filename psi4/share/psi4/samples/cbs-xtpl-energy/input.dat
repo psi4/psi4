@@ -1,0 +1,72 @@
+#! Extrapolated water energies - density-fitted version
+import numpy as np
+
+
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
+molecule h2o {
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+}
+
+# Use DF to save some time
+set {
+    scf_type      df
+    mp2_type      df
+    e_convergence 7
+    reference     rhf
+}
+
+h2o.update_geometry()
+
+# SCF TESTS
+
+scf_dz = energy('SCF/cc-pVDZ')
+clean()
+
+scf_tzvp = energy('SCF/def2-TZVP')
+
+if distributed:
+    plan = energy('SCF/aug-cc-pV[23]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_adtz = plan.get_psi_results(client)
+else:
+    scf_adtz = energy('SCF/aug-cc-pV[23]Z')
+
+if distributed:
+    plan = energy('SCF/[23]ZaPa-NR', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_zapa = plan.get_psi_results(client)
+else:
+    scf_zapa = energy('SCF/[23]ZaPa-NR')
+
+# Three point extrapolation
+# scf_adtqz = energy('SCF/aug-cc-pV[D3Q]Z')
+
+
+# MP2 TESTS
+
+mp2_addz = energy('MP2/aug-cc-pV(D+d)Z')
+clean()
+
+mp2_atz = energy('MP2/aug-cc-pVTZ')
+
+if distributed:
+    plan = energy('MP2/aug-cc-pV[2T]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_adtz = plan.get_psi_results(client)
+else:
+    mp2_adtz = energy('MP2/aug-cc-pV[2T]Z')
+
+# mp2_atqz = energy('MP2/aug-cc-pV[T,Q]Z')
+
+if distributed:
+    snowflake.stop()

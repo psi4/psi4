@@ -1,0 +1,187 @@
+#! Multilevel computation of water trimer energy (geometry from J. Chem. Theory Comput. 11, 2126-2136 (2015))
+
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
+molecule h2o_trimer {
+O      -2.76373224  -1.24377706  -0.15444566 
+H      -1.12357791  -2.06227970  -0.05243799 
+H      -3.80792362  -2.08705525   1.06090407 
+--
+O       2.46924614  -1.75437739  -0.17092884 
+H       3.76368260  -2.21425403   1.00846104 
+H       2.30598330   0.07098445  -0.03942473 
+--
+O       0.29127930   3.00875625   0.20308515 
+H      -1.21253048   1.95820900   0.10303324 
+H       0.10002049   4.24958115  -1.10222079 
+units bohr
+}
+
+
+set cc_type df
+set df_basis_mp2 def2-qzvpp-ri  # not a recommendation. present to compensate for change in default
+
+# Compute 1-body contribution with ccsd(t) and 2-body contribution with mp2
+levels = {2: 'scf/sto-3g', 1: 'mp2/sto-3g'}
+if distributed:
+    plan = energy('', molecule=h2o_trimer, bsse_type=['nocp', 'cp', 'vmfc'], return_total_data=True, return_plan=True, levels=levels)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('', molecule=h2o_trimer, bsse_type=['nocp', 'cp', 'vmfc'], return_total_data=True, return_wfn=True, levels=levels)
+clean()
+
+comparison_dict = {'nocp': -225.019408434635, 'cp': -225.000173661598, 'vmfc': -224.998744381484} #TEST
+for b, v in comparison_dict.items():                                                              #TEST
+    compare_values(v, wfn.variable('2'+b), 6, "[1] " + b + '-corrected multi-level energy')            #TEST
+
+comparison_dict_grad = {
+    "nocp": np.array([
+ [ 0.00488282, -0.06124859,  0.05278606],
+ [-0.02916847,  0.02624797, -0.01012264],
+ [ 0.02184944,  0.03426858, -0.04196949],
+ [ 0.05057868,  0.03475441,  0.05224869],
+ [-0.04175044,  0.00095151, -0.04104789],
+ [-0.00720033, -0.03777234, -0.01134265],
+ [-0.0528693 ,  0.0215054 , -0.05705717],
+ [ 0.03601714,  0.0135552 ,  0.01196507],
+ [ 0.01766046, -0.03226215,  0.04454002]]),
+    "cp": np.array(
+     [[ 0.010895194297, -0.055948033831,  0.052309409503],
+      [-0.022752547456,  0.026805842741, -0.01039077369 ],
+      [ 0.021571537328,  0.035809069951, -0.041019646812],
+      [ 0.043466133798,  0.037310576943,  0.051497689156],
+      [-0.042876799669, -0.000108081938, -0.04011303898 ],
+      [-0.011248226539, -0.031870185069, -0.012022261779],
+      [-0.051051469021,  0.013495129546, -0.056708844122],
+      [ 0.032925401179,  0.007319904127,  0.012741097094],
+      [ 0.019070776081, -0.032814222471,  0.043706369631]]),
+    "vmfc": np.array(
+     [[ 0.011258978232, -0.05501934204 ,  0.052500671092],
+      [-0.021375184998,  0.026821214671, -0.01047803926 ],
+      [ 0.021584807017,  0.036022374357, -0.041090773884],
+      [ 0.042515286424,  0.03719501866 ,  0.051630328808],
+      [-0.043066344068, -0.000216150981, -0.040163456046],
+      [-0.01195358743 , -0.030656585451, -0.012062586826],
+      [-0.050365169116,  0.012688662016, -0.05689297692 ],
+      [ 0.032180403361,  0.006086161828,  0.012787037138],
+      [ 0.019220810578, -0.03292135306 ,  0.043769795899]]),
+}
+for k, v in wfn.variables().items():
+    if isinstance(v, psi4.core.Matrix):
+        print(k, v.np)
+    else:
+        print(k, v)
+
+if distributed:
+    plan = gradient('', molecule=h2o_trimer, bsse_type=['nocp'], return_total_data=True, return_plan=True, levels=levels)
+    plan.compute(client)
+    snowflake.await_results()
+    g, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['nocp'], return_total_data=True, return_wfn=True, levels=levels)
+compare_values(comparison_dict_grad["nocp"], g, 5, '[2a] nocp-corrected multi-level gradient')            #TEST
+clean()
+
+if distributed:
+    plan = gradient('', molecule=h2o_trimer, bsse_type=['cp','nocp'], return_total_data=True, return_plan=True, levels=levels)
+    plan.compute(client)
+    snowflake.await_results()
+    g, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['cp','nocp'], return_total_data=True, return_wfn=True, levels=levels)
+compare_values(comparison_dict_grad["cp"], g, 5, '[2b] cp-corrected multi-level gradient')            #TEST
+clean()
+
+if distributed:
+    plan = gradient('', molecule=h2o_trimer, bsse_type=['vmfc'], return_total_data=True, return_plan=True, levels=levels)
+    plan.compute(client)
+    snowflake.await_results()
+    g, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['vmfc'], return_total_data=True, return_wfn=True, levels=levels)
+compare_values(comparison_dict_grad["vmfc"], g, 5, '[2c] vmfc-corrected multi-level gradient')            #TEST
+clean()
+
+# Compute 1-body contribution with ccsd(t) and estimate all higher order contributions with scf
+levels = {1: 'mp2/sto-3g', 'supersystem': 'scf/sto-3g'}
+if distributed:
+    plan = gradient('', molecule=h2o_trimer, bsse_type='nocp', return_total_data=True, return_plan=True, levels=levels)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = gradient('', molecule=h2o_trimer, bsse_type='nocp', return_total_data=True, return_wfn=True, levels=levels)
+clean()
+comparison_dict = {'1': -224.998373505116, '3': -225.023509855159}                                #TEST
+for n, v in comparison_dict.items():                                                              #TEST  
+    compare_values(v, wfn.variable(n+'nocp'), 6, '[3] Supersystem multi-level energy')            #TEST
+
+# Compute electrostatically embedded  many-body expansion energy.with TIP3P charges
+tip3p_charges = [-0.834, 0.417, 0.417]
+embedding_charges = {i: [j for j in tip3p_charges] for i in range(1, 4)}
+if distributed:
+    plan = energy('scf/sto-3g', molecule=h2o_trimer, bsse_type='vmfc', return_total_data=True, return_plan=True,
+                max_nbody=2, embedding_charges=embedding_charges)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('scf/sto-3g', molecule=h2o_trimer, bsse_type='vmfc', return_total_data=True, return_wfn=True,
+                max_nbody=2, embedding_charges=embedding_charges)
+clean()
+comparison_dict = {'1': -224.940138148882, '2': -224.943882712817}                                #TEST
+for n, v in comparison_dict.items():                                                              #TEST
+    compare_values(v, wfn.variable(n), 6, '[4] Electrostatically embedded many-body expansion')   #TEST
+
+
+# units check
+h2o_trimer_ang = psi4.core.Molecule.from_arrays(
+    elez=[8, 1, 1, 8, 1, 1, 8, 1, 1],
+    fragment_separators=[3, 6],
+    geom=np.array([
+  -2.76373224,  -1.24377706,  -0.15444566,
+  -1.12357791,  -2.06227970,  -0.05243799,
+  -3.80792362,  -2.08705525,   1.06090407,
+   2.46924614,  -1.75437739,  -0.17092884,
+   3.76368260,  -2.21425403,   1.00846104,
+   2.30598330,   0.07098445,  -0.03942473,
+   0.29127930,   3.00875625,   0.20308515,
+  -1.21253048,   1.95820900,   0.10303324,
+   0.10002049,   4.24958115,  -1.10222079]) * psi_bohr2angstroms,
+    units="Angstrom")
+
+levels = {'supersystem': 'scf/sto-3g', 1: 'mp2/sto-3g'}
+if distributed:
+    plan = energy('', molecule=h2o_trimer_ang, bsse_type='nocp', return_total_data=True, return_plan=True, levels=levels)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('', molecule=h2o_trimer_ang, bsse_type='nocp', return_total_data=True, return_wfn=True, levels=levels)
+clean()
+comparison_dict = {'1': -224.998373505116, '3': -225.023509855159}                                #TEST
+for n, v in comparison_dict.items():                                                              #TEST
+    compare_values(v, wfn.variable(n+'nocp'), 6, '[5] Supersystem multi-level energy: Ang')           #TEST
+
+if distributed:
+    plan = energy('scf/sto-3g', molecule=h2o_trimer_ang, bsse_type='vmfc', return_total_data=True, return_plan=True,
+                max_nbody=2, embedding_charges=embedding_charges)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('scf/sto-3g', molecule=h2o_trimer_ang, bsse_type='vmfc', return_total_data=True, return_wfn=True,
+                max_nbody=2, embedding_charges=embedding_charges)
+clean()
+comparison_dict = {'1': -224.940138148882, '2': -224.943882712817}                                #TEST
+for n, v in comparison_dict.items():                                                              #TEST
+    compare_values(v, wfn.variable(n), 6, '[6] Electrostatically embedded many-body expansion: Ang')  #TEST
+
+if distributed:
+    snowflake.stop()

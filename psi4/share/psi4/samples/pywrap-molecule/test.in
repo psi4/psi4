@@ -1,0 +1,178 @@
+#! Check that C++ Molecule class and qcdb molecule class
+#! are reading molecule input strings identically
+
+from psi4.driver import qcdb
+
+mol1 = """
+    0 3
+    X
+    X     1    1.000000
+    C     2 CQ     1   90.000000
+    C     3 CQ     2   60.000000     1   90.000000
+    C     4 CQ     2   60.000000     1   90.000000
+    C     5 CQ     2   60.000000     1   90.000000
+    C     6 CQ     2   60.000000     1   90.000000
+    C     7 CQ     2   60.000000     1   90.000000
+    X     3    1.000000     2   90.000000     1    0.000000
+    H     3 CH1     9   90.000000     2  180.000000
+    H     4 CH1     3  120.000000     2  180.000000
+    H     5 CH1     4  120.000000     2  180.000000
+    H     6 CH1     5  120.000000     2  180.000000
+    H     7 CH1     6  120.000000     2  180.000000
+    H     8 CH1     7  120.000000     2  180.000000
+    --
+    0 1
+    C     2 R     3   90.000000     9    0.000000
+    H    16 CH2     2    0.000000     3    0.000000
+    H    16 CH2     2 HCH     3    0.000000
+    H    16 CH2    17 HCH    18  120.000000
+    H    16 CH2    17 HCH    18  240.000000
+
+    HCH       =  109.4712090000
+    CH1       =    1.0952100000
+    CQ        =    1.4057310000
+    R         =    6.0000000000
+    CH2       =    1.0995030000
+"""
+
+
+mol2 = """
+    N           -1.527107413251     0.745960643462     0.766603000356
+    C           -0.075844098953     0.811790225041     0.711418672248
+    C            0.503195220163    -0.247849447550    -0.215671574613
+    O           -0.351261319421    -0.748978309671    -1.089590304723
+    O            1.639498336738    -0.571249748886    -0.174705953194
+    H           -1.207655674855    -0.365913941094    -0.918035522052
+--
+    C  2  rCC   3  aCCC   1  dCCCN
+    H  7  rCH1  2  aHCC1  3  dHCCC1
+    H  7  rCH2  2  aHCC2  3  dHCCC2
+    H  7  rCH3  2  aHCC3  3  dHCCC3
+    H            0.221781602033     1.772570540211     0.286988509018
+    H           -1.833601608592     0.108401996052     1.481873213172
+    H           -1.925572581453     1.640882152784     0.986471814808
+    
+    aCCC = 108.0
+    rCC = 1.4
+    dCCCN = 120
+    rCH1 = 1.08
+    rCH2 = 1.08
+    rCH3 = 1.08
+    aHCC1 = 109.0
+    aHCC2 = 109.0
+    aHCC3 = 109.0
+    dHCCC1 = 0.0
+    dHCCC2 = 120.0
+    dHCCC3 = 240.0
+no_com
+no_reorient
+"""
+
+mol3 = """
+0 1
+H          0.35854975      -0.09945835       0.00000000
+F          1.28985881      -0.09945835       0.00000000
+--
+0 2
+O        -1.44698611       0.06135708       0.00000000
+H        -1.70882231       1.00055573       0.00000000
+no_com
+no_reorient
+"""
+
+def test_qcdb():  #TEST
+    print_out("%s\n" % ans[0])  #TEST
+    print_out(origfrag.create_psi4_string_from_molecule())  #TEST
+    gorig = origfrag.geometry()  #TEST
+    frag = qcdb.Molecule(origfrag.create_psi4_string_from_molecule())  #TEST
+    frag.update_geometry()  #TEST
+    gnew = frag.geometry()  #TEST
+    compare_values(ans[1], frag.nuclear_repulsion_energy(), 6, "QCDB %s: NRE" % ans[0])  #TEST
+    compare_integers(ans[2], frag.molecular_charge(), "QCDB %s: charge" % ans[0])  #TEST
+    compare_integers(ans[3], frag.multiplicity(), "QCDB %s: multiplicity" % ans[0])  #TEST
+    qcdb.compare_arrays(gorig, gnew, 5, "QCDB %s: string recreates geometry" % ans[0])  #TEST
+
+def test_libmints():  #TEST
+    print_out("%s\n" % ans[0])  #TEST
+    print_out(origfrag.create_psi4_string_from_molecule())  #TEST
+    gorig = origfrag.geometry()  #TEST
+    frag = geometry(origfrag.create_psi4_string_from_molecule())  #TEST
+    frag.update_geometry()  #TEST
+    gnew = frag.geometry()  #TEST
+    compare_values(ans[1], frag.nuclear_repulsion_energy(), 6, "Libmints %s: NRE" % ans[0])  #TEST
+    compare_integers(ans[2], frag.molecular_charge(), "Libmints %s: charge" % ans[0])  #TEST
+    compare_integers(ans[3], frag.multiplicity(), "Libmints %s: multiplicity" % ans[0])  #TEST
+    compare_matrices(gorig, gnew, 5, "Libmints %s: string recreates geometry" % ans[0])  #TEST
+
+mol = qcdb.Molecule(mol1)
+mol.update_geometry()
+ans = ["Mol1 Dimer", 250.994551922, 0, 3]
+origfrag = mol
+test_qcdb()
+ans = ["Mol1 MonoA CP", 201.838536064, 0, 3]
+origfrag = mol.extract_fragments(1,2)
+test_qcdb()
+ans = ["Mol1 MonoB UNCP", 13.3192671807, 0, 1]
+origfrag = mol.extract_fragments(2)
+test_qcdb()
+
+mol = qcdb.Molecule(mol2)
+mol.update_geometry()
+ans = ["Mol2 Dimer", 256.6527813, 0, 1]
+origfrag = mol
+test_qcdb()
+ans = ["Mol2 MonoA CP", 144.483917787, 0, 1]
+origfrag = mol.extract_fragments(1,2)
+test_qcdb()
+ans = ["Mol2 MonoB UNCP", 16.209317711, 0, 1]
+origfrag = mol.extract_fragments(2)
+test_qcdb()
+
+mol = qcdb.Molecule(mol3)
+mol.update_geometry()
+ans = ["Mol3 Dimer", 27.4057052589, 0, 2]
+origfrag = mol
+test_qcdb()
+ans = ["Mol3 MonoA CP", 5.11387151899, 0, 1]
+origfrag = mol.extract_fragments(1,2)
+test_qcdb()
+ans = ["Mol3 MonoB UNCP", 4.34190449534, 0, 2]
+origfrag = mol.extract_fragments(2)
+test_qcdb()
+
+#mol = geometry(mol1)
+#mol.update_geometry()
+#ans = ["Mol1 Dimer", 250.994551922, 0, 3]
+#origfrag = mol
+#test_libmints()
+#ans = ["Mol1 MonoA CP", 201.838536064, 0, 3]
+#origfrag = mol.extract_subsets(1,2)
+#test_libmints()
+#ans = ["Mol1 MonoB UNCP", 13.3192671807, 0, 1]
+#origfrag = mol.extract_subsets(2)
+#test_libmints()
+
+#mol = geometry(mol2)
+#mol.update_geometry()
+#ans = ["Mol2 Dimer", 256.652780316, 0, 1]
+#origfrag = mol
+#test_libmints()
+#ans = ["Mol2 MonoA CP", 144.483917787, 0, 1]
+#origfrag = mol.extract_subsets(1,2)
+#test_libmints()
+#ans = ["Mol2 MonoB UNCP", 16.209317711, 0, 1]
+#origfrag = mol.extract_subsets(2)
+#test_libmints() 
+
+mol = geometry(mol3)
+mol.update_geometry()
+ans = ["Mol3 Dimer", 27.4057052589, 0, 2]
+origfrag = mol
+test_libmints()  #TEST
+ans = ["Mol3 MonoA CP", 5.11387151899, 0, 1]
+origfrag = mol.extract_subsets(1,2)
+test_libmints()  #TEST
+ans = ["Mol3 MonoB UNCP", 4.34190449534, 0, 2]
+origfrag = mol.extract_subsets(2)
+test_libmints()  #TEST
+

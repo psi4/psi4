@@ -1,0 +1,38 @@
+#! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
+
+molecule h2o {
+    O
+    H 1 0.97
+    H 1 0.97 2 103.0
+}
+
+set {
+    basis 6-31G**
+}
+
+wfn = optimize('ccsd', return_wfn=True)[1]
+
+refnuc   =   9.1654609427539  #TEST
+refscf   = -76.0229427274435  #TEST
+refccsd  = -0.20823570806196  #TEST
+reftotal = -76.2311784355056  #TEST
+scfT     =  75.7989532323351  #TEST
+scfVT    =   2.0029550473401  #TEST
+scfV     =   - scfVT * scfT   #TEST
+ccT      =   0.1474216520850  #TEST
+ccVT     =   2.4125178001909  #TEST
+ccV      =   -  ccVT *  ccT   #TEST
+totalVT  =   2.0037500611607  #TEST
+
+compare_values(refnuc,   h2o.nuclear_repulsion_energy(),          3, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   variable("SCF total energy"),        5, "SCF energy")               #TEST
+compare_values(refccsd,  variable("CCSD correlation energy"), 4, "CCSD contribution")        #TEST
+compare_values(reftotal, variable("Current energy"),          7, "Total energy")             #TEST
+compare_values(scfT,     variable("HF Kinetic Energy"),       5, "HF Kinetic Energy")        #TEST
+compare_values(scfV,     variable("HF Potential Energy"),     5, "HF Potential Energy")      #TEST
+compare_values(scfVT,    variable("HF Virial Ratio"),         5, "HF Virial Ratio")          #TEST
+compare_values(ccT,      wfn.variable("CC Correlation Kinetic Energy"),       5, "CC Correlation Kinetic Energy")        #TEST
+compare_values(ccV,      wfn.variable("CC Correlation Potential Energy"),     5, "CC Correlation Potential Energy")      #TEST
+compare_values(ccVT,     wfn.variable("CC Correlation Virial Ratio"),         5, "CC Correlation Virial Ratio")          #TEST
+compare_values(totalVT,  wfn.variable("CC Virial Ratio"),         5, "CC Virial Ratio")      #TEST
+

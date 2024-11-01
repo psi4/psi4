@@ -1,0 +1,33 @@
+#! Computation of NoCP-corrected water trimer gradient (geometry from J. Chem. Theory Comput. 11, 2126-2136 (2015))
+
+import numpy as np
+
+molecule water_trimer {
+O      -2.76373224  -1.24377706  -0.15444566
+H      -1.12357791  -2.06227970  -0.05243799
+H      -3.80792362  -2.08705525   1.06090407
+--
+O       2.46924614  -1.75437739  -0.17092884
+H       3.76368260  -2.21425403   1.00846104
+H       2.30598330   0.07098445  -0.03942473
+--
+O       0.29127930   3.00875625   0.20308515
+H      -1.21253048   1.95820900   0.10303324
+H       0.10002049   4.24958115  -1.10222079
+no_reorient
+no_com
+symmetry c1
+units bohr
+}
+
+g, wfn = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='nocp', max_nbody=2,
+                                      return_total_data=True, return_wfn=True)
+core.clean()
+
+
+
+
+
+
+
+

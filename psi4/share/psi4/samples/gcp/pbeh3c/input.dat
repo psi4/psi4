@@ -1,0 +1,202 @@
+#! validate PBEh-3c against the literature
+
+d3_engine = psi4.driver.EmpiricalDispersion(name_hint="b3lyp", level_hint="d3bj").engine
+
+molecule s2di {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+symmetry c1
+}
+s2ma = s2di.extract_subsets(1)
+s2mb = s2di.extract_subsets(2)
+
+molecule s4di {
+C  -2.018649   0.052883   0.000000
+O  -1.452200   1.143634   0.000000
+N  -1.407770  -1.142484   0.000000
+H  -1.964596  -1.977036   0.000000
+H  -0.387244  -1.207782   0.000000
+H  -3.117061  -0.013701   0.000000
+--
+0 1
+C   2.018649  -0.052883   0.000000
+O   1.452200  -1.143634   0.000000
+N   1.407770   1.142484   0.000000
+H   1.964596   1.977036   0.000000
+H   0.387244   1.207782   0.000000
+H   3.117061   0.013701   0.000000
+}
+s4ma = s4di.extract_subsets(1)
+s4mb = s4di.extract_subsets(2)
+
+molecule s16di {
+C   0.000000  -0.667578  -2.124659
+C   0.000000   0.667578  -2.124659
+H   0.923621  -1.232253  -2.126185
+H  -0.923621  -1.232253  -2.126185
+H  -0.923621   1.232253  -2.126185
+H   0.923621   1.232253  -2.126185
+--
+C   0.000000   0.000000   2.900503
+C   0.000000   0.000000   1.693240
+H   0.000000   0.000000   0.627352
+H   0.000000   0.000000   3.963929
+symmetry c1
+}
+s16ma = s16di.extract_subsets(1)
+s16mb = s16di.extract_subsets(2)
+
+
+def ie(es):
+    return es[0] - es[1] - es[2]
+
+set scf_type df
+#set df_basis_scf def2-qzvpp-jfit
+
+if d3_engine == "dftd3":
+    E, G = s2di.run_dftd3('pbeh3c', 'd3bj')
+    E, G = s2ma.run_dftd3('pbeh3c', 'd3bj')
+    E, G = s2mb.run_dftd3('pbeh3c', 'd3bj')
+
+    E, G = s4di.run_dftd3('pbeh3c', 'd3bj')
+    E, G = s4ma.run_dftd3('pbeh3c', 'd3bj')
+    E, G = s4mb.run_dftd3('pbeh3c', 'd3bj')
+
+    E, G = s16di.run_dftd3('pbeh3c', 'd3bj')
+    E, G = s16ma.run_dftd3('pbeh3c', 'd3bj')
+    E, G = s16mb.run_dftd3('pbeh3c', 'd3bj')
+
+E, G = s2di.run_gcp('pbeh3c')
+E, G = s2ma.run_gcp('pbeh3c')
+E, G = s2mb.run_gcp('pbeh3c')
+
+E, G = s4di.run_gcp('pbeh3c')
+E, G = s4ma.run_gcp('pbeh3c')
+E, G = s4mb.run_gcp('pbeh3c')
+
+E, G = s16di.run_gcp('pbeh3c')
+E, G = s16ma.run_gcp('pbeh3c')
+E, G = s16mb.run_gcp('pbeh3c')
+
+
+E = energy('pbeh3c', molecule=s2di)
+D = variable('DISPERSION CORRECTION ENERGY')
+E = energy('pbeh3c/def2-msvp', molecule=s2ma)
+D = variable('DISPERSION CORRECTION ENERGY')
+E = energy('pbeh3c/def2-msvp', molecule=s2mb)
+D = variable('DISPERSION CORRECTION ENERGY')
+
+###E = energy('pbeh3c/def2-msvp', molecule=s4di)
+###D = variable('DISPERSION CORRECTION ENERGY')
+###E = energy('pbeh3c/def2-msvp', molecule=s4ma)
+###D = variable('DISPERSION CORRECTION ENERGY')
+###E = energy('pbeh3c/def2-msvp', molecule=s4mb)
+###D = variable('DISPERSION CORRECTION ENERGY')
+
+###E = energy('pbeh3c/def2-msvp', molecule=s16di)
+###D = variable('DISPERSION CORRECTION ENERGY')
+###E = energy('pbeh3c/def2-msvp', molecule=s16ma)
+###D = variable('DISPERSION CORRECTION ENERGY')
+###E = energy('pbeh3c/def2-msvp', molecule=s16mb)
+###D = variable('DISPERSION CORRECTION ENERGY')
+
+set scf_type pk
+
+###E = energy('pbeh3c/def2-msvp', molecule=s2di)
+###D = variable('DISPERSION CORRECTION ENERGY')
+###E = energy('pbeh3c/def2-msvp', molecule=s2ma)
+###D = variable('DISPERSION CORRECTION ENERGY')
+###E = energy('pbeh3c/def2-msvp', molecule=s2mb)
+###D = variable('DISPERSION CORRECTION ENERGY')
+
+###E = energy('pbeh3c/def2-msvp', molecule=s4di)
+###D = variable('DISPERSION CORRECTION ENERGY')
+###E = energy('pbeh3c/def2-msvp', molecule=s4ma)
+###D = variable('DISPERSION CORRECTION ENERGY')
+###E = energy('pbeh3c/def2-msvp', molecule=s4mb)
+###D = variable('DISPERSION CORRECTION ENERGY')
+
+###E = energy('pbeh3c/def2-msvp', molecule=s16di)
+###D = variable('DISPERSION CORRECTION ENERGY')
+###E = energy('pbeh3c/def2-msvp', molecule=s16ma)
+###D = variable('DISPERSION CORRECTION ENERGY')
+###E = energy('pbeh3c/def2-msvp', molecule=s16mb)
+###D = variable('DISPERSION CORRECTION ENERGY')
+
+set scf_type df
+
+###ieparts = []
+###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s2di))
+###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s2ma))
+###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s2mb))
+####energy('pbeh3c', molecule=s4di, bsse_type='nocp') shouldn't need basis
+###ieparts = []
+###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s4di))
+###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s4ma))
+###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s4mb))
+###ieparts = []
+###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s16di))
+###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s16ma))
+###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s16mb))
+
+
+
+unopethene = s16ma.clone()
+#print(unopethene.nuclear_repulsion_energy())
+unopethene.print_out()
+set g_convergence gau_loose  #gau_verytight
+E = optimize('pbeh3c/def2-msvp', molecule=unopethene)
+#print(unopethene.nuclear_repulsion_energy())
+unopethene.print_out()
+
+molecule ethene {
+# ftp://ftp.aip.org/epaps/journ_chem_phys/E-JCPSA6-143-026529/si.pdf S81
+# ethene optimized by pbeh-3c/def2-msvp
+C -1.25092713384081  0.00000000000000 0.00000000000000
+C  1.25092713384081  0.00000000000000 0.00000000000000
+H -2.32844993329262  1.73749824891602 0.00000000000000
+H -2.32844993329262 -1.73749824891602 0.00000000000000
+H  2.32844993329262  1.73749824891602 0.00000000000000
+H  2.32844993329262 -1.73749824891602 0.00000000000000
+units bohr
+}
+ethene.update_geometry()
+#print(ethene.nuclear_repulsion_energy())
+ethene.print_out()
+
+
+### Perfectly good test, but too long
+###unopfaon2 = s4di.clone()
+###print(unopfaon2.nuclear_repulsion_energy())
+###unopfaon2.print_out()
+###set g_convergence gau_verytight
+###E = optimize('pbeh3c/def2-msvp', molecule=unopfaon2)
+###print(unopfaon2.nuclear_repulsion_energy())
+###
+###molecule faon2 {
+#### ftp://ftp.aip.org/epaps/journ_chem_phys/E-JCPSA6-143-026529/si.pdf S89
+#### formamide dimer optimized by pbeh-3c/def2-msvp
+###C -3.84682038817875  0.08299089228235 0.00000000000000
+###C  3.84682038817875 -0.08299089228235 0.00000000000000
+###N -2.72333322746720 -2.17297623985190 0.00000000000000
+###N  2.72333322746720  2.17297623985190 0.00000000000000
+###H -0.79932368195880 -2.33262276559625 0.00000000000000
+###H -5.92621836689253 -0.04323609590193 0.00000000000000
+###H -3.76804248753829 -3.75424282124564 0.00000000000000
+###H  3.76804248753829  3.75424282124564 0.00000000000000
+###H  0.79932368195880  2.33262276559625 0.00000000000000
+###H  5.92621836689253  0.04323609590193 0.00000000000000
+###O -2.78581117144177  2.12650035397182 0.00000000000000
+###O  2.78581117144177 -2.12650035397182 0.00000000000000
+###units bohr
+###}
+###faon2.update_geometry()
+###print(faon2.nuclear_repulsion_energy())
+

@@ -1,0 +1,88 @@
+#! optimization with method defined via cbs
+
+# NOTE: gradient calcs accessed through an alias to cbs (e.g., sherrill_gold_standard) aren't matching direct calls to cbs
+
+molecule mol {
+O
+H 1 R
+H 1 R 2 A
+}
+
+mol.R = 1.0
+mol.A = 90.0
+
+set g_convergence gau_verytight
+
+E0 = -76.36457925
+E1 = energy("cbs", corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g')
+compare_values(E0, E1, 5, '[1a]')
+E2 = energy('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
+compare_values(E1, E2, 5, '[1] Match gold_standard energy')  #TEST
+
+# findif
+ene_fd = -76.3707500218  #TEST
+R_fd = 0.960940174888  #TEST
+A_fd = 103.436972667  #TEST
+G0_fd = psi4.core.Matrix.from_list([[0.00000000000000,     0.00000000000000,    -0.06342827014937],   #TEST
+                                    [0.00000000000000,    -0.00458359046476,     0.03171413507468],   #TEST
+                                    [0.00000000000000,     0.00458359046476,     0.03171413507468]])  #TEST
+# analytic
+ene_ana = -76.37082222234929  #TEST
+R_ana = 0.9609448952766658  #TEST
+A_ana = 103.4370330968766  #TEST
+G0_ana = psi4.core.Matrix.from_list([[0.00000000000000,     0.00000000000000,   -6.34173012e-02 ],    #TEST
+                                     [0.00000000000000,    -4.58320481e-03,      3.17086506e-02 ],    #TEST
+                                     [0.00000000000000,     4.58320481e-03,      3.17086506e-02 ]])   #TEST
+
+ene = ene_ana  #TEST
+R = R_ana  #TEST
+A = A_ana  #TEST
+G0 = G0_ana  #TEST
+
+G1 = gradient("cbs", cbs_metadata=[{"wfn": "mp2", "basis": 'cc-pV[DT]Z'}, {"wfn": 'ccsd(t)', "basis": '3-21g', "options": {'qc_module': 'ccenergy'}}])
+compare_matrices(G0, G1, 5, '[2a] Match gold_standard gradient')  #TEST
+G2 = gradient('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g', delta_options={'qc_module': 'ccenergy'})
+compare_matrices(G1, G2, 4, '[2] Match gold_standard gradient')  #TEST
+
+# findif
+ene = -76.3707500218  #TEST
+R = 0.960940174888  #TEST
+A = 103.436972667  #TEST
+# analytic
+ene = -76.37082222234929  #TEST
+R = 0.9609448952766658  #TEST
+A = 103.4370330968766  #TEST
+
+basfams = psi4.driver.qcdb.basislist.load_basis_families()
+for fam in basfams:
+    if fam.ornate == "3-21G":
+        fam.add_rifit("def2-qzvpp-ri")
+
+# Reset mol geometries
+mol.R = 1.0
+mol.A = 100.0
+E = optimize("cbs", cbs_metadata=[{"wfn": "mp2", "basis": "cc-pV[DT]Z"}, {"wfn": "ccsd(t)", "basis": "3-21g", "options": {"qc_module": "ccenergy"}}])
+compare_values(ene, E, 5, '[3a] opt(cbs, sherrill) energy')  #TEST
+compare_values(R, mol.R, 3, '[3b] opt(cbs, sherrill) bond')  #TEST
+compare_values(A, mol.A, 2, '[3c] opt(cbs, sherrill) angle')  #TEST
+
+# Reset mol geometries
+mol.R = 1.0
+mol.A = 100.0
+E = optimize('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g', delta_options={"qc_module": "ccenergy"})
+compare_values(ene, E, 5, '[4a] opt(sherrill) energy')  #TEST
+compare_values(R, mol.R, 3, '[4b] opt(sherrill) bond')  #TEST
+compare_values(A, mol.A, 2, '[4c] opt(sherrill) angle')  #TEST
+
+# Note: with new analytical ccsd(t) gradients, calcs G1 and 3 default  #TEST
+#   to sum-of-analytic. Want to compare with custom_func values that are  #TEST
+#   always findif, so force findif on grad(cbs and opt(cbs counterparts.  #TEST
+
+# Note (Nov 2019 impl; May 2022 merged): leaving above note for historical reasons. With
+#   the DDD way of turning custom functions directly to cbs calls, the cbs
+#   analytic deriv machinery kicks in and can run analytic. The above work
+#   if change all to G_by_E, but that's off from analytic by about 1.e-5,
+#   so for speed, resetting refs and running all analytically.
+
+# Note (Oct 2021): analytic and findif references were computed when the 3-21G aux was def2-qzvpp-ri.
+#   The present svp-ri default changes the final energy by ~3.e-5, so reset default aux above.

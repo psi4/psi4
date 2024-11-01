@@ -1,0 +1,23 @@
+#! LCCD cc-pVDZ gradient for the H2O molecule.
+
+ref = psi4.Matrix.from_list([                                      #TEST
+             [ 0.000000000000,  0.000000000000,  0.012757420477],  #TEST
+             [ 0.000000000000,  0.002651662283, -0.006378710238],  #TEST
+             [ 0.000000000000, -0.002651662283, -0.006378710238]   #TEST
+           ])                                                      #TEST
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+}
+
+grad = gradient('lccd')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
+

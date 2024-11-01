@@ -1,0 +1,64 @@
+#! ghost atoms for the pcmsolver addon
+
+nucenergy   =  12.0367196636183458 #TEST
+polenergy   =  -0.0059568153047844 #TEST
+totalenergy = -55.802798786575     #TEST  # adjusted after PEDRA pruning in v1.2.3  -55.802798823871
+
+ref={}
+ref['noCP'] = 0.011128150727074626 #TEST
+ref['CP'] = 0.012103154107379055 #TEST
+
+molecule NH3 {
+N     -0.0000000001    -0.1040380466      0.0000000000
+H     -0.9015844116     0.4818470201     -1.5615900098
+H     -0.9015844116     0.4818470201      1.5615900098
+H      1.8031688251     0.4818470204      0.0000000000
+
+@N     -0.0000000001    -0.1040380466      10.0000000000
+@H     -0.9015844116     0.4818470201      8.4384099902
+@H     -0.9015844116     0.4818470201      11.5615900098
+@H      1.8031688251     0.4818470204      10.0000000000
+
+units bohr
+}
+
+set {
+  basis minix
+  scf_type pk
+  pcm true
+  pcm_scf_type total
+}
+
+pcm = {
+   Units = Angstrom
+   Medium {
+   SolverType = IEFPCM
+   Solvent = Water
+   }
+
+   Cavity {
+   RadiiSet = UFF
+   Type = GePol
+   Scaling = False
+   Area = 0.3
+   Mode = Implicit
+   }
+}
+
+energy_scf, wfn = energy('scf', return_wfn=True)
+compare_values(nucenergy, NH3.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
+compare_values(totalenergy, energy_scf, 10, "Total energy (PCM, total algorithm)") #TEST
+compare_values(polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
+
+
+molecule dimer {
+H            0.000000000000    -0.759061990794     0.521953018286
+O            0.000000000000     0.000000000000    -0.065775570547
+H            0.000000000000     0.759061990794     0.521953018286
+--
+He 2 0 0
+}
+
+for type in ['CP','noCP']:
+  e_nbody = energy('scf/minix',bsse_type=type,molecule=dimer)
+  compare_values(ref[type],e_nbody,10,f" NBody+PCM energy, {type}") #TEST

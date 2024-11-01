@@ -1,0 +1,52 @@
+#! Water RHF/cc-pVTZ distributed multipole analysis
+ref_energy = -76.0571685433842219                                                                   #TEST
+ref_dma_mat = psi4.Matrix(3, 9)                                                                     #TEST
+ref_dma_mat.name = 'Reference DMA values'                                                           #TEST
+ref_dma_arr = [                                                                                     #TEST
+  [ -0.43406697290168, -0.18762673939633,  0.00000000000000,  0.00000000000000,  0.03206686487531,  #TEST
+     0.00000000000000, -0.00000000000000, -0.53123477172696,  0.00000000000000 ],                   #TEST
+  [  0.21703348903257, -0.06422316619952,  0.00000000000000, -0.11648289410022,  0.01844320206227,  #TEST
+     0.00000000000000,  0.07409226544133, -0.07115302332866,  0.00000000000000 ],                   #TEST
+  [  0.21703348903257, -0.06422316619952,  0.00000000000000,  0.11648289410022,  0.01844320206227,  #TEST
+     0.00000000000000, -0.07409226544133, -0.07115302332866,  0.00000000000000 ]                    #TEST
+]                                                                                                   #TEST
+for i in range(3):                                                                                  #TEST
+    for j in range(9):                                                                              #TEST
+        ref_dma_mat.set(i, j, ref_dma_arr[i][j])                                                    #TEST
+ref_tot_mat = psi4.Matrix(1, 9)                                                                     #TEST
+ref_tot_mat.name = "Reference total values"                                                         #TEST
+ref_tot_arr = [                                                                                     #TEST
+     0.00000000516346, -0.79665315928128,  0.00000000000000,  0.00000000000000,  0.10813259329390,  #TEST
+     0.00000000000000,  0.00000000000000, -2.01989585894142,  0.00000000000000                      #TEST
+]                                                                                                   #TEST
+for i in range(9):                                                                                  #TEST
+    ref_tot_mat.set(0, i, ref_tot_arr[i])                                                           #TEST
+
+molecule water {
+    O  0.000000  0.000000  0.117176
+    H -0.000000 -0.756950 -0.468706
+    H -0.000000  0.756950 -0.468706
+ noreorient # These are not needed, but are used here to guarantee that the
+ nocom      # GDMA origin placement defined below is at the O atom.
+}
+
+set {
+    scf_type pk
+    basis cc-pvtz
+    d_convergence 10
+    gdma_switch   0
+    gdma_radius   [ "H", 0.65 ]
+    gdma_limit    2
+    gdma_origin   [ 0.000000,  0.000000,  0.117176 ]
+}
+
+energy, wfn = energy('scf', return_wfn=True)
+
+gdma(wfn)
+dmavals = variable("DMA DISTRIBUTED MULTIPOLES")
+totvals = variable("DMA TOTAL MULTIPOLES")
+totvals_wfn = wfn.variable("DMA TOTAL MULTIPOLES")
+compare_values(ref_energy, energy, 8, "SCF Energy")                                                 #TEST
+compare_matrices(dmavals, ref_dma_mat, 6, "DMA Distributed Multipoles")                             #TEST
+compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")                                   #TEST
+compare_matrices(totvals_wfn, ref_tot_mat, 6, "DMA Total Multipoles (wfn)")                         #TEST

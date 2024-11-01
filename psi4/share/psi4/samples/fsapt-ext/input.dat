@@ -1,0 +1,38 @@
+#! Quick test of external potential in F-SAPT (see fsapt1 for a real example)
+
+memory 1 GB
+
+# Two waters from a CCSD-optimized water trimer [J. Chem. Phys. 136, 244306 (2012)]
+molecule mol {
+0 1
+O   0.017225   0.031664   0.004802
+H  -0.046691  -0.052504   0.962436
+H   0.972017   0.055307  -0.185622
+--
+0 1
+O   2.516175   0.894012  -1.014512
+H   1.942080   1.572902  -1.410984
+H   3.056412   0.561271  -1.739079
+symmetry c1
+}
+
+# External potential containing the third water from the trimer with TIP3P charges
+external_potentials = np.array([
+-0.834, 0.179217, 2.438389, -1.484606,
+0.417, -0.194107, 1.702697, -0.966751,
+0.417, -0.426657, 2.563754, -2.222683]).reshape((-1, 4))
+# convert coordinates columns to bohr
+external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
+
+set {
+basis         jun-cc-pvdz
+scf_type df
+guess sad
+freeze_core true
+}
+
+energy('fisapt0', external_potentials=external_potentials)
+
+
+
+

@@ -1,0 +1,68 @@
+#! Various gradients for a strained helium dimer and water molecule
+import numpy as np
+
+ref_scf_dz = psi4.core.Matrix.from_list(     #TEST
+               [[ 0.0,  0.0,   0.01233095],  #TEST
+                [ 0.0,  0.0,  -0.01233095]]) #TEST
+ref_scf_tz = psi4.core.Matrix.from_list(     #TEST
+               [[ 0.0,  0.0,   0.01246097],  #TEST
+                [ 0.0,  0.0,  -0.01246097]]) #TEST
+ref_scf_dtz = psi4.core.Matrix.from_list(    #TEST
+               [[ 0.0,  0.0,   0.01249265],  #TEST
+                [ 0.0,  0.0,  -0.01249265]]) #TEST
+ref_scf_dtqz = psi4.core.Matrix.from_list(   #TEST
+               [[ 0.0,  0.0,   0.01244412],  #TEST
+                [ 0.0,  0.0,  -0.01244412]]) #TEST
+ref_mp2_dtz = psi4.core.Matrix.from_list(    #TEST
+               [[ 0.0,  0.0,   0.01155124],  #TEST
+                [ 0.0,  0.0,  -0.01155124]]) #TEST
+
+nucenergy_ref = 1.1759493570
+
+molecule he_dimer {
+    He 0 0 0
+    He 0 0 1.8
+}
+
+# Get a reasonable guess, to save some iterations
+set globals = {
+    scf_type      pk
+    mp2_type      conv
+    reference     rhf
+}
+
+he_dimer.update_geometry()
+compare_values(nucenergy_ref, he_dimer.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+
+# SCF TESTS
+
+scf_dz = gradient('SCF/cc-pVDZ')
+compare_matrices(ref_scf_dz, scf_dz, 6, "[1] SCF/cc-pVDZ Gradient")  #TEST
+
+scf_tz = gradient('SCF/cc-pVTZ', dertype=0)
+compare_matrices(ref_scf_tz, scf_tz, 6, "[1b] SCF/cc-pVTZ Gradient, dertype=0")  #TEST
+compare(3, variable('findif number'), "[1b] findif no.")  #TEST
+
+scf_dtz = gradient('SCF/cc-pV[23]Z', dertype=0)
+compare_matrices(ref_scf_dtz, scf_dtz, 6, "[4b] SCF/cc-pV[DT]Z Gradient, dertype=0")  #TEST
+compare(3, variable('findif number'), "[4b] findif no.")  #TEST
+compare(2, variable('cbs number'), "[4b] cbs no.")  #TEST
+
+scf_dtz = gradient('SCF/cc-pV[23]Z')
+compare_matrices(ref_scf_dtz, scf_dtz, 6, "[4] SCF/cc-pV[DT]Z Gradient, dertype=1")  #TEST
+compare(2, variable('cbs number'), "[4] cbs no.")  #TEST
+
+# We do not currently test at this high of angular momentum
+# scf_dtqz = gradient('SCF/cc-pV[DTQ]Z')
+# compare_matrices(ref_scf_dtqz, scf_dtqz, 6, "[5] SCF/cc-pV[DTQ]Z Gradient")  #TEST
+
+
+# MP2 TESTS
+mp2_dtz = gradient('MP2/cc-pV[DT]Z')
+compare_matrices(ref_mp2_dtz, mp2_dtz, 6, "[6] MP2/cc-pV[DT]Z Gradient")  #TEST
+compare(4, variable('cbs number'), "[6] cbs no.")  #TEST
+
+mp2_dtz = gradient('MP2/cc-pV[DT]Z', dertype='energy')
+compare_matrices(ref_mp2_dtz, mp2_dtz, 6, "[6b] MP2/cc-pV[DT]Z Gradient, dertype=0")  #TEST
+compare(3, variable('findif number'), "[6b] findif no.")  #TEST
+compare(2, variable('cbs number'), "[6b] cbs no.")  #TEST

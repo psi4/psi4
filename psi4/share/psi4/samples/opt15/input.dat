@@ -1,0 +1,36 @@
+#! 6-31G(d) optimization of SF4 starting from linear bond angle
+#! that is not linear in the optimized structure but is in a 
+#! symmetry plane of the molecule.
+
+
+molecule {
+0 1
+ S  0.00000000  0.00000000  0.00000000
+ F  0.03923814 -1.73955752  0.00000000
+ F -1.73955752 -0.03923814  0.00000000
+ F  1.73955752  0.03923814  0.00000000
+ F -0.01961907  0.86977876 -1.50688420
+}
+
+set {
+  scf_type pk
+  basis 6-31G(d)
+  reference rhf
+  ensure_bt_convergence True
+  geom_maxiter 4
+  write_opt_history True
+}
+
+
+try:
+  thisenergy = optimize('SCF')
+except driver.p4util.exceptions.OptimizationConvergenceError:
+  pass
+
+set {
+  geom_maxiter 20
+}
+
+thisenergy = optimize('SCF')
+
+

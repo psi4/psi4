@@ -1,0 +1,22 @@
+#! Geometry optimization for hydroxyl with sto-3g
+
+refenergy = -74.36488567
+
+molecule hydroxyl {
+    symmetry c1
+    0 2
+    O  0.0574960500  0.000000000  0.000000000
+    H -0.9125040246  0.000000000  0.000000000
+}
+
+set = {
+    basis sto-3g
+    reference uhf
+    df_scf_guess False
+    scf_type direct
+    brianqc_enable True
+}
+
+thisenergy = optimize('scf')
+
+compare_values(refenergy, thisenergy, 6, "Reference energy")                            #TEST

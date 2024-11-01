@@ -1,0 +1,55 @@
+#! RHF interaction energies using nbody and cbs parts of the driver
+#! Ne dimer with mp2/v[dt]z + d:ccsd(t)/vdz
+
+df_ans = 0.0131222  #TEST
+uncp_conv_ans = 0.01303175  #TEST
+cp_conv_ans = 0.01400641  #TEST
+ans = df_ans  #TEST
+
+molecule ne2 {
+    0 1
+    Ne 0 0 0
+    --
+    0 1
+    Ne 0 0 2
+}
+
+set {
+    scf_type      df
+    mp2_type      df
+    cc_type       df
+    e_convergence 7
+    reference     rhf
+}
+
+def unaug_focal(**kwargs):
+
+    scf = {
+        'wfn': 'hf',
+        'basis': kwargs.pop('scf_basis', 'cc-pVTZ'),
+        'scheme': kwargs.pop('scf_scheme', 'xtpl_highest_1')
+    }
+    corl = {
+        'wfn': kwargs.pop('corl_wfn', 'mp2'),
+        'basis': kwargs.pop('corl_basis', 'cc-pV[DT]Z'),
+        'scheme': kwargs.pop('corl_scheme', 'corl_xtpl_helgaker_2')
+    }
+    delta = {
+        'wfn': kwargs.pop('delta_wfn', 'ccsd(t)'),
+        'wfn_lesser': kwargs.pop('delta_wfn_lesser', 'mp2'),
+        'basis': kwargs.pop('delta_basis', 'cc-pVDZ'),
+        'scheme': kwargs.pop('delta_scheme', 'xtpl_highest_1')
+    }
+    return [scf, corl, delta]
+
+register_composite_function(unaug_focal)
+
+
+E_func         = energy('unaug_focal', bsse_type="nocp")
+E_method_basis = energy("MP2/cc-pv[dt]z + D:CCSD(T)/cc-pvdz", bsse_type="nocp")
+E_cbs          = energy("cbs", bsse_type="nocp", corl_wfn="mp2", corl_basis="cc-pv[dt]z",
+                                               delta_wfn="ccsd(t)", delta_basis="cc-pvdz")
+
+compare_values(ans, E_method_basis, 6, "IE MP2/cc-pv[dt]z + D:CCSD(T)/cc-pvdz")  #TEST
+compare_values(ans, E_cbs, 6, "IE cbs(...) syntax")                              #TEST
+compare_values(ans, E_func, 6, "IE via custom function")                         #TEST

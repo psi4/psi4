@@ -1,0 +1,50 @@
+#! UHF MP2 energy components. Checks that computed identically
+#! between cfour and psi4
+
+
+print('    <<<  UHF  >>>')
+
+cfour {
+ROHF-MP2 energy calculation 
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=MP2,BASIS=AUG-PVDZ
+MULT=2,REF=UHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+CC_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+
+molecule nh2 {
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set basis aug-cc-pvdz
+set e_convergence 10
+set mp2_type conv
+
+set basis aug-cc-pvdz
+set reference uhf
+set docc [3, 0, 0, 1]
+set socc [0, 0, 1, 0]  #OCCUPATION=3-1-1-0/3-0-1-0
+
+
+
+energy('mp2')
+print_variables()
+
+

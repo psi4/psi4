@@ -1,0 +1,87 @@
+#! RHF STO-3G (Cartesian) and cc-pVDZ (spherical) water Hessian test, against Psi3 reference values.
+
+psi3_hess = np.array([                                                                                    #TEST
+    [ 0.6349786,-0.0002790,-0.0000000,-0.3185355, 0.2164913, 0.0000000,-0.3164431,-0.2162124, 0.0000000], #TEST
+    [-0.0002790, 0.8039939,-0.0000000, 0.3373248,-0.4009174,-0.0000000,-0.3370458,-0.4030765, 0.0000000], #TEST
+    [-0.0000000,-0.0000000,-0.0000130, 0.0000000,-0.0000000,-0.0000008, 0.0000000, 0.0000000, 0.0000138], #TEST
+    [-0.3185355, 0.3373248, 0.0000000, 0.3011910,-0.2770123,-0.0000000, 0.0173445,-0.0603125, 0.0000000], #TEST
+    [ 0.2164913,-0.4009174,-0.0000000,-0.2770123, 0.4378681, 0.0000000, 0.0605209,-0.0369508,-0.0000000], #TEST
+    [ 0.0000000,-0.0000000,-0.0000008,-0.0000000, 0.0000000,-0.0000069, 0.0000000, 0.0000000, 0.0000077], #TEST
+    [-0.3164431,-0.3370458, 0.0000000, 0.0173445, 0.0605209, 0.0000000, 0.2990986, 0.2765248,-0.0000000], #TEST
+    [-0.2162124,-0.4030765, 0.0000000,-0.0603125,-0.0369508, 0.0000000, 0.2765248, 0.4400273,-0.0000000], #TEST
+    [ 0.0000000, 0.0000000, 0.0000138, 0.0000000,-0.0000000, 0.0000077,-0.0000000,-0.0000000,-0.0000215]  #TEST
+])                                                                                                        #TEST
+ref_ene = -74.96590118978119
+
+molecule {
+units bohr
+nocom
+noreorient
+  O            0.134467872279     0.000255539126     0.000000000000
+  H           -1.069804624577     1.430455315728    -0.000000000000
+  H           -1.064298089419    -1.434510907104    -0.000000000000
+}
+
+set {
+  puream false
+  df_scf_guess false
+  scf_type pk
+  guess sad
+  basis sto-3g
+  d_convergence 10
+}
+
+psi4_hess, wfn = hessian('hf', return_wfn=True)
+
+compare_arrays(psi3_hess, psi4_hess, 1E-7, "STO-3G Hessian") #TEST
+compare_values(ref_ene, variable('CURRENT ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_values(ref_ene, variable('current ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_values(ref_ene, variable('HF TOTAL ENERGY'), 6, 'STO-3G energy')  #TEST
+#compare_arrays(psi3_hess, variable('CURRENT HESSIAN'), 7, "STO-3G Hessian")  #TEST
+#compare_arrays(psi3_hess, variable('HF TOTAL HESSIAN'), 7, "STO-3G Hessian")  #TEST
+compare_values(ref_ene, wfn.variable('CURRENT ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_values(ref_ene, wfn.variable('current ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_values(ref_ene, wfn.variable('HF TOTAL ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_arrays(psi3_hess, wfn.variable('CURRENT HESSIAN'), 7, "STO-3G Hessian")  #TEST
+compare_arrays(psi3_hess, wfn.variable('HF TOTAL HESSIAN'), 7, "STO-3G Hessian")  #TEST
+
+# Clean out scratch files and go again with cc-pVDZ
+psi4.clean()
+
+psi3_hess = np.array([                                                                                    #TEST
+    [ 0.4644069,-0.0001622,-0.0000000,-0.2329078, 0.1572370, 0.0000000,-0.2314991,-0.1570748, 0.0000000], #TEST
+    [-0.0001622, 0.5691441, 0.0000000, 0.2174186,-0.2838372,-0.0000000,-0.2172564,-0.2853069, 0.0000000], #TEST
+    [-0.0000000, 0.0000000, 0.0509099, 0.0000000, 0.0000000,-0.0254596, 0.0000000,-0.0000000,-0.0254502], #TEST
+    [-0.2329078, 0.2174186, 0.0000000, 0.2177992,-0.1874277,-0.0000000, 0.0151086,-0.0299909, 0.0000000], #TEST
+    [ 0.1572370,-0.2838372, 0.0000000,-0.1874277, 0.3206988, 0.0000000, 0.0301908,-0.0368616,-0.0000000], #TEST
+    [ 0.0000000,-0.0000000,-0.0254596,-0.0000000, 0.0000000, 0.0225767, 0.0000000, 0.0000000, 0.0028829], #TEST
+    [-0.2314991,-0.2172564, 0.0000000, 0.0151086, 0.0301908, 0.0000000, 0.2163905, 0.1870657,-0.0000000], #TEST
+    [-0.1570748,-0.2853069,-0.0000000,-0.0299909,-0.0368616, 0.0000000, 0.1870657, 0.3221685,-0.0000000], #TEST
+    [ 0.0000000, 0.0000000,-0.0254502, 0.0000000,-0.0000000, 0.0028829,-0.0000000,-0.0000000, 0.0225673]  #TEST
+])                                                                                                        #TEST
+
+set {
+  puream true
+  basis cc-pvdz
+}
+
+psi4_hess = hessian('scf')
+
+compare_arrays(psi3_hess, psi4_hess, 1E-7, "cc-pVDZ Hessian") #TEST
+
+# Now repeat the test, permuting the first two atoms' coordinates;
+# this exposes a (now-fixed) bug in the overlap hessian.
+molecule {
+units bohr
+nocom
+noreorient
+  H           -1.069804624577     1.430455315728    -0.000000000000
+  O            0.134467872279     0.000255539126     0.000000000000
+  H           -1.064298089419    -1.434510907104    -0.000000000000
+}
+
+psi4_hess = hessian('scf')
+
+permuted_indices = [ 3, 4, 5, 0, 1, 2, 6, 7, 8 ]                       #TEST
+psi3_hess = psi3_hess[:,permuted_indices][permuted_indices,:]          #TEST
+compare_arrays(psi3_hess, psi4_hess, 1E-7, "Permuted cc-pVDZ Hessian") #TEST

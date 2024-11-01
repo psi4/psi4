@@ -1,0 +1,17 @@
+#! Test if the the guess read in the same basis converges. 
+
+molecule neon {
+    0 3
+    Ne
+    Ne 1 0.5
+}
+
+set reference rohf
+set basis aug-pcseg-2
+set guess sad
+set s_tolerance 4
+set d_convergence 8
+energy('scf')
+
+set guess read
+energy('scf')

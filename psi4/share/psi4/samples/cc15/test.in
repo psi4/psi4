@@ -1,0 +1,21 @@
+#! RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis $\langle ab|cd \rangle$)
+
+molecule h2o {
+    o
+    h 1 0.97
+    h 1 0.97 2 103.0
+}
+
+set {
+   basis 6-31G**
+   freeze_core true
+}
+
+energy("bccd(t)")
+
+escf = -76.021997876298414 #TEST
+ebccd = -76.228456597086762 #TEST
+ebccd_t = -76.231452929871523 #TEST
+compare_values(escf, variable("SCF TOTAL ENERGY"), 6, "SCF energy") #TEST
+compare_values(ebccd, variable("BCCD TOTAL ENERGY"), 6, "B-CCD energy") #TEST
+compare_values(ebccd_t, variable("BCCD(T) TOTAL ENERGY"), 6, "B-CCD(T) energy") #TEST

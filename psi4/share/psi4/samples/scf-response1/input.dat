@@ -1,0 +1,14 @@
+#! Compute the dipole, quadrupole, and traceless quadrupoles for water.
+
+molecule mol {
+O   0.000000000000     0.000000000000    -0.075367841241
+H   0.000000000000    -0.869758531118     0.598071166797
+H   0.000000000000     0.869758531118     0.598071166797
+#symmetry c1
+}
+
+set basis aug-cc-pVDZ
+properties("SCF", properties=["DIPOLE_POLARIZABILITIES", "QUADRUPOLE_POLARIZABILITIES",
+                  "TRACELESS_QUADRUPOLE_POLARIZABILITIES"])
+
+

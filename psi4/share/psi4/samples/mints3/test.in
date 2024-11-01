@@ -1,0 +1,189 @@
+#! Test individual integral objects for correctness.
+print(' Case Study Test of Integrals')
+
+molecule h2o {
+  o@15.99491461956
+  h@1.00782503207  1 R
+  h@1.00782503207  1 R 2 103.1
+}
+
+h2o.R = 0.52917721067 / 0.52917720859
+
+input_directory_simple = get_input_directory() + "/"                 #TEST
+input_directory = get_input_directory() + "/"                        #TEST
+input_directory_sss = get_input_directory() + "/sss_reference/"      #TEST
+
+# NOTE: mints3 is expected to fail if psi4_SHGAUSS_ORDERING=standard
+#       To test with standard ordering, uncomment the following line:
+#input_directory = input_directory_sss
+
+#################################################################### #TEST
+# Test Angular Momentum Integrals SO                                 #TEST
+#################################################################### #TEST
+
+set {
+  basis sto-3g
+}
+
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
+mints = MintsHelper(wfn.basisset())
+factory = mints.factory()                                            #TEST
+
+Li = mints.so_angular_momentum()
+
+#Li[0].save("Lx-STO-3G.dat", False, False, True)                     #TEST
+#Li[1].save("Ly-STO-3G.dat", False, False, True)                     #TEST
+#Li[2].save("Lz-STO-3G.dat", False, False, True)                     #TEST
+
+RefX = factory.create_matrix("Lx SO")                                #TEST
+RefY = factory.create_matrix("Ly SO")                                #TEST
+RefZ = factory.create_matrix("Lz SO")                                #TEST
+
+RefX.load(input_directory_simple + "Lx-STO-3G.dat")                  #TEST
+RefY.load(input_directory_simple + "Ly-STO-3G.dat")                  #TEST
+RefZ.load(input_directory_simple + "Lz-STO-3G.dat")                  #TEST
+
+print("   -H2O STO-3G Angular Momentum Integrals:")                  #TEST
+compare_matrices(RefX, Li[0], 12, "SO Lx")                           #TEST
+compare_matrices(RefY, Li[1], 12, "SO Ly")                           #TEST
+compare_matrices(RefZ, Li[2], 12, "SO Lz")                           #TEST
+
+set {
+  basis 6-311G**
+}
+
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
+mints = MintsHelper(wfn.basisset())
+factory = mints.factory()                                            #TEST
+
+Li = mints.so_angular_momentum()
+
+#Li[0].save("Lx-6-311Gss.dat", False, False, True)                   #TEST
+#Li[1].save("Ly-6-311Gss.dat", False, False, True)                   #TEST
+#Li[2].save("Lz-6-311Gss.dat", False, False, True)                   #TEST
+
+RefX = factory.create_matrix("Lx SO")                                #TEST
+RefY = factory.create_matrix("Ly SO")                                #TEST
+RefZ = factory.create_matrix("Lz SO")                                #TEST
+
+RefX.load(input_directory + "Lx-6-311Gss.dat")                       #TEST
+RefY.load(input_directory + "Ly-6-311Gss.dat")                       #TEST
+RefZ.load(input_directory + "Lz-6-311Gss.dat")                       #TEST
+
+print("   -H2O 6-311G** Angular Momentum Integrals:")         #TEST
+compare_matrices(RefX, Li[0], 12, "SO Lx")                           #TEST
+compare_matrices(RefY, Li[1], 12, "SO Ly")                           #TEST
+compare_matrices(RefZ, Li[2], 12, "SO Lz")                           #TEST
+
+set {
+  basis cc-pVTZ
+}
+
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
+mints = MintsHelper(wfn.basisset())
+factory = mints.factory()                                            #TEST
+
+Li = mints.so_angular_momentum()
+
+#Li[0].save("Lx-cc-pVTZ.dat", False, False, True)                    #TEST
+#Li[1].save("Ly-cc-pVTZ.dat", False, False, True)                    #TEST
+#Li[2].save("Lz-cc-pVTZ.dat", False, False, True)                    #TEST
+
+RefX = factory.create_matrix("Lx SO")                                #TEST
+RefY = factory.create_matrix("Ly SO")                                #TEST
+RefZ = factory.create_matrix("Lz SO")                                #TEST
+
+RefX.load(input_directory + "Lx-cc-pVTZ.dat")                        #TEST
+RefY.load(input_directory + "Ly-cc-pVTZ.dat")                        #TEST
+RefZ.load(input_directory + "Lz-cc-pVTZ.dat")                        #TEST
+
+print("   -H2O cc-pVTZ Angular Momentum Integrals:")          #TEST
+compare_matrices(RefX, Li[0], 12, "SO Lx")                           #TEST
+compare_matrices(RefY, Li[1], 12, "SO Ly")                           #TEST
+compare_matrices(RefZ, Li[2], 12, "SO Lz")                           #TEST
+
+#################################################################### #TEST
+# Test Nabla integrals                                               #TEST
+#################################################################### #TEST
+
+set {
+  basis sto-3g
+}
+
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
+mints = MintsHelper(wfn.basisset())
+factory = mints.factory()                                            #TEST
+
+Pi = mints.so_nabla()
+
+#Pi[0].save("Px-STO-3G.dat", False, False, True)                     #TEST
+#Pi[1].save("Py-STO-3G.dat", False, False, True)                     #TEST
+#Pi[2].save("Pz-STO-3G.dat", False, False, True)                     #TEST
+
+RefX = factory.create_matrix("Px SO")                                #TEST
+RefY = factory.create_matrix("Py SO")                                #TEST
+RefZ = factory.create_matrix("Pz SO")                                #TEST
+
+RefX.load(input_directory_simple + "Px-STO-3G.dat")                  #TEST
+RefY.load(input_directory_simple + "Py-STO-3G.dat")                  #TEST
+RefZ.load(input_directory_simple + "Pz-STO-3G.dat")                  #TEST
+
+print("   -H2O STO-3G Nabla Integrals:")                             #TEST
+compare_matrices(RefX, Pi[0], 12, "SO Px")                           #TEST
+compare_matrices(RefY, Pi[1], 12, "SO Py")                           #TEST
+compare_matrices(RefZ, Pi[2], 12, "SO Pz")                           #TEST
+
+set {
+  basis 6-311G**
+}
+
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
+mints = MintsHelper(wfn.basisset())
+factory = mints.factory()                                            #TEST
+
+Pi = mints.so_nabla()
+
+# edit matrix.cc to minimize format change: `static const char *str_block_format = "%3d %3d %3d % 16.12f\n";`
+#Pi[0].save("Px-6-311Gss.dat", False, False, True)                   #TEST
+#Pi[1].save("Py-6-311Gss.dat", False, False, True)                   #TEST
+#Pi[2].save("Pz-6-311Gss.dat", False, False, True)                   #TEST
+
+RefX = factory.create_matrix("Px SO")                                #TEST
+RefY = factory.create_matrix("Py SO")                                #TEST
+RefZ = factory.create_matrix("Pz SO")                                #TEST
+
+RefX.load(input_directory + "Px-6-311Gss.dat")                       #TEST
+RefY.load(input_directory + "Py-6-311Gss.dat")                       #TEST
+RefZ.load(input_directory + "Pz-6-311Gss.dat")                       #TEST
+
+print("   -H2O 6-311G** Nabla Integrals:")                    #TEST
+compare_matrices(RefX, Pi[0], 12, "SO Px")                           #TEST
+compare_matrices(RefY, Pi[1], 12, "SO Py")                           #TEST
+compare_matrices(RefZ, Pi[2], 12, "SO Pz")                           #TEST
+
+set {
+  basis cc-pVTZ
+}
+
+wfn = Wavefunction(h2o, BasisSet.build(h2o))
+mints = MintsHelper(wfn.basisset())
+factory = mints.factory()                                            #TEST
+
+Pi = mints.so_nabla()
+
+#Pi[0].save("Px-cc-pVTZ.dat", False, False, True)                    #TEST
+#Pi[1].save("Py-cc-pVTZ.dat", False, False, True)                    #TEST
+#Pi[2].save("Pz-cc-pVTZ.dat", False, False, True)                    #TEST
+
+RefX = factory.create_matrix("Lx SO")                                #TEST
+RefY = factory.create_matrix("Ly SO")                                #TEST
+RefZ = factory.create_matrix("Lz SO")                                #TEST
+
+RefX.load(input_directory + "Px-cc-pVTZ.dat")                        #TEST
+RefY.load(input_directory + "Py-cc-pVTZ.dat")                        #TEST
+RefZ.load(input_directory + "Pz-cc-pVTZ.dat")                        #TEST
+
+print("   -H2O cc-pVTZ Nabla Integrals:")                     #TEST
+compare_matrices(RefX, Pi[0], 12, "SO Px")                           #TEST
+compare_matrices(RefY, Pi[1], 12, "SO Py")                           #TEST
+compare_matrices(RefZ, Pi[2], 12, "SO Pz")                           #TEST

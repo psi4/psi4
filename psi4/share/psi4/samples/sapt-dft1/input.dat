@@ -1,0 +1,45 @@
+#! SAPT(DFT) aug-cc-pVDZ interaction energy between Ne and Ar atoms.
+
+
+
+
+
+molecule dimer {
+  Ne
+  --
+  Ar 1 6.5
+  units bohr
+}
+
+set {
+    basis         aug-cc-pvdz
+    scf_type      df
+    sapt_dft_grac_shift_a 0.203293
+    sapt_dft_grac_shift_b 0.138264
+}
+
+# No hybrid kernel & no exch-disp scaling & no delta HF
+set SAPT_DFT_DO_DHF False
+set SAPT_DFT_DO_HYBRID False
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
+energy('sapt(dft)', molecule=dimer)
+    if k in ["SAPT IND ENERGY", "CURRENT ENERGY"]:
+        ref = (v - DHF) / 1000.0
+    else:
+        ref = v / 1000.0
+
+# No hybrid kernel & no exch-disp scaling 
+set SAPT_DFT_DO_DHF True
+set SAPT_DFT_DO_HYBRID False
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
+energy('sapt(dft)', molecule=dimer)
+
+# Hybrid kernel & exch-disp scaling (DISP)
+set SAPT_DFT_DO_HYBRID True
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME disp
+energy('sapt(dft)', molecule=dimer)
+
+# Hybrid kernel & exch-disp scaling (FIXED)
+set SAPT_DFT_DO_HYBRID True
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME fixed 
+energy('sapt(dft)', molecule=dimer)

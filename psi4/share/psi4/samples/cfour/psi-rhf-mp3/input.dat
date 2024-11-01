@@ -1,0 +1,47 @@
+#! MP3 energy components. Checks that computed identically
+#! between cfour and psi4
+
+test_psivars = ['nuclear repulsion energy', 'scf total energy', # 'mp2 singles energy',
+
+print('    <<<  RHF  >>>')
+
+cfour {
+MP3 single-point energy calculation
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=MP3,BASIS=AUG-PVDZ
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+
+clean()
+clean_variables()
+cfour{}
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set basis aug-cc-pvdz
+set e_convergence 10
+#set mp2_type conv
+set mp_type conv
+
+energy('mp3')
+
+print_variables()
+
+

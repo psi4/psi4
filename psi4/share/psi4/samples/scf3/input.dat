@@ -1,0 +1,23 @@
+#! File retention, docc, socc, and bond distances specified explicitly.
+
+
+molecule ch2 {
+    0 3
+    c
+    h 1 b1
+    h 1 b1 2 a1
+
+    b1 = 1.0
+    a1 = 125.0
+}
+
+set {
+    reference uhf
+    basis     6-31G**
+    docc      [2, 0, 0, 1]
+    socc      [1, 0, 1, 0]
+    scf_type  pk
+}
+
+thisenergy = energy('scf')
+

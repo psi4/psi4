@@ -1,0 +1,28 @@
+#! Single point energies of multiple excited states with EOM-CCSD
+
+molecule ch2 {
+  0 3
+  c
+  h 1 r
+  h 1 r 2 a
+  r = 1.1
+  a = 109.0
+}
+
+set {
+  reference uhf
+  basis cc-pVDZ
+  roots_per_irrep [2, 2, 2, 2]
+}
+
+energy('eom-ccsd')
+
+escf = -38.917378694797                                                        #TEST
+eccsd = -39.03274757226                                                        #TEST
+eeom_ccsd = [(-38.6664604477, "B1", 1), (-38.6032901417, "B1", 2), (-38.7702711146, "B2", 0), (-38.6989011688, "B2", 1),   #TEST
+             (-38.7458590086, "A1", 0), (-38.5424940735, "A1", 1), (-38.8224374840, "A2", 0), (-38.6232036004, "A2", 1) ]  #TEST
+compare_values(escf, variable("SCF TOTAL ENERGY"), 7, "SCF energy")        #TEST
+compare_values(eccsd, variable("CCSD TOTAL ENERGY"), 7, "CCSD energy")     #TEST
+for (ref, h, i) in eeom_ccsd: # TEST
+    val = variable(f"CCSD ROOT {i} (IN {h}) TOTAL ENERGY")                                 #TEST
+    compare_values(ref, val, 6, f"EOM-CCSD root {i} (IN {h})")                                #TEST

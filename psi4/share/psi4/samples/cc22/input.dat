@@ -1,0 +1,20 @@
+#! ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in $^{3}B@@1$ CH2.
+
+molecule ch2 {
+  0 3
+  c
+  h 1 r
+  h 1 r 2 a
+  r = 1.1
+  a = 109.0
+}
+
+set {
+  reference rohf
+  basis DZ
+  roots_per_irrep [1, 0, 0, 1]
+}
+
+energy('eom-ccsd')
+
+

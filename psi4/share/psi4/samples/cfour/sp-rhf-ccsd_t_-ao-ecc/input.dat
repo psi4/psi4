@@ -1,0 +1,99 @@
+#! single-point CCSD(T)/qc2p on water with ecc, aobasis
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+CCSD(T) energy calculation using AO algorithms for ABCD terms with ECC
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=CCSD(T),BASIS=qz2p
+ABCDTYPE=AOBASIS
+CC_PROG=ECC
+SCF_CONV=12
+CC_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_CALC_LEVEL=CCSD(T)
+cfour_BASIS=qz2p
+cfour_ABCDTYPE=AOBASIS
+cfour_CC_PROGRAM=ECC
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('cfour')
+
+
+print('        <<< Thorough Psi4 format >>>')
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_BASIS=qz2p
+cfour_ABCDTYPE=AOBASIS
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('c4-ccsd(t)')
+
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_CALC_LEVEL=CCSD(T)
+cfour_BASIS=qz2p
+cfour_ABCDTYPE=AOBASIS
+cfour_CC_PROGRAM=ECC
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('cfour')
+
+

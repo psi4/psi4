@@ -1,0 +1,32 @@
+#! OLCCD cc-pVDZ freqs for C2H2
+
+molecule {
+0 1
+C            0.000000000000     0.000000000000     0.613925250708
+C            0.000000000000    -0.000000000000    -0.613925250708
+H            0.000000000000    -0.000000000000     1.692424754459
+H            0.000000000000    -0.000000000000    -1.692424754459
+}
+
+set {
+  basis cc-pvdz
+  guess sad
+  mo_maxiter 200
+}
+
+# Test values come from 3-point finite difference of analytic gradients from #TEST
+# Jonathon's Psi4Numpy code, run 03/20, e_convergence 10, orbital convergence 7. #TEST
+grad_freqs = psi4.Vector(7)  #TEST
+grad_freqs.set(0, 0, 513.982) #TEST
+grad_freqs.set(0, 1, 513.982) #TEST
+grad_freqs.set(0, 2, 722.325) #TEST
+grad_freqs.set(0, 3, 722.325) #TEST
+grad_freqs.set(0, 4, 1977.865) #TEST
+grad_freqs.set(0, 5, 3406.975) #TEST
+grad_freqs.set(0, 6, 3497.404) #TEST
+
+
+cepa_e, cepa_wfn = frequencies('olccd', dertype=0, return_wfn=True)
+fd_freqs = cepa_wfn.frequencies()                                           #TEST
+compare_vectors(grad_freqs, fd_freqs, 0.5,                                                #TEST
+ "Frequencies by gradient points vs. Frequencies by energy points to 1 cm^-1 ")           #TEST

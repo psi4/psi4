@@ -1,0 +1,29 @@
+#! DF-MP2 cc-pVDZ gradient for the NO molecule.
+
+ref = psi4.Matrix.from_list([                                        #TEST
+        [ 0.000000000000,    0.00000000000000,    -0.19535686123490],  #TEST
+        [ 0.000000000000,    0.00000000000000,     0.19535686123490]   #TEST
+      ])                                                            #TEST
+
+molecule {
+0 2
+N
+O 1 1.158
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  scf_type df
+  guess sad
+  reference uhf
+  freeze_core true
+  mp2_type df
+  qc_module occ
+}
+
+grad = gradient('mp2')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST

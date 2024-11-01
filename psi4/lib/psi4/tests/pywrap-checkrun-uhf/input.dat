@@ -1,0 +1,212 @@
+#! This checks that all energy methods can run with
+#! a minimal input and set symmetry.
+
+import random
+
+molecule water {
+  0 1
+  O
+  H  1  1.07
+  H  1  1.07  2  109.5
+}
+
+sym = 'cs'
+set reference uhf
+
+#-------------------------------------------------------------------------------------------
+
+print('  Checking gradient methods (ground state) ...')
+
+set basis sto-3g
+# three keywords below are so test can pass with default max_am_eri=5
+set df_basis_scf cc-pvdz-jkfit
+set df_basis_mp2 cc-pvdz-ri
+set df_basis_cc cc-pvdz-ri
+
+Earray = [
+  'SCF',
+  'CCSD',
+  #'CCSD(T)',  # activate with qc_module=ccenergy
+  'MP2',
+  'DCT',
+  'OMP2',
+  'OMP3',
+  'MP3',
+  'MP2.5',
+  'OMP2.5',
+  'LCCD',
+  'OLCCD',
+  'BP86',
+]
+random.shuffle(Earray)
+
+for method in Earray:
+   water.reset_point_group(sym)
+   water.fix_orientation(True)
+   water.update_geometry()
+
+   banner('Testing %s' % (method)) 
+   G, wfn = gradient(method, return_wfn=True)
+   ans = wfn.energy()
+   print('%16s\t%s\t%s\t%s' % (method, water.schoenflies_symbol(), variable('CURRENT ENERGY') - ans, ans))
+   clean()
+
+#-------------------------------------------------------------------------------------------
+
+print('  Checking gradient methods (excited state) ...')
+
+Earray = [
+  'EOM-CCSD',
+]
+random.shuffle(Earray)
+
+set basis 6-31g
+set roots_per_irrep [1, 1]
+#set roots_per_irrep [1]
+
+for method in Earray:
+   water.reset_point_group(sym)
+   water.fix_orientation(True)
+   water.update_geometry()
+
+   banner('Testing %s' % (method)) 
+   G, wfn = gradient(method, return_wfn=True)
+   ans = wfn.energy()
+   print('%16s\t%s\t%s\t%s' % (method, water.schoenflies_symbol(), variable('CURRENT ENERGY') - ans, ans))
+   clean()
+
+#-------------------------------------------------------------------------------------------
+
+print('  Checking energy methods (ground state) ...')
+
+Earray = [
+  'SCF',
+  'MP2',
+  'MCSCF',
+  'CC2',
+  'CCSD',
+  'BCCD',
+  'CC3',
+  'CCSD(T)',
+  'BCCD(T)',
+  'MP3',
+#  'ZAPT3',
+#  'CISD',
+#  'FCI',
+  'DCT',
+  'MP2.5',
+  'OLCCD',
+  'LCCD',
+  'BP86',
+  'B2PLYP-D',
+]
+random.shuffle(Earray)
+
+set basis sto-3g
+
+for method in Earray:
+   water.reset_point_group(sym)
+   water.fix_orientation(True)
+   water.update_geometry()
+
+   banner('Testing %s' % (method)) 
+   ans = energy(method)
+   print('%16s\t%s\t%s\t%s' % (method, water.schoenflies_symbol(), variable('CURRENT ENERGY') - ans, ans))
+   clean()
+
+#-------------------------------------------------------------------------------------------
+
+print('  Checking energy methods (ground state, non-minimal basis) ...')
+
+set basis 6-31g
+
+Earray = [
+#  'MP4',
+#  'MP4(SDQ)',
+#  'CEPA(0)',
+#  'CEPA(1)',
+#  'CEPA(3)',
+#  'ACPF',
+#  'AQCC',
+#  'SDCI',
+#  'DCI',
+#  'FNO-DF-CCSD(T)',
+]
+random.shuffle(Earray)
+
+for method in Earray:
+   water.reset_point_group(sym)
+   water.fix_orientation(True)
+   water.update_geometry()
+
+   banner('Testing %s' % (method)) 
+   ans = energy(method)
+   print('%16s\t%s\t%s\t%s' % (method, water.schoenflies_symbol(), variable('CURRENT ENERGY') - ans, ans))
+   clean()
+
+#-------------------------------------------------------------------------------------------
+
+print('  Checking energy methods (excited state) ...')
+
+set roots_per_irrep [1, 1]
+#set roots_per_irrep [1]
+set basis sto-3g
+
+Earray = [
+#  'ADC',
+#  'EOM-CC2',
+  'EOM-CCSD',
+  'EOM-CC3',
+]
+random.shuffle(Earray)
+
+for method in Earray:
+   water.reset_point_group(sym)
+   water.fix_orientation(True)
+   water.update_geometry()
+
+   banner('Testing %s' % (method)) 
+   ans = energy(method)
+   print('%16s\t%s\t%s\t%s' % (method, water.schoenflies_symbol(), variable('CURRENT ENERGY') - ans, ans))
+   clean()
+
+#-------------------------------------------------------------------------------------------
+
+print('  Checking energy methods (sapt) ...')
+
+molecule water {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+units angstrom
+}
+
+set basis sto-3g
+
+Earray = [
+#  'SAPT0',
+#  'SAPT2+3',
+#  'SAPT0-CT',
+#  'SAPT2+(CCD)-CT',
+  ]
+random.shuffle(Earray)
+
+for method in Earray:
+   water.reset_point_group(sym)
+   water.fix_orientation(True)
+   water.update_geometry()
+
+   banner('Testing %s' % (method)) 
+   ans = energy(method)
+   print('%16s\t%s\t%s\t%s' % (method, water.schoenflies_symbol(), variable('CURRENT ENERGY') - ans, ans))
+   clean()
+
+compare_values(0.0, 0.0, 3, 'Nothing segfaulted')  #TEST
+
+

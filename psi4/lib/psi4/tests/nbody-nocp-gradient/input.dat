@@ -1,0 +1,62 @@
+#! Computation of NoCP-corrected water trimer gradient (geometry from J. Chem. Theory Comput. 11, 2126-2136 (2015))
+
+import numpy as np
+
+molecule water_trimer {
+O      -2.76373224  -1.24377706  -0.15444566
+H      -1.12357791  -2.06227970  -0.05243799
+H      -3.80792362  -2.08705525   1.06090407
+--
+O       2.46924614  -1.75437739  -0.17092884
+H       3.76368260  -2.21425403   1.00846104
+H       2.30598330   0.07098445  -0.03942473
+--
+O       0.29127930   3.00875625   0.20308515
+H      -1.21253048   1.95820900   0.10303324
+H       0.10002049   4.24958115  -1.10222079
+no_reorient
+no_com
+symmetry c1
+units bohr
+}
+
+g, wfn = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='nocp', max_nbody=2,
+                                      return_total_data=True, return_wfn=True)
+compare(6, wfn.variable("NBODY NUMBER"), "nbody number")  #TEST
+core.clean()
+
+nocp_scheme = {  #TEST
+    "((1, 2), (1, 2))": 1,  #TEST
+    "((1, 3), (1, 3))": 1,  #TEST
+    "((2, 3), (2, 3))": 1,  #TEST
+    "((1,), (1,))": -1,  #TEST
+    "((2,), (2,))": -1,  #TEST
+    "((3,), (3,))": -1,  #TEST
+}  #TEST
+
+energy_dict, gradient_dict = {}, {} #TEST
+for i in nocp_scheme: #TEST
+    mol = water_trimer.extract_subsets(eval(i)[0], list(set(eval(i)[1]) - set(eval(i)[0]))) #TEST
+    gradient_dict[i], wfn_mol = gradient('SCF/STO-3G', molecule=mol, return_wfn=True) #TEST
+    energy_dict[i] = core.variable('CURRENT ENERGY') #TEST
+    core.clean() #TEST
+
+    compare_values(energy_dict[i], wfn.variables()["1_" + i], 8, 'Energy of %s' %i) #TEST
+    compare_arrays(gradient_dict[i], wfn.variables()['GRADIENT 1_%s' %i], 8, 'Gradient of %s' %i) #TEST
+
+ene, grad = 0, np.zeros((9, 3)) #TEST
+for i in nocp_scheme: #TEST
+    ene += nocp_scheme[i] * energy_dict[i] #TEST
+
+compare_values(ene, wfn.variables()['2'], 8, 'NoCP-Corrected Energy') #TEST
+
+for i in range(3): #TEST
+    key = '((%i,), (%i,))' %(i + 1, i + 1) #TEST
+    grad[i*3: i*3 + 3, :] += nocp_scheme.pop(key) * np.array(gradient_dict[key]) #TEST
+
+for key in nocp_scheme: #TEST
+    i, j = eval(key)[1][0]-1, eval(key)[1][1]-1 #TEST
+    index = [i*3, i*3 + 1, i*3 + 2, j*3, j*3 + 1, j*3 + 2] #TEST
+    grad[index, :] += nocp_scheme[key] * np.array(gradient_dict[key]) #TEST
+
+compare_arrays(grad, wfn.variables()['GRADIENT 2'], 8, 'NoCP-Corrected Gradient') #TEST

@@ -1,0 +1,90 @@
+#! SCF DZ finite difference frequencies by energies for C4NH4
+
+molecule c4nh4 {
+  units angstrom
+  -1 1
+    C         0.000000000000     0.000000000000     1.119905811674
+    N         0.000000000000     0.000000000000     2.310087277449
+    C         0.000000000000     0.000000000000    -0.231085072523
+    C        -0.781617287494     0.000000000000    -1.483869398827
+    C         0.781617287494     0.000000000000    -1.483869398827
+    H        -1.274488047821    -0.899961499592    -1.835960153318
+    H        -1.274488047821     0.899961499592    -1.835960153318
+    H         1.274488047821     0.899961499592    -1.835960153318
+    H         1.274488047821    -0.899961499592    -1.835960153318
+}
+
+# From analytic hessian, 10/13/18
+list_freqs = [
+-184.0607,
+236.5670,
+601.8184,
+663.5974,
+667.0856,
+895.5593,
+1008.6902,
+1008.9525,
+1046.9721,
+1160.1273,
+1161.1602,
+1215.7034,
+1225.2500,
+1600.6701,
+1622.1788,
+1673.4867,
+2239.4190,
+3171.5156,
+3182.4036,
+3224.7643,
+3244.3007]
+
+ref_freqs = psi4.Vector.from_list(list_freqs)
+a1_freqs = psi4.Vector.from_list([list_freqs[i] for i in [4, 7, 10, 13, 15, 16, 18]])
+a2_freqs = psi4.Vector.from_list([list_freqs[i] for i in [6, 12, 19]])
+b1_freqs = psi4.Vector.from_list([list_freqs[i] for i in [1, 3, 8, 11, 14, 17]])
+b2_freqs = psi4.Vector.from_list([list_freqs[i] for i in [0, 2, 5, 9, 20]])
+
+# *** Test all frequencies by 3-pt formula.
+set {
+  basis dz
+  d_convergence 11
+  points 3
+  scf_type pk
+  fd_project true
+}
+
+set findif {print 3}
+
+scf_e, scf_wfn = frequencies('scf', irrep=1, dertype=0,  return_wfn=True)
+fd_freqs = scf_wfn.frequencies()
+clean()
+
+del fd_freqs
+
+scf_e, scf_wfn = frequencies('scf', irrep=2, dertype=0,  return_wfn=True)
+fd_freqs = scf_wfn.frequencies()
+clean()
+
+del fd_freqs
+
+scf_e, scf_wfn = frequencies('scf', irrep=3, dertype=0,  return_wfn=True)
+fd_freqs = scf_wfn.frequencies()
+clean()
+
+del fd_freqs
+
+
+scf_e, scf_wfn = frequencies('scf', irrep=4, dertype=0,  return_wfn=True)
+fd_freqs = scf_wfn.frequencies()
+clean()
+
+del fd_freqs
+
+set findif {points 5}
+
+scf_e, scf_wfn = frequencies('scf', irrep=1, dertype=0, return_wfn=True)
+fd_freqs = scf_wfn.frequencies()
+clean()
+
+del fd_freqs
+

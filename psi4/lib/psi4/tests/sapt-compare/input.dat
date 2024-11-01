@@ -1,0 +1,74 @@
+#! SAPT0 aug-cc-pVDZ computation of the water-water interaction energy, using the three SAPT codes.
+
+memory 1250 mb
+
+Eref = {"SAPT ELST ENERGY":  -0.01337793703, #TEST
+        "SAPT EXCH ENERGY":   0.01121567840, #TEST
+        "SAPT IND ENERGY":   -0.00352435852, #TEST  # Rob; May 2022 switch ref from Ed (now below) to Rob
+        "SAPT DISP ENERGY":  -0.00289879691} #TEST
+
+Eref_longstanding_riri_egh = {
+    "SAPT ELST ENERGY": -0.01337542907,  #TEST
+    "SAPT EXCH ENERGY":  0.01121822627,  #TEST
+    "SAPT IND ENERGY":  -0.00352942288,  #TEST  # Ed
+    "SAPT DISP ENERGY": Eref["SAPT DISP ENERGY"],
+}
+
+molecule dimer {
+  O -2.930978458   -0.216411437    0.000000000
+  H -3.655219777    1.440921844    0.000000000
+  H -1.133225297    0.076934530    0.000000000
+   --
+  O  2.552311356    0.210645882    0.000000000
+  H  3.175492012   -0.706268134   -1.433472544
+  H  3.175492012   -0.706268134    1.433472544
+  units bohr
+  no_com
+  no_reorient
+}
+
+set {
+    basis         aug-cc-pvdz
+    e_convergence 1e-8
+    d_convergence 1e-8
+
+    SAPT_DFT_FUNCTIONAL HF
+}
+
+energy('sapt0', molecule=dimer)
+sapt0_vars = psi4.core.variables() #TEST
+
+energy('fisapt0', molecule=dimer)
+fisapt0_vars = psi4.core.variables() #TEST
+
+energy('sapt(dft)', molecule=dimer)
+sapt_dft_vars = psi4.core.variables() #TEST
+
+for k in ["SAPT ELST ENERGY", "SAPT EXCH ENERGY", "SAPT IND ENERGY"]: #TEST
+    compare_values(Eref[k], sapt_dft_vars[k], 7, "SAPT(DFT) " + k) #TEST
+    compare_values(Eref[k], fisapt0_vars[k], 7, "F-SAPT " + k) #TEST
+    compare_values(Eref[k], sapt0_vars[k], 7, "SAPT0 " + k) #TEST
+
+uks_disp = sapt_dft_vars["DISP20,U"] + sapt_dft_vars["EXCH-DISP20,U"] #TEST
+compare_values(Eref["SAPT DISP ENERGY"], uks_disp, 7, "SAPT(DFT) SAPT DISP ENERGY") #TEST
+compare_values(Eref["SAPT DISP ENERGY"], fisapt0_vars["SAPT DISP ENERGY"], 7, "F-SAPT SAPT DISP ENERGY") #TEST
+compare_values(Eref["SAPT DISP ENERGY"], sapt0_vars["SAPT DISP ENERGY"],   7, "SAPT0 SAPT DISP ENERGY") #TEST
+
+# May 2022: Longstanding SAPT (EGH; libsapt_solver) behavior was to
+#   use RIFIT basis for both DF_BASIS_SAPT and DF_BASIS_ELST. With that
+#   in place, compare_values agreement had to be set to 5 5 5; 4 5 5 for
+#   elst/exch/ind ; disp.
+#   Now, with libsapt_solver using DF_BASIS_ELST defaulted to JKFIT,
+#   agreement to 7 7 7; 7 7 7 can be achieved. The former values for SAPT0
+#   are reproduced below by forcibly setting DF_BASIS_ELST to the RIFIT of
+#   the current orbital basis
+
+clean()
+clean_variables()
+
+set df_basis_elst aug-cc-pvdz-ri
+
+e = energy("sapt0", molecule=dimer)
+for k in ["SAPT ELST ENERGY", "SAPT EXCH ENERGY", "SAPT IND ENERGY", "SAPT DISP ENERGY"]:  #TEST
+    compare_values(Eref_longstanding_riri_egh[k], variable(k), 7, "pre-v1.6 SAPT0 " + k)  #TEST
+

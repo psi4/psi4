@@ -1,0 +1,25 @@
+from __future__ import print_function
+#! SCF cc-pVDZ geometry optimzation, with Z-matrix input
+
+# This value is from a tightly converged QChem run  
+
+molecule h2o {
+     O
+     H 1 1.0
+     H 1 1.0 2 104.5
+}
+
+set {
+  diis false
+  basis cc-pvdz
+  e_convergence 10
+  d_convergence 10
+  g_convergence gau_tight
+  scf_type pk
+}
+
+thisenergy = optimize('scf')
+
+print(h2o.nuclear_repulsion_energy())
+print(thisenergy)
+

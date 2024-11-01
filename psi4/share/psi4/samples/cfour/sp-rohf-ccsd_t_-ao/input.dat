@@ -1,0 +1,59 @@
+#! single-point  CCSD(T)/qz2p on NH2 with aobasis
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+ROHF-CCSD(T) energy calculation using partial AO algorithms 
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=CCSD(T),BASIS=qz2p
+ABCDTYPE=AOBASIS
+MULT=2,REF=ROHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+CC_CONV=12
+PRINT=2
+MEMORY=20000000)
+
+}
+
+energy('cfour')
+
+
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level =CCSD(T)
+cfour_BASIS=qz2p
+cfour_ABCDTYPE=AOBASIS
+cfour_REFerence=ROHF
+cfour_OCCUPATION [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+cfour_PRINT=2
+}
+
+energy('cfour')
+
+
+

@@ -1,0 +1,33 @@
+#! Compute the IRC for HOOH torsional rotation at the RHF/DZP level of theory. 
+# Print
+# the path to a trajectory file for visualization
+# in Jmol.
+# grep '@IRC' on the output to see a nice printout
+# of the progress of your IRC computation.
+
+molecule h2o2 {
+  H     0.0000000000   0.9803530335  -0.8498671785
+  O     0.0000000000   0.6988545188   0.0536419016
+  O     0.0000000000  -0.6988545188   0.0536419016
+  H     0.0000000000  -0.9803530335  -0.8498671785
+}
+
+# g_convergence needs to be tight for IRCs:
+set g_convergence gau_verytight
+
+set {
+  basis                      dzp
+  opt_type                   irc
+  geom_maxiter               60
+  irc_direction              backward
+  d_convergence              9
+  irc_points                 12
+}
+
+energy = frequencies('scf', dertype=1)
+
+# Lower point group from C2v to C2
+h2o2.reset_point_group('c2')
+
+energy = optimize('scf')
+

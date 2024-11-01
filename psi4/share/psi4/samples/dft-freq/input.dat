@@ -1,0 +1,12 @@
+#! Frequencies for H2O B3LYP/6-31G* at optimized geometry
+
+molecule h2o {
+  O
+  H 1 0.96864
+  H 1 0.96864 2 103.586
+}
+
+set basis 6-31G*
+scf_e, scf_wfn = frequencies('b3lyp', return_wfn=True)
+
+

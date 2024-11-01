@@ -1,0 +1,67 @@
+#! Extrapolated water energies
+import numpy as np
+
+
+
+molecule h2o {
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+}
+
+# Use DF to save some time
+set {
+    scf_type      df
+    mp2_type      df
+    cc_type       df
+    e_convergence 7
+    reference     rhf
+}
+
+h2o.update_geometry()
+
+# SCF TESTS
+scf_dz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "cc-pVDZ"}])
+
+scf_adtz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "aug-cc-pV[2T]Z"}])
+
+
+# MP2 TESTS
+mp2_atz, wfn = energy("cbs", cbs_metadata = [{"wfn": "mp2", "basis": "aug-cc-pVTZ"}], return_wfn=True)
+
+mp2_adtz, wfn = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "aug-cc-pvtz"},
+                                       {"wfn": "mp2", "basis": "aug-cc-pv[dt]z"}], return_wfn=True)
+
+# D:CCSD(T) TESTS
+
+cbs_dtz, wfn = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
+                                      {"wfn": "mp2", "basis": "cc-pv[dt]z"},
+                                      {"wfn": "ccsd(t)", "basis": "cc-pvdz"}],
+                                        return_wfn=True)
+
+cbs_no_scf = energy("cbs", cbs_metadata=[{"wfn": "mp2", "basis": "cc-pv[dt]z"},
+                                       {"wfn": "ccsd(t)", "basis": "cc-pvdz"}])
+
+
+# Options test
+set freeze_core True
+
+ae_dtz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
+                                      {"wfn": "mp2", "basis": "cc-pv[dt]z"},
+                                      {"wfn": "mp2", "basis": "cc-pvdz",
+                                       "options": {"freeze_core": "False"}}])
+
+
+# Basis_lo check
+b_lo  = energy("cbs", cbs_metadata = [{"wfn": "mp2", "basis": "cc-pvtz", "stage": "corr"},
+                                    {"wfn": "mp2", "wfn_lo": "mp2",
+                                     "basis": "aug-cc-pvdz", "basis_lo": "cc-pvdz", "stage": "diff"}])
+
+# Options check (FC-CCSD - FC-MP2) as a last stage in an otherwise AE calculation
+set freeze_core False
+fc_dtz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
+                                     {"wfn": "mp2", "basis": "cc-pv[dt]z"},
+                                     {"wfn": "ccsd", "basis": "cc-pvdz",
+                                      "options": {"freeze_core": "True"},
+                                      "wfn_lo": "mp2", "basis_lo": "cc-pvdz",
+                                      "options_lo": {"freeze_core": "True"}}])

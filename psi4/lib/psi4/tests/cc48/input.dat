@@ -1,0 +1,185 @@
+#! reproduces dipole moments in J.F. Stanton's "biorthogonal" JCP paper
+
+molecule h2o {
+  0 1
+  H
+  O 1 0.957
+  H 2 0.957 1 104.5
+}
+
+set {
+  roots_per_irrep [2, 2, 2, 2]
+  freeze_core true
+}
+
+basis sadssejpvtz {
+# sl
+spherical
+****
+H 0
+S 4 1.00
+        33.8650140000           0.0060680000
+         5.0947880000           0.0453160000
+         1.1587860000           0.2028460000
+         0.3258400000           0.5037090000
+S 1 1.00
+         0.1027410000           1.0000000000
+S 1 1.00
+         0.0324000000           1.0000000000
+P 2 1.00
+         1.1588000000           0.1884400000
+         0.3258000000           0.8824200000
+P 2 1.00
+         0.1027000000           0.1178000000
+         0.0324000000           0.0042000000
+****
+C 0
+S 5 1.00
+      5240.6353000000           0.0009370000
+       782.2048000000           0.0072280000
+       178.3508300000           0.0363440000
+        50.8159420000           0.1306000000
+        16.8235620000           0.3189310000
+S 2 1.00
+         6.1757760000           0.4387420000
+         2.4180490000           0.2149740000
+S 1 1.00
+         0.5119000000           1.0000000000
+S 1 1.00
+         0.1565900000           1.0000000000
+S 1 1.00
+         0.0479000000           1.0000000000
+P 4 1.00
+        18.8418000000           0.0138870000
+         4.1592400000           0.0862790000
+         1.2067100000           0.2887440000
+         0.3855400000           0.4994110000
+P 1 1.00
+         0.1219400000           1.0000000000
+P 1 1.00
+         0.0385680000           1.0000000000
+D 2 1.00
+         1.2067000000           0.2628500000
+         0.3855000000           0.8043000000
+D 2 1.00
+         0.1219000000           0.6535000000
+         0.0386000000           0.8636000000
+****
+O 0
+S 5 1.00
+     10662.2850000000           0.0007990000
+      1599.7097000000           0.0061530000
+       364.7252600000           0.0311570000
+       103.6517900000           0.1155960000
+        33.9058050000           0.3015520000
+S 2 1.00
+        12.2874690000           0.4448700000
+         4.7568050000           0.2431720000
+S 1 1.00
+         1.0042710000           1.0000000000
+S 1 1.00
+         0.3006860000           1.0000000000
+S 1 1.00
+         0.0900300000           1.0000000000
+P 4 1.00
+        34.8564630000           0.0156480000
+         7.8431310000           0.0981970000
+         2.3062490000           0.3077680000
+         0.7231640000           0.4924700000
+P 1 1.00
+         0.2148820000           1.0000000000
+P 1 1.00
+         0.0638500000           1.0000000000
+D 2 1.00
+         2.3062000000           0.2027000000
+         0.7232000000           0.5791000000
+D 2 1.00
+         0.2149000000           0.7854500000
+         0.0639000000           0.5338700000
+****
+}
+
+wfn = properties('eom-ccsd', properties=['dipole'], return_wfn=True)[1]
+
+
+### ccdensity checks
+
+refnre     =   9.196933714281490 # TEST
+refscf     = -76.05293964626020   # TEST
+refccsd    = -76.274590901147931  # TEST
+refoverlap =   0.93455067640      # TEST
+
+compare_values(refnre, h2o.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refccsd, wfn.variable("CCSD TOTAL ENERGY"), 6, "CCSD Energy") # TEST
+compare_values(refoverlap, wfn.variable("LEFT-RIGHT CCSD EIGENVECTOR OVERLAP"), 5, "Left-Right CCSD Overlap") # TEST
+
+### Excitation energy checks
+
+ref1A1 = -75.913588662964 # TEST
+ref2A1 = -75.859480750323 # TEST
+ref0A2 = -75.938133885345 # TEST
+ref1A2 = -75.843040508395 # TEST
+ref0B1 = -76.002650024553 # TEST
+ref1B1 = -75.886857034080 # TEST
+ref0B2 = -75.849495233717 # TEST
+ref1B2 = -75.776029952037 # TEST
+
+compare_values(refccsd, core.variable("CCSD ROOT 0 (IN A1) TOTAL ENERGY"), 6, "Root 0 (A1) Energy") # TEST
+compare_values(ref1A1, core.variable("CCSD ROOT 1 (IN A1) TOTAL ENERGY"), 6, "Root 1 (A1) Energy") # TEST
+compare_values(ref2A1, core.variable("CCSD ROOT 2 (IN A1) TOTAL ENERGY"), 6, "Root 2 (A1) Energy") # TEST
+compare_values(ref0B1, core.variable("CCSD ROOT 0 (IN B1) TOTAL ENERGY"), 6, "Root 0 (B1) Energy") # TEST
+compare_values(ref1B1, core.variable("CCSD ROOT 1 (IN B1) TOTAL ENERGY"), 6, "Root 1 (B1) Energy") # TEST
+compare_values(ref0A2, core.variable("CCSD ROOT 0 (IN A2) TOTAL ENERGY"), 6, "Root 0 (A2) Energy") # TEST
+compare_values(ref1A2, core.variable("CCSD ROOT 1 (IN A2) TOTAL ENERGY"), 6, "Root 1 (A2) Energy") # TEST
+compare_values(ref0B2, core.variable("CCSD ROOT 0 (IN B2) TOTAL ENERGY"), 6, "Root 0 (B2) Energy") # TEST
+compare_values(ref1B2, core.variable("CCSD ROOT 1 (IN B2) TOTAL ENERGY"), 6, "Root 1 (B2) Energy") # TEST
+
+### Dipole check
+
+ref0A1 = -0.7236285 # TEST
+ref1A1 =  0.5231669 # TEST
+ref2A1 = -1.0960869 # TEST
+ref0A2 =  0.5394994 # TEST
+ref1A2 = -0.5130624 # TEST
+ref0B1 =  0.6537922 # TEST
+ref1B1 = -2.4285146 # TEST
+ref0B2 =  0.6032758 # TEST
+ref1B2 = -0.0524679 # TEST
+
+compare_values(ref0A1, core.variable("CCSD ROOT 0 (IN A1) DIPOLE")[2], 6, "Root 0 (A1) Dipole") # TEST
+compare_values(ref1A1, core.variable("CCSD ROOT 1 (IN A1) DIPOLE")[2], 6, "Root 1 (A1) Dipole") # TEST
+compare_values(ref2A1, core.variable("CCSD ROOT 2 (IN A1) DIPOLE")[2], 6, "Root 2 (A1) Dipole") # TEST
+compare_values(ref0B1, core.variable("CCSD ROOT 0 (IN B1) DIPOLE")[2], 6, "Root 0 (B1) Dipole") # TEST
+compare_values(ref1B1, core.variable("CCSD ROOT 1 (IN B1) DIPOLE")[2], 6, "Root 1 (B1) Dipole") # TEST
+compare_values(ref0A2, core.variable("CCSD ROOT 0 (IN A2) DIPOLE")[2], 6, "Root 0 (A2) Dipole") # TEST
+compare_values(ref1A2, core.variable("CCSD ROOT 1 (IN A2) DIPOLE")[2], 6, "Root 1 (A2) Dipole") # TEST
+compare_values(ref0B2, core.variable("CCSD ROOT 0 (IN B2) DIPOLE")[2], 6, "Root 0 (B2) Dipole") # TEST
+compare_values(ref1B2, core.variable("CCSD ROOT 1 (IN B2) DIPOLE")[2], 6, "Root 1 (B2) Dipole") # TEST
+
+### Ground-state transition checks
+#   (Other transitions available, but historically not tested here)
+
+test_data = { # TEST
+"ROOT 0 (IN A1) -> ROOT 1 (IN A1)": {"OSCILLATOR STRENGTH (LEN)": 0.09845457, "ROTATORY STRENGTH (LEN)": 0, "ROTATORY STRENGTH (VEL)": 0, "EINSTEIN A (LEN)": 4.12255582e+08, "EINSTEIN B (LEN)": 4.97723327e+19}, # TEST
+"ROOT 0 (IN A1) -> ROOT 2 (IN A1)": {"OSCILLATOR STRENGTH (LEN)": 0.00262327, "ROTATORY STRENGTH (LEN)": 0, "ROTATORY STRENGTH (VEL)": 0, "EINSTEIN A (LEN)": 1.45238295e+07, "EINSTEIN B (LEN)": 1.15329979e+18}, # TEST
+"ROOT 0 (IN A1) -> ROOT 0 (IN A2)": {"OSCILLATOR STRENGTH (LEN)": 0, "ROTATORY STRENGTH (LEN)": 0, "ROTATORY STRENGTH (VEL)": 0, "EINSTEIN A (LEN)": 0, "EINSTEIN B (LEN)": 0}, # TEST
+"ROOT 0 (IN A1) -> ROOT 1 (IN A2)": {"OSCILLATOR STRENGTH (LEN)": 0, "ROTATORY STRENGTH (LEN)": 0, "ROTATORY STRENGTH (VEL)": 0, "EINSTEIN A (LEN)": 0, "EINSTEIN B (LEN)": 0}, # TEST
+"ROOT 0 (IN A1) -> ROOT 0 (IN B1)": {"OSCILLATOR STRENGTH (LEN)": 0.05464797, "ROTATORY STRENGTH (LEN)": 0, "ROTATORY STRENGTH (VEL)": 0, "EINSTEIN A (LEN)": 1.29847603e+08, "EINSTEIN B (LEN)": 3.66742794e+19}, # TEST
+"ROOT 0 (IN A1) -> ROOT 1 (IN B1)": {"OSCILLATOR STRENGTH (LEN)": 0.00754714, "ROTATORY STRENGTH (LEN)": 0, "ROTATORY STRENGTH (VEL)": 0, "EINSTEIN A (LEN)": 3.64552879e+07, "EINSTEIN B (LEN)": 3.55230671e+18}, # TEST
+"ROOT 0 (IN A1) -> ROOT 0 (IN B2)": {"OSCILLATOR STRENGTH (LEN)": 0.01815566, "ROTATORY STRENGTH (LEN)": 0, "ROTATORY STRENGTH (VEL)": 0, "EINSTEIN A (LEN)": 1.05413512e+08, "EINSTEIN B (LEN)": 7.79448420e+18}, # TEST
+"ROOT 0 (IN A1) -> ROOT 1 (IN B2)": {"OSCILLATOR STRENGTH (LEN)": 0.06309680, "ROTATORY STRENGTH (LEN)": 0, "ROTATORY STRENGTH (VEL)": 0, "EINSTEIN A (LEN)": 5.03912015e+08, "EINSTEIN B (LEN)": 2.30967605e+19}, # TEST
+}
+
+for transition, data in test_data.items(): # TEST
+    for property, value in data.items(): # TEST
+        # Change these numbers to 6 ASAP # TEST
+        if "EINSTEIN" not in property: # TEST
+            compare_values(value, wfn.variable(f"CC {transition} {property}"), 6, f"CC {transition} {property}") # TEST
+            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), 6, f"CCSD {transition} {property}") # TEST
+        else: # TEST 
+            # Large numbers need "special" testing. # TEST
+            compare_values(value, wfn.variable(f"CC {transition} {property}"), f"CC {transition} {property}", atol=1e-6, rtol=1e-5) # TEST
+            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), f"CCSD {transition} {property}", atol=1e-6, rtol=1e-5) # TEST
+
+

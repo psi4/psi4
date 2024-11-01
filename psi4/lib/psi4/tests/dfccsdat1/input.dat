@@ -1,0 +1,28 @@
+#! DF-CCSD(AT) cc-pVDZ energy for the H2O molecule.
+
+refcc       = -76.23811132362982 #TEST
+refcc_at    = -76.24111373890018 #TEST
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  scf_type df
+  guess sad
+  freeze_core true
+  cc_type df
+}
+energy('ccsd(at)')
+
+compare_values(refcc, variable("CCSD TOTAL ENERGY"), 6, "DF-CCSD");               #TEST
+compare_values(refcc_at, variable("CCSD(AT) TOTAL ENERGY"), 6, "DF-CCSD(AT)");               #TEST
+compare_values(refcc_at, variable("A-CCSD(T) TOTAL ENERGY"), 6, "DF-CCSD(AT)");               #TEST
+
+

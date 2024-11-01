@@ -1,0 +1,75 @@
+#! SCF STO-3G finite-difference tests
+import numpy
+
+molecule h2o {
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set {
+  basis sto-3g
+  d_convergence 11
+  scf_type pk
+}
+
+# Test frequencies by energies
+
+h2o.update_geometry()
+# Psi is forbidden from "fixing" our coordinate axes. That would interfere with the displacements.
+h2o.reinterpret_coordentry(False)
+h2o.fix_orientation(True)
+
+method = "scf" # Change this line to change the method you compute with.
+
+# Displace the h2o molecule to get all displacements for hessian by energies.
+# Set -1 to 1 to get A1 frequencies, to 4 for B2...
+findif_meta_dict = psi4.driver_findif.hessian_from_energies_geometries(h2o, -1, stencil_size=3)
+
+ndisp = len(findif_meta_dict["displacements"]) + 1
+
+print(" %d displacements needed." % ndisp)
+
+def process_displacement(method, molecule, displacement, n, ndisp, **kwargs):
+    # print progress to file and screen
+    core.print_out('\n')
+    p4util.banner('Loading displacement %d of %d' % (n, ndisp))
+    print(""" %d""" % (n), end=('\n' if (n == ndisp) else ''))
+    sys.stdout.flush()
+
+    # Load in displacement (flat list) into the active molecule
+    geom_array = np.reshape(displacement["geometry"], (-1, 3))
+    molecule.set_geometry(core.Matrix.from_array(geom_array))
+
+    # Perform the energy calculation
+    derivative, wfn = energy(method, return_wfn=True, molecule=molecule, **kwargs)
+    displacement["energy"] = core.variable('CURRENT ENERGY')
+
+    # clean may be necessary when changing irreps of displacements
+    core.clean()
+
+    return wfn
+
+for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=1):
+    process_displacement(method, h2o, displacement, n, ndisp, write_orbitals=False)
+
+wfn = process_displacement(method, h2o, findif_meta_dict["reference"], ndisp, ndisp)
+
+# Compute the hessian of the h2o molecule from the energies, for all symmetry blocks
+H = driver_findif.assemble_hessian_from_energies(findif_meta_dict, -1)
+
+wfn.set_hessian(core.Matrix.from_array(H))
+# Only project out translations and rotations if you know you're not at a stationary point!
+# Have irrep to None if you computed all frequencies, and set it to anything else otherwise 
+vibinfo = vibanal_wfn(wfn, irrep=None, project_trans=True, project_rot=True)
+vibonly = qcdb.vib.filter_nonvib(vibinfo)
+# OLD SYNTAX: depr v1.4 and removed v1.7 wfn.set_frequencies(core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data)))
+wfn.frequency_analysis = vibinfo
+
+# Now let's make sure that the frequencies match the analytic ones...
+fd_freqs = wfn.frequencies().to_array()
+anal_freqs = np.array([2170.0460, 4140.0021, 4391.0669])
+
+compare_arrays(anal_freqs, fd_freqs, 1,
+ "Analytic vs. Finite-difference (3-pt.) frequencies from energies to 0.1 cm^-1 (C1)")
+

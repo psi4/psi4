@@ -1,0 +1,32 @@
+#! Test case for Binding Energy of C4H5N (Pyrrole) with CO2 using MP2/def2-TZVPP 
+E_cp = -13.1 ##kJ/mol (L. Chen, F. Cao, H. Sun, International Journal of Quantum Chemistry 2013, 113, 2261-2266)
+
+molecule {
+0 1
+C 0.7472526 -1.3376296 -0.1294481
+C 2.1138787 -1.1759945 0.0072903
+C 2.3743733 0.2167009 0.0369708
+C 1.1595896 0.8666464 -0.0824524
+N 0.1897954 -0.0908731 -0.1877630
+H -0.7952679 0.0948027 -0.2467455
+H 0.1412757 -2.2237390 -0.1929500
+H 2.8361537 -1.9712660 0.0709342
+H 3.3345426 0.6941783 0.1277415
+H 0.9152769 1.9136518 -0.1047862
+--
+0 1
+C 1.6830180 -0.4403696 3.1117942
+O 0.5425545 -0.2216001 2.9779653
+O 2.8186228 -0.6587208 3.2810031
+units angstrom
+}
+
+set {
+  basis def2-tzvpp
+}
+
+e_cp = energy('mp2', bsse_type='cp')
+clean()
+
+
+ie = psi_hartree2kcalmol*psi_cal2J*(e_cp)

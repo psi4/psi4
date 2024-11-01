@@ -1,0 +1,39 @@
+#! UHF-ODC-12 and RHF-ODC-12 single-point energy for H2O.
+#! This performs a simultaneous update of orbitals and cumulants, using DIIS extrapolation.
+#! Four-virtual integrals are handled in the AO basis, where integral transformation is avoided.
+#!
+#! In the next RHF-ODC-12 computation, AO_BASIS=NONE is used, where four-virtual integrals
+#! are transformed into MO basis.
+
+
+
+molecule h2o {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+}
+
+set {
+    r_convergence 12
+    d_convergence 12
+    algorithm   simultaneous
+    basis       cc-pvdz
+    dct_functional odc-12
+}
+
+set reference uhf
+set ao_basis disk
+energy('dct')
+clean()
+
+set reference rhf
+set ao_basis disk
+energy('dct')
+clean()
+
+set reference rhf
+set ao_basis none
+energy('dct')
+clean()
+

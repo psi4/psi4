@@ -1,0 +1,59 @@
+#! RHF-CCSD/cc-pVDZ energy of H2O partitioned into pair energy contributions.
+
+molecule h2o {
+  0 1
+  O
+  H 1 0.957119
+  H 1 0.957119 2 104.225
+}
+
+set {
+  basis "cc-pVDZ"
+  freeze_core true
+  pair_energies_print true
+}
+
+wfn = energy('ccsd', return_wfn=True)[1]
+
+refAAMP2 = psi4.core.Matrix.from_list(                         # TEST
+   [[ 0.000000000, -0.003729263, -0.003917858, -0.003988055],  # TEST
+    [-0.003729263,  0.000000000, -0.013215692, -0.012609860],  # TEST
+    [-0.003917858, -0.013215692,  0.000000000, -0.013255826],  # TEST
+    [-0.003988055, -0.012609860, -0.013255826,  0.000000000]]) # TEST
+refAACC = psi4.core.Matrix.from_list(                         # TEST
+   [[ 0.000000000, -0.003219496, -0.003353154, -0.003348416],  # TEST
+    [-0.003219496,  0.000000000, -0.012060712, -0.011320183],  # TEST
+    [-0.003353154, -0.012060712,  0.000000000, -0.012008289],  # TEST
+    [-0.003348416, -0.011320183, -0.012008289,  0.000000000]]) # TEST
+refABMP2 = psi4.core.Matrix.from_list(                         # TEST
+   [[-0.008981594, -0.005623518, -0.005498859, -0.007124124],  # TEST
+    [-0.005623518, -0.017430799, -0.008294522, -0.009593447],  # TEST
+    [-0.005498859, -0.008294522, -0.016907536, -0.007817024],  # TEST
+    [-0.007124124, -0.009593447, -0.007817024, -0.019705586]]) # TEST
+refABCC = psi4.core.Matrix.from_list(                         # TEST
+   [[-0.010060049, -0.006520995, -0.006258931, -0.008353376],  # TEST
+    [-0.006520995, -0.019331898, -0.008530911, -0.010293437],  # TEST
+    [-0.006258931, -0.008530911, -0.018624210, -0.007934745],  # TEST
+    [-0.008353376, -0.010293437, -0.007934745, -0.022097225]]) # TEST
+ref3MP2 = refAAMP2.clone()
+ref3MP2.scale(1.5)
+ref3CC = refAACC.clone()
+ref3CC.scale(1.5)
+ref1MP2 = refABMP2.clone()
+ref1MP2.scale(2)
+ref1MP2.axpy(-1/2, refAAMP2)
+ref1MP2.np[np.diag_indices_from(ref1MP2.np)] *= 1/2
+ref1CC = refABCC.clone()
+ref1CC.scale(2)
+ref1CC.axpy(-1/2, refAACC)
+ref1CC.np[np.diag_indices_from(ref1CC.np)] *= 1/2
+
+compare_values(refAAMP2, wfn.variable("MP2 ALPHA-ALPHA PAIR ENERGIES"), 5, "MP2 SS Pairs") # TEST
+compare_values(refAACC, wfn.variable("CC ALPHA-ALPHA PAIR ENERGIES"), 5, "CC SS Pairs") # TEST
+compare_values(refABMP2, wfn.variable("MP2 ALPHA-BETA PAIR ENERGIES"), 5, "MP2 OS Pairs") # TEST
+compare_values(refABCC, wfn.variable("CC ALPHA-BETA PAIR ENERGIES"), 5, "CC OS Pairs") # TEST
+compare_values(ref1MP2, wfn.variable("MP2 SINGLET PAIR ENERGIES"), 5, "MP2 Singlet Pairs") # TEST
+compare_values(ref1CC, wfn.variable("CC SINGLET PAIR ENERGIES"), 5, "CC Singlet Pairs") # TEST
+compare_values(ref3MP2, wfn.variable("MP2 TRIPLET PAIR ENERGIES"), 5, "MP2 Triplet Pairs") # TEST
+compare_values(ref3CC, wfn.variable("CC TRIPLET PAIR ENERGIES"), 5, "CC Triplet Pairs") # TEST
+

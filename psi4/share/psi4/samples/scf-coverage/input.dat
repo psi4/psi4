@@ -1,0 +1,60 @@
+#! Lithium test for coverage 
+
+molecule li_anion {
+-1 1
+Li
+}
+
+set sad_frac_occ true
+set e_convergence 8
+set d_convergence 8
+set stability_analysis check
+set basis cc-pVDZ
+set scf_type out_of_core
+
+scf_e = energy("SCF")
+compare_values(-7.41681960717086, scf_e, 6, "Lithium anion stability")
+
+# Run several perturbations
+molecule water {
+O  0.000000000000  0.000000000000 -0.075791843589
+H  0.000000000000 -0.866811828967  0.601435779270
+H  0.000000000000  0.866811828967  0.601435779270
+symmetry c1
+no_reorient
+no_com
+}
+
+set scf_type df
+set damping_percentage 0
+set stability_analysis none
+scf_e = energy("SCF")
+
+set perturb_h true
+set perturb_with dipole_y
+set perturb_magnitude 1
+scf_e = energy("SCF")
+
+set perturb_with sphere
+set theta_points 10
+set phi_points 10
+scf_e = energy("SCF")
+
+# Try out UHF NOS
+molecule water_anion {
+-1 2
+O  0.000000000000  0.000000000000 -0.075791843589
+H  0.000000000000 -0.866811828967  0.601435779270
+H  0.000000000000  0.866811828967  0.601435779270
+no_reorient
+no_com
+}
+
+set perturb_h false
+set reference uhf
+set save_uhf_nos true
+scf_e, scf_wfn = energy("SCF", return_wfn=True)
+
+
+
+

@@ -1,0 +1,84 @@
+#! single-point CCSDT/qz2p on NH2
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+UHF-CCSDT energy calculation 
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=CCSDT,BASIS=qz2p
+MULT=2,REF=UHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+CC_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+banner('UHF-CCSDT energy calculation ')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=CCSDT
+cfour_BASIS=qz2p
+cfour_REFerence=UHF
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('cfour')
+
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+banner('UHF-CCSDT energy calculation ')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=CCSDT
+cfour_BASIS=qz2p
+cfour_REFerence=UHF
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('cfour')
+
+

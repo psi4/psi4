@@ -1,0 +1,45 @@
+#! DCT calculation for the triplet O2 using DC-06 and DC-12.
+#! Only two-step algorithm is tested.
+
+refscf      = -149.604242662532   #TEST
+refmp2      = -149.921660679564   #TEST
+
+# DC-06
+refdctscf  = -149.246723409225   #TEST
+refdct     = -149.935859825526  #TEST
+
+# DC-12
+refdctxscf = -149.259033291563  #TEST
+refdctx    = -149.932306892090  #TEST
+
+molecule OO {
+0 3
+O
+O 1 R
+
+units bohr
+R = 2.000
+}
+
+set {
+    r_convergence 12
+    d_convergence 12
+    ao_basis    none
+    algorithm   twostep
+    basis       cc-pvdz
+    reference   uhf 
+}
+
+set dct_functional dc-06
+energy('dct')
+
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
+compare_values(refmp2, variable("MP2 TOTAL ENERGY"), 10, "MP2 Energy");                                             #TEST
+compare_values(refdctscf, variable("DCT SCF ENERGY"), 10, "DC-06 SCF Energy (two-step, ao_basis=none)");     #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), 10, "DC-06 Energy (two-step, ao_basis=none)");                #TEST
+
+set dct_functional dc-12
+energy('dct')
+
+compare_values(refdctxscf, variable("DCT SCF ENERGY"), 10, "DC-12 SCF Energy (two-step, ao_basis=none)");     #TEST
+compare_values(refdctx, variable("DCT TOTAL ENERGY"), 10, "DC-12 Energy (two-step, ao_basis=none)");                #TEST

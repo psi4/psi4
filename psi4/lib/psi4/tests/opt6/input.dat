@@ -1,0 +1,65 @@
+#! Various constrained energy minimizations of HOOH with cc-pvdz RHF
+#! Internal-coordinate constraints in internal-coordinate optimizations.
+
+OH_frozen_stre_rhf       = -150.78104113   #TEST
+OOH_frozen_bend_rhf      = -150.78628057   #TEST
+HOOH_frozen_dihedral_rhf = -150.78667424   #TEST
+
+set {
+  diis false
+  basis cc-pvdz
+}
+
+# Constrained minimization with O-H bonds frozen.
+molecule {
+  H
+  O 1 0.90
+  O 2 1.40 1 100.0 
+  H 3 0.90 2 100.0 1 115.0
+}
+
+set optking {
+  frozen_distance = ("
+    1  2
+    3  4
+  ")
+}
+thisenergy = optimize('scf')
+compare_values(OH_frozen_stre_rhf , thisenergy, 7, "Int. Coord. RHF opt of HOOH with O-H frozen, energy")  #TEST
+
+# Constrained minimization with O-O-H angles frozen.
+molecule {
+  H
+  O 1 0.90
+  O 2 1.40 1 100.0
+  H 3 0.90 2 100.0 1 115.0
+}
+
+set optking {
+  frozen_distance = ""  # here, it's been previous used, so must be blanked
+  frozen_bend = ("
+    1 2 3
+    2 3 4
+  ")
+}
+thisenergy = optimize('scf')
+compare_values(OOH_frozen_bend_rhf , thisenergy, 7, "Int. Coord. RHF opt of HOOH with O-O-H frozen, energy") #TEST
+
+# Constrained minimization with H-O-O-H dihedral frozen.
+molecule {
+  H
+  O 1 0.90
+  O 2 1.40 1 100.0
+  H 3 0.90 2 100.0 1 115.0
+}
+
+set optking {
+  frozen_distance = ""   # here, it's been previous used, so must be blanked
+  frozen_bend =     ""
+  frozen_dihedral = ("
+    1 2 3 4
+  ")
+}
+thisenergy = optimize('scf')
+compare_values(HOOH_frozen_dihedral_rhf , thisenergy, 7, "Int. Coord. RHF opt of HOOH with H-O-O-H frozen, energy") #TEST
+

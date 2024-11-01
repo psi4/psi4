@@ -1,0 +1,44 @@
+#! RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = length, omega=
+#! (589 355 nm)
+
+molecule h2o2 {
+  0 1
+  O
+  O 1 1.39
+  H 1 0.94 2 102.3
+  H 2 0.94 1 102.3 3 -50.0
+}
+
+set {
+  basis "cc-pVDZ"
+  freeze_core true
+  gauge length
+  omega [589, 355, nm]
+}
+
+wfn = properties('cc2',properties=['rotation'], return_wfn=True)[1]
+
+refnre = 38.2539685310425384                      # TEST
+refscf = -150.7791838721300337                    # TEST
+refcc2 = -151.162473712298407                     # TEST
+refoverlap = 0.89784269438                        # TEST
+ref589tensor = psi4.core.Matrix.from_list(        # TEST
+   [[0.158728294540701,  -0.066346094594991, 0],  # TEST
+    [-0.272773167750650, -0.014108130360913, 0],  # TEST
+    [0, 0, -0.127667932425137]])                  # TEST
+ref589rot = -83.11386                             # TEST
+ref355tensor = psi4.core.Matrix.from_list(        # TEST
+   [[0.279315257113958, -0.123252236365767, 0],   # TEST
+    [-0.488104244073309, -0.028164898177789, 0],  # TEST
+    [0, 0, -0.221999666122911]])                  # TEST
+ref355rot = -237.12775                            # TEST
+
+compare_values(refnre, h2o2.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refcc2, wfn.variable("CC2 TOTAL ENERGY"), 6, "CC2 Energy") # TEST
+compare_values(refoverlap, wfn.variable("LEFT-RIGHT CC2 EIGENVECTOR OVERLAP"), 5, "Left-Right CC2 Overlap") # TEST
+compare_values(ref589tensor, wfn.variable("CC2 OPTICAL ROTATION TENSOR (LEN) @ 589NM"), 5, "Optical Rotation Tensor (589nm)") # TEST
+compare_values(ref589rot, variable("CC2 SPECIFIC ROTATION (LEN) @ 589NM"), 5, "Specific Rotation (589nm)") # TEST
+compare_values(ref355tensor, wfn.variable("CC2 OPTICAL ROTATION TENSOR (LEN) @ 355NM"), 5, "Optical Rotation Tensor (355nm)") # TEST
+compare_values(ref355rot, variable("CC2 SPECIFIC ROTATION (LEN) @ 355NM"), 5, "Specific Rotation (355nm)") # TEST
+

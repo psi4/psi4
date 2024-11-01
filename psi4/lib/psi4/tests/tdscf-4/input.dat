@@ -1,0 +1,38 @@
+#! td-wb97x singlet excitation energies of methylene (tda)
+
+rhf_wB97X_TDA_cc_pvdz = [0.24888846143844873,
+                         0.3136260679219220,
+                         0.34848280029565865,
+                         0.41301093564098723,
+                         0.4563016375242363,
+                         0.5822268659394665,
+                         0.7192503897441206,
+                         0.7532949620910153,
+                         0.8325669256159359,
+                         0.8418130551522903]
+
+
+molecule water{
+0 1
+
+O           0.000000    0.000000    0.135446
+H          -0.000000    0.866812   -0.541782
+H          -0.000000   -0.866812   -0.541782
+symmetry c1
+}
+
+set {
+    reference rhf
+    scf_type pk
+    e_convergence 8
+    d_convergence 8
+}
+
+set TDSCF_STATES [10]
+set TDSCF_TDA true
+
+energy('td-wB97X/cc-pvdz')
+
+for n, ref in enumerate(rhf_wB97X_TDA_cc_pvdz):
+    ex_en = psi4.variable(f"TD-wB97X ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")
+    compare_values(ref,ex_en, 4, f"TD-wB97X/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")

@@ -1,0 +1,23 @@
+#! CCSDT cc-pVDZ energy for the H2O molecule using MRCC
+
+
+molecule h2o {
+    o
+    h 1 1.0
+    h 1 1.0 2 104.5
+}
+
+set {
+    basis cc-pvdz
+    freeze_core true
+    qc_module mrcc
+}
+
+energy('ccsdt')
+
+compare_values(  8.801465529972, variable("NUCLEAR REPULSION ENERGY"), 6, 'NRE')  #TEST
+compare_values(-76.021418445155, variable("SCF TOTAL ENERGY"), 6, 'SCF')  #TEST
+compare_values( -0.204692406830, variable("MP2 CORRELATION ENERGY") , 6, 'MP2 correlation')  #TEST
+compare_values( -0.217715210258, variable("CCSDT CORRELATION ENERGY"), 6, 'CCSDT correlation')  #TEST
+compare_values(-76.239133655413, variable("CURRENT ENERGY"), 6, 'CCSDT')  #TEST
+

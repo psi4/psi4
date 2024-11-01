@@ -1,0 +1,107 @@
+#! SCF STO-3G finite-differences frequencies from gradients for H2O
+import numpy as np
+
+molecule h2o {
+  symmetry c1
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set {
+  basis sto-3g
+  d_convergence 11
+  scf_type pk
+}
+
+findif_numbers_w_rproj = [7, 13, 6, 5, 2, 11]
+findif_numbers_wo_rproj = [13, 25, 9, 5, 3, 17]
+# since distributed driver assumes non-eq for caution's sake, have to assert projection or pass gradient so findif numbers match
+#set fd_project on
+#findif_numbers = findif_numbers_w_rproj
+# -or-
+#findif_numbers = findif_numbers_wo_rproj
+# -or-
+scf_g = gradient('scf')
+findif_numbers = findif_numbers_w_rproj
+
+# Test against analytic second derivatives
+anal_freqs = np.array([2170.0460, 4140.0021, 4391.0669])  #TEST
+a1_freqs, b2_freqs = np.split(anal_freqs, [2])              #TEST
+
+# Frequencies by 3-pt formula in C1 point group.
+set { points 3 }
+set findif {print 3}
+
+scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True, ref_gradient=scf_g)
+fd_freqs = scf_wfn.frequencies().to_array()   #TEST
+compare(findif_numbers[0], variable('findif number'), '3-point stencil points')  #TEST
+compare_values(anal_freqs, fd_freqs,  #TEST
+ "Analytic vs. Finite-difference (3-pt.) frequencies from energies to 0.1 cm^-1 (C1) ", atol=1.e-1)  #TEST
+
+# Frequencies by 5-pt formula in C1 point group.
+set fd_project on  # see note above
+set { points 5 }
+
+scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)
+fd_freqs = scf_wfn.frequencies().to_array()                                               #TEST
+compare(findif_numbers[1], variable('findif number'), '5-point stencil points')           #TEST
+compare_values(anal_freqs, fd_freqs,                                                      #TEST
+ "Analytic vs. Finite-difference (5-pt.) frequencies from energies to 0.001 cm^-1 (C1) ", atol=1.e-3) #TEST
+
+clean()
+
+# Frequencies by 3-pt formula in C2v.
+molecule h2o {
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set { points 3 }
+
+scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)
+fd_freqs = scf_wfn.frequencies().to_array()                                               #TEST
+compare(findif_numbers[2], variable('findif number'), '3-point stencil points')           #TEST
+compare_values(anal_freqs, fd_freqs,                                                      #TEST
+ "Analytic vs. Finite-difference (3-pt.) frequencies from energies to 0.1 cm^-1 (C2v) ", atol=1.e-1)  #TEST
+
+scf_vibinfo = scf_wfn.frequency_analysis
+scf_vibonly = qcdb.vib.filter_nonvib(scf_vibinfo)
+ref_a1_vibonly = qcdb.vib.filter_nonvib(scf_vibonly, remove=[i for i, d in enumerate(scf_vibonly['gamma'].data) if d != 'A1'])
+ref_b2_vibonly = qcdb.vib.filter_nonvib(scf_vibonly, remove=[i for i, d in enumerate(scf_vibonly['gamma'].data) if d != 'B2'])
+
+# Compute A1 frequencies only.
+scf_e, scf_wfn = frequencies('scf', dertype=1, irrep=1, return_wfn=True)
+fd_freqs = scf_wfn.frequencies().to_array()               #TEST
+compare(findif_numbers[3], variable('findif number'), '3-point stencil points')  #TEST
+compare_values(a1_freqs, fd_freqs,         #TEST
+ "Analytic vs. 3-pt finite-diff A1 freq from grad to 0.1 cm^-1", atol=1.e-1) #TEST
+
+a1_vibinfo = scf_wfn.frequency_analysis
+a1_vibonly = qcdb.vib.filter_nonvib(a1_vibinfo)
+compare(1, qcdb.compare_vibinfos(ref_a1_vibonly, a1_vibonly, 2, 'A1 analyses', verbose=0, forgive=[]), 'A1 analyses')
+
+# Compute B2 frequency only.
+scf_e, scf_wfn = frequencies('scf', dertype=1, irrep=4, return_wfn=True)
+fd_freqs = scf_wfn.frequencies().to_array()               #TEST
+compare(findif_numbers[4], variable('findif number'), '3-point stencil points')  #TEST
+compare_values(b2_freqs, fd_freqs,          #TEST
+ "Analytic vs. 3-pt finite-diff B2 freq from grad to 0.1 cm^-1", atol=1.e-1) #TEST
+
+b2_vibinfo = scf_wfn.frequency_analysis
+b2_vibonly = qcdb.vib.filter_nonvib(b2_vibinfo)
+compare(1, qcdb.compare_vibinfos(ref_b2_vibonly, b2_vibonly, 2, 'B2 analyses', verbose=0, forgive=[]), 'B2 analyses')
+
+# Compute all frequencies with 5-point formula.
+set findif { points 5 }
+set hessian_write on
+set normal_modes_write on
+
+scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)
+fd_freqs = scf_wfn.frequencies().to_array()               #TEST
+compare(findif_numbers[5], variable('findif number'), '5-point stencil points')  #TEST
+compare_values(anal_freqs, fd_freqs,       #TEST
+ "Analytic vs. 5-pt finite-diff freq from grad to 0.001 cm^-1", atol=1.e-3) #TEST
+
+clean()

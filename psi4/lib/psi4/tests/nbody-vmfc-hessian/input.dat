@@ -1,0 +1,79 @@
+#! Computation of VMFC-corrected water trimer Hessian (geometry from J. Chem. Theory Comput. 11, 2126-2136 (2015))
+
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
+import numpy as np
+
+molecule water_trimer {
+O      -2.76373224  -1.24377706  -0.15444566
+H      -1.12357791  -2.06227970  -0.05243799
+H      -3.80792362  -2.08705525   1.06090407
+--
+O       2.46924614  -1.75437739  -0.17092884
+H       3.76368260  -2.21425403   1.00846104
+H       2.30598330   0.07098445  -0.03942473
+--
+O       0.29127930   3.00875625   0.20308515
+H      -1.21253048   1.95820900   0.10303324
+H       0.10002049   4.24958115  -1.10222079
+no_reorient
+no_com
+symmetry c1
+units bohr
+}
+
+if distributed:
+    plan = psi4.hessian('SCF/STO-3G', molecule=water_trimer, bsse_type='vmfc', max_nbody=2,
+                                      return_total_data=True, return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    h, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    h, wfn = psi4.hessian('SCF/STO-3G', molecule=water_trimer, bsse_type='vmfc', max_nbody=2,
+                                      return_total_data=True, return_wfn=True)
+core.clean()
+
+vmfc_scheme = {'((1, 2), (1, 2))': 1, '((1, 3), (1, 3))': 1, '((2, 3), (2, 3))': 1, #TEST
+               '((1,), (1, 2))': -1, '((1,), (1, 3))': -1, '((2,), (1, 2))': -1, #TEST
+               '((2,), (2, 3))': -1, '((3,), (1, 3))': -1, '((3,), (2, 3))': -1, #TEST
+               '((1,), (1,))': 1, '((2,), (2,))': 1, '((3,), (3,))': 1} #TEST
+
+energy_dict, hessian_dict = {}, {} #TEST
+for i in vmfc_scheme: #TEST
+    mol = water_trimer.extract_subsets(eval(i)[0], list(set(eval(i)[1]) - set(eval(i)[0]))) #TEST
+    hessian_dict[i], wfn_mol = hessian('SCF/STO-3G', molecule=mol, return_wfn=True) #TEST
+    energy_dict[i] = core.variable('CURRENT ENERGY') #TEST
+    core.clean() #TEST
+
+    compare_values(energy_dict[i], wfn.variables()["1_"+i], 8, 'Energy of %s' %i) #TEST
+    compare_arrays(hessian_dict[i], wfn.variables()['HESSIAN %s' %"1_"+i], 2.e-8, 'Hessian of %s' %i) #TEST
+
+ene, hess = 0, np.zeros((9*3, 9*3)) #TEST
+
+for i in vmfc_scheme: #TEST
+    ene += vmfc_scheme[i] * energy_dict[i] #TEST
+
+compare_values(ene, wfn.variables()['2'], 8, 'VMFC-Corrected Energy') #TEST
+
+for i in range(3): #TEST
+    key = '((%i,), (%i,))' %(i + 1, i + 1) #TEST
+    hess[i*3*3: i*3*3 + 3*3, i*3*3: i*3*3 + 3*3] += vmfc_scheme.pop(key) * np.array(hessian_dict[key]) #TEST
+
+for key in vmfc_scheme: #TEST
+    i, j = eval(key)[1][0]-1, eval(key)[1][1]-1 #TEST
+    index = [] #TEST
+    for ind in range(9): #TEST
+        index.append(i*3*3+ind) #TEST
+    for ind in range(9): #TEST
+        index.append(j*3*3+ind) #TEST
+
+    hess[np.ix_(index, index)] += vmfc_scheme[key] * np.array(hessian_dict[key]) #TEST
+
+compare_arrays(hess, wfn.variables()['HESSIAN 2'], 2.e-8, 'VMFC-Corrected Hessian') #TEST
+
+if distributed:
+    snowflake.stop()

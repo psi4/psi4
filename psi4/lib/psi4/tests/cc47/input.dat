@@ -1,0 +1,68 @@
+#! EOM-CCSD/cc-pVDZ on H2O2 with two excited states in each irrep
+
+molecule h2o2 {
+  0 1
+  O
+  O 1 1.39
+  H 1 0.94 2 102.3
+  H 2 0.94 1 102.3 3 -50.0
+}
+
+set {
+  basis cc-pVDZ
+  freeze_core true
+  roots_per_irrep [2, 2]
+}
+
+wfn = properties('eom-ccsd', properties=['oscillator_strength'], return_wfn=True)[1]
+
+### ccdensity checks
+
+refnre     =   38.2539685310425384 # TEST
+refscf     = -150.7791838721300337 # TEST
+refccsd    = -151.173863088601593  # TEST
+refoverlap =    0.89177313450      # TEST
+
+compare_values(refnre, h2o2.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refccsd, wfn.variable("CCSD TOTAL ENERGY"), 6, "CCSD Energy") # TEST
+compare_values(refoverlap, wfn.variable("LEFT-RIGHT CCSD EIGENVECTOR OVERLAP"), 5, "Left-Right CCSD Overlap") # TEST
+
+### Excitation energy checks
+
+ref1A = -150.917014087692 # TEST
+ref2A = -150.839749395623 # TEST
+ref0B = -150.920333329231 # TEST
+ref1B = -150.839220324206 # TEST
+
+compare_values(ref1A, core.variable("CCSD ROOT 1 (IN A) TOTAL ENERGY"), 6, "Root 1 (A) Energy") # TEST
+compare_values(ref2A, core.variable("CCSD ROOT 2 (IN A) TOTAL ENERGY"), 6, "Root 2 (A) Energy") # TEST
+compare_values(ref0B, core.variable("CCSD ROOT 0 (IN B) TOTAL ENERGY"), 6, "Root 0 (B) Energy") # TEST
+compare_values(ref1B, core.variable("CCSD ROOT 1 (IN B) TOTAL ENERGY"), 6, "Root 1 (B) Energy") # TEST
+
+### Transition checks
+
+test_data = { # TEST
+"ROOT 0 (IN A) -> ROOT 1 (IN A)": {"OSCILLATOR STRENGTH (LEN)": 0.00000959, "ROTATORY STRENGTH (LEN)": -0.00235999, "ROTATORY STRENGTH (VEL)": -0.01856976, "EINSTEIN A (LEN)": 2.03327968e+04, "EINSTEIN B (LEN)": 6.81576506e+15}, # TEST
+"ROOT 0 (IN A) -> ROOT 2 (IN A)": {"OSCILLATOR STRENGTH (LEN)": 0.00791943, "ROTATORY STRENGTH (LEN)": 0.03979079, "ROTATORY STRENGTH (VEL)": 0.06687793, "EINSTEIN A (LEN)": 2.84049064e+07, "EINSTEIN B (LEN)": 4.32575255e+18}, # TEST
+"ROOT 0 (IN A) -> ROOT 0 (IN B)": {"OSCILLATOR STRENGTH (LEN)": 0.00193778, "ROTATORY STRENGTH (LEN)": -0.00497666, "ROTATORY STRENGTH (VEL)": -0.02805168, "EINSTEIN A (LEN)": 4.00196876e+06, "EINSTEIN B (LEN)": 1.39488368e+18}, # TEST
+"ROOT 0 (IN A) -> ROOT 1 (IN B)": {"OSCILLATOR STRENGTH (LEN)": 0.01015988, "ROTATORY STRENGTH (LEN)": 0.07672659, "ROTATORY STRENGTH (VEL)": 0.15161748, "EINSTEIN A (LEN)": 3.65563227e+07, "EINSTEIN B (LEN)": 5.54075974e+18}, # TEST
+"ROOT 1 (IN A) -> ROOT 2 (IN A)": {"OSCILLATOR STRENGTH (LEN)": 0.00001783, "ROTATORY STRENGTH (LEN)": -0.00021385, "ROTATORY STRENGTH (VEL)": -0.00039280, "EINSTEIN A (LEN)": 3.42020116e+03, "EINSTEIN B (LEN)": 4.21172056e+16}, # TEST
+"ROOT 0 (IN B) -> ROOT 1 (IN A)": {"OSCILLATOR STRENGTH (LEN)": 0.00152626, "ROTATORY STRENGTH (LEN)": 0.00407490, "ROTATORY STRENGTH (VEL)": 0.69670461, "EINSTEIN A (LEN)": 5.40278023e+02, "EINSTEIN B (LEN)": 8.39173700e+19}, # TEST
+"ROOT 0 (IN B) -> ROOT 2 (IN A)": {"OSCILLATOR STRENGTH (LEN)": 0.01290715, "ROTATORY STRENGTH (LEN)": 0.17444922, "ROTATORY STRENGTH (VEL)": 0.20465266, "EINSTEIN A (LEN)": 2.69301045e+06, "EINSTEIN B (LEN)": 2.92310074e+19}, # TEST
+"ROOT 1 (IN A) -> ROOT 1 (IN B)": {"OSCILLATOR STRENGTH (LEN)": 0.01441595, "ROTATORY STRENGTH (LEN)": -0.11154800, "ROTATORY STRENGTH (VEL)": -0.14958696, "EINSTEIN A (LEN)": 2.80313304e+06, "EINSTEIN B (LEN)": 3.38189794e+19}, # TEST
+"ROOT 2 (IN A) -> ROOT 1 (IN B)": {"OSCILLATOR STRENGTH (LEN)": 0.00019032, "ROTATORY STRENGTH (LEN)": 0.00874679, "ROTATORY STRENGTH (VEL)": 2.69517364, "EINSTEIN A (LEN)": 1.71165913e+00, "EINSTEIN B (LEN)": 6.56486069e+19}, # TEST
+"ROOT 0 (IN B) -> ROOT 1 (IN B)": {"OSCILLATOR STRENGTH (LEN)": 0.00682565, "ROTATORY STRENGTH (LEN)": 0.00171647, "ROTATORY STRENGTH (VEL)": 0.00117642, "EINSTEIN A (LEN)": 1.44289985e+06, "EINSTEIN B (LEN)": 1.53573347e+19} # TEST
+}
+
+for transition, data in test_data.items(): # TEST
+    for property, value in data.items(): # TEST
+        # Change these numbers to 6 ASAP # TEST
+        if "EINSTEIN" not in property: # TEST
+            compare_values(value, wfn.variable(f"CC {transition} {property}"), 4, f"CC {transition} {property}") # TEST
+            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), 4, f"CCSD {transition} {property}") # TEST
+        else: # TEST
+            # Large numbers need "special" testing. # TEST
+            compare_values(value, wfn.variable(f"CC {transition} {property}"), f"CC {transition} {property}", atol=1e-6, rtol=1e-4) # TEST
+            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), f"CCSD {transition} {property}", atol=1e-6, rtol=1e-4) # TEST
+

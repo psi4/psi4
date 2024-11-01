@@ -1,0 +1,46 @@
+#! DFT integral algorithms test, performing w-B97 RKS and UKS computations on water and its cation,
+#! using all of the different integral algorithms.  This tests both the ERI and ERF integrals.
+
+Er    = -75.318545          #TEST
+Er_df = -75.319995          #TEST
+r_ref = [Er, Er, Er, Er_df] #TEST
+Eu    = -74.970922          #TEST
+Eu_df = -74.972318          #TEST
+u_ref = [Eu, Eu, Eu, Eu_df] #TEST
+
+algorithms = ["PK", "OUT_OF_CORE", "DIRECT", "DF"]
+
+molecule h2o {
+    0 1
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+}
+
+set {
+  basis sto-3g
+  dft_spherical_points 302
+  dft_radial_points 99
+  df_basis_scf cc-pvdz-ri
+}
+
+for n,algorithm in enumerate(algorithms):
+    set scf_type $algorithm
+    E = energy('wB97')
+    compare_values(r_ref[n], E, 5, "Closed-shell wB97 Energy (%s)" % algorithm) #TEST
+
+molecule h2op {
+    1 2
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+}
+
+set basis sto-3g
+set reference uks
+
+for n, algorithm in enumerate(algorithms):
+    set scf_type $algorithm
+    E = energy('wB97')
+    compare_values(u_ref[n], E, 5, "Open-shell wB97 Energy (%s)" % algorithm) #TEST
+

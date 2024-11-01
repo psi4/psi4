@@ -1,0 +1,48 @@
+#! DC-06 calculation for the O2 molecule (triplet ground state). This performs 
+#! geometry optimization using two-step and simultaneous solution of the 
+#! response equations for the analytic gradient.
+
+refnuc      =  27.478313787659303 #TEST
+refuhf      = -149.65205193206810  #TEST
+refmp2      = -150.010998656654920  #TEST
+refdctscf  = -149.247794280025289 #TEST
+refdct     = -150.022793786295580  #TEST
+
+molecule O2 {
+0 3
+O
+O 1 R
+R = 1.230
+}
+
+set {
+    r_convergence            10
+    algorithm                twostep
+    response_algorithm       twostep
+    basis                    dzp
+    max_disp_g_convergence   1e-6
+    rms_force_g_convergence  1e-6
+    max_energy_g_convergence 1e-6
+    reference                uhf
+}
+
+set dct_functional dc-06
+optimize('dct')
+
+compare_values(refnuc, O2.nuclear_repulsion_energy(), 5, "Nuclear Repulsion Energy")                       #TEST
+compare_values(refuhf, variable("SCF TOTAL ENERGY"), 6, "UHF Energy");                                 #TEST
+compare_values(refmp2, variable("MP2 TOTAL ENERGY"), 6, "MP2 Energy");                                       #TEST
+compare_values(refdctscf, variable("DCT SCF ENERGY"), 6, "DC-06 SCF Energy (two-step response)");     #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), 6, "DC-06 Energy (two-step response)");                #TEST
+
+set response_algorithm simultaneous
+O2.R = 1.232
+
+optimize('dct')
+
+compare_values(refnuc, O2.nuclear_repulsion_energy(), 5, "Nuclear Repulsion Energy")                       #TEST
+compare_values(refuhf, variable("SCF TOTAL ENERGY"), 6, "UHF Energy");                                 #TEST
+compare_values(refmp2, variable("MP2 TOTAL ENERGY"), 6, "MP2 Energy");                                       #TEST
+compare_values(refdctscf, variable("DCT SCF ENERGY"), 6, "DC-06 SCF Energy (simultaneous response)"); #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), 6, "DC-06 Energy (simultaneous response)");            #TEST
+
