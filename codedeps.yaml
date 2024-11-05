@@ -403,7 +403,7 @@ data:
         linux-64: "=*=*mkl"
         osx-64: "=*=*mkl"
         osx-arm64: "=*=*accelerate"
-        win-64: "=2024.1*=*mkl"
+        win-64: "=*=24*mkl"
       aux_build_names:
         - blas-devel
       aux_build_names_note:
