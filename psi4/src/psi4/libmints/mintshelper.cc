@@ -2487,14 +2487,14 @@ SharedMatrix MintsHelper::embpot_grad(SharedMatrix D) {
 #  error "unknown value of macro psi4_SHGSHELL_ORDERING"
 #endif
 
-        double phi[nP*npoints] = {0};
-        double phi_x[nP*npoints] = {0};
-        double phi_y[nP*npoints] = {0};
-        double phi_z[nP*npoints] = {0};
+        std::vector<double> phi(nP*npoints, 0.0);
+        std::vector<double> phi_x(nP*npoints, 0.0);
+        std::vector<double> phi_y(nP*npoints, 0.0);
+        std::vector<double> phi_z(nP*npoints, 0.0);
 
         gg_collocation_deriv1(L, npoints, xyz.data(), 3,
                               nprim, norm, alpha, center.data(), order,
-                              phi, phi_x, phi_y, phi_z);
+                              phi.data(), phi_x.data(), phi_y.data(), phi_z.data());
 
         for (int Q = 0; Q < basisset_->nshell(); Q++) {
             const GaussianShell& Qshell = basisset_->shell(Q);
@@ -2511,11 +2511,11 @@ SharedMatrix MintsHelper::embpot_grad(SharedMatrix D) {
             center[1] = temp[1];
             center[2] = temp[2];
 
-            double phi[nQ*npoints] = {0};
+            std::vector<double> phi(nQ*npoints, 0.0);
 
             gg_collocation(L, npoints, xyz.data(), 3,
                            nprim, norm, alpha, center.data(), order,
-                           phi);
+                           phi.data());
     
             // Loop over points in EMBPOT
             for (int k = 0; k < npoints; k++) {
