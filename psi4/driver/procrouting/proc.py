@@ -1493,6 +1493,15 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         sapgau = core.BasisSet.build(wfn.molecule(), "SAPGAU_BASIS", core.get_global_option("SAPGAU_BASIS"))
         wfn.set_basisset("SAPGAU", sapgau)
 
+    if 'permanent_potential' in kwargs:
+        potential_matrix = kwargs["permanent_potential"]
+        if isinstance(potential_matrix, np.ndarray):
+            potential_matrix = core.Matrix.from_array(potential_matrix)
+        elif not isinstance(potential_matrix, core.Matrix):
+            raise ValidationError("Argument of 'permanent_potential' keyword has unrecognized type '%s', " %
+                                  type(potential_matrix) + "please provide a 'psi4.core.Matrix' or 'numpy.ndarray' object.")
+        wfn.set_permanent_potential(potential_matrix)
+
     if hasattr(core, "EXTERN") and 'external_potentials' in kwargs:
         core.print_out("\n  Warning! Both an external potential EXTERN object and the external_potential" +
                        " keyword argument are specified. The external_potentials keyword argument will be ignored.\n")

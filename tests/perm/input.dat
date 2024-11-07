@@ -1,0 +1,55 @@
+#! External potential calculation involving a TIP3P water and a QM water.
+#! Gradient on the external charges is compared to gradient on the QM atoms to validate the gradient on the charges.
+
+molecule water {
+  0 1
+  O  -0.778803000000  0.000000000000  1.132683000000
+  H  -0.666682000000  0.764099000000  1.706291000000
+  H  -0.666682000000  -0.764099000000  1.706290000000
+  symmetry c1
+  no_reorient
+  no_com
+}
+# Define a TIP3P water as the external potential
+import numpy as np
+external_potentials = np.array([
+-0.834,1.649232019048,0.0,-2.356023604706,
+0.417,0.544757019107,0.0,-3.799961446760,
+0.417,0.544757019107,0.0,-0.912085762652]).reshape((-1, 4))
+# convert coordinates columns to bohr
+external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
+
+set {
+    scf_type df
+    d_convergence 12
+    basis 6-31G*
+}
+
+# Calculate the total gradient on the wavefunction in the presence of the external potential charges.
+e_analytic = energy('scf', molecule=water, external_potentials=external_potentials)
+
+extern = core.ExternalPotential()
+for point_charge in external_potentials:
+    extern.addCharge(*point_charge.tolist())
+basis = core.BasisSet.build(
+    water,
+    "ORBITAL",
+    "6-31G*",
+)
+potential = extern.computePotentialMatrix(basis)
+
+# Calculate the nuclear contributions to the energy and gradient on
+# the wavefunction in the presence of the external potential charges.
+e_nuc = 0
+for atom in range(water.natom()):
+    for charge in external_potentials:
+        r = np.array(
+            [water.x(atom) - charge[1],
+             water.y(atom) - charge[2],
+             water.z(atom) - charge[3]],
+        )
+        e_nuc += charge[0] * water.Z(atom) / np.linalg.norm(r)
+
+e_perm = energy('scf', molecule=water, permanent_potential=potential)
+
+compare_values(e_analytic, e_perm + e_nuc, 6, "Energy with 'external_potentials' vs. 'permanent_potential' keyword")  #TEST

@@ -80,7 +80,7 @@ foreach(test_name aediis-1
                   opt11 opt12 opt13 opt14 opt15 opt16 opt-irc-1 opt-irc-2 opt-irc-3
                   opt-freeze-coords opt-full-hess-every
                   oremp-grad1 oremp-grad2
-                  phi-ao
+                  phi-ao perm
                   props1 props2 props3 props4 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2
                   psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-fd-freq1
                   psimrcc-fd-freq2 psimrcc-pt2 psimrcc-sp1 psithon1 psithon2
