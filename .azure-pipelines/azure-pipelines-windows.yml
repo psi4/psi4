@@ -142,7 +142,7 @@ jobs:
                         pytest=7 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
-                        dftd3-python ^
+                        dftd3-python=0.6.0 ^
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
