@@ -2146,10 +2146,13 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
     }
 
     auto valence_widths = std::make_shared<Matrix>("MBIS Valence Widths", num_atoms, 1);
+    auto valence_charges = std::make_shared<Matrix>("MBIS Valence Charges", num_atoms, 1);
     for (int atom = 0; atom < num_atoms; atom++) {
         valence_widths->set(atom, 0, Sai[atom][mA[atom] - 1]);
+        valence_charges->set(atom, 0, -Nai[atom][mA[atom] - 1]);
     }
     wfn_->set_array_variable("MBIS VALENCE WIDTHS", valence_widths);
+    wfn_->set_array_variable("MBIS VALENCE CHARGES", valence_charges);
 
     // Compute the volume widths, only for molecules
     bool free_atom = (num_atoms == 1);
@@ -2186,6 +2189,15 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
             outfile->Printf("  %5d      %2s %4d   %9.6f\n", a + 1, mol->label(a).c_str(), static_cast<int>(mol->Z(a)),
                             valence_widths->get(a, 0));
         }
+
+        outfile->Printf("\n\n  MBIS Valence Charges: (a.u.)\n");
+        outfile->Printf("   Center  Symbol  Z     Charge\n");
+
+        for (int a = 0; a < num_atoms; a++) {
+            outfile->Printf("  %5d      %2s %4d   %9.6f\n", a + 1, mol->label(a).c_str(), static_cast<int>(mol->Z(a)),
+                            valence_charges->get(a, 0));
+        }
+
         if (free_atom_volumes) {
             if (free_atom == false) {
                 outfile->Printf("\n\n  MBIS Volume Ratios: \n");
