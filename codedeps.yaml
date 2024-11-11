@@ -305,7 +305,11 @@ data:
     conda:
       channel: conda-forge
       name: dftd3-python
-      constraint: ">=1.0"
+      constraint:
+        linux-64: ">=1.0"
+        osx-64: ">=1.0"
+        osx-arm64: ">=1.0"
+        win-64: "<1.2"
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
