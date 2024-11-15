@@ -148,9 +148,12 @@ no_com
             "scf_type": "df",
             "guess": "sad",
             "freeze_core": "true",
+            "sapt_dft_grac_shift_a": 0.1307,
+            "sapt_dft_grac_shift_b": 0.1307,
         }
     )
-    psi4.energy("fisapt0", external_potentials={"C": Chargefield_C})
+    # psi4.energy("fisapt0", external_potentials={"C": Chargefield_C})
+    psi4.energy("sapt(dft)", external_potentials={"C": Chargefield_C})
     for key, value in fisapt0_external_potential_energies.items():
         compare_values(
             value,

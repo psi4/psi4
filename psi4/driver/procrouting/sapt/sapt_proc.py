@@ -56,7 +56,6 @@ def run_sapt_dft(name, **kwargs):
     # Alter default algorithm
     if not core.has_global_option_changed("SCF_TYPE"):
         core.set_global_option("SCF_TYPE", "DF")
-
     core.prepare_options_for_module("SAPT")
 
     # Grab overall settings
@@ -174,8 +173,13 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option('DF_INTS_IO', 'SAVE')
         core.timer_on("SAPT(DFT):Dimer SCF")
         hf_data = {}
+        hf_sapt_dimer = sapt_dimer.clone()
+        hf_sapt_dimer.reset_point_group('c1')
+        hf_sapt_dimer.fix_orientation(False)
+        hf_sapt_dimer.fix_com(False)
+
         hf_wfn_dimer = scf_helper(
-            "SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs
+            "SCF", molecule=hf_sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs
         )
         hf_data["HF DIMER"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT):Dimer SCF")
@@ -365,6 +369,7 @@ def run_sapt_dft(name, **kwargs):
         data=data,
         print_header=False,
         delta_hf=delta_hf,
+        external_potentials = kwargs.get("external_potentials", None),
     )
 
     # Copy data back into globals
@@ -535,6 +540,7 @@ def sapt_dft(
     print_header=True,
     cleanup_jk=True,
     delta_hf=False,
+    external_potentials=None,
 ):
     """
     The primary SAPT(DFT) algorithm to compute the interaction energy once the wavefunctions have been built.
