@@ -1,7 +1,10 @@
-import pytest 
+import pytest
 import psi4
 from qcelemental import constants
 from psi4 import compare_values
+import numpy as np
+import qcelemental as qcel
+from pprint import pprint as pp
 
 hartree_to_kcalmol = constants.conversion_factor("hartree", "kcal/mol")
 pytestmark = [pytest.mark.psi, pytest.mark.api]
@@ -95,5 +98,68 @@ units angstrom
     return
 
 
+@pytest.mark.saptdft
+def test_saptdft_external_potential():
+    mol_trimer = psi4.geometry(
+        """
+0 1
+O   0.017225   0.031664   0.004802
+H  -0.046691  -0.052504   0.962436
+H   0.972017   0.055307  -0.185622
+--
+0 1
+O   2.516175   0.894012  -1.014512
+H   1.942080   1.572902  -1.410984
+H   3.056412   0.561271  -1.739079
+symmetry c1
+no_reorient
+no_com
+    """
+    )
+    fisapt0_external_potential_energies = {
+        "SAPT ELST ENERGY": -0.01581004514947182,
+        "SAPT ELST10,R ENERGY": -0.01581004514947182,
+        "SAPT EXCH ENERGY": 0.012282520736587468,
+        "SAPT IND ENERGY": -0.0035613061462424402,
+        "SAPT DISP ENERGY": -0.002185724589094623,
+        "SAPT TOTAL ENERGY": -0.009274555148221415,
+    }
+    # External potential containing the third water from the trimer with TIP3P charges
+    Chargefield_C = np.array(
+        [
+            -0.834,
+            0.179217,
+            2.438389,
+            -1.484606,
+            0.417,
+            -0.194107,
+            1.702697,
+            -0.966751,
+            0.417,
+            -0.426657,
+            2.563754,
+            -2.222683,
+        ]
+    ).reshape((-1, 4))
+    Chargefield_C[:, [1, 2, 3]] /= qcel.constants.bohr2angstroms
+    psi4.set_options(
+        {
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+        }
+    )
+    psi4.energy("fisapt0", external_potentials={"C": Chargefield_C})
+    for key, value in fisapt0_external_potential_energies.items():
+        compare_values(
+            value,
+            psi4.core.variable(key),
+            8,
+            key,
+        )
+    return
+
+
 if __name__ == "__main__":
-    test_saptdft_auto_grac_iterative()
+    test_saptdft_external_potential()
