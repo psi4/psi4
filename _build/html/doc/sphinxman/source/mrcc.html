@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Interface to MRCC by M. K|a_acute|llay &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="interface-to-mrcc-by-m-ka-acutellay">
+<span id="sec-mrcc"></span><span id="index-0"></span><h1>Interface to MRCC by M. K<a href="#id6"><span class="problematic" id="id7">|a_acute|</span></a>llay<a class="headerlink" href="#interface-to-mrcc-by-m-ka-acutellay" title="Link to this heading">¶</a></h1>
+<p><em>Module:</em> <span class="xref std std-ref">Keywords</span>, <span class="xref std std-ref">PSI Variables</span>, <a href="#id1"><span class="problematic" id="id2">:source:`MRCC &lt;psi4/src/psi4/mrcc&gt;`</span></a>, <span class="xref std std-ref">Samples</span></p>
+<p><a href="#id8"><span class="problematic" id="id9">|PSIfour|</span></a> contains code to interface to the MRCC program of M. K<a href="#id10"><span class="problematic" id="id11">|a_acute|</span></a>llay
+and J. Gauss.  The license and source code of the MRCC program must be
+obtained from Mih<a href="#id12"><span class="problematic" id="id13">|a_acute|</span></a>ly K<a href="#id14"><span class="problematic" id="id15">|a_acute|</span></a>llay (<a class="reference external" href="https://www.mrcc.hu/">https://www.mrcc.hu/</a>).</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p>Follow the instructions provided with the source to build the MRCC programs.
+To be used by <a href="#id16"><span class="problematic" id="id17">|PSIfour|</span></a>, ensure that the program binary (<code class="docutils literal notranslate"><span class="pre">dmrcc</span></code>) can be
+found in your <span class="target" id="index-1"></span><a class="reference internal" href="external.html#envvar-PATH"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PATH</span></code></a>. If <a href="#id18"><span class="problematic" id="id19">|PSIfour|</span></a> is unable to execute the binary, an
+error will be reported.</p>
+</section>
+<section id="running-mrcc">
+<h2>Running MRCC<a class="headerlink" href="#running-mrcc" title="Link to this heading">¶</a></h2>
+<p>MRCC can be invoked in similar fashion as other theories provided in <a href="#id20"><span class="problematic" id="id21">|PSIfour|</span></a>.
+To indicate MRCC as the target software, set <a href="#id22"><span class="problematic" id="id23">|globals__qc_module|</span></a><code class="docutils literal notranslate"><span class="pre">=MRCC</span></code>.
+This is a change as of October 2022; previously, one prefixed the method by &quot;mr&quot;
+to indicate MRCC (e.g., <code class="docutils literal notranslate"><span class="pre">energy('mrccsdt')</span></code>).
+For example, if you want to obtain the CCSDT energy for water with cc-pVDZ using
+MRCC simply provide the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">h2o</span> <span class="p">{</span>
+     <span class="n">O</span>
+     <span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span>
+     <span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span> <span class="mi">2</span> <span class="mf">104.5</span>
+<span class="p">}</span>
+<span class="nb">set</span> <span class="p">{</span>
+     <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+     <span class="n">qc_module</span> <span class="n">mrcc</span>
+<span class="p">}</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;ccsdt&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">'ccsdt'</span></code> in the call to <code class="xref py py-func docutils literal notranslate"><span class="pre">energy()</span></code> plus <code class="docutils literal notranslate"><span class="pre">qc_module=mrcc</span></code> instructs <a href="#id24"><span class="problematic" id="id25">|PSIfour|</span></a> to first
+perform an RHF calculation and then call MRCC to compute the CCSDT energy.
+Here the <code class="docutils literal notranslate"><span class="pre">qc_module=mrcc</span></code> is optional since <a href="#id26"><span class="problematic" id="id27">|PSIfour|</span></a> has no builtin module
+that can perform CCSDT. For a method like CCSD, no specification of <a href="#id28"><span class="problematic" id="id29">|globals__qc_module|</span></a>
+will default to the CCENERGY module, and specification with value <code class="docutils literal notranslate"><span class="pre">mrcc</span></code> is
+required to route the computation to the MRCC program.
+For a CCSDT(Q) energy, simply use <code class="docutils literal notranslate"><span class="pre">'ccsdt(q)'</span></code> in the call to
+<code class="xref py py-func docutils literal notranslate"><span class="pre">energy()</span></code>. MRCC can be used to perform geometry optimization and
+frequency calculations for electronic ground states only.</p>
+<p>At this time, <a href="#id30"><span class="problematic" id="id31">|PSIfour|</span></a> is only able to automatically generate the proper
+input file for MRCC for the methods listed in table below.
+To utilize any method described in the table, you can call it directly
+For other methods, you will be required to
+use the MRCC keywords described in Appendix <span class="xref std std-ref">apdx:mrcc</span>.
+Perturbative methods (<code class="docutils literal notranslate"><span class="pre">ccsd(t)</span></code>, <code class="docutils literal notranslate"><span class="pre">ccsdtqp(h)_l</span></code>, etc.)
+are available with <a href="#id32"><span class="problematic" id="id33">|scf__reference|</span></a> ROHF in versions of MRCC published
+at least after July 1, 2014.</p>
+<p>When using ROHF-CCSDT(Q), MRCC will compute and report two variants:
+CCSDT(Q)/A and CCSDT(Q)/B. <a class="reference internal" href="bibliography.html#kallay-2008-144101" id="id3"><span>[Kallay:2008:144101]</span></a> <a href="#id34"><span class="problematic" id="id35">|PSIfour|</span></a> will save both energies but will use
+the CCSDT(Q)/B as the CCSDT(Q) energy. CCSDT(Q)/B has been found to be
+more robust by Martin. <a class="reference internal" href="bibliography.html#martin-2014-785" id="id4"><span>[Martin:2014:785]</span></a></p>
+<blockquote id="table-energy-mrcc">
+<div><table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p><span class="xref std std-term">QC_MODULE</span>=MRCC</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>name</p></th>
+<th class="head"><p>calls method in Kallay's MRCC program <a class="reference internal" href="#sec-mrcc"><span class="std std-ref">[manual]</span></a></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>ccsd</p></td>
+<td><p>CC through doubles <span class="xref std std-ref">[details]</span></p></td>
+</tr>
+<tr class="row-even"><td><p>ccsdt</p></td>
+<td><p>CC through triples</p></td>
+</tr>
+<tr class="row-odd"><td><p>ccsdtq</p></td>
+<td><p>CC through quadruples</p></td>
+</tr>
+<tr class="row-even"><td><p>ccsdtqp</p></td>
+<td><p>CC through quintuples</p></td>
+</tr>
+<tr class="row-odd"><td><p>ccsdtqph</p></td>
+<td><p>CC through sextuples</p></td>
+</tr>
+<tr class="row-even"><td><p>ccsd(t)</p></td>
+<td><p>CC through doubles with perturbative triples <span class="xref std std-ref">[details]</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>ccsdt(q)</p></td>
+<td><p>CC through triples with perturbative quadruples</p></td>
+</tr>
+<tr class="row-even"><td><p>ccsdtq(p)</p></td>
+<td><p>CC through quadruples with pertubative quintuples</p></td>
+</tr>
+<tr class="row-odd"><td><p>ccsdtqp(h)</p></td>
+<td><p>CC through quintuples with pertubative sextuples</p></td>
+</tr>
+<tr class="row-even"><td><p>ccsd(t)_l</p></td>
+<td><p>CC through doubles with asymmetric perturbative triples <span class="xref std std-ref">[details]</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>ccsdt(q)_l</p></td>
+<td><p>CC through triples with asymmetric perturbative quadruples</p></td>
+</tr>
+<tr class="row-even"><td><p>ccsdtq(p)_l</p></td>
+<td><p>CC through quadruples with asymmetric perturbative quintuples</p></td>
+</tr>
+<tr class="row-odd"><td><p>ccsdtqp(h)_l</p></td>
+<td><p>CC through quintuples with asymmetric perturbative sextuples</p></td>
+</tr>
+<tr class="row-even"><td><p>ccsdt-1a</p></td>
+<td><p>CC through doubles with iterative triples (cheapest terms)</p></td>
+</tr>
+<tr class="row-odd"><td><p>ccsdtq-1a</p></td>
+<td><p>CC through triples with iterative quadruples (cheapest terms)</p></td>
+</tr>
+<tr class="row-even"><td><p>ccsdtqp-1a</p></td>
+<td><p>CC through quadruples with iterative quintuples (cheapest terms)</p></td>
+</tr>
+<tr class="row-odd"><td><p>ccsdtqph-1a</p></td>
+<td><p>CC through quintuples with iterative sextuples (cheapest terms)</p></td>
+</tr>
+<tr class="row-even"><td><p>ccsdt-1b</p></td>
+<td><p>CC through doubles with iterative triples (cheaper terms)</p></td>
+</tr>
+<tr class="row-odd"><td><p>ccsdtq-1b</p></td>
+<td><p>CC through triples with iterative quadruples (cheaper terms)</p></td>
+</tr>
+<tr class="row-even"><td><p>ccsdtqp-1b</p></td>
+<td><p>CC through quadruples with iterative quintuples (cheaper terms)</p></td>
+</tr>
+<tr class="row-odd"><td><p>ccsdtqph-1b</p></td>
+<td><p>CC through quintuples with iterative sextuples (cheaper terms)</p></td>
+</tr>
+<tr class="row-even"><td><p>cc2</p></td>
+<td><p>approximate CC through doubles <span class="xref std std-ref">[details]</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>cc3</p></td>
+<td><p>approximate CC through triples <span class="xref std std-ref">[details]</span></p></td>
+</tr>
+<tr class="row-even"><td><p>cc4</p></td>
+<td><p>approximate CC through quadruples</p></td>
+</tr>
+<tr class="row-odd"><td><p>cc5</p></td>
+<td><p>approximate CC through quintuples</p></td>
+</tr>
+<tr class="row-even"><td><p>cc6</p></td>
+<td><p>approximate CC through sextuples</p></td>
+</tr>
+<tr class="row-odd"><td><p>ccsdt-3</p></td>
+<td><p>CC through doubles with iterative triples (all but the most expensive terms)</p></td>
+</tr>
+<tr class="row-even"><td><p>ccsdtq-3</p></td>
+<td><p>CC through triples with iterative quadruples (all but the most expensive terms)</p></td>
+</tr>
+<tr class="row-odd"><td><p>ccsdtqp-3</p></td>
+<td><p>CC through quadruples with iterative quintuples (all but the most expensive terms)</p></td>
+</tr>
+<tr class="row-even"><td><p>ccsdtqph-3</p></td>
+<td><p>CC through quintuples with iterative sextuples (all but the most expensive terms)</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Frozen-core approximation is also supported in the MRCC interface.
+To optimize CH<sub>4</sub> with CCSDT freezing the 1<em>s</em> on carbon, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">H2O</span> <span class="p">{</span>
+    <span class="n">O</span>
+    <span class="n">H</span> <span class="mi">1</span> <span class="n">r</span>
+    <span class="n">H</span> <span class="mi">1</span> <span class="n">r</span> <span class="mi">2</span> <span class="mf">104.5</span>
+
+    <span class="n">r</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+    <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+    <span class="n">freeze_core</span> <span class="n">true</span>
+<span class="p">}</span>
+
+<span class="n">optimize</span><span class="p">(</span><span class="s1">&#39;ccsdt&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="interface-details">
+<h2>Interface Details<a class="headerlink" href="#interface-details" title="Link to this heading">¶</a></h2>
+<span id="table-mrcc-mrcc-method"></span><table class="docutils align-default" id="id5">
+<caption><span class="caption-text">MRCC methods</span><a class="headerlink" href="#id5" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p><a href="#id36"><span class="problematic" id="id37">|mrcc__mrcc_method|</span></a></p></th>
+<th class="head"><p>Method</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>CC</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>CC(n-1)[n]</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>CC(n-1)(n)</p></td>
+<td><p>(CC(n-1)[n] energy is also calculated)</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>CC(n-1)(n)_L</p></td>
+<td><p>(CC(n-1)[n] and CC(n-1)(n) energies are also calculated)</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>CC(n)-1a</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>CC(n)-1b</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>CCn</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>CC(n)-3</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/mrcc.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

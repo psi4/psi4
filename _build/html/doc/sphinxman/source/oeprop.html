@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Evaluation of One-Electron Properties |w---w| oeprop() &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="evaluation-of-one-electron-properties-w-w-oeprop">
+<span id="sec-oeprop"></span><span id="index-0"></span><h1>Evaluation of One-Electron Properties <a href="#id6"><span class="problematic" id="id7">|w---w|</span></a> <code class="xref py py-func docutils literal notranslate"><span class="pre">oeprop()</span></code><a class="headerlink" href="#evaluation-of-one-electron-properties-w-w-oeprop" title="Link to this heading">¶</a></h1>
+<p><a href="#id8"><span class="problematic" id="id9">|PSIfour|</span></a> is capable of computing a number of one-electron properties
+summarized in the table below.</p>
+<span id="table-oe-features"></span><table class="docutils align-default" id="id4">
+<caption><span class="caption-text">Current one-electron property capabilities of <a href="#id10"><span class="problematic" id="id11">|PSIfour|</span></a></span><a class="headerlink" href="#id4" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Feature</p></th>
+<th class="head"><p>Keyword</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Electric dipole moment</p></td>
+<td><p>DIPOLE</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Electric quadrupole moment</p></td>
+<td><p>QUADRUPOLE</p></td>
+<td><p>Raw (traced) moments and traceless multipoles</p></td>
+</tr>
+<tr class="row-even"><td><p>All moments up order N</p></td>
+<td><p>MULTIPOLE(N)</p></td>
+<td><p>Only raw (traced) moments. Sets global variables e.g. &quot;DIPOLE&quot;, &quot;32-POLE&quot;</p></td>
+</tr>
+<tr class="row-odd"><td><p>Electrostatic potential, at nuclei</p></td>
+<td><p>ESP_AT_NUCLEI</p></td>
+<td><p>Sets global variables &quot;ESP AT CENTER n&quot;, n = 1 to natoms</p></td>
+</tr>
+<tr class="row-even"><td><p>Electrostatic potential, on grid</p></td>
+<td><p>GRID_ESP</p></td>
+<td><p>Generates V at each point in grid_esp.dat. See <a class="reference internal" href="#sec-oeprop-grid"><span class="std std-ref">Properties evaluated on a grid</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Electric field, on grid</p></td>
+<td><p>GRID_FIELD</p></td>
+<td><p>Generates {Ex,Ey,Ez} at each point grid_field.dat. See <a class="reference internal" href="#sec-oeprop-grid"><span class="std std-ref">Properties evaluated on a grid</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>Molecular orbital extents</p></td>
+<td><p>MO_EXTENTS</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Mulliken atomic charges</p></td>
+<td><p>MULLIKEN_CHARGES</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>L<a href="#id12"><span class="problematic" id="id13">|o_dots|</span></a>wdin atomic charges</p></td>
+<td><p>LOWDIN_CHARGES</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Wiberg bond indices</p></td>
+<td><p>WIBERG_LOWDIN_INDICES</p></td>
+<td><p>Uses (L<a href="#id14"><span class="problematic" id="id15">|o_dots|</span></a>wdin) symmetrically orthogonalized orbitals</p></td>
+</tr>
+<tr class="row-even"><td><p>Mayer bond indices</p></td>
+<td><p>MAYER_INDICES</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Natural orbital occupations</p></td>
+<td><p>NO_OCCUPATIONS</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Stockholder Atomic Multipoles</p></td>
+<td><p>MBIS_CHARGES</p></td>
+<td><p>Generates atomic charges, dipoles, etc. See <a class="reference internal" href="#sec-oeprop-mbis"><span class="std std-ref">Minimal Basis Iterative Stockholder</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Hirshfeld volume ratios</p></td>
+<td><p>MBIS_VOLUME_RATIOS</p></td>
+<td><p>Generate the AIM to free atom volume ratios</p></td>
+</tr>
+</tbody>
+</table>
+<p>There are two ways the computation of one-electron properties can be requested.
+Firstly, the properties can be evaluated from the last
+computed one-particle density, using the following syntax:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">oeprop</span><span class="p">(</span><span class="s2">&quot;MO_EXTENTS&quot;</span><span class="p">,</span> <span class="s2">&quot;MULTIPOLE(4)&quot;</span><span class="p">,</span> <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;hello!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that it is the user's responsibility to ensure that the relaxed density
+matrix is computed using the method of interest, which may require setting
+additional keywords (see the method's manual section for details). The named
+argument, <em>title</em>, is completely optional and is prepended to any
+globals variables set during the computation.  The unnamed arguments are the
+properties to be computed.  These can appear in any order, and multiple
+properties may be requested, as in the example above.  Note that, due to Python
+syntax restrictions, the title argument must appear after the list of
+properties to compute.  The available properties are shown in the table above.</p>
+<p>The syntax above works well for computing properties using the SCF
+wavefunction, however, may be difficult (or impossible) to use for some of the
+correlated levels of theory. Alternatively, one-electron properties can be
+computed using the built-in properties() function, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">properties</span><span class="p">(</span><span class="s1">&#39;ccsd&#39;</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;dipole&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">properties()</span></code> function provides limited functionality, but is a lot easier to
+use for correlated methods. For capabilities of <code class="xref py py-func docutils literal notranslate"><span class="pre">properties()</span></code> see the
+corresponding section of the manual.</p>
+<section id="basic-keywords">
+<h2>Basic Keywords<a class="headerlink" href="#basic-keywords" title="Link to this heading">¶</a></h2>
+<p>Multipole moments may be computed at any origin, which is controlled by the
+global <a href="#id16"><span class="problematic" id="id17">|globals__properties_origin|</span></a> keyword.  The keyword takes an array with
+the following possible values:</p>
+<span id="table-oe-origin"></span><table class="docutils align-default" id="id5">
+<caption><span class="caption-text">Allowed origin specifications</span><a class="headerlink" href="#id5" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Keyword</p></th>
+<th class="head"><p>Interpretation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>[x, y, z]</p></td>
+<td><p>Origin is at the coordinates, in the same units as the geometry specification</p></td>
+</tr>
+<tr class="row-odd"><td><p>[&quot;COM&quot;]</p></td>
+<td><p>Origin is at the center of mass</p></td>
+</tr>
+<tr class="row-even"><td><p>[&quot;NUCLEAR_CHARGE&quot;]</p></td>
+<td><p>Origin is at the center of nuclear charge</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="properties-evaluated-on-a-grid">
+<span id="sec-oeprop-grid"></span><h2>Properties evaluated on a grid<a class="headerlink" href="#properties-evaluated-on-a-grid" title="Link to this heading">¶</a></h2>
+<p>Certain properties may be evaluated a user-specified grid points.  The grid
+points are completely arbitrary and are specified by providing a file called
+grid.dat containing the x,y,z values separated with spaces for each point in order:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x1</span> <span class="n">y1</span> <span class="n">z1</span>
+<span class="n">x2</span> <span class="n">y2</span> <span class="n">z2</span>
+<span class="o">..........</span>
+<span class="n">xn</span> <span class="n">yn</span> <span class="n">zn</span>
+</pre></div>
+</div>
+<p>The grid.dat file is completely free form; any number of spaces and/or newlines
+between entries is permitted.  The units of the coordinates in grid.dat are the
+same as those used to specify the molecule's geometry, and the output
+quantities are always in atomic units.  The requested properties will be
+written out in the same order as the grid point specification in grid.dat; see
+the above table for the format and file name of the output.</p>
+<p>The grid may be generated in the input file using standard Python loops.  By
+capturing the wavefunction used to evaluate the one-electron properties, the
+values at each grid point may be captured as Python arrays in the input file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">E</span><span class="p">,</span> <span class="n">wfn</span> <span class="o">=</span> <span class="n">prop</span><span class="p">(</span><span class="s1">&#39;scf&#39;</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GRID_ESP&quot;</span><span class="p">,</span> <span class="s2">&quot;GRID_FIELD&quot;</span><span class="p">],</span> <span class="n">return_wfn</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">Vvals</span> <span class="o">=</span> <span class="n">wfn</span><span class="o">.</span><span class="n">oeprop</span><span class="o">.</span><span class="n">Vvals</span><span class="p">()</span>
+<span class="n">Exvals</span> <span class="o">=</span> <span class="n">wfn</span><span class="o">.</span><span class="n">oeprop</span><span class="o">.</span><span class="n">Exvals</span><span class="p">()</span>
+<span class="n">Eyvals</span> <span class="o">=</span> <span class="n">wfn</span><span class="o">.</span><span class="n">oeprop</span><span class="o">.</span><span class="n">Eyvals</span><span class="p">()</span>
+<span class="n">Ezvals</span> <span class="o">=</span> <span class="n">wfn</span><span class="o">.</span><span class="n">oeprop</span><span class="o">.</span><span class="n">Ezvals</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In this example, the <em>Vvals</em> array contains the electrostatic potential at each
+grid point, in the order that the grid was specified, while the <em>Exvals</em>,
+<em>Eyvals</em> and <em>Ezvals</em> arrays contain the <em>x</em>, <em>y</em> and <em>z</em> components of the
+electric field, respectively; all of these arrays can be iterated and
+manipulated using standard Python syntax.  For a complete demonstration of this
+utility, see the <a href="#id1"><span class="problematic" id="id2">:srcsample:`props4`</span></a> test case.</p>
+</section>
+<section id="minimal-basis-iterative-stockholder">
+<span id="sec-oeprop-mbis"></span><span id="index-1"></span><h2>Minimal Basis Iterative Stockholder<a class="headerlink" href="#minimal-basis-iterative-stockholder" title="Link to this heading">¶</a></h2>
+<p>The Minimal Basis Iterative Stockholder (MBIS) method is one of many procedures
+that partitions a molecular one-particle density matrix into atomic electron densities.
+Running MBIS in <a href="#id18"><span class="problematic" id="id19">|PSIfour|</span></a> will calculate atomic valence charge widths, volume ratios,
+atomic charges, as well as dipoles, quadrupoles, and octupoles.
+Additionally, all expectation values of radial moments of n-th order (<span class="math notranslate nohighlight">\(&lt;r^n&gt;\)</span>)
+are computed up to fourth order. Higher moments can be computed by specifying <a href="#id20"><span class="problematic" id="id21">|globals__max_radial_moment|</span></a>.
+The volume ratios are computed as the ratio between the volume of the atomic density
+(<span class="math notranslate nohighlight">\(&lt;r^3&gt;\)</span>) and the volume of the free atom computed using the same level
+of theory, but with a potentially unrestricted reference.</p>
+<p>The allowed number of iterations and convergence criteria for the stockholder
+algorithm is controlled by <a href="#id22"><span class="problematic" id="id23">|globals__mbis_maxiter|</span></a> and <a href="#id24"><span class="problematic" id="id25">|globals__mbis_d_convergence|</span></a>. Note
+that the density is partitioned on a molecular quadrature grid, the details of which can be
+controlled with the keywords <a href="#id26"><span class="problematic" id="id27">|globals__mbis_radial_points|</span></a>, <a href="#id28"><span class="problematic" id="id29">|globals__mbis_spherical_points|</span></a>, and
+<a href="#id30"><span class="problematic" id="id31">|globals__mbis_pruning_scheme|</span></a>. (Associated Paper: <a class="reference internal" href="bibliography.html#verstraelen-2016" id="id3"><span>[Verstraelen:2016]</span></a>)</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/oeprop.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

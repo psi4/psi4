@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Programmers FAQ &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="programmers-faq">
+<span id="sec-progfaq"></span><h1>Programmers FAQ<a class="headerlink" href="#programmers-faq" title="Link to this heading">¶</a></h1>
+<section id="c-style-in-psifour">
+<h2>C++ Style in <a href="#id1"><span class="problematic" id="id2">|PSIfour|</span></a><a class="headerlink" href="#c-style-in-psifour" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="prog_style_c.html#faq-nullptr"><span class="std std-ref">Prefer nullptr to 0 or NULL</span></a></p></li>
+<li><p><a class="reference internal" href="prog_style_c.html#faq-automakeshared"><span class="std std-ref">Prefer std::make_shared to direct use of new</span></a></p></li>
+<li><p><a class="reference internal" href="prog_style_c.html#faq-autodecl"><span class="std std-ref">Prefer auto to explicit type declarations</span></a></p></li>
+<li><p><a class="reference internal" href="code_style.html#faq-editorcodestyle"><span class="std std-ref">How to impose code style through your editor</span></a></p></li>
+<li><p><a class="reference internal" href="code_style.html#faq-githookscodestyle"><span class="std std-ref">How to impose code style through Git hooks</span></a></p></li>
+<li><p><a class="reference internal" href="code_style.html#faq-manualcodestyle"><span class="std std-ref">How to run code-style tools clang-format and yapf manually</span></a></p></li>
+</ol>
+</section>
+<section id="modules-in-psifour">
+<h2>Modules in <a href="#id3"><span class="problematic" id="id4">|PSIfour|</span></a><a class="headerlink" href="#modules-in-psifour" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="manage_addon.html#faq-readoptions"><span class="std std-ref">How to name keywords in psi4/src/read_options.cc</span></a></p></li>
+<li><p><a class="reference internal" href="prog_blas.html#faq-blaswrappers"><span class="std std-ref">How to call BLAS &amp; LAPACK in |PSIfour|</span></a></p></li>
+<li><p><a class="reference internal" href="prog_blas.html#faq-blasmatrix"><span class="std std-ref">How to use low-level BLAS/LAPACK with psi4.core.Matrix</span></a></p></li>
+<li><p><a class="reference internal" href="prog_blas.html#faq-labas"><span class="std std-ref">How to name orbital bases (e.g., AO &amp; SO)</span></a></p></li>
+<li><p><a class="reference internal" href="prog_blas.html#faq-orbdims"><span class="std std-ref">How to name orbital dimensions</span></a></p></li>
+<li><p><a class="reference internal" href="prog_blas.html#faq-orbspaces"><span class="std std-ref">How to name orbital spaces (e.g., docc)</span></a></p></li>
+</ol>
+</section>
+<section id="interfacing-with-psifour">
+<h2>Interfacing with <a href="#id5"><span class="problematic" id="id6">|PSIfour|</span></a><a class="headerlink" href="#interfacing-with-psifour" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="manage_addon.html#faq-addonname"><span class="std std-ref">How to use an Add-On's name in directory structure, build, and distribution</span></a></p></li>
+<li><p><a class="reference internal" href="manage_addon.html#faq-addoncmake"><span class="std std-ref">How to integrate an Add-On into build, testing, and docs</span></a></p></li>
+</ol>
+</section>
+<section id="versioning-psifour">
+<h2>Versioning <a href="#id7"><span class="problematic" id="id8">|PSIfour|</span></a><a class="headerlink" href="#versioning-psifour" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="manage_git.html#faq-versionbump"><span class="std std-ref">How to bump a version</span></a></p></li>
+<li><p><a class="reference internal" href="manage_git.html#faq-remotetag"><span class="std std-ref">How to create and remove an annotated Git tag on a remote</span></a></p></li>
+<li><p><a class="reference internal" href="build_obtaining.html#faq-githubworkflow"><span class="std std-ref">What is the suggested GitHub workflow</span></a></p></li>
+<li><p><a class="reference internal" href="manage_git.html#faq-psi4version"><span class="std std-ref">What Psi4 version is running</span></a></p></li>
+</ol>
+</section>
+<section id="releasing-psifour">
+<h2>Releasing <a href="#id9"><span class="problematic" id="id10">|PSIfour|</span></a><a class="headerlink" href="#releasing-psifour" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="manage_release.html#faq-annualprocedure"><span class="std std-ref">Annual</span></a></p></li>
+<li><p><a class="reference internal" href="manage_release.html#faq-prereleaseprocedure"><span class="std std-ref">Pre-Release (e.g., v1.3rc1)</span></a></p></li>
+<li><p><a class="reference internal" href="manage_release.html#faq-releaseprocedure"><span class="std std-ref">Release (e.g., v1.3)</span></a></p></li>
+<li><p><a class="reference internal" href="manage_release.html#faq-postreleaseprocedure"><span class="std std-ref">Post-Release (e.g., v1.8.2)</span></a></p></li>
+</ol>
+</section>
+<section id="workflow">
+<h2>Workflow<a class="headerlink" href="#workflow" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="build_planning.html#faq-localaddon"><span class="std std-ref">How to use a local Add-On repository in the Psi4 build</span></a></p></li>
+<li><p><a class="reference internal" href="build_planning.html#faq-dirlayoutinstall"><span class="std std-ref">What is the directory layout of the installed or staged Psi4</span></a></p></li>
+<li><p><a class="reference internal" href="build_obtaining.html#faq-githubworkflow"><span class="std std-ref">What is the suggested GitHub workflow</span></a></p></li>
+<li><p><a class="reference internal" href="build_planning.html#faq-vigitmerge"><span class="std std-ref">How to highlight git merge conflicts in vi</span></a></p></li>
+<li><p><a class="reference internal" href="build_planning.html#faq-gdblldb"><span class="std std-ref">How to use gdb and lldb with Psi4</span></a></p></li>
+<li><p><a class="reference internal" href="manage_git.html#faq-grepascii"><span class="std std-ref">How to locate non-ascii characters in the codebase</span></a></p></li>
+<li><p><a class="reference internal" href="prog_style_py.html#faq-ignoringadvice"><span class="std std-ref">How to Ignore the Bots</span></a></p></li>
+</ol>
+</section>
+<section id="miscellaneous">
+<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="add_tests.html#faq-add-tests"><span class="std std-ref">Test Suite</span></a></p></li>
+<li><p><a class="reference internal" href="add_tests.html#faq-add-psithon-tests"><span class="std std-ref">Adding PSIthon Test Cases</span></a></p></li>
+<li><p><a class="reference internal" href="add_tests.html#faq-add-psiapi-tests"><span class="std std-ref">Adding PsiAPI Test Cases</span></a></p></li>
+<li><p><a class="reference internal" href="add_tests.html#faq-psithon-through-pytest"><span class="std std-ref">How to set up PSIthon tests to run through pytest</span></a></p></li>
+<li><p><a class="reference internal" href="manage_git.html#faq-findmissingoutputref"><span class="std std-ref">How to find tests without output.ref</span></a></p></li>
+<li><p><a class="reference internal" href="manage_git.html#faq-githubcodereview"><span class="std std-ref">How to do GitHub issue management and code review</span></a></p></li>
+</ol>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/prog_faq.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

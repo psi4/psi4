@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>ADC: Ab Initio Polarization Propagator &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="adc-ab-initio-polarization-propagator">
+<span id="sec-adc"></span><span id="index-2"></span><span id="index-1"></span><span id="index-0"></span><h1>ADC: Ab Initio Polarization Propagator<a class="headerlink" href="#adc-ab-initio-polarization-propagator" title="Link to this heading">¶</a></h1>
+<p><em>Module:</em> <span class="xref std std-ref">Keywords</span>, <span class="xref std std-ref">PSI Variables</span></p>
+<p>Algebraic-diagrammatic construction methods for the polarization propagator (ADC)
+determine correlated excitation energies by investigating the pole structure
+of said propagator. For this the propagator is expressed in a representation
+constructed from so-called intermediate states, which in turn are based
+upon a correlated <a href="#id11"><span class="problematic" id="id12">|MollerPlesset|</span></a> (MP) ground state. The original derivation
+of the ADC scheme was purely diagrammatic <a class="reference internal" href="bibliography.html#schirmer-1982" id="id1"><span>[Schirmer:1982]</span></a>
+and the connect to the intermediate states was developed only later <a class="reference internal" href="bibliography.html#trofimov-2006" id="id2"><span>[Trofimov:2006]</span></a>.
+In general <span class="math notranslate nohighlight">\(n\)</span>-th order ADC theory, ADC(<span class="math notranslate nohighlight">\(n\)</span>),
+is constructed upon an <span class="math notranslate nohighlight">\(n\)</span>-th order MP ground state.
+In this sense one can consider an ADC(<span class="math notranslate nohighlight">\(n\)</span>) treatment of excited states
+consistent to an MP(<span class="math notranslate nohighlight">\(n\)</span>) perturbation expansion of the ground state.</p>
+<p>In ADC methods the residue calculus of the propagator is translated into an eigenvalue
+problem with respect to the so-called shifted Hamiltonian or ADC matrix.
+Denoting this matrix as <span class="math notranslate nohighlight">\(\mathbf{A}\)</span>, the eigenproblem can be written
+in terms of several blocks</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{pmatrix}
+\mathbf{A_{SS}} &amp; \mathbf{A_{SD}}\\
+\mathbf{A_{DS}} &amp; \mathbf{A_{DD}}
+\end{pmatrix}
+\begin{pmatrix}
+\mathbf{X_S}\\
+\mathbf{X_D}
+\end{pmatrix}
+=\omega
+\begin{pmatrix}
+\mathbf{X_S}\\
+\mathbf{X_D}
+\end{pmatrix}\end{split}\]</div>
+<p>where <em>S</em> refers to the single and <em>D</em> to the double excitation manifolds.
+This matrix is typically sparse and thus may be diagonalised iteratively,
+for example using Davidson's method <a class="reference internal" href="bibliography.html#dreuw-2014-82" id="id3"><span>[Dreuw:2014:82]</span></a>. An alternative viewpoint
+has been addressed for example in <a class="reference internal" href="bibliography.html#haettig-2002" id="id4"><span>[Haettig:2002]</span></a>, where ADC(2) is related
+to other response theories such as CC2-LR, CIS(D) and CIS(D<span class="math notranslate nohighlight">\(_n\)</span>).
+In this sense one may consider the ADC matrix the correlated response matrix
+to a response problem based on CIS
+and apply the simultaneous expansion method (SEM),
+in which the <a href="#id13"><span class="problematic" id="id14">|sigma|</span></a>-vectors (ADC matrix-vector products)
+are constructed several times.</p>
+<p>The structure and order of the blocks in the equation above
+depend on the ADC level employed. With this also the computational cost changes.
+The key computational step, namely the formation of the matrix-vector products
+scales as <span class="math notranslate nohighlight">\({\cal O}(N^5)\)</span> for ADC(2) and <span class="math notranslate nohighlight">\({\cal O}(N^6)\)</span>
+for ADC(2)-x and ADC(3). Several additional approximations,
+such as frozen-core, frozen-virtual
+may be applied to reduce the cost of the problem.
+Using the core-valence separation (CVS) approximation
+one may specifically target core-valence-excitations
+at a substantial reduction in cost.
+With the spin-flip modification few-reference ground states can
+be tackled starting from a triplet reference by simultaneously
+exciting an electron and flipping its spin.
+A more detailed overview of such modifications gives <a class="reference internal" href="bibliography.html#dreuw-2014-82" id="id5"><span>[Dreuw:2014:82]</span></a>
+and the <a class="reference external" href="https://adc-connect.org/latest/theory.html">adcc theory documentation</a>.</p>
+<section id="available-adc-methods">
+<h2>Available ADC methods<a class="headerlink" href="#available-adc-methods" title="Link to this heading">¶</a></h2>
+<p>Several ADC methods are available in <a href="#id15"><span class="problematic" id="id16">|PSIfour|</span></a> for the computation of excited states,
+see <a class="reference internal" href="#table-adcsummary"><span class="std std-ref">ADC capabilities of Psi4</span></a>.
+The methods are available via an interface to the <a class="reference external" href="https://adc-connect.org">adcc</a> python module.
+After a more general introduction, specific aspects of the implementation will be highlighted
+in section <a class="reference internal" href="#sec-interfaceadcc"><span class="std std-ref">Interface to adcc</span></a>.</p>
+<span id="table-adcsummary"></span><table class="docutils align-default" id="id10">
+<caption><span class="caption-text">ADC capabilities of Psi4</span><a class="headerlink" href="#id10" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>References</p></th>
+<th class="head"><p>Exc. Energies</p></th>
+<th class="head"><p>Props</p></th>
+<th class="head"><p>Supported values for kind keyword</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ADC(1)</p></td>
+<td><p>RHF, UHF</p></td>
+<td><p>yes</p></td>
+<td><p>yes</p></td>
+<td><p>any, singlet, triplet, spin_flip</p></td>
+</tr>
+<tr class="row-odd"><td><p>ADC(2)</p></td>
+<td><p>RHF, UHF</p></td>
+<td><p>yes</p></td>
+<td><p>yes</p></td>
+<td><p>any, singlet, triplet, spin_flip</p></td>
+</tr>
+<tr class="row-even"><td><p>ADC(2)-x</p></td>
+<td><p>RHF, UHF</p></td>
+<td><p>yes</p></td>
+<td><p>yes</p></td>
+<td><p>any, singlet, triplet, spin_flip</p></td>
+</tr>
+<tr class="row-odd"><td><p>ADC(3)</p></td>
+<td><p>RHF, UHF</p></td>
+<td><p>yes</p></td>
+<td colspan="2"><p>yes   |  any, singlet, triplet, spin_flip</p></td>
+</tr>
+<tr class="row-even"><td><p>CVS-ADC(1)</p></td>
+<td><p>RHF, UHF</p></td>
+<td><p>yes</p></td>
+<td colspan="2"><p>yes   |  any, singlet, triplet</p></td>
+</tr>
+<tr class="row-odd"><td><p>CVS-ADC(2)</p></td>
+<td><p>RHF, UHF</p></td>
+<td><p>yes</p></td>
+<td><p>yes</p></td>
+<td><p>any, singlet, triplet</p></td>
+</tr>
+<tr class="row-even"><td><p>CVS-ADC(2)-x</p></td>
+<td><p>RHF, UHF</p></td>
+<td><p>yes</p></td>
+<td><p>yes</p></td>
+<td><p>any, singlet, triplet</p></td>
+</tr>
+<tr class="row-odd"><td><p>CVS-ADC(3)</p></td>
+<td><p>RHF, UHF</p></td>
+<td><p>yes</p></td>
+<td><p>yes</p></td>
+<td><p>any, singlet, triplet</p></td>
+</tr>
+</tbody>
+</table>
+<p>The leftmost column of table <a class="reference internal" href="#table-adcsummary"><span class="std std-ref">ADC capabilities of Psi4</span></a> provides the supported ADC methods.
+If only excitation energies are desired, one can simply pass one
+of the listed method strings to the function <code class="xref py py-func docutils literal notranslate"><span class="pre">energy()</span></code>.
+For example, <code class="docutils literal notranslate"><span class="pre">energy('adc(2)-x')</span></code> will compute
+excitation energies at ADC(2)-x level.
+Properties such as oscillator strengths, transition or state dipole moments
+are available by calling the function <code class="xref py py-func docutils literal notranslate"><span class="pre">properties()</span></code>
+with appropriate arguments.
+Most commonly users will want to compute at least oscillator strengths
+along with the excitation energies,
+resulting in a call like <code class="docutils literal notranslate"><span class="pre">properties('adc(2)',</span> <span class="pre">properties=[&quot;oscillator_strength&quot;])</span></code>.</p>
+</section>
+<section id="running-adc-calculations">
+<h2>Running ADC calculations<a class="headerlink" href="#running-adc-calculations" title="Link to this heading">¶</a></h2>
+<p>Running an ADC calculation with <a href="#id17"><span class="problematic" id="id18">|PSIfour|</span></a> requires
+the call to <code class="xref py py-func docutils literal notranslate"><span class="pre">properties()</span></code> as discussed above
+as well as one or more mandatory keyword arguments.</p>
+<p>The most important keyword argument is <a href="#id19"><span class="problematic" id="id20">|adc__roots_per_irrep|</span></a>,
+which is an array with the number of excited states desired
+for each irreducible representation. Most ADC methods
+are only supported at C1 symmetry at the moment, such that
+this option should in most cases be set to an array with a single
+element only. For example one can run an ADC(2) calculation for 10
+(singlet) excited states using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">roots_per_irrep</span> <span class="p">[</span><span class="mi">10</span><span class="p">]</span>
+<span class="n">properties</span><span class="p">(</span><span class="s1">&#39;adc(2)&#39;</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;oscillator_strength&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>where the <code class="docutils literal notranslate"><span class="pre">molecule</span></code> section was dropped for brevity.</p>
+<p><strong>Selecting the excitation manifold.</strong>
+To select between the possible excitation manifolds,
+use the <a href="#id21"><span class="problematic" id="id22">|adc__kind|</span></a> keyword. For restricted references
+by default only singlet excited states are computed,
+corresponding to the keyword value <code class="docutils literal notranslate"><span class="pre">'singlet'</span></code>.
+To compute triplet states, select <code class="docutils literal notranslate"><span class="pre">'triplet'</span></code>.
+To compute both without making a spin distinction, select <code class="docutils literal notranslate"><span class="pre">'any'</span></code>.
+The latter is default for unrestricted references.</p>
+<p>The special <a href="#id23"><span class="problematic" id="id24">|adc__kind|</span></a> value <code class="docutils literal notranslate"><span class="pre">'spin_flip'</span></code> selects
+a spin-flip computation where a simultaneous flip of spin
+and excitation is performed. This is only available
+for unrestricted references and not for <code class="docutils literal notranslate"><span class="pre">CVS-ADC(n)</span></code> methods,
+see table <a class="reference internal" href="#table-adcsummary"><span class="std std-ref">ADC capabilities of Psi4</span></a>.</p>
+<p><strong>Using the core-valence separation.</strong>
+For tackling core-valence excitations using the <code class="docutils literal notranslate"><span class="pre">CVS-ADC(n)</span></code>
+methods, the keyword argument <a href="#id25"><span class="problematic" id="id26">|adc__num_core_orbitals|</span></a>
+is additionally required. It is used to specify the number of
+(spatial) orbitals to put into the core space and thus select
+as target orbitals for a core-valence excitation process.
+A value of <code class="docutils literal notranslate"><span class="pre">2</span></code> indicates, for example,
+that the two lowest-energy <span class="math notranslate nohighlight">\(\alpha\)</span> and the two
+lowest-energy <span class="math notranslate nohighlight">\(\beta\)</span> orbitals are placed in the core space.
+Since the implemented ADC procedures tackle the
+lowest-energy excitations, the value should be specified
+such that the targeted core orbital is just inside the core space.</p>
+<p><em>Example:</em> Consider furane, <span class="math notranslate nohighlight">\(C_4H_4O\)</span>. In order to tackle
+the oxygen 1s edge, <em>i.e</em> simulate a O 1s XAS spectrum, one may
+just set <a href="#id27"><span class="problematic" id="id28">|adc__num_core_orbitals|</span></a> to <code class="docutils literal notranslate"><span class="pre">1</span></code>. This will select the
+oxygen 1s orbital for the core space as it is energetically the lowest.
+For C 1s core excitations the <a href="#id29"><span class="problematic" id="id30">|adc__num_core_orbitals|</span></a> value needs
+to be set to <code class="docutils literal notranslate"><span class="pre">5</span></code>, such that both the O 1s and all four C 1s orbitals
+are part of the core space.</p>
+<p><strong>Other keywords and examples.</strong>
+Apart from the mentioned keywords, the following are common:</p>
+<p>The full list is provided in appendix <span class="xref std std-ref">apdx:adc_psivar</span>
+and many more sample input files can be found in the adc and adcc
+subfolders of <a href="#id6"><span class="problematic" id="id7">:source:`samples`</span></a>.
+Note, that not all keywords are supported by all backends.</p>
+</section>
+<section id="interface-to-adcc">
+<span id="sec-interfaceadcc"></span><h2>Interface to adcc<a class="headerlink" href="#interface-to-adcc" title="Link to this heading">¶</a></h2>
+<p>For most implemented ADC methods <a href="#id31"><span class="problematic" id="id32">|PSIfour|</span></a> relies
+on an interface to the <a class="reference external" href="https://adc-connect.org">adcc</a> python package.
+The approach of adcc is to directly diagonalise the
+ADC matrix <span class="math notranslate nohighlight">\(\mathbf{A}\)</span> in an iterative diagonalisation
+procedure, usually a Jacobi-preconditioned Davidson. Expensive parts
+of the ADC matrix-vector product are precomputed and stored
+in memory. This approach is general in the sense
+that it can be applied to a large range of ADC methods and variants.
+So far levels up to ADC(3) and CVS-ADC(3) are available
+and additional approximations such as
+<a href="#id33"><span class="problematic" id="id34">|globals__freeze_core|</span></a> and <a href="#id35"><span class="problematic" id="id36">|globals__num_frozen_uocc|</span></a>
+are supported with all ADC methods using the adcc backend.</p>
+<p>Currently adcc is only capable of performing in-core calculations,
+for which, however, permutational symmetry and spin symmetry is taken
+into account for both tensor computations and tensor storage.
+Inside adcc some heuristic checks for overly excessive memory requirements
+are implemented, resulting in a warning in case a
+successful execution is unlikely. There are no guarantees for the memory
+to be sufficient in case such a warning is not displayed.</p>
+<p>More detailed documentation about adcc and its features can be found
+at <a class="reference external" href="https://adc-connect.org">https://adc-connect.org</a>,
+especially the <a class="reference external" href="https://adc-connect.org/latest/theory.html">theory section</a>.
+If you are using adcc from <a href="#id37"><span class="problematic" id="id38">|PSIfour|</span></a> for your calculations,
+please cite both <a href="#id39"><span class="problematic" id="id40">|PSIfour|</span></a> as well as adcc <a class="reference internal" href="bibliography.html#herbst2020" id="id9"><span>[Herbst2020]</span></a>
+in your published work.</p>
+<p><strong>The ADC wavefunction object.</strong>
+After running the ADC calculation in adcc, the interface code sets
+a number of variables in the returned <code class="xref py py-class docutils literal notranslate"><span class="pre">Wavefunction</span></code>
+in case they are computed.
+In the following the <code class="docutils literal notranslate"><span class="pre">&lt;method&gt;</span></code> prefix refers to the ADC method (such as <code class="docutils literal notranslate"><span class="pre">adc(1)</span></code>,
+<code class="docutils literal notranslate"><span class="pre">adc(3)</span></code>, <code class="docutils literal notranslate"><span class="pre">cvs-adc(2)-x</span></code>).</p>
+<ul class="simple">
+<li><p>Ground state energy terms like <code class="docutils literal notranslate"><span class="pre">MP2</span> <span class="pre">correlation</span> <span class="pre">energy</span></code>, <code class="docutils literal notranslate"><span class="pre">MP3</span> <span class="pre">correlation</span> <span class="pre">energy</span></code>,
+<code class="docutils literal notranslate"><span class="pre">MP2</span> <span class="pre">total</span> <span class="pre">energy</span></code>, <code class="docutils literal notranslate"><span class="pre">MP3</span> <span class="pre">total</span> <span class="pre">energy</span></code>, <code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">correlation</span> <span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">current</span> <span class="pre">energy</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MP2</span> <span class="pre">dipole</span> <span class="pre">X</span></code> and the other components: Ground state dipole moments at MP(2) level.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number</span> <span class="pre">of</span> <span class="pre">iterations</span></code>: The number of iterations the iterative solver required to converge.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number</span> <span class="pre">of</span> <span class="pre">excited</span> <span class="pre">states</span></code>: The number of excited states, which were computed.</p></li>
+<li><p>More variables are summarized in <a class="reference internal" href="glossary_psivariables.html#apdx-psivariables-alpha"><span class="std std-ref">PSI Variables by Alpha</span></a>.</p></li>
+</ul>
+<p>The following attribute is set on returned wavefunctions:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">adcc_state</span></code>: The <a class="reference external" href="https://adc-connect.org/q/excitedstates">adcc.ExcitedStates</a>
+object used by adcc to store the ADC(n) excitation energies and all precomputed data
+in the format used by adcc.
+Provides direct access to analysis and plotting capabilities from adcc.
+For example <code class="docutils literal notranslate"><span class="pre">adcc_state.plot_spectrum()</span></code> plots a broadened excited states spectrum
+in matplotlib. See the <a class="reference external" href="https://adc-connect.org/latest/calculations.html">adcc calculations documentation</a>
+for details.</p></li>
+</ul>
+<p><strong>Tips for convergence issues.</strong>
+If you encounter convergence issues inside adcc, the following parameters
+are worth tweaking:</p>
+<ul class="simple">
+<li><p><a href="#id41"><span class="problematic" id="id42">|adc__max_num_vecs|</span></a>: Specifies the maximal number of subspace vectors
+in the Jacobi-Davidson scheme before a restart occurs. The defaults are usually
+good, but do not be shy to increase this value if you encounter convergence problems.</p></li>
+<li><p><a href="#id43"><span class="problematic" id="id44">|adc__num_guesses|</span></a>: By default adcc uses twice as many guess vectors as
+states to be computed. Sometimes increasing this value by a few vectors can be helpful.
+If you encounter a convergence to zero eigenvalues, than decreasing this parameter might
+solve the problems.</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/adc.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

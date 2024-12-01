@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Interface to gCP by S. Grimme &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="interface-to-gcp-by-s-grimme">
+<span id="sec-gcp"></span><span id="index-0"></span><h1>Interface to gCP by S. Grimme<a class="headerlink" href="#interface-to-gcp-by-s-grimme" title="Link to this heading">¶</a></h1>
+<p><em>Module:</em> <span class="xref std std-ref">Samples</span></p>
+<a class="reference external image-reference" href="https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/gcp"><img alt="https://img.shields.io/badge/home-gCP-5077AB.svg" src="https://img.shields.io/badge/home-gCP-5077AB.svg" /></a>
+<br><a class="reference external image-reference" href="https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/gcp/manGCP.pdf"><img alt="https://img.shields.io/badge/docs-latest-5077AB.svg" src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p><strong>Binary</strong></p>
+<ul>
+<li><a class="reference external image-reference" href="https://anaconda.org/psi4/gcp"><img alt="https://anaconda.org/psi4/gcp/badges/version.svg" src="https://anaconda.org/psi4/gcp/badges/version.svg" /></a>
+</li>
+<li><p>There are two implementations of gCP; see <a class="reference internal" href="dftd3.html#table-empdispimpl"><span class="std std-ref">Empirical dispersion correction packages</span></a> . The newer
+&quot;mctc&quot; one is preferred, while the older &quot;classic&quot; one will work for the immediate future.
+<a href="#id6"><span class="problematic" id="id7">|PSIfour|</span></a> will automatically select whichever is available.
+Starting with v1.9, only &quot;mctc-gcp&quot; is supported, though the now untested
+&quot;classic&quot; continues to work for many applications.</p></li>
+<li><p>gCP is available as a conda package for Linux and macOS and Windows.</p></li>
+<li><p>If using the Psi4conda installer, gCP has already been installed alongside.</p></li>
+<li><p>If using the <a href="#id8"><span class="problematic" id="id9">|PSIfour|</span></a> conda package, the classic gcp conda package can
+be obtained through <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">gcp</span> <span class="pre">-c</span> <span class="pre">psi4</span></code> or the newer implementation
+through <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">gcp-correction</span> <span class="pre">-c</span> <span class="pre">conda-forge</span></code>.</p></li>
+<li><p>If using <a href="#id10"><span class="problematic" id="id11">|PSIfour|</span></a> built from source, and anaconda or miniconda has
+already been installed (instructions at <a class="reference internal" href="conda.html#sec-quickconda"><span class="std std-ref">Quick Installation</span></a>),
+the gcp executable can be obtained through <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">gcp</span> <span class="pre">-c</span> <span class="pre">psi4</span></code>
+or <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">gcp-correction</span> <span class="pre">-c</span> <span class="pre">conda-forge</span></code>.</p></li>
+<li><p>To remove a conda installation, <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">remove</span> <span class="pre">gcp</span></code> or <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">remove</span> <span class="pre">gcp-correction</span></code>.</p></li>
+</ul>
+<p><strong>Source</strong></p>
+<ul>
+<li><a class="reference external image-reference" href="https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/gcp/getgcp"><img alt="https://img.shields.io/badge/home-gCP-5077AB.svg" src="https://img.shields.io/badge/home-gCP-5077AB.svg" /></a>
+</li>
+<li><p>If using <a href="#id12"><span class="problematic" id="id13">|PSIfour|</span></a> built from source and you want to build gCP from
+from source also, follow the instructions provided with the source
+(essentially, download the freely available tarball, unpack the source,
+edit the Makefile to select a Fortran compiler, and run make).</p></li>
+</ul>
+<p>To be used by <a href="#id14"><span class="problematic" id="id15">|PSIfour|</span></a>, the program binary (<code class="docutils literal notranslate"><span class="pre">gcp</span></code> or <code class="docutils literal notranslate"><span class="pre">mctc-gcp</span></code>) must be
+found in your <span class="target" id="index-1"></span><a class="reference internal" href="external.html#envvar-PATH"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PATH</span></code></a> so that QCEngine can detect it. Check if and where
+found through <code class="docutils literal notranslate"><span class="pre">qcengine</span> <span class="pre">info</span></code>. If
+<a href="#id16"><span class="problematic" id="id17">|PSIfour|</span></a> is unable to execute the binary, an error will be reported.
+To preferentially use a particular gcp compilation, simply adjust its
+position in the path environment variables.</p>
+</section>
+<section id="running-gcp">
+<h2>Running gCP<a class="headerlink" href="#running-gcp" title="Link to this heading">¶</a></h2>
+<p>At present there is a limited interface to gCP that is used
+only to implement the &quot;HF-3c&quot; <a class="reference internal" href="bibliography.html#sure-2013-1672" id="id1"><span>[Sure:2013:1672]</span></a>, &quot;PBEh-3c&quot;
+<a class="reference internal" href="bibliography.html#grimme-2015-054107" id="id2"><span>[Grimme:2015:054107]</span></a>, &quot;B97-3c&quot; <a class="reference internal" href="bibliography.html#brandenburg-2018-b973c" id="id3"><span>[Brandenburg:2018:b973c]</span></a>, &quot;r2SCAN-3c&quot; <a class="reference internal" href="bibliography.html#grimme-2021-064103" id="id4"><span>[Grimme:2021:064103]</span></a>,
+and &quot;wB97X-3c&quot; <a class="reference internal" href="bibliography.html#muller-2023-014103" id="id5"><span>[Muller:2023:014103]</span></a> methods (both energy and gradient).
+The interface can use classic or mctc-gcp executables but only the latter implements &quot;B97-3c&quot; and &quot;r2SCAN-3c&quot;.
+The newest wB97X-3c method doesn't use a gcp correction (it does use ECPs down to first row elements)
+but is listed here for completeness of the &quot;3c&quot; family.
+A <a class="reference internal" href="dftd3.html#sec-dftd3"><span class="std std-ref">DFTD3</span></a> executable, classic or simple-dftd3, must also be available for
+the HF-3c, PBEh-3c, or B97-3c methods to run.
+A <a class="reference internal" href="dftd3.html#sec-dftd3"><span class="std std-ref">DFTD4</span></a> python module must also be available for
+the r2SCAN-3c or wB97X-3c methods to run.
+These method are defined with their own basis set and thus no basis set should be set by the user.
+<a href="#id18"><span class="problematic" id="id19">|PSIfour|</span></a> will select the intended basis sets: HF-3c/MINIX, PBEh-3c/def2-mSVP, B97-3c/def2-mTZVP, r2SCAN-3c/def2-mTZVPP, wB97X-3c/vDZP.
+If a basis has previously been set for another calculation, use the slash syntax to &quot;empty&quot; the basis
+option for the scope of the current calculation, <code class="docutils literal notranslate"><span class="pre">energy(&quot;hf3c/&quot;)</span></code>.</p>
+<p>A few practical examples:</p>
+<ul>
+<li><p>HF-3c single point with default minix basis</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy</span><span class="p">(</span><span class="s1">&#39;hf3c&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>PBEh-3c optimization with default def2-mSVP basis</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">optimize</span><span class="p">(</span><span class="s1">&#39;pbeh3c&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>r2SCAN-3c with default basis after basis set</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;r2scan3c/&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>If only BSSE/basis set corrections (rather than total energies) are of
+interest, the <code class="docutils literal notranslate"><span class="pre">gcp</span></code> program can be run independently of the scf
+through the python function <code class="xref py py-func docutils literal notranslate"><span class="pre">run_gcp()</span></code>. (This function
+is the same <a href="#id20"><span class="problematic" id="id21">|PSIfour|</span></a>/<code class="docutils literal notranslate"><span class="pre">gcp</span></code> interface that is called during an scf job.)
+This route is much faster than running a HF or DFT energy.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">nene</span> <span class="p">{</span>
+<span class="n">Ne</span>
+<span class="n">Ne</span> <span class="mi">1</span> <span class="mf">2.0</span>
+<span class="p">}</span>
+
+<span class="n">nene</span><span class="o">.</span><span class="n">update_geometry</span><span class="p">()</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">E</span><span class="p">,</span> <span class="n">G</span> <span class="o">=</span> <span class="n">nene</span><span class="o">.</span><span class="n">run_gcp</span><span class="p">(</span><span class="s1">&#39;hf3c&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">E</span><span class="p">,</span> <span class="n">G</span> <span class="o">=</span> <span class="n">nene</span><span class="o">.</span><span class="n">run_gcp</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="s1">&#39;HF3c&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/gcp.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Interface to LIBEFP by I. Kaliman &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="interface-to-libefp-by-i-kaliman">
+<span id="sec-libefp"></span><span id="index-0"></span><h1>Interface to LIBEFP by I. Kaliman<a class="headerlink" href="#interface-to-libefp-by-i-kaliman" title="Link to this heading">¶</a></h1>
+<p><em>Module:</em> <span class="xref std std-ref">Keywords</span>, <span class="xref std std-ref">PSI Variables</span>, <a href="#id1"><span class="problematic" id="id2">:source:`LIBEFP &lt;psi4/driver/procrouting/solvent/efp.py&gt;`</span></a></p>
+<a class="reference external image-reference" href="https://github.com/libefp2/libefp"><img alt="https://img.shields.io/badge/home-libefp-5077AB.svg" src="https://img.shields.io/badge/home-libefp-5077AB.svg" /></a>
+<br><a class="reference external image-reference" href="https://github.com/libefp2/libefp"><img alt="https://img.shields.io/badge/docs-latest-5077AB.svg" src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
+<p><a href="#id3"><span class="problematic" id="id4">|PSIfour|</span></a> contains code to interface to the LIBEFP library developed
+in L. Slipchenko's group by I. Kaliman. LIBEFP
+requires no additional licence,
+downloads, or configuration. Since February 2017, libefp is not required to build
+<a href="#id5"><span class="problematic" id="id6">|Psifour|</span></a>.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p><strong>Binary</strong></p>
+<ul>
+<li><a class="reference external image-reference" href="https://anaconda.org/psi4/libefp"><img alt="https://anaconda.org/psi4/libefp/badges/version.svg" src="https://anaconda.org/psi4/libefp/badges/version.svg" /></a>
+</li>
+<li><p>libefp is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).</p></li>
+<li><p>If using the <a href="#id7"><span class="problematic" id="id8">|PSIfour|</span></a> binary, libefp has already been installed alongside.</p></li>
+<li><p>If using <a href="#id9"><span class="problematic" id="id10">|PSIfour|</span></a> built from source, and anaconda or miniconda has
+already been installed (instructions at <a class="reference internal" href="conda.html#sec-quickconda"><span class="std std-ref">Quick Installation</span></a>),
+libefp can be obtained through <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">libefp</span> <span class="pre">-c</span> <span class="pre">psi4</span></code>.
+Then enable it as a feature with <strong class="makevar">ENABLE_libefp</strong>,
+hint its location with <strong class="makevar">CMAKE_PREFIX_PATH</strong>,
+and rebuild <a href="#id11"><span class="problematic" id="id12">|PSIfour|</span></a> to detect libefp and activate dependent code.</p></li>
+</ul>
+<ul class="simple">
+<li><p>To remove a conda installation, <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">remove</span> <span class="pre">libefp</span></code>.</p></li>
+</ul>
+<p><strong>Source</strong></p>
+<ul>
+<li><a class="reference external image-reference" href="https://github.com/ilyak/libefp"><img alt="https://img.shields.io/github/tag/ilyak/libefp.svg?maxAge=2592000" src="https://img.shields.io/github/tag/ilyak/libefp.svg?maxAge=2592000" /></a>
+</li>
+<li><p>If using <a href="#id13"><span class="problematic" id="id14">|PSIfour|</span></a> built from source and you want libefp built from
+from source also,
+enable it as a feature with <strong class="makevar">ENABLE_libefp</strong>,
+and let the build system fetch and build it and activate dependent code.</p></li>
+</ul>
+</section>
+<section id="efp-fragments">
+<span id="sec-findingefpfragments"></span><span id="index-1"></span><h2>EFP Fragments<a class="headerlink" href="#efp-fragments" title="Link to this heading">¶</a></h2>
+<p>LIBEFP comes with a couple dozen ready-to-use fragments (water, benzene,
+common solvents, etc.) listed <a class="reference internal" href="#sec-availableefpfragments"><span class="std std-ref">here</span></a>
+with source <a class="reference external" href="https://github.com/libefp2/libefp/tree/master/fraglib">https://github.com/libefp2/libefp/tree/master/fraglib</a>.  Any of these may be used directly in
+a <a href="#id15"><span class="problematic" id="id16">|PSIfour|</span></a> input file as described <a class="reference internal" href="#sec-usingefpfragments"><span class="std std-ref">here</span></a>.</p>
+<p>Creating new efp fragments requires the <a class="reference external" href="https://www.msg.chem.iastate.edu/gamess/index.html">GAMESS</a> quantum chemistry package.
+Instructions on building new fragments are <a class="reference external" href="https://github.com/libefp2/libefp#how-to-create-custom-efp-fragment-types">here</a>.
+Once your new fragment is ready, make it accessible to <a href="#id17"><span class="problematic" id="id18">|PSIfour|</span></a> by
+including the directory in which the <code class="docutils literal notranslate"><span class="pre">.efp</span></code> file is located to the colon
+separated environment variable <span class="target" id="index-2"></span><a class="reference internal" href="external.html#envvar-PSIPATH"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PSIPATH</span></code></a>. Fragments are searched
+for first in the current directory, next in the paths of <span class="target" id="index-3"></span><a class="reference internal" href="external.html#envvar-PSIPATH"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PSIPATH</span></code></a>, and
+finally in built-in library. If <a href="#id19"><span class="problematic" id="id20">|PSIfour|</span></a> is unable to find the
+fragment, an error will be reported.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When constructing new fragment files, the name of the name of the
+file should be lowercase and have extension <code class="docutils literal notranslate"><span class="pre">.efp</span></code>. The molecule name
+within the file, <em>e.g.</em>, <code class="docutils literal notranslate"><span class="pre">$NH3</span></code> must correspond to the name of the
+fragment file.</p>
+</div>
+</section>
+<section id="molecule-specification">
+<span id="sec-usingefpfragments"></span><span id="index-4"></span><h2>Molecule Specification<a class="headerlink" href="#molecule-specification" title="Link to this heading">¶</a></h2>
+<p>EFP fragment geometries are specified alongside the quantum mechanical
+(QM) molecule and make use of the <code class="docutils literal notranslate"><span class="pre">--</span></code> fragment separation scheme
+described <a class="reference internal" href="psithonmol.html#sec-fragments"><span class="std std-ref">here</span></a>. Each EFP fragment has its own
+fragment section that includes the label <code class="docutils literal notranslate"><span class="pre">efp</span></code>, the name of the file
+<em>fragname</em> from which EFP parameters are to be read, and the position
+specification for the fragment in one of two ways, XYZABC or POINTS. For
+XYZABC, the fragment specification is all on one line: <code class="docutils literal notranslate"><span class="pre">efp</span></code> and
+<em>fragname</em> are followed by two sets of three numbers: the coordinates
+of the center of mass of the fragment and the three Euler angles that
+specify orientation about the center of mass. This format is compact
+but not readily generated from molecule viewing software.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">efp</span>  <span class="n">nh3</span>  <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">5.0</span>  <span class="mi">5</span> <span class="mi">2</span> <span class="mi">8</span>
+</pre></div>
+</div>
+<p>More convenient is the POINTS fragment specification. This consists of
+four lines, the first of which is <code class="docutils literal notranslate"><span class="pre">efp</span></code> and <em>fragname</em>. The next lines
+are the coordinates (without element labels) of the first three atoms
+in the fragment. Note that EFP fragment geometries are rigid, so the
+first atom will be placed exactly where specified by the first point,
+the second atom will be placed along the vector between the first and
+second points, and the third atom will be placed in the plane formed
+by the three points.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">efp</span> <span class="n">ch3oh</span>
+<span class="mf">1.275</span>    <span class="o">-</span><span class="mf">2.447</span>    <span class="o">-</span><span class="mf">4.673</span>
+<span class="mf">0.709</span>    <span class="o">-</span><span class="mf">3.191</span>    <span class="o">-</span><span class="mf">3.592</span>
+<span class="mf">2.213</span>    <span class="o">-</span><span class="mf">1.978</span>    <span class="o">-</span><span class="mf">4.343</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>At present, <a href="#id21"><span class="problematic" id="id22">|PSIfour|</span></a> has limited support for diatomic
+and monoatomic EFP fragments. Single points are allowed when the
+di-/mono-atomic fragments are specified in XYZABC format. Optimizations
+are not allowed.</p>
+</div>
+<p><a class="reference internal" href="psithonmol.html#sec-moleculekeywords"><span class="std std-ref">Just as for QM</span></a>, the center of mass
+coordinates in the XYZABC format and all coordinates in the POINTS format are
+taken to be in Angstroms by default or in Bohr if <code class="docutils literal notranslate"><span class="pre">units</span> <span class="pre">au</span></code> is present.
+Charge and multiplicity specifications are encoded in the fragment file
+and so are not read from input.</p>
+<p>Any combination of EFP and QM fragments can be placed in a molecule; even
+the oddity below is legitimate. Note that symmetry and reorientation are
+automatically turned off when EFP fragments are present (<code class="docutils literal notranslate"><span class="pre">symmetry</span> <span class="pre">c1</span></code>
+and <code class="docutils literal notranslate"><span class="pre">no_com</span></code> and <code class="docutils literal notranslate"><span class="pre">no_reorient</span></code> are implied).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">qmefp</span> <span class="p">{</span>
+  <span class="n">efp</span> <span class="n">nh3</span> <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">5.0</span> <span class="mi">5</span> <span class="mi">2</span> <span class="mi">8</span>
+  <span class="o">--</span>
+  <span class="n">C</span>  <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>
+  <span class="n">O</span>  <span class="mf">0.0</span> <span class="mf">1.5</span> <span class="mf">0.0</span>
+  <span class="n">O</span>  <span class="mf">0.0</span> <span class="o">-</span><span class="mf">1.5</span> <span class="mf">0.0</span>
+  <span class="o">--</span>
+  <span class="n">efp</span> <span class="n">h2o</span> <span class="mf">5.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mi">5</span> <span class="mi">2</span> <span class="mi">8</span>
+  <span class="o">--</span>
+  <span class="n">He</span>  <span class="o">-</span><span class="mf">3.0</span> <span class="mf">4.0</span> <span class="mf">4.0</span>
+  <span class="n">He</span>  <span class="o">-</span><span class="mf">4.0</span> <span class="mf">5.0</span> <span class="mf">4.0</span>
+  <span class="o">--</span>
+  <span class="n">efp</span> <span class="n">ch3oh</span>
+  <span class="mf">1.275</span>    <span class="o">-</span><span class="mf">2.447</span>    <span class="o">-</span><span class="mf">4.673</span>
+  <span class="mf">0.709</span>    <span class="o">-</span><span class="mf">3.191</span>    <span class="o">-</span><span class="mf">3.592</span>
+  <span class="mf">2.213</span>    <span class="o">-</span><span class="mf">1.978</span>    <span class="o">-</span><span class="mf">4.343</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="running-efp">
+<h2>Running EFP<a class="headerlink" href="#running-efp" title="Link to this heading">¶</a></h2>
+<p>EFP can be invoked in similar fashion as other theories provided in <a href="#id23"><span class="problematic" id="id24">|PSIfour|</span></a>.
+For example, if you want to obtain the EFP interaction energy for benzene and two waters,
+simply provide the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="p">{</span>
+  <span class="n">efp</span> <span class="n">c6h6</span>  <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>   <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>
+  <span class="o">--</span>
+  <span class="n">efp</span> <span class="n">h2o</span>   <span class="mf">4.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>   <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>
+  <span class="o">--</span>
+  <span class="n">efp</span> <span class="n">h2o</span>  <span class="o">-</span><span class="mf">4.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>   <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>
+<span class="p">}</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;efp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This computation involves purely EFP/EFP fragment interactions and is
+performed entirely by the LIBEFP library.  <a href="#id25"><span class="problematic" id="id26">|PSIfour|</span></a> can also handle mixed
+systems of quantum mechanical (QM) and EFP fragments through the native
+<a class="reference internal" href="scf.html#sec-scf"><span class="std std-ref">SCF</span></a> code augmented by calls to the LIBEFP library. For
+example, turning one of the waters in the example above into a QM
+fragment is shown below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="p">{</span>
+  <span class="n">efp</span> <span class="n">c6h6</span>  <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>   <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>
+  <span class="o">--</span>
+  <span class="n">O</span>  <span class="mf">4.0</span>   <span class="mf">0.0</span>   <span class="mf">0.0</span>
+  <span class="n">H</span>  <span class="mf">4.7</span>   <span class="mf">0.7</span>   <span class="mf">0.0</span>
+  <span class="n">H</span>  <span class="mf">3.3</span>  <span class="o">-</span><span class="mf">0.7</span>   <span class="mf">0.0</span>
+  <span class="o">--</span>
+  <span class="n">efp</span> <span class="n">h2o</span>  <span class="o">-</span><span class="mf">4.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>   <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="n">basis</span> <span class="mi">6</span><span class="o">-</span><span class="mi">31</span><span class="n">g</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;scf&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Whenever an EFP fragment is present in the active molecule, the SCF energy
+will include EFP contributions.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Although the EFP geometry is specified alongside the QM
+geometry in a <code class="docutils literal notranslate"><span class="pre">molecule</span> <span class="pre">name</span> <span class="pre">{...}</span></code> block, internally the handling
+of EFP is not so clean. In straightforward input files that involve
+any number of [molecule block, energy/opt/etc, clean()] portions,
+there should be no problem; the energy/opt computation will always
+be run on the molecule defined in the preceding block. For advanced
+users, unexpected difficulties may arise due to: (1) the EFP fragment
+from the last molecule block executed will always be active (and
+potentially interfering with SCF) and (2) recalling a molecule
+through <code class="docutils literal notranslate"><span class="pre">activate(name)</span></code> (where <code class="docutils literal notranslate"><span class="pre">name</span></code> was the python handle
+in the molecule block) will not load up any EFP portion of that
+molecule. This divergent treatment is a stopgap while we determine
+how best to handle molecules with different domains.</p>
+</div>
+<p>At this time, <a href="#id27"><span class="problematic" id="id28">|PSIfour|</span></a> is only able to perform pure-efp single-points and
+geometry optimizations and mixed qm/efp SCF single-points.</p>
+<blockquote id="table-libefpauto">
+<div><table class="docutils align-default" id="table-libefp-methods">
+<thead>
+<tr class="row-odd"><th class="head"><p>name</p></th>
+<th class="head"><p>molecule composition</p></th>
+<th class="head"><p>calls method</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td rowspan="3"><p>efp</p>
+<p>efp</p>
+<p>efp</p>
+</td>
+<td><p>pure EFP</p></td>
+<td><p>EFP interaction energy (IE) on all frags</p></td>
+</tr>
+<tr class="row-odd"><td><p>mixed QM/EFP</p></td>
+<td><p>EFP IE on EFP frags only</p></td>
+</tr>
+<tr class="row-even"><td><p>pure QM</p></td>
+<td><p><em>error</em></p></td>
+</tr>
+<tr class="row-odd"><td rowspan="3"><p>scf</p>
+<p>scf</p>
+<p>scf</p>
+</td>
+<td><p>pure EFP</p></td>
+<td><p><em>error</em></p></td>
+</tr>
+<tr class="row-even"><td><p>mixed QM/EFP</p></td>
+<td><p>SCF energy on QM frags w/coupling to EFP frags, plus EFP IE on EFP frags</p></td>
+</tr>
+<tr class="row-odd"><td><p>pure QM</p></td>
+<td><p>SCF energy on all frags (normal <a href="#id29"><span class="problematic" id="id30">|Psifour|</span></a> operation)</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+<section id="fragment-library">
+<span id="sec-availableefpfragments"></span><span id="index-5"></span><h2>Fragment Library<a class="headerlink" href="#fragment-library" title="Link to this heading">¶</a></h2>
+<p>Below are documented the EFP fragments available from the LIBEFP library.
+These systems are accessible in <code class="docutils literal notranslate"><span class="pre">molecule</span> <span class="pre">{...}</span></code> blocks without
+additional configuration.</p>
+<hr class="docutils" />
+<div class="toctree-wrapper compound">
+</div>
+</section>
+<section id="how-to-configure-libefp-for-building-psi4">
+<span id="cmake-libefp"></span><h2>How to configure libefp for building Psi4<a class="headerlink" href="#how-to-configure-libefp-for-building-psi4" title="Link to this heading">¶</a></h2>
+<p><strong>Role and Dependencies</strong></p>
+<ul class="simple">
+<li><p>Role <a href="#id31"><span class="problematic" id="id32">|w---w|</span></a> In <a href="#id33"><span class="problematic" id="id34">|PSIfour|</span></a>, libefp is a library that provides additional
+molecular modeling capabilities (EFP).</p></li>
+<li><p>Downstream Dependencies <a href="#id35"><span class="problematic" id="id36">|w---w|</span></a> <a href="#id37"><span class="problematic" id="id38">|PSIfour|</span></a> (<a href="#id39"><span class="problematic" id="id40">|dr|</span></a> optional) libefp</p></li>
+<li><p>Upstream Dependencies <a href="#id41"><span class="problematic" id="id42">|w---w|</span></a> libefp <a href="#id43"><span class="problematic" id="id44">|dr|</span></a> BLAS/LAPACK</p></li>
+</ul>
+<p><strong>CMake Variables</strong></p>
+<ul class="simple">
+<li><p><strong class="makevar">ENABLE_libefp</strong> <a href="#id45"><span class="problematic" id="id46">|w---w|</span></a> CMake variable toggling whether Psi4 builds with libefp</p></li>
+<li><p><strong class="makevar">CMAKE_PREFIX_PATH</strong> <a href="#id47"><span class="problematic" id="id48">|w---w|</span></a> CMake list variable to specify where pre-built dependencies can be found. For libefp, set to an installation directory containing <code class="docutils literal notranslate"><span class="pre">include/efp.h</span></code></p></li>
+<li><p><strong class="makevar">libefp_DIR</strong> <a href="#id49"><span class="problematic" id="id50">|w---w|</span></a> CMake variable to specify where pre-built libefp can be found. Set to installation directory containing <code class="docutils literal notranslate"><span class="pre">share/cmake/libefp/libefpConfig.cmake</span></code></p></li>
+<li><p><strong class="makevar">CMAKE_DISABLE_FIND_PACKAGE_libefp</strong> <a href="#id51"><span class="problematic" id="id52">|w---w|</span></a> CMake variable to force internal build of libefp instead of detecting pre-built</p></li>
+<li><p><strong class="makevar">CMAKE_INSIST_FIND_PACKAGE_libefp</strong> <a href="#id53"><span class="problematic" id="id54">|w---w|</span></a> CMake variable to force detecting pre-built libefp and not falling back on internal build</p></li>
+</ul>
+<p><strong>Examples</strong></p>
+<ol class="upperalpha simple">
+<li><p>Build bundled</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>cmake<span class="w"> </span>-DENABLE_libefp<span class="o">=</span>ON
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="upperalpha simple" start="2">
+<li><p>Build <em>without</em> libefp</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>cmake
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="upperalpha simple" start="3">
+<li><p>Link against pre-built</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>cmake<span class="w"> </span>-DENABLE_libefp<span class="o">=</span>ON<span class="w"> </span>-DCMAKE_PREFIX_PATH<span class="o">=</span>/path/to/libefp/root
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>cmake<span class="w"> </span>-DENABLE_libefp<span class="o">=</span>ON<span class="w"> </span>-Dlibefp_DIR<span class="o">=</span>/path/to/libefp/configdir
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="upperalpha simple" start="4">
+<li><p>Build bundled despite pre-built being detectable</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>cmake<span class="w"> </span>-DENABLE_libefp<span class="o">=</span>ON<span class="w"> </span>-DCMAKE_PREFIX_PATH<span class="o">=</span>/path/to/unwanted/libefp/root/and/wanted/other/dependencies/root<span class="w"> </span>-DCMAKE_DISABLE_FIND_PACKAGE_libefp<span class="o">=</span>ON
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/libefp.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

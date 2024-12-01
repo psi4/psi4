@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Managing: Git, Conda, CMake and all that &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="managing-git-conda-cmake-and-all-that">
+<span id="sec-manage"></span><h1>Managing: Git, Conda, CMake and all that<a class="headerlink" href="#managing-git-conda-cmake-and-all-that" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="manage_addon.html">Adding Add-Ons</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manage_addon.html#how-to-use-an-add-on-s-name-in-directory-structure-build-and-distribution">How to use an Add-On's name in directory structure, build, and distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_addon.html#how-to-integrate-an-add-on-into-build-testing-and-docs">How to integrate an Add-On into build, testing, and docs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_addon.html#else">else</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_addon.html#how-to-name-keywords-in-psi4-src-read-options-cc">How to name keywords in <code class="docutils literal notranslate"><span class="pre">psi4/src/read_options.cc</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manage_git.html">Git, Versioning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manage_git.html#how-to-bump-a-version">How to bump a version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_git.html#how-to-create-and-remove-an-annotated-git-tag-on-a-remote">How to create and remove an annotated Git tag on a remote</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_git.html#what-psi4-version-is-running">What Psi4 version is running</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_git.html#how-to-locate-non-ascii-characters-in-the-codebase">How to locate non-ascii characters in the codebase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_git.html#how-to-fix-psi4-undefined-version">How to fix &quot;Psi4 undefined&quot; version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_git.html#how-to-fix-cannot-import-name-core-from-top-level-psi4-dir">How to fix &quot;cannot import name 'core' from {top-level-psi4-dir}</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_git.html#how-to-find-tests-without-output-ref">How to find tests without output.ref</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_git.html#how-to-do-github-issue-management-and-code-review">How to do GitHub issue management and code review</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manage_release.html">Release Procedures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#annual">Annual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#pre-release-e-g-v1-3rc1">Pre-Release (e.g., <code class="docutils literal notranslate"><span class="pre">v1.3rc1</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#release-e-g-v1-3">Release (e.g., <code class="docutils literal notranslate"><span class="pre">v1.3</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#post-release-e-g-v1-8-2">Post-Release (e.g., <code class="docutils literal notranslate"><span class="pre">v1.8.2</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#on-january-first">On January first</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#update-copyright-year">Update copyright year</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#update-counter-scripts">Update counter scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#update-samples">Update samples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#collect-new-authors">Collect new authors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#run-long-tests">Run long tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#anticipate-next-release">Anticipate next release</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#build-conda-ecosystem-stack">Build Conda ecosystem stack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#assemble-postrelease-changes">Assemble postrelease changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#tweak-conda-for-postrelease">Tweak Conda for postrelease</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#do-final-pass-before-release-tag">Do final pass before release tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#tag-pre-release">Tag (pre)release</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#tag-postrelease">Tag postrelease</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#initialize-release-branch">Initialize release branch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#build-extra-conda-packages-for-psi4-channel">Build extra Conda packages for Psi4 channel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#build-psi4conda-set">Build Psi4conda set</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#build-docker-images">Build Docker images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#generate-download-page-for-psicode-org">Generate download page for psicode.org</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#collect-documentation-snapshot">Collect documentation snapshot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#publish-github-release">Publish GitHub release</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#publish-github-postrelease">Publish GitHub postrelease</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#publish-psicode-org-release">Publish psicode.org release</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#finalize-release">Finalize release</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manage_release.html#misc">Misc.</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/manage_index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

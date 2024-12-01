@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>DFT-NL &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="dft-nl">
+<span id="sec-dftnl"></span><span id="index-0"></span><h1>DFT-NL<a class="headerlink" href="#dft-nl" title="Link to this heading">¶</a></h1>
+<p>Non-local (NL), density based correlation energy from the VV10 kernel can be added
+to arbitrary functionals.</p>
+<div class="math notranslate nohighlight">
+\[E_{DFT-NL}=E_{DFT}+E_{NL}\]</div>
+<p>For pre-defined functionals (see Functional overview in <a class="reference internal" href="dft_byfunctional.html#table-dft-all"><span class="std std-ref">this Table</span></a> ) it is sufficient to add <cite>-NL</cite> to
+the functional name:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy</span><span class="p">(</span><span class="s1">&#39;b3lyp-nl&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Modification of the parameters <cite>b</cite> and <cite>C</cite> is done setting <a href="#id3"><span class="problematic" id="id4">|scf__dft_vv10_b|</span></a> and <a href="#id5"><span class="problematic" id="id6">|scf__dft_vv10_c|</span></a>. The <cite>C</cite> is usually left unchanged and the originally proposed
+value of <cite>C=0.0093</cite> is used.</p>
+<p>Adding <a href="#id7"><span class="problematic" id="id8">|scf__dft_vv10_b|</span></a> to any functional activates the calculation of the VV10 kernel. A BLYP-NL calculation can be set as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">DFT_VV10_B</span> <span class="mf">4.0</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;blyp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The default <cite>C</cite> parameter will be used.</p>
+<p>Similar to <a href="#id9"><span class="problematic" id="id10">|scf__dft_dispersion_parameters|</span></a> the tuple <a href="#id11"><span class="problematic" id="id12">|scf__nl_dispersion_parameters|</span></a> can used:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">NL_DISPERSION_PARAMTERS</span> <span class="p">[</span><span class="mf">4.0</span><span class="p">]</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;blyp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which is equivalent to the example above.</p>
+<p>Further examples can be found in the respective <a href="#id1"><span class="problematic" id="id2">:source:`regression test &lt;tests/dft-vv10/input.dat&gt;`</span></a></p>
+<section id="post-scf-time-savings">
+<h2>post-SCF time savings<a class="headerlink" href="#post-scf-time-savings" title="Link to this heading">¶</a></h2>
+<p>Substantial time-savings for energy calculations are available by evaluating the VV10 kernel only at the converged electron density, i.e. in a post-SCF fashion.
+The deviations from the fully self-consistent treatment are usually minimal. To activate this set <a href="#id13"><span class="problematic" id="id14">|scf__dft_vv10_postscf|</span></a> to <cite>true</cite>.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/dftnl.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

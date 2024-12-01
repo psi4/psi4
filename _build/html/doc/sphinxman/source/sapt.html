@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>SAPT: Symmetry-Adapted Perturbation Theory &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="sapt-symmetry-adapted-perturbation-theory">
+<span id="sec-sapt"></span><span id="index-0"></span><h1>SAPT: Symmetry-Adapted Perturbation Theory<a class="headerlink" href="#sapt-symmetry-adapted-perturbation-theory" title="Link to this heading">¶</a></h1>
+<p><em>Module:</em> <span class="xref std std-ref">Keywords</span>, <span class="xref std std-ref">PSI Variables</span>, <a href="#id1"><span class="problematic" id="id2">:source:`LIBSAPT_SOLVER &lt;psi4/src/psi4/libsapt_solver&gt;`</span></a></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>In rare cases with systems having a high degree of symmetry,
+<a href="#id35"><span class="problematic" id="id36">|Psifour|</span></a> gives (very obviously) wrong answers for SAPT computations
+when the specification is in Z-matrix format. Use a Cartesian representation
+to avoid this problem.</p>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>In early versions (notably <a href="#id37"><span class="problematic" id="id38">|Psifour|</span></a> alpha circa 2011
+and before), frozen core was implemented incompletely and for
+only selected terms. Comparisons with papers published using early
+<a href="#id39"><span class="problematic" id="id40">|PSIfour|</span></a> SAPT code may show discrepancies of 0.01-0.10 kcal/mol in
+individual terms, particularly <span class="math notranslate nohighlight">\(E_{exch}^{(11)}\)</span> and <span class="math notranslate nohighlight">\(E_{exch}^{(12)}\)</span>.</p>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>January 28th 2016, the default for all NAT_ORBS options
+was changed to true. Hence the code now by default uses natural
+orbital truncation to speed up the evaluation of energy terms
+wherever possible, according to literature recommendations.
+In early July 2016, some total SAPT energy psivars were renamed.</p>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>February 7, 2020, a missing term in <span class="math notranslate nohighlight">\(E^{(30)}_{ind}\)</span> was added, causing
+possible discrepancies with prior versions of the code on the order of
+0.01 kcal/mol. See <a class="reference external" href="https://github.com/psi4/psi4/issues/1677">https://github.com/psi4/psi4/issues/1677</a></p>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>August 2021, the number of frozen core orbitals used in the dMP2 computations
+is now standardized. Specifically, we now rigorously enforce that the number of core orbitals
+frozen in dimer computations is equal to the sum of frozen orbitals of each monomer. Prior to
+this, a discrepency between these values was possible when one of the monomers was (exclusively)
+a charged alkali metal.</p>
+</div>
+<div class="admonition caution" id="sec-saptfita">
+<p class="admonition-title">Caution</p>
+<p>May 2022 c. v1.6, the default for <a href="#id41"><span class="problematic" id="id42">|sapt__df_basis_elst|</span></a>
+changed from the value of <a href="#id43"><span class="problematic" id="id44">|sapt__df_basis_sapt|</span></a> (which itself
+defaults to the RI of the orbital basis) to the JKFIT of the orbital
+basis. This affects SAPT0 and sSAPT0 computed with the <a class="reference internal" href="#sec-sapt"><span class="std std-ref">SAPT
+module</span></a> (the default code for <code class="docutils literal notranslate"><span class="pre">energy(&quot;sapt0&quot;)</span></code> that
+can also compute higher-order SAPT). Electostatics, exchange,
+and induction terms for SAPT0 and sSAPT0 accessed through
+<code class="docutils literal notranslate"><span class="pre">energy(&quot;sapt0&quot;)</span></code> or <code class="docutils literal notranslate"><span class="pre">energy(&quot;ssapt0&quot;)</span></code> change; the dispersion
+term does not change. The SAPT0 and sSAPT0 terms accessed as
+subsidiary calculations of higher-order SAPT do not change; that is,
+the <a class="reference internal" href="#sec-sapt"><span class="std std-ref">SAPT module</span></a> breaks the consistency of its SAPT0
+results. The reasoning and reward behind this change is that the JKFIT
+basis better describes the physics (see <a class="reference internal" href="#sec-saptfitb"><span class="std std-ref">fitting changes</span></a> ) and the
+default SAPT0 results from the <a class="reference internal" href="#sec-sapt"><span class="std std-ref">SAPT module</span></a> are now
+consistent with those from the <a class="reference internal" href="fisapt.html#sec-fisapt"><span class="std std-ref">FISAPT module</span></a> and
+the sapt(dft) module. See <a href="#id3"><span class="problematic" id="id4">:srcsample:`sapt-compare`</span></a> for an example.
+To reproduce former behavior, set <a href="#id45"><span class="problematic" id="id46">|sapt__df_basis_elst|</span></a> to the
+orbital basis set's RI auxiliary basis.</p>
+</div>
+<p>Symmetry-adapted perturbation theory (SAPT) provides a means of directly
+computing the noncovalent interaction between two molecules, that is, the
+interaction energy is determined without computing the total energy of the
+monomers or dimer. In addition, SAPT provides a decomposition of the
+interaction energy into physically meaningful components: <em>i.e.</em>,
+electrostatic, exchange, induction, and dispersion terms. In SAPT, the
+Hamiltonian of the dimer is partitioned into contributions from each
+monomer and the interaction.</p>
+<div class="math notranslate nohighlight">
+\[H=F_A+W_A+F_B+W_B+V\]</div>
+<p>Here, the Hamiltonian is written as a sum of the usual monomer Fock
+operators, <span class="math notranslate nohighlight">\(F\)</span>, the fluctuation potential of each monomer, <span class="math notranslate nohighlight">\(W\)</span>, and the
+interaction potential, <span class="math notranslate nohighlight">\(V\)</span>. The monomer Fock operators, <span class="math notranslate nohighlight">\(F_A+F_B\)</span>, are
+treated as the zeroth-order Hamiltonian and the interaction energy is
+evaluated through a perturbative expansion of <span class="math notranslate nohighlight">\(V\)</span>, <span class="math notranslate nohighlight">\(W_A\)</span>, and <span class="math notranslate nohighlight">\(W_B\)</span>.
+Through first-order in <span class="math notranslate nohighlight">\(V\)</span>, electrostatic and exchange interactions are
+included; induction and dispersion first appear at second-order in <span class="math notranslate nohighlight">\(V\)</span>. For
+a complete description of SAPT, the reader is referred to the excellent
+review by Jeziorski, Moszynski, and Szalewicz <a class="reference internal" href="bibliography.html#jeziorski-1994-1887" id="id5"><span>[Jeziorski:1994:1887]</span></a>.</p>
+<p>Several truncations of the closed-shell SAPT expansion are available in the SAPT
+module of <a href="#id47"><span class="problematic" id="id48">|PSIfour|</span></a>. The simplest truncation of SAPT is denoted SAPT0
+and defined in Eq. <a class="reference internal" href="#equation-sapt0">(1)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-sapt0">
+<span class="eqno">(1)<a class="headerlink" href="#equation-sapt0" title="Link to this equation">¶</a></span>\[E_{SAPT0} = E_{elst}^{(10)} + E_{exch}^{(10)} + E_{ind,resp}^{(20)} +
+E_{exch-ind,resp}^{(20)} + E_{disp}^{(20)} + E_{exch-disp}^{(20)} + \delta_{HF}^{(2)}\]</div>
+<p>In this notation, <span class="math notranslate nohighlight">\(E^{(vw)}\)</span> defines the order in <span class="math notranslate nohighlight">\(V\)</span> and in <span class="math notranslate nohighlight">\(W_A+W_B\)</span>; the
+subscript, <span class="math notranslate nohighlight">\(resp\)</span>, indicates that orbital relaxation effects are included.</p>
+<div class="math notranslate nohighlight" id="equation-sapt2">
+<span class="eqno">(2)<a class="headerlink" href="#equation-sapt2" title="Link to this equation">¶</a></span>\[E_{SAPT2} = E_{SAPT0} + E_{elst,resp}^{(12)} + E_{exch}^{(11)} +
+E_{exch}^{(12)} + \; ^{t}\!E_{ind}^{(22)} + \; ^{t}\!E_{exch-ind}^{(22)}\]</div>
+<div class="math notranslate nohighlight" id="equation-sapt2p">
+<span class="eqno">(3)<a class="headerlink" href="#equation-sapt2p" title="Link to this equation">¶</a></span>\[E_{SAPT2+} = E_{SAPT2} + E_{disp}^{(21)} + E_{disp}^{(22)}\]</div>
+<div class="math notranslate nohighlight" id="equation-sapt2pparen3">
+<span class="eqno">(4)<a class="headerlink" href="#equation-sapt2pparen3" title="Link to this equation">¶</a></span>\[E_{SAPT2+(3)} = E_{SAPT2+} + E_{elst,resp}^{(13)} + E_{disp}^{(30)}\]</div>
+<div class="math notranslate nohighlight" id="equation-sapt2p3">
+<span class="eqno">(5)<a class="headerlink" href="#equation-sapt2p3" title="Link to this equation">¶</a></span>\[E_{SAPT2+3} = E_{SAPT2+(3)}
++ E_{exch-ind}^{(30)} + E_{ind,resp}^{(30)}
++ E_{exch-disp}^{(30)} + E_{ind-disp}^{(30)} + E_{exch-ind-disp}^{(30)}
+- \delta_{HF}^{(2)} + \delta_{HF}^{(3)}\]</div>
+<p>For SAPT(DFT), the SAPT expansion is truncated at the same level of SAPT0, but the zeroth-order Hamiltonian is chosen to be <span class="math notranslate nohighlight">\(K_A+K_B\)</span>, the monomer Kohn-Sham operators, instead of the Fock operators. The dispersion term needs to be computed with orbital relaxation for the result to be reasonable, and this is possible by computing dispersion energy through coupled frequency-dependent density susceptibility (FDDS). The exchange-dispersion term is estimated by scaling the uncoupled exchange-dispersion energy.</p>
+<div class="math notranslate nohighlight" id="equation-saptdft">
+<span class="eqno">(6)<a class="headerlink" href="#equation-saptdft" title="Link to this equation">¶</a></span>\[E_{SAPT(DFT)} =  E_{elst}^{(10)} + E_{exch}^{(10)} + E_{ind,resp}^{(20)} +
+E_{exch-ind,resp}^{(20)} + E_{disp,resp}^{(20)} + E_{exch-disp,resp}^{(20)}(est.) + \delta_{HF}^{(2)}\]</div>
+<div class="math notranslate nohighlight">
+\[E_{disp,resp}^{(20)} = -\frac{1}{2\pi}\int_0^\infty d\omega \int d\mathbf{r}_A d\mathbf{r}'_A d\mathbf{r}_B d\mathbf{r}'_B \frac{1}{\left|\mathbf{r}_A-\mathbf{r}_B\right|}\frac{1}{\left|\mathbf{r}'_A-\mathbf{r}'_B\right|}\chi^A_{coup}\left(\mathbf{r}_A,\mathbf{r}'_A|i\omega\right)\chi^B_{coup}\left(\mathbf{r}_B,\mathbf{r}'_B|i\omega\right)\]</div>
+<div class="math notranslate nohighlight">
+\[\chi_{coup}\left(\mathbf{r},\mathbf{r}'|\omega\right) = \chi_0\left(\mathbf{r},\mathbf{r}'|\omega\right) + \int d\omega d\mathbf{r}_1 d\mathbf{r}_2 \chi_0\left(\mathbf{r},\mathbf{r}_1|\omega\right)\left[\frac{1}{r_{12}} + f_{xc}\left(\mathbf{r}_1,\mathbf{r}_2,\omega\right)\right]\chi\left(\mathbf{r}_2,\mathbf{r}'|\omega\right)\]</div>
+<p>The <span class="math notranslate nohighlight">\(\delta_{HF}^{(2)}\)</span> and <span class="math notranslate nohighlight">\(\delta_{HF}^{(3)}\)</span> terms take into
+account higher-order induction effects and are included in the definition
+of SAPT terms. They are computed from the Hartree--Fock supermolecular interaction energy
+<span class="math notranslate nohighlight">\(E_{int}^{HF}\)</span> and are only available in dimer-centered basis SAPT
+computations, which is the default (see below for monomer-centered basis
+computations). They are defined by:</p>
+<div class="math notranslate nohighlight" id="equation-dhf2">
+<span class="eqno">(7)<a class="headerlink" href="#equation-dhf2" title="Link to this equation">¶</a></span>\[\delta_{HF}^{(2)} = E_{int}^{HF} - (E_{elst}^{(10)} + E_{exch}^{(10)}
++ E_{ind,resp}^{(20)} + E_{exch-ind,resp}^{(20)})\]</div>
+<div class="math notranslate nohighlight" id="equation-dhf3">
+<span class="eqno">(8)<a class="headerlink" href="#equation-dhf3" title="Link to this equation">¶</a></span>\[\delta_{HF}^{(3)} = \delta_{HF}^{(2)} - (E_{exch-ind}^{(30)}
++ E_{ind,resp}^{(30)})\]</div>
+<p>Additionally, high-order coupling between induction and dispersion can be
+extracted from the supermolecular MP2 interaction energy:</p>
+<div class="math notranslate nohighlight">
+\[\delta_{MP2}^{(2)} = E_{int}^{MP2, corr} - (E_{elst}^{(12)} +
+E_{exch}^{(11)} + E_{exch}^{(12)} + \; ^{t}\!E_{ind}^{(22)}
++ \; ^{t}\!E_{exch-ind}^{(22)} + E_{disp}^{(20)} + E_{exch-disp}^{(20)})\]</div>
+<div class="math notranslate nohighlight">
+\[\delta_{MP2}^{(3)} = \delta_{MP2}^{(2)} - (E_{ind-disp}^{(30)} + E_{exch-ind-disp}^{(30)})\]</div>
+<p>where <span class="math notranslate nohighlight">\(E_{int}^{MP2, corr}\)</span> is the correlation part of the supermolecular MP2
+interaction energy. <span class="math notranslate nohighlight">\(\delta_{MP2}^{(2)}\)</span> and <span class="math notranslate nohighlight">\(\delta_{MP2}^{(3)}\)</span> also improve the
+description of electrostatically dominated complexes. <span class="math notranslate nohighlight">\(\delta_{MP2}^{(2)}\)</span>
+can be applied to SAPT2+ or SAPT2+(3) energies whereas <span class="math notranslate nohighlight">\(\delta_{MP2}^{(3)}\)</span>
+should be applied to SAPT2+3 energies.</p>
+<p>A thorough analysis of the performance of these truncations of closed-shell SAPT can be
+found in a review by Hohenstein and Sherrill <a class="reference internal" href="bibliography.html#hohenstein-2012-wires" id="id6"><span>[Hohenstein:2012:WIREs]</span></a>,
+and a systematic study of the accuracy of these truncations (with and
+without an improved CCD treatment of dispersion) using different basis sets
+is reported in <a class="reference internal" href="bibliography.html#parker-2014-094106" id="id7"><span>[Parker:2014:094106]</span></a>.</p>
+<p>The closed-shell SAPT module relies entirely on the density-fitting approximation
+of the two-electron integrals. The factorization of the SAPT energy
+expressions, as implemented in <a href="#id49"><span class="problematic" id="id50">|PSIfour|</span></a>, assumes the use of density-fitted
+two-electron integrals, therefore, the closed-shell SAPT module cannot be run with
+exact integrals. In practice, we have found that the density-fitting
+approximation introduces negligible errors into the SAPT energy
+(often less than 0.01 kcal/mol for small dimers) and greatly
+improves efficiency.</p>
+<p>The latest addition to the SAPT code is the SAPT0 method for open-shell
+monomers <a class="reference internal" href="bibliography.html#gonthier-2016-134106" id="id8"><span>[Gonthier:2016:134106]</span></a>. This code is available for both exact and density fitted integrals,
+except for the dispersion terms which implementation relies on a density fitting
+factorization. Both <code class="docutils literal notranslate"><span class="pre">UHF</span></code> and <code class="docutils literal notranslate"><span class="pre">ROHF</span></code> <a href="#id51"><span class="problematic" id="id52">|scf__reference|</span></a> can be used, but coupled
+induction computations are currently not supported with <code class="docutils literal notranslate"><span class="pre">ROHF</span></code>. This means that orbital
+relaxation is not included for <code class="docutils literal notranslate"><span class="pre">ROHF</span></code> and the uncoupled induction term is computed instead.
+If both monomers are open-shell, their coupling is assumed to be high spin, i.e.
+two doublets would interact to form a triplet.</p>
+<section id="the-s2-approximation-and-scaling">
+<h2>The <em>S</em><sup>2</sup> approximation and scaling<a class="headerlink" href="#the-s2-approximation-and-scaling" title="Link to this heading">¶</a></h2>
+<p>All exchange terms in SAPT arise from the antisymmetrization
+of the wavefunctions of monomers A and B. Taking into account exchange of all possible
+electron pairs between the two monomers yields to complicated formulae.
+For this reason, exchange terms are often evaluated in the <span class="math notranslate nohighlight">\(S^{2}\)</span>
+approximation, that can be interpreted as the exchange of a single electron
+pair between monomers.</p>
+<p>The <span class="math notranslate nohighlight">\(S^{2}\)</span> approximation is usually pretty good, but may
+break down for short intermolecular distance, particularly in high-order
+terms. To compensate for these deviations, in 2014 Parker et al. <a class="reference internal" href="bibliography.html#parker-2014-094106" id="id9"><span>[Parker:2014:094106]</span></a>
+recommended to scale all <span class="math notranslate nohighlight">\(S^{2}\)</span> approximated exchange terms by the ratio:</p>
+<div class="math notranslate nohighlight">
+\[p_{EX}(\alpha) = \left( \frac{E_{exch}^{(10)}}{E_{exch}^{(10)}(S^{2})} \right)^{\alpha}\]</div>
+<p>and recommended using the ratio with exponent <span class="math notranslate nohighlight">\(\alpha = 1\)</span>. To obtain SAPT energies with this scaling,
+simply set the keyword <code class="docutils literal notranslate"><span class="pre">exch_scale_alpha</span> <span class="pre">true</span></code>. Alternatively, another value for <span class="math notranslate nohighlight">\(\alpha\)</span>
+can be specified by setting <a href="#id53"><span class="problematic" id="id54">|sapt__exch_scale_alpha|</span></a> to a value. For example,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">exch_scale_alpha</span> <span class="mf">1.0</span>
+</pre></div>
+</div>
+<p>will set <span class="math notranslate nohighlight">\(\alpha = 1.0\)</span> and scale exchange energies with <span class="math notranslate nohighlight">\(p_{EX}(1.0)\)</span>.</p>
+<p>However, as pointed out by Schaffer and Jansen <a class="reference internal" href="bibliography.html#schaffer-2013-2570" id="id10"><span>[Schaffer:2013:2570]</span></a>
+in the context of DFT-based SAPT, the ratios <span class="math notranslate nohighlight">\(E_{exch}^{(1)}(S^{2})/E_{exch}^{(1)}\)</span>,
+<span class="math notranslate nohighlight">\(E_{\rm exch-ind}^{(2)}(S^2)/E_{\rm exch-ind}^{(2)}\)</span>, and
+<span class="math notranslate nohighlight">\(E_{\rm exch-disp}^{(2)}(S^2)/E_{\rm exch-disp}^{(2)}\)</span> are not very similar to
+each other.  Hence, in 2016 universal scaling of all <span class="math notranslate nohighlight">\(S^{2}\)</span> approximated terms
+was turned off by default.</p>
+<p>Finally, in 2014 Parker et al. <a class="reference internal" href="bibliography.html#parker-2014-094106" id="id11"><span>[Parker:2014:094106]</span></a> empirically discovered that
+SAPT0 energies for van der Waals dimers with close contacts benefit from a slightly modified
+recipe that involves an empirically adjusted exponent <span class="math notranslate nohighlight">\(\alpha = 3.0\)</span>.
+To distinguish it from its unscaled counterpart, this energy is denoted sSAPT0 (see <a class="reference internal" href="bibliography.html#parker-2014-094106" id="id12"><span>[Parker:2014:094106]</span></a>).</p>
+<div class="math notranslate nohighlight" id="equation-ssapt0">
+<span class="eqno">(9)<a class="headerlink" href="#equation-ssapt0" title="Link to this equation">¶</a></span>\[E_{sSAPT0} = E_{elst}^{(10)} + E_{exch}^{(10)} + E_{ind,resp}^{(20)} +
+p_{EX}(3.0) E_{exch-ind,resp}^{(20)} + E_{disp}^{(20)} + p_{EX}(3.0) E_{exch-disp}^{(20)}
++ \delta_{HF}^{(2)}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\delta_{HF}^{(2)}\)</span> is computed <em>without</em> any scaling. Please note that
+sSAPT0 is thus not the same as requesting <code class="docutils literal notranslate"><span class="pre">exch_scale_alpha</span> <span class="pre">3.0</span></code>, and that the
+scaling is automatically performed by requesting <code class="docutils literal notranslate"><span class="pre">energy('ssapt0')</span></code>.</p>
+</section>
+<section id="a-first-example">
+<h2>A First Example<a class="headerlink" href="#a-first-example" title="Link to this heading">¶</a></h2>
+<p>The following is the simplest possible input that will perform all
+available SAPT computations (normally, you would pick one of these methods,
+not all of them).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">water_dimer</span> <span class="p">{</span>
+     <span class="mi">0</span> <span class="mi">1</span>
+     <span class="n">O</span>  <span class="o">-</span><span class="mf">1.551007</span>  <span class="o">-</span><span class="mf">0.114520</span>   <span class="mf">0.000000</span>
+     <span class="n">H</span>  <span class="o">-</span><span class="mf">1.934259</span>   <span class="mf">0.762503</span>   <span class="mf">0.000000</span>
+     <span class="n">H</span>  <span class="o">-</span><span class="mf">0.599677</span>   <span class="mf">0.040712</span>   <span class="mf">0.000000</span>
+     <span class="o">--</span>
+     <span class="mi">0</span> <span class="mi">1</span>
+     <span class="n">O</span>   <span class="mf">1.350625</span>   <span class="mf">0.111469</span>   <span class="mf">0.000000</span>
+     <span class="n">H</span>   <span class="mf">1.680398</span>  <span class="o">-</span><span class="mf">0.373741</span>  <span class="o">-</span><span class="mf">0.758561</span>
+     <span class="n">H</span>   <span class="mf">1.680398</span>  <span class="o">-</span><span class="mf">0.373741</span>   <span class="mf">0.758561</span>
+
+     <span class="n">units</span> <span class="n">angstrom</span>
+     <span class="n">no_reorient</span>
+     <span class="n">symmetry</span> <span class="n">c1</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="n">basis</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt0&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+(3)&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+3&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The SAPT module uses the standard <a href="#id55"><span class="problematic" id="id56">|PSIfour|</span></a> partitioning of the dimer
+into monomers. SAPT does not use spatial symmetry and needs the geometry
+of the system to remain fixed throughout monomer and dimer calculations.
+These requirements are imposed whenever a SAPT calculation is requested
+but can also be set explicitly with the <code class="docutils literal notranslate"><span class="pre">no_reorient</span></code> and <code class="docutils literal notranslate"><span class="pre">symmetry</span>
+<span class="pre">c1</span></code> molecule keywords, as in the example above. As a reminder, only
+SAPT0 can handle the interaction of both closed- and open-shell monomers.
+Higher-order SAPT and SAPT(DFT) are currently available only
+for computation of interactions between
+closed-shell singlets.  The SAPT codes in <a href="#id57"><span class="problematic" id="id58">|PSIfour|</span></a> have been written
+to utilize density fitting, which is much faster than using conventional
+4-index electron repulsion integrals.  This happens automatically and
+does not require any additional keywords to be specified (both the
+SAPT computations and the underlying Hartree-Fock computations will
+utilize density fitting).</p>
+<p>For SAPT(DFT), the user will need to manually specify the GRAC shift of
+both monomers, defined by the difference of ionization potential (IP) and
+Kohn-Sham HOMO energy. The ionization potential data for many common molecules
+is available in NIST Chemistry Webbook. Alternatively, one can estimate the
+ionization potential of molecule by computing the energy difference between
+the molecule as given, and the molecule after one electron has been removed
+(e.g., the energy difference between a neutral molecule and its cation).</p>
+<p>The values of GRAC shifts should be given in Hartree. For the example above,
+the GRAC shift value of both molecules are calculated to be 0.1307 (using experimental
+IP from CCCBDB), and the user would specify them using the following keywords:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="nb">globals</span> <span class="p">{</span>
+    <span class="n">sapt_dft_grac_shift_a</span> <span class="mf">0.1307</span>
+    <span class="n">sapt_dft_grac_shift_b</span> <span class="mf">0.1307</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>A complete, minimal example of a SAPT(DFT) computation is given below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="p">{</span>
+    <span class="mi">0</span> <span class="mi">1</span>
+    <span class="n">O</span>  <span class="o">-</span><span class="mf">1.551007</span>  <span class="o">-</span><span class="mf">0.114520</span>   <span class="mf">0.000000</span>
+    <span class="n">H</span>  <span class="o">-</span><span class="mf">1.934259</span>   <span class="mf">0.762503</span>   <span class="mf">0.000000</span>
+    <span class="n">H</span>  <span class="o">-</span><span class="mf">0.599677</span>   <span class="mf">0.040712</span>   <span class="mf">0.000000</span>
+    <span class="o">--</span>
+    <span class="mi">0</span> <span class="mi">1</span>
+    <span class="n">O</span>   <span class="mf">1.350625</span>   <span class="mf">0.111469</span>   <span class="mf">0.000000</span>
+    <span class="n">H</span>   <span class="mf">1.680398</span>  <span class="o">-</span><span class="mf">0.373741</span>  <span class="o">-</span><span class="mf">0.758561</span>
+    <span class="n">H</span>   <span class="mf">1.680398</span>  <span class="o">-</span><span class="mf">0.373741</span>   <span class="mf">0.758561</span>
+
+    <span class="n">units</span> <span class="n">angstrom</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+    <span class="n">basis</span>                  <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+    <span class="n">sapt_dft_grac_shift_a</span>  <span class="mf">0.1307</span>
+    <span class="n">sapt_dft_grac_shift_b</span>  <span class="mf">0.1307</span>
+<span class="p">}</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt(dft)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As already mentioned above, the SAPT0 module for open-shell cases can also
+use exact integrals for all terms except for dispersion. In practice,
+density fitting is considerably faster and introduces negligible errors, thus
+it is the preferred method for open-shell cases as well.
+Below, you can find a minimum example of open-shell SAPT0 computation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="p">{</span>
+    <span class="mi">0</span> <span class="mi">1</span>
+    <span class="n">O</span> <span class="mf">0.000000</span>  <span class="mf">0.000000</span>  <span class="mf">6.000000</span>
+    <span class="n">H</span> <span class="mf">0.000000</span>  <span class="mf">1.431500</span>  <span class="mf">4.890600</span>
+    <span class="n">H</span> <span class="mf">0.000000</span> <span class="o">-</span><span class="mf">1.431500</span>  <span class="mf">4.890600</span>
+    <span class="o">--</span>
+    <span class="mi">0</span> <span class="mi">2</span>
+    <span class="n">O</span> <span class="mf">0.000000</span>  <span class="mf">0.000000</span>  <span class="mf">0.000000</span>
+    <span class="n">O</span> <span class="mf">0.000000</span>  <span class="mf">2.503900</span>  <span class="mf">0.000000</span>
+    <span class="n">H</span> <span class="mf">0.000000</span> <span class="o">-</span><span class="mf">0.424700</span> <span class="o">-</span><span class="mf">1.839500</span>
+    <span class="n">units</span> <span class="n">bohr</span>
+    <span class="n">symmetry</span> <span class="n">c1</span>
+    <span class="n">no_reorient</span>
+    <span class="n">no_com</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+    <span class="n">reference</span>    <span class="n">uhf</span>
+    <span class="n">scf_type</span>     <span class="n">df</span>
+    <span class="n">basis</span>        <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+<span class="p">}</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt0&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a href="#id59"><span class="problematic" id="id60">|scf__reference|</span></a> needs to be <code class="docutils literal notranslate"><span class="pre">UHF</span></code>  or <code class="docutils literal notranslate"><span class="pre">ROHF</span></code> for the open-shell computation to proceed.</p>
+</section>
+<section id="advanced-example">
+<h2>Advanced example<a class="headerlink" href="#advanced-example" title="Link to this heading">¶</a></h2>
+<p>Open-shell computations can be difficult to converge in certain cases, thus you may
+want to have more control over the SCF procedure. You have the option of
+doing the driver job in the input file, by performing the dimer and monomer computations
+yourself. In the example below, we do a stability analysis for the open-shell monomer only</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="p">{</span>
+     <span class="mi">0</span> <span class="mi">2</span>
+     <span class="n">O</span> <span class="mf">0.000000</span>  <span class="mf">0.000000</span>  <span class="mf">0.000000</span>
+     <span class="n">O</span> <span class="mf">0.000000</span>  <span class="mf">2.503900</span>  <span class="mf">0.000000</span>
+     <span class="n">H</span> <span class="mf">0.000000</span> <span class="o">-</span><span class="mf">0.424700</span> <span class="o">-</span><span class="mf">1.839500</span>
+     <span class="o">--</span>
+     <span class="mi">0</span> <span class="mi">1</span>
+     <span class="n">O</span> <span class="mf">0.000000</span>  <span class="mf">0.000000</span>  <span class="mf">6.000000</span>
+     <span class="n">H</span> <span class="mf">0.000000</span>  <span class="mf">1.431500</span>  <span class="mf">4.890600</span>
+     <span class="n">H</span> <span class="mf">0.000000</span> <span class="o">-</span><span class="mf">1.431500</span>  <span class="mf">4.890600</span>
+     <span class="n">units</span> <span class="n">bohr</span>
+     <span class="n">symmetry</span> <span class="n">c1</span>
+     <span class="n">no_reorient</span>
+     <span class="n">no_com</span>
+<span class="p">}</span>
+
+<span class="n">dimer</span> <span class="o">=</span> <span class="n">psi4</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+<span class="n">reference</span> <span class="n">uhf</span>
+<span class="n">scf_type</span>     <span class="n">df</span>
+<span class="n">basis</span>         <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+<span class="n">df_basis_sapt</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span><span class="o">-</span><span class="n">ri</span>
+<span class="n">guess</span> <span class="n">sad</span>
+<span class="p">}</span>
+
+<span class="n">dimer</span> <span class="o">=</span> <span class="n">psi4</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span>
+
+<span class="nb">set</span> <span class="n">df_ints_io</span> <span class="n">save</span>
+<span class="n">psi4</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">set_default_namespace</span><span class="p">(</span><span class="s1">&#39;dimer&#39;</span><span class="p">)</span>
+<span class="n">Edim</span><span class="p">,</span> <span class="n">wfn_dimer</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s1">&#39;scf&#39;</span><span class="p">,</span><span class="n">molecule</span><span class="o">=</span><span class="n">dimer</span><span class="p">,</span><span class="n">return_wfn</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">set</span> <span class="n">df_ints_io</span> <span class="n">load</span>
+
+<span class="n">monomerA</span> <span class="o">=</span> <span class="n">dimer</span><span class="o">.</span><span class="n">extract_subsets</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">psi4</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">97</span><span class="p">,</span> <span class="s1">&#39;dimer&#39;</span><span class="p">,</span> <span class="s1">&#39;monomerA&#39;</span><span class="p">)</span>
+<span class="n">psi4</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">set_default_namespace</span><span class="p">(</span><span class="s1">&#39;monomerA&#39;</span><span class="p">)</span>
+<span class="nb">set</span> <span class="p">{</span>
+<span class="n">stability_analysis</span> <span class="n">follow</span>
+<span class="p">}</span>
+<span class="n">EmonA</span><span class="p">,</span> <span class="n">wfn_monA</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s1">&#39;scf&#39;</span><span class="p">,</span><span class="n">molecule</span><span class="o">=</span><span class="n">monomerA</span><span class="p">,</span><span class="n">return_wfn</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">monomerB</span> <span class="o">=</span> <span class="n">dimer</span><span class="o">.</span><span class="n">extract_subsets</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">psi4</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">97</span><span class="p">,</span> <span class="s1">&#39;monomerA&#39;</span><span class="p">,</span> <span class="s1">&#39;monomerB&#39;</span><span class="p">)</span>
+<span class="n">psi4</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">set_default_namespace</span><span class="p">(</span><span class="s1">&#39;monomerB&#39;</span><span class="p">)</span>
+<span class="nb">set</span> <span class="p">{</span>
+<span class="n">stability_analysis</span> <span class="n">none</span>
+<span class="p">}</span>
+<span class="n">EmonB</span><span class="p">,</span> <span class="n">wfn_monB</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s1">&#39;scf&#39;</span><span class="p">,</span><span class="n">molecule</span><span class="o">=</span><span class="n">monomerB</span><span class="p">,</span><span class="n">return_wfn</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">psi4</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">97</span><span class="p">,</span> <span class="s1">&#39;monomerB&#39;</span><span class="p">,</span> <span class="s1">&#39;dimer&#39;</span><span class="p">)</span>
+<span class="n">psi4</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">set_default_namespace</span><span class="p">(</span><span class="s1">&#39;dimer&#39;</span><span class="p">)</span>
+
+<span class="n">aux_basis</span> <span class="o">=</span> <span class="n">psi4</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">BasisSet</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">wfn_dimer</span><span class="o">.</span><span class="n">molecule</span><span class="p">(),</span> <span class="s2">&quot;DF_BASIS_SAPT&quot;</span><span class="p">,</span>
+                              <span class="n">psi4</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s2">&quot;DF_BASIS_SAPT&quot;</span><span class="p">),</span>
+                              <span class="s2">&quot;RIFIT&quot;</span><span class="p">,</span> <span class="n">psi4</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s2">&quot;BASIS&quot;</span><span class="p">))</span>
+<span class="n">wfn_dimer</span><span class="o">.</span><span class="n">set_basisset</span><span class="p">(</span><span class="s2">&quot;DF_BASIS_SAPT&quot;</span><span class="p">,</span> <span class="n">aux_basis</span><span class="p">)</span>
+<span class="n">wfn_dimer</span><span class="o">.</span><span class="n">set_basisset</span><span class="p">(</span><span class="s2">&quot;DF_BASIS_ELST&quot;</span><span class="p">,</span> <span class="n">aux_basis</span><span class="p">)</span>
+
+<span class="n">psi4</span><span class="o">.</span><span class="n">sapt</span><span class="p">(</span><span class="n">wfn_dimer</span><span class="p">,</span><span class="n">wfn_monA</span><span class="p">,</span><span class="n">wfn_monB</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this way, any of the SCF options can be tweaked for individual fragments.
+For optimal efficiency, the example uses <code class="docutils literal notranslate"><span class="pre">set</span> <span class="pre">df_ints_io</span> <span class="pre">save</span></code> to keep file 97,
+which contains the three-index integrals for density fitting. <code class="docutils literal notranslate"><span class="pre">set</span> <span class="pre">df_ints_io</span> <span class="pre">load</span></code>
+then instructs the program to read these integrals from disk instead of recomputing
+them. For each SCF computation, we use <code class="docutils literal notranslate"><span class="pre">psi4.IO.set_default_namespace</span></code> to uniquely
+name scratch files. In the following SCF step, only file 97 is renamed using
+<code class="docutils literal notranslate"><span class="pre">psi4.IO.change_file_namespace</span></code> so that integrals can be read from it.
+For more information on stability analysis, see the <a class="reference internal" href="scf.html#sec-scfstability-doc"><span class="std std-ref">stability</span></a>
+documentation.</p>
+</section>
+<section id="sapt0">
+<span id="index-1"></span><h2>SAPT0<a class="headerlink" href="#sapt0" title="Link to this heading">¶</a></h2>
+<p>Generally speaking, SAPT0 should be applied to large systems or large data
+sets. The performance of closed-shell SAPT0 relies entirely on error cancellation, which
+seems to be optimal with a truncated aug-cc-pVDZ basis, namely,
+jun-cc-pVDZ (which we have referred to in previous work as
+aug-cc-pVDZ').  We do not recommend using SAPT0 with large basis sets
+like aug-cc-pVTZ.  A systematic study of the accuracy of closed-shell SAPT0 and other SAPT
+truncations, using different basis sets, is reported in
+<a class="reference internal" href="bibliography.html#parker-2014-094106" id="id13"><span>[Parker:2014:094106]</span></a>. In particular, an empirical recipe for scaled SAPT0
+can yield improved performance and has been included in the output file as
+the sSAPT0 interaction energy. sSAPT0 is a free by-product and is automatically
+computed when SAPT0 is requested (see above for more details).
+The SAPT module has been used to perform SAPT0 computations with over
+200 atoms and 2800 basis functions; this code should be scalable to 4000
+basis functions. Publications resulting from the use of the SAPT0 code
+should cite the following publications: <a class="reference internal" href="bibliography.html#hohenstein-2010-184111" id="id14"><span>[Hohenstein:2010:184111]</span></a> and
+<a class="reference internal" href="bibliography.html#hohenstein-2011-174107" id="id15"><span>[Hohenstein:2011:174107]</span></a>. If the open-shell SAPT0 code is used,
+<a class="reference internal" href="bibliography.html#gonthier-2016-134106" id="id16"><span>[Gonthier:2016:134106]</span></a> should be additionally cited.</p>
+<section id="basic-sapt0-keywords">
+<h3>Basic SAPT0 Keywords<a class="headerlink" href="#basic-sapt0-keywords" title="Link to this heading">¶</a></h3>
+</section>
+<section id="advanced-sapt0-keywords">
+<h3>Advanced SAPT0 Keywords<a class="headerlink" href="#advanced-sapt0-keywords" title="Link to this heading">¶</a></h3>
+</section>
+<section id="specific-open-shell-sapt0-keywords">
+<h3>Specific open-shell SAPT0 keywords<a class="headerlink" href="#specific-open-shell-sapt0-keywords" title="Link to this heading">¶</a></h3>
+</section>
+</section>
+<section id="sapt-dft">
+<span id="sec-saptdft"></span><span id="index-2"></span><h2>SAPT(DFT)<a class="headerlink" href="#sapt-dft" title="Link to this heading">¶</a></h2>
+<p>In general, SAPT(DFT) should provide more accurate interaction energy
+components, and overall interaction energies, than SAPT0. The drawback
+is SAPT(DFT) method is more computationally demanding than SAPT0,
+SAPT(DFT) can still be applied to medium-sized or large systems. The
+SAPT(DFT) module was employed successfully in computations of systems
+with up to 2000 basis functions, and the code should be scalable to
+3000 basis functions. Like higher-order SAPT, SAPT(DFT) requires
+sufficient memory to hold <span class="math notranslate nohighlight">\(2ovN_aux\)</span> doubles.</p>
+<p>SAPT(DFT) requires a few special treatments to obtain accurate
+result. The DFT functionals used in SAPT(DFT) need to be asymptotically
+corrected with Gradient Regulated Asymptotic Correction scheme (GRAC),
+in order to recover the correct long-range asymptotic behavior
+(approaching <span class="math notranslate nohighlight">\(-1/r\)</span> as <span class="math notranslate nohighlight">\(r\)</span> approaches infinity). The program
+requires manual input of GRAC shift parameter for each monomer through
+keywords <a href="#id61"><span class="problematic" id="id62">|sapt__sapt_dft_grac_shift_a|</span></a> and <a href="#id63"><span class="problematic" id="id64">|sapt__sapt_dft_grac_shift_b|</span></a>,
+which should be equal to the difference of the actual ionization
+potential and the corresponding Kohn-Sham HOMO energy. The dispersion
+term needs to be computed with orbital response for good accuracy,
+and it is recommended to enable <a href="#id65"><span class="problematic" id="id66">|sapt__sapt_dft_do_hybrid|</span></a> (set to
+<code class="docutils literal notranslate"><span class="pre">True</span></code> by default). The coupled exchange-dispersion energy is usually
+estimated by scaling from the uncoupled value either by a fitted fixed
+value (suggested initially by <a class="reference internal" href="bibliography.html#hesselmann-2014-094107" id="id17"><span>[Hesselmann:2014:094107]</span></a> for a local Hartree--Fock (LHF) formulation and then revised
+by <a class="reference internal" href="bibliography.html#xie-2022-024801" id="id18"><span>[Xie:2022:024801]</span></a> for non-LHF) or
+by the ratio of
+coupled and uncoupled dispersion energy (suggested by <a class="reference internal" href="bibliography.html#podeszwa-2006-400" id="id19"><span>[Podeszwa:2006:400]</span></a> ).
+This can be controlled by keyword <a href="#id67"><span class="problematic" id="id68">|sapt__sapt_dft_exch_disp_scale_scheme|</span></a>,
+with <code class="docutils literal notranslate"><span class="pre">FIXED</span></code> using the Hesselmann/Xie approach (<a href="#id69"><span class="problematic" id="id70">|PSIfours|</span></a> default prior
+to Nov 2022), <code class="docutils literal notranslate"><span class="pre">DISP</span></code> using the Podeszwa approach (<a href="#id71"><span class="problematic" id="id72">|PSIfours|</span></a> default after Nov 2022),
+or <code class="docutils literal notranslate"><span class="pre">NONE</span></code> for not scaling and using the uncoupled exchange-dispersion
+energy directly.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Since Nov 2022, the defaults of options <a href="#id73"><span class="problematic" id="id74">|sapt__sapt_dft_exch_disp_scale_scheme|</span></a> and <a href="#id75"><span class="problematic" id="id76">|sapt__sapt_dft_exch_disp_fixed_scale|</span></a>
+have been changed. Before, the former defaulted to <code class="docutils literal notranslate"><span class="pre">FIXED</span></code> with Hesselmann value of 0.686 for the latter. Now, the former defaults to <code class="docutils literal notranslate"><span class="pre">DISP</span></code> and should you instead select <code class="docutils literal notranslate"><span class="pre">FIXED</span></code>, the default for the latter is the Xie value of 0.770. This might cause
+an older version of <a href="#id77"><span class="problematic" id="id78">|PSIfour|</span></a> to produce a different value of
+exchange-dispersion energy from the latest version.</p>
+</div>
+<section id="basic-keywords-for-sapt-dft">
+<h3>Basic Keywords for SAPT(DFT)<a class="headerlink" href="#basic-keywords-for-sapt-dft" title="Link to this heading">¶</a></h3>
+</section>
+<section id="advanced-keywords-for-sapt-dft">
+<h3>Advanced Keywords for SAPT(DFT)<a class="headerlink" href="#advanced-keywords-for-sapt-dft" title="Link to this heading">¶</a></h3>
+</section>
+</section>
+<section id="higher-order-sapt">
+<span id="index-3"></span><h2>Higher-Order SAPT<a class="headerlink" href="#higher-order-sapt" title="Link to this heading">¶</a></h2>
+<p>For smaller systems (up to the size of a nucleic acid base pair), more
+accurate interaction energies can be obtained through higher-order SAPT
+computations. The SAPT module can perform density-fitted evaluations
+of SAPT2, SAPT2+, SAPT2+(3), and SAPT2+3 energies for closed-shell systems
+only. Publications resulting from the use of the higher-order SAPT code
+should cite the following:
+<a class="reference internal" href="bibliography.html#hohenstein-2010-014101" id="id20"><span>[Hohenstein:2010:014101]</span></a>.</p>
+<p>For methods SAPT2+ and above, one can replace the many-body treatment of
+dispersion by an improved method based on coupled-cluster doubles (CCD).
+This approach tends to give good improvements when dispersion effects
+are very large, as in the PCCP dimer (see <a class="reference internal" href="bibliography.html#hohenstein-2011-2842" id="id21"><span>[Hohenstein:2011:2842]</span></a>).
+As shown in <a class="reference internal" href="bibliography.html#parker-2014-094106" id="id22"><span>[Parker:2014:094106]</span></a>, whether or not CCD dispersion offers
+more accurate interaction energies tends to depend on the SAPT truncation
+and basis set employed, due to cancellations of errors.  Thanks to
+natural orbital methods <a class="reference internal" href="bibliography.html#parrish-2013-174102" id="id23"><span>[Parrish:2013:174102]</span></a>, the SAPT code
+is able to include CCD dispersion with only a modest additional cost.
+Computations employing CCD dispersion should cite <a class="reference internal" href="bibliography.html#parrish-2013-174102" id="id24"><span>[Parrish:2013:174102]</span></a>.
+To request CCD dispersion treatment in a SAPT computation, simply append
+<code class="docutils literal notranslate"><span class="pre">(ccd)</span></code> to the name of the method, as in the following examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+(ccd)&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+(3)(ccd)&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+3(ccd)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <span class="math notranslate nohighlight">\(\delta_{MP2}\)</span> corrections can also be computed automatically
+by appending <code class="docutils literal notranslate"><span class="pre">dmp2</span></code> to the name of the method, with or without CCD dispersion</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+dmp2&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+(3)dmp2&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+3dmp2&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+(ccd)dmp2&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+(3)(ccd)dmp2&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+3(ccd)dmp2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A brief note on memory usage: the higher-order SAPT code assumes that
+certain quantities can be held in core. This code requires sufficient
+memory to hold <span class="math notranslate nohighlight">\(3o^2v^2+v^2N_{aux}\)</span> arrays in core. With this
+requirement computations on the adenine-thymine complex can be performed
+with an aug-cc-pVTZ basis in less than 64GB of memory.</p>
+<p>Higher-order SAPT is treated separately from the highly optimized SAPT0
+code, therefore, higher-order SAPT uses a separate set of keywords.
+The following keywords are relevant for higher-order SAPT.</p>
+<section id="basic-keywords-for-higher-order-sapt">
+<h3>Basic Keywords for Higher-order SAPT<a class="headerlink" href="#basic-keywords-for-higher-order-sapt" title="Link to this heading">¶</a></h3>
+</section>
+<section id="advanced-keywords-for-higher-order-sapt">
+<h3>Advanced Keywords for Higher-order SAPT<a class="headerlink" href="#advanced-keywords-for-higher-order-sapt" title="Link to this heading">¶</a></h3>
+</section>
+</section>
+<section id="mp2-natural-orbitals">
+<h2>MP2 Natural Orbitals<a class="headerlink" href="#mp2-natural-orbitals" title="Link to this heading">¶</a></h2>
+<p>One of the unique features of the SAPT module is its ability to use
+MP2 natural orbitals (NOs) to speed up the evaluation of the triples
+contribution to dispersion. By transforming to the MP2 NO basis, we can
+throw away virtual orbitals that are expected to contribute little to the
+dispersion energy. Speedups in excess of <span class="math notranslate nohighlight">\(50 \times\)</span> are possible. In
+practice, this approximation is very good and should always be applied.
+Publications resulting from the use of MP2 NO-based approximations should
+cite the following: <a class="reference internal" href="bibliography.html#hohenstein-2010-104107" id="id25"><span>[Hohenstein:2010:104107]</span></a>.</p>
+<section id="basic-keywords-controlling-mp2-no-approximations">
+<h3>Basic Keywords Controlling MP2 NO Approximations<a class="headerlink" href="#basic-keywords-controlling-mp2-no-approximations" title="Link to this heading">¶</a></h3>
+</section>
+</section>
+<section id="charge-transfer-in-sapt">
+<span id="sec-saptct"></span><span id="index-4"></span><h2>Charge-Transfer in SAPT<a class="headerlink" href="#charge-transfer-in-sapt" title="Link to this heading">¶</a></h2>
+<p>It is possible to obtain the stabilization energy of a complex due to
+charge-transfer effects from a SAPT computation. The charge-transfer energy
+can be computed with the SAPT module as described by Stone
+and Misquitta <a class="reference internal" href="bibliography.html#misquitta-2009-201" id="id26"><span>[Misquitta:2009:201]</span></a>.</p>
+<p>Charge-transfer energies can be obtained from the following calls to the
+energy function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt0-ct&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2-ct&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+-ct&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+(3)-ct&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+3-ct&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+(ccd)-ct&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+(3)(ccd)-ct&#39;</span><span class="p">)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+3(ccd)-ct&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For now, charge transfer computations are not available with open-shell SAPT0.</p>
+<p>A SAPT charge-transfer analysis will perform 5 HF computations: the dimer
+in the dimer basis, monomer A in the dimer basis, monomer B in the dimer
+basis, monomer A in the monomer A basis, and monomer B in the monomer B
+basis. Next, it performs two SAPT computations, one in the dimer basis and
+one in the monomer basis. Finally, it will print a summary of the
+charge-transfer results:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="n">SAPT</span> <span class="n">Charge</span> <span class="n">Transfer</span> <span class="n">Analysis</span>
+<span class="o">------------------------------------------------------------------------------------------------</span>
+  <span class="n">SAPT</span> <span class="n">Induction</span> <span class="p">(</span><span class="n">Dimer</span> <span class="n">Basis</span><span class="p">)</span>       <span class="o">-</span><span class="mf">2.0970</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">1.3159</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">5.5057</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+  <span class="n">SAPT</span> <span class="n">Induction</span> <span class="p">(</span><span class="n">Monomer</span> <span class="n">Basis</span><span class="p">)</span>     <span class="o">-</span><span class="mf">1.1396</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.7151</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.9920</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+  <span class="n">SAPT</span> <span class="n">Charge</span> <span class="n">Transfer</span>               <span class="o">-</span><span class="mf">0.9574</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.6008</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.5137</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>These results are for the water dimer geometry shown above computed with
+SAPT0/aug-cc-pVDZ.</p>
+</section>
+<section id="monomer-centered-basis-computations">
+<span id="index-5"></span><h2>Monomer-Centered Basis Computations<a class="headerlink" href="#monomer-centered-basis-computations" title="Link to this heading">¶</a></h2>
+<p>The charge-transfer analysis above is carried out by taking the
+difference between SAPT induction as calculated in the dimer-centered
+basis (<em>i.e.</em>, each monomer sees the basis functions on both monomers)
+vs. the monomer-centered basis (<em>i.e.</em>, each monomer utilizes only its
+own basis set).  It is also possible to run a closed-shell SAPT computation at any
+level using only the monomer-centered basis. To do this, simply add
+<code class="docutils literal notranslate"><span class="pre">sapt_basis='monomer'</span></code> to the energy function, such as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2&#39;</span><span class="p">,</span><span class="n">sapt_basis</span><span class="o">=</span><span class="s1">&#39;monomer&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This procedure leads to faster compuations, but it converges more slowly
+towards the complete basis set limit than the default procedure, which uses
+the dimer-centered basis set.  Hence, monomer-centered basis SAPT
+computations are not recommended. The open-shell SAPT0 code is not
+compatible yet with monomer-centered computations.</p>
+</section>
+<section id="computations-with-mid-bonds">
+<h2>Computations with Mid-bonds<a class="headerlink" href="#computations-with-mid-bonds" title="Link to this heading">¶</a></h2>
+<p>SAPT computations with midbonds can be accomplished by adding a third ghost
+monomer to the computation.  For example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">dimer</span> <span class="p">{</span>
+    <span class="mi">0</span> <span class="mi">1</span>
+    <span class="n">He</span> <span class="mi">0</span>  <span class="mi">0</span>  <span class="mi">5</span>
+    <span class="o">--</span>
+    <span class="mi">0</span> <span class="mi">1</span>
+    <span class="n">He</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="o">-</span><span class="mi">5</span>
+    <span class="o">--</span>
+    <span class="mi">0</span> <span class="mi">1</span>
+    <span class="nd">@He</span> <span class="mi">0</span>  <span class="mi">0</span>  <span class="mi">0</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Here the functions of the third monomer will be added to the virtual space of
+the entire computation. Note that an error will be thrown if each atom in the
+third monomer is not a ghost to prevent confusion with three-body SAPT which is
+not currently supported by Psi4.</p>
+</section>
+<section id="interpreting-sapt-results">
+<h2>Interpreting SAPT Results<a class="headerlink" href="#interpreting-sapt-results" title="Link to this heading">¶</a></h2>
+<p>We will examine the results of a SAPT2+3/aug-cc-pVDZ computation on the
+water dimer. This computation can be performed with the following
+input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">water_dimer</span> <span class="p">{</span>
+     <span class="mi">0</span> <span class="mi">1</span>
+     <span class="n">O</span>  <span class="o">-</span><span class="mf">1.551007</span>  <span class="o">-</span><span class="mf">0.114520</span>   <span class="mf">0.000000</span>
+     <span class="n">H</span>  <span class="o">-</span><span class="mf">1.934259</span>   <span class="mf">0.762503</span>   <span class="mf">0.000000</span>
+     <span class="n">H</span>  <span class="o">-</span><span class="mf">0.599677</span>   <span class="mf">0.040712</span>   <span class="mf">0.000000</span>
+     <span class="o">--</span>
+     <span class="mi">0</span> <span class="mi">1</span>
+     <span class="n">O</span>   <span class="mf">1.350625</span>   <span class="mf">0.111469</span>   <span class="mf">0.000000</span>
+     <span class="n">H</span>   <span class="mf">1.680398</span>  <span class="o">-</span><span class="mf">0.373741</span>  <span class="o">-</span><span class="mf">0.758561</span>
+     <span class="n">H</span>   <span class="mf">1.680398</span>  <span class="o">-</span><span class="mf">0.373741</span>   <span class="mf">0.758561</span>
+     <span class="n">units</span> <span class="n">angstrom</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="nb">globals</span> <span class="p">{</span>
+    <span class="n">basis</span>          <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+    <span class="n">guess</span>          <span class="n">sad</span>
+    <span class="n">scf_type</span>       <span class="n">df</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="n">sapt</span> <span class="p">{</span>
+    <span class="nb">print</span>          <span class="mi">1</span>
+    <span class="n">nat_orbs_t2</span>    <span class="n">true</span>
+    <span class="n">freeze_core</span>    <span class="n">true</span>
+<span class="p">}</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+3&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To reiterate some of the options mentioned above: the
+<a href="#id79"><span class="problematic" id="id80">|sapt__nat_orbs_t2|</span></a> option will compute MP2 natural orbitals and use
+them in the evaluation of the triples correction to dispersion, and the
+<a href="#id81"><span class="problematic" id="id82">|sapt__freeze_core|</span></a> option will freeze the core throughout the SAPT
+computation. This SAPT2+3/aug-cc-pVDZ computation produces the following
+results:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="n">SAPT</span> <span class="n">Results</span>
+<span class="o">--------------------------------------------------------------------------------------------------------</span>
+  <span class="n">Electrostatics</span>                <span class="o">-</span><span class="mf">13.06509118</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">8.19846883</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">34.30239689</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Elst10</span><span class="p">,</span><span class="n">r</span>                    <span class="o">-</span><span class="mf">13.37542977</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">8.39320925</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">35.11719087</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Elst12</span><span class="p">,</span><span class="n">r</span>                      <span class="mf">0.04490350</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.02817737</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">0.11789413</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Elst13</span><span class="p">,</span><span class="n">r</span>                      <span class="mf">0.26543510</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.16656305</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">0.69689985</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+
+  <span class="n">Exchange</span>                       <span class="mf">13.41768202</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">8.41972294</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="mf">35.22812415</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch10</span>                       <span class="mf">11.21822294</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">7.03954147</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="mf">29.45344432</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch10</span><span class="p">(</span><span class="n">S</span><span class="o">^</span><span class="mi">2</span><span class="p">)</span>                  <span class="mf">11.13802706</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">6.98921779</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="mf">29.24289005</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch11</span><span class="p">(</span><span class="n">S</span><span class="o">^</span><span class="mi">2</span><span class="p">)</span>                   <span class="mf">0.04558907</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.02860757</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">0.11969410</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch12</span><span class="p">(</span><span class="n">S</span><span class="o">^</span><span class="mi">2</span><span class="p">)</span>                   <span class="mf">2.15387002</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">1.35157390</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">5.65498573</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+
+  <span class="n">Induction</span>                      <span class="o">-</span><span class="mf">3.91313050</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.45552656</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">10.27392413</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Ind20</span><span class="p">,</span><span class="n">r</span>                      <span class="o">-</span><span class="mf">4.57530818</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.87104935</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">12.01247162</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Ind30</span><span class="p">,</span><span class="n">r</span>                      <span class="o">-</span><span class="mf">4.91714746</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">3.08555675</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">12.90997067</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Ind22</span>                        <span class="o">-</span><span class="mf">0.83718642</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.52534243</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.19803293</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch</span><span class="o">-</span><span class="n">Ind20</span><span class="p">,</span><span class="n">r</span>                  <span class="mf">2.47828501</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">1.55514739</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">6.50673730</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch</span><span class="o">-</span><span class="n">Ind30</span><span class="p">,</span><span class="n">r</span>                  <span class="mf">4.33916119</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">2.72286487</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="mf">11.39246770</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch</span><span class="o">-</span><span class="n">Ind22</span>                    <span class="mf">0.45347471</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.28455969</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">1.19059785</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">delta</span> <span class="n">HF</span><span class="p">,</span><span class="n">r</span> <span class="p">(</span><span class="mi">2</span><span class="p">)</span>               <span class="o">-</span><span class="mf">1.43239563</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.89884187</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">3.76075473</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">delta</span> <span class="n">HF</span><span class="p">,</span><span class="n">r</span> <span class="p">(</span><span class="mi">3</span><span class="p">)</span>               <span class="o">-</span><span class="mf">0.85440936</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.53614999</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.24325177</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+
+  <span class="n">Dispersion</span>                     <span class="o">-</span><span class="mf">3.62000698</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.27158877</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">9.50432831</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Disp20</span>                       <span class="o">-</span><span class="mf">3.54291925</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.22321549</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">9.30193450</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Disp30</span>                        <span class="mf">0.05959979</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.03739944</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">0.15647926</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Disp21</span>                        <span class="mf">0.11216169</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.07038252</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">0.29448051</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Disp22</span> <span class="p">(</span><span class="n">SDQ</span><span class="p">)</span>                 <span class="o">-</span><span class="mf">0.17892163</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.11227502</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.46975875</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Disp22</span> <span class="p">(</span><span class="n">T</span><span class="p">)</span>                   <span class="o">-</span><span class="mf">0.47692534</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.29927518</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">1.25216749</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Est</span><span class="o">.</span> <span class="n">Disp22</span> <span class="p">(</span><span class="n">T</span><span class="p">)</span>              <span class="o">-</span><span class="mf">0.54385233</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.34127251</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">1.42788430</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch</span><span class="o">-</span><span class="n">Disp20</span>                   <span class="mf">0.64545587</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.40502969</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">1.69464439</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch</span><span class="o">-</span><span class="n">Disp30</span>                  <span class="o">-</span><span class="mf">0.01823410</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.01144207</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.04787362</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Ind</span><span class="o">-</span><span class="n">Disp30</span>                   <span class="o">-</span><span class="mf">0.91816882</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.57615966</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.41065224</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch</span><span class="o">-</span><span class="n">Ind</span><span class="o">-</span><span class="n">Disp30</span>               <span class="mf">0.76487181</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.47996433</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">2.00817094</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+
+<span class="n">Total</span> <span class="n">HF</span>                         <span class="o">-</span><span class="mf">5.68662563</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">3.56841161</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">14.93023559</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="n">Total</span> <span class="n">SAPT0</span>                      <span class="o">-</span><span class="mf">8.58408901</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">5.38659740</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">22.53752571</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="n">Total</span> <span class="n">SAPT2</span>                      <span class="o">-</span><span class="mf">6.72343814</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">4.21902130</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">17.65238683</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="n">Total</span> <span class="n">SAPT2</span><span class="o">+</span>                     <span class="o">-</span><span class="mf">7.33405042</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">4.60218631</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">19.25554938</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="n">Total</span> <span class="n">SAPT2</span><span class="o">+</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>                  <span class="o">-</span><span class="mf">7.00901553</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">4.39822383</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">18.40217026</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="n">Total</span> <span class="n">SAPT2</span><span class="o">+</span><span class="mi">3</span>                    <span class="o">-</span><span class="mf">7.18054663</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">4.50586123</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">18.85252518</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+
+<span class="n">Special</span> <span class="n">recipe</span> <span class="k">for</span> <span class="n">scaled</span> <span class="n">SAPT0</span> <span class="p">(</span><span class="n">see</span> <span class="n">Manual</span><span class="p">):</span>
+  <span class="n">Electrostatics</span> <span class="n">sSAPT0</span>         <span class="o">-</span><span class="mf">13.37542977</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">8.39320925</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">35.11719087</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+  <span class="n">Exchange</span> <span class="n">sSAPT0</span>                <span class="mf">11.21822294</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">7.03954147</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="mf">29.45344432</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+  <span class="n">Induction</span> <span class="n">sSAPT0</span>               <span class="o">-</span><span class="mf">3.47550008</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.18090932</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">9.12492546</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+  <span class="n">Dispersion</span> <span class="n">sSAPT0</span>              <span class="o">-</span><span class="mf">2.88342055</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">1.80937379</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">7.57042064</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="n">Total</span> <span class="n">sSAPT0</span>                     <span class="o">-</span><span class="mf">8.51612746</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">5.34395089</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">22.35909265</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="o">--------------------------------------------------------------------------------------------------------</span>
+</pre></div>
+</div>
+<p>At the bottom of this output are the total SAPT energies (defined above),
+they are composed of subsets of the individual terms printed above. The
+individual terms are grouped according to the component of the interaction
+to which they contribute. The total component energies (<em>i.e.</em>,
+electrostatics, exchange, induction, and dispersion) represent what we
+regard as the best estimate available at a given level of SAPT computed
+from a subset of the terms of that grouping. The groupings shown above are
+not unique and are certainly not rigorously defined. We regard the groupings
+used in <a href="#id83"><span class="problematic" id="id84">|PSIfour|</span></a> as a &quot;chemist's grouping&quot; as opposed to a more
+mathematically based grouping, which would group all exchange terms
+(<em>i.e.</em> <span class="math notranslate nohighlight">\(E_{exch-ind,resp}^{(20)}\)</span>, <span class="math notranslate nohighlight">\(E_{exch-disp}^{(20)}\)</span>, <em>etc.</em>) in
+the exchange component. A final note is that both <code class="docutils literal notranslate"><span class="pre">Disp22(T)</span></code>
+and <code class="docutils literal notranslate"><span class="pre">Est.Disp22(T)</span></code> results appear if MP2 natural orbitals are
+used to evaluate the triples correction to dispersion. The <code class="docutils literal notranslate"><span class="pre">Disp22(T)</span></code>
+result is the triples correction as computed in the truncated NO basis;
+<code class="docutils literal notranslate"><span class="pre">Est.Disp22(T)</span></code> is a scaled result that attempts to recover
+the effect of the truncated virtual space and is our best estimate. The <code class="docutils literal notranslate"><span class="pre">Est.Disp22(T)</span></code>
+value is used in the SAPT energy and dispersion component (see <a class="reference internal" href="bibliography.html#hohenstein-2010-104107" id="id27"><span>[Hohenstein:2010:104107]</span></a>
+for details). Finally, this part of the output file contains sSAPT0, a special scaling
+scheme of the SAPT0 energy that can yield improved results and was described in more details
+above. The corresponding scaled total component energies are printed as well.</p>
+<p>As mentioned above, SAPT results with scaled exchange are also optionally available
+by setting the <a href="#id85"><span class="problematic" id="id86">|sapt__exch_scale_alpha|</span></a> keyword. When activated, the unscaled results are
+printed first as reported above, and then repeated with exchange scaling for all
+relevant terms:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="n">SAPT</span> <span class="n">Results</span> <span class="o">==&gt;</span> <span class="n">ALL</span> <span class="n">S2</span> <span class="n">TERMS</span> <span class="n">SCALED</span> <span class="p">(</span><span class="n">see</span> <span class="n">Manual</span><span class="p">)</span> <span class="o">&lt;==</span>
+
+  <span class="n">Scaling</span> <span class="n">factor</span> <span class="p">(</span><span class="n">Exch10</span><span class="o">/</span><span class="n">Exch10</span><span class="p">(</span><span class="n">S</span><span class="o">^</span><span class="mi">2</span><span class="p">))</span><span class="o">^</span><span class="p">{</span><span class="n">Alpha</span><span class="p">}</span> <span class="o">=</span>     <span class="mf">1.007200</span>
+  <span class="k">with</span> <span class="n">Alpha</span> <span class="o">=</span>     <span class="mf">1.000000</span>
+<span class="o">--------------------------------------------------------------------------------------------------------</span>
+  <span class="n">Electrostatics</span>                <span class="o">-</span><span class="mf">13.06509118</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">8.19846883</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">34.30239689</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Elst10</span><span class="p">,</span><span class="n">r</span>                    <span class="o">-</span><span class="mf">13.37542977</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">8.39320925</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">35.11719087</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Elst12</span><span class="p">,</span><span class="n">r</span>                      <span class="mf">0.04490350</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.02817737</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">0.11789413</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Elst13</span><span class="p">,</span><span class="n">r</span>                      <span class="mf">0.26543510</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.16656305</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">0.69689985</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+
+  <span class="n">Exchange</span> <span class="n">sc</span><span class="o">.</span>                   <span class="mf">13.43351854</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">8.42966050</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="mf">35.26970292</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch10</span>                       <span class="mf">11.21822294</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">7.03954147</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="mf">29.45344432</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch10</span><span class="p">(</span><span class="n">S</span><span class="o">^</span><span class="mi">2</span><span class="p">)</span>                  <span class="mf">11.13802706</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">6.98921779</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="mf">29.24289005</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch11</span><span class="p">(</span><span class="n">S</span><span class="o">^</span><span class="mi">2</span><span class="p">)</span> <span class="n">sc</span><span class="o">.</span>               <span class="mf">0.04591732</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.02881355</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">0.12055592</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch12</span><span class="p">(</span><span class="n">S</span><span class="o">^</span><span class="mi">2</span><span class="p">)</span> <span class="n">sc</span><span class="o">.</span>               <span class="mf">2.16937828</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">1.36130548</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">5.69570268</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+
+  <span class="n">Induction</span> <span class="n">sc</span><span class="o">.</span>                  <span class="o">-</span><span class="mf">3.90986540</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.45347768</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">10.26535160</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Ind20</span><span class="p">,</span><span class="n">r</span>                      <span class="o">-</span><span class="mf">4.57530818</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.87104935</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">12.01247162</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Ind30</span><span class="p">,</span><span class="n">r</span>                      <span class="o">-</span><span class="mf">4.91714746</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">3.08555675</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">12.90997067</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Ind22</span>                        <span class="o">-</span><span class="mf">0.83718642</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.52534243</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.19803293</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch</span><span class="o">-</span><span class="n">Ind20</span><span class="p">,</span><span class="n">r</span> <span class="n">sc</span><span class="o">.</span>              <span class="mf">2.49612913</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">1.56634474</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">6.55358703</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch</span><span class="o">-</span><span class="n">Ind30</span><span class="p">,</span><span class="n">r</span> <span class="n">sc</span><span class="o">.</span>              <span class="mf">4.37040396</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">2.74247000</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="mf">11.47449560</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch</span><span class="o">-</span><span class="n">Ind22</span> <span class="n">sc</span><span class="o">.</span>                <span class="mf">0.45673981</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.28660857</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">1.19917038</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">delta</span> <span class="n">HF</span><span class="p">,</span><span class="n">r</span> <span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="n">sc</span><span class="o">.</span>           <span class="o">-</span><span class="mf">1.45023975</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.91003922</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">3.80760445</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">delta</span> <span class="n">HF</span><span class="p">,</span><span class="n">r</span> <span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="n">sc</span><span class="o">.</span>           <span class="o">-</span><span class="mf">0.90349624</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.56695248</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.37212939</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+
+  <span class="n">Dispersion</span> <span class="n">sc</span><span class="o">.</span>                 <span class="o">-</span><span class="mf">3.60998364</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.26529903</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">9.47801205</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Disp20</span>                       <span class="o">-</span><span class="mf">3.54291925</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.22321549</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">9.30193450</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Disp30</span>                        <span class="mf">0.05959979</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.03739944</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">0.15647926</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Disp21</span>                        <span class="mf">0.11216169</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.07038252</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">0.29448051</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Disp22</span> <span class="p">(</span><span class="n">SDQ</span><span class="p">)</span>                 <span class="o">-</span><span class="mf">0.17892163</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.11227502</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.46975875</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Disp22</span> <span class="p">(</span><span class="n">T</span><span class="p">)</span>                   <span class="o">-</span><span class="mf">0.47692534</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.29927518</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">1.25216749</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Est</span><span class="o">.</span> <span class="n">Disp22</span> <span class="p">(</span><span class="n">T</span><span class="p">)</span>              <span class="o">-</span><span class="mf">0.54385233</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.34127251</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">1.42788430</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch</span><span class="o">-</span><span class="n">Disp20</span> <span class="n">sc</span><span class="o">.</span>               <span class="mf">0.65010327</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.40794598</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">1.70684615</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch</span><span class="o">-</span><span class="n">Disp30</span> <span class="n">sc</span><span class="o">.</span>              <span class="o">-</span><span class="mf">0.01836538</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.01152445</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.04821832</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Ind</span><span class="o">-</span><span class="n">Disp30</span>                   <span class="o">-</span><span class="mf">0.91816882</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">0.57615966</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>      <span class="o">-</span><span class="mf">2.41065224</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+    <span class="n">Exch</span><span class="o">-</span><span class="n">Ind</span><span class="o">-</span><span class="n">Disp30</span> <span class="n">sc</span><span class="o">.</span>           <span class="mf">0.77037903</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>       <span class="mf">0.48342016</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>       <span class="mf">2.02263015</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+
+<span class="n">Total</span> <span class="n">HF</span>                         <span class="o">-</span><span class="mf">5.68662563</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">3.56841161</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">14.93023559</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="n">Total</span> <span class="n">SAPT0</span> <span class="n">sc</span><span class="o">.</span>                  <span class="o">-</span><span class="mf">8.57944161</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">5.38368112</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">22.52532395</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="n">Total</span> <span class="n">SAPT2</span> <span class="n">sc</span><span class="o">.</span>                  <span class="o">-</span><span class="mf">6.69968912</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">4.20411857</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">17.59003378</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="n">Total</span> <span class="n">SAPT2</span><span class="o">+</span> <span class="n">sc</span><span class="o">.</span>                 <span class="o">-</span><span class="mf">7.31030140</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">4.58728357</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">19.19319632</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="n">Total</span> <span class="n">SAPT2</span><span class="o">+</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="n">sc</span><span class="o">.</span>              <span class="o">-</span><span class="mf">6.98526650</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">4.38332109</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">18.33981720</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="n">Total</span> <span class="n">SAPT2</span><span class="o">+</span><span class="mi">3</span> <span class="n">sc</span><span class="o">.</span>                <span class="o">-</span><span class="mf">7.15142168</span> <span class="p">[</span><span class="n">mEh</span><span class="p">]</span>      <span class="o">-</span><span class="mf">4.48758504</span> <span class="p">[</span><span class="n">kcal</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>     <span class="o">-</span><span class="mf">18.77605762</span> <span class="p">[</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">]</span>
+<span class="o">--------------------------------------------------------------------------------------------------------</span>
+</pre></div>
+</div>
+<p>The scaling factor is reported at the top (here <code class="docutils literal notranslate"><span class="pre">1.0072</span></code>) together with the
+<span class="math notranslate nohighlight">\(\alpha\)</span> parameter. All terms that are scaled are indicated by the <code class="docutils literal notranslate"><span class="pre">sc.</span></code>
+label. Note that if Exch10 is less than <span class="math notranslate nohighlight">\(10^{-5}\)</span>, the scaling factor is
+set to <span class="math notranslate nohighlight">\(1.0\)</span>.</p>
+<div class="admonition caution" id="sec-saptfitb">
+<p class="admonition-title">Caution</p>
+<p>To density fit the dispersion terms in SAPT, the RI auxiliary
+basis set (<em>e.g.</em>, aug-cc-pVDZ-RI) controlled through
+<a href="#id87"><span class="problematic" id="id88">|sapt__df_basis_sapt|</span></a> performs well. For Fock-type terms (<em>i.e.</em>,
+electrostatics, exchange, induction, and core Fock matrix elements in
+exchange-dispersion), the JKFIT density-fitting auxiliary basis
+(<em>e.g.</em>, aug-cc-pVDZ-JKFIT) is more appropriate. The <a class="reference internal" href="fisapt.html#sec-fisapt"><span class="std std-ref">FISAPT
+module</span></a> has always used JKFIT in this role. The
+<a class="reference internal" href="#sec-sapt"><span class="std std-ref">SAPT module</span></a> newly (see <a class="reference internal" href="#sec-saptfita"><span class="std std-ref">fitting notes</span></a> ) uses
+JKFIT for computations targeting SAPT0 and sSAPT0 methods. But the
+<a class="reference internal" href="#sec-sapt"><span class="std std-ref">SAPT module</span></a> still uses the RI basis for higher-order
+SAPT. For heavier elements (<em>i.e.</em>, second-row and beyond), the RI
+auxiliary basis is unsound for this role (insufficiently flexible).
+For higher-order methods in <a class="reference internal" href="#sec-sapt"><span class="std std-ref">SAPT module</span></a>, there is
+no workaround; on-the-fly construction of an auxiliary basis through
+Cholesky decomposition (not implemented) is the long-term solution.</p>
+</div>
+</section>
+<section id="spin-flip-sapt">
+<span id="sec-sfsapt"></span><h2>Spin-Flip SAPT<a class="headerlink" href="#spin-flip-sapt" title="Link to this heading">¶</a></h2>
+<p>SAPT0 with two open-shell references will always yield a high-spin complex.  In
+order to obtain a SAPT-based estimate of the splittings between different spin
+states of a complex the first-order exchange energies for all multiplets can be
+shown to be a linear combination of two matrix elements: a diagonal exchange
+term that determines the spin-averaged effect and a spin-flip term responsible
+for the splittings between the states. The numerical factors in this linear
+combination are determined solely by the Clebsch-Gordan coefficients:
+accordingly, the <span class="math notranslate nohighlight">\(S^{2}\)</span> approximation implies a Heisenberg Hamiltonian
+picture with a single coupling strength parameter determining all the
+splittings. This method can be invoked with <cite>energy(&quot;SF-SAPT&quot;)</cite> and
+publications resulting from the use of the SF-SAPT code should cite the
+following publications: <a class="reference internal" href="bibliography.html#patkowski-2018-164110" id="id28"><span>[Patkowski:2018:164110]</span></a></p>
+</section>
+<section id="higher-order-exchange-terms-without-single-exchange-approximation">
+<span id="sec-saptinf"></span><h2>Higher-Order Exchange Terms without Single-Exchange Approximation<a class="headerlink" href="#higher-order-exchange-terms-without-single-exchange-approximation" title="Link to this heading">¶</a></h2>
+<p>Recently, several SAPT higher-order exchange terms have been derived without
+the <span class="math notranslate nohighlight">\(S^{2}\)</span> approximation: <span class="math notranslate nohighlight">\(E_{exch-ind}^{(20)}\)</span> <a class="reference internal" href="bibliography.html#schaffer-2012-1235" id="id29"><span>[Schaffer:2012:1235]</span></a>,
+<span class="math notranslate nohighlight">\(E_{exch-disp}^{(20)}\)</span> <a class="reference internal" href="bibliography.html#schaffer-2013-2570" id="id30"><span>[Schaffer:2013:2570]</span></a>, and <span class="math notranslate nohighlight">\(E_{exch-ind}^{(30)}\)</span>
+<a class="reference internal" href="bibliography.html#waldrop-2021-024103" id="id31"><span>[Waldrop:2021:024103]</span></a>. The second-order terms can be computed with the following
+settings:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">SAPT_DFT_FUNCTIONAL</span> <span class="n">HF</span>
+<span class="nb">set</span> <span class="n">DO_IND_EXCH_SINF</span> <span class="n">true</span>        <span class="c1"># calculate Exch-Ind20 (S^inf)</span>
+<span class="nb">set</span> <span class="n">SAPT_DFT_MP2_DISP_ALG</span> <span class="n">fisapt</span>
+<span class="nb">set</span> <span class="n">DO_DISP_EXCH_SINF</span> <span class="n">true</span>       <span class="c1"># calculate Exch-Disp20 (S^inf)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt(dft)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and the third-order exchange-induction term is computed as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">DO_IND30_EXCH_SINF</span> <span class="n">true</span>        <span class="c1"># calculate Exch-Ind30 (S^inf)</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt2+3&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>These calculations are performed with the atomic orbital and
+density-fitting scheme described in the Supplementary Material to
+<a class="reference internal" href="bibliography.html#smith-2020-184108" id="id32"><span>[Smith:2020:184108]</span></a> for the second-order terms and in <a class="reference internal" href="bibliography.html#waldrop-2021-024103" id="id33"><span>[Waldrop:2021:024103]</span></a>
+for the third-order exchange induction. The coupled (response) version of the
+exchange-induction corrections are also calculated, exactly for
+<span class="math notranslate nohighlight">\(E_{exch-ind,resp}^{(20)}\)</span> and by scaling the uncoupled term for
+<span class="math notranslate nohighlight">\(E_{exch-ind,resp}^{(30)}\)</span>.</p>
+<section id="s-inf-keywords">
+<h3>S^inf Keywords<a class="headerlink" href="#s-inf-keywords" title="Link to this heading">¶</a></h3>
+</section>
+<section id="sapt0-d">
+<span id="sec-saptd"></span><h3>SAPT0-D<a class="headerlink" href="#sapt0-d" title="Link to this heading">¶</a></h3>
+<p>In SAPT0, the computation of <span class="math notranslate nohighlight">\(E_{disp}^{(20)} + E_{exch-disp}^{(20)}\)</span> represents
+the computational bottleneck. One can avoid this bottleneck by replacing these
+dispersion terms with the empirical D3 corrections developed by Grimme.</p>
+<p><a class="reference internal" href="dftd3.html#sec-dftd3"><span class="std std-ref">Grimme's dispersion corrections are discussed here.</span></a></p>
+<p>The corresponding method, termed SAPT0-D, thus relies on empirically fit parameters
+specific to SAPT0/jun-cc-pVDZ. While SAPT0-D can be used with any of the -D
+variants using default parameters optimized for Hartee--Fock interaction energies,
+we recommend using the refit parameters with Becke-Johnson damping, as described in
+<a class="reference internal" href="bibliography.html#schriber-2021-234107" id="id34"><span>[Schriber:2021:234107]</span></a>. Again, use of SAPT0-D with a basis set other than
+jun-cc-pVDZ is not tested and not guaranteed to give meaningful results without
+refitting the dispersion parameters.
+A simple water dimer computation using SAPT0-D may look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">molecule</span> <span class="n">water_dimer</span> <span class="p">{</span>
+         <span class="mi">0</span> <span class="mi">1</span>
+         <span class="n">O</span>  <span class="o">-</span><span class="mf">1.551007</span>  <span class="o">-</span><span class="mf">0.114520</span>   <span class="mf">0.000000</span>
+         <span class="n">H</span>  <span class="o">-</span><span class="mf">1.934259</span>   <span class="mf">0.762503</span>   <span class="mf">0.000000</span>
+         <span class="n">H</span>  <span class="o">-</span><span class="mf">0.599677</span>   <span class="mf">0.040712</span>   <span class="mf">0.000000</span>
+         <span class="o">--</span>
+         <span class="mi">0</span> <span class="mi">1</span>
+         <span class="n">O</span>   <span class="mf">1.350625</span>   <span class="mf">0.111469</span>   <span class="mf">0.000000</span>
+         <span class="n">H</span>   <span class="mf">1.680398</span>  <span class="o">-</span><span class="mf">0.373741</span>  <span class="o">-</span><span class="mf">0.758561</span>
+         <span class="n">H</span>   <span class="mf">1.680398</span>  <span class="o">-</span><span class="mf">0.373741</span>   <span class="mf">0.758561</span>
+
+         <span class="n">units</span> <span class="n">angstrom</span>
+         <span class="n">no_reorient</span>
+         <span class="n">symmetry</span> <span class="n">c1</span>
+    <span class="p">}</span>
+
+    <span class="nb">set</span> <span class="n">basis</span> <span class="n">jun</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+
+    <span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt0-d3mbj&#39;</span><span class="p">)</span> <span class="c1"># runs the recommended dispersion correction</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sapt0-d3&#39;</span><span class="p">)</span> <span class="c1"># tests an alternative damping scheme/parameterization</span>
+</pre></div>
+</div>
+<p>Given the naturally pairwise-atomic nature of these empirical dispersion corrections,
+integration with existing FSAPT functionality is also available simply by calling
+<code class="docutils literal notranslate"><span class="pre">energy(&quot;fsapt0-d3mbj&quot;)</span></code>. See <a class="reference internal" href="fisapt.html#sec-fisapt"><span class="std std-ref">FSAPT</span></a> documentation for more details on using FSAPT
+for functional group analyses.</p>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/sapt.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

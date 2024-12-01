@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Scalar relativistic Hamiltonians &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="scalar-relativistic-hamiltonians">
+<span id="sec-relativistic"></span><span id="index-0"></span><h1>Scalar relativistic Hamiltonians<a class="headerlink" href="#scalar-relativistic-hamiltonians" title="Link to this heading">¶</a></h1>
+<p>The exact-two-component (X2C) approach is a convenient way to introduce scalar
+relativistic effects in DFT and wave function-based methods.
+<a href="#id5"><span class="problematic" id="id6">|PSIfour|</span></a> implements the spin-free one-electron version of X2C, which produces
+a modified one-electron Hamiltonian <span class="math notranslate nohighlight">\(H_{\rm X2C}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[H_{\rm X2C} = T_{\rm X2C} + V_{\rm X2C}\]</div>
+<p>that is a sum of a kinetic energy (<span class="math notranslate nohighlight">\(T_{\rm X2C}\)</span>) and potential energy
+(<span class="math notranslate nohighlight">\(V_{\rm X2C}\)</span>) operator.
+Our implementation is equivalent to the one reported by Cheng and Gauss <a class="reference internal" href="bibliography.html#cheng-084114" id="id1"><span>[Cheng:084114]</span></a>.
+X2C calculations require the use of special (alternatively fully uncontracted) basis sets designed for relativistic
+calculations.  Common choices include the Dunning Douglass--Kroll basis sets
+(cc-pVXZ-DK, cc-pCVXZ-DK, cc-pwCVXZ-DK) and Roos' ANO basis sets.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>See also <a class="reference internal" href="dkh.html#sec-dkh"><span class="std std-ref">Interface to DKH by A. Wolf, M. Reiher, and B. A. Hess</span></a> for another relativistic Hamiltonian.</p>
+</div>
+<section id="a-first-example">
+<span id="sec-scalarrelativistic"></span><h2>A First Example<a class="headerlink" href="#a-first-example" title="Link to this heading">¶</a></h2>
+<p>The following is a simple input that will perform a Hartree--Fock calculation
+using the X2C Hamiltonian.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="p">{</span>
+  <span class="n">H</span>
+  <span class="n">F</span> <span class="mi">1</span> <span class="mf">0.92</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+    <span class="n">scf_type</span> <span class="n">pk</span>
+    <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+    <span class="n">relativistic</span> <span class="n">x2c</span>
+<span class="p">}</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;hf&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This computation yields the following result:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@RHF</span> <span class="n">Final</span> <span class="n">Energy</span><span class="p">:</span>  <span class="o">-</span><span class="mf">100.10007984692388</span>
+
+ <span class="o">=&gt;</span> <span class="n">Energetics</span> <span class="o">&lt;=</span>
+
+  <span class="n">Nuclear</span> <span class="n">Repulsion</span> <span class="n">Energy</span> <span class="o">=</span>              <span class="mf">5.1767335622934780</span>
+  <span class="n">One</span><span class="o">-</span><span class="n">Electron</span> <span class="n">Energy</span> <span class="o">=</span>                <span class="o">-</span><span class="mf">150.7611816259664579</span>
+  <span class="n">Two</span><span class="o">-</span><span class="n">Electron</span> <span class="n">Energy</span> <span class="o">=</span>                  <span class="mf">45.4843682167491039</span>
+  <span class="n">Total</span> <span class="n">Energy</span> <span class="o">=</span>                       <span class="o">-</span><span class="mf">100.1000798469238902</span>
+</pre></div>
+</div>
+<p>while a non-relativistic calculation yields the following energy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@RHF</span> <span class="n">Final</span> <span class="n">Energy</span><span class="p">:</span>  <span class="o">-</span><span class="mf">100.01928891411315</span>
+
+ <span class="o">=&gt;</span> <span class="n">Energetics</span> <span class="o">&lt;=</span>
+
+  <span class="n">Nuclear</span> <span class="n">Repulsion</span> <span class="n">Energy</span> <span class="o">=</span>              <span class="mf">5.1767335622934780</span>
+  <span class="n">One</span><span class="o">-</span><span class="n">Electron</span> <span class="n">Energy</span> <span class="o">=</span>                <span class="o">-</span><span class="mf">150.6645256529074572</span>
+  <span class="n">Two</span><span class="o">-</span><span class="n">Electron</span> <span class="n">Energy</span> <span class="o">=</span>                  <span class="mf">45.4685031765008461</span>
+  <span class="n">Total</span> <span class="n">Energy</span> <span class="o">=</span>                       <span class="o">-</span><span class="mf">100.0192889141131474</span>
+</pre></div>
+</div>
+</section>
+<section id="basis-sets-options">
+<h2>Basis sets options<a class="headerlink" href="#basis-sets-options" title="Link to this heading">¶</a></h2>
+<p>The X2C module in <a href="#id7"><span class="problematic" id="id8">|PSIfour|</span></a> supports different combinations of basis set.
+By default, if the input file specifies only <a href="#id9"><span class="problematic" id="id10">|mints__basis|</span></a>, then the X2C
+module will solve the modified Dirac equation in an uncontracted basis and then
+recontract the X2C Hamiltonian in the original basis.
+Alternatively, the user can use <a href="#id11"><span class="problematic" id="id12">|globals__basis_relativistic|</span></a> to specify a different
+basis set to solve the modified Dirac equation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="p">{</span>
+    <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span><span class="o">-</span><span class="n">dk</span>
+    <span class="n">basis_relativistic</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvtz</span><span class="o">-</span><span class="n">dk</span>
+    <span class="n">relativistic</span> <span class="n">x2c</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>It is recommended that when employing the X2C relativistic Hamiltonian, that you use a fully
+decontracted basis set. This can be done simply in the input by adding &quot;-decon&quot; to the
+name of the primary basis you want to use for the calculation as detailed in
+<a class="reference internal" href="basissets.html#sec-basisdecontracted"><span class="std std-ref">Decontracted Basis Sets</span></a>. Publications resulting from the use
+of X2C should cite the following publication: <a class="reference internal" href="bibliography.html#verma-2015" id="id2"><span>[Verma:2015]</span></a></p>
+</section>
+<section id="theory">
+<h2>Theory<a class="headerlink" href="#theory" title="Link to this heading">¶</a></h2>
+<p>X2C is based on exact decoupling of
+positive-energy ( <span class="math notranslate nohighlight">\(h^{FW}_{\rm ++}\)</span>
+) and negative-energy (<span class="math notranslate nohighlight">\(h^{FW}_{\rm --}\)</span> )
+blocks of the Dirac Hamiltonian (<span class="math notranslate nohighlight">\(h^{D}\)</span>).</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}U^\dagger h^{\rm D} U =
+ U^\dagger
+ \begin{pmatrix}
+ h_{LL} &amp; h_{LS} \\
+ h_{SL} &amp; h_{SS}
+ \end{pmatrix}
+ U
+ =
+\begin{pmatrix}
+h^{\rm FW}_{++} &amp; 0 \\
+0 &amp; h^{\rm FW}_{--}
+\end{pmatrix}\end{split}\]</div>
+<p>The transformation ( <span class="math notranslate nohighlight">\(U\)</span> ) is  obtained from the solutions of the Dirac equation in kinetically balanced basis <a class="reference internal" href="bibliography.html#kutzelnigg-1984" id="id3"><span>[Kutzelnigg:1984]</span></a> treatment.
+In the X2C treatment, the positive-energy block of the Hamiltonian ( <span class="math notranslate nohighlight">\(h^{FW}_{\rm ++}\)</span> )
+is given by the sum
+of a transformed kinetic (<span class="math notranslate nohighlight">\(T_{\rm X2C}\)</span>) and potential energy ( <span class="math notranslate nohighlight">\(V_{\rm X2C}\)</span> ) contribution.
+Relativistic kinetic energy ( <span class="math notranslate nohighlight">\(T_{\rm X2C}\)</span> ) and nuclear-electron interaction potential ( <span class="math notranslate nohighlight">\(V_{\rm X2C}\)</span> ) is given in terms of non-relativisitc kinetic (<span class="math notranslate nohighlight">\(T=\hat{p}^2/2\)</span>) energy and nuclear-electron interaction potential (<span class="math notranslate nohighlight">\(V\)</span>), coupling matrix ( <span class="math notranslate nohighlight">\(X\)</span>) and renormalization matrix ( <span class="math notranslate nohighlight">\(R\)</span>).</p>
+<div class="math notranslate nohighlight">
+\[T_{\rm X2C} = R^{\dagger} (TX +  {X}^{\dagger}T - {X}^{\dagger}TX ) R\]</div>
+<div class="math notranslate nohighlight">
+\[V_{\rm X2C} = R^{\dagger}(V + \frac{1}{4c^2} X^{\dagger}W^{\text{SF}}X) R\]</div>
+<p>The coupling matrix ( <span class="math notranslate nohighlight">\({X} = C^{S} (C^{L})^{-1}\)</span> ) is obtained from the large (<span class="math notranslate nohighlight">\(C^{\rm L}\)</span>) and small (<span class="math notranslate nohighlight">\(C^{\rm S}\)</span>) components of the <span class="math notranslate nohighlight">\(N\)</span> positive energy solutions of the Dirac equation.
+The renormalization matrix
+<span class="math notranslate nohighlight">\({R}=S^{-1/2}(S^{-1/2}\tilde{S}S^{-1/2})^{-1/2}S^{1/2}\)</span>,
+depends on the modified overlap matrix
+<span class="math notranslate nohighlight">\(\tilde{S}=S+\frac{1}{2c^2}X^{\dagger}TX\)</span>. The integrals <span class="math notranslate nohighlight">\(W^{\rm SF}_{\mu\nu} = \langle {\chi_\mu} | \hat{p}\cdot (\hat{V}\hat{p}) |{\chi_\nu}\rangle\)</span> can be easily computed as derivatives of the nuclear-electron attraction integrals with respect to nuclear coordinates.
+Existing nonrelativistic electronic structure code can be extended to include scalar relativistic effects
+treated with the X2C method by replacing nonrelativistic kinetic and potential energy with the corresponding
+X2C operators <span class="math notranslate nohighlight">\(T_{X2C}\)</span> and <span class="math notranslate nohighlight">\(V_{X2C}\)</span>. It is important to note that fully uncontracted basis in needed for the construction of X2C Hamiltonian as Foldy-Wouthuysen (FW <a class="reference internal" href="bibliography.html#fw-1950" id="id4"><span>[FW:1950]</span></a>) transformation is obtained in kinetically balance basis.</p>
+<section id="keywords">
+<h3>Keywords<a class="headerlink" href="#keywords" title="Link to this heading">¶</a></h3>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/relativistic.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

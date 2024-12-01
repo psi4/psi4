@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Geometry Optimization |w---w| optimize() and gradient() &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="geometry-optimization-w-w-optimize-and-gradient">
+<span id="sec-opt"></span><span id="index-0"></span><h1>Geometry Optimization <a href="#id1"><span class="problematic" id="id2">|w---w|</span></a> <code class="xref py py-func docutils literal notranslate"><span class="pre">optimize()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">gradient()</span></code><a class="headerlink" href="#geometry-optimization-w-w-optimize-and-gradient" title="Link to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><span class="xref std std-ref">Psi4 Native Gradient Methods</span></p></li>
+<li><p><span class="xref std std-ref">Psi4 Native DFT Gradient Methods (excepting double-hybrids)</span></p></li>
+<li><p><a class="reference internal" href="cfour.html#table-grad-cfour"><span class="std std-ref">CFOUR Interfaced Gradient Methods</span></a></p></li>
+</ul>
+<p>For further discussion of geometry optimization, see
+Sec. <a class="reference internal" href="optking.html#sec-optking"><span class="std std-ref">Geometry Optimization</span></a>.</p>
+<p><code class="xref py py-func docutils literal notranslate"><span class="pre">optimize()</span></code> is the only command most users will ever
+need to access directly to perform geometry optimizations. Behind
+the scenes, <code class="xref py py-func docutils literal notranslate"><span class="pre">optimize()</span></code> is a wrapper that repeatedly
+calls <code class="xref py py-func docutils literal notranslate"><span class="pre">gradient()</span></code> that computes the gradient then adds a
+call to the <a class="reference internal" href="optking.html#sec-optking"><span class="std std-ref">geometry optimization module</span></a>.</p>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/opt.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

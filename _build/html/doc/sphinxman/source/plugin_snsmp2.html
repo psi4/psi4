@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Spin-Network-Scaled MP2 (SNS-MP2) by D. E. Shaw &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="spin-network-scaled-mp2-sns-mp2-by-d-e-shaw">
+<span id="sec-snsmp2"></span><span id="index-0"></span><h1>Spin-Network-Scaled MP2 (SNS-MP2) by D. E. Shaw<a class="headerlink" href="#spin-network-scaled-mp2-sns-mp2-by-d-e-shaw" title="Link to this heading">¶</a></h1>
+<a class="reference external image-reference" href="https://github.com/DEShawResearch/sns-mp2"><img alt="https://img.shields.io/badge/home-sns--mp2-5077AB.svg" src="https://img.shields.io/badge/home-sns--mp2-5077AB.svg" /></a>
+<br><a class="reference external image-reference" href="https://github.com/DEShawResearch/sns-mp2/blob/master/README.md"><img alt="https://img.shields.io/badge/docs-latest-5077AB.svg" src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
+<p>This plugin is an implementation of the SNS-MP2 algorithm developed by McGibbon
+et. al. <a class="reference internal" href="bibliography.html#mcgibbon-2017-161725" id="id1"><span>[McGibbon:2017:161725]</span></a>. The SNS-MP2 method uses neural networking to
+improve the accuracy of MP2 (<a class="reference internal" href="dfmp2.html#sec-dfmp2"><span class="std std-ref">DF-MP2: Density-Fitted 2nd-Order |MollerPlesset| Perturbation Theory</span></a>) interaction energies for dimer molecules.
+The plugin is distributed under the 2-clause BSD license.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p><strong>Binary</strong></p>
+<ul>
+<li><a class="reference external image-reference" href="https://anaconda.org/psi4/snsmp2"><img alt="https://anaconda.org/psi4/snsmp2/badges/version.svg" src="https://anaconda.org/psi4/snsmp2/badges/version.svg" /></a>
+</li>
+<li><p>snsmp2 is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).</p></li>
+<li><p>If using the Psi4conda installer, snsmp2 has already been installed alongside.</p></li>
+<li><p>If using the <a href="#id2"><span class="problematic" id="id3">|PSIfour|</span></a> conda package, the snsmp2 conda package can
+be obtained through <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">snsmp2</span> <span class="pre">-c</span> <span class="pre">psi4</span></code> or <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span>
+<span class="pre">psi4-rt</span> <span class="pre">-c</span> <span class="pre">psi4</span></code>.</p></li>
+<li><p>If using <a href="#id4"><span class="problematic" id="id5">|PSIfour|</span></a> built from source, and anaconda or miniconda has
+already been installed (instructions at <a class="reference internal" href="conda.html#sec-quickconda"><span class="std std-ref">Quick Installation</span></a>),
+snsmp2 can be obtained through <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">snsmp2</span> <span class="pre">-c</span> <span class="pre">psi4</span></code>.
+Then, hint its location with <span class="target" id="index-1"></span><a class="reference internal" href="external.html#envvar-PYTHONPATH"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PYTHONPATH</span></code></a>.</p></li>
+<li><p>To remove a conda installation, <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">remove</span> <span class="pre">snsmp2</span></code>.</p></li>
+</ul>
+<p><strong>Source</strong></p>
+<ul>
+<li><a class="reference external image-reference" href="https://github.com/DEShawResearch/sns-mp2"><img alt="https://img.shields.io/github/tag/DEShawResearch/sns-mp2.svg?maxAge=2592000" src="https://img.shields.io/github/tag/DEShawResearch/sns-mp2.svg?maxAge=2592000" /></a>
+</li>
+<li><p>Download the plugin from the GitHub repository:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/DEShawResearch/sns-mp2
+</pre></div>
+</div>
+</li>
+<li><p>Once dowloaded, the plugin can be installed as outlined in the documentation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span><span class="nb">cd</span><span class="w"> </span><span class="o">{</span>top-level-sns-mp2-directory<span class="o">}</span>
+&gt;&gt;&gt;<span class="w"> </span><span class="nv">PSI4_PYTHON</span><span class="o">=</span><span class="k">$(</span>head<span class="w"> </span><span class="k">$(</span>which<span class="w"> </span>psi4<span class="k">)</span><span class="w"> </span>-n<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;s/^.{2}//&#39;</span><span class="k">)</span>
+&gt;&gt;&gt;<span class="w"> </span><span class="nv">$PSI4_PYTHON</span><span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="sample-input">
+<h2>Sample Input<a class="headerlink" href="#sample-input" title="Link to this heading">¶</a></h2>
+<p>A sample input file, adapted from the documentation, is shown below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sample SNS-MP2 calculation for two helium atoms</span>
+
+<span class="n">molecule</span> <span class="n">dimer</span> <span class="p">{</span>
+<span class="n">He</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span>
+<span class="o">--</span>
+<span class="n">He</span> <span class="mi">2</span> <span class="mi">0</span> <span class="mi">0</span>
+<span class="p">}</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;sns-mp2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that the two monomers are separated by double dashes, indicating that
+they should be treated as separate molecules. (See
+<a class="reference internal" href="tutorial.html#sec-tutorial-tu5"><span class="std std-ref">Analysis of Intermolecular Interactions</span></a> for more details on
+setting up dimer molecules.) This input file can be run in the usual fashion:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>psi4<span class="w"> </span>input.dat
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/plugin_snsmp2.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>CI: Configuration Interaction &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="ci-configuration-interaction">
+<span id="sec-ci"></span><span id="index-1"></span><span id="index-0"></span><h1>CI: Configuration Interaction<a class="headerlink" href="#ci-configuration-interaction" title="Link to this heading">¶</a></h1>
+<p><em>Module:</em> <span class="xref std std-ref">Keywords</span>, <span class="xref std std-ref">PSI Variables</span>, <a href="#id1"><span class="problematic" id="id2">:source:`DETCI &lt;psi4/src/psi4/detci&gt;`</span></a></p>
+<p>Configuration interaction (CI) is one of the most general ways to
+improve upon Hartree--Fock theory by adding a description of the
+correlated motions of electrons.  Simply put, a CI wavefunction
+is a linear combination of Slater determinants (or spin-adapted
+configuration state functions), with the linear coefficients being
+determined variationally via diagonalization of the Hamiltonian in the
+given subspace of determinants.  For a &quot;single-reference&quot; CI based
+on reference function <span class="math notranslate nohighlight">\(| \Phi_0 \rangle\)</span>, we can write the CI expansion as
+follows:</p>
+<div class="math notranslate nohighlight" id="equation-ciexpansion">
+<span class="eqno">(1)<a class="headerlink" href="#equation-ciexpansion" title="Link to this equation">¶</a></span>\[| \Psi \rangle = c_0 | \Phi_0 \rangle
++ \sum_i^{\rm occ} \sum_a^{\rm vir} c_i^a | \Phi_i^a \rangle
++ \sum_{i&lt;j}^{\rm occ} \sum_{a&lt;b}^{\rm vir} c_{ij}^{ab}
+| \Phi_{ij}^{ab} \rangle
++ \sum_{i&lt;j&lt;k}^{\rm occ} \sum_{a&lt;b&lt;c}^{\rm vir} c_{ijk}^{abc}
+| \Phi_{ijk}^{abc} \rangle + \cdots\]</div>
+<p>The simplest standard CI method that improves upon Hartree--Fock is a CI
+that adds all singly <span class="math notranslate nohighlight">\(| \Phi_i^a \rangle\)</span> and doubly
+<span class="math notranslate nohighlight">\(| \Phi_{ij}^{ab} \rangle\)</span>
+substituted determinants (CISD) to the reference determinant
+<span class="math notranslate nohighlight">\(| \Phi_0 \rangle\)</span>.  The CISD wavefunction has fallen out of favor
+because truncated CI wavefunctions are not size-extensive, meaning
+that their quality degrades for larger molecules.  MP2 is a less
+expensive alternative giving results similar to those of CISD for small
+molecules, but the quality of MP2 does not degrade for larger molecules.
+Coupled-cluster singles and doubles (CCSD) is another size-extensive
+alternative; it is only slightly more costly computationally than CISD,
+but it typically provides significantly more accurate results.</p>
+<p>The CI code in <a href="#id13"><span class="problematic" id="id14">|PSIfour|</span></a> is described in detail in
+<a class="reference internal" href="bibliography.html#sherrill-1999-ci" id="id3"><span>[Sherrill:1999:CI]</span></a>.  For the reasons stated above, the CI code in
+<a href="#id15"><span class="problematic" id="id16">|PSIfour|</span></a> is not optimized for CISD computations, and it uses data structures
+that are particularly inefficient for CISD and may result in the program
+running out of memory and crashing for CISD except on very small molecules.
+Instead, DETCI was designed to be efficient
+in handling more highly correlated CI wavefunctions that can be helpful in more
+challenging cases such as highly strained molecules or bond breaking reactions.  The CI
+code is based on the fast, determinant-based string formalism
+of Handy <a class="reference internal" href="bibliography.html#handy-1980" id="id4"><span>[Handy:1980]</span></a>.  It can solve for restricted active space
+configuration interaction (RAS CI) wavefunctions as described by Olsen,
+Roos, Jorgensen, and Aa. Jensen <a class="reference internal" href="bibliography.html#olsen-1988" id="id5"><span>[Olsen:1988]</span></a>.  Excitation-class
+selected multi-reference CI wavefunctions, such as second-order CI,
+can be formulated as RAS CI's.  A RAS CI selects determinants for the
+model space as those which have no more than <span class="math notranslate nohighlight">\(n\)</span> holes in the lowest set
+of orbitals (called RAS I) and no more than <span class="math notranslate nohighlight">\(m\)</span> electrons in the highest
+set of orbitals (called RAS III).  An intermediate set of orbitals, if
+present (RAS II), has no restrictions placed upon it.  All determinants
+satisfying these rules are included in the RAS CI.</p>
+<p>The DETCI module is also very efficient at computing full configuration
+interaction
+wavefunctions, and it is used in this capacity in the complete-active-space
+self-consistent-field (CASSCF) code.  It can also perform approximate
+CASSCF computations in which one uses RAS restrictions on the CI excitations,
+rather than doing a full CI in the active space.  This is called a
+RASSCF.  CASSCF and RASSCF computations are types of multi-configurational
+self-consistent-field procedures, and are described in <a class="reference internal" href="mcscf.html#sec-mcscf"><span class="std std-ref">MCSCF: Multi-Configurational Self-Consistent-Field</span></a>.</p>
+<p>As mentioned above, the DETCI module is designed for challenging
+chemical systems for which simple CISD is not suitable.  Because
+CI wavefunctions which go beyond CISD (such as RAS CI) are fairly complex,
+typically the DETCI code will be used in cases where the
+tradeoffs between computational expense and completeness of the
+model space are nontrivial.  Hence, the user is advised to develop
+a good working knowledge of multi-reference and RAS CI methods before
+attempting to use the program for a production-level project.  This user's
+manual will provide only an elementary introduction to the most
+important keywords.  Additional information is available in the complete
+list of keywords for DETCI provided in Appendix <span class="xref std std-ref">apdx:detci</span>.</p>
+<p>For single-reference CI computations, the easiest way to invoke a CI
+computation with DETCI is simply to call <code class="xref py py-func docutils literal notranslate"><span class="pre">energy()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">optimize()</span></code>, <em>etc.</em>,
+with the common name for that CI wavefunction, like <code class="docutils literal notranslate"><span class="pre">energy('cisd')</span></code>
+for a CISD single-point energy.  The Python driver
+recognizes <code class="docutils literal notranslate"><span class="pre">cisd</span></code>, <code class="docutils literal notranslate"><span class="pre">cisdt</span></code>, and <code class="docutils literal notranslate"><span class="pre">cisdtq</span></code>.  As mentioned above, codes
+written specifically for CISD will be more efficient than DETCI for a
+CISD computation, and <code class="docutils literal notranslate"><span class="pre">energy('cisd')</span></code> by default will call other,
+more efficient modules.  To force a CISD computation with DETCI,
+set <a href="#id17"><span class="problematic" id="id18">|globals__qc_module|</span></a> = DETCI.</p>
+<p>Higher order single-reference CI wavefunctions, like those including singles through
+6-fold excitations, can be invoked using numbers, like <code class="docutils literal notranslate"><span class="pre">ci6</span></code>.  A full
+CI can be specified by <code class="docutils literal notranslate"><span class="pre">fci</span></code>.  More complicated CI computations, like
+RASCI, can be performed by setting the appropriate keywords and calling the
+module generically like <code class="docutils literal notranslate"><span class="pre">energy('detci')</span></code>.  The latter approach
+will also work for any of the previously-mentioned CI wavefunctions for
+which the driver has built-in shortcuts, so long as the relevant options
+(especially <a href="#id19"><span class="problematic" id="id20">|detci__ex_level|</span></a>) are set appropriately.  Some
+examples of single-refence CI, RASCI, and full CI computations are provided
+in <a href="#id6"><span class="problematic" id="id7">:source:`samples`</span></a>.</p>
+<span id="table-ci-spaces"></span><table class="docutils align-default" id="id12">
+<caption><span class="caption-text">Orbital spaces for CI computations</span><a class="headerlink" href="#id12" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>CI (e.g., CISD, FCI)</p></th>
+<th class="head"><p>RASCI</p></th>
+<th class="head"><p>CASCI</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a href="#id21"><span class="problematic" id="id22">|globals__frozen_uocc|</span></a></p></td>
+<td><p><a href="#id23"><span class="problematic" id="id24">|globals__frozen_uocc|</span></a></p></td>
+<td><p><a href="#id25"><span class="problematic" id="id26">|globals__frozen_uocc|</span></a> <a class="footnote-reference brackets" href="#f1" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></td>
+</tr>
+<tr class="row-odd"><td rowspan="4"><p>(all orbitals not in
+<a href="#id27"><span class="problematic" id="id28">|globals__frozen_uocc|</span></a>
+or <a href="#id29"><span class="problematic" id="id30">|globals__frozen_docc|</span></a>
+are included in CI)</p></td>
+<td><p><a href="#id31"><span class="problematic" id="id32">|globals__ras4|</span></a></p></td>
+<td rowspan="4"><p><a href="#id33"><span class="problematic" id="id34">|globals__active|</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a href="#id35"><span class="problematic" id="id36">|globals__ras3|</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a href="#id37"><span class="problematic" id="id38">|globals__ras2|</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a href="#id39"><span class="problematic" id="id40">|globals__ras1|</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a href="#id41"><span class="problematic" id="id42">|globals__frozen_docc|</span></a></p></td>
+<td><p><a href="#id43"><span class="problematic" id="id44">|globals__frozen_docc|</span></a></p></td>
+<td><p><a href="#id45"><span class="problematic" id="id46">|globals__frozen_docc|</span></a></p></td>
+</tr>
+</tbody>
+</table>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="f1" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">1</a><span class="fn-bracket">]</span></span>
+<p><a href="#id47"><span class="problematic" id="id48">|globals__frozen_uocc|</span></a> is not required and will be inferred if
+<a href="#id49"><span class="problematic" id="id50">|globals__active|</span></a> is provided.  However, if it is easier to specify
+<a href="#id51"><span class="problematic" id="id52">|globals__frozen_uocc|</span></a>, then this may be provided and <a href="#id53"><span class="problematic" id="id54">|globals__active|</span></a> can
+be inferred.</p>
+</aside>
+</aside>
+<p>The table above shows the relevant orbitals spaces for CI computations (an
+analogous <a class="reference internal" href="mcscf.html#table-mcscf-spaces"><span class="std std-ref">table</span></a> for MCSCF is also available).
+The third column of the
+table refers to CASCI, in which a full CI is performed in some smaller
+set of <code class="docutils literal notranslate"><span class="pre">active</span></code> orbitals; it is equivalent to CASSCF except without
+any orbital optimization.  It can be invoked via <code class="docutils literal notranslate"><span class="pre">energy('fci')</span></code>
+with appropriate values selected for <a href="#id55"><span class="problematic" id="id56">|globals__frozen_docc|</span></a> and
+<a href="#id57"><span class="problematic" id="id58">|globals__active|</span></a>.  For CI computations, there is no difference between
+<a href="#id59"><span class="problematic" id="id60">|globals__frozen_docc|</span></a> and <a href="#id61"><span class="problematic" id="id62">|globals__restricted_docc|</span></a>, or between
+<a href="#id63"><span class="problematic" id="id64">|globals__frozen_uocc|</span></a> and <a href="#id65"><span class="problematic" id="id66">|globals__restricted_uocc|</span></a>.  There are
+differences between these keywords for <a class="reference internal" href="mcscf.html#sec-mcscf"><span class="std std-ref">MCSCF: Multi-Configurational Self-Consistent-Field</span></a>.</p>
+<section id="basic-detci-keywords">
+<span id="index-2"></span><h2>Basic DETCI Keywords<a class="headerlink" href="#basic-detci-keywords" title="Link to this heading">¶</a></h2>
+<p>For larger computations, additional keywords may be required, as
+described in the DETCI section of the Appendix <span class="xref std std-ref">apdx:detci</span>.</p>
+</section>
+<section id="spin-multiplicities-of-higher-roots">
+<span id="index-3"></span><h2>Spin Multiplicities of Higher Roots<a class="headerlink" href="#spin-multiplicities-of-higher-roots" title="Link to this heading">¶</a></h2>
+<p>As mentioned above, DETCI works in a basis of Slater determinants, rather than
+configuration state functions.  The correct value of <span class="math notranslate nohighlight">\(M_s\)</span> is easily enforced
+by fixing the number of alpha and beta electrons to be constant across all determinants
+selected for the CI computation.  However, determinant-based codes like DETCI do
+not necessarily enforce the correct spin <span class="math notranslate nohighlight">\(S\)</span>.  For example, diagonalizing the
+Hamiltonian in a space spanned by determinants with <span class="math notranslate nohighlight">\(M_s = 0\)</span> can yield
+both singlet and triplet solutions, because triplets (<span class="math notranslate nohighlight">\(S = 1\)</span>) also have an
+<span class="math notranslate nohighlight">\(M_s = 0\)</span> component.  (Indeed, even higher spin multiplicities may be encountered
+if the excitation level is high enough).  For closed-shell references with <span class="math notranslate nohighlight">\(M_s = 0\)</span>,
+the program will assume by default that a singlet (<span class="math notranslate nohighlight">\(S = 0\)</span>) computation is desired,
+and will utilize alpha/beta interchange symmetries to speed up the computation
+(this is controlled by the advanced keyword <a href="#id67"><span class="problematic" id="id68">|detci__ms0|</span></a>, which defaults to <code class="docutils literal notranslate"><span class="pre">TRUE</span></code>).
+Thus, if a user requests multiple roots (<a href="#id69"><span class="problematic" id="id70">|detci__num_roots|</span></a> = <span class="math notranslate nohighlight">\(n\)</span>), the program
+will typically return singlets and not triplets.  However, if enough roots are sought,
+higher-multiplicities may enter in.  This can be avoided by ensuring that all the guess
+vectors have the correct spin multiplicity, by setting <a href="#id71"><span class="problematic" id="id72">|detci__calc_s_squared|</span></a> to <code class="docutils literal notranslate"><span class="pre">TRUE</span></code>).
+It is also possible to ask DETCI to compute roots of higher multiplicities.  The desired value of spin may be
+provided by setting <a href="#id73"><span class="problematic" id="id74">|detci__S|</span></a> = <span class="math notranslate nohighlight">\(S\)</span>.  Typically, it would be a good idea in this context to also set
+<a href="#id75"><span class="problematic" id="id76">|detci__calc_s_squared|</span></a> to <code class="docutils literal notranslate"><span class="pre">TRUE</span></code> to ensure the guess roots have the right spin.  However, be advised that
+seeking these higher roots may cause convergence problems, because roundoff may allow the lower-lying
+roots of lower multiplicities to re-enter the computation (reducing convergence criteria may help).</p>
+<p>For open-shell systems, the <a href="#id77"><span class="problematic" id="id78">|detci__ms0|</span></a> keyword is typically not relevant, and there
+is no control over spin multiplicities of higher roots unless|detci__calc_s_squared| is
+used.</p>
+</section>
+<section id="arbitrary-order-perturbation-theory">
+<span id="sec-arbpt"></span><span id="index-4"></span><h2>Arbitrary Order Perturbation Theory<a class="headerlink" href="#arbitrary-order-perturbation-theory" title="Link to this heading">¶</a></h2>
+<p>The DETCI module is capable of computing energies for arbitrary
+order <a href="#id79"><span class="problematic" id="id80">|MollerPlesset|</span></a> perturbation theory (MPn, for closed-shell
+systems with an RHF reference) and for Z-averaged perturbation theory
+(ZAPTn, open-shell systems with a ROHF reference). However, please
+note that these computations are essentially doing high-order CI (up to
+full CI) computations to obtain these results, and hence they will only
+be possible for very small systems (generally a dozen electrons or less).</p>
+<p>The simplest way to run high-order perturbation theory computations is to
+call, <em>e.g.</em>, <code class="docutils literal notranslate"><span class="pre">energy('mp10')</span></code> to invoke a MP10 computation or
+<code class="docutils literal notranslate"><span class="pre">energy('zapt25')</span></code> to invoke a ZAPT25 computation.  This will
+automatically set several additional user options to their appropriate
+values.  The program uses the Wigner (2n+1) rule to obtain higher-order
+energies from lower-order wavefunctions.</p>
+<p>For the interested reader, the additional user options that are
+automatically set up by the calls above are as follows.  A call like
+<code class="docutils literal notranslate"><span class="pre">energy('mp10')</span></code> sets <a href="#id81"><span class="problematic" id="id82">|detci__mpn|</span></a> to TRUE.
+The program uses the Wigner (2n+1) rule by default
+(<a href="#id83"><span class="problematic" id="id84">|detci__mpn_wigner|</span></a> = TRUE)
+and figures out what order of wavefunction is
+necessary to reach the desired order in the energy.  The program then
+sets <a href="#id85"><span class="problematic" id="id86">|detci__max_num_vecs|</span></a> to the required order in the
+wavefunction.
+By default, the requested n-th order energy is saved as the current
+energy to the process environment.   ZAPTN works essentially the same
+way for an ROHF reference.</p>
+</section>
+<section id="arbitrary-order-coupled-cluster-theory">
+<span id="index-5"></span><h2>Arbitrary Order Coupled-Cluster Theory<a class="headerlink" href="#arbitrary-order-coupled-cluster-theory" title="Link to this heading">¶</a></h2>
+<p><em>This DETCI-based version of this feature is not yet released.  However,
+the current version of the code does include an interface to</em>
+<a class="reference internal" href="mrcc.html#sec-mrcc"><span class="std std-ref">Kallay's MRCC</span></a> <em>code.</em></p>
+<p>The DETCI module is also capable of computing arbitrary-order
+coupled-cluster energies, using an approach similar to that of Hirata
+and Bartlett <a class="reference internal" href="bibliography.html#hirata-2000-216" id="id9"><span>[Hirata:2000:216]</span></a>, or of Olsen <a class="reference internal" href="bibliography.html#olsen-2000-7140" id="id10"><span>[Olsen:2000:7140]</span></a>.
+Notably, the approach in DETCI also allows arbitrary-order
+<em>active space</em> coupled-cluster procedures.  The general algorithm
+for doing this in DETCI is inefficient compared to optimized
+lower-order coupled-cluster codes and should not be used for CCSD,
+where the CCENERGY module is much more efficient.  For higher-order
+CC (like CCSDT and beyond), the code is also not as efficient as the
+MRCC code by K<a href="#id87"><span class="problematic" id="id88">|a_acute|</span></a>llay, to which <a href="#id89"><span class="problematic" id="id90">|PSIfour|</span></a> can interface (see Section
+<a class="reference internal" href="mrcc.html#sec-mrcc"><span class="std std-ref">Interface to MRCC by M. K|a_acute|llay</span></a>); however, it may allow certain truncations of the model
+space that might not be available presently in MRCC.  For very small
+systems, the code can be useful for testing of, for example, CCSDTQ or
+its active-space CCSDtq analog <a class="reference internal" href="bibliography.html#piecuch-1999-6103" id="id11"><span>[Piecuch:1999:6103]</span></a>.</p>
+<p>To perform arbitrary-order coupled-cluster, set the DETCI
+option <a href="#id91"><span class="problematic" id="id92">|detci__cc|</span></a> to TRUE, and set
+<a href="#id93"><span class="problematic" id="id94">|detci__cc_ex_level|</span></a> (note: not <a href="#id95"><span class="problematic" id="id96">|detci__ex_level|</span></a>)
+to the desired coupled-cluster excitation level, and invoke
+<code class="docutils literal notranslate"><span class="pre">energy('detci')</span></code>.  Various other DETCI options have a similar
+option for coupled-cluster, usually named beginning with CC.  The full
+list of options is given in Appendix <span class="xref std std-ref">apdx:detci</span>.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/detci.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

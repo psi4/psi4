@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Best Practices for Python Functions &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="best-practices-for-python-functions">
+<span id="sec-bestpractices-py"></span><h1>Best Practices for Python Functions<a class="headerlink" href="#best-practices-for-python-functions" title="Link to this heading">¶</a></h1>
+<ul>
+<li><p>Thy python functions shall always have final argument **kwargs, that they may take in and pass on keywords meant for other functions. Yea, even the run_mcscf(), and run_ccsd() -type functions that have no use for kwargs. The exceptions are python functions that are only helpers called by a driver function.</p></li>
+<li><p>Python functions should read the kwargs dictionary and (possibly) add to it. Functions should not pop or remove keywords from kwargs, even those keywords meaningful only to itself. This will ensure that the complete kwargs is available for pickling and sow/reap procedures. The exception is the molecule argument, which is read by the first function that gets ahold of it. This first function activates the molecule and pops it out of kwargs, effectively setting molecule for all subsequent functions. The code below should suffice.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make sure the molecule the user provided is the active one</span>
+<span class="k">if</span> <span class="s1">&#39;molecule&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+    <span class="n">activate</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;molecule&#39;</span><span class="p">])</span>
+    <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;molecule&#39;</span><span class="p">]</span>
+<span class="n">molecule</span> <span class="o">=</span> <span class="n">psi4</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span>
+<span class="n">molecule</span><span class="o">.</span><span class="n">update_geometry</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+<li><p>Preferrably, the python function signature (for functions intended to be called in input files) is <code class="docutils literal notranslate"><span class="pre">function(name,</span> <span class="pre">**kwargs)</span></code>. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see <a class="reference internal" href="../db.html#sec-db"><span class="std std-ref">Database |w---w| database()</span></a> argument db_name for example).</p></li>
+<li><p>After the docstring, the first two lines of your function should be the ones below. The first provides a case insensitive handle to the name argument value. The second converts all the kwargs dictionary keys to lowercase versions of themselves, so that input files can be case insensitive.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Case sensitivity for kwargs dictionary values still needs to be handled. The first line below shows how to convert argument values to lowercase for matching. When not matching a whole value such that regular expressions are needed, the second line below performs a case insensitive match.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;db_mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;continuous&#39;</span><span class="p">):</span>
+<span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^sapt&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+</pre></div>
+</div>
+</li>
+<li><p>Match boolean keywords (db_cp in the example below) with expressions like the following, which allow case insensitive yes/true/on/1/no/false/off/0 user input. If your argument's value is a derivative level, similarly, use input.der0th, input.der1st, and input.der2nd.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="nb">input</span><span class="o">.</span><span class="n">yes</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">db_cp</span><span class="p">)):</span>
+<span class="k">elif</span> <span class="nb">input</span><span class="o">.</span><span class="n">no</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">db_cp</span><span class="p">)):</span>
+</pre></div>
+</div>
+</li>
+<li><p>For keywords that might be used in other functions as well as your own, prepend the argument name with a short representation of your function name. For example, there are keywords cp_func, db_func, and opt_func to request what python function, if not energy(), is called by cp(), database(), and optimize().</p></li>
+<li><p>Upon checking in a new python file, edit the file <code class="docutils literal notranslate"><span class="pre">psi4/doc/userman/source/index.rst</span></code> and follow the instructions therein that your file may be autodocumented here.</p></li>
+<li><p>Write docstrings! For a major function intended for use in input files, emulate any docstring in <code class="docutils literal notranslate"><span class="pre">psi4/share/python/driver.py</span></code>. For a behind-the-scenes function or if you don't want the bother of dealing with <a class="reference external" href="http://docutils.sourceforge.net/docs/user/rst/quickref.html">reStructuredText</a>, just write an ordinary docstring. It will get slurped into the documentation in plain text.</p></li>
+<li><p>Your python function should follow <a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">PEP8</a> conventions (without the line-length restriction). I'm aiming for files to pass the line below, unless for good reason. The second line is for database Python files.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pep8</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">r</span> <span class="o">--</span><span class="n">ignore</span><span class="o">=</span><span class="n">E501</span> <span class="n">pythonfile</span><span class="o">.</span><span class="n">py</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pep8</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">r</span> <span class="o">--</span><span class="n">ignore</span><span class="o">=</span><span class="n">E501</span><span class="p">,</span><span class="n">E221</span><span class="p">,</span><span class="n">E222</span><span class="p">,</span><span class="n">E241</span><span class="p">,</span><span class="n">E201</span><span class="p">,</span><span class="n">E202</span> <span class="n">databasefile</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</li>
+<li><p>Your python function should not prevent any test case from passing. A test case(s) should be written and checked in for any major python function, so that others do not break your code. If most of your work was on the python (as opposed to c++) side, the test case prefix pywrap_ is suggested.</p></li>
+<li><p>Be sure to set any new PSI variables through lines like those below. Especially if the function returns an energy, set the 'current energy' variable. This last is needed to communicate with the optimizer.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">psi4</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s1">&#39;MP2.5 CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">ce_mp25</span><span class="p">)</span>
+<span class="n">psi4</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s1">&#39;MP2.5 TOTAL ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>
+<span class="n">psi4</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s1">&#39;CURRENT ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Once your python function is fairly stable on its own, it's potential for interoperability with energy()/opt()/cp()/db()/cbs()/etc. should be evaluated. If it makes physical sense that it should work, you should strive to make that interoperability a reality. Some steps:</p>
+<blockquote>
+<div><ul>
+<li><p>If any interoperability is possible, define an argument xx_func, where xx is a short name for your function. Add near the top of your function code like the below (less the final two lines). The net result of this code is that if the user specifies no *_func arguments, then energy() gets called. If the user defines xx_func, then its value gets called. If the user defines func, then its value gets reassigned to xx_func, func itself is deleted, and xx_func() gets called. Whatever is getting called is stored in func within the function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Establish function to call</span>
+<span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="s1">&#39;xx_func&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;func&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xx_func&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;func&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;func&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xx_func&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">energy</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xx_func&#39;</span><span class="p">]</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">func</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Function </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s1"> does not exist to be called by wrapper counterpoise_correct.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">func</span> <span class="ow">is</span> <span class="n">db</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Wrapper xx is unhappy to be calling function </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p>If specific interoperabilities are known, code them in. For example, if xx shouldn't call db, add the last two lines above to the xx function. If db shouldn't call xx, add the following two lines below to the db function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">func</span> <span class="ow">is</span> <span class="n">xx</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;Wrapper database is unhappy to be calling function </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p>Create a multipart test case that runs some intercalls between your function and others (akin to <a href="#id1"><span class="problematic" id="id2">:srcsample:`pywrap_all)`</span></a>. In trials, permute the order of calls a few times to expose any calls that don't clean up after themselves and need further attention.</p></li>
+<li><p>When all is validated, add your findings to the great <a class="reference internal" href="../intercalls.html#table-intercalls"><span class="std std-ref">Permitted nesting of Psithon functions</span></a> table in the documentation.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../../_sources/doc/sphinxman/source/attic/bestpractices_py.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

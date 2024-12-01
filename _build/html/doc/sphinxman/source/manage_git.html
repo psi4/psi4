@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Git, Versioning &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="git-versioning">
+<h1>Git, Versioning<a class="headerlink" href="#git-versioning" title="Link to this heading">¶</a></h1>
+<section id="how-to-bump-a-version">
+<span id="faq-versionbump"></span><h2>How to bump a version<a class="headerlink" href="#how-to-bump-a-version" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple" start="0">
+<li><p><strong>ACT</strong> to check everything in</p></li>
+<li><p><strong>OBSERVE</strong> current versioning state</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>Be on master of (i) a direct clone or (ii) clone-of-fork with master
+up-to-date with upstream (including tags!!!) and with upstream as
+remote.</p></li>
+<li><p><a class="reference external" href="https://github.com/psi4/psi4/releases">https://github.com/psi4/psi4/releases</a> says <code class="docutils literal notranslate"><span class="pre">v1.1a1</span></code> &amp; <code class="docutils literal notranslate"><span class="pre">007a9b6</span></code></p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">tag</span>
+<span class="go">v1.0</span>
+<span class="go">v1.1a1</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cat</span> <span class="n">psi4</span><span class="o">/</span><span class="n">metadata</span><span class="o">.</span><span class="n">py</span>
+<span class="go">__version__ = &#39;1.1a1&#39;</span>
+<span class="go">__version_long = &#39;1.1a1+007a9b6&#39;</span>
+<span class="go">__version_upcoming_annotated_v_tag = &#39;1.1a2&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">describe</span> <span class="o">--</span><span class="n">abbrev</span><span class="o">=</span><span class="mi">7</span> <span class="o">--</span><span class="n">long</span> <span class="o">--</span><span class="n">always</span> <span class="n">HEAD</span>
+<span class="go">v1.1a1-417-gcbee32b</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">describe</span> <span class="o">--</span><span class="n">abbrev</span><span class="o">=</span><span class="mi">7</span> <span class="o">--</span><span class="n">long</span> <span class="o">--</span><span class="n">dirty</span>
+<span class="go">v1.1a1-417-gcbee32b</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="o">./</span><span class="n">psi4</span><span class="o">/</span><span class="n">versioner</span><span class="o">.</span><span class="n">py</span>
+<span class="go">Defining development snapshot version: 1.1a2.dev417+cbee32b (computed)</span>
+<span class="go">1.1a2.dev417 {master} cbee32b 1.0.0.999   1.0 &lt;-- 1.1a2.dev417+cbee32b</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">diff</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Observe that current latest tag matches metadata scipt and git
+describe, that GitHub releases matches metadata script, that upcoming in
+metadata script matches current versioner version.</p></li>
+<li><p>Note that current tag is <code class="docutils literal notranslate"><span class="pre">v1.1a1</span></code>. Decide on imminent tag, say <code class="docutils literal notranslate"><span class="pre">v1.1rc1</span></code>.</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p><strong>ACT</strong> to bump tag in code</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>Edit current &amp; prospective tag in <a href="#id1"><span class="problematic" id="id2">:source:`psi4/metadata.py`</span></a>. Use your
+decided-upon tag <code class="docutils literal notranslate"><span class="pre">v1.1rc1</span></code> and a speculative next tag, say <code class="docutils literal notranslate"><span class="pre">v1.1rc2</span></code>,
+and use 7 &quot;z&quot;s for the part you can't predict.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">vi</span> <span class="n">psi4</span><span class="o">/</span><span class="n">metadata</span><span class="o">.</span><span class="n">py</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">diff</span>
+<span class="go">diff --git a/psi4/metadata.py b/psi4/metadata.py</span>
+<span class="go">index 5d87b55..6cbc05e 100644</span>
+<span class="go">--- a/psi4/metadata.py</span>
+<span class="go">+++ b/psi4/metadata.py</span>
+<span class="go">@@ -1,6 +1,6 @@</span>
+<span class="go">-__version__ = &#39;1.1a1&#39;</span>
+<span class="go">-__version_long = &#39;1.1a1+007a9b6&#39;</span>
+<span class="go">-__version_upcoming_annotated_v_tag = &#39;1.1a2&#39;</span>
+<span class="go">+__version__ = &#39;1.1rc1&#39;</span>
+<span class="go">+__version_long = &#39;1.1rc1+zzzzzzz&#39;</span>
+<span class="go">+__version_upcoming_annotated_v_tag = &#39;1.1rc2&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">add</span> <span class="n">psi4</span><span class="o">/</span><span class="n">metadata</span><span class="o">.</span><span class="n">py</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;v1.1rc1&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p><strong>OBSERVE</strong> undefined version state</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">describe</span> <span class="o">--</span><span class="n">abbrev</span><span class="o">=</span><span class="mi">7</span> <span class="o">--</span><span class="n">long</span> <span class="o">--</span><span class="n">always</span> <span class="n">HEAD</span>
+<span class="go">v1.1a1-418-g6100822</span>
+
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">git</span> <span class="n">describe</span> <span class="o">--</span><span class="n">abbrev</span><span class="o">=</span><span class="mi">7</span> <span class="o">--</span><span class="n">long</span> <span class="o">--</span><span class="n">dirty</span>
+<span class="go">v1.1a1-418-g6100822</span>
+
+<span class="gp">&gt;&gt;&gt; </span> <span class="n">psi4</span><span class="o">/</span><span class="n">versioner</span><span class="o">.</span><span class="n">py</span>
+<span class="go">Undefining version for irreconcilable tags: 1.1a1 (computed) vs 1.1rc1 (recorded)</span>
+<span class="go">undefined {master} 6100822 1.0.0.999   1.0 &lt;-- undefined+6100822</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Note 7-char git hash for the new commit, here &quot;6100822&quot;.</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li><p><strong>ACT</strong> to bump tag in git, then bump git tag in code.</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>Use the decided-upon tag <code class="docutils literal notranslate"><span class="pre">v1.1rc1</span></code> and the observed hash &quot;6100822&quot; to
+mint a new <em>annotated</em> tag, minding that &quot;v&quot;s are present here.</p></li>
+<li><p>Use the observed hash to edit <a href="#id3"><span class="problematic" id="id4">:source:`psi4/metadata.py`</span></a> and commit immediately.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">tag</span> <span class="o">-</span><span class="n">a</span> <span class="n">v1</span><span class="mf">.1</span><span class="n">rc1</span> <span class="mi">6100822</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;v1.1rc1&quot;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vi</span> <span class="n">psi4</span><span class="o">/</span><span class="n">metadata</span><span class="o">.</span><span class="n">py</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">diff</span>
+<span class="go">diff --git a/psi4/metadata.py b/psi4/metadata.py</span>
+<span class="go">index 6cbc05e..fdc202e 100644</span>
+<span class="go">--- a/psi4/metadata.py</span>
+<span class="go">+++ b/psi4/metadata.py</span>
+<span class="go">@@ -1,5 +1,5 @@</span>
+<span class="go"> __version__ = &#39;1.1rc1&#39;</span>
+<span class="go">-__version_long = &#39;1.1rc1+zzzzzzz&#39;</span>
+<span class="go">+__version_long = &#39;1.1rc1+6100822&#39;</span>
+<span class="go"> __version_upcoming_annotated_v_tag = &#39;1.1rc2&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">psi4</span><span class="o">/</span><span class="n">versioner</span><span class="o">.</span><span class="n">py</span>
+<span class="go">Amazing, this can&#39;t actually happen that git hash stored at git commit.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">add</span> <span class="n">psi4</span><span class="o">/</span><span class="n">metadata</span><span class="o">.</span><span class="n">py</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;Records tag for v1.1rc1&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li><p><strong>OBSERVE</strong> current versioning state</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>Nothing to make note of, this is just a snapshot.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">psi4</span><span class="o">/</span><span class="n">versioner</span><span class="o">.</span><span class="n">py</span>
+<span class="go">Defining development snapshot version: 1.1rc2.dev1+4e0596e (computed)</span>
+<span class="go">1.1rc2.dev1 {master} 4e0596e 1.0.0.999   1.0 &lt;-- 1.1rc2.dev1+4e0596e</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">describe</span> <span class="o">--</span><span class="n">abbrev</span><span class="o">=</span><span class="mi">7</span> <span class="o">--</span><span class="n">long</span> <span class="o">--</span><span class="n">always</span> <span class="n">HEAD</span>
+<span class="go">v1.1rc1-1-g4e0596e</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">describe</span> <span class="o">--</span><span class="n">abbrev</span><span class="o">=</span><span class="mi">7</span> <span class="o">--</span><span class="n">long</span> <span class="o">--</span><span class="n">dirty</span>
+<span class="go">v1.1rc1-1-g4e0596e</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">tag</span>
+<span class="go">v1.0</span>
+<span class="go">v1.1a1</span>
+<span class="go">v1.1rc1</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cat</span> <span class="n">psi4</span><span class="o">/</span><span class="n">metadata</span><span class="o">.</span><span class="n">py</span>
+<span class="go">__version__ = &#39;1.1rc1&#39;</span>
+<span class="go">__version_long = &#39;1.1rc1+6100822&#39;</span>
+<span class="go">__version_upcoming_annotated_v_tag = &#39;1.1rc2&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cat</span> <span class="n">metadata</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">py</span> <span class="o">|</span> <span class="n">head</span> <span class="o">-</span><span class="mi">8</span>
+<span class="go">__version__ = &#39;1.1rc2.dev1&#39;</span>
+<span class="go">__version_branch_name = &#39;master&#39;</span>
+<span class="go">__version_cmake = &#39;1.0.0.999&#39;</span>
+<span class="go">__version_is_clean = &#39;True&#39;</span>
+<span class="go">__version_last_release = &#39;1.0&#39;</span>
+<span class="go">__version_long = &#39;1.1rc2.dev1+4e0596e&#39;</span>
+<span class="go">__version_prerelease = &#39;False&#39;</span>
+<span class="go">__version_release = &#39;False&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">log</span> <span class="o">--</span><span class="n">oneline</span>
+<span class="go">4e0596e Records tag for v1.1rc1</span>
+<span class="go">6100822 v1.1rc1</span>
+<span class="go">cbee32b Fixes pcmsolver/scf for py3. Moves source for libefp upstream.</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="6">
+<li><p><strong>ACT</strong> to inform remote of bump</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>Temporarily disengage &quot;Include administrators&quot; on protected master branch.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">master</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">v1</span><span class="mf">.1</span><span class="n">rc1</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Now <a class="reference external" href="https://github.com/psi4/psi4/releases">https://github.com/psi4/psi4/releases</a> says <code class="docutils literal notranslate"><span class="pre">v1.1rc1</span></code> &amp; <code class="docutils literal notranslate"><span class="pre">6100822</span></code></p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="how-to-create-and-remove-an-annotated-git-tag-on-a-remote">
+<span id="faq-remotetag"></span><h2>How to create and remove an annotated Git tag on a remote<a class="headerlink" href="#how-to-create-and-remove-an-annotated-git-tag-on-a-remote" title="Link to this heading">¶</a></h2>
+<p><a href="#id7"><span class="problematic" id="id8">|PSIfour|</span></a> versioning only works with <em>annotated</em> tags, not <em>lightweight</em>
+tags as are created with the <a class="reference external" href="https://github.com/psi4/psi4/releases/new">GitHub interface</a></p>
+<ul>
+<li><p>Create <em>annotated</em> tag:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">tag</span> <span class="o">-</span><span class="n">a</span> <span class="n">v1</span><span class="mf">.1</span><span class="n">a1</span> <span class="o">&lt;</span><span class="n">git</span> <span class="nb">hash</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">current</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;v1.1a1&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">v1</span><span class="mf">.1</span><span class="n">a1</span>
+</pre></div>
+</div>
+</li>
+<li><p>Delete tag:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">tag</span> <span class="o">-</span><span class="n">d</span> <span class="n">v1</span><span class="mf">.1</span><span class="n">a1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="p">:</span><span class="n">refs</span><span class="o">/</span><span class="n">tags</span><span class="o">/</span><span class="n">v1</span><span class="mf">.1</span><span class="n">a1</span>
+</pre></div>
+</div>
+</li>
+<li><p>Pull tags:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">fetch</span> <span class="o">&lt;</span><span class="n">remote</span><span class="o">&gt;</span> <span class="s1">&#39;refs/tags/*:refs/tags/*&#39;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="what-psi4-version-is-running">
+<span id="faq-psi4version"></span><h2>What Psi4 version is running<a class="headerlink" href="#what-psi4-version-is-running" title="Link to this heading">¶</a></h2>
+<ul>
+<li><p>Psithon / from the executable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">psi4</span> <span class="o">--</span><span class="n">version</span>
+<span class="go">1.1rc2.dev17</span>
+</pre></div>
+</div>
+</li>
+<li><p>PsiAPI / from the library:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import psi4; print(psi4.__version__)&quot;</span>
+<span class="go">1.1rc2.dev17</span>
+</pre></div>
+</div>
+</li>
+<li><p>Output file header gives info like the <code class="docutils literal notranslate"><span class="pre">print_header()</span></code> below.</p></li>
+<li><p>Function <code class="docutils literal notranslate"><span class="pre">print_header()</span></code> returns a summary of citation, version, and
+git information about <a href="#id9"><span class="problematic" id="id10">|PSIfour|</span></a>. Function <code class="docutils literal notranslate"><span class="pre">version_formatter()</span></code> can
+return version and git information in any desired format string.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">psi4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">psi4</span><span class="o">.</span><span class="n">print_header</span><span class="p">()</span>
+
+<span class="go">    -----------------------------------------------------------------------</span>
+<span class="go">          Psi4: An Open-Source Ab Initio Electronic Structure Package</span>
+<span class="go">                               Psi4 1.1rc2.dev17</span>
+
+<span class="go">                         Git: Rev {condadoc} c852257 dirty</span>
+
+
+<span class="go">    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,</span>
+<span class="go">    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,</span>
+<span class="go">    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,</span>
+<span class="go">    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,</span>
+<span class="go">    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,</span>
+<span class="go">    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,</span>
+<span class="go">    submitted.</span>
+
+<span class="go">    -----------------------------------------------------------------------</span>
+
+
+<span class="go">    Psi4 started on: Friday, 28 April 2017 07:31PM</span>
+
+<span class="go">    Process ID:  95107</span>
+<span class="go">    PSIDATADIR: /Users/johndoe/psi4/objdir8/stage/usr/local/psi4/share/psi4</span>
+<span class="go">    Memory:     500.0 MiB</span>
+<span class="go">    Threads:    1</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">psi4</span><span class="o">.</span><span class="n">version_formatter</span><span class="p">()</span>
+<span class="go">&#39;1.1rc2.dev17&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">psi4</span><span class="o">.</span><span class="n">version_formatter</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+<span class="go">&#39;1.1rc2.dev17 {condadoc} c852257 1.0.0.999 dirty  1.0 &lt;-- 1.1rc2.dev17+c852257&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">psi4</span><span class="o">.</span><span class="n">version_formatter</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;{{</span><span class="si">{branch}</span><span class="s2">}} </span><span class="si">{versionlong}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="go">&#39;{condadoc} 1.1rc2.dev17+c852257&#39;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="how-to-locate-non-ascii-characters-in-the-codebase">
+<span id="faq-grepascii"></span><h2>How to locate non-ascii characters in the codebase<a class="headerlink" href="#how-to-locate-non-ascii-characters-in-the-codebase" title="Link to this heading">¶</a></h2>
+<p>Neither the Python interpreter nor Sphinx like non-ASCII characters one
+bit, though the errors may be intermittant. Output files are usually ok,
+so Jerome can live, for now. To aid in tracking down offenders, here's
+the <code class="docutils literal notranslate"><span class="pre">vi</span></code> and <code class="docutils literal notranslate"><span class="pre">grep</span></code> search strings. In the docs, you want to use
+the substitutions in <a href="#id5"><span class="problematic" id="id6">:source:`doc/sphinxman/source/abbr_accents.rst`</span></a>
+instead of the actual characters.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># vim</span>
+<span class="p">:</span><span class="o">/</span><span class="p">[</span><span class="o">^</span>\<span class="n">x00</span><span class="o">-</span>\<span class="n">x7F</span><span class="p">]</span>
+
+<span class="c1"># bash</span>
+<span class="n">grep</span> <span class="o">-</span><span class="n">r</span> <span class="o">--</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span> <span class="o">-</span><span class="n">P</span> <span class="o">-</span><span class="n">n</span> <span class="s2">&quot;[^</span><span class="se">\x00</span><span class="s2">-</span><span class="se">\x7F</span><span class="s2">]&quot;</span> <span class="n">psi4</span><span class="o">/</span>
+</pre></div>
+</div>
+</section>
+<section id="how-to-fix-psi4-undefined-version">
+<span id="faq-undefversion"></span><h2>How to fix &quot;Psi4 undefined&quot; version<a class="headerlink" href="#how-to-fix-psi4-undefined-version" title="Link to this heading">¶</a></h2>
+<p>When in a git repo, the versioner uses <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">describe</span></code> and psi4/metadata.py
+to compute the version. If you don't have all the latest tags, this mechanism
+can't work. To solve, pull tags and remake.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># upstream in `git remote -v` points to github.com/psi4/psi4.git</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">git</span> <span class="n">fetch</span> <span class="n">upstream</span> <span class="s1">&#39;refs/tags/*:refs/tags/*&#39;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">make</span>
+<span class="c1"># version healed</span>
+</pre></div>
+</div>
+</section>
+<section id="how-to-fix-cannot-import-name-core-from-top-level-psi4-dir">
+<span id="faq-cannotimportcoretlpd"></span><h2>How to fix &quot;cannot import name 'core' from {top-level-psi4-dir}<a class="headerlink" href="#how-to-fix-cannot-import-name-core-from-top-level-psi4-dir" title="Link to this heading">¶</a></h2>
+<p>First, what's happening? <code class="docutils literal notranslate"><span class="pre">sys.path</span></code> (where modules can be imported from in python) starts with <code class="docutils literal notranslate"><span class="pre">''</span></code>.  If you <cite>export PYTHONPATH={objdir}/stage/{prefix}/lib/{pymod_lib_dir}:$PYTHONPATH</cite> to make PsiAPI easy, that inserts starting in pos'n 1 (0-indexed), so <code class="docutils literal notranslate"><span class="pre">''</span></code> still at the head of <code class="docutils literal notranslate"><span class="pre">sys.path</span></code>. Now, if you try to run a psiapi/python file from <code class="docutils literal notranslate"><span class="pre">{top-level-psi4-dir}</span></code> that contains <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">psi4</span></code>, it will find the source tree <code class="docutils literal notranslate"><span class="pre">psi4/__init__.py</span></code> and fail because there's no <code class="docutils literal notranslate"><span class="pre">core.so</span></code> around. That is, it's finding what looks to be the psi4 module dir structure <code class="docutils literal notranslate"><span class="pre">.</span></code> when the one it wants is what you inserted into PYTHONPATH at pos'n 1.</p>
+<p>The way around this is to move the python file you're running to any other directory. Or, within the file, do <code class="docutils literal notranslate"><span class="pre">sys.path.insert(0,</span> <span class="pre">{objdir}/stage/{prefix}/lib/{pymod_lib_dir}</span></code>.</p>
+</section>
+<section id="how-to-find-tests-without-output-ref">
+<span id="faq-findmissingoutputref"></span><h2>How to find tests without output.ref<a class="headerlink" href="#how-to-find-tests-without-output-ref" title="Link to this heading">¶</a></h2>
+<p>Ideally, each new test or much-altered test should add its own
+<code class="docutils literal notranslate"><span class="pre">output.ref</span></code>. When that doesn't happen, this command helps.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">find</span> <span class="n">tests</span><span class="o">/</span> <span class="o">-</span><span class="n">mindepth</span> <span class="mi">1</span> <span class="o">-</span><span class="n">maxdepth</span> <span class="mi">1</span> <span class="o">-</span><span class="nb">type</span> <span class="n">d</span> <span class="s1">&#39;!&#39;</span> <span class="o">-</span><span class="n">exec</span> <span class="n">test</span> <span class="o">-</span><span class="n">e</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">/output.ref&quot;</span> <span class="s2">&quot;;&quot;</span> <span class="o">-</span><span class="nb">print</span>
+</pre></div>
+</div>
+</section>
+<section id="how-to-do-github-issue-management-and-code-review">
+<span id="faq-githubcodereview"></span><h2>How to do GitHub issue management and code review<a class="headerlink" href="#how-to-do-github-issue-management-and-code-review" title="Link to this heading">¶</a></h2>
+<ol class="loweralpha simple">
+<li><p>Anyone, core-dev or not, is encouraged to review PRs. It's actually good practice for interacting with other open-source projects, where you don't have the advantage of knowing or working with the contributors. Before venturing into projects on GitHub where you don't know the maintainers, it doesn't hurt to read <a class="reference external" href="https://snarky.ca/setting-expectations-for-open-source-participation/">https://snarky.ca/setting-expectations-for-open-source-participation/</a> .</p></li>
+<li><p>Psi4 is a learning tool for all involved, so partial reviews in areas of confidence and questions and comments on PRs in general are encouraged.</p></li>
+<li><p>Approving before CI completes is fine, though it can be mildly personally embarrassing when CI catches something you didn't.</p></li>
+<li><p>All main branches (master and <cite>1.N.x</cite> maintenance) are protected by GitHub, including administrators, so even with write access, no one can accidentally push (master) or rewrite the history (master and maintenance).</p></li>
+<li><p>PR owners who also have maintainer status can merge their PRs as GitHub enforces two external reviews.</p></li>
+<li><p>Unless there's been a lot of discussion on core-dev about merge order, generally the 2nd positive reviewer merges the PR. Also fine to add review and leave merge for later.</p></li>
+<li><p>Presently only Azure is set up as a required-to-merge service. Incomplete GHA Ecosystem or Docs won't block merging, but we do usually let it complete before merging unless it's a trivial PR.</p></li>
+<li><p>We don't enforce branches to be up to date before merging since that'd be a lot of extra CI time and coordination when merging several PRs in a day. So, if a PR hasn't been updated in a while, and a reviewer is nervous about PR interference, fine to ask submitter to rebase. Or, there's an update button on the PR -- but if this is used, warn the submitted that their remote and local branches will be out of sync. For this reason, we try to merge newer contributors first so the rebase falls on more experienced contributors.</p></li>
+<li><p>Ideally a PR consists of atomic, compilable commits. It almost never happens, so unless there's been discussion, squash merge all PRs.</p></li>
+<li><p>When discussion on issue has overcome the original problem and settled on needing long-term work, fine to move the long-term item to Wish List and close issue.</p></li>
+</ol>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/manage_git.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

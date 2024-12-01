@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Interface to CPPE by M. Scheurer &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="interface-to-cppe-by-m-scheurer">
+<span id="sec-cppe"></span><span id="index-0"></span><h1>Interface to CPPE by M. Scheurer<a class="headerlink" href="#interface-to-cppe-by-m-scheurer" title="Link to this heading">¶</a></h1>
+<p><em>Module:</em> <span class="xref std std-ref">Keywords</span>, <span class="xref std std-ref">PSI Variables</span></p>
+<a class="reference external image-reference" href="https://github.com/maxscheurer/cppe"><img alt="https://img.shields.io/badge/home-cppe-informational.svg" src="https://img.shields.io/badge/home-cppe-informational.svg" /></a>
+<p><a href="#id3"><span class="problematic" id="id4">|PSIfour|</span></a> contains code to interface to the CPPE library developed
+by M. Scheurer.
+The CPPE library requires no additional licence, downloads, or
+configuration. The library allows for calculations in solution with the
+polarizable embedding model (PE), an explicit, fragment-based solvent model <a class="reference internal" href="bibliography.html#olsen-2010-3721" id="id1"><span>[Olsen:2010:3721]</span></a>.</p>
+<p>For a general tutorial on how to prepare/perform PE calculations, read the
+<a class="reference external" href="https://onlinelibrary.wiley.com/doi/full/10.1002/qua.25717">tutorial review</a>.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p><strong>Binary</strong></p>
+<ul>
+<li><a class="reference external image-reference" href="https://anaconda.org/psi4/cppe"><img alt="https://anaconda.org/psi4/cppe/badges/version.svg" src="https://anaconda.org/psi4/cppe/badges/version.svg" /></a>
+</li>
+<li><p>CPPE is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).</p></li>
+<li><p>If using the <a href="#id5"><span class="problematic" id="id6">|PSIfour|</span></a> binary, CPPE has already been installed alongside.</p></li>
+<li><p>If using <a href="#id7"><span class="problematic" id="id8">|PSIfour|</span></a> built from source, and anaconda or miniconda has
+already been installed (instructions at <a class="reference internal" href="conda.html#sec-quickconda"><span class="std std-ref">Quick Installation</span></a>),
+CPPE can be obtained through <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">cppe</span> <span class="pre">-c</span> <span class="pre">psi4</span></code>.
+Then enable it as a feature with <strong class="makevar">ENABLE_cppe</strong>,
+hint its location with <strong class="makevar">cppe_DIR</strong>,
+and rebuild <a href="#id9"><span class="problematic" id="id10">|PSIfour|</span></a> to detect CPPE and activate dependent code.</p></li>
+</ul>
+<ul class="simple">
+<li><p>To remove a conda installation, <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">remove</span> <span class="pre">cppe</span></code>.</p></li>
+</ul>
+<p><strong>Source</strong></p>
+<ul>
+<li><a class="reference external image-reference" href="https://github.com/maxscheurer/cppe"><img alt="https://img.shields.io/github/tag-date/maxscheurer/cppe.svg?maxAge=2592000" src="https://img.shields.io/github/tag-date/maxscheurer/cppe.svg?maxAge=2592000" /></a>
+</li>
+<li><p>If using <a href="#id11"><span class="problematic" id="id12">|PSIfour|</span></a> built from source and you want CPPE built from
+from source also,
+enable it as a feature with <strong class="makevar">ENABLE_cppe</strong>,
+and let the build system fetch and build it and activate dependent code.</p></li>
+</ul>
+</section>
+<section id="using-the-polarizable-embedding-model">
+<span id="sec-usingpe"></span><span id="index-1"></span><h2>Using the polarizable embedding model<a class="headerlink" href="#using-the-polarizable-embedding-model" title="Link to this heading">¶</a></h2>
+<p>The inclusion of a PE description of the solvent into your calculation
+is achieved by setting <a href="#id13"><span class="problematic" id="id14">|globals__pe|</span></a> <code class="docutils literal notranslate"><span class="pre">true</span></code> in your input file.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>At present, PE can only be used for energy calculations with SCF
+wavefunctions and CC wavefunctions in the PTE approximation <a class="reference internal" href="bibliography.html#cammi-2009-164104" id="id2"><span>[Cammi:2009:164104]</span></a>.
+All ERI algorithms (<code class="docutils literal notranslate"><span class="pre">PK</span></code>, <code class="docutils literal notranslate"><span class="pre">OUT_OF_CORE</span></code>, <code class="docutils literal notranslate"><span class="pre">DIRECT</span></code>, <code class="docutils literal notranslate"><span class="pre">DF</span></code>, <code class="docutils literal notranslate"><span class="pre">CD</span></code>) are supported.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>linear response calculations (static polarisabilities, TD-SCF) are supported for RHF/UHF if available.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The CPPE library <strong>cannot</strong> exploit molecular point group symmetry.</p>
+</div>
+<p>A typical input for a Hartree--Fock calculation with PE would look like the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">pna</span> <span class="p">{</span>
+    <span class="n">C</span>          <span class="mf">8.64800</span>        <span class="mf">1.07500</span>       <span class="o">-</span><span class="mf">1.71100</span>
+    <span class="n">C</span>          <span class="mf">9.48200</span>        <span class="mf">0.43000</span>       <span class="o">-</span><span class="mf">0.80800</span>
+    <span class="n">C</span>          <span class="mf">9.39600</span>        <span class="mf">0.75000</span>        <span class="mf">0.53800</span>
+    <span class="n">C</span>          <span class="mf">8.48200</span>        <span class="mf">1.71200</span>        <span class="mf">0.99500</span>
+    <span class="n">C</span>          <span class="mf">7.65300</span>        <span class="mf">2.34500</span>        <span class="mf">0.05500</span>
+    <span class="n">C</span>          <span class="mf">7.73200</span>        <span class="mf">2.03100</span>       <span class="o">-</span><span class="mf">1.29200</span>
+    <span class="n">H</span>         <span class="mf">10.18300</span>       <span class="o">-</span><span class="mf">0.30900</span>       <span class="o">-</span><span class="mf">1.16400</span>
+    <span class="n">H</span>         <span class="mf">10.04400</span>        <span class="mf">0.25200</span>        <span class="mf">1.24700</span>
+    <span class="n">H</span>          <span class="mf">6.94200</span>        <span class="mf">3.08900</span>        <span class="mf">0.38900</span>
+    <span class="n">H</span>          <span class="mf">7.09700</span>        <span class="mf">2.51500</span>       <span class="o">-</span><span class="mf">2.01800</span>
+    <span class="n">N</span>          <span class="mf">8.40100</span>        <span class="mf">2.02500</span>        <span class="mf">2.32500</span>
+    <span class="n">N</span>          <span class="mf">8.73400</span>        <span class="mf">0.74100</span>       <span class="o">-</span><span class="mf">3.12900</span>
+    <span class="n">O</span>          <span class="mf">7.98000</span>        <span class="mf">1.33100</span>       <span class="o">-</span><span class="mf">3.90100</span>
+    <span class="n">O</span>          <span class="mf">9.55600</span>       <span class="o">-</span><span class="mf">0.11000</span>       <span class="o">-</span><span class="mf">3.46600</span>
+    <span class="n">H</span>          <span class="mf">7.74900</span>        <span class="mf">2.71100</span>        <span class="mf">2.65200</span>
+    <span class="n">H</span>          <span class="mf">8.99100</span>        <span class="mf">1.57500</span>        <span class="mf">2.99500</span>
+    <span class="n">symmetry</span> <span class="n">c1</span>
+    <span class="n">no_reorient</span>
+    <span class="n">no_com</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+ <span class="n">basis</span> <span class="n">sto</span><span class="o">-</span><span class="mi">3</span><span class="n">g</span>
+ <span class="n">pe</span> <span class="n">true</span>
+ <span class="n">e_convergence</span> <span class="mi">10</span>
+ <span class="n">d_convergence</span> <span class="mi">10</span>
+ <span class="n">scf_type</span> <span class="n">pk</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="n">pe</span> <span class="p">{</span>
+ <span class="n">potfile</span> <span class="n">pna_6w</span><span class="o">.</span><span class="n">pot</span>
+<span class="p">}</span>
+
+<span class="n">scf_energy</span><span class="p">,</span> <span class="n">wfn</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s1">&#39;scf&#39;</span><span class="p">,</span> <span class="n">return_wfn</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The corresponding potential file <cite>pna_6w.pot</cite> can be downloaded
+<a class="reference external" href="https://raw.githubusercontent.com/maxscheurer/cppe/master/tests/potfiles/pna_6w.pot">here</a>.</p>
+</section>
+<section id="keywords-for-cppe">
+<h2>Keywords for CPPE<a class="headerlink" href="#keywords-for-cppe" title="Link to this heading">¶</a></h2>
+</section>
+<section id="how-to-configure-cppe-for-building-psi4">
+<span id="cmake-cppe"></span><h2>How to configure CPPE for building Psi4<a class="headerlink" href="#how-to-configure-cppe-for-building-psi4" title="Link to this heading">¶</a></h2>
+<p><strong>Role and Dependencies</strong></p>
+<ul class="simple">
+<li><p>Role <a href="#id15"><span class="problematic" id="id16">|w---w|</span></a> In <a href="#id17"><span class="problematic" id="id18">|PSIfour|</span></a>, CPPE is a library that provides additional
+quantum chemical capabilities (explicit solvation modeling).</p></li>
+<li><p>Downstream Dependencies <a href="#id19"><span class="problematic" id="id20">|w---w|</span></a> <a href="#id21"><span class="problematic" id="id22">|PSIfour|</span></a> (<a href="#id23"><span class="problematic" id="id24">|dr|</span></a> optional) CPPE</p></li>
+<li><p>Upstream Dependencies <a href="#id25"><span class="problematic" id="id26">|w---w|</span></a> CPPE</p></li>
+</ul>
+<p><strong>CMake Variables</strong></p>
+<ul class="simple">
+<li><p><strong class="makevar">ENABLE_cppe</strong> <a href="#id27"><span class="problematic" id="id28">|w---w|</span></a> CMake variable toggling whether Psi4 builds with CPPE</p></li>
+<li><p><strong class="makevar">cppe_DIR</strong> <a href="#id29"><span class="problematic" id="id30">|w---w|</span></a> CMake variable to specify where pre-built CPPE can be found. Set to installation directory containing <code class="docutils literal notranslate"><span class="pre">share/cmake/cppe/cppeConfig.cmake</span></code></p></li>
+</ul>
+<p><strong>Examples</strong></p>
+<ol class="upperalpha simple">
+<li><p>Build bundled</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>cmake<span class="w"> </span>-DENABLE_cppe<span class="o">=</span>ON
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="upperalpha simple" start="2">
+<li><p>Build <em>without</em> CPPE</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>cmake
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/cppe.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

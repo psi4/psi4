@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Code style conventions &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="code-style-conventions">
+<span id="sec-code-style"></span><h1>Code style conventions<a class="headerlink" href="#code-style-conventions" title="Link to this heading">¶</a></h1>
+<p>It is important to keep a consistent formatting of the C++ and Python code
+to avoid hard-to-read diffs and merge conflicts.
+<a class="reference external" href="https://clang.llvm.org/docs/ClangFormat.html">clang-format</a> and <a class="reference external" href="https://github.com/google/yapf">yapf</a> can be used to format C++ and Python code,
+respectively, according to a predefined style file.
+<a href="#id7"><span class="problematic" id="id8">|PSIfour|</span></a> provides the <a href="#id1"><span class="problematic" id="id2">:source:`.clang-format`</span></a> and <a href="#id3"><span class="problematic" id="id4">:source:`.style.yapf`</span></a> files in the root
+folder of the project.
+It is <strong>recommended</strong> that modifications and/or new files checked into the
+repository are formatted according to these style files using <code class="docutils literal notranslate"><span class="pre">clang-format</span></code>
+and <code class="docutils literal notranslate"><span class="pre">yapf</span></code>. It is then helpful if these tools be part of your development toolchain.
+Once <code class="docutils literal notranslate"><span class="pre">clang-format</span></code> and <code class="docutils literal notranslate"><span class="pre">yapf</span></code> are installed, there are three ways in which
+formatting of the code can be accomplished, in decreasing order of automation:</p>
+<ol class="arabic simple">
+<li><p>By integrating the formatters into your editor.</p></li>
+<li><p>By installing Git hooks to run the formatters when committing.</p></li>
+<li><p>By running the formatters manually on the modified files.</p></li>
+</ol>
+<section id="how-to-impose-code-style-through-your-editor">
+<span id="faq-editorcodestyle"></span><h2>How to impose code style through your editor<a class="headerlink" href="#how-to-impose-code-style-through-your-editor" title="Link to this heading">¶</a></h2>
+<p>Both <code class="docutils literal notranslate"><span class="pre">clang-format</span></code> and <code class="docutils literal notranslate"><span class="pre">yapf</span></code> can be integrated into widely used editors.
+The <a class="reference external" href="https://github.com/sbdchd/neoformat">Neoformat</a> plugin can be configured
+to format files when saving them to disk.</p>
+</section>
+<section id="how-to-impose-code-style-through-git-hooks">
+<span id="faq-githookscodestyle"></span><h2>How to impose code style through Git hooks<a class="headerlink" href="#how-to-impose-code-style-through-git-hooks" title="Link to this heading">¶</a></h2>
+<p>Git hooks are scripts that are run before or after certain Git events.
+In this particular case, we want to make sure that all files that have been
+added to the staging area with <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">add</span></code> are formatted according to the style
+<em>before</em> they committing them with <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">commit</span></code>.
+The hook to be modified is then the <em>pre-commit</em> hook.
+<a href="#id9"><span class="problematic" id="id10">|PSIfour|</span></a> uses the <a class="reference external" href="https://pre-commit.com/">pre-commit</a> framework, with configuration file <a href="#id5"><span class="problematic" id="id6">:source:`.pre-commit-config.yaml`</span></a>.
+To take advantage of pre-commit hooks, you will need to install the <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> utility:</p>
+<dl class="simple">
+<dt>::</dt><dd><p>pip install pre-commit</p>
+</dd>
+</dl>
+<p>or using Conda:</p>
+<dl class="simple">
+<dt>::</dt><dd><p>conda install pre_commit -c conda-forge</p>
+</dd>
+</dl>
+<p>Finally, you need to install the actual hooks:</p>
+<dl class="simple">
+<dt>::</dt><dd><p>pre-commit install</p>
+</dd>
+</dl>
+<p>Pre-commit hooks will be run on every <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">commit</span></code>, but the <code class="docutils literal notranslate"><span class="pre">--no-verify</span></code>
+option can be used to skip their execution.</p>
+<p>Hooks are powerful, but integrating the formatter into your editor will prove
+to be better. Hooks need to be installed anew for every fresh clone of the
+repository you are working on.</p>
+</section>
+<section id="how-to-run-code-style-tools-clang-format-and-yapf-manually">
+<span id="faq-manualcodestyle"></span><h2>How to run code-style tools <cite>clang-format</cite> and <cite>yapf</cite> manually<a class="headerlink" href="#how-to-run-code-style-tools-clang-format-and-yapf-manually" title="Link to this heading">¶</a></h2>
+<p>The least recommended approach to formatting your code is to run manually the
+formatters. The following commands will format only the files that have been
+modified:</p>
+<dl class="simple">
+<dt>::</dt><dd><p>clang-format -style=file -i <cite>git diff --relative --name-only HEAD -- *.cc *.h</cite>
+yapf -i <cite>git diff --relative --name-only HEAD -- *.py</cite></p>
+</dd>
+</dl>
+</section>
+<section id="how-and-when-to-not-apply-code-styling-to-your-contributions">
+<h2>How and when to <em>not</em> apply code styling to your contributions<a class="headerlink" href="#how-and-when-to-not-apply-code-styling-to-your-contributions" title="Link to this heading">¶</a></h2>
+<p>TODO</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/code_style.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

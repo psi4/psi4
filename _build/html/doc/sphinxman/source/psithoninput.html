@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Psithon: Structuring an Input File &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="psithon-structuring-an-input-file">
+<span id="sec-psithoninput"></span><h1>Psithon: Structuring an Input File<a class="headerlink" href="#psithon-structuring-an-input-file" title="Link to this heading">¶</a></h1>
+<p>To allow arbitrarily complex computations to be performed, <a href="#id7"><span class="problematic" id="id8">|PSIfour|</span></a> was built
+upon the Python interpreter. However, to make the input syntax simpler, some
+pre-processing of the input file is performed before it is interpreted,
+resulting in Python syntax that is customized for PSI, termed Psithon.  In
+this section we will describe the essential features of the Psithon language.
+<a href="#id9"><span class="problematic" id="id10">|PSIfour|</span></a> is distributed with an extensive test suite, described in section
+<a class="reference internal" href="testsuite.html#apdx-testsuite"><span class="std std-ref">Test Suite and Sample Inputs</span></a>; the input files for these test cases can be found in the
+samples subdirectory of the top-level <a href="#id11"><span class="problematic" id="id12">|PSIfour|</span></a> source directory and should
+serve as useful examples.</p>
+<p>The equivalent Python PsiAPI syntax is shown alongside the Psithon code snippets.
+When using the Python API, one must import the <a href="#id13"><span class="problematic" id="id14">|PSIfour|</span></a> module with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">psi4</span>
+</pre></div>
+</div>
+<p>No such directive is neccesary when using Psithon, which is run using the <code class="docutils literal notranslate"><span class="pre">psi4</span></code>
+executable.</p>
+<section id="physical-constants">
+<span id="sec-physicalconstants"></span><span id="index-0"></span><h2>Physical Constants<a class="headerlink" href="#physical-constants" title="Link to this heading">¶</a></h2>
+<p>For convenience, the Python interpreter will execute the contents of the
+<a href="#id15"><span class="problematic" id="id16">|psirc|</span></a> file in the current user's home area (if present) before performing any
+tasks in the input file.  This allows frequently used python variables to be
+automatically defined in all input files.  For example, if we repeatedly make
+use of the universal gravitational constant, the following line could be placed
+in the <a href="#id17"><span class="problematic" id="id18">|psirc|</span></a> file</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UGC</span> <span class="o">=</span> <span class="mf">6.67384E-11</span>  <span class="c1"># m^3 / kg^-1 s^-2</span>
+</pre></div>
+</div>
+<p>which would make the variable <code class="docutils literal notranslate"><span class="pre">UGC</span></code> available in all <a href="#id19"><span class="problematic" id="id20">|PSIfour|</span></a> input files.
+For convenience, the physical constants used within the <a href="#id21"><span class="problematic" id="id22">|PSIfour|</span></a> code (which
+are obtained from <a class="reference external" href="https://physics.nist.gov/cuu/Constants/archive2014.html">NIST CODATA 2014</a>
+are also automatically loaded as Psithon
+variables (before <a href="#id23"><span class="problematic" id="id24">|psirc|</span></a> is loaded, so that the user's <a href="#id25"><span class="problematic" id="id26">|psirc|</span></a> values can
+override the builtins (in the input file, not in the C++ code).</p>
+<p>The physical constants used within <a href="#id27"><span class="problematic" id="id28">|PSIfour|</span></a>, which are automatically
+made available within all <a href="#id29"><span class="problematic" id="id30">|PSIfour|</span></a> input files are in <span class="xref std std-ref">table:physconst</span>.</p>
+<p>In Psithon input files, prepend physical constants with <code class="docutils literal notranslate"><span class="pre">psi_</span></code> to
+prevent clashes with user-defined variables (<em>e.g.</em>, <code class="docutils literal notranslate"><span class="pre">psi_h</span></code>). In
+PsiAPI mode, access as, <em>e.g.</em>, <code class="docutils literal notranslate"><span class="pre">psi4.constants.h</span></code>.</p>
+</section>
+<section id="memory-specification">
+<span id="sec-memory"></span><span id="index-1"></span><h2>Memory Specification<a class="headerlink" href="#memory-specification" title="Link to this heading">¶</a></h2>
+<p>By default, <a href="#id31"><span class="problematic" id="id32">|PSIfour|</span></a> assumes that 500 MiB of memory are available. While this is
+enough for many computations, many of the algorithms will perform better if
+more is available. To specify memory, the <code class="docutils literal notranslate"><span class="pre">memory</span></code> keyword should be used. The following
+lines are all equivalent methods for specifying that 2 GB of RAM is available
+to <a href="#id33"><span class="problematic" id="id34">|PSIfour|</span></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># all equivalent</span>
+
+<span class="n">memory</span> <span class="mi">2</span> <span class="n">GB</span>
+
+<span class="n">memory</span> <span class="mi">2000</span> <span class="n">MB</span>
+
+<span class="n">memory</span> <span class="mi">2000000</span> <span class="n">kB</span>
+</pre></div>
+</div>
+<p>Please note that memory can be specified both in IEC binary units (1 KiB = 1024 bytes) and SI units (1 kB = 1000 bytes). <a href="#id35"><span class="problematic" id="id36">|PSIfour|</span></a> recognizes and obeys both of them correctly. The units are not case sensitive (Kb and KB are equivalent to kB).</p>
+<p>By default, <a href="#id37"><span class="problematic" id="id38">|PSIfour|</span></a> performs a &quot;sanity check&quot; when parsing Psithon input files, enforcing a minimum memory requirement of 250 MiB. While it is generally not recomennded to do so, expert users can bypass this check by directly setting the number of bytes availble to <a href="#id39"><span class="problematic" id="id40">|PSIfour|</span></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># setting available memory to 2 MB</span>
+<span class="n">set_memory_bytes</span><span class="p">(</span><span class="mi">2000000</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Please note that this memory setting only governs the maximal memory
+usage of the major data structures, and actual total memory usage
+is slightly higher. This is usually a negligible amount, except when
+setting tiny memory allowances.</p>
+<p>One convenient way to override the <a href="#id41"><span class="problematic" id="id42">|PSIfour|</span></a> default memory is to place a
+memory command in the <a href="#id43"><span class="problematic" id="id44">|psirc|</span></a> file (Sec. <a class="reference internal" href="external.html#sec-psirc"><span class="std std-ref">|psirc| File</span></a>). For example,
+the following makes the default memory 2 GB.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">set_memory</span><span class="p">(</span><span class="mi">2000000000</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>However, unless you're assured of having only one job running on a node at
+a time (and all nodes on the filesystem with <a href="#id45"><span class="problematic" id="id46">|psirc|</span></a> have similar memory
+capacities), it is advised to set memory in the input file on a
+per-calculation basis.</p>
+<p>That same command can be used for PsiAPI mode:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">psi4</span><span class="o">.</span><span class="n">set_memory</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mf">5e8</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For parallel jobs, the <code class="docutils literal notranslate"><span class="pre">memory</span></code> keyword represents the total memory
+available to the job, <em>not</em> the memory per thread.</p>
+</div>
+</section>
+<section id="molecule-and-geometry-specification">
+<h2>Molecule and Geometry Specification<a class="headerlink" href="#molecule-and-geometry-specification" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="psithonmol.html">Molecule and Geometry Specification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="psithonmol.html#coordinates">Coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="psithonmol.html#molecule-keywords">Molecule Keywords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="psithonmol.html#multiple-molecules">Multiple Molecules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="psithonmol.html#ghost-atoms">Ghost Atoms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="psithonmol.html#isotopic-substitution">Isotopic Substitution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="psithonmol.html#pubchem-database">PubChem Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="psithonmol.html#symmetry">Symmetry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="psithonmol.html#non-covalently-bonded-molecule-fragments">Non-Covalently Bonded Molecule Fragments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="psithonmol.html#advanced-python">Advanced Python</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>To add EFP fragments to a molecule, see <a class="reference internal" href="libefp.html#sec-usingefpfragments"><span class="std std-ref">Molecule Specification</span></a>.</p>
+</section>
+<section id="job-control-keywords">
+<span id="sec-jobcontrol"></span><span id="index-2"></span><h2>Job Control Keywords<a class="headerlink" href="#job-control-keywords" title="Link to this heading">¶</a></h2>
+<p><a href="#id47"><span class="problematic" id="id48">|PSIfour|</span></a> comprises a number of C++ modules that each perform
+specific tasks and are callable directly from the Python front end. Each module
+recognizes specific keywords in the input file which control its function.
+These keywords are detailed in Appendix <span class="xref std std-ref">apdx:options_c_module</span>.
+The keywords can be made global, or scoped to apply to
+certain specific modules. The following examples demonstrate some of the ways
+that global keywords can be specified:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># all equivalent</span>
+
+<span class="nb">set</span> <span class="nb">globals</span> <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+
+<span class="nb">set</span> <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+
+<span class="nb">set</span> <span class="nb">globals</span> <span class="n">basis</span> <span class="o">=</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+
+<span class="nb">set</span> <span class="n">basis</span> <span class="o">=</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+
+<span class="nb">set</span> <span class="nb">globals</span><span class="p">{</span>
+  <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+  <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+  <span class="n">basis</span> <span class="o">=</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Note the lack of quotes around <code class="docutils literal notranslate"><span class="pre">cc-pVDZ</span></code>, even though it is a string. The
+Psithon preprocessor automatically wraps any string values in <code class="docutils literal notranslate"><span class="pre">set</span></code> commands in
+strings. The last three examples provide a more convenient way for specifying
+multiple keywords:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="p">{</span>
+  <span class="n">basis</span> <span class="o">=</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+  <span class="nb">print</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="n">reference</span> <span class="o">=</span> <span class="n">rhf</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For arguments that require an array input, standard Python list syntax should
+be used, <em>viz.</em>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="p">{</span>
+  <span class="n">docc</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>List/matrix inputs may span multiple lines, as long as the opening <code class="docutils literal notranslate"><span class="pre">[</span></code> is
+on the same line as the name of the keyword.</p>
+<p>Any of the above keyword specifications can be scoped to individual modules,
+by adding the name of the module after the <code class="docutils literal notranslate"><span class="pre">set</span></code> keyword. Omitting the module
+name, or using the name <code class="docutils literal notranslate"><span class="pre">global</span></code> or <code class="docutils literal notranslate"><span class="pre">globals</span></code> will result in the keyword being
+applied to all modules. For example, in the following input</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span><span class="p">{</span>
+  <span class="n">o</span>
+  <span class="n">h</span> <span class="mi">1</span> <span class="n">roh</span>
+  <span class="n">h</span> <span class="mi">1</span> <span class="n">roh</span> <span class="mi">2</span> <span class="n">ahoh</span>
+
+  <span class="n">roh</span> <span class="o">=</span> <span class="mf">0.957</span>
+  <span class="n">ahoh</span> <span class="o">=</span> <span class="mf">104.5</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+<span class="nb">set</span> <span class="n">ccenergy</span> <span class="nb">print</span> <span class="mi">3</span>
+<span class="nb">set</span> <span class="n">scf</span> <span class="nb">print</span> <span class="mi">1</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;ccsd&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>the basis set is set to cc-pVDZ throughout, the SCF code will have a print
+level of 1 and the ccenergy code, which performs coupled cluster computations,
+will use a print level of 3. In this example a full CCSD computation is
+performed by running the SCF code first, then the coupled cluster modules;
+the <code class="xref py py-func docutils literal notranslate"><span class="pre">energy()</span></code> Python helper function ensures that this is performed correctly.
+Note that the Python interpreter executes commands in the order they appear in
+the input file, so if the last four commands in the above example were to read</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;ccsd&#39;</span><span class="p">)</span>
+<span class="nb">set</span> <span class="n">ccenergy</span> <span class="nb">print</span> <span class="mi">3</span>
+<span class="nb">set</span> <span class="n">scf</span> <span class="nb">print</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>the commands that set the print level would be ineffective, as they would be
+processed after the CCSD computation completes.</p>
+<p>In PsiAPI mode, one can use the command <code class="xref py py-func docutils literal notranslate"><span class="pre">set_options()</span></code>
+like below for general and module-specific options. Note that these values
+should be of correct type, strings for strings, floats for floats like
+convergences. The function <code class="xref py py-func docutils literal notranslate"><span class="pre">clean_options()</span></code> that reinitializes
+all options may also be useful to separate calculations in a PsiAPI
+session.</p>
+</section>
+<section id="basis-sets">
+<h2>Basis Sets<a class="headerlink" href="#basis-sets" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="basissets.html">Basis Sets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="basissets.html#built-in-basis-sets">Built-In Basis Sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basissets.html#mixing-basis-sets">Mixing Basis Sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basissets.html#decontracted-basis-sets">Decontracted Basis Sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basissets.html#user-defined-basis-sets">User-Defined Basis Sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basissets.html#inputting-effective-core-potentials-ecps">Inputting effective core potentials (ECPs)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="psi-variables">
+<span id="sec-psivariables"></span><h2>PSI Variables<a class="headerlink" href="#psi-variables" title="Link to this heading">¶</a></h2>
+<p>To harness the power of Python, <a href="#id49"><span class="problematic" id="id50">|PSIfour|</span></a> makes the most pertinent results
+of each computation available to the Python interpreter for
+post-processing. To demonstrate, we can embellish the previous example of
+H<sub>2</sub> and H atom</p>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">energy()</span></code> function returns the final result of the
+computation, the requested total energy in Hartrees, which we assign to a
+Python variable. The two energies are then converted to a dissociation
+energy and printed to the output file using standard Python notation.</p>
+<p>Generally, there are multiple quantities of interest. Appendix
+<span class="xref std std-ref">apdx:psivariables_module</span> lists PSI variables variables set by each
+module, and <a class="reference internal" href="glossary_psivariables.html#apdx-psivariables-alpha"><span class="std std-ref">PSI Variables by Alpha</span></a> defines them.  These can be
+accessed through the <code class="xref py py-func docutils literal notranslate"><span class="pre">variable()</span></code> function. For example, after
+performing a density fitted MP2 computation, both the spin component
+scaled energy and the unscaled MP2 energy are made available</p>
+<p>Each module and the Python driver set PSI variables over the course of a
+calculation.  The values for all can be printed in the output file with
+the input file command <code class="xref py py-func docutils literal notranslate"><span class="pre">print_variables()</span></code>. Note that PSI variables
+are cleared at the start of each <code class="xref py py-func docutils literal notranslate"><span class="pre">energy()</span></code>, etc. in an input
+file by <code class="xref py py-func docutils literal notranslate"><span class="pre">clean_variables()</span></code>.
+So if you run in a single input file a STO-3G FCI followed by a
+aug-cc-pVQZ SCF followed by a <code class="xref py py-func docutils literal notranslate"><span class="pre">print_variables()</span></code> command, the
+last will include <a href="#id1"><span class="problematic" id="id2">:psivar:`SCF TOTAL ENERGY`</span></a> but not
+<a href="#id3"><span class="problematic" id="id4">:psivar:`FCI TOTAL ENERGY`</span></a>.
+The entire dictionary of PSI variables can be obtained through
+<code class="xref py py-func docutils literal notranslate"><span class="pre">get_variables()</span></code>.</p>
+</section>
+<section id="return-values">
+<span id="sec-returnvals"></span><h2>Return Values<a class="headerlink" href="#return-values" title="Link to this heading">¶</a></h2>
+<p>Most of the usual user computation functions (<em>i.e.</em>,
+<code class="xref py py-func docutils literal notranslate"><span class="pre">energy()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">optimize()</span></code>, and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">frequency()</span></code>) return simply the current total energy.
+Consult the descriptions of other functions in <a class="reference internal" href="psithonfunc.html#sec-psithonfunc"><span class="std std-ref">Psithon Functions: Invoking a Calculation</span></a> for
+what quantities they return and for what data structures they make
+available for post-processing. Many users need only deal with the simple return
+form for the computation functions.</p>
+<p>For more elaborate post-processing of computations, adding
+<code class="docutils literal notranslate"><span class="pre">return_wfn=True</span></code> keyword argument additionally returns
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Wavefunction</span></code>.</p>
+</section>
+<section id="loops">
+<span id="sec-loops"></span><h2>Loops<a class="headerlink" href="#loops" title="Link to this heading">¶</a></h2>
+<p>Python provides many control structures, any of which can be used within <a href="#id51"><span class="problematic" id="id52">|PSIfour|</span></a>
+input files. For example, to loop over three basis sets, the following code can
+be used:</p>
+<p>The declaration of <code class="docutils literal notranslate"><span class="pre">basis_sets</span></code> is completely standard Python, as is the next
+line, which iterates over the list. However, because the Psithon preprocessor
+wraps strings in quotes by default, we have to tell it that <code class="docutils literal notranslate"><span class="pre">basis_set</span></code> is a
+Python variable, not a string, by prefixing it with a dollar sign.</p>
+<p>The geometry specification supports delayed initialization of variable,
+which permits potential energy scans. As an example, we can scan both the
+angle and bond length in water</p>
+<p>The declarations of <code class="docutils literal notranslate"><span class="pre">Rvals</span></code> and <code class="docutils literal notranslate"><span class="pre">Avals</span></code> are both completely standard Python syntax.
+Having named our molecule <code class="docutils literal notranslate"><span class="pre">h2o</span></code> we can then set the values of <code class="docutils literal notranslate"><span class="pre">R</span></code> and <code class="docutils literal notranslate"><span class="pre">A</span></code> within
+the loops. Note that we do not need the dollar sign to access the Python
+variable in this example; that is required only when using Python variables
+with the <code class="docutils literal notranslate"><span class="pre">set</span></code> keyword.</p>
+<p>Cartesian geometries, because of details of the geometry update process,
+need to be specified within the loop(s) along with their basis set when
+geometry scans are performed. See <a href="#id5"><span class="problematic" id="id6">:srcsample:`scf4`</span></a> for analogous Z-matrix
+and Cartiesian scans.</p>
+</section>
+<section id="tables-of-results">
+<span id="sec-resultstables"></span><h2>Tables of Results<a class="headerlink" href="#tables-of-results" title="Link to this heading">¶</a></h2>
+<p>The Psithon function <code class="docutils literal notranslate"><span class="pre">psi4.driver.p4util.Table</span></code> has been removed,
+as the Python ecosystem provides many more flexible alternatives. An
+example tabulating a potential energy surface scan for water with Pandas
+is shown below</p>
+</section>
+<section id="python-wrappers">
+<span id="sec-wrappers"></span><h2>Python Wrappers<a class="headerlink" href="#python-wrappers" title="Link to this heading">¶</a></h2>
+<p>The Python foundations of the <a href="#id53"><span class="problematic" id="id54">|PSIfour|</span></a> driver and Psithon syntax permit
+many commonly performed post-processing procedures to be integrated into
+the <a href="#id55"><span class="problematic" id="id56">|PSIfour|</span></a> suite.</p>
+<p>As seen in the neon dimer example from the <a class="reference internal" href="tutorial.html#sec-tutorial"><span class="std std-ref">tutorial</span></a> section,
+the <code class="xref py py-func docutils literal notranslate"><span class="pre">nbody()</span></code> wrapper provides automatic computation of
+counterpoise-corrected interaction energies between two molecules.  For
+example,</p>
+<p>will compute the counterpoise-corrected density-fitted MP2 interaction energy
+between two molecules.</p>
+<p><a href="#id57"><span class="problematic" id="id58">|PSIfour|</span></a> also provides the <code class="xref py py-func docutils literal notranslate"><span class="pre">cbs()</span></code> wrapper,
+which automatically computes a complete-basis-set extrapolation (and
+automatically sets up the computations with different basis sets required to
+do the extrapolation).  For example,</p>
+<p>will compute a 2-point Helgaker extrapolation of the correlation energy
+using the cc-pVDZ and cc-pVTZ basis sets (with method MP2) and add this
+extrapolated correlation energy to the Hartree--Fock energy in the
+largest basis (cc-pVTZ). <code class="xref py py-func docutils literal notranslate"><span class="pre">cbs()</span></code> can
+be configured behind-the-scenes with explicit arguments, as in the
+first example, or the convenience syntax of the equivalent second
+example can be used.</p>
+<p>Another very useful and powerful feature of <a href="#id59"><span class="problematic" id="id60">|PSIfour|</span></a> is the ability
+to compute results on entire databases of molecules at a time,
+as provided by the <code class="xref py py-func docutils literal notranslate"><span class="pre">database()</span></code> wrapper.  For example,</p>
+<p>will perform DF-MP2 counterpoise-corrected interaction energies
+(<code class="docutils literal notranslate"><span class="pre">cp=1</span></code>) on all members of Hobza's S22 database set of van der Waals
+dimers, and then compare the results against the S22B benchmark energies.
+Built-in databases include S22, A24, HTBH, HBC6, HSG, S22by5, S66, JSCH,
+NCB31, S66by8, and NBC10, among others.</p>
+<p>These wrapper functions are discussed separately in
+<a class="reference internal" href="psithonfunc.html#sec-psithonfunc"><span class="std std-ref">Psithon Functions: Invoking a Calculation</span></a>.  Note that the options documented for Python
+functions are placed as arguments in the command that calls the function,
+not in the <code class="docutils literal notranslate"><span class="pre">set</span> <span class="pre">{...}</span></code> block or with any other <code class="docutils literal notranslate"><span class="pre">set</span></code> command.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/psithoninput.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

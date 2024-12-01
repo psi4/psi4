@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Interface to Molden |w---w| molden() &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="interface-to-molden-w-w-molden">
+<span id="sec-molden"></span><span id="index-0"></span><h1>Interface to Molden <a href="#id1"><span class="problematic" id="id2">|w---w|</span></a> <code class="xref py py-func docutils literal notranslate"><span class="pre">molden()</span></code><a class="headerlink" href="#interface-to-molden-w-w-molden" title="Link to this heading">¶</a></h1>
+<p><a href="#id3"><span class="problematic" id="id4">|PSIfour|</span></a> contains an interface to the Molden program.  Molden is a
+visualization program for electronic structure developed by Gijs Schaftenaar
+at the University of of Nijmegen, Netherlands.  It is available at
+<a class="reference external" href="https://www3.cmbi.umcn.nl/molden/">https://www3.cmbi.umcn.nl/molden/</a> . Molden can
+plot atomic orbitals, densities, electrostatic potentials (ESPs), etc.
+<a href="#id5"><span class="problematic" id="id6">|PSIfour|</span></a> can create a file containing
+atomic coordinates, basis set, and SCF orbital coefficients in the
+so-called Molden format.  This file is
+written by the SCF module (see Section <a class="reference internal" href="scf.html#sec-scf"><span class="std std-ref">SCF</span></a>)
+if the user sets the <a href="#id7"><span class="problematic" id="id8">|scf__molden_write|</span></a> keyword to true.  This Molden file is
+also used to pass information between <a href="#id9"><span class="problematic" id="id10">|PSIfour|</span></a> and WebMO, if <a href="#id11"><span class="problematic" id="id12">|PSIfour|</span></a>
+computations are invoked using the WebMO GUI.  The filename of the
+Molden file ends in &quot;.molden&quot;, and the prefix is determined by
+<a href="#id13"><span class="problematic" id="id14">|globals__writer_file_label|</span></a> (if set), or else by the name of the output
+file plus the name of the current molecule. If <a href="#id15"><span class="problematic" id="id16">|globals__molden_with_virtual|</span></a>
+is set to false, the unoccupied orbitals are not written to the Molden
+file.</p>
+<section id="options">
+<h2>Options<a class="headerlink" href="#options" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/molden.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

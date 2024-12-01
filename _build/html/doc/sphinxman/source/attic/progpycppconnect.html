@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>&lt;no title&gt; &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p>One of the most significant changes introduced in version 4 was the use of
+Python.  The input file is actually a Python script, which interacts with a Psi
+Python module to perform computations.  In order for this to happen, the C++
+binding must be known to Python; this is all done in the
+{tt $PSI4/src/bin/psi4/python.cc} file.  For example, we have an SCF module, with
+the C++ signature
+{tt PsiReturnType cscf::cscf(Options &amp;options);}
+To allow Python to use this, we first define a little wrapper function
+begin{verbatim}
+double py_psi_scf()
+{</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if (scf::scf(Process::environment.options) == Success)</dt><dd><p>return Process::environment.globals[&quot;CURRENT ENERGY&quot;];</p>
+</dd>
+<dt>else</dt><dd><p>return 0.0;</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>}
+end{verbatim}
+This does a couple of things to automate things a) it passes the default
+options object into SCF automatically, so that the user doesn't have to, and b)
+checks the return value, and will return the energy, which is posted to the
+globals map, back to Python.  Note that this is C++ code, within PSIfourso
+it is aware of all global objects, such as PSIO, Chkpt and Options.  Now we
+have this simple function call, we can tell Python about it:
+begin{verbatim}
+def(&quot;scf&quot;,  py_psi_scf);
+end{verbatim}
+This binds the keyword <a href="#id1"><span class="problematic" id="id2">``</span></a>scf'' to the newly created wrapper function, allowing
+the user to type <a href="#id3"><span class="problematic" id="id4">``</span></a>scf()'' in their Python input file to fire up the SCF
+module.  Similarly, the user might want to be able to call {tt Molecule}'s
+member functions directly from Python.  This can also be done easily:</p>
+<p>begin{verbatim}
+class_&lt;Molecule, shared_ptr&lt;Molecule&gt; &gt;(&quot;Molecule&quot;).</p>
+<blockquote>
+<div><p>def(&quot;print_to_output&quot;, &amp;Molecule::print).
+def(&quot;nuclear_repulsion_energy&quot;, &amp;Molecule::nuclear_repulsion_energy);</p>
+</div></blockquote>
+<p>end{verbatim}</p>
+<p>This first defines the keyword {tt Molecule} to refer to the C++ {tt
+Molecule}; the {tt shared_ptr&lt;Molecule&gt;} keyword tells Python to store it as
+a shared pointer, which ensures that the object will not be deleted until both
+C++ and Python have no more references to it.  The member functions to be bound
+are then specified by a chained sequence of {tt def} calls (note the periods),
+terminated by a semicolon.  Then, if the user had defined a molecule called
+<a href="#id5"><span class="problematic" id="id6">``</span></a>water'', they could print its geometry simply with the command {tt
+water.print_to_output()}.</p>
+<p>Direct interaction with the Psi module from Python requires function calls that
+look like {tt psi4.call_some_function()}.  This is not very friendly to
+your average user, so a preprocessor checks for known Psi syntax and turns it
+into valid Python, before handing it off for excecution.  This preprocessor is
+purely Python, and lives in {tt $PSI4/lib/python/input.py}.  For example, the
+following text begin{verbatim}
+set scf {</p>
+<blockquote>
+<div><p>SCF_TYPE DIRECT
+BASIS cc-pVDZ
+RI_BASIS_SCF cc-pVDZ-HF
+guess core</p>
+</div></blockquote>
+<p>}
+end{verbatim}
+is converted to the following text
+begin{verbatim}
+psi4.set_default_options_for_module(&quot;SCF&quot;)
+psi4.set_option(&quot;SCF_TYPE&quot;, &quot;DIRECT&quot;)
+psi4.set_option(&quot;BASIS&quot;, &quot;cc-pVDZ&quot;)
+psi4.set_option(&quot;RI_BASIS_SCF&quot;, &quot;cc-pVDZ-HF&quot;)
+psi4.set_option(&quot;GUESS&quot;, &quot;core&quot;)
+end{verbatim}
+which can be handled by Python.</p>
+<p>There are a number of other utilities, which are entirely Python, located in
+{tt $PSI4/lib/python}.  These provide convenient functions to the user, such
+as {tt table}.</p>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../../_sources/doc/sphinxman/source/attic/progpycppconnect.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

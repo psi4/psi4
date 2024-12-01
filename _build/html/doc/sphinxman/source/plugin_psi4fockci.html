@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Psi4FockCI: A General Fock-Space CI For Spin-Flip And IP/EA &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="psi4fockci-a-general-fock-space-ci-for-spin-flip-and-ip-ea">
+<span id="sec-fockci"></span><span id="index-0"></span><h1>Psi4FockCI: A General Fock-Space CI For Spin-Flip And IP/EA<a class="headerlink" href="#psi4fockci-a-general-fock-space-ci-for-spin-flip-and-ip-ea" title="Link to this heading">¶</a></h1>
+<a class="reference external image-reference" href="https://github.com/shannonhouck/psi4fockci"><img alt="https://img.shields.io/badge/home-psi4fockci-5077AB.svg" src="https://img.shields.io/badge/home-psi4fockci-5077AB.svg" /></a>
+<br><a class="reference external image-reference" href="https://shannonhouck.github.io/psi4fockci/build/index.html"><img alt="https://img.shields.io/badge/docs-latest-5077AB.svg" src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
+<p>This plugin is an implementation of the RAS-nSF-IP/EA approach detailed
+in the paper by Houck et. al. <a class="reference internal" href="bibliography.html#houck-2019-2278" id="id1"><span>[Houck:2019:2278]</span></a>.
+This approach handles systems with both spin and spatial degeneracies
+by combining the spin-flip (SF) <a class="reference internal" href="bibliography.html#krylov-2001-522" id="id2"><span>[Krylov:2001:522]</span></a>
+and ionization potential/electron affinity (IP/EA) <a class="reference internal" href="bibliography.html#nooijen-1995-3629" id="id3"><span>[Nooijen:1995:3629]</span></a>
+approaches.</p>
+<p>The Psi4FockCI plugin allows one to perform spin-flip (SF), ionization
+potential (IP), and electron affinity (EA) calculations, as well as
+combined RAS-SF-IP/EA calculations, through the DETCI (<a class="reference internal" href="detci.html#sec-ci"><span class="std std-ref">CI: Configuration Interaction</span></a>) module.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<ul>
+<li><p>Download the plugin from the GitHub repository:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/shannonhouck/psi4fockci.git
+</pre></div>
+</div>
+</li>
+<li><p>Once downloaded, the plugin can be installed as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span><span class="nb">cd</span><span class="w"> </span><span class="o">{</span>top-level-psi4fockci-directory<span class="o">}</span>
+&gt;&gt;&gt;<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="sample-input">
+<h2>Sample Input<a class="headerlink" href="#sample-input" title="Link to this heading">¶</a></h2>
+<p>To run a CAS-nSF-IP/EA calculation, start with a molecule with the
+correct charge and multiplicity for the reference state (i.e. some
+state well-represented by a single reference). Then, run an energy
+calculation, passing in the charge and multiplicity of the
+desired state; the number of spin-flips and IP/EA will be automatically
+determined based on this input. If additional excitations outside of the
+RAS II space are desired, one can set the level of external
+excitations using the <code class="docutils literal notranslate"><span class="pre">conf_space</span></code> keyword.</p>
+<p>A sample input file for a RAS(h)-2SF-IP calculation is shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="p">{</span>
+<span class="mi">0</span> <span class="mi">7</span>
+<span class="n">N</span> <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">0.0</span>
+<span class="n">N</span> <span class="mf">0.0</span> <span class="mf">0.0</span> <span class="mf">1.3</span>
+<span class="n">symmetry</span> <span class="n">c1</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+  <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pVDZ</span>
+<span class="p">}</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;psi4fockci&#39;</span><span class="p">,</span> <span class="n">new_charge</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">new_multiplicity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">conf_space</span><span class="o">=</span><span class="s2">&quot;h&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that for calculations involving IP/EA, inclusion of hole (for IP) and
+particle (for EA) excitations is strongly recommended. Additional keywords
+can be found in the documentation.</p>
+<p>This input file can be run with Psi4:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>psi4<span class="w"> </span>input.dat
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/plugin_psi4fockci.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

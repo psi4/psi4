@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>DLPNO-MP2: Domain-Based Local Pair Natural Orbital MP2 &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="dlpno-mp2-domain-based-local-pair-natural-orbital-mp2">
+<span id="sec-dlpnomp2"></span><span id="index-0"></span><h1>DLPNO-MP2: Domain-Based Local Pair Natural Orbital MP2<a class="headerlink" href="#dlpno-mp2-domain-based-local-pair-natural-orbital-mp2" title="Link to this heading">¶</a></h1>
+<p><em>Module:</em> <span class="xref std std-ref">Keywords</span>, <span class="xref std std-ref">PSI Variables</span>, <a href="#id1"><span class="problematic" id="id2">:source:`DLPNOMP2 &lt;psi4/src/psi4/dlpno&gt;`</span></a></p>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
+<p>The steep polynomial scaling (in both time and memory) of post-HF dynamic
+correlation methods prohibits calculations on large systems, even for efficient
+codes like <a href="#id7"><span class="problematic" id="id8">|PSIfours|</span></a> <a class="reference internal" href="dfmp2.html#sec-dfmp2"><span class="std std-ref">DF-MP2</span></a>. This poor scaling is in part
+due to the use of canonical HF orbitals, which are entirely delocalized across
+the molecule. Canonical orbitals are commonly used because of mathematical
+convenience. Another possible choice is localized orbitals. Any two orbitals
+localized to separate regions of a molecule can be treated as non-interacting
+to a good approximation. Thus, when working with localized orbitals, the number
+of interacting orbital pairs (and triples, quadruples, etc.) scales linearly
+with system size. If carefully implemented, programs that exploit this sparsity
+can be made to scale linearly (or else with lower order than their canonical
+counterparts) at the cost of of modest, controllable errors. This is the
+defining insight of DLPNO-MP2 and all related &quot;local correlation&quot; methods.</p>
+<p>The DLPNO-MP2 code is a linear-scaling alternative to the <a class="reference internal" href="dfmp2.html#sec-dfmp2"><span class="std std-ref">DF-MP2</span></a>
+code, and is intended for use with large systems for which DF-MP2 is intractable.
+When running DLPNO-MP2 with default settings, approximately 99.9% of the DF-MP2
+correlation energy is recovered. The general outline of the method is as follows:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Localize the active occupied MOs (with the Foster-Boys method)</p></li>
+<li><p>Construct projected AOs (PAOs) from the virtual MOs</p></li>
+<li><p>Calculate three-index integrals in the (sparse) LMO/PAO basis</p></li>
+<li><p>Perform local density fitting to construct (sparse) exchange integrals</p></li>
+<li><p>Transform local virtuals from PAOs to pair natural orbitals (PNOs), and truncate</p></li>
+<li><p>Solve the iterative local MP2 equations in the LMO/PNO basis</p></li>
+</ol>
+</div></blockquote>
+<p>An example input file is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">h2o</span> <span class="p">{</span>
+<span class="mi">0</span> <span class="mi">1</span>
+<span class="n">O</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span> <span class="mi">2</span> <span class="mf">104.5</span>
+<span class="n">symmetry</span> <span class="n">c1</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+<span class="nb">set</span> <span class="n">scf_type</span> <span class="n">df</span>
+<span class="nb">set</span> <span class="n">freeze_core</span> <span class="kc">True</span>
+<span class="nb">set</span> <span class="n">pno_convergence</span> <span class="n">normal</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;dlpno-mp2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The main difference between this input and a DF-MP2 input is the <code class="docutils literal notranslate"><span class="pre">energy('dlpno-mp2')</span></code>
+call to <code class="xref py py-func docutils literal notranslate"><span class="pre">energy()</span></code>. The only other addition is the <a href="#id9"><span class="problematic" id="id10">|dlpno__pno_convergence|</span></a>
+keyword, which determines the accuracy of the local approximations underlying
+the DLPNO-MP2 method. Note that the water molecule in this example is not large
+enough for DLPNO-MP2 to be of any benefit relative to DF-MP2.</p>
+<p>The theory of the DLPNO-MP2 method and practical recommendations for using the
+code are presented below.</p>
+</section>
+<section id="theory">
+<span id="index-1"></span><h2>Theory<a class="headerlink" href="#theory" title="Link to this heading">¶</a></h2>
+<p>See <a class="reference internal" href="dfmp2.html#sec-dfmp2"><span class="std std-ref">DF-MP2</span></a> for background on the theory of (non-local)
+density-fitted MP2. <a href="#id11"><span class="problematic" id="id12">|PSIfours|</span></a> DLPNO-MP2 implementation is based on the
+manuscript by Pinski et al. <a class="reference internal" href="bibliography.html#pinski-2015-034108" id="id3"><span>[Pinski:2015:034108]</span></a>.</p>
+<p>In DLPNO-MP2, as in all local MP2 methods, the second-order MBPT energy is determined
+variationally via the Hylleraas functional <a class="reference internal" href="bibliography.html#hylleraas-1930-209" id="id4"><span>[Hylleraas:1930:209]</span></a>:</p>
+<div class="math notranslate nohighlight" id="equation-hylleraas">
+<span class="eqno">(1)<a class="headerlink" href="#equation-hylleraas" title="Link to this equation">¶</a></span>\[E^{(2)} = 2 \langle \Psi_{0}^{(0)} | \hat{H} - E_{0}^{(0)} | \Psi_{0}^{(1)} \rangle - \langle \Psi_{0}^{(1)} | \hat{H}^{(0)} - E_{0}^{(0)} | \Psi_{0}^{(1)} \rangle = \min_{| \Psi_{0}^{(1)} \rangle}.\]</div>
+<p>Determining the optimal <span class="math notranslate nohighlight">\(| \Psi_{0}^{(1)} \rangle\)</span> entails iteratively
+minimizing the following residual <a class="reference internal" href="bibliography.html#pulay-1986-357" id="id5"><span>[Pulay:1986:357]</span></a>:</p>
+<div class="math notranslate nohighlight" id="equation-residual">
+<span class="eqno">(2)<a class="headerlink" href="#equation-residual" title="Link to this equation">¶</a></span>\[R_{ij}^{ab} = (ia|jb) + (\epsilon_a + \epsilon_b - f_{ii} - f_{jj})t_{ij}^{ab} - \sum_{k \ne j} f_{ik} \sum_{c,d} S_{ac}t_{kj}^{c,d}S_{db} - \sum_{k \ne i} f_{kj} \sum_{cd} S_{ac}t_{ik}^{cd}S_{db}\]</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">i</span></code>, <code class="docutils literal notranslate"><span class="pre">j</span></code>, and <code class="docutils literal notranslate"><span class="pre">k</span></code> are (not necessarily canonical) occupied orbitals, <code class="docutils literal notranslate"><span class="pre">a</span></code>,
+<code class="docutils literal notranslate"><span class="pre">b</span></code>, <code class="docutils literal notranslate"><span class="pre">c</span></code>, and <code class="docutils literal notranslate"><span class="pre">d</span></code> are virtual orbitals, <span class="math notranslate nohighlight">\(f_{ij}\)</span> are fock matrix elements,
+<span class="math notranslate nohighlight">\(S_{ab}\)</span> are orbital overlaps, and finally <span class="math notranslate nohighlight">\(t_{ij}^{ab}\)</span> are the MP2
+amplitudes to be solved for. Virtual orbitals may be different for each pair
+of occupied orbitals. For a given occupied orbital pair <code class="docutils literal notranslate"><span class="pre">ij</span></code>, all virtuals are
+orthogonal and canonical, but virtuals belonging to different pair domains
+may not be orthogonal.</p>
+<p>The following expression is used to evaluate the energy of a given set of amplitudes:</p>
+<div class="math notranslate nohighlight" id="equation-energy">
+<span class="eqno">(3)<a class="headerlink" href="#equation-energy" title="Link to this equation">¶</a></span>\[\begin{split}E^{(2)} &amp;= \sum_{i,j} e_{ij}, \\
+e_{ij} &amp;= \sum_{a, b}((ia|jb) + R_{ij}^{ab})(2t_{ij}^{ab} - t_{ij}^{ba}).\end{split}\]</div>
+<p>The error in <span class="math notranslate nohighlight">\(E^{(2)}\)</span> scales quadratically with the error in the amplitudes.</p>
+<p>No local approximations have been made so far, and this iterative approach can
+be used to exactly determine <span class="math notranslate nohighlight">\(E^{(2)}\)</span> with <span class="math notranslate nohighlight">\({\cal O}(N^5)\)</span> cost.
+In DLPNO-MP2, the first local approximation is to screen distant, non-interacting
+orbital pairs <code class="docutils literal notranslate"><span class="pre">ij</span></code>. Orbital pairs are screened if below both an overlap criteria:</p>
+<div class="math notranslate nohighlight" id="equation-differential-overlap-integral">
+<span class="eqno">(4)<a class="headerlink" href="#equation-differential-overlap-integral" title="Link to this equation">¶</a></span>\[DOI_{ij} \equiv \sqrt{\int d\mathbf{r} | \chi_{i}(\mathbf{r}) | ^{2} | \chi_{j}(\mathbf{r}) | ^{2}},\]</div>
+<p>and a pair energy estimate:</p>
+<div class="math notranslate nohighlight" id="equation-dipole-approximation">
+<span class="eqno">(5)<a class="headerlink" href="#equation-dipole-approximation" title="Link to this equation">¶</a></span>\[e_{ij}^{approx} = -\frac{4}{R^{6}} \sum_{a_{i} \in [i],b_{j} \in [j]} \frac{ (2 \langle i | \mathbf{r} | a_{i} \rangle \langle j | \mathbf{r} | b_{j} \rangle)^{2}}{\epsilon_{a_{i}} + \epsilon_{b_{j}} - f_{ii} - f_{jj}},\]</div>
+<p>in which small domains of virtual orbitals are used for each local MO. As a
+result, an asymptotically linear number of <code class="docutils literal notranslate"><span class="pre">ij</span></code> pairs enter the local MP2
+equations, and the approximate pair energy of neglected pairs is added to
+the final energy.</p>
+<p>The second major local approximation in DLPNO-MP2 is the truncation of the virtual
+space. Initially, exchange integrals are calculated in the LMO/PAO basis using the
+standard density fitting approach:</p>
+<div class="math notranslate nohighlight" id="equation-exchange">
+<span class="eqno">(6)<a class="headerlink" href="#equation-exchange" title="Link to this equation">¶</a></span>\[(ia|jb) = \sum_{K,L \in [ij]} (ia|K)[\mathbf{J}^{-1}]_{KL}(L|jb)\]</div>
+<p>This is done with linear scaling effort by exploiting the locality of the LMOs, PAOs,
+and auxiliary basis functions.
+Solving the iterative local MP2 equations in the LMO/PAO basis requires large PAO
+domains to achieve reasonable accuracy. Instead, the virtual space is transformed
+into the much more compact pair natural orbital representation. The (approximate)
+PNOs diagonalize the virtual-virtual block of the (approximate) MP2 density matrix:</p>
+<div class="math notranslate nohighlight" id="equation-pnos">
+<span class="eqno">(7)<a class="headerlink" href="#equation-pnos" title="Link to this equation">¶</a></span>\[D_{ij}^{ab} = \frac{1}{1 + \delta_{ij}}[\tilde{t}_{ij}^{\dagger}t_{ij} + \tilde{t}_{ij}t_{ij}^{\dagger}]^{ab}\]</div>
+<p>which is constructed from semicanonical amplitudes:</p>
+<div class="math notranslate nohighlight" id="equation-amplitudes">
+<span class="eqno">(8)<a class="headerlink" href="#equation-amplitudes" title="Link to this equation">¶</a></span>\[\begin{split}t_{ij}^{ab}         &amp;= - \frac{(iajb)}{\epsilon_{a} + \epsilon_{b} - \epsilon_{i} - \epsilon_{j}}, \\
+\tilde{t}_{ij}^{ab} &amp;= 2t_{ij}^{ab} - t_{ij}^{ba}.\end{split}\]</div>
+<p>PNOs with small occupation numbers are discarded, and the local MP2 equations are
+solved in the LMO/PNO basis.</p>
+</section>
+<section id="recommendations">
+<h2>Recommendations<a class="headerlink" href="#recommendations" title="Link to this heading">¶</a></h2>
+<p>Some practical notes on running the code:</p>
+<ul class="simple">
+<li><p>DLPNO-MP2 is not a drop-in replacement for DF-MP2. Instead, it should be used for
+large calculations that cannot reasonably be performed with DF-MP2. The crossover
+point between DF-MP2 and DLPNO-MP2 depends on details of both the calculation and
+the hardware, but can be as low as 2,000 basis functions.</p></li>
+<li><p>The accuracy of DLPNO-MP2 (relative to DF-MP2) can be controlled with the
+<a href="#id13"><span class="problematic" id="id14">|dlpno__pno_convergence|</span></a> keyword according to recommendation by Liakos et al.
+<a class="reference internal" href="bibliography.html#liakos-2015-1525" id="id6"><span>[Liakos:2015:1525]</span></a>. For non-covalent interactions <code class="docutils literal notranslate"><span class="pre">TIGHT</span></code> is highly recommended.</p></li>
+<li><p>The greater the spatial sparsity of a molecular system, the smaller the pair
+domains and consequently the faster the calculation. DLPNO-MP2 is much faster
+for linear alkanes than for globular proteins, all else constant.</p></li>
+<li><p>Similar to molecular sparsity, the sparsity of the orbital basis affects runtime.
+Diffuse functions increase the size of the pair domains and therefore lead to
+longer calculations.</p></li>
+<li><p>All aspects of DLPNO-MP2 run in core; no disk is required. As a result, the
+code exhibits very good intra-node parallelism, and benefits from many threads.
+The amount of memory needed scales linearly with system size.</p></li>
+<li><p>DLPNO-MP2 is not symmetry aware. This should not be a concern for large systems in
+which symmetry is seldom present.</p></li>
+<li><p>As with DF-MP2, freezing core orbitals (by setting <a href="#id15"><span class="problematic" id="id16">|globals__freeze_core|</span></a>
+to <code class="docutils literal notranslate"><span class="pre">True</span></code>) is recommended for efficiency. In DLPNO methods, this is also
+recommended for accuracy, since core excitations are known to exhibit
+greater errors relative to valence excitations.</p></li>
+<li><p>At the moment, the DLPNO-MP2 code is only compatible with with RHF references.</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/dlpnomp2.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

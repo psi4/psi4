@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>DCT: Density Cumulant Theory &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="dct-density-cumulant-theory">
+<span id="sec-dct"></span><span id="index-0"></span><h1>DCT: Density Cumulant Theory<a class="headerlink" href="#dct-density-cumulant-theory" title="Link to this heading">¶</a></h1>
+<p><em>Module:</em> <span class="xref std std-ref">Keywords</span>, <span class="xref std std-ref">PSI Variables</span>, <a href="#id1"><span class="problematic" id="id2">:source:`DCT &lt;psi4/src/psi4/dct&gt;`</span></a></p>
+<section id="theory">
+<span id="sec-dcttheory"></span><h2>Theory<a class="headerlink" href="#theory" title="Link to this heading">¶</a></h2>
+<p>Density cumulant theory (DCT) is a density-based <em>ab initio</em> theory
+that can compute electronic energies without the use of a wavefunction. The
+theory starts by writing the exact energy expression in terms of the one- and
+two-particle density matrices (<span class="math notranslate nohighlight">\(\boldsymbol{\gamma_1}\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol{\gamma_2}\)</span>):</p>
+<div class="math notranslate nohighlight">
+\[E = h_p^q \gamma_q^p + \frac{1}{2} g_{pq}^{rs} \gamma_{rs}^{pq}\]</div>
+<p>Here we used Einstein convention for the summation over the repeated indices.
+<span class="math notranslate nohighlight">\(h_p^q\)</span> and <span class="math notranslate nohighlight">\(g_{pq}^{rs}\)</span> are the standard one- and two-electron integrals, and
+<span class="math notranslate nohighlight">\(\gamma_p^q\)</span> and <span class="math notranslate nohighlight">\(\gamma_{pq}^{rs}\)</span> are the elements of <span class="math notranslate nohighlight">\(\boldsymbol{\gamma_1}\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol{\gamma_2}\)</span>,
+respectively. Naively, one might expect that it is possible to minimize the
+energy functional in the equation above and obtain the exact energy. This is,
+however, not trivial, as the density matrix elements <span class="math notranslate nohighlight">\(\gamma_p^q\)</span> and
+<span class="math notranslate nohighlight">\(\gamma_{pq}^{rs}\)</span> cannot be varied arbitrarily, but must satisfy some
+conditions that make sure that the density matrices are N-representable, <em>i.e.</em>
+correspond to an antisymmetric N-electron wavefunction. Unfortunately, no
+simple set of necessary and sufficient N-representability conditions are known,
+and some of the known conditions are not easily imposed. In addition, the lack
+of separability of the density matrices may result in the loss of
+size-consistency and size-extensivity. In DCT, one takes a different route and
+replaces <span class="math notranslate nohighlight">\(\boldsymbol{\gamma_2}\)</span> in favor of its two-particle density cumulant:</p>
+<div class="math notranslate nohighlight">
+\[\lambda_{pq}^{rs} = \gamma_{pq}^{rs} - \gamma_p^r \gamma_q^s + \gamma_p^s \gamma_q^r\]</div>
+<p>The one-particle density matrix is separated into its idempotent part
+<span class="math notranslate nohighlight">\(\boldsymbol{\kappa}\)</span> and a correction <span class="math notranslate nohighlight">\(\boldsymbol{\tau}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\gamma_p^q = \kappa_p^q + \tau_p^q\]</div>
+<p>The idempotent part of <span class="math notranslate nohighlight">\(\boldsymbol{\gamma_1}\)</span> corresponds to a mean-field Hartree--Fock-like density,
+while the non-idempotent correction <span class="math notranslate nohighlight">\(\boldsymbol{\tau}\)</span>
+depends on the density cumulant and describes the electron correlation effects.
+Inserting the above two equations into the energy expression, we obtain:</p>
+<div class="math notranslate nohighlight">
+\[E_{DCT} = \frac{1}{2} \left( h_p^q + f_p^q \right) \gamma_q^p  + \frac{1}{4} \bar{g}_{pq}^{rs} \lambda_{rs}^{pq}\]</div>
+<p>where the antisymmetrized two-electron integrals and the generalized Fock operator
+matrix elements were defined as follows:</p>
+<div class="math notranslate nohighlight">
+\[\bar{g}_{pq}^{rs} = g_{pq}^{rs} - g_{pq}^{sr}\]</div>
+<div class="math notranslate nohighlight">
+\[f_p^q = h_p^q + \bar{g}_{pr}^{qs} \gamma_{s}^{r}\]</div>
+<p>Energy functional <span class="math notranslate nohighlight">\(E_{DCT}\)</span> has several important properties. First,
+the energy is now a function of two sets of independent parameters, the
+idempotent part of <span class="math notranslate nohighlight">\(\boldsymbol{\gamma_1}\)</span> (<span class="math notranslate nohighlight">\(\boldsymbol{\kappa}\)</span>) and the density cumulant
+(<span class="math notranslate nohighlight">\(\boldsymbol{\lambda_2}\)</span>). As a result, the energy functional is Hermitian,
+which is important for the evaluation of the molecular properties. The additive
+separability of the density cumulant guarantees that all of the DCT methods
+are size-extensive and size-consistent. Furthermore, the N-representability
+problem is now greatly simplified, because the idempotent part of <span class="math notranslate nohighlight">\(\boldsymbol{\gamma_1}\)</span> is
+N-representable by construction. One only needs to worry about the
+N-representability of the density cumulant, which is a relatively small part of
+<span class="math notranslate nohighlight">\(\boldsymbol{\gamma_2}\)</span>.</p>
+<p>In order to obtain the DCT energy, two conditions must be satisfied:</p>
+<ol class="arabic simple">
+<li><p>The energy must be stationary with respect to a set of orbitals. This can be done by
+diagonalizing the generalized Fock operator (as in the DC-06 and DC-12 methods, see below),
+which introduces partial orbital relaxation, or by fully relaxing the orbitals and minimizing the entire energy expression
+(as in the ODC-06 and ODC-12 methods).</p></li>
+<li><p>The energy must be stationary with respect to the variation of the density
+cumulant <span class="math notranslate nohighlight">\(\boldsymbol{\lambda_2}\)</span>, constrained to N-representability conditions.</p></li>
+</ol>
+<p>Making the energy stationary requires solution of two sets of coupled
+equations for orbitals and density cumulant, respectively (also known as
+residual equations). At the present moment, three different algorithms for the
+solution of the system of coupled equations are available (see
+<a class="reference internal" href="#sec-dctalgorithms"><span class="std std-ref">Iterative Algorithms</span></a> for details).</p>
+<p>Publications resulting from the use of the DCT code should cite contributions
+listed <a class="reference internal" href="introduction.html#intro-dctcitations"><span class="std std-ref">here</span></a>.</p>
+</section>
+<section id="methods">
+<span id="sec-dctmethods"></span><h2>Methods<a class="headerlink" href="#methods" title="Link to this heading">¶</a></h2>
+<p>Currently five DCT methods (functionals) are available: DC-06, DC-12, ODC-06, ODC-12, and ODC-13. The first four
+methods use approximate N-representability conditions derived from
+second-order perturbation theory and differ in the description of the
+correlated (non-idempotent) part <span class="math notranslate nohighlight">\(\boldsymbol{\tau}\)</span> of the one-particle density
+matrix and orbital optimization. While in the DC-06 and ODC-06 methods <span class="math notranslate nohighlight">\(\boldsymbol{\tau}\)</span> is derived from the density cumulant
+in an approximate way (labelled by '06'), the DC-12 and ODC-12 methods derive this contribution exactly, and
+take full advantage of the N-representability conditions (which is denoted by '12'). The corresponding DC and ODC methods
+have similar description of the <span class="math notranslate nohighlight">\(\boldsymbol{\gamma_1}\)</span> N-representability, but differ in describing the orbital relaxation:
+the former methods account for the relaxation only partially, while the latter fully relax the orbitals.
+Both DC-06 and DC-12 methods have similar computational cost, same is true when comparing ODC-06 and ODC-12.
+Meanwhile, the DC methods are generally more efficient than their ODC analogs, due to a more expensive orbital update step
+needed for the full orbital optimization. In the ODC-13 method, the third- and
+fourth-order N-representability conditions are used for the density cumulant
+and the correlated contribution <span class="math notranslate nohighlight">\(\boldsymbol{\tau}\)</span>, respectively,
+and the orbitals are variationally optimized.
+For most of the applications, it is recommended to use the ODC-12 method, which
+provides an optimal balance between accuracy and efficiency, especially for
+molecules with open-shell character. If highly accurate results are desired, a
+combination of the ODC-13 method with a three-particle energy correction
+[<span class="math notranslate nohighlight">\(\mbox{ODC-13$(\lambda_3)$}\)</span>] can be used (see below).
+For the detailed comparison of the quality of these methods, we refer
+users to our <a class="reference internal" href="introduction.html#intro-dctcitations"><span class="std std-ref">publications</span></a>.</p>
+<p>The DCT functional can be specified by the <a href="#id3"><span class="problematic" id="id4">|dct__dct_functional|</span></a> option. The
+default choice is the ODC-12 functional. The DCT code can also be used to
+compute the <span class="math notranslate nohighlight">\((\lambda_3)\)</span> energy correction that perturbatively accounts
+for three-particle correlation effects, similarly to the (T) correction in coupled
+cluster theory. Computation of the <span class="math notranslate nohighlight">\((\lambda_3)\)</span> correction can be
+requested by setting the <a href="#id5"><span class="problematic" id="id6">|dct__three_particle|</span></a> option to PERTURBATIVE. A
+combination of the ODC-13 functional with the  <span class="math notranslate nohighlight">\((\lambda_3)\)</span> correction
+[denoted as <span class="math notranslate nohighlight">\(\mbox{ODC-13$(\lambda_3)$}\)</span>] has been shown to provide highly
+accurate results for open-shell molecules near equilibrium geometries.</p>
+<p>At the present moment, all of the DCT methods support unrestricted reference
+orbitals (<a href="#id7"><span class="problematic" id="id8">|scf__reference|</span></a> <code class="docutils literal notranslate"><span class="pre">UHF</span></code>), which can be used to perform energy and
+gradient computations for both closed- and open-shell molecules. In addition,
+the ODC-06 and ODC-12 methods support restricted reference orbitals
+(<a href="#id9"><span class="problematic" id="id10">|scf__reference|</span></a> <code class="docutils literal notranslate"><span class="pre">RHF</span></code>) for the energy and gradient computations of
+closed-shell molecules. Note that in this case restricted reference orbitals
+are only available for <a href="#id11"><span class="problematic" id="id12">|dct__algorithm|</span></a> <code class="docutils literal notranslate"><span class="pre">SIMULTANEOUS</span></code>.</p>
+</section>
+<section id="iterative-algorithms">
+<span id="sec-dctalgorithms"></span><h2>Iterative Algorithms<a class="headerlink" href="#iterative-algorithms" title="Link to this heading">¶</a></h2>
+<p>As explained in the <a class="reference internal" href="#sec-dcttheory"><span class="std std-ref">Theory</span></a> section, in order to obtain the DCT energy one
+needs to solve a system of coupled equations for orbitals and density
+cumulant. At the present moment three iterative algorithms for the solution of the
+equations are available. The choice of the algorithm is controlled using the
+<a href="#id13"><span class="problematic" id="id14">|dct__algorithm|</span></a> option.</p>
+<dl class="simple">
+<dt>SIMULTANEOUS [Default]</dt><dd><p>In the simultaneous algorithm the DCT equations are solved in macroiterations.
+Each macroiteration consists of a single iteration of the cumulant update
+followed by a single iteration of the orbital update and orbital transformation
+of the integrals. The macroiterations are repeated until the simultaneous
+convergence of the cumulant and orbitals is achieved.
+Convergence of the simultaneous algorithm is accelerated using the
+DIIS extrapolation technique.</p>
+</dd>
+<dt>TWOSTEP</dt><dd><p>In the two-step algorithm each macroiteration consists of two sets of
+microiterations. In the first set, the density cumulant equations are solved
+iteratively, while the orbitals are kept fixed. After the density cumulant is
+converged, the second set of microiterations is performed for the
+self-consistent update of the orbitals with the fixed density cumulant. Each
+macroiteration is completed by performing the orbital transformation of the
+integrals. As in the simultaneous algorithm, the DIIS
+extrapolation is used to accelerate convergence. Two-step algorithm is
+only available for the DC-06 and DC-12 methods.</p>
+</dd>
+<dt>QC</dt><dd><p>In the quadratically-convergent algorithm, the
+orbital and cumulant update equations are solved using the Newton-Raphson
+method. Each macroiteration of the quadratically-convergent algorithm consists
+of a single Newton-Raphson update followed by the orbital transformation
+of the integrals. The solution of the Newton-Raphson equations is performed
+iteratively using the preconditioned conjugate gradients method, where only the
+product of the electronic Hessian with the step vector is computed for
+efficiency. By default, the electronic Hessian is build for both the cumulant and orbital
+updates and both updates are performed simultaneously. Setting the <a href="#id15"><span class="problematic" id="id16">|dct__qc_type|</span></a>
+option to <code class="docutils literal notranslate"><span class="pre">TWOSTEP</span></code> will perform the Newton-Raphson update only for the orbitals,
+while the equations for the cumulant will be solved using a standard Jacobi update.
+If requested by the user (set <a href="#id17"><span class="problematic" id="id18">|dct__qc_coupling|</span></a> to TRUE), the electronic Hessian can include
+matrix elements that couple the orbitals and the density cumulant.
+The computation of these coupling elements increases
+the cost of the macroiteration, but usually leads to faster convergence and is
+recommended for open-shell systems.
+It is important to note that the quadratically-convergent algorithm is not yet fully
+optimized and often converges slowly when the RMS of the cumulant or
+the orbital gradient is below <span class="math notranslate nohighlight">\(10^{-7}\)</span>.</p>
+</dd>
+</dl>
+<p>The choice of the iterative algorithm can significantly affect the cost of the
+energy computation. While the two-step algorithm requires a small number of
+disk-intensive <span class="math notranslate nohighlight">\({\cal O}(N^5)\)</span> integral transformations, the simultaneous
+algorithm benefits from a smaller number of expensive <span class="math notranslate nohighlight">\({\cal O}(N^6)\)</span>
+cumulant updates. As a result, for small closed-shell systems the two-step
+algorithm is usually preferred, while for larger systems and molecules with
+open-shell character it is recommended to use the simultaneous algorithm.
+Efficiency of the simultaneous algorithm can be greatly increased by avoiding
+the transformation of the four-index virtual two-electron integrals
+<span class="math notranslate nohighlight">\((vv|vv)\)</span> and computing the terms that involve these integrals in the AO
+basis. In order to do that one needs to set the <a href="#id19"><span class="problematic" id="id20">|dct__ao_basis|</span></a> option to
+DISK (currently used by default). For more recommendations on the choice of the algorithm see
+<a class="reference internal" href="#sec-dctrecommend"><span class="std std-ref">Recommendations</span></a>.</p>
+</section>
+<section id="analytic-gradients">
+<span id="sec-dctgradients"></span><h2>Analytic Gradients<a class="headerlink" href="#analytic-gradients" title="Link to this heading">¶</a></h2>
+<p>Analytic gradients are available for the DC-06, ODC-06, ODC-12, and ODC-13 methods.
+For DC-06, the evaluation of the analytic gradients requires the solution of the
+coupled response equations. Two algorithms are available for their iterative
+solution: <code class="docutils literal notranslate"><span class="pre">TWOSTEP</span></code> (default) and <code class="docutils literal notranslate"><span class="pre">SIMULTANEOUS</span></code>. These algorithms are similar to those
+described for the orbital and cumulant updates in the <a class="reference internal" href="#sec-dctalgorithms"><span class="std std-ref">Iterative Algorithms</span></a>
+section and usually exhibit similar efficiency. The choice of the algorithm can
+be made using the <a href="#id21"><span class="problematic" id="id22">|dct__response_algorithm|</span></a> option. For the DC-12 method the
+analytic gradients are not yet available, one has to use numerical gradients to
+perform the geometry optimizations. For the ODC-06, ODC-12 and ODC-13 methods no response equations
+need to be solved, which makes the computation of the analytic gradients very
+efficient. Analytic gradients are not available for the three-particle energy
+correction <span class="math notranslate nohighlight">\((\lambda_3)\)</span>.</p>
+</section>
+<section id="methods-summary">
+<span id="sec-dctmethodsummary"></span><h2>Methods Summary<a class="headerlink" href="#methods-summary" title="Link to this heading">¶</a></h2>
+<p>The table below summarizes current DCT code features:</p>
+<blockquote>
+<div><table class="docutils align-default" id="table-dct-methods-summary">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Available algorithms</p></th>
+<th class="head"><p>Energy</p></th>
+<th class="head"><p>Gradient</p></th>
+<th class="head"><p>Reference</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ODC-06</p></td>
+<td><p>SIMULTANEOUS, QC</p></td>
+<td><p>Y</p></td>
+<td><p>Y</p></td>
+<td><p>RHF/UHF</p></td>
+</tr>
+<tr class="row-odd"><td><p>ODC-12</p></td>
+<td><p>SIMULTANEOUS, QC</p></td>
+<td><p>Y</p></td>
+<td><p>Y</p></td>
+<td><p>RHF/UHF</p></td>
+</tr>
+<tr class="row-even"><td><p>ODC-13</p></td>
+<td><p>SIMULTANEOUS, QC</p></td>
+<td><p>Y</p></td>
+<td><p>Y</p></td>
+<td><p>UHF</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\mbox{ODC-12$(\lambda_3)$}\)</span></p></td>
+<td><p>SIMULTANEOUS, QC</p></td>
+<td><p>Y</p></td>
+<td><p>N</p></td>
+<td><p>UHF</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\mbox{ODC-13$(\lambda_3)$}\)</span></p></td>
+<td><p>SIMULTANEOUS, QC</p></td>
+<td><p>Y</p></td>
+<td><p>N</p></td>
+<td><p>UHF</p></td>
+</tr>
+<tr class="row-odd"><td><p>DC-06</p></td>
+<td><p>SIMULTANEOUS, QC, TWOSTEP</p></td>
+<td><p>Y</p></td>
+<td><p>Y</p></td>
+<td><p>UHF</p></td>
+</tr>
+<tr class="row-even"><td><p>DC-12</p></td>
+<td><p>SIMULTANEOUS, QC, TWOSTEP</p></td>
+<td><p>Y</p></td>
+<td><p>N</p></td>
+<td><p>UHF</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Note that for ODC-06 and ODC-12 <a href="#id23"><span class="problematic" id="id24">|scf__reference|</span></a> <code class="docutils literal notranslate"><span class="pre">RHF</span></code> is only available for
+<a href="#id25"><span class="problematic" id="id26">|dct__algorithm|</span></a> <code class="docutils literal notranslate"><span class="pre">SIMULTANEOUS</span></code>. To compute <span class="math notranslate nohighlight">\((\lambda_3)\)</span> correction,
+the <a href="#id27"><span class="problematic" id="id28">|dct__three_particle|</span></a> option needs to be set to PERTURBATIVE.</p>
+</section>
+<section id="minimal-input">
+<span id="sec-dctmininput"></span><h2>Minimal Input<a class="headerlink" href="#minimal-input" title="Link to this heading">¶</a></h2>
+<p>Minimal input for the DCT single-point computation looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="p">{</span>
+<span class="n">H</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;dct&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">energy('dct')</span></code> call to <code class="xref py py-func docutils literal notranslate"><span class="pre">energy()</span></code> executes the DCT
+module, which will first call the SCF module and perform the SCF computation
+with RHF reference to obtain a guess for the DCT orbitals. After SCF is
+converged, the program will perform the energy computation using the ODC-12
+method. By default, simultaneous algorithm will be used for the solution of
+the equations. One can also request to perform geometry
+optimization following example below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="p">{</span>
+<span class="n">H</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+
+<span class="n">optimize</span><span class="p">(</span><span class="s1">&#39;dct&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">optimize('dct')</span></code> call will first perform all of the procedures
+described above to obtain the ODC-12 energy. After that, the ODC-12 analytic
+gradients code will be executed and geometry optimization will be performed.</p>
+</section>
+<section id="recommendations">
+<span id="sec-dctrecommend"></span><h2>Recommendations<a class="headerlink" href="#recommendations" title="Link to this heading">¶</a></h2>
+<p>Here is a list of recommendations for the DCT module:</p>
+<ul class="simple">
+<li><p>Generally, the use of the simultaneous algorithm together with the
+<a href="#id29"><span class="problematic" id="id30">|dct__ao_basis|</span></a> <code class="docutils literal notranslate"><span class="pre">DISK</span></code> option is recommended (set by default).</p></li>
+<li><p>In cases when available memory is insufficient, the use of the <a href="#id31"><span class="problematic" id="id32">|dct__ao_basis|</span></a> <code class="docutils literal notranslate"><span class="pre">DISK</span></code> option
+is recommended. This will significantly reduce the memory requirements. However, when
+used together with the two-step algorithm, this option can significantly
+increase the cost of the energy computation.</p></li>
+<li><p>In cases when the oscillatory convergence is observed before the DIIS
+extrapolation is initialized, it is recommended to increase the threshold for
+the RMS of the density cumulant or orbital update residual, below which the
+DIIS extrapolation starts. This can be done by setting the
+<a href="#id33"><span class="problematic" id="id34">|dct__diis_start_convergence|</span></a> option to the value greater than
+<span class="math notranslate nohighlight">\(10^{-3}\)</span> by one or two orders of magnitude (<em>e.g.</em> <span class="math notranslate nohighlight">\(10^{-2}\)</span> or
+<span class="math notranslate nohighlight">\(10^{-1}\)</span>). This can be particularly useful for computations using the
+ODC methods, because it can greatly reduce the number of iterations.</p></li>
+<li><p>If oscillatory convergence is observed for atoms or molecules with high
+symmetry, it is recommended to use the quadratically-convergent algorithm.</p></li>
+<li><p>When using the quadratically-convergent algorithm for the closed-shell molecules, it
+is recommended to set the <a href="#id35"><span class="problematic" id="id36">|dct__qc_coupling|</span></a> option to FALSE for efficiency
+reasons (set by default).</p></li>
+<li><p>For the ODC computations, the user has a choice of performing the computation of the guess orbitals and cumulants
+using the corresponding DC method (set <a href="#id37"><span class="problematic" id="id38">|dct__odc_guess|</span></a> to TRUE). This can often lead to
+significant computational savings, since the orbital update step in the DC methods is cheap.
+Convergence of the guess orbitals and cumulants can be controlled using the
+<a href="#id39"><span class="problematic" id="id40">|dct__guess_r_convergence|</span></a> option.</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/dct.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

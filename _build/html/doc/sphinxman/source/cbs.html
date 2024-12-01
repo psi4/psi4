@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Complete Basis Set &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="complete-basis-set">
+<span id="sec-cbs"></span><span id="index-0"></span><h1>Complete Basis Set<a class="headerlink" href="#complete-basis-set" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">psi4.driver.cbs()</span></code> function described below is
+powerful but complicated, requiring many options. For most common
+calculations, a shorthand can be accessed directly though
+<code class="xref py py-func docutils literal notranslate"><span class="pre">psi4.driver.energy()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">psi4.driver.gradient()</span></code>, <em>etc.</em> For example,
+a MP2 single-point DT extrapolation can be accessed through the first item
+below more conveniently than the equivalent second or third items.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">energy('mp2/cc-pv[dt]z')</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">energy(&quot;cbs&quot;,</span> <span class="pre">corl_wfn='mp2',</span> <span class="pre">corl_basis='cc-pv[dt]z')</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">energy(&quot;cbs&quot;,</span> <span class="pre">cbs_metadata=[{&quot;wfn&quot;:</span> <span class="pre">&quot;hf&quot;,</span> <span class="pre">&quot;basis&quot;:</span> <span class="pre">&quot;cc-pvtz&quot;},</span> <span class="pre">{&quot;wfn&quot;:</span> <span class="pre">&quot;mp2&quot;,</span> <span class="pre">&quot;basis&quot;:</span> <span class="pre">&quot;cc-pv[dt]z&quot;,</span> <span class="pre">&quot;scheme&quot;:</span> <span class="pre">&quot;corl_xtpl_helgaker_2&quot;}])</span></code></p></li>
+</ul>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>In <a href="#id25"><span class="problematic" id="id26">|PSIfour|</span></a> previous to Spring 2022 and v1.6, calling certain
+cbs-related functions like the above looked like</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy</span><span class="p">(</span><span class="n">cbs</span><span class="p">,</span> <span class="n">corl_wfn</span><span class="o">=</span><span class="s1">&#39;mp2&#39;</span><span class="p">,</span> <span class="n">corl_basis</span><span class="o">=</span><span class="s1">&#39;cc-pv[dt]z&#39;</span><span class="p">)</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="n">cbs</span><span class="p">,</span> <span class="n">cbs_metadata</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;wfn&quot;</span><span class="p">:</span> <span class="s2">&quot;hf&quot;</span><span class="p">,</span> <span class="s2">&quot;basis&quot;</span><span class="p">:</span> <span class="s2">&quot;cc-pvtz&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;wfn&quot;</span><span class="p">:</span> <span class="s2">&quot;mp2&quot;</span><span class="p">,</span> <span class="s2">&quot;basis&quot;</span><span class="p">:</span> <span class="s2">&quot;cc-pv[dt]z&quot;</span><span class="p">,</span> <span class="s2">&quot;scheme&quot;</span><span class="p">:</span> <span class="n">corl_xtpl_helgaker_2</span><span class="p">}])</span>
+</pre></div>
+</div>
+<p>The difference is that the main function
+<code class="xref py py-func docutils literal notranslate"><span class="pre">psi4.driver.cbs()</span></code> and extrapolation schemes like
+<code class="xref py py-func docutils literal notranslate"><span class="pre">psi4.driver.driver_cbs_helper.xtpl_highest_1()</span></code> and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_2()</span></code> and composite
+aliases like <code class="xref py py-func docutils literal notranslate"><span class="pre">psi4.driver.aliases.sherrill_gold_standard()</span></code>
+and <code class="xref py py-func docutils literal notranslate"><span class="pre">psi4.driver.aliases.allen_focal_point()</span></code> in the old way
+passed the Python function directly, whereas the new way uses the
+string of the function name.</p>
+</div>
+<p>A CCSD(T) DT coupled-cluster correction atop a TQ MP2 extrapolation
+geometry optimization can also be accessed through the first item below more
+conveniently than the equivalent second and third items.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">optimize('mp2/cc-pv[tq]z</span> <span class="pre">+</span> <span class="pre">D:ccsd(t)/cc-pvdz')</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">optimize(&quot;cbs&quot;,</span> <span class="pre">corl_wfn='mp2',</span> <span class="pre">corl_basis='cc-pv[tq]z',</span> <span class="pre">delta_wfn='ccsd(t)',</span> <span class="pre">delta_basis='cc-pvdz')</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">optimize(&quot;cbs&quot;,</span> <span class="pre">cbs_metadata=[{&quot;wfn&quot;:</span> <span class="pre">&quot;hf&quot;,</span> <span class="pre">&quot;basis&quot;:</span> <span class="pre">&quot;cc-pvqz&quot;},</span> <span class="pre">{&quot;wfn&quot;:</span> <span class="pre">&quot;mp2&quot;,</span> <span class="pre">&quot;basis&quot;:</span> <span class="pre">&quot;cc-pv[tq]z&quot;},</span> <span class="pre">{&quot;wfn&quot;:</span> <span class="pre">&quot;ccsd(t)&quot;,</span> <span class="pre">&quot;basis&quot;:</span> <span class="pre">&quot;cc-pvdz&quot;}])</span></code></p></li>
+</ul>
+<p>Many examples can be found at <a href="#id1"><span class="problematic" id="id2">:srcsample:`cbs-xtpl-energy`</span></a>,
+<a href="#id3"><span class="problematic" id="id4">:srcsample:`cbs-xtpl-gradient`</span></a>, <a href="#id5"><span class="problematic" id="id6">:srcsample:`cbs-xtpl-opt`</span></a>,
+<a href="#id7"><span class="problematic" id="id8">:srcsample:`cbs-xtpl-freq`</span></a>, <a href="#id9"><span class="problematic" id="id10">:srcsample:`cbs-xtpl-func`</span></a>,
+<a href="#id11"><span class="problematic" id="id12">:srcsample:`cbs-xtpl-wrapper`</span></a>, <a href="#id13"><span class="problematic" id="id14">:srcsample:`cbs-xtpl-dict`</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As of October 2018, only two explicit <code class="docutils literal notranslate"><span class="pre">`deltaN_[wfn,basis,scheme]`</span></code> sets of options are active; if more delta functions are required, use the <code class="docutils literal notranslate"><span class="pre">`cbs_metadata`</span></code> interface. Also, temporarily extrapolations are performed on differences of target and scf total energies, rather than on correlation energies directly. This doesn't affect the extrapolated values of the particular formulas defined here (though it does affect the betas, which are commented out), but it is sloppy and temporary and could affect any user-defined corl extrapolations.</p>
+</div>
+<section id="output">
+<span id="index-1"></span><h2>Output<a class="headerlink" href="#output" title="Link to this heading">¶</a></h2>
+<p>At the beginning of a cbs() job is printed a listing of the individual
+energy calculations which will be performed. The output snippet below is
+from the example job [2] above. It shows first each model chemistry needed
+to compute the aggregate model chemistry requested through cbs(). Then,
+since, for example, an <code class="docutils literal notranslate"><span class="pre">energy('ccsd(t)')</span></code> yields CCSD(T), CCSD, MP2,
+and SCF energy values, the wrapper condenses this task list into the second
+list of minimum number of calculations which will actually be run.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Naive</span> <span class="n">listing</span> <span class="n">of</span> <span class="n">computations</span> <span class="n">required</span><span class="o">.</span>
+        <span class="n">scf</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvqz</span>              <span class="k">for</span>  <span class="n">SCF</span> <span class="n">TOTAL</span> <span class="n">ENERGY</span>
+        <span class="n">mp2</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvtz</span>              <span class="k">for</span>  <span class="n">MP2</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+        <span class="n">mp2</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvqz</span>              <span class="k">for</span>  <span class="n">MP2</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+    <span class="n">ccsd</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>              <span class="k">for</span>  <span class="n">CCSD</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+    <span class="n">ccsd</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvtz</span>              <span class="k">for</span>  <span class="n">CCSD</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+        <span class="n">mp2</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>              <span class="k">for</span>  <span class="n">MP2</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+        <span class="n">mp2</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvtz</span>              <span class="k">for</span>  <span class="n">MP2</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+
+<span class="n">Enlightened</span> <span class="n">listing</span> <span class="n">of</span> <span class="n">computations</span> <span class="n">required</span><span class="o">.</span>
+        <span class="n">mp2</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvqz</span>              <span class="k">for</span>  <span class="n">MP2</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+    <span class="n">ccsd</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>              <span class="k">for</span>  <span class="n">CCSD</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+    <span class="n">ccsd</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvtz</span>              <span class="k">for</span>  <span class="n">CCSD</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+</pre></div>
+</div>
+<p>At the end of a cbs() job is printed a summary section like the one below. First,
+in the components section, are listed the results for each model chemistry available, whether
+required for the cbs job (*) or not. Next, in the stages section, are listed the results for
+each extrapolation. The energies of this section must be dotted with the weightings in column Wt
+to get the total cbs energy. Finally, in the CBS section, are listed the results for each stage
+of the cbs procedure. The stage energies of this section sum outright to the total cbs energy.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">==&gt;</span> <span class="n">Components</span> <span class="o">&lt;==</span>
+
+<span class="o">----------------------------------------------------------------------------------</span>
+               <span class="n">Method</span> <span class="o">/</span> <span class="n">Basis</span>            <span class="n">Rqd</span>   <span class="n">Energy</span> <span class="p">[</span><span class="n">H</span><span class="p">]</span>   <span class="n">Variable</span>
+<span class="o">----------------------------------------------------------------------------------</span>
+                  <span class="n">scf</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvqz</span>        <span class="o">*</span>  <span class="o">-</span><span class="mf">1.11916375</span>   <span class="n">SCF</span> <span class="n">TOTAL</span> <span class="n">ENERGY</span>
+                  <span class="n">mp2</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvqz</span>        <span class="o">*</span>  <span class="o">-</span><span class="mf">0.03407997</span>   <span class="n">MP2</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+                  <span class="n">scf</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>           <span class="o">-</span><span class="mf">1.11662884</span>   <span class="n">SCF</span> <span class="n">TOTAL</span> <span class="n">ENERGY</span>
+                  <span class="n">mp2</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>        <span class="o">*</span>  <span class="o">-</span><span class="mf">0.02881480</span>   <span class="n">MP2</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+              <span class="n">ccsd</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>        <span class="o">*</span>  <span class="o">-</span><span class="mf">0.03893812</span>   <span class="n">CCSD</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+                 <span class="n">ccsd</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>           <span class="o">-</span><span class="mf">0.03893812</span>   <span class="n">CCSD</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+                  <span class="n">scf</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvtz</span>           <span class="o">-</span><span class="mf">1.11881134</span>   <span class="n">SCF</span> <span class="n">TOTAL</span> <span class="n">ENERGY</span>
+                  <span class="n">mp2</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvtz</span>        <span class="o">*</span>  <span class="o">-</span><span class="mf">0.03288936</span>   <span class="n">MP2</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+              <span class="n">ccsd</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvtz</span>        <span class="o">*</span>  <span class="o">-</span><span class="mf">0.04201004</span>   <span class="n">CCSD</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+                 <span class="n">ccsd</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvtz</span>           <span class="o">-</span><span class="mf">0.04201004</span>   <span class="n">CCSD</span> <span class="n">CORRELATION</span> <span class="n">ENERGY</span>
+<span class="o">----------------------------------------------------------------------------------</span>
+
+<span class="o">==&gt;</span> <span class="n">Stages</span> <span class="o">&lt;==</span>
+
+<span class="o">----------------------------------------------------------------------------------</span>
+ <span class="n">Stage</span>         <span class="n">Method</span> <span class="o">/</span> <span class="n">Basis</span>             <span class="n">Wt</span>   <span class="n">Energy</span> <span class="p">[</span><span class="n">H</span><span class="p">]</span>   <span class="n">Scheme</span>
+<span class="o">----------------------------------------------------------------------------------</span>
+   <span class="n">scf</span>            <span class="n">scf</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvqz</span>        <span class="mi">1</span>  <span class="o">-</span><span class="mf">1.11916375</span>   <span class="n">highest_1</span>
+  <span class="n">corl</span>            <span class="n">mp2</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pv</span><span class="p">[</span><span class="n">tq</span><span class="p">]</span><span class="n">z</span>     <span class="mi">1</span>  <span class="o">-</span><span class="mf">0.03494879</span>   <span class="n">corl_xtpl_helgaker_2</span>
+ <span class="n">delta</span>        <span class="n">ccsd</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pv</span><span class="p">[</span><span class="n">dt</span><span class="p">]</span><span class="n">z</span>     <span class="mi">1</span>  <span class="o">-</span><span class="mf">0.04330347</span>   <span class="n">corl_xtpl_helgaker_2</span>
+ <span class="n">delta</span>            <span class="n">mp2</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pv</span><span class="p">[</span><span class="n">dt</span><span class="p">]</span><span class="n">z</span>    <span class="o">-</span><span class="mi">1</span>  <span class="o">-</span><span class="mf">0.03460497</span>   <span class="n">corl_xtpl_helgaker_2</span>
+<span class="o">----------------------------------------------------------------------------------</span>
+
+<span class="o">==&gt;</span> <span class="n">CBS</span> <span class="o">&lt;==</span>
+
+<span class="o">----------------------------------------------------------------------------------</span>
+ <span class="n">Stage</span>         <span class="n">Method</span> <span class="o">/</span> <span class="n">Basis</span>                  <span class="n">Energy</span> <span class="p">[</span><span class="n">H</span><span class="p">]</span>   <span class="n">Scheme</span>
+<span class="o">----------------------------------------------------------------------------------</span>
+   <span class="n">scf</span>            <span class="n">scf</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvqz</span>           <span class="o">-</span><span class="mf">1.11916375</span>   <span class="n">highest_1</span>
+  <span class="n">corl</span>            <span class="n">mp2</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pv</span><span class="p">[</span><span class="n">tq</span><span class="p">]</span><span class="n">z</span>        <span class="o">-</span><span class="mf">0.03494879</span>   <span class="n">corl_xtpl_helgaker_2</span>
+ <span class="n">delta</span>  <span class="n">ccsd</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">-</span> <span class="n">mp2</span> <span class="o">/</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pv</span><span class="p">[</span><span class="n">dt</span><span class="p">]</span><span class="n">z</span>        <span class="o">-</span><span class="mf">0.00869851</span>   <span class="n">corl_xtpl_helgaker_2</span>
+ <span class="n">total</span>            <span class="n">CBS</span>                         <span class="o">-</span><span class="mf">1.16281105</span>
+<span class="o">----------------------------------------------------------------------------------</span>
+</pre></div>
+</div>
+</section>
+<section id="extrapolation-schemes">
+<span id="sec-cbs-xtpl"></span><span id="index-2"></span><h2>Extrapolation Schemes<a class="headerlink" href="#extrapolation-schemes" title="Link to this heading">¶</a></h2>
+<p>Basis set extrapolations are encoded into individual functions like the built-in ones below:</p>
+<p>Additional extrapolation schemes are easy to define by the
+user. Follow models in <a href="#id15"><span class="problematic" id="id16">:source:`psi4/driver/driver_cbs_helper.py`</span></a>
+and <a href="#id17"><span class="problematic" id="id18">:srcsample:`pywrap-cbs1`</span></a> and use the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">psi4.driver.driver_cbs_helper.register_xtpl_function()</span></code> to make
+user-defined functions known to <a href="#id27"><span class="problematic" id="id28">|PSIfour|</span></a>.</p>
+</section>
+<section id="aliases">
+<h2>Aliases<a class="headerlink" href="#aliases" title="Link to this heading">¶</a></h2>
+<p>When a particular composite method or its functional form is going to be
+reused often, it is convenient to define an alias to it. A convenient
+place for such Python code to reside is in <a href="#id19"><span class="problematic" id="id20">:source:`psi4/driver/aliases.py`</span></a>
+Some existing examples are below.</p>
+<p>Additional composite aliases are easy to define by the
+user. Follow models in <a href="#id21"><span class="problematic" id="id22">:source:`psi4/driver/aliases.py`</span></a>
+and <a href="#id23"><span class="problematic" id="id24">:srcsample:`cbs-xtpl-nbody`</span></a> and use the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">psi4.driver.driver_cbs_helper.register_composite_function()</span></code>
+to make user-defined functions known to <a href="#id29"><span class="problematic" id="id30">|PSIfour|</span></a>.</p>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/cbs.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

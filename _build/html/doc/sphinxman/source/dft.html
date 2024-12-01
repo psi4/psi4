@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>DFT: Density Functional Theory &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="dft-density-functional-theory">
+<span id="sec-dft"></span><span id="index-0"></span><h1>DFT: Density Functional Theory<a class="headerlink" href="#dft-density-functional-theory" title="Link to this heading">¶</a></h1>
+<p><em>Module:</em> <span class="xref std std-ref">Keywords</span>, <span class="xref std std-ref">PSI Variables</span>, <a href="#id1"><span class="problematic" id="id2">:source:`LIBFUNCTIONAL &lt;psi4/src/psi4/libfunctional&gt;`</span></a>, <a href="#id3"><span class="problematic" id="id4">:source:`LIBFOCK &lt;psi4/src/psi4/libfock&gt;`</span></a>, <a href="#id5"><span class="problematic" id="id6">:source:`LIBSCF_SOLVER &lt;psi4/src/psi4/libscf_solver&gt;`</span></a></p>
+<p>Both density functional theory and Hartree--Fock theory are controlled
+through the SCF module, and the <a class="reference internal" href="scf.html#sec-scfintro"><span class="std std-ref">SCF Introduction</span></a>
+section is also relevant here.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Starting version 1.5, the <a href="#id14"><span class="problematic" id="id15">|scf__wcombine|</span></a> option is temporarily disabled.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Starting version 1.4 (tag v1.4a1 in the development repository), <a href="#id16"><span class="problematic" id="id17">|PSIfour|</span></a> uses an updated and extended (to 104 elements) set
+of Bragg-Slater radii. This leads to minimal deviations in absolute energies (1E-06 au) and
+relative energies (below 0.002 kcal/mol for S22), depending also on the applied grid, compared
+to older versions. We advise not to mix absolute energies absolute energies from before and after this change for the
+calculation of relative energies.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>After May 2017 (anytime after the v1.1 release), <a href="#id18"><span class="problematic" id="id19">|PSIfour|</span></a>
+switched from hand- (+Matlab) coded functionals to Libxc. Thus
+many DFT results will be slightly different. Functionals more than
+slightly different are B97-D, wB97X (note, <em>not</em> wB97X-D), SOGGA,
+DFDL, and M05.</p>
+</div>
+<section id="theory">
+<h2>Theory<a class="headerlink" href="#theory" title="Link to this heading">¶</a></h2>
+<p>Generalized Kohn--Sham Density Functional Theory (KS-DFT) <a class="reference internal" href="bibliography.html#kohn-1965-a1133" id="id7"><span>[Kohn:1965:A1133]</span></a> <a class="reference internal" href="bibliography.html#parr-1989" id="id8"><span>[Parr:1989]</span></a> is one of the primary
+workhorses of modern computational chemistry due to its phenomenal accuracy/cost
+ratio.</p>
+<p>Pure Kohn--Sham DFT is built on the Hohenberg--Kohn theorems <a class="reference internal" href="bibliography.html#hohenberg-1964-136" id="id9"><span>[Hohenberg:1964:136]</span></a> which states: A) the energy is a universal
+functional of the one-particle electronic density and B) there exists a set of
+noninteracting quasiparticles with the same density as the true set of
+electrons, with the quasiparticle states determined as eigenvectors of an
+effective one-body potential encapsulating the true <span class="math notranslate nohighlight">\(N\)</span>-body quantum
+effects. The former idea allows the electronic density to be dealt with instead
+of the much more complicated wavefunction, while the latter allows for the
+treatment of the troublesome kinetic energy term via the implicit one-body
+Kohn--Sham orbitals.  KS-DFT borrows much of the machinery of Hartree--Fock, as is
+evident by looking at the energy expression,</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}E_{\mathrm{KS}}
+&amp;= \sum_{i} \langle i | \hat h | i \rangle
++ \frac 1 2 \sum_{i,j} [ii|jj] + E_{\mathrm{xc}} [\rho_\alpha, \rho_\beta] \\
+&amp;= D_{\mu\nu}^{\mathrm{T}}\left(T_{\mu\nu} +
+V_{\mu\nu}\right) + \frac{1}{2} D_{\mu\nu}^{\mathrm{T}}
+D_{\lambda\sigma}^{\mathrm{T}} (\mu\nu|\lambda\sigma) + E_{\mathrm{xc}} [\rho_\alpha, \rho_\beta]\end{split}\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(T\)</span> is the noninteracting quasiparticle kinetic energy operator,
+<span class="math notranslate nohighlight">\(V\)</span> is the nucleus-electron attraction potential, <span class="math notranslate nohighlight">\(D^{\mathrm{T}}\)</span>
+is the total electron density matrix, and <span class="math notranslate nohighlight">\(E_{\mathrm{xc}} [\rho_\alpha,
+\rho_\beta]\)</span> is the (potentially nonlocal) exchange, correlation, and residual
+kinetic energy functional. The residual kinetic energy term is usually quite
+small, and is often ignored, hence <span class="math notranslate nohighlight">\(E_{\mathrm{xc}}\)</span> is often referred to
+as simply the exchange-correlation functional (exchange <em>and</em> correlation, not
+just exchange-type correlation).</p>
+<p>In practice, the first few generations of KS-DFT functionals were chosen to be
+local, meaning that the form of the exchange correlation energy is an integral
+over all of space of a function depending only on local information in the
+density, such as the density value or derivatives. The simplest variants are
+Local Spin-Density Approximations (LSDA), which depend only on the spin density
+<span class="math notranslate nohighlight">\(\rho_\alpha\)</span> or <span class="math notranslate nohighlight">\(\rho_\beta\)</span>,</p>
+<div class="math notranslate nohighlight">
+\[\rho_\sigma (\vec r_1) = D_{\mu\nu}^{\sigma} \phi_{\mu} (\vec r_1)
+\phi_\nu (\vec r_1)\]</div>
+<p>The most popular variants are Generalized Gradient Approximation (GGA)
+functionals which use the norm of the density gradient
+<span class="math notranslate nohighlight">\(\gamma_{\alpha\alpha}\)</span>, <span class="math notranslate nohighlight">\(\gamma_{\alpha\beta}\)</span> or
+<span class="math notranslate nohighlight">\(\gamma_{\beta\beta}\)</span>  to build an inhomogeneity
+parameter.</p>
+<div class="math notranslate nohighlight">
+\[\gamma_{\alpha\alpha} (\vec r_1) = \nabla \rho_{\alpha} (\vec r_1) \cdot \nabla
+\rho_{\alpha} (\vec r_1)\]</div>
+<div class="math notranslate nohighlight">
+\[\gamma_{\alpha\beta} (\vec r_1) = \nabla \rho_{\alpha} (\vec r_1) \cdot \nabla
+\rho_{\beta} (\vec r_1)\]</div>
+<p>where,</p>
+<div class="math notranslate nohighlight">
+\[\nabla \rho_{\sigma} (\vec r_1) = 2 D_{\mu\nu}^{\sigma} \phi_{\mu}
+(\vec r_1) \nabla \phi_{\nu} (\vec r_1)\]</div>
+<p>GGA functionals are essentially the same cost as LSDA functionals and are often
+considerably more accurate.</p>
+<p>Another local variant  which has gained some popularity (though perhaps not as
+much as GGA functionals) is the meta approximation, in which information about
+the second derivative of the density is incorporated. The most canonical variant
+of these functionals rely on the spin kinetic energy density <span class="math notranslate nohighlight">\(\tau_\alpha\)</span>
+and <span class="math notranslate nohighlight">\(\tau_\beta\)</span>,</p>
+<div class="math notranslate nohighlight">
+\[\tau_\sigma(\vec r_1)  = \sum_{i} \left | \nabla \psi_i^{\sigma} (\vec r_1) \right | ^2
+= \sum_{i} \left | C_{\mu i}^{\sigma} \nabla \phi_{\mu} (\vec r_1) \right |
+^2 = D_{\mu\nu}^{\sigma} \nabla \phi_{\mu} (\vec r_1) \cdot \nabla
+\phi_{\nu} (\vec r_1)\]</div>
+<p>A generic local meta-GGA functional may then be written as,</p>
+<div class="math notranslate nohighlight">
+\[E_{\mathrm{xc}}^{\mathrm{DFA}} = \int_{\mathbb{R}^3} f_{\mathrm{xc}}
+\left(
+\rho_{\alpha} (\vec r_1),
+\rho_{\beta} (\vec r_1),
+\gamma_{\alpha\alpha} (\vec r_1),
+\gamma_{\alpha\beta} (\vec r_1),
+\gamma_{\beta\beta} (\vec r_1),
+\tau_{\alpha} (\vec r_1),
+\tau_{\beta} (\vec r_1)
+\right) \ \mathrm{d} ^3 r_1\]</div>
+<p>The potential corresponding to this energy functional is,</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}V_{\mu\nu}^{\mathrm{xc},\alpha} =\\\int_{\mathbb{R}^3}
+\left(\frac{\partial f}{\rho_\alpha}\right)
+\phi_{\mu}
+\phi_{\nu}
+\ \mathrm{d} ^3 r_1\end{aligned}\end{align} \]</div>
+<div class="math notranslate nohighlight">
+\[+
+\int_{\mathbb{R}^3}
+\left(2 \frac{\partial f}{\gamma_{\alpha\alpha}} \nabla \rho_\alpha + \frac{\partial
+f}{\gamma_{\alpha\beta}}\nabla \rho_\beta \right)
+\nabla\left(\phi_{\mu}
+\phi_{\nu}\right)
+\ \mathrm{d} ^3 r_1\]</div>
+<div class="math notranslate nohighlight">
+\[+
+\int_{\mathbb{R}^3}
+\left(\frac{\partial f}{\tau_\alpha}\right)
+\nabla \phi_{\mu}
+\nabla \phi_{\nu}
+\ \mathrm{d} ^3 r_1\]</div>
+<p>This potential is used to build the Kohn--Sham matrix,</p>
+<div class="math notranslate nohighlight">
+\[F_{\mu\mu}^{\alpha} = H_{\mu\nu} + J_{\mu\nu} +
+V_{\mu\nu}^{\mathrm{xc},\alpha}\]</div>
+<p>which is diagonalized to form the Kohn--Sham orbitals in the same manner as in
+Hartree--Fock.</p>
+<p>In practice the local functional kernel <span class="math notranslate nohighlight">\(f_{\mathrm{xc}}\)</span> and its required
+partial derivatives are exceedingly complex and are not analytically
+integrable. In this case, atom-centered numerical quadratures are used to
+evaluate the Kohn--Sham potentials and energies to a high degree of accuracy. The
+evaluation of these numerical integrals can be made to be linear scaling with a
+reasonable amount of cleverness (mostly related to the fact that the basis
+functions decay exponentially), meaning that the Coulomb and diagonalization
+steps become rate limiting. This enormous potential speed gain over Hartree--Fock
+with potentially exact treatment of electron correlation for &quot;free&quot; was one of
+the primary motivations for KS-DFT's adoption by chemists in the late 1980s and
+early 1990s.</p>
+<p>Unfortunately, local KS-DFT exhibits several spectacular failures, most of which
+stem from the exponential decay of the local Kohn--Sham potential, which cannot
+encapsulate long-range information in the exchange and correlation holes. In the
+exchange hole, this manifests as the problem of Many-Electron Self-Interaction
+Error (MSIE), which presents as spurious low-lying charge transfer states in
+excited-state calculations, eventual metallic breakdown in extended insulators,
+poor thermochemistry, and complete lack of a derivative discontinuity in the
+chemical potential as integer particle numbers are crossed. On the correlation
+side, this is primarily observed in the inability of KS-DFT to treat dispersion
+interactions.</p>
+<p>Generalized Kohn--Sham (GKS) functionals incorporate long-range information into
+the functional through orbital-dependent contributions, and are designed to
+combat the failures of local KS-DFT, particularly the MSIE on the exchange side.
+Note that these functionals are often referred to as &quot;implicit&quot; density
+functionals, as the orbitals are themselves functionals of the Kohn--Sham
+potential.</p>
+<p>The simplest form of an exchange-side GKS is the global hybrid ansatz, in which
+some fraction of the exact Hartree--Fock exchange of the noninteracting
+quasiparticles is added to the functional, with the local part of the exchange
+functional decreased by the corresponding amount. Note that the term
+&quot;exact-exchange&quot; refers to the Hartree--Fock being the exact exchange energy of
+the noninteracting quasiparticles, not the true electrons. Therefore, adding
+100% exact exchange is not physically reasonable, and will often lead to
+extremely poor results. The fraction of exact-exchange, denoted <span class="math notranslate nohighlight">\(\alpha\)</span>,
+is often determined by adiabatic or heuristic arguments and is typically around
+25%. The addition of exact exchange borrows another piece from an existing
+Hartree--Fock code, with the caveat that Hartree--Fock exchange is often much more
+costly to obtain than the Coulomb matrix. The global hybrid ansatz has become
+exceedingly popular, with functionals such as the ubiquitous B3LYP often
+producing absurdly accurate results.</p>
+<p>A more advanced GKS functional technology which has developed enormous
+popularity in recent years is the Long-Range Corrected (LRC) ansatz. LRC
+recognizes that the local DFA is potentially exact at short range in the
+exchange hole, and that the hybrid-exchange energy of the noninteracting
+quasiparticles is also exact for true electrons at long range in the exchange
+hole. Therefore LRC switches from DFA at short range to hybrid exchange at long
+range, typically using the function <span class="math notranslate nohighlight">\(\mathrm{erf}(\omega r_{12})\)</span> as a
+partition function.</p>
+<p>Tying all these pieces together, a full LRC-hybrid GKS functional has the
+generic form,</p>
+<div class="math notranslate nohighlight">
+\[E_{\mathrm{xc}} = (1-\alpha) \int_{\mathrm{R}^3}
+f_{\mathrm{xc}}
+\left(
+\rho_{\alpha} (\vec r_1),
+\rho_{\beta} (\vec r_1),
+\gamma_{\alpha\alpha} (\vec r_1),
+\gamma_{\alpha\beta} (\vec r_1),
+\gamma_{\beta\beta} (\vec r_1),
+\tau_{\alpha} (\vec r_1),
+\tau_{\beta} (\vec r_1)
+; \omega \right) \ \mathrm{d} ^3 r_1\]</div>
+<div class="math notranslate nohighlight">
+\[-\frac{1}{2} \sum_{i,j}
+\delta_{\sigma_{i} \sigma_{j}} \alpha \iint_{\mathrm{R}^6} \phi_{i}^1 \phi_{j}^1
+\frac{1}{r_{12}} \phi_{i}^2 \phi_{j}^2 \ \mathrm{d}^3 r_1 \ \mathrm{d}^3 r_2\]</div>
+<div class="math notranslate nohighlight">
+\[-\frac{1}{2} \sum_{i,j}
+\delta_{\sigma_{i} \sigma_{j}} (1-\alpha)\iint_{\mathrm{R}^6} \phi_{i}^1 \phi_{j}^1
+\frac{\mathrm{erf}(\omega r_{12})}{r_{12}} \phi_{i}^2 \phi_{j}^2 \ \mathrm{d}^3 r_1 \ \mathrm{d}^3 r_2\]</div>
+<p>For LRC functionals, the choice of range-separation parameter <span class="math notranslate nohighlight">\(\omega\)</span> has
+been the subject of considerable activity since the inception of LRC
+functionals. Some authors advocate a static range-separation parameter
+determined by optimization over a test set of chemical systems. However, a more
+physically-motivated and often more accurate approach is the idea of &quot;gap
+fitting&quot; or &quot;optimal tuning&quot; or simply &quot;tuning.&quot; The most popular tuned-LRC
+approach is IP-fitting, in which the <span class="math notranslate nohighlight">\(\omega\)</span> is varied until the
+Koopman's IP (the opposite of the HOMO energy) matches the true IP (the
+difference between <span class="math notranslate nohighlight">\(N-1\)</span>-electron and <span class="math notranslate nohighlight">\(N\)</span>-electron total
+energies), within the LRC functional ansatz. This guarantees the asymptotics of
+the exchange potential,</p>
+<div class="math notranslate nohighlight">
+\[\lim_{r\rightarrow\infty} v_{\mathrm{x}}^{\mathrm{tuned-LRC}} (r) = -
+\frac{1}{r} + I_{\mathrm{IP}} +
+\epsilon_{\mathrm{HOMO}}\]</div>
+<p>Note that LRC functionals with default <span class="math notranslate nohighlight">\(\omega\)</span> only capture the
+<span class="math notranslate nohighlight">\(-1/r\)</span> dependence,</p>
+<div class="math notranslate nohighlight">
+\[\lim_{r\rightarrow\infty} v_{\mathrm{x}}^{\mathrm{LRC}} (r) = -
+\frac{1}{r},\]</div>
+<p>hybrid functionals only capture part of the <span class="math notranslate nohighlight">\(-1/r\)</span> dependence,</p>
+<div class="math notranslate nohighlight">
+\[\lim_{r\rightarrow\infty} v_{\mathrm{x}}^{\mathrm{Hybrid}} (r) = -
+\frac{\alpha}{r},\]</div>
+<p>and local functionals decay exponentially, resulting in completely incorrect
+asymptotics,</p>
+<div class="math notranslate nohighlight">
+\[\lim_{r\rightarrow\infty} v_{\mathrm{x}}^{\mathrm{Local}} (r) = 0\]</div>
+<p>IP-tuned LRC functionals effectively pin the chemical potential at <span class="math notranslate nohighlight">\(N\)</span>
+electrons to the correct value determined by the ionization potential. This
+often cleans up the MSIE problem for a surprisingly large number of high-lying
+occupied orbitals, as determined by fractional particle curves. Other gap
+fitting techniques involving the electron affinity or band gap are sometimes
+also used. IP-fitting is found to be particularly critical for the qualitative
+determination of excited state ordering in many low band-gap systems.</p>
+<p>For dispersion-bound complexes, a very simple additive empirical dispersion
+potential, based on a damped Lennard-Jones potential can often produce
+remarkably accurate results with KS-DFT. This approach was championed by Grimme,
+whose &quot;-D2&quot; and more modern &quot;-D3&quot; approaches are a de facto industry standards.</p>
+</section>
+<section id="minimal-input">
+<h2>Minimal Input<a class="headerlink" href="#minimal-input" title="Link to this heading">¶</a></h2>
+<p>Minimal input for a KS-DFT computation is a molecule block, basis set
+option, and a call to <code class="docutils literal notranslate"><span class="pre">energy('b3lyp')</span></code> (or other valid functional name):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="p">{</span>
+<span class="n">He</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="n">basis</span> <span class="n">sto</span><span class="o">-</span><span class="mi">3</span><span class="n">g</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;b3lyp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will run a B3LYP Restricted Kohn--Sham (RKS) on neutral singlet Helium in
+<span class="math notranslate nohighlight">\(D_{2h}\)</span> spatial symmetry with a minimal <code class="docutils literal notranslate"><span class="pre">STO-3G</span></code> basis, 1.0E-6 energy
+and density convergence criteria, a DF ERI algorithm, symmetric
+orthogonalization, DIIS, and a core Hamiltonian guess (because single atom). For more information on
+any of these options, see the relevant section below, or in the preceding
+<a class="reference internal" href="scf.html#sec-scf"><span class="std std-ref">Hartree--Fock section</span></a>.</p>
+</section>
+<section id="spin-symmetry-treatment">
+<h2>Spin/Symmetry Treatment<a class="headerlink" href="#spin-symmetry-treatment" title="Link to this heading">¶</a></h2>
+<p><a href="#id20"><span class="problematic" id="id21">|PSIfour|</span></a> implements the most popular spin specializations of KS-DFT, including:</p>
+<dl class="simple">
+<dt>Restricted Kohn--Sham (RKS) [Default]</dt><dd><p>Appropriate only for closed-shell singlet systems, but twice as efficient
+as the other flavors, as the alpha and beta densities are constrained to be
+identical.</p>
+</dd>
+<dt>Unrestricted Kohn--Sham (UKS)</dt><dd><p>Appropriate for most open-shell systems and fairly easy to converge.
+The spatial parts of the alpha and beta orbitals are fully independent of each
+other, which allows a considerable amount of flexibility in the wavefunction.
+However, this flexibility comes at the cost of spin symmetry; the resultant
+wavefunction may not be an eigenfunction of the <span class="math notranslate nohighlight">\(\hat S^2\)</span> operator.
+However, spin contamination is usually less of a problem with UKS than with
+UHF, as the spin contamination of the noninteracting quasiparticles (the
+<span class="math notranslate nohighlight">\(S^2\)</span> metric printed in the output) is usually a severe overestimation
+of the spin contamination of the true electrons.</p>
+</dd>
+</dl>
+<p>These are set in the <a href="#id22"><span class="problematic" id="id23">|scf__reference|</span></a> option.</p>
+<p>Note that there are not equivalents to ROHF or CUHF, <em>e.g.</em>, no ROKS or CUKS. This
+is because ROHF is implicitly assumed to be followed by a correlated method
+which can break the positive definiteness of the spin polarization. KS-DFT with
+the true functional is expected to be the final step, thus restricting the
+solution to positive definite spin polarization is  not physical. See the
+section in <a class="reference internal" href="bibliography.html#szabo-1982" id="id10"><span>[Szabo:1982]</span></a> on methyl radical for an example.</p>
+</section>
+<section id="functional-selection">
+<h2>Functional Selection<a class="headerlink" href="#functional-selection" title="Link to this heading">¶</a></h2>
+<p><a href="#id24"><span class="problematic" id="id25">|PSIfour|</span></a> features an extensive list of LSDA, GGA, Meta, Hybrid, LRC, and -D
+functionals. These can be specified by a variety of means. Perhaps the simplest
+is to use the functional name as the energy procedure call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy</span><span class="p">(</span><span class="s1">&#39;b3lyp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that if you are running an unrestricted computation, you should set the
+<a href="#id26"><span class="problematic" id="id27">|scf__reference|</span></a> option before the call to <code class="docutils literal notranslate"><span class="pre">energy</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">reference</span> <span class="n">uks</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;b3lyp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The functional may also be manually specified by calling <code class="docutils literal notranslate"><span class="pre">energy</span></code> (or any driver function)
+with a <code class="docutils literal notranslate"><span class="pre">dft_functional</span></code> argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy</span><span class="p">(</span><span class="s1">&#39;scf&#39;</span><span class="p">,</span> <span class="n">dft_functional</span> <span class="o">=</span> <span class="s1">&#39;b3lyp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Another alternative is providing a specially crafted <cite>dict</cite>-ionary to the <code class="docutils literal notranslate"><span class="pre">dft_functional</span></code>
+argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">custom_functional</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;my_unique_name&quot;</span><span class="p">,</span> <span class="o">...</span> <span class="p">}</span>
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;scf&#39;</span><span class="p">,</span> <span class="n">dft_functional</span> <span class="o">=</span> <span class="n">custom_functional</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For further details about this so called <cite>dict_func</cite> syntax, see
+<a class="reference internal" href="#sec-dftdictbuilder"><span class="std std-ref">Advanced Functional Use and Manipulation</span></a>.</p>
+<p>For hybrid functionals, the fraction of exact exchange is controlled by the
+<a href="#id28"><span class="problematic" id="id29">|scf__dft_alpha|</span></a> option. For the LRC functionals, the fraction of long-range
+Hartree--Fock and short-range DFA is controlled by the <a href="#id30"><span class="problematic" id="id31">|scf__dft_omega|</span></a> option.
+Changing these will override the default behavior of the requested functional.</p>
+<p>A brief summary of some of the more notable functionals in <a href="#id32"><span class="problematic" id="id33">|PSIfour|</span></a>, and links
+to the complete listing of all functionals of each class are presented below:</p>
+<dl class="simple">
+<dt><a class="reference internal" href="dft_byfunctional.html#table-dft-all"><span class="std std-ref">All Functionals</span></a></dt><dd><p>All functionals, including LSDA-only functionals. Note that here and
+throughout, functionals which end in <cite>_X</cite> or <cite>_C</cite> are exchange or
+correlation only, and should not be used for most production-level
+computations. Examples include <cite>PBE_X</cite> and <cite>PBE_C</cite>, which contain the
+separate definitions of the PBE exchange and correlation holes. In most cases,
+the united <cite>PBE</cite> functional should be used instead.</p>
+</dd>
+<dt><a class="reference internal" href="dft_byfunctional.html#table-dft-gga"><span class="std std-ref">GGA Functionals</span></a></dt><dd><p>Many common GGA functionals. BLYP and PBE are probably among the best pure
+GGAs. Please do not use FT97 at the moment, as there
+are problems with the stability of the correlation hole. Don't worry, it
+will definitely NaN on you if you try to use it.</p>
+</dd>
+<dt><a class="reference internal" href="dft_byfunctional.html#table-dft-meta"><span class="std std-ref">Meta Functionals</span></a></dt><dd><p>We have recently implemented the M05 classes of meta functionals in
+<a href="#id34"><span class="problematic" id="id35">|PSIfour|</span></a>. Note that these functionals are not appropriate for modeling
+dispersion interactions, as they lack dispersion physics. A -D functional (Such
+as the much cheaper B97-D) should be used instead.</p>
+</dd>
+<dt><a class="reference internal" href="dft_byfunctional.html#table-dft-hybrid"><span class="std std-ref">Hybrid Functionals</span></a></dt><dd><p>Many common hybrid functionals, including the ubiquitous B3LYP. PBE0 and the
+B97 series are also quite good for many thermochemical problems.</p>
+</dd>
+<dt><a class="reference internal" href="dft_byfunctional.html#table-dft-lrc"><span class="std std-ref">LRC Functionals</span></a></dt><dd><p>LRC functionals are a particular area of interest of the <a href="#id36"><span class="problematic" id="id37">|PSIfour|</span></a> DFT team.
+LRC functionals are all denoted by a lower-case &quot;w&quot; in front of the standard DFA
+functional, such as wPBE.  We offer a stable implementation of the Gill
+association function for wS and Head-Gordon's wB97/wB97X functionals.
+Additionally, we are pleased to have recently completed a heavily conditioned
+implementation of the HJS exchange-hole model, which provides an analytical form
+for the short-range enhancement factor for wPBE, wPBEsol, and wB88. From a
+physics perspective, this implementation of wPBE is extremely useful for
+theoretical investigations, as it is parameter free, and properly integrated
+against the partition function in the exchange hole. We would like to thank Dr.
+Scuseria for providing helpful advice and a reference implementations of the
+older HSE exchange-hole model which led to the successful implementation of the
+HJS model.</p>
+</dd>
+<dt><a class="reference internal" href="dft_byfunctional.html#table-dft-dhybrid"><span class="std std-ref">Double-Hybrid Functionals</span></a></dt><dd><p>Double hybrids are percolating into <a href="#id38"><span class="problematic" id="id39">|PSIfour|</span></a>. Note that these are
+only available with density-fitted, not conventional, MP2 algorithms.</p>
+</dd>
+<dt><a class="reference internal" href="dft_byfunctional.html#table-dft-disp"><span class="std std-ref">-D Functionals</span></a></dt><dd><p>We have several -D2 functionals implemented. -D3 functionls are available
+with the installation of Grimme's <a class="reference internal" href="dftd3.html#sec-dftd3"><span class="std std-ref">DFTD3 program</span></a>.
+For now, the pure-GGA B97-D
+functional of Grimme is remarkably accurate, and the hybrid B3LYP-D
+functional is also quite reliable.</p>
+</dd>
+</dl>
+<p>Note: we have made a sincere effort to rigorously test all functionals
+implemented in <a href="#id40"><span class="problematic" id="id41">|PSIfour|</span></a> for correctness. If you find an error in a DFT
+functional or have a request for a new functional, please let us know on our
+forum or GitHub page.</p>
+</section>
+<section id="grid-selection">
+<h2>Grid Selection<a class="headerlink" href="#grid-selection" title="Link to this heading">¶</a></h2>
+<p><a href="#id42"><span class="problematic" id="id43">|PSIfour|</span></a> uses the standard Lebedev-Laikov spherical quadratures in concert with a
+number of radial quadratures and atomic partitioning schemes.
+The default grid in <a href="#id44"><span class="problematic" id="id45">|PSIfour|</span></a> is a Lebedev-Treutler (75,302) grid with a Treutler
+partition of the atomic weights.</p>
+<p>Spherical grids are all of the extremely efficient Lebedev-Laikov type.
+Spherical grid resolution is controlled by the <a href="#id46"><span class="problematic" id="id47">|scf__dft_spherical_points|</span></a>
+option, which may take one of the following values:</p>
+<blockquote id="table-lebedevorder">
+<div><table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p><a href="#id48"><span class="problematic" id="id49">|scf__dft_spherical_points|</span></a></p></th>
+<th class="head"><p>Order</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-odd"><td><p>14</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-even"><td><p>26</p></td>
+<td><p>7</p></td>
+</tr>
+<tr class="row-odd"><td><p>38</p></td>
+<td><p>9</p></td>
+</tr>
+<tr class="row-even"><td><p>50</p></td>
+<td><p>11</p></td>
+</tr>
+<tr class="row-odd"><td><p>74</p></td>
+<td><p>13</p></td>
+</tr>
+<tr class="row-even"><td><p>86</p></td>
+<td><p>15</p></td>
+</tr>
+<tr class="row-odd"><td><p>110</p></td>
+<td><p>17</p></td>
+</tr>
+<tr class="row-even"><td><p>146</p></td>
+<td><p>19</p></td>
+</tr>
+<tr class="row-odd"><td><p>170</p></td>
+<td><p>21</p></td>
+</tr>
+<tr class="row-even"><td><p>194</p></td>
+<td><p>23</p></td>
+</tr>
+<tr class="row-odd"><td><p>230</p></td>
+<td><p>25</p></td>
+</tr>
+<tr class="row-even"><td><p>266</p></td>
+<td><p>27</p></td>
+</tr>
+<tr class="row-odd"><td><p>302</p></td>
+<td><p>29</p></td>
+</tr>
+<tr class="row-even"><td><p>350</p></td>
+<td><p>31</p></td>
+</tr>
+<tr class="row-odd"><td><p>434</p></td>
+<td><p>35</p></td>
+</tr>
+<tr class="row-even"><td><p>590</p></td>
+<td><p>41</p></td>
+</tr>
+<tr class="row-odd"><td><p>770</p></td>
+<td><p>47</p></td>
+</tr>
+<tr class="row-even"><td><p>974</p></td>
+<td><p>53</p></td>
+</tr>
+<tr class="row-odd"><td><p>1202</p></td>
+<td><p>59</p></td>
+</tr>
+<tr class="row-even"><td><p>1454</p></td>
+<td><p>65</p></td>
+</tr>
+<tr class="row-odd"><td><p>1730</p></td>
+<td><p>71</p></td>
+</tr>
+<tr class="row-even"><td><p>2030</p></td>
+<td><p>77</p></td>
+</tr>
+<tr class="row-odd"><td><p>2354</p></td>
+<td><p>83</p></td>
+</tr>
+<tr class="row-even"><td><p>2702</p></td>
+<td><p>89</p></td>
+</tr>
+<tr class="row-odd"><td><p>3074</p></td>
+<td><p>95</p></td>
+</tr>
+<tr class="row-even"><td><p>3470</p></td>
+<td><p>101</p></td>
+</tr>
+<tr class="row-odd"><td><p>3890</p></td>
+<td><p>107</p></td>
+</tr>
+<tr class="row-even"><td><p>4334</p></td>
+<td><p>113</p></td>
+</tr>
+<tr class="row-odd"><td><p>4802</p></td>
+<td><p>119</p></td>
+</tr>
+<tr class="row-even"><td><p>5294</p></td>
+<td><p>125</p></td>
+</tr>
+<tr class="row-odd"><td><p>5810</p></td>
+<td><p>131</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The spherical grids are rotated according to a common set of rules developed
+during the implementation of SG1. At the moment, the rules for tetrahedral,
+octohedral, and icosohedral systems are not complete, so there may be some
+ambiguity in the grid orientation for these systems.</p>
+<p>Radial grid types are controlled by the <a href="#id50"><span class="problematic" id="id51">|scf__dft_radial_scheme|</span></a> option, which
+at the moment may be either <code class="docutils literal notranslate"><span class="pre">TREUTLER</span></code> or <code class="docutils literal notranslate"><span class="pre">BECKE</span></code>, while the number of radial
+points are controlled by the <a href="#id52"><span class="problematic" id="id53">|scf__dft_radial_points|</span></a> option, which is any positive
+integer (typically 50-100). The radial grids are &quot;centered&quot; on the Bragg-Slater
+radius of each atom, as described in Becke's 1988 paper. If inaccurate
+integration is suspected in systems with anions or very diffuse basis functions,
+the <a href="#id54"><span class="problematic" id="id55">|scf__dft_bs_radius_alpha|</span></a> option may be increased from 1.0 to a larger value to force the radial grid to span a larger extent in space.</p>
+<p>The atomic weighting scheme is controlled by the <a href="#id56"><span class="problematic" id="id57">|scf__dft_nuclear_scheme|</span></a>
+option, which may be one of <code class="docutils literal notranslate"><span class="pre">TREUTLER</span></code>, <code class="docutils literal notranslate"><span class="pre">BECKE</span></code>, <code class="docutils literal notranslate"><span class="pre">STRATMANN</span></code>, <code class="docutils literal notranslate"><span class="pre">NAIVE</span></code>,
+or <code class="docutils literal notranslate"><span class="pre">SBECKE</span></code>. The last is a smoother variant of the BECKE scheme recently introduced
+by Laqua <a class="reference internal" href="bibliography.html#laqua-2018-204111" id="id11"><span>[Laqua:2018:204111]</span></a> that should behave better for weak interactions.</p>
+<p>Pruning of the quadrature grid is controlled by the <a href="#id58"><span class="problematic" id="id59">|scf__dft_pruning_scheme|</span></a>
+option. The options <code class="docutils literal notranslate"><span class="pre">ROBUST</span></code> and <code class="docutils literal notranslate"><span class="pre">TREUTLER</span></code> divide the grid into spherical regions
+based on the Bragg-Slater radius of each atom and apply different orders to them.
+The <code class="docutils literal notranslate"><span class="pre">ROBUST</span></code> scheme is a less aggressive variant of the <code class="docutils literal notranslate"><span class="pre">TREUTLER</span></code> approach and
+suitable for benchmark-level quality (MAD &lt; 0.002 kcal/mol for the S22 with PBE/aug-cc-pVTZ
+for pruned versus unpruned grid). Our implementation of the <code class="docutils literal notranslate"><span class="pre">TREUTLER</span></code> scheme shows an
+error of 0.02 kcal/mol for the same benchmark. Both also reduce the grid order by 1 for H
+and He atoms and avoid any pruning of heavy atoms (Z &gt;= 36) Other schemes mentioned in
+the keyword documentation (e.g. P_SLATER) are experimental and should be considered expert-only.</p>
+<p>Once the molecular quadrature grid is built, the points are partitioned into
+blocks of points which are spatially close to each other. We use an octree
+algorithm for this procedure, which produces a good balance between spatial
+compactness of each block (which helps achieve linear scaling due to the
+exponential decay of the basis functions), and retaining a large number of
+points in each block (which helps keep the FLOP rate up by allowing for a
+reasonably large amount of BLAS3/BLAS2 work to form the densities and potentials
+in each block). For each block, a united set of significant basis functions is
+determined by the cutoff radius of each shell of basis functions. The size of
+this cutoff radius (and thereby the accuracy of the density/potential
+evaluation) can be varied by setting the <a href="#id60"><span class="problematic" id="id61">|scf__dft_basis_tolerance|</span></a>, which
+defaults to 1E-12. We are still exploring optimizations of the octree algorithm
+and the basis cutoffs, but it is likely that significant speed gains may be
+realized by relaxing the basis cutoff tolerance, with negligible decrease in
+accuracy.</p>
+<p>Small density values can introduce numerical instabilities with some functionals that
+can result in trailing SCF convergence issues or even numerical failures (NaNs).
+If the default settings of the LibXC library are insufficient, a custom value can be
+request by setting <a href="#id62"><span class="problematic" id="id63">|scf__dft_density_tolerance|</span></a>. For notorious cases a value of 1E-10
+is sensible.</p>
+<p>An example of a fully specified grid is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="p">{</span>
+<span class="n">H</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">0.7</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+<span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+<span class="n">scf_type</span> <span class="n">df</span>
+<span class="n">dft_spherical_points</span> <span class="mi">590</span>      <span class="c1"># Often needed</span>
+<span class="n">dft_radial_points</span> <span class="mi">99</span>          <span class="c1"># Often needed</span>
+<span class="n">dft_radial_scheme</span> <span class="n">treutler</span>    <span class="c1"># Rarely needed</span>
+<span class="n">dft_nuclear_scheme</span> <span class="n">treutler</span>   <span class="c1"># Rarely needed</span>
+<span class="n">dft_density_tolerance</span> <span class="mf">1.0E-10</span> <span class="c1"># Rarely needed</span>
+<span class="n">dft_basis_tolerance</span> <span class="mf">1.0E-11</span>   <span class="c1"># Can speed things up, but benchmark the error</span>
+<span class="n">dft_pruning_scheme</span> <span class="n">robust</span>     <span class="c1"># Generally safe and will speed things up</span>
+<span class="p">}</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;b3lyp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="eri-algorithms">
+<h2>ERI Algorithms<a class="headerlink" href="#eri-algorithms" title="Link to this heading">¶</a></h2>
+<p>The ERI algorithms for the Coulomb and hybrid exchange are identical to
+<a class="reference internal" href="scf.html#sec-scferi"><span class="std std-ref">those for Hartree--Fock</span></a>. However, for LRC functionals, the long-range
+exchange contributions to the Kohn--Sham matrix have only been implemented in the
+DF and DIRECT algorithms. The use of DF is highly recommended for KS-DFT, as the
+errors incurred by the density fitting approximation (in a proper -JKFIT
+auxiliary basis) are orders of magnitude smaller than the accuracy of any known
+functional.</p>
+<p>Key representative methods supported by the SCF module in <a href="#id64"><span class="problematic" id="id65">|Psifour|</span></a> are
+detailed in Table <a class="reference internal" href="preview_capabilities_scf.html#table-scf-stdsuite"><span class="std std-ref">SCF Capabilities</span></a>. Note
+from <a class="reference internal" href="scf.html#table-conv-scf"><span class="std std-ref">SCF algorithm and convergence criteria defaults by calculation type 1</span></a> that these SCF-level methods default to
+density-fitted reference; use <a href="#id66"><span class="problematic" id="id67">|globals__scf_type|</span></a> to select an alternate
+algorithm. SCF-level methods have no alternate implementations.</p>
+</section>
+<section id="ip-fitting">
+<h2>IP Fitting<a class="headerlink" href="#ip-fitting" title="Link to this heading">¶</a></h2>
+<p>In collaboration with the Bredas group, we have developed an automatic procedure
+for IP fitting of LRC functionals, based on a modified Regula-Falsi method. To
+perform IP fitting, one simply calls the <code class="xref py py-func docutils literal notranslate"><span class="pre">ip_fitting()</span></code> Python macro, after
+setting up a standard LRC UKS computation. A representative example is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">memory</span> <span class="mi">512</span> <span class="n">MB</span>
+
+<span class="n">molecule</span> <span class="n">h2o</span> <span class="p">{</span>
+<span class="mi">0</span> <span class="mi">1</span>  <span class="c1"># must be neutral</span>
+<span class="n">O</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span> <span class="mi">2</span> <span class="mf">104.5</span>
+<span class="c1"># IP fitting runs in C1 symmetry</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+<span class="n">reference</span> <span class="n">uks</span>  <span class="c1"># UKS, as we need to do neutral/cation</span>
+<span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+<span class="n">scf_type</span> <span class="n">df</span>
+<span class="p">}</span>
+
+<span class="c1"># Optional arguments are minimum omega, maximum omega, molecule object</span>
+<span class="n">omega</span> <span class="o">=</span> <span class="n">ip_fitting</span><span class="p">(</span><span class="s1">&#39;wb97&#39;</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">molecule</span><span class="o">=</span><span class="n">h2o</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This performs IP fitting on water for wB97/cc-pVDZ with density fitting. A
+number of neutral and cation single-point computations are run at various values
+of <span class="math notranslate nohighlight">\(\omega\)</span>, though the later iterations are much faster due to reuse of
+the DF tensors, and starting from the neutral/cation orbitals of the previous
+<span class="math notranslate nohighlight">\(\omega\)</span>. The procedure can also be assisted by providing a tighter guess
+for the bounds of <span class="math notranslate nohighlight">\(\omega\)</span>. This small test case has a tuned
+<span class="math notranslate nohighlight">\(\omega\)</span> of 1.700, hence the bounds of 0.4 and 2.0. Larger systems,
+particularly conjugated systems, will typically have an optimized <span class="math notranslate nohighlight">\(\omega\)</span>
+between 0.1 and 0.5.</p>
+</section>
+<section id="fractional-particle-curves">
+<h2>Fractional Particle Curves<a class="headerlink" href="#fractional-particle-curves" title="Link to this heading">¶</a></h2>
+<p>The behavior of the electronic energy and HOMO energy across fractional numbers
+of electrons is extremely useful for elucidating the MSIE behavior of various
+functional technologies. <a href="#id68"><span class="problematic" id="id69">|PSIfour|</span></a> features an efficient fractional-particle DFT
+code, written into the UKS spin specialization. Due to a combination of DIIS and
+reuse of integrals/guess orbitals across a range of fractional occupations, this
+code is able to perform fractional occupation curves for systems with up to 60
+atoms, across a wide range of the particle number <span class="math notranslate nohighlight">\(N\)</span>.</p>
+<p>Two python macros exist for this code. The first is <code class="xref py py-func docutils literal notranslate"><span class="pre">frac_traverse()</span></code>, which is
+used to investigate the fractional occupation behavior within one electron above
+and below the neutral. An example is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">h2o</span> <span class="p">{</span>
+<span class="mi">0</span> <span class="mi">1</span>  <span class="c1"># must be neutral</span>
+<span class="n">O</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span> <span class="mi">2</span> <span class="mf">104.5</span>
+<span class="c1"># FRAC jobs will be be run in C1 symmetry</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+<span class="n">reference</span> <span class="n">uks</span>  <span class="c1"># UKS, as we need to do all kinds of weird stuff</span>
+<span class="n">basis</span> <span class="n">aug</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>  <span class="c1"># Augmented functions are very important on the anion side</span>
+<span class="n">scf_type</span> <span class="n">df</span>
+<span class="p">}</span>
+
+<span class="c1"># Argument is functional.</span>
+<span class="c1"># Many optional arguments are available, see the python file</span>
+<span class="n">frac_traverse</span><span class="p">(</span><span class="s1">&#39;wb97&#39;</span><span class="p">,</span> <span class="n">molecule</span><span class="o">=</span><span class="n">h2o</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The other macro is <code class="xref py py-func docutils literal notranslate"><span class="pre">frac_nuke()</span></code>, which strips several electrons out of the
+system to gather information on the MSIE over a range of orbitals. The input is
+identical to the above, except that the <code class="xref py py-func docutils literal notranslate"><span class="pre">frac_traverse()</span></code> call is substituted
+for something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Argument is the functional.</span>
+<span class="c1"># A useful optional argument is nmax, the total number of electrons to</span>
+<span class="c1"># strip out of the molecule, in this case, 2.</span>
+<span class="c1"># Many optional arguments are available, see the python file</span>
+<span class="n">frac</span><span class="o">.</span><span class="n">frac_nuke</span><span class="p">(</span><span class="s1">&#39;wb97&#39;</span><span class="p">,</span> <span class="n">molecule</span><span class="o">=</span><span class="n">h2o</span><span class="p">,</span> <span class="n">nmax</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="dispersion-corrections">
+<h2>Dispersion Corrections<a class="headerlink" href="#dispersion-corrections" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="dftd3.html#sec-dftd3"><span class="std std-ref">DFT-D dispersion corrections are discussed here.</span></a></p>
+<p><a class="reference internal" href="gcp.html#sec-gcp"><span class="std std-ref">HF-3c and PBEh-3c dispersion and BSSE corrections are discussed here.</span></a></p>
+<p><a class="reference internal" href="dftnl.html#sec-dftnl"><span class="std std-ref">DFT-NL dispersion corrections are discussed here.</span></a></p>
+</section>
+<section id="recommendations">
+<h2>Recommendations<a class="headerlink" href="#recommendations" title="Link to this heading">¶</a></h2>
+<p>The KS-DFT code is quite new, but relatively complete. During code development,
+emphasis was placed on flexibility of functional technology, efficiency for
+medium to large systems in difficult electronic environments (<em>e.g.</em>, compact
+spatial extents, diffuse basis sets, low band-gaps, LRC and/or hybrid GKS
+functionals), and time to code completion. We are very interested in optimizing
+and extending the code, so expect performance gains and extensions to
+gradients/hessians and TDDFT in future releases.</p>
+<p>Some rough guidelines for using the KS-DFT code are as follows,</p>
+<ul class="simple">
+<li><p>Use DF for the ERI algorithm wherever possible.</p></li>
+<li><p><a href="#id70"><span class="problematic" id="id71">|PSIfour|</span></a> is a &quot;tight&quot; code, meaning we've set the default numerical cutoffs
+for integrals, grids, and convergence criteria in such a way that you will often
+get many more digits of precision than needed. You may be able to realize
+additional speed gains by loosening some of these thresholds. See
+<a class="reference internal" href="scf.html#table-conv-scf"><span class="std std-ref">SCF Convergence</span></a> for default convergence criteria.</p></li>
+<li><p>Read the literature to determine which functional technology to use. The world
+contains far too many papers using B3LYP on noncovalent interactions without a -D.</p></li>
+</ul>
+<p>The &quot;best-practice&quot; input file for KS-DFT is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">memory</span> <span class="mi">1</span> <span class="n">GB</span>  <span class="c1"># As much as you&#39;ve got, the DF algorithm can use</span>
+
+<span class="n">molecule</span> <span class="p">{</span>
+<span class="n">H</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">0.7</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+<span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+<span class="n">scf_type</span> <span class="n">df</span>
+<span class="n">guess</span> <span class="n">sad</span>
+<span class="p">}</span>
+
+<span class="n">energy</span><span class="p">(</span><span class="s1">&#39;b3lyp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-functional-use-and-manipulation">
+<span id="sec-dftdictbuilder"></span><h2>Advanced Functional Use and Manipulation<a class="headerlink" href="#advanced-functional-use-and-manipulation" title="Link to this heading">¶</a></h2>
+<p>New DFT functionals can be created from scratch from within the input
+file and accessed using the <code class="docutils literal notranslate"><span class="pre">dft_functional</span></code> keyword argument in the
+energy call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># DFT Custom Functional</span>
+
+<span class="n">molecule</span> <span class="n">h2o</span> <span class="p">{</span>
+<span class="mi">0</span> <span class="mi">1</span>
+<span class="n">O</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span> <span class="mi">2</span> <span class="mf">104.5</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+<span class="n">basis</span> <span class="n">sto</span><span class="o">-</span><span class="mi">3</span><span class="n">g</span>
+<span class="n">dft_spherical_points</span> <span class="mi">302</span>
+<span class="n">dft_radial_points</span> <span class="mi">99</span>
+<span class="n">reference</span> <span class="n">rks</span>
+<span class="p">}</span>
+
+<span class="n">pbe0</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;my_PBE0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;x_functionals&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;GGA_X_PBE&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="mf">0.75</span><span class="p">}},</span>
+    <span class="s2">&quot;x_hf&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">},</span>
+    <span class="s2">&quot;c_functionals&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;GGA_C_PBE&quot;</span><span class="p">:</span> <span class="p">{}}</span>
+<span class="p">}</span>
+
+<span class="n">func_call</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s1">&#39;SCF&#39;</span><span class="p">,</span> <span class="n">dft_functional</span><span class="o">=</span><span class="n">pbe0</span><span class="p">)</span>
+
+<span class="c1"># as PBE0 is a pre-defined functional, the call above is equivalent to both below:</span>
+<span class="n">func_call</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s1">&#39;SCF&#39;</span><span class="p">,</span> <span class="n">dft_functional</span><span class="o">=</span><span class="s2">&quot;PBE0&quot;</span><span class="p">)</span>
+<span class="n">func_call</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s1">&#39;PBE0&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Supported keywords include:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>name</cite>: string, name of the functional. for custom defined functionals used for printing only.</p></li>
+<li><p><cite>xc_functionals</cite>: dict, definition of a complete (X + C) functional based in LibXC name</p></li>
+<li><p><cite>x_functionals</cite>: dict, definition of exchange functionals using LibXC names</p></li>
+<li><p><cite>c_functionals</cite>: dict, definition of correlation functionals using LibXC names</p></li>
+<li><p><cite>x_hf</cite>: dict, parameters dealing with exact (HF) exchange settings for hybrid DFT</p></li>
+<li><p><cite>c_mp2</cite>: dict, parameters dealing with MP2 correlation for double hybrid DFT</p></li>
+<li><p><cite>dispersion</cite>: dict, definition of dispersion corrections</p></li>
+<li><p><cite>citation</cite>: string, citation for the method, for printing purposes</p></li>
+<li><p><cite>description</cite>: string, description of the method, for printing purposes</p></li>
+</ul>
+</div></blockquote>
+<p>The full interface is defined in
+<a href="#id12"><span class="problematic" id="id13">:source:`psi4/driver/procrouting/dft/dft_builder.py`</span></a>. All
+standard functionals provided in <a href="#id72"><span class="problematic" id="id73">|PSIfour|</span></a> are implemented in the
+<code class="docutils literal notranslate"><span class="pre">*_functionals.py</span></code> files in the same folder.</p>
+<p>One can also use the <code class="docutils literal notranslate"><span class="pre">dft_functional</span></code> keyword argument to use the
+orbitals generated by DFT for correlated wavefunction methods:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># MP2 with a PBE0 reference computation</span>
+
+<span class="n">molecule</span> <span class="n">h2o</span> <span class="p">{</span>
+<span class="mi">0</span> <span class="mi">1</span>
+<span class="n">O</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span>
+<span class="n">H</span> <span class="mi">1</span> <span class="mf">1.0</span> <span class="mi">2</span> <span class="mf">104.5</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="p">{</span>
+<span class="n">basis</span> <span class="mi">6</span><span class="o">-</span><span class="mi">31</span><span class="n">G</span>
+<span class="n">dft_spherical_points</span> <span class="mi">302</span>
+<span class="n">dft_radial_points</span> <span class="mi">99</span>
+<span class="n">reference</span> <span class="n">rks</span>
+<span class="p">}</span>
+
+<span class="n">mp2_dft</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s2">&quot;MP2&quot;</span><span class="p">,</span> <span class="n">dft_functional</span><span class="o">=</span><span class="s2">&quot;PBE0&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that this would only update the generic Psi variables (e.g., &quot;CURRENT ENERGY&quot;) and not the MP2 or DFT variables.
+Psi4 also supports easy customization and manipulation of DFT functionals.  The values of <cite>alpha</cite> and <cite>omega</cite> can be adjusted with the <a href="#id74"><span class="problematic" id="id75">|scf__dft_alpha|</span></a>
+and <a href="#id76"><span class="problematic" id="id77">|scf__dft_omega|</span></a> keywords. For example, for LRC functionals, one can control the fraction of long-range Hartree-Fock and short-range DFA by changing <a href="#id78"><span class="problematic" id="id79">|scf__dft_omega|</span></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="n">ch2</span> <span class="p">{</span>
+  <span class="mi">0</span> <span class="mi">3</span>
+  <span class="n">C</span>
+  <span class="n">H</span> <span class="mi">1</span> <span class="n">R</span>
+  <span class="n">H</span> <span class="mi">1</span> <span class="n">R</span> <span class="mi">2</span> <span class="n">A</span>
+
+  <span class="n">R</span> <span class="o">=</span> <span class="mf">1.075</span>
+  <span class="n">A</span> <span class="o">=</span> <span class="mf">133.93</span>
+<span class="p">}</span>
+
+<span class="nb">set</span> <span class="n">reference</span> <span class="n">uhf</span>
+<span class="nb">set</span> <span class="n">guess</span> <span class="n">gwh</span>
+<span class="nb">set</span> <span class="n">basis</span> <span class="n">cc</span><span class="o">-</span><span class="n">pvdz</span>
+<span class="nb">set</span> <span class="n">e_convergence</span> <span class="mi">8</span>
+
+<span class="c1"># Override the default value of omega</span>
+<span class="nb">set</span> <span class="n">dft_omega</span> <span class="mf">2.0</span>
+
+<span class="n">E</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s1">&#39;wb97x&#39;</span><span class="p">)</span>
+
+<span class="c1"># Revoke the change for later computations if needed</span>
+<span class="n">revoke_global_option_changed</span><span class="p">(</span><span class="s1">&#39;DFT_OMEGA&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This feature would be useful after finishing the IP fitting procedure, for example.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/dft.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

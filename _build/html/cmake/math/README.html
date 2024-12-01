@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Where does CMake search math libraries if you specify --blas/lapack=auto? &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="where-does-cmake-search-math-libraries-if-you-specify-blas-lapack-auto">
+<h1>Where does CMake search math libraries if you specify --blas/lapack=auto?<a class="headerlink" href="#where-does-cmake-search-math-libraries-if-you-specify-blas-lapack-auto" title="Link to this heading">¶</a></h1>
+<p>CMake will look in the environment variable MATH_ROOT.</p>
+<p>For instance my .bashrc contains:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">intel</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">compilervars</span><span class="o">.</span><span class="n">sh</span> <span class="n">intel64</span>
+<span class="n">export</span> <span class="n">MATH_ROOT</span><span class="o">=/</span><span class="n">opt</span><span class="o">/</span><span class="n">intel</span><span class="o">/</span><span class="n">mkl</span>
+</pre></div>
+</div>
+</section>
+<section id="order-of-math-libraries">
+<h1>Order of math libraries<a class="headerlink" href="#order-of-math-libraries" title="Link to this heading">¶</a></h1>
+<p>Order is set by MATH_LIB_SEARCH_ORDER in MathLibs.cmake.
+You can override this order by setting BLAS_TYPE and/or LAPACK_TYPE
+for example to ATLAS or some other library that you prefer.</p>
+</section>
+<section id="what-to-edit-if-your-math-library-is-not-found-although-you-have-set-math-root">
+<h1>What to edit if your math library is not found although you have set MATH_ROOT?<a class="headerlink" href="#what-to-edit-if-your-math-library-is-not-found-although-you-have-set-math-root" title="Link to this heading">¶</a></h1>
+<p>Normally you only need to edit MathLibs.cmake to add new libraries
+or edit existing ones.</p>
+<p>Since a vendor can provide libraries with different &quot;fingerprints&quot;
+(example MKL), you can define different combinations (up to 9), for instance:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span><span class="p">(</span><span class="n">MKL_BLAS_LIBS</span>  <span class="o">...</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="n">MKL_BLAS_LIBS2</span> <span class="o">...</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="n">MKL_BLAS_LIBS3</span> <span class="o">...</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="n">MKL_BLAS_LIBS4</span> <span class="o">...</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="n">MKL_BLAS_LIBS5</span> <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then CMake will first try MKL_BLAS_LIBS, then MKL_BLAS_LIBS2, etc.
+The first pattern that will match will be linked against.</p>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../_sources/cmake/math/README.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

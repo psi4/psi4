@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Plugin v2rdm_casscf by A. E. DePrince &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="plugin-v2rdm-casscf-by-a-e-deprince">
+<span id="sec-v2rdm-casscf"></span><span id="index-0"></span><h1>Plugin v2rdm_casscf by A. E. DePrince<a class="headerlink" href="#plugin-v2rdm-casscf-by-a-e-deprince" title="Link to this heading">¶</a></h1>
+<a class="reference external image-reference" href="https://github.com/edeprince3/v2rdm_casscf"><img alt="https://img.shields.io/badge/home-v2rdm_casscf-5077AB.svg" src="https://img.shields.io/badge/home-v2rdm_casscf-5077AB.svg" /></a>
+<br><a class="reference external image-reference" href="https://github.com/edeprince3/v2rdm_casscf/blob/master/README.md"><img alt="https://img.shields.io/badge/docs-latest-5077AB.svg" src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
+<p>A variational 2-RDM-driven CASSCF plugin to <a href="#id1"><span class="problematic" id="id2">|PSIfour|</span></a></p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p><strong>Binary</strong></p>
+<ul>
+<li><a class="reference external image-reference" href="https://anaconda.org/psi4/v2rdm_casscf"><img alt="https://anaconda.org/psi4/v2rdm_casscf/badges/version.svg" src="https://anaconda.org/psi4/v2rdm_casscf/badges/version.svg" /></a>
+</li>
+<li><p>v2rdm_casscf is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).</p></li>
+<li><p>If using the Psi4conda installer, v2rdm_casscf has already been installed alongside.</p></li>
+<li><p>If using the <a href="#id3"><span class="problematic" id="id4">|PSIfour|</span></a> conda package, the v2rdm_casscf conda package can
+be obtained through <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">v2rdm_casscf</span> <span class="pre">-c</span> <span class="pre">psi4</span></code> or <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span>
+<span class="pre">psi4-rt</span> <span class="pre">-c</span> <span class="pre">psi4</span></code>.</p></li>
+<li><p>If using <a href="#id5"><span class="problematic" id="id6">|PSIfour|</span></a> built from source, and anaconda or miniconda has
+already been installed (instructions at <a class="reference internal" href="conda.html#sec-quickconda"><span class="std std-ref">Quick Installation</span></a>),
+v2rdm_casscf can be obtained through <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">v2rdm_casscf</span> <span class="pre">-c</span> <span class="pre">psi4</span></code>.
+Then, hint its location with <span class="target" id="index-1"></span><a class="reference internal" href="external.html#envvar-PYTHONPATH"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PYTHONPATH</span></code></a>.</p></li>
+<li><p>To remove a conda installation, <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">remove</span> <span class="pre">v2rdm_casscf</span></code>.</p></li>
+</ul>
+<p><strong>Source</strong></p>
+<ul>
+<li><a class="reference external image-reference" href="https://github.com/edeprince3/v2rdm_casscf"><img alt="https://img.shields.io/github/tag/edeprince3/v2rdm_casscf.svg?maxAge=2592000" src="https://img.shields.io/github/tag/edeprince3/v2rdm_casscf.svg?maxAge=2592000" /></a>
+</li>
+<li><p>If using <a href="#id7"><span class="problematic" id="id8">|PSIfour|</span></a> built from source and you want v2rdm_casscf built from
+from source also,
+build it, then hint its location with <span class="target" id="index-2"></span><a class="reference internal" href="external.html#envvar-PYTHONPATH"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PYTHONPATH</span></code></a>.</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/plugin_v2rdm_casscf.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

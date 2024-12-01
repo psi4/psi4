@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Introduction &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="introduction">
+<span id="sec-introduction"></span><h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p><a href="#id53"><span class="problematic" id="id54">|PSIfour|</span></a> provides a wide variety of quantum chemical methods using
+state-of-the-art numerical methods and algorithms.  Several parts of
+the code feature shared-memory parallelization to run efficiently on
+multi-core machines (see Sec. <a class="reference internal" href="external.html#sec-threading"><span class="std std-ref">Threading</span></a>).
+An advanced parser written in Python allows the user
+input to have a very simple style for routine computations, but it can also
+automate very complex tasks with ease.</p>
+<p><a href="#id55"><span class="problematic" id="id56">|PSIfour|</span></a> is, in many ways, a whole new package compared to Psi3.
+While some libraries and modules remain the same, the majority of the code has
+been rewritten from scratch based on a powerful set of new libraries written
+in C++.  A totally new Python front-end makes <a href="#id57"><span class="problematic" id="id58">|PSIfour|</span></a> incredibly user-friendly
+and automates many common tasks such as basis set extrapolation, composite
+methods, running the same computation on every molecule in a test set, etc.
+Density-functional theory, absent in Psi3, is quite efficient
+in <a href="#id59"><span class="problematic" id="id60">|PSIfour|</span></a>, with many functionals available.  Density fitting is ubiquitous in
+<a href="#id61"><span class="problematic" id="id62">|PSIfour|</span></a>, leading to some of the most efficient MP2 and CCSD(T) code available.
+<a href="#id63"><span class="problematic" id="id64">|PSIfour|</span></a> also introduces extensive,
+powerful features for energy component analysis of non-covalent interactions
+via symmetry-adapted perturbation theory.  Orbital-optimized versions of
+perturbation theory and coupled-cluster methods, and their analytic gradients,
+have also been added.  Through external libraries, <a href="#id65"><span class="problematic" id="id66">|PSIfour|</span></a> gains access to implicit
+solvent (PCM) capabilities, density-matrix renormalization group CI, effective
+fragment potentials, Grimme dispersion corrections, and high-order
+coupled-cluster theory.</p>
+<p>In this section, we provide an overview of some of the features of
+<a href="#id67"><span class="problematic" id="id68">|PSIfour|</span></a> along with the prerequisite steps for running calculations.
+Sec. <a class="reference internal" href="tutorial.html#sec-tutorial"><span class="std std-ref">Tutorial</span></a> provides a brief tutorial to help new users
+get started.  Section <a class="reference internal" href="psithoninput.html#sec-psithoninput"><span class="std std-ref">Psithon</span></a> offers further details into the
+structure of <a href="#id69"><span class="problematic" id="id70">|PSIfour|</span></a> input files and how Python can be mixed with
+quantum chemistry directives in <a href="#id71"><span class="problematic" id="id72">|PSIfour|</span></a>. Section <a class="reference internal" href="psithonfunc.html#sec-psithonfunc"><span class="std std-ref">Psithon Functions</span></a>
+provides more detail on the Python functions provided by <a href="#id73"><span class="problematic" id="id74">|PSIfour|</span></a>
+and discusses some of the higher-level functions such as counterpoise
+correction, complete-basis-set extrapolation, and running computations
+on an entire database of molecules at a time.  Later sections deal with
+the different types of computations which can be done using <a href="#id75"><span class="problematic" id="id76">|PSIfour|</span></a>
+(<em>e.g.</em>, Hartree <a href="#id77"><span class="problematic" id="id78">|--|</span></a> Fock, MP2, coupled-cluster) and general procedures
+such as geometry optimization and vibrational frequency analysis.
+The <a class="reference internal" href="appendices.html#sec-appendices"><span class="std std-ref">Appendices</span></a> include a complete description of all possible input
+keywords for each module, as well as tables of available basis sets and
+a listing of the sample input files available under <a href="#id1"><span class="problematic" id="id2">:source:`samples`</span></a>.
+The user is urged to examine this directory of sample inputs, as
+most common types of computations are represented there.
+For the latest <a href="#id79"><span class="problematic" id="id80">|PSIfour|</span></a> documentation, check
+<a class="reference external" href="http://www.psicode.org">www.psicode.org</a>.</p>
+</section>
+<section id="citing-psifour">
+<h2>Citing <a href="#id81"><span class="problematic" id="id82">|PSIfour|</span></a><a class="headerlink" href="#citing-psifour" title="Link to this heading">¶</a></h2>
+<section id="overall-psifour-package">
+<h3>Overall <a href="#id83"><span class="problematic" id="id84">|PSIfour|</span></a> Package<a class="headerlink" href="#overall-psifour-package" title="Link to this heading">¶</a></h3>
+<p>The following citation should be used in any publication utilizing the
+<a href="#id85"><span class="problematic" id="id86">|PSIfour|</span></a> program package:</p>
+<ul class="simple">
+<li><p>&quot;Psi4 1.4: Open-Source Software for High-Throughput Quantum Chemistry&quot;,
+D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish, M. C.
+Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio, A. Alenaizan, A.
+M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer, R. A. Shaw, J. B.
+Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni, J. S. O'Brien, J. M.
+Waldrop, A. Kumar, E. G. Hohenstein, B. P. Pritchard, B. R. Brooks, H. F.
+Schaefer III, A. Yu. Sokolov, K. Patkowski, A. E. DePrince III, U.
+Bozkaya, R. A. King, F. A. Evangelista, J. M. Turney, T. D. Crawford, C.
+D. Sherrill, <em>J. Chem. Phys.</em> (2020).
+(doi: <a class="reference external" href="https://doi.org/10.1063/5.0006002">10.1063/5.0006002</a>).</p></li>
+</ul>
+<p>The following citation covers <a href="#id87"><span class="problematic" id="id88">|PSIfour|</span></a> early stable releases:</p>
+<ul class="simple">
+<li><p>&quot;Psi4 1.1: An Open-Source Electronic Structure Program Emphasizing
+Automation, Advanced Libraries, and Interoperability&quot;, R. M. Parrish, L.
+A. Burns, D. G. A. Smith, A. C. Simmonett, A. E. DePrince III, E. G.
+Hohenstein, U. Bozkaya, A. Yu. Sokolov, R. Di Remigio, R. M. Richard, J.
+F. Gonthier, A. M. James, H. R. McAlexander, A. Kumar, M. Saitow, X. Wang,
+B. P. Pritchard, P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King,
+E. F. Valeev, F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D.
+Sherrill, <em>J. Chem. Theory Comput.</em>, <strong>13(7)</strong> 3185--3197 (2017).
+(doi: <a class="reference external" href="https://doi.org/10.1021/acs.jctc.7b00174">10.1021/acs.jctc.7b00174</a>).</p></li>
+</ul>
+<p>The following citation covers <a href="#id89"><span class="problematic" id="id90">|PSIfour|</span></a> alpha and beta versions:</p>
+<ul class="simple">
+<li><p>&quot;Psi4: An open-source <em>ab initio</em> electronic structure program,&quot;
+J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein, F.
+Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke, M. L.
+Abrams, N. J.  Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl, W. D.
+Allen, H. F.  Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill, and T.
+D. Crawford, <em>WIREs Comput. Mol. Sci.</em> <strong>2</strong>, 556 (2012).
+(doi: <a class="reference external" href="https://doi.org/10.1002/wcms.93">10.1002/wcms.93</a>).</p></li>
+</ul>
+<p>Depending on the particular modules used, the user may also wish to
+cite some of the following references for theoretical, algorithmic,
+or implementation contributions specific to <a href="#id91"><span class="problematic" id="id92">|PSIfour|</span></a> (in addition to
+appropriate references for the underlying theory, which are not necessarily
+included in the list below).</p>
+<p>Most <a href="#id93"><span class="problematic" id="id94">|PSIfour|</span></a> calculations employ density functional
+theory. <a href="#id95"><span class="problematic" id="id96">|PSIfour|</span></a> does not implement any density functionals; instead,
+all the density functionals come from LIBXC, which should be cited in
+addition to <a href="#id97"><span class="problematic" id="id98">|PSIfour|</span></a></p>
+<ul class="simple">
+<li><p>&quot;Recent developments in LIBXC — a comprehensive library of
+functionals for density functional
+theory,&quot; S. Lehtola, C. Steigemann, M. J. T. Oliveira,
+and M. A. L. Marques, <em>SoftwareX</em> <strong>7</strong>, 1 (2018). (doi:
+<a class="reference external" href="https://doi.org/10.1016/j.softx.2017.11.002">10.1016/j.softx.2017.11.002</a>)</p></li>
+</ul>
+<p>Regardless of the type of the calculation, an initial guess is
+necessary. <a href="#id99"><span class="problematic" id="id100">|PSIfour|</span></a> features several initial guesses for the
+molecular orbitals. The default guess is the superposition of atomic
+densities (SAD), discussed in</p>
+<ul class="simple">
+<li><p>&quot;Principles for a direct SCF approach to LCAO-MO ab-initio
+calculations&quot;, J. Alml<a href="#id101"><span class="problematic" id="id102">|o_dots|</span></a>f, K. Faegri, and K. Korsell,
+<em>J. Comput. Chem.</em> <strong>3</strong>, 385 (1982).
+(doi: <a class="reference external" href="https://doi.org/10.1002/jcc.540030314">10.1002/jcc.540030314</a>).</p></li>
+<li><p>&quot;Starting SCF calculations by superposition of atomic
+densities&quot;, J. H. Van Lenthe, R. Zwaans, H. J. J. Van Dam,
+and M. F. Guest, <em>J. Comput. Chem.</em> <strong>27</strong>, 926 (2006).
+(doi: <a class="reference external" href="https://doi.org/10.1002/jcc.20393">10.1002/jcc.20393</a>).</p></li>
+</ul>
+<p><a href="#id103"><span class="problematic" id="id104">|PSIfour|</span></a> also features a SAD natural orbital guess, an extended
+H<a href="#id105"><span class="problematic" id="id106">|u_dots|</span></a>ckel guess that employs on-the-fly atomic calculations alike the SAD
+guess, as well as a superposition of atomic potentials (SAP) guess
+that is based on screening of atomic nuclei. The SAD natural orbitals,
+H<a href="#id107"><span class="problematic" id="id108">|u_dots|</span></a>ckel and SAP guesses have been described in</p>
+<ul class="simple">
+<li><p>&quot;An assessment of initial guesses for self-consistent field
+calculations. Superposition of Atomic Potentials: simple yet
+efficient&quot;, S. Lehtola, <em>J. Chem. Theory Comput.</em> <strong>15</strong>,
+1593 (2019) (doi: <a class="reference external" href="https://doi.org/10.1021/acs.jctc.8b01089">10.1021/acs.jctc.8b01089</a>).</p></li>
+</ul>
+</section>
+<section id="density-cumulant-theory-dct">
+<h3>Density Cumulant Theory (DCT)<a class="headerlink" href="#density-cumulant-theory-dct" title="Link to this heading">¶</a></h3>
+<p id="intro-dctcitations"><a href="#id109"><span class="problematic" id="id110">|PSIfour|</span></a> features several formulations of newly-developed density cumulant
+theory (DCT), also known as density cumulant functional theory (DCFT).
+The theory and benchmark of this theory are discussed in the following papers:</p>
+<p>DC-06 (also known as DCT-06):</p>
+<ul class="simple">
+<li><p>&quot;Density Cumulant Functional Theory: First Implementation and
+Benchmark Results for the DCFT-06 Model,&quot; A. C. Simmonett,
+J. J. Wilke, H. F. Schaefer, and W. Kutzelnigg, <em>J. Chem. Phys.</em>
+<strong>133</strong>, 174122 (2010).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.3503657">10.1063/1.3503657</a>).</p></li>
+<li><p>&quot;Analytic gradients for density cumulant functional theory: The
+DCFT-06 model,&quot; A. Yu. Sokolov, J. J. Wilke, A. C. Simmonett,
+and H. F. Schaefer, <em>J. Chem. Phys.</em> <strong>137</strong>, 054105 (2012).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4739423">10.1063/1.4739423</a>).</p></li>
+</ul>
+<p>DC-12:</p>
+<ul class="simple">
+<li><p>&quot;Density cumulant functional theory: The DC-12 method, an improved
+description of the one-particle density matrix,&quot; A. Yu. Sokolov,
+A. C. Simmonett, and H. F. Schaefer, <em>J. Chem. Phys.</em>  <strong>138</strong>, 024107
+(2013).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4773580">10.1063/1.4773580</a>).</p></li>
+</ul>
+<p>ODC-06 and ODC-12:</p>
+<ul class="simple">
+<li><p>&quot;Orbital-optimized density cumulant functional theory,&quot; A. Yu. Sokolov, and
+H. F. Schaefer, <em>J. Chem. Phys.</em>  <strong>139</strong>, 204110 (2013).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4833138">10.1063/1.4833138</a>).</p></li>
+</ul>
+<p>ODC-13:</p>
+<ul class="simple">
+<li><p>&quot;Density cumulant functional theory from a unitary transformation:
+N-representability, three-particle correlation effects, and application
+to O4+,&quot; A. Yu. Sokolov, H. F. Schaefer, and W. Kutzelnigg,
+<em>J. Chem. Phys.</em>  <strong>141</strong>, 074111 (2014).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4892946">10.1063/1.4892946</a>).</p></li>
+</ul>
+</section>
+<section id="configuration-interaction-ci">
+<h3>Configuration Interaction (CI)<a class="headerlink" href="#configuration-interaction-ci" title="Link to this heading">¶</a></h3>
+<p>PSI has a highly optimized code for full configuration interaction
+and highly correlated configuration interaction, as described in</p>
+<ul class="simple">
+<li><p>&quot;The Configuration Interaction Method: Advances in Highly
+Correlated Approaches,&quot; C. D. Sherrill and H. F. Schaefer, in
+<em>Adv. Quantum Chem.</em>, vol. 34, P.-O. L<a href="#id111"><span class="problematic" id="id112">|o_dots|</span></a>wdin, Ed.
+(Academic Press, New York, 1999), pp. 143-269.
+(doi: <a class="reference external" href="https://doi.org/10.1016/S0065-3276(08)60532-8">10.1016/S0065-3276(08)60532-8</a>).</p></li>
+</ul>
+</section>
+<section id="coupled-cluster-cc">
+<h3>Coupled Cluster (CC)<a class="headerlink" href="#coupled-cluster-cc" title="Link to this heading">¶</a></h3>
+<p>A general discussion of coupled cluster theory is given in</p>
+<ul class="simple">
+<li><p>&quot;An Introduction to Coupled Cluster Theory for Computational
+Chemists,&quot; T. D. Crawford and H. F. Schaefer, <em>Rev. Comp. Chem.</em>
+<strong>14</strong>, 33-136 (2000).
+(doi: <a class="reference external" href="https://doi.org/10.1002/9780470125915.ch2">10.1002/9780470125915.ch2</a>).</p></li>
+</ul>
+<p>Implementation of frozen natural orbital (FNO) coupled cluster theory
+in PSI and its performance for non-covalent interactions is discussed
+in</p>
+<ul class="simple">
+<li><p>&quot;Accurate Noncovalent Interaction Energies Using Truncated Basis Sets
+Based on Frozen Natural Orbitals,&quot; A. E. DePrince and C. D. Sherrill,
+<em>J. Chem. Theory Comput.</em> <strong>9</strong>, 293-299 (2013).
+(doi: <a class="reference external" href="https://doi.org/10.1021/ct300780u">10.1021/ct300780u</a>).</p></li>
+</ul>
+<p>Implementation of density-fitted (DF) and Cholesky decomposition (CD)
+coupled cluster in PSI, and its performance for non-covalent interactions
+and reaction energies, is discussed in</p>
+<ul class="simple">
+<li><p>&quot;Accuracy and Efficiency of Coupled-Cluster Theory Using
+Density Fitting / Cholesky Decomposition, Frozen Natural Orbitals,
+and a T1-Transformed Hamiltonian,&quot; A. E. DePrince and C. D. Sherrill,
+<em>J. Chem. Theory Comput.</em> <strong>9</strong>, 2687-2696 (2013).
+(doi: <a class="reference external" href="https://doi.org/10.1021/ct400250u">10.1021/ct400250u</a>).</p></li>
+</ul>
+<p>Implementation of the asymmetric triples correction for the density-fitted
+and cholesky-decomposed coupled-cluster singles and doubles method</p>
+<ul class="simple">
+<li><p>&quot;A noniterative asymmetric triple excitation correction for the density-fitted
+coupled-cluster singles and doubles method: Preliminary applications,&quot;
+U. Bozkaya,   <em>J. Chem. Phys.</em> <strong>144</strong>, 144108 (2016).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4945706">10.1063/1.4945706</a>).</p></li>
+</ul>
+<p>Implementation of analytic gradients for the density-fitted
+coupled-cluster singles and doubles method</p>
+<ul class="simple">
+<li><p>&quot;Analytic energy gradients for the coupled-cluster singles and doubles method with
+the density-fitting approximation,&quot;
+U. Bozkaya and C. D. Sherrill,   <em>J. Chem. Phys.</em> <strong>144</strong>, 174103 (2016).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4948318">10.1063/1.4948318</a>).</p></li>
+</ul>
+<p>Implementation of analytic gradients for the density-fitted
+coupled-cluster singles and doubles with perturbative triples method</p>
+<ul class="simple">
+<li><p>&quot;Analytic energy gradients for the coupled-cluster singles and doubles
+with perturbative triples method with the density-fitting approximation,&quot;
+U. Bozkaya and C. D. Sherrill,   <em>J. Chem. Phys.</em> <strong>147</strong>, 044104 (2017).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4994918">10.1063/1.4994918</a>).</p></li>
+</ul>
+</section>
+<section id="mukherjee-state-specific-multi-reference-coupled-cluster-mk-mrcc">
+<h3>Mukherjee State-Specific Multi-Reference Coupled Cluster (Mk-MRCC)<a class="headerlink" href="#mukherjee-state-specific-multi-reference-coupled-cluster-mk-mrcc" title="Link to this heading">¶</a></h3>
+<p><a href="#id113"><span class="problematic" id="id114">|PSIfour|</span></a> features production-level Mukherjee-style state-specific
+coupled-cluster theory, including perturbative triples and also associated
+multi-reference perturbation theories.  The theory and <a href="#id115"><span class="problematic" id="id116">|PSIfour|</span></a>
+implementation of these methods is discussed in the following papers.</p>
+<p>General Mk-MRCC</p>
+<ul class="simple">
+<li><p>&quot;Coupling Term Derivation and General Implementation of
+State-Specific Multireference Coupled-Cluster Theories,&quot;
+F. A. Evangelista, W. D. Allen, and H. F. Schaefer,
+<em>J. Chem. Phys.</em> <strong>127</strong>, 024102 (2007).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.2743014">10.1063/1.2743014</a>).</p></li>
+</ul>
+<p>Mk-MRCCSD(T)</p>
+<ul class="simple">
+<li><p>&quot;Perturbative Triples Corrections in State-Specific Multireference
+Coupled Cluster Theory,&quot;
+F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer,
+<em>J. Chem. Phys.</em> <strong>132</strong>, 074107 (2010).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.3305335">10.1063/1.3305335</a>).</p></li>
+</ul>
+<p>Mk-MRCCSDT(-n)</p>
+<ul class="simple">
+<li><p>&quot;Triple Excitations in State-Specific Multireference Coupled
+Cluster Theory: Application of Mk-MRCCSDT and Mk-MRCCSDT-n Methods to
+Model Systems,&quot; F. A. Evangelista, A. C. Simmonett, W. D. Allen,
+H. F. Schaefer, and J. Gauss, <em>J. Chem. Phys.</em> <strong>128</strong>, 124104
+(2008).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.2834927">10.1063/1.2834927</a>).</p></li>
+</ul>
+<p>Mk-MRPT2</p>
+<ul class="simple">
+<li><p>&quot;A Companion Perturbation Theory for State-specific
+Multireference Coupled Cluster Methods,&quot;
+F. A. Evangelista, A. C. Simmonett, H. F. Schaefer, D. Mukherjee, and
+W. D. Allen,
+<em>Phys. Chem. Chem. Phys.</em> <strong>11</strong>, 4728-4741 (2009).
+(doi: <a class="reference external" href="https://doi.org/10.1039/b822910d">10.1039/b822910d</a>).</p></li>
+</ul>
+</section>
+<section id="symmetry-adapted-perturbation-theory-sapt">
+<h3>Symmetry-Adapted Perturbation Theory (SAPT)<a class="headerlink" href="#symmetry-adapted-perturbation-theory-sapt" title="Link to this heading">¶</a></h3>
+<p><a href="#id117"><span class="problematic" id="id118">|PSIfour|</span></a> features an extremely efficient code to perform wavefunction-based
+Symmetry Adapted Perturbation Theory (SAPT). A good review article for this
+method is as follows:</p>
+<ul class="simple">
+<li><p>&quot;Perturbation Theory Approach to Intermolecular Potential Energy
+Surfaces of van der Waals Complexes,&quot; B. Jeziorski, R. Moszynski,
+and K. Szalewicz, <em>Chem. Rev.</em> <strong>94</strong>, 1887-1930 (1994).
+(doi: <a class="reference external" href="https://doi.org/10.1021/cr00031a008">10.1021/cr00031a008</a>).</p></li>
+</ul>
+<p><a href="#id119"><span class="problematic" id="id120">|PSIfour|</span></a> benefits enormously from the introduction of density fitting (DF)
+into SAPT. There are several SAPT truncations available in <a href="#id121"><span class="problematic" id="id122">|PSIfour|</span></a>. For
+guidance on which one to choose, see the SAPT section of the manual
+and refer to the following systematic study:</p>
+<ul class="simple">
+<li><p>&quot;Levels of  Symmetry Adapted Perturbation Theory (SAPT). I. Efficiency and
+Performance for Interaction Energies,'' T. M. Parker, L. A. Burns, R. M.
+Parrish, A. G. Ryno, and C. D. Sherrill, <em>J. Chem. Phys.</em> <strong>140</strong>,
+094106 (2014).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4867135">10.1063/1.4867135</a>).</p></li>
+</ul>
+<p>The theory and implementation of DF-SAPT is discussed
+in the following papers for various levels of SAPT.</p>
+<p>DF-SAPT0</p>
+<ul class="simple">
+<li><p>&quot;Large-scale Symmetry-adapted Perturbation Theory Computations via
+Density Fitting and Laplace Transformation Techniques: Investigating the
+Fundamental Forces of DNA-Intercalator Interactions,&quot; E. G. Hohenstein,
+R. M. Parrish, C. D. Sherrill, J. M. Turney, and H. F. Schaefer, <em>J.
+Chem. Phys.</em> <strong>135</strong>, 174017 (2011).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.3656681">10.1063/1.3656681</a>).</p></li>
+<li><p>&quot;Density Fitting and Cholesky Decomposition Approximations
+in Symmetry-Adapted Perturbation Theory: Implementation and Application
+to Probe the Nature of <span class="math notranslate nohighlight">\(\pi - \pi\)</span> Interactions in Linear Acenes,&quot;
+E. G. Hohenstein and C. D. Sherrill, <em>J. Chem. Phys.</em> <strong>132</strong>,
+184111 (2010).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.3426316">10.1063/1.3426316</a>).</p></li>
+</ul>
+<p>SAPT2</p>
+<ul class="simple">
+<li><p>&quot;Density Fitting of Intramonomer Correlation Effects in
+Symmetry-Adapted Perturbation Theory,&quot;
+E. G. Hohenstein and C. D. Sherrill, <em>J. Chem. Phys.</em> <strong>133</strong>,
+014101 (2010).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.3451077">10.1063/1.3451077</a>).</p></li>
+</ul>
+<p>SAPT2+, SAPT2+(3), SAPT2+3</p>
+<ul class="simple">
+<li><p>&quot;Wavefunction Methods for Noncovalent Interactions,&quot; E. G.
+Hohenstein and C. D. Sherrill, <em>WIREs: Comput. Mol. Sci.</em> <strong>2</strong>,
+304-326 (2012).
+(doi: <a class="reference external" href="https://doi.org/10.1002/wcms.84">10.1002/wcms.84</a>).</p></li>
+<li><p>&quot;Density Fitting of Intramonomer Correlation Effects in
+Symmetry-Adapted Perturbation Theory,&quot;
+E. G. Hohenstein and C. D. Sherrill, <em>J. Chem. Phys.</em> <strong>133</strong>,
+014101 (2010).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.3451077">10.1063/1.3451077</a>).</p></li>
+<li><p>&quot;Efficient Evaluation of Triple Excitations in Symmetry-Adapted
+Perturbation Theory via MP2 Natural Orbitals,&quot; E. G. Hohenstein
+and C. D. Sherrill, <em>J. Chem. Phys.</em> <strong>133</strong>, 104107 (2010).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.3479400">10.1063/1.3479400</a>).</p></li>
+</ul>
+<p>SAPT2+(CCD), SAPT2+(3)(CCD), and SAPT2+3(CCD)</p>
+<ul class="simple">
+<li><p>&quot;Tractability Gains in Symmetry-Adapted Perturbation Theory Including
+Coupled Double Excitations: CCD+ST(CCD) Dispersion with Natural Orbital
+Truncations,'' R. M. Parrish, E. G. Hohenstein, and C. D. Sherrill,
+<em>J. Chem. Phys.</em> <strong>139</strong>, 174102 (2013).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4826520">10.1063/1.4826520</a>).</p></li>
+<li><p>&quot;Wavefunction Methods for Noncovalent Interactions,&quot; E. G.
+Hohenstein and C. D. Sherrill, <em>WIREs: Comput. Mol. Sci.</em> <strong>2</strong>,
+304-326 (2012).
+(doi: <a class="reference external" href="https://doi.org/10.1002/wcms.84">10.1002/wcms.84</a>).</p></li>
+<li><p>&quot;Density Fitting of Intramonomer Correlation Effects in
+Symmetry-Adapted Perturbation Theory,&quot;
+E. G. Hohenstein and C. D. Sherrill, <em>J. Chem. Phys.</em> <strong>133</strong>,
+014101 (2010).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.3451077">10.1063/1.3451077</a>).</p></li>
+</ul>
+<p>F/I-SAPT</p>
+<ul class="simple">
+<li><p>&quot;Chemical Assignment of Symmetry-Adapted Perturbation Theory Interaction
+Energy Components: The Functional-Group SAPT Partition,&quot;
+R. M. Parrish, T. M. Parker, and C. D. Sherrill,
+<em>J. Chem. Theory Comput.</em> <strong>10</strong>, 4417 (2014).
+(doi: <a class="reference external" href="https://doi.org/10.1021/ct500724p">10.1021/ct500724p</a>).</p></li>
+<li><p>&quot;Communication: Practical Intramolecular Symmetry Adapted Perturbation Theory
+via Hartree-Fock Embedding,&quot;
+R. M. Parrish, J. F. Gonthier, C. Corminboeuf, and C. D. Sherrill,
+<em>J. Chem. Phys.</em> <strong>143</strong>, 051103 (2015).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4927575">10.1063/1.4927575</a>)</p></li>
+</ul>
+<p>The derivation of the second-order exchange terms without the single-exchange
+approximation are found in the following two works:</p>
+<ul class="simple">
+<li><p>&quot;Intermolecular exchange-induction energies without the overlap expansion,&quot;
+R. Sch<a href="#id123"><span class="problematic" id="id124">|a_dots|</span></a>ffer and G. Jansen, <em>Theor. Chem. Acc.</em> <strong>131</strong>, 1235 (2012).
+(doi: <a class="reference external" href="https://doi.org/10.1007/s00214-012-1235-6">10.1007/s00214-012-1235-6</a>)</p></li>
+<li><p>&quot;Single-determinant-based symmetry-adapted perturbation theory without
+single-exchange approximation,&quot;
+R. Sch<a href="#id125"><span class="problematic" id="id126">|a_dots|</span></a>ffer and G. Jansen, <em>Mol. Phys.</em> <strong>111</strong>, 2570 (2013).
+(doi: <a class="reference external" href="https://doi.org/10.1080/00268976.2013.827253">10.1080/00268976.2013.827253</a>)</p></li>
+</ul>
+</section>
+<section id="orbital-optimized-post-hartree-fock-methods">
+<h3>Orbital-Optimized Post-Hartree <a href="#id127"><span class="problematic" id="id128">|--|</span></a> Fock Methods<a class="headerlink" href="#orbital-optimized-post-hartree-fock-methods" title="Link to this heading">¶</a></h3>
+<p>Orbital-optimized second-order perturbation theory (OMP2)</p>
+<ul class="simple">
+<li><p>&quot;Quadratically convergent algorithm for orbital optimization in the
+orbital-optimized coupled-cluster doubles method and in orbital-optimized
+second-order <a href="#id129"><span class="problematic" id="id130">|MollerPlesset|</span></a> perturbation theory,&quot;
+U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
+<em>J. Chem. Phys.</em> <strong>135</strong>, 104103 (2011).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.3631129">10.1063/1.3631129</a>).</p></li>
+<li><p>&quot;Analytic energy gradients for the orbital-optimized second-order
+<a href="#id131"><span class="problematic" id="id132">|MollerPlesset|</span></a> perturbation theory,&quot; U. Bozkaya and
+C. D. Sherrill, <em>J. Chem. Phys.</em> <strong>138</strong>, 184103 (2013).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4803662">10.1063/1.4803662</a>).</p></li>
+<li><p>&quot;Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting
+and Cholesky Decomposition Approximations: An Efficient Implementation,&quot;
+U. Bozkaya,   <em>J. Chem. Theory Comput.</em> <strong>10</strong>, 2371 (2014).
+(doi: <a class="reference external" href="https://doi.org/10.1021/ct500231c">10.1021/ct500231c</a>).</p></li>
+</ul>
+<p>Orbital-optimized third-order perturbation theory (OMP3)</p>
+<ul class="simple">
+<li><p>&quot;Orbital-Optimized Third-Order <a href="#id133"><span class="problematic" id="id134">|MollerPlesset|</span></a> Perturbation
+Theory and Its Spin-Component and Spin-Opposite Scaled Variants: Application
+to Symmetry Breaking Problems,&quot; U. Bozkaya,
+<em>J. Chem. Phys.</em> <strong>135</strong>, 224103 (2011).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.3665134">10.1063/1.3665134</a>).</p></li>
+<li><p>&quot;Assessment of Orbital-Optimized Third-Order <a href="#id135"><span class="problematic" id="id136">|MollerPlesset|</span></a>
+Perturbation Theory and Its Spin-Component and Spin-Opposite Scaled Variants
+for Thermochemistry and Kinetics,&quot; E. Soydas and U. Bozkaya,
+<em>J. Chem. Theory Comput.</em> <strong>9</strong>, 1452 (2013).
+(doi: <a class="reference external" href="https://doi.org/10.1021/ct301078q">10.1021/ct301078q</a>).</p></li>
+<li><p>&quot;Analytic energy gradients for the orbital-optimized third-order <a href="#id137"><span class="problematic" id="id138">|MollerPlesset|</span></a>
+Perturbation Theory,&quot; U. Bozkaya,
+<em>J. Chem. Phys.</em> <strong>139</strong>, 104116 (2013).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4820877">10.1063/1.4820877</a>).</p></li>
+</ul>
+<p>Orbital-optimized linearized coupled-cluster doubles method (OLCCD)</p>
+<ul class="simple">
+<li><p>&quot;Orbital-optimized coupled-electron pair theory and its analytic gradients:
+Accurate equilibrium geometries, harmonic vibrational frequencies, and hydrogen transfer
+reactions,&quot; U. Bozkaya and C. D. Sherrill,
+<em>J. Chem. Phys.</em> <strong>139</strong>, 054104 (2013).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4816628">10.1063/1.4816628</a>).</p></li>
+</ul>
+<p>Orbital-optimized MP2.5 (OMP2.5)</p>
+<ul class="simple">
+<li><p>&quot;Orbital-optimized MP2.5 and its analytic gradients: Approaching CCSD(T)
+quality for noncovalent interactions,&quot; U. Bozkaya and C. D. Sherrill,
+<em>J. Chem. Phys.</em> <strong>141</strong>, 204105 (2014).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4902226">10.1063/1.4902226</a>).</p></li>
+</ul>
+<p>Extended Koopmans' Theorem</p>
+<ul class="simple">
+<li><p>&quot;The extended Koopmans' theorem for orbital-optimized methods: Accurate
+computation of ionization potentials,&quot; U. Bozkaya,  <em>J. Chem. Phys.</em>
+<strong>139</strong>, 154105 (2013).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.4825041">10.1063/1.4825041</a>).</p></li>
+<li><p>&quot;Accurate Electron Affinities from the Extended Koopmans' Theorem Based on Orbital-Optimized Methods,&quot;
+U. Bozkaya,   <em>J. Chem. Theory Comput.</em> <strong>10</strong>, 2041 (2014).
+(doi: <a class="reference external" href="https://doi.org/10.1021/ct500186j">10.1021/ct500186j</a>).</p></li>
+</ul>
+<p>Density-Fitted and Cholesky-Decomposed Orbital-optimized second-order perturbation theory (DF-OMP2)</p>
+<ul class="simple">
+<li><p>&quot;Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting
+and Cholesky Decomposition Approximations: An Efficient Implementation,&quot;
+U. Bozkaya,   <em>J. Chem. Theory Comput.</em> <strong>10</strong>, 2371 (2014).
+(doi: <a class="reference external" href="https://doi.org/10.1021/ct500231c">10.1021/ct500231c</a>).</p></li>
+<li><p>&quot;Analytic Energy Gradients and Spin Multiplicities for Orbital-Optimized
+Second-Order Perturbation Theory with Density-Fitting Approximation: An
+Efficient Implementation,&quot; U. Bozkaya, <em>J. Chem. Theory Comput.</em> <strong>10</strong>, 4389 (2014).
+(doi: <a class="reference external" href="https://doi.org/10.1021/ct500634s">10.1021/ct500634s</a>).</p></li>
+</ul>
+<p>Density-Fitted and Cholesky-Decomposed Orbital-optimized MP3 and MP2.5 (DF-OMP3 and DF-OMP2.5)</p>
+<ul class="simple">
+<li><p>&quot;Orbital-Optimized MP3 and MP2.5 with Density-Fitting
+and Cholesky Decomposition Approximations,&quot;
+U. Bozkaya,   <em>J. Chem. Theory Comput.</em> <strong>12</strong>, 1179 (2016).
+(doi: <a class="reference external" href="https://doi.org/10.1021/acs.jctc.5b01128">10.1021/acs.jctc.5b01128</a>).</p></li>
+</ul>
+<p>Density-Fitted and Cholesky-Decomposed Orbital-Optimized Linearized Coupled-Cluster Doubles Method (DF-OLCCD)</p>
+<ul class="simple">
+<li><p>&quot;Orbital-optimized linearized coupled-cluster doubles with density-fitting
+and Cholesky decomposition approximations: an efficient implementation,&quot;
+U. Bozkaya,   <em>Phys. Chem. Chem. Phys.</em> <strong>18</strong>, 11362 (2016).
+(doi: <a class="reference external" href="https://doi.org/10.1039/c6cp00164e">10.1039/c6cp00164e</a>).</p></li>
+</ul>
+</section>
+<section id="algebraic-diagrammatic-construction-methods-adc">
+<h3>Algebraic-Diagrammatic Construction methods (ADC)<a class="headerlink" href="#algebraic-diagrammatic-construction-methods-adc" title="Link to this heading">¶</a></h3>
+<p>General ADC theory</p>
+<ul class="simple">
+<li><p>&quot;Intermediate state representation approach to physical properties of
+electronically excited molecules,&quot;
+J. Schirmer, and A. B. Trofimov, <em>J. Chem. Phys.</em> <strong>120</strong>,
+11449-11464 (2004).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.1752875">10.1063/1.1752875</a>).</p></li>
+</ul>
+<p>Implementation inside <a class="reference external" href="https://adc-connect.org">adcc</a>,
+the ADC backend used for most ADC methods available in <a href="#id139"><span class="problematic" id="id140">|PSIfour|</span></a></p>
+<ul class="simple">
+<li><p>&quot;adcc: A versatile toolkit for rapid development of
+algebraic-diagrammatic construction methods,&quot;
+M. F. Herbst, M. Scheurer, T. Fransson, D. R. Rehn, and A. Dreuw.
+<em>WIREs Comput. Mol. Sci.</em>, (2020).
+(DOI: <a class="reference external" href="https://doi.org/10.1002/wcms.1462">10.1002/wcms.1462</a>, Preprint <a class="reference external" href="https://adc-connect.org/q/publications">https://adc-connect.org/q/publications</a></p></li>
+</ul>
+</section>
+<section id="density-matrix-renormalization-group-dmrg">
+<h3>Density Matrix Renormalization Group (DMRG)<a class="headerlink" href="#density-matrix-renormalization-group-dmrg" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>&quot;CheMPS2: a free open-source spin-adapted implementation of the density
+matrix renormalization group for ab initio quantum chemistry,&quot;
+S. Wouters, W. Poelmans, P. W. Ayers and D. Van Neck,
+<em>Comput. Phys. Commun.</em> <strong>185</strong> (6), 1501-1514 (2014).
+(doi: <a class="reference external" href="https://doi.org/10.1016/j.cpc.2014.01.019">10.1016/j.cpc.2014.01.019</a>).</p></li>
+<li><p>&quot;The density matrix renormalization group for ab initio quantum chemistry,&quot;
+S. Wouters and D. Van Neck, <em>Eur. Phys. J. D</em> <strong>68</strong> (9), 272 (2014).
+(doi: <a class="reference external" href="https://doi.org/10.1140/epjd/e2014-50500-1">10.1140/epjd/e2014-50500-1</a>).</p></li>
+</ul>
+</section>
+<section id="scalar-relativistic-corrections">
+<h3>Scalar Relativistic Corrections<a class="headerlink" href="#scalar-relativistic-corrections" title="Link to this heading">¶</a></h3>
+<p>General theory for the exact two-component approach (X2C)</p>
+<ul class="simple">
+<li><p>&quot;Analytic energy gradients for the spin-free exact two-component theory
+using an exact block diagonalization for the one-electron Dirac
+Hamiltonian,&quot;
+L. Cheng and J. Gauss, <em>J. Chem. Phys.</em> <strong>135</strong>, 084114 (2011).
+(doi: <a class="reference external" href="https://doi.org/10.1063/1.3624397">10.1063/1.3624397</a>).</p></li>
+</ul>
+<p>Implementation within Psi4</p>
+<ul class="simple">
+<li><p>&quot;Predicting Near Edge X-ray Absorption Spectra with the Spin-Free
+Exact-Two-Component Hamiltonian and Orthogonality Constrained Density
+Functional Theory,&quot;
+P. Verma, W. D. Derricotte and F. A. Evangelista,
+<em>J. Chem. Theory Comput.</em> (2015).
+(doi: <a class="reference external" href="https://doi.org/10.1021/acs.jctc.5b00817">10.1021/acs.jctc.5b00817</a>).</p></li>
+</ul>
+</section>
+</section>
+<section id="supported-systems">
+<span id="index-1"></span><span id="index-0"></span><h2>Supported Systems<a class="headerlink" href="#supported-systems" title="Link to this heading">¶</a></h2>
+<dl class="simple">
+<dt>Architectures</dt><dd><p>The majority of <a href="#id141"><span class="problematic" id="id142">|PSIfour|</span></a> was developed on Mac and Linux machines; in
+principle, it should work on any Unix system. The latest version of the
+<a href="#id143"><span class="problematic" id="id144">|PSIfour|</span></a> program package may be obtained at <a class="reference external" href="http://psicode.org">psicode.org</a>.
+The package is available as a binary (<a class="reference internal" href="conda.html#sec-conda"><span class="std std-ref">Installing from Binary</span></a>) for Linux, macOS (both Intel and Apple Silicon), or Windows (both native and via Windows Subsystem for
+Linux aka <a class="reference external" href="https://docs.microsoft.com/en-us/windows/wsl/about">Bash on Ubuntu on Windows</a>)
+or as source code (git repository or zipped archive from
+<a class="reference external" href="https://github.com/psi4/psi4">https://github.com/psi4/psi4</a>.</p>
+</dd>
+<dt>Compilers</dt><dd><p><a href="#id145"><span class="problematic" id="id146">|PSIfour|</span></a> has been successfully compiled using Intel, GCC, and Clang
+compilers. <a class="reference internal" href="build_planning.html#faq-approvedcxx"><span class="std std-ref">Compiler requirements</span></a> are primarily
+C++20 compliance (now GCC version 10.0 or above).
+For some architectures, a <a class="reference internal" href="conda.html#sec-conda"><span class="std std-ref">precompiled binary</span></a> is available. See <a class="reference internal" href="build_planning.html#sec-installfile"><span class="std std-ref">Compiling and Installing</span></a> for details.</p>
+</dd>
+<dt>Python</dt><dd><p><a href="#id147"><span class="problematic" id="id148">|PSIfour|</span></a> 1.1 and 1.2 are supported on Python 2.7, 3.5,
+and 3.6. After 1.2, only Python 3 will be supported
+<a class="reference external" href="https://python3statement.org/">in accordance with other scientific software projects</a>).
+<a href="#id149"><span class="problematic" id="id150">|PSIfour|</span></a> 1.3 supports Python 3.6 and 3.7.
+<a href="#id151"><span class="problematic" id="id152">|PSIfour|</span></a> 1.4 supports Python 3.6, 3.7, 3.8, and 3.9.
+<a href="#id153"><span class="problematic" id="id154">|PSIfour|</span></a> 1.5 supports Python 3.7, 3.8, and 3.9.
+<a href="#id155"><span class="problematic" id="id156">|PSIfour|</span></a> 1.6 supports Python 3.8, 3.9, and 3.10.
+<a href="#id157"><span class="problematic" id="id158">|PSIfour|</span></a> 1.7 supports Python 3.8, 3.9, 3.10, and 3.11 (no binary packages for 3.11).
+<a href="#id159"><span class="problematic" id="id160">|PSIfour|</span></a> 1.8 supports Python 3.8, 3.9, 3.10, and 3.11.
+<a href="#id161"><span class="problematic" id="id162">|PSIfour|</span></a> 1.9 supports Python 3.8, 3.9, 3.10, 3.11, and 3.12.
+<a href="#id163"><span class="problematic" id="id164">|PSIfour|</span></a> 1.10 is anticipated to support Python 3.8, 3.9, 3.10, 3.11, and 3.12.
+The future plan is to (1) be compatible with 3.8 and above until there is a good reason to drop
+older versions but (2) only build and test for versions conda-forge supports.
+The current master supports 3.8, 3.9, 3.10, 3.11, and 3.12.</p>
+</dd>
+</dl>
+</section>
+<section id="license">
+<span id="index-2"></span><h2>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
+<p><a href="#id165"><span class="problematic" id="id166">|PSIfour|</span></a> is distributed under the GNU Lesser General Public License
+version 3, <a class="reference external" href="https://opensource.org/licenses/LGPL-3.0">LGPL-3.0</a>.  Its
+required dependencies and add-ons have their own licenses, ranging from
+BSD-2-Clause to GPL-2.0+. It is possible to build <a href="#id167"><span class="problematic" id="id168">|PSIfour|</span></a> without any
+General GPL dependencies.</p>
+</section>
+<section id="capabilities">
+<h2>Capabilities<a class="headerlink" href="#capabilities" title="Link to this heading">¶</a></h2>
+<p><a href="#id169"><span class="problematic" id="id170">|PSIfour|</span></a> can perform <em>ab initio</em> computations employing basis
+sets of contracted Gaussian-type functions of virtually arbitrary
+orbital quantum number. Many parts of <a href="#id171"><span class="problematic" id="id172">|PSIfour|</span></a> can recognize and
+exploit the largest Abelian subgroup of the molecular point group.
+Table <a class="reference internal" href="#table-methods"><span class="std std-ref">Methods</span></a> displays the range of theoretical methods
+available in <a href="#id173"><span class="problematic" id="id174">|PSIfour|</span></a>.</p>
+<p>Geometry optimization can be performed using either analytic gradients
+or energy points. Likewise, vibrational frequencies can be
+computed by analytic second derivatives, by finite
+differences of analytic gradients, or by finite differences of energies.
+<a href="#id175"><span class="problematic" id="id176">|PSIfour|</span></a> can also compute an extensive list of one-electron properties.</p>
+<p>For more tables with capabilities details:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#table-methods"><span class="std std-ref">Full Capabilities</span></a> (first below) lists all methods</p></li>
+<li><p><a class="reference internal" href="preview_capabilities_summary.html#table-stdsuite"><span class="std std-ref">Capabilities Breakdown</span></a> (second below) lists selected methods by reference, etc.</p></li>
+<li><p><a class="reference internal" href="preview_capabilities_details.html#table-managedmethods"><span class="std std-ref">Module Capabilities</span></a> lists selected methods by implementation</p></li>
+<li><p><span class="xref std std-ref">Energy</span>, <span class="xref std std-ref">Energy (DFT)</span>, <a class="reference internal" href="mrcc.html#table-energy-mrcc"><span class="std std-ref">Energy (MRCC)</span></a>, <a class="reference internal" href="cfour.html#table-energy-cfour"><span class="std std-ref">Energy (CFOUR)</span></a> fully list energy target methods</p></li>
+<li><p><span class="xref std std-ref">Gradient</span>, <a class="reference internal" href="cfour.html#table-grad-cfour"><span class="std std-ref">Gradient (CFOUR)</span></a> fully list gradient target methods</p></li>
+<li><p><span class="xref std std-ref">Frequency</span> fully lists Hessian target methods</p></li>
+</ul>
+<span id="table-methods"></span><table class="docutils align-default" id="id52">
+<caption><span class="caption-text">Summary of theoretical methods available in <a href="#id177"><span class="problematic" id="id178">|PSIfour|</span></a></span><a class="headerlink" href="#id52" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Method <a class="footnote-reference brackets" href="#f10" id="id36" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></th>
+<th class="head" rowspan="2"><p>Reference<a class="footnote-reference brackets" href="#f8" id="id37" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p></th>
+<th class="head" rowspan="2"><p>Type<a class="footnote-reference brackets" href="#f8" id="id38" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p></th>
+<th class="head" colspan="4"><p>Variants<a class="footnote-reference brackets" href="#f9" id="id39" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a></p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>Canonical</p></th>
+<th class="head"><p>OO</p></th>
+<th class="head"><p>FNO <a class="footnote-reference brackets" href="#f1" id="id40" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a></p></th>
+<th class="head"><p>DLPNO</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>HF</p></td>
+<td><p>RHF/UHF/ROHF/CUHF</p></td>
+<td><p>CONV/DF/CD</p></td>
+<td><p>E/G/H</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>DFT</p></td>
+<td><p>RKS/UKS</p></td>
+<td><p>CONV/DF/CD</p></td>
+<td><p>E/G</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>DFT-D2, DFT-NL</p></td>
+<td><p>RKS/UKS</p></td>
+<td><p>CONV/DF/CD</p></td>
+<td><p>E/G</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>DCT</p></td>
+<td><p>RHF/UHF</p></td>
+<td><p>CONV/DF</p></td>
+<td><p>E/G</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>MP2</p></td>
+<td><p>RHF/UHF/ROHF</p></td>
+<td><p>CONV/DF/CD</p></td>
+<td><p>E/G</p></td>
+<td><p>E/G</p></td>
+<td></td>
+<td><p>E</p></td>
+</tr>
+<tr class="row-even"><td><p>MP3</p></td>
+<td><p>RHF/UHF</p></td>
+<td><p>CONV/DF/CD</p></td>
+<td><p>E/G</p></td>
+<td><p>E/G</p></td>
+<td><p>E</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>MP2.5</p></td>
+<td><p>RHF/UHF</p></td>
+<td><p>CONV/DF/CD</p></td>
+<td><p>E/G</p></td>
+<td><p>E/G</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>MP4, MP4(SDQ)</p></td>
+<td><p>RHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td><p>E</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>MP<em>n</em></p></td>
+<td><p>RHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>ZAPT<em>n</em></p></td>
+<td><p>ROHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>REMP2</p></td>
+<td><p>RHF/UHF</p></td>
+<td><p>CONV/DF/CD</p></td>
+<td><p>E</p></td>
+<td><p>E/G</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>LCCD</p></td>
+<td><p>RHF/UHF</p></td>
+<td><p>CONV/DF/CD</p></td>
+<td><p>E/G</p></td>
+<td><p>E/G</p></td>
+<td><p>E</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>LCCSD, CEPA(0)</p></td>
+<td><p>RHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td><p>E</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>CEPA(n), n=0,1,3</p></td>
+<td><p>RHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td><p>E</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>CCD</p></td>
+<td><p>RHF</p></td>
+<td><p>DF/CD</p></td>
+<td><p>E/G</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>BCCD</p></td>
+<td><p>RHF/UHF/ROHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>CC2</p></td>
+<td><p>RHF/UHF/ROHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E/G</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>CCSD</p></td>
+<td><p>RHF/UHF/ROHF</p></td>
+<td><p>CONV/DF/CD</p></td>
+<td><p>E/G</p></td>
+<td></td>
+<td><p>E <a class="footnote-reference brackets" href="#f2" id="id41" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>CCSD(T)</p></td>
+<td><p>RHF/UHF/ROHF</p></td>
+<td><p>CONV/DF/CD</p></td>
+<td><p>E/G</p></td>
+<td></td>
+<td><p>E <a class="footnote-reference brackets" href="#f2" id="id42" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>A-CCSD(T)</p></td>
+<td><p>RHF</p></td>
+<td><p>CONV/DF/CD</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>BCCD(T)</p></td>
+<td><p>RHF/UHF/ROHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>CC3</p></td>
+<td><p>RHF/UHF/ROHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>ACPF/AQCC</p></td>
+<td><p>RHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td><p>E</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>CISD</p></td>
+<td><p>RHF/ROHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td><p>E</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>QCISD</p></td>
+<td><p>RHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td><p>E</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>QCISD(T)</p></td>
+<td><p>RHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td><p>E</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>CI<em>n</em></p></td>
+<td><p>RHF/ROHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>FCI</p></td>
+<td><p>RHF/ROHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Mk-MRPT2</p></td>
+<td><p>RHF/ROHF/TCSCF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Mk-MRCCSD</p></td>
+<td><p>RHF/ROHF/TCSCF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Mk-MRCCSD(T)</p></td>
+<td><p>RHF/ROHF/TCSCF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>CASCI, RASCI</p></td>
+<td><p>RHF/ROHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>CASSCF, RASSCF</p></td>
+<td><p>RHF/ROHF</p></td>
+<td><p>CONV/DF</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>SAPT0, SF-SAPT0</p></td>
+<td><p>RHF/UHF/ROHF</p></td>
+<td><p>CONV/DF</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>SAPT(DFT)</p></td>
+<td><p>RKS</p></td>
+<td><p>DF</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>SAPT2, 2+, 2+(3), 2+3</p></td>
+<td><p>RHF</p></td>
+<td><p>DF</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>F/I-SAPT0</p></td>
+<td><p>RHF</p></td>
+<td><p>DF</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>TDDFT</p></td>
+<td><p>RKS/UKS</p></td>
+<td><p>CONV/DF</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>EP2</p></td>
+<td><p>RHF</p></td>
+<td><p>DF</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>EOM-CC2</p></td>
+<td><p>RHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>EOM-CCSD</p></td>
+<td><p>RHF/UHF/ROHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E/G</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>EOM-CC3</p></td>
+<td><p>RHF/UHF/ROHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td colspan="7"><p>❖ with <a class="reference internal" href="libefp.html#sec-libefp"><span class="std std-ref">LibEFP</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>EFP/EFP</p></td>
+<td><p>RHF</p></td>
+<td></td>
+<td><p>E/G</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>QM/EFP</p></td>
+<td><p>RHF</p></td>
+<td></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td colspan="7"><p>❖ with <a class="reference internal" href="dftd3.html#sec-dftd3"><span class="std std-ref">DFTD3, DFTD4</span></a>, and <a class="reference internal" href="gcp.html#sec-gcp"><span class="std std-ref">gCP</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>HF-3c, PBEh-3c, B97-3C,
+r2SCAN-3c, wB97X-3c</p></td>
+<td><p>R/U/ROHF, R/UKS</p></td>
+<td></td>
+<td><p>E/G</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>DFT-D3, DFT-D4</p></td>
+<td><p>RKS/UKS</p></td>
+<td></td>
+<td><p>E/G</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td colspan="7"><p>❖ with <a class="reference internal" href="adcc.html#sec-adcc"><span class="std std-ref">ADCC</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>ADC(1), CVS-ADC(1)</p></td>
+<td><p>RHF/UHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>ADC(2), CVS-ADC(2)</p></td>
+<td><p>RHF/UHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>ADC(2)-x, CVS-ADC(2)-x</p></td>
+<td><p>RHF/UHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>ADC(3), CVS-ADC(3)</p></td>
+<td><p>RHF/UHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td colspan="7"><p>❖ with <a class="reference internal" href="chemps2.html#sec-chemps2"><span class="std std-ref">CheMPS2</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>DMRG-CI</p></td>
+<td><p>RHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>DMRG-SCF</p></td>
+<td><p>RHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>DMRG-CASPT2</p></td>
+<td><p>RHF</p></td>
+<td><p>CONV</p></td>
+<td><p>E</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="f10" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id36">1</a><span class="fn-bracket">]</span></span>
+<p>Many methods have a more detailed breakdown of capabilities <a class="reference internal" href="preview_capabilities_details.html#table-managedmethods"><span class="std std-ref">here</span></a>.</p>
+</aside>
+<aside class="footnote brackets" id="f8" role="note">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id37">1</a>,<a role="doc-backlink" href="#id38">2</a>)</span>
+<p>Not all combinations of reference and algorithm type may be available for any variant and derivative. See detailed capabilities tables.</p>
+</aside>
+<aside class="footnote brackets" id="f9" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id39">3</a><span class="fn-bracket">]</span></span>
+<p>Shown are analytic implementations for energy (E), gradient, (G), and Hessian (H); finite difference derivatives are invoked automatically if analytic not available.</p>
+</aside>
+<aside class="footnote brackets" id="f1" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id40">4</a><span class="fn-bracket">]</span></span>
+<p>Frozen natural orbital variant available. In particular, RHF available as CONV.</p>
+</aside>
+<aside class="footnote brackets" id="f2" role="note">
+<span class="label"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id41">1</a>,<a role="doc-backlink" href="#id42">2</a>)</span>
+<p>Frozen natural orbital variant available. In particular, RHF available as CONV/DF.</p>
+</aside>
+</aside>
+</section>
+<section id="technical-support">
+<span id="index-3"></span><h2>Technical Support<a class="headerlink" href="#technical-support" title="Link to this heading">¶</a></h2>
+<p>The <a href="#id179"><span class="problematic" id="id180">|PSIfour|</span></a> package is distributed for free and without any guarantee of
+reliability, accuracy, or suitability for any particular purpose. No
+obligation to provide technical support is expressed or implied. As time
+allows, the developers will attempt to answer inquiries on the <a class="reference external" href="http://forum.psicode.org">forum</a> or <a class="reference external" href="https://github.com/psi4/psi4/issues/new">GitHub</a>. For bug reports,
+specific and detailed information, with example inputs, would be
+appreciated.</p>
+<p>Where-to-post summary:<a class="footnote-reference brackets" href="#f6" id="id43" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a></p>
+<ul class="simple">
+<li><p>How do I? -- <a class="reference external" href="http://forum.psicode.org">ask the forum</a></p></li>
+<li><p>I got this error, why? -- <a class="reference external" href="http://forum.psicode.org">ask the forum</a></p></li>
+<li><p>I got this error and I'm sure it's a bug -- <a class="reference external" href="https://github.com/psi4/psi4/issues/new">file a GitHub issue</a></p></li>
+<li><p>Can I open a discussion on this bit of code? -- <a class="reference external" href="https://github.com/psi4/psi4/issues/new">file a GitHub issue</a></p></li>
+<li><p>I have an idea/request and a plan -- <a class="reference external" href="https://github.com/psi4/psi4/issues/new">file a GitHub issue</a></p></li>
+<li><p>I have an idea/request -- <a class="reference external" href="http://forum.psicode.org">ask the forum</a></p></li>
+<li><p>Why do you? -- <a class="reference external" href="http://forum.psicode.org">ask the forum</a></p></li>
+<li><p>When will you? -- <a class="reference external" href="http://forum.psicode.org">ask the forum</a></p></li>
+<li><p>I have an experience that can improve the build documentation -- <a class="reference external" href="http://forum.psicode.org">inform the forum</a> or <a href="#id50"><span class="problematic" id="id51">:source:`add to the documentation itself &lt;doc/sphinxman/source&gt;`</span></a></p></li>
+<li><p>Anything you want to share privately -- <a class="reference external" href="mailto:crawdad&#37;&#52;&#48;vt&#46;edu">crawdad<span>&#64;</span>vt<span>&#46;</span>edu</a> or <a class="reference external" href="mailto:sherrill&#37;&#52;&#48;gatech&#46;edu">sherrill<span>&#64;</span>gatech<span>&#46;</span>edu</a></p></li>
+</ul>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="f6" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id43">6</a><span class="fn-bracket">]</span></span>
+<p>Adapted from <a class="reference external" href="https://groups.google.com/forum/#!topic/google-collections-users/m8FnCcmtC88">here</a>.</p>
+</aside>
+</aside>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/introduction.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

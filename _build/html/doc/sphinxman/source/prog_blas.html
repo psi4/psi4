@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+
+<html lang="English" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Linear Algebra in |PSIfour| &#8212; Psi4 Documentation 1.11 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=29ef4520"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="linear-algebra-in-psifour">
+<span id="sec-blaslapack"></span><h1>Linear Algebra in <a href="#id3"><span class="problematic" id="id4">|PSIfour|</span></a><a class="headerlink" href="#linear-algebra-in-psifour" title="Link to this heading">¶</a></h1>
+<section id="how-to-call-blas-lapack-in-psifour">
+<span id="faq-blaswrappers"></span><h2>How to call BLAS &amp; LAPACK in <a href="#id5"><span class="problematic" id="id6">|PSIfour|</span></a><a class="headerlink" href="#how-to-call-blas-lapack-in-psifour" title="Link to this heading">¶</a></h2>
+<p>Computational chemistry is essentially linear algebra on molecular
+systems, so using stable, portable, scalable, and efficient numerical
+linear algebra methods in <a href="#id7"><span class="problematic" id="id8">|PSIfour|</span></a> is critical. To that end, we use BLAS1
+(vector-vector operations, like dot products), BLAS2 (matrix-vector
+operations, like rank-1 update), BLAS3 (matrix-matrix operations, like
+matrix multiplication), and LAPACK (advanced matrix decompositions and
+solutions). The methods provided by BLAS and LAPACK are standard, but the
+performance of actual implementations differ greatly from one version to
+another. Moreover, the standard interfaces to the libraries are Fortran,
+so <a href="#id9"><span class="problematic" id="id10">|PSIfour|</span></a> provides a common set of wrappers in <a href="#id1"><span class="problematic" id="id2">:source:`psi4/src/psi4/libqt/qt.h`</span></a> .</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Although block_matrix, init_array, and print_mat are still
+around, their use is discouraged in favor of operations on
+<cite>psi4.core.Matrix</cite> itself. The advice in these docs will catch up
+shortly.</p>
+</div>
+<section id="blas-wrappers">
+<h3>BLAS Wrappers<a class="headerlink" href="#blas-wrappers" title="Link to this heading">¶</a></h3>
+<p>BLAS wrappers are currently fully supported at double precision.</p>
+<p>BLAS commands involving matrices are wrapped so as to be conventional
+C-style &quot;row-major&quot; indexing, meaning that the column is the fast index
+like normal.</p>
+<ul>
+<li><p>The calls to BLAS1 routines are wrapped so as to allow for operations on
+vectors with more than 2^{31} elements (~16 GB, getting to be a problem).
+So passing a signed or unsigned long works, though the stride arguments
+must be integers.</p></li>
+<li><p>All routines are declared in <code class="docutils literal notranslate"><span class="pre">qt.h</span></code>. Each routine is prefixed with a
+<code class="docutils literal notranslate"><span class="pre">C_</span></code>, followed by the standard Fortran name of the routine, in capital
+letters. Input parameters of single primitives (<code class="docutils literal notranslate"><span class="pre">int</span></code>, <code class="docutils literal notranslate"><span class="pre">double</span></code>,
+<code class="docutils literal notranslate"><span class="pre">unsigned</span> <span class="pre">long</span> <span class="pre">int</span></code>, <code class="docutils literal notranslate"><span class="pre">char</span></code>, ...) are passed by value. Arrays,
+including multidimensional arrays, are required to be in contiguous
+memory (as provided by block_matrix, for example), and are passed by
+providing a pointer to the first double or int element of the data (this
+is array[0] if array is <code class="docutils literal notranslate"><span class="pre">double**</span></code>). BLAS1 routines occasionally
+return values (DDOT for instance), BLAS2 and BLAS3 always return void.
+For char arguments, case is insensitive. A few examples are provided:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">BLAS</span><span class="o">/</span><span class="n">LAPACK</span>
+<span class="c1">#include &quot;psi4/libqt/qt.h&quot;</span>
+<span class="o">//</span> <span class="n">block_matrix</span><span class="p">,</span> <span class="n">init_array</span>
+<span class="c1">#include &quot;psi4/libciomr/libciomr.h&quot;</span>
+
+<span class="n">using</span> <span class="n">namespace</span> <span class="n">psi</span><span class="p">;</span>
+<span class="o">...</span>
+
+<span class="o">//</span> <span class="n">Allocate</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="n">vectors</span>
+<span class="nb">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+<span class="n">double</span><span class="o">*</span> <span class="n">a</span> <span class="o">=</span> <span class="n">init_array</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
+<span class="n">double</span><span class="o">*</span> <span class="n">b</span> <span class="o">=</span> <span class="n">init_array</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Allocate</span> <span class="n">A</span> <span class="n">matrix</span><span class="p">;</span>
+<span class="n">double</span><span class="o">**</span> <span class="n">A</span> <span class="o">=</span> <span class="n">block_matrix</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">);</span>
+<span class="n">double</span><span class="o">**</span> <span class="n">B</span> <span class="o">=</span> <span class="n">block_matrix</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">);</span>
+<span class="n">double</span><span class="o">**</span> <span class="n">C</span> <span class="o">=</span> <span class="n">block_matrix</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Call</span> <span class="n">the</span> <span class="n">BLAS1</span> <span class="n">dot</span> <span class="n">product</span> <span class="n">between</span> <span class="n">a</span> <span class="ow">and</span> <span class="n">b</span>
+<span class="o">//</span> <span class="n">n</span> <span class="n">can</span> <span class="n">be</span> <span class="n">a</span> <span class="n">ULI</span> <span class="k">with</span> <span class="n">the</span> <span class="n">BLAS1</span> <span class="n">wrappers</span><span class="p">,</span>
+<span class="o">//</span> <span class="n">All</span> <span class="n">strides</span> <span class="n">must</span> <span class="n">be</span> <span class="n">ints</span> <span class="n">though</span>
+<span class="n">double</span> <span class="n">dot</span> <span class="o">=</span> <span class="n">C_DDOT</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Call</span> <span class="n">the</span> <span class="n">BLAS2</span> <span class="n">GEMV</span> <span class="n">without</span> <span class="n">transposition</span>
+<span class="o">//</span> <span class="n">Note</span> <span class="n">this</span> <span class="n">works</span> <span class="ow">in</span> <span class="n">row</span><span class="o">-</span><span class="n">major</span> <span class="n">order</span>
+<span class="n">C_DGEMV</span><span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Call</span> <span class="n">the</span> <span class="n">BLAS3</span> <span class="n">GEMM</span> <span class="n">without</span> <span class="n">transposition</span>
+<span class="o">//</span> <span class="n">Note</span> <span class="n">this</span> <span class="n">works</span> <span class="ow">in</span> <span class="n">row</span><span class="o">-</span><span class="n">major</span> <span class="n">order</span>
+<span class="n">C_DGEMM</span><span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">,</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n</span><span class="p">,</span> <span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Array</span><span class="s1">&#39;s init&#39;</span><span class="n">d</span> <span class="k">with</span> <span class="n">init_array</span> <span class="n">must</span> <span class="n">be</span> <span class="n">free</span><span class="s1">&#39;d, not delete[]&#39;</span><span class="n">d</span>
+<span class="n">free</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+<span class="n">free</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Block</span> <span class="n">matrix</span> <span class="n">should</span> <span class="n">be</span> <span class="n">free_blocked</span>
+<span class="n">free_block</span><span class="p">(</span><span class="n">A</span><span class="p">);</span>
+<span class="n">free_block</span><span class="p">(</span><span class="n">B</span><span class="p">);</span>
+<span class="n">free_block</span><span class="p">(</span><span class="n">C</span><span class="p">);</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="important-blas-routines">
+<h3>Important BLAS Routines<a class="headerlink" href="#important-blas-routines" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>BLAS1</p>
+<ul>
+<li><p>DDOT: dot product</p></li>
+<li><p>DCOPY: efficient memory copy (with variable stride)</p></li>
+<li><p>DAXPY: y = y + alpha*x</p></li>
+<li><p>DROT: Givens Rotation</p></li>
+<li><p>DNRM2: Vector norm square</p></li>
+</ul>
+</li>
+<li><p>BLAS2</p>
+<ul>
+<li><p>DGEMV: General Matrix-Vector product</p></li>
+<li><p>DTRMV: Triangular Matrix-Vector product (2x faster, not wrapped yet)</p></li>
+<li><p>DTRSM: Triangular Matrix-Vector solution via back substitution (just as fast as DTRMV)</p></li>
+<li><p>DGER: Rank-1 update (not wrapped yet)</p></li>
+</ul>
+</li>
+<li><p>BLAS3</p>
+<ul>
+<li><p>DGEMM: General Matrix-Matrix product</p></li>
+<li><p>DTRMM: General Triangular Matrix-General Matrix product</p></li>
+<li><p>DTRSM: Triangular Matrix-General Matrix solution via back substitution (just as fast as DTRMM)</p></li>
+<li><p>DSYMM/DSYMV calls are not appreciably faster than DGEMM calls, and should only be used in expert situations (like using the other half of the matrix for some form of other transformation).</p></li>
+<li><p>DTRMM/DTRMV calls are 2x faster than DGEMM, and should be used where possible.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="lapack-wrappers">
+<h3>LAPACK Wrappers<a class="headerlink" href="#lapack-wrappers" title="Link to this heading">¶</a></h3>
+<p>All standard LAPACK 3.2 double precision routines are provided.</p>
+<p>LAPACK commands remain in Fortran's &quot;column-major&quot; indexing, so all the
+results will be transposed, and leading dimensions may have to be fiddled
+with (using <code class="docutils literal notranslate"><span class="pre">lda</span> <span class="pre">=</span> <span class="pre">n</span></code> in both directions for square matrices is highly
+recommended). An example of the former problem is a Cholesky
+Decomposition: you expect to get back a lower triangular matrix L such
+that <code class="docutils literal notranslate"><span class="pre">L</span> <span class="pre">L^T</span> <span class="pre">=</span> <span class="pre">A</span></code>, but this is returned in column-major order, so the actual
+recovery of the matrix A with the row-major BLAS wrappers effectively
+involves <code class="docutils literal notranslate"><span class="pre">L^T</span> <span class="pre">L</span> <span class="pre">=</span> <span class="pre">A</span></code>. On of the biggest consequences is in linear equations:
+The input/output forcing/solution vector must be explicitly formed in
+column-major indexing (each vector is placed in a C++ row, with its
+entries along the C++ column). This is visualized in C++ as the transpose
+of the forcing/solution vector.  All routines are declared in qt.h. Each
+routine is prefixed with a <code class="docutils literal notranslate"><span class="pre">C_</span></code>, followed by the standard Fortran name of
+the routine, in capital letters. Input parameters of single primitives
+(int, double, unsigned long int, char, ...) are passed by value. Arrays,
+including multidimensional arrays, are required to be in contiguous memory
+(as provided by block_matrix, for example), and are passed by providing a
+pointer to the first double or int element of the data (this is array[0]
+if array is <code class="docutils literal notranslate"><span class="pre">double**</span></code>). All routines return an int INFO with error and
+calculation information specific to the routine, In Fortran, this is the
+last argument in all LAPACK calls, but should not be provided as an
+argument here. For char arguments, case is insensitive. A Cholesky
+transform example is shown:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">BLAS</span><span class="o">/</span><span class="n">LAPACK</span>
+<span class="c1">#include &quot;psi4/libqt/qt.h&quot;</span>
+<span class="o">//</span> <span class="n">block_matrix</span><span class="p">,</span> <span class="n">init_array</span>
+<span class="c1">#include &quot;psi4/libciomr/libciomr.h&quot;</span>
+
+<span class="n">using</span> <span class="n">namespace</span> <span class="n">psi</span><span class="p">;</span>
+<span class="o">...</span>
+<span class="nb">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+
+<span class="o">//</span> <span class="n">Allocate</span> <span class="n">A</span> <span class="n">matrix</span><span class="p">;</span>
+<span class="n">double</span><span class="o">**</span> <span class="n">A</span> <span class="o">=</span> <span class="n">block_matrix</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Call</span> <span class="n">the</span> <span class="n">LAPACK</span> <span class="n">DPOTRF</span> <span class="n">to</span> <span class="n">get</span> <span class="n">the</span> <span class="n">Cholesky</span> <span class="n">factor</span>
+<span class="o">//</span> <span class="n">Note</span> <span class="n">this</span> <span class="n">works</span> <span class="ow">in</span> <span class="n">column</span><span class="o">-</span><span class="n">major</span> <span class="n">order</span>
+<span class="o">//</span> <span class="n">The</span> <span class="n">result</span> <span class="n">fills</span> <span class="n">like</span><span class="p">:</span>
+<span class="o">//</span>   <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span>
+<span class="o">//</span>     <span class="o">*</span> <span class="o">*</span> <span class="o">*</span>
+<span class="o">//</span>       <span class="o">*</span> <span class="o">*</span>
+<span class="o">//</span>         <span class="o">*</span>
+<span class="o">//</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">the</span> <span class="n">expected</span><span class="p">:</span>
+<span class="o">//</span>   <span class="o">*</span>
+<span class="o">//</span>   <span class="o">*</span> <span class="o">*</span>
+<span class="o">//</span>   <span class="o">*</span> <span class="o">*</span> <span class="o">*</span>
+<span class="o">//</span>   <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span>
+<span class="o">//</span>
+<span class="nb">int</span> <span class="n">info</span> <span class="o">=</span> <span class="n">C_DPOTRF</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">A</span> <span class="n">bit</span> <span class="n">painful</span><span class="p">,</span> <span class="n">see</span> <span class="n">below</span>
+<span class="n">fprintf</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s2">&quot;A:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">);</span>
+<span class="n">print_mat</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">outfile</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Block</span> <span class="n">matrix</span> <span class="n">should</span> <span class="n">be</span> <span class="n">free_blocked</span>
+<span class="n">free_block</span><span class="p">(</span><span class="n">A</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="important-lapack-routines">
+<h3>Important Lapack Routines<a class="headerlink" href="#important-lapack-routines" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>DSYEV: Eigenvalues and, optionally eigenvectors of a symmetric matrix. Eigenvectors take up to 10x longer than eigenvalues.</p></li>
+<li><p>DGEEV: Eigenvalues and, optionally eigenvectors of a general matrix. Up to 10x slower than DSYEV.</p></li>
+<li><p>DGESV: General solver (uses LU decomposition).</p></li>
+<li><p>DGESVD: General singular value decomposition.</p></li>
+<li><p>DGETRF: LU decomposition.</p></li>
+<li><p>DPOTRF: Cholesky decomposition (much more stable/faster)</p></li>
+<li><p>DGETRS: Solver, given LU decomposition by DGETRF</p></li>
+<li><p>DPOTRS: Solver, given Cholesky decomposition by DPOTRF</p></li>
+<li><p>DGETRI: Inverse, given LU decomposition by DGETRF (Warning: it's faster and more stable just to solve with DGETRS)</p></li>
+<li><p>DPOTRI: Inverse, given Cholesky decomposition by DPOTRF (Warning: it's faster and more stable just to solve with DPOTRS)</p></li>
+</ul>
+</section>
+</section>
+<section id="how-to-use-low-level-blas-lapack-with-psi4-core-matrix">
+<span id="faq-blasmatrix"></span><h2>How to use low-level BLAS/LAPACK with <code class="docutils literal notranslate"><span class="pre">psi4.core.Matrix</span></code><a class="headerlink" href="#how-to-use-low-level-blas-lapack-with-psi4-core-matrix" title="Link to this heading">¶</a></h2>
+<p>Jet's awesome new Matrix object has a lot of simple BLAS/LAPACK built in,
+but you can just as easily use the <code class="docutils literal notranslate"><span class="pre">double***</span></code> array underneath if you are
+careful (the outer index is the submatrix for each irrep). Here's an
+example:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// BLAS/LAPACK</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;psi4/libqt/qt.h&quot;</span>
+<span class="c1">// Matrix</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;psi4/libmints/matrix.h&quot;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">psi</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
+
+<span class="c1">// Allocate A Matrix (new C1 convenience constructor);</span>
+<span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Matrix</span><span class="o">&gt;</span><span class="w"> </span><span class="n">A</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">Matrix</span><span class="p">(</span><span class="s">&quot;Still A, but way cooler&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">));</span>
+<span class="c1">// Get the pointer to the 0 irrep (C1 for now, it errors if you ask for too high of an index)</span>
+<span class="kt">double</span><span class="o">**</span><span class="w"> </span><span class="n">A_pointer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A</span><span class="o">-&gt;</span><span class="n">get_pointer</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="c1">// Call the LAPACK DPOTRF to get the Cholesky factor</span>
+<span class="c1">// Note this works in column-major order</span>
+<span class="c1">// The result fills like:</span>
+<span class="c1">//   * * * *</span>
+<span class="c1">//     * * *</span>
+<span class="c1">//       * *</span>
+<span class="c1">//         *</span>
+<span class="c1">// instead of the expected:</span>
+<span class="c1">//   *</span>
+<span class="c1">//   * *</span>
+<span class="c1">//   * * *</span>
+<span class="c1">//   * * * *</span>
+<span class="c1">//</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C_DPOTRF</span><span class="p">(</span><span class="sc">&#39;L&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">A_pointer</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+
+<span class="c1">// Wow that&#39;s a lot easier</span>
+<span class="n">A</span><span class="o">-&gt;</span><span class="n">print</span><span class="p">();</span>
+
+<span class="c1">// Don&#39;t free, it&#39;s shared_ptr!</span>
+</pre></div>
+</div>
+</section>
+<section id="how-to-name-orbital-bases-e-g-ao-so">
+<span id="faq-labas"></span><h2>How to name orbital bases (e.g., AO &amp; SO)<a class="headerlink" href="#how-to-name-orbital-bases-e-g-ao-so" title="Link to this heading">¶</a></h2>
+<p>Many different working bases (the internal linear algebraic basis, not the
+name of the Gaussian basis) are used within <a href="#id11"><span class="problematic" id="id12">|PSIfour|</span></a>, each with a unique
+and important purpose. It is critical to keep them all distinct to prevent
+weird results from occurring.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">AO</span></code> (Atomic Orbitals): Cartesian Gaussians (6D, 10F, etc.),
+<code class="docutils literal notranslate"><span class="pre">(L</span> <span class="pre">+</span> <span class="pre">1)(L</span> <span class="pre">+</span> <span class="pre">2)/2</span></code> functions per shell of angular momentum L. The
+ordering of Cartesian exponents for a given L is given by the standard
+ordering below (MATLAB code):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ncart</span> <span class="o">=</span> <span class="p">(</span><span class="n">L</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">L</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+<span class="n">exps</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">(</span><span class="n">ncart</span><span class="p">,</span><span class="mi">3</span><span class="p">);</span>
+<span class="n">index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="k">for</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">:</span><span class="n">L</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">:</span><span class="n">i</span>
+        <span class="n">lx</span> <span class="o">=</span> <span class="n">L</span> <span class="o">-</span> <span class="n">i</span><span class="p">;</span>
+        <span class="n">ly</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="n">j</span><span class="p">;</span>
+        <span class="n">lz</span> <span class="o">=</span> <span class="n">j</span><span class="p">;</span>
+        <span class="n">exps</span><span class="p">(</span><span class="n">index</span><span class="p">,:)</span> <span class="o">=</span> <span class="p">[</span><span class="n">lx</span> <span class="n">ly</span> <span class="n">lz</span><span class="p">];</span>
+      <span class="n">index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">end</span>
+<span class="n">end</span>
+</pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SO</span></code> (Spherical Atomic Orbitals): Pure Gaussians (5D, 7F, etc.) or
+Cartesian Gaussians, as determined by the user. This is typically the
+first layer encountered, Libmints handles the transform from AO to SO
+automatically. If Cartesian functions are used, the number of functions
+per shell remains <code class="docutils literal notranslate"><span class="pre">(L</span> <span class="pre">+</span> <span class="pre">1)(L</span> <span class="pre">+</span> <span class="pre">2)/2</span></code>, and the ordering remains the same
+as above. Note that the individual functions are not normalized for
+angular momentum as in most codes: the self-overlap of a <a href="#id13"><span class="problematic" id="id14">|PSIfour|</span></a> Cartesian D
+or higher function with more than one nonzero Cartesian exponent (e.g., lx
+= 1, ly = 1, lz = 0) will be less than one. If Spherical Harmonics are
+used, 2L + 1 real combinations of the spherical harmonics are built from
+the <code class="docutils literal notranslate"><span class="pre">(L+1)(L+2)/2</span></code> Cartesian Gaussians, according to H. Schlegel and M.
+Frish, IJQC, 54, 83-87, 1995. Unlike Cartesian functions these functions
+are all strictly normalized. Note that in <a href="#id15"><span class="problematic" id="id16">|PSIfour|</span></a>, the real combinations of
+spherical harmonic functions (see the paragraph below Eq. 15 in the
+Schlegel paper) are ordered as: 0, 1+, 1-, 2+, 2-, ....</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">USO</span></code> (Unique Symmetry-Adapted Orbitals): Spatial symmetry-adapted
+combinations of SOs, blocked according to irrep. The total number of USOs
+is the same as the number of SOs, but the number of USOs within each irrep
+is usually much smaller, which can lead to significant performance
+improvements. Note that this basis is sometimes unfortunately referred to
+as the SO basis, so it's a bit context specific.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OSO</span></code> (Orthogonal Symmetry-Adapted Orbitals): USOs orthogonalized by
+Symmetric or Canonical Orthogonalization. The number of OSOs may be
+slightly smaller than the total number of USOs, due to removal of linear
+dependencies via Canonical Orthogonalization. The OSOs are rarely
+encountered, as usually we go straight from USOs to MOs.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MO</span></code> (Molecular Orbitals): The combination of OSOs that diagonalizes
+the Fock Matrix, so each basis function is a Hartree-Fock (or Kohn-Sham)
+molecular orbital. The number of OSOs and MOs is always the same. MOs are
+orthonormal.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LO</span></code> (Localized Orbitals): Localized occupied orbitals, a different
+combination of the occupied molecular orbitals which enhances spatial
+locality. LOs do not diagonalize the occ-occ block of the Fock Matrix, but
+remain orthonormal to each other and the virtual space.</p></li>
+</ul>
+</section>
+<section id="how-to-name-orbital-dimensions">
+<span id="faq-orbdims"></span><h2>How to name orbital dimensions<a class="headerlink" href="#how-to-name-orbital-dimensions" title="Link to this heading">¶</a></h2>
+<p>There are a number of different names used to refer to the basis set size.
+These may seem redundant, but they have subtly different meanings, as
+detailed below.</p>
+<p>A calculation can use either pure (5D, 7F, 9G, etc.) basis functions or
+Cartesian (6D, 10F, 15G, etc.), as dictated by the input file / basis set
+specification. Also, the basis can be represented in terms of atomic
+orbitals (AO) or symmetry-adapted orbitals (SO). Further complications
+come from the fact that a nearly linearly-dependent basis set will have
+functions removed from it to prevent redundancies. With all of these
+factors in mind, here are the conventions used internally:</p>
+<ul class="simple">
+<li><p>nao <a href="#id17"><span class="problematic" id="id18">|w---w|</span></a> The number of atomic orbitals in Cartesian representation.</p></li>
+<li><p>nso <a href="#id19"><span class="problematic" id="id20">|w---w|</span></a> The number of atomic orbitals but in the pure representation if the current basis uses pure functions, number of Cartesian AOs otherwise.</p></li>
+<li><p>nbf <a href="#id21"><span class="problematic" id="id22">|w---w|</span></a> The number of basis functions, which is the same as nso.</p></li>
+<li><p>nmo <a href="#id23"><span class="problematic" id="id24">|w---w|</span></a> The number of basis functions, after projecting out redundancies in the basis.</p></li>
+</ul>
+<p>When molecular symmetry is utilized, a small array of sizes per irrep is
+usually allocated on the stack, and is named by augmenting the name above
+with a pi (per-irrep), e.g. nmopi. Note that the number of irreps is
+always the singular nirrep, and that the index variable h is always used
+in a for-loop traverse of irreps.</p>
+</section>
+<section id="how-to-name-orbital-spaces-e-g-docc">
+<span id="faq-orbspaces"></span><h2>How to name orbital spaces (e.g., docc)<a class="headerlink" href="#how-to-name-orbital-spaces-e-g-docc" title="Link to this heading">¶</a></h2>
+<p>As with basis sets, a number of names are used to refer to refer to the
+quantity of electrons, virtuals, and active sub-quantities of a <a href="#id25"><span class="problematic" id="id26">|PSIfour|</span></a>
+calculation. All of these can be defined per irrep as above. Some common
+conventions are:</p>
+<ul class="simple">
+<li><p>nelec <a href="#id27"><span class="problematic" id="id28">|w---w|</span></a> The number of electrons, rarely used due to specialization of alphas and betas or soccs and doccs.</p></li>
+<li><p>nalpha <a href="#id29"><span class="problematic" id="id30">|w---w|</span></a> The number of alpha electrons.</p></li>
+<li><p>nbeta <a href="#id31"><span class="problematic" id="id32">|w---w|</span></a> The number of beta electrons</p></li>
+<li><p>docc <a href="#id33"><span class="problematic" id="id34">|w---w|</span></a> The number of doubly-occupied orbitals</p></li>
+<li><p>socc <a href="#id35"><span class="problematic" id="id36">|w---w|</span></a> The number of singly-occupied orbitals (Almost always alpha, we don't like open-shell singlets much).</p></li>
+<li><p>nvir <a href="#id37"><span class="problematic" id="id38">|w---w|</span></a> The number of virtual orbitals</p></li>
+</ul>
+<section id="multireference-dimensions">
+<h3>Multireference Dimensions<a class="headerlink" href="#multireference-dimensions" title="Link to this heading">¶</a></h3>
+<p>A orbital diagram of the nomenclature used for CI and MCSCF calculations.</p>
+<p>Diagrammatically:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-----------------------------------------------</span>
+       <span class="n">CI</span>       <span class="o">|</span>      <span class="n">RAS</span>      <span class="o">|</span>     <span class="n">CAS</span>
+<span class="o">-----------------------------------------------</span>
+                <span class="o">|</span> <span class="n">frozen_uocc</span>   <span class="o">|</span> <span class="n">frozen_uocc</span>
+<span class="n">dropped_uocc</span>    <span class="o">|</span> <span class="n">rstr_uocc</span>     <span class="o">|</span> <span class="n">rstr_uocc</span>
+<span class="o">-----------------------------------------------</span>
+                <span class="o">|</span> <span class="n">RAS</span> <span class="n">IV</span>        <span class="o">|</span>
+                <span class="o">|</span> <span class="n">RAS</span> <span class="n">III</span>       <span class="o">|</span>
+<span class="n">active</span>          <span class="o">|</span>               <span class="o">|</span> <span class="n">active</span>
+                <span class="o">|</span> <span class="n">RAS</span> <span class="n">II</span>        <span class="o">|</span>
+                <span class="o">|</span> <span class="n">RAS</span> <span class="n">I</span>         <span class="o">|</span>
+<span class="o">-----------------------------------------------</span>
+<span class="n">dropped_docc</span>    <span class="o">|</span> <span class="n">rstr_docc</span>     <span class="o">|</span> <span class="n">rstr_docc</span>
+                <span class="o">|</span> <span class="n">frozen_docc</span>   <span class="o">|</span> <span class="n">frozen_dcc</span>
+<span class="o">-----------------------------------------------</span>
+</pre></div>
+</div>
+<p>Notation:</p>
+<ul class="simple">
+<li><p>uocc <a href="#id39"><span class="problematic" id="id40">|w---w|</span></a> Unoccupied orbitals.</p></li>
+<li><p>active <a href="#id41"><span class="problematic" id="id42">|w---w|</span></a> Variable occupation orbitals.</p></li>
+<li><p>socc <a href="#id43"><span class="problematic" id="id44">|w---w|</span></a> Singly occupied orbitals.</p></li>
+<li><p>docc <a href="#id45"><span class="problematic" id="id46">|w---w|</span></a> Doubly occupied orbitals.</p></li>
+</ul>
+<p>Orbital spaces:</p>
+<ul class="simple">
+<li><p>frozen_uocc <a href="#id47"><span class="problematic" id="id48">|w---w|</span></a> Absolutely frozen virtual orbital.</p></li>
+<li><p>rstr_uocc <a href="#id49"><span class="problematic" id="id50">|w---w|</span></a> Can have rotations, no excitations into.</p></li>
+<li><p>dropped_uocc <a href="#id51"><span class="problematic" id="id52">|w---w|</span></a> rstr_uocc + frozen_uocc</p></li>
+</ul>
+<p>----- end CI active -----</p>
+<ul class="simple">
+<li><p>RAS IV <a href="#id53"><span class="problematic" id="id54">|w---w|</span></a> uocc, limited number of excitations into.</p></li>
+<li><p>RAS III <a href="#id55"><span class="problematic" id="id56">|w---w|</span></a> uocc, limited number of excitations into.</p></li>
+<li><p>RAS II <a href="#id57"><span class="problematic" id="id58">|w---w|</span></a> docc/socc/uocc, equivalent to active in CAS.</p></li>
+<li><p>RAS I <a href="#id59"><span class="problematic" id="id60">|w---w|</span></a> docc/socc/uocc, limited excitations out of.</p></li>
+</ul>
+<p>----- start CI active -----</p>
+<ul class="simple">
+<li><p>dropped_docc <a href="#id61"><span class="problematic" id="id62">|w---w|</span></a> rstr_docc + frozen_docc</p></li>
+<li><p>rstr_docc <a href="#id63"><span class="problematic" id="id64">|w---w|</span></a> Can have rotations, no excitations from.</p></li>
+<li><p>frozen_docc <a href="#id65"><span class="problematic" id="id66">|w---w|</span></a> Absolutely frozen core orbital.</p></li>
+</ul>
+<p>Orbitals are sorted by space, irrep, eigenvalue.</p>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Psi4 Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Harishankar.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../../../_sources/doc/sphinxman/source/prog_blas.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
