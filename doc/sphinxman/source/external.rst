@@ -276,18 +276,38 @@ explained below. Note that each deeper level trumps all previous levels.
 .. Psi4 then detects these value via the API routines in ``<omp.h>`` and
 .. ``<mkl.h>``, and runs all applicable code with 4 threads.
 
-.. rubric:: (1) The -n Command Line Flag
+..rubric:: (1)Setting OpenMP and MKL Thread Using Environment Variables
+The easiest way to control threading in PSI4 is to set the standard OpenMP and MKL environment variables.
+..code-block::bash
+
+   export OMP_NUM_THREADS=4
+   export MKL_NUM_THREADS=4
+
+These variables can be set in your shell configuration files to control the number of threads used by both OpenMP and MKL. PSI4 will automatically detect these values and run applicable code with the specified number of threads.
+If you need to adjust the number of threads dynamically during the session, you can reset the environment variable as needed:
+
+.. code-block:: bash
+    export OMP_NUM_THREADS=6
+
+Note that changing the number of threads multiple times is generally not recommended. It’s best to set it once and ensure the system is stable before running your calculations.
+
+.. sidebar:: MKL_NUM_THREADS Specifics
+
+The environment variable `MKL_NUM_THREADS` controls the number of threads used by MKL (Intel Math Kernel Library) routines. 
+This variable is useful when MKL is handling matrix operations in PSI4. Note that this can be set independently from the OpenMP threads. For more details, refer to the Intel MKL documentation.
+
+.. rubric:: (2) The -n Command Line Flag
 
 To change the number of threads at runtime, the :option:`psi4 -n` flag may be used. An
 example is:
 
 .. code-block:: bash
 
-    psi4 -i input.dat -o output.dat -n 4
+    psi4 -i input.dat -o output.dat -n 4 
 
-which will run on four threads. Note that is is not available for PsiAPI mode of operation.
+This runs the job using four threads. However, note that this option is not available for PsiAPI mode of operation.
 
-.. rubric:: (2) Setting Thread Numbers in an Input
+.. rubric:: (3) Setting Thread Numbers in an Input
 
 For more explicit control, the Process::environment class in |PSIfour| can
 override the number of threads set by environment variables. This functionality
@@ -311,7 +331,7 @@ In PsiAPI mode of operation, this syntax, ``psi4.set_num_threads(4)``,
 is the primary way to control threading.
 
 
-.. rubric:: (3) Method-Specific Control
+.. rubric:: (4) Method-Specific Control
 
 Even more control is possible in situations where the threaded generation of AO density-fitted integrals requires memory proportional to the number of threads. 
 For example, when using a small-memory node, the memory requirement may exceed the available capacity if all threads are involved in generating these integrals. 
