@@ -491,7 +491,7 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
         "gradients to determine vibrational frequencies and \n"
         "  normal modes. Resulting frequencies are only valid at stationary points",
         "2_0":
-        "gradients to determine vibrational frequencies and \n"
+        "energies to determine vibrational frequencies and \n"
         "  normal modes. Resulting frequencies are only valid at stationary points"
     }
 
