@@ -165,7 +165,7 @@ no_com
     # psi4.energy("fisapt0", external_potentials={"C": Chargefield_C})
     psi4.energy(
         "sapt(dft)",
-        # external_potentials={"C": Chargefield_C},
+        external_potentials={"C": Chargefield_C},
     )
     pp(psi4.core.variables())
     for key, value in fisapt0_external_potential_energies.items():

@@ -35,6 +35,7 @@ from psi4 import core
 from ...p4util import solvers
 from ...p4util.exceptions import *
 from .sapt_util import print_sapt_var
+from pprint import pprint as pp
 
 
 def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
@@ -72,6 +73,7 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
     # Potential ints
     mints = core.MintsHelper(wfn_A.basisset())
     cache["V_A"] = mints.ao_potential()
+    # TODO: add external potential
     # cache["V_A"].axpy(1.0, wfn_A.Va())
 
     mints = core.MintsHelper(wfn_B.basisset())
@@ -119,10 +121,12 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
     return cache
 
 
-def electrostatics(cache, do_print=True):
+def electrostatics(cache, do_print=True, external_potentials=None):
     """
     Computes the E10 electrostatics from a build_sapt_jk_cache datacache.
     """
+    print("CACHE")
+    pp(cache)
 
     if do_print:
         core.print_out("\n  ==> E10 Electostatics <== \n\n")

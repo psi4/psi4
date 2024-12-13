@@ -116,6 +116,16 @@ class FISAPT {
     void overlap();
     /// Build the kinetic integrals T
     void kinetic();
+    /// Compute External Potential Energy for Nuclear Energy
+    void external_external_potential(
+       std::shared_ptr<Wavefunction> reference_,
+       std::shared_ptr<BasisSet> primary_,
+       double** Enucsp,
+       double& Etot,
+       std::shared_ptr<Molecule> mol,
+       std::map<std::string, std::shared_ptr<Matrix> > matrices_,
+       std::map<std::string, std::shared_ptr<Vector> > vectors_
+    );
     /// Build the nuclear potentials V and interaction energies
     void nuclear();
     /// Build the J/K potentials for C, D, and E
