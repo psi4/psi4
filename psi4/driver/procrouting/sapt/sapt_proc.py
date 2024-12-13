@@ -78,19 +78,19 @@ def run_sapt_dft(name, **kwargs):
     # Get the molecule of interest
     ref_wfn = kwargs.get("ref_wfn", None)
     if ref_wfn is None:
-        sapt_dimer = kwargs.pop("molecule", core.get_active_molecule())
+        sapt_dimer_initial = kwargs.pop("molecule", core.get_active_molecule())
     else:
         core.print_out(
             'Warning! SAPT argument "ref_wfn" is only able to use molecule information.'
         )
-        sapt_dimer = ref_wfn.molecule()
+        sapt_dimer_initial = ref_wfn.molecule()
 
     if do_mon_grac_shift_A or do_mon_grac_shift_B:
-        monA = sapt_dimer.extract_subsets(1)
-        monB = sapt_dimer.extract_subsets(2)
+        monA = sapt_dimer_initial.extract_subsets(1)
+        monB = sapt_dimer_initial.extract_subsets(2)
 
     sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(
-        sapt_dimer, "dimer"
+        sapt_dimer_initial, "dimer"
     )
 
     # Print out the title and some information
@@ -168,19 +168,26 @@ def run_sapt_dft(name, **kwargs):
 
     # Compute dimer wavefunction
     hf_wfn_dimer = None
+    from pprint import pprint as pp
     if do_delta_hf:
         if (core.get_global_option('SCF_TYPE') == 'DISK_DF'):
             core.set_global_option('DF_INTS_IO', 'SAVE')
         core.timer_on("SAPT(DFT):Dimer SCF")
         hf_data = {}
-        hf_sapt_dimer = sapt_dimer.clone()
-        hf_sapt_dimer.reset_point_group('c1')
-        hf_sapt_dimer.fix_orientation(False)
-        hf_sapt_dimer.fix_com(False)
-
+        # Need to set _initial_cartesian for external potential on cloned molecule
+        sapt_dimer._initial_cartesian = sapt_dimer_initial._initial_cartesian
+        # frags = sapt_dimer_initial.get_fragments()
+        # monomerA._initial_cartesian = core.Matrix.from_array(sapt_dimer._initial_cartesian.np[frags[0][0]: frags[0][1], :].copy())
+        monomerA._initial_cartesian = core.Matrix.from_array(sapt_dimer._initial_cartesian.np.copy())
+        monomerB._initial_cartesian = core.Matrix.from_array(sapt_dimer._initial_cartesian.np.copy())
         hf_wfn_dimer = scf_helper(
-            "SCF", molecule=hf_sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs
+            "SCF",
+            # molecule=sapt_dimer_initial,
+            molecule=sapt_dimer,
+            banner="SAPT(DFT): delta HF Dimer",
+            **kwargs,
         )
+        print("HF DIMER COMPLETE")
         hf_data["HF DIMER"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT):Dimer SCF")
 
@@ -188,9 +195,11 @@ def run_sapt_dft(name, **kwargs):
         if core.get_global_option("SCF_TYPE") == "DF":
             core.IO.change_file_namespace(97, "dimer", "monomerA")
 
+        print("HF MONOMER A START")
         hf_wfn_A = scf_helper(
             "SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs
         )
+        print("HF MONOMER A COMPLETE")
         hf_data["HF MONOMER A"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT):Monomer A SCF")
 

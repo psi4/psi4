@@ -124,7 +124,17 @@ no_com
         "SAPT DISP ENERGY": -0.002185724589094623,
         "SAPT TOTAL ENERGY": -0.009274555148221415,
     }
-    # External potential containing the third water from the trimer with TIP3P charges
+
+    saptdft_no_external_potential = {
+        "SAPT ELST ENERGY": -0.014201712642446296,
+        "ELST10,R": -0.014201712642446296,
+        "SAPT EXCH ENERGY": 0.014021550175337915,
+        "SAPT IND ENERGY": -0.0033383768785273885,
+        "SAPT DISP ENERGY": -0.002394920793165888,
+        "SAPT TOTAL ENERGY": -0.005913460138801657,
+    }
+    # External potential containing the third water from the trimer with TIP3P
+    # charges
     Chargefield_C = np.array(
         [
             -0.834,
@@ -153,7 +163,11 @@ no_com
         }
     )
     # psi4.energy("fisapt0", external_potentials={"C": Chargefield_C})
-    psi4.energy("sapt(dft)", external_potentials={"C": Chargefield_C})
+    psi4.energy(
+        "sapt(dft)",
+        # external_potentials={"C": Chargefield_C},
+    )
+    pp(psi4.core.variables())
     for key, value in fisapt0_external_potential_energies.items():
         compare_values(
             value,
