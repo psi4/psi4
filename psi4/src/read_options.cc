@@ -3161,12 +3161,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("MP2_SOS_SCALE", 1.3);
         /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
         options.add_double("MP2_SOS_SCALE2", 1.2);
-        /*- CEPA opposite-spin scaling value from SCS-CCSD -*/
-        // options.add_double("CEPA_OS_SCALE",1.27);
-        /*- CEPA same-spin scaling value from SCS-CCSD -*/
-        // options.add_double("CEPA_SS_SCALE",1.13);
-        /*- CEPA Spin-opposite scaling (SOS) value -*/
-        // options.add_double("CEPA_SOS_SCALE",1.3);
         /*- Scaling value for 3rd order energy correction (S. Grimme, Vol. 24, pp. 1529, J. Comput. Chem.) -*/
         options.add_double("E3_SCALE", 0.25);
         /*- OO scaling factor used in MSD -*/
