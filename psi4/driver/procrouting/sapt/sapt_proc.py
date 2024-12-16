@@ -93,6 +93,10 @@ def run_sapt_dft(name, **kwargs):
         sapt_dimer_initial, "dimer"
     )
 
+    sapt_dimer._initial_cartesian = sapt_dimer_initial._initial_cartesian
+    monomerA._initial_cartesian = core.Matrix.from_array(sapt_dimer._initial_cartesian.np.copy())
+    monomerB._initial_cartesian = core.Matrix.from_array(sapt_dimer._initial_cartesian.np.copy())
+
     # Print out the title and some information
     core.print_out("\n")
     core.print_out(
