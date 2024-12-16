@@ -151,7 +151,7 @@ def scf_initialize(self):
     # Change allocation for collocation matrices based on DFT type
     initialize_jk_obj = False
     if isinstance(self.jk(), core.JK):
-        print("Re-using passed JK object instead of rebuilding")
+        core.print_out("\nRe-using passed JK object instead of rebuilding\n")
         jk = self.jk()
     else:
         initialize_jk_obj = True

@@ -136,8 +136,6 @@ def run_sapt_dft(name, **kwargs):
         #     core.IO.change_file_namespace(97, 'dimer', 'monomerA')
 
         jk_obj = hf_wfn_dimer.jk()
-        print("JK_OBJ:")
-        print(jk_obj)
         hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", jk=jk_obj, **kwargs)
         hf_data["HF MONOMER A"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT):Monomer A SCF")
