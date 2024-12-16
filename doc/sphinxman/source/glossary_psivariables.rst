@@ -1066,6 +1066,10 @@ PSI Variables by Alpha
    Per-atom expectation value of r^3 [a0^3], equivalent to the volume
    of the MBIS-partitioned density.
 
+.. psivar:: MBIS VALENCE CHARGES
+
+   Per-atom valence charges [e] computed from an MBIS partitioned density.
+
 .. psivar:: MBIS VALENCE WIDTHS
 
    Per-atom density width [a0] of the associated valence charge computed
