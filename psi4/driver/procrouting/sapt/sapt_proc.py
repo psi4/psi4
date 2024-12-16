@@ -231,6 +231,7 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option("DFT_GRAC_SHIFT", mon_a_shift)
 
         core.IO.set_default_namespace('monomerA')
+        core.set_global_option("SAVE_JK", True)
         wfn_A = scf_helper(sapt_dft_functional,
                            post_scf=False,
                            molecule=monomerA,
@@ -255,6 +256,7 @@ def run_sapt_dft(name, **kwargs):
                            post_scf=False,
                            molecule=monomerB,
                            banner="SAPT(DFT): DFT Monomer B",
+                           jk=wfn_A.jk(),
                            **kwargs)
         data["DFT MONOMERB"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT): Monomer B DFT")
