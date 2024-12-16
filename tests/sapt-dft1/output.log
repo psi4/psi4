@@ -1,0 +1,12 @@
+2024-12-16:11:52:06,586 INFO     [psi4.driver.task_planner:285] PLANNING Atomic:  keywords={'SAPT_DFT_DO_DHF': 0, 'SAPT_DFT_DO_HYBRID': 0, 'SAPT_DFT_EXCH_DISP_SCALE_SCHEME': 'NONE', 'SAPT_DFT_GRAC_SHIFT_A': 0.203293, 'SAPT_DFT_GRAC_SHIFT_B': 0.138264, 'SCF_TYPE': 'DF', 'function_kwargs': {}}
+2024-12-16:11:52:06,588 INFO     [psi4.driver.driver:523] Compute energy(): method=sapt(dft), basis=aug-cc-pvdz, molecule=dimer, nre=27.692307692307693
+2024-12-16:11:52:07,975 INFO     [psi4.driver.driver:526] Return energy(): 2.316811719788709e-05
+2024-12-16:11:52:07,991 INFO     [psi4.driver.task_planner:285] PLANNING Atomic:  keywords={'DF_INTS_IO': 'SAVE', 'SCF__INTS_TOLERANCE': 1e-12, 'SAPT_DFT_DO_DHF': 1, 'SAPT_DFT_DO_HYBRID': 0, 'SAPT_DFT_EXCH_DISP_SCALE_SCHEME': 'NONE', 'SAPT_DFT_GRAC_SHIFT_A': 0.203293, 'SAPT_DFT_GRAC_SHIFT_B': 0.138264, 'SCF_TYPE': 'DF', 'function_kwargs': {}}
+2024-12-16:11:52:07,993 INFO     [psi4.driver.driver:523] Compute energy(): method=sapt(dft), basis=aug-cc-pvdz, molecule=dimer, nre=27.692307692307693
+2024-12-16:11:52:09,902 INFO     [psi4.driver.driver:526] Return energy(): 1.1270716577700354e-05
+2024-12-16:11:52:09,919 INFO     [psi4.driver.task_planner:285] PLANNING Atomic:  keywords={'DF_INTS_IO': 'SAVE', 'SCF__INTS_TOLERANCE': 1e-12, 'SAPT_DFT_DO_DHF': 1, 'SAPT_DFT_DO_HYBRID': 1, 'SAPT_DFT_EXCH_DISP_SCALE_SCHEME': 'DISP', 'SAPT_DFT_GRAC_SHIFT_A': 0.203293, 'SAPT_DFT_GRAC_SHIFT_B': 0.138264, 'SCF_TYPE': 'DF', 'function_kwargs': {}}
+2024-12-16:11:52:09,920 INFO     [psi4.driver.driver:523] Compute energy(): method=sapt(dft), basis=aug-cc-pvdz, molecule=dimer, nre=27.692307692307693
+2024-12-16:11:52:11,947 INFO     [psi4.driver.driver:526] Return energy(): -1.1245828530912882e-05
+2024-12-16:11:52:11,963 INFO     [psi4.driver.task_planner:285] PLANNING Atomic:  keywords={'DF_INTS_IO': 'SAVE', 'SCF__INTS_TOLERANCE': 1e-12, 'SAPT_DFT_DO_DHF': 1, 'SAPT_DFT_DO_HYBRID': 1, 'SAPT_DFT_EXCH_DISP_SCALE_SCHEME': 'FIXED', 'SAPT_DFT_GRAC_SHIFT_A': 0.203293, 'SAPT_DFT_GRAC_SHIFT_B': 0.138264, 'SCF_TYPE': 'DF', 'function_kwargs': {}}
+2024-12-16:11:52:11,966 INFO     [psi4.driver.driver:523] Compute energy(): method=sapt(dft), basis=aug-cc-pvdz, molecule=dimer, nre=27.692307692307693
+2024-12-16:11:52:13,978 INFO     [psi4.driver.driver:526] Return energy(): -1.0710590324208879e-05
