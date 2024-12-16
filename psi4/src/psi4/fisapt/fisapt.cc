@@ -563,11 +563,11 @@ void FISAPT::kinetic() {
 void sapt_nuclear_external_potential(
     std::shared_ptr<Wavefunction> reference_,
     std::shared_ptr<BasisSet> primary_,
-    double** Enucsp,
+    double**& Enucsp,
     double& Etot,
     std::shared_ptr<Molecule> mol,
-    std::map<std::string, std::shared_ptr<Matrix> > matrices_,
-    std::map<std::string, std::shared_ptr<Vector> > vectors_,
+    std::map<std::string, std::shared_ptr<Matrix> >& matrices_,
+    std::map<std::string, std::shared_ptr<Vector> >& vectors_,
     Options& options_,
     std::shared_ptr<PsiOutStream> outfile
 ) {
