@@ -560,6 +560,13 @@ void FISAPT::kinetic() {
     Tint->compute(matrices_["T"]);
 }
 
+// void sapt_test(){
+//     printf("Hello from sapt_test\n");
+// }
+// void sapt_test(){
+//     printf("Hello from sapt_test\n");
+// }
+
 void sapt_nuclear_external_potential(
     std::shared_ptr<Wavefunction> reference_,
     std::shared_ptr<BasisSet> primary_,

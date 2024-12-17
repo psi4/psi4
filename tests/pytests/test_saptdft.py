@@ -258,4 +258,6 @@ no_com
 
 if __name__ == "__main__":
     # test_saptdft_external_potential()
-    test_fisapt_external_potential()
+    # test_fisapt_external_potential()
+    from psi4 import core
+    core.sapt_test()

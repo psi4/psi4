@@ -268,6 +268,8 @@ class CPHF_FISAPT {
 
 }  // Namespace fisapt
 
+// void sapt_test();
+
 /// Compute External Potential Energy for Nuclear Energy
 // void sapt_nuclear_external_potential(std::shared_ptr<Wavefunction> reference_, std::shared_ptr<BasisSet> primary_,
 //                                      double** Enucsp, double& Etot, std::shared_ptr<Molecule> mol,

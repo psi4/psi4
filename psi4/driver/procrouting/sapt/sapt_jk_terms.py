@@ -70,6 +70,9 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
     cache["P_A"] = core.doublet(cache["Cvir_A"], cache["Cvir_A"], False, True)
     cache["P_B"] = core.doublet(cache["Cvir_B"], cache["Cvir_B"], False, True)
 
+    # External Potential
+    core.sapt_test()
+
     # Potential ints
     mints = core.MintsHelper(wfn_A.basisset())
     cache["V_A"] = mints.ao_potential()

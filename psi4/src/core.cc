@@ -56,6 +56,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/fisapt/fisapt.h"
 
 #include "python_data_type.h"
 
@@ -289,6 +290,10 @@ void py_be_quiet() {
     auto mode = std::ostream::app;
     outfile = std::make_shared<PsiOutStream>("/dev/null", mode);
     if (!outfile) throw PSIEXCEPTION("Psi4: Unable to redirect output to /dev/null.");
+}
+
+void sapt_test(){
+    printf("Hello from sapt_test\n");
 }
 
 std::string py_get_outfile_name() { return outfile_name; }
@@ -1353,6 +1358,8 @@ PYBIND11_MODULE(core, core) {
              "Redirects output to ``/dev/null``. "
              "To switch back to regular output mode, use :func:`~psi4.core.reopen_outfile()`. "
              "Doesn't work with Windows.");
+    core.def("sapt_test", sapt_test,
+             "TESTING");
     // modules
     core.def("scfgrad", py_psi_scfgrad, "ref_wfn"_a, "Run scfgrad, which is a specialized DF-SCF gradient program.");
     core.def("scfhess", py_psi_scfhess, "ref_wfn"_a, "Run scfhess, which is a specialized DF-SCF hessian program.");
