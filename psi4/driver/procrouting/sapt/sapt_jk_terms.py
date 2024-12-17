@@ -38,7 +38,13 @@ from .sapt_util import print_sapt_var
 from pprint import pprint as pp
 
 
-def build_sapt_jk_cache(wfn_dimer, wfn_A, wfn_B, jk, do_print=True):
+def build_sapt_jk_cache(
+        wfn_dimer: core.Wavefunction,
+        wfn_A: core.Wavefunction,
+        wfn_B: core.Wavefunction,
+        jk: core.JK,
+        do_print=True,
+):
     """
     Constructs the DCBS cache data required to compute ELST/EXCH/IND
     """
@@ -71,25 +77,33 @@ def build_sapt_jk_cache(wfn_dimer, wfn_A, wfn_B, jk, do_print=True):
     cache["P_B"] = core.doublet(cache["Cvir_B"], cache["Cvir_B"], False, True)
 
     # External Potential
-    ext_matrices = {}
-    Enuc = core.sapt_nuclear_external_potential_python(
+    # nA = wfn_A.molecule().natom()
+    # print(nA, nB)
+    # TODO: ensure Enucs is the right dimensionality for different sized
+    # systems..., water dimer is 3x3
+    ext_matrices = {
+        "Enucs": core.Matrix.from_array(np.zeros((3, 3)), name="Enucs"),
+    }
+    Etot = core.sapt_nuclear_external_potential_python(
         wfn_dimer,
         ext_matrices,
         core.get_options()
     )
     pp(ext_matrices)
-    print(f"Enuc: {Enuc}")
+    print(f"Etot: {Etot}")
+    print(f"Enucs:\n{ext_matrices['Enucs'].np}")
+    for key, value in ext_matrices.items():
+        print(f"{key}: {value.name}")
+        cache[key] = value
 
     # Potential ints
     mints = core.MintsHelper(wfn_A.basisset())
     cache["V_A"] = mints.ao_potential()
-    # cache["V_A"].add(ext_matrices["VE"])
     # TODO: add external potential
     # cache["V_A"].axpy(1.0, wfn_A.Va())
 
     mints = core.MintsHelper(wfn_B.basisset())
     cache["V_B"] = mints.ao_potential()
-    # cache["V_B"].add(ext_matrices["VE"])
     # cache["V_B"].axpy(1.0, wfn_B.Va())
 
     # Anything else we might need
