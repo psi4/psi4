@@ -147,7 +147,7 @@ def build_sapt_jk_cache(
     return cache
 
 
-def electrostatics(cache, do_print=True, external_potentials=None):
+def electrostatics(cache, do_print=True):
     """
     Computes the E10 electrostatics from a build_sapt_jk_cache datacache.
     """
@@ -166,8 +166,12 @@ def electrostatics(cache, do_print=True, external_potentials=None):
     if do_print:
         core.print_out(print_sapt_var("Elst10,r ", Elst10, short=True))
         core.print_out("\n")
+    extern_extern_ie = 0
+    if cache.get('extern_extern_IE'):
+        extern_extern_ie = cache['extern_extern_IE'].get(0, 1) * 2.0
+        core.print_out(f"    Extern-Extern               {extern_extern_ie*1000:16.8f} [mEh]\n")
 
-    return {"Elst10,r": Elst10}
+    return {"Elst10,r": Elst10}, extern_extern_ie
 
 
 def exchange(cache, jk, do_print=True):

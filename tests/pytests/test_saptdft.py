@@ -179,6 +179,94 @@ no_com
         )
     return
 
+@pytest.mark.saptdft
+def test_sapthf_external_potential():
+    mol_trimer = psi4.geometry(
+        """
+0 1
+O   0.017225   0.031664   0.004802
+H  -0.046691  -0.052504   0.962436
+H   0.972017   0.055307  -0.185622
+--
+0 1
+O   2.516175   0.894012  -1.014512
+H   1.942080   1.572902  -1.410984
+H   3.056412   0.561271  -1.739079
+symmetry c1
+no_reorient
+no_com
+    """
+    )
+    fisapt0_external_potential_energies = {
+        "SAPT ELST ENERGY": -0.01581004514947182,
+        "SAPT ELST10,R ENERGY": -0.01581004514947182,
+        "SAPT EXCH ENERGY": 0.012282520736587468,
+        "SAPT IND ENERGY": -0.0035613061462424402,
+        "SAPT DISP ENERGY": -0.002185724589094623,
+        "SAPT TOTAL ENERGY": -0.009274555148221415,
+    }
+
+    saptdft_no_external_potential = {
+        "SAPT ELST ENERGY": -0.014201712642446296,
+        "ELST10,R": -0.014201712642446296,
+        "SAPT EXCH ENERGY": 0.014021550175337915,
+        "SAPT IND ENERGY": -0.0033383768785273885,
+        "SAPT DISP ENERGY": -0.002394920793165888,
+        "SAPT TOTAL ENERGY": -0.005913460138801657,
+    }
+    # External potential containing the third water from the trimer with TIP3P
+    # charges
+    Chargefield_C = np.array(
+        [
+            -0.834,
+            0.179217,
+            2.438389,
+            -1.484606,
+            0.417,
+            -0.194107,
+            1.702697,
+            -0.966751,
+            0.417,
+            -0.426657,
+            2.563754,
+            -2.222683,
+        ]
+    ).reshape((-1, 4))
+    Chargefield_C[:, [1, 2, 3]] /= qcel.constants.bohr2angstroms
+    psi4.set_options(
+        {
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+            "SAPT_DFT_FUNCTIONAL": "hf",
+            "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
+        }
+    )
+    # psi4.energy("fisapt0", external_potentials={"C": Chargefield_C})
+    psi4.energy(
+        "sapt(dft)",
+        external_potentials={"C": Chargefield_C},
+    )
+    pp(psi4.core.variables())
+    pp(fisapt0_external_potential_energies)
+    key_labels = [
+        ["SAPT ELST10,R ENERGY", "ELST10,R"],
+        ["SAPT ELST ENERGY", 'SAPT ELST ENERGY'],
+        ["SAPT EXCH ENERGY", "SAPT EXCH ENERGY"],
+        ["SAPT IND ENERGY", "SAPT IND ENERGY"],
+        ["SAPT DISP ENERGY", "SAPT DISP ENERGY"],
+        ["SAPT TOTAL ENERGY", "SAPT TOTAL ENERGY"],
+    ]
+    for k1, k2 in key_labels:
+        compare_values(
+            fisapt0_external_potential_energies[k1],
+            psi4.core.variable(k2),
+            8,
+            k1,
+        )
+    return
+
 
 def test_fisapt_external_potential():
     mol_trimer = psi4.geometry(
@@ -257,15 +345,6 @@ no_com
 
 
 if __name__ == "__main__":
-    test_saptdft_external_potential()
+    test_sapthf_external_potential()
+    # test_saptdft_external_potential()
     # test_fisapt_external_potential()
-    # from psi4 import core
-    # # core.sapt_test()
-    # print('Hello')
-    # mat = core.Matrix.from_array(np.array([[1, 2], [3, 4]]), name='mat_test')
-    # print(mat.name)
-    # core.sapt_test_matrix(mat)
-    # print("FISAPT")
-    # core.sapt_test_fisapt()
-    # core.sapt_nuclear_external_potential_matrix(
-    # )
