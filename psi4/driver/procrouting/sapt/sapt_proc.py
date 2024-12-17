@@ -123,7 +123,6 @@ def run_sapt_dft(name, **kwargs):
         core.timer_on("SAPT(DFT):Dimer SCF")
         hf_data = {}
 
-        # core.set_global_option("SAVE_JK", True)
         core.set_local_option("SCF", "SAVE_JK", True)
         hf_wfn_dimer = scf_helper("SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
         hf_data["HF DIMER"] = core.variable("CURRENT ENERGY")
