@@ -268,18 +268,6 @@ class CPHF_FISAPT {
 
 }  // Namespace fisapt
 
-void sapt_test_fisapt();
-
-void sapt_nuclear_external_potential(
-    std::shared_ptr<Wavefunction> reference_,
-    std::shared_ptr<BasisSet> primary_,
-    double**& Enucsp,
-    double& Etot,
-    std::shared_ptr<Molecule> mol,
-    std::map<std::string, std::shared_ptr<Matrix> >& matrices_,
-    Options& options_,
-    std::shared_ptr<PsiOutStream> outfile
-);
 
 double sapt_nuclear_external_potential_matrix(
     std::shared_ptr<Wavefunction> reference_,

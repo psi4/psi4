@@ -292,15 +292,6 @@ void py_be_quiet() {
     if (!outfile) throw PSIEXCEPTION("Psi4: Unable to redirect output to /dev/null.");
 }
 
-void sapt_test(){
-    printf("Hello from sapt_test\n");
-}
-
-void sapt_test_matrix(std::shared_ptr<Matrix> mat){
-    printf("Hello from sapt_test_matrix\n");
-    printf("Matrix is size: %d\n", mat->size());
-}
-
 double sapt_nuclear_external_potential_python(
     std::shared_ptr<Wavefunction> reference_,
     py::dict py_matrices_,
@@ -1380,14 +1371,6 @@ PYBIND11_MODULE(core, core) {
              "Redirects output to ``/dev/null``. "
              "To switch back to regular output mode, use :func:`~psi4.core.reopen_outfile()`. "
              "Doesn't work with Windows.");
-    core.def("sapt_test", sapt_test,
-             "TESTING");
-    core.def("sapt_test_matrix", sapt_test_matrix,
-             "TESTING MATRIX PASSING");
-    core.def("sapt_test_fisapt", psi::sapt_test_fisapt,
-             "TESTING FISAPT");
-    core.def("sapt_nuclear_external_potential_matrix", psi::sapt_nuclear_external_potential_matrix,
-             "sapt_nuclear_external_potential_matrix for FISAPT and SAPT(DFT)");
     core.def("sapt_nuclear_external_potential_python", sapt_nuclear_external_potential_python,
              "sapt_nuclear_external_potential_python for SAPT(DFT)");
     // modules
