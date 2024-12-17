@@ -71,45 +71,25 @@ def build_sapt_jk_cache(wfn_dimer, wfn_A, wfn_B, jk, do_print=True):
     cache["P_B"] = core.doublet(cache["Cvir_B"], cache["Cvir_B"], False, True)
 
     # External Potential
-    # create ext_matrices as std::map<std::string, std::shared_ptr<Matrix> >& matrices
-    # reference_->has_potential_variable("C") is false...
-    print(f"{wfn_dimer.has_potential_variable('C')=}")
-    print(f"{wfn_dimer.has_potential_variable('A')=}")
-    print(f"{wfn_dimer.has_potential_variable('B')=}")
-    pp(dir(wfn_dimer))
-    ext_matrices = {
-        "VA": core.Matrix(wfn_A.basisset().nbf(), wfn_A.basisset().nbf()),
-        "VB": core.Matrix(wfn_B.basisset().nbf(), wfn_B.basisset().nbf()),
-        "VA_extern": core.Matrix(wfn_A.basisset().nbf(), wfn_A.basisset().nbf()),
-        "VB_extern": core.Matrix(wfn_B.basisset().nbf(), wfn_B.basisset().nbf()),
-        "VE": core.Matrix(wfn_B.basisset().nbf(), wfn_B.basisset().nbf()),
-        "extern_mol_IE": core.Matrix.from_array(np.zeros((3,3)), name='extern_mol_IE'),
-        "extern_extern_IE": core.Matrix.from_array(np.zeros((3,3)), name='extern_extern_IE'),
-    }
-
-    print("before ext_matrices:")
-    pp(ext_matrices)
-    print(ext_matrices['VE'].np)
-    print(sum(ext_matrices['VE'].np))
-
-    core.sapt_nuclear_external_potential_matrix(
+    ext_matrices = {}
+    Enuc = core.sapt_nuclear_external_potential_python(
         wfn_dimer,
         ext_matrices,
         core.get_options()
     )
-    print("after ext_matrices:")
     pp(ext_matrices)
-    print(ext_matrices['VE'].np)
-    print(sum(ext_matrices['VE'].np))
+    print(f"Enuc: {Enuc}")
 
     # Potential ints
     mints = core.MintsHelper(wfn_A.basisset())
     cache["V_A"] = mints.ao_potential()
+    # cache["V_A"].add(ext_matrices["VE"])
     # TODO: add external potential
     # cache["V_A"].axpy(1.0, wfn_A.Va())
 
     mints = core.MintsHelper(wfn_B.basisset())
     cache["V_B"] = mints.ao_potential()
+    # cache["V_B"].add(ext_matrices["VE"])
     # cache["V_B"].axpy(1.0, wfn_B.Va())
 
     # Anything else we might need

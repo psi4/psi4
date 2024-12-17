@@ -8146,11 +8146,11 @@ void sapt_nuclear_external_potential(
 double sapt_nuclear_external_potential_matrix(
     std::shared_ptr<Wavefunction> reference_,
     // std::shared_ptr<Matrix> Enucsp_matrix,
-    std::map<std::string, std::shared_ptr<Matrix> > matrices_,
+    std::map<std::string, std::shared_ptr<Matrix>>& matrices_,
     Options& options_
 ) {
     // => External potential <= //
-
+    // for every key in matrices_ print matrix name
     std::shared_ptr<BasisSet> primary_ = reference_->basisset();
     std::shared_ptr<Molecule> mol = reference_->molecule();
     std::vector<std::shared_ptr<ExternalPotential>> pot_list;
@@ -8187,7 +8187,6 @@ double sapt_nuclear_external_potential_matrix(
 
         // Save external potential to add to one-electron SCF potential
         matrices_["VE"] = V_extern;
-        // matrices_["VE"]->print();
     }
 
     std::vector<std::string> subsystem_labels = {"A", "B"};
@@ -8293,7 +8292,12 @@ double sapt_nuclear_external_potential_matrix(
         outfile->Printf("\n");
         matrices_["extern_extern_IE"] = extern_extern_IE_mat;
     }
-    matrices_["VE"]->print();
+    // matrices_["VE"]->print();
+    for (auto const& x : matrices_) {
+        std::string key = x.first;
+        std::shared_ptr<Matrix> matrix = x.second;
+        outfile->Printf("  Matrix %s\n", key.c_str());
+    }
     return Etot;
 }
 }  // Namespace psi

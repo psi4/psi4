@@ -301,6 +301,23 @@ void sapt_test_matrix(std::shared_ptr<Matrix> mat){
     printf("Matrix is size: %d\n", mat->size());
 }
 
+double sapt_nuclear_external_potential_python(
+    std::shared_ptr<Wavefunction> reference_,
+    py::dict py_matrices_,
+    Options& options_
+){
+    std::map<std::string, std::shared_ptr<Matrix>> matrices_;
+    for (auto item : py_matrices_) {
+        matrices_[item.first.cast<std::string>()] = item.second.cast<std::shared_ptr<Matrix>>();
+    }
+    double Enuc = psi::sapt_nuclear_external_potential_matrix(reference_, matrices_, options_);
+    for (auto item : matrices_) {
+        py_matrices_[item.first.c_str()] = item.second;
+        std::cout << item.first.c_str() << " => " << item.second->name() << std::endl;
+    }
+    return Enuc;
+}
+
 std::string py_get_outfile_name() { return outfile_name; }
 
 void py_psi_prepare_options_for_module(std::string const& name) {
@@ -1371,6 +1388,8 @@ PYBIND11_MODULE(core, core) {
              "TESTING FISAPT");
     core.def("sapt_nuclear_external_potential_matrix", psi::sapt_nuclear_external_potential_matrix,
              "sapt_nuclear_external_potential_matrix for FISAPT and SAPT(DFT)");
+    core.def("sapt_nuclear_external_potential_python", sapt_nuclear_external_potential_python,
+             "sapt_nuclear_external_potential_python for SAPT(DFT)");
     // modules
     core.def("scfgrad", py_psi_scfgrad, "ref_wfn"_a, "Run scfgrad, which is a specialized DF-SCF gradient program.");
     core.def("scfhess", py_psi_scfhess, "ref_wfn"_a, "Run scfhess, which is a specialized DF-SCF hessian program.");
