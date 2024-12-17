@@ -296,6 +296,11 @@ void sapt_test(){
     printf("Hello from sapt_test\n");
 }
 
+void sapt_test_matrix(std::shared_ptr<Matrix> mat){
+    printf("Hello from sapt_test_matrix\n");
+    printf("Matrix is size: %d\n", mat->size());
+}
+
 std::string py_get_outfile_name() { return outfile_name; }
 
 void py_psi_prepare_options_for_module(std::string const& name) {
@@ -1360,6 +1365,12 @@ PYBIND11_MODULE(core, core) {
              "Doesn't work with Windows.");
     core.def("sapt_test", sapt_test,
              "TESTING");
+    core.def("sapt_test_matrix", sapt_test_matrix,
+             "TESTING MATRIX PASSING");
+    core.def("sapt_test_fisapt", psi::sapt_test_fisapt,
+             "TESTING FISAPT");
+    core.def("sapt_nuclear_external_potential_matrix", psi::sapt_nuclear_external_potential_matrix,
+             "sapt_nuclear_external_potential_matrix for FISAPT and SAPT(DFT)");
     // modules
     core.def("scfgrad", py_psi_scfgrad, "ref_wfn"_a, "Run scfgrad, which is a specialized DF-SCF gradient program.");
     core.def("scfhess", py_psi_scfhess, "ref_wfn"_a, "Run scfhess, which is a specialized DF-SCF hessian program.");

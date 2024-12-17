@@ -257,7 +257,15 @@ no_com
 
 
 if __name__ == "__main__":
-    # test_saptdft_external_potential()
+    test_saptdft_external_potential()
     # test_fisapt_external_potential()
-    from psi4 import core
-    core.sapt_test()
+    # from psi4 import core
+    # # core.sapt_test()
+    # print('Hello')
+    # mat = core.Matrix.from_array(np.array([[1, 2], [3, 4]]), name='mat_test')
+    # print(mat.name)
+    # core.sapt_test_matrix(mat)
+    # print("FISAPT")
+    # core.sapt_test_fisapt()
+    # core.sapt_nuclear_external_potential_matrix(
+    # )

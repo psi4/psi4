@@ -567,156 +567,6 @@ void FISAPT::kinetic() {
 //     printf("Hello from sapt_test\n");
 // }
 
-void sapt_nuclear_external_potential(
-    std::shared_ptr<Wavefunction> reference_,
-    std::shared_ptr<BasisSet> primary_,
-    double**& Enucsp,
-    double& Etot,
-    std::shared_ptr<Molecule> mol,
-    std::map<std::string, std::shared_ptr<Matrix> >& matrices_,
-    std::map<std::string, std::shared_ptr<Vector> >& vectors_,
-    Options& options_,
-    std::shared_ptr<PsiOutStream> outfile
-) {
-    // => External potential <= //
-
-    std::vector<std::shared_ptr<ExternalPotential>> pot_list;
-    std::vector<int> pot_ids;
-
-    // this is where any "external potential C" goes... any common potential felt by all subsystems
-
-    if (reference_->has_potential_variable("C")) {
-        
-        pot_list.push_back(reference_->potential_variable("C"));
-        pot_ids.push_back(2); // code 2 == C
-
-        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
-            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
-
-        std::shared_ptr<Matrix> V_extern = reference_->potential_variable("C")->computePotentialMatrix(primary_);
-
-        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
-            // Attempt to apply symmetry. No error checking is performed.
-            std::shared_ptr<Matrix> V_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
-            V_extern_sym->apply_symmetry(V_extern, reference_->aotoso());
-            V_extern = V_extern_sym;
-        }
-
-        if (reference_->get_print()) {
-            reference_->potential_variable("C")->set_print(reference_->get_print());
-            outfile->Printf("  External Potential C:\n");
-            reference_->potential_variable("C")->print();
-        }
-
-        if (reference_->get_print() > 3) V_extern->print();
-
-
-        // Save external potential to add to one-electron SCF potential
-        matrices_["VE"] = V_extern;
-
-    }
-
-    std::vector<std::string> subsystem_labels = {"A", "B"};
-    std::vector<int> potential_ids = {0, 1};
-
-    for (int i=0; i<2; i++) {
-        if (reference_->has_potential_variable(subsystem_labels[i])) {
-            
-            pot_list.push_back(reference_->potential_variable(subsystem_labels[i]));
-            pot_ids.push_back(potential_ids[i]);
-
-            if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
-                throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
-
-            std::shared_ptr<Matrix> V_extern = reference_->potential_variable(subsystem_labels[i])->computePotentialMatrix(primary_);
-
-            if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
-                // Attempt to apply symmetry. No error checking is performed.
-                std::shared_ptr<Matrix> V_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
-                V_extern_sym->apply_symmetry(V_extern, reference_->aotoso());
-                V_extern = V_extern_sym;
-            }
-
-            if (reference_->get_print()) {
-                reference_->potential_variable(subsystem_labels[i])->set_print(reference_->get_print());
-                outfile->Printf("  External Potential " + subsystem_labels[i] + ":\n");
-                reference_->potential_variable(subsystem_labels[i])->print();
-            }
-            if (reference_->get_print() > 3) V_extern->print();
-
-            matrices_["V" + subsystem_labels[i]]->add(V_extern);
-            matrices_["V" + subsystem_labels[i] + "_extern"] = V_extern;
-        }
-    }
-
-    // are there any external potentials? If so, we need all QM atoms to feel their effects in the nuclear 
-    // repulsion energy.  
-    // Apparently, we were using C full strength, but the others I think get scaled by 0.5 because Rob counts
-    // A->B and B->A separately and adds them (see a few lines up this fn...maybe due to how FSAPT files are written) 
-
-    if (pot_list.size() > 0) { 
-
-        for (int A = 0; A < mol->nfragments(); A++) {
-            outfile->Printf("           Old Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
-        }
-
-        // First compute mol-extern interaction
-        // a maximum of 3 external potentials and 3 fragments
-        auto extern_mol_IE_mat = std::make_shared<Matrix>("extern_mol_IE", 3, 3);
-        auto extern_mol_IE_matp = extern_mol_IE_mat->pointer();
-
-        std::vector<int> none;
-        std::vector<int> frag_list(1);
-        double Enuc_extern;
-        char frag = '@'; // Next characters are 'A', 'B', 'C'
-        for (int p = 0; p < pot_list.size(); p++) {
-            for (int A = 0; A < mol->nfragments(); A++) {
-                frag++;
-                frag_list[0] = A;
-                auto mol_frag = mol->extract_subsets(frag_list, none);
-                Enuc_extern = pot_list[p]->computeNuclearEnergy(mol_frag);
-                Etot += Enuc_extern;
-
-                Enucsp[A][pot_ids[p]] += Enuc_extern * 0.5;
-                Enucsp[pot_ids[p]][A] += Enuc_extern * 0.5;
-
-                extern_mol_IE_matp[pot_ids[p]][A] = Enuc_extern;
-
-            } // end frag loop
-        } // end pot loop
-
-        for (int A = 0; A < mol->nfragments(); A++) {
-            outfile->Printf("       Updated Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
-        }
-
-        outfile->Printf("\n");
-
-        matrices_["extern_mol_IE"] = extern_mol_IE_mat; // save interaction energy between external potential and molecule
-
-        // Now compute extern-extern interaction
-        // We store the interaction energy between the external potentials in A, B, and C.
-        auto extern_extern_IE_mat = std::make_shared<Matrix>("extern_extern_IE", 3, 3);
-        double** extern_extern_IE_matp = extern_extern_IE_mat->pointer();
-        double extern_extern_IE = 0.0;
-        for (int p1 = 0; p1 < pot_list.size(); p1++) {
-            for (int p2 = p1+1; p2 < pot_list.size(); p2++) {
-
-                double IE = pot_list[p1]->computeExternExternInteraction(pot_list[p2]);
-                // store half the interaction so that Eij + Eji = Etotal
-                extern_extern_IE_matp[pot_ids[p1]][pot_ids[p2]] = IE * 0.5;
-                extern_extern_IE_matp[pot_ids[p2]][pot_ids[p1]] = IE * 0.5;
-                extern_extern_IE += IE;
-
-                outfile->Printf("    Interaction Energy between External Potentials %c and %c: %24.16E [Eh]\n",
-                                'A'+pot_ids[p1], 'A'+pot_ids[p2], IE);
-            }
-        }
-
-        outfile->Printf("\n");
-        matrices_["extern_extern_IE"] = extern_extern_IE_mat;
-
-    }
-}
 
 void FISAPT::nuclear() {
     outfile->Printf("  ==> Nuclear Integrals <==\n\n");
@@ -842,14 +692,13 @@ void FISAPT::nuclear() {
     // A->B and B->A separately and adds them (see a few lines up this fn...maybe due to how FSAPT files are written) 
     
 
-    sapt_nuclear_external_potential(
+    psi::sapt_nuclear_external_potential(
         reference_,
         primary_,
         Enucsp,
         Etot,
         mol,
         matrices_,
-        vectors_,
         options_,
         outfile
     );
@@ -8141,4 +7990,310 @@ std::map<std::string, std::shared_ptr<Matrix> > CPHF_FISAPT::product(
 
 }  // Namespace fisapt
 
+void sapt_test_fisapt(){
+    printf("Hello from sapt_test_fisapt in FISAPT!\n");
+};
+
+void sapt_nuclear_external_potential(
+    std::shared_ptr<Wavefunction> reference_,
+    std::shared_ptr<BasisSet> primary_,
+    double**& Enucsp,
+    double& Etot,
+    std::shared_ptr<Molecule> mol,
+    std::map<std::string, std::shared_ptr<Matrix> >& matrices_,
+    Options& options_,
+    std::shared_ptr<PsiOutStream> outfile
+) {
+    // => External potential <= //
+
+    std::vector<std::shared_ptr<ExternalPotential>> pot_list;
+    std::vector<int> pot_ids;
+
+    // this is where any "external potential C" goes... any common potential felt by all subsystems
+
+    if (reference_->has_potential_variable("C")) {
+        
+        pot_list.push_back(reference_->potential_variable("C"));
+        pot_ids.push_back(2); // code 2 == C
+
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
+            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
+
+        std::shared_ptr<Matrix> V_extern = reference_->potential_variable("C")->computePotentialMatrix(primary_);
+
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
+            // Attempt to apply symmetry. No error checking is performed.
+            std::shared_ptr<Matrix> V_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
+            V_extern_sym->apply_symmetry(V_extern, reference_->aotoso());
+            V_extern = V_extern_sym;
+        }
+
+        if (reference_->get_print()) {
+            reference_->potential_variable("C")->set_print(reference_->get_print());
+            outfile->Printf("  External Potential C:\n");
+            reference_->potential_variable("C")->print();
+        }
+
+        if (reference_->get_print() > 3) V_extern->print();
+
+
+        // Save external potential to add to one-electron SCF potential
+        matrices_["VE"] = V_extern;
+
+    }
+
+    std::vector<std::string> subsystem_labels = {"A", "B"};
+    std::vector<int> potential_ids = {0, 1};
+
+    for (int i=0; i<2; i++) {
+        if (reference_->has_potential_variable(subsystem_labels[i])) {
+            
+            pot_list.push_back(reference_->potential_variable(subsystem_labels[i]));
+            pot_ids.push_back(potential_ids[i]);
+
+            if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
+                throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
+
+            std::shared_ptr<Matrix> V_extern = reference_->potential_variable(subsystem_labels[i])->computePotentialMatrix(primary_);
+
+            if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
+                // Attempt to apply symmetry. No error checking is performed.
+                std::shared_ptr<Matrix> V_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
+                V_extern_sym->apply_symmetry(V_extern, reference_->aotoso());
+                V_extern = V_extern_sym;
+            }
+
+            if (reference_->get_print()) {
+                reference_->potential_variable(subsystem_labels[i])->set_print(reference_->get_print());
+                outfile->Printf("  External Potential " + subsystem_labels[i] + ":\n");
+                reference_->potential_variable(subsystem_labels[i])->print();
+            }
+            if (reference_->get_print() > 3) V_extern->print();
+
+            matrices_["V" + subsystem_labels[i]]->add(V_extern);
+            matrices_["V" + subsystem_labels[i] + "_extern"] = V_extern;
+        }
+    }
+
+    // are there any external potentials? If so, we need all QM atoms to feel their effects in the nuclear 
+    // repulsion energy.  
+    // Apparently, we were using C full strength, but the others I think get scaled by 0.5 because Rob counts
+    // A->B and B->A separately and adds them (see a few lines up this fn...maybe due to how FSAPT files are written) 
+
+    if (pot_list.size() > 0) { 
+
+        for (int A = 0; A < mol->nfragments(); A++) {
+            outfile->Printf("           Old Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
+        }
+
+        // First compute mol-extern interaction
+        // a maximum of 3 external potentials and 3 fragments
+        auto extern_mol_IE_mat = std::make_shared<Matrix>("extern_mol_IE", 3, 3);
+        auto extern_mol_IE_matp = extern_mol_IE_mat->pointer();
+
+        std::vector<int> none;
+        std::vector<int> frag_list(1);
+        double Enuc_extern;
+        char frag = '@'; // Next characters are 'A', 'B', 'C'
+        for (int p = 0; p < pot_list.size(); p++) {
+            for (int A = 0; A < mol->nfragments(); A++) {
+                frag++;
+                frag_list[0] = A;
+                auto mol_frag = mol->extract_subsets(frag_list, none);
+                Enuc_extern = pot_list[p]->computeNuclearEnergy(mol_frag);
+                Etot += Enuc_extern;
+
+                Enucsp[A][pot_ids[p]] += Enuc_extern * 0.5;
+                Enucsp[pot_ids[p]][A] += Enuc_extern * 0.5;
+
+                extern_mol_IE_matp[pot_ids[p]][A] = Enuc_extern;
+
+            } // end frag loop
+        } // end pot loop
+
+        for (int A = 0; A < mol->nfragments(); A++) {
+            outfile->Printf("       Updated Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
+        }
+
+        outfile->Printf("\n");
+
+        matrices_["extern_mol_IE"] = extern_mol_IE_mat; // save interaction energy between external potential and molecule
+
+        // Now compute extern-extern interaction
+        // We store the interaction energy between the external potentials in A, B, and C.
+        auto extern_extern_IE_mat = std::make_shared<Matrix>("extern_extern_IE", 3, 3);
+        double** extern_extern_IE_matp = extern_extern_IE_mat->pointer();
+        double extern_extern_IE = 0.0;
+        for (int p1 = 0; p1 < pot_list.size(); p1++) {
+            for (int p2 = p1+1; p2 < pot_list.size(); p2++) {
+
+                double IE = pot_list[p1]->computeExternExternInteraction(pot_list[p2]);
+                // store half the interaction so that Eij + Eji = Etotal
+                extern_extern_IE_matp[pot_ids[p1]][pot_ids[p2]] = IE * 0.5;
+                extern_extern_IE_matp[pot_ids[p2]][pot_ids[p1]] = IE * 0.5;
+                extern_extern_IE += IE;
+
+                outfile->Printf("    Interaction Energy between External Potentials %c and %c: %24.16E [Eh]\n",
+                                'A'+pot_ids[p1], 'A'+pot_ids[p2], IE);
+            }
+        }
+
+        outfile->Printf("\n");
+        matrices_["extern_extern_IE"] = extern_extern_IE_mat;
+    }
+}
+
+double sapt_nuclear_external_potential_matrix(
+    std::shared_ptr<Wavefunction> reference_,
+    // std::shared_ptr<Matrix> Enucsp_matrix,
+    std::map<std::string, std::shared_ptr<Matrix> > matrices_,
+    Options& options_
+) {
+    // => External potential <= //
+
+    std::shared_ptr<BasisSet> primary_ = reference_->basisset();
+    std::shared_ptr<Molecule> mol = reference_->molecule();
+    std::vector<std::shared_ptr<ExternalPotential>> pot_list;
+    std::vector<int> pot_ids;
+    double Etot = 0.0;
+    // auto Enucsp = Enucsp_matrix->pointer();
+
+    // this is where any "external potential C" goes... any common potential felt by all subsystems
+
+    if (reference_->has_potential_variable("C")) {
+        pot_list.push_back(reference_->potential_variable("C"));
+        pot_ids.push_back(2); // code 2 == C
+
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
+            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
+
+        std::shared_ptr<Matrix> V_extern = reference_->potential_variable("C")->computePotentialMatrix(primary_);
+
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
+            // Attempt to apply symmetry. No error checking is performed.
+            std::shared_ptr<Matrix> V_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
+            V_extern_sym->apply_symmetry(V_extern, reference_->aotoso());
+            V_extern = V_extern_sym;
+        }
+
+        if (reference_->get_print()) {
+            reference_->potential_variable("C")->set_print(reference_->get_print());
+            outfile->Printf("  External Potential C:\n");
+            reference_->potential_variable("C")->print();
+        }
+
+        if (reference_->get_print() > 3) V_extern->print();
+
+
+        // Save external potential to add to one-electron SCF potential
+        matrices_["VE"] = V_extern;
+        matrices_["VE"]->print();
+
+    }
+
+    std::vector<std::string> subsystem_labels = {"A", "B"};
+    std::vector<int> potential_ids = {0, 1};
+
+    for (int i=0; i<2; i++) {
+        if (reference_->has_potential_variable(subsystem_labels[i])) {
+            outfile->Printf("  External Potential %s:\n", subsystem_labels[i].c_str());
+            
+            pot_list.push_back(reference_->potential_variable(subsystem_labels[i]));
+            pot_ids.push_back(potential_ids[i]);
+
+            if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
+                throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
+
+            std::shared_ptr<Matrix> V_extern = reference_->potential_variable(subsystem_labels[i])->computePotentialMatrix(primary_);
+
+            if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
+                // Attempt to apply symmetry. No error checking is performed.
+                std::shared_ptr<Matrix> V_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
+                V_extern_sym->apply_symmetry(V_extern, reference_->aotoso());
+                V_extern = V_extern_sym;
+            }
+
+            if (reference_->get_print()) {
+                reference_->potential_variable(subsystem_labels[i])->set_print(reference_->get_print());
+                outfile->Printf("  External Potential " + subsystem_labels[i] + ":\n");
+                reference_->potential_variable(subsystem_labels[i])->print();
+            }
+            if (reference_->get_print() > 3) V_extern->print();
+
+            matrices_["V" + subsystem_labels[i]]->add(V_extern);
+            matrices_["V" + subsystem_labels[i] + "_extern"] = V_extern;
+        } else{
+            outfile->Printf("  No External Potential %s\n", subsystem_labels[i].c_str());
+        }
+    }
+    // matrices_["VA"]->print();
+
+    // are there any external potentials? If so, we need all QM atoms to feel their effects in the nuclear 
+    // repulsion energy.  
+    // Apparently, we were using C full strength, but the others I think get scaled by 0.5 because Rob counts
+    // A->B and B->A separately and adds them (see a few lines up this fn...maybe due to how FSAPT files are written) 
+
+    if (pot_list.size() > 0) { 
+
+        // for (int A = 0; A < mol->nfragments(); A++) {
+        //     outfile->Printf("           Old Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
+        // }
+
+        // First compute mol-extern interaction
+        // a maximum of 3 external potentials and 3 fragments
+        auto extern_mol_IE_mat = std::make_shared<Matrix>("extern_mol_IE", 3, 3);
+        auto extern_mol_IE_matp = extern_mol_IE_mat->pointer();
+
+        std::vector<int> none;
+        std::vector<int> frag_list(1);
+        double Enuc_extern;
+        char frag = '@'; // Next characters are 'A', 'B', 'C'
+        for (int p = 0; p < pot_list.size(); p++) {
+            for (int A = 0; A < mol->nfragments(); A++) {
+                frag++;
+                frag_list[0] = A;
+                auto mol_frag = mol->extract_subsets(frag_list, none);
+                Enuc_extern = pot_list[p]->computeNuclearEnergy(mol_frag);
+                Etot += Enuc_extern;
+
+                // Enucsp[A][pot_ids[p]] += Enuc_extern * 0.5;
+                // Enucsp[pot_ids[p]][A] += Enuc_extern * 0.5;
+
+                extern_mol_IE_matp[pot_ids[p]][A] = Enuc_extern;
+
+            } // end frag loop
+        } // end pot loop
+
+        // for (int A = 0; A < mol->nfragments(); A++) {
+        //     outfile->Printf("       Updated Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
+        // }
+
+        outfile->Printf("\n");
+
+        matrices_["extern_mol_IE"] = extern_mol_IE_mat; // save interaction energy between external potential and molecule
+
+        // Now compute extern-extern interaction
+        // We store the interaction energy between the external potentials in A, B, and C.
+        auto extern_extern_IE_mat = std::make_shared<Matrix>("extern_extern_IE", 3, 3);
+        double** extern_extern_IE_matp = extern_extern_IE_mat->pointer();
+        double extern_extern_IE = 0.0;
+        for (int p1 = 0; p1 < pot_list.size(); p1++) {
+            for (int p2 = p1+1; p2 < pot_list.size(); p2++) {
+
+                double IE = pot_list[p1]->computeExternExternInteraction(pot_list[p2]);
+                // store half the interaction so that Eij + Eji = Etotal
+                extern_extern_IE_matp[pot_ids[p1]][pot_ids[p2]] = IE * 0.5;
+                extern_extern_IE_matp[pot_ids[p2]][pot_ids[p1]] = IE * 0.5;
+                extern_extern_IE += IE;
+
+                outfile->Printf("    Interaction Energy between External Potentials %c and %c: %24.16E [Eh]\n",
+                                'A'+pot_ids[p1], 'A'+pot_ids[p2], IE);
+            }
+        }
+
+        outfile->Printf("\n");
+        matrices_["extern_extern_IE"] = extern_extern_IE_mat;
+    }
+    return Etot;
+}
 }  // Namespace psi
