@@ -549,7 +549,7 @@ def run_sf_sapt(name, **kwargs):
     core.IO.set_default_namespace('dimer')
     data = {}
 
-    if (core.get_global_option('SCF_TYPE') == 'DISK_DF'):
+    if (core.get_global_option('SCF_TYPE') in ['DF', 'DISK_DF']):
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # Compute dimer wavefunction
