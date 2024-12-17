@@ -89,6 +89,7 @@ def build_sapt_jk_cache(
         ext_matrices,
         core.get_options()
     )
+    # print(Etot)
     pp(ext_matrices)
     print(f"Etot: {Etot}")
     print(f"Enucs:\n{ext_matrices['Enucs'].np}")

@@ -10,7 +10,8 @@ hartree_to_kcalmol = constants.conversion_factor("hartree", "kcal/mol")
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 
-psi4.set_memory('60 GB')
+psi4.set_memory("60 GB")
+
 
 @pytest.mark.saptdft
 def test_saptdft_auto_grac():
@@ -102,7 +103,7 @@ units angstrom
 
 @pytest.mark.saptdft
 def test_saptdft_external_potential():
-    mol_trimer = psi4.geometry(
+    mol = psi4.geometry(
         """
 0 1
 O   0.017225   0.031664   0.004802
@@ -179,9 +180,10 @@ no_com
         )
     return
 
+
 @pytest.mark.saptdft
 def test_sapthf_external_potential():
-    mol_trimer = psi4.geometry(
+    mol = psi4.geometry(
         """
 0 1
 O   0.017225   0.031664   0.004802
@@ -252,7 +254,7 @@ no_com
     pp(fisapt0_external_potential_energies)
     key_labels = [
         ["SAPT ELST10,R ENERGY", "ELST10,R"],
-        ["SAPT ELST ENERGY", 'SAPT ELST ENERGY'],
+        ["SAPT ELST ENERGY", "SAPT ELST ENERGY"],
         ["SAPT EXCH ENERGY", "SAPT EXCH ENERGY"],
         ["SAPT IND ENERGY", "SAPT IND ENERGY"],
         ["SAPT DISP ENERGY", "SAPT DISP ENERGY"],
@@ -268,8 +270,93 @@ no_com
     return
 
 
+@pytest.mark.saptdft
+def test_sapthf_external_potential2():
+    """ """
+    mol = psi4.geometry(
+        """
+0 1
+O   0.017225   0.031664   0.004802
+H  -0.046691  -0.052504   0.962436
+H   0.972017   0.055307  -0.185622
+--
+0 1
+O   2.516175   0.894012  -1.014512
+H   1.942080   1.572902  -1.410984
+H   3.056412   0.561271  -1.739079
+symmetry c1
+no_reorient
+no_com
+    """
+    )
+    fisapt0_external_potential_energies = {
+        "Enuc": 36.965201909136653,
+        "SAPT ELST ENERGY": -0.01581004515,
+        "SAPT EXCH ENERGY": 0.01228252074,
+        "SAPT IND ENERGY": -0.00356130615,
+        "SAPT DISP ENERGY": -0.00218572459,
+        "SAPT TOTAL ENERGY": -0.00927455515,
+        "SAPT ELST10,R ENERGY": -0.01581004514947182,
+    }
+    Chargefield_C = np.array(
+        [
+            -0.834,
+            0.179217,
+            2.438389,
+            -1.484606,
+            0.417,
+            -0.194107,
+            1.702697,
+            -0.966751,
+            0.417,
+            -0.426657,
+            2.563754,
+            -2.222683,
+        ]
+    ).reshape((-1, 4))
+    Chargefield_C[:, [1, 2, 3]] /= qcel.constants.bohr2angstroms
+    psi4.set_options(
+        {
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+            "SAPT_DFT_FUNCTIONAL": "hf",
+            "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
+        }
+    )
+    psi4.energy(
+        "sapt(dft)",
+        external_potentials={"C": Chargefield_C},
+    )
+    pp(psi4.core.variables())
+    pp(fisapt0_external_potential_energies)
+    key_labels = [
+        ["SAPT ELST10,R ENERGY", "ELST10,R"],
+        ["SAPT ELST ENERGY", "SAPT ELST ENERGY"],
+        ["SAPT EXCH ENERGY", "SAPT EXCH ENERGY"],
+        ["SAPT IND ENERGY", "SAPT IND ENERGY"],
+        ["SAPT DISP ENERGY", "SAPT DISP ENERGY"],
+        ["SAPT TOTAL ENERGY", "SAPT TOTAL ENERGY"],
+    ]
+    for k1, k2 in key_labels:
+        compare_values(
+            fisapt0_external_potential_energies[k1],
+            psi4.core.variable(k2),
+            8,
+            k1,
+        )
+    compare_values(
+        fisapt0_external_potential_energies['Enuc'],
+        mol.nuclear_repulsion_energy(),
+        8,
+        'Enuc'
+    )
+    return
+
+
 def test_fisapt_external_potential():
-    mol_trimer = psi4.geometry(
+    mol = psi4.geometry(
         """
 0 1
 O   0.017225   0.031664   0.004802
@@ -345,6 +432,6 @@ no_com
 
 
 if __name__ == "__main__":
-    test_sapthf_external_potential()
+    test_sapthf_external_potential2()
     # test_saptdft_external_potential()
     # test_fisapt_external_potential()
