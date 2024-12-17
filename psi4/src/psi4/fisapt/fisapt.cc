@@ -8187,8 +8187,7 @@ double sapt_nuclear_external_potential_matrix(
 
         // Save external potential to add to one-electron SCF potential
         matrices_["VE"] = V_extern;
-        matrices_["VE"]->print();
-
+        // matrices_["VE"]->print();
     }
 
     std::vector<std::string> subsystem_labels = {"A", "B"};
@@ -8294,6 +8293,7 @@ double sapt_nuclear_external_potential_matrix(
         outfile->Printf("\n");
         matrices_["extern_extern_IE"] = extern_extern_IE_mat;
     }
+    matrices_["VE"]->print();
     return Etot;
 }
 }  // Namespace psi
