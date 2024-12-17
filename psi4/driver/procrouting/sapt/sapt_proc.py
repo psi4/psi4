@@ -112,9 +112,7 @@ def run_sapt_dft(name, **kwargs):
         # We want to try to re-use itegrals for the dimer and monomer SCF's.
         # If we are using Disk based DF (DISK_DF) then we can use the
         # DF_INTS_IO option.  MemDF does not know about this option but setting
-        # it will be harmless there.  Handle the case of either (a) the default
-        # DF is used, or (b) the user selects DF, or (c) the user very
-        # specifically sets DISK_DF.
+        # it will be harmless there.
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # Compute dimer wavefunction
