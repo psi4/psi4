@@ -1884,11 +1884,10 @@ def scf_helper(name, post_scf=True, **kwargs):
             basisset=scf_wfn.basisset()
         )
 
-
-    # if we pass a jk, set it on the ref_wfn
-    jk_obj = kwargs.get('jk')
-    if jk_obj:
+    if (jk_obj := kwargs.get('jk')):
+        core.print_out("  Using user-supplied JK object.\n")
         scf_wfn.set_jk(jk_obj)
+
     e_scf = scf_wfn.compute_energy()
     for obj in [core, scf_wfn]:
         # set_variable("SCF TOTAL ENERGY")  # P::e SCF
