@@ -173,9 +173,7 @@ def run_sapt_dft(name, **kwargs):
         # We want to try to re-use itegrals for the dimer and monomer SCF's.
         # If we are using Disk based DF (DISK_DF) then we can use the
         # DF_INTS_IO option.  MemDF does not know about this option but setting
-        # it will be harmless there.  Handle the case of either (a) the default
-        # DF is used, or (b) the user selects DF, or (c) the user very
-        # specifically sets DISK_DF.
+        # it will be harmless there.
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # Compute dimer wavefunction
@@ -187,15 +185,14 @@ def run_sapt_dft(name, **kwargs):
         core.timer_on("SAPT(DFT):Dimer SCF")
         hf_data = {}
 
-        # core.set_global_option("SAVE_JK", True)
         core.set_local_option("SCF", "SAVE_JK", True)
         hf_wfn_dimer = scf_helper("SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
         hf_data["HF DIMER"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT):Dimer SCF")
 
         core.timer_on("SAPT(DFT):Monomer A SCF")
-        # if (core.get_global_option('SCF_TYPE') in ['DF', 'DISK_DF']):
-        #     core.IO.change_file_namespace(97, 'dimer', 'monomerA')
+        if (core.get_global_option('SCF_TYPE') in ['DF', 'DISK_DF']):
+            core.IO.change_file_namespace(97, 'dimer', 'monomerA')
 
         jk_obj = hf_wfn_dimer.jk()
         hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", jk=jk_obj, **kwargs)
@@ -203,9 +200,8 @@ def run_sapt_dft(name, **kwargs):
         core.timer_off("SAPT(DFT):Monomer A SCF")
 
         core.timer_on("SAPT(DFT):Monomer B SCF")
-        # core.set_global_option("SAVE_JK", True)
-        # if (core.get_global_option('SCF_TYPE') in ['DF', 'DISK_DF']):
-        #     core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
+        if (core.get_global_option('SCF_TYPE') in ['DF', 'DISK_DF']):
+            core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
 
         hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", jk=jk_obj, **kwargs)
         hf_data["HF MONOMER B"] = core.variable("CURRENT ENERGY")
@@ -831,7 +827,7 @@ def run_sf_sapt(name, **kwargs):
     core.IO.set_default_namespace("dimer")
     data = {}
 
-    if (core.get_global_option('SCF_TYPE') == 'DISK_DF'):
+    if (core.get_global_option('SCF_TYPE') in ['DF', 'DISK_DF']):
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # Compute dimer wavefunction
