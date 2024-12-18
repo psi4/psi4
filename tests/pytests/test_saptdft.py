@@ -119,22 +119,13 @@ no_reorient
 no_com
     """
     )
-    fisapt0_external_potential_energies = {
-        "SAPT ELST ENERGY": -0.01581004514947182,
-        "SAPT ELST10,R ENERGY": -0.01581004514947182,
-        "SAPT EXCH ENERGY": 0.012282520736587468,
-        "SAPT IND ENERGY": -0.0035613061462424402,
-        "SAPT DISP ENERGY": -0.002185724589094623,
-        "SAPT TOTAL ENERGY": -0.009274555148221415,
-    }
-
-    saptdft_no_external_potential = {
-        "SAPT ELST ENERGY": -0.014201712642446296,
-        "ELST10,R": -0.014201712642446296,
-        "SAPT EXCH ENERGY": 0.014021550175337915,
-        "SAPT IND ENERGY": -0.0033383768785273885,
-        "SAPT DISP ENERGY": -0.002394920793165888,
-        "SAPT TOTAL ENERGY": -0.005913460138801657,
+    saptdft_external_potential = {
+        "SAPT ELST ENERGY": -0.015497974872921816,
+        "ELST10,R": -0.015497974872921816,
+        "SAPT EXCH ENERGY": 0.014086924748375487,
+        "SAPT IND ENERGY": -0.0036106959685717815,
+        "SAPT DISP ENERGY": -0.002398227386784957,
+        "SAPT TOTAL ENERGY": -0.007419973479903067,
     }
     # External potential containing the third water from the trimer with TIP3P
     # charges
@@ -163,15 +154,16 @@ no_com
             "freeze_core": "true",
             "sapt_dft_grac_shift_a": 0.1307,
             "sapt_dft_grac_shift_b": 0.1307,
+            "SAPT_DFT_FUNCTIONAL": "pbe0",
         }
     )
-    # psi4.energy("fisapt0", external_potentials={"C": Chargefield_C})
     psi4.energy(
         "sapt(dft)",
         external_potentials={"C": Chargefield_C},
+        molecule=mol,
     )
     pp(psi4.core.variables())
-    for key, value in fisapt0_external_potential_energies.items():
+    for key, value in saptdft_external_potential.items():
         compare_values(
             value,
             psi4.core.variable(key),
@@ -249,6 +241,7 @@ no_com
     psi4.energy(
         "sapt(dft)",
         external_potentials={"C": Chargefield_C},
+        molecule=mol,
     )
     pp(psi4.core.variables())
     pp(fisapt0_external_potential_energies)
@@ -328,6 +321,7 @@ no_com
     psi4.energy(
         "sapt(dft)",
         external_potentials={"C": Chargefield_C},
+        molecule=mol,
     )
     pp(psi4.core.variables())
     pp(fisapt0_external_potential_energies)
@@ -419,6 +413,7 @@ no_com
     psi4.energy(
         "fisapt0",
         external_potentials={"C": Chargefield_C},
+        molecule=mol,
     )
     pp(psi4.core.variables())
     for key, value in fisapt0_external_potential_energies.items():

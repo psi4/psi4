@@ -242,8 +242,7 @@ def run_sapt_dft(name, **kwargs):
 
             # Electrostatics
             core.timer_on("SAPT(HF):elst")
-            elst, extern_extern_ie = sapt_jk_terms.electrostatics(hf_cache, True)
-            hf_data['extern_extern_ie'] = extern_extern_ie
+            elst = sapt_jk_terms.electrostatics(hf_cache, True)
             hf_data.update(elst)
             core.timer_off("SAPT(HF):elst")
 
@@ -616,11 +615,9 @@ def sapt_dft(
     cache = sapt_jk_terms.build_sapt_jk_cache(dimer_wfn, wfn_A, wfn_B, sapt_jk, True)
     core.timer_off("SAPT(DFT):Build JK")
 
-    print(f"{external_potentials = }")
-
     # Electrostatics
     core.timer_on("SAPT(DFT):elst")
-    elst, extern_extern_ie = sapt_jk_terms.electrostatics(cache, True)
+    elst = sapt_jk_terms.electrostatics(cache, True)
     data.update(elst)
     core.timer_off("SAPT(DFT):elst")
 
