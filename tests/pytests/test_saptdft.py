@@ -199,15 +199,6 @@ no_com
         "SAPT DISP ENERGY": -0.002185724589094623,
         "SAPT TOTAL ENERGY": -0.009274555148221415,
     }
-
-    saptdft_no_external_potential = {
-        "SAPT ELST ENERGY": -0.014201712642446296,
-        "ELST10,R": -0.014201712642446296,
-        "SAPT EXCH ENERGY": 0.014021550175337915,
-        "SAPT IND ENERGY": -0.0033383768785273885,
-        "SAPT DISP ENERGY": -0.002394920793165888,
-        "SAPT TOTAL ENERGY": -0.005913460138801657,
-    }
     # External potential containing the third water from the trimer with TIP3P
     # charges
     Chargefield_C = np.array(
@@ -237,7 +228,6 @@ no_com
             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
         }
     )
-    # psi4.energy("fisapt0", external_potentials={"C": Chargefield_C})
     psi4.energy(
         "sapt(dft)",
         external_potentials={"C": Chargefield_C},
@@ -374,15 +364,6 @@ no_com
         "SAPT DISP ENERGY": -0.002185724589094623,
         "SAPT TOTAL ENERGY": -0.009274555148221415,
     }
-
-    saptdft_no_external_potential = {
-        "SAPT ELST ENERGY": -0.014201712642446296,
-        "ELST10,R": -0.014201712642446296,
-        "SAPT EXCH ENERGY": 0.014021550175337915,
-        "SAPT IND ENERGY": -0.0033383768785273885,
-        "SAPT DISP ENERGY": -0.002394920793165888,
-        "SAPT TOTAL ENERGY": -0.005913460138801657,
-    }
     # External potential containing the third water from the trimer with TIP3P
     # charges
     Chargefield_C = np.array(
@@ -427,6 +408,6 @@ no_com
 
 
 if __name__ == "__main__":
-    test_sapthf_external_potential2()
+    test_sapthf_external_potential()
     # test_saptdft_external_potential()
     # test_fisapt_external_potential()
