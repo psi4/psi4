@@ -255,177 +255,6 @@ no_com
 
 
 @pytest.mark.saptdft
-def test_sapthf_external_potential_abc():
-    mol = psi4.geometry(
-        """
-0 1
-H 0.0290 -1.1199 -1.5243
-O 0.9481 -1.3990 -1.3587
-H 1.4371 -0.5588 -1.3099
---
-H 1.0088 -1.5240 0.5086
-O 1.0209 -1.1732 1.4270
-H 1.5864 -0.3901 1.3101
---
-H -1.0231 1.6243 -0.8743
-O -0.5806 2.0297 -0.1111
-H -0.9480 1.5096 0.6281
-symmetry c1
-no_reorient
-no_com
-    """
-    )
-    fisapt0_external_potential_energies = {
-        "SAPT ELST ENERGY": -0.01581004514947182,
-        "SAPT ELST10,R ENERGY": -0.01581004514947182,
-        "SAPT EXCH ENERGY": 0.012282520736587468,
-        "SAPT IND ENERGY": -0.0035613061462424402,
-        "SAPT DISP ENERGY": -0.002185724589094623,
-        "SAPT TOTAL ENERGY": -0.009274555148221415,
-    }
-    # External potential containing the third water from the trimer with TIP3P
-    # charges
-    psi_bohr2angstroms = qcel.constants.bohr2angstroms
-    external_potentials = {
-        "A": [
-            [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
-            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) /
-             psi_bohr2angstroms],
-            [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
-        ],
-        "B": [
-            [0.417, np.array([-2.5628, -0.8269, -1.6696]) /
-             psi_bohr2angstroms],
-            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) /
-             psi_bohr2angstroms],
-            [0.417, np.array([-1.8988, -0.4993, -0.3072]) /
-             psi_bohr2angstroms],
-        ],
-        "C": [
-            [0.417, np.array([1.1270, 1.5527, -0.1658]) / psi_bohr2angstroms],
-            [-0.834, np.array([1.9896, 1.0738, -0.1673]) / psi_bohr2angstroms],
-            [0.417, np.array([2.6619, 1.7546, -0.2910]) / psi_bohr2angstroms],
-        ],
-    }
-    psi4.set_options(
-        {
-            "basis": "jun-cc-pvdz",
-            "scf_type": "df",
-            "guess": "sad",
-            "freeze_core": "true",
-            "SAPT_DFT_FUNCTIONAL": "hf",
-            "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
-        }
-    )
-    psi4.energy(
-        "sapt(dft)",
-        external_potentials=external_potentials,
-        molecule=mol,
-    )
-    pp(psi4.core.variables())
-    pp(fisapt0_external_potential_energies)
-    key_labels = [
-        ["SAPT ELST10,R ENERGY", "ELST10,R"],
-        ["SAPT ELST ENERGY", "SAPT ELST ENERGY"],
-        ["SAPT EXCH ENERGY", "SAPT EXCH ENERGY"],
-        ["SAPT IND ENERGY", "SAPT IND ENERGY"],
-        ["SAPT DISP ENERGY", "SAPT DISP ENERGY"],
-        ["SAPT TOTAL ENERGY", "SAPT TOTAL ENERGY"],
-    ]
-    for k1, k2 in key_labels:
-        compare_values(
-            fisapt0_external_potential_energies[k1],
-            psi4.core.variable(k2),
-            8,
-            k1,
-        )
-    return
-
-
-@pytest.mark.saptdft
-def test_fisapt0_external_potential_abc():
-    """
-    Energy test from ../fsapt-ext-abc/input.dat
-    """
-    mol = psi4.geometry(
-        """
-0 1
-H 0.0290 -1.1199 -1.5243
-O 0.9481 -1.3990 -1.3587
-H 1.4371 -0.5588 -1.3099
---
-H 1.0088 -1.5240 0.5086
-O 1.0209 -1.1732 1.4270
-H 1.5864 -0.3901 1.3101
---
-H -1.0231 1.6243 -0.8743
-O -0.5806 2.0297 -0.1111
-H -0.9480 1.5096 0.6281
-symmetry c1
-no_reorient
-no_com
-    """
-    )
-    psi_bohr2angstroms = qcel.constants.bohr2angstroms
-    external_potentials = {
-        "A": [
-            [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
-            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) /
-             psi_bohr2angstroms],
-            [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
-        ],
-        "B": [
-            [0.417, np.array([-2.5628, -0.8269, -1.6696]) /
-             psi_bohr2angstroms],
-            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) /
-             psi_bohr2angstroms],
-            [0.417, np.array([-1.8988, -0.4993, -0.3072]) /
-             psi_bohr2angstroms],
-        ],
-        "C": [
-            [0.417, np.array([1.1270, 1.5527, -0.1658]) / psi_bohr2angstroms],
-            [-0.834, np.array([1.9896, 1.0738, -0.1673]) / psi_bohr2angstroms],
-            [0.417, np.array([2.6619, 1.7546, -0.2910]) / psi_bohr2angstroms],
-        ],
-    }
-    psi4.set_options(
-        {
-            "basis": "jun-cc-pvdz",
-            "scf_type": "df",
-            "guess": "sad",
-            "freeze_core": "true",
-        }
-    )
-    psi4.energy(
-        "fisapt0",
-        external_potentials=external_potentials,
-        molecule=mol,
-    )
-    keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]  # TEST
-    Eref = {  # TEST
-        "Enuc": 74.2330370461897,  # TEST
-        "Eelst": -0.04919037863747235,  # TEST
-        "Eexch": 0.018239207303845935,  # TEST
-        "Eind": -0.007969545823122322,  # TEST
-        "Edisp": -0.002794948165605119,  # TEST
-        "Etot": -0.04171566532235386,  # TEST
-    }
-
-    Epsi = {  # TEST
-        "Enuc": mol.nuclear_repulsion_energy(),  # TEST
-        "Eelst": core.variable("SAPT ELST ENERGY"),  # TEST
-        "Eexch": core.variable("SAPT EXCH ENERGY"),  # TEST
-        "Eind": core.variable("SAPT IND ENERGY"),  # TEST
-        "Edisp": core.variable("SAPT DISP ENERGY"),  # TESdfs
-        "Etot": core.variable("SAPT0 TOTAL ENERGY"),  # TEST
-    }  # TEST
-
-    for key in keys:  # TEST
-        compare_values(Eref[key], Epsi[key], 6, key)  # TEST
-    return
-
-
-@pytest.mark.saptdft
 def test_sapthf_external_potential2():
     """ """
     mol = psi4.geometry(
@@ -579,9 +408,175 @@ no_com
     return
 
 
+@pytest.mark.saptdft
+def test_fisapt0_external_potential_abc():
+    """
+    Energy test modified from ../fsapt-ext-abc/input.dat by deleting final
+    water monomer because SAPT(DFT) does not support trimers at the moment.
+    """
+    mol = psi4.geometry(
+        """
+0 1
+H 0.0290 -1.1199 -1.5243
+O 0.9481 -1.3990 -1.3587
+H 1.4371 -0.5588 -1.3099
+--
+H 1.0088 -1.5240 0.5086
+O 1.0209 -1.1732 1.4270
+H 1.5864 -0.3901 1.3101
+symmetry c1
+no_reorient
+no_com
+    """
+    )
+    psi_bohr2angstroms = qcel.constants.bohr2angstroms
+    external_potentials = {
+        # "A": [
+        #     [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
+        #     [-0.834, np.array([-1.4545, -0.1932, 1.4677]) /
+        #      psi_bohr2angstroms],
+        #     [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
+        # ],
+        "B": [
+            [0.417, np.array([-2.5628, -0.8269, -1.6696]) /
+             psi_bohr2angstroms],
+            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) /
+             psi_bohr2angstroms],
+            [0.417, np.array([-1.8988, -0.4993, -0.3072]) /
+             psi_bohr2angstroms],
+        ],
+        "C": [
+            [0.417, np.array([1.1270, 1.5527, -0.1658]) / psi_bohr2angstroms],
+            [-0.834, np.array([1.9896, 1.0738, -0.1673]) / psi_bohr2angstroms],
+            [0.417, np.array([2.6619, 1.7546, -0.2910]) / psi_bohr2angstroms],
+        ],
+    }
+    psi4.set_options(
+        {
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+        }
+    )
+    psi4.energy(
+        "fisapt0",
+        external_potentials=external_potentials,
+        molecule=mol,
+    )
+    keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]  # TEST
+    # UPDATED ENERGIES FOR DIMER
+    Eref = {
+        "Edisp": -0.0027561367947096767,
+        "Eelst": -0.023791997688341837,
+        "Eexch": 0.01820071383041485,
+        "Eind": -0.005995426679289061,
+        "Enuc": 37.565065473343004,
+        "Etot": -0.014342847331925725,
+    }
+
+    Epsi = {  # TEST
+        "Enuc": mol.nuclear_repulsion_energy(),  # TEST
+        "Eelst": core.variable("SAPT ELST ENERGY"),  # TEST
+        "Eexch": core.variable("SAPT EXCH ENERGY"),  # TEST
+        "Eind": core.variable("SAPT IND ENERGY"),  # TEST
+        "Edisp": core.variable("SAPT DISP ENERGY"),  # TESdfs
+        "Etot": core.variable("SAPT0 TOTAL ENERGY"),  # TEST
+    }  # TEST
+
+    pp(Epsi)
+    for key in keys:  # TEST
+        compare_values(Eref[key], Epsi[key], 6, key)  # TEST
+    return
+
+
+@pytest.mark.saptdft
+def test_sapthf_external_potential_abc():
+    mol = psi4.geometry(
+        """
+0 1
+H 0.0290 -1.1199 -1.5243
+O 0.9481 -1.3990 -1.3587
+H 1.4371 -0.5588 -1.3099
+--
+H 1.0088 -1.5240 0.5086
+O 1.0209 -1.1732 1.4270
+H 1.5864 -0.3901 1.3101
+symmetry c1
+no_reorient
+no_com
+    """
+    )
+    # External potential containing the third water from the trimer with TIP3P
+    # charges
+    psi_bohr2angstroms = qcel.constants.bohr2angstroms
+    external_potentials = {
+        # "A": [
+        #     [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
+        #     [-0.834, np.array([-1.4545, -0.1932, 1.4677]) /
+        #      psi_bohr2angstroms],
+        #     [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
+        # ],
+        "B": [
+            [0.417, np.array([-2.5628, -0.8269, -1.6696]) /
+             psi_bohr2angstroms],
+            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) /
+             psi_bohr2angstroms],
+            [0.417, np.array([-1.8988, -0.4993, -0.3072]) /
+             psi_bohr2angstroms],
+        ],
+        "C": [
+            [0.417, np.array([1.1270, 1.5527, -0.1658]) / psi_bohr2angstroms],
+            [-0.834, np.array([1.9896, 1.0738, -0.1673]) / psi_bohr2angstroms],
+            [0.417, np.array([2.6619, 1.7546, -0.2910]) / psi_bohr2angstroms],
+        ],
+    }
+    psi4.set_options(
+        {
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+            "SAPT_DFT_FUNCTIONAL": "hf",
+            "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
+        }
+    )
+    psi4.energy(
+        "sapt(dft)",
+        external_potentials=external_potentials,
+        molecule=mol,
+    )
+    pp(psi4.core.variables())
+    # UPDATED ENERGIES FOR DIMER
+    fisapt0_external_potential_energies = {
+        "Edisp": -0.002764175448434391,
+        "Eelst": -0.01358531088334658,
+        "Eexch": 0.018398027914324683,
+        "Eind": -0.004537247733244737,
+        "Enuc": 37.565065473343004,
+        "Etot": -0.002488706150701025,
+    }
+    pp(fisapt0_external_potential_energies)
+    key_labels = [
+        ["Eelst", "SAPT ELST ENERGY"],
+        ["Eexch", "SAPT EXCH ENERGY"],
+        ["Eind", "SAPT IND ENERGY"],
+        ["Edisp", "SAPT DISP ENERGY"],
+        ["Etot", "SAPT TOTAL ENERGY"],
+    ]
+    for k1, k2 in key_labels:
+        compare_values(
+            fisapt0_external_potential_energies[k1],
+            psi4.core.variable(k2),
+            8,
+            k1,
+        )
+    return
+
+
 if __name__ == "__main__":
     # test_sapthf_external_potential()
-    # test_sapthf_external_potential_abc()
     test_fisapt0_external_potential_abc()
+    test_sapthf_external_potential_abc()
     # test_saptdft_external_potential()
     # test_fisapt_external_potential()
