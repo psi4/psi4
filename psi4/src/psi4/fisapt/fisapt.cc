@@ -8059,6 +8059,8 @@ double sapt_nuclear_external_potential_matrix(
                 throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
 
             std::shared_ptr<Matrix> V_extern = reference_->potential_variable(subsystem_labels[i])->computePotentialMatrix(primary_);
+            // V_extern->ncol()
+            printf("V_extern: ncol %d, nrow: %d", V_extern->ncol(), V_extern->nrow());
 
             if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
                 // Attempt to apply symmetry. No error checking is performed.

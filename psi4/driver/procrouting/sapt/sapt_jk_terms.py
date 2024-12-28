@@ -78,19 +78,29 @@ def build_sapt_jk_cache(
 
     # External Potential
     # nA = wfn_A.molecule().natom()
+    nbf = wfn_dimer.basisset().nbf()
     # print(nA, nB)
     # TODO: ensure Enucs is the right dimensionality for different sized
     # systems..., water dimer is 3x3
     ext_matrices = {
         "Enucs": core.Matrix.from_array(np.zeros((3, 3)), name="Enucs"),
+        "VA": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA"),
+        "VB": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB"),
+        "VA_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA_extern"),
+        "VB_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB_extern"),
+        # "VA_extern": wfn_dimer.potential_variable("A").computePotentialMatrix(wfn_dimer.basisset()),
+        # "VB_extern": wfn_dimer.potential_variable("B").computePotentialMatrix(wfn_dimer.basisset()),
+        # "VA": wfn_dimer.potential_variable("A").computePotentialMatrix(wfn_dimer.basisset()),
+        # "VB": wfn_dimer.potential_variable("B").computePotentialMatrix(wfn_dimer.basisset()),
+        # "VA_extern": wfn_dimer.potential_variable("A").computePotentialMatrix(wfn_dimer.basisset()),
+        # "VB_extern": wfn_dimer.potential_variable("B").computePotentialMatrix(wfn_dimer.basisset()),
     }
+    print("pre sapt_nuclear_external_potential_python")
     Etot = core.sapt_nuclear_external_potential_python(
         wfn_dimer,
         ext_matrices,
         core.get_options()
     )
-    # print(Etot)
-    pp(ext_matrices)
     print(f"Etot: {Etot}")
     print(f"Enucs:\n{ext_matrices['Enucs'].np}")
     for key, value in ext_matrices.items():
@@ -100,11 +110,39 @@ def build_sapt_jk_cache(
     # Potential ints
     mints = core.MintsHelper(wfn_A.basisset())
     cache["V_A"] = mints.ao_potential()
+    # check if VA is all zeros
+    if np.allclose(ext_matrices["VA"].np, 0):
+        mints = core.MintsHelper(wfn_A.basisset())
+        cache["V_A"] = mints.ao_potential()
+    else:
+        mints = core.MintsHelper(wfn_A.basisset())
+        cache["V_A"] = mints.ao_potential()
+        # cache["V_A"] = ext_matrices['VA']
+    if np.allclose(ext_matrices["VB"].np, 0):
+        mints = core.MintsHelper(wfn_B.basisset())
+        cache["V_B"] = mints.ao_potential()
+    else:
+        mints = core.MintsHelper(wfn_B.basisset())
+        cache["V_B"] = mints.ao_potential()
+        # cache["V_B"] = ext_matrices['VB']
+    # if "VA" not in ext_matrices.keys():
+    #     mints = core.MintsHelper(wfn_A.basisset())
+    #     cache["V_A"] = mints.ao_potential()
+    # else:
+    #     cache["V_A"] = ext_matrices['VA']
     # TODO: add external potential
     # cache["V_A"].axpy(1.0, wfn_A.Va())
 
-    mints = core.MintsHelper(wfn_B.basisset())
-    cache["V_B"] = mints.ao_potential()
+    # mints = core.MintsHelper(wfn_B.basisset())
+    # cache["V_B"] = mints.ao_potential()
+    # if "VB" not in ext_matrices.keys():
+    #     mints = core.MintsHelper(wfn_B.basisset())
+    #     cache["V_B"] = mints.ao_potential()
+    # else:
+    #     cache["V_B"] = ext_matrices['VB']
+    # mints = core.MintsHelper(wfn_B.basisset())
+    # cache["V_B"] = mints.ao_potential()
+    # cache["V_B"].add(ext_matrices['VB'])
     # cache["V_B"].axpy(1.0, wfn_B.Va())
 
     # Anything else we might need
@@ -144,7 +182,6 @@ def build_sapt_jk_cache(
     dimer_nr = wfn_A.molecule().extract_subsets([1, 2]).nuclear_repulsion_energy()
 
     cache["nuclear_repulsion_energy"] = dimer_nr - monA_nr - monB_nr
-
     return cache
 
 
