@@ -84,11 +84,12 @@ def build_sapt_jk_cache(
     # systems..., water dimer is 3x3
     ext_matrices = {
         "Enucs": core.Matrix.from_array(np.zeros((3, 3)), name="Enucs"),
+        "extern_extern_IE": core.Matrix.from_array(np.zeros((3, 3)), name="Extern-Extern IE"),
         "VA": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA"),
         "VB": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB"),
         "VA_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA_extern"),
         "VB_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB_extern"),
-        # "VA_extern": wfn_dimer.potential_variable("A").computePotentialMatrix(wfn_dimer.basisset()),
+        "VE": core.Matrix.from_array(np.zeros((nbf, nbf)), name="External Potential"),
         # "VB_extern": wfn_dimer.potential_variable("B").computePotentialMatrix(wfn_dimer.basisset()),
         # "VA": wfn_dimer.potential_variable("A").computePotentialMatrix(wfn_dimer.basisset()),
         # "VB": wfn_dimer.potential_variable("B").computePotentialMatrix(wfn_dimer.basisset()),
@@ -103,9 +104,14 @@ def build_sapt_jk_cache(
     )
     print(f"Etot: {Etot}")
     print(f"Enucs:\n{ext_matrices['Enucs'].np}")
+    mints = core.MintsHelper(wfn_A.basisset())
+    cache["V_A"] = mints.ao_potential()
+    print("V_A:")
+    print(cache['V_A'].np)
     for key, value in ext_matrices.items():
-        print(f"{key}: {value.name}")
+        print(f"{key}: {value.name}, {value.np.shape}: \n{value.np}")
         cache[key] = value
+    print("extern_extern_IE:", ext_matrices["extern_extern_IE"].np)
 
     # Potential ints
     mints = core.MintsHelper(wfn_A.basisset())
@@ -118,12 +124,14 @@ def build_sapt_jk_cache(
         mints = core.MintsHelper(wfn_A.basisset())
         cache["V_A"] = mints.ao_potential()
         # cache["V_A"] = ext_matrices['VA']
+        # cache['V_A'].add(ext_matrices['VE'])
     if np.allclose(ext_matrices["VB"].np, 0):
         mints = core.MintsHelper(wfn_B.basisset())
         cache["V_B"] = mints.ao_potential()
     else:
         mints = core.MintsHelper(wfn_B.basisset())
         cache["V_B"] = mints.ao_potential()
+        # cache['V_B'].add(ext_matrices['VE'])
         # cache["V_B"] = ext_matrices['VB']
     # if "VA" not in ext_matrices.keys():
     #     mints = core.MintsHelper(wfn_A.basisset())

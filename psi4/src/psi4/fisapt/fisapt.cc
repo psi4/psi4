@@ -8059,6 +8059,9 @@ double sapt_nuclear_external_potential_matrix(
                 throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
 
             std::shared_ptr<Matrix> V_extern = reference_->potential_variable(subsystem_labels[i])->computePotentialMatrix(primary_);
+            // if (matrices_["V" + subsystem_labels[i]]) {
+            //     V_extern = matrices_["V" + subsystem_labels[i]];
+            // }
             // V_extern->ncol()
             printf("V_extern: ncol %d, nrow: %d", V_extern->ncol(), V_extern->nrow());
 
@@ -8148,6 +8151,7 @@ double sapt_nuclear_external_potential_matrix(
         }
 
         outfile->Printf("\n");
+        outfile->Printf("    Total Interaction Energy between External Potentials: %24.16E [Eh]\n", extern_extern_IE);
         matrices_["extern_extern_IE"] = extern_extern_IE_mat;
     }
     // matrices_["VE"]->print();

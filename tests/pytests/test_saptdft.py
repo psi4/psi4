@@ -512,8 +512,6 @@ no_reorient
 no_com
     """
     )
-    # External potential containing the third water from the trimer with TIP3P
-    # charges
     psi_bohr2angstroms = qcel.constants.bohr2angstroms
     external_potentials = {
         "A": [
@@ -551,7 +549,6 @@ no_com
         external_potentials=external_potentials,
         molecule=mol,
     )
-    # UPDATED ENERGIES FOR DIMER
     fisapt0_external_potential_energies = {
         "SAPT DISP ENERGY": -0.002185724589094623,
         "SAPT ELST ENERGY": -0.01581004514947182,
@@ -559,6 +556,15 @@ no_com
         "SAPT EXCH ENERGY": 0.012282520736587468,
         "SAPT IND ENERGY": -0.0035613061462424402,
         "SAPT TOTAL ENERGY": -0.009274555148221415,
+    }
+    # UPDATED ENERGIES FOR DIMER
+    fisapt0_external_potential_energies = {
+        "Edisp": -0.002778631330469043,
+        "Eelst": -0.04933182514082859,
+        "Eexch": 0.01826072035756901,
+        "Eind": -0.00783603487368914,
+        "Enuc": 37.565065473343004,
+        "Etot": -0.04168577098741776,
     }
     print("REF:")
     pp(fisapt0_external_potential_energies)
@@ -585,8 +591,8 @@ no_com
 
 
 if __name__ == "__main__":
-    test_sapthf_external_potential()
-    # test_fisapt0_external_potential_abc()
+    # test_sapthf_external_potential()
+    test_fisapt0_external_potential_abc()
     test_sapthf_external_potential_abc()
     # test_saptdft_external_potential()
     # test_fisapt_external_potential()
