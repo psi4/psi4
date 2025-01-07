@@ -228,8 +228,7 @@ jobs:
           ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4
-      run: |
-        cmake --build objdir --config Release --target install
+      run: cmake --build objdir --config Release --target install
 
     - name: Linked dependencies, ldd (L)
       if: runner.os == 'Linux'

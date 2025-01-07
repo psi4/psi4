@@ -128,7 +128,6 @@ jobs:
       cmake \
         -S. \
         -B build \
-        -G Ninja \
         -C $(Build.SourcesDirectory)/cache_p4env@build.cmake \
         -D CMAKE_CXX_COMPILER=${CXX_COMPILER} \
         -D CMAKE_C_COMPILER=${C_COMPILER} \

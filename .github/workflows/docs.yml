@@ -113,7 +113,7 @@ jobs:
     - name: Compile Psi4
       if: ${{ github.repository == 'psi4/psi4' }}
       working-directory: ./code
-      run: CMAKE_BUILD_PARALLEL_LEVEL=1 cmake --build objdir
+      run: cmake --build objdir
 
     - name: Compile & Pack Docs
       if: ${{ github.repository == 'psi4/psi4' }}
