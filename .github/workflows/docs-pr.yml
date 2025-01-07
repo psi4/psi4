@@ -66,6 +66,7 @@ jobs:
         channels: conda-forge
         environment-file: env_p4docs.yaml
         show-channel-urls: true
+        conda-remove-defaults: true
 
     - name: Environment Information
       if: ${{ github.repository == 'psi4/psi4' }}
@@ -100,7 +101,7 @@ jobs:
     - name: Compile Psi4
       if: ${{ github.repository == 'psi4/psi4' }}
       working-directory: ./code
-      run: CMAKE_BUILD_PARALLEL_LEVEL=1 cmake --build objdir
+      run: make --build objdir
 
     - name: Compile & Pack Docs
       if: ${{ github.repository == 'psi4/psi4' }}

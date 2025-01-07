@@ -90,6 +90,7 @@ target_compile_definitions(mints
   PRIVATE
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
+set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE one_job)
 
 # Always linked-to external projects
 target_link_libraries(mints
