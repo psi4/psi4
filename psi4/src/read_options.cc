@@ -424,7 +424,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DAMPING_FACTOR_MULTIPOLE", 2.1304);
 
         /*- Summation scheme for field computations, can be direct or fmm -*/
-        options.add_str_i("SUMMATION_FIELDS", "DIRECT", "DIRECT FMM");
+        options.add_str("SUMMATION_FIELDS", "DIRECT", "DIRECT FMM");
         /*- Expansion order of the multipoles for FMM -*/
         options.add_int("TREE_EXPANSION_ORDER", 5);
         /*- Opening angle theta -*/
