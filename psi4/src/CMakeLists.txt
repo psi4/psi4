@@ -1,3 +1,5 @@
+set_property(GLOBAL PROPERTY JOB_POOLS one_job=1 four_jobs=4)
+
 ### >> Create core target, so we may link modules to it directly <<
 ### >> This allow to propagate dependencies upwards sanely
 add_library(core SHARED core.cc)

@@ -199,6 +199,7 @@ jobs:
         auto-activate-base: false
         add-pip-as-python-dependency: true
         channels: conda-forge
+        conda-remove-defaults: true
 
     - name: Buildtime Conda environment
       run: |
@@ -227,12 +228,7 @@ jobs:
           ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4
-      run: |
-        if [[ "${{ runner.os }}" == "Linux" ]]; then
-          # limit to avoid GHA OOM errors in libmints
-          export CMAKE_BUILD_PARALLEL_LEVEL=2
-        fi
-        cmake --build objdir --config Release --target install
+      run: cmake --build objdir --config Release --target install
 
     - name: Linked dependencies, ldd (L)
       if: runner.os == 'Linux'
