@@ -424,7 +424,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DAMPING_FACTOR_MULTIPOLE", 2.1304);
 
         /*- Summation scheme for field computations, can be direct or fmm -*/
-        options.add_str_i("SUMMATION_FIELDS", "DIRECT", "DIRECT FMM");
+        options.add_str("SUMMATION_FIELDS", "DIRECT", "DIRECT FMM");
         /*- Expansion order of the multipoles for FMM -*/
         options.add_int("TREE_EXPANSION_ORDER", 5);
         /*- Opening angle theta -*/
@@ -1754,7 +1754,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         due to compile-time issues and requiring very modern CUDA CCs (>=80) -*/
         options.add_str("SNLINK_LWD_KERNEL", "DEFAULT", "DEFAULT REFERENCE SCHEME1 SCHEME1-MAGMA"); 
         /*- Overwrite sn-LinK grid options with debug grid matching GauXC's Ultrafine grid spec !expert -*/
-        options.add_int("SNLINK_USE_DEBUG_GRID", false);
+        options.add_bool("SNLINK_USE_DEBUG_GRID", false);
 
         /*- SUBSECTION SAD Guess Algorithm -*/
 
@@ -3161,12 +3161,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("MP2_SOS_SCALE", 1.3);
         /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
         options.add_double("MP2_SOS_SCALE2", 1.2);
-        /*- CEPA opposite-spin scaling value from SCS-CCSD -*/
-        // options.add_double("CEPA_OS_SCALE",1.27);
-        /*- CEPA same-spin scaling value from SCS-CCSD -*/
-        // options.add_double("CEPA_SS_SCALE",1.13);
-        /*- CEPA Spin-opposite scaling (SOS) value -*/
-        // options.add_double("CEPA_SOS_SCALE",1.3);
         /*- Scaling value for 3rd order energy correction (S. Grimme, Vol. 24, pp. 1529, J. Comput. Chem.) -*/
         options.add_double("E3_SCALE", 0.25);
         /*- OO scaling factor used in MSD -*/
