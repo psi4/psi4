@@ -1624,7 +1624,6 @@ def scf_helper(name, post_scf=True, **kwargs):
     # PE needs to use exactly input orientation to correspond to potfile
     if core.get_option("SCF", "PE") or "external_potentials" in kwargs:
         c1_molecule = scf_molecule.clone()
-        print(getattr(scf_molecule, "_initial_cartesian", None) is not None)
         if getattr(scf_molecule, "_initial_cartesian", None) is not None:
             c1_molecule._initial_cartesian = scf_molecule._initial_cartesian.clone()
             c1_molecule.set_geometry(c1_molecule._initial_cartesian)
