@@ -184,7 +184,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     dscreen_ = options.get_double("COSX_DENSITY_TOLERANCE");
     basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
     overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
-    do_gradient_ = options.get_bool("COSX_DO_GRADIENT");
+    //do_gradient_ = options.get_bool("COSX_DO_GRADIENT");
 
     current_grid_ = "Final"; // default in case it is not explicitly set anywhere
 
@@ -336,6 +336,17 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     // otherwise use a large DFTGrid
     auto grid = grids_[current_grid_];
     auto Q = Q_mat_[current_grid_];
+
+    //do_gradient_ = options_.get_bool("COSX_DO_GRADIENT");
+    //if (do_gradient_) {
+    //    auto iters = options_.get_int("COSX_MAXITER_FINAL");
+    //    if (iters == 0) {
+    //        throw PSIEXCEPTION("Cannot run COSX gradients without final grid.");
+    //    } 
+    //    else if (iters >= 1) {}
+    //}
+    //do_gradient_ = do_gradient_ && (current_grid_ == "Final");
+    // TODO: handle final iterations ==0 or >1
 
     // => Initialization <= //
 
@@ -814,6 +825,8 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         auto psio_ = PSIO::shared_object();
         Kgrad->scale(2.0);
         Kgrad->save(psio_, PSIF_KGRAD, Matrix::SaveType::SubBlocks);
+        // TODO: save kgrad in wavefunction
+        // delete after used
     }
 
     num_computed_shells_ = int_shells_computed;

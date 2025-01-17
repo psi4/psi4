@@ -1310,6 +1310,8 @@ class PSI_API CompositeJK : public JK {
     */
     int get_snLinK_max_am();
 
+    void set_COSX_gradient(bool do_gradient) {return k_algo_->set_COSX_gradient(do_gradient); }
+
     /**
     * Print header information regarding JK
     * type on output file
