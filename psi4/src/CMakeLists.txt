@@ -1,4 +1,4 @@
-set_property(GLOBAL PROPERTY JOB_POOLS one_job=1 four_jobs=4)
+set_property(GLOBAL PROPERTY JOB_POOLS one_job=1 two_jobs=2 four_jobs=4)
 
 ### >> Create core target, so we may link modules to it directly <<
 ### >> This allow to propagate dependencies upwards sanely
