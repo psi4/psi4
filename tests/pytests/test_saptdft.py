@@ -592,7 +592,7 @@ no_com
 
 if __name__ == "__main__":
     # test_sapthf_external_potential()
-    test_fisapt0_external_potential_abc()
+    # test_fisapt0_external_potential_abc()
     test_sapthf_external_potential_abc()
     # test_saptdft_external_potential()
     # test_fisapt_external_potential()

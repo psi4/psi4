@@ -385,9 +385,16 @@ def run_sapt_dft(name, **kwargs):
         core.timer_off("SAPT(DFT): Monomer B DFT")
 
     # Save JK object
-    sapt_jk = wfn_B.jk()
-    wfn_A.set_jk(sapt_jk)
-    core.set_global_option("SAVE_JK", False)
+    if do_ext_potential:
+        # Need to construct jk for wfn_A and wfn_B individually for seperate
+        # external potentials
+        sapt_jk = wfn_B.jk()
+        wfn_A.set_jk(sapt_jk)
+        core.set_global_option("SAVE_JK", False)
+    else:
+        sapt_jk = wfn_B.jk()
+        wfn_A.set_jk(sapt_jk)
+        core.set_global_option("SAVE_JK", False)
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
