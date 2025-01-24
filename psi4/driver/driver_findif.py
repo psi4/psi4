@@ -373,7 +373,6 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
     # Populate salc_indices_pi for all irreps.
     # * Python error if iterate through `salc_list`
     if displacement_space == "molsym":
-        import copy
         if method_allowed_irreps == 1:
             salc_indices_pi[0] = salcs.salcs_by_irrep[0]
         else:
