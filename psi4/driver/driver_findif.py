@@ -199,17 +199,30 @@ def _displace_cart(mass: np.ndarray, geom: np.ndarray, salc_list: core.CdSalcLis
     disp_geom = np.copy(geom)
     # This for loop and tuple unpacking is why the function can handle
     # an arbitrary number of SALCs.
-    for salc_index, disp_steps in i_m:
-        # * Python error if iterate through `salc_list`
-        for i in range(len(salc_list[salc_index])):
-            component = salc_list[salc_index][i]
-            disp_geom[component.atom, component.xyz] += disp_steps * step_size * component.coef / np.sqrt(mass[component.atom])
-        label.append(f"{salc_index}: {disp_steps}")
 
-    # salc_index is in descending order. We want the label in ascending order, so...
-    # ...add the new label part from the left of the string, not the right.
-    label = ', '.join(reversed(label))
-    return disp_geom, label
+    #MolSym "salc_list" contains the salcs and the SymText object
+    if type(salc_list) == list:
+        salcs = salc_list[0]
+        symtext = salc_list[1]
+        for salc_index, disp_steps in i_m:
+            for atom_idx in range(symtext.mol.natoms):
+                for xyz_idx in range(3):
+                    disp_geom[atom_idx, xyz_idx] += disp_steps * step_size * salcs.salcs[salc_index].coeffs[atom_idx * 3 + xyz_idx] / np.sqrt(symtext.mol.masses[atom_idx]) 
+            label.append(f"{salc_index}: {disp_steps}")
+        label = ', '.join(reversed(label))
+        return disp_geom, label
+    else:
+        for salc_index, disp_steps in i_m:
+            # * Python error if iterate through `salc_list`
+            for i in range(len(salc_list[salc_index])):
+                component = salc_list[salc_index][i]
+                disp_geom[component.atom, component.xyz] += disp_steps * step_size * component.coef / np.sqrt(mass[component.atom])
+            label.append(f"{salc_index}: {disp_steps}")
+
+        # salc_index is in descending order. We want the label in ascending order, so...
+        # ...add the new label part from the left of the string, not the right.
+        label = ', '.join(reversed(label))
+        return disp_geom, label
 
 
 def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
@@ -280,11 +293,40 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
     # Get settings for CdSalcList, then get the CdSalcList.
     method_allowed_irreps = 0x1 if mode == "1_0" else 0xFF
     # core.get_option returns an int, but CdSalcList expect a bool, so re-cast
-    salc_list = core.CdSalcList(mol, method_allowed_irreps, t_project, r_project)
+    if core.get_option("FINDIF", "molsym"):
+        try:
+            import molsym
+        except ImportError:
+            print("Download & install MolSym at: https://github.com/NASymmetry/MolSym")
+        displacement_space = "molsym" 
+        molsym_mol = molsym.Molecule.from_psi4_molecule(mol)
+        symtext = molsym.Symtext.from_molecule(molsym_mol)
+        molsym_mol = molsym_mol.transform(symtext.rotate_to_std)
 
-    n_atom = mol.natom()
-    n_irrep = salc_list.nirrep()
-    n_salc = salc_list.ncd()
+        cart_coords = molsym.salcs.CartesianCoordinates(symtext)
+
+        salcs = molsym.salcs.ProjectionOp(symtext, cart_coords)
+
+        salcs.sort_to('blocks')
+        ref_geom = symtext.mol.coords
+
+        mol.set_geometry(core.Matrix.from_array(ref_geom))
+
+        n_atom = len(molsym_mol.atoms)
+
+        #TODO implement option in molsym projection operator to only return TSIR salcs... this will do for now
+        if method_allowed_irreps == 1:
+            n_salc = len(salcs.salcs_by_irrep[0])
+            n_irrep = 1
+        else:
+            n_salc = len(salcs)
+            n_irrep = len(symtext.irreps)
+    else:
+        displacement_space = "CdSalcs" 
+        salc_list = core.CdSalcList(mol, method_allowed_irreps, t_project, r_project)
+        n_atom = mol.natom()
+        n_irrep = salc_list.nirrep()
+        n_salc = salc_list.ncd()
 
     if print_lvl and verbose:
         info = f"    Number of atoms is {n_atom}.\n"
@@ -330,8 +372,17 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
 
     # Populate salc_indices_pi for all irreps.
     # * Python error if iterate through `salc_list`
-    for i in range(len(salc_list)):
-        salc_indices_pi[salc_list[i].irrep_index()].append(i)
+    if displacement_space == "molsym":
+        import copy
+        if method_allowed_irreps == 1:
+            salc_indices_pi[0] = salcs.salcs_by_irrep[0]
+        else:
+            salc_indices_pi = salcs.salcs_by_irrep
+    else:
+        for I in range(len(salc_list)):
+            salc_list[I].print_out()
+        for i in range(len(salc_list)):
+            salc_indices_pi[salc_list[i].irrep_index()].append(i)    
 
     # If the method allows more than one irrep, print how the irreps partition the SALCS.
     if print_lvl and method_allowed_irreps != 0x1 and verbose:
@@ -361,7 +412,6 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
             # Either len(indices) or len(indices)-1 is even, so dividing by two is safe.
             n_disp += len(indices) * (len(indices) - 1) // 2 * len(disps["off"])
         n_disp_pi.append(n_disp)
-
     # Let's print out the number of geometries, the displacement multiplicity, and the CdSALCs!
     if print_lvl and verbose:
         info = f"    Number of geometries (including reference) is {sum(n_disp_pi) + 1}.\n"
@@ -375,17 +425,17 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
     if print_lvl > 1 and verbose:
         for i in range(len(salc_list)):
             salc_list[i].print_out()
-
     data.update({
         "n_disp_pi": n_disp_pi,
         "n_irrep": n_irrep,
         "n_salc": n_salc,
         "n_atom": n_atom,
-        "salc_list": salc_list,
+        "salc_list": [salcs, symtext] if displacement_space == "molsym" else salc_list,
         "salc_indices_pi": salc_indices_pi,
         "disps": disps,
         "project_translations": t_project,
-        "project_rotations": r_project
+        "project_rotations": r_project,
+        "displacement_space": displacement_space,
     })
 
     return data
@@ -663,7 +713,12 @@ def assemble_gradient_from_energies(findifrec: Dict) -> np.ndarray:
         logger.info(info)
 
     # Transform the gradient from mass-weighted SALCs to non-mass-weighted Cartesians
-    B = data["salc_list"].matrix()
+    if data["displacement_space"] == "molsym":
+        salcs = data["salc_list"][0]
+        salc_indices_TSIR = data["salc_indices_pi"][0]
+        B = salcs.basis_transformation_matrix[:,:len(salc_indices_TSIR)].T
+    else:
+        B = data["salc_list"].matrix()
     g_cart = np.dot(g_q, B)
     g_cart = g_cart.reshape(data["n_atom"], 3)
     massweighter = np.array([mol.mass(a) for a in range(data["n_atom"])])**(0.5)
@@ -814,7 +869,6 @@ def assemble_dipder_from_dipoles(findifrec: Dict, freq_irrep_only: int) -> np.nd
 
     def init_string(data):
         return ("")
-
     data = _initialize_findif(mol, freq_irrep_only, "2_1", findifrec['stencil_size'], findifrec['step']['size'],
                               init_string, findifrec['project_translations'], findifrec['project_rotations'], False)
     salc_indices = data["salc_indices_pi"][0]
@@ -827,25 +881,43 @@ def assemble_dipder_from_dipoles(findifrec: Dict, freq_irrep_only: int) -> np.nd
         for j in range(1, max_disp + 1):
             dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
             dipole[salc_index, max_disp + j - 1] = displacements[f"{salc_index}: {j}"]["dipole"]
+    if data["displacement_space"] == "molsym":
+        symtext = data["salc_list"][1]
+        ct = symtext.character_table
+        for h in range(1, data["n_irrep"]):
+            for symel, symel_class in enumerate(symtext.symel_to_class_map):
+                if np.isclose(ct[h,symel_class], -1):
+                    break
+            else:
+                raise ValidationError("A symmetric dipole passed for a non-symmetric one.")
+            sym_op = symtext.symels[symel].rrep
+            salc_indices = data["salc_indices_pi"][h]
+            #TODO take redundant code and throw it in a function so we don't repeat for CDSalcs case
+            # Creating positive displacements and populating for the other point groups
+            for salc_index in salc_indices:
+                for j in range(1, max_disp + 1):
+                    pos_disp_dipole = np.dot(sym_op, displacements[f"{salc_index}: {-j}"]["dipole"].T)
+                    dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
+                    dipole[salc_index, max_disp + j - 1] = pos_disp_dipole
+    else:
+        for h in range(1, data["n_irrep"]):
+            # Find the group operation that converts + to - displacements.
+            gamma = ct.gamma(h)
+            for group_op in range(order):
+                if gamma.character(group_op) == -1:
+                    break
+            else:
+                raise ValidationError("A symmetric dipole passed for a non-symmetric one.")
 
-    for h in range(1, data["n_irrep"]):
-        # Find the group operation that converts + to - displacements.
-        gamma = ct.gamma(h)
-        for group_op in range(order):
-            if gamma.character(group_op) == -1:
-                break
-        else:
-            raise ValidationError("A symmetric dipole passed for a non-symmetric one.")
+            sym_op = np.array(ct.symm_operation(group_op).matrix())
+            salc_indices = data["salc_indices_pi"][h]
 
-        sym_op = np.array(ct.symm_operation(group_op).matrix())
-        salc_indices = data["salc_indices_pi"][h]
-
-        # Creating positive displacements and populating for the other point groups
-        for salc_index in salc_indices:
-            for j in range(1, max_disp + 1):
-                pos_disp_dipole = np.dot(sym_op, displacements[f"{salc_index}: {-j}"]["dipole"].T)
-                dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
-                dipole[salc_index, max_disp + j - 1] = pos_disp_dipole
+            # Creating positive displacements and populating for the other point groups
+            for salc_index in salc_indices:
+                for j in range(1, max_disp + 1):
+                    pos_disp_dipole = np.dot(sym_op, displacements[f"{salc_index}: {-j}"]["dipole"].T)
+                    dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
+                    dipole[salc_index, max_disp + j - 1] = pos_disp_dipole
 
     # Computing the dipole derivative by finite differnce
     if findifrec["stencil_size"] == 3:
@@ -855,7 +927,10 @@ def assemble_dipder_from_dipoles(findifrec: Dict, freq_irrep_only: int) -> np.nd
                     dipole[:, 3]) / (12.0 * findifrec["step"]["size"])
 
     # Transform the dipole derivates from mass-weighted SALCs to non-mass-weighted Cartesians
-    B = np.asarray(data["salc_list"].matrix())
+    if data["displacement_space"] == "molsym":
+        B = data["salc_list"][0].basis_transformation_matrix.T
+    else:
+        B = np.asarray(data["salc_list"].matrix())
     dipder_cart = np.dot(dipder_q.T, B)
     dipder_cart = dipder_cart.T.reshape(data["n_atom"], 9)
 
@@ -892,7 +967,6 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
         return ("  Computing second-derivative from gradients using projected, \n"
                 "  symmetry-adapted, cartesian coordinates.\n\n"
                 "  {:d} gradients passed in, including the reference geometry.\n".format(len(displacements) + 1))
-
     data = _initialize_findif(mol, freq_irrep_only, "2_1", findifrec['stencil_size'], findifrec['step']['size'],
                               init_string, findifrec['project_translations'], findifrec['project_rotations'], False)
 
@@ -1077,11 +1151,15 @@ def assemble_hessian_from_energies(findifrec: Dict, freq_irrep_only: int) -> np.
 
     data = _initialize_findif(mol, freq_irrep_only, "2_0", findifrec['stencil_size'], findifrec['step']['size'],
                               init_string, findifrec['project_translations'], findifrec['project_rotations'], False)
-
     massweighter = np.repeat([mol.mass(a) for a in range(data["n_atom"])], 3)**(-0.5)
     B_pi = []
     H_pi = []
-    irrep_lbls = mol.irrep_labels()
+    if data["displacement_space"] == "molsym":
+        #TODO This won't change the label that is printed to the console, see qcdb/vib.py
+        symtext = data["salc_list"][1]
+        irrep_lbls = [symtext.irreps[i].symbol for i in range(data["n_irrep"])]
+    else:
+        irrep_lbls = mol.irrep_labels()
     max_disp = (findifrec["stencil_size"] - 1) // 2
     e_per_diag = 2 * max_disp
 
@@ -1113,7 +1191,6 @@ def assemble_hessian_from_energies(findifrec: Dict, freq_irrep_only: int) -> np.
             diag_fcs -= 30 * ref_energy
             diag_fcs /= (12 * findifrec["step"]["size"]**2)
         H_irr = np.diag(diag_fcs)
-
         # TODO: It's a bit ugly to use the salc indices to grab the off-diagonals but the indices
         # within the irrep to grab the diagonals. Is there a better way to do this?
 
@@ -1135,8 +1212,11 @@ def assemble_hessian_from_energies(findifrec: Dict, freq_irrep_only: int) -> np.
                           12 * ref_energy) / (12 * findifrec["step"]["size"]**2)
                 H_irr[i, j] = fc
                 H_irr[j, i] = fc
-
-        B_pi.append(data["salc_list"].matrix_irrep(h))
+        if data["displacement_space"] == "molsym":
+            salcs = data["salc_list"][0]
+            B_pi.append(salcs.basis_transformation_matrix[:,salcs.salcs_by_irrep[h]].T)
+        else:
+            B_pi.append(data["salc_list"].matrix_irrep(h))
         H_pi.append(_process_hessian_symmetry_block(H_irr, B_pi[-1], massweighter, irrep_lbls[h], data["print_lvl"]))
 
     # All blocks of the Hessian are now constructed!
@@ -1411,7 +1491,6 @@ class FiniteDifferenceComputer(BaseComputer):
         # load QCVariables & properties
         qcvars = self.task_list['reference'].get_results().extras['qcvars']
         E0 = self.findifrec['reference']['energy']
-
         properties = {
             "calcinfo_natom": self.molecule.natom(),
             "nuclear_repulsion_energy": self.molecule.nuclear_repulsion_energy(),
