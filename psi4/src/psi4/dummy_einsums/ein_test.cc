@@ -29,9 +29,10 @@
 #include <cmath>
 #include <cstdlib>
 
-#include "einsums.hpp"
-#include "range/v3/algorithm/for_each.hpp"
-#include "range/v3/view/zip.hpp"
+#include <Einsums/Print.hpp>
+#include <Einsums/Runtime.hpp>
+#include <Einsums/Tensor.hpp>
+#include <Einsums/TensorAlgebra.hpp>
 
 #include "psi4/libmints/wavefunction.h"
 
@@ -42,37 +43,45 @@ SharedWavefunction dummy_einsums(SharedWavefunction ref_wfn, Options& options) {
 
     using namespace einsums;
     using namespace einsums::tensor_algebra;
-    using namespace einsums::tensor_algebra::index;
+    using namespace einsums::index;
 
-    einsums::initialize();
+    einsums::initialize(0, nullptr);
 
     // Create a file to hold the data from the DiskTensor tests.
     //einsums::state::data = h5::create("Data.h5", H5F_ACC_TRUNC);
 
-    auto [_t, _w] = polynomial::laguerre::gauss_laguerre(40);
-    println(_t);
-    println(_w);
-
-    auto weights = create_tensor_like(_w);
-    {
-        using namespace element_operations::new_tensor;
-        einsum(Indices{i}, &_w, Indices{i}, _w, Indices{i}, exp(_t));
-    }
-    println(_w);
-
-    ranges::for_each(ranges::views::zip(_t.vector_data(), _w.vector_data()), [](auto &&v) {
-        auto t = std::get<0>(v);
-        auto w = std::get<1>(v);
-
-        println("test : {:14.10f} {:14.10f}", t, w);
-    });
+//    auto [_t, _w] = polynomial::laguerre::gauss_laguerre(40);
+//    println(_t);
+//    println(_w);
+//
+//    auto weights = create_tensor_like(_w);
+//    {
+//        using namespace element_operations::new_tensor;
+//        einsum(Indices{i}, &_w, Indices{i}, _w, Indices{i}, exp(_t));
+//    }
+//    println(_w);
+//
+//    ranges::for_each(ranges::views::zip(_t.vector_data(), _w.vector_data()), [](auto &&v) {
+//        auto t = std::get<0>(v);
+//        auto w = std::get<1>(v);
+//
+//        println("test : {:14.10f} {:14.10f}", t, w);
+//    });
 
     // BEGIN: FFT tests
 
     // auto result = fft::fftfreq(8, 0.1);
     // println(result);
 
-    einsums::finalize(true);
+    println("Hello world!");
+
+    auto A = create_random_tensor("A", 3, 3);
+    auto B = create_random_tensor("B", 3, 3);
+    auto C = create_random_tensor("C", 3, 3);
+
+    einsum(Indices{i, j}, &C, Indices{i, k}, A, Indices{k, j}, B);
+
+    einsums::finalize();
 
     return ref_wfn;
 }
