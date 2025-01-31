@@ -90,10 +90,19 @@ def _molecule_from_string(cls,
         missing_enabled_return_qm=missing_enabled_return_qm,
         missing_enabled_return_efp=missing_enabled_return_efp,
         verbose=verbose)
+
+    qmol = core.Molecule.from_dict(molrec['qm'])
+
+    geom = np.array(molrec["qm"]["geom"]).reshape((-1, 3))
+    if molrec["qm"]["units"] == "Angstrom":
+        # beware if qcel and psi4 choose different sets of constants
+        geom = geom / constants.bohr2angstroms
+    qmol._initial_cartesian = core.Matrix.from_array(geom)
+
     if return_dict:
-        return core.Molecule.from_dict(molrec['qm']), molrec
+        return qmol, molrec
     else:
-        return core.Molecule.from_dict(molrec['qm'])
+        return qmol
 
 
 @classmethod
@@ -214,9 +223,7 @@ def _molecule_from_schema(cls, molschema: Dict, return_dict: bool = False, nonph
 
     qmol = core.Molecule.from_dict(molrec)
     geom = np.array(molrec["geom"]).reshape((-1, 3))
-    if molrec["units"] == "Angstrom":
-        # beware if qcel and psi4 choose different sets of constants
-        geom = geom / constants.bohr2angstroms
+    # presently molschema are formats required to be Bohr. convert _initial_cartesian to Bohr if this expands
     qmol._initial_cartesian = core.Matrix.from_array(geom)
 
     if return_dict:
@@ -273,6 +280,11 @@ def geometry(geom: str, name: str = "default") -> core.Molecule:
 
     molecule = core.Molecule.from_dict(molrec['qm'])
     if "geom" in molrec["qm"]:
+        # for fully-specified w/frame (dtype="psi4" passed in "geom", not Zmat or
+        #   vars for dtype="psi4+" passed in "geom_unsettled"), save frame in
+        #   Bohr in `_initial_cartesian` for resetting through `Molecule.set_geometry`
+        #   if nocom/noreorient/c1 needs to be set retroactively in driver for
+        #   alignment with other data (e.g., point charges, polarizable embedding).
         geom = np.array(molrec["qm"]["geom"]).reshape((-1, 3))
         if molrec["qm"]["units"] == "Angstrom":
             # beware if qcel and psi4 choose different sets of constants
