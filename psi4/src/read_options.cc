@@ -3252,6 +3252,23 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do Cholesky decomposition of the ERI tensor -*/
         options.add_bool("CHOLESKY", false);
     }
+    if (name == "F12" || options.read_globals()) {
+        /*- MODULEDESCRIPTION Performs F12 computations for RHF reference wavefunctions. -*/
+
+        /*- SUBSECTION General Options -*/
+        /*- Choose conventional or density-fitted. Default to CONV -*/
+        options.add_str("F12_TYPE", "DF", "CONV DF DISK_CONV DISK_DF");
+        /*- Whether to read-in stored integrals from previous computation -*/
+        options.add_bool("F12_READ_INTS", false);
+        /*- Set contracted Gaussian-type geminal beta value -*/
+        options.add_double("F12_BETA", 1.0);
+        /*- Choose a basis for Complementary Auxiliary Basis Set -*/
+        options.add_str("CABS_BASIS", "");
+        /*- Whether to compute the CABS Singles Correction -*/
+        options.add_bool("CABS_SINGLES", true);
+        /*- Choose a density-fitting basis for integrals -*/
+        options.add_str("DF_BASIS_F12", "");
+    }
     if (name == "MRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
 
