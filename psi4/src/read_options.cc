@@ -2970,6 +2970,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         frequency calculation. Turned off at non-stationary geometries and
         in the presence of external perturbations. -*/
         options.add_bool("FD_PROJECT", true);
+        /*- Do use MolSym for generating SALCs of Cartesian displacements
+        as opposed to CDSalcs*/
+        options.add_bool("Molsym", false);
     }
     if (name == "OCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs orbital-optimized MPn and CC computations and conventional MPn computations. -*/
