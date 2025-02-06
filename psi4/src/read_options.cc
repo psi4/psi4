@@ -1139,14 +1139,18 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION SAPT(DFT) -*/
 
-        /*- Monomer A GRAC shift in Hartree -*/
+        /*- Monomer A GRAC shift in Hartree. Set to -99 to automatically
+           compute prior to SAPT(DFT)  -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
-        /*- Monomer B GRAC shift in Hartree -*/
+        /*- Monomer B GRAC shift in Hartree. Set to -99 to automatically
+           compute prior to SAPT(DFT) -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
+        /*- SAPT_DFT_GRAC_CONVERGENCE_TIER will specify how hard psi4 should
+          try to converge the cation for a GRAC shift before failing the
+          calculation completely -*/
+        options.add_str("SAPT_DFT_GRAC_CONVERGENCE_TIER", "SINGLE", "SINGLE ITERATIVE");
         /*- Compute the Delta-HF correction? -*/
         options.add_bool("SAPT_DFT_DO_DHF", true);
-        /*- How is the GRAC correction determined? !expert -*/
-        options.add_str("SAPT_DFT_GRAC_DETERMINATION", "INPUT", "INPUT");
         /*- Enables the hybrid xc kernel in dispersion? !expert -*/
         options.add_bool("SAPT_DFT_DO_HYBRID", true);
         /*- Scheme for approximating exchange-dispersion for SAPT-DFT.

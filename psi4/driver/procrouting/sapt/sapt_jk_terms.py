@@ -35,9 +35,16 @@ from psi4 import core
 from ...p4util import solvers
 from ...p4util.exceptions import *
 from .sapt_util import print_sapt_var
+from pprint import pprint as pp
 
 
-def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
+def build_sapt_jk_cache(
+        wfn_dimer: core.Wavefunction,
+        wfn_A: core.Wavefunction,
+        wfn_B: core.Wavefunction,
+        jk: core.JK,
+        do_print=True,
+):
     """
     Constructs the DCBS cache data required to compute ELST/EXCH/IND
     """
