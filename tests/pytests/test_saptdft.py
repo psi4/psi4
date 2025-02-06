@@ -569,10 +569,10 @@ no_com
     print("REF:")
     pp(fisapt0_external_potential_energies)
     key_labels = [
-        ["Eelst", "SAPT ELST ENERGY"],
         ["Eexch", "SAPT EXCH ENERGY"],
-        ["Eind", "SAPT IND ENERGY"],
         ["Edisp", "SAPT DISP ENERGY"],
+        ["Eelst", "SAPT ELST ENERGY"],
+        ["Eind", "SAPT IND ENERGY"],
         ["Etot", "SAPT TOTAL ENERGY"],
     ]
     saptdft_potential_energies = {

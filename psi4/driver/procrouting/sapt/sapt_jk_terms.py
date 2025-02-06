@@ -38,12 +38,23 @@ from .sapt_util import print_sapt_var
 from pprint import pprint as pp
 
 
+def construct_external_potential_in_field_C(arrays):
+    output = []
+    for i, array in enumerate(arrays):
+        if array is None:
+            continue
+        for j, val in enumerate(array):
+            output.append(val)
+    return output
+
+
 def build_sapt_jk_cache(
         wfn_dimer: core.Wavefunction,
         wfn_A: core.Wavefunction,
         wfn_B: core.Wavefunction,
         jk: core.JK,
         do_print=True,
+        external_potentials=None,
 ):
     """
     Constructs the DCBS cache data required to compute ELST/EXCH/IND
@@ -114,23 +125,47 @@ def build_sapt_jk_cache(
     print("extern_extern_IE:", ext_matrices["extern_extern_IE"].np)
 
     # Potential ints
+    # External Potentials need to add to V_A and V_B
+    from ..proc import _set_external_potentials_to_wavefunction
+    ext_A = construct_external_potential_in_field_C(
+        [external_potentials['A']]
+        # [external_potentials['C'], external_potentials['A']]
+    )
+    print(f"{ext_A=}")
+    ext_B = construct_external_potential_in_field_C(
+        # [external_potentials['C'], external_potentials['B']]
+        [external_potentials['B']]
+    )
+    print(f"{ext_B=}")
+    _set_external_potentials_to_wavefunction(ext_A, wfn_A)
+    _set_external_potentials_to_wavefunction(ext_B, wfn_B)
+    ext_A = wfn_A.external_pot().computePotentialMatrix(wfn_A.basisset())
+    ext_B = wfn_B.external_pot().computePotentialMatrix(wfn_B.basisset())
+    print(f"{ext_A=}")
     mints = core.MintsHelper(wfn_A.basisset())
     cache["V_A"] = mints.ao_potential()
+    cache["V_A"].add(ext_A)
+    print("V_A:")
+    print(cache['V_A'])
+    mints = core.MintsHelper(wfn_B.basisset())
+    cache["V_B"] = mints.ao_potential()
+    cache["V_B"].add(ext_B)
+
     # check if VA is all zeros
-    if np.allclose(ext_matrices["VA"].np, 0):
-        mints = core.MintsHelper(wfn_A.basisset())
-        cache["V_A"] = mints.ao_potential()
-    else:
-        mints = core.MintsHelper(wfn_A.basisset())
-        cache["V_A"] = mints.ao_potential()
-        # cache["V_A"] = ext_matrices['VA']
-        # cache['V_A'].add(ext_matrices['VE'])
-    if np.allclose(ext_matrices["VB"].np, 0):
-        mints = core.MintsHelper(wfn_B.basisset())
-        cache["V_B"] = mints.ao_potential()
-    else:
-        mints = core.MintsHelper(wfn_B.basisset())
-        cache["V_B"] = mints.ao_potential()
+    # if np.allclose(ext_matrices["VA"].np, 0):
+    #     mints = core.MintsHelper(wfn_A.basisset())
+    #     cache["V_A"] = mints.ao_potential()
+    # else:
+    #     mints = core.MintsHelper(wfn_A.basisset())
+    #     cache["V_A"] = mints.ao_potential()
+    #     # cache["V_A"] = ext_matrices['VA']
+    #     # cache['V_A'].add(ext_matrices['VE'])
+    # if np.allclose(ext_matrices["VB"].np, 0):
+    #     mints = core.MintsHelper(wfn_B.basisset())
+    #     cache["V_B"] = mints.ao_potential()
+    # else:
+    #     mints = core.MintsHelper(wfn_B.basisset())
+    #     cache["V_B"] = mints.ao_potential()
         # cache['V_B'].add(ext_matrices['VE'])
         # cache["V_B"] = ext_matrices['VB']
     # if "VA" not in ext_matrices.keys():
