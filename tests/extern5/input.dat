@@ -1,0 +1,47 @@
+#! External potential sanity check with 0 charge far away
+#! Checks if all units behave the same and energy is same as no
+#! potential
+
+molecule water_ang {
+  0 1
+  O  -0.778803000000  0.000000000000  1.132683000000
+  H  -0.666682000000  0.764099000000  1.706291000000
+  H  -0.666682000000  -0.764099000000  1.706290000000
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+molecule water_bohr {
+  0 1
+  O  -1.4717242691    0.000000000000  2.1404605019
+  H  -1.2598463015    1.4439377381  3.2244224468
+  H  -1.2598463015    -1.4439377381  3.2244224468
+  units bohr
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+external_potentials = np.array([
+0.0,10.0,10.0,10.0]).reshape((-1, 4))
+# convert coordinates columns to bohr
+external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
+
+
+set {
+    scf_type df
+    d_convergence 8
+    basis 6-31G*
+}
+
+# Reference energies without external potential
+energy_bohr = energy('scf', molecule=water_bohr)
+energy_ang = energy('scf', molecule=water_ang)
+compare_values(energy_bohr, energy_ang, 6, 'Bohr Angstrom energy equality')
+
+energy_bohr_charges = energy('scf', molecule=water_bohr, external_potentials=external_potentials)
+compare_values(energy_bohr, energy_bohr_charges, 6, 'Bohr - Bohr energy equality')
+
+energy_ang_charges = energy('scf', molecule=water_ang, external_potentials=external_potentials)
+compare_values(energy_ang, energy_ang_charges, 6, 'Ang - Ang energy equality')
