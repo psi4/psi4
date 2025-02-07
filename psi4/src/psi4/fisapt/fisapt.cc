@@ -690,18 +690,6 @@ void FISAPT::nuclear() {
     // repulsion energy.  
     // Apparently, we were using C full strength, but the others I think get scaled by 0.5 because Rob counts
     // A->B and B->A separately and adds them (see a few lines up this fn...maybe due to how FSAPT files are written) 
-    
-
-    // psi::sapt_nuclear_external_potential(
-    //     reference_,
-    //     primary_,
-    //     Enucsp,
-    //     Etot,
-    //     mol,
-    //     matrices_,
-    //     options_,
-    //     outfile
-    // );
     matrices_["Enucs"] = Enucs;
     Enucs->print();
     Etot += psi::sapt_nuclear_external_potential_matrix(
@@ -709,8 +697,8 @@ void FISAPT::nuclear() {
         matrices_,
         options_
     );
-    Enucs->print();
-    // Enucs = matrices_["Enucsp"];
+    // Enucs->print();
+    Enucs = matrices_["Enucsp"];
 
     // => Print <= //
 
@@ -8014,6 +8002,7 @@ double sapt_nuclear_external_potential_matrix(
     std::vector<int> pot_ids;
     double Etot = 0.0;
 
+
     // this is where any "external potential C" goes... any common potential felt by all subsystems
 
     if (reference_->has_potential_variable("C")) {
@@ -8160,6 +8149,7 @@ double sapt_nuclear_external_potential_matrix(
     //     std::shared_ptr<Matrix> matrix = x.second;
     //     outfile->Printf("  Matrix %s\n", key.c_str());
     // }
+    outfile->Printf("       Total Nuclear Repulsion: %24.16E [Eh]\n", Etot);
     return Etot;
 }
 }  // Namespace psi

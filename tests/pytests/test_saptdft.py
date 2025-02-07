@@ -700,6 +700,11 @@ no_com
             [0.417, np.array([-1.8988, -0.4993, -0.3072]) /
              psi_bohr2angstroms],
         ],
+        # "C": [
+        #     [0.417, np.array([1.1270, 1.5527, -0.1658]) / psi_bohr2angstroms],
+        #     [-0.834, np.array([1.9896, 1.0738, -0.1673]) / psi_bohr2angstroms],
+        #     [0.417, np.array([2.6619, 1.7546, -0.2910]) / psi_bohr2angstroms],
+        # ],
     }
     psi4.set_options(
         {
@@ -717,18 +722,9 @@ no_com
         molecule=mol,
     )
     fisapt0_external_potential_energies = {
-        "SAPT DISP ENERGY": -0.002185724589094623,
-        "SAPT ELST ENERGY": -0.01581004514947182,
-        "SAPT ELST10,R ENERGY": -0.01581004514947182,
-        "SAPT EXCH ENERGY": 0.012282520736587468,
-        "SAPT IND ENERGY": -0.0035613061462424402,
-        "SAPT TOTAL ENERGY": -0.009274555148221415,
-    }
-    # UPDATED ENERGIES FOR DIMER
-    fisapt0_external_potential_energies = {
+        'Eexch': 0.018716989207357836,
         'Edisp': -0.002806890580921549,
         'Eelst': -0.049844754081429986,
-        'Eexch': 0.018716989207357836,
         'Eind': -0.007796394758818957,
         'Enuc': 37.565065473343004,
         'Etot': -0.041731050213812654
@@ -758,7 +754,7 @@ no_com
 
 
 if __name__ == "__main__":
-    # test_fisapt0_external_potential_ab()
+    test_fisapt0_external_potential_ab()
     test_sapthf_external_potential_ab()
 
     # test_sapthf_external_potential()

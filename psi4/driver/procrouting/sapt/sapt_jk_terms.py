@@ -36,7 +36,6 @@ from ...p4util import solvers
 from ...p4util.exceptions import *
 from .sapt_util import print_sapt_var
 from pprint import pprint as pp
-from ..proc import _set_external_potentials_to_wavefunction
 
 
 def build_sapt_jk_cache(
@@ -50,15 +49,10 @@ def build_sapt_jk_cache(
     """
     Constructs the DCBS cache data required to compute ELST/EXCH/IND
     """
-
     core.print_out("\n  ==> Preparing SAPT Data Cache <== \n\n")
     jk.print_header()
 
     cache = {}
-    if external_potentials is not None:
-        # Must set external potentials to wavefunctions for exch to be correct
-        _set_external_potentials_to_wavefunction(external_potentials['A'], wfn_A)
-        _set_external_potentials_to_wavefunction(external_potentials['B'], wfn_B)
     cache["wfn_A"] = wfn_A
     cache["wfn_B"] = wfn_B
 
@@ -83,21 +77,6 @@ def build_sapt_jk_cache(
     cache["P_B"] = core.doublet(cache["Cvir_B"], cache["Cvir_B"], False, True)
 
     # External Potential through fisapt function
-    # nbf = wfn_dimer.basisset().nbf()
-    # ext_matrices = {
-    #     "Enucs": core.Matrix.from_array(np.zeros((3, 3)), name="Enucs"),
-    #     "extern_extern_IE": core.Matrix.from_array(np.zeros((3, 3)), name="Extern-Extern IE"),
-    #     "VA": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA"),
-    #     "VB": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB"),
-    #     "VA_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA_extern"),
-    #     "VB_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB_extern"),
-    #     "VE": core.Matrix.from_array(np.zeros((nbf, nbf)), name="External Potential"),
-    # }
-    # Etot = core.sapt_nuclear_external_potential_python(
-    #     wfn_dimer,
-    #     ext_matrices,
-    #     core.get_options()
-    # )
     # if external_potentials is not None:
     mints = core.MintsHelper(wfn_A.basisset())
     cache["V_A"] = mints.ao_potential()
@@ -105,17 +84,47 @@ def build_sapt_jk_cache(
     cache["V_B"] = mints.ao_potential()
 
     # External Potentials need to add to V_A and V_B
+    print("EXTERNAL POTENTIALS")
+    print(external_potentials)
     if external_potentials is not None:
+        nbf = wfn_dimer.basisset().nbf()
+        ext_matrices = {
+            "Enucs": core.Matrix.from_array(np.zeros((3, 3)), name="Enucs"),
+            "extern_extern_IE": core.Matrix.from_array(np.zeros((3, 3)), name="Extern-Extern IE"),
+            "VA": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA"),
+            "VB": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB"),
+            "VA_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA_extern"),
+            "VB_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB_extern"),
+            "VE": core.Matrix.from_array(np.zeros((nbf, nbf)), name="External Potential"),
+        }
+        print("OPTIONS:")
+        print(core.get_options())
+        Etot = core.sapt_nuclear_external_potential_python(
+            wfn_dimer,
+            ext_matrices,
+            core.get_options()
+        )
+        print("Ext 4")
+        print(wfn_A.potential_variables())
+        print(wfn_B.potential_variables())
+        print(wfn_dimer.potential_variables())
         # Must set external potentials to wavefunctions for exch to be correct
         # _set_external_potentials_to_wavefunction(external_potentials['A'], wfn_A)
         # _set_external_potentials_to_wavefunction(external_potentials['B'], wfn_B)
-        ext_A = wfn_A.external_pot().computePotentialMatrix(wfn_A.basisset())
-        ext_B = wfn_B.external_pot().computePotentialMatrix(wfn_B.basisset())
-        cache["V_A_ext"] = ext_A
-        cache["V_B_ext"] = ext_B
-        cache["V_A"].add(ext_A)
-        cache["V_B"].add(ext_B)
-
+        if external_potentials.get("A") is not None:
+            ext_A = wfn_A.external_pot().computePotentialMatrix(wfn_A.basisset())
+            cache["V_A_ext"] = ext_A
+            cache["V_A"].add(ext_A)
+        if external_potentials.get("B") is not None:
+            ext_B = wfn_B.external_pot().computePotentialMatrix(wfn_B.basisset())
+            cache["V_B_ext"] = ext_B
+            cache["V_B"].add(ext_B)
+        if external_potentials.get("A") is not None and external_potentials.get("B") is not None:
+            extern_extern_ie = 0
+            cache['extern_extern_IE'] = ext_matrices["extern_extern_IE"]
+            cache['Extern-Extern'] = ext_matrices["extern_extern_IE"].get(0, 1) * 2.0
+            print("Extern-Extern IE")
+            print(cache["Extern-Extern"])
 
     # Anything else we might need
     cache["S"] = wfn_A.S().clone()
@@ -152,8 +161,17 @@ def build_sapt_jk_cache(
     monA_nr = wfn_A.molecule().nuclear_repulsion_energy()
     monB_nr = wfn_B.molecule().nuclear_repulsion_energy()
     dimer_nr = wfn_A.molecule().extract_subsets([1, 2]).nuclear_repulsion_energy()
+    # dimer_nr = wfn_dimer.molecule().nuclear_repulsion_energy()
 
     cache["nuclear_repulsion_energy"] = dimer_nr - monA_nr - monB_nr
+    print("Nuclear Repulsion Energy")
+    print(cache["nuclear_repulsion_energy"])
+#     Interaction Energy between External Potentials A and B:  -9.3606745503005614E-03
+#  [Eh]
+#
+#     Total Interaction Energy between External Potentials:  -9.3606745503005614E-03 [
+# Eh]
+#     Nuclear Repulsion Tot:   3.7623796447916391E+01 [Eh]
     return cache
 
 
@@ -169,26 +187,30 @@ def electrostatics(cache, do_print=True):
 
     # ELST
     Elst10 = 4.0 * cache["D_B"].vector_dot(cache["J_A"])
+    print("Elst10 = ", Elst10)
     Elst10 += 2.0 * cache["D_A"].vector_dot(cache["V_B"])
+    print("D_A V_B = ", 2.0 * cache["D_A"].vector_dot(cache["V_B"]))
     Elst10 += 2.0 * cache["D_B"].vector_dot(cache["V_A"])
+    print("D_B V_A = ", 2.0 * cache["D_B"].vector_dot(cache["V_A"]))
     # EQ. 11 is captured by adding V_A_ext to V_A and V_B_ext to V_B
     # Elst10 -= 2.0 * cache["D_B"].vector_dot(cache["V_A_ext"])
     # Elst10 -= 2.0 * cache["D_A"].vector_dot(cache["V_B_ext"])
     Elst10 += cache["nuclear_repulsion_energy"]
+    print("nuc= ", cache["nuclear_repulsion_energy"])
 
     # Need EQ. 8 for external charges interacting with nuclei
     if cache.get("ext_A") is not None:
         print("External A")
         print(cache["ext_A"])
 
-
     if do_print:
         core.print_out(print_sapt_var("Elst10,r ", Elst10, short=True))
         core.print_out("\n")
     extern_extern_ie = 0
-    # if cache.get('extern_extern_IE'):
-    #     extern_extern_ie = cache['extern_extern_IE'].get(0, 1) * 2.0
-    #     core.print_out(f"    Extern-Extern               {extern_extern_ie*1000:16.8f} [mEh]\n")
+    if cache.get('extern_extern_IE'):
+        extern_extern_ie = cache['extern_extern_IE'].get(0, 1) * 2.0
+        # Elst10 += extern_extern_ie
+        core.print_out(f"    Extern-Extern               {extern_extern_ie*1000:16.8f} [mEh]\n")
 
     return {"Elst10,r": Elst10}, extern_extern_ie
 

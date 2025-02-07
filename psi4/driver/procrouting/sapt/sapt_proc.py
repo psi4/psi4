@@ -34,11 +34,12 @@ from ... import p4util
 from ...constants import constants
 from ...p4util.exceptions import *
 from .. import proc_util
-from ..proc import scf_helper, run_scf
+from ..proc import scf_helper, run_scf, _set_external_potentials_to_wavefunction
 from . import sapt_jk_terms, sapt_mp2_terms, sapt_sf_terms
 from .sapt_util import print_sapt_dft_summary, print_sapt_hf_summary, print_sapt_var
 import qcelemental as qcel
 from ...p4util.exceptions import ConvergenceError
+from pprint import pprint
 
 # Only export the run_ scripts
 __all__ = ["run_sapt_dft", "sapt_dft", "run_sf_sapt"]
@@ -156,8 +157,12 @@ def run_sapt_dft(name, **kwargs):
         )
         mon_b_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_B")
     core.print_out("\n")
-    do_ext_potential = kwargs.get("external_potentials", None) is not None
-    external_potentials = kwargs.pop("external_potentials", None)
+    do_ext_potential = kwargs["external_potentials"] != {}
+    external_potentials = kwargs.pop("external_potentials", {})
+    if do_ext_potential:
+        kwargs["external_potentials"] = {}
+    print("Starting ext pot...")
+    pprint(external_potentials)
 
     def construct_external_potential_in_field_C(arrays):
         output = []
@@ -191,11 +196,9 @@ def run_sapt_dft(name, **kwargs):
 
     # Compute dimer wavefunction
     hf_wfn_dimer = None
-    if do_ext_potential:
-        ext_pot_C = external_potentials.get("C", None)
-        ext_pot_A = external_potentials.get("A", None)
-        ext_pot_B = external_potentials.get("B", None)
-        kwargs["external_potentials"] = {}
+    ext_pot_C = external_potentials.get("C", None)
+    ext_pot_A = external_potentials.get("A", None)
+    ext_pot_B = external_potentials.get("B", None)
     if do_delta_hf:
         if (core.get_global_option('SCF_TYPE') in ['DF', 'DISK_DF']):
             core.set_global_option('DF_INTS_IO', 'SAVE')
@@ -203,8 +206,10 @@ def run_sapt_dft(name, **kwargs):
         hf_data = {}
 
         core.set_local_option("SCF", "SAVE_JK", True)
+        print(ext_pot_C)
         if do_ext_potential:
             kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_C, ext_pot_A, ext_pot_B])
+        print("SCF DIMER")
         hf_wfn_dimer = scf_helper("SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
         hf_data["HF DIMER"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT):Dimer SCF")
@@ -214,10 +219,9 @@ def run_sapt_dft(name, **kwargs):
             core.IO.change_file_namespace(97, 'dimer', 'monomerA')
 
         jk_obj = hf_wfn_dimer.jk()
-        hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", jk=jk_obj, **kwargs)
-        if do_ext_potential:
+        if ext_pot_A:
             kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_A])
-        hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs)
+        hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", jk=jk_obj, **kwargs)
         hf_data["HF MONOMER A"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT):Monomer A SCF")
 
@@ -225,17 +229,20 @@ def run_sapt_dft(name, **kwargs):
         if (core.get_global_option('SCF_TYPE') in ['DF', 'DISK_DF']):
             core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
 
-        if do_ext_potential:
+        if ext_pot_B:
             kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_B])
         hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", jk=jk_obj, **kwargs)
         hf_data["HF MONOMER B"] = core.variable("CURRENT ENERGY")
         core.set_global_option("SAVE_JK", False)
         core.timer_off("SAPT(DFT):Monomer B SCF")
 
-        if do_ext_potential:
-            kwargs["external_potentials"]["C"] = construct_external_potential_in_field_C([ext_pot_C])
-            kwargs["external_potentials"]["A"] = construct_external_potential_in_field_C([ext_pot_A])
-            kwargs["external_potentials"]["B"] = construct_external_potential_in_field_C([ext_pot_B])
+        kwargs["external_potentials"] = {}
+        if ext_pot_C:
+            kwargs["external_potentials"]["C"] = ext_pot_C
+        if ext_pot_A:
+            kwargs["external_potentials"]["A"] = ext_pot_A
+        if ext_pot_B:
+            kwargs["external_potentials"]["B"] = ext_pot_B
 
         if do_dft:  # For SAPT(HF) do the JK terms in sapt_dft()
             # Grab JK object and set to A (so we do not save many JK objects)
@@ -374,18 +381,32 @@ def run_sapt_dft(name, **kwargs):
                            **kwargs)
         data["DFT MONOMERB"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT): Monomer B DFT")
-
-    # Save JK object
+    kwargs["external_potentials"] = {}
     if do_ext_potential:
-        # Need to construct jk for wfn_A and wfn_B individually for seperate
-        # external potentials
-        sapt_jk = wfn_B.jk()
-        wfn_A.set_jk(sapt_jk)
-        core.set_global_option("SAVE_JK", False)
-    else:
-        sapt_jk = wfn_B.jk()
-        wfn_A.set_jk(sapt_jk)
-        core.set_global_option("SAVE_JK", False)
+        print("hhh")
+        pprint(external_potentials)
+        # because set external potentials to "C" for scf_helper usage on
+        # dimer_wfn, need to delete before an FISAPT usage of dimer_wfn
+        dimer_wfn.del_potential_variable("C")
+        if ext_pot_C:
+            kwargs["external_potentials"]["C"] = ext_pot_C
+        
+        if ext_pot_A:
+            kwargs["external_potentials"]["A"] = ext_pot_A
+            _set_external_potentials_to_wavefunction(external_potentials['A'], wfn_A)
+        if ext_pot_B:
+            kwargs["external_potentials"]["B"] = ext_pot_B
+            _set_external_potentials_to_wavefunction(external_potentials['B'], wfn_B)
+        # Must set external potentials to wavefunctions for exch to be correct
+        print("Setting external potentials to wavefunctions")
+        # _set_external_potentials_to_wavefunction(external_potentials, dimer_wfn)
+        print(wfn_A.potential_variables())
+        print(wfn_B.potential_variables())
+        print(dimer_wfn.potential_variables())
+    # Save JK object
+    sapt_jk = wfn_B.jk()
+    wfn_A.set_jk(sapt_jk)
+    core.set_global_option("SAVE_JK", False)
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
