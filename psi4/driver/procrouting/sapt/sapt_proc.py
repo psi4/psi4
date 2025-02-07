@@ -159,7 +159,14 @@ def run_sapt_dft(name, **kwargs):
     do_ext_potential = kwargs.get("external_potentials", None) is not None
     external_potentials = kwargs.pop("external_potentials", None)
 
-    construct_external_potential_in_field_C = sapt_jk_terms.construct_external_potential_in_field_C
+    def construct_external_potential_in_field_C(arrays):
+        output = []
+        for i, array in enumerate(arrays):
+            if array is None:
+                continue
+            for j, val in enumerate(array):
+                output.append(val)
+        return output
 
     if do_dft and ((mon_a_shift == 0.0) or (mon_b_shift == 0.0)):
         raise ValidationError(
@@ -189,7 +196,6 @@ def run_sapt_dft(name, **kwargs):
         ext_pot_A = external_potentials.get("A", None)
         ext_pot_B = external_potentials.get("B", None)
         kwargs["external_potentials"] = {}
-    from pprint import pprint as pp
     if do_delta_hf:
         if (core.get_global_option('SCF_TYPE') in ['DF', 'DISK_DF']):
             core.set_global_option('DF_INTS_IO', 'SAVE')
@@ -199,7 +205,6 @@ def run_sapt_dft(name, **kwargs):
         core.set_local_option("SCF", "SAVE_JK", True)
         if do_ext_potential:
             kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_C, ext_pot_A, ext_pot_B])
-        print("EXT_:", kwargs.get("external_potentials"))
         hf_wfn_dimer = scf_helper("SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
         hf_data["HF DIMER"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT):Dimer SCF")
@@ -211,20 +216,17 @@ def run_sapt_dft(name, **kwargs):
         jk_obj = hf_wfn_dimer.jk()
         hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", jk=jk_obj, **kwargs)
         if do_ext_potential:
-            kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_C, ext_pot_A])
-        print("EXT_:", kwargs.get("external_potentials"))
+            kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_A])
         hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs)
         hf_data["HF MONOMER A"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT):Monomer A SCF")
-
 
         core.timer_on("SAPT(DFT):Monomer B SCF")
         if (core.get_global_option('SCF_TYPE') in ['DF', 'DISK_DF']):
             core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
 
         if do_ext_potential:
-            kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_C, ext_pot_B])
-        print("EXT_:", kwargs.get("external_potentials"))
+            kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_B])
         hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", jk=jk_obj, **kwargs)
         hf_data["HF MONOMER B"] = core.variable("CURRENT ENERGY")
         core.set_global_option("SAVE_JK", False)
@@ -234,7 +236,6 @@ def run_sapt_dft(name, **kwargs):
             kwargs["external_potentials"]["C"] = construct_external_potential_in_field_C([ext_pot_C])
             kwargs["external_potentials"]["A"] = construct_external_potential_in_field_C([ext_pot_A])
             kwargs["external_potentials"]["B"] = construct_external_potential_in_field_C([ext_pot_B])
-        print("EXT_:", kwargs.get("external_potentials"))
 
         if do_dft:  # For SAPT(HF) do the JK terms in sapt_dft()
             # Grab JK object and set to A (so we do not save many JK objects)
@@ -342,7 +343,7 @@ def run_sapt_dft(name, **kwargs):
         core.IO.set_default_namespace('monomerA')
         core.set_global_option("SAVE_JK", True)
         if do_ext_potential:
-            kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_C, ext_pot_A])
+            kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_A])
         wfn_A = scf_helper(sapt_dft_functional,
                            post_scf=False,
                            molecule=monomerA,
@@ -364,7 +365,7 @@ def run_sapt_dft(name, **kwargs):
         core.set_global_option("SAVE_JK", True)
         core.IO.set_default_namespace('monomerB')
         if do_ext_potential:
-            kwargs["external_potentials"]['B'] = construct_external_potential_in_field_C([ext_pot_C, ext_pot_B])
+            kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_B])
         wfn_B = scf_helper(sapt_dft_functional,
                            post_scf=False,
                            molecule=monomerB,

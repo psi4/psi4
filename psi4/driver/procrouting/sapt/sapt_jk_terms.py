@@ -36,16 +36,7 @@ from ...p4util import solvers
 from ...p4util.exceptions import *
 from .sapt_util import print_sapt_var
 from pprint import pprint as pp
-
-
-def construct_external_potential_in_field_C(arrays):
-    output = []
-    for i, array in enumerate(arrays):
-        if array is None:
-            continue
-        for j, val in enumerate(array):
-            output.append(val)
-    return output
+from ..proc import _set_external_potentials_to_wavefunction
 
 
 def build_sapt_jk_cache(
@@ -64,6 +55,10 @@ def build_sapt_jk_cache(
     jk.print_header()
 
     cache = {}
+    if external_potentials is not None:
+        # Must set external potentials to wavefunctions for exch to be correct
+        _set_external_potentials_to_wavefunction(external_potentials['A'], wfn_A)
+        _set_external_potentials_to_wavefunction(external_potentials['B'], wfn_B)
     cache["wfn_A"] = wfn_A
     cache["wfn_B"] = wfn_B
 
@@ -111,13 +106,16 @@ def build_sapt_jk_cache(
 
     # External Potentials need to add to V_A and V_B
     if external_potentials is not None:
-        from ..proc import _set_external_potentials_to_wavefunction
-        _set_external_potentials_to_wavefunction(external_potentials['A'], wfn_A)
-        _set_external_potentials_to_wavefunction(external_potentials['B'], wfn_B)
+        # Must set external potentials to wavefunctions for exch to be correct
+        # _set_external_potentials_to_wavefunction(external_potentials['A'], wfn_A)
+        # _set_external_potentials_to_wavefunction(external_potentials['B'], wfn_B)
         ext_A = wfn_A.external_pot().computePotentialMatrix(wfn_A.basisset())
         ext_B = wfn_B.external_pot().computePotentialMatrix(wfn_B.basisset())
+        cache["V_A_ext"] = ext_A
+        cache["V_B_ext"] = ext_B
         cache["V_A"].add(ext_A)
         cache["V_B"].add(ext_B)
+
 
     # Anything else we might need
     cache["S"] = wfn_A.S().clone()
@@ -173,15 +171,24 @@ def electrostatics(cache, do_print=True):
     Elst10 = 4.0 * cache["D_B"].vector_dot(cache["J_A"])
     Elst10 += 2.0 * cache["D_A"].vector_dot(cache["V_B"])
     Elst10 += 2.0 * cache["D_B"].vector_dot(cache["V_A"])
+    # EQ. 11 is captured by adding V_A_ext to V_A and V_B_ext to V_B
+    # Elst10 -= 2.0 * cache["D_B"].vector_dot(cache["V_A_ext"])
+    # Elst10 -= 2.0 * cache["D_A"].vector_dot(cache["V_B_ext"])
     Elst10 += cache["nuclear_repulsion_energy"]
+
+    # Need EQ. 8 for external charges interacting with nuclei
+    if cache.get("ext_A") is not None:
+        print("External A")
+        print(cache["ext_A"])
+
 
     if do_print:
         core.print_out(print_sapt_var("Elst10,r ", Elst10, short=True))
         core.print_out("\n")
     extern_extern_ie = 0
-    if cache.get('extern_extern_IE'):
-        extern_extern_ie = cache['extern_extern_IE'].get(0, 1) * 2.0
-        core.print_out(f"    Extern-Extern               {extern_extern_ie*1000:16.8f} [mEh]\n")
+    # if cache.get('extern_extern_IE'):
+    #     extern_extern_ie = cache['extern_extern_IE'].get(0, 1) * 2.0
+    #     core.print_out(f"    Extern-Extern               {extern_extern_ie*1000:16.8f} [mEh]\n")
 
     return {"Elst10,r": Elst10}, extern_extern_ie
 
