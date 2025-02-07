@@ -87,106 +87,37 @@ def build_sapt_jk_cache(
     cache["P_A"] = core.doublet(cache["Cvir_A"], cache["Cvir_A"], False, True)
     cache["P_B"] = core.doublet(cache["Cvir_B"], cache["Cvir_B"], False, True)
 
-    # External Potential
-    # nA = wfn_A.molecule().natom()
-    nbf = wfn_dimer.basisset().nbf()
-    # print(nA, nB)
-    # TODO: ensure Enucs is the right dimensionality for different sized
-    # systems..., water dimer is 3x3
-    ext_matrices = {
-        "Enucs": core.Matrix.from_array(np.zeros((3, 3)), name="Enucs"),
-        "extern_extern_IE": core.Matrix.from_array(np.zeros((3, 3)), name="Extern-Extern IE"),
-        "VA": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA"),
-        "VB": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB"),
-        "VA_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA_extern"),
-        "VB_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB_extern"),
-        "VE": core.Matrix.from_array(np.zeros((nbf, nbf)), name="External Potential"),
-        # "VB_extern": wfn_dimer.potential_variable("B").computePotentialMatrix(wfn_dimer.basisset()),
-        # "VA": wfn_dimer.potential_variable("A").computePotentialMatrix(wfn_dimer.basisset()),
-        # "VB": wfn_dimer.potential_variable("B").computePotentialMatrix(wfn_dimer.basisset()),
-        # "VA_extern": wfn_dimer.potential_variable("A").computePotentialMatrix(wfn_dimer.basisset()),
-        # "VB_extern": wfn_dimer.potential_variable("B").computePotentialMatrix(wfn_dimer.basisset()),
-    }
-    print("pre sapt_nuclear_external_potential_python")
-    Etot = core.sapt_nuclear_external_potential_python(
-        wfn_dimer,
-        ext_matrices,
-        core.get_options()
-    )
-    print(f"Etot: {Etot}")
-    print(f"Enucs:\n{ext_matrices['Enucs'].np}")
+    # External Potential through fisapt function
+    # nbf = wfn_dimer.basisset().nbf()
+    # ext_matrices = {
+    #     "Enucs": core.Matrix.from_array(np.zeros((3, 3)), name="Enucs"),
+    #     "extern_extern_IE": core.Matrix.from_array(np.zeros((3, 3)), name="Extern-Extern IE"),
+    #     "VA": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA"),
+    #     "VB": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB"),
+    #     "VA_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA_extern"),
+    #     "VB_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB_extern"),
+    #     "VE": core.Matrix.from_array(np.zeros((nbf, nbf)), name="External Potential"),
+    # }
+    # Etot = core.sapt_nuclear_external_potential_python(
+    #     wfn_dimer,
+    #     ext_matrices,
+    #     core.get_options()
+    # )
+    # if external_potentials is not None:
     mints = core.MintsHelper(wfn_A.basisset())
     cache["V_A"] = mints.ao_potential()
-    print("V_A:")
-    print(cache['V_A'].np)
-    for key, value in ext_matrices.items():
-        print(f"{key}: {value.name}, {value.np.shape}: \n{value.np}")
-        cache[key] = value
-    print("extern_extern_IE:", ext_matrices["extern_extern_IE"].np)
-
-    # Potential ints
-    # External Potentials need to add to V_A and V_B
-    from ..proc import _set_external_potentials_to_wavefunction
-    ext_A = construct_external_potential_in_field_C(
-        [external_potentials['A']]
-        # [external_potentials['C'], external_potentials['A']]
-    )
-    print(f"{ext_A=}")
-    ext_B = construct_external_potential_in_field_C(
-        # [external_potentials['C'], external_potentials['B']]
-        [external_potentials['B']]
-    )
-    print(f"{ext_B=}")
-    _set_external_potentials_to_wavefunction(ext_A, wfn_A)
-    _set_external_potentials_to_wavefunction(ext_B, wfn_B)
-    ext_A = wfn_A.external_pot().computePotentialMatrix(wfn_A.basisset())
-    ext_B = wfn_B.external_pot().computePotentialMatrix(wfn_B.basisset())
-    print(f"{ext_A=}")
-    mints = core.MintsHelper(wfn_A.basisset())
-    cache["V_A"] = mints.ao_potential()
-    cache["V_A"].add(ext_A)
-    print("V_A:")
-    print(cache['V_A'])
     mints = core.MintsHelper(wfn_B.basisset())
     cache["V_B"] = mints.ao_potential()
-    cache["V_B"].add(ext_B)
 
-    # check if VA is all zeros
-    # if np.allclose(ext_matrices["VA"].np, 0):
-    #     mints = core.MintsHelper(wfn_A.basisset())
-    #     cache["V_A"] = mints.ao_potential()
-    # else:
-    #     mints = core.MintsHelper(wfn_A.basisset())
-    #     cache["V_A"] = mints.ao_potential()
-    #     # cache["V_A"] = ext_matrices['VA']
-    #     # cache['V_A'].add(ext_matrices['VE'])
-    # if np.allclose(ext_matrices["VB"].np, 0):
-    #     mints = core.MintsHelper(wfn_B.basisset())
-    #     cache["V_B"] = mints.ao_potential()
-    # else:
-    #     mints = core.MintsHelper(wfn_B.basisset())
-    #     cache["V_B"] = mints.ao_potential()
-        # cache['V_B'].add(ext_matrices['VE'])
-        # cache["V_B"] = ext_matrices['VB']
-    # if "VA" not in ext_matrices.keys():
-    #     mints = core.MintsHelper(wfn_A.basisset())
-    #     cache["V_A"] = mints.ao_potential()
-    # else:
-    #     cache["V_A"] = ext_matrices['VA']
-    # TODO: add external potential
-    # cache["V_A"].axpy(1.0, wfn_A.Va())
-
-    # mints = core.MintsHelper(wfn_B.basisset())
-    # cache["V_B"] = mints.ao_potential()
-    # if "VB" not in ext_matrices.keys():
-    #     mints = core.MintsHelper(wfn_B.basisset())
-    #     cache["V_B"] = mints.ao_potential()
-    # else:
-    #     cache["V_B"] = ext_matrices['VB']
-    # mints = core.MintsHelper(wfn_B.basisset())
-    # cache["V_B"] = mints.ao_potential()
-    # cache["V_B"].add(ext_matrices['VB'])
-    # cache["V_B"].axpy(1.0, wfn_B.Va())
+    # External Potentials need to add to V_A and V_B
+    if external_potentials is not None:
+        from ..proc import _set_external_potentials_to_wavefunction
+        _set_external_potentials_to_wavefunction(external_potentials['A'], wfn_A)
+        _set_external_potentials_to_wavefunction(external_potentials['B'], wfn_B)
+        ext_A = wfn_A.external_pot().computePotentialMatrix(wfn_A.basisset())
+        ext_B = wfn_B.external_pot().computePotentialMatrix(wfn_B.basisset())
+        cache["V_A"].add(ext_A)
+        cache["V_B"].add(ext_B)
 
     # Anything else we might need
     cache["S"] = wfn_A.S().clone()
