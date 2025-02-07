@@ -36,6 +36,56 @@ units au
 """)
         }
 
+@pytest.fixture
+def tests():
+    return {
+        "h2o (rhf)": {
+                      "method" : "hf",
+                      "options": {"reference" : "rhf"},
+                      "molecule" : "h2o",
+                      "bsse_type" : None,
+                      "ref_E" : -76.026780223322,
+                      "ref_iter": { # for test_cosx_maxiter_final
+                          "base": 8,
+                          "df_scf_guess": 11,   
+                          "scf_cosx_guess": 13, # assumes COSX_MAXITER_FINAL = -1 
+                          "full_cosx": 20, # for full convergence on both COSX grids, i.e., COSX_MAXITER_FINAL = -1  
+                      },
+                     },
+        "h2o (rks)": {
+                      "method" : "b3lyp",
+                      "options": {"reference" : "rhf"},
+                      "molecule" : "h2o",
+                      "bsse_type" : None,
+                      "ref_E" : -76.420402720419,
+                      "ref_iter": { # for test_cosx_maxiter_final
+                          "base": 7,
+                          "df_scf_guess": 9,   
+                          "scf_cosx_guess": 11, # assumes COSX_MAXITER_FINAL = -1 
+                          "full_cosx": 19, # for full convergence on both COSX grids, i.e., COSX_MAXITER_FINAL = -1  
+                      },  
+                     },
+        "nh2 (uhf)": {
+                      "method" : "hf",
+                      "options": {"reference" : "uhf"},
+                      "molecule" : "nh2",
+                      "bsse_type" : None,
+                      "ref_E" : -55.566890252551},
+        "nh2 (rohf)": {
+                      "method" : "hf",
+                      "options": {"reference" : "rohf"},
+                      "molecule" : "nh2",
+                      "bsse_type" : None,
+                      "ref_E" : -55.562689948780},
+        "h2o/na+ (rhf ie)": {
+                      "method" : "hf",
+                      "options": {"reference" : "rhf"},
+                      "molecule" : "h2o_nap1",
+                      "bsse_type" : "CP",
+                      "ref_E" :  -0.040121884077},
+    }
+
+
 @pytest.mark.smoke
 @pytest.mark.parametrize("j_algo", [ 
         pytest.param("DFDIRJ") 
@@ -77,49 +127,146 @@ def test_composite_call(j_algo, k_algo, mols, request):
     clean_k_name = clean_k_name.replace("-", "") # replace sn-LinK with snLinK
     assert clean_k_name.lower() == k_algo.lower(), f'{test_id} has correct K build method'
 
-@pytest.mark.parametrize(
-    "inp",
+@pytest.mark.parametrize("inp", 
     [
-        pytest.param({"method" : "hf",
-                      "options": {"reference" : "rhf"},
-                      "molecule" : "h2o",
-                      "bsse_type" : None,
-                      },
-                      marks=pytest.mark.quick,
-                      id="h2o (rhf)"),
-        pytest.param({"method" : "b3lyp",
-                      "options": {"reference" : "rhf"},
-                      "molecule" : "h2o",
-                      "bsse_type" : None,
-                      },
-                      marks=pytest.mark.quick,
-                      id="h2o (rks)"),
-        pytest.param({"method" : "hf",
-                      "options": {"reference" : "uhf"},
-                      "molecule" : "nh2",
-                      "bsse_type" : None,
-                      },
-                      id="nh2 (uhf)"),
-        pytest.param({"method" : "hf",
-                      "options": {"reference" : "rohf"},
-                      "molecule" : "nh2",
-                      "bsse_type" : None,
-                      },
-                      id="nh2 (rohf)"),
-        pytest.param({"method" : "hf",
-                      "options": {"reference" : "rhf"},
-                      "molecule" : "h2o_nap1",
-                      "bsse_type" : "CP",
-                      },
-                      marks=pytest.mark.nbody,
-                      id="h2o/na+ (rhf ie)"),
-    ],
+        pytest.param("h2o (rhf)"),
+        pytest.param("h2o (rks)"),
+    ], 
+)
+@pytest.mark.parametrize("opts", 
+    [
+        pytest.param({ "options": {
+                           "scf_type": "DIRECT",
+                           "screening": "density",
+                           "maxiter": 30,
+                       },
+                     }, id="DirectJK (MAXITER=30)",
+                     marks=pytest.mark.quick),
+        pytest.param({ "options": {
+                           "scf_type": "DIRECT",
+                           "screening": "density",
+                           "maxiter": 10,
+                       },
+                     }, id="DirectJK (MAXITER=10)",
+                     marks=pytest.mark.quick),
+        pytest.param({ "options": { 
+                           "scf_type": "DFDIRJ+LINK",
+                           "screening": "density",
+                           "maxiter": 30,
+                       },
+                    }, id="DF-DirJ+LinK",
+                     marks=pytest.mark.medlong),
+        pytest.param({ "options": { 
+                           "scf_type": "DFDIRJ+COSX",
+                           "screening": "schwarz",
+                           "maxiter": 30,
+                       },
+                     }, id="DF-DirJ+COSX (MAXITER=30)",
+                     marks=pytest.mark.medlong),
+        pytest.param({ "options": { 
+                           "scf_type": "DFDIRJ+COSX",
+                           "screening": "schwarz",
+                           "maxiter": 10,
+                       },
+                     }, id="DF-DirJ+COSX (MAXITER=10)",
+                     marks=pytest.mark.medlong),
+    ], 
+)
+@pytest.mark.parametrize("cosx_maxiter_final", [ -1, 0, 1 ])
+@pytest.mark.parametrize("scf_cosx_guess", [ True, False ])
+@pytest.mark.parametrize("df_scf_guess", [ True, False ])
+def test_cosx_maxiter_final(inp, opts, cosx_maxiter_final, scf_cosx_guess, df_scf_guess, tests, mols, request):
+    """Test the COSX_MAXITER_FINAL keyword in various situations via SCF calculations"""
+
+    test_id = request.node.callspec.id
+    
+    # basic settings configuration
+    molecule = mols[tests[inp]["molecule"]]
+    psi4.set_options({
+        "basis": "cc-pvdz",
+        "cosx_maxiter_final": cosx_maxiter_final, 
+        "df_scf_guess": df_scf_guess, 
+        "scf_cosx_guess": scf_cosx_guess, 
+        "save_jk": True,
+    })
+    psi4.set_options(tests[inp]["options"])
+    psi4.set_options(opts["options"])
+
+    # DFDIRJ+COSX doesn't support either DF_SCF_GUESS or SCF_COSX_GUESS, so skip these
+    if opts["options"]["scf_type"] == "DFDIRJ+COSX" and (scf_cosx_guess or df_scf_guess): 
+        pytest.skip(f'{test_id} skipped: DFDIRJ+COSX doesnt support JK guesses') 
+
+    # if both guesses are set to True, run should throw exception... 
+    elif scf_cosx_guess and df_scf_guess:
+        err_substr = "Please only enable one at most."
+        with pytest.raises(Exception) as e:
+            E = psi4.energy(tests[inp]["method"], molecule=molecule)
+        assert err_substr in str(e.value)
+        
+        # we keep this line just for printout purposes; should always pass if done correctly
+        assert compare(type(e), pytest.ExceptionInfo, f'{test_id} throws exception (both guesses are True)')
+   
+    # ... and enabling SCF_COSX_GUESS with COSX_MAXITER_FINAL set to 0 should also throw exception...
+    elif scf_cosx_guess and cosx_maxiter_final == 0: 
+        err_substr = "cannot be 0 when SCF_COSX_GUESS is enabled."
+        with pytest.raises(Exception) as e:
+            E = psi4.energy(tests[inp]["method"], molecule=molecule)
+        assert err_substr in str(e.value)
+
+        # we keep this line just for printout purposes; should always pass if done correctly
+        assert compare(type(e), pytest.ExceptionInfo, f'{test_id} throws exception (invalid SCF_COSX_GUESS/COSX_MAXITER_FINAL combo)')
+
+    # ... else proceed as normal
+    else:
+        guess_type = "base" # baseline number of iterations 
+        if opts["options"]["scf_type"] == "DFDIRJ+COSX" and cosx_maxiter_final == -1:
+            guess_type = "full_cosx" # fully-converged COSX on both grids (i.e., COSX_MAXITER_FINAL set to -1)
+        elif scf_cosx_guess and cosx_maxiter_final == -1:
+            guess_type = "scf_cosx_guess" # fully-converged SCF_COSX_GUESS (i.e., COSX_MAXITER_FINAL set to -1)
+        elif df_scf_guess:
+            guess_type = "df_scf_guess" # DF_SCF_GUESS enabled
+        
+        reference_iter = tests[inp]["ref_iter"][guess_type]
+      
+        # COSX_MAXITER_FINAL != -1 will add some number of iterations to baseline guess 
+        if (opts["options"]["scf_type"] == "DFDIRJ+COSX" or scf_cosx_guess) and cosx_maxiter_final != -1:
+            reference_iter += cosx_maxiter_final 
+       
+        # if maxiter < expected number of SCF iterations, run should throw exception... 
+        if opts["options"]["maxiter"] < reference_iter: 
+            with pytest.raises(psi4.SCFConvergenceError) as e:
+                E = psi4.energy(tests[inp]["method"], molecule=molecule)
+
+            # we keep this line just for printout purposes; should always pass if done correctly
+            assert compare(type(e), pytest.ExceptionInfo, f'{test_id} throws exception')
+        
+        # ... otherwise, test should run with correct number of SCF iterations and post-guess method
+        else:
+            E, wfn = psi4.energy(tests[inp]["method"], molecule=molecule, return_wfn=True)
+   
+            # correct number of SCF iterations?            
+            niter = wfn.variable("SCF ITERATIONS")
+            assert compare(niter, reference_iter, f'{test_id} has correct number of SCF iterations')
+
+            # correct post-guess method?
+            clean_jk_name = wfn.jk().name().replace("-", "") # replace DF-DirJ with DFDirJ
+            clean_jk_name = clean_jk_name.replace("DirectJK", "Direct") # DirectJK should be Direct instead
+            assert compare(opts["options"]["scf_type"].lower(), clean_jk_name.lower(), f'{test_id} has correct end method')
+
+@pytest.mark.parametrize("inp", 
+    [
+        pytest.param("h2o (rhf)"),
+        pytest.param("h2o (rks)"),
+        pytest.param("nh2 (uhf)"),
+        #pytest.param("nh2 (rohf)"),
+        pytest.param("nh2 (rohf)", marks=[pytest.mark.nbody, pytest.mark.medlong]),
+    ]
 )
 @pytest.mark.parametrize(
     "scf",
     [
         pytest.param({"scf_type" : "dfdirj+cosx",
-                      "ref" : { 
+                      "ref_E" : { 
                           "h2o (rhf)" : -76.026780223322,
                           "h2o (rks)" : -76.420402720419,
                           "nh2 (uhf)" : -55.566890252551,
@@ -130,7 +277,7 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       id="cosx"),
         pytest.param({"scf_type" : "dfdirj+snlink",
                       "snlink_force_cartesian": False,
-                      "ref" : { 
+                      "ref_E" : { 
                           "h2o (rhf)" : -76.026788692185, 
                           "h2o (rks)" : -76.420403557357,
                           "nh2 (uhf)" : -55.566911357539,
@@ -141,7 +288,7 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       id="snlink (spherical)", marks=using("gauxc")),
         pytest.param({"scf_type" : "dfdirj+snlink",
                       "snlink_force_cartesian": True,
-                      "ref" : { 
+                      "ref_E" : { 
                           "h2o (rhf)" : -76.026788692185, 
                           "h2o (rks)" : -76.420403557357,
                           "nh2 (uhf)" : -55.566911357539,
@@ -149,18 +296,19 @@ def test_composite_call(j_algo, k_algo, mols, request):
                           "h2o/na+ (rhf ie)" : -0.040118757043,
                       },
                       },
-                      id="snlink (cartesian)", marks=using("gauxc")),
+                      id="snlink (cartesian)", 
+                      marks=using("gauxc")),
  
     ]
 )
-def test_seminum(inp, scf, mols, request):
+def test_seminum(inp, scf, tests, mols, request):
     """Test the DF-DirJ + COSX/sn-LinK JK objects via SCF calculations"""
 
     test_id = request.node.callspec.id
     
-    molecule = mols[inp["molecule"]]
+    molecule = mols[tests[inp]["molecule"]]
     psi4.set_options({"scf_type" : scf["scf_type"], "basis": "cc-pvdz"})
-    psi4.set_options(inp["options"])
+    psi4.set_options(tests[inp]["options"])
     if "snlink_force_cartesian" in scf.keys():
         psi4.set_options({"snlink_force_cartesian": scf["snlink_force_cartesian"]})
 
@@ -168,49 +316,22 @@ def test_seminum(inp, scf, mols, request):
         molecule.reset_point_group("C1")
 
     # does the SCF energy match a pre-computed reference?
-    energy_seminum = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
-    assert compare_values(scf["ref"][test_id.split("-")[1]], energy_seminum, 6, f'{test_id} accurate to reference (1e-6 threshold)')
-
+    energy_seminum = psi4.energy(tests[inp]["method"], molecule=molecule, bsse_type=tests[inp]["bsse_type"])
+    assert compare_values(scf["ref_E"][test_id.split("-")[1]], energy_seminum, 6, f'{test_id} accurate to reference (1e-6 threshold)')
+    
     # is the SCF energy reasonably close to a conventional SCF?
     psi4.set_options({"scf_type" : "pk"})
-    energy_pk = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
+    energy_pk = psi4.energy(tests[inp]["method"], molecule=molecule, bsse_type=tests[inp]["bsse_type"])
     assert compare_values(energy_pk, energy_seminum, 4, f'{test_id} DFDIRJ+COSX accurate to PK (1e-4 threshold)')
 
-@pytest.mark.parametrize(
-    "inp",
+@pytest.mark.parametrize("inp", 
     [
-        pytest.param({"method" : "hf",
-                      "options": {"reference" : "rhf"},
-                      "molecule" : "h2o",
-                      "bsse_type" : None,
-                      },
-                      id="h2o (rhf)"),
-        pytest.param({"method" : "b3lyp",
-                      "options": {"reference" : "rhf"},
-                      "molecule" : "h2o",
-                      "bsse_type" : None,
-                      },
-                      id="h2o (rks)"),
-        pytest.param({"method" : "hf",
-                      "options": {"reference" : "uhf"},
-                      "molecule" : "nh2",
-                      "bsse_type" : None,
-                      },
-                      id="nh2 (uhf)"),
-        pytest.param({"method" : "hf",
-                      "options": {"reference" : "rohf"},
-                      "molecule" : "nh2",
-                      "bsse_type" : None,
-                      },
-                      id="nh2 (rohf)"),
-        pytest.param({"method" : "hf",
-                      "options": {"reference" : "rhf"},
-                      "molecule" : "h2o_nap1",
-                      "bsse_type" : "CP",
-                      },
-                      marks=pytest.mark.nbody,
-                      id="h2o/na+ (rhf ie)"),
-    ],
+        pytest.param("h2o (rhf)"),
+        pytest.param("h2o (rks)"),
+        pytest.param("nh2 (uhf)"),
+        pytest.param("nh2 (rohf)"),
+        pytest.param("nh2 (rohf)", marks=[pytest.mark.nbody, pytest.mark.medlong]),
+    ], 
 )
 @pytest.mark.parametrize(
     "scf",
@@ -221,22 +342,21 @@ def test_seminum(inp, scf, mols, request):
                       id="snlink", marks=using("gauxc")),
     ]
 )
-def test_seminum_incfock(inp, scf, mols, request):
+def test_seminum_incfock(inp, scf, tests, mols, request):
     """Test the efficiency of IncFock in DF-DirJ + COSX/sn-LinK JK objects via SCF calculations"""
 
     test_id = request.node.callspec.id
 
-    molecule = mols[inp["molecule"]]
+    molecule = mols[tests[inp]["molecule"]]
     psi4.set_options({"scf_type" : scf["scf_type"], "basis": "cc-pvdz", "incfock": False})
-    psi4.set_options(inp["options"])
+    psi4.set_options(tests[inp]["options"])
 
     # compute energy+wfn without IncFock 
-    energy_seminum_noinc, wfn_seminum_noinc = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"], return_wfn=True)
-    #assert compare_values(inp["ref"], energy_dfjcosk, atol=1e-6)
-
+    energy_seminum_noinc, wfn_seminum_noinc = psi4.energy(tests[inp]["method"], molecule=molecule, bsse_type=tests[inp]["bsse_type"], return_wfn=True)
+    
     # compute energy+wfn with Incfock 
     psi4.set_options({"incfock" : True})
-    energy_seminum_inc, wfn_seminum_inc = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"], return_wfn=True)
+    energy_seminum_inc, wfn_seminum_inc = psi4.energy(tests[inp]["method"], molecule=molecule, bsse_type=tests[inp]["bsse_type"], return_wfn=True)
 
     # how do energies compare?
     assert compare_values(energy_seminum_noinc, energy_seminum_inc, 6, f'{test_id} IncFock accurate (1e-6 threshold)')
@@ -246,6 +366,46 @@ def test_seminum_incfock(inp, scf, mols, request):
     niter_inc = int(wfn_seminum_inc.variable("SCF ITERATIONS")) if wfn_seminum_inc.has_scalar_variable("SCF ITERATIONS") else 0
     
     assert compare(True, abs(niter_inc - niter_noinc) <= 3, f'{test_id} IncFock efficient')
+
+@pytest.mark.parametrize("inp", 
+    [
+        pytest.param("h2o (rhf)"),
+        pytest.param("h2o (rks)"),
+        pytest.param("nh2 (uhf)"),
+        pytest.param("nh2 (rohf)"),
+        pytest.param("nh2 (rohf)", marks=[pytest.mark.nbody, pytest.mark.medlong]),
+    ], 
+)
+@pytest.mark.parametrize("scf_type", 
+    [
+        pytest.param("DIRECT"), 
+        pytest.param("DFDIRJ+LINK"), 
+    ], 
+)
+def test_scf_cos_guess(inp, scf_type, tests, mols, request):
+    """Test the accuracy of the SCF_COSX_GUESS keyword via SCF calculations"""
+
+    test_id = request.node.callspec.id
+
+    molecule = mols[tests[inp]["molecule"]]
+    psi4.set_options({"scf_type": scf_type, 
+                      "screening": "density", 
+                      "basis": "cc-pvdz", 
+                      "incfock": True, 
+                      "df_scf_guess": False, 
+                      "scf_cosx_guess": False
+    })
+    psi4.set_options(tests[inp]["options"])
+
+    # compute energy+wfn without SCF_COSX_GUESS 
+    energy_noguess, wfn_noguess = psi4.energy(tests[inp]["method"], molecule=molecule, bsse_type=tests[inp]["bsse_type"], return_wfn=True)
+
+    # compute DFJCOSK energy+wfn with SCF_COSX_GUESS
+    psi4.set_options({"scf_cosx_guess" : True})
+    energy_guess, wfn_guess = psi4.energy(tests[inp]["method"], molecule=molecule, bsse_type=tests[inp]["bsse_type"], return_wfn=True)
+
+    # how do energies compare?
+    assert compare_values(energy_noguess, energy_guess, 6, f'{test_id} SCF_COSX_GUESS accurate (1e-6 threshold)')
 
 @pytest.mark.parametrize("functional", [ "bp86", "b3lyp" ])
 @pytest.mark.parametrize(
