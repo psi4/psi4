@@ -353,6 +353,16 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, do_dft=True, sapt_jk=None, sapt_jk_B=None,
             sapt_jk.set_omega(wfn_A.functional().x_omega())
         sapt_jk.initialize()
         sapt_jk.print_header()
+        if wfn_B.functional().is_x_lrc() and (wfn_A.functional().x_omega() != wfn_B.functional().x_omega()):
+            core.print_out("   => Monomer B: Building SAPT JK object <= \n\n")
+            core.print_out("      Reason: MonomerA Omega != MonomerB Omega\n\n")
+            sapt_jk_B = core.JK.build(dimer_wfn.basisset())
+            sapt_jk_B.set_do_J(True)
+            sapt_jk_B.set_do_K(True)
+            sapt_jk_B.set_do_wK(True)
+            sapt_jk_B.set_omega(wfn_B.functional().x_omega())
+            sapt_jk_B.initialize()
+            sapt_jk_B.print_header()
 
     else:
         sapt_jk.set_do_K(True)
@@ -364,16 +374,6 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, do_dft=True, sapt_jk=None, sapt_jk_B=None,
         sapt_jk.set_do_wK(True)
         sapt_jk.set_omega(wfn_A.functional().x_omega())
 
-    if wfn_B.functional().is_x_lrc() and (wfn_A.functional().x_omega() != wfn_B.functional().x_omega()):
-        core.print_out("   => Monomer B: Building SAPT JK object <= \n\n")
-        core.print_out("      Reason: MonomerA Omega != MonomerB Omega\n\n")
-        sapt_jk_B = core.JK.build(dimer_wfn.basisset())
-        sapt_jk_B.set_do_J(True)
-        sapt_jk_B.set_do_K(True)
-        sapt_jk_B.set_do_wK(True)
-        sapt_jk_B.set_omega(wfn_B.functional().x_omega())
-        sapt_jk_B.initialize()
-        sapt_jk_B.print_header()
 
     if data is None:
         data = {}
