@@ -116,7 +116,7 @@ if(TARGET ECPINT::ecpint)
     )
 endif()
 
-if(TARGET Einsums::einsums)
+if(TARGET Einsums::Einsums)
   target_compile_definitions(core
     PRIVATE
       USING_Einsums
