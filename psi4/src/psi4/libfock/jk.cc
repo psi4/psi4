@@ -238,21 +238,16 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
     std::string jk_type = options.get_str("SCF_TYPE");
     if (jk_type == "DF") {
         // logic for MemDFJK vs DiskDFJK
-        if (options["DF_INTS_IO"].has_changed()) {
-            return build_JK(primary, auxiliary, options, "DISK_DF");
-
-        } else {
-            // Build exact estimate via Schwarz metrics
-            auto jk = build_JK(primary, auxiliary, options, "MEM_DF");
-            jk->set_do_wK(do_wK);
-            if (jk->memory_estimate() < doubles) {
-                return jk;
-            }
-            jk.reset();
-
-            // Use Disk DFJK
-            return build_JK(primary, auxiliary, options, "DISK_DF");
+        // Build exact estimate via Schwarz metrics
+        auto jk = build_JK(primary, auxiliary, options, "MEM_DF");
+        jk->set_do_wK(do_wK);
+        if (jk->memory_estimate() < doubles) {
+            return jk;
         }
+        jk.reset();
+
+        // Use Disk DFJK
+        return build_JK(primary, auxiliary, options, "DISK_DF");
 
     } else {  // otherwise it has already been set
         return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
