@@ -222,7 +222,7 @@ void CIWavefunction::sigma_init(CIvect &C, CIvect &S) {
         }
     }
 
-    CalcInfo_->sigma_initialized = 1;
+    CalcInfo_->sigma_initialized = true;
 }
 
 void CIWavefunction::sigma_free() {
