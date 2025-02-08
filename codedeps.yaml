@@ -1483,3 +1483,21 @@ data:
       aux_build_names_note:
         "hdf5=1.14.3": "Temporary for Einsums while 1.14.4 not setting HDF5_VERSION."
       skip_win: true
+
+  - project: pandas
+    use:
+      added: 1.10
+      required: false
+      required_note: optional for extra tests
+      buildable: false
+      buildtime: false
+      cms: false
+      test_required: false
+    repository: null
+    cmake: null
+    conda:
+      channel: conda-forge
+      name: pandas
+      constraint: null
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
