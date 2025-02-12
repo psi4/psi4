@@ -1884,6 +1884,10 @@ def scf_helper(name, post_scf=True, **kwargs):
             basisset=scf_wfn.basisset()
         )
 
+    if (jk_obj := kwargs.get('jk')):
+        core.print_out("  Using user-supplied JK object.\n")
+        scf_wfn.set_jk(jk_obj)
+
     e_scf = scf_wfn.compute_energy()
     for obj in [core, scf_wfn]:
         # set_variable("SCF TOTAL ENERGY")  # P::e SCF
@@ -4535,7 +4539,6 @@ def run_sapt(name, **kwargs):
         core.set_local_option('SAPT', 'SAPT0_E20IND', True)
         core.set_local_option('SAPT', 'SAPT0_E20Disp', False)
 
-    ri = core.get_global_option('SCF_TYPE')
     df_ints_io = core.get_option('SCF', 'DF_INTS_IO')
     # inquire if above at all applies to dfmp2
 
@@ -4546,7 +4549,8 @@ def run_sapt(name, **kwargs):
 
     # Compute dimer wavefunction
 
-    if (sapt_basis == 'dimer') and (ri == 'DF'):
+    if (sapt_basis == 'dimer'):
+        # MemDF will ignore this option
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
     optstash2 = p4util.OptionsState(['NUM_FROZEN_DOCC'])
@@ -4556,8 +4560,8 @@ def run_sapt(name, **kwargs):
     core.timer_off("SAPT: Dimer SCF")
 
     necp_ab = dimer_wfn.basisset().n_ecp_core()
-    share_df_ints = ((sapt_basis == 'dimer') and (ri == 'DF') and not (necp_ab and (os.name == 'nt')))
-    if (sapt_basis == 'dimer') and (ri == 'DF') and not share_df_ints:
+    share_df_ints = ((sapt_basis == 'dimer') and not (necp_ab and (os.name == 'nt')))
+    if (sapt_basis == 'dimer') and not share_df_ints:
         core.print_out(f"\n  Turning off SAPT DF integrals sharing because of ECP: {necp_ab}\n\n")
 
     if do_delta_mp2:
@@ -4722,7 +4726,6 @@ def run_sapt_ct(name, **kwargs):
     if core.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('SAPT requires requires \"reference rhf\".')
 
-    ri = core.get_global_option('SCF_TYPE')
     df_ints_io = core.get_option('SCF', 'DF_INTS_IO')
     # inquire if above at all applies to dfmp2
 
@@ -4734,16 +4737,14 @@ def run_sapt_ct(name, **kwargs):
     dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
     core.set_global_option('DF_INTS_IO', 'LOAD')
 
-    if (ri == 'DF'):
-        core.IO.change_file_namespace(97, 'dimer', 'monomerA')
+    core.IO.change_file_namespace(97, 'dimer', 'monomerA')
     core.IO.set_default_namespace('monomerA')
     core.print_out('\n')
     p4util.banner('Monomer A HF (Dimer Basis)')
     core.print_out('\n')
     monomerA_wfn = scf_helper('RHF', molecule=monomerA, **kwargs)
 
-    if (ri == 'DF'):
-        core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
+    core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     core.IO.set_default_namespace('monomerB')
     core.print_out('\n')
     p4util.banner('Monomer B HF (Dimer Basis)')
