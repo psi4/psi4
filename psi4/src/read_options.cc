@@ -1671,7 +1671,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
         options.add_int("DF_INTS_NUM_THREADS", 0);
-        /*- IO caching for CP corrections, etc. Changing this selects Disk_DF over Mem_DF. Note that setting this forces DiskDFJK when SCF_TYPE=DF. !expert -*/
+        /*- IO caching for CP corrections, etc. Previous to v1.10, changing this selected Disk_DF over Mem_DF.
+	That is, setting this forced DiskDFJK when SCF_TYPE=DF. Starting with v1.10, changing this affects 
+ 	|globals__scf_type| = ``CD`` or ``DISK_DF`` but does not force ``DISK_DF`` when given ``DF``. !expert -*/
         options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
         /*- Fitting Condition, i.e. eigenvalue threshold for RI basis. Analogous to S_TOLERANCE !expert -*/
         options.add_double("DF_FITTING_CONDITION", 1.0E-10);
