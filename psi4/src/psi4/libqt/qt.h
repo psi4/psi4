@@ -38,6 +38,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 #include "psi4/pragma.h"
