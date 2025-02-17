@@ -69,6 +69,7 @@ def test_xtpl_gold_fn_error():
     assert 'Replace function `energy(sherrill_gold_standard)' in str(e.value)
 
 
+@pytest.mark.extern
 def test_qmmm_class_error():
     with pytest.raises(psi4.UpgradeHelper) as e:
         psi4.QMMM()
