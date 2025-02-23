@@ -31,6 +31,7 @@
     \brief Enter brief description of file here
 */
 #include "psi4/libdpd/dpd.h"
+#include <cmath>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -59,6 +60,7 @@ void lambda_residuals() {
     dpdfile2 L1, F;
     int h, i, e, m, a, I, E, M, A, Isym, Esym, Msym, Asym;
     int row, col;
+    double Y1_norm;
 
     /* Generate spin-adapted Type-I Lambda-residual contributions to LHX1Y1 */
     global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "LHX1Y1 Residual I");
@@ -121,7 +123,9 @@ void lambda_residuals() {
     global_dpd_->buf4_close(&L2);
     global_dpd_->buf4_close(&W);
 
+
     global_dpd_->buf4_sort(&Z, PSIF_CC_LAMPS, psrq, 10, 10, "LHX1Y1 Residual II");
+    //global_dpd_->buf4_sort(&Z, PSIF_CC_LAMPS, rqps, 10, 10, "LHX1Y1 Residual IItest");
     global_dpd_->buf4_close(&Z);
 }
 
