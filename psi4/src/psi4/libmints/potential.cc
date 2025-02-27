@@ -44,11 +44,7 @@ using namespace psi;
 PotentialInt::PotentialInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1,
                            std::shared_ptr<BasisSet> bs2, int deriv)
     : OneBodyAOInt(st, bs1, bs2, deriv) {
-    if (bs1 != bs2) {
-        outfile->Printf("*********************************************************************************************************************\n");
-        outfile->Printf("When computing potential integrals with different bra and ket basis, the atom definition is taken from the bra basis.\n");
-        outfile->Printf("*********************************************************************************************************************\n");
-    }
+    // When computing potential integrals with different bra and ket basis, the atom definition is taken from the bra basis.
 
     int max_am = std::max(basis1()->max_am(), basis2()->max_am());
     int max_nprim = std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive());
