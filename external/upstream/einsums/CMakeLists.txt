@@ -32,7 +32,8 @@ if(${ENABLE_Einsums})
         ExternalProject_Add(einsums_external
             DEPENDS lapack_external
                     hdf5_external
-            URL https://github.com/Einsums/Einsums/archive/v0.5.tar.gz
+            URL https://github.com/jturney/Einsums/archive/new_structure.tar.gz
+            #URL https://github.com/Einsums/Einsums/archive/v0.5.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
