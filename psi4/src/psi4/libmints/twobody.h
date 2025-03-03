@@ -47,7 +47,7 @@
 
 namespace psi {
 
-enum class ScreeningType { None, Schwarz, CSAM, QQR, Density };
+enum class ScreeningType { None, Schwarz, CSAM, QQR };
 
 enum PermutedOrder { ABCD = 0, BACD = 1, ABDC = 2, BADC = 3, CDAB = 4, CDBA = 5, DCAB = 6, DCBA = 7 };
 
@@ -155,8 +155,6 @@ class PSI_API TwoBodyAOInt {
     bool shell_significant_csam(int M, int N, int R, int S);
     /// Implements Schwarz inequality screening of a shell quartet
     bool shell_significant_schwarz(int M, int N, int R, int S);
-    /// Asks whether this shell quartet contributes by the density test (Haser 1989)
-    bool shell_significant_density(int M, int N, int R, int S);
     /// Implements the null screening of a shell quartet - always true
     bool shell_significant_none(int M, int N, int R, int S);
 
@@ -233,6 +231,8 @@ class PSI_API TwoBodyAOInt {
     double shell_pair_value(int m, int n) { return shell_pair_values_[m * nshell_ + n]; };
     /// Return the maximum density matrix element per shell pair. Maximum is over density matrices, if multiple set
     double shell_pair_max_density(int M, int N) const;
+    /// Return the maximum density matrix element per shell pair for density matrix i
+    double shell_pair_max_density(int i, int M, int N) const; 
 
     /// For a given PQ shellpair index, what's the first RS pair that should be processed such
     /// that loops may be processed generating only permutationally unique PQ<=RS.  For engines
