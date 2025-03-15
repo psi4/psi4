@@ -128,7 +128,6 @@ def print_sapt_dft_summary(data, name, do_dft=True, short=False):
 
     # Elst
     extern_extern_IE = data.get('extern_extern_IE', 0)
-    print("extern_extern_IE", extern_extern_IE)
     ret += print_sapt_var("Electrostatics", data["Elst10,r"] + extern_extern_IE) + "\n"
     ret += print_sapt_var("  Elst1,r", data["Elst10,r"]) + "\n"
     if extern_extern_IE != 0:
