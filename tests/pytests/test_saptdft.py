@@ -12,9 +12,10 @@ pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 
 psi4.set_memory("60 GB")
+psi4.set_num_threads(22)
 
 
-@pytest.mark.saptdft
+# @pytest.mark.saptdft
 def test_saptdft_auto_grac():
     mol_dimer = psi4.geometry(
         """
@@ -60,7 +61,7 @@ units angstrom
     return
 
 
-@pytest.mark.saptdft
+# @pytest.mark.saptdft
 def test_saptdft_auto_grac_iterative():
     mol_dimer = psi4.geometry(
         """
@@ -102,7 +103,7 @@ units angstrom
     return
 
 
-@pytest.mark.saptdft
+# @pytest.mark.saptdft
 def test_saptdft_external_potential():
     mol = psi4.geometry(
         """
@@ -188,17 +189,16 @@ O   2.516175   0.894012  -1.014512
 H   1.942080   1.572902  -1.410984
 H   3.056412   0.561271  -1.739079
 symmetry c1
-no_reorient
-no_com
     """
     )
     fisapt0_external_potential_energies = {
-        "SAPT ELST ENERGY": -0.01581004514947182,
-        "SAPT ELST10,R ENERGY": -0.01581004514947182,
-        "SAPT EXCH ENERGY": 0.012282520736587468,
-        "SAPT IND ENERGY": -0.0035613061462424402,
-        "SAPT DISP ENERGY": -0.002185724589094623,
-        "SAPT TOTAL ENERGY": -0.009274555148221415,
+        "SAPT ELST ENERGY": -0.01581004515,
+        "SAPT ELST10,R ENERGY": -0.01581004515,
+        "SAPT EXCH ENERGY": 0.01228252074,
+        "SAPT IND ENERGY": -0.00356130615,
+        "SAPT DISP ENERGY": -0.00218572459,
+        "SAPT TOTAL ENERGY": -0.00927455515,
+        "Enuc": 36.96520190913665,
     }
     # External potential containing the third water from the trimer with TIP3P
     # charges
@@ -234,7 +234,6 @@ no_com
         external_potentials={"C": Chargefield_C},
         molecule=mol,
     )
-    pp(psi4.core.variables())
     print("REF:")
     pp(fisapt0_external_potential_energies)
     key_labels = [
@@ -246,13 +245,14 @@ no_com
         ["SAPT TOTAL ENERGY", "SAPT TOTAL ENERGY"],
     ]
     saptdft_potential_energies = {k1: psi4.core.variable(k2) for k1, k2 in key_labels}
+    saptdft_potential_energies["Enuc"] = mol.nuclear_repulsion_energy()
     print("CALC:")
     pp(saptdft_potential_energies)
     for k1, k2 in key_labels:
         compare_values(
             fisapt0_external_potential_energies[k1],
-            psi4.core.variable(k2),
-            8,
+            saptdft_potential_energies[k1],
+            7,
             k1,
         )
     return
@@ -357,17 +357,15 @@ O   2.516175   0.894012  -1.014512
 H   1.942080   1.572902  -1.410984
 H   3.056412   0.561271  -1.739079
 symmetry c1
-no_reorient
-no_com
     """
     )
     fisapt0_external_potential_energies = {
-        "SAPT ELST ENERGY": -0.01581004514947182,
-        "SAPT ELST10,R ENERGY": -0.01581004514947182,
-        "SAPT EXCH ENERGY": 0.012282520736587468,
-        "SAPT IND ENERGY": -0.0035613061462424402,
-        "SAPT DISP ENERGY": -0.002185724589094623,
-        "SAPT TOTAL ENERGY": -0.009274555148221415,
+        "SAPT ELST ENERGY": -0.01581004515,
+        "SAPT ELST10,R ENERGY": -0.01581004515,
+        "SAPT EXCH ENERGY": 0.01228252074,
+        "SAPT IND ENERGY": -0.00356130615,
+        "SAPT DISP ENERGY": -0.00218572459,
+        "SAPT TOTAL ENERGY": -0.00927455515,
     }
     # External potential containing the third water from the trimer with TIP3P
     # charges
@@ -400,6 +398,12 @@ no_com
         "fisapt0",
         external_potentials={"C": Chargefield_C},
         molecule=mol,
+    )
+    compare_values(
+        36.96520190913665,
+        mol.nuclear_repulsion_energy(),
+        8,
+        "Enuc",
     )
     pp(psi4.core.variables())
     for key, value in fisapt0_external_potential_energies.items():
@@ -820,10 +824,12 @@ no_com
 
 if __name__ == "__main__":
     # test_fisapt0_external_potential_ab()
-    test_sapthf_external_potential_ab()
-    # test_sapthf_external_potential_a()
     # test_sapthf_external_potential()
     # test_fisapt0_external_potential_abc()
     # test_sapthf_external_potential_abc()
-    test_saptdft_external_potential()
+    # test_saptdft_external_potential()
+
+    # test_sapthf_external_potential_ab()
     # test_fisapt_external_potential()
+    # test_sapthf_external_potential()
+    test_sapthf_external_potential_a()

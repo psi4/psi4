@@ -1,0 +1,5 @@
+2025-03-15:08:52:11,489 INFO     [psi4.driver.task_planner:285] PLANNING Atomic:  keywords={'FREEZE_CORE': 'TRUE', 'GUESS': 'SAD', 'SCF_TYPE': 'DF', 'function_kwargs': {'external_potentials': array([[-0.834     ,  0.33867105,  4.6078874 , -2.80549874],
+       [ 0.417     , -0.36680907,  3.217631  , -1.82689462],
+       [ 0.417     , -0.80626488,  4.84479291, -4.20026213]])}}
+2025-03-15:08:52:11,491 INFO     [psi4.driver.driver:523] Compute energy(): method=fisapt0, basis=jun-cc-pvdz, molecule=mol, nre=36.96520190913665
+2025-03-15:08:52:12,664 INFO     [psi4.driver.driver:526] Return energy(): -0.009274555145649118

@@ -83,6 +83,11 @@ def build_sapt_jk_cache(
 
     # External Potentials need to add to V_A and V_B
     if external_potentials:
+        # if external_potentials.get("C"):
+        #     ext_A = wfn_dimer.external_pot().computePotentialMatrix(wfn_A.basisset())
+        #     cache["V_A"].add(ext_A)
+        #     ext_B = wfn_dimer.external_pot().computePotentialMatrix(wfn_B.basisset())
+        #     cache["V_B"].add(ext_B)
         if external_potentials.get("A"):
             print("A_ext")
             ext_A = wfn_A.external_pot().computePotentialMatrix(wfn_A.basisset())
@@ -131,6 +136,7 @@ def build_sapt_jk_cache(
     cache["extern_extern_IE"] = 0.0
     print("external_potentials", external_potentials)
     if external_potentials:
+        # THIS IS INCORRECT FOR C... NEEDED FOR AB though, uncertain A or B
         dimer_nr += wfn_dimer.external_pot().computeNuclearEnergy(wfn_dimer.molecule()) 
         if external_potentials.get("A"):
             monA_nr += wfn_A.external_pot().computeNuclearEnergy(wfn_A.molecule())
@@ -140,6 +146,10 @@ def build_sapt_jk_cache(
             cache["extern_extern_IE"] = wfn_A.external_pot().computeExternExternInteraction(wfn_B.external_pot())
 
     cache["nuclear_repulsion_energy"] = dimer_nr - monA_nr - monB_nr
+    print("nuclear_repulsion_energy", cache["nuclear_repulsion_energy"])
+    print("dimer_nr", dimer_nr)
+    print("monA_nr", monA_nr)
+    print("monB_nr", monB_nr)
     return cache
 
 
@@ -158,6 +168,7 @@ def electrostatics(cache, do_print=True):
     Elst10 += 2.0 * cache["D_B"].vector_dot(cache["V_A"])
     Elst10 += 4.0 * cache["D_B"].vector_dot(cache["J_A"])
     Elst10 += cache["nuclear_repulsion_energy"]
+    print(f"Enuc_t:", cache["nuclear_repulsion_energy"])
 
     if do_print:
         core.print_out(print_sapt_var("Elst10,r ", Elst10, short=True))
