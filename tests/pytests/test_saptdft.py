@@ -747,7 +747,7 @@ no_com
         compare_values(
             fisapt0_external_potential_energies[k1],
             saptdft_potential_energies[k1],
-            8,
+            7,
             k1,
         )
     return

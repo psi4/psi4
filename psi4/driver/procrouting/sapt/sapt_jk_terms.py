@@ -87,29 +87,29 @@ def build_sapt_jk_cache(
     print("EXTERNAL POTENTIALS")
     print(external_potentials)
     if external_potentials is not None:
-        nbf = wfn_dimer.basisset().nbf()
-        ext_matrices = {
-            "Enucs": core.Matrix.from_array(np.zeros((3, 3)), name="Enucs"),
-            "extern_extern_IE": core.Matrix.from_array(
-                np.zeros((3, 3)), name="Extern-Extern IE"
-            ),
-            "VA": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA"),
-            "VB": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB"),
-            "VA_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA_extern"),
-            "VB_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB_extern"),
-            "VE": core.Matrix.from_array(
-                np.zeros((nbf, nbf)), name="External Potential"
-            ),
-        }
-        print("OPTIONS:")
-        print(core.get_options())
-        Etot = core.sapt_nuclear_external_potential_python(
-            wfn_dimer, ext_matrices, core.get_options()
-        )
-        print("Ext 4")
-        print(wfn_A.potential_variables())
-        print(wfn_B.potential_variables())
-        print(wfn_dimer.potential_variables())
+        # nbf = wfn_dimer.basisset().nbf()
+        # ext_matrices = {
+        #     "Enucs": core.Matrix.from_array(np.zeros((3, 3)), name="Enucs"),
+        #     # "extern_extern_IE": core.Matrix.from_array(
+        #     #     np.zeros((3, 3)), name="Extern-Extern IE"
+        #     # ),
+        #     "VA": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA"),
+        #     "VB": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB"),
+        #     "VA_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VA_extern"),
+        #     "VB_extern": core.Matrix.from_array(np.zeros((nbf, nbf)), name="VB_extern"),
+        #     "VE": core.Matrix.from_array(
+        #         np.zeros((nbf, nbf)), name="External Potential"
+        #     ),
+        # }
+        # print("OPTIONS:")
+        # print(core.get_options())
+        # Etot = core.sapt_nuclear_external_potential_python(
+        #     wfn_dimer, ext_matrices, core.get_options()
+        # )
+        # print("Ext 4")
+        # print(wfn_A.potential_variables())
+        # print(wfn_B.potential_variables())
+        # print(wfn_dimer.potential_variables())
         # Must set external potentials to wavefunctions for exch to be correct
         # _set_external_potentials_to_wavefunction(external_potentials['A'], wfn_A)
         # _set_external_potentials_to_wavefunction(external_potentials['B'], wfn_B)
@@ -121,15 +121,6 @@ def build_sapt_jk_cache(
             ext_B = wfn_B.external_pot().computePotentialMatrix(wfn_B.basisset())
             cache["V_B_ext"] = ext_B
             cache["V_B"].add(ext_B)
-        if (
-            external_potentials.get("A") is not None
-            and external_potentials.get("B") is not None
-        ):
-            extern_extern_ie = 0
-            cache["extern_extern_IE"] = ext_matrices["extern_extern_IE"]
-            cache["Extern-Extern"] = ext_matrices["extern_extern_IE"].get(0, 1) * 2.0
-            print("Extern-Extern IE")
-            print(cache["Extern-Extern"])
 
     # Anything else we might need
     cache["S"] = wfn_A.S().clone()
@@ -167,10 +158,15 @@ def build_sapt_jk_cache(
     monB_nr = wfn_B.molecule().nuclear_repulsion_energy()
     dimer_nr = wfn_A.molecule().extract_subsets([1, 2]).nuclear_repulsion_energy()
     # TODO: monA_nr and monB_nr DO NOT include external potentials... MUST CORRECT to agree with Updated Nuclear Repulsion Energies
+    cache["extern_extern_IE"] = 0.0
     if external_potentials is not None:
         monA_nr += wfn_A.external_pot().computeNuclearEnergy(wfn_A.molecule())
         monB_nr += wfn_B.external_pot().computeNuclearEnergy(wfn_B.molecule())
         dimer_nr += wfn_dimer.external_pot().computeNuclearEnergy(wfn_dimer.molecule()) 
+        print(wfn_A.external_pot())
+        cache["extern_extern_IE"] = wfn_A.external_pot().computeExternExternInteraction(wfn_B.external_pot())
+        print("extern_extern_IE")
+        print(cache["extern_extern_IE"])
 
     print("Nuclear Repulsion Energies")
     print(dimer_nr)
@@ -235,10 +231,10 @@ def electrostatics(cache, do_print=True):
         core.print_out(print_sapt_var("Elst10,r ", Elst10, short=True))
         core.print_out("\n")
     extern_extern_ie = 0
-    # if cache.get('extern_extern_IE'):
-    #     extern_extern_ie = cache['extern_extern_IE'].get(0, 1) * 2.0
-    #     # Elst10 += extern_extern_ie
-    #     core.print_out(f"    Extern-Extern               {extern_extern_ie*1000:16.8f} [mEh]\n")
+    if cache.get('extern_extern_IE'):
+        extern_extern_ie = cache['extern_extern_IE']
+        Elst10 += extern_extern_ie
+        core.print_out(f"    Extern-Extern               {extern_extern_ie*1000:16.8f} [mEh]\n")
 
     return {"Elst10,r": Elst10}, extern_extern_ie
 
