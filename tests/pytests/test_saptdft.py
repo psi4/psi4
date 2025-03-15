@@ -245,8 +245,7 @@ no_com
         ["SAPT DISP ENERGY", "SAPT DISP ENERGY"],
         ["SAPT TOTAL ENERGY", "SAPT TOTAL ENERGY"],
     ]
-    saptdft_potential_energies = {
-        k1: psi4.core.variable(k2) for k1, k2 in key_labels}
+    saptdft_potential_energies = {k1: psi4.core.variable(k2) for k1, k2 in key_labels}
     print("CALC:")
     pp(saptdft_potential_energies)
     for k1, k2 in key_labels:
@@ -438,17 +437,13 @@ no_com
     external_potentials = {
         "A": [
             [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
-            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) /
-             psi_bohr2angstroms],
+            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) / psi_bohr2angstroms],
             [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
         ],
         "B": [
-            [0.417, np.array([-2.5628, -0.8269, -1.6696]) /
-             psi_bohr2angstroms],
-            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) /
-             psi_bohr2angstroms],
-            [0.417, np.array([-1.8988, -0.4993, -0.3072]) /
-             psi_bohr2angstroms],
+            [0.417, np.array([-2.5628, -0.8269, -1.6696]) / psi_bohr2angstroms],
+            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) / psi_bohr2angstroms],
+            [0.417, np.array([-1.8988, -0.4993, -0.3072]) / psi_bohr2angstroms],
         ],
         "C": [
             [0.417, np.array([1.1270, 1.5527, -0.1658]) / psi_bohr2angstroms],
@@ -520,17 +515,13 @@ no_com
     external_potentials = {
         "A": [
             [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
-            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) /
-             psi_bohr2angstroms],
+            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) / psi_bohr2angstroms],
             [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
         ],
         "B": [
-            [0.417, np.array([-2.5628, -0.8269, -1.6696]) /
-             psi_bohr2angstroms],
-            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) /
-             psi_bohr2angstroms],
-            [0.417, np.array([-1.8988, -0.4993, -0.3072]) /
-             psi_bohr2angstroms],
+            [0.417, np.array([-2.5628, -0.8269, -1.6696]) / psi_bohr2angstroms],
+            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) / psi_bohr2angstroms],
+            [0.417, np.array([-1.8988, -0.4993, -0.3072]) / psi_bohr2angstroms],
         ],
     }
     psi4.set_options(
@@ -549,12 +540,12 @@ no_com
     keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]  # TEST
     # UPDATED ENERGIES FOR DIMER
     Eref = {
-        'Edisp': -0.002806890580921549,
-        'Eelst': -0.049844754081429986,
-        'Eexch': 0.018716989207357836,
-        'Eind': -0.007796394758818957,
-        'Enuc': 37.565065473343004,
-        'Etot': -0.041731050213812654
+        "Edisp": -0.002806890580921549,
+        "Eelst": -0.049844754081429986,
+        "Eexch": 0.018716989207357836,
+        "Eind": -0.007796394758818957,
+        "Enuc": 37.565065473343004,
+        "Etot": -0.041731050213812654,
     }
 
     Epsi = {  # TEST
@@ -593,17 +584,13 @@ no_com
     external_potentials = {
         "A": [
             [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
-            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) /
-             psi_bohr2angstroms],
+            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) / psi_bohr2angstroms],
             [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
         ],
         "B": [
-            [0.417, np.array([-2.5628, -0.8269, -1.6696]) /
-             psi_bohr2angstroms],
-            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) /
-             psi_bohr2angstroms],
-            [0.417, np.array([-1.8988, -0.4993, -0.3072]) /
-             psi_bohr2angstroms],
+            [0.417, np.array([-2.5628, -0.8269, -1.6696]) / psi_bohr2angstroms],
+            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) / psi_bohr2angstroms],
+            [0.417, np.array([-1.8988, -0.4993, -0.3072]) / psi_bohr2angstroms],
         ],
         "C": [
             [0.417, np.array([1.1270, 1.5527, -0.1658]) / psi_bohr2angstroms],
@@ -652,8 +639,7 @@ no_com
         ["Eind", "SAPT IND ENERGY"],
         ["Etot", "SAPT TOTAL ENERGY"],
     ]
-    saptdft_potential_energies = {
-        k1: psi4.core.variable(k2) for k1, k2 in key_labels}
+    saptdft_potential_energies = {k1: psi4.core.variable(k2) for k1, k2 in key_labels}
     saptdft_potential_energies["Enuc"] = mol.nuclear_repulsion_energy()
     print("CALC:")
     pp(saptdft_potential_energies)
@@ -688,17 +674,13 @@ no_com
     external_potentials = {
         "A": [
             [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
-            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) /
-             psi_bohr2angstroms],
+            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) / psi_bohr2angstroms],
             [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
         ],
         "B": [
-            [0.417, np.array([-2.5628, -0.8269, -1.6696]) /
-             psi_bohr2angstroms],
-            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) /
-             psi_bohr2angstroms],
-            [0.417, np.array([-1.8988, -0.4993, -0.3072]) /
-             psi_bohr2angstroms],
+            [0.417, np.array([-2.5628, -0.8269, -1.6696]) / psi_bohr2angstroms],
+            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) / psi_bohr2angstroms],
+            [0.417, np.array([-1.8988, -0.4993, -0.3072]) / psi_bohr2angstroms],
         ],
         # "C": [
         #     [0.417, np.array([1.1270, 1.5527, -0.1658]) / psi_bohr2angstroms],
@@ -722,12 +704,12 @@ no_com
         molecule=mol,
     )
     fisapt0_external_potential_energies = {
-        'Eexch': 0.018716989207357836,
-        'Edisp': -0.002806890580921549,
-        'Eelst': -0.049844754081429986,
-        'Eind': -0.007796394758818957,
-        'Enuc': 37.565065473343004,
-        'Etot': -0.041731050213812654
+        "Eexch": 0.018716989207357836,
+        "Edisp": -0.002806890580921549,
+        "Eelst": -0.049844754081429986,
+        "Eind": -0.007796394758818957,
+        "Enuc": 37.565065473343004,
+        "Etot": -0.041731050213812654,
     }
     print("REF:")
     pp(fisapt0_external_potential_energies)
@@ -738,8 +720,91 @@ no_com
         ["Eind", "SAPT IND ENERGY"],
         ["Etot", "SAPT TOTAL ENERGY"],
     ]
-    saptdft_potential_energies = {
-        k1: psi4.core.variable(k2) for k1, k2 in key_labels}
+    saptdft_potential_energies = {k1: psi4.core.variable(k2) for k1, k2 in key_labels}
+    saptdft_potential_energies["Enuc"] = mol.nuclear_repulsion_energy()
+    print("CALC:")
+    pp(saptdft_potential_energies)
+    for k1, k2 in key_labels:
+        compare_values(
+            fisapt0_external_potential_energies[k1],
+            saptdft_potential_energies[k1],
+            7,
+            k1,
+        )
+    return
+
+
+@pytest.mark.saptdft
+def test_sapthf_external_potential_a():
+    mol = psi4.geometry(
+        """
+0 1
+H 0.0290 -1.1199 -1.5243
+O 0.9481 -1.3990 -1.3587
+H 1.4371 -0.5588 -1.3099
+--
+H 1.0088 -1.5240 0.5086
+O 1.0209 -1.1732 1.4270
+H 1.5864 -0.3901 1.3101
+symmetry c1
+no_reorient
+no_com
+    """
+    )
+    psi_bohr2angstroms = qcel.constants.bohr2angstroms
+    external_potentials = {
+        # "A": [
+        #     [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
+        #     [-0.834, np.array([-1.4545, -0.1932, 1.4677]) / psi_bohr2angstroms],
+        #     [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
+        # ],
+        "B": [
+            [0.417, np.array([-2.5628, -0.8269, -1.6696]) / psi_bohr2angstroms],
+            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) / psi_bohr2angstroms],
+            [0.417, np.array([-1.8988, -0.4993, -0.3072]) / psi_bohr2angstroms],
+        ],
+    }
+    psi4.set_options(
+        {
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+            "SAPT_DFT_FUNCTIONAL": "hf",
+            "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
+        }
+    )
+    psi4.energy(
+        "sapt(dft)",
+        # "fisapt0",
+        external_potentials=external_potentials,
+        molecule=mol,
+    )
+    # Fails on EXCH, meaning it has to do with adding V_A or V_B...
+    fisapt0_external_potential_energies = {
+        # "Edisp": -0.002816214841039168,
+        # "Eelst": -0.029279397864449663,
+        # "Eexch": 0.01889146242465646,
+        # "Eind": -0.006356586601442907,
+        # "Enuc": 37.565065473343004,
+        # "Etot": -0.019560736882275276,
+        "Edisp": -0.0027835628235023946,
+        "Eelst": -0.024996838889304485,
+        "Eexch": 0.018658252478543982,
+        "Eind": -0.005940905006556488,
+        "Enuc": 37.565065473343004,
+        "Etot": -0.015063054240819385,
+    }
+    print("REF:")
+    pp(fisapt0_external_potential_energies)
+    key_labels = [
+        ["Eexch", "SAPT EXCH ENERGY"],
+        ["Edisp", "SAPT DISP ENERGY"],
+        ["Eelst", "SAPT ELST ENERGY"],
+        ["Eind", "SAPT IND ENERGY"],
+        ["Etot", "SAPT TOTAL ENERGY"],
+    ]
+    saptdft_potential_energies = {k1: psi4.core.variable(k2) for k1, k2 in key_labels}
     saptdft_potential_energies["Enuc"] = mol.nuclear_repulsion_energy()
     print("CALC:")
     pp(saptdft_potential_energies)
@@ -754,15 +819,11 @@ no_com
 
 
 if __name__ == "__main__":
-    print("test_fisapt0 start")
-    test_fisapt0_external_potential_ab()
-    print("test_fisapt0 end")
-    print("test_saptdft start")
+    # test_fisapt0_external_potential_ab()
     test_sapthf_external_potential_ab()
-    print("test_saptdft end")
-
+    # test_sapthf_external_potential_a()
     # test_sapthf_external_potential()
     # test_fisapt0_external_potential_abc()
     # test_sapthf_external_potential_abc()
-    # test_saptdft_external_potential()
+    test_saptdft_external_potential()
     # test_fisapt_external_potential()
