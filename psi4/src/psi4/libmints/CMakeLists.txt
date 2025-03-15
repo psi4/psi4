@@ -91,6 +91,18 @@ target_compile_definitions(mints
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
 
+# limit to avoid OOM errors with Ninja parallelism
+# * finer control than `CMAKE_BUILD_PARALLEL_LEVEL=1 cmake --build`
+cmake_host_system_information(RESULT _memfree QUERY AVAILABLE_PHYSICAL_MEMORY)
+cmake_host_system_information(RESULT _numcore QUERY NUMBER_OF_PHYSICAL_CORES)
+math(EXPR _memrat "${_memfree} / ${_numcore}")
+message("AVAILABLE_PHYSICAL_MEMORY ${_memfree} / NUMBER_OF_PHYSICAL_CORES ${_numcore} = ${_memrat}")
+if(_numcore LESS 5)
+    set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE two_jobs)
+else()
+    set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE four_jobs)
+endif()
+
 # Always linked-to external projects
 target_link_libraries(mints
   PUBLIC

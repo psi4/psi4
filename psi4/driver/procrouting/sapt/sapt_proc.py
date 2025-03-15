@@ -67,10 +67,10 @@ def run_sapt_dft(name, **kwargs):
 
     if np.isclose(mon_a_shift, -99.0, atol=1e-6):
         do_mon_grac_shift_A = True
-        print("Monomer A GRAC shift set to -99.0, will compute automatically.")
+        core.print_out("Monomer A GRAC shift set to -99.0, will compute automatically.")
     if np.isclose(mon_b_shift, -99.0, atol=1e-6):
         do_mon_grac_shift_B = True
-        print("Monomer B GRAC shift set to -99.0, will compute automatically.")
+        core.print_out("Monomer B GRAC shift set to -99.0, will compute automatically.")
 
     do_delta_hf = core.get_option("SAPT", "SAPT_DFT_DO_DHF")
     sapt_dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
@@ -165,42 +165,37 @@ def run_sapt_dft(name, **kwargs):
     core.IO.set_default_namespace("dimer")
     data = {}
 
-    if core.get_global_option("SCF_TYPE") == "DF":
-        # core.set_global_option('DF_INTS_IO', 'LOAD')
-        core.set_global_option("DF_INTS_IO", "SAVE")
+    # Save integrals
+    # We want to try to re-use itegrals for the dimer and monomer SCF's. If we
+    # are using Disk based DF (DISK_DF) then we can use the DF_INTS_IO option.
+    # MemDF does not know about this option but setting it will be harmless
+    # there.
+    core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # Compute dimer wavefunction
     hf_wfn_dimer = None
     if do_delta_hf:
-        if core.get_global_option("SCF_TYPE") == "DF":
-            core.set_global_option("DF_INTS_IO", "SAVE")
-
+        core.set_global_option('DF_INTS_IO', 'SAVE')
         core.timer_on("SAPT(DFT):Dimer SCF")
         hf_data = {}
-        hf_wfn_dimer = scf_helper(
-            "SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs
-        )
+
+        core.set_local_option("SCF", "SAVE_JK", True)
+        hf_wfn_dimer = scf_helper("SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
         hf_data["HF DIMER"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT):Dimer SCF")
 
         core.timer_on("SAPT(DFT):Monomer A SCF")
-        if core.get_global_option("SCF_TYPE") == "DF":
-            core.IO.change_file_namespace(97, "dimer", "monomerA")
+        core.IO.change_file_namespace(97, 'dimer', 'monomerA')
 
-        hf_wfn_A = scf_helper(
-            "SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs
-        )
+        jk_obj = hf_wfn_dimer.jk()
+        hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", jk=jk_obj, **kwargs)
         hf_data["HF MONOMER A"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT):Monomer A SCF")
 
         core.timer_on("SAPT(DFT):Monomer B SCF")
-        core.set_global_option("SAVE_JK", True)
-        if core.get_global_option("SCF_TYPE") == "DF":
-            core.IO.change_file_namespace(97, "monomerA", "monomerB")
+        core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
 
-        hf_wfn_B = scf_helper(
-            "SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", **kwargs
-        )
+        hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", jk=jk_obj, **kwargs)
         hf_data["HF MONOMER B"] = core.variable("CURRENT ENERGY")
         core.set_global_option("SAVE_JK", False)
         core.timer_off("SAPT(DFT):Monomer B SCF")
@@ -212,8 +207,7 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option("SAVE_JK", False)
 
             # Move it back to monomer A
-            if core.get_global_option("SCF_TYPE") == "DF":
-                core.IO.change_file_namespace(97, "monomerB", "dimer")
+            core.IO.change_file_namespace(97, 'monomerB', 'dimer')
 
             core.print_out("\n")
             core.print_out(
@@ -301,20 +295,18 @@ def run_sapt_dft(name, **kwargs):
 
         # Compute Monomer A wavefunction
         core.timer_on("SAPT(DFT): Monomer A DFT")
-        if core.get_global_option("SCF_TYPE") == "DF":
-            core.IO.change_file_namespace(97, "dimer", "monomerA")
+        core.IO.change_file_namespace(97, 'dimer', 'monomerA')
 
         if mon_a_shift:
             core.set_global_option("DFT_GRAC_SHIFT", mon_a_shift)
 
-        core.IO.set_default_namespace("monomerA")
-        wfn_A = scf_helper(
-            sapt_dft_functional,
-            post_scf=False,
-            molecule=monomerA,
-            banner="SAPT(DFT): DFT Monomer A",
-            **kwargs,
-        )
+        core.IO.set_default_namespace('monomerA')
+        core.set_global_option("SAVE_JK", True)
+        wfn_A = scf_helper(sapt_dft_functional,
+                           post_scf=False,
+                           molecule=monomerA,
+                           banner="SAPT(DFT): DFT Monomer A",
+                           **kwargs)
         data["DFT MONOMERA"] = core.variable("CURRENT ENERGY")
 
         core.set_global_option("DFT_GRAC_SHIFT", 0.0)
@@ -322,21 +314,19 @@ def run_sapt_dft(name, **kwargs):
 
         # Compute Monomer B wavefunction
         core.timer_on("SAPT(DFT): Monomer B DFT")
-        if core.get_global_option("SCF_TYPE") == "DF":
-            core.IO.change_file_namespace(97, "monomerA", "monomerB")
+        core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
 
         if mon_b_shift:
             core.set_global_option("DFT_GRAC_SHIFT", mon_b_shift)
 
         core.set_global_option("SAVE_JK", True)
-        core.IO.set_default_namespace("monomerB")
-        wfn_B = scf_helper(
-            sapt_dft_functional,
-            post_scf=False,
-            molecule=monomerB,
-            banner="SAPT(DFT): DFT Monomer B",
-            **kwargs,
-        )
+        core.IO.set_default_namespace('monomerB')
+        wfn_B = scf_helper(sapt_dft_functional,
+                           post_scf=False,
+                           molecule=monomerB,
+                           banner="SAPT(DFT): DFT Monomer B",
+                           jk=wfn_A.jk(),
+                           **kwargs)
         data["DFT MONOMERB"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT): Monomer B DFT")
 
@@ -588,10 +578,7 @@ def sapt_dft(
             sapt_jk.set_omega(wfn_A.functional().x_omega())
         sapt_jk.initialize()
         sapt_jk.print_header()
-
-        if wfn_B.functional().is_x_lrc() and (
-            wfn_A.functional().x_omega() != wfn_B.functional().x_omega()
-        ):
+        if wfn_B.functional().is_x_lrc() and (wfn_A.functional().x_omega() != wfn_B.functional().x_omega()):
             core.print_out("   => Monomer B: Building SAPT JK object <= \n\n")
             core.print_out(
                 "      Reason: MonomerA Omega != MonomerB Omega\n\n")
@@ -602,8 +589,17 @@ def sapt_dft(
             sapt_jk_B.set_omega(wfn_B.functional().x_omega())
             sapt_jk_B.initialize()
             sapt_jk_B.print_header()
+
     else:
         sapt_jk.set_do_K(True)
+
+    sapt_jk.set_do_J(True)
+    sapt_jk.set_do_K(True)
+
+    if wfn_A.functional().is_x_lrc():
+        sapt_jk.set_do_wK(True)
+        sapt_jk.set_omega(wfn_A.functional().x_omega())
+
 
     if data is None:
         data = {}
@@ -818,11 +814,9 @@ def run_sf_sapt(name, **kwargs):
         )
 
     # Run the two monomer computations
-    core.IO.set_default_namespace("dimer")
-    data = {}
+    core.IO.set_default_namespace('dimer')
 
-    if core.get_global_option("SCF_TYPE") == "DF":
-        core.set_global_option("DF_INTS_IO", "SAVE")
+    core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # Compute dimer wavefunction
     wfn_A = scf_helper(
