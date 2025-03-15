@@ -233,7 +233,6 @@ def electrostatics(cache, do_print=True):
     extern_extern_ie = 0
     if cache.get('extern_extern_IE'):
         extern_extern_ie = cache['extern_extern_IE']
-        Elst10 += extern_extern_ie
         core.print_out(f"    Extern-Extern               {extern_extern_ie*1000:16.8f} [mEh]\n")
 
     return {"Elst10,r": Elst10}, extern_extern_ie

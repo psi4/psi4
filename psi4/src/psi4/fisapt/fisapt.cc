@@ -32,6 +32,7 @@
 #include <ctime>
 #include <functional>
 #include <set>
+#include "psi4/mcscf/block_matrix.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -3525,6 +3526,7 @@ void FISAPT::ind() {
         scalars_["delta HF,r (2)"] =
             scalars_["HF"] - scalars_["Elst10,r"] - scalars_["Exch10"] - scalars_["Ind20,r"] - scalars_["Exch-Ind20,r"];
     }
+    outfile->Printf("HF_IE       = %18.12lf [Eh]\n", scalars_["HF"]);
 
     // => Kill the JK Object <= //
 

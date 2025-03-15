@@ -238,6 +238,9 @@ def run_sapt_dft(name, **kwargs):
         core.set_global_option("SAVE_JK", False)
         core.timer_off("SAPT(DFT):Monomer B SCF")
 
+        # HF_IE agree...
+        print(f"HF_IE: {hf_data['HF DIMER'] - hf_data['HF MONOMER A'] - hf_data['HF MONOMER B']}")
+
         kwargs["external_potentials"] = {}
         if ext_pot_C:
             kwargs["external_potentials"]["C"] = ext_pot_C
@@ -274,14 +277,15 @@ def run_sapt_dft(name, **kwargs):
             core.print_out("\n")
 
             # Build cache
+            print("Building cache (hf_cache)")
             hf_cache = sapt_jk_terms.build_sapt_jk_cache(
                hf_wfn_dimer, hf_wfn_A, hf_wfn_B, sapt_jk, True
             )
 
             # Electrostatics
             core.timer_on("SAPT(HF):elst")
-            elst, extern_extern_ie = sapt_jk_terms.electrostatics(hf_cache, True)
-            hf_data['extern_extern_ie'] = extern_extern_ie
+            elst, extern_extern_IE = sapt_jk_terms.electrostatics(hf_cache, True)
+            hf_data['extern_extern_IE'] = extern_extern_IE
             hf_data.update(elst)
             core.timer_off("SAPT(HF):elst")
 
@@ -680,14 +684,14 @@ def sapt_dft(
         data = {}
 
     # Build SAPT cache
+    print("Building cache (cache)")
     cache = sapt_jk_terms.build_sapt_jk_cache(dimer_wfn, wfn_A, wfn_B, sapt_jk, True, external_potentials)
     core.timer_off("SAPT(DFT):Build JK")
 
-    print(f"{external_potentials = }")
-
     # Electrostatics
     core.timer_on("SAPT(DFT):elst")
-    elst, extern_extern_ie = sapt_jk_terms.electrostatics(cache, True)
+    elst, extern_extern_IE = sapt_jk_terms.electrostatics(cache, True)
+    data["extern_extern_IE"] = extern_extern_IE
     data.update(elst)
     core.timer_off("SAPT(DFT):elst")
 
@@ -716,6 +720,11 @@ def sapt_dft(
             data["Elst10,r"] + data["Exch10"] +
             data["Ind20,r"] + data["Exch-Ind20,r"]
         )
+        print(f"{data['Elst10,r'] = }")
+        print(f"{data['Exch10'] = }")
+        print(f"{data['Ind20,r'] = }")
+        print(f"{data['Exch-Ind20,r'] = }")
+        print(f"{total_sapt = }")
         sapt_hf_delta = data["DHF VALUE"] - total_sapt
         core.set_variable("SAPT(DFT) Delta HF", sapt_hf_delta)
         data["Delta HF Correction"] = core.variable("SAPT(DFT) Delta HF")
@@ -823,6 +832,7 @@ def sapt_dft(
 
     # Print out final data
     core.print_out("\n")
+    pprint(data)
     core.print_out(print_sapt_dft_summary(data, "SAPT(DFT)", do_dft=do_dft))
 
     return data
