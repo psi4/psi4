@@ -672,9 +672,12 @@ void FISAPT::nuclear() {
     }
 
     /// Nuclear repulsion for A, B, C,
+    Zs->print_out();
+    Rinv->print_out();
     std::shared_ptr<Matrix> Enucs = linalg::triplet(Zs, Rinv, Zs, true, false, false);
     Enucs->scale(0.5);
     Enucs->set_name("E Nuc");
+    Enucs->print_out();
     matrices_["E NUC"] = Enucs;
 
     double** Enucsp = Enucs->pointer();
@@ -684,6 +687,7 @@ void FISAPT::nuclear() {
             Etot += Enucsp[A][B];
         }
     }
+    outfile->Printf("    Nuclear Repulsion Tot: %24.16E [Eh]\n", Etot);
 
 
     // are there any external potentials? If so, we need all QM atoms to feel their effects in the nuclear 
@@ -2261,12 +2265,27 @@ void FISAPT::elst() {
     Enuc += 2.0 * Enuc2p[0][1];  // A - B
 
     double Elst10 = 0.0;
+    double Elst10_sum = 0.0;
     std::vector<double> Elst10_terms;
     Elst10_terms.resize(4);
     Elst10_terms[0] += 2.0 * D_A->vector_dot(V_B);
+    Elst10_sum += 2.0 * D_A->vector_dot(V_B);
+    outfile->Printf("Elst10: %18.12lf\n", Elst10_sum);
     Elst10_terms[1] += 2.0 * D_B->vector_dot(V_A);
+    Elst10_sum += 2.0 * D_B->vector_dot(V_A);
+    outfile->Printf("Elst10: %18.12lf\n", Elst10_sum);
     Elst10_terms[2] += 4.0 * D_A->vector_dot(J_B);
+    Elst10_sum += 4.0 * D_A->vector_dot(J_B);
+    outfile->Printf("Elst10: %18.12lf\n", Elst10_sum);
     Elst10_terms[3] += 1.0 * Enuc;
+    Elst10_sum += 1.0 * Enuc;
+    outfile->Printf("Elst10: %18.12lf\n", Elst10_sum);
+    // correct
+    outfile->Printf("2.0 * D_A->vector_dot(V_B)  (HF): %18.12lf\n",2.0 * D_A->vector_dot(V_B));
+    outfile->Printf("2.0 * D_B->vector_dot(V_A)  (HF): %18.12lf\n",2.0 * D_B->vector_dot(V_A));
+    // maybe?
+    outfile->Printf("4.0 * D_A->vector_dot(J_B): %18.12lf\n",4.0 * D_A->vector_dot(J_B));
+    outfile->Printf("Enuc_t: %18.12lf\n", Enuc);
     for (int k = 0; k < Elst10_terms.size(); k++) {
         Elst10 += Elst10_terms[k];
     }

@@ -221,6 +221,8 @@ def run_sapt_dft(name, **kwargs):
         jk_obj = hf_wfn_dimer.jk()
         if ext_pot_A:
             kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_A])
+        print("hhh")
+        print(kwargs['external_potentials'])
         hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", jk=jk_obj, **kwargs)
         hf_data["HF MONOMER A"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT):Monomer A SCF")
@@ -384,6 +386,10 @@ def run_sapt_dft(name, **kwargs):
     kwargs["external_potentials"] = {}
     if do_ext_potential:
         print("hhh")
+        print(monomerA.nuclear_repulsion_energy())
+        Ext_A = wfn_A.potential_variable
+        print(Ext_A)
+        print(monomerB.nuclear_repulsion_energy())
         pprint(external_potentials)
         # because set external potentials to "C" for scf_helper usage on
         # dimer_wfn, need to delete before an FISAPT usage of dimer_wfn

@@ -754,8 +754,12 @@ no_com
 
 
 if __name__ == "__main__":
+    print("test_fisapt0 start")
     test_fisapt0_external_potential_ab()
+    print("test_fisapt0 end")
+    print("test_saptdft start")
     test_sapthf_external_potential_ab()
+    print("test_saptdft end")
 
     # test_sapthf_external_potential()
     # test_fisapt0_external_potential_abc()
