@@ -11,10 +11,6 @@ hartree_to_kcalmol = constants.conversion_factor("hartree", "kcal/mol")
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 
-psi4.set_memory("60 GB")
-psi4.set_num_threads(22)
-
-
 @pytest.mark.saptdft
 def test_saptdft_auto_grac():
     mol_dimer = psi4.geometry(
@@ -183,7 +179,6 @@ def test_sapthf_external_potential(test_id, external_pot_keys, energy_method, ex
     precision : int
         Decimal precision for comparison
     """
-    psi4.set_num_threads(22)
     # Define the molecule geometry (common to all tests)
     mol = psi4.geometry(
         """
