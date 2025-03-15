@@ -58,6 +58,8 @@ def build_sapt_jk_cache(
 
     # First grab the orbitals
     cache["Cocc_A"] = wfn_A.Ca_subset("AO", "OCC")
+    print("Cocc_A")
+    cache["Cocc_A"].print_out()
     cache["Cvir_A"] = wfn_A.Ca_subset("AO", "VIR")
 
     cache["Cocc_B"] = wfn_B.Ca_subset("AO", "OCC")
@@ -83,18 +85,15 @@ def build_sapt_jk_cache(
 
     # External Potentials need to add to V_A and V_B
     if external_potentials:
-        # if external_potentials.get("C"):
-        #     ext_A = wfn_dimer.external_pot().computePotentialMatrix(wfn_A.basisset())
-        #     cache["V_A"].add(ext_A)
-        #     ext_B = wfn_dimer.external_pot().computePotentialMatrix(wfn_B.basisset())
-        #     cache["V_B"].add(ext_B)
         if external_potentials.get("A"):
-            print("A_ext")
             ext_A = wfn_A.external_pot().computePotentialMatrix(wfn_A.basisset())
+            # A_ext seems identicaly between runs...
+            # ext_A.print_out()
             cache["V_A"].add(ext_A)
         if external_potentials.get("B"):
-            print("B_ext")
             ext_B = wfn_B.external_pot().computePotentialMatrix(wfn_B.basisset())
+            # print("B_ext\n")
+            # ext_B.print_out()
             cache["V_B"].add(ext_B)
 
     # Anything else we might need
@@ -163,11 +162,25 @@ def electrostatics(cache, do_print=True):
         core.print_out("\n  ==> E10 Electostatics <== \n\n")
 
     # ELST
+    # print("V_A_mat")
+    # cache['V_A'].print_out()
+    # D_B_mat is different between fsapt and sapt(hf), so has to be from monomer B SCF
+    print("D_B_mat")
+    cache['D_B'].print_out()
+    # sum all V_A
+    v_A = cache["V_A"].np.sum()
+    print("sum_VA", v_A)
+    v_B = cache["V_B"].np.sum()
+    print("sum_VB", v_B)
     Elst10 = 0.0
     Elst10 += 2.0 * cache["D_A"].vector_dot(cache["V_B"])
+    print(f"Elst10: ", Elst10)
     Elst10 += 2.0 * cache["D_B"].vector_dot(cache["V_A"])
+    print(f"Elst10: ", Elst10)
     Elst10 += 4.0 * cache["D_B"].vector_dot(cache["J_A"])
+    print(f"Elst10: ", Elst10)
     Elst10 += cache["nuclear_repulsion_energy"]
+    print(f"Elst10: ", Elst10)
     print(f"Enuc_t:", cache["nuclear_repulsion_energy"])
 
     if do_print:

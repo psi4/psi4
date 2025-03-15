@@ -2267,7 +2267,13 @@ void FISAPT::elst() {
 
     double Elst10 = 0.0;
     double Elst10_sum = 0.0;
+    double V_A_sum = 0.0;
+    double V_B_sum = 0.0;
     std::vector<double> Elst10_terms;
+    // outfile->Printf("V_A_mat\n");
+    // V_A->print_out();
+    outfile->Printf("D_B_mat\n");
+    D_B->print_out();
     Elst10_terms.resize(4);
     Elst10_terms[0] += 2.0 * D_A->vector_dot(V_B);
     Elst10_sum += 2.0 * D_A->vector_dot(V_B);
