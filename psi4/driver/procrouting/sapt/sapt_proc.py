@@ -347,13 +347,16 @@ def run_sapt_dft(name, **kwargs):
 
         core.IO.set_default_namespace('monomerA')
         core.set_global_option("SAVE_JK", True)
-        if ext_pot_A:
-            kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_A])
+        if do_ext_potential and (ext_pot_A or ext_pot_C):
+            kwargs["external_potentials"] = {}
+            kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_C, ext_pot_A])
         wfn_A = scf_helper(sapt_dft_functional,
                            post_scf=False,
                            molecule=monomerA,
                            banner="SAPT(DFT): DFT Monomer A",
                            **kwargs)
+        if do_ext_potential and kwargs.get("external_potentials"):
+            kwargs.pop("external_potentials")
         data["DFT MONOMERA"] = core.variable("CURRENT ENERGY")
 
         core.set_global_option("DFT_GRAC_SHIFT", 0.0)
@@ -368,8 +371,9 @@ def run_sapt_dft(name, **kwargs):
 
         core.set_global_option("SAVE_JK", True)
         core.IO.set_default_namespace('monomerB')
-        if ext_pot_B:
-            kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_B])
+        if do_ext_potential and (ext_pot_B or ext_pot_C):
+            kwargs["external_potentials"] = {}
+            kwargs["external_potentials"]['C'] = construct_external_potential_in_field_C([ext_pot_C, ext_pot_B])
         wfn_B = scf_helper(sapt_dft_functional,
                            post_scf=False,
                            molecule=monomerB,
@@ -378,6 +382,14 @@ def run_sapt_dft(name, **kwargs):
                            **kwargs)
         data["DFT MONOMERB"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT): Monomer B DFT")
+        if do_ext_potential:
+            kwargs["external_potentials"] = {}
+        if ext_pot_C:
+            kwargs["external_potentials"]["C"] = ext_pot_C
+        if ext_pot_A:
+            kwargs["external_potentials"]["A"] = ext_pot_A
+        if ext_pot_B:
+            kwargs["external_potentials"]["B"] = ext_pot_B
     kwargs["external_potentials"] = {}
     if do_ext_potential:
         dimer_wfn.del_potential_variable("C")

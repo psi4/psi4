@@ -105,8 +105,8 @@ units angstrom
     "test_id, external_pot_keys, energy_method, expected_values, precision",
     [
         (
-            "abc", 
-            ["A", "B", "C"], 
+            "abc",
+            ["A", "B", "C"],
             "sapt(dft)",
             {
                 "Edisp": -0.002778631330469043,
@@ -116,11 +116,25 @@ units angstrom
                 "Enuc": 37.565065473343004,
                 "Etot": -0.04168577098741776,
             },
-            8
+            8,
         ),
         (
-            "ab", 
-            ["A", "B"], 
+            "abc",
+            ["A", "B", "C"],
+            "fisapt0",
+            {
+                "Edisp": -0.002778631330469043,
+                "Eelst": -0.04933182514082859,
+                "Eexch": 0.01826072035756901,
+                "Eind": -0.00783603487368914,
+                "Enuc": 37.565065473343004,
+                "Etot": -0.04168577098741776,
+            },
+            8,
+        ),
+        (
+            "ab",
+            ["A", "B"],
             "sapt(dft)",
             {
                 "Eexch": 0.018716989207357836,
@@ -130,11 +144,11 @@ units angstrom
                 "Enuc": 37.565065473343004,
                 "Etot": -0.041731050213812654,
             },
-            7
+            7,
         ),
         (
-            "a_sapt", 
-            ["A"], 
+            "a",
+            ["A"],
             "sapt(dft)",
             {
                 "Edisp": -0.002816214841039168,
@@ -144,11 +158,11 @@ units angstrom
                 "Enuc": 37.565065473343004,
                 "Etot": -0.019560736882275276,
             },
-            8
+            8,
         ),
         (
-            "b", 
-            ["B"], 
+            "b",
+            ["B"],
             "sapt(dft)",
             {
                 "Edisp": -0.0027835628235023946,
@@ -158,14 +172,30 @@ units angstrom
                 "Enuc": 37.565065473343004,
                 "Etot": -0.015063054240819385,
             },
-            7
+            7,
         ),
-    ]
+        (
+            "c",
+            ["C"],
+            "sapt(dft)",
+            {
+                "Edisp": -0.0027641749042896808,
+                "Eelst": -0.013585309461394246,
+                "Eexch": 0.01839802168509688,
+                "Eind": -0.004537242936115817,
+                "Enuc": 37.565065473343004,
+                "Etot": -0.002488705616702865,
+            },
+            8,
+        ),
+    ],
 )
-def test_sapthf_external_potential(test_id, external_pot_keys, energy_method, expected_values, precision):
+def test_sapthf_external_potential(
+    test_id, external_pot_keys, energy_method, expected_values, precision
+):
     """
     Parameterized test for SAPT with external potentials.
-    
+
     Parameters:
     -----------
     test_id : str
@@ -195,19 +225,23 @@ no_reorient
 no_com
         """
     )
-    
+
     # All potential definitions
     psi_bohr2angstroms = qcel.constants.bohr2angstroms
     all_external_potentials = {
         "A": [
             [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
-            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) / psi_bohr2angstroms],
+            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) /
+             psi_bohr2angstroms],
             [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
         ],
         "B": [
-            [0.417, np.array([-2.5628, -0.8269, -1.6696]) / psi_bohr2angstroms],
-            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) / psi_bohr2angstroms],
-            [0.417, np.array([-1.8988, -0.4993, -0.3072]) / psi_bohr2angstroms],
+            [0.417, np.array([-2.5628, -0.8269, -1.6696]) /
+             psi_bohr2angstroms],
+            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) /
+             psi_bohr2angstroms],
+            [0.417, np.array([-1.8988, -0.4993, -0.3072]) /
+             psi_bohr2angstroms],
         ],
         "C": [
             [0.417, np.array([1.1270, 1.5527, -0.1658]) / psi_bohr2angstroms],
@@ -215,11 +249,14 @@ no_com
             [0.417, np.array([2.6619, 1.7546, -0.2910]) / psi_bohr2angstroms],
         ],
     }
-    
+
     # Select only the potentials needed for this test
-    external_potentials = {key: all_external_potentials[key] for key in external_pot_keys}
-    
+    external_potentials = {
+        key: all_external_potentials[key] for key in external_pot_keys
+    }
+
     # Set common options
+    psi4.set_num_threads(22)
     psi4.set_options(
         {
             "basis": "jun-cc-pvdz",
@@ -230,20 +267,21 @@ no_com
             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
         }
     )
-    
+
     # Run the energy calculation
     psi4.energy(
         energy_method,
         external_potentials=external_potentials,
         molecule=mol,
     )
-    
+
     # Print reference values
     print(f"TEST ID: {test_id}")
     print("REF:")
     import pprint
+
     pprint.pprint(expected_values)
-    
+
     # Collect calculated values
     key_labels = [
         ["Eexch", "SAPT EXCH ENERGY"],
@@ -254,11 +292,11 @@ no_com
     ]
     calculated_energies = {k1: psi4.core.variable(k2) for k1, k2 in key_labels}
     calculated_energies["Enuc"] = mol.nuclear_repulsion_energy()
-    
+
     # Print calculated values
     print("CALC:")
     pprint.pprint(calculated_energies)
-    
+
     # Compare values
     for k1, k2 in key_labels:
         compare_values(
@@ -267,7 +305,7 @@ no_com
             precision,
             k1,
         )
-    
+
     # Also check nuclear repulsion energy
     compare_values(
         expected_values["Enuc"],
@@ -275,21 +313,228 @@ no_com
         precision,
         "Enuc",
     )
-    
+
     return
 
+
+@pytest.mark.extern
+@pytest.mark.saptdft
+@pytest.mark.parametrize(
+    "test_id, external_pot_keys, energy_method, expected_values, precision",
+    [
+        (
+            "abc",
+            ["A", "B", "C"],
+            "sapt(dft)",
+            {
+                "Edisp": -0.003105020840469903,
+                "Eelst": -0.05485637384834476,
+                "Eexch": 0.022141622326732443,
+                "Eind": -0.03732613647232103,
+                "Enuc": 37.565065473343004,
+                "Etot": -0.07314590883440325,
+            },
+            8,
+        ),
+        (
+            "ab",
+            ["A", "B"],
+            "sapt(dft)",
+            {
+                "Edisp": -0.0031050208406997095,
+                "Eelst": -0.05485637384835187,
+                "Eexch": 0.022141622326732446,
+                "Eind": -0.03706239374340593,
+                "Enuc": 37.565065473343004,
+                "Etot": -0.07288216610572505,
+            },
+            8,
+        ),
+        (
+            "a",
+            ["A"],
+            "sapt(dft)",
+            {
+                "Edisp": -0.0029979837566503067,
+                "Eelst": -0.03385529718834235,
+                "Eexch": 0.020514018719301412,
+                "Eind": -0.02328247939937266,
+                "Enuc": 37.565065473343004,
+                "Etot": -0.039621741625063905,
+            },
+            8,
+        ),
+        (
+            "b",
+            ["B"],
+            "sapt(dft)",
+            {
+                "Edisp": -0.0031027703861807657,
+                "Eelst": -0.02717604760657366,
+                "Eexch": 0.021879704952873415,
+                "Eind": -0.01787393525825983,
+                "Enuc": 37.565065473343004,
+                "Etot": -0.026273048298140842,
+            },
+            8,
+        ),
+        (
+            "c",
+            ["C"],
+            "sapt(dft)",
+            {
+                "Edisp": -0.003035986247876737,
+                "Eelst": -0.013872053127581552,
+                "Eexch": 0.021170116363204136,
+                "Eind": -0.004613609990380219,
+                "Enuc": 37.565065473343004,
+                "Etot": -0.0003515330026343717,
+            },
+            8,
+        ),
+    ],
+)
+def test_saptdft_external_potential(
+    test_id, external_pot_keys, energy_method, expected_values, precision
+):
+    """
+    Parameterized test for SAPT with external potentials.
+
+    Parameters:
+    -----------
+    test_id : str
+        Identifier for the test case
+    external_pot_keys : list
+        List of keys from the full external_potentials dict to include in this test
+    energy_method : str
+        Energy method to use (sapt(dft) or fisapt0)
+    expected_values : dict
+        Expected energy values to compare against
+    precision : int
+        Decimal precision for comparison
+    """
+    # Define the molecule geometry (common to all tests)
+    mol = psi4.geometry(
+        """
+0 1
+H 0.0290 -1.1199 -1.5243
+O 0.9481 -1.3990 -1.3587
+H 1.4371 -0.5588 -1.3099
+--
+H 1.0088 -1.5240 0.5086
+O 1.0209 -1.1732 1.4270
+H 1.5864 -0.3901 1.3101
+symmetry c1
+no_reorient
+no_com
+        """
+    )
+
+    # All potential definitions
+    psi_bohr2angstroms = qcel.constants.bohr2angstroms
+    all_external_potentials = {
+        "A": [
+            [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
+            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) /
+             psi_bohr2angstroms],
+            [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
+        ],
+        "B": [
+            [0.417, np.array([-2.5628, -0.8269, -1.6696]) /
+             psi_bohr2angstroms],
+            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) /
+             psi_bohr2angstroms],
+            [0.417, np.array([-1.8988, -0.4993, -0.3072]) /
+             psi_bohr2angstroms],
+        ],
+        "C": [
+            [0.417, np.array([1.1270, 1.5527, -0.1658]) / psi_bohr2angstroms],
+            [-0.834, np.array([1.9896, 1.0738, -0.1673]) / psi_bohr2angstroms],
+            [0.417, np.array([2.6619, 1.7546, -0.2910]) / psi_bohr2angstroms],
+        ],
+    }
+
+    # Select only the potentials needed for this test
+    external_potentials = {
+        key: all_external_potentials[key] for key in external_pot_keys
+    }
+
+    # Set common options
+    psi4.set_num_threads(22)
+    psi4.set_options(
+        {
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+            "SAPT_DFT_FUNCTIONAL": "pbe0",
+            "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
+            "sapt_dft_grac_shift_a": 0.1307,
+            "sapt_dft_grac_shift_b": 0.1307,
+        }
+    )
+
+    # Run the energy calculation
+    psi4.energy(
+        energy_method,
+        external_potentials=external_potentials,
+        molecule=mol,
+    )
+
+    # Print reference values
+    print(f"TEST ID: {test_id}")
+    print("REF:")
+    import pprint
+
+    pprint.pprint(expected_values)
+
+    # Collect calculated values
+    key_labels = [
+        ["Eexch", "SAPT EXCH ENERGY"],
+        ["Edisp", "SAPT DISP ENERGY"],
+        ["Eelst", "SAPT ELST ENERGY"],
+        ["Eind", "SAPT IND ENERGY"],
+        ["Etot", "SAPT TOTAL ENERGY"],
+    ]
+    calculated_energies = {k1: psi4.core.variable(k2) for k1, k2 in key_labels}
+    calculated_energies["Enuc"] = mol.nuclear_repulsion_energy()
+
+    # Print calculated values
+    print("CALC:")
+    pprint.pprint(calculated_energies)
+
+    # Compare values
+    for k1, k2 in key_labels:
+        compare_values(
+            expected_values[k1],
+            calculated_energies[k1],
+            precision,
+            k1,
+        )
+
+    # Also check nuclear repulsion energy
+    compare_values(
+        expected_values["Enuc"],
+        calculated_energies["Enuc"],
+        precision,
+        "Enuc",
+    )
+
+    return
+
+
 if __name__ == "__main__":
-    test_sapthf_external_potential(
-        "abc", 
-        ["A", "B", "C"], 
+    test_saptdft_external_potential(
+        "abc",
+        ["C"],
         "sapt(dft)",
         {
-            "Edisp": -0.002778631330469043,
-            "Eelst": -0.04933182514082859,
-            "Eexch": 0.01826072035756901,
-            "Eind": -0.00783603487368914,
+            "Edisp": 0.00020091540995190323,
+            "Eelst": -0.050126189408437515,
+            "Eexch": 0.02698624267799001,
+            "Eind": -0.027862231777914692,
             "Enuc": 37.565065473343004,
-            "Etot": -0.04168577098741776,
+            "Etot": -0.05080126309841029,
         },
         8,
     )
