@@ -159,9 +159,6 @@ GTAGS
 GPATH
 GRTAGS
 Pipfile.lock
-<<<<<<< HEAD
 fsapt
-=======
->>>>>>> master
 pytest_output.dat
 pytest_output.log

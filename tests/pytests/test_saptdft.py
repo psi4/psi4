@@ -256,7 +256,6 @@ no_com
     }
 
     # Set common options
-    psi4.set_num_threads(22)
     psi4.set_options(
         {
             "basis": "jun-cc-pvdz",
@@ -460,7 +459,6 @@ no_com
     }
 
     # Set common options
-    psi4.set_num_threads(22)
     psi4.set_options(
         {
             "basis": "jun-cc-pvdz",
