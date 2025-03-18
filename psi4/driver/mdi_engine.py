@@ -103,7 +103,7 @@ class MDIEngine():
         self.nlattice = 0  # number of lattice point charges
         self.clattice = []  # list of lattice coordinates
         self.lattice = []  # list of lattice charges
-        self.lattice_field = psi4.QMMMbohr()  # Psi4 chargefield
+        self.lattice_field = psi4.core.ExternalPotential()  # Psi4 chargefield
 
         # MPI variables
         self.mpi_world = None
