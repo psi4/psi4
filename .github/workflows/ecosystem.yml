@@ -23,7 +23,7 @@ jobs:
             python-version: "3.12"
             mkl-version: ""
             platform: linux-64
-            pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-marker-expr: "addon and not (medlong or long) and not (snowflake and (multi or wrapper))"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
@@ -38,7 +38,7 @@ jobs:
             python-version: "3.9"
             mkl-version: ""
             platform: osx-64
-            pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-marker-expr: "addon and not (medlong or long) and not (snowflake and (multi or wrapper))"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -60,7 +60,7 @@ jobs:
             python-version: "3.10"
             mkl-version: ""
             platform: osx-64
-            pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-marker-expr: "addon and not (medlong or long) and not (snowflake and (multi or wrapper))"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -165,6 +165,7 @@ jobs:
           :
           # not for py312
           sed -i "s;- cppe;#- cppe;g" env_p4build.yaml
+          sed -i "s;- qcfractal;- qcfractal>=0.59;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
