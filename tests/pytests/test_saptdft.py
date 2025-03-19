@@ -258,6 +258,8 @@ no_com
     # Set common options
     psi4.set_options(
         {
+            "e_convergence": 1e-8,
+            "d_convergence": 1e-8,
             "basis": "jun-cc-pvdz",
             "scf_type": "df",
             "guess": "sad",
@@ -461,6 +463,8 @@ no_com
     # Set common options
     psi4.set_options(
         {
+            "e_convergence": 1e-8,
+            "d_convergence": 1e-8,
             "basis": "jun-cc-pvdz",
             "scf_type": "df",
             "guess": "sad",
