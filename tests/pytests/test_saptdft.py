@@ -328,12 +328,12 @@ no_com
             ["A", "B", "C"],
             "sapt(dft)",
             {
-                "Edisp": -0.003105020840469903,
-                "Eelst": -0.05485637384834476,
-                "Eexch": 0.022141622326732443,
-                "Eind": -0.03732613647232103,
+                "Edisp": -0.0030693649240918575,
+                "Eelst": -0.04826201906029539,
+                "Eexch": 0.021079055937265008,
+                "Eind": -0.03707409031613845,
                 "Enuc": 37.565065473343004,
-                "Etot": -0.07314590883440325,
+                "Etot": -0.0673264183632607,
             },
             8,
         ),
@@ -342,12 +342,12 @@ no_com
             ["A", "B"],
             "sapt(dft)",
             {
-                "Edisp": -0.0031050208406997095,
-                "Eelst": -0.05485637384835187,
-                "Eexch": 0.022141622326732446,
-                "Eind": -0.03706239374340593,
+                "Edisp": -0.003104673709893406,
+                "Eelst": -0.048898650090975625,
+                "Eexch": 0.021726964968606006,
+                "Eind": -0.036753394978655915,
                 "Enuc": 37.565065473343004,
-                "Etot": -0.07288216610572505,
+                "Etot": -0.06702975381091894,
             },
             8,
         ),
@@ -356,12 +356,12 @@ no_com
             ["A"],
             "sapt(dft)",
             {
-                "Edisp": -0.0029979837566503067,
-                "Eelst": -0.03385529718834235,
-                "Eexch": 0.020514018719301412,
-                "Eind": -0.02328247939937266,
+                "Edisp": -0.0031075463855700478,
+                "Eelst": -0.028802617979504674,
+                "Eexch": 0.02197564074312773,
+                "Eind": -0.02299208442241478,
                 "Enuc": 37.565065473343004,
-                "Etot": -0.039621741625063905,
+                "Etot": -0.032926608044361774,
             },
             8,
         ),
@@ -370,12 +370,12 @@ no_com
             ["B"],
             "sapt(dft)",
             {
-                "Edisp": -0.0031027703861807657,
-                "Eelst": -0.02717604760657366,
-                "Eexch": 0.021879704952873415,
-                "Eind": -0.01787393525825983,
+                "Edisp": -0.003124390140185924,
+                "Eelst": -0.027251596619528584,
+                "Eexch": 0.02246610724478254,
+                "Eind": -0.017826066755037367,
                 "Enuc": 37.565065473343004,
-                "Etot": -0.026273048298140842,
+                "Etot": -0.025735946269969334,
             },
             8,
         ),
@@ -384,12 +384,12 @@ no_com
             ["C"],
             "sapt(dft)",
             {
-                "Edisp": -0.003035986247876737,
-                "Eelst": -0.013872053127581552,
-                "Eexch": 0.021170116363204136,
-                "Eind": -0.004613609990380219,
+                "Edisp": -0.003035986247790965,
+                "Eelst": -0.013872053118092253,
+                "Eexch": 0.02117011636321129,
+                "Eind": -0.004613609990417991,
                 "Enuc": 37.565065473343004,
-                "Etot": -0.0003515330026343717,
+                "Etot": -0.0003515329930899192,
             },
             8,
         ),
@@ -525,18 +525,126 @@ no_com
     return
 
 
+@pytest.mark.extern
+@pytest.mark.saptdft
+def test_fisapt0_sapthf_external_potential():
+    mol = psi4.geometry(
+        """
+0 1
+H 0.0290 -1.1199 -1.5243
+O 0.9481 -1.3990 -1.3587
+H 1.4371 -0.5588 -1.3099
+--
+H 1.0088 -1.5240 0.5086
+O 1.0209 -1.1732 1.4270
+H 1.5864 -0.3901 1.3101
+symmetry c1
+no_reorient
+no_com
+        """
+    )
+    # All potential definitions
+    psi_bohr2angstroms = qcel.constants.bohr2angstroms
+    external_potentials = {
+        "A": [
+            [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
+            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) /
+             psi_bohr2angstroms],
+            [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
+        ],
+        "B": [
+            [0.417, np.array([-2.5628, -0.8269, -1.6696]) /
+             psi_bohr2angstroms],
+            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) /
+             psi_bohr2angstroms],
+            [0.417, np.array([-1.8988, -0.4993, -0.3072]) /
+             psi_bohr2angstroms],
+        ],
+        "C": [
+            [0.417, np.array([1.1270, 1.5527, -0.1658]) / psi_bohr2angstroms],
+            [-0.834, np.array([1.9896, 1.0738, -0.1673]) / psi_bohr2angstroms],
+            [0.417, np.array([2.6619, 1.7546, -0.2910]) / psi_bohr2angstroms],
+        ],
+    }
+
+    # Set common options
+    psi4.set_options(
+        {
+            "e_convergence": 1e-8,
+            "d_convergence": 1e-8,
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+            "SAPT_DFT_FUNCTIONAL": "hf",
+            "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
+        }
+    )
+
+    # Run the FISAPT0 energy calculation
+    psi4.energy(
+        "fisapt0",
+        external_potentials=external_potentials,
+        molecule=mol,
+    )
+
+    # Collect calculated values
+    key_labels = [
+        ["Eexch", "SAPT EXCH ENERGY"],
+        ["Edisp", "SAPT DISP ENERGY"],
+        ["Eelst", "SAPT ELST ENERGY"],
+        ["Eind", "SAPT IND ENERGY"],
+        ["Etot", "SAPT TOTAL ENERGY"],
+    ]
+    calculated_fisapt0_energies = {k1: psi4.core.variable(k2) for k1, k2 in key_labels}
+    calculated_fisapt0_energies["Enuc"] = mol.nuclear_repulsion_energy()
+
+    # Run the SAPT(HF) energy calculation
+    psi4.energy(
+        "sapt(dft)",
+        external_potentials=external_potentials,
+        molecule=mol,
+    )
+
+    calculated_sapthf_energies = {k1: psi4.core.variable(k2) for k1, k2 in key_labels}
+    calculated_sapthf_energies["Enuc"] = mol.nuclear_repulsion_energy()
+
+    print("FISAPT0:")
+    pp(calculated_fisapt0_energies)
+    print("SAPT(HF):")
+    pp(calculated_sapthf_energies)
+
+    # Compare values
+    for k1, k2 in key_labels:
+        compare_values(
+            calculated_fisapt0_energies[k1],
+            calculated_sapthf_energies[k1],
+            8,
+            k1,
+        )
+
+    # Also check nuclear repulsion energy
+    compare_values(
+        calculated_fisapt0_energies["Enuc"],
+        calculated_sapthf_energies["Enuc"],
+        8,
+        "Enuc",
+    )
+
+
 if __name__ == "__main__":
     test_saptdft_external_potential(
-        "abc",
+        "c",
         ["C"],
         "sapt(dft)",
         {
-            "Edisp": 0.00020091540995190323,
-            "Eelst": -0.050126189408437515,
-            "Eexch": 0.02698624267799001,
-            "Eind": -0.027862231777914692,
+            "Edisp": -0.003035986247790965,
+            "Eelst": -0.013872053118092253,
+            "Eexch": 0.02117011636321129,
+            "Eind": -0.004613609990417991,
             "Enuc": 37.565065473343004,
-            "Etot": -0.05080126309841029,
+            "Etot": -0.0003515329930899192,
         },
         8,
     )
+    test_fisapt0_sapthf_external_potential()
