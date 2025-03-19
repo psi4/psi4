@@ -135,7 +135,7 @@ else()
 endif()
 
 if(${ENABLE_Einsums})
-    find_package(Einsums 0.5 CONFIG REQUIRED)
+    find_package(Einsums 0.6 CONFIG REQUIRED)
     get_property(_loc TARGET Einsums::einsums PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using Einsums${ColourReset}: ${_loc} (version ${Einsums_VERSION})")
@@ -265,6 +265,7 @@ if(MSVC)
       _CRT_NONSTDC_NO_DEPRECATE
       _CRT_NONSTDC_NO_WARNINGS
       _CRT_SECURE_NO_WARNINGS
+      _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
       )
     # Set the exception handling model
     add_compile_options("/EHsc")
