@@ -127,10 +127,13 @@ def print_sapt_dft_summary(data, name, do_dft=True, short=False):
     ret += "  " + "-" * 105 + "\n"
 
     # Elst
-    ret += print_sapt_var("Electrostatics", data["Elst10,r"]) + "\n"
+    extern_extern_IE = data.get('extern_extern_IE', 0)
+    ret += print_sapt_var("Electrostatics", data["Elst10,r"] + extern_extern_IE) + "\n"
     ret += print_sapt_var("  Elst1,r", data["Elst10,r"]) + "\n"
+    if extern_extern_IE != 0:
+        ret += print_sapt_var("  Elst (extern-extern)", data["extern_extern_IE"]) + "\n"
     ret += "\n"
-    core.set_variable("SAPT ELST ENERGY", data["Elst10,r"])
+    core.set_variable("SAPT ELST ENERGY", data["Elst10,r"] + extern_extern_IE)
 
     # Exchange
     ret += print_sapt_var("Exchange", data["Exch10"]) + "\n"
@@ -180,7 +183,7 @@ def print_sapt_dft_summary(data, name, do_dft=True, short=False):
         core.set_variable("SAPT DISP ENERGY", disp)
     
     # Total energy
-    total = data["Elst10,r"] + data["Exch10"] + ind + disp
+    total = data["Elst10,r"] + extern_extern_IE + data["Exch10"] + ind + disp
     ret += print_sapt_var("Total %-17s" % name, total, start_spacer="    ") + "\n"
     core.set_variable("SAPT(DFT) TOTAL ENERGY", total)
     core.set_variable("SAPT TOTAL ENERGY", total)
