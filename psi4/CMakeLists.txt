@@ -265,6 +265,7 @@ if(MSVC)
       _CRT_NONSTDC_NO_DEPRECATE
       _CRT_NONSTDC_NO_WARNINGS
       _CRT_SECURE_NO_WARNINGS
+      _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
       )
     # Set the exception handling model
     add_compile_options("/EHsc")
