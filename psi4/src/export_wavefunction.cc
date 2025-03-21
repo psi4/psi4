@@ -344,6 +344,8 @@ void export_wavefunction(py::module& m) {
                       "Do reset the occupation after the guess to the inital occupation.")
         .def_property("sad_", &scf::HF::sad, &scf::HF::set_sad,
                       "Do assume a non-idempotent density matrix and no orbitals after the guess.")
+        .def("set_permanent_potential", &scf::HF::set_permanent_potential,
+             "Sets an arbitrary permanent 1e potential matrix to add to the core Hamiltonian.")
         .def("set_sad_basissets", &scf::HF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
         .def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.")

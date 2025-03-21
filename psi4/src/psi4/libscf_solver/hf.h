@@ -66,6 +66,8 @@ class HF : public Wavefunction {
     /// List of external potentials to add to Fock matrix and updated at every iteration
     /// e.g. PCM potential
     std::vector<SharedMatrix> external_potentials_;
+    /// A permanent 1e potential matrix to add to the core Hamiltonian
+    SharedMatrix Vperm_;
 
     /// Map of external potentials/perturbations to add to the CPSCF two-electron contribution
     /// e.g. PCM or PE potential
@@ -436,6 +438,9 @@ class HF : public Wavefunction {
     }
     void clear_external_cpscf_perturbations() { external_cpscf_perturbations_.clear(); }
     void compute_fvpi();
+
+    // Permanent potential
+    void set_permanent_potential(SharedMatrix Vperm) { Vperm_ = Vperm; }
 };
 }  // namespace scf
 }  // namespace psi
