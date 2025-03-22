@@ -1512,3 +1512,35 @@ data:
         //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
       cmake_note: "Primarily OTF runtime detected."
 
+  - project: openorbitaloptimizer
+    use:
+      added: 1.10
+      required: false  # true?
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: SusiLehtola
+      name: OpenOrbitalOptimizer
+      #commit: 6a8f4bf
+    cmake: null
+    conda: null
+
+  - project: armadillo
+    use:
+      added: 1.10
+      required: false
+      required_note: for OOO later this block will be incorparated into its deps
+      buildable: false
+      buildtime: true
+      cms: false
+      test_required: false
+    repository: null
+    cmake: null
+    conda:
+      channel: conda-forge
+      name: armadillo
+      constraint: null
+      cmake: null
+
