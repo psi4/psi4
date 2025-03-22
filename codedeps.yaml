@@ -1526,21 +1526,27 @@ data:
       #commit: 6a8f4bf
     cmake: null
     conda: null
-
-  - project: armadillo
-    use:
-      added: 1.10
-      required: false
-      required_note: for OOO later this block will be incorparated into its deps
-      buildable: false
-      buildtime: true
-      cms: false
-      test_required: false
-    repository: null
-    cmake: null
-    conda:
       channel: conda-forge
-      name: armadillo
+      name: armadillo  # obviously conflated
       constraint: null
-      cmake: null
+      cmake:
+        ENABLE_OpenOrbitalOptimizer: true
+        OpenOrbitalOptimizer_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/OpenOrbitalOptimizer
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/OpenOrbitalOptimizer
+        //CMAKE_INSIST_FIND_PACKAGE_OpenOrbitalOptimizer: true
+        //CMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer: true
+
+  #- project: armadillo
+  #  use:
+  #    added: 1.10
+  #    required: false
+  #    required_note: for OOO later this block will be incorparated into its deps
+  #    buildable: false
+  #    buildtime: true
+  #    cms: false
+  #    test_required: false
+  #  repository: null
+  #  cmake: null
+  #  conda:
 
