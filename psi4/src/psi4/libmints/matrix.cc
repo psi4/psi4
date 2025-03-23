@@ -401,15 +401,15 @@ void Matrix::copy(const Matrix &cp) { copy(&cp); }
 
 void Matrix::copy(const SharedMatrix &cp) { copy(cp.get()); }
 
-// produces an Eigen::Map object mapping to the matrix data buffer 
-// of a matrix with a single irrep 
+// produces an Eigen::Map object mapping to the matrix data buffer
+// of a matrix with a single irrep
 Eigen::Map<Eigen::MatrixXd> Matrix::eigen_map() {
-    // this function only works with matrices with a single irrep 
+    // this function only works with matrices with a single irrep
     if (nirrep() != 1) {
         std::string message = "Matrix::eigen_map() called, but matrix only has one irrep! ";
-        message += "Use Matrix::eigen_maps() instead."; 
-        
-        throw PSIEXCEPTION(message); 
+        message += "Use Matrix::eigen_maps() instead.";
+
+        throw PSIEXCEPTION(message);
     }
 
     // create Eigen matrix "map" using Psi4 matrix data array directly
@@ -421,22 +421,41 @@ Eigen::Map<Eigen::MatrixXd> Matrix::eigen_map() {
 }
 
 // produces Eigen::Maps object mapping to the matrix data buffer
-// of a matrix with multiple irreps 
+// of a matrix with multiple irreps
 // NOTE: this impl for mapping Psi4 matrices to Eigen maps
-// is currently experimental, as it is unused in the code 
+// is currently experimental, as it is unused in the code
 // currently
 std::vector<Eigen::Map<Eigen::MatrixXd>> Matrix::eigen_maps() {
     std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps;
     eigen_maps.reserve(nirrep());
 
-    // create Eigen matrix "map"s for each irrep, 
+    // create Eigen matrix "map"s for each irrep,
     // using Psi4 matrix data array directly
     for (int h = 0; h != nirrep(); ++h) {
         eigen_maps.emplace_back(get_pointer(h), rowdim(h), coldim(h));
-    } 
-    
+    }
+
     return eigen_maps;
 }
+
+#ifdef USING_OpenOrbitalOptimizer
+  arma::mat Matrix::to_armadillo_matrix(int h) {
+    int nc = coldim(h);
+    int nr = rowdim(h);
+    arma::mat m(nr, nc);
+    for(int ir=0;ir<nr;ir++)
+      for(int ic=0;ic<nc;ic++)
+        m(ir,ic) = get(h,ir,ic);
+    return m;
+  }
+  void from_armadillo_matrix(const arma::mat & m, int h) {
+    int nc = coldim(h);
+    int nr = rowdim(h);
+    for(int ir=0;ir<nr;ir++)
+      for(int ic=0;ic<nc;ic++)
+        set(h,ir,ic,m(ir,ic));
+  }
+#endif
 
 void Matrix::alloc() {
     if (matrix_) release();
@@ -2053,7 +2072,7 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot, 
         // Perform decomposition. Since the matrix is symmetric, row vs column major ordering makes no difference.
         int rank;
         int err = C_DPSTRF(upper ? 'U' : 'L', rowspi_[h], matrix_[h][0], rowspi_[h], pivot[h].data(), &rank, tol, work.data());
-        
+
         nchol[h] = rank;
 
         // Fix pivots, Fortran to C
