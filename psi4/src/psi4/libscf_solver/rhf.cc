@@ -48,12 +48,18 @@
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/pointgrp.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
+
+#ifdef USING_OpenOrbitalOptimizer
+#include <openorbitaloptimizer/scfsolver.hpp>
+#endif
 
 #include "rhf.h"
 
@@ -1040,6 +1046,176 @@ void RHF::setup_potential() {
     } else {
         potential_ = nullptr;
     }
+}
+
+void RHF::openorbital_scf() {
+#ifndef USING_OpenOrbitalOptimizer
+  throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build!\n");
+#else
+  std::function<OpenOrbitalOptimizer::FockBuilderReturn<double, double>(const OpenOrbitalOptimizer::DensityMatrix<double, double> &)> fock_builder = [&](const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm) {
+    // Grab the orbitals and occupations
+    std::vector<arma::mat> orbitals = dm.first;
+    std::vector<arma::vec> occupations = dm.second;
+    assert(orbitals.size() == nirrep_);
+    assert(occupations.size() == nirrep_);
+
+    // Throw away zero occupations and calculate size of the matrix
+    Dimension nmopi(nirrep_);
+    for(int h=0; h<nirrep_; h++) {
+      if(nsopi_[h]==0) {
+        nmopi[h]=0;
+        continue;
+      }
+      arma::uvec idx(arma::find(occupations[h]!=0.0));
+      orbitals[h] = orbitals[h].cols(idx);
+      occupations[h] = occupations[h](idx);
+      nmopi[h] = idx.n_elem;
+      // This interface can't handle negative occupations
+      if(idx.n_elem>0 and arma::min(occupations[h])<0.0) {
+          throw PSIEXCEPTION("Negative orbital occupations not supported in Psi4 interface!\n");
+      }
+    }
+
+    // Form the dummy orbitals for the jk object
+    auto Cdummy = std::make_shared<Matrix>("Dummy orbitals", nsopi_, nmopi);
+    for(int h=0;h<nirrep_;h++) {
+      if(nmopi[h]==0)
+        // Skip case of nothing to do
+        continue;
+      // Get the block of X
+      const arma::mat Xblock(X_->pointer(h)[0], X_->rowdim(h), X_->coldim(h), false, true);
+      arma::mat Cblock(Cdummy->pointer(h)[0], Cdummy->rowdim(h), Cdummy->coldim(h), false, true);
+      printf("h=%i: Xblock is %i x %i, orbitals is %i x %i, occupations is %i\n",h,Xblock.n_rows,Xblock.n_cols,orbitals[h].n_rows,orbitals[h].n_cols,occupations[h].n_elem); fflush(stdout);
+      Cblock = Xblock*orbitals[h]*arma::diagmat(arma::sqrt(occupations[h]));
+    }
+
+    std::vector<SharedMatrix>& jkC = jk_->C_left();
+    jkC.clear();
+    jkC.push_back(Cdummy);
+    jk_->compute();
+    const std::vector<SharedMatrix>& Jvec = jk_->J();
+    const std::vector<SharedMatrix>& Kvec = jk_->K();
+    const std::vector<SharedMatrix>& wKvec = jk_->wK();
+
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
+
+#ifdef USING_BrianQC
+    if (brianEnable and brianEnableDFT) {
+      // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+      alpha = 1.0;
+      beta = 1.0;
+    }
+#endif
+
+    // Build the Fock matrix and components of the total energy in each block
+    std::vector<arma::mat> fock(nirrep_);
+    double Ecore=0.0, Ecoul=0.0, Eexch=0.0;
+    for(int h=0;h<nirrep_;h++) {
+      if(nsopi_[h]==0)
+        // Skip case of nothing to do
+        continue;
+      const arma::mat Xblock(X_->pointer(h)[0], X_->rowdim(h), X_->coldim(h), false, true);
+      const arma::mat J_AO(Jvec[0]->pointer(h)[0], Jvec[0]->rowdim(h), Jvec[0]->coldim(h), false, true);
+      const arma::mat coreH(H_->pointer(h)[0], H_->rowdim(h), H_->coldim(h), false, true);
+      const arma::mat Cblock(Cdummy->pointer(h)[0], Cdummy->rowdim(h), Cdummy->coldim(h), false, true);
+      arma::mat K_AO(Kvec[0]->pointer(h)[0], Kvec[0]->rowdim(h), Kvec[0]->coldim(h));
+
+      if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
+        K_AO *= -alpha;
+      } else {
+        K_AO.zeros();
+      }
+
+      if (functional_->is_x_lrc()) {
+        const arma::mat wK_AO(wKvec[0]->pointer(h)[0], wKvec[0]->rowdim(h), wKvec[0]->coldim(h), false, true);
+        if (jk_->get_wcombine()) {
+          K_AO -= wK_AO;
+        } else {
+          K_AO -= beta*wK_AO;
+        }
+      }
+
+      // Minus sign in K has already been taken into account above
+      fock[h] = Xblock.t()*(coreH+J_AO+0.5*K_AO)*Xblock;
+
+      arma::mat P_AO(Cblock*Cblock.t());
+      Ecore += arma::trace(P_AO*coreH);
+      Ecoul += 0.5*arma::trace(J_AO*P_AO);
+      Eexch += 0.25*arma::trace(K_AO*P_AO);
+    }
+    double Etot = Ecore+Ecoul+Eexch+nuclearrep_;
+    printf("Enucrep = %.6f\nEcore = %.6f\nEcoul = %.6f\nEexch = %.6f\n",nuclearrep_,Ecore,Ecoul,Eexch);
+
+    return std::make_pair(Etot,fock);
+  };
+
+  arma::uword nirrep(nirrep_);
+  // Only one particle type, which has nirrep blocks
+  arma::uvec number_of_blocks_per_particle_type({nirrep});
+  // Orbitals in each nirrep block have maximal occupation 2
+  arma::vec maximum_occupation(nirrep,arma::fill::value(2.0));
+  // Number of electrons is na+nb
+  arma::vec number_of_particles({(double) (nalpha_+nbeta_)});
+
+  // Descriptions of the blocks: character table
+  std::vector<std::string> block_descriptions(nirrep);
+  CharacterTable ct = molecule_->point_group()->char_table();
+  for(int h=0; h<nirrep_; h++)
+    block_descriptions[h] = ct.gamma(h).symbol();
+
+  double E_tol = options_.get_double("E_CONVERGENCE");
+
+  // Get the orbital guess
+  std::vector<arma::mat> orbitals(nirrep);
+  std::vector<arma::vec> occupations(nirrep);
+  for(int h=0;h<nirrep_;h++) {
+    printf("irrep %i nalphapi=%i nsopi=%i\n",h,nalphapi_[h],nsopi_[h]);
+    if(nsopi_[h]==0)
+      continue;
+
+    const arma::mat Xblock(X_->pointer(h)[0], X_->rowdim(h), X_->coldim(h), false, true);
+    const arma::mat Sblock(S_->pointer(h)[0], S_->rowdim(h), S_->coldim(h), false, true);
+    const arma::mat Cblock(Ca_->pointer(h)[0], Ca_->rowdim(h), Ca_->coldim(h), false, true);
+
+    printf("irrep %i\n",h);
+    arma::mat Smo(Cblock.t()*Sblock*Cblock);
+    Smo.print("Smo");
+
+    if(Cblock.n_cols) {
+      orbitals[h] = Xblock.t()*Sblock*Cblock;
+      occupations[h].zeros(Cblock.n_cols);
+      if(nalphapi_[h]>0)
+        occupations[h].subvec(0,nalphapi_[h]-1).ones();
+      occupations[h] *= 2;
+    }
+    Xblock.print("X");
+    Sblock.print("S");
+    Cblock.print("C");
+    orbitals[h].print("orbitals");
+    occupations[h].t().print("occupations");
+  };
+
+  OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);
+  scfsolver.verbosity(5);  // mod
+  scfsolver.convergence_threshold(E_tol);  // mod
+  scfsolver.initialize_with_orbitals(orbitals, occupations);
+  scfsolver.run();
+
+  // Update the orbitals with OOO's solution
+  auto solution = scfsolver.get_solution();
+  orbitals = solution.first;
+  for(int h=0;h<nirrep_;h++) {
+    if(nsopi_[h]==0)
+      continue;
+    const arma::mat Xblock(X_->pointer(h)[0], X_->rowdim(h), X_->coldim(h), false, true);
+    const arma::mat Sblock(S_->pointer(h)[0], S_->rowdim(h), S_->coldim(h), false, true);
+    arma::mat Cblock(Ca_->pointer(h)[0], Ca_->rowdim(h), Ca_->coldim(h), false, true);
+
+    Cblock = Xblock*orbitals[h];
+  };
+
+#endif
 }
 
 }  // namespace scf
