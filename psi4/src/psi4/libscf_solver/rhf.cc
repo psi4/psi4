@@ -1211,8 +1211,8 @@ void RHF::openorbital_scf() {
     const arma::mat Xblock(X_->to_armadillo_matrix(h));
     const arma::mat Sblock(S_->to_armadillo_matrix(h));
     arma::mat Cblock(Xblock*orbitals[h]);
-    Ca_->from_armadillo_matrix(Cblock,h));
-  };
+    Ca_->from_armadillo_matrix(Cblock,h);
+  }
 
 #endif
 }
