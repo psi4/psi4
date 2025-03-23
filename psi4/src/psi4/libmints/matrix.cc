@@ -439,7 +439,7 @@ std::vector<Eigen::Map<Eigen::MatrixXd>> Matrix::eigen_maps() {
 }
 
 #ifdef USING_OpenOrbitalOptimizer
-  arma::mat Matrix::to_armadillo_matrix(int h) {
+arma::mat Matrix::to_armadillo_matrix(int h) {
     int nc = coldim(h);
     int nr = rowdim(h);
     arma::mat m(nr, nc);
@@ -447,14 +447,15 @@ std::vector<Eigen::Map<Eigen::MatrixXd>> Matrix::eigen_maps() {
       for(int ic=0;ic<nc;ic++)
         m(ir,ic) = get(h,ir,ic);
     return m;
-  }
-  void from_armadillo_matrix(const arma::mat & m, int h) {
+}
+
+void Matrix::from_armadillo_matrix(const arma::mat & m, int h) {
     int nc = coldim(h);
     int nr = rowdim(h);
     for(int ir=0;ir<nr;ir++)
       for(int ic=0;ic<nc;ic++)
         set(h,ir,ic,m(ir,ic));
-  }
+}
 #endif
 
 void Matrix::alloc() {
