@@ -278,9 +278,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
     ooo_scf = core.get_global_option('OOO_SCF')
     if ooo_scf:
-        # Calling OpenOrbitalOptimizer to do the SCF for us.
-        self.guess()
-        if (self.iteration_ == 0) and self.sad_:
+        # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
+        if self.sad_ and self.iteration_ <= 0:
+            self.form_G()
+            self.form_initial_F()
             self.form_initial_C()
             self.reset_occupation()
             self.find_occupation()
