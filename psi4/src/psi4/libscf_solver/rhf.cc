@@ -1108,6 +1108,29 @@ void RHF::openorbital_scf() {
     }
 #endif
 
+    std::vector<arma::mat> Vxc(nirrep_);
+    if (functional_->needs_xc()) {
+      auto Pdummy = std::make_shared<Matrix>("Dummy orbitals", nsopi_, nsopi_);
+      for(int h=0;h<nirrep_;h++) {
+        if(nmopi[h]==0)
+          // Skip case of nothing to do
+          continue;
+        // Get the block of X
+        const arma::mat Xblock(X_->to_armadillo_matrix(h));
+        arma::mat Cblock = Xblock*orbitals[h]*arma::diagmat(arma::sqrt(occupations[h]));
+        Pdummy->from_armadillo_matrix(Cblock*Cblock.t(),h);
+      }
+
+      potential_->set_D({Pdummy});
+      potential_->compute_V({Va_});
+      for(int h=0;h<nirrep_;h++) {
+        if(nsopi_[h]==0)
+          // Skip case of nothing to do
+          continue;
+        Vxc[h] = Va_->to_armadillo_matrix(h);
+      }
+    }
+
     // Build the Fock matrix and components of the total energy in each block
     std::vector<arma::mat> fock(nirrep_);
     double Ecore=0.0, Ecoul=0.0, Eexch=0.0;
@@ -1137,7 +1160,11 @@ void RHF::openorbital_scf() {
       }
 
       // Minus sign in K has already been taken into account above
-      fock[h] = Xblock.t()*(coreH+J_AO+0.5*K_AO)*Xblock;
+      if (functional_->needs_xc()) {
+        fock[h] = Xblock.t()*(coreH+J_AO+0.5*K_AO+Vxc[h])*Xblock;
+      } else {
+        fock[h] = Xblock.t()*(coreH+J_AO+0.5*K_AO)*Xblock;
+      }
 
       arma::mat P_AO(Cblock*Cblock.t());
       Ecore += arma::trace(P_AO*coreH);
