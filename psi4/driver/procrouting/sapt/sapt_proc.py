@@ -87,8 +87,8 @@ def run_sapt_dft(name, **kwargs):
         sapt_dimer = ref_wfn.molecule()
 
     if do_mon_grac_shift_A or do_mon_grac_shift_B:
-        monA = sapt_dimer.extract_subsets(1)
-        monB = sapt_dimer.extract_subsets(2)
+        monA_grac = sapt_dimer.extract_subsets(1)
+        monB_grac = sapt_dimer.extract_subsets(2)
 
     sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(
         sapt_dimer, "dimer"
@@ -137,7 +137,7 @@ def run_sapt_dft(name, **kwargs):
     if do_mon_grac_shift_A:
         core.print_out("     GRAC (Monomer A)\n")
         compute_GRAC_shift(
-            monA,
+            monA_grac,
             core.get_option("SAPT", "SAPT_DFT_GRAC_CONVERGENCE_TIER"),
             "Monomer A",
         )
@@ -145,7 +145,7 @@ def run_sapt_dft(name, **kwargs):
     if do_mon_grac_shift_B:
         core.print_out("     GRAC (Monomer B)\n")
         compute_GRAC_shift(
-            monB,
+            monB_grac,
             core.get_option("SAPT", "SAPT_DFT_GRAC_CONVERGENCE_TIER"),
             "Monomer B",
         )
@@ -371,48 +371,49 @@ def run_sapt_dft(name, **kwargs):
     return dimer_wfn
 
 
-def sapt_dft_grac_convergence_tier_options():
-    return {
-        "SINGLE": [
-            {
-                "SCF_INITIAL_ACCELERATOR": "ADIIS",
-            }
-        ],
-        "ITERATIVE": [
-            {
-                "SCF_INITIAL_ACCELERATOR": "ADIIS",
-            },
-            {
-                "LEVEL_SHIFT": 0.01,
-                "LEVEL_SHIFT_CUTOFF": 0.01,
-                "SCF_INITIAL_ACCELERATOR": "ADIIS",
-                "MAXITER": 200,
-            },
-            {
-                "LEVEL_SHIFT": 0.02,
-                "LEVEL_SHIFT_CUTOFF": 0.02,
-                "SCF_INITIAL_ACCELERATOR": "ADIIS",
-                "MAXITER": 200,
-            },
-        ],
-    }
+sapt_dft_grac_convergence_tier_options = {
+    "SINGLE": [
+        {
+            "SCF_INITIAL_ACCELERATOR": "ADIIS",
+        }
+    ],
+    "ITERATIVE": [
+        {
+            "SCF_INITIAL_ACCELERATOR": "ADIIS",
+        },
+        {
+            "LEVEL_SHIFT": 0.01,
+            "LEVEL_SHIFT_CUTOFF": 0.01,
+            "SCF_INITIAL_ACCELERATOR": "ADIIS",
+            "MAXITER": 200,
+        },
+        {
+            "LEVEL_SHIFT": 0.02,
+            "LEVEL_SHIFT_CUTOFF": 0.02,
+            "SCF_INITIAL_ACCELERATOR": "ADIIS",
+            "MAXITER": 200,
+        },
+    ],
+}
 
 
-def compute_GRAC_shift(
-    molecule, sapt_dft_grac_convergence_tier="SINGLE", label="Monomer A"
-):
+def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier="SINGLE", label="Monomer A"):
     optstash = p4util.OptionsState(
         ["SCF_TYPE"],
         ["SCF", "REFERENCE"],
         ["SCF", "DFT_GRAC_SHIFT"],
         ["SCF", "SAVE_JK"],
+        ["SCF", "MAXITER"],
+        ["LEVEL_SHIFT"],
+        ["LEVEL_SHIFT_CUTOFF"],
+        ["SCF_INITIAL_ACCELERATOR"],
     )
 
     dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
     scf_reference = core.get_option("SCF", "REFERENCE")
 
     print(f"Computing GRAC shift for {label} using {sapt_dft_grac_convergence_tier}...")
-    grac_options = sapt_dft_grac_convergence_tier_options()[
+    grac_options = sapt_dft_grac_convergence_tier_options[
         sapt_dft_grac_convergence_tier.upper()
     ]
     print(f"{grac_options = }")
