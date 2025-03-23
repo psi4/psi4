@@ -9,6 +9,13 @@ pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 @pytest.mark.saptdft
 def test_saptdft_auto_grac():
+    """
+    For SAPT(DFT), one must compute a GRAC shift for each monomer. Ideally,
+    this GRAC shift should be close to the experimental Ionization Potential
+    (IP) of the monomer. While the present test targets STO-3G, the IP for
+    water is 0.1307. Note that using aug-cc-pVDZ, the computed GRAC shift is
+    0.13063798506967816, which is close to the experimental value.
+    """
     mol_dimer = psi4.geometry(
         """
 0 1
@@ -33,19 +40,13 @@ units angstrom
     )
     psi4.energy("SAPT(DFT)", molecule=mol_dimer)
     compare_values(
-        #  STO-3G target
         0.19807358,
-        # aug-cc-pvdz target, 0.1307 (using experimental IP from CCCBDB)
-        # 0.13053068183319516,
         psi4.core.variable("SAPT_DFT_GRAC_SHIFT_A"),
         8,
         "SAPT_DFT_GRAC_SHIFT_A",
     )
     compare_values(
-        #  STO-3G target
         0.19830016,
-        # aug-cc-pvdz target, 0.1307 (using experimental IP from CCCBDB)
-        # 0.13063798506967816,
         psi4.core.variable("SAPT_DFT_GRAC_SHIFT_B"),
         8,
         "SAPT_DFT_GRAC_SHIFT_B",
@@ -55,6 +56,13 @@ units angstrom
 
 @pytest.mark.saptdft
 def test_saptdft_auto_grac_iterative():
+    """
+    For SAPT(DFT), one must compute a GRAC shift for each monomer. Ideally,
+    this GRAC shift should be close to the experimental Ionization Potential
+    (IP) of the monomer. While the present test targets STO-3G, the IP for
+    water is 0.1307. Note that using aug-cc-pVDZ, the computed GRAC shift is
+    0.13063798506967816, which is close to the experimental value.
+    """
     mol_dimer = psi4.geometry(
         """
 -1 1
@@ -79,14 +87,12 @@ units angstrom
     )
     psi4.energy("SAPT(DFT)", molecule=mol_dimer)
     compare_values(
-        #  STO-3G target
         0.3258340368,
         psi4.core.variable("SAPT_DFT_GRAC_SHIFT_A"),
         8,
         "SAPT_DFT_GRAC_SHIFT_A",
     )
     compare_values(
-        #  STO-3G target
         0.19830016,
         psi4.core.variable("SAPT_DFT_GRAC_SHIFT_B"),
         8,
