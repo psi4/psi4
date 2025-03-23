@@ -286,6 +286,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.reset_occupation()
             self.find_occupation()
         self.openorbital_scf()
+        self.set_energies("Total Energy", self.compute_E())
         return
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
