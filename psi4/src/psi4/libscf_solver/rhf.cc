@@ -1214,6 +1214,12 @@ void RHF::openorbital_scf() {
     Ca_->from_armadillo_matrix(Cblock,h);
   }
 
+  // Form the density matrix
+  form_D();
+  // Form the two-electron part
+  form_G();
+  // Compute the energy
+  compute_E();
 #endif
 }
 
