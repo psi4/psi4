@@ -1117,7 +1117,8 @@ void RHF::openorbital_scf() {
         // Get the block of X
         const arma::mat Xblock(X_->to_armadillo_matrix(h));
         arma::mat Cblock = Xblock*orbitals[h]*arma::diagmat(arma::sqrt(occupations[h]));
-        Pdummy->from_armadillo_matrix(Cblock*Cblock.t(),h);
+        // Psi4 expects density matrices without the factor 2
+        Pdummy->from_armadillo_matrix(0.5*Cblock*Cblock.t(),h);
       }
 
       potential_->set_D({Pdummy});
