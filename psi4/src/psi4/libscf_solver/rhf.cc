@@ -1083,10 +1083,10 @@ void RHF::openorbital_scf() {
         // Skip case of nothing to do
         continue;
       // Get the block of X
-      const arma::mat Xblock(X_->pointer(h)[0], X_->rowdim(h), X_->coldim(h), false, true);
-      arma::mat Cblock(Cdummy->pointer(h)[0], Cdummy->rowdim(h), Cdummy->coldim(h), false, true);
+      const arma::mat Xblock(X_->to_armadillo_matrix(h));
       printf("h=%i: Xblock is %i x %i, orbitals is %i x %i, occupations is %i\n",h,Xblock.n_rows,Xblock.n_cols,orbitals[h].n_rows,orbitals[h].n_cols,occupations[h].n_elem); fflush(stdout);
-      Cblock = Xblock*orbitals[h]*arma::diagmat(arma::sqrt(occupations[h]));
+      arma::mat Cblock = Xblock*orbitals[h]*arma::diagmat(arma::sqrt(occupations[h]));
+      Cdummy->from_armadillo_matrix(Cblock,h);
     }
 
     std::vector<SharedMatrix>& jkC = jk_->C_left();
@@ -1115,11 +1115,11 @@ void RHF::openorbital_scf() {
       if(nsopi_[h]==0)
         // Skip case of nothing to do
         continue;
-      const arma::mat Xblock(X_->pointer(h)[0], X_->rowdim(h), X_->coldim(h), false, true);
-      const arma::mat J_AO(Jvec[0]->pointer(h)[0], Jvec[0]->rowdim(h), Jvec[0]->coldim(h), false, true);
-      const arma::mat coreH(H_->pointer(h)[0], H_->rowdim(h), H_->coldim(h), false, true);
-      const arma::mat Cblock(Cdummy->pointer(h)[0], Cdummy->rowdim(h), Cdummy->coldim(h), false, true);
-      arma::mat K_AO(Kvec[0]->pointer(h)[0], Kvec[0]->rowdim(h), Kvec[0]->coldim(h));
+      const arma::mat Xblock(X_->to_armadillo_matrix(h));
+      const arma::mat J_AO(Jvec[0]->to_armadillo_matrix(h));
+      const arma::mat coreH(H_->to_armadillo_matrix(h));
+      const arma::mat Cblock(Cdummy->to_armadillo_matrix(h));
+      arma::mat K_AO(Kvec[0]->to_armadillo_matrix(h));
 
       if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
         K_AO *= -alpha;
@@ -1128,7 +1128,7 @@ void RHF::openorbital_scf() {
       }
 
       if (functional_->is_x_lrc()) {
-        const arma::mat wK_AO(wKvec[0]->pointer(h)[0], wKvec[0]->rowdim(h), wKvec[0]->coldim(h), false, true);
+        const arma::mat wK_AO(wKvec[0]->to_armadillo_matrix(h));
         if (jk_->get_wcombine()) {
           K_AO -= wK_AO;
         } else {
@@ -1174,9 +1174,9 @@ void RHF::openorbital_scf() {
     if(nsopi_[h]==0)
       continue;
 
-    const arma::mat Xblock(X_->pointer(h)[0], X_->rowdim(h), X_->coldim(h), false, true);
-    const arma::mat Sblock(S_->pointer(h)[0], S_->rowdim(h), S_->coldim(h), false, true);
-    const arma::mat Cblock(Ca_->pointer(h)[0], Ca_->rowdim(h), Ca_->coldim(h), false, true);
+    auto Xblock(X_->to_armadillo_matrix(h));
+    auto Sblock(S_->to_armadillo_matrix(h));
+    auto Cblock(Ca_->to_armadillo_matrix(h));
 
     printf("irrep %i\n",h);
     arma::mat Smo(Cblock.t()*Sblock*Cblock);
@@ -1208,11 +1208,10 @@ void RHF::openorbital_scf() {
   for(int h=0;h<nirrep_;h++) {
     if(nsopi_[h]==0)
       continue;
-    const arma::mat Xblock(X_->pointer(h)[0], X_->rowdim(h), X_->coldim(h), false, true);
-    const arma::mat Sblock(S_->pointer(h)[0], S_->rowdim(h), S_->coldim(h), false, true);
-    arma::mat Cblock(Ca_->pointer(h)[0], Ca_->rowdim(h), Ca_->coldim(h), false, true);
-
-    Cblock = Xblock*orbitals[h];
+    const arma::mat Xblock(X_->to_armadillo_matrix(h));
+    const arma::mat Sblock(S_->to_armadillo_matrix(h));
+    arma::mat Cblock(Xblock*orbitals[h]);
+    Ca_->from_armadillo_matrix(Cblock,h));
   };
 
 #endif

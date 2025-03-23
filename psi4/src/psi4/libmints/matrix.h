@@ -278,6 +278,12 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// returns an Eigen::Map object to the underlying matrix data buffer
     Eigen::Map<Eigen::MatrixXd> eigen_map();
     std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps();
+#ifdef USING_OpenOrbitalOptimizer
+    /// Returns an Armadillo matrix
+    arma::mat to_armadillo_matrix(int h=0);
+    /// Copies data from an Armadillo matrix
+    void from_armadillo_matrix(const arma::mat & m, int h=0);
+#endif
 
     /**
     ** For a matrix of 3D vectors (ncol==3), rotate a set of points around an
