@@ -1084,7 +1084,6 @@ void RHF::openorbital_scf() {
         continue;
       // Get the block of X
       const arma::mat Xblock(X_->to_armadillo_matrix(h));
-      printf("h=%i: Xblock is %i x %i, orbitals is %i x %i, occupations is %i\n",h,Xblock.n_rows,Xblock.n_cols,orbitals[h].n_rows,orbitals[h].n_cols,occupations[h].n_elem); fflush(stdout);
       arma::mat Cblock = Xblock*orbitals[h]*arma::diagmat(arma::sqrt(occupations[h]));
       Cdummy->from_armadillo_matrix(Cblock,h);
     }
@@ -1142,12 +1141,12 @@ void RHF::openorbital_scf() {
       const arma::mat J_AO(Jvec[0]->to_armadillo_matrix(h));
       const arma::mat coreH(H_->to_armadillo_matrix(h));
       const arma::mat Cblock(Cdummy->to_armadillo_matrix(h));
-      arma::mat K_AO(Kvec[0]->to_armadillo_matrix(h));
+      arma::mat K_AO;
 
       if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
-        K_AO *= -alpha;
+        K_AO = -alpha*(Kvec[0]->to_armadillo_matrix(h));
       } else {
-        K_AO.zeros();
+        K_AO.zeros(coreH.n_rows, coreH.n_cols);
       }
 
       if (functional_->is_x_lrc()) {
@@ -1171,8 +1170,15 @@ void RHF::openorbital_scf() {
       Ecoul += 0.5*arma::trace(J_AO*P_AO);
       Eexch += 0.25*arma::trace(K_AO*P_AO);
     }
-    double Etot = Ecore+Ecoul+Eexch+nuclearrep_;
-    printf("Enucrep = %.6f\nEcore = %.6f\nEcoul = %.6f\nEexch = %.6f\n",nuclearrep_,Ecore,Ecoul,Eexch);
+    double XC_E = 0.0;
+    double VV10_E = 0.0;
+    if (functional_->needs_xc()) {
+        XC_E = potential_->quadrature_values()["FUNCTIONAL"];
+    }
+    if (functional_->needs_vv10()) {
+        VV10_E = potential_->quadrature_values()["VV10"];
+    }
+    double Etot = Ecore+Ecoul+Eexch+nuclearrep_+XC_E+VV10_E;
 
     return std::make_pair(Etot,fock);
   };
@@ -1197,7 +1203,6 @@ void RHF::openorbital_scf() {
   std::vector<arma::mat> orbitals(nirrep);
   std::vector<arma::vec> occupations(nirrep);
   for(int h=0;h<nirrep_;h++) {
-    printf("irrep %i nalphapi=%i nsopi=%i\n",h,nalphapi_[h],nsopi_[h]);
     if(nsopi_[h]==0)
       continue;
 
@@ -1205,9 +1210,16 @@ void RHF::openorbital_scf() {
     auto Sblock(S_->to_armadillo_matrix(h));
     auto Cblock(Ca_->to_armadillo_matrix(h));
 
-    printf("irrep %i\n",h);
     arma::mat Smo(Cblock.t()*Sblock*Cblock);
-    Smo.print("Smo");
+    Smo -= arma::eye<arma::mat>(Smo.n_rows,Smo.n_cols);
+    double orth_error = arma::norm(Smo, "fro");
+    if(orth_error >= 1e-10) {
+      Smo.print("orbital orthonormality error\n");
+      fflush(stdout);
+      std::ostringstream oss;
+      oss << "Orbitals fed to openorbital_scf are not orthonormal: orthonormality error " << orth_error << "!\n";
+      throw std::logic_error(oss.str());
+    }
 
     if(Cblock.n_cols) {
       orbitals[h] = Xblock.t()*Sblock*Cblock;
@@ -1216,11 +1228,6 @@ void RHF::openorbital_scf() {
         occupations[h].subvec(0,nalphapi_[h]-1).ones();
       occupations[h] *= 2;
     }
-    Xblock.print("X");
-    Sblock.print("S");
-    Cblock.print("C");
-    orbitals[h].print("orbitals");
-    occupations[h].t().print("occupations");
   };
 
   OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);
@@ -1232,6 +1239,7 @@ void RHF::openorbital_scf() {
   // Update the orbitals with OOO's solution
   auto solution = scfsolver.get_solution();
   orbitals = solution.first;
+  occupations = solution.second;
   for(int h=0;h<nirrep_;h++) {
     if(nsopi_[h]==0)
       continue;
@@ -1239,6 +1247,14 @@ void RHF::openorbital_scf() {
     const arma::mat Sblock(S_->to_armadillo_matrix(h));
     arma::mat Cblock(Xblock*orbitals[h]);
     Ca_->from_armadillo_matrix(Cblock,h);
+
+    // We hope that the occupations are integer...
+    arma::uvec nonzero(arma::find(occupations[h]>0.0));
+    double diff(arma::norm(occupations[h](nonzero)-2*arma::ones<arma::vec>(nonzero.n_elem),2));
+    if(diff!=0.0) {
+      fprintf(stderr,"Non-integer occupations in symmetry block %i\n",h);
+    }
+    nalphapi_[h] = (int) nonzero.n_elem;
   }
 
   // Form the density matrix
