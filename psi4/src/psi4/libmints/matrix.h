@@ -37,6 +37,9 @@
 #include "dimension.h"
 
 #include <eigen3/Eigen/Core>
+#ifdef USING_OpenOrbitalOptimizer
+#include <armadillo>
+#endif
 
 namespace psi {
 
