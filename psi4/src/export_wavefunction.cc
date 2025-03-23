@@ -398,7 +398,8 @@ void export_wavefunction(py::module& m) {
         .def("frac_renormalize", &scf::HF::frac_renormalize, "docstring")
         .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
         .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.")
-        .def("print_stability_analysis", &scf::HF::print_stability_analysis, "docstring");
+        .def("print_stability_analysis", &scf::HF::print_stability_analysis, "docstring")
+        .def("openorbital_scf", &scf::HF::openorbital_scf, "Runs the SCF with OpenOrbitalOptimizer");
 
     /// HF Functions
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")

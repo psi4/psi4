@@ -276,6 +276,16 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
+    ooo_scf = core.get_global_option('OOO_SCF')
+    if ooo_scf:
+        # Calling OpenOrbitalOptimizer to do the SCF for us.
+        self.guess()
+        if (self.iteration_ == 0) and self.sad_:
+            self.form_initial_C()
+            self.reset_occupation()
+            self.find_occupation()
+        self.openorbital_scf()
+        return
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = False

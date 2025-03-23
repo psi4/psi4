@@ -73,6 +73,8 @@ class RHF : public HF {
     double compute_E() override;
     void finalize() override;
 
+    void openorbital_scf() override;
+  
     void damping_update(double) override;
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
     bool stability_analysis() override;
