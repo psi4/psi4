@@ -1109,7 +1109,7 @@ void RHF::openorbital_scf() {
 
     std::vector<arma::mat> Vxc(nirrep_);
     if (functional_->needs_xc()) {
-      auto Pdummy = std::make_shared<Matrix>("Dummy orbitals", nsopi_, nsopi_);
+      auto Pdummy = std::make_shared<Matrix>("Dummy density", nsopi_, nsopi_);
       for(int h=0;h<nirrep_;h++) {
         if(nmopi[h]==0)
           // Skip case of nothing to do
