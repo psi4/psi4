@@ -1281,7 +1281,7 @@ void UHF::openorbital_scf() {
       idx=(arma::find(occupations[hd]!=0.0));
       orbitals[hd] = orbitals[hd].cols(idx);
       occupations[hd] = occupations[hd](idx);
-      nbmopi[hd] = idx.n_elem;
+      nbmopi[h] = idx.n_elem;
       // This interface can't handle negative occupations
       if(idx.n_elem>0 and arma::min(occupations[hd])<0.0) {
           throw PSIEXCEPTION("Negative orbital occupations not supported in Psi4 interface!\n");
@@ -1339,10 +1339,10 @@ void UHF::openorbital_scf() {
           // Skip case of nothing to do
           continue;
         // Get the block of X
-        const arma::mat Xblock(X_->to_armadillo_matrix(h));
-        arma::mat Cablock = Xblock*orbitals[h]*arma::diagmat(arma::sqrt(occupations[h]));
+        arma::mat Cablock = Cadummy->to_armadillo_matrix(h);
         Padummy->from_armadillo_matrix(Cablock*Cablock.t(),h);
       }
+
       auto Pbdummy = std::make_shared<Matrix>("Dummy beta density", nsopi_, nsopi_);
       for(int h=0;h<nirrep_;h++) {
         if(nbmopi[h]==0)
@@ -1351,7 +1351,7 @@ void UHF::openorbital_scf() {
         // Get the block of X
         const arma::mat Xblock(X_->to_armadillo_matrix(h));
         int hd=h+nirrep_;
-        arma::mat Cbblock = Xblock*orbitals[hd]*arma::diagmat(arma::sqrt(occupations[hd]));
+        arma::mat Cbblock = Cbdummy->to_armadillo_matrix(h);
         Pbdummy->from_armadillo_matrix(Cbblock*Cbblock.t(),h);
       }
 
@@ -1373,6 +1373,7 @@ void UHF::openorbital_scf() {
       if(nsopi_[h]==0)
         // Skip case of nothing to do
         continue;
+
       const arma::mat Xblock(X_->to_armadillo_matrix(h));
       arma::mat J_AO(Jvec[0]->to_armadillo_matrix(h));
       J_AO += Jvec[1]->to_armadillo_matrix(h);
@@ -1405,11 +1406,11 @@ void UHF::openorbital_scf() {
       // Minus sign in K has already been taken into account above
       int hb=h+nirrep_;
       if (functional_->needs_xc()) {
-        fock[h] = Xblock.t()*(coreH+J_AO+0.5*Ka_AO+Vxca[h])*Xblock;
-        fock[hb] = Xblock.t()*(coreH+J_AO+0.5*Kb_AO+Vxcb[h])*Xblock;
+        fock[h] = Xblock.t()*(coreH+J_AO+Ka_AO+Vxca[h])*Xblock;
+        fock[hb] = Xblock.t()*(coreH+J_AO+Kb_AO+Vxcb[h])*Xblock;
       } else {
-        fock[h] = Xblock.t()*(coreH+J_AO+0.5*Ka_AO)*Xblock;
-        fock[hb] = Xblock.t()*(coreH+J_AO+0.5*Kb_AO)*Xblock;
+        fock[h] = Xblock.t()*(coreH+J_AO+Ka_AO)*Xblock;
+        fock[hb] = Xblock.t()*(coreH+J_AO+Kb_AO)*Xblock;
       }
 
       arma::mat Pa_AO(Cablock*Cablock.t());
@@ -1417,7 +1418,7 @@ void UHF::openorbital_scf() {
       arma::mat P_AO(Pa_AO+Pb_AO);
       Ecore += arma::trace(P_AO*coreH);
       Ecoul += 0.5*arma::trace(J_AO*P_AO);
-      Eexch += 0.5*arma::trace(Ka_AO*Pa_AO) + arma::trace(Kb_AO*Pb_AO);
+      Eexch += 0.5*(arma::trace(Ka_AO*Pa_AO) + arma::trace(Kb_AO*Pb_AO));
     }
     double XC_E = 0.0;
     double VV10_E = 0.0;
