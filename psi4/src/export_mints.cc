@@ -88,7 +88,7 @@ using namespace pybind11::literals;
  * @param forced_puream Force puream or not
  **/
 std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<Molecule>& mol, py::dict& pybs,
-                                                         const int forced_puream) {
+                                                         const int forced_puream, bool skip_ghost_ecps = true) {
     std::string key = pybs["key"].cast<std::string>();
     std::string name = pybs["name"].cast<std::string>();
     std::string label = pybs["blend"].cast<std::string>();
@@ -154,6 +154,17 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
             std::string atomlabel = atominfo[0].cast<std::string>();
             std::string hash = atominfo[1].cast<std::string>();
             int ncore = atominfo[2].cast<int>();
+            bool addecpforatom = true;
+            // We do NOT want to load ECPs when atom is GHOST!
+            //
+            // The atom loop always goes over all atoms in a geometry,
+            // also for SAD guess, when the 'mol' object contains only one atom.
+            // In such case loop index 'atom' goes beyond the scope of atoms list in the 'mol' object.
+            // Therefore, calling 'mol->Z(atom)' in such case raises an error and the program crashes.
+            if (skip_ghost_ecps and !(mol->Z(atom) > 0)) {
+                // We should be here only when it is not SAD and it is GHOST
+                addecpforatom = false;
+            }
             for (int atomshells = 3; atomshells < py::len(atominfo); ++atomshells) {
                 // Each shell entry has p primitives that look like
                 // [ angmom, [ [ e1, c1, r1 ], [ e2, c2, r2 ], ...., [ ep, cp, rp ] ] ]
@@ -169,10 +180,14 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
                     coefficients.push_back(primitiveinfo[1].cast<double>());
                     ns.push_back(primitiveinfo[2].cast<int>());
                 }
-                vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, ns));
+                if (addecpforatom) {
+                    vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, ns));
+                }
             }
             basis_atom_ncore[name][atomlabel] = ncore;
-            basis_atom_ecpshell[name][atomlabel] = vec_shellinfo;
+            if (addecpforatom) {
+                basis_atom_ecpshell[name][atomlabel] = vec_shellinfo;
+            }
             totalncore += ncore;
         }
     }
@@ -1236,7 +1251,8 @@ void export_mints(py::module& m) {
         .def("max_function_per_shell", &BasisSet::max_function_per_shell,
              "The max number of basis functions in a shell")
         .def("max_nprimitive", &BasisSet::max_nprimitive, "The max number of primitives in a shell")
-        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring")
+        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring",
+                    py::arg("mol"), py::arg("pybs"), py::arg("forced_puream"), py::arg("skip_ghost_ecps")=true)
         .def("compute_phi", [](BasisSet& basis, double x, double y, double z) {
             auto phi_ao = new std::vector<double>(basis.nbf());
             auto capsule = py::capsule(phi_ao, [](void *phi_ao) { delete reinterpret_cast<std::vector<double>*>(phi_ao); });
