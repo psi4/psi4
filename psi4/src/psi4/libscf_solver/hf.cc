@@ -100,6 +100,7 @@ void HF::common_init() {
     reset_occ_ = false;
     sad_ = false;
     module_ = "scf";
+    frac_performed_ = false;
 
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
