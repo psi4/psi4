@@ -1114,9 +1114,7 @@ void RHF::openorbital_scf() {
         if(nmopi[h]==0)
           // Skip case of nothing to do
           continue;
-        // Get the block of X
-        const arma::mat Xblock(X_->to_armadillo_matrix(h));
-        arma::mat Cblock = Xblock*orbitals[h]*arma::diagmat(arma::sqrt(occupations[h]));
+        arma::mat Cblock = Cdummy->to_armadillo_matrix(h);
         // Psi4 expects density matrices without the factor 2
         Pdummy->from_armadillo_matrix(0.5*Cblock*Cblock.t(),h);
       }
