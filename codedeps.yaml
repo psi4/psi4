@@ -403,7 +403,7 @@ data:
         linux-64: "=*=*mkl"
         osx-64: "=*=*mkl"
         osx-arm64: "=*=*accelerate"
-        win-64: "=*=*mkl"
+        win-64: "=*=24*mkl"
       aux_build_names:
         - blas-devel
       aux_build_names_note:
@@ -944,7 +944,7 @@ data:
       host: gitlab
       account: libxc
       name: libxc
-      commit: 6.2.2
+      commit: 7.0.0
     #cmake:
     #  name: Libxc
     #  constraint: 6.1.0
@@ -1134,7 +1134,8 @@ data:
     conda:
       channel: conda-forge
       name: i-pi
-      constraint: null
+      constraint: "==3.1.0"
+      constraint_note: "Higher requires ASE be installed."
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
 
@@ -1427,6 +1428,9 @@ data:
       aux_build_names:
         - range-v3
         - zlib
+        - hdf5=1.14.3
+      aux_build_names_note:
+        "hdf5=1.14.3": "Temporary while 1.14.4 not setting HDF5_VERSION."
       skip_win: true
       cmake:
         ENABLE_Einsums: true
@@ -1475,6 +1479,10 @@ data:
       constraint: null
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
+      aux_build_names:
+        - hdf5=1.14.3
+      aux_build_names_note:
+        "hdf5=1.14.3": "Temporary for Einsums while 1.14.4 not setting HDF5_VERSION."
       skip_win: true
 
   - project: pandas

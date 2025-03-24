@@ -77,7 +77,7 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
-              -D CMAKE_CXX_FLAGS="-IC:\Users\runneradmin\miniconda3\envs\p4build\opt\compiler\include"
+              -D CMAKE_CXX_FLAGS="-IC:\Miniconda\envs\p4build\opt\compiler\include"
 
             # Notes:
             # * When not using cache file, need to additionally specify the following:
@@ -165,6 +165,7 @@ jobs:
           :
           # not for py312
           sed -i "s;- cppe;#- cppe;g" env_p4build.yaml
+          sed -i "s;- qcfractal;- qcfractal>=0.59;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
@@ -197,15 +198,14 @@ jobs:
         show-channel-urls: true
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
-        miniforge-variant: Mambaforge
-        use-mamba: true
         add-pip-as-python-dependency: true
         channels: conda-forge
+        conda-remove-defaults: true
 
     - name: Buildtime Conda environment
       run: |
-        mamba info
-        mamba list
+        conda info
+        conda list
 
     - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
@@ -229,12 +229,7 @@ jobs:
           ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4
-      run: |
-        if [[ "${{ runner.os }}" == "Linux" ]]; then
-          # limit to avoid GHA OOM errors in libmints
-          export CMAKE_BUILD_PARALLEL_LEVEL=2
-        fi
-        cmake --build objdir --config Release --target install
+      run: cmake --build objdir --config Release --target install
 
     - name: Linked dependencies, ldd (L)
       if: runner.os == 'Linux'
@@ -268,8 +263,8 @@ jobs:
 
     - name: Runtime Conda environment
       run: |
-        mamba info
-        mamba list
+        conda info
+        conda list
         if [[ "${{ runner.os }}" != "Windows" ]]; then
           # on Windows, cmd varies: `qcengine.exe`
           qcengine info
@@ -292,9 +287,14 @@ jobs:
       working-directory: ./objdir
       run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows 
 
+      # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
+    - name: Test Addons with Pytest (geomeTRIC)
+      working-directory: ./objdir
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n 2 -m "geometric" stage/lib/psi4/tests/
+
     - name: Test Addons with Pytest
       working-directory: ./objdir
-      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }}" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }} and not geometric" stage/lib/psi4/tests/
 
     - name: Write user Conda environment files
       run: |

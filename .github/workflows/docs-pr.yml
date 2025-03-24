@@ -60,14 +60,13 @@ jobs:
       if: ${{ github.repository == 'psi4/psi4' }}
       uses: conda-incubator/setup-miniconda@v3
       with:
-        miniforge-variant: Mambaforge
-        use-mamba: true
         activate-environment: p4docs
         add-pip-as-python-dependency: true
         auto-activate-base: false
         channels: conda-forge
         environment-file: env_p4docs.yaml
         show-channel-urls: true
+        conda-remove-defaults: true
 
     - name: Environment Information
       if: ${{ github.repository == 'psi4/psi4' }}
@@ -102,7 +101,7 @@ jobs:
     - name: Compile Psi4
       if: ${{ github.repository == 'psi4/psi4' }}
       working-directory: ./code
-      run: CMAKE_BUILD_PARALLEL_LEVEL=1 cmake --build objdir
+      run: cmake --build objdir
 
     - name: Compile & Pack Docs
       if: ${{ github.repository == 'psi4/psi4' }}
