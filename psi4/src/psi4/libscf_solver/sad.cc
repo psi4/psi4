@@ -493,7 +493,6 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
         atomic_Ehu[uniA] = std::make_shared<Vector>("Atomic Huckel E", nhu);
 
         if (SAD_use_fitting(options_)) {
-            printf("ASDF %s\n", options_.get_str("ORBITAL_OPTIMIZER_PACKAGE").c_str());
             if (options_.get_str("ORBITAL_OPTIMIZER_PACKAGE") == "OPENORBITALOPTIMIZER") {
                 get_uhf_atomic_density_ooo(atomic_bases_[index], atomic_fit_bases_[index], occ_a, occ_b, atomic_D[uniA],
                                            atomic_Chu[uniA], atomic_Ehu[uniA]);
@@ -849,7 +848,6 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
     int natom = mol->natom();
     int nbf = bas->nbf();
     int Z = bas->molecule()->Z(0);  // used by ooo
-    printf("ASDF made it %d\n", Z);
 
     if (occ_a->dim() > nbf || occ_b->dim() > nbf) throw PSIEXCEPTION("Atom has more electrons than basis functions.");
 
