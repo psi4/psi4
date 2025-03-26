@@ -1197,6 +1197,7 @@ void RHF::openorbital_scf() {
     block_descriptions[h] = ct.gamma(h).symbol();
 
   double E_tol = options_.get_double("E_CONVERGENCE");
+  int maxvecs = options_.get_double("DIIS_MAX_VECS");
 
   // Get the orbital guess
   std::vector<arma::mat> orbitals(nirrep);
@@ -1208,17 +1209,6 @@ void RHF::openorbital_scf() {
     auto Xblock(X_->to_armadillo_matrix(h));
     auto Sblock(S_->to_armadillo_matrix(h));
     auto Cblock(Ca_->to_armadillo_matrix(h));
-
-    arma::mat Smo(Cblock.t()*Sblock*Cblock);
-    Smo -= arma::eye<arma::mat>(Smo.n_rows,Smo.n_cols);
-    double orth_error = arma::norm(Smo, "fro");
-    if(orth_error >= 1e-10) {
-      Smo.print("orbital orthonormality error\n");
-      fflush(stdout);
-      std::ostringstream oss;
-      oss << "Orbitals fed to openorbital_scf are not orthonormal: orthonormality error " << orth_error << "!\n";
-      throw std::logic_error(oss.str());
-    }
 
     if(Cblock.n_cols) {
       orbitals[h] = Xblock.t()*Sblock*Cblock;
@@ -1232,6 +1222,7 @@ void RHF::openorbital_scf() {
   OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);
   scfsolver.verbosity(5);  // mod
   scfsolver.convergence_threshold(E_tol);  // mod
+  scfsolver.maximum_history_length(maxvecs); // mod
   scfsolver.initialize_with_orbitals(orbitals, occupations);
   scfsolver.run();
 

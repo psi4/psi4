@@ -1450,6 +1450,7 @@ void UHF::openorbital_scf() {
     block_descriptions[hd] = std::string("beta ")  + ct.gamma(h).symbol();
   }
   double E_tol = options_.get_double("E_CONVERGENCE");
+  int maxvecs = options_.get_double("DIIS_MAX_VECS");
 
   // Get the orbital guess
   std::vector<arma::mat> orbitals(2*nirrep);
@@ -1480,6 +1481,7 @@ void UHF::openorbital_scf() {
   OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);
   scfsolver.verbosity(5);  // mod
   scfsolver.convergence_threshold(E_tol);  // mod
+  scfsolver.maximum_history_length(maxvecs); // mod
   scfsolver.initialize_with_orbitals(orbitals, occupations);
   scfsolver.run();
 
