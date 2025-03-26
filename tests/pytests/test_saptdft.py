@@ -12,9 +12,8 @@ def test_saptdft_auto_grac():
     """
     For SAPT(DFT), one must compute a GRAC shift for each monomer. Ideally,
     this GRAC shift should be close to the experimental Ionization Potential
-    (IP) of the monomer. While the present test targets STO-3G, the IP for
-    water is 0.1307. Note that using aug-cc-pVDZ, the computed GRAC shift is
-    0.13063798506967816, which is close to the experimental value.
+    (IP) of the monomer. Basis set incompleteness prevents this here.
+    e.g., aug-DZ H2O has a shift of 0.1306, compared to 0.1307 experimental IP.
     """
     mol_dimer = psi4.geometry(
         """
