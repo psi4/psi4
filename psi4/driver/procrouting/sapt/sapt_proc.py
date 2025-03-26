@@ -66,14 +66,10 @@ def run_sapt_dft(name, **kwargs):
     mon_b_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_B")
     SAPT_DFT_GRAC_COMPUTE = core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE")
 
-    print(f"{mon_a_shift = }")
-    print(f"{mon_b_shift = }")
-    if np.isclose(mon_a_shift, 0.0, atol=1e-8) and SAPT_DFT_GRAC_COMPUTE.upper() != "NONE":
+    if not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_A") and SAPT_DFT_GRAC_COMPUTE.upper() != "NONE":
         do_mon_grac_shift_A = True
-        core.print_out(f"Monomer A GRAC shift set to 0.0 and SAPT_DFT_GRAC_COMPUTE set to {SAPT_DFT_GRAC_COMPUTE}, will compute automatically.")
-    if np.isclose(mon_b_shift, 0.0, atol=1e-8) and SAPT_DFT_GRAC_COMPUTE.upper() != "NONE":
+    if not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_B") and SAPT_DFT_GRAC_COMPUTE.upper() != "NONE":
         do_mon_grac_shift_B = True
-        core.print_out(f"Monomer B GRAC shift set to 0.0 and SAPT_DFT_GRAC_COMPUTE set to {SAPT_DFT_GRAC_COMPUTE}, will compute automatically.")
 
     do_delta_hf = core.get_option("SAPT", "SAPT_DFT_DO_DHF")
     sapt_dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
@@ -158,7 +154,7 @@ def run_sapt_dft(name, **kwargs):
     core.set_variable("SAPT_DFT_GRAC_SHIFT_B", mon_b_shift)
     core.print_out("\n")
 
-    if do_dft and ((mon_a_shift == 0.0) or (mon_b_shift == 0.0)) and SAPT_DFT_GRAC_COMPUTE.upper() == "NONE":
+    if do_dft and ((not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_A")) or (not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_B"))) and SAPT_DFT_GRAC_COMPUTE.upper() == "NONE":
         raise ValidationError(
             'SAPT(DFT): must set both "SAPT_DFT_GRAC_SHIFT_A" and "B". To automatically compute the GRAC shift, set SAPT_DFT_GRAC_COMPUTE to "ITERATIVE" or "SINGLE".'
         )

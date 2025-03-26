@@ -80,12 +80,14 @@ def test_saptdft_auto_grac(SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geom
     psi4.set_options(
         {
             "basis": "STO-3G",
-            "sapt_dft_grac_shift_a": gracA,
-            "sapt_dft_grac_shift_b": gracB,
             "SAPT_DFT_FUNCTIONAL": "pbe0",
             "SAPT_DFT_GRAC_COMPUTE": SAPT_DFT_GRAC_COMPUTE,
         }
     )
+    if gracA != 0.0:
+        psi4.set_options({"SAPT_DFT_GRAC_SHIFT_A": gracA})
+    if gracB != 0.0:
+        psi4.set_options({"SAPT_DFT_GRAC_SHIFT_B": gracB})
     psi4.energy("SAPT(DFT)", molecule=mol_dimer)
     compare_values(
         refA,
