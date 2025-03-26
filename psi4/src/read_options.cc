@@ -1145,7 +1145,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Monomer B GRAC shift in Hartree. Set to -99 to automatically
            compute prior to SAPT(DFT) -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
-        /*- SAPT_DFT_GRAC_CONVERGENCE_TIER will specify how Psi4 should
+        /*- SAPT_DFT_GRAC_COMPUTE will specify how Psi4 should
           try to converge the cation for a GRAC shift before failing the
           calculation completely. "SINGLE" will try only once to converge 
           the cation for computing a GRAC shift. "ITERATIVE" will adjust
@@ -1153,7 +1153,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
           to converge the neutral/cation calculations. "ITERATIVE" will
           try 3 times to converge the cation before failing the SAPT(DFT) 
           computation. -*/
-        options.add_str("SAPT_DFT_GRAC_CONVERGENCE_TIER", "SINGLE", "SINGLE ITERATIVE");
+        options.add_str("SAPT_DFT_GRAC_COMPUTE", "NONE", "NONE SINGLE ITERATIVE");
         /*- Compute the Delta-HF correction? -*/
         options.add_bool("SAPT_DFT_DO_DHF", true);
         /*- Enables the hybrid xc kernel in dispersion? !expert -*/
