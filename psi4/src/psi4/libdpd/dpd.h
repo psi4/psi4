@@ -297,7 +297,7 @@ enum pattern { abc, acb, cab, cba, bca, bac };
 class PSI_API DPD {
    private:
     // Removes the file from cache and writes it to disk instead, returning the next entry in cache.
-    // Assumes the entry and the File are both valid.
+    // Assumes the entry and the File and the main dpd object all match. Caller must guarantee that..
     dpd_file4_cache_entry* file4_cache_del_raw(dpd_file4_cache_entry *entry, dpdfile4& File);
 
    public:

@@ -195,10 +195,6 @@ void DPD::file4_cache_add(dpdfile4 *File, size_t priority) {
 }
 
 dpd_file4_cache_entry* DPD::file4_cache_del_raw(dpd_file4_cache_entry *entry, dpdfile4& File) {
-    /* Save the current dpd_default */
-    const auto orig_dpd = dpd_default;
-    dpd_set_default(File.dpdnum);
-
     /* Unlock the entry first */
     file4_cache_unlock(&File);
 
@@ -225,18 +221,17 @@ dpd_file4_cache_entry* DPD::file4_cache_del_raw(dpd_file4_cache_entry *entry, dp
     if (next_entry != nullptr) next_entry->last = last_entry;
     if (last_entry != nullptr) last_entry->next = next_entry;
 
-    /* Return the dpd_default to original value */
-    dpd_set_default(orig_dpd);
-
     /* Return next_entry for looping purposes */
     return next_entry;
 }
 
 void DPD::file4_cache_del_filenum(size_t filenum) {
+    const auto orig_dpd = dpd_default;
     dpdfile4 File;
     auto this_entry = dpd_main.file4_cache;
     while (this_entry != nullptr) {
         if (this_entry->filenum == filenum) {
+            dpd_set_default(this_entry->dpdnum);
             file4_init(&File, this_entry->filenum, this_entry->irrep, this_entry->pqnum, this_entry->rsnum,
                    this_entry->label);
             this_entry = file4_cache_del_raw(this_entry, File);
@@ -244,6 +239,7 @@ void DPD::file4_cache_del_filenum(size_t filenum) {
             this_entry = this_entry->next;
         }
     }
+    dpd_set_default(orig_dpd);
 }
 
 void DPD::file4_cache_del(dpdfile4 *File) {
@@ -255,7 +251,10 @@ void DPD::file4_cache_del(dpdfile4 *File) {
     if (this_entry == nullptr || !(File->incore)) {
         dpd_error("File4 cache delete error!", "outfile");
     } else {
+        const auto orig_dpd = dpd_default;
+        dpd_set_default(File->dpdnum);
         file4_cache_del_raw(this_entry, *File);
+        dpd_set_default(orig_dpd);
     }
 }
 
