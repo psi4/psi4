@@ -160,6 +160,53 @@ funcs.append({
     "description": '    PBE Hybrid based 3C composite method with a small basis set, gCP and D3(BJ)\n',
     "citation": '    Grimme et. al., J. Chem. Phys., 143, 054107, 2015\n',
 })
+funcs.append({
+    "name": "HF-D4M",
+    "c_functionals": {},
+    "x_hf": {
+        "alpha": 1.0
+    },
+    "dispersion": {
+        "type": "d4bjeeqatm",
+        "nlc": False,
+        "params": {
+            'a1': 0.095,
+            'a2': 3.637,
+            's6': 1.000,
+            's8': 0.738,
+            's9': 0.000,
+        },
+    },
+    "description":
+    '    HF with D4 dispersion using Sherrill Group BJ damping parameters\n',
+    "citation":
+    '    TBA\n',
+    "doi": "",
+})
+
+funcs.append({
+    "name": "HF-D4",
+    "c_functionals": {},
+    "x_hf": {
+        "alpha": 1.0
+    },
+    "dispersion": {
+        "type": "d4bjeeqatm",
+        "nlc": False,
+        "params": {
+            's8':1.61679827,
+            'a1':0.44959224,
+            'a2':3.35743605,
+            's6': 1.000,
+            's9': 1.000,
+        },
+    },
+    "description":
+    '    HF with D4 dispersion\n',
+    "citation":
+    '    Caldeweyher, E.; Ehlert, S.; Hansen, A.; Neugebauer, H.; Spicher, S.; Bannwarth, C.; Grimmme, S., J. Chem. Phys. 150, 154122 (2019)\n',
+    "doi": "10.1063/1.5090222150",
+})
 
 funcs.append({
     "name": "wB97X3c",
