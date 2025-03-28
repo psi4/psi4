@@ -1778,6 +1778,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SAD_SPIN_AVERAGE", true);
         /*- SAD guess density decomposition threshold !expert -*/
         options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
+#ifdef USING_OpenOrbitalOptimizer
+        /*- Orbital optimizer package to use for SAD guess. If compiled with OpenOrbitalOptimizer support, change this option to use the internal code. -*/
+        options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "OPENORBITALOPTIMIZER", "INTERNAL OPENORBITALOPTIMIZER");
+#else
+        /*- Orbital optimizer package to use for SAD guess. -*/
+        options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
+#endif
 
         /*- SUBSECTION DFT -*/
 
