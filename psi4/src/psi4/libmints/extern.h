@@ -33,7 +33,10 @@
 #include <utility>
 #include <string>
 #include <tuple>
+#include <map>
 #include "typedefs.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "psi4/pragma.h"
 
@@ -58,9 +61,9 @@ class PSI_API ExternalPotential {
     /// Name of potential
     std::string name_;
     /// <Z,x,y,z> array of charges
-    std::vector<std::tuple<double, double, double, double> > charges_;
+    std::vector<std::tuple<double, double, double, double>> charges_;
     /// Auxiliary basis sets (with accompanying molecules and coefs) of diffuse charges
-    std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > bases_;
+    std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector>> bases_;
     /// Gradient, if available, as number of charges x 3 SharedMatrix
     SharedMatrix gradient_on_charges_;
 
@@ -78,15 +81,13 @@ class PSI_API ExternalPotential {
     void addCharge(double Z, double x, double y, double z);
 
     /// get the vector of charges
-    const std::vector<std::tuple<double, double, double, double>> getCharges() const {
-        return charges_;
-    }
+    const std::vector<std::tuple<double, double, double, double>> getCharges() const { return charges_; }
 
     /// Append some charges
     void appendCharges(std::vector<std::tuple<double, double, double, double>> new_charges) {
         charges_.insert(charges_.end(), new_charges.begin(), new_charges.end());
     }
- 
+
     /// Add a basis of S auxiliary functions with DF coefficients
     void addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs);
 
