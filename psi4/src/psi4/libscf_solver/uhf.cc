@@ -1451,6 +1451,8 @@ void UHF::openorbital_scf() {
   }
   double E_tol = options_.get_double("E_CONVERGENCE");
   int maxvecs = options_.get_double("DIIS_MAX_VECS");
+  int maxiter = options_.get_int("MAXITER");
+  bool fail_on_maxiter = options_.get_bool("FAIL_ON_MAXITER");
 
   // Get the orbital guess
   std::vector<arma::mat> orbitals(2*nirrep);
@@ -1479,11 +1481,14 @@ void UHF::openorbital_scf() {
   };
 
   OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);
+  scfsolver.maximum_iterations(maxiter); // mod
   scfsolver.verbosity(5);  // mod
   scfsolver.convergence_threshold(E_tol);  // mod
   scfsolver.maximum_history_length(maxvecs); // mod
   scfsolver.initialize_with_orbitals(orbitals, occupations);
   scfsolver.run();
+  if(fail_on_maxiter and not scfsolver.converged())
+    throw PSIEXCEPTION("SCF did not converge and FAIL_ON_MAXITER is set to true.\n");
 
   // Update the orbitals with OOO's solution
   auto solution = scfsolver.get_solution();
