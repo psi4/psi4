@@ -1480,11 +1480,26 @@ void UHF::openorbital_scf() {
     }
   };
 
+  std::function<void(const std::map<std::string,std::any> &)> callback_function = [&](const std::map<std::string,std::any> & data) {
+    std::string reference = options_.get_str("REFERENCE");
+    if(options_.get_str("SCF_TYPE").ends_with("DF"))
+      reference = "DF-" + reference;
+
+    int iiter = std::any_cast<size_t>(data.at("iter"));
+    double E = std::any_cast<double>(data.at("E"));
+    double dE = std::any_cast<double>(data.at("dE"));
+    double Dnorm = std::any_cast<double>(data.at("diis_error"));
+    std::string step = std::any_cast<std::string>(data.at("step"));
+
+    outfile->Printf("   @%s iter %3i: %20.14f   %12.5e   %-11.5e %s\n", reference.c_str(), iiter, E, dE, Dnorm, step.c_str());
+  };
+
   OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);
   scfsolver.maximum_iterations(maxiter); // mod
   scfsolver.verbosity(5);  // mod
   scfsolver.convergence_threshold(E_tol);  // mod
   scfsolver.maximum_history_length(maxvecs); // mod
+  scfsolver.callback_function(callback_function); // mod
   scfsolver.initialize_with_orbitals(orbitals, occupations);
   scfsolver.run();
   if(fail_on_maxiter and not scfsolver.converged())
