@@ -1197,6 +1197,8 @@ void RHF::openorbital_scf() {
     block_descriptions[h] = ct.gamma(h).symbol();
 
   double E_tol = options_.get_double("E_CONVERGENCE");
+  double start_diis = options_.get_double("SCF_INITIAL_START_DIIS_TRANSITION");
+  double finish_diis = options_.get_double("SCF_INITIAL_FINISH_DIIS_TRANSITION");
   int maxvecs = options_.get_double("DIIS_MAX_VECS");
   int maxiter = options_.get_int("MAXITER");
   bool fail_on_maxiter = options_.get_bool("FAIL_ON_MAXITER");
@@ -1241,6 +1243,8 @@ void RHF::openorbital_scf() {
   scfsolver.convergence_threshold(E_tol);  // mod
   scfsolver.maximum_history_length(maxvecs); // mod
   scfsolver.callback_function(callback_function); // mod
+  scfsolver.diis_epsilon(start_diis); // mod
+  scfsolver.diis_threshold(finish_diis); // mod
   scfsolver.initialize_with_orbitals(orbitals, occupations);
   scfsolver.run();
   if(fail_on_maxiter and not scfsolver.converged())
