@@ -300,6 +300,9 @@ class HF : public Wavefunction {
     /// Sets the internal JK object (expert)
     void set_jk(std::shared_ptr<JK> jk);
 
+    /// Deletes the internal JK object (expert)
+    void reset_jk(); 
+
     /// The DFT Functional object (or null if it has been deleted)
     std::shared_ptr<SuperFunctional> functional() const { return functional_; }
 
