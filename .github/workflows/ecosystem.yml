@@ -211,8 +211,8 @@ jobs:
       run: |
         conda/psi4-path-advisor.py \
           cache \
-          --objdir objdir \
-          --insist
+          --objdir objdir #\
+          #--insist  # temp
         echo "::group::View Cache File for CMake"
         printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
         pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake

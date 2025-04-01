@@ -79,8 +79,9 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - Python_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
-#                         qcelemental, qcengine, optking, simint, Libxc, IntegratorXX, gauxc
+#    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gauxc, gdma,
+#                         IntegratorXX, Libint2, OpenOrbitalOptimizer, optking, PCMSolver, pybind11,
+#                         pylibefp, qcelemental, qcengine, simint, Libxc
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -122,6 +123,7 @@ option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gauxc "Enables use of GauXC density functional library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
+option(ENABLE_OpenOrbitalOptimizer "Enables the OpenOrbitalOptimizer library (requires Armadillo)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
 option(ENABLE_v2rdm_casscf "Enables V2RDM_CASSCF plugin (requires Fortran; can also be added at runtime)" OFF)
@@ -250,6 +252,7 @@ ExternalProject_Add(psi4-core
            pylibefp_external
            qcelemental_external
            qcengine_external
+           openorbitaloptimizer_external
            optking_external
            simint_external
            libxc_external
@@ -302,6 +305,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_ddx=${ENABLE_ddx}
               -DENABLE_mdi=${ENABLE_mdi}
               -DENABLE_BrianQC=${ENABLE_BrianQC}
+              -DENABLE_OpenOrbitalOptimizer=${ENABLE_OpenOrbitalOptimizer}
               -DENABLE_OPENMP=${ENABLE_OPENMP}
               -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
               -DTargetHDF5_DIR=${TargetHDF5_DIR}
@@ -315,6 +319,7 @@ ExternalProject_Add(psi4-core
               -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}
               -DLibint2_DIR=${Libint2_DIR}
+              -DOpenOrbitalOptimizer_DIR=${OpenOrbitalOptimizer_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dmdi_DIR=${mdi_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
