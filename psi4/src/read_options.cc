@@ -231,10 +231,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
 #ifdef USING_dkh
     /*- Relativistic Hamiltonian type !expert -*/
-    options.add_str("RELATIVISTIC", "NO", "NO X2C DKH");
+    options.add_str("RELATIVISTIC", "NO", "NO X2C ZORA DKH");
 #else
     /*- Relativistic Hamiltonian type !expert -*/
-    options.add_str("RELATIVISTIC", "NO", "NO X2C");
+    options.add_str("RELATIVISTIC", "NO", "NO X2C ZORA");
 #endif
     /*- Auxiliary basis set for solving Dirac equation in X2C and DKH
         calculations. Defaults to decontracted orbital basis. -*/
