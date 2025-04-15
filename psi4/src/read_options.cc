@@ -242,6 +242,18 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Order of Douglas-Kroll-Hess !expert -*/
     options.add_int("DKH_ORDER", 2);
 
+	/*- Number of radial points for the ZORA effective potential grid -*/
+    options.add_int("ZORA_RADIAL_POINTS", 140);
+
+	/*- Number of spherical points for the ZORA effective potential grid -*/
+    options.add_int("ZORA_SPHERICAL_POINTS", 2030);
+
+	/*- Pruning scheme for the ZORA effective potential grid -*/
+    options.add_str("ZORA_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE");
+	
+	/*- Basis tolerance for the ZORA effective potential grid -*/
+    options.add_double("ZORA_BASIS_TOLERANCE", 1e-12);
+
     /*- Directory to which to write cube files. Default is the input file
     directory. -*/
     options.add_str_i("CUBEPROP_FILEPATH", ".");
