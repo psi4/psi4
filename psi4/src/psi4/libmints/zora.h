@@ -30,8 +30,9 @@
 #define _psi_src_lib_libmints_zora_h_
 
 #include "psi4/libmints/typedefs.h"
+#include <unordered_map>
 
-#define ZORADEBUG 0
+#define ZORADEBUG 1
 
 namespace psi {
 
@@ -61,12 +62,14 @@ class PSI_API ZORA {
     std::shared_ptr<BasisSet> primary_;
 	Options& options_;
 	std::shared_ptr<DFTGrid> grid_;
+	/// Effective potential indexed by the block index
+	std::shared_ptr<std::unordered_map<int, SharedVector>> veff_;
 
 	void setup();
     /// Effective potential
-	void compute_veff(SharedMatrix);
+	void compute_veff();
     /// Compute the T integral
-	void compute_TSR(BasisFunctions&, SharedMatrix, SharedMatrix&);
+	void compute_TSR(std::vector<std::shared_ptr<BasisFunctions>>, SharedMatrix&);
 
 	/// Model basis
 	static constexpr double coeffs[2919] = {0.0063990067,0.0745660339,0.3008381442,0.4565180734,0.1616787418,

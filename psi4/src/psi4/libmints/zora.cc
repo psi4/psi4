@@ -32,13 +32,20 @@
 #include "psi4/libqt/qt.h"
 
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libfock/points.h"
 #include "psi4/libfock/cubature.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+#include "psi4/libpsi4util/process.h"
+
 #include <map>
+// #include <unordered_map>
 #include <string>
 #include <cmath>
 
@@ -68,44 +75,39 @@ void ZORA::setup() {
 	timer_on("Make Grid");
 
 	// Initialize grid with options
-	// TODO: add options_.get_str("ZORA_PRUNING_SCHEME")
 	std::map<std::string, std::string> grid_str_options = {
-		{"DFT_RADIAL_SCHEME",  "TREUTLER"},
-		{"DFT_PRUNING_SCHEME", "TREUTLER"},
-		{"DFT_NUCLEAR_SCHEME", "TREUTLER"},
+		{"DFT_RADIAL_SCHEME",  "BECKE"},
+		{"DFT_PRUNING_SCHEME", options_.get_str("ZORA_PRUNING_SCHEME")},
+		{"DFT_NUCLEAR_SCHEME", "BECKE"},
 		{"DFT_GRID_NAME",      ""},
 		{"DFT_BLOCK_SCHEME",   "OCTREE"},
 	};
 	
-	// TODO: add options_.get_int("ZORA_SPHERICAL_POINTS" + gridname_uppercase)
-	// add options_.get_int("ZORA_RADIAL_POINTS" + gridname_uppercase
 	std::map<std::string, int> grid_int_options = {
 		{"DFT_BLOCK_MAX_POINTS", 256},
 		{"DFT_BLOCK_MIN_POINTS", 100},
-		{"DFT_SPHERICAL_POINTS", 1202},
-		{"DFT_RADIAL_POINTS",    100},
+		{"DFT_SPHERICAL_POINTS", options_.get_int("ZORA_SPHERICAL_POINTS")},
+		{"DFT_RADIAL_POINTS", options_.get_int("ZORA_RADIAL_POINTS")},
 	};
 
-	std::map<std::string, double> grid_float_options = {
+	std::map<std::string, double> grid_double_options = {
 		{"DFT_BS_RADIUS_ALPHA",   1.0},
 		{"DFT_PRUNING_ALPHA",     1.0},
 		{"DFT_WEIGHTS_TOLERANCE", 1e-15},
 		{"DFT_BLOCK_MAX_RADIUS",  3.0},
-		{"DFT_BASIS_TOLERANCE",   1e-12},
+		{"DFT_BASIS_TOLERANCE",   options_.get_double("ZORA_BASIS_TOLERANCE")},
 	};
 
-	grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_int_options, grid_str_options, grid_float_options, options_);
+	grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_int_options, grid_str_options, grid_double_options, options_);
 
 	timer_off("Make Grid");
 
-#if ZORADEBUG
-	outfile->Printf("\n  ==> ZORA: Grid Details\n");
 	auto npoints = grid_->npoints();
 	auto nblocks = grid_->blocks().size();
+
+	outfile->Printf("\n  ==> ZORA Grid Details <==\n");
 	outfile->Printf("    Total number of grid points: %d \n", npoints);
 	outfile->Printf("    Total number of batches: %d \n", nblocks);
-	grid_->print_details();
-#endif
 }
 
 void ZORA::compute(SharedMatrix T_SR) {
@@ -117,27 +119,44 @@ void ZORA::compute(SharedMatrix T_SR) {
 	int max_points = grid_->max_points();
 	int max_funcs = grid_->max_functions();
 
+	int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
+	// Basis function computer on each thread
+	std::vector<std::shared_ptr<BasisFunctions>> pworkers;
+	for (int i = 0; i < nthreads; i++) {
+		auto p_tmp = std::make_shared<BasisFunctions>(primary_, max_points, max_funcs);
+		p_tmp->set_deriv(1);
+		pworkers.push_back(p_tmp);
+	}
+
 	timer_on("Effective Potential");
-	auto veff = std::make_shared<Matrix>("Effective potential", nblocks, max_points);
-	compute_veff(veff);
+	veff_ = std::make_shared<std::unordered_map<int, SharedVector>>();
+	compute_veff();
 	timer_off("Effective Potential");
 
 	timer_on("Scalar Relativistic Kinetic");
-	BasisFunctions bf_computer(primary_, max_points, max_funcs);
-	bf_computer.set_deriv(1);
-	compute_TSR(bf_computer, veff, T_SR);
+	compute_TSR(pworkers, T_SR);
 	timer_off("Scalar Relativistic Kinetic");
 
 	timer_off("ZORA");
+
 #if ZORADEBUG
 	T_SR->print();
 #endif
 }
 
-void ZORA::compute_veff(SharedMatrix veff)
+void ZORA::compute_veff()
 {
 	// Speed of light in atomic units
 	double C = pc_c_au;
+
+	int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
 
 	int natoms = molecule_->natom();
 	for (int a = 0; a < natoms; a++) {
@@ -149,13 +168,16 @@ void ZORA::compute_veff(SharedMatrix veff)
 		const double* alpha_a = &alphas[c_aIndex[Z-1]];
 		int nc_a = c_aIndex[Z] - c_aIndex[Z-1];
 
-		int index = 0;
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
 		for (const auto &block : grid_->blocks()) {
 			int npoints = block->npoints();
+			int index = block->index();
 
 			double* x = block->x();
 			double* y = block->y();
 			double* z = block->z();
+
+			auto veff_block = std::make_shared<Vector>(npoints);
 
 			//einsums("i,ip->p", 𝕔[i], erf(α[i]⊗ r[p]))/r[p]
 			for (int p = 0; p < npoints; p++) {
@@ -166,58 +188,77 @@ void ZORA::compute_veff(SharedMatrix veff)
 				}
 				outer /= dist;
 				outer -= Z/dist;
-				veff->add(index, p, outer);
+				veff_block->add(p, outer);
 			}
-			index++;
+
+			veff_->insert({index, veff_block});
+// #pragma omp critical
+// 			{
+// 				veff_->insert({index, veff_block});
+// 			}
 		}
 	}
 }
 
+
 //Scalar Relativistic Kinetic Energy Matrix
-void ZORA::compute_TSR(BasisFunctions &props, SharedMatrix veff, SharedMatrix &T_SR)
+void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, SharedMatrix &T_SR)
 {
 	// Speed of light in atomic units
 	double C = pc_c_au;
-	double** T_SRp = T_SR->pointer();
 
-	double* kernel = new double[props.max_points()];
+	int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
 
-	int index = 0;
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
 	for (const auto &block : grid_->blocks()) {
 		const auto &bf_map = block->functions_local_to_global();
 		auto local_nbf = bf_map.size();
 		int npoints = block->npoints();
 
-		props.compute_functions(block);
-		auto phi_x = props.basis_value("PHI_X");
-		auto phi_y = props.basis_value("PHI_Y");
-		auto phi_z = props.basis_value("PHI_Z");
+		auto veff_block = veff_->at(block->index());
 
+		int thread = omp_get_thread_num();
+		pworkers[thread]->compute_functions(block);
+		auto phi_x = pworkers[thread]->basis_value("PHI_X");
+		auto phi_y = pworkers[thread]->basis_value("PHI_Y");
+		auto phi_z = pworkers[thread]->basis_value("PHI_Z");
+
+
+		// Preprocess kernel c²/(2c²-veff) * weight
 		double* w = block->w();
-
-		//preprocess kernel c²/(2c²-veff) * weight
+		double kernel[npoints];
 		for (int p = 0; p < npoints; p++) {
-			kernel[p] = C *C /(2.*C *C - veff->get(index,p)) * w[p];
+			kernel[p] = C *C /(2.*C *C - veff_block->get(p)) * w[p];
 		}
 
+		auto tmp = std::make_shared<Matrix>(T_SR->ncol(), T_SR->nrow());
+
+		// Compute kinetic integral using kernel above
+		// bf_map is needed because the basis funcions differ from that of a given block
 		for (int l_mu = 0; l_mu < local_nbf; l_mu++) {
 			int mu = bf_map[l_mu];
 			for (int l_nu = l_mu; l_nu < local_nbf; l_nu++) {
 				int nu = bf_map[l_nu];
 				for (int p = 0; p < npoints; p++) {
-					T_SRp[mu][nu] += kernel[p] * (
+					tmp->add(mu,nu, kernel[p] * (
 						phi_x->get(p,l_mu)*phi_x->get(p,l_nu) +
 						phi_y->get(p,l_mu)*phi_y->get(p,l_nu) +
-						phi_z->get(p,l_mu)*phi_z->get(p,l_nu) );
-
+						phi_z->get(p,l_mu)*phi_z->get(p,l_nu) ));
 				}
 			}
 		}
-		index++;
+
+		// Lock the T_SR matrix before adding
+#pragma omp critical
+		{
+			T_SR->add(tmp);
+		}
 	}
 
 	T_SR->copy_upper_to_lower();
-	delete kernel;
 }
 
 }  // namespace psi
