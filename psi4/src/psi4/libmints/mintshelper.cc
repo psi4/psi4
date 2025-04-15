@@ -1456,10 +1456,8 @@ void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
 void MintsHelper::compute_so_zora_ints(bool include_perturbations) {
     outfile->Printf(" OEINTS: Using relativistic (ZORA) kinetic integrals.\n");
 
-    if (include_perturbations) {
-        if (options_.get_bool("PERTURB_H")) {
-			throw PSIEXCEPTION("Perturbations of the ZORA hamiltonian are not implemented.... yet");
-		}
+    if (include_perturbations && options_.get_bool("PERTURB_H")) {
+		throw PSIEXCEPTION("Perturbations of the ZORA hamiltonian are not implemented.");
     }
 
     ZORA zoraint(molecule_, basisset_, options_);
