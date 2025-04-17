@@ -140,7 +140,6 @@ void DFJCOSKGrad::compute_gradient() {
 
 
 void DFJCOSKGrad::build_JGrad() {
-    Dt_->print();
     if (!do_J_) return;
     timer_on("J Grad");
     int nthread_df = ints_num_threads_;
