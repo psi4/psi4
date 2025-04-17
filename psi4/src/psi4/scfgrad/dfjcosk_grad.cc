@@ -73,96 +73,6 @@ void DFJCOSKGrad::common_init() {
     ints_num_threads_ = Process::environment.get_n_threads();
 #endif
 
-    // => Direct Density-Fitted Coulomb Setup <= //
-
-    // pre-compute coulomb fitting metric
-    /*
-    timer_on("Coulomb Metric");
-    FittingMetric J_metric_obj(auxiliary_, true);
-    J_metric_obj.form_fitting_metric();
-    J_metric_ = J_metric_obj.get_metric();
-    timer_off("Coulomb Metric");
-
-    // pre-construct per-thread TwoBodyAOInt objects for computing 3-index ERIs
-    timer_on("ERI Computers");
-    eri_computers_.resize(nthreads_);
-    auto zero = BasisSet::zero_ao_basis_set();
-    IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
-    eri_computers_[0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
-    for(int rank = 1; rank < nthreads_; rank++) {
-        eri_computers_[rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_.front()->clone());
-    }
-    timer_off("ERI Computers");
-    */
-
-    // => Chain of Spheres Exchange Setup <= //
-
-    timer_on("Grid Construction");
-
-    // TODO: specify bool "DFT_REMOVE_DISTANT_POINTS" in the DFTGrid constructors
-
-    // Create a large DFTGrid for the gradient
-    std::map<std::string, std::string> grid_final_str_options = {
-        {"DFT_PRUNING_SCHEME", options_.get_str("COSX_PRUNING_SCHEME")},
-        {"DFT_RADIAL_SCHEME",  "TREUTLER"},
-        {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
-        {"DFT_GRID_NAME",      ""},
-        {"DFT_BLOCK_SCHEME",   "OCTREE"},
-    };
-    std::map<std::string, int> grid_final_int_options = {
-        {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS_FINAL")}, 
-        {"DFT_RADIAL_POINTS",    options_.get_int("COSX_RADIAL_POINTS_FINAL")},
-        {"DFT_BLOCK_MIN_POINTS", 100},
-        {"DFT_BLOCK_MAX_POINTS", 256},
-    };
-    std::map<std::string, double> grid_final_float_options = {
-        {"DFT_BASIS_TOLERANCE",   options_.get_double("COSX_BASIS_TOLERANCE")}, 
-        {"DFT_BS_RADIUS_ALPHA",   1.0},
-        {"DFT_PRUNING_ALPHA",     1.0},
-        {"DFT_BLOCK_MAX_RADIUS",  3.0},
-        {"DFT_WEIGHTS_TOLERANCE", 1e-15},
-    };
-    grid_final_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_final_int_options, grid_final_str_options, grid_final_float_options, options_);
-
-    timer_off("Grid Construction");
-
-    // => Overlap Fitting Metric <= //
-
-    // Fit an overlap metric (Q) for both grids to reduce numerical error
-
-    // DOI 10.1063/1.3646921, EQ. 18
-    // Note: the above reference defines Q as S_an @ S_num^{-1} @ X
-    // Here, Q refers to just S_ @ S_num^{-1} (no X)
-    // This Q is contracted with X later to agree with the literature definition
-
-    timer_on("Numeric Overlap");
-
-    // compute the numeric overlap matrix for each grid
-    auto S_num = compute_numeric_overlap(*grid_final_, primary_ );
-
-    timer_off("Numeric Overlap");
-
-    timer_on("Analytic Overlap");
-
-    // compute the analytic overlap matrix
-    MintsHelper helper(primary_, options_);
-    auto S_an = helper.ao_overlap();
-
-    timer_off("Analytic Overlap");
-
-    // form the overlap metric (Q) for each grid
-
-    timer_on("Overlap Metric Solve");
-
-    int nbf = primary_->nbf();
-    std::vector<int> ipiv(nbf);
-
-    // solve: Q_final_ = S_an @ S_num_final_^{-1}
-    Q_final_ = S_an->clone();
-    C_DGESV(nbf, nbf, S_num.pointer()[0], nbf, ipiv.data(), Q_final_->pointer()[0], nbf);
-
-    timer_off("Overlap Metric Solve");
-    outfile->Printf("COSX gradients successfully initialized.\n");
 }
 void DFJCOSKGrad::print_header() const {
     std::string screen_type = options_.get_str("SCREENING");
@@ -209,11 +119,6 @@ void DFJCOSKGrad::compute_gradient() {
         outfile->Printf("coulomb gradients successfully calculated.\n");
     }
     if (do_K_) {
-
-        if (ref_wfn->has_array_variable("-D Gradient")) {
-            gradients_["-D Gradient"] = ref_wfn->array_variable("-D Gradient");
-            gradients_["-D Gradient"]->set_name("-D Gradient");
-        }
         auto psio_ = PSIO::shared_object();
         gradients_["Exchange"]->load(psio_, PSIF_KGRAD, Matrix::SaveType::SubBlocks);
         if (Ca_ == Cb_){
