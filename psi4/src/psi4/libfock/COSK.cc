@@ -39,8 +39,6 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dftensor.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
 
 #include <algorithm>
@@ -822,11 +820,8 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 Kgrad->add(KTgrad[jki][thread]);
             }
         }
-        auto psio_ = PSIO::shared_object();
         Kgrad->scale(2.0);
-        Kgrad->save(psio_, PSIF_KGRAD, Matrix::SaveType::SubBlocks);
-        // TODO: save kgrad in wavefunction
-        // delete after used
+        Process::environment.arrays["COSK_EXCHANGE_GRADIENT"] = Kgrad;
     }
 
     num_computed_shells_ = int_shells_computed;

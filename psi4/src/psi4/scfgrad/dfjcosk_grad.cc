@@ -29,7 +29,6 @@
 
 #include "jk_grad.h"
 
-#include "psi4/psifiles.h"
 #include "psi4/lib3index/3index.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libfock/cubature.h"
@@ -46,7 +45,6 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsio/psio.h"
 
 #include <vector>
 #include <map>
@@ -119,8 +117,7 @@ void DFJCOSKGrad::compute_gradient() {
         outfile->Printf("coulomb gradients successfully calculated.\n");
     }
     if (do_K_) {
-        auto psio_ = PSIO::shared_object();
-        gradients_["Exchange"]->load(psio_, PSIF_KGRAD, Matrix::SaveType::SubBlocks);
+        gradients_["Exchange"] = Process::environment.arrays["COSK_EXCHANGE_GRADIENT"];
         if (Ca_ == Cb_){
             gradients_["Exchange"]->scale(2.0);
         }
