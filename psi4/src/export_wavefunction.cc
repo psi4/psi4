@@ -48,6 +48,8 @@
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/civect.h"
 
+#include "psi4/dmrg/dmrg.h"
+
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
 
@@ -640,4 +642,10 @@ void export_wavefunction(py::module& m) {
                .. warning:: Symmetry free calculations only (nirreps > 1 will cause error)
                .. warning:: No checks that the amplitudes will fit in core. Do not use for proteins
         )pbdoc");
+
+        py::class_<dmrg::DMRGSolver, std::shared_ptr<dmrg::DMRGSolver>, Wavefunction>(
+          m, "DMRGSolver", "Specialized Wavefunction used by CheMPS2.")
+          .def(py::init<std::shared_ptr<Wavefunction>, Options&>())
+          .def("occupation_a", &dmrg::DMRGSolver::occupation_a, "Returns the occupation numbers of the current alpha orbitals using the spin-averaged density.")
+          .def("occupation_b", &dmrg::DMRGSolver::occupation_b, "Returns the occupation numbers of the current beta orbitals using the spin-averaged density.");
 }

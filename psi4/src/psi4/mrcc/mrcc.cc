@@ -558,7 +558,7 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
         one_particle->print();
     }
 
-    one_particle->save(_default_psio_lib_, PSIF_MO_OPDM, Matrix::Full);
+    one_particle->save(_default_psio_lib_, PSIF_MO_OPDM, Matrix::SubBlocks);
 
     one_particle->print();
 

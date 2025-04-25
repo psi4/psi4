@@ -330,8 +330,12 @@ def _write_molden(
     else:
         Ca = self.Ca()
         Cb = self.Cb()
-        occupation_a = self.occupation_a()
-        occupation_b = self.occupation_b()
+        if hasattr(self, "occupation_a"):
+            occupation_a = self.occupation_a()
+            occupation_b = self.occupation_b()
+        else:
+            occupation_a = self.reference_wavefunction().occupation_a()
+            occupation_b = self.reference_wavefunction().occupation_b()
         epsilon_a = self.epsilon_a()
         epsilon_b = self.epsilon_b()
 

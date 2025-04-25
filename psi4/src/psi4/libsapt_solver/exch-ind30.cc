@@ -40,26 +40,26 @@ namespace psi {
 namespace sapt {
 
 void SAPT2p3::exch_ind30() {
-    double **tAR = block_matrix(noccA_, nvirA_);
+    auto tAR = std::make_unique<Matrix>("Ind30 uAR Amplitudes", noccA_, nvirA_);
     double **vAR = block_matrix(noccA_, nvirA_);
 
-    psio_->read_entry(PSIF_SAPT_AMPS, "Ind30 uAR Amplitudes", (char *)tAR[0], sizeof(double) * noccA_ * nvirA_);
+    tAR->load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::SubBlocks);
     psio_->read_entry(PSIF_SAPT_AMPS, "AR Exch-Ind Integrals", (char *)vAR[0], sizeof(double) * noccA_ * nvirA_);
 
-    double ex_1 = -2.0 * C_DDOT(noccA_ * nvirA_, tAR[0], 1, vAR[0], 1);
+    double ex_1 = -2.0 * C_DDOT(noccA_ * nvirA_, tAR->get_pointer(), 1, vAR[0], 1);
 
-    free_block(tAR);
+    tAR.reset();
     free_block(vAR);
 
-    double **tBS = block_matrix(noccB_, nvirB_);
+    auto tBS = std::make_unique<Matrix>("Ind30 uBS Amplitudes", noccA_, nvirA_);    
     double **vBS = block_matrix(noccB_, nvirB_);
 
-    psio_->read_entry(PSIF_SAPT_AMPS, "Ind30 uBS Amplitudes", (char *)tBS[0], sizeof(double) * noccB_ * nvirB_);
+    tBS->load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::SubBlocks);
     psio_->read_entry(PSIF_SAPT_AMPS, "BS Exch-Ind Integrals", (char *)vBS[0], sizeof(double) * noccB_ * nvirB_);
 
-    double ex_2 = -2.0 * C_DDOT(noccB_ * nvirB_, tBS[0], 1, vBS[0], 1);
+    double ex_2 = -2.0 * C_DDOT(noccB_ * nvirB_, tBS->get_pointer(), 1, vBS[0], 1);
 
-    free_block(tBS);
+    tBS.reset();
     free_block(vBS);
 
     double **sAR = block_matrix(noccA_, nvirA_);
@@ -336,10 +336,10 @@ void SAPT2p3::sinf_e30ind() {
     int nr = nvirA_;
     int ns = nvirB_;
 
-    auto uAR = Matrix("Ind30 uAR Amplitudes", na, nr);
-    auto uBS = Matrix("Ind30 uBS Amplitudes", nb, ns);
-    uAR.load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::Full);
-    uBS.load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::Full);
+    auto uAR = std::make_unique<Matrix>("Ind30 uAR Amplitudes", na, nr);
+    auto uBS = std::make_unique<Matrix>("Ind30 uBS Amplitudes", nb, ns);
+    uAR->load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::SubBlocks);
+    uBS->load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::SubBlocks);
 
     // => Intermolecular overlap matrix and inverse <= //
     auto Sab = linalg::triplet(CoccA_, Smat_, CoccB_, true, false, false);
@@ -524,12 +524,13 @@ void SAPT2p3::sinf_e30ind() {
     auto STS_ar = linalg::triplet(sAR, Tar, sAR, false, true, false);
     auto STS_bs = linalg::triplet(sBS, Tbs, sBS, false, true, false);
 
-    CompleteInd30 += uAR.vector_dot(omega_ar);
-    CompleteInd30 += uBS.vector_dot(omega_bs);
+    CompleteInd30 += uAR->vector_dot(omega_ar);
+    CompleteInd30 += uBS->vector_dot(omega_bs);
     CompleteInd30 -= STS_br->vector_dot(omega_br);
     CompleteInd30 -= STS_as->vector_dot(omega_as);
     CompleteInd30 -= STS_ar->vector_dot(omega_ar);
     CompleteInd30 -= STS_bs->vector_dot(omega_bs);
+    uAR.reset(); uBS.reset(); STS_br.reset(); STS_as.reset(); STS_ar.reset(); STS_bs.reset();
 
 //All Omega-dependent contributions have been completed, now Xi-dependent (J/K) contributions
 

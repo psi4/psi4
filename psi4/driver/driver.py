@@ -2050,51 +2050,20 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
 
     """
 
-    if filename is None:
-        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".molden"
+    warnings.warn(
+        "Using `psi4.molden` instead of `wfn.write_molden` is deprecated, and as soon as 1.12 it will stop working\n",
+        category=FutureWarning)
 
-    if dovirtual is None:
-        dovirt = bool(core.get_option("SCF", "MOLDEN_WITH_VIRTUAL"))
-
-    else:
-        dovirt = dovirtual
-
+    wfn_ = core.Wavefunction.build(wfn.molecule(), core.get_global_option('BASIS'))
+    wfn_.deep_copy(wfn)
     if density_a:
-        nmopi = wfn.nmopi()
-        nsopi = wfn.nsopi()
+        wfn_.Da().copy(density_a)
+        wfn_.Da().back_transform(wfn_.Ca())
+    if density_b:
+        wfn_.Db().copy(density_b)
+        wfn_.Db().back_transform(wfn_.Cb())
+    wfn_.write_molden(filename, dovirtual, density_a is not None or density_b is not None)
 
-        NO_Ra = core.Matrix("NO Alpha Rotation Matrix", nmopi, nmopi)
-        NO_occa = core.Vector(nmopi)
-        density_a.diagonalize(NO_Ra, NO_occa, core.DiagonalizeOrder.Descending)
-        NO_Ca = core.Matrix("Ca Natural Orbitals", nsopi, nmopi)
-        NO_Ca.gemm(False, False, 1.0, wfn.Ca(), NO_Ra, 0)
-
-        if density_b:
-            NO_Rb = core.Matrix("NO Beta Rotation Matrix", nmopi, nmopi)
-            NO_occb = core.Vector(nmopi)
-            density_b.diagonalize(NO_Rb, NO_occb, core.DiagonalizeOrder.Descending)
-            NO_Cb = core.Matrix("Cb Natural Orbitals", nsopi, nmopi)
-            NO_Cb.gemm(False, False, 1.0, wfn.Cb(), NO_Rb, 0)
-
-        else:
-            NO_occb = NO_occa
-            NO_Cb = NO_Ca
-
-        mw = core.MoldenWriter(wfn)
-        mw.write(filename, NO_Ca, NO_Cb, NO_occa, NO_occb, NO_occa, NO_occb, dovirt)
-
-    else:
-        try:
-            occa = wfn.occupation_a()
-            occb = wfn.occupation_b()
-        except AttributeError:
-            core.print_out("\n!Molden warning: This wavefunction does not have occupation numbers.\n"
-                           "Writing zero's for occupation numbers\n\n")
-            occa = core.Vector(wfn.nmopi())
-            occb = core.Vector(wfn.nmopi())
-
-        mw = core.MoldenWriter(wfn)
-        mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb, dovirt)
 
 def tdscf(wfn, **kwargs):
     return proc.run_tdscf_excitations(wfn,**kwargs)
