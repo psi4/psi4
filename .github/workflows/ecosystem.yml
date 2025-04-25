@@ -20,7 +20,7 @@ jobs:
 
           - label: "Conda GNU (L)"
             runs-on: ubuntu-latest
-            python-version: "3.12"
+            python-version: "3.13"
             mkl-version: ""
             platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
@@ -164,8 +164,8 @@ jobs:
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
           # not for py312
-          sed -i "s;- cppe;#- cppe;g" env_p4build.yaml
-          sed -i "s;- qcfractal;- qcfractal>=0.59;g" env_p4build.yaml
+          #sed -i "s;- cppe;#- cppe;g" env_p4build.yaml
+          #sed -i "s;- qcfractal;- qcfractal>=0.59;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
@@ -173,7 +173,7 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Silicon)" ]]; then
           :
-          sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
+          #sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
           sed -E -i.bak "s;- einsums;#- einsums;g" env_p4build.yaml
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
