@@ -1088,8 +1088,8 @@ data:
       channel: conda-forge
       name: cppe
       name_note: "Equivalent to psi4::pycppe ."
-      constraint: "==0.3.1"
-      constraint_note: "v0.3.2 available, incl. Windows but errors with libecpint."
+      constraint: null
+      constraint_note: "==0.3.1 tests clean. v0.3.2 more broadly available but errors with libecpint, hence 'not pe_ecp'."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_cppe is inconsequential."
 
@@ -1288,7 +1288,7 @@ data:
       channel: conda-forge
       channel_note: "Can also use qcarchive/label/next and constraint >=0.50b10."
       name: qcfractal
-      constraint: null
+      constraint: ">=0.59"
       aux_run_names:
         - postgresql
       aux_run_names_note:

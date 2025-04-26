@@ -22,7 +22,7 @@ jobs:
 
       gcc_latest:
         CXX_COMPILER: 'g++'
-        PYTHON_VER: '3.13'
+        PYTHON_VER: '3.12'  #'3.13'
         C_COMPILER: 'gcc'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
