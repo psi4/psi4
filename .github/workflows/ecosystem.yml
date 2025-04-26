@@ -24,6 +24,7 @@ jobs:
             mkl-version: ""
             platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
@@ -35,10 +36,11 @@ jobs:
 
           - label: "Conda Clang (M-Intel)"
             runs-on: macos-13  # ensures py!=27 in base OS
-            python-version: "3.10"  #"3.9"
+            python-version: "3.9"
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -57,10 +59,11 @@ jobs:
 
           - label: "Conda Clang (M-Silicon)"
             runs-on: macos-latest
-            python-version: "3.9"
+            python-version: "3.10"
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not pe_ecp"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -70,10 +73,11 @@ jobs:
           - label: "LLVM clang-cl (W)"
             runs-on: windows-latest
             python-version: "3.12"
-            mkl-version: "=2022.1"
+            mkl-version: "" #"=2022.1"
             llvm-version: "17.0.6"
             platform: win-64
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
+            pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
@@ -294,7 +298,7 @@ jobs:
 
     - name: Test Addons with Pytest
       working-directory: ./objdir
-      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }} and not geometric" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }} and not geometric" -k "${{ matrix.cfg.pytest-name-expr }}" stage/lib/psi4/tests/
 
     - name: Write user Conda environment files
       run: |

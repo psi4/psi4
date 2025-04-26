@@ -22,11 +22,11 @@ jobs:
 
       gcc_latest:
         CXX_COMPILER: 'g++'
-        PYTHON_VER: '3.12'  #'3.13'
+        PYTHON_VER: '3.13'
         C_COMPILER: 'gcc'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran'
+        APT_INSTALL: 'gfortran gcc-defaults'
         vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: 'api and not stdsuite and not (smoke or quick or medlong or long)'
         ENABLE_EINSUMS: "ON"

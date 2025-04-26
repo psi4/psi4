@@ -984,8 +984,8 @@ data:
       constraint: null
       skip_win: true
       aux_run_names:
-        - openfermion=1
-        - pydantic=1
+        - openfermion #=1
+#        - pydantic=1
       aux_run_names_note:
         "openfermion=1": "Shouldn't need to specify but do for the pydantic transition."
       cmake: null
