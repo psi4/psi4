@@ -629,7 +629,6 @@ def gradient(name, **kwargs):
     if core.get_global_option('SCF_TYPE') == 'CD':
         raise ValidationError("""No analytic derivatives for SCF_TYPE CD.""")
 
-
     core.print_out("""gradient() will perform analytic gradient computation.\n""")
 
     # Perform the gradient calculation

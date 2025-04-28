@@ -277,17 +277,10 @@ protected:
     void build_JGrad();
     void build_KGrad();
 
-    // => Density Fitting Stuff <= //
     /// Coulomb Metric
     SharedMatrix J_metric_;
     /// per-thread TwoBodyAOInt object (for computing three-center ERIs)
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri_computers_;
-
-    // => Semi-Numerical Stuff <= //
-    /// Large DFTGrid for the final SCF iteration
-    std::shared_ptr<DFTGrid> grid_final_;
-    /// Overlap fitting metric for grid_final_
-    SharedMatrix Q_final_;
 
    public:
     DFJCOSKGrad(int deriv, std::shared_ptr<MintsHelper> mints, Options& options);
@@ -303,7 +296,6 @@ protected:
      * @param val a positive integer
      */
     void set_ints_num_threads(int val) { ints_num_threads_ = val; }
-
 
 };
 }} // Namespaces

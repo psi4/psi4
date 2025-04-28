@@ -1315,7 +1315,6 @@ class PSI_API CompositeJK : public JK {
     */
     int get_snLinK_max_am();
 
-
     /**
     * Print header information regarding JK
     * type on output file
