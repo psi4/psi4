@@ -2678,7 +2678,6 @@ def run_scf_gradient(name, **kwargs):
 
     optstash = proc_util.scf_set_reference_local(name, is_dft=dft_func)
 
-    #TODO: investigate optstash
     if "COSX" in core.get_global_option("SCF_TYPE"):
         core.set_global_option("COSX_DO_GRADIENT", True)
         if core.get_option("SCF", "COSX_MAXITER_FINAL") == 0:

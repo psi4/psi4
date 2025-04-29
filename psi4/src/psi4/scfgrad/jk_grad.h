@@ -40,7 +40,6 @@ class BasisSet;
 class PSIO;
 class TwoBodyAOInt;
 class MintsHelper;
-class DFTGrid;
 class Options;
 
 namespace scfgrad {
@@ -290,6 +289,15 @@ protected:
     void compute_hessian() override;
 
     void print_header() const override;
+
+    /**
+     * Minimum relative eigenvalue to retain in fitting inverse
+     * All eigenvectors with \epsilon_i < condition * \epsilon_max
+     * will be discarded
+     * @param condition, minimum relative eigenvalue allowed,
+     *        defaults to 1.0E-12
+     */
+    void set_condition(double condition) { condition_ = condition; }
 
     /**
      * What number of threads to compute integrals on

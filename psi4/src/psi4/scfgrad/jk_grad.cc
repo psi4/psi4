@@ -91,7 +91,7 @@ std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<MintsHel
             jk->set_debug(options.get_int("DEBUG"));
         if (options["BENCH"].has_changed())
             jk->set_bench(options.get_int("BENCH"));
-      //jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
+        jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 

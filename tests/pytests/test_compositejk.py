@@ -333,3 +333,30 @@ def test_j_algo_bp86(j_algo, k_algo, df_basis_scf, mols):
     energy_composite = psi4.energy("bp86", molecule=molecule) 
  
     assert compare_values(energy_dfdirj, energy_composite, 6, f'BP86/{df_basis_scf} {scf_type} accurate to {j_algo} (1e-6 threshold)')
+
+@pytest.mark.parametrize("inp", [
+    pytest.param({"molecule" : "h2o",
+                  "options": {"reference" : "rhf"},
+                  "ref":   [[ 0.0, -0.0,        -0.01496538],
+                            [ 0.0, -0.01039195,  0.007477  ],
+                            [ 0.0,  0.01039195,  0.007477  ]]
+                  },
+                  id="h2o (rhf)"),
+    pytest.param({"molecule" : "nh2",
+                  "options": {"reference" : "uhf"},
+                  "ref" :  [[ 0.0,  0.0,         0.01517592],
+                            [ 0.0,  0.00610143, -0.00739917],
+                            [ 0.0, -0.00610143, -0.00739917]]
+                  },
+                  id="nh2 (uhf)"),
+])
+def test_cosx_grad(inp, mols):
+    """ Test the functionality of DFJ+COSX gradient calculations."""
+
+    molecule = mols[inp["molecule"]]
+    
+    psi4.set_options({ "scf_type" : "DFDIRJ+COSX"})
+    psi4.set_options(inp["options"])
+    grad_cosx = psi4.gradient("hf/cc-pvdz", molecule=molecule) 
+
+    assert compare_values(inp["ref"], grad_cosx, 6, "COSX gradients match reference to 1e-6")

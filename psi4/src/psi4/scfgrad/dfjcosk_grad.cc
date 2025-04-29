@@ -4,7 +4,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2023 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -70,10 +70,9 @@ void DFJCOSKGrad::common_init() {
 #ifdef _OPENMP
     ints_num_threads_ = Process::environment.get_n_threads();
 #endif
-
+    condition_ = 1.0E-12;
 }
 void DFJCOSKGrad::print_header() const {
-    std::string screen_type = options_.get_str("SCREENING");
     if (print_) {
         outfile->Printf("  ==> DFJCOSKGrad: Chain-of-Spheres SCF Gradients <==\n\n");
 
@@ -84,12 +83,7 @@ void DFJCOSKGrad::print_header() const {
         if (do_wK_) outfile->Printf("    Omega:             %11.3E\n", omega_);
         outfile->Printf("    Integrals threads: %11d\n", ints_num_threads_);
         outfile->Printf("    Memory [MiB]:       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        outfile->Printf("    J Screening Type:   %11s\n", screen_type.c_str());
-        outfile->Printf("    J Screening Cutoff: %11.0E\n", cutoff_);
-        outfile->Printf("    K Screening Cutoff: %11.0E\n", options_.get_double("COSX_INTS_TOLERANCE"));
-        outfile->Printf("    K Density Cutoff:   %11.0E\n", options_.get_double("COSX_DENSITY_TOLERANCE"));
-        outfile->Printf("    K Basis Cutoff:     %11.0E\n", options_.get_double("COSX_BASIS_TOLERANCE"));
-        outfile->Printf("    K Overlap Fitting:  %11s\n", (options_.get_bool("COSX_OVERLAP_FITTING") ? "Yes" : "No"));
+        outfile->Printf("    Fitting Condition: %11.0E\n\n", condition_);
         outfile->Printf("\n");
     }
 }
@@ -129,10 +123,10 @@ void DFJCOSKGrad::compute_gradient() {
     }
 
     // Printing
-    gradients_["Coulomb"]->print();
-    if (do_K_) {
-        gradients_["Exchange"]->print();
-     }
+    // gradients_["Coulomb"]->print();
+    // if (do_K_) {
+    //      gradients_["Exchange"]->print();
+    // }
 }
 
 
@@ -150,7 +144,7 @@ void DFJCOSKGrad::build_JGrad() {
 
     auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(ints_num_threads_);
-    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)); //eri(1) ??
+    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1));
     for (int t = 1; t < ints_num_threads_; t++) {
         eri[t] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
     }
