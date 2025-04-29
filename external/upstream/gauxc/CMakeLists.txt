@@ -60,7 +60,7 @@ if(${ENABLE_gauxc})
                     libxc_external
                     gau2grid_external
             #URL https://github.com/wavefunction91/GauXC/archive/6a8f4bf.tar.gz
-            URL https:://github.com/JonathonMisiewicz:patch-1.tar.gz
+            URL https:://github.com/JonathonMisiewicz/GauXC/archive/patch-1.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
