@@ -279,7 +279,6 @@ def _write_molden(
        >>> molden(wfn, 'no_root1.molden', use_natural=True)
 
     """
-
     if filename is None:
         filename = core.get_writer_file_prefix(self.molecule().name()) + ".molden"
 
@@ -309,8 +308,6 @@ def _write_molden(
     if use_natural:
         # Alphas
         nmopi = self.nmopi()
-        #MO_Da = core.Matrix("MO Alpha Density Matrix", nmopi, nmopi)
-        #MO_Da.transform(self.Da(), self.Ca().transpose())
         MO_Da = self.Da_subset("MO") #MO_Da.transform(self.Da(), self.Ca())
         NO_Ra = core.Matrix("NO Alpha Rotation Matrix", nmopi, nmopi)
         occupation_a = core.Vector(nmopi)
@@ -318,14 +315,17 @@ def _write_molden(
         Ca = core.doublet(self.Ca(), NO_Ra, False, False)
         epsilon_a = occupation_a
         # Betas
-        #MO_Db = core.Matrix("MO Beta Density Matrix", nmopi, nmopi)
-        #MO_Db.transform(self.Db(), self.Cb().transpose())
-        MO_Db = self.Db_subset("MO")
-        NO_Rb = core.Matrix("NO Beta Rotation Matrix", nmopi, nmopi)
-        occupation_b = core.Vector(nmopi)
-        MO_Db.diagonalize(NO_Rb, occupation_b, core.DiagonalizeOrder.Descending)
-        Cb = core.doublet(self.Cb(), NO_Rb, False, False)
-        epsilon_b = occupation_b
+        if self.same_a_b_dens():
+            Cb = Ca
+            occupation_b = occupation_a
+            epsilon_b = epsilon_a
+        else:
+            MO_Db = self.Db_subset("MO")
+            NO_Rb = core.Matrix("NO Beta Rotation Matrix", nmopi, nmopi)
+            occupation_b = core.Vector(nmopi)
+            MO_Db.diagonalize(NO_Rb, occupation_b, core.DiagonalizeOrder.Descending)
+            Cb = core.doublet(self.Cb(), NO_Rb, False, False)
+            epsilon_b = occupation_b
 
     else:
         Ca = self.Ca()
@@ -403,10 +403,12 @@ def _write_molden(
         return element[0]
     mos.sort(key=mosSort)
 
+    closedshell = self.same_a_b_orbs() and self.same_a_b_dens() and (self.epsilon_a() == self.epsilon_b() or use_natural)
+
     for i in range(len(mos)):
         h, n = mos[i][1]
         mol_string += f" Sym= {ct.gamma(h).symbol():s}\n Ene= {epsilon_a.get(h, n):24.10e}\n Spin= Alpha\n"
-        if self.same_a_b_orbs() and self.epsilon_a() == self.epsilon_b() and self.same_a_b_dens():
+        if closedshell:
             mol_string += f" Occup= {occupation_a.get(h, n) + occupation_b.get(h, n):24.10e}\n"
         else:
             mol_string += f" Occup= {occupation_a.get(h, n):24.10e}\n"
@@ -415,7 +417,7 @@ def _write_molden(
 
     # Betas
     mos = []
-    if not self.same_a_b_orbs() or self.epsilon_a() != self.epsilon_b() or not self.same_a_b_dens():
+    if not closedshell:
         for h in range(nirrep):
             for n in range(mo_dim[h]):
                 mos.append((self.epsilon_b().get(h, n), (h, n)))

@@ -37,6 +37,7 @@ import logging
 import os
 import re
 import shutil
+import warnings
 from typing import Dict, Optional, Union
 
 import numpy as np
@@ -2054,15 +2055,22 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
         "Using `psi4.molden` instead of `wfn.write_molden` is deprecated, and as soon as 1.12 it will stop working\n",
         category=FutureWarning)
 
-    wfn_ = core.Wavefunction.build(wfn.molecule(), core.get_global_option('BASIS'))
-    wfn_.deep_copy(wfn)
-    if density_a:
+    if density_b and not density_a:
+        raise ValidationError(f"psi4.molden can't receive a beta but not an alpha spindensity.")
+
+    if not density_a:
+        wfn.write_molden(filename, dovirtual, False)
+    else:
+        wfn_ = core.Wavefunction.build(wfn.molecule(), core.get_global_option('BASIS'))
+        wfn_.deep_copy(wfn)
         wfn_.Da().copy(density_a)
         wfn_.Da().back_transform(wfn_.Ca())
-    if density_b:
-        wfn_.Db().copy(density_b)
-        wfn_.Db().back_transform(wfn_.Cb())
-    wfn_.write_molden(filename, dovirtual, density_a is not None or density_b is not None)
+        if density_b:
+            wfn_.Db().copy(density_b)
+            wfn_.Db().back_transform(wfn_.Cb())
+        else:
+            wfn_.Db().copy(wfn_.Da())
+        wfn_.write_molden(filename, dovirtual, True)
 
 
 def tdscf(wfn, **kwargs):
