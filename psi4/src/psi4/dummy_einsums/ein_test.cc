@@ -29,9 +29,10 @@
 #include <cmath>
 #include <cstdlib>
 
-#include "einsums.hpp"
-#include "range/v3/algorithm/for_each.hpp"
-#include "range/v3/view/zip.hpp"
+#include <Einsums/Print.hpp>
+#include <Einsums/Runtime.hpp>
+#include <Einsums/Tensor.hpp>
+#include <Einsums/TensorAlgebra.hpp>
 
 #include "psi4/libmints/wavefunction.h"
 
