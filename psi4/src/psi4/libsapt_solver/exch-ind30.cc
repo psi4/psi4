@@ -51,7 +51,7 @@ void SAPT2p3::exch_ind30() {
     tAR.reset();
     free_block(vAR);
 
-    auto tBS = std::make_unique<Matrix>("Ind30 uBS Amplitudes", noccA_, nvirA_);    
+    auto tBS = std::make_unique<Matrix>("Ind30 uBS Amplitudes", noccB_, nvirB_);
     double **vBS = block_matrix(noccB_, nvirB_);
 
     tBS->load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::SubBlocks);

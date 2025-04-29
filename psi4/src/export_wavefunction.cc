@@ -643,9 +643,11 @@ void export_wavefunction(py::module& m) {
                .. warning:: No checks that the amplitudes will fit in core. Do not use for proteins
         )pbdoc");
 
+#ifdef USING_CheMPS2
         py::class_<dmrg::DMRGSolver, std::shared_ptr<dmrg::DMRGSolver>, Wavefunction>(
           m, "DMRGSolver", "Specialized Wavefunction used by CheMPS2.")
           .def(py::init<std::shared_ptr<Wavefunction>, Options&>())
           .def("occupation_a", &dmrg::DMRGSolver::occupation_a, "Returns the occupation numbers of the current alpha orbitals using the spin-averaged density.")
           .def("occupation_b", &dmrg::DMRGSolver::occupation_b, "Returns the occupation numbers of the current beta orbitals using the spin-averaged density.");
+#endif
 }

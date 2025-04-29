@@ -1167,7 +1167,7 @@ void SAPT2p3::ind30_amps(int AAfile, const char *ARlabel, int BBfile, const char
 
     for (int a = 0; a < noccA; a++) {
         for (int r = 0; r < nvirA; r++) {
-            uAR.get_pointer()[r] /= evalsA[a] - evalsA[r + noccA];
+            uAR.pointer()[a][r] /= evalsA[a] - evalsA[r + noccA];
         }
     }
 

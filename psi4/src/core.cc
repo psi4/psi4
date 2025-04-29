@@ -561,7 +561,7 @@ void throw_deprecation_errors(std::string const& key, std::string const& module 
         py_psi_print_out("WARNING!\n\tRemove keyword PK_ALGO! PK_ALGO has been replaced by the SCF_SUBTYPE=YOSHIMINE_OUT_OF_CORE and REORDER_OUT_OF_CORE options. Using PK_ALGO will raise an error in v1.8.\n");
     }
     if (module == "DFOCC" && key == "MOLDEN_WRITE") {
-        py_psi_print_out("WARNING!\n\tRemove keyword MOLDEN_WRITE! Using MOLDEN_WRITE will raise an error in v1.12. Call wrn.write_molden instead.\n");
+        py_psi_print_out("WARNING!\n\tRemove keyword MOLDEN_WRITE! Using MOLDEN_WRITE will raise an error in v1.12. Call wfn.write_molden instead.\n");
     }
     if (module == "SAPT" && key == "E_CONVERGENCE") {
         throw PsiException(
