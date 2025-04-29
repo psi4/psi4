@@ -1,8 +1,8 @@
 if(${ENABLE_Einsums})
-    find_package(Einsums 0.6 CONFIG)
+    find_package(Einsums 1.0 CONFIG)
 
-    if(TARGET Einsums::einsums)
-        get_property(_loc TARGET Einsums::einsums PROPERTY LOCATION)
+    if(TARGET Einsums::Einsums)
+        get_property(_loc TARGET Einsums::Einsums PROPERTY LOCATION)
         message(STATUS "${Cyan}Found Einsums${ColourReset}: ${_loc} (found version ${Einsums_VERSION})")
         add_library(einsums_external INTERFACE)  # dummy
 
@@ -32,7 +32,7 @@ if(${ENABLE_Einsums})
         ExternalProject_Add(einsums_external
             DEPENDS lapack_external
                     hdf5_external
-            URL https://github.com/Einsums/Einsums/archive/v0.6.1.tar.gz
+            URL https://github.com/Einsums/Einsums/archive/v1.0.2.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

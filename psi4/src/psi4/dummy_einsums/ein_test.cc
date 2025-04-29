@@ -42,7 +42,7 @@ SharedWavefunction dummy_einsums(SharedWavefunction ref_wfn, Options& options) {
 
     using namespace einsums;
     using namespace einsums::tensor_algebra;
-    using namespace einsums::tensor_algebra::index;
+    using namespace einsums::index;
 
     einsums::initialize();
 
