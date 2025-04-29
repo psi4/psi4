@@ -1474,8 +1474,8 @@ data:
       constraint: null
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
-      #aux_build_names:
-      #  - hdf5=1.14.3
-      #aux_build_names_note:
-      #  "hdf5=1.14.3": "Temporary for Einsums while 1.14.4 not setting HDF5_VERSION."
+      aux_build_names:
+        - hdf5=1.14.3
+      aux_build_names_note:
+        "hdf5=1.14.3": "Temporary for Einsums while 1.14.4 not setting HDF5_VERSION."
       skip_win: true
