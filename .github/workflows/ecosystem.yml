@@ -74,7 +74,7 @@ jobs:
             runs-on: windows-latest
             python-version: "3.12"
             mkl-version: "" #"=2022.1"
-            llvm-version: "20" #"17.0.6"
+            llvm-version: "20.*" #"17.0.6"
             platform: win-64
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             pytest-name-expr: "not pe_ecp"
@@ -171,6 +171,7 @@ jobs:
           #sed -i "s;- cppe;#- cppe;g" env_p4build.yaml
           #sed -i "s;- qcfractal;- qcfractal>=0.59;g" env_p4build.yaml
           sed -i "s;- qcfractal;#- qcfractal>=0.59;g" env_p4build.yaml
+          sed -i "s;- einsums;#- einsums;g" env_p4build.yaml  # TODO UNDO
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
@@ -181,7 +182,7 @@ jobs:
           #sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
           #sed -E -i.bak "s;- einsums;#- einsums;g" env_p4build.yaml
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
-          #sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
+          sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
