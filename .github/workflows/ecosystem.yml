@@ -74,7 +74,7 @@ jobs:
             runs-on: windows-latest
             python-version: "3.12"
             mkl-version: "" #"=2022.1"
-            llvm-version: "17.0.6"
+            llvm-version: "20" #"17.0.6"
             platform: win-64
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             pytest-name-expr: "not pe_ecp"
@@ -186,7 +186,7 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
-          #sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
+          sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
           sed -i "s;- intel-openmp;- intel-openmp=2024.2.0=h57928b3_978;g" env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
