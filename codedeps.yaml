@@ -401,8 +401,8 @@ data:
         linux-64: "=*=*mkl"
         osx-64: "=*=*mkl"
         osx-arm64: "=*=*accelerate"
-        #win-64: "=*=24*mkl"
-        win-64: "=*=*mkl"
+        win-64: "=*=24*mkl"
+        #win-64: "=*=*mkl"  # READD release 24
       aux_build_names:
         - blas-devel
       aux_build_names_note:
@@ -1093,6 +1093,7 @@ data:
       constraint_note: "==0.3.1 tests clean. v0.3.2 more broadly available but errors with libecpint, hence 'not pe_ecp'."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_cppe is inconsequential."
+      skip_win: true  # READD remove
 
   - project: geometric
     use:
@@ -1239,6 +1240,7 @@ data:
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
+      skip_win: true  # READD remove
 
   - project: ecpint
     use:
