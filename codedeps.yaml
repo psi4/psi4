@@ -1093,7 +1093,8 @@ data:
       constraint_note: "==0.3.1 tests clean. v0.3.2 more broadly available but errors with libecpint, hence 'not pe_ecp'."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_cppe is inconsequential."
-      #skip_win: true  # READD remove
+      skip_win: true  # READD remove
+      skip_win_note: "cppe is available for Windows but uses llvm-openmp that runtime conflicts with Psi4 MKL build."
 
   - project: geometric
     use:
