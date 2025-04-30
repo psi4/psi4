@@ -1093,7 +1093,7 @@ data:
       constraint_note: "==0.3.1 tests clean. v0.3.2 more broadly available but errors with libecpint, hence 'not pe_ecp'."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_cppe is inconsequential."
-      skip_win: true  # READD remove
+      #skip_win: true  # READD remove
 
   - project: geometric
     use:
@@ -1240,7 +1240,7 @@ data:
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
-      skip_win: true  # READD remove
+      #skip_win: true  # READD remove
 
   - project: ecpint
     use:
