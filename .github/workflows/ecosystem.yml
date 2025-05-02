@@ -170,13 +170,14 @@ jobs:
           :
           # not for py312
           sed -i "s;- adcc;#- adcc;g" env_p4build.yaml
-          sed -i "s;- hdf5;#- hdf5;g" env_p4build.yaml
+          sed -i "s;- h5py;#- h5py;g" env_p4build.yaml
+          sed -i "s;- ambit;#- ambit;g" env_p4build.yaml
           #sed -i "s;- cppe;#- cppe;g" env_p4build.yaml
           #sed -i "s;- qcfractal;- qcfractal>=0.59;g" env_p4build.yaml
           sed -i "s;- qcfractal;#- qcfractal>=0.59;g" env_p4build.yaml
           #READD2 UNTIL TORSIONDRIVE
           #sed -i "s;- einsums;#- einsums;g" env_p4build.yaml  # TODO UNDO READD2
-          sed -i "s;- openfermionpsi4;#- openfermionpsi4;g" env_p4build.yaml
+          sed -i "s;- openfermion;#- openfermion;g" env_p4build.yaml
           #sed -i "s;- adcc;#- adcc;g" env_p4build.yaml
           # until hdf5/h5py versions reconciled
         fi
@@ -184,6 +185,7 @@ jobs:
           :
           # sed -E -i.bak "s;;;g" env_p4build.yaml
           sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
+          sed -E -i.bak "s;- ambit;#- ambit;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Silicon)" ]]; then
           :
@@ -192,6 +194,7 @@ jobs:
           sed -E -i.bak "s;- openfermionpsi4;#- openfermionpsi4;g" env_p4build.yaml
           # openfermion not yet ready for np v2
           sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
+          sed -E -i.bak "s;- ambit;#- ambit;g" env_p4build.yaml
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
