@@ -17,13 +17,6 @@ target_link_libraries(core
     pybind11::lto
     pybind11::windows_extras
 )
-if(TARGET Einsums::Einsums)
-# TODO UNDO this block is very bad but just testing if Einsums appeased by it
-target_link_libraries(core
-  PRIVATE
-    pybind11::embed
-)
-endif()
 pybind11_extension(core)
 if(NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo)
     # Strip unnecessary sections of the binary on Linux/macOS
