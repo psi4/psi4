@@ -185,6 +185,7 @@ jobs:
           #sed -E -i.bak "s;- einsums;#- einsums;g" env_p4build.yaml # TODO UNDO READD2 testing omp segfault only on mac with pybind11::embed
           sed -E -i.bak "s;- openfermionpsi4;#- openfermionpsi4;g" env_p4build.yaml
           # openfermion not yet ready for np v2
+          sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml  # until hdf5/h5py versions reconciled
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
