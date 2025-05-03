@@ -1421,9 +1421,8 @@ data:
     conda:
       channel: conda-forge
       name: einsums
-      constraint: ">=1.0.3" #null #"=*=mkl*"
+      constraint: ">=1.0.3"
       constraint_note: "v1 changes interface, and 1.0.3 needed for Linux to compile against."
-      # todo: tie einsums variant to libblas selection, rather than mkl constraint above.
       aux_build_names:
         - range-v3
         - zlib
@@ -1438,6 +1437,31 @@ data:
           win-64: ${CONDA_PREFIX}/Library/share/cmake/Einsums
         //CMAKE_INSIST_FIND_PACKAGE_Einsums: true
         //CMAKE_DISABLE_FIND_PACKAGE_Einsums: true
+
+  - project: integratorxx
+    use:
+      added: 1.10
+      required: false
+      required_note: "Allow using the IntegratorXX DFT grid library."
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: wavefunction91
+      name: IntegratorXX
+      commit: cf2917c
+    conda:
+      channel: conda-forge
+      name: integratorxx
+      constraint: null
+      cmake:
+        ENABLE_IntegratorXX: true
+        IntegratorXX_DIR:
+          unix: ${CONDA_PREFIX}/lib/cmake/IntegratorXX
+          win-64: ${CONDA_PREFIX}/Library/lib/cmake/IntegratorXX
+        //CMAKE_INSIST_FIND_PACKAGE_IntegratorXX: true
+        //CMAKE_DISABLE_FIND_PACKAGE_IntegratorXX: true
 
   - project: gauxc 
     use:

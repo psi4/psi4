@@ -26,7 +26,7 @@ jobs:
         C_COMPILER: 'gcc'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran g++-14'
+        APT_INSTALL: 'gfortran'
         vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: 'api and not stdsuite and not (smoke or quick or medlong or long)'
         ENABLE_EINSUMS: "ON"
