@@ -402,7 +402,7 @@ data:
         osx-64: "=*=*mkl"
         osx-arm64: "=*=*accelerate"
         win-64: "=*=24*mkl"
-        #win-64: "=*=*mkl"  # READD release 24
+      constraint_note: "On Windows, MKL 2024.2.2 gives wrong results, so 24*mkl requests 2024.1.0."
       aux_build_names:
         - blas-devel
       aux_build_names_note:
@@ -1197,7 +1197,7 @@ data:
       host: github
       account: MolSSI
       name: QCEngine
-      commit: v0.30.0
+      commit: v0.32.0
     #cmake:
     #  name: qcengine
     #  constraint: ATLEAST 0.26.0

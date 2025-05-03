@@ -74,7 +74,7 @@ jobs:
             runs-on: windows-latest
             python-version: "3.12"
             mkl-version: ""
-            llvm-version: "20.*"  # READD "20.*"  # known good: "17.0.6"
+            llvm-version: "19.*"  # READD "20.*"  # known good: "17.0.6"; omp problem: "20.1.4"
             platform: win-64
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             pytest-name-expr: "not pe_ecp"
@@ -272,7 +272,7 @@ jobs:
         python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.29.0.dev2 --no-deps
 
     - name: Special Config - QCEngine Dep
-      if: true  # needed for Windows + DFTD4
+      if: false  # needed for Windows + DFTD4
       run: |
         conda remove qcengine --force  # TODO UNDO after https://github.com/MolSSI/QCEngine/pull/472
         python -m pip install git+https://github.com/loriab/QCEngine.git@d4why --no-deps
