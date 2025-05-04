@@ -74,7 +74,7 @@ jobs:
             runs-on: windows-latest
             python-version: "3.12"
             mkl-version: ""
-            llvm-version: "19.*"  # READD "20.*"  # known good: "17.0.6"; omp problem: "20.1.4"
+            llvm-version: "17.0.6"  # known good: "17.0.6"; omp problem: 19, 20
             platform: win-64
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             pytest-name-expr: "not pe_ecp"
