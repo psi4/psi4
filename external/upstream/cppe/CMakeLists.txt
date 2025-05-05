@@ -22,7 +22,7 @@ if(${ENABLE_cppe})
 
         ExternalProject_Add(cppe_external
             DEPENDS pybind11_external
-            URL https://github.com/maxscheurer/cppe/archive/v0.3.1.tar.gz
+            URL https://github.com/maxscheurer/cppe/archive/v0.3.2.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                         # runtime segfault if Debug passed from Psi4
