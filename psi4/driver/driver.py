@@ -76,9 +76,7 @@ def _energy_is_invariant(gradient_rms, stationary_criterion=1.e-2):
 
 def _filter_renamed_methods(compute, method):
     r"""Raises UpgradeHelper when a method has been renamed."""
-    if method == "dcft":
-        raise UpgradeHelper(compute + "('dcft')", compute + "('dct')", 1.4,
-                            " All instances of 'dcft' should be replaced with 'dct'.")
+    pass
 
 
 def energy(name, **kwargs):
