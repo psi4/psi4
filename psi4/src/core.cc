@@ -551,6 +551,22 @@ bool specifies_convergence(std::string const& key) {
 
 // DCFT deprecation errors first added in 1.4. Feel free to retire after "enough" time.
 void throw_deprecation_errors(std::string const& key, std::string const& module = "") {
+    // Templates.
+    /*
+    if (module == "OLD") {
+        throw PsiException(
+            "Rename local options block. All instances of 'OLD' should be replaced with 'NEW'. The method was renamed "
+            "in vX.Y.",
+            __FILE__, __LINE__);
+    }
+    if (key.find("OLD") != std::string::npos) {
+        throw PsiException(
+            "Rename keyword " + key +
+                ". All instances of 'OLD' should be replaced with 'NEW'. The method was renamed in vX.Y.",
+            __FILE__, __LINE__);
+    }
+    */
+
     if (module == "SCF" && key == "DIIS_MIN_VECS") {
         py_psi_print_out("WARNING!\n\tRemove keyword DIIS_MIN_VECS! This keyword does nothing. Using it will raise an error in v1.7.\n");
     }

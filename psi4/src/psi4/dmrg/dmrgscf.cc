@@ -938,7 +938,6 @@ double DMRGSolver::compute_energy()
 
     // Reference on what the density is:
     // https://github.com/SebWouters/CheMPS2/issues/83
-    // TODO: Get this added!!!
     density_map_["DMRG MS-AVERAGED (MO)"] = std::make_shared<Matrix>(std::move(build_rdm(iHandler, DMRG1DM)));
     density_map_["DMRG MS-AVERAGED"] = std::make_shared<Matrix>(std::move(mo_to_ao(*density_map_["DMRG MS-AVERAGED (MO)"], *Ca_, *aotoso())));
 

@@ -59,7 +59,7 @@ file plus the name of the current molecule. If |globals__molden_with_virtual|
 is set to false, the unoccupied orbitals are not written to the Molden
 file.
 
-.. autofunction:: psi4.molden(wfn, filename)
+.. autofunction:: psi4.core.Wavefunction.write_molden(filename)
    :noindex:
 
 Options
