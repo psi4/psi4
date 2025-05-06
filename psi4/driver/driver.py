@@ -1995,9 +1995,6 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     .. versionadded:: 0.5
        *wfn* parameter passed explicitly
 
-    .. deprecated:: 1.10
-       Use :py:func:`psi4.core.Wavefunction.write_molden` instead.
-
     :returns: None
 
     :type wfn: :py:class:`~psi4.core.Wavefunction`

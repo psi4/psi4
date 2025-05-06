@@ -441,7 +441,7 @@ For more elaborate post-processing of computations, adding
     print wfn.gradient().rms()
 
     # format output for other programs
-    wfn.write_molden('mycalc.molden')
+    molden(wfn, 'mycalc.molden')
 
     # access array in another format
     np.array(wfn.hessian())
@@ -460,7 +460,7 @@ For more elaborate post-processing of computations, adding
     print(wfn.gradient().rms())
 
     # format output for other programs
-    wfn.write_molden('mycalc.molden')
+    psi4.molden(wfn, 'mycalc.molden')
 
     # access array in another format
     np.array(wfn.hessian())
