@@ -6,6 +6,7 @@ list(APPEND _allowed_cxx_standards 20)
 if(NOT psi4_CXX_STANDARD IN_LIST _allowed_cxx_standards)
   message(FATAL_ERROR "Psi4 requires C++20 at least")
 endif()
+set(CMAKE_CXX_SCAN_FOR_MODULES 0)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
