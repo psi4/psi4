@@ -20,6 +20,9 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 
+# set globally here as each psi4/src/psi4/* needs it
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+
 include(psi4OptionsTools)
 include(TestRestrict)
 include(TestBigEndian)
