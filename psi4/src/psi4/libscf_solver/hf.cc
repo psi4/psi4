@@ -541,6 +541,16 @@ void HF::form_H() {
     if (debug_ > 2) T_->print("outfile");
     if (debug_ > 2) V_->print("outfile");
 
+    if (Vperm_) {
+        if (nirrep_ > 1)
+            throw PSIEXCEPTION("RHF_embed: arbitrary permanent 1e potentials require 'symmetry c1'.");
+        if (Vperm_->rowdim() != Vperm_->coldim())
+            throw PSIEXCEPTION("RHF_embed: arbitrary permanent 1e potential matrix must be a square matrix.");
+        if (V_->coldim() != Vperm_->coldim())
+            throw PSIEXCEPTION("RHF_embed: arbitrary permanent 1e potential matrix must be nbf x nbf.");
+        V_->add(Vperm_);
+    }
+
     if (perturb_h_) {
         if (dipole_field_type_ == embpot || dipole_field_type_ == sphere ||
             dipole_field_type_ == dx) {  // embedding potential read from file
