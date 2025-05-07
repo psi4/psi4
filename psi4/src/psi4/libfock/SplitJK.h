@@ -161,6 +161,20 @@ class PSI_API DirectDFJ : public SplitJK {
     /// Coulomb Metric
     SharedMatrix J_metric_;
 
+    /**
+     * Screen ERI contributions during formation of the gamma_P intermediate
+     */
+    bool shell_significant(int M, int N, int P,
+        const std::shared_ptr<TwoBodyAOInt> eri_computer, 
+        double** matrixp, const std::vector<double>& J_metric_shell_diag);
+
+    /**
+     * Screen ERI contributions during formation of J 
+     */
+    bool shell_significant(int M, int N, int P,
+        const std::shared_ptr<TwoBodyAOInt> eri_computer, 
+        double* vectorp, const std::vector<double>& J_metric_shell_diag);
+
    public:
     // => Constructors < = //
 
@@ -210,6 +224,13 @@ class PSI_API LinK : public SplitJK {
 
     // Density-based ERI Screening tolerance to use in the LinK algorithm
     double linK_ints_cutoff_;
+
+    /**
+     * Determine if shell quartet is significant or not 
+     * based on screening method used
+     */ 
+    bool shell_significant(int M, int N, int R, int S,
+        const std::shared_ptr<TwoBodyAOInt> eri_computers); 
 
    public:
     // => Constructors < = //
@@ -277,6 +298,20 @@ class PSI_API COSK : public SplitJK {
     double basis_tol_;
     /// use overlap-fitted COSX algo?
     bool overlap_fitted_;
+
+    /**
+     * Determine significance of shell pair over block of grid points 
+     */ 
+    bool shell_significant_block(int NU, int TAU, bool symm,
+        double X_block_max, double** esp_boundp,
+        double* F_block_gmaxp);
+
+    /**
+     * Determine significance of shell pair over single grid point 
+     */ 
+    bool shell_significant(int NU, int TAU, int g, bool symm,
+        psi::Vector X_block_bfmaxp, double** esp_boundp,
+        double** F_block_shellp, double dist_decay); 
 
    public:
     // => Constructors < = //

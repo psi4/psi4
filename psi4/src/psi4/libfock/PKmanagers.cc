@@ -1068,6 +1068,13 @@ void PKMgrYoshimine::form_PK_wK() {
     sort_ints_wK();
 }
 
+bool PKMgrYoshimine::shell_significant(int M, int N, int R, int S,
+    const std::shared_ptr<TwoBodyAOInt> ints, 
+    const std::vector<SharedMatrix>& D) 
+{
+    return ints->shell_significant(M,N,R,S); 
+}
+
 void PKMgrYoshimine::compute_integrals(bool wK) {
     // Get an AO integral factory
     auto intfact = std::make_shared<IntegralFactory>(primary());
@@ -1101,7 +1108,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
             for (size_t j = 0; j <= i; ++j) {
                 int RR = sh_pairs[j].first;
                 int SS = sh_pairs[j].second;
-                if (tb[thread]->shell_significant(PP, QQ, RR, SS)) {
+                if (shell_significant(PP, QQ, RR, SS, tb[thread])) {
                     int P = PP;
                     int Q = QQ;
                     int R = RR;
@@ -1140,7 +1147,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
             for (size_t j = 0; j <= i; ++j) {
                 int RR = sh_pairs[j].first;
                 int SS = sh_pairs[j].second;
-                if (tb[thread]->shell_significant(PP, QQ, RR, SS)) {
+                if (shell_significant(PP, QQ, RR, SS, tb[thread])) {
                     int P = PP;
                     int Q = QQ;
                     int R = RR;
