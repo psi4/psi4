@@ -303,6 +303,12 @@ add_custom_target(update_version ALL
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
+message("PRE    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALLLIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4")
+file(TO_CMAKE_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALLLIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4" _asdf_cmake)
+file(TO_NATIVE_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALLLIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4" _asdf_native)
+message("CMAKE  ${_asdf_cmake}")
+message("NATIVE ${_asdf_native}")
+
 # <<<  Install  >>>
 
     # <<<  install bin/  >>>
