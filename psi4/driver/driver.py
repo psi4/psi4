@@ -2049,10 +2049,6 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
 
     """
 
-    warnings.warn(
-        "Using `psi4.molden` instead of `wfn.write_molden` is deprecated, and as soon as 1.12 it will stop working\n",
-        category=FutureWarning)
-
     if density_b and not density_a:
         raise ValidationError(f"psi4.molden can't receive a beta but not an alpha spindensity.")
 
