@@ -523,7 +523,6 @@ void export_mints(py::module& m) {
     typedef SharedMatrix (Matrix::*get_block_shared)(const Slice&, const Slice&) const;
 
     py::enum_<Matrix::SaveType>(m, "SaveType", "The layout of the matrix for saving")
-        .value("Full", Matrix::SaveType::Full)
         .value("SubBlocks", Matrix::SaveType::SubBlocks)
         .value("LowerTriangle", Matrix::SaveType::LowerTriangle)
         .export_values();
@@ -1688,12 +1687,6 @@ void export_mints(py::module& m) {
         .def("SCF_Dtot", &FCHKWriter::SCF_Dtot, py::return_value_policy::reference_internal)
         .def("set_postscf_density_label", &FCHKWriter::set_postscf_density_label,
              "Set base label for post-SCF density, e.g. ' CC Density'.", "label"_a);
-
-    py::class_<MoldenWriter, std::shared_ptr<MoldenWriter>>(m, "MoldenWriter",
-                                                            "Writes wavefunction information in molden format")
-        .def(py::init<std::shared_ptr<Wavefunction>>())
-        .def("write", &MoldenWriter::write, "Writes wavefunction information in molden format", "filename"_a, "Ca"_a,
-             "Cb"_a, "Ea"_a, "Eb"_a, "OccA"_a, "OccB"_a, "dovirtual"_a);
 
     py::class_<MOWriter, std::shared_ptr<MOWriter>>(m, "MOWriter", "Writes the MOs")
         .def(py::init<std::shared_ptr<Wavefunction>>())
