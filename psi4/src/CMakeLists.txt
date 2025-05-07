@@ -230,5 +230,6 @@ set_target_properties(core PROPERTIES
                            # PREFIX/SUFFIX covered by pybind11_extension in pybind11_add_module
                            # PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
                            # SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
+                           CXX_SCAN_FOR_MODULES OFF
                            INSTALL_RPATH "${psi4_RPATH}"
                            BUILD_WITH_INSTALL_RPATH ON)
