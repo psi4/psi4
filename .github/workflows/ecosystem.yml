@@ -167,11 +167,6 @@ jobs:
         #
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
-          # not for py312
-          #sed -i "s;- adcc;#- adcc;g" env_p4build.yaml
-          #sed -i "s;- h5py;#- h5py;g" env_p4build.yaml
-          #sed -i "s;- ambit;#- ambit;g" env_p4build.yaml
-          # einsums on hdf5 1.14.6, above on 1.14.3
           sed -i "s;- openfermion;#- openfermion;g" env_p4build.yaml
           # openfermion not yet ready for np v2
           #sed -i "s;- qcfractal;- qcfractal>=0.59;g" env_p4build.yaml
@@ -181,19 +176,11 @@ jobs:
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
           # sed -E -i.bak "s;;;g" env_p4build.yaml
-          #sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
-          #sed -E -i.bak "s;- h5py;#- h5py;g" env_p4build.yaml
-          #sed -E -i.bak "s;- ambit;#- ambit;g" env_p4build.yaml
-          # einsums on hdf5 1.14.6, above on 1.14.3
           sed -E -i.bak "s;- openfermion;#- openfermion;g" env_p4build.yaml
           # openfermion not yet ready for np v2
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Silicon)" ]]; then
           :
-          #sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
-          #sed -E -i.bak "s;- ambit;#- ambit;g" env_p4build.yaml
-          #sed -E -i.bak "s;- h5py;#- h5py;g" env_p4build.yaml
-          # einsums on hdf5 1.14.6, above on 1.14.3
           sed -E -i.bak "s;- openfermion;#- openfermion;g" env_p4build.yaml
           # openfermion not yet ready for np v2
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
@@ -203,7 +190,6 @@ jobs:
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
           sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
-          #sed -i "s;- intel-openmp;- intel-openmp=2024.2.0=h57928b3_978;g" env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
         echo "::group::View Env Spec File for Conda (Edited)"
