@@ -269,6 +269,7 @@ ExternalProject_Add(psi4-core
               -Dpsi4_CXX_STANDARD_Libint2=${psi4_CXX_STANDARD_Libint2}
               -DCMAKE_CXX_STANDARD_REQUIRED=ON
               -DCMAKE_CXX_EXTENSIONS=OFF
+              -DCMAKE_CXX_SCAN_FOR_MODULES=0
               -DFORCE_PEDANTIC=${FORCE_PEDANTIC}
               -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
               -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
