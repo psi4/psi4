@@ -49,6 +49,7 @@ from .mdi_engine import mdi_run
 from .p4util.exceptions import *
 from .procrouting import *
 from .task_base import AtomicComputer
+from .procrouting.sapt import fsapt
 
 # never import wrappers or aliases into this file
 
@@ -797,6 +798,7 @@ def properties(*args, **kwargs):
         return (core.variable('CURRENT ENERGY'), wfn)
     else:
         return core.variable('CURRENT ENERGY')
+
 
 
 def optimize_geometric(name, **kwargs):
@@ -2096,8 +2098,53 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
         mw = core.MoldenWriter(wfn)
         mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb, dovirt)
 
+
 def tdscf(wfn, **kwargs):
-    return proc.run_tdscf_excitations(wfn,**kwargs)
+    return proc.run_tdscf_excitations(wfn, **kwargs)
+
+
+def fsapt_analysis(
+    fragments_a: Dict,
+    fragments_b: Dict,
+    molecule=None,
+    atomic_results=None,  # :AtomicResults,
+    pdb_dir: str = None,
+    analysis_type: str = "reduced",
+    links5050: bool = True,
+    dirname: str = "./fsapt",
+):
+    r"""Runs fsapt.py either through qcvars or on fsapt output files.
+
+    To run through qcvars, you must have just run fisapt0 (having qcvars stored
+    in core.variables()) or provide an atomic_results=AtomicResults() object
+    from QCSchema format.
+
+    Running this function through output files requires the directory where
+    fsapt wrote its files (dirname which is defaulted to './fsapt')
+    """
+
+    logger.debug('FSAPT ANALYSIS')
+    if atomic_results is None and molecule is None:
+        print(f"Running fsapt_analysis through output files with {dirname = }")
+        with open(f"{dirname}/fA.dat", "w") as f:
+            for k, v in fragments_a.items():
+                f.write(f"{k} {' '.join([str(i) for i in v])}\n")
+        with open(f"{dirname}/fB.dat", "w") as f:
+            for k, v in fragments_b.items():
+                f.write(f"{k} {' '.join([str(i) for i in v])}\n")
+        results = fsapt.run_from_output()
+    else:
+        print("Running fsapt_analysis through variables")
+        results = fsapt.run_fsapt_analysis(
+            fragments_a,
+            fragments_b,
+            molecule,
+            atomic_results,
+            pdb_dir,
+            analysis_type,
+            links5050,
+        )
+    return results
 
 
 # Aliases
