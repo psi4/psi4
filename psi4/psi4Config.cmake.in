@@ -61,6 +61,7 @@ set (_valid_components
     pcmsolver
     simint
     einsums
+    integratorxx
     gauxc
 )
 
@@ -131,6 +132,24 @@ if(NOT TARGET ${PN}::core)
     find_package(TargetLAPACK CONFIG REQUIRED)
     set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     find_package(Threads)
+
+    message("alert -- THREADS_FOUND ${THREADS_FOUND}")
+    
+    include(CMakePrintHelpers)
+    cmake_print_properties(
+      TARGETS
+        Threads::Threads
+    #    Libint2::cxx
+      PROPERTIES
+        IMPORTED_LINK_DEPENDENT_LIBRARIES
+        INTERFACE_LOCATION
+        INTERFACE_LINK_LIBRARIES
+        INTERFACE_INCLUDE_DIRECTORIES
+        INTERFACE_COMPILE_DEFINITIONS
+        INTERFACE_COMPILE_OPTIONS
+        INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+      )
+
     find_package(Libint2 CONFIG REQUIRED)
     # No more ${PN} since defined in above find_package
 endif()

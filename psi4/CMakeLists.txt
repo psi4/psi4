@@ -292,6 +292,12 @@ endif()
 # * computes version from metadata.py and git info
 # * calls cmake to run write_basic_package_version_file
 
+message("2PRE    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4")
+file(TO_CMAKE_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4" _asdf_cmake)
+file(TO_NATIVE_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4" _asdf_native)
+message("2CMAKE  ${_asdf_cmake}")
+message("2NATIVE ${_asdf_native}")
+
 add_custom_target(update_version ALL
                   COMMAND ${Python_EXECUTABLE} versioner.py --metaout ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
                                                             --cmakeout ${CMAKE_CURRENT_BINARY_DIR}/metadata.cmake
@@ -302,12 +308,6 @@ add_custom_target(update_version ALL
                   COMMENT "Generating version info")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
-
-message("2PRE    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALLLIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4")
-file(TO_CMAKE_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALLLIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4" _asdf_cmake)
-file(TO_NATIVE_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALLLIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4" _asdf_native)
-message("2CMAKE  ${_asdf_cmake}")
-message("2NATIVE ${_asdf_native}")
 
 # <<<  Install  >>>
 
