@@ -2177,6 +2177,10 @@ def run_dfocc(name, **kwargs):
 
     dfocc_wfn = core.dfocc(ref_wfn)
 
+    if core.get_local_option("DFOCC", "MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dfocc_wfn.molecule().name()) + "_dfocc.molden"
+        dfocc_wfn.write_molden(filename, True, True)
+
     # Shove variables into global space
     for k, v in dfocc_wfn.variables().items():
         core.set_variable(k, v)
@@ -2279,6 +2283,10 @@ def run_dfocc_gradient(name, **kwargs):
 
     dfocc_wfn.set_variable(f"{name.upper()} TOTAL GRADIENT", dfocc_wfn.gradient())
 
+    if core.get_local_option("DFOCC", "MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dfocc_wfn.molecule().name()) + "_dfocc.molden"
+        dfocc_wfn.write_molden(filename, True, True)
+
     # Shove variables into global space
     for k, v in dfocc_wfn.variables().items():
         core.set_variable(k, v)
@@ -2351,6 +2359,10 @@ def run_dfocc_property(name, **kwargs):
     if name in ['mp2', 'omp2']:
         for k, v in dfocc_wfn.variables().items():
             core.set_variable(k, v)
+
+    if core.get_local_option("DFOCC", "MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dfocc_wfn.molecule().name()) + "_dfocc.molden"
+        dfocc_wfn.write_molden(filename, True, True)
 
     optstash.restore()
     return dfocc_wfn
@@ -4429,6 +4441,10 @@ def run_dmrgscf(name, **kwargs):
     for k, v in dmrg_wfn.variables().items():
         core.set_variable(k, v)
 
+    if core.get_option("DMRG", "DMRG_MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dmrg_wfn.molecule().name()) + "_pseudocanonical.molden"
+        dmrg_wfn.write_molden(filename, True, False)
+
     return dmrg_wfn
 
 
@@ -4457,6 +4473,10 @@ def run_dmrgci(name, **kwargs):
     # Shove variables into global space
     for k, v in dmrg_wfn.variables().items():
         core.set_variable(k, v)
+
+    if core.get_option("DMRG", "DMRG_MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dmrg_wfn.molecule().name()) + "_pseudocanonical.molden"
+        dmrg_wfn.write_molden(filename, True, True)
 
     return dmrg_wfn
 

@@ -3007,15 +3007,6 @@ void Matrix::save(psi::PSIO *const psio, size_t fileno, SaveType st) {
                 psio->write_entry(fileno, const_cast<char *>(str.c_str()), (char *)matrix_[h][0],
                                   sizeof(double) * colspi_[h ^ symmetry_] * rowspi_[h]);
         }
-    } else if (st == Full) {
-        double **fullblock = to_block_matrix();
-
-        // Write the full block
-        if (sizer > 0 && sizec > 0)
-            psio->write_entry(fileno, const_cast<char *>(name_.c_str()), (char *)fullblock[0],
-                              sizeof(double) * sizer * sizec);
-
-        linalg::detail::free(fullblock);
     } else if (st == LowerTriangle) {
         double *lower = to_lower_triangle();
 
@@ -3102,15 +3093,6 @@ void Matrix::load(psi::PSIO *const psio, size_t fileno, SaveType st) {
                 psio->read_entry(fileno, str.c_str(), (char *)matrix_[h][0],
                                  sizeof(double) * colspi_[h ^ symmetry_] * rowspi_[h]);
         }
-    } else if (st == Full) {
-        double **fullblock = to_block_matrix();
-
-        // Read the full block
-        if (sizer > 0 && sizec > 0)
-            psio->read_entry(fileno, name_.c_str(), (char *)fullblock[0], sizeof(double) * sizer * sizec);
-
-        set(fullblock);
-        free_block(fullblock);
     } else if (st == LowerTriangle) {
         double *lower = to_lower_triangle();
 
