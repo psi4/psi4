@@ -1,5 +1,3 @@
-spherical
-
 !----------------------------------------------------------------------
 ! Basis Set Exchange
 ! Version 0.11
@@ -10,7 +8,23 @@ spherical
 !        Role: orbital
 !     Version: 0  (Data from the Original Basis Set Exchange)
 !----------------------------------------------------------------------
-
+! Elements                             References
+! --------                             ----------
+! H     : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
+! He    : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).
+! B - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
+! Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).
+! Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,
+! J. Chem. Phys., 110, 7667 (1999).
+! Original exponents recontracted: W.A. de Jong, R.J. Harrison and D.A. Dixon,
+! J. Chem. Phys. 114, 48 (2001).
+! Sc - Zn: (20s,16p,8d,2f,1g) -> [7s,6p,4d,2f,1g]     N.B. Balabanov and K.A.
+! Peterson, J. Chem. Phys.,
+! 123, 064107 (2005)
+! Y Zr Nb Mo Tc Ru Rh Pd      : K.A. Peterson, D. Figgen, M. Dolg, H. Stoll, 
+! Energy-consistent relativistic pseudopotentials and correlation consistent 
+! basis sets for the 4d elements Y-Pd, Journal of Chemical Physics 126, 124101 (2007).
+! 
 
 ****
 H     0 
