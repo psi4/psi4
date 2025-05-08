@@ -129,6 +129,7 @@ if(NOT TARGET ${PN}::core)
       set(ENABLE_OPENMP "@ENABLE_OPENMP@")
     endif()
     find_package(TargetLAPACK CONFIG REQUIRED)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     find_package(Threads)
     find_package(Libint2 CONFIG REQUIRED)
     # No more ${PN} since defined in above find_package
