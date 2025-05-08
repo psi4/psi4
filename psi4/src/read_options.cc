@@ -193,6 +193,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
+    /*- Use OpenOrbitalOptimizer to carry out SCF?. -*/
+    options.add_bool("OOO_SCF", false);
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -1778,6 +1780,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SAD_SPIN_AVERAGE", true);
         /*- SAD guess density decomposition threshold !expert -*/
         options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
+#ifdef USING_OpenOrbitalOptimizer
+        /*- Orbital optimizer package to use for SAD guess. If compiled with OpenOrbitalOptimizer support, change this option to use the internal code. -*/
+        options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "OPENORBITALOPTIMIZER", "INTERNAL OPENORBITALOPTIMIZER");
+#else
+        /*- Orbital optimizer package to use for SAD guess. -*/
+        options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
+#endif
 
         /*- SUBSECTION DFT -*/
 

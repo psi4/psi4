@@ -37,6 +37,16 @@
 #include "dimension.h"
 
 #include <eigen3/Eigen/Core>
+#ifdef USING_OpenOrbitalOptimizer
+#define ARMA_DONT_USE_WRAPPER
+#include <armadillo>
+#else
+// Forward declaration
+namespace arma {
+  class mat;
+}
+#endif
+
 
 namespace psi {
 
@@ -278,6 +288,10 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// returns an Eigen::Map object to the underlying matrix data buffer
     Eigen::Map<Eigen::MatrixXd> eigen_map();
     std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps();
+    /// Returns an Armadillo matrix
+    arma::mat to_armadillo_matrix(int h=0);
+    /// Copies data from an Armadillo matrix
+    void from_armadillo_matrix(const arma::mat & m, int h=0);
 
     /**
     ** For a matrix of 3D vectors (ncol==3), rotate a set of points around an

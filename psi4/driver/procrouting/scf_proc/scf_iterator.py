@@ -276,6 +276,18 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
+    ooo_scf = core.get_global_option('OOO_SCF')
+    if ooo_scf:
+        # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
+        if self.sad_ and self.iteration_ <= 0:
+            self.form_G()
+            self.form_initial_F()
+            self.form_initial_C()
+            self.reset_occupation()
+            self.find_occupation()
+        self.openorbital_scf()
+        self.set_energies("Total Energy", self.compute_E())
+        return
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = False
