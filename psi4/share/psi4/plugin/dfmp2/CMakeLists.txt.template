@@ -28,7 +28,10 @@
 # @END LICENSE
 #
 
-cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19...4.0)
+if (POLICY CMP0167)
+    cmake_policy(SET CMP0167 OLD)
+endif ()
 
 project(@plugin@ CXX)
 

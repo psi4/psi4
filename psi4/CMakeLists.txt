@@ -1,5 +1,12 @@
-cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19...4.0)
 cmake_policy(SET CMP0094 NEW)
+if (POLICY CMP0167)
+    # L2 not prepared for BoostConfig instead of FindBoost
+    cmake_policy(SET CMP0167 OLD)
+endif ()
+#if (POLICY CMP0177)
+#    cmake_policy(SET CMP0177 OLD)
+#endif()
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared
@@ -15,6 +22,9 @@ if (NOT MSVC)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
+
+# set globally here as each psi4/src/psi4/* needs it
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 include(psi4OptionsTools)
 include(TestRestrict)
@@ -281,6 +291,12 @@ endif()
 # <<<  Version  >>>
 # * computes version from metadata.py and git info
 # * calls cmake to run write_basic_package_version_file
+
+message("2PRE    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4")
+file(TO_CMAKE_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4" _asdf_cmake)
+file(TO_NATIVE_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4" _asdf_native)
+message("2CMAKE  ${_asdf_cmake}")
+message("2NATIVE ${_asdf_native}")
 
 add_custom_target(update_version ALL
                   COMMAND ${Python_EXECUTABLE} versioner.py --metaout ${CMAKE_CURRENT_BINARY_DIR}/metadata.py

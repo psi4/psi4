@@ -489,7 +489,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     #   * removing autodocs alleviates dependencies
     #   * thar will be warnings galore for unresolved links
     add_custom_command(
-        TARGET sphinxmini
+        TARGET sphinxmini POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E remove ${CCBD}/source/autodoc*
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CCBD}/source/autodir_options_c
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CCBD}/source/autodir_psivariables

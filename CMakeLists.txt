@@ -1,5 +1,5 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19...4.0)
 cmake_policy(SET CMP0094 NEW)
 cmake_policy(SET CMP0075 NEW)
 if (POLICY CMP0135)
@@ -13,6 +13,9 @@ if (POLICY CMP0167)
     # L2 not prepared for BoostConfig instead of FindBoost
     cmake_policy(SET CMP0167 OLD)
 endif ()
+#if (POLICY CMP0177)
+#    cmake_policy(SET CMP0177 OLD)
+#endif()
                                               # 3.15: useable FindPython with NumPy component and LOCATION
                                               # 3.8: CXX_STANDARD recognizes C++17
                                               # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
