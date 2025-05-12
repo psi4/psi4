@@ -1,5 +1,4 @@
 if(ENABLE_ambit OR ENABLE_CheMPS2 OR ENABLE_Einsums)
-    cmake_minimum_required(VERSION 3.19...4.0)
     project(TargetHDF5)
     set(PN ${PROJECT_NAME})
 

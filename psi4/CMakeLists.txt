@@ -4,6 +4,9 @@ if (POLICY CMP0167)
     # L2 not prepared for BoostConfig instead of FindBoost
     cmake_policy(SET CMP0167 OLD)
 endif ()
+if (POLICY CMP0177)
+    cmake_policy(SET CMP0177 OLD)
+endif()
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared
@@ -19,6 +22,12 @@ if (NOT MSVC)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
+
+message("1pre    ${CMAKE_PREFIX_PATH}")
+file(TO_NATIVE_PATH "${CMAKE_PREFIX_PATH}" _nat_CMAKE_PREFIX_PATH)
+message("1NATIVE ${_nat_CMAKE_PREFIX_PATH}")
+file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" _cmake_CMAKE_PREFIX_PATH)
+message("1CMAKE  ${_cmake_CMAKE_PREFIX_PATH}")
 
 # set globally here as each psi4/src/psi4/* needs it
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
@@ -289,11 +298,11 @@ endif()
 # * computes version from metadata.py and git info
 # * calls cmake to run write_basic_package_version_file
 
-message("2PRE    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4")
-file(TO_CMAKE_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4" _asdf_cmake)
-file(TO_NATIVE_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4" _asdf_native)
-message("2CMAKE  ${_asdf_cmake}")
-message("2NATIVE ${_asdf_native}")
+#message("2PRE    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4")
+#file(TO_CMAKE_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4" _asdf_cmake)
+#file(TO_NATIVE_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4" _asdf_native)
+#message("2CMAKE  ${_asdf_cmake}")
+#message("2NATIVE ${_asdf_native}")
 
 add_custom_target(update_version ALL
                   COMMAND ${Python_EXECUTABLE} versioner.py --metaout ${CMAKE_CURRENT_BINARY_DIR}/metadata.py

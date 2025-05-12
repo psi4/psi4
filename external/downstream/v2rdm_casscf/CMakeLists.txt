@@ -39,7 +39,7 @@ if(${ENABLE_v2rdm_casscf})
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
                              -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                              -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}
-                             -DCMAKE_PREFIX_PATH:PATH=${STAGED_INSTALL_PREFIX})
+                             -DCMAKE_PREFIX_PATH:PATH="${STAGED_INSTALL_PREFIX};${CMAKE_PREFIX_PATH})
 
         set(v2rdm_casscf_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/v2rdm_casscf CACHE PATH "path to internally built v2rdm_casscfConfig.cmake" FORCE)
     endif()
