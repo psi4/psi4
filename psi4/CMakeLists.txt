@@ -4,9 +4,6 @@ if (POLICY CMP0167)
     # L2 not prepared for BoostConfig instead of FindBoost
     cmake_policy(SET CMP0167 OLD)
 endif ()
-#if (POLICY CMP0177)
-#    cmake_policy(SET CMP0177 OLD)
-#endif()
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared

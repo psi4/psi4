@@ -29,8 +29,9 @@ foreach(dir
 endforeach()
 
 # for rare case where resolved ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR} isn't nested, make libdir. may yet be empty
-message("pre ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-set(_plain_libdir "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" _plain_libdir)
+message("preAA ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+#set(_plain_libdir "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" _native_libdir)
 message("NATIVE ${_native_libdir}")
 file(TO_CMAKE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" _cmake_libdir)

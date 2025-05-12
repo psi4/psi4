@@ -13,9 +13,6 @@ if (POLICY CMP0167)
     # L2 not prepared for BoostConfig instead of FindBoost
     cmake_policy(SET CMP0167 OLD)
 endif ()
-#if (POLICY CMP0177)
-#    cmake_policy(SET CMP0177 OLD)
-#endif()
                                               # 3.15: useable FindPython with NumPy component and LOCATION
                                               # 3.8: CXX_STANDARD recognizes C++17
                                               # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
@@ -125,6 +122,7 @@ option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gauxc "Enables use of GauXC density functional library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
+option(ENABLE_IntegratorXX "Enables use of IntegratorXX density functional grids library" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
 option(ENABLE_v2rdm_casscf "Enables V2RDM_CASSCF plugin (requires Fortran; can also be added at runtime)" OFF)

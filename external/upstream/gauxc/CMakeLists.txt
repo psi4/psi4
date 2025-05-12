@@ -79,7 +79,6 @@ if(${ENABLE_gauxc})
                    -DGAUXC_ENABLE_TESTS=OFF
                    -DGAUXC_ENABLE_HDF5=OFF
                    -DGAUXC_ENABLE_MAGMA=${gauxc_ENABLE_MAGMA}
-                   -DCMAKE_POLICY_VERSION_MINIMUM=3.5
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                          -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
