@@ -235,9 +235,9 @@ include(custom_static_library)
 # for rare case where resolved ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR} isn't nested, make libdir. may yet be empty
 message("pre    ${CMAKE_PREFIX_PATH}")
 file(TO_NATIVE_PATH "${CMAKE_PREFIX_PATH}" _nat_CMAKE_PREFIX_PATH)
-message("NATIVE ${_nat_CMAKE_PREFIX_PATH)")
+message("NATIVE ${_nat_CMAKE_PREFIX_PATH}")
 file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" _cmake_CMAKE_PREFIX_PATH)
-message("CMAKE  ${_cmake_CMAKE_PREFIX_PATH)")
+message("CMAKE  ${_cmake_CMAKE_PREFIX_PATH}")
 
 include(ExternalProject)
 ExternalProject_Add(psi4-core
