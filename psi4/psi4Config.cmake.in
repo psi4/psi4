@@ -131,6 +131,7 @@ if(NOT TARGET ${PN}::core)
     endif()
     find_package(TargetLAPACK CONFIG REQUIRED)
     if (APPLE)
+        set(Threads_FOUND TRUE)
         set(THREADS_PREFER_PTHREAD_FLAG TRUE)
         find_package(Threads)
 
