@@ -232,6 +232,13 @@ include(custom_cxxstandard)
 include(custom_static_library)
 
 ################################  Main Project  ################################
+# for rare case where resolved ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR} isn't nested, make libdir. may yet be empty
+message("pre    ${CMAKE_PREFIX_PATH}")
+file(TO_NATIVE_PATH "${CMAKE_PREFIX_PATH}" _nat_CMAKE_PREFIX_PATH)
+message("NATIVE ${_nat_CMAKE_PREFIX_PATH)")
+file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" _cmake_CMAKE_PREFIX_PATH)
+message("CMAKE  ${_cmake_CMAKE_PREFIX_PATH)")
+
 include(ExternalProject)
 ExternalProject_Add(psi4-core
    DEPENDS lapack_external
@@ -335,7 +342,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
               -DENABLE_CYTHONIZE=${ENABLE_CYTHONIZE}
               -Dpsi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-   CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
+   CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${_cmake_CMAKE_PREFIX_PATH}
               -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
               -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
               -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}
