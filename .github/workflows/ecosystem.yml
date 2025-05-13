@@ -36,7 +36,7 @@ jobs:
 
           - label: "Conda Clang (M-Intel)"
             runs-on: macos-13  # ensures py!=27 in base OS
-            python-version: "3.9"
+            python-version: "3.11"
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
@@ -191,7 +191,7 @@ jobs:
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
           sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
-          echo "  - libgcc 14" >> env_p4build.yaml
+          echo "  - libgcc <15.0" >> env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
         echo "::group::View Env Spec File for Conda (Edited)"
