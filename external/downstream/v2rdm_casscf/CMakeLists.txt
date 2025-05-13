@@ -16,7 +16,7 @@ if(${ENABLE_v2rdm_casscf})
 
         ExternalProject_Add(v2rdm_casscf_external
             DEPENDS psi4-core
-            URL https://github.com/loriab/v2rdm_casscf/archive/c2f435f.tar.gz
+            URL https://github.com/loriab/v2rdm_casscf/archive/bfb99ba.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -39,7 +39,7 @@ if(${ENABLE_v2rdm_casscf})
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
                              -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                              -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}
-                             -DCMAKE_PREFIX_PATH:PATH="${STAGED_INSTALL_PREFIX};${CMAKE_PREFIX_PATH}")
+                             -DCMAKE_PREFIX_PATH:STRING=${STAGED_INSTALL_PREFIX};${CMAKE_PREFIX_PATH})
 
         set(v2rdm_casscf_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/v2rdm_casscf CACHE PATH "path to internally built v2rdm_casscfConfig.cmake" FORCE)
     endif()
