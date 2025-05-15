@@ -102,7 +102,6 @@ jobs:
         echo "  - psi4::gcp" >> env_p4env.yaml
         echo "  - psi4::dftd3" >> env_p4env.yaml
       fi
-      sed -i "s;- h5py;#- h5py;g" env_p4env.yaml
       sed -i "s;- libint;#- libint;g" env_p4env.yaml
       sed -i "s;#- psi4::libint;- psi4::libint=2.8.1;g" env_p4env.yaml
       echo "  - einsums>=1.0.3" >> env_p4env.yaml

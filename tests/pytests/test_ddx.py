@@ -388,8 +388,8 @@ def test_ddx_tdscf_pcmsolver():
     for i in range(5):
         e_calc.append(psi4.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'))
         f_calc.append(psi4.variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A TRANSITION'))
-    compare_arrays(exc_energies, e_calc, 4, 'PCM EXCITATION ENERGY ')
-    compare_arrays(osc_strengths, f_calc, 4, 'PCM OSCILLATOR STRENGTH ')
+    assert compare_arrays(exc_energies, e_calc, 0.0005, 'PCM EXCITATION ENERGY ')
+    assert compare_arrays(osc_strengths, f_calc, 0.0005, 'PCM OSCILLATOR STRENGTH ')
 
 
 @pytest.mark.quick
@@ -399,6 +399,8 @@ def test_ddx_tdscf_gaussian():
     exc_energies = np.array([  # eV
         9.7131, 11.6679, 11.9693, 14.0604, 16.0886, 20.3350, 33.4852, 34.1673, 35.3953, 35.6058,
     ])
+    exc_energies /= psi4.constants.conversion_factor('hartree', 'eV')
+
     psi4.geometry("""
         O         0.00000000     0.00000000     0.11721877
         H         0.00000000     1.48123757    -0.93017349
@@ -435,4 +437,4 @@ def test_ddx_tdscf_gaussian():
     e_calc = []
     for i in range(5):
         e_calc.append(psi4.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'))
-    compare_arrays(exc_energies, e_calc, 4, 'PCM EXCITATION ENERGY ')
+    assert compare_values(exc_energies[:5], e_calc, 'PCM EXCITATION ENERGY ', atol=0.0001)

@@ -212,7 +212,7 @@ data:
     conda:
       channel: conda-forge
       name: cmake
-      constraint: "<3.30.0"  # TODO release then fix 117 for win?
+      constraint: null
       constraint_note: "On Mac, v3.30 FindPython not finding NumPy includes."
       cmake:
         -S: <src>
@@ -1289,12 +1289,10 @@ data:
       commit: v0.52
       commit_note: "Includes snowflake fix at v0.52."
     cmake: null
-    #  constraint: ">=0.51"
     conda:
       channel: conda-forge
-      channel_note: "Can also use qcarchive/label/next and constraint >=0.50b10."
       name: qcfractal
-      constraint: ">=0.59"
+      constraint: null
       aux_run_names:
         - postgresql
       aux_run_names_note:
@@ -1429,9 +1427,9 @@ data:
       aux_build_names:
         - range-v3
         - zlib
-        - hdf5 #=1.14.3
-      #aux_build_names_note:
-      #  "hdf5=1.14.3": "Temporary while 1.14.4 not setting HDF5_VERSION."
+        - hdf5
+      aux_build_names_note:
+        "hdf5": "Use 1.14.3 or 1.14.6 (so far) as .4 and .5 not setting HDF5_VERSION."
       skip_win: true
       cmake:
         ENABLE_Einsums: true
@@ -1505,8 +1503,4 @@ data:
       constraint: null
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
-      #aux_build_names:
-      #  - hdf5=1.14.3
-      #aux_build_names_note:
-      #  "hdf5=1.14.3": "Temporary for Einsums while 1.14.4 not setting HDF5_VERSION."
       skip_win: true
