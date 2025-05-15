@@ -35,7 +35,7 @@ from psi4 import core
 from .. import empirical_dispersion
 
 
-def fisapt_compute_energy(self, jk_obj, external_potentials=None):
+def fisapt_compute_energy(self, jk_obj, *, external_potentials=None):
     """Computes the FSAPT energy. FISAPT::compute_energy"""
 
     # => Header <=
