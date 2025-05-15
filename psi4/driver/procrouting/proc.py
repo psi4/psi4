@@ -4867,7 +4867,7 @@ def run_fisapt(name, **kwargs):
     an F/ISAPT0 computation
 
     """
-    optstash = p4util.OptionsState(['SCF_TYPE'])
+    optstash = p4util.OptionsState(['SCF_TYPE'], ['SCF', 'SAVE_JK'])
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -4899,7 +4899,9 @@ def run_fisapt(name, **kwargs):
 
     if ref_wfn is None:
         core.timer_on("FISAPT: Dimer SCF")
+        core.set_local_option("SCF", "SAVE_JK", True)
         ref_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
+        jk_obj = ref_wfn.jk()
         core.timer_off("FISAPT: Dimer SCF")
 
     core.print_out("  Constructing Basis Sets for FISAPT...\n\n")
@@ -4925,7 +4927,7 @@ def run_fisapt(name, **kwargs):
 
     fisapt_wfn = core.FISAPT(ref_wfn)
     from .sapt import fisapt_proc
-    fisapt_wfn.compute_energy(external_potentials=kwargs.get("external_potentials", None))
+    fisapt_wfn.compute_energy(jk_obj, external_potentials=kwargs.get("external_potentials", None))
 
     # Compute -D dispersion
     if "-d" in name.lower():
