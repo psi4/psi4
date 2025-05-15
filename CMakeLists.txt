@@ -1,5 +1,5 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19...4.0)
 cmake_policy(SET CMP0094 NEW)
 cmake_policy(SET CMP0075 NEW)
 if (POLICY CMP0135)
@@ -60,6 +60,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - SciPy (runtime only; avoidable through keyword setting; e.g., `conda install scipy`)
 #    - py-cpuinfo (runtime only; e.g., `conda install py-cpuinfo`)
 #    - psutil (runtime only; e.g., `conda install psutil`)
+#    - setuptools (buildtime only unless optking, etc. pre-built; e.g., `conda install setuptools`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
@@ -84,8 +85,8 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
-#    - CMAKE_DISABLE_FIND_PACKAGE_${AddON} "Set to ON to force internal build"
-#    - CMAKE_INSIST_FIND_PACKAGE_${AddON} "Set to ON to force external detect"
+#    - CMAKE_DISABLE_FIND_PACKAGE_${AddOn} "Set to ON to force internal build"
+#    - CMAKE_INSIST_FIND_PACKAGE_${AddOn} "Set to ON to force external detect"
 
 #  <<<  Detecting BLAS/LAPACK  >>>
 #
@@ -122,6 +123,7 @@ option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gauxc "Enables use of GauXC density functional library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
+option(ENABLE_IntegratorXX "Enables use of IntegratorXX density functional grids library" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
 option(ENABLE_v2rdm_casscf "Enables V2RDM_CASSCF plugin (requires Fortran; can also be added at runtime)" OFF)
@@ -229,6 +231,9 @@ include(custom_cxxstandard)
 include(custom_static_library)
 
 ################################  Main Project  ################################
+# On W, var may come in in native, and w/cmake v4, the psi4-core cache protests, so normalize path
+file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" _cmake_CMAKE_PREFIX_PATH)
+
 include(ExternalProject)
 ExternalProject_Add(psi4-core
    DEPENDS lapack_external
@@ -332,7 +337,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
               -DENABLE_CYTHONIZE=${ENABLE_CYTHONIZE}
               -Dpsi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-   CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
+   CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${_cmake_CMAKE_PREFIX_PATH}
               -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
               -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
               -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}
