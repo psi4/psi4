@@ -1143,6 +1143,28 @@ void Matrix::transpose_this() {
     }
 }
 
+void Matrix::reshape(const uint64_t nrow, const uint64_t ncol) {
+    if (nirrep_ != 1) {
+        throw PSIEXCEPTION("Matrix::reshape is only defined for Matrix with 1 irrep!");
+    }
+
+    if (nrow * ncol != rowspi_[0] * colspi_[0]) {
+        throw PSIEXCEPTION("Invalid input dimensions for Matrix::reshape");
+    }
+
+    // Make sure the data in matrix is "re-shaped" properly without copying, data remains contiguous
+    double **mat = (double **)malloc(sizeof(double *) * nrow);
+    mat[0] = &(matrix_[0][0][0]);
+    for (int r = 1; r < nrow; ++r) mat[r] = mat[r - 1] + ncol;
+
+    // Data is NOT lost, so no memory leaks
+    free(matrix_[0]);
+    matrix_[0] = mat;
+
+    rowspi_[0] = nrow;
+    colspi_[0] = ncol;
+}
+
 void Matrix::add(const Matrix *const plus) {
     if (symmetry_ != plus->symmetry_) {
         std::ostringstream oss;
