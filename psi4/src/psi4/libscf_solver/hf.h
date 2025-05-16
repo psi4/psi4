@@ -248,6 +248,27 @@ class HF : public Wavefunction {
     bool frac_performed() const { return frac_performed_; }
     void set_frac_performed(bool tf) { frac_performed_ = tf; }
 
+    /// Runs SCF using OpenTrustRegion
+    void opentrustregion_scf();
+    virtual void update_orbs(const double* kappa, double* func, void** grad, void** h_diag, void (**hess_x_out)(const double*, void**)) { 
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
+    };
+    virtual void hess_x(const double* x, void** out) { 
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
+    };
+    virtual double obj_func(const double* kappa) { 
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
+    };
+
+    /// The number non-redundant parameters
+    virtual int n_param()  { 
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
+    };
+    int n_param_;
+
+    /// Temporary global pointer to the active instance
+    static inline HF* instance = nullptr;
+
     /// Are we to do excited-state MOM?
     bool MOM_excited() const { return MOM_excited_; }
     void set_MOM_excited(bool tf) { MOM_excited_ = tf; }
@@ -437,6 +458,12 @@ class HF : public Wavefunction {
     void clear_external_cpscf_perturbations() { external_cpscf_perturbations_.clear(); }
     void compute_fvpi();
 };
+
+extern "C" double obj_func_wrapper(const double* kappa);
+extern "C" void hess_x_wrapper(const double* x, void** hess_x);
+extern "C" void update_orbs_wrapper(const double* kappa, double* func, void** grad, void** h_diag,
+    void (**hess_x_out)(const double*, void**));
+
 }  // namespace scf
 }  // namespace psi
 

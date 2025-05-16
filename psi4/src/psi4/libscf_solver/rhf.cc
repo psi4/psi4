@@ -1042,5 +1042,170 @@ void RHF::setup_potential() {
     }
 }
 
+SharedMatrix RHF::unpack(const double* matrix, const std::string name, const Dimension doccpi, 
+                         const Dimension virpi) {
+    // create shared matrix
+    auto shared_matrix = std::make_shared<Matrix>(name, doccpi, virpi);
+
+    // loop over irreps
+    for (size_t h = 0, counter = 0; h < nirrep_; h++) {
+        // skip if dimensions are zero
+        if (!doccpi[h] || !virpi[h]) continue;
+
+        // get the pointer to the memory block for this irrep in shared matrix
+        double** block = shared_matrix->pointer(h);
+
+        // copy matrix to shared matrix
+        for (size_t i = 0; i < doccpi[h]; i++) {
+            for (size_t a = 0; a < virpi[h]; a++) {
+                block[i][a] = matrix[counter++];
+            }
+        }
+    }
+
+    return shared_matrix;
+}
+
+double RHF::obj_func(const double* kappa) {
+    // get doubly occupied and virtual dimensions per irrep
+    auto doccpi = nalphapi_;
+    auto virpi = nmopi_ - nalphapi_;
+
+    // unpack kappa
+    auto kappa_shared = unpack(kappa, "kappa", doccpi, virpi);
+
+    // save coefficients, density matrix and other quantities
+    auto C_save = std::make_shared<Matrix>(Ca_);
+    auto D_save = std::make_shared<Matrix>(Da_);
+    auto G_save = std::make_shared<Matrix>(G_);
+    auto V_save = std::make_shared<Matrix>(Va_);
+    auto J_save = std::make_shared<Matrix>(J_);
+    auto K_save = std::make_shared<Matrix>(K_);
+    auto wK_save = std::make_shared<Matrix>(wK_);
+
+    // apply orbital rotation
+    rotate_orbitals(Ca_, kappa_shared);
+    
+    // form density matrix
+    form_D();
+
+    // form two-electron contribution to Fock matrix (also forms Coulomb and exchange contributions separately)
+    form_G();
+
+    // compute energy
+    double func = compute_E();
+
+    // get back previous quantities
+    Ca_->copy(C_save);
+    Da_->copy(D_save);
+    G_->copy(G_save);
+    Va_->copy(V_save);
+    J_->copy(J_save);
+    K_->copy(K_save);
+    wK_->copy(wK_save);
+    if (functional_->needs_xc()) {
+        potential_->set_D({Da_});
+    }
+
+    return func;
+}
+
+void RHF::hess_x(const double* x, void** hess_x) {
+    // get doubly occupied and virtual dimensions per irrep
+    auto doccpi = nalphapi_;
+    auto virpi = nmopi_ - nalphapi_;
+
+    // unpack x
+    auto x_shared = unpack(x, "x", doccpi, virpi);
+
+    // apply Hessian linear transformation
+    auto hess_x_shared = cphf_Hx({x_shared})[0];
+
+    // allocate Hessian linear transformation
+    auto hess_x_arr = (double*)malloc(sizeof(double) * instance->n_param_);
+
+    // loop over irreps
+    for (size_t h = 0, counter = 0; h < nirrep_; h++) {
+        // skip if dimensions are zero
+        if (!doccpi[h] || !virpi[h]) continue;
+
+        // get the pointer to the memory block for this irrep in shared matrix
+        double** hess_x_irrep = hess_x_shared->pointer(h);
+
+        // copy shared matrix to Hessian linear transformation, factor 2 for doubly 
+        // occupied orbitals and another factor 2 to account for redundant parameters
+        for (size_t i = 0; i < doccpi[h]; i++) {
+            for (size_t a = 0; a < virpi[h]; a++) {
+                hess_x_arr[counter++] = -4 * hess_x_irrep[i][a];
+            }
+        }
+    }
+
+    // set pointer
+    *hess_x = hess_x_arr;
+}
+
+void RHF::update_orbs(const double* kappa, double* func, void** grad, void** h_diag,
+                      void (**hess_x_out)(const double*, void**)) {
+
+    // get doubly occupied and virtual dimensions per irrep
+    auto doccpi = nalphapi_;
+    auto virpi = nmopi_ - nalphapi_;
+
+    // unpack kappa
+    auto kappa_shared = unpack(kappa, "kappa", doccpi, virpi);
+
+    // apply orbital rotation
+    rotate_orbitals(Ca_, kappa_shared);
+
+    // form density matrix
+    form_D();
+
+    // form two-electron contribution to Fock matrix (also forms Coulomb and exchange contributions separately)
+    form_G();
+
+    // compute energy
+    *func = compute_E();
+
+    // form Fock matrix
+    form_F();
+
+    // compute Fock matrix
+    auto fock = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
+
+    // allocate gradient and Hessian diagonal
+    auto grad_arr = (double*)malloc(sizeof(double) * instance->n_param_);
+    auto h_diag_arr = (double*)malloc(sizeof(double) * instance->n_param_);
+
+    // loop over irreps
+    for (size_t h = 0, counter = 0; h < nirrep_; h++) {
+        // skip if dimensions are zero
+        if (!doccpi[h] || !virpi[h]) continue;
+
+        // get the pointer to the memory block for this irrep in shared matrix
+        auto fp = fock->pointer(h);
+
+        // construct gradient and Hessian diagonal, factor 2 for doubly occupied 
+        // orbitals and another factor 2 to account for redundant parameters
+        for (size_t i = 0; i < doccpi[h]; i++) {
+            for (size_t a = doccpi[h]; a < nmopi_[h]; a++) {
+                grad_arr[counter] = 4 * fp[i][a];
+                h_diag_arr[counter++] = 4 * (-fp[i][i] + fp[a][a]);
+            }
+        }
+    }
+
+    // set pointers
+    *grad = grad_arr;
+    *h_diag = h_diag_arr;
+    *hess_x_out = hess_x_wrapper;
+}
+
+int RHF::n_param() { 
+    Dimension nparampi = nalphapi_;
+    for (size_t i = 0, maxi = nparampi.n(); i < maxi; ++i) nparampi[i] *= (nmopi_ - nalphapi_)[i];
+    return nparampi.sum();
+}
+
 }  // namespace scf
 }  // namespace psi

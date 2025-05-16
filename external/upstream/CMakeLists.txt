@@ -17,6 +17,7 @@ foreach(dir
   pylibefp
   qcelemental
   qcengine
+  opentrustregion
   optking
   simint
   libxc

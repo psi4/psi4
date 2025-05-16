@@ -145,6 +145,13 @@ if(TARGET IntegratorXX::IntegratorXX)
     )
 endif()
 
+if(TARGET OpenTrustRegion::OpenTrustRegion)
+  target_link_libraries(core
+    PRIVATE
+      OpenTrustRegion::OpenTrustRegion
+    )
+endif()
+
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   # Enable call to for_rtl_init_() which is required if using the
   # Intel fortran compiler

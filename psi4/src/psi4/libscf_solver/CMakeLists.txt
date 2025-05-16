@@ -44,3 +44,13 @@ if(TARGET BrianQC::static_wrapper)
     )
 endif()
 
+if(TARGET OpenTrustRegion::OpenTrustRegion)
+  target_compile_definitions(scf_solver
+    PUBLIC
+      USING_OpenTrustRegion
+    )
+  target_link_libraries(scf_solver
+    PUBLIC
+      OpenTrustRegion::OpenTrustRegion
+    )
+endif()

@@ -1510,3 +1510,17 @@ data:
       #aux_build_names_note:
       #  "hdf5=1.14.3": "Temporary for Einsums while 1.14.4 not setting HDF5_VERSION."
       skip_win: true
+
+  - project: opentrustregion
+    use:
+      added: "1.10"
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: eriksen-lab
+      name: opentrustregion
+    cmake: null
+    conda: null
