@@ -695,6 +695,15 @@ def scf_finalize_energy(self):
     #     core.print_out(" with %f %f %f perturbation" %
     #                    (dipole_field_strength_[0], dipole_field_strength_[1], dipole_field_strength_[2]))
     # }
+    vars = self.variables()
+    if "V_EXTERNALPOTENTIAL" in vars:
+        V_externalPotential = vars["V_EXTERNALPOTENTIAL"]
+        ExternalPotentialEnergy = V_externalPotential.vector_dot(self.Da()) + V_externalPotential.vector_dot(self.Db())
+        self.set_variable(
+            "ELECTRONIC-EXTERNAL POTENTIAL ENERGY",
+            ExternalPotentialEnergy,
+        )
+        self.del_variable("V_EXTERNALPOTENTIAL")
     core.print_out("\n\n")
     self.print_energies()
 
@@ -749,7 +758,6 @@ def scf_finalize_energy(self):
 
     core.print_out("\nComputation Completed\n")
     core.del_variable("SCF D NORM")
-
     return energy
 
 
@@ -766,6 +774,9 @@ def scf_print_energies(self):
     edd = self.get_energies('DD Solvation Energy')
     epe = self.get_energies('PE Energy')
     ke = self.get_energies('Kinetic')
+    vars = self.variables()
+    nuclear_external_pe = vars.get('NUCLEAR-EXTERNAL POTENTIAL ENERGY')
+    electronic_external_pe = vars.get('ELECTRONIC-EXTERNAL POTENTIAL ENERGY')
 
     hf_energy = enuc + e1 + e2
     dft_energy = hf_energy + exc + ed + evv10
@@ -784,11 +795,15 @@ def scf_print_energies(self):
     if core.get_option('SCF', 'PCM'):
         core.print_out("    PCM Polarization Energy =         {:24.16f}\n".format(epcm))
     if core.get_option('SCF', 'DDX'):
-        core.print_out("    DD Solvation Energy =            {:24.16f}\n".format(edd))
+        core.print_out("    DD Solvation Energy =             {:24.16f}\n".format(edd))
     if core.get_option('SCF', 'PE'):
         core.print_out("    PE Energy =                       {:24.16f}\n".format(epe))
     if hasattr(self.molecule(), 'EFP'):
         core.print_out("    EFP Energy =                      {:24.16f}\n".format(eefp))
+    if nuclear_external_pe:
+        core.print_out("    Nuclear External Potential E =    {:24.16f}\n".format(nuclear_external_pe))
+    if electronic_external_pe:
+        core.print_out("    Electronic External Potential E = {:24.16f}\n".format(electronic_external_pe))
     core.print_out("    Total Energy =                    {:24.16f}\n".format(total_energy))
 
     if core.get_option('SCF', 'PE'):
