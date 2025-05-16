@@ -5,6 +5,7 @@ import numpy as np
 from psi4 import core
 
 from ...p4util import solvers
+from ...p4util.exceptions import SCFConvergenceError, ValidationError
 from ..diis import DIIS, RemovalPolicy, StoragePolicy
 from ..response.scf_products import TDUSCFEngine
 
@@ -142,8 +143,8 @@ def _UHF_stability_analysis(self):
         roots = [core.get_option("SCF", "SOLVER_N_ROOT")] * self.nirrep()
     else:
         roots = core.get_option("SCF", "SOLVER_ROOTS_PER_IRREP")
-        if len(roots) != wfn.nirrep():
-            raise ValidationError(f"SOLVER_ROOTS_PER_IRREP specified {wfn.nirrep()} irreps, but there are {len(roots)} irreps.")
+        if len(roots) != self.nirrep():
+            raise ValidationError(f"SOLVER_ROOTS_PER_IRREP specified {self.nirrep()} irreps, but there are {len(roots)} irreps.")
     r_convergence = core.get_option("SCF", "SOLVER_CONVERGENCE")
     # Below formula borrowed from TDSCF code.
     max_vecs_per_root = int(-np.log10(r_convergence) * 50)
@@ -169,7 +170,7 @@ def _UHF_stability_analysis(self):
                                       max_ss_size=max_vecs_per_root * nroot,
                                       verbose=0)
         if not ret["stats"][-1]["done"]:
-            raise SCFConvergenceError(maxiter, self, f"hessian eigenvectors in irrep {irrep_ES}", ret["stats"][-1])
+            raise SCFConvergenceError(core.get_option("SCF", "SOLVER_MAXITER"), self, f"hessian eigenvectors in irrep {h}", ret["stats"][-1])
         if h == 0:
             current_eigenvalue = ret["eigvals"][0]
             # Distinction between left and right eigenvectors is a formality for TDA-type solvers but forces the extra [0].
@@ -187,7 +188,7 @@ def _UHF_stability_analysis(self):
         core.print_out(f"    Lowest totally symmetric eigenvalue: {current_eigenvalue:.6f} \n")
 
     # => Print out and save stability eigenvalues <=
-    core.print_out("    Lowest UHF->UHF stability eigenvalues: \n");
+    core.print_out("    Lowest UHF->UHF stability eigenvalues: \n")
     eval_sym_pairs = []
     for h in range(eval_sym.nirrep()):
         for i in range(eval_sym.rows(h)):
@@ -211,13 +212,13 @@ def _UHF_stability_analysis(self):
             core.print_out("    Negative eigenvalue similar to previous one, wavefunction\n")
             core.print_out("    likely to be in the same minimum.\n")
             self.step_scale += core.get_option("SCF", "FOLLOW_STEP_INCREMENT")
-            core.print_out(f"    Modifying FOLLOW_STEP_SCALE to {step_scale}.\n")
+            core.print_out(f"    Modifying FOLLOW_STEP_SCALE to {self.step_scale}.\n")
         else:
             self.step_scale = core.get_option("SCF", "FOLLOW_STEP_SCALE")
             self.last_hess_eigval = current_eigenvalue
         # ==> Perform the orbital rotation! <==
         # The current eigenvector is normalized to 1/2.
-        core.print_out(f"    Rotating orbitals by {self.step_scale} * pi / 2 radians along unstable eigenvector.\n");
+        core.print_out(f"    Rotating orbitals by {self.step_scale} * pi / 2 radians along unstable eigenvector.\n")
         current_eigenvector[0].scale(self.step_scale * np.pi)
         self.rotate_orbitals(self.Ca(), current_eigenvector[0])
         current_eigenvector[1].scale(self.step_scale * np.pi)

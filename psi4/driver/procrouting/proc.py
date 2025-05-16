@@ -2177,6 +2177,10 @@ def run_dfocc(name, **kwargs):
 
     dfocc_wfn = core.dfocc(ref_wfn)
 
+    if core.get_local_option("DFOCC", "MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dfocc_wfn.molecule().name()) + "_dfocc.molden"
+        dfocc_wfn.write_molden(filename, True, True)
+
     # Shove variables into global space
     for k, v in dfocc_wfn.variables().items():
         core.set_variable(k, v)
@@ -2279,6 +2283,10 @@ def run_dfocc_gradient(name, **kwargs):
 
     dfocc_wfn.set_variable(f"{name.upper()} TOTAL GRADIENT", dfocc_wfn.gradient())
 
+    if core.get_local_option("DFOCC", "MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dfocc_wfn.molecule().name()) + "_dfocc.molden"
+        dfocc_wfn.write_molden(filename, True, True)
+
     # Shove variables into global space
     for k, v in dfocc_wfn.variables().items():
         core.set_variable(k, v)
@@ -2351,6 +2359,10 @@ def run_dfocc_property(name, **kwargs):
     if name in ['mp2', 'omp2']:
         for k, v in dfocc_wfn.variables().items():
             core.set_variable(k, v)
+
+    if core.get_local_option("DFOCC", "MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dfocc_wfn.molecule().name()) + "_dfocc.molden"
+        dfocc_wfn.write_molden(filename, True, True)
 
     optstash.restore()
     return dfocc_wfn
@@ -4429,6 +4441,10 @@ def run_dmrgscf(name, **kwargs):
     for k, v in dmrg_wfn.variables().items():
         core.set_variable(k, v)
 
+    if core.get_option("DMRG", "DMRG_MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dmrg_wfn.molecule().name()) + "_pseudocanonical.molden"
+        dmrg_wfn.write_molden(filename, True, False)
+
     return dmrg_wfn
 
 
@@ -4457,6 +4473,10 @@ def run_dmrgci(name, **kwargs):
     # Shove variables into global space
     for k, v in dmrg_wfn.variables().items():
         core.set_variable(k, v)
+
+    if core.get_option("DMRG", "DMRG_MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dmrg_wfn.molecule().name()) + "_pseudocanonical.molden"
+        dmrg_wfn.write_molden(filename, True, True)
 
     return dmrg_wfn
 
@@ -4847,7 +4867,7 @@ def run_fisapt(name, **kwargs):
     an F/ISAPT0 computation
 
     """
-    optstash = p4util.OptionsState(['SCF_TYPE'])
+    optstash = p4util.OptionsState(['SCF_TYPE'], ['SCF', 'SAVE_JK'])
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -4879,7 +4899,9 @@ def run_fisapt(name, **kwargs):
 
     if ref_wfn is None:
         core.timer_on("FISAPT: Dimer SCF")
+        core.set_local_option("SCF", "SAVE_JK", True)
         ref_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
+        jk_obj = ref_wfn.jk()
         core.timer_off("FISAPT: Dimer SCF")
 
     core.print_out("  Constructing Basis Sets for FISAPT...\n\n")
@@ -4905,7 +4927,7 @@ def run_fisapt(name, **kwargs):
 
     fisapt_wfn = core.FISAPT(ref_wfn)
     from .sapt import fisapt_proc
-    fisapt_wfn.compute_energy(external_potentials=kwargs.get("external_potentials", None))
+    fisapt_wfn.compute_energy(jk_obj, external_potentials=kwargs.get("external_potentials", None))
 
     # Compute -D dispersion
     if "-d" in name.lower():

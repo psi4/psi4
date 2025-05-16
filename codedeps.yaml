@@ -84,7 +84,7 @@ data:
     use:
       added: "1.0"
       required: true
-      required_note: "Must support c++17 standard."
+      required_note: "Must support c++20 standard."
       buildable: false
       buildtime: true
       cms: false
@@ -180,7 +180,7 @@ data:
     repository: null
     #cmake:
     #  name:
-    #  constraint: ">=3.8"
+    #  constraint: ">=3.9"
     #  target:
     #  components:
     conda:
@@ -212,7 +212,7 @@ data:
     conda:
       channel: conda-forge
       name: cmake
-      constraint: "<3.30.0"
+      constraint: null
       constraint_note: "On Mac, v3.30 FindPython not finding NumPy includes."
       cmake:
         -S: <src>
@@ -309,8 +309,6 @@ data:
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
-      skip_win: true
-      skip_win_note: "Older versions available for Windows but not fully functional for v1.9."
 
   - project: dkh
     use:
@@ -404,6 +402,7 @@ data:
         osx-64: "=*=*mkl"
         osx-arm64: "=*=*accelerate"
         win-64: "=*=24*mkl"
+      constraint_note: "On Windows, MKL 2024.2.2 gives wrong results, so 24*mkl requests 2024.1.0."
       aux_build_names:
         - blas-devel
       aux_build_names_note:
@@ -780,7 +779,7 @@ data:
     conda:
       channel: conda-forge
       name: pytest
-      constraint: "<8"
+      constraint: null  # TODO "<8"
       aux_run_names:
         - pytest-xdist
       aux_run_names_note:
@@ -986,8 +985,8 @@ data:
       constraint: null
       skip_win: true
       aux_run_names:
-        - openfermion=1
-        - pydantic=1
+        - openfermion #=1
+#        - pydantic=1
       aux_run_names_note:
         "openfermion=1": "Shouldn't need to specify but do for the pydantic transition."
       cmake: null
@@ -1018,6 +1017,9 @@ data:
       aux_run_names:
         - msgpack-python
         - networkx
+        - setuptools
+      aux_run_names_note:
+        "setuptools": "Needed for qcelemental cmake detection."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
@@ -1080,7 +1082,7 @@ data:
       host: github
       account: maxscheurer
       name: cppe
-      commit: v0.3.1
+      commit: v0.3.2
     #cmake:
     #  name: cppe
     #  constraint: ATLEAST 0.3.1
@@ -1090,11 +1092,12 @@ data:
       channel: conda-forge
       name: cppe
       name_note: "Equivalent to psi4::pycppe ."
-      constraint: "==0.3.1"
-      constraint_note: "v0.3.2 available, incl. Windows but errors with libecpint."
+      constraint: null
+      constraint_note: "==0.3.1 tests clean. v0.3.2 more broadly available but errors with libecpint, hence 'not pe_ecp'."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_cppe is inconsequential."
       skip_win: true
+      skip_win_note: "cppe is available for Windows but uses llvm-openmp that runtime-conflicts with Psi4 MKL (intel-openmp) build."
 
   - project: geometric
     use:
@@ -1197,7 +1200,7 @@ data:
       host: github
       account: MolSSI
       name: QCEngine
-      commit: v0.30.0
+      commit: v0.32.0
     #cmake:
     #  name: qcengine
     #  constraint: ATLEAST 0.26.0
@@ -1241,8 +1244,6 @@ data:
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
-      skip_win: true
-      skip_win_note: "Older versions available for Windows but not fully functional for v1.9."
 
   - project: ecpint
     use:
@@ -1288,10 +1289,8 @@ data:
       commit: v0.52
       commit_note: "Includes snowflake fix at v0.52."
     cmake: null
-    #  constraint: ">=0.51"
     conda:
       channel: conda-forge
-      channel_note: "Can also use qcarchive/label/next and constraint >=0.50b10."
       name: qcfractal
       constraint: null
       aux_run_names:
@@ -1423,14 +1422,14 @@ data:
     conda:
       channel: conda-forge
       name: einsums
-      constraint: "=*=mkl*"
-      # todo: tie einsums variant to libblas selection, rather than mkl constraint above.
+      constraint: ">=1.0.3"
+      constraint_note: "v1 changes interface, and 1.0.3 needed for Linux to compile against."
       aux_build_names:
         - range-v3
         - zlib
-        - hdf5=1.14.3
+        - hdf5
       aux_build_names_note:
-        "hdf5=1.14.3": "Temporary while 1.14.4 not setting HDF5_VERSION."
+        "hdf5": "Use 1.14.3 or 1.14.6 (so far) as .4 and .5 not setting HDF5_VERSION."
       skip_win: true
       cmake:
         ENABLE_Einsums: true
@@ -1439,6 +1438,31 @@ data:
           win-64: ${CONDA_PREFIX}/Library/share/cmake/Einsums
         //CMAKE_INSIST_FIND_PACKAGE_Einsums: true
         //CMAKE_DISABLE_FIND_PACKAGE_Einsums: true
+
+  - project: integratorxx
+    use:
+      added: 1.10
+      required: false
+      required_note: "Allow using the IntegratorXX DFT grid library."
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: wavefunction91
+      name: IntegratorXX
+      commit: cf2917c
+    conda:
+      channel: conda-forge
+      name: integratorxx
+      constraint: null
+      cmake:
+        ENABLE_IntegratorXX: true
+        IntegratorXX_DIR:
+          unix: ${CONDA_PREFIX}/lib/cmake/IntegratorXX
+          win-64: ${CONDA_PREFIX}/Library/lib/cmake/IntegratorXX
+        //CMAKE_INSIST_FIND_PACKAGE_IntegratorXX: true
+        //CMAKE_DISABLE_FIND_PACKAGE_IntegratorXX: true
 
   - project: gauxc 
     use:
@@ -1479,8 +1503,4 @@ data:
       constraint: null
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
-      aux_build_names:
-        - hdf5=1.14.3
-      aux_build_names_note:
-        "hdf5=1.14.3": "Temporary for Einsums while 1.14.4 not setting HDF5_VERSION."
       skip_win: true
