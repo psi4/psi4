@@ -695,6 +695,15 @@ def scf_finalize_energy(self):
     #     core.print_out(" with %f %f %f perturbation" %
     #                    (dipole_field_strength_[0], dipole_field_strength_[1], dipole_field_strength_[2]))
     # }
+    vars = self.variables()
+    if "V_EXTERNALPOTENTIAL" in vars:
+        V_externalPotential = vars["V_EXTERNALPOTENTIAL"]
+        ExternalPotentialEnergy = V_externalPotential.vector_dot(self.Da()) + V_externalPotential.vector_dot(self.Db())
+        self.set_variable(
+            "ELECTRONIC-EXTERNAL POTENTIAL ENERGY",
+            ExternalPotentialEnergy,
+        )
+        self.del_variable("V_EXTERNALPOTENTIAL")
     core.print_out("\n\n")
     self.print_energies()
 
@@ -749,16 +758,6 @@ def scf_finalize_energy(self):
 
     core.print_out("\nComputation Completed\n")
     core.del_variable("SCF D NORM")
-
-    vars = self.variables()
-    if "V_EXTERNALPOTENTIAL" in vars:
-        V_externalPotential = vars["V_EXTERNALPOTENTIAL"]
-        ExternalPotentialEnergy = V_externalPotential.vector_dot(self.Da()) + V_externalPotential.vector_dot(self.Db())
-        self.set_variable(
-            "ELECTRONIC-EXTERNAL POTENTIAL ENERGY",
-            ExternalPotentialEnergy,
-        )
-        self.del_variable("V_EXTERNALPOTENTIAL")
     return energy
 
 
