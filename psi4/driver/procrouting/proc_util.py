@@ -208,13 +208,17 @@ def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
     dvec.close_io_files(True)
 
 
-def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[core.Molecule, core.Molecule, core.Molecule]:
+def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str, clone_molecule=True) -> Tuple[core.Molecule, core.Molecule, core.Molecule]:
     """
     Prepares a dimer molecule for a SAPT computation. Returns the dimer, monomerA, and monomerB.
     """
 
     # Shifting to C1 so we need to copy the active molecule
-    sapt_dimer = sapt_dimer.clone()
+    # This clone statement is making molecule incompatible with external
+    # potential for scf_helper dimer and monomers... what is not being cloned
+    # correctly? Cloning is resetting _initial_cartesians, need to block
+    if clone_molecule:
+        sapt_dimer = sapt_dimer.clone()
     if sapt_dimer.schoenflies_symbol() != 'c1':
         core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
         sapt_dimer.reset_point_group('c1')
