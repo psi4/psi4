@@ -64,6 +64,27 @@ std::vector<int> merge_lists(const std::vector<int> &l1, const std::vector<int> 
 
 }
 
+std::vector<int> index_list(const std::vector<int> &l1, const std::vector<int> &l2) {
+    /* This function takes two sorted lists, such that l2 is a subset of l1, 
+     * and finds the indices of the elements of l1 that correspond to the elements of l2.
+     */
+
+    std::vector<int> lsub;
+
+    int i1 = 0, i2 = 0;
+    while(i2 < l2.size()) {
+        if (l1[i1] == l2[i2]) {
+            lsub.push_back(i1);
+            i1++;
+            i2++;
+        } else {
+            i1++;
+        }
+    }
+
+    return lsub;
+}
+
 std::vector<int> contract_lists(const std::vector<int> &y, const std::vector<std::vector<int>> &A_to_y) {
 
     // TODO: runtime is proportional to A_to_y size (system size, O(N))
@@ -185,11 +206,14 @@ SharedMatrix submatrix_cols(const Matrix &mat, const std::vector<int> &col_inds)
 SharedMatrix submatrix_rows_and_cols(const Matrix &mat, const std::vector<int> &row_inds, const std::vector<int> &col_inds) {
 
     SharedMatrix mat_new = std::make_shared<Matrix>(mat.name(), row_inds.size(), col_inds.size());
+    double** mat_newp = mat_new->pointer();
+    double** matp = mat.pointer();
+
     for(int r_new = 0; r_new < row_inds.size(); r_new++) {
         int r_old = row_inds[r_new];
         for(int c_new = 0; c_new < col_inds.size(); c_new++) {
             int c_old = col_inds[c_new];
-            mat_new->set(r_new, c_new, mat.get(r_old, c_old));
+            mat_newp[r_new][c_new] = matp[r_old][c_old];
         }
     }
     return mat_new;
