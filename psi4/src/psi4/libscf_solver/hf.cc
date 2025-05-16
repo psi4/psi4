@@ -83,6 +83,12 @@ extern bool brianEnable;
 
 #endif
 
+#ifdef HAVE_DLFCN_H
+
+#include <dlfcn.h>
+
+#endif
+
 namespace psi {
 namespace scf {
 
@@ -1450,5 +1456,113 @@ bool HF::stability_analysis() {
     throw PSIEXCEPTION("Stability analysis hasn't been implemented yet for this wfn type.");
     return false;
 }
+
+extern "C" double obj_func_wrapper(const double* kappa) {
+    if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
+    return HF::instance->obj_func(kappa);
+}
+
+extern "C" void hess_x_wrapper(const double* x, void** hess_x) {
+    if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
+    HF::instance->hess_x(x, hess_x);
+}
+
+extern "C" void update_orbs_wrapper(const double* kappa, double* func, void** grad, void** h_diag,
+    void (**hess_x_out)(const double*, void**)) {
+    if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
+    HF::instance->update_orbs(kappa, func, grad, h_diag, hess_x_out);
+}
+
+extern "C" void logger(const char* message) {
+    outfile->Printf(" %s\n", message);
+}
+
+void HF::opentrustregion_scf() {
+    // check if OpenTrustRegion is enabled and loading of dynamic libraries is possible
+    #ifndef USING_OpenTrustRegion
+        throw PSIEXCEPTION("OpenTrustRegion support has not been enabled in this Psi4 build!\n");
+    #elifndef HAVE_DLFCN_H
+        throw PSIEXCEPTION("Plugins are not supported on your platform.\n");
+    #endif
+
+    // load library
+    void* handle = dlopen("libopentrustregion.dylib", RTLD_LAZY);
+    if (!handle) {
+        throw PSIEXCEPTION(
+            "HF::opentrustregion_scf: Failed to load library libopentrustregion.dylib."
+        );
+    }
+
+    // define interface
+    using solver_func_t = void (*)(
+        void (*update_orbs)(const double*, double*, void**, void**, void (**)(const double*, void**)),
+        double (*obj_func)(const double*),
+        int n_param,
+        bool* error,
+        void* precond_c_ptr,
+        void* stability_c_ptr,
+        void* line_search_c_ptr,
+        void* jacobi_davidson_c_ptr,
+        void* conv_tol_c_ptr,
+        void* n_random_trial_vectors_c_ptr,
+        void* start_trust_radius_c_ptr,
+        void* n_macro_c_ptr,
+        void* n_micro_c_ptr,
+        void* global_red_factor_c_ptr,
+        void* local_red_factor_c_ptr,
+        void* seed_c_ptr,
+        void* verbose_c_ptr,
+        void (*logger)(const char*)
+    );
+    
+    // load symbol
+    solver_func_t solver = reinterpret_cast<solver_func_t>(dlsym(handle, "solver"));
+    if (!solver) {
+        throw PSIEXCEPTION(
+            "HF::opentrustregion_scf: Failed to load symbol solver from library libopentrustregion.dylib."
+        );
+    }
+
+    // initialize instance
+    instance = this;
+
+    // input parameters
+    n_param_ = n_param();
+    bool error;
+    bool stability = options_.get_str("STABILITY_ANALYSIS") != "NONE";
+    auto stability_ptr = static_cast<void*>(&stability);
+    void* conv_tol_ptr;
+    if (options_["SOSCF_CONV"].has_changed()) {
+        double conv_tol = options_.get_double("SOSCF_CONV");
+        conv_tol_ptr = static_cast<void*>(&conv_tol);
+    } else {
+        conv_tol_ptr = nullptr;
+    }
+    int n_macro = options_.get_int("MAXITER");
+    auto n_macro_ptr = static_cast<void*>(&n_macro);
+    void* n_micro_ptr;
+    if (options_["SOSCF_MAX_ITER"].has_changed()) {
+        int n_micro = options_.get_int("SOSCF_MAX_ITER");
+        n_micro_ptr = static_cast<void*>(&n_micro);
+    } else {
+        n_micro_ptr = nullptr;
+    }
+    int verbose = options_.get_int("PRINT");
+    verbose = (verbose == 0) ? 2 : (verbose == 1) ? 3 : 4;
+    auto verbose_ptr = static_cast<void*>(&verbose);
+
+    // call the Fortran solver
+    solver(update_orbs_wrapper, obj_func_wrapper, n_param_, &error, nullptr, stability_ptr,
+            nullptr, nullptr, conv_tol_ptr, nullptr, nullptr, n_macro_ptr, n_micro_ptr, nullptr,
+            nullptr, nullptr, verbose_ptr, logger);
+
+    // check if solver completed successfully
+    if (error) {
+        throw PSIEXCEPTION(
+            "HF::opentrustregion_scf: OpenTrustRegion solver returned error."
+        );
+    }
+}
+
 }  // namespace scf
 }  // namespace psi

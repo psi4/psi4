@@ -65,6 +65,10 @@ class UHF : public HF {
     void Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a, SharedMatrix Cvir_a, SharedMatrix ret_a,
             SharedMatrix x_b, SharedMatrix IFock_b, SharedMatrix Cocc_b, SharedMatrix Cvir_b, SharedMatrix ret_b);
 
+    std::pair<SharedMatrix, SharedMatrix> unpack(const double* matrix, const std::string name, 
+                                                 const Dimension occpi_a, const Dimension virpi_a, 
+                                                 const Dimension occpi_b, const Dimension virpi_b);
+
    public:
     UHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
     UHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
@@ -88,6 +92,12 @@ class UHF : public HF {
 
     void damping_update(double) override;
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
+
+    void update_orbs(const double* kappa, double* func, void** grad, void** h_diag,
+    void (**hess_x_out)(const double*, void**)) override;
+    void hess_x(const double* x, void** out) override;
+    double obj_func(const double* kappa) override;
+    int n_param() override;
 
     std::shared_ptr<VBase> V_potential() const override { return potential_; };
 

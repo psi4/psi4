@@ -1546,3 +1546,16 @@ data:
         //CMAKE_INSIST_FIND_PACKAGE_OpenOrbitalOptimizer: true
         //CMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer: true
 
+  - project: opentrustregion
+    use:
+      added: "1.10"
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: eriksen-lab
+      name: opentrustregion
+    cmake: null
+    conda: null
