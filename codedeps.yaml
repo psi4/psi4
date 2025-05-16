@@ -1571,3 +1571,17 @@ data:
       constraint: null
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
+
+  - project: opentrustregion
+    use:
+      added: 1.11
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: eriksen-lab
+      name: opentrustregion
+    cmake: null
+    conda: null

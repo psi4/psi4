@@ -337,6 +337,19 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         early_screening = True
         self.jk().set_COSX_grid("Initial")
 
+    otr_scf = core.get_global_option('OTR_SCF')
+    if otr_scf:
+        # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
+        if self.sad_ and self.iteration_ <= 0:
+            self.form_G()
+            self.form_initial_F()
+            self.form_initial_C()
+            self.reset_occupation()
+            self.find_occupation()
+        self.opentrustregion_scf()
+        self.set_energies("Total Energy", self.compute_E())
+        return
+
     # maximum number of scf iterations to run after early screening is disabled
     scf_maxiter_post_screening = core.get_option('SCF', 'COSX_MAXITER_FINAL')
 
@@ -630,7 +643,7 @@ def scf_finalize_energy(self):
 
     # Perform wavefunction stability analysis before doing
     # anything on a wavefunction that may not be truly converged.
-    if core.get_option('SCF', 'STABILITY_ANALYSIS') != "NONE":
+    if core.get_option('SCF', 'STABILITY_ANALYSIS') != "NONE" and not core.get_global_option('OTR_SCF'):
 
         # We need the integral file, make sure it is written and
         # compute it if needed

@@ -200,6 +200,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Orbital optimizer package to use for SCF. -*/
     options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
 #endif
+    /*- Use OpenTrustRegion to carry out SCF? -*/
+    options.add_bool("OTR_SCF", false);
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
