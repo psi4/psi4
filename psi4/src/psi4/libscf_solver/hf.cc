@@ -83,6 +83,12 @@ extern bool brianEnable;
 
 #endif
 
+#ifdef HAVE_DLFCN_H
+
+#include <dlfcn.h>
+
+#endif
+
 namespace psi {
 namespace scf {
 
