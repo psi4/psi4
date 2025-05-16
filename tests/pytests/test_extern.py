@@ -146,3 +146,70 @@ def test_nopotential(frame, deriv, molmode):
     if charges_and_pure_frames_should_match:
         psi4.compare_values(ret_bohr_charges, ret_bohr_pure, atol, f"[9] {molmode} {deriv}: Bohr geometry, charges vs no charges return equality")
         psi4.compare_values(ret_ang_charges, ret_ang_pure, atol, f"[10] {molmode} {deriv}: Angstrom geometry, charges vs no charges return equality")
+
+
+def test_electronic_external_potential_energy():
+    mol = psi4.geometry("""
+    0 1
+    He 0.0 0.0 0.0
+    units au
+    """)
+    external_potential = np.array([1.0, 0.0, 0.0, 100.0])
+    energy, wfn = psi4.energy("hf/6-31G*", molecule=mol, external_potentials=[external_potential], return_wfn=True)
+    rhf_electronic_energy = wfn.variables()['ELECTRONIC-EXTERNAL POTENTIAL ENERGY']
+    from pprint import pprint
+    print("WFN VARS:")
+    pprint(wfn.variables())
+    psi4.set_options({
+        "reference": "uhf",
+    })
+    energy, wfn = psi4.energy("hf/6-31G*", molecule=mol, external_potentials=[external_potential], return_wfn=True)
+    uhf_electronic_energy = wfn.variables()['ELECTRONIC-EXTERNAL POTENTIAL ENERGY']
+    print("WFN VARS:")
+    pprint(wfn.variables())
+    assert psi4.compare_values(rhf_electronic_energy, uhf_electronic_energy, 1e-6, "Electronic external potential energy should be the same for RHF and UHF.")
+    assert psi4.compare_values(rhf_electronic_energy, -0.01999999999999999, 1e-6, "Electronic external potential energy should -0.02")
+
+    mol = psi4.geometry("""
+    0 2
+    H 0.0 0.0 0.0
+    units au
+    """)
+    psi4.set_options({
+        "reference": "uhf",
+    })
+    energy, wfn = psi4.energy("hf/6-31G*", molecule=mol, external_potentials=[external_potential], return_wfn=True)
+    uhf_electronic_energy = wfn.variables()['ELECTRONIC-EXTERNAL POTENTIAL ENERGY']
+    assert psi4.compare_values(uhf_electronic_energy, -0.01, 1e-6, "Electronic external potential energy should -0.01")
+    print("WFN VARS:")
+    pprint(wfn.variables())
+
+    mol = psi4.geometry("""
+    0 2
+    H 0.0 0.0 0.0
+    units au
+    """)
+    psi4.set_options({
+        "reference": "rohf",
+    })
+    energy, wfn = psi4.energy("hf/6-31G*", molecule=mol, external_potentials=[external_potential], return_wfn=True)
+    uhf_electronic_energy = wfn.variables()['ELECTRONIC-EXTERNAL POTENTIAL ENERGY']
+    assert psi4.compare_values(uhf_electronic_energy, -0.01, 1e-6, "Electronic external potential energy should -0.01")
+    print("WFN VARS:")
+    pprint(wfn.variables())
+
+    mol = psi4.geometry("""
+    0 2
+    Li 0.0 0.0 0.0
+    units au
+    """)
+    psi4.set_options({
+        "reference": "uhf",
+        "d_convergence": 9,
+    })
+    external_potential = np.array([1.0, 0.0, 0.0, 1000.0])
+    energy, wfn = psi4.energy("hf/6-31G*", molecule=mol, external_potentials=[external_potential], return_wfn=True)
+    uhf_electronic_energy = wfn.variables()['ELECTRONIC-EXTERNAL POTENTIAL ENERGY']
+    assert psi4.compare_values(uhf_electronic_energy, -0.003, 1e-6, "Electronic external potential energy should -0.003")
+    print("WFN VARS:")
+    pprint(wfn.variables())

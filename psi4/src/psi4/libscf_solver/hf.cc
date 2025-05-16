@@ -667,16 +667,18 @@ void HF::form_H() {
         }
         if (print_ > 3) Vprime->print();
         V_->add(Vprime);
+        // Need to set to wfn SharedMatrix arrays_
+        set_array_variable("V_EXTERNALPOTENTIAL", Vprime);
 
         // Extra nuclear repulsion
         double enuc2 = external_pot_->computeNuclearEnergy(molecule_);
         if (print_) {
             outfile->Printf("  Old nuclear repulsion        = %20.15f\n", nuclearrep_);
-            outfile->Printf("  Additional nuclear repulsion = %20.15f\n", enuc2);
+            outfile->Printf("  Nuclear-External Potential E = %20.15f\n", enuc2);
             outfile->Printf("  Total nuclear repulsion      = %20.15f\n\n", nuclearrep_ + enuc2);
         }
         nuclearrep_ += enuc2;
-
+        set_scalar_variable("NUCLEAR-EXTERNAL POTENTIAL ENERGY", enuc2);
     }  // end external
 
     // Save perturbed V_ for future (e.g. correlated) calcs
