@@ -42,6 +42,13 @@ namespace psi{
  */
 std::vector<int> merge_lists(const std::vector<int> &l1, const std::vector<int> &l2);
 
+/* Args: two lists of values l1 and l2 (where l2 is a subset of l1)
+ * WARNING: This assumes that each list is sorted and has unique elements!
+ * Returns: the position in l1 where each element of l2 is
+ * Example: l1 = [2, 4, 6, 8, 10, 12], l2 = [2, 8, 12], return = [0, 3, 5] since those are the indices of [8, 10, 12] in l1
+ */
+std::vector<int> PSI_API index_list(const std::vector<int> &l1, const std::vector<int> &l2);
+
 /* Args: sorted list of y, sparse map from A to another list of y (assume sorted, each possible value of y appears exactly once in entire map)
  * Returns: the union of lists in A_to_y where at least one element is in y
  */
