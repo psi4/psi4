@@ -245,29 +245,18 @@ with every |PSIfour| instance.
 
 Threading
 =========
-
-Most new modules in |PSIfour| are designed to run efficiently on SMP architectures
-via application of several thread models. The de facto standard for |PSIfour|
-involves using threaded BLAS/LAPACK (particularly Intel's excellent MKL package)
-for most tensor-like operations, OpenMP for more general operations, and C++
-``std::thread`` for some special-case operations. Note: Using OpenMP alone is a really
-bad idea. The developers make little to no effort to explicitly parallelize
-operations which are already easily threaded by MKL or other threaded BLAS. Less
-than 20% of the threaded code in |PSIfour| uses OpenMP, the rest is handled by
-parallel DGEMM and other library routines. From this point forward, it is
-assumed that you have compiled |PSIfour| with OpenMP and MKL (Note that it is
-possible to use g++ or another compiler and yet still link against MKL).
+PSI4 is designed to run efficiently on computers with multiple processors, known as SMP architectures, by using different tools to speed up calculations. 
+Most of the complex math operations, such as working with large matrices or tensors, are handled by specialized libraries like Intel's MKL. 
+These libraries are highly optimized to use multiple processors, so PSI4 doesn’t need to manually divide these tasks. 
+For other operations that aren’t covered by these libraries, PSI4 uses a tool called OpenMP, but this is kept to a minimum because the libraries are usually more efficient. 
+By combining these methods, PSI4 ensures that it takes full advantage of your computer’s processing power while keeping things as simple and effective as possible.
 
 Control of threading in |PSIfour| can be accomplished at a variety of levels,
 ranging from global environment variables to direct control of thread count in
 the input file, to even directives specific to each model. This hierarchy is
 explained below. Note that each deeper level trumps all previous levels.
 
-.. rubric:: (1) OpenMP/MKL Environment Variables
 
-.. deprecated:: 1.1
-   Environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`
-   do not affect threading in |PSIfour|.
 
 .. The easiest/least visible way to thread |PSIfour| is to set the standard OpenMP/MKL
 .. environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`.
@@ -287,6 +276,26 @@ explained below. Note that each deeper level trumps all previous levels.
 .. Psi4 then detects these value via the API routines in ``<omp.h>`` and
 .. ``<mkl.h>``, and runs all applicable code with 4 threads.
 
+..rubric:: (1)Setting OpenMP and MKL Thread Using Environment Variables
+The easiest way to control threading in PSI4 is to set the standard OpenMP and MKL environment variables.
+..code-block::bash
+
+   export OMP_NUM_THREADS=4
+   export MKL_NUM_THREADS=4
+
+These variables can be set in your shell configuration files to control the number of threads used by both OpenMP and MKL. PSI4 will automatically detect these values and run applicable code with the specified number of threads.
+If you need to adjust the number of threads dynamically during the session, you can reset the environment variable as needed:
+
+.. code-block:: bash
+    export OMP_NUM_THREADS=6
+
+Note that changing the number of threads multiple times is generally not recommended. It’s best to set it once and ensure the system is stable before running your calculations.
+
+.. sidebar:: MKL_NUM_THREADS Specifics
+
+The environment variable `MKL_NUM_THREADS` controls the number of threads used by MKL (Intel Math Kernel Library) routines. 
+This variable is useful when MKL is handling matrix operations in PSI4. Note that this can be set independently from the OpenMP threads. For more details, refer to the Intel MKL documentation.
+
 .. rubric:: (2) The -n Command Line Flag
 
 To change the number of threads at runtime, the :option:`psi4 -n` flag may be used. An
@@ -294,19 +303,21 @@ example is:
 
 .. code-block:: bash
 
-    psi4 -i input.dat -o output.dat -n 4
+    psi4 -i input.dat -o output.dat -n 4 
 
-which will run on four threads. Note that is is not available for PsiAPI mode of operation.
+This runs the job using four threads. However, note that this option is not available for PsiAPI mode of operation.
 
 .. rubric:: (3) Setting Thread Numbers in an Input
 
 For more explicit control, the Process::environment class in |PSIfour| can
 override the number of threads set by environment variables. This functionality
 is accessed via the :py:func:`~psi4.core.set_num_threads` function, which controls
-both MKL and OpenMP thread numbers. The number of threads may be changed
-multiple times in a |PSIfour| input file. An example input for this feature is::
+both MKL and OpenMP thread numbers. The number of threads can be set once in the 
+|PSIfour| input file. An example input for this feature is::
 
-    # A bit small-ish, but you get the idea
+    # Set the number of threads to 4
+    set_num_threads(4)
+
     molecule h2o {
     0 1
     O
@@ -314,21 +325,17 @@ multiple times in a |PSIfour| input file. An example input for this feature is::
     H 1 1.0 2 90.0
     }
 
-    # Run from 1 to 4 threads, for instance, to record timings
-    for nthread in range(1, 5):
-        set_num_threads(nthread)
-        energy("scf/cc-pvdz")
+    energy("scf/cc-pvdz")
 
-In PsiAPI mode of operation, this syntax, ``psi4.set_num_threads(nthread)``, is
-the primary way to control threading.
+In PsiAPI mode of operation, this syntax, ``psi4.set_num_threads(4)``, 
+is the primary way to control threading.
+
 
 .. rubric:: (4) Method-Specific Control
 
-Even more control is possible in certain circumstances. For instance, the
-threaded generation of AO density-fitted integrals involves a memory requirement
-proportional to the number of threads. This requirement may exceed the total
-memory of a small-memory node if all threads are involved in the generation of
-these integrals. For general DF algorithms, the user may specify::
+Even more control is possible in situations where the threaded generation of AO density-fitted integrals requires memory proportional to the number of threads. 
+For example, when using a small-memory node, the memory requirement may exceed the available capacity if all threads are involved in generating these integrals. 
+For general DF algorithms, the user may specify:
 
     set MODULE_NAME df_ints_num_threads n
 
