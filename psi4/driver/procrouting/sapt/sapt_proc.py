@@ -135,23 +135,21 @@ def run_sapt_dft(name, **kwargs):
         core.print_out("     DFT  (Monomer B)\n")
     if do_mon_grac_shift_A:
         core.print_out("     GRAC (Monomer A)\n")
-        compute_GRAC_shift(
+        mon_a_shift = compute_GRAC_shift(
             monomerA_mon_only_bf,
             SAPT_DFT_GRAC_COMPUTE,
             "Monomer A",
         )
-        mon_a_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_A")
     if do_mon_grac_shift_B:
         core.print_out("     GRAC (Monomer B)\n")
-        compute_GRAC_shift(
+        mon_b_shift = compute_GRAC_shift(
             monomerB_mon_only_bf,
             SAPT_DFT_GRAC_COMPUTE,
             "Monomer B",
         )
-        mon_b_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_B")
 
-    core.set_variable("SAPT_DFT_GRAC_SHIFT_A", mon_a_shift)
-    core.set_variable("SAPT_DFT_GRAC_SHIFT_B", mon_b_shift)
+    core.set_variable("SAPT DFT GRAC SHIFT A", mon_a_shift)
+    core.set_variable("SAPT DFT GRAC SHIFT B", mon_b_shift)
     core.print_out("\n")
 
     if do_dft and ((not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_A")) or (not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_B"))) and SAPT_DFT_GRAC_COMPUTE.upper() == "NONE":
@@ -399,7 +397,7 @@ sapt_dft_grac_convergence_tier_options = {
 }
 
 
-def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier="SINGLE", label="Monomer A"):
+def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier, label):
     optstash = p4util.OptionsState(
         ["SCF_TYPE"],
         ["SCF", "REFERENCE"],
@@ -414,35 +412,35 @@ def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier="SINGLE", label=
     dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
     scf_reference = core.get_option("SCF", "REFERENCE")
 
-    print(f"Computing GRAC shift for {label} using {sapt_dft_grac_convergence_tier}...")
+    core.print_out(f"Computing GRAC shift for {label} using {sapt_dft_grac_convergence_tier}...")
     grac_options = sapt_dft_grac_convergence_tier_options[
         sapt_dft_grac_convergence_tier.upper()
     ]
-    print(f"{grac_options = }")
     for options in grac_options:
         for key, val in options.items():
             core.set_local_option("SCF", key, val)
         core.set_local_option("SCF", "REFERENCE", "UHF")
-        # Need to get the neutral and cation to estimate ionization energy for
+        # Need to get the initial and cation to estimate ionization energy for
         # GRAC shift
         mol_qcel_dict = molecule.to_schema(dtype=2)
         del mol_qcel_dict["fragment_charges"]
         del mol_qcel_dict["fragment_multiplicities"]
         del mol_qcel_dict["molecular_multiplicity"]
-        mol_qcel_dict["molecular_charge"] = 0
+        # mol_qcel_dict["molecular_charge"] = 0
+        given_charge = mol_qcel_dict["molecular_charge"]
 
         mol_qcel = qcel.models.Molecule(**mol_qcel_dict)
-        mol_neutral = core.Molecule.from_schema(mol_qcel.dict())
+        mol_given = core.Molecule.from_schema(mol_qcel.dict())
 
-        mol_qcel_dict["molecular_charge"] = 1
+        mol_qcel_dict["molecular_charge"] += 1
         mol_qcel = qcel.models.Molecule(**mol_qcel_dict)
         mol_cation = core.Molecule.from_schema(mol_qcel.dict())
 
-        core.print_out(f"\n\n  ==> GRAC {label}: Neutral <==\n\n")
+        core.print_out(f"\n\n  ==> GRAC {label}: Given {given_charge} <==\n\n")
         try:
-            wfn_neutral = run_scf(
+            wfn_given = run_scf(
                 dft_functional.lower(),
-                molecule=mol_neutral,
+                molecule=mol_given,
             )
             core.print_out(f"\n\n  ==> GRAC {label}: Cation <==\n\n")
             wfn_cation = run_scf(
@@ -455,32 +453,29 @@ def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier="SINGLE", label=
                     "Convergence error in GRAC shift calculation, please try a different convergence tier."
                 )
             else:
-                print("Convergence error, trying next GRAC iteration...")
-                print(f"{options = }")
+                core.print_out("Convergence error, trying next GRAC iteration...")
             continue
-        occ_neutral = wfn_neutral.epsilon_a_subset(basis="SO", subset="OCC").to_array(
+        occ_given = wfn_given.epsilon_a_subset(basis="SO", subset="OCC").to_array(
             dense=True
         )
-        HOMO = np.amax(occ_neutral)
+        HOMO = np.amax(occ_given)
 
-        E_neutral = wfn_neutral.energy()
+        E_given = wfn_given.energy()
         E_cation = wfn_cation.energy()
-        grac = E_cation - E_neutral + HOMO
+        grac = E_cation - E_given + HOMO
         if grac >= 1 or grac <= -1:
             raise Exception(f"The computed GRAC shift ({grac = }) exceeds the bounds of -1 < x < 1 and should not be used to approximate the ionization potential.")
         if label == "Monomer A":
-            core.set_global_option("SAPT_DFT_GRAC_SHIFT_A", grac)
-            core.set_variable("SAPT_DFT_GRAC_SHIFT_A", grac)
+            core.set_variable("SAPT DFT GRAC SHIFT A", grac)
         elif label == "Monomer B":
-            core.set_global_option("SAPT_DFT_GRAC_SHIFT_B", grac)
-            core.set_variable("SAPT_DFT_GRAC_SHIFT_B", grac)
+            core.set_variable("SAPT DFT GRAC SHIFT B", grac)
         else:
             raise ValueError(
                 "Only Monomer A and Monomer B are valid GRAC shift options"
             )
     core.set_local_option("SCF", "REFERENCE", scf_reference)
     optstash.restore()
-    return
+    return grac
 
 
 def sapt_dft_header(
