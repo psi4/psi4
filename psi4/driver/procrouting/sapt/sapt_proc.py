@@ -426,6 +426,7 @@ def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier, label):
         del mol_qcel_dict["fragment_charges"]
         del mol_qcel_dict["fragment_multiplicities"]
         del mol_qcel_dict["molecular_multiplicity"]
+        # setting to neutral for testing...
         # mol_qcel_dict["molecular_charge"] = 0
         given_charge = mol_qcel_dict["molecular_charge"]
 
