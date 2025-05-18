@@ -711,13 +711,15 @@ void FISAPT::nuclear() {
 }
 
 
-void FISAPT::coulomb() {
+void FISAPT::coulomb(std::shared_ptr<JK> jk) {
     outfile->Printf("  ==> Coulomb Integrals <==\n\n");
 
     // => Global JK Object <= //
+    // Reuse the passed JK object //
+    jk_ = jk;
 
-    jk_ = JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_, false, doubles_);
-    jk_->set_memory(doubles_);
+    //jk_ = JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_, false, doubles_);
+    //jk_->set_memory(doubles_);
 
     // => Build J and K for embedding <= //
 
@@ -739,8 +741,8 @@ void FISAPT::coulomb() {
 
     jk_->set_do_J(true);
     jk_->set_do_K(true);
-    jk_->initialize();
-    jk_->print_header();
+    //jk_->initialize();
+    //jk_->print_header();
 
     jk_->compute();
 

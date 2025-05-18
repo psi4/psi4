@@ -118,8 +118,8 @@ class FISAPT {
     void kinetic();
     /// Build the nuclear potentials V and interaction energies
     void nuclear();
-    /// Build the J/K potentials for C, D, and E
-    void coulomb();
+    /// Build the J/K potentials for C, D, and E, reusing the JK object from previous SCF calculation
+    void coulomb(std::shared_ptr<JK> jk);
     /// Solve the relaxed SCF equations for A0 and B0
     void scf();
     /// Freeze the core orbitals

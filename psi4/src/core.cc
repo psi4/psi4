@@ -569,18 +569,22 @@ bool specifies_convergence(std::string const& key) {
 
 // DCFT deprecation errors first added in 1.4. Feel free to retire after "enough" time.
 void throw_deprecation_errors(std::string const& key, std::string const& module = "") {
-    if (module == "DCFT") {
+    // Templates.
+    /*
+    if (module == "OLD") {
         throw PsiException(
-            "Rename local options block. All instances of 'dcft' should be replaced with 'dct'. The method was renamed "
-            "in v1.4.",
+            "Rename local options block. All instances of 'OLD' should be replaced with 'NEW'. The method was renamed "
+            "in vX.Y.",
             __FILE__, __LINE__);
     }
-    if (key.find("DCFT") != std::string::npos) {
+    if (key.find("OLD") != std::string::npos) {
         throw PsiException(
             "Rename keyword " + key +
-                ". All instances of 'dcft' should be replaced with 'dct'. The method was renamed in v1.4.",
+                ". All instances of 'OLD' should be replaced with 'NEW'. The method was renamed in vX.Y.",
             __FILE__, __LINE__);
     }
+    */
+
     if (module == "SCF" && key == "DIIS_MIN_VECS") {
         py_psi_print_out("WARNING!\n\tRemove keyword DIIS_MIN_VECS! This keyword does nothing. Using it will raise an error in v1.7.\n");
     }
@@ -589,6 +593,9 @@ void throw_deprecation_errors(std::string const& key, std::string const& module 
     }
     if (module == "SCF" && key == "PK_ALGO") {
         py_psi_print_out("WARNING!\n\tRemove keyword PK_ALGO! PK_ALGO has been replaced by the SCF_SUBTYPE=YOSHIMINE_OUT_OF_CORE and REORDER_OUT_OF_CORE options. Using PK_ALGO will raise an error in v1.8.\n");
+    }
+    if (module == "DFOCC" && key == "MOLDEN_WRITE") {
+        py_psi_print_out("WARNING!\n\tRemove keyword MOLDEN_WRITE! Using MOLDEN_WRITE will raise an error in v1.12. Call wfn.write_molden instead.\n");
     }
     if (module == "SAPT" && key == "E_CONVERGENCE") {
         throw PsiException(

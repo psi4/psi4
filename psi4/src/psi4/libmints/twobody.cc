@@ -238,16 +238,16 @@ void TwoBodyAOInt::setup_sieve() {
     // Different approaches are possible, so we use a function pointer and set it once, to avoid logic later on
     switch (screening_type_) {
         case ScreeningType::CSAM:
-            sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_csam(M, N, R, S); };
+            sieve_impl_ = [this](int M, int N, int R, int S) { return this->shell_significant_csam(M, N, R, S); };
             break;
         case ScreeningType::Schwarz:
-            sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_schwarz(M, N, R, S); };
+            sieve_impl_ = [this](int M, int N, int R, int S) { return this->shell_significant_schwarz(M, N, R, S); };
             break;
         case ScreeningType::Density:
-            sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_density(M, N, R, S); };
+            sieve_impl_ = [this](int M, int N, int R, int S) { return this->shell_significant_density(M, N, R, S); };
             break;
         case ScreeningType::None:   
-            sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_none(M, N, R, S); };
+            sieve_impl_ = [this](int M, int N, int R, int S) { return this->shell_significant_none(M, N, R, S); };
             return;
         default:
             throw PSIEXCEPTION("Unimplemented screening type in TwoBodyAOInt::setup_sieve()");

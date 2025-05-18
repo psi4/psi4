@@ -11,7 +11,7 @@ jobs:
     matrix:
       gcc_11:
         CXX_COMPILER: 'g++-11'
-        PYTHON_VER: '3.8'
+        PYTHON_VER: '3.9'
         C_COMPILER: 'gcc-11'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
@@ -22,7 +22,7 @@ jobs:
 
       gcc_latest:
         CXX_COMPILER: 'g++'
-        PYTHON_VER: '3.12'
+        PYTHON_VER: '3.13'
         C_COMPILER: 'gcc'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
@@ -33,7 +33,7 @@ jobs:
 
       clang_latest:
         CXX_COMPILER: 'clang++'
-        PYTHON_VER: '3.9'
+        PYTHON_VER: '3.11'
         C_COMPILER: 'clang'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
@@ -104,7 +104,7 @@ jobs:
       fi
       sed -i "s;- libint;#- libint;g" env_p4env.yaml
       sed -i "s;#- psi4::libint;- psi4::libint=2.8.1;g" env_p4env.yaml
-      echo "  - einsums=*=mkl*" >> env_p4env.yaml
+      echo "  - einsums>=1.0.3" >> env_p4env.yaml
       echo "  - range-v3" >> env_p4env.yaml
       echo "  - zlib" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
