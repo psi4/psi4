@@ -95,3 +95,14 @@ def test_saptdft_auto_grac(SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geom
         8,
         "SAPT DFT GRAC SHIFT B",
     )
+
+if __name__ == "__main__":
+    test_saptdft_auto_grac(
+            "ITERATIVE",
+            0.3258340368,
+            0.19830016,
+            None,
+            None,
+            "hydroxide",
+        )
+

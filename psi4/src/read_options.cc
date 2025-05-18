@@ -1156,6 +1156,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
          the neutral/cation calculations. "ITERATIVE" will try 3 times to
          converge the cation before failing the SAPT(DFT) computation. -*/
         options.add_str("SAPT_DFT_GRAC_COMPUTE", "NONE", "NONE SINGLE ITERATIVE");
+        /*- To ensure that the GRAC shift is computed with a sufficiently large
+          basis set, the user can specify a larger basis set for the GRAC
+          calculation, which will can different from the basis set used for the
+          SAPT(DFT) calculation. The default is an augmented triple-zeta basis
+          set. -*/
+        options.add_str("SAPT_DFT_GRAC_BASIS", "AUG-CC-PVTZ");
         /*- Compute the Delta-HF correction? -*/
         options.add_bool("SAPT_DFT_DO_DHF", true);
         /*- Enables the hybrid xc kernel in dispersion? !expert -*/

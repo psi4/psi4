@@ -407,10 +407,13 @@ def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier, label):
         ["LEVEL_SHIFT"],
         ["LEVEL_SHIFT_CUTOFF"],
         ["SCF_INITIAL_ACCELERATOR"],
+        ["SCF", "BASIS"],
     )
 
     dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
     scf_reference = core.get_option("SCF", "REFERENCE")
+    grac_basis = core.get_option("SAPT", "SAPT_DFT_GRAC_BASIS")
+    core.set_global_option("BASIS", grac_basis)
 
     core.print_out(f"Computing GRAC shift for {label} using {sapt_dft_grac_convergence_tier}...")
     grac_options = sapt_dft_grac_convergence_tier_options[
