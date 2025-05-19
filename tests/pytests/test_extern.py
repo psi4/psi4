@@ -251,7 +251,7 @@ _ans12 = {"B": {"points": _qxyz4a, "diffuse": _qxyzw4a}, "A": {"matrix": _mat5a}
     ({"b": [_qxyz4b, _qxyzw4b], "a": {"matrix": _mat5a}}, _ans12),
 ])
 def test_extern_parsing(ep, ans):
-    cptd = psi4.procrouting.proc.validate_external_potential(ep)
+    cptd = psi4.p4util.validate_external_potential(ep)
     assert compare_recursive(ans, cptd)
 
 
@@ -316,7 +316,7 @@ def test_extern_parsing(ep, ans):
 ])
 def test_extern_parsing_error(ep):
     with pytest.raises((psi4.ValidationError, TypeError)):
-        psi4.procrouting.proc.validate_external_potential(ep)
+        psi4.p4util.validate_external_potential(ep)
 
 
 _one_far_point = [[0.001, 100.0, 0.0, 0.0]]
