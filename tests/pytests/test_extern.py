@@ -317,30 +317,3 @@ def test_extern_parsing(ep, ans):
 def test_extern_parsing_error(ep):
     with pytest.raises((psi4.ValidationError, TypeError)):
         psi4.p4util.validate_external_potential(ep)
-
-
-_one_far_point = [[0.001, 100.0, 0.0, 0.0]]
-_one_farther_point = [[1.0, 0.0, 10000.0, 0.0]]
-_one_far_diffuse = [[0.001, 100.0, 0.0, 0.0, 5.0]]
-_one_farther_diffuse = [[1.0, 0.0, 10000.0, 0.0, 5.0]]
-
-_three_near_points = np.array([
-    [-0.834, 3.11659683, 0.0, -4.45223936],
-    [ 0.417, 1.02944157, 0.0, -7.18088642],
-    [ 0.417, 1.02944157, 0.0, -1.72359229]])
-_three_near_sharp_diffuse = np.array([
-    [-0.834,  3.11659683, 0.0, -4.45223936, 1000.0],
-    [ 0.417,  1.02944157, 0.0, -7.18088642, 1000.0],
-    [ 0.417,  1.02944157, 0.0, -1.72359229, 1000.0]])
-_three_near_natural_diffuse = np.array([
-    [ 0.417,  1.02944157, 0.0, -7.18088642, 0.2],
-    [-0.834,  3.11659683, 0.0, -4.45223936, 0.5],
-    [ 0.417,  1.02944157, 0.0, -1.72359229, 0.2]])
-
-_two_very_near_points = np.array([
-    [ 1.0, -1.5,  0.1, 2.14],
-    [-1.0, -1.5,  0.2, 2.14]])
-_two_very_near_sharp_diffuse = np.array([
-    [ 1.0, -1.5,  0.1, 2.14, 1000000000.0],
-    [-1.0, -1.5,  0.2, 2.14, 1000000000.0]])
-

@@ -208,6 +208,7 @@ def test_cancelled_qcvars():
     assert err_substr in str(e.value)
 
 
+@pytest.mark.extern
 def test_deprecated_qmmmbohr():
     err_substr = "external_potentials"
     with pytest.warns(FutureWarning, match=err_substr) as e:

@@ -885,7 +885,6 @@ def validate_external_potential(external_potential) -> Dict:
     return ep2
 
 
-
 ## Option helpers
 
 
