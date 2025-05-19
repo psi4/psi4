@@ -32,12 +32,12 @@ jobs:
       #  ENABLE_EINSUMS: "ON"
 
       clang_latest:
-        CXX_COMPILER: 'clang++'
+        CXX_COMPILER: 'clang++-11'
         PYTHON_VER: '3.11'
         C_COMPILER: 'clang-11'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran clang-11'
+        APT_INSTALL: 'gfortran clang-11 clang++-11'
         vmImage: 'ubuntu-22.04'
         PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
         ENABLE_EINSUMS: "OFF"
