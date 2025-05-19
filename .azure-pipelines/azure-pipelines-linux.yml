@@ -9,27 +9,27 @@ jobs:
   strategy:
     maxParallel: 8
     matrix:
-      #gcc_11:
-      #  CXX_COMPILER: 'g++-11'
-      #  PYTHON_VER: '3.9'
-      #  C_COMPILER: 'gcc-11'
-      #  F_COMPILER: 'gfortran'
-      #  BUILD_TYPE: 'release'
-      #  APT_INSTALL: 'gfortran gcc-11 g++-11'
-      #  vmImage: 'ubuntu-22.04'
-      #  PYTEST_MARKER_EXPR: "quick"
-      #  ENABLE_EINSUMS: "ON"
+      gcc_11:
+        CXX_COMPILER: 'g++-11'
+        PYTHON_VER: '3.9'
+        C_COMPILER: 'gcc-11'
+        F_COMPILER: 'gfortran'
+        BUILD_TYPE: 'release'
+        APT_INSTALL: 'gfortran gcc-11 g++-11'
+        vmImage: 'ubuntu-22.04'
+        PYTEST_MARKER_EXPR: "quick"
+        ENABLE_EINSUMS: "ON"
 
-      #gcc_latest:
-      #  CXX_COMPILER: 'g++'
-      #  PYTHON_VER: '3.13'
-      #  C_COMPILER: 'gcc'
-      #  F_COMPILER: 'gfortran'
-      #  BUILD_TYPE: 'release'
-      #  APT_INSTALL: 'gfortran'
-      #  vmImage: 'ubuntu-latest'
-      #  PYTEST_MARKER_EXPR: 'api and not stdsuite and not (smoke or quick or medlong or long)'
-      #  ENABLE_EINSUMS: "ON"
+      gcc_latest:
+        CXX_COMPILER: 'g++'
+        PYTHON_VER: '3.13'
+        C_COMPILER: 'gcc'
+        F_COMPILER: 'gfortran'
+        BUILD_TYPE: 'release'
+        APT_INSTALL: 'gfortran'
+        vmImage: 'ubuntu-latest'
+        PYTEST_MARKER_EXPR: 'api and not stdsuite and not (smoke or quick or medlong or long)'
+        ENABLE_EINSUMS: "ON"
 
       clang_latest:
         CXX_COMPILER: 'clang++-11'
@@ -40,7 +40,7 @@ jobs:
         APT_INSTALL: 'gfortran clang-11 clang++-11 libomp-11-dev'
         vmImage: 'ubuntu-22.04'
         PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
-        ENABLE_EINSUMS: "ON"
+        ENABLE_EINSUMS: "OFF"
 
   pool:
     vmImage: $(vmImage)
