@@ -37,7 +37,7 @@ jobs:
         C_COMPILER: 'clang'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran clang-6.0'
+        APT_INSTALL: 'gfortran clang-11'
         vmImage: 'ubuntu-22.04'
         PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
         ENABLE_EINSUMS: "OFF"
