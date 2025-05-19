@@ -37,10 +37,10 @@ jobs:
         C_COMPILER: 'clang-11'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran clang-11 clang++-11'
+        APT_INSTALL: 'gfortran clang-11 clang++-11 libomp-11-dev'
         vmImage: 'ubuntu-22.04'
         PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
-        ENABLE_EINSUMS: "OFF"
+        ENABLE_EINSUMS: "ON"
 
   pool:
     vmImage: $(vmImage)
