@@ -317,3 +317,79 @@ def test_extern_parsing(ep, ans):
 def test_extern_parsing_error(ep):
     with pytest.raises((psi4.ValidationError, TypeError)):
         psi4.p4util.validate_external_potential(ep)
+
+
+_one_far_point = [[0.001, 100.0, 0.0, 0.0]]
+_one_farther_point = [[1.0, 0.0, 10000.0, 0.0]]
+_one_far_diffuse = [[0.001, 100.0, 0.0, 0.0, 5.0]]
+_one_farther_diffuse = [[1.0, 0.0, 10000.0, 0.0, 5.0]]
+
+_three_near_points = np.array([
+    [-0.834, 3.11659683, 0.0, -4.45223936],
+    [ 0.417, 1.02944157, 0.0, -7.18088642],
+    [ 0.417, 1.02944157, 0.0, -1.72359229]])
+_three_near_sharp_diffuse = np.array([
+    [-0.834,  3.11659683, 0.0, -4.45223936, 1000.0],
+    [ 0.417,  1.02944157, 0.0, -7.18088642, 1000.0],
+    [ 0.417,  1.02944157, 0.0, -1.72359229, 1000.0]])
+_three_near_natural_diffuse = np.array([
+    [ 0.417,  1.02944157, 0.0, -7.18088642, 0.2],
+    [-0.834,  3.11659683, 0.0, -4.45223936, 0.5],
+    [ 0.417,  1.02944157, 0.0, -1.72359229, 0.2]])
+
+_two_very_near_points = np.array([
+    [ 1.0, -1.5,  0.1, 2.14],
+    [-1.0, -1.5,  0.2, 2.14]])
+_two_very_near_sharp_diffuse = np.array([
+    [ 1.0, -1.5,  0.1, 2.14, 1000000000.0],
+    [-1.0, -1.5,  0.2, 2.14, 1000000000.0]])
+
+@pytest.mark.quick
+@pytest.mark.parametrize("ep,anskey", [
+    # lone H2O equivalents
+    pytest.param(None, "h2o_plain_df", id="water"),
+    pytest.param(_one_far_point, "h2o_plain_df", id="water_farP"),
+    pytest.param(_one_farther_point, "h2o_plain_df", id="water_farP_2"),
+    pytest.param({"diffuse": _one_far_diffuse}, "h2o_plain_df", id="water_farD"),
+    pytest.param([None, _one_farther_diffuse], "h2o_plain_df", id="water_farD_2"),
+    # H2O + point charge H2O equivalents
+    pytest.param(_three_near_points, "h2o_ee_df", id="water_P"),
+    pytest.param([_one_far_point, _three_near_sharp_diffuse], "h2o_ee_df", id="water_farP_D"),
+    pytest.param([None, _three_near_sharp_diffuse], "h2o_ee_df", id="water_D"),
+    pytest.param([_three_near_points[:1], _three_near_sharp_diffuse[1:]], "h2o_ee_df", id="water_2P_D"),
+    pytest.param([_three_near_points[1:], _three_near_sharp_diffuse[:1]], "h2o_ee_df", id="water_P_2D"),
+    # H2O + diffuse charge H2O equivalents
+    pytest.param([None, _three_near_natural_diffuse], "h2o_dd_df", id="water_DD"),
+    # H2O + very near strong charges equivalents
+    pytest.param(_two_very_near_points, "h2o_de_df", id="water_near_PP"),
+    pytest.param([None, _two_very_near_sharp_diffuse], "h2o_de_df", id="water_near_DD"),
+    pytest.param([_two_very_near_points[:1], _two_very_near_sharp_diffuse[1:]], "h2o_de_df", id="water_near_DP"),
+    pytest.param([_two_very_near_points[1:], _two_very_near_sharp_diffuse[:1]], "h2o_de_df", id="water_near_PD"),
+])
+def test_extern_points_diffuse(ep, anskey):
+
+    h2o_bohr = [-1.47172438,  0.0,         2.14046066,
+                -1.25984639,  1.44393784,  3.22442268,
+                -1.25984639, -1.44393784,  3.22442079]
+    water = psi4.core.Molecule.from_arrays(units="Bohr", geom=h2o_bohr, elem=["O", "H", "H"])
+            #, fix_com=True, fix_orientation=True)
+
+    ans = {
+        "h2o_plain_df": {  # copied from psi4/extern1 test
+            "energy": -76.010274923509,
+        },
+        "h2o_ee_df": {  # copied from psi4/extern1 test
+            "energy": -76.0194112285529968,
+        },
+        "h2o_dd_df": {  # uncorroborated, merely to check calc stable
+            #"energy": -76.01481363, # all 0.2
+            "energy": -76.014805897408,
+        },
+        "h2o_de_df": {
+            "energy": -42.27378086,
+        },
+    }
+
+    ene = psi4.energy("hf/6-31G*", molecule=water, external_potentials=ep)
+    psi4.compare_values(ans[anskey]["energy"], ene, 6, anskey)
+

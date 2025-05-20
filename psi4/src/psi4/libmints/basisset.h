@@ -405,6 +405,7 @@ class PSI_API BasisSet {
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
     // Converts the contraction to match the SAP approach.
+    //   Note this is NOT idempotent and is only for s-function bases.
     void convert_sap_contraction();
     
    private:
