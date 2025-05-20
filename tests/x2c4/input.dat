@@ -4,7 +4,7 @@
 # Pyscf:                              -1270.4887320302198
 # DIRAC: (setting X2C with spin free) -1271.1221679632611
 
-ref_rel_energy = -1270.99040467  #TEST  # from 1.e-20
+ref_rel_energy = -1270.99040342  #TEST  # from 1.e-16
 
 molecule iron {
 Fe
@@ -16,6 +16,7 @@ set {
   basis_relativistic cc-pVDZ-decon
   relativistic x2c
   puream false
+  d_convergence 10
 }
 
 testrel = energy('scf')
