@@ -1650,7 +1650,7 @@ void export_mints(py::module& m) {
         .def("getCharges", &ExternalPotential::getCharges, "Get the vector of charge tuples")
         .def("appendCharges", &ExternalPotential::appendCharges,
              "Append a vector of charge tuples to a current ExternalPotential")
-        .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions iwth Df coefficients",
+        .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions with DF coefficients",
              "basis"_a, "coefs"_a)
         .def("gradient_on_charges", &ExternalPotential::gradient_on_charges, "Get the gradient on the embedded charges")
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")
@@ -1660,7 +1660,7 @@ void export_mints(py::module& m) {
              "Compute the contribution to the nuclear repulsion energy for the given molecule")
         .def("computeExternExternInteraction", &ExternalPotential::computeExternExternInteraction,
              "Compute the interaction between this potential and other external potential")
-        .def("print_out", &ExternalPotential::py_print, "Print python print helper to the outfile");
+        .def("print_out", &ExternalPotential::py_print, "Print object summary to the outfile");
 
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>,
                                                               std::shared_ptr<Matrix>);

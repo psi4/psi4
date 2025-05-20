@@ -45,6 +45,7 @@ __all__ = [
     "plump_qcvar",
     "set_options",
     "set_module_options",
+    "validate_external_potential",
 ]
 
 
@@ -741,6 +742,148 @@ core.OEProp.valid_methods = [
     'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES', 'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES',
     'MBIS_CHARGES','MBIS_VOLUME_RATIOS', 'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI', 'NO_OCCUPATIONS'
 ]
+
+
+## External Potential helpers
+
+def validate_external_potential(external_potential) -> Dict:
+    """Validate and normalize the format of **external_potential** in preparation for class construction.
+
+    Parameters
+    ----------
+    external_potential
+        Specification for :py:class:`psi4.core.ExternalPotential`. Can be composed of point charges
+        (Q x y z), diffuse charges (Gaussian s-orbitals at a center; Q x y z width), or (Nao, Nao)
+        potential matrix. If only one of the three specified, it is assumed to be point charges for
+        backwards compatibility. Include diffuse charges as a dictionary with key "diffuse" or as the
+        second item in a list (if no point charges, use placeholder None as first item). Include a
+        matrix as a dictionary with key "matrix" or as the third item in a list. External potential
+        will apply to the whole molecule unless behind another dictionary key ("A", "B", or "C") to
+        apply to portions of the molecule (monomer, monomer, linker) for FI-SAPT. Most sensible
+        formats are accepted: list-of-lists, NumPy array, and :py:class:`psi4.core.Matrix`. The
+        points or diffuse array should be a list-like structure where each row corresponds to a charge.
+        Lines can be composed of ``q, [x, y, z]`` or ``q, x, y, z`` (for points) or ``q, [x, w, z] w``
+        of ``q, x, y, z, w`` (for diffuse). Locations are in [a0].
+        See test_extern.py for many examples.
+
+    Returns
+    -------
+    dict
+        After some bounds, dimension, and shape checks, a normalized nested dict is returned with
+        outer keys of fragment labels, inner keys among {"points", "diffuse", "matrix"}, and inner
+        keys Python lists.
+
+    Examples
+    --------
+    >>> # [1] point charges on whole molecule (all equivalent)
+    >>> validate_external_potential([[0.5,0,0,1], [-0.5,0,0,-1]])
+    >>> validate_external_potential({"points": np.array([[0.5,0,0,1], [-0.5,0,0,-1]])})
+    >>> validate_external_potential({"C": {"points": psi4.core.Matrix.from_array(np.array([[0.5,0,0,1], [-0.5,0,0,-1]]))}})
+
+    >>> # [2] point charges on monoB and linker for FI-SAPT
+    >>> validate_external_potential({"b": [0.01,2,2,2], "c": [[0.5,0,0,1], [-0.5,0,0,-1]]})
+    >>> validate_external_potential({"B": {"points": np.array([0.01,2,2,2])}, "C": {"points": np.array([[0.5,0,0,1], [-0.5,0,0,-1]])}})
+
+    """
+    def validate_charge_list(lqxyz, diffuse: bool=False):
+        # check charge has form Q x y z, Q [x y z], Q x y z w, or Q [x y z] w
+
+        def validate_single_charge(chg):
+            try:
+                nchg = len(chg)
+            except TypeError:
+                return False
+
+            if (not diffuse) and nchg == 2:
+                return chg[0], chg[1][0], chg[1][1], chg[1][2]
+            elif diffuse and nchg == 3:
+                return chg[0], chg[1][0], chg[1][1], chg[1][2], chg[2]
+            elif (not diffuse) and nchg == 4:
+                return chg[0], chg[1], chg[2], chg[3]
+            elif diffuse and nchg == 5:
+                return chg[0], chg[1], chg[2], chg[3], chg[4]
+            else:
+                return False
+
+        flattened = [validate_single_charge(pt) for pt in lqxyz]
+
+        # reject if a charge line has wrong format or if spec is nested too deep or too shallow (can
+        #   happen due to flexible input format and backwards compatibility with points-only).
+        for itm in flattened:
+            if itm is False:
+                return False
+        try:
+            if np.array(flattened).ndim != 2:
+                return False
+        except ValueError:
+            return False
+        return flattened
+
+    def validate_potential_array(mat):
+        if isinstance(mat, core.Matrix):
+            npmat = mat.np
+        elif isinstance(mat, list):
+            npmat = np.array(mat)
+        elif isinstance(mat, np.ndarray):
+            npmat = mat
+        else:
+            return False
+
+        if npmat.ndim != 2 or npmat.shape[0] != npmat.shape[1]:
+            return False
+
+        return npmat.tolist()
+
+    frag_keys = set("ABC")
+    mode_keys_list = ["points", "diffuse", "matrix"]
+
+    if isinstance(external_potential, dict) and ({k.upper() for k in external_potential.keys()} <= frag_keys):
+        ep_outer_structure = {k.upper(): v for k, v in external_potential.items()}
+    else:
+        # assign "C" to mean whole molecule in the non-SAPT case
+        ep_outer_structure = {"C": external_potential}
+
+    # expand input structure: may be single points list or types list or types dict or fragments dict (for SAPT)
+    ep_building = {}
+    for frag, frag_ep in ep_outer_structure.items():
+        if isinstance(frag_ep, dict):
+            if frag_ep.keys() <= set(mode_keys_list):
+                ep_building[frag] = frag_ep
+            else:
+                raise ValidationError(f"external_potential: primary or sec keys should be among {mode_keys_list}, not {frag_ep.keys()}. Full input: {external_potential}")
+        elif isinstance(frag_ep, list):
+            if (w := validate_charge_list(frag_ep)):
+                ep_building[frag] = dict(zip(mode_keys_list, [w]))
+            else:
+                ep_building[frag] = dict(zip(mode_keys_list, frag_ep))
+        elif isinstance(frag_ep, np.ndarray):
+                ep_building[frag] = dict(zip(mode_keys_list, [frag_ep]))
+        else:
+            raise ValidationError(f"external_potential: ought to be dict, list, or np.ndarray, not {type(frag_ep)}. Full input: {external_potential}")
+
+    # validate each type of spec in each a/b/c fragment
+    ep_validated = {abc: {} for abc in ep_building}
+    for abc, frag_ep in ep_building.items():
+        if (points := frag_ep.get("points")) is not None:
+            if (vpoints := validate_charge_list(points)):
+                ep_validated[abc]["points"] = vpoints
+            else:
+                raise ValidationError(f"external_potential: bad points (should be 2D, (npts, 4), and np.ndarray or list: {points}\nFull input: {external_potential}")
+
+        if (diffuse := frag_ep.get("diffuse")) is not None:
+            if (vdiffuse := validate_charge_list(diffuse, diffuse=True)):
+                ep_validated[abc]["diffuse"] = vdiffuse
+            else:
+                raise ValidationError(f"external_potential: bad diffuse (should be 2D, (npts, 5), and np.ndarray or list: {diffuse}\nFull input: {external_potential}")
+
+        if (matrix := frag_ep.get("matrix")) is not None:
+            if (vmatrix := validate_potential_array(matrix)):
+                ep_validated[abc]["matrix"] = vmatrix
+            else:
+                raise ValidationError(f"external_potential: bad matrix (should be 2D, square, and psi4.core.Matrix, np.ndarray or list): {matrix}\nFull input: {external_potential}")
+
+    return ep_validated
+
 
 ## Option helpers
 
