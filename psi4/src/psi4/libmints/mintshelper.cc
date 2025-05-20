@@ -1470,7 +1470,7 @@ void MintsHelper::compute_so_zora_ints(bool include_perturbations) {
 	if (factory_->nirrep() != 1) {
 		so_kinetic_zora = factory_->create_shared_matrix(label);
         so_kinetic_zora->apply_symmetry(ao_kinetic_zora, petite_list()->aotoso());
-    } else {
+	} else {
 		so_kinetic_zora = ao_kinetic_zora;
 	}
 
