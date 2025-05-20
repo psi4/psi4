@@ -231,7 +231,7 @@ void X2CInt::diagonalize_dirac_h() {
      * Diagonalize the Dirac Hamiltonian with X2C 1e Hamiltonian
      */
 
-    SXMat->power(-0.5, 1.0e-20);
+    SXMat->power(-0.5, 1.0e-16);
     dMat->transform(SXMat);
     dMat->diagonalize(dtmpMat, E_LS_Mat);                    // diagonalize Dfock
     C_LS_Mat->gemm(false, false, 1.0, SXMat, dtmpMat, 0.0);  // C = X C'
@@ -328,7 +328,7 @@ void X2CInt::form_R() {
      */
 
     S_inv_half->copy(sMat);
-    S_inv_half->power(-0.5, 1.0e-20);
+    S_inv_half->power(-0.5, 1.0e-16);
 #if X2CDEBUG
     S_inv_half->print();
 #endif
@@ -340,7 +340,7 @@ void X2CInt::form_R() {
     //    sTmp->gemm(false, false, 1.0, clMat, S_inv_half,0.0);      // S^{-1/2} S_tilda S^{-1/2}
     // TOCHECK -> this line below should take care of the two above.
     sTmp1->transform(S_tilde, S_inv_half);
-    sTmp1->power(-0.5, 1.0e-20);
+    sTmp1->power(-0.5, 1.0e-16);
 
     /*
      * S^{-1/2} (S ^{-1/2} S_tilda S^{-1/2})^{-1/2} S^{1/2}
@@ -475,7 +475,7 @@ void X2CInt::test_h_FW_plus() {
     SharedMatrix S_inv_half(S_x2c_->clone());
     SharedMatrix H_x2c = T_x2c_->clone();
     H_x2c->add(V_x2c_);
-    S_inv_half->power(-0.5, 1.0e-20);
+    S_inv_half->power(-0.5, 1.0e-16);
     H_x2c->transform(S_inv_half);
     H_x2c->diagonalize(Evec_x2c, Eval_x2c);
 
