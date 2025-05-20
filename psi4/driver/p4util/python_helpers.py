@@ -838,51 +838,51 @@ def validate_external_potential(external_potential) -> Dict:
     mode_keys_list = ["points", "diffuse", "matrix"]
 
     if isinstance(external_potential, dict) and ({k.upper() for k in external_potential.keys()} <= frag_keys):
-        ep = {k.upper(): v for k, v in external_potential.items()}
+        ep_outer_structure = {k.upper(): v for k, v in external_potential.items()}
     else:
         # assign "C" to mean whole molecule in the non-SAPT case
-        ep = {"C": external_potential}
+        ep_outer_structure = {"C": external_potential}
 
     # expand input structure: may be single points list or types list or types dict or fragments dict (for SAPT)
-    ep1 = {}
-    for frag, frag_ep in ep.items():
+    ep_building = {}
+    for frag, frag_ep in ep_outer_structure.items():
         if isinstance(frag_ep, dict):
             if frag_ep.keys() <= set(mode_keys_list):
-                ep1[frag] = frag_ep
+                ep_building[frag] = frag_ep
             else:
                 raise ValidationError(f"external_potential: primary or sec keys should be among {mode_keys_list}, not {frag_ep.keys()}. Full input: {external_potential}")
         elif isinstance(frag_ep, list):
             if (w := validate_charge_list(frag_ep)):
-                ep1[frag] = dict(zip(mode_keys_list, [w]))
+                ep_building[frag] = dict(zip(mode_keys_list, [w]))
             else:
-                ep1[frag] = dict(zip(mode_keys_list, frag_ep))
+                ep_building[frag] = dict(zip(mode_keys_list, frag_ep))
         elif isinstance(frag_ep, np.ndarray):
-                ep1[frag] = dict(zip(mode_keys_list, [frag_ep]))
+                ep_building[frag] = dict(zip(mode_keys_list, [frag_ep]))
         else:
             raise ValidationError(f"external_potential: ought to be dict, list, or np.ndarray, not {type(frag_ep)}. Full input: {external_potential}")
 
     # validate each type of spec in each a/b/c fragment
-    ep2 = {abc: {} for abc in ep1}
-    for abc, frag_ep in ep1.items():
+    ep_validated = {abc: {} for abc in ep_building}
+    for abc, frag_ep in ep_building.items():
         if (points := frag_ep.get("points")) is not None:
             if (vpoints := validate_charge_list(points)):
-                ep2[abc]["points"] = vpoints
+                ep_validated[abc]["points"] = vpoints
             else:
                 raise ValidationError(f"external_potential: bad points (should be 2D, (npts, 4), and np.ndarray or list: {points}\nFull input: {external_potential}")
 
         if (diffuse := frag_ep.get("diffuse")) is not None:
             if (vdiffuse := validate_charge_list(diffuse, diffuse=True)):
-                ep2[abc]["diffuse"] = vdiffuse
+                ep_validated[abc]["diffuse"] = vdiffuse
             else:
                 raise ValidationError(f"external_potential: bad diffuse (should be 2D, (npts, 5), and np.ndarray or list: {diffuse}\nFull input: {external_potential}")
 
         if (matrix := frag_ep.get("matrix")) is not None:
             if (vmatrix := validate_potential_array(matrix)):
-                ep2[abc]["matrix"] = vmatrix
+                ep_validated[abc]["matrix"] = vmatrix
             else:
                 raise ValidationError(f"external_potential: bad matrix (should be 2D, square, and psi4.core.Matrix, np.ndarray or list): {matrix}\nFull input: {external_potential}")
 
-    return ep2
+    return ep_validated
 
 
 ## Option helpers
