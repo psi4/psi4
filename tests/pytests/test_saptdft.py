@@ -35,7 +35,7 @@ units angstrom
 
 @pytest.mark.saptdft
 @pytest.mark.parametrize(
-    "SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geometry",
+    "SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geometry, grac_basis",
     [
         (
             "SINGLE",
@@ -44,6 +44,7 @@ units angstrom
             None,
             None,
             'neutral_water_dimer',
+            "NONE",
         ),
         (
             "SINGLE",
@@ -52,18 +53,29 @@ units angstrom
             0.1307,
             None,
             'neutral_water_dimer',
+            "NONE",
         ),
         (
             "ITERATIVE",
-            0.3258340368,
+            0.2303073898,
             0.19830016,
             None,
             None,
             "hydroxide",
+            "NONE",
+        ),
+        (
+            "ITERATIVE",
+            0.0924377691,
+            0.1306379832,
+            None,
+            None,
+            "hydroxide",
+            "aug-cc-pvdz",
         ),
     ],
 )
-def test_saptdft_auto_grac(SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geometry):
+def test_saptdft_auto_grac(SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geometry, grac_basis):
     """
     For SAPT(DFT), one must compute a GRAC shift for each monomer. Ideally,
     this GRAC shift should be close to the experimental Ionization Potential
@@ -76,6 +88,7 @@ def test_saptdft_auto_grac(SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geom
             "basis": "STO-3G",
             "SAPT_DFT_FUNCTIONAL": "pbe0",
             "SAPT_DFT_GRAC_COMPUTE": SAPT_DFT_GRAC_COMPUTE,
+            "SAPT_DFT_GRAC_BASIS": grac_basis,
         }
     )
     if gracA is not None:
@@ -96,13 +109,15 @@ def test_saptdft_auto_grac(SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geom
         "SAPT DFT GRAC SHIFT B",
     )
 
+
 if __name__ == "__main__":
     test_saptdft_auto_grac(
             "ITERATIVE",
-            0.3258340368,
-            0.19830016,
+            0.0924377691,
+            0.1306379832,
             None,
             None,
             "hydroxide",
+            "aug-cc-pvdz",
         )
 
