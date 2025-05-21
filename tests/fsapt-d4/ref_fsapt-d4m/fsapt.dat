@@ -1,0 +1,40 @@
+  ==> F-ISAPT: Links by Charge <==
+
+No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.
+
+   => Full Analysis <=
+
+Frag1     Frag2         Elst     Exch    IndAB    IndBA     Disp    EDisp    Total 
+MethylA   MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.002 
+MethylA   All         -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.002 
+All       MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.002 
+All       All         -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.002 
+
+   => Reduced Analysis <=
+
+Frag1     Frag2         Elst     Exch    IndAB    IndBA     Disp    EDisp    Total 
+MethylA   MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.033 
+MethylA   All         -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.033 
+All       MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.033 
+All       All         -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.033 
+
+  ==> F-ISAPT: Links 50-50 <==
+
+No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.
+
+   => Full Analysis <=
+
+Frag1     Frag2         Elst     Exch    IndAB    IndBA     Disp    EDisp    Total 
+MethylA   MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.002 
+MethylA   All         -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.002 
+All       MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.002 
+All       All         -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.002 
+
+   => Reduced Analysis <=
+
+Frag1     Frag2         Elst     Exch    IndAB    IndBA     Disp    EDisp    Total 
+MethylA   MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.033 
+MethylA   All         -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.033 
+All       MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.033 
+All       All         -0.002    0.000   -0.000   -0.000    0.000   -0.031   -0.033 
+
