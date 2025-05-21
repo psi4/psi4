@@ -61,14 +61,12 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn, Options &options) {
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
     moinfo.labels = wfn->molecule()->irrep_labels();
-    moinfo.orbspi = init_int_array(moinfo.nirreps);
-    moinfo.clsdpi = init_int_array(moinfo.nirreps);
-    moinfo.openpi = init_int_array(moinfo.nirreps);
-    for (int h = 0; h < moinfo.nirreps; ++h) {
-        moinfo.orbspi[h] = wfn->nmopi()[h];
-        moinfo.clsdpi[h] = wfn->doccpi()[h];
-        moinfo.openpi[h] = wfn->soccpi()[h];
-    }
+    moinfo.orbspi = wfn->nmopi();
+    moinfo.clsdpi = wfn->doccpi() - wfn->frzcpi();
+    moinfo.openpi = wfn->soccpi();
+    moinfo.frdocc = wfn->frzcpi();
+    moinfo.fruocc = wfn->frzvpi();
+    moinfo.uoccpi = moinfo.orbspi - moinfo.clsdpi - moinfo.openpi - moinfo.fruocc - moinfo.frdocc;
 
     nirreps = moinfo.nirreps;
 
@@ -80,20 +78,12 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn, Options &options) {
     //  errcod = ip_string("EOM_REFERENCE", &(read_eom_ref),0);
     if (read_eom_ref == "ROHF") params.ref = 1;
 
-    /* Get frozen and active orbital lookups from CC_INFO */
-    moinfo.frdocc = init_int_array(moinfo.nirreps);
-    moinfo.fruocc = init_int_array(moinfo.nirreps);
-    psio_read_entry(PSIF_CC_INFO, "Frozen Core Orbs Per Irrep", (char *)moinfo.frdocc, sizeof(int) * moinfo.nirreps);
-    psio_read_entry(PSIF_CC_INFO, "Frozen Virt Orbs Per Irrep", (char *)moinfo.fruocc, sizeof(int) * moinfo.nirreps);
     psio_read_entry(PSIF_CC_INFO, "No. of Active Orbitals", (char *)&(nactive), sizeof(int));
 
     if (params.ref == 0 || params.ref == 1) { /** RHF or ROHF **/
 
-        moinfo.occpi = init_int_array(moinfo.nirreps);
-        moinfo.virtpi = init_int_array(moinfo.nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Occ Orbs Per Irrep", (char *)moinfo.occpi, sizeof(int) * moinfo.nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Virt Orbs Per Irrep", (char *)moinfo.virtpi,
-                        sizeof(int) * moinfo.nirreps);
+        moinfo.occpi = moinfo.clsdpi + wfn->soccpi();
+        moinfo.virtpi = moinfo.uoccpi + wfn->soccpi();
 
         moinfo.occ_sym = init_int_array(nactive);
         moinfo.vir_sym = init_int_array(nactive);
@@ -106,19 +96,10 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn, Options &options) {
         psio_read_entry(PSIF_CC_INFO, "Active Virt Orb Offsets", (char *)moinfo.vir_off, sizeof(int) * moinfo.nirreps);
     } else if (params.ref == 2) { /** UHF **/
 
-        moinfo.aoccpi = init_int_array(nirreps);
-        moinfo.boccpi = init_int_array(nirreps);
-        moinfo.avirtpi = init_int_array(nirreps);
-        moinfo.bvirtpi = init_int_array(nirreps);
-
-        psio_read_entry(PSIF_CC_INFO, "Active Alpha Occ Orbs Per Irrep", (char *)moinfo.aoccpi,
-                        sizeof(int) * moinfo.nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Beta Occ Orbs Per Irrep", (char *)moinfo.boccpi,
-                        sizeof(int) * moinfo.nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Alpha Virt Orbs Per Irrep", (char *)moinfo.avirtpi,
-                        sizeof(int) * moinfo.nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Beta Virt Orbs Per Irrep", (char *)moinfo.bvirtpi,
-                        sizeof(int) * moinfo.nirreps);
+        moinfo.aoccpi = moinfo.clsdpi + wfn->soccpi();
+        moinfo.boccpi = moinfo.clsdpi;
+        moinfo.avirtpi = moinfo.uoccpi;
+        moinfo.bvirtpi = moinfo.uoccpi + wfn->soccpi();
 
         moinfo.aocc_sym = init_int_array(nactive);
         moinfo.bocc_sym = init_int_array(nactive);
@@ -146,29 +127,11 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn, Options &options) {
                         sizeof(int) * moinfo.nirreps);
     }
 
-    /* Adjust clsdpi array for frozen orbitals */
-    for (i = 0; i < moinfo.nirreps; i++) moinfo.clsdpi[i] -= moinfo.frdocc[i];
-
-    moinfo.uoccpi = init_int_array(moinfo.nirreps);
-    for (i = 0; i < moinfo.nirreps; i++)
-        moinfo.uoccpi[i] = moinfo.orbspi[i] - moinfo.clsdpi[i] - moinfo.openpi[i] - moinfo.fruocc[i] - moinfo.frdocc[i];
 }
 
 /* Frees memory allocated in get_moinfo() and dumps some info. */
 void cleanup() {
-    int i;
-
-    free(moinfo.orbspi);
-    free(moinfo.clsdpi);
-    free(moinfo.openpi);
-    //  free(moinfo.uoccpi);
-    //  free(moinfo.fruocc);
-    //  free(moinfo.frdocc);
     if (params.ref == 2) {
-        free(moinfo.aoccpi);
-        free(moinfo.boccpi);
-        free(moinfo.avirtpi);
-        free(moinfo.bvirtpi);
         free(moinfo.aocc_sym);
         free(moinfo.bocc_sym);
         free(moinfo.avir_sym);
@@ -178,8 +141,6 @@ void cleanup() {
         free(moinfo.vir_sym);
         free(moinfo.occ_off);
         free(moinfo.vir_off);
-        free(moinfo.occpi);
-        free(moinfo.virtpi);
     }
 }
 

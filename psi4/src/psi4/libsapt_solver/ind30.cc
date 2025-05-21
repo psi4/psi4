@@ -29,6 +29,7 @@
 #include "sapt2p3.h"
 
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -37,21 +38,21 @@ namespace psi {
 namespace sapt {
 
 void SAPT2p3::ind30() {
-    double **tAR = block_matrix(noccA_, nvirA_);
+    auto tAR = std::make_unique<Matrix>("Ind30 uAR Amplitudes", noccA_, nvirA_);
 
-    psio_->read_entry(PSIF_SAPT_AMPS, "Ind30 uAR Amplitudes", (char *)tAR[0], sizeof(double) * noccA_ * nvirA_);
+    tAR->load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::SubBlocks);
 
-    double indA_B = 2.0 * C_DDOT(noccA_ * nvirA_, tAR[0], 1, wBAR_[0], 1);
+    double indA_B = 2.0 * C_DDOT(noccA_ * nvirA_, tAR->get_pointer(), 1, wBAR_[0], 1);
 
-    free_block(tAR);
+    tAR.reset();
 
-    double **tBS = block_matrix(noccB_, nvirB_);
+    auto tBS = std::make_unique<Matrix>("Ind30 uBS Amplitudes", noccB_, nvirB_);
 
-    psio_->read_entry(PSIF_SAPT_AMPS, "Ind30 uBS Amplitudes", (char *)tBS[0], sizeof(double) * noccB_ * nvirB_);
+    tBS->load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::SubBlocks);
 
-    double indB_A = 2.0 * C_DDOT(noccB_ * nvirB_, tBS[0], 1, wABS_[0], 1);
+    double indB_A = 2.0 * C_DDOT(noccB_ * nvirB_, tBS->get_pointer(), 1, wABS_[0], 1);
 
-    free_block(tBS);
+    tBS.reset();
 
     e_ind30_ = indA_B + indB_A + e_ind30_vsasb_term_;
 

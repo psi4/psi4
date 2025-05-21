@@ -27,6 +27,11 @@ if(${ENABLE_CheMPS2})
             set(_a_only  ON)
             set(_so_only OFF)
         endif()
+        if (UNIX AND NOT APPLE)
+            # chemps2 exe not linking w/static
+            set(_a_only  OFF)
+            set(_so_only ON)
+        endif()
 
         ExternalProject_Add(chemps2_external
             DEPENDS lapack_external

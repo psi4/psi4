@@ -56,7 +56,7 @@ namespace ccresponse {
 
 void write_blocks(const Matrix& mat) {
     Slice occ_slice(Dimension(moinfo.nirreps), moinfo.act_occpi);
-    Slice vir_slice(moinfo.act_occpi, moinfo.act_pi);
+    Slice vir_slice(moinfo.act_occpi, moinfo.actpi);
 
     dpdfile2 f;
 
