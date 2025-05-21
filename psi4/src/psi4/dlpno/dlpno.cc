@@ -88,7 +88,7 @@ void DLPNO::common_init() {
         algorithm_ = DLPNOMethod::MP2;
     } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD") {
         algorithm_ = DLPNOMethod::CCSD;
-    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD_T") {
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD(T)") {
         algorithm_ = DLPNOMethod::CCSD_T;
     } else {
         throw PSIEXCEPTION("Requested DLPNO algorithm has NOT been implemented yet");
@@ -594,7 +594,7 @@ void DLPNO::compute_dipole_ints() {
 }
 
 
-template<bool initial, bool final> void DLPNO::prep_sparsity() {
+void DLPNO::prep_sparsity(bool initial, bool final) {
     int natom = molecule_->natom();
     int nbf = basisset_->nbf();
     int nshell = basisset_->nshell();
@@ -613,7 +613,7 @@ template<bool initial, bool final> void DLPNO::prep_sparsity() {
         ribf_to_atom[i] = ribasis_->function_to_center(i);
     }
 
-    if (!last) {
+    if (!final) {
         outfile->Printf("  ==> Forming Local MO Domains <==\n");
 
         // map from LMO to local DF domain (aux basis functions)
@@ -805,7 +805,7 @@ template<bool initial, bool final> void DLPNO::prep_sparsity() {
         }
     } // end if
 
-    if (!last) {
+    if (!final) {
         // determine maps to extended LMO domains, which are the union of an LMO's domain with domains
         //   of all interacting LMOs
 
@@ -821,7 +821,7 @@ template<bool initial, bool final> void DLPNO::prep_sparsity() {
 
         // We'll use these maps to screen the projected AO transform (second index):
         //   (mn|Q) * C_nu -> (mu|Q)
-        riatom_to_atoms2_ = chain_maps(riatom_to_lmos_ext_, chain_maps(lmo_to_paos_, pao_to_atoms));
+        riatom_to_atoms2_ = chain_maps(riatom_to_lmos_ext_, chain_maps(lmo_to_paos_, pao_to_atoms_));
         riatom_to_shells2_ = chain_maps(riatom_to_atoms2_, atom_to_shell_);
         riatom_to_bfs2_ = chain_maps(riatom_to_atoms2_, atom_to_bf_);
 
@@ -1000,8 +1000,6 @@ void DLPNO::compute_qia() {
     }
 
     outfile->Printf("\n  ==> Transforming 3-Index Integrals to LMO/PAO basis <==\n");
-
-    print_integral_sparsity();
 
     auto SC_lmo =
         linalg::doublet(reference_wavefunction_->S(), C_lmo_, false, false);  // intermediate for coefficient fitting
@@ -1320,7 +1318,7 @@ void DLPNO::pno_transform() {
     int nbf = basisset_->nbf();
     int n_lmo_pairs = ij_to_i_j_.size();
 
-    const int MIN_PNO = options_.get_int("MIN_PNOS_PER_PAIR");
+    size_t MIN_PNO = options_.get_int("MIN_PNOS_PER_PAIR");
 
     outfile->Printf("\n  ==> Forming Pair Natural Orbitals <==\n");
 

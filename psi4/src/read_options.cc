@@ -2651,6 +2651,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_DO", 1e-2);
         /*- DOI threshold for treating LMOs (i,j) as interacting !expert -*/
         options.add_double("T_CUT_DO_ij", 1e-5);
+        /*- DOI threshold for treating PAOs (u,v) as interacting !expert -*/
+        options.add_double("T_CUT_DO_uv", 1e-5);
         /*- Pair energy threshold (dipole approximation) for treating LMOs (i, j) as interacting !expert -*/
         options.add_double("T_CUT_PRE", 1e-6); 
         /*- DOI threshold for including PAO (u) in domain of LMO (i) during pre-screening !expert -*/
@@ -2674,6 +2676,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION DLPNO-CCSD Specific Options -*/
 
+        /*- The tolerance to decide between "MP2 Pairs" and "CCSD Pairs" after the initial pair prescreening -*/
+        options.add_double("T_CUT_PAIRS", 1e-5);
         /*- How much to scale T_CUT_PNO by for diagonal PNOs !expert */
         options.add_double("T_CUT_PNO_DIAG_SCALE", 3e-2);
         /*- Occupation trace sum threshold for removing PNOs !expert -*/

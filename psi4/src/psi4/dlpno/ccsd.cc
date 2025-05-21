@@ -56,7 +56,7 @@
 namespace psi {
 namespace dlpno {
 
-DLPNOCCSD::DLPNOCCSD(SharedWavefunction ref_wfn, Options& options) : DLPNOBase(ref_wfn, options) {}
+DLPNOCCSD::DLPNOCCSD(SharedWavefunction ref_wfn, Options& options) : DLPNO(ref_wfn, options) {}
 DLPNOCCSD::~DLPNOCCSD() {}
 
 inline SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
@@ -2555,7 +2555,7 @@ double DLPNOCCSD::compute_energy() {
     outfile->Printf("    T_CUT_DO  set to %6.3e\n\n", T_CUT_DO_);
 
     timer_on("Sparsity");
-    prep_sparsity<true, false>();
+    prep_sparsity(true, false);
     timer_off("Sparsity");
 
     timer_on("Crude DF Ints");
@@ -2575,7 +2575,7 @@ double DLPNOCCSD::compute_energy() {
     outfile->Printf("    T_CUT_DO  reset to %6.3e\n\n", T_CUT_DO_);
 
     timer_on("Sparsity");
-    prep_sparsity<false, false>();
+    prep_sparsity(false, false);
     timer_off("Sparsity");
 
     timer_on("Refined DF Ints");
@@ -2587,7 +2587,7 @@ double DLPNOCCSD::compute_energy() {
     timer_off("Refined Pair Prescreening");
 
     timer_on("Sparsity");
-    prep_sparsity<false, true>();
+    prep_sparsity(false, true);
     timer_off("Sparsity");
 
     timer_on("PNO-LMP2 Iterations");
@@ -2635,7 +2635,7 @@ double DLPNOCCSD::compute_energy() {
     timer_off("LCCSD");
 
     if (write_qab_pao_) {
-        if (algorithm_ == CCSD) {
+        if (algorithm_ == DLPNOMethod::CCSD) {
             // Integrals no longer needed
             psio_->close(PSIF_DLPNO_QAB_PAO, 0);
         } else {
