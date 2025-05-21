@@ -1141,11 +1141,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Monomer A GRAC shift in Hartree. To automatically compute prior to
         SAPT(DFT), do NOT set this option and set |sapt__sapt_dft_grac_compute|
-        to "SINGLE" or "ITERATIVE" as described below. */
+        to "SINGLE" or "ITERATIVE" as described below. -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
         /*- Monomer B GRAC shift in Hartree. To automatically compute prior to
         SAPT(DFT), do NOT set this option and set |sapt__sapt_dft_grac_compute|
-        to "SINGLE" or "ITERATIVE" as described below. */
+        to "SINGLE" or "ITERATIVE" as described below. -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
         /*- SAPT_DFT_GRAC_COMPUTE will enable automatically computing GRAC
          shifts prior to running SAPT(DFT). Note that the user must not specify
@@ -1160,7 +1160,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
           basis set, the user can specify a larger basis set for the GRAC
           calculation, which can be different from the basis set used for the
           SAPT(DFT) calculation. -*/
-        options.add_str("SAPT_DFT_GRAC_BASIS", "NONE");
+        options.add_str("SAPT_DFT_GRAC_BASIS", "AUTO");
         /*- Compute the Delta-HF correction? -*/
         options.add_bool("SAPT_DFT_DO_DHF", true);
         /*- Enables the hybrid xc kernel in dispersion? !expert -*/

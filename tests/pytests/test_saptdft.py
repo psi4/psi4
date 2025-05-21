@@ -44,7 +44,7 @@ units angstrom
             None,
             None,
             'neutral_water_dimer',
-            "NONE",
+            None,
         ),
         (
             "SINGLE",
@@ -53,7 +53,7 @@ units angstrom
             0.1307,
             None,
             'neutral_water_dimer',
-            "NONE",
+            None,
         ),
         (
             "ITERATIVE",
@@ -62,7 +62,7 @@ units angstrom
             None,
             None,
             "hydroxide",
-            "NONE",
+            None,
         ),
         (
             "ITERATIVE",
@@ -88,9 +88,10 @@ def test_saptdft_auto_grac(SAPT_DFT_GRAC_COMPUTE, refA, refB, gracA, gracB, geom
             "basis": "STO-3G",
             "SAPT_DFT_FUNCTIONAL": "pbe0",
             "SAPT_DFT_GRAC_COMPUTE": SAPT_DFT_GRAC_COMPUTE,
-            "SAPT_DFT_GRAC_BASIS": grac_basis,
         }
     )
+    if grac_basis is not None:
+        psi4.set_options({"SAPT_DFT_GRAC_BASIS": grac_basis})
     if gracA is not None:
         psi4.set_options({"SAPT_DFT_GRAC_SHIFT_A": gracA})
     if gracB is not None:
