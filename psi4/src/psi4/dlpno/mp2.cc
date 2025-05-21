@@ -246,7 +246,7 @@ double DLPNOMP2::compute_energy() {
     timer_off("Dipole Ints");
 
     timer_on("Sparsity");
-    prep_sparsity<true, false>();
+    prep_sparsity(true, false);
     timer_off("Sparsity");
 
     timer_on("DF Ints");
