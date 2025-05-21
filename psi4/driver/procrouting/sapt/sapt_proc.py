@@ -64,11 +64,11 @@ def run_sapt_dft(name, **kwargs):
     do_mon_grac_shift_B = False
     mon_a_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_A")
     mon_b_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_B")
-    SAPT_DFT_GRAC_COMPUTE = core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE")
+    grac_compute = core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE")
 
-    if not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_A") and SAPT_DFT_GRAC_COMPUTE.upper() != "NONE":
+    if not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_A") and grac_compute.upper() != "NONE":
         do_mon_grac_shift_A = True
-    if not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_B") and SAPT_DFT_GRAC_COMPUTE.upper() != "NONE":
+    if not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_B") and grac_compute.upper() != "NONE":
         do_mon_grac_shift_B = True
 
     do_delta_hf = core.get_option("SAPT", "SAPT_DFT_DO_DHF")
@@ -85,13 +85,13 @@ def run_sapt_dft(name, **kwargs):
         )
         sapt_dimer = ref_wfn.molecule()
 
-    if do_mon_grac_shift_A or do_mon_grac_shift_B:
-        monomerA_mon_only_bf = sapt_dimer.extract_subsets(1)
-        monomerB_mon_only_bf = sapt_dimer.extract_subsets(2)
-
     sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(
         sapt_dimer, "dimer"
     )
+
+    if do_mon_grac_shift_A or do_mon_grac_shift_B:
+        monomerA_mon_only_bf = sapt_dimer.extract_subsets(1)
+        monomerB_mon_only_bf = sapt_dimer.extract_subsets(2)
 
     # Print out the title and some information
     core.print_out("\n")
@@ -116,14 +116,8 @@ def run_sapt_dft(name, **kwargs):
                    str(sapt_dft_functional))
     core.print_out("   Monomer A GRAC Shift    %12.6f\n" % mon_a_shift)
     core.print_out("   Monomer B GRAC Shift    %12.6f\n" % mon_b_shift)
-    core.print_out(
-        "   Delta HF                %12s\n" % (
-            "True" if do_delta_hf else "False")
-    )
-    core.print_out(
-        "   JK Algorithm            %12s\n" % core.get_global_option(
-            "SCF_TYPE")
-    )
+    core.print_out("   Delta HF                %12s\n" % ("True" if do_delta_hf else "False"))
+    core.print_out("   JK Algorithm            %12s\n" % core.get_global_option("SCF_TYPE"))
     core.print_out("\n")
     core.print_out("   Required computations:\n")
     if do_delta_hf:
@@ -137,22 +131,22 @@ def run_sapt_dft(name, **kwargs):
         core.print_out("     GRAC (Monomer A)\n")
         mon_a_shift = compute_GRAC_shift(
             monomerA_mon_only_bf,
-            SAPT_DFT_GRAC_COMPUTE,
+            grac_compute,
             "Monomer A",
         )
     if do_mon_grac_shift_B:
         core.print_out("     GRAC (Monomer B)\n")
         mon_b_shift = compute_GRAC_shift(
             monomerB_mon_only_bf,
-            SAPT_DFT_GRAC_COMPUTE,
+            grac_compute,
             "Monomer B",
         )
 
-    core.set_variable("SAPT DFT GRAC SHIFT A", mon_a_shift)
-    core.set_variable("SAPT DFT GRAC SHIFT B", mon_b_shift)
+    core.set_variable("SAPT DFT GRAC SHIFT A", mon_a_shift)  # P::e SAPT
+    core.set_variable("SAPT DFT GRAC SHIFT B", mon_b_shift)  # P::e SAPT
     core.print_out("\n")
 
-    if do_dft and ((not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_A")) or (not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_B"))) and SAPT_DFT_GRAC_COMPUTE.upper() == "NONE":
+    if do_dft and ((not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_A")) or (not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_B"))) and grac_compute == "NONE":
         raise ValidationError(
             'SAPT(DFT): must set both "SAPT_DFT_GRAC_SHIFT_A" and "B". To automatically compute the GRAC shift, set SAPT_DFT_GRAC_COMPUTE to "ITERATIVE" or "SINGLE".'
         )
@@ -418,7 +412,7 @@ def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier, label):
 
     core.print_out(f"Computing GRAC shift for {label} using {sapt_dft_grac_convergence_tier}...")
     grac_options = sapt_dft_grac_convergence_tier_options[
-        sapt_dft_grac_convergence_tier.upper()
+        sapt_dft_grac_convergence_tier
     ]
     for options in grac_options:
         for key, val in options.items():
@@ -468,14 +462,6 @@ def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier, label):
         grac = E_cation - E_given + HOMO
         if grac >= 1 or grac <= -1:
             raise Exception(f"The computed GRAC shift ({grac = }) exceeds the bounds of -1 < x < 1 and should not be used to approximate the ionization potential.")
-        if label == "Monomer A":
-            core.set_variable("SAPT DFT GRAC SHIFT A", grac)
-        elif label == "Monomer B":
-            core.set_variable("SAPT DFT GRAC SHIFT B", grac)
-        else:
-            raise ValueError(
-                "Only Monomer A and Monomer B are valid GRAC shift options"
-            )
     core.set_local_option("SCF", "REFERENCE", scf_reference)
     optstash.restore()
     return grac
