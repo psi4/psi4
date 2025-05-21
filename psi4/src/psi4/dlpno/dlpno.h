@@ -234,7 +234,7 @@ class DLPNO : public Wavefunction {
     /// and LMO sparsity are used to construct domains of PAOs, RI basis functions, and orbital
     /// basis functions for each LMO. These domains are necessary for efficient evaluation of
     /// three-index integrals.
-    template<bool initial, bool final> void prep_sparsity();
+    void prep_sparsity(bool initial, bool final);
 
     /// Compute the auxiliary metric
     void compute_metric();
