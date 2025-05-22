@@ -803,3 +803,30 @@ def test_cppe():
 #    ene = psi4.energy("cct3")
 #    assert psi4.compare_values(-4.220587742726, ene, 10, "cc(t;3) energy")
 #
+
+@pytest.mark.quick
+@uusing("ddx")
+def test_ddx_tdscf_gaussian():
+    # same test as test_ddx.py of same name
+    # Reference test against Gaussian
+    import numpy as np
+
+    exc_energies = np.array([  # eV
+        9.7131, 11.6679, 11.9693, 14.0604, 16.0886, 20.3350, 33.4852, 34.1673, 35.3953, 35.6058,
+    ])
+    exc_energies /= psi4.constants.conversion_factor('hartree', 'eV')
+
+    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["O", "H", "H"], "geometry": [0.0, 0.0, 0.11721877, 0.0, 1.48123757, -0.93017349, 0.0, -1.48123757, -0.93017349], "name": "H2O", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [15.99491461957, 1.00782503223, 1.00782503223], "real": [true, true, true], "atom_labels": ["", "", ""], "atomic_numbers": [8, 1, 1], "mass_numbers": [16, 1, 1], "fragments": [[0, 1, 2]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": true, "fix_orientation": true, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "0.29.0", "routine": "qcelemental.molparse.from_string"}, "extras": {}}, "driver": "energy", "model": {"method": "td-hf", "basis": "3-21G"}, "keywords": {"ddx": 1, "ddx_eta": 0.0, "ddx_lmax": 10, "ddx_model": "PCM", "ddx_n_lebedev": 590, "ddx_radii_scaling": 1.1, "ddx_radii_set": "UFF", "ddx_solute_radial_points": 1000, "ddx_solute_spherical_points": 590, "ddx_solvation_convergence": 1e-10, "ddx_solvent_epsilon": 2.0, "ddx_solvent_epsilon_optical": 2.0, "d_convergence": 1e-08, "e_convergence": 1e-12, "guess": "CORE", "scf_type": "DIRECT", "tdscf_r_convergence": 1e-06, "tdscf_states": [10]}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.10a1.dev70", "routine": "psi4.driver.p4util.procutil"}}"""
+
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="td-hf")
+    # print(f'    jatin = """{atin.serialize("json")}"""')
+    # assert 0
+
+    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
+    pprint.pprint(atres.dict())
+
+    e_calc = []
+    for i in range(5):
+        e_calc.append(atres.extras["qcvars"][f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'])
+    psi4.compare_values(exc_energies[:5], e_calc, 4, 'PCM EXCITATION ENERGY ')
+

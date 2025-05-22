@@ -1,5 +1,9 @@
-cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19...4.0)
 cmake_policy(SET CMP0094 NEW)
+if (POLICY CMP0167)
+    # L2 not prepared for BoostConfig instead of FindBoost
+    cmake_policy(SET CMP0167 OLD)
+endif ()
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared
@@ -15,6 +19,9 @@ if (NOT MSVC)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
+
+# set globally here as each psi4/src/psi4/* needs it
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 include(psi4OptionsTools)
 include(TestRestrict)
@@ -135,8 +142,8 @@ else()
 endif()
 
 if(${ENABLE_Einsums})
-    find_package(Einsums 0.5 CONFIG REQUIRED)
-    get_property(_loc TARGET Einsums::einsums PROPERTY LOCATION)
+    find_package(Einsums 1.0.3 CONFIG REQUIRED)
+    get_property(_loc TARGET Einsums::Einsums PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using Einsums${ColourReset}: ${_loc} (version ${Einsums_VERSION})")
 else()
@@ -265,6 +272,7 @@ if(MSVC)
       _CRT_NONSTDC_NO_DEPRECATE
       _CRT_NONSTDC_NO_WARNINGS
       _CRT_SECURE_NO_WARNINGS
+      _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
       )
     # Set the exception handling model
     add_compile_options("/EHsc")

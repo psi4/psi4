@@ -59,7 +59,7 @@ if(${ENABLE_gauxc})
             DEPENDS lapack_external 
                     libxc_external
                     gau2grid_external
-            URL https://github.com/wavefunction91/GauXC/archive/6a8f4bf.tar.gz
+            URL https://github.com/wavefunction91/GauXC/archive/5c85f6b.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -79,6 +79,7 @@ if(${ENABLE_gauxc})
                    -DGAUXC_ENABLE_TESTS=OFF
                    -DGAUXC_ENABLE_HDF5=OFF
                    -DGAUXC_ENABLE_MAGMA=${gauxc_ENABLE_MAGMA}
+                   -DCMAKE_POLICY_VERSION_MINIMUM=3.5
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                          -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}

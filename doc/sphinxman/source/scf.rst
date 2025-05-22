@@ -1149,6 +1149,13 @@ and z coordinate in that order. The atomic charge and coordinates are
 specified in atomic units, [e] and [a0]. Add as many particle rows as
 needed to describe the full MM region.
 
+|PSIfour| v1.10 started expanded parsing to in future allow more types of potentials
+beyond point charges. See examples in the docstring below for specification or the
+``test_extern_parsing`` function in :source:`test_extern.py <tests/pytests/test_extern.py>` .
+
+.. autofunction:: psi4.driver.p4util.validate_external_potential(ep_spec)
+   :noindex:
+
 .. caution:: In |PSIfour| previous to Spring 2022 and v1.6, setting an
    external potential like the above looked like ::
 
