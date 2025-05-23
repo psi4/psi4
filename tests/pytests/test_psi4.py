@@ -222,7 +222,7 @@ def test_psi4_scfproperty():
     ch2.update_geometry()
     assert psi4.compare_values(6.6484189450, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
 
-    props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
+    props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES', 'LOWDIN_SPINS',
              'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',
              'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
              'MULTIPOLE(5)', 'NO_OCCUPATIONS']

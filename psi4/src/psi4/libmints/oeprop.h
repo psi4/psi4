@@ -256,7 +256,7 @@ class PopulationAnalysisCalc : public Prop {
     /// Compute Mulliken Charges
     std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_mulliken_charges(bool print_output = false);
     /// Compute Lowdin Charges
-    std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_lowdin_charges(bool print_output = false);
+    std::tuple<SharedStdVector, SharedStdVector, SharedStdVector, SharedStdVector> compute_lowdin_charges(bool print_output = false);
     /// Compute MBIS Multipoles (doi:10.1021/acs.jctc.6b00456)
     std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> compute_mbis_multipoles(bool free_atom_volumes = false, bool print_output = false);
     /// Compute Mayer Bond Indices (non-orthogoal basis)

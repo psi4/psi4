@@ -1041,6 +1041,11 @@ PSI Variables by Alpha
 
    Property of partial atomic charges [e] by the method of L\ |o_dots|\ wdin, (nat,).
 
+.. psivar:: LOWDIN SPINS
+
+   Property of partial atomic spin population by the method of L\ |o_dots|\ wdin, (nat,).
+   Consider this the fractional number of unpaired electrons.
+
 .. psivar:: MAYER INDICES
 
    Property of Mayer bond indices, (nat, nat).

@@ -739,7 +739,7 @@ def basis_helper(block: str, name: str = '', key: str = 'BASIS', set_option: boo
 
 
 core.OEProp.valid_methods = [
-    'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES', 'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES',
+    'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES', 'LOWDIN_SPINS', 'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES',
     'MBIS_CHARGES','MBIS_VOLUME_RATIOS', 'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI', 'NO_OCCUPATIONS'
 ]
 
@@ -939,6 +939,7 @@ _qcvar_transitions = {
     "NON-COUNTERPOISE CORRECTED INTERACTION ENERGY": ("NOCP-CORRECTED INTERACTION ENERGY", 1.7),
     "VALIRON-MAYER FUNCTION COUTERPOISE TOTAL ENERGY": ("VALIRON-MAYER FUNCTION COUNTERPOISE TOTAL ENERGY", 1.7),  # note misspelling
     "VALIRON-MAYER FUNCTION COUTERPOISE INTERACTION ENERGY": ("VMFC-CORRECTED INTERACTION ENERGY", 1.7),  # note misspelling
+    "LOWDIN_SPINS": ("LOWDIN SPINS", 1.9),
 }
 
 _qcvar_cancellations = {
@@ -1025,7 +1026,7 @@ def plump_qcvar(
     elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         reshaper = tuple([3] * _multipole_order.index(p[0]))
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES", "SCF TOTAL ENERGIES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "LOWDIN_SPINS", "MULLIKEN CHARGES", "LOWDIN CHARGES", "LOWDIN SPINS", "SCF TOTAL ENERGIES"]:
         reshaper = (-1, )
     elif "GRADIENT" in key.upper():
         reshaper = (-1, 3)
@@ -1071,7 +1072,7 @@ def _qcvar_reshape_set(key: str, val: np.ndarray) -> np.ndarray:
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         val = _multipole_compressor(val, _multipole_order.index(p[0]))
         reshaper = (1, -1)
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES", "SCF TOTAL ENERGIES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "LOWDIN_SPINS", "MULLIKEN CHARGES", "LOWDIN CHARGES", "LOWDIN SPINS", "SCF TOTAL ENERGIES"]:
         reshaper = (1, -1)
 
     if reshaper:
@@ -1107,7 +1108,7 @@ def _qcvar_reshape_get(key: str, val: core.Matrix) -> Union[core.Matrix, np.ndar
     elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(p[0]))
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES", "SCF TOTAL ENERGIES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "LOWDIN_SPINS", "MULLIKEN CHARGES", "LOWDIN CHARGES", "LOWDIN SPINS", "SCF TOTAL ENERGIES"]:
         reshaper = (-1, )
     if reshaper:
         return val.np.reshape(reshaper)

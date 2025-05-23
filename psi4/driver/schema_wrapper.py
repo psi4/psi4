@@ -74,7 +74,7 @@ methods_dict_ = {
     'frequency': driver.frequency,
 }
 default_properties_ = {
-    "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices"
+    "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "lowdin_spins", "wiberg_lowdin_indices", "mayer_indices"
 }
 
 ## QCSchema translation blocks
@@ -93,6 +93,7 @@ _qcschema_translation = {
     "properties": {
         "mulliken_charges": {"variables": "MULLIKEN CHARGES", "skip_null": True},
         "lowdin_charges": {"variables": "LOWDIN CHARGES", "skip_null": True},
+        "lowdin_spins": {"variables": "LOWDIN SPINS", "skip_null": True},
         "wiberg_lowdin_indices": {"variables": "WIBERG LOWDIN INDICES", "skip_null": True},
         "mayer_indices": {"variables": "MAYER INDICES", "skip_null": True},
     },
