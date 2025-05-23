@@ -93,6 +93,7 @@ _qcschema_translation = {
     "properties": {
         "mulliken_charges": {"variables": "MULLIKEN CHARGES", "skip_null": True},
         "lowdin_charges": {"variables": "LOWDIN CHARGES", "skip_null": True},
+        "lowdin_spins": {"variables": "LOWDIN SPINS", "skip_null": True},
         "wiberg_lowdin_indices": {"variables": "WIBERG LOWDIN INDICES", "skip_null": True},
         "mayer_indices": {"variables": "MAYER INDICES", "skip_null": True},
     },
