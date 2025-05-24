@@ -811,11 +811,10 @@ def optimize_geometric(name, **kwargs):
         """
         Internally run an energy and gradient calculation for geometric 
         """
-        def __init__(self, p4_name, p4_mol, p4_return_wfn, **p4_kwargs):
+        def __init__(self, p4_name, p4_mol, **p4_kwargs):
     
             self.p4_name = p4_name
             self.p4_mol = p4_mol
-            self.p4_return_wfn = p4_return_wfn
             self.p4_kwargs = p4_kwargs
     
             molecule = geometric.molecule.Molecule()
@@ -829,6 +828,7 @@ def optimize_geometric(name, **kwargs):
         def calc(self, coords, dirname, read_data=False):
             self.p4_mol.set_geometry(core.Matrix.from_array(coords.reshape(-1,3)))
             self.p4_mol.update_geometry()
+            # always collect wfn - can discard it later
             g, wfn = gradient(self.p4_name, return_wfn=True, molecule=self.p4_mol, **self.p4_kwargs)
             self.p4_wfn = wfn
             e = core.variable('CURRENT ENERGY')
@@ -869,7 +869,7 @@ def optimize_geometric(name, **kwargs):
             core.print_out(f"\n  Psi4 convergence criteria {optimizer_keywords['convergence_set']:6s} not recognized by GeomeTRIC, switching to GAU_TIGHT          ~")
             optimizer_keywords['convergence_set'] = 'GAU_TIGHT'
 
-    engine = Psi4NativeEngine(name, molecule, return_wfn, **kwargs)
+    engine = Psi4NativeEngine(name, molecule, **kwargs)
     M = engine.M
     
     # Handle constraints

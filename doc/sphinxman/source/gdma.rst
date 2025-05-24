@@ -120,8 +120,8 @@ information.
 
 After running, two matrices of results can be accessed::
 
-    dma_results = get_array_variable('DMA DISTRIBUTED MULTIPOLES')
-    tot_results = get_array_variable('DMA TOTAL MULTIPOLES')
+    dma_results = variable('DMA DISTRIBUTED MULTIPOLES')
+    tot_results = variable('DMA TOTAL MULTIPOLES')
 
 The first contains distributed multipoles, in units given by
 |gdma__gdma_multipole_units|, with the row index corresponding to the site and
