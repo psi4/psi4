@@ -1558,10 +1558,11 @@ def _core_get_array_variables():
     raise UpgradeHelper("psi4.core.get_array_variables", "psi4.core.variables", 1.9, f" Replace `psi4.core.get_array_variables` with `psi4.core.variables` (or `psi4.core.array_variables` for array variables only).")
 
 
-core.get_variable = _core_get_variable
-core.get_variables = _core_get_variables
-core.get_array_variable = _core_get_array_variable
-core.get_array_variables = _core_get_array_variables
+# removed in v1.10 to reduce API footprint. deprecated 1.4 and no-op since 1.9
+# core.get_variable = _core_get_variable
+# core.get_variables = _core_get_variables
+# core.get_array_variable = _core_get_array_variable
+# core.get_array_variables = _core_get_array_variables
 
 
 def _core_wavefunction_get_variable(cls, key):
@@ -1608,10 +1609,11 @@ def _core_wavefunction_arrays(cls):
     raise UpgradeHelper("psi4.core.Wavefunction.arrays", "psi4.core.Wavefunction.variables", 1.9, f" Replace `psi4.core.Wavefunction.arrays` with `psi4.core.Wavefunction.variables` (or `psi4.core.Wavefunction.array_variables` for array variables only).")
 
 
-core.Wavefunction.get_variable = _core_wavefunction_get_variable
-core.Wavefunction.get_array = _core_wavefunction_get_array
-core.Wavefunction.set_array = _core_wavefunction_set_array
-core.Wavefunction.arrays = _core_wavefunction_arrays
+# removed in v1.10 to reduce API footprint. deprecated 1.4 and no-op since 1.9
+# core.Wavefunction.get_variable = _core_wavefunction_get_variable
+# core.Wavefunction.get_array = _core_wavefunction_get_array
+# core.Wavefunction.set_array = _core_wavefunction_set_array
+# core.Wavefunction.arrays = _core_wavefunction_arrays
 
 
 def _core_wavefunction_frequencies(self):
@@ -1644,13 +1646,16 @@ def _core_doublet(A, B, transA, transB):
 
     .. deprecated:: 1.4
        Use :py:func:`psi4.core.doublet` instead.
+    .. versionchanged:: 1.10
+       Errors rather than warn-and-forward.
 
     """
-    warnings.warn(
-        "Using `psi4.core.Matrix.doublet` instead of `psi4.core.doublet` is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return core.doublet(A, B, transA, transB)
+    # warnings.warn(
+    #     "Using `psi4.core.Matrix.doublet` instead of `psi4.core.doublet` is deprecated, and as soon as 1.4 it will stop working\n",
+    #     category=FutureWarning,
+    #     stacklevel=2)
+    # return core.doublet(A, B, transA, transB)
+    raise UpgradeHelper("psi4.core.Matrix.doublet", "psi4.core.doublet", 1.10, f" Replace `psi4.Matrix` with `psi4.core`.")
 
 
 def _core_triplet(A, B, C, transA, transB, transC):
@@ -1658,15 +1663,19 @@ def _core_triplet(A, B, C, transA, transB, transC):
 
     .. deprecated:: 1.4
        Use :py:func:`psi4.core.triplet` instead.
+    .. versionchanged:: 1.10
+       Errors rather than warn-and-forward.
 
     """
-    warnings.warn(
-        "Using `psi4.core.Matrix.triplet` instead of `psi4.core.triplet` is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return core.triplet(A, B, C, transA, transB, transC)
+    # warnings.warn(
+    #     "Using `psi4.core.Matrix.triplet` instead of `psi4.core.triplet` is deprecated, and as soon as 1.4 it will stop working\n",
+    #     category=FutureWarning,
+    #     stacklevel=2)
+    # return core.triplet(A, B, C, transA, transB, transC)
+    raise UpgradeHelper("psi4.core.Matrix.triplet", "psi4.core.triplet", 1.10, f" Replace `psi4.Matrix` with `psi4.core`.")
 
 
+# removed in v1.10 to reduce API footprint. deprecated 1.4 and no-op since 1.9
 core.Matrix.doublet = staticmethod(_core_doublet)
 core.Matrix.triplet = staticmethod(_core_triplet)
 
