@@ -829,11 +829,8 @@ def optimize_geometric(name, **kwargs):
         def calc(self, coords, dirname, read_data=False):
             self.p4_mol.set_geometry(core.Matrix.from_array(coords.reshape(-1,3)))
             self.p4_mol.update_geometry()
-            if self.p4_return_wfn:
-                g, wfn = gradient(self.p4_name, return_wfn=True, molecule=self.p4_mol, **self.p4_kwargs)
-                self.p4_wfn = wfn
-            else:
-                g = gradient(self.p4_name, return_wfn=False, molecule=self.p4_mol, **self.p4_kwargs)
+            g, wfn = gradient(self.p4_name, return_wfn=True, molecule=self.p4_mol, **self.p4_kwargs)
+            self.p4_wfn = wfn
             e = core.variable('CURRENT ENERGY')
             return {'energy': e, 'gradient': g.np.ravel()}
 
@@ -936,7 +933,11 @@ def optimize_geometric(name, **kwargs):
             break
         elif optimizer.state == geometric.optimize.OPT_STATE.FAILED:
             core.print_out("\n\n  Optimization failed to converge!                                                              ~\n")
-            break
+            opt_geometry = core.Matrix.from_array(optimizer.X.reshape(-1,3))
+            molecule.set_geometry(opt_geometry)
+            molecule.update_geometry()
+            core.clean()
+            raise OptimizationConvergenceError("""geometry optimization""", optimizer.Iteration, engine.p4_wfn)
         optimizer.step()
         optimizer.calcEnergyForce()
         optimizer.evaluateStep()
