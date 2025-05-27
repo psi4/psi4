@@ -150,7 +150,7 @@ def run_sapt_dft(name, **kwargs):
 
     if do_dft and ((not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_A")) or (not core.has_option_changed("SAPT", "SAPT_DFT_GRAC_SHIFT_B"))) and grac_compute == "NONE":
         raise ValidationError(
-            'SAPT(DFT): must set both "SAPT_DFT_GRAC_SHIFT_A" and "B". To automatically compute the GRAC shift, set SAPT_DFT_GRAC_COMPUTE to "ITERATIVE" or "SINGLE".'
+            'SAPT(DFT): User must set both "SAPT_DFT_GRAC_SHIFT_A" and "_B".  Or, to automatically compute the GRAC shift, set SAPT_DFT_GRAC_COMPUTE to "ITERATIVE" or "SINGLE".'
         )
 
     if core.get_option("SCF", "REFERENCE") != "RHF":
@@ -433,7 +433,7 @@ def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier, label):
         mol_qcel = qcel.models.Molecule(**mol_qcel_dict)
         mol_cation = core.Molecule.from_schema(mol_qcel.dict())
 
-        core.print_out(f"\n\n  ==> GRAC {label}: Given {given_charge} <==\n\n")
+        core.print_out(f"\n\n  ==> GRAC {label} Given Molecule: charge={mol_given.molecular_charge()} mult={mol_given.multiplicity()} <==\n\n")
         try:
             if mol_given.multiplicity() != 1:
                 core.set_local_option("SCF", "REFERENCE", "UHF")
@@ -447,7 +447,7 @@ def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier, label):
                 core.set_local_option("SCF", "REFERENCE", "UHF")
             else:
                 core.set_local_option("SCF", "REFERENCE", "RHF")
-            core.print_out(f"\n\n  ==> GRAC {label}: Cation <==\n\n")
+            core.print_out(f"\n\n  ==> GRAC {label} Electron Removed Molecule: charge={mol_cation.molecular_charge()} mult={mol_cation.multiplicity()
             wfn_cation = run_scf(
                 dft_functional.lower(),
                 molecule=mol_cation,
