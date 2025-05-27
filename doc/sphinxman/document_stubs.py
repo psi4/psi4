@@ -46,10 +46,6 @@ def pts(category, pyfile):
 Path("source/api/").mkdir(parents=True, exist_ok=True)
 
 for stub in ["psi4.core.del_variable",
-             #"psi4.core.get_array_variable",
-             #"psi4.core.get_array_variables",
-             #"psi4.core.get_variable",
-             #"psi4.core.get_variables",
              "psi4.core.has_variable",
              "psi4.core.set_global_option_python",
              "psi4.core.set_variable",

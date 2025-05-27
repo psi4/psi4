@@ -38,29 +38,29 @@ QCVariables: setting and accessing
 .. table:: API and conventions to access and program with QCVariables.
    :align: left
 
-   +----------------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+-------------------------------------------------+
-   | Operation                              | Py-side Globals [#e1]_ [#e5]_           | Py-side Wavefunction [#e1]_ [#e5]_                | C-side Globals [#e3]_ [#e4]_   | C-side Wavefunction [#e5]_                      |
-   +========================================+=========================================+===================================================+================================+=================================================+
-   | return a variable value                | :py:func:`~psi4.core.variable()`        | :py:func:`~psi4.core.Wavefunction.variable()`     | ``val = P::e.globals["KEY"];`` | ``Wavefunction::scalar_variable("kEy")`` or     |
-   |                                        |                                         |                                                   | ``val = P::e.arrays["KEY"];``  | ``Wavefunction::array_variable("kEy")``         |
-   +----------------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+-------------------------------------------------+
-   | return all variables                   | :py:func:`~psi4.core.variables()`       | :py:func:`~psi4.core.Wavefunction.variables()`    | ``P::e.globals;``              | ``Wavefunction::scalar_variables()`` or         |
-   |                                        |                                         |                                                   | ``P::e.arrays;``               | ``Wavefunction::array_variables()``             |
-   +----------------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+-------------------------------------------------+
-   | is var set?                            | :py:func:`~psi4.core.has_variable()`    | :py:func:`~psi4.core.Wavefunction.has_variable()` | ``P::e.globals.count("KEY");`` | ``Wavefunction::has_scalar_variable("kEy")`` or |
-   |                                        |                                         |                                                   | ``P::e.arrays.count("KEY");``  | ``Wavefunction::has_array_variable("kEy")``     |
-   +----------------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+-------------------------------------------------+
-   | set a variable value [#e2]_            | :py:func:`~psi4.core.set_variable()`    | :py:func:`~psi4.core.Wavefunction.set_variable()` | ``P::e.globals["KEY"] = val;`` | ``Wavefunction::set_scalar_variable("kEy")`` or |
-   |                                        |                                         |                                                   | ``P::e.arrays["KEY"] = val;``  | ``Wavefunction::set_array_variable("kEy")``     |
-   +----------------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+-------------------------------------------------+
-   | unset variable                         | :py:func:`~psi4.core.del_variable()`    | :py:func:`~psi4.core.Wavefunction.del_variable()` | ``P::e.globals.erase("KEY")``  | ``Wavefunction::del_scalar_variable("kEy")`` or |
-   |                                        |                                         |                                                   | ``P::e.arrays.erase("KEY")``   | ``Wavefunction::del_array_variable("kEy")``     |
-   +----------------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+-------------------------------------------------+
-   | unset all variables                    | :py:func:`~psi4.core.clean_variables()` |                                                   |                                |                                                 |
-   +----------------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+-------------------------------------------------+
-   | register var with documentation system | ``core.set_variable("GIBBS", G)  # P::e THERMO`` or                                         | ``P::e.globals["CC T1 DIAG"] = val;`` or                                         |
-   | [#e6]_                                 | ``# wfn.set_variable("ADC ROOT n")  # P::e ADC``                                            | ``// P::e.globals["CCSD ROOT n"];``                                              |
-   +----------------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+-------------------------------------------------+
+   +-------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+----------------------------------------------+
+   | Operation                     | Py-side Globals [#e1]_ [#e5]_           | Py-side Wavefunction [#e1]_ [#e5]_                | C-side Globals [#e3]_ [#e4]_   | C-side Wavefunction [#e5]_                   |
+   +===============================+=========================================+===================================================+================================+==============================================+
+   | access var                    | :py:func:`~psi4.core.variable()`        | :py:func:`~psi4.core.Wavefunction.variable()`     | ``val = P::e.globals["KEY"];`` | ``Wavefunction::scalar_variable("kEy")``     |
+   |                               |                                         |                                                   | ``val = P::e.arrays["KEY"];``  | ``Wavefunction::array_variable("kEy")``      |
+   +-------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+----------------------------------------------+
+   | access all vars               | :py:func:`~psi4.core.variables()`       | :py:func:`~psi4.core.Wavefunction.variables()`    | ``P::e.globals;``              | ``Wavefunction::scalar_variables()``         |
+   |                               |                                         |                                                   | ``P::e.arrays;``               | ``Wavefunction::array_variables()``          |
+   +-------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+----------------------------------------------+
+   | is var set?                   | :py:func:`~psi4.core.has_variable()`    | :py:func:`~psi4.core.Wavefunction.has_variable()` | ``P::e.globals.count("KEY");`` | ``Wavefunction::has_scalar_variable("kEy")`` |
+   |                               |                                         |                                                   | ``P::e.arrays.count("KEY");``  | ``Wavefunction::has_array_variable("kEy")``  |
+   +-------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+----------------------------------------------+
+   | set a var value [#e2]_        | :py:func:`~psi4.core.set_variable()`    | :py:func:`~psi4.core.Wavefunction.set_variable()` | ``P::e.globals["KEY"] = val;`` | ``Wavefunction::set_scalar_variable("kEy")`` |
+   |                               |                                         |                                                   | ``P::e.arrays["KEY"] = val;``  | ``Wavefunction::set_array_variable("kEy")``  |
+   +-------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+----------------------------------------------+
+   | unset var                     | :py:func:`~psi4.core.del_variable()`    | :py:func:`~psi4.core.Wavefunction.del_variable()` | ``P::e.globals.erase("KEY")``  | ``Wavefunction::del_scalar_variable("kEy")`` |
+   |                               |                                         |                                                   | ``P::e.arrays.erase("KEY")``   | ``Wavefunction::del_array_variable("kEy")``  |
+   +-------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+----------------------------------------------+
+   | unset all vars                | :py:func:`~psi4.core.clean_variables()` |                                                   |                                |                                              |
+   +-------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+----------------------------------------------+
+   | register var with docs [#e6]_ | ``core.set_variable("GIBBS", G) # P::e THERMO`` or                                          | ``P::e.globals["CC T1 DIAG"] = val;`` or                                      |
+   |                               | ``# wfn.set_variable("ROOT n") # P::e ADC``                                                 | ``// P::e.globals["CCSD ROOT n"];``                                           |
+   +-------------------------------+-----------------------------------------+---------------------------------------------------+--------------------------------+----------------------------------------------+
 
 .. [#e1] Works on float or array variables
 .. [#e2] Py-side, value can be float or :py:class:`psi4.core.Matrix` or ``np.ndarray``. C-side, value can be float or Matrix, and the appropriate function must be used.
