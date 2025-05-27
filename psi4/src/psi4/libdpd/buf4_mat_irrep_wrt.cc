@@ -66,8 +66,6 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
     int p, q, r, s;     /* orbital indices */
     int bufpq, bufrs;   /* Input dpdbuf row and column indices */
     int rowtot, coltot; /* dpdfile row and column dimensions */
-    int b_perm_pq, b_perm_rs, b_peq, b_res;
-    int f_perm_pq, f_perm_rs, f_peq, f_res;
     int permute;
     double value;
     long int size;
@@ -80,14 +78,14 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
     size = ((long)rowtot) * ((long)coltot);
 
     /* Index packing information */
-    b_perm_pq = Buf->params->perm_pq;
-    b_perm_rs = Buf->params->perm_rs;
-    f_perm_pq = Buf->file.params->perm_pq;
-    f_perm_rs = Buf->file.params->perm_rs;
-    b_peq = Buf->params->peq;
-    b_res = Buf->params->res;
-    f_peq = Buf->file.params->peq;
-    f_res = Buf->file.params->res;
+    const auto& b_perm_pq = Buf->params->perm_pq;
+    const auto& b_perm_rs = Buf->params->perm_rs;
+    const auto& f_perm_pq = Buf->file.params->perm_pq;
+    const auto& f_perm_rs = Buf->file.params->perm_rs;
+    const auto& b_peq = Buf->params->peq;
+    const auto& b_res = Buf->params->res;
+    const auto& f_peq = Buf->file.params->peq;
+    const auto& f_res = Buf->file.params->res;
 
     /* Exit if buffer is antisymmetrized */
     if (Buf->anti) {
@@ -96,36 +94,38 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
         throw PSIEXCEPTION("Cannot write antisymmetrized buffer back to original DPD file!");
     }
 
+    const auto& AllPolicy = dpdparams4::DiagPolicy::All;
+
     if ((b_perm_pq == f_perm_pq) && (b_perm_rs == f_perm_rs) && (b_peq == f_peq) && (b_res == f_res))
         method = 12;
     else if ((b_perm_pq != f_perm_pq) && (b_perm_rs == f_perm_rs) && (b_res == f_res)) {
-        if (f_perm_pq && !b_perm_pq)
+        if (f_perm_pq != AllPolicy && b_perm_pq == AllPolicy)
             method = 21;
-        else if (!f_perm_pq && b_perm_pq)
+        else if (f_perm_pq == AllPolicy && b_perm_pq != AllPolicy)
             method = 23;
         else {
             printf("\n\tInvalid second-level method!\n");
             throw PSIEXCEPTION("Invalid second-level method!");
         }
     } else if ((b_perm_pq == f_perm_pq) && (b_perm_rs != f_perm_rs) && (b_peq == f_peq)) {
-        if (f_perm_rs && !b_perm_rs)
+        if (f_perm_rs != AllPolicy && b_perm_rs == AllPolicy)
             method = 31;
-        else if (!f_perm_rs && b_perm_rs)
+        else if (f_perm_rs == AllPolicy && b_perm_rs != AllPolicy)
             method = 33;
         else {
             printf("\n\tInvalid third-level method!\n");
             throw PSIEXCEPTION("Invalid third-level method!");
         }
     } else if ((b_perm_pq != f_perm_pq) && (b_perm_rs != f_perm_rs)) {
-        if (f_perm_pq && !b_perm_pq) {
-            if (f_perm_rs && !b_perm_rs)
+        if (f_perm_pq != AllPolicy && b_perm_pq == dpdparams4::DiagPolicy::All) {
+            if (f_perm_rs != AllPolicy && b_perm_rs == AllPolicy)
                 method = 41;
-            else if (!f_perm_rs && b_perm_rs)
+            else if (f_perm_rs == AllPolicy && b_perm_rs != AllPolicy)
                 method = 42;
-        } else if (!f_perm_pq && b_perm_pq) {
-            if (f_perm_rs && !b_perm_rs)
+        } else if (f_perm_pq == AllPolicy && b_perm_pq != AllPolicy) {
+            if (f_perm_rs != AllPolicy && b_perm_rs == AllPolicy)
                 method = 43;
-            else if (!f_perm_rs && b_perm_rs)
+            else if (f_perm_rs == AllPolicy && b_perm_rs != AllPolicy)
                 method = 45;
         } else {
             printf("\n\tInvalid fourth-level method!\n");
@@ -206,7 +206,7 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
                 filerow = Buf->file.incore ? pq : 0;
 
                 /* Set the permutation operator's value */
-                permute = ((p < q) && (b_perm_pq < 0) ? -1 : 1);
+                permute = ((p < q) && (b_perm_pq == dpdparams4::DiagPolicy::AntiSymm) ? -1 : 1);
 
                 /* Loop over the columns in the dpdbuf */
                 for (rs = 0; rs < coltot; rs++) {

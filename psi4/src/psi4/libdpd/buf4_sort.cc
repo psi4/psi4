@@ -121,7 +121,6 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
     int PQ, RS;
     int Gp, Gq, Gr, Gs, Gpq, Grs, Gpr, Gqs, Grq, Gqr, Gps, Gsp, Grp, Gsq;
     dpdbuf4 OutBuf;
-    int incore;
     long int rowtot, coltot, core_total, maxrows;
     int Grow, Gcol;
     int out_rows_per_bucket, out_nbuckets, out_rows_left, out_row_start, n;
@@ -138,7 +137,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
     buf4_init(&OutBuf, outfilenum, my_irrep, pqnum, rsnum, pqnum, rsnum, 0, label);
 
     /* select in-core vs. out-of-core algorithms */
-    incore = 1;
+    bool incore = true;
     core_total = 0;
     for (h = 0; h < nirreps; h++) {
         coltot = InBuf->params->coltot[h ^ my_irrep];
@@ -153,17 +152,17 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
         rowtot = InBuf->params->rowtot[h];
         for (; rowtot > maxrows; rowtot -= maxrows) {
             if (core_total > (core_total + 2 * maxrows * coltot))
-                incore = 0;
+                incore = false;
             else
                 core_total += 2 * maxrows * coltot;
         }
-        if (core_total > (core_total + 2 * rowtot * coltot)) incore = 0;
+        if (core_total > (core_total + 2 * rowtot * coltot)) incore = false;
         core_total += 2 * rowtot * coltot;
     }
-    if (core_total > dpd_memfree()) incore = 0;
+    if (core_total > dpd_memfree()) incore = false;
 
 #ifdef DPD_DEBUG
-    if (incore == 0) {
+    if (incore == false) {
         switch (index) {
             case (pqsr):
                 printf("Doing out-of-core pqsr sort.\n");
@@ -193,25 +192,25 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
 #ifdef ALL_BUF4_SORT_OOC
     switch (index) {
         case (pqsr):
-            incore = 0;
+            incore = false;
             break;
         case (prqs):
-            incore = 0;
+            incore = false;
             break;
         case (prsq):
-            incore = 0;
+            incore = false;
             break;
         case (qprs):
-            incore = 0;
+            incore = false;
             break;
         case (qpsr):
-            incore = 0;
+            incore = false;
             break;
         case (sqpr):
-            incore = 0;
+            incore = false;
             break;
         case (rspq):
-            incore = 0;
+            incore = false;
             break;
     }
 #endif

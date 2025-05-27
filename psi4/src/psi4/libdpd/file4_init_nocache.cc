@@ -70,10 +70,10 @@ int DPD::file4_init_nocache(dpdfile4 *File, int filenum, int irrep, int pqnum, i
 
     this_entry = file4_cache_scan(filenum, irrep, pqnum, rsnum, label, dpd_default);
     if (this_entry != nullptr) {
-        File->incore = 1;
+        File->incore = true;
         File->matrix = this_entry->matrix;
     } else {
-        File->incore = 0;
+        File->incore = false;
         File->matrix = (double ***)malloc(File->params->nirreps * sizeof(double **));
     }
 
