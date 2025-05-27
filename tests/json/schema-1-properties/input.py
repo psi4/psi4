@@ -77,7 +77,7 @@ expected_return_result = {
     0.29725527034203636,
     0.29725527034203636
   ],
-  "lowdin_charges": [
+  "lowdin_spins": [
     0.0,
     0.0,
     0.0
