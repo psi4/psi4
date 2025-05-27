@@ -821,8 +821,7 @@ void OEProp::compute() {
     else if (tasks_.count("TRANSITION_DIPOLE")) compute_multipoles(1, true);
     if (tasks_.count("MO_EXTENTS")) compute_mo_extents();
     if (tasks_.count("MULLIKEN_CHARGES")) compute_mulliken_charges();
-    if (tasks_.count("LOWDIN_CHARGES")) compute_lowdin_charges();
-    if (tasks_.count("LOWDIN_SPINS")) compute_lowdin_charges();
+    if ((tasks_.count("LOWDIN_CHARGES")) || (tasks_.count("LOWDIN_SPINS"))) compute_lowdin_charges();
     if (tasks_.count("MBIS_VOLUME_RATIOS")) compute_mbis_multipoles(true);
     else if (tasks_.count("MBIS_CHARGES")) compute_mbis_multipoles(false);
     if (tasks_.count("MAYER_INDICES")) compute_mayer_indices();

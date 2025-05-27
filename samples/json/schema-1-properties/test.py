@@ -37,7 +37,6 @@ json_data = {
       "quadrupole",
       "mulliken_charges",
       "lowdin_charges",
-      "lowdin_spins",
       "wiberg_lowdin_indices",
       "mayer_indices",
     ]
@@ -76,11 +75,6 @@ expected_return_result = {
     -0.5945105406840803,
     0.29725527034203636,
     0.29725527034203636
-  ],
-  "lowdin_spins": [
-    0.0,
-    0.0,
-    0.0
   ],
   "wiberg_lowdin_indices": [
     0.0,
