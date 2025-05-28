@@ -192,23 +192,11 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
 #ifdef ALL_BUF4_SORT_OOC
     switch (index) {
         case (pqsr):
-            incore = false;
-            break;
         case (prqs):
-            incore = false;
-            break;
         case (prsq):
-            incore = false;
-            break;
         case (qprs):
-            incore = false;
-            break;
         case (qpsr):
-            incore = false;
-            break;
         case (sqpr):
-            incore = false;
-            break;
         case (rspq):
             incore = false;
             break;

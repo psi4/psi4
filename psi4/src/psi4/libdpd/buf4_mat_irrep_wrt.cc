@@ -99,33 +99,33 @@ int DPD::buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep) {
     if ((b_perm_pq == f_perm_pq) && (b_perm_rs == f_perm_rs) && (b_peq == f_peq) && (b_res == f_res))
         method = 12;
     else if ((b_perm_pq != f_perm_pq) && (b_perm_rs == f_perm_rs) && (b_res == f_res)) {
-        if (f_perm_pq != AllPolicy && b_perm_pq == AllPolicy)
+        if (b_perm_pq == AllPolicy)
             method = 21;
-        else if (f_perm_pq == AllPolicy && b_perm_pq != AllPolicy)
+        else if (f_perm_pq == AllPolicy)
             method = 23;
         else {
             printf("\n\tInvalid second-level method!\n");
             throw PSIEXCEPTION("Invalid second-level method!");
         }
     } else if ((b_perm_pq == f_perm_pq) && (b_perm_rs != f_perm_rs) && (b_peq == f_peq)) {
-        if (f_perm_rs != AllPolicy && b_perm_rs == AllPolicy)
+        if (b_perm_rs == AllPolicy)
             method = 31;
-        else if (f_perm_rs == AllPolicy && b_perm_rs != AllPolicy)
+        else if (f_perm_rs == AllPolicy)
             method = 33;
         else {
             printf("\n\tInvalid third-level method!\n");
             throw PSIEXCEPTION("Invalid third-level method!");
         }
     } else if ((b_perm_pq != f_perm_pq) && (b_perm_rs != f_perm_rs)) {
-        if (f_perm_pq != AllPolicy && b_perm_pq == dpdparams4::DiagPolicy::All) {
-            if (f_perm_rs != AllPolicy && b_perm_rs == AllPolicy)
+        if (b_perm_pq == AllPolicy) {
+            if (b_perm_rs == AllPolicy)
                 method = 41;
-            else if (f_perm_rs == AllPolicy && b_perm_rs != AllPolicy)
+            else if (f_perm_rs == AllPolicy)
                 method = 42;
-        } else if (f_perm_pq == AllPolicy && b_perm_pq != AllPolicy) {
-            if (f_perm_rs != AllPolicy && b_perm_rs == AllPolicy)
+        } else if (f_perm_pq == AllPolicy) {
+            if (b_perm_rs == AllPolicy)
                 method = 43;
-            else if (f_perm_rs == AllPolicy && b_perm_rs != AllPolicy)
+            else if (f_perm_rs == AllPolicy)
                 method = 45;
         } else {
             printf("\n\tInvalid fourth-level method!\n");

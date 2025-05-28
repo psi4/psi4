@@ -110,7 +110,7 @@ int DPD::buf4_mat_irrep_rd(dpdbuf4 *Buf, int irrep) {
                 throw PSIEXCEPTION("Unpack pq and antisymmetrize?");
             }
             method = 21;
-        } else if (f_perm_pq == AllPolicy && b_perm_pq != AllPolicy) {
+        } else if (f_perm_pq == AllPolicy) {
             if (Buf->anti)
                 method = 22;
             else
