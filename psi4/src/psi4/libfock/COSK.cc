@@ -351,18 +351,15 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     for(size_t thread = 0; thread < nthreads_; thread++) {
         int_computers[thread] = std::shared_ptr<ElectrostaticInt>(static_cast<ElectrostaticInt *>(factory.electrostatic().release()));
         bf_computers[thread] = std::make_shared<BasisFunctions>(primary_, grid->max_points(), grid->max_functions());
-        if (do_gradient_) {
-            bf_computers[thread]->set_deriv(1);
-        }
+        bf_computers[thread]->set_deriv(do_gradient_);
         for(size_t jki = 0; jki < njk; jki++) {
             KT[jki][thread] = std::make_shared<Matrix>(nbf, nbf);
-            KTgrad[jki][thread] = std::make_shared<Matrix>(natom, 3);
+            if (do_gradient_) {
+                KTgrad[jki][thread] = std::make_shared<Matrix>(natom, 3);
+            }
         }
     }
     
-    // exchange gradient
-    auto Kgrad = std::make_shared<Matrix>("Exchange Gradient", natom, 3);
-
     // precompute bounds for the one-electron integrals
     auto esp_bound = compute_esp_bound(*primary_);
     auto esp_boundp = esp_bound.pointer();
@@ -801,6 +798,7 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     }
     
     if (do_gradient_){
+        auto Kgrad = std::make_shared<Matrix>("Exchange Gradient", natom, 3);
         for(size_t jki = 0; jki < njk; jki++) {
             for (size_t thread = 0; thread < nthreads_; thread++) {
                 Kgrad->add(KTgrad[jki][thread]);
