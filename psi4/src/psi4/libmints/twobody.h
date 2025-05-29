@@ -116,7 +116,7 @@ class PSI_API TwoBodyAOInt {
      */
     typedef std::vector<std::pair<int, int>> PairList;
     /// Is sieve initialized?
-    bool initialized_;
+    bool sieve_initialized_;
     /// The threshold below which integrals are to be neglected
     double screening_threshold_;
     double screening_threshold_squared_;
@@ -207,7 +207,7 @@ class PSI_API TwoBodyAOInt {
      * Sieve information
      */
     /// Is sieve initialized?
-    bool initialized() { return initialized_; };
+    bool sieve_initialized() { return sieve_initialized_; };
     /// Update max_dens_shell_pair_ given an updated density matrix (Haser 1989)
     void update_density(const std::vector<SharedMatrix>& D);
     /// Ask the built in sieve whether this quartet contributes

@@ -71,7 +71,7 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
     // Setup sieve data
     screening_threshold_ = Process::environment.options.get_double("INTS_TOLERANCE");
 
-    initialized_ = false;
+    sieve_initialized_ = false;
 
     auto screentype = Process::environment.options.get_str("SCREENING");
     if (screentype == "SCHWARZ")
@@ -400,7 +400,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
 
 void TwoBodyAOInt::create_sieve_pair_info() {
     // We only want to initialize TwoBodyAOInt once
-    if(initialized_) throw PSIEXCEPTION("Sieve pair info has already been created!");
+    if(sieve_initialized_) throw PSIEXCEPTION("Sieve pair info has already been created!");
 
     // We assume that only the bra or the ket has a pair that generates a sieve.  If all bases are the same, either
     // can be used.  If only bra or ket has a matching pair, that matching pair is used.  If both bra and ket have
@@ -430,7 +430,7 @@ void TwoBodyAOInt::create_sieve_pair_info() {
         for(int shell = 0; shell < basis3()->nshell(); ++shell) shell_pairs_ket_.emplace_back(shell,0);
     }
 
-    initialized_ = true;
+    sieve_initialized_ = true;
 }
 
 void TwoBodyAOInt::initialize_sieve() {

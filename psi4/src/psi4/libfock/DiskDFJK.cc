@@ -74,7 +74,7 @@ void DiskDFJK::common_init() {
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     auto tmperi = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-    if (!tmperi->initialized()) tmperi->initialize_sieve();
+    if (!tmperi->sieve_initialized()) tmperi->initialize_sieve();
     n_function_pairs_ = tmperi->function_pairs().size();
 }
 size_t DiskDFJK::memory_estimate() {
@@ -434,7 +434,7 @@ void DiskDFJK::preiterations() {
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     eri_.emplace_back(rifactory->eri());
-    if (!(eri_.front()->initialized())) eri_.front()->initialize_sieve();
+    if (!(eri_.front()->sieve_initialized())) eri_.front()->initialize_sieve();
     for (int Q = 1; Q < df_ints_num_threads_; Q++) {
         eri_.emplace_back(eri_.front()->clone());
     }
@@ -446,7 +446,7 @@ void DiskDFJK::preiterations() {
         std::shared_ptr<IntegralFactory> rifactory =
             std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
         erf_eri_.emplace_back(rifactory->erf_eri(omega_));
-        if (!erf_eri_.front()->initialized()) erf_eri_.front()->initialize_sieve();
+        if (!erf_eri_.front()->sieve_initialized()) erf_eri_.front()->initialize_sieve();
         for (int Q = 1; Q < df_ints_num_threads_; Q++) {
             erf_eri_.emplace_back(erf_eri_.front()->clone());
         }

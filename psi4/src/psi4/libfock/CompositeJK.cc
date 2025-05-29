@@ -113,7 +113,7 @@ void CompositeJK::common_init() {
     IntegralFactory factory(primary_, primary_, primary_, primary_);
     eri_computers_["4-Center"][0] = std::shared_ptr<TwoBodyAOInt>(factory.eri());
 
-    if (!eri_computers_["4-Center"][0]->initialized()) eri_computers_["4-Center"][0]->initialize_sieve();
+    if (!eri_computers_["4-Center"][0]->sieve_initialized()) eri_computers_["4-Center"][0]->initialize_sieve();
 
     // create each threads' ERI computers
     for(int rank = 1; rank < nthreads_; rank++) {
@@ -136,7 +136,7 @@ void CompositeJK::common_init() {
 
         IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
         eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
-        if (!eri_computers_["3-Center"][0]->initialized()) eri_computers_["3-Center"][0]->initialize_sieve();
+        if (!eri_computers_["3-Center"][0]->sieve_initialized()) eri_computers_["3-Center"][0]->initialize_sieve();
 
         computed_shells_per_iter_["Triplets"] = {};
 
