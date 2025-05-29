@@ -256,7 +256,7 @@ void TwoBodyAOInt::setup_sieve() {
             throw PSIEXCEPTION("Unimplemented screening type in TwoBodyAOInt::setup_sieve()");
     }
 
-    if (screening_type_ != ScreeningType::None) create_sieve_pair_info();
+    if (screening_type_ != ScreeningType::None) create_sieve_pair_info_manager();
 }
 
 void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra) {
@@ -398,7 +398,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     }
 }
 
-void TwoBodyAOInt::create_sieve_pair_info() {
+void TwoBodyAOInt::create_sieve_pair_info_manager() {
     // We only want to initialize TwoBodyAOInt once
     if(sieve_initialized_) throw PSIEXCEPTION("Sieve pair info has already been created!");
 

@@ -95,13 +95,6 @@ void DirectJK::common_init() {
     // other options
     auto screening_type = options_.get_str("SCREENING");
     density_screening_ = screening_type == "DENSITY";
-/*
-    if (screening_type == "NONE") {
-        set_cutoff(0.0);
-    } else {
-        set_cutoff(options_.get_double("INTS_TOLERANCE"));
-    }
-*/
     computed_shells_per_iter_["Quartets"] = {};
 }
 
