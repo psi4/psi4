@@ -1290,7 +1290,7 @@ class Molecule(LibmintsMolecule):
             When `dertype=None`, both energy [Eh] and (nat, 3) gradient [Eh/a0].
 
         """
-        raise InputError("Using `Molecule.run_dftd3` instead of `Molecule.run_sdftd3` is obsolete as of 1.10. Note that parameters do not translate directly -- see docstring. Also aliases are not available for dashlvl. The new run_sdftd3 is analogous to run_dftd4. Alternately, you could access these routines by running `qcengine.compute(atomicinput, 's-dftd3')` directly.")
+        raise RuntimeError("Using `Molecule.run_dftd3` instead of `Molecule.run_sdftd3` is obsolete as of 1.10. Note that parameters do not translate directly -- see docstring. Also aliases are not available for dashlvl. The new run_sdftd3 is analogous to run_dftd4. Alternately, you could access these routines by running `qcengine.compute(atomicinput, 's-dftd3')` directly.")
 
     def run_sdftd3(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
         """Compute dispersion correction via Grimme's new simple-dftd3 program, not the classic DFTD3 executable.
@@ -1332,7 +1332,7 @@ class Molecule(LibmintsMolecule):
         -----
         This function wraps the QCEngine s-dftd3 harness which wraps the internal DFTD3 Python API.
         As such, the upstream convention of `func` trumping `dashparam` holds, rather than the deprecated
-        :py:func:`run_dftd3` behavior of `dashparam` extending or overriding `func`.
+        :py:func:`~qcdb.Molecule.run_dftd3` behavior of `dashparam` extending or overriding `func`.
         """
         import qcengine as qcng
 
@@ -1424,7 +1424,7 @@ class Molecule(LibmintsMolecule):
         -----
         This function wraps the QCEngine dftd4 harness which wraps the internal DFTD4 Python API.
         As such, the upstream convention of `func` trumping `dashparam` holds, rather than the
-        :py:func:`run_dftd3` behavior of `dashparam` extending or overriding `func`.
+        :py:func:`~qcdb.Molecule.run_dftd3` behavior of `dashparam` extending or overriding `func`.
 
         """
         import qcengine as qcng

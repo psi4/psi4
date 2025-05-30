@@ -51,7 +51,6 @@ _engine_can_do = collections.OrderedDict([
 ]) # yapf: disable
 _install_dftd3python = " Allow the default dispersion engine to run by removing 'engine=' and installing `conda install dftd3-python -c conda-forge`."
 _obsolete_engines = {
-
     ("dftd3", "d2"): ("engine='dftd3'", "engine='libdisp'", "1.10", " Allow the default (internal) dispersion engine to run by removing 'engine='."),
     ("dftd3", "d3zero2b"): ("engine='dftd3'", "engine='s-dftd3'", "1.10", _install_dftd3python),
     ("dftd3", "d3bj2b"): ("engine='dftd3'", "engine='s-dftd3'", "1.10", _install_dftd3python),

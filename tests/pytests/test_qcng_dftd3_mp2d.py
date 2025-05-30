@@ -317,7 +317,7 @@ def test_molecule__run_dftd3__23body(inp, subjects):
     expected = ref[inp['parent']][inp['lbl']][inp['subject']]
     gexpected = gref[inp['parent']][inp['lbl']][inp['subject']]
 
-    E, G = subject.run_dftd3(inp['first'], inp['second'])
+    E, G = subject.run_sdftd3(inp['first'], inp['second'])
     assert compare_values(expected, E, atol=5.e-7)
     assert compare_values(gexpected, G, atol=5.e-7)
 
