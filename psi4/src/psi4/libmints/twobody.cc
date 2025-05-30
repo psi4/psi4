@@ -71,7 +71,7 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
     // Setup sieve data
     screening_threshold_ = Process::environment.options.get_double("INTS_TOLERANCE");
 
-    initialized_ = false;
+    sieve_initialized_ = false;
 
     auto screentype = Process::environment.options.get_str("SCREENING");
     if (screentype == "SCHWARZ")
@@ -256,7 +256,7 @@ void TwoBodyAOInt::setup_sieve() {
             throw PSIEXCEPTION("Unimplemented screening type in TwoBodyAOInt::setup_sieve()");
     }
 
-    if (screening_type_ != ScreeningType::None) create_sieve_pair_info();
+    if (screening_type_ != ScreeningType::None) create_sieve_pair_info_manager();
 }
 
 void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra) {
@@ -398,23 +398,23 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     }
 }
 
-void TwoBodyAOInt::create_sieve_pair_info() {
+void TwoBodyAOInt::create_sieve_pair_info_manager() {
     // We only want to initialize TwoBodyAOInt once
-    if(initialized_) throw PSIEXCEPTION("Sieve pair info has already been created!");
+    if(sieve_initialized_) throw PSIEXCEPTION("Sieve pair info has already been created!");
 
     // We assume that only the bra or the ket has a pair that generates a sieve.  If all bases are the same, either
     // can be used.  If only bra or ket has a matching pair, that matching pair is used.  If both bra and ket have
     // matching pairs but those pairs are different, we need to generalize this machinery a little to disambiguate
     // which pair should be used to form the sieve.  I don't know of a need for that right now, so I'll assume its
     // not needed and add a safety check to futureproof the code against that kind of use case further down the road.
-    if(bra_same_ && ket_same_ && !braket_same_) throw PSIEXCEPTION("Unexpected integral type (aa|bb) in setup_sieve()");
+    if(bra_same_ && ket_same_ && !braket_same_) throw PSIEXCEPTION("Unexpected integral type (aa|bb) in create_sieve_pair_info_manager()");
 
     if(bra_same_) {
         create_sieve_pair_info(basis1(), shell_pairs_bra_, true);
         shell_pairs_ = shell_pairs_bra_;
     } else {
         if (basis2()->l2_shell(0) != libint2::Shell::unit())
-               throw PSIEXCEPTION("If different basis sets exist in the bra, basis3 is expected to be dummy in setup_sieve()");
+               throw PSIEXCEPTION("If different basis sets exist in the bra, basis3 is expected to be dummy in create_sieve_pair_info_manager()");
         for(int shell = 0; shell < basis1()->nshell(); ++shell) shell_pairs_bra_.emplace_back(shell,0);
     }
     if(ket_same_) {
@@ -426,11 +426,11 @@ void TwoBodyAOInt::create_sieve_pair_info() {
         }
     } else {
         if (basis4()->l2_shell(0) != libint2::Shell::unit())
-               throw PSIEXCEPTION("If different basis sets exist in the ket, basis4 is expected to be dummy in setup_sieve()");
+               throw PSIEXCEPTION("If different basis sets exist in the ket, basis4 is expected to be dummy in create_sieve_pair_info_manager()");
         for(int shell = 0; shell < basis3()->nshell(); ++shell) shell_pairs_ket_.emplace_back(shell,0);
     }
 
-    initialized_ = true;
+    sieve_initialized_ = true;
 }
 
 void TwoBodyAOInt::initialize_sieve() {

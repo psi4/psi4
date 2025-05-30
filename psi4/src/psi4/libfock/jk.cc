@@ -185,6 +185,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
     /// handle composite methods
     } else if (is_composite) {
         auto jk = std::make_shared<CompositeJK>(primary, auxiliary, options);
+        // INTS_TOLERANCE handling in CompositeJK::common_init() to better account for behavior when SCREENING=NONE
+
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));

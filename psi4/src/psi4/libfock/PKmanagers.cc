@@ -192,7 +192,7 @@ PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& 
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     eri_ = std::shared_ptr<TwoBodyAOInt>(factory->eri());
-    if (!eri_->initialized()) eri_->initialize_sieve();
+    if (!eri_->sieve_initialized()) eri_->initialize_sieve();
 
     if (memory_ < pk_pairs_) {
         throw PSIEXCEPTION("Not enough memory for PK algorithm\n");
@@ -1080,7 +1080,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
             tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->eri()));
         }
         for (auto eri : tb) {
-            if (!eri->initialized()) eri->initialize_sieve();
+            if (!eri->sieve_initialized()) eri->initialize_sieve();
         }
     } else {
         for (int i = 0; i < nthreads(); ++i) {
