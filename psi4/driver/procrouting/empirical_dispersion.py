@@ -49,14 +49,15 @@ _engine_can_do = collections.OrderedDict([
     ("mctc-gcp", [                                                                                                                          "3c",                       ]),
     ("gcp",      [                                                                                                                          "3c",                       ]),
 ]) # yapf: disable
-_uh_dftd3python = UpgradeHelper("engine='dftd3'", "engine='s-dftd3'", "1.10", " Allow the default dispersion engine to run by removing 'engine=' and installing `conda install dftd3-python -c conda-forge`.")
+_install_dftd3python = " Allow the default dispersion engine to run by removing 'engine=' and installing `conda install dftd3-python -c conda-forge`."
 _obsolete_engines = {
-    ("dftd3", "d2"): UpgradeHelper("engine='dftd3'", "engine='libdisp'", "1.10", " Allow the default (internal) dispersion engine to run by removing 'engine='."),
-    ("dftd3", "d3zero2b"): _uh_dftd3python,
-    ("dftd3", "d3bj2b"): _uh_dftd3python,
-    ("dftd3", "d3mzero2b"): _uh_dftd3python,
-    ("dftd3", "d3mbj2b"): _uh_dftd3python,
-    ("gcp", "3c"): UpgradeHelper("engine='gcp'", "engine='mctc-gcp'", "1.10", " Allow the default dispersion engine to run by removing 'engine=' and installing `conda install gcp-correction -c conda-forge`."),
+
+    ("dftd3", "d2"): ("engine='dftd3'", "engine='libdisp'", "1.10", " Allow the default (internal) dispersion engine to run by removing 'engine='."),
+    ("dftd3", "d3zero2b"): ("engine='dftd3'", "engine='s-dftd3'", "1.10", _install_dftd3python),
+    ("dftd3", "d3bj2b"): ("engine='dftd3'", "engine='s-dftd3'", "1.10", _install_dftd3python),
+    ("dftd3", "d3mzero2b"): ("engine='dftd3'", "engine='s-dftd3'", "1.10", _install_dftd3python),
+    ("dftd3", "d3mbj2b"): ("engine='dftd3'", "engine='s-dftd3'", "1.10", _install_dftd3python),
+    ("gcp", "3c"): ("engine='gcp'", "engine='mctc-gcp'", "1.10", " Allow the default dispersion engine to run by removing 'engine=' and installing `conda install gcp-correction -c conda-forge`."),
 }
 
 
@@ -199,7 +200,7 @@ class EmpiricalDispersion():
             else:
                 raise ValidationError(f"This little engine ({engine}) can't ({self.dashlevel})")
         if (key := (self.engine, self.dashlevel)) in _obsolete_engines:
-            raise _obsolete_engines[key]
+            raise UpgradeHelper(*_obsolete_engines[key])
 
         if self.engine == 'libdisp':
             self.disp = core.Dispersion.build(self.dashlevel, **resolved['dashparams'])
@@ -213,7 +214,7 @@ class EmpiricalDispersion():
             else:
                 raise ValidationError(f"This little engine ({engine}) can't ({gcp_dashlevel})")
         if (key := (self.gcp_engine, gcp_dashlevel)) in _obsolete_engines:
-            raise _obsolete_engines[key]
+            raise UpgradeHelper(*_obsolete_engines[key])
 
     def print_out(self):
         """Format dispersion parameters of `self` for output file."""
