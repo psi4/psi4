@@ -163,11 +163,12 @@ class EmpiricalDispersion():
     engine
         Override which code computes dispersion. See above for allowed
         values. Formerly (pre Nov 2022) only relevant for -D2, which can be computed by
-        libdisp or dftd3. Now (post Nov 2022) also relevant for -D3 variants,
+        libdisp or dftd3. Later (post Nov 2022, pre Jun 2025) also relevant for -D3 variants,
         which can be computed by dftd3 executable or simple-dftd3 Python module.
+        Now (post Jun 2025) irrelevant as each dispersion level only available from one code.
     gcp_engine
-        Override which code computes the gcp correction. Now can use
-        classic gcp or mctc-gcp executables.
+        Override which code computes the gcp correction. Relevant between
+        Nov 2022 and Jun 2025 when could use either the classic gcp or mctc-gcp executables.
     save_pairwise_disp
         Whether to request atomic pairwise analysis.
 
@@ -212,8 +213,8 @@ class EmpiricalDispersion():
                 self.gcp_engine = gcp_engine
             else:
                 raise ValidationError(f"This little engine ({engine}) can't ({gcp_dashlevel})")
-        if (key := (self.gcp_engine, gcp_dashlevel)) in _obsolete_engines:
-            raise UpgradeHelper(*_obsolete_engines[key])
+            if (key := (self.gcp_engine, gcp_dashlevel)) in _obsolete_engines:
+                raise UpgradeHelper(*_obsolete_engines[key])
 
     def print_out(self):
         """Format dispersion parameters of `self` for output file."""
