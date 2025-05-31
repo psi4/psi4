@@ -96,10 +96,7 @@ hasD3M = True
 for dlvl in ['d3zero', 'd3bj', 'd3mzero', 'd3mbj']:
     # in contrast to classic dftd3, dftd3-python
     # * can't run d2
-    # * runs d3 w/3-body corrections by default
-    # * while d3bj or d3bj2b would run through psi4 w/o 3-body corrections, only way to do this
-    #   through run_sdftd3 would be to give all the parameters with s9 zeroed. here, we adjust the
-    #   reference and run w/ 3-body.
+    # * runs d3 w/3-body corrections by default (psi4 aliases d3bj -> d3bj2b are valid here; d3bjatm to get w/3-body)
     E = eeee.run_sdftd3(fctl, dlvl, dertype=der)
     compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
     E = mAuncp.run_sdftd3(fctl, dlvl, dertype=der)

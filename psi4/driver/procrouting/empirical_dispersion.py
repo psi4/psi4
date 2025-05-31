@@ -165,10 +165,12 @@ class EmpiricalDispersion():
         values. Formerly (pre Nov 2022) only relevant for -D2, which can be computed by
         libdisp or dftd3. Later (post Nov 2022, pre Jun 2025) also relevant for -D3 variants,
         which can be computed by dftd3 executable or simple-dftd3 Python module.
-        Now (post Jun 2025) irrelevant as each dispersion level only available from one code.
+        Now (post Jun 2025) irrelevant as each dispersion level only available from one code;
+        `dftd3` is no-op.
     gcp_engine
         Override which code computes the gcp correction. Relevant between
         Nov 2022 and Jun 2025 when could use either the classic gcp or mctc-gcp executables.
+        Now (post Jun 2025), `gcp` is no-op.
     save_pairwise_disp
         Whether to request atomic pairwise analysis.
 

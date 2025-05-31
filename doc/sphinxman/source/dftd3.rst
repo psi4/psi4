@@ -122,17 +122,11 @@ Installation
 
 * If using |PSIfour| built from source and you want to build DFTD3 from
   from source also,
-  follow the instructions provided with the source
-  (essentially, download the freely available tarball, unpack the source,
-  edit the Makefile to select a
-  Fortran compiler, and run make). From version 3.1.0 onwards, DFTD3 can
-  be used as-is; for earlier versions, patches are available:
-  :source:`psi4/share/psi4/scripts/patch_grimme_dftd3.3.0.2`.
+  follow the instructions provided with the source.
 
-To be used by |PSIfour|, the classic program binary (``dftd3``) must be
-found in your :envvar:`PATH` or the s-dftd3 module in your :envvar:`PYTHONPATH`
+To be used by |PSIfour|, the s-dftd3 module must be detectable or in your :envvar:`PYTHONPATH`
 so QCEngine can detect it. Check if and where found through ``qcengine info``. If
-|PSIfour| is unable to execute the binary, an error will be reported.
+|PSIfour| is unable to run the module, an error will be reported.
 To preferentially use a particular dftd3 compilation, simply adjust its
 position in the path environment variables.
 
@@ -324,7 +318,7 @@ The dispersion coefficients are defined as
 See the `DFT-D3 documentation <https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/man.pdf>`_ 
 for more details.
 
-For now, the three-body correction can be called by using the :py:func:`~psi4.core.Molecule.run_dftd3`
+For now, the three-body correction can be called by using the :py:func:`~psi4.core.Molecule.run_sdftd3`
 function with `d3-atmgr` as the passed functional string. 
 For example, the three-body ATM dispersion correction for a neon trimer could
 be computed with::
@@ -335,7 +329,7 @@ be computed with::
    Ne 0.0 1.0 1.0
    }
    ne.update_geometry()
-   energy = m.run_dftd3('d3-atmgr', dertype=0)
+   energy = m.run_sdftd3('b3lyp-d3', dertype=0)
    print(energy)
 
 Since v1.7, it is preferred to use ``s-dftd3`` for ATM since the 3-body can be run concurrent
@@ -390,7 +384,8 @@ interest, the dispersion programs can be run independently of the scf
 through the python function :py:func:`~qcdb.Molecule.run_sdftd3` or :py:func:`~qcdb.Molecule.run_dftd4`. (These functions
 call QCEngine, which is the same |PSIfour| + ``dftd3``/``dftd4`` interface that is called during an scf job.)
 This "D-only" route is much faster than running a DFT-D energy.
-The longstanding :py:func:`~qcdb.Molecule.run_dftd3` route has been converted to ``s-dftd3`` (function above) but uses different input argument reasoning.
+The longstanding :py:func:`~qcdb.Molecule.run_dftd3` route is largely replaced by
+:py:func:`~qcdb.Molecule.run_sdftd3`, but the functions use different input argument reasoning.
 
 Note that in a DFT+D energy or gradient calculation through |PSIfour|,
 dispersion parameters override any information provided about the
@@ -408,7 +403,7 @@ functional information overrides any user-specified dispersion parameters.
 
    nene.update_geometry()
 
-* The same four dispersion corrections/gradients as the section above::
+* Two of the four four dispersion corrections/gradients from the section above::
 
    >>> E, G = nene.run_dftd3('pbe', 'd3bj')
    >>> print G
