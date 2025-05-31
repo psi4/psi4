@@ -430,6 +430,8 @@ functional information overrides any user-specified dispersion parameters.
 
 .. autoclass:: psi4.driver.procrouting.empirical_dispersion.EmpiricalDispersion
 
+.. autofunction:: qcdb.Molecule.run_dftd3
+
 .. comment print_stdout('  -D correction from Py-side')
 .. comment eneyne.update_geometry()
 .. comment E, G = eneyne.run_dftd3('b3lyp', 'd2gr')

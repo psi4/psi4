@@ -77,12 +77,11 @@ for rxn in [4, 8, 16, 20]:
     E1, G2 = ma.run_sdftd3('hf3c', 'd3bj', verbose=True)
     E2, G2 = mb.run_sdftd3('hf3c', 'd3bj', verbose=True)
     hf3c_d3 = [E, E1, E2]
-    atm_d, atm_m = [0.00000621, 0.000000332]  # run_sdftd3 adds 3-body correction
 
     if rxn == 4:
-        compare_values(-0.03764556 + atm_d, E, digits, 'S22-4 di d3bj')  #TEST  # from orca (w/o atm)
-        compare_values(-0.015360571 + atm_m, E1, digits, 'S22-4 ma d3bj')  #TEST  # from orca
-        compare_values(-0.015360571 + atm_m, E2, digits, 'S22-4 mb d3bj')  #TEST  # from orca
+        compare_values(-0.03764556, E, digits, 'S22-4 di d3bj')  #TEST  # from orca (w/o atm)
+        compare_values(-0.015360571, E1, digits, 'S22-4 ma d3bj')  #TEST  # from orca
+        compare_values(-0.015360571, E2, digits, 'S22-4 mb d3bj')  #TEST  # from orca
 
     E, G = di.run_gcp(func='HF3c', verbose=True)
     E1, G1 = ma.run_gcp(func='HF3c', verbose=True)
@@ -105,16 +104,15 @@ for rxn in [4, 8, 16, 20]:
         compare_values(-167.7352629, E1, digits, 'S22-4 ma hf/minix')  #TEST   # from orca
         compare_values(-167.7352629, E2, digits, 'S22-4 mb hf/minix')  #TEST   # from orca
 
-    if d3_engine == "dftd3":
-        hf3c = ie(hf3c_gcp) + ie(hf3c_d3) + ie(hf3c_hf)
+    hf3c = ie(hf3c_gcp) + ie(hf3c_d3) + ie(hf3c_hf)
 
-        print("""{:4} {:16.8f} {:8.3f} {:8.2f} {:10.4f} : {:8.2f} {:8.2f} {:8.2f}""".format(
-            rxn, hf3c, hf3c * 627.5095, orca22[rxn-1] * 627.5095, (hf3c - orca22[rxn-1]) * 627.5095,
-            627.5095 * ie(hf3c_gcp),
-            627.5095 * ie(hf3c_d3),
-            627.5095 * ie(hf3c_hf)))
+    print("""{:4} {:16.8f} {:8.3f} {:8.2f} {:10.4f} : {:8.2f} {:8.2f} {:8.2f}""".format(
+        rxn, hf3c, hf3c * 627.5095, orca22[rxn-1] * 627.5095, (hf3c - orca22[rxn-1]) * 627.5095,
+        627.5095 * ie(hf3c_gcp),
+        627.5095 * ie(hf3c_d3),
+        627.5095 * ie(hf3c_hf)))
 
-        compare_values(orca22[rxn-1], hf3c, digits, 'HF-3c for S22-{}'.format(rxn))  #TEST
+    compare_values(orca22[rxn-1], hf3c, digits, 'HF-3c for S22-{}'.format(rxn))  #TEST
 
     if rxn == 8:
         EE = energy('hf3c', molecule=di, bsse_type='nocp')

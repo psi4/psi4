@@ -101,11 +101,11 @@ for dlvl in ['d3zero', 'd3bj', 'd3mzero', 'd3mbj']:
     #   through run_sdftd3 would be to give all the parameters with s9 zeroed. here, we adjust the
     #   reference and run w/ 3-body.
     E = eeee.run_sdftd3(fctl, dlvl, dertype=der)
-    compare_values(refs[dlvl]['d'] + refs['3b']['d'], E, 7, 'dimer ' + dlvl)  #TEST
+    compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
     E = mAuncp.run_sdftd3(fctl, dlvl, dertype=der)
-    compare_values(refs[dlvl]['m'] + refs['3b']['m'], E, 7, 'monoA ' + dlvl)  #TEST
+    compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
     E = mBcp.run_sdftd3(fctl, dlvl, dertype=der)
-    compare_values(refs[dlvl]['m'] + refs['3b']['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
+    compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
 
 #hasD3M = False  # temporary until fctl released into superfunctionals list
 # why have the hasD3M switch, you ask? why not just try catch throughout to
@@ -183,11 +183,14 @@ qmBcp.update_geometry()
 print('  Part III: -D correction from Py-side on Py-mol')  #TEST
 for dlvl in ['d3zero', 'd3bj', 'd3mzero', 'd3mbj']:
     E = qeeee.run_sdftd3(fctl, dlvl, dertype=der)
-    compare_values(refs[dlvl]['d'] + refs['3b']['d'], E, 7, 'dimer ' + dlvl)  #TEST
+    compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
     E = qmAuncp.run_sdftd3(fctl, dlvl, dertype=der)
-    compare_values(refs[dlvl]['m'] + refs['3b']['m'], E, 7, 'monoA ' + dlvl)  #TEST
+    compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
     E = qmBcp.run_sdftd3(fctl, dlvl, dertype=der)
-    compare_values(refs[dlvl]['m'] + refs['3b']['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
+    compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
+for dlvl in ['d3zeroatm']:
+    E = qeeee.run_sdftd3(fctl, dlvl, dertype=der)
+    compare_values(refs[dlvl[:-3]]['d'] + refs['3b']['d'], E, 7, 'dimer ' + dlvl)  #TEST
 
 
 # <<<  Part 4  >>>

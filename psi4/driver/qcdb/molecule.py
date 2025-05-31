@@ -1354,6 +1354,7 @@ class Molecule(LibmintsMolecule):
             },
             'keywords': {
                 'verbose': verbose,
+                "apply_qcengine_aliases": True,
             },
         }
         if dashlvl:
