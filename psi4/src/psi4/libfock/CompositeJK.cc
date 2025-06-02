@@ -92,8 +92,14 @@ void CompositeJK::common_init() {
     }
 
     // other options
-    density_screening_ = options_.get_str("SCREENING") == "DENSITY";
-    set_cutoff(options_.get_double("INTS_TOLERANCE"));
+    auto screening_type = options_.get_str("SCREENING");
+    density_screening_ = screening_type == "DENSITY";
+
+    if (screening_type == "NONE") {
+        set_cutoff(0.0);
+    } else {
+        set_cutoff(options_.get_double("INTS_TOLERANCE"));
+    }
 
     // pre-construct per-thread TwoBodyAOInt objects for computing 3- and 4-index ERIs
     timer_on("CompositeJK: ERI Computers");
@@ -106,6 +112,8 @@ void CompositeJK::common_init() {
 
     IntegralFactory factory(primary_, primary_, primary_, primary_);
     eri_computers_["4-Center"][0] = std::shared_ptr<TwoBodyAOInt>(factory.eri());
+
+    if (!eri_computers_["4-Center"][0]->sieve_initialized()) eri_computers_["4-Center"][0]->initialize_sieve();
 
     // create each threads' ERI computers
     for(int rank = 1; rank < nthreads_; rank++) {
@@ -121,14 +129,15 @@ void CompositeJK::common_init() {
         // initialize SplitJK algo
         j_algo_ = std::make_shared<DirectDFJ>(primary_, auxiliary_, options_);
 
-        // create 3-center ERIs
+        // initialize 3-Center ERIs
         eri_computers_["3-Center"].emplace({});
         eri_computers_["3-Center"].resize(nthreads_);
 
-        computed_shells_per_iter_["Triplets"] = {};
-        
         IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
         eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
+        if (!eri_computers_["3-Center"][0]->sieve_initialized()) eri_computers_["3-Center"][0]->initialize_sieve();
+
+        computed_shells_per_iter_["Triplets"] = {};
 
         for(int rank = 1; rank < nthreads_; rank++) {
             eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["3-Center"].front()->clone());
@@ -288,6 +297,12 @@ void CompositeJK::compute_JK() {
     if (density_screening_) {
         for (auto eri_computer : eri_computers_["4-Center"]) {
             eri_computer->update_density(D_ref_);
+        }
+    } else if (do_K_) {
+        if (k_algo_->name() == "LinK") {
+            for (auto eri_computer : eri_computers_["4-Center"]) {
+                eri_computer->update_density(D_ref_);
+            }
         }
     }
 

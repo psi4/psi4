@@ -792,6 +792,7 @@ sieving, set the |scf__ints_tolerance| keyword to your desired cutoff
 (1.0E-12 is recommended for most applications). To choose the type of sieving, set 
 the |globals__screening| keyword to your desired option. For Schwarz screening, set it
 to ``SCHWARZ``, for CSAM, ``CSAM``, and for density matrix-based screening, ``DENSITY``.
+See `comment <https://github.com/psi4/psi4/pull/3060#issuecomment-2331738677>`_ where 1. is currently implemented.
 
 SCHWARZ
     Uses the Cauchy-Schwarz inequality to calculate an upper bounded value of a shell quartet,
