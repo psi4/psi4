@@ -1363,13 +1363,6 @@ std::map<std::string, SharedMatrix> Wavefunction::array_variables() { return arr
 
 std::map<std::string, std::shared_ptr<ExternalPotential>> Wavefunction::potential_variables() { return potentials_; }
 
-double Wavefunction::get_variable(const std::string &key) { return scalar_variable(key); }
-SharedMatrix Wavefunction::get_array(const std::string &key) { return array_variable(key); }
-void Wavefunction::set_variable(const std::string &key, double val) { return set_scalar_variable(key, val); }
-void Wavefunction::set_array(const std::string &key, SharedMatrix val) { set_array_variable(key, val); }
-std::map<std::string, double> Wavefunction::variables() { return scalar_variables(); }
-std::map<std::string, SharedMatrix> Wavefunction::arrays() { return array_variables(); }
-
 void Wavefunction::set_PCM(const std::shared_ptr<PCM> &pcm) {
     PCM_ = pcm;
     PCM_enabled_ = true;

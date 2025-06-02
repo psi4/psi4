@@ -36,7 +36,7 @@ from .. import empirical_dispersion
 from psi4.driver.qcdb import ValidationError
 
 
-def fisapt_compute_energy(self, external_potentials=None):
+def fisapt_compute_energy(self, jk_obj, *, external_potentials=None):
     """Computes the FSAPT energy. FISAPT::compute_energy"""
 
     # => Header <=
@@ -51,7 +51,7 @@ def fisapt_compute_energy(self, external_potentials=None):
     self.overlap()
     self.kinetic()
     self.nuclear()
-    self.coulomb()
+    self.coulomb(jk_obj)
     core.timer_off("FISAPT: Setup")
     core.timer_on("FISAPT: Monomer SCF")
     self.scf()

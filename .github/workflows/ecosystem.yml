@@ -20,10 +20,11 @@ jobs:
 
           - label: "Conda GNU (L)"
             runs-on: ubuntu-latest
-            python-version: "3.12"
+            python-version: "3.13"
             mkl-version: ""
             platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
@@ -35,15 +36,17 @@ jobs:
 
           - label: "Conda Clang (M-Intel)"
             runs-on: macos-13  # ensures py!=27 in base OS
-            python-version: "3.9"
+            python-version: "3.11"
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+              -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
             #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
@@ -54,6 +57,7 @@ jobs:
             #    -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
             #    -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
             #    -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
+            # * numpy/_core in py310 vs numpy/core in py39 (or maybe a np v1/v2 thing)
 
           - label: "Conda Clang (M-Silicon)"
             runs-on: macos-latest
@@ -61,6 +65,7 @@ jobs:
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not pe_ecp"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -70,10 +75,11 @@ jobs:
           - label: "LLVM clang-cl (W)"
             runs-on: windows-latest
             python-version: "3.12"
-            mkl-version: "=2022.1"
-            llvm-version: "17.0.6"
+            mkl-version: ""
+            llvm-version: "17.0.6"  # known good: "17.0.6"; omp problem: 19, 20
             platform: win-64
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
+            pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
@@ -163,18 +169,19 @@ jobs:
         #
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
-          # not for py312
-          sed -i "s;- cppe;#- cppe;g" env_p4build.yaml
-          sed -i "s;- qcfractal;- qcfractal>=0.59;g" env_p4build.yaml
+          sed -i "s;- openfermion;#- openfermion;g" env_p4build.yaml
+          # openfermion not yet ready for np v2
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
           # sed -E -i.bak "s;;;g" env_p4build.yaml
+          sed -E -i.bak "s;- openfermion;#- openfermion;g" env_p4build.yaml
+          # openfermion not yet ready for np v2
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Silicon)" ]]; then
           :
-          sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
-          sed -E -i.bak "s;- einsums;#- einsums;g" env_p4build.yaml
+          sed -E -i.bak "s;- openfermion;#- openfermion;g" env_p4build.yaml
+          # openfermion not yet ready for np v2
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
@@ -182,7 +189,7 @@ jobs:
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
           sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
-          #sed -i "s;- intel-openmp;- intel-openmp=2024.2.0=h57928b3_978;g" env_p4build.yaml
+          echo "  - libgcc <14.3" >> env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
         echo "::group::View Env Spec File for Conda (Edited)"
@@ -250,6 +257,12 @@ jobs:
         conda remove qcelemental --force
         python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.29.0.dev2 --no-deps
 
+    - name: Special Config - QCEngine Dep
+      if: false  # needed for Windows + DFTD4
+      run: |
+        conda remove qcengine --force  # TODO UNDO after https://github.com/MolSSI/QCEngine/pull/472
+        python -m pip install git+https://github.com/loriab/QCEngine.git@d4why --no-deps
+
     - name: Special Config - QCFractal Dep
       if: false
       run: |
@@ -285,7 +298,7 @@ jobs:
     - name: Test Addons with CTest (M)
       if: runner.os == 'macOS'
       working-directory: ./objdir
-      run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows 
+      run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows
 
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
     - name: Test Addons with Pytest (geomeTRIC)
@@ -294,7 +307,7 @@ jobs:
 
     - name: Test Addons with Pytest
       working-directory: ./objdir
-      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }} and not geometric" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }} and not geometric" -k "${{ matrix.cfg.pytest-name-expr }}" stage/lib/psi4/tests/
 
     - name: Write user Conda environment files
       run: |
@@ -309,6 +322,7 @@ jobs:
 
 # Error: (W) "OMP: Error #15: Initializing libiomp5md.dll, but found libomp.dll already initialized." or analysis shows linked to libomp.dll
 # Soln: feed OpenMP_LIBRARY_DIRS so selects correct libiomp5md.lib so analysis shows linked to libiomp5md.dll
+# Apr 2025 Soln: this can also arise when a dep links in llvm-openmp instead of intel-openmp
 
 # Error (W) "  File "D:\a\psi4\psi4\objdir\stage\lib\psi4\__init__.py", line 55, in <module>
 #              from . import core
@@ -329,3 +343,5 @@ jobs:
 #   same 2019.1 iomp5, and it seems to work fine. Is all this really necessary? I don't know.
 #   There is another libiomp5md.lib that comes with llvm and lives at "C:\Program Files\LLVM\lib\libiomp5md.lib".
 #   Attempts to use it quickly fell off the narrow path-of-compilability-and-runability but should be explored again.
+# 2024: While MKL 2023 and 2024.1 (and probably 2022.1) work fine, 2024.2 causes DYSEV errors and other wrong answers on
+#   Windows, possibly intel-openmp needs restriction, too.

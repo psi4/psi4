@@ -34,6 +34,7 @@
  */
 #include <cstring>
 #include <cstdlib>
+#include "psi4/libdpd/dpd.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psi4-dec.h"
@@ -48,6 +49,9 @@ void PSIO::close(size_t unit, int keep) {
 
     /* First check to see if this unit is already closed */
     if (this_unit->vol[0].stream == -1) psio_error(unit, PSIO_ERROR_RECLOSE);
+
+    /* Dump all DPD cached entries for this file.  */
+    global_dpd_->file4_cache_del_filenum(unit);
 
     /* Dump the current TOC back out to disk */
     tocwrite(unit);

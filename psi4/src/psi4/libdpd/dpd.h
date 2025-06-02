@@ -155,7 +155,7 @@ struct dpdfile2 {
 
 /* DPD File4 Cache entries */
 struct dpd_file4_cache_entry {
-    int dpdnum;                  /* dpd structure reference */
+    int dpdnum;                  /* index of the entry's dpd object in dpd_list */
     int filenum;                 /* libpsio unit number */
     int irrep;                   /* overall symmetry */
     int pqnum;                   /* dpd pq value */
@@ -295,6 +295,11 @@ enum indices {
 enum pattern { abc, acb, cab, cba, bca, bac };
 
 class PSI_API DPD {
+   private:
+    // Removes the file from cache and writes it to disk instead, returning the next entry in cache.
+    // Assumes the entry and the File and the main dpd object all match. Caller must guarantee that..
+    dpd_file4_cache_entry* file4_cache_del_raw(dpd_file4_cache_entry *entry, dpdfile4& File);
+
    public:
     // These used to live in the dpd_data struct
     int nirreps;
@@ -322,8 +327,6 @@ class PSI_API DPD {
 
     ~DPD();
 
-    int init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-             dpd_file4_cache_entry *priority, int num_subspaces, ...);
     int init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
              dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
 
@@ -441,24 +444,41 @@ class PSI_API DPD {
     dpd_file2_cache_entry *dpd_file2_cache_last();
     int file2_cache_add(dpdfile2 *File);
     int file2_cache_del(dpdfile2 *File);
+    // Delete the first of the lowest-priority entries in cache.
+    // Returns 1 if no candidates to delete were found, 0 on success.
     int file4_cache_del_low();
     void file2_cache_dirty(dpdfile2 *File);
 
+    // Initialize the file4_cache data of the dpd_main global
     void file4_cache_init();
+    // Clean all cache memory and destroy the cache chain, at or after dpd_main.file4_cache
     void file4_cache_close();
-    void file4_cache_print(std::string out_fname);
-    void file4_cache_print_screen();
+    // Print the state of the cache to a PsiOutStream with name out_fname.
+    void file4_cache_print(std::string out_fname = "outfile");
+    // Return the priority of the target file in cache, or 0 if not found.
     int file4_cache_get_priority(dpdfile4 *File);
 
+    // Return the next cache entry with the specific parameters. Returns nullptr, if no entry matches.
     dpd_file4_cache_entry *file4_cache_scan(int filenum, int irrep, int pqnum, int rsnum, const char *label,
                                             int dpdnum);
+    // Return the final cache entry in the chain. If this_entry is already nullptr, returns nullptr.
     dpd_file4_cache_entry *file4_cache_last();
-    int file4_cache_add(dpdfile4 *File, size_t priority);
-    int file4_cache_del(dpdfile4 *File);
+    // If the file is cached, change its priority level. If file is not cached, add it after the last entry.
+    // Errors if whether the file is in cache and whether it's supposed to be in cache are inconsistent.
+    void file4_cache_add(dpdfile4 *File, size_t priority);
+    // Removes the file from cache and writes it to disk instead.
+    // Errors if the file isn't supposed to be in cache, or the file isn't found.
+    void file4_cache_del(dpdfile4 *File);
+    // Delete all cache entries with filenum.
+    void file4_cache_del_filenum(size_t filenum);
     dpd_file4_cache_entry *file4_cache_find_lru();
     int file4_cache_del_lru();
+    // Sets the file's clean flag to false.
+    // Errors if the file isn't supposed to be in cache, or the file isn't found.
     void file4_cache_dirty(dpdfile4 *File);
+    // Mark the file as locked and update dpd_main.memlocked.
     void file4_cache_lock(dpdfile4 *File);
+    // Mark the file as unlocked and update dpd_main.memlocked.
     void file4_cache_unlock(dpdfile4 *File);
 
     void sort_3d(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx, int ***roworb, int *asym,
@@ -520,11 +540,11 @@ class PSI_API DPD {
 /*
  * Static variables/functions to mimic the old C machinery
  */
-extern dpd_gbl dpd_main;
-extern PSI_API DPD *global_dpd_;
-extern PSI_API int dpd_default;
-extern DPD *dpd_list[2];
-extern PSI_API int dpd_set_default(int dpd_num);
+extern dpd_gbl dpd_main; // Information global across all DPD objects.
+extern PSI_API DPD *global_dpd_; // The currently active DPD object.
+extern PSI_API int dpd_default; // index of global_dpd_ within dpd_list.
+extern DPD *dpd_list[2]; // The array of selectable DPD objects.
+extern PSI_API int dpd_set_default(int dpd_num); // Set the default DPD to be idx dpd_num of dpd_list.
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
 extern int dpd_close(int dpd_num);

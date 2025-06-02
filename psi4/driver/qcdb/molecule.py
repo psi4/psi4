@@ -1549,7 +1549,7 @@ class Molecule(LibmintsMolecule):
         schmol = qcel.molparse.to_schema(molrec, dtype=dtype, units=units)
         return schmol
 
-    def to_dict(self, force_c1=False, force_units=False, np_out=True):
+    def to_dict(self, force_c1=False, force_units=False, np_out=True, quiet=False):
         """Serializes instance into Molecule dictionary."""
 
         self.update_geometry()
@@ -1643,13 +1643,15 @@ class Molecule(LibmintsMolecule):
         #   to_dict, but is included as a check. in practice, only fills in mass
         #   numbers and heals user chgmult.
         try:
-            validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
+            _elemental_verbosity = -1 if quiet else 0
+            validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=_elemental_verbosity, domain='qm', **molrec)
         except qcel.ValidationError as err:
             # * this can legitimately happen if total chg or mult has been set
             #   independently b/c fragment chg/mult not reset. so try again.
-            print(
+            if not quiet:
+                print(
                 """Following warning is harmless if you've altered chgmult through `set_molecular_change` or `set_multiplicity`. Such alterations are an expert feature. Specifying in the original molecule string is preferred. Nonphysical masses may also trigger the warning."""
-            )
+                )
             molrec['fragment_charges'] = [None] * len(fragments)
             molrec['fragment_multiplicities'] = [None] * len(fragments)
             validated_molrec = qcel.molparse.from_arrays(speclabel=False, nonphysical=True, verbose=0, domain='qm', **molrec)

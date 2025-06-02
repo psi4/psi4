@@ -106,56 +106,58 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
 #endif
 
     // Monopoles
-    std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
-    for (size_t i=0; i< charges_.size(); ++i) {
-        Zxyz.push_back({std::get<0>(charges_[i]),{{std::get<1>(charges_[i]),
-                                                   std::get<2>(charges_[i]),
-                                                   std::get<3>(charges_[i])}}});
-    }
+    if (charges_.size()) {
+        std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
+        for (size_t i=0; i< charges_.size(); ++i) {
+            Zxyz.push_back({std::get<0>(charges_[i]),{{std::get<1>(charges_[i]),
+                                                       std::get<2>(charges_[i]),
+                                                       std::get<3>(charges_[i])}}});
+        }
 
-    std::vector<SharedMatrix> V_charge;
-    std::vector<std::shared_ptr<PotentialInt> > pot;
-    for (size_t t = 0; t < nthreads; ++t) {
-        V_charge.push_back(std::make_shared<Matrix>("External Potential (Charges)", n, n));
-        V_charge[t]->zero();
-        pot.push_back(std::shared_ptr<PotentialInt>(static_cast<PotentialInt *>(fact->ao_potential().release())));
-        pot[t]->set_charge_field(Zxyz);
-    }
+        std::vector<SharedMatrix> V_charge;
+        std::vector<std::shared_ptr<PotentialInt> > pot;
+        for (size_t t = 0; t < nthreads; ++t) {
+            V_charge.push_back(std::make_shared<Matrix>("External Potential (Charges)", n, n));
+            V_charge[t]->zero();
+            pot.push_back(std::shared_ptr<PotentialInt>(static_cast<PotentialInt *>(fact->ao_potential().release())));
+            pot[t]->set_charge_field(Zxyz);
+        }
 
-    // Monopole potential is symmetric, so generate unique pairs of shells
-    const auto& ij_pairs = pot[0]->shellpairs();
+        // Monopole potential is symmetric, so generate unique pairs of shells
+        const auto& ij_pairs = pot[0]->shellpairs();
 
-    // Calculate monopole potential
+        // Calculate monopole potential
 #pragma omp parallel for schedule(guided) num_threads(nthreads)
-    for (size_t p = 0; p < ij_pairs.size(); ++p) {
-        size_t i = ij_pairs[p].first;
-        size_t j = ij_pairs[p].second;
-        size_t ni = basis->shell(i).nfunction();
-        size_t nj = basis->shell(j).nfunction();
-        size_t index_i = basis->shell(i).function_index();
-        size_t index_j = basis->shell(j).function_index();
+        for (size_t p = 0; p < ij_pairs.size(); ++p) {
+            size_t i = ij_pairs[p].first;
+            size_t j = ij_pairs[p].second;
+            size_t ni = basis->shell(i).nfunction();
+            size_t nj = basis->shell(j).nfunction();
+            size_t index_i = basis->shell(i).function_index();
+            size_t index_j = basis->shell(j).function_index();
 
-        size_t rank = 0;
+            size_t rank = 0;
 #ifdef _OPENMP
-        rank = omp_get_thread_num();
+            rank = omp_get_thread_num();
 #endif
 
-        double **Vp = V_charge[rank]->pointer();
-        pot[rank]->compute_shell(i, j);
-        const auto* buffer = pot[rank]->buffers()[0];
+            double **Vp = V_charge[rank]->pointer();
+            pot[rank]->compute_shell(i, j);
+            const auto* buffer = pot[rank]->buffers()[0];
 
-        size_t index = 0;
-        for (size_t ii = index_i; ii < (index_i + ni); ++ii) {
-            for (size_t jj = index_j; jj < (index_j + nj); ++jj) {
-                Vp[ii][jj] = Vp[jj][ii] = buffer[index++];
+            size_t index = 0;
+            for (size_t ii = index_i; ii < (index_i + ni); ++ii) {
+                for (size_t jj = index_j; jj < (index_j + nj); ++jj) {
+                    Vp[ii][jj] = Vp[jj][ii] = buffer[index++];
+                }
             }
-        }
-    } // p
+        } // p
 
-    for (size_t t = 0; t < nthreads; ++t) {
-        V->add(V_charge[t]);
-        V_charge[t].reset();
-        pot[t].reset();
+        for (size_t t = 0; t < nthreads; ++t) {
+            V->add(V_charge[t]);
+            V_charge[t].reset();
+            pot[t].reset();
+        }
     }
 
     // Diffuse Bases
