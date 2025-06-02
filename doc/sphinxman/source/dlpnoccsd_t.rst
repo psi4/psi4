@@ -59,7 +59,7 @@ with this algorithm. This algorithm was originally implemented in the ORCA softw
 is now available in |PSIfour|!
 
 For a more comprehensive overview on local correlation and the DLPNO-CCSD(T) algorithm, the reader is referred
-to the :ref:`DLPNO-MP2 <sec:dlpno-mp2>` documentation, and the published work of Jiang et al. describing the
+to the :ref:`DLPNO-MP2 <sec:dlpnomp2>` documentation, and the published work of Jiang et al. describing the
 implementation of DLPNO-CCSD(T) in |Psifour| [Jiang:2024:082502]_.
 
 An example input file for a DLPNO-CCSD computation is::
@@ -119,10 +119,10 @@ Practical Advice
   (NOTE: In ORCA, a DLPNO-CCSD(T) computation defaults to the semicanonical (T0) computation.)
 
 * Due to differences in implementation and working equations, absolute DLPNO-CCSD(T) energies in |PSIfour| will not
-  exactly match ORCA, as |PSIfours| |dlpno__pno_convergence| at a given level is designed to be more accuarate than
+  exactly match ORCA, as |PSIfours| |dlpno__pno_convergence| at a given level is designed to be more accurate than
   the same setting in ORCA (see results on water clusters in [Jiang:2024:082502]_).
 
-* Based on user allocated memory, disk/core storage for different integrals and tensors
+* Based on user allocated memory, disk/core storage for various integrals and tensors
   for DLPNO-CCSD/(T) are automatically determined. There is no need to toggle with the disk/core
   options for the average user.
 
