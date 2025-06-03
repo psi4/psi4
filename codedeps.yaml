@@ -1017,9 +1017,9 @@ data:
       aux_run_names:
         - msgpack-python
         - networkx
-        - setuptools
+        - setuptools<81
       aux_run_names_note:
-        "setuptools": "Needed for qcelemental cmake detection."
+        "setuptools<81": "Needed for qcelemental cmake detection. <81 avoid pkg_resources message."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true

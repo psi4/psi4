@@ -37,7 +37,8 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
 
-#include "einsums.hpp"
+#include <Einsums/TensorAlgebra.hpp>
+#include <Einsums/Tensor/DiskTensor.hpp>
 
 namespace psi {
 namespace f12 {
@@ -160,8 +161,8 @@ void MP2F12::form_f12_energy(einsums::Tensor<double, 4>* V, einsums::Tensor<doub
                              einsums::Tensor<double, 2>* f, einsums::Tensor<double, 4>* G,
                              einsums::Tensor<double, 4>* D) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     auto E_f12_s = 0.0;
     auto E_f12_t = 0.0;
@@ -179,7 +180,7 @@ void MP2F12::form_f12_energy(einsums::Tensor<double, 4>* V, einsums::Tensor<doub
                 Tensor X_ = (*X)(All, All, All, All);
                 auto f_scale = (*f)(i + nfrzn_, i + nfrzn_) + (*f)(j + nfrzn_, j + nfrzn_);
                 linear_algebra::scale(f_scale, &X_);
-                sort(1.0, Indices{k, l, m, n}, &B_, -1.0, Indices{k, l, m, n}, X_);
+                permute(1.0, Indices{k, l, m, n}, &B_, -1.0, Indices{k, l, m, n}, X_);
             }
 
             // Getting V_Tilde and B_Tilde
@@ -215,7 +216,7 @@ void MP2F12::form_f12_energy(einsums::Tensor<double, 4>* V, einsums::Tensor<doub
 
 void MP2F12::form_cabs_singles(einsums::Tensor<double, 2>* f) {
     using namespace einsums;
-    using namespace linear_algebra;
+    using namespace einsums::linear_algebra;
 
     int all_vir = nvir_ + ncabs_;
 
@@ -255,7 +256,7 @@ void MP2F12::form_cabs_singles(einsums::Tensor<double, 2>* f) {
 double MP2F12::compute_energy() {
     timer_on("MP2-F12 Compute Energy");
     using namespace einsums;
-    timer::initialize();
+    einsums::profile::initialize();
 
     print_header();
 
@@ -371,9 +372,9 @@ double MP2F12::compute_energy() {
     print_results();
 
     if (print_ > 1) {
-        timer::report();
+        einsums::profile::report("timer_mp2f12.dat", false);
     }
-    timer::finalize();
+    einsums::profile::finalize();
     timer_off("MP2-F12 Compute Energy");
 
     // Typically you would build a new wavefunction and populate it with data
@@ -387,8 +388,8 @@ void MP2F12::print_results() {
         outfile->Printf("\n ===> MP2-F12/3C(FIX) Energies <===\n\n");
     }
 
-    auto E_rhf = Process::environment.globals["CURRENT REFERENCE ENERGY"];
-    auto E_mp2 = Process::environment.globals["MP2 CORRELATION ENERGY"];
+    auto E_rhf = scalar_variable("CURRENT REFERENCE ENERGY");
+    auto E_mp2 = scalar_variable("MP2 CORRELATION ENERGY");
 
     E_mp2f12_ = E_rhf + E_mp2 + E_f12_ + E_singles_;
 
@@ -427,8 +428,8 @@ std::pair<double, double> MP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, eins
                                           einsums::TensorView<double, 2>& G_ij, einsums::TensorView<double, 2>& D_ij,
                                           const int& i, const int& j) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     double V_s, V_t;
     int kd;
@@ -452,8 +453,8 @@ std::pair<double, double> MP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, eins
 std::pair<double, double> MP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, einsums::Tensor<double, 4>* C,
                                           einsums::TensorView<double, 2>& D_ij, const int& i, const int& j) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     double B_s, B_t;
     int kd;
@@ -513,8 +514,8 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double, 4>* V, einsums::Dis
                                  einsums::DiskTensor<double, 2>* f, einsums::DiskTensor<double, 4>* G,
                                  einsums::DiskTensor<double, 4>* D) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     auto E_f12_s = 0.0;
     auto E_f12_t = 0.0;
@@ -538,8 +539,8 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double, 4>* V, einsums::Dis
             {
                 Tensor X_ = X_klmn.get();
                 auto f_scale = f_act(i, i) + f_act(j, j);
-                linear_algebra::scale(f_scale, &X_);
-                sort(1.0, Indices{k, l, m, n}, &B_, -1.0, Indices{k, l, m, n}, X_);
+                einsums::linear_algebra::scale(f_scale, &X_);
+                permute(1.0, Indices{k, l, m, n}, &B_, -1.0, Indices{k, l, m, n}, X_);
             }
 
             // Getting V_Tilde and B_Tilde
@@ -571,7 +572,7 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double, 4>* V, einsums::Dis
 
 void DiskMP2F12::form_cabs_singles(einsums::DiskTensor<double, 2>* f) {
     using namespace einsums;
-    using namespace linear_algebra;
+    using namespace einsums::linear_algebra;
 
     int all_vir = nvir_ + ncabs_;
 
@@ -607,7 +608,7 @@ void DiskMP2F12::form_cabs_singles(einsums::DiskTensor<double, 2>* f) {
 
 double DiskMP2F12::compute_energy() {
     using namespace einsums;
-    timer::initialize();
+    einsums::profile::initialize();
 
     print_header();
 
@@ -626,10 +627,11 @@ double DiskMP2F12::compute_energy() {
 
     if (f12_read_ints_) {
         // Reads existing file
-        einsums::state::data() = h5::open(file_name, H5F_ACC_RDWR);
+        // formerly lhs einsums::state::data() . this is likely to change again in Einsums in the near future
+        ein_state_data_ = h5::open(file_name, H5F_ACC_RDWR);
     } else {
         // Creates new file
-        einsums::state::data() = h5::create(file_name, H5F_ACC_TRUNC);
+        ein_state_data_ = h5::create(file_name, H5F_ACC_TRUNC);
     }
 
     outfile->Printf("\n ===> Forming the Integrals <===");
@@ -637,12 +639,12 @@ double DiskMP2F12::compute_energy() {
 
     /* Form the two-electron integrals */
     // Two-Electron Integrals
-    auto G = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO G Tensor", nact_, nact_, nobs_, nri_);
-    auto F = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO F12 Tensor", nact_, nact_, nri_, nri_);
+    auto G = std::make_unique<DiskTensor<double, 4>>(ein_state_data_, "MO G Tensor", nact_, nact_, nobs_, nri_);
+    auto F = std::make_unique<DiskTensor<double, 4>>(ein_state_data_, "MO F12 Tensor", nact_, nact_, nri_, nri_);
     auto F2 =
-        std::make_unique<DiskTensor<double, 4>>(state::data(), "MO F12_Squared Tensor", nact_, nact_, nact_, nri_);
-    auto FG = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO F12G12 Tensor", nact_, nact_, nact_, nact_);
-    auto Uf = std::make_unique<DiskTensor<double, 4>>(state::data(), "MO F12_DoubleCommutator Tensor", nact_, nact_,
+        std::make_unique<DiskTensor<double, 4>>(ein_state_data_, "MO F12_Squared Tensor", nact_, nact_, nact_, nri_);
+    auto FG = std::make_unique<DiskTensor<double, 4>>(ein_state_data_, "MO F12G12 Tensor", nact_, nact_, nact_, nact_);
+    auto Uf = std::make_unique<DiskTensor<double, 4>>(ein_state_data_, "MO F12_DoubleCommutator Tensor", nact_, nact_,
                                                       nact_, nact_);
 
     std::vector<std::string> teint = {};
@@ -654,9 +656,9 @@ double DiskMP2F12::compute_energy() {
     if (teint.size() == 0) outfile->Printf("   Two-Electron Integrals\n");
 
     // Fock Matrices
-    auto f = std::make_unique<DiskTensor<double, 2>>(state::data(), "Fock Matrix", nri_, nri_);
-    auto k = std::make_unique<DiskTensor<double, 2>>(state::data(), "Exchange Matrix", nri_, nri_);
-    auto fk = std::make_unique<DiskTensor<double, 2>>(state::data(), "Fock-Exchange Matrix", nri_, nri_);
+    auto f = std::make_unique<DiskTensor<double, 2>>(ein_state_data_, "Fock Matrix", nri_, nri_);
+    auto k = std::make_unique<DiskTensor<double, 2>>(ein_state_data_, "Exchange Matrix", nri_, nri_);
+    auto fk = std::make_unique<DiskTensor<double, 2>>(ein_state_data_, "Fock-Exchange Matrix", nri_, nri_);
 
     if (use_df_) {
         outfile->Printf("   Fock Matrix\n");
@@ -740,14 +742,14 @@ double DiskMP2F12::compute_energy() {
     /* Form the F12 Matrices */
     outfile->Printf("\n ===> Forming the F12 Intermediate Tensors <===\n");
     auto V =
-        std::make_unique<DiskTensor<double, 4>>(state::data(), "V Intermediate Tensor", nact_, nact_, nact_, nact_);
+        std::make_unique<DiskTensor<double, 4>>(ein_state_data_, "V Intermediate Tensor", nact_, nact_, nact_, nact_);
     auto X =
-        std::make_unique<DiskTensor<double, 4>>(state::data(), "X Intermediate Tensor", nact_, nact_, nact_, nact_);
+        std::make_unique<DiskTensor<double, 4>>(ein_state_data_, "X Intermediate Tensor", nact_, nact_, nact_, nact_);
     auto C =
-        std::make_unique<DiskTensor<double, 4>>(state::data(), "C Intermediate Tensor", nact_, nact_, nvir_, nvir_);
+        std::make_unique<DiskTensor<double, 4>>(ein_state_data_, "C Intermediate Tensor", nact_, nact_, nvir_, nvir_);
     auto B =
-        std::make_unique<DiskTensor<double, 4>>(state::data(), "B Intermediate Tensor", nact_, nact_, nact_, nact_);
-    auto D = std::make_unique<DiskTensor<double, 4>>(state::data(), "D Tensor", nact_, nact_, nvir_, nvir_);
+        std::make_unique<DiskTensor<double, 4>>(ein_state_data_, "B Intermediate Tensor", nact_, nact_, nact_, nact_);
+    auto D = std::make_unique<DiskTensor<double, 4>>(ein_state_data_, "D Tensor", nact_, nact_, nvir_, nvir_);
 
     outfile->Printf("   V Intermediate\n");
     if (!(*V).existed()) {
@@ -798,9 +800,9 @@ double DiskMP2F12::compute_energy() {
     print_results();
 
     if (print_ > 1) {
-        timer::report();
+        einsums::profile::report("timer_mp2f12.dat", false);
     }
-    timer::finalize();
+    einsums::profile::finalize();
 
     // Typically you would build a new wavefunction and populate it with data
     return E_mp2f12_;
@@ -810,8 +812,8 @@ std::pair<double, double> DiskMP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, 
                                               einsums::DiskView<double, 2, 4>& G_ij,
                                               einsums::DiskView<double, 2, 4>& D_ij, const int& i, const int& j) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     double V_s, V_t;
     int kd;
@@ -851,8 +853,8 @@ std::pair<double, double> DiskMP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, 
 std::pair<double, double> DiskMP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, einsums::DiskTensor<double, 4>* C,
                                               einsums::DiskView<double, 2, 4>& D_ij, const int& i, const int& j) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     double B_s, B_t;
     int kd;
