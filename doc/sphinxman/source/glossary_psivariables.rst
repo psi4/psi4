@@ -1009,6 +1009,13 @@ PSI Variables by Alpha
 
    The total electronic second derivative [E_h/a0/a0] for the Hartree-Fock method, (3 * {nat}, 3 * {nat}).
 
+.. psivar:: HF-CABS TOTAL ENERGY
+   F12 CABS CORRECTION ENERGY
+
+   The correction and total electronic energy [E_h] for the Hartree--Fock method
+   including the complementary auxiliary basis set (CABS) correction. Defined for
+   explicity correlated methods.
+
 .. psivar:: LCCD TOTAL ENERGY
    LCCD CORRELATION ENERGY
 
@@ -1145,10 +1152,9 @@ PSI Variables by Alpha
 
 .. psivar:: MP2-F12 TOTAL ENERGY
    MP2-F12 CORRELATION ENERGY
-   F12 CORRELATION ENERGY
 
-   The total electronic energy [E_h], total correlation energy component [E_h],
-   MP2 correlation energy component [E_h], and explicit correlation energy component [E_h]
+   The total electronic energy [E_h] and correlation energy component [E_h]
+   atop the :psivar:`HF-CABS TOTAL ENERGY` ,
    for the MP2-F12/3C(FIX) level of theory.
 
 .. psivar:: MP3 TOTAL ENERGY
@@ -1202,7 +1208,7 @@ PSI Variables by Alpha
    CISD DOUBLES ENERGY
    QCISD DOUBLES ENERGY
    REMP2 DOUBLES ENERGY
-   F12 DOUBLES ENERGY
+   MP2-F12 DOUBLES ENERGY
    LCCD DOUBLES ENERGY
    CCD DOUBLES ENERGY
    LCCSD DOUBLES ENERGY
@@ -1215,6 +1221,7 @@ PSI Variables by Alpha
 
    The doubles portion [E_h] of the named correlation energy
    including same-spin and opposite-spin correlations.
+   Explicitly correlated methods are with respect to the CABS-corrected reference.
 
 .. psivar:: MP2 SINGLES ENERGY
    MP2.5 SINGLES ENERGY
@@ -1228,7 +1235,7 @@ PSI Variables by Alpha
    CISD SINGLES ENERGY
    QCISD SINGLES ENERGY
    REMP2 SINGLES ENERGY
-   F12 SINGLES ENERGY
+   MP2-F12 SINGLES ENERGY
    LCCD SINGLES ENERGY
    CCD SINGLES ENERGY
    LCCSD SINGLES ENERGY
@@ -1238,6 +1245,7 @@ PSI Variables by Alpha
 
    The singles portion [E_h] of the named correlation energy.
    Zero except in ROHF.
+   Explicitly correlated methods are with respect to the CABS-corrected reference.
 
 .. psivar:: MP2 SAME-SPIN CORRELATION ENERGY
    MP2.5 SAME-SPIN CORRELATION ENERGY
@@ -1251,7 +1259,7 @@ PSI Variables by Alpha
    ACPF SAME-SPIN CORRELATION ENERGY
    AQCC SAME-SPIN CORRELATION ENERGY
    REMP2 SAME-SPIN CORRELATION ENERGY
-   F12 SAME-SPIN CORRELATION ENERGY
+   MP2-F12 SAME-SPIN CORRELATION ENERGY
    LCCD SAME-SPIN CORRELATION ENERGY
    CCD SAME-SPIN CORRELATION ENERGY
    LCCSD SAME-SPIN CORRELATION ENERGY
@@ -1264,6 +1272,7 @@ PSI Variables by Alpha
 
    The unscaled portion [E_h] of the named correlation energy
    from same-spin or triplet doubles correlations.
+   Explicitly correlated methods are with respect to the CABS-corrected reference.
 
 .. psivar:: MP2 OPPOSITE-SPIN CORRELATION ENERGY
    MP2.5 OPPOSITE-SPIN CORRELATION ENERGY
@@ -1277,7 +1286,7 @@ PSI Variables by Alpha
    ACPF OPPOSITE-SPIN CORRELATION ENERGY
    AQCC OPPOSITE-SPIN CORRELATION ENERGY
    REMP2 OPPOSITE-SPIN CORRELATION ENERGY
-   F12 OPPPOSITE-SPIN CORRELATION ENERGY
+   MP2-F12 OPPOSITE-SPIN CORRELATION ENERGY
    LCCD OPPOSITE-SPIN CORRELATION ENERGY
    CCD OPPOSITE-SPIN CORRELATION ENERGY
    LCCSD OPPOSITE-SPIN CORRELATION ENERGY
@@ -1290,6 +1299,7 @@ PSI Variables by Alpha
 
    The unscaled portion [E_h] of the named correlation energy
    from opposite-spin or singlet doubles correlations.
+   Explicitly correlated methods are with respect to the CABS-corrected reference.
 
 .. psivar:: MRPT TOTAL ENERGY
    MP2-CCSD TOTAL ENERGY

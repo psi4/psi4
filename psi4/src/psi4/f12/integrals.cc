@@ -39,7 +39,8 @@
 #include "psi4/libmints/onebody.h"
 #include "psi4/lib3index/dftensor.h"
 
-#include "einsums.hpp"
+#include <Einsums/TensorAlgebra.hpp>
+#include <Einsums/Tensor/DiskTensor.hpp>
 
 namespace psi {
 namespace f12 {
@@ -375,8 +376,8 @@ void MP2F12::form_oeints(einsums::Tensor<double, 2>* h) {
 
 void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>* ERI, std::vector<char> order) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     const bool frz_bra =
         (nfrzn_ > 0) && ((*ERI).dim(0) == nact_) && ((*ERI).dim(1) == nact_);  // No frozen in Fock Build
@@ -431,7 +432,7 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
                 {
                     // Sort
                     Tensor<double, 4> rsPq{"rsPq", nbf3, nbf4, nmo1, nbf2};
-                    sort(Indices{r, s, P, q}, &rsPq, Indices{P, q, r, s}, Pqrs);
+                    permute(Indices{r, s, P, q}, &rsPq, Indices{P, q, r, s}, Pqrs);
 
                     auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
                     convert_C(C2.get(), bs_[o2], nbf2, nmo2, frz_ket1);
@@ -452,7 +453,7 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
                 {
                     // Sort
                     Tensor<double, 4> PQRs{"PQRs", nmo1, nmo2, nmo3, nbf4};
-                    sort(Indices{P, Q, R, s}, &PQRs, Indices{R, s, P, Q}, RsPQ);
+                    permute(Indices{P, Q, R, s}, &PQRs, Indices{R, s, P, Q}, RsPQ);
 
                     auto C4 = std::make_unique<Tensor<double, 2>>("C4", nbf4, nmo4);
                     convert_C(C4.get(), bs_[o4], nbf4, nmo4, frz_ket2);
@@ -462,7 +463,7 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
             }
 
             // Switch from Chem to Phys
-            sort(Indices{P, R, Q, index::S}, &PRQS, Indices{P, Q, R, index::S}, PQRS);
+            permute(Indices{P, R, Q, index::S}, &PRQS, Indices{P, Q, R, index::S}, PQRS);
         }
         timer_off("MO Transformation");
 
@@ -479,7 +480,7 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
 
             if (nbf2 != nbf1 && nbf2 != nbf3 && nbf2 != nbf4 && int_type == "F") {
                 Tensor<double, 4> RPSQ{"RPSQ", nmo3, nmo1, nmo4, nmo2};
-                sort(Indices{R, P, index::S, Q}, &RPSQ, Indices{P, R, Q, index::S}, PRQS);
+                permute(Indices{R, P, index::S, Q}, &RPSQ, Indices{P, R, Q, index::S}, PRQS);
                 PRQS.reset();
                 TensorView<double, 4> ERI_RPSQ{*ERI, Dim<4>{nmo3, nmo1, nmo4, nmo2}, Offset<4>{off3, off1, off4, off2}};
                 set_ERI(ERI_RPSQ, &RPSQ);
@@ -487,7 +488,7 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
 
             if (nbf2 != nbf1 && nbf2 != nbf3 && nbf2 != nbf4 && int_type == "J") {
                 Tensor<double, 4> QSPR{"QSPR", nmo2, nmo4, nmo1, nmo3};
-                sort(Indices{Q, index::S, P, R}, &QSPR, Indices{P, R, Q, index::S}, PRQS);
+                permute(Indices{Q, index::S, P, R}, &QSPR, Indices{P, R, Q, index::S}, PRQS);
                 PRQS.reset();
                 TensorView<double, 4> ERI_QSPR{*ERI, Dim<4>{nmo2, nmo4, nmo1, nmo3}, Offset<4>{off2, off4, off1, off3}};
                 set_ERI(ERI_QSPR, &QSPR);
@@ -495,7 +496,7 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
 
             if (nbf4 != nbf1 && nbf4 != nbf2 && nbf4 != nbf3 && int_type == "K") {
                 Tensor<double, 4> SQRP{"SQRP", nmo4, nmo2, nmo3, nmo1};
-                sort(Indices{index::S, Q, R, P}, &SQRP, Indices{P, R, Q, index::S}, PRQS);
+                permute(Indices{index::S, Q, R, P}, &SQRP, Indices{P, R, Q, index::S}, PRQS);
                 PRQS.reset();
                 TensorView<double, 4> ERI_SQRP{*ERI, Dim<4>{nmo4, nmo2, nmo3, nmo1}, Offset<4>{off4, off2, off3, off1}};
                 set_ERI(ERI_SQRP, &SQRP);
@@ -507,8 +508,8 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
 
 void MP2F12::form_metric_ints(einsums::Tensor<double, 3>* DF_ERI, bool is_fock) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     std::vector<char> order;
 
@@ -545,7 +546,7 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3>* DF_ERI, bool is_fock) 
 
             // Sort
             Tensor<double, 3> BQp{"BQp", naux_, nmo2, nbf1};
-            sort(Indices{B, Q, p}, &BQp, Indices{B, p, Q}, BpQ);
+            permute(Indices{B, Q, p}, &BQp, Indices{B, p, Q}, BpQ);
 
             // C1
             auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
@@ -555,7 +556,7 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3>* DF_ERI, bool is_fock) 
             C1.reset();
 
             // Sort
-            sort(Indices{B, P, Q}, &BPQ, Indices{B, Q, P}, BQP);
+            permute(Indices{B, P, Q}, &BPQ, Indices{B, Q, P}, BQP);
         }
         timer_off("MO Transformation");
 
@@ -588,8 +589,8 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3>* DF_ERI, bool is_fock) 
 
 void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double, 3>* DF_ERI) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     const auto dim1 = (*DF_ERI).dim(1);
     const auto dim2 = (*DF_ERI).dim(2);
@@ -633,7 +634,7 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
 
             // Sort
             Tensor<double, 3> BQp{"BQp", naux_, nmo2, nbf1};
-            sort(Indices{B, Q, p}, &BQp, Indices{B, p, Q}, BpQ);
+            permute(Indices{B, Q, p}, &BQp, Indices{B, p, Q}, BpQ);
 
             // C1
             auto C1 = std::make_unique<Tensor<double, 2>>("C1", nbf1, nmo1);
@@ -643,7 +644,7 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
             C1.reset();
 
             // Sort
-            sort(Indices{B, P, Q}, &BPQ, Indices{B, Q, P}, BQP);
+            permute(Indices{B, P, Q}, &BPQ, Indices{B, Q, P}, BQP);
         }
         timer_off("MO Transformation");
 
@@ -661,8 +662,8 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
 
 void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double, 2>* DF_ERI) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
 
@@ -714,8 +715,8 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
 void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double, 4>* ERI,
                             einsums::Tensor<double, 3>* J_inv_AB, std::vector<char> order) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     const bool frz_ket1 = (nfrzn_ > 0) && ((*ERI).dim(2) == nact_);  // No frozen in tensor contractions
     const bool frz_ket2 = (nfrzn_ > 0) && ((*ERI).dim(3) == nact_);  // No frozen in tensor contractions
@@ -783,7 +784,7 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
             timer_off("Robust DF Procedure");
 
             // Switch to <PR|QS> ordering
-            sort(Indices{p, r, q, s}, &phys_robust, Indices{p, q, r, s}, chem_robust);
+            permute(Indices{p, r, q, s}, &phys_robust, Indices{p, q, r, s}, chem_robust);
         }
 
         timer_on("Set in ERI");
@@ -876,8 +877,8 @@ void DiskMP2F12::form_oeints(einsums::DiskTensor<double, 2>* h) {
 
 void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<double, 4>* ERI) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     // In (PQ|RS) ordering
     std::vector<char> order = {'o', 'o', 'o', 'o'};
@@ -941,7 +942,7 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
                 {
                     // Sort
                     Tensor<double, 4> rsPq{"rsPq", nbf3, nbf4, nmo1, nbf2};
-                    sort(Indices{r, s, P, q}, &rsPq, Indices{P, q, r, s}, Pqrs);
+                    permute(Indices{r, s, P, q}, &rsPq, Indices{P, q, r, s}, Pqrs);
 
                     auto C2 = std::make_unique<Tensor<double, 2>>("C2", nbf2, nmo2);
                     convert_C(C2.get(), bs_[o2], nbf2, nmo2, frz_ket1);
@@ -962,7 +963,7 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
                 {
                     // Sort
                     Tensor<double, 4> PQRs{"PQRs", nmo1, nmo2, nmo3, nbf4};
-                    sort(Indices{P, Q, R, s}, &PQRs, Indices{R, s, P, Q}, RsPQ);
+                    permute(Indices{P, Q, R, s}, &PQRs, Indices{R, s, P, Q}, RsPQ);
 
                     auto C4 = std::make_unique<Tensor<double, 2>>("C4", nbf4, nmo4);
                     convert_C(C4.get(), bs_[o4], nbf4, nmo4, frz_ket2);
@@ -972,7 +973,7 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
             }
 
             // Switch from Chem to Phys
-            sort(Indices{P, R, Q, index::S}, &PRQS, Indices{P, Q, R, index::S}, PQRS);
+            permute(Indices{P, R, Q, index::S}, &PRQS, Indices{P, Q, R, index::S}, PQRS);
         }
         timer_off("MO Transformation");
 
@@ -994,7 +995,7 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
 
             if (nbf4 != nbf1 && nbf4 != nbf2 && nbf4 != nbf3 && int_type == "F") {
                 Tensor<double, 4> RPSQ{"RPSQ", nmo3, nmo1, nmo4, nmo2};
-                sort(Indices{R, P, index::S, Q}, &RPSQ, Indices{P, R, Q, index::S}, PRQS);
+                permute(Indices{R, P, index::S, Q}, &RPSQ, Indices{P, R, Q, index::S}, PRQS);
                 PRQS.reset();
                 for (int r = 0; r < nmo3; r++) {
                     for (int p = 0; p < nmo1; p++) {
@@ -1007,7 +1008,7 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
 
             if (nbf2 != nbf1 && nbf2 != nbf3 && nbf2 != nbf4 && int_type == "J") {
                 Tensor<double, 4> QSPR{"QSPR", nmo2, nmo4, nmo1, nmo3};
-                sort(Indices{Q, index::S, P, R}, &QSPR, Indices{P, R, Q, index::S}, PRQS);
+                permute(Indices{Q, index::S, P, R}, &QSPR, Indices{P, R, Q, index::S}, PRQS);
                 PRQS.reset();
                 for (int q = 0; q < nmo2; q++) {
                     for (int s = 0; s < nmo4; s++) {
@@ -1020,7 +1021,7 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
 
             if (nbf4 != nbf1 && nbf4 != nbf2 && nbf4 != nbf3 && int_type == "K") {
                 Tensor<double, 4> SQRP{"SQRP", nmo4, nmo2, nmo3, nmo1};
-                sort(Indices{index::S, Q, R, P}, &SQRP, Indices{P, R, Q, index::S}, PRQS);
+                permute(Indices{index::S, Q, R, P}, &SQRP, Indices{P, R, Q, index::S}, PRQS);
                 PRQS.reset();
                 for (int s = 0; s < nmo4; s++) {
                     for (int q = 0; q < nmo2; q++) {
@@ -1038,8 +1039,8 @@ void DiskMP2F12::form_teints(const std::string& int_type, einsums::DiskTensor<do
 void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor<double, 4>* ERI,
                                 einsums::Tensor<double, 3>* J_inv_AB) {
     using namespace einsums;
-    using namespace tensor_algebra;
-    using namespace tensor_algebra::index;
+    using namespace einsums::tensor_algebra;
+    using namespace einsums::index;
 
     // In (PQ|RS) ordering
     std::vector<char> order = {'o', 'o', 'o', 'o'};
@@ -1105,7 +1106,7 @@ void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor
             timer_off("Robust DF Procedure");
 
             // Switch to Phys Notation
-            sort(Indices{p, r, q, s}, &phys_robust, Indices{p, q, r, s}, chem_robust);
+            permute(Indices{p, r, q, s}, &phys_robust, Indices{p, q, r, s}, chem_robust);
         }
 
         // Stitch into ERI Tensor

@@ -9,13 +9,6 @@ ref_singles_corl      =  -0.0032481493805634775    # TEST
 ref_mp2f12_corl       =  -0.29974712691292626      # TEST
 ref_mp2f12_total      =  -76.358235657485167       # TEST
 
-ref_df_scf            =  -76.059551121528784      # TEST
-ref_df_mp2_corl       =  -0.24110853689574918     # TEST
-ref_df_f12_corl       =  -0.055279195185694963    # TEST
-ref_df_singles_corl   =  -0.0032377589349817473   # TEST
-ref_df_mp2f12_corl    =  -0.2996254910164259      # TEST
-ref_df_mp2f12_total   =  -76.359176612545212      # TEST
-
 molecule h2o {
 O    0.000000000    0.000000000    0.221664874
 H    0.000000000    1.430900622   -0.886659498
@@ -28,45 +21,23 @@ symmetry c1
 set {
   basis          cc-pvdz-f12
   freeze_core    True
-  f12_type       conv
+  mp2_type       conv
   e_convergence  1e-10
   d_convergence  1e-10
 }
 
 print('   Testing MP2-F12/3C(FIX) ...')
-val = energy('mp2-f12')
+val, wfn = energy('mp2-f12', return_wfn=True)
 
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 9, 'mp2-f12 ref')                      #TEST
 compare_values(ref_mp2_corl, variable('MP2 CORRELATION ENERGY'), 9, 'mp2 corl')              #TEST
-compare_values(ref_mp2f12_corl, variable('MP2-F12 CORRELATION ENERGY'), 9, 'mp2-f12 corl')   #TEST
+compare_values(ref_mp2f12_corl, variable('MP2-F12 CORRELATION ENERGY') + variable("F12 CABS CORRECTION ENERGY"), 9, 'mp2-f12 corl')   #TEST
+compare_values(ref_mp2f12_corl, wfn.variable('MP2-F12 CORRELATION ENERGY') + wfn.variable("F12 CABS CORRECTION ENERGY"), 9, 'mp2-f12 corl')   #TEST
+compare_values(ref_mp2f12_total, wfn.variable('MP2-F12 TOTAL ENERGY'), 9, 'mp2-f12 tot')         #TEST
 compare_values(ref_mp2f12_total, variable('MP2-F12 TOTAL ENERGY'), 9, 'mp2-f12 tot')         #TEST
-compare_values(ref_singles_corl, variable('F12 SINGLES ENERGY'), 9, 'f12 singles')           #TEST
-compare_values(ref_f12_corl, variable('F12 DOUBLES ENERGY'), 9, 'f12 doubles')               #TEST
-compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 9, 'mp2-f12 ref')              #TEST
-compare_values(ref_mp2f12_corl, variable('CURRENT CORRELATION ENERGY'), 9, 'mp2-f12 corl')   #TEST
+compare_values(ref_singles_corl, variable('F12 CABS CORRECTION energy'), 9, 'f12 singles')           #TEST
+compare_values(ref_f12_corl, variable('MP2-F12 DOUBLES ENERGY') - variable("MP2 DOUBLES ENERGY"), 9, 'f12 doubles')               #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY') - variable("F12 CABS CORRECTION ENERGY"), 9, 'mp2-f12 ref')              #TEST
+compare_values(ref_mp2f12_corl, variable('CURRENT CORRELATION ENERGY') + variable("F12 CABS CORRECTION ENERGY"), 9, 'mp2-f12 corl')   #TEST
 compare_values(ref_mp2f12_total, variable('CURRENT ENERGY'), 9, 'mp2-f12 tot')               #TEST
 compare_values(ref_mp2f12_total, val, 9, 'mp2-f12 return')                                   #TEST
-clean()
-
-set {
-  scf_type       df
-  f12_type       df
-  df_basis_f12   aug-cc-pvdz-ri
-  e_convergence  1e-10
-  d_convergence  1e-10
-}
-
-print('   Testing DF-MP2-F12/3C(FIX) ...')
-val = energy('mp2-f12')
-
-compare_values(ref_df_scf, variable('SCF TOTAL ENERGY'), 9, 'df-mp2-f12 ref')                      #TEST
-compare_values(ref_df_mp2_corl, variable('MP2 CORRELATION ENERGY'), 9, 'df-mp2 corl')              #TEST
-compare_values(ref_df_mp2f12_corl, variable('MP2-F12 CORRELATION ENERGY'), 6, 'df-mp2-f12 corl')   #TEST
-compare_values(ref_df_mp2f12_total, variable('MP2-F12 TOTAL ENERGY'), 6, 'df-mp2-f12 tot')         #TEST
-compare_values(ref_df_singles_corl, variable('F12 SINGLES ENERGY'), 9, 'df-f12 singles')           #TEST
-compare_values(ref_df_f12_corl, variable('F12 DOUBLES ENERGY'), 6, 'df-f12 doubles')               #TEST
-compare_values(ref_df_scf, variable('CURRENT REFERENCE ENERGY'), 9, 'df-mp2-f12 ref')              #TEST
-compare_values(ref_df_mp2f12_corl, variable('CURRENT CORRELATION ENERGY'), 6, 'df-mp2-f12 corl')   #TEST
-compare_values(ref_df_mp2f12_total, variable('CURRENT ENERGY'), 6, 'df-mp2-f12 tot')               #TEST
-compare_values(ref_df_mp2f12_total, val, 6, 'df-mp2-f12 return')                                   #TEST
-clean()

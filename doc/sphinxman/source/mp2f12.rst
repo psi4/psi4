@@ -34,7 +34,7 @@
 .. _`sec:mp2f12`:
 
 MP2-F12: Explicitly Correlated MP2
-======================================================
+==================================
 
 .. codeauthor:: Erica Mitchell
 .. sectionauthor:: Erica Mitchell
@@ -279,4 +279,4 @@ them before changing defaults. Some basic recommendations for running the module
 * MP2-F12 cannot use Psi4's Schwarz screening due to the presence of mixed basis sets. This is a work 
   in progress but siginificantly increases the computational prefactor.
 
-* At the moment, the MP2-F12 code is only compatible with with RHF references.
+* At the moment, the MP2-F12 code is only compatible with RHF references.

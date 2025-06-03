@@ -4402,11 +4402,13 @@ def run_mp2f12(name, **kwargs):
         ['SCF_TYPE'],
         ['MP2_TYPE'],
         ['CABS_BASIS'],
+        ["SCF", "DF_BASIS_SCF"],
+        ["DFMP2", "DF_BASIS_MP2"],
         ['DF_BASIS_F12'])
 
     # Default SCF_TYPE to PK if F12_TYPE is CONV and has not been changed
     if not core.has_global_option_changed('SCF_TYPE')\
-        and "CONV" in core.get_option("F12", "F12_TYPE"):
+        and "CONV" in core.get_option("F12", "MP2_TYPE"):
         core.set_global_option('SCF_TYPE', 'PK')
         core.print_out("""    SCF Algorithm Type set to PK.\n""")
     else:
@@ -4416,8 +4418,7 @@ def run_mp2f12(name, **kwargs):
 
     # Ensure RHF reference
     if core.get_global_option('REFERENCE') != "RHF":
-        raise ValidationError("MP2-F12 is not available for %s references.",
-                              core.get_global_option('REFERENCE'))
+        raise ValidationError(f"MP2-F12 is not available for {core.get_global_option('REFERENCE')} references.")
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -4428,13 +4429,15 @@ def run_mp2f12(name, **kwargs):
                               """reference wavefunction must be C1.\n""")
 
     # Default MP2_TYPE to CONV if F12_TYPE is CONV
-    if "CONV" in core.get_option("F12", "F12_TYPE"):
-        core.set_global_option("MP2_TYPE", "CONV")
+    if core.get_option("F12", "MP2_TYPE") == "CONV":
         ref_wfn = run_occ("mp2", ref_wfn=ref_wfn)
     else:
         core.set_local_option("DFMP2", "DF_BASIS_MP2", dfbs)
         ref_wfn = run_dfmp2("dfmp2", ref_wfn=ref_wfn)
- 
+
+    # clean results from globals, keep on wfn
+    core.clean_variables()
+
     core.tstart()
     core.print_out('\n')
     p4util.banner('MP2-F12')
@@ -4464,7 +4467,9 @@ def run_mp2f12(name, **kwargs):
     mp2f12_wfn.compute_energy()
 
     mp2f12_wfn.set_variable('CURRENT ENERGY', mp2f12_wfn.variable('MP2-F12 TOTAL ENERGY'))
+    mp2f12_wfn.set_variable('CURRENT REFERENCE ENERGY', mp2f12_wfn.variable('HF-CABS TOTAL ENERGY'))
     mp2f12_wfn.set_variable('CURRENT CORRELATION ENERGY', mp2f12_wfn.variable('MP2-F12 CORRELATION ENERGY'))
+    mp2f12_wfn.set_module("f12")
 
     # Shove variables into global space
     for k, v in mp2f12_wfn.variables().items():

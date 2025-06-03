@@ -38,7 +38,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/liboptions/liboptions.h"
 
-#include "einsums.hpp"
+#include <Einsums/Tensor/Tensor.hpp>
 
 namespace psi {
 namespace f12 {
@@ -63,6 +63,9 @@ class MP2F12 : public Wavefunction {
 
     /* Choose CONV or DF F12 computation */
     std::string f12_type_;
+
+    /* Choose in-memory or disp algorithm */
+    std::string f12_subtype_;
 
     /* Density-fitting Basis Set (DFBS) */
     std::shared_ptr<BasisSet> DFBS_;
@@ -115,6 +118,9 @@ class MP2F12 : public Wavefunction {
 
     /* Total MP2-F12/3C(FIX) Energy */
     double E_mp2f12_ = 0.0;
+
+    /* Integrals data that formerly was einsums::state::data */
+    h5::fd_t ein_state_data_;
 
     void common_init();
 
