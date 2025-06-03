@@ -188,7 +188,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- When several modules can compute the same methods and the default
     routing is not suitable, this targets a module. ``CCENERGY`` covers
     CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
-    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN MRCC");
+    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN MRCC F12");
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
@@ -1458,7 +1458,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             depending on available memory or other hardware constraints, allow the best
             sub-algorithm for the molecule and conditions (``AUTO`` ; usual mode) or
             forcibly select a sub-algorithm (usually only for debugging or profiling).
-            Presently, ``SCF_SUBTYPE=DF``, ``SCF_SUBTYPE=MEM_DF``, and ``SCF_SUBTYPE=DISK_DF`` 
+            Presently, ``SCF_TYPE=DF``, ``SCF_TYPE=MEM_DF``, and ``SCF_TYPE=DISK_DF``
 	        can have ``INCORE`` and ``OUT_OF_CORE`` selected; and ``SCF_TYPE=PK``  can have ``INCORE``,
 	        ``OUT_OF_CORE``, ``YOSHIMINE_OUT_OF_CORE``, and ``REORDER_OUT_OF_CORE`` selected. !expert -*/
 	    options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE YOSHIMINE_OUT_OF_CORE REORDER_OUT_OF_CORE");
@@ -3274,8 +3274,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- MODULEDESCRIPTION Performs F12 computations for RHF reference wavefunctions. -*/
 
         /*- SUBSECTION General Options -*/
-        /*- Choose conventional or density-fitted. Default to CONV -*/
-        options.add_str("F12_TYPE", "DF", "CONV DF DISK_CONV DISK_DF");
+        /*- Algorithm to use for MP2-F12 computation, conventional or density-fitted. -*/
+        options.add_str("MP2_TYPE", "DF", "DF CONV");
+        /*- For certain |globals__mp2_type| algorithms that have internal sub-algorithms
+            depending on available memory or other hardware constraints, select a sub-algorithm
+            Presently, ``MP2_TYPE=DF`` and ``MP2_TYPE=CONV``
+	        can have ``INCORE`` and ``DISK`` selected. In future, ``AUTO`` will be added. -*/
+        options.add_str("F12_SUBTYPE", "INCORE", "INCORE DISK");
         /*- Whether to read-in stored integrals from previous computation -*/
         options.add_bool("F12_READ_INTS", false);
         /*- Set contracted Gaussian-type geminal beta value -*/

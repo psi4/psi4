@@ -5,12 +5,12 @@ list(APPEND sources
   f12_intermediates.cc
   )
 
-if(TARGET Einsums::einsums)
+if(TARGET Einsums::Einsums)
     psi4_add_module(bin f12 sources)
     target_link_libraries(
       f12
       PRIVATE
-        Einsums::einsums
+        Einsums::Einsums
       )
 
     if(DEFINED ENV{CONDA_TOOLCHAIN_BUILD})
