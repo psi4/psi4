@@ -309,7 +309,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
                     x_func.set_alpha(x_params["alpha"])
                 if "omega" in x_params:
                     x_func.set_omega(x_params["omega"])
-                sup.add_x_functional(x_func)
+                sup.add_functional(x_func)
 
                 # This ensures there is at least some citation for the method
                 if x_func.citation() not in citation:
@@ -360,7 +360,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
                     c_func.set_alpha(c_params["alpha"])
                 else:
                     c_func.set_alpha(1.0)
-                sup.add_c_functional(c_func)
+                sup.add_functional(c_func)
                 if c_func.citation() not in citation:
                     citation.append(c_func.citation())
                 if c_func.description() not in descr:
