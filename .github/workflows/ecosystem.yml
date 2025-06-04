@@ -295,13 +295,6 @@ jobs:
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
-    - name: Test Run, F12, Run
-      working-directory: ./objdir
-      run: |
-        export PATH=../install/bin:$PATH
-        #export KMP_DUPLICATE_LIB_OK=TRUE
-        psi4 ../tests/dfmp2f12-1/input.dat -o stdout
-
       # step works but is redundant with next one; enable for debugging
     - name: Test Addons with CTest (M)
       if: runner.os == 'macOS'

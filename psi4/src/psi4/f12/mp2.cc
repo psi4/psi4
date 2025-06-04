@@ -431,7 +431,7 @@ std::pair<double, double> MP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, eins
     using namespace einsums::tensor_algebra;
     using namespace einsums::index;
 
-    double V_s, V_t;
+    double V_s = 0.0, V_t = 0.0;  // clang needs these initialized
     int kd;
 
     {
@@ -456,7 +456,7 @@ std::pair<double, double> MP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, eins
     using namespace einsums::tensor_algebra;
     using namespace einsums::index;
 
-    double B_s, B_t;
+    double B_s = 0.0, B_t = 0.0;  // clang needs these initialized
     int kd;
 
     {
