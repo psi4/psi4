@@ -40,8 +40,9 @@ namespace psi {
 double DPD::buf4_dot(dpdbuf4 *BufA, dpdbuf4 *BufB) {
     int h, nirreps, n, my_irrep;
     double dot;
-    int incore, nbuckets;
+    int nbuckets;
     long int memoryd, rows_per_bucket, rows_left;
+    bool incore;
 
     nirreps = BufA->params->nirreps;
     my_irrep = BufA->file.my_irrep;
@@ -66,11 +67,11 @@ double DPD::buf4_dot(dpdbuf4 *BufA, dpdbuf4 *BufB) {
 
             rows_left = BufA->params->rowtot[h] % rows_per_bucket;
 
-            incore = 1;
-            if (nbuckets > 1) incore = 0;
+            incore = true;
+            if (nbuckets > 1) incore = false;
 
         } else
-            incore = 1;
+            incore = true;
 
         if (incore) {
             buf4_mat_irrep_init(BufA, h);
