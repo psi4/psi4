@@ -353,6 +353,7 @@ void export_wavefunction(py::module& m) {
         .def("Vb", &scf::HF::Vb, "Returns the Beta Kohn-Sham Potential Matrix.")
         .def("jk", &scf::HF::jk, "Returns the internal JK object.")
         .def("set_jk", &scf::HF::set_jk, "Sets the internal JK object !expert.")
+        .def("reset_jk", &scf::HF::reset_jk, "Deletes the internal JK object !expert.")
         .def("functional", &scf::HF::functional, "Returns the internal DFT Superfunctional.")
         .def("V_potential", &scf::HF::V_potential, "Returns the internal DFT V object.")
         .def("finalize", &scf::HF::finalize, "Cleans up the the Wavefunction's temporary data.")

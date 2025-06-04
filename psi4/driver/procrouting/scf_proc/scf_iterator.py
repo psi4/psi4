@@ -59,8 +59,10 @@ def scf_compute_energy(self):
     returns the SCF energy computed by finalize_energy().
 
     """
-    if core.get_option('SCF', 'DF_SCF_GUESS') and (core.get_global_option('SCF_TYPE') == 'DIRECT'):
-        # speed up DIRECT algorithm (recomputes full (non-DF) integrals
+    if core.get_option('SCF', 'DF_SCF_GUESS') and core.get_option('SCF', 'SCF_COSX_GUESS') and any([ core.get_global_option('SCF_TYPE') == x for x in [ 'DIRECT', 'DFDIRJ+LINK' ] ]):
+        raise ValidationError("Both DF_SCF_GUESS and SCF_COSX_GUESS are set to True! Please only enable one at most.")
+    elif core.get_option('SCF', 'DF_SCF_GUESS') and any([ core.get_global_option('SCF_TYPE') == x for x in [ 'DIRECT', 'DFDIRJ+LINK' ] ]):
+        # speed up DIRECT/DF-DirJ+LinK algorithm (recomputes full (non-DF) integrals
         #   each iter) by first converging via fast DF iterations, then
         #   fully converging in fewer slow DIRECT iterations. aka Andy trick 2.0
         core.print_out("  Starting with a DF guess...\n\n")
@@ -77,6 +79,46 @@ def scf_compute_energy(self):
         # reset the DIIS & JK objects in prep for DIRECT
         if self.initialized_diis_manager_:
             self.diis_manager_.reset_subspace()
+        self.initialize_jk(self.memory_jk_)
+    elif core.get_option('SCF', 'SCF_COSX_GUESS') and any([ core.get_global_option('SCF_TYPE') == x for x in [ 'DIRECT', 'DFDIRJ+LINK' ] ]):
+        # speed up DIRECT/DF-DirJ+LinK algorithm (recomputes full (non-DF) integrals
+        #   each iter) by first converging via fast COSX iterations, then
+        #   fully converging in fewer slow DIRECT iterations. aka Phillip Nelson/David Poole trick 
+        core.print_out("  Starting with a COSX guess...\n\n")
+        optstash = p4util.OptionsState(
+            ['SCF_TYPE'], ['SCREENING'], 
+            ['SCF', 'COSX_MAXITER_FINAL'], 
+            ['SCF', 'COSX_RADIAL_POINTS_INITIAL'], 
+            ['SCF', 'COSX_SPHERICAL_POINTS_INITIAL']
+        )
+
+        core.set_global_option('SCF_TYPE', 'DFDIRJ+COSX')
+        core.set_global_option('SCREENING', "SCHWARZ")
+      
+        # only use single COSX grid for guess 
+        core.set_local_option('SCF', 'COSX_MAXITER_FINAL', 0)
+        
+        # set grid to (20/50) unless otherwise specified 
+        if not core.has_option_changed("SCF", "COSX_RADIAL_POINTS_INITIAL"):
+          core.set_local_option('SCF', 'COSX_RADIAL_POINTS_INITIAL', 20)
+        if not core.has_option_changed("SCF", "COSX_SPHERICAL_POINTS_INITIAL"):
+          core.set_local_option('SCF', 'COSX_SPHERICAL_POINTS_INITIAL', 50)
+
+        self.initialize()
+        try:
+            self.iterations()
+        except SCFConvergenceError:
+            self.finalize()
+            raise SCFConvergenceError("""SCF COSX preiterations""", self.iteration_, self, 0, 0)
+
+        optstash.restore()
+
+        core.print_out("\n  COSX guess converged.\n\n")
+
+        # reset the DIIS & JK objects in prep for DIRECT
+        if self.initialized_diis_manager_:
+            self.diis_manager_.reset_subspace()
+        self.reset_jk()
         self.initialize_jk(self.memory_jk_)
     else:
         self.initialize()
@@ -277,25 +319,43 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     efp_enabled = hasattr(self.molecule(), 'EFP')
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
 
-    # does the JK algorithm use severe screening approximations for early SCF iterations?
-    early_screening = False
+    # does the SCF process require two "stages" of SCF iterations?
+    # if so, are we on the first round of SCF iterations?
+    # formalism currently applies to the following:
+    #    - COSX: initial grid -> final grid 
+    #    - COSX_SCF_GUESS: COSX -> DirectJK/DF-DirJ+LinK
+    #    NOTE: DF_SCF_GUESS fits the criteria here, but does not explicitly utilize this formalism 
+    on_first_iter_round = False
     if cosx_enabled:
-        early_screening = True
+        on_first_iter_round = True
         self.jk().set_COSX_grid("Initial")
 
-    # maximum number of scf iterations to run after early screening is disabled
-    scf_maxiter_post_screening = core.get_option('SCF', 'COSX_MAXITER_FINAL')
+    # are we doing are final round of SCF iterations?
+    on_final_iter_round = False
+    # maximum number of scf iterations to run during the final round of SCF iterations, for applicable methods 
+    scf_maxiter_final_round = core.get_option('SCF', 'COSX_MAXITER_FINAL')
 
-    if scf_maxiter_post_screening < -1:
-        raise ValidationError('COSX_MAXITER_FINAL ({}) must be -1 or above. If you wish to attempt full SCF converge on the final COSX grid, set COSX_MAXITER_FINAL to -1.'.format(scf_maxiter_post_screening))
+    # account for DirectJK/DF-DirJ+LinK iterations post-COSX-guess if need be
+    if core.get_option('SCF', 'SCF_COSX_GUESS') and any([ core.get_global_option('SCF_TYPE') == x for x in [ 'DIRECT', 'DFDIRJ+LINK' ] ]):
+        on_first_iter_round = False 
+        on_final_iter_round = True
 
-    # has early_screening changed from True to False?
-    early_screening_disabled = False
+        # two DirectJK/DF-DirJ+LinK iterations unless specified
+        if not core.has_option_changed("SCF", "COSX_MAXITER_FINAL"):
+          scf_maxiter_final_round = 2 # run two iterations with COSX guess
+        else:
+          scf_maxiter_final_round = core.get_option("SCF", "COSX_MAXITER_FINAL") # run COSX_MAXITER_FINAL # of DirectJK iterations with COSX guess
+
+    # sanity checking of COSX_MAXITER_FINAL
+    if scf_maxiter_final_round < -1:
+        raise ValidationError('COSX_MAXITER_FINAL ({}) must be -1 or above. If you wish to attempt full SCF converge on the final COSX grid, set COSX_MAXITER_FINAL to -1.'.format(scf_maxiter_final_round))
+    elif scf_maxiter_final_round == 0 and on_final_iter_round and core.get_option("SCF", "SCF_COSX_GUESS"):
+        raise ValidationError('COSX_MAXITER_FINAL ({}) cannot be 0 when SCF_COSX_GUESS is enabled. Please set COSX_MAXITER_FINAL to a positive integer, or -1 if you wish to attempt full SCF converge on {}.'.format(scf_maxiter_final_round, core.get_global_option("SCF_TYPE")))
 
     # SCF iterations!
     SCFE_old = 0.0
     Dnorm = 0.0
-    scf_iter_post_screening = 0
+    scf_iter_final_round = 0
     while True:
         self.iteration_ += 1
 
@@ -518,21 +578,21 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             continue
 
         # have we completed our post-early screening SCF iterations?
-        if early_screening_disabled:
-            scf_iter_post_screening += 1
-            if scf_iter_post_screening >= scf_maxiter_post_screening and scf_maxiter_post_screening > 0:
+        if on_final_iter_round:
+            scf_iter_final_round += 1
+            if scf_iter_final_round >= scf_maxiter_final_round and scf_maxiter_final_round > 0:
                 break
 
         # Call any postiteration callbacks
         if not ((self.iteration_ == 0) and self.sad_) and _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
 
-            if early_screening:
+            if on_first_iter_round:
 
                 # we've reached convergence with early screning enabled; disable it
-                early_screening = False
+                on_first_iter_round = False
 
                 # make note of the change to early screening; next SCF iteration(s) will be the last
-                early_screening_disabled = True
+                on_final_iter_round = True
 
                 # cosx uses the largest grid for its final SCF iteration(s)
                 if cosx_enabled:
@@ -543,7 +603,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 if hasattr(self.jk(), 'clear_D_prev'):
                     self.jk().clear_D_prev()
 
-                if scf_maxiter_post_screening == 0:
+                if scf_maxiter_final_round == 0:
                     break
                 else:
                     core.print_out("  Energy and wave function converged with early screening.\n")

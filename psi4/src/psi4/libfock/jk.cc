@@ -97,8 +97,9 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         [&](std::string jk_algo) { return jk_type == jk_algo; }
     ); 
     bool do_df_scf_guess = options.get_bool("DF_SCF_GUESS") && is_in_df_scf_guess;
+    bool do_scf_cosx_guess = options.get_bool("SCF_COSX_GUESS");
 
-    bool is_incompatible_density_screen = !(is_compatible_density_screen || do_df_scf_guess);
+    bool is_incompatible_density_screen = !(is_compatible_density_screen || do_df_scf_guess || do_scf_cosx_guess);
     
     if (do_density_screen && is_incompatible_density_screen) {
         std::string error_message = "SCREENING=DENSITY has not been implemented for ";

@@ -373,12 +373,17 @@ void HF::initialize_gtfock_jk() {
 #endif
 }
 
+void HF::reset_jk() { 
+    jk_->finalize(); 
+    jk_.reset(); 
+}
+
 void HF::finalize() {
     // Clean memory off, handle diis closeout, etc
 
     // This will be the only one
     if (!options_.get_bool("SAVE_JK")) {
-        jk_.reset();
+        reset_jk();
     }
 
     // Clean up after DIIS
