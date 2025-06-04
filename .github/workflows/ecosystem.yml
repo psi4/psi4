@@ -170,7 +170,6 @@ jobs:
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
           sed -i "s;- openfermion;#- openfermion;g" env_p4build.yaml
-          sed -i "s;- adcc;#- adcc;g" env_p4build.yaml
           # openfermion not yet ready for np v2
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
@@ -178,7 +177,6 @@ jobs:
           # sed -E -i.bak "s;;;g" env_p4build.yaml
           sed -E -i.bak "s;- openfermion;#- openfermion;g" env_p4build.yaml
           # openfermion not yet ready for np v2
-          sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Silicon)" ]]; then
           :
@@ -187,7 +185,6 @@ jobs:
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
-          sed -E -i.bak "s;- adcc;#- adcc;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
@@ -297,6 +294,13 @@ jobs:
         export PATH=../install/bin:$PATH
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+
+    - name: Test Run, F12, Run
+      working-directory: ./objdir
+      run: |
+        export PATH=../install/bin:$PATH
+        #export KMP_DUPLICATE_LIB_OK=TRUE
+        psi4 ../tests/dfmp2f12-1/input.dat -o stdout
 
       # step works but is redundant with next one; enable for debugging
     - name: Test Addons with CTest (M)
