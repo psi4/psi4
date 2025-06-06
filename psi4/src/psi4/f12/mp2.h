@@ -64,6 +64,9 @@ class MP2F12 : public Wavefunction {
     /* Choose CONV or DF F12 computation */
     std::string f12_type_;
 
+    /* Choose in-memory or disp algorithm */
+    std::string f12_subtype_;
+
     /* Density-fitting Basis Set (DFBS) */
     std::shared_ptr<BasisSet> DFBS_;
 

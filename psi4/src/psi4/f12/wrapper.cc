@@ -33,7 +33,7 @@ namespace f12 {
 
 SharedWavefunction f12(SharedWavefunction ref_wfn, Options& options) {
     std::shared_ptr<Wavefunction> f12;
-    if (options.get_str("F12_TYPE").find("DISK") != std::string::npos) {
+    if (options.get_str("F12_SUBTYPE").find("DISK") != std::string::npos) {
         f12 = std::make_shared<DiskMP2F12>(ref_wfn, options);
     } else {
         f12 = std::make_shared<MP2F12>(ref_wfn, options);

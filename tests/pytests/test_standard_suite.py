@@ -5170,6 +5170,57 @@ def test_olccd_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, 
 
 
 #
+#  ,--.   ,--.,------.  ,---.        ,------. ,--. ,---.
+#  |   `.'   ||  .--. ''.-.  \,-----.|  .---'/   |'.-.  \
+#  |  |'.'|  ||  '--' | .-' .''-----'|  `--, `|  | .-' .'
+#  |  |   |  ||  | --' /   '-.       |  |`    |  |/   '-.
+#  `--'   `--'`--'     '-----'       `--'     `--''-----'
+#
+#  <<<  MP2-F12 Energy
+
+@pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
+@pytest.mark.parametrize(
+    "basis, subjects",
+    [
+        # adz only until basis situation better understood
+        # pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
+        pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz"),  #, marks=pytest.mark.long),
+        # pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+    ],
+)
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
+        ######## Are all possible ways of computing <method> working?
+
+        ###### f12
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "f12", "freeze_core": "true",                     },}, id="mp2f12  rhf    conv fc: * f12",),
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "f12", "freeze_core": "false",                    },}, id="mp2f12  rhf    conv ae: * f12",),
+        #
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "f12", "freeze_core": "true",  "f12_subtype": "disk"},}, id="mp2f12  rhf  d conv fc: * f12",),
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "f12", "freeze_core": "false", "f12_subtype": "disk"},}, id="mp2f12  rhf  d conv ae: * f12",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "f12", "freeze_core": "true",                     },}, id="mp2f12  rhf    df   fc:   f12",),
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "f12", "freeze_core": "false",                    },}, id="mp2f12  rhf    df   ae:   f12",),
+        #
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "f12", "freeze_core": "true",  "f12_subtype": "disk"},}, id="mp2f12  rhf  d df   fc:   f12",),
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "f12", "freeze_core": "false", "f12_subtype": "disk"},}, id="mp2f12  rhf  d df   ae:   f12",),
+        ##
+        # skipping pk/df for now
+        ##
+        # skipping cd/df for now
+        ####
+        # yapf: enable
+    ],
+)
+def test_mp2f12_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, request):
+    # inp["keywords"]["cabs_basis"] = "aug-cc-pvdz-optri"
+    inp["keywords"]["df_basis_f12"] = "aug-cc-pvdz-ri"
+    runner_asserter(*_processor(inp, dertype, basis, subjects, clsd_open_pmols, request, "mp2-f12", "energy"))
+
+
+#
 #   ,---.,--.   ,--.,--.   ,--.,--.  ,--.    ,------.
 #  '   .-'\  `.'  / |  |   |  ||  ,'.|  |    |  .---',--,--,  ,---. ,--.--. ,---.,--. ,--.
 #  `.  `-. \     /  |  |.'.|  ||  |' '  |    |  `--, |      \| .-. :|  .--'| .-. |\  '  /

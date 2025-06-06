@@ -62,7 +62,8 @@ void MP2F12::common_init() {
     print_ = options_.get_int("PRINT");
     singles_ = options_.get_bool("CABS_SINGLES");
 
-    f12_type_ = options_.get_str("F12_TYPE");
+    f12_type_ = options_.get_str("MP2_TYPE");
+    f12_subtype_ = options_.get_str("F12_SUBTYPE");
     f12_read_ints_ = options_.get_bool("F12_READ_INTS");
 
     std::vector<OrbitalSpace> bs_ = {};
@@ -104,7 +105,7 @@ void MP2F12::print_header() {
         outfile->Printf("                        Erica Mitchell                      \n");
     }
     outfile->Printf(" -----------------------------------------------------------\n\n");
-    outfile->Printf(" Using %s algorithm \n\n", f12_type_.c_str());
+    outfile->Printf(" Using %s %s algorithm \n\n", f12_type_.c_str(), f12_subtype_.c_str());
 }
 
 void MP2F12::form_basissets() {
@@ -208,8 +209,8 @@ void MP2F12::form_f12_energy(einsums::Tensor<double, 4>* V, einsums::Tensor<doub
         }
     }
 
-    set_scalar_variable("F12 OPPOSITE-SPIN CORRELATION ENERGY", E_f12_s);
-    set_scalar_variable("F12 SAME-SPIN CORRELATION ENERGY", E_f12_t);
+    set_scalar_variable("MP2-F12 OPPOSITE-SPIN CORRELATION ENERGY", E_f12_s + scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY"));
+    set_scalar_variable("MP2-F12 SAME-SPIN CORRELATION ENERGY", E_f12_t + scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY"));
 
     E_f12_ = E_f12_s + E_f12_t;
 }
@@ -250,6 +251,7 @@ void MP2F12::form_cabs_singles(einsums::Tensor<double, 2>* f) {
         }
     }
 
+    set_scalar_variable("F12 CABS CORRECTION ENERGY", E_s);
     E_singles_ = E_s;
 }
 
@@ -406,12 +408,12 @@ void MP2F12::print_results() {
         outfile->Printf("     CABS Singles Correction:           %16.12f \n", E_singles_);
     }
 
-    set_scalar_variable("F12 CORRELATION ENERGY", E_f12_ + E_singles_);
-    set_scalar_variable("MP2-F12 CORRELATION ENERGY", E_mp2 + E_f12_ + E_singles_);
+    set_scalar_variable("HF-CABS TOTAL ENERGY", E_rhf + E_singles_);
+    set_scalar_variable("MP2-F12 CORRELATION ENERGY", E_mp2 + E_f12_);
     set_scalar_variable("MP2-F12 TOTAL ENERGY", E_mp2f12_);
 
-    set_scalar_variable("F12 SINGLES ENERGY", E_singles_);
-    set_scalar_variable("F12 DOUBLES ENERGY", E_f12_);
+    set_scalar_variable("MP2-F12 SINGLES ENERGY", 0.0);  // RHF
+    set_scalar_variable("MP2-F12 DOUBLES ENERGY", E_mp2 + E_f12_);
 }
 
 double MP2F12::t_(const int& p, const int& q, const int& r, const int& s) {
@@ -564,8 +566,8 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double, 4>* V, einsums::Dis
         }
     }
 
-    set_scalar_variable("F12 OPPOSITE-SPIN CORRELATION ENERGY", E_f12_s);
-    set_scalar_variable("F12 SAME-SPIN CORRELATION ENERGY", E_f12_t);
+    set_scalar_variable("MP2-F12 OPPOSITE-SPIN CORRELATION ENERGY", E_f12_s + scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY"));
+    set_scalar_variable("MP2-F12 SAME-SPIN CORRELATION ENERGY", E_f12_t + scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY"));
 
     E_f12_ = E_f12_s + E_f12_t;
 }
