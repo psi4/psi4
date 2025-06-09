@@ -33,6 +33,7 @@ if(${ENABLE_cppe})
                        -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
+                       -DPYMOD_INSTALL_FULLDIR=${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/cppe
                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                        -DENABLE_OPENMP=OFF
                        -DENABLE_PYTHON_INTERFACE=ON

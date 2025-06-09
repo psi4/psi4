@@ -24,15 +24,19 @@ if(${ENABLE_bse})
     
         ExternalProject_Add(bse_external
             BUILD_ALWAYS 1
-            URL https://github.com/MolSSI-BSE/basis_set_exchange/archive/v0.9.tar.gz
+            # URL https://github.com/MolSSI-BSE/basis_set_exchange/archive/v0.11.tar.gz  # incomp w/setuptools-scm
+            URL https://pypi.org/packages/source/b/basis_set_exchange/basis_set_exchange-0.11.tar.gz
+            DOWNLOAD_NO_EXTRACT 1
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
-            BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
+            BUILD_COMMAND ""
             BUILD_IN_SOURCE 1
-            INSTALL_COMMAND ${Python_EXECUTABLE} setup.py install
-                                                          --record=record.txt
-                                                          --single-version-externally-managed
-                                                          --install-lib=${_install_lib})
+            INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install <DOWNLOADED_FILE>
+                                                          --target=${_install_lib}
+                                                          --no-deps
+                                                          --upgrade
+                                                          #-v
+            )
     endif()
 else()
     add_library(bse_external INTERFACE)  # dummy

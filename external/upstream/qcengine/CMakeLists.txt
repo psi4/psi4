@@ -47,6 +47,7 @@ else()
         INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install <DOWNLOADED_FILE>
                                                       --target=${_install_lib}
                                                       --no-deps
+                                                      --upgrade
                                                       #-v
         )
     ExternalProject_Add_Step(qcengine_external

@@ -16,17 +16,19 @@ if(${ENABLE_adcc})
         include(ExternalProject)
         message(STATUS "Suitable adcc could not be located, ${Magenta}Building adcc${ColourReset} instead.")
 
+        # Note: needs pkgconfig installed to detect libtensorlight. hard to build from src b/c c++17-deprecated features in ltl
         ExternalProject_Add(adcc_external
             BUILD_ALWAYS 1
             URL https://github.com/adc-connect/adcc/archive/v0.15.16.tar.gz
+            DOWNLOAD_NO_EXTRACT 1
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
-            BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
+            BUILD_COMMAND ""
             BUILD_IN_SOURCE 1
-            INSTALL_COMMAND ${Python_EXECUTABLE} setup.py install
-                                                          --record=record.txt
-                                                          --single-version-externally-managed
-                                                          --install-lib=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR})
+            INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install <DOWNLOADED_FILE>
+                                                          --target=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}
+                                                          --no-deps
+            )
     endif()
 else()
     add_library(adcc_external INTERFACE)  # dummy
