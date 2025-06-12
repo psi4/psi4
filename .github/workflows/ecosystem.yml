@@ -255,6 +255,12 @@ jobs:
         python -m pip install git+https://github.com/loriab/QCEngine.git@d4why --no-deps
 
     - name: Special Config - QCFractal Dep
+      if: true
+      run: |
+        conda remove qcmanybody --force
+        python -m pip install git+https://github.com/loriab/QCManyBody.git@qcmb_in_psi --no-deps
+
+    - name: Special Config - QCFractal Dep
       if: false
       run: |
         conda remove qcfractal --force
