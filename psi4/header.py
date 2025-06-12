@@ -110,7 +110,6 @@ def print_header():
     K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
     F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
     {journal_doi}
-    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
 
                             Additional Code Authors
     E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
