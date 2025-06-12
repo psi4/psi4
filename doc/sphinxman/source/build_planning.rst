@@ -241,7 +241,7 @@ build system will automatically download and build.
 
 * optking |w---w| `[what is optking] <https://optking.readthedocs.io/en/latest/>`_ (runtime dependency, required at build-time) 
 
-* QCManyBody |w---w| `[what is QCManyBody?] <https://molssi.github.io/QCManyBody/>`_ (May 2024; added by v1.10; runtime dependency, required at build-time)
+* QCManyBody |w---w| `[what is QCManyBody?] <https://molssi.github.io/QCManyBody/>`_ (June 2025; added by v1.10; runtime dependency, required at build-time)
 
 Additionally, there are runtime-only dependencies:
 

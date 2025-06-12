@@ -157,38 +157,25 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
     packet = {"molecule": molecule, "driver": driver, "method": method, "basis": basis, "keywords": keywords}
 
     # First check for BSSE type
-    #if kwargs.get("bsse_type", None) is not None:
     if current_manybody_kwargs.get("bsse_type", None) is not None:
         levels = kwargs.pop('levels', None)
         dertype = kwargs.pop("dertype", None)
 
-        plan = ManyBodyComputer.from_psi4_task_planner(levels=levels, **packet, **current_manybody_kwargs) #**kwargs)
-        #plan = ManyBodyComputer(**packet, **kwargs)
+        plan = ManyBodyComputer.from_psi4_task_planner(levels=levels, **packet, **current_manybody_kwargs)  # **kwargs)
         original_molecule = packet.pop("molecule")
 
         # Add tasks for every nbody level requested
-#        # Organize nbody calculations into modelchem levels
-#        # * expand keys of `levels` into full lists of nbodies covered. save to plan, resetting max_nbody accordingly
-#        # * below, process values of `levels`, which are modelchem strings, into kwargs specs
-#
-#        plan.max_nbody = max(nb for nb in levels if nb != "supersystem")
-#        plan.nbodies_per_mc_level = nbodies_per_mc_level
-
         for mc_level_idx, mtd in enumerate(plan.levels.values()):
             mtdkey = plan.input_data.specification.specification[mtd].model.method
-            # print(f"{mtdkey=}")
-            # print(f"ENUM0 {mc_level_idx=} {mtd=} {method=} {basis=} {cbsmeta=} {kwargs=}")
             mtdin = mtdkey if mtd == "(auto)" else mtd
             method, basis, cbsmeta = expand_cbs_methods(mtdin, basis, driver, cbsmeta=cbsmeta, **kwargs)  # NEW mtd->mtdkey
             packet.update({'method': method, 'basis': basis})
-            # print(f"ENUM {mc_level_idx=} {mtd=} {method=} {basis=} {cbsmeta=}")
 
             # Tell the task builder which level to add a task list for
             # * see https://github.com/psi4/psi4/pull/1351#issuecomment-549948276 for discussion of where build_tasks logic should live
             if method == "cbs":
                 # This CompositeComputer is discarded after being used for dermode.
                 simplekwargs = copy.deepcopy(kwargs)
-#                simplekwargs.pop('dertype', None)
                 simplecbsmeta = copy.deepcopy(cbsmeta)
                 simplecbsmeta['verbose'] = 0
                 dummyplan = CompositeComputer(**packet, **simplecbsmeta, molecule=original_molecule, **simplekwargs)
