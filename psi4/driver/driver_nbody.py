@@ -116,10 +116,7 @@ from .driver_findif import FiniteDifferenceComputer
 from .p4util.exceptions import *
 from .task_base import AtomicComputer, EnergyGradientHessianWfnReturn
 
-try:
-    from pydantic.v1 import validator
-except ImportError:
-    from pydantic import validator
+from pydantic.v1 import validator
 
 from qcelemental.models import Molecule
 from qcmanybody.models import AtomicSpecification, ManyBodyInput, ManyBodyResult
