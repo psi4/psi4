@@ -144,10 +144,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional,
 
 import numpy as np
 
-try:
-    from pydantic.v1 import Field, validator
-except ImportError:
-    from pydantic import Field, validator
+from pydantic.v1 import Field, validator
 
 from qcelemental.models import AtomicResult, DriverEnum
 

@@ -37,10 +37,7 @@ import copy
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
-try:
-    from pydantic.v1 import Field, validator
-except ImportError:
-    from pydantic import Field, validator
+from pydantic.v1 import Field, validator
 
 import qcelemental as qcel
 from qcelemental.models import AtomicInput, AtomicResult, DriverEnum
@@ -86,12 +83,15 @@ class AtomicComputer(BaseComputer):
         "Note for finite difference that this should be the target driver, not the means driver.")
     keywords: Dict[str, Any] = Field(default_factory=dict, description="The keywords to use in the computation.")
     protocols: Optional[Union[AtomicResultProtocols, Dict[str, Any]]] = Field({"stdout": True}, description="Output modifications.")
-    tag: str = Field("*", description="The tags to pass along to compute managers.")
-    priority: str = Field(1, description="The priority of a Task; higher priority will be pulled first. {high:2, normal:1, low:0}")
+    compute_tag: str = Field("*", description="The tags to pass along to compute managers.")
+    compute_priority: Union[int, str] = Field(1, description="The priority of a Task; higher priority will be pulled first. {high:2, normal:1, low:0}")
     owner_group: Optional[str] = Field(None, description="group in the chown sense.")
     computed: bool = Field(False, description="Whether quantum chemistry has been run on this task.")
     result: Any = Field(default_factory=dict, description=":py:class:`~qcelemental.models.AtomicResult` return.")
     result_id: Optional[str] = Field(None, description="The optional ID for the computation.")
+    # remove 2026. QCFractal is showing the upgrade path
+    tag: str = Field(None, description="Deprecated version of compute_tag")
+    priority: Union[int, str] = Field(None, description="Deprecated version of compute_priority")
 
     class Config(qcel.models.ProtoModel.Config):
         pass
@@ -146,6 +146,13 @@ class AtomicComputer(BaseComputer):
             # Build the molecule
             mol = Molecule(**self.molecule.to_schema(dtype=2))
 
+            # remove the bargaining in 2026. passing so that QCFractal's upgrade guidance is raised
+            oldargs = {}
+            if self.tag is not None:
+                oldargs["tag"] = self.tag
+            if self.priority is not None:
+                oldargs["priority"] = self.priority
+
             meta, ids = client.add_singlepoints(
                 molecules=mol,
                 program="psi4",
@@ -154,9 +161,10 @@ class AtomicComputer(BaseComputer):
                 basis=self.basis,
                 keywords=self.keywords,
                 protocols=self.protocols,
-                tag=self.tag,
-                priority=self.priority,
+                compute_tag=self.compute_tag,
+                compute_priority=self.compute_priority,
                 owner_group=self.owner_group,
+                **oldargs
             )
             self.result_id = ids[0]
             # NOTE: The following will re-run errored jobs by default
