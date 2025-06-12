@@ -119,7 +119,7 @@ from .task_base import AtomicComputer, EnergyGradientHessianWfnReturn
 from pydantic.v1 import validator
 
 from qcelemental.models import Molecule
-from qcmanybody.models import AtomicSpecification, ManyBodyInput, ManyBodyResult
+from qcmanybody.models.v1 import AtomicSpecification, ManyBodyInput, ManyBodyResult, BsseEnum
 from qcmanybody import ManyBodyCore, ManyBodyComputer as ManyBodyComputerQCNG
 from qcmanybody.utils import delabeler, labeler, translate_qcvariables, modelchem_labels
 

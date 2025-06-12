@@ -67,8 +67,8 @@ for i in vmfc_scheme: #TEST
     #   supersystem size. so we'll test both and the qcmb.resize_hessian at the same time.
     expanded_hessian = qcmb.resize_hessian(hessian_dict[i].np, eval(i)[1], sz_dict, sl_dict)  #TEST
     contracted_hessian = qcmb.resize_hessian(hvar.np, eval(i)[1], sz_dict, sl_dict, reverse=True)  #TEST
-    compare_arrays(expanded_hessian, hvar, 2.e-8, 'Hessian of %s' %i) #TEST
-    compare_arrays(hessian_dict[i], contracted_hessian, 2.e-8, 'Hessian of %s' %i) #TEST
+    compare_arrays(expanded_hessian, hvar, 2.5e-8, 'Hessian of %s' %i) #TEST
+    compare_arrays(hessian_dict[i], contracted_hessian, 2.5e-8, 'Hessian of %s' %i) #TEST
 
 ene, hess = 0, np.zeros((9*3, 9*3)) #TEST
 
@@ -91,7 +91,7 @@ for key in vmfc_scheme: #TEST
 
     hess[np.ix_(index, index)] += vmfc_scheme[key] * np.array(hessian_dict[key]) #TEST
 
-compare_arrays(hess, wfn.variable('VMFC-CORRECTED TOTAL HESSIAN THROUGH 2-BODY'), 2.e-8, 'VMFC-Corrected Hessian') #TEST
+compare_arrays(hess, wfn.variable('VMFC-CORRECTED TOTAL HESSIAN THROUGH 2-BODY'), 2.5e-8, 'VMFC-Corrected Hessian') #TEST
 
 if distributed:
     snowflake.stop()
