@@ -1006,9 +1006,11 @@ data:
       aux_run_names:
         - msgpack-python
         - networkx
-        - setuptools<80.9
+        - setuptools
+        - "pydantic>=1.10.17"
       aux_run_names_note:
-        "setuptools<80.9": "Needed for qcelemental cmake detection. <80.9 avoid pkg_resources message from adcc."
+        "setuptools": "Needed for qcelemental cmake detection."
+        "pydantic>=1.10.17": "Allow uniform access to Pydantic v1 API."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
@@ -1266,7 +1268,7 @@ data:
       channel: conda-forge
       name: qcfractal
       constraint: ">=0.60,!=0.62"
-      constraint_note: "v0.62 hangs for snowflake jobs."
+      constraint_note: "v0.60 includes new compute_tag syntax. v0.62 hangs for snowflake jobs."
       aux_run_names:
         - postgresql
       aux_run_names_note:
