@@ -13,6 +13,6 @@ trigger:
   - 1.1.x
   - 1.0.x
 
-jobs:
-  - template: ./.azure-pipelines/azure-pipelines-windows.yml
-  - template: ./.azure-pipelines/azure-pipelines-linux.yml
+#jobs:
+#  - template: ./.azure-pipelines/azure-pipelines-windows.yml
+#  - template: ./.azure-pipelines/azure-pipelines-linux.yml

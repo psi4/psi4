@@ -68,6 +68,12 @@ jobs:
         show-channel-urls: true
         conda-remove-defaults: true
 
+    - name: Special Config - QCFractal Dep
+      if: true
+      run: |
+        conda remove qcmanybody --force
+        python -m pip install git+https://github.com/loriab/QCManyBody.git@qcsk_v1v2_rearr --no-deps
+
     - name: Environment Information
       if: ${{ github.repository == 'psi4/psi4' }}
       run: |
