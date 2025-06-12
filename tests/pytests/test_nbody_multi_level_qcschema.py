@@ -65,7 +65,8 @@ def base_schema():
                   'VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY': -224.943882712817},
                  id='nbody-embedded', marks=pytest.mark.extern),
 ])
-def test_nbody_levels(inp, expected, base_schema):
+def test_nbody_levels(inp, expected, base_schema, monkeypatch):
+    monkeypatch.setenv("QCMANYBODY_EMBEDDING_CHARGES", "1")
     # reference for nbody-multilevel generated with this larger fitting basis for sto-3g. fails otherwise by 3.e-5
     basfams = psi4.driver.qcdb.basislist.load_basis_families()
     for fam in basfams:
