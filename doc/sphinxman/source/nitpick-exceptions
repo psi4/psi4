@@ -30,6 +30,14 @@ py:class FixedSize
 #py:class qcportal.PortalClient
 py:class qcelemental.models.results.AtomicResultProtocols
 
+# QCManyBody
+py::obj qcmanybody.computer.ManyBodyComputer.set_bsse_type
+py::obj qcmanybody.computer.ManyBodyComputer.set_embedding_charges
+py::obj qcmanybody.computer.ManyBodyComputer.set_levels
+py::obj qcmanybody.computer.ManyBodyComputer.set_max_nbody
+py::obj qcmanybody.computer.ManyBodyComputer.set_return_total_data
+py::obj qcmanybody.computer.ManyBodyComputer.set_supersystem_ie_only
+
 ## numpy inherited docstrings
 #py:obj dtype
 #py:obj a
