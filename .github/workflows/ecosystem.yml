@@ -254,7 +254,7 @@ jobs:
         conda remove qcengine --force  # TODO UNDO after https://github.com/MolSSI/QCEngine/pull/472
         python -m pip install git+https://github.com/loriab/QCEngine.git@d4why --no-deps
 
-    - name: Special Config - QCFractal Dep
+    - name: Special Config - QCManyBody Dep
       if: true
       run: |
         conda remove qcmanybody --force
