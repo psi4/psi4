@@ -205,7 +205,7 @@ def nbody():
 
         Dictionary of atom-centered point charges. keys: 1-based index of fragment, values: list of charges for each fragment.
         Add atom-centered point charges for fragments whose basis sets are not included in the computation.
-        Starting in v1.10, set :envvar:`QCMANYBODY_EMBEDDING_CHARGES=1` to access this functionality.
+        Starting in v1.10, set :envvar:`QCMANYBODY_EMBEDDING_CHARGES` =1 to access this functionality.
 
     Potential QCVariables set are:
 
