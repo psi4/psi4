@@ -57,17 +57,6 @@ jobs:
             #    -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
             # * numpy/_core in py310 vs numpy/core in py39 (or maybe a np v1/v2 thing)
 
-          - label: "Conda Clang 15 (M-Silicon)"
-            runs-on: macos-15
-            python-version: "3.13"
-            mkl-version: ""
-            platform: osx-64
-            pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not pe_ecp"
-            target-sdk: "10.10"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
-
           - label: "Conda Clang (M-Silicon)"
             runs-on: macos-latest
             python-version: "3.10"
@@ -266,7 +255,7 @@ jobs:
         python -m pip install git+https://github.com/loriab/QCEngine.git@d4why --no-deps
 
     - name: Special Config - QCManyBody Dep
-      if: true
+      if: false
       run: |
         conda remove qcmanybody --force
         python -m pip install git+https://github.com/loriab/QCManyBody.git@qcsk_v1v2_rearr --no-deps
