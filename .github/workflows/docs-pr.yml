@@ -69,7 +69,7 @@ jobs:
         conda-remove-defaults: true
 
     - name: Special Config - QCManyBody Dep
-      if: true
+      if: false
       run: |
         conda remove qcmanybody --force
         python -m pip install git+https://github.com/loriab/QCManyBody.git@qcsk_v1v2_rearr --no-deps
