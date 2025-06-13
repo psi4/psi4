@@ -50,6 +50,9 @@ Basis Set Superposition Corrections
 
 The nbody function computes counterpoise-corrected (CP), non-CP (noCP), and Valiron-Mayer Function Counterpoise (VMFC) interaction energies for complexes composed of arbitrary numbers of monomers.
 
+.. caution:: June 2025, v1.10 many-body computations are no longer
+   using internal driver code but have been offloaded to QCManyBody
+   software.
 
 **Examples :** ::
 
