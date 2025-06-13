@@ -100,8 +100,8 @@ API
    :undoc-members:
    :inherited-members: BaseModel, ProtoModel
 
-.. autopydantic_model:: qcmanybody.ManyBodyComputer
-   :members:
-   :undoc-members:
-   :noindex:
+.. .. autopydantic_model:: qcmanybody.ManyBodyComputer
+..    :members:
+..    :undoc-members:
+..    :noindex:
 
