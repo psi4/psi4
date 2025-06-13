@@ -474,10 +474,6 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         core.print_out("\n" + p4util.banner(f" ManyBody Setup: N-Body Levels {computer_model.max_nbody}", strNotOutfile=True) + "\n")
         core.print_out(info)
 
-        #    if not result.success:
-        #        print(result.error.error_message)
-        #        raise RuntimeError("Calculation did not succeed! Error:\n" + result.error.error_message)
-
         return computer_model
 
     def build_tasks(
@@ -514,15 +510,10 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         # Get the n-body orders for this level. e.g., [1] or [2, 3] or ["supersystem"]
         nbodies = self.nbodies_per_mc_level[mc_level_idx]
-        # print(f"{self.nbodies_per_mc_level=} {nbodies=} {mc_level_idx=}")
-        # print(f"{self.levels=}")
-        # print(f"{self.qcmb_core.nbodies_per_mc_level=}")
 
         for spec_key, nb_lst in self.qcmb_core.nbodies_per_mc_level.items():
             if nb_lst == nbodies:
                 filter_key = spec_key
-        #filter_key = rev_nbpermclvl[self.nbodies_per_mc_level[mc_level_idx]]
-        # print(f"{filter_key=}")
 
         for kwg in ['dft_functional']:
             if kwg in kwargs:
@@ -534,7 +525,6 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         for chem, label, imol in self.qcmb_core.iterate_molecules():
             mckey, frag, bas = delabeler(label)
-            # print(f"{chem=} {label=}, {imol=}      {mckey=} {frag=} {bas=}    {imol.extras=}")
             if mckey != filter_key:
                 continue
             # TODO probably haven't filtered by body
@@ -586,11 +576,6 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         """
         component_results = {k: v.get_results(client=client) for k, v in self.task_list.items()}
-
-#            if not result.success:
-#                print(result.error.error_message)
-#                raise RuntimeError("Calculation did not succeed! Error:\n" + result.error.error_message)
-
         component_properties = {}
         props = {"energy", "gradient", "hessian"}
 

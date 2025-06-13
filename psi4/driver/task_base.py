@@ -202,7 +202,7 @@ class AtomicComputer(BaseComputer):
         # ... END
 
         #pp.pprint(self.result.dict())
-        #print("... JSON returns >>>")
+        #print(f"... JSON returns {self.result.success} >>>")
         core.set_output_file(gof, True)
         core.reopen_outfile()
         logger.debug(pp.pformat(self.result.dict()))
