@@ -103,4 +103,5 @@ API
 .. autopydantic_model:: qcmanybody.ManyBodyComputer
    :members:
    :undoc-members:
+   :noindex:
 

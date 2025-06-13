@@ -68,7 +68,7 @@ jobs:
         show-channel-urls: true
         conda-remove-defaults: true
 
-    - name: Special Config - QCFractal Dep
+    - name: Special Config - QCManyBody Dep
       if: true
       run: |
         conda remove qcmanybody --force
