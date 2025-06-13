@@ -660,7 +660,7 @@ data:
     conda:
       channel: conda-forge
       name: sphinx
-      constraint: "<8"
+      constraint: ">=7,<8"
       aux_build_names:
         - sphinx-automodapi
         - sphinx-autodoc-typehints
