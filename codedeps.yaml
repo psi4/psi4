@@ -1504,7 +1504,7 @@ data:
     conda:
       channel: conda-forge
       name: qcmanybody
-      constraint: ">=0.5.0"
+      constraint: ">=0.5.1"
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
