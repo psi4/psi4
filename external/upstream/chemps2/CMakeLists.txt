@@ -36,7 +36,7 @@ if(${ENABLE_CheMPS2})
         ExternalProject_Add(chemps2_external
             DEPENDS lapack_external
                     hdf5_external
-            URL https://github.com/SebWouters/CheMPS2/archive/d8ac508.tar.gz  # v1.8.9 + 1
+            URL https://github.com/SebWouters/CheMPS2/archive/d8ac508.tar.gz  # v1.8.9+  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

@@ -22,7 +22,7 @@ if(${ENABLE_dkh})
 
         ExternalProject_Add(dkh_external
             DEPENDS lapack_external
-            URL https://github.com/psi4/dkh/archive/3ba0128.tar.gz  # v1.2 + cmake
+            URL https://github.com/psi4/dkh/archive/3ba0128.tar.gz  # v1.2+  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

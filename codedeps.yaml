@@ -271,7 +271,8 @@ data:
       host: github
       account: SebWouters
       name: CheMPS2
-      commit: d8ac508  # v1.8.9 + 1  # TODO update
+      commit: d8ac508
+      commit_note: "v1.8.9+"
     #cmake:
     #  name: CheMPS2
     #  constraint: 1.8.7
@@ -324,7 +325,7 @@ data:
       account: psi4
       name: dkh
       commit: 3ba0128
-    #  commit: v1.2
+      commit_note: "v1.2+"
     #cmake:
     #  name: dkh
     #  constraint: ">=1.2"
@@ -365,7 +366,8 @@ data:
       host: github
       account: psi4
       name: gdma
-      commit: 9d607d7  # v2.2.6-2-g9d607d7
+      commit: v2.3.3
+      commit_note: "Stone/upstream c2e0b548 plus lib, I/O, Py"
     #cmake:
     #  name: gdma
     #  constraint: 2.2.6
@@ -499,7 +501,8 @@ data:
       host: github
       account: loriab
       name: pylibefp
-      commit: v0.6.2  # libefp itself 15cd7ce = v1.5.0 + 10
+      commit: 76f8e52
+      commit_note: "libefp v1.5.0+, py v0.6.2+"
     #cmake:
     #  name: pylibefp
     #  constraint: ">=0.6.2"
@@ -607,7 +610,7 @@ data:
       host: github
       account: loriab
       name: v2rdm_casscf
-      commit: aa7d6a1
+      commit: bfb99ba
     # cmake:
     #   ENABLE_v2rdm_casscf
     #    v2rdm_casscf::v2rdm_casscf
@@ -774,8 +777,8 @@ data:
       buildtime: false
       cms: false
       test_required: true
-    # cmake:
-    #  constraint: ">=7.0.1"
+    repository: null
+    cmake: null
     conda:
       channel: conda-forge
       name: pytest
@@ -796,7 +799,7 @@ data:
       cms: false
       docs_required: false
       docs_required_note: "Allows including the PsiAPI tutorial in the docs."
-    repository: false
+    repository: null
     #cmake:
     #  name:
     #  constraint:
@@ -837,7 +840,7 @@ data:
       cms: true
     repository:
       host: url
-      url: http://www.bennyp.org/research/simint/download/simint-v0.7.tar.bz2
+      url: https://www.bennyp.org/research/simint/download/simint-v${SIMINT_VER}.tar.bz2
     #cmake:
     #  name: simint
     #  constraint: 0.7
@@ -866,7 +869,7 @@ data:
       host: github
       account: jturney
       name: ambit
-      commit: v0.7.1
+      commit: 733c529
     #cmake:
     #  name:
     #  constraint: 0.6
@@ -897,7 +900,8 @@ data:
       host: github
       account: dgasmith
       name: gau2grid
-      commit: v2.0.7
+      commit: c2d78e0
+      commit_note: "v2.0.7+"
     #cmake:
     #  name: gau2grid
     #  constraint: ">=2.0.7"
@@ -1004,7 +1008,7 @@ data:
       host: github
       account: MolSSI
       name: QCElemental
-      commit: v0.28.0
+      commit: v0.29.0
     #cmake:
     #  name:
     #  constraint: ATLEAST 0.24.0
@@ -1037,7 +1041,7 @@ data:
       host: github
       account: adc-connect
       name: adcc
-      commit: v0.15.13
+      commit: v0.15.16
     cmake:
       name: adcc
       constraint: ATLEAST 0.15.16
@@ -1257,7 +1261,7 @@ data:
       host: github
       account: robashaw
       name: libecpint
-      commit: v1.0.7  # TODO needs PR
+      commit: v1.0.7
     #cmake:
     #  name: ecpint
     #  constraint: ">=1.0.7"
@@ -1330,7 +1334,7 @@ data:
       host: github
       account: ddsolvation
       name: ddX
-      commit: v0.4.5
+      commit: a43f9b4
     #cmake:
     #  name:
     #  constraint: ATLEAST 0.4.3
@@ -1358,7 +1362,7 @@ data:
       host: github
       account: psi-rking
       name: optking
-      commit: 0.2.1
+      commit: 0.3.0
     #cmake:
     #  name: optking
     #  constraint: ATLEAST 0.2.1
@@ -1385,7 +1389,8 @@ data:
       host: github
       account: MolSSI-BSE
       name: basis_set_exchange
-      commit: v0.9
+      commit: v0.11
+      githttps: true
     #cmake:
     #  name:
     #  constraint: ATLEAST 0.9.0
@@ -1412,7 +1417,7 @@ data:
       host: github
       account: Einsums
       name: Einsums
-      commit: v0.5
+      commit: v1.0.3
     #cmake:
     #  name:
     #  constraint: 0.4
@@ -1476,7 +1481,7 @@ data:
       host: github
       account: wavefunction91
       name: GauXC
-      commit: 6a8f4bf
+      commit: 5c85f6b
     #cmake: 
     #  name: gauxc
     #  constraint: null

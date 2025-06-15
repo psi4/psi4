@@ -23,7 +23,7 @@ else()
 
     ExternalProject_Add(optking_external
         BUILD_ALWAYS 1
-        URL https://github.com/psi-rking/optking/archive/0.3.0.tar.gz
+        URL https://github.com/psi-rking/optking/archive/0.3.0.tar.gz  # edit in codedeps
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ${Python_EXECUTABLE} setup.py build

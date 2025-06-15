@@ -18,7 +18,7 @@ if(${ENABLE_mdi})
         include(ExternalProject)
         message(STATUS "Suitable mdi could not be located, ${Magenta}Building mdi${ColourReset} instead.")
         ExternalProject_Add(mdi_external
-            URL https://github.com/MolSSI-MDI/MDI_Library/archive/v1.2.3.tar.gz
+            URL https://github.com/MolSSI-MDI/MDI_Library/archive/v1.2.3.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

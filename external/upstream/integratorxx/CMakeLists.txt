@@ -15,7 +15,7 @@ if(${ENABLE_IntegratorXX})
         include(ExternalProject)
         message(STATUS "Suitable IntegratorXX could not be located, ${Magenta}Building IntegratorXX${ColourReset} instead.")
         ExternalProject_Add(integratorxx_external
-            URL https://github.com/wavefunction91/IntegratorXX/archive/master.tar.gz
+            URL https://github.com/wavefunction91/IntegratorXX/archive/cf2917c.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

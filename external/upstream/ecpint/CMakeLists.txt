@@ -18,7 +18,7 @@ if(${ENABLE_ecpint})
         include(ExternalProject)
         message(STATUS "Suitable ecpint could not be located, ${Magenta}Building ecpint${ColourReset} instead.")
         ExternalProject_Add(ecpint_external
-            URL https://github.com/robashaw/libecpint/archive/v1.0.7.tar.gz
+            URL https://github.com/robashaw/libecpint/archive/v1.0.7.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

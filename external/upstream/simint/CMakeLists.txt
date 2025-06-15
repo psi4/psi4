@@ -27,7 +27,7 @@ if(${ENABLE_simint})
         endif()
 
         ExternalProject_Add(simint_external
-            URL http://www.bennyp.org/research/simint/download/simint-v${SIMINT_VER}.tar.bz2
+            URL https://www.bennyp.org/research/simint/download/simint-v${SIMINT_VER}.tar.bz2  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

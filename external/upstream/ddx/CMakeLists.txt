@@ -25,7 +25,7 @@ if(${ENABLE_ddx})
 
         ExternalProject_Add(ddx_external
             BUILD_ALWAYS 1
-            URL https://github.com/ddsolvation/ddX/archive/a43f9b4.tar.gz  # cmake fixes
+            URL https://github.com/ddsolvation/ddX/archive/a43f9b4.tar.gz  # edit in codedeps
             DOWNLOAD_NO_EXTRACT 1
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
