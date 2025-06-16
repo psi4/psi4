@@ -719,3 +719,8 @@ These environment variables will influence |PSIfours| behavior.
    non-standard location. Value should be set
    to directory containing driver, basis, *etc.* directories, generally
    ending in ``share/psi4``.
+
+.. envvar:: QCMANYBODY_EMBEDDING_CHARGES
+
+   Set to allow embedding charges with many-body/counterpoise computations.
+

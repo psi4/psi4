@@ -22,6 +22,7 @@ set scf_type pk
 set geom_maxiter 100
 
 optimize('hf', molecule=h2o_trimer, bsse_type='nocp', max_nbody=2, return_total_data=True)
+compare(True, int(variable("OPTIMIZATION ITERATIONS")) < 60, f"Opt iter={int(variable('OPTIMIZATION ITERATIONS'))}")  #TEST
 e, wfn = freq('hf', molecule=h2o_trimer, return_wfn=True, bsse_type='nocp', max_nbody=2, return_total_data=True)
 compare_values(85.1205563211, h2o_trimer.nuclear_repulsion_energy(), 3, "H2O_TRIMER Nuclear repulsion energy")  #TEST
 compare_values(-224.91766723, variable('current energy'), 6, 'H2O_TRIMER E0')  #TEST
