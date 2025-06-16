@@ -117,8 +117,8 @@ for basename in os.walk(DriverPath + '../../psi4/driver').next()[1]:
             fdriver.write('   :members:\n')
             fdriver.write('   :undoc-members:\n')
 
-        if basename == 'qcdb' and basename2 == 'molecule':
-            fdriver.write('   :exclude-members: run_dftd3\n')
+        # if basename == 'qcdb' and basename2 == 'molecule':
+        #     fdriver.write('   :exclude-members: run_dftd3\n')
 
         fdriver.write('\n')
     fdriver.write('\n')

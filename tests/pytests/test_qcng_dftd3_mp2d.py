@@ -294,7 +294,7 @@ def test_3():
     assert compare('B3LYP-D3(BJ)', _compute_key(res['extras']['local_keywords']), 'key')
 
 
-@uusing("classic-dftd3")
+@uusing("s-dftd3")
 @pytest.mark.parametrize(
     "subjects",
     [
@@ -305,28 +305,21 @@ def test_3():
     ids=['qmol', 'pmol'])
 @pytest.mark.parametrize(
     "inp", [
-        ({'first': 'b3lyp', 'second': 'd', 'parent': 'eneyne', 'subject': 'dimer', 'lbl': 'B3LYP-D2'}),
+        pytest.param({'first': 'b3lyp', 'second': 'd', 'parent': 'eneyne', 'subject': 'dimer', 'lbl': 'B3LYP-D2'}, marks=pytest.mark.xfail),
         ({'first': 'b3lyp', 'second': 'd3bj', 'parent': 'eneyne', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}),
         ({'first': 'pbe', 'second': 'd3zero', 'parent': 'eneyne', 'subject': 'mB', 'lbl': 'PBE-D3'}),
         ({'first': 'pbe', 'second': 'd3zero', 'parent': 'eneyne', 'subject': 'gAmB', 'lbl': 'PBE-D3'}),
-        ({'first': 'pbe', 'second': 'd2', 'parent': 'eneyne', 'subject': 'mAgB', 'lbl': 'PBE-D2'}),
+        pytest.param({'first': 'pbe', 'second': 'd2', 'parent': 'eneyne', 'subject': 'mAgB', 'lbl': 'PBE-D2'}, marks=pytest.mark.xfail),
         ({'first': 'b3lyp', 'second': 'd3bj', 'parent': 'ne', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}),
-        #({'first': '', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'dimer', 'lbl': 'ATM'}),
-        #({'first': 'b3lyp', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'mA', 'lbl': 'ATM'}),
-        #({'first': 'pbe', 'second': 'atm(gr)', 'parent': 'eneyne', 'subject': 'mB', 'lbl': 'ATM'}),
-        #({'first': '', 'second': 'ATMgr', 'parent': 'eneyne', 'subject': 'mAgB', 'lbl': 'ATM'}),
-        # below two xfail until dftd3 that's only 2-body is out of psi4 proper
-        pytest.param({'first': 'atmgr', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'gAmB', 'lbl': 'ATM'}, marks=[*using("dftd3_321"), pytest.mark.xfail]),
-        pytest.param({'first': 'pbe-atmgr', 'second': None, 'parent': 'ne', 'subject': 'atom', 'lbl': 'ATM'}, marks=[*using("dftd3_321"), pytest.mark.xfail]),
     ])  # yapf: disable
 def test_molecule__run_dftd3__23body(inp, subjects):
     subject = subjects()[inp['parent']][inp['subject']]
     expected = ref[inp['parent']][inp['lbl']][inp['subject']]
     gexpected = gref[inp['parent']][inp['lbl']][inp['subject']]
 
-    E, G = subject.run_dftd3(inp['first'], inp['second'])
-    assert compare_values(expected, E, atol=1.e-7)
-    assert compare_values(gexpected, G, atol=1.e-7)
+    E, G = subject.run_sdftd3(inp['first'], inp['second'])
+    assert compare_values(expected, E, atol=5.e-7)
+    assert compare_values(gexpected, G, atol=5.e-7)
 
 
 @uusing("qcdb")
@@ -404,7 +397,7 @@ def test_mp2d__run_mp2d__2body(inp, subjects, request):
     gexpected, jrec['extras']['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION GRADIENT'], atol=1.e-7)
 
 
-@uusing("dftd3")
+@uusing("s-dftd3")
 @pytest.mark.parametrize(
     "subjects",
     [
@@ -415,17 +408,10 @@ def test_mp2d__run_mp2d__2body(inp, subjects, request):
     ],
     ids=['qmol', 'pmol', 'qcmol'])
 @pytest.mark.parametrize("inp, program", [
-    pytest.param({'parent': 'eneyne', 'name': 'd3-b3lyp-d', 'subject': 'dimer', 'lbl': 'B3LYP-D2'}, "dftd3", marks=using("classic-dftd3")),
-    pytest.param({'parent': 'eneyne', 'name': 'd3-b3lyp-d3bj', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}, "dftd3", marks=using("classic-dftd3")),
-    pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'mB', 'lbl': 'PBE-D3'}, "dftd3", marks=using("classic-dftd3")),
-    pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'gAmB', 'lbl': 'PBE-D3'}, "dftd3", marks=using("classic-dftd3")),
-    pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D2', 'subject': 'mAgB', 'lbl': 'PBE-D2'}, "dftd3", marks=using("classic-dftd3")),
-    pytest.param({'parent': 'ne', 'name': 'd3-b3lyp-d3bj', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}, "dftd3", marks=using("classic-dftd3")),
-
-    pytest.param({'parent': 'eneyne', 'name': 'd3-b3lyp-d3bj', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}, "s-dftd3", marks=using("s-dftd3")),
-    pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'mB', 'lbl': 'PBE-D3'}, "s-dftd3", marks=using("s-dftd3")),
-    pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'gAmB', 'lbl': 'PBE-D3'}, "s-dftd3", marks=using("s-dftd3")),
-    pytest.param({'parent': 'ne', 'name': 'd3-b3lyp-d3bj', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}, "s-dftd3", marks=using("s-dftd3")),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-b3lyp-d3bj', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}, "s-dftd3"),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'mB', 'lbl': 'PBE-D3'}, "s-dftd3"),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'gAmB', 'lbl': 'PBE-D3'}, "s-dftd3"),
+    pytest.param({'parent': 'ne', 'name': 'd3-b3lyp-d3bj', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}, "s-dftd3"),
 ])  # yapf: disable
 def test_dftd3__run_dftd3__2body(inp, program, subjects, request):
     subject = subjects()[inp['parent']][inp['subject']]
@@ -471,7 +457,7 @@ def test_dftd3__run_dftd3__2body(inp, program, subjects, request):
         gexpected, jrec['extras']['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION GRADIENT'], atol=5.e-7)
 
 
-@uusing("dftd3_321")
+@uusing("classic-dftd3")
 @pytest.mark.parametrize(
     "subjects",
     [

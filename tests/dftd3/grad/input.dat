@@ -44,10 +44,9 @@ molecule atoms {
 
 import numpy as np  #TEST
 
-if d3_engine == "dftd3":
-    E, G = atoms.run_dftd3('bp86-d3(bj)')
-    compare_values(0.0, E, 7, "One-real-one-ghost-atom energy")  #TEST
-    compare_arrays(np.zeros((2, 3)), G, 7, "One-real-one-ghost-atom gradient")  #TEST
+E, G = atoms.run_sdftd3('bp86-d3(bj)')
+compare_values(0.0, E, 7, "One-real-one-ghost-atom disp energy")  #TEST
+compare_arrays(np.zeros((2, 3)), G, 7, "One-real-one-ghost-atom disp gradient")  #TEST
 
 g, wfn = gradient("bp86-d3(bj)", return_wfn=True)
 compare_values(0.0, wfn.variable("DISPERSION CORRECTION ENERGY"), 7, "One-real-one-ghost-atom energy")  #TEST

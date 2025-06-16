@@ -280,7 +280,7 @@ data:
   - project: dftd3
     use:
       added: "1.0"
-      added_note: "Switched from classic dftd3 exe to py intf of simple-dftd3 (from dftd3-python) at 1.7. Classic tolerated but no longer supported as of 1.9."
+      added_note: "Switched from classic dftd3 exe to py intf of simple-dftd3 (from dftd3-python) at 1.7. Classic tolerated but no longer supported as of 1.9. Classic raises UpgradeHelper as of 1.10"
       required: false
       buildable: false
       buildtime: false
@@ -688,7 +688,7 @@ data:
   - project: gcp
     use:
       added: 1.1
-      added_note: "Switched from classic gcp exe to mctc-gcp exe (from gcp-correction) at 1.7. Classic tolerated but no longer supported as of 1.9. A few functionals require mctc."
+      added_note: "Switched from classic gcp exe to mctc-gcp exe (from gcp-correction) at 1.7. Classic tolerated but no longer supported as of 1.9. A few functionals require mctc. Classic raises UpgradeHelper as of 1.10"
       required: false
       buildable: false
       buildtime: false
