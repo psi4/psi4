@@ -24,7 +24,7 @@ df_basis_sapt def2-qzvpp-ri  # not a recommendation. present to compensate for c
 }
 
 ref_321g = -0.09561567760757009
-ref_lanl = -0.10472408365123138
+ref_lanl = -0.1039198611537151
 
 E = energy('sapt0/3-21g')
 E = energy('sapt0/lanl2dz')
