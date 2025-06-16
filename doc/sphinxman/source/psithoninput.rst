@@ -376,7 +376,7 @@ aug-cc-pVQZ SCF followed by a :py:func:`~psi4.core.print_variables` command, the
 last will include :psivar:`SCF TOTAL ENERGY` but not
 :psivar:`FCI TOTAL ENERGY`.
 The entire dictionary of PSI variables can be obtained through
-:py:func:`~psi4.core.get_variables`.
+:py:func:`~psi4.core.variables`.
 
 .. _`sec:returnvals`:
 

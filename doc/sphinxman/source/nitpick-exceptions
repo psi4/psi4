@@ -7,6 +7,7 @@ py:class pybind11_builtins.pybind11_object
 #py:class 3
 py:class psi::Options
 py:class psi4.core.PCM.CalcType
+py:class psi4.core.PCM.get_PCM
 
 # pydantic
 py:class pydantic.main.BaseModel

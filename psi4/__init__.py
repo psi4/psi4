@@ -102,7 +102,6 @@ from .metadata import __version__, version_formatter
 
 # A few extraneous functions
 from .extras import get_input_directory, addons, test, set_output_file
-from psi4.core import get_variable  # kill off in 1.4
 from psi4.core import variable, set_variable
 
 # Python portions of compiled-in Add-Ons
