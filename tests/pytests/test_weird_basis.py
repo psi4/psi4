@@ -463,3 +463,24 @@ def test_skipped_angmom(subject, bas, mols, request):
     wert = psi4.core.BasisSet.build(mol, "BASIS", "FAKE")
 
     assert wert.nbf() == nbf
+
+
+def test_high_am_in_default_build():
+    cucu = psi4.core.Molecule.from_string("""
+        Cu
+        Cu 1 2.0
+""")
+
+    psi4.gradient("hf/def2-SVP", molecule=cucu)
+
+
+def test_too_high_am_in_default_build():
+    ne = psi4.core.Molecule.from_string("""
+        Ne
+""")
+
+    psi4.set_options({"scf_type": "pk"})
+    with pytest.raises(RuntimeError) as e:
+        psi4.gradient("hf/7zapa-nr", molecule=ne)
+
+    assert "Engine::lmax_exceeded -- angular momentum limit exceeded" in str(e.value)

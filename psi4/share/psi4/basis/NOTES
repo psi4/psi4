@@ -5,12 +5,20 @@ Thursday, May 15, 2025 -- jaclark5
 
 https://github.com/psi4/psi4/pull/3285
 
-[53] Added Mo, Nb, Pd, Rh, Ru, Tc, Y, and Zr elements to the Douglas-Kroll
+[55 was 53] Added Mo, Nb, Pd, Rh, Ru, Tc, Y, and Zr elements to the Douglas-Kroll
     [aug-|heavy-aug-|]cc-pVTZ-DK basis sets by altering the triple-zeta of
     primitives 97 & diffuse_dk below.
 
     Also expanded the basis adder script to beyond Krypton.
 
+*******************************************************************************
+*******************************************************************************
+
+Monday, March 12, 2024 -- LAB
+
+[53] Corrected pwCV5Z and deprecated pwCV(X+d)Z basis sets.
+
+cc-pwCV5Z basis set was found to differ from BSE in the contraction pattern of some s- and p-shells for Al-Ar. That is, the valance space was re-optimized from cc-pV5Z, so + cc-pwCV5z != cc-pV5Z + tight as the psi4 basis scripts were composing them. This is the same issue as [35] for Na/Mg/K/Ca.
 
 *******************************************************************************
 *******************************************************************************
