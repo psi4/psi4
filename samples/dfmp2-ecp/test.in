@@ -4,7 +4,7 @@ refnuc =   45.862024925                                                         
 refall = -457.47320868249                                                                #TEST
 reffzc = -457.38127218548                                                                #TEST
 reffHe = -457.47130951838                                                                #TEST
-refEin =    0.00468169972                                                                #TEST
+refEin =    0.00468819703                                                                #TEST
 
 molecule dimer {
     0 1

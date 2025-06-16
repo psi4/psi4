@@ -1,0 +1,33 @@
+# Any line starting with the # character is a comment line
+#! Sample r2scan-d4/cc-pVDZ H2O computation
+
+memory 600 mb
+
+molecule h2o {
+  O
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+r2scand4_biggrid_e = -76.38150398
+r2scand4_biggrid_g = [
+ [ 0.,          0.        ,  0.01244124],
+ [ 0.,          0.00294003, -0.00622062],
+ [ 0.,         -0.00294003, -0.00622062]]
+
+set e_convergence 8
+set dft_radial_points 99
+set dft_spherical_points 590
+set basis cc-pVDZ
+
+ene = energy('r2scan-d4')
+
+#set points 5
+#fd = gradient('r2scan-d4/cc-pvdz', dertype=0)
+#compare_values(r2scand4_biggrid_e, variable('current energy'), 6, "r2scan-d4 ene")
+#compare_values(r2scand4_biggrid_g, fd, 6, "r2scan-d4 grad findif")
+#print(fd.np)
+
+grd = gradient('r2scan-d4/cc-pvdz', dertype=1)
+print(grd.np)
+

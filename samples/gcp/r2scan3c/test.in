@@ -1,0 +1,37 @@
+# Any line starting with the # character is a comment line
+#! Sample r2scan-3c H2O computation
+
+memory 600 mb
+
+molecule h2o {
+  O
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+r2scan3c_biggrid_e = -76.41835894
+r2scan3c_biggrid_g = [
+ [ 0.,          0.        ,  0.00270896],
+ [ 0.,          0.00079913, -0.00135448],
+ [ 0.,         -0.00079913, -0.00135448]]
+
+
+set e_convergence 8
+set dft_radial_points 99
+set dft_spherical_points 590
+set basis cc-pVDZ
+
+ene = energy('r2scan3c/')  # slash unsets basis from above
+compare_values(r2scan3c_biggrid_e, variable('SCF TOTAL ENERGY'), 6, 'r2scan-3c ene')  #TEST
+compare_values(r2scan3c_biggrid_e, ene, 6, 'r2scan-3c ene')  #TEST
+
+#fd = gradient('r2scan-3c/', dertype=0)
+#compare_values(r2scan3c_biggrid_e, variable('current energy'), 6, "r2scan-3c ene")  #TEST
+#compare_values(r2scan3c_biggrid_g, fd, 6, "r2scan-3c grad findif")  #TEST
+#print(fd.np)
+
+grd = gradient('r2scan-3c/', dertype=1)
+compare_values(r2scan3c_biggrid_e, variable('current energy'), 6, "r2scan-3c ene")  #TEST
+compare_values(r2scan3c_biggrid_g, grd, 4e-5, "r2scan-3c grad analytic")  #TEST
+print(grd.np)
+
