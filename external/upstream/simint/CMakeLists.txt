@@ -1,7 +1,7 @@
 set(SIMINT_VER "0.7")
 
 if(${ENABLE_simint})
-    find_package(simint ${SIMINT_VER} CONFIG QUIET COMPONENTS am${MAX_AM_ERI} der0)
+    find_package(simint 0.7 COMPONENTS am${MAX_AM_ERI} der0 CONFIG QUIET)  # edit in codedeps
 
     if(${simint_FOUND})
         get_property(_loc TARGET simint::simint PROPERTY LOCATION)

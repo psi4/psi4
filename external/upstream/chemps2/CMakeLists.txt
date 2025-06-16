@@ -1,5 +1,5 @@
 if(${ENABLE_CheMPS2})
-    find_package(CheMPS2 1.8.7 CONFIG QUIET)
+    find_package(CheMPS2 1.8.7 CONFIG QUIET)  # edit in codedeps
 
     if(${CheMPS2_FOUND})
         get_property(_loc TARGET CheMPS2::chemps2 PROPERTY LOCATION)

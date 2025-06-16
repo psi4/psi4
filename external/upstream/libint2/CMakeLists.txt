@@ -35,10 +35,7 @@
 # [Apr 2024]
 # * As of now, Psi4 needs v2.8.1 or higher for relativistic integral support.
 
-find_package(
-  Libint2
-  2.8.1
-  CONFIG
+find_package(Libint2 2.8.1 CONFIG  # edit in codedeps
 #  COMPONENTS
 #    sss
 #    CXX_ho

@@ -1,5 +1,5 @@
 if(${ENABLE_ecpint})
-    find_package(ecpint 1.0.7 CONFIG QUIET)
+    find_package(ecpint 1.0.7 CONFIG QUIET)  # edit in codedeps
 
     if(${ecpint_FOUND})
         get_property(_loc TARGET ECPINT::ecpint PROPERTY LOCATION)

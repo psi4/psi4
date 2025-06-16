@@ -1,6 +1,6 @@
 
 if(${ENABLE_IntegratorXX})
-    find_package(IntegratorXX CONFIG)
+    find_package(IntegratorXX CONFIG)  # edit in codedeps
 
     if(${IntegratorXX_FOUND})
         get_property(_loc TARGET IntegratorXX::IntegratorXX PROPERTY LOCATION)

@@ -8,7 +8,7 @@ if(${ENABLE_gauxc})
 
     get_property(BLAS_LIBRARIES TARGET lapk PROPERTY INTERFACE_LINK_LIBRARIES)
 
-    find_package(gauxc CONFIG) 
+    find_package(gauxc CONFIG)  # edit in codedeps
 
     if(${gauxc_FOUND})
         #== check if GPU-enabled GauXC is found, if GPU is specified ==#

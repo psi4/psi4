@@ -1,5 +1,5 @@
 if(${ENABLE_v2rdm_casscf})
-    find_package(v2rdm_casscf 0.9 CONFIG QUIET)
+    find_package(v2rdm_casscf 0.9 CONFIG QUIET)  # edit in codedeps
 
     if(${v2rdm_casscf_FOUND})
         get_property(_loc TARGET v2rdm_casscf::v2rdm_casscf PROPERTY LOCATION)

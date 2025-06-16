@@ -1,7 +1,7 @@
 if(${ENABLE_cppe})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_cppe}))
         include(FindPythonModule)
-        find_python_module(cppe ATLEAST 0.3.1 QUIET)
+        find_python_module(cppe ATLEAST 0.3.1 QUIET)  # edit in codedeps
     endif()
 
     if(${cppe_FOUND})

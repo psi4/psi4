@@ -1,5 +1,5 @@
 if(${ENABLE_ambit})
-    find_package(ambit 0.6 CONFIG QUIET)
+    find_package(ambit 0.6 CONFIG QUIET)  # edit in codedeps
 
     if(${ambit_FOUND})
         get_property(_loc TARGET ambit::ambit PROPERTY LOCATION)

@@ -1,8 +1,7 @@
 if(${ENABLE_libefp})
-    #find_package(pylibefp 0.6.1 CONFIG QUIET)
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_pylibefp}))
         include(FindPythonModule)
-        find_python_module(pylibefp QUIET)
+        find_python_module(pylibefp QUIET)  # edit in codedeps
     endif()
 
     if(${pylibefp_FOUND})

@@ -1,9 +1,9 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcelemental}))
     include(FindPythonModule)
     if(${Python_NumPy_VERSION} GREATER_EQUAL "2")
-        find_python_module(qcelemental ATLEAST 0.28.0 QUIET)
+        find_python_module(qcelemental ATLEAST 0.28.0 QUIET)  # edit in codedeps
     else()
-        find_python_module(qcelemental ATLEAST 0.26.0 QUIET)
+        find_python_module( qcelemental ATLEAST 0.26.0 QUIET)
     endif()
 endif()
 

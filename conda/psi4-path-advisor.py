@@ -1100,7 +1100,6 @@ mv env_p4docs.yaml {full_cmake_S}/devtools/conda-envs/linux-64-docs.yaml
 
     seds = []
     for ddep in ydict["data"]:
-
         repo = ddep["repository"]
         if repo is None:
             continue
@@ -1120,6 +1119,19 @@ mv env_p4docs.yaml {full_cmake_S}/devtools/conda-envs/linux-64-docs.yaml
             url = repo["url"]
 
         seds.append(f"sed -i 's;{repo_url}.*;{url}  # edit in codedeps;' {full_cmake_S}/external/*/*/CMakeLists.txt")
+
+    for ddep in ydict["data"]:
+        cm = ddep["cmake"]
+        if cm is None:
+            continue
+
+        components = (" COMPONENTS " + " ".join(cm["components"])) if cm.get("components", False) else ""
+        constraint = f" {cm['constraint']}" if cm.get("constraint", False) else ""
+        fp = cm['name'] + constraint + components + " "
+
+        seds.append(f"sed -i 's;find_python_module({cm["name"]} .*QUIET;find_python_module({fp}QUIET;' {full_cmake_S}/external/*/*/CMakeLists.txt")
+        seds.append(f"sed -i 's;find_package({cm["name"]} .*CONFIG;find_package({fp}CONFIG;' {full_cmake_S}/external/*/*/CMakeLists.txt")
+        seds.append(f"sed -i 's;find_package({cm["name"]} .*CONFIG;find_package({fp}CONFIG;' {full_cmake_S}/psi4/CMakeLists.txt")
 
     with open("deps_deploy_external.sh", "w") as fp:
         fp.write("\n".join(seds))

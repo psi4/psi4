@@ -1,5 +1,5 @@
 if(${ENABLE_mdi})
-    find_package(mdi 1.2.3 CONFIG QUIET)
+    find_package(mdi 1.2.3 CONFIG QUIET)  # edit in codedeps
 
     if(${mdi_FOUND})
         get_property(_loc TARGET mdi::mdi PROPERTY LOCATION)

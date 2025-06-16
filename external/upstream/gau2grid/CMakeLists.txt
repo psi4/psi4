@@ -1,4 +1,4 @@
-find_package(gau2grid 2.0 CONFIG QUIET)
+find_package(gau2grid 2.0.7 CONFIG QUIET)  # edit in codedeps
 
 if(${gau2grid_FOUND})
     get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)

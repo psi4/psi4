@@ -1,5 +1,5 @@
 if(${ENABLE_gdma})
-    find_package(gdma 2.3.3 CONFIG QUIET COMPONENTS Python)
+    find_package(gdma 2.3.3 COMPONENTS Python CONFIG QUIET)  # edit in codedeps
 
     if(${gdma_FOUND})
         get_property(_loc TARGET gdma::pygdma PROPERTY LOCATION)

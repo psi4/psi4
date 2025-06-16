@@ -1,5 +1,5 @@
     if(${ENABLE_PCMSolver})
-    find_package(PCMSolver 1.2.3 CONFIG QUIET)
+    find_package(PCMSolver 1.2.3 CONFIG QUIET)  # edit in codedeps
 
     if(${PCMSolver_FOUND})
         get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)

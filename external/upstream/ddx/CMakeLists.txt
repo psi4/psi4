@@ -1,7 +1,7 @@
 if(${ENABLE_ddx})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_ddx}))
         include(FindPythonModule)
-        find_python_module(pyddx ATLEAST 0.4.2 QUIET)
+        find_python_module(pyddx ATLEAST 0.4.2 QUIET)  # edit in codedeps
     endif()
 
     if(${pyddx_FOUND})
