@@ -6,7 +6,7 @@
     "codeRepository": "https://github.com/psi4/psi4",
     "issueTracker": "https://github.com/psi4/psi4/issues",
     "license": "https://opensource.org/licenses/lgpl-3.0.html",
-    "version": "1.9",
+    "version": "1.10",
     "author": [
         {
             "@type": "Person",

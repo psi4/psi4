@@ -115,7 +115,7 @@ Update copyright year
 
   - ``grep -rl "(c) 2007-2017" * | xargs sed -i '' "s/(c) 2007-2017/(c) 2007-2018/g"``
   - On Linux, drop the ``''`` in above command
-  - Need to do ``psi4/`` and ``docs/`` dirs
+  - Need to do mostly ``psi4/`` and ``docs/`` dirs, but top-level is fine
 
 * Also, license in these files
 
@@ -568,7 +568,7 @@ are built through GHA on the https://github.com/psi4/psi4meta repository and get
 * Edit recipe https://github.com/psi4/psi4meta/blob/master/installers/construct.yaml
 
   - Edit the top matter for Configuration, mainly the ``release`` field. See snapshots in directory for examples.
-  - Edit the packages and channels info if necessary. Probably long-term stable.
+  - Edit the packages and channels info if necessary. Probably long-term stable. sed-like tweaks can go in workflows/Installers.yml
 
 * Edit the GHA control file https://github.com/psi4/psi4meta/blob/master/.github/workflows/Installers.yml
   ``matrix.cfg`` list if Python versions or target architectures have changed.
@@ -576,13 +576,12 @@ are built through GHA on the https://github.com/psi4/psi4meta repository and get
   https://anaconda.org/conda-forge/psi4/files .
 * Commit ``construct.yaml`` to trigger installer builds. (Even workflow edits need a dummy commit to
   ``construct.yaml`` to retrigger.)
-* When all build successfully, hover over the artifacts, and note the smallest and largest of the
-  near-consecutive numbers GH has assigned them. These artifacts only linger for a day.
-* Log in to vergil root and cd to ``/var/www/html/psicode-download``.
-* Use the pull_gha_installers.sh script to download the installers from GH to vergil. First two
-  arguments are first and last of the artifact numbers, and third argument is an auth token.
-  ``bash pull_gha_installers.sh 47226565 47226573 715...4f3``.
-* Make WindowsWSL and any other symlinks the script frontmatter advises.
+* When all build successfully, look at the "Filter artifact IDs" GHA step, and copy the ``bash
+  pull_gha_installers...`` line. These artifacts only linger for a day.
+* Log in to COS vergil root and cd to ``/projects/vergil/sherrill_website/cdsg/static/psicode-download``.
+* Use the ``pull_gha_installers_2025.sh`` script to download the installers from GH to COS vergil. First
+  argument is an auth token and remaining args are artifact numbers.
+  ``bash pull_gha_installers_2025.sh 715...4f3 3280468170 3280468226 3280468291 3280468500``.
 
 
 Build Docker images
