@@ -980,9 +980,9 @@ data:
       aux_run_names:
         - msgpack-python
         - networkx
-        - setuptools<80.9
+        - setuptools
       aux_run_names_note:
-        "setuptools<80.9": "Needed for qcelemental cmake detection. <80.9 avoid pkg_resources message from adcc."
+        "setuptools": "Needed for qcelemental cmake detection."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
@@ -1000,7 +1000,7 @@ data:
       host: github
       account: adc-connect
       name: adcc
-      commit: v0.15.16
+      commit: v0.16.1
     cmake:
       name: adcc
       constraint: ATLEAST 0.15.16
@@ -1008,7 +1008,7 @@ data:
       channel: conda-forge
       name: adcc
       constraint: null
-      constraint_note: v0.15.16 has transition moment corrections
+      constraint_note: "v0.15.16 has transition moment corrections. v0.16.1 avoids pkg_resources warning."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_adcc is inconsequential."
       skip_win: true
