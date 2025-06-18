@@ -16,7 +16,7 @@ https://github.com/psi4/psi4/pull/3285
 
 Monday, March 12, 2024 (merged June 2025) -- LAB
 
-[54] Corrected pwCV5Z and deprecated pCV(X+d)Z basis sets.
+[54] Corrected *pwCV5Z basis sets.
 
     cc-pwCV5Z basis set was found to differ from BSE in the contraction pattern
     of some s- and p-shells for Al-Ar. That is, the valance space was re-optimized
