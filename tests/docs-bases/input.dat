@@ -20,6 +20,8 @@ fenergy.write('   +={}=+={}=+={}=+={}=+={}=+\n'.format(
     27 * '=', 40 * '=', 40 * '=', 40 * '=', 40 * '='))
 
 for basis in qcdb.load_basis_families():
+    if basis.ornate.endswith("deprecated"):
+        continue
     print(basis.orbital, basis.jkfit, basis.rifit)
 
     fenergy.write('   | %-27s | %-40s | %-40s | %-40s | %-40s |\n' % 

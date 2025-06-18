@@ -31,7 +31,7 @@ dependencies:
   - msgpack-python            # req'd with qcelemental
   - networkx                  # req'd with qcelemental
   - scipy
-  - setuptools<80.9           # req'd with qcelemental; Needed for qcelemental cmake detection. <80.9 avoid pkg_resources message from adcc.
+  - setuptools                # req'd with qcelemental; Needed for qcelemental cmake detection.
     # test
   - pytest
   - pytest-xdist              # req'd with pytest; Parallel runner not strictly needed but very handy.

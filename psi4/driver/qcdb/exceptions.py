@@ -110,6 +110,17 @@ class BasisSetNotFound(QcdbException):
             print('\nQcdbException BasisSetNotFound: %s\n\n' % (msg))
 
 
+class BasisSetNotFoundDeprecated(QcdbException):
+    """
+
+    """
+    def __init__(self, msg, deprecation, silent=False):
+        QcdbException.__init__(self, deprecation + msg)
+        self.msg = deprecation + msg
+        if not silent:
+            print('\nQcdbException BasisSetNotFoundDeprecated: %s\n\n' % (msg))
+
+
 class BasisSetNotDefined(QcdbException):
     """
 
