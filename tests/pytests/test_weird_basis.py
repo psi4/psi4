@@ -484,3 +484,27 @@ def test_too_high_am_in_default_build():
         psi4.gradient("hf/7zapa-nr", molecule=ne)
 
     assert "Engine::lmax_exceeded -- angular momentum limit exceeded" in str(e.value)
+
+
+def test_basis_depr_note_53_runs():
+    arar = psi4.geometry("""
+        Ar
+        Ar 1 2.0
+""")
+
+    ene = psi4.energy("mp2/CC-pwcv(D+d)z-deprecated")
+    assert compare_values(-1054.0949206936429619, ene, 6, "basis-deprecated works")  # dz
+    # assert compare_values(-1054.5174244585762, ene, 6, "basis-deprecated works")  # tz
+
+
+def test_basis_depr_note_53_raises():
+    arar = psi4.geometry("""
+        Ar
+        Ar 1 2.0
+""")
+
+    with pytest.raises(psi4.driver.qcdb.exceptions.BasisSetNotFoundDeprecated) as e:
+        psi4.energy("mp2/jun-cc-pwcv(t+D)z")
+
+    # end with an error saying use cc-pv(d+d)z-deprecated
+    assert "ill-advised" in str(e)

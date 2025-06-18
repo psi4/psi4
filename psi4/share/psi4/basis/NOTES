@@ -14,11 +14,60 @@ https://github.com/psi4/psi4/pull/3285
 *******************************************************************************
 *******************************************************************************
 
-Monday, March 12, 2024 -- LAB
+Monday, March 12, 2024 (merged June 2025) -- LAB
 
-[53] Corrected pwCV5Z and deprecated pwCV(X+d)Z basis sets.
+[54] Corrected pwCV5Z and deprecated pCV(X+d)Z basis sets.
 
-cc-pwCV5Z basis set was found to differ from BSE in the contraction pattern of some s- and p-shells for Al-Ar. That is, the valance space was re-optimized from cc-pV5Z, so + cc-pwCV5z != cc-pV5Z + tight as the psi4 basis scripts were composing them. This is the same issue as [35] for Na/Mg/K/Ca.
+    cc-pwCV5Z basis set was found to differ from BSE in the contraction pattern
+    of some s- and p-shells for Al-Ar. That is, the valance space was re-optimized
+    from cc-pV5Z, so + cc-pwCV5Z != cc-pV5Z + tight as the psi4 basis scripts were
+    composing them. This is the same issue as [35] for Na/Mg/K/Ca.
+    So Al-Ar removed from tight-cc-pwcv5z.gbs and added to partial-basis-cc-pwcv5z.gbs .
+    7 basis sets affected: cc-pwCV5Z, feb-, ..., aug-cc-pwCV5Z
+
+[53] Deprecated *pCV(X+d)Z and *pwCV(X+d)Z basis sets.
+
+    From early days of the basis set library, (X+d) bases
+
+    cc-pVXZ         1  =   1
+    cc-pV(X+d)Z     2  =   1 + (special definitions for Al-Ar and sometimes Na/Mg/K/Ca)
+    cc-pCVXZ        3  = ~ 1 + core
+    cc-pCV(X+d)Z    4  = ~ 2 + core
+    cc-pwCVXZ       5  = ~ 1 + w-core
+    cc-pwCV(X+d)Z   6  = ~ 2 + w-core
+
+    @lukekurfman found the following quote from Peterson/Dunning at https://doi.org/10.1063/1.1520138
+
+        "In fact the tight d functions used in these latter sets
+        [cc-pV(n+d)Z] were very similar to some of the ones added in the
+        cc-pwCVnZ basis sets. It should be noted, however, that for studies
+        of core correlation effects, the augmenting functions [i.e., tight
+        functions] developed in this work should be used with the cc-pVnZ
+        (or aug-cc-pVnZ) basis sets and not the cc-pV(n+d)Z ones."
+            square bracket clarifications added
+
+    An example that we found for Ar 5-zeta was 10.518 ~= 6.251 or 13.575
+
+    CDS concurs: Ok yeah I think this is pretty clearly saying that the tight d situation
+    is fixed in the (aug-)cc-pCVXZ and (aug-)cc-pwCVXZ basis sets, and so one does
+    not add additional tight d's to these to create something like (aug-)cc-p(w)CV(X+d)Z.
+    Agreeing with what you two [Luke and LAB] concluded. (edited)
+
+    These 52 *CV(X+d)Z basis sets (30 CV and 22 wCV) are frozen and will recieve
+    no more corrtions, incl. those in [54]. They (X) in table below have been
+    renamed to -deprecated. They'll run normally if accessed as e.g.
+    "cc-pwcV(D+d)Z-deprecated" but will throw an error if run with the normal
+    name b/c they will give bad results.
+
+    The next question is what to do about *CV(X+d)Z-RI also defined in the table
+    below? I (LAB) was worried I did the same mistake as for the orbital bases and
+    mixed core tight fns with (x+D). However, from below (1) there is no difference
+    in contents between e.g. 23 & 24 cc-pwCVXZ-RI & cc-pwCV(X+d)Z-RI; (2) BSE has
+    cc-pwcv5z-ri and aug-cc-pwcv5z-ri, and their contents are no different from
+    unchanged Psi4 bases; (3) the RI formulations are from 10.1039/b415208e in 2005
+    so late enough to incorporate understanding from 2002 Peterson paper above.
+    I haven't compared the exponents but based on the above I'm leaving the
+    *CV(X+d)Z-RI basis sets alone as they shouldn't be dangerous.
 
 *******************************************************************************
 *******************************************************************************
@@ -603,66 +652,65 @@ diffuse_feb_jk  =  diffuse-mar-cc-pvxz-jkfit with the highest angmom removed [F 
 key
 [elem: label] =  elements in list elem are taken from basis set label
 DNE =  basis sets not available
-
-
+X = deprecated, see [53] above
 
 basis                           label       straightforward_construction    fundamental_construction                            available
 ---------------------------------------------------------------------------------------------------------------------------------------------
 !  cc-pVXZ                       1      =   1                           =   1                                                   DTQ56
 !  cc-pV(X+d)Z                   2      =   2                           =   2                                                   DTQ56
 !  cc-pCVXZ                      3      =   3                           =   3 (Aug 2017: once and sometimes 1 + core)           DTQ56
-!  cc-pCV(X+d)Z                  4      =   4                           =   4 (Aug 2017: once and sometimes 2 + core)           DTQ56
+X  cc-pCV(X+d)Z                  4      =   4                           =   4 (Aug 2017: once and sometimes 2 + core)           DTQ56
 !  cc-pwCVXZ                     5      =   5                           =   5 (Jun 2017: once and sometimes 1 + w-core)         DTQ5
-!  cc-pwCV(X+d)Z                 6      =   6                           =   6 (Jun 2017: once and sometimes 2 + w-core)         DTQ5
+X  cc-pwCV(X+d)Z                 6      =   6                           =   6 (Jun 2017: once and sometimes 2 + w-core)         DTQ5
 
 !  aug-cc-pVXZ                   7      =   1 + diffuse                 =   1 + diffuse                                         DTQ56
 !  aug-cc-pV(X+d)Z               8      =   2 + diffuse_xpd             =   2 + diffuse_xpd                                     DTQ56
 !  aug-cc-pCVXZ                  9      =   3 + diffuse                 =   ~ 1 + core + diffuse                                DTQ56
-!  aug-cc-pCV(X+d)Z             10      =   4 + diffuse_xpd             =   ~ 2 + core + diffuse_xpd                            DTQ56
+X  aug-cc-pCV(X+d)Z             10      =   4 + diffuse_xpd             =   ~ 2 + core + diffuse_xpd                            DTQ56
 !  aug-cc-pwCVXZ                11      =   5 + diffuse                 =   ~ 1 + w-core + diffuse                              DTQ5
-!  aug-cc-pwCV(X+d)Z            12      =   6 + diffuse_xpd             =   ~ 2 + w-core + diffuse_xpd                          DTQ5
+X  aug-cc-pwCV(X+d)Z            12      =   6 + diffuse_xpd             =   ~ 2 + w-core + diffuse_xpd                          DTQ5
 
 !  heavy-aug-cc-pVXZ            73      =   7 [H-He:  1]                =   1 + diffuse [H-He:  1]                              DTQ56
 !  heavy-aug-cc-pV(X+d)Z        74      =   8 [H-He:  1]                =   2 + diffuse_xpd [H-He:  1]                          DTQ56
 !  heavy-aug-cc-pCVXZ           75      =   9 [H-He:  1]                =   ~ 1 + core + diffuse [H-He:  1]                     DTQ56
-!  heavy-aug-cc-pCV(X+d)Z       76      =  10 [H-He:  1]                =   ~ 2 + core + diffuse_xpd [H-He:  1]                 DTQ56
+X  heavy-aug-cc-pCV(X+d)Z       76      =  10 [H-He:  1]                =   ~ 2 + core + diffuse_xpd [H-He:  1]                 DTQ56
 !  heavy-aug-cc-pwCVXZ          77      =  11 [H-He:  1]                =   ~ 1 + w-core + diffuse [H-He:  1]                   DTQ5
-!  heavy-aug-cc-pwCV(X+d)Z      78      =  12 [H-He:  1]                =   ~ 2 + w-core + diffuse_xpd [H-He:  1]               DTQ5
+X  heavy-aug-cc-pwCV(X+d)Z      78      =  12 [H-He:  1]                =   ~ 2 + w-core + diffuse_xpd [H-He:  1]               DTQ5
 
 !  jun-cc-pVXZ                 121      =   1 + diffuse_jun             =   1 + diffuse_jun                                     DTQ56
 !  jun-cc-pV(X+d)Z             122      =   2 + diffuse_jun_xpd         =   2 + diffuse_jun_xpd                                 DTQ56
 !  jun-cc-pCVXZ                123      =   3 + diffuse_jun             =   ~ 1 + core + diffuse_jun                            DTQ56
-!  jun-cc-pCV(X+d)Z            124      =   4 + diffuse_jun_xpd         =   ~ 2 + core + diffuse_jun_xpd                        DTQ56
+X  jun-cc-pCV(X+d)Z            124      =   4 + diffuse_jun_xpd         =   ~ 2 + core + diffuse_jun_xpd                        DTQ56
 !  jun-cc-pwCVXZ               125      =   5 + diffuse_jun             =   ~ 1 + w-core + diffuse_jun                          DTQ5
-!  jun-cc-pwCV(X+d)Z           126      =   6 + diffuse_jun_xpd         =   ~ 2 + w-core + diffuse_jun_xpd                      DTQ5
+X  jun-cc-pwCV(X+d)Z           126      =   6 + diffuse_jun_xpd         =   ~ 2 + w-core + diffuse_jun_xpd                      DTQ5
 
 !  may-cc-pVXZ                 127      =   1 + diffuse_may             =   1 + diffuse_may                                     -TQ56
 !  may-cc-pV(X+d)Z             128      =   2 + diffuse_may_xpd         =   2 + diffuse_may_xpd                                 -TQ56
 !  may-cc-pCVXZ                129      =   3 + diffuse_may             =   ~ 1 + core + diffuse_may                            -TQ56
-!  may-cc-pCV(X+d)Z            130      =   4 + diffuse_may_xpd         =   ~ 2 + core + diffuse_may_xpd                        -TQ56
+X  may-cc-pCV(X+d)Z            130      =   4 + diffuse_may_xpd         =   ~ 2 + core + diffuse_may_xpd                        -TQ56
 !  may-cc-pwCVXZ               131      =   5 + diffuse_may             =   ~ 1 + w-core + diffuse_may                          -TQ5
-!  may-cc-pwCV(X+d)Z           132      =   6 + diffuse_may_xpd         =   ~ 2 + w-core + diffuse_may_xpd                      -TQ5
+X  may-cc-pwCV(X+d)Z           132      =   6 + diffuse_may_xpd         =   ~ 2 + w-core + diffuse_may_xpd                      -TQ5
 
 !  apr-cc-pVXZ                 133      =   1 + diffuse_apr             =   1 + diffuse_apr                                     --Q56
 !  apr-cc-pV(X+d)Z             134      =   2 + diffuse_apr_xpd         =   2 + diffuse_apr_xpd                                 --Q56
 !  apr-cc-pCVXZ                135      =   3 + diffuse_apr             =   ~ 1 + core + diffuse_apr                            --Q56
-!  apr-cc-pCV(X+d)Z            136      =   4 + diffuse_apr_xpd         =   ~ 2 + core + diffuse_apr_xpd                        --Q56
+X  apr-cc-pCV(X+d)Z            136      =   4 + diffuse_apr_xpd         =   ~ 2 + core + diffuse_apr_xpd                        --Q56
 !  apr-cc-pwCVXZ               137      =   5 + diffuse_apr             =   ~ 1 + w-core + diffuse_apr                          --Q5
-!  apr-cc-pwCV(X+d)Z           138      =   6 + diffuse_apr_xpd         =   ~ 2 + w-core + diffuse_apr_xpd                      --Q5
+X  apr-cc-pwCV(X+d)Z           138      =   6 + diffuse_apr_xpd         =   ~ 2 + w-core + diffuse_apr_xpd                      --Q5
 
 !  mar-cc-pVXZ                 139      =   1 + diffuse_mar             =   1 + diffuse_mar                                     ---56
 !  mar-cc-pV(X+d)Z             140      =   2 + diffuse_mar_xpd         =   2 + diffuse_mar_xpd                                 ---56
 !  mar-cc-pCVXZ                141      =   3 + diffuse_mar             =   ~ 1 + core + diffuse_mar                            ---56
-!  mar-cc-pCV(X+d)Z            142      =   4 + diffuse_mar_xpd         =   ~ 2 + core + diffuse_mar_xpd                        ---56
+X  mar-cc-pCV(X+d)Z            142      =   4 + diffuse_mar_xpd         =   ~ 2 + core + diffuse_mar_xpd                        ---56
 !  mar-cc-pwCVXZ               143      =   5 + diffuse_mar             =   ~ 1 + w-core + diffuse_mar                          ---5
-!  mar-cc-pwCV(X+d)Z           144      =   6 + diffuse_mar_xpd         =   ~ 2 + w-core + diffuse_mar_xpd                      ---5
+X  mar-cc-pwCV(X+d)Z           144      =   6 + diffuse_mar_xpd         =   ~ 2 + w-core + diffuse_mar_xpd                      ---5
 
 !  feb-cc-pVXZ                 145      =   1 + diffuse_feb             =   1 + diffuse_feb                                     ----6
 !  feb-cc-pV(X+d)Z             146      =   2 + diffuse_feb_xpd         =   2 + diffuse_feb_xpd                                 ----6
 !  feb-cc-pCVXZ                147      =   3 + diffuse_feb             =   ~ 1 + core + diffuse_feb                            ----6
-!  feb-cc-pCV(X+d)Z            148      =   4 + diffuse_feb_xpd         =   ~ 2 + core + diffuse_feb_xpd                        ----6
+X  feb-cc-pCV(X+d)Z            148      =   4 + diffuse_feb_xpd         =   ~ 2 + core + diffuse_feb_xpd                        ----6
 !  feb-cc-pwCVXZ               149      =   5 + diffuse_feb             =   ~ 1 + w-core + diffuse_feb                          -----
-!  feb-cc-pwCV(X+d)Z           150      =   6 + diffuse_feb_xpd         =   ~ 2 + w-core + diffuse_feb_xpd                      -----
+X  feb-cc-pwCV(X+d)Z           150      =   6 + diffuse_feb_xpd         =   ~ 2 + w-core + diffuse_feb_xpd                      -----
 
 !  d-aug-cc-pVXZ                13      =   7 + d-diffuse               =   1 + diffuse + d-diffuse                             DTQ56
 !  d-aug-cc-pV(X+d)Z            14      =   8 + d-diffuse_xpd           =   2 + diffuse_xpd + d-diffuse_xpd                     -----
