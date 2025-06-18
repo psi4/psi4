@@ -475,13 +475,28 @@ def test_high_am_in_default_build():
 
 
 def test_too_high_am_in_default_build():
-    ne = psi4.core.Molecule.from_string("""
-        Ne
+    h2 = psi4.core.Molecule.from_string("""
+        H
+        H 1 1.0
 """)
+    too_high_am_basis = """
+    spherical
+****
+H 0
+L=8 1 1.0
+ 1.0 1.0
+****
+"""
 
-    psi4.set_options({"scf_type": "pk"})
+    def basisspec_psi4_yo__anonymous1234(h2, role):
+        h2.set_basis_all_atoms("test", role=role)
+        return {"test": too_high_am_basis}
+
+    psi4.driver.qcdb.libmintsbasisset.basishorde["TOOHI"] = basisspec_psi4_yo__anonymous1234
+
+    psi4.set_options({"scf_type": "pk", "basis": "toohi"})
     with pytest.raises(RuntimeError) as e:
-        psi4.gradient("hf/7zapa-nr", molecule=ne)
+        psi4.gradient("hf", molecule=h2)
 
     assert "Engine::lmax_exceeded -- angular momentum limit exceeded" in str(e.value)
 
