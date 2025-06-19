@@ -838,6 +838,10 @@ elif args.subparser_name in ["cmake", "cache"]:
             primary = conda["name"]
         aux_run = conda.get("aux_run_names", [])
         aux_bld = conda.get("aux_build_names", [])
+        if isinstance(aux_run, dict):
+            aux_run = aux_run .get(conda_platform, [])
+        if isinstance(aux_bld, dict):
+            aux_bld = aux_bld.get(conda_platform, [])
 
         constraint_delimiter = "=|!|<|>"
         package_set = [primary, *aux_bld, *aux_run]
