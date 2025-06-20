@@ -33,6 +33,7 @@ import numpy as np
 from psi4 import core
 
 from .. import empirical_dispersion
+from psi4.driver.qcdb import ValidationError
 
 
 def fisapt_compute_energy(self, jk_obj, *, external_potentials=None):
@@ -78,7 +79,8 @@ def fisapt_compute_energy(self, jk_obj, *, external_potentials=None):
     core.timer_off("FISAPT:SAPT:ind")
     if not core.get_option("FISAPT", "FISAPT_DO_FSAPT"):
         core.timer_on("FISAPT:SAPT:disp")
-        self.disp(self.matrices(), self.vectors(), True)  # Expensive, only do if needed  # unteseted translation of below
+        # Expensive, only do if needed  # unteseted translation of below
+        self.disp(self.matrices(), self.vectors(), True)
         # self.disp(matrices_, vectors_, true)  # Expensive, only do if needed
         core.timer_off("FISAPT:SAPT:disp")
 
@@ -101,13 +103,15 @@ def fisapt_compute_energy(self, jk_obj, *, external_potentials=None):
             core.timer_on("FISAPT:FSAPT:disp")
             self.fdisp()
             core.timer_off("FISAPT:FSAPT:disp")
-        #else:
+        # else:
         #    # Build Empirical Dispersion
         #    dashD = empirical_dispersion.EmpiricalDispersion(name_hint='SAPT0-D3M')
         #    dashD.print_out()
         #    # Compute -D
         #    Edisp = dashD.compute_energy(core.get_active_molecule())
-        #    core.set_variable('{} DISPERSION CORRECTION ENERGY'.format(dashD.fctldash), Edisp)            # Printing
+        #    core.set_variable(
+        # '{} DISPERSION CORRECTION ENERGY'.format(dashD.fctldash), Edisp)
+        # Printing
         #    text = []
         #    text.append("   => {}: Empirical Dispersion <=".format(dashD.fctldash.upper()))
         #    text.append(" ")
@@ -134,18 +138,115 @@ def fisapt_fdrop(self, external_potentials=None):
     """Drop output files from FSAPT calculation. FISAPT::fdrop"""
 
     core.print_out("  ==> F-SAPT Output <==\n\n")
+    write_output_files = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH").lower() != "none"
 
-    filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
-    os.makedirs(filepath, exist_ok=True)
+    if write_output_files:
+        filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
+        os.makedirs(filepath, exist_ok=True)
 
-    core.print_out("    F-SAPT Data Filepath = {}\n\n".format(filepath))
+        core.print_out("    F-SAPT Data Filepath = {}\n\n".format(filepath))
 
-    geomfile = filepath + os.sep + 'geom.xyz'
-    xyz = self.molecule().to_string(dtype='xyz', units='Angstrom')
-    with open(geomfile, 'w') as fh:
-        fh.write(xyz)
+        geomfile = filepath + os.sep + "geom.xyz"
+        xyz = self.molecule().to_string(dtype="xyz", units="Angstrom")
+        with open(geomfile, "w") as fh:
+            fh.write(xyz)
 
     # write external potential geometries
+    if external_potentials is not None and isinstance(external_potentials, dict):
+        for frag in "ABC":
+            potential = external_potentials.get(frag, None)
+            if potential is not None:
+                print(potential)
+                xyz = str(len(potential)) + "\n\n"
+                potential_lst = []
+                for qxyz in potential:
+                    if len(qxyz) == 2:
+                        xyz += "Ch %f %f %f\n" % (qxyz[1][0], qxyz[1][1], qxyz[1][2])
+                        potential_lst.append(qxyz[1])
+                    elif len(qxyz) == 4:
+                        xyz += "Ch %f %f %f\n" % (qxyz[1], qxyz[2], qxyz[3])
+                        potential_lst.append(qxyz[1:])
+                    else:
+                        raise ValidationError(
+                            f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'"
+                        )
+                potential_lst = np.array(potential_lst)
+                core.set_variable("FSAPT_EXTERN_POTENTIAL_{}".format(frag), potential_lst)
+                if write_output_files:
+                    with open(filepath + os.sep + "Extern_%s.xyz" % frag, "w") as fh:
+                        fh.write(xyz)
+
+    vectors = self.vectors()
+    matrices = self.matrices()
+
+    matrices["Qocc0A"].name = "QA"
+    matrices["Qocc0B"].name = "QB"
+    matrices["Elst_AB"].name = "Elst"
+    matrices["Exch_AB"].name = "Exch"
+    matrices["IndAB_AB"].name = "IndAB"
+    matrices["IndBA_AB"].name = "IndBA"
+    core.set_variable("FSAPT_QA", matrices["Qocc0A"])
+    core.set_variable("FSAPT_QB", matrices["Qocc0B"])
+    core.set_variable("FSAPT_ELST_AB", matrices["Elst_AB"])
+    core.set_variable("FSAPT_EXCH_AB", matrices["Exch_AB"])
+    core.set_variable("FSAPT_INDAB_AB", matrices["IndAB_AB"])
+    core.set_variable("FSAPT_INDBA_AB", matrices["IndBA_AB"])
+
+    if write_output_files:
+        _drop(vectors["ZA"], filepath)
+        _drop(vectors["ZB"], filepath)
+        _drop(matrices["Qocc0A"], filepath)
+        _drop(matrices["Qocc0B"], filepath)
+        _drop(matrices["Elst_AB"], filepath)
+        _drop(matrices["Exch_AB"], filepath)
+        _drop(matrices["IndAB_AB"], filepath)
+        _drop(matrices["IndBA_AB"], filepath)
+
+    if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
+        matrices["Disp_AB"].name = "Disp"
+        core.set_variable("FSAPT_DISP_AB", matrices["Disp_AB"])
+        if write_output_files:
+            _drop(matrices["Disp_AB"], filepath)
+
+    if core.get_option("FISAPT", "SSAPT0_SCALE"):
+        # NOTE: do same as above for conditionally writing
+        ssapt_filepath = core.get_option("FISAPT", "FISAPT_FSSAPT_FILEPATH")
+        write_ssapt_files = ssapt_filepath.lower() != "none"
+
+        if write_ssapt_files:
+            os.makedirs(ssapt_filepath, exist_ok=True)
+            core.print_out("    sF-SAPT Data Filepath = {}\n\n".format(ssapt_filepath))
+            geomfile = ssapt_filepath + os.sep + "geom.xyz"
+            with open(geomfile, "w") as fh:
+                fh.write(xyz)
+
+        matrices["sIndAB_AB"].name = "IndAB"
+        matrices["sIndBA_AB"].name = "IndBA"
+        core.set_variable("FSAPT_SINDAB_AB", matrices["sIndAB_AB"])
+        core.set_variable("FSAPT_SINDBA_AB", matrices["sIndBA_AB"])
+
+        if write_ssapt_files:
+            _drop(vectors["ZA"], ssapt_filepath)
+            _drop(vectors["ZB"], ssapt_filepath)
+            _drop(matrices["Qocc0A"], ssapt_filepath)
+            _drop(matrices["Qocc0B"], ssapt_filepath)
+            _drop(matrices["Elst_AB"], ssapt_filepath)
+            _drop(matrices["Exch_AB"], ssapt_filepath)
+            _drop(matrices["sIndAB_AB"], ssapt_filepath)
+            _drop(matrices["sIndBA_AB"], ssapt_filepath)
+
+        if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
+            matrices["sDisp_AB"].name = "Disp"
+            core.set_variable("FSAPT_SDISP_AB", matrices["sDisp_AB"])
+            if write_ssapt_files:
+                _drop(matrices["sDisp_AB"], ssapt_filepath)
+
+
+def fisapt_save_fsapt_variables(self, external_potentials=None):
+    core.print_out("  ==> F-SAPT Output (to psi vars) <==\n\n")
+
+    # write external potential geometries
+    external_pot_str = ""
     if external_potentials is not None and isinstance(external_potentials, dict):
         for frag in "ABC":
             potential = external_potentials.get(frag, None)
@@ -157,59 +258,35 @@ def fisapt_fdrop(self, external_potentials=None):
                     elif len(qxyz) == 4:
                         xyz += "Ch %f %f %f\n" % (qxyz[1], qxyz[2], qxyz[3])
                     else:
-                        raise ValidationError(f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'")
+                        raise ValidationError(
+                            f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'"
+                        )
+                external_pot_str += xyz
 
-                with open(filepath + os.sep + "Extern_%s.xyz" % frag, "w") as fh:
-                    fh.write(xyz)
-
-    vectors = self.vectors()
     matrices = self.matrices()
 
-    matrices["Qocc0A"].name = "QA"
-    matrices["Qocc0B"].name = "QB"
-    matrices["Elst_AB"].name = "Elst"
-    matrices["Exch_AB"].name = "Exch"
-    matrices["IndAB_AB"].name = "IndAB"
-    matrices["IndBA_AB"].name = "IndBA"
-
-    _drop(vectors["ZA"], filepath)
-    _drop(vectors["ZB"], filepath)
-    _drop(matrices["Qocc0A"], filepath)
-    _drop(matrices["Qocc0B"], filepath)
-    _drop(matrices["Elst_AB"], filepath)
-    _drop(matrices["Exch_AB"], filepath)
-    _drop(matrices["IndAB_AB"], filepath)
-    _drop(matrices["IndBA_AB"], filepath)
+    # NOTE: removed to_array() and will need to do in fsapt
+    core.set_variable("FSAPT_QA", matrices["Qocc0A"])
+    core.set_variable("FSAPT_QB", matrices["Qocc0B"])
+    core.set_variable("FSAPT_ELST_AB", matrices["Elst_AB"])
+    core.set_variable("FSAPT_EXCH_AB", matrices["Exch_AB"])
+    core.set_variable("FSAPT_INDAB_AB", matrices["IndAB_AB"])
+    core.set_variable("FSAPT_INDBA_AB", matrices["IndBA_AB"])
 
     if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
-        matrices["Disp_AB"].name = "Disp"
-        _drop(matrices["Disp_AB"], filepath)
+        matrices["FSAPT_DISP_AB"].name = "Disp"
+        core.set_variable("FSAPT_DISP_AB", matrices["Disp_AB"])
 
     if core.get_option("FISAPT", "SSAPT0_SCALE"):
-        ssapt_filepath = core.get_option("FISAPT", "FISAPT_FSSAPT_FILEPATH")
-        os.makedirs(ssapt_filepath, exist_ok=True)
-
-        core.print_out("    sF-SAPT Data Filepath = {}\n\n".format(ssapt_filepath))
-
-        geomfile = ssapt_filepath + os.sep + 'geom.xyz'
-        with open(geomfile, 'w') as fh:
-            fh.write(xyz)
-
         matrices["sIndAB_AB"].name = "IndAB"
         matrices["sIndBA_AB"].name = "IndBA"
-
-        _drop(vectors["ZA"], ssapt_filepath)
-        _drop(vectors["ZB"], ssapt_filepath)
-        _drop(matrices["Qocc0A"], ssapt_filepath)
-        _drop(matrices["Qocc0B"], ssapt_filepath)
-        _drop(matrices["Elst_AB"], ssapt_filepath)
-        _drop(matrices["Exch_AB"], ssapt_filepath)
-        _drop(matrices["sIndAB_AB"], ssapt_filepath)
-        _drop(matrices["sIndBA_AB"], ssapt_filepath)
+        core.set_variable("FSAPT_SINDAB_AB", matrices["sIndAB_AB"])
+        core.set_variable("FSAPT_SINDBA_AB", matrices["sIndBA_AB"])
 
         if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
             matrices["sDisp_AB"].name = "Disp"
-            _drop(matrices["sDisp_AB"], ssapt_filepath)
+            core.set_variable("FSAPT_SDISP_AB", matrices["sDisp_AB"])
+
 
 def fisapt_plot(self):
     """Filesystem wrapper for FISAPT::plot."""
@@ -217,9 +294,9 @@ def fisapt_plot(self):
     filepath = core.get_option("FISAPT", "FISAPT_PLOT_FILEPATH")
     os.makedirs(filepath, exist_ok=True)
 
-    geomfile = filepath + os.sep + 'geom.xyz'
-    xyz = self.molecule().to_string(dtype='xyz', units='Angstrom')
-    with open(geomfile, 'w') as fh:
+    geomfile = filepath + os.sep + "geom.xyz"
+    xyz = self.molecule().to_string(dtype="xyz", units="Angstrom")
+    with open(geomfile, "w") as fh:
         fh.write(xyz)
 
     self.raw_plot(filepath)
@@ -245,11 +322,12 @@ def _drop(array, filepath):
     Equivalent to https://github.com/psi4/psi4archive/blob/master/psi4/src/psi4/fisapt/fisapt.cc#L4389-L4420
 
     """
-    filename = filepath + os.sep + array.name + '.dat'
-    with open(filename, 'wb') as handle:
-        np.savetxt(handle, array.to_array(), fmt="%24.16E", delimiter=' ', newline='\n')
+    filename = filepath + os.sep + array.name + ".dat"
+    with open(filename, "wb") as handle:
+        np.savetxt(handle, array.to_array(), fmt="%24.16E", delimiter=" ", newline="\n")
 
 
 core.FISAPT.compute_energy = fisapt_compute_energy
 core.FISAPT.fdrop = fisapt_fdrop
 core.FISAPT.plot = fisapt_plot
+core.FISAPT.save_fsapt_variables = fisapt_save_fsapt_variables
