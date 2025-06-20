@@ -28,11 +28,28 @@ dependencies:
   - optking
   - qcelemental
   - qcengine
+    # buildtime optional
+  - dkh
+  - integratorxx
+  - libecpint
+  - pcmsolver
+  - zlib                      # req'd with pcmsolver
     # runtime required
   - msgpack-python            # req'd with qcelemental
   - networkx                  # req'd with qcelemental
   - scipy
   - setuptools                # req'd with qcelemental; Needed for qcelemental cmake detection.
+    # runtime optional
+  - basis_set_exchange
+  - dftd3-python>=1.0
+  - dftd4-python
+  - gcp-correction
+  - geometric
+  - i-pi==3.1.0
+  - pygdma
+  - pylibefp
+  - pymdi
+  - toml                      # req'd with dftd4-python
     # test
   - pytest
   - pytest-xdist              # req'd with pytest; Parallel runner not strictly needed but very handy.

@@ -5,17 +5,15 @@ channels:
 dependencies:
     # build
   - c-compiler
-  - clangdev=17.0.6           # req'd with cxx-compiler; Avoid omp problem with v19, v20.
   - cmake
   - cxx-compiler
-  - libgcc<14.3               # req'd with cxx-compiler; Avoid 'specified procedure could not be found' DLL error.
   - ninja
     # non-qc buildtime required
   - blas-devel                # req'd with libblas
   - eigen                     # req'd with libint
-  - intel-openmp
   - libblas=*=*mkl
   - libboost-headers          # req'd with libint
+  - llvm-openmp
   - numpy
   - pip                       # req'd with python; Package installer not strictly needed but needs to be tied to this python if used.
   - pybind11
@@ -28,11 +26,42 @@ dependencies:
   - optking
   - qcelemental
   - qcengine
+    # buildtime optional
+  - ambit
+  - dkh
+  - einsums>=1.0.3
+  - fortran-compiler
+  - hdf5                      # req'd with einsums; Use 1.14.3 or 1.14.6 (so far) as .4 and .5 not setting HDF5_VERSION.
+  - integratorxx
+  - libecpint
+  - pcmsolver
+  - range-v3                  # req'd with einsums
+  - zlib                      # req'd with einsums
+  - zlib                      # req'd with einsums
     # runtime required
   - msgpack-python            # req'd with qcelemental
   - networkx                  # req'd with qcelemental
   - scipy
   - setuptools                # req'd with qcelemental; Needed for qcelemental cmake detection.
+    # runtime optional
+  - adcc
+  - basis_set_exchange
+  - cppe
+  - dftd3-python>=1.0
+  - dftd4-python
+  - gcp-correction
+  - geometric
+  - i-pi==3.1.0
+  - openfermionpsi4
+  - postgresql                # req'd with qcfractal; Easy way to use QCFractal, but you can instead supply your own database.
+  - pyddx
+  - pygdma
+  - pylibefp
+  - pymdi
+  - qcfractal>=0.60
+  - toml                      # req'd with dftd4-python
     # test
+  - h5py
+  - memory_profiler
   - pytest
   - pytest-xdist              # req'd with pytest; Parallel runner not strictly needed but very handy.
