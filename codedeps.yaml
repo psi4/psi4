@@ -950,18 +950,18 @@ data:
       name: OpenFermion-Psi4
       commit: v0.5
     cmake: null
-    conda:
-      channel: conda-forge
-      name: openfermionpsi4
-      constraint: null
-      skip_win: true
-      # TODO cirq-core still np v1. commenting so envs don't solve v1 for niche addon
+    # TODO cirq-core still np v1. commenting so envs don't solve v1 for niche addon
+    conda: null
+      # channel: conda-forge
+      # name: openfermionpsi4
+      # constraint: null
+      # skip_win: true
       # aux_run_names:
       #   - "openfermion>=1.7.1"
       # aux_run_names_note:
       #   "openfermion>1.7.1": "v1.7.1 compatible with numpy v2."
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected."
+      # cmake: null
+      # cmake_note: "Primarily OTF runtime detected."
 
   - project: qcelemental
     use:

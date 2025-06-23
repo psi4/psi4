@@ -52,7 +52,6 @@ dependencies:
   - gcp-correction
   - geometric
   - i-pi==3.1.0
-  - openfermionpsi4
   - postgresql                # req'd with qcfractal; Easy way to use QCFractal, but you can instead supply your own database.
   - pyddx
   - pygdma
