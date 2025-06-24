@@ -270,7 +270,7 @@ them before changing defaults. Some basic recommendations for running the module
 
 * MP2-F12 is memory greedy. The core algorithm has been developed to compute the integrals on-the-fly but 
   the size of some integrals cannot be avoided. Care should be taken to choose whether the core or disk 
-  algorithm is chosen, ``F12_TYPE``.
+  algorithm is chosen, |f12__f12_subtype| .
 
 * Like most wavefunction methods, freezing the core is good for both efficiency and correctness purposes.
 
