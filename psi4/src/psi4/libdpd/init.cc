@@ -52,8 +52,8 @@ struct dpdpair {
     int *right_orbsym;
     int *left_orboff;
     int *right_orboff;
-    int permlr;
-    int ler;
+    dpdparams4::DiagPolicy permlr;
+    bool ler;
 };
 
 int dpd_set_default(int dpd_num) {
@@ -211,8 +211,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
         pairs[5 * i].right_orbspi = orbspi[i];
         pairs[5 * i].right_orbsym = orbsym[i];
         pairs[5 * i].right_orboff = orboff[i];
-        pairs[5 * i].permlr = 0;
-        pairs[5 * i].ler = 0;
+        pairs[5 * i].permlr = dpdparams4::DiagPolicy::All;
+        pairs[5 * i].ler = false;
 
         pairs[5 * i + 1].left_orbspi = orbspi[i];
         pairs[5 * i + 1].left_orbsym = orbsym[i];
@@ -220,8 +220,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
         pairs[5 * i + 1].right_orbspi = orbspi[i];
         pairs[5 * i + 1].right_orbsym = orbsym[i];
         pairs[5 * i + 1].right_orboff = orboff[i];
-        pairs[5 * i + 1].permlr = 1;
-        pairs[5 * i + 1].ler = 0;
+        pairs[5 * i + 1].permlr = dpdparams4::DiagPolicy::Symm;
+        pairs[5 * i + 1].ler = false;
 
         pairs[5 * i + 2].left_orbspi = orbspi[i];
         pairs[5 * i + 2].left_orbsym = orbsym[i];
@@ -229,8 +229,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
         pairs[5 * i + 2].right_orbspi = orbspi[i];
         pairs[5 * i + 2].right_orbsym = orbsym[i];
         pairs[5 * i + 2].right_orboff = orboff[i];
-        pairs[5 * i + 2].permlr = -1;
-        pairs[5 * i + 2].ler = 0;
+        pairs[5 * i + 2].permlr = dpdparams4::DiagPolicy::AntiSymm;
+        pairs[5 * i + 2].ler = false;
 
         pairs[5 * i + 3].left_orbspi = orbspi[i];
         pairs[5 * i + 3].left_orbsym = orbsym[i];
@@ -238,8 +238,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
         pairs[5 * i + 3].right_orbspi = orbspi[i];
         pairs[5 * i + 3].right_orbsym = orbsym[i];
         pairs[5 * i + 3].right_orboff = orboff[i];
-        pairs[5 * i + 3].permlr = 1;
-        pairs[5 * i + 3].ler = 1;
+        pairs[5 * i + 3].permlr = dpdparams4::DiagPolicy::Symm;
+        pairs[5 * i + 3].ler = true;
 
         pairs[5 * i + 4].left_orbspi = orbspi[i];
         pairs[5 * i + 4].left_orbsym = orbsym[i];
@@ -247,8 +247,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
         pairs[5 * i + 4].right_orbspi = orbspi[i];
         pairs[5 * i + 4].right_orbsym = orbsym[i];
         pairs[5 * i + 4].right_orboff = orboff[i];
-        pairs[5 * i + 4].permlr = -1;
-        pairs[5 * i + 4].ler = 1;
+        pairs[5 * i + 4].permlr = dpdparams4::DiagPolicy::AntiSymm;
+        pairs[5 * i + 4].ler = true;
 
         for (j = 0; j < nirreps; j++)
             for (k = 0; k < nirreps; k++) {
@@ -289,8 +289,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
             pairs[cnt].right_orbspi = orbspi[j];
             pairs[cnt].right_orbsym = orbsym[j];
             pairs[cnt].right_orboff = orboff[j];
-            pairs[cnt].permlr = 0;
-            pairs[cnt].ler = 0;
+            pairs[cnt].permlr = dpdparams4::DiagPolicy::All;
+            pairs[cnt].ler = false;
 
             pairs[cnt + 1].left_orbspi = orbspi[j];
             pairs[cnt + 1].left_orbsym = orbsym[j];
@@ -298,8 +298,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
             pairs[cnt + 1].right_orbspi = orbspi[i];
             pairs[cnt + 1].right_orbsym = orbsym[i];
             pairs[cnt + 1].right_orboff = orboff[i];
-            pairs[cnt + 1].permlr = 0;
-            pairs[cnt + 1].ler = 0;
+            pairs[cnt + 1].permlr = dpdparams4::DiagPolicy::All;
+            pairs[cnt + 1].ler = false;
 
             for (k = 0; k < nirreps; k++)
                 for (l = 0; l < nirreps; l++) {

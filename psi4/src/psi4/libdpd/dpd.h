@@ -55,6 +55,13 @@ class Matrix;
 /* #define ALL_BUF4_SORT_OOC */
 
 struct dpdparams4 {
+    /*
+      How are p < q handled? If All, they're stored explicitly. This is the default.
+      If p and q are the same space, you can only store p < q. Symm / AntiSymm relates
+      element (p, q) to the implicit element (q, p).
+    */
+    enum class DiagPolicy { All, Symm, AntiSymm};
+
     int nirreps;   /* No. of irreps */
     int pqnum;     /* Pair number for the row indices */
     int rsnum;     /* Pair number for the column indices */
@@ -76,10 +83,10 @@ struct dpdparams4 {
     int *qsym;     /* Orbital symmetry for index q */
     int *rsym;     /* Orbital symmetry for index r */
     int *ssym;     /* Orbital symmetry for index s */
-    int perm_pq;   /* Can p and q be permuted? */
-    int perm_rs;   /* Can r and s be permuted? */
-    int peq;       /* Can p and q be equal? */
-    int res;       /* Can r and s be equal? */
+    DiagPolicy perm_pq;   /* Can p and q be permuted? */
+    DiagPolicy perm_rs;   /* Can r and s be permuted? */
+    bool peq;       /* Can p and q be equal? */
+    bool res;       /* Can r and s be equal? */
     int **start13; /* returns the starting row of irrep matrix h for orbital index p */
 };
 
@@ -90,7 +97,7 @@ struct dpdfile4 {
     int my_irrep;         /* Total irrep of this quantity */
     psio_address *lfiles; /* File address for each submatrix by ROW irrep */
     dpdparams4 *params;
-    int incore;
+    bool incore;
     double ***matrix;
 };
 
@@ -103,7 +110,7 @@ struct dpdshift4 {
 
 struct dpdbuf4 {
     int dpdnum; /* dpd structure reference */
-    int anti;   /* Is this buffer antisymmetric? */
+    bool anti;   /* Is this buffer antisymmetric? */
     dpdparams4 *params;
     dpdfile4 file;
     dpdshift4 shift;
@@ -146,7 +153,7 @@ struct dpdfile2 {
     int my_irrep;
     psio_address *lfiles;
     dpdparams2 *params;
-    int incore;
+    bool incore;
     double ***matrix;
 
     int axpy_matrix(const Matrix& MatX, double alpha);
@@ -166,8 +173,8 @@ struct dpd_file4_cache_entry {
     size_t access;               /* access time */
     size_t usage;                /* number of accesses */
     size_t priority;             /* priority level */
-    int lock;                    /* auto-deletion allowed? */
-    int clean;                   /* has this file4 changed? */
+    bool lock;                    /* auto-deletion allowed? */
+    bool clean;                   /* has this file4 changed? */
     dpd_file4_cache_entry *next; /* pointer to next cache entry */
     dpd_file4_cache_entry *last; /* pointer to previous cache entry */
 };
@@ -183,7 +190,7 @@ struct dpd_file2_cache_entry {
     char label[PSIO_KEYLEN];     /* libpsio TOC keyword */
     double ***matrix;            /* pointer to irrep blocks */
     int size;                    /* size of entry in double words */
-    int clean;                   /* has this file2 changed? */
+    bool clean;                   /* has this file2 changed? */
     dpd_file2_cache_entry *next; /* pointer to next cache entry */
     dpd_file2_cache_entry *last; /* pointer to previous cache entry */
 };
