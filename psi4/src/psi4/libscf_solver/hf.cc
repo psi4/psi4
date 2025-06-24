@@ -129,10 +129,10 @@ void HF::common_init() {
         // Map the symmetry of the input DOCC, to account for displacements
         auto ps = options_.get_str("PARENT_SYMMETRY");
         if (ps != "") {
-            auto old_pg = std::make_shared<PointGroup>(ps);
+            auto old_pg = PointGroup(ps);
             // This is one of a series of displacements;  check the dimension against the parent
             // point group
-            size_t full_nirreps = old_pg->char_table().nirrep();
+            size_t full_nirreps = old_pg.char_table().nirrep();
             if (options_["DOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
             Dimension temp_docc(full_nirreps);
@@ -157,10 +157,10 @@ void HF::common_init() {
         // Map the symmetry of the input SOCC, to account for displacements
         auto ps = options_.get_str("PARENT_SYMMETRY");
         if (ps != "") {
-            auto old_pg = std::make_shared<PointGroup>(ps);
+            auto old_pg = PointGroup(ps);
             // This is one of a series of displacements;  check the dimension against the parent
             // point group
-            size_t full_nirreps = old_pg->char_table().nirrep();
+            size_t full_nirreps = old_pg.char_table().nirrep();
             if (options_["SOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
             Dimension temp_socc(full_nirreps);
