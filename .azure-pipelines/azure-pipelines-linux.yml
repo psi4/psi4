@@ -28,7 +28,7 @@ jobs:
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran'
         vmImage: 'ubuntu-latest'
-        PYTEST_MARKER_EXPR: 'api and not stdsuite and not (smoke or quick or medlong or long)'
+        PYTEST_MARKER_EXPR: '(api and not stdsuite and not (smoke or quick or medlong or long)) or einsums'
         ENABLE_EINSUMS: "ON"
 
       clang_latest:
