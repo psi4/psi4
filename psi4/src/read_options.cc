@@ -3289,7 +3289,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("CABS_BASIS", "");
         /*- Whether to compute the CABS Singles Correction -*/
         options.add_bool("CABS_SINGLES", true);
-        /*- Choose a density-fitting basis for integrals -*/
+        /*- Choose a density-fitting basis for integrals. For |f12__mp2_type| =DF, this is applied to non-F12
+        SCF and MP2 parts, too, regardless of |scf__df_basis_scf| or |dfmp2__df_basis_mp2| .  -*/
         options.add_str("DF_BASIS_F12", "");
     }
     if (name == "MRCC" || options.read_globals()) {
