@@ -71,7 +71,7 @@ An example input file is::
      cabs_basis    cc-pvtz-f12-optri
      df_basis_f12  aug-cc-pvtz-ri
      freeze_core   True
-     f12_type      df
+     mp2_type      df
      f12_beta      1.0
      cabs_singles  True
    }
