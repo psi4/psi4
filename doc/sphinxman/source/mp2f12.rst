@@ -80,7 +80,7 @@ An example input file is::
 
 The ``energy('mp2-f12')`` call to :py:func:`~psi4.driver.energy` executes the predefined MP-F12 procedure, 
 first calling the SCF module with a default RHF reference. The two-electron integrals may be solved either with 
-or without DF, as specified with ``F12_TYPE``. The general outline of an MP2-F12 computation is as follows:
+or without DF, as specified with |f12__mp2_type|. The general outline of an MP2-F12 computation is as follows:
 
     (1) Form the CABS AO to MO transformation matrix
     (2) Compute the one- and two-electron integrals
