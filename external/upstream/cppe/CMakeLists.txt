@@ -1,7 +1,7 @@
 if(${ENABLE_cppe})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_cppe}))
         include(FindPythonModule)
-        find_python_module(cppe ATLEAST 0.3.1 QUIET)
+        find_python_module(cppe ATLEAST 0.3.1 QUIET)  # edit in codedeps
     endif()
 
     if(${cppe_FOUND})
@@ -22,7 +22,7 @@ if(${ENABLE_cppe})
 
         ExternalProject_Add(cppe_external
             DEPENDS pybind11_external
-            URL https://github.com/maxscheurer/cppe/archive/v0.3.2.tar.gz
+            URL https://github.com/maxscheurer/cppe/archive/v0.3.2.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                         # runtime segfault if Debug passed from Psi4
@@ -33,6 +33,7 @@ if(${ENABLE_cppe})
                        -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
+                       -DPYMOD_INSTALL_FULLDIR=${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/cppe
                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                        -DENABLE_OPENMP=OFF
                        -DENABLE_PYTHON_INTERFACE=ON

@@ -499,7 +499,11 @@ def _to_serial(self: Union[core.Matrix, core.Vector]) -> Dict[str, Any]:
 
     for view in self.nph:
         json_data["shape"].append(view.shape)
-        json_data["data"].append(view.tostring())
+        try:
+            json_data["data"].append(view.tobytes())
+        except AttributeError:
+            # numpy v1
+            json_data["data"].append(view.tostring())
 
     if len(json_data["shape"][0]) == 1:
         json_data["type"] = "vector"

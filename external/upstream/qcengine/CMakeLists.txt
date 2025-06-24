@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcengine}))
     include(FindPythonModule)
-    find_python_module(qcengine ATLEAST 0.28.1 QUIET)
+    find_python_module(qcengine ATLEAST 0.28.1 QUIET)  # edit in codedeps
 endif()
 
 if(${qcengine_FOUND})
@@ -38,7 +38,7 @@ else()
     ExternalProject_Add(qcengine_external
         DEPENDS qcelemental_external
         BUILD_ALWAYS 1
-        URL https://github.com/MolSSI/QCEngine/archive/v0.32.0.tar.gz
+        URL https://github.com/MolSSI/QCEngine/archive/v0.32.0.tar.gz  # edit in codedeps
         DOWNLOAD_NO_EXTRACT 1
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
@@ -47,6 +47,7 @@ else()
         INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install <DOWNLOADED_FILE>
                                                       --target=${_install_lib}
                                                       --no-deps
+                                                      --upgrade
                                                       #-v
         )
     ExternalProject_Add_Step(qcengine_external

@@ -17,7 +17,7 @@ dependencies:
   - libboost-headers          # req'd with libint
   - numpy
   - pip                       # req'd with python; Package installer not strictly needed but needs to be tied to this python if used.
-  - pybind11>=2.10.*
+  - pybind11
   - python
     # qc buildtime required
   - gau2grid
@@ -31,6 +31,7 @@ dependencies:
   - msgpack-python            # req'd with qcelemental
   - networkx                  # req'd with qcelemental
   - scipy
+  - setuptools<80.9           # req'd with qcelemental; Needed for qcelemental cmake detection. <80.9 avoid pkg_resources message from adcc.
     # test
-  - pytest<8
+  - pytest
   - pytest-xdist              # req'd with pytest; Parallel runner not strictly needed but very handy.

@@ -41,6 +41,7 @@ if(${ENABLE_libefp})
                        -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+                       -DCMAKE_POLICY_VERSION_MINIMUM=3.5
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
                              -DTargetOpenMP_FIND_COMPONENTS:STRING=C)

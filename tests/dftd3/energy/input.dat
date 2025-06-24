@@ -31,50 +31,55 @@ mB = eneyne.extract_subsets(2)
 import qcengine as qcng
 d3_engine = psi4.driver.EmpiricalDispersion(name_hint="b3lyp", level_hint="d3bj").engine
 
-if d3_engine == "dftd3":
-    print('  -D correction from Py-side')                      #TEST
-    E, G = eneyne.run_dftd3('b3lyp', 'd2')
+print('  -D correction from Py-side')                      #TEST
+try:
+    E, G = eneyne.run_sdftd3('b3lyp', 'd2')
     compare_values(ref_d2[0], E, 7, '1: Ethene-Ethyne -D2')              #TEST
-    E, G = mA.run_dftd3('b3lyp', 'd2')
+    E, G = mA.run_sdftd3('b3lyp', 'd2')
     compare_values(ref_d2[1], E, 7, '2: Ethene -D2')                     #TEST
-    E, G = mB.run_dftd3('b3lyp', 'd2')
+    E, G = mB.run_sdftd3('b3lyp', 'd2')
     compare_values(ref_d2[2], E, 7, '3: Ethyne -D2')                     #TEST
     #mBcp = eneyne.extract_subsets(2,1)                               #TEST
     #E, G = mBcp.run_dftd3('b3lyp')                                   #TEST
     #compare_values(ref_d2[2], E, 7, '4: Ethyne(CP) -D2')                #TEST
+except qcdb.QcdbException:
+    pass
 
-    E, G = eneyne.run_dftd3('b3lyp', 'd3zero')
-    compare_values(ref_d3zero[0], E, 7, '5: Ethene-Ethyne -D3 (zero)')   #TEST
-    mA = eneyne.extract_subsets(1)
-    E, G = mA.run_dftd3('b3lyp', 'd3zero')
-    compare_values(ref_d3zero[1], E, 7, '6: Ethene -D3 (zero)')          #TEST
-    mB = eneyne.extract_subsets(2)
-    E, G = mB.run_dftd3('b3lyp', 'd3zero')
-    compare_values(ref_d3zero[2], E, 7, '7: Ethyne -D3 (zero)')          #TEST
+E, G = eneyne.run_sdftd3('b3lyp', 'd3zero')
+compare_values(ref_d3zero[0], E, 7, '5: Ethene-Ethyne -D3 (zero)')   #TEST
+mA = eneyne.extract_subsets(1)
+E, G = mA.run_sdftd3('b3lyp', 'd3zero')
+compare_values(ref_d3zero[1], E, 7, '6: Ethene -D3 (zero)')          #TEST
+mB = eneyne.extract_subsets(2)
+E, G = mB.run_sdftd3('b3lyp', 'd3zero')
+compare_values(ref_d3zero[2], E, 7, '7: Ethyne -D3 (zero)')          #TEST
 
-    E, G = eneyne.run_dftd3('b3lyp', 'd3bj')
-    compare_values(ref_d3bj[0], E, 6, '8: Ethene-Ethyne -D3 (bj)')       #TEST
-    mA = eneyne.extract_subsets(1)
-    E, G = mA.run_dftd3('b3lyp', 'd3bj')
-    compare_values(ref_d3bj[1], E, 6, '9: Ethene -D3 (bj)')              #TEST
-    mB = eneyne.extract_subsets(2)
-    E, G = mB.run_dftd3('b3lyp', 'd3bj')
-    compare_values(ref_d3bj[2], E, 6, '10: Ethyne -D3 (bj)')              #TEST
+E, G = eneyne.run_sdftd3('b3lyp', 'd3bj')
+compare_values(ref_d3bj[0], E, 6, '8: Ethene-Ethyne -D3 (bj)')       #TEST
+mA = eneyne.extract_subsets(1)
+E, G = mA.run_sdftd3('b3lyp', 'd3bj')
+compare_values(ref_d3bj[1], E, 6, '9: Ethene -D3 (bj)')              #TEST
+mB = eneyne.extract_subsets(2)
+E, G = mB.run_sdftd3('b3lyp', 'd3bj')
+compare_values(ref_d3bj[2], E, 6, '10: Ethyne -D3 (bj)')              #TEST
 
-    try:
-        E, G = eneyne.run_dftd4('b3lyp', 'd4')
-    except qcng.exceptions.ResourceError:
-        pass
-    else:                                                                           #TEST
-        compare_values(ref_d3zero[0], E, 2, '11(fake): Ethene-Ethyne -D4 (alias)')  #TEST
-    E, G = eneyne.run_dftd3('b3lyp', 'd3zero')
-    compare_values(ref_d3zero[0], E, 6, '11(fake d3): Ethene-Ethyne -D3 (alias)')  #TEST
-    E, G = eneyne.run_dftd3('b3lyp', 'd3')
-    compare_values(ref_d3zero[0], E, 6, '11: Ethene-Ethyne -D3 (alias)')  #TEST
-    E, G = eneyne.run_dftd3('b3lyp', 'd')
+try:
+    E, G = eneyne.run_dftd4('b3lyp', 'd4')
+except qcng.exceptions.ResourceError:
+    pass
+else:                                                                           #TEST
+    compare_values(ref_d3zero[0], E, 2, '11(fake): Ethene-Ethyne -D4 (alias)')  #TEST
+E, G = eneyne.run_sdftd3('b3lyp', 'd3zero')
+compare_values(ref_d3zero[0], E, 6, '11(fake d3): Ethene-Ethyne -D3 (alias)')  #TEST
+E, G = eneyne.run_sdftd3('b3lyp', 'd3')
+compare_values(ref_d3zero[0], E, 6, '11: Ethene-Ethyne -D3 (alias)')  #TEST
+try:
+    E, G = eneyne.run_sdftd3('b3lyp', 'd')
     compare_values(ref_d2[0], E, 6, '12: Ethene-Ethyne -D (alias)')       #TEST
-    E, G = eneyne.run_dftd3('b3lyp', 'd2')
+    E, G = eneyne.run_sdftd3('b3lyp', 'd2')
     compare_values(ref_d2[0], E, 6, '13: Ethene-Ethyne -D2 (alias)')      #TEST
+except qcdb.QcdbException:
+    pass
 
 set basis sto-3g
 set scf_type df
@@ -87,19 +92,15 @@ print('  -D correction from C-side')                                            
 activate(mA)
 energy('b3lyp-d2', engine='libdisp')
 compare_values(ref_d2[1], variable('DISPERSION CORRECTION ENERGY'), 7, '14: Ethene -D2 (calling psi4 Disp class)')  #TEST
-if d3_engine == "dftd3":
+try:
     energy('b3lyp-d2', engine='dftd3')
     compare_values(ref_d2[1], variable('DISPERSION CORRECTION ENERGY'), 7, '15: Ethene -D2 (calling dftd3 -old)')       #TEST
+except psi4.UpgradeHelper:
+    pass
 energy('b3lyp-d3zero2b')
 compare_values(ref_d3zero[1], variable('DISPERSION CORRECTION ENERGY'), 7, '16a: Ethene -D3zero2b')  #TEST
-if d3_engine == "dftd3":
-    try:
-        energy('b3lyp-d3zeroatm')
-    except qcng.exceptions.ResourceError as exc:
-        pass
-else:
-    energy('b3lyp-d3zeroatm')
-    compare_values(ref_d3zero[1] + ref_atm[1], variable('DISPERSION CORRECTION ENERGY'), 7, '16b: Ethene -D3zeroatm')  #TEST
+energy('b3lyp-d3zeroatm')
+compare_values(ref_d3zero[1] + ref_atm[1], variable('DISPERSION CORRECTION ENERGY'), 7, '16b: Ethene -D3zeroatm')  #TEST
 energy('b3lyp-d3zero')
 compare_values(ref_d3zero[1], variable('DISPERSION CORRECTION ENERGY'), 7, '16c: Ethene -D3zero')  #TEST
 energy('b3lyp-d3bj')
@@ -120,7 +121,7 @@ set dft_dispersion_parameters [0.75]
 energy('b3lyp-d', engine='libdisp')
 compare_values(ref_pbe_d2[2], variable('DISPERSION CORRECTION ENERGY'), 7, '22: Ethene -D2 (calling psi4 Disp class)')  #TEST
 set dft_dispersion_parameters [0.75, 20.0]
-if d3_engine == "dftd3":
+if False:
     energy('b3lyp-d2', engine='dftd3')
     compare_values(ref_pbe_d2[2], variable('DISPERSION CORRECTION ENERGY'), 7, '23: Ethene -D2 (calling dftd3 -old)')       #TEST
 set dft_dispersion_parameters [1.0,  0.722, 1.217, 14.0]
@@ -144,7 +145,9 @@ set dft_dispersion_parameters [1.0]
 energy('wb97x-d')
 compare_values(-0.000834247063, variable('DISPERSION CORRECTION ENERGY'), 7, '29: Ethene wb97x-d (chg)')                #TEST
 
-if d3_engine == "dftd3":
+if False:
+    # run_sdftd3 (1) doesn't run D2 and (2) doesn't handle setting both func and disp params the same way as run_dftd3, so skip
+
     print('  non-default -D correction from Py-side')                                                         #TEST
     eneyne.update_geometry()
     eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})

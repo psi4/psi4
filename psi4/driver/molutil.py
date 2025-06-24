@@ -255,6 +255,7 @@ def dynamic_variable_bind(cls):
     cls.from_schema = _molecule_from_schema
     cls.to_schema = qcdb.Molecule.to_schema
     cls.run_dftd3 = qcdb.Molecule.run_dftd3
+    cls.run_sdftd3 = qcdb.Molecule.run_sdftd3
     cls.run_dftd4 = qcdb.Molecule.run_dftd4
     cls.run_gcp = qcdb.Molecule.run_gcp
     cls.format_molecule_for_mol = qcdb.Molecule.format_molecule_for_mol

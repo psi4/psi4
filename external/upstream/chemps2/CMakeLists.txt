@@ -1,5 +1,5 @@
 if(${ENABLE_CheMPS2})
-    find_package(CheMPS2 1.8.7 CONFIG QUIET)
+    find_package(CheMPS2 1.8.7 CONFIG QUIET)  # edit in codedeps
 
     if(${CheMPS2_FOUND})
         get_property(_loc TARGET CheMPS2::chemps2 PROPERTY LOCATION)
@@ -36,7 +36,7 @@ if(${ENABLE_CheMPS2})
         ExternalProject_Add(chemps2_external
             DEPENDS lapack_external
                     hdf5_external
-            URL https://github.com/SebWouters/CheMPS2/archive/d8ac508.tar.gz  # v1.8.9 + 1
+            URL https://github.com/SebWouters/CheMPS2/archive/d8ac508.tar.gz  # v1.8.9+  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -60,6 +60,7 @@ if(${ENABLE_CheMPS2})
                        -DTargetHDF5_DIR=${TargetHDF5_DIR}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+                       -DCMAKE_POLICY_VERSION_MINIMUM=3.5
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
