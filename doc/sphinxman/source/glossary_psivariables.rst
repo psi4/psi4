@@ -1150,6 +1150,11 @@ PSI Variables by Alpha
    The total electronic energy [E_h] and correlation energy component [E_h]
    for the MP2.5 level of theory.
 
+.. psivar:: MP2-F12 CORRECTION ENERGY
+
+   The component [E_h] correcting :psivar:`MP2 CORRELATION ENERGY` for
+   explicit correlation for the MP2-F12/3C(FIX) level of theory.
+
 .. psivar:: MP2-F12 TOTAL ENERGY
    MP2-F12 CORRELATION ENERGY
 

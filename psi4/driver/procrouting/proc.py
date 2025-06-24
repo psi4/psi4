@@ -1453,7 +1453,13 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
     df_needed |= "DFDIRJ" in core.get_global_option("SCF_TYPE")
     df_needed |= (core.get_global_option("SCF_TYPE") == "DIRECT" and core.get_option("SCF", "DF_SCF_GUESS"))
     if df_needed:
-        aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
+        if (dfbs := kwargs.get("_force_df_basis_scf", False)):
+            key, target, fitrole = dfbs
+            aux_basis = core.BasisSet.build(wfn.molecule(), key, target, fitrole,
+                                        core.get_global_option('BASIS'),
+                                        puream=wfn.basisset().has_puream())
+        else:
+            aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
                                         core.get_option("SCF", "DF_BASIS_SCF"),
                                         "JKFIT", core.get_global_option('BASIS'),
                                         puream=wfn.basisset().has_puream())
@@ -4197,7 +4203,13 @@ def run_dfmp2(name, **kwargs):
     if core.get_global_option('REFERENCE') == "ROHF":
         ref_wfn.semicanonicalize()
 
-    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
+    if (dfbs := kwargs.get("_force_df_basis_mp2", False)):
+        key, target, fitrole = dfbs
+        aux_basis = core.BasisSet.build(ref_wfn.molecule(), key, target, fitrole,
+                                        core.get_global_option('BASIS'),
+                                        puream=ref_wfn.basisset().has_puream())
+    else:
+        aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
                                     core.get_option("DFMP2", "DF_BASIS_MP2"),
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
@@ -4393,6 +4405,7 @@ def run_dlpnomp2(name, **kwargs):
     core.tstop()
     return dlpnomp2_wfn
 
+
 def run_mp2f12(name, **kwargs):
     r"""Function encoding sequence of PSI module calls
     for a MP2-F12/3C(FIX) calculation.
@@ -4401,26 +4414,38 @@ def run_mp2f12(name, **kwargs):
     optstash = p4util.OptionsState(
         ['SCF_TYPE'],
         ['MP2_TYPE'],
-        ['CABS_BASIS'],
+        ["F12", "CABS_BASIS"],
         ["SCF", "DF_BASIS_SCF"],
         ["DFMP2", "DF_BASIS_MP2"],
         ['DF_BASIS_F12'])
 
-    # Default SCF_TYPE to PK if F12_TYPE is CONV and has not been changed
-    if not core.has_global_option_changed('SCF_TYPE')\
-        and "CONV" in core.get_option("F12", "MP2_TYPE"):
-        core.set_global_option('SCF_TYPE', 'PK')
-        core.print_out("""    SCF Algorithm Type set to PK.\n""")
+
+    # Alter default SCF algorithm and enforce DF+DF or CONV+CONV
+    df_f12 = core.get_option("F12", "MP2_TYPE") == "DF"
+    if df_f12:
+        if not core.has_global_option_changed('SCF_TYPE'):
+            core.set_global_option('SCF_TYPE', 'DF')
+            core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+
+        if "DF" not in core.get_global_option('SCF_TYPE'):
+            raise ValidationError('DF-MP2-F12 energies need DF-SCF reference.')
+
+        kwargs["_force_df_basis_scf"] = ("DF_BASIS_F12", core.get_option("F12", "DF_BASIS_F12"), "RIFIT")
+
     else:
-        dfbs = core.get_option("F12", "DF_BASIS_F12")
-        core.set_global_option('SCF_TYPE', 'DF')
-        core.set_local_option("SCF", "DF_BASIS_SCF", dfbs)
+        if not core.has_global_option_changed('SCF_TYPE'):
+            core.set_global_option('SCF_TYPE', 'PK')
+            core.print_out("""    SCF Algorithm Type (re)set to PK.\n""")
+
+        if "DF" in core.get_global_option('SCF_TYPE') or "CD" in core.get_global_option('SCF_TYPE'):
+            raise ValidationError('MP2-F12 energies need CONV SCF reference.')
 
     # Ensure RHF reference
     if core.get_global_option('REFERENCE') != "RHF":
         raise ValidationError(f"MP2-F12 is not available for {core.get_global_option('REFERENCE')} references.")
 
     # Bypass the scf call if a reference wavefunction is given
+    # * note that consistency of f12dfbs not checked if ref passed in
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
@@ -4432,10 +4457,10 @@ def run_mp2f12(name, **kwargs):
     if core.get_option("F12", "MP2_TYPE") == "CONV":
         ref_wfn = run_occ("mp2", ref_wfn=ref_wfn)
     else:
-        core.set_local_option("DFMP2", "DF_BASIS_MP2", dfbs)
-        ref_wfn = run_dfmp2("dfmp2", ref_wfn=ref_wfn)
+        ref_wfn = run_dfmp2("dfmp2", ref_wfn=ref_wfn, _force_df_basis_mp2=kwargs["_force_df_basis_scf"])
 
     # clean results from globals, keep on wfn
+    kwargs.pop("_force_df_basis_scf", None)
     core.clean_variables()
 
     core.tstart()
@@ -4453,12 +4478,12 @@ def run_mp2f12(name, **kwargs):
         raise ValidationError("""  No CABS_BASIS given!""")
 
     # Create CABS
-    keys = ["BASIS","CABS_BASIS"]
+    keys = ["BASIS", "CABS_BASIS"]
     targets = [OBS, CABS]
-    roles = ["ORBITAL","F12"]
+    roles = ["ORBITAL", "F12"]
     others = [OBS, OBS]
     mol = ref_wfn.molecule()
-    combined = qcdb.libmintsbasisset.BasisSet.pyconstruct_combined(mol.save_string_xyz(), keys, targets, roles, others)
+    combined = qcdb.libmintsbasisset.BasisSet.pyconstruct_combined(mol.to_string(dtype="psi4"), keys, targets, roles, others)
     cabs = core.BasisSet.construct_from_pydict(mol, combined, combined["puream"])
     ref_wfn.set_basisset("CABS", cabs)
 
@@ -4478,6 +4503,7 @@ def run_mp2f12(name, **kwargs):
     optstash.restore()
     core.tstop()
     return mp2f12_wfn
+
 
 def run_dmrgscf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
