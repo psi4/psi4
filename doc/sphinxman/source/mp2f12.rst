@@ -258,7 +258,7 @@ them before changing defaults. Some basic recommendations for running the module
   are also set to run DF. Choose a DF basis set with at least triple-zeta quality as 
   |PSIfours| :ref:`DF-SCF <sec:scf>` module performs poorly with lower quality DF basis sets. 
   This module utilizes robust density-fitting [Dunlap:2000:2113]_ so energies may differ from other programs.
-  The default ``F12_TYPE`` is ``DF``.
+  The default |f12__mp2_type| is ``DF``.
 
 * The length-scale parameter ``F12_BETA`` has been fiddled with in many past studies and they have determined 
   that the exponents 0.9, 1.0, and 1.0 :math:`a_0^{-1}` are recommended for cc-pVXZ-F12 where X = D, T, and Q, 
