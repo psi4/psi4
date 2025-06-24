@@ -1,7 +1,8 @@
 from typing import Tuple
 
 import numpy as np
-from qcengine.programs.tests.standard_suite_ref import answer_hash, compute_derived_qcvars, _std_suite, _std_generics
+from qcengine.programs.tests.standard_suite_ref import answer_hash, compute_derived_qcvars, _std_suite, _std_generics, _scf_h2o_adz_pk_rhf, _scf_h2o_adz_df_rhf
+
 
 
 # in-repo extensions for _std_suite above
@@ -36,6 +37,8 @@ _std_suite_psi4_extension = [
             "MP2-F12 CORRELATION ENERGY": -0.31082166907,
             "MP2-F12 SINGLES ENERGY": 0.0,
             "MP2-F12 SAME-SPIN CORRELATION ENERGY": -0.07400595,
+            "HF TOTAL ENERGY": _scf_h2o_adz_pk_rhf,
+            "MP2 CORRELATION ENERGY": -0.2218977246,  # copied from qcengine
         },
     },
     {
@@ -154,6 +157,8 @@ _std_suite_psi4_extension = [
             "MP2-F12 CORRELATION ENERGY": -0.292676554889,
             "MP2-F12 SINGLES ENERGY": 0.0,
             "MP2-F12 SAME-SPIN CORRELATION ENERGY": -0.07262946,
+            "HF TOTAL ENERGY": _scf_h2o_adz_pk_rhf,
+            "MP2 CORRELATION ENERGY": -0.2194081478,  # copied from qcengine
         },
     },
     {
@@ -229,6 +234,7 @@ _std_suite_psi4_extension = [
             "MP2-F12 CORRELATION ENERGY": -0.310633975041,
             "MP2-F12 SINGLES ENERGY": 0.0,
             "MP2-F12 SAME-SPIN CORRELATION ENERGY": -0.07403290,
+            "HF TOTAL ENERGY": _scf_h2o_adz_df_rhf,
         },
     },
     {
@@ -323,6 +329,7 @@ _std_suite_psi4_extension = [
             "MP2-F12 CORRELATION ENERGY": -0.292535867049,
             "MP2-F12 SINGLES ENERGY": 0.0,
             "MP2-F12 SAME-SPIN CORRELATION ENERGY": -0.07265948,
+            "HF TOTAL ENERGY": _scf_h2o_adz_df_rhf,
         },
     },
     {
@@ -390,6 +397,10 @@ def compute_derived_qcvars_psi4_extension(std_suite_list):
                 calc["data"]["MP2-F12 TOTAL ENERGY"] = (
                     calc["data"]["MP2-F12 CORRELATION ENERGY"] + calc["data"]["HF-CABS TOTAL ENERGY"]
                 )
+                if "HF-CABS TOTAL ENERGY" in calc["data"] and "HF TOTAL ENERGY" in calc["data"]:
+                    calc["data"]["F12 CABS CORRECTION ENERGY"] = calc["data"]["HF-CABS TOTAL ENERGY"] - calc["data"]["HF TOTAL ENERGY"]
+                if "MP2-F12 CORRELATION ENERGY" in calc["data"] and "MP2 CORRELATION ENERGY" in calc["data"]:
+                    calc["data"]["MP2-F12 CORRECTION ENERGY"] = calc["data"]["MP2-F12 CORRELATION ENERGY"] - calc["data"]["MP2 CORRELATION ENERGY"]
                 if "MP2-F12 SINGLES ENERGY" in calc["data"]:
                     calc["data"]["MP2-F12 DOUBLES ENERGY"] = (
                         calc["data"]["MP2-F12 CORRELATION ENERGY"] - calc["data"]["MP2-F12 SINGLES ENERGY"]
@@ -424,9 +435,11 @@ def contractual_mp2f12(
     {{_contractual_docstring}}
     """
     contractual_qcvars = [
+        # "F12 CABS CORRECTION ENERGY",  # not valid for df
         "HF-CABS TOTAL ENERGY",
         "MP2-F12 CORRELATION ENERGY",
         "MP2-F12 TOTAL ENERGY",
+        "MP2-F12 CORRECTION ENERGY",  # may not be valid for df
         "MP2-F12 SAME-SPIN CORRELATION ENERGY",
         "MP2-F12 SINGLES ENERGY",
         "MP2-F12 DOUBLES ENERGY",
@@ -441,7 +454,8 @@ def contractual_mp2f12(
     for pv in contractual_qcvars:
         expected = True
         if (
-        ):
+            (qc_module == "psi4-f12" and corl_type == "df" and method == "mp2-f12")
+        ) and pv in ["F12 CABS CORRECTION ENERGY"]:  # TODO wrong should be HF TOT
             expected = False
 
         yield (pv, pv, expected)

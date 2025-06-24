@@ -395,20 +395,23 @@ void MP2F12::print_results() {
 
     E_mp2f12_ = E_rhf + E_mp2 + E_f12_ + E_singles_;
 
+    outfile->Printf("     RHF Reference Energy:              %16.12f \n", E_rhf);
+    if (singles_ == true) {
+        outfile->Printf("     CABS Singles Correction:           %16.12f \n", E_singles_);
+    }
+    outfile->Printf("     CABS-corrected Reference Energy:   %16.12f \n", E_rhf + E_singles_);
+
+    outfile->Printf("     MP2 Correlation Energy:            %16.12f \n", E_mp2);
+    outfile->Printf("     F12/3C(FIX) Correction Energy:     %16.12f \n", E_f12_);
+    outfile->Printf("     MP2-F12/3C(FIX) Correlation Energy:%16.12f \n", E_f12_ + E_mp2);
     if (use_df_) {
         outfile->Printf("  Total DF-MP2-F12/3C(FIX) Energy:      %16.12f \n", E_mp2f12_);
     } else {
         outfile->Printf("  Total MP2-F12/3C(FIX) Energy:         %16.12f \n", E_mp2f12_);
     }
-    outfile->Printf("     RHF Reference Energy:              %16.12f \n", E_rhf);
-    outfile->Printf("     MP2 Correlation Energy:            %16.12f \n", E_mp2);
-    outfile->Printf("     F12/3C(FIX) Correlation Energy:    %16.12f \n", E_f12_);
-
-    if (singles_ == true) {
-        outfile->Printf("     CABS Singles Correction:           %16.12f \n", E_singles_);
-    }
 
     set_scalar_variable("HF-CABS TOTAL ENERGY", E_rhf + E_singles_);
+    set_scalar_variable("MP2-F12 CORRECTION ENERGY", E_f12_);
     set_scalar_variable("MP2-F12 CORRELATION ENERGY", E_mp2 + E_f12_);
     set_scalar_variable("MP2-F12 TOTAL ENERGY", E_mp2f12_);
 
@@ -605,6 +608,7 @@ void DiskMP2F12::form_cabs_singles(einsums::DiskTensor<double, 2>* f) {
         }
     }
 
+    set_scalar_variable("F12 CABS CORRECTION ENERGY", E_s);
     E_singles_ = E_s;
 }
 
