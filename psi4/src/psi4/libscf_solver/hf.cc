@@ -83,10 +83,12 @@ extern bool brianEnable;
 
 #endif
 
+#ifdef USING_OpenTrustRegion
+#include <opentrustregion.h>
+#endif
+
 #ifdef HAVE_DLFCN_H
-
 #include <dlfcn.h>
-
 #endif
 
 namespace psi {
@@ -1457,23 +1459,23 @@ bool HF::stability_analysis() {
     return false;
 }
 
-extern "C" double obj_func_wrapper(const double* kappa) {
+extern "C" const double obj_func_wrapper(const double* kappa) {
     if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
     return HF::instance->obj_func(kappa);
 }
 
-extern "C" void hess_x_wrapper(const double* x, void** hess_x) {
+extern "C" void hess_x_wrapper(const double* x, double** hess_x) {
     if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
     HF::instance->hess_x(x, hess_x);
 }
 
-extern "C" void update_orbs_wrapper(const double* kappa, double* func, void** grad, void** h_diag,
-    void (**hess_x_out)(const double*, void**)) {
+extern "C" const void update_orbs_wrapper(const double* kappa, double* func, double** grad,
+    double** h_diag, void (**hess_x_out)(const double*, double**)) {
     if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
     HF::instance->update_orbs(kappa, func, grad, h_diag, hess_x_out);
 }
 
-extern "C" void logger(const char* message) {
+extern "C" const void logger(const char* message) {
     outfile->Printf(" %s\n", message);
 }
 
@@ -1494,26 +1496,7 @@ void HF::opentrustregion_scf() {
     }
 
     // define interface
-    using solver_func_t = void (*)(
-        void (*update_orbs)(const double*, double*, void**, void**, void (**)(const double*, void**)),
-        double (*obj_func)(const double*),
-        int n_param,
-        bool* error,
-        void* precond_c_ptr,
-        void* stability_c_ptr,
-        void* line_search_c_ptr,
-        void* jacobi_davidson_c_ptr,
-        void* conv_tol_c_ptr,
-        void* n_random_trial_vectors_c_ptr,
-        void* start_trust_radius_c_ptr,
-        void* n_macro_c_ptr,
-        void* n_micro_c_ptr,
-        void* global_red_factor_c_ptr,
-        void* local_red_factor_c_ptr,
-        void* seed_c_ptr,
-        void* verbose_c_ptr,
-        void (*logger)(const char*)
-    );
+    using solver_func_t = decltype(&solver);
     
     // load symbol
     solver_func_t solver = reinterpret_cast<solver_func_t>(dlsym(handle, "solver"));
@@ -1529,32 +1512,29 @@ void HF::opentrustregion_scf() {
     // input parameters
     n_param_ = n_param();
     bool error;
-    bool stability = options_.get_str("STABILITY_ANALYSIS") != "NONE";
-    auto stability_ptr = static_cast<void*>(&stability);
-    void* conv_tol_ptr;
+    const bool stability = options_.get_str("STABILITY_ANALYSIS") != "NONE";
+    const double* conv_tol_ptr;
     if (options_["SOSCF_CONV"].has_changed()) {
-        double conv_tol = options_.get_double("SOSCF_CONV");
-        conv_tol_ptr = static_cast<void*>(&conv_tol);
+        const double conv_tol = options_.get_double("SOSCF_CONV");
+        conv_tol_ptr = &conv_tol;
     } else {
         conv_tol_ptr = nullptr;
     }
-    int n_macro = options_.get_int("MAXITER");
-    auto n_macro_ptr = static_cast<void*>(&n_macro);
-    void* n_micro_ptr;
+    const int n_macro = options_.get_int("MAXITER");
+    const int* n_micro_ptr;
     if (options_["SOSCF_MAX_ITER"].has_changed()) {
-        int n_micro = options_.get_int("SOSCF_MAX_ITER");
-        n_micro_ptr = static_cast<void*>(&n_micro);
+        const int n_micro = options_.get_int("SOSCF_MAX_ITER");
+        n_micro_ptr = &n_micro;
     } else {
         n_micro_ptr = nullptr;
     }
-    int verbose = options_.get_int("PRINT");
-    verbose = (verbose == 0) ? 2 : (verbose == 1) ? 3 : 4;
-    auto verbose_ptr = static_cast<void*>(&verbose);
+    int print = options_.get_int("PRINT");
+    const int verbose = (print == 0) ? 2 : (print == 1) ? 3 : 4;
 
     // call the Fortran solver
-    solver(update_orbs_wrapper, obj_func_wrapper, n_param_, &error, nullptr, stability_ptr,
-            nullptr, nullptr, conv_tol_ptr, nullptr, nullptr, n_macro_ptr, n_micro_ptr, nullptr,
-            nullptr, nullptr, verbose_ptr, logger);
+    solver(update_orbs_wrapper, obj_func_wrapper, n_param_, &error, nullptr, nullptr, 
+            &stability, nullptr, nullptr, nullptr, nullptr, conv_tol_ptr, nullptr, nullptr, 
+            &n_macro, n_micro_ptr, nullptr, nullptr, nullptr, &verbose, logger);
 
     // check if solver completed successfully
     if (error) {

@@ -1413,7 +1413,7 @@ double ROHF::obj_func(const double* kappa) {
     return func;
 }
 
-void ROHF::hess_x(const double* x, void** hess_x) {
+void ROHF::hess_x(const double* x, double** hess_x) {
     // get doubly and singly occupied and virtual dimensions per irrep
     auto doccpi = nbetapi_;
     auto soccpi = nalphapi_ - nbetapi_;
@@ -1460,8 +1460,8 @@ void ROHF::hess_x(const double* x, void** hess_x) {
     *hess_x = hess_x_arr;
 }
 
-void ROHF::update_orbs(const double* kappa, double* func, void** grad, void** h_diag,
-                      void (**hess_x_out)(const double*, void**)) {
+void ROHF::update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
+                      void (**hess_x_out)(const double*, double**)) {
     // get doubly and singly occupied and virtual dimensions per irrep
     auto doccpi = nbetapi_;
     auto soccpi = nalphapi_ - nbetapi_;

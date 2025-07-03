@@ -1662,7 +1662,7 @@ double UHF::obj_func(const double* kappa) {
     return func;
 }
 
-void UHF::hess_x(const double* x, void** hess_x) {
+void UHF::hess_x(const double* x, double** hess_x) {
     // get doubly occupied and virtual dimensions per irrep
     auto occpi_a = nalphapi_;
     auto occpi_b = nbetapi_;
@@ -1712,8 +1712,8 @@ void UHF::hess_x(const double* x, void** hess_x) {
     *hess_x = hess_x_arr;
 }
 
-void UHF::update_orbs(const double* kappa, double* func, void** grad, void** h_diag,
-                      void (**hess_x_out)(const double*, void**)) {
+void UHF::update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
+                      void (**hess_x_out)(const double*, double**)) {
     // get occupied and virtual dimensions per spin type and irrep
     auto occpi_a = nalphapi_;
     auto occpi_b = nbetapi_;
