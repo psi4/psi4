@@ -134,6 +134,7 @@ void C_DTRMM(char side, char uplo, char transa, char diag, int m, int n, double 
 void C_DSYRK(char uplo, char trans, int n, int k, double alpha, double* a, int lda, double beta, double* c, int ldc);
 void C_DSYR2K(char uplo, char trans, int n, int k, double alpha, double* a, int lda, double* b, int ldb, double beta,
               double* c, int ldc);
+PSI_API
 void C_DTRSV(char uplo, char trans, char diag, int n, double* a, int lda, double* x, int incx);
 
 // LAPACK 3.2 Double routines
