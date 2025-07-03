@@ -48,15 +48,10 @@ from ..constants import constants
 class Lineshape:
     """Lineshape ABC
 
-    Attributes
-    ----------
-    domain
-        Domain of the spectral band.
-    gamma
-        A function returning the broadening factor.
-
     Notes
     -----
+    domain -- Domain of the spectral band.
+    gamma -- A function returning the broadening factor.
     Why do we use a callable broadening factor?
     For plots in the *wavelength domain*, the broadening factor depends on the location of the band's maximum.
     """

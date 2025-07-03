@@ -572,24 +572,37 @@ void HF::form_H() {
 
             if (dipole_field_type_ == embpot) {
                 FILE* input = fopen("EMBPOT", "r");
-                int npoints;
-                int statusvalue = fscanf(input, "%d", &npoints);
-                outfile->Printf("  npoints = %d\n", npoints);
+                size_t npoints;
+                int statusvalue = fscanf(input, "%zu", &npoints);
+                if (statusvalue != 1) {
+                    throw PSIEXCEPTION("HF::form_H error: EOF or wrong number of inputs read from EMBPOT header, return=" +
+                                       std::to_string(statusvalue) + " (expected 1)");
+                }
+                if (npoints*5*8 > memory_) {
+                    throw PSIEXCEPTION("HF::form_H error: Size of EMBPOT file exceeds memory allocation, " +
+                                       std::to_string(npoints*5*8) + " bytes > " + std::to_string(memory_) + " bytes");
+                }
+                outfile->Printf("  npoints = %zu\n", npoints);
                 double x, y, z, w, v;
                 double max = 0;
-                for (int k = 0; k < npoints; k++) {
+                for (size_t k = 0; k < npoints; k++) {
                     statusvalue = fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
+                    if (statusvalue != 5) {
+                        throw PSIEXCEPTION("HF::form_H error: EOF or wrong number of inputs read from EMBPOT, return=" +
+                                           std::to_string(statusvalue) + " (expected 5)");
+                    }
                     if (std::fabs(v) > max) max = std::fabs(v);
 
-                    basisset_->compute_phi(phi_ao.pointer(), x, y, z);
-                    // Transform phi_ao to SO basis
-                    phi_so.gemv(true, 1.0, u, phi_ao, 0.0);
-                    for (int i = 0; i < nso; i++)
-                        for (int j = 0; j < nso; j++) V_eff.add(i, j, w * v * phi_so[i] * phi_so[j]);
+                    basisset_->compute_phi(phi_so.pointer(), x, y, z);
+                    for (int i = 0; i < nso; i++) {
+                        for (int j = 0; j < nso; j++) {
+                            V_eff.add(i, j, w * v * phi_so[i] * phi_so[j]);
+                        }
+                    }
                 }  // npoints
-
                 outfile->Printf("  Max. embpot value = %20.10f\n", max);
                 fclose(input);
+
 
             }  // embpot
             else if (dipole_field_type_ == dx) {
