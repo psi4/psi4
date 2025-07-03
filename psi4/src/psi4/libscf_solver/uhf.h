@@ -101,9 +101,9 @@ class UHF : public HF {
     int otr_n_param() override;
 #endif
 
-    void update_orbs(const double* kappa, double* func, void** grad, void** h_diag,
-    void (**hess_x_out)(const double*, void**)) override;
-    void hess_x(const double* x, void** out) override;
+    void update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
+    void (**hess_x_out)(const double*, double**)) override;
+    void hess_x(const double* x, double** out) override;
     double obj_func(const double* kappa) override;
     int n_param() override;
 

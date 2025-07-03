@@ -83,10 +83,12 @@ extern bool brianEnable;
 
 #endif
 
+#ifdef USING_OpenTrustRegion
+#include <opentrustregion.h>
+#endif
+
 #ifdef HAVE_DLFCN_H
-
 #include <dlfcn.h>
-
 #endif
 
 namespace psi {
