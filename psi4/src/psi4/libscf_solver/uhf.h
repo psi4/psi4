@@ -91,9 +91,9 @@ class UHF : public HF {
     void damping_update(double) override;
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
 
-    void update_orbs(const double* kappa, double* func, void** grad, void** h_diag,
-    void (**hess_x_out)(const double*, void**)) override;
-    void hess_x(const double* x, void** out) override;
+    void update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
+    void (**hess_x_out)(const double*, double**)) override;
+    void hess_x(const double* x, double** out) override;
     double obj_func(const double* kappa) override;
     int n_param() override;
 
