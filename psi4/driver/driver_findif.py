@@ -303,6 +303,7 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
         cart_coords = molsym.salcs.CartesianCoordinates(symtext)
 
         salcs = molsym.salcs.ProjectionOp(symtext, cart_coords)
+        #salcs = molsym.salcs.ProjectionOp(symtext, cart_coords, project_Eckart=False)
 
         salcs.sort_to('blocks')
         ref_geom = symtext.mol.coords
