@@ -15,11 +15,22 @@ message(STATUS "Setting option ${variable}: ${${variable}}")
 endif()
 endfunction()
 
+#Macro for handling deprecated cache variables
+#
+#Note: We are doing shenanigans as macros to break out of the function
+#  caller if needed.
+#
+#Syntax: option_with_print(<option name pointer> <default value>)
+#
+macro(psi4_deprecated_variable variable_var default)
+endmacro()
+
 # Wraps an option with default ON/OFF. Adds nice messaging to option()
 #
 #Syntax: option_with_print(<option name> <description> <default value>)
 #
 function(option_with_print variable msge default)
+psi4_deprecated_variable(variable ${default})
 print_option(${variable} ${default})
 option(${variable} ${msge} ${default})
 endfunction(option_with_print)
@@ -33,6 +44,7 @@ endfunction(option_with_print)
 #Syntax: option_with_default(<option name> <description> <default value>)
 #
 function(option_with_default variable msge default)
+psi4_deprecated_variable(variable ${default})
 print_option(${variable} ${default})
 if(NOT DEFINED ${variable} OR "${${variable}}" STREQUAL "")
 set(${variable} ${default} CACHE STRING ${msge} FORCE)
