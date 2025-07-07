@@ -3,26 +3,26 @@
 ###functions/macros.  If you find repetitive code throughout the build scripts
 ###this is the place to add it (make sure you document it too).
 
-#Macro for printing an option in a consistent manner
+#Function for printing an option in a consistent manner
 #
 #Syntax: print_option(<option to print> <was specified>)
 #
-macro(print_option variable default)
+function(print_option variable default)
 if(NOT DEFINED ${variable} OR "${${variable}}" STREQUAL "")
 message(STATUS "Setting (unspecified) option ${variable}: ${default}")
 else()
 message(STATUS "Setting option ${variable}: ${${variable}}")
 endif()
-endmacro()
+endfunction()
 
 # Wraps an option with default ON/OFF. Adds nice messaging to option()
 #
 #Syntax: option_with_print(<option name> <description> <default value>)
 #
-macro(option_with_print variable msge default)
+function(option_with_print variable msge default)
 print_option(${variable} ${default})
 option(${variable} ${msge} ${default})
-endmacro(option_with_print)
+endfunction(option_with_print)
 
 #Wraps an option with a default other than ON/OFF and prints it
 #NOTE: Can't combine with above b/c CMake handles ON/OFF options specially
@@ -32,12 +32,12 @@ endmacro(option_with_print)
 #
 #Syntax: option_with_default(<option name> <description> <default value>)
 #
-macro(option_with_default variable msge default)
+function(option_with_default variable msge default)
 print_option(${variable} ${default})
 if(NOT DEFINED ${variable} OR "${${variable}}" STREQUAL "")
 set(${variable} ${default} CACHE STRING ${msge} FORCE)
 endif()
-endmacro(option_with_default)
+endfunction(option_with_default)
 
 # Common guts to adding a Psi4 library irrespective of bin vs. lib home
 #
