@@ -837,7 +837,7 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
                                       SharedVector occ_b, SharedMatrix D, SharedMatrix Chuckel, SharedVector Ehuckel) {
 
 #ifndef USING_OpenOrbitalOptimizer
-  throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build!\n");
+  throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build! Recompile with `-D ENABLE_OpenOrbitalOptimizer=ON`.\n");
 #else
     std::shared_ptr<Molecule> mol = bas->molecule();
     mol->update_geometry();
