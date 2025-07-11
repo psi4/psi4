@@ -285,9 +285,16 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.form_initial_C()
             self.reset_occupation()
             self.find_occupation()
-        self.openorbital_scf()
-        self.set_energies("Total Energy", self.compute_E())
-        return
+        try:
+            self.openorbital_scf()
+        except RuntimeError as ex:
+            if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
+                core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
+            else:
+                raise ex
+        else:
+            self.set_energies("Total Energy", self.compute_E())
+            return
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = False

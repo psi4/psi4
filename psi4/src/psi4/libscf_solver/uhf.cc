@@ -41,6 +41,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include <any>
 
 #include "psi4/physconst.h"
 
@@ -1498,7 +1499,7 @@ void UHF::openorbital_scf() {
 
   OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);
   scfsolver.maximum_iterations(maxiter); // mod
-  scfsolver.verbosity(5);  // mod
+  scfsolver.verbosity(options_.get_int("OOO_PRINT"));  // mod
   scfsolver.convergence_threshold(E_tol);  // mod
   scfsolver.maximum_history_length(maxvecs); // mod
   scfsolver.callback_function(callback_function); // mod
