@@ -29,7 +29,7 @@ try:
     Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-0.912085762652)
     psi4.set_global_option_python('EXTERN', Chrgfield.extern)
 except UpgradeHelper as e:
-    if "QMMMbohr" in str(e):
+    if "external_potentials" in str(e):
         upgrade_helper_raised = True
 compare(True, upgrade_helper_raised, "avert old QMMM syntax")
 

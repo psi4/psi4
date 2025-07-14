@@ -56,31 +56,34 @@ Empirical Dispersion Implementations
 
 .. table:: Empirical dispersion correction packages
 
-   +-------------------------------------+---------------------------------+-------------+------------+---------------------------+----------------------------------------------------------------------------------+----------+
-   | Package                             | Provides                        | before v1.7 | since v1.7 | Request                   | Source                                                                           | Nickname |
-   +=====================================+=================================+=============+============+===========================+==================================================================================+==========+
-   | D3                                  |                                 |             |            |                           |                                                                                  |          |
-   +-------------------------------------+---------------------------------+-------------+------------+---------------------------+----------------------------------------------------------------------------------+----------+
-   | ``psi4::dftd3``                     | ``bin/dftd3``                   | preferred   | works      | ``engine="dftd3"``        | https://github.com/loriab/dftd3                                                  | classic  |
-   +-------------------------------------+---------------------------------+-------------+------------+---------------------------+----------------------------------------------------------------------------------+----------+
-   | ``conda-forge::dftd3-python``       | ``import dftd3``                | nyi         | preferred  | ``engine="s-dftd3"``      | https://github.com/dftd3/simple-dftd3                                            | s-dftd3  |
-   +-------------------------------------+---------------------------------+-------------+------------+---------------------------+----------------------------------------------------------------------------------+----------+
-   | (dep) ``conda-forge::simple-dftd3`` | ``bin/simple-dftd3``            |             |            |                           | https://github.com/dftd3/simple-dftd3                                            |          |
-   +-------------------------------------+---------------------------------+-------------+------------+---------------------------+----------------------------------------------------------------------------------+----------+
-   | D4                                  |                                 |             |            |                           |                                                                                  |          |
-   +-------------------------------------+---------------------------------+-------------+------------+---------------------------+----------------------------------------------------------------------------------+----------+
-   | ``psi4::dftd4``                     | ``bin/dftd4``, ``import dftd4`` | preferred   | works      | ``engine="dftd4"``        | https://github.com/dftd4/dftd4                                                   |          |
-   +-------------------------------------+---------------------------------+-------------+------------+---------------------------+----------------------------------------------------------------------------------+----------+
-   | ``conda-forge::dftd4-python``       | ``import dftd4``                | nyi         | preferred  | ``engine="dftd4"``        | https://github.com/dftd4/dftd4                                                   |          |
-   +-------------------------------------+---------------------------------+-------------+------------+---------------------------+----------------------------------------------------------------------------------+----------+
-   | (dep) ``conda-forge::dftd4``        | ``bin/dftd4``                   |             |            |                           | https://github.com/dftd4/dftd4                                                   |          |
-   +-------------------------------------+---------------------------------+-------------+------------+---------------------------+----------------------------------------------------------------------------------+----------+
-   | GCP                                 |                                 |             |            |                           |                                                                                  |          |
-   +-------------------------------------+---------------------------------+-------------+------------+---------------------------+----------------------------------------------------------------------------------+----------+
-   | ``psi4::gcp``                       | ``bin/gcp``                     | preferred   | works      | ``gcp_engine="gcp"``      | https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/gcp/gcp_v202.tar.gz | classic  |
-   +-------------------------------------+---------------------------------+-------------+------------+---------------------------+----------------------------------------------------------------------------------+----------+
-   | ``conda-forge::gcp-correction``     | ``bin/mctc-gcp``                | nyi         | preferred  | ``gcp_engine="mctc-gcp"`` | https://github.com/grimme-lab/gcp                                                | mctc     |
-   +-------------------------------------+---------------------------------+-------------+------------+---------------------------+----------------------------------------------------------------------------------+----------+
+   +-------------------------------------+---------------------------------+-------------+------------+--------------+---------------------------+----------------------------------------------------------------------------------+----------+
+   | Package                             | Provides                        | before v1.7 | since v1.7 | since v1.10  | Request                   | Source                                                                           | Nickname |
+   +=====================================+=================================+=============+============+==============+===========================+==================================================================================+==========+
+   | D3                                  |                                 |             |            |              |                           |                                                                                  |          |
+   +-------------------------------------+---------------------------------+-------------+------------+--------------+---------------------------+----------------------------------------------------------------------------------+----------+
+   | ``psi4::dftd3``                     | ``bin/dftd3``                   | preferred   | works      | error [#g1]_ | ``engine="dftd3"``        | https://github.com/loriab/dftd3                                                  | classic  |
+   +-------------------------------------+---------------------------------+-------------+------------+--------------+---------------------------+----------------------------------------------------------------------------------+----------+
+   | ``conda-forge::dftd3-python``       | ``import dftd3``                | nyi         | preferred  | preferred    | ``engine="s-dftd3"``      | https://github.com/dftd3/simple-dftd3                                            | s-dftd3  |
+   +-------------------------------------+---------------------------------+-------------+------------+--------------+---------------------------+----------------------------------------------------------------------------------+----------+
+   | (dep) ``conda-forge::simple-dftd3`` | ``bin/simple-dftd3``            |             |            |              |                           | https://github.com/dftd3/simple-dftd3                                            |          |
+   +-------------------------------------+---------------------------------+-------------+------------+--------------+---------------------------+----------------------------------------------------------------------------------+----------+
+   | D4                                  |                                 |             |            |              |                           |                                                                                  |          |
+   +-------------------------------------+---------------------------------+-------------+------------+--------------+---------------------------+----------------------------------------------------------------------------------+----------+
+   | ``psi4::dftd4``                     | ``bin/dftd4``, ``import dftd4`` | preferred   | works      |              | ``engine="dftd4"``        | https://github.com/dftd4/dftd4                                                   |          |
+   +-------------------------------------+---------------------------------+-------------+------------+--------------+---------------------------+----------------------------------------------------------------------------------+----------+
+   | ``conda-forge::dftd4-python``       | ``import dftd4``                | nyi         | preferred  |              | ``engine="dftd4"``        | https://github.com/dftd4/dftd4                                                   |          |
+   +-------------------------------------+---------------------------------+-------------+------------+--------------+---------------------------+----------------------------------------------------------------------------------+----------+
+   | (dep) ``conda-forge::dftd4``        | ``bin/dftd4``                   |             |            |              |                           | https://github.com/dftd4/dftd4                                                   |          |
+   +-------------------------------------+---------------------------------+-------------+------------+--------------+---------------------------+----------------------------------------------------------------------------------+----------+
+   | GCP                                 |                                 |             |            |              |                           |                                                                                  |          |
+   +-------------------------------------+---------------------------------+-------------+------------+--------------+---------------------------+----------------------------------------------------------------------------------+----------+
+   | ``psi4::gcp``                       | ``bin/gcp``                     | preferred   | works      | error [#g1]_ | ``gcp_engine="gcp"``      | https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/gcp/gcp_v202.tar.gz | classic  |
+   +-------------------------------------+---------------------------------+-------------+------------+--------------+---------------------------+----------------------------------------------------------------------------------+----------+
+   | ``conda-forge::gcp-correction``     | ``bin/mctc-gcp``                | nyi         | preferred  | preferred    | ``gcp_engine="mctc-gcp"`` | https://github.com/grimme-lab/gcp                                                | mctc     |
+   +-------------------------------------+---------------------------------+-------------+------------+--------------+---------------------------+----------------------------------------------------------------------------------+----------+
+
+.. [#g1] Does not run job but raises an ``UpgradeHelper`` suggesting a replacement syntax.
+
 
 Installation
 ~~~~~~~~~~~~
@@ -91,24 +94,26 @@ Installation
      :target: https://anaconda.org/psi4/dftd3
 
 * There are two implementations of DFTD3; see :ref:`table:empdispimpl` . The newer
-  "s-dftd3" one is preferred, while the older "classic" one will work for the immediate future.
-  |PSIfour| will automatically select whichever is available.
-  Starting with v1.9, only "s-dftd3" is supported, though the "classic" continues to work for many applications.
+  "s-dftd3" one is available and preferred since v1.7. The older "classic" one continued to work, and
+  |PSIfour| would automatically select whichever is available.
+  Starting with v1.9, only "s-dftd3" is officially supported, and in v1.10 "classic" is no longer available
+  (request it to get upgrade advice). Note that the "classic" interface is in QCEngine, not |PSIfour|,
+  so access could be restored in a pinch by commenting out the upgrade intervention.
 
 * DFTD3 is available as a conda package for Linux and macOS and Windows.
 
 * If using the Psi4conda installer, DFTD3 has already been installed alongside.
 
 * If using the |PSIfour| conda package, the classic dftd3 conda package can
-  be obtained through ``conda install dftd3 -c psi4`` or the newer implementation
-  through ``conda install dftd3-python -c conda-forge``.
+  be obtained through ``conda install dftd3-python -c conda-forge``.
+  (``conda install dftd3 -c psi4`` brings the obsolete "classic" implementation.)
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  the dftd3 executable can be obtained through ``conda install dftd3 -c psi4``
-  or ``conda install dftd3-python -c conda-forge``.
+  the dftd3 executable can be obtained through ``conda install dftd3-python -c conda-forge``.
+  (``conda install dftd3 -c psi4`` brings the obsolete "classic" implementation.)
 
-* To remove a conda installation, ``conda remove dftd3`` or ``conda remove dftd3-python``.
+* To remove a conda installation, ``conda remove dftd3-python``.
 
 **Source**
 
@@ -117,17 +122,11 @@ Installation
 
 * If using |PSIfour| built from source and you want to build DFTD3 from
   from source also,
-  follow the instructions provided with the source
-  (essentially, download the freely available tarball, unpack the source,
-  edit the Makefile to select a
-  Fortran compiler, and run make). From version 3.1.0 onwards, DFTD3 can
-  be used as-is; for earlier versions, patches are available:
-  :source:`psi4/share/psi4/scripts/patch_grimme_dftd3.3.0.2`.
+  follow the instructions provided with the source.
 
-To be used by |PSIfour|, the classic program binary (``dftd3``) must be
-found in your :envvar:`PATH` or the s-dftd3 module in your :envvar:`PYTHONPATH`
+To be used by |PSIfour|, the s-dftd3 module must be detectable or in your :envvar:`PYTHONPATH`
 so QCEngine can detect it. Check if and where found through ``qcengine info``. If
-|PSIfour| is unable to execute the binary, an error will be reported.
+|PSIfour| is unable to run the module, an error will be reported.
 To preferentially use a particular dftd3 compilation, simply adjust its
 position in the path environment variables.
 
@@ -180,7 +179,7 @@ sometimes allowed to vary as well.)
 
 .. math:: f_{damp}(R_{ij}) = \frac{1}{1 + e^{- \alpha_6 (R_{ij}/R_{vdW} - 1)}}
 
-Grimme recently presented a refined method, DFT-D3, [Grimme:2010:154104]_
+Grimme presented a refined method, DFT-D3, [Grimme:2010:154104]_
 which incorporates an additional :math:`R^{-8}` term in the dispersion
 series and adjusts the :math:`C_{6}^{ij}` combination formula and damping
 function. The individual atomic :math:`C_6^i` are interpolated from
@@ -222,13 +221,11 @@ A number of *a posteriori* dispersion corrections are available in
 available only through the ``DFTD3`` or ``DFTD4`` programs. Once installed, the
 ``dftd3``/|PSIfour| and ``dftd4``/|PSIfour| interfaces are transparent, and all corrections are
 interfaced exactly alike.
-The -D3 interface can use classic or simple-dftd3 programs interchangeably and will prefer the latter.
-Starting in v1.9, the classic program is no longer supported or tested, though it isn't deliberately disabled.
+The -D3 interface uses the simple-dftd3 program exclusively starting in v1.10; the classic program is disabled.
 
-Despite different defaults in these programs when run independently,
-when run through |PSIfour| as EmpiricalDispersion engine, each should
-produce the same result. Moreover, |PSIfours| own defaults and aliases
-are unchanged by the new engines, so ``-D`` continues to mean ``-D2``,
+Note that |PSIfours| own defaults and aliases aren't necessarily the defaults of the programs when run independently, so
+when run through |PSIfour| as an ``EmpiricalDispersion`` engine,
+``-D`` continues to mean ``-D2``,
 ``-D3`` continues to mean zero-damping *without* 3-body correction,
 and input files should continue producing the same results. Please file
 an issue if found otherwise.
@@ -272,21 +269,21 @@ No text output is available from the ``dftd4`` or ``s-dftd3`` programs.
    +-------------------------------------+--------------------------------------------------------------------------------------+---------------------------------+---------------------------------------------------------------------------------------------+
    | -D1                                 | -D1 [#f1]_                                                                           | |PSIfours| libdisp              | [:math:`s_6`]                                                                               |
    +-------------------------------------+--------------------------------------------------------------------------------------+---------------------------------+---------------------------------------------------------------------------------------------+
-   | -D2                                 | -D2 [#f2]_                                                                           | |PSIfours| libdisp OR ``dftd3`` | [:math:`s_6`, :math:`\alpha_6`, :math:`s_{r,6}`]                                            |
+   | -D2                                 | -D2 [#f2]_                                                                           | |PSIfours| libdisp              | [:math:`s_6`, :math:`\alpha_6`, :math:`s_{r,6}`]                                            |
    +-------------------------------------+--------------------------------------------------------------------------------------+---------------------------------+---------------------------------------------------------------------------------------------+
-   | -D3ZERO2B, -D3ZERO, -D32B, -D3      | -D3 [#f3]_ w/ original zero-damping w/o 3-body ATM                                   | ``s-dftd3`` or ``dftd3``        | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\alpha_6`, :math:`s_{r,8}`]              |
+   | -D3ZERO2B, -D3ZERO, -D32B, -D3      | -D3 [#f3]_ w/ original zero-damping w/o 3-body ATM                                   | ``s-dftd3``                     | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\alpha_6`, :math:`s_{r,8}`]              |
    +-------------------------------------+--------------------------------------------------------------------------------------+---------------------------------+---------------------------------------------------------------------------------------------+
    | -D3ZEROATM                          | -D3 [#f3]_ w/ original zero-damping w/ 3-body ATM                                    | ``s-dftd3``                     | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\alpha_6`, :math:`s_{r,8}`, :math:`s_9`] |
    +-------------------------------------+--------------------------------------------------------------------------------------+---------------------------------+---------------------------------------------------------------------------------------------+
-   | -D3BJ2B, -D3BJ, -D3(BJ)             | -D3 [#f4]_ w/ newer Becke-Johnson rational damping w/o 3-body ATM                    | ``s-dftd3`` or ``dftd3``        | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`]                                        |
+   | -D3BJ2B, -D3BJ, -D3(BJ)             | -D3 [#f4]_ w/ newer Becke-Johnson rational damping w/o 3-body ATM                    | ``s-dftd3``                     | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`]                                        |
    +-------------------------------------+--------------------------------------------------------------------------------------+---------------------------------+---------------------------------------------------------------------------------------------+
    | -D3BJATM                            | -D3 [#f4]_ w/ newer Becke-Johnson rational damping w/ 3-body ATM                     | ``s-dftd3``                     | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`, :math:`s_9`]                           |
    +-------------------------------------+--------------------------------------------------------------------------------------+---------------------------------+---------------------------------------------------------------------------------------------+
-   | -D3MZERO2B, -D3MZERO, -D3M2B, -D3M  | -D3 [#f5]_ w/ reparameterized and more flexible original zero-damping w/o 3-body ATM | ``s-dftd3`` OR ``dftd3``        | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\beta`]                                  |
+   | -D3MZERO2B, -D3MZERO, -D3M2B, -D3M  | -D3 [#f5]_ w/ reparameterized and more flexible original zero-damping w/o 3-body ATM | ``s-dftd3``                     | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\beta`]                                  |
    +-------------------------------------+--------------------------------------------------------------------------------------+---------------------------------+---------------------------------------------------------------------------------------------+
    | -D3MZEROATM                         | -D3 [#f5]_ w/ reparameterized and more flexible original zero-damping w/ 3-body ATM  | ``s-dftd3``                     | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\beta`, :math:`s_9`]                     |
    +-------------------------------------+--------------------------------------------------------------------------------------+---------------------------------+---------------------------------------------------------------------------------------------+
-   | -D3MBJ2B, -D3MBJ, -D3M(BJ)          | -D3 [#f5]_ w/ reparameterized newer Becke-Johnson rational damping w/o 3-body ATM    | ``s-dftd3`` OR ``dftd3``        | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`]                                        |
+   | -D3MBJ2B, -D3MBJ, -D3M(BJ)          | -D3 [#f5]_ w/ reparameterized newer Becke-Johnson rational damping w/o 3-body ATM    | ``s-dftd3``                     | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`]                                        |
    +-------------------------------------+--------------------------------------------------------------------------------------+---------------------------------+---------------------------------------------------------------------------------------------+
    | -D3MBJATM                           | -D3 [#f5]_ w/ reparameterized newer Becke-Johnson rational damping w/ 3-body ATM     | ``s-dftd3``                     | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`, :math:`s_9`]                           |
    +-------------------------------------+--------------------------------------------------------------------------------------+---------------------------------+---------------------------------------------------------------------------------------------+
@@ -323,7 +320,7 @@ The dispersion coefficients are defined as
 See the `DFT-D3 documentation <https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/man.pdf>`_ 
 for more details.
 
-For now, the three-body correction can be called by using the :py:func:`~psi4.core.Molecule.run_dftd3`
+For now, the three-body correction can be called by using the :py:func:`~psi4.core.Molecule.run_sdftd3`
 function with `d3-atmgr` as the passed functional string. 
 For example, the three-body ATM dispersion correction for a neon trimer could
 be computed with::
@@ -334,7 +331,7 @@ be computed with::
    Ne 0.0 1.0 1.0
    }
    ne.update_geometry()
-   energy = m.run_dftd3('d3-atmgr', dertype=0)
+   energy = m.run_sdftd3('b3lyp-d3', dertype=0)
    print(energy)
 
 Since v1.7, it is preferred to use ``s-dftd3`` for ATM since the 3-body can be run concurrent
@@ -382,22 +379,24 @@ A few practical examples:
    set dft_dispersion_parameters [1.0, 2.0, 1.261, 14.0]
    energy('b3lyp-d3')
 
-* DFT-D2 single point with ``dftd3`` instead of |PSIfours| libdisp ::
+* DFT-D2 single point explicitly requesting |PSIfours| libdisp ::
 
-   energy('pbe-d2', engine='dftd3')
+   energy('pbe-d2', engine='libdisp')
 
 If only dispersion corrections (rather than total energies) are of
 interest, the dispersion programs can be run independently of the scf
-through the python function :py:func:`~qcdb.Molecule.run_dftd3` or :py:func:`~qcdb.Molecule.run_dftd4`. (These functions
+through the python function :py:func:`~qcdb.Molecule.run_sdftd3` or :py:func:`~qcdb.Molecule.run_dftd4`. (These functions
 call QCEngine, which is the same |PSIfour| + ``dftd3``/``dftd4`` interface that is called during an scf job.)
 This "D-only" route is much faster than running a DFT-D energy.
-This route is NOT available for ``s-dftd3``. File an issue if a definite need arises.
+The longstanding :py:func:`~qcdb.Molecule.run_dftd3` route is largely replaced by
+:py:func:`~qcdb.Molecule.run_sdftd3`, but the functions use different input argument reasoning.
 
-Note that in a DFT+D energy or gradient calculation, user-specified
+Note that in a DFT+D energy or gradient calculation through |PSIfour|,
 dispersion parameters override any information provided about the
 functional. The same holds true for a ``dftd3`` "D-only" calculation. But
-in a ``dftd4`` "D-only" calculation, functional information overrides
-any user-specified dispersion parameters.
+In a ``dftd4`` or ``s-dftd3`` "D-only" calculation (through QCEngine or
+:py:func:`~qcdb.Molecule.run_sdftd3` or :py:func:`~qcdb.Molecule.run_dftd4`),
+functional information overrides any user-specified dispersion parameters.
 
 * Some set-up::
 
@@ -405,31 +404,32 @@ any user-specified dispersion parameters.
    Ne
    Ne 1 2.0
    }
-   
+
    nene.update_geometry()
 
-* The same four dispersion corrections/gradients as the section above::
+* Two of the four four dispersion corrections/gradients from the section above::
 
-   >>> print nene.run_dftd3('bp86', 'd', dertype=0)
-   -7.735e-05
-   
    >>> E, G = nene.run_dftd3('pbe', 'd3bj')
    >>> print G
    [[0.0, 0.0, -1.1809087569358e-05], [0.0, 0.0, 1.1809087569358e-05]]
-   
-   >>> E, G = nene.run_dftd3('b3lyp', 'd2', {'s6': 1.20})
-   >>> print E
-   -8.84e-05
-   
-   >>> E, G = nene.run_dftd3(dashlvl='d3', dashparam={'s8': 2.0, 'alpha6': 14.0, 'sr6': 1.261, 's6': 1.0})
-   >>> print E
+
+   >>> print nene.run_dftd3(dashlvl='d3', dashparam={'s8': 2.0, 'alpha6': 14.0, 'sr6': 1.261, 's6': 1.0}, dertype=0)
    -0.00024762
 
-.. autofunction:: qcdb.Molecule.run_dftd3
+.. comment   >>> print nene.run_dftd3('bp86', 'd', dertype=0)
+.. comment   -7.735e-05
+
+.. comment   >>> E, G = nene.run_dftd3('b3lyp', 'd2', {'s6': 1.20})
+.. comment   >>> print E
+.. comment   -8.84e-05
+
+.. autofunction:: qcdb.Molecule.run_sdftd3
 
 .. autofunction:: qcdb.Molecule.run_dftd4
 
 .. autoclass:: psi4.driver.procrouting.empirical_dispersion.EmpiricalDispersion
+
+.. autofunction:: qcdb.Molecule.run_dftd3
 
 .. comment print_stdout('  -D correction from Py-side')
 .. comment eneyne.update_geometry()

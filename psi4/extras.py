@@ -29,6 +29,7 @@
 import atexit
 import datetime
 import itertools
+import textwrap
 import os
 from pathlib import Path
 from typing import List, Optional, Union
@@ -176,6 +177,7 @@ _addons_ = {
     "bse": which_import("basis_set_exchange", return_bool=True),
     "einsums": _CMake_to_Py_boolean("@ENABLE_Einsums@"),
     "gauxc": _CMake_to_Py_boolean("@ENABLE_gauxc@"),
+    "integratorxx": _CMake_to_Py_boolean("@ENABLE_IntegratorXX@"),
 }
 
 
@@ -307,6 +309,7 @@ def set_output_file(
         core.set_output_file(str(out), append)
         if print_header is True or (print_header is None and not append):
             _print_header()
+            core.print_out("Addons:     " + textwrap.fill(", ".join(addons()), width=95, initial_indent='', subsequent_indent='                ') + "\n")
         # Warning: baseFilename is not part of the documented API for the logging module and could change.
         filenames = [handle.baseFilename for handle in logger.handlers]
         if not f_handler.baseFilename in filenames:

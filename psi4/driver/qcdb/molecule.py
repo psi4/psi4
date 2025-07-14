@@ -1290,12 +1290,60 @@ class Molecule(LibmintsMolecule):
             When `dertype=None`, both energy [Eh] and (nat, 3) gradient [Eh/a0].
 
         """
+        raise RuntimeError("Using `Molecule.run_dftd3` instead of `Molecule.run_sdftd3` is obsolete as of 1.10. Note that parameters do not translate directly -- see docstring. Also aliases are not available for dashlvl. The new run_sdftd3 is analogous to run_dftd4. Alternately, you could access these routines by running `qcengine.compute(atomicinput, 's-dftd3')` directly.")
+
+    def run_sdftd3(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
+        """Compute dispersion correction via Grimme's new simple-dftd3 program, not the classic DFTD3 executable.
+
+        Parameters
+        ----------
+        func
+            Name of functional (func only, func & disp, or disp only) for
+            which to compute dispersion (e.g., blyp, BLYP-D2, blyp-d3bj,
+            blyp-d3(bj), hf+d). Unlike run_dftd3 and like run_dftd4,
+            ``func`` overwrites any parameter initialized via
+            `dashparam`.
+        dashlvl
+            Name of dispersion correction to be applied (e.g., d3zero,
+            D3(bj)). Must be key in `dashcoeff` or "alias" or
+            "formal" to run.
+        dashparam
+            Values for the same keys as `dashcoeff[dashlvl]['default']`
+            used to provide custom values. Unlike run_dftd3 and like run_dftd4,
+            will not have effect if `func` given. Must provide all parameters.
+            Extra parameters will error.
+        dertype
+            Maximum derivative level at which to run DFTD3. For large
+            molecules, energy-only calculations can be significantly more
+            efficient. Influences return values, see below.
+        verbose
+            Amount of printing.
+
+        Returns
+        -------
+        energy : float
+            When `dertype=0`, energy [Eh].
+        gradient : ~numpy.ndarray
+            When `dertype=1`, (nat, 3) gradient [Eh/a0].
+        (energy, gradient) : tuple of float and ~numpy.ndarray
+            When `dertype=None`, both energy [Eh] and (nat, 3) gradient [Eh/a0].
+
+        Notes
+        -----
+        This function wraps the QCEngine s-dftd3 harness which wraps the internal DFTD3 Python API.
+        As such, the upstream convention of `func` trumping `dashparam` holds, rather than the deprecated
+        :py:func:`~qcdb.Molecule.run_dftd3` behavior of `dashparam` extending or overriding `func`.
+        """
         import qcengine as qcng
 
         if dertype is None:
             derint, derdriver = -1, 'gradient'
         else:
             derint, derdriver = parse_dertype(dertype, max_derivative=1)
+
+        if ((func is not None and (func.lower().endswith("-d") or func.lower().endswith("-d2"))) or
+            (dashlvl is not None and dashlvl.lower() in ["d", "d2"])):
+            raise ValidationError("run_dftd3: no longer computes D2, only D3")
 
         resinp = {
             'molecule': self.to_schema(dtype=2),
@@ -1306,13 +1354,14 @@ class Molecule(LibmintsMolecule):
             },
             'keywords': {
                 'verbose': verbose,
+                "apply_qcengine_aliases": True,
             },
         }
         if dashlvl:
             resinp['keywords']['level_hint'] = dashlvl
         if dashparam:
             resinp['keywords']['params_tweaks'] = dashparam
-        jobrec = qcng.compute(resinp, 'dftd3', raise_error=True)
+        jobrec = qcng.compute(resinp, 's-dftd3', raise_error=True)
         jobrec = jobrec.dict()
 
         # hack as not checking type GRAD
@@ -1376,7 +1425,7 @@ class Molecule(LibmintsMolecule):
         -----
         This function wraps the QCEngine dftd4 harness which wraps the internal DFTD4 Python API.
         As such, the upstream convention of `func` trumping `dashparam` holds, rather than the
-        :py:func:`run_dftd3` behavior of `dashparam` extending or overriding `func`.
+        :py:func:`~qcdb.Molecule.run_dftd3` behavior of `dashparam` extending or overriding `func`.
 
         """
         import qcengine as qcng
@@ -1549,7 +1598,7 @@ class Molecule(LibmintsMolecule):
         schmol = qcel.molparse.to_schema(molrec, dtype=dtype, units=units)
         return schmol
 
-    def to_dict(self, force_c1=False, force_units=False, np_out=True):
+    def to_dict(self, force_c1=False, force_units=False, np_out=True, quiet=False):
         """Serializes instance into Molecule dictionary."""
 
         self.update_geometry()
@@ -1643,13 +1692,15 @@ class Molecule(LibmintsMolecule):
         #   to_dict, but is included as a check. in practice, only fills in mass
         #   numbers and heals user chgmult.
         try:
-            validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
+            _elemental_verbosity = -1 if quiet else 0
+            validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=_elemental_verbosity, domain='qm', **molrec)
         except qcel.ValidationError as err:
             # * this can legitimately happen if total chg or mult has been set
             #   independently b/c fragment chg/mult not reset. so try again.
-            print(
+            if not quiet:
+                print(
                 """Following warning is harmless if you've altered chgmult through `set_molecular_change` or `set_multiplicity`. Such alterations are an expert feature. Specifying in the original molecule string is preferred. Nonphysical masses may also trigger the warning."""
-            )
+                )
             molrec['fragment_charges'] = [None] * len(fragments)
             molrec['fragment_multiplicities'] = [None] * len(fragments)
             validated_molrec = qcel.molparse.from_arrays(speclabel=False, nonphysical=True, verbose=0, domain='qm', **molrec)

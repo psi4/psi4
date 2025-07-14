@@ -187,8 +187,6 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
     psio->open(PSIF_CC_INFO, PSIO_OPEN_OLD);
 
     psio->write_entry(PSIF_CC_INFO, "Reference Wavefunction", (char *)&(reference), sizeof(int));
-    psio->write_entry(PSIF_CC_INFO, "Frozen Core Orbs Per Irrep", (char *)(int *)frzcpi, sizeof(int) * nirreps);
-    psio->write_entry(PSIF_CC_INFO, "Frozen Virt Orbs Per Irrep", (char *)(int *)frzvpi, sizeof(int) * nirreps);
     psio->write_entry(PSIF_CC_INFO, "No. of Active Orbitals", (char *)&(nactive), sizeof(int));
 
     // Build QT->CC and CC->QT reordering arrays
@@ -266,13 +264,6 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
             }
         }
 
-        psio->write_entry(PSIF_CC_INFO, "Active Alpha Occ Orbs Per Irrep", (char *)(int *)aoccpi,
-                          sizeof(int) * nirreps);
-        psio->write_entry(PSIF_CC_INFO, "Active Beta Occ Orbs Per Irrep", (char *)(int *)boccpi, sizeof(int) * nirreps);
-        psio->write_entry(PSIF_CC_INFO, "Active Alpha Virt Orbs Per Irrep", (char *)(int *)avirpi,
-                          sizeof(int) * nirreps);
-        psio->write_entry(PSIF_CC_INFO, "Active Beta Virt Orbs Per Irrep", (char *)(int *)bvirpi,
-                          sizeof(int) * nirreps);
         psio->write_entry(PSIF_CC_INFO, "Active Alpha Occ Orb Offsets", (char *)aocc_off.data(), sizeof(int) * nirreps);
         psio->write_entry(PSIF_CC_INFO, "Active Beta Occ Orb Offsets", (char *)bocc_off.data(), sizeof(int) * nirreps);
         psio->write_entry(PSIF_CC_INFO, "Active Alpha Virt Orb Offsets", (char *)avir_off.data(),
@@ -342,8 +333,6 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
             }
         }
 
-        psio->write_entry(PSIF_CC_INFO, "Active Occ Orbs Per Irrep", (char *)(int *)occpi, sizeof(int) * nirreps);
-        psio->write_entry(PSIF_CC_INFO, "Active Virt Orbs Per Irrep", (char *)(int *)virpi, sizeof(int) * nirreps);
         psio->write_entry(PSIF_CC_INFO, "Active Occ Orb Offsets", (char *)occ_off.data(), sizeof(int) * nirreps);
         psio->write_entry(PSIF_CC_INFO, "Active Virt Orb Offsets", (char *)vir_off.data(), sizeof(int) * nirreps);
         psio->write_entry(PSIF_CC_INFO, "Active Occ Orb Symmetry", (char *)occ_sym.data(), sizeof(int) * nactive);

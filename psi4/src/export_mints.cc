@@ -523,7 +523,6 @@ void export_mints(py::module& m) {
     typedef SharedMatrix (Matrix::*get_block_shared)(const Slice&, const Slice&) const;
 
     py::enum_<Matrix::SaveType>(m, "SaveType", "The layout of the matrix for saving")
-        .value("Full", Matrix::SaveType::Full)
         .value("SubBlocks", Matrix::SaveType::SubBlocks)
         .value("LowerTriangle", Matrix::SaveType::LowerTriangle)
         .export_values();
@@ -1651,7 +1650,7 @@ void export_mints(py::module& m) {
         .def("getCharges", &ExternalPotential::getCharges, "Get the vector of charge tuples")
         .def("appendCharges", &ExternalPotential::appendCharges,
              "Append a vector of charge tuples to a current ExternalPotential")
-        .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions iwth Df coefficients",
+        .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions with DF coefficients",
              "basis"_a, "coefs"_a)
         .def("gradient_on_charges", &ExternalPotential::gradient_on_charges, "Get the gradient on the embedded charges")
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")
@@ -1661,7 +1660,7 @@ void export_mints(py::module& m) {
              "Compute the contribution to the nuclear repulsion energy for the given molecule")
         .def("computeExternExternInteraction", &ExternalPotential::computeExternExternInteraction,
              "Compute the interaction between this potential and other external potential")
-        .def("print_out", &ExternalPotential::py_print, "Print python print helper to the outfile");
+        .def("print_out", &ExternalPotential::py_print, "Print object summary to the outfile");
 
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>,
                                                               std::shared_ptr<Matrix>);
@@ -1688,12 +1687,6 @@ void export_mints(py::module& m) {
         .def("SCF_Dtot", &FCHKWriter::SCF_Dtot, py::return_value_policy::reference_internal)
         .def("set_postscf_density_label", &FCHKWriter::set_postscf_density_label,
              "Set base label for post-SCF density, e.g. ' CC Density'.", "label"_a);
-
-    py::class_<MoldenWriter, std::shared_ptr<MoldenWriter>>(m, "MoldenWriter",
-                                                            "Writes wavefunction information in molden format")
-        .def(py::init<std::shared_ptr<Wavefunction>>())
-        .def("write", &MoldenWriter::write, "Writes wavefunction information in molden format", "filename"_a, "Ca"_a,
-             "Cb"_a, "Ea"_a, "Eb"_a, "OccA"_a, "OccB"_a, "dovirtual"_a);
 
     py::class_<MOWriter, std::shared_ptr<MOWriter>>(m, "MOWriter", "Writes the MOs")
         .def(py::init<std::shared_ptr<Wavefunction>>())
@@ -1753,9 +1746,8 @@ void export_mints(py::module& m) {
             .def("get_x4", &LS_THC_Computer::get_x4, "Returns x4 factor from LS-THC factorization")
             .def("get_Z", &LS_THC_Computer::get_Z, "Returns Z factor from LS-THC factorization");
 
-    // when psi4 requires >=v2.8.0
-    // m.def("libint2_supports", [](const std::string& comp) { return libint2::supports(comp); },
-    //    "Whether the linked Libint2 supports a particular ordering or integral type/derivative/AM. Use maximally uniform AM for latter.");
+    m.def("libint2_supports", [](const std::string& comp) { return libint2::supports(comp); },
+       "Whether the linked Libint2 supports a particular ordering or integral type/derivative/AM. Use maximally uniform AM for latter.");
 
     // when L2 is pure cmake
     // m.def("libint2_citation", []() {
