@@ -1506,55 +1506,35 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
 
 
 def _set_external_potentials_to_wavefunction(external_potential: Union[List, Dict[str, List]], wfn: "core.Wavefunction"):
-    """Initialize :py:class:`psi4.core.ExternalPotential` object(s) from charges and locations and set on **wfn**.
+    vep = p4util.validate_external_potential(external_potential)
 
-    Parameters
-    ----------
-    external_potential
-        List-like structure where each row corresponds to a charge. Lines can be composed of ``q, [x, y, z]`` or
-        ``q, x, y, z``. Locations are in [a0].
-        Or, dictionary where keys are FI-SAPT fragments A, B, or C and values are as above.
+    total_ep = core.ExternalPotential()
 
-    """
-    from psi4.driver.qmmm import QMMMbohr
+    for frag, ep_spec in vep.items():
+        if "diffuse" in ep_spec:
+            raise ValidationError("Diffuse charges not yet supported")
 
-    def validate_qxyz(qxyz):
-        if len(qxyz) == 2:
-            return qxyz[0], qxyz[1][0], qxyz[1][1], qxyz[1][2]
-        elif len(qxyz) == 4:
-            return qxyz[0], qxyz[1], qxyz[2], qxyz[3]
-        else:
-            raise ValidationError(f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'")
+        if "matrix" in ep_spec:
+            raise ValidationError("Matrix potential not yet supported")
 
-    if isinstance(external_potential, dict):
-        # For FSAPT, we can take a dictionary of external potentials, e.g.,
-        # external_potentials={'A': potA, 'B': potB, 'C': potC} (any optional)
-        # For the dimer SAPT calculation, we need to account for the external potential
-        # in all of the subsystems A, B, C. So we add them all in total_external_potential
-        # and set the external potential to the dimer wave function
+        frag_ep = core.ExternalPotential()
 
-        total_external_potential = core.ExternalPotential()
+        if "points" in ep_spec:
+            frag_ep.appendCharges(ep_spec["points"])
+            total_ep.appendCharges(ep_spec["points"])
 
-        for frag, frag_qxyz in external_potential.items():
-            if frag.upper() in "ABC":
-                chrgfield = QMMMbohr()
-                for qxyz in frag_qxyz:
-                    chrgfield.extern.addCharge(*validate_qxyz(qxyz))
+        wfn.set_potential_variable(frag, frag_ep)
+    wfn.set_external_potential(total_ep)
+    total_ep.print_out()
 
-                wfn.set_potential_variable(frag.upper(), chrgfield.extern)
-                total_external_potential.appendCharges(chrgfield.extern.getCharges())
+    # For FSAPT, we can take a dictionary of external potentials, e.g.,
+    # external_potentials={'A': potA, 'B': potB, 'C': potC} (any optional)
+    # For the dimer SAPT calculation, we need to account for the external potential
+    # in all of the subsystems A, B, C. So we add them all in total_external_potential
+    # and set the external potential to the dimer wave function
 
-            else:
-                core.print_out("\n  Warning! Unknown key for the external_potentials argument: %s" % frag)
-
-        wfn.set_external_potential(total_external_potential)
-
-    else:
-        chrgfield = QMMMbohr()
-        for qxyz in external_potential:
-            chrgfield.extern.addCharge(*validate_qxyz(qxyz))
-        wfn.set_potential_variable("C", chrgfield.extern)  # This is for the FSAPT procedure
-        wfn.set_external_potential(chrgfield.extern)
+    # If no fragment specified, `validate_external_potential` assigns it to "C".
+    #   `set_potential_variable("C", total_ep)` is needed for the FSAPT procedure.
 
 
 def scf_helper(name, post_scf=True, **kwargs):

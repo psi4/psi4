@@ -1,5 +1,5 @@
     if(${ENABLE_PCMSolver})
-    find_package(PCMSolver 1.2.3 CONFIG QUIET)
+    find_package(PCMSolver 1.2.3 CONFIG QUIET)  # edit in codedeps
 
     if(${PCMSolver_FOUND})
         get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)
@@ -29,9 +29,7 @@
         set(_pcmsolver_dir "share/cmake/PCMSolver")
 
         ExternalProject_Add(pcmsolver_external
-            #URL https://github.com/PCMSolver/pcmsolver/archive/v1.3.1.tar.gz
-            #URL https://github.com/loriab/pcmsolver/archive/v1211.tar.gz
-            URL https://github.com/loriab/pcmsolver/archive/v123_plus_ming.tar.gz
+            URL https://github.com/loriab/pcmsolver/archive/v123_plus_ming.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

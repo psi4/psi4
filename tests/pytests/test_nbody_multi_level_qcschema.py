@@ -56,7 +56,7 @@ def base_schema():
     pytest.param({'method': 'scf/sto-3g', 'kfk': {'bsse_type': 'vmfc', 'return_total_data': True, 'levels': None, 'max_nbody': 2,
                                                   'embedding_charges': {i: [j for j in [-0.834, 0.417, 0.417]] for i in range(1, 4)}}},
                  {'1': -224.940138148882, '2': -224.943882712817},
-                 id='nbody-embedded'),
+                 id='nbody-embedded', marks=pytest.mark.extern),
 ])
 def test_nbody_levels(inp, expected, base_schema):
     # reference for nbody-multilevel generated with this larger fitting basis for sto-3g. fails otherwise by 3.e-5
