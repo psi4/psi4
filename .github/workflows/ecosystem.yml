@@ -24,9 +24,11 @@ jobs:
             mkl-version: ""
             platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or snow)"
+            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
             # Notes:
             # * for all three lanes, can consider:
             #    -D BUILD_SHARED_LIBS=ON
@@ -38,10 +40,12 @@ jobs:
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6 or snow)"
+            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
               -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
@@ -61,10 +65,12 @@ jobs:
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or snow)"
+            pytest-name-expr: "not pe_ecp"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
 
           - label: "LLVM clang-cl (W)"
             runs-on: windows-latest

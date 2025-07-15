@@ -1238,7 +1238,7 @@ data:
     conda:
       channel: conda-forge
       name: qcfractal
-      constraint: ">=0.60"
+      constraint: ">=0.60,<0.62"
       aux_run_names:
         - postgresql
       aux_run_names_note:
