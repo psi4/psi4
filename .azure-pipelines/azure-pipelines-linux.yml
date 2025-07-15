@@ -86,6 +86,8 @@ jobs:
         echo "##vso[task.prependpath]$CONDA/bin"
         conda config --set always_yes yes
         conda config --set solver libmamba
+        conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+        conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
     displayName: "Add Conda to PATH"
 
   - bash: |
