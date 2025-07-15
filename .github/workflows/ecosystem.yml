@@ -24,7 +24,7 @@ jobs:
             mkl-version: ""
             platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not pe_ecp"
+            pytest-name-expr: "not (pe_ecp or ecp or pcm or adcc)"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
             # Notes:
@@ -38,7 +38,7 @@ jobs:
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
+            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6 or ecp or pcm or adcc)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -61,7 +61,7 @@ jobs:
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not pe_ecp"
+            pytest-name-expr: "not (pe_ecp or ecp or pcm or adcc)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF

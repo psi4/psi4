@@ -164,7 +164,7 @@ jobs:
       python -V
       python -c 'import numpy; print(numpy.version.version)'
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
-      ./stage/bin/psi4 ../tests/fd-freq-energy/input.dat
+      PYTHONPATH=stage/lib/ ./stage/bin/psi4 ../tests/fd-freq-energy/input.dat
     displayName: 'Spot Test 2'
 
   - bash: |
