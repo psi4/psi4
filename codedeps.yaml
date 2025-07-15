@@ -1238,7 +1238,8 @@ data:
     conda:
       channel: conda-forge
       name: qcfractal
-      constraint: ">=0.60,<0.62"
+      constraint: ">=0.60,!=0.62"
+      constraint_note: "v0.62 hangs for snowflake jobs."
       aux_run_names:
         - postgresql
       aux_run_names_note:

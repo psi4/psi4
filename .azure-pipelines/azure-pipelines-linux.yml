@@ -155,6 +155,7 @@ jobs:
       python -V
       python -c 'import numpy; print(numpy.version.version)'
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
+      export KMP_DUPLICATE_LIB_OK=TRUE
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
 
@@ -164,12 +165,14 @@ jobs:
       python -V
       python -c 'import numpy; print(numpy.version.version)'
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
+      export KMP_DUPLICATE_LIB_OK=TRUE
       PYTHONPATH=stage/lib/ ./stage/bin/psi4 ../tests/fd-freq-energy/input.dat
     displayName: 'Spot Test 2'
 
   - bash: |
       cd build
       source activate p4env
+      export KMP_DUPLICATE_LIB_OK=TRUE
       python ../devtools/scripts/ci_run_test.py
       python ../devtools/scripts/ci_print_failing.py
     displayName: 'CTest Tests'
@@ -177,6 +180,7 @@ jobs:
   - bash: |
       cd build
       source activate p4env
+      export KMP_DUPLICATE_LIB_OK=TRUE
       PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 --durations-min=40 --strict-markers --color yes -n 2 -m "$PYTEST_MARKER_EXPR" stage/lib/psi4/tests/
     displayName: 'PyTest Tests'
 

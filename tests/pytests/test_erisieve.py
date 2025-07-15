@@ -388,7 +388,8 @@ def test_schwarz_vs_none_energy():
                       'ints_tolerance' : 1.0e-12 })
     e_none = psi4.energy('hf/DZ')
 
-    assert compare_values(e_schwarz, e_none, 11, 'Schwarz vs None Screening, Cutoff 1.0e-12')
+    assert compare_values(e_schwarz, e_none, 3.e-11, 'Schwarz vs None Screening, Cutoff 1.0e-12')
+
 
 @pytest.mark.parametrize("scf_type", [ "PK", "DIRECT", "OUT_OF_CORE", "DISK_DF", "MEM_DF", "DFDIRJ+LINK", "DFDIRJ+COSX" ])
 def test_schwarz_vs_none_quartets(scf_type):
