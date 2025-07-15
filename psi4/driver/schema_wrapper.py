@@ -44,6 +44,7 @@ import sys
 import traceback
 import uuid
 import warnings
+import textwrap
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, Union
@@ -53,7 +54,7 @@ import qcelemental as qcel
 import qcengine as qcng
 
 from psi4 import core
-from psi4.extras import exit_printing
+from psi4.extras import exit_printing, addons
 from psi4.header import print_header
 from psi4.metadata import __version__
 
@@ -74,7 +75,7 @@ methods_dict_ = {
     'frequency': driver.frequency,
 }
 default_properties_ = {
-    "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices"
+    "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "lowdin_spins", "wiberg_lowdin_indices", "mayer_indices"
 }
 
 ## QCSchema translation blocks
@@ -93,6 +94,7 @@ _qcschema_translation = {
     "properties": {
         "mulliken_charges": {"variables": "MULLIKEN CHARGES", "skip_null": True},
         "lowdin_charges": {"variables": "LOWDIN CHARGES", "skip_null": True},
+        "lowdin_spins": {"variables": "LOWDIN SPINS", "skip_null": True},
         "wiberg_lowdin_indices": {"variables": "WIBERG LOWDIN INDICES", "skip_null": True},
         "mayer_indices": {"variables": "MAYER INDICES", "skip_null": True},
     },
@@ -442,6 +444,7 @@ def run_qcschema(
     outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".qcschema_tmpout")
     core.set_output_file(outfile, False)
     print_header()
+    core.print_out("Addons:     " + textwrap.fill(", ".join(addons()), width=95, initial_indent='', subsequent_indent='                ') + "\n")
 
     start_time = datetime.datetime.now()
 

@@ -178,7 +178,13 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     // set options
     lr_symmetric_ = true;
 
-    kscreen_ = options.get_double("COSX_INTS_TOLERANCE");
+    // set up COSX integral tolerance
+    if (options["COSX_INTS_TOLERANCE"].has_changed() && options.get_str("SCREENING") != "NONE") {
+        kscreen_ = options.get_double("COSX_INTS_TOLERANCE");
+    } else {
+        kscreen_ = cutoff_;
+    }
+
     dscreen_ = options.get_double("COSX_DENSITY_TOLERANCE");
     basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
     overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");

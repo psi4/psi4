@@ -127,7 +127,7 @@ class QMMM():
     """Hold charges and :py:class:`psi4.core.ExternalPotential`. Use :py:class:`psi4.driver.QMMMbohr` instead."""
 
     def __init__(self):
-        raise UpgradeHelper(self.__class__.__name__, "QMMMbohr", 1.6, ' Replace object with a list of charges and locations in Bohr passed as keyword argument, e.g., `energy(..., external_potentials=[[0.5, [0, 0, 1]], [-0.5, [0, 0, -1]]])`.')
+        raise UpgradeHelper(self.__class__.__name__, "external_potentials", 1.6, ' Replace object with a list of charges and locations in Bohr passed as keyword argument, e.g., `energy(..., external_potentials=[[0.5, [0, 0, 1]], [-0.5, [0, 0, -1]]])`.')
 
 
 class QMMMbohr():
@@ -135,6 +135,12 @@ class QMMMbohr():
     passing the array of charges with kwarg ``external_potentials``, as in extern2 example."""
 
     def __init__(self):
+
+        warnings.warn(
+            "Using `QMMMbohr` instead of `psi4.energy(..., external_potentials=[[0.5, [0, 0, 1]], [-0.5, [0, 0, -1]]])` is deprecated, and as soon as 1.10 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+
         self.charges = []
         self.diffuses = []
         self.extern = core.ExternalPotential()

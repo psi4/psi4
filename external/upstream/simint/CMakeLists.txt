@@ -1,7 +1,7 @@
 set(SIMINT_VER "0.7")
 
 if(${ENABLE_simint})
-    find_package(simint ${SIMINT_VER} CONFIG QUIET COMPONENTS am${MAX_AM_ERI} der0)
+    find_package(simint 0.7 COMPONENTS am${MAX_AM_ERI} der0 CONFIG QUIET)  # edit in codedeps
 
     if(${simint_FOUND})
         get_property(_loc TARGET simint::simint PROPERTY LOCATION)
@@ -27,7 +27,7 @@ if(${ENABLE_simint})
         endif()
 
         ExternalProject_Add(simint_external
-            URL http://www.bennyp.org/research/simint/download/simint-v${SIMINT_VER}.tar.bz2
+            URL https://www.bennyp.org/research/simint/download/simint-v${SIMINT_VER}.tar.bz2  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -45,6 +45,7 @@ if(${ENABLE_simint})
                        -DSIMINT_MAXAM=${MAX_AM_ERI}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+                       -DCMAKE_POLICY_VERSION_MINIMUM=3.5
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}

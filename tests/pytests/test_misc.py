@@ -69,6 +69,7 @@ def test_xtpl_gold_fn_error():
     assert 'Replace function `energy(sherrill_gold_standard)' in str(e.value)
 
 
+@pytest.mark.extern
 def test_qmmm_class_error():
     with pytest.raises(psi4.UpgradeHelper) as e:
         psi4.QMMM()
@@ -205,3 +206,12 @@ def test_cancelled_qcvars():
         psi4.variable("scsn-mp2 same-spin correlation energy")
 
     assert err_substr in str(e.value)
+
+
+@pytest.mark.extern
+def test_deprecated_qmmmbohr():
+    err_substr = "external_potentials"
+    with pytest.warns(FutureWarning, match=err_substr) as e:
+        Chrgfield = psi4.QMMMbohr()
+        Chrgfield.extern.addCharge(-0.5,0,0,1)
+        Chrgfield.extern.addCharge(0.5,0,0,-1)
