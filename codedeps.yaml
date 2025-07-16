@@ -1238,7 +1238,8 @@ data:
     conda:
       channel: conda-forge
       name: qcfractal
-      constraint: ">=0.60"
+      constraint: ">=0.60,!=0.62"
+      constraint_note: "v0.62 hangs for snowflake jobs."
       aux_run_names:
         - postgresql
       aux_run_names_note:
@@ -1356,17 +1357,17 @@ data:
       host: github
       account: Einsums
       name: Einsums
-      commit: v1.0.3
+      commit: v1.0.6
     cmake:
       name: Einsums
-      constraint: 1.0.3
+      constraint: 1.0.6
       target: Einsums::Einsums
     #  components:
     #  ENABLE_Einsums
     conda:
       channel: conda-forge
       name: einsums
-      constraint: ">=1.0.3"
+      constraint: ">=1.0.6"
       constraint_note: "v1 changes interface, and 1.0.3 needed for Linux to compile against."
       aux_build_names:
         - range-v3
