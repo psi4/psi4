@@ -159,3 +159,6 @@ GTAGS
 GPATH
 GRTAGS
 Pipfile.lock
+fsapt
+pytest_output.dat
+pytest_output.log

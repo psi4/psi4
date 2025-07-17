@@ -66,17 +66,17 @@ class FISAPT {
     /// Map of scalars
     std::map<std::string, double> scalars_;
     /// Map of vectors
-    std::map<std::string, std::shared_ptr<Vector> > vectors_;
+    std::map<std::string, std::shared_ptr<Vector>> vectors_;
     /// Map of matrices
-    std::map<std::string, std::shared_ptr<Matrix> > matrices_;
+    std::map<std::string, std::shared_ptr<Matrix>> matrices_;
 
     // Build the ExchInd20 potential in the monomer A ov space
-    std::shared_ptr<Matrix> build_exch_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
-    std::shared_ptr<Matrix> build_exch_ind_pot_par(std::map<std::string, std::shared_ptr<Matrix> >& vars);
-    std::shared_ptr<Matrix> build_exch_ind_pot_perp(std::map<std::string, std::shared_ptr<Matrix> >& vars);
-    std::shared_ptr<Matrix> build_exch_ind_pot_avg(std::map<std::string, std::shared_ptr<Matrix> >& vars);
+    std::shared_ptr<Matrix> build_exch_ind_pot(std::map<std::string, std::shared_ptr<Matrix>>& vars);
+    std::shared_ptr<Matrix> build_exch_ind_pot_par(std::map<std::string, std::shared_ptr<Matrix>>& vars);
+    std::shared_ptr<Matrix> build_exch_ind_pot_perp(std::map<std::string, std::shared_ptr<Matrix>>& vars);
+    std::shared_ptr<Matrix> build_exch_ind_pot_avg(std::map<std::string, std::shared_ptr<Matrix>>& vars);
     // Build the Ind20 potential in the monomer A ov space
-    std::shared_ptr<Matrix> build_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
+    std::shared_ptr<Matrix> build_ind_pot(std::map<std::string, std::shared_ptr<Matrix>>& vars);
 
     // DFHelper object
     std::shared_ptr<DFHelper> dfh_;
@@ -165,12 +165,12 @@ class FISAPT {
     void disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
               bool do_print);
     void sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
-              bool do_print);
+                   bool do_print);
 
     /// Return arrays
     std::map<std::string, double>& scalars() { return scalars_; }
-    std::map<std::string, std::shared_ptr<Vector> >& vectors() { return vectors_; }
-    std::map<std::string, std::shared_ptr<Matrix> >& matrices() { return matrices_; }
+    std::map<std::string, std::shared_ptr<Vector>>& vectors() { return vectors_; }
+    std::map<std::string, std::shared_ptr<Matrix>>& matrices() { return matrices_; }
 };
 
 class FISAPTSCF {
@@ -184,9 +184,9 @@ class FISAPTSCF {
     /// Map of scalars
     std::map<std::string, double> scalars_;
     /// Map of vectors
-    std::map<std::string, std::shared_ptr<Vector> > vectors_;
+    std::map<std::string, std::shared_ptr<Vector>> vectors_;
     /// Map of matrices
-    std::map<std::string, std::shared_ptr<Matrix> > matrices_;
+    std::map<std::string, std::shared_ptr<Matrix>> matrices_;
 
     /// Print orbitals
     void print_orbitals(const std::string& header, int start, std::shared_ptr<Vector> eps);
@@ -206,8 +206,8 @@ class FISAPTSCF {
     void compute_energy();
 
     std::map<std::string, double>& scalars() { return scalars_; }
-    std::map<std::string, std::shared_ptr<Vector> >& vectors() { return vectors_; }
-    std::map<std::string, std::shared_ptr<Matrix> >& matrices() { return matrices_; }
+    std::map<std::string, std::shared_ptr<Vector>>& vectors() { return vectors_; }
+    std::map<std::string, std::shared_ptr<Matrix>>& matrices() { return matrices_; }
 };
 
 class CPHF_FISAPT {
@@ -254,7 +254,7 @@ class CPHF_FISAPT {
     std::shared_ptr<Vector> eps_vir_B_;
 
     // Form the s = Ab product for the provided vectors b (may or may not need more iterations)
-    std::map<std::string, std::shared_ptr<Matrix> > product(std::map<std::string, std::shared_ptr<Matrix> > b);
+    std::map<std::string, std::shared_ptr<Matrix>> product(std::map<std::string, std::shared_ptr<Matrix>> b);
     // Apply the denominator from r into z
     void preconditioner(std::shared_ptr<Matrix> r, std::shared_ptr<Matrix> z, std::shared_ptr<Vector> o,
                         std::shared_ptr<Vector> v);
@@ -267,6 +267,14 @@ class CPHF_FISAPT {
 };
 
 }  // Namespace fisapt
+
+
+double sapt_nuclear_external_potential_matrix(
+    std::shared_ptr<Wavefunction> reference_,
+    // std::shared_ptr<Matrix> Enucsp_matrix,
+    std::map<std::string, std::shared_ptr<Matrix>>& matrices_,
+    Options& options_
+);
 
 }  // Namespace psi
 

@@ -56,6 +56,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/fisapt/fisapt.h"
 
 #include "python_data_type.h"
 
@@ -289,6 +290,23 @@ void py_be_quiet() {
     auto mode = std::ostream::app;
     outfile = std::make_shared<PsiOutStream>("/dev/null", mode);
     if (!outfile) throw PSIEXCEPTION("Psi4: Unable to redirect output to /dev/null.");
+}
+
+double sapt_nuclear_external_potential_python(
+    std::shared_ptr<Wavefunction> reference_,
+    py::dict py_matrices_,
+    Options& options_
+){
+    std::map<std::string, std::shared_ptr<Matrix>> matrices_;
+    for (auto item : py_matrices_) {
+        matrices_[item.first.cast<std::string>()] = item.second.cast<std::shared_ptr<Matrix>>();
+    }
+    double Enuc = psi::sapt_nuclear_external_potential_matrix(reference_, matrices_, options_);
+    for (auto item : matrices_) {
+        py_matrices_[item.first.c_str()] = item.second;
+        std::cout << item.first.c_str() << " => " << item.second->name() << std::endl;
+    }
+    return Enuc;
 }
 
 std::string py_get_outfile_name() { return outfile_name; }
@@ -1360,6 +1378,8 @@ PYBIND11_MODULE(core, core) {
              "Redirects output to ``/dev/null``. "
              "To switch back to regular output mode, use :func:`~psi4.core.reopen_outfile()`. "
              "Doesn't work with Windows.");
+    core.def("sapt_nuclear_external_potential_python", sapt_nuclear_external_potential_python,
+             "sapt_nuclear_external_potential_python for SAPT(DFT)");
     // modules
     core.def("scfgrad", py_psi_scfgrad, "ref_wfn"_a, "Run scfgrad, which is a specialized DF-SCF gradient program.");
     core.def("scfhess", py_psi_scfhess, "ref_wfn"_a, "Run scfhess, which is a specialized DF-SCF hessian program.");
