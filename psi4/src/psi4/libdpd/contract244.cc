@@ -65,7 +65,6 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y, 
     int h, h0, Hx, hybuf, hzbuf, Hy, Hz, nirreps, GX, GY, GZ, bra_y;
     int rking = 0, *yrow, *ycol, symlink;
     int Xtrans, Ytrans = 0;
-    int incore;
     int rowx, rowz, colx, colz;
     int pq, Gr, GsY, GsZ, Gs, GrZ, GrY;
     int ncols, nrows, nlinks;
@@ -83,7 +82,7 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y, 
     GZ = Z->file.my_irrep;
 
     memoryd = dpd_main.memory;
-    incore = 1; /* default */
+    bool incore = true; /* default */
 
     file2_mat_init(X);
     file2_mat_rd(X);
@@ -119,7 +118,7 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y, 
 #endif
 
     for (hzbuf = 0; hzbuf < nirreps; hzbuf++) {
-        incore = 1; /* default */
+        incore = true; /* default */
 
         if (sum_Y < 2) {
             if (Ztrans)
@@ -148,11 +147,11 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y, 
         rowtot = Y->params->rowtot[hybuf];
         for (; rowtot > maxrows; rowtot -= maxrows) {
             if (core_total > (core_total + maxrows * coltot))
-                incore = 0;
+                incore = false;
             else
                 core_total += maxrows * coltot;
         }
-        if (core_total > (core_total + rowtot * coltot)) incore = 0;
+        if (core_total > (core_total + rowtot * coltot)) incore = false;
         core_total += rowtot * coltot;
 
         if (sum_Y == 1 || sum_Y == 2) core_total *= 2; /* we need room to transpose the Y buffer */
@@ -172,19 +171,19 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y, 
         if (Ztrans) Z_core *= 2;
         for (; rowtot > maxrows; rowtot -= maxrows) {
             if (core_total > (core_total + Z_core))
-                incore = 0;
+                incore = false;
             else
                 core_total += Z_core;
         }
         Z_core = rowtot * coltot;
         if (Ztrans) Z_core *= 2;
-        if (core_total > (core_total + Z_core)) incore = 0;
+        if (core_total > (core_total + Z_core)) incore = false;
         core_total += Z_core;
 
-        if (core_total > memoryd) incore = 0;
+        if (core_total > memoryd) incore = false;
 
         /* Force incore for all but a "normal" 244 contraction for now */
-        if (!Ztrans || sum_Y == 0 || sum_Y == 1 || sum_Y == 3) incore = 1;
+        if (!Ztrans || sum_Y == 0 || sum_Y == 1 || sum_Y == 3) incore = true;
 
         if (incore) {
             /*       dpd_buf4_scm(Z, beta); */
