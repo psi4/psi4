@@ -1710,8 +1710,9 @@ PSI Variables by Alpha
    SAPT DFT GRAC SHIFT B
 
    The gradient-regulation asymptotic correction (GRAC) [E_h] 
-   improves the accuracy of SAPT(DFT) calculations by correctly
-   describing the electron density at longe-range.
+   used in a SAPT(DFT) computation for monomer A or B, respectively,
+   to improve the accuracy by correctly describing the electron density
+   at long-range.
 
 
 .. psivar:: SCF ITERATIONS
