@@ -58,9 +58,9 @@ and return the MP2.5 energy. ::
     def run_mp2_5(name, **kwargs):
     
         energy('mp3', **kwargs)
-        e_scf = psi4.get_variable('SCF TOTAL ENERGY')
-        ce_mp2 = psi4.get_variable('MP2 CORRELATION ENERGY')
-        ce_mp3 = psi4.get_variable('MP3 CORRELATION ENERGY')
+        e_scf = psi4.variable('SCF TOTAL ENERGY')
+        ce_mp2 = psi4.variable('MP2 CORRELATION ENERGY')
+        ce_mp3 = psi4.variable('MP3 CORRELATION ENERGY')
     
         ce_mp25 = 0.5 * (ce_mp2 + ce_mp3)
         e_mp25 = e_scf + ce_mp25
@@ -79,9 +79,9 @@ The rationale for the changes is indicated in the comments below. ::
     
         # Run detci calculation and collect conventional quantities
         energy('mp3', **kwargs)
-        e_scf = psi4.get_variable('SCF TOTAL ENERGY')
-        ce_mp2 = psi4.get_variable('MP2 CORRELATION ENERGY')
-        ce_mp3 = psi4.get_variable('MP3 CORRELATION ENERGY')
+        e_scf = psi4.variable('SCF TOTAL ENERGY')
+        ce_mp2 = psi4.variable('MP2 CORRELATION ENERGY')
+        ce_mp3 = psi4.variable('MP3 CORRELATION ENERGY')
         e_mp2 = e_scf + ce_mp2  # reform mp2 and mp3 total energies for printing
         e_mp3 = e_scf + ce_mp3
     

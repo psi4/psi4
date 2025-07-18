@@ -541,9 +541,9 @@ For instance, to compute the MBPT 2 3/4 energy from MBPT 3 results, the
 following could be used. ::
 
    energy('c4-mp3')
-   mp2p75_corl = 0.75 * get_variable('mp3 correlation energy') + \
-                 0.25 * get_variable('MP2 correlation energy')
-   print mp2p75_corl + get_variable('scf total energy')
+   mp2p75_corl = 0.75 * variable('mp3 correlation energy') + \
+                 0.25 * variable('MP2 correlation energy')
+   print mp2p75_corl + variable('scf total energy')
 
 .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
