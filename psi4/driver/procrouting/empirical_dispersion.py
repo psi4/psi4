@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -36,7 +36,7 @@ from qcelemental.models import AtomicInput
 from psi4 import core
 
 from .. import p4util
-from ..p4util.exceptions import ValidationError
+from ..p4util.exceptions import ValidationError, UpgradeHelper
 
 _engine_can_do = collections.OrderedDict([
     # engine order establishes default for each disp
@@ -49,6 +49,15 @@ _engine_can_do = collections.OrderedDict([
     ("mctc-gcp", [                                                                                                                          "3c",                       ]),
     ("gcp",      [                                                                                                                          "3c",                       ]),
 ]) # yapf: disable
+_install_dftd3python = " Allow the default dispersion engine to run by removing 'engine=' and installing `conda install dftd3-python -c conda-forge`."
+_obsolete_engines = {
+    ("dftd3", "d2"): ("engine='dftd3'", "engine='libdisp'", "1.10", " Allow the default (internal) dispersion engine to run by removing 'engine='."),
+    ("dftd3", "d3zero2b"): ("engine='dftd3'", "engine='s-dftd3'", "1.10", _install_dftd3python),
+    ("dftd3", "d3bj2b"): ("engine='dftd3'", "engine='s-dftd3'", "1.10", _install_dftd3python),
+    ("dftd3", "d3mzero2b"): ("engine='dftd3'", "engine='s-dftd3'", "1.10", _install_dftd3python),
+    ("dftd3", "d3mbj2b"): ("engine='dftd3'", "engine='s-dftd3'", "1.10", _install_dftd3python),
+    ("gcp", "3c"): ("engine='gcp'", "engine='mctc-gcp'", "1.10", " Allow the default dispersion engine to run by removing 'engine=' and installing `conda install gcp-correction -c conda-forge`."),
+}
 
 
 def _capable_engines_for_disp()-> Dict[str, List[str]]:
@@ -154,11 +163,14 @@ class EmpiricalDispersion():
     engine
         Override which code computes dispersion. See above for allowed
         values. Formerly (pre Nov 2022) only relevant for -D2, which can be computed by
-        libdisp or dftd3. Now (post Nov 2022) also relevant for -D3 variants,
+        libdisp or dftd3. Later (post Nov 2022, pre Jun 2025) also relevant for -D3 variants,
         which can be computed by dftd3 executable or simple-dftd3 Python module.
+        Now (post Jun 2025) irrelevant as each dispersion level only available from one code;
+        `dftd3` is no-op.
     gcp_engine
-        Override which code computes the gcp correction. Now can use
-        classic gcp or mctc-gcp executables.
+        Override which code computes the gcp correction. Relevant between
+        Nov 2022 and Jun 2025 when could use either the classic gcp or mctc-gcp executables.
+        Now (post Jun 2025), `gcp` is no-op.
     save_pairwise_disp
         Whether to request atomic pairwise analysis.
 
@@ -189,17 +201,22 @@ class EmpiricalDispersion():
                 self.engine = engine
             else:
                 raise ValidationError(f"This little engine ({engine}) can't ({self.dashlevel})")
+        if (key := (self.engine, self.dashlevel)) in _obsolete_engines:
+            raise UpgradeHelper(*_obsolete_engines[key])
 
         if self.engine == 'libdisp':
             self.disp = core.Dispersion.build(self.dashlevel, **resolved['dashparams'])
 
+        gcp_dashlevel = "3c"
         if gcp_engine is None:
-            self.gcp_engine = capable_engines_for_disp["3c"][0]
+            self.gcp_engine = capable_engines_for_disp[gcp_dashlevel][0]
         else:
-            if "3c" in _engine_can_do[gcp_engine]:
+            if gcp_dashlevel in _engine_can_do[gcp_engine]:
                 self.gcp_engine = gcp_engine
             else:
-                raise ValidationError(f"This little engine ({engine}) can't (3c)")
+                raise ValidationError(f"This little engine ({engine}) can't ({gcp_dashlevel})")
+            if (key := (self.gcp_engine, gcp_dashlevel)) in _obsolete_engines:
+                raise UpgradeHelper(*_obsolete_engines[key])
 
     def print_out(self):
         """Format dispersion parameters of `self` for output file."""

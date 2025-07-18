@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -422,11 +422,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     int nmo() const { return nmo_; }
     /// Returns the number of irreps
     int nirrep() const { return nirrep_; }
-    /// Returns the energy
-    PSI_DEPRECATED(
-        "Using `Wavefunction.reference_energy` instead of `Wavefunction.energy` is deprecated, and as soon as 1.4 it will "
-        "stop working")
-    double reference_energy() const { return energy_; }
     double energy() const { return energy_; }
     /// Sets the energy
     void set_energy(double ene);
@@ -584,16 +579,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     SharedMatrix lagrangian() const;
     /// Set Lagrangian matrix in SO basis
     void set_lagrangian(SharedMatrix X);
-    /// Returns the SO basis Lagrangian
-    PSI_DEPRECATED(
-        "Using `Wavefunction.Lagrangian` instead of `Wavefunction.lagrangian` is deprecated,"
-        " and as soon as 1.5 it will stop working")
-    SharedMatrix Lagrangian() const { return lagrangian(); }
-    /// Returns the SO basis Lagrangian (duplicated one)
-    PSI_DEPRECATED(
-        "Using `Wavefunction.X` instead of `Wavefunction.lagrangian` is deprecated,"
-        " and as soon as 1.5 it will stop working")
-    SharedMatrix X() const { return lagrangian(); }
 
     /// Returns the gradient
     SharedMatrix gradient() const;
@@ -690,31 +675,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     std::map<std::string, SharedMatrix> array_variables();
     // The function below is provisional and might be removed in the future
     std::map<std::string, std::shared_ptr<ExternalPotential>> potential_variables();
-
-    PSI_DEPRECATED(
-        "Using `Wavefunction.get_variable` instead of `Wavefunction.scalar_variable` is deprecated, and as soon as 1.4 it will "
-        "stop working")
-    double get_variable(const std::string& key);
-    PSI_DEPRECATED(
-        "Using `Wavefunction.set_variable` instead of `Wavefunction.set_scalar_variable` is deprecated, and as soon as 1.4 it "
-        "will stop working")
-    void set_variable(const std::string& key, double value);
-    PSI_DEPRECATED(
-        "Using `Wavefunction.variables` instead of `Wavefunction.scalar_variables` is deprecated, and as soon as 1.4 it will "
-        "stop working")
-    std::map<std::string, double> variables();
-    PSI_DEPRECATED(
-        "Using `Wavefunction.get_array` instead of `Wavefunction.array_variable` is deprecated, and as soon as 1.4 it will "
-        "stop working")
-    SharedMatrix get_array(const std::string& key);
-    PSI_DEPRECATED(
-        "Using `Wavefunction.set_array` instead of `Wavefunction.set_array_variable` is deprecated, and as soon as 1.4 it will "
-        "stop working")
-    void set_array(const std::string& key, SharedMatrix value);
-    PSI_DEPRECATED(
-        "Using `Wavefunction.arrays` instead of `Wavefunction.array_variables` is deprecated, and as soon as 1.4 it will stop "
-        "working")
-    std::map<std::string, SharedMatrix> arrays();
 
     /// Set PCM object
     void set_PCM(const std::shared_ptr<PCM>& pcm);

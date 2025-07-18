@@ -84,7 +84,7 @@ data:
     use:
       added: "1.0"
       required: true
-      required_note: "Must support c++17 standard."
+      required_note: "Must support c++20 standard."
       buildable: false
       buildtime: true
       cms: false
@@ -178,11 +178,7 @@ data:
       buildtime: true
       cms: false
     repository: null
-    #cmake:
-    #  name:
-    #  constraint: ">=3.8"
-    #  target:
-    #  components:
+    cmake: null
     conda:
       channel: conda-forge
       name: python
@@ -212,7 +208,7 @@ data:
     conda:
       channel: conda-forge
       name: cmake
-      constraint: "<3.30.0"
+      constraint: null
       constraint_note: "On Mac, v3.30 FindPython not finding NumPy includes."
       cmake:
         -S: <src>
@@ -249,12 +245,8 @@ data:
       buildtime: false
       cms: true
     repository: null
-    #cmake:
-    #  name:
-    #  constraint:
-    #  target:
-    #  components:
-    # xcfour
+    cmake: null
+      # xcfour
     conda: null
       #cmake:
       #  CMAKE_PROGRAM_PATH: null
@@ -271,11 +263,12 @@ data:
       host: github
       account: SebWouters
       name: CheMPS2
-      commit: d8ac508  # v1.8.9 + 1  # TODO update
-    #cmake:
-    #  name: CheMPS2
-    #  constraint: 1.8.7
-    #  target: CheMPS2::chemps2
+      commit: d8ac508
+      commit_note: "v1.8.9+"
+    cmake:
+      name: CheMPS2
+      constraint: 1.8.7
+      target: CheMPS2::chemps2
     #  ENABLE_CheMPS2
     conda: null
       #cmake:
@@ -287,7 +280,7 @@ data:
   - project: dftd3
     use:
       added: "1.0"
-      added_note: "Switched from classic dftd3 exe to py intf of simple-dftd3 (from dftd3-python) at 1.7. Classic tolerated but no longer supported as of 1.9."
+      added_note: "Switched from classic dftd3 exe to py intf of simple-dftd3 (from dftd3-python) at 1.7. Classic tolerated but no longer supported as of 1.9. Classic raises UpgradeHelper as of 1.10"
       required: false
       buildable: false
       buildtime: false
@@ -297,11 +290,7 @@ data:
       account: dftd3
       name: simple-dftd3
       commit: v0.7.0  # TODO not in psi src
-    #cmake:
-    #  name:
-    #  constraint: ">=0.6.0"
-    #  target:
-    #  components:
+    cmake: null
     conda:
       channel: conda-forge
       name: dftd3-python
@@ -309,8 +298,6 @@ data:
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
-      skip_win: true
-      skip_win_note: "Older versions available for Windows but not fully functional for v1.9."
 
   - project: dkh
     use:
@@ -326,12 +313,12 @@ data:
       account: psi4
       name: dkh
       commit: 3ba0128
-    #  commit: v1.2
-    #cmake:
-    #  name: dkh
-    #  constraint: ">=1.2"
-    #  target: dkh::dkh
-    #  enable: ENABLE_dkh
+      commit_note: "v1.2+"
+    cmake:
+      name: dkh
+      constraint: "1.2"
+      target: dkh::dkh
+      enable: ENABLE_dkh
     conda:
       channel: conda-forge
       name: dkh
@@ -353,7 +340,6 @@ data:
     cmake: null
     conda: null
 
-    # TODO update now pygdma merged
   - project: gdma
     use:
       added: "1.0"  # external at 1.1
@@ -367,12 +353,15 @@ data:
       host: github
       account: psi4
       name: gdma
-      commit: 9d607d7  # v2.2.6-2-g9d607d7
-    #cmake:
-    #  name: gdma
-    #  constraint: 2.2.6
-    #  target: gdma::gdma
-    # ENABLE_gdma
+      commit: v2.3.3
+      commit_note: "Stone/upstream c2e0b548 plus lib, I/O, Py"
+    cmake:
+      name: gdma
+      constraint: 2.3.3
+      components:
+        - Python
+      target: gdma::pygdma
+      enable: ENABLE_gdma
     conda:
       channel: conda-forge
       name: pygdma
@@ -404,6 +393,7 @@ data:
         osx-64: "=*=*mkl"
         osx-arm64: "=*=*accelerate"
         win-64: "=*=24*mkl"
+      constraint_note: "On Windows, MKL 2024.2.2 gives wrong results, so 24*mkl requests 2024.1.0."
       aux_build_names:
         - blas-devel
       aux_build_names_note:
@@ -441,10 +431,10 @@ data:
       account: evaleev
       name: libint
       commit: v2.8.1
-    #cmake:
-    #  name: Libint2
-    #  constraint:
-    #  target: Libint2::cxx
+    cmake:
+      name: Libint2
+      constraint: 2.8.1
+      target: Libint2::cxx
     #  components:
     #    - gss
     #    - CXX_ho
@@ -500,11 +490,13 @@ data:
       host: github
       account: loriab
       name: pylibefp
-      commit: v0.6.2  # libefp itself 15cd7ce = v1.5.0 + 10
-    #cmake:
-    #  name: pylibefp
+      commit: 76f8e52
+      commit_note: "libefp v1.5.0+, py v0.6.2+"
+    cmake:
+      # rework after switch to libefp2, pylibefp::core
+      name: pylibefp
     #  constraint: ">=0.6.2"
-    #  target: pylibefp::core
+      target: libefp::efp
     #  components: shallow
     #  ENABLE_libefp
     conda:
@@ -529,11 +521,7 @@ data:
       buildtime: false
       cms: true
     repository: null
-    #cmake:
-    #  name:
-    #  constraint:
-    #  target:
-    #  components:
+    cmake: null
     conda: null
       #cmake:
       #  CMAKE_PROGRAM_PATH: null
@@ -547,11 +535,8 @@ data:
       buildtime: true
       cms: false
     repository: null
-    #cmake:
-    #  name:
-    #  constraint:
-    #  target:
-    #  components:
+    cmake: null
+    # OpenMP::OpenMP, OpenMP::OpenMP_CXX
     conda:
       channel: conda-forge
       name:
@@ -577,10 +562,10 @@ data:
       account: loriab
       name: pcmsolver
       commit: v123_plus_ming
-    #cmake:
-    #  name: PCMSolver
-    #  constraint: "1.2.3"
-    #  target: PCMSolver::pcm
+    cmake:
+      name: PCMSolver
+      constraint: "1.2.3"
+      target: PCMSolver::pcm
     # ENABLE_PCMSolver
     conda:
       channel: conda-forge
@@ -608,10 +593,12 @@ data:
       host: github
       account: loriab
       name: v2rdm_casscf
-      commit: aa7d6a1
-    # cmake:
+      commit: bfb99ba
+    cmake:
+      name: v2rdm_casscf
+      constraint: 0.9
     #   ENABLE_v2rdm_casscf
-    #    v2rdm_casscf::v2rdm_casscf
+      target: v2rdm_casscf::v2rdm_casscf
     #    CMAKE_INSIST_FIND_PACKAGE_v2rdm_casscf
     conda: null
 
@@ -624,12 +611,11 @@ data:
       cms: false
       docs_required: false
     repository: null
-    #cmake:
-    #  name: Doxygen
-    #  constraint: null
-    #  target: Doxygen::doxygen
-    #  components: null
-    #  enables_target: doxyman
+    cmake:
+      name: Doxygen
+      constraint: null
+      target: Doxygen::doxygen
+      enables_target: doxyman
     conda:
       channel: conda-forge
       name: doxygen
@@ -646,11 +632,7 @@ data:
       cms: false
       docs_required: true
     repository: null
-    #cmake:
-    #  name:
-    #  constraint:
-    #  target:
-    #  components:
+    cmake: null
     conda:
       channel: conda-forge
       name: python-graphviz
@@ -667,11 +649,7 @@ data:
       cms: false
       docs_required: true
     repository: null
-    #cmake:
-    #  name:
-    #  constraint: ">=3.5"
-    #  target:
-    #  components:
+    cmake: null
     conda:
       channel: conda-forge
       name: sphinx
@@ -698,11 +676,7 @@ data:
       docs_required: true
       docs_required_note: "Avoidable by specifying SPHINX_THEME=<alternative_theme>."
     repository: null
-    #cmake:
-    #  name:
-    #  constraint:
-    #  target:
-    #  components:
+    cmake: null
     conda:
       channel: psi4
       name: sphinx-psi-theme
@@ -714,7 +688,7 @@ data:
   - project: gcp
     use:
       added: 1.1
-      added_note: "Switched from classic gcp exe to mctc-gcp exe (from gcp-correction) at 1.7. Classic tolerated but no longer supported as of 1.9. A few functionals require mctc."
+      added_note: "Switched from classic gcp exe to mctc-gcp exe (from gcp-correction) at 1.7. Classic tolerated but no longer supported as of 1.9. A few functionals require mctc. Classic raises UpgradeHelper as of 1.10"
       required: false
       buildable: false
       buildtime: false
@@ -724,11 +698,7 @@ data:
       account: grimme-lab
       name: gcp
       commit: v2.3.1
-    #cmake:
-    #  name:
-    #  constraint: ">=2.3.1"
-    #  target:
-    #  components:
+    cmake: null
     conda:
       channel: conda-forge
       name: gcp-correction
@@ -750,10 +720,10 @@ data:
       account: pybind
       name: pybind11
       commit: v2.13.1
-    #cmake:
-    #  name: pybind11  # detect Python before pybind11
-    #  constraint: 2.10.1
-    #  target:
+    cmake:
+      name: pybind11  # detect Python before pybind11
+      constraint: 2.12.0
+      target: pybind11::module
     conda:
       channel: conda-forge
       name: pybind11
@@ -775,12 +745,12 @@ data:
       buildtime: false
       cms: false
       test_required: true
-    # cmake:
-    #  constraint: ">=7.0.1"
+    repository: null
+    cmake: null
     conda:
       channel: conda-forge
       name: pytest
-      constraint: "<8"
+      constraint: null  # TODO "<8"
       aux_run_names:
         - pytest-xdist
       aux_run_names_note:
@@ -797,12 +767,8 @@ data:
       cms: false
       docs_required: false
       docs_required_note: "Allows including the PsiAPI tutorial in the docs."
-    repository: false
-    #cmake:
-    #  name:
-    #  constraint:
-    #  target:
-    #  components:
+    repository: null
+    cmake: null
     conda:
       channel: conda-forge
       name: nbsphinx
@@ -838,12 +804,12 @@ data:
       cms: true
     repository:
       host: url
-      url: http://www.bennyp.org/research/simint/download/simint-v0.7.tar.bz2
-    #cmake:
-    #  name: simint
-    #  constraint: 0.7
-    #  target: simint::simint
-    # ENABLE_simint
+      url: https://www.bennyp.org/research/simint/download/simint-v${SIMINT_VER}.tar.bz2
+    cmake:
+      name: simint
+      constraint: "0.7"
+      target: simint::simint
+      enable: ENABLE_simint
       components:
         - "am${MAX_AM_ERI}"
         - der0
@@ -867,13 +833,13 @@ data:
       host: github
       account: jturney
       name: ambit
-      commit: v0.7.1
-    #cmake:
-    #  name:
-    #  constraint: 0.6
-    #  target: ambit::ambit
-    #  components:
-    #  ENABLE_ambit
+      commit: 733c529
+    cmake:
+      name: ambit
+      constraint: 0.6
+      target: ambit::ambit
+      components: null
+      enable: ENABLE_ambit
     conda:
       channel: conda-forge
       name: ambit
@@ -898,11 +864,12 @@ data:
       host: github
       account: dgasmith
       name: gau2grid
-      commit: v2.0.7
-    #cmake:
-    #  name: gau2grid
-    #  constraint: ">=2.0.7"
-    #  target: gau2grid::gg
+      commit: c2d78e0
+      commit_note: "v2.0.7+"
+    cmake:
+      name: gau2grid
+      constraint: "2.0.7"
+      target: gau2grid::gg
     conda:
       channel: conda-forge
       name: gau2grid
@@ -945,11 +912,11 @@ data:
       account: libxc
       name: libxc
       commit: 7.0.0
-    #cmake:
-    #  name: Libxc
-    #  constraint: 6.1.0
-    #  constraint_note: "v6.1.0 required for HYB_MGGA_XC_R2SCAN0, etc."
-    #  target: Libxc::xc
+    cmake:
+      name: Libxc
+      constraint: 7.0.0
+      constraint_note: "v6.1.0 required for HYB_MGGA_XC_R2SCAN0, etc. but v7 preferred"
+      target: Libxc::xc
       components:
         - C
     conda:
@@ -975,19 +942,15 @@ data:
       account: quantumlib
       name: OpenFermion-Psi4
       commit: v0.5
-    #cmake:
-    #  name:
-    #  constraint:
-    #  target:
-    #  components:
+    cmake: null
     conda:
       channel: conda-forge
       name: openfermionpsi4
       constraint: null
       skip_win: true
       aux_run_names:
-        - openfermion=1
-        - pydantic=1
+        - openfermion #=1
+#        - pydantic=1
       aux_run_names_note:
         "openfermion=1": "Shouldn't need to specify but do for the pydantic transition."
       cmake: null
@@ -1005,12 +968,11 @@ data:
       host: github
       account: MolSSI
       name: QCElemental
-      commit: v0.28.0
-    #cmake:
-    #  name:
-    #  constraint: ATLEAST 0.24.0
-    #  target:
-    #  components:
+      commit: v0.29.0
+    cmake:
+      name: qcelemental
+      constraint: "ATLEAST 0.28.0"
+      target: null
     conda:
       channel: conda-forge
       name: qcelemental
@@ -1018,6 +980,9 @@ data:
       aux_run_names:
         - msgpack-python
         - networkx
+        - setuptools<80.9
+      aux_run_names_note:
+        "setuptools<80.9": "Needed for qcelemental cmake detection. <80.9 avoid pkg_resources message from adcc."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
@@ -1035,13 +1000,10 @@ data:
       host: github
       account: adc-connect
       name: adcc
-      commit: v0.15.13
+      commit: v0.15.16
     cmake:
       name: adcc
       constraint: ATLEAST 0.15.16
-      #ENABLE_adcc
-      #target:
-      #components:
     conda:
       channel: conda-forge
       name: adcc
@@ -1060,12 +1022,12 @@ data:
       buildtime: true
       cms: true
     repository: null
-    #cmake:
-    #  name:
-    #  constraint: "1.1"
-    #  target: BrianQC::static_wrapper
-    # ENABLE_BrianQC "Enables the BrianQC GPU module (requires CUDA; requires separate installation and licensing of the BrianQC module)"
-    # BrianQC_DIR
+    cmake:
+      name: BrianQC
+      constraint: "1.1"
+      target: BrianQC::static_wrapper
+      enable: ENABLE_BrianQC
+      enable_note: "Enables the BrianQC GPU module (requires CUDA; requires separate installation and licensing of the BrianQC module)"
     conda: null
 
   - project: cppe
@@ -1080,21 +1042,22 @@ data:
       host: github
       account: maxscheurer
       name: cppe
-      commit: v0.3.1
-    #cmake:
-    #  name: cppe
-    #  constraint: ATLEAST 0.3.1
-    #  target:
-    # ENABLE_cppe
+      commit: v0.3.2
+    cmake:
+      name: cppe
+      constraint: ATLEAST 0.3.1
+      target:
+      enable: ENABLE_cppe
     conda:
       channel: conda-forge
       name: cppe
       name_note: "Equivalent to psi4::pycppe ."
-      constraint: "==0.3.1"
-      constraint_note: "v0.3.2 available, incl. Windows but errors with libecpint."
+      constraint: null
+      constraint_note: "==0.3.1 tests clean. v0.3.2 more broadly available but errors with libecpint, hence 'not pe_ecp'."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_cppe is inconsequential."
       skip_win: true
+      skip_win_note: "cppe is available for Windows but uses llvm-openmp that runtime-conflicts with Psi4 MKL (intel-openmp) build."
 
   - project: geometric
     use:
@@ -1108,11 +1071,7 @@ data:
       account: leeping
       name: geomeTRIC
       commit: "1.0"
-    #cmake:
-    #  name:
-    #  constraint: ">=1.0"
-    #  target:
-    #  components:
+    cmake: null
     conda:
       channel: conda-forge
       name: geometric
@@ -1134,7 +1093,8 @@ data:
     conda:
       channel: conda-forge
       name: i-pi
-      constraint: null
+      constraint: "==3.1.0"
+      constraint_note: "Higher requires ASE be installed."
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
 
@@ -1151,12 +1111,12 @@ data:
       account: MolSSI-MDI
       name: MDI_Library
       commit: v1.2.3
-    #cmake:
-    #  name: mdi
-    #  constraint: ">=1.2"
-    #  target: mdi::mdi
-    #  components: null
-    # ENABLE_mdi
+    cmake:
+      name: mdi
+      constraint: "1.2.3"
+      target: mdi::mdi
+      components: null
+      enable: ENABLE_mdi
     conda:
       channel: conda-forge
       name: pymdi
@@ -1177,11 +1137,7 @@ data:
       account: Chandemonium
       name: MP2D
       commit: c6c7f86
-    #cmake:
-    #  name:
-    #  constraint:
-    #  target:
-    #  components:
+    cmake: null
     conda: null
 
   - project: qcengine
@@ -1196,11 +1152,11 @@ data:
       host: github
       account: MolSSI
       name: QCEngine
-      commit: v0.30.0
-    #cmake:
-    #  name: qcengine
-    #  constraint: ATLEAST 0.26.0
-    #  target:
+      commit: v0.32.0
+    cmake:
+      name: qcengine
+      constraint: ATLEAST 0.28.1
+      target:
     conda:
       channel: conda-forge
       name: qcengine
@@ -1223,13 +1179,8 @@ data:
       account: dftd4
       name: dftd4
       commit: v3.5.0
-      commit_note: "v3.5.0 needed for r2scan3c"
-    # - dftd4-python >=3.5.0                         # 3.5.0 provides b97-3c parameters
-    #cmake:
-    #  name:
-    #  constraint: ">=3.3.0"
-    #  target:
-    #  components:
+      commit_note: "v3.5.0 needed for r2scan3c, b97-3c"
+    cmake: null
     conda:
       channel: conda-forge
       name: dftd4-python
@@ -1240,8 +1191,6 @@ data:
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
-      skip_win: true
-      skip_win_note: "Older versions available for Windows but not fully functional for v1.9."
 
   - project: ecpint
     use:
@@ -1255,12 +1204,11 @@ data:
       host: github
       account: robashaw
       name: libecpint
-      commit: v1.0.7  # TODO needs PR
-    #cmake:
-    #  name: ecpint
-    #  constraint: ">=1.0.7"
-    #  target: ECPINT::ecpint
-    #  ENABLE_ecpint
+      commit: v1.0.7
+    cmake:
+      name: ecpint
+      constraint: "1.0.7"
+      target: ECPINT::ecpint
     conda:
       channel: conda-forge
       name: libecpint
@@ -1287,12 +1235,11 @@ data:
       commit: v0.52
       commit_note: "Includes snowflake fix at v0.52."
     cmake: null
-    #  constraint: ">=0.51"
     conda:
       channel: conda-forge
-      channel_note: "Can also use qcarchive/label/next and constraint >=0.50b10."
       name: qcfractal
-      constraint: null
+      constraint: ">=0.60,!=0.62"
+      constraint_note: "v0.62 hangs for snowflake jobs."
       aux_run_names:
         - postgresql
       aux_run_names_note:
@@ -1330,13 +1277,12 @@ data:
       host: github
       account: ddsolvation
       name: ddX
-      commit: v0.4.5
-    #cmake:
-    #  name:
-    #  constraint: ATLEAST 0.4.3
-    #  target:
-    #  components:
-    # ENABLE_ddx
+      commit: a43f9b4
+    cmake:
+      name: pyddx
+      constraint: ATLEAST 0.4.2
+      target:
+      enable: ENABLE_ddx
     conda:
       channel: conda-forge
       name: pyddx
@@ -1358,12 +1304,10 @@ data:
       host: github
       account: psi-rking
       name: optking
-      commit: 0.2.1
-    #cmake:
-    #  name: optking
-    #  constraint: ATLEAST 0.2.1
-    #  target:
-    #  components:
+      commit: 0.3.0
+    cmake:
+      name: optking
+      constraint: ATLEAST 0.3.0
     conda:
       channel: conda-forge
       name: optking
@@ -1385,11 +1329,12 @@ data:
       host: github
       account: MolSSI-BSE
       name: basis_set_exchange
-      commit: v0.9
-    #cmake:
-    #  name:
-    #  constraint: ATLEAST 0.9.0
-    #  "ENABLE_bse"
+      commit: v0.11
+      githttps: true
+    cmake:
+      name: basis_set_exchange
+      constraint: ATLEAST 0.9.0
+      enable: "ENABLE_bse"
     conda:
       channel: conda-forge
       name: basis_set_exchange
@@ -1412,21 +1357,24 @@ data:
       host: github
       account: Einsums
       name: Einsums
-      commit: v0.5
-    #cmake:
-    #  name:
-    #  constraint: 0.4
-    #  target: Einsums::einsums
+      commit: v1.0.6
+    cmake:
+      name: Einsums
+      constraint: 1.0.6
+      target: Einsums::Einsums
     #  components:
     #  ENABLE_Einsums
     conda:
       channel: conda-forge
       name: einsums
-      constraint: "=*=mkl*"
-      # todo: tie einsums variant to libblas selection, rather than mkl constraint above.
+      constraint: ">=1.0.6"
+      constraint_note: "v1 changes interface, and 1.0.3 needed for Linux to compile against."
       aux_build_names:
         - range-v3
         - zlib
+        - hdf5
+      aux_build_names_note:
+        "hdf5": "Use 1.14.3 or 1.14.6 (so far) as .4 and .5 not setting HDF5_VERSION."
       skip_win: true
       cmake:
         ENABLE_Einsums: true
@@ -1436,7 +1384,36 @@ data:
         //CMAKE_INSIST_FIND_PACKAGE_Einsums: true
         //CMAKE_DISABLE_FIND_PACKAGE_Einsums: true
 
-  - project: gauxc 
+  - project: integratorxx
+    use:
+      added: 1.10
+      required: false
+      required_note: "Allow using the IntegratorXX DFT grid library."
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: wavefunction91
+      name: IntegratorXX
+      commit: cf2917c
+    cmake:
+      name: IntegratorXX
+      constraint: null
+      target: IntegratorXX::IntegratorXX
+    conda:
+      channel: conda-forge
+      name: integratorxx
+      constraint: null
+      cmake:
+        ENABLE_IntegratorXX: true
+        IntegratorXX_DIR:
+          unix: ${CONDA_PREFIX}/lib/cmake/IntegratorXX
+          win-64: ${CONDA_PREFIX}/Library/lib/cmake/IntegratorXX
+        //CMAKE_INSIST_FIND_PACKAGE_IntegratorXX: true
+        //CMAKE_DISABLE_FIND_PACKAGE_IntegratorXX: true
+
+  - project: gauxc
     use:
       added: 1.10
       required: false
@@ -1448,17 +1425,17 @@ data:
       host: github
       account: wavefunction91
       name: GauXC
-      commit: 6a8f4bf
-    #cmake: 
-    #  name: gauxc
-    #  constraint: null
-    #  target: gauxc::gauxc
+      commit: 5c85f6b
+    cmake:
+      name: gauxc
+      constraint: null
+      target: gauxc::gauxc
     #  components:
     #  ENABLE_gauxc
-    #  gauxc_ENABLE_GPU 
+    #  gauxc_ENABLE_GPU
     conda: null
 
-  - project: h5py 
+  - project: h5py
     use:
       added: 1.10
       required: false

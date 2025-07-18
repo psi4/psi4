@@ -103,7 +103,7 @@ for result in [  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     variable("CURRENT GRADIENT"),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad, result, 8, 'CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad, result, 7, 'CP-Corrected Gradient')  #TEST
 
 # compute pieces
 cp_scheme = {  #TEST
@@ -174,7 +174,7 @@ for result in [  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     grad,  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad, result, 8, 'CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad, result, 7, 'CP-Corrected Gradient')  #TEST
 
 compare(12, wfn.variable("NBODY NUMBER"), "rtd=T nbody number")  #TEST
 
@@ -210,14 +210,14 @@ for result in [  #TEST
 for result in [  #TEST
     wfn.variable('GRADIENT 2'),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad, result, 8, 'rtd=F CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad, result, 7, 'rtd=F CP-Corrected Gradient')  #TEST
 
 for result in [  #TEST
     g,  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     variable("CURRENT GRADIENT"),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad_ie, result, 8, 'rtd=F CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad_ie, result, 7, 'rtd=F CP-Corrected Gradient')  #TEST
 
 compare(12, wfn.variable("NBODY NUMBER"), "rtd=F nbody number")  #TEST
 

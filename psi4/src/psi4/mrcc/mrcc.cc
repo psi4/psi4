@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -558,7 +558,7 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
         one_particle->print();
     }
 
-    one_particle->save(_default_psio_lib_, PSIF_MO_OPDM, Matrix::Full);
+    one_particle->save(_default_psio_lib_, PSIF_MO_OPDM, Matrix::SubBlocks);
 
     one_particle->print();
 

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -294,11 +294,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// Copies data to the row specified. Assumes data is of correct length.
     void copy_to_row(int h, int row, double const* const data);
 
-    enum SaveType { Full
-    PSI_DEPRECATED(
-        "Using `Matrix::SaveType::Full` instead of `Matrix::SaveType::SubBlocks` is deprecated, "
-        "and as soon as 1.5 it will stop working"),
-    SubBlocks, LowerTriangle, ThreeIndexLowerTriangle };
+    enum SaveType { SubBlocks, LowerTriangle, ThreeIndexLowerTriangle };
 
     /**
      * @{

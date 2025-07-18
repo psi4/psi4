@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -123,7 +123,7 @@ dpd_file4_cache_entry *DPD::file4_cache_last() {
     return (nullptr);
 }
 
-int DPD::file4_cache_add(dpdfile4 *File, size_t priority) {
+void DPD::file4_cache_add(dpdfile4 *File, size_t priority) {
     int h, dpdnum;
     dpd_file4_cache_entry *this_entry;
 
@@ -137,7 +137,6 @@ int DPD::file4_cache_add(dpdfile4 *File, size_t priority) {
     } else if (this_entry != nullptr && File->incore) {
         /* We already have this one in cache, but change its priority level */
         this_entry->priority = priority;
-        return 0;
     } else if (this_entry == nullptr && !(File->incore)) { /* New cache entry */
 
         this_entry = (dpd_file4_cache_entry *)malloc(sizeof(dpd_file4_cache_entry));
@@ -192,90 +191,71 @@ int DPD::file4_cache_add(dpdfile4 *File, size_t priority) {
 
         /* return dpd_value to its original value */
         dpd_set_default(dpdnum);
-
-        return 0;
     }
-
-    return 0;
 }
 
-int DPD::file4_cache_del(dpdfile4 *File) {
-    int h, dpdnum;
+dpd_file4_cache_entry* DPD::file4_cache_del_raw(dpd_file4_cache_entry *entry, dpdfile4& File) {
+    /* Unlock the entry first */
+    file4_cache_unlock(&File);
+
+    File.incore = 0;
+
+    /* Write all the data to disk and free the memory */
+    for (int h = 0; h < File.params->nirreps; h++) {
+        if (!(entry->clean)) file4_mat_irrep_wrt(&File, h);
+        file4_mat_irrep_close(&File, h);
+    }
+
+    auto next_entry = entry->next;
+    auto last_entry = entry->last;
+
+    /* Adjust the global cache size value */
+    dpd_main.memcache -= entry->size;
+
+    /* Are we deleting the top of the tree? */
+    if (entry == dpd_main.file4_cache) dpd_main.file4_cache = next_entry;
+
+    free(entry);
+
+    /* Reassign pointers for adjacent entries in the list */
+    if (next_entry != nullptr) next_entry->last = last_entry;
+    if (last_entry != nullptr) last_entry->next = next_entry;
+
+    /* Return next_entry for looping purposes */
+    return next_entry;
+}
+
+void DPD::file4_cache_del_filenum(size_t filenum) {
+    const auto orig_dpd = dpd_default;
+    dpdfile4 File;
+    auto this_entry = dpd_main.file4_cache;
+    while (this_entry != nullptr) {
+        if (this_entry->filenum == filenum) {
+            dpd_set_default(this_entry->dpdnum);
+            file4_init(&File, this_entry->filenum, this_entry->irrep, this_entry->pqnum, this_entry->rsnum,
+                   this_entry->label);
+            this_entry = file4_cache_del_raw(this_entry, File);
+        } else {
+            this_entry = this_entry->next;
+        }
+    }
+    dpd_set_default(orig_dpd);
+}
+
+void DPD::file4_cache_del(dpdfile4 *File) {
     dpd_file4_cache_entry *this_entry, *next_entry, *last_entry;
 
     this_entry = file4_cache_scan(File->filenum, File->my_irrep, File->params->pqnum, File->params->rsnum, File->label,
                                   File->dpdnum);
 
-    if ((this_entry == nullptr && File->incore) || (this_entry != nullptr && !(File->incore)) ||
-        (this_entry == nullptr && !(File->incore))) {
+    if (this_entry == nullptr || !(File->incore)) {
         dpd_error("File4 cache delete error!", "outfile");
     } else {
-        /* Save the current dpd_default */
-        dpdnum = dpd_default;
+        const auto orig_dpd = dpd_default;
         dpd_set_default(File->dpdnum);
-
-        /* Unlock the entry first */
-        file4_cache_unlock(File);
-
-        File->incore = 0;
-
-        /* Write all the data to disk and free the memory */
-        for (h = 0; h < File->params->nirreps; h++) {
-            if (!(this_entry->clean)) file4_mat_irrep_wrt(File, h);
-            file4_mat_irrep_close(File, h);
-        }
-
-        next_entry = this_entry->next;
-        last_entry = this_entry->last;
-
-        /* Adjust the global cache size value */
-        dpd_main.memcache -= this_entry->size;
-
-        /* Are we deleting the top of the tree? */
-        if (this_entry == dpd_main.file4_cache) dpd_main.file4_cache = next_entry;
-
-        free(this_entry);
-
-        /* Reassign pointers for adjacent entries in the list */
-        if (next_entry != nullptr) next_entry->last = last_entry;
-        if (last_entry != nullptr) last_entry->next = next_entry;
-
-        /* Return the dpd_default to original value */
-        dpd_set_default(dpdnum);
+        file4_cache_del_raw(this_entry, *File);
+        dpd_set_default(orig_dpd);
     }
-
-    return 0;
-}
-
-void DPD::file4_cache_print_screen() {
-    int total_size = 0;
-    dpd_file4_cache_entry *this_entry;
-
-    this_entry = dpd_main.file4_cache;
-
-    outfile->Printf("\n\tDPD File4 Cache Listing:\n\n");
-    outfile->Printf("Cache Label            DPD File symm  pq  rs  use acc clean    pri lock size(kB)\n");
-    outfile->Printf("--------------------------------------------------------------------------------\n");
-    while (this_entry != nullptr) {
-        outfile->Printf("%-22s  %1d   %3d   %1d   %2d  %2d  %3zu %3zu    %1d  %6zu   %1d  %8.1f\n", this_entry->label,
-                        this_entry->dpdnum, this_entry->filenum, this_entry->irrep, this_entry->pqnum,
-                        this_entry->rsnum, this_entry->usage, this_entry->access, this_entry->clean,
-                        this_entry->priority, this_entry->lock, (this_entry->size) * sizeof(double) / 1e3);
-        total_size += this_entry->size;
-        this_entry = this_entry->next;
-    }
-    outfile->Printf("--------------------------------------------------------------------------------\n");
-    outfile->Printf("Total cached: %9.1f kB; MRU = %6zu; LRU = %6zu\n", (total_size * sizeof(double)) / 1e3,
-                    dpd_main.file4_cache_most_recent, dpd_main.file4_cache_least_recent);
-    outfile->Printf("#LRU deletions = %6zu; #Low-priority deletions = %6zu\n", dpd_main.file4_cache_lru_del,
-                    dpd_main.file4_cache_low_del);
-    outfile->Printf("Core max size:  %9.1f kB\n", (dpd_main.memory) * sizeof(double) / 1e3);
-    outfile->Printf("Core used:      %9.1f kB\n", (dpd_main.memused) * sizeof(double) / 1e3);
-    outfile->Printf("Core available: %9.1f kB\n", dpd_memfree() * sizeof(double) / 1e3);
-    outfile->Printf("Core cached:    %9.1f kB\n", (dpd_main.memcache) * sizeof(double) / 1e3);
-    outfile->Printf("Locked cached:  %9.1f kB\n", (dpd_main.memlocked) * sizeof(double) / 1e3);
-    outfile->Printf("Most recent entry  = %zu\n", dpd_main.file4_cache_most_recent);
-    outfile->Printf("Least recent entry = %zu\n", dpd_main.file4_cache_least_recent);
 }
 
 void DPD::file4_cache_print(std::string out) {
@@ -395,8 +375,7 @@ void DPD::file4_cache_dirty(dpdfile4 *File) {
     this_entry = file4_cache_scan(File->filenum, File->my_irrep, File->params->pqnum, File->params->rsnum, File->label,
                                   File->dpdnum);
 
-    if ((this_entry == nullptr && File->incore) || (this_entry != nullptr && !File->incore) ||
-        (this_entry == nullptr && !File->incore))
+    if (this_entry == nullptr || !(File->incore))
         dpd_error("Error setting file4_cache dirty flag!", "outfile");
     else {
         this_entry->clean = 0;
@@ -420,6 +399,8 @@ int DPD::file4_cache_get_priority(dpdfile4 *File) {
     return (0);
 }
 
+// Of the lowest-priority unlocked entries in cache, return the first.
+// If cache is empty, return nullptr.
 dpd_file4_cache_entry *dpd_file4_cache_find_low() {
     dpd_file4_cache_entry *this_entry, *low_entry;
 

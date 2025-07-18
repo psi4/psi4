@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -378,6 +378,8 @@ class PSI_API MintsHelper {
     // Computes the electric dipole derivatives
     SharedMatrix dipole_grad(SharedMatrix D);
     SharedMatrix multipole_grad(SharedMatrix D, int order, const std::vector<double>& origin = {0.0, 0.0, 0.0});
+    // Computes the gradient due to an embedding potential
+    SharedMatrix embpot_grad(SharedMatrix D);
     // Computes the gradient due to external dipole perturbation
     SharedMatrix perturb_grad(SharedMatrix D);
     // Computes the gradient due to ECPs in the basis set

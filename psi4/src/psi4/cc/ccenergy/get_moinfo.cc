@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -77,37 +77,24 @@ void CCEnergyWavefunction::get_moinfo() {
         moinfo_.escf = energy_;
     moinfo_.sopi = nsopi_;
     moinfo_.orbspi = nmopi_;
+    moinfo_.frdocc = frzcpi_;
+    moinfo_.fruocc = frzvpi_;
     moinfo_.openpi = soccpi();
-    // We'll remove the frzcpi later in this file.
-    moinfo_.clsdpi = doccpi();
+    moinfo_.clsdpi = doccpi() - frzcpi_;
+    moinfo_.uoccpi = moinfo_.orbspi - moinfo_.clsdpi - moinfo_.openpi - moinfo_.fruocc - moinfo_.frdocc;
 
     auto nirreps = moinfo_.nirreps;
 
     psio_read_entry(PSIF_CC_INFO, "Reference Wavefunction", (char *)&(params_.ref), sizeof(int));
 
-    /* Get frozen and active orbital lookups from CC_INFO */
-    moinfo_.frdocc = init_int_array(nirreps);
-    moinfo_.fruocc = init_int_array(nirreps);
-    psio_read_entry(PSIF_CC_INFO, "Frozen Core Orbs Per Irrep", (char *)moinfo_.frdocc, sizeof(int) * nirreps);
-    psio_read_entry(PSIF_CC_INFO, "Frozen Virt Orbs Per Irrep", (char *)moinfo_.fruocc, sizeof(int) * nirreps);
-
     psio_read_entry(PSIF_CC_INFO, "No. of Active Orbitals", (char *)&(nactive), sizeof(int));
 
     if (params_.ref == 2) { /** UHF **/
 
-        moinfo_.aoccpi = init_int_array(nirreps);
-        moinfo_.boccpi = init_int_array(nirreps);
-        moinfo_.avirtpi = init_int_array(nirreps);
-        moinfo_.bvirtpi = init_int_array(nirreps);
-
-        psio_read_entry(PSIF_CC_INFO, "Active Alpha Occ Orbs Per Irrep", (char *)moinfo_.aoccpi,
-                        sizeof(int) * moinfo_.nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Beta Occ Orbs Per Irrep", (char *)moinfo_.boccpi,
-                        sizeof(int) * moinfo_.nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Alpha Virt Orbs Per Irrep", (char *)moinfo_.avirtpi,
-                        sizeof(int) * moinfo_.nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Beta Virt Orbs Per Irrep", (char *)moinfo_.bvirtpi,
-                        sizeof(int) * moinfo_.nirreps);
+        moinfo_.aoccpi = moinfo_.clsdpi + soccpi();
+        moinfo_.boccpi = moinfo_.clsdpi;
+        moinfo_.avirtpi = moinfo_.uoccpi;
+        moinfo_.bvirtpi = moinfo_.uoccpi + soccpi();
 
         moinfo_.aocc_sym = init_int_array(nactive);
         moinfo_.bocc_sym = init_int_array(nactive);
@@ -135,12 +122,10 @@ void CCEnergyWavefunction::get_moinfo() {
 
     } else { /** RHF or ROHF **/
 
-        moinfo_.occpi = init_int_array(nirreps);
-        moinfo_.virtpi = init_int_array(nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Occ Orbs Per Irrep", (char *)moinfo_.occpi, sizeof(int) * nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Virt Orbs Per Irrep", (char *)moinfo_.virtpi, sizeof(int) * nirreps);
-        act_occpi_ = Dimension(std::vector<int>(moinfo_.occpi, moinfo_.occpi + nirreps));
-        act_virpi_ = Dimension(std::vector<int>(moinfo_.virtpi, moinfo_.virtpi + nirreps));
+        moinfo_.occpi = moinfo_.clsdpi + soccpi();
+        moinfo_.virtpi = moinfo_.uoccpi + soccpi();
+        act_occpi_ = moinfo_.occpi;
+        act_virpi_ = moinfo_.virtpi;
         moinfo_.occ_sym = init_int_array(nactive);
         moinfo_.vir_sym = init_int_array(nactive);
         psio_read_entry(PSIF_CC_INFO, "Active Occ Orb Symmetry", (char *)moinfo_.occ_sym, sizeof(int) * nactive);
@@ -208,17 +193,9 @@ void CCEnergyWavefunction::get_moinfo() {
         moinfo_.Cbv = Cb;
     }
 
-    /* Adjust clsdpi array for frozen orbitals */
-    for (int i = 0; i < nirreps; i++) moinfo_.clsdpi[i] -= moinfo_.frdocc[i];
-
-    moinfo_.uoccpi = init_int_array(moinfo_.nirreps);
-    for (int i = 0; i < nirreps; i++)
-        moinfo_.uoccpi[i] =
-            moinfo_.orbspi[i] - moinfo_.clsdpi[i] - moinfo_.openpi[i] - moinfo_.fruocc[i] - moinfo_.frdocc[i];
 
     if (params_.ref == 0) {
-        moinfo_.nvirt = 0;
-        for (int h = 0; h < nirreps; h++) moinfo_.nvirt += moinfo_.virtpi[h];
+        moinfo_.nvirt = moinfo_.virtpi.sum();;
     }
 
     psio_read_entry(PSIF_CC_INFO, "Reference Energy", (char *)&(moinfo_.eref), sizeof(double));
@@ -253,19 +230,7 @@ void CCEnergyWavefunction::cleanup() {
         free(moinfo_.Cbv);
     }
 
-    // Wavefunction owns these arrays
-    //    free(moinfo.sopi);
-    //    free(moinfo.sosym);
-    //    free(moinfo.orbspi);
-    //    free(moinfo.openpi);
-    //    free(moinfo.uoccpi);
-    //  free(moinfo.fruocc);
-    //  free(moinfo.frdocc);
     if (params_.ref == 2) {
-        free(moinfo_.aoccpi);
-        free(moinfo_.boccpi);
-        free(moinfo_.avirtpi);
-        free(moinfo_.bvirtpi);
         free(moinfo_.aocc_sym);
         free(moinfo_.bocc_sym);
         free(moinfo_.avir_sym);
@@ -275,8 +240,6 @@ void CCEnergyWavefunction::cleanup() {
         free(moinfo_.avir_off);
         free(moinfo_.bvir_off);
     } else {
-        free(moinfo_.occpi);
-        free(moinfo_.virtpi);
         free(moinfo_.occ_sym);
         free(moinfo_.vir_sym);
         free(moinfo_.occ_off);

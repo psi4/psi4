@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -71,12 +71,12 @@ struct MOInfo {
     Dimension virtpi;                /* no. of active virt. orbs. (incl. open) per irrep */
     Dimension avirtpi;               /* no. of alpha active virt. orbs. (incl. open) per irrep */
     Dimension bvirtpi;               /* no. of beta active virt. orbs. (incl. open) per irrep */
-    Dimension occ_off;               /* occupied orbital offsets within each irrep */
-    Dimension aocc_off;              /* alpha occupied orbital offsets within each irrep */
-    Dimension bocc_off;              /* beta occupied orbital offsets within each irrep */
-    Dimension vir_off;               /* virtual orbital offsets within each irrep */
-    Dimension avir_off;              /* alpha virtual orbital offsets within each irrep */
-    Dimension bvir_off;              /* beta virtual orbital offsets within each irrep */
+    std::vector<int> occ_off;        /* occupied orbital offsets within each irrep */
+    std::vector<int> aocc_off;       /* alpha occupied orbital offsets within each irrep */
+    std::vector<int> bocc_off;       /* beta occupied orbital offsets within each irrep */
+    std::vector<int> vir_off;        /* virtual orbital offsets within each irrep */
+    std::vector<int> avir_off;       /* alpha virtual orbital offsets within each irrep */
+    std::vector<int> bvir_off;       /* beta virtual orbital offsets within each irrep */
     std::vector<int> cc_occ;         /* QT->CC active occupied reordering array */
     std::vector<int> cc_aocc;        /* QT->CC alpha active occupied reordering array */
     std::vector<int> cc_bocc;        /* QT->CC beta active occupied reordering array */

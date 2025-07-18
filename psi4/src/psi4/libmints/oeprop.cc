@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -821,7 +821,7 @@ void OEProp::compute() {
     else if (tasks_.count("TRANSITION_DIPOLE")) compute_multipoles(1, true);
     if (tasks_.count("MO_EXTENTS")) compute_mo_extents();
     if (tasks_.count("MULLIKEN_CHARGES")) compute_mulliken_charges();
-    if (tasks_.count("LOWDIN_CHARGES")) compute_lowdin_charges();
+    if ((tasks_.count("LOWDIN_CHARGES")) || (tasks_.count("LOWDIN_SPINS"))) compute_lowdin_charges();
     if (tasks_.count("MBIS_VOLUME_RATIOS")) compute_mbis_multipoles(true);
     else if (tasks_.count("MBIS_CHARGES")) compute_mbis_multipoles(false);
     if (tasks_.count("MAYER_INDICES")) compute_mayer_indices();
@@ -1508,8 +1508,8 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
     return std::make_tuple(Qa, Qb, apcs);
 }
 void OEProp::compute_lowdin_charges() {
-    PAC::SharedStdVector Qa, Qb, apcs;
-    std::tie(Qa, Qb, apcs) = pac_.compute_lowdin_charges(true);
+    PAC::SharedStdVector Qa, Qb, apcs, asps;
+    std::tie(Qa, Qb, apcs, asps) = pac_.compute_lowdin_charges(true);
     wfn_->set_atomic_point_charges(apcs);
 
     auto vec_apcs = std::make_shared<Matrix>("Lowdin Charges: (a.u.)", 1, apcs->size());
@@ -1517,9 +1517,15 @@ void OEProp::compute_lowdin_charges() {
         vec_apcs->set(0, i, (*apcs)[i]);
     }
     wfn_->set_array_variable("LOWDIN CHARGES", vec_apcs);
+
+    auto vec_asps = std::make_shared<Matrix>("Lowdin Spins: (a.u.)", 1, apcs->size());
+    for (size_t i = 0; i < asps->size(); i++) {
+        vec_asps->set(0, i, (*asps)[i]);
+    }
+    wfn_->set_array_variable("LOWDIN SPINS", vec_asps);
 }
 
-std::tuple<PAC::SharedStdVector, PAC::SharedStdVector, PAC::SharedStdVector>
+std::tuple<PAC::SharedStdVector, PAC::SharedStdVector, PAC::SharedStdVector, PAC::SharedStdVector>
 PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
     if (print_output) {
         outfile->Printf("  Lowdin Charges: (a.u.)\n");
@@ -1530,6 +1536,7 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
     auto Qb = std::make_shared<std::vector<double>>(mol->natom());
 
     auto apcs = std::make_shared<std::vector<double>>(mol->natom());
+    auto asps = std::make_shared<std::vector<double>>(mol->natom());
 
     double suma = 0.0;
 
@@ -1592,6 +1599,7 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
         double Qs = (*Qa)[A] - (*Qb)[A];
         double Qt = mol->Z(A) - ((*Qa)[A] + (*Qb)[A]);
         (*apcs)[A] = Qt;
+        (*asps)[A] = Qs;
         if (print_output) {
             outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A + 1, mol->label(A).c_str(), (*Qa)[A],
                             (*Qb)[A], Qs, Qt);
@@ -1603,7 +1611,7 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
                         nuc - suma - sumb);
     }
 
-    return std::make_tuple(Qa, Qb, apcs);
+    return std::make_tuple(Qa, Qb, apcs, asps);
 }
 
 // See PopulationAnalysisCalc::compute_mbis_multipoles

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -146,11 +146,6 @@ class MolecularGrid {
 
     /// Build the grid
     void buildGridFromOptions(MolecularGridOptions const& opt);
-    /// Build the grid
-    void buildGridFromOptions(MolecularGridOptions const& opt,
-                              const std::vector<std::vector<double>>& rs,  // Radial nodes,     per atom
-                              const std::vector<std::vector<double>>& ws,  // Radial weights,   per atom
-                              const std::vector<std::vector<int>>& Ls);    // Spherical orders, per atom
 
     /// Print information about the grid
     void print(std::string out_fname = "outfile", int print = 2) const;

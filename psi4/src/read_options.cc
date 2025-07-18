@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -424,7 +424,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DAMPING_FACTOR_MULTIPOLE", 2.1304);
 
         /*- Summation scheme for field computations, can be direct or fmm -*/
-        options.add_str_i("SUMMATION_FIELDS", "DIRECT", "DIRECT FMM");
+        options.add_str("SUMMATION_FIELDS", "DIRECT", "DIRECT FMM");
         /*- Expansion order of the multipoles for FMM -*/
         options.add_int("TREE_EXPANSION_ORDER", 5);
         /*- Opening angle theta -*/
@@ -1139,14 +1139,30 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION SAPT(DFT) -*/
 
-        /*- Monomer A GRAC shift in Hartree -*/
+        /*- Monomer A GRAC shift in Hartree. To automatically compute prior to
+        SAPT(DFT), do NOT set this option but set |sapt__sapt_dft_grac_compute|
+        to "SINGLE" or "ITERATIVE" as described below. -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
-        /*- Monomer B GRAC shift in Hartree -*/
+        /*- Monomer B GRAC shift in Hartree. To automatically compute prior to
+        SAPT(DFT), do NOT set this option but set |sapt__sapt_dft_grac_compute|
+        to "SINGLE" or "ITERATIVE" as described below. -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
+        /*- SAPT_DFT_GRAC_COMPUTE will enable automatically computing GRAC
+         shifts prior to running SAPT(DFT). Note that the user must not specify
+         a value for SAPT_DFT_GRAC_SHIFT_A or SAPT_DFT_GRAC_SHIFT_B to trigger
+         this GRAC computation. "SINGLE" will try only once to converge the
+         cation for computing a GRAC shift. "ITERATIVE" will adjust local Psi4
+         options ("LEVEL_SHIFT", "LEVEL_SHIFT_CUTOFF") to attempt to converge
+         the neutral/cation calculations. "ITERATIVE" will try 3 times to
+         converge the cation before failing the SAPT(DFT) computation. -*/
+        options.add_str("SAPT_DFT_GRAC_COMPUTE", "NONE", "NONE SINGLE ITERATIVE");
+        /*- To ensure that the GRAC shift is computed with a sufficiently large
+          basis set, the user can specify a larger basis set for the GRAC
+          calculation, which can be different from the basis set used for the
+          SAPT(DFT) calculation. -*/
+        options.add_str("SAPT_DFT_GRAC_BASIS", "AUTO");
         /*- Compute the Delta-HF correction? -*/
         options.add_bool("SAPT_DFT_DO_DHF", true);
-        /*- How is the GRAC correction determined? !expert -*/
-        options.add_str("SAPT_DFT_GRAC_DETERMINATION", "INPUT", "INPUT");
         /*- Enables the hybrid xc kernel in dispersion? !expert -*/
         options.add_bool("SAPT_DFT_DO_HYBRID", true);
         /*- Scheme for approximating exchange-dispersion for SAPT-DFT.
@@ -1671,7 +1687,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
         options.add_int("DF_INTS_NUM_THREADS", 0);
-        /*- IO caching for CP corrections, etc. Changing this selects Disk_DF over Mem_DF. Note that setting this forces DiskDFJK when SCF_TYPE=DF. !expert -*/
+        /*- IO caching for CP corrections, etc. Previous to v1.10, changing this selected Disk_DF over Mem_DF.
+	That is, setting this forced DiskDFJK when SCF_TYPE=DF. Starting with v1.10, changing this affects 
+ 	|globals__scf_type| = ``CD`` or ``DISK_DF`` but does not force ``DISK_DF`` when given ``DF``. !expert -*/
         options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
         /*- Fitting Condition, i.e. eigenvalue threshold for RI basis. Analogous to S_TOLERANCE !expert -*/
         options.add_double("DF_FITTING_CONDITION", 1.0E-10);
@@ -1754,7 +1772,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         due to compile-time issues and requiring very modern CUDA CCs (>=80) -*/
         options.add_str("SNLINK_LWD_KERNEL", "DEFAULT", "DEFAULT REFERENCE SCHEME1 SCHEME1-MAGMA"); 
         /*- Overwrite sn-LinK grid options with debug grid matching GauXC's Ultrafine grid spec !expert -*/
-        options.add_int("SNLINK_USE_DEBUG_GRID", false);
+        options.add_bool("SNLINK_USE_DEBUG_GRID", false);
 
         /*- SUBSECTION SAD Guess Algorithm -*/
 
@@ -3161,12 +3179,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("MP2_SOS_SCALE", 1.3);
         /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
         options.add_double("MP2_SOS_SCALE2", 1.2);
-        /*- CEPA opposite-spin scaling value from SCS-CCSD -*/
-        // options.add_double("CEPA_OS_SCALE",1.27);
-        /*- CEPA same-spin scaling value from SCS-CCSD -*/
-        // options.add_double("CEPA_SS_SCALE",1.13);
-        /*- CEPA Spin-opposite scaling (SOS) value -*/
-        // options.add_double("CEPA_SOS_SCALE",1.3);
         /*- Scaling value for 3rd order energy correction (S. Grimme, Vol. 24, pp. 1529, J. Comput. Chem.) -*/
         options.add_double("E3_SCALE", 0.25);
         /*- OO scaling factor used in MSD -*/

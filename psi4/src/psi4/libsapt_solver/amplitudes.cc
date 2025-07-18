@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -30,6 +30,7 @@
 #include "sapt2p.h"
 #include "sapt2p3.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
@@ -1104,7 +1105,7 @@ void SAPT2p3::Y3_4(double **yAR, int intfile, const char *AAlabel, const char *A
 
 void SAPT2p3::ind30_amps(int AAfile, const char *ARlabel, int BBfile, const char *BSlabel, double **wBAA, double **wBAR,
                          double **wBRR, double **wABS, size_t noccA, size_t nvirA, double *evalsA, size_t noccB, size_t nvirB,
-                         double *evalsB, size_t ampout, const char *amplabel) {
+                         double *evalsB, size_t ampout, const std::string& amplabel) {
     double **sAR = block_matrix(noccA, nvirA);
     double **sBS = block_matrix(noccB, nvirB);
 
@@ -1120,7 +1121,7 @@ void SAPT2p3::ind30_amps(int AAfile, const char *ARlabel, int BBfile, const char
         }
     }
 
-    double **uAR = block_matrix(noccA, nvirA);
+    auto uAR = Matrix(amplabel, noccA, nvirA);
 
     double **B_p_AR = get_DF_ints(AAfile, ARlabel, 0, noccA, 0, nvirA);
     double **B_p_BS = get_DF_ints(BBfile, BSlabel, 0, noccB, 0, nvirB);
@@ -1128,17 +1129,17 @@ void SAPT2p3::ind30_amps(int AAfile, const char *ARlabel, int BBfile, const char
     double *X = init_array(ndf_ + 3);
 
     C_DGEMV('t', noccB * nvirB, ndf_ + 3, 1.0, B_p_BS[0], ndf_ + 3, sBS[0], 1, 0.0, X, 1);
-    C_DGEMV('n', noccA * nvirA, ndf_ + 3, 2.0, B_p_AR[0], ndf_ + 3, X, 1, 0.0, uAR[0], 1);
+    C_DGEMV('n', noccA * nvirA, ndf_ + 3, 2.0, B_p_AR[0], ndf_ + 3, X, 1, 0.0, uAR.get_pointer(), 1);
 
     free(X);
 
     if (amplabel == std::string("Ind30 uAR Amplitudes")) {
-        e_ind30_vsasb_term_ = 2.0 * C_DDOT(noccA * nvirA, uAR[0], 1, sAR[0], 1);
+        e_ind30_vsasb_term_ = 2.0 * C_DDOT(noccA * nvirA, uAR.get_pointer(), 1, sAR[0], 1);
     }
 
-    C_DGEMM('N', 'T', noccA, nvirA, nvirA, 1.0, sAR[0], nvirA, wBRR[0], nvirA, 1.0, uAR[0], nvirA);
+    C_DGEMM('N', 'T', noccA, nvirA, nvirA, 1.0, sAR[0], nvirA, wBRR[0], nvirA, 1.0, uAR.get_pointer(), nvirA);
 
-    C_DGEMM('N', 'N', noccA, nvirA, noccA, -1.0, wBAA[0], noccA, sAR[0], nvirA, 1.0, uAR[0], nvirA);
+    C_DGEMM('N', 'N', noccA, nvirA, noccA, -1.0, wBAA[0], noccA, sAR[0], nvirA, 1.0, uAR.get_pointer(), nvirA);
 
     double **tARBS = block_matrix(noccA * nvirA, noccB * nvirB);
 
@@ -1158,7 +1159,7 @@ void SAPT2p3::ind30_amps(int AAfile, const char *ARlabel, int BBfile, const char
         }
     }
 
-    C_DGEMV('n', noccA * nvirA, noccB * nvirB, 2.0, tARBS[0], noccB * nvirB, wABS[0], 1, 1.0, uAR[0], 1);
+    C_DGEMV('n', noccA * nvirA, noccB * nvirB, 2.0, tARBS[0], noccB * nvirB, wABS[0], 1, 1.0, uAR.get_pointer(), 1);
 
     free_block(tARBS);
     free_block(sAR);
@@ -1166,13 +1167,11 @@ void SAPT2p3::ind30_amps(int AAfile, const char *ARlabel, int BBfile, const char
 
     for (int a = 0; a < noccA; a++) {
         for (int r = 0; r < nvirA; r++) {
-            uAR[a][r] /= evalsA[a] - evalsA[r + noccA];
+            uAR.pointer()[a][r] /= evalsA[a] - evalsA[r + noccA];
         }
     }
 
-    psio_->write_entry(ampout, amplabel, (char *)uAR[0], sizeof(double) * noccA * nvirA);
-
-    free_block(uAR);
+    uAR.save(psio_, ampout, Matrix::SaveType::SubBlocks); 
 }
 
 void SAPT2p3::inddisp30_amps() {

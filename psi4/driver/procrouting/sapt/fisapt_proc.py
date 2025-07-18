@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -35,7 +35,7 @@ from psi4 import core
 from .. import empirical_dispersion
 
 
-def fisapt_compute_energy(self, external_potentials=None):
+def fisapt_compute_energy(self, jk_obj, *, external_potentials=None):
     """Computes the FSAPT energy. FISAPT::compute_energy"""
 
     # => Header <=
@@ -50,7 +50,7 @@ def fisapt_compute_energy(self, external_potentials=None):
     self.overlap()
     self.kinetic()
     self.nuclear()
-    self.coulomb()
+    self.coulomb(jk_obj)
     core.timer_off("FISAPT: Setup")
     core.timer_on("FISAPT: Monomer SCF")
     self.scf()

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -560,7 +560,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
         copy_file_to_scratch(read180, 'psi', 'ot', 180)
     core.set_local_option("SCF", "DF_INTS_IO", "SAVE")
     E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule,
-                           banner='IP Fitting SCF: Burn-in', **kwargs)
+                           banner='IP Fitting SCF: Burn-in', quiet=True, **kwargs)
     core.set_local_option("SCF", "DF_INTS_IO", "LOAD")
 
     if not wfn.functional().is_x_lrc():
@@ -609,7 +609,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
     molecule.set_molecular_charge(charge0)
     molecule.set_multiplicity(mult0)
     E0r, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule,
-                             banner='IP Fitting SCF: Neutral, Right Endpoint', **kwargs)
+                             banner='IP Fitting SCF: Neutral, Right Endpoint', quiet=True, **kwargs)
     eps_a = wfn.epsilon_a()
     eps_b = wfn.epsilon_b()
     if Nb == 0:
@@ -629,7 +629,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
     molecule.set_molecular_charge(charge1)
     molecule.set_multiplicity(mult1)
     E1r = driver.energy('scf', dft_functional=name, molecule=molecule,
-                               banner='IP Fitting SCF: Cation, Right Endpoint', **kwargs)
+                               banner='IP Fitting SCF: Cation, Right Endpoint', quiet=True, **kwargs)
     core.IO.change_file_namespace(180, "ot", "cation")
 
     IPr = E1r - E0r
@@ -659,7 +659,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
     core.set_global_option("DOCC", [Nb])
     core.set_global_option("SOCC", [Na - Nb])
     E0l, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule,
-                             banner='IP Fitting SCF: Neutral, Left Endpoint', **kwargs)
+                             banner='IP Fitting SCF: Neutral, Left Endpoint', quiet=True, **kwargs)
     eps_a = wfn.epsilon_a()
     eps_b = wfn.epsilon_b()
     if Nb == 0:
@@ -678,7 +678,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
     core.set_global_option("DOCC", [Nb1])
     core.set_global_option("SOCC", [Na1 - Nb1])
     E1l = driver.energy('scf', dft_functional=name, molecule=molecule,
-                        banner='IP Fitting SCF: Cation, Left Endpoint', **kwargs)
+                        banner='IP Fitting SCF: Cation, Left Endpoint', quiet=True, **kwargs)
     core.IO.change_file_namespace(180, "ot", "cation")
 
     IPl = E1l - E0l
@@ -715,7 +715,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
         core.set_global_option("DOCC", [Nb])
         core.set_global_option("SOCC", [Na - Nb])
         E0, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule,
-                                banner='IP Fitting SCF: Neutral, Omega = {:11.3E}'.format(omega), **kwargs)
+                                banner='IP Fitting SCF: Neutral, Omega = {:11.3E}'.format(omega), quiet=True, **kwargs)
         eps_a = wfn.epsilon_a()
         eps_b = wfn.epsilon_b()
         if Nb == 0:
@@ -733,7 +733,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
         core.set_global_option("DOCC", [Nb1])
         core.set_global_option("SOCC", [Na1 - Nb1])
         E1 = driver.energy('scf', dft_functional=name, molecule=molecule,
-                           banner='IP Fitting SCF: Cation, Omega = {:11.3E}'.format(omega), **kwargs)
+                           banner='IP Fitting SCF: Cation, Omega = {:11.3E}'.format(omega), quiet=True, **kwargs)
         core.IO.change_file_namespace(180, "ot", "cation")
 
         IP = E1 - E0

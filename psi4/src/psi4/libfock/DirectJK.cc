@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -91,15 +91,17 @@ void DirectJK::common_init() {
     if (options_.get_int("INCFOCK_FULL_FOCK_EVERY") <= 0) {
         throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
     }
-    density_screening_ = options_.get_str("SCREENING") == "DENSITY";
 
+    // other options
+    auto screening_type = options_.get_str("SCREENING");
+    density_screening_ = screening_type == "DENSITY";
     computed_shells_per_iter_["Quartets"] = {};
-    
-    set_cutoff(options_.get_double("INTS_TOLERANCE"));
 }
+
 size_t DirectJK::num_computed_shells() { 
     return num_computed_shells_; 
 }
+
 size_t DirectJK::memory_estimate() {
     return 0;  // Effectively
 }

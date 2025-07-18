@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -90,10 +90,20 @@ def _molecule_from_string(cls,
         missing_enabled_return_qm=missing_enabled_return_qm,
         missing_enabled_return_efp=missing_enabled_return_efp,
         verbose=verbose)
+
+    qmol = core.Molecule.from_dict(molrec['qm'])
+
+    if "geom" in molrec["qm"]:
+        geom = np.array(molrec["qm"]["geom"]).reshape((-1, 3))
+        if molrec["qm"]["units"] == "Angstrom":
+            # beware if qcel and psi4 choose different sets of constants
+            geom = geom / constants.bohr2angstroms
+        qmol._initial_cartesian = core.Matrix.from_array(geom)
+
     if return_dict:
-        return core.Molecule.from_dict(molrec['qm']), molrec
+        return qmol, molrec
     else:
-        return core.Molecule.from_dict(molrec['qm'])
+        return qmol
 
 
 @classmethod
@@ -173,8 +183,13 @@ def _molecule_from_arrays(cls,
         verbose=verbose)
 
     qmol = core.Molecule.from_dict(molrec)
-    geom = np.array(molrec["geom"]).reshape((-1, 3))
-    qmol._initial_cartesian = core.Matrix.from_array(geom)
+
+    if "geom" in molrec:
+        geom = np.array(molrec["geom"]).reshape((-1, 3))
+        if molrec["units"] == "Angstrom":
+            # beware if qcel and psi4 choose different sets of constants
+            geom = geom / constants.bohr2angstroms
+        qmol._initial_cartesian = core.Matrix.from_array(geom)
 
     if return_dict:
         return qmol, molrec
@@ -211,6 +226,8 @@ def _molecule_from_schema(cls, molschema: Dict, return_dict: bool = False, nonph
 
     qmol = core.Molecule.from_dict(molrec)
     geom = np.array(molrec["geom"]).reshape((-1, 3))
+    # presently molschema are formats required to be in Bohr Cartesian
+    #   if the format expands, convert _initial_cartesian to Bohr and conditionalize setting the prop
     qmol._initial_cartesian = core.Matrix.from_array(geom)
 
     if return_dict:
@@ -238,6 +255,7 @@ def dynamic_variable_bind(cls):
     cls.from_schema = _molecule_from_schema
     cls.to_schema = qcdb.Molecule.to_schema
     cls.run_dftd3 = qcdb.Molecule.run_dftd3
+    cls.run_sdftd3 = qcdb.Molecule.run_sdftd3
     cls.run_dftd4 = qcdb.Molecule.run_dftd4
     cls.run_gcp = qcdb.Molecule.run_gcp
     cls.format_molecule_for_mol = qcdb.Molecule.format_molecule_for_mol
@@ -267,6 +285,11 @@ def geometry(geom: str, name: str = "default") -> core.Molecule:
 
     molecule = core.Molecule.from_dict(molrec['qm'])
     if "geom" in molrec["qm"]:
+        # for fully-specified w/frame (dtype="psi4" passed in "geom", not Zmat or
+        #   vars for dtype="psi4+" passed in "geom_unsettled"), save frame in
+        #   Bohr in `_initial_cartesian` for resetting through `Molecule.set_geometry`
+        #   if nocom/noreorient/c1 needs to be set retroactively in driver for
+        #   alignment with other data (e.g., point charges, polarizable embedding).
         geom = np.array(molrec["qm"]["geom"]).reshape((-1, 3))
         if molrec["qm"]["units"] == "Angstrom":
             # beware if qcel and psi4 choose different sets of constants

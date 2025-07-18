@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -328,11 +328,11 @@ Additionally, there are runtime-loaded capabilities:
 
 * cfour |w---w| :ref:`[what is CFOUR?] <sec:cfour>`
 
-* dftd3 |w---w| :ref:`[what is DFTD3?] <sec:dftd3>`
+* dftd3 |w---w| :ref:`[what is DFTD3?] <sec:dftd3>` (Jun 2025; removed by v1.10)
 
 * simple-dftd3 |w---w| :ref:`[what is DFTD3?] <sec:dftd3>` (Nov 2022; added by v1.7) preferred alternative to dftd3 https://github.com/dftd3/simple-dftd3
 
-* gcp |w---w| :ref:`[what is gCP?] <sec:gcp>`
+* gcp |w---w| :ref:`[what is gCP?] <sec:gcp>` (Jun 2025; removed by v1.10)
 
 * mctc-gcp |w---w| :ref:`[what is gCP?] <sec:gcp>` (Nov 2022; added by v1.7) preferred alternative to gcp https://github.com/grimme-lab/gcp
 

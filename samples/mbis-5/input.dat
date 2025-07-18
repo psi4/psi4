@@ -20,6 +20,7 @@
 # O 0.40965750899754616
 
 
+
 [0.652824],
 [1.379211]])
 
@@ -51,5 +52,6 @@ quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
 vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vcharges = wfn.array_variable('MBIS VALENCE CHARGES')
 vratios = wfn.array_variable('MBIS VOLUME RATIOS')
 

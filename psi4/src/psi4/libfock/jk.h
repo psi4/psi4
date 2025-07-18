@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -404,7 +404,7 @@ class PSI_API JK {
      * @param cutoff ceiling of magnitude of elements to be
      *        ignored if possible
      */
-    void set_cutoff(double cutoff) { cutoff_ = cutoff; }
+    virtual void set_cutoff(double cutoff) { cutoff_ = cutoff; }
     double get_cutoff() const { return cutoff_; }
     /**
      * @param do_csam whether to perform CSAM screening instead of
@@ -1187,6 +1187,7 @@ class PSI_API MemDFJK : public JK {
     void set_omega_alpha(double alpha) override;
     void set_omega_beta(double beta) override;
     void set_wcombine(bool wcombine) override;
+    void set_cutoff(double cutoff) override; 
 
     /**
      * Returns the DFHelper object

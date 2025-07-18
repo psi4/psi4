@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -56,7 +56,7 @@ namespace ccresponse {
 
 void write_blocks(const Matrix& mat) {
     Slice occ_slice(Dimension(moinfo.nirreps), moinfo.act_occpi);
-    Slice vir_slice(moinfo.act_occpi, moinfo.act_pi);
+    Slice vir_slice(moinfo.act_occpi, moinfo.actpi);
 
     dpdfile2 f;
 
