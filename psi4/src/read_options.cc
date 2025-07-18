@@ -1140,11 +1140,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- SUBSECTION SAPT(DFT) -*/
 
         /*- Monomer A GRAC shift in Hartree. To automatically compute prior to
-        SAPT(DFT), do NOT set this option and set |sapt__sapt_dft_grac_compute|
+        SAPT(DFT), do NOT set this option but set |sapt__sapt_dft_grac_compute|
         to "SINGLE" or "ITERATIVE" as described below. -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
         /*- Monomer B GRAC shift in Hartree. To automatically compute prior to
-        SAPT(DFT), do NOT set this option and set |sapt__sapt_dft_grac_compute|
+        SAPT(DFT), do NOT set this option but set |sapt__sapt_dft_grac_compute|
         to "SINGLE" or "ITERATIVE" as described below. -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
         /*- SAPT_DFT_GRAC_COMPUTE will enable automatically computing GRAC
