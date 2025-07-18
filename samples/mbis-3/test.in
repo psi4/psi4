@@ -38,6 +38,10 @@ vwidths_ref = psi4.Matrix.from_list([  #TEST
  [0.39070772],    #TEST
  [0.35579084]])   #TEST
 
+vcharges_ref = psi4.Matrix.from_list([  #TEST
+ [-6.781942],    #TEST
+ [-0.610676]])   #TEST
+
 vratios_ref = psi4.Matrix.from_list([  #TEST
 [1.139889],
 [0.211763]])
@@ -71,12 +75,14 @@ quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
 vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vcharges = wfn.array_variable('MBIS VALENCE CHARGES')
 vratios = wfn.array_variable('MBIS VOLUME RATIOS')
 
 compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
 compare_matrices(avols_ref, avols, 5, "MBIS Radial Moments <r^3>")    #TEST
 compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
+compare_matrices(vcharges_ref, vcharges, 5, "MBIS Valence Charges")      #TEST
 compare_matrices(vratios, vratios, 5, "MBIS Volume Ratios")      #TEST
 
 # lands on different degenerate solutions due to high-symmetry wfn, so test stable values. (happens for molecular quadrupole, too, not just mbis.)
