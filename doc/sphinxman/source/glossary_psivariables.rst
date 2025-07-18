@@ -1706,6 +1706,15 @@ PSI Variables by Alpha
    The total electronic interaction energy [E_h] for the labeled SAPT level
    of theory that incorporates MP2 induction correction.
 
+.. psivar:: SAPT DFT GRAC SHIFT A
+   SAPT DFT GRAC SHIFT B
+
+   The gradient-regulation asymptotic correction (GRAC) [E_h] 
+   used in a SAPT(DFT) computation for monomer A or B, respectively,
+   to improve the accuracy by correctly describing the electron density
+   at long-range.
+
+
 .. psivar:: SCF ITERATIONS
    ADC ITERATIONS
    CCSD ITERATIONS
