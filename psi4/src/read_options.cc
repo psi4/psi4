@@ -188,7 +188,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- When several modules can compute the same methods and the default
     routing is not suitable, this targets a module. ``CCENERGY`` covers
     CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
-    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN MRCC");
+    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN MRCC F12");
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
@@ -1458,7 +1458,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             depending on available memory or other hardware constraints, allow the best
             sub-algorithm for the molecule and conditions (``AUTO`` ; usual mode) or
             forcibly select a sub-algorithm (usually only for debugging or profiling).
-            Presently, ``SCF_SUBTYPE=DF``, ``SCF_SUBTYPE=MEM_DF``, and ``SCF_SUBTYPE=DISK_DF`` 
+            Presently, ``SCF_TYPE=DF``, ``SCF_TYPE=MEM_DF``, and ``SCF_TYPE=DISK_DF``
 	        can have ``INCORE`` and ``OUT_OF_CORE`` selected; and ``SCF_TYPE=PK``  can have ``INCORE``,
 	        ``OUT_OF_CORE``, ``YOSHIMINE_OUT_OF_CORE``, and ``REORDER_OUT_OF_CORE`` selected. !expert -*/
 	    options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE YOSHIMINE_OUT_OF_CORE REORDER_OUT_OF_CORE");
@@ -3269,6 +3269,29 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("MOLDEN_WRITE", false);
         /*- Do Cholesky decomposition of the ERI tensor -*/
         options.add_bool("CHOLESKY", false);
+    }
+    if (name == "F12" || options.read_globals()) {
+        /*- MODULEDESCRIPTION Performs F12 computations for RHF reference wavefunctions. -*/
+
+        /*- SUBSECTION General Options -*/
+        /*- Algorithm to use for MP2-F12 computation, conventional or density-fitted. -*/
+        options.add_str("MP2_TYPE", "DF", "DF CONV");
+        /*- For certain |globals__mp2_type| algorithms that have internal sub-algorithms
+            depending on available memory or other hardware constraints, select a sub-algorithm
+            Presently, ``MP2_TYPE=DF`` and ``MP2_TYPE=CONV``
+	        can have ``INCORE`` and ``DISK`` selected. In future, ``AUTO`` will be added. -*/
+        options.add_str("F12_SUBTYPE", "INCORE", "INCORE DISK");
+        /*- Whether to read-in stored integrals from previous computation -*/
+        options.add_bool("F12_READ_INTS", false);
+        /*- Set contracted Gaussian-type geminal beta value -*/
+        options.add_double("F12_BETA", 1.0);
+        /*- Choose a basis for Complementary Auxiliary Basis Set -*/
+        options.add_str("CABS_BASIS", "");
+        /*- Whether to compute the CABS Singles Correction -*/
+        options.add_bool("CABS_SINGLES", true);
+        /*- Choose a density-fitting basis for integrals. For |f12__mp2_type| =DF, this is applied to non-F12
+        SCF and MP2 parts, too, regardless of |scf__df_basis_scf| or |dfmp2__df_basis_mp2| .  -*/
+        options.add_str("DF_BASIS_F12", "");
     }
     if (name == "MRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

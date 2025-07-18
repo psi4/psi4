@@ -221,7 +221,7 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pai
         outfile->Printf("ERI derivative integrals only available using Libint");
     if (integral_package == "SIMINT")
         outfile->Printf("Chosen integral package " + integral_package +
-                        " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
+                        " unavailable.\nRecompile with `-D ENABLE_simint=ON`.\nFalling back to Libint");
     throw PSIEXCEPTION("No ERI object to return.");
 }
 
