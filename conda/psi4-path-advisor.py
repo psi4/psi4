@@ -645,6 +645,10 @@ if args.subparser_name in ["conda", "env"]:
         # start collecting
         aux_run = conda.get("aux_run_names", [])
         aux_bld = conda.get("aux_build_names", [])
+        if isinstance(aux_run, dict):
+            aux_run = aux_run .get(conda_platform, [])
+        if isinstance(aux_bld, dict):
+            aux_bld = aux_bld.get(conda_platform, [])
 
         if isinstance(conda["name"], dict):
             primary = conda["name"][conda_platform]
@@ -834,6 +838,10 @@ elif args.subparser_name in ["cmake", "cache"]:
             primary = conda["name"]
         aux_run = conda.get("aux_run_names", [])
         aux_bld = conda.get("aux_build_names", [])
+        if isinstance(aux_run, dict):
+            aux_run = aux_run .get(conda_platform, [])
+        if isinstance(aux_bld, dict):
+            aux_bld = aux_bld.get(conda_platform, [])
 
         constraint_delimiter = "=|!|<|>"
         package_set = [primary, *aux_bld, *aux_run]
@@ -1067,30 +1075,52 @@ elif args.subparser_name in ["deploy"]:
     if not pm_available:
         raise RuntimeError("usage: this script requires either the conda or mamba command to be in envvar PATH.")
 
+    # sugg from docs CONDA_OVERRIDE_LINUX=1 and CONDA_OVERRIDE_GLIBC=2.17
+
     full_cmake_S = codedeps_yaml.parent
+    full_conda_envs = f"{full_cmake_S}/devtools/conda-envs/"
     script = f"""#!/usr/bin/env bash
 
 PNAME=p4dev8  # some env that doesn't exist
 
+# Core
 {full_cmake_S}/conda/psi4-path-advisor.py env --platform linux-64 --lapack mkl --disable addons docs
 CONDA_SUBDIR=linux-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
-mv env_p4dev.yaml {full_cmake_S}/devtools/conda-envs/linux-64-buildrun.yaml
+mv env_p4dev.yaml {full_conda_envs}/linux-64-buildrun.yaml
 
 {full_cmake_S}/conda/psi4-path-advisor.py env --platform osx-64 --lapack mkl --disable addons docs
 CONDA_SUBDIR=osx-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
-mv env_p4dev.yaml {full_cmake_S}/devtools/conda-envs/osx-64-buildrun.yaml
+mv env_p4dev.yaml {full_conda_envs}/osx-64-buildrun.yaml
 
 {full_cmake_S}/conda/psi4-path-advisor.py env --platform osx-arm64 --lapack accelerate --disable addons docs
 CONDA_SUBDIR=osx-arm64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
-mv env_p4dev.yaml {full_cmake_S}/devtools/conda-envs/osx-arm64-buildrun.yaml
+mv env_p4dev.yaml {full_conda_envs}/osx-arm64-buildrun.yaml
 
 {full_cmake_S}/conda/psi4-path-advisor.py env --platform win-64 --lapack mkl --disable addons docs
 CONDA_SUBDIR=win-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
-mv env_p4dev.yaml {full_cmake_S}/devtools/conda-envs/win-64-buildrun.yaml
+mv env_p4dev.yaml {full_conda_envs}/win-64-buildrun.yaml
 
+# Docs
 {full_cmake_S}/conda/psi4-path-advisor.py env --name p4docs --platform linux-64 --disable addons
 CONDA_SUBDIR=linux-64 conda env create -n $PNAME -f env_p4docs.yaml --dry-run
-mv env_p4docs.yaml {full_cmake_S}/devtools/conda-envs/linux-64-docs.yaml
+mv env_p4docs.yaml {full_conda_envs}/linux-64-docs.yaml
+
+# Eco
+{full_cmake_S}/conda/psi4-path-advisor.py env --platform linux-64 --lapack mkl --disable docs
+CONDA_SUBDIR=linux-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+mv env_p4dev.yaml {full_conda_envs}/linux-64-buildrun-addons.yaml
+
+{full_cmake_S}/conda/psi4-path-advisor.py env --platform osx-64 --lapack mkl --disable docs
+CONDA_OVERRIDE_OSX=13 CONDA_SUBDIR=osx-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+mv env_p4dev.yaml {full_conda_envs}/osx-64-buildrun-addons.yaml
+
+{full_cmake_S}/conda/psi4-path-advisor.py env --platform osx-arm64 --lapack accelerate --disable docs
+CONDA_OVERRIDE_OSX=13 CONDA_SUBDIR=osx-arm64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+mv env_p4dev.yaml {full_conda_envs}/osx-arm64-buildrun-addons.yaml
+
+{full_cmake_S}/conda/psi4-path-advisor.py env --platform win-64 --lapack mkl --disable docs
+CONDA_SUBDIR=win-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+mv env_p4dev.yaml {full_conda_envs}/win-64-buildrun-addons.yaml
 
 """
 

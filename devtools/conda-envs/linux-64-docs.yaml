@@ -1,4 +1,4 @@
-name: p4dev
+name: p4docs
 channels:
   - conda-forge
   - nodefaults
@@ -7,6 +7,7 @@ dependencies:
   - c-compiler
   - cmake
   - cxx-compiler
+  #- dpcpp_linux-64            # opt'l with cxx-compiler
   - ninja
     # non-qc buildtime required
   - blas-devel                # req'd with libblas
@@ -36,3 +37,15 @@ dependencies:
   - memory_profiler
   - pytest
   - pytest-xdist              # req'd with pytest; Parallel runner not strictly needed but very handy.
+    # docs
+  - autodoc-pydantic=1        # req'd with sphinx
+  - doxygen
+  - ipykernel                 # req'd with nbsphinx
+  - nbsphinx
+  - python-graphviz
+  - qcportal                  # req'd with sphinx; Required for docs to resolve objects in pydantic classes.
+  - sphinx<8
+  - sphinx-autodoc-typehints  # req'd with sphinx
+  - sphinx-automodapi         # req'd with sphinx
+  - psi4::sphinx-psi-theme
+  - sphinx-tabs               # req'd with sphinx
