@@ -76,6 +76,7 @@ if(${ENABLE_gauxc})
                    -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    -DOpenMP_ROOT=${OpenMP_ROOT}
+                   -DOpenMP_C_INCLUDE_DIR=${OpenMP_C_INCLUDE_DIR}
                    -DGAUXC_ENABLE_MPI=OFF
                    -DGAUXC_ENABLE_TESTS=OFF
                    -DGAUXC_ENABLE_HDF5=OFF

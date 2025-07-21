@@ -147,6 +147,7 @@ jobs:
         -D ENABLE_gauxc=ON \
         -D FORCE_PEDANTIC=ON \
         -D OpenMP_ROOT="$CONDA_PREFIX" \
+        -D OpenMP_C_INCLUDE_DIR="$CONDA_PREFIX/include" \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
