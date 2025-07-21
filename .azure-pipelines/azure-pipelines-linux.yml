@@ -30,7 +30,7 @@ jobs:
         APT_INSTALL: 'gfortran'
         vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: 'api and not stdsuite and not (smoke or quick or medlong or long)'
-        PYTEST_NAME_EXPR: 'not ITERATIVE'
+        PYTEST_NAME_EXPR: 'not asdfqwer'
         ENABLE_EINSUMS: "ON"
 
       clang_latest:
@@ -40,6 +40,7 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran clang-15 clang++-15'
+        # needed by gauxc 'libomp-15-dev' leads to needing `export KMP_DUPLICATE_LIB_OK=TRUE`
         vmImage: 'ubuntu-22.04'
         PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
         PYTEST_NAME_EXPR: 'not asdfqwer'
@@ -141,8 +142,9 @@ jobs:
         -D ENABLE_PLUGIN_TESTING=ON \
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=OFF \
-        -D ENABLE_gauxc=OFF \
+        -D ENABLE_gauxc=ON \
         -D FORCE_PEDANTIC=ON \
+        -D OpenMP_LIBRARY_DIRS="$CONDA/lib" \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
@@ -160,7 +162,6 @@ jobs:
       python -V
       python -c 'import numpy; print(numpy.version.version)'
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
-      export KMP_DUPLICATE_LIB_OK=TRUE
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
 
@@ -170,7 +171,6 @@ jobs:
       python -V
       python -c 'import numpy; print(numpy.version.version)'
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
-      export KMP_DUPLICATE_LIB_OK=TRUE
       PYTHONPATH=stage/lib/ ./stage/bin/psi4 ../tests/fd-freq-energy/input.dat
     displayName: 'Spot Test 2'
 
@@ -186,7 +186,6 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      # export KMP_DUPLICATE_LIB_OK=TRUE
       python ../devtools/scripts/ci_run_test.py
       python ../devtools/scripts/ci_print_failing.py
     displayName: 'CTest Tests'
@@ -194,7 +193,6 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      # export KMP_DUPLICATE_LIB_OK=TRUE
       PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 --durations-min=40 --strict-markers --color yes -n 2 -m "$PYTEST_MARKER_EXPR" -k "$PYTEST_NAME_EXPR" stage/lib/psi4/tests/
     displayName: 'PyTest Tests'
 

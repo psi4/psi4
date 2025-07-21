@@ -75,6 +75,7 @@ if(${ENABLE_gauxc})
                    -Dgau2grid_DIR=${gau2grid_DIR}
                    -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                   -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
                    -DGAUXC_ENABLE_MPI=OFF
                    -DGAUXC_ENABLE_TESTS=OFF
                    -DGAUXC_ENABLE_HDF5=OFF
