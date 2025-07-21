@@ -30,7 +30,7 @@ dependencies:
     # buildtime optional
   - ambit
   - dkh
-  - einsums>=1.0.3
+  - einsums>=1.0.6
   - fortran-compiler
   - hdf5                      # req'd with einsums; Use 1.14.3 or 1.14.6 (so far) as .4 and .5 not setting HDF5_VERSION.
   - integratorxx
@@ -58,7 +58,7 @@ dependencies:
   - pygdma
   - pylibefp
   - pymdi
-  - qcfractal>=0.60
+  - qcfractal>=0.60,!=0.62
   - toml                      # req'd with dftd4-python
     # test
   - h5py

@@ -106,9 +106,10 @@ jobs:
       fi
       sed -i "s;- libint;#- libint;g" env_p4env.yaml
       sed -i "s;#- psi4::libint;- psi4::libint=2.8.1;g" env_p4env.yaml
-      echo "  - einsums>=1.0.3" >> env_p4env.yaml
+      echo "  - einsums>=1.0.6" >> env_p4env.yaml
       echo "  - range-v3" >> env_p4env.yaml
       echo "  - zlib" >> env_p4env.yaml
+      echo "  - setuptools=80.8.0" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
