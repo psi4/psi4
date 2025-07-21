@@ -26,6 +26,7 @@
 # @END LICENSE
 #
 
+import sys
 import time
 
 import numpy as np
@@ -148,6 +149,11 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
     if is_hybrid:
         R_A = fdds_obj.R_A().to_array()
         R_B = fdds_obj.R_B().to_array()
+        with np.printoptions(threshold=sys.maxsize):
+            print("R_A")
+            print(R_A)
+            print("R_B")
+            print(R_B)
         Rtinv_A = np.linalg.pinv(R_A, rcond=1.e-13).transpose()
         Rtinv_B = np.linalg.pinv(R_B, rcond=1.e-13).transpose()
 
