@@ -18,6 +18,7 @@ jobs:
         APT_INSTALL: 'gfortran gcc-11 g++-11'
         vmImage: 'ubuntu-22.04'
         PYTEST_MARKER_EXPR: "quick"
+        PYTEST_NAME_EXPR: 'not asdfqwer'
         ENABLE_EINSUMS: "ON"
 
       gcc_latest:
@@ -29,6 +30,7 @@ jobs:
         APT_INSTALL: 'gfortran'
         vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: 'api and not stdsuite and not (smoke or quick or medlong or long)'
+        PYTEST_NAME_EXPR: 'not ITERATIVE'
         ENABLE_EINSUMS: "ON"
 
       clang_latest:
@@ -37,9 +39,10 @@ jobs:
         C_COMPILER: 'clang-15'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran clang-15 clang++-15 libomp-15-dev'
+        APT_INSTALL: 'gfortran clang-15 clang++-15'
         vmImage: 'ubuntu-22.04'
         PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
+        PYTEST_NAME_EXPR: 'not asdfqwer'
         ENABLE_EINSUMS: "OFF"
 
   pool:
@@ -109,7 +112,6 @@ jobs:
       echo "  - einsums>=1.0.6" >> env_p4env.yaml
       echo "  - range-v3" >> env_p4env.yaml
       echo "  - zlib" >> env_p4env.yaml
-      echo "  - setuptools=80.8.0" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
@@ -175,7 +177,16 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      export KMP_DUPLICATE_LIB_OK=TRUE
+      python -V
+      python -c 'import numpy; print(numpy.version.version)'
+      python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
+      PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
+    displayName: 'Spot Test 3'
+
+  - bash: |
+      cd build
+      source activate p4env
+      # export KMP_DUPLICATE_LIB_OK=TRUE
       python ../devtools/scripts/ci_run_test.py
       python ../devtools/scripts/ci_print_failing.py
     displayName: 'CTest Tests'
@@ -183,8 +194,8 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      export KMP_DUPLICATE_LIB_OK=TRUE
-      PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 --durations-min=40 --strict-markers --color yes -n 2 -m "$PYTEST_MARKER_EXPR" stage/lib/psi4/tests/
+      # export KMP_DUPLICATE_LIB_OK=TRUE
+      PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 --durations-min=40 --strict-markers --color yes -n 2 -m "$PYTEST_MARKER_EXPR" -k "$PYTEST_NAME_EXPR" stage/lib/psi4/tests/
     displayName: 'PyTest Tests'
 
 # setuptools v66 (vendors packaging v23) incompatible with arb. tarballs. thinks the branch names are versions
