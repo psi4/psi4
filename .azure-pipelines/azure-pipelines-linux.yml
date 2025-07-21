@@ -131,6 +131,8 @@ jobs:
         --insist
       echo "\n<<<  cache_p4env@build.cmake  >>>\n"
       cat cache_p4env@build.cmake
+      echo $CONDA
+      echo $CONDA_PREFIX
       cmake \
         -S. \
         -B build \
@@ -144,7 +146,7 @@ jobs:
         -D ENABLE_IntegratorXX=OFF \
         -D ENABLE_gauxc=ON \
         -D FORCE_PEDANTIC=ON \
-        -D OpenMP_LIBRARY_DIRS="$CONDA/lib" \
+        -D OpenMP_ROOT="$CONDA" \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
