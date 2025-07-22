@@ -334,6 +334,8 @@ ExternalProject_Add(psi4-core
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
               -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
+              -DOpenMP_C_FLAGS=${OpenMP_C_FLAGS}
+              -DOpenMP_CXX_FLAGS=${OpenMP_CXX_FLAGS}
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
               -DENABLE_CYTHONIZE=${ENABLE_CYTHONIZE}
               -Dpsi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
@@ -342,6 +344,8 @@ ExternalProject_Add(psi4-core
               -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
               -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}
                # CMAKE_<lang>_COMPILER_ARG1 vars pass args thru when CMAKE_<lang>_COMPILER set as "compiler --vital-args"
+              -DOpenMP_C_LIB_NAMES:STRING=${OpenMP_C_LIB_NAMES}
+              -DOpenMP_CXX_LIB_NAMES:STRING=${OpenMP_CXX_LIB_NAMES}
    USES_TERMINAL_BUILD 1
    BUILD_ALWAYS 1)
 
