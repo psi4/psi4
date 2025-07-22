@@ -87,6 +87,7 @@ if(${ENABLE_gauxc})
                          -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
                          -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                          -DOpenMP_CXX_FLAGS:STRING=-fopenmp=libomp
+                         -DOpenMP_CXX_LIB_NAMES:STRING=omp
                          -DOpenMP_C_FLAGS:STRING=-fopenmp=libomp
                          -DOpenMP_C_LIB_NAMES:STRING=omp
                          -DOpenMP_LIBRARY_DIRS:STRING=${OpenMP_LIBRARY_DIRS}
