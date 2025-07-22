@@ -336,6 +336,7 @@ ExternalProject_Add(psi4-core
               -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
               -DOpenMP_C_FLAGS=${OpenMP_C_FLAGS}
               -DOpenMP_CXX_FLAGS=${OpenMP_CXX_FLAGS}
+              -DOpenMP_omp_LIBRARY=${OpenMP_omp_LIBRARY}
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
               -DENABLE_CYTHONIZE=${ENABLE_CYTHONIZE}
               -Dpsi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}

@@ -20,6 +20,7 @@ jobs:
         PYTEST_MARKER_EXPR: "quick"
         PYTEST_NAME_EXPR: 'not asdfqwer'
         ENABLE_EINSUMS: "ON"
+        CMARGS: ""
 
       gcc_latest:
         CXX_COMPILER: 'g++'
@@ -32,6 +33,7 @@ jobs:
         PYTEST_MARKER_EXPR: 'api and not stdsuite and not (smoke or quick or medlong or long)'
         PYTEST_NAME_EXPR: 'not asdfqwer'
         ENABLE_EINSUMS: "ON"
+        CMARGS: ""
 
       clang_latest:
         CXX_COMPILER: 'clang++-15'
@@ -45,6 +47,7 @@ jobs:
         PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
         PYTEST_NAME_EXPR: 'not asdfqwer'
         ENABLE_EINSUMS: "OFF"
+        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=$CONDA_PREFIX/lib/libomp.so'
 
   pool:
     vmImage: $(vmImage)
@@ -150,6 +153,7 @@ jobs:
         -D OpenMP_C_INCLUDE_DIR=$CONDA_PREFIX/include \
         -D OpenMP_LIBRARY_DIRS=$CONDA_PREFIX/lib/libomp.so \
         -D OpenMP_omp_LIBRARY=$CONDA_PREFIX/lib/libomp.so \
+        ${CMARGS} \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
