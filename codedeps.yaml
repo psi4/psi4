@@ -95,7 +95,14 @@ data:
       name: cxx-compiler
       constraint: null
       aux_build_names:
-        - //dpcpp_linux-64
+        linux-64:
+          - "//dpcpp_linux-64"
+        win-64:
+          - "libgcc<14.3"
+          - "clangdev=17.0.6"
+      aux_build_names_note:
+        "libgcc<14.3": "Avoid 'specified procedure could not be found' DLL error."
+        "clangdev=17.0.6": "Avoid omp problem with v19, v20."
       cmake:
         # {CMAKE_CXX_COMPILER_ID}_{Conda_platform}
         GNU_linux-64:
@@ -943,18 +950,18 @@ data:
       name: OpenFermion-Psi4
       commit: v0.5
     cmake: null
-    conda:
-      channel: conda-forge
-      name: openfermionpsi4
-      constraint: null
-      skip_win: true
-      aux_run_names:
-        - openfermion #=1
-#        - pydantic=1
-      aux_run_names_note:
-        "openfermion=1": "Shouldn't need to specify but do for the pydantic transition."
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected."
+    # TODO cirq-core still np v1. commenting so envs don't solve v1 for niche addon
+    conda: null
+      # channel: conda-forge
+      # name: openfermionpsi4
+      # constraint: null
+      # skip_win: true
+      # aux_run_names:
+      #   - "openfermion>=1.7.1"
+      # aux_run_names_note:
+      #   "openfermion>1.7.1": "v1.7.1 compatible with numpy v2."
+      # cmake: null
+      # cmake_note: "Primarily OTF runtime detected."
 
   - project: qcelemental
     use:
@@ -980,9 +987,9 @@ data:
       aux_run_names:
         - msgpack-python
         - networkx
-        - setuptools<80.9
+        - setuptools
       aux_run_names_note:
-        "setuptools<80.9": "Needed for qcelemental cmake detection. <80.9 avoid pkg_resources message from adcc."
+        "setuptools": "Needed for qcelemental cmake detection."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
@@ -1000,7 +1007,7 @@ data:
       host: github
       account: adc-connect
       name: adcc
-      commit: v0.15.16
+      commit: v0.16.1
     cmake:
       name: adcc
       constraint: ATLEAST 0.15.16
@@ -1008,7 +1015,7 @@ data:
       channel: conda-forge
       name: adcc
       constraint: null
-      constraint_note: v0.15.16 has transition moment corrections
+      constraint_note: "v0.15.16 has transition moment corrections. v0.16.1 avoids pkg_resources warning."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_adcc is inconsequential."
       skip_win: true

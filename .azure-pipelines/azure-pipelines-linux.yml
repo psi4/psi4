@@ -18,7 +18,9 @@ jobs:
         APT_INSTALL: 'gfortran gcc-11 g++-11'
         vmImage: 'ubuntu-22.04'
         PYTEST_MARKER_EXPR: "quick"
+        PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
+        CMARGS: ""
 
       gcc_latest:
         CXX_COMPILER: 'g++'
@@ -29,7 +31,9 @@ jobs:
         APT_INSTALL: 'gfortran'
         vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: 'api and not stdsuite and not (smoke or quick or medlong or long)'
+        PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
+        CMARGS: ""
 
       clang_latest:
         CXX_COMPILER: 'clang++-15'
@@ -37,10 +41,13 @@ jobs:
         C_COMPILER: 'clang-15'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran clang-15 clang++-15 libomp-15-dev'
+        APT_INSTALL: 'gfortran clang-15 clang++-15'
+        # needed by gauxc 'libomp-15-dev' leads to needing `export KMP_DUPLICATE_LIB_OK=TRUE`
         vmImage: 'ubuntu-22.04'
         PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
+        PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
+        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so'
 
   pool:
     vmImage: $(vmImage)
@@ -106,7 +113,7 @@ jobs:
       fi
       sed -i "s;- libint;#- libint;g" env_p4env.yaml
       sed -i "s;#- psi4::libint;- psi4::libint=2.8.1;g" env_p4env.yaml
-      echo "  - einsums>=1.0.3" >> env_p4env.yaml
+      echo "  - einsums>=1.0.6" >> env_p4env.yaml
       echo "  - range-v3" >> env_p4env.yaml
       echo "  - zlib" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
@@ -140,6 +147,7 @@ jobs:
         -D ENABLE_IntegratorXX=OFF \
         -D ENABLE_gauxc=ON \
         -D FORCE_PEDANTIC=ON \
+        ${CMARGS} \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
@@ -157,24 +165,18 @@ jobs:
       python -V
       python -c 'import numpy; print(numpy.version.version)'
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
-      export KMP_DUPLICATE_LIB_OK=TRUE
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
 
   - bash: |
       cd build
       source activate p4env
-      python -V
-      python -c 'import numpy; print(numpy.version.version)'
-      python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
-      export KMP_DUPLICATE_LIB_OK=TRUE
-      PYTHONPATH=stage/lib/ ./stage/bin/psi4 ../tests/fd-freq-energy/input.dat
+      PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
     displayName: 'Spot Test 2'
 
   - bash: |
       cd build
       source activate p4env
-      export KMP_DUPLICATE_LIB_OK=TRUE
       python ../devtools/scripts/ci_run_test.py
       python ../devtools/scripts/ci_print_failing.py
     displayName: 'CTest Tests'
@@ -182,8 +184,7 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      export KMP_DUPLICATE_LIB_OK=TRUE
-      PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 --durations-min=40 --strict-markers --color yes -n 2 -m "$PYTEST_MARKER_EXPR" stage/lib/psi4/tests/
+      PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 --durations-min=40 --strict-markers --color yes -n 2 -m "$PYTEST_MARKER_EXPR" -k "$PYTEST_NAME_EXPR" stage/lib/psi4/tests/
     displayName: 'PyTest Tests'
 
 # setuptools v66 (vendors packaging v23) incompatible with arb. tarballs. thinks the branch names are versions
