@@ -76,6 +76,7 @@ if(${ENABLE_gauxc})
                    -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    -DOpenMP_ROOT=${OpenMP_ROOT}
+                   -DOpenMP_omp_LIBRARY=${OpenMP_omp_LIBRARY}
                    -DGAUXC_ENABLE_MPI=OFF
                    -DGAUXC_ENABLE_TESTS=OFF
                    -DGAUXC_ENABLE_HDF5=OFF
@@ -87,6 +88,7 @@ if(${ENABLE_gauxc})
                          -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                          -DOpenMP_CXX_FLAGS:STRING=-fopenmp=libomp
                          -DOpenMP_C_FLAGS:STRING=-fopenmp=libomp
+                         -DOpenMP_C_LIB_NAMES:STRING=omp
                          -DOpenMP_LIBRARY_DIRS:STRING=${OpenMP_LIBRARY_DIRS}
                          -DBLAS_LIBRARIES:STRING=${BLAS_LIBRARIES})
         set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)

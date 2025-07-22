@@ -149,6 +149,7 @@ jobs:
         -D OpenMP_ROOT="$CONDA_PREFIX" \
         -D OpenMP_C_INCLUDE_DIR=$CONDA_PREFIX/include \
         -D OpenMP_LIBRARY_DIRS=$CONDA_PREFIX/lib/libomp.so \
+        -D OpenMP_omp_LIBRARY=$CONDA_PREFIX/lib/libomp.so \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
