@@ -77,6 +77,10 @@ if(${ENABLE_gauxc})
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    -DOpenMP_ROOT=${OpenMP_ROOT}
                    -DOpenMP_C_INCLUDE_DIR=${OpenMP_C_INCLUDE_DIR}
+                   -DOpenMP_CXX_FLAGS="-fopenmp=libomp"
+                   -DOpenMP_CXX_LIB_NAMES="omp;pthread"
+                   -DOpenMP_C_FLAGS="-fopenmp=libomp"
+                   -DOpenMP_C_LIB_NAMES="omp;pthread"
                    -DGAUXC_ENABLE_MPI=OFF
                    -DGAUXC_ENABLE_TESTS=OFF
                    -DGAUXC_ENABLE_HDF5=OFF
