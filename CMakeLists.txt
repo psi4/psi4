@@ -333,6 +333,7 @@ ExternalProject_Add(psi4-core
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
+              -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
               -DOpenMP_C_FLAGS=${OpenMP_C_FLAGS}
               -DOpenMP_CXX_FLAGS=${OpenMP_CXX_FLAGS}
               -DOpenMP_omp_LIBRARY=${OpenMP_omp_LIBRARY}
