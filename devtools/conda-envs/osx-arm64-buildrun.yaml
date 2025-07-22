@@ -7,7 +7,6 @@ dependencies:
   - c-compiler
   - cmake
   - cxx-compiler
-  #- dpcpp_linux-64            # opt'l with cxx-compiler
   - ninja
     # non-qc buildtime required
   - blas-devel                # req'd with libblas
