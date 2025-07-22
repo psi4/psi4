@@ -79,6 +79,7 @@ if(${ENABLE_gauxc})
                    -DOpenMP_CXX_FLAGS:STRING=${OpenMP_CXX_FLAGS}
                    -DOpenMP_omp_LIBRARY=${OpenMP_omp_LIBRARY}
                    -DOpenMP_gomp_LIBRARY=${OpenMP_gomp_LIBRARY}
+                   -DOpenMP_pthread_LIBRARY=${OpenMP_pthread_LIBRARY}
                    -DGAUXC_ENABLE_MPI=OFF
                    -DGAUXC_ENABLE_TESTS=OFF
                    -DGAUXC_ENABLE_HDF5=OFF
