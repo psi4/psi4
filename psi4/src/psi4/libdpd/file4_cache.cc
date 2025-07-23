@@ -162,7 +162,7 @@ void DPD::file4_cache_add(dpdfile4 *File, size_t priority) {
         this_entry->next = nullptr;
         this_entry->last = file4_cache_last();
 
-        this_entry->lock = 0;
+        this_entry->lock = false;
 
         if (this_entry->last != nullptr)
             this_entry->last->next = this_entry;
@@ -177,14 +177,14 @@ void DPD::file4_cache_add(dpdfile4 *File, size_t priority) {
         this_entry->usage = 1;
 
         /* Set the clean flag */
-        this_entry->clean = 1;
+        this_entry->clean = true;
 
         /* Set the priority level */
         this_entry->priority = priority;
 
         this_entry->matrix = File->matrix;
 
-        File->incore = 1;
+        File->incore = true;
 
         /* Adjust the global cache size value */
         dpd_main.memcache += this_entry->size;
@@ -198,7 +198,7 @@ dpd_file4_cache_entry* DPD::file4_cache_del_raw(dpd_file4_cache_entry *entry, dp
     /* Unlock the entry first */
     file4_cache_unlock(&File);
 
-    File.incore = 0;
+    File.incore = false;
 
     /* Write all the data to disk and free the memory */
     for (int h = 0; h < File.params->nirreps; h++) {
@@ -378,7 +378,7 @@ void DPD::file4_cache_dirty(dpdfile4 *File) {
     if (this_entry == nullptr || !(File->incore))
         dpd_error("Error setting file4_cache dirty flag!", "outfile");
     else {
-        this_entry->clean = 0;
+        this_entry->clean = false;
     }
 }
 
@@ -486,7 +486,7 @@ void DPD::file4_cache_lock(dpdfile4 *File) {
             dpd_main.memlocked += static_cast<size_t>(File->params->rowtot[h]) * File->params->coltot[h ^ (File->my_irrep)];
         }
 
-        this_entry->lock = 1;
+        this_entry->lock = true;
     }
 }
 
@@ -498,7 +498,7 @@ void DPD::file4_cache_unlock(dpdfile4 *File) {
                                   File->dpdnum);
 
     if (this_entry != nullptr && this_entry->lock) {
-        this_entry->lock = 0;
+        this_entry->lock = false;
 
         /* Decrement the locked cache memory counter */
         for (h = 0; h < File->params->nirreps; h++) {

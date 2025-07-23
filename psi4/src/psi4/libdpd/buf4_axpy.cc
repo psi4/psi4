@@ -48,20 +48,20 @@ namespace psi {
 */
 
 int DPD::buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha) {
-    int h, nirreps, my_irrep;
-    int row, col, incore, n, nbuckets;
+    int row, col, n, nbuckets;
     long int length;
     long int memoryd, rows_per_bucket, rows_left;
     double *X, *Y;
+    bool incore;
 
-    nirreps = BufX->params->nirreps;
-    my_irrep = BufX->file.my_irrep;
+    auto nirreps = BufX->params->nirreps;
+    auto my_irrep = BufX->file.my_irrep;
 
 #ifdef DPD_TIMER
     timer_on("buf4_axpy");
 #endif
 
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         memoryd = (dpd_memfree() - BufX->file.params->coltot[h ^ my_irrep]) / 2; /* use half the memory for each buf4 */
         if (BufX->params->rowtot[h] && BufX->params->coltot[h ^ my_irrep]) {
             rows_per_bucket = memoryd / BufX->params->coltot[h ^ my_irrep];
@@ -75,9 +75,9 @@ int DPD::buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha) {
 
             rows_left = BufX->params->rowtot[h] % rows_per_bucket;
 
-            incore = 1;
+            incore = true;
             if (nbuckets > 1) {
-                incore = 0;
+                incore = false;
 #if DPD_DEBUG
                 outfile->Printf("buf4_axpy: memory information.\n");
                 outfile->Printf("buf4_axpy: rowtot[%d] = %d\n", h, BufX->params->rowtot[h]);
@@ -88,7 +88,7 @@ int DPD::buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha) {
 #endif
             }
         } else
-            incore = 1;
+            incore = true;
 
         if (incore) {
             buf4_mat_irrep_init(BufX, h);
