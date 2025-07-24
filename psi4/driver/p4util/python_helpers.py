@@ -90,7 +90,7 @@ def _pybuild_basis(
     mol
         Molecule for which to build the basis set instance.
     key
-        {'BASIS', 'ORBITAL', 'DF_BASIS_SCF', 'DF_BASIS_MP2', 'DF_BASIS_CC', 'BASIS_RELATIVISTIC', 'DF_BASIS_SAD'}
+        {'BASIS', 'ORBITAL', 'DF_BASIS_SCF', 'DF_BASIS_MP2', 'DF_BASIS_CC', 'BASIS_RELATIVISTIC', 'DF_BASIS_SAD', 'DF_BASIS_F12'}
         Label (effectively Psi4 keyword) to append the basis on the molecule.
         The primary basis set is indicated by any of values None or
         ``"ORBITAL"`` or ``"BASIS"``.
