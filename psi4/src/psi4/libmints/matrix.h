@@ -695,6 +695,9 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// In place transposition
     void transpose_this();
 
+    /// Reshape the dimensions of a matrix (without affecting the underlying data), only for the case nirrep = 1
+    void reshape(const uint64_t nrow, const uint64_t ncol);
+
     /// Adds a matrix to this
     void add(const Matrix* const);
     /// Adds a matrix to this
