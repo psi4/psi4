@@ -1232,8 +1232,7 @@ def optimize(name, **kwargs):
                                       "carefully making sure all symmetry-dependent "
                                       "input, such as DOCC, is correct." % (current_sym, initial_sym))
 
-        kwargs['opt_iter'] = n
-        core.set_variable('GEOMETRY ITERATIONS', n)
+        core.set_variable('OPTIMIZATION ITERATIONS', n)
 
         # Use orbitals from previous iteration as a guess
         #   set within loop so that can be influenced by fns to optimize (e.g., cbs)
@@ -1249,6 +1248,7 @@ def optimize(name, **kwargs):
         opt_object.E = thisenergy
         opt_object.gX = G.np
 
+        core.set_variable('OPTIMIZATION ITERATIONS', n)
         if core.get_option('OPTKING', 'CART_HESS_READ') and (n == 1):
             opt_object.params.cart_hess_read = True
             opt_object.params.hessian_file = f"{core.get_writer_file_prefix(molecule.name())}.hess"
