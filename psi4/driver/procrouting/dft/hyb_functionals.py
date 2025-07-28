@@ -180,8 +180,8 @@ funcs.append({
     "description":
     '    HF with D4 dispersion using Sherrill Group BJ damping parameters\n',
     "citation":
-    '    TBA\n',
-    "doi": "",
+    '    Wallace, A. M.; Sherrill, C. D., J. Chem. Phys., 161, 114115, 2024\n',
+    "doi": "10.1063/5.0219185",
 })
 
 funcs.append({
