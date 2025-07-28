@@ -162,32 +162,6 @@ funcs.append({
 })
 
 funcs.append({
-    "name": "HF-D4BJEEQATM",
-    "alias": ["HF-D4"],
-    "c_functionals": {},
-    "x_hf": {
-        "alpha": 1.0
-    },
-    "dispersion": {
-        "type": "d4bjeeqatm",
-        "nlc": False,
-        "params": {
-            's8':1.61679827,
-            'a1':0.44959224,
-            'a2':3.35743605,
-            's6': 1.000,
-            's9': 1.000,
-            'alp': 16.0,
-        },
-    },
-    "description":
-    '    HF with D4 dispersion\n',
-    "citation":
-    '    Caldeweyher, E.; Ehlert, S.; Hansen, A.; Neugebauer, H.; Spicher, S.; Bannwarth, C.; Grimmme, S., J. Chem. Phys. 150, 154122 (2019)\n',
-    "doi": "10.1063/1.5090222150",
-})
-
-funcs.append({
     "name": "HF-D4BJEEQTWO",
     "alias": ["HF-D4M"],
     "c_functionals": {},
