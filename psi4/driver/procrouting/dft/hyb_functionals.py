@@ -162,32 +162,6 @@ funcs.append({
 })
 
 funcs.append({
-    "name": "HF-D4BJEEQTWO",
-    "alias": ["HF-D4M"],
-    "c_functionals": {},
-    "x_hf": {
-        "alpha": 1.0
-    },
-    "dispersion": {
-        "type": "d4bjeeqatm",
-        "nlc": False,
-        "params": {
-            'a1': 0.095,
-            'a2': 3.637,
-            's6': 1.000,
-            's8': 0.738,
-            's9': 0.000,
-            'alp': 16.0,
-        },
-    },
-    "description":
-    '    HF with D4 dispersion using Sherrill Group BJ damping parameters\n',
-    "citation":
-    '    Wallace, A. M.; Sherrill, C. D., J. Chem. Phys., 161, 114115, 2024\n',
-    "doi": "10.1063/5.0219185",
-})
-
-funcs.append({
     "name": "wB97X3c",
     "alias": ["wB97X-3C"],
     "xc_functionals": {
