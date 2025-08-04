@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -66,6 +66,7 @@ procedures = {
         'custom-scs-omp2' : proc.run_occ,
         'dlpno-mp2'     : proc.run_dlpnomp2,
         'scs-dlpno-mp2' : proc.run_dlpnomp2,
+        'mp2-f12'       : proc.run_mp2f12,
         'mp2.5'         : proc.select_mp2p5,
         'custom-scs-mp2.5' : proc.run_occ,
         'omp2.5'        : proc.select_omp2p5,

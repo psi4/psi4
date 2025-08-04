@@ -463,3 +463,63 @@ def test_skipped_angmom(subject, bas, mols, request):
     wert = psi4.core.BasisSet.build(mol, "BASIS", "FAKE")
 
     assert wert.nbf() == nbf
+
+
+def test_high_am_in_default_build():
+    cucu = psi4.core.Molecule.from_string("""
+        Cu
+        Cu 1 2.0
+""")
+
+    psi4.gradient("hf/def2-SVP", molecule=cucu)
+
+
+def test_too_high_am_in_default_build():
+    h2 = psi4.core.Molecule.from_string("""
+        H
+        H 1 1.0
+""")
+    too_high_am_basis = """
+    spherical
+****
+H 0
+L=8 1 1.0
+ 1.0 1.0
+****
+"""
+
+    def basisspec_psi4_yo__anonymous1234(h2, role):
+        h2.set_basis_all_atoms("test", role=role)
+        return {"test": too_high_am_basis}
+
+    psi4.driver.qcdb.libmintsbasisset.basishorde["TOOHI"] = basisspec_psi4_yo__anonymous1234
+
+    psi4.set_options({"scf_type": "pk", "basis": "toohi"})
+    with pytest.raises(RuntimeError) as e:
+        psi4.gradient("hf", molecule=h2)
+
+    assert "Engine::lmax_exceeded -- angular momentum limit exceeded" in str(e.value)
+
+
+def test_basis_depr_note_53_runs():
+    arar = psi4.geometry("""
+        Ar
+        Ar 1 2.0
+""")
+
+    ene = psi4.energy("mp2/CC-pwcv(D+d)z-deprecated")
+    assert compare_values(-1054.0949206936429619, ene, 6, "basis-deprecated works")  # dz
+    # assert compare_values(-1054.5174244585762, ene, 6, "basis-deprecated works")  # tz
+
+
+def test_basis_depr_note_53_raises():
+    arar = psi4.geometry("""
+        Ar
+        Ar 1 2.0
+""")
+
+    with pytest.raises(psi4.driver.qcdb.exceptions.BasisSetNotFoundDeprecated) as e:
+        psi4.energy("mp2/jun-cc-pwcv(t+D)z")
+
+    # end with an error saying use cc-pv(d+d)z-deprecated
+    assert "ill-advised" in str(e)

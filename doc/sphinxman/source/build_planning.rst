@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -759,7 +759,7 @@ Run |PSIfour|. ::
     He
     }
     energy('hf/cc-pvdz')
-    compare_values(-2.85518839, get_variable('current energy'), 5, 'SCF E')
+    compare_values(-2.85518839, variable('current energy'), 5, 'SCF E')
     >>> psi4 sample.in
     SCF E.............................................................PASSED
 
@@ -834,7 +834,7 @@ Run |PSIfour|. ::
     He
     """)
     psi4.energy('hf/cc-pvdz')
-    psi4.compare_values(-2.85518839, psi4.core.get_variable('current energy'), 5, 'SCF E')
+    psi4.compare_values(-2.85518839, psi4.core.variable('current energy'), 5, 'SCF E')
     >>> python sample.py
     SCF E.............................................................PASSED
 
@@ -894,7 +894,7 @@ Run |PSIfour| as executable. ::
     He
     }
     energy('hf/cc-pvdz')
-    compare_values(-2.85518839, get_variable('current energy'), 5, 'SCF E')
+    compare_values(-2.85518839, variable('current energy'), 5, 'SCF E')
     >>> psi4 sample.in
     SCF E.............................................................PASSED
 
@@ -906,7 +906,7 @@ Run |PSIfour| as executable. ::
     He
     """)
     psi4.energy('hf/cc-pvdz')
-    psi4.compare_values(-2.85518839, psi4.core.get_variable('current energy'), 5, 'SCF E')
+    psi4.compare_values(-2.85518839, psi4.core.variable('current energy'), 5, 'SCF E')
     >>> python sample.py
     SCF E.............................................................PASSED
 

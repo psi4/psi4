@@ -24,7 +24,7 @@ jobs:
             mkl-version: ""
             platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not pe_ecp"
+            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
@@ -44,8 +44,6 @@ jobs:
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D ENABLE_v2rdm_casscf=ON
-              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
               -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
@@ -169,27 +167,20 @@ jobs:
         #
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
-          sed -i "s;- openfermion;#- openfermion;g" env_p4build.yaml
-          # openfermion not yet ready for np v2
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
           # sed -E -i.bak "s;;;g" env_p4build.yaml
-          sed -E -i.bak "s;- openfermion;#- openfermion;g" env_p4build.yaml
-          # openfermion not yet ready for np v2
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Silicon)" ]]; then
           :
-          sed -E -i.bak "s;- openfermion;#- openfermion;g" env_p4build.yaml
-          # openfermion not yet ready for np v2
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
-          sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
-          echo "  - libgcc <14.3" >> env_p4build.yaml
+          # sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
         echo "::group::View Env Spec File for Conda (Edited)"

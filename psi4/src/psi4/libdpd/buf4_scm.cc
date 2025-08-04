@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -67,8 +67,8 @@ int DPD::buf4_scm(dpdbuf4 *InBuf, double alpha) {
     long int length, core, memoryd, core_total, rowtot, coltot, maxrows;
     int h, nirreps, new_buf4, all_buf_irrep;
     int row, col;
-    int incore;
     double *X;
+    bool incore;
 
     nirreps = InBuf->params->nirreps;
     all_buf_irrep = InBuf->file.my_irrep;
@@ -85,7 +85,7 @@ int DPD::buf4_scm(dpdbuf4 *InBuf, double alpha) {
 
     for (h = 0; h < nirreps; h++) {
         memoryd = dpd_main.memory;
-        incore = 1; /* default */
+       incore = true; /* default */
 
         /* Compute the core requirements for the straight contraction */
         core_total = 0;
@@ -102,14 +102,14 @@ int DPD::buf4_scm(dpdbuf4 *InBuf, double alpha) {
         rowtot = InBuf->params->rowtot[h];
         for (; rowtot > maxrows; rowtot -= maxrows) {
             if (core_total > (core_total + maxrows * coltot))
-                incore = 0;
+                incore = false;
             else
                 core_total += maxrows * coltot;
         }
-        if (core_total > (core_total + rowtot * coltot)) incore = 0;
+        if (core_total > (core_total + rowtot * coltot)) incore = false;
         core_total += rowtot * coltot;
 
-        if (core_total > memoryd) incore = 0;
+        if (core_total > memoryd) incore = false;
 
         if (incore) {
             buf4_mat_irrep_init(InBuf, h);

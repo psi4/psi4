@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -102,7 +102,6 @@ from .metadata import __version__, version_formatter
 
 # A few extraneous functions
 from .extras import get_input_directory, addons, test, set_output_file
-from psi4.core import get_variable  # kill off in 1.4
 from psi4.core import variable, set_variable
 
 # Python portions of compiled-in Add-Ons

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -188,7 +188,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- When several modules can compute the same methods and the default
     routing is not suitable, this targets a module. ``CCENERGY`` covers
     CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
-    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN MRCC");
+    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN MRCC F12");
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
@@ -1139,14 +1139,30 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION SAPT(DFT) -*/
 
-        /*- Monomer A GRAC shift in Hartree -*/
+        /*- Monomer A GRAC shift in Hartree. To automatically compute prior to
+        SAPT(DFT), do NOT set this option but set |sapt__sapt_dft_grac_compute|
+        to "SINGLE" or "ITERATIVE" as described below. -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
-        /*- Monomer B GRAC shift in Hartree -*/
+        /*- Monomer B GRAC shift in Hartree. To automatically compute prior to
+        SAPT(DFT), do NOT set this option but set |sapt__sapt_dft_grac_compute|
+        to "SINGLE" or "ITERATIVE" as described below. -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
+        /*- SAPT_DFT_GRAC_COMPUTE will enable automatically computing GRAC
+         shifts prior to running SAPT(DFT). Note that the user must not specify
+         a value for SAPT_DFT_GRAC_SHIFT_A or SAPT_DFT_GRAC_SHIFT_B to trigger
+         this GRAC computation. "SINGLE" will try only once to converge the
+         cation for computing a GRAC shift. "ITERATIVE" will adjust local Psi4
+         options ("LEVEL_SHIFT", "LEVEL_SHIFT_CUTOFF") to attempt to converge
+         the neutral/cation calculations. "ITERATIVE" will try 3 times to
+         converge the cation before failing the SAPT(DFT) computation. -*/
+        options.add_str("SAPT_DFT_GRAC_COMPUTE", "NONE", "NONE SINGLE ITERATIVE");
+        /*- To ensure that the GRAC shift is computed with a sufficiently large
+          basis set, the user can specify a larger basis set for the GRAC
+          calculation, which can be different from the basis set used for the
+          SAPT(DFT) calculation. -*/
+        options.add_str("SAPT_DFT_GRAC_BASIS", "AUTO");
         /*- Compute the Delta-HF correction? -*/
         options.add_bool("SAPT_DFT_DO_DHF", true);
-        /*- How is the GRAC correction determined? !expert -*/
-        options.add_str("SAPT_DFT_GRAC_DETERMINATION", "INPUT", "INPUT");
         /*- Enables the hybrid xc kernel in dispersion? !expert -*/
         options.add_bool("SAPT_DFT_DO_HYBRID", true);
         /*- Scheme for approximating exchange-dispersion for SAPT-DFT.
@@ -1442,7 +1458,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             depending on available memory or other hardware constraints, allow the best
             sub-algorithm for the molecule and conditions (``AUTO`` ; usual mode) or
             forcibly select a sub-algorithm (usually only for debugging or profiling).
-            Presently, ``SCF_SUBTYPE=DF``, ``SCF_SUBTYPE=MEM_DF``, and ``SCF_SUBTYPE=DISK_DF`` 
+            Presently, ``SCF_TYPE=DF``, ``SCF_TYPE=MEM_DF``, and ``SCF_TYPE=DISK_DF``
 	        can have ``INCORE`` and ``OUT_OF_CORE`` selected; and ``SCF_TYPE=PK``  can have ``INCORE``,
 	        ``OUT_OF_CORE``, ``YOSHIMINE_OUT_OF_CORE``, and ``REORDER_OUT_OF_CORE`` selected. !expert -*/
 	    options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE YOSHIMINE_OUT_OF_CORE REORDER_OUT_OF_CORE");
@@ -3253,6 +3269,29 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("MOLDEN_WRITE", false);
         /*- Do Cholesky decomposition of the ERI tensor -*/
         options.add_bool("CHOLESKY", false);
+    }
+    if (name == "F12" || options.read_globals()) {
+        /*- MODULEDESCRIPTION Performs F12 computations for RHF reference wavefunctions. -*/
+
+        /*- SUBSECTION General Options -*/
+        /*- Algorithm to use for MP2-F12 computation, conventional or density-fitted. -*/
+        options.add_str("MP2_TYPE", "DF", "DF CONV");
+        /*- For certain |globals__mp2_type| algorithms that have internal sub-algorithms
+            depending on available memory or other hardware constraints, select a sub-algorithm
+            Presently, ``MP2_TYPE=DF`` and ``MP2_TYPE=CONV``
+	        can have ``INCORE`` and ``DISK`` selected. In future, ``AUTO`` will be added. -*/
+        options.add_str("F12_SUBTYPE", "INCORE", "INCORE DISK");
+        /*- Whether to read-in stored integrals from previous computation -*/
+        options.add_bool("F12_READ_INTS", false);
+        /*- Set contracted Gaussian-type geminal beta value -*/
+        options.add_double("F12_BETA", 1.0);
+        /*- Choose a basis for Complementary Auxiliary Basis Set -*/
+        options.add_str("CABS_BASIS", "");
+        /*- Whether to compute the CABS Singles Correction -*/
+        options.add_bool("CABS_SINGLES", true);
+        /*- Choose a density-fitting basis for integrals. For |f12__mp2_type| =DF, this is applied to non-F12
+        SCF and MP2 parts, too, regardless of |scf__df_basis_scf| or |dfmp2__df_basis_mp2| .  -*/
+        options.add_str("DF_BASIS_F12", "");
     }
     if (name == "MRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

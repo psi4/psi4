@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -521,7 +521,7 @@ SAPT(DFT) can still be applied to medium-sized or large systems. The
 SAPT(DFT) module was employed successfully in computations of systems 
 with up to 2000 basis functions, and the code should be scalable to 
 3000 basis functions. Like higher-order SAPT, SAPT(DFT) requires 
-sufficient memory to hold :math:`2ovN_aux` doubles.
+sufficient memory to hold :math:`2ovN_{\rm aux}` doubles.
 
 
 SAPT(DFT) requires a few special treatments to obtain accurate
@@ -532,20 +532,23 @@ in order to recover the correct long-range asymptotic behavior
 requires manual input of GRAC shift parameter for each monomer through
 keywords |sapt__sapt_dft_grac_shift_a| and |sapt__sapt_dft_grac_shift_b|,
 which should be equal to the difference of the actual ionization
-potential and the corresponding Kohn-Sham HOMO energy. The dispersion
-term needs to be computed with orbital response for good accuracy,
-and it is recommended to enable |sapt__sapt_dft_do_hybrid| (set to
+potential and the corresponding Kohn-Sham HOMO energy. However,
+|PSIfour| can automatically compute a GRAC shift for monomers A and B
+if |sapt__sapt_dft_grac_compute| is set to ``SINGLE`` or ``ITERATIVE``. 
+
+
+The dispersion term needs to be computed with orbital response for good
+accuracy, and it is recommended to enable |sapt__sapt_dft_do_hybrid| (set to
 ``True`` by default). The coupled exchange-dispersion energy is usually
-estimated by scaling from the uncoupled value either by a fitted fixed
-value (suggested initially by [Hesselmann:2014:094107]_ for a local Hartree--Fock (LHF) formulation and then revised
-by [Xie:2022:024801]_ for non-LHF) or
-by the ratio of
-coupled and uncoupled dispersion energy (suggested by [Podeszwa:2006:400]_ ). 
-This can be controlled by keyword |sapt__sapt_dft_exch_disp_scale_scheme|, 
-with ``FIXED`` using the Hesselmann/Xie approach (|PSIfours| default prior 
-to Nov 2022), ``DISP`` using the Podeszwa approach (|PSIfours| default after Nov 2022),
-or ``NONE`` for not scaling and using the uncoupled exchange-dispersion 
-energy directly.
+estimated by scaling from the uncoupled value either by a fitted fixed value
+(suggested initially by [Hesselmann:2014:094107]_ for a local Hartree--Fock
+(LHF) formulation and then revised by [Xie:2022:024801]_ for non-LHF) or by the
+ratio of coupled and uncoupled dispersion energy (suggested by
+[Podeszwa:2006:400]_ ). This can be controlled by keyword
+|sapt__sapt_dft_exch_disp_scale_scheme|, with ``FIXED`` using the
+Hesselmann/Xie approach (|PSIfours| default prior to Nov 2022), ``DISP`` using
+the Podeszwa approach (|PSIfours| default after Nov 2022), or ``NONE`` for not
+scaling and using the uncoupled exchange-dispersion energy directly.
 
 .. warning:: Since Nov 2022, the defaults of options |sapt__sapt_dft_exch_disp_scale_scheme| and |sapt__sapt_dft_exch_disp_fixed_scale|
              have been changed. Before, the former defaulted to ``FIXED`` with Hesselmann value of 0.686 for the latter. Now, the former defaults to ``DISP`` and should you instead select ``FIXED``, the default for the latter is the Xie value of 0.770. This might cause
@@ -559,6 +562,7 @@ Basic Keywords for SAPT(DFT)
 .. include:: autodir_options_c/sapt__sapt_dft_grac_shift_b.rst
 .. include:: autodir_options_c/sapt__sapt_dft_do_dhf.rst
 .. include:: autodir_options_c/sapt__sapt_dft_exch_disp_scale_scheme.rst
+.. include:: autodir_options_c/sapt__sapt_dft_grac_compute.rst
 
 Advanced Keywords for SAPT(DFT)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

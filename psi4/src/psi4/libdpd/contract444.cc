@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -61,7 +61,8 @@ namespace psi {
 int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z, int target_X, int target_Y, double alpha, double beta) {
     int n, Hx, Hy, Hz, GX, GY, GZ, nirreps, Xtrans, Ytrans, *numlinks, symlink;
     long int size_Y, size_Z, size_file_X_row;
-    int incore, nbuckets;
+    int nbuckets;
+    bool incore;
     long int memoryd, core, rows_per_bucket, rows_left, memtotal;
     int nrows, ncols, nlinks;
 #if DPD_DEBUG
@@ -150,10 +151,10 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z, int target_X, int targe
 
             rows_left = X->params->rowtot[Hx] % rows_per_bucket;
 
-            incore = 1;
-            if (nbuckets > 1) incore = 0;
+            incore = true;
+            if (nbuckets > 1) incore = false;
         } else
-            incore = 1;
+            incore = true;
 
 #if DPD_DEBUG
         if (!incore) {
