@@ -39,7 +39,7 @@ au2kcal = qcel.constants.conversion_factor('hartree', 'kcal/mol')
 e_d4_total = energy('fisapt0-d4')
 e_d4_disp = core.variable('FISAPT0-D DISP ENERGY') * au2kcal
 
-e_d4m = energy('fisapt0-d4m')
+e_d4m = energy('fisapt0-d4bjeeqtwo')
 e_d4m_disp = core.variable('FISAPT0-D DISP ENERGY') * au2kcal
 print("Ethyne-Ethene -d4: ", e_d4_total)
 
