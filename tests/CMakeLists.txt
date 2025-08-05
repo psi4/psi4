@@ -183,6 +183,7 @@ find_program(DFTD4_EXECUTABLE
 
 if(DFTD4_EXECUTABLE)
     add_subdirectory(dftd4)
+    add_subdirectory(fsapt-d4)
     message(STATUS "${Cyan}Found DFTD4${ColourReset}: ${DFTD4_EXECUTABLE}")
     message(STATUS "Adding test cases: Psi4 + DFTD4")
 endif()

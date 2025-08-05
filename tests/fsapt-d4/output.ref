@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.10a1.dev110 
+                               Psi4 1.10a1.dev112 
 
-                         Git: Rev {sapt0d4} cd13ac3 
+                         Git: Rev {sapt0d4} b434d95 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -31,13 +31,13 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 04 August 2025 07:42PM
+    Psi4 started on: Tuesday, 05 August 2025 04:55PM
 
-    Process ID: 3887907
+    Process ID: 4175186
     Host:       cos-4a16505.cos.gatech.edu
     PSIDATADIR: /home/awallace43/gits/psi4/build_sapt0d4/stage/share/psi4
     Memory:     500.0 MiB
-    Threads:    8
+    Threads:    1
     Addons:     adcc, a̶m̶b̶i̶t̶, bse, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, cppe, ddx, dftd3, dftd4, d̶k̶h̶,
                 e̶c̶p̶i̶n̶t̶, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, gcp, gdma, geometric,
                 g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, ipi, libefp, mdi, m̶p̶2̶d̶,
@@ -88,7 +88,7 @@ au2kcal = qcel.constants.conversion_factor('hartree', 'kcal/mol')
 e_d4_total = energy('fisapt0-d4')
 e_d4_disp = core.variable('FISAPT0-D DISP ENERGY') * au2kcal
 
-e_d4m = energy('fisapt0-d4bjeeqtwo')
+e_d4m = energy('fisapt0-d4bj2b')
 e_d4m_disp = core.variable('FISAPT0-D DISP ENERGY') * au2kcal
 print("Ethyne-Ethene -d4: ", e_d4_total)
 
@@ -155,7 +155,7 @@ Scratch directory: /fastscratch/awallace43/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on cos-4a16505.cos.gatech.edu
-*** at Mon Aug  4 19:42:30 2025
+*** at Tue Aug  5 16:55:02 2025
 
    => Loading Basis Set <=
 
@@ -171,7 +171,7 @@ Scratch directory: /fastscratch/awallace43/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RHF Reference
-                        8 Threads,    953 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -237,7 +237,7 @@ Scratch directory: /fastscratch/awallace43/
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.014 GiB; user supplied 0.698 GiB. 
+  DFHelper Memory: AOs need 0.013 GiB; user supplied 0.698 GiB. 
   SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
   Using in-core AOs.
 
@@ -246,7 +246,7 @@ Scratch directory: /fastscratch/awallace43/
     J tasked:                   Yes
     K tasked:                   Yes
     wK tasked:                   No
-    OpenMP threads:               8
+    OpenMP threads:               1
     Memory [MiB]:               715
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -283,17 +283,17 @@ Scratch directory: /fastscratch/awallace43/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:   -80.52513768578704   -8.05251e+01   0.00000e+00 
-   @DF-RHF iter   1:   -79.64742235171350    8.77715e-01   1.20653e-02 ADIIS/DIIS
-   @DF-RHF iter   2:   -80.27046842193977   -6.23046e-01   6.57695e-03 ADIIS/DIIS
-   @DF-RHF iter   3:   -80.39385538913598   -1.23387e-01   6.99972e-04 ADIIS/DIIS
-   @DF-RHF iter   4:   -80.39787263437299   -4.01725e-03   1.76471e-04 ADIIS/DIIS
-   @DF-RHF iter   5:   -80.39808502694346   -2.12393e-04   2.13431e-05 DIIS
-   @DF-RHF iter   6:   -80.39808837367696   -3.34673e-06   2.67146e-06 DIIS
-   @DF-RHF iter   7:   -80.39808842699219   -5.33152e-08   3.34481e-07 DIIS
-   @DF-RHF iter   8:   -80.39808842771541   -7.23219e-10   6.94366e-08 DIIS
-   @DF-RHF iter   9:   -80.39808842774293   -2.75264e-11   2.09028e-08 DIIS
-   @DF-RHF iter  10:   -80.39808842774528   -2.34479e-12   3.92145e-09 DIIS
+   @DF-RHF iter SAD:   -80.52513768579541   -8.05251e+01   0.00000e+00 
+   @DF-RHF iter   1:   -79.64742235172004    8.77715e-01   1.20653e-02 DIIS/ADIIS
+   @DF-RHF iter   2:   -80.27046842194574   -6.23046e-01   6.57695e-03 DIIS/ADIIS
+   @DF-RHF iter   3:   -80.39385538914169   -1.23387e-01   6.99972e-04 DIIS/ADIIS
+   @DF-RHF iter   4:   -80.39787263437879   -4.01725e-03   1.76471e-04 DIIS/ADIIS
+   @DF-RHF iter   5:   -80.39808502694915   -2.12393e-04   2.13431e-05 DIIS
+   @DF-RHF iter   6:   -80.39808837368255   -3.34673e-06   2.67146e-06 DIIS
+   @DF-RHF iter   7:   -80.39808842699793   -5.33154e-08   3.34481e-07 DIIS
+   @DF-RHF iter   8:   -80.39808842772095   -7.23020e-10   6.94366e-08 DIIS
+   @DF-RHF iter   9:   -80.39808842774843   -2.74838e-11   2.09028e-08 DIIS
+   @DF-RHF iter  10:   -80.39808842775088   -2.44427e-12   3.92145e-09 DIIS
   Energy and wave function converged.
 
 
@@ -340,14 +340,14 @@ Scratch directory: /fastscratch/awallace43/
     NA   [    10 ]
     NB   [    10 ]
 
-  @DF-RHF Final Energy:   -80.39808842774528
+  @DF-RHF Final Energy:   -80.39808842775088
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             35.0752983874740636
-    One-Electron Energy =                -175.7868054425326250
-    Two-Electron Energy =                  60.3134186273132968
-    Total Energy =                        -80.3980884277452788
+    One-Electron Energy =                -175.7868054425355240
+    Two-Electron Energy =                  60.3134186273106039
+    Total Energy =                        -80.3980884277508778
 
 Computation Completed
 
@@ -371,14 +371,14 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on cos-4a16505.cos.gatech.edu at Mon Aug  4 19:42:31 2025
+*** tstop() called on cos-4a16505.cos.gatech.edu at Tue Aug  5 16:55:03 2025
 Module time:
-	user time   =       2.65 seconds =       0.04 minutes
-	system time =       0.32 seconds =       0.01 minutes
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.65 seconds =       0.04 minutes
-	system time =       0.32 seconds =       0.01 minutes
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
   Constructing Basis Sets for FISAPT...
 
@@ -428,13 +428,13 @@ Total time:
     Maxiter     =         200
 
     @IBO Iter:                   Metric       Gradient
-    @IBO    1:   1.2830268171120318E+00   2.992905E-01
-    @IBO    2:   1.3188419970175789E+00   1.412781E-01
-    @IBO    3:   1.3221360052815421E+00   9.806041E-03
-    @IBO    4:   1.3221475469002477E+00   8.388258E-06
-    @IBO    5:   1.3221475469087762E+00   3.595045E-08
-    @IBO    6:   1.3221475469087764E+00   1.624489E-10
-    @IBO    7:   1.3221475469087767E+00   3.536930E-13
+    @IBO    1:   1.2830268170774011E+00   2.992905E-01
+    @IBO    2:   1.3188419970104817E+00   1.412781E-01
+    @IBO    3:   1.3221360052813405E+00   9.806041E-03
+    @IBO    4:   1.3221475469002806E+00   8.388258E-06
+    @IBO    5:   1.3221475469088095E+00   3.595045E-08
+    @IBO    6:   1.3221475469088095E+00   1.624489E-10
+    @IBO    7:   1.3221475469088095E+00   3.536930E-13
 
     IBO Localizer 2 converged.
 
@@ -500,16 +500,16 @@ Total time:
     Max DIIS Vectors = 10
 
     Iter   N:                        E          dE         |D|
-    Iter   1:  -4.0199041112868898E+01  -4.020E+01   2.446E-05 
-    Iter   2:  -4.0199041931755659E+01  -8.189E-07   9.207E-07 DIIS
-    Iter   3:  -4.0199041937481205E+01  -5.726E-09   1.575E-07 DIIS
-    Iter   4:  -4.0199041937710234E+01  -2.290E-10   4.323E-08 DIIS
-    Iter   5:  -4.0199041937727422E+01  -1.719E-11   1.127E-08 DIIS
-    Iter   6:  -4.0199041937728069E+01  -6.466E-13   1.773E-09 DIIS
+    Iter   1:  -4.0199041112873147E+01  -4.020E+01   2.446E-05 
+    Iter   2:  -4.0199041931759936E+01  -8.189E-07   9.207E-07 DIIS
+    Iter   3:  -4.0199041937485390E+01  -5.725E-09   1.575E-07 DIIS
+    Iter   4:  -4.0199041937714426E+01  -2.290E-10   4.323E-08 DIIS
+    Iter   5:  -4.0199041937731664E+01  -1.724E-11   1.127E-08 DIIS
+    Iter   6:  -4.0199041937732311E+01  -6.466E-13   1.773E-09 DIIS
 
     FISAPTSCF Converged.
 
-    Final SCF Energy:  -4.0199041937728069E+01 [Eh]
+    Final SCF Energy:  -4.0199041937732311E+01 [Eh]
 
    => Occupied Orbital Energies <=
 
@@ -552,15 +552,15 @@ Total time:
     Max DIIS Vectors = 10
 
     Iter   N:                        E          dE         |D|
-    Iter   1:  -4.0199042258273721E+01  -4.020E+01   2.228E-05 
-    Iter   2:  -4.0199042824343650E+01  -5.661E-07   7.101E-07 DIIS
-    Iter   3:  -4.0199042827210647E+01  -2.867E-09   9.483E-08 DIIS
-    Iter   4:  -4.0199042827281268E+01  -7.062E-11   2.581E-08 DIIS
-    Iter   5:  -4.0199042827285659E+01  -4.391E-12   8.280E-09 DIIS
+    Iter   1:  -4.0199042258273778E+01  -4.020E+01   2.228E-05 
+    Iter   2:  -4.0199042824343778E+01  -5.661E-07   7.101E-07 DIIS
+    Iter   3:  -4.0199042827210697E+01  -2.867E-09   9.483E-08 DIIS
+    Iter   4:  -4.0199042827281353E+01  -7.066E-11   2.581E-08 DIIS
+    Iter   5:  -4.0199042827285773E+01  -4.420E-12   8.280E-09 DIIS
 
     FISAPTSCF Converged.
 
-    Final SCF Energy:  -4.0199042827285659E+01 [Eh]
+    Final SCF Energy:  -4.0199042827285773E+01 [Eh]
 
    => Occupied Orbital Energies <=
 
@@ -646,22 +646,22 @@ Total time:
  Trace of D_B:   5.000000 
 
  Trace of D_C:   0.000000 
-    E ABC(HF) =  -8.0398088427745279E+01 [Eh]
-    E AC(0)   =  -4.0199041937728062E+01 [Eh]
-    E BC(0)   =  -4.0199042827285659E+01 [Eh]
-    E A(0)    =  -4.0199041937728062E+01 [Eh]
-    E B(0)    =  -4.0199042827285659E+01 [Eh]
-    E AC(HF)  =  -4.0199041112868898E+01 [Eh]
-    E BC(HF)  =  -4.0199042258273728E+01 [Eh]
-    E AB(HF)  =  -8.0398088427745250E+01 [Eh]
-    E A(HF)   =  -4.0199041112868898E+01 [Eh]
-    E B(HF)   =  -4.0199042258273728E+01 [Eh]
+    E ABC(HF) =  -8.0398088427750878E+01 [Eh]
+    E AC(0)   =  -4.0199041937732311E+01 [Eh]
+    E BC(0)   =  -4.0199042827285773E+01 [Eh]
+    E A(0)    =  -4.0199041937732311E+01 [Eh]
+    E B(0)    =  -4.0199042827285773E+01 [Eh]
+    E AC(HF)  =  -4.0199041112873154E+01 [Eh]
+    E BC(HF)  =  -4.0199042258273778E+01 [Eh]
+    E AB(HF)  =  -8.0398088427750906E+01 [Eh]
+    E A(HF)   =  -4.0199041112873154E+01 [Eh]
+    E B(HF)   =  -4.0199042258273778E+01 [Eh]
     E C       =   0.0000000000000000E+00 [Eh]
-    E HF      =  -3.6627315580517461E-06 [Eh]
+    E HF      =  -3.6627327943961063E-06 [Eh]
 
   ==> Electrostatics <==
 
-    Elst10,r            =    -0.000003803581 [Eh]
+    Elst10,r            =    -0.000003803582 [Eh]
 
   ==> Exchange <==
 
@@ -720,12 +720,12 @@ Total time:
     Maxiter     =        1000
 
     @IBO Iter:                   Metric       Gradient
-    @IBO    1:   1.0895213322676154E+00   7.095819E-02
-    @IBO    2:   1.1109466528050802E+00   3.461409E-02
-    @IBO    3:   1.1117860740423358E+00   1.083833E-03
-    @IBO    4:   1.1117868326203362E+00   2.596973E-06
-    @IBO    5:   1.1117868326246911E+00   2.715715E-10
-    @IBO    6:   1.1117868326246911E+00   5.771040E-13
+    @IBO    1:   1.0895213310597214E+00   7.095824E-02
+    @IBO    2:   1.1109466509957058E+00   3.461412E-02
+    @IBO    3:   1.1117860740382934E+00   1.083836E-03
+    @IBO    4:   1.1117868326203675E+00   2.596980E-06
+    @IBO    5:   1.1117868326247222E+00   2.715726E-10
+    @IBO    6:   1.1117868326247224E+00   5.771050E-13
 
     IBO Localizer 2 converged.
 
@@ -742,12 +742,12 @@ Total time:
     Maxiter     =        1000
 
     @IBO Iter:                   Metric       Gradient
-    @IBO    1:   1.0897093726732947E+00   9.753762E-02
-    @IBO    2:   1.1098378768404218E+00   5.014001E-02
-    @IBO    3:   1.1117826903887309E+00   2.980790E-03
-    @IBO    4:   1.1117884315939635E+00   1.114040E-06
-    @IBO    5:   1.1117884315947650E+00   7.093130E-10
-    @IBO    6:   1.1117884315947650E+00   4.027376E-13
+    @IBO    1:   1.0897093705609318E+00   9.753746E-02
+    @IBO    2:   1.1098378731024972E+00   5.014006E-02
+    @IBO    3:   1.1117826903829586E+00   2.980791E-03
+    @IBO    4:   1.1117884315939779E+00   1.114041E-06
+    @IBO    5:   1.1117884315947792E+00   7.093038E-10
+    @IBO    6:   1.1117884315947795E+00   4.027304E-13
 
     IBO Localizer 2 converged.
 
@@ -763,7 +763,7 @@ Total time:
     Schwarz Cutoff:                1E-12
     Mask sparsity (%):                22
     DFH Avail. Memory [GiB]:       0.838
-    OpenMP threads:                    8
+    OpenMP threads:                    1
     Algorithm:                DIRECT_iaQ
     AO Core:                        True
     MO Core:                       False
@@ -773,7 +773,7 @@ Total time:
     Q Shell Max:                       7
 
 
-    Elst10,r            =    -0.000003803581 [Eh]
+    Elst10,r            =    -0.000003803582 [Eh]
 
   ==> F-SAPT Exchange <==
 
@@ -852,7 +852,7 @@ Total time:
     Exchange                        0.00017916 [mEh]       0.00011242 [kcal/mol]       0.00047038 [kJ/mol]
     Induction                      -0.00003831 [mEh]      -0.00002404 [kcal/mol]      -0.00010058 [kJ/mol]
     Dispersion                     -0.05443565 [mEh]      -0.03415888 [kcal/mol]      -0.14292077 [kJ/mol]
-  Total FISAPT0-D                  -0.05809838 [mEh]      -0.03645728 [kcal/mol]      -0.15253727 [kJ/mol]
+  Total FISAPT0-D                  -0.05809838 [mEh]      -0.03645728 [kcal/mol]      -0.15253728 [kJ/mol]
   --------------------------------------------------------------------------------------------------------
 
   Warning: Use the `Empirical_Disp.dat` file only with `fsapt.py` from Psi4 v1.7.0 or later.
@@ -866,7 +866,7 @@ Scratch directory: /fastscratch/awallace43/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on cos-4a16505.cos.gatech.edu
-*** at Mon Aug  4 19:42:32 2025
+*** at Tue Aug  5 16:55:04 2025
 
    => Loading Basis Set <=
 
@@ -882,7 +882,7 @@ Scratch directory: /fastscratch/awallace43/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RHF Reference
-                        8 Threads,    953 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -948,7 +948,7 @@ Scratch directory: /fastscratch/awallace43/
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.014 GiB; user supplied 0.698 GiB. 
+  DFHelper Memory: AOs need 0.013 GiB; user supplied 0.698 GiB. 
   SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
   Using in-core AOs.
 
@@ -957,7 +957,7 @@ Scratch directory: /fastscratch/awallace43/
     J tasked:                   Yes
     K tasked:                   Yes
     wK tasked:                   No
-    OpenMP threads:               8
+    OpenMP threads:               1
     Memory [MiB]:               715
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -994,17 +994,17 @@ Scratch directory: /fastscratch/awallace43/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:   -80.52513768578707   -8.05251e+01   0.00000e+00 
-   @DF-RHF iter   1:   -79.64742235171343    8.77715e-01   1.20653e-02 ADIIS/DIIS
-   @DF-RHF iter   2:   -80.27046842193984   -6.23046e-01   6.57695e-03 ADIIS/DIIS
-   @DF-RHF iter   3:   -80.39385538913589   -1.23387e-01   6.99972e-04 ADIIS/DIIS
-   @DF-RHF iter   4:   -80.39787263437304   -4.01725e-03   1.76471e-04 ADIIS/DIIS
-   @DF-RHF iter   5:   -80.39808502694339   -2.12393e-04   2.13431e-05 DIIS
-   @DF-RHF iter   6:   -80.39808837367703   -3.34673e-06   2.67146e-06 DIIS
-   @DF-RHF iter   7:   -80.39808842699217   -5.33151e-08   3.34481e-07 DIIS
-   @DF-RHF iter   8:   -80.39808842771541   -7.23233e-10   6.94366e-08 DIIS
-   @DF-RHF iter   9:   -80.39808842774285   -2.74412e-11   2.09028e-08 DIIS
-   @DF-RHF iter  10:   -80.39808842774532   -2.47269e-12   3.92145e-09 DIIS
+   @DF-RHF iter SAD:   -80.52513768579541   -8.05251e+01   0.00000e+00 
+   @DF-RHF iter   1:   -79.64742235172004    8.77715e-01   1.20653e-02 DIIS/ADIIS
+   @DF-RHF iter   2:   -80.27046842194574   -6.23046e-01   6.57695e-03 DIIS/ADIIS
+   @DF-RHF iter   3:   -80.39385538914169   -1.23387e-01   6.99972e-04 DIIS/ADIIS
+   @DF-RHF iter   4:   -80.39787263437879   -4.01725e-03   1.76471e-04 DIIS/ADIIS
+   @DF-RHF iter   5:   -80.39808502694915   -2.12393e-04   2.13431e-05 DIIS
+   @DF-RHF iter   6:   -80.39808837368255   -3.34673e-06   2.67146e-06 DIIS
+   @DF-RHF iter   7:   -80.39808842699793   -5.33154e-08   3.34481e-07 DIIS
+   @DF-RHF iter   8:   -80.39808842772095   -7.23020e-10   6.94366e-08 DIIS
+   @DF-RHF iter   9:   -80.39808842774843   -2.74838e-11   2.09028e-08 DIIS
+   @DF-RHF iter  10:   -80.39808842775088   -2.44427e-12   3.92145e-09 DIIS
   Energy and wave function converged.
 
 
@@ -1051,14 +1051,14 @@ Scratch directory: /fastscratch/awallace43/
     NA   [    10 ]
     NB   [    10 ]
 
-  @DF-RHF Final Energy:   -80.39808842774532
+  @DF-RHF Final Energy:   -80.39808842775088
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             35.0752983874740636
-    One-Electron Energy =                -175.7868054425328523
-    Two-Electron Energy =                  60.3134186273134816
-    Total Energy =                        -80.3980884277453214
+    One-Electron Energy =                -175.7868054425355240
+    Two-Electron Energy =                  60.3134186273106039
+    Total Energy =                        -80.3980884277508778
 
 Computation Completed
 
@@ -1082,14 +1082,14 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on cos-4a16505.cos.gatech.edu at Mon Aug  4 19:42:32 2025
+*** tstop() called on cos-4a16505.cos.gatech.edu at Tue Aug  5 16:55:04 2025
 Module time:
-	user time   =       2.50 seconds =       0.04 minutes
-	system time =       0.43 seconds =       0.01 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.53 seconds =       0.16 minutes
-	system time =       1.35 seconds =       0.02 minutes
+	user time   =       1.56 seconds =       0.03 minutes
+	system time =       0.12 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
   Constructing Basis Sets for FISAPT...
 
@@ -1139,13 +1139,13 @@ Total time:
     Maxiter     =         200
 
     @IBO Iter:                   Metric       Gradient
-    @IBO    1:   1.2830268171123516E+00   2.992905E-01
-    @IBO    2:   1.3188419970171150E+00   1.412781E-01
-    @IBO    3:   1.3221360052815387E+00   9.806041E-03
-    @IBO    4:   1.3221475469002502E+00   8.388258E-06
-    @IBO    5:   1.3221475469087789E+00   3.595045E-08
-    @IBO    6:   1.3221475469087791E+00   1.624489E-10
-    @IBO    7:   1.3221475469087791E+00   3.536930E-13
+    @IBO    1:   1.2830268170774011E+00   2.992905E-01
+    @IBO    2:   1.3188419970104817E+00   1.412781E-01
+    @IBO    3:   1.3221360052813405E+00   9.806041E-03
+    @IBO    4:   1.3221475469002806E+00   8.388258E-06
+    @IBO    5:   1.3221475469088095E+00   3.595045E-08
+    @IBO    6:   1.3221475469088095E+00   1.624489E-10
+    @IBO    7:   1.3221475469088095E+00   3.536930E-13
 
     IBO Localizer 2 converged.
 
@@ -1211,16 +1211,16 @@ Total time:
     Max DIIS Vectors = 10
 
     Iter   N:                        E          dE         |D|
-    Iter   1:  -4.0199041112868905E+01  -4.020E+01   2.446E-05 
-    Iter   2:  -4.0199041931755680E+01  -8.189E-07   9.207E-07 DIIS
-    Iter   3:  -4.0199041937481113E+01  -5.725E-09   1.575E-07 DIIS
-    Iter   4:  -4.0199041937710220E+01  -2.291E-10   4.323E-08 DIIS
-    Iter   5:  -4.0199041937727365E+01  -1.715E-11   1.127E-08 DIIS
-    Iter   6:  -4.0199041937728119E+01  -7.532E-13   1.773E-09 DIIS
+    Iter   1:  -4.0199041112873147E+01  -4.020E+01   2.446E-05 
+    Iter   2:  -4.0199041931759936E+01  -8.189E-07   9.207E-07 DIIS
+    Iter   3:  -4.0199041937485390E+01  -5.725E-09   1.575E-07 DIIS
+    Iter   4:  -4.0199041937714426E+01  -2.290E-10   4.323E-08 DIIS
+    Iter   5:  -4.0199041937731664E+01  -1.724E-11   1.127E-08 DIIS
+    Iter   6:  -4.0199041937732311E+01  -6.466E-13   1.773E-09 DIIS
 
     FISAPTSCF Converged.
 
-    Final SCF Energy:  -4.0199041937728119E+01 [Eh]
+    Final SCF Energy:  -4.0199041937732311E+01 [Eh]
 
    => Occupied Orbital Energies <=
 
@@ -1263,15 +1263,15 @@ Total time:
     Max DIIS Vectors = 10
 
     Iter   N:                        E          dE         |D|
-    Iter   1:  -4.0199042258273735E+01  -4.020E+01   2.228E-05 
-    Iter   2:  -4.0199042824343692E+01  -5.661E-07   7.101E-07 DIIS
-    Iter   3:  -4.0199042827210583E+01  -2.867E-09   9.483E-08 DIIS
-    Iter   4:  -4.0199042827281303E+01  -7.072E-11   2.581E-08 DIIS
-    Iter   5:  -4.0199042827285709E+01  -4.405E-12   8.280E-09 DIIS
+    Iter   1:  -4.0199042258273778E+01  -4.020E+01   2.228E-05 
+    Iter   2:  -4.0199042824343778E+01  -5.661E-07   7.101E-07 DIIS
+    Iter   3:  -4.0199042827210697E+01  -2.867E-09   9.483E-08 DIIS
+    Iter   4:  -4.0199042827281353E+01  -7.066E-11   2.581E-08 DIIS
+    Iter   5:  -4.0199042827285773E+01  -4.420E-12   8.280E-09 DIIS
 
     FISAPTSCF Converged.
 
-    Final SCF Energy:  -4.0199042827285709E+01 [Eh]
+    Final SCF Energy:  -4.0199042827285773E+01 [Eh]
 
    => Occupied Orbital Energies <=
 
@@ -1357,22 +1357,22 @@ Total time:
  Trace of D_B:   5.000000 
 
  Trace of D_C:   0.000000 
-    E ABC(HF) =  -8.0398088427745321E+01 [Eh]
-    E AC(0)   =  -4.0199041937728119E+01 [Eh]
-    E BC(0)   =  -4.0199042827285709E+01 [Eh]
-    E A(0)    =  -4.0199041937728119E+01 [Eh]
-    E B(0)    =  -4.0199042827285709E+01 [Eh]
-    E AC(HF)  =  -4.0199041112868905E+01 [Eh]
-    E BC(HF)  =  -4.0199042258273735E+01 [Eh]
-    E AB(HF)  =  -8.0398088427745279E+01 [Eh]
-    E A(HF)   =  -4.0199041112868905E+01 [Eh]
-    E B(HF)   =  -4.0199042258273735E+01 [Eh]
+    E ABC(HF) =  -8.0398088427750878E+01 [Eh]
+    E AC(0)   =  -4.0199041937732311E+01 [Eh]
+    E BC(0)   =  -4.0199042827285773E+01 [Eh]
+    E A(0)    =  -4.0199041937732311E+01 [Eh]
+    E B(0)    =  -4.0199042827285773E+01 [Eh]
+    E AC(HF)  =  -4.0199041112873154E+01 [Eh]
+    E BC(HF)  =  -4.0199042258273778E+01 [Eh]
+    E AB(HF)  =  -8.0398088427750906E+01 [Eh]
+    E A(HF)   =  -4.0199041112873154E+01 [Eh]
+    E B(HF)   =  -4.0199042258273778E+01 [Eh]
     E C       =   0.0000000000000000E+00 [Eh]
-    E HF      =  -3.6627314941028999E-06 [Eh]
+    E HF      =  -3.6627327943961063E-06 [Eh]
 
   ==> Electrostatics <==
 
-    Elst10,r            =    -0.000003803581 [Eh]
+    Elst10,r            =    -0.000003803582 [Eh]
 
   ==> Exchange <==
 
@@ -1431,12 +1431,12 @@ Total time:
     Maxiter     =        1000
 
     @IBO Iter:                   Metric       Gradient
-    @IBO    1:   1.0895213322525674E+00   7.095819E-02
-    @IBO    2:   1.1109466527834913E+00   3.461409E-02
-    @IBO    3:   1.1117860740422851E+00   1.083833E-03
-    @IBO    4:   1.1117868326203375E+00   2.596973E-06
-    @IBO    5:   1.1117868326246925E+00   2.715715E-10
-    @IBO    6:   1.1117868326246922E+00   5.771104E-13
+    @IBO    1:   1.0895213310597214E+00   7.095824E-02
+    @IBO    2:   1.1109466509957058E+00   3.461412E-02
+    @IBO    3:   1.1117860740382934E+00   1.083836E-03
+    @IBO    4:   1.1117868326203675E+00   2.596980E-06
+    @IBO    5:   1.1117868326247222E+00   2.715726E-10
+    @IBO    6:   1.1117868326247224E+00   5.771050E-13
 
     IBO Localizer 2 converged.
 
@@ -1453,12 +1453,12 @@ Total time:
     Maxiter     =        1000
 
     @IBO Iter:                   Metric       Gradient
-    @IBO    1:   1.0897093726950200E+00   9.753763E-02
-    @IBO    2:   1.1098378768756556E+00   5.014001E-02
-    @IBO    3:   1.1117826903887780E+00   2.980790E-03
-    @IBO    4:   1.1117884315939637E+00   1.114040E-06
-    @IBO    5:   1.1117884315947650E+00   7.093131E-10
-    @IBO    6:   1.1117884315947650E+00   4.027369E-13
+    @IBO    1:   1.0897093705609318E+00   9.753746E-02
+    @IBO    2:   1.1098378731024972E+00   5.014006E-02
+    @IBO    3:   1.1117826903829586E+00   2.980791E-03
+    @IBO    4:   1.1117884315939779E+00   1.114041E-06
+    @IBO    5:   1.1117884315947792E+00   7.093038E-10
+    @IBO    6:   1.1117884315947795E+00   4.027304E-13
 
     IBO Localizer 2 converged.
 
@@ -1474,7 +1474,7 @@ Total time:
     Schwarz Cutoff:                1E-12
     Mask sparsity (%):                22
     DFH Avail. Memory [GiB]:       0.838
-    OpenMP threads:                    8
+    OpenMP threads:                    1
     Algorithm:                DIRECT_iaQ
     AO Core:                        True
     MO Core:                       False
@@ -1484,7 +1484,7 @@ Total time:
     Q Shell Max:                       7
 
 
-    Elst10,r            =    -0.000003803581 [Eh]
+    Elst10,r            =    -0.000003803582 [Eh]
 
   ==> F-SAPT Exchange <==
 
@@ -1563,7 +1563,7 @@ Total time:
     Exchange                        0.00017916 [mEh]       0.00011242 [kcal/mol]       0.00047038 [kJ/mol]
     Induction                      -0.00003831 [mEh]      -0.00002404 [kcal/mol]      -0.00010058 [kJ/mol]
     Dispersion                     -0.04881474 [mEh]      -0.03063171 [kcal/mol]      -0.12816307 [kJ/mol]
-  Total FISAPT0-D                  -0.05247747 [mEh]      -0.03293011 [kcal/mol]      -0.13777957 [kJ/mol]
+  Total FISAPT0-D                  -0.05247747 [mEh]      -0.03293011 [kcal/mol]      -0.13777958 [kJ/mol]
   --------------------------------------------------------------------------------------------------------
 
   Warning: Use the `Empirical_Disp.dat` file only with `fsapt.py` from Psi4 v1.7.0 or later.
@@ -1579,7 +1579,7 @@ Total time:
     fEedisp...............................................................................PASSED
     fEtot.................................................................................PASSED
 
-    Psi4 stopped on: Monday, 04 August 2025 07:42PM
-    Psi4 wall time for execution: 0:00:03.19
+    Psi4 stopped on: Tuesday, 05 August 2025 04:55PM
+    Psi4 wall time for execution: 0:00:03.77
 
 *** Psi4 exiting successfully. Buy a developer a beer!
