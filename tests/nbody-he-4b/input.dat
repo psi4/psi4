@@ -21,6 +21,9 @@ set {
     d_convergence 1.e-10
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 if distributed:
     plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type=["nocp", "cp", "vmfc"], return_plan=True)
     plan.compute(client)

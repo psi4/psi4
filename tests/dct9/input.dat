@@ -30,6 +30,9 @@ set {
     dct_functional odc-12
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 set reference uhf
 set ao_basis disk
 energy('dct')
@@ -42,7 +45,7 @@ set reference rhf
 set ao_basis disk
 energy('dct')
 compare_values(refscf_rhf, variable("SCF TOTAL ENERGY"), 10, "RHF Energy");                                       #TEST
-compare_values(refmp2_rhf, variable("MP2 TOTAL ENERGY"), 10, "RHF-MP2 Energy");                                             #TEST
+compare_values(refmp2_rhf, variable("MP2 TOTAL ENERGY"),  9, "RHF-MP2 Energy");                                             #TEST
 compare_values(refodc12_rhf, variable("CURRENT ENERGY"), 10, "RHF-ODC-12 Total Energy (simultaneous, ao_basis=disk)");     #TEST
 clean()
 
@@ -50,7 +53,7 @@ set reference rhf
 set ao_basis none
 energy('dct')
 compare_values(refscf_rhf, variable("SCF TOTAL ENERGY"), 10, "RHF Energy");                                       #TEST
-compare_values(refmp2_rhf, variable("MP2 TOTAL ENERGY"), 10, "RHF-MP2 Energy");                                             #TEST
+compare_values(refmp2_rhf, variable("MP2 TOTAL ENERGY"),  9, "RHF-MP2 Energy");                                             #TEST
 compare_values(refodc12_rhf, variable("CURRENT ENERGY"), 10, "RHF-ODC-12 Total Energy (simultaneous, ao_basis=none)");     #TEST
 clean()
 

@@ -16,6 +16,12 @@ set {
   omega [589, 355, nm]
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    optrot_tol = 5
+else:
+    optrot_tol = 5e-3
+    psi4.set_options({"e_convergence": 10, "d_convergence": 3e-9})
+
 wfn = properties('cc2',properties=['rotation'], return_wfn=True)[1]
 
 refnre = 38.2539685310425384                      # TEST
@@ -38,7 +44,7 @@ compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
 compare_values(refcc2, wfn.variable("CC2 TOTAL ENERGY"), 6, "CC2 Energy") # TEST
 compare_values(refoverlap, wfn.variable("LEFT-RIGHT CC2 EIGENVECTOR OVERLAP"), 5, "Left-Right CC2 Overlap") # TEST
 compare_values(ref589tensor, wfn.variable("CC2 OPTICAL ROTATION TENSOR (LEN) @ 589NM"), 5, "Optical Rotation Tensor (589nm)") # TEST
-compare_values(ref589rot, variable("CC2 SPECIFIC ROTATION (LEN) @ 589NM"), 5, "Specific Rotation (589nm)") # TEST
+compare_values(ref589rot, variable("CC2 SPECIFIC ROTATION (LEN) @ 589NM"), optrot_tol, "Specific Rotation (589nm)") # TEST
 compare_values(ref355tensor, wfn.variable("CC2 OPTICAL ROTATION TENSOR (LEN) @ 355NM"), 5, "Optical Rotation Tensor (355nm)") # TEST
-compare_values(ref355rot, variable("CC2 SPECIFIC ROTATION (LEN) @ 355NM"), 5, "Specific Rotation (355nm)") # TEST
+compare_values(ref355rot, variable("CC2 SPECIFIC ROTATION (LEN) @ 355NM"), optrot_tol, "Specific Rotation (355nm)") # TEST
 

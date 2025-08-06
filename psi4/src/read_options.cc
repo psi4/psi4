@@ -194,9 +194,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
     /*- Use OpenOrbitalOptimizer to carry out SCF?. -*/
-    options.add_bool("OOO_SCF", true); //false);
-    /*- Verbosity of printing for OpenOrbitalOptimizer iterations. 5 is common. -*/
-    options.add_int("OOO_PRINT", 5);
+#ifdef USING_OpenOrbitalOptimizer
+    /*- Orbital optimizer package to use for SCF. If compiled with OpenOrbitalOptimizer support, change this option to use the internal code. -*/
+    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "OOO", "INTERNAL OOO OPENORBITALOPTIMIZER");
+#else
+    /*- Orbital optimizer package to use for SDF . -*/
+    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
+#endif
+    /*- Verbosity of printing for OpenOrbitalOptimizer iterations printing to screen. 5 is common. -*/
+    options.add_int("OOO_PRINT", 1);
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -1800,10 +1806,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
 #ifdef USING_OpenOrbitalOptimizer
         /*- Orbital optimizer package to use for SAD guess. If compiled with OpenOrbitalOptimizer support, change this option to use the internal code. -*/
-        options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "OPENORBITALOPTIMIZER", "INTERNAL OPENORBITALOPTIMIZER");
+        options.add_str("SAD_ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
 #else
         /*- Orbital optimizer package to use for SAD guess. -*/
-        options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
+        options.add_str("SAD_ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
 #endif
 
         /*- SUBSECTION DFT -*/

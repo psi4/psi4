@@ -276,7 +276,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
-    ooo_scf = core.get_global_option('OOO_SCF')
+    ooo_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OOO", "OPENORBITALOPTIMIZER"]
     if ooo_scf:
         # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
         if self.sad_ and self.iteration_ <= 0:
@@ -293,7 +293,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             else:
                 raise ex
         else:
-            self.set_energies("Total Energy", self.compute_E())
+            SCFE = self.compute_E()
+            self.set_energies("Total Energy", SCFE)
+            core.set_variable("SCF ITERATION ENERGY", SCFE)
             return
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?

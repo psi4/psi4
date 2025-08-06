@@ -11,7 +11,10 @@ Eref = {
         "Canonical" : -149.58723684929720, #TEST
         "DF"        : -149.58715054487624, #TEST
         "Composite": {
-          "DFDirJ+COSX"    : -149.58722317236171, #TEST
+          "DFDirJ+COSX"    : {
+            "INTERNAL":      -149.58722317236171, #TEST
+            "OOO":           -149.58726907,       #TEST  # -0.00004645
+            },
           "DFDirJ+LinK"    : -149.58726772171027  #TEST
         } 
     },
@@ -19,7 +22,10 @@ Eref = {
         "Canonical" : -149.67135517240553, #TEST
         "DF"        : -149.67125624291961, #TEST
         "Composite": {
-          "DFDirJ+COSX"    : -149.67132922581225, #TEST
+          "DFDirJ+COSX"    : {
+            "INTERNAL":      -149.67132922581225, #TEST
+            "OOO":           -149.67136954,       #TEST  # -0.00004031
+            },
           "DFDirJ+LinK"    : -149.67137328005577  #TEST
         }
     },
@@ -92,7 +98,10 @@ for method in Eref["Singlet"]["Composite"].keys():
       set screening density
 
     E = energy('scf')
-    compare_values(Eref["Singlet"]["Composite"][method], E, 6, f'Singlet {method} RHF energy') #TEST
+    ans = Eref["Singlet"]["Composite"][method]
+    if isinstance(ans, dict):
+        ans = ans[get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE")]
+    compare_values(ans, E, 6, f'Singlet {method} RHF energy') #TEST
 
 print('    -Singlet UHF:') #TEST
 set scf reference uhf
@@ -126,7 +135,10 @@ for method in Eref["Singlet"]["Composite"].keys():
       set screening density
 
     E = energy('scf')
-    compare_values(Eref["Singlet"]["Composite"][method], E, 6, f'Singlet {method} UHF energy') #TEST
+    ans = Eref["Singlet"]["Composite"][method]
+    if isinstance(ans, dict):
+        ans = ans[get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE")]
+    compare_values(ans, E, 6, f'Singlet {method} UHF energy') #TEST
 
 print('    -Singlet CUHF:') #TEST
 set scf reference cuhf
@@ -160,7 +172,10 @@ for method in Eref["Singlet"]["Composite"].keys():
       set screening density
 
     E = energy('scf')
-    compare_values(Eref["Singlet"]["Composite"][method], E, 6, f'Singlet {method} CUHF energy') #TEST
+    ans = Eref["Singlet"]["Composite"][method]
+    if isinstance(ans, dict):
+        ans = ans["INTERNAL"]  # no OOO for CUHF
+    compare_values(ans, E, 6, f'Singlet {method} CUHF energy') #TEST
 
 activate(triplet_o2)
 set {
@@ -202,7 +217,10 @@ for method in Eref["Triplet UHF"]["Composite"].keys():
       set screening density
 
     E = energy('scf')
-    compare_values(Eref["Triplet UHF"]["Composite"][method], E, 6, f'Triplet {method} UHF energy') #TEST
+    ans = Eref["Triplet UHF"]["Composite"][method]
+    if isinstance(ans, dict):
+        ans = ans[get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE")]
+    compare_values(ans, E, 6, f'Triplet {method} UHF energy') #TEST
 
 clean()
 

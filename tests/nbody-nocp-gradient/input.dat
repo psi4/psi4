@@ -20,6 +20,9 @@ symmetry c1
 units bohr
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 g, wfn = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='nocp', max_nbody=2,
                                       return_total_data=True, return_wfn=True)
 compare(6, wfn.variable("NBODY NUMBER"), "nbody number")  #TEST

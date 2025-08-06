@@ -1051,7 +1051,7 @@ void RHF::setup_potential() {
 
 void RHF::openorbital_scf() {
 #ifndef USING_OpenOrbitalOptimizer
-  throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build!\n");
+  throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build! Reconfigure with `-D ENABLE_OpenOrbitalOptimizer=ON`.\n");
 #else
   std::function<OpenOrbitalOptimizer::FockBuilderReturn<double, double>(const OpenOrbitalOptimizer::DensityMatrix<double, double> &)> fock_builder = [&](const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm) {
     // Grab the orbitals and occupations
@@ -1224,6 +1224,17 @@ void RHF::openorbital_scf() {
     }
   };
 
+  std::function<bool(const std::map<std::string,std::any> &)> callback_convergence_function = [&](const std::map<std::string,std::any> & data) -> bool {
+
+        double e_delta = std::any_cast<double>(data.at("dE"));
+        double d_rms = std::any_cast<double>(data.at("diis_error"));
+        double e_conv = options_.get_double("E_CONVERGENCE");
+        double d_conv = options_.get_double("D_CONVERGENCE");
+
+        bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
+        return converged;
+  };
+
   std::function<void(const std::map<std::string,std::any> &)> callback_function = [&](const std::map<std::string,std::any> & data) {
     std::string reference = options_.get_str("REFERENCE");
     if(options_.get_str("SCF_TYPE").ends_with("DF"))
@@ -1236,14 +1247,15 @@ void RHF::openorbital_scf() {
     std::string step = std::any_cast<std::string>(data.at("step"));
 
     outfile->Printf("   @%s iter %3i: %20.14f   %12.5e   %-11.5e %s\n", reference.c_str(), iiter, E, dE, Dnorm, step.c_str());
+    iteration_ = iiter;
   };
 
   OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);
   scfsolver.maximum_iterations(maxiter); // mod
   scfsolver.verbosity(options_.get_int("OOO_PRINT"));  // mod
-  scfsolver.convergence_threshold(E_tol);  // mod
   scfsolver.maximum_history_length(maxvecs); // mod
   scfsolver.callback_function(callback_function); // mod
+  scfsolver.callback_convergence_function(callback_convergence_function); // mod
   scfsolver.diis_epsilon(start_diis); // mod
   scfsolver.diis_threshold(finish_diis); // mod
   scfsolver.initialize_with_orbitals(orbitals, occupations);
