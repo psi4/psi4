@@ -116,6 +116,7 @@ jobs:
       echo "  - einsums>=1.0.6" >> env_p4env.yaml
       echo "  - range-v3" >> env_p4env.yaml
       echo "  - zlib" >> env_p4env.yaml
+      echo "  - armadillo" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
@@ -145,7 +146,7 @@ jobs:
         -D ENABLE_PLUGIN_TESTING=ON \
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=OFF \
-        -D ENABLE_gauxc=ON \
+        -D ENABLE_gauxc=OFF \
         -D ENABLE_OpenOrbitalOptimizer=ON \
         -D FORCE_PEDANTIC=ON \
         ${CMARGS} \

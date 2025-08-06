@@ -84,7 +84,9 @@ class SADGuess {
     void form_C();
 
     //void set_jk(std::unique_ptr<JK> & jkin) { jk = jkin; }
+#ifdef USING_OpenOrbitalOptimizer
     std::pair<double, std::vector<arma::mat>> fock_builder(const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm, const std::vector<std::vector<arma::uvec>> & lm_indices, const std::vector<arma::mat> & X, const arma::mat & S, const arma::mat & coreH);
+#endif
 
    public:
     SADGuess(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, Options& options);
