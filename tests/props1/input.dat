@@ -21,6 +21,7 @@ lambdas = [pert, -pert, 2.0*pert, -2.0*pert]
 set {
     basis        sto-3g
     e_convergence   10
+    d_convergence   5e-9
     scf_type pk
 }
 

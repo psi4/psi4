@@ -49,5 +49,9 @@ L=2   1   1.00
 set d_convergence 1e-10
 set e_convergence 1e-10
 set scf_type pk
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 ene, wfn = energy('scf', return_wfn=True)
 compare_values(-128.48877555174084, ene, 8, "scf energy in general basis")  #TEST

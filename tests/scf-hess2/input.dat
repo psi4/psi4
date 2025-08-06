@@ -33,6 +33,9 @@ set {
   reference uhf
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 psi4_hess, wfn = hessian('hf', return_wfn=True)
 
 compare_arrays(psi3_hess, psi4_hess, 1E-7, "STO-3G Hessian") #TEST

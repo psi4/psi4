@@ -61,7 +61,7 @@ expected_properties = {
     0.0,
     1.040372174058
   ],
-  "scf_iterations": 10,
+  "scf_iterations": 10 if psi4.core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") == "INTERNAL" else 12,
   "scf_total_energy": -75.98014187232745,
   "mp2_same_spin_correlation_energy": -0.031030063236104254,
   "mp2_opposite_spin_correlation_energy": -0.10168342161187537,

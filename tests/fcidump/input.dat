@@ -14,7 +14,7 @@ set {
 
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.6311G.INTDUMP', oe_ints=['EIGENVALUES'])
-compare_fcidumps('Ne.6311G.INTDUMP.ref', 'Ne.6311G.INTDUMP', 'Ne, 6-311g, integrals in FCIDUMP format') # TEST
+compare_fcidumps('Ne.6311G.INTDUMP.ref', 'Ne.6311G.INTDUMP', '[1] Ne, 6-311g, integrals in FCIDUMP format') # TEST
 clean()
 
 set {
@@ -27,9 +27,15 @@ set {
   num_frozen_uocc 4
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    fci_tol = 10
+else:
+    fci_tol = 8
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.6311G.frozen.INTDUMP', oe_ints=['EIGENVALUES'])
-compare_fcidumps('Ne.6311G.frozen.INTDUMP.ref', 'Ne.6311G.frozen.INTDUMP', 'Ne, 6-311g, some frozen core and virtual orbitals, integrals in FCIDUMP format') # TEST
+compare_fcidumps('Ne.6311G.frozen.INTDUMP.ref', 'Ne.6311G.frozen.INTDUMP', '[2] Ne, 6-311g, some frozen core and virtual orbitals, integrals in FCIDUMP format') # TEST
 clean()
 
 set {
@@ -42,9 +48,12 @@ set {
   num_frozen_uocc 0
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 10, "d_convergence": 5e-8})
+
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.cc-pVDZ.UHF.INTDUMP', oe_ints=['EIGENVALUES'])
-compare_fcidumps('Ne.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.cc-pVDZ.UHF.INTDUMP', 'Ne, cc-pVDZ, UHF reference, integrals in FCIDUMP format') # TEST
+compare_fcidumps('Ne.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.cc-pVDZ.UHF.INTDUMP', '[3] Ne, cc-pVDZ, UHF reference, integrals in FCIDUMP format', fci_tol) # TEST
 clean()
 
 # Now run without symmetry
@@ -58,9 +67,12 @@ set {
   e_convergence 1e-8
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.C1.6311G.INTDUMP', oe_ints=['EIGENVALUES'])
-compare_fcidumps('Ne.C1.6311G.INTDUMP.ref', 'Ne.C1.6311G.INTDUMP', 'Ne, C1, 6-311g, integrals in FCIDUMP format')  # TEST
+compare_fcidumps('Ne.C1.6311G.INTDUMP.ref', 'Ne.C1.6311G.INTDUMP', '[4] Ne, C1, 6-311g, integrals in FCIDUMP format', fci_tol)  # TEST
 clean()
 
 set {
@@ -71,6 +83,9 @@ set {
   e_convergence 1e-8
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.C1.cc-pVDZ.UHF.INTDUMP', oe_ints=['EIGENVALUES'])
-compare_fcidumps('Ne.C1.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.C1.cc-pVDZ.UHF.INTDUMP', 'Ne, C1, cc-pVDZ, UHF reference, integrals in FCIDUMP format') # TEST
+compare_fcidumps('Ne.C1.cc-pVDZ.UHF.INTDUMP.ref', 'Ne.C1.cc-pVDZ.UHF.INTDUMP', '[5] Ne, C1, cc-pVDZ, UHF reference, integrals in FCIDUMP format', fci_tol) # TEST

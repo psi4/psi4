@@ -17,6 +17,9 @@ set {
    qc_module ccenergy
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)
 CFOUR_GRAD = psi4.Matrix.from_list([                                      #TEST
              [ 0.0000000000, -0.0655653749, -0.0499834310],  # 
@@ -38,6 +41,9 @@ set {
    r_convergence 14
    d_convergence 14
 }
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)
 CFOUR_GRAD = psi4.Matrix.from_list([                                      #TEST

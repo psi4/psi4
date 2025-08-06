@@ -19,6 +19,9 @@ set {
   qc_module occ
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 e, wfn = frequencies('mp2', dertype=1, return_wfn=True)
 fd_freqs = wfn.frequencies().to_array() # TEST
 compare_arrays([1635.3, 3933.1, 4071.9], fd_freqs, 1, # TEST

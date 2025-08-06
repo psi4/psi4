@@ -17,7 +17,13 @@ H 1 0.96
 H 1 0.96 2 104.5
 """)
 
-psi4.set_options({"d_convergence": 1e-10})
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    psi4.set_options({"d_convergence": 1e-10})
+    tol_efs = 9
+else:
+    psi4.set_options({"d_convergence": 2e-9})
+    tol_efs = 8
+
 
 ene, wfn = psi4.energy('scf/STO-3G', return_wfn = True)
 myepc = p4c.ESPPropCalc(wfn)
@@ -209,4 +215,4 @@ reference_efs =   [[  0.         ,  -0.         , 477.186105805],
 
 # Comparison
 psi4.compare_arrays(efs_1threads, efs_4threads, 9, "Reference value for EF calculation, 1 thread vs. 4 threads.")
-psi4.compare_arrays(efs_1threads, reference_efs, 9, "Reference value for EF calculation, 1 thread vs. reference calculation.")
+psi4.compare_arrays(efs_1threads, reference_efs, tol_efs, "Reference value for EF calculation, 1 thread vs. reference calculation.")

@@ -33,6 +33,9 @@ set {
    d_convergence 11
 }
 
+if get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    set_options({"d_convergence": 8})
+
 e_cp = energy('mp2', bsse_type='cp')
 
 compare_values(Enuc, formic_dim.nuclear_repulsion_energy(), 7, "Nuclear Repulsion Energy") #TEST

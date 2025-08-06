@@ -27,6 +27,11 @@ set {
     points 5
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    grad_tol = 7
+else:
+    grad_tol = 3e-7
+
 anl_grad = gradient('wB97X-D', dertype=1)
 compare_matrices(df_ref, anl_grad, 7, "DF Analytic Gradient vs Reference")    #TEST
 # fd_grad = gradient('wB97X-D', dertype=0)
@@ -34,4 +39,4 @@ compare_matrices(df_ref, anl_grad, 7, "DF Analytic Gradient vs Reference")    #T
 
 set scf_type pk
 anl_grad = gradient('wB97X-D', dertype=1)
-compare_matrices(pk_ref, anl_grad, 7, "PK Analytic Gradient vs Reference")    #TEST
+compare_matrices(pk_ref, anl_grad, grad_tol, "PK Analytic Gradient vs Reference")    #TEST

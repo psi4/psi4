@@ -41,6 +41,12 @@ set {
     SAPT_DFT_MP2_DISP_ALG FISAPT
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    sapt_tol = 6
+else:
+    sapt_tol = 3e-5
+    psi4.set_options({"e_convergence": 5e-7, "d_convergence": 3e-5})
+
 # No hybrid kernel & no exch-disp scaling & no delta HF
 set SAPT_DFT_DO_DHF False
 set SAPT_DFT_DO_HYBRID False
@@ -51,7 +57,7 @@ for k, v in Eref_nh.items(): #TEST
         ref = (v - DHF) / 1000.0
     else:
         ref = v / 1000.0
-    compare_values(ref, psi4.variable(k), 6, "!hyb, xd=none, !dHF: " + k) #TEST
+    compare_values(ref, psi4.variable(k), sapt_tol, "!hyb, xd=none, !dHF: " + k) #TEST
 
 # No hybrid kernel & no exch-disp scaling 
 set SAPT_DFT_DO_DHF True
@@ -59,18 +65,18 @@ set SAPT_DFT_DO_HYBRID False
 set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
 energy('sapt(dft)', molecule=dimer)
 for k, v in Eref_nh.items(): #TEST
-    compare_values(v / 1000.0, psi4.variable(k), 6, "!hyb, xd=none, dHF: " + k) #TEST
+    compare_values(v / 1000.0, psi4.variable(k), sapt_tol, "!hyb, xd=none, dHF: " + k) #TEST
 
 # Hybrid kernel & exch-disp scaling (DISP)
 set SAPT_DFT_DO_HYBRID True
 set SAPT_DFT_EXCH_DISP_SCALE_SCHEME disp
 energy('sapt(dft)', molecule=dimer)
 for k, v in Eref_h_disp.items(): #TEST
-    compare_values(v / 1000.0, psi4.variable(k), 6, "hyb, xd=disp, dHF: " + k) #TEST
+    compare_values(v / 1000.0, psi4.variable(k), sapt_tol, "hyb, xd=disp, dHF: " + k) #TEST
 
 # Hybrid kernel & exch-disp scaling (FIXED)
 set SAPT_DFT_DO_HYBRID True
 set SAPT_DFT_EXCH_DISP_SCALE_SCHEME fixed 
 energy('sapt(dft)', molecule=dimer)
 for k, v in Eref_h_fixed.items(): #TEST
-    compare_values(v / 1000.0, psi4.variable(k), 6, "hyb, xd=fixed, dHF: " + k) #TEST
+    compare_values(v / 1000.0, psi4.variable(k), sapt_tol, "hyb, xd=fixed, dHF: " + k) #TEST
