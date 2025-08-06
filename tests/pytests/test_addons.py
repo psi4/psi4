@@ -1450,7 +1450,7 @@ def test_dftd4():
         'a2': 3.637,
         's6': 1.000,
         's9': 0.000,
-        "d4_variant": "d4m",
+        "d4_variant": "d4bj2b",
         "disp_energy": -0.0017167422058899998,
     },
 ])
