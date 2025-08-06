@@ -99,6 +99,9 @@ D 2 1.00
 ****
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 10, "d_convergence": 1e-9})
+
 wfn = properties('eom-ccsd', properties=['dipole'], return_wfn=True)[1]
 
 

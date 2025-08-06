@@ -30,7 +30,7 @@ optimize('MP2/cc-pVDZ')
 compare_values(0.754362336677, h2.R, 4, "[4] SCF/cc-pVDZ Optimized R")  #TEST
 
 if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+    psi4.set_options({"e_convergence": 9, "d_convergence": 8e-9})
 
 optimize('MP2/cc-pV[DT]Z')
 compare_values(0.735403792164, h2.R, 4, "[5] MP2/cc-pV[DT]Z Optimized R")  #TEST

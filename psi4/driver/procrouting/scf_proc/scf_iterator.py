@@ -278,25 +278,37 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
     ooo_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OOO", "OPENORBITALOPTIMIZER"]
     if ooo_scf:
-        # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
-        if self.sad_ and self.iteration_ <= 0:
-            self.form_G()
-            self.form_initial_F()
-            self.form_initial_C()
-            self.reset_occupation()
-            self.find_occupation()
-        try:
-            self.openorbital_scf()
-        except RuntimeError as ex:
-            if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
-                core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
-            else:
-                raise ex
+        if reference in ["ROHF"] or soscf_enabled or self.MOM_excited_ or frac_enabled:
+            core.print_out(f"    Note: OpenOrbitalOptimizer not compatible with at least one of the following. Falling back to orbital_optimizer_package=internal\n")
+            core.print_out(f"          {reference=}, soscf={soscf_enabled}, mom={self.MOM_excited_}, frac={frac_enabled}\n")
         else:
-            SCFE = self.compute_E()
-            self.set_energies("Total Energy", SCFE)
-            core.set_variable("SCF ITERATION ENERGY", SCFE)
-            return
+            # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
+            if self.sad_ and self.iteration_ <= 0:
+                self.form_G()
+                self.form_initial_F()
+                self.form_initial_C()
+                self.reset_occupation()
+                self.find_occupation()
+                ene_sad = self.compute_E()
+                core.print_out(
+                    "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
+                    ("DF-" if is_dfjk else "", reference, "SAD", ene_sad, ene_sad, 0.0, ""))
+            try:
+                self.openorbital_scf()
+            except RuntimeError as ex:
+                if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
+                    core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
+                else:
+                    raise ex
+            else:
+                SCFE = self.compute_E()
+                self.set_energies("Total Energy", SCFE)
+                core.set_variable("SCF ITERATION ENERGY", SCFE)
+
+                self.form_G()
+                self.form_F()
+                self.form_C()
+                return
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = False

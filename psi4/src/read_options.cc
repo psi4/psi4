@@ -194,15 +194,21 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
     /*- Use OpenOrbitalOptimizer to carry out SCF?. -*/
+//    options.add_bool("OOO_SCF", true); //false);
 #ifdef USING_OpenOrbitalOptimizer
     /*- Orbital optimizer package to use for SCF. If compiled with OpenOrbitalOptimizer support, change this option to use the internal code. -*/
+    //options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
     options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "OOO", "INTERNAL OOO OPENORBITALOPTIMIZER");
 #else
     /*- Orbital optimizer package to use for SDF . -*/
     options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
 #endif
-    /*- Verbosity of printing for OpenOrbitalOptimizer iterations printing to screen. 5 is common. -*/
+    /*- Verbosity of printing for OpenOrbitalOptimizer iterations printing to screen.
+    0 prints nothing. 1 prints one line per iter (note that RHF rms(density) printed
+    differs by half from convergence criterion. 5 is common and adds occupancy printing. -*/
     options.add_int("OOO_PRINT", 1);
+    /*- For |scf__orbital_optimizer_package| = `OOO`, the DIIS restart criterion (Chupin et al, 2021) -*/
+    options.add_double("OOO_DIIS_RESTART_FACTOR", 1.0e-4);
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");

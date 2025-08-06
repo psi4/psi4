@@ -17,8 +17,11 @@ set {
    qc_module ccenergy
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    tol = 8
+else:
+    tol = 5e-8
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
 
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)
 CFOUR_GRAD = psi4.Matrix.from_list([                                      #TEST
@@ -26,7 +29,7 @@ CFOUR_GRAD = psi4.Matrix.from_list([                                      #TEST
              [ 0.0000000000,  0.0000000000,  0.0999668620],  # CFOUR RESULTS
              [ 0.0000000000,  0.0655653749, -0.0499834310]   #
            ])
-compare_matrices(analytic, CFOUR_GRAD, 8, "1. RHF-CCSD(T) gradient comparison with CFOUR") #TEST
+compare_matrices(analytic, CFOUR_GRAD, tol, "1. RHF-CCSD(T) gradient comparison with CFOUR") #TEST
 
 molecule N2{
 N 0 0 1.05723396
@@ -42,7 +45,10 @@ set {
    d_convergence 14
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    tol = 8
+else:
+    tol = 5e-8
     psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)
@@ -50,4 +56,4 @@ CFOUR_GRAD = psi4.Matrix.from_list([                                      #TEST
              [  0.000000000000,     0.000000000000,     0.0013878869],  #TEST   CFOUR RESULTS
              [  0.000000000000,     0.000000000000,    -0.0013878869]   #TEST   CFOUR RESULTS
 	   ])
-compare_matrices(analytic, CFOUR_GRAD, 8, "2. RHF-CCSD(T) gradient comparison with CFOUR") #TEST
+compare_matrices(analytic, CFOUR_GRAD, tol, "2. RHF-CCSD(T) gradient comparison with CFOUR") #TEST

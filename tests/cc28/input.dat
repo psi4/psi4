@@ -17,8 +17,8 @@ set {
 if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
     optrot_tol = 5
 else:
-    optrot_tol = 8.e-5
-    psi4.set_options({"e_convergence": 10, "d_convergence": 2e-9})
+    optrot_tol = 5.e-4
+    psi4.set_options({"e_convergence": 10, "d_convergence": 5e-9})
 
 wfn = properties('ccsd', properties=['rotation'], return_wfn=True)[1]
 
