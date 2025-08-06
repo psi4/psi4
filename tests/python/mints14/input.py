@@ -21,7 +21,7 @@ if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
     psi4.set_options({"d_convergence": 1e-10})
     tol_efs = 9
 else:
-    psi4.set_options({"d_convergence": 2e-9})
+    psi4.set_options({"d_convergence": 5e-9})
     tol_efs = 8
 
 

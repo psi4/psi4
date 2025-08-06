@@ -1237,7 +1237,9 @@ def optimize(name, **kwargs):
         # Use orbitals from previous iteration as a guess
         #   set within loop so that can be influenced by fns to optimize (e.g., cbs)
         if (n > 1) and (not core.get_option('SCF', 'GUESS_PERSIST')):
-            core.set_local_option('SCF', 'GUESS', 'READ')
+            #core.set_local_option('SCF', 'GUESS', 'READ')
+            pass
+        core.set_local_option('SCF', 'GUESS', 'SAD')
 
         # We'll currently ignore the possibility that the gradient isn't needed
         opt_calcs = opt_object.calculations_needed() # tuple of strings ('energy', 'gradient', etc)

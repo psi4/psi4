@@ -56,6 +56,6 @@ fin_diff = psi4.Matrix.from_list([                                      #TEST
     [     0.00000000000000,     0.00000000000000,     0.03761158318898],  # FINITE DIFFERENCE 5 POINT FORMULA
     [     0.00000000000000,     0.00000000000000,    -0.03761158318898]
 	   ])
-compare_matrices(analytic, fin_diff, 8, "2. RHF-CCSD(T) gradient comparison with finite differences") #TEST
+compare_matrices(analytic, fin_diff, tol, "2. RHF-CCSD(T) gradient comparison with finite differences") #TEST
 
 

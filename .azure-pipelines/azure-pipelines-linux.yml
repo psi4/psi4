@@ -146,6 +146,7 @@ jobs:
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=OFF \
         -D ENABLE_gauxc=ON \
+        -D ENABLE_OpenOrbitalOptimizer=ON \
         -D FORCE_PEDANTIC=ON \
         ${CMARGS} \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install

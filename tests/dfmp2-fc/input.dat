@@ -18,7 +18,7 @@ d_convergence 1.0e-10
 }
 
 if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+    psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
 
 ref_0 = 0.012274322894882062                                                       #TEST
 ref_1 = 0.012873836410108197                                                       #TEST

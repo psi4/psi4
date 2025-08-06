@@ -95,6 +95,9 @@ compare_matrices(ref_uhf, analytic, 5, "UHF SCF reference vs. analytic gradient 
 set findif points 3
 findif = gradient('scf', dertype=0)
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 compare_matrices(analytic, findif, 5, "UHF SCF finite-diff (3-pt) vs. analytic gradient to 10^-5") #TEST
 
 set findif points 5

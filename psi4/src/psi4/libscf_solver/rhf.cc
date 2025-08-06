@@ -1197,7 +1197,6 @@ void RHF::openorbital_scf() {
   for(int h=0; h<nirrep_; h++)
     block_descriptions[h] = ct.gamma(h).symbol();
 
-  double E_tol = options_.get_double("E_CONVERGENCE");
   double start_diis = options_.get_double("SCF_INITIAL_START_DIIS_TRANSITION");
   double finish_diis = options_.get_double("SCF_INITIAL_FINISH_DIIS_TRANSITION");
   int maxvecs = options_.get_double("DIIS_MAX_VECS");
@@ -1226,12 +1225,14 @@ void RHF::openorbital_scf() {
 
   std::function<bool(const std::map<std::string,std::any> &)> callback_convergence_function = [&](const std::map<std::string,std::any> & data) -> bool {
 
-        double e_delta = std::any_cast<double>(data.at("dE"));
-        double d_rms = std::any_cast<double>(data.at("diis_error"));
         double e_conv = options_.get_double("E_CONVERGENCE");
         double d_conv = options_.get_double("D_CONVERGENCE");
+        double e_delta = std::any_cast<double>(data.at("dE"));
+        double d_rms = 0.5 * std::any_cast<double>(data.at("diis_error"));
+        // scale density norm to match internal algorithm
 
         bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
+        printf("%d = |%e| < %e && %e < %e\n", converged, e_delta, e_conv, d_rms, d_conv);
         return converged;
   };
 
@@ -1240,14 +1241,14 @@ void RHF::openorbital_scf() {
     if(options_.get_str("SCF_TYPE").ends_with("DF"))
       reference = "DF-" + reference;
 
-    int iiter = std::any_cast<size_t>(data.at("iter"));
+    iteration_ = std::any_cast<size_t>(data.at("iter"));
     double E = std::any_cast<double>(data.at("E"));
     double dE = std::any_cast<double>(data.at("dE"));
-    double Dnorm = std::any_cast<double>(data.at("diis_error"));
+    double Dnorm = 0.5 * std::any_cast<double>(data.at("diis_error"));
+    // scale density norm to match internal algorithm
     std::string step = std::any_cast<std::string>(data.at("step"));
 
-    outfile->Printf("   @%s iter %3i: %20.14f   %12.5e   %-11.5e %s\n", reference.c_str(), iiter, E, dE, Dnorm, step.c_str());
-    iteration_ = iiter;
+    outfile->Printf("   @%s iter %3i: %20.14f   %12.5e   %-11.5e %s\n", reference.c_str(), iteration_, E, dE, Dnorm, step.c_str());
   };
 
   OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);
@@ -1255,9 +1256,10 @@ void RHF::openorbital_scf() {
   scfsolver.verbosity(options_.get_int("OOO_PRINT"));  // mod
   scfsolver.maximum_history_length(maxvecs); // mod
   scfsolver.callback_function(callback_function); // mod
-  scfsolver.callback_convergence_function(callback_convergence_function); // mod
+  scfsolver.callback_convergence_function(callback_convergence_function);  // replaces scfsolver.convergence_threshold()
   scfsolver.diis_epsilon(start_diis); // mod
   scfsolver.diis_threshold(finish_diis); // mod
+  scfsolver.diis_restart_factor(options_.get_double("OOO_DIIS_RESTART_FACTOR"));
   scfsolver.initialize_with_orbitals(orbitals, occupations);
   scfsolver.run();
   if(fail_on_maxiter and not scfsolver.converged())
@@ -1280,6 +1282,7 @@ void RHF::openorbital_scf() {
     double diff(arma::norm(occupations[h](nonzero)-2*arma::ones<arma::vec>(nonzero.n_elem),2));
     if(diff!=0.0) {
       fprintf(stderr,"Non-integer occupations in symmetry block %i\n",h);
+      occupations[h].print("occs");  // stdout
     }
     nalphapi_[h] = (int) nonzero.n_elem;
   }
