@@ -16,7 +16,7 @@ h2o = psi4.geometry("""
 psi4.set_options({'freeze_core': 'false'})
 
 if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-9})
+    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
 
 psi4.basis_helper("""
 # Sadlej-pVTZ

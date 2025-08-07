@@ -30,6 +30,9 @@ set {
     dft_radial_points 300
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 # Calculate the total energy and gradient on the wavefunction in the
 # presence of the external potential charges, embedded analytically.
 e_analytic, wfn = energy('scf', molecule=water, return_wfn=True,
