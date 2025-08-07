@@ -90,6 +90,10 @@ void DLPNO::common_init() {
         algorithm_ = DLPNOMethod::CCSD;
     } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD(T)") {
         algorithm_ = DLPNOMethod::CCSD_T;
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSDT") {
+        algorithm_ = DLPNOMethod::CCSDT;
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSDT(Q)") {
+        algorithm_ = DLPNOMethod::CCSDT_Q;
     } else {
         throw PSIEXCEPTION("Requested DLPNO algorithm has NOT been implemented yet");
     }
@@ -168,6 +172,20 @@ void DLPNO::common_init() {
             if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-6;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
         }
+
+        // Tighter cutoffs for post-CCSD(T) methods, essentially very tight with T_CUT_PAIRS 1.0e-8
+        if (algorithm_ == DLPNOMethod::CCSDT || algorithm_ == DLPNOMethod::CCSDT_Q) {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
+            if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.999;
+            if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.997;
+            if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.9999;
+            if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.999;
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
+            if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-8;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
+        }
+
         if (!T_CUT_PRE_changed) T_CUT_PRE_ = std::min(T_CUT_PRE_, 0.01 * T_CUT_PAIRS_);
     }
 

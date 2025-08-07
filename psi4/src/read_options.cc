@@ -2614,10 +2614,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- SUBSECTION Expert Options -*/
 
         /*- Which DLPNO Algorithm to run (not set by user) !expert -*/
-        options.add_str("DLPNO_ALGORITHM", "CCSD(T)", "MP2 CCSD CCSD(T)");
+        options.add_str("DLPNO_ALGORITHM", "CCSD(T)", "MP2 CCSD CCSD(T) CCSDT CCSDT(Q)");
         /*- Use T0 approximation for DLPNO-CCSD(T)? (not set explicitly), 
         triggered by indicating 'dlpno-ccsd(t0)' rather than 'dlpno-ccsd(t)' !expert -*/
         options.add_bool("T0_APPROXIMATION", false);
+        /*- Use Q0 approximation for DLPNO-CCSDT(Q)? (not set explicitly), 
+        triggered by indicating 'dlpno-ccsdt(q0)' rather than 'dlpno-ccsdt(q)' !expert -*/
+        options.add_bool("Q0_ONLY", false);
         /*- Occupation number threshold for removing PNOs !expert -*/
         options.add_double("T_CUT_PNO", 1e-8);
         /*- DOI threshold for including PAO (u) in domain of LMO (i) !expert -*/
@@ -2682,7 +2685,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- LMO/PAO threshold for the prescreening portion of the (T) algorithm !expert -*/
         options.add_double("T_CUT_DO_TRIPLES_PRE", 2e-2);
         /*- Triples energy threshold for a triplet (ijk) to not be further considered !expert -*/
-        options.add_double("T_CUT_TRIPLES_WEAK", 1e-7);
+        options.add_double("T_CUT_TRIPLES_WEAK", 1e-8);
         /*- Local density fitting tolerance for the (T) algorithm !expert -*/
         options.add_double("T_CUT_MKN_TRIPLES", 1e-2);
         /*- LMO/PAO threshold for the (T) algorithm !expert -*/
@@ -2694,6 +2697,45 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Minimum number of TNOs required in each triplet !expert -*/
         options.add_int("MIN_TNOS_PER_TRIPLET", 9);
 
+        /*- SUBSECTION DLPNO-CCSDT Specific Options -*/
+
+        /*- Occupation number threshold for removing TNOs with full triples !expert -*/
+        options.add_double("T_CUT_TNO_FULL", 1.0e-7);
+
+        /*- SUBSECTION DLPNO-CCSDT(Q) Specific Options -*/
+        
+        /*- Occupation number threshold for removing QNOs !expert -*/
+        options.add_double("T_CUT_QNO", 3.33e-7);
+        /*- Maximum number of weak pairs in (ij, jk, ik, il, jl, kl) to consider when forming quadruplet ijkl !expert -*/
+        options.add_bool("QUADS_MAX_WEAK_PAIRS", 3);
+        /*- T_CUT_QNO scaling for strong quadruplets in the iterative (Q) algorithm !expert -*/
+        options.add_double("T_CUT_QNO_STRONG_SCALE", 2.0);
+        /*- T_CUT_QNO scaling for weak quadruplets in the iterative (Q) algorithm !expert -*/
+        options.add_double("T_CUT_QNO_WEAK_SCALE", 10.0);
+        /*- Occupation number threshold used in the quadruples prescreening step !expert -*/
+        options.add_double("T_CUT_QNO_PRE", 1.0e-6);
+        /*- Local density fitting tolerance for the prescreening portion of the (Q) algorithm !expert -*/
+        options.add_double("T_CUT_MKN_QUADS_PRE", 1.0e-1);
+        /*- LMO/PAO threshold for the prescreening portion of the (T) algorithm !expert -*/
+        options.add_double("T_CUT_DO_QUADS_PRE", 2.0e-2);
+        /*- Quadruples energy threshold for a quadruplet (ijkl) to not be further considered !expert -*/
+        options.add_double("T_CUT_QUADS_WEAK", 1.0e-8);
+        /*- Local density fitting tolerance for the (Q) algorithm !expert -*/
+        options.add_double("T_CUT_MKN_QUADS", 1.0e-2);
+        /*- LMO/PAO threshold for the (Q) algorithm !expert -*/
+        options.add_double("T_CUT_DO_QUADS", 1.0e-2);
+        /*- Fock matrix threshold for treating amplitudes as coupled during local (Q) iterations !expert -*/
+        options.add_double("F_CUT_Q", 1.0e-3);
+        /*- Energy difference in which to stop considering quadruples in iterative (Q) !expert -*/
+        options.add_double("T_CUT_ITER_Q", 1.0e-4);
+        /*- Minimum number of QNOs required in each quadruplet !expert -*/
+        options.add_int("MIN_QNOS", 4);
+
+        /*- SUBSECTION DLPNO-CCSDTQ Specific Options -*/
+
+        /*- Occupation number threshold for removing QNOs with full quadruples !expert -*/
+        options.add_double("T_CUT_QNO_FULL", 3.33e-6);
+
         /*- SUBSECTION Memory Control Options -*/
 
         /*- Use low memory PNO overlap algorithm? !expert -*/
@@ -2704,7 +2746,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("WRITE_QAB_PNO", false);
         /*- Write triples amplitudes to disk? !expert -*/
         options.add_bool("WRITE_TRIPLES", false);
-
+        /*- Write expensive DLPNO-CCSDT overlap integrals to disk? !expert -*/
+        options.add_bool("DLPNO_CCSDT_DISK_OVERLAP", true);
+        /*- Write expensive DLPNO-CCSDT TNO integrals to disk? !expert -*/
+        options.add_bool("DLPNO_CCSDT_DISK_INTS", true);
 
         /*- SUBSECTION DOI Grid Options -*/
 

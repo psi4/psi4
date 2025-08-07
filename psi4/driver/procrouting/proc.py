@@ -4504,6 +4504,103 @@ def run_dlpnoccsd_t(name, **kwargs):
     core.tstop()
     return dlpnoccsd_t_wfn
 
+def run_dlpnoccsdt(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DLPNO-CCSDT calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['DF_BASIS_CC'],
+        ['SCF_TYPE']
+    )
+
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
+    elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
+        raise ValidationError("""  DLPNO-CCSDT does not make use of molecular symmetry: """
+                              """reference wavefunction must be C1.\n""")
+    
+    if core.get_global_option('REFERENCE') != "RHF":
+        raise ValidationError("DLPNO-CCSDT is not available for %s references.",
+                              core.get_global_option('REFERENCE'))
+    
+    core.tstart()
+    core.print_out('\n')
+    p4util.banner('DLPNO-CCSDT')
+    core.print_out('\n')
+
+    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                    core.get_option("DLPNO", "DF_BASIS_CC"),
+                                    "RIFIT", core.get_global_option('BASIS'))
+    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
+
+    core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSDT")
+
+    dlpnoccsdt_wfn = core.dlpno(ref_wfn)
+    dlpnoccsdt_wfn.compute_energy()
+
+    dlpnoccsdt_wfn.set_variable('CURRENT ENERGY', dlpnoccsdt_wfn.variable('CCSDT TOTAL ENERGY'))
+    dlpnoccsdt_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsdt_wfn.variable('CCSDT CORRELATION ENERGY'))
+
+    # Shove variables into global space
+    for k, v in dlpnoccsdt_wfn.variables().items():
+        core.set_variable(k, v)
+
+    optstash.restore()
+    core.tstop()
+    return dlpnoccsdt_wfn
+
+def run_dlpnoccsdt_q(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DLPNO-CCSDT(Q) calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['DF_BASIS_CC'],
+        ['SCF_TYPE']
+    )
+
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
+    elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
+        raise ValidationError("""  DLPNO-CCSDT(Q) does not make use of molecular symmetry: """
+                              """reference wavefunction must be C1.\n""")
+    
+    if core.get_global_option('REFERENCE') != "RHF":
+        raise ValidationError("DLPNO-CCSDT(Q) is not available for %s references.",
+                              core.get_global_option('REFERENCE'))
+    
+    core.tstart()
+    core.print_out('\n')
+    p4util.banner('DLPNO-CCSDT(Q)')
+    core.print_out('\n')
+
+    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                    core.get_option("DLPNO", "DF_BASIS_CC"),
+                                    "RIFIT", core.get_global_option('BASIS'))
+    ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
+
+    core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSDT(Q)")
+    core.set_local_option("DLPNO", "Q0_ONLY", True) if name == "dlpno-ccsdt(q0)" else core.set_local_option("DLPNO", "Q0_ONLY", False)
+
+    dlpnoccsdt_q_wfn = core.dlpno(ref_wfn)
+    dlpnoccsdt_q_wfn.compute_energy()
+
+    dlpnoccsdt_q_wfn.set_variable('CURRENT ENERGY', dlpnoccsdt_q_wfn.variable('CCSDT(Q) TOTAL ENERGY'))
+    dlpnoccsdt_q_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsdt_q_wfn.variable('CCSDT(Q) CORRELATION ENERGY'))
+
+    # Shove variables into global space
+    for k, v in dlpnoccsdt_q_wfn.variables().items():
+        core.set_variable(k, v)
+
+    optstash.restore()
+    core.tstop()
+    return dlpnoccsdt_q_wfn
+
 def run_mp2f12(name, **kwargs):
     r"""Function encoding sequence of PSI module calls
     for a MP2-F12/3C(FIX) calculation.

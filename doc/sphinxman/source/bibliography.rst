@@ -822,3 +822,18 @@ Bibliography
    A. Jiang, Z. Glick, D. Poole, J. M. Turney, C. D. Sherrill, and H. F. Schaefer III,
    *J. Chem. Phys.* **161**, 082502 (2024).
    https://doi.org/10.1063/5.0219963
+
+.. [Jiang:2025:2386]
+   A. Jiang, H. F. Schaefer III, and J. M. Turney,
+   *J. Chem. Theory Comput.* **21**, 2386-2401 (2025).
+   https://doi.org/10.1021/acs.jctc.4c01716
+
+.. [Jiang:2025:144102]
+   A. Jiang, H. F. Schaefer III, and J. M. Turney,
+   *J. Chem. Phys.* **162**, 144102 (2025).
+   https://doi.org/10.1063/5.0257672
+
+.. [Bomble:2005:054101]
+   Y. J. Bomble, J. F. Stanton, M. Kallay, and J. Gauss,
+   *J. Chem. Phys.* **123**, 054101 (2005).
+   https://doi.org/10.1063/1.1950567

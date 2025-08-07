@@ -3,6 +3,7 @@ list(APPEND sources
   mp2.cc
   ccsd.cc
   triples.cc
+  quads.cc
   wrapper.cc
   sparse.cc
   )
