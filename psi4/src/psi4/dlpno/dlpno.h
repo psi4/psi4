@@ -576,6 +576,8 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
     bool disk_overlap_;
     // Write expensive integrals (q_{ijk}| m_{ijk} a_{ijk}) and (q_{ijk} | a_{ijk} b_{ijk}) to disk?
     bool disk_ints_;
+    // Damping ratio (how much of the original triples amplitude to keep)
+    double damping_ratio_;
 
     // Singles Amplitudes
     std::vector<Tensor<double, 2>> T_n_ijk_;
@@ -595,6 +597,11 @@ class DLPNOCCSDT : public DLPNOCCSD_T {
     double E_T0_loose_;
     // (T) energy using looser TNOs
     double E_T_loose_;
+    
+    /// Encapsulates the reading in of (Q_{ijk}|m_{ijk} a_{ijk}) integrals (regardless of core or disk)
+    inline Tensor<double, 3> QIA_TNO(const int ijk);
+    /// Encapsulates the reading in of (Q_{ijk}|a_{ijk} b_{ijk}) integrals (regardless of core or disk)
+    inline Tensor<double, 3> QAB_TNO(const int ijk);
 
     /// Helper function for transforming amplitudes from one TNO space to another
     Tensor<double, 3> matmul_3d_einsums(const Tensor<double, 3> &A, const SharedMatrix &X, int dim_old, int dim_new);

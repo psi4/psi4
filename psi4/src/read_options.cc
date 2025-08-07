@@ -2701,6 +2701,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Occupation number threshold for removing TNOs with full triples !expert -*/
         options.add_double("T_CUT_TNO_FULL", 1.0e-7);
+        /*- Damping factor on triples amplitude updates in CCSDT iterations !expert -*/
+        options.add_double("TRIPLES_DAMPING_RATIO", 0.2);
 
         /*- SUBSECTION DLPNO-CCSDT(Q) Specific Options -*/
         

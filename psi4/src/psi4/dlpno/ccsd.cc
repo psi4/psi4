@@ -310,15 +310,31 @@ void DLPNOCCSD::estimate_memory() {
 
     // TODO: This is currently NOT supported, make this a viable option in the future;
     write_qab_pao_ = false;
-    if (write_qab_pao_) qab_memory_ = 0;
-
     low_memory_overlap_ = options_.get_bool("LOW_MEMORY_OVERLAP");
-    if (low_memory_overlap_) pno_overlap_memory = low_overlap_memory;
-
     write_qia_pno_ = options_.get_bool("WRITE_QIA_PNO");
-    if (write_qia_pno_) qov = 0;
-
     write_qab_pno_ = options_.get_bool("WRITE_QAB_PNO");
+    
+
+    if (algorithm_ == DLPNOMethod::CCSDT || algorithm_ == DLPNOMethod::CCSDT_Q) {
+        if (!options_["LOW_MEMORY_OVERLAP"].has_changed()) {
+            outfile->Printf("  LOW_MEMORY_OVERLAP set to true to conserve memory for post-CCSD(T) computation!\n\n");
+            low_memory_overlap_ = true;
+        }
+
+        if (!options_["WRITE_QIA_PNO"].has_changed()) {
+            outfile->Printf("  WRITE_QIA_PNO set to true to conserve memory for post-CCSD(T) computation!\n\n");
+            write_qia_pno_ = true;
+        }
+
+        if (!options_["WRITE_QAB_PNO"].has_changed()) {
+            outfile->Printf("  WRITE_QAB_PNO set to true to conserve memory for post-CCSD(T) computation!\n\n");
+            write_qab_pno_ = true;
+        }
+    }
+
+    if (write_qab_pao_) qab_memory_ = 0;
+    if (low_memory_overlap_) pno_overlap_memory = low_overlap_memory;
+    if (write_qia_pno_) qov = 0;
     if (write_qab_pno_) qvv = 0;
 
     const size_t total_df_memory = qij_memory_ + qia_memory_ + qab_memory_;
@@ -2646,13 +2662,23 @@ double DLPNOCCSD::compute_energy() {
     }
 
     if (write_qia_pno_) {
-        // Bye bye (Q_ij | m_ij a_ij) integrals. You won't be missed
-        psio_->close(PSIF_DLPNO_QIA_PNO, 0);
+        if (algorithm_ == DLPNOMethod::CCSD || algorithm_ == DLPNOMethod::CCSD_T) {
+            // Integrals no longer needed
+            psio_->close(PSIF_DLPNO_QIA_PNO, 0);
+        } else {
+            // Integrals may still be needed for post-CCSD(T) calculations
+            psio_->close(PSIF_DLPNO_QIA_PNO, 1);
+        }
     }
 
     if (write_qab_pno_) {
-        // Bye bye (Q_ij | a_ij b_ij) integrals. You won't be missed
-        psio_->close(PSIF_DLPNO_QAB_PNO, 0);
+        if (algorithm_ == DLPNOMethod::CCSD || algorithm_ == DLPNOMethod::CCSD_T) {
+            // Integrals no longer needed
+            psio_->close(PSIF_DLPNO_QAB_PNO, 0);
+        } else {
+            // Integrals may still be needed for post-CCSD(T) calculations
+            psio_->close(PSIF_DLPNO_QAB_PNO, 1);
+        }
     }
 
     print_results();
