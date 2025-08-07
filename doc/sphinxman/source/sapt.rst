@@ -1007,41 +1007,49 @@ SAPT0-D
 
 In SAPT0, the computation of :math:`E_{disp}^{(20)} + E_{exch-disp}^{(20)}` represents
 the computational bottleneck. One can avoid this bottleneck by replacing these
-dispersion terms with the empirical D3 corrections developed by Grimme.
+dispersion terms with the empirical D3 and D4 corrections developed by Grimme.
   
 :ref:`Grimme's dispersion corrections are discussed here. <sec:dftd3>`
 
-The corresponding method, termed SAPT0-D, thus relies on empirically fit parameters
-specific to SAPT0/jun-cc-pVDZ. While SAPT0-D can be used with any of the -D 
-variants using default parameters optimized for Hartee--Fock interaction energies, 
-we recommend using the refit parameters with Becke-Johnson damping, as described in
-[Schriber:2021:234107]_. Again, use of SAPT0-D with a basis set other than
-jun-cc-pVDZ is not tested and not guaranteed to give meaningful results without
-refitting the dispersion parameters. 
-A simple water dimer computation using SAPT0-D may look like::
+The corresponding method, termed SAPT0-D, thus relies on empirically fit
+parameters specific to SAPT0-D3/jun-cc-pVDZ or SAPT0-D4/aug-cc-pVDZ. While
+SAPT0-D can be used with any of the -D variants using default parameters
+optimized for Hartee--Fock interaction energies, we recommend using the refit
+parameters with Becke-Johnson damping, as described in [Schriber:2021:234107]_
+or [Wallace:2024:114115]_. While SAPT0-D3 and SAPT0-D4 do have minor damping
+function parameter adjustments with respect to basis set, the parameters are
+quite transferable at least between cc-pVDZ to aug-cc-pVTZ (see Fig S1 and S2
+from [Wallace:2024:114115]_ for more information). However, recommended usage
+is with the following levels of theory: SAPT0-D3/jun-cc-pVDZ,
+SAPT0-D3/aug-cc-pVDZ, and SAPT0-D4/aug-cc-pVDZ. A simple water dimer
+computation using SAPT0-D may look like::
 
-	molecule water_dimer {
-	     0 1
-	     O  -1.551007  -0.114520   0.000000
-	     H  -1.934259   0.762503   0.000000
-	     H  -0.599677   0.040712   0.000000
-	     --
-	     0 1
-	     O   1.350625   0.111469   0.000000
-	     H   1.680398  -0.373741  -0.758561
-	     H   1.680398  -0.373741   0.758561
-	
-	     units angstrom
-	     no_reorient
-	     symmetry c1
-	}
-	
-	set basis jun-cc-pvdz
+    molecule water_dimer {
+         0 1
+         O  -1.551007  -0.114520   0.000000
+         H  -1.934259   0.762503   0.000000
+         H  -0.599677   0.040712   0.000000
+         --
+         0 1
+         O   1.350625   0.111469   0.000000
+         H   1.680398  -0.373741  -0.758561
+         H   1.680398  -0.373741   0.758561
 
-	energy('sapt0-d3mbj') # runs the recommended dispersion correction
+         units angstrom
+         no_reorient
+         symmetry c1
+    }
+
+    set basis jun-cc-pvdz
+
+    energy('sapt0-d3mbj') # runs the recommended -D3 dispersion correction
     energy('sapt0-d3') # tests an alternative damping scheme/parameterization
+
+    set basis aug-cc-pvdz
+    energy('sapt0-d4bjeeqtwo') # runs the recommended -D4 dispersion correction
 
 Given the naturally pairwise-atomic nature of these empirical dispersion corrections,
 integration with existing FSAPT functionality is also available simply by calling
-``energy("fsapt0-d3mbj")``. See :ref:`FSAPT <sec:fisapt>` documentation for more details on using FSAPT
-for functional group analyses.
+``energy("fsapt0-d3mbj")`` or ``energy("fsapt0-d4bj2b")`` (alias to ``energy("fsapt0-d4bjeeqtwo")``). See :ref:`FSAPT
+<sec:fisapt>` documentation for more details on using FSAPT for functional
+group analyses.
