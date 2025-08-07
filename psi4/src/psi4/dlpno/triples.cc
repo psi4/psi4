@@ -2069,10 +2069,6 @@ void DLPNOCCSDT::compute_R_iajb_triples(std::vector<SharedMatrix>& R_iajb, std::
 
     // Compute residual from LCCSD
     DLPNOCCSD::compute_R_iajb(R_iajb, Rn_iajb);
-    
-    if (weak_pair_algorithm_ != WeakPairAlgorithm::MP2) {
-        DLPNOCCSD::compute_R_iajb_weak(R_iajb);
-    }
 
     // Clean buffers
 #pragma omp parallel for
@@ -3304,12 +3300,7 @@ void DLPNOCCSDT::lccsdt_iterations() {
     double e_curr = 0.0, e_prev = 0.0, e_weak = 0.0, r_curr1 = 0.0, r_curr2 = 0.0, r_curr3 = 0.0;
     bool e_converged = false, r_converged = false;
 
-    DIISManager diis;
-    if (options_.get_bool("DLPNO_CCSDT_DISK_DIIS")) {
-        diis = DIISManager(options_.get_int("DIIS_MAX_VECS"), "LCCSDT DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
-    } else {
-        diis = DIISManager(options_.get_int("DIIS_MAX_VECS"), "LCCSDT DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
-    }
+    DIISManager diis = DIISManager(options_.get_int("DIIS_MAX_VECS"), "LCCSDT DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
 
     while (!(e_converged && r_converged)) {
         // RMS of residual per LMO orbital, for assessing convergence
@@ -3544,6 +3535,8 @@ double DLPNOCCSDT::compute_energy() {
 
     timer_on("DLPNO-CCSDT");
 
+    einsums::profile::initialize();
+
     print_header();
 
     // Compute TNOs
@@ -3554,8 +3547,6 @@ double DLPNOCCSDT::compute_energy() {
     tno_scale_.resize(n_lmo_triplets, 1.0);
 
     double t_cut_tno_full = options_.get_double("T_CUT_TNO_FULL");
-    double t_cut_trace_triples = options_.get_double("T_CUT_TRACE_TRIPLES");
-    double t_cut_energy_triples = options_.get_double("T_CUT_ENERGY_TRIPLES");
 
     tno_transform(t_cut_tno_full);
 
@@ -3603,6 +3594,8 @@ double DLPNOCCSDT::compute_energy() {
     timer_on("DLPNO-CCSDT : LCCSDT iterations");
     lccsdt_iterations();
     timer_off("DLPNO-CCSDT : LCCSDT iterations");
+
+    einsums::profile::finalize();
 
     timer_off("DLPNO-CCSDT");
 

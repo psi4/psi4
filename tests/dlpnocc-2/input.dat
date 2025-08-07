@@ -1,0 +1,39 @@
+#! regression test of DLPNO-CCSDT(Q)
+
+ref_scf                   =    -76.0267872755965             #TEST
+
+ref_dlpnoccsdt_corl       =     -0.214502825537              #TEST
+ref_dlpnoccsdt_tot        =    -76.241290101131              #TEST
+ref_dlpnoccsdt_q_corl     =     -0.214984310019              #TEST
+ref_dlpnoccsdt_q_tot      =    -76.241771585613              #TEST
+
+molecule h2o {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis cc-pvdz
+set freeze_core True
+set scf_type df
+set mp2_type df
+set cc_type  df
+set nat_orbs False
+set e_convergence 1.0e-8
+set r_convergence 1.0e-8
+set pno_convergence very_tight
+
+print('   Testing DLPNO-CCSDT(Q) ...')
+val = energy('dlpno-ccsdt(q)')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                 #TEST
+compare_values(ref_dlpnoccsdt_corl, variable('CCSDT CORRELATION ENERGY'), 6, 'ccsdt corl')          #TEST
+compare_values(ref_dlpnoccsdt_tot, variable('CCSDT TOTAL ENERGY'), 6, 'ccsdt tot')                  #TEST
+compare_values(ref_dlpnoccsdt_q_corl, variable('CCSDT(Q) CORRELATION ENERGY'), 6, 'ccsdt(q) corl')  #TEST
+compare_values(ref_dlpnoccsdt_q_tot, variable('CCSDT(Q) TOTAL ENERGY'), 6, 'ccsdt(q) tot')          #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 6, 'scf ref')                         #TEST
+compare_values(ref_dlpnoccsdt_q_corl, variable('CURRENT CORRELATION ENERGY'), 6, 'ccsdt(q) corl')   #TEST
+compare_values(ref_dlpnoccsdt_q_tot, variable('CURRENT ENERGY'), 6, 'ccsdt(q) tot')                 #TEST
+compare_values(ref_dlpnoccsdt_q_tot, val, 6, 'ccsdt(q) return')                                     #TEST
+clean()

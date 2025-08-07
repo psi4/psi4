@@ -53,6 +53,9 @@
 #include <omp.h>
 #endif
 
+namespace psi {
+namespace dlpno {
+
 DLPNOCCSDT_Q::DLPNOCCSDT_Q(SharedWavefunction ref_wfn, Options &options) : DLPNOCCSDT(ref_wfn, options) {}
 DLPNOCCSDT_Q::~DLPNOCCSDT_Q() {}
 
@@ -1418,6 +1421,8 @@ double DLPNOCCSDT_Q::compute_energy() {
     // Run DLPNO-CCSDT
     double e_dlpno_ccsdt = DLPNOCCSDT::compute_energy();
 
+    einsums::profile::initialize();
+
     // Clear CCSD integrals
     K_mnij_.clear();
     K_bar_.clear();
@@ -1525,11 +1530,11 @@ double DLPNOCCSDT_Q::compute_energy() {
 
     double e_scf = variables_["SCF TOTAL ENERGY"];
     double e_ccsdt_q_corr = E_Q0 + de_lccsdt_q_screened_ + e_lccsdt_ + dE_T_rank_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
-    double e_ccsdt_q_total = e_scf + e_ccsdt_q0_corr;
+    double e_ccsdt_q_total = e_scf + e_ccsdt_q_corr;
 
-    outfile->Printf("\n\n  @Total DLPNO-CCSDT(Q0) Energy: %16.12f\n", e_ccsdt_q0_total);
+    outfile->Printf("\n\n  @Total DLPNO-CCSDT(Q0) Energy: %16.12f\n", e_ccsdt_q_total);
 
-    double e_total = e_ccsdt_q0_total;
+    double e_total = e_ccsdt_q_total;
 
     if (!options_.get_bool("Q0_ONLY")) {
         // STEP 3: Iterative (Q) computations
@@ -1572,7 +1577,12 @@ double DLPNOCCSDT_Q::compute_energy() {
     set_scalar_variable("CCSDT(Q) TOTAL ENERGY", e_ccsdt_q_total);
     set_scalar_variable("CURRENT ENERGY", e_ccsdt_q_total);
 
+    einsums::profile::finalize();
+
     timer_off("DLPNO-CCSDT(Q)");
 
     return e_total;
+}
+
+}
 }

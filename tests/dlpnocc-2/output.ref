@@ -1,0 +1,1037 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.10a1.dev102 
+
+                         Git: Rev {dlpno_ccsdt_q} f691219 dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, and Erica C. Mitchell
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 07 August 2025 11:57AM
+
+    Process ID: 518066
+    Host:       d5-17
+    PSIDATADIR: /scratch/aj48384/github/psi4/objdir_p4dev/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    4
+    Addons:     adcc, ambit, bse, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, cppe, ddx, dftd3, dftd4, dkh, ecpint,
+                einsums, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, gcp, gdma, geometric, g̶p̶u̶_̶d̶f̶c̶c̶,
+                integratorxx, ipi, libefp, mdi, m̶p̶2̶d̶, m̶r̶c̶c̶,
+                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, pcmsolver, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶, p̶s̶i̶x̶a̶s̶,
+                r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶, v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! regression test of DLPNO-CCSDT(Q)
+
+ref_scf                   =    -76.0267872755965             #TEST
+
+ref_dlpnoccsdt_corl       =     -0.214502825537              #TEST
+ref_dlpnoccsdt_tot        =    -76.241290101131              #TEST
+ref_dlpnoccsdt_q_corl     =     -0.214984310019              #TEST
+ref_dlpnoccsdt_q_tot      =    -76.241771585613              #TEST
+
+molecule h2o {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis cc-pvdz
+set freeze_core True
+set scf_type df
+set mp2_type df
+set cc_type  df
+set nat_orbs False
+set e_convergence 1.0e-8
+set r_convergence 1.0e-8
+set pno_convergence very_tight
+
+print('   Testing DLPNO-CCSDT(Q) ...')
+val = energy('dlpno-ccsdt(q)')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                 #TEST
+compare_values(ref_dlpnoccsdt_corl, variable('CCSDT CORRELATION ENERGY'), 6, 'ccsdt corl')          #TEST
+compare_values(ref_dlpnoccsdt_tot, variable('CCSDT TOTAL ENERGY'), 6, 'ccsdt tot')                  #TEST
+compare_values(ref_dlpnoccsdt_q_corl, variable('CCSDT(Q) CORRELATION ENERGY'), 6, 'ccsdt(q) corl')  #TEST
+compare_values(ref_dlpnoccsdt_q_tot, variable('CCSDT(Q) TOTAL ENERGY'), 6, 'ccsdt(q) tot')          #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 6, 'scf ref')                         #TEST
+compare_values(ref_dlpnoccsdt_q_corl, variable('CURRENT CORRELATION ENERGY'), 6, 'ccsdt(q) corl')   #TEST
+compare_values(ref_dlpnoccsdt_q_tot, variable('CURRENT ENERGY'), 6, 'ccsdt(q) tot')                 #TEST
+compare_values(ref_dlpnoccsdt_q_tot, val, 6, 'ccsdt(q) return')                                     #TEST
+clean()--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on d5-17
+*** at Thu Aug  7 11:57:21 2025
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /scratch/aj48384/github/psi4/objdir_p4dev/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /scratch/aj48384/github/psi4/objdir_p4dev/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        4 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065570021889    15.994914619570
+         H            0.000000000000    -0.756689922073     0.520321915104     1.007825032230
+         H            0.000000000000     0.756689922073     0.520321915104     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.43416  B =     14.60648  C =      9.53165 [cm^-1]
+  Rotational constants: A = 822455.52651  B = 437891.14479  C = 285751.53189 [MHz]
+  Nuclear repulsion =    9.196933714281483
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis functions: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   221 file /scratch/aj48384/github/psi4/objdir_p4dev/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /scratch/aj48384/github/psi4/objdir_p4dev/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               4
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 42
+    Number of basis functions: 116
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.4162833904E-02.
+  Reciprocal condition number of the overlap matrix is 9.2080850101E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         24      24 
+   -------------------------
+    Total      24      24
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter SAD:   -76.48941727877465   -7.64894e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.93130372714921    5.58114e-01   1.85420e-02 DIIS/ADIIS
+   @DF-RHF iter   2:   -76.01221114038657   -8.09074e-02   8.48397e-03 DIIS/ADIIS
+   @DF-RHF iter   3:   -76.02600788775133   -1.37967e-02   1.76048e-03 DIIS/ADIIS
+   @DF-RHF iter   4:   -76.02676017888599   -7.52291e-04   2.49611e-04 DIIS/ADIIS
+   @DF-RHF iter   5:   -76.02678632498034   -2.61461e-05   4.88429e-05 DIIS
+   @DF-RHF iter   6:   -76.02678725036786   -9.25388e-07   6.08573e-06 DIIS
+   @DF-RHF iter   7:   -76.02678727509503   -2.47272e-08   9.81413e-07 DIIS
+   @DF-RHF iter   8:   -76.02678727559146   -4.96428e-10   9.53608e-08 DIIS
+   @DF-RHF iter   9:   -76.02678727559417   -2.71427e-12   7.39592e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.550396     2A     -1.336833     3A     -0.699409  
+       4A     -0.566642     5A     -0.493163  
+
+    Virtual:                                                              
+
+       6A      0.185614     7A      0.256287     8A      0.789487  
+       9A      0.854656    10A      1.163645    11A      1.200456  
+      12A      1.253394    13A      1.444812    14A      1.476790  
+      15A      1.675235    16A      1.867468    17A      1.935894  
+      18A      2.453618    19A      2.491350    20A      3.286614  
+      21A      3.339622    22A      3.511619    23A      3.866679  
+      24A      4.148184  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+    NA   [     5 ]
+    NB   [     5 ]
+
+  @DF-RHF Final Energy:   -76.02678727559417
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1969337142814833
+    One-Electron Energy =                -123.1545542581352919
+    Two-Electron Energy =                  37.9308332682596330
+    Total Energy =                        -76.0267872755941738
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Z            :         -0.1661035            0.9752568            0.8091533
+ Magnitude           :                                                    0.8091533
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on d5-17 at Thu Aug  7 11:57:22 2025
+Module time:
+	user time   =       0.73 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.73 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on d5-17
+*** at Thu Aug  7 11:57:22 2025
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //           DLPNO-CCSDT(Q)          //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_CC
+    atoms 1   entry O          line   235 file /scratch/aj48384/github/psi4/objdir_p4dev/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    19 file /scratch/aj48384/github/psi4/objdir_p4dev/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+
+   --------------------------------------------
+                    DLPNO-CCSD                 
+                   by Andy Jiang               
+   --------------------------------------------
+
+  DLPNO convergence set to VERY_TIGHT.
+
+  Detailed DLPNO thresholds and cutoffs:
+    T_CUT_PNO        = 1.0000e-08 
+    T_DIAG_SCALE     = 3.0000e-02 
+    T_CUT_TRACE      = 9.9900e-01 
+    T_CUT_ENERGY     = 9.9700e-01 
+    T_CUT_PAIRS      = 1.0000e-08 
+    MIN_PNOS_PAIR    =      5   
+    T_CUT_PRE        = 1.0000e-10 
+    T_CUT_DO_PRE     = 3.0000e-02 
+    T_CUT_MKN        = 1.0000e-04 
+    T_CUT_PNO_MP2    = 1.0000e-10 
+    T_CUT_TRACE_MP2  = 9.9990e-01 
+    T_CUT_ENERGY_MP2 = 9.9900e-01 
+    T_CUT_DO         = 5.0000e-03 
+    T_CUT_DO_ij      = 1.0000e-05 
+    T_CUT_DO_uv      = 1.0000e-05 
+    T_CUT_CLMO       = 1.0000e-03 
+    T_CUT_CPAO       = 1.0000e-03 
+    S_CUT            = 1.0000e-08 
+    F_CUT            = 1.0000e-05 
+    INTS_TOL (AO)    = 1.0000e-10 
+
+
+  ==> Basis Set Information <==
+
+   ----------------------------------------------
+      NBF   NFRZC   NACT   NDOCC   NVIR   NAUX   
+   ----------------------------------------------
+       24      1      4       5      19     84
+   ----------------------------------------------
+
+  ==> Boys Localizer <==
+
+    Convergence =   1.000E-12
+    Maxiter     =        1000
+
+    Iteration                   Metric       Residual
+    @Boys    0   1.8043922026135309E-01              -
+    @Boys    1   2.2054591534111418E+00   1.122273E+01
+    @Boys    2   2.4972534340669617E+00   1.323055E-01
+    @Boys    3   2.5360980532145785E+00   1.555494E-02
+    @Boys    4   2.5411325011910448E+00   1.985116E-03
+    @Boys    5   2.5415119474587713E+00   1.493217E-04
+    @Boys    6   2.5415848060572745E+00   2.866742E-05
+    @Boys    7   2.5415953775931222E+00   4.159427E-06
+    @Boys    8   2.5415973133871224E+00   7.616452E-07
+    @Boys    9   2.5415975678807832E+00   1.001314E-07
+    @Boys   10   2.5415976421075559E+00   2.920477E-08
+    @Boys   11   2.5415976500158579E+00   3.111548E-09
+    @Boys   12   2.5415976518217036E+00   7.105160E-10
+    @Boys   13   2.5415976521239600E+00   1.189238E-10
+    @Boys   14   2.5415976521708892E+00   1.846442E-11
+    @Boys   15   2.5415976521769510E+00   2.385042E-12
+    @Boys   16   2.5415976521777770E+00   3.249948E-13
+
+    Boys Localizer converged.
+
+  Starting Crude Prescreening...
+    T_CUT_MKN set to 1.000e-02
+    T_CUT_DO  set to 1.000e-02
+
+  ==> Forming Local MO Domains <==
+
+    Auxiliary BFs per Local MO:
+      Average =   63 AUX BFs (1 atoms)
+      Min     =   56 AUX BFs (1 atoms)
+      Max     =   70 AUX BFs (2 atoms)
+  
+    Projected AOs per Local MO:
+      Average =   24 PAOs (3 atoms)
+      Min     =   24 PAOs (3 atoms)
+      Max     =   24 PAOs (3 atoms)
+
+    Local MOs per Local MO:
+      Average =    4 LMOs
+      Min     =    4 LMOs
+      Max     =    4 LMOs
+ 
+    Screened 0 of 16 LMO pairs (0.00 %)
+             0 pairs met overlap criteria
+             4 pairs met energy criteria
+ 
+    Screened LMO pair energy =  0.000000000000 
+
+  ==> Merging LMO Domains into LMO Pair Domains <==
+  
+    Auxiliary BFs per Local MO pair:
+      Average =   68 AUX BFs (1 atoms)
+      Min     =   56 AUX BFs (1 atoms)
+      Max     =   84 AUX BFs (3 atoms)
+  
+    Local MOs per Local MO pair:
+      Average =    4 LMOs
+      Min     =    4 LMOs
+      Max     =    4 LMOs
+  
+    Projected AOs per Local MO pair:
+      Average =   24 PAOs (3 atoms)
+      Min     =   24 PAOs (3 atoms)
+      Max     =   24 PAOs (3 atoms)
+
+  ==> Transforming 3-Index Integrals to LMO/PAO basis <==
+
+  ==> Determining Strong and Weak Pairs (Crude Prescreening Step) <==
+
+  ==> Computing SC-LMP2 Pair Energies <==
+
+    Starting semicanonical (non-iterative) LMP2 step...
+
+    PAO-SC-LMP2 Energy:  -0.195081002926
+
+    Eliminated Pairs                = 0
+    (Initial) Weak Pairs            = 0
+    (Initial) Strong Pairs          = 16
+    Surviving Pairs / Total Pairs   = (100.00 %)
+    Eliminated Pair dE              = 0.000000000000
+
+  Starting Refined Prescreening...
+    T_CUT_MKN reset to 1.000e-04
+    T_CUT_DO  reset to 5.000e-03
+
+  ==> Forming Local MO Domains <==
+
+    Auxiliary BFs per Local MO:
+      Average =   84 AUX BFs (3 atoms)
+      Min     =   84 AUX BFs (3 atoms)
+      Max     =   84 AUX BFs (3 atoms)
+  
+    Projected AOs per Local MO:
+      Average =   24 PAOs (3 atoms)
+      Min     =   24 PAOs (3 atoms)
+      Max     =   24 PAOs (3 atoms)
+
+    Local MOs per Local MO:
+      Average =    4 LMOs
+      Min     =    4 LMOs
+      Max     =    4 LMOs
+ 
+    Screened 0 of 16 LMO pairs (0.00 %)
+             0 pairs met overlap criteria
+             4 pairs met energy criteria
+ 
+    Screened LMO pair energy =  0.000000000000 
+
+  ==> Merging LMO Domains into LMO Pair Domains <==
+  
+    Auxiliary BFs per Local MO pair:
+      Average =   84 AUX BFs (3 atoms)
+      Min     =   84 AUX BFs (3 atoms)
+      Max     =   84 AUX BFs (3 atoms)
+  
+    Local MOs per Local MO pair:
+      Average =    4 LMOs
+      Min     =    4 LMOs
+      Max     =    4 LMOs
+  
+    Projected AOs per Local MO pair:
+      Average =   24 PAOs (3 atoms)
+      Min     =   24 PAOs (3 atoms)
+      Max     =   24 PAOs (3 atoms)
+
+  ==> Transforming 3-Index Integrals to LMO/PAO basis <==
+
+  ==> Determining Strong and Weak Pairs (Refined Prescreening Step) <==
+
+
+  ==> Computing SC-LMP2 Pair Energies <==
+
+    Starting semicanonical (non-iterative) LMP2 step...
+
+
+  ==> Forming Pair Natural Orbitals (for LMP2) <==
+    PAO-SC-LMP2 Energy:  -0.195128271174
+
+  
+    Natural Orbitals per Local MO pair:
+      Avg:  19 NOs 
+      Min:  19 NOs 
+      Max:  19 NOs 
+      Avg Occ Number Tol: 9.438e-08 
+      Min Occ Number Tol: 4.624e-09 
+      Max Occ Number Tol: 2.459e-07 
+      Avg Trace Sum: 1.000000 
+      Min Trace Sum: 1.000000 
+      Max Trace Sum: 1.000000 
+  
+    PNO truncation energy = -0.000000000000
+    (Additional) Eliminated Pairs   = 0
+    (Final) Weak Pairs              = 0
+    (Final) Strong Pairs            = 16
+    Strong Pairs / Total Pairs      = (100.00 %)
+    (Cumulative) Eliminated Pair dE = 0.000000000000
+    (Initial) Weak Pair dE          = 0.000000000000
+
+
+    Auxiliary BFs per Local MO:
+      Average =   84 AUX BFs (3 atoms)
+      Min     =   84 AUX BFs (3 atoms)
+      Max     =   84 AUX BFs (3 atoms)
+  
+    Projected AOs per Local MO:
+      Average =   24 PAOs (3 atoms)
+      Min     =   24 PAOs (3 atoms)
+      Max     =   24 PAOs (3 atoms)
+
+    Local MOs per Local MO:
+      Average =    4 LMOs
+      Min     =    4 LMOs
+      Max     =    4 LMOs
+ 
+    Screened 0 of 16 LMO pairs (0.00 %)
+             0 pairs met overlap criteria
+             4 pairs met energy criteria
+ 
+    Screened LMO pair energy =  0.000000000000 
+
+  ==> Merging LMO Domains into LMO Pair Domains <==
+  
+    Auxiliary BFs per Local MO pair:
+      Average =   84 AUX BFs (3 atoms)
+      Min     =   84 AUX BFs (3 atoms)
+      Max     =   84 AUX BFs (3 atoms)
+  
+    Local MOs per Local MO pair:
+      Average =    4 LMOs
+      Min     =    4 LMOs
+      Max     =    4 LMOs
+  
+    Projected AOs per Local MO pair:
+      Average =   24 PAOs (3 atoms)
+      Min     =   24 PAOs (3 atoms)
+      Max     =   24 PAOs (3 atoms)
+  ==> PNO-LMP2 Memory Estimate <== 
+
+    PNO/PNO overlaps       : 0.000 [GiB]
+    Total Memory Given     : 0.488 [GiB]
+
+
+  ==> Iterative Local MP2 with Pair Natural Orbitals (PNOs) <==
+
+    E_CONVERGENCE = 1.00e-10
+    R_CONVERGENCE = 1.00e-10
+
+                         Corr. Energy    Delta E     Max R     Time (s)
+  @PNO-LMP2 iter   0:  -0.199401937748 -1.994e-01  1.301e-03        0
+  @PNO-LMP2 iter   1:  -0.201425480957 -2.024e-03  3.492e-04        0
+  @PNO-LMP2 iter   2:  -0.201560114037 -1.346e-04  6.909e-05        0
+  @PNO-LMP2 iter   3:  -0.201577949969 -1.784e-05  1.361e-05        0
+  @PNO-LMP2 iter   4:  -0.201578967380 -1.017e-06  1.581e-06        0
+  @PNO-LMP2 iter   5:  -0.201579145534 -1.782e-07  2.801e-07        0
+  @PNO-LMP2 iter   6:  -0.201579146905 -1.372e-09  5.088e-08        0
+  @PNO-LMP2 iter   7:  -0.201579130133  1.677e-08  1.044e-08        0
+  @PNO-LMP2 iter   8:  -0.201579128469  1.664e-09  1.787e-09        0
+  @PNO-LMP2 iter   9:  -0.201579127662  8.077e-10  3.459e-10        0
+  @PNO-LMP2 iter  10:  -0.201579127641  2.076e-11  9.287e-11        0
+  
+  Total DLPNO-MP2 Correlation Energy:  -0.201579127641 
+    MP2 Correlation Energy:            -0.201579127641 
+    Eliminated Pair MP2 Correction:     0.000000000000 
+    Dipole Correction:                  0.000000000000 
+    PNO Truncation Correction:         -0.000000000000 
+
+
+  @Total DLPNO-MP2 Energy: -76.228366403235 
+
+  ==> Forming Pair Natural Orbitals (for LCCSD) <==
+  
+    Natural Orbitals per Local MO pair:
+      Avg:  18 NOs 
+      Min:  18 NOs 
+      Max:  19 NOs 
+      Avg Occ Number Tol: 1.459e-07 
+      Min Occ Number Tol: 3.972e-08 
+      Max Occ Number Tol: 3.469e-07 
+      Avg Trace Sum: 1.000000 
+      Min Trace Sum: 0.999999 
+      Max Trace Sum: 1.000000 
+  
+    LMP2 Weak pair energy = 0.000000000000
+    PNO truncation energy = -0.000000021813
+
+    Coefficient sparsity in AO -> LMO transform:   0.00 % 
+    Coefficient sparsity in AO -> PAO transform:   0.00 % 
+    Coefficient sparsity in combined transforms:   0.00 % 
+
+    Storing transformed LMO/LMO, LMO/PAO, and PAO/PAO integrals in sparse format.
+    Required memory: 0.000 GiB (0.00 % reduction from dense format) 
+
+  ==> Transforming 3-Index Integrals to LMO/LMO basis <==
+
+  ==> Transforming 3-Index Integrals to PAO/PAO basis <==
+    PAO/PAO Integral Memory After Screening: 0.000 [GiB]
+
+  ==> DLPNO-CCSD Memory Requirements <== 
+
+    (q | i j) integrals        : 0.000 [GiB]
+    (q | i a) integrals        : 0.000 [GiB]
+    (q | a b) integrals        : 0.000 [GiB]
+    (m i | n j)                : 0.000 [GiB]
+    (i j | k c_{ij})           : 0.000 [GiB]
+    (i a_{ij} | j b_{ij})      : 0.000 [GiB]
+    (i k | a_{ij} b_{kj})      : 0.000 [GiB]
+    (i a_{ij} | b_{ij} c_{ij}) : 0.001 [GiB]
+    (Q_{ij}|m_{ij} a_{ij})     : 0.000 [GiB]
+    (Q_{ij}|a_{ij} b_{ij})     : 0.002 [GiB]
+    PNO/PNO overlaps           : 0.000 [GiB]
+
+    Total Memory Given         : 0.488 [GiB]
+    Total Memory Required      : 0.005 [GiB]
+
+    Using high memory PNO overlap algorithm... 
+
+    Storing (Q_{ij}|m_{ij} a_{ij}) integrals in RAM... 
+
+    Storing (Q_{ij}|a_{ij} b_{ij}) integrals in RAM... 
+
+    Computing CC integrals...
+
+    Integral Computation Complete!!! Time Elapsed:    0 seconds
+
+
+  ==> Local CCSD (T1-transformed Hamiltonian) <==
+
+    E_CONVERGENCE = 1.00e-08
+    R_CONVERGENCE = 1.00e-08
+
+                      Corr. Energy    Delta E     Max R1     Max R2     Time (s)
+  @LCCSD iter   0:  -0.207114801085 -2.071e-01  4.344e-03  2.179e-03        0
+  @LCCSD iter   1:  -0.210522603343 -3.408e-03  8.738e-04  7.670e-04        0
+  @LCCSD iter   2:  -0.211076504093 -5.539e-04  2.892e-04  2.190e-04        0
+  @LCCSD iter   3:  -0.211263121296 -1.866e-04  9.901e-05  7.042e-05        0
+  @LCCSD iter   4:  -0.211292335993 -2.921e-05  4.105e-05  1.666e-05        0
+  @LCCSD iter   5:  -0.211293538130 -1.202e-06  2.270e-05  5.563e-06        0
+  @LCCSD iter   6:  -0.211294111234 -5.731e-07  9.062e-06  2.767e-06        0
+  @LCCSD iter   7:  -0.211294980765 -8.695e-07  4.174e-06  8.809e-07        0
+  @LCCSD iter   8:  -0.211295519129 -5.384e-07  1.389e-06  3.148e-07        0
+  @LCCSD iter   9:  -0.211295727395 -2.083e-07  4.478e-07  1.152e-07        0
+  @LCCSD iter  10:  -0.211295841877 -1.145e-07  1.109e-07  5.256e-08        0
+  @LCCSD iter  11:  -0.211295872006 -3.013e-08  4.561e-08  2.062e-08        0
+  @LCCSD iter  12:  -0.211295886063 -1.406e-08  1.836e-08  9.037e-09        0
+  @LCCSD iter  13:  -0.211295890538 -4.475e-09  8.072e-09  3.366e-09        0
+
+  T1 Diagnostic: 0.00588208 
+  
+  Total DLPNO-CCSD Correlation Energy:  -0.211295912351 
+    CCSD Correlation Energy:            -0.211295890538 
+    Weak Pair Contribution:              0.000000000000 
+    Eliminated Pair MP2 Correction:      0.000000000000 
+    Dipole Pair Correction:              0.000000000000 
+    PNO Truncation Correction:          -0.000000021813 
+
+
+  @Total DLPNO-CCSD Energy: -76.238083187945 
+   --------------------------------------------
+                    DLPNO-CCSD(T)              
+                    by Andy Jiang              
+   --------------------------------------------
+
+  DLPNO convergence set to VERY_TIGHT.
+
+  Detailed DLPNO thresholds and cutoffs:
+    ALGORITHM    = ITERATIVE (T)   
+    STORAGE      = IN CORE   
+    T_CUT_TNO (T0)             = 1.000e-09 
+    T_CUT_DO_TRIPLES (T0)      = 1.000e-02 
+    T_CUT_MKN_TRIPLES (T0)     = 1.000e-02 
+    T_CUT_TRIPLES_WEAK (T0)    = 1.000e-08 
+    T_CUT_TNO_PRE (T0)         = 1.000e-07 
+    T_CUT_DO_TRIPLES_PRE (T0)  = 2.000e-02 
+    T_CUT_MKN_TRIPLES_PRE (T0) = 1.000e-01 
+    TRIPLES_MAX_WEAK_PAIRS     =      2   
+    MIN_TNOS_TRIPLET           =      9   
+    T_CUT_TNO_STRONG (T)       = 1.000e-08 
+    T_CUT_TNO_WEAK (T)         = 1.000e-07 
+    F_CUT_T (T)                = 1.000e-03 
+    T_CUT_ITER (T)             = 1.000e-03 
+
+
+
+   Starting Triplet Prescreening...
+     T_CUT_TNO set to 1.000e-07 
+     T_CUT_DO  set to 2.000e-02 
+     T_CUT_MKN set to 1.000e-01 
+
+  
+    Number of (Unique) Local MO triplets: 16
+    Max Number of Possible (Unique) LMO Triplets: 16 (Ratio: 1.0000)
+    Natural Orbitals per Local MO triplet:
+      Avg:  18 NOs 
+      Min:  18 NOs 
+      Max:  19 NOs 
+  
+    (Relavent) Semicanonical LCCSD(T0) Computation Complete!!! Time Elapsed:    0 seconds
+
+
+   Continuing computation with surviving triplets...
+     Eliminated all triples with energy less than 1.000e-08 Eh... 
+
+    * Energy Contribution From Screened Triplets: 0.000000000000 
+
+     T_CUT_TNO (re)set to 1.000e-09 
+     T_CUT_DO  (re)set to 1.000e-02 
+     T_CUT_MKN (re)set to 1.000e-02 
+
+  
+    Number of (Unique) Local MO triplets: 16
+    Max Number of Possible (Unique) LMO Triplets: 16 (Ratio: 1.0000)
+    Natural Orbitals per Local MO triplet:
+      Avg:  19 NOs 
+      Min:  19 NOs 
+      Max:  19 NOs 
+  
+    (Relavent) Semicanonical LCCSD(T0) Computation Complete!!! Time Elapsed:    0 seconds
+
+    DLPNO-CCSD(T0) Correlation Energy:  -0.214223026377 
+    * DLPNO-CCSD Contribution:          -0.211295890538 
+    * DLPNO-(T0) Contribution:          -0.002927135840 
+    * Screened Triplets Contribution:    0.000000000000 
+
+
+
+  ==> Computing Full Iterative (T) <==
+
+  ==> Sorting Triplets <== 
+
+    Number of Strong Triplets:     14, Total Triplets:     16, Ratio: 0.8750
+
+     T_CUT_TNO (re)set to 1.000e-08 for strong triples 
+     T_CUT_TNO (re)set to 1.000e-07 for weak triples   
+
+  
+    Number of (Unique) Local MO triplets: 16
+    Max Number of Possible (Unique) LMO Triplets: 16 (Ratio: 1.0000)
+    Natural Orbitals per Local MO triplet:
+      Avg:  18 NOs 
+      Min:  18 NOs 
+      Max:  19 NOs 
+  
+
+  ==> DLPNO-(T) Memory Requirements <== 
+
+    (q | i j) integrals    : 0.000 [GiB]
+    (q | i a) integrals    : 0.000 [GiB]
+    (q | a b) integrals    : 0.000 [GiB]
+    W_{ijk}^{abc}          : 0.001 [GiB]
+    V_{ijk}^{abc}          : 0.001 [GiB]
+    T_{ijk}^{abc}          : 0.001 [GiB]
+    Total Memory Given     : 0.488 [GiB]
+    Total Memory Required  : 0.003 [GiB]
+
+    Storing all X_{ijk}^{abc} quantities in RAM...
+
+    (Relavent) Semicanonical LCCSD(T0) Computation Complete!!! Time Elapsed:    0 seconds
+
+
+  ==> Local CCSD(T) <==
+
+    E_CONVERGENCE = 1.00e-08
+    R_CONVERGENCE = 1.00e-08
+
+                         Corr. Energy    Delta E     Max R     Time (s)
+  @LCCSD(T) iter   1:  -0.003027746902 -3.028e-03  2.708e-05        0
+  @LCCSD(T) iter   2:  -0.003039727399 -1.198e-05  4.052e-06        0
+  @LCCSD(T) iter   3:  -0.003039998555 -2.712e-07  5.479e-07        0
+  @LCCSD(T) iter   4:  -0.003039998555  0.000e+00  0.000e+00        0
+
+    DLPNO-CCSD(T0) energy at looser tolerance:  -0.002924198766
+    DLPNO-CCSD(T)  energy at looser tolerance:  -0.003039998555
+    * Net Iterative (T) contribution:           -0.000115799789
+
+  
+  Total DLPNO-CCSD(T) Correlation Energy:  -0.214338847979 
+    DLPNO-CCSD Contribution:               -0.211295912351 
+    DLPNO-(T) Contribution:                -0.003042935629 
+    Screened Triplets Contribution:         0.000000000000 
+    Andy Jiang... FOR THREEEEEEEEEEE!!!
+
+
+  @Total DLPNO-CCSD(T) Energy: -76.241126123574 
+   --------------------------------------------
+                    DLPNO-CCSDT                
+                   by Andy Jiang               
+   --------------------------------------------
+
+  DLPNO convergence set to VERY_TIGHT.
+
+  Detailed DLPNO thresholds and cutoffs:
+    T_CUT_TNO_STRONG           = 1.000e-08 
+    T_CUT_TNO_WEAK             = 1.000e-07 
+    T_CUT_DO_TRIPLES           = 1.000e-02 
+    T_CUT_MKN_TRIPLES          = 1.000e-02 
+    F_CUT_T                    = 1.000e-03 
+  
+    Number of (Unique) Local MO triplets: 16
+    Max Number of Possible (Unique) LMO Triplets: 16 (Ratio: 1.0000)
+    Natural Orbitals per Local MO triplet:
+      Avg:  18 NOs 
+      Min:  18 NOs 
+      Max:  19 NOs 
+  
+    (Relavent) Semicanonical LCCSD(T0) Computation Complete!!! Time Elapsed:    0 seconds
+
+
+  ==> Local CCSD(T) <==
+
+    E_CONVERGENCE = 1.00e-08
+    R_CONVERGENCE = 1.00e-08
+
+                         Corr. Energy    Delta E     Max R     Time (s)
+  @LCCSD(T) iter   1:  -0.003027465962 -3.027e-03  2.708e-05        0
+  @LCCSD(T) iter   2:  -0.003039711176 -1.225e-05  4.071e-06        0
+  @LCCSD(T) iter   3:  -0.003039995833 -2.847e-07  6.001e-07        0
+  @LCCSD(T) iter   4:  -0.003039995833  0.000e+00  0.000e+00        0
+
+ ==> DLPNO-CCSDT Memory Estimate <== 
+
+    (i j | l_{ijk} a_{ijk})        : 0.000 [GiB]
+    (i a_{ijk} | l_{ijk} b_{ijk})  : 0.001 [GiB]
+    (i a_{ijk} | b_{ijk} c_{ijk})  : 0.002 [GiB]
+    (Q_{ijk} | l_{ijk} [i,j,k])    : 0.000 [GiB]
+    (Q_{ijk} | l_{ijk} a_{ijk})    : 0.002 [GiB]
+    (Q_{ijk} | a_{ijk} b_{ijk})    : 0.003 [GiB]
+    S(a_{ijk}, a_{ii})             : 0.000 [GiB]
+    S(a_{ijk}, a_{ll})             : 0.000 [GiB]
+    S(a_{ijk}, a_{ij})             : 0.000 [GiB]
+    S(a_{ijk}, a_{il})             : 0.001 [GiB]
+    S(a_{ijk}, a_{lm})             : 0.000 [GiB]
+    S(a_{ijk}, a_{ljk})            : 0.000 [GiB]
+    S(a_{ijk}, a_{mli})            : 0.000 [GiB]
+    Total Memory Required          : 0.009 [GiB]
+
+    Writing expensive S(a_{ijk}, a_{lm}) and S(a_{ijk}, a_{mli}) matrices to disk!
+
+
+  ==> Local CCSDT <==
+
+    E_CONVERGENCE = 1.00e-08
+    R_CONVERGENCE = 1.00e-08
+
+                       Corr. Energy    Delta E     Max R1     Max R2     Max R3     Time (s)
+  @LCCSDT iter   1:  -0.214120925534 -2.141e-01  4.413e-04  2.909e-04  5.667e-05        0
+  @LCCSDT iter   2:  -0.214253955802 -1.330e-04  1.368e-04  5.698e-05  2.341e-05        1
+  @LCCSDT iter   3:  -0.214468441466 -2.145e-04  5.210e-05  3.693e-05  8.148e-06        0
+  @LCCSDT iter   4:  -0.214497657429 -2.922e-05  2.089e-05  1.032e-05  2.876e-06        0
+  @LCCSDT iter   5:  -0.214502252532 -4.595e-06  9.548e-06  5.822e-06  1.302e-06        0
+  @LCCSDT iter   6:  -0.214501981148  2.714e-07  3.500e-06  2.096e-06  4.384e-07        1
+  @LCCSDT iter   7:  -0.214502944035 -9.629e-07  1.606e-06  9.832e-07  1.463e-07        0
+  @LCCSDT iter   8:  -0.214502603643  3.404e-07  9.197e-07  3.446e-07  6.665e-08        0
+  @LCCSDT iter   9:  -0.214502754002 -1.504e-07  4.478e-07  1.569e-07  2.637e-08        0
+  @LCCSDT iter  10:  -0.214502762113 -8.111e-09  1.611e-07  5.288e-08  1.119e-08        0
+  @LCCSDT iter  11:  -0.214502791695 -2.958e-08  7.078e-08  2.504e-08  4.960e-09        1
+  @LCCSDT iter  12:  -0.214502799072 -7.377e-09  3.863e-08  1.240e-08  2.741e-09        0
+  @LCCSDT iter  13:  -0.214502804399 -5.327e-09  1.275e-08  5.174e-09  1.208e-09        0
+  @LCCSDT iter  14:  -0.214502805320 -9.209e-10  4.581e-09  2.234e-09  5.248e-10        0
+
+  * (T) TNO rank correction:   0.000000000000
+
+
+  T1 Diagnostic: 0.00568070 
+  
+  Total DLPNO-CCSDT Correlation Energy:  -0.214502827133 
+    LCCSDT Correlation Energy:           -0.214502805320 
+    Weak Pair Contribution:               0.000000000000 
+    Eliminated Pair MP2 Correction:       0.000000000000 
+    Dipole Pair Correction:               0.000000000000 
+    PNO Truncation Correction:           -0.000000021813 
+    Triples Rank Correction:              0.000000000000 
+
+
+  @Total DLPNO-CCSDT Energy: -76.241290102727 
+
+   Starting Quadruplet Prescreening...
+     T_CUT_QNO set to 1.000e-06 
+     T_CUT_DO  set to 2.000e-02 
+     T_CUT_MKN set to 1.000e-01 
+
+  
+    Number of (Unique) Local MO quadruplets: 19
+    Max Number of Possible (Unique) LMO Quadruplets: 19 (Ratio: 1.0000)
+    Natural Orbitals per Local MO quadruplet:
+      Avg:  18 NOs 
+      Min:  16 NOs 
+      Max:  19 NOs 
+      Avg Occ Number Tol: 1.228e-06 
+      Min Occ Number Tol: 1.035e-06 
+      Max Occ Number Tol: 1.774e-06 
+      Avg Trace Sum: 0.999912 
+      Min Trace Sum: 0.999815 
+      Max Trace Sum: 1.000000 
+  
+    Computation of T4 amplitudes complete!!! Time Elapsed:    1 seconds
+
+    (Initial) DLPNO-(Q0) Correlation Energy:  -0.000464345733
+
+
+   Continuing computation with surviving quadruplets...
+     Eliminated all quadruplets with energy less than 1.000e-08 Eh... 
+
+    * Energy Contribution From Screened Quadruplets: 0.000000000000 
+
+     T_CUT_QNO (re)set to 3.330e-07 
+     T_CUT_DO  (re)set to 1.000e-02 
+     T_CUT_MKN (re)set to 1.000e-02 
+
+  
+    Number of (Unique) Local MO quadruplets: 19
+    Max Number of Possible (Unique) LMO Quadruplets: 19 (Ratio: 1.0000)
+    Natural Orbitals per Local MO quadruplet:
+      Avg:  18 NOs 
+      Min:  17 NOs 
+      Max:  19 NOs 
+      Avg Occ Number Tol: 9.575e-07 
+      Min Occ Number Tol: 3.592e-07 
+      Max Occ Number Tol: 1.774e-06 
+      Avg Trace Sum: 0.999986 
+      Min Trace Sum: 0.999925 
+      Max Trace Sum: 1.000000 
+  
+    Computation of T4 amplitudes complete!!! Time Elapsed:    0 seconds
+
+    (Total) DLPNO-(Q0) Correlation Energy:       -0.000464296980
+    * Screened Quadruplets Contribution:          0.000000000000
+
+
+  @Total DLPNO-CCSDT(Q0) Energy: -76.241754399706
+
+
+  ==> Computing Full Iterative (Q) <==
+
+     T_CUT_QNO (re)set to 6.660e-07 for strong triples 
+     T_CUT_QNO (re)set to 3.330e-06 for weak triples   
+
+  ==> Sorting Quadruplets <== 
+
+    Number of Strong Quadruplets:     16, Total Quadruplets:     19, Ratio: 0.8421
+
+  
+    Number of (Unique) Local MO quadruplets: 19
+    Max Number of Possible (Unique) LMO Quadruplets: 19 (Ratio: 1.0000)
+    Natural Orbitals per Local MO quadruplet:
+      Avg:  18 NOs 
+      Min:  14 NOs 
+      Max:  19 NOs 
+      Avg Occ Number Tol: 1.681e-06 
+      Min Occ Number Tol: 7.278e-07 
+      Max Occ Number Tol: 6.319e-06 
+      Avg Trace Sum: 0.999860 
+      Min Trace Sum: 0.998943 
+      Max Trace Sum: 1.000000 
+  
+
+  ==> DLPNO-(Q) Memory Requirements <== 
+
+    (q | i j) integrals    : 0.000 [GiB]
+    (q | i a) integrals    : 0.000 [GiB]
+    (q | a b) integrals    : 0.000 [GiB]
+    (i a | b e)            : 0.003 [GiB]
+    (i a | j m)            : 0.000 [GiB]
+    (i a | j b)            : 0.002 [GiB]
+    T_{ijkl}^{abcd}        : 0.016 [GiB]
+    G_{ijkl}^{abcd}        : 0.016 [GiB]
+    Total Memory Given     : 0.488 [GiB]
+    Total Memory Required  : 0.037 [GiB]
+
+    Computation of T4 amplitudes complete!!! Time Elapsed:    1 seconds
+
+
+  ==> Local CCSDT(Q) <==
+
+    E_CONVERGENCE = 1.00e-08
+    R_CONVERGENCE = 1.00e-08
+
+                         Corr. Energy    Delta E     Max R     Time (s)
+  @LCCSDT(Q) iter   1:  -0.000480142911 -4.801e-04  2.241e-06        0
+  @LCCSDT(Q) iter   2:  -0.000481323985 -1.181e-06  1.216e-07        0
+  @LCCSDT(Q) iter   3:  -0.000481367770 -4.378e-08  1.052e-08        1
+  @LCCSDT(Q) iter   4:  -0.000481369676 -1.906e-09  1.200e-09        0
+
+    DLPNO-(Q0) energy at looser tolerance:       -0.000464182161
+    DLPNO-(Q)  energy at looser tolerance:       -0.000481369676
+    * Net Iterative (Q) contribution:            -0.000017187515
+
+    (Total) DLPNO-(Q) Correlation Energy:        -0.000481484495
+    * DLPNO-(Q0) Contribution:                   -0.000464296980
+    * DLPNO-(Q) Contribution:                    -0.000017187515
+    * Screened Quadruplets Contribution:          0.000000000000
+
+
+  @Total DLPNO-CCSDT(Q) Energy: -76.241771587222
+*** I can't believe this job finished! A thousand hallelujahs!
+
+
+*** tstop() called on d5-17 at Thu Aug  7 11:57:28 2025
+Module time:
+	user time   =      23.43 seconds =       0.39 minutes
+	system time =       1.10 seconds =       0.02 minutes
+	total time  =          6 seconds =       0.10 minutes
+Total time:
+	user time   =      24.16 seconds =       0.40 minutes
+	system time =       1.14 seconds =       0.02 minutes
+	total time  =          7 seconds =       0.12 minutes
+    scf ref...............................................................................PASSED
+    ccsdt corl............................................................................PASSED
+    ccsdt tot.............................................................................PASSED
+    ccsdt(q) corl.........................................................................PASSED
+    ccsdt(q) tot..........................................................................PASSED
+    scf ref...............................................................................PASSED
+    ccsdt(q) corl.........................................................................PASSED
+    ccsdt(q) tot..........................................................................PASSED
+    ccsdt(q) return.......................................................................PASSED
+
+    Psi4 stopped on: Thursday, 07 August 2025 11:57AM
+    Psi4 wall time for execution: 0:00:06.83
+
+*** Psi4 exiting successfully. Buy a developer a beer!

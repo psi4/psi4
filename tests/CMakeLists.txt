@@ -54,7 +54,7 @@ foreach(test_name aediis-1
                   dft-grad-lr1 dft-grad-lr2 dft-grad-lr3 dft-grad-disk
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-grac dft-ghost dft-grad-meta
                   dft-freq dft-freq-analytic1 dft-freq-analytic2 dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10
-                  dft1-alt dft2 dft3 dft-omega dft-dens-cut dlpnocc-1 dlpnomp2-1 dlpnomp2-2 dlpnomp2-3
+                  dft1-alt dft2 dft3 dft-omega dft-dens-cut dlpnocc-1 dlpnocc-2 dlpnomp2-1 dlpnomp2-2 dlpnomp2-3
                   docs-bases docs-dft explicit-am-basis extern1 extern2 extern3 extern4 extern5
                   fsapt1 fsapt2 fsapt-terms fsapt-allterms fsapt-ext fsapt-ext-abc fsapt-ext-abc2
                   fsapt-ext-abc-au isapt1 isapt2 isapt-siao1 fisapt-siao1 isapt-charged
