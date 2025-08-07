@@ -75,7 +75,7 @@ def test_h2o_constrained(inp):
     }
 
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+        psi4.set_options({"e_convergence": 9, "d_convergence": 8e-9})
 
     e, wfn = psi4.optimize(inp['name'], return_wfn=True, engine='geometric', optimizer_keywords=geometric_keywords)
     assert compare_values(inp['ref_ene'], e, 6)

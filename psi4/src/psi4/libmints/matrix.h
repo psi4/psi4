@@ -39,6 +39,7 @@
 #include <eigen3/Eigen/Core>
 #ifdef USING_OpenOrbitalOptimizer
 #define ARMA_DONT_USE_WRAPPER
+#define ARMA_DONT_USE_FORTRAN_HIDDEN_ARGS
 #include <armadillo>
 #else
 // Forward declaration

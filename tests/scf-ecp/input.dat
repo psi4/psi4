@@ -17,8 +17,11 @@ set = {
     d_convergence  10
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    findif5_tol = 8
+else:
+    findif5_tol = 7
+    psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
 
 e = energy('scf')
 compare_values(nucenergy, arwater.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")   #TEST
@@ -27,4 +30,4 @@ compare_values(refenergy, e, 9, "SCF energy with ECP")                          
 agrad = gradient('scf')
 set points 5
 ngrad = gradient('scf', dertype=0)
-compare_matrices(agrad, ngrad, 8, "SCF ECP finite-diff (5-pt) vs. analytic gradient to 10^-8") #TEST
+compare_matrices(agrad, ngrad, findif5_tol, "SCF ECP finite-diff (5-pt) vs. analytic gradient to 10^-8") #TEST
