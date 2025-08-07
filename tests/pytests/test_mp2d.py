@@ -72,6 +72,11 @@ def test_dft_mp2(inp):
         'basis': basisset,
     })
     psi4.set_options(inp['options'])
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+        tol = 1.e-10
+    else:
+        tol = 5e-8
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
     kwargs = {'return_wfn': True}
     if inp.get('dertype') is not None:
         kwargs.update({'dertype': inp['dertype']})
@@ -127,7 +132,7 @@ def test_dft_mp2(inp):
         for retrn in [grad,
                       wfn.gradient()]:
             atol = 2.e-8 if 'dertype' in inp else 1.e-10
-            assert compare_values(ref[basisset][inp['pv'] + ' TOTAL GRADIENT'], np.asarray(retrn), basisset + " tot grad", atol=atol)
+            assert compare_values(ref[basisset][inp['pv'] + ' TOTAL GRADIENT'], np.asarray(retrn), basisset + " tot grad", atol=tol)
 
 
 #TABLE 14259 -1.155358302362078 0.7013114524160179
@@ -150,6 +155,8 @@ def test_mp2d_opt():
         'e_convergence': 12,
         'g_convergence': 'gau_verytight',
     })
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
 
     ene, wfn = psi4.optimize('mp2d/cc-pvdz', return_wfn=True, molecule=h2)
 

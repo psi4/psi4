@@ -308,7 +308,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             else:
                 SCFE = self.compute_E()
                 self.set_energies("Total Energy", SCFE)
-                core.set_variable("SCF ITERATION ENERGY", SCFE)
+                self.set_variable("SCF ITERATION ENERGY", SCFE)
+                self.iteration_energies.append(SCFE)  # note 1-len array, not niter-len array like INTERNAL
 
                 self.form_G()
                 self.form_F()
