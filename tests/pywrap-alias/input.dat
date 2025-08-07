@@ -100,6 +100,9 @@ set {
     e_convergence 8
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 # Try something other than scf
 banner('db()')
 database('scf','S22',subset=[2,8],benchmark='S22A')

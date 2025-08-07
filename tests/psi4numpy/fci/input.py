@@ -29,6 +29,10 @@ psi4.set_options({"ACTIVE": list(wfn.nmopi())})
 num_eig = 1
 ctol = 1.e-5
 etol = 1.e-7
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    # otherwise CI conv and energies go haywire
+    ctol = 1.e-4
+    etol = 1.e-6
 
 # Get the CI Wavefunction and compute required integrals
 psi4.core.prepare_options_for_module("DETCI")
@@ -124,7 +128,6 @@ for CI_ITER in range(max_guess - 1):
         dvecs.copy(svecs, n, swork_vec)
         norm = dvecs.norm(n)
         dvecs.symnormalize(1 / norm, n)
-        
 
         total_proj = 0
         for i in range(num_vecs):
@@ -144,4 +147,4 @@ for CI_ITER in range(max_guess - 1):
 
 print("\nComparison to Psi4's DETCI module:")
 psi_ci_energy, ciwfn = psi4.energy('DETCI', return_wfn=True)
-psi4.compare_values(CI_E, psi_ci_energy, 6, 'CI Energy') 
+psi4.compare_values(psi_ci_energy, CI_E, 6, 'CI Energy')

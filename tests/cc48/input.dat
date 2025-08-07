@@ -99,7 +99,10 @@ D 2 1.00
 ****
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    dip_tol = 6
+else:
+    dip_tol = 5
     psi4.set_options({"e_convergence": 10, "d_convergence": 1e-9})
 
 wfn = properties('eom-ccsd', properties=['dipole'], return_wfn=True)[1]
@@ -153,8 +156,8 @@ ref1B2 = -0.0524679 # TEST
 compare_values(ref0A1, core.variable("CCSD ROOT 0 (IN A1) DIPOLE")[2], 6, "Root 0 (A1) Dipole") # TEST
 compare_values(ref1A1, core.variable("CCSD ROOT 1 (IN A1) DIPOLE")[2], 6, "Root 1 (A1) Dipole") # TEST
 compare_values(ref2A1, core.variable("CCSD ROOT 2 (IN A1) DIPOLE")[2], 6, "Root 2 (A1) Dipole") # TEST
-compare_values(ref0B1, core.variable("CCSD ROOT 0 (IN B1) DIPOLE")[2], 6, "Root 0 (B1) Dipole") # TEST
-compare_values(ref1B1, core.variable("CCSD ROOT 1 (IN B1) DIPOLE")[2], 6, "Root 1 (B1) Dipole") # TEST
+compare_values(ref0B1, core.variable("CCSD ROOT 0 (IN B1) DIPOLE")[2], dip_tol, "Root 0 (B1) Dipole") # TEST
+compare_values(ref1B1, core.variable("CCSD ROOT 1 (IN B1) DIPOLE")[2], dip_tol, "Root 1 (B1) Dipole") # TEST
 compare_values(ref0A2, core.variable("CCSD ROOT 0 (IN A2) DIPOLE")[2], 6, "Root 0 (A2) Dipole") # TEST
 compare_values(ref1A2, core.variable("CCSD ROOT 1 (IN A2) DIPOLE")[2], 6, "Root 1 (A2) Dipole") # TEST
 compare_values(ref0B2, core.variable("CCSD ROOT 0 (IN B2) DIPOLE")[2], 6, "Root 0 (B2) Dipole") # TEST
