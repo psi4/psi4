@@ -1159,7 +1159,7 @@ data:
       host: github
       account: MolSSI
       name: QCEngine
-      commit: v0.32.0
+      commit: v0.33.0
     cmake:
       name: qcengine
       constraint: ATLEAST 0.28.1
@@ -1168,6 +1168,7 @@ data:
       channel: conda-forge
       name: qcengine
       constraint: null
+      constraint_note: "v0.33 has SAPT0-D4 parameters"
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcengine: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcengine: true
