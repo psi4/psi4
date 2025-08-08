@@ -1810,7 +1810,7 @@ def gdma(wfn, datafile=""):
     # from outside the Psi4 ecosystem
     from qcelemental.util import which_import
     if not which_import("gdma", return_bool=True):
-        raise ModuleNotFoundError('Python module gdma not found. Solve by installing it: `conda install -c conda-forge gdma` or recompile with `-DENABLE_gdma`')
+        raise ModuleNotFoundError('Python module gdma not found. Solve by installing it: `conda install -c conda-forge pygdma` or recompile with `-DENABLE_gdma`')
     import gdma
 
     min_version = "2.3.3"

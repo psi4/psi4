@@ -1560,7 +1560,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DIIS_START", 1);
         /*- Minimum number of error vectors stored for DIIS extrapolation. Will be removed in v1.7. -*/
         options.add_int("DIIS_MIN_VECS", 2);
-        /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+        /*- Maximum number of error vectors stored for DIIS extrapolation.
+        For |globals__orbital_optimizer_package| = `OOO`, sets maximum_history_length. -*/
         options.add_int("DIIS_MAX_VECS", 10);
         /*- Do use DIIS extrapolation to accelerate convergence? -*/
         options.add_bool("DIIS", true);
