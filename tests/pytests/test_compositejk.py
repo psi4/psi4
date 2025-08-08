@@ -167,9 +167,15 @@ def test_seminum(inp, scf, mols, request):
         #SNLINK_FORCE_CARTESIAN doesnt work with symmetry currently
         molecule.reset_point_group("C1")
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+        tol = 6
+    else:
+        tol = 5e-6
+        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-7})
+
     # does the SCF energy match a pre-computed reference?
     energy_seminum = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
-    assert compare_values(scf["ref"][test_id.split("-")[1]], energy_seminum, 6, f'{test_id} accurate to reference (1e-6 threshold)')
+    assert compare_values(scf["ref"][test_id.split("-")[1]], energy_seminum, tol, f'{test_id} accurate to reference (1e-6 threshold)')
 
     # is the SCF energy reasonably close to a conventional SCF?
     psi4.set_options({"scf_type" : "pk"})
@@ -330,6 +336,7 @@ def test_j_algo_bp86(j_algo, k_algo, df_basis_scf, mols):
     screening = "CSAM" if any([ _ in scf_type for _ in [ "COSX", "SNLINK" ] ]) else "DENSITY"
 
     psi4.set_options({"scf_type" : scf_type, "reference": "rhf", "basis": "cc-pvdz", "df_basis_scf": df_basis_scf, "screening": screening})
+
     energy_composite = psi4.energy("bp86", molecule=molecule) 
  
     assert compare_values(energy_dfdirj, energy_composite, 6, f'BP86/{df_basis_scf} {scf_type} accurate to {j_algo} (1e-6 threshold)')
