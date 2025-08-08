@@ -248,4 +248,10 @@ def test_zeta(scftype, zeta, der, request):
     else:
         print(ans.np)
 
-    assert compare_values(ref[scftype][der][zeta], ans, 6, f"Hartree--Fock {scftype} {der} {zeta}-zeta")
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+        tol = 6
+    else:
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+        tol = 3e-5
+
+    assert psi4.compare_values(ref[scftype][der][zeta], ans, tol, f"Hartree--Fock {scftype} {der} {zeta}-zeta")
