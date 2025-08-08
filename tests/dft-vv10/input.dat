@@ -30,7 +30,7 @@ set D_CONVERGENCE 1.e-10
 if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
     dft_tol = 9
 else:
-    psi4.set_options({"e_convergence": 10, "d_convergence": 9})
+    psi4.set_options({"e_convergence": 10, "d_convergence": 8e-9})
     dft_tol = 5e-9
 
 scf_e, scf_wfn = energy("VV10", return_wfn=True)

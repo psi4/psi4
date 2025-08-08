@@ -58,6 +58,8 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
         "df_basis_scf": "cc-pvtz-jkfit",
         "print": 2,
     })
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
  
     #== skip redundant option combinations based on type/subtype combination ==#   
     if scf_type not in [ "PK", "DISK_DF", "MEM_DF"] and scf_subtype != "AUTO":
