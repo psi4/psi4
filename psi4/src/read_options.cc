@@ -2672,7 +2672,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- AO ERI Schwarz Screening tolerance for building DF ints in DLPNO !expert -*/
         options.add_double("DLPNO_AO_INTS_TOL", 1.0e-10);
         /*- Minimum number of PNOs required in each pair !expert -*/
-        options.add_int("MIN_PNOS_PER_PAIR", 5);
+        options.add_int("MIN_PNOS", 5);
 
         /*- SUBSECTION DLPNO-CCSD Specific Options -*/
 
@@ -2719,7 +2719,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Energy difference in which to stop considering triples in iterative (T) !expert -*/
         options.add_double("T_CUT_ITER", 1e-3);
         /*- Minimum number of TNOs required in each triplet !expert -*/
-        options.add_int("MIN_TNOS_PER_TRIPLET", 9);
+        options.add_int("MIN_TNOS", 9);
 
         /*- SUBSECTION Memory Control Options -*/
 

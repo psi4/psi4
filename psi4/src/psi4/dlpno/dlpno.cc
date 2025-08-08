@@ -1169,13 +1169,6 @@ void DLPNO::compute_qab() {
 
     outfile->Printf("\n  ==> Transforming 3-Index Integrals to PAO/PAO basis <==\n");
 
-    // TODO: Writing (Q|ab) pao integrals to disk is currently NOT supported. Add this capability later
-    write_qab_pao_ = false;
-
-    if (write_qab_pao_) {
-        psio_->open(PSIF_DLPNO_QAB_PAO, PSIO_OPEN_NEW);
-    }
-
     qab_.resize(naux);
 
     size_t qab_doubles = 0L;
@@ -1269,24 +1262,11 @@ void DLPNO::compute_qab() {
                 ++qab_doubles;
             }
             qab_[qstart + q] = qab_temp;
-
-            if (write_qab_pao_) { // Write to disk
-                std::stringstream toc_entry;
-                toc_entry << "QAB (PAO) " << (qstart + q);
-                qab_[qstart + q]->set_name(toc_entry.str());
-#pragma omp critical
-                qab_[qstart + q]->save(psio_, PSIF_DLPNO_QAB_PAO, psi::Matrix::LowerTriangle);
-                qab_[qstart + q] = nullptr;
-            }
         }
     }
 
     qab_memory_ = qab_doubles;
     outfile->Printf("    PAO/PAO Integral Memory After Screening: %.3f [GiB]\n\n", qab_doubles * pow(2.0, -30) * sizeof(double));
-
-    if (write_qab_pao_) {
-        psio_->close(PSIF_DLPNO_QAB_PAO, 1);
-    }
 
     timer_off("(mn|K)->(ab|K)");
 }
