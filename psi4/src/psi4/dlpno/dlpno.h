@@ -110,8 +110,6 @@ class DLPNO : public Wavefunction {
     size_t qij_memory_;
     size_t qia_memory_;
     size_t qab_memory_;
-    /// Write (Q | u v) integrals to disk?
-    bool write_qab_pao_;
 
     /// LMO/LMO three-index integrals
     std::vector<SharedMatrix> qij_;
@@ -262,6 +260,8 @@ class DLPNO : public Wavefunction {
     double compute_energy() override;
 };
 
+// Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
+
 class DLPNOMP2 : public DLPNO {
    protected:
     // PNO overlap matrices
@@ -293,6 +293,8 @@ class DLPNOMP2 : public DLPNO {
     double compute_energy() override;
 };
 
+// Equations refer to Jiang et al. (JCP 161, 082502, 2024; DOI: 10.1063/5.0219963)
+
 class PSI_API DLPNOCCSD : public DLPNO {
    protected:
     /// Use low memory algorithm to store PNO overlaps?
@@ -301,13 +303,6 @@ class PSI_API DLPNOCCSD : public DLPNO {
     bool write_qia_pno_;
     /// Write (Q_ij | a_ij b_ij) integrals to disk?
     bool write_qab_pno_;
-    /// NOT [form (i j | a_ik b_jk)]
-    bool project_j_;
-    /// NOT [form (i a_ik | j b_jk)]
-    bool project_k_;
-
-    /// Number of svd functions for PNO pair ij in rank-reduced (Q_ij |a_ij b_ij)
-    std::vector<int> n_svd_;
 
     /// PNO overlap integrals
     std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
@@ -315,23 +310,23 @@ class PSI_API DLPNOCCSD : public DLPNO {
     std::vector<std::vector<SharedMatrix>> S_pno_ij_mn_; ///< pno overlaps
 
     /// Coupled-cluster amplitudes
-    std::vector<SharedMatrix> T_ia_; ///< singles amplitudes
-    std::vector<SharedMatrix> T_n_ij_; ///< singles amplitudes of LMO n_ij in PNO basis of ij (dim: n_lmo_pairs * nlmo_ij * npno_ij)
+    std::vector<SharedMatrix> T_ia_; ///< singles amplitudes [naocc x (npno_ii, 1)]
+    std::vector<SharedMatrix> T_n_ij_; ///< projected singles amplitudes [n_lmo_pairs x (nlmo_ij, npno_ij)] (Jiang Eq. 70)
 
     // => Strong and Weak Pair Info <=//
 
     std::vector<double> e_ij_mp2_scale_; ///< how much to scale MP2 energies for scaled approximation to PAO-LMP2
 
-    std::vector<std::vector<int>> i_j_to_ij_strong_;
-    std::vector<std::pair<int,int>> ij_to_i_j_strong_;
-    std::vector<int> ij_to_ji_strong_;
+    std::vector<std::vector<int>> i_j_to_ij_strong_; ///< LMO indices (i, j) to significant strong pair index (ij); insignificant (i, j) maps to -1
+    std::vector<std::pair<int,int>> ij_to_i_j_strong_;  ///< LMO strong pair index (ij) to both LMO indices (i, j)
+    std::vector<int> ij_to_ji_strong_; ///< LMO strong pair index (ij) to LMO pair index (ji)
 
-    std::vector<std::vector<int>> i_j_to_ij_weak_;
-    std::vector<std::pair<int,int>> ij_to_i_j_weak_;
-    std::vector<int> ij_to_ji_weak_;
+    std::vector<std::vector<int>> i_j_to_ij_weak_; ///< LMO indices (i, j) to significant weak pair index (ij); insignificant (i, j) maps to -1
+    std::vector<std::pair<int,int>> ij_to_i_j_weak_;  ///< LMO weak pair index (ij) to both LMO indices (i, j)
+    std::vector<int> ij_to_ji_weak_; ///< LMO weak pair index (ij) to LMO pair index (ji)
 
     // => Additional helpful sparse maps <= //
-    SparseMap lmopair_to_paos_ext_;
+    SparseMap lmopair_to_paos_ext_; ///< paos on all significant lmo pairs (ik and kj) for a given lmo pair (ij)
 
     // => CCSD Integrals <= //
 
@@ -345,12 +340,10 @@ class PSI_API DLPNOCCSD : public DLPNO {
     std::vector<SharedMatrix> J_ijab_; /// (i j | a_ij b_ij)
     std::vector<SharedMatrix> L_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i b_ij | j a_ij)
     std::vector<SharedMatrix> M_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i j | b_ij a_ij)
-    std::vector<std::vector<SharedMatrix>> J_ij_kj_;   /// (i k | a_ij b_jk)
-    std::vector<std::vector<SharedMatrix>> K_ij_kj_;   /// (i a_ij | k b_kj)
+    std::vector<std::vector<SharedMatrix>> J_ij_kj_;  /// (i k | a_ij b_jk)
+    std::vector<std::vector<SharedMatrix>> K_ij_kj_;  /// (i a_ij | k b_kj)
     /// (1 occupied, 3 virtual)
-    std::vector<SharedMatrix> K_tilde_chem_; /// (i e_ij | a_ij f_ij) [aka K_tilde] (stored as (e, a*f)) [Chemist's Notation]
-    std::vector<SharedMatrix> K_tilde_phys_; /// (i e_ij | a_ij f_ij) [aka K_tilde] (stored as (a, e*f)) [Physicist's Notation]
-    std::vector<SharedMatrix> L_tilde_; /// 2.0 * K_tilde_chem - K_tilde_phys
+    std::vector<SharedMatrix> K_tilde_chem_; /// (i e_ij | a_ij f_ij) (stored as (e, a*f)) [Chemist's Notation]
     /// (0 occupied, 4 virtual)
 
     // DF Integrals (Used in DLPNO-T1-CCSD)
@@ -363,10 +356,10 @@ class PSI_API DLPNOCCSD : public DLPNO {
     std::vector<SharedMatrix> i_Qa_t1_;   // (q_ij | a_ij i) [T1-dressed]
 
     // Dressed Fock matrices (used in DLPNO-T1-CCSD)
-    SharedMatrix Fkj_;
-    std::vector<SharedMatrix> Fkc_;
-    std::vector<SharedMatrix> Fai_;
-    std::vector<SharedMatrix> Fab_;
+    SharedMatrix Fkj_; // Jiang Eq. 94
+    std::vector<SharedMatrix> Fkc_; // Jiang Eq. 95
+    std::vector<SharedMatrix> Fai_; // Jiang Eq. 96
+    std::vector<SharedMatrix> Fab_; // Jiang Eq. 97
 
     double e_lmp2_; ///< raw (uncorrected) local MP2 correlation energy
     double e_lccsd_; ///< raw (uncorrected) local CCSD correlation energy
@@ -433,6 +426,8 @@ class PSI_API DLPNOCCSD : public DLPNO {
     double compute_energy() override;
 };
 
+// Equations refer to Jiang et al. (JCP 161, 082502, 2024; DOI: 10.1063/5.0219963)
+
 class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
    protected:
     // Sparsity information
@@ -477,14 +472,14 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     SharedMatrix matmul_3d(SharedMatrix A, SharedMatrix X, int dim_old, int dim_new);
     /// Returns a symmetrized version of that matrix (in i <= j <= k ordering)
     SharedMatrix triples_permuter(const SharedMatrix& X, int i, int j, int k, bool reverse=false);
-    /// compute (T) iteration energy
+    /// compute (T) iteration energy (Jiang Eq. 53)
     double compute_t_iteration_energy();
 
-    /// L_CCSD(T0) energy
+    /// L_CCSD(T0) energy (Jiang Eq. 53, 109-110)
     double compute_lccsd_t0(bool store_amplitudes=false);
     /// A function to estimate Full-(T) memory costs
     void estimate_memory();
-    /// L_CCSD(T) iterations
+    /// L_CCSD(T) iterations (Jiang Eq. 111-112)
     double lccsd_t_iterations();
 
     void print_header();

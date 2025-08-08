@@ -308,10 +308,6 @@ void DLPNOCCSD::estimate_memory() {
         }
     }
 
-    // TODO: This is currently NOT supported, make this a viable option in the future;
-    write_qab_pao_ = false;
-    if (write_qab_pao_) qab_memory_ = 0;
-
     low_memory_overlap_ = options_.get_bool("LOW_MEMORY_OVERLAP");
     if (low_memory_overlap_) pno_overlap_memory = low_overlap_memory;
 
@@ -326,17 +322,17 @@ void DLPNOCCSD::estimate_memory() {
     size_t total_memory = total_df_memory + pno_overlap_memory + total_pno_int_memory;
 
     // 2^30 bytes per GiB
-    outfile->Printf("    (q | i j) integrals        : %.3f [GiB]\n", qij_memory_ * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (q | i a) integrals        : %.3f [GiB]\n", qia_memory_ * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (q | a b) integrals        : %.3f [GiB]\n", qab_memory_ * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (m i | n j)                : %.3f [GiB]\n", oooo * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (i j | k c_{ij})           : %.3f [GiB]\n", ooov * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (i a_{ij} | j b_{ij})      : %.3f [GiB]\n", oovv * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (i k | a_{ij} b_{kj})      : %.3f [GiB]\n", oovv_large * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (i a_{ij} | b_{ij} c_{ij}) : %.3f [GiB]\n", ovvv * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (Q_{ij}|m_{ij} a_{ij})     : %.3f [GiB]\n", qov * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    (Q_{ij}|a_{ij} b_{ij})     : %.3f [GiB]\n", qvv * pow(2.0, -30) * sizeof(double));
-    outfile->Printf("    PNO/PNO overlaps           : %.3f [GiB]\n\n", pno_overlap_memory * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (q | i j) [AUX, LMO]       : %.3f [GiB]\n", qij_memory_ * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (q | i a) [AUX, LMO, PAO]  : %.3f [GiB]\n", qia_memory_ * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (q | a b) [AUX, PAO]       : %.3f [GiB]\n", qab_memory_ * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    0-virtual LMO ERI          : %.3f [GiB]\n", oooo * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    1-virtual LMO/PNO ERI      : %.3f [GiB]\n", ooov * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    2-virtual LMO/PNO ERI      : %.3f [GiB]\n", oovv * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    2-virtual non-projected    : %.3f [GiB]\n", oovv_large * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    3-virtual LMO/PNO ERI      : %.3f [GiB]\n", ovvv * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (Q_ij | m_ij a_ij)         : %.3f [GiB]\n", qov * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (Q_ij | a_ij b_ij)         : %.3f [GiB]\n", qvv * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    PNO overlaps               : %.3f [GiB]\n\n", pno_overlap_memory * pow(2.0, -30) * sizeof(double));
     outfile->Printf("    Total Memory Given         : %.3f [GiB]\n", memory_ * pow(2.0, -30));
     outfile->Printf("    Total Memory Required      : %.3f [GiB]\n\n", total_memory * pow(2.0, -30) * sizeof(double));
 
@@ -386,17 +382,17 @@ void DLPNOCCSD::estimate_memory() {
     if (memory_changed) {
         outfile->Printf("  ==> (Updated) DLPNO-CCSD Memory Requirements <== \n\n");
 
-        outfile->Printf("    (q | i j) integrals        : %.3f [GiB]\n", qij_memory_ * pow(2.0, -30) * sizeof(double));
-        outfile->Printf("    (q | i a) integrals        : %.3f [GiB]\n", qia_memory_ * pow(2.0, -30) * sizeof(double));
-        outfile->Printf("    (q | a b) integrals        : %.3f [GiB]\n", qab_memory_ * pow(2.0, -30) * sizeof(double));
-        outfile->Printf("    (m i | n j)                : %.3f [GiB]\n", oooo * pow(2.0, -30) * sizeof(double));
-        outfile->Printf("    (i j | k c_{ij})           : %.3f [GiB]\n", ooov * pow(2.0, -30) * sizeof(double));
-        outfile->Printf("    (i a_{ij} | j b_{ij})      : %.3f [GiB]\n", oovv * pow(2.0, -30) * sizeof(double));
-        outfile->Printf("    (i k | a_{ij} b_{kj})      : %.3f [GiB]\n", oovv_large * pow(2.0, -30) * sizeof(double));
-        outfile->Printf("    (i a_{ij} | b_{ij} c_{ij}) : %.3f [GiB]\n", ovvv * pow(2.0, -30) * sizeof(double));
-        outfile->Printf("    (Q_{ij}|m_{ij} a_{ij})     : %.3f [GiB]\n", qov * pow(2.0, -30) * sizeof(double));
-        outfile->Printf("    (Q_{ij}|a_{ij} b_{ij})     : %.3f [GiB]\n", qvv * pow(2.0, -30) * sizeof(double));
-        outfile->Printf("    PNO/PNO overlaps           : %.3f [GiB]\n\n", pno_overlap_memory * pow(2.0, -30) * sizeof(double));
+        outfile->Printf("    (q | i j) [AUX, LMO]       : %.3f [GiB]\n", qij_memory_ * pow(2.0, -30) * sizeof(double));
+        outfile->Printf("    (q | i a) [AUX, LMO, PAO]  : %.3f [GiB]\n", qia_memory_ * pow(2.0, -30) * sizeof(double));
+        outfile->Printf("    (q | a b) [AUX, PAO]       : %.3f [GiB]\n", qab_memory_ * pow(2.0, -30) * sizeof(double));
+        outfile->Printf("    0-virtual LMO ERI          : %.3f [GiB]\n", oooo * pow(2.0, -30) * sizeof(double));
+        outfile->Printf("    1-virtual LMO/PNO ERI      : %.3f [GiB]\n", ooov * pow(2.0, -30) * sizeof(double));
+        outfile->Printf("    2-virtual LMO/PNO ERI      : %.3f [GiB]\n", oovv * pow(2.0, -30) * sizeof(double));
+        outfile->Printf("    2-virtual non-projected    : %.3f [GiB]\n", oovv_large * pow(2.0, -30) * sizeof(double));
+        outfile->Printf("    3-virtual LMO/PNO ERI      : %.3f [GiB]\n", ovvv * pow(2.0, -30) * sizeof(double));
+        outfile->Printf("    (Q_ij | m_ij a_ij)         : %.3f [GiB]\n", qov * pow(2.0, -30) * sizeof(double));
+        outfile->Printf("    (Q_ij | a_ij b_ij)         : %.3f [GiB]\n", qvv * pow(2.0, -30) * sizeof(double));
+        outfile->Printf("    PNO overlaps               : %.3f [GiB]\n\n", pno_overlap_memory * pow(2.0, -30) * sizeof(double));
         outfile->Printf("    Total Memory Given         : %.3f [GiB]\n", memory_ * pow(2.0, -30));
         outfile->Printf("    Total Memory Required      : %.3f [GiB]\n\n", total_memory * pow(2.0, -30) * sizeof(double));
     }
@@ -429,6 +425,9 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
     int nbf = basisset_->nbf();
     int naocc = i_j_to_ij_.size();
     int n_lmo_pairs = ij_to_i_j_.size();
+
+    const int MIN_PNOS = options_.get_int("MIN_PNOS");
+
     std::vector<double> e_ijs(n_lmo_pairs);
 
     outfile->Printf("\n  ==> Computing SC-LMP2 Pair Energies <==\n\n");
@@ -448,8 +447,6 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
         occ_pno_.resize(n_lmo_pairs);
         trace_pno_.resize(n_lmo_pairs);
         de_pno_.resize(n_lmo_pairs);
-        // de_pno_os_.resize(n_lmo_pairs);
-        // de_pno_ss_.resize(n_lmo_pairs);
     }
 
     double e_sc_lmp2 = 0.0;
@@ -525,8 +522,6 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
 
         // mp2 energy of this LMO pair before transformation to PNOs
         double e_ij_initial = K_pao_ij->vector_dot(Tt_pao_ij);
-        // double e_ij_os_initial = K_pao_ij->vector_dot(T_pao_ij);
-        // double e_ij_ss_initial = e_ij_initial - e_ij_os_inital;
 
         double prefactor = (i == j) ? 1.0 : 2.0;
         e_sc_lmp2 += prefactor * e_ij_initial;
@@ -570,7 +565,7 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
 
             for (size_t a = 0; a < nvir_ij; ++a) {
                 if (fabs(pno_occ.get(a)) >= t_cut_scale * T_CUT_PNO_MP2_ || occ_pno / occ_total < T_CUT_TRACE_MP2_ ||
-                        std::fabs(e_pno) < T_CUT_ENERGY_MP2_ * std::fabs(e_ij_initial)) {
+                        std::fabs(e_pno) < T_CUT_ENERGY_MP2_ * std::fabs(e_ij_initial) || a < MIN_PNOS) {
                     a_curr.push_back(a);
 
                     // Energy criteria
@@ -607,13 +602,9 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
 
             // mp2 energy of this LMO pair after transformation to PNOs and truncation
             double e_ij_trunc = K_pno_ij->vector_dot(Tt_pno_ij);
-            // double e_ij_os_trunc = K_pno_ij->vector_dot(T_pno_ij);
-            // double e_ij_ss_trunc = e_ij_trunc - e_ij_os_trunc;
 
             // truncation error
             double de_pno_ij = e_ij_initial - e_ij_trunc;
-            // double de_pno_ij_os = e_ij_os_initial - e_ij_os_trunc;
-            // double de_pno_ij_ss = e_ij_ss_initial - e_ij_ss_trunc;
 
             X_pno_ij = linalg::doublet(X_pao_ij, X_pno_ij, false, false);
 
@@ -626,8 +617,6 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
             occ_pno_[ij] = pno_occ.get(n_pno_[ij] - 1);
             trace_pno_[ij] = occ_pno / occ_total;
             de_pno_[ij] = de_pno_ij;
-            // de_pno_os_[ij] = de_pno_ij_os;
-            // de_pno_ss_[ij] = de_pno_ij_ss;
 
             // account for symmetry
             if (i < j) {
@@ -640,8 +629,6 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
                 occ_pno_[ji] = occ_pno_[ij];
                 trace_pno_[ji] = trace_pno_[ij];
                 de_pno_[ji] = de_pno_ij;
-                // de_pno_os_[ji] = de_pno_ij_os;
-                // de_pno_ss_[ji] = de_pno_ij_ss;
             }
         }
     } // end for (ij pairs)
@@ -671,14 +658,13 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
         outfile->Printf("    Natural Orbitals per Local MO pair:\n");
         outfile->Printf("      Avg: %3d NOs \n", pno_count_total / n_lmo_pairs);
         outfile->Printf("      Min: %3d NOs \n", pno_count_min);
-        outfile->Printf("      Max: %3d NOs \n", pno_count_max);
+        outfile->Printf("      Max: %3d NOs \n\n", pno_count_max);
         outfile->Printf("      Avg Occ Number Tol: %.3e \n", occ_number_total / n_lmo_pairs);
         outfile->Printf("      Min Occ Number Tol: %.3e \n", occ_number_min);
-        outfile->Printf("      Max Occ Number Tol: %.3e \n", occ_number_max);
+        outfile->Printf("      Max Occ Number Tol: %.3e \n\n", occ_number_max);
         outfile->Printf("      Avg Trace Sum: %.6f \n", trace_total / n_lmo_pairs);
         outfile->Printf("      Min Trace Sum: %.6f \n", trace_min);
-        outfile->Printf("      Max Trace Sum: %.6f \n", trace_max);
-        outfile->Printf("  \n");
+        outfile->Printf("      Max Trace Sum: %.6f \n\n", trace_max);
         outfile->Printf("    PNO truncation energy = %.12f\n", de_pno_total_);
     }
 
@@ -686,14 +672,15 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
 }
 
 void DLPNOCCSD::pno_lmp2_iterations() {
+    /* Code borrowed and adapted from Zach Glick's DLPNO-MP2 */
 
     int nbf = basisset_->nbf();
     int naocc = i_j_to_ij_.size();
     int n_lmo_pairs = ij_to_i_j_.size();
 
-    outfile->Printf("  ==> PNO-LMP2 Memory Estimate <== \n\n");
+    outfile->Printf("\n  ==> PNO-LMP2 Memory Estimate <== \n\n");
 
-    double F_CUT_PAIR = options_.get_double("F_CUT");
+    double F_CUT_MP2 = options_.get_double("F_CUT");
 
     size_t pno_overlap_memory = 0;
 #pragma omp parallel for schedule(dynamic, 1) reduction(+ : pno_overlap_memory)
@@ -706,17 +693,19 @@ void DLPNOCCSD::pno_lmp2_iterations() {
             int kj = i_j_to_ij_[k][j];
             int ik = i_j_to_ij_[i][k];
 
-            if (kj != -1 && i != k && fabs(F_lmo_->get(i, k)) > F_CUT_PAIR) {
+            if (kj != -1 && i != k && fabs(F_lmo_->get(i, k)) > F_CUT_MP2) {
                 pno_overlap_memory += n_pno_[ij] * n_pno_[kj];
             }
-            if (ik != -1 && j != k && fabs(F_lmo_->get(k, j)) > F_CUT_PAIR) {
+            if (ik != -1 && j != k && fabs(F_lmo_->get(k, j)) > F_CUT_MP2) {
                 pno_overlap_memory += n_pno_[ij] * n_pno_[ik];
             }
         }
     }
+
+    // => Form PNO overlap integrals for preceeding DLPNO-MP2 iterations
         
     // 2^30 bytes per GiB
-    outfile->Printf("    PNO/PNO overlaps       : %.3f [GiB]\n", pno_overlap_memory * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    PNO overlaps           : %.3f [GiB]\n", pno_overlap_memory * pow(2.0, -30) * sizeof(double));
     outfile->Printf("    Total Memory Given     : %.3f [GiB]\n\n", memory_ * pow(2.0, -30));
 
     if (pno_overlap_memory * sizeof(double) > 0.9 * memory_) {
@@ -743,11 +732,11 @@ void DLPNOCCSD::pno_lmp2_iterations() {
             int kj = i_j_to_ij_[k][j];
             int ik = i_j_to_ij_[i][k];
 
-            if (kj != -1 && i != k && fabs(F_lmo_->get(i, k)) > F_CUT_PAIR) {
+            if (kj != -1 && i != k && fabs(F_lmo_->get(i, k)) > F_CUT_MP2) {
                 S_pno_ij_kj[ij][k] = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], lmopair_to_paos_[kj]);
                 S_pno_ij_kj[ij][k] = linalg::triplet(X_pno_[ij], S_pno_ij_kj[ij][k], X_pno_[kj], true, false, false);
             }
-            if (ik != -1 && j != k && fabs(F_lmo_->get(k, j)) > F_CUT_PAIR) {
+            if (ik != -1 && j != k && fabs(F_lmo_->get(k, j)) > F_CUT_MP2) {
                 S_pno_ij_ik[ij][k] = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], lmopair_to_paos_[ik]);
                 S_pno_ij_ik[ij][k] = linalg::triplet(X_pno_[ij], S_pno_ij_ik[ij][k], X_pno_[ik], true, false, false);
             }
@@ -762,7 +751,7 @@ void DLPNOCCSD::pno_lmp2_iterations() {
 
     std::vector<SharedMatrix> R_iajb(n_lmo_pairs);
 
-    int iteration = 0, max_iteration = options_.get_int("DLPNO_MAXITER");
+    int iteration = 1, max_iteration = options_.get_int("DLPNO_MAXITER");
     double e_curr = 0.0, e_prev = 0.0, r_curr = 0.0;
     bool e_converged = false, r_converged = false;
     DIISManager diis(options_.get_int("DIIS_MAX_VECS"), "LMP2 DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
@@ -838,7 +827,7 @@ void DLPNOCCSD::pno_lmp2_iterations() {
         auto T_iajb_flat = flatten_mats(T_iajb_);
         auto R_iajb_flat = flatten_mats(R_iajb);
 
-        if (iteration == 0) {
+        if (iteration == 1) {
             diis.set_error_vector_size(R_iajb_flat.get());
             diis.set_vector_size(T_iajb_flat.get());
         }
@@ -877,7 +866,7 @@ void DLPNOCCSD::pno_lmp2_iterations() {
 
         iteration++;
 
-        if (iteration > max_iteration) {
+        if (iteration > max_iteration + 1) {
             throw PSIEXCEPTION("Maximum DLPNO iterations exceeded.");
         }
     }
@@ -888,14 +877,14 @@ void DLPNOCCSD::pno_lmp2_iterations() {
 }
 
 void DLPNOCCSD::recompute_pnos() {
+    /* Recompute Pair Natural Orbitals for LCCSD iterations */
 
     timer_on("Recompute PNOs");
 
     int nbf = basisset_->nbf();
     int naocc = i_j_to_ij_.size();
     int n_lmo_pairs = ij_to_i_j_.size();
-
-    // Recompute Pair Natural Orbitals for LCCSD iterations
+    const int MIN_PNOS = options_.get_int("MIN_PNOS");
 
     outfile->Printf("\n  ==> Forming Pair Natural Orbitals (for LCCSD) <==\n");
 
@@ -913,8 +902,6 @@ void DLPNOCCSD::recompute_pnos() {
         SharedVector e_pao_ij;  // energies of the canonical PAOs
         std::tie(X_pao_ij, e_pao_ij) = orthocanonicalizer(S_pao_ij, F_pao_ij);
 
-        auto S_pno_ij_init = linalg::triplet(X_pno_[ij], S_pao_ij, X_pno_[ij], true, false, false);
-        auto S_pao_half = linalg::triplet(X_pao_ij, S_pao_ij, X_pno_[ij], true, false, false);
         S_pao_ij = linalg::triplet(X_pao_ij, S_pao_ij, X_pao_ij, true, false, false);
         auto F_pno_ij_init = linalg::triplet(X_pno_[ij], F_pao_ij, X_pno_[ij], true, false, false);
 
@@ -948,7 +935,7 @@ void DLPNOCCSD::recompute_pnos() {
 
         for (size_t a = 0; a < nvir_ij; ++a) {
             if (fabs(pno_occ.get(a)) >= t_cut_scale * T_CUT_PNO_ || occ_pno / occ_total < T_CUT_TRACE_ ||
-                    std::fabs(e_pno) < T_CUT_ENERGY_ * std::fabs(e_ij_total)) {
+                    std::fabs(e_pno) < T_CUT_ENERGY_ * std::fabs(e_ij_total) || a < MIN_PNOS) {
                 a_curr.push_back(a);
 
                 // Energy criteria
@@ -1038,14 +1025,13 @@ void DLPNOCCSD::recompute_pnos() {
     outfile->Printf("    Natural Orbitals per Local MO pair:\n");
     outfile->Printf("      Avg: %3d NOs \n", pno_count_total / n_lmo_pairs);
     outfile->Printf("      Min: %3d NOs \n", pno_count_min);
-    outfile->Printf("      Max: %3d NOs \n", pno_count_max);
+    outfile->Printf("      Max: %3d NOs \n\n", pno_count_max);
     outfile->Printf("      Avg Occ Number Tol: %.3e \n", occ_number_total / n_lmo_pairs);
     outfile->Printf("      Min Occ Number Tol: %.3e \n", occ_number_min);
-    outfile->Printf("      Max Occ Number Tol: %.3e \n", occ_number_max);
+    outfile->Printf("      Max Occ Number Tol: %.3e \n\n", occ_number_max);
     outfile->Printf("      Avg Trace Sum: %.6f \n", trace_total / n_lmo_pairs);
     outfile->Printf("      Min Trace Sum: %.6f \n", trace_min);
-    outfile->Printf("      Max Trace Sum: %.6f \n", trace_max);
-    outfile->Printf("  \n");
+    outfile->Printf("      Max Trace Sum: %.6f \n\n", trace_max);
     outfile->Printf("    LMP2 Weak pair energy = %.12f\n", de_weak_);
     outfile->Printf("    PNO truncation energy = %.12f\n", de_pno_total_);
 
@@ -1053,6 +1039,8 @@ void DLPNOCCSD::recompute_pnos() {
 }
 
 template<bool crude> std::pair<double, double> DLPNOCCSD::filter_pairs(const std::vector<double>& e_ijs) {
+    /* This function filters between strong and weak pairs */
+
     int natom = molecule_->natom();
     int nbf = basisset_->nbf();
     int naocc = i_j_to_ij_.size();
@@ -1173,7 +1161,7 @@ template<bool crude> void DLPNOCCSD::pair_prescreening() {
         int n_surviving_pairs = n_strong_pairs + n_weak_pairs;
         int n_eliminated_pairs = n_lmo_pairs_init - n_surviving_pairs;
 
-        outfile->Printf("    Eliminated Pairs                = %d\n", n_eliminated_pairs);
+        outfile->Printf("    Eliminated Pairs (SC-LMP2)      = %d\n", n_eliminated_pairs);
         outfile->Printf("    (Initial) Weak Pairs            = %d\n", n_weak_pairs);
         outfile->Printf("    (Initial) Strong Pairs          = %d\n", n_strong_pairs);
         outfile->Printf("    Surviving Pairs / Total Pairs   = (%.2f %%)\n", (100.0 * n_surviving_pairs) / (naocc * naocc));
@@ -1198,7 +1186,6 @@ template<bool crude> void DLPNOCCSD::pair_prescreening() {
         outfile->Printf("    (Final) Strong Pairs            = %d\n", n_strong_pairs);
         outfile->Printf("    Strong Pairs / Total Pairs      = (%.2f %%)\n", (100.0 * n_strong_pairs) / (naocc * naocc));
         outfile->Printf("    (Cumulative) Eliminated Pair dE = %.12f\n", de_lmp2_eliminated_);
-        outfile->Printf("    (Initial) Weak Pair dE          = %.12f\n\n", de_weak_);
     }
 }
 
@@ -1206,6 +1193,7 @@ void DLPNOCCSD::compute_cc_integrals() {
     outfile->Printf("    Computing CC integrals...\n\n");
 
     int n_lmo_pairs = ij_to_i_j_.size();
+
     // 0 virtual
     K_mnij_.resize(n_lmo_pairs);
     // 1 virtual
@@ -1217,13 +1205,11 @@ void DLPNOCCSD::compute_cc_integrals() {
     J_ijab_.resize(n_lmo_pairs);
     L_iajb_.resize(n_lmo_pairs);
     M_iajb_.resize(n_lmo_pairs);
+    // 2-virtual non-projected
     J_ij_kj_.resize(n_lmo_pairs);
     K_ij_kj_.resize(n_lmo_pairs);
     // 3 virtual
     K_tilde_chem_.resize(n_lmo_pairs);
-    // K_tilde_phys_.resize(n_lmo_pairs);
-    // L_tilde_.resize(n_lmo_pairs);
-    // 4 virtual
 
     // DF integrals (used in DLPNO-CCSD with T1 Transformed Hamiltonian)
     if (!write_qia_pno_) {
@@ -1236,14 +1222,7 @@ void DLPNOCCSD::compute_cc_integrals() {
     i_Qa_ij_.resize(n_lmo_pairs);
     i_Qk_ij_.resize(n_lmo_pairs);
 
-    n_svd_.resize(n_lmo_pairs);
-
     size_t qvv_memory = 0;
-    size_t qvv_svd_memory = 0;
-
-    if (write_qab_pao_) {
-        psio_->open(PSIF_DLPNO_QAB_PAO, PSIO_OPEN_OLD);
-    }
 
     if (write_qia_pno_) {
         psio_->open(PSIF_DLPNO_QIA_PNO, PSIO_OPEN_NEW);
@@ -1256,7 +1235,7 @@ void DLPNOCCSD::compute_cc_integrals() {
     std::time_t time_start = std::time(nullptr);
     std::time_t time_lap = std::time(nullptr);
 
-#pragma omp parallel for schedule(dynamic, 1) reduction(+ : qvv_memory) reduction(+ : qvv_svd_memory)
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : qvv_memory)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
@@ -1347,27 +1326,18 @@ void DLPNOCCSD::compute_cc_integrals() {
             q_ov_tmp = linalg::doublet(q_ov_tmp, X_pno_[ij], false, false);
             ::memcpy(&(*q_ov)(q_ij, 0), &(*q_ov_tmp)(0,0), nlmo_ij * npno_ij * sizeof(double));
 
-            SharedMatrix q_vv_tmp;
-            if (write_qab_pao_) {
-                std::stringstream toc_entry;
-                toc_entry << "QAB (PAO) " << q;
-                int npao_q = riatom_to_paos_ext_[centerq].size();
-                q_vv_tmp = std::make_shared<Matrix>(toc_entry.str(), npao_q, npao_q);
-#pragma omp critical
-                q_vv_tmp->load(psio_, PSIF_DLPNO_QAB_PAO, psi::Matrix::LowerTriangle);
-                q_vv_tmp = submatrix_rows_and_cols(*q_vv_tmp, sparse_pao_list, sparse_pao_list);
-            } else {
-                q_vv_tmp = std::make_shared<Matrix>(npao_ij, npao_ij);
-                for (int u_ij = 0; u_ij < npao_ij; ++u_ij) {
-                    int u = lmopair_to_paos_[ij][u_ij];
-                    for (int v_ij = 0; v_ij < npao_ij; ++v_ij) {
-                        int v = lmopair_to_paos_[ij][v_ij];
-                        int uv_idx = riatom_to_pao_pairs_dense_[centerq][u][v];
-                        if (uv_idx == -1) continue;
-                        q_vv_tmp->set(u_ij, v_ij, qab_[q]->get(uv_idx, 0));
-                    }
+            SharedMatrix q_vv_tmp = std::make_shared<Matrix>(npao_ij, npao_ij);
+            
+            for (int u_ij = 0; u_ij < npao_ij; ++u_ij) {
+                int u = lmopair_to_paos_[ij][u_ij];
+                for (int v_ij = 0; v_ij < npao_ij; ++v_ij) {
+                    int v = lmopair_to_paos_[ij][v_ij];
+                    int uv_idx = riatom_to_pao_pairs_dense_[centerq][u][v];
+                    if (uv_idx == -1) continue;
+                    q_vv_tmp->set(u_ij, v_ij, qab_[q]->get(uv_idx, 0));
                 }
             }
+            
             q_vv_tmp = linalg::triplet(X_pno_[ij], q_vv_tmp, X_pno_[ij], true, false, false);
             ::memcpy(&(*q_vv)(q_ij, 0), &(*q_vv_tmp)(0,0), npno_ij * npno_ij * sizeof(double));
         }
@@ -1633,6 +1603,8 @@ void DLPNOCCSD::t1_ints() {
 
         if (i_j_to_ij_strong_[i][j] == -1) continue;
 
+        // => Jiang Eq. 91 <= //
+
         i_Qk_t1_[ij] = i_Qk_ij_[ij]->clone();
 
         auto qma_ij = QIA_PNO(ij);
@@ -1643,6 +1615,8 @@ void DLPNOCCSD::t1_ints() {
                 }
             }
         }
+
+        // => Jiang Eq. 92 <= //
 
         i_Qa_t1_[ij] = i_Qa_ij_[ij]->clone();
         i_Qa_t1_[ij]->subtract(linalg::doublet(i_Qk_ij_[ij], T_n_ij_[ij]));
@@ -1687,13 +1661,13 @@ void DLPNOCCSD::t1_fock() {
         int nlmo_ij = lmopair_to_lmos_[ij].size();
         int npno_ij = n_pno_[ij];
 
-        // Partially dress Fij
+        // Partially dress Fij (Jiang Eq. 98)
         (*Fij_bar)(i, j) += 2.0 * T_n_ij_[ij]->vector_dot(K_bar_chem_[ij]);
         (*Fij_bar)(i, j) -= T_n_ij_[ij]->vector_dot(K_bar_[ji]);
 
         if (i > j || i_j_to_ij_strong_[i][j] == -1) continue;
 
-        // Partially dress Fia and Fab
+        // Partially dress Fia and Fab (Jiang Eq. 99 and 101)
         Fia_bar[ij] = std::make_shared<Matrix>(nlmo_ij, npno_ij);
 
         Fab_bar[ij] = std::make_shared<Matrix>(npno_ij, npno_ij);
@@ -1723,7 +1697,7 @@ void DLPNOCCSD::t1_fock() {
             Fab_bar[ij]->subtract(Kcont);
         }
 
-        // Partially dress Fai
+        // Partially dress Fai (Jiang Eq. 100)
         if (i == j) {
             Fai_bar[i] = std::make_shared<Matrix>(npno_ij, 1);
 
@@ -1768,13 +1742,14 @@ void DLPNOCCSD::t1_fock() {
         int nlmo_ij = lmopair_to_lmos_[ij].size();
         int npno_ij = n_pno_[ij];
 
-        // Fully dress Fkj matrices
+        // Fully dress Fkj matrices (Jiang Eq. 94)
         int i_jj = lmopair_to_lmos_dense_[jj][i];
         for (int a_jj = 0; a_jj < n_pno_[jj]; ++a_jj) {
             (*Fkj_)(i, j) += (*Fia_bar[jj])(i_jj, a_jj) * (*T_ia_[j])(a_jj, 0);
         }
 
         // Fkc matrices (built separately since Fia intermediate not built for weak pairs)
+        // Jiang Eq. 95
         Fkc_[ij] = std::make_shared<Matrix>(1, npno_ij);
 
         for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
@@ -1788,11 +1763,11 @@ void DLPNOCCSD::t1_fock() {
 
         if (i_j_to_ij_strong_[i][j] == -1 || i > j) continue;
 
-        // Fully dress Fab matrices
+        // Fully dress Fab matrices (Jiang Eq. 97)
         Fab_[ij] = Fab_bar[ij]->clone();
         Fab_[ij]->subtract(linalg::doublet(T_n_ij_[ij], Fia_bar[ij], true, false));
 
-        // Fully dress Fai matrices (the worst term)
+        // Fully dress Fai matrices (Jiang Eq. 96)
         if (i == j) {
             Fai_[i] = Fai_bar[i]->clone();
             Fai_[i]->add(linalg::doublet(Fab_bar[ij], T_ia_[i], false, false));
@@ -1831,8 +1806,10 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_beta() {
         int pair_idx = (i > j) ? ji : ij;
         int i_ij = lmopair_to_lmos_dense_[ij][i], j_ij = lmopair_to_lmos_dense_[ij][j];
 
+        // Jiang Eq. 82a
         beta[ij] = linalg::doublet(i_Qk_t1_[ij], i_Qk_t1_[ji], true, false);
 
+        // Jiang Eq. 82b
         auto qma_ij = QIA_PNO(ij);
         for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
             beta[ij]->add(linalg::triplet(qma_ij[q_ij], T_iajb_[ij], qma_ij[q_ij], false, false, true));
@@ -1864,16 +1841,19 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_gamma() {
         int k_ki = lmopair_to_lmos_dense_[ki][k], i_ki = lmopair_to_lmos_dense_[ki][i];
         int pair_idx = (k > i) ? ij_to_ji_[ki] : ki;
 
-        // First term of gamma is the dressing of J_ijab
         gamma[ki] = std::make_shared<Matrix>(npno_ki, npno_ki);
+        gamma[ki]->zero();
 
+        // Jiang Eq. 83a
+        gamma[ki]->subtract(linalg::doublet(T_n_ij_[ki], K_bar_chem_[ki], true, false));
+
+        // Jiang Eq. 83b
         auto T_i = linalg::doublet(S_PNO(ki, ii), T_ia_[i]);
         auto K_temp = linalg::doublet(T_i, K_tilde_chem_[ki], true, false);
         K_temp->reshape(n_pno_[ki], n_pno_[ki]);
         gamma[ki]->add(K_temp);
 
-        gamma[ki]->subtract(linalg::doublet(T_n_ij_[ki], K_bar_chem_[ki], true, false));
-
+        // Jiang Eq. 83c
         for (int l_ki = 0; l_ki < nlmo_ki; ++l_ki) {
             int l = lmopair_to_lmos_[ki][l_ki];
             int kl = i_j_to_ij_[k][l], ll = i_j_to_ij_[l][l];
@@ -1883,9 +1863,9 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_gamma() {
             auto K_kl = linalg::triplet(S_PNO(ki, kl), K_iajb_[kl], T_i_kl, false, true, false);
 
             C_DGER(npno_ki, npno_ki, -1.0, T_l->get_pointer(), 1, K_kl->get_pointer(), 1, gamma[ki]->get_pointer(), npno_ki);
-
         }
-                
+        
+        // Jiang Eq. 83d
         for (int l_ki = 0; l_ki < nlmo_ki; ++l_ki) {
             int l = lmopair_to_lmos_[ki][l_ki];
             int li = i_j_to_ij_[l][i], kl = i_j_to_ij_[k][l];
@@ -1924,24 +1904,28 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_delta() {
         int pair_idx = (i > k) ? ki : ik;
 
         delta[ik] = std::make_shared<Matrix>(npno_ik, npno_ik);
+        delta[ik]->zero();
 
+        // Jiang Eq. 84a
+        auto L_bar_temp = K_bar_[ik]->clone();
+        L_bar_temp->scale(2.0);
+        L_bar_temp->subtract(K_bar_chem_[ik]);
+        delta[ik]->subtract(linalg::doublet(T_n_ij_[ik], L_bar_temp, true, false));
+
+        // Jiang Eq. 84b
         auto T_i = linalg::doublet(S_PNO(ik, ii), T_ia_[i]);
         auto L_temp = K_tilde_chem_[ki]->clone();
         L_temp->scale(2.0);
         L_temp->reshape(npno_ik * npno_ik, npno_ik);
         L_temp = linalg::doublet(L_temp, T_i);
         L_temp->reshape(npno_ik, npno_ik);
-        delta[ik]->add(L_temp->transpose());
+        delta[ik]->add(L_temp->transpose());        
         L_temp = K_tilde_chem_[ki]->clone();
         L_temp = linalg::doublet(T_i, L_temp, true, false);
         L_temp->reshape(npno_ik, npno_ik);
         delta[ik]->subtract(L_temp->transpose());
 
-        auto L_bar_temp = K_bar_[ik]->clone();
-        L_bar_temp->scale(2.0);
-        L_bar_temp->subtract(K_bar_chem_[ik]);
-        delta[ik]->subtract(linalg::doublet(T_n_ij_[ik], L_bar_temp, true, false));
-
+        // Jiang Eq. 84c
         for (int l_ik = 0; l_ik < nlmo_ik; ++l_ik) {
             int l = lmopair_to_lmos_[ik][l_ik];
             int ll = i_j_to_ij_[l][l], lk = i_j_to_ij_[l][k];
@@ -1953,6 +1937,7 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_delta() {
             C_DGER(npno_ik, npno_ik, -1.0, T_l->get_pointer(), 1, L_lk->get_pointer(), 1, delta[ik]->get_pointer(), npno_ik);
         }
 
+        // Jiang Eq. 84d
         for (int l_ik = 0; l_ik < nlmo_ik; ++l_ik) {
             int l = lmopair_to_lmos_[ik][l_ik];
             int il = i_j_to_ij_[i][l], lk = i_j_to_ij_[l][k];
@@ -1979,6 +1964,7 @@ SharedMatrix DLPNOCCSD::compute_Fkj_double_tilde() {
 
     SharedMatrix Fkj_double_tilde = Fkj_->clone();
 
+    // Jiang Eq. 86
 #pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < naocc * naocc; ++ij) {
         int i = ij / naocc, j = ij % naocc;
@@ -2009,7 +1995,7 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    // Initialize R1 residuals, DePrince 2013 Equation 19, Term 1
+    // Initialize R1 residuals, DePrince 2013 Eq. 19a, Jiang Eq. 87a
 #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < naocc; ++i) {
         int ii = i_j_to_ij_[i][i];
@@ -2044,14 +2030,14 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
         std::vector<int> k_ik_slice = std::vector<int>(1, k_ik);
         int ii = i_j_to_ij_[i][i];
 
-        // A_{i}^{a} = u_{ki}^{cd}B^{Q}_{kc}B^{Q}_{ad} (DePrince 2013 Equation 20)
+        // A_{i}^{a} = u_{ki}^{cd}B^{Q}_{kc}B^{Q}_{ad} (DePrince 2013 Eq. 20, Jiang Eq. 88a)
         auto K_kcad = K_tilde_chem_[ki]->clone();
         K_kcad->reshape(n_pno_[ki] * n_pno_[ki], n_pno_[ki]);
         auto Uki = Tt_iajb_[ki]->clone();
         Uki->reshape(npno_ik * npno_ik, 1);
         R_ia_buffer[thread][i]->add(linalg::triplet(S_PNO(ki, ii), K_kcad, Uki, true, true, false));
 
-        // C_{i}^{a} = F_{kc}U_{ik}^{ac}  (DePrince 2013 Equation 22)
+        // C_{i}^{a} = F_{kc}U_{ik}^{ac}  (DePrince 2013 Eq. 22, Jiang Eq. 90)
         R_ia_buffer[thread][i]->add(linalg::triplet(S_PNO(ik, ii), Tt_iajb_[ik], Fkc_[ki], true, false, true));
     } // end ki
 
@@ -2071,7 +2057,7 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
         thread = omp_get_thread_num();
 #endif
 
-        // B_{i}^{a} = -u_{kl}^{ac}B^{Q}_{ki}B^{Q}_{lc} (DePrince 2013 Equation 21)
+        // B_{i}^{a} = -u_{kl}^{ac}B^{Q}_{ki}B^{Q}_{lc} (DePrince 2013 Eq. 21, Jiang Eq. 89a)
         auto K_kilc = K_bar_[kl]->clone();
         K_kilc->add(linalg::doublet(T_n_ij_[kl], K_iajb_[kl]));
         auto B_ia = linalg::doublet(Tt_iajb_[kl], K_kilc, false, true);
@@ -2080,14 +2066,14 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
             int i = lmopair_to_lmos_[kl][i_kl];
             int ii = i_j_to_ij_[i][i], ki = i_j_to_ij_[k][i];
 
-            // A2 conribution
+            // A2 contribution (Jiang Eq. 88b)
             std::vector<int> l_ii_slice(1, lmopair_to_lmos_dense_[ii][l]);
             auto U_ki = linalg::triplet(S_PNO(kl, ki), Tt_iajb_[ki], S_PNO(ki, kl));
             auto T_l = submatrix_rows(*T_n_ij_[ii], l_ii_slice);
             T_l->scale(K_iajb_[kl]->vector_dot(U_ki));
             R_ia_buffer[thread][i]->subtract(T_l->transpose());
 
-            // B contribution
+            // B contribution (Jiang Eq. 89b)
             std::vector<int> i_kl_slice(1, i_kl);
             R_ia_buffer[thread][i]->subtract(linalg::doublet(S_PNO(kl, ii), submatrix_cols(*B_ia, i_kl_slice), true, false));
         }
@@ -2148,12 +2134,12 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
         int i_ij = lmopair_to_lmos_dense_[ij][i], j_ij = lmopair_to_lmos_dense_[ij][j];
 
         if (i <= j) {
-            // R_{ij}^{ab} += (i a_ij | q_ij)' * (q_ij | j b_ij)' (Deprince Equation 10, Term 1)
+            // R_{ij}^{ab} += (i a_ij | q_ij)' * (q_ij | j b_ij)' (DePrince 2013 Eq. 10a, Jiang Eq. 75)
             auto K_ij = linalg::doublet(i_Qa_t1_[ij], i_Qa_t1_[ji], true, false);
             R_iajb[ij]->add(K_ij);
             if (i != j) R_iajb[ji]->add(K_ij->transpose());
 
-            // A_{ij}^{ab} = B^{Q}_{ac} * t_{ij}^{cd} * B^{Q}_{bd} (DePrince Equation 11)
+            // A_{ij}^{ab} = B^{Q}_{ac} * t_{ij}^{cd} * B^{Q}_{bd} (DePrince 2013 Eq. 11, Jiang Eq. 76)
             auto A_ij = std::make_shared<Matrix>(npno_ij, npno_ij);
             auto qma_ij = QIA_PNO(ij);
             auto qab_ij = QAB_PNO(ij);
@@ -2182,12 +2168,11 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
                 S_ij = linalg::doublet(S_ij, X_pno_[ij], false, false);
             } // end if
 
-            // B_{ij}^{ab} = t_{kl}^{ab} * [B^{Q}_{ki} * B^{Q}_{lj} + t_{ij}^{cd} * B^{Q}_{kc} * t_{ij}^{cd} * B^{Q}_{ld}]
-            // (DePrince Equation 12)
-            // and E_{ij}^{ab} = t_{ij}^{ac} (Fbc - U_{kl}^{bd}[B^{Q}_{ld}B^{Q}_{kc}]) (DePrince Equation 15)
-            
+            // B_{ij}^{ab} = t_{kl}^{ab} * [beta_{ij}^{kl}] (DePrince 2013 Eq. 12, Jiang Eq. 77)
+            // E_{ij}^{ab} = t_{ij}^{ac} (F_double_tilde_{bc}) (Jiang Eq. 80)
+            // F_double_tilde_{bc} = Fbc - U_{kl}^{bd}[B^{Q}_{ld}B^{Q}_{kc}]) (DePrince 2013 Eq. 15, Jiang Eq. 85)
             auto B_ij = std::make_shared<Matrix>(npno_ij, npno_ij);
-            auto E_tilde = Fab_[ij]->clone();
+            auto Fab_double_tilde = Fab_[ij]->clone();
 
             for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
                 int k = lmopair_to_lmos_[ij][k_ij];
@@ -2206,15 +2191,15 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
 
                     // E intermediates
                     auto E_temp = linalg::doublet(Tt_iajb_[kl], K_iajb_[kl], false, true);
-                    E_tilde->subtract(linalg::triplet(S_kl_ij, E_temp, S_kl_ij, true, false, false));
+                    Fab_double_tilde->subtract(linalg::triplet(S_kl_ij, E_temp, S_kl_ij, true, false, false));
 
                 } // end l_ij
             } // end k_ij
             R_iajb[ij]->add(B_ij);
             if (i != j) R_iajb[ji]->add(B_ij->transpose());
 
-            auto E_ij = linalg::doublet(T_iajb_[ij], E_tilde, false, true);
-            E_ij->add(linalg::doublet(E_tilde, T_iajb_[ij], false, false));
+            auto E_ij = linalg::doublet(T_iajb_[ij], Fab_double_tilde, false, true);
+            E_ij->add(linalg::doublet(Fab_double_tilde, T_iajb_[ij], false, false));
 
             R_iajb[ij]->add(E_ij);
             if (i != j) R_iajb[ji]->add(E_ij->transpose());
@@ -2223,7 +2208,7 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
         
 
         // C_{ij}^{ab} = -t_{kj}^{bc}[B^{Q}_{ki}B^{Q}_{ac} - 0.5t_{li}^{ad}(B^{Q}_{kd}B^{Q}_{lc})] 
-        // (DePrince Equation 13)
+        // (DePrince 2013 Eq. 13, Jiang Eq. 78)
         auto C_ij = std::make_shared<Matrix>(npno_ij, npno_ij);
         for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
             int k = lmopair_to_lmos_[ij][k_ij];
@@ -2239,7 +2224,8 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
         C_ij_total->add(C_ij->transpose());
         Rn_iajb[ij]->add(C_ij_total);
 
-        // D_{ij}^{ab} = u_{jk}^{bc}(L_{aikc} + 0.5[u_{il}^{ad}L_{ldkc}]) (DePrince Equation 14)
+        // D_{ij}^{ab} = u_{jk}^{bc}(L_{aikc} + 0.5[u_{il}^{ad}L_{ldkc}]) 
+        // (DePrince 2013 Eq. 14, Jiang Eq. 79)
         auto D_ij = R_iajb[ij]->clone();
         D_ij->zero();
         for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
@@ -2260,7 +2246,8 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
         }
         Rn_iajb[ij]->add(D_ij);
 
-        // G_{ij}^{ab} = -t_{ik}^{ab} (Fkj + U_{lj}^{cd}[B^{Q}_{kd}B^{Q}_{lc}]) (DePrince Equation 16)
+        // G_{ij}^{ab} = -t_{ik}^{ab} (Fkj + U_{lj}^{cd}[B^{Q}_{kd}B^{Q}_{lc}]) 
+        // (DePrince 2013 Eq. 16, Jiang Eq. 81)
         auto G_ij = R_iajb[ij]->clone();
         G_ij->zero();
 
@@ -2305,7 +2292,7 @@ void DLPNOCCSD::lccsd_iterations() {
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    outfile->Printf("\n  ==> Local CCSD (T1-transformed Hamiltonian) <==\n\n");
+    outfile->Printf("\n  ==> Local CCSD <==\n\n");
     outfile->Printf("    E_CONVERGENCE = %.2e\n", options_.get_double("E_CONVERGENCE"));
     outfile->Printf("    R_CONVERGENCE = %.2e\n\n", options_.get_double("R_CONVERGENCE"));
     outfile->Printf("                      Corr. Energy    Delta E     Max R1     Max R2     Time (s)\n");
@@ -2349,7 +2336,7 @@ void DLPNOCCSD::lccsd_iterations() {
         }
     }
 
-    int iteration = 0, max_iteration = options_.get_int("DLPNO_MAXITER");
+    int iteration = 1, max_iteration = options_.get_int("DLPNO_MAXITER");
     double e_curr = 0.0, e_prev = 0.0, e_weak = 0.0, r1_curr = 0.0, r2_curr = 0.0;
     bool e_converged = false, r_converged = false;
 
@@ -2370,7 +2357,7 @@ void DLPNOCCSD::lccsd_iterations() {
 
         std::time_t time_start = std::time(nullptr);
 
-        // Step 1: Create T_n intermediate
+        // Step 1: Create T_n intermediate (Jiang Eq. 70)
 #pragma omp parallel for schedule(dynamic, 1)
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             auto &[i, j] = ij_to_i_j_[ij];
@@ -2413,7 +2400,7 @@ void DLPNOCCSD::lccsd_iterations() {
             R_iajb_rms[ij] = R_iajb[ij]->rms();
         }
 
-        // Update Singles Amplitude
+        // Update Singles Amplitude (Jiang Eq. 103)
 #pragma omp parallel for
         for (int i = 0; i < naocc; ++i) {
             int ii = i_j_to_ij_[i][i];
@@ -2422,7 +2409,7 @@ void DLPNOCCSD::lccsd_iterations() {
             }
         }
 
-        // Update Doubles Amplitude
+        // Update Doubles Amplitude (Jiang Eq. 104)
 #pragma omp parallel for schedule(dynamic, 1)
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             auto &[i, j] = ij_to_i_j_[ij];
@@ -2450,7 +2437,7 @@ void DLPNOCCSD::lccsd_iterations() {
         auto T_vecs_flat = flatten_mats(T_vecs);
         auto R_vecs_flat = flatten_mats(R_vecs);
 
-        if (iteration == 0) {
+        if (iteration == 1) {
             diis.set_error_vector_size(R_vecs_flat);
             diis.set_vector_size(T_vecs_flat);
         }
@@ -2490,7 +2477,7 @@ void DLPNOCCSD::lccsd_iterations() {
 
         // evaluate convergence using current amplitudes and residuals
         e_prev = e_curr;
-        // Compute LCCSD energy
+        // Compute LCCSD energy (Jiang Eq. 45)
         e_curr = 0.0;
         e_weak = 0.0;
 #pragma omp parallel for schedule(dynamic, 1) reduction(+ : e_curr, e_weak)
@@ -2515,7 +2502,7 @@ void DLPNOCCSD::lccsd_iterations() {
 
         iteration++;
 
-        if (iteration > max_iteration) {
+        if (iteration > max_iteration + 1) {
             throw PSIEXCEPTION("Maximum DLPNO iterations exceeded.");
         }
     }
@@ -2595,7 +2582,6 @@ double DLPNOCCSD::compute_energy() {
     timer_off("PNO-LMP2 Iterations");
 
     // Set variables from LMP2
-
     double e_scf = reference_wavefunction_->energy();
     double e_lmp2_corr = e_lmp2_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
     double e_lmp2_total = e_scf + e_lmp2_corr;
@@ -2608,7 +2594,7 @@ double DLPNOCCSD::compute_energy() {
     outfile->Printf("  \n");
     outfile->Printf("  Total DLPNO-MP2 Correlation Energy: %16.12f \n", e_lmp2_ + de_lmp2_eliminated_ + de_pno_total_ + de_dipole_);
     outfile->Printf("    MP2 Correlation Energy:           %16.12f \n", e_lmp2_);
-    outfile->Printf("    Eliminated Pair MP2 Correction:   %16.12f \n", de_lmp2_eliminated_);
+    outfile->Printf("    Semicanonical MP2 Correction:     %16.12f \n", de_lmp2_eliminated_);
     outfile->Printf("    Dipole Correction:                %16.12f \n", de_dipole_);
     outfile->Printf("    PNO Truncation Correction:        %16.12f \n", de_pno_total_);
     outfile->Printf("\n\n  @Total DLPNO-MP2 Energy: %16.12f \n", variables_["SCF TOTAL ENERGY"] + e_lmp2_ + de_lmp2_eliminated_ + de_pno_total_ + de_dipole_);
@@ -2634,16 +2620,6 @@ double DLPNOCCSD::compute_energy() {
     timer_on("LCCSD");
     lccsd_iterations();
     timer_off("LCCSD");
-
-    if (write_qab_pao_) {
-        if (algorithm_ == DLPNOMethod::CCSD) {
-            // Integrals no longer needed
-            psio_->close(PSIF_DLPNO_QAB_PAO, 0);
-        } else {
-            // Integrals may still be needed for post-CCSD calculations
-            psio_->close(PSIF_DLPNO_QAB_PAO, 1);
-        }
-    }
 
     if (write_qia_pno_) {
         // Bye bye (Q_ij | m_ij a_ij) integrals. You won't be missed
@@ -2745,7 +2721,7 @@ void DLPNOCCSD::print_header() {
     outfile->Printf("    T_CUT_TRACE      = %6.4e \n", T_CUT_TRACE_);
     outfile->Printf("    T_CUT_ENERGY     = %6.4e \n", T_CUT_ENERGY_);
     outfile->Printf("    T_CUT_PAIRS      = %6.4e \n", T_CUT_PAIRS_);
-    outfile->Printf("    MIN_PNOS_PAIR    = %6d   \n", options_.get_int("MIN_PNOS_PER_PAIR"));
+    outfile->Printf("    MIN_PNOS         = %6d   \n", options_.get_int("MIN_PNOS"));
     outfile->Printf("    T_CUT_PRE        = %6.4e \n", T_CUT_PRE_);
     outfile->Printf("    T_CUT_DO_PRE     = %6.4e \n", options_.get_double("T_CUT_DO_PRE"));
     outfile->Printf("    T_CUT_MKN        = %6.4e \n", T_CUT_MKN_);
@@ -2790,7 +2766,7 @@ void DLPNOCCSD::print_results() {
     outfile->Printf("  Total DLPNO-CCSD Correlation Energy: %16.12f \n", e_lccsd_ + de_weak_ + de_lmp2_eliminated_ + de_pno_total_ + de_dipole_);
     outfile->Printf("    CCSD Correlation Energy:           %16.12f \n", e_lccsd_);
     outfile->Printf("    Weak Pair Contribution:            %16.12f \n", de_weak_);
-    outfile->Printf("    Eliminated Pair MP2 Correction:    %16.12f \n", de_lmp2_eliminated_);
+    outfile->Printf("    Semicanonical MP2 Correction:      %16.12f \n", de_lmp2_eliminated_);
     outfile->Printf("    Dipole Pair Correction:            %16.12f \n", de_dipole_);
     outfile->Printf("    PNO Truncation Correction:         %16.12f \n", de_pno_total_);
     outfile->Printf("\n\n  @Total DLPNO-CCSD Energy: %16.12f \n", variables_["SCF TOTAL ENERGY"] + e_lccsd_ + de_lmp2_eliminated_ + de_weak_ + de_pno_total_ + de_dipole_);

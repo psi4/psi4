@@ -83,7 +83,7 @@ void DLPNOCCSD_T::print_header() {
     outfile->Printf("    T_CUT_DO_TRIPLES_PRE (T0)  = %6.3e \n", options_.get_double("T_CUT_DO_TRIPLES_PRE"));
     outfile->Printf("    T_CUT_MKN_TRIPLES_PRE (T0) = %6.3e \n", options_.get_double("T_CUT_MKN_TRIPLES_PRE"));
     outfile->Printf("    TRIPLES_MAX_WEAK_PAIRS     = %6d   \n", options_.get_int("TRIPLES_MAX_WEAK_PAIRS"));
-    outfile->Printf("    MIN_TNOS_TRIPLET           = %6d   \n", options_.get_int("MIN_TNOS_PER_TRIPLET"));
+    outfile->Printf("    MIN_TNOS                   = %6d   \n", options_.get_int("MIN_TNOS"));
     if (!t0_only) {
         outfile->Printf("    T_CUT_TNO_STRONG (T)       = %6.3e \n", t_cut_tno * t_cut_tno_strong_scale);
         outfile->Printf("    T_CUT_TNO_WEAK (T)         = %6.3e \n", t_cut_tno * t_cut_tno_weak_scale);
@@ -331,6 +331,7 @@ void DLPNOCCSD_T::tno_transform(double t_cut_tno) {
     int naocc = nalpha_ - nfrzc();
     int n_lmo_pairs = ij_to_i_j_.size();
     int n_lmo_triplets = ijk_to_i_j_k_.size();
+    const int MIN_TNOS = options_.get_int("MIN_TNOS");
 
     X_tno_.clear();
     e_tno_.clear();
@@ -424,7 +425,7 @@ void DLPNOCCSD_T::tno_transform(double t_cut_tno) {
 
         int nvir_ijk_final = 0;
         for (size_t a = 0; a < nvir_ijk; ++a) {
-            if (fabs(tno_occ.get(a)) >= tno_scale * t_cut_tno) {
+            if (fabs(tno_occ.get(a)) >= tno_scale * t_cut_tno || a < MIN_TNOS) {
                 nvir_ijk_final++;
             }
         }
@@ -545,10 +546,6 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
 
     double E_T0 = 0.0;
 
-    if (write_qab_pao_) {
-        psio_->open(PSIF_DLPNO_QAB_PAO, PSIO_OPEN_OLD);
-    }
-
     if (store_amplitudes) {
         W_iajbkc_.resize(n_lmo_triplets);
         V_iajbkc_.resize(n_lmo_triplets);
@@ -601,6 +598,8 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
         auto q_jo = std::make_shared<Matrix>(naux_ijk, nlmo_ijk);
         auto q_ko = std::make_shared<Matrix>(naux_ijk, nlmo_ijk);
 
+        auto q_vv = std::make_shared<Matrix>(naux_ijk, ntno_ijk * ntno_ijk);
+
         for (int q_ijk = 0; q_ijk < naux_ijk; q_ijk++) {
             const int q = lmotriplet_to_ribfs_[ijk][q_ijk];
             const int centerq = ribasis_->function_to_center(q);
@@ -619,6 +618,21 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
                 (*q_jv)(q_ijk, u_ijk) = (*qia_[q])(riatom_to_lmos_ext_dense_[centerq][j], riatom_to_paos_ext_dense_[centerq][u]);
                 (*q_kv)(q_ijk, u_ijk) = (*qia_[q])(riatom_to_lmos_ext_dense_[centerq][k], riatom_to_paos_ext_dense_[centerq][u]);
             }
+
+            auto q_vv_tmp = std::make_shared<Matrix>(npao_ijk, npao_ijk);
+            q_vv_tmp->zero();
+
+            for (int u_ijk = 0; u_ijk < npao_ijk; ++u_ijk) {
+                int u = lmotriplet_to_paos_[ijk][u_ijk];
+                for (int v_ijk = 0; v_ijk < npao_ijk; ++v_ijk) {
+                    int v = lmotriplet_to_paos_[ijk][v_ijk];
+                    int uv_idx = riatom_to_pao_pairs_dense_[centerq][u][v];
+                    if (uv_idx == -1) continue;
+                    (*q_vv_tmp)(u_ijk, v_ijk) = (*qab_[q])(uv_idx, 0);
+                } // end v_ijk
+            } // end u_ijk
+            q_vv_tmp = linalg::triplet(X_tno_[ijk], q_vv_tmp, X_tno_[ijk], true, false, false);
+            ::memcpy(&(*q_vv)(q_ijk, 0), &(*q_vv_tmp)(0, 0), ntno_ijk * ntno_ijk * sizeof(double));
         }
 
         q_iv = linalg::doublet(q_iv, X_tno_[ijk]);
@@ -648,99 +662,9 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
         if (thread == 0) timer_on("LCCSD(T0): Contract Integrals");
 
         // W integrals
-        auto K_ivvv = std::make_shared<Matrix>(ntno_ijk, ntno_ijk * n_pno_[jk]);
-        auto K_jvvv = std::make_shared<Matrix>(ntno_ijk, ntno_ijk * n_pno_[ik]);
-        auto K_kvvv = std::make_shared<Matrix>(ntno_ijk, ntno_ijk * n_pno_[ij]);
-
-        for (int q_ijk = 0; q_ijk < naux_ijk; ++q_ijk) {
-            const int q = lmotriplet_to_ribfs_[ijk][q_ijk];
-            const int centerq = ribasis_->function_to_center(q);
-
-            SharedMatrix q_vv_ij_tmp;
-            SharedMatrix q_vv_jk_tmp;
-            SharedMatrix q_vv_ik_tmp;
-
-            if (write_qab_pao_) {
-                const auto sparse_pao_list = index_list(riatom_to_paos_ext_[centerq], lmotriplet_to_paos_[ijk]);
-                
-                std::stringstream toc_entry;
-                toc_entry << "QAB (PAO) " << q;
-                int npao_q = riatom_to_paos_ext_[centerq].size();
-                SharedMatrix q_vv_tmp = std::make_shared<Matrix>(toc_entry.str(), npao_q, npao_q);
-#pragma omp critical
-                q_vv_tmp->load(psio_, PSIF_DLPNO_QAB_PAO, psi::Matrix::LowerTriangle);
-                q_vv_tmp = submatrix_rows_and_cols(*q_vv_tmp, sparse_pao_list, sparse_pao_list);
-
-                auto ij_idx = index_list(lmotriplet_to_paos_[ijk], lmopair_to_paos_[ij]);
-                q_vv_ij_tmp = submatrix_cols(*q_vv_tmp, ij_idx);
-                auto jk_idx = index_list(lmotriplet_to_paos_[ijk], lmopair_to_paos_[jk]);
-                q_vv_jk_tmp = submatrix_cols(*q_vv_tmp, jk_idx);
-                auto ik_idx = index_list(lmotriplet_to_paos_[ijk], lmopair_to_paos_[ik]);
-                q_vv_ik_tmp = submatrix_cols(*q_vv_tmp, ik_idx);
-
-                q_vv_ij_tmp = linalg::triplet(X_tno_[ijk], q_vv_ij_tmp, X_pno_[ij], true, false, false);
-                q_vv_jk_tmp = linalg::triplet(X_tno_[ijk], q_vv_jk_tmp, X_pno_[jk], true, false, false);
-                q_vv_ik_tmp = linalg::triplet(X_tno_[ijk], q_vv_ik_tmp, X_pno_[ik], true, false, false);
-            } else {
-                int npao_q = riatom_to_paos_ext_[centerq].size();
-                auto q_vv_tmp = std::make_shared<Matrix>(npao_ijk, npao_q);
-
-                for (int u_ijk = 0; u_ijk < npao_ijk; ++u_ijk) {
-                    int u = lmotriplet_to_paos_[ijk][u_ijk];
-                    for (int v_q = 0; v_q < npao_q; ++v_q) {
-                        int v = riatom_to_paos_ext_[centerq][v_q];
-                        int uv_idx = riatom_to_pao_pairs_dense_[centerq][u][v];
-                        if (uv_idx == -1) continue;
-                        q_vv_tmp->set(u_ijk, v_q, qab_[q]->get(uv_idx, 0));
-                    }
-                }
-                q_vv_tmp = linalg::doublet(X_tno_[ijk], q_vv_tmp, true, false);
-
-                q_vv_ij_tmp = std::make_shared<Matrix>(ntno_ijk, npao_ij);
-                q_vv_jk_tmp = std::make_shared<Matrix>(ntno_ijk, npao_jk);
-                q_vv_ik_tmp = std::make_shared<Matrix>(ntno_ijk, npao_ik);
-
-                for (int a_ijk = 0; a_ijk < ntno_ijk; ++a_ijk) {
-                    
-                    for (int v_ij = 0; v_ij < npao_ij; ++v_ij) {
-                        int v = lmopair_to_paos_[ij][v_ij];
-                        int v_dense = riatom_to_paos_ext_dense_[centerq][v];
-                        (*q_vv_ij_tmp)(a_ijk, v_ij) = (*q_vv_tmp)(a_ijk, v_dense);
-                    }
-
-                    for (int v_jk = 0; v_jk < npao_jk; ++v_jk) {
-                        int v = lmopair_to_paos_[jk][v_jk];
-                        int v_dense = riatom_to_paos_ext_dense_[centerq][v];
-                        (*q_vv_jk_tmp)(a_ijk, v_jk) = (*q_vv_tmp)(a_ijk, v_dense);
-                    }
-
-                    for (int v_ik = 0; v_ik < npao_ik; ++v_ik) {
-                        int v = lmopair_to_paos_[ik][v_ik];
-                        int v_dense = riatom_to_paos_ext_dense_[centerq][v];
-                        (*q_vv_ik_tmp)(a_ijk, v_ik) = (*q_vv_tmp)(a_ijk, v_dense);
-                    }
-                } // end a_ijk
-
-                q_vv_ij_tmp = linalg::doublet(q_vv_ij_tmp, X_pno_[ij]);
-                q_vv_jk_tmp = linalg::doublet(q_vv_jk_tmp, X_pno_[jk]);
-                q_vv_ik_tmp = linalg::doublet(q_vv_ik_tmp, X_pno_[ik]);
-
-            } // end else
-
-            for (int a_ijk = 0; a_ijk < ntno_ijk; ++a_ijk) {
-                for (int b_ijk = 0; b_ijk < ntno_ijk; ++b_ijk) {
-                    for (int d_jk = 0; d_jk < n_pno_[jk]; ++d_jk) {
-                        (*K_ivvv)(a_ijk, b_ijk * n_pno_[jk] + d_jk) += (*q_iv_clone)(q_ijk, a_ijk) * (*q_vv_jk_tmp)(b_ijk, d_jk);
-                    }
-                    for (int d_ik = 0; d_ik < n_pno_[ik]; ++d_ik) {
-                        (*K_jvvv)(a_ijk, b_ijk * n_pno_[ik] + d_ik) += (*q_jv_clone)(q_ijk, a_ijk) * (*q_vv_ik_tmp)(b_ijk, d_ik);
-                    }
-                    for (int d_ij = 0; d_ij < n_pno_[ij]; ++d_ij) {
-                        (*K_kvvv)(a_ijk, b_ijk * n_pno_[ij] + d_ij) += (*q_kv_clone)(q_ijk, a_ijk) * (*q_vv_ij_tmp)(b_ijk, d_ij);
-                    }
-                } // end b_ijk
-            } // end a_ijk
-        }
+        auto K_ivvv = linalg::doublet(q_iv_clone, q_vv, true, false);
+        auto K_jvvv = linalg::doublet(q_jv_clone, q_vv, true, false);
+        auto K_kvvv = linalg::doublet(q_kv_clone, q_vv, true, false);
 
         auto K_iojv = linalg::doublet(q_io, q_jv, true, false);
         auto K_joiv = linalg::doublet(q_jo, q_iv, true, false);
@@ -763,7 +687,7 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
         auto S_ijk = submatrix_rows_and_cols(*S_pao_, pair_ext_domain, lmotriplet_to_paos_[ijk]);
         S_ijk = linalg::doublet(S_ijk, X_tno_[ijk], false, false);
 
-        // => Step 1: Compute W_ijk <= //
+        // => Step 1: Compute W_ijk (Jiang Eq. 109) <= //
 
         std::stringstream w_name;
         w_name << "W " << (ijk);
@@ -796,11 +720,12 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
             // Compute overlap between TNOs of triplet ijk and PNOs of pair kj
             std::vector<int> kj_idx_list = index_list(pair_ext_domain, lmopair_to_paos_[kj]);
             auto S_kj_ijk = linalg::doublet(X_pno_[kj], submatrix_rows(*S_ijk, kj_idx_list), true, false);
-            auto T_kj = linalg::doublet(S_kj_ijk, T_iajb_[kj], true, false);
+            auto T_kj = linalg::triplet(S_kj_ijk, T_iajb_[kj], S_kj_ijk, true, false, false);
 
             auto K_ovvv = K_ovvv_list[idx]->clone();
 
-            K_ovvv->reshape(ntno_ijk * ntno_ijk, n_pno_[kj]);
+            // Jiang Eq. 109a
+            K_ovvv->reshape(ntno_ijk * ntno_ijk, ntno_ijk);
             K_ovvv = linalg::doublet(K_ovvv, T_kj, false, true);
             K_ovvv->reshape(ntno_ijk, ntno_ijk * ntno_ijk);
             Wperms[idx]->add(K_ovvv);
@@ -813,6 +738,7 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
                 auto S_il_ijk = linalg::doublet(X_pno_[il], submatrix_rows(*S_ijk, il_idx_list), true, false);
                 auto T_il = linalg::triplet(S_il_ijk, T_iajb_[il], S_il_ijk, true, false, false);
 
+                // Jiang Eq. 109b
                 for (int a_ijk = 0; a_ijk < ntno_ijk; a_ijk++) {
                     for (int b_ijk = 0; b_ijk < ntno_ijk; b_ijk++) {
                         for (int c_ijk = 0; c_ijk < ntno_ijk; c_ijk++) {
@@ -839,7 +765,7 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
 
         if (thread == 0) timer_on("LCCSD(T0): Form V");
 
-        // => Step 2: Compute V_ijk <= //
+        // => Step 2: Compute V_ijk (Jiang Eq. 110) <= //
 
         auto V_ijk = W_ijk->clone();
         std::stringstream v_name;
@@ -875,7 +801,7 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
 
         if (thread == 0) timer_off("LCCSD(T0): Form V");
 
-        // Step 3: Compute T0 energy through amplitudes
+        // Step 3: Compute T0 energy through amplitudes (Jiang Eq. 53)
         auto T_ijk = W_ijk->clone();
         std::stringstream t_name;
         t_name << "T " << (ijk);
@@ -943,6 +869,7 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
 }
 
 double DLPNOCCSD_T::compute_t_iteration_energy() {
+    /* Jiang Eq. 53 */
     timer_on("Compute (T) Energy");
 
     int naocc = nalpha_ - nfrzc();
@@ -1129,6 +1056,9 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                 W_ijk = W_iajbkc_[ijk];
                 T_ijk = T_iajbkc_[ijk];
             }
+
+            // => Jiang Eq. 111 <= //
+            
             R_ijk->copy(W_ijk);
 
             for (int a_ijk = 0; a_ijk < ntno_ijk; ++a_ijk) {
@@ -1215,7 +1145,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
                 }
             }
 
-            // => Update T3 Amplitudes <= //
+            // => Update T3 Amplitudes (Jiang Eq. 112) <= //
             for (int a_ijk = 0; a_ijk < ntno_ijk; ++a_ijk) {
                 for (int b_ijk = 0; b_ijk < ntno_ijk; ++b_ijk) {
                     for (int c_ijk = 0; c_ijk < ntno_ijk; ++c_ijk) {
@@ -1251,7 +1181,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
 
         iteration++;
 
-        if (iteration > max_iteration) {
+        if (iteration > max_iteration + 1) {
             throw PSIEXCEPTION("Maximum DLPNO iterations exceeded.");
         }
     }
@@ -1278,13 +1208,11 @@ double DLPNOCCSD_T::compute_energy() {
     J_ij_kj_.clear();
     K_ij_kj_.clear();
     K_tilde_chem_.clear();
-    K_tilde_phys_.clear();
-    L_tilde_.clear();
     Qma_ij_.clear();
     Qab_ij_.clear();
     i_Qk_ij_.clear();
     i_Qa_ij_.clear();
-    i_Qa_ij_.clear();
+    i_Qk_t1_.clear();
     i_Qa_t1_.clear();
     S_pno_ij_kj_.clear();
     S_pno_ij_nn_.clear();
@@ -1362,11 +1290,6 @@ double DLPNOCCSD_T::compute_energy() {
     set_scalar_variable("CURRENT ENERGY", e_ccsd_t_total);
 
     print_results();
-
-    if (write_qab_pao_) {
-        // Bye bye, you won't be missed
-        psio_->close(PSIF_DLPNO_QAB_PAO, 0);
-    }
 
     if (write_amplitudes_) {
         psio_->close(PSIF_DLPNO_TRIPLES, 0);
