@@ -261,6 +261,9 @@ def test_mp2d():
         },
         'keywords': {},
     }
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        resinp["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
+
     jrec = qcng.compute(resinp, 'mp2d', raise_error=True)
     jrec = jrec.dict()
 
@@ -747,6 +750,8 @@ def test_run_qcschema():
         },
         "keywords": {}
     }
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        json_input["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
 
     json_ret = psi4.json_wrapper.run_qcschema(json_input)
     print(json_ret.dict())

@@ -110,6 +110,8 @@ def test_nopotential(frame, deriv, molmode):
         "print": 0,
         "debug": 0,
     })
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
 
     atol = 3.e-6 if deriv == "1_0" else 1.e-6
 
