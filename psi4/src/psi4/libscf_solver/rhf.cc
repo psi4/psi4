@@ -1261,6 +1261,7 @@ void RHF::openorbital_scf() {
   scfsolver.callback_convergence_function(callback_convergence_function);  // replaces scfsolver.convergence_threshold()
   scfsolver.diis_epsilon(start_diis); // mod
   scfsolver.diis_threshold(finish_diis); // mod
+  if(input_docc_) scfsolver.frozen_occupations(true);
   scfsolver.diis_restart_factor(options_.get_double("OOO_DIIS_RESTART_FACTOR"));
   scfsolver.optimal_damping_threshold(options_.get_double("OOO_OPTIMAL_DAMPING_THRESHOLD"));
   scfsolver.initialize_with_orbitals(orbitals, occupations);

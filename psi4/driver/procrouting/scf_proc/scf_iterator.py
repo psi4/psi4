@@ -283,12 +283,14 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         pe_enabled = core.get_option('SCF', 'PE')
         level_shift_enabled = core.get_option("SCF", "LEVEL_SHIFT") != 0.0
         autograc_enabled = core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE"
+        guessmix_enabled = core.get_option("SCF", "GUESS_MIX")
         if (reference in ["ROHF"] or soscf_enabled or self.MOM_excited_ or frac_enabled or
             efp_enabled or pcm_enabled or ddx_enabled or pe_enabled or autograc_enabled or
-            level_shift_enabled):
+            level_shift_enabled or guessmix_enabled):
             core.print_out(f"    Note: OpenOrbitalOptimizer not compatible with at least one of the following. Falling back to orbital_optimizer_package=internal\n")
             core.print_out(f"          {reference=}, soscf={soscf_enabled}, mom={self.MOM_excited_}, frac={frac_enabled}, efp={efp_enabled},\n")
-            core.print_out(f"          pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled}, autograc={autograc_enabled}, level_shift={level_shift_enabled}\n")
+            core.print_out(f"          pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled}, autograc={autograc_enabled}, level_shift={level_shift_enabled},\n")
+            core.print_out(f"          guess_mix={guessmix_enabled}\n")
         else:
             # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
             self.iteration_ += 1
@@ -321,6 +323,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 self.form_G()
                 self.form_F()
                 self.form_C()
+                self.form_D()
                 return
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?

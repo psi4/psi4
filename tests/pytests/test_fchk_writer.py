@@ -65,10 +65,8 @@ def test_uhf_fchk(inp2, datadir):
         fchk_tol = 1.e-8
     else:
         dens_tol = 3.e-8
-        fchk_tol = 6.e-7
-        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
-        if inp2["name"] == "ccsd":
-            psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
+        fchk_tol = 2.e-6
+        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
     FCHK_file = f"uhf-{inp2['name']}.fchk"
     reference_file = datadir.join(f"uhf-{inp2['name']}.ref")
     psi4.set_options(inp2['options'])

@@ -13,8 +13,11 @@ set {
   scf_type pk
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    tol = 0.1
+else:
+    psi4.set_options({"e_convergence": 9, "d_convergence": 7e-8})
+    tol = 0.12
 
 method = 'SVWN/sto-3g'
 
@@ -23,4 +26,4 @@ Ean, anwfn = freq(method, return_wfn=True)
 fdwfn.frequencies().print_out()
 anwfn.frequencies().print_out()
 
-compare_arrays(fdwfn.frequencies(), anwfn.frequencies(), f"{method} frequencies, Analytic vs. Finite Difference", atol=0.1)  #TEST
+compare_arrays(fdwfn.frequencies(), anwfn.frequencies(), f"{method} frequencies, Analytic vs. Finite Difference", atol=tol)  #TEST

@@ -293,7 +293,7 @@ jobs:
 
       # step works but is redundant with next one; enable for debugging
     - name: Test Addons with CTest (M)
-      if: runner.os == 'macOS'
+      if: false
       working-directory: ./objdir
       run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows
 

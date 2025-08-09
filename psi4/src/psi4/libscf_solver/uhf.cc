@@ -1501,7 +1501,7 @@ void UHF::openorbital_scf() {
     if(options_.get_str("SCF_TYPE").ends_with("DF"))
       reference = "DF-" + reference;
 
-    iteration_ = std::any_cast<size_t>(data.at("iter"));
+    iteration_++;
     double E = std::any_cast<double>(data.at("E"));
     double dE = std::any_cast<double>(data.at("dE"));
     double Dnorm = std::any_cast<double>(data.at("diis_error"));
@@ -1518,6 +1518,7 @@ void UHF::openorbital_scf() {
   scfsolver.callback_convergence_function(callback_convergence_function);  // replaces scfsolver.convergence_threshold()
   scfsolver.diis_epsilon(start_diis); // mod
   scfsolver.diis_threshold(finish_diis); // mod
+  if(input_socc_ || input_docc_) scfsolver.frozen_occupations(true);
   scfsolver.diis_restart_factor(options_.get_double("OOO_DIIS_RESTART_FACTOR"));
   scfsolver.initialize_with_orbitals(orbitals, occupations);
   scfsolver.run();
