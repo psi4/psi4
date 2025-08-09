@@ -12,6 +12,7 @@ set guess gwh    # With this guess, un-accelerated DIIS will fail
 set scf_type pk
 set basis lanl2dz
 set scf_initial_accelerator ediis
+set orbital_optimizer_package internal
 set maxiter 28
 energy = energy('b3lyp')
 

@@ -1241,7 +1241,7 @@ void RHF::openorbital_scf() {
     if(options_.get_str("SCF_TYPE").ends_with("DF"))
       reference = "DF-" + reference;
 
-    iteration_ = std::any_cast<size_t>(data.at("iter"));
+    iteration_++;
     double E = std::any_cast<double>(data.at("E"));
     double dE = std::any_cast<double>(data.at("dE"));
     double Dnorm = 0.5 * std::any_cast<double>(data.at("diis_error"));
