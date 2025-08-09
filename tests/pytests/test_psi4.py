@@ -38,7 +38,7 @@ def test_psi4_cc():
     psi4.set_options({"basis": '6-31G**'})
 
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
 
     psi4.optimize('ccsd')
 

@@ -27,6 +27,8 @@
  */
 
 #ifdef USING_OpenOrbitalOptimizer
+#define ARMA_DONT_USE_FORTRAN_HIDDEN_ARGS
+#define ARMA_DONT_USE_WRAPPER
 #include <openorbitaloptimizer/scfsolver.hpp>
 #endif
 

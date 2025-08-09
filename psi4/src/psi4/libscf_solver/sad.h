@@ -30,6 +30,7 @@
 #define LIBSCF_SAD_H
 
 #ifdef USING_OpenOrbitalOptimizer
+#define ARMA_DONT_USE_FORTRAN_HIDDEN_ARGS
 #define ARMA_DONT_USE_WRAPPER
 #include <armadillo>
 #include <openorbitaloptimizer/scfsolver.hpp>
