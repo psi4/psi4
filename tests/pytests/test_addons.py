@@ -836,6 +836,7 @@ def test_v2rdm_casscf():
       'maxiter': 500,
       'restricted_docc': [ 2, 0, 0, 0, 0, 2, 0, 0 ],
       'active': [ 1, 0, 1, 1, 0, 1, 1, 1 ],
+      'orbital_optimizer_package': 'internal',
     })
     psi4.set_options({
       'v2rdm_casscf__positivity': 'dqg',
