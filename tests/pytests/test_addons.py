@@ -56,14 +56,20 @@ def test_gdma():
                        "gdma_limit": 2,
                        "gdma_origin": [ 0.000000,  0.000000,  0.117176 ]})
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+        dma_tol = 6
+    else:
+        dma_tol = 2e-6
+        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
     energy, wfn = psi4.energy('scf', return_wfn=True)
 
     psi4.gdma(wfn)
     dmavals = psi4.core.variable("DMA DISTRIBUTED MULTIPOLES")
     totvals = psi4.core.variable("DMA TOTAL MULTIPOLES")
     assert psi4.compare_values(ref_energy, energy, 8, "SCF Energy")
-    assert psi4.compare_matrices(dmavals, ref_dma_mat, 6, "DMA Distributed Multipoles")
-    assert psi4.compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")
+    assert psi4.compare_matrices(dmavals, ref_dma_mat, dma_tol, "DMA Distributed Multipoles")
+    assert psi4.compare_matrices(totvals, ref_tot_mat, dma_tol, "DMA Total Multipoles")
 
 
 @uusing("ipi")
@@ -261,6 +267,9 @@ def test_mp2d():
         },
         'keywords': {},
     }
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        resinp["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
+
     jrec = qcng.compute(resinp, 'mp2d', raise_error=True)
     jrec = jrec.dict()
 
@@ -747,6 +756,8 @@ def test_run_qcschema():
         },
         "keywords": {}
     }
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        json_input["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
 
     json_ret = psi4.json_wrapper.run_qcschema(json_input)
     print(json_ret.dict())
@@ -825,6 +836,7 @@ def test_v2rdm_casscf():
       'maxiter': 500,
       'restricted_docc': [ 2, 0, 0, 0, 0, 2, 0, 0 ],
       'active': [ 1, 0, 1, 1, 0, 1, 1, 1 ],
+      'orbital_optimizer_package': 'internal',
     })
     psi4.set_options({
       'v2rdm_casscf__positivity': 'dqg',

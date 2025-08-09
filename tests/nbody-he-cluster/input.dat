@@ -19,6 +19,9 @@ set {
     d_convergence 1.e-10
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 energy('MP2/aug-cc-pV[D,T]Z', molecule=he_trimer, bsse_type=['cp', 'nocp', 'vmfc'])
 
 for k, v in sorted(psi4.core.variables().items()):

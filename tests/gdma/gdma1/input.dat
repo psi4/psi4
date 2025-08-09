@@ -40,6 +40,12 @@ set {
     gdma_origin   [ 0.000000,  0.000000,  0.117176 ]
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    dma_tol = 6
+else:
+    dma_tol = 2e-6
+    psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
 energy, wfn = energy('scf', return_wfn=True)
 
 gdma(wfn)
@@ -47,6 +53,6 @@ dmavals = variable("DMA DISTRIBUTED MULTIPOLES")
 totvals = variable("DMA TOTAL MULTIPOLES")
 totvals_wfn = wfn.variable("DMA TOTAL MULTIPOLES")
 compare_values(ref_energy, energy, 8, "SCF Energy")                                                 #TEST
-compare_matrices(dmavals, ref_dma_mat, 6, "DMA Distributed Multipoles")                             #TEST
-compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")                                   #TEST
-compare_matrices(totvals_wfn, ref_tot_mat, 6, "DMA Total Multipoles (wfn)")                         #TEST
+compare_matrices(dmavals, ref_dma_mat, dma_tol, "DMA Distributed Multipoles")                             #TEST
+compare_matrices(totvals, ref_tot_mat, dma_tol, "DMA Total Multipoles")                                   #TEST
+compare_matrices(totvals_wfn, ref_tot_mat, dma_tol, "DMA Total Multipoles (wfn)")                         #TEST

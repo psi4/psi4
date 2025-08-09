@@ -1238,7 +1238,9 @@ def optimize(name, **kwargs):
         # Use orbitals from previous iteration as a guess
         #   set within loop so that can be influenced by fns to optimize (e.g., cbs)
         if (n > 1) and (not core.get_option('SCF', 'GUESS_PERSIST')):
-            core.set_local_option('SCF', 'GUESS', 'READ')
+            #core.set_local_option('SCF', 'GUESS', 'READ')
+            pass
+        core.set_local_option('SCF', 'GUESS', 'SAD')
 
         # We'll currently ignore the possibility that the gradient isn't needed
         opt_calcs = opt_object.calculations_needed() # tuple of strings ('energy', 'gradient', etc)
@@ -1808,7 +1810,7 @@ def gdma(wfn, datafile=""):
     # from outside the Psi4 ecosystem
     from qcelemental.util import which_import
     if not which_import("gdma", return_bool=True):
-        raise ModuleNotFoundError('Python module gdma not found. Solve by installing it: `conda install -c conda-forge gdma` or recompile with `-DENABLE_gdma`')
+        raise ModuleNotFoundError('Python module gdma not found. Solve by installing it: `conda install -c conda-forge pygdma` or recompile with `-DENABLE_gdma`')
     import gdma
 
     min_version = "2.3.3"

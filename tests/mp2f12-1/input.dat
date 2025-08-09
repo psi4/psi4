@@ -26,6 +26,9 @@ set {
   d_convergence  1e-10
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 print('   Testing MP2-F12/3C(FIX) ...')
 val, wfn = energy('mp2-f12', return_wfn=True)
 

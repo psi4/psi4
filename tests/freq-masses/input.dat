@@ -24,6 +24,8 @@ mH = 1.007825032230
 mu_plain = mO * mH / (mO + mH)
 mu_weird = mO * 1000. / (mO + 1000.)
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
 
 ene, wfn = frequencies('hf/cc-pvdz', molecule=plain, return_wfn=True, dertype=2)
 masses = [plain.mass(iat) for iat in range(plain.natom())]

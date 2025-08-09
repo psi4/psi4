@@ -155,6 +155,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
             # runtime conv crit
             "points": 5,
             "fd_project": False,
+            "orbital_optimizer_package": "internal",  # haven't tried to adapt for ooo
         }
     )
     extra_kwargs = inp["keywords"].pop("function_kwargs", {})

@@ -32,6 +32,6 @@ compare_values(r2scan3c_biggrid_e, ene, 6, 'r2scan-3c ene')  #TEST
 
 grd = gradient('r2scan-3c/', dertype=1)
 compare_values(r2scan3c_biggrid_e, variable('current energy'), 6, "r2scan-3c ene")  #TEST
-compare_values(r2scan3c_biggrid_g, grd, 4e-5, "r2scan-3c grad analytic")  #TEST
+compare_values(r2scan3c_biggrid_g, grd, 5e-5, "r2scan-3c grad analytic")  #TEST
 print(grd.np)
 

@@ -71,7 +71,7 @@ jobs:
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
 
           - label: "LLVM clang-cl (W)"
-            runs-on: windows-latest
+            runs-on: windows-2022
             python-version: "3.12"
             mkl-version: ""
             llvm-version: "17.0.6"  # known good: "17.0.6"; omp problem: 19, 20
@@ -209,8 +209,8 @@ jobs:
       run: |
         conda/psi4-path-advisor.py \
           cache \
-          --objdir objdir \
-          --insist
+          --objdir objdir #\
+          #--insist  # temp
         echo "::group::View Cache File for CMake"
         printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
         pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake

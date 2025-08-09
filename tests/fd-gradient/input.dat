@@ -20,6 +20,10 @@ compare_matrices(fd_grad, anal_grad, 4, "3-point finite-difference vs. analytic 
 compare(7, variable('findif number'), '3-point stencil points')  #TEST
 
 # Test gradient by 5-point formula
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
 set findif { points 5 }
 fd_grad = gradient('scf', dertype=0)
 

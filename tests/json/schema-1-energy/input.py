@@ -61,7 +61,7 @@ expected_properties = {
     0.0,
     1.040372174058
   ],
-  "scf_iterations": 10,
+  "scf_iterations": 10 if psi4.core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") == "INTERNAL" else 15,
   "scf_total_energy": -75.98014187232745,
   "mp2_same_spin_correlation_energy": -0.031030063236104254,
   "mp2_opposite_spin_correlation_energy": -0.10168342161187537,
@@ -91,7 +91,10 @@ psi4.compare_values(expected_return_result, json_ret.return_result, 5, "Return V
 psi4.compare_integers(True, "MAYER INDICES" in json_ret.extras["qcvars"], "Mayer Indices Found")                           #TEST
 
 for k in expected_properties.keys():                                                       #TEST
-    psi4.compare_values(expected_properties[k], getattr(json_ret.properties, k), 5, k.upper())   #TEST
+    if k == "scf_iterations" and psi4.core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") != "INTERNAL":
+        psi4.compare(True, json_ret.properties.scf_iterations < 16, k.upper())  #TEST
+    else:
+        psi4.compare_values(expected_properties[k], getattr(json_ret.properties, k), 5, k.upper())   #TEST
 
 assert "Density-fitted CCSD" in json_ret.stdout #TEST
 

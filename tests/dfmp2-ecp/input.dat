@@ -19,6 +19,9 @@ set {
     print 2
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
+
 # All electrons on Ne correlated, all non-ECP electrons on Xe correlated
 Eall = energy('mp2')
 compare_values(refnuc, dimer.nuclear_repulsion_energy(), 8, "Nuclear repulsion energy")  #TEST
