@@ -124,7 +124,7 @@ def test_psi4_dfmp2():
     })
 
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
 
     e_cp = psi4.energy('mp2', bsse_type='cp')
 

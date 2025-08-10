@@ -11,6 +11,9 @@ symmetry c1
 """)
 psi4.set_options({'basis': 'cc-pvdz', 'freeze_core': 'false'})
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 _, wfn = psi4.energy('ccsd', return_wfn=True, molecule=Ne)
 amps = wfn.get_amplitudes()
 

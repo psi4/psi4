@@ -90,6 +90,9 @@ def test_ipi_broker1():
         'reference': 'rhf',
     })
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
+
     options = {}
 
     #ipi_broker(serverdata="inet:localhost:21340", options=options)

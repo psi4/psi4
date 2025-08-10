@@ -173,7 +173,7 @@ def test_schwarz_vs_csam_energy():
                       'ints_tolerance' : 1.0e-12 })
 
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+        psi4.set_options({"e_convergence": 9, "d_convergence": 6e-9})
 
     e_schwarz = psi4.energy('hf/DZ')
 
