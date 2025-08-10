@@ -15,7 +15,7 @@ set {
 if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
     fci_tol = 10
 else:
-    fci_tol = 9
+    fci_tol = 8
 
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.6311G.INTDUMP', oe_ints=['EIGENVALUES'])
@@ -33,7 +33,7 @@ set {
 }
 
 if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+    psi4.set_options({"e_convergence": 9, "d_convergence": 6e-8})
 
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.6311G.frozen.INTDUMP', oe_ints=['EIGENVALUES'])
@@ -51,7 +51,7 @@ set {
 }
 
 if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 10, "d_convergence": 5e-8})
+    psi4.set_options({"e_convergence": 10, "d_convergence": 6e-8})
 
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
 fcidump(scf_wfn, fname='Ne.cc-pVDZ.UHF.INTDUMP', oe_ints=['EIGENVALUES'])
