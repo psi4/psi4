@@ -1528,7 +1528,7 @@ data:
     conda:
       channel: conda-forge
       name: armadillo  # obviously conflated
-      constraint: "=14.4" #null
+      constraint: null
       cmake:
         ENABLE_OpenOrbitalOptimizer: true
         OpenOrbitalOptimizer_DIR:

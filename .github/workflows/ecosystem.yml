@@ -71,7 +71,7 @@ jobs:
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
 
           - label: "LLVM clang-cl (W)"
-            runs-on: windows-2022
+            runs-on: windows-latest
             python-version: "3.12"
             mkl-version: ""
             llvm-version: "17.0.6"  # known good: "17.0.6"; omp problem: 19, 20
@@ -293,7 +293,7 @@ jobs:
 
       # step works but is redundant with next one; enable for debugging
     - name: Test Addons with CTest (M)
-      if: false
+      if: runner.os == 'macOS'
       working-directory: ./objdir
       run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows
 

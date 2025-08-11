@@ -153,7 +153,6 @@ jobs:
                         qcmanybody ^
                         pydantic=1.10.17 ^
                         optking ^
-                        armadillo ^
                         scipy
           which anaconda
           conda list
@@ -212,7 +211,6 @@ jobs:
                 -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
                 -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON ^
                 -DBUILD_SHARED_LIBS=OFF ^
-                -DENABLE_OpenOrbitalOptimizer=ON ^
                 -DFORCE_PEDANTIC=ON ^
                 $(Build.SourcesDirectory)
         displayName: "Configure Psi4"

@@ -284,7 +284,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         level_shift_enabled = core.get_option("SCF", "LEVEL_SHIFT") != 0.0
         autograc_enabled = core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE"
         guessmix_enabled = core.get_option("SCF", "GUESS_MIX")
-        if (reference in ["ROHF"] or soscf_enabled or self.MOM_excited_ or frac_enabled or
+        if (reference in ["ROHF", "CUHF"] or soscf_enabled or self.MOM_excited_ or frac_enabled or
             efp_enabled or pcm_enabled or ddx_enabled or pe_enabled or autograc_enabled or
             level_shift_enabled or guessmix_enabled):
             core.print_out(f"    Note: OpenOrbitalOptimizer not compatible with at least one of the following. Falling back to orbital_optimizer_package=internal\n")
@@ -293,8 +293,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             core.print_out(f"          guess_mix={guessmix_enabled}\n")
         else:
             # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
-            self.iteration_ += 1
             if self.sad_ and self.iteration_ <= 0:
+                self.iteration_ += 1
                 self.form_G()
                 self.form_initial_F()
                 self.form_initial_C()
@@ -304,17 +304,22 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 core.print_out(
                     "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
                     ("DF-" if is_dfjk else "", reference, "SAD", ene_sad, ene_sad, 0.0, ""))
+            if core.get_option("SCF", "GUESS") == "READ" and self.iteration_ <= 0:
+                self.form_G()
+                self.form_initial_F()
+                self.form_initial_C()
+                self.reset_occupation()
+                self.find_occupation()
+                ene_sad = self.compute_E()
+
             try:
-                print(f"ITER F {self.iteration_=}")
                 self.openorbital_scf()
-                print(f"ITER G {self.iteration_=}")
             except RuntimeError as ex:
                 if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
                     core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
                 else:
                     raise ex
             else:
-                print(f"ITER H {self.iteration_=}")
                 SCFE = self.compute_E()
                 self.set_energies("Total Energy", SCFE)
                 self.set_variable("SCF ITERATION ENERGY", SCFE)
