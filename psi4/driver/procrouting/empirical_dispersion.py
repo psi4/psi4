@@ -45,7 +45,7 @@ _engine_can_do = collections.OrderedDict([
     ("dftd3",    [      "d2", "d3zero2b", "d3bj2b", "d3mzero2b", "d3mbj2b",                                                                                             ]),
     ("nl",       [                                                                                                                          "nl",                       ]),
     ("mp2d",     [                                                                                                                          "dmp2",                     ]),
-    ("dftd4",    [                                                                                                            "d4bjeeqatm",                             ]),
+    ("dftd4",    [                                                                                                            "d4bjeeqatm", "d4bjeeqtwo"                ]),
     ("mctc-gcp", [                                                                                                                          "3c",                       ]),
     ("gcp",      [                                                                                                                          "3c",                       ]),
 ]) # yapf: disable
@@ -102,7 +102,7 @@ class EmpiricalDispersion():
     Attributes
     ----------
     dashlevel : str
-        {"d1", "d2", "chg", "das2009", "das2010", "nl", "dmp2", "d3zero2b", "d3bj2b", "d3mzero2b", "d3mbj2b", "d3zeroatm", "d3bjatm", "d3mzeroatm", "d3mbjatm", "d4bjeeqatm"}
+        {"d1", "d2", "chg", "das2009", "das2010", "nl", "dmp2", "d3zero2b", "d3bj2b", "d3mzero2b", "d3mbj2b", "d3zeroatm", "d3bjatm", "d3mzeroatm", "d3mbjatm", "d4bjeeqatm", "d4bjeeqtwo"}
         Name of dispersion correction to be applied. Resolved
         from `name_hint` and/or `level_hint` into a key of
         `empirical_dispersion_resources.dashcoeff`.
