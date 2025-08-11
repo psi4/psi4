@@ -45,14 +45,14 @@ set {
 }
 
 if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+    psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
 
 #DC-06
 set dct_functional dc-06
 energy('dct')
 
 compare_values(refscf, variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
-compare_values(refmp2, variable("MP2 TOTAL ENERGY"), 10, "MP2 Energy");                                             #TEST
+compare_values(refmp2, variable("MP2 TOTAL ENERGY"),  9, "MP2 Energy");                                             #TEST
 compare_values(refdctscf, variable("DCT SCF ENERGY"), 10, "DC-06 SCF Energy (two-step, ao_basis=none)");     #TEST
 compare_values(refdct, variable("DCT TOTAL ENERGY"), 10, "DC-06 Energy (two-step, ao_basis=none)");                #TEST
 

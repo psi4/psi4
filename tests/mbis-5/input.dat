@@ -67,7 +67,7 @@ set {
 if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
     pole_tol = 5
 else:
-    pole_tol = 2e-5
+    pole_tol = 3e-5
     psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)

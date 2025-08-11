@@ -213,6 +213,10 @@ compare("scf", wfn.module(), "[14] module")  #TEST
 
 
 # MP2 TESTS
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-9})
+
 if distributed:
     plan = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', return_plan=True)
     plan.compute(client)
@@ -223,6 +227,9 @@ else:
 compare_matrices(ref_mp2_dtz, mp2_dtz, 6, "[15] MP2/cc-pV[DT]Z Gradient")  #TEST
 compare(4, variable('cbs number'), '[15] no')  #TEST
 compare("occ", wfn.module(), "[15] module")  #TEST
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 7, "d_convergence": 8})
 
 if distributed:
     plan = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', dertype='energy', return_plan=True)
