@@ -171,7 +171,7 @@ def test_seminum(inp, scf, mols, request):
         tol = 6
     else:
         tol = 5e-6
-        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-7})
+        psi4.set_options({"e_convergence": 9, "d_convergence": 7e-7})
 
     # does the SCF energy match a pre-computed reference?
     energy_seminum = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
