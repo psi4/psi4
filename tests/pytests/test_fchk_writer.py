@@ -107,7 +107,7 @@ def test_rhf_fchk(inp, datadir):
     else:
         dens_tol = 3.e-8
         fchk_tol = 5.e-7
-        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
     FCHK_file = f"rhf-{inp['name']}.fchk"
     reference_file = datadir.join(f"rhf-{inp['name']}.ref")
     psi4.set_options(inp['options'])
