@@ -2,10 +2,10 @@
 
 ref_scf                   =    -76.0267872755965             #TEST
 
-ref_dlpnoccsdt_corl       =     -0.214502825537              #TEST
-ref_dlpnoccsdt_tot        =    -76.241290101131              #TEST
-ref_dlpnoccsdt_q_corl     =     -0.214984310019              #TEST
-ref_dlpnoccsdt_q_tot      =    -76.241771585613              #TEST
+ref_dlpnoccsdt_corl       =     -0.214499682682              #TEST
+ref_dlpnoccsdt_tot        =    -76.241286958276              #TEST
+ref_dlpnoccsdt_q_corl     =     -0.214981281550              #TEST
+ref_dlpnoccsdt_q_tot      =    -76.241768557100              #TEST
 
 molecule h2o {
 O

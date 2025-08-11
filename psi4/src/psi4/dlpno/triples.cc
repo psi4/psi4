@@ -2624,6 +2624,7 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
 
         std::vector<int> ijk_idx = {i, j, k};
         std::vector<Tensor<double, 1>> T_i_list = {T_i, T_j, T_k};
+        std::vector<Tensor<double, 2>> q_io_list = {q_io_[ijk], q_jo_[ijk], q_ko_[ijk]};
         std::vector<Tensor<double, 2>> q_io_t1_list = {q_io_t1, q_jo_t1, q_ko_t1};
         std::vector<Tensor<double, 2>> q_iv_t1_list = {q_iv_t1, q_jv_t1, q_kv_t1};
 
@@ -2660,12 +2661,11 @@ void DLPNOCCSDT::compute_R_iajbkc(std::vector<SharedMatrix>& R_iajbkc) {
             }
 
             // J Contractions
-            Tensor<double, 2> q_io_slice = q_ov_[ijk](All, All, i_ijk);
-            einsum(1.0, Indices{index::l}, &F_li_list[idx], 2.0, Indices{index::Q, index::l}, q_io_slice, Indices{index::Q}, gamma_Q);
+            einsum(1.0, Indices{index::l}, &F_li_list[idx], 2.0, Indices{index::Q, index::l}, q_io_list[idx], Indices{index::Q}, gamma_Q);
 
             // K contractions
             Tensor<double, 2> F_li_K_temp("F_li_K_temp", naux_ijk, ntno_ijk);
-            einsum(0.0, Indices{index::Q, index::a}, &F_li_K_temp, 1.0, Indices{index::Q, index::m}, q_io_slice, Indices{index::m, index::a}, T_n_ijk_[ijk]);
+            einsum(0.0, Indices{index::Q, index::a}, &F_li_K_temp, 1.0, Indices{index::Q, index::m}, q_io_list[idx], Indices{index::m, index::a}, T_n_ijk_[ijk]);
             einsum(1.0, Indices{index::l}, &F_li_list[idx], -1.0, Indices{index::Q, index::a, index::l}, q_vo, Indices{index::Q, index::a}, F_li_K_temp);
 
             // Add F_ld contribution
