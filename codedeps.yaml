@@ -1544,16 +1544,3 @@ data:
         //CMAKE_INSIST_FIND_PACKAGE_OpenOrbitalOptimizer: true
         //CMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer: true
 
-  #- project: armadillo
-  #  use:
-  #    added: "1.10"
-  #    required: false
-  #    required_note: for OOO later this block will be incorparated into its deps
-  #    buildable: false
-  #    buildtime: true
-  #    cms: false
-  #    test_required: false
-  #  repository: null
-  #  cmake: null
-  #  conda:
-

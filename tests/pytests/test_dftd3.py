@@ -161,9 +161,6 @@ def test_grimme_3c(mtdbas, ref, mode):
     """)
     kcal = psi4.driver.constants.hartree2kcalmol
 
-    if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
-
     if mode == "abs":
         psi4.set_options({
             "scf_type": "direct",
@@ -172,6 +169,9 @@ def test_grimme_3c(mtdbas, ref, mode):
             "e_convergence": 8,
             "d_convergence": 8,
         })
+
+        if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+            psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
 
         ene = psi4.energy(mtdbas)
         assert psi4.compare_values(ref[0], ene, 5, mtdbas)
@@ -185,6 +185,10 @@ def test_grimme_3c(mtdbas, ref, mode):
             "d_convergence": 8,
         })
         psi4.set_options({'basis': 'cc-pvdz'})  # try to confuse method
+
+        if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+            psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
+
         ene = psi4.energy(mtdbas, bsse_type='nocp')
         assert psi4.compare_values(kcal * (ref[0] - ref[1] - ref[2]), kcal * ene, 1.1e-3, mtdbas)
 
