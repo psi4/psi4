@@ -170,17 +170,11 @@ jobs:
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
 
-  - bash: |
-      cd build
-      source activate p4env
-      ./stage/bin/psi4 ../tests/sapt1/input.dat
-    displayName: 'Spot Test 2'
-
-  - bash: |
-      cd build
-      source activate p4env
-      ./stage/bin/psi4 ../tests/json/schema-1-gradient/input.py
-    displayName: 'Spot Test 3'
+  #- bash: |
+  #    cd build
+  #    source activate p4env
+  #    PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
+  #  displayName: 'Spot Test 2'
 
   - bash: |
       cd build

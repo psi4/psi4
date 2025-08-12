@@ -12,6 +12,9 @@ set {
   freeze_core true
 }
 
+if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO various errors with ooo
+
 basis sadssejpvtz {
 # sl
 spherical

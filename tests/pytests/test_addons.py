@@ -1388,6 +1388,9 @@ def test_dftd4():
     H   0.000000   0.000000   3.963929
     """)
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
+
     print('  -D correction from Py-side')
     eneyne.update_geometry()
     E, G = eneyne.run_dftd4('b3lyp', 'd4bj')

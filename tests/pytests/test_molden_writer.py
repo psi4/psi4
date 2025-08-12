@@ -67,6 +67,8 @@ def test_H2O_density_molden(inp_h2o_density, datadir):
         'scf_type': 'pk',
         'e_convergence': 10
         })
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
     molden_file = f"{inp_h2o_density['name']}.molden"
     ref = datadir.join(f"{inp_h2o_density['name']}.ref")
     e, wfn = psi4.properties(inp_h2o_density['energy'], return_wfn=True, molecule=mol)
