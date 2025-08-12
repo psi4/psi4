@@ -1524,7 +1524,10 @@ data:
       account: SusiLehtola
       name: OpenOrbitalOptimizer
       commit: v0.2.0
-    cmake: null
+    cmake:
+      name: OpenOrbitalOptimizer
+      constraint: "0.2"
+      target: OpenOrbitalOptimizer::OpenOrbitalOptimizer
     conda:
       channel: conda-forge
       name: openorbitaloptimizer
