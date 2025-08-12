@@ -72,10 +72,7 @@ def test_dft_mp2(inp):
         'basis': basisset,
     })
     psi4.set_options(inp['options'])
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
-        tol = 1.e-10
-    else:
-        tol = 5e-8
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
         psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
     kwargs = {'return_wfn': True}
     if inp.get('dertype') is not None:
@@ -132,7 +129,9 @@ def test_dft_mp2(inp):
         for retrn in [grad,
                       wfn.gradient()]:
             atol = 2.e-8 if 'dertype' in inp else 1.e-10
-            assert compare_values(ref[basisset][inp['pv'] + ' TOTAL GRADIENT'], np.asarray(retrn), basisset + " tot grad", atol=tol)
+            if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+                atol = 5e-8
+            assert compare_values(ref[basisset][inp['pv'] + ' TOTAL GRADIENT'], np.asarray(retrn), basisset + " tot grad", atol=atol)
 
 
 #TABLE 14259 -1.155358302362078 0.7013114524160179

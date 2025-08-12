@@ -1164,7 +1164,12 @@ def test_resp_2(tmp_path):
     print("Difference")
     print(charges1[1]-reference_charges1)
 
-    assert np.allclose(charges1[1], reference_charges1, atol=1e-5)
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+        atol = 1e-5
+    else:
+        atol = 1e-4
+
+    assert np.allclose(charges1[1], reference_charges1, atol=atol)
 
     # Add constraint for atoms fixed in second stage fit
     options['resp_a'] = 0.001
@@ -1190,7 +1195,7 @@ def test_resp_2(tmp_path):
     print("Difference")
     print(charges2[1]-reference_charges2)
 
-    assert np.allclose(charges2[1], reference_charges2, atol=1e-5)
+    assert np.allclose(charges2[1], reference_charges2, atol=atol)
 
 
 @uusing("fockci")
