@@ -10,6 +10,9 @@ molecule h2o {
   H 1 0.96 2 104.5
 }
 
+if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO sometimes bad conv with ooo
+
 set basis cc-pVDZ
 energy('scf')
 

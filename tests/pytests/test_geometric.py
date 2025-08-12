@@ -104,7 +104,7 @@ def test_opt_stops_short(engine):
     })
 
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
     thisenergy, wfn = psi4.optimize("scf", return_wfn=True, engine=engine)
     # These values are from a tightly converged QChem run

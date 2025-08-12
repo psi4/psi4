@@ -121,7 +121,7 @@ def test_qcschema_cli(input_enc, input_fn, output_enc, output_fn, result_data_fi
     assert compare_integers(True, success, "Computation Status")
     # command shows up in stdout for Windows
     if not sys.platform.startswith("win"):
-        pass
+        assert compare_integers(True, ret['stdout'] == '', "Empty stdout")
 
     try:
         parsed = True

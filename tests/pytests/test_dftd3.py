@@ -161,6 +161,9 @@ def test_grimme_3c(mtdbas, ref, mode):
     """)
     kcal = psi4.driver.constants.hartree2kcalmol
 
+    if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
+
     if mode == "abs":
         psi4.set_options({
             "scf_type": "direct",
