@@ -1633,8 +1633,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("LINK_INTS_TOLERANCE", 1.0e-12);
         /*- Verbosity of printing for OpenOrbitalOptimizer iterations printing to screen.
         0 prints nothing. 1 prints one line per iter (note that RHF rms(density) printed
-        differs by half from convergence criterion. 5 is common and adds occupancy printing. -*/
-        options.add_int("OOO_PRINT", 1);
+        differs by half from convergence criterion. 5 is common and adds occupancy printing. 12 is max. -*/
+        options.add_int("OOO_PRINT", 0);
         /*- For |globals__orbital_optimizer_package| = `OOO`, the DIIS restart criterion (Chupin et al, 2021) -*/
         options.add_double("OOO_DIIS_RESTART_FACTOR", 1.0e-4);
         /*- For |globals__orbital_optimizer_package| = `OOO`, use optimal damping when max error bigger than this. -*/
