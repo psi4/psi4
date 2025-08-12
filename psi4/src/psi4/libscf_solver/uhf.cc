@@ -1490,7 +1490,8 @@ void UHF::openorbital_scf() {
         double d_rms = std::any_cast<double>(data.at("diis_error"));
 
         bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
-        printf("%d = |%e| < %e && %e < %e\n", converged, e_delta, e_conv, d_rms, d_conv);
+        if (iteration_ == options_.get_int("MAXITER"))
+            printf("%d = |%e| < %e && %e < %e\n", converged, e_delta, e_conv, d_rms, d_conv);
         return converged;
   };
 
