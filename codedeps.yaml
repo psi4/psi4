@@ -949,6 +949,7 @@ data:
       account: cdsgroup
       name: resp
       commit: c5019bf
+    cmake: null
     conda:
       channel: conda-forge
       name: resp
@@ -1007,10 +1008,10 @@ data:
         - msgpack-python
         - networkx
         - setuptools
-        - "pydantic>=1.10.17"
+        - "pydantic>=1.10.17,<3"
       aux_run_names_note:
         "setuptools": "Needed for qcelemental cmake detection."
-        "pydantic>=1.10.17": "Allow uniform access to Pydantic v1 API."
+        "pydantic>=1.10.17,<3": "Allow uniform access to Pydantic v1 API."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
@@ -1496,11 +1497,12 @@ data:
       host: github
       account: MolSSI
       name: QCManyBody
-      commit: v0.3.0
-    #cmake:
-    #  name: qcmanybody
-    #  constraint: ATLEAST 0.2.0
-    #  target:
+      commit: v0.5.1
+      githttps: true
+    cmake:
+      name: qcmanybody
+      constraint: "ATLEAST 0.5.1"
+      target: null
     conda:
       channel: conda-forge
       name: qcmanybody

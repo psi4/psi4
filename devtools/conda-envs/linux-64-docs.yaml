@@ -27,9 +27,11 @@ dependencies:
   - optking
   - qcelemental
   - qcengine
+  - qcmanybody>=0.5.1
     # runtime required
   - msgpack-python            # req'd with qcelemental
   - networkx                  # req'd with qcelemental
+  - pydantic>=1.10.17,<3      # req'd with qcelemental; Allow uniform access to Pydantic v1 API.
   - scipy
   - setuptools                # req'd with qcelemental; Needed for qcelemental cmake detection.
     # test
@@ -44,7 +46,7 @@ dependencies:
   - nbsphinx
   - python-graphviz
   - qcportal                  # req'd with sphinx; Required for docs to resolve objects in pydantic classes.
-  - sphinx<8
+  - sphinx>=7,<8
   - sphinx-autodoc-typehints  # req'd with sphinx
   - sphinx-automodapi         # req'd with sphinx
   - psi4::sphinx-psi-theme
