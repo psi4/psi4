@@ -26,9 +26,11 @@ dependencies:
   - optking
   - qcelemental
   - qcengine
+  - qcmanybody>=0.5.1
     # runtime required
   - msgpack-python            # req'd with qcelemental
   - networkx                  # req'd with qcelemental
+  - pydantic>=1.10.17,<3      # req'd with qcelemental; Allow uniform access to Pydantic v1 API.
   - scipy
   - setuptools                # req'd with qcelemental; Needed for qcelemental cmake detection.
     # test

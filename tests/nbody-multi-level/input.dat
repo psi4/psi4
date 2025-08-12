@@ -21,9 +21,11 @@ H       0.10002049   4.24958115  -1.10222079
 units bohr
 }
 
-
 set cc_type df
 set df_basis_mp2 def2-qzvpp-ri  # not a recommendation. present to compensate for change in default
+
+species_comparison_dict = {"§A_(2)@(2)": -74.9994424129044, "§B_(2)@(2)": -74.96344779297539}
+species_comparison_dict = {f"n-body {k} total energy": v for k, v in species_comparison_dict.items()}  #TEST
 
 # Compute 1-body contribution with ccsd(t) and 2-body contribution with mp2
 levels = {2: 'scf/sto-3g', 1: 'mp2/sto-3g'}
@@ -34,11 +36,17 @@ if distributed:
     e, wfn = plan.get_psi_results(client, return_wfn=True)
 else:
     e, wfn = energy('', molecule=h2o_trimer, bsse_type=['nocp', 'cp', 'vmfc'], return_total_data=True, return_wfn=True, levels=levels)
-clean()
+
+# * 2NOCP -> NOCP-CORRECTED TOTAL ENERGY THROUGH 2-BODY
+# * 1NOCP -> NOCP-CORRECTED TOTAL ENERGY THROUGH 1-BODY
 
 comparison_dict = {'nocp': -225.019408434635, 'cp': -225.000173661598, 'vmfc': -224.998744381484} #TEST
 for b, v in comparison_dict.items():                                                              #TEST
-    compare_values(v, wfn.variable('2'+b), 6, "[1] " + b + '-corrected multi-level energy')            #TEST
+    compare_values(v, wfn.variable(f"{b}-corrected total energy through 2-body"), 6, "[1] " + b + '-corrected multi-level energy')  #TEST
+for n, v in species_comparison_dict.items():                                                              #TEST
+    compare_values(v, wfn.variable(n), 6, f'[1b] multi-level energy, per subsys {n}')  #TEST
+clean()
+clean_variables()
 
 comparison_dict_grad = {
     "nocp": np.array([
@@ -87,6 +95,7 @@ else:
     g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['nocp'], return_total_data=True, return_wfn=True, levels=levels)
 compare_values(comparison_dict_grad["nocp"], g, 5, '[2a] nocp-corrected multi-level gradient')            #TEST
 clean()
+clean_variables()
 
 if distributed:
     plan = gradient('', molecule=h2o_trimer, bsse_type=['cp','nocp'], return_total_data=True, return_plan=True, levels=levels)
@@ -97,6 +106,7 @@ else:
     g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['cp','nocp'], return_total_data=True, return_wfn=True, levels=levels)
 compare_values(comparison_dict_grad["cp"], g, 5, '[2b] cp-corrected multi-level gradient')            #TEST
 clean()
+clean_variables()
 
 if distributed:
     plan = gradient('', molecule=h2o_trimer, bsse_type=['vmfc'], return_total_data=True, return_plan=True, levels=levels)
@@ -107,6 +117,7 @@ else:
     g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['vmfc'], return_total_data=True, return_wfn=True, levels=levels)
 compare_values(comparison_dict_grad["vmfc"], g, 5, '[2c] vmfc-corrected multi-level gradient')            #TEST
 clean()
+clean_variables()
 
 # Compute 1-body contribution with ccsd(t) and estimate all higher order contributions with scf
 levels = {1: 'mp2/sto-3g', 'supersystem': 'scf/sto-3g'}
@@ -117,10 +128,14 @@ if distributed:
     e, wfn = plan.get_psi_results(client, return_wfn=True)
 else:
     e, wfn = gradient('', molecule=h2o_trimer, bsse_type='nocp', return_total_data=True, return_wfn=True, levels=levels)
-clean()
+
 comparison_dict = {'1': -224.998373505116, '3': -225.023509855159}                                #TEST
 for n, v in comparison_dict.items():                                                              #TEST  
-    compare_values(v, wfn.variable(n+'nocp'), 6, '[3] Supersystem multi-level energy')            #TEST
+    compare_values(v, wfn.variable(f"nocp-corrected total energy through {n}-body"), 6, '[3] Supersystem multi-level energy')            #TEST
+for n, v in species_comparison_dict.items():                                                              #TEST
+    compare_values(v, wfn.variable(n), 6, '[3b] multi-level energy, per subsys')  #TEST
+clean()
+clean_variables()
 
 # Compute electrostatically embedded  many-body expansion energy.with TIP3P charges
 tip3p_charges = [-0.834, 0.417, 0.417]
@@ -134,10 +149,13 @@ if distributed:
 else:
     e, wfn = energy('scf/sto-3g', molecule=h2o_trimer, bsse_type='vmfc', return_total_data=True, return_wfn=True,
                 max_nbody=2, embedding_charges=embedding_charges)
-clean()
+
 comparison_dict = {'1': -224.940138148882, '2': -224.943882712817}                                #TEST
+comparison_dict = {f"vmfc-corrected total energy through {k}-body": v for k, v in comparison_dict.items()}  #TEST
 for n, v in comparison_dict.items():                                                              #TEST
     compare_values(v, wfn.variable(n), 6, '[4] Electrostatically embedded many-body expansion')   #TEST
+clean()
+clean_variables()
 
 
 # units check
@@ -164,10 +182,13 @@ if distributed:
     e, wfn = plan.get_psi_results(client, return_wfn=True)
 else:
     e, wfn = energy('', molecule=h2o_trimer_ang, bsse_type='nocp', return_total_data=True, return_wfn=True, levels=levels)
-clean()
+
 comparison_dict = {'1': -224.998373505116, '3': -225.023509855159}                                #TEST
+comparison_dict = {f"nocp-corrected total energy through {k}-body": v for k, v in comparison_dict.items()}  #TEST
 for n, v in comparison_dict.items():                                                              #TEST
-    compare_values(v, wfn.variable(n+'nocp'), 6, '[5] Supersystem multi-level energy: Ang')           #TEST
+    compare_values(v, wfn.variable(n), 6, '[5] Supersystem multi-level energy: Ang')           #TEST
+clean()
+clean_variables()
 
 if distributed:
     plan = energy('scf/sto-3g', molecule=h2o_trimer_ang, bsse_type='vmfc', return_total_data=True, return_plan=True,
@@ -178,10 +199,12 @@ if distributed:
 else:
     e, wfn = energy('scf/sto-3g', molecule=h2o_trimer_ang, bsse_type='vmfc', return_total_data=True, return_wfn=True,
                 max_nbody=2, embedding_charges=embedding_charges)
-clean()
 comparison_dict = {'1': -224.940138148882, '2': -224.943882712817}                                #TEST
+comparison_dict = {f"vmfc-corrected total energy through {k}-body": v for k, v in comparison_dict.items()}  #TEST
 for n, v in comparison_dict.items():                                                              #TEST
     compare_values(v, wfn.variable(n), 6, '[6] Electrostatically embedded many-body expansion: Ang')  #TEST
+clean()
+clean_variables()
 
 if distributed:
     snowflake.stop()

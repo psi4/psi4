@@ -34,6 +34,9 @@
    triple: setting; keywords; cp
    triple: setting; keywords; vmfc
    single: counterpoise correction
+   triple: setting; keywords; mbe
+   triple: setting; keywords; ssfc
+   single: QCManyBody
 
 .. _`sec:cp()`:
 
@@ -42,11 +45,14 @@ Basis Set Superposition Corrections
 
 .. codeauthor:: Daniel G. A. Smith
 
-.. autofunction:: psi4.driver.driver_nbody.nbody(func, method_string [, molecule, bsse_type, max_nbody, ptype, return_total_data])
+.. autofunction:: psi4.driver.driver_nbody.nbody(func, method_string [, molecule, bsse_type, max_nbody, ptype, return_total_data, supersystem_ie_only])
 
 
 The nbody function computes counterpoise-corrected (CP), non-CP (noCP), and Valiron-Mayer Function Counterpoise (VMFC) interaction energies for complexes composed of arbitrary numbers of monomers.
 
+.. caution:: August 2025, v1.10 many-body computations are no longer
+   using internal driver code but have been offloaded to QCManyBody
+   software.
 
 **Examples :** ::
 
@@ -82,6 +88,8 @@ The nbody function computes counterpoise-corrected (CP), non-CP (noCP), and Vali
 
     # Returns the nocp energy as its first in the list
     energy('CCSD(T)', bsse_type=['nocp', 'cp', 'vmfc'], max_nbody=3)
+    # Calculate cp geometry optimization skipping the MBE intermediate levels
+    optimize("ccsd(t)/cc-pv[dt]z", bsse_type="cp", supersystem_ie_only=True)
 
 API
 ---
@@ -91,4 +99,12 @@ API
    :undoc-members:
 
 .. autopydantic_model:: psi4.driver.driver_nbody.ManyBodyComputer
+   :members:
+   :undoc-members:
+   :inherited-members: BaseModel, ProtoModel
+
+.. .. autopydantic_model:: qcmanybody.ManyBodyComputer
+..    :members:
+..    :undoc-members:
+..    :noindex:
 
