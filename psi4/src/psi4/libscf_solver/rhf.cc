@@ -1260,13 +1260,13 @@ void RHF::openorbital_scf() {
   };
 
   OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);
-  scfsolver.maximum_iterations(maxiter); // mod
-  scfsolver.verbosity(options_.get_int("OOO_PRINT"));  // mod
-  scfsolver.maximum_history_length(maxvecs); // mod
-  scfsolver.callback_function(callback_function); // mod
+  scfsolver.maximum_iterations(maxiter);
+  scfsolver.verbosity(options_.get_int("OOO_PRINT"));
+  scfsolver.maximum_history_length(maxvecs);
+  scfsolver.callback_function(callback_function);
   scfsolver.callback_convergence_function(callback_convergence_function);  // replaces scfsolver.convergence_threshold()
-  scfsolver.diis_epsilon(start_diis); // mod
-  scfsolver.diis_threshold(finish_diis); // mod
+  scfsolver.diis_epsilon(start_diis);
+  scfsolver.diis_threshold(finish_diis);
   if(input_docc_) scfsolver.frozen_occupations(true);
   scfsolver.diis_restart_factor(options_.get_double("OOO_DIIS_RESTART_FACTOR"));
   scfsolver.optimal_damping_threshold(options_.get_double("OOO_OPTIMAL_DAMPING_THRESHOLD"));

@@ -1616,10 +1616,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             to have both the chosen accelerator and DIIS (if enabled). For restricted-open references, ``EDIIS`` and ``ADIIS`` have no effect. -*/
         options.add_str("SCF_INITIAL_ACCELERATOR", "ADIIS", "NONE EDIIS ADIIS");
         /*- SCF error at which to start the linear interpolation between DIIS steps and steps of the initial SCF accelerator.
-            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249 -*/
+            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249
+            For |globals__orbital_optimizer_package| = `OOO`, sets diis_epsilon. -*/
         options.add_double("SCF_INITIAL_START_DIIS_TRANSITION", 1.0E-1);
         /*- SCF error at which to complete the linear interpolation between DIIS steps and steps of the initial SCF accelerator
-            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249 -*/
+            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249
+            For |globals__orbital_optimizer_package| = `OOO`, sets diis_threshold. -*/
         options.add_double("SCF_INITIAL_FINISH_DIIS_TRANSITION", 1.0E-4);
         /*- Do perform incremental Fock build? -*/
         options.add_bool("INCFOCK", false);
@@ -1631,7 +1633,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- The screening tolerance used for ERI/Density sparsity in the LinK algorithm -*/
         options.add_double("LINK_INTS_TOLERANCE", 1.0e-12);
-        /*- Verbosity of printing for OpenOrbitalOptimizer iterations printing to screen.
+        /*- For |globals__orbital_optimizer_package| = `OOO`, verbosity of printing to screen.
         0 prints nothing. 1 prints one line per iter (note that RHF rms(density) printed
         differs by half from convergence criterion. 5 is common and adds occupancy printing. 12 is max. -*/
         options.add_int("OOO_PRINT", 0);
@@ -2118,7 +2120,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("PROP_SYM", 1);
         /*- Root number (within its irrep) for computing properties -*/
         options.add_int("PROP_ROOT", 1);
-        /*- Maximum number of iterations -*/
+        /*- Maximum number of iterations.
+        For |globals__orbital_optimizer_package| = `OOO`, sets maximum iterations. -*/
         options.add_int("MAXITER", 50);
         /*- Do use zeta?  -*/
         options.add_bool("ZETA", false);

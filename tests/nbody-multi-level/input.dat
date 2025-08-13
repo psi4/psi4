@@ -141,6 +141,8 @@ clean()
 clean_variables()
 
 # Compute electrostatically embedded  many-body expansion energy.with TIP3P charges
+import os
+os.environ["QCMANYBODY_EMBEDDING_CHARGES"] = "1"
 tip3p_charges = [-0.834, 0.417, 0.417]
 embedding_charges = {i: [j for j in tip3p_charges] for i in range(1, 4)}
 if distributed:
