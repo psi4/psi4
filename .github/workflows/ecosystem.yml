@@ -271,6 +271,16 @@ jobs:
       run: |
         sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /Users/runner/miniconda3/envs/p4build/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
 
+    - name: Special Config - Force testing OpenOrbitalOptimizer
+      run: |
+        grep OOO psi4/src/read_options.cc
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          sed -E -i.bak 's;\(options\.add_str("ORBITAL_OPTIMIZER_PACKAGE", "\)INTERNAL\(", "INTERNAL OOO OPENORBITALOPTIMIZER"\);\1OOO\2;' psi4/src/read_options.cc
+        else
+          sed -i        's;\(options\.add_str("ORBITAL_OPTIMIZER_PACKAGE", "\)INTERNAL\(", "INTERNAL OOO OPENORBITALOPTIMIZER"\);\1OOO\2;' psi4/src/read_options.cc
+        fi
+        grep OOO psi4/src/read_options.cc
+
     - name: Runtime Conda environment
       run: |
         conda info

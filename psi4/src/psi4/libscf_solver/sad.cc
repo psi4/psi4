@@ -97,7 +97,7 @@ std::vector<std::vector<arma::uvec>> get_lm_indices(std::shared_ptr<BasisSet> ba
         auto am = sh.am();
         auto stidx = sh.start();
         if(not sh.is_pure()) {
-            throw PSIEXCEPTION("no good for ooo");
+            throw PSIEXCEPTION("SAD guess @OOO: Cartesian shells not verified");
         }
         if(lm_indices[am].size() != nfc) {
             lm_indices[am].resize(nfc);
@@ -500,7 +500,8 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
         atomic_Ehu[uniA] = std::make_shared<Vector>("Atomic Huckel E", nhu);
 
         if (SAD_use_fitting(options_)) {
-            if (options_.get_str("ORBITAL_OPTIMIZER_PACKAGE") == "OPENORBITALOPTIMIZER") {
+            if ((options_.get_str("SAD_ORBITAL_OPTIMIZER_PACKAGE") == "OPENORBITALOPTIMIZER") or
+                (options_.get_str("SAD_ORBITAL_OPTIMIZER_PACKAGE") == "OOO")) {
                 get_uhf_atomic_density_ooo(atomic_bases_[index], atomic_fit_bases_[index], occ_a, occ_b, atomic_D[uniA],
                                            atomic_Chu[uniA], atomic_Ehu[uniA]);
             } else {
@@ -510,7 +511,8 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
 
         } else {
             std::shared_ptr<BasisSet> zbas = BasisSet::zero_ao_basis_set();
-            if (options_.get_str("ORBITAL_OPTIMIZER_PACKAGE") == "OPENORBITALOPTIMIZER") {
+            if ((options_.get_str("SAD_ORBITAL_OPTIMIZER_PACKAGE") == "OPENORBITALOPTIMIZER") or
+                (options_.get_str("SAD_ORBITAL_OPTIMIZER_PACKAGE") == "OOO")) {
                 get_uhf_atomic_density_ooo(atomic_bases_[index], zbas, occ_a, occ_b, atomic_D[uniA], atomic_Chu[uniA],
                                            atomic_Ehu[uniA]);
             } else {

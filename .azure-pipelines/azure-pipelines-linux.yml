@@ -98,6 +98,12 @@ jobs:
     displayName: "Add Conda to PATH"
 
   - bash: |
+      grep OOO psi4/src/read_options.cc
+      sed -i 's;\(options\.add_str("ORBITAL_OPTIMIZER_PACKAGE", "\)INTERNAL\(", "INTERNAL OOO OPENORBITALOPTIMIZER"\);\1OOO\2;' psi4/src/read_options.cc
+      grep OOO psi4/src/read_options.cc
+    displayName: "Special Operation: test OpenOrbitalOptimizer"
+
+  - bash: |
       conda install pyyaml -c conda-forge
       conda/psi4-path-advisor.py \
         env \
