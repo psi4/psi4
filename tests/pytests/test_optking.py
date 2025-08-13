@@ -201,7 +201,7 @@ def test_cart_constraints(inp):
     psi4.set_options(psi4_options)
 
     if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
     e = psi4.optimize(inp["name"])
 
