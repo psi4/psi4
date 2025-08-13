@@ -197,7 +197,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Orbital optimizer package to use for SCF. If compiled with OpenOrbitalOptimizer support, change this to use it or the internal code. -*/
     options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
 #else
-    /*- Orbital optimizer package to use for SDF . -*/
+    /*- Orbital optimizer package to use for SCF. -*/
     options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
 #endif
     /*- Algorithm to use for MP2 computation.
@@ -1817,7 +1817,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         Implementation WIP !expert -*/
         options.add_str("SAD_ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
 #else
-        /*- Orbital optimizer package to use for SAD guess. -*/
+        /*- Orbital optimizer package to use for SAD guess. !expert -*/
         options.add_str("SAD_ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
 #endif
 
