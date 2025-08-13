@@ -30,8 +30,8 @@
 #define LIBSCF_SAD_H
 
 #ifdef USING_OpenOrbitalOptimizer
-#include <mkl.h>
 #ifdef USING_LAPACK_MKL
+#include <mkl.h>
 #define ARMA_USE_MKL
 #define ARMA_USE_MKL_TYPES
 #endif
