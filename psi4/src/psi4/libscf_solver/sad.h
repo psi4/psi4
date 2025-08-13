@@ -30,6 +30,13 @@
 #define LIBSCF_SAD_H
 
 #ifdef USING_OpenOrbitalOptimizer
+#include <mkl.h>
+#ifdef USING_LAPACK_MKL
+#define ARMA_USE_MKL
+#define ARMA_USE_MKL_TYPES
+#endif
+#define ARMA_DONT_USE_FORTRAN_HIDDEN_ARGS
+#define ARMA_DONT_USE_WRAPPER
 #include <armadillo>
 #include <openorbitaloptimizer/scfsolver.hpp>
 #endif
