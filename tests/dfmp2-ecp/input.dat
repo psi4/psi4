@@ -1,5 +1,8 @@
 #! Ne-Xe dimer MP2 energies with ECP, with electrons correlated then frozen.
 
+oopkg = os.environ.get("_PSI4_USE_OOPKG", False)
+psi4.set_options({"orbital_optimizer_package": "ooo" if oopkg else "internal"})
+
 refnuc =   45.862024925                                                                  #TEST
 refall = -457.47320868249                                                                #TEST
 reffzc = -457.38127218548                                                                #TEST

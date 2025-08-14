@@ -706,6 +706,14 @@ def test_simint():
     _test_scf5()
 
 
+@uusing("ooo")
+def test_openorbitaloptimizer():
+    """scf5"""
+
+    psi4.set_options({'orbital_optimizer_package': 'openorbitaloptimizer'})
+    _test_scf5()
+
+
 def test_run_json():
     """json/energy"""
 

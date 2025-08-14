@@ -206,6 +206,7 @@ jobs:
         conda list
 
     - name: Special Config - Force testing OpenOrbitalOptimizer
+      if: "(matrix.cfg.label == 'Conda Clang (M-Intel)')"
       run: |
         grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
         if [[ "${{ runner.os }}" == "macOS" ]]; then
