@@ -95,7 +95,13 @@ Installation
   and let the build system fetch and build it and activate dependent code.
 
 
-.. _`cmake:simint`:
+Options
+~~~~~~~
+
+.. include:: autodir_options_c/scf__maxiter.rst
+.. include:: autodir_options_c/scf__ooo_print.rst
+
+.. _`cmake:ooo`:
 
 How to configure OpenOrbitalOptimizer for building Psi4
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -111,7 +117,7 @@ How to configure OpenOrbitalOptimizer for building Psi4
 
 **CMake Variables**
 
-* :makevar:`ENABLE_simint` |w---w| CMake variable toggling whether |PSIfour| builds with simint
+* :makevar:`ENABLE_OpenOrbitalOptimizer` |w---w| CMake variable toggling whether |PSIfour| builds with OpenOrbitalOptimizer
 * :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For simint, set to an installation directory containing ``include/simint/simint.h``
 * :makevar:`simint_DIR` |w---w| CMake variable to specify where pre-built simint can be found. Set to installation directory containing ``share/cmake/simint/simintConfig.cmake``
 * :makevar:`CMAKE_DISABLE_FIND_PACKAGE_simint` |w---w| CMake variable to force internal build of simint instead of detecting pre-built
