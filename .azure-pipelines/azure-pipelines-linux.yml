@@ -99,7 +99,7 @@ jobs:
 
   - bash: |
       grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
-      if [[ "$(Agent.JobName)" == "gcc_latest" ]]; then
+      if [[ "$(Agent.JobName)" == "Linux Builds gcc_latest" ]]; then
         sed -i 's;\(options\.add_str("ORBITAL_OPTIMIZER_PACKAGE", "\)INTERNAL\(", "INTERNAL OOO OPENORBITALOPTIMIZER"\);\1OOO\2;' psi4/src/read_options.cc
       fi
       grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
