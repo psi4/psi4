@@ -40,7 +40,7 @@ Interface to OpenOrbitalOptimizer by S. Lehtola
 
 .. *Module:* :ref:`Keywords <apdx:efp>`, :ref:`PSI Variables <apdx:efp_psivar>`, :source:`LIBEFP <src/lib/libefp_solver>`
 
-.. image:: https://img.shields.io/badge/home-simint-5077AB.svg
+.. image:: https://img.shields.io/badge/home-OpenOrbitalOptimizer-5077AB.svg
    :target: https://github.com/SusiLehtola/OpenOrbitalOptimizer
 
 .. raw:: html
@@ -62,44 +62,56 @@ Installation
 
 **Binary**
 
-* .. image:: https://anaconda.org/psi4/simint/badges/version.svg
-     :target: https://anaconda.org/psi4/simint
+* .. image:: https://anaconda.org/SusiLehtola/OpenOrbitalOptimizer/badges/version.svg
+     :target: https://anaconda.org/SusiLehtola/OpenOrbitalOptimizer
 
-* SIMINT is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
+* OpenOrbitalOptimizer is available as a conda package for Linux, macOS, and Windows.
 
-* The conda package is compiled to least-common-denominator, namely SSE instruction set.
+* The conda package is (for the C++ interface) a header-only library.
 
-* If using the |PSIfour| binary, simint has already been installed alongside.
+* If using the |PSIfour| binary, OpenOrbitalOptimizer has already been compiled in.
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  simint can be obtained through ``conda install simint -c psi4``.
-  Then enable it as a feature with :makevar:`ENABLE_simint`,
+  OpenOrbitalOptimizer can be obtained through ``conda install openorbitaloptimizer -c conda-forge``.
+  Then enable it as a feature with :makevar:`ENABLE_OpenOrbitalOptimizer`,
   hint its location with :makevar:`CMAKE_PREFIX_PATH`,
-  and rebuild |PSIfour| to detect simint and activate dependent code.
+  and rebuild |PSIfour| to detect OpenOrbitalOptimizer and activate dependent code.
 
-.. * Previous bullet had details. To build |PSIfour| from source and use 
-..   simint from conda without thinking, consult.
-
-* To remove a conda installation, ``conda remove simint``.
+* To remove a conda installation, ``conda remove openorbitaloptimizer``.
 
 **Source**
 
-* .. image:: https://img.shields.io/github/tag/psi4/simint.svg?maxAge=2592000
+* .. image:: https://img.shields.io/github/tag/SusiLehtola/OpenOrbitalOptimizer.svg?maxAge=2592000
+     :target: https://github.com/SusiLehtola/OpenOrbitalOptimizer
 
-..     :target: https://github.com/psi4/simint TODO BPP
-
-* If using |PSIfour| built from source and you want simint built from
+* If using |PSIfour| built from source and you want OpenOrbitalOptimizer built from
   from source also,
-  enable it as a feature with :makevar:`ENABLE_simint`,
+  enable it as a feature with :makevar:`ENABLE_OpenOrbitalOptimizer`,
   and let the build system fetch and build it and activate dependent code.
 
 
-Options
-~~~~~~~
+.. _`options:ooo`:
 
+OpenOrbitalOptimizer Options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+OpenOrbitalOptimizer is ready to use for RHF and UHF SCF
+iterations. (Other references will fall back on the internal
+optimizer.) Note that you may need to back off on convergence
+criteria. OpenOrbitalOptimizer for the SAD guess is available for
+experimentation only.
+
+.. include:: autodir_options_c/globals__orbital_optimizer_package.rst
 .. include:: autodir_options_c/scf__maxiter.rst
 .. include:: autodir_options_c/scf__ooo_print.rst
+.. include:: autodir_options_c/scf__diis_max_vecs
+.. include:: autodir_options_c/scf__scf_initial_start_diis_transition
+.. include:: autodir_options_c/scf__scf_initial_finish_diis_transition
+.. include:: autodir_options_c/scf__ooo_diis_restart_factor
+.. include:: autodir_options_c/scf__ooo_optimal_damping_threshold
+.. include:: autodir_options_c/scf__sad_orbital_optimizer_package
+
 
 .. _`cmake:ooo`:
 
@@ -118,11 +130,10 @@ How to configure OpenOrbitalOptimizer for building Psi4
 **CMake Variables**
 
 * :makevar:`ENABLE_OpenOrbitalOptimizer` |w---w| CMake variable toggling whether |PSIfour| builds with OpenOrbitalOptimizer
-* :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For simint, set to an installation directory containing ``include/simint/simint.h``
-* :makevar:`simint_DIR` |w---w| CMake variable to specify where pre-built simint can be found. Set to installation directory containing ``share/cmake/simint/simintConfig.cmake``
-* :makevar:`CMAKE_DISABLE_FIND_PACKAGE_simint` |w---w| CMake variable to force internal build of simint instead of detecting pre-built
-* :makevar:`CMAKE_INSIST_FIND_PACKAGE_simint` |w---w| CMake variable to force detecting pre-built simint and not falling back on internal build
-* :makevar:`SIMINT_VECTOR` |w---w| CMake variable for simint vectorization (i.e., scalar sse avx avxfma micavx512). Default is ``avx``, *not* detected, so ``sse`` may be required for older chipsets. See http://www.bennyp.org/research/simint/README.txt for details.
+* :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For OOO, set to an installation directory containing ``include/openorbitaloptimizer/scfsolver.hpp``
+* :makevar:`OpenOrbitalOptimizer_DIR` |w---w| CMake variable to specify where pre-built OpenOrbitalOptimizer can be found. Set to installation directory containing ``share/cmake/OpenOrbitalOptimizer/OpenOrbitalOptimizer/OpenOrbitalOptimizerConfig.cmake``
+* :makevar:`CMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer` |w---w| CMake variable to force internal build of OpenOrbitalOptimizer instead of detecting pre-built
+* :makevar:`CMAKE_INSIST_FIND_PACKAGE_OpenOrbitalOptimizer` |w---w| CMake variable to force detecting pre-built OpenOrbitalOptimizerand not falling back on internal build
 
 **Examples**
 
@@ -130,9 +141,9 @@ A. Build bundled
 
   .. code-block:: bash
 
-    >>> cmake -DENABLE_simint=ON
+    >>> cmake -DENABLE_OpenOrbitalOptimizer=ON
 
-B. Build *without* simint
+B. Build *without* OpenOrbitalOptimizer
 
   .. code-block:: bash
 
@@ -142,15 +153,16 @@ C. Link against pre-built
 
   .. code-block:: bash
 
-    >>> cmake -DENABLE_simint=ON -DCMAKE_PREFIX_PATH=/path/to/simint/root
+    >>> cmake -DENABLE_OpenOrbitalOptimizer=ON -DCMAKE_PREFIX_PATH=/path/to/OpenOrbitalOptimizer/root
 
   .. code-block:: bash
 
-    >>> cmake -DENABLE_simint=ON -Dsimint_DIR=/path/to/simint/configdir
+    >>> cmake -DENABLE_OpenOrbitalOptimizer=ON -DOpenOrbitalOptimizer_DIR=/path/to/ooo/configdir
 
 D. Build bundled despite pre-built being detectable
 
   .. code-block:: bash
 
-    >>> cmake -DENABLE_simint=ON -DCMAKE_PREFIX_PATH=/path/to/unwanted/simint/root/and/wanted/other/dependencies/root -DCMAKE_DISABLE_FIND_PACKAGE_simint=ON
+    >>> cmake -DENABLE_OpenOrbitalOptimizer=ON -DCMAKE_PREFIX_PATH=/path/to/unwanted/OpenOrbitalOptimizer/root/and/wanted/other/dependencies/root -DCMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer=ON
+
 
