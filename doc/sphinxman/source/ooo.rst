@@ -105,12 +105,12 @@ experimentation only.
 .. include:: autodir_options_c/globals__orbital_optimizer_package.rst
 .. include:: autodir_options_c/scf__maxiter.rst
 .. include:: autodir_options_c/scf__ooo_print.rst
-.. include:: autodir_options_c/scf__diis_max_vecs
-.. include:: autodir_options_c/scf__scf_initial_start_diis_transition
-.. include:: autodir_options_c/scf__scf_initial_finish_diis_transition
-.. include:: autodir_options_c/scf__ooo_diis_restart_factor
-.. include:: autodir_options_c/scf__ooo_optimal_damping_threshold
-.. include:: autodir_options_c/scf__sad_orbital_optimizer_package
+.. include:: autodir_options_c/scf__diis_max_vecs.rst
+.. include:: autodir_options_c/scf__scf_initial_start_diis_transition.rst
+.. include:: autodir_options_c/scf__scf_initial_finish_diis_transition.rst
+.. include:: autodir_options_c/scf__ooo_diis_restart_factor.rst
+.. include:: autodir_options_c/scf__ooo_optimal_damping_threshold.rst
+.. include:: autodir_options_c/scf__sad_orbital_optimizer_package.rst
 
 
 .. _`cmake:ooo`:
