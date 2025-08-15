@@ -63,7 +63,7 @@ jobs:
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or cbs_xtpl_energy)"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or snowflake)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF

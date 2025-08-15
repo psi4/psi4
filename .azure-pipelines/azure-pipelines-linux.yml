@@ -20,6 +20,7 @@ jobs:
         PYTEST_MARKER_EXPR: "quick"
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
+        ENABLE_GAUXC: "ON"
         CMARGS: ""
 
       gcc_latest:
@@ -33,6 +34,7 @@ jobs:
         PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long)) or einsums)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
+        ENABLE_GAUXC: "ON"
         CMARGS: ""
 
       clang_latest:
@@ -47,6 +49,7 @@ jobs:
         PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
+        ENABLE_GAUXC: "OFF"
         CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so'
 
   pool:
@@ -154,7 +157,7 @@ jobs:
         -D ENABLE_PLUGIN_TESTING=ON \
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=OFF \
-        -D ENABLE_gauxc=ON \
+        -D ENABLE_gauxc="${ENABLE_GAUXC}" \
         -D ENABLE_OpenOrbitalOptimizer=ON \
         -D FORCE_PEDANTIC=ON \
         ${CMARGS} \
