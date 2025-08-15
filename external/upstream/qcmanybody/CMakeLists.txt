@@ -32,7 +32,7 @@ else()
         UPDATE_COMMAND ""
         BUILD_COMMAND ""
         BUILD_IN_SOURCE 1
-        # master: INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCManyBody.git#egg=proj
+        # master: INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/ QCManyBody.git#egg=proj
         INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCManyBody.git@v0.5.1#egg=proj  # edit in codedeps
                                                       --target=${_install_lib}
                                                       --no-deps

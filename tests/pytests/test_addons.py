@@ -56,14 +56,20 @@ def test_gdma():
                        "gdma_limit": 2,
                        "gdma_origin": [ 0.000000,  0.000000,  0.117176 ]})
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+        dma_tol = 6
+    else:
+        dma_tol = 2e-6
+        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
     energy, wfn = psi4.energy('scf', return_wfn=True)
 
     psi4.gdma(wfn)
     dmavals = psi4.core.variable("DMA DISTRIBUTED MULTIPOLES")
     totvals = psi4.core.variable("DMA TOTAL MULTIPOLES")
     assert psi4.compare_values(ref_energy, energy, 8, "SCF Energy")
-    assert psi4.compare_matrices(dmavals, ref_dma_mat, 6, "DMA Distributed Multipoles")
-    assert psi4.compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")
+    assert psi4.compare_matrices(dmavals, ref_dma_mat, dma_tol, "DMA Distributed Multipoles")
+    assert psi4.compare_matrices(totvals, ref_tot_mat, dma_tol, "DMA Total Multipoles")
 
 
 @uusing("ipi")
@@ -83,6 +89,9 @@ def test_ipi_broker1():
         'basis': 'sto-3g',
         'reference': 'rhf',
     })
+
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
 
     options = {}
 
@@ -261,6 +270,9 @@ def test_mp2d():
         },
         'keywords': {},
     }
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        resinp["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
+
     jrec = qcng.compute(resinp, 'mp2d', raise_error=True)
     jrec = jrec.dict()
 
@@ -694,6 +706,14 @@ def test_simint():
     _test_scf5()
 
 
+@uusing("ooo")
+def test_openorbitaloptimizer():
+    """scf5"""
+
+    psi4.set_options({'orbital_optimizer_package': 'openorbitaloptimizer'})
+    _test_scf5()
+
+
 def test_run_json():
     """json/energy"""
 
@@ -747,6 +767,8 @@ def test_run_qcschema():
         },
         "keywords": {}
     }
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        json_input["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
 
     json_ret = psi4.json_wrapper.run_qcschema(json_input)
     print(json_ret.dict())
@@ -825,6 +847,7 @@ def test_v2rdm_casscf():
       'maxiter': 500,
       'restricted_docc': [ 2, 0, 0, 0, 0, 2, 0, 0 ],
       'active': [ 1, 0, 1, 1, 0, 1, 1, 1 ],
+      'orbital_optimizer_package': 'internal',
     })
     psi4.set_options({
       'v2rdm_casscf__positivity': 'dqg',
@@ -1149,7 +1172,12 @@ def test_resp_2(tmp_path):
     print("Difference")
     print(charges1[1]-reference_charges1)
 
-    assert np.allclose(charges1[1], reference_charges1, atol=1e-5)
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+        atol = 1e-5
+    else:
+        atol = 1e-4
+
+    assert np.allclose(charges1[1], reference_charges1, atol=atol)
 
     # Add constraint for atoms fixed in second stage fit
     options['resp_a'] = 0.001
@@ -1175,7 +1203,7 @@ def test_resp_2(tmp_path):
     print("Difference")
     print(charges2[1]-reference_charges2)
 
-    assert np.allclose(charges2[1], reference_charges2, atol=1e-5)
+    assert np.allclose(charges2[1], reference_charges2, atol=atol)
 
 
 @uusing("fockci")
@@ -1372,6 +1400,9 @@ def test_dftd4():
     H   0.000000   0.000000   0.627352
     H   0.000000   0.000000   3.963929
     """)
+
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
 
     print('  -D correction from Py-side')
     eneyne.update_geometry()

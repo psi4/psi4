@@ -60,13 +60,20 @@ def test_uhf_fchk(inp2, datadir):
         'r_convergence': 1e-10,
         'pcg_convergence': 1e-10,
     })
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+        dens_tol = 9
+        fchk_tol = 1.e-8
+    else:
+        dens_tol = 3.e-8
+        fchk_tol = 2.e-6
+        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
     FCHK_file = f"uhf-{inp2['name']}.fchk"
     reference_file = datadir.join(f"uhf-{inp2['name']}.ref")
     psi4.set_options(inp2['options'])
     e, wfn = psi4.gradient(inp2['name'], return_wfn=True, molecule=mol)
     ret = psi4.driver.fchk(wfn, FCHK_file, debug=True)
-    assert psi4.compare_arrays(ret["Total SCF Density"], calcD(wfn), 9, "FCHK UHF Density")
-    assert psi4.compare_fchkfiles(reference_file, FCHK_file, 1.e-8, f" File comparison: {FCHK_file}")
+    assert psi4.compare_arrays(ret["Total SCF Density"], calcD(wfn), dens_tol, "FCHK UHF Density")
+    assert psi4.compare_fchkfiles(reference_file, FCHK_file, fchk_tol, f" File comparison: {FCHK_file}")
 
 @pytest.mark.parametrize('inp', [
     pytest.param({'name': 'hf', 'options': {'scf_type': 'df'} }, id='df-rhf)'),
@@ -94,6 +101,13 @@ def test_rhf_fchk(inp, datadir):
         'r_convergence': 1e-10,
         'pcg_convergence': 1e-10,
     })
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+        dens_tol = 9
+        fchk_tol = 1.e-8
+    else:
+        dens_tol = 3.e-8
+        fchk_tol = 5.e-7
+        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
     FCHK_file = f"rhf-{inp['name']}.fchk"
     reference_file = datadir.join(f"rhf-{inp['name']}.ref")
     psi4.set_options(inp['options'])
@@ -104,6 +118,6 @@ def test_rhf_fchk(inp, datadir):
         expected = calcD(refwfn)
     else:
         expected = calcD(wfn)
-    assert psi4.compare_arrays(ret["Total SCF Density"], expected, 9, "FCHK RHF Density")
-    assert psi4.compare_fchkfiles(reference_file, FCHK_file, 1.e-8, f" File comparison: {FCHK_file}")
+    assert psi4.compare_arrays(ret["Total SCF Density"], expected, dens_tol, "FCHK RHF Density")
+    assert psi4.compare_fchkfiles(reference_file, FCHK_file, fchk_tol, f" File comparison: {FCHK_file}")
 

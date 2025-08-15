@@ -58,6 +58,10 @@ def test_qcschema_energy(result_data_fixture):
 
 
 def test_qcschema_gradient(result_data_fixture):
+
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        result_data_fixture["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
+
     result_data_fixture["driver"] = "gradient"
     ret = psi4.schema_wrapper.run_qcschema(result_data_fixture)
 

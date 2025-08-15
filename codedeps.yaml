@@ -1416,7 +1416,7 @@ data:
 
   - project: integratorxx
     use:
-      added: 1.10
+      added: "1.10"
       required: false
       required_note: "Allow using the IntegratorXX DFT grid library."
       buildable: true
@@ -1445,7 +1445,7 @@ data:
 
   - project: gauxc
     use:
-      added: 1.10
+      added: "1.10"
       required: false
       required_note: "Allow using the GauXC density functional library for LinK (not DFT)."
       buildable: true
@@ -1467,7 +1467,7 @@ data:
 
   - project: h5py
     use:
-      added: 1.10
+      added: "1.10"
       required: false
       required_note: optional for extra tests of GauXC interface
       buildable: false
@@ -1511,4 +1511,36 @@ data:
         //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
       cmake_note: "Primarily OTF runtime detected."
+
+  - project: openorbitaloptimizer
+    use:
+      added: "1.10"
+      required: false
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: SusiLehtola
+      name: OpenOrbitalOptimizer
+      commit: v0.2.0
+    cmake:
+      name: OpenOrbitalOptimizer
+      constraint: "0.2"
+      target: OpenOrbitalOptimizer::OpenOrbitalOptimizer
+    conda:
+      channel: conda-forge
+      name: openorbitaloptimizer
+      constraint: null
+      aux_build_names:
+        - armadillo
+      skip_win: true
+      skip_win_note: "OOO works on windows but not yet with Psi4."
+      cmake:
+        ENABLE_OpenOrbitalOptimizer: true
+        OpenOrbitalOptimizer_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/OpenOrbitalOptimizer
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/OpenOrbitalOptimizer
+        //CMAKE_INSIST_FIND_PACKAGE_OpenOrbitalOptimizer: true
+        //CMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer: true
 

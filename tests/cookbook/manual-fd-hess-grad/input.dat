@@ -13,6 +13,9 @@ set {
   scf_type pk
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"d_convergence": 8})
+
 # Test frequencies by gradients
 
 h2o.update_geometry()

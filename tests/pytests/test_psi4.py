@@ -37,6 +37,9 @@ def test_psi4_cc():
 
     psi4.set_options({"basis": '6-31G**'})
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
+
     psi4.optimize('ccsd')
 
     refnuc   =   9.1654609427539
@@ -120,6 +123,9 @@ def test_psi4_dfmp2():
        'd_convergence': 11,
     })
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
     e_cp = psi4.energy('mp2', bsse_type='cp')
 
     assert psi4.compare_values(Enuc, formic_dim.nuclear_repulsion_energy(), 7, "Nuclear Repulsion Energy")
@@ -167,6 +173,9 @@ def test_psi4_sapt():
         "d_convergence": 11,
         "puream": True,
         "print": 1})
+
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
 
     psi4.energy('sapt0', molecule=ethene_ethyne)
 

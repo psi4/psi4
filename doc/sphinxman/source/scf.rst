@@ -596,7 +596,8 @@ that |PSIfour| expects the numpy file on disk to have the ``.npy`` extension, no
 Convergence Stabilization
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A summary of Psi's supported convergence stabilization techniques is presented below:
+A summary of Psi's supported convergence stabilization techniques is presented below.
+Alternatively, stabilization can run through the OpenOrbitalOptimizer library. See :ref:`options:ooo` for details.
 
 DIIS [On by Default]
     DIIS uses previous iterates of the Fock matrix together
@@ -656,6 +657,7 @@ Level shifting [Off by default]
     respectively.
 SOSCF [Off by Default]
     See :ref:`sec:soscf`
+
 
 .. _`sec:scferi`:
 

@@ -10,6 +10,9 @@ set reference rhf
 set basis cc-pVDZ
 set guess sad
 set d_convergence 10
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 energy('scf')
 compare_values(-149.54395801861, variable('SCF TOTAL ENERGY'), 6, 'RHF SCF energy')  #TEST
 
@@ -42,6 +45,9 @@ set guess read
 energy('scf')
 compare_values(-149.60909083608954, variable('SCF TOTAL ENERGY'), 6, 'CUHF SCF energy, read-in guess')  #TEST
 compare_values(1, variable('SCF ITERATIONS'), 1, 'CUHF Iterations, read-in guess')  #TEST
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
 # UHF
 set reference uhf

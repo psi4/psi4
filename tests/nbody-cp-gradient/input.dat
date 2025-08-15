@@ -71,6 +71,9 @@ units bohr
 
 set d_convergence 9
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 10, "d_convergence": 3e-8})
+
 # compute nbody
 if distributed:
     plan = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='cp', max_nbody=2,
@@ -158,7 +161,7 @@ for i in cp_scheme: #TEST
         wfn_mol.variable("CURRENT GRADIENT"),
         variable("CURRENT GRADIENT"),
     ]:
-        compare_arrays(ref[i][1], result.rms(), 8, f"Gradient RMS of {i}")  #TEST
+        compare_arrays(ref[i][1], result.rms(), 2e-8, f"Gradient RMS of {i}")  #TEST
 
 
 # recompute from pieces

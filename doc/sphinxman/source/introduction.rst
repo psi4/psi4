@@ -620,10 +620,10 @@ Python
     |PSIfour| 1.7 supports Python 3.8, 3.9, 3.10, and 3.11 (no binary packages for 3.11).
     |PSIfour| 1.8 supports Python 3.8, 3.9, 3.10, and 3.11.
     |PSIfour| 1.9 supports Python 3.8, 3.9, 3.10, 3.11, and 3.12.
-    |PSIfour| 1.10 is anticipated to support Python 3.9, 3.10, 3.11, 3.12, and 3.13.
+    |PSIfour| 1.10 supports Python 3.9, 3.10, 3.11, 3.12, and 3.13.
     The future plan is to (1) be compatible with 3.8 and above until there is a good reason to drop
     older versions but (2) only build and test for versions conda-forge supports.
-    The current master supports 3.8, 3.9, 3.10, 3.11, 3.12, and 3.13.
+    The current master supports 3.9, 3.10, 3.11, 3.12, and 3.13.
 
 .. index:: license
 

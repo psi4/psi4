@@ -52,6 +52,9 @@ def test_gradient(inp):
     psi4.set_options({'basis': 'aug-cc-pvdz', 'points': 5})
     psi4.set_options(inp['options'])
     
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
     analytic_gradient = psi4.gradient(inp['name'], dertype=1)
     print(analytic_gradient)
     findif_gradient = psi4.gradient(inp['name'], dertype=0)

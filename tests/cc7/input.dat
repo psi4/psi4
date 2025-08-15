@@ -18,6 +18,10 @@ set perturb_dipole [0, 0, -0.05]
 set e_convergence 10
 set d_convergence 10
 set r_convergence 10
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 analytic = gradient('ccsd')
 set findif points 5
 findif = gradient('ccsd', dertype=0)

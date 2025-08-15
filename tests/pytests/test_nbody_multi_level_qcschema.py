@@ -77,6 +77,9 @@ def test_nbody_levels(inp, expected, base_schema, monkeypatch):
     jin['model']['method'] = inp['method']
     jin['keywords']['function_kwargs'] = inp['kfk']
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        jin["keywords"].update({"e_convergence": 9, "d_convergence": 5e-8})
+
     otp = psi4.schema_wrapper.run_qcschema(jin)
     pprint.pprint(otp)
 

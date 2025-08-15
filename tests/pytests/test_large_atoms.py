@@ -90,6 +90,9 @@ def test_large_atoms(inp, mol, mols):
     # occupations
     psi4.set_options({'docc' : inp['ref'][mol]['docc']})
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
     method = inp['method']
     analytic_grad, wfn = psi4.gradient(method, molecule=mols[mol], dertype=1, return_wfn=True)
     findif_grad = psi4.gradient(method, molecule=mols[mol], dertype=0)

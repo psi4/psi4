@@ -77,7 +77,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     prog_debug_profile.rst manage_release.rst plugin_psi4fockci.rst
     brianqc.rst tdscf.rst prog_integrals.rst prog_tour.rst mcscf.rst
     code_style.rst nitpick-exceptions external_apis.rst ecpint.rst
-    capabilities.rst variables.rst
+    capabilities.rst variables.rst ooo.rst
     )
 
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman

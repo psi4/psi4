@@ -152,6 +152,9 @@ H   0.000000   0.000000   3.963929
         },
     }
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        atin["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
+
     ret = psi4.schema_wrapper.run_qcschema(atin)
 
     assert compare_values(return_result, ret.return_result, atol=1.e-6, label="manybody")

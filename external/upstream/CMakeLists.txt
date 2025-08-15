@@ -18,6 +18,7 @@ foreach(dir
   qcelemental
   qcengine
   qcmanybody
+  openorbitaloptimizer
   optking
   simint
   libxc

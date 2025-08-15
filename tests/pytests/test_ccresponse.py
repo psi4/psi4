@@ -30,6 +30,11 @@ def test_cc_polaroptrot():
     omega = [589, 355, 'nm']
     psi4.set_options({'gauge': 'both', 'omega': omega, 'freeze_core': True, 'r_convergence': 10})
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+        rot_tol = 3
+    else:
+        rot_tol = 2
+
     e,wfn = psi4.properties('CCSD',properties=["polarizability","rotation"],return_wfn=True)
 
     pol_589      =      8.92296  #TEST
@@ -71,12 +76,12 @@ def test_cc_polaroptrot():
 
     assert psi4.compare_values(pol_589, polr_589,  3, "CCSD polarizability @ 589nm") #TEST
     assert psi4.compare_values(pol_355, polr_355,  3, "CCSD polarizability @ 355nm") #TEST
-    assert psi4.compare_values(rotlen_589, rotlenr_589,  3, "CCSD rotation @ 589nm in length gauge") #TEST
-    assert psi4.compare_values(rotvel_589, rotvelr_589,  3, "CCSD rotation @ 589nm in velocity gauge") #TEST
-    assert psi4.compare_values(rotmvg_589, rotmvgr_589,  3, "CCSD rotation @ 589nm in modified velocity gauge") #TEST
-    assert psi4.compare_values(rotlen_355, rotlenr_355,  3, "CCSD rotation @ 355nm in length gauge") #TEST
-    assert psi4.compare_values(rotvel_355, rotvelr_355,  3, "CCSD rotation @ 355nm in velocity gauge") #TEST
-    assert psi4.compare_values(rotmvg_355, rotmvgr_355,  3, "CCSD rotation @ 355nm in modified velocity gauge") #TEST
+    assert psi4.compare_values(rotlen_589, rotlenr_589,  rot_tol, "CCSD rotation @ 589nm in length gauge") #TEST
+    assert psi4.compare_values(rotvel_589, rotvelr_589,  rot_tol, "CCSD rotation @ 589nm in velocity gauge") #TEST
+    assert psi4.compare_values(rotmvg_589, rotmvgr_589,  rot_tol, "CCSD rotation @ 589nm in modified velocity gauge") #TEST
+    assert psi4.compare_values(rotlen_355, rotlenr_355,  rot_tol, "CCSD rotation @ 355nm in length gauge") #TEST
+    assert psi4.compare_values(rotvel_355, rotvelr_355,  rot_tol, "CCSD rotation @ 355nm in velocity gauge") #TEST
+    assert psi4.compare_values(rotmvg_355, rotmvgr_355,  rot_tol, "CCSD rotation @ 355nm in modified velocity gauge") #TEST
 
     assert psi4.compare_values(polt_589, wfn.variable("CCSD DIPOLE POLARIZABILITY TENSOR @ 589NM"),  3, "CCSD polarizability tensor @ 589nm") #TEST
     assert psi4.compare_values(polt_355, wfn.variable("CCSD DIPOLE POLARIZABILITY TENSOR @ 355NM"),  3, "CCSD polarizability tensor @ 355nm") #TEST

@@ -31,6 +31,9 @@ set {
   d_convergence 10
 }
 
+if get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    set_options({"d_convergence": 8})
+
 psi4_hess, wfn = hessian('hf', return_wfn=True)
 
 compare_arrays(psi3_hess, psi4_hess, 1E-7, "STO-3G Hessian") #TEST

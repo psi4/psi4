@@ -72,6 +72,9 @@ for var in vars_2:
 
 clean_variables()
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 e, wfn = psi4.energy("", levels=levels_3, bsse_type=['cp','nocp','vmfc'], return_wfn=True, return_total_data=True)
 for var in vars_3:
     energy = wfn.variable(var)

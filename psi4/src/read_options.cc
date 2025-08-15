@@ -193,6 +193,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
+#ifdef USING_OpenOrbitalOptimizer
+    /*- Orbital optimizer package to use for SCF. If compiled with OpenOrbitalOptimizer support, change this to use it or the internal code. -*/
+    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
+#else
+    /*- Orbital optimizer package to use for SCF. -*/
+    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
+#endif
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -1550,7 +1557,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DIIS_START", 1);
         /*- Minimum number of error vectors stored for DIIS extrapolation. Will be removed in v1.7. -*/
         options.add_int("DIIS_MIN_VECS", 2);
-        /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+        /*- Maximum number of error vectors stored for DIIS extrapolation.
+        For |globals__orbital_optimizer_package| = `OOO`, sets maximum_history_length. -*/
         options.add_int("DIIS_MAX_VECS", 10);
         /*- Do use DIIS extrapolation to accelerate convergence? -*/
         options.add_bool("DIIS", true);
@@ -1605,10 +1613,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             to have both the chosen accelerator and DIIS (if enabled). For restricted-open references, ``EDIIS`` and ``ADIIS`` have no effect. -*/
         options.add_str("SCF_INITIAL_ACCELERATOR", "ADIIS", "NONE EDIIS ADIIS");
         /*- SCF error at which to start the linear interpolation between DIIS steps and steps of the initial SCF accelerator.
-            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249 -*/
+            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249
+            For |globals__orbital_optimizer_package| = `OOO`, sets diis_epsilon. -*/
         options.add_double("SCF_INITIAL_START_DIIS_TRANSITION", 1.0E-1);
         /*- SCF error at which to complete the linear interpolation between DIIS steps and steps of the initial SCF accelerator
-            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249 -*/
+            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249
+            For |globals__orbital_optimizer_package| = `OOO`, sets diis_threshold. -*/
         options.add_double("SCF_INITIAL_FINISH_DIIS_TRANSITION", 1.0E-4);
         /*- Do perform incremental Fock build? -*/
         options.add_bool("INCFOCK", false);
@@ -1620,6 +1630,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- The screening tolerance used for ERI/Density sparsity in the LinK algorithm -*/
         options.add_double("LINK_INTS_TOLERANCE", 1.0e-12);
+        /*- For |globals__orbital_optimizer_package| = `OOO`, verbosity of printing to screen.
+        0 prints nothing. 1 prints one line per iter (note that RHF rms(density) printed
+        differs by half from convergence criterion. 5 is common and adds occupancy printing. 12 is max. -*/
+        options.add_int("OOO_PRINT", 0);
+        /*- For |globals__orbital_optimizer_package| = `OOO`, the DIIS restart criterion (Chupin et al, 2021) -*/
+        options.add_double("OOO_DIIS_RESTART_FACTOR", 1.0e-4);
+        /*- For |globals__orbital_optimizer_package| = `OOO`, use optimal damping when max error bigger than this. -*/
+        options.add_double("OOO_OPTIMAL_DAMPING_THRESHOLD", 1.0);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
@@ -1794,6 +1812,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SAD_SPIN_AVERAGE", true);
         /*- SAD guess density decomposition threshold !expert -*/
         options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
+#ifdef USING_OpenOrbitalOptimizer
+        /*- Orbital optimizer package to use for SAD guess. If compiled with OpenOrbitalOptimizer support, change this to use it or the internal code.
+        Implementation WIP !expert -*/
+        options.add_str("SAD_ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
+#else
+        /*- Orbital optimizer package to use for SAD guess. !expert -*/
+        options.add_str("SAD_ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
+#endif
 
         /*- SUBSECTION DFT -*/
 
@@ -2092,7 +2118,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("PROP_SYM", 1);
         /*- Root number (within its irrep) for computing properties -*/
         options.add_int("PROP_ROOT", 1);
-        /*- Maximum number of iterations -*/
+        /*- Maximum number of iterations.
+        For |globals__orbital_optimizer_package| = `OOO`, sets maximum iterations. -*/
         options.add_int("MAXITER", 50);
         /*- Do use zeta?  -*/
         options.add_bool("ZETA", false);

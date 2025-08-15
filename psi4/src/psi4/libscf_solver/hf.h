@@ -248,6 +248,9 @@ class HF : public Wavefunction {
     bool frac_performed() const { return frac_performed_; }
     void set_frac_performed(bool tf) { frac_performed_ = tf; }
 
+    /// Runs the SCF using OpenOrbitalOptimizer
+    virtual void openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
+
     /// Are we to do excited-state MOM?
     bool MOM_excited() const { return MOM_excited_; }
     void set_MOM_excited(bool tf) { MOM_excited_ = tf; }

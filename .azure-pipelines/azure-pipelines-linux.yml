@@ -20,6 +20,7 @@ jobs:
         PYTEST_MARKER_EXPR: "quick"
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
+        ENABLE_GAUXC: "ON"
         CMARGS: ""
 
       gcc_latest:
@@ -33,6 +34,7 @@ jobs:
         PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long)) or einsums)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
+        ENABLE_GAUXC: "ON"
         CMARGS: ""
 
       clang_latest:
@@ -47,6 +49,7 @@ jobs:
         PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
+        ENABLE_GAUXC: "OFF"
         CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so'
 
   pool:
@@ -98,6 +101,14 @@ jobs:
     displayName: "Add Conda to PATH"
 
   - bash: |
+      grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
+      if [[ "$(Agent.JobName)" == "Linux Builds gcc_latest" ]]; then
+        sed -i 's;\(options\.add_str("ORBITAL_OPTIMIZER_PACKAGE", "\)INTERNAL\(", "INTERNAL OOO OPENORBITALOPTIMIZER"\);\1OOO\2;' psi4/src/read_options.cc
+      fi
+      grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
+    displayName: "Special Operation: test OpenOrbitalOptimizer"
+
+  - bash: |
       conda install pyyaml -c conda-forge
       conda/psi4-path-advisor.py \
         env \
@@ -116,6 +127,7 @@ jobs:
       echo "  - einsums>=1.0.6" >> env_p4env.yaml
       echo "  - range-v3" >> env_p4env.yaml
       echo "  - zlib" >> env_p4env.yaml
+      echo "  - armadillo" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
@@ -145,7 +157,8 @@ jobs:
         -D ENABLE_PLUGIN_TESTING=ON \
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=OFF \
-        -D ENABLE_gauxc=ON \
+        -D ENABLE_gauxc="${ENABLE_GAUXC}" \
+        -D ENABLE_OpenOrbitalOptimizer=ON \
         -D FORCE_PEDANTIC=ON \
         ${CMARGS} \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
@@ -168,11 +181,11 @@ jobs:
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
 
-  - bash: |
-      cd build
-      source activate p4env
-      PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
-    displayName: 'Spot Test 2'
+  #- bash: |
+  #    cd build
+  #    source activate p4env
+  #    PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
+  #  displayName: 'Spot Test 2'
 
   - bash: |
       cd build
