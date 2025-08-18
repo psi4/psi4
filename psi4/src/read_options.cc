@@ -2802,10 +2802,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
                 // No option restrictions are enforced here. This allows optking to add new options
                 // without updates to this file. Optking will reject invalid options.
-                // Once option initialization has occured within optking, the options are then
-                // communicated back to Psi4 TODO. This allows for optking's sometimes complex
-                // option validation to be communicated back to Psi4.
-                // The ContstrainedXValues are peculaiar to pydantic v1
+                // Once option initialization has occured within optking, Psi4 should use the
+                // opt_object to access options like geom_maxiter. This allows for optking's
+                // sometimes complex option validation to be communicated back to Psi4.
+                // Note: The ContstrainedXValues are peculaiar to pydantic v1
 
                 if (option_type == "float" || option_type == "ConstrainedFloatValue") {
                     options.add_double(opt_option, std::stod(option_default));
