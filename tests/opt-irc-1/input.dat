@@ -19,7 +19,7 @@ set {
   basis                      dzp
   opt_type                   irc
   geom_maxiter               60
-  irc_direction              backward
+  irc_direction              forward
   d_convergence              9
   irc_points                 12
 }

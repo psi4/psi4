@@ -35,6 +35,7 @@ import copy
 import json
 import logging
 import os
+import pathlib
 import re
 import shutil
 import warnings
@@ -996,7 +997,10 @@ def optimize(name, **kwargs):
 
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
 
-    :raises: :py:class:`psi4.driver.OptimizationConvergenceError` if :term:`GEOM_MAXITER <GEOM_MAXITER (OPTKING)>` exceeded without reaching geometry convergence.
+    :raises: :py:class:`psi4.driver.OptimizationConvergenceError`
+
+        if :py:attr`GEOM_MAXITER <optking.v1.optparams.OptParams.geom_maxiter>`
+        exceeded without reaching geometry convergence.
 
     :PSI variables:
 
@@ -1214,7 +1218,8 @@ def optimize(name, **kwargs):
         opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params)
 
     initial_sym = molecule.schoenflies_symbol()
-    while n <= core.get_option('OPTKING', 'GEOM_MAXITER'):
+    # Use optking's value so that validation can change value (e.g. IRC_POINTS sets max_iter based on number of points)
+    while n <= opt_object.params.geom_maxiter:
         current_sym = molecule.schoenflies_symbol()
         if initial_sym != current_sym:
 
@@ -1249,11 +1254,10 @@ def optimize(name, **kwargs):
         opt_object.gX = G.np
 
         core.set_variable('OPTIMIZATION ITERATIONS', n)
-        if core.get_option('OPTKING', 'CART_HESS_READ') and (n == 1):
-            opt_object.params.cart_hess_read = True
-            opt_object.params.hessian_file = f"{core.get_writer_file_prefix(molecule.name())}.hess"
-                # compute Hessian as requested; frequency wipes out gradient so stash it
-        elif 'hessian' in opt_calcs:
+        # Used to handle cart_hess_read explicitly. Optking now looks for hessians in hessian_file
+        # Hessian can be priovided as AtomicOutput in a .json or cfour style in a .hess file
+        # If empty Optking will try to fall back to psi4's writer_prefix on its own.
+        if 'hessian' in opt_calcs:
             # compute hessian as requested.
 
             # procedures proctable analytic hessians
@@ -1291,7 +1295,7 @@ def optimize(name, **kwargs):
         molecule.set_geometry(core.Matrix.from_array(opt_object.molsys.geom))
         molecule.update_geometry()
 
-        opt_status = opt_object.status()  # Query optking for convergence, failure or continuing opt.
+        opt_status = opt_object.status(psi4=True)  # Query optking for convergence, failure or continuing opt.
         if opt_status == 'CONVERGED':
 
             # Last geom is normally last in history. For IRC last geom is last in IRC trajectory
@@ -1343,10 +1347,12 @@ def optimize(name, **kwargs):
             optstash.restore()
 
             opt_data = opt_object.to_dict()
-            if core.get_option('OPTKING', 'WRITE_OPT_HISTORY'):
+            if core.get_option('OPTKING', 'SAVE_OPTIMIZATION'):
                 with open(f"{core.get_writer_file_prefix(molecule.name())}.opt.json", 'w+') as f:
                     json.dump(opt_data, f, indent=2)
 
+            # Try to shutdown nicely
+            opt_object.close()
             raise OptimizationConvergenceError("""geometry optimization""", n - 1, wfn)
 
         core.print_out('\n    Structure for next step:\n')

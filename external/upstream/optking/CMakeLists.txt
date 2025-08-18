@@ -23,7 +23,8 @@ else()
 
     ExternalProject_Add(optking_external
         BUILD_ALWAYS 1
-        URL https://github.com/psi-rking/optking/archive/0.3.0.tar.gz  # edit in codedeps
+        # URL https://github.com/psi-rking/optking/archive/0.3.0.tar.gz  # edit in codedeps
+        URL https://github.com/psi-rking/optking/archive/refs/heads/irc_fixes.zip
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
@@ -32,5 +33,6 @@ else()
                                                       --record=record.txt
                                                       --single-version-externally-managed
                                                       --install-lib=${_install_lib})
+
 endif()
 
