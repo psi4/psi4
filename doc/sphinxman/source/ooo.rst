@@ -69,7 +69,7 @@ Installation
 
 * The conda package is (for the C++ interface) a header-only library.
 
-* If using the |PSIfour| binary, OpenOrbitalOptimizer has already been compiled in.
+* If using the |PSIfour| binary, OpenOrbitalOptimizer has already been compiled in (except Windows).
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),

@@ -59,13 +59,6 @@
 #include "psi4/libtrans/integraltransform.h"
 
 #ifdef USING_OpenOrbitalOptimizer
-#ifdef USING_LAPACK_MKL
-#include <mkl.h>
-#define ARMA_USE_MKL
-#define ARMA_USE_MKL_TYPES
-#endif
-#define ARMA_DONT_USE_FORTRAN_HIDDEN_ARGS
-#define ARMA_DONT_USE_WRAPPER
 #include <openorbitaloptimizer/scfsolver.hpp>
 #endif
 

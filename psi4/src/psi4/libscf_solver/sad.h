@@ -30,14 +30,7 @@
 #define LIBSCF_SAD_H
 
 #ifdef USING_OpenOrbitalOptimizer
-#ifdef USING_LAPACK_MKL
-#include <mkl.h>
-#define ARMA_USE_MKL
-#define ARMA_USE_MKL_TYPES
-#endif
-#define ARMA_DONT_USE_FORTRAN_HIDDEN_ARGS
-#define ARMA_DONT_USE_WRAPPER
-#include <armadillo>
+#include "psi4/libmints/matrix.h"
 #include <openorbitaloptimizer/scfsolver.hpp>
 #endif
 
@@ -90,7 +83,6 @@ class SADGuess {
     void form_D();
     void form_C();
 
-    //void set_jk(std::unique_ptr<JK> & jkin) { jk = jkin; }
 #ifdef USING_OpenOrbitalOptimizer
     std::pair<double, std::vector<arma::mat>> fock_builder(const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm, const std::vector<std::vector<arma::uvec>> & lm_indices, const std::vector<arma::mat> & X, const arma::mat & S, const arma::mat & coreH);
 #endif

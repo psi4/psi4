@@ -658,7 +658,6 @@ Level shifting [Off by default]
 SOSCF [Off by Default]
     See :ref:`sec:soscf`
 
-
 .. _`sec:scferi`:
 
 ERI Algorithms

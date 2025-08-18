@@ -41,17 +41,6 @@
 #include <vector>
 #include <utility>
 
-#ifdef USING_OpenOrbitalOptimizer
-#ifdef USING_LAPACK_MKL
-#include <mkl.h>
-#define ARMA_USE_MKL
-#define ARMA_USE_MKL_TYPES
-#endif
-#define ARMA_DONT_USE_FORTRAN_HIDDEN_ARGS
-#define ARMA_DONT_USE_WRAPPER
-#include <openorbitaloptimizer/scfsolver.hpp>
-#endif
-
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
@@ -76,6 +65,10 @@
 #include "psi4/liboptions/liboptions.h"
 #include "hf.h"
 #include "sad.h"
+
+#ifdef USING_OpenOrbitalOptimizer
+#include <openorbitaloptimizer/scfsolver.hpp>
+#endif
 
 using namespace psi;
 
@@ -709,7 +702,6 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     diis_manager.set_vector_size(Fa.get(), Fb.get());
 
     // Setup JK
-//    std::unique_ptr<JK> jk;
     // Need a very special auxiliary basis here
     if (SAD_use_fitting(options_)) {
         auto dfjk = std::make_unique<MemDFJK>(bas, fit, options_);
@@ -731,7 +723,6 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     auto ints_tolerance_changed = Process::environment.options.use_local(ints_tolerance_key).has_changed();
     Process::environment.options.set_double("SCF", ints_tolerance_key, 0.0);
 
-//    set_jk(jk);
     jk->set_memory((size_t)(0.5 * (Process::environment.get_memory() / 8L)));
     jk->initialize();
     if (print_ > 1) jk->print_header();
@@ -996,7 +987,6 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
     auto ints_tolerance_changed = Process::environment.options.use_local(ints_tolerance_key).has_changed();
     Process::environment.options.set_double("SCF", ints_tolerance_key, 0.0);
 
-//    set_jk(jk);
     jk->set_memory((size_t)(0.5 * (Process::environment.get_memory() / 8L)));
     jk->initialize();
     if (print_ > 1) jk->print_header();
@@ -1088,7 +1078,7 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
             psi_C->set(ii, jj, Cp2(ii, jj));
         }
     }
-    // TODO: Build Fock matrix
+    // Build Fock matrix
     std::vector<SharedMatrix>& jkCC = jk->C_left();
     jkCC.clear();
     jkCC.push_back(psi_C);
@@ -1355,6 +1345,5 @@ void HF::compute_huckel_guess(bool updated_rule) {
 
     energies_["Total Energy"] = 0.0;  // This is the -1th iteration
 }
-
 }  // namespace scf
 }  // namespace psi
