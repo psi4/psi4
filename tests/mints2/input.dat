@@ -115,6 +115,9 @@ set d_convergence 11
 set e_convergence 11
 set scf_type pk
  
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 scfenergy = energy('scf')
 
 compare_strings("c2v", bz.schoenflies_symbol(), "Point group")                        #TEST

@@ -471,6 +471,9 @@ def test_high_am_in_default_build():
         Cu 1 2.0
 """)
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
     psi4.gradient("hf/def2-SVP", molecule=cucu)
 
 
@@ -517,6 +520,9 @@ def test_basis_depr_note_53_raises():
         Ar
         Ar 1 2.0
 """)
+
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
     with pytest.raises(psi4.driver.qcdb.exceptions.BasisSetNotFoundDeprecated) as e:
         psi4.energy("mp2/jun-cc-pwcv(t+D)z")

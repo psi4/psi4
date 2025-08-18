@@ -66,10 +66,170 @@
 #include "hf.h"
 #include "sad.h"
 
+#ifdef USING_OpenOrbitalOptimizer
+#include <openorbitaloptimizer/scfsolver.hpp>
+#endif
+
 using namespace psi;
 
 namespace psi {
 namespace scf {
+
+  // Atomic SCF averages over all magnetic sublevels m. Build list of
+  // basis functions with given l. For simplicity, the indexing is
+  // [am][m][exponent]
+
+#ifdef USING_OpenOrbitalOptimizer
+
+std::vector<std::vector<arma::uvec>> get_lm_indices(std::shared_ptr<BasisSet> bas) {
+    std::vector<std::vector<std::vector<size_t>>> lm_indices(bas->max_am()+1);
+    for(size_t is=0; is<bas->nshell(); is++) {
+
+        auto sh = bas->shell(is);
+        auto nfc = sh.nfunction();
+        auto am = sh.am();
+        auto stidx = sh.start();
+        if(not sh.is_pure()) {
+            throw PSIEXCEPTION("SAD guess @OOO: Cartesian shells not verified");
+        }
+        if(lm_indices[am].size() != nfc) {
+            lm_indices[am].resize(nfc);
+        }
+        for(size_t ifn=0; ifn<nfc; ifn++) {
+            lm_indices[am][ifn].push_back(stidx+ifn);
+        }
+    }
+    std::vector<std::vector<arma::uvec>> arma_lm_indices(bas->max_am()+1);
+    for (size_t is=0; is<arma_lm_indices.size(); is++) {
+        arma_lm_indices[is].resize(lm_indices[is].size());
+        for (size_t iss=0; iss<arma_lm_indices[is].size(); iss++) {
+            arma_lm_indices[is][iss] = arma::conv_to<arma::uvec>::from(lm_indices[is][iss]);
+        }
+    }
+    return arma_lm_indices;
+}
+
+std::pair<arma::mat,arma::vec> expand_density(const std::vector<arma::mat> &C, const std::vector<arma::vec> & occs, const std::vector<std::vector<arma::uvec>> & lm_indices, const std::vector<arma::mat> & X, const arma::mat & S) {
+   // Count the number of orbitals
+   size_t Norb = 0;
+   for(size_t iblock=0; iblock<C.size(); iblock++)
+     Norb += (2*iblock+1)*C[iblock].n_cols;
+
+   size_t Nbf = 0;
+   for(size_t iblock=0; iblock<X.size(); iblock++)
+     Nbf += (2*iblock+1)*X[iblock].n_rows;
+
+   arma::mat Cret(Nbf,Norb,arma::fill::zeros);
+   arma::vec oret(Norb,arma::fill::zeros);
+
+   size_t iorb_out=0;
+   // Loop over orbital blocks
+   for(size_t iblock=0;iblock<lm_indices.size();iblock++) {
+     // Orbital coefficients in non-orthogonal basis
+     arma::mat Csub = X[iblock]*C[iblock];
+     for(size_t iorb_in=0; iorb_in<Csub.n_cols; iorb_in++) {
+       // Loop over m values
+       for(size_t im=0;im<lm_indices[iblock].size();im++) {
+         // Store occupation: equal occupation among all m channels
+         oret(iorb_out) = occs[iblock](iorb_in)/lm_indices[iblock].size();
+         // Store coefficients: loop over basis functions
+         for(size_t ibf=0;ibf<lm_indices[iblock][im].size();ibf++) {
+           Cret(lm_indices[iblock][im][ibf], iorb_out) = Csub(ibf, iorb_in);
+         }
+         iorb_out++;
+       }
+     }
+   }
+   if(iorb_out != Norb)
+     throw std::logic_error("iorb_out != Norb\n");
+
+   // Check that orbitals are orthonormal
+   arma::mat ovl = Cret.t() * S * Cret;
+   ovl -= arma::eye<arma::mat>(ovl.n_rows,ovl.n_cols);
+   double orth_error = arma::norm(ovl, "fro");
+   if(orth_error >= 1e-10) {
+     ovl.print("orbital orthonormality error\n");
+     fflush(stdout);
+     std::ostringstream oss;
+     oss << "Orbitals are not orthonormal: orthonormality error " << orth_error << "!\n";
+     throw std::logic_error(oss.str());
+   }
+
+   return std::make_pair(Cret,oret);
+ };
+
+std::vector<arma::mat> extract_mat(const std::vector<std::vector<arma::uvec>> & lm_indices, const arma::mat & mat) {
+    std::vector<arma::mat> ret(lm_indices.size());
+    for(size_t iblock=0;iblock<lm_indices.size();iblock++) {
+      ret[iblock].zeros(lm_indices[iblock][0].size(),lm_indices[iblock][0].size());
+      for(size_t iexpn=0;iexpn<lm_indices[iblock][0].size();iexpn++) {
+        for(size_t jexpn=0;jexpn<lm_indices[iblock][0].size();jexpn++) {
+          double avg=0.0;
+          for(size_t im=0;im<lm_indices[iblock].size();im++) {
+            auto ibf = lm_indices[iblock][im][iexpn];
+            auto jbf = lm_indices[iblock][im][jexpn];
+            avg += mat(ibf, jbf);
+          }
+          avg /= lm_indices[iblock].size();
+          ret[iblock](iexpn,jexpn) = avg;
+        }
+      }
+    }
+    return ret;
+};
+
+
+std::pair<double, std::vector<arma::mat>> SADGuess::fock_builder(const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm, const std::vector<std::vector<arma::uvec>> & lm_indices, const std::vector<arma::mat> & X, const arma::mat & S, const arma::mat & coreH) {
+
+    std::vector<arma::mat> orbitals = dm.first;
+    std::vector<arma::vec> occupations = dm.second;
+
+    // Expand the density and orbitals in the non-orthonormal basis
+    arma::mat C_AO;
+    arma::vec occ;
+    std::tie(C_AO, occ) = expand_density(orbitals, occupations, lm_indices, X, S);
+
+    // Find nonzero occupations
+    arma::uvec nonzero_idx = arma::find(occ>0.0);
+    arma::mat Cp = C_AO.cols(nonzero_idx) * arma::diagmat(arma::sqrt(occ(nonzero_idx)));
+    auto psi_C = std::make_shared<Matrix>("Cp", Cp.n_rows, Cp.n_cols);
+    for (size_t ii=0; ii<Cp.n_rows; ii++) {
+        for (size_t jj=0; jj<Cp.n_cols; jj++) {
+            psi_C->set(ii, jj, Cp(ii, jj));
+        }
+    }
+
+    // Compute the terms in the Fock matrices
+    std::vector<SharedMatrix>& jkC = jk->C_left();
+    jkC.clear();
+    jkC.push_back(psi_C);
+    jk->compute();
+    const std::vector<SharedMatrix>& Jvec = jk->J();
+    const std::vector<SharedMatrix>& Kvec = jk->K();
+    arma::mat J_AO(Jvec[0]->pointer()[0], Cp.n_rows, Cp.n_rows);
+    arma::mat K_AO(Kvec[0]->pointer()[0], Cp.n_rows, Cp.n_rows);
+    // Psi4 defines K without the minus sign
+    K_AO *= -1;
+    arma::mat P_AO(Cp * Cp.t());
+
+    // Form the AO Fock matrix
+    arma::mat F_AO = coreH + J_AO + .5*K_AO;
+    // Extract the blocks in the orthonormal basis
+    std::vector<arma::mat> fock(extract_mat(lm_indices, F_AO));
+    for(size_t iblock=0; iblock<fock.size(); iblock++)
+      fock[iblock] = X[iblock].t() * fock[iblock] * X[iblock];
+
+    // Compute energy terms
+    double Ecore = arma::trace(P_AO*coreH);
+    double Ecoul = 0.5*arma::trace(J_AO*P_AO);
+    double Eexch = 0.25*arma::trace(K_AO*P_AO);
+    double Etot = Ecore+Ecoul+Eexch;
+
+    return std::make_pair(Etot,fock);
+  };
+
+#endif
+
 // Parse options: either use DF or exact integrals.
 static bool SAD_use_fitting(const Options& opt) {
     std::string jk_type(opt.get_str("SAD_SCF_TYPE"));
@@ -333,12 +493,25 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
         atomic_Ehu[uniA] = std::make_shared<Vector>("Atomic Huckel E", nhu);
 
         if (SAD_use_fitting(options_)) {
-            get_uhf_atomic_density(atomic_bases_[index], atomic_fit_bases_[index], occ_a, occ_b, atomic_D[uniA],
-                                   atomic_Chu[uniA], atomic_Ehu[uniA]);
+            if ((options_.get_str("SAD_ORBITAL_OPTIMIZER_PACKAGE") == "OPENORBITALOPTIMIZER") or
+                (options_.get_str("SAD_ORBITAL_OPTIMIZER_PACKAGE") == "OOO")) {
+                get_uhf_atomic_density_ooo(atomic_bases_[index], atomic_fit_bases_[index], occ_a, occ_b, atomic_D[uniA],
+                                           atomic_Chu[uniA], atomic_Ehu[uniA]);
+            } else {
+                get_uhf_atomic_density(atomic_bases_[index], atomic_fit_bases_[index], occ_a, occ_b, atomic_D[uniA],
+                                       atomic_Chu[uniA], atomic_Ehu[uniA]);
+            }
+
         } else {
             std::shared_ptr<BasisSet> zbas = BasisSet::zero_ao_basis_set();
-            get_uhf_atomic_density(atomic_bases_[index], zbas, occ_a, occ_b, atomic_D[uniA], atomic_Chu[uniA],
-                                   atomic_Ehu[uniA]);
+            if ((options_.get_str("SAD_ORBITAL_OPTIMIZER_PACKAGE") == "OPENORBITALOPTIMIZER") or
+                (options_.get_str("SAD_ORBITAL_OPTIMIZER_PACKAGE") == "OOO")) {
+                get_uhf_atomic_density_ooo(atomic_bases_[index], zbas, occ_a, occ_b, atomic_D[uniA], atomic_Chu[uniA],
+                                           atomic_Ehu[uniA]);
+            } else {
+                get_uhf_atomic_density(atomic_bases_[index], zbas, occ_a, occ_b, atomic_D[uniA], atomic_Chu[uniA],
+                                       atomic_Ehu[uniA]);
+            }
         }
         if (print_ > 1) outfile->Printf("Finished UHF Computation!\n");
     }
@@ -529,7 +702,6 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     diis_manager.set_vector_size(Fa.get(), Fb.get());
 
     // Setup JK
-    std::unique_ptr<JK> jk;
     // Need a very special auxiliary basis here
     if (SAD_use_fitting(options_)) {
         auto dfjk = std::make_unique<MemDFJK>(bas, fit, options_);
@@ -611,7 +783,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         diis_manager.add_entry(gradient_a.get(), gradient_b.get(), Fa.get(), Fb.get());
         diis_manager.extrapolate(Fa.get(), Fb.get());
 
-        // Diagonalize Fa and Fb to from Ca and Cb and Da and Db
+        // Diagonalize Fa and Fb to form Ca and Cb and Da and Db
         form_C_and_D(X, Fa, Ca, Ea, Ca_occ, occ_a, Da);
         form_C_and_D(X, Fb, Cb, Eb, Cb_occ, occ_b, Db);
 
@@ -660,6 +832,291 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     for (int i = 0; i < occ_a->dim(); i++) {
         Eoccp[i] = Ep[i];
     }
+}
+void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::shared_ptr<BasisSet> fit, SharedVector occ_a,
+                                      SharedVector occ_b, SharedMatrix D, SharedMatrix Chuckel, SharedVector Ehuckel) {
+
+#ifndef USING_OpenOrbitalOptimizer
+  throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build! Recompile with `-D ENABLE_OpenOrbitalOptimizer=ON`.\n");
+#else
+    std::shared_ptr<Molecule> mol = bas->molecule();
+    mol->update_geometry();
+    if (print_ > 1) {
+        mol->print();
+    }
+
+    int natom = mol->natom();
+    int nbf = bas->nbf();
+    int Z = bas->molecule()->Z(0);  // used by ooo
+
+    if (occ_a->dim() > nbf || occ_b->dim() > nbf) throw PSIEXCEPTION("Atom has more electrons than basis functions.");
+
+    if (print_ > 1) {
+        outfile->Printf("\n");
+        bas->print("outfile");
+        outfile->Printf("\n  Atom:\n");
+        mol->print();
+    }
+
+    if (natom != 1) {
+        throw std::domain_error("SAD Atomic UHF has been given a molecule, not an atom");
+    }
+
+    IntegralFactory integral(bas, bas, bas, bas);
+    MatrixFactory mat;
+    mat.init_with(1, &nbf, &nbf);
+    std::unique_ptr<OneBodyAOInt> S_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_overlap());
+    std::unique_ptr<OneBodyAOInt> T_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_kinetic());
+    std::unique_ptr<OneBodyAOInt> V_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_potential());
+#ifdef USING_ecpint
+    auto ECP_ints = std::unique_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral.ao_ecp().release()));
+#endif
+
+    // Compute overlap S and orthogonalizer X;
+    SharedMatrix S(mat.create_matrix("Overlap Matrix"));
+    S_ints->compute(S);
+
+    SharedMatrix X = S->clone();
+    X->power(-0.5, 1.e-10);
+    X->set_name("Orthogonalizer X^-1/2 Matrix");
+
+    if (print_ > 6) {
+        S->print();
+        X->print();
+    }
+
+    // Compute H
+    SharedMatrix T(mat.create_matrix("T"));
+    T_ints->compute(T);
+    SharedMatrix V(mat.create_matrix("V"));
+    V_ints->compute(V);
+#ifdef USING_ecpint
+    SharedMatrix ECP(mat.create_matrix("ECP"));
+    ECP_ints->compute(ECP);
+#endif
+    SharedMatrix H(mat.create_matrix("Core Hamiltonian Matrix H"));
+    H->zero();
+    H->add(T);
+    H->add(V);
+#ifdef USING_ecpint
+    H->add(ECP);
+#endif
+
+    T.reset();
+    V.reset();
+#ifdef USING_ecpint
+    ECP.reset();
+#endif
+
+    if (print_ > 6) {
+        H->print();
+    }
+
+    // Init temps
+    SharedMatrix Ca(mat.create_matrix("Ca"));
+    SharedMatrix Cb(mat.create_matrix("Cb"));
+
+    SharedMatrix Da(mat.create_matrix("Da"));
+    SharedMatrix Db(mat.create_matrix("Db"));
+
+    SharedVector Ea = std::make_shared<Vector>("Ea", nbf);
+    SharedVector Eb = std::make_shared<Vector>("Eb", nbf);
+
+    SharedMatrix gradient_a(mat.create_matrix("gradient_a"));
+    SharedMatrix gradient_b(mat.create_matrix("gradient_b"));
+
+    SharedMatrix Fa(mat.create_matrix("Fa"));
+    SharedMatrix Fb(mat.create_matrix("Fb"));
+
+    auto Ca_occ = std::make_shared<Matrix>("Ca occupied", nbf, occ_a->dim());
+    auto Cb_occ = std::make_shared<Matrix>("Cb occupied", nbf, occ_b->dim());
+
+    // Compute initial Cx, Dx, and D from core guess
+    form_C_and_D(X, H, Ca, Ea, Ca_occ, occ_a, Da);
+    form_C_and_D(X, H, Cb, Eb, Cb_occ, occ_b, Db);
+
+    D->zero();
+    D->add(Da);
+    D->add(Db);
+
+    if (print_ > 6) {
+        Ca->print();
+        Cb->print();
+        Ca_occ->print();
+        Cb_occ->print();
+        Da->print();
+        Db->print();
+        D->print();
+    }
+
+    // Compute initial E for reference
+    double E = D->vector_dot(H);
+    E *= 0.5;
+
+    double E_tol = options_.get_double("SAD_E_CONVERGENCE");
+    double D_tol = options_.get_double("SAD_D_CONVERGENCE");
+    int sad_maxiter = options_.get_int("SAD_MAXITER");
+    bool diis_rms = options_.get_bool("DIIS_RMS_ERROR");
+
+    double E_old = E;
+    int iteration = 0;
+
+    // Setup DIIS
+    DIISManager diis_manager(6, "SAD DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    diis_manager.set_error_vector_size(gradient_a.get(), gradient_b.get());
+    diis_manager.set_vector_size(Fa.get(), Fb.get());
+
+    // Need a very special auxiliary basis here
+    if (SAD_use_fitting(options_)) {
+        auto dfjk = std::make_unique<MemDFJK>(bas, fit, options_);
+
+        if (options_["DF_INTS_NUM_THREADS"].has_changed())
+            dfjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
+        dfjk->dfh()->set_print_lvl(0);
+        jk = std::move(dfjk);
+    } else {
+        DirectJK* directjk(new DirectJK(bas, options_));
+        if (options_["DF_INTS_NUM_THREADS"].has_changed())
+            directjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
+        jk = std::unique_ptr<JK>(directjk);
+    }
+
+    // JK object primary libint2::Engine used to construct Schwarz externally, so need to zero precision for SAD scope
+    std::string ints_tolerance_key = "INTS_TOLERANCE";
+    auto ints_tolerance_value = Process::environment.options.get_double(ints_tolerance_key);
+    auto ints_tolerance_changed = Process::environment.options.use_local(ints_tolerance_key).has_changed();
+    Process::environment.options.set_double("SCF", ints_tolerance_key, 0.0);
+
+    jk->set_memory((size_t)(0.5 * (Process::environment.get_memory() / 8L)));
+    jk->initialize();
+    if (print_ > 1) jk->print_header();
+
+    Process::environment.options.set_double("SCF", ints_tolerance_key, ints_tolerance_value);
+    if (!ints_tolerance_changed) Process::environment.options.use_local(ints_tolerance_key).dechanged();
+
+    // These are static so lets just grab them now
+    std::vector<SharedMatrix>& jkC = jk->C_left();
+    jkC.push_back(Ca_occ);
+    jkC.push_back(Cb_occ);
+    const std::vector<SharedMatrix>& Jvec = jk->J();
+    const std::vector<SharedMatrix>& Kvec = jk->K();
+
+    // Print a header
+    bool converged = false;
+    if (print_ > 1) {
+        std::string measure = diis_rms ? "RMS |[F,P]|  " : "MAX |[F,P]|  ";
+        outfile->Printf("\n  Initial Atomic UHF Energy:    %14.10f\n\n", E);
+        outfile->Printf("  %33s %20s    %20s %20s\n", "", "Total Energy   ", "Delta E   ", measure.c_str());
+    }
+    // TODO uhf
+    int nblocks = bas->max_am() + 1;
+    arma::uvec number_of_blocks_per_particle_type({static_cast<unsigned int>(nblocks)});  // {nbf, nbf}
+    arma::vec maximum_occupation(nblocks);
+    for(size_t l=0; l<nblocks; l++)
+        maximum_occupation[l] = 2*(2*l+1);
+    int Q = 0;  // TODO
+    arma::vec number_of_particles({(double) (Z-Q)});
+    std::vector<std::string> block_descriptions({static_cast<unsigned int>(nblocks)});  // 2*nbf
+    for(size_t l=0; l<nblocks; l++) {
+        std::ostringstream oss;
+        oss << "alpha l=" << l;
+        block_descriptions[l] = oss.str();
+    }
+    arma::mat coreH(H->pointer()[0], H->rowdim(), H->coldim());
+
+    std::vector<std::vector<arma::uvec>> lm_indices = get_lm_indices(bas);
+    for(size_t ism=0; ism<lm_indices.size(); ism++) {
+        for(size_t ism2=0; ism2<lm_indices[ism].size(); ism2++) {
+            lm_indices[ism][ism2].print();
+        }
+    }
+    arma::mat arma_S(S->pointer()[0], S->rowdim(), S->coldim());
+    std::vector<arma::mat> avgd_S = extract_mat(lm_indices, arma_S);
+
+    std::vector<arma::mat> Xmat(avgd_S.size());
+    for(size_t iblock=0; iblock<Xmat.size(); iblock++) {
+      arma::vec Sval;
+      arma::mat Svec;
+      arma::eig_sym(Sval, Svec, avgd_S[iblock]);
+      arma::uvec idx = arma::find(Sval >= 1e-6);
+      Xmat[iblock] = Svec.cols(idx) * arma::diagmat(arma::pow(Sval(idx), -0.5));
+    }
+
+    std::vector<arma::mat> fock_guess = extract_mat(lm_indices, coreH);
+    for(size_t iblock=0; iblock<Xmat.size(); iblock++) {
+      fock_guess[iblock] = Xmat[iblock].t() * fock_guess[iblock] * Xmat[iblock];
+    }
+
+
+    OpenOrbitalOptimizer::FockBuilder<double, double> fock_builder_builder = [lm_indices, Xmat, this, arma_S, coreH](const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm) {
+        return fock_builder(dm, lm_indices, Xmat, arma_S, coreH);
+    };
+
+    OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder_builder, block_descriptions);
+    scfsolver.verbosity(10);  // mod
+    scfsolver.convergence_threshold(E_tol);  // mod
+    scfsolver.initialize_with_fock(fock_guess);
+    scfsolver.run();
+
+    auto ooo_orbs = scfsolver.get_orbitals();
+    auto ooo_occs = scfsolver.get_orbital_occupations();
+
+    arma::mat C_AO;
+    arma::vec occ;
+    std::tie(C_AO, occ) = expand_density(ooo_orbs, ooo_occs, lm_indices, Xmat, arma_S);
+
+    // Form density matrix
+    arma::mat P_AO = C_AO * arma::diagmat(occ) * C_AO.t();
+    // Get the occupied orbitals for the Huckel routines
+    arma::uvec occ_idx = arma::find(occ > 0.0);
+    arma::mat C_occ = C_AO.cols(occ_idx);
+    // Determine orbital energies for Huckel
+    arma::mat Cp2 = C_AO.cols(occ_idx) * arma::diagmat(arma::sqrt(occ(occ_idx)));
+    auto psi_C = std::make_shared<Matrix>("Cp", Cp2.n_rows, Cp2.n_cols);
+    for (size_t ii=0; ii<Cp2.n_rows; ii++) {
+        for (size_t jj=0; jj<Cp2.n_cols; jj++) {
+            psi_C->set(ii, jj, Cp2(ii, jj));
+        }
+    }
+    // Build Fock matrix
+    std::vector<SharedMatrix>& jkCC = jk->C_left();
+    jkCC.clear();
+    jkCC.push_back(psi_C);
+    jk->compute();
+    const std::vector<SharedMatrix>& JJvec = jk->J();
+    const std::vector<SharedMatrix>& KKvec = jk->K();
+    arma::mat JJ_AO(JJvec[0]->pointer()[0], Cp2.n_rows, Cp2.n_rows);
+    arma::mat KK_AO(KKvec[0]->pointer()[0], Cp2.n_rows, Cp2.n_rows);
+    // Psi4 defines K without the minus sign
+    KK_AO *= -1;
+    arma::mat F = coreH + JJ_AO + 0.5 * KK_AO;
+
+    // Orbital energies
+    arma::vec E_occ = arma::diagvec(C_occ.t() * F * C_occ);
+
+    if (converged && print_ > 1)
+        outfile->Printf("  @Atomic UHF Final Energy for atom %s: %20.14f\n", mol->symbol(0).c_str(), E);
+
+    // TODO save the energies (elements of E_occ) and orbitals (C_occ) and density (P_AO) onto the Chuckel object. but need to resize Chuckel & Ehuckel & density one (sq; atomic_D elsewhere; D (3rd to last) in this fn)
+
+    for(int i=0; i<nbf; i++)
+      for(int j=0; j<nbf; j++)
+        D->set(i, j, P_AO(i,j)); // /2
+
+#if 0
+ // Copy Huckel coefficients and energies
+    double** Coccp = Chuckel->pointer();
+    double** Cp = Ca->pointer();
+    for (int i = 0; i < nbf; i++) {
+        C_DCOPY(occ_a->dim(), Cp[i], 1, Coccp[i], 1);
+    }
+    double* Eoccp = Ehuckel->pointer();
+    double* Ep = Ea->pointer();
+    for (int i = 0; i < occ_a->dim(); i++) {
+        Eoccp[i] = Ep[i];
+    }
+#endif
+#endif
 }
 void SADGuess::form_gradient(SharedMatrix grad, SharedMatrix F, SharedMatrix D, SharedMatrix S, SharedMatrix X) {
     int nbf = X->rowdim();

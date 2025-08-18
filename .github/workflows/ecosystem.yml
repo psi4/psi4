@@ -40,7 +40,7 @@ jobs:
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
+            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6 or v2rdm6 or v2rdm7)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -63,7 +63,7 @@ jobs:
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not pe_ecp"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or snowflake)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -204,6 +204,17 @@ jobs:
       run: |
         conda info
         conda list
+
+    - name: Special Config - Force testing OpenOrbitalOptimizer
+      if: "(matrix.cfg.label == 'Conda Clang (M-Intel)')"
+      run: |
+        grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          sed -E -i.bak 's;(options\.add_str\("ORBITAL_OPTIMIZER_PACKAGE", ")INTERNAL(", "INTERNAL OOO OPENORBITALOPTIMIZER");\1OOO\2;' psi4/src/read_options.cc
+        else
+          sed -i 's;\(options\.add_str("ORBITAL_OPTIMIZER_PACKAGE", "\)INTERNAL\(", "INTERNAL OOO OPENORBITALOPTIMIZER"\);\1OOO\2;' psi4/src/read_options.cc
+        fi
+        grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
 
     - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |

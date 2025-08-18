@@ -61,6 +61,7 @@ platform capabilities, *etc*.
    libint
    molden
    mrcc
+   ooo
    pcmsolver
    simint
    plugin_snsmp2

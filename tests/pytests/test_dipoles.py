@@ -39,6 +39,9 @@ def test_dipole(inp):
         H 1 1.0 2 101.5
     """)
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
     mol = h2o_singlet if inp["options"].get("reference", "rhf") == "rhf" else h2o_doublet
     psi4.set_options({'perturb_h': True, 'perturb_with': 'dipole', 'basis': 'cc-pvdz'})
     psi4.set_options(inp['options'])

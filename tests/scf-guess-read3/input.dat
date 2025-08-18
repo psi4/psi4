@@ -17,4 +17,17 @@ compare_values(-247.03173864745776, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF e
 set guess read
 energy('scf')
 compare_values(-247.03173864745776, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF energy, read-in guess')  #TEST
-compare_values(1, variable('SCF ITERATIONS'), 1, 'ROHF Iterations, read-in guess')  #TEST
+niter = int(variable('SCF ITERATIONS'))
+compare(1, niter, f'ROHF Iterations {niter}, read-in guess')  #TEST
+
+
+set reference uhf
+set guess sad
+energy('scf')
+compare_values(-247.03206951, variable('SCF TOTAL ENERGY'), 6, 'UHF SCF energy')  #TEST
+
+set guess read
+energy('scf')
+compare_values(-247.03206951, variable('SCF TOTAL ENERGY'), 6, 'UHF SCF energy, read-in guess')  #TEST
+niter = int(variable('SCF ITERATIONS'))
+compare(1, niter, f'UHF Iterations {niter}, read-in guess')  #TEST

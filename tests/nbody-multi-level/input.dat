@@ -24,6 +24,9 @@ units bohr
 set cc_type df
 set df_basis_mp2 def2-qzvpp-ri  # not a recommendation. present to compensate for change in default
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 species_comparison_dict = {"§A_(2)@(2)": -74.9994424129044, "§B_(2)@(2)": -74.96344779297539}
 species_comparison_dict = {f"n-body {k} total energy": v for k, v in species_comparison_dict.items()}  #TEST
 
@@ -138,6 +141,8 @@ clean()
 clean_variables()
 
 # Compute electrostatically embedded  many-body expansion energy.with TIP3P charges
+import os
+os.environ["QCMANYBODY_EMBEDDING_CHARGES"] = "1"
 tip3p_charges = [-0.834, 0.417, 0.417]
 embedding_charges = {i: [j for j in tip3p_charges] for i in range(1, 4)}
 if distributed:

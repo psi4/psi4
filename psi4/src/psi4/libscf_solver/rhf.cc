@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include <any>
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -48,12 +49,18 @@
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/pointgrp.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
+
+#ifdef USING_OpenOrbitalOptimizer
+#include <openorbitaloptimizer/scfsolver.hpp>
+#endif
 
 #include "rhf.h"
 
@@ -1040,6 +1047,256 @@ void RHF::setup_potential() {
     } else {
         potential_ = nullptr;
     }
+}
+
+void RHF::openorbital_scf() {
+#ifndef USING_OpenOrbitalOptimizer
+  throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build! Reconfigure with `-D ENABLE_OpenOrbitalOptimizer=ON`.\n");
+#else
+  std::function<OpenOrbitalOptimizer::FockBuilderReturn<double, double>(const OpenOrbitalOptimizer::DensityMatrix<double, double> &)> fock_builder = [&](const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm) {
+    // Grab the orbitals and occupations
+    std::vector<arma::mat> orbitals = dm.first;
+    std::vector<arma::vec> occupations = dm.second;
+    assert(orbitals.size() == nirrep_);
+    assert(occupations.size() == nirrep_);
+
+    // Throw away zero occupations and calculate size of the matrix
+    Dimension nmopi(nirrep_);
+    for(int h=0; h<nirrep_; h++) {
+      if(nsopi_[h]==0) {
+        nmopi[h]=0;
+        continue;
+      }
+      arma::uvec idx(arma::find(occupations[h]!=0.0));
+      orbitals[h] = orbitals[h].cols(idx);
+      occupations[h] = occupations[h](idx);
+      nmopi[h] = idx.n_elem;
+      // This interface can't handle negative occupations
+      if(idx.n_elem>0 and arma::min(occupations[h])<0.0) {
+          throw PSIEXCEPTION("Negative orbital occupations not supported in Psi4 interface!\n");
+      }
+    }
+
+    // Form the dummy orbitals for the jk object
+    auto Cdummy = std::make_shared<Matrix>("Dummy orbitals", nsopi_, nmopi);
+    for(int h=0;h<nirrep_;h++) {
+      if(nmopi[h]==0)
+        // Skip case of nothing to do
+        continue;
+      // Get the block of X
+      const arma::mat Xblock(X_->to_armadillo_matrix(h));
+      arma::mat Cblock = Xblock*orbitals[h]*arma::diagmat(arma::sqrt(occupations[h]));
+      Cdummy->from_armadillo_matrix(Cblock,h);
+    }
+
+    std::vector<SharedMatrix>& jkC = jk_->C_left();
+    jkC.clear();
+    jkC.push_back(Cdummy);
+    jk_->compute();
+    const std::vector<SharedMatrix>& Jvec = jk_->J();
+    const std::vector<SharedMatrix>& Kvec = jk_->K();
+    const std::vector<SharedMatrix>& wKvec = jk_->wK();
+
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
+
+#ifdef USING_BrianQC
+    if (brianEnable and brianEnableDFT) {
+      // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+      alpha = 1.0;
+      beta = 1.0;
+    }
+#endif
+
+    std::vector<arma::mat> Vxc(nirrep_);
+    if (functional_->needs_xc()) {
+      auto Pdummy = std::make_shared<Matrix>("Dummy density", nsopi_, nsopi_);
+      for(int h=0;h<nirrep_;h++) {
+        if(nmopi[h]==0)
+          // Skip case of nothing to do
+          continue;
+        arma::mat Cblock = Cdummy->to_armadillo_matrix(h);
+        // Psi4 expects density matrices without the factor 2
+        Pdummy->from_armadillo_matrix(0.5*Cblock*Cblock.t(),h);
+      }
+
+      potential_->set_D({Pdummy});
+      potential_->compute_V({Va_});
+      for(int h=0;h<nirrep_;h++) {
+        if(nsopi_[h]==0)
+          // Skip case of nothing to do
+          continue;
+        Vxc[h] = Va_->to_armadillo_matrix(h);
+      }
+    }
+
+    // Build the Fock matrix and components of the total energy in each block
+    std::vector<arma::mat> fock(nirrep_);
+    double Ecore=0.0, Ecoul=0.0, Eexch=0.0;
+    for(int h=0;h<nirrep_;h++) {
+      if(nsopi_[h]==0)
+        // Skip case of nothing to do
+        continue;
+      const arma::mat Xblock(X_->to_armadillo_matrix(h));
+      const arma::mat J_AO(Jvec[0]->to_armadillo_matrix(h));
+      const arma::mat coreH(H_->to_armadillo_matrix(h));
+      const arma::mat Cblock(Cdummy->to_armadillo_matrix(h));
+      arma::mat K_AO;
+
+      if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
+        K_AO = -alpha*(Kvec[0]->to_armadillo_matrix(h));
+      } else {
+        K_AO.zeros(coreH.n_rows, coreH.n_cols);
+      }
+
+      if (functional_->is_x_lrc()) {
+        const arma::mat wK_AO(wKvec[0]->to_armadillo_matrix(h));
+        if (jk_->get_wcombine()) {
+          K_AO -= wK_AO;
+        } else {
+          K_AO -= beta*wK_AO;
+        }
+      }
+
+      // Minus sign in K has already been taken into account above
+      if (functional_->needs_xc()) {
+        fock[h] = Xblock.t()*(coreH+J_AO+0.5*K_AO+Vxc[h])*Xblock;
+      } else {
+        fock[h] = Xblock.t()*(coreH+J_AO+0.5*K_AO)*Xblock;
+      }
+
+      arma::mat P_AO(Cblock*Cblock.t());
+      Ecore += arma::trace(P_AO*coreH);
+      Ecoul += 0.5*arma::trace(J_AO*P_AO);
+      Eexch += 0.25*arma::trace(K_AO*P_AO);
+    }
+    double XC_E = 0.0;
+    double VV10_E = 0.0;
+    if (functional_->needs_xc()) {
+        XC_E = potential_->quadrature_values()["FUNCTIONAL"];
+    }
+    if (functional_->needs_vv10()) {
+        VV10_E = potential_->quadrature_values()["VV10"];
+    }
+    double Etot = Ecore+Ecoul+Eexch+nuclearrep_+XC_E+VV10_E;
+
+    return std::make_pair(Etot,fock);
+  };
+
+  arma::uword nirrep(nirrep_);
+  // Only one particle type, which has nirrep blocks
+  arma::uvec number_of_blocks_per_particle_type({nirrep});
+  // Orbitals in each nirrep block have maximal occupation 2
+  arma::vec maximum_occupation(nirrep,arma::fill::value(2.0));
+  // Number of electrons is na+nb
+  arma::vec number_of_particles({(double) (nalpha_+nbeta_)});
+
+  // Descriptions of the blocks: character table
+  std::vector<std::string> block_descriptions(nirrep);
+  CharacterTable ct = molecule_->point_group()->char_table();
+  for(int h=0; h<nirrep_; h++)
+    block_descriptions[h] = ct.gamma(h).symbol();
+
+  double start_diis = options_.get_double("SCF_INITIAL_START_DIIS_TRANSITION");
+  double finish_diis = options_.get_double("SCF_INITIAL_FINISH_DIIS_TRANSITION");
+  int maxvecs = options_.get_double("DIIS_MAX_VECS");
+  int maxiter = options_.get_int("MAXITER");
+  bool fail_on_maxiter = options_.get_bool("FAIL_ON_MAXITER");
+
+  // Get the orbital guess
+  std::vector<arma::mat> orbitals(nirrep);
+  std::vector<arma::vec> occupations(nirrep);
+  for(int h=0;h<nirrep_;h++) {
+    if(nsopi_[h]==0)
+      continue;
+
+    auto Xblock(X_->to_armadillo_matrix(h));
+    auto Sblock(S_->to_armadillo_matrix(h));
+    auto Cblock(Ca_->to_armadillo_matrix(h));
+
+    if(Cblock.n_cols) {
+      orbitals[h] = Xblock.t()*Sblock*Cblock;
+      occupations[h].zeros(Cblock.n_cols);
+      if(nalphapi_[h]>0)
+        occupations[h].subvec(0,nalphapi_[h]-1).ones();
+      occupations[h] *= 2;
+    }
+  };
+
+  std::function<bool(const std::map<std::string,std::any> &)> callback_convergence_function = [&](const std::map<std::string,std::any> & data) -> bool {
+
+        double e_conv = options_.get_double("E_CONVERGENCE");
+        double d_conv = options_.get_double("D_CONVERGENCE");
+        double e_delta = std::any_cast<double>(data.at("dE"));
+        double d_rms = 0.5 * std::any_cast<double>(data.at("diis_error"));
+        // scale density norm to match internal algorithm
+
+        bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
+        if (iteration_ == options_.get_int("MAXITER"))
+            printf("%d = |%e| < %e && %e < %e\n", converged, e_delta, e_conv, d_rms, d_conv);
+        return converged;
+  };
+
+  std::function<void(const std::map<std::string,std::any> &)> callback_function = [&](const std::map<std::string,std::any> & data) {
+    std::string reference = options_.get_str("REFERENCE");
+    if(options_.get_str("SCF_TYPE").ends_with("DF"))
+      reference = "DF-" + reference;
+
+    iteration_++;
+    double E = std::any_cast<double>(data.at("E"));
+    double dE = std::any_cast<double>(data.at("dE"));
+    double Dnorm = 0.5 * std::any_cast<double>(data.at("diis_error"));
+    // scale density norm to match internal algorithm
+    std::string step = std::any_cast<std::string>(data.at("step"));
+
+    outfile->Printf("   @%s iter %3i: %20.14f   %12.5e   %-11.5e %s\n", reference.c_str(), iteration_, E, dE, Dnorm, step.c_str());
+  };
+
+  OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);
+  scfsolver.maximum_iterations(maxiter);
+  scfsolver.verbosity(options_.get_int("OOO_PRINT"));
+  scfsolver.maximum_history_length(maxvecs);
+  scfsolver.callback_function(callback_function);
+  scfsolver.callback_convergence_function(callback_convergence_function);  // replaces scfsolver.convergence_threshold()
+  scfsolver.diis_epsilon(start_diis);
+  scfsolver.diis_threshold(finish_diis);
+  if(input_docc_) scfsolver.frozen_occupations(true);
+  scfsolver.diis_restart_factor(options_.get_double("OOO_DIIS_RESTART_FACTOR"));
+  scfsolver.optimal_damping_threshold(options_.get_double("OOO_OPTIMAL_DAMPING_THRESHOLD"));
+  scfsolver.initialize_with_orbitals(orbitals, occupations);
+  scfsolver.run();
+  if(fail_on_maxiter and not scfsolver.converged())
+    throw PSIEXCEPTION("SCF did not converge and FAIL_ON_MAXITER is set to true.\n");
+
+  // Update the orbitals with OOO's solution
+  auto solution = scfsolver.get_solution();
+  orbitals = solution.first;
+  occupations = solution.second;
+  for(int h=0;h<nirrep_;h++) {
+    if(nsopi_[h]==0)
+      continue;
+    const arma::mat Xblock(X_->to_armadillo_matrix(h));
+    const arma::mat Sblock(S_->to_armadillo_matrix(h));
+    arma::mat Cblock(Xblock*orbitals[h]);
+    Ca_->from_armadillo_matrix(Cblock,h);
+
+    // We hope that the occupations are integer...
+    arma::uvec nonzero(arma::find(occupations[h]>0.0));
+    double diff(arma::norm(occupations[h](nonzero)-2*arma::ones<arma::vec>(nonzero.n_elem),2));
+    if(diff!=0.0) {
+      fprintf(stderr,"Non-integer occupations in symmetry block %i\n",h);
+      occupations[h].print("occs");  // stdout
+    }
+    nalphapi_[h] = (int) nonzero.n_elem;
+  }
+
+  // Form the density matrix
+  form_D();
+  // Form the two-electron part
+  form_G();
+  // Compute the energy
+  compute_E();
+#endif
 }
 
 }  // namespace scf
