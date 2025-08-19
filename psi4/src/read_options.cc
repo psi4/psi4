@@ -4180,7 +4180,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         **Psi4 Interface:** Geometry optimizations run through PSI (except in
         sandwich mode) use PSI's optimizer and so this keyword has no effect.
         Use :ref:`optking <apdx:optking>` keywords instead,
-        particularly :py:attr:`~optking.v1.optparams.OptParams.intrafrag_step_limit`. -*/
+        particularly :py:attr:`intrafrag_step_limit optking.v1.optparams.OptParams.intrafrag_trust`. -*/
         options.add_int("CFOUR_GEO_MAXSTEP", 300);
 
         /*- Specifies the used geometry optimization methods. The following

@@ -656,11 +656,11 @@ Convergence Criteria
 
 Optking monitors five quantities to evaluate the progress of a geometry 
 optimization. These are (with their keywords) the change in energy 
-(:py:attr:`~optking.v1.optparams.OptParams.max_energy_g_convergence`), the maximum element of 
-the gradient (:py:attr:`~optking.v1.optparams.OptParams.max_force_g_convergence`), the root-mean-square 
-of the gradient (:py:attr:`~optking.v1.optparams.OptParams.rms_force_g_convergence`), the maximum element
-of displacement (:py:attr:`~optking.v1.optparams.OptParams.max_disp_g_convergence`), and the 
-root-mean-square of displacement (:py:attr:`~optking.v1.optparams.OptParams.rms_disp_g_convergence`), 
+(:py:attr:`max_energy_g_convergence optking.v1.optparams.OptParams.conv_max_DE`), the maximum element of 
+the gradient (:py:attr:`max_force_g_convergence optking.v1.optparams.OptParams.conv_max_force`), the root-mean-square 
+of the gradient (:py:attr:`rms_force_g_convergence optking.v1.optparams.OptParams.conv_rms_force`), the maximum element
+of displacement (:py:attr:`max_disp_g_convergence optking.v1.optparams.OptParams.conv_max_disp`), and the 
+root-mean-square of displacement (:py:attr:`rms_disp_g_convergence optking.v1.optparams.OptParams.conv_rms_disp`), 
 all in internal coordinates and atomic units. Usually, these options will not 
 be set directly. Primary control for geometry convergence lies with the keyword 
 :py:attr:`~optking.v1.optparams.OptParams.g_convergence` which sets the aforementioned in accordance 
