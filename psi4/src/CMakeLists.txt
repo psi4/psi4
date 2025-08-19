@@ -16,7 +16,6 @@ target_link_libraries(core
     pybind11::module
     pybind11::lto
     pybind11::windows_extras
-    pybind11::embed
 )
 pybind11_extension(core)
 if(NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo)
