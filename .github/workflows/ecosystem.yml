@@ -216,6 +216,11 @@ jobs:
         fi
         grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
 
+    - name: Special Config - OptKing Dep
+      run: |
+        conda remove optking --force
+        python -m pip install git+https://github.com/psi-rking/optking.git@0.4.0 --no-deps
+
     - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
         conda/psi4-path-advisor.py \
