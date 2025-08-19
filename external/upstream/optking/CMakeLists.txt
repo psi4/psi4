@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_optking}))
     include(FindPythonModule)
-    find_python_module(optking ATLEAST 0.4.1 QUIET)  # edit in codedeps
+    find_python_module(optking ATLEAST 0.4.0 QUIET)  # edit in codedeps
 endif()
 
 if(${optking_FOUND})
