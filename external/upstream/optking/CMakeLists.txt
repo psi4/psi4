@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_optking}))
     include(FindPythonModule)
-    find_python_module(optking ATLEAST 0.3.0 QUIET)  # edit in codedeps
+    find_python_module(optking ATLEAST 0.4.1 QUIET)  # edit in codedeps
 endif()
 
 if(${optking_FOUND})
@@ -24,7 +24,7 @@ else()
     ExternalProject_Add(optking_external
         BUILD_ALWAYS 1
         # URL https://github.com/psi-rking/optking/archive/0.3.0.tar.gz  # edit in codedeps
-        URL https://github.com/psi-rking/optking/archive/refs/heads/irc_fixes.zip
+        URL https://github.com/psi-rking/optking/archive/refs/heads/master.zip
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ${Python_EXECUTABLE} setup.py build

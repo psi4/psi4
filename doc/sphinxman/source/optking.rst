@@ -44,10 +44,11 @@ Geometry Optimization
 .. note::
 
    As of version `1.10`, the validation of OptKing's options has been moved from |PSIfour| into
-   OptKing. Any options can still be set directly in |PSIfour| like in previous versions. At
-   compile time, all available options in the locatable version of OptKing will be available in
-   |PSIfour|. If an option is not available in your version of PSI4 please make sure that |PSIfour|
-   and OptKing are up-to-date.
+   OptKing. Any options can still be set directly in |PSIfour| like in previous versions; however,
+   validation of any OptKing keywords will not take place until optimize is called.
+   If an option is not available in your version of PSI4 please make sure that |PSIfour|
+   and OptKing are up-to-date. If an option is still not available, use the ``optimizer_keywords``
+   argument to :py:func:`~psi4.driver.optimize`.
 
 |PSIfour| carries out molecular optimizations using a Python module called
 optking.  The optking program takes as input nuclear gradients and,
