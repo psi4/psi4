@@ -68,6 +68,11 @@ jobs:
         show-channel-urls: true
         conda-remove-defaults: true
 
+    - name: Special Config - OptKing Dep
+      run: |
+        conda remove optking --force
+        python -m pip install git+https://github.com/psi-rking/optking.git@0.4.0 --no-deps
+
     - name: Special Config - QCManyBody Dep
       if: false
       run: |
