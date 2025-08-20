@@ -1334,10 +1334,10 @@ data:
       host: github
       account: psi-rking
       name: optking
-      commit: 0.3.0
+      commit: 0.4.1
     cmake:
       name: optking
-      constraint: ATLEAST 0.3.0
+      constraint: ATLEAST 0.4.1
     conda:
       channel: conda-forge
       name: optking
