@@ -3001,6 +3001,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /* The following keywords are Psi4 specific and therfore included in autodoc */
 
+        /*- Tolerance for symmetrizing cartesian geometry between steps -*/
+        options.add_double("CARTESIAN_SYM_TOLERANCE", 1e-7);
         /*- Write the optimization history / state to disc -*/
         options.add_bool("WRITE_OPT_RESULT", false);
         /*- Save OptKing's internal classes for possible restart upon error -*/
