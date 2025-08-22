@@ -46,7 +46,7 @@ Geometry Optimization
    As of version `1.10`, the validation of OptKing's options has been moved from |PSIfour| into
    OptKing. Any options can still be set directly in |PSIfour| like in previous versions; however,
    validation of any OptKing keywords will not take place until optimize is called.
-   If an option is not available in your version of PSI4 please make sure that |PSIfour|
+   If an option is not available in your version of |PSIfour| please make sure that |PSIfour|
    and OptKing are up-to-date. If an option is still not available, use the ``optimizer_keywords``
    argument to :py:func:`~psi4.driver.optimize`.
 
