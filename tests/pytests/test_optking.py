@@ -21,7 +21,7 @@ pytestmark = [pytest.mark.psi, pytest.mark.api]
                 "ref_ene": -150.781130356,
             },
             id="frozen_stre",
-            marks=pytest.mark.quick
+            marks=[pytest.mark.quick, pytest.mark.opt]
         ),
         pytest.param(
             {
@@ -73,6 +73,7 @@ pytestmark = [pytest.mark.psi, pytest.mark.api]
                 "ref_ene": -150.786669,
             },
             id="ext_f_stre",
+            marks=pytest.mark.opt
         ),
         pytest.param(
             {
@@ -290,14 +291,14 @@ def test_dimers_ne2_long(inp):
     ('DYNAMIC_LVL', 4),
     ('DYNAMIC_LVL_MAX', 3),
     ('ENSURE_BT_CONVERGENCE', True),
-    ('EXT_FORCE_BEND', "2 3 4 `SIN(X)`"),
-    ('EXT_FORCE_CARTESIAN', "`1 XY SIN(X)`"),
-    ('EXT_FORCE_DIHEDRAL', "`1 2 3 4 SIN(X)`"),
-    ('EXT_FORCE_DISTANCE', "`1 2 SIN(X)`"),
-    ('EXT_FORCE_OOFP', "`1 2 3 4 SIN(X)`"),
+    ('EXT_FORCE_BEND', "2 3 4 'SIN(X)'"),
+    ('EXT_FORCE_CARTESIAN', "1 XY 'SIN(X)'"),
+    ('EXT_FORCE_DIHEDRAL', "1 2 3 4 'SIN(X)'"),
+    ('EXT_FORCE_DISTANCE', "1 2 'SIN(X)'"),
+    ('EXT_FORCE_OOFP', "1 2 3 4 'SIN(X)'"),
     ('FIX_VAL_NEAR_PI', 0.01),
     ('FLEXIBLE_G_CONVERGENCE', True),
-    ('FRAG_MODE', "`MULTI`"),
+    ('FRAG_MODE', "MULTI"),
     # ('FRAG_REF_ATOMS', ),
     ('FREEZE_ALL_DIHEDRALS', True),
     ('FREEZE_INTRAFRAG', True),
@@ -347,9 +348,9 @@ def test_dimers_ne2_long(inp):
     ('OPT_COORDINATES', "CARTESIAN"),
     ('OPT_TYPE', "TS"),
     ('PRINT', 4),
-    ('RANGED_BEND', "1 2 3 120 130"),
+    ('RANGED_BEND', "1 2 3 120.0 130.0"),
     ('RANGED_CARTESIAN', "1 XY 1.5 1.7"),
-    ('RANGED_DIHEDRAL', "1 2 3 4 120 130"),
+    ('RANGED_DIHEDRAL', "1 2 3 4 120.0 130.0"),
     ('RANGED_DISTANCE', "1 2 1.2 1.4"),
     ('RANGED_OOFP', "1 2 3 4 60.0 65.0"),
     ('REDUNDANT_EVAL_TOL', 0.01),
@@ -371,6 +372,7 @@ def test_dimers_ne2_long(inp):
     ('V3D_TORS_COS_TOL', 0.01),
     ('WRITE_TRAJECTORY', True)]
 )
+@pytest.mark.opt
 def test_all_keywords(option, test_val):
 
     import optking

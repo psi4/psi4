@@ -247,7 +247,8 @@ if args['plugin_name']:
     sys.exit()
 
 if args["test"] is not None:
-    if args["test"] not in ['smoke', 'quick', 'full', 'long', 'smoke_not_d2ints', 'quick_not_d2ints']:
+    test_labels = ['smoke', 'quick', 'full', 'long', 'smoke_not_d2ints', 'quick_not_d2ints', 'opt']
+    if args["test"] not in test_labels:
         raise KeyError("The test category {} does not exist.".format(args["test"]))
 
     nthread = int(args["nthread"])
