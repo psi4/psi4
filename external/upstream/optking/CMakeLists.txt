@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_optking}))
     include(FindPythonModule)
-    find_python_module(optking ATLEAST 0.4.1 QUIET)  # edit in codedeps
+    find_python_module(optking ATLEAST 0.4.2 QUIET)  # edit in codedeps
 endif()
 
 if(${optking_FOUND})
@@ -23,7 +23,7 @@ else()
 
     ExternalProject_Add(optking_external
         BUILD_ALWAYS 1
-        URL https://github.com/psi-rking/optking/archive/0.4.1.tar.gz  # edit in codedeps
+        URL https://github.com/psi-rking/optking/archive/0.4.2.tar.gz  # edit in codedeps
         DOWNLOAD_NO_EXTRACT 1
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
