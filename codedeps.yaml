@@ -1334,16 +1334,16 @@ data:
       host: github
       account: psi-rking
       name: optking
-      commit: 0.4.1
+      commit: 0.4.2
     cmake:
       name: optking
-      constraint: ATLEAST 0.4.1
+      constraint: ATLEAST 0.4.2
     conda:
       channel: conda-forge
       name: optking
       constraint: null
       cmake:
-        //CMAKE_INSIST_FIND_PACKAGE_optking: true
+        //CMAKE_INSIST_FIND_PACKAGE_optking: false
         //CMAKE_DISABLE_FIND_PACKAGE_optking: true
       cmake_note: "Primarily OTF runtime detected."
 
