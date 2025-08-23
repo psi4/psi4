@@ -249,7 +249,7 @@ Below is an example of a geometry optimization::
 
 Note that the primary change is the exchange of :py:func:`~psi4.driver.energy`
 for :py:func:`~psi4.driver.optimize` to trigger an optimization.  Setting
-|optking__g_convergence|\ =CFOUR provides a good imitation of Cfour
+:py:attr:`~optking.v1.optparams.OptParams.g_convergence`\ =CFOUR provides a good imitation of Cfour
 default convergence criteria. Although Cfour produces gradients only in
 its standard orientation and atom ordering, these are transformed back to
 input orientation by the P4C4 interface. Several sample inputs in
@@ -837,7 +837,7 @@ arise, here are the specifics, the governing laws.
   straightforward. Unless the optimization is invoked in sandwich mode,
   all Cfour optimization keywords (*e.g.*, |cfour__cfour_geo_maxcyc|) are
   ineffective, as the Cfour optimizer is never invoked. |PSIfour|
-  optimization keywords (*e.g.*, |optking__geom_maxiter|) instead fill
+  optimization keywords (*e.g.*, :py:attr:`~optking.v1.optparams.OptParams.geom_maxiter`) instead fill
   these roles.
 
 * Specifying the computational method (through, for instance,

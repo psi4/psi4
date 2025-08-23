@@ -41,6 +41,15 @@ Geometry Optimization
 
 *Module:* :ref:`Keywords <apdx:optking>`, `OPTKING <https://github.com/psi-rking/optking>`_
 
+.. note::
+
+   As of version `1.10`, the validation of OptKing's options has been moved from |PSIfour| into
+   OptKing. Any options can still be set directly in |PSIfour| like in previous versions; however,
+   validation of any OptKing keywords will not take place until optimize is called.
+   If an option is not available in your version of |PSIfour| please make sure that |PSIfour|
+   and OptKing are up-to-date. If an option is still not available, use the ``optimizer_keywords``
+   argument to :py:func:`~psi4.driver.optimize`.
+
 |PSIfour| carries out molecular optimizations using a Python module called
 optking.  The optking program takes as input nuclear gradients and,
 optionally, nuclear second derivatives |w---w| both in Cartesian coordinates.
@@ -57,7 +66,7 @@ fragments, we have chosen not to employ their "extra-redundant" coordinates.
 The internal coordinates are generated automatically based on an assumed bond
 connectivity.  The connectivity is determined by testing if the interatomic
 distance is less than the sum of atomic radii times the value of
-|optking__covalent_connect|. If the user finds that some
+:py:attr:`~optking.v1.optparams.OptParams.covalent_connect`. If the user finds that some
 connectivity is lacking by default, then this value may be increased.
 
 .. warning:: The selection of a Z-matrix input, and in particular the inclusion
@@ -68,22 +77,43 @@ connectivity is lacking by default, then this value may be increased.
 
 Presently, by default, separate fragments are bonded by the
 nearest atoms, and the whole system is treated as if it were part of one
-molecule. However, with the option |optking__frag_mode|, fragments
+molecule. However, with the option :py:attr:`~optking.v1.optparams.OptParams.frag_mode`, fragments
 may instead be related by a minimal set of interfragment coordinates defined by
 reference points within each fragment.  The reference points can be atomic
 positions (current default) or linear combinations of atomic positions
 (automatic use of principal axes is under development).
-These `dimer coordinates` can be directly specified through |optking__interfrag_coords|)
+These `dimer coordinates` can be directly specified through :py:attr:`~optking.v1.optparams.OptParams.interfrag_coords`)
 See `here <DimerSection_>` for two examples of their use.
 
 Basic Keywords
 ^^^^^^^^^^^^^^
 
-.. include:: autodir_options_c/optking__opt_type.rst
-.. include:: autodir_options_c/optking__step_type.rst
-.. include:: autodir_options_c/optking__geom_maxiter.rst
-.. include:: autodir_options_c/optking__g_convergence.rst
-.. include:: autodir_options_c/optking__full_hess_every.rst
+.. For fields. show-alias False and swap-name-and-alias shows only alias in place of the name
+.. autopydantic_field:: optking.v1.optparams.OptParams.opt_type
+   :no-index:
+   :field-swap-name-and-alias:
+   :field-list-validators: False
+   :field-show-alias: False
+.. autopydantic_field:: optking.v1.optparams.OptParams.step_type
+   :no-index:
+   :field-swap-name-and-alias:
+   :field-list-validators: False
+   :field-show-alias: False
+.. autopydantic_field:: optking.v1.optparams.OptParams.geom_maxiter
+   :no-index:
+   :field-swap-name-and-alias:
+   :field-list-validators: False
+   :field-show-alias: False
+.. autopydantic_field:: optking.v1.optparams.OptParams.g_convergence
+   :no-index:
+   :field-swap-name-and-alias:
+   :field-list-validators: False
+   :field-show-alias: False
+.. autopydantic_field:: optking.v1.optparams.OptParams.full_hess_every
+   :no-index:
+   :field-swap-name-and-alias:
+   :field-list-validators: False
+   :field-show-alias: False
 
 .. index:: geometry optimization; minima
 .. _`sec:optkingExamples`:
@@ -154,13 +184,13 @@ internal coordinates.  Otherwise, several empirical Hessians are available,
 including those of Schlegel [Schlegel:1984:333]_ and Fischer and Almlof
 [Fischer:1992:9770]_.
 Either of these or a simple diagonal Hessian may be selected using the 
-|optking__intrafrag_hess| keyword.
+:py:attr:`~optking.v1.optparams.OptParams.intrafrag_hess` keyword.
 
 All the common Hessian update schemes are available.  For formulas, see
 Schlegel [Schlegel:1987:AIMQC]_ and Bofill [Bofill:1994:1]_.
 
 The Hessian may be computed during an optimization using the 
-|optking__full_hess_every| keyword.
+:py:attr:`~optking.v1.optparams.OptParams.full_hess_every` keyword.
 
 .. index:: 
    pair: geometry optimization; transition state
@@ -172,7 +202,7 @@ Transition States and Reaction Paths
 
 Optking currently has two transition state algorithms. The current default is the
 newer RS_I_RFO algorithm [Besalu:1998:265]_ . The old algorithm can be used by setting
-`STEP_TYPE P_RFO` for `OPT_TYPE TS`
+``STEP_TYPE P_RFO`` for ``OPT_TYPE TS``
 
 * Calculate a starting Hessian and optimize the "transition state" of
   linear water (note that without a reasonable starting geometry and
@@ -323,7 +353,7 @@ For bends, the corresponding keyword is "frozen_bend".
    for point in PES:
      print("\t%5.1f%20.10f" % (point[0], point[1]))
 
-* To scan the potential energy surface without the |optking__ranged_dihedral| keyword, a zmatrix
+* To scan the potential energy surface without the :py:attr:`~optking.v1.optparams.OptParams.ranged_dihedral` keyword, a zmatrix
   can be used.
 
 .. warning:: 
@@ -371,8 +401,8 @@ Multi-Fragment Optimizations
 .. _DimerSection:
 
 In previous versions of optking, the metric for connecting atoms was increased until all atoms
-were connected. This is the current behavior for |optking__frag_mode| `single`.
-Setting |optking__frag_mode| to `multi` will now add a special
+were connected. This is the current behavior for :py:attr:`~optking.v1.optparams.OptParams.frag_mode` ``single```.
+Setting :py:attr:`~optking.v1.optparams.OptParams.frag_mode` to ``multi`` will now add a special
 set of intermolecular coordinates between fragments - internally referred to as DimerFrag
 coordinates (see `here <DimerIntro_>` for the brief description). 
 For each pair of molecular fragments, a set of up to 3 reference points
@@ -382,15 +412,15 @@ fragments will be created using these reference points. See
 :ref:`Dimer coordinate table <table:DimerFrag>` for how reference points are created.
 For a set of three dimers A, B, and C, sets of coordinates are created between each pair:
 AB, AC, and BC. Each `DimerFrag` may use different reference points. 
-Creation of the intermolecular coordinates can be controlled through |optking__frag_ref_atoms| 
-and |optking__interfrag_coords|. |optking__frag_ref_atoms| specifies which atoms 
-(or linear combination of atoms) to use for the reference points and |optking__interfrag_coords|,
-which encompasses |optking__frag_ref_atoms|, allows for constraints and labels to be added to the
+Creation of the intermolecular coordinates can be controlled through :py:attr:`~optking.v1.optparams.OptParams.frag_ref_atoms` 
+and :py:attr:`~optking.v1.optparams.OptParams.interfrag_coords`. :py:attr:`~optking.v1.optparams.OptParams.frag_ref_atoms` specifies which atoms 
+(or linear combination of atoms) to use for the reference points and :py:attr:`~optking.v1.optparams.OptParams.interfrag_coords`,
+which encompasses :py:attr:`~optking.v1.optparams.OptParams.frag_ref_atoms`, allows for constraints and labels to be added to the
 intermolecular coordinates.
 
 .. note:: Manual specification of the interfragment coordinates is supported for power users,
     and provides complete control of fragments' relative orientations.
-    Setting |optking__interfrag_mode| to `multi` should suffice in almost all cases.
+    Setting :py:attr:`~optking.v1.optparams.OptParams.interfrag_mode` to `multi` should suffice in almost all cases.
     :ref:`Dimer coordinate table <table:DimerFrag>`. provides the name and ordering
     convention for the coordinates.
 
@@ -431,9 +461,9 @@ intermolecular coordinates.
 
 .. Warning:: The molecule input for psi4 has no effect upon optking, expect to provide Cartesian
     coordinates. Specifying independent fragments with the `--` seperator, will not trigger 
-    optking to add specific interfragment coordinates. Use |optking__frag_mode| `multi`.
+    optking to add specific interfragment coordinates. Use :py:attr:`~optking.v1.optparams.OptParams.frag_mode` ``multi``.
 
-* Specify the reference points to use for coordinates via |optking__frag_ref_atoms|.
+* Specify the reference points to use for coordinates via :py:attr:`~optking.v1.optparams.OptParams.frag_ref_atoms`.
   Each list corresponds to a fragment. A list of indices denotes a linear combination
   of the atoms. In this case, the first reference point for the second fragment is the center
   of the benzene ring. Indexing starts at 1, so the second fragment in this example starts at index 4.
@@ -486,7 +516,7 @@ intermolecular coordinates.
    
    optimize("mp2")
 
-For even greater control, a dictionary can be passed to |optking__interfrag_coords|
+For even greater control, a dictionary can be passed to :py:attr:`~optking.v1.optparams.OptParams.interfrag_coords`
 
 The coordinates that are created between two dimers depend upon the number of atoms present
 The fragments `A` and `B` have up to 3 reference atoms each as shown in
@@ -590,7 +620,7 @@ For difficult cases, the following suggestions are made.
   been chosen because they perform efficiently for common, representative test sets.
   More restrictive, cautious steps are sometimes necessary.
 
-* |optking__dynamic_level| allows optking to change the method of optimization
+* :py:attr:`~optking.v1.optparams.OptParams.dynamic_level` allows optking to change the method of optimization
   toward algorithms that, while often less efficient, may help to converge difficult
   cases.  If this is initially set to 1, then optking, as poor steps are detected,
   will increase the dynamic level through several forms of more robust and cautious algorithms.
@@ -598,7 +628,7 @@ For difficult cases, the following suggestions are made.
   searching), add cartesian coordinates, switch to cartesian coordinates, and take
   steepest-descent steps.
 
-* The developers have found the |optking__opt_coordinates| set to "BOTH" which
+* The developers have found the :py:attr:`~optking.v1.optparams.OptParams.opt_coordinates` set to "BOTH" which
   includes both the redundant internal coordinate set, as well as cartesian coordinates,
   works well for systems with long 'arms' or floppy portions of a molecule poorly
   described by local internals.
@@ -608,13 +638,13 @@ For difficult cases, the following suggestions are made.
   An internal error `AlgError` may be raised in such cases. Optking will avoid such
   coordinates when choosing an initial coordinate system; however, they may arise in the course
   of an optimization. In such cases, try restarting from the most recent geometry.
-  Alternatively, setting |optking__opt_coordinates| to cartesian will avoid any internal
+  Alternatively, setting :py:attr:`~optking.v1.optparams.OptParams.opt_coordinates` to cartesian will avoid any internal
   coordinate difficulties altogether. These coordinate changes can be automatically
-  performed by turning |optking__dynamic_level| to 1.
+  performed by turning :py:attr:`~optking.v1.optparams.OptParams.dynamic_level` to 1.
 
 .. warning:: In some cases, such as the coordinate issues described above, optking will reset to maintain
-  a consistent history. If an error occurs in Psi4 due to |optking__geom_maxiter| being exceeded but
-  the final step report indicates that optking has not taken |optking__geom_maxiter| steps, such a 
+  a consistent history. If an error occurs in Psi4 due to :py:attr:`~optking.v1.optparams.OptParams.geom_maxiter` being exceeded but
+  the final step report indicates that optking has not taken :py:attr:`~optking.v1.optparams.OptParams.geom_maxiter` steps, such a 
   reset has occured. Inspection will show that the step counter was reset to 1 somewhere in the
   optimization.
 
@@ -626,14 +656,14 @@ Convergence Criteria
 
 Optking monitors five quantities to evaluate the progress of a geometry 
 optimization. These are (with their keywords) the change in energy 
-(|optking__max_energy_g_convergence|), the maximum element of 
-the gradient (|optking__max_force_g_convergence|), the root-mean-square 
-of the gradient (|optking__rms_force_g_convergence|), the maximum element
-of displacement (|optking__max_disp_g_convergence|), and the 
-root-mean-square of displacement (|optking__rms_disp_g_convergence|), 
+(:py:attr:`max_energy_g_convergence <optking.v1.optparams.OptParams.conv_max_DE>`), the maximum element of 
+the gradient (:py:attr:`max_force_g_convergence <optking.v1.optparams.OptParams.conv_max_force>`), the root-mean-square 
+of the gradient (:py:attr:`rms_force_g_convergence <optking.v1.optparams.OptParams.conv_rms_force>`), the maximum element
+of displacement (:py:attr:`max_disp_g_convergence <optking.v1.optparams.OptParams.conv_max_disp>`), and the 
+root-mean-square of displacement (:py:attr:`rms_disp_g_convergence <optking.v1.optparams.OptParams.conv_rms_disp>`), 
 all in internal coordinates and atomic units. Usually, these options will not 
 be set directly. Primary control for geometry convergence lies with the keyword 
-|optking__g_convergence| which sets the aforementioned in accordance 
+:py:attr:`~optking.v1.optparams.OptParams.g_convergence` which sets the aforementioned in accordance 
 with Table :ref:`Geometry Convergence <table:optkingconv>`.
 
 |
@@ -644,7 +674,7 @@ with Table :ref:`Geometry Convergence <table:optkingconv>`.
 .. table:: Summary of sets of geometry optimization criteria available in |PSIfour|
 
     +-----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+
-    | |optking__g_convergence|    | Max Energy                 | Max Force                  | RMS Force                  | Max Disp                   | RMS Disp                   |
+    | ``g_convergence``           | Max Energy                 | Max Force                  | RMS Force                  | Max Disp                   | RMS Disp                   |
     +=============================+============================+============================+============================+============================+============================+
     | NWCHEM_LOOSE [#fd]_         |                            | :math:`4.5 \times 10^{-3}` | :math:`3.0 \times 10^{-3}` | :math:`5.4 \times 10^{-3}` | :math:`3.6 \times 10^{-3}` |
     +-----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+
@@ -683,10 +713,10 @@ with Table :ref:`Geometry Convergence <table:optkingconv>`.
          *max force* and/or *rms force* are small.
 
 For ultimate control, specifying a value for any of the five monitored options activates that
-criterium and overwrites/appends it to the criteria set by |optking__g_convergence|.
+criterium and overwrites/appends it to the criteria set by :py:attr:`~optking.v1.optparams.OptParams.g_convergence`.
 Note that this revokes the special convergence arrangements detailed in notes [#fe]_ and [#ff]_ 
 and instead requires all active criteria to be fulfilled to 
-achieve convergence. To avoid this revokation, turn on keyword |optking__flexible_g_convergence|.
+achieve convergence. To avoid this revokation, turn on keyword :py:attr:`~optking.v1.optparams.OptParams.flexible_g_convergence`.
 
 .. index::
    pair: geometry optimization; output
@@ -699,8 +729,8 @@ Psi4's native Optking optimizer. GeomeTRIC uses a translation-rotation-internal 
 system that works well for optimizing geometries of systems containing noncovalent interactions.
 
 Use of the GeomeTRIC optimizer is specified with the ``engine`` argument to
-:py:func:`~psi4.driver.optimize`. The optimization will respect the keywords |optking__g_convergence|
-and |optking__geom_maxiter|. Any other GeomeTRIC-specific options (including constraints)
+:py:func:`~psi4.driver.optimize`. The optimization will respect the keywords :py:attr:`~optking.v1.optparams.OptParams.g_convergence`
+and :py:attr:`~optking.v1.optparams.OptParams.geom_maxiter`. Any other GeomeTRIC-specific options (including constraints)
 may be specified with the ``optimizer_keywords`` argument to :py:func:`~psi4.driver.optimize`.
 Constraints may be placed on cartesian coordinates, bonds, angles, and dihedrals, and they can be
 used to either freeze a coordinate or set it to a specific value. See the `GeomeTRIC github
@@ -809,15 +839,26 @@ is active and fulfilled (``*``), active and unfulfilled ( ),  or inactive (``o``
        4     -38.92548668   -8.00e-05      2.30e-04 *    1.92e-04 o    1.99e-03      1.17e-03 o  ~
        5     -38.92548698   -2.98e-07 *    3.95e-05 *    3.35e-05 o    1.37e-04 *    1.05e-04 o  ~
 
-The full list of keywords for optking is provided in Appendix :ref:`apdx:optking`.
-
 Information on the Psithon function that drives geometry optimizations is provided
 at :py:func:`~psi4.driver.optimize`.
 
 Important User Changes from cpp-optking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* `FIXED_COORD` keywords have been generalized to `RANGED_COORD` e.g. |optking__ranged_distance|
+* `FIXED_COORD` keywords have been generalized to `RANGED_COORD` e.g. :py:attr:`~optking.v1.optparams.OptParams.ranged_distance`
 
 * Detailed optimization is now printed through the python logging system. If more information about
   the optimization is needed. Please see `\<output_name\>.log`
+
+Keywords
+^^^^^^^^
+
+.. autopydantic_model:: optking.v1.optparams.OptParams
+   :model-show-config-summary: False
+   :model-show-field-summary: False
+   :model-show-json: False
+   :model-show-validator-summary: False
+   :model-show-validator-members: False
+   :field-swap-name-and-alias: True
+   :field-show-alias: False
+   :field-list-validators: False

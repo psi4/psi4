@@ -40,7 +40,10 @@ molecule {
 }
 
 set optking {
-  ranged_distance = (" ")
+  # This doesn't work anymore. If it was truly an empty string it would pass validation but parser adds
+  # parentheses and it looks like the user has tried to set something
+  # ranged_distance = (" ")
+  ranged_distance = ""
   ranged_bend = ("
     1 2 3 105.000 105.0001
     2 3 4 105.000 105.0001
@@ -58,7 +61,7 @@ molecule {
 }
 
 set optking {
-  ranged_bend = (" ")
+  ranged_bend = ""
   ranged_dihedral = ("
     1 2 3 4 120.000 120.0001
   ")
