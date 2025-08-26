@@ -1343,7 +1343,7 @@ data:
       name: optking
       constraint: null
       cmake:
-        //CMAKE_INSIST_FIND_PACKAGE_optking: false
+        //CMAKE_INSIST_FIND_PACKAGE_optking: true
         //CMAKE_DISABLE_FIND_PACKAGE_optking: true
       cmake_note: "Primarily OTF runtime detected."
 
