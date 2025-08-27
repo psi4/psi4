@@ -2779,224 +2779,184 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /* Alphabetized so I can check for missing keywords more easily against sorted model */
 
-        /* */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.accept_symmetry_breaking` -*/
         options.add_bool("ACCEPT_SYMMETRY_BREAKING", false);
-        /* Do add bond coordinates at nearby atoms for non-bonded systems? */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.add_auxiliary_bonds` -*/
         options.add_bool("ADD_AUXILIARY_BONDS", true);
-        /* Skipping ALG_GEOM_MAXITER */
-        /* This factor times standard covalent distance is used to add extra stretch coordinates. */
+        // Undocumented. Inactive currently
+        options.add_double("ALG_GEOM_MAXITER", 50);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.auxiliary_bond_factor` -*/
         options.add_double("AUXILIARY_BOND_FACTOR", 2.5);
-        /* SKIPPING BT_X KEYWORDS */
-        /* Do read Cartesian Hessian?  Only for experts - use
-        :py:attr:`~optking.v1.optparams.OptParams.full_hess_every` instead. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.bt_dx_conv` -*/
+        options.add_double("BT_DX_CONV", 1e-7);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.bt_dx_rms_change_conv` -*/
+        options.add_double("BT_DX_RMS_CHANGE_CONV", 1e-12);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.bt_max_iter` -*/
+        options.add_double("BT_MAX_ITER", 25);
+        // Undocumented. Should be switching to this instead of linear_algebra_tol
+        options.add_double("BT_PINV_RCOND", 1e-6);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.full_hess_every` -*/
         options.add_bool("CART_HESS_READ", false);
-        /* */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.conjugate_gradient_type` -*/
         options.add_str("CONJUGATE_GRADIENT_TYPE", "");
-        /* Set number of consecutive backward steps allowed in optimization */
+        /*- :py:attr:`consecutive_backsteps <optking.v1.optparams.OptParams.consecutive_backsteps_allowed>` -*/
         options.add_int("CONSECUTIVE_BACKSTEPS", 0);
-        /* When determining connectivity, a bond is assigned if interatomic distance
-        is less than (this number) * sum of covalent radii. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.covalent_connect` -*/
         options.add_double("COVALENT_CONNECT", 1.3);
-        /* A string formatted as a dicitonary containing a set of coordinates. Coordinates can be
-            appended to Optking's coordinate set or used on their own - expected optking 0.5 */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.custom_coords`. Not currently supported.
+        Expected in an upcoming release. -*/
         options.add_str("CUSTOM_COORDS", "");
-        /* Starting level for dynamic optimization (0=nondynamic, higher=>more conservative) */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.dynamic_level` -*/
         options.add_int("DYNAMIC_LEVEL", 0);
-        /* */
+        /*- :py:attr:`dynamic_level_max <optking.v1.optparams.OptParams.dynamic_lvl_max>` -*/
         options.add_int("DYNAMIC_LEVEL_MAX", 6);
-        /* Reduce step size as necessary to ensure back-transformation of internal
-        coordinate step to cartesian coordinates. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ensure_bt_convergence` -*/
         options.add_bool("ENSURE_BT_CONVERGENCE", false);
-        /* Specify formula for external forces for the distance between atoms */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_bend` -*/
         options.add_str("EXT_FORCE_BEND", "");
-        /* Specify formula for external forces for dihedral angles between atoms */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_cartesian` -*/
         options.add_str("EXT_FORCE_CARTESIAN", "");
-        /* Tolerance for symmetrizing cartesian geometry between steps */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_dihedral` -*/
         options.add_str("EXT_FORCE_DIHEDRAL", "");
-        /* Specify formula for external forces for out-of-plane angles between atoms */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_distance` -*/
         options.add_str("EXT_FORCE_DISTANCE", "");
-        /* Specify formula for external forces for angles between atoms */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_oofp` -*/
         options.add_str("EXT_FORCE_OOFP", "");
-        /* Even if a user-defined threshold is set, allow for normal, flexible convergence criteria */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ensure_bt_convergence` -*/
         options.add_bool("FLEXIBLE_G_CONVERGENCE", false);
-        /* For multi-fragment molecules, treat as single bonded molecule
-        or via interfragment coordinates. A primary difference is that in ``MULTI`` mode,
-        the interfragment coordinates are not redundant. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frag_mode` -*/
         options.add_str("FRAG_MODE", "SINGLE");
-        /* Which atoms define the reference points for interfragment coordinates? */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frag_ref_atoms` -*/
         options.add("FRAG_REF_ATOMS", new ArrayType());
-        /* When interfragment coordinates are present, use as reference points either
-        principal axes or fixed linear combinations of atoms. */
-        /* Freeze ALL dihedral angles */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.freeze_all_dihedrals` -*/
         options.add_bool("FREEZE_ALL_DIHEDRALS", false);
-        /* Unfreeze a subset of dihedrals - meant for use with freeze_all_dihedrals */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.freeze_intrafrag` -*/
         options.add_bool("FREEZE_INTRAFRAG", false);
-        /* Do freeze all interfragment modes? */
-        options.add_bool("FREEZE_INTERFRAG", false);
-        /* Specify angles between atoms to be frozen (unchanged) */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_bend` -*/
         options.add_str("FROZEN_BEND", "");
-        /* Specify atom and X, XY, XYZ, ... to be frozen (unchanged) */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_cartesian` -*/
         options.add_str("FROZEN_CARTESIAN", "");
-        /* Specify dihedral angles between atoms to be frozen (unchanged) */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_dihedral` -*/
         options.add_str("FROZEN_DIHEDRAL", "");
-        /* Specify distances between atoms to be frozen (unchanged) */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_distance` -*/
         options.add_str("FROZEN_DISTANCE", "");
-        /* Specify out-of-plane angles between atoms to be frozen (unchanged) */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_oofp` -*/
         options.add_str("FROZEN_OOFP", "");
-        /* Frequency with which to compute the full Hessian in the course
-        of a geometry optimization. 0 means to compute the initial Hessian only, 1
-        means recompute every step, and N means recompute every N steps. The
-        default (-1) is to never compute the full Hessian. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.full_hess_every` -*/
         options.add_int("FULL_HESS_EVERY", -1);
-        /* Maximum number of geometry optimization steps */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.geom_maxiter` -*/
         options.add_int("GEOM_MAXITER", 50);
-        /* Set of optimization criteria. Specification of any MAX_*_G_CONVERGENCE
-        or RMS_*_G_CONVERGENCE options will append to overwrite the criteria set here
-        unless :py:attr:`~optking.v1.optparams.OptParams.flexible_g_convergence` is also on.
-        See Table :ref:`Geometry Convergence
-        <table:optkingconv>` for details. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.g_convergence` -*/
         options.add_str("G_CONVERGENCE", "QCHEM");
-        /* - Specify file for Cartesian Hessian (or JSON Schema-like file) to get Hessians from
-        Only for experts - use :py:attr:`~optking.v1.optparams.OptParams.full_hess_every` instead.
-        Requires :py:attr:`~optking.v1.optparams.OptParams.CART_HESS_READ `` - */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.hessian_file` -*/
         options.add_str_i("HESSIAN_FILE", "");
-        /* Hessian update scheme */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update` -*/
         options.add_str("HESS_UPDATE", "BFGS");
-        /* Skipping HESS_UPDATE_DEN_TOL */
-        /* Skipping HESS_UPDATE_DQ_TOL */
-        /* Do limit the magnitude of changes caused by the Hessian update? */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit` -*/
         options.add_bool("HESS_UPDATE_LIMIT", true);
-        /* If :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit` is true, changes to the Hessian
-        from the update are limited to the larger of
-        :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit_scale` * (the previous value) and
-        HESS_UPDATE_LIMIT_MAX [au]. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit_max` -*/
         options.add_double("HESS_UPDATE_LIMIT_MAX", 1.00);
-        /* If :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit` is true, changes to the Hessian
-        from the update are limited to the larger of HESS_UPDATE_LIMIT_SCALE
-        * (the previous value) and :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit_max` [au]. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit_scale` -*/
         options.add_double("HESS_UPDATE_LIMIT_SCALE", 0.50);
-        /* Number of previous steps to use in Hessian update, 0 uses all */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update_use_last` -*/
         options.add_int("HESS_UPDATE_USE_LAST", 4);
-        /* For now, this is a general maximum distance for the definition of H-bonds */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.h_bond_connect` -*/
         options.add_double("H_BOND_CONNECT", 4.3);
-        /* Re-estimate the Hessian at every step, i.e., ignore the currently stored Hessian. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.h_guess_every` -*/
         options.add_bool("H_GUESS_EVERY", false);
-        /* SKIPPING INCLUDE_OOFP */
-        /* Tolerance for whether to reject a set of generated reference atoms due to collinearity */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_collinear_tol` -*/
         options.add_double("INTERFRAG_COLLINEAR_TOL", 0.01);
-        // /* When connecting disparate fragments when frag_mode = SIMPLE, a "bond"
-        // is assigned if interatomic distance is less than (this number) * sum of covalent radii. The
-        // value is then increased until all the fragments are connected (directly or indirectly). */
-        // options.add_double("INTERFRAGMENT_CONNECT", 1.8);
-        /* Dictionary to define a dimer. Contains "Natoms per frag", "A Frag", "A Ref Atoms", "B Frag", and "B Ref Atoms" */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_coords` -*/
         options.add_str("INTERFRAG_COORDS", "");
-        /* Use 1/R for the interfragment stretching coordinate instead of R */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_dist_inv` -*/
         options.add_bool("INTERFRAG_DIST_INV", false);
-        /* Model Hessian to guess interfragment force constants */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_hess` -*/
         options.add_str("INTERFRAG_HESS", "DEFAULT");
-        /* When interfragment coordinates are present, use as reference points either
-        principal axes or fixed linear combinations of atoms. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_mode` -*/
         options.add_str("INTERFRAG_MODE", "FIXED");
-        /* Maximum step size in bohr or radian along an interfragment coordinate */
+        /*- :py:attr:`interfrag_step_limit <optking.v1.optparams.OptParams.interfrag_trust>` -*/
         options.add_double("INTERFRAG_STEP_LIMIT", 0.5);
-        /* */
+        /*- :py:attr:`interfrag_step_limit_max <optking.v1.optparams.OptParams.interfrag_trust_max>` -*/
         options.add_double("INTERFRAG_STEP_LIMIT_MAX", 1.0);
-        /* */
+        /*- :py:attr:`interfrag_step_limit_min <optking.v1.optparams.OptParams.interfrag_trust_min>` -*/
         options.add_double("INTERFRAG_STEP_LIMIT_MIN", 0.001);
-        /* Initial maximum step size in bohr or radian along an internal coordinate */
+        /*- :py:attr:`intrafrag_step_limit <optking.v1.optparams.OptParams.intrafrag_trust>` -*/
         options.add_double("INTRAFRAG_STEP_LIMIT", 0.5);
-        /* Lower bound for dynamic trust radius [au] */
+        /*- :py:attr:`intrafrag_step_limit_min <optking.v1.optparams.OptParams.intrafrag_trust_min>` -*/
         options.add_double("INTRAFRAG_STEP_LIMIT_MIN", 0.001);
-        /* Upper bound for dynamic trust radius [au] */
+        /*- :py:attr:`intrafrag_step_limit_max <optking.v1.optparams.OptParams.intrafrag_trust_min>` -*/
         options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
-        /* IRC_CONVERGENCE */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_convergence` -*/
         options.add_double("IRC_CONVERGENCE", -0.7);
-        /* IRC mapping direction */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_direction` -*/
         options.add_str("IRC_DIRECTION", "FORWARD");
-        /* */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_mode` -*/
         options.add_str("IRC_MODE", "NORMAL");
-        /* Maximum number of IRC points to collect before stopping. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_points` -*/
         options.add_int("IRC_POINTS", 20);
-        /* IRC step size in bohr(amu)\ $^{1/2}$. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_step_size` -*/
         options.add_double("IRC_STEP_SIZE", 0.2);
-        /*  */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.linear_algebra_tol` -*/
         options.add_double("LINEAR_ALGEBRA_TOL", 1e-10);
-        /* */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.linear_bend_threshold` -*/
         options.add_double("LINEAR_BEND_THRESHOLD", 3.05);
-        /* */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.linesearch` -*/
         options.add_bool("LINESEARCH", false);
-        /* */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.linesearch_step` -*/
         options.add_double("LINESEARCH_STEP", 0.2);
-        /* Convergence criterion for geometry optmization: maximum displacement
-        (internal coordinates, atomic units). */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.conv_max_disp` -*/
         options.add_double("MAX_DISP_G_CONVERGENCE", 1.2e-3);
-        /* Convergence criterion for geometry optmization: maximum energy change. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.conv_max_DE` -*/
         options.add_double("MAX_ENERGY_G_CONVERGENCE", 1.0e-6);
-        /* Convergence criterion for geometry optmization: maximum force
-        (internal coordinates, atomic units). */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.conv_max_force` -*/
         options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
-        /* Geometry optimization coordinates to use.
-            REDUNDANT and INTERNAL are synonyms and the default.
-            CARTESIAN uses only cartesian coordinates.
-            BOTH uses both redundant and cartesian coordinates.
-            CUSTOM is not fully implemented yet - expected optking 0.5 */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.opt_coordinates` -*/
         options.add_str("OPT_COORDINATES", "INTERNAL");
-        /* Specifies minimum search, transition-state search, or IRC following */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.opt_type` -*/
         options.add_str("OPT_TYPE", "MIN");
-        /* skipping PRINT - comes from elsewhere */
-        /* Print all optking parameters.
-        options.add_bool("PRINT_OPT_PARAMS", false);
-        /* Should an xyz trajectory file be kept (useful for visualization)? -- DEPRECATED */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.print_trajectory_xyz_file` -*/
         options.add_bool("PRINT_TRAJECTORY_XYZ_FILE", false);
-        /* skipping PROGRAM. using psi4 */
-        /* Specify range for angles between atoms to be constrained to (eq. value specified)
-            analogous to the previous FIXED_BEND */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_bend` -*/
         options.add_str("RANGED_BEND", "");
-        /* */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_cartesian` -*/
         options.add_str("RANGED_CARTESIAN", "");
-        /* Specify range for the dihedral angles between atoms to be constrained to (eq. value specified)
-            analogous to the previous FIXED_DIHEDRAL */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_dihedral` -*/
         options.add_str("RANGED_DIHEDRAL", "");
-        /* Specify range for distances between atoms to be constrained to (eq. value specified)
-        analogous to the previous FIXED_DISTANCE */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_distance` -*/
         options.add_str("RANGED_DISTANCE", "");
-        /* Specify range for the out-of-plane angles between atoms to be constrained to (eq. value specified)
-            analogous to the old FIXED_<COORD> keyword*/
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_oofp` -*/
         options.add_str("RANGED_OOFP", "");
-        /* Do follow the initial RFO vector after the first step? */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.rfo_follow_root` -*/
         options.add_bool("RFO_FOLLOW_ROOT", false);
-        /* Eigenvectors of RFO matrix whose final column is smaller than this are ignored. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.rfo_normalization_max` -*/
         options.add_double("RFO_NORMALIZATION_MAX", 100);
-        /* Root for RFO to follow, 0 being lowest (for a minimum) */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.rfo_root` -*/
         options.add_int("RFO_ROOT", 0);
-        /* Absolute maximum value of RS-RFO. */
-        /* Convergence criterion for geometry optmization: rms displacement
-        (internal coordinates, atomic units). */
+        /*- :py:attr:`rms_disp_g_convergence <optking.v1.optparams.OptParams.conv_rms_disp>` -*/
         options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
-        /* Convergence criterion for geometry optmization: rms force
-        (internal coordinates, atomic units). */
+        /*- :py:attr:`rms_force_g_convergence <optking.v1.optparams.OptParams.conv_rms_force>` -*/
         options.add_double("RMS_FORCE_G_CONVERGENCE", 3.0e-4);
-        /* Absolute maximum value of RS-RFO. */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.rsrfo_alpha_max` -*/
         options.add_double("RSRFO_ALPHA_MAX", 1e8);
-        /* */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.sd_hessian` -*/
         options.add_str("SD_HESSIAN", "");
-        /* Do stupid, linear scaling of internal coordinates to step limit (not RS-RFO) */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.simple_step_scaling` -*/
         options.add_bool("SIMPLE_STEP_SCALING", false);
-        /* skipping SMALL_BEND_FIX_THRESHOLD */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.steepest_descent_type` -*/
         options.add_str("STEEPEST_DESCENT_TYPE", "");
-        /* Geometry optimization step type, either Newton-Raphson or Rational Function Optimization */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.step_type` -*/
         options.add_str("STEP_TYPE", "RFO");
-        /* Do test B matrix? */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.test_B` -*/
         options.add_bool("TEST_B", false);
-        /* Do test derivative B matrix? */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.test_derivative_B` -*/
         options.add_bool("TEST_DERIVATIVE_B", false);
-        /* Unfreeze a subset of dihedrals - meant for use with freeze_all_dihedrals */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.unfreeze_dihedrals` -*/
         options.add_str("UNFREEZE_DIHEDRALS", "");
-        /* */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.v3d_tors_angle_lim` -*/
         options.add_double("V3D_TORS_ANGLE_LIM", 0.017);
-        /* */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.v3d_tors_cos_tol` -*/
         options.add_double("V3D_TORS_COS_TOL", 1e-10);
-        /* Write Optimization Trajectory */
+        /*- :py:attr:`~optking.v1.optparams.OptParams.write_trajectory` -*/
         options.add_bool("WRITE_TRAJECTORY", false);
 
         /* The following keywords are Psi4 specific and therfore included in autodoc */
