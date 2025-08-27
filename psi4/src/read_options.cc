@@ -2896,7 +2896,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("IRC_POINTS", 20);
         /*- :py:attr:`~optking.v1.optparams.OptParams.irc_step_size` -*/
         options.add_double("IRC_STEP_SIZE", 0.2);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.linear_algebra_tol` -*/
+        /*- Threshold to ignore small values when inverting matrices -*/
         options.add_double("LINEAR_ALGEBRA_TOL", 1e-10);
         /*- :py:attr:`~optking.v1.optparams.OptParams.linear_bend_threshold` -*/
         options.add_double("LINEAR_BEND_THRESHOLD", 3.05);
