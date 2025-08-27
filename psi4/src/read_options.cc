@@ -2803,8 +2803,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("CONSECUTIVE_BACKSTEPS", 0);
         /*- :py:attr:`~optking.v1.optparams.OptParams.covalent_connect` -*/
         options.add_double("COVALENT_CONNECT", 1.3);
-        /*- :py:attr:`~optking.v1.optparams.OptParams.custom_coords`. Not currently supported.
-        Expected in an upcoming release. -*/
+        /*- Expected in an upcoming release. -*/
         options.add_str("CUSTOM_COORDS", "");
         /*- :py:attr:`~optking.v1.optparams.OptParams.dynamic_level` -*/
         options.add_int("DYNAMIC_LEVEL", 0);
