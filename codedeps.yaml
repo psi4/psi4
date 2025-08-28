@@ -1008,7 +1008,7 @@ data:
         - msgpack-python
         - networkx
         - setuptools
-        - "pydantic>=1.10.17,<3"
+        - "pydantic>=1.10.17,<3!1.10.22"
       aux_run_names_note:
         "setuptools": "Needed for qcelemental cmake detection."
         "pydantic>=1.10.17,<3!1.10.22": "Allow uniform access to Pydantic v1 API. Issues with 22 and autodoc."
