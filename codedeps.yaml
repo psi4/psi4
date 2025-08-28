@@ -1008,10 +1008,10 @@ data:
         - msgpack-python
         - networkx
         - setuptools
-        - "pydantic>=1.10.17,<3"
+        - "pydantic>=1.10.17,!=1.10.22,<3"
       aux_run_names_note:
         "setuptools": "Needed for qcelemental cmake detection."
-        "pydantic>=1.10.17,<3": "Allow uniform access to Pydantic v1 API."
+        "pydantic>=1.10.17,!=1.10.22,<3": "Allow uniform access to Pydantic v1 API. Issues with 22 and autodoc."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
@@ -1334,10 +1334,10 @@ data:
       host: github
       account: psi-rking
       name: optking
-      commit: 0.3.0
+      commit: 0.4.2
     cmake:
       name: optking
-      constraint: ATLEAST 0.3.0
+      constraint: ATLEAST 0.4.2
     conda:
       channel: conda-forge
       name: optking
