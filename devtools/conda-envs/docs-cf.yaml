@@ -32,6 +32,7 @@ dependencies:
   - pytest
   - pytest-xdist              # req'd with pytest; Parallel runner not strictly needed but very handy.
     # docs
+  - pydantic>=1.10.17<3!1.10.22
   - autodoc-pydantic=1        # req'd with sphinx
   - doxygen
   - ipykernel                 # req'd with nbsphinx
