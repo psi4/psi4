@@ -1011,7 +1011,7 @@ data:
         - "pydantic>=1.10.17,<3"
       aux_run_names_note:
         "setuptools": "Needed for qcelemental cmake detection."
-        "pydantic>=1.10.17,<3": "Allow uniform access to Pydantic v1 API."
+        "pydantic>=1.10.17,<3!1.10.22": "Allow uniform access to Pydantic v1 API. Issues with 22 and autodoc."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
