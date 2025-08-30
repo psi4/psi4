@@ -75,5 +75,34 @@ void hbar_extra() {
     global_dpd_->buf4_close(&W1);
 }
 
+
+void lambda_2(){
+
+    dpdfile2 L1, GAE, GMI;
+    dpdbuf4  L2, WL;
+
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
+    global_dpd_->file2_scm(&L1, 2);
+    global_dpd_->file2_close(&L1);
+      
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
+    global_dpd_->buf4_scm(&L2, 2); 
+    global_dpd_->buf4_close(&L2);
+
+    global_dpd_->buf4_init(&WL, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "WefabL2");
+    global_dpd_->buf4_scm(&WL, 2); //I multiplied by 2
+    global_dpd_->buf4_close(&WL);
+
+    global_dpd_->file2_init(&GAE, PSIF_CC_LAMBDA, 0, 1, 1, "GAE");
+    global_dpd_->file2_scm(&GAE, 2); //I multiplied by 2
+    global_dpd_->file2_close(&GAE);
+
+    global_dpd_->file2_init(&GMI, PSIF_CC_LAMBDA, 0, 0, 0, "GMI");
+    global_dpd_->file2_scm(&GMI, 2); //I multiplied by 2
+    global_dpd_->file2_close(&GMI);
+
+
+}
+
 }  // namespace ccresponse
 }  // namespace psi
