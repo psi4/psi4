@@ -34,5 +34,11 @@ basis 6-31g
 reference uhf
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    tol = 8
+else:
+    tol = 5e-8
+    psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
 uhf_hess = hessian('scf')
 

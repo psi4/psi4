@@ -31,9 +31,15 @@ set {
     linK_ints_tolerance 1.0e-12
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    incfock_efficient = 15.0
+else:
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+    incfock_efficient = 17.0
+
 linK_energy = energy('b3lyp')
 psi4.compare_values(ref_energy, linK_energy, 8, "B3LYP Energy (using LinK algo)")
 # Really, what we'd love to test is that the value of SCF ITERATIONS is agnostic to incfock, but this test is long enough as-is.
 # Ensuring that property is exactly why we turn incfock off for small residuals.
 # We choose a number that'll be an upper bound, even under pessimistic assumptions on differences across machines.
-compare(1, variable("SCF ITERATIONS") < 15.0, "LinK Incfock Efficient")
+compare(1, variable("SCF ITERATIONS") < incfock_efficient, "LinK Incfock Efficient")

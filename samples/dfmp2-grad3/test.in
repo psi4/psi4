@@ -25,6 +25,9 @@ set {
   freeze_core true
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 grad = gradient('mp2')
 
 compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST

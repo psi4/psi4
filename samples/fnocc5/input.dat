@@ -20,6 +20,10 @@ set {
   cc_type               cd
   df_ints_io          save
 }
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 en,wfn = energy('scf',return_wfn=True)
 energy('ccsd(t)',ref_wfn=wfn)
 edfccsd  = variable("CCSD CORRELATION ENERGY")

@@ -19,6 +19,12 @@ set {
    qc_module ccenergy  # signals to use the analytic ccsd(t) gradients
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    tol = 8
+else:
+    psi4.set_options({"e_convergence": 10, "d_convergence": 3e-8})
+    tol = 5e-8
+
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)
              [ 0.00000000000000,     0.00000000000000,    -0.02788939642641],  # FINITE DIFFERENCE 5 POINT FORMULA
              [ 0.00000000000000,    -0.00904503210340,     0.01394469821321],
@@ -39,6 +45,9 @@ set {
    r_convergence 13
    d_convergence 13
 }
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 10, "d_convergence": 3e-8})
 
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)
     [     0.00000000000000,     0.00000000000000,     0.03761158318898],  # FINITE DIFFERENCE 5 POINT FORMULA

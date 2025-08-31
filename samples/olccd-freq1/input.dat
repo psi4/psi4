@@ -14,6 +14,9 @@ set {
   mo_maxiter 200
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 
 
 cepa_e, cepa_wfn = frequencies('olccd', dertype=0, return_wfn=True)
