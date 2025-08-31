@@ -523,6 +523,16 @@
         },
         {
             "@type": "Person",
+            "givenName": "Tibor",
+            "familyName": "Győri",
+            "affiliation": "Department of Physical Chemistry and Materials Science, University of Szeged",
+            "latitude": 46.24686908961076,
+            "longitude": 20.148394438118277,
+            "@id": "https://orcid.org/0000-0002-4078-7624",
+            "identifier": "https://github.com/TiborGY"
+        },
+        {
+            "@type": "Person",
             "givenName": "Erica",
             "additionalName": "C.",
             "familyName": "Mitchell",
@@ -531,6 +541,28 @@
             "longitude": -83.37482,
             "@id": "https://orcid.org/0000-0001-5649-5776",
             "identifier": "https://github.com/EricaCMitchell"
+        },
+        {
+            "@type": "Person",
+            "givenName": "John",
+            "additionalName": "P.",
+            "familyName": "Pederson",
+            "affiliation": "School of Chemistry and Biochemistry, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
+            "@id": "https://orcid.org/0000-0001-6718-3823",
+            "identifier": "https://github.com/johnppederson"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Austin",
+            "additionalName": "M.",
+            "familyName": "Wallace",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780025,
+            "longitude": -84.396543,
+            "@id": "https://orcid.org/0000-0002-0659-6912",
+            "identifier": "https://github.com/awallace3"
         }
     ],
     "developmentStatus": "active",
