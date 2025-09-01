@@ -55,7 +55,7 @@ __citation_doi = "10.1063/5.0006002"
 __citation_doilink = "https://doi.org/" + __citation_doi
 __citation_title = "Psi4 1.4: Open-Source Software for High-Throughput Quantum Chemistry"
 __citation_authors = "D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish, M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio, A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer, R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni, J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein, B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov, K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King, F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill"
-__extra_authors = "E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger, J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang, P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide, M. F. Herbst, and D. L. Poole"
+__extra_authors = "E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger, J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang, P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide, M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson, and A. M. Wallace"
 
 
 def citation_formatter(formatstring='oneline'):
@@ -117,7 +117,8 @@ def print_header():
     E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
     J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
     P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
-    M. F. Herbst, D. L. Poole, and Erica C. Mitchell
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
 
              Previous Authors, Complete List of Code Contributors,
                        and Citations for Specific Modules

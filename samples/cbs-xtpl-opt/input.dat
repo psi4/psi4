@@ -22,6 +22,9 @@ optimize('SCF/cc-pV[DT]Z')
 
 optimize('SCF/cc-pV[DTQ]Z')
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 8e-9})
+
 optimize('MP2/cc-pVDZ')
 
 optimize('MP2/cc-pV[DT]Z')

@@ -15,3 +15,13 @@ energy('scf')
 
 set guess read
 energy('scf')
+niter = int(variable('SCF ITERATIONS'))
+
+
+set reference uhf
+set guess sad
+energy('scf')
+
+set guess read
+energy('scf')
+niter = int(variable('SCF ITERATIONS'))

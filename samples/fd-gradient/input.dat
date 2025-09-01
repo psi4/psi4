@@ -13,11 +13,15 @@ set findif { print 2 }
 # In C1, test gradients by 3-point formula ; default is disp_size = .005
 anal_grad = gradient('scf')
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 set findif { points 3 }
 fd_grad = gradient('scf', dertype=0)
 
 
 # Test gradient by 5-point formula
+
 set findif { points 5 }
 fd_grad = gradient('scf', dertype=0)
 

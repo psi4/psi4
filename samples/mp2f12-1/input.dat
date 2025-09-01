@@ -1,0 +1,28 @@
+#! comparison of MP2-F12 with MPQC4
+#! Note: MPQC4 does not use robust DF for DF-MP2-F12
+#! MP2 convergence requires that e_conv and d_conv are 1e-10
+
+
+molecule h2o {
+O    0.000000000    0.000000000    0.221664874
+H    0.000000000    1.430900622   -0.886659498
+H    0.000000000   -1.430900622   -0.886659498
+
+units bohr
+symmetry c1
+}
+
+set {
+  basis          cc-pvdz-f12
+  freeze_core    True
+  mp2_type       conv
+  e_convergence  1e-10
+  d_convergence  1e-10
+}
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
+print('   Testing MP2-F12/3C(FIX) ...')
+val, wfn = energy('mp2-f12', return_wfn=True)
+

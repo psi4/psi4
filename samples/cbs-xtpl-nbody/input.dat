@@ -40,6 +40,8 @@ def unaug_focal(**kwargs):
 
 register_composite_function(unaug_focal)
 
+if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
 E_func         = energy('unaug_focal', bsse_type="nocp")
 E_method_basis = energy("MP2/cc-pv[dt]z + D:CCSD(T)/cc-pvdz", bsse_type="nocp")

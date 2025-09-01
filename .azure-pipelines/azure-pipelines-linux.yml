@@ -11,7 +11,7 @@ jobs:
     matrix:
       gcc_11:
         CXX_COMPILER: 'g++-11'
-        PYTHON_VER: '3.9'
+        PYTHON_VER: '3.10'
         C_COMPILER: 'gcc-11'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'

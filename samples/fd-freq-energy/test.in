@@ -25,6 +25,9 @@ set {
   scf_type pk
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 # Test against analytic second derivatives
 anal_freqs = np.array([2170.0460, 4140.0021, 4391.0669]) #TEST
 a1_freqs, b2_freqs = np.split(anal_freqs, [2])             #TEST

@@ -13,6 +13,12 @@ set {
   roots_per_irrep [0, 0, 0, 1]
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    findif5_tol = 7
+else:
+    findif5_tol = 5e-6
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 analytic_grad = gradient('eom-ccsd')
 findif_grad = gradient('eom-ccsd', dertype=0)
 
@@ -22,4 +28,4 @@ set findif points 5
 
 findif_grad = gradient('eom-ccsd', dertype=0)
 
-compare_matrices(analytic_grad, findif_grad, 7, "RHF-EOM-CCSD finite-diff. (5-pt.) vs. analytic gradient to 10^-7") #TEST
+compare_matrices(analytic_grad, findif_grad, findif5_tol, "RHF-EOM-CCSD finite-diff. (5-pt.) vs. analytic gradient to 10^-7") #TEST

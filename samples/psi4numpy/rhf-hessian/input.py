@@ -41,6 +41,9 @@ options = {'BASIS':'STO-3G', 'SCF_TYPE':'PK',
            }
 
 psi4.set_options(options)
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    print("Falling back to internal orbopt")
+    psi4.set_options({"orbital_optimizer_package": "internal"})
 
 rhf_e, wfn = psi4.energy('SCF', return_wfn=True)
 

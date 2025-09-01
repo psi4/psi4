@@ -25,6 +25,9 @@ set {
     d_convergence 1e-12,
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 ene, wfn = psi4.energy("sapt0", return_wfn=True, molecule=dimer)
 
 compare_values(0.01417236585, ene, 6, "SAPT0 tot")

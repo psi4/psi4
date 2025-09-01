@@ -111,6 +111,9 @@ set reference uhf
 set s_orthogonalization partialcholesky
 set d_convergence  10
     
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 set s_cholesky_tolerance 1e-4
 set print 3
 e_chol_4 = energy('HF')

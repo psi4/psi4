@@ -20,6 +20,9 @@ set dft_radial_points 99
 set dft_spherical_points 590
 set basis cc-pVDZ
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 ene = energy('r2scan-d4')
 compare_values(r2scand4_biggrid_e, ene, 6, "r2scan-d4 ene")  #TEST
 
