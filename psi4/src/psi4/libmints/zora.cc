@@ -191,11 +191,10 @@ void ZORA::compute_veff()
 				veff_block->add(p, outer);
 			}
 
-			veff_->insert({index, veff_block});
-// #pragma omp critical
-// 			{
-// 				veff_->insert({index, veff_block});
-// 			}
+#pragma omp critical
+			{
+				veff_->insert({index, veff_block});
+			}
 		}
 	}
 }
@@ -220,16 +219,19 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
 
 		auto veff_block = veff_->at(block->index());
 
-		int thread = omp_get_thread_num();
+		int thread = 0;
+#ifdef _OPENMP
+		thread = omp_get_thread_num();
+#endif
+
 		pworkers[thread]->compute_functions(block);
 		auto phi_x = pworkers[thread]->basis_value("PHI_X");
 		auto phi_y = pworkers[thread]->basis_value("PHI_Y");
 		auto phi_z = pworkers[thread]->basis_value("PHI_Z");
 
-
 		// Preprocess kernel c²/(2c²-veff) * weight
 		double* w = block->w();
-		double kernel[npoints];
+		double* kernel = new double[npoints];
 		for (int p = 0; p < npoints; p++) {
 			kernel[p] = C *C /(2.*C *C - veff_block->get(p)) * w[p];
 		}
@@ -250,6 +252,9 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
 				}
 			}
 		}
+
+		delete[] kernel;
+		kernel = nullptr;
 
 		// Lock the T_SR matrix before adding
 #pragma omp critical
