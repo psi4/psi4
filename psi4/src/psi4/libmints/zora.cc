@@ -45,7 +45,6 @@
 #include "psi4/libpsi4util/process.h"
 
 #include <map>
-// #include <unordered_map>
 #include <string>
 #include <cmath>
 
@@ -168,7 +167,7 @@ void ZORA::compute_veff()
 		const double* alpha_a = &alphas[c_aIndex[Z-1]];
 		int nc_a = c_aIndex[Z] - c_aIndex[Z-1];
 
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+#pragma omp parallel for schedule(static) num_threads(nthreads)
 		for (const auto &block : grid_->blocks()) {
 			int npoints = block->npoints();
 			int index = block->index();
@@ -211,7 +210,7 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
     nthreads = Process::environment.get_n_threads();
 #endif
 
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+#pragma omp parallel for schedule(static) num_threads(nthreads)
 	for (const auto &block : grid_->blocks()) {
 		const auto &bf_map = block->functions_local_to_global();
 		auto local_nbf = bf_map.size();
@@ -231,7 +230,7 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
 
 		// Preprocess kernel c²/(2c²-veff) * weight
 		double* w = block->w();
-		double* kernel = new double[npoints];
+		std::vector<double> kernel(npoints);
 		for (int p = 0; p < npoints; p++) {
 			kernel[p] = C *C /(2.*C *C - veff_block->get(p)) * w[p];
 		}
@@ -252,9 +251,6 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
 				}
 			}
 		}
-
-		delete[] kernel;
-		kernel = nullptr;
 
 		// Lock the T_SR matrix before adding
 #pragma omp critical
