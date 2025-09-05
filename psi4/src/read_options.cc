@@ -242,17 +242,24 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Order of Douglas-Kroll-Hess !expert -*/
     options.add_int("DKH_ORDER", 2);
 
-	/*- Number of radial points for the ZORA effective potential grid -*/
+    /*- Number of radial points for the ZORA effective potential grid. The ZORA calculation is 
+     * relatively fast, and only happens once, so don't cheap out on the radial points! -*/
     options.add_int("ZORA_RADIAL_POINTS", 140);
 
 	/*- Number of spherical points for the ZORA effective potential grid -*/
     options.add_int("ZORA_SPHERICAL_POINTS", 2030);
 
-	/*- Pruning scheme for the ZORA effective potential grid -*/
-    options.add_str("ZORA_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE");
+    /*- Pruning scheme for the ZORA effective potential grid. ``P_slater`` is the best option if
+    *  you must prune, but ``none`` is recommended. ``Robust`` and ``Treutler`` are not recommended
+    *  for the ZORA grid as they cut too many points near the nuclear cusp. !expert -*/
+    options.add_str("ZORA_PRUNING_SCHEME", "NONE", "NONE P_SLATER ROBUST LOG_SLATER TREUTLER");
 	
-	/*- Basis tolerance for the ZORA effective potential grid -*/
+	/*- Basis tolerance for the ZORA effective potential grid !expert -*/
     options.add_double("ZORA_BASIS_TOLERANCE", 1e-12);
+
+    /*- Compute the non-relativistic kinetic energy with the ZORA code.
+     *  Useful when comparing analytic and grid-based methods. !expert -*/
+    options.add_bool("ZORA_NR_DEBUG", false);
 
     /*- Directory to which to write cube files. Default is the input file
     directory. -*/

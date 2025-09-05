@@ -30,9 +30,7 @@
 #define _psi_src_lib_libmints_zora_h_
 
 #include "psi4/libmints/typedefs.h"
-#include <unordered_map>
-
-#define ZORADEBUG 1
+#include <map>
 
 namespace psi {
 
@@ -43,7 +41,23 @@ class BasisFunctions;
 
 /*! \ingroup MINTS
  *  \class ZORA
- *  \brief Scalar relativistic kinetic integral through zeroth-order regular approximation (ZORA)
+ *  \brief Scalar relativistic kinetic integral through zeroth-order regular approximation (ZORA).
+ *
+ *  \details Here we use the model potential proposed by van Wüllen in 
+ *  *Molecular density functional calculations in the regular relativistic approximation*
+ *  (https://doi.org/10.1063/1.476576/). The exact values of the model potential come from
+ *  NWCHEM (https://www.nwchem-sw.org/). Given atomic orbital :math:`\chi`, we evaluate the
+ *  following integral on a grid:
+ *
+ *  :math:`T^\text{SR}_{ij}=\int d\mathbf{r}^3 \frac{c^2}{2c^2-v_\text{eff} (\mathbf{r})}
+ *  \nabla\chi_i^\dagger(\mathbf{r}) \cdot\nabla\chi_j(\mathbf{r})`
+ *
+ *  The effective potential :math:`v_\text{eff}(\mathbf{r})` is the potential experienced
+ *  at a point due to nuclear attraction and electron repulsion. The generated matrix
+ *  replaces the kinetic energy for SCF etc. Because this is only evaluated once, don't
+ *  cheap out on the grid! The ZORA time is usually negligible.
+ *
+ *  \author Nathan Gillispie, University of Memphis, 2025
  */
 class PSI_API ZORA {
    public:
@@ -51,7 +65,7 @@ class PSI_API ZORA {
 	~ZORA();
 
     /*! @{
-     * Computes the ZORA kinetic integral.
+     * Fills an empty SharedMatrix with the computed ZORA kinetic integral.
      * @param T Shared matrix object that will hold the ZORA kinetic integrals.
      */
     void compute(SharedMatrix);
@@ -60,18 +74,22 @@ class PSI_API ZORA {
    private:
     std::shared_ptr<Molecule> molecule_;
     std::shared_ptr<BasisSet> primary_;
-	Options& options_;
 	std::shared_ptr<DFTGrid> grid_;
-	/// Effective potential indexed by the block index
-	std::shared_ptr<std::unordered_map<int, SharedVector>> veff_;
+	Options& options_;
+    /*! Purpose of the map: the ``block->index()`` does not index like ``grid_->blocks()``.
+     *  For multithreading to work, this is a solution.
+     */
+    std::shared_ptr<std::map<int, SharedVector>> veff_;
 
 	void setup();
-    /// Effective potential
 	void compute_veff();
-    /// Compute the T integral
+	void compute_debug_veff();
 	void compute_TSR(std::vector<std::shared_ptr<BasisFunctions>>, SharedMatrix&);
 
-	/// Model basis
+    /*! I'm so sorry.
+     *  These are the contraction coefficients and exponents of the model basis. The
+     *  last array indexes the atoms by atomic number.
+     */
 	static constexpr double coeffs[2919] = {0.0063990067,0.0745660339,0.3008381442,0.4565180734,0.1616787418,
 0.0016101508,0.0213576449,0.1264356558,0.4071300039,0.7131028835,0.5945686398,0.1357950212,
 0.0020540716,0.0273399604,0.1614536361,0.5044307717,0.7988661637,0.4659750757,-0.0763562345,0.1347347496,0.6984222586,0.2830795469,
@@ -288,4 +306,4 @@ class PSI_API ZORA {
 
 }  // namespace psi
 
-#endif  // _psi_src_lib_libmints_x2cint_h_
+#endif
