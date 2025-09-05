@@ -41,10 +41,9 @@
 
 #ifdef _OPENMP
 #include <omp.h>
-#endif
 #include "psi4/libpsi4util/process.h"
+#endif
 
-#include <map>
 #include <string>
 #include <cmath>
 
@@ -56,20 +55,12 @@ ZORA::ZORA(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, 
 ZORA::~ZORA() {}
 
 void ZORA::setup() {
-    outfile->Printf("\n");
-    outfile->Printf("          ███████╗ ██████╗ ██████╗  █████╗\n");
-    outfile->Printf("          ╚══███╔╝██╔═══██╗██╔══██╗██╔══██╗\n");
-    outfile->Printf("            ███╔╝ ██║   ██║██████╔╝███████║\n");
-    outfile->Printf("           ███╔╝  ██║   ██║██╔══██╗██╔══██║\n");
-    outfile->Printf("          ███████╗╚██████╔╝██║  ██║██║  ██║\n");
-    outfile->Printf("          ╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝\n");
-    outfile->Printf("                 by Nathan Gillispie\n");
-    outfile->Printf("         ===================================\n");
-
-	
-    // Print options
-    outfile->Printf("\n  ==> ZORA Options <==\n");
-    outfile->Printf("\n    Basis: %s", primary_->name().c_str());
+    outfile->Printf("\n        ____  ____  ___  ___\n");
+    outfile->Printf("       /_  / / __ \\/ _ \\/ _ |\n");
+    outfile->Printf("        / /_/ /_/ / , _/ __ |\n");
+    outfile->Printf("       /___/\\____/_/|_/_/ |_|\n");
+    outfile->Printf("        by Nathan Gillispie\n");
+    outfile->Printf("      ========================\n");
 
 	timer_on("Make Grid");
 
@@ -104,9 +95,9 @@ void ZORA::setup() {
 	auto npoints = grid_->npoints();
 	auto nblocks = grid_->blocks().size();
 
-	outfile->Printf("\n  ==> ZORA Grid Details <==\n");
-	outfile->Printf("    Total number of grid points: %d \n", npoints);
-	outfile->Printf("    Total number of batches: %d \n", nblocks);
+	outfile->Printf("\n  ==> ZORA Details <==\n");
+	outfile->Printf("    Total number of grid points: %d\n", npoints);
+	outfile->Printf("    Total number of batches: %d\n", nblocks);
 }
 
 void ZORA::compute(SharedMatrix T_SR) {
@@ -122,6 +113,7 @@ void ZORA::compute(SharedMatrix T_SR) {
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
 #endif
+    outfile->Printf("    Using %d thread(s)\n\n", nthreads);
 
 	// Basis function computer on each thread
 	std::vector<std::shared_ptr<BasisFunctions>> pworkers;
@@ -132,8 +124,12 @@ void ZORA::compute(SharedMatrix T_SR) {
 	}
 
 	timer_on("Effective Potential");
-	veff_ = std::make_shared<std::unordered_map<int, SharedVector>>();
-	compute_veff();
+    veff_ = std::make_shared<std::map<int, SharedVector>>();
+    if (options_.get_bool("ZORA_NR_DEBUG")) {
+        compute_debug_veff();
+    } else {
+        compute_veff();
+    }
 	timer_off("Effective Potential");
 
 	timer_on("Scalar Relativistic Kinetic");
@@ -141,10 +137,16 @@ void ZORA::compute(SharedMatrix T_SR) {
 	timer_off("Scalar Relativistic Kinetic");
 
 	timer_off("ZORA");
+}
 
-#if ZORADEBUG
-	T_SR->print();
-#endif
+void ZORA::compute_debug_veff() {
+    for (const auto &block : grid_->blocks()) {
+        int index = block->index();
+        int npoints = block->npoints();
+        auto veff_block = std::make_shared<Vector>(npoints);
+        veff_block->zero();
+        veff_->insert({index, veff_block});
+    }
 }
 
 void ZORA::compute_veff()
@@ -158,50 +160,49 @@ void ZORA::compute_veff()
 #endif
 
 	int natoms = molecule_->natom();
-	for (int a = 0; a < natoms; a++) {
-		int Z = molecule_->Z(a);
-		if (Z > 104) throw PSIEXCEPTION("Z too big. Max value 104");
-		auto pos_a = molecule_->xyz(a);
+#pragma omp parallel for num_threads(nthreads)
+    for (const auto &block : grid_->blocks()) {
+        int npoints = block->npoints();
+        int index = block->index();
 
-		const double* coef_a  = &coeffs[c_aIndex[Z-1]];
-		const double* alpha_a = &alphas[c_aIndex[Z-1]];
-		int nc_a = c_aIndex[Z] - c_aIndex[Z-1];
+        double* x = block->x();
+        double* y = block->y();
+        double* z = block->z();
 
-#pragma omp parallel for schedule(static) num_threads(nthreads)
-		for (const auto &block : grid_->blocks()) {
-			int npoints = block->npoints();
-			int index = block->index();
+        auto veff_block = std::make_shared<Vector>(npoints);
 
-			double* x = block->x();
-			double* y = block->y();
-			double* z = block->z();
+        for (int a = 0; a < natoms; a++) {
+            int Z = molecule_->Z(a);
+            if (Z > 104) throw PSIEXCEPTION("Z too big. Max value 104");
+            auto pos_a = molecule_->xyz(a);
 
-			auto veff_block = std::make_shared<Vector>(npoints);
+            const double* coef_a  = &coeffs[c_aIndex[Z-1]];
+            const double* alpha_a = &alphas[c_aIndex[Z-1]];
+            int nc_a = c_aIndex[Z] - c_aIndex[Z-1];
 
-			//einsums("i,ip->p", 𝕔[i], erf(α[i]⊗ r[p]))/r[p]
-			for (int p = 0; p < npoints; p++) {
-				double dist = std::hypot(pos_a[0]-x[p], pos_a[1]-y[p], pos_a[2]-z[p]);
-				double outer = 0;
-				for (int i = 0; i < nc_a; i++) {
-					outer += std::erf(dist * alpha_a[i]) * coef_a[i];
-				}
-				outer /= dist;
-				outer -= Z/dist;
-				veff_block->add(p, outer);
-			}
+            //einsums("i,ip->p", 𝕔[i], erf(α[i]⊗ r[p]))/r[p]
+            for (int p = 0; p < npoints; p++) {
+                double dist = std::hypot(pos_a[0]-x[p], pos_a[1]-y[p], pos_a[2]-z[p]);
+                double outer = 0;
+                for (int i = 0; i < nc_a; i++) {
+                    outer += std::erf(dist * alpha_a[i]) * coef_a[i];
+                }
+                outer /= dist;
+                outer -= Z/dist;
+                veff_block->add(p, outer);
+            }
+        }
 
 #pragma omp critical
-			{
-				veff_->insert({index, veff_block});
-			}
-		}
-	}
+        {
+            veff_->insert({index, veff_block});
+        }
+    }
 }
 
 
 //Scalar Relativistic Kinetic Energy Matrix
-void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, SharedMatrix &T_SR)
-{
+void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, SharedMatrix &T_SR) {
 	// Speed of light in atomic units
 	double C = pc_c_au;
 
@@ -210,7 +211,7 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
     nthreads = Process::environment.get_n_threads();
 #endif
 
-#pragma omp parallel for schedule(static) num_threads(nthreads)
+#pragma omp parallel for num_threads(nthreads)
 	for (const auto &block : grid_->blocks()) {
 		const auto &bf_map = block->functions_local_to_global();
 		auto local_nbf = bf_map.size();
@@ -230,7 +231,7 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
 
 		// Preprocess kernel c²/(2c²-veff) * weight
 		double* w = block->w();
-		std::vector<double> kernel(npoints);
+        std::vector<double> kernel(npoints);
 		for (int p = 0; p < npoints; p++) {
 			kernel[p] = C *C /(2.*C *C - veff_block->get(p)) * w[p];
 		}
@@ -238,16 +239,19 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
 		auto tmp = std::make_shared<Matrix>(T_SR->ncol(), T_SR->nrow());
 
 		// Compute kinetic integral using kernel above
+        // T_SR --> non-relativistic T when veff --> 0.
 		// bf_map is needed because the basis funcions differ from that of a given block
 		for (int l_mu = 0; l_mu < local_nbf; l_mu++) {
 			int mu = bf_map[l_mu];
 			for (int l_nu = l_mu; l_nu < local_nbf; l_nu++) {
 				int nu = bf_map[l_nu];
 				for (int p = 0; p < npoints; p++) {
-					tmp->add(mu,nu, kernel[p] * (
+                    // ∇²φ(r)*kernel
+					tmp->add(mu,nu, kernel[p]*(
 						phi_x->get(p,l_mu)*phi_x->get(p,l_nu) +
 						phi_y->get(p,l_mu)*phi_y->get(p,l_nu) +
-						phi_z->get(p,l_mu)*phi_z->get(p,l_nu) ));
+						phi_z->get(p,l_mu)*phi_z->get(p,l_nu)
+                    ));
 				}
 			}
 		}
