@@ -160,7 +160,7 @@ void ZORA::compute_veff()
 #endif
 
 	int natoms = molecule_->natom();
-#pragma omp parallel for num_threads(nthreads)
+#pragma omp parallel for schedule(auto) num_threads(nthreads)
     for (const auto &block : grid_->blocks()) {
         int npoints = block->npoints();
         int index = block->index();
@@ -211,7 +211,9 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
     nthreads = Process::environment.get_n_threads();
 #endif
 
-#pragma omp parallel for num_threads(nthreads)
+	int max_points = grid_->max_points(); //Set in grid_int_options
+	std::vector<double> kernel(max_points);
+#pragma omp parallel for schedule(auto) num_threads(nthreads) firstprivate(kernel)
 	for (const auto &block : grid_->blocks()) {
 		const auto &bf_map = block->functions_local_to_global();
 		auto local_nbf = bf_map.size();
@@ -231,7 +233,6 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
 
 		// Preprocess kernel c²/(2c²-veff) * weight
 		double* w = block->w();
-        std::vector<double> kernel(npoints);
 		for (int p = 0; p < npoints; p++) {
 			kernel[p] = C *C /(2.*C *C - veff_block->get(p)) * w[p];
 		}
