@@ -204,7 +204,7 @@ void ZORA::compute_veff()
 //Scalar Relativistic Kinetic Energy Matrix
 void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, SharedMatrix &T_SR) {
 	// Speed of light in atomic units
-	double C = pc_c_au;
+	const double C2 = pc_c_au*pc_c_au;
 
 	int nthreads = 1;
 #ifdef _OPENMP
@@ -212,55 +212,58 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
 #endif
 
 	int max_points = grid_->max_points(); //Set in grid_int_options
-	std::vector<double> kernel(max_points);
-#pragma omp parallel for schedule(auto) num_threads(nthreads) firstprivate(kernel)
-	for (const auto &block : grid_->blocks()) {
-		const auto &bf_map = block->functions_local_to_global();
-		auto local_nbf = bf_map.size();
-		int npoints = block->npoints();
+#pragma omp parallel num_threads(nthreads)
+	{
+		std::vector<double> kernel(max_points);
+#pragma omp for schedule(auto)
+	    for (const auto &block : grid_->blocks()) {
+			const auto &bf_map = block->functions_local_to_global();
+			auto local_nbf = bf_map.size();
+			int npoints = block->npoints();
 
-		auto veff_block = veff_->at(block->index());
+			auto veff_block = veff_->at(block->index());
 
-		int thread = 0;
+			int thread = 0;
 #ifdef _OPENMP
-		thread = omp_get_thread_num();
+			thread = omp_get_thread_num();
 #endif
 
-		pworkers[thread]->compute_functions(block);
-		auto phi_x = pworkers[thread]->basis_value("PHI_X");
-		auto phi_y = pworkers[thread]->basis_value("PHI_Y");
-		auto phi_z = pworkers[thread]->basis_value("PHI_Z");
+			pworkers[thread]->compute_functions(block);
+			auto phi_x = pworkers[thread]->basis_value("PHI_X");
+			auto phi_y = pworkers[thread]->basis_value("PHI_Y");
+			auto phi_z = pworkers[thread]->basis_value("PHI_Z");
 
-		// Preprocess kernel c²/(2c²-veff) * weight
-		double* w = block->w();
-		for (int p = 0; p < npoints; p++) {
-			kernel[p] = C *C /(2.*C *C - veff_block->get(p)) * w[p];
-		}
+			// Preprocess kernel c²/(2c²-veff) * weight
+			double* w = block->w();
+			for (int p = 0; p < npoints; p++) {
+				kernel[p] = C2 /(2.*C2 - veff_block->get(p)) * w[p];
+			}
 
-		auto tmp = std::make_shared<Matrix>(T_SR->ncol(), T_SR->nrow());
+			auto tmp = std::make_shared<Matrix>(T_SR->ncol(), T_SR->nrow());
 
-		// Compute kinetic integral using kernel above
-        // T_SR --> non-relativistic T when veff --> 0.
-		// bf_map is needed because the basis funcions differ from that of a given block
-		for (int l_mu = 0; l_mu < local_nbf; l_mu++) {
-			int mu = bf_map[l_mu];
-			for (int l_nu = l_mu; l_nu < local_nbf; l_nu++) {
-				int nu = bf_map[l_nu];
-				for (int p = 0; p < npoints; p++) {
-                    // ∇²φ(r)*kernel
-					tmp->add(mu,nu, kernel[p]*(
-						phi_x->get(p,l_mu)*phi_x->get(p,l_nu) +
-						phi_y->get(p,l_mu)*phi_y->get(p,l_nu) +
-						phi_z->get(p,l_mu)*phi_z->get(p,l_nu)
-                    ));
+			// Compute kinetic integral using kernel above
+			// T_SR --> non-relativistic T when veff --> 0.
+			// bf_map is needed because the basis funcions differ from that of a given block
+			for (int l_mu = 0; l_mu < local_nbf; l_mu++) {
+				int mu = bf_map[l_mu];
+				for (int l_nu = l_mu; l_nu < local_nbf; l_nu++) {
+					int nu = bf_map[l_nu];
+					for (int p = 0; p < npoints; p++) {
+						// ∇²φ(r)*kernel
+						tmp->add(mu,nu, kernel[p]*(
+							phi_x->get(p,l_mu)*phi_x->get(p,l_nu) +
+							phi_y->get(p,l_mu)*phi_y->get(p,l_nu) +
+							phi_z->get(p,l_mu)*phi_z->get(p,l_nu)
+						));
+					}
 				}
 			}
-		}
 
-		// Lock the T_SR matrix before adding
+			// Lock the T_SR matrix before adding
 #pragma omp critical
-		{
-			T_SR->add(tmp);
+			{
+				T_SR->add(tmp);
+			}
 		}
 	}
 
