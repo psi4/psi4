@@ -151,9 +151,6 @@ void ZORA::compute_debug_veff() {
 
 void ZORA::compute_veff()
 {
-	// Speed of light in atomic units
-	double C = pc_c_au;
-
 	int nthreads = 1;
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
@@ -173,7 +170,7 @@ void ZORA::compute_veff()
 
         for (int a = 0; a < natoms; a++) {
             int Z = molecule_->Z(a);
-            if (Z > 104) throw PSIEXCEPTION("Z too big. Max value 104");
+            if (Z > 104) throw PSIEXCEPTION("Too heavy atom for ZORA implementation. Tabulation only available to Z=104, Rf.\n");
             auto pos_a = molecule_->xyz(a);
 
             const double* coef_a  = &coeffs[c_aIndex[Z-1]];
@@ -187,8 +184,8 @@ void ZORA::compute_veff()
                 for (int i = 0; i < nc_a; i++) {
                     outer += std::erf(dist * alpha_a[i]) * coef_a[i];
                 }
+                outer -= Z;
                 outer /= dist;
-                outer -= Z/dist;
                 veff_block->add(p, outer);
             }
         }
@@ -201,9 +198,8 @@ void ZORA::compute_veff()
 }
 
 
-//Scalar Relativistic Kinetic Energy Matrix
 void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, SharedMatrix &T_SR) {
-	// Speed of light in atomic units
+	// Speed of light in atomic units squared
 	const double C2 = pc_c_au*pc_c_au;
 
 	int nthreads = 1;
@@ -214,7 +210,9 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
 	int max_points = grid_->max_points(); //Set in grid_int_options
 #pragma omp parallel num_threads(nthreads)
 	{
+		// Give each thread their own scratch space
 		std::vector<double> kernel(max_points);
+		auto tmp = std::make_shared<Matrix>(T_SR->ncol(), T_SR->nrow());
 #pragma omp for schedule(auto)
 	    for (const auto &block : grid_->blocks()) {
 			const auto &bf_map = block->functions_local_to_global();
@@ -239,7 +237,7 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
 				kernel[p] = C2 /(2.*C2 - veff_block->get(p)) * w[p];
 			}
 
-			auto tmp = std::make_shared<Matrix>(T_SR->ncol(), T_SR->nrow());
+			tmp->zero();
 
 			// Compute kinetic integral using kernel above
 			// T_SR --> non-relativistic T when veff --> 0.
