@@ -81,9 +81,14 @@ class PSI_API ZORA {
      */
     std::shared_ptr<std::map<int, SharedVector>> veff_;
 
+
+	/// Initializes grid_ with options, prints details
 	void setup();
+	/// Fills veff_ with effective potential for each point in a block.
 	void compute_veff();
+	/// Creates same structure as above but all zeros. TSR->T as veff->0
 	void compute_debug_veff();
+	/// Uses veff_ to compute the Scalar Relativistic Kinetic Energy Matrix
 	void compute_TSR(std::vector<std::shared_ptr<BasisFunctions>>, SharedMatrix&);
 
     /*! I'm so sorry.
