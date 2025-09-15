@@ -1316,7 +1316,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         computations -*/
 
         /*- Reference wavefunction type -*/
-        options.add_str("REFERENCE", "RHF", "UHF RHF ROHF");
+        options.add_str("REFERENCE", "RHF", "UHF RHF ROHF CGHF");
         /*- Algorithm to use for the density cumulant and orbital updates in the DCT energy computation.
         Two-step algorithm is usually more efficient for small
         systems, but for large systems simultaneous algorithm (default) is recommended.
@@ -1462,7 +1462,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("WFN", "SCF", "SCF");
         /*- Reference wavefunction type.
         **Cfour Interface:** Keyword translates into |cfour__cfour_reference|. -*/
-        options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
+        options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CGHF CUHF RKS UKS CGHF");
         /*- Primary basis set -*/
         options.add_str("BASIS", "");
         /*- Auxiliary basis set for SCF density fitting computations.
@@ -2147,7 +2147,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- MODULEDESCRIPTION Performs Algebraic-Diagrammatic Construction (ADC) propagator computations for excited
            states. -*/
         /*- Reference wavefunction type -*/
-        options.add_str("REFERENCE", "RHF", "RHF UHF");
+        options.add_str("REFERENCE", "RHF", "RHF UHF CGHF");
         /*- The number of poles / excited states to obtain per irrep vector -*/
         options.add("ROOTS_PER_IRREP", new ArrayType());
         /*- Tolerance for extracted or printed amplitudes. This option is only available for the adcc backend. -*/
@@ -2196,9 +2196,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Wavefunction type !expert -*/
         options.add_str("WFN", "EOM_CCSD", "EOM_CCSD EOM_CC2 EOM_CC3");
         /*- Reference wavefunction type -*/
-        options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
+        options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CGHF");
         /*- Reference wavefunction type for EOM computations -*/
-        options.add_str("EOM_REFERENCE", "RHF", "RHF ROHF UHF");
+        options.add_str("EOM_REFERENCE", "RHF", "RHF ROHF UHF CGHF");
         /*- Do use full effective Hamiltonian matrix? -*/
         options.add_bool("FULL_MATRIX", false);
         /*- Caching level for libdpd governing the storage of amplitudes,
@@ -2410,7 +2410,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- MODULEDESCRIPTION Performs RHF/UHF/ROHF/TCSCF and more general MCSCF computations. Called
             as the starting point for multireference coupled cluster computations. -*/
         /*- Reference wavefunction type -*/
-        options.add_str("REFERENCE", "RHF", "RHF ROHF UHF TWOCON MCSCF GENERAL");
+        options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CGHF TWOCON MCSCF GENERAL");
         /*- Level shift to aid convergence -*/
         options.add_double("LEVEL_SHIFT", 0.0);
         /*- Convergence criterion for energy. -*/
@@ -2468,7 +2468,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("WFN", "NONE",
                         "CCSD CCSD_T CCSD_AT EOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
         /*- Reference wavefunction type -*/
-        options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
+        options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CGHF");
         /*- Do use new triples? -*/
         options.add_bool("NEW_TRIPLES", 1);
         /*- Do analyze T2 amplitudes -*/
@@ -4671,7 +4671,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         complete-active space SCF calculations (currently not implemented).
         **Psi4 Interface:** Keyword subject to translation from value of
         |scf__reference| unless set explicitly. -*/
-        options.add_str("CFOUR_REFERENCE", "RHF", "RHF UHF ROHF TCSCF CASSCF");
+        options.add_str("CFOUR_REFERENCE", "RHF", "RHF UHF CGHF ROHF TCSCF CASSCF");
 
         /*- Specifies the treatment of relativistic effects. The default is
         a non-relativistic treatment (OFF), while perturbational treatments

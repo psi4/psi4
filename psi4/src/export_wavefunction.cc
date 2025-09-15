@@ -58,6 +58,7 @@
 #include "psi4/libscf_solver/uhf.h"
 #include "psi4/libscf_solver/rohf.h"
 #include "psi4/libscf_solver/cuhf.h"
+#include "psi4/libscf_solver/cghf.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfock/v.h"
 
@@ -430,6 +431,17 @@ void export_wavefunction(py::module& m) {
     py::class_<scf::UHF, std::shared_ptr<scf::UHF>, scf::HF>(m, "UHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("c1_deep_copy", &scf::UHF::c1_deep_copy,
+             "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
+             "BasisSet *basis*",
+             "basis"_a)
+        .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
+    py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, scf::HF>(m, "CGHF", "docstring")
+        .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
+        .def("form_numpy_D", &scf::CGHF::form_numpy_D)
+        .def("form_FDSmSDF", &scf::CGHF::form_FDSmSDF)
+        .def("compute_Dnorm", &scf::CGHF::compute_Dnorm)
+        .def("einsums_to_numpy", &scf::CGHF::einsums_to_numpy, "Convert einsums::Tensor to numpy array from string argument", "msg"_a)
+        .def("c1_deep_copy", &scf::CGHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
              "BasisSet *basis*",
              "basis"_a)

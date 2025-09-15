@@ -40,6 +40,7 @@ class VBase;
 namespace scf {
     class RHF;
     class UHF;
+    class CGHF;
 }
 
 namespace scfgrad {
