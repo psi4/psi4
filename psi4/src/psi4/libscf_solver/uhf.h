@@ -101,10 +101,10 @@ class UHF : public HF {
     int otr_n_param() override;
 #endif
 
-    void update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
-    void (**hess_x_out)(const double*, double**)) override;
-    void hess_x(const double* x, double** out) override;
-    double obj_func(const double* kappa) override;
+    int64_t update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
+    int64_t (**hess_x_out)(const double*, double**)) override;
+    int64_t hess_x(const double* x, double** out) override;
+    int64_t obj_func(const double* kappa, double* func) override;
     int n_param() override;
 
     std::shared_ptr<VBase> V_potential() const override { return potential_; };
