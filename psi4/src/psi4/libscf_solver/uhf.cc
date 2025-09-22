@@ -1604,7 +1604,7 @@ std::pair<SharedMatrix, SharedMatrix> UHF::unpack(const double* matrix, const st
     return {shared_matrix_a, shared_matrix_b};
 }
 
-double UHF::obj_func(const double* kappa) {
+int64_t UHF::obj_func(const double* kappa, double* func) {
     // get occupied and virtual dimensions per spin type and irrep
     auto occpi_a = nalphapi_;
     auto occpi_b = nbetapi_;
@@ -1640,7 +1640,7 @@ double UHF::obj_func(const double* kappa) {
     form_G();
 
     // compute energy
-    double func = compute_E();
+    *func = compute_E();
 
     // get back previous quantities
     Ca_->copy(Ca_save);
@@ -1660,10 +1660,10 @@ double UHF::obj_func(const double* kappa) {
         potential_->set_D({Da_, Db_});
     }
 
-    return func;
+    return 0;
 }
 
-void UHF::hess_x(const double* x, double** hess_x) {
+int64_t UHF::hess_x(const double* x, double** hess_x) {
     // get doubly occupied and virtual dimensions per irrep
     auto occpi_a = nalphapi_;
     auto occpi_b = nbetapi_;
@@ -1689,7 +1689,7 @@ void UHF::hess_x(const double* x, double** hess_x) {
             // copy shared matrix to Hessian linear transformation
             for (size_t i = 0; i < occpi_a[h]; i++) {
                 for (size_t a = 0; a < virpi_a[h]; a++) {
-                    hess_x_arr[counter++] = -hess_x_irrep[i][a];
+                    hess_x_arr[counter++] = -2 * hess_x_irrep[i][a];
                 }
             }
         }
@@ -1711,10 +1711,12 @@ void UHF::hess_x(const double* x, double** hess_x) {
 
     // set pointer
     *hess_x = hess_x_arr;
+
+    return 0;
 }
 
-void UHF::update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
-                      void (**hess_x_out)(const double*, double**)) {
+int64_t UHF::update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
+                         int64_t (**hess_x_out)(const double*, double**)) {
     // get occupied and virtual dimensions per spin type and irrep
     auto occpi_a = nalphapi_;
     auto occpi_b = nbetapi_;
@@ -1785,6 +1787,8 @@ void UHF::update_orbs(const double* kappa, double* func, double** grad, double**
     *grad = grad_arr;
     *h_diag = h_diag_arr;
     *hess_x_out = hess_x_wrapper;
+
+    return 0;
 }
 
 int UHF::n_param() {

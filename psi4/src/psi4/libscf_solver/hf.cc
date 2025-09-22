@@ -1459,20 +1459,20 @@ bool HF::stability_analysis() {
     return false;
 }
 
-extern "C" const double obj_func_wrapper(const double* kappa) {
+extern "C" const int64_t obj_func_wrapper(const double* kappa, double* func) {
     if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
-    return HF::instance->obj_func(kappa);
+    return HF::instance->obj_func(kappa, func);
 }
 
-extern "C" void hess_x_wrapper(const double* x, double** hess_x) {
+extern "C" int64_t hess_x_wrapper(const double* x, double** hess_x) {
     if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
-    HF::instance->hess_x(x, hess_x);
+    return HF::instance->hess_x(x, hess_x);
 }
 
-extern "C" const void update_orbs_wrapper(const double* kappa, double* func, double** grad,
-    double** h_diag, void (**hess_x_out)(const double*, double**)) {
+extern "C" const int64_t update_orbs_wrapper(const double* kappa, double* func, double** grad,
+    double** h_diag, int64_t (**hess_x_out)(const double*, double**)) {
     if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
-    HF::instance->update_orbs(kappa, func, grad, h_diag, hess_x_out);
+    return HF::instance->update_orbs(kappa, func, grad, h_diag, hess_x_out);
 }
 
 extern "C" const void logger(const char* message) {
@@ -1511,7 +1511,7 @@ void HF::opentrustregion_scf() {
 
     // input parameters
     n_param_ = n_param();
-    bool error;
+    int64_t error;
     const bool stability = options_.get_str("STABILITY_ANALYSIS") != "NONE";
     const double* conv_tol_ptr;
     if (options_["SOSCF_CONV"].has_changed()) {
@@ -1520,21 +1520,22 @@ void HF::opentrustregion_scf() {
     } else {
         conv_tol_ptr = nullptr;
     }
-    const int n_macro = options_.get_int("MAXITER");
-    const int* n_micro_ptr;
+    const int64_t n_macro = options_.get_int("MAXITER");
+    const int64_t* n_micro_ptr;
     if (options_["SOSCF_MAX_ITER"].has_changed()) {
-        const int n_micro = options_.get_int("SOSCF_MAX_ITER");
+        const int64_t n_micro = options_.get_int("SOSCF_MAX_ITER");
         n_micro_ptr = &n_micro;
     } else {
         n_micro_ptr = nullptr;
     }
     int print = options_.get_int("PRINT");
-    const int verbose = (print == 0) ? 2 : (print == 1) ? 3 : 4;
+    const int64_t verbose = (print == 0) ? 2 : (print == 1) ? 3 : 4;
 
     // call the Fortran solver
-    solver(update_orbs_wrapper, obj_func_wrapper, n_param_, &error, nullptr, nullptr, 
-            &stability, nullptr, nullptr, nullptr, nullptr, conv_tol_ptr, nullptr, nullptr, 
-            &n_macro, n_micro_ptr, nullptr, nullptr, nullptr, &verbose, logger);
+    error = solver(update_orbs_wrapper, obj_func_wrapper, n_param_, nullptr, nullptr, 
+                   &stability, nullptr, nullptr, nullptr, nullptr, conv_tol_ptr, nullptr, 
+                   nullptr, &n_macro, n_micro_ptr, nullptr, nullptr, nullptr, &verbose, 
+                   logger);
 
     // check if solver completed successfully
     if (error) {

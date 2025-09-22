@@ -1323,7 +1323,7 @@ SharedMatrix RHF::unpack(const double* matrix, const std::string name, const Dim
     return shared_matrix;
 }
 
-double RHF::obj_func(const double* kappa) {
+int64_t RHF::obj_func(const double* kappa, double* func) {
     // get doubly occupied and virtual dimensions per irrep
     auto doccpi = nalphapi_;
     auto virpi = nmopi_ - nalphapi_;
@@ -1350,7 +1350,7 @@ double RHF::obj_func(const double* kappa) {
     form_G();
 
     // compute energy
-    double func = compute_E();
+    *func = compute_E();
 
     // get back previous quantities
     Ca_->copy(C_save);
@@ -1364,10 +1364,10 @@ double RHF::obj_func(const double* kappa) {
         potential_->set_D({Da_});
     }
 
-    return func;
+    return 0;
 }
 
-void RHF::hess_x(const double* x, double** hess_x) {
+int64_t RHF::hess_x(const double* x, double** hess_x) {
     // get doubly occupied and virtual dimensions per irrep
     auto doccpi = nalphapi_;
     auto virpi = nmopi_ - nalphapi_;
@@ -1400,10 +1400,12 @@ void RHF::hess_x(const double* x, double** hess_x) {
 
     // set pointer
     *hess_x = hess_x_arr;
+
+    return 0;
 }
 
-void RHF::update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
-                      void (**hess_x_out)(const double*, double**)) {
+int64_t RHF::update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
+                         int64_t (**hess_x_out)(const double*, double**)) {
 
     // get doubly occupied and virtual dimensions per irrep
     auto doccpi = nalphapi_;
@@ -1456,6 +1458,8 @@ void RHF::update_orbs(const double* kappa, double* func, double** grad, double**
     *grad = grad_arr;
     *h_diag = h_diag_arr;
     *hess_x_out = hess_x_wrapper;
+
+    return 0;
 }
 
 int RHF::n_param() { 

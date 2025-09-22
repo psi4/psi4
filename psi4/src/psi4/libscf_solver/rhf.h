@@ -81,10 +81,10 @@ class RHF : public HF {
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
     bool stability_analysis() override;
 
-    void update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
-    void (**hess_x_out)(const double*, double**)) override;
-    void hess_x(const double* x, double** out) override;
-    double obj_func(const double* kappa) override;
+    int64_t update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
+    int64_t (**hess_x_out)(const double*, double**)) override;
+    int64_t hess_x(const double* x, double** out) override;
+    int64_t obj_func(const double* kappa, double* func) override;
     int n_param() override;
 
     std::shared_ptr<VBase> V_potential() const override { return potential_; };

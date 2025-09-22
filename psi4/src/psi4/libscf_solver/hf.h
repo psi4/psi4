@@ -253,13 +253,13 @@ class HF : public Wavefunction {
 
     /// Runs SCF using OpenTrustRegion
     void opentrustregion_scf();
-    virtual void update_orbs(const double* kappa, double* func, double** grad, double** h_diag, void (**hess_x_out)(const double*, double**)) { 
+    virtual int64_t update_orbs(const double* kappa, double* func, double** grad, double** h_diag, int64_t (**hess_x_out)(const double*, double**)) { 
         throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
     };
-    virtual void hess_x(const double* x, double** out) { 
+    virtual int64_t hess_x(const double* x, double** out) { 
         throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
     };
-    virtual double obj_func(const double* kappa) { 
+    virtual int64_t obj_func(const double* kappa, double* func) { 
         throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
     };
 
@@ -462,10 +462,10 @@ class HF : public Wavefunction {
     void compute_fvpi();
 };
 
-extern "C" const double obj_func_wrapper(const double* kappa);
-extern "C" void hess_x_wrapper(const double* x, double** hess_x);
-extern "C" const void update_orbs_wrapper(const double* kappa, double* func, double** grad, double** h_diag,
-    void (**hess_x_out)(const double*, double**));
+extern "C" const int64_t obj_func_wrapper(const double* kappa, double* func);
+extern "C" int64_t hess_x_wrapper(const double* x, double** hess_x);
+extern "C" const int64_t update_orbs_wrapper(const double* kappa, double* func, double** grad, double** h_diag,
+    int64_t (**hess_x_out)(const double*, double**));
 
 }  // namespace scf
 }  // namespace psi
