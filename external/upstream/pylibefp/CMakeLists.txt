@@ -1,8 +1,7 @@
 if(${ENABLE_libefp})
-    #find_package(pylibefp 0.6.1 CONFIG QUIET)
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_pylibefp}))
         include(FindPythonModule)
-        find_python_module(pylibefp QUIET)
+        find_python_module(pylibefp QUIET)  # edit in codedeps
     endif()
 
     if(${pylibefp_FOUND})
@@ -28,7 +27,7 @@ if(${ENABLE_libefp})
             DEPENDS lapack_external
                     libefp_external
                     pybind11_external
-            URL https://github.com/loriab/pylibefp/archive/b3da48f.tar.gz  # v0.6.2 + 5
+            URL https://github.com/loriab/pylibefp/archive/76f8e52.tar.gz  # libefp v1.5.0+, py v0.6.2+  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -52,6 +51,7 @@ if(${ENABLE_libefp})
                        -Dpybind11_DIR=${pybind11_DIR}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+                       -DCMAKE_POLICY_VERSION_MINIMUM=3.5
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}

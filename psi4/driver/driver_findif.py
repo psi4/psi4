@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -144,10 +144,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional,
 
 import numpy as np
 
-try:
-    from pydantic.v1 import Field, validator
-except ImportError:
-    from pydantic import Field, validator
+from pydantic.v1 import Field, validator
 
 from qcelemental.models import AtomicResult, DriverEnum
 
@@ -1303,7 +1300,7 @@ class FiniteDifferenceComputer(BaseComputer):
         # uncalled function
         return [t.plan() for t in self.task_list.values()]
 
-    def compute(self, client: Optional["qcportal.FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.client.PortalClient"] = None):
         """Run each job in task list."""
         instructions = "\n" + p4util.banner(f" FiniteDifference Computations", strNotOutfile=True) + "\n"
         logger.debug(instructions)
@@ -1313,7 +1310,7 @@ class FiniteDifferenceComputer(BaseComputer):
             for t in self.task_list.values():
                 t.compute(client=client)
 
-    def _prepare_results(self, client: Optional["qcportal.FractalClient"] = None):
+    def _prepare_results(self, client: Optional["qcportal.client.PortalClient"] = None):
         results_list = {k: v.get_results(client=client) for k, v in self.task_list.items()}
 
         # load AtomicComputer results into findifrec[reference]
@@ -1400,7 +1397,7 @@ class FiniteDifferenceComputer(BaseComputer):
             H0 = assemble_hessian_from_energies(self.findifrec, self.metameta['irrep'])
             self.findifrec["reference"][self.driver.name] = H0
 
-    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.client.PortalClient"] = None) -> AtomicResult:
         """Return results as FiniteDifference-flavored QCSchema."""
 
         instructions = "\n" + p4util.banner(f" FiniteDifference Results", strNotOutfile=True) + "\n"
@@ -1467,7 +1464,7 @@ class FiniteDifferenceComputer(BaseComputer):
 
     def get_psi_results(
         self,
-        client: Optional["qcportal.FractalClient"] = None,
+        client: Optional["qcportal.client.PortalClient"] = None,
         *,
         return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
         """Called by driver to assemble results into FiniteDifference-flavored QCSchema,

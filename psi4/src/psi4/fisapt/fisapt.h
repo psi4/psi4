@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -118,8 +118,8 @@ class FISAPT {
     void kinetic();
     /// Build the nuclear potentials V and interaction energies
     void nuclear();
-    /// Build the J/K potentials for C, D, and E
-    void coulomb();
+    /// Build the J/K potentials for C, D, and E, reusing the JK object from previous SCF calculation
+    void coulomb(std::shared_ptr<JK> jk);
     /// Solve the relaxed SCF equations for A0 and B0
     void scf();
     /// Freeze the core orbitals

@@ -1,5 +1,5 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19...4.0)
 cmake_policy(SET CMP0094 NEW)
 cmake_policy(SET CMP0075 NEW)
 if (POLICY CMP0135)
@@ -60,6 +60,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - SciPy (runtime only; avoidable through keyword setting; e.g., `conda install scipy`)
 #    - py-cpuinfo (runtime only; e.g., `conda install py-cpuinfo`)
 #    - psutil (runtime only; e.g., `conda install psutil`)
+#    - setuptools (buildtime only unless optking, etc. pre-built; e.g., `conda install setuptools`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
@@ -79,14 +80,15 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - Python_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gdma, Libint2, OpenTrustRegion, 
-#                         PCMSolver, pybind11, pylibefp, qcelemental, qcengine, optking, simint, Libxc, 
-#                         IntegratorXX, gauxc
+#    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gauxc, gdma,
+#                         IntegratorXX, Libint2, OpenOrbitalOptimizer, OpenTrustRegion, optking, 
+#                         PCMSolver, pybind11, pylibefp, qcelemental, qcengine, simint, Libxc, 
+#                         qcmanybody
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
-#    - CMAKE_DISABLE_FIND_PACKAGE_${AddON} "Set to ON to force internal build"
-#    - CMAKE_INSIST_FIND_PACKAGE_${AddON} "Set to ON to force external detect"
+#    - CMAKE_DISABLE_FIND_PACKAGE_${AddOn} "Set to ON to force internal build"
+#    - CMAKE_INSIST_FIND_PACKAGE_${AddOn} "Set to ON to force external detect"
 
 #  <<<  Detecting BLAS/LAPACK  >>>
 #
@@ -123,6 +125,8 @@ option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gauxc "Enables use of GauXC density functional library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
+option(ENABLE_IntegratorXX "Enables use of IntegratorXX density functional grids library" OFF)
+option(ENABLE_OpenOrbitalOptimizer "Enables the OpenOrbitalOptimizer library (requires Armadillo)" OFF)
 option(ENABLE_OpenTrustRegion "Enables the OpenTrustRegion library" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
@@ -218,8 +222,8 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * headers: Python.h for pybind11 to build against in psi4-core
 # * library: not at all
 
-set(Python_ADDITIONAL_VERSIONS 3.13 3.12 3.11 3.10 3.9)  # adjust with CMake minimum FindPythonInterp
-find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
+set(Python_ADDITIONAL_VERSIONS 3.13 3.12 3.11 3.10)  # adjust with CMake minimum FindPythonInterp
+find_package(Python 3.10 COMPONENTS Interpreter Development NumPy REQUIRED)
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION}; NumPy version: ${Python_NumPy_VERSION})")
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
@@ -231,6 +235,9 @@ include(custom_cxxstandard)
 include(custom_static_library)
 
 ################################  Main Project  ################################
+# On W, var may come in in native, and w/cmake v4, the psi4-core cache protests, so normalize path
+file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" _cmake_CMAKE_PREFIX_PATH)
+
 include(ExternalProject)
 ExternalProject_Add(psi4-core
    DEPENDS lapack_external
@@ -252,6 +259,8 @@ ExternalProject_Add(psi4-core
            pylibefp_external
            qcelemental_external
            qcengine_external
+           qcmanybody_external
+           openorbitaloptimizer_external
            opentrustregion_external
            optking_external
            simint_external
@@ -305,6 +314,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_ddx=${ENABLE_ddx}
               -DENABLE_mdi=${ENABLE_mdi}
               -DENABLE_BrianQC=${ENABLE_BrianQC}
+              -DENABLE_OpenOrbitalOptimizer=${ENABLE_OpenOrbitalOptimizer}
               -DENABLE_OPENMP=${ENABLE_OPENMP}
               -DENABLE_OpenTrustRegion=${ENABLE_OpenTrustRegion}
               -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
@@ -319,6 +329,7 @@ ExternalProject_Add(psi4-core
               -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}
               -DLibint2_DIR=${Libint2_DIR}
+              -DOpenOrbitalOptimizer_DIR=${OpenOrbitalOptimizer_DIR}
               -DOpenTrustRegion_DIR=${OpenTrustRegion_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dmdi_DIR=${mdi_DIR}
@@ -334,14 +345,22 @@ ExternalProject_Add(psi4-core
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
               -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
+              -DOpenMP_C_FLAGS=${OpenMP_C_FLAGS}
+              -DOpenMP_CXX_FLAGS=${OpenMP_CXX_FLAGS}
+              -DOpenMP_omp_LIBRARY=${OpenMP_omp_LIBRARY}
+              -DOpenMP_gomp_LIBRARY=${OpenMP_gomp_LIBRARY}
+              -DOpenMP_libiomp5md_LIBRARY=${OpenMP_libiomp5md_LIBRARY}
+              -DOpenMP_pthread_LIBRARY=${OpenMP_pthread_LIBRARY}
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
               -DENABLE_CYTHONIZE=${ENABLE_CYTHONIZE}
               -Dpsi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-   CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
+   CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${_cmake_CMAKE_PREFIX_PATH}
               -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
               -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
               -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}
                # CMAKE_<lang>_COMPILER_ARG1 vars pass args thru when CMAKE_<lang>_COMPILER set as "compiler --vital-args"
+              -DOpenMP_C_LIB_NAMES:STRING=${OpenMP_C_LIB_NAMES}
+              -DOpenMP_CXX_LIB_NAMES:STRING=${OpenMP_CXX_LIB_NAMES}
    USES_TERMINAL_BUILD 1
    BUILD_ALWAYS 1)
 

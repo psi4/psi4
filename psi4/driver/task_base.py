@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -37,10 +37,7 @@ import copy
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
-try:
-    from pydantic.v1 import Field, validator
-except ImportError:
-    from pydantic import Field, validator
+from pydantic.v1 import Field, validator
 
 import qcelemental as qcel
 from qcelemental.models import AtomicInput, AtomicResult, DriverEnum
@@ -86,24 +83,30 @@ class AtomicComputer(BaseComputer):
         "Note for finite difference that this should be the target driver, not the means driver.")
     keywords: Dict[str, Any] = Field(default_factory=dict, description="The keywords to use in the computation.")
     protocols: Optional[Union[AtomicResultProtocols, Dict[str, Any]]] = Field({"stdout": True}, description="Output modifications.")
-    tag: str = Field("*", description="The tags to pass along to compute managers.")
-    priority: str = Field(1, description="The priority of a Task; higher priority will be pulled first. {high:2, normal:1, low:0}")
+    compute_tag: str = Field("*", description="The tags to pass along to compute managers.")
+    compute_priority: Union[int, str] = Field(1, description="The priority of a Task; higher priority will be pulled first. {high:2, normal:1, low:0}")
     owner_group: Optional[str] = Field(None, description="group in the chown sense.")
     computed: bool = Field(False, description="Whether quantum chemistry has been run on this task.")
     result: Any = Field(default_factory=dict, description=":py:class:`~qcelemental.models.AtomicResult` return.")
     result_id: Optional[str] = Field(None, description="The optional ID for the computation.")
+    # remove 2026. QCFractal is showing the upgrade path
+    tag: str = Field(None, description="Deprecated version of compute_tag")
+    priority: Union[int, str] = Field(None, description="Deprecated version of compute_priority")
 
     class Config(qcel.models.ProtoModel.Config):
         pass
 
+    # v2: @field_validator("basis")
     @validator("basis")
     def set_basis(cls, basis):
         return basis.lower()
 
+    # v2: @field_validator("method")
     @validator("method")
     def set_method(cls, method):
         return method.lower()
 
+    # v2: @field_validator("keywords")
     @validator("keywords")
     def set_keywords(cls, keywords):
         return copy.deepcopy(keywords)
@@ -128,7 +131,7 @@ class AtomicComputer(BaseComputer):
 
         return atomic_model
 
-    def compute(self, client: Optional["qcportal.client.FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.client.PortalClient"] = None):
         """Run quantum chemistry."""
         from psi4.driver import pp
 
@@ -143,6 +146,13 @@ class AtomicComputer(BaseComputer):
             # Build the molecule
             mol = Molecule(**self.molecule.to_schema(dtype=2))
 
+            # remove the bargaining in 2026. passing so that QCFractal's upgrade guidance is raised
+            oldargs = {}
+            if self.tag is not None:
+                oldargs["tag"] = self.tag
+            if self.priority is not None:
+                oldargs["priority"] = self.priority
+
             meta, ids = client.add_singlepoints(
                 molecules=mol,
                 program="psi4",
@@ -151,9 +161,10 @@ class AtomicComputer(BaseComputer):
                 basis=self.basis,
                 keywords=self.keywords,
                 protocols=self.protocols,
-                tag=self.tag,
-                priority=self.priority,
+                compute_tag=self.compute_tag,
+                compute_priority=self.compute_priority,
                 owner_group=self.owner_group,
+                **oldargs
             )
             self.result_id = ids[0]
             # NOTE: The following will re-run errored jobs by default
@@ -169,7 +180,7 @@ class AtomicComputer(BaseComputer):
 
             return
 
-        logger.info(f'<<< JSON launch ... {self.molecule.schoenflies_symbol()} {self.molecule.nuclear_repulsion_energy()}')
+        logger.info(f'<<< JSON launch ... {self.method} {self.basis} {self.molecule.schoenflies_symbol()} {self.molecule.nuclear_repulsion_energy()}')
         gof = core.get_output_file()
 
         # EITHER ...
@@ -191,7 +202,7 @@ class AtomicComputer(BaseComputer):
         # ... END
 
         #pp.pprint(self.result.dict())
-        #print("... JSON returns >>>")
+        #print(f"... JSON returns {self.result.success} >>>")
         core.set_output_file(gof, True)
         core.reopen_outfile()
         logger.debug(pp.pformat(self.result.dict()))
@@ -199,7 +210,7 @@ class AtomicComputer(BaseComputer):
             core.print_out(_drink_filter(stdout))
         self.computed = True
 
-    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.client.PortalClient"] = None) -> AtomicResult:
         """Return results as Atomic-flavored QCSchema."""
 
         if self.result:

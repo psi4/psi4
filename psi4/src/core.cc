@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -179,6 +179,9 @@ SharedWavefunction dfmp2(SharedWavefunction, Options&);
 }
 namespace dlpno {
 SharedWavefunction dlpno(SharedWavefunction, Options&);
+}
+namespace f12 {
+SharedWavefunction f12(SharedWavefunction, Options&);
 }
 namespace dfoccwave {
 SharedWavefunction dfoccwave(SharedWavefunction, Options&);
@@ -364,6 +367,17 @@ SharedWavefunction py_psi_dlpno(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("DLPNO");
     return dlpno::dlpno(ref_wfn, Process::environment.options);
 }
+
+#ifdef USING_Einsums
+SharedWavefunction py_psi_f12(SharedWavefunction ref_wfn) {
+    py_psi_prepare_options_for_module("F12");
+    return f12::f12(ref_wfn, Process::environment.options);
+}
+#else
+double py_psi_f12(SharedWavefunction ref_wfn) {
+    throw PSIEXCEPTION("Einsums not enabled. Recompile with -DENABLE_Einsums");
+}
+#endif
 
 double py_psi_sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB) {
     py_psi_prepare_options_for_module("SAPT");
@@ -551,18 +565,22 @@ bool specifies_convergence(std::string const& key) {
 
 // DCFT deprecation errors first added in 1.4. Feel free to retire after "enough" time.
 void throw_deprecation_errors(std::string const& key, std::string const& module = "") {
-    if (module == "DCFT") {
+    // Templates.
+    /*
+    if (module == "OLD") {
         throw PsiException(
-            "Rename local options block. All instances of 'dcft' should be replaced with 'dct'. The method was renamed "
-            "in v1.4.",
+            "Rename local options block. All instances of 'OLD' should be replaced with 'NEW'. The method was renamed "
+            "in vX.Y.",
             __FILE__, __LINE__);
     }
-    if (key.find("DCFT") != std::string::npos) {
+    if (key.find("OLD") != std::string::npos) {
         throw PsiException(
             "Rename keyword " + key +
-                ". All instances of 'dcft' should be replaced with 'dct'. The method was renamed in v1.4.",
+                ". All instances of 'OLD' should be replaced with 'NEW'. The method was renamed in vX.Y.",
             __FILE__, __LINE__);
     }
+    */
+
     if (module == "SCF" && key == "DIIS_MIN_VECS") {
         py_psi_print_out("WARNING!\n\tRemove keyword DIIS_MIN_VECS! This keyword does nothing. Using it will raise an error in v1.7.\n");
     }
@@ -571,6 +589,9 @@ void throw_deprecation_errors(std::string const& key, std::string const& module 
     }
     if (module == "SCF" && key == "PK_ALGO") {
         py_psi_print_out("WARNING!\n\tRemove keyword PK_ALGO! PK_ALGO has been replaced by the SCF_SUBTYPE=YOSHIMINE_OUT_OF_CORE and REORDER_OUT_OF_CORE options. Using PK_ALGO will raise an error in v1.8.\n");
+    }
+    if (module == "DFOCC" && key == "MOLDEN_WRITE") {
+        py_psi_print_out("WARNING!\n\tRemove keyword MOLDEN_WRITE! Using MOLDEN_WRITE will raise an error in v1.12. Call wfn.write_molden instead.\n");
     }
     if (module == "SAPT" && key == "E_CONVERGENCE") {
         throw PsiException(
@@ -1359,6 +1380,7 @@ PYBIND11_MODULE(core, core) {
     core.def("dct", py_psi_dct, "ref_wfn"_a, "Runs the density cumulant (functional) theory code.");
     core.def("dfmp2", py_psi_dfmp2, "ref_wfn"_a, "Runs the DF-MP2 code.");
     core.def("dlpno", py_psi_dlpno, "Runs the DLPNO codes.");
+    core.def("f12", py_psi_f12, "Runs the F12 codes.");
     core.def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     core.def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
     core.def("mrcc_load_densities", py_psi_mrcc_load_densities,

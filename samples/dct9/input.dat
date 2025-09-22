@@ -22,6 +22,9 @@ set {
     dct_functional odc-12
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 6e-9})
+
 set reference uhf
 set ao_basis disk
 energy('dct')

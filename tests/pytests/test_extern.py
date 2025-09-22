@@ -2,7 +2,9 @@ import pytest
 import numpy as np
 import psi4
 
-pytestmark = [pytest.mark.psi, pytest.mark.api]
+from qcelemental.testing import compare_recursive
+
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.extern]
 
 @pytest.mark.parametrize(
     "frame",
@@ -26,9 +28,9 @@ def test_nopotential(frame, deriv, molmode):
 
     b2a=0.529177249
     smol_bohr = """
-        O  -1.47172427  0.          2.1404605  
-        H  -1.2598463   1.44393774  3.22442245 
-        H  -1.2598463  -1.44393774  3.22442056   
+        O  -1.47172427  0.          2.1404605
+        H  -1.2598463   1.44393774  3.22442245
+        H  -1.2598463  -1.44393774  3.22442056
         units au
         """
     smol_ang = """
@@ -94,9 +96,9 @@ def test_nopotential(frame, deriv, molmode):
     nre = 9.14756
     psi4.compare_values(nre, molecule_bohr.nuclear_repulsion_energy(), 5, f"{molmode}: [1b] Bohr geometry NRE")
     psi4.compare_values(nre, molecule_ang.nuclear_repulsion_energy(), 5, f"{molmode}: [1a] Ang geometry NRE")
-    
+
     external_potentials = [[0.00, np.array([10.0,10.0,10.0]) / b2a]]
-    
+
     refs = {psi4.energy: -74.96341862235225, psi4.gradient: np.array([[ 1.09256884e-02, -7.29151482e-07,  5.58954770e-02],
  [-5.46279071e-03, -1.75246287e-02, -2.79474763e-02],
  [-5.46289770e-03,  1.75253578e-02, -2.79480007e-02]])}
@@ -108,7 +110,9 @@ def test_nopotential(frame, deriv, molmode):
         "print": 0,
         "debug": 0,
     })
-    
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
     atol = 3.e-6 if deriv == "1_0" else 1.e-6
 
     ret_bohr_pure = driver('scf', molecule=molecule_bohr, dertype=dertype)
@@ -146,3 +150,172 @@ def test_nopotential(frame, deriv, molmode):
     if charges_and_pure_frames_should_match:
         psi4.compare_values(ret_bohr_charges, ret_bohr_pure, atol, f"[9] {molmode} {deriv}: Bohr geometry, charges vs no charges return equality")
         psi4.compare_values(ret_ang_charges, ret_ang_pure, atol, f"[10] {molmode} {deriv}: Angstrom geometry, charges vs no charges return equality")
+
+
+_qxyz1a = [ [-0.5, 1.0, 1.0, 0.0] ]
+_qxyz1b = [ [-0.5, [1.0, 1.0, 0.0]] ]
+_ans1 = {"C": {"points": _qxyz1a}}
+_ans2 = {"B": {"points": _qxyz1a}}
+_qxyz4a = [ [-0.5, 1.0, 1.0, 0.0],
+            [ 0.5, 0.0, 1.0, 0.0],
+            [ 7.7, 0.0, 0.0, 1.0],
+            [-7.7, 0.0, 1.0, 1.0] ]
+_qxyz4b = [ [-0.5, [1.0, 1.0, 0.0]],
+            [ 0.5, [0.0, 1.0, 0.0]],
+            [ 7.7, [0.0, 0.0, 1.0]],
+            [-7.7, [0.0, 1.0, 1.0]] ]
+_ans3 = {"C": {"points": _qxyz4a}}
+_ans4 = {"B": {"points": _qxyz4a}}
+_qxyzw4a = [ [-0.5, 1.0, 1.0, 0.0, 0.8],
+             [ 0.5, 0.0, 1.0, 0.0, 0.7],
+             [ 7.7, 0.0, 0.0, 1.0, 0.6],
+             [-7.7, 0.0, 1.0, 1.0, 0.5] ]
+_qxyzw4b = [ [-0.5, [1.0, 1.0, 0.0], 0.8],
+             [ 0.5, [0.0, 1.0, 0.0], 0.7],
+             [ 7.7, [0.0, 0.0, 1.0], 0.6],
+             [-7.7, [0.0, 1.0, 1.0], 0.5] ]
+_ans5 = {"C": {"diffuse": _qxyzw4a}}
+_ans6 = {"B": {"diffuse": _qxyzw4a}}
+_ans7 = {"C": {"points": _qxyz4a, "diffuse": _qxyzw4a}}
+_ans8 = {"B": {"points": _qxyz4a, "diffuse": _qxyzw4a}}
+_mat5b = np.identity(5)
+_mat5c = psi4.core.Matrix.from_array(_mat5b)
+_mat5a = _mat5b.tolist()
+_ans9 = {"C": {"matrix": _mat5a}}
+_ans10 = {"B": {"matrix": _mat5a}}
+_ans11 = {"C": {"points": _qxyz4a, "diffuse": _qxyzw4a, "matrix": _mat5a}}
+_ans12 = {"B": {"points": _qxyz4a, "diffuse": _qxyzw4a}, "A": {"matrix": _mat5a}}
+
+@pytest.mark.parametrize("ep,ans", [
+    # lone points, 1-atom
+    (_qxyz1a, _ans1),
+    (_qxyz1b, _ans1),
+    (np.array(_qxyz1a), _ans1),
+    ([_qxyz1a], _ans1),
+    ([_qxyz1b], _ans1),
+    ([np.array(_qxyz1a)], _ans1),
+    ({"points": _qxyz1a}, _ans1),
+    ({"points": _qxyz1b}, _ans1),
+    ({"points": np.array(_qxyz1a)}, _ans1),
+    ({"b": _qxyz1a}, _ans2),
+    ({"B": [_qxyz1b]}, _ans2),
+    ({"b": {"points": _qxyz1a}}, _ans2),
+    # lone points, 4-atom
+    (_qxyz4a, _ans3),
+    (_qxyz4b, _ans3),
+    (np.array(_qxyz4a), _ans3),
+    ([_qxyz4a], _ans3),
+    ([_qxyz4b], _ans3),
+    ([np.array(_qxyz4a)], _ans3),
+    ({"points": _qxyz4a}, _ans3),
+    ({"points": _qxyz4b}, _ans3),
+    ({"points": np.array(_qxyz4a)}, _ans3),
+    ({"b": _qxyz4a}, _ans4),
+    ({"B": [_qxyz4b]}, _ans4),
+    ({"b": {"points": _qxyz4a}}, _ans4),
+    # lone diffuse
+    ([None, _qxyzw4a], _ans5),
+    ([None, _qxyzw4b], _ans5),
+    ([None, np.array(_qxyzw4a)], _ans5),
+    ([None, np.array(_qxyzw4a), None], _ans5),
+    ({"diffuse": _qxyzw4a}, _ans5),
+    ({"diffuse": _qxyzw4b}, _ans5),
+    ({"diffuse": np.array(_qxyzw4a)}, _ans5),
+    ({"b": {"diffuse": _qxyzw4a}}, _ans6),
+    ({"B": {"diffuse": _qxyzw4b}}, _ans6),
+    ({"b": [None, _qxyzw4b]}, _ans6),
+    # point and diffuse
+    ([_qxyz4a, _qxyzw4a], _ans7),
+    ([_qxyz4b, _qxyzw4b], _ans7),
+    ([_qxyz4a, np.array(_qxyzw4a), None], _ans7),
+    ({"points": _qxyz4a, "diffuse": _qxyzw4a, "matrix": None}, _ans7),
+    ({"points": _qxyz4b, "diffuse": _qxyzw4b}, _ans7),
+    ({"points": _qxyz4a, "diffuse": np.array(_qxyzw4a)}, _ans7),
+    ({"b": {"points": _qxyz4a, "diffuse": _qxyzw4a}}, _ans8),
+    ({"B": {"points": _qxyz4b, "diffuse": _qxyzw4b}}, _ans8),
+    ({"b": [_qxyz4b, _qxyzw4b]}, _ans8),
+    # lone matrix
+    ([None, None, _mat5a], _ans9),
+    ([None, None, _mat5b], _ans9),
+    ([None, None, _mat5c], _ans9),
+    ({"matrix": _mat5a}, _ans9),
+    ({"b": {"matrix": _mat5b}}, _ans10),
+    ({"b": [None, None, _mat5c]}, _ans10),
+    # altogether now
+    ([_qxyz4a, _qxyzw4a, _mat5a], _ans11),
+    ([_qxyz4b, _qxyzw4b, _mat5b], _ans11),
+    ([_qxyz4a, np.array(_qxyzw4a), _mat5c], _ans11),
+    ({"points": _qxyz4a, "diffuse": _qxyzw4a, "matrix": _mat5c}, _ans11),
+    ({"points": _qxyz4b, "diffuse": _qxyzw4b, "matrix": _mat5a}, _ans11),
+    ({"points": _qxyz4a, "diffuse": np.array(_qxyzw4a), "matrix": _mat5b}, _ans11),
+    ({"b": {"points": _qxyz4a, "diffuse": _qxyzw4a}, "A": [None, None, _mat5b]}, _ans12),
+    ({"B": {"points": _qxyz4b, "diffuse": _qxyzw4b}, "A": [None, None, _mat5c]}, _ans12),
+    ({"b": [_qxyz4b, _qxyzw4b], "a": {"matrix": _mat5a}}, _ans12),
+])
+def test_extern_parsing(ep, ans):
+    cptd = psi4.p4util.validate_external_potential(ep)
+    assert compare_recursive(ans, cptd)
+
+
+@pytest.mark.parametrize("ep", [
+    # alone, unwrapped
+    (_qxyz1a[0]),
+    (_qxyz1b[0]),
+    (_qxyz4a[0]),
+    (_qxyz4b[0]),
+    (np.array(_qxyz1a[0])),
+    (np.array(_qxyz4a[0])),
+    # lone diffuse, unlabeled/unlisted
+    (_qxyzw4a),
+    (_qxyzw4b),
+    (np.array(_qxyzw4a)),
+    ([_qxyzw4a]),
+    ([_qxyzw4b]),
+    ([np.array(_qxyzw4a)]),
+    ({"b": _qxyzw4a}),
+    ({"b": [_qxyzw4b]}),
+    # lone matrix unlabeled/unlisted
+    (_mat5a),
+    (_mat5b),
+    (_mat5c),
+    ([_mat5a]),
+    ([_mat5b]),
+    ([_mat5c]),
+    ({"b": [_mat5a]}),
+    ({"b": [_mat5b]}),
+    ({"b": [_mat5c]}),
+    ({"C": _mat5a}),
+    ({"C": _mat5b}),
+    ({"C": _mat5c}),
+    # point and diffuse
+    ([_qxyzw4a, _qxyz4a]),
+    ([_qxyzw4b, _qxyz4b]),
+    ([np.array(_qxyzw4a), np.array(_qxyz4a)]),
+    ({"points": [_qxyz1a]}),
+    ({"points": [_qxyz1b]}),
+    ({"points": [np.array(_qxyz1a)]}),
+    ({"points": [_qxyz4a]}),
+    ({"points": [_qxyz4b]}),
+    ({"points": [np.array(_qxyz4a)]}),
+    ({"b": {"points": [_qxyz1b]}}),
+    ({"b": {"points": [_qxyz4b]}}),
+    ({"diffuse": [_qxyzw4a]}),
+    ({"diffuse": [_qxyzw4b]}),
+    ({"diffuse": [np.array(_qxyzw4a)]}),
+    ({"b": {"diffuse": [_qxyzw4b]}}),
+    ({"points": _qxyz4a, "diffuse": [_qxyzw4a]}),
+    ({"points": _qxyz4b, "diffuse": [_qxyzw4b]}),
+    ({"points": _qxyz4a, "diffuse": [np.array(_qxyzw4a)]}),
+    ({"b": {"points": _qxyz4b, "diffuse": [_qxyzw4b]}}),
+    # bad keys
+    ({"pointses": np.array(_qxyz1a)}),
+    ({"d": _qxyz1a}),
+    # bad dims
+    ([None, None, np.zeros((6, 5))]),
+    ([None, None, np.zeros((6, 6, 4))]),
+    # empty
+    # ([None, None, None]),
+])
+def test_extern_parsing_error(ep):
+    with pytest.raises((psi4.ValidationError, TypeError)):
+        psi4.p4util.validate_external_potential(ep)

@@ -56,6 +56,11 @@ vwidths_ref = psi4.Matrix.from_list([ # TEST
  [0.35779695],   #TEST
  [0.35779695]])  #TEST
 
+vcharges_ref = psi4.Matrix.from_list([ # TEST
+ [-7.233675],    #TEST
+ [-0.577139],    #TEST
+ [-0.577139]])   #TEST
+
 molecule mol {
   0 1
   O
@@ -75,6 +80,9 @@ set {
   max_radial_moment 4
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
 oeprop(wfn, 'MBIS_CHARGES', title='H20 SCF')
 
@@ -85,6 +93,7 @@ quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
 vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vcharges = wfn.array_variable('MBIS VALENCE CHARGES')
 
 compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
@@ -92,6 +101,7 @@ compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
 compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
 compare_matrices(avols_ref, avols, 5, "MBIS Radial Moments <r^3>")    #TEST
 compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
+compare_matrices(vcharges_ref, vcharges, 5, "MBIS Valence Charges")   #TEST
 
 oeprop(wfn, "MBIS_VOLUME_RATIOS", title='H20 SCF')
 

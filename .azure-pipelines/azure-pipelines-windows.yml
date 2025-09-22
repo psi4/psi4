@@ -22,13 +22,12 @@ jobs:
           setlocal EnableDelayedExpansion
           echo python.version: %PYTHON_VERSION%
           set VALID=false
-          if "%PYTHON_VERSION%"=="3.9" set VALID=true
           if "%PYTHON_VERSION%"=="3.10" set VALID=true
           if "%PYTHON_VERSION%"=="3.11" set VALID=true
           if "%PYTHON_VERSION%"=="3.12" set VALID=true
           if "%PYTHON_VERSION%"=="3.13" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.9" through "3.13".
+            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.10" through "3.13".
             exit 1
           )
         displayName: "Check Python version: $(python.version)"
@@ -121,6 +120,7 @@ jobs:
       # Create conda enviroment
       # Note: conda activate doesn't work here, because it creates a new shell!
       # Note: c-f eigen has Config.cmake file
+      # pydantic=1.10.17 ensures v1 pydantic still working
       - script: |
           conda install cmake ^
                         anaconda-project ^
@@ -149,7 +149,8 @@ jobs:
                         libint ^
                         qcelemental ^
                         qcengine ^
-                        pydantic=1.10.13 ^
+                        qcmanybody ^
+                        pydantic=1.10.17 ^
                         optking ^
                         scipy
           which anaconda

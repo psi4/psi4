@@ -24,6 +24,9 @@ set cceom {
   e_convergence 5
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
+
 cc_energy, wfn = properties('eom-cc2', properties=['dipole','quadrupole'],return_wfn=True)
 
 

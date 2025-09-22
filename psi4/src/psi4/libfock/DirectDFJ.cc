@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -105,7 +105,7 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
     size_t computed_triplets1 = 0, computed_triplets2 = 0;
 
     // screening threshold
-    double thresh2 = options_.get_double("INTS_TOLERANCE") * options_.get_double("INTS_TOLERANCE");
+    double thresh2 = cutoff_ * cutoff_;
 
     // per-thread G Vector buffers (for accumulating thread contributions to G)
     // G is the contraction of the density matrix with the 3-index ERIs

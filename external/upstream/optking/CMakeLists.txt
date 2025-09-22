@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_optking}))
     include(FindPythonModule)
-    find_python_module(optking ATLEAST 0.2.1 QUIET)
+    find_python_module(optking ATLEAST 0.4.2 QUIET)  # edit in codedeps
 endif()
 
 if(${optking_FOUND})
@@ -23,14 +23,15 @@ else()
 
     ExternalProject_Add(optking_external
         BUILD_ALWAYS 1
-        URL https://github.com/psi-rking/optking/archive/0.2.1.tar.gz
+        URL https://github.com/psi-rking/optking/archive/0.4.2.tar.gz  # edit in codedeps
+        DOWNLOAD_NO_EXTRACT 1
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
-        BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
+        BUILD_COMMAND ""
         BUILD_IN_SOURCE 1
-        INSTALL_COMMAND ${Python_EXECUTABLE} setup.py install
-                                                      --record=record.txt
-                                                      --single-version-externally-managed
-                                                      --install-lib=${_install_lib})
+        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install <DOWNLOADED_FILE>
+                                                      --target=${_install_lib}
+                                                      --no-deps
+    )
 endif()
 

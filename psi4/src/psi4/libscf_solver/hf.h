@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -247,6 +247,9 @@ class HF : public Wavefunction {
     /// Frac performed current iteration?
     bool frac_performed() const { return frac_performed_; }
     void set_frac_performed(bool tf) { frac_performed_ = tf; }
+
+    /// Runs the SCF using OpenOrbitalOptimizer
+    virtual void openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
 
     /// Runs SCF using OpenTrustRegion
     void opentrustregion_scf();

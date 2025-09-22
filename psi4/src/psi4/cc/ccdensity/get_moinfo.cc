@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -73,8 +73,11 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
         moinfo.escf = wfn->energy();
 
     moinfo.orbspi = wfn->nmopi();
-    moinfo.clsdpi = wfn->doccpi();
+    moinfo.frdocc = wfn->frzcpi();
+    moinfo.fruocc = wfn->frzvpi();
+    moinfo.clsdpi = wfn->doccpi() - moinfo.frdocc;
     moinfo.openpi = wfn->soccpi();
+    moinfo.uoccpi = moinfo.orbspi - moinfo.clsdpi - moinfo.openpi - moinfo.fruocc - moinfo.frdocc;
 
     moinfo.Ca = wfn->Ca();
 
@@ -82,72 +85,52 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
     for (i = 0; i < moinfo.nirreps; ++i)
         for (j = 0; j < moinfo.openpi[i]; ++j) moinfo.sym = moinfo.sym ^ i;
 
-    auto temp = std::vector<int>(moinfo.nirreps);
-
-    /* Get frozen and active orbital lookups from CC_INFO */
-    psio_read_entry(PSIF_CC_INFO, "Frozen Core Orbs Per Irrep", (char *)temp.data(), sizeof(int) * moinfo.nirreps);
-    moinfo.frdocc = Dimension(temp);
-    psio_read_entry(PSIF_CC_INFO, "Frozen Virt Orbs Per Irrep", (char *)temp.data(), sizeof(int) * moinfo.nirreps);
-    moinfo.fruocc = Dimension(temp);
 
     psio_read_entry(PSIF_CC_INFO, "No. of Active Orbitals", (char *)&(nactive), sizeof(int));
     moinfo.nactive = nactive;
 
+    auto temp = std::vector<int>(moinfo.nirreps);
     if (params.ref == 0 || params.ref == 1) { /** RHF or ROHF **/
-
-        psio_read_entry(PSIF_CC_INFO, "Active Occ Orbs Per Irrep", (char *)temp.data(), sizeof(int) * moinfo.nirreps);
-        moinfo.occpi = Dimension(temp);
-        psio_read_entry(PSIF_CC_INFO, "Active Virt Orbs Per Irrep", (char *)temp.data(),
-                        sizeof(int) * moinfo.nirreps);
-        moinfo.virtpi = Dimension(temp);
+        moinfo.occpi = moinfo.clsdpi + wfn->soccpi();
+        moinfo.virtpi = moinfo.uoccpi + wfn->soccpi();
 
         moinfo.occ_sym = std::vector<int>(nactive);
         psio_read_entry(PSIF_CC_INFO, "Active Occ Orb Symmetry", (char *)moinfo.occ_sym.data(), sizeof(int) * nactive);
         moinfo.vir_sym = std::vector<int>(nactive);
         psio_read_entry(PSIF_CC_INFO, "Active Virt Orb Symmetry", (char *)moinfo.vir_sym.data(), sizeof(int) * nactive);
 
-        psio_read_entry(PSIF_CC_INFO, "Active Occ Orb Offsets", (char *)temp.data(), sizeof(int) * moinfo.nirreps);
-        moinfo.occ_off = Dimension(temp);
-        psio_read_entry(PSIF_CC_INFO, "Active Virt Orb Offsets", (char *)temp.data(), sizeof(int) * moinfo.nirreps);
-        moinfo.vir_off = Dimension(temp);
-
+        moinfo.occ_off = std::vector<int>(moinfo.nirreps);
+        psio_read_entry(PSIF_CC_INFO, "Active Occ Orb Offsets", (char *)moinfo.occ_off.data(), sizeof(int) * moinfo.nirreps);
+        moinfo.vir_off = std::vector<int>(moinfo.nirreps);
+        psio_read_entry(PSIF_CC_INFO, "Active Virt Orb Offsets", (char *)moinfo.vir_off.data(), sizeof(int) * moinfo.nirreps);
     } else if (params.ref == 2) { /** UHF **/
+        moinfo.aoccpi = moinfo.clsdpi + wfn->soccpi();
+        moinfo.boccpi = moinfo.clsdpi;
+        moinfo.avirtpi = moinfo.uoccpi;
+        moinfo.bvirtpi = moinfo.uoccpi + wfn->soccpi();
 
-        psio_read_entry(PSIF_CC_INFO, "Active Alpha Occ Orbs Per Irrep", (char *)temp.data(),
-                        sizeof(int) * moinfo.nirreps);
-        moinfo.aoccpi = Dimension(temp);
-        psio_read_entry(PSIF_CC_INFO, "Active Beta Occ Orbs Per Irrep", (char *)temp.data(),
-                        sizeof(int) * moinfo.nirreps);
-        moinfo.boccpi = Dimension(temp);
-        psio_read_entry(PSIF_CC_INFO, "Active Alpha Virt Orbs Per Irrep", (char *)temp.data(),
-                        sizeof(int) * moinfo.nirreps);
-        moinfo.avirtpi = Dimension(temp);
-        psio_read_entry(PSIF_CC_INFO, "Active Beta Virt Orbs Per Irrep", (char *)temp.data(),
-                        sizeof(int) * moinfo.nirreps);
-        moinfo.bvirtpi = Dimension(temp);
-
-        moinfo.aocc_sym = std::vector<int>(nactive);;
-        moinfo.bocc_sym = std::vector<int>(nactive);;
-        moinfo.avir_sym = std::vector<int>(nactive);;
-        moinfo.bvir_sym = std::vector<int>(nactive);;
-
+        moinfo.aocc_sym = std::vector<int>(nactive);
         psio_read_entry(PSIF_CC_INFO, "Active Alpha Occ Orb Symmetry", (char *)moinfo.aocc_sym.data(), sizeof(int) * nactive);
+        moinfo.bocc_sym = std::vector<int>(nactive);
         psio_read_entry(PSIF_CC_INFO, "Active Beta Occ Orb Symmetry", (char *)moinfo.bocc_sym.data(), sizeof(int) * nactive);
+        moinfo.avir_sym = std::vector<int>(nactive);
         psio_read_entry(PSIF_CC_INFO, "Active Alpha Virt Orb Symmetry", (char *)moinfo.avir_sym.data(), sizeof(int) * nactive);
+        moinfo.bvir_sym = std::vector<int>(nactive);
         psio_read_entry(PSIF_CC_INFO, "Active Beta Virt Orb Symmetry", (char *)moinfo.bvir_sym.data(), sizeof(int) * nactive);
 
-        psio_read_entry(PSIF_CC_INFO, "Active Alpha Occ Orb Offsets", (char *)temp.data(),
+
+        moinfo.aocc_off = std::vector<int>(moinfo.nirreps);
+        psio_read_entry(PSIF_CC_INFO, "Active Alpha Occ Orb Offsets", (char *)moinfo.aocc_off.data(),
                         sizeof(int) * moinfo.nirreps);
-        moinfo.aocc_off = Dimension(temp);
-        psio_read_entry(PSIF_CC_INFO, "Active Beta Occ Orb Offsets", (char *)temp.data(),
+        moinfo.bocc_off = std::vector<int>(moinfo.nirreps);
+        psio_read_entry(PSIF_CC_INFO, "Active Beta Occ Orb Offsets", (char *)moinfo.bocc_off.data(),
                         sizeof(int) * moinfo.nirreps);
-        moinfo.bocc_off = Dimension(temp);
-        psio_read_entry(PSIF_CC_INFO, "Active Alpha Virt Orb Offsets", (char *)temp.data(),
+        moinfo.avir_off = std::vector<int>(moinfo.nirreps);
+        psio_read_entry(PSIF_CC_INFO, "Active Alpha Virt Orb Offsets", (char *)moinfo.avir_off.data(),
                         sizeof(int) * moinfo.nirreps);
-        moinfo.avir_off = Dimension(temp);
-        psio_read_entry(PSIF_CC_INFO, "Active Beta Virt Orb Offsets", (char *)temp.data(),
+        moinfo.bvir_off = std::vector<int>(moinfo.nirreps);
+        psio_read_entry(PSIF_CC_INFO, "Active Beta Virt Orb Offsets", (char *)moinfo.bvir_off.data(),
                         sizeof(int) * moinfo.nirreps);
-        moinfo.bvir_off = Dimension(temp);
     }
 
     /* Compute spatial-orbital reordering arrays */
@@ -160,10 +143,6 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
         moinfo.qt2pitzer[j] = i;
     }
 
-    /* Adjust clsdpi array for frozen orbitals */
-    moinfo.clsdpi -= moinfo.frdocc;
-
-    moinfo.uoccpi = moinfo.orbspi - moinfo.clsdpi - moinfo.openpi - moinfo.fruocc - moinfo.frdocc;
 
     moinfo.nfzc = moinfo.frdocc.sum();
     moinfo.nfzv = moinfo.fruocc.sum();

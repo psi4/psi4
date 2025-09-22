@@ -7,6 +7,8 @@ py:class pybind11_builtins.pybind11_object
 #py:class 3
 py:class psi::Options
 py:class psi4.core.PCM.CalcType
+py:class psi4.core.PCM.get_PCM
+py:class psi::PCM
 
 # pydantic
 py:class pydantic.main.BaseModel
@@ -24,10 +26,19 @@ py:class FixedSize
 
 # QCArchive
 # FractalClient is temp until https://github.com/MolSSI/QCFractal/pull/716
-py:class qcportal.client.FractalClient
-py:class qcportal.FractalClient
-py:class qcportal.PortalClient
+#py:class qcportal.client.FractalClient
+#py:class qcportal.FractalClient
+#py:class qcportal.PortalClient
 py:class qcelemental.models.results.AtomicResultProtocols
+
+# QCManyBody
+py:obj qcmanybody.computer.ManyBodyComputer.set_bsse_type
+py:obj qcmanybody.computer.ManyBodyComputer.set_embedding_charges
+py:obj qcmanybody.computer.ManyBodyComputer.set_levels
+py:obj qcmanybody.computer.ManyBodyComputer.set_max_nbody
+py:obj qcmanybody.computer.ManyBodyComputer.set_return_total_data
+py:obj qcmanybody.computer.ManyBodyComputer.set_supersystem_ie_only
+py:class mbres
 
 ## numpy inherited docstrings
 #py:obj dtype

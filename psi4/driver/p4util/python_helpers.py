@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -45,6 +45,7 @@ __all__ = [
     "plump_qcvar",
     "set_options",
     "set_module_options",
+    "validate_external_potential",
 ]
 
 
@@ -89,7 +90,7 @@ def _pybuild_basis(
     mol
         Molecule for which to build the basis set instance.
     key
-        {'BASIS', 'ORBITAL', 'DF_BASIS_SCF', 'DF_BASIS_MP2', 'DF_BASIS_CC', 'BASIS_RELATIVISTIC', 'DF_BASIS_SAD'}
+        {'BASIS', 'ORBITAL', 'DF_BASIS_SCF', 'DF_BASIS_MP2', 'DF_BASIS_CC', 'BASIS_RELATIVISTIC', 'DF_BASIS_SAD', 'DF_BASIS_F12'}
         Label (effectively Psi4 keyword) to append the basis on the molecule.
         The primary basis set is indicated by any of values None or
         ``"ORBITAL"`` or ``"BASIS"``.
@@ -738,9 +739,151 @@ def basis_helper(block: str, name: str = '', key: str = 'BASIS', set_option: boo
 
 
 core.OEProp.valid_methods = [
-    'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES', 'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES',
+    'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES', 'LOWDIN_SPINS', 'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES',
     'MBIS_CHARGES','MBIS_VOLUME_RATIOS', 'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI', 'NO_OCCUPATIONS'
 ]
+
+
+## External Potential helpers
+
+def validate_external_potential(external_potential) -> Dict:
+    """Validate and normalize the format of **external_potential** in preparation for class construction.
+
+    Parameters
+    ----------
+    external_potential
+        Specification for :py:class:`psi4.core.ExternalPotential`. Can be composed of point charges
+        (Q x y z), diffuse charges (Gaussian s-orbitals at a center; Q x y z width), or (Nao, Nao)
+        potential matrix. If only one of the three specified, it is assumed to be point charges for
+        backwards compatibility. Include diffuse charges as a dictionary with key "diffuse" or as the
+        second item in a list (if no point charges, use placeholder None as first item). Include a
+        matrix as a dictionary with key "matrix" or as the third item in a list. External potential
+        will apply to the whole molecule unless behind another dictionary key ("A", "B", or "C") to
+        apply to portions of the molecule (monomer, monomer, linker) for FI-SAPT. Most sensible
+        formats are accepted: list-of-lists, NumPy array, and :py:class:`psi4.core.Matrix`. The
+        points or diffuse array should be a list-like structure where each row corresponds to a charge.
+        Lines can be composed of ``q, [x, y, z]`` or ``q, x, y, z`` (for points) or ``q, [x, w, z] w``
+        of ``q, x, y, z, w`` (for diffuse). Locations are in [a0].
+        See test_extern.py for many examples.
+
+    Returns
+    -------
+    dict
+        After some bounds, dimension, and shape checks, a normalized nested dict is returned with
+        outer keys of fragment labels, inner keys among {"points", "diffuse", "matrix"}, and inner
+        keys Python lists.
+
+    Examples
+    --------
+    >>> # [1] point charges on whole molecule (all equivalent)
+    >>> validate_external_potential([[0.5,0,0,1], [-0.5,0,0,-1]])
+    >>> validate_external_potential({"points": np.array([[0.5,0,0,1], [-0.5,0,0,-1]])})
+    >>> validate_external_potential({"C": {"points": psi4.core.Matrix.from_array(np.array([[0.5,0,0,1], [-0.5,0,0,-1]]))}})
+
+    >>> # [2] point charges on monoB and linker for FI-SAPT
+    >>> validate_external_potential({"b": [0.01,2,2,2], "c": [[0.5,0,0,1], [-0.5,0,0,-1]]})
+    >>> validate_external_potential({"B": {"points": np.array([0.01,2,2,2])}, "C": {"points": np.array([[0.5,0,0,1], [-0.5,0,0,-1]])}})
+
+    """
+    def validate_charge_list(lqxyz, diffuse: bool=False):
+        # check charge has form Q x y z, Q [x y z], Q x y z w, or Q [x y z] w
+
+        def validate_single_charge(chg):
+            try:
+                nchg = len(chg)
+            except TypeError:
+                return False
+
+            if (not diffuse) and nchg == 2:
+                return chg[0], chg[1][0], chg[1][1], chg[1][2]
+            elif diffuse and nchg == 3:
+                return chg[0], chg[1][0], chg[1][1], chg[1][2], chg[2]
+            elif (not diffuse) and nchg == 4:
+                return chg[0], chg[1], chg[2], chg[3]
+            elif diffuse and nchg == 5:
+                return chg[0], chg[1], chg[2], chg[3], chg[4]
+            else:
+                return False
+
+        flattened = [validate_single_charge(pt) for pt in lqxyz]
+
+        # reject if a charge line has wrong format or if spec is nested too deep or too shallow (can
+        #   happen due to flexible input format and backwards compatibility with points-only).
+        for itm in flattened:
+            if itm is False:
+                return False
+        try:
+            if np.array(flattened).ndim != 2:
+                return False
+        except ValueError:
+            return False
+        return flattened
+
+    def validate_potential_array(mat):
+        if isinstance(mat, core.Matrix):
+            npmat = mat.np
+        elif isinstance(mat, list):
+            npmat = np.array(mat)
+        elif isinstance(mat, np.ndarray):
+            npmat = mat
+        else:
+            return False
+
+        if npmat.ndim != 2 or npmat.shape[0] != npmat.shape[1]:
+            return False
+
+        return npmat.tolist()
+
+    frag_keys = set("ABC")
+    mode_keys_list = ["points", "diffuse", "matrix"]
+
+    if isinstance(external_potential, dict) and ({k.upper() for k in external_potential.keys()} <= frag_keys):
+        ep_outer_structure = {k.upper(): v for k, v in external_potential.items()}
+    else:
+        # assign "C" to mean whole molecule in the non-SAPT case
+        ep_outer_structure = {"C": external_potential}
+
+    # expand input structure: may be single points list or types list or types dict or fragments dict (for SAPT)
+    ep_building = {}
+    for frag, frag_ep in ep_outer_structure.items():
+        if isinstance(frag_ep, dict):
+            if frag_ep.keys() <= set(mode_keys_list):
+                ep_building[frag] = frag_ep
+            else:
+                raise ValidationError(f"external_potential: primary or sec keys should be among {mode_keys_list}, not {frag_ep.keys()}. Full input: {external_potential}")
+        elif isinstance(frag_ep, list):
+            if (w := validate_charge_list(frag_ep)):
+                ep_building[frag] = dict(zip(mode_keys_list, [w]))
+            else:
+                ep_building[frag] = dict(zip(mode_keys_list, frag_ep))
+        elif isinstance(frag_ep, np.ndarray):
+                ep_building[frag] = dict(zip(mode_keys_list, [frag_ep]))
+        else:
+            raise ValidationError(f"external_potential: ought to be dict, list, or np.ndarray, not {type(frag_ep)}. Full input: {external_potential}")
+
+    # validate each type of spec in each a/b/c fragment
+    ep_validated = {abc: {} for abc in ep_building}
+    for abc, frag_ep in ep_building.items():
+        if (points := frag_ep.get("points")) is not None:
+            if (vpoints := validate_charge_list(points)):
+                ep_validated[abc]["points"] = vpoints
+            else:
+                raise ValidationError(f"external_potential: bad points (should be 2D, (npts, 4), and np.ndarray or list: {points}\nFull input: {external_potential}")
+
+        if (diffuse := frag_ep.get("diffuse")) is not None:
+            if (vdiffuse := validate_charge_list(diffuse, diffuse=True)):
+                ep_validated[abc]["diffuse"] = vdiffuse
+            else:
+                raise ValidationError(f"external_potential: bad diffuse (should be 2D, (npts, 5), and np.ndarray or list: {diffuse}\nFull input: {external_potential}")
+
+        if (matrix := frag_ep.get("matrix")) is not None:
+            if (vmatrix := validate_potential_array(matrix)):
+                ep_validated[abc]["matrix"] = vmatrix
+            else:
+                raise ValidationError(f"external_potential: bad matrix (should be 2D, square, and psi4.core.Matrix, np.ndarray or list): {matrix}\nFull input: {external_potential}")
+
+    return ep_validated
+
 
 ## Option helpers
 
@@ -796,19 +939,45 @@ _qcvar_transitions = {
     "NON-COUNTERPOISE CORRECTED INTERACTION ENERGY": ("NOCP-CORRECTED INTERACTION ENERGY", 1.7),
     "VALIRON-MAYER FUNCTION COUTERPOISE TOTAL ENERGY": ("VALIRON-MAYER FUNCTION COUNTERPOISE TOTAL ENERGY", 1.7),  # note misspelling
     "VALIRON-MAYER FUNCTION COUTERPOISE INTERACTION ENERGY": ("VMFC-CORRECTED INTERACTION ENERGY", 1.7),  # note misspelling
+    "LOWDIN_SPINS": ("LOWDIN SPINS", 1.9),
 }
 
 _qcvar_cancellations = {
-    "SCSN-MP2 SAME-SPIN CORRELATION ENERGY": ["MP2 SAME-SPIN CORRELATION ENERGY"],
-    "SCSN-MP2 OPPOSITE-SPIN CORRELATION ENERGY": ["MP2 OPPOSITE-SPIN CORRELATION ENERGY"],
-    "SCS-CCSD SAME-SPIN CORRELATION ENERGY": ["CCSD SAME-SPIN CORRELATION ENERGY"],
-    "SCS-CCSD OPPOSITE-SPIN CORRELATION ENERGY": ["CCSD OPPOSITE-SPIN CORRELATION ENERGY"],
-    "SCS-MP2 SAME-SPIN CORRELATION ENERGY": ["MP2 SAME-SPIN CORRELATION ENERGY"],
-    "SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY": ["MP2 OPPOSITE-SPIN CORRELATION ENERGY"],
-    "SCS(N)-OMP2 CORRELATION ENERGY": ["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"],
-    "SCS(N)-OMP2 TOTAL ENERGY": ["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"],
-    "SCSN-OMP2 CORRELATION ENERGY": ["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"],
-    "SCSN-OMP2 TOTAL ENERGY": ["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+    # old: ([recompose from vars], next release)
+    "SCSN-MP2 SAME-SPIN CORRELATION ENERGY": (["MP2 SAME-SPIN CORRELATION ENERGY"], "1.4"),
+    "SCSN-MP2 OPPOSITE-SPIN CORRELATION ENERGY": (["MP2 OPPOSITE-SPIN CORRELATION ENERGY"], "1.4"),
+    "SCS-CCSD SAME-SPIN CORRELATION ENERGY": (["CCSD SAME-SPIN CORRELATION ENERGY"], "1.4"),
+    "SCS-CCSD OPPOSITE-SPIN CORRELATION ENERGY": (["CCSD OPPOSITE-SPIN CORRELATION ENERGY"], "1.4"),
+    "SCS-MP2 SAME-SPIN CORRELATION ENERGY": (["MP2 SAME-SPIN CORRELATION ENERGY"], "1.4"),
+    "SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY": (["MP2 OPPOSITE-SPIN CORRELATION ENERGY"], "1.4"),
+    "SCS(N)-OMP2 CORRELATION ENERGY": (["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"], "1.4"),
+    "SCS(N)-OMP2 TOTAL ENERGY": (["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"], "1.4"),
+    "SCSN-OMP2 CORRELATION ENERGY": (["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"], "1.4"),
+    "SCSN-OMP2 TOTAL ENERGY": (["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"], "1.4"),
+    "1": (["{bsse}-CORRECTED TOTAL ENERGY THROUGH 1-BODY", "{bsse}-CORRECTED INTERACTION ENERGY THROUGH 1-BODY"], "1.10"),
+    "2": (["{bsse}-CORRECTED TOTAL ENERGY THROUGH 2-BODY", "{bsse}-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"], "1.10"),
+    "3": (["{bsse}-CORRECTED TOTAL ENERGY THROUGH 3-BODY", "{bsse}-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"], "1.10"),
+    "4": (["{bsse}-CORRECTED TOTAL ENERGY THROUGH 4-BODY", "{bsse}-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"], "1.10"),
+    "1NOCP": (["NOCP-CORRECTED TOTAL ENERGY THROUGH 1-BODY", "NOCP-CORRECTED INTERACTION ENERGY THROUGH 1-BODY"], "1.10"),
+    "2NOCP": (["NOCP-CORRECTED TOTAL ENERGY THROUGH 2-BODY", "NOCP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"], "1.10"),
+    "3NOCP": (["NOCP-CORRECTED TOTAL ENERGY THROUGH 3-BODY", "NOCP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"], "1.10"),
+    "4NOCP": (["NOCP-CORRECTED TOTAL ENERGY THROUGH 4-BODY", "NOCP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"], "1.10"),
+    "1CP": (["CP-CORRECTED TOTAL ENERGY THROUGH 1-BODY", "CP-CORRECTED INTERACTION ENERGY THROUGH 1-BODY"], "1.10"),
+    "2CP": (["CP-CORRECTED TOTAL ENERGY THROUGH 2-BODY", "CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"], "1.10"),
+    "3CP": (["CP-CORRECTED TOTAL ENERGY THROUGH 3-BODY", "CP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"], "1.10"),
+    "4CP": (["CP-CORRECTED TOTAL ENERGY THROUGH 4-BODY", "CP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"], "1.10"),
+    "1VMFC": (["VMFC-CORRECTED TOTAL ENERGY THROUGH 1-BODY", "VMFC-CORRECTED INTERACTION ENERGY THROUGH 1-BODY"], "1.10"),
+    "2VMFC": (["VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY", "VMFC-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"], "1.10"),
+    "3VMFC": (["VMFC-CORRECTED TOTAL ENERGY THROUGH 3-BODY", "VMFC-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"], "1.10"),
+    "4VMFC": (["VMFC-CORRECTED TOTAL ENERGY THROUGH 4-BODY", "VMFC-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"], "1.10"),
+    "GRADIENT 1": (["{bsse}-CORRECTED TOTAL GRADIENT THROUGH 1-BODY", "{bsse}-CORRECTED INTERACTION GRADIENT THROUGH 1-BODY"], "1.10"),
+    "GRADIENT 2": (["{bsse}-CORRECTED TOTAL GRADIENT THROUGH 2-BODY", "{bsse}-CORRECTED INTERACTION GRADIENT THROUGH 2-BODY"], "1.10"),
+    "GRADIENT 3": (["{bsse}-CORRECTED TOTAL GRADIENT THROUGH 3-BODY", "{bsse}-CORRECTED INTERACTION GRADIENT THROUGH 3-BODY"], "1.10"),
+    "GRADIENT 4": (["{bsse}-CORRECTED TOTAL GRADIENT THROUGH 4-BODY", "{bsse}-CORRECTED INTERACTION GRADIENT THROUGH 4-BODY"], "1.10"),
+    "HESSIAN 1": (["{bsse}-CORRECTED TOTAL HESSIAN THROUGH 1-BODY", "{bsse}-CORRECTED INTERACTION HESSIAN THROUGH 1-BODY"], "1.10"),
+    "HESSIAN 2": (["{bsse}-CORRECTED TOTAL HESSIAN THROUGH 2-BODY", "{bsse}-CORRECTED INTERACTION HESSIAN THROUGH 2-BODY"], "1.10"),
+    "HESSIAN 3": (["{bsse}-CORRECTED TOTAL HESSIAN THROUGH 3-BODY", "{bsse}-CORRECTED INTERACTION HESSIAN THROUGH 3-BODY"], "1.10"),
+    "HESSIAN 4": (["{bsse}-CORRECTED TOTAL HESSIAN THROUGH 4-BODY", "{bsse}-CORRECTED INTERACTION HESSIAN THROUGH 4-BODY"], "1.10"),
 }
 
 
@@ -832,8 +1001,9 @@ def _qcvar_warnings(key: str) -> str:
         return replacement
 
     if key.upper() in _qcvar_cancellations:
-        raise UpgradeHelper(key.upper(), "no direct replacement", 1.4, " Consult QCVariables " + ", ".join(_qcvar_cancellations[key.upper()]) + " to recompose the quantity.")
-
+        replacements, version = _qcvar_cancellations[key.upper()]
+        raise UpgradeHelper(key.upper(), "no direct replacement", version,
+            " Consult QCVariables " + ", ".join(replacements) + " to recompose the quantity.")
     return key
 
 
@@ -882,7 +1052,7 @@ def plump_qcvar(
     elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         reshaper = tuple([3] * _multipole_order.index(p[0]))
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES", "SCF TOTAL ENERGIES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "LOWDIN_SPINS", "MULLIKEN CHARGES", "LOWDIN CHARGES", "LOWDIN SPINS", "SCF TOTAL ENERGIES"]:
         reshaper = (-1, )
     elif "GRADIENT" in key.upper():
         reshaper = (-1, 3)
@@ -928,7 +1098,7 @@ def _qcvar_reshape_set(key: str, val: np.ndarray) -> np.ndarray:
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         val = _multipole_compressor(val, _multipole_order.index(p[0]))
         reshaper = (1, -1)
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES", "SCF TOTAL ENERGIES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "LOWDIN_SPINS", "MULLIKEN CHARGES", "LOWDIN CHARGES", "LOWDIN SPINS", "SCF TOTAL ENERGIES"]:
         reshaper = (1, -1)
 
     if reshaper:
@@ -964,7 +1134,7 @@ def _qcvar_reshape_get(key: str, val: core.Matrix) -> Union[core.Matrix, np.ndar
     elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
         p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
         return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(p[0]))
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES", "SCF TOTAL ENERGIES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "LOWDIN_SPINS", "MULLIKEN CHARGES", "LOWDIN CHARGES", "LOWDIN SPINS", "SCF TOTAL ENERGIES"]:
         reshaper = (-1, )
     if reshaper:
         return val.np.reshape(reshaper)
@@ -1368,107 +1538,15 @@ core.Wavefunction.set_variable = _core_wavefunction_set_variable
 core.Wavefunction.del_variable = _core_wavefunction_del_variable
 core.Wavefunction.variables = _core_wavefunction_variables
 
-## Psi4 v1.4 Export Deprecations
-
-
-def _core_get_variable(key):
-    """
-    .. deprecated:: 1.4
-       Use :py:func:`psi4.core.variable` instead.
-    .. versionchanged:: 1.9
-       Errors rather than warn-and-forward.
-
-    """
-    raise UpgradeHelper("psi4.core.get_variable", "psi4.core.variable", 1.9, f" Replace `get_variable` with `variable` (or `scalar_variable` for scalar variables only).")
-
-
-def _core_get_variables():
-    """
-    .. deprecated:: 1.4
-       Use :py:func:`psi4.core.variables` instead.
-    .. versionchanged:: 1.9
-       Errors rather than warn-and-forward.
-
-    """
-    raise UpgradeHelper("psi4.core.get_variables", "psi4.core.variables", 1.9, f" Replace `psi4.core.get_variables` with `psi4.core.variables` (or `psi4.core.scalar_variables` for scalar variables only).")
-
-
-def _core_get_array_variable(key):
-    """
-    .. deprecated:: 1.4
-       Use :py:func:`psi4.core.variable` instead.
-    .. versionchanged:: 1.9
-       Errors rather than warn-and-forward.
-
-    """
-    raise UpgradeHelper("psi4.core.get_array_variable", "psi4.core.variable", 1.9, f" Replace `psi4.core.get_array_variable` with `psi4.core.variable` (or `psi4.core.array_variable` for array variables only).")
-
-
-def _core_get_array_variables():
-    """
-    .. deprecated:: 1.4
-       Use :py:func:`psi4.core.variables` instead.
-    .. versionchanged:: 1.9
-       Errors rather than warn-and-forward.
-
-    """
-    raise UpgradeHelper("psi4.core.get_array_variables", "psi4.core.variables", 1.9, f" Replace `psi4.core.get_array_variables` with `psi4.core.variables` (or `psi4.core.array_variables` for array variables only).")
-
-
-core.get_variable = _core_get_variable
-core.get_variables = _core_get_variables
-core.get_array_variable = _core_get_array_variable
-core.get_array_variables = _core_get_array_variables
-
-
-def _core_wavefunction_get_variable(cls, key):
-    """
-    .. deprecated:: 1.4
-       Use :py:func:`psi4.core.Wavefunction.variable` instead.
-    .. versionchanged:: 1.9
-       Errors rather than warn-and-forward.
-
-    """
-    raise UpgradeHelper("psi4.core.Wavefunction.get_variable", "psi4.core.Wavefunction.variable", 1.9, f" Replace `psi4.core.Wavefunction.get_variable` with `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.scalar_variable` for scalar variables only).")
-
-
-def _core_wavefunction_get_array(cls, key):
-    """
-    .. deprecated:: 1.4
-       Use :py:func:`psi4.core.Wavefunction.variable` instead.
-    .. versionchanged:: 1.9
-       Errors rather than warn-and-forward.
-
-    """
-    raise UpgradeHelper("psi4.core.Wavefunction.get_array", "psi4.core.Wavefunction.variable", 1.9, f" Replace `psi4.core.Wavefunction.get_array` with `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.array_variable` for array variables only).")
-
-
-def _core_wavefunction_set_array(cls, key, val):
-    """
-    .. deprecated:: 1.4
-       Use :py:func:`psi4.core.Wavefunction.set_variable` instead.
-    .. versionchanged:: 1.9
-       Errors rather than warn-and-forward.
-
-    """
-    raise UpgradeHelper("psi4.core.Wavefunction.set_array", "psi4.core.Wavefunction.set_variable", 1.9, f" Replace `psi4.core.Wavefunction.set_array` with `psi4.core.Wavefunction.set_variable` (or `psi4.core.Wavefunction.set_array_variable` for array variables only).")
-
-
-def _core_wavefunction_arrays(cls):
-    """
-    .. deprecated:: 1.4
-       Use :py:func:`psi4.core.Wavefunction.variables` instead.
-    .. versionchanged:: 1.9
-       Errors rather than warn-and-forward.
-
-    """
-    raise UpgradeHelper("psi4.core.Wavefunction.arrays", "psi4.core.Wavefunction.variables", 1.9, f" Replace `psi4.core.Wavefunction.arrays` with `psi4.core.Wavefunction.variables` (or `psi4.core.Wavefunction.array_variables` for array variables only).")
-
-
-core.Wavefunction.get_variable = _core_wavefunction_get_variable
-core.Wavefunction.get_array = _core_wavefunction_get_array
-core.Wavefunction.set_array = _core_wavefunction_set_array
-core.Wavefunction.arrays = _core_wavefunction_arrays
+# removed in v1.10 to reduce API footprint. deprecated 1.4 and no-op since 1.9
+# core.get_variable
+# core.get_variables
+# core.get_array_variable
+# core.get_array_variables
+# core.Wavefunction.get_variable
+# core.Wavefunction.get_array
+# core.Wavefunction.set_array
+# core.Wavefunction.arrays
 
 
 def _core_wavefunction_frequencies(self):
@@ -1501,13 +1579,16 @@ def _core_doublet(A, B, transA, transB):
 
     .. deprecated:: 1.4
        Use :py:func:`psi4.core.doublet` instead.
+    .. versionchanged:: 1.10
+       Errors rather than warn-and-forward.
 
     """
-    warnings.warn(
-        "Using `psi4.core.Matrix.doublet` instead of `psi4.core.doublet` is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return core.doublet(A, B, transA, transB)
+    # warnings.warn(
+    #     "Using `psi4.core.Matrix.doublet` instead of `psi4.core.doublet` is deprecated, and as soon as 1.4 it will stop working\n",
+    #     category=FutureWarning,
+    #     stacklevel=2)
+    # return core.doublet(A, B, transA, transB)
+    raise UpgradeHelper("psi4.core.Matrix.doublet", "psi4.core.doublet", 1.10, f" Replace `psi4.Matrix` with `psi4.core`.")
 
 
 def _core_triplet(A, B, C, transA, transB, transC):
@@ -1515,15 +1596,19 @@ def _core_triplet(A, B, C, transA, transB, transC):
 
     .. deprecated:: 1.4
        Use :py:func:`psi4.core.triplet` instead.
+    .. versionchanged:: 1.10
+       Errors rather than warn-and-forward.
 
     """
-    warnings.warn(
-        "Using `psi4.core.Matrix.triplet` instead of `psi4.core.triplet` is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return core.triplet(A, B, C, transA, transB, transC)
+    # warnings.warn(
+    #     "Using `psi4.core.Matrix.triplet` instead of `psi4.core.triplet` is deprecated, and as soon as 1.4 it will stop working\n",
+    #     category=FutureWarning,
+    #     stacklevel=2)
+    # return core.triplet(A, B, C, transA, transB, transC)
+    raise UpgradeHelper("psi4.core.Matrix.triplet", "psi4.core.triplet", 1.10, f" Replace `psi4.Matrix` with `psi4.core`.")
 
 
+# removed in v1.10 to reduce API footprint. deprecated 1.4 and no-op since 1.9
 core.Matrix.doublet = staticmethod(_core_doublet)
 core.Matrix.triplet = staticmethod(_core_triplet)
 

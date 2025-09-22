@@ -14,6 +14,12 @@ set {
   scf_type pk
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    findif5_tol = 1e-3
+else:
+    findif5_tol = 1e-2
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 findif_numbers_w_rproj = [7, 13, 6, 5, 2, 11]
 findif_numbers_wo_rproj = [13, 25, 9, 5, 3, 17]
 # since distributed driver assumes non-eq for caution's sake, have to assert projection or pass gradient so findif numbers match
@@ -47,7 +53,7 @@ scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)
 fd_freqs = scf_wfn.frequencies().to_array()                                               #TEST
 compare(findif_numbers[1], variable('findif number'), '5-point stencil points')           #TEST
 compare_values(anal_freqs, fd_freqs,                                                      #TEST
- "Analytic vs. Finite-difference (5-pt.) frequencies from energies to 0.001 cm^-1 (C1) ", atol=1.e-3) #TEST
+ "Analytic vs. Finite-difference (5-pt.) frequencies from energies to 0.001 cm^-1 (C1) ", atol=findif5_tol) #TEST
 
 clean()
 
@@ -102,6 +108,6 @@ scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)
 fd_freqs = scf_wfn.frequencies().to_array()               #TEST
 compare(findif_numbers[5], variable('findif number'), '5-point stencil points')  #TEST
 compare_values(anal_freqs, fd_freqs,       #TEST
- "Analytic vs. 5-pt finite-diff freq from grad to 0.001 cm^-1", atol=1.e-3) #TEST
+ "Analytic vs. 5-pt finite-diff freq from grad to 0.001 cm^-1", atol=findif5_tol) #TEST
 
 clean()

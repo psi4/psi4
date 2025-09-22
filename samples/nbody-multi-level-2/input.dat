@@ -16,11 +16,22 @@ He 0.0 2.0 2.0
 He 2.0 2.0 2.0
 }
 
+# renamed for v1.10
+# * '4NOCP' -> 'NOCP-CORRECTED TOTAL ENERGY THROUGH 4-BODY'
+# * '4CP' ->     'CP-CORRECTED TOTAL ENERGY THROUGH 4-BODY'
+# * '4VMFC' -> 'VMFC-CORRECTED TOTAL ENERGY THROUGH 4-BODY'
+# * '3NOCP' -> 'NOCP-CORRECTED TOTAL ENERGY THROUGH 3-BODY'
+# * '3CP' ->     'CP-CORRECTED TOTAL ENERGY THROUGH 3-BODY'
+# * '3VMFC' -> 'VMFC-CORRECTED TOTAL ENERGY THROUGH 3-BODY'
+
+
 vars_1 = ["NOCP-CORRECTED TOTAL ENERGY", "CP-CORRECTED TOTAL ENERGY","VMFC-CORRECTED TOTAL ENERGY",
         "NOCP-CORRECTED INTERACTION ENERGY", "CP-CORRECTED INTERACTION ENERGY","VMFC-CORRECTED INTERACTION ENERGY"]
 
 vars_2 = ["4NOCP", "4CP", "4VMFC"]
+vars_2 = [f"{bsse}-CORRECTED TOTAL ENERGY THROUGH 4-BODY" for bsse in ["NOCP", "CP", "VMFC"]]
 vars_3 = ["3NOCP", "3CP", "3VMFC"]
+vars_3 = [f"{bsse}-CORRECTED TOTAL ENERGY THROUGH 3-BODY" for bsse in ["NOCP", "CP", "VMFC"]]
 
 levels_1 = {4:'hf/6-31g'}
 levels_2 = {1:'ccsd/6-31g', 4:'hf/6-31g'}
@@ -34,21 +45,17 @@ ref1 = {"NOCP-CORRECTED TOTAL ENERGY"       :-11.41443642869664,
         "CP-CORRECTED INTERACTION ENERGY"   :0.0067480220667928,
         "VMFC-CORRECTED INTERACTION ENERGY" :0.0066798091644493}
 
-ref2 = {"4NOCP"  : -11.47436885006691,
-        "4CP"    : -11.47390053367237,
-        "4VMFC"  : -11.47396874657488}
+ref2 = {"NOCP-CORRECTED TOTAL ENERGY THROUGH 4-BODY"  : -11.47436885006691,
+          "CP-CORRECTED TOTAL ENERGY THROUGH 4-BODY"  : -11.47390053367237,
+        "VMFC-CORRECTED TOTAL ENERGY THROUGH 4-BODY"  : -11.47396874657488}
 
-ref3 = {"3NOCP"  : -11.47411506642999,
-        "3CP"    : -11.47349141626227,
-        "3VMFC"  : -11.47357018907939}
+ref3 = {"NOCP-CORRECTED TOTAL ENERGY THROUGH 3-BODY"  : -11.47411506642999,
+          "CP-CORRECTED TOTAL ENERGY THROUGH 3-BODY"  : -11.47349141626227,
+        "VMFC-CORRECTED TOTAL ENERGY THROUGH 3-BODY"  : -11.47357018907939}
 
-ref4 = {"4NOCP"  : -11.47411915928889,
-        "4CP"    : -11.47340919259218,
-        "4VMFC"  : -11.47348895385019}
-
-
-
-
+ref4 = {"NOCP-CORRECTED TOTAL ENERGY THROUGH 4-BODY"  : -11.47411915928889,
+          "CP-CORRECTED TOTAL ENERGY THROUGH 4-BODY"  : -11.47340919259218,
+        "VMFC-CORRECTED TOTAL ENERGY THROUGH 4-BODY"  : -11.47348895385019}
 
 e, wfn = psi4.energy("", levels=levels_1, bsse_type=['cp','nocp','vmfc'], return_wfn=True, return_total_data=True)
 
@@ -62,6 +69,9 @@ for var in vars_2:
     energy = wfn.variable(var)
 
 clean_variables()
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
 e, wfn = psi4.energy("", levels=levels_3, bsse_type=['cp','nocp','vmfc'], return_wfn=True, return_total_data=True)
 for var in vars_3:

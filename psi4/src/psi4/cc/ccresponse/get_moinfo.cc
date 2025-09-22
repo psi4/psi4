@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -71,16 +71,13 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
     moinfo.nao = wfn->basisset()->nao();
     moinfo.labels = wfn->molecule()->irrep_labels();
 
-    moinfo.sopi = init_int_array(moinfo.nirreps);
-    moinfo.orbspi = init_int_array(moinfo.nirreps);
-    moinfo.clsdpi = init_int_array(moinfo.nirreps);
-    moinfo.openpi = init_int_array(moinfo.nirreps);
-    for (int h = 0; h < moinfo.nirreps; ++h) {
-        moinfo.sopi[h] = wfn->nsopi()[h];
-        moinfo.orbspi[h] = wfn->nmopi()[h];
-        moinfo.clsdpi[h] = wfn->doccpi()[h];
-        moinfo.openpi[h] = wfn->soccpi()[h];
-    }
+    moinfo.sopi = wfn->nsopi();
+    moinfo.orbspi = wfn->nmopi();
+    moinfo.clsdpi = wfn->doccpi() - wfn->frzcpi();
+    moinfo.openpi = wfn->soccpi();
+    moinfo.frdocc = wfn->frzcpi();
+    moinfo.fruocc = wfn->frzvpi();
+    moinfo.uoccpi = moinfo.orbspi - moinfo.clsdpi - moinfo.openpi - moinfo.fruocc - moinfo.frdocc;
 
     moinfo.natom = wfn->molecule()->natom();
 
@@ -90,33 +87,17 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
     moinfo.noei = moinfo.nso * (moinfo.nso + 1) / 2;
     moinfo.noei_ao = moinfo.nao * (moinfo.nao + 1) / 2;
 
-    /* Get frozen and active orbital lookups from CC_INFO */
-    moinfo.frdocc = init_int_array(nirreps);
-    moinfo.fruocc = init_int_array(nirreps);
-    psio_read_entry(PSIF_CC_INFO, "Frozen Core Orbs Per Irrep", (char *)moinfo.frdocc, sizeof(int) * nirreps);
-    psio_read_entry(PSIF_CC_INFO, "Frozen Virt Orbs Per Irrep", (char *)moinfo.fruocc, sizeof(int) * nirreps);
-
     psio_read_entry(PSIF_CC_INFO, "No. of Active Orbitals", (char *)&(nactive), sizeof(int));
     moinfo.nactive = nactive;
 
-    moinfo.nfzc = 0;
-    for (h = 0; h < nirreps; h++) moinfo.nfzc += moinfo.frdocc[h];
+    moinfo.nfzc = moinfo.frdocc.sum();
 
     if (params.ref == 2) { /** UHF **/
 
-        moinfo.aoccpi = init_int_array(nirreps);
-        moinfo.boccpi = init_int_array(nirreps);
-        moinfo.avirtpi = init_int_array(nirreps);
-        moinfo.bvirtpi = init_int_array(nirreps);
-
-        psio_read_entry(PSIF_CC_INFO, "Active Alpha Occ Orbs Per Irrep", (char *)moinfo.aoccpi,
-                        sizeof(int) * moinfo.nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Beta Occ Orbs Per Irrep", (char *)moinfo.boccpi,
-                        sizeof(int) * moinfo.nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Alpha Virt Orbs Per Irrep", (char *)moinfo.avirtpi,
-                        sizeof(int) * moinfo.nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Beta Virt Orbs Per Irrep", (char *)moinfo.bvirtpi,
-                        sizeof(int) * moinfo.nirreps);
+        moinfo.aoccpi = moinfo.clsdpi + wfn->soccpi();
+        moinfo.boccpi = moinfo.clsdpi;
+        moinfo.avirtpi = moinfo.uoccpi;
+        moinfo.bvirtpi = moinfo.uoccpi + wfn->soccpi();
 
         moinfo.aocc_sym = init_int_array(nactive);
         moinfo.bocc_sym = init_int_array(nactive);
@@ -143,11 +124,9 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
 
     } else { /** RHF or ROHF **/
 
-        moinfo.occpi = init_int_array(nirreps);
-        moinfo.virtpi = init_int_array(nirreps);
-        psio_read_entry(PSIF_CC_INFO, "Active Occ Orbs Per Irrep", (char *)moinfo.occpi, sizeof(int) * nirreps);
-        moinfo.act_occpi = Dimension(std::vector<int>(moinfo.occpi, moinfo.occpi + nirreps));
-        psio_read_entry(PSIF_CC_INFO, "Active Virt Orbs Per Irrep", (char *)moinfo.virtpi, sizeof(int) * nirreps);
+        moinfo.occpi = moinfo.clsdpi + wfn->soccpi();
+        moinfo.virtpi = moinfo.uoccpi + wfn->soccpi();
+        moinfo.act_occpi = moinfo.occpi;
 
         moinfo.occ_sym = init_int_array(nactive);
         moinfo.vir_sym = init_int_array(nactive);
@@ -160,21 +139,10 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
         psio_read_entry(PSIF_CC_INFO, "Active Virt Orb Offsets", (char *)moinfo.vir_off, sizeof(int) * moinfo.nirreps);
     }
 
-    /* Adjust clsdpi array for frozen orbitals */
-    for (i = 0; i < nirreps; i++) moinfo.clsdpi[i] -= moinfo.frdocc[i];
-
-    moinfo.uoccpi = init_int_array(moinfo.nirreps);
-    for (i = 0; i < nirreps; i++)
-        moinfo.uoccpi[i] = moinfo.orbspi[i] - moinfo.clsdpi[i] - moinfo.openpi[i] - moinfo.fruocc[i] - moinfo.frdocc[i];
-
-    moinfo.nvirt = 0;
-    for (i = 0; i < nirreps; i++) moinfo.nvirt += moinfo.virtpi[i];
+    moinfo.nvirt = moinfo.virtpi.sum();
 
     /*** arrange active SCF MO's ***/
-    actpi = init_int_array(nirreps);
-    for (h = 0; h < nirreps; h++) actpi[h] = moinfo.orbspi[h] - moinfo.frdocc[h] - moinfo.fruocc[h];
-    moinfo.actpi = actpi;
-    moinfo.act_pi = Dimension(std::vector<int>(moinfo.actpi, moinfo.actpi + nirreps));
+    moinfo.actpi = moinfo.orbspi - moinfo.frdocc - moinfo.fruocc;
     moinfo.Ca = wfn->Ca_subset("SO", "ACTIVE");
 
     /* Get the active virtual orbitals */
@@ -198,10 +166,6 @@ void cleanup() {
     int i;
 
     if (params.ref == 2) { /* UHF */
-        free(moinfo.aoccpi);
-        free(moinfo.boccpi);
-        free(moinfo.avirtpi);
-        free(moinfo.bvirtpi);
         free(moinfo.aocc_sym);
         free(moinfo.bocc_sym);
         free(moinfo.avir_sym);
@@ -214,22 +178,11 @@ void cleanup() {
         for (i = 0; i < moinfo.nirreps; i++)
             if (moinfo.sopi[i] && moinfo.virtpi[i]) free_block(moinfo.C[i]);
         free(moinfo.C);
-        free(moinfo.occpi);
-        free(moinfo.virtpi);
         free(moinfo.occ_sym);
         free(moinfo.vir_sym);
         free(moinfo.occ_off);
         free(moinfo.vir_off);
     }
-
-    free(moinfo.sopi);
-    free(moinfo.orbspi);
-    free(moinfo.clsdpi);
-    free(moinfo.openpi);
-    //    free(moinfo.uoccpi);
-    //    free(moinfo.fruocc);
-    //    free(moinfo.frdocc);
-    free(moinfo.actpi);
 
     free(moinfo.mu_irreps);
     free(moinfo.l_irreps);

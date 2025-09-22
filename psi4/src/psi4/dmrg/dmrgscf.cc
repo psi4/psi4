@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -44,6 +44,7 @@
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libmints/wavefunction.h"
+#include "dmrg.h"
 
 #include "psi4/libmints/typedefs.h"
 //Header above this comment contains typedef std::shared_ptr<psi::Matrix> SharedMatrix;
@@ -178,11 +179,16 @@ void buildQmatACT(CheMPS2::DMRGSCFmatrix& theQmatACT, const CheMPS2::DMRGSCFindi
 }
 
 
-Matrix build_rdm_ao(const CheMPS2::DMRGSCFindices& idx, const std::vector<double>& DMRG1DM, Matrix& MO_RDM, const Matrix& Cmat, const Matrix& aotoso ){
+Matrix build_rdm(const CheMPS2::DMRGSCFindices& idx, const std::vector<double>& DMRG1DM){
 
     const int num_irreps = idx.getNirreps();
     const int tot_dmrg   = idx.getDMRGcumulative( num_irreps );
-    MO_RDM.zero();
+    std::vector<int> dim(num_irreps);
+    for (auto h = 0; h < dim.size(); h++) {
+        dim[h] = idx.getNORB(h);
+    }
+    Dimension nmopi(dim);
+    Matrix MO_RDM(nmopi, nmopi);
 
     for ( int irrep = 0; irrep < num_irreps; irrep++ ){
 
@@ -203,27 +209,31 @@ Matrix build_rdm_ao(const CheMPS2::DMRGSCFindices& idx, const std::vector<double
         }
     }
 
+    return MO_RDM;
+}
+
+Matrix mo_to_ao(Matrix& MO_mat, const Matrix& Cmat, const Matrix& aotoso ){
     const auto& nmopi = Cmat.colspi();
     const int nao = aotoso.rowspi( 0 );
 
-    Matrix AO_RDM(nao, nao);
+    Matrix AO_mat(nao, nao);
 
     const auto tfo = linalg::doublet(aotoso, Cmat, false, false);
-    const auto work = linalg::doublet(tfo, MO_RDM, false, false);
+    const auto work = linalg::doublet(tfo, MO_mat, false, false);
 
     for ( int ao_row = 0; ao_row < nao; ao_row++ ){
         for ( int ao_col = 0; ao_col < nao; ao_col++ ){
             double value = 0.0;
-            for ( int irrep = 0; irrep < num_irreps; irrep++ ){
+            for ( int irrep = 0; irrep < MO_mat.nirrep(); irrep++ ){
                 for ( int mo = 0; mo < nmopi[ irrep ]; mo++ ){
                     value += work.get( irrep, ao_row, mo ) * tfo.get( irrep, ao_col, mo );
                 }
             }
-            AO_RDM.set( 0, ao_row, ao_col, value );
+            AO_mat.set( 0, ao_row, ao_col, value );
         }
     }
 
-    return AO_RDM;
+    return AO_mat;
 
 }
 
@@ -401,8 +411,27 @@ void update_WFNco(const Matrix& C_0, const CheMPS2::DMRGSCFindices& iHandler, Ch
 
 }
 
+SharedWavefunction dmrg(SharedWavefunction ref_wfn, Options& options)
+{
+    auto dmrg = std::make_shared<DMRGSolver>(ref_wfn, options);
+    dmrg->compute_energy();
+    return dmrg;
+}
 
-SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
+DMRGSolver::DMRGSolver(SharedWavefunction ref_wfn, Options& options) : Wavefunction(options)
+{
+    reference_wavefunction_ = ref_wfn;
+    shallow_copy(ref_wfn);
+    Ca_ = ref_wfn->Ca()->clone();
+    Cb_ = ref_wfn->Cb()->clone();
+    Da_ = ref_wfn->Da()->clone();
+    Db_ = ref_wfn->Db()->clone();
+    Fa_ = ref_wfn->Fa()->clone();
+    Fb_ = ref_wfn->Fb()->clone();
+    same_a_b_orbs_ = true;
+}
+
+double DMRGSolver::compute_energy()
 {
 
     /* This plugin is able to perform a DMRG calculation in a molecular orbital active space. */
@@ -411,59 +440,57 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
      *   Environment information   *
      *******************************/
     std::shared_ptr<PSIO> psio(_default_psio_lib_); // Grab the global (default) PSIO object, for file I/O
-    if (!wfn){ throw PSIEXCEPTION("SCF has not been run yet!"); }
+    if (!reference_wavefunction_){ throw PSIEXCEPTION("SCF has not been run yet!"); }
 
     /*************************
      *   Fetch the options   *
      *************************/
 
-    const int wfn_irrep               = options.get_int("DMRG_IRREP");
-    const int wfn_multp               = options.get_int("DMRG_MULTIPLICITY");
-    auto dmrg_states                  = options.get_int_vector("DMRG_SWEEP_STATES");
-    const int ndmrg_states            = options["DMRG_SWEEP_STATES"].size();
-    double * dmrg_econv               = options.get_double_array("DMRG_SWEEP_ENERGY_CONV");
-    const int ndmrg_econv             = options["DMRG_SWEEP_ENERGY_CONV"].size();
-    auto dmrg_maxsweeps               = options.get_int_vector("DMRG_SWEEP_MAX_SWEEPS");
-    const int ndmrg_maxsweeps         = options["DMRG_SWEEP_MAX_SWEEPS"].size();
-    double * dmrg_noiseprefactors     = options.get_double_array("DMRG_SWEEP_NOISE_PREFAC");
-    const int ndmrg_noiseprefactors   = options["DMRG_SWEEP_NOISE_PREFAC"].size();
-    double * dmrg_dvdson_rtol         = options.get_double_array("DMRG_SWEEP_DVDSON_RTOL");
-    const int ndmrg_dvdson_rtol       = options["DMRG_SWEEP_DVDSON_RTOL"].size();
-    const bool dmrg_print_corr        = options.get_bool("DMRG_PRINT_CORR");
-    const bool mps_chkpt              = options.get_bool("DMRG_MPS_WRITE");
-    auto frozen_docc                  = options.get_int_vector("RESTRICTED_DOCC");
-    auto active                       = options.get_int_vector("ACTIVE");
-    const double d_convergence        = options.get_double("DMRG_SCF_GRAD_THR");
-    const bool dmrg_store_unit        = options.get_bool("DMRG_UNITARY_WRITE");
-    const bool dmrg_do_diis           = options.get_bool("DMRG_DIIS");
-    const double dmrg_diis_branch     = options.get_double("DMRG_SCF_DIIS_THR");
-    const bool dmrg_store_diis        = options.get_bool("DMRG_DIIS_WRITE");
-    const int dmrg_max_iter           = options.get_int("DMRG_SCF_MAX_ITER");
-    const int dmrg_which_root         = options.get_int("DMRG_EXCITATION");
-    const bool dmrg_state_avg         = options.get_bool("DMRG_SCF_STATE_AVG");
-    const std::string dmrg_active_space    = options.get_str("DMRG_SCF_ACTIVE_SPACE");
-    const bool dmrg_loc_random        = options.get_bool("DMRG_LOCAL_INIT");
-    const bool dmrg_caspt2            = options.get_bool("DMRG_CASPT2_CALC");
-    const std::string dmrg_caspt2_orb      = options.get_str("DMRG_CASPT2_ORBS");
+    const int wfn_irrep               = options_.get_int("DMRG_IRREP");
+    const int wfn_multp               = options_.get_int("DMRG_MULTIPLICITY");
+    auto dmrg_states                  = options_.get_int_vector("DMRG_SWEEP_STATES");
+    const int ndmrg_states            = options_["DMRG_SWEEP_STATES"].size();
+    double * dmrg_econv               = options_.get_double_array("DMRG_SWEEP_ENERGY_CONV");
+    const int ndmrg_econv             = options_["DMRG_SWEEP_ENERGY_CONV"].size();
+    auto dmrg_maxsweeps               = options_.get_int_vector("DMRG_SWEEP_MAX_SWEEPS");
+    const int ndmrg_maxsweeps         = options_["DMRG_SWEEP_MAX_SWEEPS"].size();
+    double * dmrg_noiseprefactors     = options_.get_double_array("DMRG_SWEEP_NOISE_PREFAC");
+    const int ndmrg_noiseprefactors   = options_["DMRG_SWEEP_NOISE_PREFAC"].size();
+    double * dmrg_dvdson_rtol         = options_.get_double_array("DMRG_SWEEP_DVDSON_RTOL");
+    const int ndmrg_dvdson_rtol       = options_["DMRG_SWEEP_DVDSON_RTOL"].size();
+    const bool dmrg_print_corr        = options_.get_bool("DMRG_PRINT_CORR");
+    const bool mps_chkpt              = options_.get_bool("DMRG_MPS_WRITE");
+    auto frozen_docc                  = options_.get_int_vector("RESTRICTED_DOCC");
+    auto active                       = options_.get_int_vector("ACTIVE");
+    const double d_convergence        = options_.get_double("DMRG_SCF_GRAD_THR");
+    const bool dmrg_store_unit        = options_.get_bool("DMRG_UNITARY_WRITE");
+    const bool dmrg_do_diis           = options_.get_bool("DMRG_DIIS");
+    const double dmrg_diis_branch     = options_.get_double("DMRG_SCF_DIIS_THR");
+    const bool dmrg_store_diis        = options_.get_bool("DMRG_DIIS_WRITE");
+    const int dmrg_max_iter           = options_.get_int("DMRG_SCF_MAX_ITER");
+    const int dmrg_which_root         = options_.get_int("DMRG_EXCITATION");
+    const bool dmrg_state_avg         = options_.get_bool("DMRG_SCF_STATE_AVG");
+    const std::string dmrg_active_space    = options_.get_str("DMRG_SCF_ACTIVE_SPACE");
+    const bool dmrg_loc_random        = options_.get_bool("DMRG_LOCAL_INIT");
+    const bool dmrg_caspt2            = options_.get_bool("DMRG_CASPT2_CALC");
+    const std::string dmrg_caspt2_orb      = options_.get_str("DMRG_CASPT2_ORBS");
     const bool PSEUDOCANONICAL        = ( dmrg_caspt2_orb.compare("PSEUDOCANONICAL") == 0 ) ? true : false;
-    const double dmrg_ipea            = options.get_double("DMRG_CASPT2_IPEA");
-    const double dmrg_imag_shift      = options.get_double("DMRG_CASPT2_IMAG");
-    const bool dmrg_molden            = options.get_bool("DMRG_MOLDEN_WRITE");
-    const bool dmrg_density_ao        = options.get_bool("DMRG_OPDM_AO_PRINT");
+    const double dmrg_ipea            = options_.get_double("DMRG_CASPT2_IPEA");
+    const double dmrg_imag_shift      = options_.get_double("DMRG_CASPT2_IMAG");
+    const bool dmrg_molden            = options_.get_bool("DMRG_MOLDEN_WRITE");
+    const bool dmrg_density_ao        = options_.get_bool("DMRG_OPDM_AO_PRINT");
     const int dmrg_num_vec_diis       = CheMPS2::DMRGSCF_numDIISvecs;
-    const std::string unitaryname     = psi::get_writer_file_prefix( wfn->molecule()->name() ) + ".unitary.h5";
-    const std::string diisname        = psi::get_writer_file_prefix( wfn->molecule()->name() ) + ".DIIS.h5";
+    const std::string unitaryname     = psi::get_writer_file_prefix( molecule()->name() ) + ".unitary.h5";
+    const std::string diisname        = psi::get_writer_file_prefix( molecule()->name() ) + ".DIIS.h5";
 
     /****************************************
      *   Check if the input is consistent   *
      ****************************************/
 
-    const int SyGroup= chemps2_groupnumber( wfn->molecule()->sym_label() );
-    const int nmo    = wfn->nmo();
-    const int nirrep = wfn->nirrep();
-    const auto& orbspi = wfn->nmopi();
-    const auto& docc = wfn->doccpi();
-    const auto& socc = wfn->soccpi();
+    const int SyGroup= chemps2_groupnumber( molecule()->sym_label() );
+    const auto& orbspi = nmopi();
+    const auto& docc = doccpi();
+    const auto& socc = soccpi();
 
     if ( wfn_irrep<0 )                            { throw PSIEXCEPTION("Option DMRG_IRREP (integer) may not be smaller than zero!"); }
     if ( wfn_multp<1 )                            { throw PSIEXCEPTION("Option DMRG_MULTIPLICITY (integer) should be larger or equal to one: DMRG_MULTIPLICITY = (2S+1) >= 1 !"); }
@@ -475,8 +502,8 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     if ( ndmrg_states!=ndmrg_maxsweeps )          { throw PSIEXCEPTION("Options DMRG_SWEEP_STATES (integer array) and DMRG_SWEEP_MAX_SWEEPS (integer array) should contain the same number of elements!"); }
     if ( ndmrg_states!=ndmrg_noiseprefactors )    { throw PSIEXCEPTION("Options DMRG_SWEEP_STATES (integer array) and DMRG_SWEEP_NOISE_PREFAC (double array) should contain the same number of elements!"); }
     if ( ndmrg_states!=ndmrg_dvdson_rtol )        { throw PSIEXCEPTION("Options DMRG_SWEEP_STATES (integer array) and DMRG_SWEEP_DVDSON_RTOL (double array) should contain the same number of elements!"); }
-    if ( options["RESTRICTED_DOCC"].size() != nirrep ){ throw PSIEXCEPTION("Option RESTRICTED_DOCC (integer array) should contain as many elements as there are irreps!"); }
-    if ( options["ACTIVE"].size()      != nirrep ){ throw PSIEXCEPTION("Option ACTIVE (integer array) should contain as many elements as there are irreps!"); }
+    if ( options_["RESTRICTED_DOCC"].size() != nirrep_ ){ throw PSIEXCEPTION("Option RESTRICTED_DOCC (integer array) should contain as many elements as there are irreps!"); }
+    if ( options_["ACTIVE"].size()      != nirrep_ ){ throw PSIEXCEPTION("Option ACTIVE (integer array) should contain as many elements as there are irreps!"); }
     for ( int cnt=0; cnt<ndmrg_states; cnt++ ){
        if ( dmrg_states[cnt] < 2 ){
           throw PSIEXCEPTION("Entries in DMRG_SWEEP_STATES (integer array) should be larger than 1!");
@@ -514,36 +541,36 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
      *   Print orbital information; check consistency of frozen_docc and active   *
      ******************************************************************************/
 
-    std::vector<int> nvirtual(nirrep);
+    std::vector<int> nvirtual(nirrep_);
     bool virtualsOK = true;
-    for (int cnt=0; cnt<nirrep; cnt++){
+    for (int cnt=0; cnt<nirrep_; cnt++){
        nvirtual[cnt] = orbspi[cnt] - frozen_docc[cnt] - active[cnt];
        if ( nvirtual[cnt] < 0 ){ virtualsOK = false; }
     }
     (*outfile->stream()) << "wfn_irrep   = " << wfn_irrep << std::endl;
     (*outfile->stream()) << "wfn_multp   = " << wfn_multp << std::endl;
     (*outfile->stream()) << "numOrbitals = [ " << orbspi[0];
-    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile->stream()) << " , " << orbspi[cnt];      } (*outfile->stream()) << " ]" << std::endl;
+    for (int cnt=1; cnt<nirrep_; cnt++){ (*outfile->stream()) << " , " << orbspi[cnt];      } (*outfile->stream()) << " ]" << std::endl;
     (*outfile->stream()) << "R(O)HF DOCC = [ " << docc[0];
-    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile->stream()) << " , " << docc[cnt];        } (*outfile->stream()) << " ]" << std::endl;
+    for (int cnt=1; cnt<nirrep_; cnt++){ (*outfile->stream()) << " , " << docc[cnt];        } (*outfile->stream()) << " ]" << std::endl;
     (*outfile->stream()) << "R(O)HF SOCC = [ " << socc[0];
-    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile->stream()) << " , " << socc[cnt];        } (*outfile->stream()) << " ]" << std::endl;
+    for (int cnt=1; cnt<nirrep_; cnt++){ (*outfile->stream()) << " , " << socc[cnt];        } (*outfile->stream()) << " ]" << std::endl;
     (*outfile->stream()) << "frozen_docc = [ " << frozen_docc[0];
-    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile->stream()) << " , " << frozen_docc[cnt]; } (*outfile->stream()) << " ]" << std::endl;
+    for (int cnt=1; cnt<nirrep_; cnt++){ (*outfile->stream()) << " , " << frozen_docc[cnt]; } (*outfile->stream()) << " ]" << std::endl;
     (*outfile->stream()) << "active      = [ " << active[0];
-    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile->stream()) << " , " << active[cnt];      } (*outfile->stream()) << " ]" << std::endl;
+    for (int cnt=1; cnt<nirrep_; cnt++){ (*outfile->stream()) << " , " << active[cnt];      } (*outfile->stream()) << " ]" << std::endl;
     (*outfile->stream()) << "virtual     = [ " << nvirtual[0];
-    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile->stream()) << " , " << nvirtual[cnt];    } (*outfile->stream()) << " ]" << std::endl;
+    for (int cnt=1; cnt<nirrep_; cnt++){ (*outfile->stream()) << " , " << nvirtual[cnt];    } (*outfile->stream()) << " ]" << std::endl;
     if ( !virtualsOK ){ throw PSIEXCEPTION("For at least one irrep: frozen_docc[ irrep ] + active[ irrep ] > numOrbitals[ irrep ]!"); }
 
     /*******************************************
      *   Create another bit of DMRG preamble   *
      *******************************************/
-    CheMPS2::DMRGSCFindices iHandler(nmo, SyGroup, frozen_docc.data(), active.data(), nvirtual.data());
+    CheMPS2::DMRGSCFindices iHandler(nmo_, SyGroup, frozen_docc.data(), active.data(), nvirtual.data());
     CheMPS2::DMRGSCFunitary unitary(&iHandler);
     std::unique_ptr<CheMPS2::DIIS> theDIIS = nullptr;
     CheMPS2::DMRGSCFintegrals theRotatedTEI(&iHandler);
-    const int nOrbDMRG = iHandler.getDMRGcumulative(nirrep);
+    const int nOrbDMRG = iHandler.getDMRGcumulative(nirrep_);
     std::vector<double> DMRG1DM(nOrbDMRG * nOrbDMRG);
     std::vector<double> DMRG2DM(nOrbDMRG * nOrbDMRG * nOrbDMRG * nOrbDMRG);
     CheMPS2::DMRGSCFmatrix theFmatrix(&iHandler);
@@ -561,18 +588,18 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
      ***************************************************/
 
     int nElectrons = 0;
-    for (int cnt=0; cnt<nirrep; cnt++){ nElectrons += 2 * docc[cnt] + socc[cnt]; }
+    for (int cnt=0; cnt<nirrep_; cnt++){ nElectrons += 2 * docc[cnt] + socc[cnt]; }
     (*outfile->stream()) << "nElectrons  = " << nElectrons << std::endl;
 
     // Number of electrons in the active space
     int nDMRGelectrons = nElectrons;
-    for (int cnt=0; cnt<nirrep; cnt++){ nDMRGelectrons -= 2 * frozen_docc[cnt]; }
+    for (int cnt=0; cnt<nirrep_; cnt++){ nDMRGelectrons -= 2 * frozen_docc[cnt]; }
     (*outfile->stream()) << "nEl. active = " << nDMRGelectrons << std::endl;
 
     // Create the CheMPS2::Hamiltonian --> fill later
     std::vector<int> orbitalIrreps(nOrbDMRG);
     int counterFillOrbitalIrreps = 0;
-    for (int h=0; h<nirrep; h++){
+    for (int h=0; h<nirrep_; h++){
        for (int cnt=0; cnt<active[h]; cnt++){ //Only the active space is treated with DMRG-SCF!
           orbitalIrreps[counterFillOrbitalIrreps] = h;
           counterFillOrbitalIrreps++;
@@ -592,12 +619,12 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
      *   Start with DMRG                  *
      **************************************/
 
-    Matrix work1("work1", nirrep, orbspi, orbspi);
-    Matrix work2("work2", nirrep, orbspi, orbspi);
-    std::shared_ptr<JK> myJK = std::make_shared<DiskJK>(wfn->basisset(), options);
+    Matrix work1("work1", orbspi, orbspi);
+    Matrix work2("work2", orbspi, orbspi);
+    std::shared_ptr<JK> myJK = std::make_shared<DiskJK>(basisset(), options_);
     myJK->set_cutoff(0.0);
     myJK->initialize();
-    const auto orig_coeff = *wfn->Ca()->clone();
+    const auto orig_coeff = *Ca()->clone();
 
     std::vector<int> OAorbs; // Occupied + active
     std::vector<int> Aorbs;  // Only active
@@ -623,7 +650,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     spaces.push_back(  Vorbs_ptr   );
     spaces.push_back( MOSpace::all );
     // CheMPS2 requires RHF or ROHF orbitals.
-    IntegralTransform ints(IntegralTransform(wfn, spaces, IntegralTransform::TransformationType::Restricted));
+    IntegralTransform ints(IntegralTransform(shared_from_this(), spaces, IntegralTransform::TransformationType::Restricted));
     ints.set_keep_iwl_so_ints( true );
     ints.set_keep_dpd_so_ints( true );
 
@@ -648,7 +675,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
     int theDIISvectorParamSize = 0;
     int maxlinsize = 0;
-    for (int irrep=0; irrep<nirrep; irrep++){
+    for (int irrep=0; irrep<nirrep_; irrep++){
         const int linsize_irrep = iHandler.getNORB(irrep);
         theDIISvectorParamSize += linsize_irrep*(linsize_irrep-1)/2;
         if (linsize_irrep>maxlinsize){ maxlinsize = linsize_irrep; }
@@ -738,10 +765,10 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         if (( dmrg_store_diis ) && (updateNorm!=1.0) && (theDIIS!=nullptr)){ theDIIS->saveDIIS( diisname ); }
 
         //Fill HamDMRG
-        update_WFNco(orig_coeff, iHandler, unitary, *wfn);
-        buildTmatrix(theTmatrix, iHandler, *wfn->Ca(), *wfn);
-        buildQmatOCC(theQmatOCC, iHandler, work1, work2, *wfn->Ca(), *myJK);
-        buildHamDMRG(ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, *wfn);
+        update_WFNco(orig_coeff, iHandler, unitary, *this);
+        buildTmatrix(theTmatrix, iHandler, *Ca_, *this);
+        buildQmatOCC(theQmatOCC, iHandler, work1, work2, *Ca_, *myJK);
+        buildHamDMRG(ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, *this);
 
         //Localize the active space and reorder the orbitals within each irrep based on the exchange matrix
         if (( dmrg_active_space.compare("LOC")==0 ) && (theDIIS==nullptr)){ //When the DIIS has started: stop
@@ -769,10 +796,10 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             }
             system(("rm " + chemps2filename).c_str());
 
-            update_WFNco(orig_coeff, iHandler, unitary, *wfn);
-            buildTmatrix(theTmatrix, iHandler, *wfn->Ca(), *wfn);
-            buildQmatOCC(theQmatOCC, iHandler, work1, work2, *wfn->Ca(), *myJK);
-            buildHamDMRG(ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, *wfn );
+            update_WFNco(orig_coeff, iHandler, unitary, *this);
+            buildTmatrix(theTmatrix, iHandler, *Ca_, *this);
+            buildQmatOCC(theQmatOCC, iHandler, work1, work2, *Ca_, *myJK);
+            buildHamDMRG(ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, *this );
             (*outfile->stream()) << "Rotated the active space to localized orbitals, sorted according to the exchange matrix." << std::endl;
 
         }
@@ -827,9 +854,9 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             CheMPS2::CASSCF::copy_active( DMRG1DM.data(), &theFmatrix, &iHandler, true );
             CheMPS2::CASSCF::block_diagonalize( 'A', &theFmatrix, &unitary, mem1.data(), mem2.data(), &iHandler, true, DMRG2DM.data(), nullptr, nullptr ); // Unitary is updated and DMRG2DM rotated
             CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM.data(), DMRG2DM.data() );
-            update_WFNco(orig_coeff, iHandler, unitary, *wfn);
-            buildTmatrix(theTmatrix, iHandler, *wfn->Ca(), *wfn);
-            buildQmatOCC(theQmatOCC, iHandler, work1, work2, *wfn->Ca(), *myJK);
+            update_WFNco(orig_coeff, iHandler, unitary, *this);
+            buildTmatrix(theTmatrix, iHandler, *Ca_, *this);
+            buildQmatOCC(theQmatOCC, iHandler, work1, work2, *Ca_, *myJK);
             (*outfile->stream()) << "Rotated the active space to natural orbitals, sorted according to the NOON." << std::endl;
         }
 
@@ -838,7 +865,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             break;
         }
 
-        buildQmatACT( theQmatACT, iHandler, DMRG1DM, work1, work2, *wfn->Ca(), *myJK);
+        buildQmatACT( theQmatACT, iHandler, DMRG1DM, work1, work2, *Ca_, *myJK);
         fillRotatedTEI_coulomb(  ints, OAorbs_ptr, theRotatedTEI, iHandler, psio);
         fillRotatedTEI_exchange( ints, OAorbs_ptr, Vorbs_ptr,  theRotatedTEI, iHandler, psio );
 
@@ -868,10 +895,10 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     }
 
     outfile->Printf("The DMRG-SCF energy = %3.10f \n", Energy);
-    wfn->set_energy(Energy);
-    wfn->set_scalar_variable("CURRENT ENERGY", Energy);
-    wfn->set_scalar_variable("DMRG-SCF TOTAL ENERGY", Energy);
-    wfn->set_module("chemps2");
+    set_energy(Energy);
+    set_scalar_variable("CURRENT ENERGY", Energy);
+    set_scalar_variable("DMRG-SCF TOTAL ENERGY", Energy);
+    set_module("chemps2");
 
     if ((( dmrg_molden ) || (( dmrg_caspt2 ) && ( PSEUDOCANONICAL ))) && ( nIterations > 0 )){
 
@@ -885,53 +912,34 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         CheMPS2::CASSCF::block_diagonalize( 'A', &theFmatrix, &unitary, mem1.data(), mem2.data(), &iHandler, false, DMRG2DM.data(), nullptr, nullptr );
         CheMPS2::CASSCF::block_diagonalize( 'V', &theFmatrix, &unitary, mem1.data(), mem2.data(), &iHandler, false, nullptr, nullptr, nullptr );
         CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM.data(), DMRG2DM.data());
-        update_WFNco(orig_coeff, iHandler, unitary, *wfn);
-        buildTmatrix(theTmatrix, iHandler, *wfn->Ca(), *wfn);
-        buildQmatOCC(theQmatOCC, iHandler, work1, work2, *wfn->Ca(), *myJK);
-        buildQmatACT(theQmatACT, iHandler, DMRG1DM, work1, work2, *wfn->Ca(), *myJK);
+        update_WFNco(orig_coeff, iHandler, unitary, *this);
+        buildTmatrix(theTmatrix, iHandler, *Ca(), *this);
+        buildQmatOCC(theQmatOCC, iHandler, work1, work2, *Ca(), *myJK);
+        buildQmatACT(theQmatACT, iHandler, DMRG1DM, work1, work2, *Ca(), *myJK);
         CheMPS2::CASSCF::construct_fock(&theFmatrix, &theTmatrix, &theQmatOCC, &theQmatACT, &iHandler );
 
-    }
-
-    if (( dmrg_molden ) && ( nIterations > 0 )){
-
-        auto occupation = std::make_shared<Vector>(orbspi);
-        for ( int h = 0; h < nirrep; h++ ){
-            const int NOCC = iHandler.getNOCC( h );
-            const int NACT = iHandler.getNDMRG( h );
-            const int NVIR = iHandler.getNVIRT( h );
-            for ( int occ = 0; occ < NOCC; occ++ ){
-               occupation->set( h, occ, 1.0 );
-            }
-            for ( int act = 0; act < NACT; act++ ){
-                const double rdmvalue = DMRG1DM[ ( 1 + nOrbDMRG ) * ( iHandler.getDMRGcumulative( h ) + act ) ];
-                occupation->set( h, NOCC + act, 0.5 * rdmvalue );
-            }
-            for ( int vir = 0; vir < NVIR; vir++ ){
-                occupation->set( h, NOCC + NACT + vir, 0.0 );
-            }
-        }
-
-        auto sp_energies = std::make_shared<Vector>(orbspi);
-        for ( int h = 0; h < nirrep; h++ ){
+        epsilon_a_->set_name("DMRG Pseudocanonical Orbital Energies");
+        for ( int h = 0; h < nirrep_; h++ ){
             const int NOCC = iHandler.getNOCC( h );
             const int NACT = iHandler.getNDMRG( h );
             const int NVIR = iHandler.getNVIRT( h );
             for ( int orb = 0; orb < orbspi[ h ]; orb++ ){
-               sp_energies->set( h, orb, theFmatrix.get(h, orb, orb ) );
+               epsilon_a_->set( h, orb, theFmatrix.get(h, orb, orb ) );
             }
         }
+        epsilon_b_ = epsilon_a_;
+    }
 
-        MoldenWriter molden(wfn);
-        std::string filename = get_writer_file_prefix( wfn->molecule()->name() ) + ".pseudocanonical.molden";
-        outfile->Printf( "Write molden file to %s. \n", filename.c_str() );
-        molden.write( filename, wfn->Ca(), wfn->Ca(), sp_energies, sp_energies, occupation, occupation, true );
-
+    if (( dmrg_molden ) && ( nIterations > 0 )){
+        // Prevent writing beta orbitals.
+        // This may need to be revisited, if we ever have gradients.
+        same_a_b_dens_ = true;
     }
 
     // Reference on what the density is:
     // https://github.com/SebWouters/CheMPS2/issues/83
-    wfn->density_map_["DMRG MS-AVERAGED"] = std::make_shared<Matrix>(std::move(build_rdm_ao(iHandler, DMRG1DM, work1, *wfn->Ca(), *wfn->aotoso())));
+    density_map_["DMRG MS-AVERAGED (MO)"] = std::make_shared<Matrix>(std::move(build_rdm(iHandler, DMRG1DM)));
+    density_map_["DMRG MS-AVERAGED"] = std::make_shared<Matrix>(std::move(mo_to_ao(*density_map_["DMRG MS-AVERAGED (MO)"], *Ca_, *aotoso())));
 
     if ( dmrg_density_ao ){
 
@@ -941,7 +949,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         (*outfile->stream()) << "###                      ###" << std::endl;
         (*outfile->stream()) << "############################" << std::endl;
         (*outfile->stream()) << "Please check the molden file for AO basis function information." << std::endl;
-        wfn->density_map_["DMRG MS-AVERAGED"]->print("outfile");
+        density_map_["DMRG MS-AVERAGED"]->print("outfile");
     }
 
     if (( dmrg_caspt2 ) && ( nIterations > 0 )){
@@ -952,7 +960,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         (*outfile->stream()) << "###                     ###" << std::endl;
         (*outfile->stream()) << "###########################" << std::endl;
 
-        buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, *wfn );
+        buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, *this );
 
         std::vector<double> contract(tot_dmrg_power6);
         std::vector<double> three_dm(tot_dmrg_power6);
@@ -976,7 +984,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             theDMRG->calc_rdms_and_correlations( true );
             CheMPS2::CASSCF::copy2DMover( theDMRG->get2DM(), nOrbDMRG, DMRG2DM.data());
             CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM.data(), DMRG2DM.data());
-            buildQmatACT( theQmatACT, iHandler, DMRG1DM, work1, work2, *wfn->Ca(), *myJK);
+            buildQmatACT( theQmatACT, iHandler, DMRG1DM, work1, work2, *Ca_, *myJK);
             CheMPS2::CASSCF::construct_fock(&theFmatrix, &theTmatrix, &theQmatOCC, &theQmatACT, &iHandler );
             CheMPS2::CASSCF::copy_active(&theFmatrix, mem2.data(), &iHandler );                   // Fock
             for ( int cnt = 0; cnt < tot_dmrg_power6; cnt++ ){ contract[ cnt ] = 0.0; }
@@ -1024,10 +1032,10 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
            CheMPS2::CASSCF::block_diagonalize( 'A', &theFmatrix, &unitary, mem1.data(), mem2.data(), &iHandler, false, DMRG2DM.data(), three_dm.data(), contract.data() ); // 2-RDM, 3-RDM, and trace( Fock * cu(4)-4-RDM )
            CheMPS2::CASSCF::block_diagonalize( 'V', &theFmatrix, &unitary, mem1.data(), mem2.data(), &iHandler, false, nullptr, nullptr, nullptr );
            CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM.data(), DMRG2DM.data()); // 1-RDM
-           update_WFNco(orig_coeff, iHandler, unitary, *wfn);
-           buildTmatrix(theTmatrix, iHandler, *wfn->Ca(), *wfn);
-           buildQmatOCC(theQmatOCC, iHandler, work1, work2, *wfn->Ca(), *myJK);
-           buildQmatACT(theQmatACT, iHandler, DMRG1DM, work1, work2, *wfn->Ca(), *myJK);
+           update_WFNco(orig_coeff, iHandler, unitary, *this);
+           buildTmatrix(theTmatrix, iHandler, *Ca_, *this);
+           buildQmatOCC(theQmatOCC, iHandler, work1, work2, *Ca_, *myJK);
+           buildQmatACT(theQmatACT, iHandler, DMRG1DM, work1, work2, *Ca_, *myJK);
            CheMPS2::CASSCF::construct_fock(&theFmatrix, &theTmatrix, &theQmatOCC, &theQmatACT, &iHandler ); // Fock
        }
 
@@ -1063,14 +1071,28 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
        outfile->Printf("The DMRG-CASPT2 variational correction energy = %3.10f \n", E_CASPT2);
        outfile->Printf("The DMRG-CASPT2 energy = %3.10f \n", Energy + E_CASPT2);
-       wfn->set_energy(Energy + E_CASPT2);
-       wfn->set_scalar_variable("CURRENT ENERGY", Energy + E_CASPT2);
-       wfn->set_scalar_variable("DMRG-CASPT2 TOTAL ENERGY", Energy + E_CASPT2);
-       wfn->set_module("chemps2");
+       set_energy(Energy + E_CASPT2);
+       set_scalar_variable("CURRENT ENERGY", Energy + E_CASPT2);
+       set_scalar_variable("DMRG-CASPT2 TOTAL ENERGY", Energy + E_CASPT2);
+       set_module("chemps2");
 
     }
 
-    return wfn;
+    return this->scalar_variable("CURRENT ENERGY");
+}
+
+SharedVector DMRGSolver::occupation_a() const {
+    if (density_map_.find("DMRG MS-AVERAGED (MO)") == density_map_.end()) {
+        throw PSIEXCEPTION("Density matrix not yet set.");
+    }
+    const auto& density = density_map_.at("DMRG MS-AVERAGED (MO)");
+    auto occupation = std::make_shared<Vector>(density->rowspi());
+    for (size_t h = 0; h < occupation->nirrep(); h++) {
+        for (size_t i = 0; i < occupation->dim(h); i++) {
+            occupation->set(h, i, 0.5 * density->get(h, i, i));
+        }
+    }
+    return occupation;
 }
 
 }} // End Namespaces

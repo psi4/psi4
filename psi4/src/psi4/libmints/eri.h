@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -138,6 +138,9 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
                                   const libint2::ShellPair *sp34 = nullptr) = 0;
 
     void compute_shell_blocks(int shellpair12, int shellpair34, int npair12 = -1, int npair34 = -1) override;
+
+    /// Manual sieve initialization specific to Libint2
+    virtual void initialize_sieve() override;
 };
 
 class Libint2ERI : public Libint2TwoElectronInt {

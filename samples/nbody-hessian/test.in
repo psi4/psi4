@@ -10,6 +10,9 @@ no_com
 no_reorient
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 for bsse_type in ["nocp", "cp", "vmfc"]:
     h, wfn = psi4.hessian('SCF/STO-3G', molecule=dimer, bsse_type=bsse_type, max_nbody=2, return_total_data=True, return_wfn=True)
 
@@ -17,3 +20,4 @@ for bsse_type in ["nocp", "cp", "vmfc"]:
                                             dertype=1, return_wfn=True)
 
     compare_arrays(h, h_fd_g, 5, bsse_type + '-corrected Hessian from finite differences of the gradient') #TEST
+    compare({"nocp": 3, "cp": 5, "vmfc": 5}[bsse_type], variable("nbody number"), bsse_type + " count")  #TEST

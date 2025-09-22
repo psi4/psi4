@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -425,107 +425,19 @@ void DFOCC::occ_iterations() {
 //=========================
 void DFOCC::save_mo_to_wfn() {
 
-    name_=wfn_type_.c_str();
+    name_=wfn_type_;
     module_="dfocc";
 
     // Save MOs to wfn_; We cannot semicanonicalize them, as we'd need to do the same to all MO-basis quantities
-    if (reference_ == "RESTRICTED") {
-        SharedMatrix Ca = std::make_shared<Matrix>("Alpha MO Coefficients", nso_, nmo_);
-        CmoA->to_shared_matrix(Ca);
-        Ca_->copy(Ca);
+    SharedMatrix Ca = std::make_shared<Matrix>("Alpha MO Coefficients", nso_, nmo_);
+    CmoA->to_shared_matrix(Ca);
+    Ca_->copy(Ca);
+    Ca.reset();
 
-        if (options_.get_str("MOLDEN_WRITE") == "TRUE") {
-            // Diagonalize OPDM to obtain NOs
-            SharedMatrix aevecs(new Matrix("Eigenvectors (Alpha)", nmo_, nmo_));
-            SharedVector aevals(new Vector("Eigenvalues (Alpha)", nmo_));
-
-            // Diagonaliz OPDM
-            auto a_opdm = std::make_shared<Matrix>("Alpha OPDM", nmo_, nmo_);
-            G1->to_shared_matrix(a_opdm);
-            // scale by 1/2 because MoldenWrite expect only alpha part
-            a_opdm->scale(0.5);
-            a_opdm->diagonalize(aevecs, aevals, descending);
-
-            // Form transformation matrix from AO to NO
-            SharedMatrix aAONO(new Matrix("NOs (Alpha)", nso_, nmo_));
-            aAONO->gemm(false, false, 1.0, Ca, aevecs, 0.0);
-
-            // Write to MOLDEN file
-            std::shared_ptr<MoldenWriter> molden(new MoldenWriter(shared_from_this()));
-            std::string filename = get_writer_file_prefix(molecule_->name()) + "_dfocc.molden";
-
-            // For now use zeros instead of energies, and NO occupation numbers as occupation numbers
-            SharedVector dummy_a(new Vector("Dummy Vector Alpha", nmo_));
-            for (int i = 0; i < naoccA; ++i) eps_orbA->set(i + nfrzc, eigooA->get(i));
-            for (int a = 0; a < navirA; ++a) eps_orbA->set(a + noccA, eigvvA->get(a));
-            eps_orbA->to_shared_vector(dummy_a);
-
-            // write
-            molden->write(filename, aAONO, aAONO, dummy_a, dummy_a, aevals, aevals, true);
-
-            // free
-            aAONO.reset();
-            a_opdm.reset();
-        }
-
-        Ca.reset();
-    }
-
-    else if (reference_ == "UNRESTRICTED") {
-        SharedMatrix Ca = std::make_shared<Matrix>("Alpha MO Coefficients", nso_, nmo_);
+    if (reference_ == "UNRESTRICTED") {
         SharedMatrix Cb = std::make_shared<Matrix>("Beta MO Coefficients", nso_, nmo_);
-        CmoA->to_shared_matrix(Ca);
         CmoB->to_shared_matrix(Cb);
-
-        Ca_->copy(Ca);
         Cb_->copy(Cb);
-
-        if (options_.get_str("MOLDEN_WRITE") == "TRUE") {
-            // Diagonalize OPDM to obtain NOs
-            SharedMatrix aevecs(new Matrix("Eigenvectors (Alpha)", nmo_, nmo_));
-            SharedMatrix bevecs(new Matrix("Eigenvectors (Beta)", nmo_, nmo_));
-            SharedVector aevals(new Vector("Eigenvalues (Alpha)", nmo_));
-            SharedVector bevals(new Vector("Eigenvalues (Beta)", nmo_));
-
-            // Diagonaliz OPDM
-            SharedMatrix a_opdm = std::make_shared<Matrix>("Alpha OPDM", nmo_, nmo_);
-            SharedMatrix b_opdm = std::make_shared<Matrix>("Alpha OPDM", nmo_, nmo_);
-            G1A->to_shared_matrix(a_opdm);
-            G1B->to_shared_matrix(b_opdm);
-            a_opdm->diagonalize(aevecs, aevals, descending);
-            b_opdm->diagonalize(bevecs, bevals, descending);
-
-            // Form transformation matrix from AO to NO
-            SharedMatrix aAONO(new Matrix("NOs (Alpha)", nso_, nmo_));
-            SharedMatrix bAONO(new Matrix("NOs (Beta)", nso_, nmo_));
-            aAONO->gemm(false, false, 1.0, Ca, aevecs, 0.0);
-            bAONO->gemm(false, false, 1.0, Cb, bevecs, 0.0);
-
-            // Write to MOLDEN file
-            std::shared_ptr<MoldenWriter> molden(new MoldenWriter(shared_from_this()));
-            std::string filename = get_writer_file_prefix(molecule_->name()) + "_dfocc.molden";
-
-            // For now use zeros instead of energies, and NO occupation numbers as occupation numbers
-            SharedVector dummy_a(new Vector("Dummy Vector Alpha", nmo_));
-            SharedVector dummy_b(new Vector("Dummy Vector Beta", nmo_));
-            for (int i = 0; i < naoccA; ++i) eps_orbA->set(i + nfrzc, eigooA->get(i));
-            for (int a = 0; a < navirA; ++a) eps_orbA->set(a + noccA, eigvvA->get(a));
-            for (int i = 0; i < naoccB; ++i) eps_orbB->set(i + nfrzc, eigooB->get(i));
-            for (int a = 0; a < navirB; ++a) eps_orbB->set(a + noccB, eigvvB->get(a));
-            eps_orbA->to_shared_vector(dummy_a);
-            eps_orbB->to_shared_vector(dummy_b);
-
-            // write
-            molden->write(filename, aAONO, bAONO, dummy_a, dummy_b, aevals, bevals, true);
-
-            // free
-            aAONO.reset();
-            bAONO.reset();
-            a_opdm.reset();
-            b_opdm.reset();
-        }
-
-        Ca.reset();
         Cb.reset();
     }
 

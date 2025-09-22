@@ -32,5 +32,8 @@ set {
     incfock_full_fock_every 4
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 ds_energy = energy('b3lyp')
 psi4.compare_values(ref_energy, ds_energy, 9, "B3LYP Density Screening Energy")

@@ -1,5 +1,5 @@
 if(${ENABLE_dkh})
-    find_package(dkh 1.2 CONFIG QUIET)
+    find_package(dkh 1.2 CONFIG QUIET)  # edit in codedeps
 
     if(${dkh_FOUND})
         get_property(_loc TARGET dkh::dkh PROPERTY LOCATION)
@@ -22,7 +22,7 @@ if(${ENABLE_dkh})
 
         ExternalProject_Add(dkh_external
             DEPENDS lapack_external
-            URL https://github.com/psi4/dkh/archive/3ba0128.tar.gz  # v1.2 + cmake
+            URL https://github.com/psi4/dkh/archive/3ba0128.tar.gz  # v1.2+  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -40,6 +40,7 @@ if(${ENABLE_dkh})
                        -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+                       -DCMAKE_POLICY_VERSION_MINIMUM=3.5
             CMAKE_CACHE_ARGS -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
                              -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}

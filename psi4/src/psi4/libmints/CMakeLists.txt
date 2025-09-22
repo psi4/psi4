@@ -172,3 +172,10 @@ if(TARGET BrianQC::static_wrapper)
       $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
     )
 endif()
+
+if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
+  target_compile_definitions(mints
+    PUBLIC
+      USING_OpenOrbitalOptimizer
+    )
+endif()

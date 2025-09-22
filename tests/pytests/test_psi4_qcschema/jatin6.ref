@@ -151,7 +151,7 @@
     "basis": "CC-PVDZ"
   },
   "keywords": {
-    "d_convergence": 1e-11,
+    "d_convergence": 5e-9,
     "df_basis_elst": "cc-pVDZ-RI",
     "guess": "SAD",
     "print": 1,

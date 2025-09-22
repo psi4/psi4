@@ -14,6 +14,9 @@ set {
   mo_maxiter 200
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 # Test values come from 3-point finite difference of analytic gradients from #TEST
 # Jonathon's Psi4Numpy code, run 03/20, e_convergence 10, orbital convergence 7. #TEST
 grad_freqs = psi4.Vector(7)  #TEST

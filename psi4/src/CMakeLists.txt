@@ -145,6 +145,13 @@ if(TARGET IntegratorXX::IntegratorXX)
     )
 endif()
 
+if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
+  target_link_libraries(core
+    PRIVATE
+      OpenOrbitalOptimizer::OpenOrbitalOptimizer
+    )
+endif()
+
 if(TARGET OpenTrustRegion::OpenTrustRegion)
   target_link_libraries(core
     PRIVATE

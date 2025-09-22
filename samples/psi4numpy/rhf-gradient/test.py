@@ -37,7 +37,9 @@ options = {'BASIS':'STO-3G', 'SCF_TYPE':'PK',
            'D_CONVERGENCE':1e-10}
 
 psi4.set_options(options)
-
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    print("Falling back to internal orbopt")
+    psi4.set_options({"orbital_optimizer_package": "internal"})
 
 rhf_e, wfn = psi4.energy('SCF', return_wfn=True)
 
@@ -137,7 +139,7 @@ Gradient["TEI"] = Gradient["J"] + Gradient["K"]
 Gradient["Total"] = Gradient["OEI"] + Gradient["TEI"] + Gradient["N"]
 
 
-# PIS4's overlap_grad, kinetic_grad and potential_grad
+# PSI4's overlap_grad, kinetic_grad and potential_grad
 
 PSI4_Grad = {}
 D = wfn.Da()

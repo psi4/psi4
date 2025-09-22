@@ -3,7 +3,7 @@
 # * In order for Psi4 to at all work with a libint2 build, need LIBINT2_CARTGAUSS_ORDERING=standard *at generation time*. This is already the default.
 # * In order for Psi4 to at all work with a libint2 build, need LIBINT2_SHELL_SET=standard *at generation time*. This is already the default.
 # * ~In order for Psi4 to at all work with a libint2 build, need LIBINT2_SHGAUSS_ORDERING=gaussian *at library build time*.
-#   This is not the default, though it may become runtime selectable in future https://github.com/evaleev/libint/issues/190#issuecomment-691485225 .~ (see [Feb 2023] update)
+#   This is not the default, though it may become runtime selectable in future GH:evaleev/libint/issues/190#issuecomment-691485225 .~ (see [Feb 2023] update)
 # * In order for any DF to work, need ENABLE_ERI3 and ENABLE_ERI2 >=0
 # * In order for gradient and Hessian tests to not segfault, need ENABLE_ERI and ENABLE_ERI3 and ENABLE_ERI2 =2
 # * (new c. Jan 2022) In order for Psi4 to at all work with a libint2 build for one-electron ints, need ENABLE_ONEBODY =2
@@ -35,10 +35,7 @@
 # [Apr 2024]
 # * As of now, Psi4 needs v2.8.1 or higher for relativistic integral support.
 
-find_package(
-  Libint2
-  2.8.1
-  CONFIG
+find_package(Libint2 2.8.1 CONFIG  # edit in codedeps
 #  COMPONENTS
 #    sss
 #    CXX_ho

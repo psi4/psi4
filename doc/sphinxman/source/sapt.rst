@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -521,7 +521,7 @@ SAPT(DFT) can still be applied to medium-sized or large systems. The
 SAPT(DFT) module was employed successfully in computations of systems 
 with up to 2000 basis functions, and the code should be scalable to 
 3000 basis functions. Like higher-order SAPT, SAPT(DFT) requires 
-sufficient memory to hold :math:`2ovN_aux` doubles.
+sufficient memory to hold :math:`2ovN_{\rm aux}` doubles.
 
 
 SAPT(DFT) requires a few special treatments to obtain accurate
@@ -532,20 +532,23 @@ in order to recover the correct long-range asymptotic behavior
 requires manual input of GRAC shift parameter for each monomer through
 keywords |sapt__sapt_dft_grac_shift_a| and |sapt__sapt_dft_grac_shift_b|,
 which should be equal to the difference of the actual ionization
-potential and the corresponding Kohn-Sham HOMO energy. The dispersion
-term needs to be computed with orbital response for good accuracy,
-and it is recommended to enable |sapt__sapt_dft_do_hybrid| (set to
+potential and the corresponding Kohn-Sham HOMO energy. However,
+|PSIfour| can automatically compute a GRAC shift for monomers A and B
+if |sapt__sapt_dft_grac_compute| is set to ``SINGLE`` or ``ITERATIVE``. 
+
+
+The dispersion term needs to be computed with orbital response for good
+accuracy, and it is recommended to enable |sapt__sapt_dft_do_hybrid| (set to
 ``True`` by default). The coupled exchange-dispersion energy is usually
-estimated by scaling from the uncoupled value either by a fitted fixed
-value (suggested initially by [Hesselmann:2014:094107]_ for a local Hartree--Fock (LHF) formulation and then revised
-by [Xie:2022:024801]_ for non-LHF) or
-by the ratio of
-coupled and uncoupled dispersion energy (suggested by [Podeszwa:2006:400]_ ). 
-This can be controlled by keyword |sapt__sapt_dft_exch_disp_scale_scheme|, 
-with ``FIXED`` using the Hesselmann/Xie approach (|PSIfours| default prior 
-to Nov 2022), ``DISP`` using the Podeszwa approach (|PSIfours| default after Nov 2022),
-or ``NONE`` for not scaling and using the uncoupled exchange-dispersion 
-energy directly.
+estimated by scaling from the uncoupled value either by a fitted fixed value
+(suggested initially by [Hesselmann:2014:094107]_ for a local Hartree--Fock
+(LHF) formulation and then revised by [Xie:2022:024801]_ for non-LHF) or by the
+ratio of coupled and uncoupled dispersion energy (suggested by
+[Podeszwa:2006:400]_ ). This can be controlled by keyword
+|sapt__sapt_dft_exch_disp_scale_scheme|, with ``FIXED`` using the
+Hesselmann/Xie approach (|PSIfours| default prior to Nov 2022), ``DISP`` using
+the Podeszwa approach (|PSIfours| default after Nov 2022), or ``NONE`` for not
+scaling and using the uncoupled exchange-dispersion energy directly.
 
 .. warning:: Since Nov 2022, the defaults of options |sapt__sapt_dft_exch_disp_scale_scheme| and |sapt__sapt_dft_exch_disp_fixed_scale|
              have been changed. Before, the former defaulted to ``FIXED`` with Hesselmann value of 0.686 for the latter. Now, the former defaults to ``DISP`` and should you instead select ``FIXED``, the default for the latter is the Xie value of 0.770. This might cause
@@ -559,6 +562,7 @@ Basic Keywords for SAPT(DFT)
 .. include:: autodir_options_c/sapt__sapt_dft_grac_shift_b.rst
 .. include:: autodir_options_c/sapt__sapt_dft_do_dhf.rst
 .. include:: autodir_options_c/sapt__sapt_dft_exch_disp_scale_scheme.rst
+.. include:: autodir_options_c/sapt__sapt_dft_grac_compute.rst
 
 Advanced Keywords for SAPT(DFT)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1003,41 +1007,49 @@ SAPT0-D
 
 In SAPT0, the computation of :math:`E_{disp}^{(20)} + E_{exch-disp}^{(20)}` represents
 the computational bottleneck. One can avoid this bottleneck by replacing these
-dispersion terms with the empirical D3 corrections developed by Grimme.
+dispersion terms with the empirical D3 and D4 corrections developed by Grimme.
   
 :ref:`Grimme's dispersion corrections are discussed here. <sec:dftd3>`
 
-The corresponding method, termed SAPT0-D, thus relies on empirically fit parameters
-specific to SAPT0/jun-cc-pVDZ. While SAPT0-D can be used with any of the -D 
-variants using default parameters optimized for Hartee--Fock interaction energies, 
-we recommend using the refit parameters with Becke-Johnson damping, as described in
-[Schriber:2021:234107]_. Again, use of SAPT0-D with a basis set other than
-jun-cc-pVDZ is not tested and not guaranteed to give meaningful results without
-refitting the dispersion parameters. 
-A simple water dimer computation using SAPT0-D may look like::
+The corresponding method, termed SAPT0-D, thus relies on empirically fit
+parameters specific to SAPT0-D3/jun-cc-pVDZ or SAPT0-D4/aug-cc-pVDZ. While
+SAPT0-D can be used with any of the -D variants using default parameters
+optimized for Hartee--Fock interaction energies, we recommend using the refit
+parameters with Becke-Johnson damping, as described in [Schriber:2021:234107]_
+or [Wallace:2024:114115]_. While SAPT0-D3 and SAPT0-D4 do have minor damping
+function parameter adjustments with respect to basis set, the parameters are
+quite transferable at least between cc-pVDZ to aug-cc-pVTZ (see Fig S1 and S2
+from [Wallace:2024:114115]_ for more information). However, recommended usage
+is with the following levels of theory: SAPT0-D3/jun-cc-pVDZ,
+SAPT0-D3/aug-cc-pVDZ, and SAPT0-D4/aug-cc-pVDZ. A simple water dimer
+computation using SAPT0-D may look like::
 
-	molecule water_dimer {
-	     0 1
-	     O  -1.551007  -0.114520   0.000000
-	     H  -1.934259   0.762503   0.000000
-	     H  -0.599677   0.040712   0.000000
-	     --
-	     0 1
-	     O   1.350625   0.111469   0.000000
-	     H   1.680398  -0.373741  -0.758561
-	     H   1.680398  -0.373741   0.758561
-	
-	     units angstrom
-	     no_reorient
-	     symmetry c1
-	}
-	
-	set basis jun-cc-pvdz
+    molecule water_dimer {
+         0 1
+         O  -1.551007  -0.114520   0.000000
+         H  -1.934259   0.762503   0.000000
+         H  -0.599677   0.040712   0.000000
+         --
+         0 1
+         O   1.350625   0.111469   0.000000
+         H   1.680398  -0.373741  -0.758561
+         H   1.680398  -0.373741   0.758561
 
-	energy('sapt0-d3mbj') # runs the recommended dispersion correction
+         units angstrom
+         no_reorient
+         symmetry c1
+    }
+
+    set basis jun-cc-pvdz
+
+    energy('sapt0-d3mbj') # runs the recommended -D3 dispersion correction
     energy('sapt0-d3') # tests an alternative damping scheme/parameterization
+
+    set basis aug-cc-pvdz
+    energy('sapt0-d4bjeeqtwo') # runs the recommended -D4 dispersion correction
 
 Given the naturally pairwise-atomic nature of these empirical dispersion corrections,
 integration with existing FSAPT functionality is also available simply by calling
-``energy("fsapt0-d3mbj")``. See :ref:`FSAPT <sec:fisapt>` documentation for more details on using FSAPT
-for functional group analyses.
+``energy("fsapt0-d3mbj")`` or ``energy("fsapt0-d4bj2b")`` (alias to ``energy("fsapt0-d4bjeeqtwo")``). See :ref:`FSAPT
+<sec:fisapt>` documentation for more details on using FSAPT for functional
+group analyses.

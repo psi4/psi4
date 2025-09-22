@@ -13,6 +13,8 @@ set {
     e_convergence 12
     r_convergence 12
 }
+if get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    set_options({"e_convergence": 8, "d_convergence": 8})
 
 for r in rvals:
     h2.R = r

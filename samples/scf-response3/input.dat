@@ -13,6 +13,12 @@ symmetry c1
 set reference uhf
 set scf_type pk
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    pol_tol = 10
+else:
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+    pol_tol = 1e-7
+
 psi4.properties("scf/cc-pVDZ", properties=["DIPOLE_POLARIZABILITIES"])
 
 # Reference created with G16

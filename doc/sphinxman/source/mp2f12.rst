@@ -1,0 +1,282 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This file is part of Psi4.
+.. #
+.. # Psi4 is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU Lesser General Public License as published by
+.. # the Free Software Foundation, version 3.
+.. #
+.. # Psi4 is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU Lesser General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU Lesser General Public License along
+.. # with Psi4; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
+
+.. include:: autodoc_abbr_options_c.rst
+
+.. index::
+   single: MP2-F12
+
+.. _`sec:mp2f12`:
+
+MP2-F12: Explicitly Correlated MP2
+==================================
+
+.. codeauthor:: Erica Mitchell
+.. sectionauthor:: Erica Mitchell
+
+*Module:* :ref:`Keywords <apdx:f12>`, :ref:`PSI Variables <apdx:f12_psivar>`, :source:`MP2-F12 <psi4/src/psi4/f12>`
+
+Introduction
+------------
+
+Convergence of the one-particle basis set to the electronic cusp is slow with traditional methods. This slow convergence is 
+inherent in all traditional electronic structure methods and has led to the construction of what are called explicitly 
+correlated methods. Explicitly correlated methods include terms that have the interelectronic distance within them significantly increasing 
+the speed at which convergence to the electronic cusp is achieved. These explicitly correlated terms contain the correlation 
+factor, :math:`f_{12}`, which describes the behavior of the electronic cusp. The correlation factor is the defining part of 
+explicitly correlated methods.
+
+The inclusion of :math:`f_{12}` into the equations makes the prefactor for the computation much larger than traditional 
+methods. When running MP2-F12, the 3C(FIX) Ansatz is utilized along with the complementary auxiliary basis set (CABS) approach 
+resulting in an :math:`{\cal O}(N^5)` scaling separate from the prefactor. To lower the prefactor, density-fitting may be 
+utilized but scaling will remain the same.
+
+An example input file is::
+
+   molecule h2o {
+   0 1
+   O
+   H 1 1.0
+   H 1 1.0 2 104.5
+   symmetry c1
+   }
+
+   set {
+     basis         cc-pvtz-f12
+     cabs_basis    cc-pvtz-f12-optri
+     df_basis_f12  aug-cc-pvtz-ri
+     freeze_core   True
+     mp2_type      df
+     f12_beta      1.0
+     cabs_singles  True
+   }
+
+   energy('mp2-f12')
+
+The ``energy('mp2-f12')`` call to :py:func:`~psi4.driver.energy` executes the predefined MP-F12 procedure, 
+first calling the SCF module with a default RHF reference. The two-electron integrals may be solved either with 
+or without DF, as specified with |f12__mp2_type|. The general outline of an MP2-F12 computation is as follows:
+
+    (1) Form the CABS AO to MO transformation matrix
+    (2) Compute the one- and two-electron integrals
+    (3) Construct the F12 intermediates, :math:`V`, :math:`X`, :math:`C`, and :math:`B`
+    (4) Solve the F12 energy equation for each occupied orbital pair
+
+The results will then look something like::
+
+   ===> DF-MP2-F12/3C(FIX) Energies <===
+
+    Total DF-MP2-F12/3C(FIX) Energy:      -76.362440627264
+       RHF Reference Energy:              -76.059038661557
+       MP2 Correlation Energy:             -0.276433879145
+       F12/3C(FIX) Correlation Energy:     -0.026029803210
+       CABS Singles Correction:            -0.000938283352
+
+The theory and common keywords used in MP2-F12 are presented below. 
+
+.. index::
+   pair: MP2-F12; theory
+
+Theory
+------
+
+In MP2-F12, the second-order MBPT energy may be determined by minimizing the Hylleraas functional,
+
+.. math::
+   :label: HylleraasFunctional
+
+   E^{(2)} = \langle \psi^{(1)} | \hat{H}^{(0)} - E^{(0)} | \psi^{(1)} \rangle 
+   + 2 \langle \psi^{(1)} | \hat{H}^{(1)} | \psi^{(0)} \rangle = = \min_{| \psi^{(1)} \rangle}
+
+The resulting linear first-order equations can then be broken down into the conventional residual and the explicitly 
+correlated residual,
+
+.. math::
+   :label: Residuals
+
+   R^{ij}_{ab} = G^{ij}_{ab} + (\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j) T^{ij}_{ab} + T^{ij}_{mn} C^{mn}_{ab} \\
+   R^{ij}_{kl} = V^{ij}_{kl} + C^{kl}_{ab} T^{ij}_{ab} + \left[ B_{kl,mn} - (\epsilon_i + \epsilon_j)X_{kl,mn} \right] T^{ij}_{mn}
+
+where the last term of the :math:`R^{ij}_{ab}` couples the two residuals. Within the 
+residuals, the correlation factor, :math:`f_{12}`, and the projector, :math:`\hat{Q}_{12}`, 
+are present in what are known as the F12 intermediates,
+
+.. math::
+   :label: Short_F12_Intermediates
+
+   V^{ij}_{kl} &= \langle ij | r_{12}^{-1} \hat{Q}_{12} f_{12} | kl \rangle \\
+   X_{kl,mn} &= \langle kl | f_{12} \hat{Q}_{12} f_{12} | mn \rangle \\
+   C^{kl}_{ab} &= \langle kl | f_{12} \hat{Q}_{12} \left( \hat{F}_1 + \hat{F}_2 \right) | ab \rangle \\
+   B_{kl,mn} &= \langle kl | f_{12} \hat{Q}_{12} \left( \hat{F}_1 + \hat{F}_2 \right) \hat{Q}_{12} f_{12} | mn \rangle \\
+
+The correlation factor and projector are what hold the majority of the approximations made in F12 theory. Firstly, the correlation 
+factor is what describes the electronic cusp but, similar to how a nuclear cusp is simulated by contracted Gaussian-type orbitals, 
+the :math:`f_{12}` is composed of multiple Gaussian-type geminals to imitate a Slater-type geminal,
+
+.. math::
+   :label: Correlation_Factor
+
+   f_{12} = \frac{1 - e^{-\beta r_{12}}{\beta} \approx \sum^6_{n=1} c_n e^{-\alpha_n r_{12}^2}
+
+where the coefficients and exponents are taken from Tew and Klopper [Tew:2005:074101]_ and can be scaled using the parameter :math:`\beta`.
+Secondly, the projector is what holds the chosen Ansatz. In other words, the projector determines the choice of orthogonalization between 
+the explicitly correlated functions and to the conventional doubly substituted determinants. The strongest orthogonality is observed with
+
+.. math::
+   :label: Ansatz_3
+
+   \hat{Q}_{12} = (1-\hat{O}_1)(1-\hat{O}_2) - \hat{V}_1 \hat{V}_2
+
+where :math:`\hat{O}` represents :math:`| i \rangle\langle i |` and :math:`\hat{V}` represents :math:`| a \rangle\langle a |`. This form of 
+the projector is known as Ansatz 3.
+
+Within modern F12 theory, the ansatz inherently holds the resolution-of-identity (RI). The RI can be taken as functions from the 
+orbital basis set (OBS) and a chosen auxiliary basis set (ABS). It was observed by Valeev [Valeev:2004:190]_ that the choice of ABS 
+can affect the error due to the use of a finite RI. He proposed that the ABS include the OBS explicitly so that the exact orthogonal 
+complement projector :math:`\hat{Q}_{12} = 1 - \hat{P}_{12}` is properly approximated. This lead to what is known as the complementary 
+auxiliary basis set or CABS. The expanded Ansatz 3 projector with the RI and CABS is then
+
+.. math::
+   :label: CABS_Ansatz_3
+
+   \hat{Q}_{12} = 1 - | a'j \rangle\langle a'j | - | ib' \rangle\langle ib' | - | rs \rangle\langle rs |
+
+When applying the projector within the CABS approach to the F12 intermediates, the :math:`C` and :math:`B` intermediates contain terms which 
+require commutation of the correlation factor, :math:`f_{12}`, and the Fock operator, :math:`\hat{F}`. To factorize these, there are three 
+different approaches, A, B, and C. In general, Ansatz 3 with approximation C, or Ansatz 3C, is computationally cheaper than ans{\"a}tze 3A 
+and 3B. In Ansatz 3C, the unit operator in the projector is treated with the commutator approach while the rest utilizes direct RI 
+expansions. Within Ansatz 3C, the F12 intermediates then take the form
+
+.. math::
+   :label: Long_F12_Intermediates
+
+   V^{ij}_{kl} &= (\overline{gf})^{ij}_{kl} - \overline{g}^{ij}_{a'n}\overline{f}^{a'n}_{kl} -
+                  \overline{g}^{ij}_{mb'}\overline{f}^{mb'}_{kl} - \overline{g}^{ij}_{rs}\overline{f}^{rs}_{kl} \\
+   X_{kl,mn} &= \left(f^2\right)^{kl}_{mn} - \overline{f}^{kl}_{ib'}\overline{f}^{ib'}_{mn} -
+                \overline{f}^{kl}_{a'j}\overline{f}^{a'j}_{mn} - \overline{f}^{kl}_{pq}\overline{f}^{pq}_{mn} \\
+   C^{kl}_{ab} &= \overline{f}^{kl}_{ab'}F^{b'}_{b} + \overline{f}^{kl}_{a'b}F^{a'}_{a} \\
+   B_{kl,mn} &= \langle kl|[\hat{f}_{12},[\hat{T}_{12},\hat{f}_{12}]]|mn\rangle + \hat{S}_{mn,kl} \left[ (\overline{f^2})^{p'l}_{mn}(F + K)^k_{p'} 
+                + (\overline{f^2})^{kq'}_{mn}(F + K)^l_{q'} \right] \\
+               &- \overline{f}^{p'q'}_{mn}K^{r'}_{p'}\overline{f}^{kl}_{r'q'} - \overline{f}^{p'j}_{mn}F^{r'}_{p'}\overline{f}^{kl}_{r'j} + 
+                  \overline{f}^{ib'}_{mn}F^{j}_{i}\overline{f}^{kl}_{jb'} - \overline{f}^{pb}_{mn}F^{r}_{p}\overline{f}^{kl}_{rb} \\
+               &- 2\hat{S}_{mn,kl}\left[ \overline{f}^{ib'}_{mn}F^{p'}_{i}\overline{f}^{kl}_{p'b'} + 
+                  \overline{f}^{a'b}_{mn}F^{q}_{a'}\overline{f}^{kl}_{qb} \right]
+
+where the following integral types are revealed,
+
+.. math::
+   :label: Integral_Types
+
+   &\langle p'q'|r_{12}^{-1}|r's'\rangle = g^{p'q'}_{r's'} \\
+   &\langle p'q'|\hat{f}_{12}|r's'\rangle = f^{p'q'}_{r's'} \\
+   &\langle p'q'|\hat{f}_{12}^{2}|r's'\rangle= (f^2)^{p'q'}_{r's'} \\
+   &\langle p'q'|\hat{f}_{12}\:r_{12}^{-1}|r's'\rangle = (gf)^{p'q'}_{r's'} \\
+   &\langle p'q'|[\hat{f}_{12},[\hat{T}_{12},\hat{f}_{12}]]|r's'\rangle
+
+Before the energy expression can be revealed, the choice of explicitly correlated amplitudes must be taken into account. Although the 
+residuals can both be set to zero to solve for the minimized amplitudes, it has been determined that the best approach is by utilizing 
+the electronic cusp conditions so that the *s*- and *p*- wave coalesence conditions are met [Tenno:2004:117]_. This results in only the 
+conventional residual, :math:`R^{ij}_{ab}`,  being minimized and the explicitly correlated amplitudes being
+
+.. math::
+   :label: Fixed_Amps
+
+   T^{ij}_{kl} = \frac{3}{8}\delta_{ik}\delta{jl} + \frac{1}{8}\delta_{jk}\delta{il}
+
+which is denoted as the 3C(FIX) Ansatz. The 3C(FIX) Ansatz has the benefits that it is free from the geminal basis set superposition error, 
+orbital invariant, and diagonal. Since only diagonal terms are needed, the computational complexity reduces from :math:`{\cal O}(N^6)` with 
+the minimized amplitudes to :math:`{\cal O}(N^5)` with fixed amplitudes.
+
+Finally, the F12/3C(FIX) energy correction can be expressed as 
+
+.. math::
+   :label: F12_Correction
+
+   \Delta E_\mathrm{F12/3C(FIX)} = T^{ij}_{kl} \left( 2\Tilde{V}^{ij}_{kl} + \Tilde{B}^{ij}_{kl,mn} T^{ij}_{mn} \right)
+
+where :math:`\Tilde{V}^{ij}_{kl}` and :math:`\Tilde{B}^{ij}_{kl,mn}` are
+
+.. math::
+   :label: Tilde_Intermediates
+
+   \Tilde{V}^{ij}_{kl} &= V^{ij}_{kl} - \frac{C^{kl}_{ab} G^{ij}_{ab}}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j} \\
+   \Tilde{B}^{ij}_{kl,mn} &= B_{kl,mn} - (\epsilon_i + \epsilon_j)X_{kl,mn} - \frac{C^{mn}_{ab} C^{kl}_{ab}}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j}
+
+With the slow convergence of the conventional doubles energy handled, the primary source of error then comes from the basis set 
+incompleteness error from the HF reference. When the CABS is utilized, the relaxation of the HF orbitals in the presence of the 
+CABS needs to be accounted for. This is done using the what's termed the CABS singles correction. The CABS singles correction 
+is reminiscent of the singles correction in MP2 without a RHF or UHF reference,
+
+.. math::
+   :label: CABS_Singles
+
+   \Delta E_\mathrm{CABS Singles} = \frac{|F_i^\alpha|^2}{\epsilon_\alpha - \epsilon_i}
+
+where :math:`\alpha` runs over all virtual orbitals, OBS virtuals and CABS.
+
+Therefore, the most accurate MP2-F12/3C(FIX) energy is given by
+
+.. math::
+   :label: MP2-F12_3C_FIX
+
+   E_\mathrm{MP2-F12/3C(FIX)} = E_\mathrm{MP2} + \Delta E_\mathrm{F12} + \Delta E_\mathrm{CABS Singles}
+
+Recommendations
+---------------
+
+MP2-F12 is a complicated theory but the implemented module should be simple to use. All keywords are 
+appropriately documented in the Appendix :ref:`apdx:f12` and care should be taken to read through 
+them before changing defaults. Some basic recommendations for running the module are included below:
+
+* MP2-F12 runs much faster with density-fitted integrals. Unless high accuracy is needed, DF requires much 
+  less computational resources and still provides quality results. If DF is chosen, the HF and MP2 modules 
+  are also set to run DF. Choose a DF basis set with at least triple-zeta quality as 
+  |PSIfours| :ref:`DF-SCF <sec:scf>` module performs poorly with lower quality DF basis sets. 
+  This module utilizes robust density-fitting [Dunlap:2000:2113]_ so energies may differ from other programs.
+  The default |f12__mp2_type| is ``DF``.
+
+* The length-scale parameter ``F12_BETA`` has been fiddled with in many past studies and they have determined 
+  that the exponents 0.9, 1.0, and 1.0 :math:`a_0^{-1}` are recommended for cc-pVXZ-F12 where X = D, T, and Q, 
+  respectively, while those for aug-cc-pVXZ where X = D, T, and Q are 1.1, 1.2, and 1.4 :math:`a_0^{-1}`. 
+  The default value is set to 1.0 :math:`a_0^{-1}` to allow flexibility of use.
+
+* MP2-F12 likes threads. The module was developed with threading in mind and the formation of the 
+  integrals and the tensor contractions rely on the threads for efficiency.
+
+* MP2-F12 is memory greedy. The core algorithm has been developed to compute the integrals on-the-fly but 
+  the size of some integrals cannot be avoided. Care should be taken to choose whether the core or disk 
+  algorithm is chosen, |f12__f12_subtype| .
+
+* Like most wavefunction methods, freezing the core is good for both efficiency and correctness purposes.
+
+* MP2-F12 is not symmetry aware.
+
+* MP2-F12 cannot use Psi4's Schwarz screening due to the presence of mixed basis sets. This is a work 
+  in progress but siginificantly increases the computational prefactor.
+
+* At the moment, the MP2-F12 code is only compatible with RHF references.

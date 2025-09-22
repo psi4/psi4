@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -1453,7 +1453,13 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
     df_needed |= "DFDIRJ" in core.get_global_option("SCF_TYPE")
     df_needed |= (core.get_global_option("SCF_TYPE") == "DIRECT" and core.get_option("SCF", "DF_SCF_GUESS"))
     if df_needed:
-        aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
+        if (dfbs := kwargs.get("_force_df_basis_scf", False)):
+            key, target, fitrole = dfbs
+            aux_basis = core.BasisSet.build(wfn.molecule(), key, target, fitrole,
+                                        core.get_global_option('BASIS'),
+                                        puream=wfn.basisset().has_puream())
+        else:
+            aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
                                         core.get_option("SCF", "DF_BASIS_SCF"),
                                         "JKFIT", core.get_global_option('BASIS'),
                                         puream=wfn.basisset().has_puream())
@@ -1506,55 +1512,35 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
 
 
 def _set_external_potentials_to_wavefunction(external_potential: Union[List, Dict[str, List]], wfn: "core.Wavefunction"):
-    """Initialize :py:class:`psi4.core.ExternalPotential` object(s) from charges and locations and set on **wfn**.
+    vep = p4util.validate_external_potential(external_potential)
 
-    Parameters
-    ----------
-    external_potential
-        List-like structure where each row corresponds to a charge. Lines can be composed of ``q, [x, y, z]`` or
-        ``q, x, y, z``. Locations are in [a0].
-        Or, dictionary where keys are FI-SAPT fragments A, B, or C and values are as above.
+    total_ep = core.ExternalPotential()
 
-    """
-    from psi4.driver.qmmm import QMMMbohr
+    for frag, ep_spec in vep.items():
+        if "diffuse" in ep_spec:
+            raise ValidationError("Diffuse charges not yet supported")
 
-    def validate_qxyz(qxyz):
-        if len(qxyz) == 2:
-            return qxyz[0], qxyz[1][0], qxyz[1][1], qxyz[1][2]
-        elif len(qxyz) == 4:
-            return qxyz[0], qxyz[1], qxyz[2], qxyz[3]
-        else:
-            raise ValidationError(f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'")
+        if "matrix" in ep_spec:
+            raise ValidationError("Matrix potential not yet supported")
 
-    if isinstance(external_potential, dict):
-        # For FSAPT, we can take a dictionary of external potentials, e.g.,
-        # external_potentials={'A': potA, 'B': potB, 'C': potC} (any optional)
-        # For the dimer SAPT calculation, we need to account for the external potential
-        # in all of the subsystems A, B, C. So we add them all in total_external_potential
-        # and set the external potential to the dimer wave function
+        frag_ep = core.ExternalPotential()
 
-        total_external_potential = core.ExternalPotential()
+        if "points" in ep_spec:
+            frag_ep.appendCharges(ep_spec["points"])
+            total_ep.appendCharges(ep_spec["points"])
 
-        for frag, frag_qxyz in external_potential.items():
-            if frag.upper() in "ABC":
-                chrgfield = QMMMbohr()
-                for qxyz in frag_qxyz:
-                    chrgfield.extern.addCharge(*validate_qxyz(qxyz))
+        wfn.set_potential_variable(frag, frag_ep)
+    wfn.set_external_potential(total_ep)
+    total_ep.print_out()
 
-                wfn.set_potential_variable(frag.upper(), chrgfield.extern)
-                total_external_potential.appendCharges(chrgfield.extern.getCharges())
+    # For FSAPT, we can take a dictionary of external potentials, e.g.,
+    # external_potentials={'A': potA, 'B': potB, 'C': potC} (any optional)
+    # For the dimer SAPT calculation, we need to account for the external potential
+    # in all of the subsystems A, B, C. So we add them all in total_external_potential
+    # and set the external potential to the dimer wave function
 
-            else:
-                core.print_out("\n  Warning! Unknown key for the external_potentials argument: %s" % frag)
-
-        wfn.set_external_potential(total_external_potential)
-
-    else:
-        chrgfield = QMMMbohr()
-        for qxyz in external_potential:
-            chrgfield.extern.addCharge(*validate_qxyz(qxyz))
-        wfn.set_potential_variable("C", chrgfield.extern)  # This is for the FSAPT procedure
-        wfn.set_external_potential(chrgfield.extern)
+    # If no fragment specified, `validate_external_potential` assigns it to "C".
+    #   `set_potential_variable("C", total_ep)` is needed for the FSAPT procedure.
 
 
 def scf_helper(name, post_scf=True, **kwargs):
@@ -2177,6 +2163,10 @@ def run_dfocc(name, **kwargs):
 
     dfocc_wfn = core.dfocc(ref_wfn)
 
+    if core.get_local_option("DFOCC", "MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dfocc_wfn.molecule().name()) + "_dfocc.molden"
+        dfocc_wfn.write_molden(filename, True, True)
+
     # Shove variables into global space
     for k, v in dfocc_wfn.variables().items():
         core.set_variable(k, v)
@@ -2279,6 +2269,10 @@ def run_dfocc_gradient(name, **kwargs):
 
     dfocc_wfn.set_variable(f"{name.upper()} TOTAL GRADIENT", dfocc_wfn.gradient())
 
+    if core.get_local_option("DFOCC", "MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dfocc_wfn.molecule().name()) + "_dfocc.molden"
+        dfocc_wfn.write_molden(filename, True, True)
+
     # Shove variables into global space
     for k, v in dfocc_wfn.variables().items():
         core.set_variable(k, v)
@@ -2351,6 +2345,10 @@ def run_dfocc_property(name, **kwargs):
     if name in ['mp2', 'omp2']:
         for k, v in dfocc_wfn.variables().items():
             core.set_variable(k, v)
+
+    if core.get_local_option("DFOCC", "MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dfocc_wfn.molecule().name()) + "_dfocc.molden"
+        dfocc_wfn.write_molden(filename, True, True)
 
     optstash.restore()
     return dfocc_wfn
@@ -4205,7 +4203,13 @@ def run_dfmp2(name, **kwargs):
     if core.get_global_option('REFERENCE') == "ROHF":
         ref_wfn.semicanonicalize()
 
-    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
+    if (dfbs := kwargs.get("_force_df_basis_mp2", False)):
+        key, target, fitrole = dfbs
+        aux_basis = core.BasisSet.build(ref_wfn.molecule(), key, target, fitrole,
+                                        core.get_global_option('BASIS'),
+                                        puream=ref_wfn.basisset().has_puream())
+    else:
+        aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
                                     core.get_option("DFMP2", "DF_BASIS_MP2"),
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
@@ -4402,6 +4406,105 @@ def run_dlpnomp2(name, **kwargs):
     return dlpnomp2_wfn
 
 
+def run_mp2f12(name, **kwargs):
+    r"""Function encoding sequence of PSI module calls
+    for a MP2-F12/3C(FIX) calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF_TYPE'],
+        ['MP2_TYPE'],
+        ["F12", "CABS_BASIS"],
+        ["SCF", "DF_BASIS_SCF"],
+        ["DFMP2", "DF_BASIS_MP2"],
+        ['DF_BASIS_F12'])
+
+
+    # Alter default SCF algorithm and enforce DF+DF or CONV+CONV
+    df_f12 = core.get_option("F12", "MP2_TYPE") == "DF"
+    if df_f12:
+        if not core.has_global_option_changed('SCF_TYPE'):
+            core.set_global_option('SCF_TYPE', 'DF')
+            core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+
+        if "DF" not in core.get_global_option('SCF_TYPE'):
+            raise ValidationError('DF-MP2-F12 energies need DF-SCF reference.')
+
+        kwargs["_force_df_basis_scf"] = ("DF_BASIS_F12", core.get_option("F12", "DF_BASIS_F12"), "RIFIT")
+
+    else:
+        if not core.has_global_option_changed('SCF_TYPE'):
+            core.set_global_option('SCF_TYPE', 'PK')
+            core.print_out("""    SCF Algorithm Type (re)set to PK.\n""")
+
+        if "DF" in core.get_global_option('SCF_TYPE') or "CD" in core.get_global_option('SCF_TYPE'):
+            raise ValidationError('MP2-F12 energies need CONV SCF reference.')
+
+    # Ensure RHF reference
+    if core.get_global_option('REFERENCE') != "RHF":
+        raise ValidationError(f"MP2-F12 is not available for {core.get_global_option('REFERENCE')} references.")
+
+    # Bypass the scf call if a reference wavefunction is given
+    # * note that consistency of f12dfbs not checked if ref passed in
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
+    if ref_wfn.molecule().schoenflies_symbol() != 'c1':
+        raise ValidationError("""  MP2-F12 does not make use of molecular symmetry: """
+                              """reference wavefunction must be C1.\n""")
+
+    # Default MP2_TYPE to CONV if F12_TYPE is CONV
+    if core.get_option("F12", "MP2_TYPE") == "CONV":
+        ref_wfn = run_occ("mp2", ref_wfn=ref_wfn)
+    else:
+        ref_wfn = run_dfmp2("dfmp2", ref_wfn=ref_wfn, _force_df_basis_mp2=kwargs["_force_df_basis_scf"])
+
+    # clean results from globals, keep on wfn
+    kwargs.pop("_force_df_basis_scf", None)
+    core.clean_variables()
+
+    core.tstart()
+    core.print_out('\n')
+    p4util.banner('MP2-F12')
+    core.print_out('\n')
+
+    # Default CABS to OPTRI basis sets if available
+    OBS = core.get_global_option("BASIS")
+    CABS = core.get_option("F12", "CABS_BASIS")
+    if CABS == "" and "CC-PV" in OBS and ("AUG" in OBS or "F12" in OBS):
+        core.set_local_option("F12", "CABS_BASIS", OBS + "-OPTRI")
+        CABS = core.get_option("F12", "CABS_BASIS")
+    elif CABS == "":
+        raise ValidationError("""  No CABS_BASIS given!""")
+
+    # Create CABS
+    keys = ["BASIS", "CABS_BASIS"]
+    targets = [OBS, CABS]
+    roles = ["ORBITAL", "F12"]
+    others = [OBS, OBS]
+    mol = ref_wfn.molecule()
+    combined = qcdb.libmintsbasisset.BasisSet.pyconstruct_combined(mol.to_string(dtype="psi4"), keys, targets, roles, others)
+    cabs = core.BasisSet.construct_from_pydict(mol, combined, combined["puream"])
+    ref_wfn.set_basisset("CABS", cabs)
+
+    # Compute Energy
+    mp2f12_wfn = core.f12(ref_wfn)
+    mp2f12_wfn.compute_energy()
+
+    mp2f12_wfn.set_variable('CURRENT ENERGY', mp2f12_wfn.variable('MP2-F12 TOTAL ENERGY'))
+    mp2f12_wfn.set_variable('CURRENT REFERENCE ENERGY', mp2f12_wfn.variable('HF-CABS TOTAL ENERGY'))
+    mp2f12_wfn.set_variable('CURRENT CORRELATION ENERGY', mp2f12_wfn.variable('MP2-F12 CORRELATION ENERGY'))
+    mp2f12_wfn.set_module("f12")
+
+    # Shove variables into global space
+    for k, v in mp2f12_wfn.variables().items():
+        core.set_variable(k, v)
+
+    optstash.restore()
+    core.tstop()
+    return mp2f12_wfn
+
+
 def run_dmrgscf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an DMRG calculation.
@@ -4428,6 +4531,10 @@ def run_dmrgscf(name, **kwargs):
     # Shove variables into global space
     for k, v in dmrg_wfn.variables().items():
         core.set_variable(k, v)
+
+    if core.get_option("DMRG", "DMRG_MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dmrg_wfn.molecule().name()) + "_pseudocanonical.molden"
+        dmrg_wfn.write_molden(filename, True, False)
 
     return dmrg_wfn
 
@@ -4457,6 +4564,10 @@ def run_dmrgci(name, **kwargs):
     # Shove variables into global space
     for k, v in dmrg_wfn.variables().items():
         core.set_variable(k, v)
+
+    if core.get_option("DMRG", "DMRG_MOLDEN_WRITE"):
+        filename = core.get_writer_file_prefix(dmrg_wfn.molecule().name()) + "_pseudocanonical.molden"
+        dmrg_wfn.write_molden(filename, True, True)
 
     return dmrg_wfn
 
@@ -4847,7 +4958,7 @@ def run_fisapt(name, **kwargs):
     an F/ISAPT0 computation
 
     """
-    optstash = p4util.OptionsState(['SCF_TYPE'])
+    optstash = p4util.OptionsState(['SCF_TYPE'], ['SCF', 'SAVE_JK'])
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -4879,7 +4990,9 @@ def run_fisapt(name, **kwargs):
 
     if ref_wfn is None:
         core.timer_on("FISAPT: Dimer SCF")
+        core.set_local_option("SCF", "SAVE_JK", True)
         ref_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
+        jk_obj = ref_wfn.jk()
         core.timer_off("FISAPT: Dimer SCF")
 
     core.print_out("  Constructing Basis Sets for FISAPT...\n\n")
@@ -4905,7 +5018,7 @@ def run_fisapt(name, **kwargs):
 
     fisapt_wfn = core.FISAPT(ref_wfn)
     from .sapt import fisapt_proc
-    fisapt_wfn.compute_energy(external_potentials=kwargs.get("external_potentials", None))
+    fisapt_wfn.compute_energy(jk_obj, external_potentials=kwargs.get("external_potentials", None))
 
     # Compute -D dispersion
     if "-d" in name.lower():

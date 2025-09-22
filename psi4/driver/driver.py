@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -35,8 +35,10 @@ import copy
 import json
 import logging
 import os
+import pathlib
 import re
 import shutil
+import warnings
 from typing import Dict, Optional, Union
 
 import numpy as np
@@ -75,9 +77,7 @@ def _energy_is_invariant(gradient_rms, stationary_criterion=1.e-2):
 
 def _filter_renamed_methods(compute, method):
     r"""Raises UpgradeHelper when a method has been renamed."""
-    if method == "dcft":
-        raise UpgradeHelper(compute + "('dcft')", compute + "('dct')", 1.4,
-                            " All instances of 'dcft' should be replaced with 'dct'.")
+    pass
 
 
 def energy(name, **kwargs):
@@ -165,6 +165,8 @@ def energy(name, **kwargs):
     | dlpno-mp2               | local MP2 with pair natural orbital domains (DLPNO) :ref:`[manual] <sec:dlpnomp2>`                                                    |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
     | scs-dlpno-mp2           | spin-component-scaled DLPNO MP2 :ref:`[manual] <sec:dlpnomp2>`                                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
+    | mp2-f12                 | explicitly correlated MP2 in the 3C(FIX) Ansatz :ref:`[manual] <sec:mp2f12>`                                                          |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
     | mp3                     | 3rd-order |MollerPlesset| perturbation theory (MP3) :ref:`[manual] <sec:occ_nonoo>` :ref:`[details] <dd_mp3>`                         |
     +-------------------------+---------------------------------------------------------------------------------------------------------------------------------------+
@@ -812,11 +814,10 @@ def optimize_geometric(name, **kwargs):
         """
         Internally run an energy and gradient calculation for geometric 
         """
-        def __init__(self, p4_name, p4_mol, p4_return_wfn, **p4_kwargs):
+        def __init__(self, p4_name, p4_mol, **p4_kwargs):
     
             self.p4_name = p4_name
             self.p4_mol = p4_mol
-            self.p4_return_wfn = p4_return_wfn
             self.p4_kwargs = p4_kwargs
     
             molecule = geometric.molecule.Molecule()
@@ -830,11 +831,9 @@ def optimize_geometric(name, **kwargs):
         def calc(self, coords, dirname, read_data=False):
             self.p4_mol.set_geometry(core.Matrix.from_array(coords.reshape(-1,3)))
             self.p4_mol.update_geometry()
-            if self.p4_return_wfn:
-                g, wfn = gradient(self.p4_name, return_wfn=True, molecule=self.p4_mol, **self.p4_kwargs)
-                self.p4_wfn = wfn
-            else:
-                g = gradient(self.p4_name, return_wfn=False, molecule=self.p4_mol, **self.p4_kwargs)
+            # always collect wfn - can discard it later
+            g, wfn = gradient(self.p4_name, return_wfn=True, molecule=self.p4_mol, **self.p4_kwargs)
+            self.p4_wfn = wfn
             e = core.variable('CURRENT ENERGY')
             return {'energy': e, 'gradient': g.np.ravel()}
 
@@ -873,7 +872,7 @@ def optimize_geometric(name, **kwargs):
             core.print_out(f"\n  Psi4 convergence criteria {optimizer_keywords['convergence_set']:6s} not recognized by GeomeTRIC, switching to GAU_TIGHT          ~")
             optimizer_keywords['convergence_set'] = 'GAU_TIGHT'
 
-    engine = Psi4NativeEngine(name, molecule, return_wfn, **kwargs)
+    engine = Psi4NativeEngine(name, molecule, **kwargs)
     M = engine.M
     
     # Handle constraints
@@ -937,7 +936,11 @@ def optimize_geometric(name, **kwargs):
             break
         elif optimizer.state == geometric.optimize.OPT_STATE.FAILED:
             core.print_out("\n\n  Optimization failed to converge!                                                              ~\n")
-            break
+            opt_geometry = core.Matrix.from_array(optimizer.X.reshape(-1,3))
+            molecule.set_geometry(opt_geometry)
+            molecule.update_geometry()
+            core.clean()
+            raise OptimizationConvergenceError("""geometry optimization""", optimizer.Iteration, engine.p4_wfn)
         optimizer.step()
         optimizer.calcEnergyForce()
         optimizer.evaluateStep()
@@ -994,7 +997,10 @@ def optimize(name, **kwargs):
 
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
 
-    :raises: :py:class:`psi4.driver.OptimizationConvergenceError` if :term:`GEOM_MAXITER <GEOM_MAXITER (OPTKING)>` exceeded without reaching geometry convergence.
+    :raises: :py:class:`psi4.driver.OptimizationConvergenceError`
+
+        if :py:attr`GEOM_MAXITER <optking.v1.optparams.OptParams.geom_maxiter>`
+        exceeded without reaching geometry convergence.
 
     :PSI variables:
 
@@ -1212,7 +1218,8 @@ def optimize(name, **kwargs):
         opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params)
 
     initial_sym = molecule.schoenflies_symbol()
-    while n <= core.get_option('OPTKING', 'GEOM_MAXITER'):
+    # Use optking's value so that validation can change value (e.g. IRC_POINTS sets max_iter based on number of points)
+    while n <= opt_object.params.geom_maxiter:
         current_sym = molecule.schoenflies_symbol()
         if initial_sym != current_sym:
 
@@ -1230,8 +1237,7 @@ def optimize(name, **kwargs):
                                       "carefully making sure all symmetry-dependent "
                                       "input, such as DOCC, is correct." % (current_sym, initial_sym))
 
-        kwargs['opt_iter'] = n
-        core.set_variable('GEOMETRY ITERATIONS', n)
+        core.set_variable('OPTIMIZATION ITERATIONS', n)
 
         # Use orbitals from previous iteration as a guess
         #   set within loop so that can be influenced by fns to optimize (e.g., cbs)
@@ -1247,11 +1253,11 @@ def optimize(name, **kwargs):
         opt_object.E = thisenergy
         opt_object.gX = G.np
 
-        if core.get_option('OPTKING', 'CART_HESS_READ') and (n == 1):
-            opt_object.params.cart_hess_read = True
-            opt_object.params.hessian_file = f"{core.get_writer_file_prefix(molecule.name())}.hess"
-                # compute Hessian as requested; frequency wipes out gradient so stash it
-        elif 'hessian' in opt_calcs:
+        core.set_variable('OPTIMIZATION ITERATIONS', n)
+        # Used to handle cart_hess_read explicitly. Optking now looks for hessians in hessian_file
+        # Hessian can be priovided as AtomicOutput in a .json or cfour style in a .hess file
+        # If empty Optking will try to fall back to psi4's writer_prefix on its own.
+        if 'hessian' in opt_calcs:
             # compute hessian as requested.
 
             # procedures proctable analytic hessians
@@ -1289,7 +1295,7 @@ def optimize(name, **kwargs):
         molecule.set_geometry(core.Matrix.from_array(opt_object.molsys.geom))
         molecule.update_geometry()
 
-        opt_status = opt_object.status()  # Query optking for convergence, failure or continuing opt.
+        opt_status = opt_object.status(psi4=True)  # Query optking for convergence, failure or continuing opt.
         if opt_status == 'CONVERGED':
 
             # Last geom is normally last in history. For IRC last geom is last in IRC trajectory
@@ -1341,10 +1347,12 @@ def optimize(name, **kwargs):
             optstash.restore()
 
             opt_data = opt_object.to_dict()
-            if core.get_option('OPTKING', 'WRITE_OPT_HISTORY'):
+            if core.get_option('OPTKING', 'SAVE_OPTIMIZATION'):
                 with open(f"{core.get_writer_file_prefix(molecule.name())}.opt.json", 'w+') as f:
                     json.dump(opt_data, f, indent=2)
 
+            # Try to shutdown nicely
+            opt_object.close()
             raise OptimizationConvergenceError("""geometry optimization""", n - 1, wfn)
 
         core.print_out('\n    Structure for next step:\n')
@@ -1806,7 +1814,7 @@ def gdma(wfn, datafile=""):
     # from outside the Psi4 ecosystem
     from qcelemental.util import which_import
     if not which_import("gdma", return_bool=True):
-        raise ModuleNotFoundError('Python module gdma not found. Solve by installing it: `conda install -c conda-forge gdma` or recompile with `-DENABLE_gdma`')
+        raise ModuleNotFoundError('Python module gdma not found. Solve by installing it: `conda install -c conda-forge pygdma` or recompile with `-DENABLE_gdma`')
     import gdma
 
     min_version = "2.3.3"
@@ -2050,51 +2058,23 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
 
     """
 
-    if filename is None:
-        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".molden"
+    if density_b and not density_a:
+        raise ValidationError(f"psi4.molden can't receive a beta but not an alpha spindensity.")
 
-    if dovirtual is None:
-        dovirt = bool(core.get_option("SCF", "MOLDEN_WITH_VIRTUAL"))
-
+    if not density_a:
+        wfn.write_molden(filename, dovirtual, False)
     else:
-        dovirt = dovirtual
-
-    if density_a:
-        nmopi = wfn.nmopi()
-        nsopi = wfn.nsopi()
-
-        NO_Ra = core.Matrix("NO Alpha Rotation Matrix", nmopi, nmopi)
-        NO_occa = core.Vector(nmopi)
-        density_a.diagonalize(NO_Ra, NO_occa, core.DiagonalizeOrder.Descending)
-        NO_Ca = core.Matrix("Ca Natural Orbitals", nsopi, nmopi)
-        NO_Ca.gemm(False, False, 1.0, wfn.Ca(), NO_Ra, 0)
-
+        wfn_ = core.Wavefunction.build(wfn.molecule(), core.get_global_option('BASIS'))
+        wfn_.deep_copy(wfn)
+        wfn_.Da().copy(density_a)
+        wfn_.Da().back_transform(wfn_.Ca())
         if density_b:
-            NO_Rb = core.Matrix("NO Beta Rotation Matrix", nmopi, nmopi)
-            NO_occb = core.Vector(nmopi)
-            density_b.diagonalize(NO_Rb, NO_occb, core.DiagonalizeOrder.Descending)
-            NO_Cb = core.Matrix("Cb Natural Orbitals", nsopi, nmopi)
-            NO_Cb.gemm(False, False, 1.0, wfn.Cb(), NO_Rb, 0)
-
+            wfn_.Db().copy(density_b)
+            wfn_.Db().back_transform(wfn_.Cb())
         else:
-            NO_occb = NO_occa
-            NO_Cb = NO_Ca
+            wfn_.Db().copy(wfn_.Da())
+        wfn_.write_molden(filename, dovirtual, True)
 
-        mw = core.MoldenWriter(wfn)
-        mw.write(filename, NO_Ca, NO_Cb, NO_occa, NO_occb, NO_occa, NO_occb, dovirt)
-
-    else:
-        try:
-            occa = wfn.occupation_a()
-            occb = wfn.occupation_b()
-        except AttributeError:
-            core.print_out("\n!Molden warning: This wavefunction does not have occupation numbers.\n"
-                           "Writing zero's for occupation numbers\n\n")
-            occa = core.Vector(wfn.nmopi())
-            occb = core.Vector(wfn.nmopi())
-
-        mw = core.MoldenWriter(wfn)
-        mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb, dovirt)
 
 def tdscf(wfn, **kwargs):
     return proc.run_tdscf_excitations(wfn,**kwargs)

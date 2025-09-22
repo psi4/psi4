@@ -1,5 +1,5 @@
 if(${ENABLE_gdma})
-    find_package(gdma 2.3.3 CONFIG QUIET COMPONENTS Python)
+    find_package(gdma 2.3.3 COMPONENTS Python CONFIG QUIET)  # edit in codedeps
 
     if(${gdma_FOUND})
         get_property(_loc TARGET gdma::pygdma PROPERTY LOCATION)
@@ -22,7 +22,7 @@ if(${ENABLE_gdma})
 
         ExternalProject_Add(gdma_external
             DEPENDS pybind11_external
-            URL https://github.com/psi4/gdma/archive/v2.3.3.tar.gz  # Stone's upstream c2e0b548 plus commits from Andy Simmonett for lib, Holger Kruse for I/O, Lori Burns for CMake & Python
+            URL https://github.com/psi4/gdma/archive/v2.3.3.tar.gz  # Stone/upstream c2e0b548 plus lib, I/O, Py  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
