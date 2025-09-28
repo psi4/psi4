@@ -1548,14 +1548,19 @@ data:
 
   - project: opentrustregion
     use:
-      added: "1.10"
+      added: "1.11"
       required: false
-      buildable: false
+      buildable: true
       buildtime: false
       cms: true
     repository:
       host: github
       account: eriksen-lab
       name: opentrustregion
+      commit: v1.0.0
     cmake: null
+    #cmake:
+    #  name: opentrustregion
+    #  constraint: "1.0.0"
+    ##  target: OpenOrbitalOptimizer::OpenOrbitalOptimizer
     conda: null
