@@ -1546,15 +1546,34 @@ data:
 
   - project: opentrustregion
     use:
-      added: "1.10"
+      added: "1.11"
       required: false
-      buildable: false
+      buildable: true
       buildtime: false
       cms: true
     repository:
       host: github
       account: eriksen-lab
       name: opentrustregion
+      commit: v1.0.0
     cmake: null
+    #cmake:
+    #  name: opentrustregion
+    #  constraint: "1.0.0"
+    ##  target: OpenOrbitalOptimizer::OpenOrbitalOptimizer
     conda: null
+    #  channel: conda-forge
+    #  name: opentrustregion
+    #  constraint: null
+    #  aux_build_names:
+    #    - armadillo
+    #  skip_win: true
+    #  skip_win_note: "OOO works on windows but not yet with Psi4."
+    #  cmake:
+    #    ENABLE_OpenTrustRegion: true
+    #    OpenTrustRegion_DIR:
+    #      unix: ${CONDA_PREFIX}/share/cmake/OpenOrbitalOptimizer
+    #      win-64: ${CONDA_PREFIX}/Library/share/cmake/OpenOrbitalOptimizer
+    #    //CMAKE_INSIST_FIND_PACKAGE_OpenOrbitalOptimizer: true
+    #    //CMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer: true
 

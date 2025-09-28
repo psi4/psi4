@@ -1483,12 +1483,14 @@ void HF::opentrustregion_scf() {
     // check if OpenTrustRegion is enabled and loading of dynamic libraries is possible
     #ifndef USING_OpenTrustRegion
         throw PSIEXCEPTION("OpenTrustRegion support has not been enabled in this Psi4 build!\n");
-    #elifndef HAVE_DLFCN_H
-        throw PSIEXCEPTION("Plugins are not supported on your platform.\n");
+    #else
+        #ifndef HAVE_DLFCN_H
+            throw PSIEXCEPTION("Plugins are not supported on your platform.\n");
+        #endif
     #endif
 
     // load library
-    void* handle = dlopen("libopentrustregion.dylib", RTLD_LAZY);
+    void* handle = dlopen("libopentrustregion.so", RTLD_LAZY);
     if (!handle) {
         throw PSIEXCEPTION(
             "HF::opentrustregion_scf: Failed to load library libopentrustregion.dylib."

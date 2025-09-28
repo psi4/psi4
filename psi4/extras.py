@@ -179,6 +179,7 @@ _addons_ = {
     "gauxc": _CMake_to_Py_boolean("@ENABLE_gauxc@"),
     "integratorxx": _CMake_to_Py_boolean("@ENABLE_IntegratorXX@"),
     "ooo": _CMake_to_Py_boolean("@ENABLE_OpenOrbitalOptimizer@"),
+    "otr": _CMake_to_Py_boolean("@ENABLE_OpenTrustRegion@"),
 }
 
 
