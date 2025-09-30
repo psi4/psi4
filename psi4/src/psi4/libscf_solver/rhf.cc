@@ -1322,7 +1322,7 @@ SharedMatrix RHF::unpack(const double* matrix, const std::string name, const Dim
     return shared_matrix;
 }
 
-int64_t RHF::obj_func(const double* kappa, double* func) {
+int64_t RHF::otr_obj_func(const double* kappa, double* func) {
     // get doubly occupied and virtual dimensions per irrep
     auto doccpi = nalphapi_;
     auto virpi = nmopi_ - nalphapi_;
@@ -1366,7 +1366,7 @@ int64_t RHF::obj_func(const double* kappa, double* func) {
     return 0;
 }
 
-int64_t RHF::hess_x(const double* x, double** hess_x) {
+int64_t RHF::otr_hess_x(const double* x, double** hess_x) {
     // get doubly occupied and virtual dimensions per irrep
     auto doccpi = nalphapi_;
     auto virpi = nmopi_ - nalphapi_;
@@ -1403,7 +1403,7 @@ int64_t RHF::hess_x(const double* x, double** hess_x) {
     return 0;
 }
 
-int64_t RHF::update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
+int64_t RHF::otr_update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
                          int64_t (**hess_x_out)(const double*, double**)) {
 
     // get doubly occupied and virtual dimensions per irrep
@@ -1456,7 +1456,7 @@ int64_t RHF::update_orbs(const double* kappa, double* func, double** grad, doubl
     // set pointers
     *grad = grad_arr;
     *h_diag = h_diag_arr;
-    *hess_x_out = hess_x_wrapper;
+    *hess_x_out = otr_hess_x_wrapper;
 
     return 0;
 }
