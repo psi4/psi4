@@ -1663,7 +1663,7 @@ int64_t UHF::otr_obj_func(const double* kappa, double* func) {
     return 0;
 }
 
-int64_t UHF::otr_hess_x(const double* x, double** hess_x) {
+int64_t UHF::otr_hess_x(const double* x, double* hess_x) {
     // get doubly occupied and virtual dimensions per irrep
     auto occpi_a = nalphapi_;
     auto occpi_b = nbetapi_;
@@ -1676,9 +1676,6 @@ int64_t UHF::otr_hess_x(const double* x, double** hess_x) {
     // apply Hessian linear transformation
     auto hess_x_shared = cphf_Hx({x_shared_a, x_shared_b});
 
-    // allocate Hessian linear transformation
-    auto hess_x_arr = (double*)malloc(sizeof(double) * instance->n_param_);
-
     // loop over irreps
     for (size_t h = 0, counter = 0; h < nirrep_; h++) {
         // skip if dimensions are zero
@@ -1689,7 +1686,7 @@ int64_t UHF::otr_hess_x(const double* x, double** hess_x) {
             // copy shared matrix to Hessian linear transformation
             for (size_t i = 0; i < occpi_a[h]; i++) {
                 for (size_t a = 0; a < virpi_a[h]; a++) {
-                    hess_x_arr[counter++] = -2 * hess_x_irrep[i][a];
+                    hess_x[counter++] = -2 * hess_x_irrep[i][a];
                 }
             }
         }
@@ -1703,20 +1700,17 @@ int64_t UHF::otr_hess_x(const double* x, double** hess_x) {
             // for redundant parameters
             for (size_t i = 0; i < occpi_b[h]; i++) {
                 for (size_t a = 0; a < virpi_b[h]; a++) {
-                    hess_x_arr[counter++] = -2 * hess_x_irrep[i][a];
+                    hess_x[counter++] = -2 * hess_x_irrep[i][a];
                 }
             }
         }
     }
 
-    // set pointer
-    *hess_x = hess_x_arr;
-
     return 0;
 }
 
-int64_t UHF::otr_update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
-                         int64_t (**hess_x_out)(const double*, double**)) {
+int64_t UHF::otr_update_orbs(const double* kappa, double* func, double* grad, double* h_diag,
+                             int64_t (**hess_x_out)(const double*, double*)) {
     // get occupied and virtual dimensions per spin type and irrep
     auto occpi_a = nalphapi_;
     auto occpi_b = nbetapi_;
@@ -1746,10 +1740,6 @@ int64_t UHF::otr_update_orbs(const double* kappa, double* func, double** grad, d
     auto fock_a = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
     auto fock_b = linalg::triplet(Cb_, Fb_, Cb_, true, false, false);
 
-    // allocate gradient and Hessian diagonal
-    auto grad_arr = (double*)malloc(sizeof(double) * instance->n_param_);
-    auto h_diag_arr = (double*)malloc(sizeof(double) * instance->n_param_);
-
     // loop over irreps
     for (size_t h = 0, counter = 0; h < nirrep_; h++) {
         // skip if dimensions are zero
@@ -1761,8 +1751,8 @@ int64_t UHF::otr_update_orbs(const double* kappa, double* func, double** grad, d
             // redundant parameters
             for (size_t i = 0; i < occpi_a[h]; i++) {
                 for (size_t a = occpi_a[h]; a < nmopi_[h]; a++) {
-                    grad_arr[counter] = 2 * fp[i][a];
-                    h_diag_arr[counter++] = 2 * (-fp[i][i] + fp[a][a]);
+                    grad[counter] = 2 * fp[i][a];
+                    h_diag[counter++] = 2 * (-fp[i][i] + fp[a][a]);
                 }
             }
         }
@@ -1776,22 +1766,20 @@ int64_t UHF::otr_update_orbs(const double* kappa, double* func, double** grad, d
             // redundant parameters
             for (size_t i = 0; i < occpi_b[h]; i++) {
                 for (size_t a = occpi_b[h]; a < nmopi_[h]; a++) {
-                    grad_arr[counter] = 2 * fp[i][a];
-                    h_diag_arr[counter++] = 2 * (-fp[i][i] + fp[a][a]);
+                    grad[counter] = 2 * fp[i][a];
+                    h_diag[counter++] = 2 * (-fp[i][i] + fp[a][a]);
                 }
             }
         }
     }
 
-    // set pointers
-    *grad = grad_arr;
-    *h_diag = h_diag_arr;
+    // set pointer
     *hess_x_out = otr_hess_x_wrapper;
 
     return 0;
 }
 
-int UHF::n_param() {
+int UHF::otr_n_param() {
     Dimension nparampi_a = nalphapi_;
     Dimension nparampi_b = nbetapi_;
     for (size_t i = 0, maxi = nalphapi_.n(); i < maxi; ++i) nparampi_a[i] *= (nmopi_ - nalphapi_)[i];

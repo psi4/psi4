@@ -1554,16 +1554,16 @@ data:
     repository:
       host: github
       account: eriksen-lab
-      name: opentrustregion
+      name: OpenTrustRegion
       commit: v1.0.0
     cmake: null
     #cmake:
-    #  name: opentrustregion
+    #  name: OpenTrustRegion
     #  constraint: "1.0.0"
     ##  target: OpenOrbitalOptimizer::OpenOrbitalOptimizer
     conda: null
     #  channel: conda-forge
-    #  name: opentrustregion
+    #  name: OpenTrustRegion
     #  constraint: null
     #  aux_build_names:
     #    - armadillo

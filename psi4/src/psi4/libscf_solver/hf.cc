@@ -1464,13 +1464,13 @@ extern "C" const int64_t otr_obj_func_wrapper(const double* kappa, double* func)
     return HF::instance->otr_obj_func(kappa, func);
 }
 
-extern "C" int64_t otr_hess_x_wrapper(const double* x, double** hess_x) {
+extern "C" int64_t otr_hess_x_wrapper(const double* x, double* hess_x) {
     if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
     return HF::instance->otr_hess_x(x, hess_x);
 }
 
-extern "C" const int64_t otr_update_orbs_wrapper(const double* kappa, double* func, double** grad,
-    double** h_diag, int64_t (**hess_x_out)(const double*, double**)) {
+extern "C" const int64_t otr_update_orbs_wrapper(const double* kappa, double* func, double* grad,
+    double* h_diag, int64_t (**hess_x_out)(const double*, double*)) {
     if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
     return HF::instance->otr_update_orbs(kappa, func, grad, h_diag, hess_x_out);
 }
@@ -1512,7 +1512,7 @@ void HF::opentrustregion_scf() {
     instance = this;
 
     // input parameters
-    n_param_ = n_param();
+    otr_n_param_ = otr_n_param();
     int64_t error;
     const bool stability = options_.get_str("STABILITY_ANALYSIS") != "NONE";
     const double* conv_tol_ptr;
@@ -1534,10 +1534,10 @@ void HF::opentrustregion_scf() {
     const int64_t verbose = (print == 0) ? 2 : (print == 1) ? 3 : 4;
 
     // call the Fortran solver
-    error = solver(otr_update_orbs_wrapper, otr_obj_func_wrapper, n_param_, nullptr, nullptr,
-                   &stability, nullptr, nullptr, nullptr, nullptr, conv_tol_ptr, nullptr,
-                   nullptr, &n_macro, n_micro_ptr, nullptr, nullptr, nullptr, &verbose,
-                   logger);
+    error = solver(otr_update_orbs_wrapper, otr_obj_func_wrapper, otr_n_param_, nullptr, 
+                   nullptr, &stability, nullptr, nullptr, nullptr, nullptr, conv_tol_ptr, 
+                   nullptr, nullptr, &n_macro, n_micro_ptr, nullptr, nullptr, nullptr, 
+                   &verbose, logger);
 
     // check if solver completed successfully
     if (error) {
