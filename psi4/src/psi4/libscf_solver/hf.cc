@@ -1489,7 +1489,7 @@ void HF::opentrustregion_scf() {
     void* handle = dlopen("libopentrustregion.so", RTLD_LAZY);
     if (!handle) {
         throw PSIEXCEPTION(
-            "HF::opentrustregion_scf: Failed to load library libopentrustregion.dylib."
+            "HF::opentrustregion_scf: Failed to load library libopentrustregion.dylib.\n"
         );
     }
 
@@ -1500,7 +1500,7 @@ void HF::opentrustregion_scf() {
     solver_func_t solver = reinterpret_cast<solver_func_t>(dlsym(handle, "solver"));
     if (!solver) {
         throw PSIEXCEPTION(
-            "HF::opentrustregion_scf: Failed to load symbol solver from library libopentrustregion.dylib."
+            "HF::opentrustregion_scf: Failed to load symbol solver from library libopentrustregion.dylib.\n"
         );
     }
 
@@ -1537,10 +1537,11 @@ void HF::opentrustregion_scf() {
 
     // check if solver completed successfully
     if (error) {
-        throw PSIEXCEPTION(
-            "HF::opentrustregion_scf: OpenTrustRegion solver returned error."
-        );
+        std::ostringstream oss;
+        oss << "HF::opentrustregion_scf: OpenTrustRegion solver returned error " << error << "\n";
+        throw PSIEXCEPTION(oss.str());
     }
+    
 }
 
 }  // namespace scf
