@@ -1413,7 +1413,7 @@ int64_t ROHF::otr_obj_func(const double* kappa, double* func) {
     return 0;
 }
 
-int64_t ROHF::otr_hess_x(const double* x, double** hess_x) {
+int64_t ROHF::otr_hess_x(const double* x, double* hess_x) {
     // get doubly and singly occupied and virtual dimensions per irrep
     auto doccpi = nbetapi_;
     auto soccpi = nalphapi_ - nbetapi_;
@@ -1425,9 +1425,6 @@ int64_t ROHF::otr_hess_x(const double* x, double** hess_x) {
     // apply Hessian linear transformation
     auto hess_x_shared = std::make_shared<Matrix>("hess_x_shared", doccpi + soccpi, soccpi + virpi);
     Hx(x_shared, hess_x_shared);
-
-    // allocate Hessian linear transformation
-    auto hess_x_arr = (double*)malloc(sizeof(double) * instance->n_param_);
 
     // loop over irreps
     for (size_t h = 0, counter = 0; h < nirrep_; h++) {
@@ -1441,29 +1438,26 @@ int64_t ROHF::otr_hess_x(const double* x, double** hess_x) {
         // parameters implicitly included
         for (size_t i = 0; i < doccpi[h]; i++) {
             for (size_t p = 0; p < soccpi[h]; p++) {
-                hess_x_arr[counter++] = hess_x_irrep[i][p];
+                hess_x[counter++] = hess_x_irrep[i][p];
             }
         }
         for (size_t i = 0; i < doccpi[h]; i++) {
             for (size_t a = soccpi[h]; a < soccpi[h] + virpi[h]; a++) {
-                hess_x_arr[counter++] = hess_x_irrep[i][a];
+                hess_x[counter++] = hess_x_irrep[i][a];
             }
         }
         for (size_t p = doccpi[h]; p < doccpi[h] + soccpi[h]; p++) {
             for (size_t a = soccpi[h]; a < soccpi[h] + virpi[h]; a++) {
-                hess_x_arr[counter++] = hess_x_irrep[p][a];
+                hess_x[counter++] = hess_x_irrep[p][a];
             }
         }
     }
 
-    // set pointer
-    *hess_x = hess_x_arr;
-
     return 0;
 }
 
-int64_t ROHF::otr_update_orbs(const double* kappa, double* func, double** grad, double** h_diag,
-                          int64_t (**hess_x_out)(const double*, double**)) {
+int64_t ROHF::otr_update_orbs(const double* kappa, double* func, double* grad, double* h_diag,
+                              int64_t (**hess_x_out)(const double*, double*)) {
     // get doubly and singly occupied and virtual dimensions per irrep
     auto doccpi = nbetapi_;
     auto soccpi = nalphapi_ - nbetapi_;
@@ -1488,10 +1482,6 @@ int64_t ROHF::otr_update_orbs(const double* kappa, double* func, double** grad, 
     // form Fock matrix
     form_F();
 
-    // allocate gradient and Hessian diagonal
-    auto grad_arr = (double*)malloc(sizeof(double) * instance->n_param_);
-    auto h_diag_arr = (double*)malloc(sizeof(double) * instance->n_param_);
-
     // loop over irreps
     for (size_t h = 0, counter = 0; h < nirrep_; h++) {
         // skip if dimensions are zero
@@ -1504,33 +1494,31 @@ int64_t ROHF::otr_update_orbs(const double* kappa, double* func, double** grad, 
         // parameters
         for (size_t i = 0; i < doccpi[h]; i++) {
             for (size_t p = doccpi[h]; p < doccpi[h] + soccpi[h]; p++) {
-                grad_arr[counter] = 2 * fp[i][p];
-                h_diag_arr[counter++] = 2 * (-fp[i][i] + fp[p][p]);
+                grad[counter] = 2 * fp[i][p];
+                h_diag[counter++] = 2 * (-fp[i][i] + fp[p][p]);
             }
         }
         for (size_t i = 0; i < doccpi[h]; i++) {
             for (size_t a = doccpi[h] + soccpi[h]; a < nmopi_[h]; a++) {
-                grad_arr[counter] = 4 * fp[i][a];
-                h_diag_arr[counter++] = 4 * (-fp[i][i] + fp[a][a]);
+                grad[counter] = 4 * fp[i][a];
+                h_diag[counter++] = 4 * (-fp[i][i] + fp[a][a]);
             }
         }
         for (size_t p = doccpi[h]; p < doccpi[h] + soccpi[h]; p++) {
             for (size_t a = doccpi[h] + soccpi[h]; a < nmopi_[h]; a++) {
-                grad_arr[counter] = 2 * fp[p][a];
-                h_diag_arr[counter++] = 2 * (-fp[p][p] + fp[a][a]);
+                grad[counter] = 2 * fp[p][a];
+                h_diag[counter++] = 2 * (-fp[p][p] + fp[a][a]);
             }
         }
     }
 
-    // set pointers
-    *grad = grad_arr;
-    *h_diag = h_diag_arr;
+    // set pointer
     *hess_x_out = otr_hess_x_wrapper;
 
     return 0;
 }
 
-int ROHF::n_param() {
+int ROHF::otr_n_param() {
     Dimension nparampi_o_s = nbetapi_;
     Dimension nparampi_os_v = nalphapi_;
     for (size_t i = 0, maxi = nalphapi_.n(); i < maxi; ++i) nparampi_o_s[i] *= (nalphapi_ - nbetapi_)[i];
