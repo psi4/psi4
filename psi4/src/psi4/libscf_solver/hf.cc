@@ -84,11 +84,9 @@ extern bool brianEnable;
 #endif
 
 #ifdef USING_OpenTrustRegion
-#include <opentrustregion.h>
-#endif
-
-#ifdef HAVE_DLFCN_H
-#include <dlfcn.h>
+namespace OTR {
+    #include "opentrustregion.h"
+}
 #endif
 
 namespace psi {
@@ -1480,34 +1478,6 @@ extern "C" const void logger(const char* message) {
 }
 
 void HF::opentrustregion_scf() {
-    // check if OpenTrustRegion is enabled and loading of dynamic libraries is possible
-    #ifndef USING_OpenTrustRegion
-        throw PSIEXCEPTION("OpenTrustRegion support has not been enabled in this Psi4 build!\n");
-    #else
-        #ifndef HAVE_DLFCN_H
-            throw PSIEXCEPTION("Plugins are not supported on your platform.\n");
-        #endif
-    #endif
-
-    // load library
-    void* handle = dlopen("libopentrustregion.so", RTLD_LAZY);
-    if (!handle) {
-        throw PSIEXCEPTION(
-            "HF::opentrustregion_scf: Failed to load library libopentrustregion.dylib.\n"
-        );
-    }
-
-    // define interface
-    using solver_func_t = decltype(&solver);
-
-    // load symbol
-    solver_func_t solver = reinterpret_cast<solver_func_t>(dlsym(handle, "solver"));
-    if (!solver) {
-        throw PSIEXCEPTION(
-            "HF::opentrustregion_scf: Failed to load symbol solver from library libopentrustregion.dylib.\n"
-        );
-    }
-
     // initialize instance
     instance = this;
 
@@ -1534,10 +1504,10 @@ void HF::opentrustregion_scf() {
     const int64_t verbose = (print == 0) ? 2 : (print == 1) ? 3 : 4;
 
     // call the Fortran solver
-    error = solver(otr_update_orbs_wrapper, otr_obj_func_wrapper, otr_n_param_, nullptr, 
-                   nullptr, &stability, nullptr, nullptr, nullptr, nullptr, conv_tol_ptr, 
-                   nullptr, nullptr, &n_macro, n_micro_ptr, nullptr, nullptr, nullptr, 
-                   &verbose, logger);
+    error = OTR::solver(otr_update_orbs_wrapper, otr_obj_func_wrapper, otr_n_param_, nullptr, 
+                        nullptr, &stability, nullptr, nullptr, nullptr, nullptr, conv_tol_ptr, 
+                        nullptr, nullptr, &n_macro, n_micro_ptr, nullptr, nullptr, nullptr, 
+                        &verbose, logger);
 
     // check if solver completed successfully
     if (error) {
