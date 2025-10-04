@@ -147,7 +147,7 @@ if(ENABLE_ccsort OR ENABLE_transqt2)
   message(STATUS "Enabling pasture plugins")
 endif()
 
-if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_PCMSolver)
+if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_PCMSolver OR ENABLE_OpenTrustRegion)
   if(psi4_SKIP_ENABLE_Fortran)
     message(STATUS "NOT Enabling Fortran")
   else()

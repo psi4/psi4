@@ -1555,12 +1555,11 @@ data:
       cms: true
     repository:
       host: github
-      account: eriksen-lab
+      account: jonas-greiner
       name: OpenTrustRegion
-      commit: v1.0.0
-    cmake: null
-    #cmake:
-    #  name: OpenTrustRegion
+      commit: 424322ff2aaf384c2b28ab56788f06e8b0e919ab
+    cmake:
+      name: OpenTrustRegion
     #  constraint: "1.0.0"
-    ##  target: OpenOrbitalOptimizer::OpenOrbitalOptimizer
+      target: OpenTrustRegion::OpenTrustRegion
     conda: null
