@@ -84,11 +84,9 @@ extern bool brianEnable;
 #endif
 
 #ifdef USING_OpenTrustRegion
-#include <opentrustregion.h>
-#endif
-
-#ifdef HAVE_DLFCN_H
-#include <dlfcn.h>
+namespace OTR {
+    #include "opentrustregion.h"
+}
 #endif
 
 namespace psi {
