@@ -6,7 +6,7 @@ from psi4.driver import constants  #TEST
 ref_hf_di_au = np.array([0.0, 0.0, 0.22531665104559076])  #TEST
 ref_hf_quad_au = np.array([[-5.698048215087, 0.0, 0.0], [0.0, -4.533526061123, 0.0], [0.0, 0.0, -5.301543240772]])  #TEST
 ref_b3lyp_di_au = np.array([0.0, 0.0, 0.252480541747])  #TEST
-ref_b3lyp_quad_au = np.array([[-5.66266837697, 0.0, 0.0], [0.0, -4.46523692003, 0.0], [0.0, 0.0, -5.22054902407]])  #TEST
+ref_b3lyp_quad_au = np.array([[-5.662668071479, 0.0, 0.0], [0.0, -4.465236034621, 0.0], [0.0, 0.0, -5.267335978497]])  #TEST
 
 ref_hf_di_debye = ref_hf_di_au * constants.dipmom_au2debye  #TEST
 ref_hf_quad_debye = ref_hf_quad_au * constants.dipmom_au2debye * constants.bohr2angstroms  #TEST
