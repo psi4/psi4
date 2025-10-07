@@ -30,5 +30,5 @@ compare_values(-184.1840201594929454, psi4.variable('CURRENT ENERGY'), 6, "MP2 E
 compare_values(np.array([0, 0, 0.234000203994]) / constants.dipmom_au2debye, variable("MP2 DIPOLE"), 4, "MP2 DIPOLE")  #TEST
 compare_values(np.array([[-14.731131601691, 0, 0], [0, -14.731131601691, 0], [0, 0, -19.287283345539]]) / (constants.dipmom_au2debye * constants.bohr2angstroms),  #TEST
     variable("MP2 QUADRUPOLE"), 4, "MP2 QUADRUPOLE")  #TEST
-compare_values(np.array([0, 0, -0.9526489, 0, 0, 0, -0.9526489, 0, 0, 0, 0, 0, 0, 0, -0.9526489, 0, -0.9526489, 0, -0.9526489, 0, 0, 0, -0.9526489, 0, 0, 0, -6.8644462]).reshape((3, 3, 3)),
+compare_values(np.array([0, 0, -0.9570114, 0, 0, 0, -0.9570114, 0, 0, 0, 0, 0, 0, 0, -0.9570114, 0, -0.9570114, 0, -0.9570114, 0, 0, 0, -0.9570114, 0, 0, 0, -6.8815815]).reshape((3, 3, 3)),
     variable("MP2 OCTUPOLE"), 4, "MP2 OCTUPOLE")  #TEST
