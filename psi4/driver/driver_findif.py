@@ -403,15 +403,26 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
         for h in range(n_irrep):
             if h != freq_irrep_only:
                 salc_indices_pi[h].clear()
-
+    #TODO Fix n_disp_pi for MolSym because it is iterating over salcs, not irreps. Not summing correctly
     n_disp_pi = []
-
-    for irrep, indices in enumerate(salc_indices_pi):
-        n_disp = len(indices) * len(disps["asym_irr" if irrep != 0 else "sym_irr"])
-        if mode == "2_0":
-            # Either len(indices) or len(indices)-1 is even, so dividing by two is safe.
-            n_disp += len(indices) * (len(indices) - 1) // 2 * len(disps["off"])
-        n_disp_pi.append(n_disp)
+    if displacement_space == "molsym":
+        asym_list = []
+        for i, salc in enumerate(salcs):
+            asym_list.append(maps_to_negative(symtext, salc))
+        for salcs_h in salcs.salcs_by_irrep:
+            for salc in salcs_h:
+                n_disp = 2 if not maps_to_negative(symtext, salcs[salc]) else 1
+            if mode == "2_0":
+                # Either len(indices) or len(indices)-1 is even, so dividing by two is safe.
+                n_disp += len(salcs_h) * (len(salcs_h) - 1) // 2 * len(disps["off"])
+            n_disp_pi.append(n_disp)
+    else:
+        for irrep, indices in enumerate(salc_indices_pi):
+            n_disp = len(indices) * len(disps["asym_irr" if irrep != 0 else "sym_irr"])
+            if mode == "2_0":
+                # Either len(indices) or len(indices)-1 is even, so dividing by two is safe.
+                n_disp += len(indices) * (len(indices) - 1) // 2 * len(disps["off"])
+            n_disp_pi.append(n_disp)
     # Let's print out the number of geometries, the displacement multiplicity, and the CdSALCs!
     if print_lvl and verbose:
         info = f"    Number of geometries (including reference) is {sum(n_disp_pi) + 1}.\n"
@@ -430,7 +441,7 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
         "n_irrep": n_irrep,
         "n_salc": n_salc,
         "n_atom": n_atom,
-        "salc_list": [salcs, symtext] if displacement_space == "molsym" else salc_list,
+        "salc_list": [salcs, symtext, asym_list] if displacement_space == "molsym" else salc_list,
         "salc_indices_pi": salc_indices_pi,
         "disps": disps,
         "project_translations": t_project,
@@ -599,8 +610,13 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
         for index in active_indices:
             # Displace along the diagonal.
             # Remember that the totally symmetric irrep has special displacements.
-            for val in data["disps"]["sym_irr" if h == 0 else "asym_irr"]:
-                append_geoms((index, ), val)
+            if data["displacement_space"] == "molsym":
+                asym_list = data["salc_list"][2]
+                for val in data["disps"]["sym_irr" if asym_list[index] == 0 else "asym_irr"]:
+                    append_geoms((index, ), val)
+            else: 
+                for val in data["disps"]["sym_irr" if h == 0 else "asym_irr"]:
+                    append_geoms((index, ), val)
 
         # Hessian from energies? We have off-diagonal displacements to worry about.
         if mode == "2_0":
@@ -881,24 +897,47 @@ def assemble_dipder_from_dipoles(findifrec: Dict, freq_irrep_only: int) -> np.nd
         for j in range(1, max_disp + 1):
             dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
             dipole[salc_index, max_disp + j - 1] = displacements[f"{salc_index}: {j}"]["dipole"]
+    
     if data["displacement_space"] == "molsym":
         symtext = data["salc_list"][1]
-        ct = symtext.character_table
-        for h in range(1, data["n_irrep"]):
-            for symel, symel_class in enumerate(symtext.symel_to_class_map):
-                if np.isclose(ct[h,symel_class], -1):
-                    break
-            else:
-                raise ValidationError("A symmetric dipole passed for a non-symmetric one.")
-            sym_op = symtext.symels[symel].rrep
+        salc_list = data["salc_list"][0]  # contains SALC displacement objects
+        max_disp = (findifrec["stencil_size"] - 1) // 2  # e.g., 1 for 3-point stencil
+
+        for h in range(data["n_irrep"]):
             salc_indices = data["salc_indices_pi"][h]
-            #TODO take redundant code and throw it in a function so we don't repeat for CDSalcs case
-            # Creating positive displacements and populating for the other point groups
             for salc_index in salc_indices:
-                for j in range(1, max_disp + 1):
-                    pos_disp_dipole = np.dot(sym_op, displacements[f"{salc_index}: {-j}"]["dipole"].T)
-                    dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
-                    dipole[salc_index, max_disp + j - 1] = pos_disp_dipole
+                salc = salc_list[salc_index]
+
+                if maps_to_negative(symtext, salc):
+                    # There exists an operation R such that RQ = -Q
+                    # Use R to generate +Q dipole from -Q dipole
+                    for k, op in enumerate(symtext.symels):
+                        transformed = np.zeros(3)
+                        # find which operation maps + to - exactly
+                        N = salc.coeffs.size // 3
+                        disp_matrix = salc.coeffs.reshape(N, 3)
+                        transformed_disp = np.zeros_like(disp_matrix)
+                        for a in range(N):
+                            b = symtext.atom_map[a, k]
+                            transformed_disp[b] = op.rrep @ disp_matrix[a]
+                        if np.allclose(transformed_disp.flatten(), -salc.coeffs, atol=1e-8):
+                            R = op.rrep
+                            break
+
+                    for j in range(1, max_disp + 1):
+                        # compute + dipole from - dipole using R
+                        neg_dip = displacements[f"{salc_index}: {-j}"]["dipole"]
+                        pos_dip = R @ neg_dip
+                        dipole[salc_index, max_disp - j] = neg_dip
+                        dipole[salc_index, max_disp + j - 1] = pos_dip
+
+                else:
+                    # Must compute both + and - dipoles explicitly
+                    for j in range(1, max_disp + 1):
+                        neg_dip = displacements[f"{salc_index}: {-j}"]["dipole"]
+                        pos_dip = displacements[f"{salc_index}: {j}"]["dipole"]
+                        dipole[salc_index, max_disp - j] = neg_dip
+                        dipole[salc_index, max_disp + j - 1] = pos_dip
     else:
         for h in range(1, data["n_irrep"]):
             # Find the group operation that converts + to - displacements.
@@ -1157,6 +1196,7 @@ def assemble_hessian_from_energies(findifrec: Dict, freq_irrep_only: int) -> np.
     if data["displacement_space"] == "molsym":
         #TODO This won't change the label that is printed to the console, see qcdb/vib.py
         symtext = data["salc_list"][1]
+        asym_list = data["salc_list"][2]
         irrep_lbls = [symtext.irreps[i].symbol for i in range(data["n_irrep"])]
     else:
         irrep_lbls = mol.irrep_labels()
@@ -1176,11 +1216,19 @@ def assemble_hessian_from_energies(findifrec: Dict, freq_irrep_only: int) -> np.
         # For asymmetric irreps, the energy at a + disp is the same as at a - disp
         # Just reuse the - disp energy for the + disp energy
 
-        for i, salc_index in enumerate(salc_indices):
-            for j in range(1, max_disp + 1):
-                E[i, max_disp - j] = displacements[f"{salc_index}: {-j}"]["energy"]
-                k = -j if h else j  # Because of the +- displacement trick
-                E[i, max_disp + j - 1] = displacements[f"{salc_index}: {k}"]["energy"]
+        if data["displacement_space"] == "molsym":
+            for i, salc_index in enumerate(salc_indices):
+                for j in range(1, max_disp + 1):
+                    E[i, max_disp - j] = displacements[f"{salc_index}: {-j}"]["energy"]
+                    k = -j if asym_list[salc_index] else j # Because of the +- displacement trick 
+                    E[i, max_disp + j - 1] = displacements[f"{salc_index}: {k}"]["energy"]
+
+        else:
+            for i, salc_index in enumerate(salc_indices):
+                for j in range(1, max_disp + 1):
+                    E[i, max_disp - j] = displacements[f"{salc_index}: {-j}"]["energy"]
+                    k = -j if h else j  # Because of the +- displacement trick
+                    E[i, max_disp + j - 1] = displacements[f"{salc_index}: {k}"]["energy"]
         # Now determine all diagonal force constants for this irrep.
         if findifrec["stencil_size"] == 3:
             diag_fcs = E[:, 0] + E[:, 1]
@@ -1585,6 +1633,45 @@ class FiniteDifferenceComputer(BaseComputer):
         else:
             return ret_ptype
 
+def maps_to_negative(symtext, salc, tol=1e-8):
+    """
+    Test a SALC for +/- displacement equivalence.
+
+    Parameters
+    ----------
+    symtext
+        A MolSym object that contains the symmetry context for point group of the molecule.
+
+    salc
+        (nat * 3) Symmetry-Adapted Linear Combination of Cartesian displacement coordinates.
+
+    tol
+        The numerical tolerance used to identify a equivalence between the negative displacement
+        and a symmetry operation acting on the displacement.
+
+    Returns
+    -------
+
+    bool
+        The +/- displacements are equivalent.
+    """
+    N = salc.coeffs.size // 3
+    disp_matrix = salc.coeffs.reshape(N, 3)
+    n_ops = symtext.atom_map.shape[1]
+
+    for k in range(n_ops):
+        op = symtext.symels[k]
+        transformed = np.zeros_like(disp_matrix)
+
+        for a in range(N):
+            b = symtext.atom_map[a,k]
+            transformed[b] = op.rrep @ disp_matrix[a]
+        transformed_flat = transformed.flatten()
+
+        if np.allclose(transformed_flat, -salc.coeffs, atol=tol):
+            return True
+
+    return False
 
 def _findif_schema_to_wfn(findif_model: AtomicResult) -> core.Wavefunction:
     """Helper function to produce Wavefunction and Psi4 files from a FiniteDifference-flavored AtomicResult."""
