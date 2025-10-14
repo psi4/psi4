@@ -347,5 +347,9 @@ void export_functional(py::module &m) {
               "n_data)", "grid_data"_a, "D"_a)
          .def("potential_integral", &NumIntHelper::potential_integral,
               "Compute an integral \\int \\chi_\\mu(r) \\chi_\\nu(r) f(r) where f is a scalar function represented for "
-              "each block of points of the integration grid as a vector of n_points.");
+              "each block of points of the integration grid as a vector of n_points.")
+         .def("potential_gradient", &NumIntHelper::potential_gradient,
+              "Compute a Hellmann-Feynman gradient contribution 2 D \\int \\nabla \\chi_\\mu(r) \\chi_\\nu(r) f(r) "
+              "where f is a scalar function represented for each block of points of the integration grid as a vector "
+              "of n_points.");
 }
