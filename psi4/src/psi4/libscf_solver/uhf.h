@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -83,6 +83,8 @@ class UHF : public HF {
     void form_V() override;
     double compute_E() override;
     void finalize() override;
+
+    void openorbital_scf() override;
 
     void damping_update(double) override;
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;

@@ -38,6 +38,9 @@ set {
     df_basis_elst cc-pvdz-ri
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
+
 energy('sapt0', molecule=ethene_ethyne)
 
 Eelst = psi4.variable("SAPT ELST ENERGY")

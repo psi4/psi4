@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -133,11 +133,11 @@ int DPD::file2_cache_add(dpdfile2 *File) {
         file2_mat_init(File);
         file2_mat_rd(File);
 
-        this_entry->clean = 1;
+        this_entry->clean = true;
 
         this_entry->matrix = File->matrix;
 
-        File->incore = 1;
+        File->incore = true;
 
         dpd_set_default(dpdnum);
 
@@ -163,7 +163,7 @@ int DPD::file2_cache_del(dpdfile2 *File) {
     if (this_entry == nullptr)
         dpd_error("File2 cache delete error!", "outfile");
     else {
-        File->incore = 0;
+        File->incore = false;
 
         dpdnum = dpd_default;
         dpd_set_default(File->dpdnum);
@@ -221,7 +221,7 @@ void DPD::file2_cache_dirty(dpdfile2 *File) {
         (this_entry == nullptr && !File->incore))
         dpd_error("Error setting file4_cache dirty flag!", "outfile");
     else {
-        this_entry->clean = 0;
+        this_entry->clean = false;
     }
 }
 

@@ -5,6 +5,11 @@ H
 F 1 0.917
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    psi4.set_options({"e_convergence": 10, "d_convergence": 10})
+else:
+    psi4.set_options({"e_convergence": 8, "d_convergence": 7})
+
 # refs[cc_type][fc][psivar]
 refs = {
     "conv": {
@@ -66,7 +71,7 @@ refs = {
 
 def do_check(module, cc_typ, fc):
     set_options(
-        dict(qc_module=module, cc_type=cc_typ, freeze_core=fc, basis='cc-pvdz', e_convergence=10, d_convergence=8))
+        dict(qc_module=module, cc_type=cc_typ, freeze_core=fc, basis='cc-pvdz'))
     ret_e = energy('ccsd(t)', molecule=hf)
     for var_name, ref_val in refs[cc_typ][fc].items():
         compare_values(ref_val, variable(var_name), 7, "{}/{} (fc={}) [{}]".format(cc_typ, module, fc,  var_name))

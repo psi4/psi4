@@ -26,6 +26,9 @@ set {
     basis 6-31G*
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 # Calculate the total gradient on the wavefunction in the presence of the external potential charges.
 e_total, wfn = energy('scf', molecule=water, return_wfn=True, external_potentials=external_potentials)
 grad_total = np.asarray(gradient('scf', ref_wfn=wfn))

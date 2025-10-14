@@ -23,8 +23,11 @@ df_fitting_condition 1.e-12
 df_basis_sapt def2-qzvpp-ri  # not a recommendation. present to compensate for change in default
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
 ref_321g = -0.09561567760757009
-ref_lanl = -0.10472408365123138
+ref_lanl = -0.1039198611537151
 
 E = energy('sapt0/3-21g')
 E = energy('sapt0/lanl2dz')

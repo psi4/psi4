@@ -94,15 +94,16 @@ _programs = {
     "einsums": psi4.addons("einsums"),
     "gauxc": psi4.addons("gauxc"),
     "pandas": which_import("pandas", return_bool=True),
+    "ooo": psi4.addons("ooo"),
 }
 
 
 def has_program(name):
     # Note for d3/gcp that EmpiricalDispersion is choosing between engines and which can't be globally controlled, so there's no use or truth in separate selectors
     if name == "dftd3":
-        return _programs_qcng["s-dftd3"] or _programs_qcng["dftd3"]
+        return _programs_qcng["s-dftd3"]  # or _programs_qcng["dftd3"]
     elif name == "gcp":
-        return _programs_qcng["mctc-gcp"] or _programs_qcng["gcp"]
+        return _programs_qcng["mctc-gcp"]  # or _programs_qcng["gcp"]
     elif name == "classic-dftd3":
         return _programs_qcng["dftd3"]
     elif name in _programs:

@@ -1,5 +1,18 @@
 #! Tests RHF/ROHF/UHF SCF gradients
 
+ref_rhf = psi4.Matrix.from_list(            #TEST
+[[0.0,  0.00000000e+00, -5.95973789e-02],   #TEST
+ [0.0, -4.30395224e-02,  2.97986894e-02],   #TEST
+ [0.0,  4.30395224e-02,  2.97986894e-02]])  #TEST
+ref_rohf = psi4.Matrix.from_list(           #TEST
+[[0.0,  0.00000000e+00,  6.86276760e-02],   #TEST
+ [0.0,  4.53106586e-02, -3.43138380e-02],   #TEST
+ [0.0, -4.53106586e-02, -3.43138380e-02]])  #TEST
+ref_uhf = psi4.Matrix.from_list(            #TEST
+[[0.0,  0.00000000e+00,  7.03280322e-02],   #TEST
+ [0.0,  4.63402834e-02, -3.51640161e-02],   #TEST
+ [0.0, -4.63402834e-02, -3.51640161e-02]])  #TEST
+
 molecule h2o {
 0 1
 O
@@ -17,7 +30,9 @@ set {
    d_convergence 8
 }
 
-analytic = gradient('scf')
+analytic, wfn = gradient('scf', return_wfn=True)
+
+compare_matrices(ref_rhf, analytic, 5, "RHF SCF reference vs. analytic gradient to 10^-5") #TEST
 
 set findif points 3
 findif = gradient('scf', dertype=0)
@@ -44,7 +59,9 @@ set {
    basis cc-pvdz
 }
 
-analytic = gradient('scf')
+analytic, wfn = gradient('scf', return_wfn=True)
+
+compare_matrices(ref_rohf, analytic, 5, "ROHF SCF reference vs. analytic gradient to 10^-5") #TEST
 
 set findif points 3
 findif = gradient('scf', dertype=0)
@@ -71,7 +88,12 @@ set {
    basis cc-pvdz
 }
 
-analytic = gradient('scf')
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
+analytic, wfn = gradient('scf', return_wfn=True)
+
+compare_matrices(ref_uhf, analytic, 5, "UHF SCF reference vs. analytic gradient to 10^-5") #TEST
 
 set findif points 3
 findif = gradient('scf', dertype=0)

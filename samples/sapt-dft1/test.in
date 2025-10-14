@@ -34,6 +34,9 @@ set {
     sapt_dft_grac_shift_b 0.138264
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"d_convergence": 5e-5})
+
 # No hybrid kernel & no exch-disp scaling & no delta HF
 set SAPT_DFT_DO_DHF False
 set SAPT_DFT_DO_HYBRID False

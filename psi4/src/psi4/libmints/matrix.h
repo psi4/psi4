@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,6 +37,22 @@
 #include "dimension.h"
 
 #include <eigen3/Eigen/Core>
+#ifdef USING_OpenOrbitalOptimizer
+#ifdef USING_LAPACK_MKL
+#include <mkl.h>
+#define ARMA_USE_MKL
+#define ARMA_USE_MKL_TYPES
+#endif
+#define ARMA_DONT_USE_FORTRAN_HIDDEN_ARGS
+#define ARMA_DONT_USE_WRAPPER
+#include <armadillo>
+#else
+// Forward declaration
+namespace arma {
+  class mat;
+}
+#endif
+
 
 namespace psi {
 
@@ -278,6 +294,10 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// returns an Eigen::Map object to the underlying matrix data buffer
     Eigen::Map<Eigen::MatrixXd> eigen_map();
     std::vector<Eigen::Map<Eigen::MatrixXd>> eigen_maps();
+    /// Returns an Armadillo matrix
+    arma::mat to_armadillo_matrix(int h=0);
+    /// Copies data from an Armadillo matrix
+    void from_armadillo_matrix(const arma::mat & m, int h=0);
 
     /**
     ** For a matrix of 3D vectors (ncol==3), rotate a set of points around an

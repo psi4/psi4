@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -188,11 +188,18 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- When several modules can compute the same methods and the default
     routing is not suitable, this targets a module. ``CCENERGY`` covers
     CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
-    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN MRCC");
+    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN MRCC F12");
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
+#ifdef USING_OpenOrbitalOptimizer
+    /*- Orbital optimizer package to use for SCF. If compiled with OpenOrbitalOptimizer support, change this to use it or the internal code. -*/
+    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
+#else
+    /*- Orbital optimizer package to use for SCF. -*/
+    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
+#endif
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -1139,14 +1146,30 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION SAPT(DFT) -*/
 
-        /*- Monomer A GRAC shift in Hartree -*/
+        /*- Monomer A GRAC shift in Hartree. To automatically compute prior to
+        SAPT(DFT), do NOT set this option but set |sapt__sapt_dft_grac_compute|
+        to "SINGLE" or "ITERATIVE" as described below. -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
-        /*- Monomer B GRAC shift in Hartree -*/
+        /*- Monomer B GRAC shift in Hartree. To automatically compute prior to
+        SAPT(DFT), do NOT set this option but set |sapt__sapt_dft_grac_compute|
+        to "SINGLE" or "ITERATIVE" as described below. -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
+        /*- SAPT_DFT_GRAC_COMPUTE will enable automatically computing GRAC
+         shifts prior to running SAPT(DFT). Note that the user must not specify
+         a value for SAPT_DFT_GRAC_SHIFT_A or SAPT_DFT_GRAC_SHIFT_B to trigger
+         this GRAC computation. "SINGLE" will try only once to converge the
+         cation for computing a GRAC shift. "ITERATIVE" will adjust local Psi4
+         options ("LEVEL_SHIFT", "LEVEL_SHIFT_CUTOFF") to attempt to converge
+         the neutral/cation calculations. "ITERATIVE" will try 3 times to
+         converge the cation before failing the SAPT(DFT) computation. -*/
+        options.add_str("SAPT_DFT_GRAC_COMPUTE", "NONE", "NONE SINGLE ITERATIVE");
+        /*- To ensure that the GRAC shift is computed with a sufficiently large
+          basis set, the user can specify a larger basis set for the GRAC
+          calculation, which can be different from the basis set used for the
+          SAPT(DFT) calculation. -*/
+        options.add_str("SAPT_DFT_GRAC_BASIS", "AUTO");
         /*- Compute the Delta-HF correction? -*/
         options.add_bool("SAPT_DFT_DO_DHF", true);
-        /*- How is the GRAC correction determined? !expert -*/
-        options.add_str("SAPT_DFT_GRAC_DETERMINATION", "INPUT", "INPUT");
         /*- Enables the hybrid xc kernel in dispersion? !expert -*/
         options.add_bool("SAPT_DFT_DO_HYBRID", true);
         /*- Scheme for approximating exchange-dispersion for SAPT-DFT.
@@ -1442,7 +1465,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             depending on available memory or other hardware constraints, allow the best
             sub-algorithm for the molecule and conditions (``AUTO`` ; usual mode) or
             forcibly select a sub-algorithm (usually only for debugging or profiling).
-            Presently, ``SCF_SUBTYPE=DF``, ``SCF_SUBTYPE=MEM_DF``, and ``SCF_SUBTYPE=DISK_DF`` 
+            Presently, ``SCF_TYPE=DF``, ``SCF_TYPE=MEM_DF``, and ``SCF_TYPE=DISK_DF``
 	        can have ``INCORE`` and ``OUT_OF_CORE`` selected; and ``SCF_TYPE=PK``  can have ``INCORE``,
 	        ``OUT_OF_CORE``, ``YOSHIMINE_OUT_OF_CORE``, and ``REORDER_OUT_OF_CORE`` selected. !expert -*/
 	    options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE YOSHIMINE_OUT_OF_CORE REORDER_OUT_OF_CORE");
@@ -1534,7 +1557,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DIIS_START", 1);
         /*- Minimum number of error vectors stored for DIIS extrapolation. Will be removed in v1.7. -*/
         options.add_int("DIIS_MIN_VECS", 2);
-        /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+        /*- Maximum number of error vectors stored for DIIS extrapolation.
+        For |globals__orbital_optimizer_package| = `OOO`, sets maximum_history_length. -*/
         options.add_int("DIIS_MAX_VECS", 10);
         /*- Do use DIIS extrapolation to accelerate convergence? -*/
         options.add_bool("DIIS", true);
@@ -1589,10 +1613,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             to have both the chosen accelerator and DIIS (if enabled). For restricted-open references, ``EDIIS`` and ``ADIIS`` have no effect. -*/
         options.add_str("SCF_INITIAL_ACCELERATOR", "ADIIS", "NONE EDIIS ADIIS");
         /*- SCF error at which to start the linear interpolation between DIIS steps and steps of the initial SCF accelerator.
-            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249 -*/
+            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249
+            For |globals__orbital_optimizer_package| = `OOO`, sets diis_epsilon. -*/
         options.add_double("SCF_INITIAL_START_DIIS_TRANSITION", 1.0E-1);
         /*- SCF error at which to complete the linear interpolation between DIIS steps and steps of the initial SCF accelerator
-            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249 -*/
+            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249
+            For |globals__orbital_optimizer_package| = `OOO`, sets diis_threshold. -*/
         options.add_double("SCF_INITIAL_FINISH_DIIS_TRANSITION", 1.0E-4);
         /*- Do perform incremental Fock build? -*/
         options.add_bool("INCFOCK", false);
@@ -1604,6 +1630,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- The screening tolerance used for ERI/Density sparsity in the LinK algorithm -*/
         options.add_double("LINK_INTS_TOLERANCE", 1.0e-12);
+        /*- For |globals__orbital_optimizer_package| = `OOO`, verbosity of printing to screen.
+        0 prints nothing. 1 prints one line per iter (note that RHF rms(density) printed
+        differs by half from convergence criterion. 5 is common and adds occupancy printing. 12 is max. -*/
+        options.add_int("OOO_PRINT", 0);
+        /*- For |globals__orbital_optimizer_package| = `OOO`, the DIIS restart criterion (Chupin et al, 2021) -*/
+        options.add_double("OOO_DIIS_RESTART_FACTOR", 1.0e-4);
+        /*- For |globals__orbital_optimizer_package| = `OOO`, use optimal damping when max error bigger than this. -*/
+        options.add_double("OOO_OPTIMAL_DAMPING_THRESHOLD", 1.0);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
@@ -1778,6 +1812,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SAD_SPIN_AVERAGE", true);
         /*- SAD guess density decomposition threshold !expert -*/
         options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
+#ifdef USING_OpenOrbitalOptimizer
+        /*- Orbital optimizer package to use for SAD guess. If compiled with OpenOrbitalOptimizer support, change this to use it or the internal code.
+        Implementation WIP !expert -*/
+        options.add_str("SAD_ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
+#else
+        /*- Orbital optimizer package to use for SAD guess. !expert -*/
+        options.add_str("SAD_ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
+#endif
 
         /*- SUBSECTION DFT -*/
 
@@ -2076,7 +2118,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("PROP_SYM", 1);
         /*- Root number (within its irrep) for computing properties -*/
         options.add_int("PROP_ROOT", 1);
-        /*- Maximum number of iterations -*/
+        /*- Maximum number of iterations.
+        For |globals__orbital_optimizer_package| = `OOO`, sets maximum iterations. -*/
         options.add_int("MAXITER", 50);
         /*- Do use zeta?  -*/
         options.add_bool("ZETA", false);
@@ -2732,214 +2775,199 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     if (name == "OPTKING" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs geometry optimizations and vibrational frequency analyses. -*/
 
-        /*- SUBSECTION Optimization Algorithm -*/
+        /* SUBSECTION Optimization Algorithm */
 
-        /*- Maximum number of geometry optimization steps -*/
-        options.add_int("GEOM_MAXITER", 50);
-        /*- Print all optking parameters. -*/
-        options.add_bool("PRINT_OPT_PARAMS", false);
-        /*- Specifies minimum search, transition-state search, or IRC following -*/
-        options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
-        /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
-        options.add_str("STEP_TYPE", "RFO", "RFO RS_I_RFO P_RFO NR SD LINESEARCH");
-        /*- Geometry optimization coordinates to use.
-            REDUNDANT and INTERNAL are synonyms and the default.
-            CARTESIAN uses only cartesian coordinates.
-            BOTH uses both redundant and cartesian coordinates.
-            CUSTOM is not fully implemented yet - expected optking 0.3.1  -*/
-        options.add_str("OPT_COORDINATES", "INTERNAL", "REDUNDANT INTERNAL CARTESIAN BOTH CUSTOM");
-        /*- A string formatted as a dicitonary containing a set of coordinates. Coordinates can be
-            appended to Optking's coordinate set or used on their own - expected optking 0.3.1. -*/
-        options.add_str("CUSTOM_COORDS", "");
-        /*- Do follow the initial RFO vector after the first step? -*/
-        options.add_bool("RFO_FOLLOW_ROOT", false);
-        /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/
-        options.add_int("RFO_ROOT", 0);
-        /*- Starting level for dynamic optimization (0=nondynamic, higher=>more conservative) -*/
-        options.add_int("DYNAMIC_LEVEL", 0);
-        /*- IRC step size in bohr(amu)\ $^{1/2}$. -*/
-        options.add_double("IRC_STEP_SIZE", 0.2);
-        /*- IRC mapping direction -*/
-        options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
-        /*- Maximum number of IRC points to collect before stopping. -*/
-        options.add_int("IRC_POINTS", 20);
-        /*- Initial maximum step size in bohr or radian along an internal coordinate -*/
-        options.add_double("INTRAFRAG_STEP_LIMIT", 0.5);
-        /*- Lower bound for dynamic trust radius [au] -*/
-        options.add_double("INTRAFRAG_STEP_LIMIT_MIN", 0.001);
-        /*- Upper bound for dynamic trust radius [au] -*/
-        options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
-        /*- Maximum step size in bohr or radian along an interfragment coordinate -*/
-        options.add_double("INTERFRAG_STEP_LIMIT", 0.5);
-        /*- Reduce step size as necessary to ensure back-transformation of internal
-            coordinate step to cartesian coordinates. -*/
-        options.add_bool("ENSURE_BT_CONVERGENCE", false);
-        /*= Do stupid, linear scaling of internal coordinates to step limit (not RS-RFO) -*/
-        options.add_bool("SIMPLE_STEP_SCALING", false);
-        /*- Set number of consecutive backward steps allowed in optimization -*/
+        /* Alphabetized so I can check for missing keywords more easily against sorted model */
+
+        /*- :py:attr:`~optking.v1.optparams.OptParams.accept_symmetry_breaking` -*/
+        options.add_bool("ACCEPT_SYMMETRY_BREAKING", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.add_auxiliary_bonds` -*/
+        options.add_bool("ADD_AUXILIARY_BONDS", true);
+        // Undocumented. Inactive currently
+        options.add_double("ALG_GEOM_MAXITER", 50);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.auxiliary_bond_factor` -*/
+        options.add_double("AUXILIARY_BOND_FACTOR", 2.5);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.bt_dx_conv` -*/
+        options.add_double("BT_DX_CONV", 1e-7);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.bt_dx_rms_change_conv` -*/
+        options.add_double("BT_DX_RMS_CHANGE_CONV", 1e-12);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.bt_max_iter` -*/
+        options.add_double("BT_MAX_ITER", 25);
+        // Undocumented. Should be switching to this instead of linear_algebra_tol
+        options.add_double("BT_PINV_RCOND", 1e-6);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.full_hess_every` -*/
+        options.add_bool("CART_HESS_READ", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.conjugate_gradient_type` -*/
+        options.add_str("CONJUGATE_GRADIENT_TYPE", "");
+        /*- :py:attr:`consecutive_backsteps <optking.v1.optparams.OptParams.consecutive_backsteps_allowed>` -*/
         options.add_int("CONSECUTIVE_BACKSTEPS", 0);
-        /*- Eigenvectors of RFO matrix whose final column is smaller than this are ignored. -*/
-        options.add_double("RFO_NORMALIZATION_MAX", 100);
-        /*- Denominator check for hessian update. -*/
-        options.add_double("H_UPDATE_DEN_TOL", 1e-7);
-        /*- Absolute maximum value of RS-RFO. -*/
-        options.add_double("RSRFO_ALPHA_MAX", 1e8);
-        /*- Specify distances between atoms to be frozen (unchanged) -*/
-        options.add_str("FROZEN_DISTANCE", "");
-        /*- Specify angles between atoms to be frozen (unchanged) -*/
-        options.add_str("FROZEN_BEND", "");
-        /*- Specify dihedral angles between atoms to be frozen (unchanged) -*/
-        options.add_str("FROZEN_DIHEDRAL", "");
-        /*- Specify out-of-plane angles between atoms to be frozen (unchanged) -*/
-        options.add_str("FROZEN_OOFP", "");
-        /*- Specify atom and X, XY, XYZ, ... to be frozen (unchanged) -*/
-        options.add_str("FROZEN_CARTESIAN", "");
-        /*- Specify range for distances between atoms to be constrained to (eq. value specified)
-            analogous to the previous FIXED_DISTANCE -*/
-        options.add_str("RANGED_DISTANCE", "");
-        /*- Specify range for angles between atoms to be constrained to (eq. value specified)
-            analogous to the previous FIXED_BEND -*/
-        options.add_str("RANGED_BEND", "");
-        /*- Specify range for the dihedral angles between atoms to be constrained to (eq. value specified)
-            analogous to the previous FIXED_DIHEDRAL -*/
-        options.add_str("RANGED_DIHEDRAL", "");
-        /*- Specify range for the out-of-plane angles between atoms to be constrained to (eq. value specified)
-            analogous to the old FIXED_<COORD> keyword-*/
-        options.add_str("RANGED_OOFP", "");
-        /*- Freeze ALL dihedral angles -*/
-        options.add_bool("FREEZE_ALL_DIHEDRALS", false);
-        /*- Unfreeze a subset of dihedrals - meant for use with freeze_all_dihedrals -*/
-        options.add_str("UNFREEZE_DIHEDRALS", "");
-
-        /*- Specify formula for external forces for the distance between atoms -*/
-        options.add_str("EXT_FORCE_DISTANCE", "");
-        /*- Specify formula for external forces for angles between atoms -*/
+        /*- :py:attr:`~optking.v1.optparams.OptParams.covalent_connect` -*/
+        options.add_double("COVALENT_CONNECT", 1.3);
+        /*- Expected in an upcoming release. -*/
+        options.add_str("CUSTOM_COORDS", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.dynamic_level` -*/
+        options.add_int("DYNAMIC_LEVEL", 0);
+        /*- :py:attr:`dynamic_level_max <optking.v1.optparams.OptParams.dynamic_lvl_max>` -*/
+        options.add_int("DYNAMIC_LEVEL_MAX", 6);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ensure_bt_convergence` -*/
+        options.add_bool("ENSURE_BT_CONVERGENCE", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_bend` -*/
         options.add_str("EXT_FORCE_BEND", "");
-        /*- Specify formula for external forces for dihedral angles between atoms -*/
-        options.add_str("EXT_FORCE_DIHEDRAL", "");
-        /*- Specify formula for external forces for out-of-plane angles between atoms -*/
-        options.add_str("EXT_FORCE_OOFP", "");
-        /*- Symmetry formula for external forces for cartesian coordinates on atoms . -*/
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_cartesian` -*/
         options.add_str("EXT_FORCE_CARTESIAN", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_dihedral` -*/
+        options.add_str("EXT_FORCE_DIHEDRAL", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_distance` -*/
+        options.add_str("EXT_FORCE_DISTANCE", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ext_force_oofp` -*/
+        options.add_str("EXT_FORCE_OOFP", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ensure_bt_convergence` -*/
+        options.add_bool("FLEXIBLE_G_CONVERGENCE", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frag_mode` -*/
+        options.add_str("FRAG_MODE", "SINGLE");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frag_ref_atoms` -*/
+        options.add("FRAG_REF_ATOMS", new ArrayType());
+        /*- :py:attr:`~optking.v1.optparams.OptParams.freeze_all_dihedrals` -*/
+        options.add_bool("FREEZE_ALL_DIHEDRALS", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.freeze_intrafrag` -*/
+        options.add_bool("FREEZE_INTRAFRAG", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_bend` -*/
+        options.add_str("FROZEN_BEND", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_cartesian` -*/
+        options.add_str("FROZEN_CARTESIAN", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_dihedral` -*/
+        options.add_str("FROZEN_DIHEDRAL", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_distance` -*/
+        options.add_str("FROZEN_DISTANCE", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.frozen_oofp` -*/
+        options.add_str("FROZEN_OOFP", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.full_hess_every` -*/
+        options.add_int("FULL_HESS_EVERY", -1);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.geom_maxiter` -*/
+        options.add_int("GEOM_MAXITER", 50);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.g_convergence` -*/
+        options.add_str("G_CONVERGENCE", "QCHEM");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.hessian_file` -*/
+        options.add_str_i("HESSIAN_FILE", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update` -*/
+        options.add_str("HESS_UPDATE", "BFGS");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit` -*/
+        options.add_bool("HESS_UPDATE_LIMIT", true);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit_max` -*/
+        options.add_double("HESS_UPDATE_LIMIT_MAX", 1.00);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update_limit_scale` -*/
+        options.add_double("HESS_UPDATE_LIMIT_SCALE", 0.50);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.hess_update_use_last` -*/
+        options.add_int("HESS_UPDATE_USE_LAST", 4);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.h_bond_connect` -*/
+        options.add_double("H_BOND_CONNECT", 4.3);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.h_guess_every` -*/
+        options.add_bool("H_GUESS_EVERY", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_collinear_tol` -*/
+        options.add_double("INTERFRAG_COLLINEAR_TOL", 0.01);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_coords` -*/
+        options.add_str("INTERFRAG_COORDS", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_dist_inv` -*/
+        options.add_bool("INTERFRAG_DIST_INV", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_hess` -*/
+        options.add_str("INTERFRAG_HESS", "DEFAULT");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.interfrag_mode` -*/
+        options.add_str("INTERFRAG_MODE", "FIXED");
+        /*- :py:attr:`interfrag_step_limit <optking.v1.optparams.OptParams.interfrag_trust>` -*/
+        options.add_double("INTERFRAG_STEP_LIMIT", 0.5);
+        /*- :py:attr:`interfrag_step_limit_max <optking.v1.optparams.OptParams.interfrag_trust_max>` -*/
+        options.add_double("INTERFRAG_STEP_LIMIT_MAX", 1.0);
+        /*- :py:attr:`interfrag_step_limit_min <optking.v1.optparams.OptParams.interfrag_trust_min>` -*/
+        options.add_double("INTERFRAG_STEP_LIMIT_MIN", 0.001);
+        /*- :py:attr:`intrafrag_step_limit <optking.v1.optparams.OptParams.intrafrag_trust>` -*/
+        options.add_double("INTRAFRAG_STEP_LIMIT", 0.5);
+        /*- :py:attr:`intrafrag_step_limit_min <optking.v1.optparams.OptParams.intrafrag_trust_min>` -*/
+        options.add_double("INTRAFRAG_STEP_LIMIT_MIN", 0.001);
+        /*- :py:attr:`intrafrag_step_limit_max <optking.v1.optparams.OptParams.intrafrag_trust_min>` -*/
+        options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_convergence` -*/
+        options.add_double("IRC_CONVERGENCE", -0.7);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_direction` -*/
+        options.add_str("IRC_DIRECTION", "FORWARD");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_mode` -*/
+        options.add_str("IRC_MODE", "NORMAL");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_points` -*/
+        options.add_int("IRC_POINTS", 20);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.irc_step_size` -*/
+        options.add_double("IRC_STEP_SIZE", 0.2);
+        /*- Threshold to ignore small values when inverting matrices -*/
+        options.add_double("LINEAR_ALGEBRA_TOL", 1e-10);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.linear_bend_threshold` -*/
+        options.add_double("LINEAR_BEND_THRESHOLD", 3.05);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.linesearch` -*/
+        options.add_bool("LINESEARCH", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.linesearch_step` -*/
+        options.add_double("LINESEARCH_STEP", 0.2);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.conv_max_disp` -*/
+        options.add_double("MAX_DISP_G_CONVERGENCE", 1.2e-3);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.conv_max_DE` -*/
+        options.add_double("MAX_ENERGY_G_CONVERGENCE", 1.0e-6);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.conv_max_force` -*/
+        options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.opt_coordinates` -*/
+        options.add_str("OPT_COORDINATES", "INTERNAL");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.opt_type` -*/
+        options.add_str("OPT_TYPE", "MIN");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.print_trajectory_xyz_file` -*/
+        options.add_bool("PRINT_TRAJECTORY_XYZ_FILE", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_bend` -*/
+        options.add_str("RANGED_BEND", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_cartesian` -*/
+        options.add_str("RANGED_CARTESIAN", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_dihedral` -*/
+        options.add_str("RANGED_DIHEDRAL", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_distance` -*/
+        options.add_str("RANGED_DISTANCE", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.ranged_oofp` -*/
+        options.add_str("RANGED_OOFP", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.rfo_follow_root` -*/
+        options.add_bool("RFO_FOLLOW_ROOT", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.rfo_normalization_max` -*/
+        options.add_double("RFO_NORMALIZATION_MAX", 100);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.rfo_root` -*/
+        options.add_int("RFO_ROOT", 0);
+        /*- :py:attr:`rms_disp_g_convergence <optking.v1.optparams.OptParams.conv_rms_disp>` -*/
+        options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
+        /*- :py:attr:`rms_force_g_convergence <optking.v1.optparams.OptParams.conv_rms_force>` -*/
+        options.add_double("RMS_FORCE_G_CONVERGENCE", 3.0e-4);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.rsrfo_alpha_max` -*/
+        options.add_double("RSRFO_ALPHA_MAX", 1e8);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.sd_hessian` -*/
+        options.add_str("SD_HESSIAN", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.simple_step_scaling` -*/
+        options.add_bool("SIMPLE_STEP_SCALING", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.steepest_descent_type` -*/
+        options.add_str("STEEPEST_DESCENT_TYPE", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.step_type` -*/
+        options.add_str("STEP_TYPE", "RFO");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.test_B` -*/
+        options.add_bool("TEST_B", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.test_derivative_B` -*/
+        options.add_bool("TEST_DERIVATIVE_B", false);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.unfreeze_dihedrals` -*/
+        options.add_str("UNFREEZE_DIHEDRALS", "");
+        /*- :py:attr:`~optking.v1.optparams.OptParams.v3d_tors_angle_lim` -*/
+        options.add_double("V3D_TORS_ANGLE_LIM", 0.017);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.v3d_tors_cos_tol` -*/
+        options.add_double("V3D_TORS_COS_TOL", 1e-10);
+        /*- :py:attr:`~optking.v1.optparams.OptParams.write_trajectory` -*/
+        options.add_bool("WRITE_TRAJECTORY", false);
+
+        /* The following keywords are Psi4 specific and therfore included in autodoc */
+
         /*- Tolerance for symmetrizing cartesian geometry between steps -*/
         options.add_double("CARTESIAN_SYM_TOLERANCE", 1e-7);
-
-        /*- SUBSECTION Convergence Control -*/
-
-        /*- Set of optimization criteria. Specification of any MAX_*_G_CONVERGENCE
-        or RMS_*_G_CONVERGENCE options will append to overwrite the criteria set here
-        unless |optking__flexible_g_convergence| is also on.      See Table :ref:`Geometry Convergence
-        <table:optkingconv>` for details. -*/
-        options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT INTERFRAG_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
-        /*- Convergence criterion for geometry optmization: maximum force
-        (internal coordinates, atomic units). -*/
-        options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
-        /*- Convergence criterion for geometry optmization: rms force
-        (internal coordinates, atomic units). -*/
-        options.add_double("RMS_FORCE_G_CONVERGENCE", 3.0e-4);
-        /*- Convergence criterion for geometry optmization: maximum energy change. -*/
-        options.add_double("MAX_ENERGY_G_CONVERGENCE", 1.0e-6);
-        /*- Convergence criterion for geometry optmization: maximum displacement
-        (internal coordinates, atomic units). -*/
-        options.add_double("MAX_DISP_G_CONVERGENCE", 1.2e-3);
-        /*- Convergence criterion for geometry optmization: rms displacement
-        (internal coordinates, atomic units). -*/
-        options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
-        /*- Even if a user-defined threshold is set, allow for normal, flexible convergence criteria -*/
-        options.add_bool("FLEXIBLE_G_CONVERGENCE", false);
-
-        /*- SUBSECTION Hessian Update -*/
-
-        /*- Hessian update scheme -*/
-        options.add_str("HESS_UPDATE", "BFGS", "NONE BFGS MS POWELL BOFILL");
-        /*- Number of previous steps to use in Hessian update, 0 uses all -*/
-        options.add_int("HESS_UPDATE_USE_LAST", 4);
-        /*- Do limit the magnitude of changes caused by the Hessian update? -*/
-        options.add_bool("HESS_UPDATE_LIMIT", true);
-        /*- If |optking__hess_update_limit| is true, changes to the Hessian
-        from the update are limited to the larger of
-        |optking__hess_update_limit_scale| * (the previous value) and
-        HESS_UPDATE_LIMIT_MAX [au]. -*/
-        options.add_double("HESS_UPDATE_LIMIT_MAX", 1.00);
-        /*- If |optking__hess_update_limit| is true, changes to the Hessian
-        from the update are limited to the larger of HESS_UPDATE_LIMIT_SCALE
-        * (the previous value) and |optking__hess_update_limit_max| [au]. -*/
-        options.add_double("HESS_UPDATE_LIMIT_SCALE", 0.50);
-        /*- Do read Cartesian Hessian?  Only for experts - use
-        |optking__full_hess_every| instead. -*/
-        options.add_bool("CART_HESS_READ", false);
-        /* - Specify file for Cartesian Hessian (or JSON Schema-like file) to get Hessians from
-        Only for experts - use |optking__full_hess_every| instead. Requires |optking__CART_HESS_READ | - */
-        options.add_str("HESSIAN_FILE", "");
-        /*- Frequency with which to compute the full Hessian in the course
-        of a geometry optimization. 0 means to compute the initial Hessian only, 1
-        means recompute every step, and N means recompute every N steps. The
-        default (-1) is to never compute the full Hessian. -*/
-        options.add_int("FULL_HESS_EVERY", -1);
-        /*- Model Hessian to guess intrafragment force constants -*/
-        options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE LINDH LINDH_SIMPLE");
-
-        /*- SUBSECTION Fragment/Internal Coordinate Control -*/
-
-        /*- For multi-fragment molecules, treat as single bonded molecule
-        or via interfragment coordinates. A primary difference is that in ``MULTI`` mode,
-        the interfragment coordinates are not redundant. -*/
-        options.add_str("FRAG_MODE", "SINGLE", "SINGLE MULTI");
-        /*- Which atoms define the reference points for interfragment coordinates? -*/
-        options.add("FRAG_REF_ATOMS", new ArrayType());
-        /*- Do freeze all fragments rigid? -*/
-        options.add_bool("FREEZE_INTRAFRAG", false);
-        /*- Do freeze all interfragment modes? -*/
-        options.add_bool("FREEZE_INTERFRAG", false);
-        /*- When interfragment coordinates are present, use as reference points either
-        principal axes or fixed linear combinations of atoms. -*/
-        options.add_str("INTERFRAG_MODE", "FIXED", "FIXED PRINCIPAL_AXES");
-        /*- Use 1/R for the interfragment stretching coordinate instead of R -*/
-        options.add_bool("INTERFRAG_DIST_INV", false);
-        /*- Dictionary to define a dimer. Contains "Natoms per frag", "A Frag", "A Ref Atoms", "B Frag", and "B Ref Atoms" -*/
-        options.add_str("INTERFRAG_COORDS", "");
-        /*- Specify atoms to use for reference points in interfragment coordinates -*/
-        options.add("FRAG_REF_ATOMS", new ArrayType());
-
-        /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
-        options.add_bool("ADD_AUXILIARY_BONDS", true);
-        /*- Re-estimate the Hessian at every step, i.e., ignore the currently stored Hessian. -*/
-        options.add_bool("H_GUESS_EVERY", false);
-        /*- This factor times standard covalent distance is used to add extra stretch coordinates. -*/
-        options.add_double("AUXILIARY_BOND_FACTOR", 2.5);
-        /*- Model Hessian to guess interfragment force constants -*/
-        options.add_str("INTERFRAG_HESS", "DEFAULT", "DEFAULT FISCHER_LIKE");
-        /*- When determining connectivity, a bond is assigned if interatomic distance
-        is less than (this number) * sum of covalent radii. -*/
-        options.add_double("COVALENT_CONNECT", 1.3);
-        /*- When connecting disparate fragments when frag_mode = SIMPLE, a "bond"
-        is assigned if interatomic distance is less than (this number) * sum of covalent radii. The
-        value is then increased until all the fragments are connected (directly or indirectly). -*/
-        options.add_double("INTERFRAGMENT_CONNECT", 1.8);
-        /*- Tolerance for whether to reject a set of generated reference atoms due to collinearity -*/
-        options.add_double("INTERFRAG_COLLINEAR_TOL", 0.01);
-
-        /*- For now, this is a general maximum distance for the definition of H-bonds -*/
-        options.add_double("H_BOND_CONNECT", 4.3);
-        /*- Do only generate the internal coordinates and then stop? -*/
-        options.add_bool("INTCOS_GENERATE_EXIT", false);
-        /*- SUBSECTION Misc. -*/
-
-        /*- Do test B matrix? -*/
-        options.add_bool("TEST_B", false);
-        /*- Do test derivative B matrix? -*/
-        options.add_bool("TEST_DERIVATIVE_B", false);
-
         /*- Write the optimization history / state to disc -*/
         options.add_bool("WRITE_OPT_RESULT", false);
         /*- Save OptKing's internal classes for possible restart upon error -*/
         options.add_bool("SAVE_OPTIMIZATION", false);
         /*- Restart the optimization from optking's written history -*/
         options.add_double("OPT_RESTART", 0);
-        /*- Write Optimization Trajectory -*/
-        options.add_bool("WRITE_TRAJECTORY", false);
-        /*- Should an xyz trajectory file be kept (useful for visualization)? -*/
-        options.add_bool("PRINT_TRAJECTORY_XYZ_FILE", false);
         /*- Write the full history to disk. Produces a non validated OptimizationResult. -*/
         options.add_bool("WRITE_OPT_HISTORY", false);
 
@@ -3253,6 +3281,29 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("MOLDEN_WRITE", false);
         /*- Do Cholesky decomposition of the ERI tensor -*/
         options.add_bool("CHOLESKY", false);
+    }
+    if (name == "F12" || options.read_globals()) {
+        /*- MODULEDESCRIPTION Performs F12 computations for RHF reference wavefunctions. -*/
+
+        /*- SUBSECTION General Options -*/
+        /*- Algorithm to use for MP2-F12 computation, conventional or density-fitted. -*/
+        options.add_str("MP2_TYPE", "DF", "DF CONV");
+        /*- For certain |globals__mp2_type| algorithms that have internal sub-algorithms
+            depending on available memory or other hardware constraints, select a sub-algorithm
+            Presently, ``MP2_TYPE=DF`` and ``MP2_TYPE=CONV``
+	        can have ``INCORE`` and ``DISK`` selected. In future, ``AUTO`` will be added. -*/
+        options.add_str("F12_SUBTYPE", "INCORE", "INCORE DISK");
+        /*- Whether to read-in stored integrals from previous computation -*/
+        options.add_bool("F12_READ_INTS", false);
+        /*- Set contracted Gaussian-type geminal beta value -*/
+        options.add_double("F12_BETA", 1.0);
+        /*- Choose a basis for Complementary Auxiliary Basis Set -*/
+        options.add_str("CABS_BASIS", "");
+        /*- Whether to compute the CABS Singles Correction -*/
+        options.add_bool("CABS_SINGLES", true);
+        /*- Choose a density-fitting basis for integrals. For |f12__mp2_type| =DF, this is applied to non-F12
+        SCF and MP2 parts, too, regardless of |scf__df_basis_scf| or |dfmp2__df_basis_mp2| .  -*/
+        options.add_str("DF_BASIS_F12", "");
     }
     if (name == "MRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
@@ -3909,7 +3960,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         **Psi4 Interface:** Geometry optimizations run through PSI (except in
         sandwich mode) use PSI's optimizer and so this keyword has no effect.
         Use :ref:`optking <apdx:optking>` keywords instead,
-        particularly |optking__full_hess_every|. -*/
+        particularly :py:attr:`~optking.v1.optparams.OptParams.full_hess_every`. -*/
         options.add_int("CFOUR_EVAL_HESS", 0);
 
         /*- Specifies in CC calculations using mrcc the excitation level if
@@ -4081,8 +4132,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         **Psi4 Interface:** Geometry optimizations run through PSI (except in
         sandwich mode) use PSI's optimizer and so this keyword has no effect.
         Use :ref:`optking <apdx:optking>` keywords instead,
-        particularly |optking__g_convergence| =CFOUR, which should be equivalent
-        except for different internal coordinate definitions. -*/
+        particularly :py:attr:`~optking.v1.optparams.OptParams.g_convergence` =CFOUR,
+        which should be equivalent except for different internal coordinate definitions. -*/
         options.add_int("CFOUR_GEO_CONV", 5);
 
         /*- Specifies largest step (in millibohr) which is allowed in
@@ -4090,7 +4141,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         **Psi4 Interface:** Geometry optimizations run through PSI (except in
         sandwich mode) use PSI's optimizer and so this keyword has no effect.
         Use :ref:`optking <apdx:optking>` keywords instead,
-        particularly |optking__intrafrag_step_limit|. -*/
+        particularly :py:attr:`intrafrag_step_limit <optking.v1.optparams.OptParams.intrafrag_trust>`. -*/
         options.add_int("CFOUR_GEO_MAXSTEP", 300);
 
         /*- Specifies the used geometry optimization methods. The following
@@ -4112,7 +4163,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         **Psi4 Interface:** Geometry optimizations run through PSI (except in
         sandwich mode) use PSI's optimizer and so this keyword has no effect.
         Use :ref:`optking <apdx:optking>` keywords instead,
-        particularly |optking__geom_maxiter|. -*/
+        particularly :py:attr:`~optking.v1.optparams.OptParams.geom_maxiter`. -*/
         options.add_int("CFOUR_GEO_MAXCYC", 50);
 
         /*- Specifies whether gauge-including atomic orbitals are used (ON)
@@ -4260,7 +4311,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         **Psi4 Interface:** Geometry optimizations run through PSI (except in
         sandwich mode) use PSI's optimizer and so this keyword has no effect.
         Use :ref:`optking <apdx:optking>` keywords instead,
-        particularly |optking__opt_type| and |optking__step_type|. -*/
+        particularly :py:attr:`~optking.v1.optparams.OptParams.opt_type`
+        and :py:attr:`~optking.v1.optparams.OptParams.step_type`. -*/
         options.add_str("CFOUR_METHOD", "SINGLE_POINT", "NR RFA TS MANR SINGLE_POINT");
 
         /*- Specifies the type of MRCC calculation. MK performs a MR-CC

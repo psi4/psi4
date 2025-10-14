@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -959,12 +959,21 @@ class BasisSet(object):
                 break
 
             else:
-                # Ne'er found :-(
                 text2  = """  Shell Entries: %s\n""" % (seek['entry'])
                 text2 += """  Basis Sets: %s\n""" % (seek['basis'])
                 text2 += """  File Path: %s\n""" % (', '.join(map(str, seek['path'].split(os.pathsep))))
                 text2 += """  Input Blocks: %s\n""" % (', '.join(seek['strings']))
-                raise BasisSetNotFound(f'BasisSet::construct: Unable to find a basis set for atom {at + 1} for key {key} among:\n{text2}')
+
+                # basis/NOTES [53]
+                deprecated_basis_sets = ["APR-CC-PCV(5+D)Z", "APR-CC-PCV(6+D)Z", "APR-CC-PCV(Q+D)Z", "AUG-CC-PCV(5+D)Z", "AUG-CC-PCV(6+D)Z", "AUG-CC-PCV(D+D)Z", "AUG-CC-PCV(Q+D)Z", "AUG-CC-PCV(T+D)Z", "CC-PCV(5+D)Z", "CC-PCV(6+D)Z", "CC-PCV(D+D)Z", "CC-PCV(Q+D)Z", "CC-PCV(T+D)Z", "FEB-CC-PCV(6+D)Z", "HEAVY-AUG-CC-PCV(5+D)Z", "HEAVY-AUG-CC-PCV(6+D)Z", "HEAVY-AUG-CC-PCV(D+D)Z", "HEAVY-AUG-CC-PCV(Q+D)Z", "HEAVY-AUG-CC-PCV(T+D)Z", "JUN-CC-PCV(5+D)Z", "JUN-CC-PCV(6+D)Z", "JUN-CC-PCV(D+D)Z", "JUN-CC-PCV(Q+D)Z", "JUN-CC-PCV(T+D)Z", "MAR-CC-PCV(5+D)Z", "MAR-CC-PCV(6+D)Z", "MAY-CC-PCV(5+D)Z", "MAY-CC-PCV(6+D)Z", "MAY-CC-PCV(Q+D)Z", "MAY-CC-PCV(T+D)Z", "APR-CC-PWCV(5+D)Z", "APR-CC-PWCV(Q+D)Z", "AUG-CC-PWCV(5+D)Z", "AUG-CC-PWCV(D+D)Z", "AUG-CC-PWCV(Q+D)Z", "AUG-CC-PWCV(T+D)Z", "CC-PWCV(5+D)Z", "CC-PWCV(D+D)Z", "CC-PWCV(Q+D)Z", "CC-PWCV(T+D)Z", "HEAVY-AUG-CC-PWCV(5+D)Z", "HEAVY-AUG-CC-PWCV(D+D)Z", "HEAVY-AUG-CC-PWCV(Q+D)Z", "HEAVY-AUG-CC-PWCV(T+D)Z", "JUN-CC-PWCV(5+D)Z", "JUN-CC-PWCV(D+D)Z", "JUN-CC-PWCV(Q+D)Z", "JUN-CC-PWCV(T+D)Z", "MAR-CC-PWCV(5+D)Z", "MAY-CC-PWCV(5+D)Z", "MAY-CC-PWCV(Q+D)Z", "MAY-CC-PWCV(T+D)Z"]
+                if  seek['basis'][0][0] in deprecated_basis_sets:
+                    raise BasisSetNotFoundDeprecated(
+                        f'BasisSet::construct: Unable to find a basis set for atom {at + 1} for key {key} among:\n{text2}',
+                        f"This basis was ill-advised. Access if you must via {seek['basis'][0][0].lower()}-deprecated. See note [54] for details in https://github.com/psi4/psi4/blob/master/psi4/share/psi4/basis/NOTES.\n"
+                    )
+                else:
+                    # Ne'er found :-(
+                    raise BasisSetNotFound(f'BasisSet::construct: Unable to find a basis set for atom {at + 1} for key {key} among:\n{text2}')
 
         # Construct the grand BasisSet for mol
         basisset = BasisSet(key, mol, atom_basis_shell)

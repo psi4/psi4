@@ -10,6 +10,9 @@ molecule h2o {
   H 1 0.96 2 104.5
 }
 
+if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO sometimes bad conv with ooo
+
 set basis cc-pVDZ
 energy('scf')
 
@@ -33,6 +36,10 @@ set globals {
     JOBTYPE SP
     GUESS CORE
 }
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 
 S22mad = database('sapt0','s44',subset=[2,8],BENCHMARK='s22A')
 compare_values(refS22AmadSAPT0, S22mad, 5, "PSIPATH database")  #TEST

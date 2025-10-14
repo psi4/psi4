@@ -160,4 +160,5 @@ GPATH
 GRTAGS
 Pipfile.lock
 tmp
-pytest_output.*
+pytest_output.dat
+pytest_output.log

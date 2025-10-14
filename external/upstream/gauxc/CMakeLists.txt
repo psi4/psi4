@@ -8,7 +8,7 @@ if(${ENABLE_gauxc})
 
     get_property(BLAS_LIBRARIES TARGET lapk PROPERTY INTERFACE_LINK_LIBRARIES)
 
-    find_package(gauxc CONFIG) 
+    find_package(gauxc CONFIG)  # edit in codedeps
 
     if(${gauxc_FOUND})
         #== check if GPU-enabled GauXC is found, if GPU is specified ==#
@@ -59,7 +59,7 @@ if(${ENABLE_gauxc})
             DEPENDS lapack_external 
                     libxc_external
                     gau2grid_external
-            URL https://github.com/wavefunction91/GauXC/archive/5c85f6b.tar.gz
+            URL https://github.com/wavefunction91/GauXC/archive/5c85f6b.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -75,6 +75,11 @@ if(${ENABLE_gauxc})
                    -Dgau2grid_DIR=${gau2grid_DIR}
                    -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                   -DOpenMP_C_FLAGS:STRING=${OpenMP_C_FLAGS}
+                   -DOpenMP_CXX_FLAGS:STRING=${OpenMP_CXX_FLAGS}
+                   -DOpenMP_omp_LIBRARY=${OpenMP_omp_LIBRARY}
+                   -DOpenMP_gomp_LIBRARY=${OpenMP_gomp_LIBRARY}
+                   -DOpenMP_pthread_LIBRARY=${OpenMP_pthread_LIBRARY}
                    -DGAUXC_ENABLE_MPI=OFF
                    -DGAUXC_ENABLE_TESTS=OFF
                    -DGAUXC_ENABLE_HDF5=OFF
@@ -84,6 +89,8 @@ if(${ENABLE_gauxc})
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                          -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
                          -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
+                         -DOpenMP_C_LIB_NAMES:STRING=${OpenMP_C_LIB_NAMES}
+                         -DOpenMP_CXX_LIB_NAMES:STRING=${OpenMP_CXX_LIB_NAMES}
                          -DBLAS_LIBRARIES:STRING=${BLAS_LIBRARIES})
         set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
     endif()

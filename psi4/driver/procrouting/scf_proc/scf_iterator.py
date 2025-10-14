@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -276,6 +276,60 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
+    ooo_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OOO", "OPENORBITALOPTIMIZER"]
+    if ooo_scf:
+        pcm_enabled = core.get_option('SCF', 'PCM')
+        ddx_enabled = core.get_option('SCF', 'DDX')
+        pe_enabled = core.get_option('SCF', 'PE')
+        level_shift_enabled = core.get_option("SCF", "LEVEL_SHIFT") != 0.0
+        autograc_enabled = core.get_option("SAPT", "SAPT_DFT_GRAC_COMPUTE") != "NONE"
+        guessmix_enabled = core.get_option("SCF", "GUESS_MIX")
+        if (reference in ["ROHF", "CUHF"] or soscf_enabled or self.MOM_excited_ or frac_enabled or
+            efp_enabled or pcm_enabled or ddx_enabled or pe_enabled or autograc_enabled or
+            level_shift_enabled or guessmix_enabled):
+            core.print_out(f"    Note: OpenOrbitalOptimizer not compatible with at least one of the following. Falling back to orbital_optimizer_package=internal\n")
+            core.print_out(f"          {reference=}, soscf={soscf_enabled}, mom={self.MOM_excited_}, frac={frac_enabled}, efp={efp_enabled},\n")
+            core.print_out(f"          pcm={pcm_enabled}, ddx={ddx_enabled}, pe={pe_enabled}, autograc={autograc_enabled}, level_shift={level_shift_enabled},\n")
+            core.print_out(f"          guess_mix={guessmix_enabled}\n")
+        else:
+            # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
+            if self.sad_ and self.iteration_ <= 0:
+                self.iteration_ += 1
+                self.form_G()
+                self.form_initial_F()
+                self.form_initial_C()
+                self.reset_occupation()
+                self.find_occupation()
+                ene_sad = self.compute_E()
+                core.print_out(
+                    "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
+                    ("DF-" if is_dfjk else "", reference, "SAD", ene_sad, ene_sad, 0.0, ""))
+            if core.get_option("SCF", "GUESS") == "READ" and self.iteration_ <= 0:
+                self.form_G()
+                self.form_initial_F()
+                self.form_initial_C()
+                self.reset_occupation()
+                self.find_occupation()
+                ene_sad = self.compute_E()
+
+            try:
+                self.openorbital_scf()
+            except RuntimeError as ex:
+                if "openorbital_scf is virtual; it has not been implemented for your class" in str(ex):
+                    core.print_out(f"    Note: OpenOrbitalOptimizer NYI for {reference}. Falling back to Internal.\n")
+                else:
+                    raise ex
+            else:
+                SCFE = self.compute_E()
+                self.set_energies("Total Energy", SCFE)
+                self.set_variable("SCF ITERATION ENERGY", SCFE)
+                self.iteration_energies.append(SCFE)  # note 1-len array, not niter-len array like INTERNAL
+
+                self.form_G()
+                self.form_F()
+                self.form_C()
+                self.form_D()
+                return
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = False

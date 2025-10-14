@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -100,6 +100,7 @@ void HF::common_init() {
     reset_occ_ = false;
     sad_ = false;
     module_ = "scf";
+    frac_performed_ = false;
 
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();

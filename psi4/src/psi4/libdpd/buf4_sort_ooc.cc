@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -54,8 +54,9 @@ int DPD::buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index, int p
     int h, nirreps, row, col, all_buf_irrep, r_irrep;
     int p, q, r, s, P, Q, R, S, pq, rs, sr, pr, qs, qp, rq, qr, ps, sp, rp, sq;
     int Gp, Gq, Gr, Gs, Gpq, Grs, Gpr, Gqs, Grq, Gqr, Gps, Gsp, Grp, Gsq;
-    int memoryd, rows_per_bucket, nbuckets, rows_left, incore, n;
+    int memoryd, rows_per_bucket, nbuckets, rows_left, n;
     dpdbuf4 OutBuf;
+    bool incore;
 
     nirreps = InBuf->params->nirreps;
     all_buf_irrep = InBuf->file.my_irrep;
@@ -97,9 +98,9 @@ int DPD::buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index, int p
 
                     rows_left = InBuf->params->rowtot[h] % rows_per_bucket;
 
-                    incore = 1;
+                    incore = true;
                     if (nbuckets > 1) {
-                        incore = 0;
+                        incore = false;
 #if DPD_DEBUG
                         outfile->Printf("buf4_sort_pqsr: memory information.\n");
                         outfile->Printf("buf4_sort_pqsr: rowtot[%d] = %d\n", h, InBuf->params->rowtot[h]);
@@ -111,7 +112,7 @@ int DPD::buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index, int p
                     }
 
                 } else
-                    incore = 1;
+                    incore = true;
 
                 if (incore) {
                     buf4_mat_irrep_init(&OutBuf, h);

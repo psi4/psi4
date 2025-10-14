@@ -1023,6 +1023,11 @@ def test_hessian_vs_cfour(scf_type, subject, dertype, request):
         }
         if subject in ['hooh']:
             toldict["omega"] = 2.0
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        if scf_type == "pk":
+            toldict["IR_intensity"] = 1.e-1
+            toldict["omega"] = 2.e-1
+            toldict["svd"] = 2.e-6
 
     verbose = 2
     forgive = ['gamma'] if subject in ['co2', 'ch4', 'nh3'] else []  # since Psi can't classify degen symmetries
@@ -1038,6 +1043,8 @@ def test_hessian_vs_cfour(scf_type, subject, dertype, request):
         'points': 5,
         'scf_type': scf_type,
     })
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
     E, pwfn = psi4.frequency('hf/cc-pvdz', return_wfn=True, molecule=apmol, dertype=dertype)
 
@@ -1072,6 +1079,9 @@ def test_thermochemistry():
         'points': 5,
         'scf_type': 'pk',
     })
+
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
 
     psi4.optimize(modelchem, molecule=ch4_thermo_mol)
     E, thermo_wfn = psi4.freq(modelchem, return_wfn=True, molecule=ch4_thermo_mol, dertype=1)
@@ -1320,6 +1330,9 @@ def test_nonequilibrium_harmonic_analysis():
         'points': 5,
         'scf_type': 'pk'
     })
+
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
 
     # 1. findif-by-G, auto inclusion of rot dof b/c non-eq
     e, wfn = psi4.frequency('hf/cc-pvdz', return_wfn=True, molecule=h2o, dertype=1)

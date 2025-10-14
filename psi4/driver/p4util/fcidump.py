@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -340,7 +340,7 @@ def fcidump_from_file(fname: str) -> Dict[str, Any]:
     return intdump
 
 
-def compare_fcidumps(expected: str, computed: str, label: str):
+def compare_fcidumps(expected: str, computed: str, label: str, atol: int = 10):
     """Comparison function for FCIDUMP files.
     Compares the first six below, then computes energies from MO integrals and compares the last four.
 
@@ -374,13 +374,13 @@ def compare_fcidumps(expected: str, computed: str, label: str):
     ref_energies = energies_from_fcidump(ref_intdump)
     energies = energies_from_fcidump(intdump)
 
-    pass_1el = compare_values(ref_energies['ONE-ELECTRON ENERGY'], energies['ONE-ELECTRON ENERGY'], 7,
+    pass_1el = compare_values(ref_energies['ONE-ELECTRON ENERGY'], energies['ONE-ELECTRON ENERGY'], atol-3,
                               label + '. 1-electron energy')
-    pass_2el = compare_values(ref_energies['TWO-ELECTRON ENERGY'], energies['TWO-ELECTRON ENERGY'], 7,
+    pass_2el = compare_values(ref_energies['TWO-ELECTRON ENERGY'], energies['TWO-ELECTRON ENERGY'], atol-3,
                               label + '. 2-electron energy')
-    pass_scf = compare_values(ref_energies['SCF TOTAL ENERGY'], energies['SCF TOTAL ENERGY'], 10,
+    pass_scf = compare_values(ref_energies['SCF TOTAL ENERGY'], energies['SCF TOTAL ENERGY'], atol,
                               label + '. SCF total energy')
-    pass_mp2 = compare_values(ref_energies['MP2 CORRELATION ENERGY'], energies['MP2 CORRELATION ENERGY'], 10,
+    pass_mp2 = compare_values(ref_energies['MP2 CORRELATION ENERGY'], energies['MP2 CORRELATION ENERGY'], atol,
                               label + '. MP2 correlation energy')
 
     compare_integers(True, (pass_1el and pass_2el and pass_scf and pass_mp2), label)

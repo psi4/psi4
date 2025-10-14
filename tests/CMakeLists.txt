@@ -70,7 +70,7 @@ foreach(test_name aediis-1
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
                   mints9 mints10 mints15 molden1 molden2 mom mom-h2o-3 mom-h2o-4
                   mp2-1  mp2-def2 mp2-grad1 mp2-grad2 mp2-h mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
-                  mp2-property mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient
+                  mp2-property mp2f12-1 mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient
                   nbo nbody-cp-gradient nbody-vmfc-gradient nbody-vmfc-hessian nbody-hessian nbody-convergence
                   nbody-freq nbody-multi-level nbody-multi-level-2 numpy-array-interface
                   olccd-freq1 olccd-grad1 olccd-grad2 olccd1 olccd2 olccd3
@@ -107,7 +107,7 @@ foreach(test_name aediis-1
                   tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5 tdscf-6 tdscf-7
                   dft-pruning freq-masses sapt9 sapt10 sapt11 scf-uhf-grad-nobeta
                   linK-1 linK-2 linK-3
-                  cbs-xtpl-energy-conv ddd-deriv nbody-he-4b ddd-function-kwargs
+                  cbs-xtpl-energy-conv ddd-deriv nbody-he-4b ddd-function-kwargs dfmp2f12-1
                   )
     add_subdirectory(${test_name})
 endforeach()
@@ -164,7 +164,7 @@ endif()
 # <<<  DFTD3  >>>
 
 find_program(DFTD3_EXECUTABLE
-             NAMES s-dftd3 dftd3
+             NAMES s-dftd3
              DOC "Path to Grimme's dftd3 executable")
 
 if(DFTD3_EXECUTABLE)
@@ -184,6 +184,7 @@ find_program(DFTD4_EXECUTABLE
 
 if(DFTD4_EXECUTABLE)
     add_subdirectory(dftd4)
+    add_subdirectory(fsapt-d4)
     message(STATUS "${Cyan}Found DFTD4${ColourReset}: ${DFTD4_EXECUTABLE}")
     message(STATUS "Adding test cases: Psi4 + DFTD4")
 endif()
@@ -205,7 +206,7 @@ endif()
 # <<<  gCP  >>>
 
 find_program(gCP_EXECUTABLE
-             NAMES mctc-gcp gcp
+             NAMES mctc-gcp
              DOC "Path to Grimme's gCP executable")
 
 if(gCP_EXECUTABLE)

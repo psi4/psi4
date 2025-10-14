@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -44,6 +44,7 @@ import sys
 import traceback
 import uuid
 import warnings
+import textwrap
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, Union
@@ -53,7 +54,7 @@ import qcelemental as qcel
 import qcengine as qcng
 
 from psi4 import core
-from psi4.extras import exit_printing
+from psi4.extras import exit_printing, addons
 from psi4.header import print_header
 from psi4.metadata import __version__
 
@@ -443,6 +444,7 @@ def run_qcschema(
     outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".qcschema_tmpout")
     core.set_output_file(outfile, False)
     print_header()
+    core.print_out("Addons:     " + textwrap.fill(", ".join(addons()), width=95, initial_indent='', subsequent_indent='                ') + "\n")
 
     start_time = datetime.datetime.now()
 

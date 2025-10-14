@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -596,7 +596,8 @@ that |PSIfour| expects the numpy file on disk to have the ``.npy`` extension, no
 Convergence Stabilization
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A summary of Psi's supported convergence stabilization techniques is presented below:
+A summary of Psi's supported convergence stabilization techniques is presented below.
+Alternatively, stabilization can run through the OpenOrbitalOptimizer library. See :ref:`options:ooo` for details.
 
 DIIS [On by Default]
     DIIS uses previous iterates of the Fock matrix together

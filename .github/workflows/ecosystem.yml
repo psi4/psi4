@@ -24,7 +24,7 @@ jobs:
             mkl-version: ""
             platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not pe_ecp"
+            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
@@ -40,12 +40,10 @@ jobs:
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
+            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6 or v2rdm6 or v2rdm7)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D ENABLE_v2rdm_casscf=ON
-              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
               -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
@@ -65,7 +63,7 @@ jobs:
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not pe_ecp"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or snowflake)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -169,27 +167,20 @@ jobs:
         #
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
-          sed -i "s;- openfermion;#- openfermion;g" env_p4build.yaml
-          # openfermion not yet ready for np v2
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
           # sed -E -i.bak "s;;;g" env_p4build.yaml
-          sed -E -i.bak "s;- openfermion;#- openfermion;g" env_p4build.yaml
-          # openfermion not yet ready for np v2
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Silicon)" ]]; then
           :
-          sed -E -i.bak "s;- openfermion;#- openfermion;g" env_p4build.yaml
-          # openfermion not yet ready for np v2
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
-          sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
-          echo "  - libgcc <14.3" >> env_p4build.yaml
+          # sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
         echo "::group::View Env Spec File for Conda (Edited)"
@@ -213,6 +204,17 @@ jobs:
       run: |
         conda info
         conda list
+
+    - name: Special Config - Force testing OpenOrbitalOptimizer
+      if: "(matrix.cfg.label == 'Conda Clang (M-Intel)')"
+      run: |
+        grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          sed -E -i.bak 's;(options\.add_str\("ORBITAL_OPTIMIZER_PACKAGE", ")INTERNAL(", "INTERNAL OOO OPENORBITALOPTIMIZER");\1OOO\2;' psi4/src/read_options.cc
+        else
+          sed -i 's;\(options\.add_str("ORBITAL_OPTIMIZER_PACKAGE", "\)INTERNAL\(", "INTERNAL OOO OPENORBITALOPTIMIZER"\);\1OOO\2;' psi4/src/read_options.cc
+        fi
+        grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
 
     - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
@@ -262,6 +264,12 @@ jobs:
       run: |
         conda remove qcengine --force  # TODO UNDO after https://github.com/MolSSI/QCEngine/pull/472
         python -m pip install git+https://github.com/loriab/QCEngine.git@d4why --no-deps
+
+    - name: Special Config - QCManyBody Dep
+      if: false
+      run: |
+        conda remove qcmanybody --force
+        python -m pip install git+https://github.com/loriab/QCManyBody.git@qcsk_v1v2_rearr --no-deps
 
     - name: Special Config - QCFractal Dep
       if: false

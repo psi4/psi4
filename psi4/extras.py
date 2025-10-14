@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -29,6 +29,7 @@
 import atexit
 import datetime
 import itertools
+import textwrap
 import os
 from pathlib import Path
 from typing import List, Optional, Union
@@ -177,6 +178,7 @@ _addons_ = {
     "einsums": _CMake_to_Py_boolean("@ENABLE_Einsums@"),
     "gauxc": _CMake_to_Py_boolean("@ENABLE_gauxc@"),
     "integratorxx": _CMake_to_Py_boolean("@ENABLE_IntegratorXX@"),
+    "ooo": _CMake_to_Py_boolean("@ENABLE_OpenOrbitalOptimizer@"),
 }
 
 
@@ -308,6 +310,7 @@ def set_output_file(
         core.set_output_file(str(out), append)
         if print_header is True or (print_header is None and not append):
             _print_header()
+            core.print_out("Addons:     " + textwrap.fill(", ".join(addons()), width=95, initial_indent='', subsequent_indent='                ') + "\n")
         # Warning: baseFilename is not part of the documented API for the logging module and could change.
         filenames = [handle.baseFilename for handle in logger.handlers]
         if not f_handler.baseFilename in filenames:

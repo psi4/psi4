@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -769,7 +769,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
 #  error "unknown value of macro psi4_SHGSHELL_ORDERING"
 #endif
 
-        // Copmute collocation
+        // Compute collocation
         if (deriv_ == 0) {
             gg_collocation(L, npoints, xyz.data(), 1, nprim, norm, alpha, center.data(), order, phi_start);
         } else if (deriv_ == 1) {

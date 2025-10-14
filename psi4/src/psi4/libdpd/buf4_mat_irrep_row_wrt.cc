@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -49,8 +49,6 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq) {
     int bufpq, bufrs; /* Input dpdbuf row and column indices */
     int filepq;
     int rowtot, coltot; /* dpdfile row and column dimensions */
-    int b_perm_pq, b_perm_rs, b_peq, b_res;
-    int f_perm_pq, f_perm_rs, f_peq, f_res;
     int permute;
     double value;
 
@@ -60,14 +58,16 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq) {
     coltot = Buf->file.params->coltot[irrep ^ all_buf_irrep];
 
     /* Index packing information */
-    b_perm_pq = Buf->params->perm_pq;
-    b_perm_rs = Buf->params->perm_rs;
-    f_perm_pq = Buf->file.params->perm_pq;
-    f_perm_rs = Buf->file.params->perm_rs;
-    b_peq = Buf->params->peq;
-    b_res = Buf->params->res;
-    f_peq = Buf->file.params->peq;
-    f_res = Buf->file.params->res;
+    const auto& b_perm_pq = Buf->params->perm_pq;
+    const auto& b_perm_rs = Buf->params->perm_rs;
+    const auto& f_perm_pq = Buf->file.params->perm_pq;
+    const auto& f_perm_rs = Buf->file.params->perm_rs;
+    const auto& b_peq = Buf->params->peq;
+    const auto& b_res = Buf->params->res;
+    const auto& f_peq = Buf->file.params->peq;
+    const auto& f_res = Buf->file.params->res;
+
+    const auto& AllPolicy = dpdparams4::DiagPolicy::All;
 
     /* Exit if buffer is antisymmetrized */
     if (Buf->anti) {
@@ -79,33 +79,33 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq) {
     if ((b_perm_pq == f_perm_pq) && (b_perm_rs == f_perm_rs) && (b_peq == f_peq) && (b_res == f_res))
         method = 12;
     else if ((b_perm_pq != f_perm_pq) && (b_perm_rs == f_perm_rs) && (b_res == f_res)) {
-        if (f_perm_pq && !b_perm_pq)
+        if (b_perm_pq == AllPolicy)
             method = 21;
-        else if (!f_perm_pq && b_perm_pq)
+        else if (f_perm_pq == AllPolicy)
             method = 23;
         else {
             outfile->Printf("\n\tInvalid second-level method!\n");
             throw PSIEXCEPTION("Invalid second-level method!");
         }
     } else if ((b_perm_pq == f_perm_pq) && (b_perm_rs != f_perm_rs) && (b_peq == f_peq)) {
-        if (f_perm_rs && !b_perm_rs)
+        if (b_perm_rs == AllPolicy)
             method = 31;
-        else if (!f_perm_rs && b_perm_rs)
+        else if (f_perm_rs == AllPolicy)
             method = 33;
         else {
             outfile->Printf("\n\tInvalid third-level method!\n");
             throw PSIEXCEPTION("Invalid third-level method!");
         }
     } else if ((b_perm_pq != f_perm_pq) && (b_perm_rs != f_perm_rs)) {
-        if (f_perm_pq && !b_perm_pq) {
-            if (f_perm_rs && !b_perm_rs)
+        if (b_perm_pq == AllPolicy) {
+            if (b_perm_rs == AllPolicy)
                 method = 41;
-            else if (!f_perm_rs && b_perm_rs)
+            else if (f_perm_rs == AllPolicy)
                 method = 42;
-        } else if (!f_perm_pq && b_perm_pq) {
-            if (f_perm_rs && !b_perm_rs)
+        } else if (f_perm_pq == AllPolicy) {
+            if (b_perm_rs == AllPolicy)
                 method = 43;
-            else if (!f_perm_rs && b_perm_rs)
+            else if (f_perm_rs == AllPolicy)
                 method = 45;
         } else {
             outfile->Printf("\n\tInvalid fourth-level method!\n");

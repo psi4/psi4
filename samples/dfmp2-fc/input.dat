@@ -17,6 +17,9 @@ e_convergence 1.0e-10
 d_convergence 1.0e-10
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 6e-8})
+
 
 set freeze_core 0
 E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")

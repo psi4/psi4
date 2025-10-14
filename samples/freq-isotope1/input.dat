@@ -11,6 +11,9 @@ molecule h2o {
   H      0.00000000   -1.93042809   -1.10715266
 }
 
+if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 8e-8})
+
 #VALID BUT OUTDATED molecule d2o {
 #VALID BUT OUTDATED   units au
 #VALID BUT OUTDATED   O                  0.00000000    0.00000000    0.00000000

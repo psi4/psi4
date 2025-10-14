@@ -33,6 +33,9 @@ def test_h2o(inp, engine):
                      })
     psi4.set_options(inp['options'])
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
+
     e, wfn = psi4.optimize(inp['name'], return_wfn=True, engine=engine)
     assert compare_values(inp['ref_ene'], e, 6)
     assert compare_values(inp['ref_nuc'], h2o.nuclear_repulsion_energy(), 3)
@@ -60,18 +63,67 @@ def test_h2o_constrained(inp):
                      })
     psi4.set_options(inp['options'])
 
-    # geometric specific options 
+    # geometric specific options
     geometric_keywords = {
         'coordsys' : 'tric',
         'enforce' : 0.0,
-        'constraints' : { 
+        'constraints' : {
             'set' : [{'type'    : 'angle',
                       'indices' : [1, 0, 2],
                       'value'   : 90.0 }]
         }
     }
 
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
+
     e, wfn = psi4.optimize(inp['name'], return_wfn=True, engine='geometric', optimizer_keywords=geometric_keywords)
     assert compare_values(inp['ref_ene'], e, 6)
     assert compare_values(inp['ref_nuc'], h2o.nuclear_repulsion_energy(), 3)
+
+
+@pytest.mark.parametrize('engine', [
+    pytest.param('optking'),
+    pytest.param('geometric', marks=using('geometric')),
+])
+def test_opt_stops_short(engine):
+    # same test as opt1
+
+    h2o = psi4.geometry("""
+        O
+        H 1 1.0
+        H 1 1.0 2 104.5
+    """)
+
+    psi4.set_options({
+        "diis": "false",
+        "basis": "sto-3g",
+        "e_convergence": 10,
+        "d_convergence": 10,
+        "scf_type": "pk",
+    })
+
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
+    thisenergy, wfn = psi4.optimize("scf", return_wfn=True, engine=engine)
+    # These values are from a tightly converged QChem run
+    assert compare_values(8.9064890670, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")
+    assert compare_values(-74.965901192, thisenergy, 6, "Reference energy")
+
+    psi4.set_options({
+        "basis": "cc-pvdz",
+        "g_convergence": "gau_verytight",
+        "geom_maxiter": 3,
+    })
+
+    with pytest.raises(psi4.OptimizationConvergenceError) as ex:
+        psi4.optimize("scf", engine=engine)
+
+    wfn_from_error = ex.value.wfn
+    mol_from_error = wfn_from_error.molecule()
+    mol_from_error.print_out()
+
+    assert compare_values(9.297919, wfn_from_error.molecule().nuclear_repulsion_energy(), 2, 'NRE from error exit')
+    assert 3 == ex.value.iteration, f"Iterations {ex.value.iteration} != 3"
 

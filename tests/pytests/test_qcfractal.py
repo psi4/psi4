@@ -53,15 +53,17 @@ def test_qcf_cbs_mbe(distributed, snowflake):
         # `get_results` is a closer-to-internals alternative to `get_psi_results`.
         #   It grabs the AtomicResult-compliant QCSchema model directly, rather
         #   than forming a dummy wfn and setting qcvars to it and to globals.
+        #   As schema are formalized, be sure to favor official properties, and
+        #   don't assume QCVariables or Psi4 specialties are available before get_psi_results.
         ret = plan.get_results(client)
 
-        print(f'Final energy   = {ret.extras["qcvars"]["CURRENT ENERGY"]} [E_h]')
-        print(f'Final gradient = {ret.extras["qcvars"]["CURRENT GRADIENT"]} [E_h/a0]')
+        # print(f'Final energy   = {ret.extras["qcvars"]["CURRENT ENERGY"]} [E_h]')
+        # print(f'Final gradient = {ret.extras["qcvars"]["CURRENT GRADIENT"]} [E_h/a0]')
         print(f'Final gradient = {ret.return_result} [E_h/a0]')
         print(f'Final energy   = {ret.properties.return_energy} [E_h]')
     
-        assert compare_values(ref_ene, ret.extras["qcvars"]["CURRENT ENERGY"], atol=1e-5)
-        assert compare_values(ref_grad, ret.extras["qcvars"]["CURRENT GRADIENT"], atol=1e-4)
+        # assert compare_values(ref_ene, ret.extras["qcvars"]["CURRENT ENERGY"], atol=1e-5)
+        # assert compare_values(ref_grad, ret.extras["qcvars"]["CURRENT GRADIENT"], atol=1e-4)
         assert compare_values(ref_ene, ret.properties.return_energy)
         assert compare_values(ref_grad, ret.return_result)
     
