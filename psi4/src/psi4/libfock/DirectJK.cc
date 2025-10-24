@@ -329,7 +329,7 @@ void DirectJK::compute_JK() {
     }
 #endif
 
-    if (incfock_) {
+    if (incfock_){
         timer_on("DirectJK: INCFOCK Preprocessing");
         int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
         double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
