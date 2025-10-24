@@ -253,6 +253,23 @@ get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libxc${ColourReset}: ${_loc} (version ${Libxc_VERSION})")
 
+# Work around conda-forge libxc packaging issue on Windows where INTERFACE_INCLUDE_DIRECTORIES
+# contains hardcoded build paths that don't exist
+if(WIN32 AND TARGET Libxc::xc)
+    get_target_property(_libxc_includes Libxc::xc INTERFACE_INCLUDE_DIRECTORIES)
+    if(_libxc_includes)
+        set(_libxc_valid_includes "")
+        foreach(_inc_dir ${_libxc_includes})
+            if(EXISTS "${_inc_dir}")
+                list(APPEND _libxc_valid_includes "${_inc_dir}")
+            else()
+                message(STATUS "Removing non-existent Libxc include directory: ${_inc_dir}")
+            endif()
+        endforeach()
+        set_target_properties(Libxc::xc PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${_libxc_valid_includes}")
+    endif()
+endif()
+
 if(APPLE)
     set(PRE_LIBRARY_OPTION -Wl,-all_load)
 elseif(UNIX)
