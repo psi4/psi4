@@ -908,25 +908,10 @@ def assemble_dipder_from_dipoles(findifrec: Dict, freq_irrep_only: int) -> np.nd
                 salc = salc_list[salc_index]
 
                 if maps_to_negative(symtext, salc):
-                    # There exists an operation R such that RQ = -Q
-                    # Use R to generate +Q dipole from -Q dipole
-                    for k, op in enumerate(symtext.symels):
-                        transformed = np.zeros(3)
-                        # find which operation maps + to - exactly
-                        N = salc.coeffs.size // 3
-                        disp_matrix = salc.coeffs.reshape(N, 3)
-                        transformed_disp = np.zeros_like(disp_matrix)
-                        for a in range(N):
-                            b = symtext.atom_map[a, k]
-                            transformed_disp[b] = op.rrep @ disp_matrix[a]
-                        if np.allclose(transformed_disp.flatten(), -salc.coeffs, atol=1e-8):
-                            R = op.rrep
-                            break
-
                     for j in range(1, max_disp + 1):
                         # compute + dipole from - dipole using R
                         neg_dip = displacements[f"{salc_index}: {-j}"]["dipole"]
-                        pos_dip = R @ neg_dip
+                        pos_dip, _ = generate_symmetric_partner(symtext, salc, neg_dip, data_type = "dipole")
                         dipole[salc_index, max_disp - j] = neg_dip
                         dipole[salc_index, max_disp + j - 1] = pos_dip
 
@@ -1082,38 +1067,14 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
                 grad_entries = []
 
                 if maps_to_negative(symtext, salc):
-                    # find symmetry op k that maps +Q -> -Q
-                    found_k = None
-                    for k in range(symtext.atom_map.shape[1]):
-                        R = symtext.symels[k].rrep
-                        disp_mat = salc.coeffs.reshape(N, 3)
-                        transformed = np.zeros_like(disp_mat)
-                        for a in range(N):
-                            b = symtext.atom_map[a, k]
-                            transformed[b] = R @ disp_mat[a]
-                        if np.allclose(transformed.flatten(), -salc.coeffs, atol=1e-8):
-                            found_k = k
-                            break
-                    if found_k is None:
-                        raise ValidationError(f"maps_to_negative claimed True but no op found for SALC {salc_index}")
-
                     # build negative displacements
                     for j in range(max_disp, 0, -1):
                         key_minus = f"{salc_index}: {-j}"
                         grad_raw = displacements[key_minus]["gradient"]
                         grad_mat = np.reshape(grad_raw, (N, 3))
                         grad_entries.append(grad_mat)
-
-                    # build positive displacements via symmetry
-                    for j in range(1, max_disp + 1):
-                        key_minus = f"{salc_index}: {-j}"
-                        grad_minus_raw = displacements[key_minus]["gradient"]
-                        grad_minus_mat = np.reshape(grad_minus_raw, (N, 3))
-                        new_grad = np.zeros_like(grad_minus_mat)
-                        for a in range(N):
-                            b = symtext.atom_map[a, found_k]
-                            new_grad[b] = symtext.symels[found_k].rrep @ grad_minus_mat[a]
-                        grad_entries.append(new_grad)
+                        pos_grad, _ = generate_symmetric_partner(symtext, salc, grad_mat, data_type = "gradient")
+                        grad_entries.append(pos_grad)
 
                 else:
                     # explicit +/- displacements exist
@@ -1750,6 +1711,69 @@ class FiniteDifferenceComputer(BaseComputer):
             return (ret_ptype, wfn)
         else:
             return ret_ptype
+
+def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=1e-8):
+    """
+    Use molecular symmetry to generate + displacements from - displacements 
+    for quantities that transform as vectors (dipoles) or sets of atomic vectors (gradients).
+
+    Parameters
+    ----------
+    symtext : MolSym object
+        Contains symmetry operations and atom mapping information.
+    salc : MolSym SALC object
+        The symmetry-adapted linear combination of Cartesian coordinates.
+    neg_data : np.ndarray
+        The quantity at the negative displacement.
+        Shape:
+            (3,) for dipole vectors
+            (N_atoms, 3) for gradients
+    data_type : str, optional
+        "dipole" or "gradient", controls how the transformation is applied.
+    tol : float
+        Numerical tolerance for comparing transformed vectors.
+
+    Returns
+    -------
+    pos_data : np.ndarray
+        The symmetry-generated positive displacement quantity.
+    found_op : int or None
+        Index of the symmetry operation used (if any).
+    """
+
+    N = salc.coeffs.size // 3
+    disp_matrix = salc.coeffs.reshape(N, 3)
+
+    # Find symmetry operation R such that R(Q) = -Q
+    found_op = None
+    R = None
+    for k, op in enumerate(symtext.symels):
+        transformed = np.zeros_like(disp_matrix)
+        for a in range(N):
+            b = symtext.atom_map[a, k]
+            transformed[b] = op.rrep @ disp_matrix[a]
+        if np.allclose(transformed.flatten(), -salc.coeffs, atol=tol):
+            found_op = k
+            R = op.rrep
+            break
+
+    if found_op is None:
+        return None, None
+
+    # Apply the same symmetry to the quantity
+    if data_type == "dipole":
+        pos_data = R @ neg_data
+
+    elif data_type == "gradient":
+        pos_data = np.zeros_like(neg_data)
+        for a in range(neg_data.shape[0]):
+            b = symtext.atom_map[a, found_op]
+            pos_data[b] = R @ neg_data[a]
+
+    else:
+        raise ValueError(f"Unsupported data_type: {data_type}")
+
+    return pos_data, found_op
 
 def maps_to_negative(symtext, salc, tol=1e-8):
     """
