@@ -81,11 +81,13 @@ class RHF : public HF {
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
     bool stability_analysis() override;
 
-    int64_t otr_update_orbs(const double* kappa, double* func, double* grad, double* h_diag,
-    int64_t (**hess_x_out)(const double*, double*)) override;
-    int64_t otr_hess_x(const double* x, double* out) override;
-    int64_t otr_obj_func(const double* kappa, double* func) override;
+#ifdef USING_OpenTrustRegion
+    OTR::c_int otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
+                               OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) override;
+    OTR::c_int otr_hess_x(const OTR::c_real* x, OTR::c_real* out) override;
+    OTR::c_int otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) override;
     int otr_n_param() override;
+#endif
 
     std::shared_ptr<VBase> V_potential() const override { return potential_; };
 
