@@ -1565,7 +1565,8 @@ void UHF::openorbital_scf() {
 #endif
 }
 
-std::pair<SharedMatrix, SharedMatrix> UHF::unpack(const double* matrix, const std::string name, 
+#ifdef USING_OpenTrustRegion
+std::pair<SharedMatrix, SharedMatrix> UHF::unpack(const OTR::c_real* matrix, const std::string name, 
                                                   const Dimension occpi_a, const Dimension virpi_a, 
                                                   const Dimension occpi_b, const Dimension virpi_b) {
     // create shared matrix
@@ -1577,7 +1578,7 @@ std::pair<SharedMatrix, SharedMatrix> UHF::unpack(const double* matrix, const st
         // skip if dimensions are zero
         if (occpi_a[h] && virpi_a[h]) {
             // get the pointer to the memory block for this irrep in shared matrix
-            double** block = shared_matrix_a->pointer(h);
+            auto block = shared_matrix_a->pointer(h);
 
             // copy matrix to shared matrix
             for (size_t i = 0; i < occpi_a[h]; i++) {
@@ -1590,7 +1591,7 @@ std::pair<SharedMatrix, SharedMatrix> UHF::unpack(const double* matrix, const st
         // skip if dimensions are zero
         if (occpi_b[h] && virpi_b[h]) {
             // get the pointer to the memory block for this irrep in shared matrix
-            double** block = shared_matrix_b->pointer(h);
+            auto block = shared_matrix_b->pointer(h);
 
             // copy matrix to shared matrix
             for (size_t i = 0; i < occpi_b[h]; i++) {
@@ -1604,7 +1605,7 @@ std::pair<SharedMatrix, SharedMatrix> UHF::unpack(const double* matrix, const st
     return {shared_matrix_a, shared_matrix_b};
 }
 
-int64_t UHF::otr_obj_func(const double* kappa, double* func) {
+OTR::c_int UHF::otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) {
     // get occupied and virtual dimensions per spin type and irrep
     auto occpi_a = nalphapi_;
     auto occpi_b = nbetapi_;
@@ -1663,7 +1664,7 @@ int64_t UHF::otr_obj_func(const double* kappa, double* func) {
     return 0;
 }
 
-int64_t UHF::otr_hess_x(const double* x, double* hess_x) {
+OTR::c_int UHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
     // get doubly occupied and virtual dimensions per irrep
     auto occpi_a = nalphapi_;
     auto occpi_b = nbetapi_;
@@ -1681,7 +1682,7 @@ int64_t UHF::otr_hess_x(const double* x, double* hess_x) {
         // skip if dimensions are zero
         if (occpi_a[h] && virpi_a[h]) {
             // get the pointer to the memory block for this irrep in shared matrix
-            double** hess_x_irrep = hess_x_shared[0]->pointer(h);
+            auto hess_x_irrep = hess_x_shared[0]->pointer(h);
 
             // copy shared matrix to Hessian linear transformation
             for (size_t i = 0; i < occpi_a[h]; i++) {
@@ -1694,7 +1695,7 @@ int64_t UHF::otr_hess_x(const double* x, double* hess_x) {
         // skip if dimensions are zero
         if (occpi_b[h] && virpi_b[h]) {
             // get the pointer to the memory block for this irrep in shared matrix
-            double** hess_x_irrep = hess_x_shared[1]->pointer(h);
+            auto hess_x_irrep = hess_x_shared[1]->pointer(h);
 
             // copy shared matrix to Hessian linear transformation, factor 2 to account 
             // for redundant parameters
@@ -1709,8 +1710,8 @@ int64_t UHF::otr_hess_x(const double* x, double* hess_x) {
     return 0;
 }
 
-int64_t UHF::otr_update_orbs(const double* kappa, double* func, double* grad, double* h_diag,
-                             int64_t (**hess_x_out)(const double*, double*)) {
+OTR::c_int UHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
+                                OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) {
     // get occupied and virtual dimensions per spin type and irrep
     auto occpi_a = nalphapi_;
     auto occpi_b = nbetapi_;
@@ -1774,7 +1775,7 @@ int64_t UHF::otr_update_orbs(const double* kappa, double* func, double* grad, do
     }
 
     // set pointer
-    *hess_x_out = otr_hess_x_wrapper;
+    *hess_x_fp = otr_hess_x_wrapper;
 
     return 0;
 }
@@ -1787,6 +1788,7 @@ int UHF::otr_n_param() {
 
     return (nparampi_a + nparampi_b).sum();
 }
+#endif
 
 }  // namespace scf
 }  // namespace psi

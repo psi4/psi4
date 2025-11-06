@@ -83,12 +83,6 @@ extern bool brianEnable;
 
 #endif
 
-#ifdef USING_OpenTrustRegion
-namespace OTR {
-    #include "opentrustregion.h"
-}
-#endif
-
 namespace psi {
 namespace scf {
 
@@ -1457,57 +1451,58 @@ bool HF::stability_analysis() {
     return false;
 }
 
-extern "C" const int64_t otr_obj_func_wrapper(const double* kappa, double* func) {
+#ifdef USING_OpenTrustRegion
+extern "C" OTR::c_int otr_obj_func_wrapper(const OTR::c_real* kappa, OTR::c_real* func) {
     if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
     return HF::instance->otr_obj_func(kappa, func);
 }
 
-extern "C" int64_t otr_hess_x_wrapper(const double* x, double* hess_x) {
+extern "C" OTR::c_int otr_hess_x_wrapper(const OTR::c_real* x, OTR::c_real* hess_x) {
     if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
     return HF::instance->otr_hess_x(x, hess_x);
 }
 
-extern "C" const int64_t otr_update_orbs_wrapper(const double* kappa, double* func, double* grad,
-    double* h_diag, int64_t (**hess_x_out)(const double*, double*)) {
+extern "C" OTR::c_int otr_update_orbs_wrapper(const OTR::c_real* kappa, OTR::c_real* func, 
+                                              OTR::c_real* grad, OTR::c_real* h_diag, 
+                                              OTR::hess_x_fp* hess_x_fp) {
     if (!HF::instance) throw PSIEXCEPTION("No HF instance set!\n");
-    return HF::instance->otr_update_orbs(kappa, func, grad, h_diag, hess_x_out);
+    return HF::instance->otr_update_orbs(kappa, func, grad, h_diag, hess_x_fp);
 }
 
-extern "C" const void logger(const char* message) {
+extern "C" void otr_logger(const char* message) {
     outfile->Printf(" %s\n", message);
 }
+#endif
 
 void HF::opentrustregion_scf() {
+#ifndef USING_OpenTrustRegion
+    throw PSIEXCEPTION("OpenTrustRegion support has not been enabled in this Psi4 build! Reconfigure with `-D ENABLE_OpenTrustRegion=ON`.\n");
+#else
     // initialize instance
     instance = this;
 
-    // input parameters
+    // number of parameters
     otr_n_param_ = otr_n_param();
-    int64_t error;
-    const bool stability = options_.get_str("STABILITY_ANALYSIS") != "NONE";
-    const double* conv_tol_ptr;
+
+    // initialize settings
+    OTR::solver_settings_type settings = OTR::solver_settings_init();
+
+    // override default settings
+    settings.stability = options_.get_str("STABILITY_ANALYSIS") != "NONE";
     if (options_["SOSCF_CONV"].has_changed()) {
-        const double conv_tol = options_.get_double("SOSCF_CONV");
-        conv_tol_ptr = &conv_tol;
-    } else {
-        conv_tol_ptr = nullptr;
+        settings.conv_tol = options_.get_double("SOSCF_CONV");
     }
-    const int64_t n_macro = options_.get_int("MAXITER");
-    const int64_t* n_micro_ptr;
+    settings.n_macro = options_.get_int("MAXITER");
     if (options_["SOSCF_MAX_ITER"].has_changed()) {
-        const int64_t n_micro = options_.get_int("SOSCF_MAX_ITER");
-        n_micro_ptr = &n_micro;
-    } else {
-        n_micro_ptr = nullptr;
+        settings.n_micro = options_.get_int("SOSCF_MAX_ITER");
     }
-    int print = options_.get_int("PRINT");
-    const int64_t verbose = (print == 0) ? 2 : (print == 1) ? 3 : 4;
+    auto print = options_.get_int("PRINT");
+    settings.verbose = (print == 0) ? 2 : (print == 1) ? 3 : 4;
+    settings.logger = otr_logger;
 
     // call the Fortran solver
-    error = OTR::solver(otr_update_orbs_wrapper, otr_obj_func_wrapper, otr_n_param_, nullptr, 
-                        nullptr, &stability, nullptr, nullptr, nullptr, nullptr, conv_tol_ptr, 
-                        nullptr, nullptr, &n_macro, n_micro_ptr, nullptr, nullptr, nullptr, 
-                        &verbose, logger);
+    auto error = OTR::solver(otr_update_orbs_wrapper, otr_obj_func_wrapper, 
+                             otr_n_param_, settings);
 
     // check if solver completed successfully
     if (error) {
@@ -1515,7 +1510,7 @@ void HF::opentrustregion_scf() {
         oss << "HF::opentrustregion_scf: OpenTrustRegion solver returned error " << error << "\n";
         throw PSIEXCEPTION(oss.str());
     }
-    
+#endif
 }
 
 }  // namespace scf
