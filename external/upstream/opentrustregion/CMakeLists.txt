@@ -22,7 +22,7 @@ if(${ENABLE_OpenTrustRegion})
 
         ExternalProject_Add(opentrustregion_external
             DEPENDS lapack_external
-            URL https://github.com/jonas-greiner/OpenTrustRegion/archive/project_name.tar.gz
+            URL https://github.com/eriksen-lab/OpenTrustRegion/archive/v2.0.0.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

@@ -1332,7 +1332,8 @@ void ROHF::setup_potential() {
     }
 }
 
-SharedMatrix ROHF::unpack(const double* matrix, const std::string name, const Dimension doccpi, 
+#ifdef USING_OpenTrustRegion
+SharedMatrix ROHF::unpack(const OTR::c_real* matrix, const std::string name, const Dimension doccpi, 
                           const Dimension soccpi, const Dimension virpi) {
     // create shared matrix
     auto shared_matrix = std::make_shared<Matrix>(name, doccpi + soccpi, soccpi + virpi);
@@ -1340,7 +1341,7 @@ SharedMatrix ROHF::unpack(const double* matrix, const std::string name, const Di
     // loop over irreps
     for (size_t h = 0, counter = 0; h < nirrep_; h++) {
         // get the pointer to the memory block for this irrep in shared matrix
-        double** block = shared_matrix->pointer(h);
+        auto block = shared_matrix->pointer(h);
 
         // copy matrix to shared matrix
         for (size_t i = 0; i < doccpi[h]; i++) {
@@ -1368,7 +1369,7 @@ SharedMatrix ROHF::unpack(const double* matrix, const std::string name, const Di
     return shared_matrix;
 }
 
-int64_t ROHF::otr_obj_func(const double* kappa, double* func) {
+OTR::c_int ROHF::otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) {
     // get doubly and singly occupied and virtual dimensions per irrep
     auto doccpi = nbetapi_;
     auto soccpi = nalphapi_ - nbetapi_;
@@ -1413,7 +1414,7 @@ int64_t ROHF::otr_obj_func(const double* kappa, double* func) {
     return 0;
 }
 
-int64_t ROHF::otr_hess_x(const double* x, double* hess_x) {
+OTR::c_int ROHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
     // get doubly and singly occupied and virtual dimensions per irrep
     auto doccpi = nbetapi_;
     auto soccpi = nalphapi_ - nbetapi_;
@@ -1432,7 +1433,7 @@ int64_t ROHF::otr_hess_x(const double* x, double* hess_x) {
         if (!doccpi[h] || !virpi[h]) continue;
 
         // get the pointer to the memory block for this irrep in shared matrix
-        double** hess_x_irrep = hess_x_shared->pointer(h);
+        auto hess_x_irrep = hess_x_shared->pointer(h);
 
         // copy shared matrix to Hessian linear transformation, factor 2 for redundant
         // parameters implicitly included
@@ -1456,8 +1457,8 @@ int64_t ROHF::otr_hess_x(const double* x, double* hess_x) {
     return 0;
 }
 
-int64_t ROHF::otr_update_orbs(const double* kappa, double* func, double* grad, double* h_diag,
-                              int64_t (**hess_x_out)(const double*, double*)) {
+OTR::c_int ROHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
+                                 OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) {
     // get doubly and singly occupied and virtual dimensions per irrep
     auto doccpi = nbetapi_;
     auto soccpi = nalphapi_ - nbetapi_;
@@ -1513,7 +1514,7 @@ int64_t ROHF::otr_update_orbs(const double* kappa, double* func, double* grad, d
     }
 
     // set pointer
-    *hess_x_out = otr_hess_x_wrapper;
+    *hess_x_fp = otr_hess_x_wrapper;
 
     return 0;
 }
@@ -1526,6 +1527,7 @@ int ROHF::otr_n_param() {
 
     return (nparampi_o_s + nparampi_os_v).sum();
 }
+#endif
 
 }  // namespace scf
 }  // namespace psi
