@@ -2,8 +2,13 @@ import pytest
 import psi4
 import numpy as np
 
+from utils import compare_values
+from addons import using, uusing
+
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 # Define test molecules
-molecules = [
+_fd0_molecules = [
     # Water
     """
     O        1.2091536548      1.7664118189     -0.0171613972
@@ -41,10 +46,11 @@ ref_intensities = [np.array([ 8.68661, 39.02869, 23.97606]),
 np.array([107.59281,   2.62096,   2.62098,   5.22301,   2.32676,   2.32678]),
 np.array([6.30806, 6.30806, 6.30805, 0.,      0.,      0.,      0.55949, 0.55949, 0.5595 ])]
 
-@pytest.mark.parametrize("engine", [False, True])
+@pytest.mark.findif
+@pytest.mark.parametrize("engine", [pytest.param(False), pytest.param(True, marks=using("molsym"))])
 def test_fd_energy_engine(engine):
     print(f"\nTesting with MolSym = {engine}")
-    for m, mol in enumerate(molecules):
+    for m, mol in enumerate(_fd0_molecules):
         molecule = psi4.geometry(mol)
 
         psi4.set_options({
