@@ -377,6 +377,7 @@ Additionally, there are runtime-loaded capabilities:
 
 * QCManyBody |w---w| `[what is QCManyBody?] <https://molssi.github.io/QCManyBody/>`_ (July 2026 - optional by v1.12; August 2025 - added required by v1.10; runtime dependency, optional at build-time)
 
+* MolSym |w---w| https://github.com/NASymmetry/MolSym
 
 .. _`faq:condapsi4dev`:
 
