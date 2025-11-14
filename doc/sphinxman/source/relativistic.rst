@@ -31,15 +31,141 @@
 .. index::
    relativistic
 
-.. _`sec:relativistic`:
-
-Scalar relativistic Hamiltonians
 ================================
+Scalar Relativistic Hamiltonians
+================================
+
+.. _`sec:zora`:
+
+Zeroth-order regular approximation (ZORA)
+=========================================
+
+.. codeauthor:: Nathan Gillispie and Daniel R. Nascimento
+.. sectionauthor:: Nathan Gillispie and Daniel R. Nascimento
+
+*Source*: :source:`zora.cc <psi4/src/psi4/libmints/zora.cc>` :source:`zora.h <psi4/src/psi4/libmints/zora.h>`
+
+ZORA is a perturbative approximation of the full relativistic Hamiltonian for
+DFT and wavefunction-based methods. It is commonly used to provide a more
+accurate total energy in DFT calculations.
+
+When ZORA is used in |PSIfour|, it creates a scalar relativistic kinetic
+energy integral to be used in the SCF procedure. It has been tested
+for HF and DFT references with the driver methods ``energy`` and ``optimize``.
+Our implementation employs a grid-based scheme, therefore analytic energy
+gradients are not supported.
+
+Equations and implementation details are based on a paper by Pak, Dada and
+Nascimento [Pak:2025:094110]_.
+
+Usage
+^^^^^
+
+To use the ZORA Hamiltonian with default grid settings, use option
+|globals__relativistic| with ``ZORA``. To change the number of grid points, use
+the |globals__zora_radial_points| and |globals__zora_spherical_points| options. ::
+
+    set {
+        reference rhf
+        scf_type pk
+        relativistic zora
+        zora_radial_points 160
+        zora_spherical_points 1202
+    }
+
+.. note::
+   The number of spherical points must be a Lebedev number.
+   See :ref:`Grid Selection <sec:grid-selection>` for a list of all options.
+
+It may be useful to compute the non-relativistic kinetic integral using the
+grid points to compare against the analytic kinetic integrals. To do this, use
+the |globals__zora_nr_debug| option. ::
+
+    set {
+        relativistic zora
+        zora_nr_debug true
+    }
+
+See :ref:`sec:relativistic-keywords` for more options.
+
+Theory
+^^^^^^
+
+In short, the FW-transformed Dirac Hamiltonian is perturbatively expanded with
+respect to an expression (:math:`E/(2mc^2-V)`) involving the potential
+:math:`V`. To the zeroth-order, we get the ZORA Hamiltonian. Below is the ZORA
+Kohn-Sham (ZKS) Hamiltonian, however, results are analagous for other methods.
+
+.. math::
+   :label: zks
+   
+   \hat h^\text{ZKS}=\frac{\mathbf{p}^2}{2}+\mathbf{p}\left(\frac{\kappa -1}{2}\right)\mathbf{p}+\frac{\kappa^2}{4c^2}\mathbf{\sigma}\cdot\left(\nabla v^\text{KS}\times \mathbf{p}\right)+v^\text{KS}
+
+:math:`\mathbf{p}` is the momentum operator, :math:`\mathbf{\sigma}` are
+the Pauli matrices, :math:`\kappa=[1-v^\text{KS}/(2c^2)]^{-1}`, and
+:math:`v^\text{KS}` is the usual Kohn-Sham potential. In this form, the terms
+of the ZORA Hamiltonian are separated into the classical kinetic energy,
+scalar relativistic correction to the kinetic energy, spin-orbit, and KS
+potential terms, respectively. Were this implemented as is, the relativistic
+terms would depend on the KS potential, which is impracticable due to
+gauge-invariance and convergence issues.
+
+The procedure given by Van W\ |u_dots|\ llen [vanWullen:1998:392]_ avoids these
+problems by replacing :math:`v^\text{KS}` in the relativistic terms of
+:eq:`zks` with an effective potential :math:`v_\text{eff}(\mathbf{r})`.
+This is the potential experienced at a point due to nuclear attraction and
+electron repulsion from a model potential that reproduces the nuclear cusp on 
+each atom. The model potential comes from a model basis of Gaussian-type
+orbitals, whose values were obtained from NWChem [NWChem:2020]_. This means that
+geometry is the only thing affecting :math:`v_\text{eff}(\mathbf{r})`.
+
+The ZORA scalar relativistic kinetic integral :math:`T^\text{SR}` is the
+first two terms of :eq:`zks` in the atomic orbital basis. Once
+:math:`v_\text{eff}(\mathbf{r})` is computed on a grid, :math:`T^\text{SR}` can
+be calculated as
+
+.. math:: T_{\mu\nu}^\text{SR}=\int d\mathbf{r}^3 \frac{c^2}{2c^2-v_\text{eff}(\mathbf{r})}\nabla\chi_\mu^\dagger(\mathbf{r}) \cdot\nabla\chi_\nu(\mathbf{r}),
+
+given atomic orbitals :math:`\chi(\mathrm{r})`. Notice that as
+:math:`v_\text{eff}\rightarrow 0`, :math:`T^\text{SR}` simply becomes the
+non-relativistic kinetic energy. This is the basis behind the
+|globals__zora_nr_debug| option. Because :math:`T^\text{SR}` is only evaluated
+once before the SCF procedure, don't cheap out on the grid! In practice, the
+time spent computing the ZORA Hamiltonian is relatively negligible.
+
+Limitations
+^^^^^^^^^^^
+
+* Spin-orbit coupling effects are not available, because they require a
+  complex-generalized SCF procedure.
+
+* ZORA theory allows for adjustment of the molecular orbital energies.
+  This provides an important correction for linear response calculations.
+  Currently, this is not implemented in |PSIfour|.
+
+* This method uses a grid-based scheme, so analytic energy gradients are not available.
+
+.. _`sec:relativistic-keywords`:
+
+Keywords
+^^^^^^^^
+
+.. include:: autodir_options_c/globals__relativistic.rst
+.. include:: autodir_options_c/globals__zora_radial_points.rst
+.. include:: autodir_options_c/globals__zora_spherical_points.rst
+.. include:: autodir_options_c/globals__zora_pruning_scheme.rst
+.. include:: autodir_options_c/globals__zora_basis_tolerance.rst
+.. include:: autodir_options_c/globals__zora_nr_debug.rst
+
+.. _`sec:x2c`:
+
+Exact two-component (X2C)
+=========================
 
 .. codeauthor:: Prakash Verma and Francesco A. Evangelista
 .. sectionauthor:: Prakash Verma, Wallace D. Derricotte, and Francesco A. Evangelista
 
-The exact-two-component (X2C) approach is a convenient way to introduce scalar
+The X2C approach is a convenient way to introduce scalar
 relativistic effects in DFT and wave function-based methods.
 |PSIfour| implements the spin-free one-electron version of X2C, which produces
 a modified one-electron Hamiltonian :math:`H_{\rm X2C}`:
@@ -54,8 +180,6 @@ calculations.  Common choices include the Dunning Douglass--Kroll basis sets
 (cc-pVXZ-DK, cc-pCVXZ-DK, cc-pwCVXZ-DK) and Roos' ANO basis sets.
 
 .. note:: See also :ref:`sec:DKH` for another relativistic Hamiltonian.
-
-.. _`sec:ScalarRelativistic`:
 
 A First Example
 ^^^^^^^^^^^^^^^
@@ -165,7 +289,7 @@ treated with the X2C method by replacing nonrelativistic kinetic and potential e
 X2C operators :math:`T_{X2C}` and :math:`V_{X2C}`. It is important to note that fully uncontracted basis in needed for the construction of X2C Hamiltonian as Foldy-Wouthuysen (FW [FW:1950]_) transformation is obtained in kinetically balance basis.
 
 Keywords
-~~~~~~~~
+^^^^^^^^
 
 .. include:: autodir_options_c/globals__relativistic.rst
 .. include:: autodir_options_c/globals__basis_relativistic.rst

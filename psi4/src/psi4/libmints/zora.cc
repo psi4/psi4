@@ -139,6 +139,8 @@ void ZORA::compute(SharedMatrix T_SR) {
 	timer_off("ZORA");
 }
 
+// Fill veff_ with zeros so that `compute` creates non-relativistic kinetic
+// energy integrals.
 void ZORA::compute_debug_veff() {
     for (const auto &block : grid_->blocks()) {
         int index = block->index();
@@ -149,6 +151,9 @@ void ZORA::compute_debug_veff() {
     }
 }
 
+// Compute the model potential proposed by van Wüllen in *Molecular density
+// functional calculations in the regular relativistic approximation*
+// (https://doi.org/10.1063/1.476576/).
 void ZORA::compute_veff()
 {
 	int nthreads = 1;
@@ -197,7 +202,8 @@ void ZORA::compute_veff()
     }
 }
 
-
+// Compute the scalar relativistic kinetic energy integral in the AO basis.
+// See header for equation.
 void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, SharedMatrix &T_SR) {
 	// Speed of light in atomic units squared
 	const double C2 = pc_c_au*pc_c_au;
