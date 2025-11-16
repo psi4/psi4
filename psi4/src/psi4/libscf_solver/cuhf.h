@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef __math_test_cuhf_h__
-#define __math_test_cuhf_h__
+#ifndef PSI4_LIBSCF_SOLVER_CUHF_H
+#define PSI4_LIBSCF_SOLVER_CUHF_H
 
 #include "hf.h"
 #include "psi4/libpsio/psio.hpp"
