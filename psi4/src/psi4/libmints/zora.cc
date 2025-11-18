@@ -161,7 +161,12 @@ void ZORA::compute_veff()
     nthreads = Process::environment.get_n_threads();
 #endif
 
+	// Run check here because OMP blocks don't like PSIEXCEPTIONs
 	int natoms = molecule_->natom();
+	for (int a = 0; a < natoms; a++) {
+		if (molecule_->Z(a) > 104) throw PSIEXCEPTION("Too heavy atom for ZORA implementation. Tabulation only available to Z=104, Rf.\n");
+	}
+
 #pragma omp parallel for schedule(auto) num_threads(nthreads)
     for (const auto &block : grid_->blocks()) {
         int npoints = block->npoints();
@@ -172,10 +177,11 @@ void ZORA::compute_veff()
         double* z = block->z();
 
         auto veff_block = std::make_shared<Vector>(npoints);
+        veff_block->zero();
 
         for (int a = 0; a < natoms; a++) {
             int Z = molecule_->Z(a);
-            if (Z > 104) throw PSIEXCEPTION("Too heavy atom for ZORA implementation. Tabulation only available to Z=104, Rf.\n");
+            if (Z == 0) continue; // avert ghost atom segfault
             auto pos_a = molecule_->xyz(a);
 
             const double* coef_a  = &coeffs[c_aIndex[Z-1]];
@@ -218,7 +224,7 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
 	{
 		// Give each thread their own scratch space
 		std::vector<double> kernel(max_points);
-		auto tmp = std::make_shared<Matrix>(T_SR->ncol(), T_SR->nrow());
+		auto tmp = std::make_shared<Matrix>(T_SR->nrow(), T_SR->ncol());
 #pragma omp for schedule(auto)
 	    for (const auto &block : grid_->blocks()) {
 			const auto &bf_map = block->functions_local_to_global();

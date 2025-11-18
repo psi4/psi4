@@ -136,14 +136,14 @@ time spent computing the ZORA Hamiltonian is relatively negligible.
 Limitations
 ^^^^^^^^^^^
 
-* Spin-orbit coupling effects are not available, because they require a
-  complex-generalized SCF procedure.
+* Spin-orbit coupling effects are not available because they require a
+  complex generalized SCF procedure.
 
 * ZORA theory allows for adjustment of the molecular orbital energies.
   This provides an important correction for linear response calculations.
   Currently, this is not implemented in |PSIfour|.
 
-* This method uses a grid-based scheme, so analytic energy gradients are not available.
+* Analytic energy gradients are not available.
 
 .. _`sec:relativistic-keywords`:
 
