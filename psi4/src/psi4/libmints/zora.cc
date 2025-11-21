@@ -180,7 +180,7 @@ void ZORA::compute_veff()
         veff_block->zero();
 
         for (int a = 0; a < natoms; a++) {
-            int Z = molecule_->Z(a);
+            const int Z = molecule_->Z(a);
             if (Z == 0) continue; // avert ghost atom segfault
             auto pos_a = molecule_->xyz(a);
 
