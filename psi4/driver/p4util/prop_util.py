@@ -29,6 +29,7 @@
 
 import psi4
 
+from .exceptions import ValidationError
 from . import optproc
 
 __all__ = ['free_atom_volumes']
@@ -58,20 +59,26 @@ def free_atom_volumes(wfn: psi4.core.Wavefunction, **kwargs):
     if natom == 1:
         return 0 
     
-
-    # the level of theory
+    # We need to know the level of theory of the system to compute the free atoms
+    # This isn't stored or might have been preloaded so we search the psi4 variables for
+    # the best match
     current_en = wfn.scalar_variable('CURRENT ENERGY')
-    total_energies = [k for k, v in wfn.scalar_variables().items() if abs(v - current_en) <= 1e-12]
-    theory = ""
-    for var in total_energies:
-        if 'TOTAL ENERGY' in var:
-            var = var.split()
-            if var[0] == 'SCF':
-                continue
-            elif var[0] == 'DFT':
-                theory = wfn.functional().name()
-            else:
-                theory = var[0]
+    total_keys = [
+        k for k in wfn.scalar_variables().keys() if
+        ('TOTAL ENERGY' in k and 'SCF' not in k)
+    ]
+    total_energy_diffs = sorted([
+        [abs(wfn.scalar_variable(k) - current_en), k] for k in total_keys],
+        key=lambda x: x[0]
+    )
+    if total_energy_diffs[0][0] > 1e-8:
+        raise ValidationError(
+            "No valid 'method TOTAL ENERGY' found in wavefunction scalar variables. Needed for MBIS free atoms."
+        )
+
+    theory = total_energy_diffs[0][1].split()[0]
+    if theory == 'DFT':
+        theory = wfn.functional().name()
 
     # list of reference number of unpaired electrons.
     # Note that this is not the same as the
