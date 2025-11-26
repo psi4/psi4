@@ -1,0 +1,32 @@
+#! Test of X2C with Cartesian basis as reported in https://github.com/psi4/psi4/issues/1908
+#! The reference numbers are from Lan Cheng's implementation in Cfour
+# Ref values using spherically averaged orbital, which set fractional occupation in the d orbitals and Psi4 doesn't do.
+# Pyscf:                              -1270.4887320302198
+# DIRAC: (setting X2C with spin free) -1271.1221679632611
+
+ref_rel_energy = -1271.0  #TEST
+
+# Above is clearly a ref value testing sanity, not accuracy. Even with the power fix, answers vary significantly:
+#   * Azure Windows/MKL               -1270.9885268
+#   * GHA Eco Mac/Intel/MKL           -1270.9886579
+#   * GHA Eco Mac/Silicon/OpenBlas?   -1270.9901846
+#   * Azure Linux/MKl                 -1270.9902581
+#   * psinet Linux/MKL                -1270.99040342
+#   * psinet Linux/MKL/OOO            -1271.19395552
+
+
+molecule iron {
+Fe
+symmetry c1
+}
+
+set {
+  basis cc-pVDZ-decon
+  basis_relativistic cc-pVDZ-decon
+  relativistic x2c
+  puream false
+}
+
+testrel = energy('scf')
+
+compare_values(ref_rel_energy, testrel, 0.2, "X2C relativistic SCF energy")  #TEST
