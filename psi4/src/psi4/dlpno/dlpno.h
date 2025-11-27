@@ -43,6 +43,17 @@
 #include <string>
 #include <unordered_map>
 
+#include "Einsums/Tensor.hpp"
+#include "Einsums/TensorAlgebra.hpp"
+#include "Einsums/LinearAlgebra.hpp"
+#include "Einsums/Profile.hpp"
+#include "Einsums/TensorUtilities/RMSD.hpp"
+
+using namespace einsums;
+using namespace einsums::index;
+using namespace einsums::linear_algebra;
+using namespace einsums::tensor_algebra;
+
 namespace psi {
 namespace dlpno {
 
@@ -127,6 +138,7 @@ class DLPNO : public Wavefunction {
     std::vector<int> n_pno_;       ///< number of pnos
     std::vector<double> occ_pno_;       ///< lowest PNO occupation number per PNO
     std::vector<double> trace_pno_;     ///< total trace(Dij) recovered per PNO
+    std::vector<double> e_ratio_pno_;   ///< percentage of correlation energy recovered by PNOs
     std::vector<double> de_pno_;   ///< PNO truncation energy error
     std::vector<double> de_pno_os_;   ///< opposite-spin contributions to de_pno_
     std::vector<double> de_pno_ss_;   ///< same-spin contributions to de_pno_
@@ -294,7 +306,6 @@ class DLPNOMP2 : public DLPNO {
 };
 
 // Equations refer to Jiang et al. (JCP 161, 082502, 2024; DOI: 10.1063/5.0219963)
-
 class PSI_API DLPNOCCSD : public DLPNO {
    protected:
     /// Use low memory algorithm to store PNO overlaps?
@@ -304,6 +315,27 @@ class PSI_API DLPNOCCSD : public DLPNO {
     /// Write (Q_ij | a_ij b_ij) integrals to disk?
     bool write_qab_pno_;
 
+    /// DF Domain Integrals
+    std::vector<Tensor<double, 2>> q_io_list_; ///< (Q_{ij} | k_{ij} i)
+    std::vector<Tensor<double, 2>> q_iv_list_; ///< (Q_{ij} | a_{ij} i)
+    std::vector<Tensor<double, 2>> q_io_t1_;   ///< (Q_{ij} | k_{ij} i) [t1-dressed] (Jiang Eq. 36)
+    std::vector<Tensor<double, 2>> q_iv_t1_;   ///< (Q_{ij} | a_{ij} i) [t1-dressed] (Jiang Eq. 38)
+
+    std::vector<Tensor<double, 3>> q_ov_pno_; ///< (Q_{ij} | m_{ij} a_{ij}) (only filled if not writing to disk)
+    std::vector<Tensor<double, 3>> q_vv_pno_; ///< (Q_{ij} | a_{ij} b_{ij}) (only filled if not writing to disk)
+
+    /// Expensive DF Integrals (read from disk)
+    /// TODO: Replace this with std::vector<DiskTensor<double, 3>> in the future,
+    /// when things are more efficient
+    inline Tensor<double, 3> QIA_PNO_EINSUMS(const int ij); ///< (Q_{ij} | m_{ij} a_{ij})
+    inline Tensor<double, 3> QAB_PNO_EINSUMS(const int ij); ///< (Q_{ij} | a_{ij} b_{ij})
+
+    /// T1-Dressed Fock Matrices
+    std::vector<Tensor<double, 1>> F_ki_t1_;   ///< \widetilde{F}_{ki} (Jiang Eq. 40)
+    std::vector<Tensor<double, 2>> F_kc_t1_;   ///< \widetilde{F}_{kc} (Jiang Eq. 41)
+    std::vector<Tensor<double, 1>> F_ai_t1_;   ///< \widetilde{F}_{ai} (Jiang Eq. 42)
+    std::vector<Tensor<double, 2>> F_ab_t1_;   ///< \widetilde{F}_{ab} (Jiang Eq. 43)
+
     /// PNO overlap integrals
     std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
     std::vector<std::vector<SharedMatrix>> S_pno_ij_nn_; ///< pno overlaps
@@ -312,6 +344,7 @@ class PSI_API DLPNOCCSD : public DLPNO {
     /// Coupled-cluster amplitudes
     std::vector<SharedMatrix> T_ia_; ///< singles amplitudes [naocc x (npno_ii, 1)]
     std::vector<SharedMatrix> T_n_ij_; ///< projected singles amplitudes [n_lmo_pairs x (nlmo_ij, npno_ij)] (Jiang Eq. 70)
+    std::vector<Tensor<double, 2>> T_n_ij_sums_;    ///< projected singles amplitudes in the domain of ij (Einsums storage)
 
     // => Strong and Weak Pair Info <=//
 
@@ -340,8 +373,8 @@ class PSI_API DLPNOCCSD : public DLPNO {
     std::vector<SharedMatrix> J_ijab_; /// (i j | a_ij b_ij)
     std::vector<SharedMatrix> L_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i b_ij | j a_ij)
     std::vector<SharedMatrix> M_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i j | b_ij a_ij)
-    std::vector<std::vector<SharedMatrix>> J_ij_kj_;  /// (i k | a_ij b_jk)
-    std::vector<std::vector<SharedMatrix>> K_ij_kj_;  /// (i a_ij | k b_kj)
+    std::vector<std::vector<SharedMatrix>> J_ij_kj_;  /// (i k | a_{ij} b_{jk}) - (i k | a_{ij} b_{ij}) S(b_{ij}, b_{kj})
+    std::vector<std::vector<SharedMatrix>> K_ij_kj_;  /// (i a_{ij} | k b_{kj}) - (i a_{ij} | k b_{ij}) S(b_{ij}, b_{kj})
     /// (1 occupied, 3 virtual)
     std::vector<SharedMatrix> K_tilde_chem_; /// (i e_ij | a_ij f_ij) (stored as (e, a*f)) [Chemist's Notation]
     /// (0 occupied, 4 virtual)
@@ -371,10 +404,12 @@ class PSI_API DLPNOCCSD : public DLPNO {
     /// Encapsulates the reading in of (Q_{ij}|a_{ij} b_{ij}) integrals (regardless of core or disk)
     inline std::vector<SharedMatrix> QAB_PNO(const int ij);
 
-    /// Determine which pairs are strong and weak pairs
-    template<bool crude> void pair_prescreening(); // Encapsulates crude/refined prescreening step in Riplinger 2016
+    /// These functions split up pairs that survive the initial dipole screening
+    // The "crude" pre-screening step splits up semi-canonical MP2 pairs from the rest,
+    // while the non-crude splits up strong/weak pairs (see Riplinger 2016 for more details)
+    template<bool crude> void pair_prescreening();
     template<bool crude> std::vector<double> compute_pair_energies();
-    template<bool crude> std::pair<double, double> filter_pairs(const std::vector<double>& e_ijs);
+    template<bool crude> double filter_pairs(const std::vector<double>& e_ijs);
 
     /// Runs preceeding DLPNO-MP2 computation before DLPNO-CCSD iterations
     void pno_lmp2_iterations();

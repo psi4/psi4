@@ -689,7 +689,7 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
     // map from LMO to local occupied domain (other LMOs)
     // locality determined via differential overlap integrals
     //   and also approximated pair energies from dipole integrals
-
+    // This is only performed in the initial step to eliminate dipole pairs
     if (initial) {
         i_j_to_ij_.resize(naocc);
         de_dipole_ = 0.0;
@@ -747,7 +747,8 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
         lmopair_to_riatoms_[ij] = merge_lists(lmo_to_riatoms_[i], lmo_to_riatoms_[j]);
     }
 
-    // Create a list of lmos that "interact" with a lmo_pair by differential overlap
+    // Create a list of lmos that "interact" with a lmo_pair
+    // This is defined by all LMOs m such that im and jm form valid pairs
     lmopair_to_lmos_.clear();
     lmopair_to_lmos_.resize(n_lmo_pairs);
     lmopair_to_lmos_dense_.resize(n_lmo_pairs);

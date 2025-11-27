@@ -107,6 +107,32 @@ inline SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
     }
 }
 
+inline Tensor<double, 3> DLPNOCCSD::QIA_PNO_EINSUMS(const int ij) {
+    auto &[i, j] = ij_to_i_j_[ij];
+    const int pair_idx = (i > j) ? ij_to_ji_[ij] : ij;
+
+    int naux_ij = lmopair_to_ribfs_[ij].size();
+    int nlmo_ij = lmopair_to_lmos_[ij].size();
+    int npno_ij = n_pno_[ij];
+
+    if (write_qia_pno_) {
+        std::stringstream toc_entry;
+        toc_entry << "QIA (PNO) EINSUMS " << pair_idx;
+
+        auto q_ov = std::make_shared<Matrix>(toc_entry.str(), naux_ij, nlmo_ij * npno_ij);
+    #pragma omp critical
+        q_ov->load(psio_, PSIF_DLPNO_QIA_PNO, psi::Matrix::SubBlocks);
+
+        // TODO: An efficient disk tensor I/O would eliminate the need for this back and forth copying
+        Tensor<double, 3> qia_pno("qia_pno", naux_ij, nlmo_ij, npno_ij);
+        ::memcpy(qia_pno.data(), q_ov->get_pointer(), naux_ij * nlmo_ij * npno_ij * sizeof(double));
+
+        return qia_pno;
+    } else {
+        return q_ov_pno_[pair_idx];
+    }
+}
+
 inline std::vector<SharedMatrix> DLPNOCCSD::QIA_PNO(const int ij) {
     auto &[i, j] = ij_to_i_j_[ij];
     int pair_idx = (i > j) ? ij_to_ji_[ij] : ij;
@@ -131,6 +157,31 @@ inline std::vector<SharedMatrix> DLPNOCCSD::QIA_PNO(const int ij) {
         return Qma_pno;
     } else {
         return Qma_ij_[pair_idx];
+    }
+}
+
+inline Tensor<double, 3> DLPNOCCSD::QAB_PNO_EINSUMS(const int ij) {
+    auto &[i, j] = ij_to_i_j_[ij];
+    const int pair_idx = (i > j) ? ij_to_ji_[ij] : ij;
+
+    int naux_ij = lmopair_to_ribfs_[ij].size();
+    int npno_ij = n_pno_[ij];
+
+    if (write_qab_pno_) {
+        std::stringstream toc_entry;
+        toc_entry << "QAB (PNO) EINSUMS " << pair_idx;
+
+        auto q_vv = std::make_shared<Matrix>(toc_entry.str(), naux_ij, npno_ij * npno_ij);
+    #pragma omp critical
+        q_vv->load(psio_, PSIF_DLPNO_QAB_PNO, psi::Matrix::ThreeIndexLowerTriangle);
+
+        // TODO: An efficient disk tensor I/O would eliminate the need for this back and forth copying
+        Tensor<double, 3> qab_pno("qab_pno", naux_ij, npno_ij, npno_ij);
+        ::memcpy(qab_pno.data(), q_vv->get_pointer(), naux_ij * npno_ij * npno_ij * sizeof(double));
+
+        return qab_pno;
+    } else {
+        return q_vv_pno_[pair_idx];
     }
 }
 
@@ -430,9 +481,9 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
 
     std::vector<double> e_ijs(n_lmo_pairs);
 
-    outfile->Printf("\n  ==> Computing SC-LMP2 Pair Energies <==\n\n");
-
-    outfile->Printf("    Starting semicanonical (non-iterative) LMP2 step...\n\n");
+    if constexpr (crude) {
+        outfile->Printf("\n  ==> Semi-Canonical MP2 Pair Prescreening <==\n\n");
+    }
 
     if constexpr (!crude) {
         outfile->Printf("\n  ==> Forming Pair Natural Orbitals (for LMP2) <==\n");
@@ -446,13 +497,12 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
         n_pno_.resize(n_lmo_pairs);
         occ_pno_.resize(n_lmo_pairs);
         trace_pno_.resize(n_lmo_pairs);
+        e_ratio_pno_.resize(n_lmo_pairs);
         de_pno_.resize(n_lmo_pairs);
     }
 
-    double e_sc_lmp2 = 0.0;
-
     // Step 1: compute SC-LMP2 pair energies
-#pragma omp parallel for schedule(dynamic, 1) reduction(+ : e_sc_lmp2)
+#pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         auto &[i, j] = ij_to_i_j_[ij];
         int ji = ij_to_ji_[ij];
@@ -512,25 +562,22 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
             }
         }
 
-        // Compute SC-LMP2 pair energy using PAOs
-
+        // Compute semi-canonical MP2 pair energy using PAOs
         size_t nvir_ij = K_pao_ij->rowspi(0);
 
         auto Tt_pao_ij = T_pao_ij->clone();
         Tt_pao_ij->scale(2.0);
         Tt_pao_ij->subtract(T_pao_ij->transpose());
 
-        // mp2 energy of this LMO pair before transformation to PNOs
+        // MP2 energy of this LMO pair before transformation to PNOs
         double e_ij_initial = K_pao_ij->vector_dot(Tt_pao_ij);
-
-        double prefactor = (i == j) ? 1.0 : 2.0;
-        e_sc_lmp2 += prefactor * e_ij_initial;
 
         e_ijs[ij] = e_ij_initial;
         if (i < j) {
             e_ijs[ji] = e_ij_initial;
         }
 
+        // Compute PNOs in the non-crude prescreening step :)
         if constexpr (!crude) {
             //                                           //
             // ==> Canonical PAOs  to Canonical PNOs <== //
@@ -566,14 +613,14 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
             for (size_t a = 0; a < nvir_ij; ++a) {
                 if (fabs(pno_occ.get(a)) >= t_cut_scale * T_CUT_PNO_MP2_ || occ_pno / occ_total < T_CUT_TRACE_MP2_ ||
                         std::fabs(e_pno) < T_CUT_ENERGY_MP2_ * std::fabs(e_ij_initial) || a < MIN_PNOS) {
-                    a_curr.push_back(a);
-
                     // Energy criteria
                     e_pno = submatrix_rows_and_cols(*K_pno_init, a_curr, a_curr)->vector_dot(submatrix_rows_and_cols(*Tt_pno_init, a_curr, a_curr));
 
                     // Trace criteria
                     occ_pno += pno_occ.get(a);
-                    
+
+                    // Add PNO to list
+                    a_curr.push_back(a);
                     nvir_ij_final++;
                 }
             }
@@ -608,6 +655,7 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
 
             X_pno_ij = linalg::doublet(X_pao_ij, X_pno_ij, false, false);
 
+            // Set values for relavant PNO-related quantities
             K_iajb_[ij] = K_pno_ij;
             T_iajb_[ij] = T_pno_ij;
             Tt_iajb_[ij] = Tt_pno_ij;
@@ -616,6 +664,7 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
             n_pno_[ij] = X_pno_ij->colspi(0);
             occ_pno_[ij] = pno_occ.get(n_pno_[ij] - 1);
             trace_pno_[ij] = occ_pno / occ_total;
+            e_ratio_pno_[ij] = e_ij_trunc / e_ij_initial;
             de_pno_[ij] = de_pno_ij;
 
             // account for symmetry
@@ -628,29 +677,36 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
                 n_pno_[ji] = n_pno_[ij];
                 occ_pno_[ji] = occ_pno_[ij];
                 trace_pno_[ji] = trace_pno_[ij];
+                e_ratio_pno_[ji] = e_ratio_pno_[ij];
                 de_pno_[ji] = de_pno_ij;
             }
         }
     } // end for (ij pairs)
-
-    outfile->Printf("    PAO-SC-LMP2 Energy: %16.12f\n\n", e_sc_lmp2);
 
     if constexpr (!crude) {
         // Print out PNO domain information
         int pno_count_total = 0, pno_count_min = nbf, pno_count_max = 0;
         double occ_number_total = 0.0, occ_number_min = 2.0, occ_number_max = 0.0;
         double trace_total = 0.0, trace_min = 1.0, trace_max = 0.0;
-        de_pno_total_ = 0.0, de_pno_total_os_ = 0.0, de_pno_total_ss_ = 0.0;
+        double energy_total = 0.0, energy_min = 1.0, energy_max = 0.0;
+        de_pno_total_ = 0.0;
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             pno_count_total += n_pno_[ij];
             pno_count_min = std::min(pno_count_min, n_pno_[ij]);
             pno_count_max = std::max(pno_count_max, n_pno_[ij]);
+
             occ_number_total += occ_pno_[ij];
             occ_number_min = std::min(occ_number_min, occ_pno_[ij]);
             occ_number_max = std::max(occ_number_max, occ_pno_[ij]);
+
             trace_total += trace_pno_[ij];
             trace_min = std::min(trace_min, trace_pno_[ij]);
             trace_max = std::max(trace_max, trace_pno_[ij]);
+
+            energy_total += e_ratio_pno_[ij];
+            energy_min = std::min(energy_min, e_ratio_pno_[ij]);
+            energy_max = std::max(energy_max, e_ratio_pno_[ij]);
+            
             de_pno_total_ += de_pno_[ij];
         }
 
@@ -659,12 +715,19 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
         outfile->Printf("      Avg: %3d NOs \n", pno_count_total / n_lmo_pairs);
         outfile->Printf("      Min: %3d NOs \n", pno_count_min);
         outfile->Printf("      Max: %3d NOs \n\n", pno_count_max);
+
         outfile->Printf("      Avg Occ Number Tol: %.3e \n", occ_number_total / n_lmo_pairs);
         outfile->Printf("      Min Occ Number Tol: %.3e \n", occ_number_min);
         outfile->Printf("      Max Occ Number Tol: %.3e \n\n", occ_number_max);
+
         outfile->Printf("      Avg Trace Sum: %.6f \n", trace_total / n_lmo_pairs);
         outfile->Printf("      Min Trace Sum: %.6f \n", trace_min);
         outfile->Printf("      Max Trace Sum: %.6f \n\n", trace_max);
+
+        outfile->Printf("      Avg Energy Ratio: %.6f \n", energy_total / n_lmo_pairs);
+        outfile->Printf("      Min Energy Ratio: %.6f \n", energy_min);
+        outfile->Printf("      Max Energy Ratio: %.6f \n\n", energy_max);
+
         outfile->Printf("    PNO truncation energy = %.12f\n", de_pno_total_);
     }
 
@@ -879,7 +942,7 @@ void DLPNOCCSD::pno_lmp2_iterations() {
 void DLPNOCCSD::recompute_pnos() {
     /* Recompute Pair Natural Orbitals for LCCSD iterations */
 
-    timer_on("Recompute PNOs");
+    timer_on("Compute PNOs (CCSD)");
 
     int nbf = basisset_->nbf();
     int naocc = i_j_to_ij_.size();
@@ -984,6 +1047,7 @@ void DLPNOCCSD::recompute_pnos() {
         n_pno_[ij] = X_pno_ij->colspi(0);
         occ_pno_[ij] = pno_occ.get(n_pno_[ij] - 1);
         trace_pno_[ij] = occ_pno / occ_total;
+        e_ratio_pno_[ij] = e_pno / e_ij_total;
         de_pno_[ij] += de_pno_ij;
 
         // account for symmetry
@@ -996,6 +1060,7 @@ void DLPNOCCSD::recompute_pnos() {
             n_pno_[ji] = n_pno_[ij];
             occ_pno_[ji] = occ_pno_[ij];
             trace_pno_[ji] = trace_pno_[ij];
+            e_ratio_pno_[ji] = e_ratio_pno_[ij];
             de_pno_[ji] += de_pno_ij;
         } // end if (i < j)
     }
@@ -1004,20 +1069,30 @@ void DLPNOCCSD::recompute_pnos() {
     int pno_count_total = 0, pno_count_min = nbf, pno_count_max = 0;
     double occ_number_total = 0.0, occ_number_min = 2.0, occ_number_max = 0.0;
     double trace_total = 0.0, trace_min = 1.0, trace_max = 0.0;
-    de_weak_ = 0.0, de_pno_total_ = 0.0, de_pno_total_os_ = 0.0, de_pno_total_ss_ = 0.0;
+    double energy_total = 0.0, energy_min = 1.0, energy_max = 0.0;
+    de_weak_ = 0.0, de_pno_total_ = 0.0;
+
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         auto &[i, j] = ij_to_i_j_[ij];
+
         if (i_j_to_ij_strong_[i][j] == -1) de_weak_ += K_iajb_[ij]->vector_dot(Tt_iajb_[ij]);
 
         pno_count_total += n_pno_[ij];
         pno_count_min = std::min(pno_count_min, n_pno_[ij]);
         pno_count_max = std::max(pno_count_max, n_pno_[ij]);
+
         occ_number_total += occ_pno_[ij];
         occ_number_min = std::min(occ_number_min, occ_pno_[ij]);
         occ_number_max = std::max(occ_number_max, occ_pno_[ij]);
+
         trace_total += trace_pno_[ij];
         trace_min = std::min(trace_min, trace_pno_[ij]);
         trace_max = std::max(trace_max, trace_pno_[ij]);
+
+        energy_total += e_ratio_pno_[ij];
+        energy_min = std::min(energy_min, e_ratio_pno_[ij]);
+        energy_max = std::max(energy_max, e_ratio_pno_[ij]);
+
         de_pno_total_ += de_pno_[ij];
     }
 
@@ -1026,20 +1101,27 @@ void DLPNOCCSD::recompute_pnos() {
     outfile->Printf("      Avg: %3d NOs \n", pno_count_total / n_lmo_pairs);
     outfile->Printf("      Min: %3d NOs \n", pno_count_min);
     outfile->Printf("      Max: %3d NOs \n\n", pno_count_max);
+
     outfile->Printf("      Avg Occ Number Tol: %.3e \n", occ_number_total / n_lmo_pairs);
     outfile->Printf("      Min Occ Number Tol: %.3e \n", occ_number_min);
     outfile->Printf("      Max Occ Number Tol: %.3e \n\n", occ_number_max);
+
     outfile->Printf("      Avg Trace Sum: %.6f \n", trace_total / n_lmo_pairs);
     outfile->Printf("      Min Trace Sum: %.6f \n", trace_min);
     outfile->Printf("      Max Trace Sum: %.6f \n\n", trace_max);
-    outfile->Printf("    LMP2 Weak pair energy = %.12f\n", de_weak_);
+
+    outfile->Printf("      Avg Energy Ratio: %.6f \n", energy_total / n_lmo_pairs);
+    outfile->Printf("      Min Energy Ratio: %.6f \n", energy_min);
+    outfile->Printf("      Max Energy Ratio: %.6f \n\n", energy_max);
+
+    outfile->Printf("    LMP2 Weak Pair energy = %.12f\n", de_weak_);
     outfile->Printf("    PNO truncation energy = %.12f\n", de_pno_total_);
 
-    timer_off("Recompute PNOs");
+    timer_off("Compute PNOs (CCSD)");
 }
 
-template<bool crude> std::pair<double, double> DLPNOCCSD::filter_pairs(const std::vector<double>& e_ijs) {
-    /* This function filters between strong and weak pairs */
+template<bool crude> double DLPNOCCSD::filter_pairs(const std::vector<double>& e_ijs) {
+    /* If crude, this function filters out semicanonical MP2 pairs. Otherwise, it filters out the weak pairs from the strong pairs */
 
     int natom = molecule_->natom();
     int nbf = basisset_->nbf();
@@ -1048,100 +1130,85 @@ template<bool crude> std::pair<double, double> DLPNOCCSD::filter_pairs(const std
     int naux = ribasis_->nbf();
     int npao = C_pao_->colspi(0);  // same as nbf
 
-    // Step 2. Split up strong and weak pairs based on e_ijs
-    int strong_pair_count = 0, weak_pair_count = 0;
-    double delta_e_crude = 0.0, delta_e_weak = 0.0;
+    if constexpr (crude) {
+        // Clear information from old maps
+        std::vector<std::vector<int>> i_j_to_ij_new;
+        std::vector<std::pair<int,int>> ij_to_i_j_new;
+        std::vector<int> ij_to_ji_new;
 
-    std::vector<std::vector<int>> i_j_to_ij_strong_copy = i_j_to_ij_strong_;
+        // Allocate space for new intermediates
+        i_j_to_ij_new.resize(naocc);
 
-    ij_to_i_j_strong_.clear();
-    ij_to_i_j_weak_.clear();
+        for (size_t i = 0; i < naocc; i++) {
+            i_j_to_ij_new[i].resize(naocc, -1);
+        }
 
-    i_j_to_ij_strong_.clear();
-    i_j_to_ij_weak_.clear();
+        double delta_e_crude = 0.0;
 
-    i_j_to_ij_strong_.resize(naocc);
-    i_j_to_ij_weak_.resize(naocc);
-
-    for (size_t i = 0; i < naocc; i++) {
-        i_j_to_ij_strong_[i].resize(naocc, -1);
-        i_j_to_ij_weak_[i].resize(naocc, -1);
-
-        for (size_t j = 0; j < naocc; j++) {
-            int ij = i_j_to_ij_[i][j];
-            if (ij == -1) continue;
-
-            if constexpr (crude) {
-                if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_) { // Strong Pair
-                    i_j_to_ij_strong_[i][j] = strong_pair_count;
-                    ij_to_i_j_strong_.push_back(std::make_pair(i,j));
-                    ++strong_pair_count;
-                } else if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_MP2_) { // Weak Pair
-                    i_j_to_ij_weak_[i][j] = weak_pair_count;
-                    ij_to_i_j_weak_.push_back(std::make_pair(i,j));
-                    ++weak_pair_count;
-                } else { // Crude Pair
-                    delta_e_crude += e_ijs[ij];
-                }
-            } else {
-                if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_ && i_j_to_ij_strong_copy[i][j] != -1) { // Strong Pair
-                    i_j_to_ij_strong_[i][j] = strong_pair_count;
-                    ij_to_i_j_strong_.push_back(std::make_pair(i,j));
-                    ++strong_pair_count;
-                } else { // Weak Pair
-                    i_j_to_ij_weak_[i][j] = weak_pair_count;
-                    ij_to_i_j_weak_.push_back(std::make_pair(i,j));
-                    delta_e_weak += e_ijs[ij];
-                    ++weak_pair_count;
-                }
+        int ij_new = 0;
+        for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+            auto &[i, j] = ij_to_i_j_[ij];
+            if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_MP2_) { // If this pair survives, it continues in the computation
+                i_j_to_ij_new[i][j] = ij_new;
+                ij_to_i_j_new.push_back(std::make_pair(i, j));
+                ++ij_new;
+            } else { // Otherwise, it dies forever :)
+                delta_e_crude += e_ijs[ij];
             }
-            
-        } // end j
-    } // end i
+        }
 
-    ij_to_ji_strong_.clear();
-    ij_to_ji_weak_.clear();
+        for (size_t ij = 0; ij < ij_to_i_j_new.size(); ++ij) {
+            auto &[i, j] = ij_to_i_j_new[ij];
+            ij_to_ji_new.push_back(i_j_to_ij_new[j][i]);
+        }
 
-    for (size_t ij = 0; ij < ij_to_i_j_strong_.size(); ++ij) {
-        size_t i, j;
-        std::tie(i, j) = ij_to_i_j_strong_[ij];
-        ij_to_ji_strong_.push_back(i_j_to_ij_strong_[j][i]);
+        i_j_to_ij_ = i_j_to_ij_new;
+        ij_to_i_j_ = ij_to_i_j_new;
+        ij_to_ji_ = ij_to_ji_new;
+
+        return delta_e_crude;
+
+    } else {
+        i_j_to_ij_strong_.resize(naocc);
+        i_j_to_ij_weak_.resize(naocc);
+
+        for (size_t i = 0; i < naocc; i++) {
+            i_j_to_ij_strong_[i].resize(naocc, -1);
+            i_j_to_ij_weak_[i].resize(naocc, -1);
+        }
+
+        double delta_e_weak = 0.0;
+
+        int ij_strong = 0, ij_weak = 0;
+        for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+            auto &[i, j] = ij_to_i_j_[ij];
+            if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_) { // Pair is strong pair
+                i_j_to_ij_strong_[i][j] = ij_strong;
+                ij_to_i_j_strong_.push_back(std::make_pair(i, j));
+                ++ij_strong;
+            } else { // Pair is weak pair
+                i_j_to_ij_weak_[i][j] = ij_weak;
+                ij_to_i_j_weak_.push_back(std::make_pair(i, j));
+                delta_e_weak += e_ijs[ij];
+                ++ij_weak;
+            } // end else
+        } // end ij
+
+        ij_to_ji_strong_.clear();
+        ij_to_ji_weak_.clear();
+
+        for (size_t ij = 0; ij < ij_to_i_j_strong_.size(); ++ij) {
+            auto &[i, j] = ij_to_i_j_strong_[ij];
+            ij_to_ji_strong_.push_back(i_j_to_ij_strong_[j][i]);
+        } // end ij
+        
+        for (size_t ij = 0; ij < ij_to_i_j_weak_.size(); ++ij) {
+            auto &[i, j] = ij_to_i_j_weak_[ij];
+            ij_to_ji_weak_.push_back(i_j_to_ij_weak_[j][i]);
+        } // end ij
+
+        return delta_e_weak;
     }
-    
-    for (size_t ij = 0; ij < ij_to_i_j_weak_.size(); ++ij) {
-        size_t i, j;
-        std::tie(i, j) = ij_to_i_j_weak_[ij];
-        ij_to_ji_weak_.push_back(i_j_to_ij_weak_[j][i]);
-    }
-
-    // Recompute global pair lists
-    ij_to_i_j_.clear();
-    i_j_to_ij_.clear();
-
-    i_j_to_ij_.resize(naocc);
-
-    int ij = 0;
-    for (size_t i = 0; i < naocc; i++) {
-        i_j_to_ij_[i].resize(naocc, -1);
-
-        for (size_t j = 0; j < naocc; j++) {
-            if (i_j_to_ij_strong_[i][j] != -1 || i_j_to_ij_weak_[i][j] != -1) {
-                i_j_to_ij_[i][j] = ij;
-                ij_to_i_j_.push_back(std::make_pair(i,j));
-                ++ij;
-            } // end if
-        } // end j
-    } // end i
-
-    ij_to_ji_.clear();
-
-    for (size_t ij = 0; ij < ij_to_i_j_.size(); ++ij) {
-        size_t i, j;
-        std::tie(i, j) = ij_to_i_j_[ij];
-        ij_to_ji_.push_back(i_j_to_ij_[j][i]);
-    }
-
-    return std::make_pair(delta_e_crude, delta_e_weak);
 }
 
 template<bool crude> void DLPNOCCSD::pair_prescreening() {
@@ -1149,43 +1216,34 @@ template<bool crude> void DLPNOCCSD::pair_prescreening() {
     int naocc = i_j_to_ij_.size();
 
     if constexpr (crude) {
-        outfile->Printf("\n  ==> Determining Strong and Weak Pairs (Crude Prescreening Step) <==\n");
+        outfile->Printf("\n  ==> Initial semi-canonical MP2 prescreening of pairs <==\n");
 
         int n_lmo_pairs_init = ij_to_i_j_.size();
 
         const std::vector<double>& e_ijs_crude = compute_pair_energies<true>();
-        std::tie(de_lmp2_eliminated_, de_weak_) = filter_pairs<true>(e_ijs_crude);
+        de_lmp2_eliminated_ = filter_pairs<true>(e_ijs_crude);
 
-        int n_strong_pairs = ij_to_i_j_strong_.size();
-        int n_weak_pairs = ij_to_i_j_weak_.size();
-        int n_surviving_pairs = n_strong_pairs + n_weak_pairs;
-        int n_eliminated_pairs = n_lmo_pairs_init - n_surviving_pairs;
+        int n_lmo_pairs_final = ij_to_i_j_.size();
+        int n_eliminated_pairs = n_lmo_pairs_init - n_lmo_pairs_final;
 
-        outfile->Printf("    Eliminated Pairs (SC-LMP2)      = %d\n", n_eliminated_pairs);
-        outfile->Printf("    (Initial) Weak Pairs            = %d\n", n_weak_pairs);
-        outfile->Printf("    (Initial) Strong Pairs          = %d\n", n_strong_pairs);
-        outfile->Printf("    Surviving Pairs / Total Pairs   = (%.2f %%)\n", (100.0 * n_surviving_pairs) / (naocc * naocc));
-        outfile->Printf("    Eliminated Pair dE              = %.12f\n\n", de_lmp2_eliminated_);
+        outfile->Printf("    Eliminated Pairs (SC-LMP2)         = %d\n", n_eliminated_pairs);
+        outfile->Printf("    Surviving Pairs                    = %d\n", n_lmo_pairs_final);
+        outfile->Printf("    Surviving Pairs / Non-dipole Pairs = (%.2f %%)\n", (100.0 * n_lmo_pairs_final) / (n_lmo_pairs_init));
+        outfile->Printf("    Eliminated Pair dE                 = %.12f\n\n", de_lmp2_eliminated_);
     } else {
         outfile->Printf("\n  ==> Determining Strong and Weak Pairs (Refined Prescreening Step) <==\n\n");
 
-        int n_lmo_pairs_init = ij_to_i_j_.size();
+        int n_lmo_pairs = ij_to_i_j_.size();
 
         const std::vector<double>& e_ijs = compute_pair_energies<false>();
-        double de_lmp2_eliminated_refined = 0.0;
-        std::tie(de_lmp2_eliminated_refined, de_weak_) = filter_pairs<false>(e_ijs);
-        de_lmp2_eliminated_ += de_lmp2_eliminated_refined;
+        filter_pairs<false>(e_ijs);
 
         int n_strong_pairs = ij_to_i_j_strong_.size();
         int n_weak_pairs = ij_to_i_j_weak_.size();
-        int n_surviving_pairs = n_strong_pairs + n_weak_pairs;
-        int n_eliminated_pairs = n_lmo_pairs_init - n_surviving_pairs;
 
-        outfile->Printf("    (Additional) Eliminated Pairs   = %d\n", n_eliminated_pairs);
-        outfile->Printf("    (Final) Weak Pairs              = %d\n", n_weak_pairs);
-        outfile->Printf("    (Final) Strong Pairs            = %d\n", n_strong_pairs);
-        outfile->Printf("    Strong Pairs / Total Pairs      = (%.2f %%)\n", (100.0 * n_strong_pairs) / (naocc * naocc));
-        outfile->Printf("    (Cumulative) Eliminated Pair dE = %.12f\n", de_lmp2_eliminated_);
+        outfile->Printf("    Weak Pairs                      = %d\n", n_weak_pairs);
+        outfile->Printf("    Strong Pairs                    = %d\n", n_strong_pairs);
+        outfile->Printf("    Strong Pairs / Total Pairs      = (%.2f %%)\n", (100.0 * n_strong_pairs) / n_lmo_pairs);
     }
 }
 
@@ -1211,12 +1269,18 @@ void DLPNOCCSD::compute_cc_integrals() {
     // 3 virtual
     K_tilde_chem_.resize(n_lmo_pairs);
 
+    // Einsums integrals
+    q_io_list_.resize(n_lmo_pairs);
+    q_iv_list_.resize(n_lmo_pairs);
+
     // DF integrals (used in DLPNO-CCSD with T1 Transformed Hamiltonian)
     if (!write_qia_pno_) {
         Qma_ij_.resize(n_lmo_pairs);
+        q_ov_pno_.resize(n_lmo_pairs);
     }
     if (!write_qab_pno_) {
         Qab_ij_.resize(n_lmo_pairs);
+        q_vv_pno_.resize(n_lmo_pairs);
     }
 
     i_Qa_ij_.resize(n_lmo_pairs);
@@ -1224,13 +1288,8 @@ void DLPNOCCSD::compute_cc_integrals() {
 
     size_t qvv_memory = 0;
 
-    if (write_qia_pno_) {
-        psio_->open(PSIF_DLPNO_QIA_PNO, PSIO_OPEN_NEW);
-    }
-
-    if (write_qab_pno_) {
-        psio_->open(PSIF_DLPNO_QAB_PNO, PSIO_OPEN_NEW);
-    }
+    psio_->open(PSIF_DLPNO_QIA_PNO, PSIO_OPEN_NEW);
+    psio_->open(PSIF_DLPNO_QAB_PNO, PSIO_OPEN_NEW);
 
     std::time_t time_start = std::time(nullptr);
     std::time_t time_lap = std::time(nullptr);
@@ -1373,6 +1432,42 @@ void DLPNOCCSD::compute_cc_integrals() {
         C_DGESV_wrapper(A_solve->clone(), q_ov);
         C_DGESV_wrapper(A_solve->clone(), q_vv);
 
+        // Copy necessary integrals to Einsums
+        q_io_list_[ij] = Tensor<double, 2>("q_io", naux_ij, nlmo_ij);
+        ::memcpy(q_io_list_[ij].data(), q_io->get_pointer(), naux_ij * nlmo_ij * sizeof(double));
+        q_iv_list_[ij] = Tensor<double, 2>("q_iv", naux_ij, npno_ij);
+        ::memcpy(q_iv_list_[ij].data(), q_iv->get_pointer(), naux_ij * npno_ij * sizeof(double));
+        if (i != j) {
+            q_io_list_[ji] = Tensor<double, 2>("q_jo", naux_ij, nlmo_ij);
+            ::memcpy(q_io_list_[ji].data(), q_jo->get_pointer(), naux_ij * nlmo_ij * sizeof(double));
+            q_iv_list_[ji] = Tensor<double, 2>("q_jv", naux_ij, npno_ij);
+            ::memcpy(q_iv_list_[ji].data(), q_jv->get_pointer(), naux_ij * npno_ij * sizeof(double));
+        }
+
+        // Write (Q_{ij} | m_{ij} a_{ij}) integrals to disk
+        if (write_qia_pno_) {
+            std::stringstream qov_entry;
+            qov_entry << "QIA (PNO) EINSUMS " << ij;
+            q_ov->set_name(qov_entry.str());
+    #pragma omp critical
+            q_ov->save(psio_, PSIF_DLPNO_QIA_PNO, psi::Matrix::SubBlocks);
+        } else {
+            q_ov_pno_[ij] = Tensor<double, 3>("QIA (PNO)", naux_ij, nlmo_ij, npno_ij);
+            ::memcpy(q_ov_pno_[ij].data(), q_ov->get_pointer(), naux_ij * nlmo_ij * npno_ij * sizeof(double));
+        }
+
+        // Write (Q_{ij} | a_{ij} b_{ij}) integrals to disk
+        if (write_qab_pno_) {
+            std::stringstream qvv_entry;
+            qvv_entry << "QAB (PNO) EINSUMS " << ij;
+            q_vv->set_name(qvv_entry.str());
+    #pragma omp critical
+            q_vv->save(psio_, PSIF_DLPNO_QAB_PNO, psi::Matrix::ThreeIndexLowerTriangle);
+        } else {
+            q_vv_pno_[ij] = Tensor<double, 3>("QAB (PNO)", naux_ij, npno_ij, npno_ij);
+            ::memcpy(q_vv_pno_[ij].data(), q_vv->get_pointer(), naux_ij * npno_ij * npno_ij * sizeof(double));
+        }
+
         if (thread == 0) timer_off("DLPNO-CCSD: Setup Integrals");
 
         if (is_strong_pair) {
@@ -1386,11 +1481,17 @@ void DLPNOCCSD::compute_cc_integrals() {
                 if (i != j) J_ij_kj_[ji][k_ij] = std::make_shared<Matrix>(n_pno_[ij], n_pno_[ik]);
             }
 
+            // Partially transformed q_vv with first index transformed into PNO virtual space,
+            // second in extended PAO space
+            SharedMatrix q_vv_partial = std::make_shared<Matrix>("q_vv_partial", naux_ij, npno_ij * npao_ext_ij);
+
+            // Compute (i k_{ij} | a_{ij} b_{kj}) integrals through density-fitting
             for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
                 const int q = lmopair_to_ribfs_[ij][q_ij];
                 const int centerq = ribasis_->function_to_center(q);
                 
                 auto q_cd_temp = std::make_shared<Matrix>(npao_ij, npao_ext_ij);
+                q_cd_temp->zero();
                 for (int u_ij = 0; u_ij < npao_ij; ++u_ij) {
                     int u = lmopair_to_paos_[ij][u_ij];
                     for (int v_ij = 0; v_ij < npao_ext_ij; ++v_ij) {
@@ -1401,7 +1502,9 @@ void DLPNOCCSD::compute_cc_integrals() {
                     }
                 }
                 q_cd_temp = linalg::doublet(X_pno_[ij], q_cd_temp, true, false);
+                ::memcpy(&(*q_vv_partial)(q_ij, 0), q_cd_temp->get_pointer(), npno_ij * npao_ext_ij * sizeof(double));
 
+                /*
                 for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
                     int k = lmopair_to_lmos_[ij][k_ij];
                     int ik = i_j_to_ij_[i][k], kj = i_j_to_ij_[k][j];
@@ -1419,7 +1522,32 @@ void DLPNOCCSD::compute_cc_integrals() {
                         J_ij_kj_[ji][k_ij]->add(J_ij_ik_temp);
                     }
                 }
+                */
             }
+
+            SharedMatrix K_iovv_partial = linalg::doublet(q_io_clone, q_vv_partial, true, false);
+            SharedMatrix K_jovv_partial;
+
+            if (i != j) {
+                K_jovv_partial = linalg::doublet(q_jo_clone, q_vv_partial, true, false);
+            }
+
+            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+                int k = lmopair_to_lmos_[ij][k_ij];
+                int ik = i_j_to_ij_[i][k], kj = i_j_to_ij_[k][j];
+
+                auto K_iovv_slice = submatrix_rows(*K_iovv_partial, std::vector<int>(1, k_ij));
+                K_iovv_slice->reshape(npno_ij, npao_ext_ij);
+                auto K_iovv_kj = submatrix_cols(*K_iovv_slice, index_list(extended_pao_domain, lmopair_to_paos_[kj]));
+                J_ij_kj_[ij][k_ij] = linalg::doublet(K_iovv_kj, X_pno_[kj]);
+
+                if (i != j) {
+                    auto K_jovv_slice = submatrix_rows(*K_jovv_partial, std::vector<int>(1, k_ij));
+                    K_jovv_slice->reshape(npno_ij, npao_ext_ij);
+                    auto K_jovv_ik = submatrix_cols(*K_jovv_slice, index_list(extended_pao_domain, lmopair_to_paos_[ik]));
+                    J_ij_kj_[ji][k_ij] = linalg::doublet(K_jovv_ik, X_pno_[ik]);
+                } // end if
+            } // end for
 
             if (thread == 0) timer_off("DLPNO-CCSD: J_ij_kj Integrals");
 
@@ -1465,8 +1593,62 @@ void DLPNOCCSD::compute_cc_integrals() {
             }
 
             if (thread == 0) timer_off("DLPNO-CCSD: K_ij_kj Integrals");
+
+            // Take the difference with respect to projected integrals
+            /*
+            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+                int k = lmopair_to_lmos_[ij][k_ij];
+                int kj = i_j_to_ij_[k][j], ik = i_j_to_ij_[i][k];
+                
+                auto S_ij_kj = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], lmopair_to_paos_[kj]);
+                S_ij_kj = linalg::triplet(X_pno_[ij], S_ij_kj, X_pno_[kj], true, false, false);
+
+                auto J_ij_kj = std::make_shared<Matrix>(npno_ij, npno_ij);
+                J_ij_kj->zero();
+
+                auto K_ij_kj = std::make_shared<Matrix>(npno_ij, npno_ij);
+                K_ij_kj->zero();
+
+                for (int a_ij = 0; a_ij < npno_ij; ++a_ij) {
+                    for (int b_ij = 0; b_ij < npno_ij; ++b_ij) {
+                        for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
+                            (*J_ij_kj)(a_ij, b_ij) += (*q_io)(q_ij, k_ij) * (*q_vv)(q_ij, a_ij * npno_ij + b_ij);
+                            (*K_ij_kj)(a_ij, b_ij) += (*q_iv)(q_ij, a_ij) * (*q_ov)(q_ij, k_ij * npno_ij + b_ij);
+                        } // end q_ij
+                    } // end b_ij
+                } // end a_ij
+
+                // Take projection difference
+                J_ij_kj_[ij][k_ij]->subtract(linalg::doublet(J_ij_kj, S_ij_kj, false, false));
+                K_ij_kj_[ij][k_ij]->subtract(linalg::doublet(K_ij_kj, S_ij_kj, false, false));
+
+                if (i != j) {
+                    auto S_ij_ik = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], lmopair_to_paos_[ik]);
+                    S_ij_ik = linalg::triplet(X_pno_[ij], S_ij_ik, X_pno_[ik], true, false, false);
+
+                    auto J_ij_ik = std::make_shared<Matrix>(npno_ij, npno_ij);
+                    J_ij_ik->zero();
+
+                    auto K_ij_ik = std::make_shared<Matrix>(npno_ij, npno_ij);
+                    K_ij_ik->zero();
+
+                    for (int a_ij = 0; a_ij < npno_ij; ++a_ij) {
+                        for (int b_ij = 0; b_ij < npno_ij; ++b_ij) {
+                            for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
+                                (*J_ij_ik)(a_ij, b_ij) += (*q_jo)(q_ij, k_ij) * (*q_vv)(q_ij, a_ij * npno_ij + b_ij);
+                                (*K_ij_ik)(a_ij, b_ij) += (*q_jv)(q_ij, a_ij) * (*q_ov)(q_ij, k_ij * npno_ij + b_ij);
+                            } // end q_ij
+                        } // end b_ij
+                    } // end a_ij
+
+                    // Take projection difference
+                    J_ij_kj_[ji][k_ij]->subtract(linalg::doublet(J_ij_ik, S_ij_ik, false, false));
+                    K_ij_kj_[ji][k_ij]->subtract(linalg::doublet(K_ij_ik, S_ij_ik, false, false));
+                } // end if
+            }
+            */
         
-        } // end if (strong pair, dispersion, or weak pair residual)
+        } // end if
 
         if (thread == 0) timer_on("DLPNO-CCSD: Contract Integrals");
 
@@ -1634,6 +1816,32 @@ void DLPNOCCSD::t1_ints() {
         } // end q_ij
     }
 
+    // Einsums part
+    q_io_t1_.resize(n_lmo_pairs);
+    q_iv_t1_.resize(n_lmo_pairs);
+
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+        int i_ij = lmopair_to_lmos_dense_[ij][i];
+
+        Tensor<double, 3> Qma_ij = QIA_PNO_EINSUMS(ij); // Read in (Q_{ij} | m_{ij} a_{ij}) integrals from disk
+        Tensor<double, 3> Qab_ij = QAB_PNO_EINSUMS(ij); // Read in (Q_{ij} | a_{ij} b_{ij}) integrals from disk
+        Tensor<double, 1> T_i = T_n_ij_sums_[ij](i_ij, All); // Slice i out of T_n_ij
+
+        // Jiang Eq. 36
+        q_io_t1_[ij] = q_io_list_[ij];
+        einsum(1.0, Indices{index::Q, index::k}, &q_io_t1_[ij], 1.0, Indices{index::Q, index::k, index::a}, Qma_ij, 
+                Indices{index::a}, T_i);
+
+        // Jiang Eq. 38
+        q_iv_t1_[ij] = q_iv_list_[ij];
+        einsum(1.0, Indices{index::Q, index::a}, &q_iv_t1_[ij], -1.0, Indices{index::Q, index::k}, q_io_t1_[ij], 
+                Indices{index::k, index::a}, T_n_ij_sums_[ij]);
+        einsum(1.0, Indices{index::Q, index::a}, &q_iv_t1_[ij], 1.0, Indices{index::Q, index::a, index::b}, Qab_ij, 
+                Indices{index::b}, T_i);
+    }
+
     timer_off("DLPNO-CCSD: T1 Ints");
 }
 
@@ -1783,6 +1991,197 @@ void DLPNOCCSD::t1_fock() {
         } // end i == j
     }
 
+    // => Einsums part... old stuff goes away once we confirm this works :)
+
+    // T1-dressed Fock matrix elements (Jiang Eq. 94 - 97)
+    F_ki_t1_.resize(n_lmo_pairs);
+    F_kc_t1_.resize(n_lmo_pairs);
+    F_ai_t1_.resize(naocc); // These only need to be computed for singles
+    F_ab_t1_.resize(n_lmo_pairs);
+
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+        // lmopair_to_lmos_dense_ tracks all orbitals m in the molecule for a domain ij.
+        // If m is in the domain of ij, it gives the corresponding m_ij, else, returns -1
+        int i_ij = lmopair_to_lmos_dense_[ij][i], j_ij = lmopair_to_lmos_dense_[ij][j];
+        int ji = ij_to_ji_[ij], jj = i_j_to_ij_[j][j];
+        int pair_idx = (i > j) ? ji : ij;
+
+        if (i_j_to_ij_strong_[i][j] == -1 || i > j) continue;
+
+        int naux_ij = lmopair_to_ribfs_[ij].size(); // Local auxiliary basis (defined by Mulliken population)
+        int nlmo_ij = lmopair_to_lmos_[ij].size();  // All occ orbitals k, such that ik AND jk are valid pairs
+        int npno_ij = n_pno_[ij]; // Pair natural orbitals per ij
+
+        // Read in 3-center integrals from disk (or core... depending on option)
+        Tensor<double, 3> Qma_ij = QIA_PNO_EINSUMS(ij); // (naux_ij * nlmo_ij * npno_ij)
+        Tensor<double, 3> Qab_ij = QAB_PNO_EINSUMS(ij); // (naux_ij * npno_ij * npno_ij)
+
+        // Common intermediate is Gamma_{Q_{ij}}, which is used in every Fock matrix
+        // \Gamma_{Q} = B^{Q}_{me} t_{m}^{e}
+        // T_n_ij_sums = t_{n_{ij}}^{a_{nn}} S_{a_{nn}}^{a_{ij}} (Jiang Eq. 70)
+        // Singles in domain of ij with relavant amplitudes projected onto PNO space of ij
+        Tensor<double, 1> Gamma_Q("Gamma_Q", naux_ij);
+        einsum(0.0, Indices{index::Q}, &Gamma_Q, 1.0, Indices{index::Q, index::m, index::e}, Qma_ij,
+                Indices{index::m, index::e}, T_n_ij_sums_[ij]);
+
+        // \overline{F}_{ki} = f_{ki} + [2B^{Q}_{ki}B^{Q}_{me} - B^{Q}_{ke}B^{Q}_{mi}]t_{m}^{e}
+        // = f_{ki} + 2B^{Q}_{ki} \Gamma_{Q} - B^{Q}_{ke}B^{Q}_{mi}t_{m}^{e}
+        // Reindex of Eq. 98, using Eq. 44 as baseline
+        Tensor<double, 1> F_ki_bar("F_ki_bar", nlmo_ij);
+
+        // Copy LMO Fock matrix elements into F_ki_bar
+        for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+            int k = lmopair_to_lmos_[ij][k_ij];
+            F_ki_bar(k_ij) = (*F_lmo_)(k, i);
+        }
+
+        // J-like contribution to F_ki_bar (2B^{Q}_{ki} \Gamma_{Q})
+        einsum(1.0, Indices{index::k}, &F_ki_bar, 2.0, Indices{index::Q, index::k}, q_io_list_[ij],
+                Indices{index::Q}, Gamma_Q);
+        // Einsums sequence
+        // F_ki = A (1.0) * F_{ki} + B (2.0) * (Q, k) (q_io_list_[ij]) * (Q) (Gamma_Q)
+        // (Q, k) (Q) -> GEMV (matrix-vector product)
+
+        // K-like contribution to F_ki_bar
+        for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
+            // \overline{F}_{ki} -= B^{Q}_{ke} B^{Q}_{mi} t_{m}^{e}
+            Tensor<double, 2> Qke_slice = (Qma_ij)(q_ij, All, All); // (k, e)
+            Tensor<double, 1> Qmi_slice = (q_io_list_[ij])(q_ij, All); // (m)
+            // T_n_ij_sums_[ij]; (m, e)
+
+            Tensor<double, 1> F_ki_int("F_ki_int", npno_ij);
+            einsum(0.0, Indices{index::e}, &F_ki_int, 1.0, Indices{index::m, index::e}, T_n_ij_sums_[ij],
+                    Indices{index::m}, Qmi_slice);
+
+            // Adds contributions to F_ki_bar
+            einsum(1.0, Indices{index::k}, &F_ki_bar, -1.0, Indices{index::k, index::e}, Qke_slice, 
+                    Indices{index::e}, F_ki_int);
+        }
+
+        // \overline{F}_{kc} = f_{kc} + [2B^{Q}_{kc}B^{Q}_{me} - B^{Q}_{ke}B^{Q}_{mc}]t_{m}^{e} 
+        // Reindex of (Jiang Eq. 99), using Eq. 44 as baseline
+        // f_{kc} is zero in restricted closed-shell case
+        Tensor<double, 2> F_kc_bar("F_kc_bar", nlmo_ij, npno_ij);
+
+        // J-like contribution to F_kc_bar \overline{F}_{kc} = 2 B^{Q}_{kc} \Gamma_{Q}
+        einsum(0.0, Indices{index::k, index::c}, &F_kc_bar, 2.0, Indices{index::Q, index::k, index::c},
+                Qma_ij, Indices{index::Q}, Gamma_Q);
+
+        // K-like contribution to F_kc_bar
+        for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
+            // \overline{F}_{kc} -= B^{Q}_{ke}B^{Q}_{mc}t_{m}^{e}
+            Tensor<double, 2> Qke_slice = (Qma_ij)(q_ij, All, All); // (k, e)
+            Tensor<double, 2> Qmc_slice = (Qma_ij)(q_ij, All, All); // (m, c)
+            // T_n_ij_sums_[ij]; (m, e)
+
+            Tensor<double, 2> F_kc_int("F_kc_int", npno_ij, npno_ij);
+            einsum(0.0, Indices{index::c, index::e}, &F_kc_int, 1.0, Indices{index::m, index::c},
+                    Qmc_slice, Indices{index::m, index::e}, T_n_ij_sums_[ij]);
+
+            // Adds contributions to F_kc_bar
+            einsum(1.0, Indices{index::k, index::c}, &F_kc_bar, -1.0, Indices{index::k, index::e}, 
+                    Qke_slice, Indices{index::c, index::e}, F_kc_int);
+        }
+
+        // \overline{F}_{ab} = f_{ab} + [2B^{Q}_{ab}B^{Q}_{me} - B^{Q}_{ae}B^{Q}_{mb}]t_{m}^{e} 
+        // Reindex of (Jiang Eq. 101), using Eq. 44 as baseline
+        // f_{a_{ij}b_{ij}} is diagonal in each PNO domain
+        Tensor<double, 2> F_ab_bar("F_ab_bar", npno_ij, npno_ij);
+        F_ab_bar.zero();
+
+        for (int a_ij = 0; a_ij < npno_ij; ++a_ij) {
+            (F_ab_bar)(a_ij, a_ij) = (*e_pno_[ij])(a_ij);
+        }
+
+        // J-like contribution to F_ab_bar \overline{F}_{ab} = 2 B^{Q}_{ab} \Gamma_{Q}
+        einsum(1.0, Indices{index::a, index::b}, &F_ab_bar, 2.0, Indices{index::Q, index::a, index::b},
+                Qab_ij, Indices{index::Q}, Gamma_Q);
+
+        // K-like contribution to F_ab_bar
+        for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
+            // \overline{F}_{ab} -= B^{Q}_{ae}B^{Q}_{mb}t_{m}^{e}
+            Tensor<double, 2> Qae_slice = (Qab_ij)(q_ij, All, All); // (a, e)
+            Tensor<double, 2> Qmb_slice = (Qma_ij)(q_ij, All, All); // (m, b)
+            // T_n_ij_sums_[ij]; (m, e)
+
+            Tensor<double, 2> F_ab_int("F_ab_int", npno_ij, npno_ij);
+            einsum(0.0, Indices{index::b, index::e}, &F_ab_int, 1.0, Indices{index::m, index::b},
+                    Qmb_slice, Indices{index::m, index::e}, T_n_ij_sums_[ij]);
+
+            // Adds contributions to F_ab_bar
+            einsum(1.0, Indices{index::a, index::b}, &F_ab_bar, -1.0, Indices{index::a, index::e}, 
+                    Qae_slice, Indices{index::b, index::e}, F_ab_int);
+        }
+
+        // Build Fully T1-Dressed Fock Matrix Intermediates
+
+        // \widetilde{F}_{ki} = \overline{F}_{ki} + \overline{F}_{kc}t_{i}^{c}
+        // (Jiang Eq. 94)... small modification... using more robust virtual space of ij
+        // compared to jj
+        F_ki_t1_[ij] = F_ki_bar; // in einsums, this is copy
+        Tensor<double, 1> T_i = (T_n_ij_sums_[ij])(i_ij, All); // Grab projected i from all projected m_ij amplitudes
+        einsum(1.0, Indices{index::k}, &F_ki_t1_[ij], 1.0, Indices{index::k, index::c}, F_kc_bar,
+                Indices{index::c}, T_i);
+
+        // We do not need to make modifications for fully T1-dressed Fkc
+        // (Jiang Eq. 95 assumed that the index was restricted over strong pairs only,
+        // which is no longer the case due to strong/weak pair coupling
+        F_kc_t1_[ij] = F_kc_bar; // in einsums, this is copy
+
+        // \widetilde{F}_{ab} = \overline{F}_{ab} - t_{k}^{a} \overline{F}_{kb}
+        // (Jiang Eq. 96)... no mods
+        F_ab_t1_[ij] = F_ab_bar;
+        einsum(1.0, Indices{index::a, index::b}, &F_ab_t1_[ij], -1.0, Indices{index::k, index::a},
+                T_n_ij_sums_[ij], Indices{index::k, index::b}, F_kc_bar);
+
+        // Only do if i == j, since only needed for singles
+        if (i == j) {
+            // \overline{F}_{ai} = f_{ai} + [2B^{Q}_{ai}B^{Q}_{me} - B^{Q}_{ae}B^{Q}_{mi}]t_{m}^{e}
+            // Reindex of (Jiang Eq. 100), using Eq. 44 as baseline
+            // f_{a_{ii}i} is zero in restricted closed-shell reference
+            Tensor<double, 1> F_ai_bar("F_ai_bar", npno_ij);
+            F_ai_bar.zero();
+
+            // J-like contribution to F_ai_bar \overline{F}_{ai} = 2 B^{Q}_{ai} \Gamma_{Q}
+            einsum(1.0, Indices{index::a}, &F_ai_bar, 2.0, Indices{index::Q, index::a},
+                    q_iv_list_[ij], Indices{index::Q}, Gamma_Q);
+
+            // K-like contribution to F_ai_bar
+            for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
+                // \overline{F}_{ai} -= B^{Q}_{ae}B^{Q}_{mi}t_{m}^{e}
+                // TODO: Test with Tensorview
+                Tensor<double, 2> Qae_slice = (Qab_ij)(q_ij, All, All); // (a, e)
+                Tensor<double, 1> Qmi_slice = (q_io_list_[ij])(q_ij, All); // (m)
+                // T_n_ij_sums_[ij]; (m, e)
+
+                Tensor<double, 1> F_ai_int("F_ai_int", npno_ij);
+                einsum(0.0, Indices{index::e}, &F_ai_int, 1.0, Indices{index::m, index::e},
+                        T_n_ij_sums_[ij], Indices{index::m}, Qmi_slice);
+
+                // Adds contributions to F_ai_bar
+                einsum(1.0, Indices{index::a}, &F_ai_bar, -1.0, Indices{index::a, index::e}, 
+                        Qae_slice, Indices{index::e}, F_ai_int);
+
+                // \widetilde{F}_{ai} = \overline{F}_{ai} - t_{k}^{a} \overline{F}_{ki}
+                // + \overline{F}_{ab} t_{i}^{b} - t_{k}^{a} \overline{F}_{kb} t_{i}^{b}
+                // => factor out - t_{k}^{a}
+                // \overline{F}_{ai} + \overline{F}_{ab} t_{i}^{b} - t_{k}^{a} 
+                // (\overline{F}_{ki} + \overline{F}_{kb} t_{i}^{b}) <- Eq. 94 (Jaden is genius)
+                // \widetilde{F}_{ai} = \overline{F}_{ai} + \overline{F}_{ab} t_{i}^{b}
+                // - t_{k}^{a} \widetilde{F}_{ki}
+                F_ai_t1_[i] = F_ai_bar;
+                einsum(1.0, Indices{index::a}, &F_ai_t1_[i], 1.0, Indices{index::a, index::b}, F_ab_bar,
+                        Indices{index::b}, T_i);
+                einsum(1.0, Indices{index::a}, &F_ai_t1_[i], -1.0, Indices{index::k, index::a}, T_n_ij_sums_[ij],
+                        Indices{index::k}, F_ki_t1_[ij]);
+            }
+
+        } // end if
+
+    } // end for
+
     timer_off("DLPNO-CCSD: T1 Fock");
 }
 
@@ -1844,6 +2243,7 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_gamma() {
         gamma[ki] = std::make_shared<Matrix>(npno_ki, npno_ki);
         gamma[ki]->zero();
 
+        /*
         // Jiang Eq. 83a
         gamma[ki]->subtract(linalg::doublet(T_n_ij_[ki], K_bar_chem_[ki], true, false));
 
@@ -1864,6 +2264,7 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_gamma() {
 
             C_DGER(npno_ki, npno_ki, -1.0, T_l->get_pointer(), 1, K_kl->get_pointer(), 1, gamma[ki]->get_pointer(), npno_ki);
         }
+        */
         
         // Jiang Eq. 83d
         for (int l_ki = 0; l_ki < nlmo_ki; ++l_ki) {
@@ -1906,6 +2307,7 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_delta() {
         delta[ik] = std::make_shared<Matrix>(npno_ik, npno_ik);
         delta[ik]->zero();
 
+        /*
         // Jiang Eq. 84a
         auto L_bar_temp = K_bar_[ik]->clone();
         L_bar_temp->scale(2.0);
@@ -1936,6 +2338,7 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_delta() {
 
             C_DGER(npno_ik, npno_ik, -1.0, T_l->get_pointer(), 1, L_lk->get_pointer(), 1, delta[ik]->get_pointer(), npno_ik);
         }
+        */
 
         // Jiang Eq. 84d
         for (int l_ik = 0; l_ik < nlmo_ik; ++l_ik) {
@@ -1999,7 +2402,9 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
 #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < naocc; ++i) {
         int ii = i_j_to_ij_[i][i];
-        R_ia[i]->copy(Fai_[i]);
+        // R_ia[i]->copy(Fai_[i]);
+        // Initialize Ria as T1-dressed Fock matrix element Fai
+        ::memcpy(R_ia[i]->get_pointer(), F_ai_t1_[i].data(), n_pno_[ii] * sizeof(double));
     }
 
     // Zero out buffers
@@ -2009,11 +2414,13 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
         }
     }
 
-    // Compute residual for singles amplitude (A1 and C contributions)
+    // Compute residual for singles amplitude (A and C contributions)
 #pragma omp parallel for schedule(dynamic, 1)
     for (int ik = 0; ik < n_lmo_pairs; ++ik) {
         auto &[i, k] = ij_to_i_j_[ik];
         int ki = ij_to_ji_[ik];
+        int k_ki = lmopair_to_lmos_dense_[ki][k]; // Grabs the index of k within domain ki
+        int pair_idx = (i > k) ? ki : ik;
 
         int nlmo_ik = lmopair_to_lmos_[ik].size();
         int naux_ik = lmopair_to_ribfs_[ik].size();
@@ -2024,20 +2431,61 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
         thread = omp_get_thread_num();
 #endif
 
-        int pair_idx = (i > k) ? ki : ik;
-
         int i_ik = lmopair_to_lmos_dense_[ik][i], k_ik = lmopair_to_lmos_dense_[ik][k];
         std::vector<int> k_ik_slice = std::vector<int>(1, k_ik);
         int ii = i_j_to_ij_[i][i];
 
-        // A_{i}^{a} = u_{ki}^{cd}B^{Q}_{kc}B^{Q}_{ad} (DePrince 2013 Eq. 20, Jiang Eq. 88a)
+        // Read in 3-center integrals from disk (or core... depending on option)
+        Tensor<double, 3> Qma_ik = QIA_PNO_EINSUMS(ik); // (naux_ik * nlmo_ik * npno_ik)
+        Tensor<double, 3> Qab_ik = QAB_PNO_EINSUMS(ik); // (naux_ik * npno_ik * npno_ik)
+        
+        // A_{i}^{a} = u_{ik}^{dc} [(ad|kc) - t_{l}^{a}(ld|kc)] (Jiang Eq. 88)
+        // (d_{ik}, c_{ik}) * (Q_{ik}, a_{ik}, d_{ik}) * (Q_{ik}, k, c_{ik})
+        // (d_{ik}, c_{ik}) * (l_{ik}, a_{ik}) * (Q_{ik}, l_{ik}, d_{ik}) * (Q_{ik}, k, c_{ik})
+
+        // Make Einsums copy of amplitudes
+        // TODO: Make this global instead of allocating space each time it is needed
+        Tensor<double, 2> U_ik("U_ik", n_pno_[ik], n_pno_[ik]);
+        ::memcpy(U_ik.data(), Tt_iajb_[ik]->get_pointer(), n_pno_[ik] * n_pno_[ik] * sizeof(double));
+
+        // Make transposed version of Qma_ik (for easier matrix manipulation)
+        Tensor<double, 3> Qam_ik("Qam_ik", naux_ik, npno_ik, nlmo_ik);
+        permute(Indices{index::Q, index::a, index::m}, &Qam_ik, Indices{index::Q, index::m, index::a}, Qma_ik);
+        
+        // A1_int (Q_{ik}, d_{ik}) = (Q_{ik} | k, c_{ik}) * U_ik (d_{ik}, c_{ik})
+        // Common intermediate
+        Tensor<double, 2> A1_int("A1_int", naux_ik, npno_ik);
+        einsum(0.0, Indices{index::Q, index::d}, &A1_int, 1.0, Indices{index::Q, index::c}, q_iv_list_[ki],
+                Indices{index::d, index::c}, U_ik);
+
+        // A1_occ (l_{ik}) = (Q_{ik} | d_{ik}, l_{ik}) * A1_int (Q_{ik}, d_{ik})
+        Tensor<double, 1> A1_occ("A1_occ", nlmo_ik);
+        einsum(0.0, Indices{index::l}, &A1_occ, 1.0, Indices{index::Q, index::d, index::l}, Qam_ik, 
+                Indices{index::Q, index::d}, A1_int);
+
+        // A1_vir (a_{ik}) = (Q_{ik} | d_{ik} a_{ik}) * A1_int (Q_{ik}, d_{ik}) - T (l_{ik}, a_{ik}) A1_occ (l_{ik})
+        Tensor<double, 1> A1_vir("A1_vir", npno_ik);
+        einsum(0.0, Indices{index::a}, &A1_vir, 1.0, Indices{index::Q, index::d, index::a}, Qab_ik, 
+                Indices{index::Q, index::d}, A1_int);
+        einsum(1.0, Indices{index::a}, &A1_vir, -1.0, Indices{index::l, index::a}, T_n_ij_sums_[ik],
+                Indices{index::l}, A1_occ);
+
+        // Make psi copy of intermediate
+        auto A1_vir_psi = std::make_shared<Matrix>("A1_vir_psi", npno_ik, 1);
+        ::memcpy(A1_vir_psi->get_pointer(), A1_vir.data(), npno_ik * sizeof(double));
+
+        // Project to PNO space of ii and add to buffer
+        R_ia_buffer[thread][i]->add(linalg::doublet(S_PNO(ik, ii), A1_vir_psi, true, false));
+
+        /*
         auto K_kcad = K_tilde_chem_[ki]->clone();
         K_kcad->reshape(n_pno_[ki] * n_pno_[ki], n_pno_[ki]);
         auto Uki = Tt_iajb_[ki]->clone();
         Uki->reshape(npno_ik * npno_ik, 1);
         R_ia_buffer[thread][i]->add(linalg::triplet(S_PNO(ki, ii), K_kcad, Uki, true, true, false));
+        */
 
-        // C_{i}^{a} = F_{kc}U_{ik}^{ac}  (DePrince 2013 Eq. 22, Jiang Eq. 90)
+        // C_{i}^{a} = F_{kc}U_{ik}^{ac} (DePrince 2013 Eq. 22, Jiang Eq. 90)
         R_ia_buffer[thread][i]->add(linalg::triplet(S_PNO(ik, ii), Tt_iajb_[ik], Fkc_[ki], true, false, true));
     } // end ki
 
@@ -2067,11 +2515,13 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
             int ii = i_j_to_ij_[i][i], ki = i_j_to_ij_[k][i];
 
             // A2 contribution (Jiang Eq. 88b)
+            /*
             std::vector<int> l_ii_slice(1, lmopair_to_lmos_dense_[ii][l]);
             auto U_ki = linalg::triplet(S_PNO(kl, ki), Tt_iajb_[ki], S_PNO(ki, kl));
             auto T_l = submatrix_rows(*T_n_ij_[ii], l_ii_slice);
             T_l->scale(K_iajb_[kl]->vector_dot(U_ki));
             R_ia_buffer[thread][i]->subtract(T_l->transpose());
+            */
 
             // B contribution (Jiang Eq. 89b)
             std::vector<int> i_kl_slice(1, i_kl);
@@ -2130,83 +2580,326 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
 
         int pair_idx = (i > j) ? ji : ij;
 
-        // Useful information for integral slices
-        int i_ij = lmopair_to_lmos_dense_[ij][i], j_ij = lmopair_to_lmos_dense_[ij][j];
-
         if (i <= j) {
-            // R_{ij}^{ab} += (i a_ij | q_ij)' * (q_ij | j b_ij)' (DePrince 2013 Eq. 10a, Jiang Eq. 75)
-            auto K_ij = linalg::doublet(i_Qa_t1_[ij], i_Qa_t1_[ji], true, false);
-            R_iajb[ij]->add(K_ij);
-            if (i != j) R_iajb[ji]->add(K_ij->transpose());
+            // => SECTION 0: SETUP (buffers, indices, etc.) <= //
 
-            // A_{ij}^{ab} = B^{Q}_{ac} * t_{ij}^{cd} * B^{Q}_{bd} (DePrince 2013 Eq. 11, Jiang Eq. 76)
-            auto A_ij = std::make_shared<Matrix>(npno_ij, npno_ij);
-            auto qma_ij = QIA_PNO(ij);
-            auto qab_ij = QAB_PNO(ij);
+            // Useful information for integral slices
+            int i_ij = lmopair_to_lmos_dense_[ij][i], j_ij = lmopair_to_lmos_dense_[ij][j];
+
+            // Buffers for contractions and holding data
+            Tensor<double, 2> R_ij("R_ij", npno_ij, npno_ij);
+            R_ij.zero();
+
+            Tensor<double, 2> pno_buffer_a("pno_buffer_a", npno_ij, npno_ij);
+            Tensor<double, 2> pno_buffer_b("pno_buffer_b", npno_ij, npno_ij);
+
+            // => SECTION 1: INTEGRALS <= //
+
+            // Expensive DF integrals are read from disk once to minimize Disk I/O overhead
+            Tensor<double, 3> Qma_ij = QIA_PNO_EINSUMS(ij);
+            Tensor<double, 3> Qab_ij = QAB_PNO_EINSUMS(ij);
+
+            // Form T1-dressed version of Qab_ij (Jiang Eq. 39)
+            Tensor<double, 3> Qab_t1("Qab_t1", naux_ij, npno_ij, npno_ij);
             for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-                auto Qab_t1 = qab_ij[q_ij]->clone();
-                Qab_t1->subtract(linalg::doublet(T_n_ij_[ij], qma_ij[q_ij], true, false));
+                Tensor<double, 2> Qma_slice = Qma_ij(q_ij, All, All);
+                Tensor<double, 2> Qab_slice = Qab_ij(q_ij, All, All);
+                einsum(1.0, Indices{index::a, index::b}, &Qab_slice, -1.0, Indices{index::k, index::a}, T_n_ij_sums_[ij], 
+                        Indices{index::k, index::b}, Qma_slice);
+                
+                Qab_t1(q_ij, All, All) = Qab_slice;
+            }
+            
+            // Delta (ki|ac) and (kj|ac), simplifies T1-effects in integrals [stored as: a, k, c]
+            Tensor<double, 3> delta_g_akci("delta_g_akci", npno_ij, nlmo_ij, npno_ij);
+            Tensor<double, 3> delta_g_akcj("delta_g_akcj", npno_ij, nlmo_ij, npno_ij); {
+                // Initialize buffer
+                Tensor<double, 3> g_akci_buffer("g_akci_buffer", nlmo_ij, npno_ij, npno_ij);
 
-                A_ij->add(linalg::triplet(Qab_t1, T_iajb_[ij], Qab_t1, false, false, true));
-            } // end q_ij
-            R_iajb[ij]->add(A_ij);
-            if (i != j) R_iajb[ji]->add(A_ij->transpose());
+                einsum(0.0, Indices{index::k, index::a, index::c}, &g_akci_buffer, 1.0, Indices{index::Q, index::k},
+                        q_io_t1_[ij], Indices{index::Q, index::a, index::c}, Qab_t1);
+                einsum(1.0, Indices{index::k, index::a, index::c}, &g_akci_buffer, -1.0, Indices{index::Q, index::k},
+                        q_io_list_[ij], Indices{index::Q, index::a, index::c}, Qab_ij);
+                permute(Indices{index::a, index::k, index::c}, &delta_g_akci, Indices{index::k, index::a, index::c}, g_akci_buffer);
 
+                einsum(0.0, Indices{index::k, index::a, index::c}, &g_akci_buffer, 1.0, Indices{index::Q, index::k},
+                        q_io_t1_[ji], Indices{index::Q, index::a, index::c}, Qab_t1);
+                einsum(1.0, Indices{index::k, index::a, index::c}, &g_akci_buffer, -1.0, Indices{index::Q, index::k},
+                        q_io_list_[ji], Indices{index::Q, index::a, index::c}, Qab_ij);
+                permute(Indices{index::a, index::k, index::c}, &delta_g_akcj, Indices{index::k, index::a, index::c}, g_akci_buffer);
+            }
+
+            // Delta (ai|kc) and (aj|kc), encapsulates T1-effects in integrals [stored as: a, k, c]
+            Tensor<double, 3> delta_g_akic("delta_g_akic", npno_ij, nlmo_ij, npno_ij);
+            Tensor<double, 3> delta_g_akjc("delta_g_akjc", npno_ij, nlmo_ij, npno_ij); {
+                einsum(0.0, Indices{index::a, index::k, index::c}, &delta_g_akic, 1.0, Indices{index::Q, index::a},
+                        q_iv_t1_[ij], Indices{index::Q, index::k, index::c}, Qma_ij);
+                einsum(1.0, Indices{index::a, index::k, index::c}, &delta_g_akic, -1.0, Indices{index::Q, index::a},
+                        q_iv_list_[ij], Indices{index::Q, index::k, index::c}, Qma_ij);
+
+                einsum(0.0, Indices{index::a, index::k, index::c}, &delta_g_akjc, 1.0, Indices{index::Q, index::a},
+                        q_iv_t1_[ji], Indices{index::Q, index::k, index::c}, Qma_ij);
+                einsum(1.0, Indices{index::a, index::k, index::c}, &delta_g_akjc, -1.0, Indices{index::Q, index::a},
+                        q_iv_list_[ji], Indices{index::Q, index::k, index::c}, Qma_ij);
+            }
+
+            /*
+            // (kc|ld) [stored as: k, l, c, d]
+            Tensor<double, 4> g_klcd("g_klcd", nlmo_ij, nlmo_ij, npno_ij, npno_ij); 
+            // 2 (kc|ld) - (kd|lc) [stored as: k, l, c, d]
+            Tensor<double, 4> L_klcd("L_klcd", nlmo_ij, nlmo_ij, npno_ij, npno_ij); {
+                // Perform contraction over auxiliary index (indices in chemist's notation)
+                Tensor<double, 4> g_klcd_buffer("g_klcd_buffer", nlmo_ij, npno_ij, nlmo_ij, npno_ij);
+                einsum(0.0, Indices{index::k, index::c, index::l, index::d}, &g_klcd_buffer, 1.0,
+                        Indices{index::Q, index::k, index::c}, Qma_ij, Indices{index::Q, index::l, index::d}, Qma_ij);
+
+                // Transpose to physicist's notation
+                permute(Indices{index::k, index::l, index::c, index::d}, &g_klcd, Indices{index::k, index::c, index::l, index::d}, g_klcd_buffer);
+
+                // Form anti-symmetrized L integrals
+                permute(Indices{index::k, index::l, index::c, index::d}, &L_klcd, Indices{index::k, index::l, index::d, index::c}, g_klcd);
+                L_klcd *= -1;
+                L_klcd += g_klcd;
+                L_klcd += g_klcd;
+            }
+            */
+
+            // => SECTION 2: PROJECTED AMPLITUDES <= //
+
+            // Father of all overlap integrals (all overlap integrals are built using semi-direct algorithm)
+            // (using the extended PAO domain, which combines PAOs with all pairs ij with PAOs from all possible pairs
+            // ik, jk, il, jl, as well as kl
             SharedMatrix S_ij;
             std::vector<int> pair_ext_domain;
-            if (low_memory_overlap_) {
-                for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-                    int k = lmopair_to_lmos_[ij][k_ij];
-                    for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
-                        int l = lmopair_to_lmos_[ij][l_ij];
-                        int kl = i_j_to_ij_[k][l];
-                        if (kl == -1 || n_pno_[kl] == 0) continue;
-                        pair_ext_domain = merge_lists(pair_ext_domain, lmopair_to_paos_[kl]);
-                    } // end k
-                } // end l
-                S_ij = submatrix_rows_and_cols(*S_pao_, pair_ext_domain, lmopair_to_paos_[ij]);
-                S_ij = linalg::doublet(S_ij, X_pno_[ij], false, false);
-            } // end if
+            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+                int k = lmopair_to_lmos_[ij][k_ij];
+                for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
+                    int l = lmopair_to_lmos_[ij][l_ij];
+                    pair_ext_domain = merge_lists(pair_ext_domain, lmo_to_paos_[k]);
+                    pair_ext_domain = merge_lists(pair_ext_domain, lmo_to_paos_[l]);
+                } // end k_ij
+            } // end l_ij
+            S_ij = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], pair_ext_domain);
+            S_ij = linalg::doublet(X_pno_[ij], S_ij, true, false);
 
-            // B_{ij}^{ab} = t_{kl}^{ab} * [beta_{ij}^{kl}] (DePrince 2013 Eq. 12, Jiang Eq. 77)
-            // E_{ij}^{ab} = t_{ij}^{ac} (F_double_tilde_{bc}) (Jiang Eq. 80)
-            // F_double_tilde_{bc} = Fbc - U_{kl}^{bd}[B^{Q}_{ld}B^{Q}_{kc}]) (DePrince 2013 Eq. 15, Jiang Eq. 85)
-            auto B_ij = std::make_shared<Matrix>(npno_ij, npno_ij);
-            auto Fab_double_tilde = Fab_[ij]->clone();
+            // Amplitude intermediates
+            Tensor<double, 2> T_ij_ein("T_ij_ein", npno_ij, npno_ij);
+            ::memcpy(T_ij_ein.data(), T_iajb_[ij]->get_pointer(), npno_ij * npno_ij * sizeof(double));
 
+            // Amplitudes from T_ik and T_jk projected onto the PNO space of ij
+            // (as well as spin-summed amplitudes U_ki and U_kj)
+            Tensor<double, 3> T_ik("T_ik", nlmo_ij, npno_ij, npno_ij);
+            T_ik.zero();
+            Tensor<double, 3> T_jk("T_jk", nlmo_ij, npno_ij, npno_ij);
+            T_jk.zero();
+            Tensor<double, 3> U_ki("U_ki", nlmo_ij, npno_ij, npno_ij);
+            U_ki.zero();
+            Tensor<double, 3> U_kj("U_kj", nlmo_ij, npno_ij, npno_ij);
+            U_kj.zero();
+            
+            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+                int k = lmopair_to_lmos_[ij][k_ij];
+                int ik = i_j_to_ij_[i][k], jk = i_j_to_ij_[j][k];
+                int ki = ij_to_ji_[ik], kj = ij_to_ji_[jk];
+
+                // Compute overlap matrices using the "semi-direct" algorithm
+                auto S_ij_ik = submatrix_cols(*S_ij, index_list(pair_ext_domain, lmopair_to_paos_[ik]));
+                S_ij_ik = linalg::doublet(S_ij_ik, X_pno_[ik], false, false);
+                auto S_ij_jk = submatrix_cols(*S_ij, index_list(pair_ext_domain, lmopair_to_paos_[jk]));
+                S_ij_jk = linalg::doublet(S_ij_jk, X_pno_[jk], false, false);
+
+                // Perform PNO projection and copy data
+                auto T_ik_proj = linalg::triplet(S_ij_ik, T_iajb_[ik], S_ij_ik, false, false, true);
+                ::memcpy(&T_ik(k_ij, 0, 0), T_ik_proj->get_pointer(), npno_ij * npno_ij * sizeof(double));
+
+                auto T_jk_proj = linalg::triplet(S_ij_jk, T_iajb_[jk], S_ij_jk, false, false, true);
+                ::memcpy(&T_jk(k_ij, 0, 0), T_jk_proj->get_pointer(), npno_ij * npno_ij * sizeof(double));
+
+                auto U_ki_proj = linalg::triplet(S_ij_ik, Tt_iajb_[ki], S_ij_ik, false, false, true);
+                ::memcpy(&U_ki(k_ij, 0, 0), U_ki_proj->get_pointer(), npno_ij * npno_ij * sizeof(double));
+
+                auto U_kj_proj = linalg::triplet(S_ij_jk, Tt_iajb_[kj], S_ij_jk, false, false, true);
+                ::memcpy(&U_kj(k_ij, 0, 0), U_kj_proj->get_pointer(), npno_ij * npno_ij * sizeof(double));
+            }
+
+            // => SECTION 3: Contract Amplitudes and Integrals into R2 Residual! <= //
+
+            // R_{ij}^{ab} += (i a_ij | q_ij)' * (q_ij | j b_ij)' (DePrince 2013 Eq. 10a, Jiang Eq. 75)
+            einsum(0.0, Indices{index::a, index::b}, &R_ij, 1.0, Indices{index::Q, index::a}, q_iv_t1_[ij],
+                    Indices{index::Q, index::b}, q_iv_t1_[ji]);
+
+            // R_{ij}^{ab} += B^{Q}_{ac} * t_{ij}^{cd} * B^{Q}_{bd} (DePrince 2013 Eq. 11, Jiang Eq. 76)
+            for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
+                Tensor<double, 2> Qab_slice = Qab_t1(q_ij, All, All);
+
+                einsum(0.0, Indices{index::a, index::d}, &pno_buffer_a, 1.0, Indices{index::a, index::c}, Qab_slice,
+                        Indices{index::c, index::d}, T_ij_ein);
+                einsum(0.0, Indices{index::a, index::b}, &pno_buffer_b, 1.0, Indices{index::a, index::d}, pno_buffer_a,
+                        Indices{index::b, index::d}, Qab_slice);
+                R_ij += pno_buffer_b;
+            }
+
+            // beta_{ij}^{kl} = B^{Q}_{ki} B^{Q}_{lj} + B^{Q}_{kc} B^{Q}_{ld} t_{ij}^{cd} (Jiang Eq. 27)
+            Tensor<double, 2> beta_ij("beta_ij", nlmo_ij, nlmo_ij);
+            einsum(0.0, Indices{index::k, index::l}, &beta_ij, 1.0, Indices{index::Q, index::k}, q_io_t1_[ij], 
+                    Indices{index::Q, index::l}, q_io_t1_[ji]);
+
+            for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
+                Tensor<double, 2> Qma_slice = Qma_ij(q_ij, All, All);
+
+                // beta_{ij}^{kl} += B^{Q}_{kc} B^{Q}_{ld} t_{ij}^{cd}
+                Tensor<double, 2> beta_temp("beta_temp", npno_ij, nlmo_ij);
+                einsum(0.0, Indices{index::c, index::l}, &beta_temp, 1.0, Indices{index::c, index::d}, T_ij_ein,
+                        Indices{index::l, index::d}, Qma_slice);
+
+                einsum(1.0, Indices{index::k, index::l}, &beta_ij, 1.0, Indices{index::k, index::c}, Qma_slice,
+                        Indices{index::c, index::l}, beta_temp);
+            }
+            
+            // Make B and E intermediates
+
+            // F_double_tilde_{bc} = Fbc - U_{kl}^{bd}[B^{Q}_{ld}B^{Q}_{kc}]) (Jiang Eq. 30)
+            Tensor<double, 2> F_bc_double_tilde = F_ab_t1_[ij];
+            auto F_bc_buffer = std::make_shared<Matrix>(n_pno_[ij], n_pno_[ij]);
+            F_bc_buffer->zero();
+            
             for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
                 int k = lmopair_to_lmos_[ij][k_ij];
                 for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
                     int l = lmopair_to_lmos_[ij][l_ij];
                     int kl = i_j_to_ij_[k][l];
-                    if (kl == -1 || n_pno_[kl] == 0) continue;
+                    if (kl == -1) continue;
+                    
+                    SharedMatrix S_ij_kl;
+                    if (low_memory_overlap_) { // Compute S_ij_kl using the "semi-direct" algorithm on the fly
+                        S_ij_kl = submatrix_cols(*S_ij, index_list(pair_ext_domain, lmopair_to_paos_[kl]));
+                        S_ij_kl = linalg::doublet(S_ij_kl, X_pno_[kl], false, false);
+                    } else { // Big chunk of memory
+                        S_ij_kl = S_PNO(ij, kl);
+                    }
+                    
+                    // Perform PNO projection and copy data
+                    auto T_kl_proj = linalg::triplet(S_ij_kl, T_iajb_[kl], S_ij_kl, false, false, true);
 
-                    SharedMatrix S_kl_ij = (low_memory_overlap_) ? 
-                            linalg::doublet(X_pno_[kl], submatrix_rows(*S_ij, index_list(pair_ext_domain, lmopair_to_paos_[kl])), true, false) : S_PNO(kl, ij);
+                    // R_{ij}^{ab} += t_{kl}^{ab} * beta_{ij}^{kl} (Jiang Eq. 22)
+                    T_kl_proj->scale((beta_ij)(k_ij, l_ij));
+                    R_iajb[ij]->add(T_kl_proj);
+                    if (i != j) R_iajb[ji]->add(T_kl_proj->transpose());
 
-                    // B intermediates
-                    auto T_kl = linalg::triplet(S_kl_ij, T_iajb_[kl], S_kl_ij, true, false, false);
-                    T_kl->scale((*beta[ij])(k_ij, l_ij));
-                    B_ij->add(T_kl);
-
-                    // E intermediates
-                    auto E_temp = linalg::doublet(Tt_iajb_[kl], K_iajb_[kl], false, true);
-                    Fab_double_tilde->subtract(linalg::triplet(S_kl_ij, E_temp, S_kl_ij, true, false, false));
-
+                    // F_double_tilde_{bc} -= U_{kl}^{bd}K_{kl}^{cd} (one can form this intermediate outside loop)
+                    auto F_bc_double_tilde_cont = linalg::doublet(Tt_iajb_[kl], K_iajb_[kl], false, true);
+                    F_bc_buffer->subtract(linalg::triplet(S_ij_kl, F_bc_double_tilde_cont, S_ij_kl, false, false, true));
                 } // end l_ij
             } // end k_ij
-            R_iajb[ij]->add(B_ij);
-            if (i != j) R_iajb[ji]->add(B_ij->transpose());
+            ::memcpy(pno_buffer_a.data(), F_bc_buffer->get_pointer(), n_pno_[ij] * n_pno_[ij] * sizeof(double));
+            F_bc_double_tilde += pno_buffer_a;
 
-            auto E_ij = linalg::doublet(T_iajb_[ij], Fab_double_tilde, false, true);
-            E_ij->add(linalg::doublet(Fab_double_tilde, T_iajb_[ij], false, false));
+            // gamma_{ki}^{ac} = B^{Q}_{ki}B^{Q}_{ac} - 0.5t_{li}^{ad}(B^{Q}_{kd}B^{Q}_{lc}) (Jiang Eq. 28)
+            // (over both i and j)
+            Tensor<double, 3> gamma_ki = delta_g_akci;
+            Tensor<double, 3> gamma_kj = delta_g_akcj;
+            /*
+            {
+                // (Ideal contraction is (l, d, a) * (l, d, k, c))... this allows for GEMM :)
+                Tensor<double, 4> g_klcd_t("g_klcd_t", nlmo_ij, npno_ij, nlmo_ij, npno_ij);
+                permute(Indices{index::l, index::d, index::k, index::c}, &g_klcd_t, Indices{index::l, index::k, index::c, index::d}, g_klcd);
 
-            R_iajb[ij]->add(E_ij);
-            if (i != j) R_iajb[ji]->add(E_ij->transpose());
+                einsum(1.0, Indices{index::a, index::k, index::c}, &gamma_ki, -0.5, Indices{index::l, index::d, index::a}, T_ik,
+                        Indices{index::l, index::d, index::k, index::c}, g_klcd_t);
+                einsum(1.0, Indices{index::a, index::k, index::c}, &gamma_kj, -0.5, Indices{index::l, index::d, index::a}, T_jk,
+                        Indices{index::l, index::d, index::k, index::c}, g_klcd_t);
+            }
+            */
             
-        } // end if
-        
+            // -(0.5 + P_{ab}) [t_{kj}^{bc} gamma_{ki}^{ac} + t_{ki}^{ac} gamma_{kj}^{bc}] (Jiang Eq. 20, 23)
+            Tensor<double, 2> C_ij("C_ij", npno_ij, npno_ij);
+            einsum(0.0, Indices{index::a, index::b}, &C_ij, -0.5, Indices{index::a, index::k, index::c}, gamma_ki,
+                    Indices{index::k, index::c, index::b}, T_jk);
+            einsum(1.0, Indices{index::a, index::b}, &C_ij, -0.5, Indices{index::k, index::c, index::a}, T_ik,
+                    Indices{index::b, index::k, index::c}, gamma_kj);
+            R_ij += C_ij;
+            permute(Indices{index::b, index::a}, &pno_buffer_a, Indices{index::a, index::b}, C_ij);
+            pno_buffer_a *= 2.0;
+            R_ij += pno_buffer_a;
 
+            // delta_{ik}^{ac} = (2 B^{Q}_{ai} B^{Q}_{kc} - B^{Q}_{ki} B^{Q}_{ac}) + 0.5 u_{il}^{ad} L_{ldkc}
+            Tensor<double, 3> delta_ik = delta_g_akic;
+            delta_ik *= 2.0;
+            delta_ik -= delta_g_akci;
+
+            Tensor<double, 3> delta_jk = delta_g_akjc;
+            delta_jk *= 2.0;
+            delta_jk -= delta_g_akcj;
+            /*
+            {
+                // (Ideal contraction is (l, d, a) * (l, d, k, c))... this allows for GEMM :)
+                Tensor<double, 4> L_klcd_t("L_klcd_t", nlmo_ij, npno_ij, nlmo_ij, npno_ij);
+                permute(Indices{index::l, index::d, index::k, index::c}, &L_klcd_t, Indices{index::l, index::k, index::d, index::c}, L_klcd);
+
+                einsum(1.0, Indices{index::a, index::k, index::c}, &delta_ik, 0.5, Indices{index::l, index::d, index::a}, U_ki,
+                        Indices{index::l, index::d, index::k, index::c}, L_klcd_t);
+
+                einsum(1.0, Indices{index::a, index::k, index::c}, &delta_jk, 0.5, Indices{index::l, index::d, index::a}, U_kj,
+                        Indices{index::l, index::d, index::k, index::c}, L_klcd_t);
+            }
+            */
+
+            // R_{ij}^{ab} += 0.5 (u_{jk}^{bc} delta_{ik}^{ac} + u_{ik}^{ac} delta_{jk}^{bc})
+            einsum(1.0, Indices{index::a, index::b}, &R_ij, 0.5, Indices{index::a, index::k, index::c}, delta_ik,
+                    Indices{index::k, index::c, index::b}, U_kj);
+            einsum(1.0, Indices{index::a, index::b}, &R_ij, 0.5, Indices{index::k, index::c, index::a}, U_ki,
+                    Indices{index::b, index::k, index::c}, delta_jk);
+            
+            // R_{ij}^{ab} += P_{ij}^{ab} [t_{ij}^{ac} (F_double_tilde_{bc})] (Jiang Eq. 25)
+            // or t_{ij}^{ac} F_double_tilde_{bc} + F_double_tilde_{ac} t_{ij}^{cb}
+            einsum(1.0, Indices{index::a, index::b}, &R_ij, 1.0, Indices{index::a, index::c}, T_ij_ein,
+                    Indices{index::b, index::c}, F_bc_double_tilde);
+            einsum(1.0, Indices{index::a, index::b}, &R_ij, 1.0, Indices{index::a, index::c}, F_bc_double_tilde,
+                    Indices{index::c, index::b}, T_ij_ein);
+            
+            // Flush buffers
+            // TODO: Get rid of this copying in the future
+            auto R_ij_psi = std::make_shared<Matrix>(npno_ij, npno_ij);
+            ::memcpy(R_ij_psi->get_pointer(), R_ij.data(), npno_ij * npno_ij * sizeof(double));
+            R_iajb[ij]->add(R_ij_psi);
+            if (i != j) R_iajb[ji]->add(R_ij_psi->transpose());
+        } // end if
+
+        /*
+        // (Projection Error Correction Terms)
+        // Projection Error correction terms from C_{ij}^{ab} and D_{ij}^{ab}
+        auto dC_ij = std::make_shared<Matrix>(npno_ij, npno_ij);
+        auto dD_ij = std::make_shared<Matrix>(npno_ij, npno_ij);
+        dC_ij->zero();
+        dD_ij->zero();
+        for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+            int k = lmopair_to_lmos_[ij][k_ij];
+            int jk = i_j_to_ij_[j][k];
+
+            auto S_ij_jk = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], lmopair_to_paos_[jk]);
+            S_ij_jk = linalg::triplet(X_pno_[ij], S_ij_jk, X_pno_[jk], true, false, false);
+
+            // (ki|ac) correction (Adapted from Jiang Eq. 78)
+            // dC_ij->subtract(linalg::triplet(dJ_ij_kj_[ij][k_ij], T_iajb_[jk], S_ij_jk, false, false, true));
+
+            // 2.0 (ai|kc) - (ki|ac) correction (Adapted from Jiang Eq. 79)
+            // auto L_aikc = dK_ij_kj_[ij][k_ij]->clone();
+            // L_aikc->scale(2.0);
+            // L_aikc->subtract(dJ_ij_kj_[ij][k_ij]);
+            // auto D_temp = linalg::triplet(L_aikc, Tt_iajb_[jk], S_ij_jk, false, true, true);
+            // D_temp->scale(0.5);
+            // dD_ij->add(D_temp);
+            dD_ij->add(linalg::triplet(dK_ij_kj_[ij][k_ij], Tt_iajb_[jk], S_ij_jk, false, true, true));
+        }
+        // Add all the C terms to the non-symmetrized R buffer
+        auto dC_ij_total = dC_ij->clone();
+        dC_ij_total->scale(0.5);
+        dC_ij_total->add(dC_ij->transpose());
+        Rn_iajb[ij]->add(dC_ij_total);
+        // Add the D contribution to the non-symmetrized R buffer
+        Rn_iajb[ij]->add(dD_ij);
+        */
+        
         // C_{ij}^{ab} = -t_{kj}^{bc}[B^{Q}_{ki}B^{Q}_{ac} - 0.5t_{li}^{ad}(B^{Q}_{kd}B^{Q}_{lc})] 
         // (DePrince 2013 Eq. 13, Jiang Eq. 78)
         auto C_ij = std::make_shared<Matrix>(npno_ij, npno_ij);
@@ -2262,18 +2955,19 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
         Rn_iajb[ij]->add(G_ij);
     } // end ij
 
-    // Symmetrize residual for doubles amplitude
+    // Add the contributions from projection corrections
 #pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
         int ji = ij_to_ji_[ij];
 
-        if (n_pno_[ij] != 0 && i_j_to_ij_strong_[i][j] != -1) {
+        if (i_j_to_ij_strong_[i][j] != -1) {
             R_iajb[ij]->add(Rn_iajb[ij]);
             R_iajb[ij]->add(Rn_iajb[ji]->transpose());
         } else {
             R_iajb[ij] = std::make_shared<Matrix>(n_pno_[ij], n_pno_[ij]);
+            R_iajb[ij]->zero();
         }
     }
 
@@ -2348,6 +3042,7 @@ void DLPNOCCSD::lccsd_iterations() {
     i_Qa_t1_.resize(n_lmo_pairs);
 
     T_n_ij_.resize(n_lmo_pairs);
+    T_n_ij_sums_.resize(n_lmo_pairs);
 
     while (!(e_converged && r_converged)) {
         // RMS of residual per single LMO, for assesing convergence
@@ -2376,6 +3071,9 @@ void DLPNOCCSD::lccsd_iterations() {
                     (*T_n_ij_[ij])(n_ij, a_ij) = (*T_n_temp)(a_ij, 0);
                 } // end a_ij
             } // end n_ij
+
+            T_n_ij_sums_[ij] = Tensor<double, 2>("T_n_ij", nlmo_ij, npno_ij);
+            ::memcpy(T_n_ij_sums_[ij].data(), T_n_ij_[ij]->get_pointer(), nlmo_ij * npno_ij * sizeof(double));
         }
 
         // Step 2: T1-dress integrals and Fock matrices
@@ -2549,9 +3247,9 @@ double DLPNOCCSD::compute_energy() {
     compute_qia();
     timer_off("Crude DF Ints");
 
-    timer_on("Crude Pair Prescreening");
+    timer_on("Initial Pair Prescreening");
     pair_prescreening<true>();
-    timer_off("Crude Pair Prescreening");
+    timer_off("Initial Pair Prescreening");
 
     // Reset Sparsity After
     T_CUT_MKN_ *= 0.01;
@@ -2599,7 +3297,7 @@ double DLPNOCCSD::compute_energy() {
     outfile->Printf("    PNO Truncation Correction:        %16.12f \n", de_pno_total_);
     outfile->Printf("\n\n  @Total DLPNO-MP2 Energy: %16.12f \n", variables_["SCF TOTAL ENERGY"] + e_lmp2_ + de_lmp2_eliminated_ + de_pno_total_ + de_dipole_);
 
-    // Now we do the hard stuff
+    // Now we do the hard stuff (CCSD)
     recompute_pnos();
 
     timer_on("DF Ints");
@@ -2621,15 +3319,10 @@ double DLPNOCCSD::compute_energy() {
     lccsd_iterations();
     timer_off("LCCSD");
 
-    if (write_qia_pno_) {
-        // Bye bye (Q_ij | m_ij a_ij) integrals. You won't be missed
-        psio_->close(PSIF_DLPNO_QIA_PNO, 0);
-    }
-
-    if (write_qab_pno_) {
-        // Bye bye (Q_ij | a_ij b_ij) integrals. You won't be missed
-        psio_->close(PSIF_DLPNO_QAB_PNO, 0);
-    }
+    // Bye bye (Q_ij | m_ij a_ij) integrals. You won't be missed
+    psio_->close(PSIF_DLPNO_QIA_PNO, 0);
+    // Bye bye (Q_ij | a_ij b_ij) integrals. You won't be missed
+    psio_->close(PSIF_DLPNO_QAB_PNO, 0);
 
     print_results();
 

@@ -2697,7 +2697,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Occupation number threshold for removing TNOs !expert -*/
         options.add_double("T_CUT_TNO", 1e-9);
         /*- Maximum number of weak pairs in (ij, jk, ik) to consider when forming triplet ijk !expert -*/
-        options.add_int("TRIPLES_MAX_WEAK_PAIRS", 2);
+        options.add_int("TRIPLES_MAX_WEAK_PAIRS", 1);
         /*- T_CUT_TNO scaling for strong triplets in the iterative (T) algorithm !expert -*/
         options.add_double("T_CUT_TNO_STRONG_SCALE", 10.0);
         /*- T_CUT_TNO scaling for weak triplets in the iterative (T) algorithm !expert -*/
@@ -2709,7 +2709,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- LMO/PAO threshold for the prescreening portion of the (T) algorithm !expert -*/
         options.add_double("T_CUT_DO_TRIPLES_PRE", 2e-2);
         /*- Triples energy threshold for a triplet (ijk) to not be further considered !expert -*/
-        options.add_double("T_CUT_TRIPLES_WEAK", 1e-7);
+        options.add_double("T_CUT_TRIPLES_WEAK", 1e-8);
         /*- Local density fitting tolerance for the (T) algorithm !expert -*/
         options.add_double("T_CUT_MKN_TRIPLES", 1e-2);
         /*- LMO/PAO threshold for the (T) algorithm !expert -*/
@@ -2717,7 +2717,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Fock matrix threshold for treating ampltudes as coupled during local (T) iterations !expert -*/
         options.add_double("F_CUT_T", 1e-3);
         /*- Energy difference in which to stop considering triples in iterative (T) !expert -*/
-        options.add_double("T_CUT_ITER", 1e-3);
+        options.add_double("T_CUT_ITER", 1e-5);
         /*- Minimum number of TNOs required in each triplet !expert -*/
         options.add_int("MIN_TNOS", 9);
 
