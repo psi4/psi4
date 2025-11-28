@@ -120,7 +120,7 @@ option(ENABLE_ddx "Enables ddx for domain-decomposition contiuum solvation model
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_ecpint "Enables libecpint for effective core potentials (ECP)" OFF)
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
-option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
+option(ENABLE_Einsums "Enables the Einsums tensor library" ON)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gauxc "Enables use of GauXC density functional library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)

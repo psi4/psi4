@@ -2026,6 +2026,8 @@ void DLPNOCCSD::t1_fock() {
         einsum(0.0, Indices{index::Q}, &Gamma_Q, 1.0, Indices{index::Q, index::m, index::e}, Qma_ij,
                 Indices{index::m, index::e}, T_n_ij_sums_[ij]);
 
+        // => Part 1: J-like contributions <= //
+
         // \overline{F}_{ki} = f_{ki} + [2B^{Q}_{ki}B^{Q}_{me} - B^{Q}_{ke}B^{Q}_{mi}]t_{m}^{e}
         // = f_{ki} + 2B^{Q}_{ki} \Gamma_{Q} - B^{Q}_{ke}B^{Q}_{mi}t_{m}^{e}
         // Reindex of Eq. 98, using Eq. 44 as baseline
@@ -2044,22 +2046,6 @@ void DLPNOCCSD::t1_fock() {
         // F_ki = A (1.0) * F_{ki} + B (2.0) * (Q, k) (q_io_list_[ij]) * (Q) (Gamma_Q)
         // (Q, k) (Q) -> GEMV (matrix-vector product)
 
-        // K-like contribution to F_ki_bar
-        for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-            // \overline{F}_{ki} -= B^{Q}_{ke} B^{Q}_{mi} t_{m}^{e}
-            Tensor<double, 2> Qke_slice = (Qma_ij)(q_ij, All, All); // (k, e)
-            Tensor<double, 1> Qmi_slice = (q_io_list_[ij])(q_ij, All); // (m)
-            // T_n_ij_sums_[ij]; (m, e)
-
-            Tensor<double, 1> F_ki_int("F_ki_int", npno_ij);
-            einsum(0.0, Indices{index::e}, &F_ki_int, 1.0, Indices{index::m, index::e}, T_n_ij_sums_[ij],
-                    Indices{index::m}, Qmi_slice);
-
-            // Adds contributions to F_ki_bar
-            einsum(1.0, Indices{index::k}, &F_ki_bar, -1.0, Indices{index::k, index::e}, Qke_slice, 
-                    Indices{index::e}, F_ki_int);
-        }
-
         // \overline{F}_{kc} = f_{kc} + [2B^{Q}_{kc}B^{Q}_{me} - B^{Q}_{ke}B^{Q}_{mc}]t_{m}^{e} 
         // Reindex of (Jiang Eq. 99), using Eq. 44 as baseline
         // f_{kc} is zero in restricted closed-shell case
@@ -2068,22 +2054,6 @@ void DLPNOCCSD::t1_fock() {
         // J-like contribution to F_kc_bar \overline{F}_{kc} = 2 B^{Q}_{kc} \Gamma_{Q}
         einsum(0.0, Indices{index::k, index::c}, &F_kc_bar, 2.0, Indices{index::Q, index::k, index::c},
                 Qma_ij, Indices{index::Q}, Gamma_Q);
-
-        // K-like contribution to F_kc_bar
-        for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-            // \overline{F}_{kc} -= B^{Q}_{ke}B^{Q}_{mc}t_{m}^{e}
-            Tensor<double, 2> Qke_slice = (Qma_ij)(q_ij, All, All); // (k, e)
-            Tensor<double, 2> Qmc_slice = (Qma_ij)(q_ij, All, All); // (m, c)
-            // T_n_ij_sums_[ij]; (m, e)
-
-            Tensor<double, 2> F_kc_int("F_kc_int", npno_ij, npno_ij);
-            einsum(0.0, Indices{index::c, index::e}, &F_kc_int, 1.0, Indices{index::m, index::c},
-                    Qmc_slice, Indices{index::m, index::e}, T_n_ij_sums_[ij]);
-
-            // Adds contributions to F_kc_bar
-            einsum(1.0, Indices{index::k, index::c}, &F_kc_bar, -1.0, Indices{index::k, index::e}, 
-                    Qke_slice, Indices{index::c, index::e}, F_kc_int);
-        }
 
         // \overline{F}_{ab} = f_{ab} + [2B^{Q}_{ab}B^{Q}_{me} - B^{Q}_{ae}B^{Q}_{mb}]t_{m}^{e} 
         // Reindex of (Jiang Eq. 101), using Eq. 44 as baseline
@@ -2099,21 +2069,65 @@ void DLPNOCCSD::t1_fock() {
         einsum(1.0, Indices{index::a, index::b}, &F_ab_bar, 2.0, Indices{index::Q, index::a, index::b},
                 Qab_ij, Indices{index::Q}, Gamma_Q);
 
-        // K-like contribution to F_ab_bar
-        for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-            // \overline{F}_{ab} -= B^{Q}_{ae}B^{Q}_{mb}t_{m}^{e}
-            Tensor<double, 2> Qae_slice = (Qab_ij)(q_ij, All, All); // (a, e)
-            Tensor<double, 2> Qmb_slice = (Qma_ij)(q_ij, All, All); // (m, b)
-            // T_n_ij_sums_[ij]; (m, e)
+        Tensor<double, 1> F_ai_bar;
+        if (i == j) {
+            // \overline{F}_{ai} = f_{ai} + [2B^{Q}_{ai}B^{Q}_{me} - B^{Q}_{ae}B^{Q}_{mi}]t_{m}^{e}
+            // Reindex of (Jiang Eq. 100), using Eq. 44 as baseline
+            // f_{a_{ii}i} is zero in restricted closed-shell reference
+            F_ai_bar = Tensor<double, 1>("F_ai_bar", npno_ij);
+            F_ai_bar.zero();
 
-            Tensor<double, 2> F_ab_int("F_ab_int", npno_ij, npno_ij);
-            einsum(0.0, Indices{index::b, index::e}, &F_ab_int, 1.0, Indices{index::m, index::b},
-                    Qmb_slice, Indices{index::m, index::e}, T_n_ij_sums_[ij]);
-
-            // Adds contributions to F_ab_bar
-            einsum(1.0, Indices{index::a, index::b}, &F_ab_bar, -1.0, Indices{index::a, index::e}, 
-                    Qae_slice, Indices{index::b, index::e}, F_ab_int);
+            // J-like contribution to F_ai_bar \overline{F}_{ai} = 2 B^{Q}_{ai} \Gamma_{Q}
+            einsum(1.0, Indices{index::a}, &F_ai_bar, 2.0, Indices{index::Q, index::a},
+                    q_iv_list_[ij], Indices{index::Q}, Gamma_Q);
         }
+
+        // => Part 2: K-like contributions <= //
+        
+        for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
+            // Integral slices
+            Tensor<double, 2> Qov_slice = (Qma_ij)(q_ij, All, All);
+            Tensor<double, 2> Qvv_slice = (Qab_ij)(q_ij, All, All);
+            Tensor<double, 1> Qmi_slice = (q_io_list_[ij])(q_ij, All);
+
+            // Common intermediates
+
+            // This intermediate is used for F_ki and F_ai
+            // F_xi_int (e) = Qmi_slice (m) * T_n_ij_sums (m, e)
+            Tensor<double, 1> F_xi_int("F_xi_int", npno_ij);
+            einsum(0.0, Indices{index::e}, &F_xi_int, 1.0, Indices{index::m, index::e}, T_n_ij_sums_[ij],
+                    Indices{index::m}, Qmi_slice);
+
+            // K-like contribution to F_ki_bar
+            // \overline{F}_{ki} -= B^{Q}_{ke} B^{Q}_{mi} t_{m}^{e} (k, e) (m) (m, e)
+            // or \overline{F}_{ki} -= B^{Q}_{ke} (k, e) F_xi_int (e)
+            einsum(1.0, Indices{index::k}, &F_ki_bar, -1.0, Indices{index::k, index::e}, Qov_slice, 
+                    Indices{index::e}, F_xi_int);
+
+            // K-like contribution to F_kc_bar
+            // \overline{F}_{kc} -= B^{Q}_{ke} B^{Q}_{mc} t_{m}^{e} (k, e) (m, c) (m, e)
+            Tensor<double, 2> F_kc_int("F_kc_int", nlmo_ij, nlmo_ij);
+            einsum(0.0, Indices{index::k, index::m}, &F_kc_int, 1.0, Indices{index::k, index::e},
+                    Qov_slice, Indices{index::m, index::e}, T_n_ij_sums_[ij]);
+            einsum(1.0, Indices{index::k, index::c}, &F_kc_bar, -1.0, Indices{index::k, index::m}, 
+                    F_kc_int, Indices{index::m, index::c}, Qov_slice);
+
+            // K-like contribution to F_ab_bar
+            // \overline{F}_{ab} -= B^{Q}_{ae} B^{Q}_{mb} t_{m}^{e} (a, e) (m, b) (m, e)
+            Tensor<double, 2> F_ab_int("F_ab_int", npno_ij, nlmo_ij);
+            einsum(0.0, Indices{index::a, index::m}, &F_ab_int, 1.0, Indices{index::a, index::e},
+                    Qvv_slice, Indices{index::m, index::e}, T_n_ij_sums_[ij]);
+            einsum(1.0, Indices{index::a, index::b}, &F_ab_bar, -1.0, Indices{index::a, index::m}, 
+                    F_ab_int, Indices{index::m, index::b}, Qov_slice);
+
+            if (i == j) {
+                // K-like contribution to F_ai_bar
+                // \overline{F}_{ai} -= B^{Q}_{ae} B^{Q}_{mi} t_{m}^{e} (a, e) (m) (m, e)
+                // \overline{F}_{ai} -= B^{Q}_{ae} (a, e) F_xi_int (e)
+                einsum(1.0, Indices{index::a}, &F_ai_bar, -1.0, Indices{index::a, index::e}, 
+                        Qvv_slice, Indices{index::e}, F_xi_int);
+            }
+        } // end q_ij
 
         // Build Fully T1-Dressed Fock Matrix Intermediates
 
@@ -2138,46 +2152,18 @@ void DLPNOCCSD::t1_fock() {
 
         // Only do if i == j, since only needed for singles
         if (i == j) {
-            // \overline{F}_{ai} = f_{ai} + [2B^{Q}_{ai}B^{Q}_{me} - B^{Q}_{ae}B^{Q}_{mi}]t_{m}^{e}
-            // Reindex of (Jiang Eq. 100), using Eq. 44 as baseline
-            // f_{a_{ii}i} is zero in restricted closed-shell reference
-            Tensor<double, 1> F_ai_bar("F_ai_bar", npno_ij);
-            F_ai_bar.zero();
-
-            // J-like contribution to F_ai_bar \overline{F}_{ai} = 2 B^{Q}_{ai} \Gamma_{Q}
-            einsum(1.0, Indices{index::a}, &F_ai_bar, 2.0, Indices{index::Q, index::a},
-                    q_iv_list_[ij], Indices{index::Q}, Gamma_Q);
-
-            // K-like contribution to F_ai_bar
-            for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-                // \overline{F}_{ai} -= B^{Q}_{ae}B^{Q}_{mi}t_{m}^{e}
-                // TODO: Test with Tensorview
-                Tensor<double, 2> Qae_slice = (Qab_ij)(q_ij, All, All); // (a, e)
-                Tensor<double, 1> Qmi_slice = (q_io_list_[ij])(q_ij, All); // (m)
-                // T_n_ij_sums_[ij]; (m, e)
-
-                Tensor<double, 1> F_ai_int("F_ai_int", npno_ij);
-                einsum(0.0, Indices{index::e}, &F_ai_int, 1.0, Indices{index::m, index::e},
-                        T_n_ij_sums_[ij], Indices{index::m}, Qmi_slice);
-
-                // Adds contributions to F_ai_bar
-                einsum(1.0, Indices{index::a}, &F_ai_bar, -1.0, Indices{index::a, index::e}, 
-                        Qae_slice, Indices{index::e}, F_ai_int);
-
-                // \widetilde{F}_{ai} = \overline{F}_{ai} - t_{k}^{a} \overline{F}_{ki}
-                // + \overline{F}_{ab} t_{i}^{b} - t_{k}^{a} \overline{F}_{kb} t_{i}^{b}
-                // => factor out - t_{k}^{a}
-                // \overline{F}_{ai} + \overline{F}_{ab} t_{i}^{b} - t_{k}^{a} 
-                // (\overline{F}_{ki} + \overline{F}_{kb} t_{i}^{b}) <- Eq. 94 (Jaden is genius)
-                // \widetilde{F}_{ai} = \overline{F}_{ai} + \overline{F}_{ab} t_{i}^{b}
-                // - t_{k}^{a} \widetilde{F}_{ki}
-                F_ai_t1_[i] = F_ai_bar;
-                einsum(1.0, Indices{index::a}, &F_ai_t1_[i], 1.0, Indices{index::a, index::b}, F_ab_bar,
-                        Indices{index::b}, T_i);
-                einsum(1.0, Indices{index::a}, &F_ai_t1_[i], -1.0, Indices{index::k, index::a}, T_n_ij_sums_[ij],
-                        Indices{index::k}, F_ki_t1_[ij]);
-            }
-
+            // \widetilde{F}_{ai} = \overline{F}_{ai} - t_{k}^{a} \overline{F}_{ki}
+            // + \overline{F}_{ab} t_{i}^{b} - t_{k}^{a} \overline{F}_{kb} t_{i}^{b}
+            // => factor out - t_{k}^{a}
+            // \overline{F}_{ai} + \overline{F}_{ab} t_{i}^{b} - t_{k}^{a} 
+            // (\overline{F}_{ki} + \overline{F}_{kb} t_{i}^{b}) <- Eq. 94 (Jaden is genius)
+            // \widetilde{F}_{ai} = \overline{F}_{ai} + \overline{F}_{ab} t_{i}^{b}
+            // - t_{k}^{a} \widetilde{F}_{ki}
+            F_ai_t1_[i] = F_ai_bar;
+            einsum(1.0, Indices{index::a}, &F_ai_t1_[i], 1.0, Indices{index::a, index::b}, F_ab_bar,
+                    Indices{index::b}, T_i);
+            einsum(1.0, Indices{index::a}, &F_ai_t1_[i], -1.0, Indices{index::k, index::a}, T_n_ij_sums_[ij],
+                    Indices{index::k}, F_ki_t1_[ij]);
         } // end if
 
     } // end for
@@ -2243,7 +2229,6 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_gamma() {
         gamma[ki] = std::make_shared<Matrix>(npno_ki, npno_ki);
         gamma[ki]->zero();
 
-        /*
         // Jiang Eq. 83a
         gamma[ki]->subtract(linalg::doublet(T_n_ij_[ki], K_bar_chem_[ki], true, false));
 
@@ -2264,7 +2249,6 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_gamma() {
 
             C_DGER(npno_ki, npno_ki, -1.0, T_l->get_pointer(), 1, K_kl->get_pointer(), 1, gamma[ki]->get_pointer(), npno_ki);
         }
-        */
         
         // Jiang Eq. 83d
         for (int l_ki = 0; l_ki < nlmo_ki; ++l_ki) {
@@ -2307,7 +2291,6 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_delta() {
         delta[ik] = std::make_shared<Matrix>(npno_ik, npno_ik);
         delta[ik]->zero();
 
-        /*
         // Jiang Eq. 84a
         auto L_bar_temp = K_bar_[ik]->clone();
         L_bar_temp->scale(2.0);
@@ -2338,7 +2321,6 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_delta() {
 
             C_DGER(npno_ik, npno_ik, -1.0, T_l->get_pointer(), 1, L_lk->get_pointer(), 1, delta[ik]->get_pointer(), npno_ik);
         }
-        */
 
         // Jiang Eq. 84d
         for (int l_ik = 0; l_ik < nlmo_ik; ++l_ik) {
@@ -2434,56 +2416,15 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
         int i_ik = lmopair_to_lmos_dense_[ik][i], k_ik = lmopair_to_lmos_dense_[ik][k];
         std::vector<int> k_ik_slice = std::vector<int>(1, k_ik);
         int ii = i_j_to_ij_[i][i];
-
-        // Read in 3-center integrals from disk (or core... depending on option)
-        Tensor<double, 3> Qma_ik = QIA_PNO_EINSUMS(ik); // (naux_ik * nlmo_ik * npno_ik)
-        Tensor<double, 3> Qab_ik = QAB_PNO_EINSUMS(ik); // (naux_ik * npno_ik * npno_ik)
         
         // A_{i}^{a} = u_{ik}^{dc} [(ad|kc) - t_{l}^{a}(ld|kc)] (Jiang Eq. 88)
         // (d_{ik}, c_{ik}) * (Q_{ik}, a_{ik}, d_{ik}) * (Q_{ik}, k, c_{ik})
         // (d_{ik}, c_{ik}) * (l_{ik}, a_{ik}) * (Q_{ik}, l_{ik}, d_{ik}) * (Q_{ik}, k, c_{ik})
-
-        // Make Einsums copy of amplitudes
-        // TODO: Make this global instead of allocating space each time it is needed
-        Tensor<double, 2> U_ik("U_ik", n_pno_[ik], n_pno_[ik]);
-        ::memcpy(U_ik.data(), Tt_iajb_[ik]->get_pointer(), n_pno_[ik] * n_pno_[ik] * sizeof(double));
-
-        // Make transposed version of Qma_ik (for easier matrix manipulation)
-        Tensor<double, 3> Qam_ik("Qam_ik", naux_ik, npno_ik, nlmo_ik);
-        permute(Indices{index::Q, index::a, index::m}, &Qam_ik, Indices{index::Q, index::m, index::a}, Qma_ik);
-        
-        // A1_int (Q_{ik}, d_{ik}) = (Q_{ik} | k, c_{ik}) * U_ik (d_{ik}, c_{ik})
-        // Common intermediate
-        Tensor<double, 2> A1_int("A1_int", naux_ik, npno_ik);
-        einsum(0.0, Indices{index::Q, index::d}, &A1_int, 1.0, Indices{index::Q, index::c}, q_iv_list_[ki],
-                Indices{index::d, index::c}, U_ik);
-
-        // A1_occ (l_{ik}) = (Q_{ik} | d_{ik}, l_{ik}) * A1_int (Q_{ik}, d_{ik})
-        Tensor<double, 1> A1_occ("A1_occ", nlmo_ik);
-        einsum(0.0, Indices{index::l}, &A1_occ, 1.0, Indices{index::Q, index::d, index::l}, Qam_ik, 
-                Indices{index::Q, index::d}, A1_int);
-
-        // A1_vir (a_{ik}) = (Q_{ik} | d_{ik} a_{ik}) * A1_int (Q_{ik}, d_{ik}) - T (l_{ik}, a_{ik}) A1_occ (l_{ik})
-        Tensor<double, 1> A1_vir("A1_vir", npno_ik);
-        einsum(0.0, Indices{index::a}, &A1_vir, 1.0, Indices{index::Q, index::d, index::a}, Qab_ik, 
-                Indices{index::Q, index::d}, A1_int);
-        einsum(1.0, Indices{index::a}, &A1_vir, -1.0, Indices{index::l, index::a}, T_n_ij_sums_[ik],
-                Indices{index::l}, A1_occ);
-
-        // Make psi copy of intermediate
-        auto A1_vir_psi = std::make_shared<Matrix>("A1_vir_psi", npno_ik, 1);
-        ::memcpy(A1_vir_psi->get_pointer(), A1_vir.data(), npno_ik * sizeof(double));
-
-        // Project to PNO space of ii and add to buffer
-        R_ia_buffer[thread][i]->add(linalg::doublet(S_PNO(ik, ii), A1_vir_psi, true, false));
-
-        /*
         auto K_kcad = K_tilde_chem_[ki]->clone();
         K_kcad->reshape(n_pno_[ki] * n_pno_[ki], n_pno_[ki]);
         auto Uki = Tt_iajb_[ki]->clone();
         Uki->reshape(npno_ik * npno_ik, 1);
         R_ia_buffer[thread][i]->add(linalg::triplet(S_PNO(ki, ii), K_kcad, Uki, true, true, false));
-        */
 
         // C_{i}^{a} = F_{kc}U_{ik}^{ac} (DePrince 2013 Eq. 22, Jiang Eq. 90)
         R_ia_buffer[thread][i]->add(linalg::triplet(S_PNO(ik, ii), Tt_iajb_[ik], Fkc_[ki], true, false, true));
@@ -2515,13 +2456,11 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
             int ii = i_j_to_ij_[i][i], ki = i_j_to_ij_[k][i];
 
             // A2 contribution (Jiang Eq. 88b)
-            /*
             std::vector<int> l_ii_slice(1, lmopair_to_lmos_dense_[ii][l]);
             auto U_ki = linalg::triplet(S_PNO(kl, ki), Tt_iajb_[ki], S_PNO(ki, kl));
             auto T_l = submatrix_rows(*T_n_ij_[ii], l_ii_slice);
             T_l->scale(K_iajb_[kl]->vector_dot(U_ki));
             R_ia_buffer[thread][i]->subtract(T_l->transpose());
-            */
 
             // B contribution (Jiang Eq. 89b)
             std::vector<int> i_kl_slice(1, i_kl);
@@ -2609,60 +2548,6 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
                 
                 Qab_t1(q_ij, All, All) = Qab_slice;
             }
-            
-            // Delta (ki|ac) and (kj|ac), simplifies T1-effects in integrals [stored as: a, k, c]
-            Tensor<double, 3> delta_g_akci("delta_g_akci", npno_ij, nlmo_ij, npno_ij);
-            Tensor<double, 3> delta_g_akcj("delta_g_akcj", npno_ij, nlmo_ij, npno_ij); {
-                // Initialize buffer
-                Tensor<double, 3> g_akci_buffer("g_akci_buffer", nlmo_ij, npno_ij, npno_ij);
-
-                einsum(0.0, Indices{index::k, index::a, index::c}, &g_akci_buffer, 1.0, Indices{index::Q, index::k},
-                        q_io_t1_[ij], Indices{index::Q, index::a, index::c}, Qab_t1);
-                einsum(1.0, Indices{index::k, index::a, index::c}, &g_akci_buffer, -1.0, Indices{index::Q, index::k},
-                        q_io_list_[ij], Indices{index::Q, index::a, index::c}, Qab_ij);
-                permute(Indices{index::a, index::k, index::c}, &delta_g_akci, Indices{index::k, index::a, index::c}, g_akci_buffer);
-
-                einsum(0.0, Indices{index::k, index::a, index::c}, &g_akci_buffer, 1.0, Indices{index::Q, index::k},
-                        q_io_t1_[ji], Indices{index::Q, index::a, index::c}, Qab_t1);
-                einsum(1.0, Indices{index::k, index::a, index::c}, &g_akci_buffer, -1.0, Indices{index::Q, index::k},
-                        q_io_list_[ji], Indices{index::Q, index::a, index::c}, Qab_ij);
-                permute(Indices{index::a, index::k, index::c}, &delta_g_akcj, Indices{index::k, index::a, index::c}, g_akci_buffer);
-            }
-
-            // Delta (ai|kc) and (aj|kc), encapsulates T1-effects in integrals [stored as: a, k, c]
-            Tensor<double, 3> delta_g_akic("delta_g_akic", npno_ij, nlmo_ij, npno_ij);
-            Tensor<double, 3> delta_g_akjc("delta_g_akjc", npno_ij, nlmo_ij, npno_ij); {
-                einsum(0.0, Indices{index::a, index::k, index::c}, &delta_g_akic, 1.0, Indices{index::Q, index::a},
-                        q_iv_t1_[ij], Indices{index::Q, index::k, index::c}, Qma_ij);
-                einsum(1.0, Indices{index::a, index::k, index::c}, &delta_g_akic, -1.0, Indices{index::Q, index::a},
-                        q_iv_list_[ij], Indices{index::Q, index::k, index::c}, Qma_ij);
-
-                einsum(0.0, Indices{index::a, index::k, index::c}, &delta_g_akjc, 1.0, Indices{index::Q, index::a},
-                        q_iv_t1_[ji], Indices{index::Q, index::k, index::c}, Qma_ij);
-                einsum(1.0, Indices{index::a, index::k, index::c}, &delta_g_akjc, -1.0, Indices{index::Q, index::a},
-                        q_iv_list_[ji], Indices{index::Q, index::k, index::c}, Qma_ij);
-            }
-
-            /*
-            // (kc|ld) [stored as: k, l, c, d]
-            Tensor<double, 4> g_klcd("g_klcd", nlmo_ij, nlmo_ij, npno_ij, npno_ij); 
-            // 2 (kc|ld) - (kd|lc) [stored as: k, l, c, d]
-            Tensor<double, 4> L_klcd("L_klcd", nlmo_ij, nlmo_ij, npno_ij, npno_ij); {
-                // Perform contraction over auxiliary index (indices in chemist's notation)
-                Tensor<double, 4> g_klcd_buffer("g_klcd_buffer", nlmo_ij, npno_ij, nlmo_ij, npno_ij);
-                einsum(0.0, Indices{index::k, index::c, index::l, index::d}, &g_klcd_buffer, 1.0,
-                        Indices{index::Q, index::k, index::c}, Qma_ij, Indices{index::Q, index::l, index::d}, Qma_ij);
-
-                // Transpose to physicist's notation
-                permute(Indices{index::k, index::l, index::c, index::d}, &g_klcd, Indices{index::k, index::c, index::l, index::d}, g_klcd_buffer);
-
-                // Form anti-symmetrized L integrals
-                permute(Indices{index::k, index::l, index::c, index::d}, &L_klcd, Indices{index::k, index::l, index::d, index::c}, g_klcd);
-                L_klcd *= -1;
-                L_klcd += g_klcd;
-                L_klcd += g_klcd;
-            }
-            */
 
             // => SECTION 2: PROJECTED AMPLITUDES <= //
 
@@ -2685,42 +2570,6 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
             // Amplitude intermediates
             Tensor<double, 2> T_ij_ein("T_ij_ein", npno_ij, npno_ij);
             ::memcpy(T_ij_ein.data(), T_iajb_[ij]->get_pointer(), npno_ij * npno_ij * sizeof(double));
-
-            // Amplitudes from T_ik and T_jk projected onto the PNO space of ij
-            // (as well as spin-summed amplitudes U_ki and U_kj)
-            Tensor<double, 3> T_ik("T_ik", nlmo_ij, npno_ij, npno_ij);
-            T_ik.zero();
-            Tensor<double, 3> T_jk("T_jk", nlmo_ij, npno_ij, npno_ij);
-            T_jk.zero();
-            Tensor<double, 3> U_ki("U_ki", nlmo_ij, npno_ij, npno_ij);
-            U_ki.zero();
-            Tensor<double, 3> U_kj("U_kj", nlmo_ij, npno_ij, npno_ij);
-            U_kj.zero();
-            
-            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-                int k = lmopair_to_lmos_[ij][k_ij];
-                int ik = i_j_to_ij_[i][k], jk = i_j_to_ij_[j][k];
-                int ki = ij_to_ji_[ik], kj = ij_to_ji_[jk];
-
-                // Compute overlap matrices using the "semi-direct" algorithm
-                auto S_ij_ik = submatrix_cols(*S_ij, index_list(pair_ext_domain, lmopair_to_paos_[ik]));
-                S_ij_ik = linalg::doublet(S_ij_ik, X_pno_[ik], false, false);
-                auto S_ij_jk = submatrix_cols(*S_ij, index_list(pair_ext_domain, lmopair_to_paos_[jk]));
-                S_ij_jk = linalg::doublet(S_ij_jk, X_pno_[jk], false, false);
-
-                // Perform PNO projection and copy data
-                auto T_ik_proj = linalg::triplet(S_ij_ik, T_iajb_[ik], S_ij_ik, false, false, true);
-                ::memcpy(&T_ik(k_ij, 0, 0), T_ik_proj->get_pointer(), npno_ij * npno_ij * sizeof(double));
-
-                auto T_jk_proj = linalg::triplet(S_ij_jk, T_iajb_[jk], S_ij_jk, false, false, true);
-                ::memcpy(&T_jk(k_ij, 0, 0), T_jk_proj->get_pointer(), npno_ij * npno_ij * sizeof(double));
-
-                auto U_ki_proj = linalg::triplet(S_ij_ik, Tt_iajb_[ki], S_ij_ik, false, false, true);
-                ::memcpy(&U_ki(k_ij, 0, 0), U_ki_proj->get_pointer(), npno_ij * npno_ij * sizeof(double));
-
-                auto U_kj_proj = linalg::triplet(S_ij_jk, Tt_iajb_[kj], S_ij_jk, false, false, true);
-                ::memcpy(&U_kj(k_ij, 0, 0), U_kj_proj->get_pointer(), npno_ij * npno_ij * sizeof(double));
-            }
 
             // => SECTION 3: Contract Amplitudes and Integrals into R2 Residual! <= //
 
@@ -2793,62 +2642,6 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
             } // end k_ij
             ::memcpy(pno_buffer_a.data(), F_bc_buffer->get_pointer(), n_pno_[ij] * n_pno_[ij] * sizeof(double));
             F_bc_double_tilde += pno_buffer_a;
-
-            // gamma_{ki}^{ac} = B^{Q}_{ki}B^{Q}_{ac} - 0.5t_{li}^{ad}(B^{Q}_{kd}B^{Q}_{lc}) (Jiang Eq. 28)
-            // (over both i and j)
-            Tensor<double, 3> gamma_ki = delta_g_akci;
-            Tensor<double, 3> gamma_kj = delta_g_akcj;
-            /*
-            {
-                // (Ideal contraction is (l, d, a) * (l, d, k, c))... this allows for GEMM :)
-                Tensor<double, 4> g_klcd_t("g_klcd_t", nlmo_ij, npno_ij, nlmo_ij, npno_ij);
-                permute(Indices{index::l, index::d, index::k, index::c}, &g_klcd_t, Indices{index::l, index::k, index::c, index::d}, g_klcd);
-
-                einsum(1.0, Indices{index::a, index::k, index::c}, &gamma_ki, -0.5, Indices{index::l, index::d, index::a}, T_ik,
-                        Indices{index::l, index::d, index::k, index::c}, g_klcd_t);
-                einsum(1.0, Indices{index::a, index::k, index::c}, &gamma_kj, -0.5, Indices{index::l, index::d, index::a}, T_jk,
-                        Indices{index::l, index::d, index::k, index::c}, g_klcd_t);
-            }
-            */
-            
-            // -(0.5 + P_{ab}) [t_{kj}^{bc} gamma_{ki}^{ac} + t_{ki}^{ac} gamma_{kj}^{bc}] (Jiang Eq. 20, 23)
-            Tensor<double, 2> C_ij("C_ij", npno_ij, npno_ij);
-            einsum(0.0, Indices{index::a, index::b}, &C_ij, -0.5, Indices{index::a, index::k, index::c}, gamma_ki,
-                    Indices{index::k, index::c, index::b}, T_jk);
-            einsum(1.0, Indices{index::a, index::b}, &C_ij, -0.5, Indices{index::k, index::c, index::a}, T_ik,
-                    Indices{index::b, index::k, index::c}, gamma_kj);
-            R_ij += C_ij;
-            permute(Indices{index::b, index::a}, &pno_buffer_a, Indices{index::a, index::b}, C_ij);
-            pno_buffer_a *= 2.0;
-            R_ij += pno_buffer_a;
-
-            // delta_{ik}^{ac} = (2 B^{Q}_{ai} B^{Q}_{kc} - B^{Q}_{ki} B^{Q}_{ac}) + 0.5 u_{il}^{ad} L_{ldkc}
-            Tensor<double, 3> delta_ik = delta_g_akic;
-            delta_ik *= 2.0;
-            delta_ik -= delta_g_akci;
-
-            Tensor<double, 3> delta_jk = delta_g_akjc;
-            delta_jk *= 2.0;
-            delta_jk -= delta_g_akcj;
-            /*
-            {
-                // (Ideal contraction is (l, d, a) * (l, d, k, c))... this allows for GEMM :)
-                Tensor<double, 4> L_klcd_t("L_klcd_t", nlmo_ij, npno_ij, nlmo_ij, npno_ij);
-                permute(Indices{index::l, index::d, index::k, index::c}, &L_klcd_t, Indices{index::l, index::k, index::d, index::c}, L_klcd);
-
-                einsum(1.0, Indices{index::a, index::k, index::c}, &delta_ik, 0.5, Indices{index::l, index::d, index::a}, U_ki,
-                        Indices{index::l, index::d, index::k, index::c}, L_klcd_t);
-
-                einsum(1.0, Indices{index::a, index::k, index::c}, &delta_jk, 0.5, Indices{index::l, index::d, index::a}, U_kj,
-                        Indices{index::l, index::d, index::k, index::c}, L_klcd_t);
-            }
-            */
-
-            // R_{ij}^{ab} += 0.5 (u_{jk}^{bc} delta_{ik}^{ac} + u_{ik}^{ac} delta_{jk}^{bc})
-            einsum(1.0, Indices{index::a, index::b}, &R_ij, 0.5, Indices{index::a, index::k, index::c}, delta_ik,
-                    Indices{index::k, index::c, index::b}, U_kj);
-            einsum(1.0, Indices{index::a, index::b}, &R_ij, 0.5, Indices{index::k, index::c, index::a}, U_ki,
-                    Indices{index::b, index::k, index::c}, delta_jk);
             
             // R_{ij}^{ab} += P_{ij}^{ab} [t_{ij}^{ac} (F_double_tilde_{bc})] (Jiang Eq. 25)
             // or t_{ij}^{ac} F_double_tilde_{bc} + F_double_tilde_{ac} t_{ij}^{cb}
@@ -2864,7 +2657,6 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
             R_iajb[ij]->add(R_ij_psi);
             if (i != j) R_iajb[ji]->add(R_ij_psi->transpose());
         } // end if
-
         /*
         // (Projection Error Correction Terms)
         // Projection Error correction terms from C_{ij}^{ab} and D_{ij}^{ab}
