@@ -107,32 +107,6 @@ inline SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
     }
 }
 
-inline Tensor<double, 3> DLPNOCCSD::QIA_PNO_EINSUMS(const int ij) {
-    auto &[i, j] = ij_to_i_j_[ij];
-    const int pair_idx = (i > j) ? ij_to_ji_[ij] : ij;
-
-    int naux_ij = lmopair_to_ribfs_[ij].size();
-    int nlmo_ij = lmopair_to_lmos_[ij].size();
-    int npno_ij = n_pno_[ij];
-
-    if (write_qia_pno_) {
-        std::stringstream toc_entry;
-        toc_entry << "QIA (PNO) EINSUMS " << pair_idx;
-
-        auto q_ov = std::make_shared<Matrix>(toc_entry.str(), naux_ij, nlmo_ij * npno_ij);
-    #pragma omp critical
-        q_ov->load(psio_, PSIF_DLPNO_QIA_PNO, psi::Matrix::SubBlocks);
-
-        // TODO: An efficient disk tensor I/O would eliminate the need for this back and forth copying
-        Tensor<double, 3> qia_pno("qia_pno", naux_ij, nlmo_ij, npno_ij);
-        ::memcpy(qia_pno.data(), q_ov->get_pointer(), naux_ij * nlmo_ij * npno_ij * sizeof(double));
-
-        return qia_pno;
-    } else {
-        return q_ov_pno_[pair_idx];
-    }
-}
-
 inline std::vector<SharedMatrix> DLPNOCCSD::QIA_PNO(const int ij) {
     auto &[i, j] = ij_to_i_j_[ij];
     int pair_idx = (i > j) ? ij_to_ji_[ij] : ij;
@@ -157,31 +131,6 @@ inline std::vector<SharedMatrix> DLPNOCCSD::QIA_PNO(const int ij) {
         return Qma_pno;
     } else {
         return Qma_ij_[pair_idx];
-    }
-}
-
-inline Tensor<double, 3> DLPNOCCSD::QAB_PNO_EINSUMS(const int ij) {
-    auto &[i, j] = ij_to_i_j_[ij];
-    const int pair_idx = (i > j) ? ij_to_ji_[ij] : ij;
-
-    int naux_ij = lmopair_to_ribfs_[ij].size();
-    int npno_ij = n_pno_[ij];
-
-    if (write_qab_pno_) {
-        std::stringstream toc_entry;
-        toc_entry << "QAB (PNO) EINSUMS " << pair_idx;
-
-        auto q_vv = std::make_shared<Matrix>(toc_entry.str(), naux_ij, npno_ij * npno_ij);
-    #pragma omp critical
-        q_vv->load(psio_, PSIF_DLPNO_QAB_PNO, psi::Matrix::ThreeIndexLowerTriangle);
-
-        // TODO: An efficient disk tensor I/O would eliminate the need for this back and forth copying
-        Tensor<double, 3> qab_pno("qab_pno", naux_ij, npno_ij, npno_ij);
-        ::memcpy(qab_pno.data(), q_vv->get_pointer(), naux_ij * npno_ij * npno_ij * sizeof(double));
-
-        return qab_pno;
-    } else {
-        return q_vv_pno_[pair_idx];
     }
 }
 
@@ -1269,18 +1218,12 @@ void DLPNOCCSD::compute_cc_integrals() {
     // 3 virtual
     K_tilde_chem_.resize(n_lmo_pairs);
 
-    // Einsums integrals
-    q_io_list_.resize(n_lmo_pairs);
-    q_iv_list_.resize(n_lmo_pairs);
-
     // DF integrals (used in DLPNO-CCSD with T1 Transformed Hamiltonian)
     if (!write_qia_pno_) {
         Qma_ij_.resize(n_lmo_pairs);
-        q_ov_pno_.resize(n_lmo_pairs);
     }
     if (!write_qab_pno_) {
         Qab_ij_.resize(n_lmo_pairs);
-        q_vv_pno_.resize(n_lmo_pairs);
     }
 
     i_Qa_ij_.resize(n_lmo_pairs);
@@ -1432,54 +1375,11 @@ void DLPNOCCSD::compute_cc_integrals() {
         C_DGESV_wrapper(A_solve->clone(), q_ov);
         C_DGESV_wrapper(A_solve->clone(), q_vv);
 
-        // Copy necessary integrals to Einsums
-        q_io_list_[ij] = Tensor<double, 2>("q_io", naux_ij, nlmo_ij);
-        ::memcpy(q_io_list_[ij].data(), q_io->get_pointer(), naux_ij * nlmo_ij * sizeof(double));
-        q_iv_list_[ij] = Tensor<double, 2>("q_iv", naux_ij, npno_ij);
-        ::memcpy(q_iv_list_[ij].data(), q_iv->get_pointer(), naux_ij * npno_ij * sizeof(double));
-        if (i != j) {
-            q_io_list_[ji] = Tensor<double, 2>("q_jo", naux_ij, nlmo_ij);
-            ::memcpy(q_io_list_[ji].data(), q_jo->get_pointer(), naux_ij * nlmo_ij * sizeof(double));
-            q_iv_list_[ji] = Tensor<double, 2>("q_jv", naux_ij, npno_ij);
-            ::memcpy(q_iv_list_[ji].data(), q_jv->get_pointer(), naux_ij * npno_ij * sizeof(double));
-        }
-
-        // Write (Q_{ij} | m_{ij} a_{ij}) integrals to disk
-        if (write_qia_pno_) {
-            std::stringstream qov_entry;
-            qov_entry << "QIA (PNO) EINSUMS " << ij;
-            q_ov->set_name(qov_entry.str());
-    #pragma omp critical
-            q_ov->save(psio_, PSIF_DLPNO_QIA_PNO, psi::Matrix::SubBlocks);
-        } else {
-            q_ov_pno_[ij] = Tensor<double, 3>("QIA (PNO)", naux_ij, nlmo_ij, npno_ij);
-            ::memcpy(q_ov_pno_[ij].data(), q_ov->get_pointer(), naux_ij * nlmo_ij * npno_ij * sizeof(double));
-        }
-
-        // Write (Q_{ij} | a_{ij} b_{ij}) integrals to disk
-        if (write_qab_pno_) {
-            std::stringstream qvv_entry;
-            qvv_entry << "QAB (PNO) EINSUMS " << ij;
-            q_vv->set_name(qvv_entry.str());
-    #pragma omp critical
-            q_vv->save(psio_, PSIF_DLPNO_QAB_PNO, psi::Matrix::ThreeIndexLowerTriangle);
-        } else {
-            q_vv_pno_[ij] = Tensor<double, 3>("QAB (PNO)", naux_ij, npno_ij, npno_ij);
-            ::memcpy(q_vv_pno_[ij].data(), q_vv->get_pointer(), naux_ij * npno_ij * npno_ij * sizeof(double));
-        }
-
         if (thread == 0) timer_off("DLPNO-CCSD: Setup Integrals");
 
         if (is_strong_pair) {
 
             if (thread == 0) timer_on("DLPNO-CCSD: J_ij_kj Integrals");
-            
-            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-                int k = lmopair_to_lmos_[ij][k_ij];
-                int ik = i_j_to_ij_[i][k], kj = i_j_to_ij_[k][j];
-                J_ij_kj_[ij][k_ij] = std::make_shared<Matrix>(n_pno_[ij], n_pno_[kj]);
-                if (i != j) J_ij_kj_[ji][k_ij] = std::make_shared<Matrix>(n_pno_[ij], n_pno_[ik]);
-            }
 
             // Partially transformed q_vv with first index transformed into PNO virtual space,
             // second in extended PAO space
@@ -1503,26 +1403,6 @@ void DLPNOCCSD::compute_cc_integrals() {
                 }
                 q_cd_temp = linalg::doublet(X_pno_[ij], q_cd_temp, true, false);
                 ::memcpy(&(*q_vv_partial)(q_ij, 0), q_cd_temp->get_pointer(), npno_ij * npao_ext_ij * sizeof(double));
-
-                /*
-                for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-                    int k = lmopair_to_lmos_[ij][k_ij];
-                    int ik = i_j_to_ij_[i][k], kj = i_j_to_ij_[k][j];
-                    auto kj_idx = index_list(extended_pao_domain, lmopair_to_paos_[kj]);
-
-                    auto J_ij_kj_temp = linalg::doublet(submatrix_cols(*q_cd_temp, kj_idx), X_pno_[kj], false, false);
-                    J_ij_kj_temp->scale((*q_io_clone)(q_ij, k_ij));
-                    J_ij_kj_[ij][k_ij]->add(J_ij_kj_temp);
-
-                    if (i != j) {
-                        auto ik_idx = index_list(extended_pao_domain, lmopair_to_paos_[ik]);
-
-                        auto J_ij_ik_temp = linalg::doublet(submatrix_cols(*q_cd_temp, ik_idx), X_pno_[ik], false, false);
-                        J_ij_ik_temp->scale((*q_jo_clone)(q_ij, k_ij));
-                        J_ij_kj_[ji][k_ij]->add(J_ij_ik_temp);
-                    }
-                }
-                */
             }
 
             SharedMatrix K_iovv_partial = linalg::doublet(q_io_clone, q_vv_partial, true, false);
@@ -1538,116 +1418,67 @@ void DLPNOCCSD::compute_cc_integrals() {
 
                 auto K_iovv_slice = submatrix_rows(*K_iovv_partial, std::vector<int>(1, k_ij));
                 K_iovv_slice->reshape(npno_ij, npao_ext_ij);
-                auto K_iovv_kj = submatrix_cols(*K_iovv_slice, index_list(extended_pao_domain, lmopair_to_paos_[kj]));
-                J_ij_kj_[ij][k_ij] = linalg::doublet(K_iovv_kj, X_pno_[kj]);
+                K_iovv_slice = submatrix_cols(*K_iovv_slice, index_list(extended_pao_domain, lmopair_to_paos_[kj]));
+                J_ij_kj_[ij][k_ij] = linalg::doublet(K_iovv_slice, X_pno_[kj]);
 
                 if (i != j) {
                     auto K_jovv_slice = submatrix_rows(*K_jovv_partial, std::vector<int>(1, k_ij));
                     K_jovv_slice->reshape(npno_ij, npao_ext_ij);
-                    auto K_jovv_ik = submatrix_cols(*K_jovv_slice, index_list(extended_pao_domain, lmopair_to_paos_[ik]));
-                    J_ij_kj_[ji][k_ij] = linalg::doublet(K_jovv_ik, X_pno_[ik]);
+                    K_jovv_slice = submatrix_cols(*K_jovv_slice, index_list(extended_pao_domain, lmopair_to_paos_[ik]));
+                    J_ij_kj_[ji][k_ij] = linalg::doublet(K_jovv_slice, X_pno_[ik]);
                 } // end if
             } // end for
 
             if (thread == 0) timer_off("DLPNO-CCSD: J_ij_kj Integrals");
 
             if (thread == 0) timer_on("DLPNO-CCSD: K_ij_kj Integrals");
-            
-            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-                int k = lmopair_to_lmos_[ij][k_ij];
-                int ik = i_j_to_ij_[i][k], kj = i_j_to_ij_[k][j];
-                K_ij_kj_[ij][k_ij] = std::make_shared<Matrix>(n_pno_[ij], n_pno_[kj]);
-                if (i != j) K_ij_kj_[ji][k_ij] = std::make_shared<Matrix>(n_pno_[ij], n_pno_[ik]);
-            }
+
+            // Global q_ov_ext containing lmos in ij and paos in extended domain of ij
+            SharedMatrix q_ov_ext = std::make_shared<Matrix>("q_ov_ext", naux_ij, nlmo_ij * npao_ext_ij);
+
+            // Compute (i k_{ij} | a_{ij} b_{kj}) integrals through density-fitting
 
             for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
                 const int q = lmopair_to_ribfs_[ij][q_ij];
                 const int centerq = ribasis_->function_to_center(q);
 
-                for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-                    int k = lmopair_to_lmos_[ij][k_ij];
-                    int ik = i_j_to_ij_[i][k], kj = i_j_to_ij_[k][j];
-                    int k_sparse = riatom_to_lmos_ext_dense_[centerq][k];
-                    auto kj_idx = index_list(riatom_to_paos_ext_[centerq], lmopair_to_paos_[kj]);
-                    
-                    auto K_ij_kj_temp = linalg::doublet(submatrix_rows_and_cols(*qia_[q], std::vector<int>(1, k_sparse), kj_idx), X_pno_[kj]);
+                const auto sparse_lmo_list = index_list(riatom_to_lmos_ext_[centerq], lmopair_to_lmos_[ij]);
+                const auto sparse_pao_list = index_list(riatom_to_paos_ext_[centerq], extended_pao_domain);
 
-                    for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
-                        for (int c_kj = 0; c_kj < n_pno_[kj]; ++c_kj) {
-                            (*K_ij_kj_[ij][k_ij])(a_ij, c_kj) += (*q_iv_clone)(q_ij, a_ij) * (*K_ij_kj_temp)(0, c_kj);
-                        }
-                    }
-                    
-                    if (i != j) {
-                        auto ik_idx = index_list(riatom_to_paos_ext_[centerq], lmopair_to_paos_[ik]);
-                        auto K_ij_ik_temp = linalg::doublet(submatrix_rows_and_cols(*qia_[q], std::vector<int>(1, k_sparse), ik_idx), X_pno_[ik]);
+                auto q_ov_ext_tmp = submatrix_rows_and_cols(*qia_[q], sparse_lmo_list, sparse_pao_list);
+                ::memcpy(&(*q_ov_ext)(q_ij, 0), q_ov_ext_tmp->get_pointer(), nlmo_ij * npao_ext_ij * sizeof(double));
+            }
 
-                        for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
-                            for (int c_ik = 0; c_ik < n_pno_[ik]; ++c_ik) {
-                                (*K_ij_kj_[ji][k_ij])(a_ij, c_ik) += (*q_jv_clone)(q_ij, a_ij) * (*K_ij_ik_temp)(0, c_ik);
-                            }
-                        }
-                    } // end (i != j)
+            SharedMatrix K_oviv = linalg::doublet(q_ov_ext, q_iv_clone, true, false);
+            K_oviv->reshape(nlmo_ij, npao_ext_ij * npno_ij);
+            SharedMatrix K_ovjv;
 
-                }
+            if (i != j) {
+                K_ovjv = linalg::doublet(q_ov_ext, q_jv_clone, true, false);
+                K_ovjv->reshape(nlmo_ij, npao_ext_ij * npno_ij);
+            }
+
+            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+                int k = lmopair_to_lmos_[ij][k_ij];
+                int ik = i_j_to_ij_[i][k], kj = i_j_to_ij_[k][j];
+
+                auto K_oviv_slice = submatrix_rows(*K_oviv, std::vector<int>(1, k_ij));
+                K_oviv_slice->reshape(npao_ext_ij, npno_ij);
+                K_oviv_slice = submatrix_rows(*K_oviv_slice, index_list(extended_pao_domain, lmopair_to_paos_[kj]));
+                K_oviv_slice = linalg::doublet(X_pno_[kj], K_oviv_slice, true, false);
+                K_ij_kj_[ij][k_ij] = K_oviv_slice->transpose();
+
+                if (i != j) {
+                    auto K_ovjv_slice = submatrix_rows(*K_ovjv, std::vector<int>(1, k_ij));
+                    K_ovjv_slice->reshape(npao_ext_ij, npno_ij);
+                    K_ovjv_slice = submatrix_rows(*K_ovjv_slice, index_list(extended_pao_domain, lmopair_to_paos_[ik]));
+                    K_ovjv_slice = linalg::doublet(X_pno_[ik], K_ovjv_slice, true, false);
+                    K_ij_kj_[ji][k_ij] = K_ovjv_slice->transpose();
+                } // end if
             }
 
             if (thread == 0) timer_off("DLPNO-CCSD: K_ij_kj Integrals");
 
-            // Take the difference with respect to projected integrals
-            /*
-            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-                int k = lmopair_to_lmos_[ij][k_ij];
-                int kj = i_j_to_ij_[k][j], ik = i_j_to_ij_[i][k];
-                
-                auto S_ij_kj = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], lmopair_to_paos_[kj]);
-                S_ij_kj = linalg::triplet(X_pno_[ij], S_ij_kj, X_pno_[kj], true, false, false);
-
-                auto J_ij_kj = std::make_shared<Matrix>(npno_ij, npno_ij);
-                J_ij_kj->zero();
-
-                auto K_ij_kj = std::make_shared<Matrix>(npno_ij, npno_ij);
-                K_ij_kj->zero();
-
-                for (int a_ij = 0; a_ij < npno_ij; ++a_ij) {
-                    for (int b_ij = 0; b_ij < npno_ij; ++b_ij) {
-                        for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-                            (*J_ij_kj)(a_ij, b_ij) += (*q_io)(q_ij, k_ij) * (*q_vv)(q_ij, a_ij * npno_ij + b_ij);
-                            (*K_ij_kj)(a_ij, b_ij) += (*q_iv)(q_ij, a_ij) * (*q_ov)(q_ij, k_ij * npno_ij + b_ij);
-                        } // end q_ij
-                    } // end b_ij
-                } // end a_ij
-
-                // Take projection difference
-                J_ij_kj_[ij][k_ij]->subtract(linalg::doublet(J_ij_kj, S_ij_kj, false, false));
-                K_ij_kj_[ij][k_ij]->subtract(linalg::doublet(K_ij_kj, S_ij_kj, false, false));
-
-                if (i != j) {
-                    auto S_ij_ik = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], lmopair_to_paos_[ik]);
-                    S_ij_ik = linalg::triplet(X_pno_[ij], S_ij_ik, X_pno_[ik], true, false, false);
-
-                    auto J_ij_ik = std::make_shared<Matrix>(npno_ij, npno_ij);
-                    J_ij_ik->zero();
-
-                    auto K_ij_ik = std::make_shared<Matrix>(npno_ij, npno_ij);
-                    K_ij_ik->zero();
-
-                    for (int a_ij = 0; a_ij < npno_ij; ++a_ij) {
-                        for (int b_ij = 0; b_ij < npno_ij; ++b_ij) {
-                            for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-                                (*J_ij_ik)(a_ij, b_ij) += (*q_jo)(q_ij, k_ij) * (*q_vv)(q_ij, a_ij * npno_ij + b_ij);
-                                (*K_ij_ik)(a_ij, b_ij) += (*q_jv)(q_ij, a_ij) * (*q_ov)(q_ij, k_ij * npno_ij + b_ij);
-                            } // end q_ij
-                        } // end b_ij
-                    } // end a_ij
-
-                    // Take projection difference
-                    J_ij_kj_[ji][k_ij]->subtract(linalg::doublet(J_ij_ik, S_ij_ik, false, false));
-                    K_ij_kj_[ji][k_ij]->subtract(linalg::doublet(K_ij_ik, S_ij_ik, false, false));
-                } // end if
-            }
-            */
-        
         } // end if
 
         if (thread == 0) timer_on("DLPNO-CCSD: Contract Integrals");
@@ -1816,32 +1647,6 @@ void DLPNOCCSD::t1_ints() {
         } // end q_ij
     }
 
-    // Einsums part
-    q_io_t1_.resize(n_lmo_pairs);
-    q_iv_t1_.resize(n_lmo_pairs);
-
-#pragma omp parallel for schedule(dynamic, 1)
-    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
-        auto &[i, j] = ij_to_i_j_[ij];
-        int i_ij = lmopair_to_lmos_dense_[ij][i];
-
-        Tensor<double, 3> Qma_ij = QIA_PNO_EINSUMS(ij); // Read in (Q_{ij} | m_{ij} a_{ij}) integrals from disk
-        Tensor<double, 3> Qab_ij = QAB_PNO_EINSUMS(ij); // Read in (Q_{ij} | a_{ij} b_{ij}) integrals from disk
-        Tensor<double, 1> T_i = T_n_ij_sums_[ij](i_ij, All); // Slice i out of T_n_ij
-
-        // Jiang Eq. 36
-        q_io_t1_[ij] = q_io_list_[ij];
-        einsum(1.0, Indices{index::Q, index::k}, &q_io_t1_[ij], 1.0, Indices{index::Q, index::k, index::a}, Qma_ij, 
-                Indices{index::a}, T_i);
-
-        // Jiang Eq. 38
-        q_iv_t1_[ij] = q_iv_list_[ij];
-        einsum(1.0, Indices{index::Q, index::a}, &q_iv_t1_[ij], -1.0, Indices{index::Q, index::k}, q_io_t1_[ij], 
-                Indices{index::k, index::a}, T_n_ij_sums_[ij]);
-        einsum(1.0, Indices{index::Q, index::a}, &q_iv_t1_[ij], 1.0, Indices{index::Q, index::a, index::b}, Qab_ij, 
-                Indices{index::b}, T_i);
-    }
-
     timer_off("DLPNO-CCSD: T1 Ints");
 }
 
@@ -1990,183 +1795,6 @@ void DLPNOCCSD::t1_fock() {
             
         } // end i == j
     }
-
-    // => Einsums part... old stuff goes away once we confirm this works :)
-
-    // T1-dressed Fock matrix elements (Jiang Eq. 94 - 97)
-    F_ki_t1_.resize(n_lmo_pairs);
-    F_kc_t1_.resize(n_lmo_pairs);
-    F_ai_t1_.resize(naocc); // These only need to be computed for singles
-    F_ab_t1_.resize(n_lmo_pairs);
-
-#pragma omp parallel for schedule(dynamic, 1)
-    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
-        auto &[i, j] = ij_to_i_j_[ij];
-        // lmopair_to_lmos_dense_ tracks all orbitals m in the molecule for a domain ij.
-        // If m is in the domain of ij, it gives the corresponding m_ij, else, returns -1
-        int i_ij = lmopair_to_lmos_dense_[ij][i], j_ij = lmopair_to_lmos_dense_[ij][j];
-        int ji = ij_to_ji_[ij], jj = i_j_to_ij_[j][j];
-        int pair_idx = (i > j) ? ji : ij;
-
-        if (i_j_to_ij_strong_[i][j] == -1 || i > j) continue;
-
-        int naux_ij = lmopair_to_ribfs_[ij].size(); // Local auxiliary basis (defined by Mulliken population)
-        int nlmo_ij = lmopair_to_lmos_[ij].size();  // All occ orbitals k, such that ik AND jk are valid pairs
-        int npno_ij = n_pno_[ij]; // Pair natural orbitals per ij
-
-        // Read in 3-center integrals from disk (or core... depending on option)
-        Tensor<double, 3> Qma_ij = QIA_PNO_EINSUMS(ij); // (naux_ij * nlmo_ij * npno_ij)
-        Tensor<double, 3> Qab_ij = QAB_PNO_EINSUMS(ij); // (naux_ij * npno_ij * npno_ij)
-
-        // Common intermediate is Gamma_{Q_{ij}}, which is used in every Fock matrix
-        // \Gamma_{Q} = B^{Q}_{me} t_{m}^{e}
-        // T_n_ij_sums = t_{n_{ij}}^{a_{nn}} S_{a_{nn}}^{a_{ij}} (Jiang Eq. 70)
-        // Singles in domain of ij with relavant amplitudes projected onto PNO space of ij
-        Tensor<double, 1> Gamma_Q("Gamma_Q", naux_ij);
-        einsum(0.0, Indices{index::Q}, &Gamma_Q, 1.0, Indices{index::Q, index::m, index::e}, Qma_ij,
-                Indices{index::m, index::e}, T_n_ij_sums_[ij]);
-
-        // => Part 1: J-like contributions <= //
-
-        // \overline{F}_{ki} = f_{ki} + [2B^{Q}_{ki}B^{Q}_{me} - B^{Q}_{ke}B^{Q}_{mi}]t_{m}^{e}
-        // = f_{ki} + 2B^{Q}_{ki} \Gamma_{Q} - B^{Q}_{ke}B^{Q}_{mi}t_{m}^{e}
-        // Reindex of Eq. 98, using Eq. 44 as baseline
-        Tensor<double, 1> F_ki_bar("F_ki_bar", nlmo_ij);
-
-        // Copy LMO Fock matrix elements into F_ki_bar
-        for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-            int k = lmopair_to_lmos_[ij][k_ij];
-            F_ki_bar(k_ij) = (*F_lmo_)(k, i);
-        }
-
-        // J-like contribution to F_ki_bar (2B^{Q}_{ki} \Gamma_{Q})
-        einsum(1.0, Indices{index::k}, &F_ki_bar, 2.0, Indices{index::Q, index::k}, q_io_list_[ij],
-                Indices{index::Q}, Gamma_Q);
-        // Einsums sequence
-        // F_ki = A (1.0) * F_{ki} + B (2.0) * (Q, k) (q_io_list_[ij]) * (Q) (Gamma_Q)
-        // (Q, k) (Q) -> GEMV (matrix-vector product)
-
-        // \overline{F}_{kc} = f_{kc} + [2B^{Q}_{kc}B^{Q}_{me} - B^{Q}_{ke}B^{Q}_{mc}]t_{m}^{e} 
-        // Reindex of (Jiang Eq. 99), using Eq. 44 as baseline
-        // f_{kc} is zero in restricted closed-shell case
-        Tensor<double, 2> F_kc_bar("F_kc_bar", nlmo_ij, npno_ij);
-
-        // J-like contribution to F_kc_bar \overline{F}_{kc} = 2 B^{Q}_{kc} \Gamma_{Q}
-        einsum(0.0, Indices{index::k, index::c}, &F_kc_bar, 2.0, Indices{index::Q, index::k, index::c},
-                Qma_ij, Indices{index::Q}, Gamma_Q);
-
-        // \overline{F}_{ab} = f_{ab} + [2B^{Q}_{ab}B^{Q}_{me} - B^{Q}_{ae}B^{Q}_{mb}]t_{m}^{e} 
-        // Reindex of (Jiang Eq. 101), using Eq. 44 as baseline
-        // f_{a_{ij}b_{ij}} is diagonal in each PNO domain
-        Tensor<double, 2> F_ab_bar("F_ab_bar", npno_ij, npno_ij);
-        F_ab_bar.zero();
-
-        for (int a_ij = 0; a_ij < npno_ij; ++a_ij) {
-            (F_ab_bar)(a_ij, a_ij) = (*e_pno_[ij])(a_ij);
-        }
-
-        // J-like contribution to F_ab_bar \overline{F}_{ab} = 2 B^{Q}_{ab} \Gamma_{Q}
-        einsum(1.0, Indices{index::a, index::b}, &F_ab_bar, 2.0, Indices{index::Q, index::a, index::b},
-                Qab_ij, Indices{index::Q}, Gamma_Q);
-
-        Tensor<double, 1> F_ai_bar;
-        if (i == j) {
-            // \overline{F}_{ai} = f_{ai} + [2B^{Q}_{ai}B^{Q}_{me} - B^{Q}_{ae}B^{Q}_{mi}]t_{m}^{e}
-            // Reindex of (Jiang Eq. 100), using Eq. 44 as baseline
-            // f_{a_{ii}i} is zero in restricted closed-shell reference
-            F_ai_bar = Tensor<double, 1>("F_ai_bar", npno_ij);
-            F_ai_bar.zero();
-
-            // J-like contribution to F_ai_bar \overline{F}_{ai} = 2 B^{Q}_{ai} \Gamma_{Q}
-            einsum(1.0, Indices{index::a}, &F_ai_bar, 2.0, Indices{index::Q, index::a},
-                    q_iv_list_[ij], Indices{index::Q}, Gamma_Q);
-        }
-
-        // => Part 2: K-like contributions <= //
-        
-        for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-            // Integral slices
-            Tensor<double, 2> Qov_slice = (Qma_ij)(q_ij, All, All);
-            Tensor<double, 2> Qvv_slice = (Qab_ij)(q_ij, All, All);
-            Tensor<double, 1> Qmi_slice = (q_io_list_[ij])(q_ij, All);
-
-            // Common intermediates
-
-            // This intermediate is used for F_ki and F_ai
-            // F_xi_int (e) = Qmi_slice (m) * T_n_ij_sums (m, e)
-            Tensor<double, 1> F_xi_int("F_xi_int", npno_ij);
-            einsum(0.0, Indices{index::e}, &F_xi_int, 1.0, Indices{index::m, index::e}, T_n_ij_sums_[ij],
-                    Indices{index::m}, Qmi_slice);
-
-            // K-like contribution to F_ki_bar
-            // \overline{F}_{ki} -= B^{Q}_{ke} B^{Q}_{mi} t_{m}^{e} (k, e) (m) (m, e)
-            // or \overline{F}_{ki} -= B^{Q}_{ke} (k, e) F_xi_int (e)
-            einsum(1.0, Indices{index::k}, &F_ki_bar, -1.0, Indices{index::k, index::e}, Qov_slice, 
-                    Indices{index::e}, F_xi_int);
-
-            // K-like contribution to F_kc_bar
-            // \overline{F}_{kc} -= B^{Q}_{ke} B^{Q}_{mc} t_{m}^{e} (k, e) (m, c) (m, e)
-            Tensor<double, 2> F_kc_int("F_kc_int", nlmo_ij, nlmo_ij);
-            einsum(0.0, Indices{index::k, index::m}, &F_kc_int, 1.0, Indices{index::k, index::e},
-                    Qov_slice, Indices{index::m, index::e}, T_n_ij_sums_[ij]);
-            einsum(1.0, Indices{index::k, index::c}, &F_kc_bar, -1.0, Indices{index::k, index::m}, 
-                    F_kc_int, Indices{index::m, index::c}, Qov_slice);
-
-            // K-like contribution to F_ab_bar
-            // \overline{F}_{ab} -= B^{Q}_{ae} B^{Q}_{mb} t_{m}^{e} (a, e) (m, b) (m, e)
-            Tensor<double, 2> F_ab_int("F_ab_int", npno_ij, nlmo_ij);
-            einsum(0.0, Indices{index::a, index::m}, &F_ab_int, 1.0, Indices{index::a, index::e},
-                    Qvv_slice, Indices{index::m, index::e}, T_n_ij_sums_[ij]);
-            einsum(1.0, Indices{index::a, index::b}, &F_ab_bar, -1.0, Indices{index::a, index::m}, 
-                    F_ab_int, Indices{index::m, index::b}, Qov_slice);
-
-            if (i == j) {
-                // K-like contribution to F_ai_bar
-                // \overline{F}_{ai} -= B^{Q}_{ae} B^{Q}_{mi} t_{m}^{e} (a, e) (m) (m, e)
-                // \overline{F}_{ai} -= B^{Q}_{ae} (a, e) F_xi_int (e)
-                einsum(1.0, Indices{index::a}, &F_ai_bar, -1.0, Indices{index::a, index::e}, 
-                        Qvv_slice, Indices{index::e}, F_xi_int);
-            }
-        } // end q_ij
-
-        // Build Fully T1-Dressed Fock Matrix Intermediates
-
-        // \widetilde{F}_{ki} = \overline{F}_{ki} + \overline{F}_{kc}t_{i}^{c}
-        // (Jiang Eq. 94)... small modification... using more robust virtual space of ij
-        // compared to jj
-        F_ki_t1_[ij] = F_ki_bar; // in einsums, this is copy
-        Tensor<double, 1> T_i = (T_n_ij_sums_[ij])(i_ij, All); // Grab projected i from all projected m_ij amplitudes
-        einsum(1.0, Indices{index::k}, &F_ki_t1_[ij], 1.0, Indices{index::k, index::c}, F_kc_bar,
-                Indices{index::c}, T_i);
-
-        // We do not need to make modifications for fully T1-dressed Fkc
-        // (Jiang Eq. 95 assumed that the index was restricted over strong pairs only,
-        // which is no longer the case due to strong/weak pair coupling
-        F_kc_t1_[ij] = F_kc_bar; // in einsums, this is copy
-
-        // \widetilde{F}_{ab} = \overline{F}_{ab} - t_{k}^{a} \overline{F}_{kb}
-        // (Jiang Eq. 96)... no mods
-        F_ab_t1_[ij] = F_ab_bar;
-        einsum(1.0, Indices{index::a, index::b}, &F_ab_t1_[ij], -1.0, Indices{index::k, index::a},
-                T_n_ij_sums_[ij], Indices{index::k, index::b}, F_kc_bar);
-
-        // Only do if i == j, since only needed for singles
-        if (i == j) {
-            // \widetilde{F}_{ai} = \overline{F}_{ai} - t_{k}^{a} \overline{F}_{ki}
-            // + \overline{F}_{ab} t_{i}^{b} - t_{k}^{a} \overline{F}_{kb} t_{i}^{b}
-            // => factor out - t_{k}^{a}
-            // \overline{F}_{ai} + \overline{F}_{ab} t_{i}^{b} - t_{k}^{a} 
-            // (\overline{F}_{ki} + \overline{F}_{kb} t_{i}^{b}) <- Eq. 94 (Jaden is genius)
-            // \widetilde{F}_{ai} = \overline{F}_{ai} + \overline{F}_{ab} t_{i}^{b}
-            // - t_{k}^{a} \widetilde{F}_{ki}
-            F_ai_t1_[i] = F_ai_bar;
-            einsum(1.0, Indices{index::a}, &F_ai_t1_[i], 1.0, Indices{index::a, index::b}, F_ab_bar,
-                    Indices{index::b}, T_i);
-            einsum(1.0, Indices{index::a}, &F_ai_t1_[i], -1.0, Indices{index::k, index::a}, T_n_ij_sums_[ij],
-                    Indices{index::k}, F_ki_t1_[ij]);
-        } // end if
-
-    } // end for
 
     timer_off("DLPNO-CCSD: T1 Fock");
 }
@@ -2384,9 +2012,8 @@ void DLPNOCCSD::compute_R_ia(std::vector<SharedMatrix>& R_ia, std::vector<std::v
 #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < naocc; ++i) {
         int ii = i_j_to_ij_[i][i];
-        // R_ia[i]->copy(Fai_[i]);
         // Initialize Ria as T1-dressed Fock matrix element Fai
-        ::memcpy(R_ia[i]->get_pointer(), F_ai_t1_[i].data(), n_pno_[ii] * sizeof(double));
+        R_ia[i]->copy(Fai_[i]);
     }
 
     // Zero out buffers
@@ -2520,177 +2147,77 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
         int pair_idx = (i > j) ? ji : ij;
 
         if (i <= j) {
-            // => SECTION 0: SETUP (buffers, indices, etc.) <= //
+            // R_{ij}^{ab} += (i a_ij | q_ij)' * (q_ij | j b_ij)' (Deprince Equation 10, Term 1)
+            auto K_ij = linalg::doublet(i_Qa_t1_[ij], i_Qa_t1_[ji], true, false);
+            R_iajb[ij]->add(K_ij);
+            if (i != j) R_iajb[ji]->add(K_ij->transpose());
 
-            // Useful information for integral slices
-            int i_ij = lmopair_to_lmos_dense_[ij][i], j_ij = lmopair_to_lmos_dense_[ij][j];
-
-            // Buffers for contractions and holding data
-            Tensor<double, 2> R_ij("R_ij", npno_ij, npno_ij);
-            R_ij.zero();
-
-            Tensor<double, 2> pno_buffer_a("pno_buffer_a", npno_ij, npno_ij);
-            Tensor<double, 2> pno_buffer_b("pno_buffer_b", npno_ij, npno_ij);
-
-            // => SECTION 1: INTEGRALS <= //
-
-            // Expensive DF integrals are read from disk once to minimize Disk I/O overhead
-            Tensor<double, 3> Qma_ij = QIA_PNO_EINSUMS(ij);
-            Tensor<double, 3> Qab_ij = QAB_PNO_EINSUMS(ij);
-
-            // Form T1-dressed version of Qab_ij (Jiang Eq. 39)
-            Tensor<double, 3> Qab_t1("Qab_t1", naux_ij, npno_ij, npno_ij);
+            // A_{ij}^{ab} = B^{Q}_{ac} * t_{ij}^{cd} * B^{Q}_{bd} (DePrince Equation 11)
+            auto A_ij = std::make_shared<Matrix>(npno_ij, npno_ij);
+            auto qma_ij = QIA_PNO(ij);
+            auto qab_ij = QAB_PNO(ij);
             for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-                Tensor<double, 2> Qma_slice = Qma_ij(q_ij, All, All);
-                Tensor<double, 2> Qab_slice = Qab_ij(q_ij, All, All);
-                einsum(1.0, Indices{index::a, index::b}, &Qab_slice, -1.0, Indices{index::k, index::a}, T_n_ij_sums_[ij], 
-                        Indices{index::k, index::b}, Qma_slice);
-                
-                Qab_t1(q_ij, All, All) = Qab_slice;
-            }
+                auto Qab_t1 = qab_ij[q_ij]->clone();
+                Qab_t1->subtract(linalg::doublet(T_n_ij_[ij], qma_ij[q_ij], true, false));
 
-            // => SECTION 2: PROJECTED AMPLITUDES <= //
+                A_ij->add(linalg::triplet(Qab_t1, T_iajb_[ij], Qab_t1, false, false, true));
+            } // end q_ij
+            R_iajb[ij]->add(A_ij);
+            if (i != j) R_iajb[ji]->add(A_ij->transpose());
 
-            // Father of all overlap integrals (all overlap integrals are built using semi-direct algorithm)
-            // (using the extended PAO domain, which combines PAOs with all pairs ij with PAOs from all possible pairs
-            // ik, jk, il, jl, as well as kl
             SharedMatrix S_ij;
             std::vector<int> pair_ext_domain;
-            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-                int k = lmopair_to_lmos_[ij][k_ij];
-                for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
-                    int l = lmopair_to_lmos_[ij][l_ij];
-                    pair_ext_domain = merge_lists(pair_ext_domain, lmo_to_paos_[k]);
-                    pair_ext_domain = merge_lists(pair_ext_domain, lmo_to_paos_[l]);
-                } // end k_ij
-            } // end l_ij
-            S_ij = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], pair_ext_domain);
-            S_ij = linalg::doublet(X_pno_[ij], S_ij, true, false);
+            if (low_memory_overlap_) {
+                for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+                    int k = lmopair_to_lmos_[ij][k_ij];
+                    for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
+                        int l = lmopair_to_lmos_[ij][l_ij];
+                        int kl = i_j_to_ij_[k][l];
+                        if (kl == -1 || n_pno_[kl] == 0) continue;
+                        pair_ext_domain = merge_lists(pair_ext_domain, lmopair_to_paos_[kl]);
+                    } // end k
+                } // end l
+                S_ij = submatrix_rows_and_cols(*S_pao_, pair_ext_domain, lmopair_to_paos_[ij]);
+                S_ij = linalg::doublet(S_ij, X_pno_[ij], false, false);
+            } // end if
 
-            // Amplitude intermediates
-            Tensor<double, 2> T_ij_ein("T_ij_ein", npno_ij, npno_ij);
-            ::memcpy(T_ij_ein.data(), T_iajb_[ij]->get_pointer(), npno_ij * npno_ij * sizeof(double));
-
-            // => SECTION 3: Contract Amplitudes and Integrals into R2 Residual! <= //
-
-            // R_{ij}^{ab} += (i a_ij | q_ij)' * (q_ij | j b_ij)' (DePrince 2013 Eq. 10a, Jiang Eq. 75)
-            einsum(0.0, Indices{index::a, index::b}, &R_ij, 1.0, Indices{index::Q, index::a}, q_iv_t1_[ij],
-                    Indices{index::Q, index::b}, q_iv_t1_[ji]);
-
-            // R_{ij}^{ab} += B^{Q}_{ac} * t_{ij}^{cd} * B^{Q}_{bd} (DePrince 2013 Eq. 11, Jiang Eq. 76)
-            for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-                Tensor<double, 2> Qab_slice = Qab_t1(q_ij, All, All);
-
-                einsum(0.0, Indices{index::a, index::d}, &pno_buffer_a, 1.0, Indices{index::a, index::c}, Qab_slice,
-                        Indices{index::c, index::d}, T_ij_ein);
-                einsum(0.0, Indices{index::a, index::b}, &pno_buffer_b, 1.0, Indices{index::a, index::d}, pno_buffer_a,
-                        Indices{index::b, index::d}, Qab_slice);
-                R_ij += pno_buffer_b;
-            }
-
-            // beta_{ij}^{kl} = B^{Q}_{ki} B^{Q}_{lj} + B^{Q}_{kc} B^{Q}_{ld} t_{ij}^{cd} (Jiang Eq. 27)
-            Tensor<double, 2> beta_ij("beta_ij", nlmo_ij, nlmo_ij);
-            einsum(0.0, Indices{index::k, index::l}, &beta_ij, 1.0, Indices{index::Q, index::k}, q_io_t1_[ij], 
-                    Indices{index::Q, index::l}, q_io_t1_[ji]);
-
-            for (int q_ij = 0; q_ij < naux_ij; ++q_ij) {
-                Tensor<double, 2> Qma_slice = Qma_ij(q_ij, All, All);
-
-                // beta_{ij}^{kl} += B^{Q}_{kc} B^{Q}_{ld} t_{ij}^{cd}
-                Tensor<double, 2> beta_temp("beta_temp", npno_ij, nlmo_ij);
-                einsum(0.0, Indices{index::c, index::l}, &beta_temp, 1.0, Indices{index::c, index::d}, T_ij_ein,
-                        Indices{index::l, index::d}, Qma_slice);
-
-                einsum(1.0, Indices{index::k, index::l}, &beta_ij, 1.0, Indices{index::k, index::c}, Qma_slice,
-                        Indices{index::c, index::l}, beta_temp);
-            }
+            // B_{ij}^{ab} = t_{kl}^{ab} * [B^{Q}_{ki} * B^{Q}_{lj} + t_{ij}^{cd} * B^{Q}_{kc} * t_{ij}^{cd} * B^{Q}_{ld}]
+            // (DePrince Equation 12)
+            // and E_{ij}^{ab} = t_{ij}^{ac} (Fbc - U_{kl}^{bd}[B^{Q}_{ld}B^{Q}_{kc}]) (DePrince Equation 15)
             
-            // Make B and E intermediates
+            auto B_ij = std::make_shared<Matrix>(npno_ij, npno_ij);
+            auto E_tilde = Fab_[ij]->clone();
 
-            // F_double_tilde_{bc} = Fbc - U_{kl}^{bd}[B^{Q}_{ld}B^{Q}_{kc}]) (Jiang Eq. 30)
-            Tensor<double, 2> F_bc_double_tilde = F_ab_t1_[ij];
-            auto F_bc_buffer = std::make_shared<Matrix>(n_pno_[ij], n_pno_[ij]);
-            F_bc_buffer->zero();
-            
             for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
                 int k = lmopair_to_lmos_[ij][k_ij];
                 for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
                     int l = lmopair_to_lmos_[ij][l_ij];
                     int kl = i_j_to_ij_[k][l];
-                    if (kl == -1) continue;
-                    
-                    SharedMatrix S_ij_kl;
-                    if (low_memory_overlap_) { // Compute S_ij_kl using the "semi-direct" algorithm on the fly
-                        S_ij_kl = submatrix_cols(*S_ij, index_list(pair_ext_domain, lmopair_to_paos_[kl]));
-                        S_ij_kl = linalg::doublet(S_ij_kl, X_pno_[kl], false, false);
-                    } else { // Big chunk of memory
-                        S_ij_kl = S_PNO(ij, kl);
-                    }
-                    
-                    // Perform PNO projection and copy data
-                    auto T_kl_proj = linalg::triplet(S_ij_kl, T_iajb_[kl], S_ij_kl, false, false, true);
+                    if (kl == -1 || n_pno_[kl] == 0) continue;
 
-                    // R_{ij}^{ab} += t_{kl}^{ab} * beta_{ij}^{kl} (Jiang Eq. 22)
-                    T_kl_proj->scale((beta_ij)(k_ij, l_ij));
-                    R_iajb[ij]->add(T_kl_proj);
-                    if (i != j) R_iajb[ji]->add(T_kl_proj->transpose());
+                    SharedMatrix S_kl_ij = (low_memory_overlap_) ? 
+                            linalg::doublet(X_pno_[kl], submatrix_rows(*S_ij, index_list(pair_ext_domain, lmopair_to_paos_[kl])), true, false) : S_PNO(kl, ij);
 
-                    // F_double_tilde_{bc} -= U_{kl}^{bd}K_{kl}^{cd} (one can form this intermediate outside loop)
-                    auto F_bc_double_tilde_cont = linalg::doublet(Tt_iajb_[kl], K_iajb_[kl], false, true);
-                    F_bc_buffer->subtract(linalg::triplet(S_ij_kl, F_bc_double_tilde_cont, S_ij_kl, false, false, true));
+                    // B intermediates
+                    auto T_kl = linalg::triplet(S_kl_ij, T_iajb_[kl], S_kl_ij, true, false, false);
+                    T_kl->scale((*beta[ij])(k_ij, l_ij));
+                    B_ij->add(T_kl);
+
+                    // E intermediates
+                    auto E_temp = linalg::doublet(Tt_iajb_[kl], K_iajb_[kl], false, true);
+                    E_tilde->subtract(linalg::triplet(S_kl_ij, E_temp, S_kl_ij, true, false, false));
+
                 } // end l_ij
             } // end k_ij
-            ::memcpy(pno_buffer_a.data(), F_bc_buffer->get_pointer(), n_pno_[ij] * n_pno_[ij] * sizeof(double));
-            F_bc_double_tilde += pno_buffer_a;
-            
-            // R_{ij}^{ab} += P_{ij}^{ab} [t_{ij}^{ac} (F_double_tilde_{bc})] (Jiang Eq. 25)
-            // or t_{ij}^{ac} F_double_tilde_{bc} + F_double_tilde_{ac} t_{ij}^{cb}
-            einsum(1.0, Indices{index::a, index::b}, &R_ij, 1.0, Indices{index::a, index::c}, T_ij_ein,
-                    Indices{index::b, index::c}, F_bc_double_tilde);
-            einsum(1.0, Indices{index::a, index::b}, &R_ij, 1.0, Indices{index::a, index::c}, F_bc_double_tilde,
-                    Indices{index::c, index::b}, T_ij_ein);
-            
-            // Flush buffers
-            // TODO: Get rid of this copying in the future
-            auto R_ij_psi = std::make_shared<Matrix>(npno_ij, npno_ij);
-            ::memcpy(R_ij_psi->get_pointer(), R_ij.data(), npno_ij * npno_ij * sizeof(double));
-            R_iajb[ij]->add(R_ij_psi);
-            if (i != j) R_iajb[ji]->add(R_ij_psi->transpose());
+            R_iajb[ij]->add(B_ij);
+            if (i != j) R_iajb[ji]->add(B_ij->transpose());
+
+            auto E_ij = linalg::doublet(T_iajb_[ij], E_tilde, false, true);
+            E_ij->add(linalg::doublet(E_tilde, T_iajb_[ij], false, false));
+
+            R_iajb[ij]->add(E_ij);
+            if (i != j) R_iajb[ji]->add(E_ij->transpose());
         } // end if
-        /*
-        // (Projection Error Correction Terms)
-        // Projection Error correction terms from C_{ij}^{ab} and D_{ij}^{ab}
-        auto dC_ij = std::make_shared<Matrix>(npno_ij, npno_ij);
-        auto dD_ij = std::make_shared<Matrix>(npno_ij, npno_ij);
-        dC_ij->zero();
-        dD_ij->zero();
-        for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
-            int k = lmopair_to_lmos_[ij][k_ij];
-            int jk = i_j_to_ij_[j][k];
-
-            auto S_ij_jk = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], lmopair_to_paos_[jk]);
-            S_ij_jk = linalg::triplet(X_pno_[ij], S_ij_jk, X_pno_[jk], true, false, false);
-
-            // (ki|ac) correction (Adapted from Jiang Eq. 78)
-            // dC_ij->subtract(linalg::triplet(dJ_ij_kj_[ij][k_ij], T_iajb_[jk], S_ij_jk, false, false, true));
-
-            // 2.0 (ai|kc) - (ki|ac) correction (Adapted from Jiang Eq. 79)
-            // auto L_aikc = dK_ij_kj_[ij][k_ij]->clone();
-            // L_aikc->scale(2.0);
-            // L_aikc->subtract(dJ_ij_kj_[ij][k_ij]);
-            // auto D_temp = linalg::triplet(L_aikc, Tt_iajb_[jk], S_ij_jk, false, true, true);
-            // D_temp->scale(0.5);
-            // dD_ij->add(D_temp);
-            dD_ij->add(linalg::triplet(dK_ij_kj_[ij][k_ij], Tt_iajb_[jk], S_ij_jk, false, true, true));
-        }
-        // Add all the C terms to the non-symmetrized R buffer
-        auto dC_ij_total = dC_ij->clone();
-        dC_ij_total->scale(0.5);
-        dC_ij_total->add(dC_ij->transpose());
-        Rn_iajb[ij]->add(dC_ij_total);
-        // Add the D contribution to the non-symmetrized R buffer
-        Rn_iajb[ij]->add(dD_ij);
-        */
         
         // C_{ij}^{ab} = -t_{kj}^{bc}[B^{Q}_{ki}B^{Q}_{ac} - 0.5t_{li}^{ad}(B^{Q}_{kd}B^{Q}_{lc})] 
         // (DePrince 2013 Eq. 13, Jiang Eq. 78)
@@ -2834,7 +2361,6 @@ void DLPNOCCSD::lccsd_iterations() {
     i_Qa_t1_.resize(n_lmo_pairs);
 
     T_n_ij_.resize(n_lmo_pairs);
-    T_n_ij_sums_.resize(n_lmo_pairs);
 
     while (!(e_converged && r_converged)) {
         // RMS of residual per single LMO, for assesing convergence
@@ -2863,10 +2389,7 @@ void DLPNOCCSD::lccsd_iterations() {
                     (*T_n_ij_[ij])(n_ij, a_ij) = (*T_n_temp)(a_ij, 0);
                 } // end a_ij
             } // end n_ij
-
-            T_n_ij_sums_[ij] = Tensor<double, 2>("T_n_ij", nlmo_ij, npno_ij);
-            ::memcpy(T_n_ij_sums_[ij].data(), T_n_ij_[ij]->get_pointer(), nlmo_ij * npno_ij * sizeof(double));
-        }
+        } // end ij
 
         // Step 2: T1-dress integrals and Fock matrices
         t1_ints();

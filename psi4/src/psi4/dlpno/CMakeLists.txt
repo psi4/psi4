@@ -9,4 +9,3 @@ list(APPEND sources
 psi4_add_module(bin dlpno sources)
 
 target_link_libraries(dlpno PUBLIC diis)
-target_link_libraries(dlpno PRIVATE Einsums::Einsums)

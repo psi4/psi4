@@ -43,17 +43,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "Einsums/Tensor.hpp"
-#include "Einsums/TensorAlgebra.hpp"
-#include "Einsums/LinearAlgebra.hpp"
-#include "Einsums/Profile.hpp"
-#include "Einsums/TensorUtilities/RMSD.hpp"
-
-using namespace einsums;
-using namespace einsums::index;
-using namespace einsums::linear_algebra;
-using namespace einsums::tensor_algebra;
-
 namespace psi {
 namespace dlpno {
 
@@ -315,27 +304,6 @@ class PSI_API DLPNOCCSD : public DLPNO {
     /// Write (Q_ij | a_ij b_ij) integrals to disk?
     bool write_qab_pno_;
 
-    /// DF Domain Integrals
-    std::vector<Tensor<double, 2>> q_io_list_; ///< (Q_{ij} | k_{ij} i)
-    std::vector<Tensor<double, 2>> q_iv_list_; ///< (Q_{ij} | a_{ij} i)
-    std::vector<Tensor<double, 2>> q_io_t1_;   ///< (Q_{ij} | k_{ij} i) [t1-dressed] (Jiang Eq. 36)
-    std::vector<Tensor<double, 2>> q_iv_t1_;   ///< (Q_{ij} | a_{ij} i) [t1-dressed] (Jiang Eq. 38)
-
-    std::vector<Tensor<double, 3>> q_ov_pno_; ///< (Q_{ij} | m_{ij} a_{ij}) (only filled if not writing to disk)
-    std::vector<Tensor<double, 3>> q_vv_pno_; ///< (Q_{ij} | a_{ij} b_{ij}) (only filled if not writing to disk)
-
-    /// Expensive DF Integrals (read from disk)
-    /// TODO: Replace this with std::vector<DiskTensor<double, 3>> in the future,
-    /// when things are more efficient
-    inline Tensor<double, 3> QIA_PNO_EINSUMS(const int ij); ///< (Q_{ij} | m_{ij} a_{ij})
-    inline Tensor<double, 3> QAB_PNO_EINSUMS(const int ij); ///< (Q_{ij} | a_{ij} b_{ij})
-
-    /// T1-Dressed Fock Matrices
-    std::vector<Tensor<double, 1>> F_ki_t1_;   ///< \widetilde{F}_{ki} (Jiang Eq. 40)
-    std::vector<Tensor<double, 2>> F_kc_t1_;   ///< \widetilde{F}_{kc} (Jiang Eq. 41)
-    std::vector<Tensor<double, 1>> F_ai_t1_;   ///< \widetilde{F}_{ai} (Jiang Eq. 42)
-    std::vector<Tensor<double, 2>> F_ab_t1_;   ///< \widetilde{F}_{ab} (Jiang Eq. 43)
-
     /// PNO overlap integrals
     std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
     std::vector<std::vector<SharedMatrix>> S_pno_ij_nn_; ///< pno overlaps
@@ -344,7 +312,6 @@ class PSI_API DLPNOCCSD : public DLPNO {
     /// Coupled-cluster amplitudes
     std::vector<SharedMatrix> T_ia_; ///< singles amplitudes [naocc x (npno_ii, 1)]
     std::vector<SharedMatrix> T_n_ij_; ///< projected singles amplitudes [n_lmo_pairs x (nlmo_ij, npno_ij)] (Jiang Eq. 70)
-    std::vector<Tensor<double, 2>> T_n_ij_sums_;    ///< projected singles amplitudes in the domain of ij (Einsums storage)
 
     // => Strong and Weak Pair Info <=//
 
