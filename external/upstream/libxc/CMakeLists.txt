@@ -9,6 +9,10 @@ if(${Libxc_FOUND})
     message(STATUS "${Cyan}Found Libxc${ColourReset}: ${_loc} (found version ${Libxc_VERSION})")
     add_library(libxc_external INTERFACE)  # dummy
 
+    # Ensure Libxc_DIR is cached so it's available to other ExternalProjects (like gauxc)
+    # find_package sets this variable, but we need to ensure it's in the cache
+    set(Libxc_DIR ${Libxc_DIR} CACHE PATH "path to externally found LibxcConfig.cmake" FORCE)
+
     if(${CMAKE_INSIST_FIND_PACKAGE_Libxc})
         message(VERBOSE "Suitable Libxc located externally as user insists")
     endif()
