@@ -98,7 +98,10 @@ if(${ENABLE_gauxc})
                          -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                          -DOpenMP_C_LIB_NAMES:STRING=${OpenMP_C_LIB_NAMES}
                          -DOpenMP_CXX_LIB_NAMES:STRING=${OpenMP_CXX_LIB_NAMES}
-                         -DBLAS_LIBRARIES:STRING=${BLAS_LIBRARIES})
+                         -DBLAS_LIBRARIES:STRING=${BLAS_LIBRARIES}
+                         # CMAKE_PREFIX_PATH propagates to GauXC's FetchContent builds (ExchCXX)
+                         # allowing ExchCXX to find Psi4's LibXC without rebuilding from source
+                         -DCMAKE_PREFIX_PATH:STRING=${STAGED_INSTALL_PREFIX};${CMAKE_PREFIX_PATH})
         set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
     endif()
 else()
