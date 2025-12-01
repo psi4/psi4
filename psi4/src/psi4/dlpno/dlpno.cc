@@ -74,11 +74,13 @@ void DLPNO::common_init() {
     T_CUT_TRACE_MP2_ = options_.get_double("T_CUT_TRACE_MP2");
     T_CUT_ENERGY_MP2_ = options_.get_double("T_CUT_ENERGY_MP2");
     T_CUT_PNO_DIAG_SCALE_ = options_.get_double("T_CUT_PNO_DIAG_SCALE");
+    T_CUT_PNO_CORE_SCALE_ = options_.get_double("T_CUT_PNO_CORE_SCALE");
     
     // LMO and Auxiliary space truncation parameters
     T_CUT_DO_ = options_.get_double("T_CUT_DO");
     T_CUT_MKN_ = options_.get_double("T_CUT_MKN");
     T_CUT_PAIRS_ = options_.get_double("T_CUT_PAIRS");
+    T_CUT_PAIRS_MP2_ = options_.get_double("T_CUT_PAIRS_MP2");
     T_CUT_PRE_ = options_.get_double("T_CUT_PRE");
 
     // TNO Truncation cutoff for (T)
@@ -131,41 +133,52 @@ void DLPNO::common_init() {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-6;
             if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.9;
             if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.9;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-3;
+
+            if (!T_CUT_PNO_MP2_changed) T_CUT_PNO_MP2_ = 1e-8;
             if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.99;
             if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.99;
+
             if (!T_CUT_DO_changed) T_CUT_DO_ = 2e-2;
-            if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
-            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-3;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
+
         } else if (options_.get_str("PNO_CONVERGENCE") == "NORMAL") {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 3.33e-7;
             if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.99;
             if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.99;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-4;
+            
+            if (!T_CUT_PNO_MP2_changed) T_CUT_PNO_MP2_ = 3.33e-9;
             if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.999;
             if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.997;
+
             if (!T_CUT_DO_changed) T_CUT_DO_ = 1e-2;
-            if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
-            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-4;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
+
         } else if (options_.get_str("PNO_CONVERGENCE") == "TIGHT") {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-7;
             if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.999;
             if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.997;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-5;
+
+            if (!T_CUT_PNO_MP2_changed) T_CUT_PNO_MP2_ = 1e-9;
             if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.9999;
             if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.999;
+
             if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
-            if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
-            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-5;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
+
         } else if (options_.get_str("PNO_CONVERGENCE") == "VERY_TIGHT") {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
             if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.999;
             if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.997;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-6;
+
+            if (!T_CUT_PNO_MP2_changed) T_CUT_PNO_MP2_ = 1e-10;
             if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.9999;
             if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.999;
+            
             if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
-            if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
-            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-6;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
         }
         if (!T_CUT_PRE_changed) T_CUT_PRE_ = std::min(T_CUT_PRE_, 0.01 * T_CUT_PAIRS_);
@@ -173,8 +186,7 @@ void DLPNO::common_init() {
 
     // TODO: Is this reasonable?
     // Answer: Yes, this is what they do in ORCA
-    if (!options_["T_CUT_PNO_MP2"].has_changed()) T_CUT_PNO_MP2_ = T_CUT_PNO_ * 0.01;
-    T_CUT_PAIRS_MP2_ = std::min(1.0e-6, T_CUT_PAIRS_ * 0.1);
+    if (!options_["T_CUT_PAIRS_MP2"].has_changed()) T_CUT_PAIRS_MP2_ = std::min(1.0e-6, T_CUT_PAIRS_ * 0.1);
 
     name_ = "DLPNO";
     module_ = "dlpno";
@@ -304,6 +316,15 @@ void DLPNO::setup_orbitals() {
     int naocc = nalpha_ - nfrzc();
 
     auto C_occ = reference_wavefunction_->Ca_subset("AO", "OCC");
+
+    // Compute number of core orbitals
+    if (options_.get_str("FREEZE_CORE") == "TRUE" || options_.get_str("FREEZE_CORE") == "1") {
+        ncore_ = 0;
+    } else if (options_.get_str("FREEZE_CORE") == "FALSE" || options_.get_str("FREEZE_CORE") == "0") {
+        ncore_ = basisset_->n_frozen_core("TRUE", molecule_);
+    } else {
+        throw PSIEXCEPTION("DLPNO Methods do not yet support custom frozen core policies!");
+    }
 
     timer_on("Local MOs");
     // Localize active occupied orbitals
@@ -1168,7 +1189,7 @@ void DLPNO::compute_qab() {
         eris[thread] = std::shared_ptr<TwoBodyAOInt>(eris.front()->clone());
     }
 
-    outfile->Printf("\n  ==> Transforming 3-Index Integrals to PAO/PAO basis <==\n");
+    outfile->Printf("\n  ==> Transforming 3-Index Integrals to PAO/PAO basis <==\n\n");
 
     qab_.resize(naux);
 
@@ -1267,7 +1288,7 @@ void DLPNO::compute_qab() {
     }
 
     qab_memory_ = qab_doubles;
-    outfile->Printf("    PAO/PAO Integral Memory After Screening: %.3f [GiB]\n\n", qab_doubles * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    * PAO/PAO Integral Memory After Screening: %.3f [GiB]\n\n", qab_doubles * pow(2.0, -30) * sizeof(double));
 
     timer_off("(mn|K)->(ab|K)");
 }
@@ -1404,11 +1425,13 @@ void DLPNO::pno_transform() {
         Vector pno_occ("eigenvalues", nvir_ij);
         D_ij->diagonalize(*X_pno_ij, pno_occ, descending);
 
-        double T_DIAG_SCALE = (i == j) ? T_CUT_PNO_DIAG_SCALE_ : 1.0;
+        double pno_scale = 1.0;
+        if (i == j) pno_scale *= T_CUT_PNO_DIAG_SCALE_;
+        if (i < ncore_ || j < ncore_) pno_scale *= T_CUT_PNO_CORE_SCALE_;
 
         int nvir_ij_final = std::min(MIN_PNO, nvir_ij);
         for (size_t a = MIN_PNO; a < nvir_ij; ++a) {
-            if (fabs(pno_occ.get(a)) >= T_DIAG_SCALE * T_CUT_PNO_) {
+            if (fabs(pno_occ.get(a)) >= pno_scale * T_CUT_PNO_) {
                 nvir_ij_final++;
             }
         }

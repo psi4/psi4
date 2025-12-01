@@ -77,10 +77,15 @@ class DLPNO : public Wavefunction {
     double T_CUT_PRE_;
     /// tolerance for local density fitting (by Mulliken population)
     double T_CUT_MKN_;
-    /// T_CUT_PNO scaling factor for diagonal PNOs (CC only)
+    /// T_CUT_PNO scaling factor for diagonal PNOs
     double T_CUT_PNO_DIAG_SCALE_;
+    /// T_CUT_PNO scaling for core orbitals
+    double T_CUT_PNO_CORE_SCALE_;
     /// Tolerance for TNO truncation for triples (by occupation number)
     double T_CUT_TNO_;
+
+    /// number of core orbitals (0 if freeze_core = True)
+    int ncore_;
 
     /// auxiliary basis
     std::shared_ptr<BasisSet> ribasis_;
@@ -325,35 +330,35 @@ class PSI_API DLPNOCCSD : public DLPNO {
     std::vector<std::pair<int,int>> ij_to_i_j_weak_;  ///< LMO weak pair index (ij) to both LMO indices (i, j)
     std::vector<int> ij_to_ji_weak_; ///< LMO weak pair index (ij) to LMO pair index (ji)
 
-    // => Additional helpful sparse maps <= //
-    SparseMap lmopair_to_paos_ext_; ///< paos on all significant lmo pairs (ik and kj) for a given lmo pair (ij)
-
     // => CCSD Integrals <= //
 
-    /// (4 occupied, 0 virtual)
-    std::vector<SharedMatrix> K_mnij_; /// (m i | n j)
-    /// (3 occupied, 1 virtual)
-    std::vector<SharedMatrix> K_bar_; /// (m i | b_ij j) [aka K_bar]
-    std::vector<SharedMatrix> K_bar_chem_; /// (i j | m b_ij)
-    std::vector<SharedMatrix> L_bar_; /// 2.0 * K_mbij - K_mbji
-    /// (2 occupied, 2 virtual)
-    std::vector<SharedMatrix> J_ijab_; /// (i j | a_ij b_ij)
-    std::vector<SharedMatrix> L_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i b_ij | j a_ij)
-    std::vector<SharedMatrix> M_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i j | b_ij a_ij)
-    std::vector<std::vector<SharedMatrix>> J_ij_kj_;  /// (i k | a_{ij} b_{jk}) - (i k | a_{ij} b_{ij}) S(b_{ij}, b_{kj})
-    std::vector<std::vector<SharedMatrix>> K_ij_kj_;  /// (i a_{ij} | k b_{kj}) - (i a_{ij} | k b_{ij}) S(b_{ij}, b_{kj})
-    /// (1 occupied, 3 virtual)
-    std::vector<SharedMatrix> K_tilde_chem_; /// (i e_ij | a_ij f_ij) (stored as (e, a*f)) [Chemist's Notation]
-    /// (0 occupied, 4 virtual)
+    // Uses the notation of Jiang et al. Eq. 71-74
+    // J_pqrs_ => J_{pq}^{rs} = (pq|rs), K_prqs_ => K_{pq}^{rs} = (pr|qs)
+    // L_prqs_ => L_{pq}^{rs} = 2(pr|qs) - (ps|qr), M_{pq}^{rs} = 2(pr|qs) - (pq|rs)
+    
+    /// 1-external integrals
+    std::vector<SharedMatrix> K_mibj_; /// (m_{ij} i | b_{ij} j)
+    std::vector<SharedMatrix> J_ijmb_; /// (i j | m_{ij} b_{ij})
+    std::vector<SharedMatrix> L_mibj_; /// 2.0 (m_{ij} i | b_{ij} j) - (m_{ij} j | b_{ij} i)
 
-    // DF Integrals (Used in DLPNO-T1-CCSD)
-    std::vector<std::vector<SharedMatrix>> Qma_ij_; // (q_ij | m_ij a_ij)
-    std::vector<std::vector<SharedMatrix>> Qab_ij_; // (q_ij | a_ij b_ij)
+    /// 2-external integrals
+    std::vector<SharedMatrix> L_iajb_; /// 2.0 * (i a_{ij} | j b_{ij}) - (i b_{ij} | j a_{ij})
 
-    std::vector<SharedMatrix> i_Qk_ij_;   // (q_ij | k_ij i)
-    std::vector<SharedMatrix> i_Qa_ij_;   // (q_ij | a_ij i)
-    std::vector<SharedMatrix> i_Qk_t1_;   // (q_ij | k_ij i) [T1-dressed]
-    std::vector<SharedMatrix> i_Qa_t1_;   // (q_ij | a_ij i) [T1-dressed]
+    /// 2-external non-projected integrals
+    std::vector<std::vector<SharedMatrix>> J_ikac_non_proj_; /// (i k | a_{ij} c_{kj})
+    std::vector<std::vector<SharedMatrix>> K_iakc_non_proj_; /// (i a_{ij} | k c_{kj})
+
+    /// 3-external integrals
+    std::vector<SharedMatrix> K_ivvv_; /// (i e_{ij} | a_{ij} f_{ij}) (stored as (e, a * f))
+
+    // Density-fitted integrals (only computed over strong pairs)
+    std::vector<std::vector<SharedMatrix>> Qma_ij_; // (Q_{ij} | m_{ij} a_{ij})
+    std::vector<std::vector<SharedMatrix>> Qab_ij_; // (Q_{ij} | a_{ij} b_{ij})
+
+    std::vector<SharedMatrix> i_Qk_ij_;   // (Q_{ij} | k_{ij} i)
+    std::vector<SharedMatrix> i_Qa_ij_;   // (Q_{ij} | a_{ij} i)
+    std::vector<SharedMatrix> i_Qk_t1_;   // (Q_{ij} | k_{ij} i) [T1-dressed] (Jiang Eq. 91)
+    std::vector<SharedMatrix> i_Qa_t1_;   // (Q_{ij} | a_{ij} i) [T1-dressed] (Jiang Eq. 92)
 
     // Dressed Fock matrices (used in DLPNO-T1-CCSD)
     SharedMatrix Fkj_; // Jiang Eq. 94
@@ -390,8 +395,8 @@ class PSI_API DLPNOCCSD : public DLPNO {
 
     /// A function to estimate integral memory costs
     void estimate_memory();
-    /// Compute four-center integrals for CC computations
-    void compute_cc_integrals();
+    /// Compute PNO integrals for CC computations
+    void compute_pno_integrals();
 
     // => CCSD intermediates <= //
 
@@ -432,27 +437,22 @@ class PSI_API DLPNOCCSD : public DLPNO {
 
 class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
    protected:
-    // Sparsity information
-    // WARNING: Only unique triplets are used
+    // Sparsity information, NOTE: only unique triplets i <= j <= k are used
     SparseMap lmotriplet_to_ribfs_; ///< which ribfs are on an LMO triplet (i, j, k)
     SparseMap lmotriplet_to_lmos_; ///< which LMOs l form a significant pair with (i, j, or k)
     SparseMap lmotriplet_to_paos_; ///< which PAOs span the virtual space of a triplet of LMOs?
     std::unordered_map<int, int> i_j_k_to_ijk_; ///< LMO indices (i, j, k) to significant LMO triplet index (ijk), -1 if not found
     std::vector<std::tuple<int, int, int>> ijk_to_i_j_k_; ///< LMO triplet index (ijk) to LMO index tuple (i, j, k)
 
-    std::vector<std::vector<std::vector<int>>> lmotriplet_lmo_to_riatom_lmo_;
-    std::vector<std::vector<std::vector<int>>> lmotriplet_pao_to_riatom_pao_;
-
     /// triplet natural orbitals (TNOs)
-    std::vector<SharedMatrix> W_iajbkc_; ///< W3 intermediate for each lmo triplet
-    std::vector<SharedMatrix> V_iajbkc_; ///< V3 intermeidate for each lmo triplet
+    std::vector<SharedMatrix> W_iajbkc_; ///< W3 intermediate for each lmo triplet (Jiang Eq. 109)
+    std::vector<SharedMatrix> V_iajbkc_; ///< V3 intermeidate for each lmo triplet (Jiang Eq. 110)
     std::vector<SharedMatrix> T_iajbkc_; ///< Triples amplitude for each lmo triplet
     std::vector<SharedMatrix> X_tno_; ///< global PAO -> canonical TNO transforms
     std::vector<SharedVector> e_tno_; ///< TNO orbital energies
     std::vector<int> n_tno_; ///< number of tnos per triplet domain
     std::vector<double> e_ijk_; ///< energy of triplet ijk (used for pre-screening and convergence purposes)
-    std::vector<double> ijk_scale_; ///< scaling factor to apply to triplet energy ijk (based on MP2 scaling)
-    std::vector<double> tno_scale_; ///< scaling factor to apply to each triplet to account for TNO truncation error
+    std::vector<double> tno_scale_; ///< scaling factor to apply to each triplet for strong/weak triplets in iterative (T)
     std::vector<bool> is_strong_triplet_; ///< whether or not triplet is strong
 
     /// Write amplitudes to disk?
@@ -470,16 +470,16 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     /// Sort triplets to split between "strong" and "weak" triplets (for (T) iterations)
     void sort_triplets(double e_total);
 
-    /// A helper function to transform TNO-like quantities
+    /// A helper function to transform triples-like tensor
     SharedMatrix matmul_3d(SharedMatrix A, SharedMatrix X, int dim_old, int dim_new);
-    /// Returns a symmetrized version of that matrix (in i <= j <= k ordering)
+    /// Returns a symmetrized version of a triples-like tensor (in i <= j <= k ordering)
     SharedMatrix triples_permuter(const SharedMatrix& X, int i, int j, int k, bool reverse=false);
     /// compute (T) iteration energy (Jiang Eq. 53)
     double compute_t_iteration_energy();
 
     /// L_CCSD(T0) energy (Jiang Eq. 53, 109-110)
     double compute_lccsd_t0(bool store_amplitudes=false);
-    /// A function to estimate Full-(T) memory costs
+    /// A function to estimate (T) memory costs
     void estimate_memory();
     /// L_CCSD(T) iterations (Jiang Eq. 111-112)
     double lccsd_t_iterations();

@@ -83,13 +83,13 @@ void DLPNOCCSD_T::print_header() {
     outfile->Printf("    T_CUT_DO_TRIPLES_PRE (T0)  = %6.3e \n", options_.get_double("T_CUT_DO_TRIPLES_PRE"));
     outfile->Printf("    T_CUT_MKN_TRIPLES_PRE (T0) = %6.3e \n", options_.get_double("T_CUT_MKN_TRIPLES_PRE"));
     outfile->Printf("    TRIPLES_MAX_WEAK_PAIRS     = %6d   \n", options_.get_int("TRIPLES_MAX_WEAK_PAIRS"));
-    outfile->Printf("    MIN_TNOS                   = %6d   \n", options_.get_int("MIN_TNOS"));
     if (!t0_only) {
         outfile->Printf("    T_CUT_TNO_STRONG (T)       = %6.3e \n", t_cut_tno * t_cut_tno_strong_scale);
         outfile->Printf("    T_CUT_TNO_WEAK (T)         = %6.3e \n", t_cut_tno * t_cut_tno_weak_scale);
         outfile->Printf("    F_CUT_T (T)                = %6.3e \n", options_.get_double("F_CUT_T"));
         outfile->Printf("    T_CUT_ITER (T)             = %6.3e \n", options_.get_double("T_CUT_ITER"));
     }
+    outfile->Printf("    MIN_TNOS                   = %6d   \n", options_.get_int("MIN_TNOS"));
     outfile->Printf("\n\n");
 }
 
@@ -340,8 +340,6 @@ void DLPNOCCSD_T::tno_transform(double t_cut_tno) {
     X_tno_.resize(n_lmo_triplets);
     e_tno_.resize(n_lmo_triplets);
     n_tno_.resize(n_lmo_triplets);
-
-    ijk_scale_.resize(n_lmo_triplets, 1.0);
 
 #pragma omp parallel for schedule(dynamic, 1)
     for (int ijk = 0; ijk < n_lmo_triplets; ++ijk) {
@@ -611,7 +609,6 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
                 (*q_ko)(q_ijk, l_ijk) = (*qij_[q])(riatom_to_lmos_ext_dense_[centerq][k], riatom_to_lmos_ext_dense_[centerq][l]);
             }
 
-
             for (int u_ijk = 0; u_ijk < npao_ijk; ++u_ijk) {
                 int u = lmotriplet_to_paos_[ijk][u_ijk];
                 (*q_iv)(q_ijk, u_ijk) = (*qia_[q])(riatom_to_lmos_ext_dense_[centerq][i], riatom_to_paos_ext_dense_[centerq][u]);
@@ -631,9 +628,13 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
                     (*q_vv_tmp)(u_ijk, v_ijk) = (*qab_[q])(uv_idx, 0);
                 } // end v_ijk
             } // end u_ijk
+            
+            // naux_{ijk} * npao_{ijk}^{2} * ntno_{ijk}
             q_vv_tmp = linalg::triplet(X_tno_[ijk], q_vv_tmp, X_tno_[ijk], true, false, false);
             ::memcpy(&(*q_vv)(q_ijk, 0), &(*q_vv_tmp)(0, 0), ntno_ijk * ntno_ijk * sizeof(double));
-        }
+
+            // naux_ijk * npao_ijk^2 * ntno_{ijk}
+        } // end q_ijk
 
         q_iv = linalg::doublet(q_iv, X_tno_[ijk]);
         q_jv = linalg::doublet(q_jv, X_tno_[ijk]);
@@ -818,7 +819,7 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool store_amplitudes) {
             }
         }
 
-        double prefactor = ijk_scale_[ijk];
+        double prefactor = 1.0;
         if (i == j && j == k) {
             prefactor /= 6.0;
         } else if (i == j || j == k || i == k) {
@@ -891,7 +892,7 @@ double DLPNOCCSD_T::compute_t_iteration_energy() {
         int jki = i_j_k_to_ijk_[j * naocc * naocc + k * naocc + i];
         int kij = i_j_k_to_ijk_[k * naocc * naocc + i * naocc + j];
 
-        double prefactor = ijk_scale_[ijk];
+        double prefactor = 1.0;
         if (i == j && j == k) {
             prefactor /= 6.0;
         } else if (i == j || j == k || i == k) {
@@ -1198,16 +1199,13 @@ double DLPNOCCSD_T::compute_energy() {
     double e_dlpno_ccsd = DLPNOCCSD::compute_energy();
 
     // Clear CCSD integrals
-    K_mnij_.clear();
-    K_bar_.clear();
-    K_bar_chem_.clear();
-    L_bar_.clear();
-    J_ijab_.clear();
+    K_mibj_.clear();
+    J_ijmb_.clear();
+    L_mibj_.clear();
     L_iajb_.clear();
-    M_iajb_.clear();
-    J_ij_kj_.clear();
-    K_ij_kj_.clear();
-    K_tilde_chem_.clear();
+    J_ikac_non_proj_.clear();
+    K_iakc_non_proj_.clear();
+    K_ivvv_.clear();
     Qma_ij_.clear();
     Qab_ij_.clear();
     i_Qk_ij_.clear();

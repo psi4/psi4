@@ -2613,7 +2613,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("EP2_MAXITER", 20);
     }
     if (name == "DLPNO" || options.read_globals()) {
-        /*- MODULEDESCRIPTION Performs DLPNO-MP2 computations for RHF reference wavefunctions. -*/
+        /*- MODULEDESCRIPTION Performs DLPNO-MP2/CCSD/CCSD(T) computations for RHF reference wavefunctions. -*/
 
         /*- SUBSECTION General Options -*/
 
@@ -2629,13 +2629,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("LOCAL_CONVERGENCE", 1.0E-12);
         /*- Maximum iterations in Foster-Boys localization -*/
         options.add_int("LOCAL_MAXITER", 1000);
-        /*- Energy convergence criteria for local MP2 iterations -*/
+        /*- Energy convergence criteria for local MP2/CCSD/CCSD(T) iterations -*/
         options.add_double("E_CONVERGENCE", 1e-6);
-        /*- Residual convergence criteria for local MP2 iterations -*/
+        /*- Residual convergence criteria for local MP2/CCSD/CCSD(T) iterations -*/
         options.add_double("R_CONVERGENCE", 1e-6);
         /*- Orbital localizer -*/
         options.add_str("DLPNO_LOCAL_ORBITALS", "BOYS", "BOYS PIPEK_MEZEY");
-        /*- Maximum number of iterations to determine the MP2 amplitudes. -*/
+        /*- Maximum number of iterations to determine the MP2/CCSD/CCSD(T) amplitudes. -*/
         options.add_int("DLPNO_MAXITER", 50);
 
         /*- SUBSECTION Expert Options -*/
@@ -2667,8 +2667,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("S_CUT", 1e-8);
         /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations !expert -*/
         options.add_double("F_CUT", 1e-5);
-        /*- Which algorithm to use when computing weak pair amplitudes? !expert -*/
-        options.add_str("WEAK_PAIR_ALGORITHM", "CEPA0", "MP2 TWO_VIRT CEPA0 CCD");
         /*- AO ERI Schwarz Screening tolerance for building DF ints in DLPNO !expert -*/
         options.add_double("DLPNO_AO_INTS_TOL", 1.0e-10);
         /*- Minimum number of PNOs required in each pair !expert -*/
@@ -2676,14 +2674,18 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION DLPNO-CCSD Specific Options -*/
 
-        /*- The tolerance to decide between "MP2 Pairs" and "CCSD Pairs" after the initial pair prescreening -*/
+        /*- The tolerance to decide between "Weak Pairs" and "Strong Pairs" after the initial pair prescreening -*/
         options.add_double("T_CUT_PAIRS", 1e-5);
         /*- How much to scale T_CUT_PNO by for diagonal PNOs !expert */
         options.add_double("T_CUT_PNO_DIAG_SCALE", 3e-2);
+        /*- How much to scale T_CUT_PNO for core pairs !expert */
+        options.add_double("T_CUT_PNO_CORE_SCALE", 1e-2);
         /*- Occupation trace sum threshold for removing PNOs !expert -*/
         options.add_double("T_CUT_TRACE", 0.999);
         /*- MP2 pair energy tolerance for removing PNOs !expert -*/
         options.add_double("T_CUT_ENERGY", 0.997);
+        /*- The tolerance to decide between "Weak Pairs" and "SC-MP2 Pairs" after dipole screening !expert -*/
+        options.add_double("T_CUT_PAIRS_MP2", 1e-6);
         /*- Occupation number threshold for removing PNOs (for preceeding DLPNO-MP2 computation) !expert -*/
         options.add_double("T_CUT_PNO_MP2", 1e-10);
         /*- Occupation trace sum threshold for removing PNOs (for preceeding DLPNO-MP2 computation) !expert -*/
