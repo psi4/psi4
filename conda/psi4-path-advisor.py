@@ -928,15 +928,10 @@ elif args.subparser_name in ["cmake", "cache"]:
                     v = v.replace("${SHLIB_EXT}", shlib_ext[conda_platform])
                     if "${HOST}" in v:
                         v = v.replace("${HOST}", conda_host)
-                    # For PATH variables, check if the path exists before adding to cache
-                    # This prevents pre-setting *_DIR variables to non-existent paths which breaks find_package
-                    if ctyp == "PATH" and not Path(v).exists():
-                        text.append(f'# set({k:<28} {v} CACHE {ctyp} "")  # Path does not exist')
-                    else:
-                        text.append(f'set({k:<30} {v} CACHE {ctyp} "")')
-                        if not (ctyp == "BOOL" or Path(v).exists()):
-                            pass
-                            # print(f"Warning: Active value in cache for {k} does not exist on filesystem: {v}")
+                    text.append(f'set({k:<30} {v} CACHE {ctyp} "")')
+                    if not (ctyp == "BOOL" or Path(v).exists()):
+                        pass
+                        # print(f"Warning: Active value in cache for {k} does not exist on filesystem: {v}")
 
         else:
             if note := conda.get("cmake_note"):
