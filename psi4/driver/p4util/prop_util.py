@@ -71,7 +71,7 @@ def free_atom_volumes(wfn: psi4.core.Wavefunction, **kwargs):
         [abs(wfn.scalar_variable(k) - current_en), k] for k in total_keys],
         key=lambda x: x[0]
     )
-    if total_energy_diffs[0][0] > 1e-8:
+    if len(total_energy_diffs) == 0 or total_energy_diffs[0][0] > 1e-8:
         raise ValidationError(
             "No valid 'method TOTAL ENERGY' found in wavefunction scalar variables. Needed for MBIS free atoms."
         )
