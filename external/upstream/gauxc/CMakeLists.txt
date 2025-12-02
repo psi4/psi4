@@ -66,7 +66,7 @@ if(${ENABLE_gauxc})
 
         ExternalProject_Add(gauxc_external
             DEPENDS ${_gauxc_depends}
-            URL https://github.com/wavefunction91/GauXC/archive/d9cdad3.tar.gz  # edit in codedeps
+            URL https://github.com/wavefunction91/GauXC/archive/5c85f6b.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
