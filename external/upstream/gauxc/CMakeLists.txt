@@ -55,17 +55,10 @@ if(${ENABLE_gauxc})
         message(STATUS "Suitable gauxc could not be located, ${Magenta}Building gauxc${ColourReset} instead.")
 
         include(ExternalProject)
-
-        # Build dependency list conditionally
-        set(_gauxc_depends lapack_external gau2grid_external)
-        # Only depend on libxc_external if it's an actual ExternalProject (i.e., LibXC not found externally)
-        # When LibXC is found from conda, Libxc::xc imported target exists and libxc_external is just a dummy INTERFACE library
-        if(NOT TARGET Libxc::xc)
-            list(APPEND _gauxc_depends libxc_external)
-        endif()
-
         ExternalProject_Add(gauxc_external
-            DEPENDS ${_gauxc_depends}
+            DEPENDS lapack_external 
+                    libxc_external
+                    gau2grid_external
             URL https://github.com/wavefunction91/GauXC/archive/5c85f6b.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
