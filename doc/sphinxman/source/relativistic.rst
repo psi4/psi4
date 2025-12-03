@@ -32,6 +32,8 @@
    relativistic
 
 ================================
+.. _`sec:relativistic`:
+
 Scalar Relativistic Hamiltonians
 ================================
 
