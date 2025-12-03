@@ -62,7 +62,7 @@ void ZORA::setup() {
     outfile->Printf("        by Nathan Gillispie\n");
     outfile->Printf("      ========================\n");
 
-    timer_on("Make Grid");
+    timer_on("ZORA: Build Grid");
 
     // Initialize grid with options
     std::map<std::string, std::string> grid_str_options = {
@@ -90,7 +90,7 @@ void ZORA::setup() {
 
     grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_int_options, grid_str_options, grid_double_options, options_);
 
-    timer_off("Make Grid");
+    timer_off("ZORA: Build Grid");
 
     auto npoints = grid_->npoints();
     auto nblocks = grid_->blocks().size();
@@ -123,18 +123,18 @@ void ZORA::compute(SharedMatrix T_SR) {
         pworkers.push_back(p_tmp);
     }
 
-    timer_on("Effective Potential");
+    timer_on("ZORA: Effective Potential");
     veff_ = std::make_shared<std::map<int, SharedVector>>();
     if (options_.get_bool("ZORA_NR_DEBUG")) {
         compute_debug_veff();
     } else {
         compute_veff();
     }
-    timer_off("Effective Potential");
+    timer_off("ZORA: Effective Potential");
 
-    timer_on("Scalar Relativistic Kinetic");
+    timer_on("ZORA: Scalar Relativistic Kinetic");
     compute_TSR(pworkers, T_SR);
-    timer_off("Scalar Relativistic Kinetic");
+    timer_off("ZORA: Scalar Relativistic Kinetic");
 
     timer_off("ZORA");
 }
