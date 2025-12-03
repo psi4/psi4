@@ -587,7 +587,7 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
         K_pao_ij = linalg::triplet(X_pao_ij, K_pao_ij, X_pao_ij, true, false, false);
 
         // number of PAOs in the domain after removing linear dependencies
-        int npao_can_ij = X_pao_ij->colspi(0);
+        int npao_can_ij = X_pao_ij->ncol();
         auto T_pao_ij = K_pao_ij->clone();
         for (int a = 0; a < npao_can_ij; ++a) {
             for (int b = 0; b < npao_can_ij; ++b) {
@@ -597,7 +597,7 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
         }
 
         // Compute semi-canonical MP2 pair energy using PAOs
-        size_t nvir_ij = K_pao_ij->rowspi(0);
+        size_t nvir_ij = K_pao_ij->nrow();
 
         auto Tt_pao_ij = T_pao_ij->clone();
         Tt_pao_ij->scale(2.0);
@@ -697,7 +697,7 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
             Tt_iajb_[ij] = Tt_pno_ij;
             X_pno_[ij] = X_pno_ij;
             e_pno_[ij] = e_pno_ij;
-            n_pno_[ij] = X_pno_ij->colspi(0);
+            n_pno_[ij] = X_pno_ij->ncol();
             occ_pno_[ij] = pno_occ.get(n_pno_[ij] - 1);
             trace_pno_[ij] = occ_pno / occ_total;
             e_ratio_pno_[ij] = e_ij_trunc / e_ij_initial;
@@ -1030,7 +1030,7 @@ void DLPNOCCSD::recompute_pnos() {
         D_ij->add(linalg::doublet(Tt_iajb_[ij], T_iajb_[ij], true, false));
         if (i == j) D_ij->scale(0.5);
 
-        int nvir_ij = F_pno_ij_init->rowspi(0);
+        int nvir_ij = F_pno_ij_init->nrow();
 
         // Diagonalization of pair density gives PNOs (in basis of the LMO's virtual domain) and PNO occ numbers
         auto X_pno_ij = std::make_shared<Matrix>("eigenvectors", nvir_ij, nvir_ij);
@@ -1103,7 +1103,7 @@ void DLPNOCCSD::recompute_pnos() {
         Tt_iajb_[ij] = Tt_pno_ij;
         X_pno_[ij] = X_pno_ij;
         e_pno_[ij] = e_pno_ij;
-        n_pno_[ij] = X_pno_ij->colspi(0);
+        n_pno_[ij] = X_pno_ij->ncol();
         occ_pno_[ij] = pno_occ.get(n_pno_[ij] - 1);
         trace_pno_[ij] = occ_pno / occ_total;
         e_ratio_pno_[ij] = e_pno / e_ij_total;
@@ -1187,7 +1187,7 @@ template<bool crude> double DLPNOCCSD::filter_pairs(const std::vector<double>& e
     int naocc = i_j_to_ij_.size();
     int n_lmo_pairs = ij_to_i_j_.size();
     int naux = ribasis_->nbf();
-    int npao = C_pao_->colspi(0);  // same as nbf
+    int npao = C_pao_->ncol();  // same as nbf
 
     if constexpr (crude) {
         // Clear information from old maps
@@ -2933,6 +2933,12 @@ double DLPNOCCSD::compute_energy() {
     set_scalar_variable("CURRENT CORRELATION ENERGY", e_ccsd_corr);
     set_scalar_variable("CCSD TOTAL ENERGY", e_ccsd_total);
     set_scalar_variable("CURRENT ENERGY", e_ccsd_total);
+
+    // psivars for LCCSD energy components
+    set_scalar_variable("LMP2 WEAK PAIR ENERGY", de_weak_);
+    set_scalar_variable("SC-MP2 PAIR CORRECTION", de_lmp2_eliminated_);
+    set_scalar_variable("DLPNO DIPOLE CORRECTION", de_dipole_);
+    set_scalar_variable("PNO TRUNCATION ERROR", de_pno_total_);
 
     return e_ccsd_total;
 }

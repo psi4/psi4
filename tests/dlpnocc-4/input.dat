@@ -3,25 +3,25 @@ memory 16 GB
 
 ref_scf                  =    -391.231691174187             #TEST
 
-ref_ccsd_corl_loose      =      -1.584233239015             #TEST
-ref_ccsd_tot_loose       =    -392.815924413202             #TEST
-ref_ccsd_t_corl_loose    =      -1.621212598097             #TEST
-ref_ccsd_t_tot_loose     =    -392.852903772284             #TEST
+ref_ccsd_corl_loose      =      -1.584233242090             #TEST
+ref_ccsd_tot_loose       =    -392.815924416277             #TEST
+ref_ccsd_t_corl_loose    =      -1.621212635630             #TEST
+ref_ccsd_t_tot_loose     =    -392.852903809817             #TEST
 
-ref_ccsd_corl_normal     =      -1.582538799986             #TEST
-ref_ccsd_tot_normal      =    -392.814229975048             #TEST
-ref_ccsd_t_corl_normal   =      -1.628227193415             #TEST
-ref_ccsd_t_tot_normal    =    -392.859918368478             #TEST
+ref_ccsd_corl_normal     =      -1.582425532072             #TEST
+ref_ccsd_tot_normal      =    -392.814116707135             #TEST
+ref_ccsd_t_corl_normal   =      -1.628517828763             #TEST
+ref_ccsd_t_tot_normal    =    -392.860209003826             #TEST
 
-ref_ccsd_corl_tight      =      -1.582627555882             #TEST
-ref_ccsd_tot_tight       =    -392.814318730619             #TEST
-ref_ccsd_t_corl_tight    =      -1.629986490566             #TEST
-ref_ccsd_t_tot_tight     =    -392.861677665303             #TEST
+ref_ccsd_corl_tight      =      -1.582627562127             #TEST
+ref_ccsd_tot_tight       =    -392.814318736864             #TEST
+ref_ccsd_t_corl_tight    =      -1.629986501510             #TEST
+ref_ccsd_t_tot_tight     =    -392.861677676247             #TEST
 
-ref_ccsd_corl_vtight     =      -1.582785566182             #TEST
-ref_ccsd_tot_vtight      =    -392.814476741066             #TEST
-ref_ccsd_t_corl_vtight   =      -1.630331193002             #TEST
-ref_ccsd_t_tot_vtight    =    -392.862022367885             #TEST
+ref_ccsd_corl_vtight     =      -1.582786356344             #TEST
+ref_ccsd_tot_vtight      =    -392.814477531228             #TEST
+ref_ccsd_t_corl_vtight   =      -1.630333046252             #TEST
+ref_ccsd_t_tot_vtight    =    -392.862024221135             #TEST
 
 molecule decane {
 0 1

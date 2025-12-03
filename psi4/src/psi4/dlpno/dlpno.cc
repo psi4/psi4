@@ -206,8 +206,8 @@ void DLPNO::common_init() {
  * The workaround used here is to switch the layout of B before and after the call
  */
 void DLPNO::C_DGESV_wrapper(SharedMatrix A, SharedMatrix B) {
-    int N = B->rowspi(0);
-    int M = B->colspi(0);
+    int N = B->nrow();
+    int M = B->ncol();
     if (N == 0 || M == 0) return;
 
     // create a copy of B in fortran ordering
@@ -273,8 +273,8 @@ void DLPNO::copy_flat_mats(SharedVector flat, std::vector<SharedMatrix>& mat_lis
  * CX are canonical orbitals (i.e. F(CX) = e(CX))
  */
 std::pair<SharedMatrix, SharedVector> DLPNO::canonicalizer(SharedMatrix C, SharedMatrix F) {
-    SharedMatrix X = std::make_shared<Matrix>("eigenvectors", C->colspi(0), C->colspi(0));
-    SharedVector e = std::make_shared<Vector>("eigenvalues", C->colspi(0));
+    SharedMatrix X = std::make_shared<Matrix>("eigenvectors", C->ncol(), C->ncol());
+    SharedVector e = std::make_shared<Vector>("eigenvalues", C->ncol());
 
     auto temp = linalg::triplet(C, F, C, true, false, false);
     temp->diagonalize(X, e, descending);
@@ -293,8 +293,8 @@ std::pair<SharedMatrix, SharedVector> DLPNO::orthocanonicalizer(SharedMatrix S, 
                                      0);
     auto X = orthog.basis_to_orthog_basis();
 
-    int nmo_initial = X->rowspi(0);
-    int nmo_final = X->colspi(0);
+    int nmo_initial = X->nrow();
+    int nmo_final = X->ncol();
 
     auto U = std::make_shared<Matrix>("eigenvectors", nmo_final, nmo_final);
     auto e = std::make_shared<Vector>("eigenvalues", nmo_final);
@@ -356,7 +356,7 @@ void DLPNO::setup_orbitals() {
     S_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->S(), C_pao_, true, false, false);
 
     // normalize PAOs
-    for (size_t i = 0; i < C_pao_->colspi(0); ++i) {
+    for (size_t i = 0; i < C_pao_->ncol(); ++i) {
         C_pao_->scale_column(0, i, pow(S_pao_->get(i, i), -0.5));
     }
     S_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->S(), C_pao_, true, false, false);
@@ -390,8 +390,8 @@ void DLPNO::setup_orbitals() {
 
 void DLPNO::compute_overlap_ints() {
     int nbf = basisset_->nbf();
-    int naocc = C_lmo_->colspi(0);
-    int npao = C_pao_->colspi(0);  // same as nbf
+    int naocc = nalpha_ - nfrzc();
+    int npao = C_pao_->ncol();  // same as nbf
 
     timer_on("Construct Grid");
     // Create a grid for the DOI integrals
@@ -511,8 +511,8 @@ void DLPNO::compute_overlap_ints() {
 
 void DLPNO::compute_dipole_ints() {
     int natom = molecule_->natom();
-    int naocc = C_lmo_->colspi(0);
-    int nbf = C_lmo_->rowspi(0);
+    int naocc = nalpha_ - nfrzc();
+    int nbf = C_lmo_->nrow();
 
     const auto ao_dipole = MintsHelper(basisset_, options_).ao_dipole();
 
@@ -563,7 +563,7 @@ void DLPNO::compute_dipole_ints() {
         lmo_pao_dipy_i = linalg::doublet(lmo_pao_dipy_i, X_pao_i);
         lmo_pao_dipz_i = linalg::doublet(lmo_pao_dipz_i, X_pao_i);
 
-        int npao_i = X_pao_i->colspi(0);
+        int npao_i = X_pao_i->ncol();
 
         for (size_t u = 0; u < npao_i; u++) {
             lmo_pao_dr[i].push_back(
@@ -621,7 +621,7 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
     int nshell = basisset_->nshell();
     int naux = ribasis_->nbf();
     int naocc = nalpha_ - nfrzc();
-    int npao = C_pao_->colspi(0);  // same as nbf
+    int npao = C_pao_->ncol();  // same as nbf
 
     auto bf_to_atom = std::vector<int>(nbf);
     auto ribf_to_atom = std::vector<int>(naux);
@@ -1390,7 +1390,7 @@ void DLPNO::pno_transform() {
         K_pao_ij = linalg::triplet(X_pao_ij, K_pao_ij, X_pao_ij, true, false, false);
 
         // number of PAOs in the domain after removing linear dependencies
-        int npao_can_ij = X_pao_ij->colspi(0);
+        int npao_can_ij = X_pao_ij->ncol();
         auto T_pao_ij = K_pao_ij->clone();
         for (int a = 0; a < npao_can_ij; ++a) {
             for (int b = 0; b < npao_can_ij; ++b) {
@@ -1405,7 +1405,7 @@ void DLPNO::pno_transform() {
 
         // PNOs defined in (DOI: 10.1063/1.3086717), EQ 17 through EQ 24
 
-        size_t nvir_ij = K_pao_ij->rowspi(0);
+        size_t nvir_ij = K_pao_ij->nrow();
 
         auto Tt_pao_ij = T_pao_ij->clone();
         Tt_pao_ij->scale(2.0);
@@ -1426,7 +1426,6 @@ void DLPNO::pno_transform() {
         D_ij->diagonalize(*X_pno_ij, pno_occ, descending);
 
         double pno_scale = 1.0;
-        if (i == j) pno_scale *= T_CUT_PNO_DIAG_SCALE_;
         if (i < ncore_ || j < ncore_) pno_scale *= T_CUT_PNO_CORE_SCALE_;
 
         int nvir_ij_final = std::min(MIN_PNO, nvir_ij);
@@ -1471,7 +1470,7 @@ void DLPNO::pno_transform() {
         T_iajb_[ij] = T_pno_ij;
         X_pno_[ij] = X_pno_ij;
         e_pno_[ij] = e_pno_ij;
-        n_pno_[ij] = X_pno_ij->colspi(0);
+        n_pno_[ij] = X_pno_ij->ncol();
         de_pno_[ij] = de_pno_ij;
         de_pno_os_[ij] = de_pno_ij_os;
         de_pno_ss_[ij] = de_pno_ij_ss;

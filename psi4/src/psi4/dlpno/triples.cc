@@ -133,7 +133,7 @@ void DLPNOCCSD_T::triples_sparsity(bool prescreening) {
 
     int naocc = nalpha_ - nfrzc();
     int n_lmo_pairs = ij_to_i_j_.size();
-    int npao = C_pao_->colspi(0);
+    int npao = C_pao_->ncol();
 
     int MAX_WEAK_PAIRS = options_.get_int("TRIPLES_MAX_WEAK_PAIRS");
 
@@ -380,7 +380,7 @@ void DLPNOCCSD_T::tno_transform(double t_cut_tno) {
         F_pao_ijk = linalg::triplet(X_pao_ijk, F_pao_ijk, X_pao_ijk, true, false, false);
 
         // number of PAOs in the domain after removing linear dependencies
-        int npao_can_ijk = X_pao_ijk->colspi(0);
+        int npao_can_ijk = X_pao_ijk->ncol();
 
         // S_ijk partially transformed overlap matrix
         std::vector<int> triples_ext_domain = merge_lists(lmo_to_paos_[i], merge_lists(lmo_to_paos_[j], lmo_to_paos_[k]));
@@ -392,7 +392,7 @@ void DLPNOCCSD_T::tno_transform(double t_cut_tno) {
         // ==> Canonical PAOs  to Canonical TNOs <== //
         //                                           //
 
-        size_t nvir_ijk = F_pao_ijk->rowspi(0);
+        size_t nvir_ijk = F_pao_ijk->nrow();
 
         // Construct pair densities from amplitudes
         auto D_ij = linalg::doublet(Tt_iajb_[ij], T_iajb_[ij], false, true);
@@ -460,10 +460,10 @@ void DLPNOCCSD_T::tno_transform(double t_cut_tno) {
 
         X_tno_[ijk] = X_tno_ijk;
         e_tno_[ijk] = e_tno_ijk;
-        n_tno_[ijk] = X_tno_ijk->colspi(0);
+        n_tno_[ijk] = X_tno_ijk->ncol();
     }
 
-    int tno_count_total = 0, tno_count_min = C_pao_->colspi(0), tno_count_max = 0;
+    int tno_count_total = 0, tno_count_min = C_pao_->ncol(), tno_count_max = 0;
     for (int ijk = 0; ijk < n_lmo_triplets; ++ijk) {
         tno_count_total += n_tno_[ijk];
         tno_count_min = std::min(tno_count_min, n_tno_[ijk]);
@@ -1050,7 +1050,7 @@ SharedMatrix DLPNOCCSD_T::triples_permuter(const SharedMatrix &X, int i, int j, 
         not in i <= j <= k ordering */
 
     SharedMatrix Xperm = X->clone();
-    int ntno_ijk = X->rowspi(0);
+    int ntno_ijk = X->nrow();
 
     int perm_idx;
     if (i <= j && j <= k && i <= k) {
@@ -1478,6 +1478,11 @@ double DLPNOCCSD_T::compute_energy() {
     set_scalar_variable("CURRENT CORRELATION ENERGY", e_ccsd_t_corr);
     set_scalar_variable("CCSD(T) TOTAL ENERGY", e_ccsd_t_total);
     set_scalar_variable("CURRENT ENERGY", e_ccsd_t_total);
+
+    // psivars for (T) energy components
+    set_scalar_variable("DLPNO-(T) ENERGY", e_lccsd_t_ - e_lccsd_);
+    set_scalar_variable("SEMICANONICAL DLPNO-(T0) ENERGY", E_T0 + de_lccsd_t_screened_);
+    set_scalar_variable("SCREENED TRIPLETS ENERGY", de_lccsd_t_screened_);
 
     print_results();
     

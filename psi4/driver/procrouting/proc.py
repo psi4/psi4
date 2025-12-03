@@ -4352,7 +4352,8 @@ def run_dlpnomp2(name, **kwargs):
     """
     optstash = p4util.OptionsState(
         ['DF_BASIS_MP2'],
-        ['SCF_TYPE'])
+        ['SCF_TYPE'],
+        ['DLPNO_ALGORITHM'])
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -4414,7 +4415,8 @@ def run_dlpnoccsd(name, **kwargs):
     """
     optstash = p4util.OptionsState(
         ['DF_BASIS_CC'],
-        ['SCF_TYPE']
+        ['SCF_TYPE'],
+        ['DLPNO_ALGORITHM']
     )
 
     # Bypass the scf call if a reference wavefunction is given
@@ -4462,7 +4464,8 @@ def run_dlpnoccsd_t(name, **kwargs):
     """
     optstash = p4util.OptionsState(
         ['DF_BASIS_CC'],
-        ['SCF_TYPE']
+        ['SCF_TYPE'],
+        ['DLPNO_ALGORITHM']
     )
 
     # Bypass the scf call if a reference wavefunction is given
@@ -4488,7 +4491,10 @@ def run_dlpnoccsd_t(name, **kwargs):
     ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSD(T)")
-    core.set_local_option("DLPNO", "T0_APPROXIMATION", True) if name == "dlpno-ccsd(t0)" else core.set_local_option("DLPNO", "T0_APPROXIMATION", False)
+    if name == "dlpno-ccsd(t0)":
+        core.set_local_option("DLPNO", "T0_APPROXIMATION", True)
+    else:
+        core.set_local_option("DLPNO", "T0_APPROXIMATION", False)
 
     dlpnoccsd_t_wfn = core.dlpno(ref_wfn)
     dlpnoccsd_t_wfn.compute_energy()

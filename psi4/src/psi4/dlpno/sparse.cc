@@ -72,7 +72,7 @@ std::vector<int> index_list(const std::vector<int> &l1, const std::vector<int> &
     std::vector<int> lsub;
 
     int i1 = 0, i2 = 0;
-    while(i2 < l2.size()) {
+    while (i2 < l2.size() && i1 < l1.size()) {
         if (l1[i1] == l2[i2]) {
             lsub.push_back(i1);
             i1++;
@@ -80,6 +80,10 @@ std::vector<int> index_list(const std::vector<int> &l1, const std::vector<int> &
         } else {
             i1++;
         }
+    }
+
+    if (lsub.size() != l2.size()) {
+        throw PSIEXCEPTION("Index List error! Check that l2 is a subset of l1, and both lists are sorted!");
     }
 
     return lsub;
