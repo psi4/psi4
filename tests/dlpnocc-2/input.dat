@@ -3,7 +3,7 @@
 #! Methane geometry from HTBH.py in databases
 #! The reference DF-CCSD(T) values are stored and not rerun
 
-memory 4 GB
+memory 8 GB
 
 ref_scf                  =    -40.213627016015              #TEST
 

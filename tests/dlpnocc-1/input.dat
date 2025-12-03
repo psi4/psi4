@@ -3,7 +3,7 @@
 #! There should not be enough sparsity in water to affect the other parameters
 #! The reference DF-CCSD(T) values are stored and not rerun
 
-memory 2 GB
+memory 4 GB
 
 ref_scf                  =    -76.026787275597              #TEST
 

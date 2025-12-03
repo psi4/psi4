@@ -124,8 +124,6 @@ as well as the percentage energy recovery of the PNOs compared to the non-trunca
    | Very_Tight  | 1.0e-8     | 0.999       | 0.997        | 5e-3     | 1e-4      | 1e-6        | Benchmarking, Focal Point |
    +-------------+------------+-------------+--------------+----------+-----------+-------------+---------------------------+
 
-.. include:: autodoc_capabilities_ccenergy.rst
-
 Practical Advice
 ----------------
 
@@ -135,7 +133,7 @@ Practical Advice
 
 * For most computations, |dlpno__pno_convergence| ``TIGHT`` is recommended, especially 
   those involving non-covalent interactions. For larger systems where ``TIGHT`` is too expensive, 
-  ``NORMAL`` for |dlpno__pno_convergence| while setting |dlpno_t_cut_pairs| to ``1.0e-5`` is recommended. 
+  ``NORMAL`` for |dlpno__pno_convergence| while setting |dlpno__t_cut_pairs| to ``1.0e-5`` is recommended. 
   This has been shown to yield errors on the order of kJ/mol for non-covalent interactions [Jiang:2024:082502]_.
 
 * Based on user allocated memory, disk/core storage for various integrals and tensors
@@ -145,7 +143,7 @@ Practical Advice
 * In DLPNO methods, it is recommended to freeze core orbitals (by setting |globals__freeze_core|
   to ``True``), since core excitations are known to be more sensitive to PNO truncations than
   valence truncations. If a non-frozen core computation is requested, all PNOs corresponding to core-core
-  or core-virtual pairs have cutoffs scaled by |dlpno_t_cut_pno_core_scale| (default ``1.0e-2``).
+  or core-virtual pairs have cutoffs scaled by |dlpno__t_cut_pno_core_scale| (default ``1.0e-2``).
 
 * Please specify ``symmetry c1`` in the user input file. DLPNO does not yet have molecular point group symmetry implemented.
 
@@ -183,8 +181,6 @@ Computation Size Limits
    +------------------+------------+-------------+-------------+
    | HPC Cluster      | 3 TB       | 3000+       | 2000+       |
    +------------------+------------+-------------+-------------+
-   
-.. include:: autodoc_capabilities_ccenergy.rst
 
 Key Differences with DLPNO-CCSD(T) in ORCA
 ------------------------------------------
