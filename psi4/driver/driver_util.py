@@ -506,7 +506,7 @@ def sort_derivative_type(
         core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
         dertype = 0
 
-    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
+    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH", "ZORA"]:
         core.print_out("\nRelativistic analytic gradients are not implemented yet, re-routing to finite differences.\n")
         dertype = 0
 
