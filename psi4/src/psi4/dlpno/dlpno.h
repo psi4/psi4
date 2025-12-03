@@ -384,7 +384,7 @@ class PSI_API DLPNOCCSD : public DLPNO {
     template<bool crude> double filter_pairs(const std::vector<double>& e_ijs);
 
     /// Runs preceeding DLPNO-MP2 computation before DLPNO-CCSD iterations
-    void pno_lmp2_iterations();
+    std::vector<double> pno_lmp2_iterations();
     /// Recompute PNOs after DLPNO-MP2 converges
     void recompute_pnos();
 
@@ -455,6 +455,8 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     std::vector<double> tno_scale_; ///< scaling factor to apply to each triplet for strong/weak triplets in iterative (T)
     std::vector<bool> is_strong_triplet_; ///< whether or not triplet is strong
 
+    /// Write intermediates (W and V) to disk?
+    bool write_intermediates_ = false;
     /// Write amplitudes to disk?
     bool write_amplitudes_ = false;
 
@@ -478,7 +480,7 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     double compute_t_iteration_energy();
 
     /// L_CCSD(T0) energy (Jiang Eq. 53, 109-110)
-    double compute_lccsd_t0(bool store_amplitudes=false);
+    double compute_lccsd_t0(bool save_memory=false);
     /// A function to estimate (T) memory costs
     void estimate_memory();
     /// L_CCSD(T) iterations (Jiang Eq. 111-112)

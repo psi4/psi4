@@ -252,7 +252,7 @@ void DLPNOCCSD::estimate_memory() {
         }
 
         // These account for the memory costs of the expensive S(ij, kl) PNO overlaps
-        if (i <= j && !low_memory_overlap_) {
+        if (i <= j) {
             for (int mn_ij = 0; mn_ij < nlmo_ij * nlmo_ij; mn_ij++) {
                 const int m_ij = mn_ij / nlmo_ij, n_ij = mn_ij % nlmo_ij;
                 const int m = lmopair_to_lmos_[ij][m_ij], n = lmopair_to_lmos_[ij][n_ij];
@@ -415,7 +415,7 @@ void DLPNOCCSD::estimate_memory() {
         low_memory_overlap_ = true;
         memory_changed = true;
         pno_overlap_memory = low_overlap_memory;
-        outfile->Printf("    Required Memory Reduced to %.3f [GiB]\n\n", std::max(memory_ccsd, memory_integrals) * DOUBLES_TO_GB);
+        outfile->Printf("    Required Memory Reduced to %.3f [GB]\n\n", std::max(memory_ccsd, memory_integrals) * DOUBLES_TO_GB);
     }
 
     if (std::max(memory_ccsd, memory_integrals) * sizeof(double) > 0.9 * memory_) {
@@ -427,7 +427,7 @@ void DLPNOCCSD::estimate_memory() {
         write_qia_pno_ = true;
         memory_changed = true;
         qov = 0L;
-        outfile->Printf("    Required Memory Reduced to %.3f [GiB]\n\n", std::max(memory_ccsd, memory_integrals) * DOUBLES_TO_GB);
+        outfile->Printf("    Required Memory Reduced to %.3f [GB]\n\n", std::max(memory_ccsd, memory_integrals) * DOUBLES_TO_GB);
     }
 
     if (std::max(memory_ccsd, memory_integrals) * sizeof(double) > 0.9 * memory_) {
@@ -439,7 +439,7 @@ void DLPNOCCSD::estimate_memory() {
         write_qab_pno_ = true;
         memory_changed = true;
         qvv = 0L;
-        outfile->Printf("    Required Memory Reduced to %.3f [GiB]\n\n", std::max(memory_ccsd, memory_integrals) * DOUBLES_TO_GB);
+        outfile->Printf("    Required Memory Reduced to %.3f [GB]\n\n", std::max(memory_ccsd, memory_integrals) * DOUBLES_TO_GB);
     }
 
     if (std::max(memory_ccsd, memory_integrals) * sizeof(double) > 0.9 * memory_) {
@@ -770,7 +770,7 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
     return e_ijs;
 }
 
-void DLPNOCCSD::pno_lmp2_iterations() {
+std::vector<double> DLPNOCCSD::pno_lmp2_iterations() {
     /* Code borrowed and adapted from Zach Glick's DLPNO-MP2 */
 
     int nbf = basisset_->nbf();
@@ -857,7 +857,11 @@ void DLPNOCCSD::pno_lmp2_iterations() {
         } // end k
     } // end ij
 
+    // Store the energy for each pair (used to filter out strong and weak pairs later)
+    std::vector<double> e_ijs(n_lmo_pairs);
+
     // => Computing Truncated LMP2 energies (basically running DLPNO-MP2 here)
+
     outfile->Printf("\n  ==> Iterative Local MP2 with Pair Natural Orbitals (PNOs) <==\n\n");
     outfile->Printf("    E_CONVERGENCE = %.2e\n", 0.01 * options_.get_double("E_CONVERGENCE"));
     outfile->Printf("    R_CONVERGENCE = %.2e\n\n", 0.01 * options_.get_double("R_CONVERGENCE"));
@@ -966,7 +970,8 @@ void DLPNOCCSD::pno_lmp2_iterations() {
             int i, j;
             std::tie(i, j) = ij_to_i_j_[ij];
 
-            e_curr += K_iajb_[ij]->vector_dot(Tt_iajb_[ij]);
+            e_ijs[ij] = K_iajb_[ij]->vector_dot(Tt_iajb_[ij]);
+            e_curr += e_ijs[ij];
         }
 
         r_curr = *max_element(R_iajb_rms.begin(), R_iajb_rms.end());
@@ -988,6 +993,7 @@ void DLPNOCCSD::pno_lmp2_iterations() {
     // Set reference LMP2 reference energy to MP2 energy this iteration
     e_lmp2_ = e_curr;
 
+    return e_ijs;
 }
 
 void DLPNOCCSD::recompute_pnos() {
@@ -1288,12 +1294,19 @@ template<bool crude> void DLPNOCCSD::pair_prescreening() {
 
         int n_lmo_pairs = ij_to_i_j_.size();
 
-        const std::vector<double>& e_ijs = compute_pair_energies<false>();
+        compute_pair_energies<false>();
+
+        // Compute full LMP2 energies for remaining pairs for a better energy estimate
+        timer_on("PNO-LMP2 Iterations");
+        const std::vector<double>& e_ijs = pno_lmp2_iterations();
+        timer_off("PNO-LMP2 Iterations");
+
         filter_pairs<false>(e_ijs);
 
         int n_strong_pairs = ij_to_i_j_strong_.size();
         int n_weak_pairs = ij_to_i_j_weak_.size();
 
+        outfile->Printf("\n  ==> Final Strong and Weak Pairs <==\n\n");
         outfile->Printf("    Weak Pairs                      = %d\n", n_weak_pairs);
         outfile->Printf("    Strong Pairs                    = %d\n", n_strong_pairs);
         outfile->Printf("    Strong Pairs / Total Pairs      = (%.2f %%)\n", (100.0 * n_strong_pairs) / n_lmo_pairs);
@@ -1337,8 +1350,59 @@ void DLPNOCCSD::compute_pno_integrals() {
     std::time_t time_start = std::time(nullptr);
     std::time_t time_lap = std::time(nullptr);
 
-#pragma omp parallel for schedule(dynamic, 1)
+    // Sort pairs by the approximate number of operations (for maximal parallel efficiency)
+    std::vector<std::pair<int, size_t>> ij_cost_tuple(n_lmo_pairs);
+    
+#pragma omp parallel for
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+
+        const int npao_ij = lmopair_to_paos_[ij].size();
+        const int naux_ij = lmopair_to_ribfs_[ij].size();
+        const int nlmo_ij = lmopair_to_lmos_[ij].size();
+        
+        size_t cost = 0;
+
+        if (i <= j) {
+            // Cost of transforming q_vv from PAO to PNO basis
+            cost += naux_ij * npao_ij * npao_ij * n_pno_[ij];
+            cost += naux_ij * npao_ij * n_pno_[ij] * n_pno_[ij];
+            // Cost of transforming q_ov from PAO to PNO basis
+            cost += naux_ij * npao_ij * nlmo_ij * n_pno_[ij];
+
+            // For strong pairs, there are the non-projected integrals
+            if (i_j_to_ij_strong_[i][j] != -1) {
+
+                std::vector<int> extended_pao_domain = lmopair_to_paos_[ij];
+
+                for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+                    int k = lmopair_to_lmos_[ij][k_ij];
+                    extended_pao_domain = merge_lists(extended_pao_domain, lmo_to_paos_[k]);
+                }
+
+                const int npao_ext_ij = extended_pao_domain.size();
+                cost += naux_ij * npao_ext_ij * npao_ij * n_pno_[ij]; // Most expensive step in forming non-projected integrals
+            } // end if
+        }
+
+        ij_cost_tuple[ij] = std::make_pair(ij, cost);
+    }
+    
+    std::sort(ij_cost_tuple.begin(), ij_cost_tuple.end(), [&](const std::pair<int, size_t>& a, const std::pair<int, size_t>& b) {
+        return (a.second > b.second);
+    });
+
+    std::vector<int> ij_sorted_by_cost(n_lmo_pairs);
+    
+#pragma omp parallel for
+    for (int ij_idx = 0; ij_idx < n_lmo_pairs; ++ij_idx) {
+        ij_sorted_by_cost[ij_idx] = ij_cost_tuple[ij_idx].first;
+    }
+
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij_idx = 0; ij_idx < n_lmo_pairs; ++ij_idx) {
+        int ij = ij_sorted_by_cost[ij_idx];
+
         auto &[i, j] = ij_to_i_j_[ij];
         const int ji = ij_to_ji_[ij];
         const bool is_strong_pair = i_j_to_ij_strong_[i][j] != -1;
@@ -1661,7 +1725,7 @@ void DLPNOCCSD::compute_pno_integrals() {
             int time_elapsed = (int) time_curr - (int) time_lap;
             if (time_elapsed > 60) {
                 outfile->Printf("  Time Elapsed from last checkpoint %4d (s), Progress %2d %%, Integrals for (%4d / %4d) Pairs Computed\n", time_elapsed, 
-                                    (100 * ij) / n_lmo_pairs, ij, n_lmo_pairs);
+                                    (100 * ij_idx) / n_lmo_pairs, ij_idx, n_lmo_pairs);
                 time_lap = std::time(nullptr);
             }
         }
@@ -2277,9 +2341,64 @@ void DLPNOCCSD::compute_R_iajb(std::vector<SharedMatrix>& R_iajb, std::vector<Sh
         Rn_iajb[ij]->zero();
     }
 
+    // Sort pairs by the approximate number of operations (for maximal parallel efficiency)
+    std::vector<std::pair<int, size_t>> ij_cost_tuple(n_lmo_pairs);
+    
+#pragma omp parallel for
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+
+        const int npao_ij = lmopair_to_paos_[ij].size();
+        const int naux_ij = lmopair_to_ribfs_[ij].size();
+        const int nlmo_ij = lmopair_to_lmos_[ij].size();
+        
+        size_t cost = 0;
+
+        if (i <= j) {
+            // Cost of PNO projections
+            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+                int k = lmopair_to_lmos_[ij][k_ij];
+                for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
+                    int l = lmopair_to_lmos_[ij][l_ij];
+                    int kl = i_j_to_ij_[k][l];
+                    if (kl == -1) continue;
+
+                    cost += n_pno_[ij] * n_pno_[ij] * n_pno_[kl];
+                    cost += n_pno_[ij] * n_pno_[kl] * n_pno_[kl];
+                } // end l_ij
+            } // end k_ij
+        } else {
+            // Cost of PNO projections
+            for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+                int k = lmopair_to_lmos_[ij][k_ij];
+                int ik = i_j_to_ij_[i][k], jk = i_j_to_ij_[j][k];
+
+                cost += n_pno_[ij] * n_pno_[ij] * n_pno_[ik];
+                cost += n_pno_[ij] * n_pno_[ik] * n_pno_[ik];
+                cost += n_pno_[ij] * n_pno_[ij] * n_pno_[jk];
+                cost += n_pno_[ij] * n_pno_[jk] * n_pno_[jk];
+            } // end k_ij
+        } // end else
+
+        ij_cost_tuple[ij] = std::make_pair(ij, cost);
+    }
+    
+    std::sort(ij_cost_tuple.begin(), ij_cost_tuple.end(), [&](const std::pair<int, size_t>& a, const std::pair<int, size_t>& b) {
+        return (a.second > b.second);
+    });
+
+    std::vector<int> ij_sorted_by_cost(n_lmo_pairs);
+    
+#pragma omp parallel for
+    for (int ij_idx = 0; ij_idx < n_lmo_pairs; ++ij_idx) {
+        ij_sorted_by_cost[ij_idx] = ij_cost_tuple[ij_idx].first;
+    }
+
     // Compute residual for doubles amplitude
 #pragma omp parallel for schedule(dynamic, 1)
-    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+    for (int ij_idx = 0; ij_idx < n_lmo_pairs; ++ij_idx) {
+        int ij = ij_sorted_by_cost[ij_idx];
+
         auto &[i, j] = ij_to_i_j_[ij];
         bool is_weak_pair = (i_j_to_ij_strong_[i][j] == -1);
         int ji = ij_to_ji_[ij];
@@ -2715,7 +2834,7 @@ double DLPNOCCSD::compute_energy() {
     T_CUT_MKN_ *= 100;
     T_CUT_DO_ *= 2;
 
-    outfile->Printf("  ==> Crude Prescreening (Determines Dipole and Semicanonical-MP2 Pairs) <==\n\n");
+    outfile->Printf("  ==> Crude Prescreening (Determines Semicanonical-MP2 Pairs) <==\n\n");
     outfile->Printf("    T_CUT_MKN set to %6.3e\n", T_CUT_MKN_);
     outfile->Printf("    T_CUT_DO  set to %6.3e\n\n", T_CUT_DO_);
 
@@ -2752,14 +2871,6 @@ double DLPNOCCSD::compute_energy() {
     pair_prescreening<false>();
     timer_off("Refined Pair Prescreening");
 
-    timer_on("Sparsity");
-    prep_sparsity(false, true);
-    timer_off("Sparsity");
-
-    timer_on("PNO-LMP2 Iterations");
-    pno_lmp2_iterations();
-    timer_off("PNO-LMP2 Iterations");
-
     // Set variables from LMP2
     double e_scf = reference_wavefunction_->energy();
     double e_lmp2_corr = e_lmp2_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
@@ -2782,6 +2893,10 @@ double DLPNOCCSD::compute_energy() {
     outfile->Printf("\n                as slightly tighter cutoffs utilized to increase accuracy in the context of CC!!!\n\n");
 
     // Now we do the hard stuff (CCSD)
+    timer_on("Sparsity");
+    prep_sparsity(false, true);
+    timer_off("Sparsity");
+
     recompute_pnos();
 
     timer_on("DF Ints");
@@ -2949,7 +3064,7 @@ void DLPNOCCSD::print_results() {
     outfile->Printf("    Dipole Pair Correction:            %16.12f \n", de_dipole_);
     outfile->Printf("    PNO Truncation Correction:         %16.12f \n", de_pno_total_);
     outfile->Printf("\n\n  @Total DLPNO-CCSD Energy: %16.12f \n", variables_["SCF TOTAL ENERGY"] + e_lccsd_ + de_lmp2_eliminated_ + de_weak_ + de_pno_total_ + de_dipole_);
-    outfile->Printf("    *** Wow, that was fast! A thousand hallelujahs!!! \n");
+    outfile->Printf("    *** Wow, that was fast! A thousand hallelujahs!!! \n\n");
 }
 
 }  // namespace dlpno

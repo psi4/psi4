@@ -2731,8 +2731,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("WRITE_QIA_PNO", false);
         /*- Write (Q_{ij} | a_{ij} b_{ij}) integrals to disk? !expert -*/
         options.add_bool("WRITE_QAB_PNO", false);
+        /*- Write triples (W and V intermediates) to disk? !expert -*/
+        options.add_bool("WRITE_TRIPLES_INTERMEDIATES", false);
         /*- Write triples amplitudes to disk? !expert -*/
-        options.add_bool("WRITE_TRIPLES", false);
+        options.add_bool("WRITE_TRIPLES_AMPLITUDES", false);
 
 
         /*- SUBSECTION DOI Grid Options -*/

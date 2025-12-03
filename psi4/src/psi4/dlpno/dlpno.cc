@@ -1589,13 +1589,15 @@ void DLPNO::print_lmo_domains(bool initial) {
     outfile->Printf("      Average = %4d LMOs\n", total_lmos / naocc);
     outfile->Printf("      Min     = %4d LMOs\n", min_lmos);
     outfile->Printf("      Max     = %4d LMOs\n", max_lmos);
-    outfile->Printf(" \n");
-    outfile->Printf("    Screened %d of %d LMO pairs (%.2f %%)\n", naocc * naocc - total_lmos, naocc * naocc,
-                    100.0 - (total_lmos * 100.0) / (naocc * naocc));
-    outfile->Printf("             %d pairs met overlap criteria\n", exclude_pairs_overlap);
-    outfile->Printf("             %d pairs met energy criteria\n", exclude_pairs_energy);
-    outfile->Printf(" \n");
-    outfile->Printf("    Screened LMO pair energy =  %.12f \n", de_dipole_);
+    if (initial) {
+        outfile->Printf(" \n");
+        outfile->Printf("    Screened %d of %d LMO pairs (%.2f %%)\n", naocc * naocc - total_lmos, naocc * naocc,
+                        100.0 - (total_lmos * 100.0) / (naocc * naocc));
+        outfile->Printf("             %d pairs met overlap criteria\n", exclude_pairs_overlap);
+        outfile->Printf("             %d pairs met energy criteria\n", exclude_pairs_energy);
+        outfile->Printf(" \n");
+        outfile->Printf("    Screened LMO pair energy =  %.12f \n", de_dipole_);
+    }
 }
 
 void DLPNO::print_aux_pair_domains() {
