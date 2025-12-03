@@ -4368,6 +4368,12 @@ def run_dlpnomp2(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
+        molecule = kwargs.get('molecule', core.get_active_molecule())
+        if molecule.schoenflies_symbol() != 'c1':
+            core.print_out("""\n  A requested method does not make use of molecular symmetry: """
+                           """further calculations in C1 point group.\n\n""")
+            molecule.reset_point_group("c1")
+
         ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
     elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
         raise ValidationError("""  DLPNO-MP2 does not make use of molecular symmetry: """
@@ -4422,6 +4428,12 @@ def run_dlpnoccsd(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
+        molecule = kwargs.get('molecule', core.get_active_molecule())
+        if molecule.schoenflies_symbol() != 'c1':
+            core.print_out("""\n  A requested method does not make use of molecular symmetry: """
+                           """further calculations in C1 point group.\n\n""")
+            molecule.reset_point_group("c1")
+
         ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
     elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
         raise ValidationError("""  DLPNO-CCSD does not make use of molecular symmetry: """
@@ -4471,6 +4483,12 @@ def run_dlpnoccsd_t(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
+        molecule = kwargs.get('molecule', core.get_active_molecule())
+        if molecule.schoenflies_symbol() != 'c1':
+            core.print_out("""\n  A requested method does not make use of molecular symmetry: """
+                           """further calculations in C1 point group.\n\n""")
+            molecule.reset_point_group("c1")
+            
         ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
     elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
         raise ValidationError("""  DLPNO-CCSD(T) does not make use of molecular symmetry: """

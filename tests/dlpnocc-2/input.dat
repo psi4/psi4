@@ -1,7 +1,9 @@
 #! comparison of DF-CCSD(T) and DLPNO-CCSD(T) without frozen core
 #! Also a test of very_tight parameters
 #! Methane geometry from HTBH.py in databases
-memory 4 GB
+#! The reference DF-CCSD(T) values are stored and not rerun
+
+memory 8 GB
 
 ref_scf                  =    -40.213627016015              #TEST
 
@@ -32,35 +34,21 @@ set scf_type df
 set mp2_type df
 set cc_type df
 set nat_orbs False
-set pno_convergence tight
+set pno_convergence very_tight
 set e_convergence 1.0e-8
 set r_convergence 1.0e-8
-
-print('   Testing DF-CCSD(T) w/o frozen core ...')
-val = energy('ccsd(t)')
-
-compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                           #TEST
-compare_values(ref_dfccsd_corl, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')          #TEST
-compare_values(ref_dfccsd_tot, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                  #TEST
-compare_values(ref_dfccsd_t_corl, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
-compare_values(ref_dfccsd_t_tot, variable('CCSD(T) TOTAL ENERGY'), 7, 'ccsd(t) tot')          #TEST
-compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')                   #TEST
-compare_values(ref_dfccsd_t_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
-compare_values(ref_dfccsd_t_tot, variable('CURRENT ENERGY'), 7, 'ccsd(t) tot')                #TEST
-compare_values(ref_dfccsd_t_tot, val, 7, 'ccsd(t) return')                                    #TEST
-clean()
 
 print('   Testing DLPNO-CCSD(T) w/o frozen core...')
 val = energy('dlpno-ccsd(t)')
 
 # DLPNO-CCSD(T) matches DF-CCSD(T) if the thresholds are tightened enough
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                           #TEST
-compare_values(ref_dfccsd_corl, variable('CCSD CORRELATION ENERGY'), 4, 'ccsd corl')          #TEST
-compare_values(ref_dfccsd_tot, variable('CCSD TOTAL ENERGY'), 4, 'ccsd tot')                  #TEST
-compare_values(ref_dfccsd_t_corl, variable('CCSD(T) CORRELATION ENERGY'), 4, 'ccsd(t) corl')  #TEST
-compare_values(ref_dfccsd_t_tot, variable('CCSD(T) TOTAL ENERGY'), 4, 'ccsd(t) tot')          #TEST
+compare_values(ref_dfccsd_corl, variable('CCSD CORRELATION ENERGY'), 5, 'ccsd corl')          #TEST
+compare_values(ref_dfccsd_tot, variable('CCSD TOTAL ENERGY'), 5, 'ccsd tot')                  #TEST
+compare_values(ref_dfccsd_t_corl, variable('CCSD(T) CORRELATION ENERGY'), 5, 'ccsd(t) corl')  #TEST
+compare_values(ref_dfccsd_t_tot, variable('CCSD(T) TOTAL ENERGY'), 5, 'ccsd(t) tot')          #TEST
 compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')                   #TEST
-compare_values(ref_dfccsd_t_corl, variable('CURRENT CORRELATION ENERGY'), 4, 'ccsd(t) corl')  #TEST
-compare_values(ref_dfccsd_t_tot, variable('CURRENT ENERGY'), 4, 'ccsd(t) tot')                #TEST
-compare_values(ref_dfccsd_t_tot, val, 4, 'ccsd(t) return')                                    #TEST
+compare_values(ref_dfccsd_t_corl, variable('CURRENT CORRELATION ENERGY'), 5, 'ccsd(t) corl')  #TEST
+compare_values(ref_dfccsd_t_tot, variable('CURRENT ENERGY'), 5, 'ccsd(t) tot')                #TEST
+compare_values(ref_dfccsd_t_tot, val, 5, 'ccsd(t) return')                                    #TEST
 clean()

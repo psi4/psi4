@@ -1,4 +1,5 @@
 #! comparison of DF-CCSD(T) and DLPNO-CCSD(T) CBS Extrapolation on Ar dimer
+#! The reference DF-CCSD(T) values are stored and not rerun
 
 memory 16 GB
 
@@ -26,13 +27,8 @@ set r_convergence 1.0e-8
 set local_convergence 1.0e-11
 set local_maxiter 10000
 
-print('   Computing DF-CCSD(T)/cc-pV[TQ]Z interaction energy ...')
-de_canonical = energy('ccsd(t)/cc-pV[TQ]Z', bsse_type='cp')
-compare_values(de_canonical, df_ccsd_t_e_int, 6, 'canonical CCSD(T)/CBS Eint') #TEST
-clean()
-
 print('   Computing DLPNO-CCSD(T)/cc-pV[TQ]Z interaction energy ...')
 de_dlpno = energy('dlpno-ccsd(t)/cc-pV[TQ]Z', bsse_type='cp')
-compare_values(de_dlpno, dlpno_ccsd_t_e_int, 6, 'canonical DLPNO-CCSD(T)/CBS Eint')              #TEST
-compare_values(de_canonical, de_dlpno, 5, 'canonical vs DLPNO-CCSD(T) Eint (< 0.006 kcal/mol)')  #TEST
+compare_values(de_dlpno, dlpno_ccsd_t_e_int, 6, 'canonical DLPNO-CCSD(T)/CBS Eint')                 #TEST
+compare_values(de_dlpno, df_ccsd_t_e_int, 5, 'canonical vs DLPNO-CCSD(T) Eint (< 0.006 kcal/mol)')  #TEST
 clean()
