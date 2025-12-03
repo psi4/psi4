@@ -182,6 +182,12 @@ jobs:
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
 
+  - bash: |
+      cd build
+      source activate p4env
+      PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
+    displayName: 'Run Spot Run Test'
+
   #- bash: |
   #    cd build
   #    source activate p4env
