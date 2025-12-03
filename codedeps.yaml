@@ -667,6 +667,7 @@ data:
         - sphinx-tabs
         - autodoc-pydantic=1
         - qcportal
+        - "gxx_linux-64=14.3.0=hc876b51_14"
       aux_build_names_note:
         qcportal: "Required for docs to resolve objects in pydantic classes."
       cmake:

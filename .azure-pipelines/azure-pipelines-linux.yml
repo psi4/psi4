@@ -192,6 +192,7 @@ jobs:
       cd build
       source activate p4env
       python ../devtools/scripts/ci_run_test.py
+      cat Testing/Temporary/LastTest.log
       python ../devtools/scripts/ci_print_failing.py
     displayName: 'CTest Tests'
 
