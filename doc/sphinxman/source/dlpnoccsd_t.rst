@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -143,7 +143,7 @@ Practical Advice
 * In DLPNO methods, it is recommended to freeze core orbitals (by setting |globals__freeze_core|
   to ``True``), since core excitations are known to be more sensitive to PNO truncations than
   valence truncations. If a non-frozen core computation is requested, all PNOs corresponding to core-core
-  or core-virtual pairs have cutoffs scaled by |dlpno__t_cut_pno_core_scale| (default ``1.0e-2``).
+  or core-virtual pairs have cutoffs scaled by ``T_CUT_PNO_CORE_SCALE`` (default ``1.0e-2``).
 
 * Please specify ``symmetry c1`` in the user input file. DLPNO does not yet have molecular point group symmetry implemented.
 
