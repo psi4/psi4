@@ -50,7 +50,7 @@
 namespace psi {
 
 ZORA::ZORA(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, Options& options)
-	: options_(options), molecule_(molecule), primary_(basis) {}
+    : options_(options), molecule_(molecule), primary_(basis) {}
 
 ZORA::~ZORA() {}
 
@@ -62,81 +62,81 @@ void ZORA::setup() {
     outfile->Printf("        by Nathan Gillispie\n");
     outfile->Printf("      ========================\n");
 
-	timer_on("Make Grid");
+    timer_on("Make Grid");
 
-	// Initialize grid with options
-	std::map<std::string, std::string> grid_str_options = {
-		{"DFT_RADIAL_SCHEME",  "BECKE"},
-		{"DFT_PRUNING_SCHEME", options_.get_str("ZORA_PRUNING_SCHEME")},
-		{"DFT_NUCLEAR_SCHEME", "BECKE"},
-		{"DFT_GRID_NAME",      ""},
-		{"DFT_BLOCK_SCHEME",   "OCTREE"},
-	};
-	
-	std::map<std::string, int> grid_int_options = {
-		{"DFT_BLOCK_MAX_POINTS", 256},
-		{"DFT_BLOCK_MIN_POINTS", 100},
-		{"DFT_SPHERICAL_POINTS", options_.get_int("ZORA_SPHERICAL_POINTS")},
-		{"DFT_RADIAL_POINTS", options_.get_int("ZORA_RADIAL_POINTS")},
-	};
+    // Initialize grid with options
+    std::map<std::string, std::string> grid_str_options = {
+        {"DFT_RADIAL_SCHEME",  "BECKE"},
+        {"DFT_PRUNING_SCHEME", options_.get_str("ZORA_PRUNING_SCHEME")},
+        {"DFT_NUCLEAR_SCHEME", "BECKE"},
+        {"DFT_GRID_NAME",      ""},
+        {"DFT_BLOCK_SCHEME",   "OCTREE"},
+    };
 
-	std::map<std::string, double> grid_double_options = {
-		{"DFT_BS_RADIUS_ALPHA",   1.0},
-		{"DFT_PRUNING_ALPHA",     1.0},
-		{"DFT_WEIGHTS_TOLERANCE", 1e-15},
-		{"DFT_BLOCK_MAX_RADIUS",  3.0},
-		{"DFT_BASIS_TOLERANCE",   options_.get_double("ZORA_BASIS_TOLERANCE")},
-	};
+    std::map<std::string, int> grid_int_options = {
+        {"DFT_BLOCK_MAX_POINTS", 256},
+        {"DFT_BLOCK_MIN_POINTS", 100},
+        {"DFT_SPHERICAL_POINTS", options_.get_int("ZORA_SPHERICAL_POINTS")},
+        {"DFT_RADIAL_POINTS", options_.get_int("ZORA_RADIAL_POINTS")},
+    };
 
-	grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_int_options, grid_str_options, grid_double_options, options_);
+    std::map<std::string, double> grid_double_options = {
+        {"DFT_BS_RADIUS_ALPHA",   1.0},
+        {"DFT_PRUNING_ALPHA",     1.0},
+        {"DFT_WEIGHTS_TOLERANCE", 1e-15},
+        {"DFT_BLOCK_MAX_RADIUS",  3.0},
+        {"DFT_BASIS_TOLERANCE",   options_.get_double("ZORA_BASIS_TOLERANCE")},
+    };
 
-	timer_off("Make Grid");
+    grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_int_options, grid_str_options, grid_double_options, options_);
 
-	auto npoints = grid_->npoints();
-	auto nblocks = grid_->blocks().size();
+    timer_off("Make Grid");
 
-	outfile->Printf("\n  ==> ZORA Details <==\n");
-	outfile->Printf("    Total number of grid points: %d\n", npoints);
-	outfile->Printf("    Total number of batches: %d\n", nblocks);
+    auto npoints = grid_->npoints();
+    auto nblocks = grid_->blocks().size();
+
+    outfile->Printf("\n  ==> ZORA Details <==\n");
+    outfile->Printf("    Total number of grid points: %d\n", npoints);
+    outfile->Printf("    Total number of batches: %d\n", nblocks);
 }
 
 void ZORA::compute(SharedMatrix T_SR) {
-	timer_on("ZORA");
+    timer_on("ZORA");
 
-	setup();
+    setup();
 
-	int nblocks = grid_->blocks().size();
-	int max_points = grid_->max_points();
-	int max_funcs = grid_->max_functions();
+    int nblocks = grid_->blocks().size();
+    int max_points = grid_->max_points();
+    int max_funcs = grid_->max_functions();
 
-	int nthreads = 1;
+    int nthreads = 1;
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
 #endif
     outfile->Printf("    Using %d thread(s)\n\n", nthreads);
 
-	// Basis function computer on each thread
-	std::vector<std::shared_ptr<BasisFunctions>> pworkers;
-	for (int i = 0; i < nthreads; i++) {
-		auto p_tmp = std::make_shared<BasisFunctions>(primary_, max_points, max_funcs);
-		p_tmp->set_deriv(1);
-		pworkers.push_back(p_tmp);
-	}
+    // Basis function computer on each thread
+    std::vector<std::shared_ptr<BasisFunctions>> pworkers;
+    for (int i = 0; i < nthreads; i++) {
+        auto p_tmp = std::make_shared<BasisFunctions>(primary_, max_points, max_funcs);
+        p_tmp->set_deriv(1);
+        pworkers.push_back(p_tmp);
+    }
 
-	timer_on("Effective Potential");
+    timer_on("Effective Potential");
     veff_ = std::make_shared<std::map<int, SharedVector>>();
     if (options_.get_bool("ZORA_NR_DEBUG")) {
         compute_debug_veff();
     } else {
         compute_veff();
     }
-	timer_off("Effective Potential");
+    timer_off("Effective Potential");
 
-	timer_on("Scalar Relativistic Kinetic");
-	compute_TSR(pworkers, T_SR);
-	timer_off("Scalar Relativistic Kinetic");
+    timer_on("Scalar Relativistic Kinetic");
+    compute_TSR(pworkers, T_SR);
+    timer_off("Scalar Relativistic Kinetic");
 
-	timer_off("ZORA");
+    timer_off("ZORA");
 }
 
 // Fill veff_ with zeros so that `compute` creates non-relativistic kinetic
@@ -156,16 +156,16 @@ void ZORA::compute_debug_veff() {
 // (https://doi.org/10.1063/1.476576/).
 void ZORA::compute_veff()
 {
-	int nthreads = 1;
+    int nthreads = 1;
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
 #endif
 
-	// Run check here because OMP blocks don't like PSIEXCEPTIONs
-	int natoms = molecule_->natom();
-	for (int a = 0; a < natoms; a++) {
-		if (molecule_->Z(a) > 104) throw PSIEXCEPTION("Too heavy atom for ZORA implementation. Tabulation only available to Z=104, Rf.\n");
-	}
+    // Run check here because OMP blocks don't like PSIEXCEPTIONs
+    int natoms = molecule_->natom();
+    for (int a = 0; a < natoms; a++) {
+        if (molecule_->Z(a) > 104) throw PSIEXCEPTION("Too heavy atom for ZORA implementation. Tabulation only available to Z=104, Rf.\n");
+    }
 
 #pragma omp parallel for schedule(auto) num_threads(nthreads)
     for (const auto &block : grid_->blocks()) {
@@ -179,6 +179,9 @@ void ZORA::compute_veff()
         auto veff_block = std::make_shared<Vector>(npoints);
         veff_block->zero();
 
+        // If we were using "ATOMIC" blocking, it would be sufficient to just
+        // int a = block->parent_atom(); but overall speed suffers without
+        // "OCTREE". Below is not a bottleneck (and won't be due to scaling)
         for (int a = 0; a < natoms; a++) {
             const int Z = molecule_->Z(a);
             if (Z == 0) continue; // avert ghost atom segfault
@@ -211,73 +214,70 @@ void ZORA::compute_veff()
 // Compute the scalar relativistic kinetic energy integral in the AO basis.
 // See header for equation.
 void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, SharedMatrix &T_SR) {
-	// Speed of light in atomic units squared
-	const double C2 = pc_c_au*pc_c_au;
+    // Speed of light in atomic units squared
+    const double C2 = pc_c_au*pc_c_au;
 
-	int nthreads = 1;
+    int nthreads = 1;
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
 #endif
 
-	int max_points = grid_->max_points(); //Set in grid_int_options
+    int max_points = grid_->max_points(); //Set in grid_int_options
 #pragma omp parallel num_threads(nthreads)
-	{
-		// Give each thread their own scratch space
-		std::vector<double> kernel(max_points);
-		auto tmp = std::make_shared<Matrix>(T_SR->nrow(), T_SR->ncol());
+    {
+        // Give each thread their own scratch space
+        std::vector<double> kernel(max_points);
+        auto tmp = std::make_shared<Matrix>(T_SR->nrow(), T_SR->ncol());
+        tmp->zero();
 #pragma omp for schedule(auto)
-	    for (const auto &block : grid_->blocks()) {
-			const auto &bf_map = block->functions_local_to_global();
-			auto local_nbf = bf_map.size();
-			int npoints = block->npoints();
+        for (const auto &block : grid_->blocks()) {
+            const auto &bf_map = block->functions_local_to_global();
+            auto local_nbf = bf_map.size();
+            int npoints = block->npoints();
 
-			auto veff_block = veff_->at(block->index());
+            auto veff_block = veff_->at(block->index());
 
-			int thread = 0;
+            int thread = 0;
 #ifdef _OPENMP
-			thread = omp_get_thread_num();
+            thread = omp_get_thread_num();
 #endif
 
-			pworkers[thread]->compute_functions(block);
-			auto phi_x = pworkers[thread]->basis_value("PHI_X");
-			auto phi_y = pworkers[thread]->basis_value("PHI_Y");
-			auto phi_z = pworkers[thread]->basis_value("PHI_Z");
+            pworkers[thread]->compute_functions(block);
+            auto phi_x = pworkers[thread]->basis_value("PHI_X");
+            auto phi_y = pworkers[thread]->basis_value("PHI_Y");
+            auto phi_z = pworkers[thread]->basis_value("PHI_Z");
 
-			// Preprocess kernel c²/(2c²-veff) * weight
-			double* w = block->w();
-			for (int p = 0; p < npoints; p++) {
-				kernel[p] = C2 /(2.*C2 - veff_block->get(p)) * w[p];
-			}
+            // Preprocess kernel c²/(2c²-veff) * weight
+            double* w = block->w();
+            for (int p = 0; p < npoints; p++) {
+                kernel[p] = C2 /(2.*C2 - veff_block->get(p)) * w[p];
+            }
 
-			tmp->zero();
-
-			// Compute kinetic integral using kernel above
-			// T_SR --> non-relativistic T when veff --> 0.
-			// bf_map is needed because the basis funcions differ from that of a given block
-			for (int l_mu = 0; l_mu < local_nbf; l_mu++) {
-				int mu = bf_map[l_mu];
-				for (int l_nu = l_mu; l_nu < local_nbf; l_nu++) {
-					int nu = bf_map[l_nu];
-					for (int p = 0; p < npoints; p++) {
-						// ∇²φ(r)*kernel
-						tmp->add(mu,nu, kernel[p]*(
-							phi_x->get(p,l_mu)*phi_x->get(p,l_nu) +
-							phi_y->get(p,l_mu)*phi_y->get(p,l_nu) +
-							phi_z->get(p,l_mu)*phi_z->get(p,l_nu)
-						));
-					}
-				}
-			}
-
-			// Lock the T_SR matrix before adding
+            // Compute kinetic integral using kernel above
+            // T_SR --> non-relativistic T when veff --> 0.
+            // bf_map is needed because the basis funcions differ from that of a given block
+            for (int l_mu = 0; l_mu < local_nbf; l_mu++) {
+                int mu = bf_map[l_mu];
+                for (int l_nu = l_mu; l_nu < local_nbf; l_nu++) {
+                    int nu = bf_map[l_nu];
+                    for (int p = 0; p < npoints; p++) {
+                        // ∇²φ(r)*kernel
+                        tmp->add(mu,nu, kernel[p]*(
+                            phi_x->get(p,l_mu)*phi_x->get(p,l_nu) +
+                            phi_y->get(p,l_mu)*phi_y->get(p,l_nu) +
+                            phi_z->get(p,l_mu)*phi_z->get(p,l_nu)
+                        ));
+                    }
+                }
+            }
+        }
 #pragma omp critical
-			{
-				T_SR->add(tmp);
-			}
-		}
-	}
+        {
+            T_SR->add(tmp);
+        }
+    }
 
-	T_SR->copy_upper_to_lower();
+    T_SR->copy_upper_to_lower();
 }
 
 }  // namespace psi
