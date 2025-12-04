@@ -22,9 +22,6 @@ symmetry c1
 set basis cc-pvdz
 set freeze_core True
 set scf_type df
-set mp2_type df
-set cc_type  df
-set nat_orbs False
 set e_convergence 1.0e-8
 set r_convergence 1.0e-8
 set t_cut_pno 0.0

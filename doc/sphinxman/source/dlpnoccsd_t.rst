@@ -112,17 +112,17 @@ as well as the percentage energy recovery of the PNOs compared to the non-trunca
 
 .. table:: PNO convergence levels given in |Psifour|
 
-   +-------------+------------+-------------+--------------+----------+-----------+-------------+---------------------------+
-   | Convergence | T_CUT_PNO  | T_CUT_TRACE | T_CUT_ENERGY | T_CUT_DO | T_CUT_MKN | T_CUT_PAIRS | Recommended Applications  |
-   +=============+============+=============+==============+==========+===========+=============+===========================+
-   | Loose       | 1.0e-6     | 0.9         | 0.9          | 2e-2     | 1e-3      | 1e-3        | High-throughput screening |
-   +-------------+------------+-------------+--------------+----------+-----------+-------------+---------------------------+
-   | Normal      | 3.33e-7    | 0.99        | 0.99         | 1e-2     | 1e-3      | 1e-4        | Thermochemistry           |
-   +-------------+------------+-------------+--------------+----------+-----------+-------------+---------------------------+
-   | Tight       | 1.0e-7     | 0.999       | 0.997        | 5e-3     | 1e-3      | 1e-5        | Non-covalent Interactions |
-   +-------------+------------+-------------+--------------+----------+-----------+-------------+---------------------------+
-   | Very_Tight  | 1.0e-8     | 0.999       | 0.997        | 5e-3     | 1e-4      | 1e-6        | Benchmarking, Focal Point |
-   +-------------+------------+-------------+--------------+----------+-----------+-------------+---------------------------+
+   +--------------------------+------------+-------------+--------------+----------+-----------+-------------+---------------------------+
+   | |dlpno__pno_convergence| | T_CUT_PNO  | T_CUT_TRACE | T_CUT_ENERGY | T_CUT_DO | T_CUT_MKN | T_CUT_PAIRS | Recommended Applications  |
+   +==========================+============+=============+==============+==========+===========+=============+===========================+
+   | Loose                    | 1.0e-6     | 0.9         | 0.9          | 2e-2     | 1e-3      | 1e-3        | High-throughput screening |
+   +--------------------------+------------+-------------+--------------+----------+-----------+-------------+---------------------------+
+   | Normal                   | 3.33e-7    | 0.99        | 0.99         | 1e-2     | 1e-3      | 1e-4        | Thermochemistry           |
+   +--------------------------+------------+-------------+--------------+----------+-----------+-------------+---------------------------+
+   | Tight                    | 1.0e-7     | 0.999       | 0.997        | 5e-3     | 1e-3      | 1e-5        | Non-covalent Interactions |
+   +--------------------------+------------+-------------+--------------+----------+-----------+-------------+---------------------------+
+   | Very_Tight               | 1.0e-8     | 0.999       | 0.997        | 5e-3     | 1e-4      | 1e-6        | Benchmarking, Focal Point |
+   +--------------------------+------------+-------------+--------------+----------+-----------+-------------+---------------------------+
 
 Practical Advice
 ----------------
@@ -145,7 +145,7 @@ Practical Advice
   valence truncations. If a non-frozen core computation is requested, all PNOs corresponding to core-core
   or core-virtual pairs have cutoffs scaled by ``T_CUT_PNO_CORE_SCALE`` (default ``1.0e-2``).
 
-* Please specify ``symmetry c1`` in the user input file. DLPNO does not yet have molecular point group symmetry implemented.
+* Note that DLPNO does not yet have molecular point group symmetry implemented and will run in C1 symmetry.
 
 * At this time, DLPNO-CCSD/(T) is only available for closed-shell RHF computations.
 

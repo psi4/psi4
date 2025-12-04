@@ -4353,9 +4353,9 @@ def run_dlpnomp2(name, **kwargs):
     optstash = p4util.OptionsState(
         ['DF_BASIS_MP2'],
         ['SCF_TYPE'],
-        ['DLPNO_ALGORITHM'])
+        ["DLPNO", "DLPNO_ALGORITHM"])
 
-    # Alter default algorithm
+    # Alter default algorithm (if not set by user)
     if not core.has_global_option_changed('SCF_TYPE'):
         core.set_global_option('SCF_TYPE', 'DF')
         core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
@@ -4420,10 +4420,14 @@ def run_dlpnoccsd(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['DF_BASIS_CC'],
+        ["DLPNO", 'DF_BASIS_CC'],
         ['SCF_TYPE'],
-        ['DLPNO_ALGORITHM']
-    )
+        ["DLPNO", "DLPNO_ALGORITHM"])
+
+    # Alter default algorithm (if not set by user)
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -4475,10 +4479,15 @@ def run_dlpnoccsd_t(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['DF_BASIS_CC'],
+        ["DLPNO", 'DF_BASIS_CC'],
         ['SCF_TYPE'],
-        ['DLPNO_ALGORITHM']
-    )
+        ["DLPNO", "DLPNO_ALGORITHM"],
+        ["DLPNO", "T0_APPROXIMATION"])
+
+    # Alter default algorithm (if not set by user)
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)

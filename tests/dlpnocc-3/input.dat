@@ -18,9 +18,6 @@ symmetry c1
 
 set freeze_core True
 set scf_type df
-set mp2_type df
-set cc_type df
-set nat_orbs False
 set pno_convergence tight
 set e_convergence 1.0e-8
 set r_convergence 1.0e-8
