@@ -27,19 +27,11 @@
 .. #
 
 .. include:: autodoc_abbr_options_c.rst
+
 .. index::
    single: DLPNO-CC
    
-   .. _`sec:dlpnocc`:
-   
-=================================================
-DLPNO-CC: Domain-Based Local Pair Natural Orbital
-=================================================
-
-.. index::
-   single: DLPNO-CCSD(T)
-
-.. _`sec:dlpnoccsd_t`:
+.. _`sec:dlpnocc`:
 
 DLPNO-CCSD(T): Domain-Based Local Pair Natural Orbital CCSD(T)
 ==============================================================
