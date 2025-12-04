@@ -3028,8 +3028,8 @@ void DLPNOCCSD::print_header() {
     outfile->Printf("    T_CUT_TRACE_MP2  = %6.4e \n", T_CUT_TRACE_MP2_);
     outfile->Printf("    T_CUT_ENERGY_MP2 = %6.4e \n", T_CUT_ENERGY_MP2_);
     outfile->Printf("    T_CUT_DO         = %6.4e \n", T_CUT_DO_);
-    outfile->Printf("    T_CUT_DO_ij      = %6.4e \n", options_.get_double("T_CUT_DO_ij"));
-    outfile->Printf("    T_CUT_DO_uv      = %6.4e \n", options_.get_double("T_CUT_DO_uv"));
+    outfile->Printf("    T_CUT_DO_IJ      = %6.4e \n", options_.get_double("T_CUT_DO_IJ"));
+    outfile->Printf("    T_CUT_DO_UV      = %6.4e \n", options_.get_double("T_CUT_DO_UV"));
     outfile->Printf("    T_CUT_CLMO       = %6.4e \n", options_.get_double("T_CUT_CLMO"));
     outfile->Printf("    T_CUT_CPAO       = %6.4e \n", options_.get_double("T_CUT_CPAO"));
     outfile->Printf("    S_CUT            = %6.4e \n", options_.get_double("S_CUT"));

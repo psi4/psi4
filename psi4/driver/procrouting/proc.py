@@ -4369,6 +4369,9 @@ def run_dlpnomp2(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         molecule = kwargs.get('molecule', core.get_active_molecule())
+        # We need to force SCF to run in c1 for DLPNO methods
+        # TODO: Investigate why local DF domains are not properly assigned
+        # when the preceding SCF is NOT run in c1
         if molecule.schoenflies_symbol() != 'c1':
             core.print_out("""\n  A requested method does not make use of molecular symmetry: """
                            """further calculations in C1 point group.\n\n""")
@@ -4433,6 +4436,9 @@ def run_dlpnoccsd(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         molecule = kwargs.get('molecule', core.get_active_molecule())
+        # We need to force SCF to run in c1 for DLPNO methods
+        # TODO: Investigate why local DF domains are not properly assigned
+        # when the preceding SCF is NOT run in c1
         if molecule.schoenflies_symbol() != 'c1':
             core.print_out("""\n  A requested method does not make use of molecular symmetry: """
                            """further calculations in C1 point group.\n\n""")
@@ -4493,6 +4499,9 @@ def run_dlpnoccsd_t(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         molecule = kwargs.get('molecule', core.get_active_molecule())
+        # We need to force SCF to run in c1 for DLPNO methods
+        # TODO: Investigate why local DF domains are not properly assigned
+        # when the preceding SCF is NOT run in c1
         if molecule.schoenflies_symbol() != 'c1':
             core.print_out("""\n  A requested method does not make use of molecular symmetry: """
                            """further calculations in C1 point group.\n\n""")

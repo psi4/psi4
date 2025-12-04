@@ -27,6 +27,14 @@
 .. #
 
 .. include:: autodoc_abbr_options_c.rst
+.. index::
+   single: DLPNO-CC
+   
+   .. _`sec:dlpnocc`:
+   
+=================================================
+DLPNO-CC: Domain-Based Local Pair Natural Orbital
+=================================================
 
 .. index::
    single: DLPNO-CCSD(T)
@@ -154,7 +162,7 @@ Computation Size Limits
 
 * Since DLPNO-CCSD(T) is linear-scaling, with access to sufficient computing resources, a DLPNO-CCSD(T) computation 
   can be possible with any system. In fact, for larger systems, Hartree-Fock becomes the bottleneck (not the coupled-cluster)!
-  Below, we tabulate the projected limits (number of atoms) of DLPNO-CCSD(T) across different access to hardware. All these limits 
+  Below, we tabulate the roughly projected limits (number of atoms) of DLPNO-CCSD(T) across different access to hardware. All these limits 
   are with a standard polarized double zeta basis set. For larger basis sets, divide by 3 for an increase in cardinality, 
   2 for full set of diffuse functions, and 1.5 for partial diffuse functions (e.g. if the size limit is 100
   for cc-pVDZ, expect 30 for cc-pVTZ, 50 for aug-cc-pVDZ, and 70 for jun-cc-pVDZ). Estimates for larger amounts of RAM should be
@@ -175,40 +183,37 @@ Computation Size Limits
    +------------------+------------+-------------+-------------+
    | Lab Workstation  | 192 GB     | 300-400     | 200-300     |
    +------------------+------------+-------------+-------------+
-   | Lab Cluster      | 512 GB     | 1000+       | 500-800     |
+   | Lab Cluster      | 512 GB     | 700+        | 400+        |
    +------------------+------------+-------------+-------------+
-   | Lab/HPC Cluster  | 1 TB       | 1500+       | 1000+       |
+   | Lab/HPC Cluster  | 1 TB       | 1000+       | 700+        |
    +------------------+------------+-------------+-------------+
-   | HPC Cluster      | 3 TB       | 3000+       | 2000+       |
+   | HPC Cluster      | 3 TB       | 1500+       | 1000+       |
    +------------------+------------+-------------+-------------+
 
 Key Differences with DLPNO-CCSD(T) in ORCA
 ------------------------------------------
 
-We note that while the DLPNO-CCSD(T) algorithm in Psi4 is heavily inspired by the original method
+While the DLPNO-CCSD(T) formulation in |PSIfour| is heavily inspired by the original method
 proposed by Neese and coworkers in ORCA [Riplinger:2013:034106]_ [Riplinger:2013:134101]_ [Riplinger:2016:024109]_ 
-[Guo:2018:011101]_, the DLPNO-CCSD(T) code in |PSIfour| is fundamentally represents a different algorithm than the one
-in ORCA. In other words, the DLPNO-CCSD(T) code in |PSIfour| satisfies the same specifications as the DLPNO-CCSD(T)
-algorithm in ORCA, but represents a different implementation. The best analogy is chicken sandwiches at different fast food chains
-(e.g. Chick-fil-A vs. Popeyes). The food item represents a specification (i.e. fried chicken breast served between buttered, 
-toasted buns), but the implementation is different (different oils, cooking temperatures, breading techniques, seasonings, etc).
-Both algorithms represent linear-scaling CCSD(T) algorithms solved in the the local pair natural orbital basis, with convergence
+[Guo:2018:011101]_, |PSIfour| employs different algorithms for certain parts of the procedure. 
+Both represent linear-scaling CCSD(T) algorithms solved in the the local pair natural orbital basis, with convergence
 to canonical CCSD(T) results as the local tolerances are tightened. However, the manner in which the PNO spaces are truncated as
 well as how the CCSD equations are solved are different. Notable differences in implementation between the two algorithms are
 highlighted below:
 
-* The most notable difference is that the DLPNO-CCSD equations in |PSIfour| utilizes T1-dressed Hamiltonian and Fock matrix elements,
+* The most notable difference is that the DLPNO-CCSD equations in |PSIfour| utilize T1-dressed Hamiltonian and Fock matrix elements,
   which significantly simplifies the number of working equations as well as the number of mathematical operations involved in solving
   the CCSD residual equations. Because of the reduced number of intermediates that are required, we find that the DLPNO-CCSD code in 
-  |PSIfour| uses less RAM (around a factor of 2 to 3) than the corresponding implementation in ORCA, at a given |dlpno__pno_convergence|.
+  |PSIfour| potentially uses less RAM than the ORCA formulation for a given |dlpno__pno_convergence|.
   The runtimes are expected to be similar.
 
-* |PSIfour| often recovers slightly more CCSD correlation energy than ORCA, since additional PNO cutoffs are utilized in |PSIfour| 
-  compared to ORCA, with |dlpno__t_cut_trace| and |dlpno__t_cut_energy| cutoffs used in addition to the normal |dlpno__t_cut_pno|. 
-  These result in larger and more robust PNO spaces at a given |dlpno__pno_convergence| in |PSIfour|. The difference is typically small 
-  in terms of absolute energies (on the order of ``1.0e-3`` to ``1.0e-4`` Hartrees), with agreement on the order of 99.95% or better.
+* |PSIfour| often recovers slightly more CCSD correlation energy than ORCA due to additional PNO cutoffs |dlpno__t_cut_trace| 
+  and |dlpno__t_cut_energy| used in addition to the normal |dlpno__t_cut_pno|. These result in larger and more robust PNO spaces at a given 
+  |dlpno__pno_convergence| in |PSIfour|. The difference is typically small in terms of absolute energies (on the order of ``1.0e-3`` to ``1.0e-4`` Hartrees),
+  with agreement on the order of 99.95% or better. Due to the different T1 formulation, it is not possible to exactly match ORCA and |PSIfour| 
+  DLPNO-CCSD energies by adjusting keywords.
 
-* |PSIfour| also couples MP2 weak pair amplitudes to CCSD strong pair amplitudes in the solving the CCSD residual equations. In our
+* |PSIfour| also couples MP2 weak pair amplitudes to CCSD strong pair amplitudes in solving the CCSD residual equations. In our
   formulation, this does not add significantly more time and memory since the most expensive algorithmic steps result from self-coupling 
   terms, such as the particle-particle ladder (:math:`R_{ij}^{ab} \mathrel{+}= B^{Q}_{ac} t_{ij}^{cd} B^{Q}_{bd}`). This is likely an
   additional source of the increased recovery of correlation energy in |PSIfour| compared to ORCA.

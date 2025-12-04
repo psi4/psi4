@@ -13,10 +13,10 @@ ref_dfccsd_tot           =    -40.453751484412              #TEST
 ref_dfccsd_t_corl        =     -0.246845986540              #TEST
 ref_dfccsd_t_tot         =    -40.460473002555              #TEST
 
-ref_dlpnoccsd_corl       =     -0.240195457394              #TEST
-ref_dlpnoccsd_tot        =    -40.453822473402              #TEST
-ref_dlpnoccsd_t_corl     =     -0.246909714224              #TEST
-ref_dlpnoccsd_t_tot      =    -40.460536730232              #TEST
+ref_dlpnoccsd_corl       =     -0.240119244817              #TEST
+ref_dlpnoccsd_tot        =    -40.453746260834              #TEST
+ref_dlpnoccsd_t_corl     =     -0.246838014696              #TEST
+ref_dlpnoccsd_t_tot      =    -40.460465030713              #TEST
 
 molecule ch4 {
 0 1
@@ -62,4 +62,16 @@ compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')     
 compare_values(ref_dfccsd_t_corl, variable('CURRENT CORRELATION ENERGY'), 5, 'ccsd(t) corl')  #TEST
 compare_values(ref_dfccsd_t_tot, variable('CURRENT ENERGY'), 5, 'ccsd(t) tot')                #TEST
 compare_values(ref_dfccsd_t_tot, val, 5, 'ccsd(t) return')                                    #TEST
+clean()
+
+# Compare with DLPNO-CCSD(T) values if anything changes in the code
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                              #TEST
+compare_values(ref_dlpnoccsd_corl, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')          #TEST
+compare_values(ref_dlpnoccsd_tot, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                  #TEST
+compare_values(ref_dlpnoccsd_t_corl, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
+compare_values(ref_dlpnoccsd_t_tot, variable('CCSD(T) TOTAL ENERGY'), 7, 'ccsd(t) tot')          #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')                      #TEST
+compare_values(ref_dlpnoccsd_t_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
+compare_values(ref_dlpnoccsd_t_tot, variable('CURRENT ENERGY'), 7, 'ccsd(t) tot')                #TEST
+compare_values(ref_dlpnoccsd_t_tot, val, 7, 'ccsd(t) return')                                    #TEST
 clean()

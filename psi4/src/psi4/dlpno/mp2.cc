@@ -312,7 +312,7 @@ void DLPNOMP2::print_header() {
     outfile->Printf("  Detailed DLPNO thresholds and cutoffs:\n");
     outfile->Printf("    T_CUT_DO     = %6.3e \n", T_CUT_DO_);
     outfile->Printf("    T_CUT_PNO    = %6.3e \n", T_CUT_PNO_);
-    outfile->Printf("    T_CUT_DO_ij  = %6.3e \n", options_.get_double("T_CUT_DO_ij"));
+    outfile->Printf("    T_CUT_DO_IJ  = %6.3e \n", options_.get_double("T_CUT_DO_IJ"));
     outfile->Printf("    T_CUT_PRE    = %6.3e \n", options_.get_double("T_CUT_PRE"));
     outfile->Printf("    T_CUT_DO_PRE = %6.3e \n", options_.get_double("T_CUT_DO_PRE"));
     outfile->Printf("    T_CUT_MKN    = %6.3e \n", options_.get_double("T_CUT_MKN"));

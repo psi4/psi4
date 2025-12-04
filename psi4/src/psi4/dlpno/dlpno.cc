@@ -718,7 +718,7 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
 
         for (size_t i = 0, ij = 0; i < naocc; i++) {
             for (size_t j = 0; j < naocc; j++) {
-                bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_ij"));
+                bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_IJ"));
                 bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > T_CUT_PRE_);
 
                 if (overlap_big || energy_big) {
@@ -1142,7 +1142,7 @@ void DLPNO::compute_qab() {
     int naux = ribasis_->nbf();
     int natom = molecule_->natom();
     double ints_tolerance = options_.get_double("DLPNO_AO_INTS_TOL");
-    double T_CUT_DO_uv = options_.get_double("T_CUT_DO_uv");
+    double T_CUT_DO_UV = options_.get_double("T_CUT_DO_UV");
 
     // Prepare Sparsity info for QAB intergrals
     riatom_to_pao_pairs_.resize(natom);
@@ -1165,7 +1165,7 @@ void DLPNO::compute_qab() {
                 int v_idx = riatom_to_paos_ext_dense_[Qatom][v];
                 if (v_idx == -1 || u > v) continue;
 
-                if (fabs(DOI_uv_->get(u,v)) > T_CUT_DO_uv) {
+                if (fabs(DOI_uv_->get(u,v)) > T_CUT_DO_UV) {
                     riatom_to_pao_pairs_[Qatom].push_back(std::make_pair(u,v));
                     riatom_to_pao_pairs_dense_[Qatom][u][v] = uv_idx;
                     riatom_to_pao_pairs_dense_[Qatom][v][u] = uv_idx;
@@ -1574,7 +1574,7 @@ void DLPNO::print_lmo_domains(bool initial) {
             if (i_j_to_ij_[i][j] != -1) {
                 lmos += 1;
             }
-            bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_ij"));
+            bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_IJ"));
             bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > T_CUT_PRE_);
             if (!overlap_big) exclude_pairs_overlap++;
             if (!energy_big) exclude_pairs_energy++;

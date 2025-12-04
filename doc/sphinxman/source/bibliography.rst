@@ -587,10 +587,12 @@ Bibliography
 .. [Hylleraas:1930:209]
    E. Hylleraas
    *Z. Phys.* **65**, 209 (1930).
+   https://doi.org/10.1007/BF01397032
 
 .. [Pulay:1986:357]
    P. Pulay and S. Saeb\ |o_slash|\ ,
    *Theor. Chim. Acta* **69**, 357 (1986).
+   https://doi.org/10.1007/BF00526697
 
 .. [Pinski:2015:034108]
    P. Pinski, C. Riplinger, E. Valeev, and F. Neese,
@@ -599,6 +601,7 @@ Bibliography
 .. [Liakos:2015:1525]
    D. Liakos, M. Sparta, M. Kesharwani, J. Martin, and F. Neese,
    *J. Chem. Theory Comput.* **11**, 1525 (2015).
+   https://doi.org/10.1021/ct501129s
 
 .. [Dunlap:2000:2113]
    B. Dunlap,
@@ -786,21 +789,6 @@ Bibliography
    H. Laqua and T. H. Thompson and J. Kussmann and C. Ochsenfeld
    *J. Chem. Theory Comput.* **16**, 1456-1468 (2020)
    https://doi.org/10.1021/acs.jctc.9b00860
-
-.. [Hylleraas:1930:209]
-   E. Hylleraas
-   *Z. Phys.* **65**, 209 (1930).
-   https://doi.org/10.1007/BF01397032
-
-.. [Pulay:1986:357]
-   P. Pulay and S. Saeb\ |o_slash|\ ,
-   *Theor. Chim. Acta* **69**, 357 (1986).
-   https://doi.org/10.1007/BF00526697
-
-.. [Liakos:2015:1525]
-   D. Liakos, M. Sparta, M. Kesharwani, J. Martin, and F. Neese,
-   *J. Chem. Theory Comput.* **11**, 1525 (2015).
-   https://doi.org/10.1021/ct501129s
 
 .. [Riplinger:2016:024109]
    C. Riplinger, P. Pinksi, U. Becker, E. Valeev, and F. Neese,

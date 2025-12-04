@@ -2617,6 +2617,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION General Options -*/
 
+        /*- Occupation number threshold for removing PNOs -*/
+        options.add_double("T_CUT_PNO", 1e-8);
+        /*- DOI threshold for including PAO (u) in domain of LMO (i) -*/
+        options.add_double("T_CUT_DO", 1e-2);
+        /*- Mulliken charge threshold for including aux BFs on atom (a) in domain of LMO (i) -*/
+        options.add_double("T_CUT_MKN", 1e-3);
         /*- Auxiliary basis set for MP2 density fitting computations.
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
         options.add_str("DF_BASIS_MP2", "");
@@ -2648,20 +2654,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Use T0 approximation for DLPNO-CCSD(T)? (not set explicitly), 
         triggered by indicating 'dlpno-ccsd(t0)' rather than 'dlpno-ccsd(t)' !expert -*/
         options.add_bool("T0_APPROXIMATION", false);
-        /*- Occupation number threshold for removing PNOs !expert -*/
-        options.add_double("T_CUT_PNO", 1e-8);
-        /*- DOI threshold for including PAO (u) in domain of LMO (i) !expert -*/
-        options.add_double("T_CUT_DO", 1e-2);
         /*- DOI threshold for treating LMOs (i,j) as interacting !expert -*/
-        options.add_double("T_CUT_DO_ij", 1e-5);
+        options.add_double("T_CUT_DO_IJ", 1e-5);
         /*- DOI threshold for treating PAOs (u,v) as interacting !expert -*/
-        options.add_double("T_CUT_DO_uv", 1e-5);
+        options.add_double("T_CUT_DO_UV", 1e-5);
         /*- Pair energy threshold (dipole approximation) for treating LMOs (i, j) as interacting !expert -*/
         options.add_double("T_CUT_PRE", 1e-6); 
         /*- DOI threshold for including PAO (u) in domain of LMO (i) during pre-screening !expert -*/
         options.add_double("T_CUT_DO_PRE", 3e-2);
-        /*- Mulliken charge threshold for including aux BFs on atom (a) in domain of LMO (i) !expert -*/
-        options.add_double("T_CUT_MKN", 1e-3);
         /*- Basis set coefficient threshold for including basis function (m) in domain of LMO (i) !expert -*/
         options.add_double("T_CUT_CLMO", 1e-3);
         /*- Basis set coefficient threshold for including basis function (n) in domain of PAO (u) !expert -*/
@@ -2699,7 +2699,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION DLPNO-CCSD(T) Specific Options -*/
 
-        /*- Occupation number threshold for removing TNOs !expert -*/
+        /*- Occupation number threshold for removing TNOs -*/
         options.add_double("T_CUT_TNO", 1e-9);
         /*- Maximum number of weak pairs in (ij, jk, ik) to consider when forming triplet ijk !expert -*/
         options.add_int("TRIPLES_MAX_WEAK_PAIRS", 1);
