@@ -4376,6 +4376,7 @@ def run_dlpnomp2(name, **kwargs):
             core.print_out("""\n  A requested method does not make use of molecular symmetry: """
                            """further calculations in C1 point group.\n\n""")
             molecule.reset_point_group("c1")
+            molecule.update_geometry()
 
         ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
     elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
@@ -4443,6 +4444,7 @@ def run_dlpnoccsd(name, **kwargs):
             core.print_out("""\n  A requested method does not make use of molecular symmetry: """
                            """further calculations in C1 point group.\n\n""")
             molecule.reset_point_group("c1")
+            molecule.update_geometry()
 
         ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
     elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
@@ -4506,6 +4508,7 @@ def run_dlpnoccsd_t(name, **kwargs):
             core.print_out("""\n  A requested method does not make use of molecular symmetry: """
                            """further calculations in C1 point group.\n\n""")
             molecule.reset_point_group("c1")
+            molecule.update_geometry()
             
         ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
     elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
