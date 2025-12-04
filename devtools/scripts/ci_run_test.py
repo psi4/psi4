@@ -41,7 +41,7 @@ ctestout = str(ctest_exit_status) + "\n" + ctestout
 with open('full_ctest_output.dat', 'w') as outfile:
     outfile.write(ctestout)
 
-if ctest_exit_status:
-    sys.stdout.write("""\n  <<<  CTest failed, printing LastTest.log  >>>\n\n""")
-    with open('Testing/Temporary/LastTest.log', 'r') as ttllog:
-        sys.stdout.write(ttllog.read())
+# if ctest_exit_status:
+#     sys.stdout.write("""\n  <<<  CTest failed, printing LastTest.log  >>>\n\n""")
+#     with open('Testing/Temporary/LastTest.log', 'r') as ttllog:
+#         sys.stdout.write(ttllog.read())
