@@ -83,7 +83,9 @@ class DLPNO : public Wavefunction {
     double T_CUT_PNO_CORE_SCALE_;
     /// Tolerance for TNO truncation for triples (by occupation number)
     double T_CUT_TNO_;
-
+    
+    /// toggle core and disk options based on available memory
+    bool toggle_memory_;
     /// number of core orbitals (0 if freeze_core = True)
     int ncore_;
 

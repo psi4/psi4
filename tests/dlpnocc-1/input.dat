@@ -2,9 +2,8 @@
 #! In the limit of zero PNO cutoffs, DF and DLPNO should exactly match
 #! There should not be enough sparsity in water to affect the other parameters
 #! The reference DF-CCSD(T) values are stored and not rerun
-
-memory 4 GB
-set_memory('4 GB')
+#! This is also a test of the completely in core DLPNO algorithm 
+#! (hence memory is NOT toggled)
 
 ref_scf                  =    -76.026787275597              #TEST
 
@@ -31,6 +30,7 @@ set t_cut_mkn 0.0
 set t_cut_tno 0.0
 set t_cut_do_triples 0.0
 set t_cut_mkn_triples 0.0
+set dlpno_toggle_memory false
 
 print('   Testing DLPNO-CCSD(T) ...')
 val = energy('dlpno-ccsd(t)')

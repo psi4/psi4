@@ -529,7 +529,7 @@ void DLPNOCCSD_T::estimate_memory() {
     // Memory checks!!!
     bool memory_changed = false;
 
-    if (total_memory * sizeof(double) > 0.9 * memory_) {
+    if (toggle_memory_ && !write_intermediates_ && total_memory * sizeof(double) > 0.9 * memory_) {
         outfile->Printf("  Total Required Memory is more than 90%% of Available Memory!\n");
         outfile->Printf("    Attempting to switch to disk IO for W and V intermediates...\n");
 
@@ -540,7 +540,7 @@ void DLPNOCCSD_T::estimate_memory() {
         outfile->Printf("    Required Memory Reduced to %.3f [GB]\n\n", total_memory * DOUBLES_TO_GB);
     }
 
-    if (total_memory * sizeof(double) > 0.9 * memory_) {
+    if (toggle_memory_ && !write_amplitudes_ && total_memory * sizeof(double) > 0.9 * memory_) {
         outfile->Printf("  Total Required Memory is (still) more than 90%% of Available Memory!\n");
         outfile->Printf("    Attempting to switch to disk IO for T3 amplitudes...\n");
 
@@ -553,7 +553,7 @@ void DLPNOCCSD_T::estimate_memory() {
 
     // This will likely never be executed, barring a pathological case 
     // (as the memory here is less than what is needed for CCSD)
-    if (total_memory * sizeof(double) > 0.9 * memory_) {
+    if (toggle_memory_ && total_memory * sizeof(double) > 0.9 * memory_) {
         outfile->Printf("  Total Required Memory is (still) more than 90%% of Available Memory!\n");
         throw PSIEXCEPTION("   Too little memory given for DLPNO-(T) Algorithm!");
     }

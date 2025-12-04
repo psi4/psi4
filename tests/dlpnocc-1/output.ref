@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.11a1.dev16 
+                               Psi4 1.11a1.dev22 
 
-                         Git: Rev {dlpno_ccsd_t_pr_branch} 3e5375e dirty
+                         Git: Rev {dlpno_ccsd_t_pr_branch} 06a26af dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -32,10 +32,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 04 December 2025 12:38AM
+    Psi4 started on: Thursday, 04 December 2025 10:14AM
 
-    Process ID: 1270418
-    Host:       a3-2
+    Process ID: 1472190
+    Host:       d5-15
     PSIDATADIR: /home/aj48384/github/psi4/objdir_p4dev/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    4
@@ -52,9 +52,8 @@
 #! In the limit of zero PNO cutoffs, DF and DLPNO should exactly match
 #! There should not be enough sparsity in water to affect the other parameters
 #! The reference DF-CCSD(T) values are stored and not rerun
-
-memory 4 GB
-set_memory('4 GB')
+#! This is also a test of the completely in core DLPNO algorithm 
+#! (hence memory is NOT toggled)
 
 ref_scf                  =    -76.026787275597              #TEST
 
@@ -81,6 +80,7 @@ set t_cut_mkn 0.0
 set t_cut_tno 0.0
 set t_cut_do_triples 0.0
 set t_cut_mkn_triples 0.0
+set dlpno_toggle_memory false
 
 print('   Testing DLPNO-CCSD(T) ...')
 val = energy('dlpno-ccsd(t)')
@@ -98,10 +98,6 @@ compare_values(ref_dfccsd_t_tot, val, 7, 'ccsd(t) return')                      
 clean()
 --------------------------------------------------------------------------
 
-  Memory set to   3.725 GiB by Python driver.
-
-  Memory set to   3.725 GiB by Python driver.
-
 Scratch directory: /tmp/
    => Libint2 <=
 
@@ -110,8 +106,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on a3-2
-*** at Thu Dec  4 00:39:12 2025
+*** tstart() called on d5-15
+*** at Thu Dec  4 10:14:31 2025
 
    => Loading Basis Set <=
 
@@ -127,7 +123,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RHF Reference
-                        4 Threads,   3814 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -186,7 +182,7 @@ Scratch directory: /tmp/
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.001 GiB; user supplied 2.794 GiB. 
+  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.366 GiB. 
   SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
   Using in-core AOs.
 
@@ -196,7 +192,7 @@ Scratch directory: /tmp/
     K tasked:                   Yes
     wK tasked:                   No
     OpenMP threads:               4
-    Memory [MiB]:              2861
+    Memory [MiB]:               375
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
     Mask sparsity (%):       0.0000
@@ -232,16 +228,16 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:   -76.48941727877461   -7.64894e+01   0.00000e+00 
-   @DF-RHF iter   1:   -75.93130372714926    5.58114e-01   1.85420e-02 ADIIS/DIIS
-   @DF-RHF iter   2:   -76.01221114038657   -8.09074e-02   8.48397e-03 ADIIS/DIIS
-   @DF-RHF iter   3:   -76.02600788775123   -1.37967e-02   1.76048e-03 ADIIS/DIIS
-   @DF-RHF iter   4:   -76.02676017888598   -7.52291e-04   2.49611e-04 ADIIS/DIIS
-   @DF-RHF iter   5:   -76.02678632498031   -2.61461e-05   4.88429e-05 DIIS
-   @DF-RHF iter   6:   -76.02678725036785   -9.25388e-07   6.08573e-06 DIIS
-   @DF-RHF iter   7:   -76.02678727509502   -2.47272e-08   9.81413e-07 DIIS
-   @DF-RHF iter   8:   -76.02678727559147   -4.96456e-10   9.53608e-08 DIIS
-   @DF-RHF iter   9:   -76.02678727559424   -2.77112e-12   7.39592e-09 DIIS
+   @DF-RHF iter SAD:   -76.48941727877471   -7.64894e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.93130372714919    5.58114e-01   1.85420e-02 ADIIS/DIIS
+   @DF-RHF iter   2:   -76.01221114038654   -8.09074e-02   8.48397e-03 ADIIS/DIIS
+   @DF-RHF iter   3:   -76.02600788775132   -1.37967e-02   1.76048e-03 ADIIS/DIIS
+   @DF-RHF iter   4:   -76.02676017888602   -7.52291e-04   2.49611e-04 ADIIS/DIIS
+   @DF-RHF iter   5:   -76.02678632498032   -2.61461e-05   4.88429e-05 DIIS
+   @DF-RHF iter   6:   -76.02678725036787   -9.25388e-07   6.08573e-06 DIIS
+   @DF-RHF iter   7:   -76.02678727509503   -2.47272e-08   9.81413e-07 DIIS
+   @DF-RHF iter   8:   -76.02678727559152   -4.96485e-10   9.53608e-08 DIIS
+   @DF-RHF iter   9:   -76.02678727559424   -2.72848e-12   7.39592e-09 DIIS
   Energy and wave function converged.
 
 
@@ -276,8 +272,8 @@ Scratch directory: /tmp/
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1969337142814833
-    One-Electron Energy =                -123.1545542581353487
-    Two-Electron Energy =                  37.9308332682596259
+    One-Electron Energy =                -123.1545542581353345
+    Two-Electron Energy =                  37.9308332682596117
     Total Energy =                        -76.0267872755942449
 
 Computation Completed
@@ -302,18 +298,18 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on a3-2 at Thu Dec  4 00:39:13 2025
+*** tstop() called on d5-15 at Thu Dec  4 10:14:32 2025
 Module time:
-	user time   =       1.91 seconds =       0.03 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       1.08 seconds =       0.02 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.91 seconds =       0.03 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       1.08 seconds =       0.02 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on a3-2
-*** at Thu Dec  4 00:39:13 2025
+*** tstart() called on d5-15
+*** at Thu Dec  4 10:14:32 2025
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -375,23 +371,23 @@ Total time:
     Maxiter     =        1000
 
     Iteration                   Metric       Residual
-    @Boys    0   1.8043922026135234E-01              -
-    @Boys    1   2.2054591534111383E+00   1.122273E+01
-    @Boys    2   2.4972534340669577E+00   1.323055E-01
-    @Boys    3   2.5360980532145758E+00   1.555494E-02
-    @Boys    4   2.5411325011910422E+00   1.985116E-03
-    @Boys    5   2.5415119474587682E+00   1.493217E-04
-    @Boys    6   2.5415848060572714E+00   2.866742E-05
-    @Boys    7   2.5415953775931190E+00   4.159427E-06
-    @Boys    8   2.5415973133871193E+00   7.616452E-07
-    @Boys    9   2.5415975678807801E+00   1.001314E-07
-    @Boys   10   2.5415976421075523E+00   2.920477E-08
-    @Boys   11   2.5415976500158548E+00   3.111548E-09
-    @Boys   12   2.5415976518217009E+00   7.105161E-10
-    @Boys   13   2.5415976521239574E+00   1.189238E-10
-    @Boys   14   2.5415976521708865E+00   1.846442E-11
-    @Boys   15   2.5415976521769488E+00   2.385217E-12
-    @Boys   16   2.5415976521777743E+00   3.248200E-13
+    @Boys    0   1.8043922026135217E-01              -
+    @Boys    1   2.2054591534111418E+00   1.122273E+01
+    @Boys    2   2.4972534340669608E+00   1.323055E-01
+    @Boys    3   2.5360980532145767E+00   1.555494E-02
+    @Boys    4   2.5411325011910435E+00   1.985116E-03
+    @Boys    5   2.5415119474587700E+00   1.493217E-04
+    @Boys    6   2.5415848060572732E+00   2.866742E-05
+    @Boys    7   2.5415953775931208E+00   4.159427E-06
+    @Boys    8   2.5415973133871210E+00   7.616452E-07
+    @Boys    9   2.5415975678807823E+00   1.001314E-07
+    @Boys   10   2.5415976421075550E+00   2.920477E-08
+    @Boys   11   2.5415976500158575E+00   3.111548E-09
+    @Boys   12   2.5415976518217032E+00   7.105160E-10
+    @Boys   13   2.5415976521239596E+00   1.189238E-10
+    @Boys   14   2.5415976521708892E+00   1.846460E-11
+    @Boys   15   2.5415976521769510E+00   2.385042E-12
+    @Boys   16   2.5415976521777770E+00   3.249948E-13
 
     Boys Localizer converged.
 
@@ -520,7 +516,7 @@ Total time:
       Min Energy Ratio: 1.000000 
       Max Energy Ratio: 1.000000 
 
-    PNO truncation energy = 0.000000000000
+    PNO truncation energy = -0.000000000000
 
   ==> PNO-LMP2 Memory Estimate <== 
 
@@ -531,7 +527,7 @@ Total time:
     U_{ij}^{a_{ij} b_{ij}}     :    0.000 [GB]
     PNO overlaps               :    0.000 [GB]
     Total Memory Required      :    0.000 [GB]
-    Total Memory Given         :    4.000 [GB]
+    Total Memory Given         :    0.524 [GB]
 
 
   ==> Iterative Local MP2 with Pair Natural Orbitals (PNOs) <==
@@ -562,7 +558,7 @@ Total time:
     MP2 Correlation Energy:            -0.201579127641 
     Semicanonical MP2 Correction:       0.000000000000 
     Dipole Correction:                  0.000000000000 
-    PNO Truncation Correction:          0.000000000000 
+    PNO Truncation Correction:         -0.000000000000 
 
 
   @Total DLPNO-MP2 Energy: -76.228366403235 
@@ -661,7 +657,7 @@ Total time:
     Buffer Space for Iterations   :    0.002 [GB]
     Total Memory Required (LCCSD) :    0.008 [GB]
 
-    Total Memory Given            :    4.000 [GB]
+    Total Memory Given            :    0.524 [GB]
 
     Using high memory PNO overlap algorithm... 
 
@@ -747,7 +743,7 @@ Total time:
       Min:  19 NOs 
       Max:  19 NOs 
   
-    (Relavent) Semicanonical LCCSD(T0) Computation Complete!!! Time Elapsed:    1 seconds
+    (Relavent) Semicanonical LCCSD(T0) Computation Complete!!! Time Elapsed:    0 seconds
 
 
    Continuing computation with surviving triplets...
@@ -803,7 +799,7 @@ Total time:
     V_{ijk}^{abc}          : 0.001 [GB]
     T_{ijk}^{abc}          : 0.001 [GB]
     Total Memory Required  : 0.003 [GB]
-    Total Memory Given     : 4.000 [GB]
+    Total Memory Given     : 0.524 [GB]
 
     Storing all X_{ijk}^{abc} quantities in RAM...
 
@@ -837,15 +833,15 @@ Total time:
     *** Andy Jiang... FOR THREEEEEEEEEEE!!!
 
 
-*** tstop() called on a3-2 at Thu Dec  4 00:39:14 2025
+*** tstop() called on d5-15 at Thu Dec  4 10:14:32 2025
 Module time:
-	user time   =       1.65 seconds =       0.03 minutes
+	user time   =       1.60 seconds =       0.03 minutes
 	system time =       0.05 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.56 seconds =       0.06 minutes
-	system time =       0.14 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.69 seconds =       0.04 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
     scf ref...............................................................................PASSED
     ccsd corl.............................................................................PASSED
     ccsd tot..............................................................................PASSED
@@ -856,7 +852,7 @@ Total time:
     ccsd(t) tot...........................................................................PASSED
     ccsd(t) return........................................................................PASSED
 
-    Psi4 stopped on: Thursday, 04 December 2025 12:39AM
-    Psi4 wall time for execution: 0:00:02.34
+    Psi4 stopped on: Thursday, 04 December 2025 10:14AM
+    Psi4 wall time for execution: 0:00:00.88
 
 *** Psi4 exiting successfully. Buy a developer a beer!

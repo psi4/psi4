@@ -407,7 +407,7 @@ void DLPNOCCSD::estimate_memory() {
     // Memory checks!!!
     bool memory_changed = false;
 
-    if (std::max(memory_ccsd, memory_integrals) * sizeof(double) > 0.9 * memory_) {
+    if (toggle_memory_ && !low_memory_overlap_ && std::max(memory_ccsd, memory_integrals) * sizeof(double) > 0.9 * memory_) {
         outfile->Printf("  Total Required Memory is more than 90%% of Available Memory!\n");
         outfile->Printf("    Attempting to switch to semi-direct low memory PNO overlap algorithm...\n");
 
@@ -418,7 +418,7 @@ void DLPNOCCSD::estimate_memory() {
         outfile->Printf("    Required Memory Reduced to %.3f [GB]\n\n", std::max(memory_ccsd, memory_integrals) * DOUBLES_TO_GB);
     }
 
-    if (std::max(memory_ccsd, memory_integrals) * sizeof(double) > 0.9 * memory_) {
+    if (toggle_memory_ && !write_qia_pno_ && std::max(memory_ccsd, memory_integrals) * sizeof(double) > 0.9 * memory_) {
         outfile->Printf("  Total Required Memory is (still) more than 90%% of Available Memory!\n");
         outfile->Printf("    Attempting to switch to disk IO for (Q_{ij}|m_{ij} a_{ij}) integrals...\n");
 
@@ -430,7 +430,7 @@ void DLPNOCCSD::estimate_memory() {
         outfile->Printf("    Required Memory Reduced to %.3f [GB]\n\n", std::max(memory_ccsd, memory_integrals) * DOUBLES_TO_GB);
     }
 
-    if (std::max(memory_ccsd, memory_integrals) * sizeof(double) > 0.9 * memory_) {
+    if (toggle_memory_ && !write_qab_pno_ && std::max(memory_ccsd, memory_integrals) * sizeof(double) > 0.9 * memory_) {
         outfile->Printf("  Total Required Memory is (still) more than 90%% of Available Memory!\n");
         outfile->Printf("    Attempting to switch to disk IO for (Q_{ij}|a_{ij} b_{ij}) integrals...\n");
 
@@ -442,7 +442,7 @@ void DLPNOCCSD::estimate_memory() {
         outfile->Printf("    Required Memory Reduced to %.3f [GB]\n\n", std::max(memory_ccsd, memory_integrals) * DOUBLES_TO_GB);
     }
 
-    if (std::max(memory_ccsd, memory_integrals) * sizeof(double) > 0.9 * memory_) {
+    if (toggle_memory_ && std::max(memory_ccsd, memory_integrals) * sizeof(double) > 0.9 * memory_) {
         outfile->Printf("  Total Required Memory is (still) more than 90%% of Available Memory!\n");
         outfile->Printf("    We exhausted all of our options!!! This computation cannot continue...\n");
 
@@ -820,7 +820,7 @@ std::vector<double> DLPNOCCSD::pno_lmp2_iterations() {
     outfile->Printf("    Total Memory Required      : %8.3f [GB]\n", total_memory * DOUBLES_TO_GB);
     outfile->Printf("    Total Memory Given         : %8.3f [GB]\n\n", memory_ * WORDS_TO_GB);
     
-    if (total_memory * sizeof(double) > 0.9 * memory_) {
+    if (toggle_memory_ && total_memory * sizeof(double) > 0.9 * memory_) {
         outfile->Printf("  Total Required Memory is more than 90%% of Available Memory!\n");
         outfile->Printf("    We exhausted all of our options!!! This computation cannot continue...\n");
         outfile->Printf("    Pro Tip: Try adjusting the T_CUT_PNO_MP2, T_CUT_TRACE_MP2, and/or T_CUT_ENERGY_MP2 parameters\n");

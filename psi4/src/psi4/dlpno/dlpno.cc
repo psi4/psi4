@@ -197,6 +197,7 @@ void DLPNO::common_init() {
     psio_ = _default_psio_lib_;
 
     memory_ = Process::environment.get_memory();
+    toggle_memory_ = options_.get_bool("DLPNO_TOGGLE_MEMORY");
 }
 
 /* Utility function for making C_DGESV calls

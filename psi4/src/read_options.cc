@@ -2637,6 +2637,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DLPNO_LOCAL_ORBITALS", "BOYS", "BOYS PIPEK_MEZEY");
         /*- Maximum number of iterations to determine the MP2/CCSD/CCSD(T) amplitudes. -*/
         options.add_int("DLPNO_MAXITER", 50);
+        /*- Perform automatic memory checks to toggle between core and disk? 
+            (NOT recommended to change this for average user). -*/
+        options.add_bool("DLPNO_TOGGLE_MEMORY", true);
 
         /*- SUBSECTION Expert Options -*/
 

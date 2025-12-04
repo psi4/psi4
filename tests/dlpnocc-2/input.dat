@@ -2,9 +2,9 @@
 #! Also a test of very_tight parameters
 #! Methane geometry from HTBH.py in databases
 #! The reference DF-CCSD(T) values are stored and not rerun
+#! This also tests the low memory overlap/disk algorithms available
 
-memory 8 GB
-set_memory('8 GB')
+memory 4 GB
 
 ref_scf                  =    -40.213627016015              #TEST
 
@@ -37,6 +37,17 @@ set nat_orbs False
 set pno_convergence very_tight
 set e_convergence 1.0e-8
 set r_convergence 1.0e-8
+set dlpno_toggle_memory false
+
+# Typical use case when memory is low for DLPNO-CCSD
+set low_memory_overlap true
+set write_qia_pno true
+set write_qab_pno true
+
+# Typical use case when memory is low for DLPNO-(T), 
+# amplitudes written to disk as last resort
+set write_triples_intermediates true
+set write_triples_amplitudes false
 
 print('   Testing DLPNO-CCSD(T) w/o frozen core...')
 val = energy('dlpno-ccsd(t)')
