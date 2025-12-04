@@ -2935,10 +2935,10 @@ double DLPNOCCSD::compute_energy() {
     set_scalar_variable("CURRENT ENERGY", e_ccsd_total);
 
     // psivars for LCCSD energy components
-    set_scalar_variable("LMP2 WEAK PAIR ENERGY", de_weak_);
-    set_scalar_variable("SC-MP2 PAIR CORRECTION", de_lmp2_eliminated_);
-    set_scalar_variable("DLPNO DIPOLE CORRECTION", de_dipole_);
-    set_scalar_variable("PNO TRUNCATION ERROR", de_pno_total_);
+    set_scalar_variable("DLPNO LMP2 WEAK PAIR ENERGY", de_weak_);
+    set_scalar_variable("DLPNO SC-LMP2 PAIR ENERGY", de_lmp2_eliminated_);
+    set_scalar_variable("DLPNO DIPOLE ENERGY", de_dipole_);
+    set_scalar_variable("DLPNO PNO TRUNCATION ERROR", de_pno_total_);
 
     return e_ccsd_total;
 }

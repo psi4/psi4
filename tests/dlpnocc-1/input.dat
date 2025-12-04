@@ -4,6 +4,7 @@
 #! The reference DF-CCSD(T) values are stored and not rerun
 
 memory 4 GB
+set_memory('4 GB')
 
 ref_scf                  =    -76.026787275597              #TEST
 

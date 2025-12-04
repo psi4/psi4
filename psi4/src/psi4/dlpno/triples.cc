@@ -1480,9 +1480,9 @@ double DLPNOCCSD_T::compute_energy() {
     set_scalar_variable("CURRENT ENERGY", e_ccsd_t_total);
 
     // psivars for (T) energy components
-    set_scalar_variable("DLPNO-(T) ENERGY", e_lccsd_t_ - e_lccsd_);
-    set_scalar_variable("SEMICANONICAL DLPNO-(T0) ENERGY", E_T0 + de_lccsd_t_screened_);
-    set_scalar_variable("SCREENED TRIPLETS ENERGY", de_lccsd_t_screened_);
+    set_scalar_variable("(T) CORRECTION ENERGY", e_lccsd_t_ - e_lccsd_);
+    set_scalar_variable("DLPNO SEMICANONICAL (T0) ENERGY", E_T0 + de_lccsd_t_screened_);
+    set_scalar_variable("DLPNO SCREENED TRIPLETS ENERGY", de_lccsd_t_screened_);
 
     print_results();
     

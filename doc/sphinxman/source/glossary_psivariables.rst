@@ -900,6 +900,18 @@ PSI Variables by Alpha
    When dispersion parameters are untweaked for a functional and dispersion
    level, labeled QCVariable also defined.
 
+.. psivar:: DLPNO LMP2 WEAK PAIR ENERGY
+   DLPNO SC-LMP2 PAIR ENERGY
+   DLPNO DIPOLE ENERGY
+   DLPNO PNO TRUNCATION ERROR
+
+   Various corrections in the overall DLPNO-CCSD correlation energy
+
+.. psivar:: DLPNO SEMICANONICAL (T0) ENERGY
+   DLPNO SCREENED TRIPLETS ENERGY
+
+   Various components to the overall DLPNO-(T) correlation energy
+
 .. psivar:: DOUBLE-HYBRID CORRECTION ENERGY
 
    The scaled MP2 correlation energy correction [E_h] appended to an
