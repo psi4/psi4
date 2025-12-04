@@ -1321,7 +1321,7 @@ void DLPNO::pno_transform() {
     int nbf = basisset_->nbf();
     int n_lmo_pairs = ij_to_i_j_.size();
 
-    size_t MIN_PNO = options_.get_int("MIN_PNOS_PER_PAIR");
+    size_t MIN_PNO = options_.get_int("MIN_PNOS");
 
     outfile->Printf("\n  ==> Forming Pair Natural Orbitals <==\n");
 

@@ -2739,7 +2739,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Write triples amplitudes to disk? !expert -*/
         options.add_bool("WRITE_TRIPLES_AMPLITUDES", false);
 
-
         /*- SUBSECTION DOI Grid Options -*/
 
         /*- Number of spherical points in DOI grid !expert -*/
