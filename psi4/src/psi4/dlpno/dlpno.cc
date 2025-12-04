@@ -66,39 +66,143 @@ void DLPNO::common_init() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 
+    // PNO Truncation Parameters
     T_CUT_PNO_ = options_.get_double("T_CUT_PNO");
+    T_CUT_TRACE_ = options_.get_double("T_CUT_TRACE");
+    T_CUT_ENERGY_ = options_.get_double("T_CUT_ENERGY");
+    T_CUT_PNO_MP2_ = options_.get_double("T_CUT_PNO_MP2");
+    T_CUT_TRACE_MP2_ = options_.get_double("T_CUT_TRACE_MP2");
+    T_CUT_ENERGY_MP2_ = options_.get_double("T_CUT_ENERGY_MP2");
+    T_CUT_PNO_DIAG_SCALE_ = options_.get_double("T_CUT_PNO_DIAG_SCALE");
+    
+    // LMO and Auxiliary space truncation parameters
     T_CUT_DO_ = options_.get_double("T_CUT_DO");
+    T_CUT_MKN_ = options_.get_double("T_CUT_MKN");
+    T_CUT_PAIRS_ = options_.get_double("T_CUT_PAIRS");
+    T_CUT_PRE_ = options_.get_double("T_CUT_PRE");
+
+    // TNO Truncation cutoff for (T)
+    T_CUT_TNO_ = options_.get_double("T_CUT_TNO");
 
     if (options_.get_str("DLPNO_ALGORITHM") == "MP2") {
         algorithm_ = DLPNOMethod::MP2;
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD") {
+        algorithm_ = DLPNOMethod::CCSD;
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD(T)") {
+        algorithm_ = DLPNOMethod::CCSD_T;
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSDT") {
+        algorithm_ = DLPNOMethod::CCSDT;
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSDT(Q)") {
+        algorithm_ = DLPNOMethod::CCSDT_Q;
     } else {
         throw PSIEXCEPTION("Requested DLPNO algorithm has NOT been implemented yet");
     }
 
     // did the user manually change expert level options?
-    bool T_CUT_PNO_changed = options_["T_CUT_PNO"].has_changed();
-    bool T_CUT_DO_changed = options_["T_CUT_DO"].has_changed();
+    const bool T_CUT_PNO_changed = options_["T_CUT_PNO"].has_changed();
+    const bool T_CUT_TRACE_changed = options_["T_CUT_TRACE"].has_changed();
+    const bool T_CUT_ENERGY_changed = options_["T_CUT_ENERGY"].has_changed();
+    const bool T_CUT_PNO_MP2_changed = options_["T_CUT_PNO_MP2"].has_changed();
+    const bool T_CUT_TRACE_MP2_changed = options_["T_CUT_TRACE_MP2"].has_changed();
+    const bool T_CUT_ENERGY_MP2_changed = options_["T_CUT_ENERGY_MP2"].has_changed();
+    const bool T_DIAG_SCALE_changed = options_["T_CUT_PNO_DIAG_SCALE"].has_changed();
+    const bool T_CUT_DO_changed = options_["T_CUT_DO"].has_changed();
+    const bool T_CUT_MKN_changed = options_["T_CUT_MKN"].has_changed();
+    const bool T_CUT_PAIRS_changed = options_["T_CUT_PAIRS"].has_changed();
+    const bool T_CUT_PRE_changed = options_["T_CUT_PRE"].has_changed();
 
     // if not, values are determined by the user-friendly "PNO_CONVERGENCE"
     if (algorithm_ == DLPNOMethod::MP2) {
         if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-7;
             if (!T_CUT_DO_changed) T_CUT_DO_ = 2e-2;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
         } else if (options_.get_str("PNO_CONVERGENCE") == "NORMAL") {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
             if (!T_CUT_DO_changed) T_CUT_DO_ = 1e-2;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
         } else if (options_.get_str("PNO_CONVERGENCE") == "TIGHT") {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-9;
             if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
+        } else if (options_.get_str("PNO_CONVERGENCE") == "VERY_TIGHT") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-10;
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
         }
+    } else { // Coupled-cluster defaults
+        if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-6;
+            if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.9;
+            if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.9;
+            if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.99;
+            if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.99;
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 2e-2;
+            if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-3;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
+        } else if (options_.get_str("PNO_CONVERGENCE") == "NORMAL") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 3.33e-7;
+            if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.99;
+            if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.99;
+            if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.999;
+            if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.997;
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 1e-2;
+            if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-4;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
+        } else if (options_.get_str("PNO_CONVERGENCE") == "TIGHT") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-7;
+            if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.999;
+            if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.997;
+            if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.9999;
+            if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.999;
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
+            if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-5;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
+        } else if (options_.get_str("PNO_CONVERGENCE") == "VERY_TIGHT") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
+            if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.999;
+            if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.997;
+            if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.9999;
+            if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.999;
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
+            if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-6;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
+        }
+
+        // Tighter cutoffs for post-CCSD(T) methods, essentially very tight with T_CUT_PAIRS 1.0e-8
+        if (algorithm_ == DLPNOMethod::CCSDT || algorithm_ == DLPNOMethod::CCSDT_Q) {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
+            if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.999;
+            if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.997;
+            if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.9999;
+            if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.999;
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
+            if (!T_DIAG_SCALE_changed) T_CUT_PNO_DIAG_SCALE_ = 3e-2;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-8;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
+        }
+
+        if (!T_CUT_PRE_changed) T_CUT_PRE_ = std::min(T_CUT_PRE_, 0.01 * T_CUT_PAIRS_);
     }
+
+    // TODO: Is this reasonable?
+    // Answer: Yes, this is what they do in ORCA
+    if (!options_["T_CUT_PNO_MP2"].has_changed()) T_CUT_PNO_MP2_ = T_CUT_PNO_ * 0.01;
+    T_CUT_PAIRS_MP2_ = std::min(1.0e-6, T_CUT_PAIRS_ * 0.1);
 
     name_ = "DLPNO";
     module_ = "dlpno";
 
     variables_["SCF TOTAL ENERGY"] = reference_wavefunction_->energy();
 
-    ribasis_ = get_basisset("DF_BASIS_MP2");
+    ribasis_ = (algorithm_ == DLPNOMethod::MP2) ? get_basisset("DF_BASIS_MP2") : get_basisset("DF_BASIS_CC");
+    psio_ = _default_psio_lib_;
+
+    memory_ = Process::environment.get_memory();
 }
 
 /* Utility function for making C_DGESV calls
@@ -318,10 +422,12 @@ void DLPNO::compute_overlap_ints() {
     std::vector<std::shared_ptr<BasisFunctions>> point_funcs(nthread);
     std::vector<Matrix> DOI_ij_temps(nthread);
     std::vector<Matrix> DOI_iu_temps(nthread);
+    std::vector<Matrix> DOI_uv_temps(nthread);
     for (size_t thread = 0; thread < nthread; thread++) {
         point_funcs[thread] = std::make_shared<BasisFunctions>(basisset_, grid.max_points(), nbf);
         DOI_ij_temps[thread] = Matrix("(i,j) Differential Overlap Integrals", naocc, naocc);
         DOI_iu_temps[thread] = Matrix("(i,u) Differential Overlap Integrals", naocc, nbf);
+        DOI_uv_temps[thread] = Matrix("(u,v) Differential Overlap Integrals", nbf, nbf);
     }
 
     timer_on("Integration");
@@ -374,21 +480,30 @@ void DLPNO::compute_overlap_ints() {
             C_lmo_slice_w->scale_row(0, p, block->w()[p]);
         }
 
+        auto C_pao_slice_w = std::make_shared<Matrix>(C_pao_slice);  // points x npao
+        for (size_t p = 0; p < npoints_block; p++) {
+            C_pao_slice_w->scale_row(0, p, block->w()[p]);
+        }
+
         DOI_ij_temps[thread].add(linalg::doublet(C_lmo_slice_w, C_lmo_slice, true, false));  // naocc x naocc
         DOI_iu_temps[thread].add(linalg::doublet(C_lmo_slice_w, C_pao_slice, true, false));  // naocc x npao
+        DOI_uv_temps[thread].add(linalg::doublet(C_pao_slice_w, C_pao_slice, true, false));  // npao x npao
     }
     timer_off("Integration");
 
     DOI_ij_ = std::make_shared<Matrix>("(i,j) Differential Overlap Integrals", naocc, naocc);
     DOI_iu_ = std::make_shared<Matrix>("(i,u) Differential Overlap Integrals", naocc, nbf);
+    DOI_uv_ = std::make_shared<Matrix>("(u,v) Differential Overlap Integrals", nbf, nbf);
 
     for (size_t thread = 0; thread < nthread; thread++) {
         DOI_ij_->add(DOI_ij_temps[thread]);
         DOI_iu_->add(DOI_iu_temps[thread]);
+        DOI_uv_->add(DOI_uv_temps[thread]);
     }
 
     DOI_ij_->sqrt_this();
     DOI_iu_->sqrt_this();
+    DOI_uv_->sqrt_this();
 }
 
 void DLPNO::compute_dipole_ints() {
@@ -496,7 +611,8 @@ void DLPNO::compute_dipole_ints() {
     }
 }
 
-void DLPNO::prep_sparsity() {
+
+void DLPNO::prep_sparsity(bool initial, bool final) {
     int natom = molecule_->natom();
     int nbf = basisset_->nbf();
     int nshell = basisset_->nshell();
@@ -515,52 +631,57 @@ void DLPNO::prep_sparsity() {
         ribf_to_atom[i] = ribasis_->function_to_center(i);
     }
 
-    outfile->Printf("  ==> Forming Local MO Domains <==\n");
+    if (!final) {
+        outfile->Printf("  ==> Forming Local MO Domains <==\n");
 
-    // map from LMO to local DF domain (aux basis functions)
-    // locality determined via mulliken charges
+        // map from LMO to local DF domain (aux basis functions)
+        // locality determined via mulliken charges
 
-    lmo_to_ribfs_.resize(naocc);
-    lmo_to_riatoms_.resize(naocc);
+        lmo_to_ribfs_.clear();
+        lmo_to_riatoms_.clear();
 
-    for (size_t i = 0; i < naocc; ++i) {
-        // atomic mulliken populations for this orbital
-        std::vector<double> mkn_pop(natom, 0.0);
+        lmo_to_ribfs_.resize(naocc);
+        lmo_to_riatoms_.resize(naocc);
 
-        auto P_i = reference_wavefunction_->S()->clone();
+        for (size_t i = 0; i < naocc; ++i) {
+            // atomic mulliken populations for this orbital
+            std::vector<double> mkn_pop(natom, 0.0);
 
-        for (size_t u = 0; u < nbf; u++) {
-            P_i->scale_row(0, u, C_lmo_->get(u, i));
-            P_i->scale_column(0, u, C_lmo_->get(u, i));
-        }
+            auto P_i = reference_wavefunction_->S()->clone();
 
-        for (size_t u = 0; u < nbf; u++) {
-            int centerU = basisset_->function_to_center(u);
-            double p_uu = P_i->get(u, u);
-
-            for (size_t v = 0; v < nbf; v++) {
-                int centerV = basisset_->function_to_center(v);
-                double p_vv = P_i->get(v, v);
-
-                // off-diag pops (p_uv) split between u and v prop to diag pops
-                double p_uv = P_i->get(u, v);
-                mkn_pop[centerU] += p_uv * ((p_uu) / (p_uu + p_vv));
-                mkn_pop[centerV] += p_uv * ((p_vv) / (p_uu + p_vv));
+            for (size_t u = 0; u < nbf; u++) {
+                P_i->scale_row(0, u, C_lmo_->get(u, i));
+                P_i->scale_column(0, u, C_lmo_->get(u, i));
             }
-        }
 
-        // if non-zero mulliken pop on atom, include atom in the LMO's fitting domain
-        for (size_t a = 0; a < natom; a++) {
-            if (fabs(mkn_pop[a]) > options_.get_double("T_CUT_MKN")) {
-                lmo_to_riatoms_[i].push_back(a);
+            for (size_t u = 0; u < nbf; u++) {
+                int centerU = basisset_->function_to_center(u);
+                double p_uu = P_i->get(u, u);
 
-                // each atom's aux orbitals are all-or-nothing for each LMO
-                for (int u : atom_to_ribf_[a]) {
-                    lmo_to_ribfs_[i].push_back(u);
+                for (size_t v = 0; v < nbf; v++) {
+                    int centerV = basisset_->function_to_center(v);
+                    double p_vv = P_i->get(v, v);
+
+                    // off-diag pops (p_uv) split between u and v prop to diag pops
+                    double p_uv = P_i->get(u, v);
+                    mkn_pop[centerU] += p_uv * ((p_uu) / (p_uu + p_vv));
+                    mkn_pop[centerV] += p_uv * ((p_vv) / (p_uu + p_vv));
+                }
+            }
+
+            // if non-zero mulliken pop on atom, include atom in the LMO's fitting domain
+            for (size_t a = 0; a < natom; a++) {
+                if (fabs(mkn_pop[a]) > T_CUT_MKN_) {
+                    lmo_to_riatoms_[i].push_back(a);
+
+                    // each atom's aux orbitals are all-or-nothing for each LMO
+                    for (int u : atom_to_ribf_[a]) {
+                        lmo_to_ribfs_[i].push_back(u);
+                    }
                 }
             }
         }
-    }
+    } // end if
 
     // map from LMO to local virtual domain (PAOs)
     // locality determined via differential overlap integrals
@@ -587,41 +708,45 @@ void DLPNO::prep_sparsity() {
     // locality determined via differential overlap integrals
     //   and also approximated pair energies from dipole integrals
 
-    i_j_to_ij_.resize(naocc);
-    de_dipole_ = 0.0;
+    if (initial) {
+        i_j_to_ij_.resize(naocc);
+        de_dipole_ = 0.0;
 
-    for (size_t i = 0, ij = 0; i < naocc; i++) {
-        for (size_t j = 0; j < naocc; j++) {
-            bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_ij"));
-            bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > options_.get_double("T_CUT_PRE"));
+        for (size_t i = 0, ij = 0; i < naocc; i++) {
+            for (size_t j = 0; j < naocc; j++) {
+                bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_ij"));
+                bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > T_CUT_PRE_);
 
-            if (overlap_big || energy_big) {
-                i_j_to_ij_[i].push_back(ij);
-                ij_to_i_j_.push_back(std::make_pair(i, j));
-                ij++;
-            } else {
-                de_dipole_ += dipole_pair_e_->get(i, j);
-                i_j_to_ij_[i].push_back(-1);
+                if (overlap_big || energy_big) {
+                    i_j_to_ij_[i].push_back(ij);
+                    ij_to_i_j_.push_back(std::make_pair(i, j));
+                    ij++;
+                } else {
+                    de_dipole_ += dipole_pair_e_->get(i, j);
+                    i_j_to_ij_[i].push_back(-1);
+                }
             }
         }
-    }
 
-    int n_lmo_pairs = ij_to_i_j_.size();
+        int n_lmo_pairs = ij_to_i_j_.size();
 
-    for (size_t ij = 0; ij < n_lmo_pairs; ++ij) {
-        size_t i, j;
-        std::tie(i, j) = ij_to_i_j_[ij];
-        ij_to_ji_.push_back(i_j_to_ij_[j][i]);
-    }
+        for (size_t ij = 0; ij < n_lmo_pairs; ++ij) {
+            size_t i, j;
+            std::tie(i, j) = ij_to_i_j_[ij];
+            ij_to_ji_.push_back(i_j_to_ij_[j][i]);
+        }
+    } // end if
 
     print_aux_domains();
     print_pao_domains();
-    print_lmo_domains();
+    print_lmo_domains(initial);
 
     outfile->Printf("\n  ==> Merging LMO Domains into LMO Pair Domains <==\n");
 
     // map from (LMO, LMO) pair to local auxiliary and virtual domains
     // LMO pair domains are the union of LMO domains
+
+    int n_lmo_pairs = ij_to_i_j_.size();
 
     lmopair_to_paos_.resize(n_lmo_pairs);
     lmopair_to_paoatoms_.resize(n_lmo_pairs);
@@ -640,98 +765,243 @@ void DLPNO::prep_sparsity() {
         lmopair_to_riatoms_[ij] = merge_lists(lmo_to_riatoms_[i], lmo_to_riatoms_[j]);
     }
 
+    // Create a list of lmos that "interact" with a lmo_pair by differential overlap
+    lmopair_to_lmos_.clear();
+    lmopair_to_lmos_.resize(n_lmo_pairs);
+    lmopair_to_lmos_dense_.resize(n_lmo_pairs);
+
+#pragma omp parallel for
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        int i, j;
+        std::tie(i, j) = ij_to_i_j_[ij];
+        lmopair_to_lmos_dense_[ij] = std::vector<int>(naocc, -1);
+
+        int m_ij = 0;
+        for (int m = 0; m < naocc; ++m) {
+            int im = i_j_to_ij_[i][m];
+            int jm = i_j_to_ij_[j][m];
+
+            if (im != -1 && jm != -1) {
+                lmopair_to_lmos_[ij].push_back(m);
+                lmopair_to_lmos_dense_[ij][m] = m_ij;
+                m_ij++;
+            }
+        }
+    } // end ij
+
     print_aux_pair_domains();
+    print_lmo_pair_domains();
     print_pao_pair_domains();
 
-    // => Coefficient Sparsity <= //
+    if (initial) {
+        // => Coefficient Sparsity <= //
 
-    // which basis functions (on which atoms) contribute to each local MO?
-    SparseMap lmo_to_bfs(naocc);
-    SparseMap lmo_to_atoms(naocc);
+        // which basis functions (on which atoms) contribute to each local MO?
+        lmo_to_bfs_.resize(naocc);
+        lmo_to_atoms_.resize(naocc);
 
-    for (int i = 0; i < naocc; ++i) {
-        for (int bf_ind = 0; bf_ind < nbf; ++bf_ind) {
-            if (fabs(C_lmo_->get(bf_ind, i)) > options_.get_double("T_CUT_CLMO")) {
-                lmo_to_bfs[i].push_back(bf_ind);
+        for (int i = 0; i < naocc; ++i) {
+            for (int bf_ind = 0; bf_ind < nbf; ++bf_ind) {
+                if (fabs(C_lmo_->get(bf_ind, i)) > options_.get_double("T_CUT_CLMO")) {
+                    lmo_to_bfs_[i].push_back(bf_ind);
+                }
+            }
+            lmo_to_atoms_[i] = block_list(lmo_to_bfs_[i], bf_to_atom);
+        }
+
+        // which basis functions (on which atoms) contribute to each projected AO?
+        pao_to_bfs_.resize(nbf);
+        pao_to_atoms_.resize(nbf);
+
+        for (int u = 0; u < nbf; ++u) {
+            for (int bf_ind = 0; bf_ind < nbf; ++bf_ind) {
+                if (fabs(C_pao_->get(bf_ind, u)) > options_.get_double("T_CUT_CPAO")) {
+                    pao_to_bfs_[u].push_back(bf_ind);
+                }
+            }
+            pao_to_atoms_[u] = block_list(pao_to_bfs_[u], bf_to_atom);
+        }
+    } // end if
+
+    if (!final) {
+        // determine maps to extended LMO domains, which are the union of an LMO's domain with domains
+        //   of all interacting LMOs
+
+        lmo_to_riatoms_ext_ = extend_maps(lmo_to_riatoms_, ij_to_i_j_);
+        riatom_to_lmos_ext_ = invert_map(lmo_to_riatoms_ext_, natom);
+        riatom_to_paos_ext_ = chain_maps(riatom_to_lmos_ext_, lmo_to_paos_);
+
+        // We'll use these maps to screen the the local MO transform (first index):
+        //   (mn|Q) * C_mi -> (in|Q)
+        riatom_to_atoms1_ = chain_maps(riatom_to_lmos_ext_, lmo_to_atoms_);
+        riatom_to_shells1_ = chain_maps(riatom_to_atoms1_, atom_to_shell_);
+        riatom_to_bfs1_ = chain_maps(riatom_to_atoms1_, atom_to_bf_);
+
+        // We'll use these maps to screen the projected AO transform (second index):
+        //   (mn|Q) * C_nu -> (mu|Q)
+        riatom_to_atoms2_ = chain_maps(riatom_to_lmos_ext_, chain_maps(lmo_to_paos_, pao_to_atoms_));
+        riatom_to_shells2_ = chain_maps(riatom_to_atoms2_, atom_to_shell_);
+        riatom_to_bfs2_ = chain_maps(riatom_to_atoms2_, atom_to_bf_);
+
+        // Need dense versions of previous maps for quick lookup
+
+        // riatom_to_lmos_ext_dense_[riatom][lmo] is the index of lmo in riatom_to_lmos_ext_[riatom]
+        //   (if present), else -1
+        riatom_to_lmos_ext_dense_.resize(natom);
+        // riatom_to_paos_ext_dense_[riatom][pao] is the index of pao in riatom_to_paos_ext_[riatom]
+        //   (if present), else -1
+        riatom_to_paos_ext_dense_.resize(natom);
+
+        // riatom_to_atoms1_dense_(1,2)[riatom][a] is true if the orbitals basis functions of atom A
+        //   are needed for the (LMO,PAO) transform
+        riatom_to_atoms1_dense_.resize(natom);
+        riatom_to_atoms2_dense_.resize(natom);
+
+        for (int a_ri = 0; a_ri < natom; a_ri++) {
+            riatom_to_lmos_ext_dense_[a_ri] = std::vector<int>(naocc, -1);
+            riatom_to_paos_ext_dense_[a_ri] = std::vector<int>(npao, -1);
+            riatom_to_atoms1_dense_[a_ri] = std::vector<bool>(natom, false);
+            riatom_to_atoms2_dense_[a_ri] = std::vector<bool>(natom, false);
+
+            for (int i_ind = 0; i_ind < riatom_to_lmos_ext_[a_ri].size(); i_ind++) {
+                int i = riatom_to_lmos_ext_[a_ri][i_ind];
+                riatom_to_lmos_ext_dense_[a_ri][i] = i_ind;
+            }
+            for (int u_ind = 0; u_ind < riatom_to_paos_ext_[a_ri].size(); u_ind++) {
+                int u = riatom_to_paos_ext_[a_ri][u_ind];
+                riatom_to_paos_ext_dense_[a_ri][u] = u_ind;
+            }
+            for (int a_bf : riatom_to_atoms1_[a_ri]) {
+                riatom_to_atoms1_dense_[a_ri][a_bf] = true;
+            }
+            for (int a_bf : riatom_to_atoms2_[a_ri]) {
+                riatom_to_atoms2_dense_[a_ri][a_bf] = true;
             }
         }
-        lmo_to_atoms[i] = block_list(lmo_to_bfs[i], bf_to_atom);
-    }
-
-    // which basis functions (on which atoms) contribute to each projected AO?
-    SparseMap pao_to_bfs(nbf);
-    SparseMap pao_to_atoms(nbf);
-
-    for (int u = 0; u < nbf; ++u) {
-        for (int bf_ind = 0; bf_ind < nbf; ++bf_ind) {
-            if (fabs(C_pao_->get(bf_ind, u)) > options_.get_double("T_CUT_CPAO")) {
-                pao_to_bfs[u].push_back(bf_ind);
-            }
-        }
-        pao_to_atoms[u] = block_list(pao_to_bfs[u], bf_to_atom);
-    }
-
-    // determine maps to extended LMO domains, which are the union of an LMO's domain with domains
-    //   of all interacting LMOs
-
-    lmo_to_riatoms_ext_ = extend_maps(lmo_to_riatoms_, ij_to_i_j_);
-    riatom_to_lmos_ext_ = invert_map(lmo_to_riatoms_ext_, natom);
-    riatom_to_paos_ext_ = chain_maps(riatom_to_lmos_ext_, lmo_to_paos_);
-
-    // We'll use these maps to screen the the local MO transform (first index):
-    //   (mn|Q) * C_mi -> (in|Q)
-    riatom_to_atoms1_ = chain_maps(riatom_to_lmos_ext_, lmo_to_atoms);
-    riatom_to_shells1_ = chain_maps(riatom_to_atoms1_, atom_to_shell_);
-    riatom_to_bfs1_ = chain_maps(riatom_to_atoms1_, atom_to_bf_);
-
-    // We'll use these maps to screen the projected AO transform (second index):
-    //   (mn|Q) * C_nu -> (mu|Q)
-    riatom_to_atoms2_ = chain_maps(riatom_to_lmos_ext_, chain_maps(lmo_to_paos_, pao_to_atoms));
-    riatom_to_shells2_ = chain_maps(riatom_to_atoms2_, atom_to_shell_);
-    riatom_to_bfs2_ = chain_maps(riatom_to_atoms2_, atom_to_bf_);
-
-    // Need dense versions of previous maps for quick lookup
-
-    // riatom_to_lmos_ext_dense_[riatom][lmo] is the index of lmo in riatom_to_lmos_ext_[riatom]
-    //   (if present), else -1
-    riatom_to_lmos_ext_dense_.resize(natom);
-    // riatom_to_paos_ext_dense_[riatom][pao] is the index of pao in riatom_to_paos_ext_[riatom]
-    //   (if present), else -1
-    riatom_to_paos_ext_dense_.resize(natom);
-
-    // riatom_to_atoms1_dense_(1,2)[riatom][a] is true if the orbitals basis functions of atom A
-    //   are needed for the (LMO,PAO) transform
-    riatom_to_atoms1_dense_.resize(natom);
-    riatom_to_atoms2_dense_.resize(natom);
-
-    for (int a_ri = 0; a_ri < natom; a_ri++) {
-        riatom_to_lmos_ext_dense_[a_ri] = std::vector<int>(naocc, -1);
-        riatom_to_paos_ext_dense_[a_ri] = std::vector<int>(npao, -1);
-        riatom_to_atoms1_dense_[a_ri] = std::vector<bool>(natom, false);
-        riatom_to_atoms2_dense_[a_ri] = std::vector<bool>(natom, false);
-
-        for (int i_ind = 0; i_ind < riatom_to_lmos_ext_[a_ri].size(); i_ind++) {
-            int i = riatom_to_lmos_ext_[a_ri][i_ind];
-            riatom_to_lmos_ext_dense_[a_ri][i] = i_ind;
-        }
-        for (int u_ind = 0; u_ind < riatom_to_paos_ext_[a_ri].size(); u_ind++) {
-            int u = riatom_to_paos_ext_[a_ri][u_ind];
-            riatom_to_paos_ext_dense_[a_ri][u] = u_ind;
-        }
-        for (int a_bf : riatom_to_atoms1_[a_ri]) {
-            riatom_to_atoms1_dense_[a_ri][a_bf] = true;
-        }
-        for (int a_bf : riatom_to_atoms2_[a_ri]) {
-            riatom_to_atoms2_dense_[a_ri][a_bf] = true;
-        }
-    }
+    } // end if
 }
 
-void DLPNO::compute_df_ints() {
+void DLPNO::compute_qij() {
+    timer_on("(mn|K)->(ij|K)");
+
+    int nbf = basisset_->nbf();
+    int naux = ribasis_->nbf();
+    double ints_tolerance = options_.get_double("DLPNO_AO_INTS_TOL");
+
+    size_t nthread = 1;
+#ifdef _OPENMP
+    nthread = omp_get_max_threads();
+#endif
+
+    std::shared_ptr<IntegralFactory> factory =
+        std::make_shared<IntegralFactory>(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eris(nthread);
+
+    eris[0] = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+    for (size_t thread = 1; thread < nthread; thread++) {
+        eris[thread] = std::shared_ptr<TwoBodyAOInt>(eris.front()->clone());
+    }
+
+    outfile->Printf("\n  ==> Transforming 3-Index Integrals to LMO/LMO basis <==\n");
+
+    auto SC_lmo = linalg::doublet(reference_wavefunction_->S(), C_lmo_, false, false);
+
+    qij_.resize(naux);
+
+    // LMO-LMO DF ints
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int Q = 0; Q < ribasis_->nshell(); Q++) {
+        int nq = ribasis_->shell(Q).nfunction();
+        int qstart = ribasis_->shell(Q).function_index();
+        int centerQ = ribasis_->shell_to_center(Q);
+
+        size_t thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+
+        // Sparse lists for LMO/LMO
+        auto bf_map_lmo = riatom_to_bfs1_[centerQ];
+
+        // inverse map, from global basis function index to auxiliary specific index
+        std::vector<int> bf_map_lmo_inv(nbf, -1);
+        for (int m_ind = 0; m_ind < bf_map_lmo.size(); m_ind++) {
+            bf_map_lmo_inv[bf_map_lmo[m_ind]] = m_ind;
+        }
+
+        for (size_t q = 0; q < nq; q++) {
+            qij_[qstart + q] = std::make_shared<Matrix>("(mn|Q)", bf_map_lmo.size(), bf_map_lmo.size());
+        }
+
+        for (int M : riatom_to_shells1_[centerQ]) {
+            int nm = basisset_->shell(M).nfunction();
+            int mstart = basisset_->shell(M).function_index();
+            int centerM = basisset_->shell_to_center(M);
+
+            for (int N : riatom_to_shells1_[centerQ]) {
+                int nn = basisset_->shell(N).nfunction();
+                int nstart = basisset_->shell(N).function_index();
+                int centerN = basisset_->shell_to_center(N);
+
+                // is (N in the list of M's) and (M in the list of N's)?
+                // This is (probably) not needed here, but this is copied from the qia integral code for DLPNO-MP2
+                bool MN_symmetry =
+                    (riatom_to_atoms1_dense_[centerQ][centerN] && riatom_to_atoms1_dense_[centerQ][centerM]);
+
+                // if so, we want to exploit (MN|Q) <-> (NM|Q) symmetry
+                if (N < M && MN_symmetry) continue;
+
+                // AO ERI Screening
+                if (J_metric_shell_diag_[Q] * eris[thread]->shell_pair_value(M, N) < ints_tolerance * ints_tolerance) continue;
+
+                eris[thread]->compute_shell(Q, 0, M, N);
+                const double* buffer = eris[thread]->buffer();
+
+                for (int q = 0, index = 0; q < nq; q++) {
+                    for (int m = 0; m < nm; m++) {
+                        for (int n = 0; n < nn; n++, index++) {
+                            int index_m = bf_map_lmo_inv[mstart + m];
+                            int index_n = bf_map_lmo_inv[nstart + n];
+                            qij_[qstart + q]->set(index_m, index_n, buffer[index]);
+                        }
+                    }
+                }
+
+                // (MN|Q) <-> (NM|Q) symmetry
+                if (N > M && MN_symmetry) {
+                    for (int q = 0, index = 0; q < nq; q++) {
+                        for (int m = 0; m < nm; m++) {
+                            for (int n = 0; n < nn; n++, index++) {
+                                int index_m = bf_map_lmo_inv[mstart + m];
+                                int index_n = bf_map_lmo_inv[nstart + n];
+                                qij_[qstart + q]->set(index_n, index_m, buffer[index]);
+                            }
+                        }
+                    }
+                }
+
+            } // N loop
+        } // M loop
+
+        auto C_lmo_slice = submatrix_rows_and_cols(*SC_lmo, riatom_to_bfs1_[centerQ], riatom_to_lmos_ext_[centerQ]);
+        auto S_aa = submatrix_rows_and_cols(*reference_wavefunction_->S(), riatom_to_bfs1_[centerQ], riatom_to_bfs1_[centerQ]);
+        C_DGESV_wrapper(S_aa, C_lmo_slice);
+
+        // (mn|Q) C_mi C_nj ->(ij|Q)
+        for (size_t q = 0; q < nq; q++) {
+            qij_[qstart+q] = linalg::triplet(C_lmo_slice, qij_[qstart+q], C_lmo_slice, true, false, false);
+        }
+    }
+
+    timer_off("(mn|K)->(ij|K)");
+}
+
+void DLPNO::compute_qia() {
     timer_on("(mn|K) -> (ia|K)");
 
     int nbf = basisset_->nbf();
     int naux = ribasis_->nbf();
+    double ints_tolerance = options_.get_double("DLPNO_AO_INTS_TOL");
 
     size_t nthread = 1;
 #ifdef _OPENMP
@@ -748,8 +1018,6 @@ void DLPNO::compute_df_ints() {
     }
 
     outfile->Printf("\n  ==> Transforming 3-Index Integrals to LMO/PAO basis <==\n");
-
-    print_integral_sparsity();
 
     auto SC_lmo =
         linalg::doublet(reference_wavefunction_->S(), C_lmo_, false, false);  // intermediate for coefficient fitting
@@ -800,6 +1068,9 @@ void DLPNO::compute_df_ints() {
 
                 // if so, we want to exploit (MN|Q) <-> (NM|Q) symmetry
                 if (N < M && MN_symmetry) continue;
+
+                // AO ERI Screening
+                if (J_metric_shell_diag_[Q] * eris[thread]->shell_pair_value(M, N) < ints_tolerance * ints_tolerance) continue;
 
                 eris[thread]->compute_shell(Q, 0, M, N);
                 const double* buffer = eris[thread]->buffer();
@@ -858,9 +1129,214 @@ void DLPNO::compute_df_ints() {
     timer_off("(K|L)");
 }
 
+
+void DLPNO::compute_qab() {
+    timer_on("(mn|K)->(ab|K)");
+
+    int nbf = basisset_->nbf();
+    int naux = ribasis_->nbf();
+    int natom = molecule_->natom();
+    double ints_tolerance = options_.get_double("DLPNO_AO_INTS_TOL");
+    double T_CUT_DO_uv = options_.get_double("T_CUT_DO_uv");
+
+    // Prepare Sparsity info for QAB intergrals
+    riatom_to_pao_pairs_.resize(natom);
+    riatom_to_pao_pairs_dense_.resize(natom);
+
+    for (int Qatom = 0; Qatom < natom; ++Qatom) {
+        int npao_Q = riatom_to_paos_ext_[Qatom].size();
+        riatom_to_pao_pairs_dense_[Qatom].resize(nbf);
+
+        for (int u = 0; u < nbf; ++u) {
+            riatom_to_pao_pairs_dense_[Qatom][u].resize(nbf, -1);
+        }
+
+        int uv_idx = 0;
+        for (int u = 0; u < nbf; ++u) {
+            int u_idx = riatom_to_paos_ext_dense_[Qatom][u];
+            if (u_idx == -1) continue;
+
+            for (int v = 0; v < nbf; ++v) {
+                int v_idx = riatom_to_paos_ext_dense_[Qatom][v];
+                if (v_idx == -1 || u > v) continue;
+
+                if (fabs(DOI_uv_->get(u,v)) > T_CUT_DO_uv) {
+                    riatom_to_pao_pairs_[Qatom].push_back(std::make_pair(u,v));
+                    riatom_to_pao_pairs_dense_[Qatom][u][v] = uv_idx;
+                    riatom_to_pao_pairs_dense_[Qatom][v][u] = uv_idx;
+                    ++uv_idx;
+                }
+
+            }
+        }
+    }
+
+    size_t nthread = 1;
+#ifdef _OPENMP
+    nthread = omp_get_max_threads();
+#endif
+
+    std::shared_ptr<IntegralFactory> factory =
+        std::make_shared<IntegralFactory>(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eris(nthread);
+
+    eris[0] = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+    for (size_t thread = 1; thread < nthread; thread++) {
+        eris[thread] = std::shared_ptr<TwoBodyAOInt>(eris.front()->clone());
+    }
+
+    outfile->Printf("\n  ==> Transforming 3-Index Integrals to PAO/PAO basis <==\n");
+
+    // TODO: Writing (Q|ab) pao integrals to disk is currently NOT supported. Add this capability later
+    write_qab_pao_ = false;
+
+    if (write_qab_pao_) {
+        psio_->open(PSIF_DLPNO_QAB_PAO, PSIO_OPEN_NEW);
+    }
+
+    qab_.resize(naux);
+
+    size_t qab_doubles = 0L;
+
+    // PAO-PAO DF ints
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : qab_doubles)
+    for (int Q = 0; Q < ribasis_->nshell(); Q++) {
+        int nq = ribasis_->shell(Q).nfunction();
+        int qstart = ribasis_->shell(Q).function_index();
+        int centerQ = ribasis_->shell_to_center(Q);
+
+        size_t thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+
+        // Sparse lists for PAO/PAO
+        auto bf_map_pao = riatom_to_bfs2_[centerQ];
+
+        // inverse map, from global basis function index to auxiliary specific index
+        std::vector<int> bf_map_pao_inv(nbf, -1);
+        for (int m_ind = 0; m_ind < bf_map_pao.size(); m_ind++) {
+            bf_map_pao_inv[bf_map_pao[m_ind]] = m_ind;
+        }
+
+        for (size_t q = 0; q < nq; q++) {
+            qab_[qstart + q] = std::make_shared<Matrix>("(mn|Q)", bf_map_pao.size(), bf_map_pao.size());
+        }
+
+        for (int M : riatom_to_shells2_[centerQ]) {
+            int nm = basisset_->shell(M).nfunction();
+            int mstart = basisset_->shell(M).function_index();
+            int centerM = basisset_->shell_to_center(M);
+
+            for (int N : riatom_to_shells2_[centerQ]) {
+                int nn = basisset_->shell(N).nfunction();
+                int nstart = basisset_->shell(N).function_index();
+                int centerN = basisset_->shell_to_center(N);
+
+                // is (N in the list of M's) and (M in the list of N's)?
+                // This is (probably) not needed here, but this is copied from the qia integral code for DLPNO-MP2
+                bool MN_symmetry =
+                    (riatom_to_atoms2_dense_[centerQ][centerN] && riatom_to_atoms2_dense_[centerQ][centerM]);
+
+                // if so, we want to exploit (MN|Q) <-> (NM|Q) symmetry
+                if (N < M && MN_symmetry) continue;
+
+                // AO ERI Screening
+                if (J_metric_shell_diag_[Q] * eris[thread]->shell_pair_value(M, N) < ints_tolerance * ints_tolerance) continue;
+
+                eris[thread]->compute_shell(Q, 0, M, N);
+                const double* buffer = eris[thread]->buffer();
+
+                for (int q = 0, index = 0; q < nq; q++) {
+                    for (int m = 0; m < nm; m++) {
+                        for (int n = 0; n < nn; n++, index++) {
+                            int index_m = bf_map_pao_inv[mstart + m];
+                            int index_n = bf_map_pao_inv[nstart + n];
+                            qab_[qstart + q]->set(index_m, index_n, buffer[index]);
+                        }
+                    }
+                }
+
+                // (MN|Q) <-> (NM|Q) symmetry
+                if (N > M && MN_symmetry) {
+                    for (int q = 0, index = 0; q < nq; q++) {
+                        for (int m = 0; m < nm; m++) {
+                            for (int n = 0; n < nn; n++, index++) {
+                                int index_m = bf_map_pao_inv[mstart + m];
+                                int index_n = bf_map_pao_inv[nstart + n];
+                                qab_[qstart + q]->set(index_n, index_m, buffer[index]);
+                            }
+                        }
+                    }
+                }
+
+            }  // N loop
+        } // M loop
+
+        auto C_pao_slice = submatrix_rows_and_cols(*C_pao_, riatom_to_bfs2_[centerQ], riatom_to_paos_ext_[centerQ]);
+
+        // (mn|Q) C_mi C_nj ->(ij|Q)
+        for (size_t q = 0; q < nq; q++) {
+            qab_[qstart + q] = linalg::triplet(C_pao_slice, qab_[qstart + q], C_pao_slice, true, false, false);
+            SharedMatrix qab_temp = std::make_shared<Matrix>(riatom_to_pao_pairs_[centerQ].size(), 1);
+
+            for (int uv = 0; uv < riatom_to_pao_pairs_[centerQ].size(); ++uv) {
+                auto &[u, v] = riatom_to_pao_pairs_[centerQ][uv];
+                int u_idx = riatom_to_paos_ext_dense_[centerQ][u], v_idx = riatom_to_paos_ext_dense_[centerQ][v];
+                qab_temp->set(uv, 0, qab_[qstart + q]->get(u_idx, v_idx));
+                ++qab_doubles;
+            }
+            qab_[qstart + q] = qab_temp;
+
+            if (write_qab_pao_) { // Write to disk
+                std::stringstream toc_entry;
+                toc_entry << "QAB (PAO) " << (qstart + q);
+                qab_[qstart + q]->set_name(toc_entry.str());
+#pragma omp critical
+                qab_[qstart + q]->save(psio_, PSIF_DLPNO_QAB_PAO, psi::Matrix::LowerTriangle);
+                qab_[qstart + q] = nullptr;
+            }
+        }
+    }
+
+    qab_memory_ = qab_doubles;
+    outfile->Printf("    PAO/PAO Integral Memory After Screening: %.3f [GiB]\n\n", qab_doubles * pow(2.0, -30) * sizeof(double));
+
+    if (write_qab_pao_) {
+        psio_->close(PSIF_DLPNO_QAB_PAO, 1);
+    }
+
+    timer_off("(mn|K)->(ab|K)");
+}
+
+void DLPNO::compute_metric() {
+    timer_on("(K|L)");
+
+    // Compute the full metric, don't invert
+    auto metric = FittingMetric(ribasis_, true);
+    metric.form_fitting_metric();
+    full_metric_ = std::make_shared<Matrix>(metric.get_metric());
+
+    // Compute max value of diagonal metric element (used in integral screening)
+    J_metric_shell_diag_.resize(ribasis_->nshell(), 0.0);
+
+#pragma omp parallel for
+    for (size_t Qshell = 0; Qshell < ribasis_->nshell(); ++Qshell) {
+        int bf_start = ribasis_->shell(Qshell).function_index();
+        int bf_end = bf_start + ribasis_->shell(Qshell).nfunction();
+        for (size_t bf = bf_start; bf < bf_end; bf++) {
+            J_metric_shell_diag_[Qshell] = std::max(J_metric_shell_diag_[Qshell], full_metric_->get(bf, bf));
+        }
+    }
+
+    timer_off("(K|L)");
+}
+
 void DLPNO::pno_transform() {
     int nbf = basisset_->nbf();
     int n_lmo_pairs = ij_to_i_j_.size();
+
+    size_t MIN_PNO = options_.get_int("MIN_PNOS_PER_PAIR");
 
     outfile->Printf("\n  ==> Forming Pair Natural Orbitals <==\n");
 
@@ -965,9 +1441,11 @@ void DLPNO::pno_transform() {
         Vector pno_occ("eigenvalues", nvir_ij);
         D_ij->diagonalize(*X_pno_ij, pno_occ, descending);
 
-        int nvir_ij_final = 0;
-        for (size_t a = 0; a < nvir_ij; ++a) {
-            if (fabs(pno_occ.get(a)) >= T_CUT_PNO_) {
+        double T_DIAG_SCALE = (i == j) ? T_CUT_PNO_DIAG_SCALE_ : 1.0;
+
+        int nvir_ij_final = std::min(MIN_PNO, nvir_ij);
+        for (size_t a = MIN_PNO; a < nvir_ij; ++a) {
+            if (fabs(pno_occ.get(a)) >= T_DIAG_SCALE * T_CUT_PNO_) {
                 nvir_ij_final++;
             }
         }
@@ -1098,7 +1576,7 @@ void DLPNO::print_pao_domains() {
     outfile->Printf("      Max     = %4zu PAOs (%zu atoms)\n", max_paos, max_atoms);
 }
 
-void DLPNO::print_lmo_domains() {
+void DLPNO::print_lmo_domains(bool initial) {
     int naocc = i_j_to_ij_.size();
 
     int exclude_pairs_overlap = 0;
@@ -1111,7 +1589,7 @@ void DLPNO::print_lmo_domains() {
                 lmos += 1;
             }
             bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_ij"));
-            bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > options_.get_double("T_CUT_PRE"));
+            bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > T_CUT_PRE_);
             if (!overlap_big) exclude_pairs_overlap++;
             if (!energy_big) exclude_pairs_energy++;
         }
@@ -1160,6 +1638,30 @@ void DLPNO::print_aux_pair_domains() {
     outfile->Printf("      Max     = %4d AUX BFs (%d atoms)\n", max_domain_ri, max_domain_ri_atom);
 }
 
+void DLPNO::print_lmo_pair_domains() {
+    int n_lmo_pairs = lmopair_to_lmos_.size();
+    int min_domain_lmo = lmopair_to_lmos_[0].size(), max_domain_lmo = 0, total_domain_lmo = 0;
+    for (size_t ij = 0; ij < n_lmo_pairs; ij++) {
+        int pair_domain_size_lmo = lmopair_to_lmos_[ij].size();
+        // int pair_domain_size_atom = lmopair_to_paoatoms_[ij].size();
+
+        total_domain_lmo += pair_domain_size_lmo;
+        // total_domain_atom += pair_domain_size_atom;
+
+        min_domain_lmo = std::min(min_domain_lmo, pair_domain_size_lmo);
+        // min_domain_atom = std::min(min_domain_atom, pair_domain_size_atom);
+
+        max_domain_lmo = std::max(max_domain_lmo, pair_domain_size_lmo);
+        // max_domain_atom = std::max(max_domain_atom, pair_domain_size_atom);
+    }
+
+    outfile->Printf("  \n");
+    outfile->Printf("    Local MOs per Local MO pair:\n");
+    outfile->Printf("      Average = %4d LMOs\n", total_domain_lmo / n_lmo_pairs);
+    outfile->Printf("      Min     = %4d LMOs\n", min_domain_lmo);
+    outfile->Printf("      Max     = %4d LMOs\n", max_domain_lmo);
+}
+
 void DLPNO::print_pao_pair_domains() {
     int n_lmo_pairs = lmopair_to_paos_.size();
     int min_domain_pao = lmopair_to_paos_[0].size(), max_domain_pao = 0, total_domain_pao = 0;
@@ -1184,55 +1686,6 @@ void DLPNO::print_pao_pair_domains() {
                     total_domain_atom / n_lmo_pairs);
     outfile->Printf("      Min     = %4d PAOs (%d atoms)\n", min_domain_pao, min_domain_atom);
     outfile->Printf("      Max     = %4d PAOs (%d atoms)\n", max_domain_pao, max_domain_atom);
-}
-
-void DLPNO::print_integral_sparsity() {
-    // statistics for number of (MN|K) shell triplets we need to compute
-
-    int nbf = basisset_->nbf();
-    int nshell = basisset_->nshell();
-    int naux = ribasis_->nbf();
-    int naocc = nalpha_ - nfrzc();
-
-    size_t triplets = 0;       // computed (MN|K) triplets with no screening
-    size_t triplets_lmo = 0;   // computed (MN|K) triplets with only LMO screening
-    size_t triplets_pao = 0;   // computed (MN|K) triplets with only PAO screening
-    size_t triplets_both = 0;  // computed (MN|K) triplets with LMO and PAO screening
-
-    for (size_t atom = 0; atom < riatom_to_shells1_.size(); atom++) {
-        size_t nshellri_atom = atom_to_rishell_[atom].size();
-        triplets += nshell * nshell * nshellri_atom;
-        triplets_lmo += riatom_to_shells1_[atom].size() * nshell * nshellri_atom;
-        triplets_pao += nshell * riatom_to_shells2_[atom].size() * nshellri_atom;
-        triplets_both += riatom_to_shells1_[atom].size() * riatom_to_shells2_[atom].size() * nshellri_atom;
-    }
-    size_t screened_total = triplets - triplets_both;
-    size_t screened_lmo = triplets - triplets_lmo;
-    size_t screened_pao = triplets - triplets_pao;
-
-    // statistics for the number of (iu|Q) integrals we're left with after the transformation
-
-    size_t total_integrals = (size_t)naocc * nbf * naux;
-    size_t actual_integrals = 0;
-
-    for (size_t atom = 0; atom < riatom_to_shells1_.size(); atom++) {
-        actual_integrals +=
-            riatom_to_lmos_ext_[atom].size() * riatom_to_paos_ext_[atom].size() * atom_to_ribf_[atom].size();
-    }
-
-    // number of doubles * (2^3 bytes / double) * (1 GiB / 2^30 bytes)
-    double total_memory = total_integrals * pow(2.0, -27);
-    double actual_memory = actual_integrals * pow(2.0, -27);
-    double screened_memory = total_memory - actual_memory;
-
-    outfile->Printf("\n");
-    outfile->Printf("    Coefficient sparsity in AO -> LMO transform: %6.2f %% \n", screened_lmo * 100.0 / triplets);
-    outfile->Printf("    Coefficient sparsity in AO -> PAO transform: %6.2f %% \n", screened_pao * 100.0 / triplets);
-    outfile->Printf("    Coefficient sparsity in combined transforms: %6.2f %% \n", screened_total * 100.0 / triplets);
-    outfile->Printf("\n");
-    outfile->Printf("    Storing transformed LMO/PAO integrals in sparse format.\n");
-    outfile->Printf("    Required memory: %.3f GiB (%.2f %% reduction from dense format) \n", actual_memory,
-                    screened_memory * 100.0 / total_memory);
 }
 
 double DLPNO::compute_energy() { return 0.0; }

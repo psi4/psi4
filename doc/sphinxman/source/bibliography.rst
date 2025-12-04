@@ -787,4 +787,57 @@ Bibliography
    *J. Chem. Theory Comput.* **16**, 1456-1468 (2020)
    https://doi.org/10.1021/acs.jctc.9b00860
 
->>>>>>> Other build cleanups and documentation updates
+.. [Hylleraas:1930:209]
+   E. Hylleraas
+   *Z. Phys.* **65**, 209 (1930).
+   https://doi.org/10.1007/BF01397032
+
+.. [Pulay:1986:357]
+   P. Pulay and S. Saeb\ |o_slash|\ ,
+   *Theor. Chim. Acta* **69**, 357 (1986).
+   https://doi.org/10.1007/BF00526697
+
+.. [Liakos:2015:1525]
+   D. Liakos, M. Sparta, M. Kesharwani, J. Martin, and F. Neese,
+   *J. Chem. Theory Comput.* **11**, 1525 (2015).
+   https://doi.org/10.1021/ct501129s
+
+.. [Riplinger:2016:024109]
+   C. Riplinger, P. Pinksi, U. Becker, E. Valeev, and F. Neese,
+   *J. Chem. Phys.* **144**, 024109 (2016).
+   https://doi.org/10.1063/1.4939030
+
+.. [Riplinger:2013:034106]
+   C. Riplinger and F. Neese,
+   *J. Chem. Phys.* **138**, 034106 (2013).
+   https://doi.org/10.1063/1.4773581
+
+.. [Riplinger:2013:134101]
+   C. Riplinger, B. Sandhoefer, A. Hansen, and F. Neese,
+   *J. Chem. Phys.* **139**, 134101 (2013).
+   https://doi.org/10.1063/1.4821834
+
+.. [Guo:2018:011101]
+   Y. Guo, C. Riplinger, U. Becker, D. Liakos, Y. Minenkov, L. Cavallo, and F. Neese,
+   *J. Chem. Phys.* **148**, 011101 (2018).
+   https://doi.org/10.1063/1.5011798
+
+.. [Jiang:2024:082502]
+   A. Jiang, Z. Glick, D. Poole, J. M. Turney, C. D. Sherrill, and H. F. Schaefer III,
+   *J. Chem. Phys.* **161**, 082502 (2024).
+   https://doi.org/10.1063/5.0219963
+
+.. [Jiang:2025:2386]
+   A. Jiang, H. F. Schaefer III, and J. M. Turney,
+   *J. Chem. Theory Comput.* **21**, 2386-2401 (2025).
+   https://doi.org/10.1021/acs.jctc.4c01716
+
+.. [Jiang:2025:144102]
+   A. Jiang, H. F. Schaefer III, and J. M. Turney,
+   *J. Chem. Phys.* **162**, 144102 (2025).
+   https://doi.org/10.1063/5.0257672
+
+.. [Bomble:2005:054101]
+   Y. J. Bomble, J. F. Stanton, M. Kallay, and J. Gauss,
+   *J. Chem. Phys.* **123**, 054101 (2005).
+   https://doi.org/10.1063/1.1950567
