@@ -44,6 +44,7 @@ if(TARGET BrianQC::static_wrapper)
     )
 endif()
 
+
 if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
   target_compile_definitions(scf_solver
     PUBLIC
@@ -52,5 +53,16 @@ if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
   target_link_libraries(scf_solver
     PUBLIC
       OpenOrbitalOptimizer::OpenOrbitalOptimizer
+    )
+endif()
+
+if(TARGET OpenTrustRegion::OpenTrustRegion)
+  target_compile_definitions(scf_solver
+    PUBLIC
+      USING_OpenTrustRegion
+    )
+  target_link_libraries(scf_solver
+    PUBLIC
+      OpenTrustRegion::OpenTrustRegion
     )
 endif()
