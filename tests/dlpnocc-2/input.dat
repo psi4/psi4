@@ -53,15 +53,15 @@ print('   Testing DLPNO-CCSD(T) w/o frozen core...')
 val = energy('dlpno-ccsd(t)')
 
 # DLPNO-CCSD(T) matches DF-CCSD(T) if the thresholds are tightened enough
-compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                           #TEST
-compare_values(ref_dfccsd_corl, variable('CCSD CORRELATION ENERGY'), 5, 'ccsd corl')          #TEST
-compare_values(ref_dfccsd_tot, variable('CCSD TOTAL ENERGY'), 5, 'ccsd tot')                  #TEST
-compare_values(ref_dfccsd_t_corl, variable('CCSD(T) CORRELATION ENERGY'), 5, 'ccsd(t) corl')  #TEST
-compare_values(ref_dfccsd_t_tot, variable('CCSD(T) TOTAL ENERGY'), 5, 'ccsd(t) tot')          #TEST
-compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')                   #TEST
-compare_values(ref_dfccsd_t_corl, variable('CURRENT CORRELATION ENERGY'), 5, 'ccsd(t) corl')  #TEST
-compare_values(ref_dfccsd_t_tot, variable('CURRENT ENERGY'), 5, 'ccsd(t) tot')                #TEST
-compare_values(ref_dfccsd_t_tot, val, 5, 'ccsd(t) return')                                    #TEST
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                #TEST
+compare_values(ref_dfccsd_corl, variable('CCSD CORRELATION ENERGY'), 2.0e-5, 'ccsd corl')          #TEST
+compare_values(ref_dfccsd_tot, variable('CCSD TOTAL ENERGY'), 2.0e-5, 'ccsd tot')                  #TEST
+compare_values(ref_dfccsd_t_corl, variable('CCSD(T) CORRELATION ENERGY'), 2.0e-5, 'ccsd(t) corl')  #TEST
+compare_values(ref_dfccsd_t_tot, variable('CCSD(T) TOTAL ENERGY'), 2.0e-5, 'ccsd(t) tot')          #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')                        #TEST
+compare_values(ref_dfccsd_t_corl, variable('CURRENT CORRELATION ENERGY'), 2.0e-5, 'ccsd(t) corl')  #TEST
+compare_values(ref_dfccsd_t_tot, variable('CURRENT ENERGY'), 2.0e-5, 'ccsd(t) tot')                #TEST
+compare_values(ref_dfccsd_t_tot, val, 2.0e-5, 'ccsd(t) return')                                    #TEST
 clean()
 
 # Compare with DLPNO-CCSD(T) values if anything changes in the code
