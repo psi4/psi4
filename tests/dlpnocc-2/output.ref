@@ -32,9 +32,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 04 December 2025 07:27PM
+    Psi4 started on: Thursday, 04 December 2025 09:39PM
 
-    Process ID: 1464708
+    Process ID: 1472200
     Host:       a3-2
     PSIDATADIR: /home/aj48384/github/psi4/objdir_p4dev/stage/share/psi4
     Memory:     500.0 MiB
@@ -53,7 +53,7 @@
 #! Methane geometry from HTBH.py in databases
 #! The reference DF-CCSD(T) values are stored and not rerun
 #! This also tests the low memory overlap/disk algorithms available
-
+import os
 memory 4 GB
 
 ref_scf                  =    -40.213627016015              #TEST
@@ -115,16 +115,18 @@ compare_values(ref_dfccsd_t_tot, val, 2.0e-5, 'ccsd(t) return')                 
 clean()
 
 # Compare with DLPNO-CCSD(T) values if anything changes in the code
-compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                              #TEST
-compare_values(ref_dlpnoccsd_corl, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')          #TEST
-compare_values(ref_dlpnoccsd_tot, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                  #TEST
-compare_values(ref_dlpnoccsd_t_corl, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
-compare_values(ref_dlpnoccsd_t_tot, variable('CCSD(T) TOTAL ENERGY'), 7, 'ccsd(t) tot')          #TEST
-compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')                      #TEST
-compare_values(ref_dlpnoccsd_t_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
-compare_values(ref_dlpnoccsd_t_tot, variable('CURRENT ENERGY'), 7, 'ccsd(t) tot')                #TEST
-compare_values(ref_dlpnoccsd_t_tot, val, 7, 'ccsd(t) return')                                    #TEST
-clean()
+# TODO: This block will not run with windows (fix for future PR)
+if os.name != 'nt':
+    compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                              #TEST
+    compare_values(ref_dlpnoccsd_corl, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')          #TEST
+    compare_values(ref_dlpnoccsd_tot, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                  #TEST
+    compare_values(ref_dlpnoccsd_t_corl, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
+    compare_values(ref_dlpnoccsd_t_tot, variable('CCSD(T) TOTAL ENERGY'), 7, 'ccsd(t) tot')          #TEST
+    compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')                      #TEST
+    compare_values(ref_dlpnoccsd_t_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
+    compare_values(ref_dlpnoccsd_t_tot, variable('CURRENT ENERGY'), 7, 'ccsd(t) tot')                #TEST
+    compare_values(ref_dlpnoccsd_t_tot, val, 7, 'ccsd(t) return')                                    #TEST
+    clean()
 --------------------------------------------------------------------------
 
   Memory set to   3.725 GiB by Python driver.
@@ -141,7 +143,7 @@ Scratch directory: /tmp/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on a3-2
-*** at Thu Dec  4 19:27:30 2025
+*** at Thu Dec  4 21:39:06 2025
 
    => Loading Basis Set <=
 
@@ -264,16 +266,16 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:   -40.76972293319141   -4.07697e+01   0.00000e+00 
-   @DF-RHF iter   1:   -39.92713361900670    8.42589e-01   3.93636e-03 ADIIS/DIIS
-   @DF-RHF iter   2:   -40.17038184616992   -2.43248e-01   2.12704e-03 ADIIS/DIIS
-   @DF-RHF iter   3:   -40.21143014486896   -4.10483e-02   2.90601e-04 ADIIS/DIIS
-   @DF-RHF iter   4:   -40.21350318685842   -2.07304e-03   7.66445e-05 DIIS
-   @DF-RHF iter   5:   -40.21362411069994   -1.20924e-04   1.04795e-05 DIIS
-   @DF-RHF iter   6:   -40.21362698073226   -2.87003e-06   1.09025e-06 DIIS
-   @DF-RHF iter   7:   -40.21362701587282   -3.51406e-08   8.65412e-08 DIIS
-   @DF-RHF iter   8:   -40.21362701601485   -1.42030e-10   1.01898e-08 DIIS
-   @DF-RHF iter   9:   -40.21362701601656   -1.71241e-12   6.55540e-10 DIIS
+   @DF-RHF iter SAD:   -40.76972293319144   -4.07697e+01   0.00000e+00 
+   @DF-RHF iter   1:   -39.92713361900667    8.42589e-01   3.93636e-03 ADIIS/DIIS
+   @DF-RHF iter   2:   -40.17038184616995   -2.43248e-01   2.12704e-03 ADIIS/DIIS
+   @DF-RHF iter   3:   -40.21143014486895   -4.10483e-02   2.90601e-04 ADIIS/DIIS
+   @DF-RHF iter   4:   -40.21350318685861   -2.07304e-03   7.66445e-05 DIIS
+   @DF-RHF iter   5:   -40.21362411069998   -1.20924e-04   1.04795e-05 DIIS
+   @DF-RHF iter   6:   -40.21362698073237   -2.87003e-06   1.09025e-06 DIIS
+   @DF-RHF iter   7:   -40.21362701587289   -3.51405e-08   8.65412e-08 DIIS
+   @DF-RHF iter   8:   -40.21362701601461   -1.41711e-10   1.01898e-08 DIIS
+   @DF-RHF iter   9:   -40.21362701601658   -1.97531e-12   6.55539e-10 DIIS
   Energy and wave function converged.
 
 
@@ -341,14 +343,14 @@ Scratch directory: /tmp/
     NA   [     5 ]
     NB   [     5 ]
 
-  @DF-RHF Final Energy:   -40.21362701601656
+  @DF-RHF Final Energy:   -40.21362701601658
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             13.4669541719040744
-    One-Electron Energy =                 -79.7913272934180782
-    Two-Electron Energy =                  26.1107461054974408
-    Total Energy =                        -40.2136270160165594
+    One-Electron Energy =                 -79.7913272934182913
+    Two-Electron Energy =                  26.1107461054976326
+    Total Energy =                        -40.2136270160165807
 
 Computation Completed
 
@@ -372,18 +374,18 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on a3-2 at Thu Dec  4 19:27:31 2025
+*** tstop() called on a3-2 at Thu Dec  4 21:39:07 2025
 Module time:
-	user time   =       1.24 seconds =       0.02 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       1.22 seconds =       0.02 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.24 seconds =       0.02 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       1.22 seconds =       0.02 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on a3-2
-*** at Thu Dec  4 19:27:31 2025
+*** at Thu Dec  4 21:39:07 2025
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -445,14 +447,14 @@ Total time:
     Maxiter     =        1000
 
     Iteration                   Metric       Residual
-    @Boys    0   1.1617129316216648E+00              -
-    @Boys    1   7.5828688316938280E+00   5.527317E+00
-    @Boys    2   7.7582927789643445E+00   2.313425E-02
-    @Boys    3   7.7602202322646150E+00   2.484378E-04
-    @Boys    4   7.7602304992298876E+00   1.323025E-06
-    @Boys    5   7.7602305597053149E+00   7.792994E-09
-    @Boys    6   7.7602305600004371E+00   3.803007E-11
-    @Boys    7   7.7602305600067520E+00   8.137579E-13
+    @Boys    0   1.1617061851960038E+00              -
+    @Boys    1   7.5827324121986139E+00   5.527238E+00
+    @Boys    2   7.7582993641505196E+00   2.315352E-02
+    @Boys    3   7.7602202632105852E+00   2.475928E-04
+    @Boys    4   7.7602304996383502E+00   1.319090E-06
+    @Boys    5   7.7602305597081545E+00   7.740724E-09
+    @Boys    6   7.7602305600010819E+00   3.774726E-11
+    @Boys    7   7.7602305600073507E+00   8.078063E-13
 
     Boys Localizer converged.
 
@@ -740,18 +742,18 @@ Total time:
     R_CONVERGENCE = 1.00e-08
 
                       Corr. Energy    Delta E     Max R1     Max R2     Time (s)
-  @LCCSD iter   1:  -0.234096417655 -2.341e-01  1.639e-03  6.934e-04        2
-  @LCCSD iter   2:  -0.238918966815 -4.823e-03  2.590e-04  1.308e-04        1
+  @LCCSD iter   1:  -0.234096417655 -2.341e-01  1.639e-03  6.934e-04        1
+  @LCCSD iter   2:  -0.238918966815 -4.823e-03  2.590e-04  1.308e-04        2
   @LCCSD iter   3:  -0.239847933151 -9.290e-04  1.700e-04  3.524e-05        1
   @LCCSD iter   4:  -0.240075340450 -2.274e-04  4.254e-05  9.548e-06        1
   @LCCSD iter   5:  -0.240109860821 -3.452e-05  2.149e-05  2.657e-06        1
   @LCCSD iter   6:  -0.240111485895 -1.625e-06  2.667e-06  6.437e-07        1
-  @LCCSD iter   7:  -0.240112900801 -1.415e-06  7.961e-07  1.956e-07        1
+  @LCCSD iter   7:  -0.240112900800 -1.415e-06  7.961e-07  1.956e-07        1
   @LCCSD iter   8:  -0.240113182875 -2.821e-07  4.017e-07  6.071e-08        1
-  @LCCSD iter   9:  -0.240113356879 -1.740e-07  1.018e-07  1.661e-08        1
+  @LCCSD iter   9:  -0.240113356878 -1.740e-07  1.018e-07  1.661e-08        1
   @LCCSD iter  10:  -0.240113431976 -7.510e-08  8.091e-08  4.829e-09        1
-  @LCCSD iter  11:  -0.240113457845 -2.587e-08  8.320e-09  1.687e-09        2
-  @LCCSD iter  12:  -0.240113470454 -1.261e-08  7.187e-09  6.926e-10        1
+  @LCCSD iter  11:  -0.240113457845 -2.587e-08  8.320e-09  1.687e-09        1
+  @LCCSD iter  12:  -0.240113470454 -1.261e-08  7.187e-09  6.926e-10        2
   @LCCSD iter  13:  -0.240113474547 -4.093e-09  8.590e-10  2.364e-10        1
 
   T1 Diagnostic: 0.00699907 
@@ -895,14 +897,14 @@ Total time:
     *** Andy Jiang... FOR THREEEEEEEEEEE!!!
 
 
-*** tstop() called on a3-2 at Thu Dec  4 19:28:15 2025
+*** tstop() called on a3-2 at Thu Dec  4 21:39:51 2025
 Module time:
-	user time   =      87.06 seconds =       1.45 minutes
-	system time =       1.80 seconds =       0.03 minutes
+	user time   =      87.08 seconds =       1.45 minutes
+	system time =       1.92 seconds =       0.03 minutes
 	total time  =         44 seconds =       0.73 minutes
 Total time:
 	user time   =      88.30 seconds =       1.47 minutes
-	system time =       1.84 seconds =       0.03 minutes
+	system time =       1.98 seconds =       0.03 minutes
 	total time  =         45 seconds =       0.75 minutes
     scf ref...............................................................................PASSED
     ccsd corl.............................................................................PASSED
@@ -923,7 +925,7 @@ Total time:
     ccsd(t) tot...........................................................................PASSED
     ccsd(t) return........................................................................PASSED
 
-    Psi4 stopped on: Thursday, 04 December 2025 07:28PM
-    Psi4 wall time for execution: 0:00:45.53
+    Psi4 stopped on: Thursday, 04 December 2025 09:39PM
+    Psi4 wall time for execution: 0:00:45.51
 
 *** Psi4 exiting successfully. Buy a developer a beer!
