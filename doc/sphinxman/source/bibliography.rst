@@ -787,4 +787,22 @@ Bibliography
    *J. Chem. Theory Comput.* **16**, 1456-1468 (2020)
    https://doi.org/10.1021/acs.jctc.9b00860
 
+.. [Pak:2025:094110]
+   "Fast simulation of soft x-ray near-edge spectra using a relativistic state-interaction approach"
+   S. Pak, M. A. Dada, N. Govind and D. R. Nascimento,
+   *J. Chem. Phys.* **163**, 094110 (2025).
+   https://doi.org/10.1063/5.0276628
+
+.. [vanWullen:1998:392]
+   "Molecular Density Functional Calculations in the Regular Relativistic Approximation: Method, Application to Coinage Metal Diatomics, Hydrides, Fluorides and Chlorides, and Comparison with First-Order Relativistic Calculations."
+   C. van W\ |u_dots|\ llen,
+   *J. Chem. Phys.* **109** (2), 392-399.
+   https://doi.org/10.1063/1.476576
+
+.. [NWChem:2020]
+   "NWChem: Past, present, and future"
+   E. Aprà, E. J. Bylaska, W. A. de Jong, et. al.,
+   *J. Chem. Phys.* **152**, 184102 (2020)
+   https://doi.org/10.1063/5.0004997
+
 >>>>>>> Other build cleanups and documentation updates
