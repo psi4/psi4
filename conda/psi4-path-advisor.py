@@ -69,7 +69,7 @@ def conda_list(*, name: str = None, prefix: str = None) -> Dict:
         proc = run([condaexe, "list", "--json", "--prefix", prefix], text=True, capture_output=True)
     else:
         proc = run([condaexe, "list", "--json"], text=True, capture_output=True)
-    proc.check_return_code()
+    proc.check_returncode()
     return json.loads(proc.stdout)
 
 
