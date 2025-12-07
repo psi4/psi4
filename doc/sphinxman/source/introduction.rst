@@ -285,6 +285,15 @@ coupled-cluster singles and doubles with perturbative triples method
   U. Bozkaya and C. D. Sherrill,   *J. Chem. Phys.* **147**, 044104 (2017).
   (doi: `10.1063/1.4994918 <https://doi.org/10.1063/1.4994918>`_).
 
+Implementation of linear-scaling domain-based local pair natural orbital
+(DLPNO) coupled-cluster theory through perturbative triples (CCSD(T))
+
+* "Accurate and efficient open-source implementation of domain-based local pair natural
+  orbital (DLPNO) coupled-cluster theory using a t1-transformed Hamiltonian"
+  A. Jiang, Z. L. Glick, D. Poole, J. M. Turney, C. D. Sherrill, and H. F. Schaefer III
+  *J. Chem. Phys.* **161**, 082502 (2024).
+  (doi: `10.1063/5.0219963 <https://doi.org/10.1063/5.0219963>`_).
+
 Mukherjee State-Specific Multi-Reference Coupled Cluster (Mk-MRCC)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 |PSIfour| features production-level Mukherjee-style state-specific
@@ -704,9 +713,9 @@ For more tables with capabilities details:
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+
     | CC2                     | RHF/UHF/ROHF      | CONV              | E/G        |            |            |            |            |
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+
-    | CCSD                    | RHF/UHF/ROHF      | CONV/DF/CD        | E/G        |            | E [#f2]_   |            |            |
+    | CCSD                    | RHF/UHF/ROHF      | CONV/DF/CD        | E/G        |            | E [#f2]_   | E          |            |
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+
-    | CCSD(T)                 | RHF/UHF/ROHF      | CONV/DF/CD        | E/G        |            | E [#f2]_   |            |            |
+    | CCSD(T)                 | RHF/UHF/ROHF      | CONV/DF/CD        | E/G        |            | E [#f2]_   | E          |            |
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+
     | A-CCSD(T)               | RHF               | CONV/DF/CD        | E          |            |            |            |            |
     +-------------------------+-------------------+-------------------+------------+------------+------------+------------+------------+

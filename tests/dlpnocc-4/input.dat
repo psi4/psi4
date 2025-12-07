@@ -1,0 +1,132 @@
+#! Decane chain at different pno convergences (databases/bench12.py)
+memory 16 GB
+
+ref_scf                  =    -391.231691174187             #TEST
+
+ref_ccsd_corl_loose      =      -1.584233242090             #TEST
+ref_ccsd_tot_loose       =    -392.815924416277             #TEST
+ref_ccsd_t_corl_loose    =      -1.621212635630             #TEST
+ref_ccsd_t_tot_loose     =    -392.852903809817             #TEST
+
+ref_ccsd_corl_normal     =      -1.582425532072             #TEST
+ref_ccsd_tot_normal      =    -392.814116707135             #TEST
+ref_ccsd_t_corl_normal   =      -1.628517828763             #TEST
+ref_ccsd_t_tot_normal    =    -392.860209003826             #TEST
+
+ref_ccsd_corl_tight      =      -1.582627562127             #TEST
+ref_ccsd_tot_tight       =    -392.814318736864             #TEST
+ref_ccsd_t_corl_tight    =      -1.629986501510             #TEST
+ref_ccsd_t_tot_tight     =    -392.861677676247             #TEST
+
+ref_ccsd_corl_vtight     =      -1.582786356344             #TEST
+ref_ccsd_tot_vtight      =    -392.814477531228             #TEST
+ref_ccsd_t_corl_vtight   =      -1.630333046252             #TEST
+ref_ccsd_t_tot_vtight    =    -392.862024221135             #TEST
+
+molecule decane {
+0 1
+C        0.40267235     0.64977904     0.00000000
+H        1.06210212     0.66547832     0.87441225
+H        1.06210212     0.66547832    -0.87441225
+C       -0.46431471     1.90898497     0.00000000
+H       -1.12377520     1.89323444    -0.87442948
+H       -1.12377520     1.89323444     0.87442948
+C        0.34027906     3.20874936     0.00000000
+H        0.99988197     3.22611504    -0.87444682
+H        0.99988197     3.22611504     0.87444682
+C       -0.52663804     4.46801317     0.00000000
+H       -1.18529556     4.45181950     0.87386445
+H       -1.18529556     4.45181950    -0.87386445
+C        0.28501763     5.76202328     0.00000000
+H       -0.36242574     6.64019737     0.00000000
+H        0.92798572     5.82534568     0.88054822
+H        0.92798572     5.82534568    -0.88054822
+C       -0.40267235    -0.64977904     0.00000000
+H       -1.06210212    -0.66547832     0.87441225
+H       -1.06210212    -0.66547832    -0.87441225
+C        0.46431471    -1.90898497     0.00000000
+H        1.12377520    -1.89323444     0.87442948
+H        1.12377520    -1.89323444    -0.87442948
+C       -0.34027906    -3.20874936     0.00000000
+H       -0.99988197    -3.22611504    -0.87444682
+H       -0.99988197    -3.22611504     0.87444682
+C        0.52663804    -4.46801317     0.00000000
+H        1.18529556    -4.45181950    -0.87386445
+H        1.18529556    -4.45181950     0.87386445
+C       -0.28501763    -5.76202328     0.00000000
+H        0.36242574    -6.64019737     0.00000000
+H       -0.92798572    -5.82534568    -0.88054822
+H       -0.92798572    -5.82534568     0.88054822
+units angstrom
+symmetry c1
+}
+
+set basis def2-SVP
+set freeze_core True
+set scf_type df
+set mp2_type df
+set cc_type df
+set nat_orbs False
+set pno_convergence tight
+set e_convergence 1.0e-8
+set r_convergence 1.0e-8
+
+print('   Testing DLPNO-CCSD(T) loose...')
+set pno_convergence loose
+val = energy('dlpno-ccsd(t)')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                #TEST
+compare_values(ref_ccsd_corl_loose, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')           #TEST
+compare_values(ref_ccsd_tot_loose, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                   #TEST
+compare_values(ref_ccsd_t_corl_loose, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')   #TEST
+compare_values(ref_ccsd_t_tot_loose, variable('CCSD(T) TOTAL ENERGY'), 7, 'ccsd(t) tot')           #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')                        #TEST
+compare_values(ref_ccsd_t_corl_loose, variable('CURRENT CORRELATION ENERGY'), 7, 'ccsd(t) corl')   #TEST
+compare_values(ref_ccsd_t_tot_loose, variable('CURRENT ENERGY'), 7, 'ccsd(t) tot')                 #TEST
+compare_values(ref_ccsd_t_tot_loose, val, 7, 'ccsd(t) return')                                     #TEST
+clean()
+
+print('   Testing DLPNO-CCSD(T) normal...')
+set pno_convergence normal
+val = energy('dlpno-ccsd(t)')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                #TEST
+compare_values(ref_ccsd_corl_normal, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')          #TEST
+compare_values(ref_ccsd_tot_normal, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                  #TEST
+compare_values(ref_ccsd_t_corl_normal, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
+compare_values(ref_ccsd_t_tot_normal, variable('CCSD(T) TOTAL ENERGY'), 7, 'ccsd(t) tot')          #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')                        #TEST
+compare_values(ref_ccsd_t_corl_normal, variable('CURRENT CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
+compare_values(ref_ccsd_t_tot_normal, variable('CURRENT ENERGY'), 7, 'ccsd(t) tot')                #TEST
+compare_values(ref_ccsd_t_tot_normal, val, 7, 'ccsd(t) return')                                    #TEST
+clean()
+
+print('   Testing DLPNO-CCSD(T) tight...')
+set pno_convergence tight
+val = energy('dlpno-ccsd(t)')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                #TEST
+compare_values(ref_ccsd_corl_tight, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')           #TEST
+compare_values(ref_ccsd_tot_tight, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                   #TEST
+compare_values(ref_ccsd_t_corl_tight, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')   #TEST
+compare_values(ref_ccsd_t_tot_tight, variable('CCSD(T) TOTAL ENERGY'), 7, 'ccsd(t) tot')           #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')                        #TEST
+compare_values(ref_ccsd_t_corl_tight, variable('CURRENT CORRELATION ENERGY'), 7, 'ccsd(t) corl')   #TEST
+compare_values(ref_ccsd_t_tot_tight, variable('CURRENT ENERGY'), 7, 'ccsd(t) tot')                 #TEST
+compare_values(ref_ccsd_t_tot_tight, val, 7, 'ccsd(t) return')                                     #TEST
+clean()
+
+print('   Testing DLPNO-CCSD(T) very_tight...')
+set pno_convergence very_tight
+val = energy('dlpno-ccsd(t)')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                                #TEST
+compare_values(ref_ccsd_corl_vtight, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')          #TEST
+compare_values(ref_ccsd_tot_vtight, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                  #TEST
+compare_values(ref_ccsd_t_corl_vtight, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
+compare_values(ref_ccsd_t_tot_vtight, variable('CCSD(T) TOTAL ENERGY'), 7, 'ccsd(t) tot')          #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')                        #TEST
+compare_values(ref_ccsd_t_corl_vtight, variable('CURRENT CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
+compare_values(ref_ccsd_t_tot_vtight, variable('CURRENT ENERGY'), 7, 'ccsd(t) tot')                #TEST
+compare_values(ref_ccsd_t_tot_vtight, val, 7, 'ccsd(t) return')                                    #TEST
+clean()

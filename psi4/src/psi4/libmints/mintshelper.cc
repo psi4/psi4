@@ -28,6 +28,7 @@
 
 #include "x2cint.h"
 #include "gau2grid/gau2grid.h"
+#include "zora.h"
 
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
@@ -1351,6 +1352,8 @@ SharedMatrix MintsHelper::so_kinetic(bool include_perturbations) {
         if (options_.get_str("RELATIVISTIC") == "X2C") {
             // generate so_overlap, so_kinetic, so_potential and cache them
             compute_so_x2c_ints(include_perturbations);
+		} else if (options_.get_str("RELATIVISTIC") == "ZORA") {
+            compute_so_zora_ints(include_perturbations);
         } else {
             cached_oe_ints_[p] = so_kinetic_nr();
         }
@@ -1448,6 +1451,31 @@ void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
             potential_mat->add(dipoles[2]);
         }
     }
+}
+
+void MintsHelper::compute_so_zora_ints(bool include_perturbations) {
+    outfile->Printf(" OEINTS: Using relativistic (ZORA) kinetic integrals.\n");
+
+    if (include_perturbations && options_.get_bool("PERTURB_H")) {
+		throw PSIEXCEPTION("Perturbations of the ZORA hamiltonian are not implemented.");
+    }
+
+    ZORA zoraint(molecule_, basisset_, options_);
+	auto ao_kinetic_zora = std::make_shared<Matrix>("Kinetic", basisset_->nbf(), basisset_->nbf());
+    zoraint.compute(ao_kinetic_zora);
+
+    std::string label(PSIF_SO_S);
+    SharedMatrix so_kinetic_zora;
+
+	if (factory_->nirrep() != 1) {
+		so_kinetic_zora = factory_->create_shared_matrix(label);
+        so_kinetic_zora->apply_symmetry(ao_kinetic_zora, petite_list()->aotoso());
+    } else {
+		so_kinetic_zora = ao_kinetic_zora;
+	}
+
+    // Overwrite cached integrals
+    cached_oe_ints_[std::make_pair(PSIF_SO_T, include_perturbations)] = so_kinetic_zora;
 }
 
 void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
