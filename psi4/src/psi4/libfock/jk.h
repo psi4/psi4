@@ -748,6 +748,12 @@ class PSI_API DirectJK : public JK {
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
 
+    /// Previous iteration J matrix (for IncFock accumulation)
+    std::vector<SharedMatrix> J_prev_;
+
+    /// Previous iteration K matrix (for IncFock accumulation)
+    std::vector<SharedMatrix> K_prev_;
+
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
 
@@ -787,7 +793,7 @@ class PSI_API DirectJK : public JK {
     /**
     * Return number of ERI shell quartets computed during the JK build process.
     */
-    size_t num_computed_shells() override; 
+    size_t num_computed_shells() override;
 
    public:
     // => Constructors < = //
@@ -1237,6 +1243,12 @@ class PSI_API CompositeJK : public JK {
 
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
+
+    /// Previous iteration J matrix (for IncFock accumulation)
+    std::vector<SharedMatrix> J_prev_;
+
+    /// Previous iteration K matrix (for IncFock accumulation)
+    std::vector<SharedMatrix> K_prev_;
 
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;

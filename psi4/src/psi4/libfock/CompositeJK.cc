@@ -234,12 +234,41 @@ void CompositeJK::incfock_setup() {
         if (initial_iteration_ || D_prev_.size() != njk) {
             initial_iteration_ = true;
 
-            D_ref_ = D_ao_;
-            zero();
-        } else { // Otherwise, the iteration is incremental
+            // First iteration: allocate D_ref_ with its own matrices (not sharing with D_ao_)
+            // This avoids clone() overhead on subsequent iterations by reusing D_ref_
+            D_ref_.clear();
             for (size_t jki = 0; jki < njk; jki++) {
-                D_ref_[jki] = D_ao_[jki]->clone();
-                D_ref_[jki]->subtract(D_prev_[jki]);
+                D_ref_.push_back(D_ao_[jki]->clone());
+            }
+            zero();
+
+            // Clear J_prev_/K_prev_ - they will be properly saved in incfock_postiter()
+            // after compute completes. No need to clone zero matrices here.
+            J_prev_.clear();
+            K_prev_.clear();
+        } else { // Otherwise, the iteration is incremental
+            // Compute delta-density: D_ref_ = D_ao_ - D_prev_
+            // Check if D_ref_ shares storage with D_ao_ (from non-incfock iteration)
+            bool sharing = (D_ref_.size() == njk && D_ref_[0].get() == D_ao_[0].get());
+            if (sharing) {
+                // D_ref_ shares pointers with D_ao_, must clone to avoid corrupting D_ao_
+                for (size_t jki = 0; jki < njk; jki++) {
+                    D_ref_[jki] = D_ao_[jki]->clone();
+                    D_ref_[jki]->subtract(D_prev_[jki]);
+                }
+            } else {
+                // D_ref_ has its own storage, can use copy+subtract (avoids allocation)
+                for (size_t jki = 0; jki < njk; jki++) {
+                    D_ref_[jki]->copy(D_ao_[jki]);
+                    D_ref_[jki]->subtract(D_prev_[jki]);
+                }
+            }
+
+            // Restore baseline J/K from previous iteration for accumulation
+            // Sub-algorithms use +=, so J = J_prev + Delta_J, K = K_prev + Delta_K
+            for (size_t jki = 0; jki < njk; jki++) {
+                if (do_J_ && J_prev_.size() > jki) J_ao_[jki]->copy(J_prev_[jki]);
+                if (do_K_ && K_prev_.size() > jki) K_ao_[jki]->copy(K_prev_[jki]);
             }
         }
     } else {
@@ -249,10 +278,46 @@ void CompositeJK::incfock_setup() {
 }
 
 void CompositeJK::incfock_postiter() {
-    // Save a copy of the density for the next iteration
-    D_prev_.clear();
-    for(auto const &Di : D_ao_) {
-        D_prev_.push_back(Di->clone());
+    auto njk = D_ao_.size();
+
+    // Save density for next iteration - reuse existing matrices if possible
+    if (D_prev_.size() == njk) {
+        for (size_t jki = 0; jki < njk; jki++) {
+            D_prev_[jki]->copy(D_ao_[jki]);
+        }
+    } else {
+        D_prev_.clear();
+        for (auto const &Di : D_ao_) {
+            D_prev_.push_back(Di->clone());
+        }
+    }
+
+    // Save J matrices for accumulation in next iteration
+    if (do_J_) {
+        if (J_prev_.size() == njk) {
+            for (size_t jki = 0; jki < njk; jki++) {
+                J_prev_[jki]->copy(J_ao_[jki]);
+            }
+        } else {
+            J_prev_.clear();
+            for (auto const &Ji : J_ao_) {
+                J_prev_.push_back(Ji->clone());
+            }
+        }
+    }
+
+    // Save K matrices for accumulation in next iteration
+    if (do_K_) {
+        if (K_prev_.size() == njk) {
+            for (size_t jki = 0; jki < njk; jki++) {
+                K_prev_[jki]->copy(K_ao_[jki]);
+            }
+        } else {
+            K_prev_.clear();
+            for (auto const &Ki : K_ao_) {
+                K_prev_.push_back(Ki->clone());
+            }
+        }
     }
 }
 

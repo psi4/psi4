@@ -144,6 +144,13 @@ void DirectJK::incfock_setup() {
 
             D_ref_ = D_ao_;
             zero();
+
+            J_prev_.clear();
+            K_prev_.clear();
+            for (size_t jki = 0; jki < njk; jki++) {
+                if (do_J_) J_prev_.push_back(J_ao_[jki]->clone());
+                if (do_K_) K_prev_.push_back(K_ao_[jki]->clone());
+            }
         } else { // Otherwise, the iteration is incremental
             for (size_t jki = 0; jki < njk; jki++) {
                 D_ref_[jki] = D_ao_[jki]->clone();
@@ -157,10 +164,46 @@ void DirectJK::incfock_setup() {
 }
 
 void DirectJK::incfock_postiter() {
-    // Save a copy of the density for the next iteration
-    D_prev_.clear();
-    for(auto const &Di : D_ao_) {
-        D_prev_.push_back(Di->clone());
+    auto njk = D_ao_.size();
+
+    // Save density for next iteration - reuse existing matrices if possible
+    if (D_prev_.size() == njk) {
+        for (size_t jki = 0; jki < njk; jki++) {
+            D_prev_[jki]->copy(D_ao_[jki]);
+        }
+    } else {
+        D_prev_.clear();
+        for (auto const &Di : D_ao_) {
+            D_prev_.push_back(Di->clone());
+        }
+    }
+
+    // Save J matrices for accumulation in next iteration
+    if (do_J_) {
+        if (J_prev_.size() == njk) {
+            for (size_t jki = 0; jki < njk; jki++) {
+                J_prev_[jki]->copy(J_ao_[jki]);
+            }
+        } else {
+            J_prev_.clear();
+            for (auto const &Ji : J_ao_) {
+                J_prev_.push_back(Ji->clone());
+            }
+        }
+    }
+
+    // Save K matrices for accumulation in next iteration
+    if (do_K_) {
+        if (K_prev_.size() == njk) {
+            for (size_t jki = 0; jki < njk; jki++) {
+                K_prev_[jki]->copy(K_ao_[jki]);
+            }
+        } else {
+            K_prev_.clear();
+            for (auto const &Ki : K_ao_) {
+                K_prev_.push_back(Ki->clone());
+            }
+        }
     }
 }
 
@@ -356,7 +399,16 @@ void DirectJK::compute_JK() {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
-            if (density_screening_) ints[thread]->update_density(D_ref_);
+            if (density_screening_ || do_incfock_iter_) ints[thread]->update_density(D_ref_);
+        }
+        // Delta-density screening for INCFOCK with adaptive threshold
+        if (do_incfock_iter_) {
+            ints[0]->update_delta_density(D_ref_, D_ao_);
+            ints[0]->set_incfock_screening(true);
+            for (int thread = 1; thread < df_ints_num_threads_; thread++) {
+                ints[thread]->update_delta_density(D_ref_, D_ao_);
+                ints[thread]->set_incfock_screening(true);
+            }
         }
         if (do_J_) {
             build_JK_matrices(ints, D_ref_, J_ao_, wK_ao_);
@@ -368,7 +420,12 @@ void DirectJK::compute_JK() {
     if (do_J_ || do_K_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
-        if (density_screening_) ints[0]->update_density(D_ref_);
+        if (density_screening_ || do_incfock_iter_) ints[0]->update_density(D_ref_);
+        // Delta-density screening for INCFOCK with adaptive threshold (setup before cloning)
+        if (do_incfock_iter_) {
+            ints[0]->update_delta_density(D_ref_, D_ao_);
+            ints[0]->set_incfock_screening(true);
+        }
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
@@ -401,19 +458,33 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     
     timer_on("build_JK_matrices()");
 
-    // => Zeroing... <= //
-    
-    // Ideally, this wouldnt be here at all
-    // It would be better covered in incfock_setup()
-    // But removing this causes a couple of tests to fail for some reason
-    
     if (!do_incfock_iter_) {
         for (auto& Jmat : J) {
             Jmat->zero();
         }
-    
         for (auto& Kmat : K) {
             Kmat->zero();
+        }
+    } else {
+        // Copy J_prev if available, otherwise zero
+        if (J_prev_.size() == J.size()) {
+            for (size_t jki = 0; jki < J.size(); jki++) {
+                J[jki]->copy(J_prev_[jki]);
+            }
+        } else {
+            for (auto& Jmat : J) {
+                Jmat->zero();
+            }
+        }
+        // Copy K_prev if available, otherwise zero
+        if (K_prev_.size() == K.size()) {
+            for (size_t jki = 0; jki < K.size(); jki++) {
+                K[jki]->copy(K_prev_[jki]);
+            }
+        } else {
+            for (auto& Kmat : K) {
+                Kmat->zero();
+            }
         }
     }
 
@@ -590,6 +661,9 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                         if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
+
+                        // Delta-density screening for incremental Fock build
+                        if (do_incfock_iter_ && !ints[thread]->shell_significant_delta_density(P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
                         // if (thread == 0) timer_on("JK: Ints");
