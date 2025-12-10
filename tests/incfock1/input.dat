@@ -1,0 +1,32 @@
+#! Test INCFOCK with screening=NONE (regression test for null pointer crash fix)
+
+print(' INCFOCK with screening=NONE') #TEST
+
+molecule water {
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+}
+
+# Reference energy from scf_type direct without INCFOCK
+Eref = -76.02665366188853  #TEST
+
+set {
+    basis cc-pvdz
+    scf_type direct
+    screening none
+    incfock true
+    incfock_convergence 1e-10
+    e_convergence 1e-10
+    d_convergence 1e-8
+}
+
+# RHF with INCFOCK + screening=NONE
+set reference rhf
+E = energy('scf')
+compare_values(Eref, E, 8, 'RHF INCFOCK screening=NONE') #TEST
+
+# UHF with INCFOCK + screening=NONE
+set reference uhf
+E = energy('scf')
+compare_values(Eref, E, 8, 'UHF INCFOCK screening=NONE') #TEST
