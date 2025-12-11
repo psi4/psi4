@@ -1,0 +1,34 @@
+#! Test INCFOCK with range-separated functionals (CAM-B3LYP, wB97X)
+#! Regression test for wK accumulation bug fix
+
+print(' INCFOCK with range-separated functionals') #TEST
+
+molecule water {
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+}
+
+# Reference energies from scf_type direct without INCFOCK
+Eref_camb3lyp = -76.39185490520970  #TEST
+Eref_wb97x = -76.40040787136924  #TEST
+
+set {
+    basis cc-pvdz
+    scf_type direct
+    screening schwarz
+    incfock true
+    incfock_convergence 1e-10
+    e_convergence 1e-10
+    d_convergence 1e-8
+}
+
+# CAM-B3LYP with INCFOCK
+E = energy('cam-b3lyp')
+compare_values(Eref_camb3lyp, E, 8, 'CAM-B3LYP INCFOCK') #TEST
+
+clean()
+
+# wB97X with INCFOCK
+E = energy('wb97x')
+compare_values(Eref_wb97x, E, 8, 'wB97X INCFOCK') #TEST

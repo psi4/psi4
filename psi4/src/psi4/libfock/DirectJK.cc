@@ -140,18 +140,22 @@ void DirectJK::incfock_setup() {
 
         // If there is no previous pseudo-density, this iteration is normal
         if (initial_iteration_ || D_prev_.size() != njk) {
-	        initial_iteration_ = true;
+            initial_iteration_ = true;
 
             D_ref_ = D_ao_;
             zero();
 
+            // Initialize prev_ matrices for accumulation
             J_prev_.clear();
             K_prev_.clear();
+            wK_prev_.clear();
             for (size_t jki = 0; jki < njk; jki++) {
                 if (do_J_) J_prev_.push_back(J_ao_[jki]->clone());
                 if (do_K_) K_prev_.push_back(K_ao_[jki]->clone());
+                if (do_wK_) wK_prev_.push_back(wK_ao_[jki]->clone());
             }
-        } else { // Otherwise, the iteration is incremental
+        } else {
+            // Incremental iteration: compute delta-density
             for (size_t jki = 0; jki < njk; jki++) {
                 D_ref_[jki] = D_ao_[jki]->clone();
                 D_ref_[jki]->subtract(D_prev_[jki]);
@@ -202,6 +206,20 @@ void DirectJK::incfock_postiter() {
             K_prev_.clear();
             for (auto const &Ki : K_ao_) {
                 K_prev_.push_back(Ki->clone());
+            }
+        }
+    }
+
+    // Save wK matrices for accumulation in next iteration (range-separated exchange)
+    if (do_wK_) {
+        if (wK_prev_.size() == njk) {
+            for (size_t jki = 0; jki < njk; jki++) {
+                wK_prev_[jki]->copy(wK_ao_[jki]);
+            }
+        } else {
+            wK_prev_.clear();
+            for (auto const &wKi : wK_ao_) {
+                wK_prev_.push_back(wKi->clone());
             }
         }
     }
@@ -395,6 +413,9 @@ void DirectJK::compute_JK() {
     // Passed in as a dummy when J (and/or K) is not built
     std::vector<SharedMatrix> temp;
 
+    // Build wK (long-range exchange for range-separated functionals)
+    // NOTE: J is NOT built here - it will be built with standard ERI in the J/K block below.
+    // This prevents J from being overwritten and ensures correct INCFOCK accumulation.
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
@@ -410,11 +431,8 @@ void DirectJK::compute_JK() {
                 ints[thread]->set_incfock_screening(true);
             }
         }
-        if (do_J_) {
-            build_JK_matrices(ints, D_ref_, J_ao_, wK_ao_);
-        } else {
-            build_JK_matrices(ints, D_ref_, temp, wK_ao_);
-        }
+        // Build wK only, pass wK_prev_ for INCFOCK accumulation
+        build_JK_matrices(ints, D_ref_, temp, wK_ao_, nullptr, &wK_prev_);
     }
 
     if (do_J_ || do_K_) {
@@ -430,11 +448,11 @@ void DirectJK::compute_JK() {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
         if (do_J_ && do_K_) {
-            build_JK_matrices(ints, D_ref_, J_ao_, K_ao_);
+            build_JK_matrices(ints, D_ref_, J_ao_, K_ao_, &J_prev_, &K_prev_);
         } else if (do_J_) {
-            build_JK_matrices(ints, D_ref_, J_ao_, temp);
+            build_JK_matrices(ints, D_ref_, J_ao_, temp, &J_prev_, nullptr);
         } else {
-            build_JK_matrices(ints, D_ref_, temp, K_ao_);
+            build_JK_matrices(ints, D_ref_, temp, K_ao_, nullptr, &K_prev_);
         }
     }
 
@@ -449,42 +467,36 @@ void DirectJK::compute_JK() {
 void DirectJK::postiterations() {}
 
 void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
-                        std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K) {
+                        std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K,
+                        std::vector<SharedMatrix>* J_prev, std::vector<SharedMatrix>* K_prev) {
 
     bool build_J = (!J.empty());
     bool build_K = (!K.empty());
 
     if (!build_J && !build_K) return;
-    
+
     timer_on("build_JK_matrices()");
 
-    if (!do_incfock_iter_) {
+    // Initialize J and K matrices
+    // For INCFOCK: copy from prev matrices if provided, otherwise zero
+    // For non-INCFOCK: always zero
+    if (do_incfock_iter_ && J_prev && J_prev->size() == J.size()) {
+        for (size_t jki = 0; jki < J.size(); jki++) {
+            J[jki]->copy((*J_prev)[jki]);
+        }
+    } else {
         for (auto& Jmat : J) {
             Jmat->zero();
         }
-        for (auto& Kmat : K) {
-            Kmat->zero();
+    }
+
+    if (do_incfock_iter_ && K_prev && K_prev->size() == K.size()) {
+        for (size_t jki = 0; jki < K.size(); jki++) {
+            K[jki]->copy((*K_prev)[jki]);
         }
     } else {
-        // Copy J_prev if available, otherwise zero
-        if (J_prev_.size() == J.size()) {
-            for (size_t jki = 0; jki < J.size(); jki++) {
-                J[jki]->copy(J_prev_[jki]);
-            }
-        } else {
-            for (auto& Jmat : J) {
-                Jmat->zero();
-            }
-        }
-        // Copy K_prev if available, otherwise zero
-        if (K_prev_.size() == K.size()) {
-            for (size_t jki = 0; jki < K.size(); jki++) {
-                K[jki]->copy(K_prev_[jki]);
-            }
-        } else {
-            for (auto& Kmat : K) {
-                Kmat->zero();
-            }
+        for (auto& Kmat : K) {
+            Kmat->zero();
         }
     }
 
