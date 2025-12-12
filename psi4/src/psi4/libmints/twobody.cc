@@ -105,8 +105,6 @@ TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_
     shell_pair_values_ = rhs.shell_pair_values_;
     max_dens_shell_pair_ = rhs.max_dens_shell_pair_;
     max_delta_dens_shell_pair_ = rhs.max_delta_dens_shell_pair_;
-    max_full_dens_ = rhs.max_full_dens_;
-    max_delta_dens_ = rhs.max_delta_dens_;
     incfock_screening_active_ = rhs.incfock_screening_active_;
     shell_pair_exchange_values_ = rhs.shell_pair_exchange_values_;
     function_sqrt_ = rhs.function_sqrt_;
@@ -162,8 +160,7 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
 
 }
 
-void TwoBodyAOInt::update_delta_density(const std::vector<SharedMatrix>& delta_D,
-                                        const std::vector<SharedMatrix>& full_D) {
+void TwoBodyAOInt::update_delta_density(const std::vector<SharedMatrix>& delta_D) {
     // Initialize storage if needed
     if (max_delta_dens_shell_pair_.size() == 0) {
         max_delta_dens_shell_pair_.resize(delta_D.size());
@@ -174,11 +171,7 @@ void TwoBodyAOInt::update_delta_density(const std::vector<SharedMatrix>& delta_D
 
     timer_on("Update Delta Density");
 
-    // Thread-local maxima for reduction
-    double global_max_delta = 0.0;
-    double global_max_full = 0.0;
-
-#pragma omp parallel for reduction(max: global_max_delta, global_max_full)
+#pragma omp parallel for
     for (int M = 0; M < nshell_; M++) {
         for (int N = M; N < nshell_; N++) {
             int m_start = bs1_->shell(M).function_index();
@@ -188,26 +181,17 @@ void TwoBodyAOInt::update_delta_density(const std::vector<SharedMatrix>& delta_D
 
             for (size_t i = 0; i < delta_D.size(); i++) {
                 double** dDp = delta_D[i]->pointer();
-                double** Dp = full_D[i]->pointer();
                 double max_delta = 0.0;
-                double max_full = 0.0;
                 for (int m = m_start; m < m_start + num_m; m++) {
                     for (int n = n_start; n < n_start + num_n; n++) {
                         max_delta = std::max(max_delta, std::abs(dDp[m][n]));
-                        max_full = std::max(max_full, std::abs(Dp[m][n]));
                     }
                 }
                 max_delta_dens_shell_pair_[i][M * nshell_ + N] = max_delta;
                 if (M != N) max_delta_dens_shell_pair_[i][N * nshell_ + M] = max_delta;
-
-                global_max_delta = std::max(global_max_delta, max_delta);
-                global_max_full = std::max(global_max_full, max_full);
             }
         }
     }
-
-    max_delta_dens_ = global_max_delta;
-    max_full_dens_ = global_max_full;
 
     timer_off("Update Delta Density");
 }
@@ -298,9 +282,10 @@ bool TwoBodyAOInt::shell_significant_delta_density(int M, int N, int R, int S) c
     double mn_mn = shell_pair_values_[N * nshell_ + M];
     double rs_rs = shell_pair_values_[S * nshell_ + R];
 
-    // Screening condition: Q_MN * Q_RS * |delta-D|² >= threshold
-    // No adaptive threshold - use fixed threshold for consistent integral computation
-    // Adaptive thresholds that relax near convergence cause oscillation
+    // Use fixed screening threshold (not adaptive).
+    // Adaptive threshold (threshold² = base² × (δD/D)²) was tested but causes slowdown
+    // due to extra computation overhead without improving accuracy.
+    // Fixed threshold provides correct results with better performance.
     return (mn_mn * rs_rs * max_delta_density * max_delta_density >= screening_threshold_squared_);
 }
 

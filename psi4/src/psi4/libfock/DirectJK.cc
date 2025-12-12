@@ -422,12 +422,12 @@ void DirectJK::compute_JK() {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
             if (density_screening_ || do_incfock_iter_) ints[thread]->update_density(D_ref_);
         }
-        // Delta-density screening for INCFOCK with adaptive threshold
+        // Delta-density screening for INCFOCK
         if (do_incfock_iter_) {
-            ints[0]->update_delta_density(D_ref_, D_ao_);
+            ints[0]->update_delta_density(D_ref_);
             ints[0]->set_incfock_screening(true);
             for (int thread = 1; thread < df_ints_num_threads_; thread++) {
-                ints[thread]->update_delta_density(D_ref_, D_ao_);
+                ints[thread]->update_delta_density(D_ref_);
                 ints[thread]->set_incfock_screening(true);
             }
         }
@@ -439,9 +439,9 @@ void DirectJK::compute_JK() {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
         if (density_screening_ || do_incfock_iter_) ints[0]->update_density(D_ref_);
-        // Delta-density screening for INCFOCK with adaptive threshold (setup before cloning)
+        // Delta-density screening for INCFOCK (setup before cloning)
         if (do_incfock_iter_) {
-            ints[0]->update_delta_density(D_ref_, D_ao_);
+            ints[0]->update_delta_density(D_ref_);
             ints[0]->set_incfock_screening(true);
         }
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {

@@ -136,10 +136,6 @@ class PSI_API TwoBodyAOInt {
     std::vector<std::vector<double>> max_dens_shell_pair_;
     /// Max delta-density per shell pair for INCFOCK screening (Outer: density matrix, Inner: shell pairs)
     std::vector<std::vector<double>> max_delta_dens_shell_pair_;
-    /// Global max of full density (for adaptive INCFOCK threshold)
-    double max_full_dens_ = 0.0;
-    /// Global max of delta-density (for adaptive INCFOCK threshold)
-    double max_delta_dens_ = 0.0;
     /// Flag indicating INCFOCK delta-density screening is active
     bool incfock_screening_active_ = false;
     /// Significant unique function pairs, in row-major, lower triangular indexing
@@ -247,11 +243,9 @@ class PSI_API TwoBodyAOInt {
     /// Return the maximum density matrix element per shell pair. Maximum is over density matrices, if multiple set
     double shell_pair_max_density(int M, int N) const;
 
-    /// Update delta-density data for INCFOCK screening with adaptive threshold
+    /// Update delta-density data for INCFOCK screening
     /// @param delta_D The delta density matrices (D_current - D_previous)
-    /// @param full_D The full density matrices (for adaptive threshold scaling)
-    void update_delta_density(const std::vector<SharedMatrix>& delta_D,
-                              const std::vector<SharedMatrix>& full_D);
+    void update_delta_density(const std::vector<SharedMatrix>& delta_D);
     /// Enable/disable INCFOCK delta-density screening
     void set_incfock_screening(bool active) { incfock_screening_active_ = active; }
     /// Check if INCFOCK delta-density screening is active
