@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef __math_test_uhf_h__
-#define __math_test_uhf_h__
+#ifndef PSI4_LIBSCF_SOLVER_UHF_H
+#define PSI4_LIBSCF_SOLVER_UHF_H
 
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libfock/v.h"

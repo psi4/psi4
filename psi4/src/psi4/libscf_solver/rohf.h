@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef __rohf_psi_h__
-#define __rohf_psi_h__
+#ifndef PSI4_LIBSCF_SOLVER_ROHF_H
+#define PSI4_LIBSCF_SOLVER_ROHF_H
 
 #include <vector>
 #include "psi4/libpsio/psio.hpp"
