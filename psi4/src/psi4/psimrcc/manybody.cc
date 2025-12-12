@@ -98,7 +98,7 @@ CCManyBody::~CCManyBody() {
 void CCManyBody::generate_integrals() {
     // CCSort reads the one and two electron integrals
     // and creates the Fock matrices
-    std::make_shared<CCSort>(wfn_, out_of_core_sort);
+    auto sort = std::make_shared<CCSort>(wfn_, out_of_core_sort);
     //   wfn_->blas()->show_storage();
     wfn_->blas()->compute_storage_strategy();
     //   wfn_->blas()->show_storage();

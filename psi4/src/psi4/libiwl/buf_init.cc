@@ -41,7 +41,7 @@
 
 namespace psi {
 
-IWL::IWL() {
+IWL::IWL() : psio_{nullptr}, labels_{nullptr}, values_{nullptr} {
     /*! set up buffer info */
     itap_ = -1;
     bufpos_ = PSIO_ZERO;

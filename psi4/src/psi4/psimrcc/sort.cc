@@ -106,7 +106,10 @@ CCSort::CCSort(std::shared_ptr<PSIMRCCWfn> wfn, SortAlgorithm algorithm)
     delete ints;
 }
 
-CCSort::~CCSort() {}
+CCSort::~CCSort() {
+    // trans.reset();
+    // wfn_.reset();
+}
 
 /**
  * Initialize the CCSort class
