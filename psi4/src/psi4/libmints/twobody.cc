@@ -298,15 +298,10 @@ bool TwoBodyAOInt::shell_significant_delta_density(int M, int N, int R, int S) c
     double mn_mn = shell_pair_values_[N * nshell_ + M];
     double rs_rs = shell_pair_values_[S * nshell_ + R];
 
-    // Adaptive threshold: relax screening when ||delta-D|| << ||D||
-    // This allows skipping more quartets near SCF convergence
-    double adaptive_threshold_sq = screening_threshold_squared_;
-    if (max_full_dens_ > 0.0 && max_delta_dens_ > 0.0) {
-        double ratio = std::max(max_delta_dens_ / max_full_dens_, 1.0e-2);  // floor at 1%
-        adaptive_threshold_sq = screening_threshold_squared_ / (ratio * ratio);
-    }
-
-    return (mn_mn * rs_rs * max_delta_density * max_delta_density >= adaptive_threshold_sq);
+    // Screening condition: Q_MN * Q_RS * |delta-D|² >= threshold
+    // No adaptive threshold - use fixed threshold for consistent integral computation
+    // Adaptive thresholds that relax near convergence cause oscillation
+    return (mn_mn * rs_rs * max_delta_density * max_delta_density >= screening_threshold_squared_);
 }
 
 bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) { 
