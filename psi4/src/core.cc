@@ -1088,7 +1088,7 @@ bool psi4_python_module_initialize() {
     outfile = std::make_shared<PsiOutStream>();
     outfile_name = "stdout";
     std::string fprefix = PSI_DEFAULT_FILE_PREFIX;
-    psi_file_prefix = strdup(fprefix.c_str());
+    psi_file_prefix = strdup(fprefix.c_str()); // strdup mallocs the string. It needs to be freed later. Yes, it's only four bytes. Yes, it still needs to be freed.
 
     // There is only one timer:
     timer_init();
@@ -1165,6 +1165,9 @@ void psi4_python_module_finalize() {
     libint2::finalize();
 
     outfile = std::shared_ptr<PsiOutStream>();
+    if(psi_file_prefix != nullptr) {
+        free(psi_file_prefix);
+    }
     psi_file_prefix = nullptr;
 }
 
