@@ -92,6 +92,12 @@ void DirectJK::common_init() {
         throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
     }
 
+    // Auto-calculate INCFOCK_CONVERGENCE from D_CONVERGENCE if not explicitly set
+    if (incfock_ && !options_["INCFOCK_CONVERGENCE"].has_changed()) {
+        double d_conv = options_.get_double("D_CONVERGENCE");
+        Process::environment.options.set_double("SCF", "INCFOCK_CONVERGENCE", d_conv * 1e-2);
+    }
+
     // other options
     auto screening_type = options_.get_str("SCREENING");
     density_screening_ = screening_type == "DENSITY";
