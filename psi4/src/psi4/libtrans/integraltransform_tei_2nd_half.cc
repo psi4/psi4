@@ -99,7 +99,9 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
     }
 
     if (useIWL_) {
-        delete iwl;
+    if (iwl != nullptr) {
+         delete iwl;
+    }
         iwl = new IWL(psio_.get(), iwlAAIntFile_, tolerance_, 0, 0);
     }
 
