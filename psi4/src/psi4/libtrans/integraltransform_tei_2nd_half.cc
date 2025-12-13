@@ -98,7 +98,12 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
         }
     }
 
-    if (useIWL_) iwl = new IWL(psio_.get(), iwlAAIntFile_, tolerance_, 0, 0);
+    if (useIWL_) {
+    if (iwl != nullptr) {
+         delete iwl;
+    }
+        iwl = new IWL(psio_.get(), iwlAAIntFile_, tolerance_, 0, 0);
+    }
 
     psio_->open(dpdIntFile_, PSIO_OPEN_OLD);
     psio_->open(aHtIntFile_, PSIO_OPEN_OLD);

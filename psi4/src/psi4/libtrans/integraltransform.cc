@@ -298,6 +298,9 @@ IntegralTransform::~IntegralTransform() {
     if (initialized_) {
         dpd_close(myDPDNum_);
         free_int_matrix(cacheList_);
+        if(mosym_ != nullptr) {
+            free(mosym_);
+        }
         free(cacheFiles_);
         free(zeros_);
         free(aQT_);
@@ -308,6 +311,24 @@ IntegralTransform::~IntegralTransform() {
         }
     }
     if (tpdm_buffer_) delete[] tpdm_buffer_;
+
+    for(auto &pair : aIndices_) {
+        if(pair.second != nullptr) {
+            delete[] pair.second;
+        }
+    }
+
+    for(auto &pair : bIndices_) {
+        if(pair.second != nullptr) {
+            delete[] pair.second;
+        }
+    }
+
+    for(int i = 0; i < spaceArray_.size(); i++) {
+        if(spaceArray_[i] != nullptr) {
+            delete[] spaceArray_[i];
+        }
+    }
 }
 
 void IntegralTransform::check_initialized() {

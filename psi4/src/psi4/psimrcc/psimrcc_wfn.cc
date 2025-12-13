@@ -118,6 +118,10 @@ double PSIMRCCWfn::compute_energy() {
 
     _default_psio_lib_->close(PSIF_PSIMRCC_INTEGRALS, 1);
 
+    // Break cyclic dependencies causing nothing to be freed. (caused a huge memory leak.)
+    ccmanybody.reset();
+    blas_.reset();
+
     return energy;
 }
 }
