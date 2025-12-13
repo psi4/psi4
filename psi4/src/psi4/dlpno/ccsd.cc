@@ -266,7 +266,7 @@ void DLPNOCCSD::estimate_memory() {
         } // end if
     } // end ij
 
-    size_t oo, ov, vv, vv_non_proj, vvv, qo, qv, qov, qvv;
+    size_t oo = 0, ov = 0, vv = 0, vv_non_proj = 0, vvv = 0, qo = 0, qv = 0, qov = 0, qvv = 0;
 
     // oo => n_lmo_pairs * (nlmo_{ij}, nlmo_{ij})-like quantities: \beta_{ij}^{kl} (1 case over strong pairs, restricted indexing)
 
@@ -1207,7 +1207,7 @@ template<bool crude> double DLPNOCCSD::filter_pairs(const std::vector<double>& e
         int ij_new = 0;
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             auto &[i, j] = ij_to_i_j_[ij];
-            if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_MP2_) { // If this pair survives, it continues in the computation
+            if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_MP2_ || i == j) { // If this pair survives, it continues in the computation
                 i_j_to_ij_new[i][j] = ij_new;
                 ij_to_i_j_new.push_back(std::make_pair(i, j));
                 ++ij_new;
@@ -1241,7 +1241,7 @@ template<bool crude> double DLPNOCCSD::filter_pairs(const std::vector<double>& e
         int ij_strong = 0, ij_weak = 0;
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             auto &[i, j] = ij_to_i_j_[ij];
-            if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_) { // Pair is strong pair
+            if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_ || i == j) { // Pair is strong pair, diagonal pairs are ALWAYS strong pairs
                 i_j_to_ij_strong_[i][j] = ij_strong;
                 ij_to_i_j_strong_.push_back(std::make_pair(i, j));
                 ++ij_strong;
