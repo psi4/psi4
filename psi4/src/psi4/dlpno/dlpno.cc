@@ -721,7 +721,7 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
                 bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_IJ"));
                 bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > T_CUT_PRE_);
 
-                if (overlap_big || energy_big) {
+                if (overlap_big || energy_big || i == j) {
                     i_j_to_ij_[i].push_back(ij);
                     ij_to_i_j_.push_back(std::make_pair(i, j));
                     ij++;
