@@ -307,7 +307,7 @@ jobs:
       if: runner.os == 'macOS'
       working-directory: ./objdir
       env: 
-        MKL_CBWR: COMPATIBLE
+        MKL_VERBOSE: 1
       run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows
 
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
