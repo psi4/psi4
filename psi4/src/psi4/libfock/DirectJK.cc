@@ -354,9 +354,10 @@ void DirectJK::compute_JK() {
 
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
-        for (int thread = 0; thread < df_ints_num_threads_; thread++) {
-            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
-            if (density_screening_) ints[thread]->update_density(D_ref_);
+        ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
+        if (density_screening_) ints[0]->update_density(D_ref_);
+        for (int thread = 1; thread < df_ints_num_threads_; thread++) {
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
         if (do_J_) {
             build_JK_matrices(ints, D_ref_, J_ao_, wK_ao_);
