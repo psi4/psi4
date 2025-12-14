@@ -310,8 +310,8 @@ jobs:
         MKL_VERBOSE: 1
       run: |
         export MKL_VERBOSE=1
-        ctest --verbose -L quick -j2 --output-on-failure
-        cat ../tests/scf-cholesky-basis/output.dat
+        ctest -L quick -j2 --output-on-failure
+        cat ../tests/scf-cholesky-basis/*
 
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
     - name: Test Addons with Pytest (geomeTRIC)
