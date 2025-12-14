@@ -310,6 +310,7 @@ jobs:
         MKL_VERBOSE: 1
       run: |
         export MKL_VERBOSE=1
+        cat ../tests/scf-cholesky-basis/*
         ctest -L quick -j2 --output-on-failure
         cat ../tests/scf-cholesky-basis/*
 
