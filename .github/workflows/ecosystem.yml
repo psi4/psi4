@@ -308,7 +308,10 @@ jobs:
       working-directory: ./objdir
       env: 
         MKL_VERBOSE: 1
-      run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows
+      run: |
+        export MKL_VERBOSE=1
+        ctest --verbose -L quick -j2 --output-on-failure
+        cat ../tests/scf-cholesky-basis/output.dat
 
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
     - name: Test Addons with Pytest (geomeTRIC)
