@@ -2683,9 +2683,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- DOI threshold for including PAO (u) in domain of LMO (i) during pre-screening !expert -*/
         options.add_double("T_CUT_DO_PRE", 3e-2);
         /*- Basis set coefficient threshold for including basis function (m) in domain of LMO (i) !expert -*/
-        options.add_double("T_CUT_CLMO", 1e-3);
+        options.add_double("T_CUT_CLMO", 1e-4);
         /*- Basis set coefficient threshold for including basis function (n) in domain of PAO (u) !expert -*/
-        options.add_double("T_CUT_CPAO", 1e-3);
+        options.add_double("T_CUT_CPAO", 1e-4);
         /*- Overlap matrix threshold for removing linear dependencies !expert -*/
         options.add_double("S_CUT", 1e-8);
         /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations !expert -*/
