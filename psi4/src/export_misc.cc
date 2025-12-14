@@ -40,5 +40,6 @@ void export_misc(py::module &m) {
     m.def("timer_off", timer_off, "label"_a, "Stop timer with *label*.");
     m.def("tstart", tstart, "Start module-level timer. Only one active at once.");
     m.def("tstop", tstop, "Stop module-level timer. Prints user, system, and total times to outfile.");
+    m.def("collect_timers", collect_timers, "");
     m.def("clean_timers", clean_timers, "Reinitialize timers for independent ``timer.dat`` entries. Vital when earlier independent calc finished improperly.");
 }

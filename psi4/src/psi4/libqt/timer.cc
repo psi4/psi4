@@ -111,6 +111,8 @@ typedef int omp_lock_t;
     } while (0)
 #endif
 
+#include "psi4/pybind11.h"
+
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 #include "psi4/times.h"
@@ -123,6 +125,8 @@ typedef int omp_lock_t;
 #ifndef HZ
 #define HZ 60
 #endif
+
+namespace py = pybind11;
 
 namespace psi {
 
@@ -946,9 +950,12 @@ void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> pri
         case OFF:
             printer->Printf("%s: %10.3fu %10.3fs %10.3fw %6zu calls\n", key.c_str(), timer.get_utime(),
                             timer.get_stime(), wtime, timer.get_n_calls());
+            printf("%s: %10.3fu %10.3fs %10.3fw %6zu calls\n", key.c_str(), timer.get_utime(),
+                            timer.get_stime(), wtime, timer.get_n_calls());
             break;
         case PARALLEL:
             printer->Printf("%s: %10.3fp                         %6zu calls\n", key.c_str(), wtime, timer.get_n_calls());
+            printf("%s: %10.3fp                         %6zu calls\n", key.c_str(), wtime, timer.get_n_calls());
         default:
             break;
     }
@@ -960,9 +967,54 @@ void print_nested_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStre
     for (auto child_iter = children.begin(), end_child_iter = children.end(); child_iter != end_child_iter;
          ++child_iter) {
         printer->Printf("%s", indent.c_str());
+        printf("%s", indent.c_str());
         print_timer(*child_iter, printer, 36 - indent.length());
         print_nested_timer(*child_iter, printer, indent + "| ");
     }
+}
+
+py::dict collect_simple_timer(const Timer_Structure &timer, int align_key_width) {
+    py::dict dtime;
+    std::string key = timer.get_key();
+    if (key.length() < align_key_width) {
+        key.resize(align_key_width, ' ');
+    }
+    double wtime = std::chrono::duration_cast<std::chrono::duration<double>>(timer.get_total_wtime()).count();
+    switch (timer.get_status()) {
+        case ON:
+        case OFF:
+            dtime[py::cast("key")] = key;
+            dtime[py::cast("utime")] = timer.get_utime();
+            dtime[py::cast("stime")] = timer.get_stime();
+            dtime[py::cast("wtime")] = wtime;
+            dtime[py::cast("ncalls")] = timer.get_n_calls();
+            break;
+        case PARALLEL:
+            dtime[py::cast("key")] = key;
+            dtime[py::cast("wtime")] = wtime;
+            dtime[py::cast("ncalls")] = timer.get_n_calls();
+        default:
+            break;
+    }
+    return dtime;
+}
+
+py::list collect_nested_timer(const Timer_Structure &timer, const std::string &indent) {
+    py::list ltime;
+    const std::list<Timer_Structure> &children = timer.get_children();
+    for (auto child_iter = children.begin(), end_child_iter = children.end(); child_iter != end_child_iter;
+         ++child_iter) {
+        auto subdtime = collect_simple_timer(*child_iter, 36 - indent.length());
+        subdtime[py::cast("key")] = indent + subdtime[py::cast("key")].cast<std::string>();
+        auto subltime = collect_nested_timer(*child_iter, indent + "| ");
+        printf("< %s >\n", indent.c_str());
+        py::print("collect_simple_timer", subdtime);
+        //py::print("collect_nested_timer", subltime);
+        //for (auto item : subltime) { ltime.append(item); }
+        ltime.append(subdtime);
+        //ltime.append(subltime);
+    }
+    return ltime;
 }
 
 bool empty_parallel() {
@@ -1041,6 +1093,22 @@ void timer_done() {
 
     omp_unset_lock(&lock_timer);
     omp_destroy_lock(&lock_timer);
+}
+
+py::tuple collect_timers() {
+    extern std::time_t timer_start, timer_end;
+    //omp_set_lock(&lock_timer);
+    extern Timer_Structure root_timer;
+    //root_timer.turn_off();
+
+    auto ltime = collect_nested_timer(root_timer, "");
+    py::list lseq;
+    //dtime[py::cast("nested")] = ltime;
+    //py::print("collect_timers", ltime);
+    py::tuple rets = py::make_tuple(lseq, ltime);
+    //omp_unset_lock(&lock_timer);
+    //omp_destroy_lock(&lock_timer);
+    return rets;
 }
 
 void clean_timers() {
