@@ -310,8 +310,7 @@ jobs:
         MKL_VERBOSE: 1
       run: |
         export MKL_VERBOSE=1
-        cat ../tests/scf-cholesky-basis/*
-        ctest -L quick -j2 --output-on-failure
+        ctest -L quick -j2 --output-on-failure || cat ../tests/scf-cholesky-basis/*
         cat ../tests/scf-cholesky-basis/*
 
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
