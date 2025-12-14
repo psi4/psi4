@@ -56,7 +56,7 @@ namespace psi {
         std::swap(e_vals[i], e_vals[N - i - 1]);
     }
     // Reverse the order of columns of the row-major 2D eigenvector array
-    if (e_vecs != nullptr){
+    if (e_vecs != nullptr) {
         for (int64_t i = 0; i < N; i++) {
             for (int64_t j = 0; j < N / 2; j++) {
                 std::swap(e_vecs[i][j], e_vecs[i][N - j - 1]);
