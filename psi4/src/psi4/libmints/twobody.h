@@ -250,7 +250,7 @@ class PSI_API TwoBodyAOInt {
     void set_incfock_screening(bool active) { incfock_screening_active_ = active; }
     /// Check if INCFOCK delta-density screening is active
     bool incfock_screening_active() const { return incfock_screening_active_; }
-    /// Delta-density screening for INCFOCK (Häser & Ahlrichs 1989)
+    /// Delta-density screening for INCFOCK
     bool shell_significant_delta_density(int M, int N, int R, int S) const;
 
     /// For a given PQ shellpair index, what's the first RS pair that should be processed such

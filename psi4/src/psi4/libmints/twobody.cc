@@ -278,14 +278,8 @@ bool TwoBodyAOInt::shell_significant_delta_density(int M, int N, int R, int S) c
         max_delta_density = std::max({2.0 * dD_MN, 2.0 * dD_RS, dD_MR, dD_MS, dD_NR, dD_NS});
     }
 
-    // Schwarz bounds: Q_MN = sqrt((MN|MN)), Q_RS = sqrt((RS|RS))
     double mn_mn = shell_pair_values_[N * nshell_ + M];
     double rs_rs = shell_pair_values_[S * nshell_ + R];
-
-    // Use fixed screening threshold (not adaptive).
-    // Adaptive threshold (threshold² = base² × (δD/D)²) was tested but causes slowdown
-    // due to extra computation overhead without improving accuracy.
-    // Fixed threshold provides correct results with better performance.
     return (mn_mn * rs_rs * max_delta_density * max_delta_density >= screening_threshold_squared_);
 }
 

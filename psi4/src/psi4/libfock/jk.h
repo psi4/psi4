@@ -735,12 +735,14 @@ class PSI_API DirectJK : public JK {
     bool density_screening_;
 
     // => Incremental Fock build variables <= //
-    
+
     /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
     /// The number of times INCFOCK has been performed (includes resets)
     int incfock_count_;
     bool do_incfock_iter_;
+    /// Whether to use delta-density screening (disabled when Dnorm is small)
+    bool use_incfock_screening_ = true;
 
     /// Previous iteration pseudo-density matrix
     std::vector<SharedMatrix> D_prev_;

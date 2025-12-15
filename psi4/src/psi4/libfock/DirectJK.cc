@@ -403,11 +403,11 @@ void DirectJK::compute_JK() {
         double Dnorm = Process::environment.globals["SCF D NORM"];
         // Do IFB on this iteration?
         do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
-        
+
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
-        
+
         incfock_setup();
-	
+
         timer_off("DirectJK: INCFOCK Preprocessing");
     } else {
         D_ref_ = D_ao_;
@@ -415,7 +415,16 @@ void DirectJK::compute_JK() {
     }
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
-    
+
+    // Disable delta-density screening when Dnorm is small to prevent over-screening
+    // of diffuse shell quartets. Threshold derived from Q^2_floor for diffuse bases.
+    if (incfock_) {
+        constexpr double Q2_floor = 1e-4;
+        double screening_threshold = cutoff_ / Q2_floor;
+        double Dnorm = Process::environment.globals["SCF D NORM"];
+        use_incfock_screening_ = (Dnorm >= screening_threshold);
+    }
+
     // Passed in as a dummy when J (and/or K) is not built
     std::vector<SharedMatrix> temp;
 
@@ -428,16 +437,14 @@ void DirectJK::compute_JK() {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
             if (density_screening_ || do_incfock_iter_) ints[thread]->update_density(D_ref_);
         }
-        // Delta-density screening for INCFOCK
         if (do_incfock_iter_) {
             ints[0]->update_delta_density(D_ref_);
-            ints[0]->set_incfock_screening(true);
+            ints[0]->set_incfock_screening(use_incfock_screening_);
             for (int thread = 1; thread < df_ints_num_threads_; thread++) {
                 ints[thread]->update_delta_density(D_ref_);
-                ints[thread]->set_incfock_screening(true);
+                ints[thread]->set_incfock_screening(use_incfock_screening_);
             }
         }
-        // Build wK only, pass wK_prev_ for INCFOCK accumulation
         build_JK_matrices(ints, D_ref_, temp, wK_ao_, nullptr, &wK_prev_);
     }
 
@@ -445,10 +452,9 @@ void DirectJK::compute_JK() {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
         if (density_screening_ || do_incfock_iter_) ints[0]->update_density(D_ref_);
-        // Delta-density screening for INCFOCK (setup before cloning)
         if (do_incfock_iter_) {
             ints[0]->update_delta_density(D_ref_);
-            ints[0]->set_incfock_screening(true);
+            ints[0]->set_incfock_screening(use_incfock_screening_);
         }
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
