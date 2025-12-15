@@ -72,6 +72,9 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options) {
 
     tstart();
 
+    if (memory_manager != nullptr) {
+        delete memory_manager;
+    }
     memory_manager = new MemoryManager(Process::environment.get_memory());
 
     psio->open(PSIF_MCSCF, PSIO_OPEN_NEW);
@@ -87,6 +90,9 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options) {
 
         // Now, set the reference wavefunction for subsequent codes to use
         wfn = std::make_shared<SCF>(ref_wfn, options, psio);
+        if (moinfo_scf != nullptr) {
+            delete moinfo_scf;
+        }
         moinfo_scf = new psi::MOInfoSCF(*(wfn.get()), options);
         wfn->compute_energy();
 
@@ -98,8 +104,15 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options) {
         throw PSIEXCEPTION("REFERENCE = MCSCF not implemented yet");
     }
 
-    if (moinfo_scf) delete moinfo_scf;
-    if (memory_manager) delete memory_manager;
+    if (moinfo_scf != nullptr) {
+        delete moinfo_scf;
+        moinfo_scf = nullptr;
+    }
+
+    if (memory_manager != nullptr) {
+        delete memory_manager;
+        memory_manager = nullptr;
+    }
 
     close_psi(options);
     psio->close(PSIF_MCSCF, 1);
