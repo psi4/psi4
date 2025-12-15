@@ -433,9 +433,10 @@ void DirectJK::compute_JK() {
     // This prevents J from being overwritten and ensures correct INCFOCK accumulation.
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
-        for (int thread = 0; thread < df_ints_num_threads_; thread++) {
-            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
-            if (density_screening_ || do_incfock_iter_) ints[thread]->update_density(D_ref_);
+        ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
+        if (density_screening_ || do_incfock_iter_) ints[0]->update_density(D_ref_);
+        for (int thread = 1; thread < df_ints_num_threads_; thread++) {
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
         if (do_incfock_iter_) {
             ints[0]->update_delta_density(D_ref_);
