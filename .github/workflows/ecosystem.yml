@@ -35,7 +35,7 @@ jobs:
             #    -D ENABLE_XHOST=OFF
 
           - label: "Conda Clang (M-Intel)"
-            runs-on: macos-14
+            runs-on: macos-15-intel
             python-version: "3.11"
             mkl-version: ""
             platform: osx-64
@@ -306,12 +306,7 @@ jobs:
     - name: Test Addons with CTest (M)
       if: runner.os == 'macOS'
       working-directory: ./objdir
-      env: 
-        MKL_VERBOSE: 1
-      run: |
-        export MKL_VERBOSE=1
-        ctest -L quick -j2 --output-on-failure || cat ../tests/scf-cholesky-basis/*
-        cat ../tests/scf-cholesky-basis/*
+      run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows
 
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
     - name: Test Addons with Pytest (geomeTRIC)
