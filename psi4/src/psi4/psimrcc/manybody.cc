@@ -98,7 +98,12 @@ CCManyBody::~CCManyBody() {
 void CCManyBody::generate_integrals() {
     // CCSort reads the one and two electron integrals
     // and creates the Fock matrices
-    auto sort = std::make_shared<CCSort>(wfn_, out_of_core_sort);
+
+    // We need to assign this to a variable. If we don't, then the make_shared function
+    // will create a pr-value, which may be destroyed at any point. Any assumptions about its
+    // lifetime is undefined behavior. By assigning it to a variable, we create an l-value, whose
+    // lifetime is guaranteed until the end of scope.
+    [[maybe_unused]] auto sort = std::make_shared<CCSort>(wfn_, out_of_core_sort);
     //   wfn_->blas()->show_storage();
     wfn_->blas()->compute_storage_strategy();
     //   wfn_->blas()->show_storage();
