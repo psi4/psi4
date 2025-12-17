@@ -219,7 +219,7 @@ else()
 endif()
 
 if(${ENABLE_OpenTrustRegion})
-    find_package(OpenTrustRegion REQUIRED CONFIG)
+    find_package(OpenTrustRegion COMPONENTS int32 CONFIG REQUIRED)
     get_property(_loc TARGET OpenTrustRegion::OpenTrustRegion PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using OpenTrustRegion${ColourReset}: ${_loc} (version ${OpenTrustRegion_VERSION})")

@@ -1,5 +1,5 @@
 if(${ENABLE_OpenTrustRegion})
-    find_package(OpenTrustRegion CONFIG)
+    find_package(OpenTrustRegion CONFIG COMPONENTS int32)
 
     if(TARGET OpenTrustRegion::OpenTrustRegion)
         get_property(_loc TARGET OpenTrustRegion::OpenTrustRegion PROPERTY LOCATION)
@@ -18,11 +18,12 @@ if(${ENABLE_OpenTrustRegion})
         include(ExternalProject)
         message(STATUS "Suitable OpenTrustRegion could not be located, ${Magenta}Building OpenTrustRegion${ColourReset} instead.")
 
-        set(_otr_dir "share/cmake/OpenTrustRegion")
+        set(_otr_dir "lib/cmake/OpenTrustRegion")
 
         ExternalProject_Add(opentrustregion_external
             DEPENDS lapack_external
-            URL https://github.com/eriksen-lab/OpenTrustRegion/archive/v2.0.0.tar.gz
+            #URL https://github.com/eriksen-lab/OpenTrustRegion/archive/v2.0.0.tar.gz
+            URL https://github.com/loriab/OpenTrustRegion/archive/cmakeconda.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
