@@ -1591,6 +1591,7 @@ void UHF::openorbital_scf() {
   // Compute the energy
   compute_E();
 #endif
+}
 
 #ifdef USING_OpenTrustRegion
 std::pair<SharedMatrix, SharedMatrix> UHF::unpack(const OTR::c_real* matrix, const std::string name, 
