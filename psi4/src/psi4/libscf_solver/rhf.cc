@@ -1297,6 +1297,7 @@ void RHF::openorbital_scf() {
   // Compute the energy
   compute_E();
 #endif
+}
 
 #ifdef USING_OpenTrustRegion
 SharedMatrix RHF::unpack(const OTR::c_real* matrix, const std::string name, const Dimension doccpi, 
