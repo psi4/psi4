@@ -419,7 +419,7 @@ void DirectJK::compute_JK() {
     // Disable delta-density screening when Dnorm is small to prevent over-screening
     // of diffuse shell quartets. Threshold derived from Q^2_floor for diffuse bases.
     if (incfock_) {
-        constexpr double Q2_floor = 1e-4;
+        constexpr double Q2_floor = 1e-5;
         double screening_threshold = cutoff_ / Q2_floor;
         double Dnorm = Process::environment.globals["SCF D NORM"];
         use_incfock_screening_ = (Dnorm >= screening_threshold);
