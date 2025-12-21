@@ -27,13 +27,14 @@ else()
 
     ExternalProject_Add(qcelemental_external
         BUILD_ALWAYS 1
-        URL https://github.com/MolSSI/QCElemental/archive/v0.29.0.tar.gz  # edit in codedeps
-        DOWNLOAD_NO_EXTRACT 1
+        DOWNLOAD_COMMAND ""
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ""
         BUILD_IN_SOURCE 1
-        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install <DOWNLOADED_FILE>
+        # master: INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/ QCElemental.git#egg=proj
+        #INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.50.0#egg=proj  # edit in codedeps
+        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/loriab/QCElemental.git@py314#egg=proj  # edit in codedeps
                                                       --target=${_install_lib}
                                                       --no-deps
                                                       #-v

@@ -81,22 +81,43 @@ expected_properties = {
   "ccsd_prt_pr_total_energy": expected_return_result,
 }
 
-json_ret = psi4.schema_wrapper.run_qcschema(json_data)
+import sys
+if sys.version_info >= (3, 14):
+    try:
+        json_ret = psi4.schema_wrapper.run_qcschema(json_data)
+    except RuntimeError as err:
+        psi4.compare(True, True, "Py314 fail error")
+        psi4.compare(True, "pydantic.v1 is unavailable" in str(err), "Py314 fail reason")
+    else:
+        psi4.compare(True, False, "wrong err")
 
-with open("output.json", "w") as ofile:                                                    #TEST
-    json.dump(json_ret.json(), ofile, indent=2)                                                   #TEST
+    #json_ret = psi4.schema_wrapper.run_qcschema(json_data)
+    #print(json_ret)
+    ## note this is a v2 FailedOp
+    #psi4.compare(True, json_ret.error.error_type == "RuntimeError", "Py314 fail object")
+    #psi4.compare(True, "pydantic.v1 is unavailable" in json_ret.error.error_message, "Py314 fail reason")
 
-psi4.compare_integers(True, json_ret.success, "JSON Success")                           #TEST
-psi4.compare_values(expected_return_result, json_ret.return_result, 5, "Return Value")  #TEST
-psi4.compare_integers(True, "MAYER INDICES" in json_ret.extras["qcvars"], "Mayer Indices Found")                           #TEST
+    json_ret = psi4.schema_wrapper.run_qcschema(json_data, return_dict=True)
+else:
+
+    json_ret = psi4.schema_wrapper.run_qcschema(json_data)
+
+    with open("output.json", "w") as ofile:                                                    #TEST
+        json.dump(json_ret.json(), ofile, indent=2)                                                   #TEST
+
+    json_ret = json_ret.dict()
+
+psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
+psi4.compare_values(expected_return_result, json_ret["return_result"], 5, "Return Value")  #TEST
+psi4.compare_integers(True, "MAYER INDICES" in json_ret["extras"]["qcvars"], "Mayer Indices Found")                           #TEST
 
 for k in expected_properties.keys():                                                       #TEST
     if k == "scf_iterations" and psi4.core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") != "INTERNAL":
-        psi4.compare(True, json_ret.properties.scf_iterations < 16, k.upper())  #TEST
+        psi4.compare(True, json_ret["properties"]["scf_iterations"] < 16, k.upper())  #TEST
     else:
-        psi4.compare_values(expected_properties[k], getattr(json_ret.properties, k), 5, k.upper())   #TEST
+        psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
 
-assert "Density-fitted CCSD" in json_ret.stdout #TEST
+assert "Density-fitted CCSD" in json_ret["stdout"]  #TEST
 
 # Expected output with exact MP2
 expected_return_result = -76.2283674281634
@@ -127,18 +148,18 @@ json_data["model"] = {
 json_data["keywords"]["scf_type"] = "pk"
 json_data["keywords"]["mp2_type"] = "conv"
 json_data["extras"] = {"current_qcvars_only": True}
-json_ret = psi4.schema_wrapper.run_qcschema(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data, return_dict=True)
 
 #print(json.dumps(json_ret.json(), indent=2))
 #import pprint
 #pprint.pprint(json_ret.dict(), width=200)
 
-psi4.compare_integers(True, json_ret.success, "JSON Success")                           #TEST
-psi4.compare_values(expected_return_result, json_ret.return_result, 5, "Return Value")  #TEST
-psi4.compare_integers(True, "MAYER INDICES" in json_ret.extras["qcvars"], "Mayer Indices Found")                           #TEST
+psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
+psi4.compare_values(expected_return_result, json_ret["return_result"], 5, "Return Value")  #TEST
+psi4.compare_integers(True, "MAYER INDICES" in json_ret["extras"]["qcvars"], "Mayer Indices Found")                           #TEST
 
 for k in expected_properties.keys():                                                       #TEST
-    psi4.compare_values(expected_properties[k], getattr(json_ret.properties, k), 5, k.upper())   #TEST
+    psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
 
-assert "Ugur Bozkaya" in json_ret.stdout
+assert "Ugur Bozkaya" in json_ret["stdout"]
 

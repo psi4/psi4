@@ -3,10 +3,11 @@
 import numpy as np
 import psi4
 import json
+import pprint
 
 # Generate JSON data
 json_data = {
-  "schema_name": "qc_schema_input",
+  "schema_name": "qcschema_input",
   "schema_version": 1,
   "molecule": {
     "geometry": [
@@ -120,20 +121,17 @@ expected_properties = {
 }
 
 
-## with deprecated `run_json`
+## with removed `run_json`
 
-json_ret = psi4.json_wrapper.run_json(json_data)
+try:
+    json_ret = psi4.schema_wrapper.run_json(json_data)
+except psi4.driver.p4util.exceptions.UpgradeHelper:
+    psi4.compare(True, True, "run_json failed")
+else:
+    psi4.compare(True, False, "run_json failed")
 
-with open("output.json", "w") as ofile:                                                    #TEST
-    json.dump(json_ret, ofile, indent=2)                                                   #TEST
-
-psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
-psi4.compare_strings("qcschema_output", json_ret["schema_name"], "Schema Name")            #TEST
-for k in expected_return_result.keys():                                                    #TEST
-    psi4.compare_arrays(expected_return_result[k], json_ret["return_result"][k], 5, "Result: " + k.upper())  #TEST
-
-for k in expected_properties.keys():                                                       #TEST
-    psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
+# with open("output.json", "w") as ofile:                                                    #TEST
+#     json.dump(json_ret, ofile, indent=2)                                                   #TEST
 
 
 ## with current `run_qcschema`
@@ -151,7 +149,9 @@ expected_return_result["quadrupole"] = np.array(expected_return_result["quadrupo
 expected_return_result["wiberg_lowdin_indices"] = np.array(expected_return_result["wiberg_lowdin_indices"]).reshape((3, 3))
 expected_return_result["mayer_indices"] = np.array(expected_return_result["mayer_indices"]).reshape((3, 3))
 
-json_ret = psi4.schema_wrapper.run_qcschema(json_data).dict()
+json_ret = psi4.schema_wrapper.run_qcschema(json_data, return_dict=True)
+
+pprint.pprint(json_ret, width=200)
 
 # can't write msgpack arrays to json
 
