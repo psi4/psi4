@@ -430,11 +430,10 @@ void DirectJK::compute_JK() {
 
     // Build wK (long-range exchange for range-separated functionals)
     // NOTE: J is NOT built here - it will be built with standard ERI in the J/K block below.
-    // This prevents J from being overwritten and ensures correct INCFOCK accumulation.
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
-        if (density_screening_ || do_incfock_iter_) ints[0]->update_density(D_ref_);
+        if (density_screening_ && !do_incfock_iter_) ints[0]->update_density(D_ref_);
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
@@ -452,7 +451,7 @@ void DirectJK::compute_JK() {
     if (do_J_ || do_K_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
-        if (density_screening_ || do_incfock_iter_) ints[0]->update_density(D_ref_);
+        if (density_screening_ && !do_incfock_iter_) ints[0]->update_density(D_ref_);
         if (do_incfock_iter_) {
             ints[0]->update_delta_density(D_ref_);
             ints[0]->set_incfock_screening(use_incfock_screening_);
