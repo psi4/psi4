@@ -31,7 +31,7 @@ from typing import Dict, List, Union
 
 import numpy as np
 import qcengine as qcng
-from qcelemental.models import AtomicInput
+from qcelemental.models.v2 import AtomicInput
 
 from psi4 import core
 

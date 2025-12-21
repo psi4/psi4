@@ -1,3 +1,4 @@
+import sys
 import json
 import pprint
 
@@ -20,6 +21,10 @@ import psi4
 #    pprint.pprint(atres.dict())
 
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.smoke]
+
+
+_sch_name = {1: "qcschema_output", 2: "qcschema_atomic_result"}
+_ispy314 = sys.version_info >= (3, 14)
 
 
 @uusing("gdma")
@@ -374,11 +379,12 @@ def test_pcmsolver():
                                "Polarization energy (PCM, separate algorithm)")
 
 
+@pytest.mark.parametrize("schver", [pytest.param(1, marks=[pytest.mark.skipif(_ispy314, reason="Py314+QCSk1")]), pytest.param(2)])
 @pytest.mark.parametrize("integral_package", [
     pytest.param("libint2"),
     pytest.param("simint", marks=using("simint")),
 ])
-def test_integrals(integral_package):
+def test_integrals(integral_package, schver):
     """scf5"""
     #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set and using ERD integrals.
 
@@ -389,35 +395,56 @@ def test_integrals(integral_package):
     Eref_rohf_can = -149.65170765757173
     Eref_rohf_df = -149.65160796208073
 
-    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["O", "O"], "geometry": [0.0, 0.0, -1.0393493690018054, 0.0, 0.0, 1.0393493690018054], "name": "O2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [15.99491461957, 15.99491461957], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [8, 8], "mass_numbers": [16, 16], "fragments": [[0, 1]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ"}, "keywords": {"df_basis_scf": "CC-PVTZ-JKFIT", "print": 2, "scf__scf_type": "DIRECT"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
+    def set_int_pkg(din):
+        if schver == 1:
+            din["keywords"]["integral_package"] = integral_package
+        elif schver == 2:
+            din["specification"]["keywords"]["integral_package"] = integral_package
 
-    datin = json.loads(jatin)
-    datin["keywords"]["integral_package"] = integral_package
+    jatin = {}
+    jatin[1] = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["O", "O"], "geometry": [0.0, 0.0, -1.0393493690018054, 0.0, 0.0, 1.0393493690018054], "name": "O2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [15.99491461957, 15.99491461957], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [8, 8], "mass_numbers": [16, 16], "fragments": [[0, 1]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ"}, "keywords": {"df_basis_scf": "CC-PVTZ-JKFIT", "print": 2, "scf__scf_type": "DIRECT"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
+    jatin[2] = """{"id": null, "schema_name": "qcschema_atomic_input", "schema_version": 2, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 3, "validated": true, "symbols": ["O", "O"], "geometry": [0.0, 0.0, -1.039349369001805, 0.0, 0.0, 1.039349369001805], "name": "O2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [15.99491461957, 15.99491461957], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [8, 8], "mass_numbers": [16, 16], "fragments": [[0, 1]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "0.50a2.dev18+g6966fbe55.d20251126", "routine": "qcelemental.molparse.from_string"}, "extras": {}}, "specification": {"schema_name": "qcschema_atomic_specification", "keywords": {"df_basis_scf": "CC-PVTZ-JKFIT", "print": 2, "scf__reference": "RHF", "scf__scf_type": "DIRECT"}, "program": "", "driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}}, "provenance": {"creator": "Psi4", "version": "1.11a1.dev1", "routine": "psi4.driver.p4util.procutil"}}"""
+
+    datin = json.loads(jatin[schver])
+    set_int_pkg(datin)
     atres = psi4.schema_wrapper.run_qcschema(datin)
+    assert atres.success, pprint.pprint(atres.model_dump(), width=200)
+    assert atres.schema_version == schver
+    assert atres.schema_name == _sch_name[schver]
     assert psi4.compare_values(Eref_sing_can, atres.return_result, 6, 'Singlet Direct RHF energy')
 
-    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["O", "O"], "geometry": [0.0, 0.0, -1.0393493690018054, 0.0, 0.0, 1.0393493690018054], "name": "O2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [15.99491461957, 15.99491461957], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [8, 8], "mass_numbers": [16, 16], "fragments": [[0, 1]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ"}, "keywords": {"df_basis_scf": "CC-PVTZ-JKFIT", "print": 2, "scf_type": "df", "reference": "uhf"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
+    jatin[1] = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["O", "O"], "geometry": [0.0, 0.0, -1.0393493690018054, 0.0, 0.0, 1.0393493690018054], "name": "O2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [15.99491461957, 15.99491461957], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [8, 8], "mass_numbers": [16, 16], "fragments": [[0, 1]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ"}, "keywords": {"df_basis_scf": "CC-PVTZ-JKFIT", "print": 2, "scf_type": "df", "reference": "uhf"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
+    jatin[2] = """{"id": null, "schema_name": "qcschema_atomic_input", "schema_version": 2, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 3, "validated": true, "symbols": ["O", "O"], "geometry": [0.0, 0.0, -1.039349369001805, 0.0, 0.0, 1.039349369001805], "name": "O2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [15.99491461957, 15.99491461957], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [8, 8], "mass_numbers": [16, 16], "fragments": [[0, 1]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "0.50a2.dev18+g6966fbe55.d20251126", "routine": "qcelemental.molparse.from_string"}, "extras": {}}, "specification": {"schema_name": "qcschema_atomic_specification", "keywords": {"df_basis_scf": "CC-PVTZ-JKFIT", "print": 2, "scf__reference": "UHF", "scf__scf_type": "DF"}, "program": "", "driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}}, "provenance": {"creator": "Psi4", "version": "1.11a1.dev1", "routine": "psi4.driver.p4util.procutil"}}"""
 
-    datin = json.loads(jatin)
-    datin["keywords"]["integral_package"] = integral_package
+    datin = json.loads(jatin[schver])
+    set_int_pkg(datin)
     atres = psi4.schema_wrapper.run_qcschema(datin)
+    assert atres.success, pprint.pprint(atres.model_dump(), width=200)
+    assert atres.schema_version == schver
+    assert atres.schema_name == _sch_name[schver]
     assert psi4.compare_values(Eref_sing_df, atres.return_result, 6, 'Singlet DF UHF energy')
 
-    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["O", "O"], "geometry": [0.0, 0.0, -1.0393493690018054, 0.0, 0.0, 1.0393493690018054], "name": "O2", "molecular_charge": 0.0, "molecular_multiplicity": 3, "masses": [15.99491461957, 15.99491461957], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [8, 8], "mass_numbers": [16, 16], "fragments": [[0, 1]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ"}, "keywords": {"df_basis_scf": "CC-PVTZ-JKFIT", "print": 2, "scf_type": "out_of_core", "reference": "rohf"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
+    jatin[1] = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["O", "O"], "geometry": [0.0, 0.0, -1.0393493690018054, 0.0, 0.0, 1.0393493690018054], "name": "O2", "molecular_charge": 0.0, "molecular_multiplicity": 3, "masses": [15.99491461957, 15.99491461957], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [8, 8], "mass_numbers": [16, 16], "fragments": [[0, 1]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ"}, "keywords": {"df_basis_scf": "CC-PVTZ-JKFIT", "print": 2, "scf_type": "out_of_core", "reference": "rohf"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
+    jatin[2] = """{"id": null, "schema_name": "qcschema_atomic_input", "schema_version": 2, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 3, "validated": true, "symbols": ["O", "O"], "geometry": [0.0, 0.0, -1.039349369001805, 0.0, 0.0, 1.039349369001805], "name": "O2", "molecular_charge": 0.0, "molecular_multiplicity": 3, "masses": [15.99491461957, 15.99491461957], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [8, 8], "mass_numbers": [16, 16], "fragments": [[0, 1]], "fragment_charges": [0.0], "fragment_multiplicities": [3], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "0.50a2.dev18+g6966fbe55.d20251126", "routine": "qcelemental.molparse.from_string"}, "extras": {}}, "specification": {"schema_name": "qcschema_atomic_specification", "keywords": {"df_basis_scf": "CC-PVTZ-JKFIT", "guess": "CORE", "print": 2, "scf__reference": "ROHF", "scf__scf_type": "OUT_OF_CORE"}, "program": "", "driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}}, "provenance": {"creator": "Psi4", "version": "1.11a1.dev1", "routine": "psi4.driver.p4util.procutil"}}"""
 
-    datin = json.loads(jatin)
-    datin["keywords"]["integral_package"] = integral_package
+    datin = json.loads(jatin[schver])
+    set_int_pkg(datin)
     atres = psi4.schema_wrapper.run_qcschema(datin)
+    assert atres.success, pprint.pprint(atres.model_dump(), width=200)
+    assert atres.schema_version == schver
+    assert atres.schema_name == _sch_name[schver]
     assert psi4.compare_values(Eref_rohf_can, atres.return_result, 6, 'Triplet Disk ROHF energy')
 
 
-def test_json():
+@pytest.mark.parametrize("schver", [1, 2])
+def test_json(schver):
     """json/energy"""
 
     import numpy as np
 
     # Generate JSON data
     json_input = {
+      1: {
         "schema_name": "qcschema_input",
         "schema_version": 1,
         "molecule": {
@@ -430,13 +457,30 @@ def test_json():
             "basis": "sto-3g"
         },
         "keywords": {}
+      },
+      2: {
+        "schema_name": "qcschema_atomic_input",
+        "schema_version": 2,
+        "molecule": {
+            "symbols": ["He", "He"],
+            "geometry": [0, 0, -1, 0, 0, 1]
+        },
+        "specification": {
+        "driver": "gradient",
+        "model": {
+            "method": "SCF",
+            "basis": "sto-3g"
+        },
+        "keywords": {}
+        },
+      },
     }
 
-    json_ret = psi4.schema_wrapper.run_qcschema(json_input)
-    json_ret = json_ret.dict()
-    pprint.pprint(json_ret)
+    json_ret = psi4.schema_wrapper.run_qcschema(json_input[schver], return_dict=True)
 
-    assert psi4.compare_integers(True, json_ret["success"], "Success")
+    assert psi4.compare_integers(True, json_ret["success"], "Success"), pprint.pprint(json_ret, width=200)
+    assert json_ret["schema_version"] == schver
+    assert json_ret["schema_name"] == _sch_name[schver]
     assert psi4.compare_values(-5.474227786274896, json_ret["properties"]["return_energy"], 4, "SCF ENERGY")
 
     bench_gradient = np.array([[0.0, 0.0, 0.32746933], [0.0, 0.0, -0.32746933]])

@@ -29,20 +29,21 @@
 __all__ = [
     "AtomicComputer",
     "BaseComputer",
+    "ComputerEnum",
     "EnergyGradientHessianWfnReturn",
 ]
 
 import abc
 import copy
 import logging
+from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
-from pydantic.v1 import Field, validator
+from pydantic import Field, field_validator
 
 import qcelemental as qcel
-from qcelemental.models import AtomicInput, AtomicResult, DriverEnum
-from qcelemental.models.results import AtomicResultProtocols
-qcel.models.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries for high-res findif
+from qcelemental.models.v2 import AtomicInput, AtomicResult, DriverEnum, AtomicProtocols, ProtoModel
+qcel.models.v2.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries for high-res findif
 import qcengine as qcng
 
 from psi4 import core
@@ -57,7 +58,7 @@ logger = logging.getLogger(__name__)
 EnergyGradientHessianWfnReturn = Union[float, core.Matrix, Tuple[Union[float, core.Matrix], core.Wavefunction]]
 
 
-class BaseComputer(qcel.models.ProtoModel):
+class BaseComputer(qcel.models.v2.ProtoModel):
     """Base class for "computers" that plan, run, and process QC tasks."""
 
     @abc.abstractmethod
@@ -68,9 +69,7 @@ class BaseComputer(qcel.models.ProtoModel):
     def plan(self):
         pass
 
-    class Config(qcel.models.ProtoModel.Config):
-        extra = "allow"
-        allow_mutation = True
+    model_config = ProtoModel._merge_config_with(extra="allow", frozen=False)
 
 
 class AtomicComputer(BaseComputer):
@@ -82,32 +81,28 @@ class AtomicComputer(BaseComputer):
     driver: DriverEnum = Field(..., description="The resulting type of computation: energy, gradient, hessian, properties."
         "Note for finite difference that this should be the target driver, not the means driver.")
     keywords: Dict[str, Any] = Field(default_factory=dict, description="The keywords to use in the computation.")
-    protocols: Optional[Union[AtomicResultProtocols, Dict[str, Any]]] = Field({"stdout": True}, description="Output modifications.")
+    protocols: Optional[Union[AtomicProtocols, Dict[str, Any]]] = Field({"stdout": True}, description="Output modifications.")
     compute_tag: str = Field("*", description="The tags to pass along to compute managers.")
     compute_priority: Union[int, str] = Field(1, description="The priority of a Task; higher priority will be pulled first. {high:2, normal:1, low:0}")
     owner_group: Optional[str] = Field(None, description="group in the chown sense.")
     computed: bool = Field(False, description="Whether quantum chemistry has been run on this task.")
-    result: Any = Field(default_factory=dict, description=":py:class:`~qcelemental.models.AtomicResult` return.")
+    result: Any = Field(default_factory=dict, description=":py:class:`~qcelemental.models.v2.AtomicResult` return.")
     result_id: Optional[str] = Field(None, description="The optional ID for the computation.")
     # remove 2026. QCFractal is showing the upgrade path
     tag: str = Field(None, description="Deprecated version of compute_tag")
     priority: Union[int, str] = Field(None, description="Deprecated version of compute_priority")
 
-    class Config(qcel.models.ProtoModel.Config):
-        pass
+    #model_config = ProtoModel._merge_config_with()
 
-    # v2: @field_validator("basis")
-    @validator("basis")
+    @field_validator("basis")
     def set_basis(cls, basis):
         return basis.lower()
 
-    # v2: @field_validator("method")
-    @validator("method")
+    @field_validator("method")
     def set_method(cls, method):
         return method.lower()
 
-    # v2: @field_validator("keywords")
-    @validator("keywords")
+    @field_validator("keywords")
     def set_keywords(cls, keywords):
         return copy.deepcopy(keywords)
 
@@ -115,17 +110,19 @@ class AtomicComputer(BaseComputer):
         """Form QCSchema input from member data."""
 
         atomic_model = AtomicInput(**{
-            "molecule": self.molecule.to_schema(dtype=2),
-            "driver": self.driver,
-            "model": {
-                "method": self.method,
-                "basis": self.basis
-            },
-            "keywords": self.keywords,
-            "protocols": self.protocols,
-            "extras": {
-                "psiapi": True,
-                "wfn_qcvars_only": True,
+            "molecule": self.molecule.to_schema(dtype=3),
+            "specification": {
+                "driver": self.driver,
+                "model": {
+                    "method": self.method,
+                    "basis": self.basis
+                },
+                "keywords": self.keywords,
+                "protocols": self.protocols,
+                "extras": {
+                    "psiapi": True,
+                    "wfn_qcvars_only": True,
+                },
             },
         })
 
@@ -141,10 +138,10 @@ class AtomicComputer(BaseComputer):
         if client:
             self.computed = True
 
-            from qcelemental.models import Molecule
+            from qcelemental.models.v2 import Molecule
 
             # Build the molecule
-            mol = Molecule(**self.molecule.to_schema(dtype=2))
+            mol = Molecule(**self.molecule.to_schema(dtype=3))
 
             # remove the bargaining in 2026. passing so that QCFractal's upgrade guidance is raised
             oldargs = {}
@@ -201,12 +198,12 @@ class AtomicComputer(BaseComputer):
         )
         # ... END
 
-        #pp.pprint(self.result.dict())
+        #pp.pprint(self.result.model_dump())
         #print(f"... JSON returns {self.result.success} >>>")
         core.set_output_file(gof, True)
         core.reopen_outfile()
-        logger.debug(pp.pformat(self.result.dict()))
-        if stdout := self.result.dict()["stdout"]:
+        logger.debug(pp.pformat(self.result.model_dump()))
+        if stdout := self.result.model_dump()["stdout"]:
             core.print_out(_drink_filter(stdout))
         self.computed = True
 
@@ -272,3 +269,21 @@ def _drink_filter(stdout: str) -> str:
     stdout = stdout.replace("\n*** Psi4 exiting successfully. Buy a developer a beer!", "")
     stdout = stdout.replace("\n*** Psi4 encountered an error. Buy a developer more coffee!", "")
     return stdout
+
+class ComputerEnum(str, Enum):
+    """Allowed driver compute layers."""
+
+    def computer(self) -> BaseComputer:
+        """Return class specified by enum."""
+
+        if self == "atomic":
+            return AtomicComputer
+        elif self == "composite":
+            from .driver_cbs import CompositeComputer
+            return CompositeComputer
+        elif self == "finitedifference":
+            from .driver_findif import FiniteDifferenceComputer
+            return FiniteDifferenceComputer
+        elif self == "manybody":
+            from .driver_nbody import ManyBodyComputer
+            return ManyBodyComputer
