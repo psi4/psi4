@@ -1,3 +1,5 @@
+import pprint
+import sys
 import re
 import pytest
 import numpy as np
@@ -5,6 +7,9 @@ from qcelemental.testing import compare, compare_values
 import psi4
 
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.nbody]
+
+_sch_name = {1: "qcschema_output", 2: "qcschema_atomic_result"}
+_ispy314 = sys.version_info >= (3, 14)
 
 _tot_cp_ene = -155.40761029
 _ie_cp_ene = -0.00172611
@@ -137,7 +142,10 @@ H   0.000000   0.000000   0.627352
 H   0.000000   0.000000   3.963929
 """)
 
-    atin = {
+    # nbody_number arbitrarily chosen to split among QCSchema v1/v2
+    if nbody_number == 3:
+      schver = 1
+      atin = {
         "driver": driver,
         "model": {
             "method": "mp2",
@@ -150,14 +158,38 @@ H   0.000000   0.000000   3.963929
                 "return_total_data": return_total_data,
             },
         },
-    }
+      }
+    else:
+      schver = 2
+      atin = {
+       "molecule": eneyne.to_schema(dtype=3),
+       "specification": {
+        "driver": driver,
+        "model": {
+            "method": "mp2",
+            "basis": "cc-pvdz",
+        },
+        "keywords": {
+            "function_kwargs": {
+                "bsse_type": bsse_type,
+                "return_total_data": return_total_data,
+            },
+        },
+       },
+      }
+
+    if _ispy314 and schver == 1:
+        pytest.skip(reason="Py314+QCSk1")
 
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
         atin["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
 
     ret = psi4.schema_wrapper.run_qcschema(atin)
 
+    assert ret.success, pprint.pprint(ret.dict(), width=200)
+    assert ret.schema_version == schver
+    assert ret.schema_name == _sch_name[schver]
+
     assert compare_values(return_result, ret.return_result, atol=1.e-6, label="manybody")
     assert compare(nbody_number, ret.extras["qcvars"]["NBODY NUMBER"], label="nbody number")
     assert re.search(_stdouts[stdoutkey], ret.stdout, re.MULTILINE), f"N-Body pattern not found: {_stdouts[stdoutkey]}"
-
