@@ -32,7 +32,6 @@ from .constants import *
 # isort: split
 
 from . import aliases, diatomic, frac, gaussian_n
-from . import schema_wrapper as json_wrapper  # Deprecate in 1.4
 from . import schema_wrapper as schema_wrapper
 from . import wrapper_autofrag, wrapper_database
 from .driver import *

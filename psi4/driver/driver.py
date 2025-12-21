@@ -454,7 +454,7 @@ def energy(name, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("energy", lowername, molecule, **kwargs)
     logger.debug('ENERGY PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -603,7 +603,7 @@ def gradient(name, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("gradient", lowername, molecule, **kwargs)
     logger.debug('GRADIENT PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -762,7 +762,7 @@ def properties(*args, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("properties", lowername, molecule, **kwargs)
     logger.debug('PROPERTIES PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -1428,7 +1428,7 @@ def hessian(name, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("hessian", lowername, molecule, **kwargs)
     logger.debug('HESSIAN PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
