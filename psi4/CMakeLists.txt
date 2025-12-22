@@ -140,6 +140,35 @@ else()
     message(STATUS "Disabled libefp ${libefp_DIR} ${pylibefp_DIR}")
 endif()
 
+# --- Eigen3 Resolution Fix ---
+find_package(Eigen3 REQUIRED)
+
+# 1. Handle Target-based vs Variable-based discovery
+if(TARGET Eigen3::Eigen)
+    get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+endif()
+
+# 2. Safety check: ensure the variable is actually populated
+if(NOT EIGEN3_INCLUDE_DIR)
+    message(FATAL_ERROR "Eigen3 headers not found. Ensure Eigen3 is installed.")
+endif()
+
+# 3. Identify the parent directory to resolve <eigen3/Eigen/Core>
+# e.g., converts /opt/homebrew/include/eigen3 -> /opt/homebrew/include
+get_filename_component(EIGEN3_PARENT_DIR "${EIGEN3_INCLUDE_DIR}" DIRECTORY)
+
+# 4. Final verification messages
+message(STATUS "Eigen3_DIR:          ${Eigen3_DIR}")
+message(STATUS "EIGEN3_INCLUDE_DIR:  ${EIGEN3_INCLUDE_DIR}")
+message(STATUS "EIGEN3_PARENT_DIR:   ${EIGEN3_PARENT_DIR}")
+
+# 5. Add both paths as SYSTEM to suppress compiler warnings (GCC 15 compatibility)
+include_directories(SYSTEM ${EIGEN3_PARENT_DIR})
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+# -----------------------------
+
+
+
 if(${ENABLE_Einsums})
     find_package(Einsums 1.0.6 CONFIG REQUIRED)  # edit in codedeps
     get_property(_loc TARGET Einsums::Einsums PROPERTY LOCATION)
