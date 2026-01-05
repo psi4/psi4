@@ -93,6 +93,7 @@ _programs = {
     "bse": which_import("basis_set_exchange", return_bool=True),
     "einsums": psi4.addons("einsums"),
     "gauxc": psi4.addons("gauxc"),
+    "molsym": which_import("molsym", return_bool=True),
 }
 
 

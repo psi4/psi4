@@ -370,6 +370,8 @@ Additionally, there are runtime-loaded capabilities:
 
 * :ref:`ddx <sec:ddx>` |w---w| https://github.com/ddsolvation/ddx
 
+* MolSym |w---w| https://github.com/NASymmetry/MolSym
+
 
 .. _`faq:condapsi4dev`:
 

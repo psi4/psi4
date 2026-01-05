@@ -1483,3 +1483,23 @@ data:
       aux_build_names_note:
         "hdf5=1.14.3": "Temporary for Einsums while 1.14.4 not setting HDF5_VERSION."
       skip_win: true
+
+  - project: molsym
+    use:
+      added: "1.11"
+      required: false
+      required_note: "Allows modular symmetry package for finite difference."
+      buildable: true
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: NASymmetry
+      name: MolSym
+      commit: b27360f  # TODO tag: v0.5.1
+      githttps: true
+    cmake:
+      name: molsym
+      constraint: null  # "ATLEAST 0.5.1"
+      target: null
+    conda: null

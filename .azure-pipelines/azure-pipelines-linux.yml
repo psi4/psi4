@@ -89,6 +89,14 @@ jobs:
     displayName: "Add Conda to PATH"
 
   - bash: |
+      grep MOLSYM psi4/src/read_options.cc
+      if [[ "$(Agent.JobName)" == "Linux Builds gcc_latest" ]]; then
+        sed -i 's;\(options\.add_str("SDSALC_PACKAGE", "\)INTERNAL\(", "INTERNAL MOLSYM"\);\1MOLSYM\2;' psi4/src/read_options.cc
+      fi
+      grep MOLSYM psi4/src/read_options.cc
+    displayName: "Special Operation: test MolSym"
+
+  - bash: |
       conda install pyyaml -c conda-forge
       conda/psi4-path-advisor.py \
         env \
@@ -137,6 +145,7 @@ jobs:
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=ON \
         -D ENABLE_gauxc=ON \
+        -D ENABLE_molsym=ON \
         -D FORCE_PEDANTIC=ON \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'

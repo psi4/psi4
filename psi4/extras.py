@@ -176,6 +176,7 @@ _addons_ = {
     "bse": which_import("basis_set_exchange", return_bool=True),
     "einsums": _CMake_to_Py_boolean("@ENABLE_Einsums@"),
     "gauxc": _CMake_to_Py_boolean("@ENABLE_gauxc@"),
+    "molsym": which_import("molsym", return_bool=True),
 }
 
 
