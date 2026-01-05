@@ -246,7 +246,7 @@ def select_omp2(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
 
     func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS', 'ROKS']:
         if mtd_type == 'CONV':
             if module in ['', 'OCC']:
                 func = run_occ
@@ -276,7 +276,7 @@ def select_omp2_gradient(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
 
     func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS', 'ROKS']:
         if mtd_type == 'CONV':
             if module in ['', 'OCC']:
                 func = run_occ_gradient
@@ -303,7 +303,7 @@ def select_omp2_property(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
 
     func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS', 'ROKS']:
         if mtd_type == 'DF':
             if module in ['', 'OCC']:
                 func = run_dfocc_property
@@ -327,7 +327,7 @@ def select_omp2p5_property(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
 
     func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS', 'ROKS']:
         if mtd_type == 'DF':
             if module in ['', 'OCC']:
                 func = run_dfocc_property
@@ -351,7 +351,7 @@ def select_omp3_property(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
 
     func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS', 'ROKS']:
         if mtd_type == 'DF':
             if module in ['', 'OCC']:
                 func = run_dfocc_property
@@ -375,7 +375,7 @@ def select_olccd_property(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
 
     func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS', 'ROKS']:
         if mtd_type == 'DF':
             if module in ['', 'OCC']:
                 func = run_dfocc_property
@@ -489,7 +489,7 @@ def select_omp3(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
 
     func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS', 'ROKS']:
         if mtd_type == 'CONV':
             if module in ['', 'OCC']:
                 func = run_occ
@@ -519,7 +519,7 @@ def select_omp3_gradient(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
 
     func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS', 'ROKS']:
         if mtd_type == 'CONV':
             if module in ['', 'OCC']:
                 func = run_occ_gradient
@@ -605,7 +605,7 @@ def select_omp2p5(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
 
     func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS', 'ROKS']:
         if mtd_type == 'CONV':
             if module in ['', 'OCC']:
                 func = run_occ
@@ -635,7 +635,7 @@ def select_omp2p5_gradient(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
 
     func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS', 'ROKS']:
         if mtd_type == 'CONV':
             if module in ['', 'OCC']:
                 func = run_occ_gradient
@@ -733,7 +733,7 @@ def select_olccd(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
 
     func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS', 'ROKS']:
         if mtd_type == 'CONV':
             if module in ['', 'OCC']:
                 func = run_occ
@@ -763,7 +763,7 @@ def select_olccd_gradient(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
 
     func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS', 'ROKS']:
         if mtd_type == 'CONV':
             if module in ['', 'OCC']:
                 func = run_occ_gradient
@@ -1436,7 +1436,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
     core.prepare_options_for_module("SCF")
     if reference in ["RHF", "RKS"]:
         wfn = core.RHF(ref_wfn, superfunc)
-    elif reference == "ROHF":
+    elif reference in ["ROHF", "ROKS"]:
         wfn = core.ROHF(ref_wfn, superfunc)
     elif reference in ["UHF", "UKS"]:
         wfn = core.UHF(ref_wfn, superfunc)

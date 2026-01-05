@@ -83,6 +83,8 @@ void ROHF::common_init() {
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian matrix"));
     Ka_ = SharedMatrix(factory_->create_matrix("K alpha"));
     Kb_ = SharedMatrix(factory_->create_matrix("K beta"));
+    wKa_ = SharedMatrix(factory_->create_matrix("wK alpha"));
+    wKb_ = SharedMatrix(factory_->create_matrix("wK beta"));
     Ga_ = SharedMatrix(factory_->create_matrix("G alpha"));
     Gb_ = SharedMatrix(factory_->create_matrix("G beta"));
     Dt_ = SharedMatrix(factory_->create_matrix("Total SCF density"));
@@ -483,7 +485,35 @@ double ROHF::compute_initial_E() { return nuclearrep_ + Dt_->vector_dot(H_); }
 double ROHF::compute_E() {
     double one_electron_E = Dt_->vector_dot(H_);
     double kinetic_E = Dt_->vector_dot(T_);
-    double two_electron_E = 0.5 * (Da_->vector_dot(Ga_) + Db_->vector_dot(Gb_));
+
+    // Compute Coulomb energy
+    SharedMatrix Jdocc = jk_->J()[0];
+    SharedMatrix Jsocc = jk_->J()[1];
+    double coulomb_E = 2.0 * Da_->vector_dot(Jdocc);
+    coulomb_E += Da_->vector_dot(Jsocc);
+    coulomb_E += Db_->vector_dot(Jsocc);
+
+    // Compute exchange energy
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
+
+    double exchange_E = 0.0;
+    if (functional_->is_x_hybrid()) {
+        exchange_E -= alpha * Da_->vector_dot(Ka_);
+        exchange_E -= alpha * Db_->vector_dot(Kb_);
+    }
+
+    if (functional_->is_x_lrc()) {
+        if (jk_->get_do_wK() && jk_->get_wcombine()) {
+            exchange_E -= Da_->vector_dot(wKa_);
+            exchange_E -= Db_->vector_dot(wKb_);
+        } else {
+            exchange_E -= beta * Da_->vector_dot(wKa_);
+            exchange_E -= beta * Db_->vector_dot(wKb_);
+        }
+    }
+
+    double two_electron_E = 0.5 * (coulomb_E + exchange_E);
 
     energies_["Nuclear"] = nuclearrep_;
     energies_["Kinetic"] = kinetic_E;
@@ -932,7 +962,23 @@ int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter
     return fock_builds;
 }
 
+void ROHF::form_V() {
+    // Compute exchange-correlation potential from separate alpha/beta densities
+    potential_->set_D({Da_, Db_});
+    potential_->compute_V({Va_, Vb_});
+}
+
 void ROHF::form_G() {
+    // Initialize Ga_ and Gb_ with XC contribution if needed
+    if (functional_->needs_xc()) {
+        form_V();
+        Ga_->copy(Va_);
+        Gb_->copy(Vb_);
+    } else {
+        Ga_->zero();
+        Gb_->zero();
+    }
+
     Dimension dim_zero(nirrep_, "Zero Dim");
 
     auto& C = jk_->C_left();
@@ -952,17 +998,51 @@ void ROHF::form_G() {
     // Pull the J and K matrices off
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
-    Ga_->copy(J[0]);
-    Ga_->scale(2.0);
-    Ga_->add(J[1]);
+    const std::vector<SharedMatrix>& wK = jk_->wK();
 
+    // Add Coulomb contribution: J[0] from docc, J[1] from socc
+    // Both alpha and beta Fock matrices get the same Coulomb part
+    Ga_->axpy(2.0, J[0]);
+    Ga_->add(J[1]);
+    Gb_->axpy(2.0, J[0]);
+    Gb_->add(J[1]);
+
+    // Build exchange matrices: Ka from docc+socc, Kb from docc only
     Ka_->copy(K[0]);
     Ka_->add(K[1]);
     Kb_ = K[0];
 
-    Gb_->copy(Ga_);
-    Ga_->subtract(Ka_);
-    Gb_->subtract(Kb_);
+    // Pull wK matrices for long-range corrected functionals
+    if (functional_->is_x_lrc()) {
+        wKa_->copy(wK[0]);
+        wKa_->add(wK[1]);
+        wKb_ = wK[0];
+    }
+
+    // Apply hybrid and long-range exchange
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
+
+    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
+        Ga_->axpy(-alpha, Ka_);
+        Gb_->axpy(-alpha, Kb_);
+    } else {
+        Ga_->subtract(Ka_);
+        Gb_->subtract(Kb_);
+    }
+
+    if (functional_->is_x_lrc()) {
+        if (jk_->get_wcombine()) {
+            Ga_->axpy(-1.0, wKa_);
+            Gb_->axpy(-1.0, wKb_);
+        } else {
+            Ga_->axpy(-beta, wKa_);
+            Gb_->axpy(-beta, wKb_);
+        }
+    } else {
+        wKa_->zero();
+        wKb_->zero();
+    }
 }
 
 bool ROHF::stability_analysis() {
@@ -1328,7 +1408,15 @@ void ROHF::compute_SAD_guess(bool natorb) {
 
 void ROHF::setup_potential() {
     if (functional_->needs_xc()) {
-        throw PSIEXCEPTION("ROHF: Cannot compute XC components!");
+        // ROKS uses unrestricted V (UV) since ROHF maintains separate alpha/beta densities
+        potential_ = std::make_shared<UV>(functional_, basisset_, options_);
+        potential_->initialize();
+
+        // Allocate XC potential matrices
+        Va_ = SharedMatrix(factory_->create_matrix("V alpha ROKS"));
+        Vb_ = SharedMatrix(factory_->create_matrix("V beta ROKS"));
+    } else {
+        potential_ = nullptr;
     }
 }
 

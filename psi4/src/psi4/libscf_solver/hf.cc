@@ -918,7 +918,7 @@ void HF::print_orbitals() {
         print_orbital_pairs("Beta Occupied:", occB);
         print_orbital_pairs("Beta Virtual:", virB);
 
-    } else if (reference == "ROHF") {
+    } else if ((reference == "ROHF") || (reference == "ROKS")) {
         std::vector<std::pair<double, std::pair<std::string, int> > > docc;
         std::vector<std::pair<double, std::pair<std::string, int> > > socc;
         std::vector<std::pair<double, std::pair<std::string, int> > > vir;
