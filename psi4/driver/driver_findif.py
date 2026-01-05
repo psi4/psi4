@@ -289,6 +289,7 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
         info = initialize_string(data)
         core.print_out(info)
         logger.info(info)
+    exploit_degeneracy = core.get_option("FINDIF", "EXPLOIT_DEGENERACY")
 
     # Get settings for CdSalcList, then get the CdSalcList.
     method_allowed_irreps = 0x1 if mode == "1_0" else 0xFF
@@ -300,6 +301,7 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
             print("Download & install MolSym at: https://github.com/NASymmetry/MolSym")
         engine = "molsym" 
         molsym_mol = molsym.Molecule.from_psi4_molecule(mol)
+        molsym_mol.tol = 1e-3
         symtext = molsym.Symtext.from_molecule(molsym_mol)
         molsym_mol = molsym_mol.transform(symtext.rotate_to_std)
 
@@ -378,6 +380,9 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
             salc_indices_pi[0] = salcs.salcs_by_irrep[0]
         else:
             salc_indices_pi = salcs.salcs_by_irrep
+            if exploit_degeneracy:
+                for h, irrep in enumerate(symtext.irreps):
+                    salc_indices_pi[h] = salc_indices_pi[h][: len(salc_indices_pi[h]) // irrep.d]
     else:
         for I in range(len(salc_list)):
             salc_list[I].print_out()
@@ -408,14 +413,15 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
     if engine == "molsym":
         asym_list = []
         for i, salc in enumerate(salcs):
-            asym_list.append(maps_to_negative(symtext, salc))
-        for salcs_h in salcs.salcs_by_irrep:
+            asym_list.append(molsym.symtools.maps_to_negative(symtext, salc))
+        for h, salcs_h in enumerate(salcs.salcs_by_irrep):
             n_disp = 0
-            for salc in salcs_h:
-                n_disp += 2 if not maps_to_negative(symtext, salcs[salc]) else 1
+            for s in range(0, len(salcs_h) // symtext.irreps[h].d):
+                salc = salcs_h[s]
+                n_disp += 2 if not molsym.symtools.maps_to_negative(symtext, salcs[salc]) else 1
             if mode == "2_0":
                 # Either len(indices) or len(indices)-1 is even, so dividing by two is safe.
-                n_disp += len(salcs_h) * (len(salcs_h) - 1) // 2 * len(disps["off"])
+                n_disp += (len(salcs_h) // symtext.irreps[h].d) * ((len(salcs_h) // symtext.irreps[h].d) - 1) // 2 * len(disps["off"])
             n_disp_pi.append(n_disp)
     else:
         for irrep, indices in enumerate(salc_indices_pi):
@@ -601,10 +607,8 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
             core.print_out(info)
             logger.info(info)
         findifrec["displacements"][label] = {"geometry": disp_geom}
-
     for h in range(data["n_irrep"]):
         active_indices = data["salc_indices_pi"][h]
-
         for index in active_indices:
             # Displace along the diagonal.
             # Remember that the totally symmetric irrep has special displacements.
@@ -785,7 +789,6 @@ def _process_hessian_symmetry_block(H_block: np.ndarray, B_block: np.ndarray, ma
     idx = evals.argsort()[::-1]
     evals = evals[idx]
     evects = evects[:, idx]
-
     normal_irr = np.dot((B_block * massweighter).T, evects)
 
     if print_lvl >= 2:
@@ -895,32 +898,66 @@ def assemble_dipder_from_dipoles(findifrec: Dict, freq_irrep_only: int) -> np.nd
         for j in range(1, max_disp + 1):
             dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
             dipole[salc_index, max_disp + j - 1] = displacements[f"{salc_index}: {j}"]["dipole"]
-    
     if data["engine"] == "molsym":
+        if core.get_option("FINDIF", "molsym"):
+            try:
+                import molsym
+            except ImportError:
+                print("Download & install MolSym at: https://github.com/NASymmetry/MolSym")
         symtext = data["salc_list"][1]
         salc_list = data["salc_list"][0]  # contains SALC displacement objects
-        max_disp = (findifrec["stencil_size"] - 1) // 2  # e.g., 1 for 3-point stencil
-
+        max_disp = (findifrec["stencil_size"] - 1) // 2  # e.g., 1 for 3-point
+        irreps_with_dipole = [irrep for irrep, comps in symtext.assign_dipole_irrep.items() if comps]
+        dipole_dir_sum = " + ".join(irreps_with_dipole) 
+        print(f"The dipole transforms as: {dipole_dir_sum} ")
         for h in range(data["n_irrep"]):
+            # minimal subset actually displaced
             salc_indices = data["salc_indices_pi"][h]
+
+            # 1. Fill dipoles from explicit displacements
             for salc_index in salc_indices:
                 salc = salc_list[salc_index]
 
-                if maps_to_negative(symtext, salc):
+                if molsym.symtools.maps_to_negative(symtext, salc):
                     for j in range(1, max_disp + 1):
-                        # compute + dipole from - dipole using R
                         neg_dip = displacements[f"{salc_index}: {-j}"]["dipole"]
-                        pos_dip, _ = generate_symmetric_partner(symtext, salc, neg_dip, data_type = "dipole")
+                        pos_dip, _ = molsym.symtools.generate_symmetric_partner(
+                            symtext, salc, neg_dip, data_type="dipole"
+                        )
                         dipole[salc_index, max_disp - j] = neg_dip
                         dipole[salc_index, max_disp + j - 1] = pos_dip
-
                 else:
-                    # Must compute both + and - dipoles explicitly
                     for j in range(1, max_disp + 1):
                         neg_dip = displacements[f"{salc_index}: {-j}"]["dipole"]
                         pos_dip = displacements[f"{salc_index}: {j}"]["dipole"]
                         dipole[salc_index, max_disp - j] = neg_dip
                         dipole[salc_index, max_disp + j - 1] = pos_dip
+            # 2. Exploit degeneracy by rotating dipoles for *all* degenerate SALCs
+                if core.get_option("FINDIF", "EXPLOIT_DEGENERACY"):
+                    irrep = symtext.irreps[h]
+                    test_array = np.array([[1, 0, 2],[0, 1, 2]])
+                    if irrep.d > 1:
+                        proj_on_neg = symtext.proj_on_dipole(neg_dip, irrep)
+                        proj_on_pos = symtext.proj_on_dipole(pos_dip, irrep)
+                        if len(symtext.assign_dipole_irrep[irrep.symbol]) != 0:
+                            for d_i in range(1, irrep.d):
+                                pf_sidx = salc_index + len(salc_indices) * d_i
+                                s_i, s_j = salc_list[pf_sidx].i, 0
+                                if len(irreps_with_dipole) > 1:
+                                    for p_irrep_symbol in irreps_with_dipole:
+                                        if p_irrep_symbol != irrep.symbol:
+                                             for Irrep in symtext.irreps:
+                                                 if Irrep.symbol == p_irrep_symbol: 
+                                                     proj_on_neg_comp2 = symtext.proj_on_dipole(neg_dip, Irrep) 
+                                                     proj_on_pos_comp2 = symtext.proj_on_dipole(pos_dip, Irrep) 
+                                                     tot_neg_dip = proj_on_neg[s_i, s_j] + proj_on_neg_comp2 
+                                                     tot_pos_dip = proj_on_pos[s_i, s_j] + proj_on_pos_comp2
+                                                     dipole[pf_sidx][0] = tot_neg_dip[0][0] 
+                                                     dipole[pf_sidx][1] = tot_pos_dip[0][0]
+                                else:
+                                    dipole[pf_sidx][0] = proj_on_neg[s_i, s_j] 
+                                    dipole[pf_sidx][1] = proj_on_pos[s_i, s_j] 
+
     else:
         for h in range(1, data["n_irrep"]):
             # Find the group operation that converts + to - displacements.
@@ -1045,7 +1082,6 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
         gradients_pi = []  # list of lists: per irrep, per displacement
 
         # iterate irreps in order (keep same indexing as original)
-        #for h in range(1, data["n_irrep"]):
         for h in range(data["n_irrep"]):
             salc_indices = data["salc_indices_pi"][h]
 
@@ -1065,14 +1101,14 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
 
                 grad_entries = []
 
-                if maps_to_negative(symtext, salc):
+                if molsym.symtools.maps_to_negative(symtext, salc):
                     # build negative displacements
                     for j in range(max_disp, 0, -1):
                         key_minus = f"{salc_index}: {-j}"
                         grad_raw = displacements[key_minus]["gradient"]
                         grad_mat = np.reshape(grad_raw, (N, 3))
                         grad_entries.append(grad_mat)
-                        pos_grad, _ = generate_symmetric_partner(symtext, salc, grad_mat, data_type = "gradient")
+                        pos_grad, _ = molsym.symtools.generate_symmetric_partner(symtext, salc, grad_mat, data_type = "gradient")
                         grad_entries.append(pos_grad)
 
                 else:
@@ -1087,7 +1123,6 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
                         grad_entries.append(np.reshape(grad_raw, (N, 3)))
 
                 gradients_for_irrep.extend(grad_entries)
-
             # append gradients for this irrep
             gradients_pi.append(gradients_for_irrep)
      
@@ -1135,7 +1170,6 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
             for i in data["salc_indices_pi"][h]:
                 recursive_gradients(i, max_disp)
             gradients_pi.append(gradients)
-
     # Massweight all gradients.
     # Remember, the atom currently corresponds to our 0 axis, hence these transpose tricks.
     massweighter = np.asarray([mol.mass(a) for a in range(data["n_atom"])])**(-0.5)
@@ -1163,7 +1197,6 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
             salc_indices = data["salc_indices_pi"][h]
             Nindices = len(salc_indices)
             gradients = gradients_pi[h]
-
             # If no SALCs or no gradients, create empty blocks to keep alignment
             if Nindices == 0 or len(gradients) == 0:
                 B_pi.append(np.zeros((0, 3*data["n_atom"])))
@@ -1172,13 +1205,14 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
 
             # Flatten gradients and build gradient_matrix
             gradient_matrix = np.array([grad.flatten() for grad in gradients]).T
-
-            # Build B matrix
+           
+            # Build B matrix. For now, it is defined as the minimal salcs per irrep if degeneracy is exploited
             B = np.vstack([salcs[i].coeffs for i in salc_indices])
-            B_pi.append(B)
-
-            # Transform gradients
             grads_adapted = (B @ gradient_matrix).T
+            #redefine B in terms of full set of salcs, in case degeneracy is begin exploited 
+            B = np.vstack([salcs[i].coeffs for i in salcs.salcs_by_irrep[h]])
+            B_pi.append(B)
+            
 
             # Compute Hessian finite differences
             H_block = np.empty([Nindices, Nindices])
@@ -1188,6 +1222,9 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
                 H_block = (grads_adapted[::4] - 8*grads_adapted[1::4] + 8*grads_adapted[2::4] - grads_adapted[3::4]) / (12.0 * findifrec["step"]["size"])
 
             # Apply symmetry processing
+            if core.get_option("FINDIF", "EXPLOIT_DEGENERACY"):
+                #Duplicate degenerate blocks of the Hessian along the diagonal
+                H_block = np.kron(np.eye(symtext.irreps[h].d), H_block)
             H_pi.append(_process_hessian_symmetry_block(H_block, B, massweighter, irrep_lbls[h], data["print_lvl"]))
     
     else:
@@ -1338,6 +1375,8 @@ def assemble_hessian_from_energies(findifrec: Dict, freq_irrep_only: int) -> np.
                           12 * ref_energy) / (12 * findifrec["step"]["size"]**2)
                 H_irr[i, j] = fc
                 H_irr[j, i] = fc
+        if core.get_option("FINDIF", "EXPLOIT_DEGENERACY"):
+            H_irr = np.kron(np.eye(symtext.irreps[h].d), H_irr)
         if data["engine"] == "molsym":
             salcs = data["salc_list"][0]
             B_pi.append(salcs.basis_transformation_matrix[:,salcs.salcs_by_irrep[h]].T)
@@ -1710,109 +1749,6 @@ class FiniteDifferenceComputer(BaseComputer):
             return (ret_ptype, wfn)
         else:
             return ret_ptype
-
-def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=1e-8):
-    """
-    Use molecular symmetry to generate + displacements from - displacements 
-    for quantities that transform as vectors (dipoles) or sets of atomic vectors (gradients).
-
-    Parameters
-    ----------
-    symtext : MolSym object
-        Contains symmetry operations and atom mapping information.
-    salc : MolSym SALC object
-        The symmetry-adapted linear combination of Cartesian coordinates.
-    neg_data : np.ndarray
-        The quantity at the negative displacement.
-        Shape:
-            (3,) for dipole vectors
-            (N_atoms, 3) for gradients
-    data_type : str, optional
-        "dipole" or "gradient", controls how the transformation is applied.
-    tol : float
-        Numerical tolerance for comparing transformed vectors.
-
-    Returns
-    -------
-    pos_data : np.ndarray
-        The symmetry-generated positive displacement quantity.
-    found_op : int or None
-        Index of the symmetry operation used (if any).
-    """
-
-    N = salc.coeffs.size // 3
-    disp_matrix = salc.coeffs.reshape(N, 3)
-
-    # Find symmetry operation R such that R(Q) = -Q
-    found_op = None
-    R = None
-    for k, op in enumerate(symtext.symels):
-        transformed = np.zeros_like(disp_matrix)
-        for a in range(N):
-            b = symtext.atom_map[a, k]
-            transformed[b] = op.rrep @ disp_matrix[a]
-        if np.allclose(transformed.flatten(), -salc.coeffs, atol=tol):
-            found_op = k
-            R = op.rrep
-            break
-
-    if found_op is None:
-        return None, None
-
-    # Apply the same symmetry to the quantity
-    if data_type == "dipole":
-        pos_data = R @ neg_data
-
-    elif data_type == "gradient":
-        pos_data = np.zeros_like(neg_data)
-        for a in range(neg_data.shape[0]):
-            b = symtext.atom_map[a, found_op]
-            pos_data[b] = R @ neg_data[a]
-
-    else:
-        raise ValueError(f"Unsupported data_type: {data_type}")
-
-    return pos_data, found_op
-
-def maps_to_negative(symtext, salc, tol=1e-8):
-    """
-    Test a SALC for +/- displacement equivalence.
-
-    Parameters
-    ----------
-    symtext
-        A MolSym object that contains the symmetry context for point group of the molecule.
-
-    salc
-        (nat * 3) Symmetry-Adapted Linear Combination of Cartesian displacement coordinates.
-
-    tol
-        The numerical tolerance used to identify a equivalence between the negative displacement
-        and a symmetry operation acting on the displacement.
-
-    Returns
-    -------
-
-    bool
-        The +/- displacements are equivalent.
-    """
-    N = salc.coeffs.size // 3
-    disp_matrix = salc.coeffs.reshape(N, 3)
-    n_ops = symtext.atom_map.shape[1]
-
-    for k in range(n_ops):
-        op = symtext.symels[k]
-        transformed = np.zeros_like(disp_matrix)
-
-        for a in range(N):
-            b = symtext.atom_map[a,k]
-            transformed[b] = op.rrep @ disp_matrix[a]
-        transformed_flat = transformed.flatten()
-
-        if np.allclose(transformed_flat, -salc.coeffs, atol=tol):
-            return True
-
-    return False
 
 def _findif_schema_to_wfn(findif_model: AtomicResult) -> core.Wavefunction:
     """Helper function to produce Wavefunction and Psi4 files from a FiniteDifference-flavored AtomicResult."""

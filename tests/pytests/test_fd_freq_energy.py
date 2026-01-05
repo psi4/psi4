@@ -41,9 +41,12 @@ ref_intensities = [np.array([ 8.68661, 39.02869, 23.97606]),
 np.array([107.59281,   2.62096,   2.62098,   5.22301,   2.32676,   2.32678]),
 np.array([6.30806, 6.30806, 6.30805, 0.,      0.,      0.,      0.55949, 0.55949, 0.5595 ])]
 
-@pytest.mark.parametrize("engine", [False, True])
-def test_fd_energy_engine(engine):
+#@pytest.mark.parametrize("engine", [False, True], "exploit_degeneracy", [False, True])
+@pytest.mark.parametrize(("engine", "exploit_degeneracy"),
+    [(False, False), (True, False), (True, True)])
+def test_fd_energy_engine(engine, exploit_degeneracy):
     print(f"\nTesting with MolSym = {engine}")
+    print(f"\nTesting with exploit_degeneracy = {exploit_degeneracy}")
     for m, mol in enumerate(molecules):
         molecule = psi4.geometry(mol)
 
@@ -55,6 +58,7 @@ def test_fd_energy_engine(engine):
             'e_convergence': 1e-11,
             'd_convergence': 1e-11,
             'fd_project': True,
+            'exploit_degeneracy' : exploit_degeneracy,
         })
 
         e, wfn = psi4.frequency('scf', dertype='energy', return_wfn=True)
@@ -69,10 +73,10 @@ def test_fd_energy_engine(engine):
         # Compare to 0.1 cm^-1 tolerance
         assert np.allclose(frequencies, ref_freqs[m], atol=1e-1), (
             f"Frequencies differ for molecule {m} (MolSym={engine}).\n"
-            f"Expected: {ref_freqs[m]}\nGot: {results}"
+            f"Expected: {ref_freqs[m]}\nGot: {frequencies}"
         )
 
         assert np.allclose(intensities, ref_intensities[m], atol=1e-1), (
-            f"Frequencies differ for molecule {m} (MolSym={engine}).\n"
-            f"Expected: {ref_freqs[m]}\nGot: {results}"
+            f"Intensities differ for molecule {m} (MolSym={engine}).\n"
+            f"Expected: {ref_intensities[m]}\nGot: {intensities}"
         )
