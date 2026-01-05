@@ -1,0 +1,59 @@
+#! ROKS tests on open-shell systems with various functionals
+
+set scf_type df
+set e_convergence 9
+set d_convergence 8
+set print 2
+
+# Test 1: Li atom (doublet) with B3LYP
+molecule li {
+0 2
+Li
+symmetry c1
+}
+
+set basis 6-31G
+set reference rohf
+
+e = energy('b3lyp', molecule=li)
+compare_values(-7.647006357900, e, 6, 'Li atom: ROKS B3LYP/6-31G')  #TEST
+
+# Test 2: Li atom (doublet) with CAM-B3LYP (range-separated)
+set scf_type direct
+
+e = energy('cam-b3lyp', molecule=li)
+compare_values(-7.841498500000, e, 6, 'Li atom: ROKS CAM-B3LYP/6-31G')  #TEST
+
+# Test 3: H2O+ (doublet) with B3LYP
+molecule oswater {
+1 2
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+}
+
+set basis aug-cc-pvdz
+set scf_type pk
+set dft_spherical_points 590
+set dft_radial_points 99
+set reference rohf
+
+e = energy('b3lyp', molecule=oswater)
+compare_values(-86.147562754310, e, 6, 'H2O+ (open-shell): ROKS B3LYP')  #TEST
+
+# Test 4: H2O+ with CAM-B3LYP
+set scf_type direct
+
+e = energy('cam-b3lyp', molecule=oswater)
+compare_values(-86.783459267232, e, 6, 'H2O+ (open-shell): ROKS CAM-B3LYP')  #TEST
+
+# Test 5: H2O+ with wB97X
+e = energy('wb97x', molecule=oswater)
+compare_values(-86.991534024728, e, 6, 'H2O+ (open-shell): ROKS wB97X')  #TEST
+
+# Test 6: Compare ROKS vs UKS on same system (should be different)
+set reference uks
+set scf_type pk
+
+e_uks = energy('b3lyp', molecule=oswater)
+compare_values(-75.974154693676, e_uks, 5, 'H2O+ (open-shell): UKS B3LYP (reference)')  #TEST
