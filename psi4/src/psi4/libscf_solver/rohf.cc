@@ -1408,13 +1408,13 @@ void ROHF::compute_SAD_guess(bool natorb) {
 
 void ROHF::setup_potential() {
     if (functional_->needs_xc()) {
+        // ROKS: allocate Va_ and Vb_ for DFT exchange-correlation potentials
+        Va_ = SharedMatrix(factory_->create_matrix("V alpha"));
+        Vb_ = SharedMatrix(factory_->create_matrix("V beta"));
+
         // ROKS uses unrestricted V (UV) since ROHF maintains separate alpha/beta densities
         potential_ = std::make_shared<UV>(functional_, basisset_, options_);
         potential_->initialize();
-
-        // Allocate XC potential matrices
-        Va_ = SharedMatrix(factory_->create_matrix("V alpha ROKS"));
-        Vb_ = SharedMatrix(factory_->create_matrix("V beta ROKS"));
     } else {
         potential_ = nullptr;
     }
