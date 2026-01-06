@@ -94,8 +94,8 @@ void MOInfoSCF::read_mo_spaces() {
         // This is one of a series of displacements;  check the dimension against the parent point group
         int nirreps_ref = old_pg->char_table().nirrep();
 
-        intvec docc_ref;
-        intvec actv_ref;
+        intvec docc_ref(nirreps_ref);
+        intvec actv_ref(nirreps_ref);
 
         read_mo_space(nirreps_ref, ndocc, docc_ref, "DOCC");
         read_mo_space(nirreps_ref, nactv, actv_ref, "SOCC");
@@ -108,8 +108,9 @@ void MOInfoSCF::read_mo_spaces() {
         // Find the occupation in the subgroup
         for (int h = 0; h < nirreps_ref; ++h) {
             int target = corrtab.gamma(h, 0);
-            docc[target] += docc_ref[h];
-            actv[target] += actv_ref[h];
+
+            docc.at(target) += docc_ref.at(h);
+            actv.at(target) += actv_ref.at(h);
         }
     } else {
         // For a single-point only
