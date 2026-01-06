@@ -16,13 +16,13 @@ set basis 6-31G
 set reference rohf
 
 e = energy('b3lyp', molecule=li)
-compare_values(-7.647006357900, e, 6, 'Li atom: ROKS B3LYP/6-31G')  #TEST
+compare_values(-7.490903748193, e, 6, 'Li atom: ROKS B3LYP/6-31G')  #TEST
 
 # Test 2: Li atom (doublet) with CAM-B3LYP (range-separated)
 set scf_type direct
 
 e = energy('cam-b3lyp', molecule=li)
-compare_values(-7.841498500000, e, 6, 'Li atom: ROKS CAM-B3LYP/6-31G')  #TEST
+compare_values(-7.469302688929, e, 6, 'Li atom: ROKS CAM-B3LYP/6-31G')  #TEST
 
 # Test 3: H2O+ (doublet) with B3LYP
 molecule oswater {
@@ -39,21 +39,21 @@ set dft_radial_points 99
 set reference rohf
 
 e = energy('b3lyp', molecule=oswater)
-compare_values(-86.147562754310, e, 6, 'H2O+ (open-shell): ROKS B3LYP')  #TEST
+compare_values(-75.972432077909, e, 6, 'H2O+ (open-shell): ROKS B3LYP')  #TEST
 
 # Test 4: H2O+ with CAM-B3LYP
 set scf_type direct
 
 e = energy('cam-b3lyp', molecule=oswater)
-compare_values(-86.783459267232, e, 6, 'H2O+ (open-shell): ROKS CAM-B3LYP')  #TEST
+compare_values(-75.944174773257, e, 6, 'H2O+ (open-shell): ROKS CAM-B3LYP')  #TEST
 
 # Test 5: H2O+ with wB97X
 e = energy('wb97x', molecule=oswater)
-compare_values(-86.991534024728, e, 6, 'H2O+ (open-shell): ROKS wB97X')  #TEST
+compare_values(-75.952049808210, e, 6, 'H2O+ (open-shell): ROKS wB97X')  #TEST
 
 # Test 6: Compare ROKS vs UKS on same system (should be different)
 set reference uks
 set scf_type pk
 
 e_uks = energy('b3lyp', molecule=oswater)
-compare_values(-75.974154693676, e_uks, 5, 'H2O+ (open-shell): UKS B3LYP (reference)')  #TEST
+compare_values(-75.974154768799, e_uks, 5, 'H2O+ (open-shell): UKS B3LYP (reference)')  #TEST

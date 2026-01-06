@@ -489,7 +489,7 @@ double ROHF::compute_E() {
     // Compute Coulomb energy
     SharedMatrix Jdocc = jk_->J()[0];
     SharedMatrix Jsocc = jk_->J()[1];
-    double coulomb_E = 2.0 * Da_->vector_dot(Jdocc);
+    double coulomb_E = 2.0 * Dt_->vector_dot(Jdocc);  // Dt = Da + Db
     coulomb_E += Da_->vector_dot(Jsocc);
     coulomb_E += Db_->vector_dot(Jsocc);
 
@@ -515,16 +515,23 @@ double ROHF::compute_E() {
 
     double two_electron_E = 0.5 * (coulomb_E + exchange_E);
 
+    // Compute XC energy for ROKS
+    double XC_E = 0.0;
+    double VV10_E = 0.0;
+    if (functional_->needs_xc()) {
+        XC_E = potential_->quadrature_values()["FUNCTIONAL"];
+        VV10_E = potential_->quadrature_values()["VV10"];
+    }
+
     energies_["Nuclear"] = nuclearrep_;
     energies_["Kinetic"] = kinetic_E;
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = two_electron_E;
-    energies_["XC"] = 0.0;
-    energies_["VV10_E"] = 0.0;
-    energies_["-D"] = 0.0;
+    energies_["XC"] = XC_E;
+    energies_["VV10"] = VV10_E;
+    energies_["-D"] = scalar_variable("-D Energy");
 
-    double Eelec = one_electron_E + two_electron_E;
-    double Etotal = nuclearrep_ + Eelec;
+    double Etotal = nuclearrep_ + one_electron_E + two_electron_E + XC_E + VV10_E + energies_["-D"];
     return Etotal;
 }
 
