@@ -1014,16 +1014,18 @@ void ROHF::form_G() {
     Gb_->axpy(2.0, J[0]);
     Gb_->add(J[1]);
 
-    // Build exchange matrices: Ka from docc+socc, Kb from docc only
-    Ka_->copy(K[0]);
-    Ka_->add(K[1]);
-    Kb_ = K[0];
+    // Build exchange matrices if hybrid functional: Ka from docc+socc, Kb from docc only
+    if (functional_->is_x_hybrid()) {
+        Ka_->copy(K[0]);
+        Ka_->add(K[1]);
+        Kb_->copy(K[0]);
+    }
 
     // Pull wK matrices for long-range corrected functionals
     if (functional_->is_x_lrc()) {
         wKa_->copy(wK[0]);
         wKa_->add(wK[1]);
-        wKb_ = wK[0];
+        wKb_->copy(wK[0]);
     }
 
     // Apply hybrid and long-range exchange
@@ -1034,8 +1036,8 @@ void ROHF::form_G() {
         Ga_->axpy(-alpha, Ka_);
         Gb_->axpy(-alpha, Kb_);
     } else {
-        Ga_->subtract(Ka_);
-        Gb_->subtract(Kb_);
+        Ka_->zero();
+        Kb_->zero();
     }
 
     if (functional_->is_x_lrc()) {
