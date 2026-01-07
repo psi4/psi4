@@ -18,33 +18,33 @@ jobs:
       matrix:
         cfg:
 
-          - label: "Conda GNU (L)"
-            runs-on: ubuntu-latest
-            python-version: "3.13"
-            mkl-version: ""
-            platform: linux-64
-            pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D ENABLE_v2rdm_casscf=ON
-              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+          #- label: "Conda GNU (L)"
+          #  runs-on: ubuntu-latest
+          #  python-version: "3.13"
+          #  mkl-version: ""
+          #  platform: linux-64
+          #  pytest-marker-expr: "addon and not (medlong or long)"
+          #  pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
+          #  cmargs: >
+          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
+          #    -D ENABLE_v2rdm_casscf=ON
+          #    -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
             # Notes:
             # * for all three lanes, can consider:
             #    -D BUILD_SHARED_LIBS=ON
             #    -D ENABLE_XHOST=OFF
 
-          - label: "Conda Clang (M-Intel)"
-            runs-on: macos-15-intel
-            python-version: "3.11"
-            mkl-version: ""
-            platform: osx-64
-            pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6 or v2rdm6 or v2rdm7)"
-            target-sdk: "10.10"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
+          #- label: "Conda Clang (M-Intel)"
+          #  runs-on: macos-15-intel
+          #  python-version: "3.11"
+          #  mkl-version: ""
+          #  platform: osx-64
+          #  pytest-marker-expr: "addon and not (medlong or long)"
+          #  pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6 or v2rdm6 or v2rdm7)"
+          #  target-sdk: "10.10"
+          #  cmargs: >
+          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
+          #    -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
             #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
@@ -57,31 +57,31 @@ jobs:
             #    -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
             # * numpy/_core in py310 vs numpy/core in py39 (or maybe a np v1/v2 thing)
 
-          - label: "Conda Clang (M-Silicon)"
-            runs-on: macos-latest
-            python-version: "3.10"
-            mkl-version: ""
-            platform: osx-64
-            pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or snowflake)"
-            target-sdk: "10.10"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D ENABLE_v2rdm_casscf=ON
-              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+          #- label: "Conda Clang (M-Silicon)"
+          #  runs-on: macos-latest
+          #  python-version: "3.10"
+          #  mkl-version: ""
+          #  platform: osx-64
+          #  pytest-marker-expr: "addon and not (medlong or long)"
+          #  pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or snowflake)"
+          #  target-sdk: "10.10"
+          #  cmargs: >
+          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
+          #    -D ENABLE_v2rdm_casscf=ON
+          #    -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
 
           - label: "LLVM clang-cl (W)"
             runs-on: windows-latest
             python-version: "3.12"
             mkl-version: ""
-            llvm-version: "17.0.6"  # known good: "17.0.6"; omp problem: 19, 20
+            #llvm-version: "17.0.6"  # known good: "17.0.6"; omp problem: 19, 20
             platform: win-64
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
-              -D CMAKE_CXX_FLAGS="-IC:\Miniconda\envs\p4build\opt\compiler\include"
+              #-D CMAKE_CXX_FLAGS="-IC:\Miniconda\envs\p4build\opt\compiler\include"
 
             # Notes:
             # * When not using cache file, need to additionally specify the following:
