@@ -154,6 +154,23 @@ class PSI_API PMLocalizer : public Localizer {
     void localize() override;
 };
 
+class PSI_API ERLocalizer : public Localizer {
+   protected:
+    /// Set defaults
+    void common_init();
+    /// Auxiliary basis set
+    std::shared_ptr<BasisSet> auxiliary_;
+
+   public:
+    ERLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<Matrix> C);
+
+    ~ERLocalizer() override;
+
+    void print_header() const override;
+
+    void localize() override;
+};
+
 }  // Namespace psi
 
 #endif

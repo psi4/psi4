@@ -320,6 +320,7 @@ class PSI_API Vector final : public IrreppedVector<double> {
     explicit Vector(const Dimension &dimpi, const occwave::Array1d &array);
 
     Vector clone() const { return Vector(*this); }
+    SharedVector shared_clone() const { return std::make_shared<Vector>(*this); }
     Vector get_block(const Slice &slice) const { return psi::get_block(*this, slice); };
 
     /// Adds other elt/vector to this
