@@ -97,12 +97,12 @@ data:
       aux_build_names:
         linux-64:
           - "//dpcpp_linux-64"
-        win-64:
-          - "libgcc<14.3"
-          - "clangdev=17.0.6"
-      aux_build_names_note:
-        "libgcc<14.3": "Avoid 'specified procedure could not be found' DLL error."
-        "clangdev=17.0.6": "Avoid omp problem with v19, v20."
+        #win-64:
+          #- "libgcc<14.3"
+          #- "clangdev=17.0.6"
+      #aux_build_names_note:
+      #  "libgcc<14.3": "Avoid 'specified procedure could not be found' DLL error."
+      #  "clangdev=17.0.6": "Avoid omp problem with v19, v20."
       cmake:
         # {CMAKE_CXX_COMPILER_ID}_{Conda_platform}
         GNU_linux-64:
