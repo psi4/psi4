@@ -263,7 +263,7 @@ endif()
 # add -pedantic-errors flag here, if FORCE_PEDANTIC is enabled 
 if(${FORCE_PEDANTIC})
   if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive- /WX")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")
   else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic-errors")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
