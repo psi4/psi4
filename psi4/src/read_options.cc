@@ -300,7 +300,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Use DF approximation when computing LS-THC factorization? -*/
     options.add_bool("LS_THC_DF", true);
     /*- Number of spherical points in LS-THC grid -*/
-    options.add_int("LS_THC_SPHERICAL_POINTS", 50);
+    options.add_int("LS_THC_SPHERICAL_POINTS", 26);
     /*- Number of radial points in LS-THC grid -*/
     options.add_int("LS_THC_RADIAL_POINTS", 10);
     /*- Screening criteria for basis function values on LS-THC grids !expert -*/
