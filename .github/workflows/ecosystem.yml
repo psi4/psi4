@@ -181,6 +181,7 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
+          sed -i "s;- resp;#- resp;g" env_p4build.yaml
           # sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
