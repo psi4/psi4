@@ -357,7 +357,7 @@ void DLPNO::setup_orbitals() {
         localizer.localize();
         C_lmo_ = localizer.L();
     } else if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "ER") {
-        ERLocalizer localizer = ERLocalizer(basisset_, get_basisset("DF_BASIS_SCF"), reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
+        ERLocalizer localizer = ERLocalizer(basisset_, get_basisset("DF_BASIS_THC"), reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
         localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
         localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
         localizer.localize();

@@ -4353,6 +4353,7 @@ def run_dlpnomp2(name, **kwargs):
     optstash = p4util.OptionsState(
         ['DF_BASIS_MP2'],
         ['SCF_TYPE'],
+        ["DLPNO", "DLPNO_LOCAL_ORBITALS"],
         ["DLPNO", "DLPNO_ALGORITHM"])
 
     # Alter default algorithm (if not set by user)
@@ -4397,6 +4398,14 @@ def run_dlpnomp2(name, **kwargs):
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
 
+    # If Edmiston-Ruedenberg (ER) Orbitals are selected for LMOs, form
+    # DF orbitals for THC-fitting of ERIs
+    if core.get_option("DLPNO", "DLPNO_LOCAL_ORBITALS") == "ER":
+        aux_basis_thc = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_THC",
+                                        core.get_global_option("DF_BASIS_THC"),
+                                        "JKFIT", core.get_global_option('BASIS'))
+        ref_wfn.set_basisset("DF_BASIS_THC", aux_basis_thc)
+
     core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "MP2")
 
     dlpnomp2_wfn = core.dlpno(ref_wfn)
@@ -4426,6 +4435,7 @@ def run_dlpnoccsd(name, **kwargs):
     optstash = p4util.OptionsState(
         ["DLPNO", 'DF_BASIS_CC'],
         ['SCF_TYPE'],
+        ["DLPNO", "DLPNO_LOCAL_ORBITALS"],
         ["DLPNO", "DLPNO_ALGORITHM"])
 
     # Alter default algorithm (if not set by user)
@@ -4465,6 +4475,14 @@ def run_dlpnoccsd(name, **kwargs):
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
+    # If Edmiston-Ruedenberg (ER) Orbitals are selected for LMOs, form
+    # DF orbitals for THC-fitting of ERIs
+    if core.get_option("DLPNO", "DLPNO_LOCAL_ORBITALS") == "ER":
+        aux_basis_thc = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_THC",
+                                        core.get_global_option("DF_BASIS_THC"),
+                                        "JKFIT", core.get_global_option('BASIS'))
+        ref_wfn.set_basisset("DF_BASIS_THC", aux_basis_thc)
+
     core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSD")
 
     dlpnoccsd_wfn = core.dlpno(ref_wfn)
@@ -4489,6 +4507,7 @@ def run_dlpnoccsd_t(name, **kwargs):
     optstash = p4util.OptionsState(
         ["DLPNO", 'DF_BASIS_CC'],
         ['SCF_TYPE'],
+        ["DLPNO", "DLPNO_LOCAL_ORBITALS"],
         ["DLPNO", "DLPNO_ALGORITHM"],
         ["DLPNO", "T0_APPROXIMATION"])
 
@@ -4528,6 +4547,14 @@ def run_dlpnoccsd_t(name, **kwargs):
                                     core.get_option("DLPNO", "DF_BASIS_CC"),
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
+
+    # If Edmiston-Ruedenberg (ER) Orbitals are selected for LMOs, form
+    # DF orbitals for THC-fitting of ERIs
+    if core.get_option("DLPNO", "DLPNO_LOCAL_ORBITALS") == "ER":
+        aux_basis_thc = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_THC",
+                                        core.get_global_option("DF_BASIS_THC"),
+                                        "JKFIT", core.get_global_option('BASIS'))
+        ref_wfn.set_basisset("DF_BASIS_THC", aux_basis_thc)
 
     core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSD(T)")
     if name == "dlpno-ccsd(t0)":
