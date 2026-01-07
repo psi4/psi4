@@ -130,7 +130,6 @@ jobs:
                         eigen ^
                         libboost-headers ^
                         conda-verify ^
-                        intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
                         mpmath ^
                         msgpack-python ^
@@ -167,17 +166,6 @@ jobs:
           echo '##vso[task.setvariable variable=PATH]%PATH%'
           clang-cl --version
         displayName: "Install LLVM"
-
-      # Install Intel OpenMP import library
-      # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
-      #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
-      #    set LIB=%cd%\iomp5md\conda\win\$(mkl.version);%LIB%
-      - script: |
-          cd
-          git clone https://github.com/psi4/iomp5md.git
-          set LIB=%cd%\iomp5md\conda\win\2019.1;%LIB%
-          echo '##vso[task.setvariable variable=LIB]%LIB%'
-        displayName: "Install Intel OpenMP import library"
 
       # Configure
       # call "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
