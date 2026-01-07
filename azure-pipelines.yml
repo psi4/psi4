@@ -15,4 +15,4 @@ trigger:
 
 jobs:
   - template: ./.azure-pipelines/azure-pipelines-windows.yml
-  #- template: ./.azure-pipelines/azure-pipelines-linux.yml
+  - template: ./.azure-pipelines/azure-pipelines-linux.yml
