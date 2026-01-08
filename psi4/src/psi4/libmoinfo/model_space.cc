@@ -41,11 +41,7 @@ ModelSpace::ModelSpace(MOInfo* moinfo_obj_) : moinfo_obj(moinfo_obj_) {
     //  print();
 }
 
-ModelSpace::~ModelSpace() { cleanup(); }
-
 void ModelSpace::startup() { wfn_sym = moinfo_obj->get_wfn_sym(); }
-
-void ModelSpace::cleanup() {}
 
 void ModelSpace::print() {
     outfile->Printf("\n\n  Model space:");

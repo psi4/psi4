@@ -43,12 +43,10 @@ class MOInfo;
 class ModelSpace {
    public:
     ModelSpace(MOInfo* moinfo_obj_);
-    ~ModelSpace();
     void print();
 
    private:
     void startup();
-    void cleanup();
     void build();
     void classify();
 
