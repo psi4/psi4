@@ -46,7 +46,6 @@ class ModelSpace {
     void print();
 
    private:
-    void startup();
     void build();
     void classify();
 
