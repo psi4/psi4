@@ -36,15 +36,7 @@ SlaterDeterminant::SlaterDeterminant(int alfa_sym_, int beta_sym_, std::vector<b
       alfa_string(-1),
       beta_string(-1),
       alfa_bits(alfa_bits_),
-      beta_bits(beta_bits_) {
-    startup();
-}
-
-SlaterDeterminant::~SlaterDeterminant() { cleanup(); }
-
-void SlaterDeterminant::startup() {}
-
-void SlaterDeterminant::cleanup() {}
+      beta_bits(beta_bits_){}
 
 bool SlaterDeterminant::is_closed_shell() { return (alfa_bits == beta_bits); }
 
