@@ -84,8 +84,8 @@ parser.add_argument("-k", "--skip-preprocessor", action='store_true',
                     help="Skips input preprocessing. !Warning! expert option.")
 parser.add_argument("--qcschema", "--schema", action='store_true',
                     help="Runs input file as QCSchema. Can either be JSON or MessagePack input. Use `--output` to not overwrite schema input file.")
-parser.add_argument("--json", action='store_true',
-                    help="Runs a JSON input file. !Warning! depcrated option in 1.4, use --qcschema instead.")
+parser.add_argument("--return-version", default=-1,
+                    help="With --[qc]schema, return this schema version. If not supplied (or the default of -1), input schema_version of the input is returned.")
 parser.add_argument("-t", "--test", nargs='?', const='smoke', default=None,
                     help="Runs pytest tests (requires pytest installed). If `pytest-xdist` installed, parallel with `--nthread`.")
 parser.add_argument("--mdi", default=None,
@@ -300,7 +300,7 @@ if args["scratch"] is not None:
     psi4.core.IOManager.shared_object().set_default_path(os.path.abspath(os.path.expanduser(args["scratch"])))
 
 # If this is a json or qcschema call, compute and stop
-if args["qcschema"]:
+def _psi4_qcschema_cli():
     import qcelemental as qcel
 
     # Handle the reading and deserialization manually
@@ -324,7 +324,7 @@ if args["qcschema"]:
         for func in _clean_functions:
             atexit.unregister(func)
 
-    ret = psi4.schema_wrapper.run_qcschema(data, clean=clean)
+    ret = psi4.schema_wrapper.run_qcschema(data, clean=clean, return_version=int(args["return_version"]))
 
     if args["output"] is not None:
         filename = args["output"]
@@ -341,24 +341,11 @@ if args["qcschema"]:
         with open(filename, 'wb') as handle:
             handle.write(ret.serialize(encoding))
 
+if args["qcschema"]:
+    # separate function call for traceability
+    _psi4_qcschema_cli()
     sys.exit()
 
-if args["json"]:
-
-    with open(args["input"], 'r') as f:
-        json_data = json.load(f)
-
-    psi4.extras._success_flag_ = True
-    psi4.extras.exit_printing(start_time)
-    json_data = psi4.schema_wrapper.run_json(json_data)
-
-    with open(args["input"], 'w') as f:
-        json.dump(json_data, f)
-
-    if args["output"] != "stdout":
-        os.unlink(args["output"])
-
-    sys.exit()
 
 # Read input
 with open(args["input"]) as f:

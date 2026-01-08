@@ -36,6 +36,8 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 
 #  <<<  CMake build overview  >>>
 #
+#    Note: also see `conda/psi4-path-advisor.py --help` for a detailed procedure
+#
 #    >>> ls
 #    external/  COPYING  psi4/  tests/  ...
 #    >>> cmake -S. -Bobjdir -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 ...
@@ -43,6 +45,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    -- Generating done
 #    -- Build files have been written to: /current/dir/objdir
 #    >>> cmake --build objdir --target install -j`getconf _NPROCESSORS_ONLN`
+#    >>> eval $(objdir/stage/bin/psi4 --psiapi)
 
 #  <<<  Required build dependencies that Psi4 can't build itself  >>>
 #
@@ -266,7 +269,7 @@ ExternalProject_Add(psi4-core
            brianqc_external
            integratorxx_external
            gauxc_external
- 
+
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
