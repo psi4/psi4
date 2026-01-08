@@ -44,8 +44,6 @@ namespace psi {
 
 class SlaterDeterminant {
    public:
-    //  SlaterDeterminant();
-    //  SlaterDeterminant(SlaterDeterminant& det);
     SlaterDeterminant(int alfa_sym_, int beta_sym_, std::vector<bool> alfa_bits_, std::vector<bool> beta_bits_);
     ~SlaterDeterminant();
 
