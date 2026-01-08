@@ -43,6 +43,56 @@ struct GridFunction {
         }
     }
 };
+
+inline void gradient_integrator(std::shared_ptr<BasisSet> primary, std::shared_ptr<BlockOPoints> block,
+                                    const SharedVector& potential, std::shared_ptr<PointFunctions> pworker,
+                                    SharedMatrix G, SharedMatrix D, SharedMatrix U) {
+    // => Setup scratch pointers, and associated variables <= //
+    auto Gp = G->pointer();
+
+    auto Up = U->pointer();
+    auto Tp = pworker->scratch()[0]->pointer();
+    auto Dp = D->pointer();
+
+    auto max_functions = U->ncol();
+
+    // Block data
+    auto npoints = block->npoints();
+    auto w = block->w();
+    const auto& function_map = block->functions_local_to_global();
+    auto nlocal = function_map.size();
+
+    // Points data
+    auto phi = pworker->basis_value("PHI")->pointer();
+    auto phi_x = pworker->basis_value("PHI_X")->pointer();
+    auto phi_y = pworker->basis_value("PHI_Y")->pointer();
+    auto phi_z = pworker->basis_value("PHI_Z")->pointer();
+    auto coll_funcs = pworker->basis_value("PHI")->ncol();
+
+    // Potential data
+    auto& vp = *potential;
+
+    // Potential contribution
+    for (int P = 0; P < npoints; P++) {
+        std::fill(Tp[P], Tp[P] + nlocal, 0.0);
+        C_DAXPY(nlocal, -2.0 * vp[P] * w[P], phi[P], 1, Tp[P], 1);
+    }
+
+    // U := einsum("pm, mn -> pn")
+    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, Tp[0], max_functions, Dp[0], max_functions, 0.0, Up[0],
+            max_functions);
+
+    //                                      ∂
+    // dE += einsum("pn, pnx, ni -> ix", U, -- φ, δ)
+    //                                      ∂x
+    for (int ml = 0; ml < nlocal; ml++) {
+        auto A = primary->function_to_center(function_map[ml]);
+        Gp[A][0] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_x[0][ml], coll_funcs);
+        Gp[A][1] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_y[0][ml], coll_funcs);
+        Gp[A][2] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_z[0][ml], coll_funcs);
+    }
+}
+
 }  // namespace
 
 template <typename Integrand>
@@ -182,5 +232,74 @@ SharedMatrix NumIntHelper::potential_integral(const std::vector<SharedVector>& g
     }  // grid blocks
     timer_off("NumIntHelper: potential_integral");
     return V_AO;
+}
+
+SharedMatrix NumIntHelper::potential_gradient(const std::vector<SharedVector>& grid_data,
+                                              const SharedMatrix& D) const {
+    if (numint_grid_->blocks().size() != grid_data.size()) {
+        throw PSIEXCEPTION("Mismatch of grid data size and DFT integration blocks.");
+    }
+    timer_on("NumIntHelper: potential_gradient");
+    const int max_points = numint_grid_->max_points();
+    const int max_functions = numint_grid_->max_functions();
+    std::shared_ptr<BasisSet> basisset = numint_grid_->primary();
+    const int natom = basisset->molecule()->natom();
+
+    std::vector<std::shared_ptr<PointFunctions>> numint_point_workers;
+    std::vector<SharedMatrix> G_local, U_local;
+    for (size_t i = 0; i < nthread_; i++) {
+        G_local.push_back(std::make_shared<Matrix>("G Temp", natom, 3));
+        U_local.push_back(std::make_shared<Matrix>("U Temp", max_points, max_functions));
+        auto point_tmp = std::make_shared<SAPFunctions>(basisset, max_points, max_functions);
+        point_tmp->set_ansatz(0);
+        point_tmp->set_deriv(1);
+        numint_point_workers.push_back(point_tmp);
+    }
+
+    int rank = 0;
+    // Traverse the blocks of points
+#pragma omp parallel for private(rank) schedule(dynamic) num_threads(nthread_)
+    for (size_t Q = 0; Q < numint_grid_->blocks().size(); Q++) {
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+
+        // Extract per-thread info
+        std::shared_ptr<BlockOPoints> block = numint_grid_->blocks()[Q];
+        std::shared_ptr<PointFunctions> worker = numint_point_workers[rank];
+
+        // Compute data on grid points
+        parallel_timer_on("Properties", rank);
+        worker->compute_points(block, false);
+
+        const std::vector<int>& function_map = block->functions_local_to_global();
+        int nlocal = function_map.size();
+
+        auto D_local = std::make_shared<Matrix>("Dlocal", max_functions, max_functions);
+        double** Dp = D->pointer();
+        double** D2p = D_local->pointer();
+        for (int ml = 0; ml < nlocal; ml++) {
+            int mg = function_map[ml];
+            for (int nl = 0; nl <= ml; nl++) {
+                int ng = function_map[nl];
+                double Dval = Dp[mg][ng];
+                D2p[ml][nl] = Dval;
+                D2p[nl][ml] = Dval;
+            }
+        }
+        parallel_timer_off("Properties", rank);
+
+        parallel_timer_on("finish operator", rank);
+        gradient_integrator(basisset, block, grid_data[Q], worker, G_local[rank], D_local, U_local[rank]);
+        parallel_timer_off("finish operator", rank);
+    }  // grid blocks
+    // Sum up the matrix
+    auto G = std::make_shared<Matrix>("NumIntHelper Gradient", natom, 3);
+    for (auto const& val : G_local) {
+        G->add(val);
+    }
+    G->print();
+    timer_off("NumIntHelper: potential_gradient");
+    return G;
 }
 }  // namespace psi
