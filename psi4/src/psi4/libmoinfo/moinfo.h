@@ -74,7 +74,6 @@ class MOInfo : public MOInfoBase {
        public:
         typedef std::bitset<2048> bitdet;  // adjust based on "size det"?
         SlaterDeterminant(const MOInfo*);
-        ~SlaterDeterminant();
         void set(int n) { bits.set(n); }
         bool test(int n) const { return (bits.test(n)); }
         bool is_closed_shell();
