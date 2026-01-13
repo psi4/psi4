@@ -424,6 +424,23 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if (self.iteration_ == 0) and self.sad_:
             self.form_initial_F()
         else:
+            # Reset IncFock if previous SOSCF change was large relative to convergence level
+            # This prevents IncFock error accumulation with fast-converging SOSCF
+            try:
+                prev_soscf_change = core.variable("PREV SOSCF D CHANGE")
+            except KeyError:
+                prev_soscf_change = None
+            try:
+                prev_dnorm = core.variable("SCF D NORM")
+            except KeyError:
+                prev_dnorm = None
+            if (prev_soscf_change is not None and prev_dnorm is not None
+                    and prev_dnorm > 0 and hasattr(self.jk(), 'clear_D_prev')):
+                if prev_soscf_change > prev_dnorm / 10.0:
+                    self.jk().clear_D_prev()
+            if prev_soscf_change is not None:
+                core.del_variable("PREV SOSCF D CHANGE")
+
             self.form_F()
         core.timer_off("HF: Form F")
 
@@ -549,9 +566,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.form_D()
         core.timer_off("HF: Form D")
 
-        # Conditional IncFock reset after SOSCF: now that form_D() has been called,
-        # we can compare the new density with the pre-SOSCF density
-        if D_before_soscf is not None and hasattr(self.jk(), 'clear_D_prev'):
+        # Store SOSCF density change for next iteration's IncFock reset check
+        # The check happens BEFORE form_F() in the next iteration to prevent errors
+        if D_before_soscf is not None:
             D_delta = self.Da().clone()
             D_delta.subtract(D_before_soscf)
             soscf_d_change = D_delta.rms()
@@ -561,12 +578,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 Db_delta.subtract(Db_before_soscf)
                 soscf_d_change = max(soscf_d_change, Db_delta.rms())
 
-            # Reset IncFock if SOSCF caused density change much larger than normal iteration change
-            # At late convergence (small Dnorm), be more aggressive with resets
-            # Never exceed 1e-4 (original threshold that works)
-            threshold = min(Dnorm * 10.0, 1e-4)
-            if soscf_d_change > threshold:
-                self.jk().clear_D_prev()
+            # Store for next iteration's pre-form_F() check
+            core.set_variable("PREV SOSCF D CHANGE", soscf_d_change)
 
         self.set_variable("SCF ITERATION ENERGY", SCFE)
         core.set_variable("SCF D NORM", Dnorm)
