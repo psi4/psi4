@@ -432,16 +432,13 @@ void DirectJK::compute_JK() {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
         if (density_screening_) ints[0]->update_density(D_ao_);
 
-        for (int thread = 1; thread < df_ints_num_threads_; thread++) {
-            ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
-        }
+        // Setup incfock BEFORE cloning - clones inherit data via copy constructor
         if (do_incfock_iter_) {
             ints[0]->update_delta_density(D_ref_);
             ints[0]->set_incfock_screening(use_incfock_screening_);
-            for (int thread = 1; thread < df_ints_num_threads_; thread++) {
-                ints[thread]->update_delta_density(D_ref_);
-                ints[thread]->set_incfock_screening(use_incfock_screening_);
-            }
+        }
+        for (int thread = 1; thread < df_ints_num_threads_; thread++) {
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
         build_JK_matrices(ints, D_ref_, temp, wK_ao_, nullptr, &wK_prev_);
     }

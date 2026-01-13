@@ -829,6 +829,17 @@ class PSI_API DirectJK : public JK {
     bool do_incfock_iter() { return do_incfock_iter_; }
 
     /**
+     * Clear previous density matrices, forcing full Fock rebuild on next iteration.
+     * Used to reset IncFock when large density changes occur (e.g., after SOSCF).
+     */
+    void clear_D_prev() {
+        D_prev_.clear();
+        J_prev_.clear();
+        K_prev_.clear();
+        wK_prev_.clear();
+    }
+
+    /**
     * Print header information regarding JK
     * type on output file
     */

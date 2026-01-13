@@ -1,0 +1,35 @@
+#! Test INCFOCK with SOSCF (Second-Order SCF)
+#! Validates IncFock stability with SOSCF orbital rotations
+
+print(' INCFOCK with SOSCF') #TEST
+
+molecule water {
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+}
+
+# Reference energy from scf_type direct with SOSCF but without INCFOCK
+Eref = -76.02665366188853  #TEST
+
+set {
+    basis cc-pvdz
+    scf_type direct
+    screening schwarz
+    soscf true
+    incfock true
+    e_convergence 1e-10
+    d_convergence 1e-8
+}
+
+# RHF with SOSCF + INCFOCK
+set reference rhf
+E = energy('scf')
+compare_values(Eref, E, 8, 'RHF SOSCF+INCFOCK') #TEST
+
+clean()
+
+# UHF with SOSCF + INCFOCK
+set reference uhf
+E = energy('scf')
+compare_values(Eref, E, 8, 'UHF SOSCF+INCFOCK') #TEST

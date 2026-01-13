@@ -1644,8 +1644,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- How often to rebuild the full Fock matrix when using incremental Fock (|scf__incfock|).
             Periodic rebuilds prevent error accumulation from the incremental procedure. -*/
         options.add_int("INCFOCK_FULL_FOCK_EVERY", 100);
-        /*- Screening threshold for incremental Fock build. If not set by user,
-            calculated automatically as d_convergence * 1e-2 -*/
+        /*- The density threshold at which to stop building the Fock matrix incrementally -*/
         options.add_double("INCFOCK_CONVERGENCE", 1.0e-10);
 
         /*- The screening tolerance used for ERI/Density sparsity in the LinK algorithm -*/

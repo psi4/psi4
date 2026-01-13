@@ -1,0 +1,27 @@
+#! Test INCFOCK with ROHF (Restricted Open-Shell Hartree-Fock)
+#! Validates IncFock for open-shell systems
+
+print(' INCFOCK with ROHF') #TEST
+
+molecule oxygen {
+    0 3
+    O
+}
+
+# Reference energy from scf_type direct
+Eref_rohf = -74.78751307462  #TEST
+
+set {
+    basis cc-pvdz
+    scf_type direct
+    screening schwarz
+    incfock true
+    incfock_convergence 1e-10
+    e_convergence 1e-10
+    d_convergence 1e-8
+    reference rohf
+}
+
+# ROHF with INCFOCK
+E = energy('scf')
+compare_values(Eref_rohf, E, 8, 'ROHF INCFOCK') #TEST

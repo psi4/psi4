@@ -360,6 +360,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         self.save_density_and_energy()
 
+        # For conditional IncFock reset after SOSCF (checked after form_D)
+        D_before_soscf = None
+        Db_before_soscf = None
+
         if efp_enabled:
             # EFP: Add efp contribution to Fock matrix
             self.H().copy(self.Horig)
@@ -455,6 +459,11 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 base_name = "SOSCF, nmicro="
 
             if not _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
+                # Save density before SOSCF for conditional IncFock reset
+                D_before_soscf = self.Da().clone()
+                if not self.same_a_b_dens():
+                    Db_before_soscf = self.Db().clone()
+
                 nmicro = self.soscf_update(core.get_option('SCF', 'SOSCF_CONV'),
                                            core.get_option('SCF', 'SOSCF_MIN_ITER'),
                                            core.get_option('SCF', 'SOSCF_MAX_ITER'),
@@ -466,6 +475,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                     self.find_occupation()
                     status.append(base_name + str(nmicro))
                 else:
+                    # SOSCF bounced, don't compare pre-SOSCF density with post-DIIS density
+                    D_before_soscf = None
+                    Db_before_soscf = None
                     if verbose > 0:
                         core.print_out("Did not take a SOSCF step, using normal convergence methods\n")
 
@@ -536,6 +548,25 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.timer_on("HF: Form D")
         self.form_D()
         core.timer_off("HF: Form D")
+
+        # Conditional IncFock reset after SOSCF: now that form_D() has been called,
+        # we can compare the new density with the pre-SOSCF density
+        if D_before_soscf is not None and hasattr(self.jk(), 'clear_D_prev'):
+            D_delta = self.Da().clone()
+            D_delta.subtract(D_before_soscf)
+            soscf_d_change = D_delta.rms()
+
+            if Db_before_soscf is not None:
+                Db_delta = self.Db().clone()
+                Db_delta.subtract(Db_before_soscf)
+                soscf_d_change = max(soscf_d_change, Db_delta.rms())
+
+            # Reset IncFock if SOSCF caused density change much larger than normal iteration change
+            # At late convergence (small Dnorm), be more aggressive with resets
+            # Never exceed 1e-4 (original threshold that works)
+            threshold = min(Dnorm * 10.0, 1e-4)
+            if soscf_d_change > threshold:
+                self.jk().clear_D_prev()
 
         self.set_variable("SCF ITERATION ENERGY", SCFE)
         core.set_variable("SCF D NORM", Dnorm)
