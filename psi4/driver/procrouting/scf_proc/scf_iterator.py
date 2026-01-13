@@ -567,8 +567,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.timer_off("HF: Form D")
 
         # Store SOSCF density change for next iteration's IncFock reset check
-        # The check happens BEFORE form_F() in the next iteration to prevent errors
-        if D_before_soscf is not None:
+        # Only compute if IncFock is available (DirectJK/CompositeJK have clear_D_prev)
+        if D_before_soscf is not None and hasattr(self.jk(), 'clear_D_prev'):
             D_delta = self.Da().clone()
             D_delta.subtract(D_before_soscf)
             soscf_d_change = D_delta.rms()
