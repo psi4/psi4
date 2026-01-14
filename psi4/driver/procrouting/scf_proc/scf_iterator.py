@@ -360,10 +360,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         self.save_density_and_energy()
 
-        # For conditional IncFock reset after SOSCF (checked after form_D)
-        D_before_soscf = None
-        Db_before_soscf = None
-
         if efp_enabled:
             # EFP: Add efp contribution to Fock matrix
             self.H().copy(self.Horig)
@@ -424,22 +420,11 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if (self.iteration_ == 0) and self.sad_:
             self.form_initial_F()
         else:
-            # Reset IncFock if previous SOSCF change was large relative to convergence level
-            # This prevents IncFock error accumulation with fast-converging SOSCF
-            try:
-                prev_soscf_change = core.variable("PREV SOSCF D CHANGE")
-            except KeyError:
-                prev_soscf_change = None
-            try:
-                prev_dnorm = core.variable("SCF D NORM")
-            except KeyError:
-                prev_dnorm = None
-            if (prev_soscf_change is not None and prev_dnorm is not None
-                    and prev_dnorm > 0 and hasattr(self.jk(), 'clear_D_prev')):
-                if prev_soscf_change > prev_dnorm / 10.0:
-                    self.jk().clear_D_prev()
-            if prev_soscf_change is not None:
-                core.del_variable("PREV SOSCF D CHANGE")
+            # SOSCF orbital rotations invalidate incremental Fock linearity assumption
+            in_soscf_phase = (soscf_enabled and self.iteration_ >= 3
+                              and Dnorm < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))
+            if in_soscf_phase and hasattr(self.jk(), 'clear_D_prev'):
+                self.jk().clear_D_prev()
 
             self.form_F()
         core.timer_off("HF: Form F")
@@ -476,11 +461,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 base_name = "SOSCF, nmicro="
 
             if not _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
-                # Save density before SOSCF for conditional IncFock reset
-                D_before_soscf = self.Da().clone()
-                if not self.same_a_b_dens():
-                    Db_before_soscf = self.Db().clone()
-
                 nmicro = self.soscf_update(core.get_option('SCF', 'SOSCF_CONV'),
                                            core.get_option('SCF', 'SOSCF_MIN_ITER'),
                                            core.get_option('SCF', 'SOSCF_MAX_ITER'),
@@ -492,12 +472,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                     self.find_occupation()
                     status.append(base_name + str(nmicro))
                 else:
-                    # SOSCF bounced, don't compare pre-SOSCF density with post-DIIS density
-                    D_before_soscf = None
-                    Db_before_soscf = None
-                    # SOSCF bounce disrupts density sequence - reset IncFock for clean restart
-                    if hasattr(self.jk(), 'clear_D_prev'):
-                        self.jk().clear_D_prev()
                     if verbose > 0:
                         core.print_out("Did not take a SOSCF step, using normal convergence methods\n")
 
@@ -568,21 +542,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.timer_on("HF: Form D")
         self.form_D()
         core.timer_off("HF: Form D")
-
-        # Store SOSCF density change for next iteration's IncFock reset check
-        # Only compute if IncFock is available (DirectJK/CompositeJK have clear_D_prev)
-        if D_before_soscf is not None and hasattr(self.jk(), 'clear_D_prev'):
-            D_delta = self.Da().clone()
-            D_delta.subtract(D_before_soscf)
-            soscf_d_change = D_delta.rms()
-
-            if Db_before_soscf is not None:
-                Db_delta = self.Db().clone()
-                Db_delta.subtract(Db_before_soscf)
-                soscf_d_change = max(soscf_d_change, Db_delta.rms())
-
-            # Store for next iteration's pre-form_F() check
-            core.set_variable("PREV SOSCF D CHANGE", soscf_d_change)
 
         self.set_variable("SCF ITERATION ENERGY", SCFE)
         core.set_variable("SCF D NORM", Dnorm)
