@@ -495,6 +495,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                     # SOSCF bounced, don't compare pre-SOSCF density with post-DIIS density
                     D_before_soscf = None
                     Db_before_soscf = None
+                    # SOSCF bounce disrupts density sequence - reset IncFock for clean restart
+                    if hasattr(self.jk(), 'clear_D_prev'):
+                        self.jk().clear_D_prev()
                     if verbose > 0:
                         core.print_out("Did not take a SOSCF step, using normal convergence methods\n")
 
