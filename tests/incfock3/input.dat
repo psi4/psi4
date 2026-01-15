@@ -1,5 +1,8 @@
 #! Test INCFOCK with SOSCF (Second-Order SCF)
 #! Validates IncFock stability with SOSCF orbital rotations
+#! Uses screening=DENSITY, validates energy AND iteration count
+#! Note: iteration count with incfock=true differs from incfock=false
+#! because IncFock is disabled during SOSCF phase
 
 print(' INCFOCK with SOSCF') #TEST
 
@@ -9,13 +12,17 @@ molecule water {
     H 1 0.96 2 104.5
 }
 
-# Reference energy from scf_type direct with SOSCF but without INCFOCK
-Eref = -76.02665366188853  #TEST
+# Reference values from incfock=TRUE, screening=density, soscf=true runs
+# (iterations differ from incfock=false due to SOSCF/IncFock interaction)
+Eref_rhf = -76.026653661805
+Iref_rhf = 17
+Eref_uhf = -76.026653661888
+Iref_uhf = 16
 
 set {
     basis cc-pvdz
     scf_type direct
-    screening schwarz
+    screening density
     soscf true
     incfock true
     e_convergence 1e-10
@@ -24,12 +31,14 @@ set {
 
 # RHF with SOSCF + INCFOCK
 set reference rhf
-E = energy('scf')
-compare_values(Eref, E, 8, 'RHF SOSCF+INCFOCK') #TEST
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref_rhf, E, 8, 'RHF SOSCF+INCFOCK DENSITY: Energy') #TEST
+compare_integers(Iref_rhf, wfn.iteration_, 'RHF SOSCF+INCFOCK DENSITY: Iterations') #TEST
 
 clean()
 
 # UHF with SOSCF + INCFOCK
 set reference uhf
-E = energy('scf')
-compare_values(Eref, E, 8, 'UHF SOSCF+INCFOCK') #TEST
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref_uhf, E, 8, 'UHF SOSCF+INCFOCK DENSITY: Energy') #TEST
+compare_integers(Iref_uhf, wfn.iteration_, 'UHF SOSCF+INCFOCK DENSITY: Iterations') #TEST

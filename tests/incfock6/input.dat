@@ -1,0 +1,39 @@
+#! Test INCFOCK with ROKS (Restricted Open-Shell Kohn-Sham)
+#! Extends coverage: incfock4 tests ROHF, this tests ROHF+DFT
+#! Uses screening=DENSITY, validates energy AND iteration count
+
+print(' INCFOCK with ROKS') #TEST
+
+molecule oxygen {
+    0 3
+    O
+}
+
+# Reference values from incfock=false, screening=density runs
+Eref_b3lyp = -75.066562484773
+Iref_b3lyp = 13
+Eref_camb3lyp = -75.043022167614
+Iref_camb3lyp = 14
+
+set {
+    basis cc-pvdz
+    scf_type direct
+    screening density
+    incfock true
+    incfock_convergence 1e-10
+    e_convergence 1e-10
+    d_convergence 1e-8
+    reference rohf
+}
+
+# ROKS B3LYP with IncFock (global hybrid + open-shell)
+E, wfn = energy('b3lyp', return_wfn=True)
+compare_values(Eref_b3lyp, E, 6, 'ROKS B3LYP INCFOCK DENSITY: Energy') #TEST
+compare_integers(Iref_b3lyp, wfn.iteration_, 'ROKS B3LYP INCFOCK DENSITY: Iterations') #TEST
+
+clean()
+
+# ROKS CAM-B3LYP with IncFock (range-separated + open-shell)
+E, wfn = energy('cam-b3lyp', return_wfn=True)
+compare_values(Eref_camb3lyp, E, 6, 'ROKS CAM-B3LYP INCFOCK DENSITY: Energy') #TEST
+compare_integers(Iref_camb3lyp, wfn.iteration_, 'ROKS CAM-B3LYP INCFOCK DENSITY: Iterations') #TEST

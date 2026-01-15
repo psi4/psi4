@@ -1,5 +1,6 @@
 #! Test INCFOCK with range-separated functionals (CAM-B3LYP, wB97X)
 #! Regression test for wK accumulation bug fix
+#! Uses screening=DENSITY, validates energy AND iteration count
 
 print(' INCFOCK with range-separated functionals') #TEST
 
@@ -9,14 +10,16 @@ molecule water {
     H 1 0.96 2 104.5
 }
 
-# Reference energies from scf_type direct without INCFOCK
-Eref_camb3lyp = -76.39185490520970  #TEST
-Eref_wb97x = -76.40040787136924  #TEST
+# Reference values from incfock=false, screening=density runs
+Eref_camb3lyp = -76.391854905210
+Iref_camb3lyp = 15
+Eref_wb97x = -76.400407871369
+Iref_wb97x = 17
 
 set {
     basis cc-pvdz
     scf_type direct
-    screening schwarz
+    screening density
     incfock true
     incfock_convergence 1e-10
     e_convergence 1e-10
@@ -24,11 +27,13 @@ set {
 }
 
 # CAM-B3LYP with INCFOCK
-E = energy('cam-b3lyp')
-compare_values(Eref_camb3lyp, E, 8, 'CAM-B3LYP INCFOCK') #TEST
+E, wfn = energy('cam-b3lyp', return_wfn=True)
+compare_values(Eref_camb3lyp, E, 8, 'CAM-B3LYP INCFOCK DENSITY: Energy') #TEST
+compare_integers(Iref_camb3lyp, wfn.iteration_, 'CAM-B3LYP INCFOCK DENSITY: Iterations') #TEST
 
 clean()
 
 # wB97X with INCFOCK
-E = energy('wb97x')
-compare_values(Eref_wb97x, E, 8, 'wB97X INCFOCK') #TEST
+E, wfn = energy('wb97x', return_wfn=True)
+compare_values(Eref_wb97x, E, 8, 'wB97X INCFOCK DENSITY: Energy') #TEST
+compare_integers(Iref_wb97x, wfn.iteration_, 'wB97X INCFOCK DENSITY: Iterations') #TEST

@@ -1,4 +1,5 @@
 #! Test INCFOCK with screening=NONE (regression test for null pointer crash fix)
+#! Validates energy AND iteration count match IncFock OFF
 
 print(' INCFOCK with screening=NONE') #TEST
 
@@ -8,8 +9,9 @@ molecule water {
     H 1 0.96 2 104.5
 }
 
-# Reference energy from scf_type direct without INCFOCK
-Eref = -76.02665366188853  #TEST
+# Reference values from incfock=false runs
+Eref = -76.026653661889
+Iref = 16
 
 set {
     basis cc-pvdz
@@ -23,10 +25,14 @@ set {
 
 # RHF with INCFOCK + screening=NONE
 set reference rhf
-E = energy('scf')
-compare_values(Eref, E, 8, 'RHF INCFOCK screening=NONE') #TEST
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'RHF INCFOCK NONE: Energy') #TEST
+compare_integers(Iref, wfn.iteration_, 'RHF INCFOCK NONE: Iterations') #TEST
+
+clean()
 
 # UHF with INCFOCK + screening=NONE
 set reference uhf
-E = energy('scf')
-compare_values(Eref, E, 8, 'UHF INCFOCK screening=NONE') #TEST
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'UHF INCFOCK NONE: Energy') #TEST
+compare_integers(Iref, wfn.iteration_, 'UHF INCFOCK NONE: Iterations') #TEST

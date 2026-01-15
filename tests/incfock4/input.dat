@@ -1,5 +1,6 @@
 #! Test INCFOCK with ROHF (Restricted Open-Shell Hartree-Fock)
 #! Validates IncFock for open-shell systems
+#! Uses screening=DENSITY, validates energy AND iteration count
 
 print(' INCFOCK with ROHF') #TEST
 
@@ -8,13 +9,14 @@ molecule oxygen {
     O
 }
 
-# Reference energy from scf_type direct
-Eref_rohf = -74.78751307462  #TEST
+# Reference values from incfock=false, screening=density runs
+Eref_rohf = -74.787513074624
+Iref_rohf = 14
 
 set {
     basis cc-pvdz
     scf_type direct
-    screening schwarz
+    screening density
     incfock true
     incfock_convergence 1e-10
     e_convergence 1e-10
@@ -23,5 +25,6 @@ set {
 }
 
 # ROHF with INCFOCK
-E = energy('scf')
-compare_values(Eref_rohf, E, 8, 'ROHF INCFOCK') #TEST
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref_rohf, E, 8, 'ROHF INCFOCK DENSITY: Energy') #TEST
+compare_integers(Iref_rohf, wfn.iteration_, 'ROHF INCFOCK DENSITY: Iterations') #TEST

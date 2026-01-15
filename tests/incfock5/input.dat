@@ -1,0 +1,76 @@
+#! Test INCFOCK with all screening types (SCHWARZ, DENSITY, CSAM)
+#! Main feature of this PR: delta-density screening now works with all screening types
+#! Validates energy AND iteration count match IncFock OFF
+
+print(' INCFOCK with all screening types') #TEST
+
+molecule water {
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+}
+
+# Reference values from incfock=false runs (all screening types give same energy/iterations)
+Eref = -76.026653661889
+Iref = 16
+
+set {
+    basis cc-pvdz
+    scf_type direct
+    incfock true
+    incfock_convergence 1e-10
+    e_convergence 1e-10
+    d_convergence 1e-8
+}
+
+# === RHF Tests ===
+set reference rhf
+
+# Test 1: RHF + SCHWARZ + IncFock
+set screening schwarz
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'RHF INCFOCK SCHWARZ: Energy') #TEST
+compare_integers(Iref, wfn.iteration_, 'RHF INCFOCK SCHWARZ: Iterations') #TEST
+
+clean()
+
+# Test 2: RHF + DENSITY + IncFock
+set screening density
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'RHF INCFOCK DENSITY: Energy') #TEST
+compare_integers(Iref, wfn.iteration_, 'RHF INCFOCK DENSITY: Iterations') #TEST
+
+clean()
+
+# Test 3: RHF + CSAM + IncFock
+set screening csam
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'RHF INCFOCK CSAM: Energy') #TEST
+compare_integers(Iref, wfn.iteration_, 'RHF INCFOCK CSAM: Iterations') #TEST
+
+clean()
+
+# === UHF Tests (closed-shell, same energy as RHF) ===
+set reference uhf
+
+# Test 4: UHF + SCHWARZ + IncFock
+set screening schwarz
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'UHF INCFOCK SCHWARZ: Energy') #TEST
+compare_integers(Iref, wfn.iteration_, 'UHF INCFOCK SCHWARZ: Iterations') #TEST
+
+clean()
+
+# Test 5: UHF + DENSITY + IncFock
+set screening density
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'UHF INCFOCK DENSITY: Energy') #TEST
+compare_integers(Iref, wfn.iteration_, 'UHF INCFOCK DENSITY: Iterations') #TEST
+
+clean()
+
+# Test 6: UHF + CSAM + IncFock
+set screening csam
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'UHF INCFOCK CSAM: Energy') #TEST
+compare_integers(Iref, wfn.iteration_, 'UHF INCFOCK CSAM: Iterations') #TEST
