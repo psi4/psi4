@@ -15,9 +15,9 @@ molecule water {
 # Reference values from incfock=TRUE, screening=density, soscf=true runs
 # (iterations differ from incfock=false due to SOSCF/IncFock interaction)
 Eref_rhf = -76.026653661805
-Iref_rhf = 17
+Iref_rhf = 12
 Eref_uhf = -76.026653661888
-Iref_uhf = 16
+Iref_uhf = 12
 
 set {
     basis cc-pvdz

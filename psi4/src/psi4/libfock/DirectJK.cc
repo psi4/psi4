@@ -141,30 +141,12 @@ void DirectJK::preiterations() {
 
 void DirectJK::incfock_setup() {
     if (do_incfock_iter_) {
+        // Incremental iteration: compute delta-density
+        // D_prev_ guaranteed to be ready (checked in do_incfock_iter_ condition)
         size_t njk = D_ao_.size();
-
-        // If there is no previous pseudo-density, this iteration is normal
-        if (initial_iteration_ || D_prev_.size() != njk) {
-            initial_iteration_ = true;
-
-            D_ref_ = D_ao_;
-            zero();
-
-            // Initialize prev_ matrices for accumulation
-            J_prev_.clear();
-            K_prev_.clear();
-            wK_prev_.clear();
-            for (size_t jki = 0; jki < njk; jki++) {
-                if (do_J_) J_prev_.push_back(J_ao_[jki]->clone());
-                if (do_K_) K_prev_.push_back(K_ao_[jki]->clone());
-                if (do_wK_) wK_prev_.push_back(wK_ao_[jki]->clone());
-            }
-        } else {
-            // Incremental iteration: compute delta-density
-            for (size_t jki = 0; jki < njk; jki++) {
-                D_ref_[jki] = D_ao_[jki]->clone();
-                D_ref_[jki]->subtract(D_prev_[jki]);
-            }
+        for (size_t jki = 0; jki < njk; jki++) {
+            D_ref_[jki] = D_ao_[jki]->clone();
+            D_ref_[jki]->subtract(D_prev_[jki]);
         }
     } else {
         D_ref_ = D_ao_;
@@ -398,8 +380,10 @@ void DirectJK::compute_JK() {
         int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
         double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
         double Dnorm = Process::environment.globals["SCF D NORM"];
-        // Do IFB on this iteration?
-        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+        // Incremental Fock requires: (1) at least one full build completed, (2) D_prev_ structure matches D_ao_
+        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ &&
+                           (incfock_count_ > 0) && (D_prev_.size() == D_ao_.size()) &&
+                           (incfock_count_ % reset != reset - 1);
 
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
 
