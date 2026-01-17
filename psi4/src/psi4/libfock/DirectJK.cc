@@ -380,11 +380,26 @@ void DirectJK::compute_JK() {
         int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
         double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
         double Dnorm = Process::environment.globals["SCF D NORM"];
-        // Incremental Fock requires: (1) at least one full build completed, (2) D_prev_ structure matches D_ao_
+
+        // Incremental Fock build requires all conditions to be met:
+        // 1. Dnorm >= incfock_conv: density change above threshold for incremental to be worthwhile
+        // 2. Not initial iteration: first JK call must do full build to establish baseline
+        // 3. D_prev_ ready: previous density matrices available and correct size
+        // 4. Full build done: at least one full build since last clear_D_prev (ensures D_prev_ provenance)
+        // 5. Not periodic reset: every INCFOCK_FULL_FOCK_EVERY iterations, force full rebuild
         do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ &&
-                           (incfock_count_ > 0) && (D_prev_.size() == D_ao_.size()) &&
+                           (D_prev_.size() == D_ao_.size()) && !incfock_needs_full_build_ &&
                            (incfock_count_ % reset != reset - 1);
 
+        // After a full build in the IncFock regime, incremental builds can resume.
+        // Also clear after initial iteration (to enable IncFock on iter 2).
+        // But NOT when Dnorm < incfock_conv (SOSCF phase) - D_prev_ from SOSCF
+        // has different provenance and shouldn't seed DIIS incremental builds.
+        if (!do_incfock_iter_ && (initial_iteration_ || Dnorm >= incfock_conv)) {
+            incfock_needs_full_build_ = false;
+        }
+
+        // Count iterations for periodic reset
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
 
         incfock_setup();

@@ -738,9 +738,15 @@ class PSI_API DirectJK : public JK {
 
     /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
-    /// The number of times INCFOCK has been performed (includes resets)
+    /// The number of incremental Fock iterations performed (for periodic full rebuild)
     int incfock_count_;
+    /// Whether this iteration uses incremental Fock build
     bool do_incfock_iter_;
+    /// True when a full Fock build is required before IncFock can resume.
+    /// Set after clear_D_prev() or at initialization; cleared after a full build
+    /// in the IncFock regime (Dnorm >= incfock_conv). This ensures proper
+    /// D_prev_ provenance when transitioning between SCF phases (e.g., DIIS -> SOSCF -> DIIS).
+    bool incfock_needs_full_build_ = true;
     /// Whether to use delta-density screening (disabled when Dnorm is small)
     bool use_incfock_screening_ = true;
 
@@ -829,14 +835,17 @@ class PSI_API DirectJK : public JK {
     bool do_incfock_iter() { return do_incfock_iter_; }
 
     /**
-     * Clear previous density matrices, forcing full Fock rebuild on next iteration.
-     * Used to reset IncFock when large density changes occur (e.g., after SOSCF).
+     * Clear previous density/Fock matrices and reset IncFock state.
+     * Forces a full Fock rebuild before incremental builds can resume.
+     * Called when density matrix provenance changes (e.g., entering SOSCF phase).
      */
     void clear_D_prev() {
         D_prev_.clear();
         J_prev_.clear();
         K_prev_.clear();
         wK_prev_.clear();
+        incfock_needs_full_build_ = true;
+        incfock_count_ = 0;
     }
 
     /**
@@ -1253,9 +1262,14 @@ class PSI_API CompositeJK : public JK {
     
     /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
-    /// The number of times INCFOCK has been performed (includes resets)
+    /// The number of incremental Fock iterations performed (for periodic full rebuild)
     int incfock_count_;
+    /// Whether this iteration uses incremental Fock build
     bool do_incfock_iter_;
+    /// True when a full Fock build is required before IncFock can resume.
+    /// Set after clear_D_prev() or at initialization; cleared after a full build
+    /// in the IncFock regime (Dnorm >= incfock_conv).
+    bool incfock_needs_full_build_ = true;
 
     /// Previous iteration pseudo-density matrix
     std::vector<SharedMatrix> D_prev_;
@@ -1271,7 +1285,7 @@ class PSI_API CompositeJK : public JK {
 
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
-  
+
     size_t memory_estimate() override;
 
     // => Required Algorithm-Specific Methods <= //
@@ -1315,9 +1329,16 @@ class PSI_API CompositeJK : public JK {
     bool do_incfock_iter() { return do_incfock_iter_; }
 
     /**
-     * Clear D_prev_
+     * Clear previous density/Fock matrices and reset IncFock state.
+     * Forces a full Fock rebuild before incremental builds can resume.
      */
-    void clear_D_prev() { D_prev_.clear();}
+    void clear_D_prev() {
+        D_prev_.clear();
+        J_prev_.clear();
+        K_prev_.clear();
+        incfock_needs_full_build_ = true;
+        incfock_count_ = 0;
+    }
 
     // => Knobs <= //
     std::string name() override { return j_algo_->name() + "+" + k_algo_->name(); }

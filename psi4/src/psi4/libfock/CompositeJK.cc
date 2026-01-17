@@ -346,14 +346,27 @@ void CompositeJK::compute_JK() {
         auto reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
         auto incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
         auto Dnorm = Process::environment.globals["SCF D NORM"];
-        // Do IFB on this iteration?
-        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+
+        // Incremental Fock build requires all conditions to be met:
+        // 1. Dnorm >= incfock_conv: density change above threshold for incremental to be worthwhile
+        // 2. Not initial iteration: first JK call must do full build to establish baseline
+        // 3. Full build done: at least one full build since last clear_D_prev (ensures D_prev_ provenance)
+        // 4. Not periodic reset: every INCFOCK_FULL_FOCK_EVERY iterations, force full rebuild
+        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ &&
+                           !incfock_needs_full_build_ && (incfock_count_ % reset != reset - 1);
+
+        // After a full build in the IncFock regime, incremental builds can resume.
+        // Also clear after initial iteration. But NOT during SOSCF (Dnorm < incfock_conv).
+        if (!do_incfock_iter_ && (initial_iteration_ || Dnorm >= incfock_conv)) {
+            incfock_needs_full_build_ = false;
+        }
 
         if (k_algo_->name() == "sn-LinK") {
-            auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_); 
+            auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_);
             k_algo_derived->set_incfock_iter(do_incfock_iter_);
         }
 
+        // Count iterations for periodic reset
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
 
         incfock_setup();
