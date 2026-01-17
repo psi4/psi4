@@ -327,12 +327,14 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     std::string reference = options_.get_str("REFERENCE");
 
     // We guess occ x vir block size by the size of x to make this method easy to use
+    // Note: ROKS uses the same orbital structure as ROHF (both have socc overlap)
+    bool is_rohf_type = (reference == "ROHF") || (reference == "ROKS");
     Dimension tsize = x->colspi() + x->rowspi();
-    if ((reference != "ROHF") && (tsize != nmopi_)) {
+    if (!is_rohf_type && (tsize != nmopi_)) {
         throw PSIEXCEPTION("HF::rotate_orbitals: x dimensions do not match nmo_ dimension.");
     }
     tsize = x->colspi() + x->rowspi() - soccpi();
-    if ((reference == "ROHF") && (tsize != nmopi_)) {
+    if (is_rohf_type && (tsize != nmopi_)) {
         throw PSIEXCEPTION("HF::rotate_orbitals: x dimensions do not match nmo_ dimension.");
     }
 

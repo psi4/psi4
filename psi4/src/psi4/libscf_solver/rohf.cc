@@ -536,9 +536,6 @@ double ROHF::compute_E() {
 }
 
 void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
-    if (functional_->needs_xc()) {
-        throw PSIEXCEPTION("SCF: Cannot yet compute DFT Hessian-vector prodcuts.\n");
-    }
     // Index reference
     // left = IAJB + IAjb, right = iajb + iaJB
     // i = docc, a = socc, p = pure virtual
@@ -612,8 +609,13 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
     Cl.clear();
     Cr.clear();
 
-    // If scf_type is DF we can do some extra JK voodo
-    if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || (options_.get_str("SCF_TYPE") == "CD")) {
+    // Check actual JK object type (not SCF_TYPE option) to select correct Hx algorithm
+    std::string jk_name = jk_->name();
+    bool use_df_hx = (jk_name.find("DF") != std::string::npos) || (jk_name == "CDJK");
+    if (print_ > 2) {
+        outfile->Printf("    ROHF::Hx JK type: %s, using %s path\n", jk_name.c_str(), use_df_hx ? "DF" : "Direct");
+    }
+    if (use_df_hx) {
         auto Cdocc = Ca_->get_block({dim_zero, nsopi_}, {dim_zero, docc});
         Cdocc->set_name("Cdocc");
 
@@ -660,7 +662,31 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
         Cr.push_back(Cr_a);
         Cr.push_back(Csocc);
 
+        // Hx density differs from SCF density - force full build and preserve D_prev_
+        jk_->require_full_build();
         jk_->compute();
+
+        // XC contribution: build perturbation densities for ROHF orbital subspaces
+        //   Dx_a = Cocc * x[:, socc:] * Cpvir^T   (alpha virtual = pvir only)
+        //   Dx_b = Cdocc * x[0:docc, :] * Cvir_beta^T  (beta virtual = socc + pvir)
+        std::vector<SharedMatrix> Vx_xc;
+        if (functional_->needs_xc()) {
+            auto Cpvir = Ca_->get_block({dim_zero, nsopi_}, {occpi, nmopi_});
+            auto Cvir_beta = Ca_->get_block({dim_zero, nsopi_}, {docc, nmopi_});
+
+            auto x_pvir = x->get_block({dim_zero, occpi}, {socc, virpi});
+            auto Dx_a = linalg::triplet(Cocc, x_pvir, Cpvir, false, false, true);
+
+            auto x_docc = x->get_block({dim_zero, docc}, {dim_zero, virpi});
+            auto Dx_b = linalg::triplet(Cdocc, x_docc, Cvir_beta, false, false, true);
+
+            std::vector<SharedMatrix> Dx = {Dx_a, Dx_b};
+            auto Vx_a = std::make_shared<Matrix>("Vx alpha", nsopi_, nsopi_);
+            auto Vx_b = std::make_shared<Matrix>("Vx beta", nsopi_, nsopi_);
+            Vx_xc = {Vx_a, Vx_b};
+
+            potential_->compute_Vx(Dx, Vx_xc);
+        }
 
         // Just in case someone only clears out Cleft and gets very strange errors
         Cl.clear();
@@ -679,6 +705,15 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
         J[0]->add(J[1]);
         J[0]->add(J[2]);
         J[1]->copy(J[0]);
+
+        // Add XC contribution with -0.5 coefficient:
+        // - ROHF builds positive Dx, UHF builds negative Dx (via R->scale(-1.0))
+        // - Since compute_Vx is linear in Dx, opposite sign requires negation
+        // - Effective: -0.5 * 4.0 (from scale(4.0)) = -2.0, vs UHF's +2.0 on negative Dx
+        if (functional_->needs_xc()) {
+            J[0]->axpy(-0.5, Vx_xc[0]);
+            J[1]->axpy(-0.5, Vx_xc[1]);
+        }
 
         K[2]->add(K[0]);
         K[0]->add(K[1]);
@@ -737,7 +772,29 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
         Cr.push_back(Cr_a);
         Cr.push_back(Cr_b);
 
+        // Hx density differs from SCF density - force full build and preserve D_prev_
+        jk_->require_full_build();
         jk_->compute();
+
+        // XC contribution: same perturbation density logic as DF path
+        std::vector<SharedMatrix> Vx_xc;
+        if (functional_->needs_xc()) {
+            auto Cpvir = Ca_->get_block({dim_zero, nsopi_}, {occpi, nmopi_});
+            auto Cvir_beta = Ca_->get_block({dim_zero, nsopi_}, {docc, nmopi_});
+
+            auto x_pvir = x->get_block({dim_zero, occpi}, {socc, virpi});
+            auto Dx_a = linalg::triplet(Cocc, x_pvir, Cpvir, false, false, true);
+
+            auto x_docc = x->get_block({dim_zero, docc}, {dim_zero, virpi});
+            auto Dx_b = linalg::triplet(Cdocc, x_docc, Cvir_beta, false, false, true);
+
+            std::vector<SharedMatrix> Dx = {Dx_a, Dx_b};
+            auto Vx_a = std::make_shared<Matrix>("Vx alpha", nsopi_, nsopi_);
+            auto Vx_b = std::make_shared<Matrix>("Vx beta", nsopi_, nsopi_);
+            Vx_xc = {Vx_a, Vx_b};
+
+            potential_->compute_Vx(Dx, Vx_xc);
+        }
 
         // Just in case someone only clears out Cleft and gets very strange errors
         Cl.clear();
@@ -752,6 +809,15 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
         // Collect left terms
         J[0]->add(J[1]);
         J[1]->copy(J[0]);
+
+        // Add XC contribution with -0.5 coefficient:
+        // - ROHF builds positive Dx, UHF builds negative Dx (via R->scale(-1.0))
+        // - Since compute_Vx is linear in Dx, opposite sign requires negation
+        // - Effective: -0.5 * 4.0 (from scale(4.0)) = -2.0, vs UHF's +2.0 on negative Dx
+        if (functional_->needs_xc()) {
+            J[0]->axpy(-0.5, Vx_xc[0]);
+            J[1]->axpy(-0.5, Vx_xc[1]);
+        }
 
         K[0]->scale(0.5);
         J[0]->subtract(K[0]);

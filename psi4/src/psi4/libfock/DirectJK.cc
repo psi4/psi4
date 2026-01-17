@@ -155,6 +155,12 @@ void DirectJK::incfock_setup() {
 }
 
 void DirectJK::incfock_postiter() {
+    // Skip saving D_prev_ if this was an Hx call (different density provenance)
+    if (incfock_skip_save_) {
+        incfock_skip_save_ = false;  // Clear flag for next call
+        return;
+    }
+
     auto njk = D_ao_.size();
 
     // Save density for next iteration - reuse existing matrices if possible

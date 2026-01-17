@@ -584,6 +584,12 @@ class PSI_API JK {
     * type on output file
     */
     virtual void print_header() const = 0;
+
+    /**
+     * Force the next compute() to build J/K from scratch, ignoring any cached D_prev_.
+     * Call this before computing J/K for a density unrelated to the SCF iteration sequence.
+     */
+    virtual void require_full_build() {}
 };
 
 // => APPLIED CLASSES <= //
@@ -749,6 +755,8 @@ class PSI_API DirectJK : public JK {
     bool incfock_needs_full_build_ = true;
     /// Whether to use delta-density screening (disabled when Dnorm is small)
     bool use_incfock_screening_ = true;
+    /// Skip saving D_prev_ in postiter (for Hx calls that use different density)
+    bool incfock_skip_save_ = false;
 
     /// Previous iteration pseudo-density matrix
     std::vector<SharedMatrix> D_prev_;
@@ -846,6 +854,12 @@ class PSI_API DirectJK : public JK {
         wK_prev_.clear();
         incfock_needs_full_build_ = true;
         incfock_count_ = 0;
+    }
+
+    /// Force full build and skip D_prev_ save (preserves SCF density reference)
+    void require_full_build() override {
+        incfock_needs_full_build_ = true;
+        incfock_skip_save_ = true;
     }
 
     /**
@@ -1270,6 +1284,8 @@ class PSI_API CompositeJK : public JK {
     /// Set after clear_D_prev() or at initialization; cleared after a full build
     /// in the IncFock regime (Dnorm >= incfock_conv).
     bool incfock_needs_full_build_ = true;
+    /// Skip saving D_prev_ in postiter (for Hx calls that use different density)
+    bool incfock_skip_save_ = false;
 
     /// Previous iteration pseudo-density matrix
     std::vector<SharedMatrix> D_prev_;
@@ -1338,6 +1354,12 @@ class PSI_API CompositeJK : public JK {
         K_prev_.clear();
         incfock_needs_full_build_ = true;
         incfock_count_ = 0;
+    }
+
+    /// Force full build and skip D_prev_ save (preserves SCF density reference)
+    void require_full_build() override {
+        incfock_needs_full_build_ = true;
+        incfock_skip_save_ = true;
     }
 
     // => Knobs <= //
