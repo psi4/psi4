@@ -1640,7 +1640,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             For |globals__orbital_optimizer_package| = `OOO`, sets diis_threshold. -*/
         options.add_double("SCF_INITIAL_FINISH_DIIS_TRANSITION", 1.0E-4);
         /*- Do perform incremental Fock build? -*/
-        options.add_bool("INCFOCK", false);
+        options.add_bool("INCFOCK", true);
         /*- How often to rebuild the full Fock matrix when using incremental Fock (|scf__incfock|).
             Periodic rebuilds prevent error accumulation from the incremental procedure. -*/
         options.add_int("INCFOCK_FULL_FOCK_EVERY", 100);
