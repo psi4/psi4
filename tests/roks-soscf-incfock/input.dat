@@ -1,0 +1,30 @@
+#! ROKS + SOSCF + IncFock with range-separated functional (CAM-B3LYP)
+#! Tests XC Hessian-vector products implementation in ROHF::Hx()
+
+print(' ROKS SOSCF with IncFock and range-separated functional') #TEST
+
+molecule li {
+    0 2
+    Li 0 0 0
+    symmetry c1
+}
+
+# Reference from converged calculation
+Eref_camb3lyp = -7.469766603468
+Iref_camb3lyp = 15
+
+set {
+    basis cc-pVDZ
+    reference roks
+    scf_type direct
+    incfock true
+    e_convergence 1e-10
+    d_convergence 1e-8
+    soscf true
+    soscf_start_convergence 1e-3
+    maxiter 50
+}
+
+E, wfn = energy('cam-b3lyp', return_wfn=True)
+compare_values(Eref_camb3lyp, E, 8, 'ROKS SOSCF CAM-B3LYP: Energy') #TEST
+compare_integers(Iref_camb3lyp, wfn.iteration_, 'ROKS SOSCF CAM-B3LYP: Iterations') #TEST
