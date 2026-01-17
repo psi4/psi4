@@ -350,10 +350,12 @@ void CompositeJK::compute_JK() {
         // Incremental Fock build requires all conditions to be met:
         // 1. Dnorm >= incfock_conv: density change above threshold for incremental to be worthwhile
         // 2. Not initial iteration: first JK call must do full build to establish baseline
-        // 3. Full build done: at least one full build since last clear_D_prev (ensures D_prev_ provenance)
-        // 4. Not periodic reset: every INCFOCK_FULL_FOCK_EVERY iterations, force full rebuild
+        // 3. D_prev_ ready: previous density matrices available and correct size
+        // 4. Full build done: at least one full build since last clear_D_prev (ensures D_prev_ provenance)
+        // 5. Not periodic reset: every INCFOCK_FULL_FOCK_EVERY iterations, force full rebuild
         do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ &&
-                           !incfock_needs_full_build_ && (incfock_count_ % reset != reset - 1);
+                           (D_prev_.size() == D_ao_.size()) && !incfock_needs_full_build_ &&
+                           (incfock_count_ % reset != reset - 1);
 
         // After a full build in the IncFock regime, incremental builds can resume.
         // Also clear after initial iteration. But NOT during SOSCF (Dnorm < incfock_conv).
