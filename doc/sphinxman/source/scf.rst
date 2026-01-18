@@ -815,7 +815,7 @@ Incremental Fock matrix construction (IncFock), described in [Haser:1989:104]_, 
 using the difference in the density matrix between iterations, rather than the full density matrix.
 This approach is enabled by default (|scf__incfock| = ``true``) and works with any screening method
 (SCHWARZ, CSAM, DENSITY, or NONE), applying delta-density screening to skip shell quartets with
-negligible density changes.
+negligible density changes. For implementation details and benchmarks, see `PR #3348 <https://github.com/psi4/psi4/pull/3348>`_.
 
 We have added the automatic capability to use the extremely fast DF
 code for intermediate convergence of the orbitals, for |globals__scf_type|
