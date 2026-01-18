@@ -149,7 +149,7 @@ def select_mp2(name, **kwargs):
         elif mtd_type == 'CD':
             if module in ['', 'OCC']:
                 func = run_dfocc
-    elif reference in ['RKS', 'UKS']:
+    elif reference in ['RKS', 'UKS', 'ROKS']:
         if mtd_type == 'DF':
             if module in ['', 'DFMP2']:
                 func = run_dfmp2
@@ -2158,7 +2158,7 @@ def run_dfocc(name, **kwargs):
                                             "RIFIT", core.get_global_option("BASIS"))
         ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
-    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS']:
         ref_wfn.semicanonicalize()
 
     dfocc_wfn = core.dfocc(ref_wfn)
@@ -2260,7 +2260,7 @@ def run_dfocc_gradient(name, **kwargs):
                                         "RIFIT", core.get_global_option("BASIS"))
     ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
-    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS']:
         ref_wfn.semicanonicalize()
     dfocc_wfn = core.dfocc(ref_wfn)
 
@@ -2336,7 +2336,7 @@ def run_dfocc_property(name, **kwargs):
                                         "RIFIT", core.get_global_option("BASIS"))
     ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
-    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS']:
         ref_wfn.semicanonicalize()
     dfocc_wfn = core.dfocc(ref_wfn)
 
@@ -2393,7 +2393,7 @@ def run_qchf(name, **kwargs):
             raise ValidationError("""  QCHF does not make use of molecular symmetry: """
                                   """reference wavefunction must be C1.\n""")
 
-    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS']:
         ref_wfn.semicanonicalize()
     dfocc_wfn = core.dfocc(ref_wfn)
 
@@ -2470,7 +2470,7 @@ def run_occ(name, **kwargs):
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
-    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS']:
         ref_wfn.semicanonicalize()
 
     occ_wfn = core.occ(ref_wfn)
@@ -2540,7 +2540,7 @@ def run_occ_gradient(name, **kwargs):
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
-    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS']:
         ref_wfn.semicanonicalize()
 
     occ_wfn = core.occ(ref_wfn)
@@ -4200,7 +4200,7 @@ def run_dfmp2(name, **kwargs):
     p4util.banner('DFMP2')
     core.print_out('\n')
 
-    if core.get_global_option('REFERENCE') == "ROHF":
+    if core.get_global_option('REFERENCE') in ["ROHF", "ROKS"]:
         ref_wfn.semicanonicalize()
 
     if (dfbs := kwargs.get("_force_df_basis_mp2", False)):
