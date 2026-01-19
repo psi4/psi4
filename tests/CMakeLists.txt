@@ -72,10 +72,10 @@ foreach(test_name aediis-1
                   mp2-property mp2f12-1 mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient
                   nbo nbody-cp-gradient nbody-vmfc-gradient nbody-vmfc-hessian nbody-hessian nbody-convergence
                   nbody-freq nbody-multi-level nbody-multi-level-2 numint1 numpy-array-interface
-                  olccd-freq1 olccd-grad1 olccd-grad2 olccd1 olccd2 olccd3
+                  olccd-freq1 olccd-grad1 olccd-grad2 olccd1 olccd2 olccd3 olccd-roks1
                   omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp2-grad1 omp2-grad2 omp2-roks1
-                  omp2p5-1 omp2p5-2 omp2p5-grad1 omp2p5-grad2 omp3-1 omp3-2
-                  omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2 opt-lindep-change
+                  omp2p5-1 omp2p5-2 omp2p5-grad1 omp2p5-grad2 omp2p5-grad-roks1 omp2p5-roks1 omp3-1 omp3-2
+                  omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2 omp3-grad-roks1 omp3-roks1 opt-lindep-change
                   opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 opt8 opt9
                   opt11 opt12 opt13 opt14 opt15 opt16 opt-irc-1 opt-irc-2 opt-irc-3
                   opt-freeze-coords opt-full-hess-every
