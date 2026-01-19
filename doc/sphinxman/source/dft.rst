@@ -362,6 +362,7 @@ These are set in the |scf__reference| option.
 Note that there is not an equivalent to CUHF, *e.g.*, no CUKS. This
 is because constraining the spin polarization to be positive definite in KS-DFT
 is not generally physical when the true functional is expected to be the final step.
+See the section in [Szabo:1982]_ on methyl radical for an example.
 
 Functional Selection
 ~~~~~~~~~~~~~~~~~~~~
