@@ -92,6 +92,13 @@ void ExternalPotential::print(const std::string& out) const {
             }
         }
     }
+    
+    // Matrix
+    if (matrix_) {
+        printer->Printf("    > One-Electron Potential Matrix < \n\n");
+        matrix_->print();
+        printer->Printf("\n");
+    }
 }
 
 SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet> basis) {
@@ -198,6 +205,15 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
         }
     }
 
+    // User-provided one-electron potential matrix
+    if (matrix_) {
+        if (matrix_->rowdim() != matrix_->coldim())
+            throw PSIEXCEPTION("ExternalPotential: user-provided 1e potential matrix must be a square matrix.");
+        if (V->coldim() != matrix_->coldim())
+            throw PSIEXCEPTION("ExternalPotential: user-provided 1e potential matrix must be nbf x nbf.");
+        V->add(matrix_);
+    }
+
     return V;
 }
 
@@ -208,126 +224,130 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     SharedMolecule mol = basis->molecule();
     int natom = mol->natom();
     int nextc = charges_.size();
+
     auto grad_on_atoms = std::make_shared<Matrix>("External Potential Gradient", natom, 3);
     auto grad_on_charges = std::make_shared<Matrix>("Gradient on External Charges", nextc, 3);
+    grad_on_atoms->zero();
+    grad_on_charges->zero();
+
     double **Gp = grad_on_atoms->pointer();
     double **EGp = grad_on_charges->pointer();
 
-    std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
-    for (size_t i=0; i< charges_.size(); ++i) {
-        Zxyz.push_back({std::get<0>(charges_[i]),{{std::get<1>(charges_[i]),
-                                                   std::get<2>(charges_[i]),
-                                                   std::get<3>(charges_[i])}}});
-    }
-
-    // Start with the nuclear contribution
-    grad_on_atoms->zero();
-    grad_on_charges->zero();
-    for (int cen = 0; cen < natom; ++cen) {
-        double xc = mol->x(cen);
-        double yc = mol->y(cen);
-        double zc = mol->z(cen);
-        double cencharge = mol->Z(cen);
-        for (int ext = 0; ext < nextc; ++ext) {
-            double charge = cencharge * Zxyz[ext].first;
-            double x = Zxyz[ext].second[0] - xc;
-            double y = Zxyz[ext].second[1] - yc;
-            double z = Zxyz[ext].second[2] - zc;
-            double r2 = x * x + y * y + z * z;
-            double r = sqrt(r2);
-            Gp[cen][0] += charge * x / (r * r2);
-            Gp[cen][1] += charge * y / (r * r2);
-            Gp[cen][2] += charge * z / (r * r2);
-            EGp[ext][0] -= charge * x / (r * r2);
-            EGp[ext][1] -= charge * y / (r * r2);
-            EGp[ext][2] -= charge * z / (r * r2);
+    if (charges_.size()) {
+        std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
+        for (size_t i=0; i< charges_.size(); ++i) {
+            Zxyz.push_back({std::get<0>(charges_[i]),{{std::get<1>(charges_[i]),
+                                                       std::get<2>(charges_[i]),
+                                                       std::get<3>(charges_[i])}}});
         }
-    }
 
-    // Now the electronic contribution.
-    auto fact = std::make_shared<IntegralFactory>(basis, basis, basis, basis);
+        // Start with the nuclear contribution
+        for (int cen = 0; cen < natom; ++cen) {
+            double xc = mol->x(cen);
+            double yc = mol->y(cen);
+            double zc = mol->z(cen);
+            double cencharge = mol->Z(cen);
+            for (int ext = 0; ext < nextc; ++ext) {
+                double charge = cencharge * Zxyz[ext].first;
+                double x = Zxyz[ext].second[0] - xc;
+                double y = Zxyz[ext].second[1] - yc;
+                double z = Zxyz[ext].second[2] - zc;
+                double r2 = x * x + y * y + z * z;
+                double r = sqrt(r2);
+                Gp[cen][0] += charge * x / (r * r2);
+                Gp[cen][1] += charge * y / (r * r2);
+                Gp[cen][2] += charge * z / (r * r2);
+                EGp[ext][0] -= charge * x / (r * r2);
+                EGp[ext][1] -= charge * y / (r * r2);
+                EGp[ext][2] -= charge * z / (r * r2);
+            }
+        }
 
-    // Thread count
-    int threads = 1;
+        // Now the electronic contribution.
+        auto fact = std::make_shared<IntegralFactory>(basis, basis, basis, basis);
+
+        // Thread count
+        int threads = 1;
 #ifdef _OPENMP
-    threads = Process::environment.get_n_threads();
+        threads = Process::environment.get_n_threads();
 #endif
 
-    // Potential derivatives
-    std::vector<std::shared_ptr<PotentialInt> > Vint;
-    std::vector<SharedMatrix> Vtemps;
-    std::vector<SharedMatrix> EVtemps;
-    for (int t = 0; t < threads; t++) {
-        Vint.push_back(std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(fact->ao_potential(1).release())));
-        Vint[t]->set_charge_field(Zxyz);
-        Vtemps.push_back(SharedMatrix(grad_on_atoms->clone()));
-        Vtemps[t]->zero();
-        EVtemps.push_back(SharedMatrix(grad_on_charges->clone()));
-        EVtemps[t]->zero();
-    }
+        // Potential derivatives
+        std::vector<std::shared_ptr<PotentialInt> > Vint;
+        std::vector<SharedMatrix> Vtemps;
+        std::vector<SharedMatrix> EVtemps;
+        for (int t = 0; t < threads; t++) {
+            Vint.push_back(std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(fact->ao_potential(1).release())));
+            Vint[t]->set_charge_field(Zxyz);
+            Vtemps.push_back(SharedMatrix(grad_on_atoms->clone()));
+            Vtemps[t]->zero();
+            EVtemps.push_back(SharedMatrix(grad_on_charges->clone()));
+            EVtemps[t]->zero();
+        }
 
-    // Lower Triangle
-    const auto &PQ_pairs = Vint[0]->shellpairs();
+        // Lower Triangle
+        const auto &PQ_pairs = Vint[0]->shellpairs();
 
 #pragma omp parallel for schedule(dynamic) num_threads(threads)
-    for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-        int P = PQ_pairs[PQ].first;
-        int Q = PQ_pairs[PQ].second;
+        for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
+            int P = PQ_pairs[PQ].first;
+            int Q = PQ_pairs[PQ].second;
 
-        int thread = 0;
+            int thread = 0;
 #ifdef _OPENMP
-        thread = omp_get_thread_num();
+            thread = omp_get_thread_num();
 #endif
-        Vint[thread]->compute_shell_deriv1(P, Q);
-        const auto& buffers = Vint[thread]->buffers();
+            Vint[thread]->compute_shell_deriv1(P, Q);
+            const auto& buffers = Vint[thread]->buffers();
 
-        int cP = basis->shell(P).ncenter();
-        int nP = basis->shell(P).nfunction();
-        int oP = basis->shell(P).function_index();
+            int cP = basis->shell(P).ncenter();
+            int nP = basis->shell(P).nfunction();
+            int oP = basis->shell(P).function_index();
 
-        int cQ = basis->shell(Q).ncenter();
-        int nQ = basis->shell(Q).nfunction();
-        int oQ = basis->shell(Q).function_index();
+            int cQ = basis->shell(Q).ncenter();
+            int nQ = basis->shell(Q).nfunction();
+            int oQ = basis->shell(Q).function_index();
 
-        double perm = (P == Q ? 1.0 : 2.0);
+            double perm = (P == Q ? 1.0 : 2.0);
 
-        double **Vp = Vtemps[thread]->pointer();
-        double **EVp = EVtemps[thread]->pointer();
-        double **Dp = Dt->pointer();
-        const double *ref0 = buffers[0];
-        const double *ref1 = buffers[1];
-        const double *ref2 = buffers[2];
-        const double *ref3 = buffers[3];
-        const double *ref4 = buffers[4];
-        const double *ref5 = buffers[5];
-        std::vector<const double*> refx(3*nextc);
-        for (int ext = 0; ext < nextc; ext++) {
-            refx[ext*3] = buffers[ext*3 + 6];
-            refx[ext*3 + 1] = buffers[ext*3 + 7];
-            refx[ext*3 + 2] = buffers[ext*3 + 8];
-        }
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                double Vval = perm * Dp[p + oP][q + oQ];
-                Vp[cP][0] += Vval * (*ref0++);
-                Vp[cP][1] += Vval * (*ref1++);
-                Vp[cP][2] += Vval * (*ref2++);
-                Vp[cQ][0] += Vval * (*ref3++);
-                Vp[cQ][1] += Vval * (*ref4++);
-                Vp[cQ][2] += Vval * (*ref5++);
-                const double** refxp = &refx[0];
-                for (int ext = 0; ext < nextc; ext++) {
-                    EVp[ext][0] += Vval * (*refxp[ext*3]++);
-                    EVp[ext][1] += Vval * (*refxp[ext*3 + 1]++);
-                    EVp[ext][2] += Vval * (*refxp[ext*3 + 2]++);
+            double **Vp = Vtemps[thread]->pointer();
+            double **EVp = EVtemps[thread]->pointer();
+            double **Dp = Dt->pointer();
+            const double *ref0 = buffers[0];
+            const double *ref1 = buffers[1];
+            const double *ref2 = buffers[2];
+            const double *ref3 = buffers[3];
+            const double *ref4 = buffers[4];
+            const double *ref5 = buffers[5];
+            std::vector<const double*> refx(3*nextc);
+            for (int ext = 0; ext < nextc; ext++) {
+                refx[ext*3] = buffers[ext*3 + 6];
+                refx[ext*3 + 1] = buffers[ext*3 + 7];
+                refx[ext*3 + 2] = buffers[ext*3 + 8];
+            }
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    double Vval = perm * Dp[p + oP][q + oQ];
+                    Vp[cP][0] += Vval * (*ref0++);
+                    Vp[cP][1] += Vval * (*ref1++);
+                    Vp[cP][2] += Vval * (*ref2++);
+                    Vp[cQ][0] += Vval * (*ref3++);
+                    Vp[cQ][1] += Vval * (*ref4++);
+                    Vp[cQ][2] += Vval * (*ref5++);
+                    const double** refxp = &refx[0];
+                    for (int ext = 0; ext < nextc; ext++) {
+                        EVp[ext][0] += Vval * (*refxp[ext*3]++);
+                        EVp[ext][1] += Vval * (*refxp[ext*3 + 1]++);
+                        EVp[ext][2] += Vval * (*refxp[ext*3 + 2]++);
+                    }
                 }
             }
         }
-    }
 
-    for (int t = 0; t < threads; t++) {
-        grad_on_atoms->add(Vtemps[t]);
-        grad_on_charges->add(EVtemps[t]);
+        for (int t = 0; t < threads; t++) {
+            grad_on_atoms->add(Vtemps[t]);
+            grad_on_charges->add(EVtemps[t]);
+        }
     }
     gradient_on_charges_ = grad_on_charges;
     return grad_on_atoms;
