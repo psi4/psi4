@@ -888,9 +888,11 @@ COSX analogue to |scf__dft_basis_tolerance|.
 
 The |scf__incfock| keyword (defaults to ``true``) increases performance
 by constructing the Fock matrix from differences in the density matrix, which
-are more amenable to screening. For diffuse basis functions (aug-cc-pVXZ, etc.),
+are more amenable to screening. For diffuse basis sets (e.g., aug-cc-pVXZ),
 delta-density screening is automatically disabled near convergence to prevent
-over-screening of slowly-decaying shell pairs.
+over-screening of slowly-decaying shell pairs. This is implemented
+with a granularity of shell quartets, therefore custom basis sets are
+also covered by it.
 The |scf__cosx_overlap_fitting| keyword (defaults to ``true``) reduces numerical
 integration errors using the method described in [Izsak:2011:144105]_ and is
 always recommended.
