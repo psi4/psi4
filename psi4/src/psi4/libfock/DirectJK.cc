@@ -161,7 +161,7 @@ void DirectJK::incfock_postiter() {
         return;
     }
 
-    auto njk = D_ao_.size();
+    const auto njk = D_ao_.size();
 
     // Save density for next iteration - reuse existing matrices if possible
     if (D_prev_.size() == njk) {

@@ -234,7 +234,7 @@ void CompositeJK::preiterations() {}
 
 void CompositeJK::incfock_setup() {
     if (do_incfock_iter_) {
-        auto njk = D_ao_.size();
+        const auto njk = D_ao_.size();
 
         // If there is no previous pseudo-density, this iteration is normal
         if (initial_iteration_ || D_prev_.size() != njk) {
@@ -255,7 +255,7 @@ void CompositeJK::incfock_setup() {
         } else { // Otherwise, the iteration is incremental
             // Compute delta-density: D_ref_ = D_ao_ - D_prev_
             // Check if D_ref_ shares storage with D_ao_ (from non-incfock iteration)
-            bool sharing = (D_ref_.size() == njk && D_ref_[0].get() == D_ao_[0].get());
+            const bool sharing = (D_ref_.size() == njk && D_ref_[0].get() == D_ao_[0].get());
             if (sharing) {
                 // D_ref_ shares pointers with D_ao_, must clone to avoid corrupting D_ao_
                 for (size_t jki = 0; jki < njk; jki++) {
@@ -290,7 +290,7 @@ void CompositeJK::incfock_postiter() {
         return;
     }
 
-    auto njk = D_ao_.size();
+    const auto njk = D_ao_.size();
 
     // Save density for next iteration - reuse existing matrices if possible
     if (D_prev_.size() == njk) {
