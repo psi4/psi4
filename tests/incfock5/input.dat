@@ -1,5 +1,5 @@
 #! Test INCFOCK with all screening types (SCHWARZ, DENSITY, CSAM)
-#! Main feature of this PR: delta-density screening now works with all screening types
+#! Validates delta-density screening with all screening types
 #! Validates energy AND iteration count match IncFock OFF
 
 print(' INCFOCK with all screening types') #TEST

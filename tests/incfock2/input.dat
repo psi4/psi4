@@ -1,5 +1,5 @@
 #! Test INCFOCK with range-separated functionals (CAM-B3LYP, wB97X)
-#! Regression test for wK accumulation bug fix
+#! Validates wK (long-range exchange) accumulation
 #! Uses screening=DENSITY, validates energy
 
 print(' INCFOCK with range-separated functionals') #TEST

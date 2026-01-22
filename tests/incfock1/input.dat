@@ -1,4 +1,4 @@
-#! Test INCFOCK with screening=NONE (regression test for null pointer crash fix)
+#! Test INCFOCK with screening=NONE
 #! Validates energy AND iteration count match IncFock OFF
 
 print(' INCFOCK with screening=NONE') #TEST

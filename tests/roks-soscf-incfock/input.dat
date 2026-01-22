@@ -1,5 +1,5 @@
 #! ROKS + SOSCF + IncFock with range-separated functional (CAM-B3LYP)
-#! Tests XC Hessian-vector products implementation in ROHF::Hx()
+#! Validates SOSCF convergence with range-separated functionals
 
 print(' ROKS SOSCF with IncFock and range-separated functional') #TEST
 

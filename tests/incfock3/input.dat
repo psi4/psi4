@@ -1,8 +1,6 @@
 #! Test INCFOCK with SOSCF (Second-Order SCF)
 #! Validates IncFock stability with SOSCF orbital rotations
 #! Uses screening=DENSITY, validates energy AND iteration count
-#! Note: iteration count with incfock=true differs from incfock=false
-#! because IncFock is disabled during SOSCF phase
 
 print(' INCFOCK with SOSCF') #TEST
 
@@ -13,7 +11,6 @@ molecule water {
 }
 
 # Reference values from incfock=TRUE, screening=density, soscf=true runs
-# (iterations differ from incfock=false due to SOSCF/IncFock interaction)
 # Note: iteration count may vary by +-1 across compilers due to floating-point differences
 Eref_rhf = -76.026653661805
 Iref_rhf = 12

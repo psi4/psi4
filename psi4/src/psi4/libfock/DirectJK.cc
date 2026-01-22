@@ -393,9 +393,8 @@ void DirectJK::compute_JK() {
         // 3. D_prev_ ready: previous density matrices available and correct size
         // 4. Full build done: at least one full build since last clear_D_prev (ensures D_prev_ provenance)
         // 5. Not periodic reset: every INCFOCK_FULL_FOCK_EVERY iterations, force full rebuild
-        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ &&
-                           (D_prev_.size() == D_ao_.size()) && !incfock_needs_full_build_ &&
-                           (incfock_count_ % reset != reset - 1);
+        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (D_prev_.size() == D_ao_.size()) &&
+                           !incfock_needs_full_build_ && (incfock_count_ % reset != reset - 1);
 
         // After a full build in the IncFock regime, incremental builds can resume.
         // Also clear after initial iteration (to enable IncFock on iter 2).
@@ -486,7 +485,6 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     bool build_K = (!K.empty());
 
     if (!build_J && !build_K) return;
-
     timer_on("build_JK_matrices()");
 
     // Initialize J and K matrices: copy from prev (IncFock) or zero (full build)
