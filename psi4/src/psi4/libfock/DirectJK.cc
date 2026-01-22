@@ -489,10 +489,11 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
     timer_on("build_JK_matrices()");
 
-    // Initialize J and K matrices
-    // For INCFOCK: copy from prev matrices if provided, otherwise zero
-    // For non-INCFOCK: always zero
-    if (do_incfock_iter_ && J_prev && J_prev->size() == J.size()) {
+    // Initialize J and K matrices: copy from prev (IncFock) or zero (full build)
+    const bool have_J_prev = (J_prev != nullptr) && (J_prev->size() == J.size());
+    const bool have_K_prev = (K_prev != nullptr) && (K_prev->size() == K.size());
+
+    if (do_incfock_iter_ && have_J_prev) {
         for (size_t jki = 0; jki < J.size(); jki++) {
             J[jki]->copy((*J_prev)[jki]);
         }
@@ -502,7 +503,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         }
     }
 
-    if (do_incfock_iter_ && K_prev && K_prev->size() == K.size()) {
+    if (do_incfock_iter_ && have_K_prev) {
         for (size_t jki = 0; jki < K.size(); jki++) {
             K[jki]->copy((*K_prev)[jki]);
         }
