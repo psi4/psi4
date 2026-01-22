@@ -1646,6 +1646,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("INCFOCK_FULL_FOCK_EVERY", 100);
         /*- The density threshold at which to stop building the Fock matrix incrementally -*/
         options.add_double("INCFOCK_CONVERGENCE", 1.0e-10);
+        /*- Minimum Schwarz Q^2 estimate for diffuse shell pairs. Delta-density screening
+            is disabled when Dnorm < |scf__ints_tolerance| / INCFOCK_DIFFUSE_CUTOFF to
+            prevent over-screening of slowly-decaying integrals in diffuse basis sets. -*/
+        options.add_double("INCFOCK_DIFFUSE_CUTOFF", 1.0e-5);
 
         /*- The screening tolerance used for ERI/Density sparsity in the LinK algorithm -*/
         options.add_double("LINK_INTS_TOLERANCE", 1.0e-12);
