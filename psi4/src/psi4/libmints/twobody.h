@@ -251,7 +251,7 @@ class PSI_API TwoBodyAOInt {
     /// Check if INCFOCK delta-density screening is active
     bool incfock_screening_active() const { return incfock_screening_active_; }
     /// Delta-density screening for INCFOCK
-    bool shell_significant_delta_density(int M, int N, int R, int S) const;
+    bool shell_significant_delta_density(const int M, const int N, const int R, const int S) const;
 
     /// For a given PQ shellpair index, what's the first RS pair that should be processed such
     /// that loops may be processed generating only permutationally unique PQ<=RS.  For engines

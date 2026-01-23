@@ -242,7 +242,7 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 
 // INCFOCK delta-density screening using Schwarz inequality with delta-D
 // Reference: Häser & Ahlrichs, J. Comput. Chem. 10 (1989) 104-111
-bool TwoBodyAOInt::shell_significant_delta_density(int M, int N, int R, int S) const {
+bool TwoBodyAOInt::shell_significant_delta_density(const int M, const int N, const int R, const int S) const {
     if (!incfock_screening_active_ || max_delta_dens_shell_pair_.empty() || shell_pair_values_.empty()) {
         return true;
     }

@@ -328,7 +328,7 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
 
     // We guess occ x vir block size by the size of x to make this method easy to use
     // Note: ROKS uses the same orbital structure as ROHF (both have socc overlap)
-    bool is_rohf_type = (reference == "ROHF") || (reference == "ROKS");
+    const bool is_rohf_type = (reference == "ROHF") || (reference == "ROKS");
     Dimension tsize = x->colspi() + x->rowspi();
     if (!is_rohf_type && (tsize != nmopi_)) {
         throw PSIEXCEPTION("HF::rotate_orbitals: x dimensions do not match nmo_ dimension.");
@@ -474,7 +474,7 @@ void HF::find_occupation() {
             }
         }
 
-        bool occ_changed = (nalphapi_ != old_nalphapi) || (nbetapi_ != old_nbetapi);
+        const bool occ_changed = (nalphapi_ != old_nalphapi) || (nbetapi_ != old_nbetapi);
 
         // If print > 2 (diagnostics), print always
         if ((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0) {
@@ -1026,7 +1026,7 @@ void HF::guess() {
         if (print_) outfile->Printf("  SCF Guess: Orbitals guess was supplied from a previous computation.\n\n");
 
         std::string reference = options_.get_str("REFERENCE");
-        bool single_orb = (reference == "RHF");
+        const bool single_orb = (reference == "RHF");
 
         if (single_orb) {
             guess_Cb_ = guess_Ca_;
