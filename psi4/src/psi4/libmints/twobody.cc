@@ -164,8 +164,8 @@ void TwoBodyAOInt::update_delta_density(const std::vector<SharedMatrix>& delta_D
     // Initialize storage if needed
     if (max_delta_dens_shell_pair_.size() == 0) {
         max_delta_dens_shell_pair_.resize(delta_D.size());
-        for (size_t i = 0; i < delta_D.size(); i++) {
-            max_delta_dens_shell_pair_[i].resize(nshell_ * nshell_);
+        for (auto& pair_vec : max_delta_dens_shell_pair_) {
+            pair_vec.resize(nshell_ * nshell_);
         }
     }
 
