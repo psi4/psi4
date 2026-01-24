@@ -176,6 +176,7 @@ _addons_ = {
     #"mctc-gcp": psi4_which("mctc-gcp", return_bool=True),
     "bse": which_import("basis_set_exchange", return_bool=True),
     "einsums": _CMake_to_Py_boolean("@ENABLE_Einsums@"),
+    "pyeinsums": which_import("einsums", return_bool=True),
     "gauxc": _CMake_to_Py_boolean("@ENABLE_gauxc@"),
     "integratorxx": _CMake_to_Py_boolean("@ENABLE_IntegratorXX@"),
     "ooo": _CMake_to_Py_boolean("@ENABLE_OpenOrbitalOptimizer@"),

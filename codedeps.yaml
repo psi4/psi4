@@ -1392,7 +1392,7 @@ data:
       commit: v1.0.6
     cmake:
       name: Einsums
-      constraint: 1.0.6
+      constraint: 1.1.0
       target: Einsums::Einsums
     #  components:
     #  ENABLE_Einsums

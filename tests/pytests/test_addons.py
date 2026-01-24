@@ -3,6 +3,7 @@ from addons import hardware_nvidia_gpu, uusing
 
 import json
 
+import numpy as np
 import qcengine as qcng
 
 import psi4
@@ -1587,3 +1588,33 @@ def test_forte_fci_1():
     # check results
     assert hf.value('hf energy') == pytest.approx(ref_hf_energy, 1.0e-10)
     assert fci.value('active space energy')[state] == pytest.approx([ref_fci_energy], 1.0e-10)
+
+
+@uusing("pyeinsums")
+@pytest.mark.parametrize(["dtype"], [(np.float64,), (np.complex128,)])
+@pytest.mark.parametrize("array", ["einsums", "numpy"])
+@pytest.mark.parametrize(
+    ["a", "b", "c"],
+    [(10, 10, 10), (100, 100, 100), (11, 13, 17)],
+)
+def test_pyeinsums_gemm(a, b, c, dtype, array):
+    import einsums as ein
+
+    A = ein.utils.random_tensor_factory("A", [a, b], dtype, array)
+    B = ein.utils.random_tensor_factory("B", [b, c], dtype, array)
+    C = ein.utils.tensor_factory("C", [a, c], dtype, array)
+
+    C_actual = np.array([[0.0 for i in range(c)] for j in range(a)], dtype=dtype)
+
+    ein.core.gemm("N", "N", 1.0, A, B, 0.0, C)
+
+    # Numpy hates doing matrix multiplication with einsums imported
+    for i in range(a):
+        for j in range(c):
+            for k in range(b):
+                C_actual[i, j] += A[i, k] * B[k, j]
+
+    for i in range(a):
+        for j in range(c):
+            assert C[i, j] == pytest.approx(C_actual[i, j])
+
