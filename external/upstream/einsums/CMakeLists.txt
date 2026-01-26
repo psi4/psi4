@@ -63,7 +63,7 @@ if(${ENABLE_Einsums})
                        -DEINSUMS_INSTALL_PYMODDIR=${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}
                        -DEINSUMS_WITH_EXAMPLES=OFF
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-                             -DCMAKE_CXX_FLAGS:STRING=${_local_CMAKE_CXX_FLAGS}
+                             -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
                              -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                              -DTargetOpenMP_FIND_COMPONENTS:STRING=C;CXX)
