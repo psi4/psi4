@@ -4,6 +4,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libfock/v.h"
 #include "hf.h"
+#include <Einsums/Config.hpp>
 #include "Einsums/Tensor.hpp"
 
 namespace psi {
@@ -20,8 +21,12 @@ class CGHF : public HF {
 		void form_init_F();
 		void form_X();
 		void form_S();
-		void sort_real_evals();
+		//void sort_real_evals();
+		void sort_eigenpairs(einsums::Tensor<std::complex<double>, 1>& evals, einsums::Tensor<std::complex<double>, 2>& evecs, double tol);
+		void evals_sanity_check();
 		void preiterations();
+		void rotated_sad_guess();
+		void zero_tensors();
 		void finalize() override;
 		void save_density_and_energy() override;
 		void form_FDSmSDF();
@@ -31,6 +36,8 @@ class CGHF : public HF {
 		void form_F() override;
 		void form_C(double shift) override;
 		void form_D() override;
+		void set_init_D();
+		void redo_SCF();
 		std::tuple<SharedMatrix, SharedMatrix> einsums_to_numpy(std::string mat_str);
 		void form_numpy_D();
 
@@ -69,33 +76,38 @@ class CGHF : public HF {
                 std::vector<std::complex<double>> diis_coeffs;
                 std::vector<std::complex<double>> error_doubles;
 
+		double nuclearrep_;
+
                 einsums::BlockTensor<std::complex<double>, 2> F0_;
                 einsums::BlockTensor<std::complex<double>, 2> EINT_;
                 einsums::BlockTensor<std::complex<double>, 2> F_;
+                einsums::BlockTensor<std::complex<double>, 2> FDSmSDF_;
                 einsums::BlockTensor<std::complex<double>, 2> Fp_;
                 einsums::BlockTensor<double, 2> EINS_;
                 einsums::BlockTensor<std::complex<double>, 2> EINX_;
                 einsums::BlockTensor<std::complex<double>, 2> C_;
                 einsums::BlockTensor<std::complex<double>, 2> cCocc_;
                 einsums::BlockTensor<std::complex<double>, 2> Cocc_;
-                einsums::BlockTensor<std::complex<double>, 2> FDSmSDF_;
                 einsums::BlockTensor<std::complex<double>, 2> D_;
                 einsums::BlockTensor<std::complex<double>, 2> Fevecs_;
+                //einsums::BlockTensor<double, 1> Fevals_;
                 einsums::BlockTensor<std::complex<double>, 1> Fevals_;
-                einsums::BlockTensor<double, 1> RealEvals_;
 
-                einsums::BlockTensor<std::complex<double>, 2> JKwK_;
-                einsums::BlockTensor<std::complex<double>, 2> temp;
-                einsums::BlockTensor<std::complex<double>, 2> temp2;
+                einsums::BlockTensor<double, 1> RealEvals_;
+                einsums::BlockTensor<std::complex<double>, 2> J_;
+                einsums::BlockTensor<std::complex<double>, 2> K_;
+                einsums::BlockTensor<std::complex<double>, 2> temp1_;
+                einsums::BlockTensor<std::complex<double>, 2> temp2_;
 
                 //size_t nirrep_;
                 std::vector<int> irrep_sizes_;
+		std::vector<int> nelecpi_;
         	//Dimension nsopi_;
         	//Dimension nbetapi_;
-        	Dimension nelecpi_;
+        	//Dimension nelecpi_;
         	//Dimension nvirtpi_;
 
-	        std::shared_ptr<psi::BasisSet> basisset_;
+	        //std::shared_ptr<psi::BasisSet> basisset_;
 
 		//einsums::BlockTensor<std::complex<double>, 2> F0_;
 

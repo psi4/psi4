@@ -437,10 +437,13 @@ void export_wavefunction(py::module& m) {
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
     py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, scf::HF>(m, "CGHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
-        .def("form_numpy_D", &scf::CGHF::form_numpy_D)
-        .def("form_FDSmSDF", &scf::CGHF::form_FDSmSDF)
+        //.def("form_numpy_D", &scf::CGHF::form_numpy_D)
+        //.def("form_FDSmSDF", &scf::CGHF::form_FDSmSDF)
         .def("compute_Dnorm", &scf::CGHF::compute_Dnorm)
-        .def("einsums_to_numpy", &scf::CGHF::einsums_to_numpy, "Convert einsums::Tensor to numpy array from string argument", "msg"_a)
+	//.def("zero_tensors", &scf::CGHF::zero_tensors)
+        //.def("einsums_to_numpy", &scf::CGHF::einsums_to_numpy, "Convert einsums::Tensor to numpy array from string argument", "msg"_a)
+	//.def("redo_SCF", &scf::CGHF::redo_SCF, "Retries an SCF cycle with a modified density matrix")
+	//.def("common_init", &scf::CGHF::common_init)
         .def("c1_deep_copy", &scf::CGHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
              "BasisSet *basis*",
