@@ -1033,22 +1033,21 @@ void CCEnergyWavefunction::cc3_Wabei() {
 
 void CCEnergyWavefunction::purge_Wabei() {
     dpdfile4 W;
-    int *occpi, *virtpi;
     int a, b, e, i;
     int A, B, E, I;
     int asym, bsym, esym, isym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int nirreps;
 
     nirreps = moinfo_.nirreps;
-    occpi = moinfo_.occpi;
-    virtpi = moinfo_.virtpi;
+    auto occpi = moinfo_.occpi;
+    auto virtpi = moinfo_.virtpi;
     occ_off = moinfo_.occ_off;
     vir_off = moinfo_.vir_off;
     occ_sym = moinfo_.occ_sym;
     vir_sym = moinfo_.vir_sym;
-    openpi = moinfo_.openpi;
+    auto openpi = moinfo_.openpi;
 
     /* Purge Wabei matrix elements */
     global_dpd_->file4_init(&W, PSIF_CC_TMP2, 0, 11, 7, "CC3 WABEI (EI,A>B)");

@@ -1165,7 +1165,7 @@ void HF::guess() {
 
         Fa_->zero();  // Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
         int h, i, j;
-        const int* opi = S_->rowspi();
+        auto opi = S_->rowspi();
         int nirreps = S_->nirrep();
         for (h = 0; h < nirreps; ++h) {
             for (i = 0; i < opi[h]; ++i) {
@@ -1368,9 +1368,9 @@ void HF::reset_occupation() {
 }
 
 SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi) {
-    const int* nsopi = Cso->rowspi();
-    const int* nmopi = Cso->colspi();
-    int* nvirpi = new int[nirrep_];
+    auto nsopi = Cso->rowspi();
+    auto nmopi = Cso->colspi();
+    auto nvirpi = new int[nirrep_];
 
     for (int h = 0; h < nirrep_; h++) nvirpi[h] = nmopi[h] - noccpi[h];
 

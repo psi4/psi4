@@ -220,22 +220,21 @@ void CCEnergyWavefunction::cc3_Wmnie() {
 /* Purge Wmnie matrix elements */
 void CCEnergyWavefunction::purge_Wmnie() {
     dpdfile4 W;
-    int *occpi, *virtpi;
     int e, i, m, n;
     int E, I, M, N;
     int esym, isym, msym, nsym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int nirreps;
 
     nirreps = moinfo_.nirreps;
-    occpi = moinfo_.occpi;
-    virtpi = moinfo_.virtpi;
+    auto occpi = moinfo_.occpi;
+    auto virtpi = moinfo_.virtpi;
     occ_off = moinfo_.occ_off;
     vir_off = moinfo_.vir_off;
     occ_sym = moinfo_.occ_sym;
     vir_sym = moinfo_.vir_sym;
-    openpi = moinfo_.openpi;
+    auto openpi = moinfo_.openpi;
 
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 0, 11, "CC3 WMnIe (Mn,eI)");
     for (int h = 0; h < nirreps; h++) {

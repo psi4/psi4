@@ -70,7 +70,7 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
     AO_c1NO->gemm(false, false, 1.0, AO_c1MO, c1MO_c1NO, 0.0);
     // Reapply the symmetry to the AO dimension
     auto AO_SO = reference_wavefunction_->aotoso();
-    auto SO_c1NO = std::make_shared<Matrix>(nirrep_, (const int*)nsopi_, nmo_);
+    auto SO_c1NO = std::make_shared<Matrix>(nirrep_, nsopi_.blocks().data(), nmo_);
     SO_c1NO->set_name("SO to C1 NO");
     for (int h = 0; h < nirrep_; ++h) {
         int so_h = nsopi_[h];
@@ -120,7 +120,7 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
     //
     // Now we're finished with the MO(c1)->NO(c1) matrix, use it as scratch for diag(NO occ)
     c1MO_c1NO->set_diagonal(occ_c1);
-    auto temp = std::make_shared<Matrix>(nirrep_, (const int*)nsopi_, nmo_);
+    auto temp = std::make_shared<Matrix>(nirrep_, nsopi_.blocks().data(), nmo_);
     for (int h = 0; h < nirrep_; ++h) {
         int so_h = nsopi_[h];
         if (so_h) {

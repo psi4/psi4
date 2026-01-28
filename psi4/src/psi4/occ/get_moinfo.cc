@@ -191,7 +191,7 @@ void OCCWave::get_moinfo() {
         memset(qt2pitzerA, 0, sizeof(int) * nmo_);
         memset(pitzer2qtA, 0, sizeof(int) * nmo_);
 
-        reorder_qt(doccpi(), soccpi(), frzcpi_, frzvpi_, pitzer2qtA, nmopi_, nirrep_);
+        reorder_qt(doccpi().blocks().data(), soccpi().blocks().data(), const_cast<int*>(frzcpi_.blocks().data()), const_cast<int*>(frzvpi_.blocks().data()), pitzer2qtA, const_cast<int*>(nmopi_.blocks().data()), nirrep_);
         for (int p = 0; p < nmo_; p++) {
             int pa = pitzer2qtA[p];
             qt2pitzerA[pa] = p;
@@ -541,7 +541,7 @@ void OCCWave::get_moinfo() {
         memset(pitzer2qtA, 0, sizeof(int) * nmo_);
         memset(qt2pitzerB, 0, sizeof(int) * nmo_);
         memset(pitzer2qtB, 0, sizeof(int) * nmo_);
-        reorder_qt_uhf(doccpi(), soccpi(), frzcpi_, frzvpi_, pitzer2qtA, pitzer2qtB, nmopi_, nirrep_);
+        reorder_qt_uhf(doccpi().blocks().data(), soccpi().blocks().data(), const_cast<int*>(frzcpi_.blocks().data()), const_cast<int*>(frzvpi_.blocks().data()), pitzer2qtA, pitzer2qtB, const_cast<int*>(nmopi_.blocks().data()), nirrep_);
         for (int p = 0; p < nmo_; p++) {
             int pa = pitzer2qtA[p];
             int pb = pitzer2qtB[p];

@@ -331,7 +331,7 @@ void DCTSolver::process_so_ints() {
         global_dpd_->buf4_init(&tau1_AO_aa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[n,n]"), ID("[O,O]"), ID("[n,n]"), 0,
                                "tau1AO <OO|nn>");
         global_dpd_->buf4_scm(&tau1_AO_aa, 0.0);
-        half_transform(&tau1_AO_aa, &lambda, avir_c_, avir_c_, navirpi_, navirpi_, pq_row_start, CD_row_start, true,
+        half_transform(&tau1_AO_aa, &lambda, avir_c_, avir_c_, navirpi_.blocks().data(), navirpi_.blocks().data(), pq_row_start, CD_row_start, true,
                        1.0, 0.0);
         global_dpd_->buf4_close(&lambda);
         global_dpd_->buf4_close(&tau1_AO_aa);
@@ -356,7 +356,7 @@ void DCTSolver::process_so_ints() {
         global_dpd_->buf4_init(&tau1_AO_bb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[n,n]"), ID("[o,o]"), ID("[n,n]"), 0,
                                "tau1AO <oo|nn>");
         global_dpd_->buf4_scm(&tau1_AO_bb, 0.0);
-        half_transform(&tau1_AO_bb, &lambda, bvir_c_, bvir_c_, nbvirpi_, nbvirpi_, pq_row_start, cd_row_start, true,
+        half_transform(&tau1_AO_bb, &lambda, bvir_c_, bvir_c_, nbvirpi_.blocks().data(), nbvirpi_.blocks().data(), pq_row_start, cd_row_start, true,
                        1.0, 0.0);
         global_dpd_->buf4_close(&lambda);
         global_dpd_->buf4_close(&tau1_AO_bb);
@@ -380,7 +380,7 @@ void DCTSolver::process_so_ints() {
         global_dpd_->buf4_init(&tau1_AO_ab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[n,n]"), ID("[O,o]"), ID("[n,n]"), 0,
                                "tau1AO <Oo|nn>");
         global_dpd_->buf4_scm(&tau1_AO_ab, 0.0);
-        half_transform(&tau1_AO_ab, &lambda, avir_c_, bvir_c_, navirpi_, nbvirpi_, pq_row_start, Cd_row_start, true,
+        half_transform(&tau1_AO_ab, &lambda, avir_c_, bvir_c_, navirpi_.blocks().data(), nbvirpi_.blocks().data(), pq_row_start, Cd_row_start, true,
                        1.0, 0.0);
         global_dpd_->buf4_close(&lambda);
         global_dpd_->buf4_close(&tau1_AO_ab);
@@ -656,7 +656,7 @@ void DCTSolver::process_so_ints() {
         global_dpd_->buf4_init(&tau_temp, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "tau(temp) <OO|VV>");
         global_dpd_->buf4_scm(&tau_temp, 0.0);
-        half_transform(&tau2_AO_aa, &tau_temp, avir_c_, avir_c_, navirpi_, navirpi_, pq_row_start, CD_row_start, false,
+        half_transform(&tau2_AO_aa, &tau_temp, avir_c_, avir_c_, navirpi_.blocks().data(), navirpi_.blocks().data(), pq_row_start, CD_row_start, false,
                        0.5, 0.0);
         global_dpd_->buf4_close(&tau2_AO_aa);
         global_dpd_->buf4_close(&tau_temp);
@@ -671,7 +671,7 @@ void DCTSolver::process_so_ints() {
         global_dpd_->buf4_init(&tau_temp, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                "tau(temp) <oo|vv>");
         global_dpd_->buf4_scm(&tau_temp, 0.0);
-        half_transform(&tau2_AO_bb, &tau_temp, bvir_c_, bvir_c_, nbvirpi_, nbvirpi_, pq_row_start, cd_row_start, false,
+        half_transform(&tau2_AO_bb, &tau_temp, bvir_c_, bvir_c_, nbvirpi_.blocks().data(), nbvirpi_.blocks().data(), pq_row_start, cd_row_start, false,
                        0.5, 0.0);
         global_dpd_->buf4_close(&tau2_AO_bb);
         global_dpd_->buf4_close(&tau_temp);
@@ -686,7 +686,7 @@ void DCTSolver::process_so_ints() {
         global_dpd_->buf4_init(&tau_temp, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "tau(temp) <Oo|Vv>");
         global_dpd_->buf4_scm(&tau_temp, 0.0);
-        half_transform(&tau2_AO_ab, &tau_temp, avir_c_, bvir_c_, navirpi_, nbvirpi_, pq_row_start, Cd_row_start, false,
+        half_transform(&tau2_AO_ab, &tau_temp, avir_c_, bvir_c_, navirpi_.blocks().data(), nbvirpi_.blocks().data(), pq_row_start, Cd_row_start, false,
                        1.0, 0.0);
         global_dpd_->buf4_close(&tau2_AO_ab);
         global_dpd_->buf4_close(&tau_temp);
@@ -834,7 +834,7 @@ void DCTSolver::build_AO_tensors() {
     global_dpd_->buf4_init(&tau1_AO_aa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[n,n]"), ID("[O,O]"), ID("[n,n]"), 0,
                            "tau1AO <OO|nn>");
     global_dpd_->buf4_scm(&tau1_AO_aa, 0.0);
-    half_transform(&tau1_AO_aa, &lambda, avir_c_, avir_c_, navirpi_, navirpi_, pq_row_start, CD_row_start, true, 1.0,
+    half_transform(&tau1_AO_aa, &lambda, avir_c_, avir_c_, navirpi_.blocks().data(), navirpi_.blocks().data(), pq_row_start, CD_row_start, true, 1.0,
                    0.0);
     global_dpd_->buf4_close(&lambda);
     global_dpd_->buf4_close(&tau1_AO_aa);
@@ -859,7 +859,7 @@ void DCTSolver::build_AO_tensors() {
     global_dpd_->buf4_init(&tau1_AO_bb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[n,n]"), ID("[o,o]"), ID("[n,n]"), 0,
                            "tau1AO <oo|nn>");
     global_dpd_->buf4_scm(&tau1_AO_bb, 0.0);
-    half_transform(&tau1_AO_bb, &lambda, bvir_c_, bvir_c_, nbvirpi_, nbvirpi_, pq_row_start, cd_row_start, true, 1.0,
+    half_transform(&tau1_AO_bb, &lambda, bvir_c_, bvir_c_, nbvirpi_.blocks().data(), nbvirpi_.blocks().data(), pq_row_start, cd_row_start, true, 1.0,
                    0.0);
     global_dpd_->buf4_close(&lambda);
     global_dpd_->buf4_close(&tau1_AO_bb);
@@ -883,7 +883,7 @@ void DCTSolver::build_AO_tensors() {
     global_dpd_->buf4_init(&tau1_AO_ab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[n,n]"), ID("[O,o]"), ID("[n,n]"), 0,
                            "tau1AO <Oo|nn>");
     global_dpd_->buf4_scm(&tau1_AO_ab, 0.0);
-    half_transform(&tau1_AO_ab, &lambda, avir_c_, bvir_c_, navirpi_, nbvirpi_, pq_row_start, Cd_row_start, true, 1.0,
+    half_transform(&tau1_AO_ab, &lambda, avir_c_, bvir_c_, navirpi_.blocks().data(), nbvirpi_.blocks().data(), pq_row_start, Cd_row_start, true, 1.0,
                    0.0);
     global_dpd_->buf4_close(&lambda);
     global_dpd_->buf4_close(&tau1_AO_ab);
@@ -1007,7 +1007,7 @@ void DCTSolver::build_AO_tensors() {
     global_dpd_->buf4_init(&tau_temp, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "tau(temp) <OO|VV>");
     global_dpd_->buf4_scm(&tau_temp, 0.0);
-    half_transform(&tau2_AO_aa, &tau_temp, avir_c_, avir_c_, navirpi_, navirpi_, pq_row_start, CD_row_start, false, 0.5,
+    half_transform(&tau2_AO_aa, &tau_temp, avir_c_, avir_c_, navirpi_.blocks().data(), navirpi_.blocks().data(), pq_row_start, CD_row_start, false, 0.5,
                    0.0);
     global_dpd_->buf4_close(&tau2_AO_aa);
     global_dpd_->buf4_close(&tau_temp);
@@ -1022,7 +1022,7 @@ void DCTSolver::build_AO_tensors() {
     global_dpd_->buf4_init(&tau_temp, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                            "tau(temp) <oo|vv>");
     global_dpd_->buf4_scm(&tau_temp, 0.0);
-    half_transform(&tau2_AO_bb, &tau_temp, bvir_c_, bvir_c_, nbvirpi_, nbvirpi_, pq_row_start, cd_row_start, false, 0.5,
+    half_transform(&tau2_AO_bb, &tau_temp, bvir_c_, bvir_c_, nbvirpi_.blocks().data(), nbvirpi_.blocks().data(), pq_row_start, cd_row_start, false, 0.5,
                    0.0);
     global_dpd_->buf4_close(&tau2_AO_bb);
     global_dpd_->buf4_close(&tau_temp);
@@ -1037,7 +1037,7 @@ void DCTSolver::build_AO_tensors() {
     global_dpd_->buf4_init(&tau_temp, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "tau(temp) <Oo|Vv>");
     global_dpd_->buf4_scm(&tau_temp, 0.0);
-    half_transform(&tau2_AO_ab, &tau_temp, avir_c_, bvir_c_, navirpi_, nbvirpi_, pq_row_start, Cd_row_start, false, 1.0,
+    half_transform(&tau2_AO_ab, &tau_temp, avir_c_, bvir_c_, navirpi_.blocks().data(), nbvirpi_.blocks().data(), pq_row_start, Cd_row_start, false, 1.0,
                    0.0);
     global_dpd_->buf4_close(&tau2_AO_ab);
     global_dpd_->buf4_close(&tau_temp);

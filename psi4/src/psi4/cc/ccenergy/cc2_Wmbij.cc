@@ -491,22 +491,21 @@ void CCEnergyWavefunction::cc2_Wmbij_build() {
 
 void CCEnergyWavefunction::purge_cc2_Wmbij() {
     dpdfile4 W;
-    int *occpi, *virtpi;
     int b, i, j, m;
     int B, I, J, M;
     int bsym, isym, jsym, msym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int nirreps;
 
     nirreps = moinfo_.nirreps;
-    occpi = moinfo_.occpi;
-    virtpi = moinfo_.virtpi;
+    auto occpi = moinfo_.occpi;
+    auto virtpi = moinfo_.virtpi;
     occ_off = moinfo_.occ_off;
     vir_off = moinfo_.vir_off;
     occ_sym = moinfo_.occ_sym;
     vir_sym = moinfo_.vir_sym;
-    openpi = moinfo_.openpi;
+    auto openpi = moinfo_.openpi;
 
     global_dpd_->file4_init(&W, PSIF_CC2_HET1, 0, 10, 2, "CC2 WMBIJ (MB,I>J)");
     for (int h = 0; h < nirreps; h++) {

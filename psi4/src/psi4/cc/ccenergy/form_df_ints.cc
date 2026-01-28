@@ -67,7 +67,7 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     SharedMatrix dfAOtoSO = petite.aotoso();
     const Dimension &soDim = AO2SO_->colspi();
     const Dimension &dfDim = dfAOtoSO->colspi();
-    auto symQao = std::make_shared<Matrix>(nirrep_, (const int *)dfDim, nbf2);
+    auto symQao = std::make_shared<Matrix>(nirrep_, dfDim.blocks().data(), nbf2);
     double **pQao = Qao->pointer();
     for (int h = 0; h < nirrep_; ++h) {
         double **pAOSO = dfAOtoSO->pointer(h);
@@ -87,24 +87,24 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
      */
     std::vector<int *> aospaces;
     if (params_.ref == 2) {  // UHF
-        aospaces.push_back(moinfo_.aoccpi);
+        aospaces.push_back(&moinfo_.aoccpi[0]);
         aospaces.push_back(moinfo_.aocc_sym);
-        aospaces.push_back(moinfo_.sopi);
+        aospaces.push_back(&moinfo_.sopi[0]);
         aospaces.push_back(moinfo_.sosym);
-        aospaces.push_back(moinfo_.boccpi);
+        aospaces.push_back(&moinfo_.boccpi[0]);
         aospaces.push_back(moinfo_.bocc_sym);
-        aospaces.push_back(moinfo_.sopi);
+        aospaces.push_back(&moinfo_.sopi[0]);
         aospaces.push_back(moinfo_.sosym);
-        aospaces.push_back(moinfo_.avirtpi);
+        aospaces.push_back(&moinfo_.avirtpi[0]);
         aospaces.push_back(moinfo_.avir_sym);
-        aospaces.push_back(moinfo_.bvirtpi);
+        aospaces.push_back(&moinfo_.bvirtpi[0]);
         aospaces.push_back(moinfo_.bvir_sym);
     } else {  // R(O)HF
-        aospaces.push_back(moinfo_.occpi);
+        aospaces.push_back(&moinfo_.occpi[0]);
         aospaces.push_back(moinfo_.occ_sym);
-        aospaces.push_back(moinfo_.sopi);
+        aospaces.push_back(&moinfo_.sopi[0]);
         aospaces.push_back(moinfo_.sosym);
-        aospaces.push_back(moinfo_.virtpi);
+        aospaces.push_back(&moinfo_.virtpi[0]);
         aospaces.push_back(moinfo_.vir_sym);
     }
     auto *dforbspi = new int[moinfo_.nirreps];

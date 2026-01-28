@@ -49,12 +49,12 @@ namespace ccdensity {
 void relax_I_ROHF() {
     dpdfile2 I, D, f;
     dpdbuf4 E;
-    int h, nirreps, i, j, e, *occpi, *virtpi, *openpi;
+    int h, nirreps, i, j, e;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    openpi = moinfo.openpi;
+    auto occpi = moinfo.occpi;
+    auto virtpi = moinfo.virtpi;
+    auto openpi = moinfo.openpi;
 
     /*** occupied-virtual relaxation terms */
 

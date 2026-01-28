@@ -53,7 +53,6 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int 
 
 double T3_grad_UHF_BBB() {
     int h, nirreps;
-    int *occpi, *virtpi, *occ_off, *vir_off;
     int i, j, k, a, b, c, d, l;
     int I, J, K, A, B, C, D, L;
     int ij, ji, ik, ki, jk, kj;
@@ -79,10 +78,10 @@ double T3_grad_UHF_BBB() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.boccpi;
-    virtpi = moinfo.bvirtpi;
-    occ_off = moinfo.bocc_off;
-    vir_off = moinfo.bvir_off;
+    auto occpi = moinfo.boccpi;
+    auto virtpi = moinfo.bvirtpi;
+    auto occ_off = moinfo.bocc_off;
+    auto vir_off = moinfo.bvir_off;
 
     double ***WIJK = (double ***)malloc(nirreps * sizeof(double **));
     double ***VIJK = (double ***)malloc(nirreps * sizeof(double **));

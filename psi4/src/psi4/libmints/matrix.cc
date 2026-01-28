@@ -124,8 +124,10 @@ Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symm
     matrix_ = nullptr;
     nirrep_ = l_nirreps;
     symmetry_ = symmetry;
-    rowspi_ = l_rowspi;
-    colspi_ = l_colspi;
+    for (size_t i = 0; i < rowspi_.n(); i++) {
+        rowspi_[i] = l_rowspi[i];
+        colspi_[i] = l_colspi[i];
+    }
     alloc();
 }
 
@@ -134,8 +136,10 @@ Matrix::Matrix(const std::string &name, int l_nirreps, const int *l_rowspi, cons
     matrix_ = nullptr;
     nirrep_ = l_nirreps;
     symmetry_ = symmetry;
-    rowspi_ = l_rowspi;
-    colspi_ = l_colspi;
+    for (size_t i = 0; i < rowspi_.n(); i++) {
+        rowspi_[i] = l_rowspi[i];
+        colspi_[i] = l_colspi[i];
+    }
     alloc();
 }
 
@@ -2717,7 +2721,7 @@ void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transform
     }
 
     // Create temporary matrix of proper size.
-    Matrix temp(nirrep(), a->nrow(), transformer->colspi());
+    Matrix temp(nirrep(), a->nrow(), transformer->colspi().blocks().data());
 
     char ta = 'n';
     char tb = 'n';
@@ -2775,7 +2779,7 @@ void Matrix::remove_symmetry(const SharedMatrix &a, const SharedMatrix &SO2AO) {
     zero();
 
     // Create temporary matrix of proper size.
-    Matrix temp(SO2AO->nirrep(), a->rowspi(), SO2AO->colspi());
+    Matrix temp(SO2AO->nirrep(), a->rowspi().blocks().data(), SO2AO->colspi().blocks().data());
 
     char ta = 'n';
     char tb = 'n';
@@ -3618,7 +3622,7 @@ bool test_matrix_dpd_interface() {
     auto cachelist = init_int_matrix(5, 5);
 
     std::vector<int *> spaces;
-    spaces.push_back(dimpi);
+    spaces.push_back(&dimpi[0]);
     std::vector<int> sym_vec {0, 0, 3, 0, 2, 0, 3};
     spaces.push_back(sym_vec.data());
     dpd_init(0, 4, 500e6, 0, cachefiles.data(), cachelist, nullptr, 1, spaces);

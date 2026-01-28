@@ -67,14 +67,12 @@ void build_Z_UHF() {
     int num_ai, a, i, ai, bj;
     int h, nirreps, count, dim_A, dim_B;
     int *ipiv, info;
-    int *avirtpi, *aoccpi;
-    int *bvirtpi, *boccpi;
 
     nirreps = moinfo.nirreps;
-    aoccpi = moinfo.aoccpi;
-    avirtpi = moinfo.avirtpi;
-    boccpi = moinfo.boccpi;
-    bvirtpi = moinfo.bvirtpi;
+    auto aoccpi = moinfo.aoccpi;
+    auto avirtpi = moinfo.avirtpi;
+    auto boccpi = moinfo.boccpi;
+    auto bvirtpi = moinfo.bvirtpi;
 
     /* compute the number of ai pairs */
     num_ai = 0;

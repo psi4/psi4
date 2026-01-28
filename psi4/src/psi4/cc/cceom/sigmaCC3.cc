@@ -94,11 +94,11 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
         if (params.t3_Ws_incore)
             global_dpd_->cc3_sigma_RHF_ic(&CMnEf, &WAbEi, &WMbIj, 1, &Dints, &SIA, 1, &FME, &WmAEf, &WMnIe, &SIjAb,
-                                          moinfo.occpi, moinfo.occ_off, moinfo.virtpi, moinfo.vir_off, omega, "outfile",
+                                          moinfo.occpi.blocks().data(), moinfo.occ_off, moinfo.virtpi.blocks().data(), moinfo.vir_off, omega, "outfile",
                                           params.nthreads, params.newtrips);
         else
             global_dpd_->cc3_sigma_RHF(&CMnEf, &WAbEi, &WMbIj, 1, &Dints, &SIA, 1, &FME, &WmAEf, &WMnIe, &SIjAb,
-                                       moinfo.occpi, moinfo.occ_off, moinfo.virtpi, moinfo.vir_off, omega, "outfile",
+                                       moinfo.occpi.blocks().data(), moinfo.occ_off, moinfo.virtpi.blocks().data(), moinfo.vir_off, omega, "outfile",
                                        params.newtrips);
 
         global_dpd_->buf4_close(&CMnEf);
@@ -134,11 +134,11 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
         if (params.t3_Ws_incore)
             global_dpd_->cc3_sigma_RHF_ic(&tIjAb, &WAbEi, &WMbIj, 1, &Dints, &SIA, 1, &FME, &WmAEf, &WMnIe, &SIjAb,
-                                          moinfo.occpi, moinfo.occ_off, moinfo.virtpi, moinfo.vir_off, omega, "outfile",
+                                          moinfo.occpi.blocks().data(), moinfo.occ_off, moinfo.virtpi.blocks().data(), moinfo.vir_off, omega, "outfile",
                                           params.nthreads, params.newtrips);
         else
             global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 1, &Dints, &SIA, 1, &FME, &WmAEf, &WMnIe, &SIjAb,
-                                       moinfo.occpi, moinfo.occ_off, moinfo.virtpi, moinfo.vir_off, omega, "outfile",
+                                       moinfo.occpi.blocks().data(), moinfo.occ_off, moinfo.virtpi.blocks().data(), moinfo.vir_off, omega, "outfile",
                                        params.newtrips);
 
         global_dpd_->buf4_close(&tIjAb);
@@ -172,11 +172,11 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
         if (params.t3_Ws_incore)
             global_dpd_->cc3_sigma_RHF_ic(&tIjAb, &WAbEi, &WMbIj, 0, nullptr, nullptr, 1, &FME, &WmAEf, &WMnIe, &SIjAb,
-                                          moinfo.occpi, moinfo.occ_off, moinfo.virtpi, moinfo.vir_off, 0.0, "outfile",
+                                          moinfo.occpi.blocks().data(), moinfo.occ_off, moinfo.virtpi.blocks().data(), moinfo.vir_off, 0.0, "outfile",
                                           params.nthreads, params.newtrips);
         else
             global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 0, nullptr, nullptr, 1, &FME, &WmAEf, &WMnIe, &SIjAb,
-                                       moinfo.occpi, moinfo.occ_off, moinfo.virtpi, moinfo.vir_off, 0.0, "outfile",
+                                       moinfo.occpi.blocks().data(), moinfo.occ_off, moinfo.virtpi.blocks().data(), moinfo.vir_off, 0.0, "outfile",
                                        params.newtrips);
 
         global_dpd_->buf4_close(&tIjAb);
@@ -227,7 +227,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
          * <D| Hhat <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_2 */
 
         global_dpd_->cc3_sigma_UHF_AAA(&CMNEF, &WABEI, &WMBIJ, 1, &DIJAB_anti, &SIA, 1, &FME, &WAMEF, &WMNIE, &SIJAB,
-                                       moinfo.aoccpi, moinfo.aocc_off, moinfo.avirtpi, moinfo.avir_off, omega,
+                                       moinfo.aoccpi.blocks().data(), moinfo.aocc_off, moinfo.avirtpi.blocks().data(), moinfo.avir_off, omega,
                                        "outfile");
 
         global_dpd_->buf4_close(&CMNEF);
@@ -253,7 +253,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
          * <D| Hhat <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_2 */
 
         global_dpd_->cc3_sigma_UHF_BBB(&Cmnef, &Wabei, &Wmbij, 1, &Dijab_anti, &Sia, 1, &Fme, &Wamef, &Wmnie, &Sijab,
-                                       moinfo.boccpi, moinfo.bocc_off, moinfo.bvirtpi, moinfo.bvir_off, omega,
+                                       moinfo.boccpi.blocks().data(), moinfo.bocc_off, moinfo.bvirtpi.blocks().data(), moinfo.bvir_off, omega,
                                        "outfile");
 
         global_dpd_->buf4_close(&Cmnef);
@@ -296,8 +296,8 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
         global_dpd_->cc3_sigma_UHF_AAB(&CMNEF, &CMnEf, &CmNeF, &WABEI, &WaBeI, &WAbEi, &WMBIJ, &WMbIj, &WmBiJ, 1,
                                        &DIJAB_anti, &DIjAb, &SIA, &Sia, 1, &FME, &Fme, &WAMEF, &WaMeF, &WAmEf, &WMNIE,
-                                       &WMnIe, &WmNiE, &SIJAB, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
-                                       moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
+                                       &WMnIe, &WmNiE, &SIJAB, &SIjAb, moinfo.aoccpi.blocks().data(), moinfo.aocc_off, moinfo.boccpi.blocks().data(),
+                                       moinfo.bocc_off, moinfo.avirtpi.blocks().data(), moinfo.avir_off, moinfo.bvirtpi.blocks().data(),
                                        moinfo.bvir_off, omega, "outfile");
 
         global_dpd_->buf4_close(&CMNEF);
@@ -352,8 +352,8 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
         global_dpd_->cc3_sigma_UHF_BBA(&Cmnef, &CMnEf, &CmNeF, &Wabei, &WaBeI, &WAbEi, &Wmbij, &WMbIj, &WmBiJ, 1,
                                        &Dijab_anti, &DiJaB, &SIA, &Sia, 1, &FME, &Fme, &Wamef, &WaMeF, &WAmEf, &Wmnie,
-                                       &WMnIe, &WmNiE, &Sijab, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
-                                       moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
+                                       &WMnIe, &WmNiE, &Sijab, &SIjAb, moinfo.aoccpi.blocks().data(), moinfo.aocc_off, moinfo.boccpi.blocks().data(),
+                                       moinfo.bocc_off, moinfo.avirtpi.blocks().data(), moinfo.avir_off, moinfo.bvirtpi.blocks().data(),
                                        moinfo.bvir_off, omega, "outfile");
 
         global_dpd_->buf4_close(&Cmnef);
@@ -409,7 +409,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
          * <D| Hhat <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_2 */
 
         global_dpd_->cc3_sigma_UHF_AAA(&TIJAB, &WABEI, &WMBIJ, 1, &DIJAB_anti, &SIA, 1, &FME, &WAMEF, &WMNIE, &SIJAB,
-                                       moinfo.aoccpi, moinfo.aocc_off, moinfo.avirtpi, moinfo.avir_off, omega,
+                                       moinfo.aoccpi.blocks().data(), moinfo.aocc_off, moinfo.avirtpi.blocks().data(), moinfo.avir_off, omega,
                                        "outfile");
 
         global_dpd_->buf4_close(&TIJAB);
@@ -434,7 +434,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
          * <D| Hhat <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_2 */
 
         global_dpd_->cc3_sigma_UHF_BBB(&Tijab, &Wabei, &Wmbij, 1, &Dijab_anti, &Sia, 1, &Fme, &Wamef, &Wmnie, &Sijab,
-                                       moinfo.boccpi, moinfo.bocc_off, moinfo.bvirtpi, moinfo.bvir_off, omega,
+                                       moinfo.boccpi.blocks().data(), moinfo.bocc_off, moinfo.bvirtpi.blocks().data(), moinfo.bvir_off, omega,
                                        "outfile");
 
         global_dpd_->buf4_close(&Tijab);
@@ -475,8 +475,8 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
         global_dpd_->cc3_sigma_UHF_AAB(&TIJAB, &TIjAb, &TiJaB, &WABEI, &WaBeI, &WAbEi, &WMBIJ, &WMbIj, &WmBiJ, 1,
                                        &DIJAB_anti, &DIjAb, &SIA, &Sia, 1, &FME, &Fme, &WAMEF, &WaMeF, &WAmEf, &WMNIE,
-                                       &WMnIe, &WmNiE, &SIJAB, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
-                                       moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
+                                       &WMnIe, &WmNiE, &SIJAB, &SIjAb, moinfo.aoccpi.blocks().data(), moinfo.aocc_off, moinfo.boccpi.blocks().data(),
+                                       moinfo.bocc_off, moinfo.avirtpi.blocks().data(), moinfo.avir_off, moinfo.bvirtpi.blocks().data(),
                                        moinfo.bvir_off, omega, "outfile");
 
         global_dpd_->buf4_close(&TIJAB);
@@ -529,8 +529,8 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
         global_dpd_->cc3_sigma_UHF_BBA(&Tijab, &TIjAb, &TiJaB, &Wabei, &WaBeI, &WAbEi, &Wmbij, &WMbIj, &WmBiJ, 1,
                                        &Dijab_anti, &DiJaB, &SIA, &Sia, 1, &FME, &Fme, &Wamef, &WaMeF, &WAmEf, &Wmnie,
-                                       &WMnIe, &WmNiE, &Sijab, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
-                                       moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
+                                       &WMnIe, &WmNiE, &Sijab, &SIjAb, moinfo.aoccpi.blocks().data(), moinfo.aocc_off, moinfo.boccpi.blocks().data(),
+                                       moinfo.bocc_off, moinfo.avirtpi.blocks().data(), moinfo.avir_off, moinfo.bvirtpi.blocks().data(),
                                        moinfo.bvir_off, omega, "outfile");
 
         global_dpd_->buf4_close(&Tijab);
@@ -584,7 +584,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
         /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
 
         global_dpd_->cc3_sigma_UHF_AAA(&TIJAB, &WABEI, &WMBIJ, 0, nullptr, nullptr, 1, &FME, &WAMEF, &WMNIE, &SIJAB,
-                                       moinfo.aoccpi, moinfo.aocc_off, moinfo.avirtpi, moinfo.avir_off, 0.0, "outfile");
+                                       moinfo.aoccpi.blocks().data(), moinfo.aocc_off, moinfo.avirtpi.blocks().data(), moinfo.avir_off, 0.0, "outfile");
 
         global_dpd_->buf4_close(&TIJAB);
         global_dpd_->buf4_close(&WABEI);
@@ -605,7 +605,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
         /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
 
         global_dpd_->cc3_sigma_UHF_BBB(&Tijab, &Wabei, &Wmbij, 0, nullptr, nullptr, 1, &Fme, &Wamef, &Wmnie, &Sijab,
-                                       moinfo.boccpi, moinfo.bocc_off, moinfo.bvirtpi, moinfo.bvir_off, 0.0, "outfile");
+                                       moinfo.boccpi.blocks().data(), moinfo.bocc_off, moinfo.bvirtpi.blocks().data(), moinfo.bvir_off, 0.0, "outfile");
 
         global_dpd_->buf4_close(&Tijab);
         global_dpd_->buf4_close(&Wabei);
@@ -640,8 +640,8 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
         global_dpd_->cc3_sigma_UHF_AAB(&TIJAB, &TIjAb, &TiJaB, &WABEI, &WaBeI, &WAbEi, &WMBIJ, &WMbIj, &WmBiJ, 0,
                                        nullptr, nullptr, nullptr, nullptr, 1, &FME, &Fme, &WAMEF, &WaMeF, &WAmEf,
-                                       &WMNIE, &WMnIe, &WmNiE, &SIJAB, &SIjAb, moinfo.aoccpi, moinfo.aocc_off,
-                                       moinfo.boccpi, moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
+                                       &WMNIE, &WMnIe, &WmNiE, &SIJAB, &SIjAb, moinfo.aoccpi.blocks().data(), moinfo.aocc_off,
+                                       moinfo.boccpi.blocks().data(), moinfo.bocc_off, moinfo.avirtpi.blocks().data(), moinfo.avir_off, moinfo.bvirtpi.blocks().data(),
                                        moinfo.bvir_off, 0.0, "outfile");
 
         global_dpd_->buf4_close(&TIJAB);
@@ -688,8 +688,8 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
         global_dpd_->cc3_sigma_UHF_BBA(&Tijab, &TIjAb, &TiJaB, &Wabei, &WaBeI, &WAbEi, &Wmbij, &WMbIj, &WmBiJ, 0,
                                        nullptr, nullptr, nullptr, nullptr, 1, &FME, &Fme, &Wamef, &WaMeF, &WAmEf,
-                                       &Wmnie, &WMnIe, &WmNiE, &Sijab, &SIjAb, moinfo.aoccpi, moinfo.aocc_off,
-                                       moinfo.boccpi, moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
+                                       &Wmnie, &WMnIe, &WmNiE, &Sijab, &SIjAb, moinfo.aoccpi.blocks().data(), moinfo.aocc_off,
+                                       moinfo.boccpi.blocks().data(), moinfo.bocc_off, moinfo.avirtpi.blocks().data(), moinfo.avir_off, moinfo.bvirtpi.blocks().data(),
                                        moinfo.bvir_off, 0.0, "outfile");
 
         global_dpd_->buf4_close(&Tijab);

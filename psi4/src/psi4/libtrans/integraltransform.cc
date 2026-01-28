@@ -208,11 +208,15 @@ void IntegralTransform::initialize() {
 
     aQT_ = init_int_array(nmo_);
     if (transformationType_ == TransformationType::Restricted) {
-        reorder_qt(clsdpi_, openpi_, frzcpi_, frzvpi_, aQT_, mopi_, nirreps_);
+        reorder_qt(clsdpi_.blocks().data(), openpi_.blocks().data(),
+                   const_cast<int*>(frzcpi_.blocks().data()), const_cast<int*>(frzvpi_.blocks().data()),
+                   aQT_, const_cast<int*>(mopi_.blocks().data()), nirreps_);
         bQT_ = aQT_;
     } else {
         bQT_ = init_int_array(nmo_);
-        reorder_qt_uhf(clsdpi_, openpi_, frzcpi_, frzvpi_, aQT_, bQT_, mopi_, nirreps_);
+        reorder_qt_uhf(clsdpi_.blocks().data(), openpi_.blocks().data(),
+                       const_cast<int*>(frzcpi_.blocks().data()), const_cast<int*>(frzvpi_.blocks().data()),
+                       aQT_, bQT_, const_cast<int*>(mopi_.blocks().data()), nirreps_);
     }
     // Set up the correlated to Pitzer arrays.  These have to include the occupied core terms, because
     // the reference contributions are already folded into the TPDM.  However, they don't include frozen
