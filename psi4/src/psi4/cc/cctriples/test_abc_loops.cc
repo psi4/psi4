@@ -176,7 +176,7 @@ void test_abc_loops_BBB() {
     auto occpi = moinfo.boccpi;
     auto virtpi = moinfo.bvirtpi;
     auto occ_off = moinfo.bocc_off;
-	  auto vir_off = moinfo.bvir_off;
+    auto vir_off = moinfo.bvir_off;
     double ***WIJK = (double ***)malloc(nirreps * sizeof(double **));
     double ***VIJK = (double ***)malloc(nirreps * sizeof(double **));
 

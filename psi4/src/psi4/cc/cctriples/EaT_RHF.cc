@@ -288,8 +288,8 @@ void EaT_RHF_thread(EaT_RHF_thread_data *data) {
     int nijk, nthreads, first_ijk, last_ijk, thr_id;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi.blocks().data();
-    auto virtpi = moinfo.virtpi.blocks().data();
+    auto occpi = moinfo.occpi;
+    auto virtpi = moinfo.virtpi;
     auto occ_off = moinfo.occ_off;
     auto vir_off = moinfo.vir_off;
 

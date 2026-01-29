@@ -419,11 +419,11 @@ void ROHF::form_C(double shift) {
 
 void ROHF::prepare_canonical_orthogonalization() {
     // Some matrix size changes if we canonical orthogonalization
-    Ct_->init(nmopi_, nmopi_);
-    moFa_->init(nmopi_, nmopi_);
-    moFb_->init(nmopi_, nmopi_);
-    moFeff_->init(nmopi_, nmopi_);
-    soFeff_->init(nmopi_, nmopi_);  // This is in the "Orthogonalized SO" basis
+    Ct_->init(nirrep_, nmopi_, nmopi_);
+    moFa_->init(nirrep_, nmopi_, nmopi_);
+    moFb_->init(nirrep_, nmopi_, nmopi_);
+    moFeff_->init(nirrep_, nmopi_, nmopi_);
+    soFeff_->init(nirrep_, nmopi_, nmopi_);  // This is in the "Orthogonalized SO" basis
 }
 void ROHF::form_initial_C() {
     // In ROHF the creation of the C matrix depends on the previous iteration's C
