@@ -121,7 +121,7 @@ std::string CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el
 
     /* loop over orbitals */
     for (j = 0; j < nbf; j++) {
-        std::string olabel(orb2lbl(j + num_drc_orbs, CalcInfo_, const_cast<int*>(nmopi_.blocks().data()))); /* get label for orbital j */
+        std::string olabel(orb2lbl(j + num_drc_orbs, CalcInfo_, nmopi_)); /* get label for orbital j */
 
         for (k = 0, afound = 0; k < num_alp_el; k++) {
             if ((stralp->occs)[k] > j)
