@@ -3622,7 +3622,7 @@ bool test_matrix_dpd_interface() {
     auto cachelist = init_int_matrix(5, 5);
 
     std::vector<int *> spaces;
-    spaces.push_back(&dimpi[0]);
+    spaces.push_back(dimpi);
     std::vector<int> sym_vec {0, 0, 3, 0, 2, 0, 3};
     spaces.push_back(sym_vec.data());
     dpd_init(0, 4, 500e6, 0, cachefiles.data(), cachelist, nullptr, 1, spaces);

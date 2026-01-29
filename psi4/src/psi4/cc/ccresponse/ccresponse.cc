@@ -93,23 +93,23 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
         cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
         std::vector<int *> spaces;
-        spaces.push_back(&moinfo.aoccpi[0]);
-        spaces.push_back(&moinfo.aocc_sym[0]);
-        spaces.push_back(&moinfo.avirtpi[0]);
-        spaces.push_back(&moinfo.avir_sym[0]);
-        spaces.push_back(&moinfo.boccpi[0]);
-        spaces.push_back(&moinfo.bocc_sym[0]);
-        spaces.push_back(&moinfo.bvirtpi[0]);
-        spaces.push_back(&moinfo.bvir_sym[0]);
+        spaces.push_back(moinfo.aoccpi);
+        spaces.push_back(moinfo.aocc_sym);
+        spaces.push_back(moinfo.avirtpi);
+        spaces.push_back(moinfo.avir_sym);
+        spaces.push_back(moinfo.boccpi);
+        spaces.push_back(moinfo.bocc_sym);
+        spaces.push_back(moinfo.bvirtpi);
+        spaces.push_back(moinfo.bvir_sym);
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
     } else { /*** RHF/ROHF references ***/
         cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
         std::vector<int *> spaces;
-        spaces.push_back(&moinfo.occpi[0]);
-        spaces.push_back(&moinfo.occ_sym[0]);
-        spaces.push_back(&moinfo.virtpi[0]);
-        spaces.push_back(&moinfo.vir_sym[0]);
+        spaces.push_back(moinfo.occpi);
+        spaces.push_back(moinfo.occ_sym);
+        spaces.push_back(moinfo.virtpi);
+        spaces.push_back(moinfo.vir_sym);
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
     }
 

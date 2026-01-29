@@ -140,7 +140,6 @@ void c_clean(dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbu
 }
 
 void c_cleanSS(dpdfile2 *CME, dpdfile2 *Cme) {
-    int *occpi, *virtpi, *openpi;
     int *occ_off, *vir_off;
     int nirreps, *occ_sym, *vir_sym;
     int mn, ef, m, n, e, f;
@@ -149,13 +148,13 @@ void c_cleanSS(dpdfile2 *CME, dpdfile2 *Cme) {
 
     C_irr = CME->my_irrep;
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi.blocks().data();
-    virtpi = moinfo.virtpi.blocks().data();
+    auto occpi = moinfo.occpi;
+    auto virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi.blocks().data();
+    auto openpi = moinfo.openpi;
 
     global_dpd_->file2_mat_init(CME);
     global_dpd_->file2_mat_rd(CME);

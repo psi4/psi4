@@ -98,8 +98,8 @@ void sigmaCC3_RHF_obsolete(int i, int C_irr, double omega) {
     /* * <S| H    <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_1
      * <D| Hhat <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_2 */
 
-    global_dpd_->cc3_sigma_RHF(&CMnEf, &WAbEi, &WMbIj, 1, &Dints, &SIA, 1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi.blocks().data(),
-                               moinfo.occ_off, moinfo.virtpi.blocks().data(), moinfo.vir_off, omega, "outfile", params.newtrips);
+    global_dpd_->cc3_sigma_RHF(&CMnEf, &WAbEi, &WMbIj, 1, &Dints, &SIA, 1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi,
+                               moinfo.occ_off, moinfo.virtpi, moinfo.vir_off, omega, "outfile", params.newtrips);
 
     global_dpd_->buf4_close(&CMnEf);
     global_dpd_->buf4_close(&WAbEi);
@@ -132,8 +132,8 @@ void sigmaCC3_RHF_obsolete(int i, int C_irr, double omega) {
     /* * <S| H    <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_1
      * <D| Hhat <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_2 */
 
-    global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 1, &Dints, &SIA, 1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi.blocks().data(),
-                               moinfo.occ_off, moinfo.virtpi.blocks().data(), moinfo.vir_off, omega, "outfile", params.newtrips);
+    global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 1, &Dints, &SIA, 1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi,
+                               moinfo.occ_off, moinfo.virtpi, moinfo.vir_off, omega, "outfile", params.newtrips);
 
     global_dpd_->buf4_close(&tIjAb);
     global_dpd_->buf4_close(&WAbEi);
@@ -165,7 +165,7 @@ void sigmaCC3_RHF_obsolete(int i, int C_irr, double omega) {
     /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
 
     global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 0, nullptr, nullptr, 1, &FME, &WmAEf, &WMnIe, &SIjAb,
-                               moinfo.occpi.blocks().data(), moinfo.occ_off, moinfo.virtpi.blocks().data(), moinfo.vir_off, 0.0, "outfile",
+                               moinfo.occpi, moinfo.occ_off, moinfo.virtpi, moinfo.vir_off, 0.0, "outfile",
                                params.newtrips);
 
     global_dpd_->buf4_close(&tIjAb);

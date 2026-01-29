@@ -101,13 +101,13 @@ double CCEnergyWavefunction::compute_energy() {
     if (params_.ref == 2) { /** UHF **/
         cachelist = cacheprep_uhf(params_.cachelev, cachefiles.data());
         std::vector<int *> spaces;
-        spaces.push_back(&moinfo_.aoccpi[0]);
+        spaces.push_back(moinfo_.aoccpi);
         spaces.push_back(moinfo_.aocc_sym);
-        spaces.push_back(&moinfo_.avirtpi[0]);
+        spaces.push_back(moinfo_.avirtpi);
         spaces.push_back(moinfo_.avir_sym);
-        spaces.push_back(&moinfo_.boccpi[0]);
+        spaces.push_back(moinfo_.boccpi);
         spaces.push_back(moinfo_.bocc_sym);
-        spaces.push_back(&moinfo_.bvirtpi[0]);
+        spaces.push_back(moinfo_.bvirtpi);
         spaces.push_back(moinfo_.bvir_sym);
         delete[] dpd_list[0];
         dpd_list[0] = new DPD(0, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, 4, spaces);
@@ -117,13 +117,13 @@ double CCEnergyWavefunction::compute_energy() {
             form_df_ints(options_, cachelist, cachefiles.data());
         } else if (params_.aobasis != "NONE") { /* Set up new DPD's for AO-basis algorithm */
             std::vector<int *> aospaces;
-            aospaces.push_back(&moinfo_.aoccpi[0]);
+            aospaces.push_back(moinfo_.aoccpi);
             aospaces.push_back(moinfo_.aocc_sym);
-            aospaces.push_back(&moinfo_.sopi[0]);
+            aospaces.push_back(moinfo_.sopi);
             aospaces.push_back(moinfo_.sosym);
-            aospaces.push_back(&moinfo_.boccpi[0]);
+            aospaces.push_back(moinfo_.boccpi);
             aospaces.push_back(moinfo_.bocc_sym);
-            aospaces.push_back(&moinfo_.sopi[0]);
+            aospaces.push_back(moinfo_.sopi);
             aospaces.push_back(moinfo_.sosym);
             dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, 4, aospaces);
             dpd_set_default(0);
@@ -133,9 +133,9 @@ double CCEnergyWavefunction::compute_energy() {
         cachelist = cacheprep_rhf(params_.cachelev, cachefiles.data());
         init_priority_list();
         std::vector<int *> spaces;
-        spaces.push_back(&moinfo_.occpi[0]);
+        spaces.push_back(moinfo_.occpi);
         spaces.push_back(moinfo_.occ_sym);
-        spaces.push_back(&moinfo_.virtpi[0]);
+        spaces.push_back(moinfo_.virtpi);
         spaces.push_back(moinfo_.vir_sym);
 
         dpd_init(0, moinfo_.nirreps, params_.memory, params_.cachetype, cachefiles.data(), cachelist,
@@ -145,9 +145,9 @@ double CCEnergyWavefunction::compute_energy() {
             form_df_ints(options_, cachelist, cachefiles.data());
         } else if (params_.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
             std::vector<int *> aospaces;
-            aospaces.push_back(&moinfo_.occpi[0]);
+            aospaces.push_back(moinfo_.occpi);
             aospaces.push_back(moinfo_.occ_sym);
-            aospaces.push_back(&moinfo_.sopi[0]);
+            aospaces.push_back(moinfo_.sopi);
             aospaces.push_back(moinfo_.sosym);
             dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, 2, aospaces);
             dpd_set_default(0);

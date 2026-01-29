@@ -167,7 +167,7 @@ void DCTSolver::process_so_ints_RHF() {
         global_dpd_->buf4_init(&tau1_AO_ab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[n,n]"), ID("[O,O]"), ID("[n,n]"), 0,
                                "tau1AO <OO|nn>");  // tau1AO <Oo|nn>
         global_dpd_->buf4_scm(&tau1_AO_ab, 0.0);
-        half_transform(&tau1_AO_ab, &lambda, avir_c_, avir_c_, navirpi_.blocks().data(), navirpi_.blocks().data(), pq_row_start, Cd_row_start, true,
+        half_transform(&tau1_AO_ab, &lambda, avir_c_, avir_c_, navirpi_, navirpi_, pq_row_start, Cd_row_start, true,
                        1.0, 0.0);
         global_dpd_->buf4_close(&lambda);
         global_dpd_->buf4_close(&tau1_AO_ab);
@@ -387,7 +387,7 @@ void DCTSolver::process_so_ints_RHF() {
         global_dpd_->buf4_init(&tau_temp, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "tau(temp) SF <OO|VV>");  // tau(temp) <Oo|Vv>
         global_dpd_->buf4_scm(&tau_temp, 0.0);
-        half_transform(&tau2_AO_ab, &tau_temp, avir_c_, avir_c_, navirpi_.blocks().data(), navirpi_.blocks().data(), pq_row_start, Cd_row_start, false,
+        half_transform(&tau2_AO_ab, &tau_temp, avir_c_, avir_c_, navirpi_, navirpi_, pq_row_start, Cd_row_start, false,
                        1.0, 0.0);
         global_dpd_->buf4_close(&tau2_AO_ab);
         global_dpd_->buf4_close(&tau_temp);
