@@ -28,6 +28,8 @@
  * @END LICENSE
  */
 
+#pragma once
+
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/matrix.h"
