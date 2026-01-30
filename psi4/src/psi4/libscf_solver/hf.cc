@@ -726,7 +726,7 @@ void HF::form_Shalf() {
         brianInt computeOverlapRoot = BRIAN_FALSE;
         brianInt computeOverlapInverseRoot = BRIAN_TRUE;
         brianInt basisRank;
-        SharedMatrix buffer = std::make_shared<Matrix>(nirrep_, nsopi_, nsopi_);
+        SharedMatrix buffer = std::make_shared<Matrix>(nsopi_, nsopi_);
         brianSCFComputeOverlapRoot(&brianCookie, &computeOverlapRoot, &computeOverlapInverseRoot, S_->get_pointer(),
                                    &S_cutoff, &basisRank, nullptr, buffer->get_pointer());
         checkBrian();
@@ -734,7 +734,7 @@ void HF::form_Shalf() {
         nmo_ = basisRank;
         nmopi_[0] = basisRank;
 
-        X_->init(nirrep_, nsopi_, nmopi_, "X (Canonical Orthogonalization)");
+        X_->init(nsopi_, nmopi_, "X (Canonical Orthogonalization)");
         for (int i = 0; i < nso_; i++) {
             for (int j = 0; j < nmo_; j++) {
                 X_->set(i, j, buffer->get(nmo_ - 1 - j, i));
@@ -769,10 +769,10 @@ void HF::form_Shalf() {
     }
     // Refreshes twice in RHF, no big deal
     epsilon_a_->init(nmopi_);
-    Ca_->init(nirrep_, nsopi_, nmopi_, "Alpha MO coefficients");
+    Ca_->init(nsopi_, nmopi_, "Alpha MO coefficients");
     epsilon_b_->init(nmopi_);
     if (!same_a_b_orbs_) {
-        Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
+        Cb_->init(nsopi_, nmopi_, "Beta MO coefficients");
     }
 
     // Extra matrix dimension changes for specific derived classes
