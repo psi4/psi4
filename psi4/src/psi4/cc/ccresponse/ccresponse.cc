@@ -92,24 +92,18 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
     if (params.ref == 2) { /*** UHF references ***/
         cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
-        std::vector<int *> spaces;
-        spaces.push_back(moinfo.aoccpi);
-        spaces.push_back(moinfo.aocc_sym);
-        spaces.push_back(moinfo.avirtpi);
-        spaces.push_back(moinfo.avir_sym);
-        spaces.push_back(moinfo.boccpi);
-        spaces.push_back(moinfo.bocc_sym);
-        spaces.push_back(moinfo.bvirtpi);
-        spaces.push_back(moinfo.bvir_sym);
+        std::vector<std::pair<Dimension, int *>> spaces;
+        spaces.push_back(std::make_pair(moinfo.aoccpi, moinfo.aocc_sym));
+        spaces.push_back(std::make_pair(moinfo.avirtpi, moinfo.avir_sym));
+        spaces.push_back(std::make_pair(moinfo.boccpi, moinfo.bocc_sym));
+        spaces.push_back(std::make_pair(moinfo.bvirtpi, moinfo.bvir_sym));
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
     } else { /*** RHF/ROHF references ***/
         cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
-        std::vector<int *> spaces;
-        spaces.push_back(moinfo.occpi);
-        spaces.push_back(moinfo.occ_sym);
-        spaces.push_back(moinfo.virtpi);
-        spaces.push_back(moinfo.vir_sym);
+        std::vector<std::pair<Dimension, int *>> spaces;
+        spaces.push_back(std::make_pair(moinfo.occpi, moinfo.occ_sym));
+        spaces.push_back(std::make_pair(moinfo.virtpi, moinfo.vir_sym));
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
     }
 
