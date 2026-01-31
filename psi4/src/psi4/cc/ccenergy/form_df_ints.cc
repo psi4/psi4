@@ -85,30 +85,21 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     /*
      * Set up the DPD machinery
      */
-    std::vector<int *> aospaces;
+    std::vector<std::pair<Dimension, int *>> aospaces;
     if (params_.ref == 2) {  // UHF
-        aospaces.push_back(moinfo_.aoccpi);
-        aospaces.push_back(moinfo_.aocc_sym);
-        aospaces.push_back(moinfo_.sopi);
-        aospaces.push_back(moinfo_.sosym);
-        aospaces.push_back(moinfo_.boccpi);
-        aospaces.push_back(moinfo_.bocc_sym);
-        aospaces.push_back(moinfo_.sopi);
-        aospaces.push_back(moinfo_.sosym);
-        aospaces.push_back(moinfo_.avirtpi);
-        aospaces.push_back(moinfo_.avir_sym);
-        aospaces.push_back(moinfo_.bvirtpi);
-        aospaces.push_back(moinfo_.bvir_sym);
+        aospaces.push_back(std::make_pair(moinfo_.aoccpi, moinfo_.aocc_sym));
+        aospaces.push_back(std::make_pair(moinfo_.sopi, moinfo_.sosym));
+        aospaces.push_back(std::make_pair(moinfo_.boccpi, moinfo_.bocc_sym));
+        aospaces.push_back(std::make_pair(moinfo_.sopi, moinfo_.sosym));
+        aospaces.push_back(std::make_pair(moinfo_.avirtpi, moinfo_.avir_sym));
+        aospaces.push_back(std::make_pair(moinfo_.bvirtpi, moinfo_.bvir_sym));
     } else {  // R(O)HF
-        aospaces.push_back(moinfo_.occpi);
-        aospaces.push_back(moinfo_.occ_sym);
-        aospaces.push_back(moinfo_.sopi);
-        aospaces.push_back(moinfo_.sosym);
-        aospaces.push_back(moinfo_.virtpi);
-        aospaces.push_back(moinfo_.vir_sym);
+        aospaces.push_back(std::make_pair(moinfo_.occpi, moinfo_.occ_sym));
+        aospaces.push_back(std::make_pair(moinfo_.sopi, moinfo_.sosym));
+        aospaces.push_back(std::make_pair(moinfo_.virtpi, moinfo_.vir_sym));
     }
-    auto *dforbspi = new int[moinfo_.nirreps];
-    auto *dummyorbspi = new int[moinfo_.nirreps];
+	  std::vector<int> dforbspi(moinfo_.nirreps);
+	  std::vector<int> dummyorbspi(moinfo_.nirreps);
     int count = 0;
     for (int h = 0; h < moinfo_.nirreps; ++h) {
         dummyorbspi[h] = 0;
@@ -123,16 +114,12 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     count = 0;
     for (int h = 0; h < moinfo_.nirreps; ++h)
         for (int orb = 0; orb < dforbspi[h]; ++orb) dforbsym[count++] = h;
-    aospaces.push_back(dforbspi);
-    aospaces.push_back(dforbsym);
-    aospaces.push_back(dummyorbspi);
-    aospaces.push_back(dummyorbsym);
+    aospaces.push_back(std::make_pair(Dimension(dforbspi), dforbsym));
+    aospaces.push_back(std::make_pair(Dimension(dummyorbspi), dummyorbsym));
 
     dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, nullptr, aospaces.size() / 2, aospaces);
 
-    delete[] dforbspi;
     delete[] dforbsym;
-    delete[] dummyorbspi;
     delete[] dummyorbsym;
 
     /*      The IDs of the spaces
