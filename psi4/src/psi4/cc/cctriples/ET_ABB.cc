@@ -52,7 +52,7 @@ double ET_ABB() {
     int ab, ba, ac, ca, bc, cb;
     int ae, be, eb, ce, ec, ie, je, ke;
     int im, jm, mj, km, mk, ma, mb, mc;
-    int *occpi, *virtpi, *occ_off, *vir_off;
+    int *occ_off, *vir_off;
     double value_c, value_d, denom, ET_ABB;
     double t_ijae, t_ijeb, t_ijec, t_jkbe, t_jkce, t_ikae, t_ikeb, t_ikec;
     double F_kebc, F_keca, F_keba, F_ieac, F_ieab, F_jebc, F_jeca, F_jeba;
@@ -64,8 +64,8 @@ double ET_ABB() {
     dpdfile2 T1A, T1B, fIJ, fij, fAB, fab;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    auto occpi = moinfo.occpi;
+    auto virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 
