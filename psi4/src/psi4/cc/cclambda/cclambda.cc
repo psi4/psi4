@@ -142,19 +142,15 @@ double CCLambdaWavefunction::compute_energy() {
 
         cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
-        std::vector<int *> spaces;
-        spaces.push_back(moinfo.occpi);
-        spaces.push_back(moinfo.occ_sym);
-        spaces.push_back(moinfo.virtpi);
-        spaces.push_back(moinfo.vir_sym);
+        std::vector<std::pair<Dimension, int *>> spaces;
+        spaces.push_back(std::make_pair(moinfo.occpi, moinfo.occ_sym));
+        spaces.push_back(std::make_pair(moinfo.virtpi, moinfo.vir_sym));
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
 
         if (params.aobasis) { /* Set up new DPD for AO-basis algorithm */
-            std::vector<int *> aospaces;
-            aospaces.push_back(moinfo.occpi);
-            aospaces.push_back(moinfo.occ_sym);
-            aospaces.push_back(moinfo.sopi);
-            aospaces.push_back(moinfo.sosym);
+            std::vector<std::pair<Dimension, int *>> aospaces;
+            aospaces.push_back(std::make_pair(moinfo.occpi, moinfo.occ_sym));
+            aospaces.push_back(std::make_pair(moinfo.sopi, moinfo.sosym));
             dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, aospaces);
             dpd_set_default(0);
         }
@@ -162,28 +158,20 @@ double CCLambdaWavefunction::compute_energy() {
     } else if (params.ref == 2) { /** UHF **/
 
         cachelist = cacheprep_uhf(params.cachelev, cachefiles);
-        std::vector<int *> spaces;
-        spaces.push_back(moinfo.aoccpi);
-        spaces.push_back(moinfo.aocc_sym);
-        spaces.push_back(moinfo.avirtpi);
-        spaces.push_back(moinfo.avir_sym);
-        spaces.push_back(moinfo.boccpi);
-        spaces.push_back(moinfo.bocc_sym);
-        spaces.push_back(moinfo.bvirtpi);
-        spaces.push_back(moinfo.bvir_sym);
+        std::vector<std::pair<Dimension, int *>> spaces;
+        spaces.push_back(std::make_pair(moinfo.aoccpi, moinfo.aocc_sym));
+        spaces.push_back(std::make_pair(moinfo.avirtpi, moinfo.avir_sym));
+        spaces.push_back(std::make_pair(moinfo.boccpi, moinfo.bocc_sym));
+        spaces.push_back(std::make_pair(moinfo.bvirtpi, moinfo.bvir_sym));
 
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
 
         if (params.aobasis) { /* Set up new DPD's for AO-basis algorithm */
-            std::vector<int *> aospaces;
-            aospaces.push_back(moinfo.aoccpi);
-            aospaces.push_back(moinfo.aocc_sym);
-            aospaces.push_back(moinfo.sopi);
-            aospaces.push_back(moinfo.sosym);
-            aospaces.push_back(moinfo.boccpi);
-            aospaces.push_back(moinfo.bocc_sym);
-            aospaces.push_back(moinfo.sopi);
-            aospaces.push_back(moinfo.sosym);
+            std::vector<std::pair<Dimension, int *>> aospaces;
+            aospaces.push_back(std::make_pair(moinfo.aoccpi, moinfo.aocc_sym));
+            aospaces.push_back(std::make_pair(moinfo.sopi, moinfo.sosym));
+            aospaces.push_back(std::make_pair(moinfo.boccpi, moinfo.bocc_sym));
+            aospaces.push_back(std::make_pair(moinfo.sopi, moinfo.sosym));
             dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, aospaces);
             dpd_set_default(0);
         }
