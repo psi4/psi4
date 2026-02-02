@@ -95,8 +95,8 @@ namespace psi {
 namespace cclambda {
 
 void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2, dpdbuf4 *F, dpdbuf4 *E,
-            dpdfile2 *fIJ, dpdfile2 *fAB, dpdbuf4 *D, dpdbuf4 *LIJAB, dpdfile2 *LIA, dpdfile2 *FME, int *occpi,
-            int *occ_off, int *virtpi, int *vir_off) {
+            dpdfile2 *fIJ, dpdfile2 *fAB, dpdbuf4 *D, dpdbuf4 *LIJAB, dpdfile2 *LIA, dpdfile2 *FME, Dimension& occpi,
+            int *occ_off, Dimension& virtpi, int *vir_off) {
     int h;
     int i, j, k;
     int Ga, Gb, Gc;

@@ -225,9 +225,9 @@ struct thread_data {
     dpdbuf4 *WmAEf;
     dpdbuf4 *WMnIe;
     dpdbuf4 *SIjAb;
-    int *occpi;
+    Dimension occpi;
     int *occ_off;
-    int *virtpi;
+    Dimension virtpi;
     int *vir_off;
     double omega;
     dpdfile2 *fIJ;
@@ -491,58 +491,58 @@ class PSI_API DPD {
     void file4_cache_unlock(dpdfile4 *File);
 
     void sort_3d(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx, int ***roworb, int *asym,
-                 int *bsym, int *aoff, int *boff, int *cpi, int *coff, int **rowidx_out, enum pattern index, int sum);
+                 int *bsym, int *aoff, int *boff, Dimension& cpi, int *coff, int **rowidx_out, enum pattern index, int sum);
 
     void T3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2, dpdbuf4 *F,
-                dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off,
+                dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, Dimension& occpi, int *occ_off, Dimension& virtpi, int *vir_off,
                 double omega);
 
     void T3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2AA, dpdbuf4 *T2AB,
                 dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA, dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA,
-                dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB, dpdfile2 *fab, int *aoccpi, int *aocc_off, int *boccpi,
-                int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, double omega);
+                dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB, dpdfile2 *fab, Dimension& aoccpi, int *aocc_off, Dimension& boccpi,
+                int *bocc_off, Dimension& avirtpi, int *avir_off, Dimension& bvirtpi, int *bvir_off, double omega);
 
     void T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2, dpdbuf4 *F,
-                dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off,
+                dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, Dimension& occpi, int *occ_off, Dimension& virtpi, int *vir_off,
                 double omega);
 
     void T3_RHF_ic(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2, dpdbuf4 *F,
-                   dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off,
+                   dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, Dimension& occpi, int *occ_off, Dimension& virtpi, int *vir_off,
                    double omega);
 
     void cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj, int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
-                       int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe, dpdbuf4 *SIjAb, int *occpi,
-                       int *occ_off, int *virtpi, int *vir_off, double omega, std::string out_fname, int newtrips);
+                       int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe, dpdbuf4 *SIjAb, Dimension& occpi,
+                       int *occ_off, Dimension& virtpi, int *vir_off, double omega, std::string out_fname, int newtrips);
 
     void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj, int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
-                          int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe, dpdbuf4 *SIjAb, int *occpi,
-                          int *occ_off, int *virtpi, int *vir_off, double omega, std::string out_fname, int nthreads,
+                          int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe, dpdbuf4 *SIjAb, Dimension& occpi,
+                          int *occ_off, Dimension& virtpi, int *vir_off, double omega, std::string out_fname, int nthreads,
                           int newtrips);
 
     void cc3_sigma_UHF_AAA(dpdbuf4 *CMNEF, dpdbuf4 *WABEI, dpdbuf4 *WMBIJ, int do_singles, dpdbuf4 *Dints_anti,
                            dpdfile2 *SIA, int do_doubles, dpdfile2 *FME, dpdbuf4 *WMAFE, dpdbuf4 *WMNIE, dpdbuf4 *SIJAB,
-                           int *aoccpi, int *aocc_off, int *avirtpi, int *avir_off, double omega,
+                           Dimension& aoccpi, int *aocc_off, Dimension& avirtpi, int *avir_off, double omega,
                            std::string out_fname);
 
     void cc3_sigma_UHF_BBB(dpdbuf4 *Cmnef, dpdbuf4 *Wabei, dpdbuf4 *Wmbij, int do_singles, dpdbuf4 *Dijab_anti,
                            dpdfile2 *Sia, int do_doubles, dpdfile2 *Fme, dpdbuf4 *Wmafe, dpdbuf4 *Wmnie, dpdbuf4 *Sijab,
-                           int *boccpi, int *bocc_off, int *bvirtpi, int *bvir_off, double omega,
+                           Dimension& boccpi, int *bocc_off, Dimension& bvirtpi, int *bvir_off, double omega,
                            std::string out_fname);
 
     void cc3_sigma_UHF_AAB(dpdbuf4 *C2AA, dpdbuf4 *C2AB, dpdbuf4 *C2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
                            dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, int do_singles, dpdbuf4 *DAA, dpdbuf4 *DAB,
                            dpdfile2 *SIA, dpdfile2 *Sia, int do_doubles, dpdfile2 *FME, dpdfile2 *Fme, dpdbuf4 *WMAFE,
                            dpdbuf4 *WMaFe, dpdbuf4 *WmAfE, dpdbuf4 *WMNIE, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
-                           dpdbuf4 *SIJAB, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off,
-                           int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, double omega,
+                           dpdbuf4 *SIJAB, dpdbuf4 *SIjAb, Dimension& aoccpi, int *aocc_off, Dimension& boccpi, int *bocc_off,
+                           Dimension& avirtpi, int *avir_off, Dimension& bvirtpi, int *bvir_off, double omega,
                            std::string out_fname);
 
     void cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA, dpdbuf4 *FBB, dpdbuf4 *FAB, dpdbuf4 *FBA,
                            dpdbuf4 *EBB, dpdbuf4 *EAB, dpdbuf4 *EBA, int do_singles, dpdbuf4 *DBB, dpdbuf4 *DBA,
                            dpdfile2 *SIA, dpdfile2 *Sia, int do_doubles, dpdfile2 *FME, dpdfile2 *Fme, dpdbuf4 *Wmafe,
                            dpdbuf4 *WMaFe, dpdbuf4 *WmAfE, dpdbuf4 *Wmnie, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
-                           dpdbuf4 *Sijab, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off,
-                           int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, double omega,
+                           dpdbuf4 *Sijab, dpdbuf4 *SIjAb, Dimension& aoccpi, int *aocc_off, Dimension& boccpi, int *bocc_off,
+                           Dimension& avirtpi, int *avir_off, Dimension& bvirtpi, int *bvir_off, double omega,
                            std::string out_fname);
 };  // Dpd class
 

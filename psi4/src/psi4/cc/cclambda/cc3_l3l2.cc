@@ -47,14 +47,14 @@ void cc3_l3l2_RHF_AAA();
 void cc3_l3l2_RHF_AAB();
 
 void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2, dpdbuf4 *F, dpdbuf4 *E,
-            dpdfile2 *fIJ, dpdfile2 *fAB, dpdbuf4 *D, dpdbuf4 *LIJAB, dpdfile2 *LIA, dpdfile2 *FME, int *occpi,
-            int *occ_off, int *virtpi, int *vir_off);
+            dpdfile2 *fIJ, dpdfile2 *fAB, dpdbuf4 *D, dpdbuf4 *LIJAB, dpdfile2 *LIA, dpdfile2 *FME, Dimension& occpi,
+            int *occ_off, Dimension& virtpi, int *vir_off);
 
 void L3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2AA, dpdbuf4 *T2AB,
             dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA, dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA,
             dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB, dpdfile2 *fab, dpdbuf4 *DAA, dpdbuf4 *DAB, dpdbuf4 *LIJAB,
-            dpdbuf4 *LIjAb, dpdfile2 *LIA, dpdfile2 *Lia, dpdfile2 *FME, dpdfile2 *Fme, int *aoccpi, int *aocc_off,
-            int *boccpi, int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off);
+            dpdbuf4 *LIjAb, dpdfile2 *LIA, dpdfile2 *Lia, dpdfile2 *FME, dpdfile2 *Fme, Dimension& aoccpi, int *aocc_off,
+            Dimension& boccpi, int *bocc_off, Dimension& avirtpi, int *avir_off, Dimension& bvirtpi, int *bvir_off);
 
 void cc3_l3l2() {
     if (params.ref == 0) {

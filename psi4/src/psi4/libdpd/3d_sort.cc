@@ -82,7 +82,7 @@
 namespace psi {
 
 void DPD::sort_3d(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx, int ***roworb,
-                  int *asym, int *bsym, int *aoff, int *boff, int *cpi, int *coff, int **rowidx_out, enum pattern index,
+                  int *asym, int *bsym, int *aoff, int *boff, Dimension& cpi, int *coff, int **rowidx_out, enum pattern index,
                   int sum) {
     int Ga, Gb, Gc;
     int Gab, Gac, Gca, Gcb, Gbc, Gba;

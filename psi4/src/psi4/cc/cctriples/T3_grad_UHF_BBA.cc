@@ -47,15 +47,15 @@ extern void T3_UHF_AAB(double ***W, double ***V, int disc, int nirreps, int I, i
                        dpdbuf4 *T2AA, dpdbuf4 *T2AB, dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
                        dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B, dpdbuf4 *DAA,
                        dpdbuf4 *DAB, dpdfile2 *fIA, dpdfile2 *fia, dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB,
-                       dpdfile2 *fab, int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off, int *avirtpi,
-                       int *avir_off, int *bvirtpi, int *bvir_off, double omega);
+                       dpdfile2 *fab, Dimension& aoccpi, int *aocc_off, Dimension& boccpi, int *bocc_off, Dimension& avirtpi,
+                       int *avir_off, Dimension& bvirtpi, int *bvir_off, double omega);
 
 extern void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk,
                            dpdbuf4 *T2AA, dpdbuf4 *T2AB, dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
                            dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B, dpdbuf4 *DAA,
                            dpdbuf4 *DAB, dpdfile2 *fIA, dpdfile2 *fia, dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB,
-                           dpdfile2 *fab, int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off, int *avirtpi,
-                           int *avir_off, int *bvirtpi, int *bvir_off, double omega);
+                           dpdfile2 *fab, Dimension& aoccpi, int *aocc_off, Dimension& boccpi, int *bocc_off, Dimension& avirtpi,
+                           int *avir_off, Dimension& bvirtpi, int *bvir_off, double omega);
 
 double T3_grad_UHF_BBA() {
     int cnt;

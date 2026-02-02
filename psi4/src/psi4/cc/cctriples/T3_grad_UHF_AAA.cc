@@ -45,11 +45,11 @@ namespace cctriples {
 
 extern void T3_UHF_AAA(double ***W, double ***V, int disc, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk,
                        dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ,
-                       dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega);
+                       dpdfile2 *fAB, Dimension& occpi, int *occ_off, Dimension& virtpi, int *vir_off, double omega);
 
 extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int Ga, int B, int Gb, int C, int Gc,
                            dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ,
-                           dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega);
+                           dpdfile2 *fAB, Dimension& occpi, int *occ_off, Dimension& virtpi, int *vir_off, double omega);
 
 double T3_grad_UHF_AAA() {
     int h, nirreps;
