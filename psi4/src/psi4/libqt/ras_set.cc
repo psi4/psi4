@@ -132,8 +132,8 @@ namespace psi {
 ** Returns: 1 for success, 0 otherwise
 ** \ingroup QT
 */
-int ras_set3(int nirreps, int nmo, int *orbspi, int *docc, int *socc, int *frdocc, int *fruocc, int *restrdocc,
-             int *restruocc, int **ras_opi, int *core_guess, int *order, int ras_type, bool is_mcscf,
+int ras_set3(int nirreps, int nmo, Dimension& orbspi, int *docc, int *socc, int *frdocc, int *fruocc, int *restrdocc,
+             int *restruocc, int **ras_opi, Dimension& core_guess, int *order, int ras_type, bool is_mcscf,
              Options &options) {
     int i, irrep, point, tmpi, cnt = 0;
     int errcod, errbad = 0;

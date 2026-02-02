@@ -181,7 +181,7 @@ class CCEnergyWavefunction : public Wavefunction {
     /* AO basis */
     void BT2_AO();
     void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C1, double ***C2, int nirreps,
-                   int **mo_row, int **so_row, int *mospi_left, int *mospi_right, int *sospi, int type, double alpha,
+                   int **mo_row, int **so_row, Dimension& mospi_left, Dimension& mospi_right, Dimension& sospi, int type, double alpha,
                    double beta);
     int AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO);
 

@@ -43,10 +43,12 @@
 
 #include "psi4/pragma.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libmints/dimension.h"
 
 namespace psi {
 class Options;
 class Wavefunction;
+class Dimension;
 
 void dx_write(std::shared_ptr<Wavefunction> wfn, Options& options, double** D);
 void dx_read(double** V_eff, double* phi_ao, double* phi_so, int nao, int nso, double** u);
@@ -62,8 +64,8 @@ void reorder_qt(const int* docc_in, const int* socc_in, int* frozen_docc_in, int
 PSI_API
 void reorder_qt_uhf(const int* docc, const int* socc, int* frozen_docc, int* frozen_uocc, int* order_alpha, int* order_beta,
                     int* orbspi, int nirreps);
-int ras_set3(int nirreps, int nmo, int* orbspi, int* docc, int* socc, int* frdocc, int* fruocc, int* restrdocc,
-             int* restruocc, int** ras_opi, int* core_guess, int* order, int ras_type, bool is_mcscf, Options& options);
+int ras_set3(int nirreps, int nmo, Dimension& orbspi, int* docc, int* socc, int* frdocc, int* fruocc, int* restrdocc,
+             int* restruocc, int** ras_opi, Dimension& core_guess, int* order, int ras_type, bool is_mcscf, Options& options);
 void newmm_rking(double** A, int transa, double** B, int transb, double** C, int num_rows, int num_links, int num_cols,
                  double alpha, double beta);
 double dot_block(double** A, double** B, int rows, int cols, double alpha);

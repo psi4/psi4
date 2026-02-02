@@ -51,14 +51,14 @@ namespace psi {
 namespace cclambda {
 
 void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C, int nirreps, int **mo_row,
-               int **so_row, int *mospi, int *sospi, int type, double alpha, double beta);
+               int **so_row, Dimension& mospi, Dimension& sospi, int type, double alpha, double beta);
 
 void AO_contribute(int p, int q, int r, int s, double value, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int anti);
 
 void BL2_AO(int L_irr) {
     int h, nirreps, i, Gc, Gd, Ga, Gb, ij;
     double ***C, **X;
-    int *orbspi, *virtpi;
+    Dimension orbspi, virtpi;
     int **T2_cd_row_start, **T2_pq_row_start, offset, cd, pq;
     dpdbuf4 tau, t2, tau1_AO, tau2_AO;
     psio_address next;
