@@ -59,13 +59,14 @@ void schmidt(double** A, int rows, int cols, std::string out_fname);
 double invert_matrix(double** a, double** y, int N, std::string out_fname);
 void solve_2x2_pep(double** H, double S, double* evals, double** evecs);
 PSI_API
-void reorder_qt(const int* docc_in, const int* socc_in, int* frozen_docc_in, int* frozen_uocc_in, int* order, int* orbs_per_irrep,
-                int nirreps);
+void reorder_qt(Dimension const& docc_in, Dimension const& socc_in, Dimension const& frozen_docc_in,
+                Dimension const& frozen_uocc_in, int* order, Dimension const& orbs_per_irrep, int nirreps);
 PSI_API
-void reorder_qt_uhf(const int* docc, const int* socc, int* frozen_docc, int* frozen_uocc, int* order_alpha, int* order_beta,
-                    int* orbspi, int nirreps);
-int ras_set3(int nirreps, int nmo, Dimension& orbspi, Dimension&  docc, Dimension&  socc, Dimension&  frdocc, Dimension&  fruocc, Dimension&  restrdocc,
-             Dimension&  restruocc, int** ras_opi, Dimension& core_guess, int* order, int ras_type, bool is_mcscf, Options& options);
+void reorder_qt_uhf(Dimension const& docc, Dimension const& socc, Dimension const& frozen_docc,
+                    Dimension const& frozen_uocc, int* order_alpha, int* order_beta,
+                    Dimension const& orbspi, int nirreps);
+int ras_set3(int nirreps, int nmo, Dimension& orbspi, Dimension& docc, Dimension& socc, Dimension& frdocc, Dimension& fruocc, Dimension& restrdocc,
+             Dimension& restruocc, int** ras_opi, Dimension& core_guess, int* order, int ras_type, bool is_mcscf, Options& options);
 void newmm_rking(double** A, int transa, double** B, int transb, double** C, int num_rows, int num_links, int num_cols,
                  double alpha, double beta);
 double dot_block(double** A, double** B, int rows, int cols, double alpha);
