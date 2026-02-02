@@ -2,6 +2,7 @@ list(APPEND sources
   dlpno.cc
   mp2.cc
   ccsd.cc
+  ccsd_lambda.cc
   triples.cc
   wrapper.cc
   sparse.cc
