@@ -132,12 +132,13 @@ namespace psi {
 ** Returns: 1 for success, 0 otherwise
 ** \ingroup QT
 */
-int ras_set3(int nirreps, int nmo, Dimension& orbspi, Dimension& docc, Dimension& socc, Dimension& frdocc,
-             Dimension& fruocc, Dimension& restrdocc, Dimension& restruocc, int **ras_opi,
-             Dimension& core_guess, int *order, int ras_type, bool is_mcscf, Options &options) {
+int ras_set3(int nirreps, int nmo, Dimension& orbspi, int *docc, int *socc, int *frdocc, int *fruocc, int *restrdocc,
+             int *restruocc, int **ras_opi, Dimension& core_guess, int *order, int ras_type, bool is_mcscf,
+             Options &options) {
     int i, irrep, point, tmpi, cnt = 0;
-    int errbad = 0;
+    int errcod, errbad = 0;
     int *used, *offset, **tras;
+    int *tmp_frdocc, *tmp_fruocc;
     bool parsed_ras1 = false, parsed_ras2 = false;
     bool parsed_ras3 = false, parsed_ras4 = false;
     bool parsed_frozen_docc = false, parsed_restr_docc = false;
@@ -150,6 +151,10 @@ int ras_set3(int nirreps, int nmo, Dimension& orbspi, Dimension& docc, Dimension
     for (i = 0; i < MAX_RAS_SPACES; i++) {
         zero_int_array(ras_opi[i], nirreps);
     }
+    zero_int_array(frdocc, nirreps);
+    zero_int_array(restrdocc, nirreps);
+    zero_int_array(fruocc, nirreps);
+    zero_int_array(restruocc, nirreps);
 
     zero_int_array(order, nmo);
 
