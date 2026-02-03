@@ -1,3 +1,6 @@
+#ifndef PLUGIN_SCF_H
+#define PLUGIN_SCF_H
+
 /*
  * @BEGIN LICENSE
  *
@@ -27,8 +30,6 @@
  *
  * @END LICENSE
  */
-
-#pragma once
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/wavefunction.h"
@@ -91,3 +92,5 @@ class SCF : public Wavefunction {
 };
 
 }} //End namespaces
+
+#endif
