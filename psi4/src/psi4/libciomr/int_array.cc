@@ -43,6 +43,7 @@
 #include <sstream>
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libmints/dimension.h"
 namespace psi {
 
 /*!
@@ -84,6 +85,22 @@ PSI_API int *init_int_array(int size) {
 ** \ingroup CIOMR
 */
 void zero_int_array(int *a, int size) { memset(a, 0, sizeof(int) * size); }
+
+/*!
+** zero_int_array()
+** Zeroes out an array of integers 'size' integers long
+**
+** \param a    = Dimension reference to zero out
+** \param size = number of elements in a to zero
+**
+** Returns: none
+**
+** \ingroup CIOMR
+*/
+void zero_int_array(Dimension& a, int size) {
+  std::vector<int> tmp(size, 0);
+  a = Dimension(tmp);
+}
 
 /*!
 ** init_int_matrix():

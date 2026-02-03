@@ -951,11 +951,9 @@ void Options::fill_int_array(std::string key, int* empty_array) const {
 
 void Options::fill_int_array(std::string key, Dimension& empty_array) const {
     auto array = std::vector<int>(use(key).size());
-
     for (size_t i = 0; i < use(key).size(); ++i) {
-        array.push_back(use(key)[i].to_integer());
+        array[i] = use(key)[i].to_integer();
     }
-
     empty_array = Dimension(array);
 }
 
