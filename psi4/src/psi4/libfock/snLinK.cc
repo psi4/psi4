@@ -78,7 +78,7 @@ std::tuple<
 
     // generate map for radial quadrature schemes 
     std::unordered_map<std::string, GauXC::RadialQuad> radial_scheme_map; 
-    radial_scheme_map["TREUTLER"] = GauXC::RadialQuad::TreutlerAldrichs;
+    radial_scheme_map["TREUTLER"] = GauXC::RadialQuad::TreutlerAhlrichs;
     radial_scheme_map["MURA"] = GauXC::RadialQuad::MuraKnowles;
     // The Murray, Handy, Laming literature reference is mentioned in cubature.cc
     // with association to this keyword

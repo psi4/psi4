@@ -450,6 +450,8 @@ implemented in |PSIfour| for correctness. If you find an error in a DFT
 functional or have a request for a new functional, please let us know on our
 forum or GitHub page.
 
+.. _`sec:grid-selection`:
+
 Grid Selection
 ~~~~~~~~~~~~~~
 

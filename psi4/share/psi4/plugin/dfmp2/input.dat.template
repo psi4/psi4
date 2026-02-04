@@ -24,6 +24,9 @@ set @plugin@ {
   print 1
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 8, "d_convergence": 3e-8})
+
 energy('@plugin@')
 
 @plugin@.exampleFN()

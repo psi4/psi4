@@ -35,7 +35,7 @@ jobs:
             #    -D ENABLE_XHOST=OFF
 
           - label: "Conda Clang (M-Intel)"
-            runs-on: macos-13  # ensures py!=27 in base OS
+            runs-on: macos-15-intel
             python-version: "3.11"
             mkl-version: ""
             platform: osx-64
@@ -170,6 +170,7 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
+          sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # sed -E -i.bak "s;;;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Silicon)" ]]; then

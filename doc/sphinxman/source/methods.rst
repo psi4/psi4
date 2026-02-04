@@ -53,6 +53,7 @@ A complete list of standard keywords is provided in Appendix
    mp2f12
    cc
    fnocc
+   dlpnocc
    occ
    psimrcc
    detci

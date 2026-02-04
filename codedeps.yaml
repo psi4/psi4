@@ -667,8 +667,10 @@ data:
         - sphinx-tabs
         - autodoc-pydantic=1
         - qcportal
+        - "gxx_linux-64=14.3.0=hc876b51_14"
       aux_build_names_note:
         qcportal: "Required for docs to resolve objects in pydantic classes."
+        "gxx_linux-64=14.3.0=hc876b51_14": "Temporary for Linux only; rm for Mac."
       cmake:
         SPHINX_ROOT: ${CONDA_PREFIX}
         //SPHINXMAN_STRICT: OFF
@@ -1455,7 +1457,7 @@ data:
       host: github
       account: wavefunction91
       name: GauXC
-      commit: 5c85f6b
+      commit: d9cdad3
     cmake:
       name: gauxc
       constraint: null
