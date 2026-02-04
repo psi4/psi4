@@ -47,14 +47,14 @@ namespace cctriples {
 
 extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int Ga, int B, int Gb, int C, int Gc,
                            dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ,
-                           dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega);
+                           dpdfile2 *fAB, Dimension const& occpi, int *occ_off, Dimension const& virtpi, int *vir_off, double omega);
 
 extern void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk,
                            dpdbuf4 *T2AA, dpdbuf4 *T2AB, dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
                            dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B, dpdbuf4 *DAA,
                            dpdbuf4 *DAB, dpdfile2 *fIA, dpdfile2 *fia, dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB,
-                           dpdfile2 *fab, int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off, int *avirtpi,
-                           int *avir_off, int *bvirtpi, int *bvir_off, double omega);
+                           dpdfile2 *fab, Dimension const& aoccpi, int *aocc_off, Dimension const& boccpi, int *bocc_off, Dimension const& avirtpi,
+                           int *avir_off, Dimension const& bvirtpi, int *bvir_off, double omega);
 
 void test_abc_loops_AAA() {
     int i, j, k, a, b, c, ij, I, J, K;
@@ -64,10 +64,10 @@ void test_abc_loops_AAA() {
 
     double denom, ET;
     int nirreps = moinfo.nirreps;
-    int *occpi = moinfo.aoccpi;
-    int *virtpi = moinfo.avirtpi;
-    int *occ_off = moinfo.aocc_off;
-    int *vir_off = moinfo.avir_off;
+    const auto& occpi = moinfo.aoccpi;
+    const auto& virtpi = moinfo.avirtpi;
+    auto occ_off = moinfo.aocc_off;
+    auto vir_off = moinfo.avir_off;
     double ***WIJK = (double ***)malloc(nirreps * sizeof(double **));
     double ***VIJK = (double ***)malloc(nirreps * sizeof(double **));
 
@@ -173,10 +173,10 @@ void test_abc_loops_BBB() {
 
     double denom, ET;
     int nirreps = moinfo.nirreps;
-    int *occpi = moinfo.boccpi;
-    int *virtpi = moinfo.bvirtpi;
-    int *occ_off = moinfo.bocc_off;
-    int *vir_off = moinfo.bvir_off;
+    const auto& occpi = moinfo.boccpi;
+    const auto& virtpi = moinfo.bvirtpi;
+    auto occ_off = moinfo.bocc_off;
+    auto vir_off = moinfo.bvir_off;
     double ***WIJK = (double ***)malloc(nirreps * sizeof(double **));
     double ***VIJK = (double ***)malloc(nirreps * sizeof(double **));
 
@@ -282,14 +282,14 @@ void test_abc_loops_AAB() {
 
     double denom, ET;
     int nirreps = moinfo.nirreps;
-    int *aoccpi = moinfo.aoccpi;
-    int *avirtpi = moinfo.avirtpi;
-    int *aocc_off = moinfo.aocc_off;
-    int *avir_off = moinfo.avir_off;
-    int *boccpi = moinfo.boccpi;
-    int *bvirtpi = moinfo.bvirtpi;
-    int *bocc_off = moinfo.bocc_off;
-    int *bvir_off = moinfo.bvir_off;
+    const auto& aoccpi = moinfo.aoccpi;
+    const auto& avirtpi = moinfo.avirtpi;
+    auto aocc_off = moinfo.aocc_off;
+    auto avir_off = moinfo.avir_off;
+    const auto& boccpi = moinfo.boccpi;
+    const auto& bvirtpi = moinfo.bvirtpi;
+    auto bocc_off = moinfo.bocc_off;
+    auto bvir_off = moinfo.bvir_off;
     double ***WIJk = (double ***)malloc(nirreps * sizeof(double **));
     double ***VIJk = (double ***)malloc(nirreps * sizeof(double **));
 
@@ -428,14 +428,14 @@ void test_abc_loops_BBA() {
 
     double denom, ET;
     int nirreps = moinfo.nirreps;
-    int *aoccpi = moinfo.aoccpi;
-    int *avirtpi = moinfo.avirtpi;
-    int *aocc_off = moinfo.aocc_off;
-    int *avir_off = moinfo.avir_off;
-    int *boccpi = moinfo.boccpi;
-    int *bvirtpi = moinfo.bvirtpi;
-    int *bocc_off = moinfo.bocc_off;
-    int *bvir_off = moinfo.bvir_off;
+    const auto& aoccpi = moinfo.aoccpi;
+    const auto& avirtpi = moinfo.avirtpi;
+    auto aocc_off = moinfo.aocc_off;
+    auto avir_off = moinfo.avir_off;
+    const auto& boccpi = moinfo.boccpi;
+    const auto& bvirtpi = moinfo.bvirtpi;
+    auto bocc_off = moinfo.bocc_off;
+    auto bvir_off = moinfo.bvir_off;
     double ***WijK = (double ***)malloc(nirreps * sizeof(double **));
     double ***VijK = (double ***)malloc(nirreps * sizeof(double **));
 
