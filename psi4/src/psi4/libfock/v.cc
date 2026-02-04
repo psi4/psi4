@@ -1266,35 +1266,47 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
     }
     
-    // => Special BrianQC Logic <=
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
-        double DFTEnergy;
-        
-        brianSCFBuildFockDFT(&brianCookie,
-            D_AO_[0]->get_pointer(0),
-            nullptr,
-            ret[0]->get_pointer(0),
-            nullptr,
-            &DFTEnergy
-        );
-        checkBrian();
-        
-        quad_values_["VV10"] = 0.0; // NOTE: BrianQC doesn't compute the VV10 term separately, it just includes it in the DFT energy term
-        quad_values_["FUNCTIONAL"] = DFTEnergy;
-        quad_values_["RHO_A"] = 0.0;
-        quad_values_["RHO_AX"] = 0.0;
-        quad_values_["RHO_AY"] = 0.0;
-        quad_values_["RHO_AZ"] = 0.0;
-        quad_values_["RHO_B"] = 0.0;
-        quad_values_["RHO_BX"] = 0.0;
-        quad_values_["RHO_BY"] = 0.0;
-        quad_values_["RHO_BZ"] = 0.0;
-        
+        compute_V_brianqc(ret);
+        timer_off("RV: Form V");
         return;
-    }
 #endif
+    if (options_.get_int("GAUXC_INTEGRATE")) compute_V_gauxc(ret);
+    else compute_V_psi(ret);
+    timer_off("RV: Form V");
+}
 
+void RV::compute_V_brianqc(std::vector<SharedMatrix>& ret) {
+#ifdef USING_BrianQC
+    double DFTEnergy;
+    
+    brianSCFBuildFockDFT(&brianCookie,
+        D_AO_[0]->get_pointer(0),
+        nullptr,
+        ret[0]->get_pointer(0),
+        nullptr,
+        &DFTEnergy
+    );
+    checkBrian();
+    
+    quad_values_["VV10"] = 0.0; // NOTE: BrianQC doesn't compute the VV10 term separately, it just includes it in the DFT energy term
+    quad_values_["FUNCTIONAL"] = DFTEnergy;
+    quad_values_["RHO_A"] = 0.0;
+    quad_values_["RHO_AX"] = 0.0;
+    quad_values_["RHO_AY"] = 0.0;
+    quad_values_["RHO_AZ"] = 0.0;
+    quad_values_["RHO_B"] = 0.0;
+    quad_values_["RHO_BX"] = 0.0;
+    quad_values_["RHO_BY"] = 0.0;
+    quad_values_["RHO_BZ"] = 0.0;
+#endif
+}
+
+void RV::compute_V_gauxc(std::vector<SharedMatrix>& ret) { // TODO: populate
+}
+
+void RV::compute_V_psi(std::vector<SharedMatrix>& ret) {
     // => Initialize variables, esp. pointers and matrices <=
     // Thread info
     int rank = 0;
@@ -1429,7 +1441,6 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         outfile->Printf("    <\\vec r\\rho_b> : <%24.16E,%24.16E,%24.16E>\n\n", quad_values_["RHO_BX"],
                         quad_values_["RHO_BY"], quad_values_["RHO_BZ"]);
     }
-    timer_off("RV: Form V");
 }
 
 std::vector<SharedMatrix> RV::compute_fock_derivatives() {
