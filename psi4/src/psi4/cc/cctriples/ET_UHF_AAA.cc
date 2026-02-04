@@ -59,6 +59,7 @@ double ET_UHF_AAA() {
     int id, jd, kd;
     int il, jl, kl;
     int lc, la, lb;
+    int *occpi, *virtpi, *occ_off, *vir_off;
     double value_c, value_d, dijk, denom, ET;
     double t_ia, t_ib, t_ic, t_ja, t_jb, t_jc, t_ka, t_kb, t_kc;
     double f_ia, f_ib, f_ic, f_ja, f_jb, f_jc, f_ka, f_kb, f_kc;
@@ -72,10 +73,10 @@ double ET_UHF_AAA() {
     FILE *ijkfile;
 
     nirreps = moinfo.nirreps;
-    const auto& occpi = moinfo.aoccpi;
-    const auto& virtpi = moinfo.avirtpi;
-    const auto& occ_off = moinfo.aocc_off;
-    const auto& vir_off = moinfo.avir_off;
+    occpi = moinfo.aoccpi;
+    virtpi = moinfo.avirtpi;
+    occ_off = moinfo.aocc_off;
+    vir_off = moinfo.avir_off;
 
     global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");

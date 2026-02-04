@@ -60,6 +60,8 @@ double ET_UHF_AAB() {
     int lc, la, lb;
     int id, jd, kd;
     int il, jl, kl;
+    int *aoccpi, *avirtpi, *aocc_off, *avir_off;
+    int *boccpi, *bvirtpi, *bocc_off, *bvir_off;
     double value_c, value_d, dijk, denom, ET_AAB;
     double t_ia, t_ib, t_ja, t_jb, t_kc;
     double f_ia, f_ib, f_ja, f_jb, f_kc;
@@ -75,14 +77,14 @@ double ET_UHF_AAB() {
     int nijk, mijk;
 
     nirreps = moinfo.nirreps;
-    const auto& aoccpi = moinfo.aoccpi;
-    const auto& avirtpi = moinfo.avirtpi;
-    const auto& aocc_off = moinfo.aocc_off;
-    const auto& avir_off = moinfo.avir_off;
-    const auto& boccpi = moinfo.boccpi;
-    const auto& bvirtpi = moinfo.bvirtpi;
-    const auto& bocc_off = moinfo.bocc_off;
-    const auto& bvir_off = moinfo.bvir_off;
+    aoccpi = moinfo.aoccpi;
+    avirtpi = moinfo.avirtpi;
+    aocc_off = moinfo.aocc_off;
+    avir_off = moinfo.avir_off;
+    boccpi = moinfo.boccpi;
+    bvirtpi = moinfo.bvirtpi;
+    bocc_off = moinfo.bocc_off;
+    bvir_off = moinfo.bvir_off;
 
     global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");

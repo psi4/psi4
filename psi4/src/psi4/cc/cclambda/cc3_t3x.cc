@@ -45,8 +45,8 @@ namespace cclambda {
 void cc3_t3x() {
     if (params.ref == 0) {
         int h, nirreps;
-        int *occ_off;
-        int *vir_off;
+        int *occ_off, *occpi;
+        int *vir_off, *virtpi;
         int Gi, Gj, Gk, Gijk;
         int Ga, Gb, Gc, Gab;
         int i, j, k, I, J, K;
@@ -62,9 +62,9 @@ void cc3_t3x() {
         int **W_offset, offset;
 
         nirreps = moinfo.nirreps;
-        const auto& occpi = moinfo.occpi;
+        occpi = moinfo.occpi;
         occ_off = moinfo.occ_off;
-        const auto& virtpi = moinfo.virtpi;
+        virtpi = moinfo.virtpi;
         vir_off = moinfo.vir_off;
 
         W_offset = init_int_matrix(nirreps, nirreps);
