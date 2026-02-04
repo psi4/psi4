@@ -1929,6 +1929,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Save the UHF NOs -*/
         options.add_bool("SAVE_UHF_NOS", false);
 
+        /*- SUBSECTION GAUXCINT -*/
+        /*- Outsource all Kohn-Shame numerical integration to the GauXC program? -*/
+        options.add_bool("GAUXC_INTEGRATE", false);
+
         /*- SUBSECTION TDSCF -*/
         /*- Number of roots (excited states) we should seek to converge. This
         can be either an integer (total number of states to seek) or a list
