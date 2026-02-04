@@ -769,10 +769,10 @@ void HF::form_Shalf() {
     }
     // Refreshes twice in RHF, no big deal
     epsilon_a_->init(nmopi_);
-    Ca_->init(nirrep_, nsopi_, nmopi_, "Alpha MO coefficients");
+    Ca_->init(nsopi_, nmopi_, "Alpha MO coefficients");
     epsilon_b_->init(nmopi_);
     if (!same_a_b_orbs_) {
-        Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
+        Cb_->init(nsopi_, nmopi_, "Beta MO coefficients");
     }
 
     // Extra matrix dimension changes for specific derived classes
@@ -1165,7 +1165,7 @@ void HF::guess() {
 
         Fa_->zero();  // Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
         int h, i, j;
-        const int* opi = S_->rowspi();
+        const auto& opi = S_->rowspi();
         int nirreps = S_->nirrep();
         for (h = 0; h < nirreps; ++h) {
             for (i = 0; i < opi[h]; ++i) {
@@ -1367,14 +1367,12 @@ void HF::reset_occupation() {
     nbeta_ = original_nbeta_;
 }
 
-SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi) {
-    const int* nsopi = Cso->rowspi();
-    const int* nmopi = Cso->colspi();
-    int* nvirpi = new int[nirrep_];
+SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, const Dimension& noccpi) {
+    const auto& nsopi = Cso->rowspi();
+    const auto& nmopi = Cso->colspi();
+    const auto nvirpi = nmopi - noccpi;
 
-    for (int h = 0; h < nirrep_; h++) nvirpi[h] = nmopi[h] - noccpi[h];
-
-    auto Fia = std::make_shared<Matrix>("Fia (Some Basis)", nirrep_, noccpi, nvirpi);
+    auto Fia = std::make_shared<Matrix>("Fia (Some Basis)", noccpi, nvirpi);
 
     // Hack to get orbital e for this Fock
     auto C2 = std::make_shared<Matrix>("C2", Cso->rowspi(), Cso->colspi());
@@ -1408,8 +1406,6 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi) {
     }
 
     // Fia->print();
-
-    delete[] nvirpi;
 
     return Fia;
 }
