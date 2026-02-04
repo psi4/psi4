@@ -174,6 +174,9 @@ class RV : public VBase {
 
     // compute_V assuming same orbitals for different spin. Computes V_alpha, not spin-summed V.
     void compute_V(std::vector<SharedMatrix> ret) override;
+    void compute_V_brianqc(std::vector<SharedMatrix>& ret);
+    void compute_V_gauxc(std::vector<SharedMatrix>& ret);
+    void compute_V_psi(std::vector<SharedMatrix>& ret);
     /// Compute the orbital derivative of the KS potential, contract against Dx, and
     /// putting the result in ret. ret[i] is Vx where x = Dx[i]. The "true" vector has
     /// 2^-0.5 Dx[i] for each input spin case and returns **half** the α component of the output.
