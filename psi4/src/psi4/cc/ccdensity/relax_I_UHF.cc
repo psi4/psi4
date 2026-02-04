@@ -49,14 +49,12 @@ void relax_I_UHF() {
     dpdfile2 I, D, f;
     dpdbuf4 E;
     int h, nirreps, i, a;
-    int *aoccpi, *avirtpi;
-    int *boccpi, *bvirtpi;
 
     nirreps = moinfo.nirreps;
-    aoccpi = moinfo.aoccpi;
-    avirtpi = moinfo.avirtpi;
-    boccpi = moinfo.boccpi;
-    bvirtpi = moinfo.bvirtpi;
+    auto aoccpi = moinfo.aoccpi;
+    auto avirtpi = moinfo.avirtpi;
+    auto boccpi = moinfo.boccpi;
+    auto bvirtpi = moinfo.bvirtpi;
 
     /*** occupied-virtual relaxation terms */
 

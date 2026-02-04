@@ -70,16 +70,16 @@ void diagSS(int C_irr) {
     int L, h, i, j, k, a, C_index, errcod, keep_going = 1, numCs, iter = 0;
     double norm, tval, *lambda, *lambda_old, zero = 0.0;
     double **G, *work, *evals_complex, **alpha, **evectors_left;
-    int nirreps, *openpi, *occpi, *virtpi, range;
-    int *aoccpi, *avirtpi, *boccpi, *bvirtpi;
+    int nirreps, range;
+    Dimension aoccpi, avirtpi, boccpi, bvirtpi;
     int *converged, num_converged, num_roots;
     int begin_occ, begin_virt, end_virt, dim_SS = 0;
     int pf, cnt, irr_occ, irr_virt;
 
     nirreps = moinfo.nirreps;
-    openpi = moinfo.openpi;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    auto openpi = moinfo.openpi;
+    auto occpi = moinfo.occpi;
+    auto virtpi = moinfo.virtpi;
 
     if (params.eom_ref == 2) { /* UHF */
         aoccpi = moinfo.aoccpi;

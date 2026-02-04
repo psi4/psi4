@@ -49,12 +49,12 @@ namespace ccdensity {
 void relax_I_RHF() {
     dpdfile2 I, D, f, I1, I2, I3;
     dpdbuf4 E, A, C, D4;
-    int h, nirreps, i, j, e, *occpi, *virtpi, *openpi;
+    int h, nirreps, i, j, e;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    openpi = moinfo.openpi;
+    auto occpi = moinfo.occpi;
+    auto virtpi = moinfo.virtpi;
+    auto openpi = moinfo.openpi;
 
     /* I(I,A) = I'(I,A) - sum_M f(I,M) D(orb)(A,M) */
     global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");

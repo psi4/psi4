@@ -59,8 +59,6 @@ double ET_UHF_ABB() {
     int lc, lb, la;
     int id, jd, kd;
     int il, jl, kl;
-    int *aoccpi, *avirtpi, *aocc_off, *avir_off;
-    int *boccpi, *bvirtpi, *bocc_off, *bvir_off;
     double value_c, value_d, dijk, denom, ET_ABB;
     int nrows, ncols, nlinks;
     double t_ia, t_jb, t_jc, t_kb, t_kc;
@@ -76,14 +74,14 @@ double ET_UHF_ABB() {
     int nijk, mijk;
 
     nirreps = moinfo.nirreps;
-    aoccpi = moinfo.aoccpi;
-    avirtpi = moinfo.avirtpi;
-    aocc_off = moinfo.aocc_off;
-    avir_off = moinfo.avir_off;
-    boccpi = moinfo.boccpi;
-    bvirtpi = moinfo.bvirtpi;
-    bocc_off = moinfo.bocc_off;
-    bvir_off = moinfo.bvir_off;
+    auto aoccpi = moinfo.aoccpi;
+    auto avirtpi = moinfo.avirtpi;
+    auto aocc_off = moinfo.aocc_off;
+    auto avir_off = moinfo.avir_off;
+    auto boccpi = moinfo.boccpi;
+    auto bvirtpi = moinfo.bvirtpi;
+    auto bocc_off = moinfo.bocc_off;
+    auto bvir_off = moinfo.bvir_off;
 
     global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");

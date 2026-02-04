@@ -79,7 +79,6 @@ void Iia(const struct RHO_Params& rho_params);
 
 void lag(const struct RHO_Params& rho_params) {
     int h, nirreps, i, j, a, b;
-    int *occpi, *virtpi, *openpi;
     dpdfile2 I;
 
     Iij(rho_params);
@@ -162,9 +161,9 @@ void lag(const struct RHO_Params& rho_params) {
 
     if (params.ref == 1) { /** ROHF **/
         nirreps = moinfo.nirreps;
-        occpi = moinfo.occpi;
-        virtpi = moinfo.virtpi;
-        openpi = moinfo.openpi;
+        auto occpi = moinfo.occpi;
+        auto virtpi = moinfo.virtpi;
+        auto openpi = moinfo.openpi;
 
         global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'ij");
         global_dpd_->file2_mat_init(&I);

@@ -73,8 +73,6 @@ double T3_grad_UHF_BBA() {
     int lc, lb, la;
     int id, jd, kd;
     int il, jl, kl, li, lk;
-    int *aoccpi, *avirtpi, *aocc_off, *avir_off;
-    int *boccpi, *bvirtpi, *bocc_off, *bvir_off;
     double value_c, value_d, dijk, denom, ET;
     int nrows, ncols, nlinks;
     dpdbuf4 T2AB, T2BB, T2BA;
@@ -89,14 +87,14 @@ double T3_grad_UHF_BBA() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    aoccpi = moinfo.aoccpi;
-    avirtpi = moinfo.avirtpi;
-    aocc_off = moinfo.aocc_off;
-    avir_off = moinfo.avir_off;
-    boccpi = moinfo.boccpi;
-    bvirtpi = moinfo.bvirtpi;
-    bocc_off = moinfo.bocc_off;
-    bvir_off = moinfo.bvir_off;
+    auto aoccpi = moinfo.aoccpi;
+    auto avirtpi = moinfo.avirtpi;
+    auto aocc_off = moinfo.aocc_off;
+    auto avir_off = moinfo.avir_off;
+    auto boccpi = moinfo.boccpi;
+    auto bvirtpi = moinfo.bvirtpi;
+    auto bocc_off = moinfo.bocc_off;
+    auto bvir_off = moinfo.bvir_off;
 
     double ***WijK = (double ***)malloc(nirreps * sizeof(double **));
     double ***VijK = (double ***)malloc(nirreps * sizeof(double **));

@@ -65,15 +65,14 @@ void denom_rhf(const struct L_Params& L_params) {
     int h, i, j, a, b, ij, ab;
     int I, J, A, B;
     int isym, jsym, asym, bsym;
-    int *occpi, *virtpi;
     int *occ_off, *vir_off;
     int *openpi;
     double Fii, Fjj, Faa, Fbb;
 
     L_irr = L_params.irrep;
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    auto occpi = moinfo.occpi;
+    auto virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 
@@ -151,7 +150,6 @@ void denom_rhf(const struct L_Params& L_params) {
 
 void denom_uhf(const struct L_Params& L_params) {
     int nirreps, h, i, j, a, b, ij, ab, I, J, A, B, isym, jsym, asym, bsym, m, e;
-    int *aoccpi, *boccpi, *avirtpi, *bvirtpi;
     int *aocc_off, *bocc_off, *avir_off, *bvir_off, L_irr;
     dpdfile2 LFMIt, LFmit, LFaet, LFAEt;
     dpdfile2 FMI, Fmi, FAE, Fae;
@@ -161,10 +159,10 @@ void denom_uhf(const struct L_Params& L_params) {
 
     L_irr = L_params.irrep;
     nirreps = moinfo.nirreps;
-    aoccpi = moinfo.aoccpi;
-    boccpi = moinfo.boccpi;
-    avirtpi = moinfo.avirtpi;
-    bvirtpi = moinfo.bvirtpi;
+    auto aoccpi = moinfo.aoccpi;
+    auto boccpi = moinfo.boccpi;
+    auto avirtpi = moinfo.avirtpi;
+    auto bvirtpi = moinfo.bvirtpi;
     aocc_off = moinfo.aocc_off;
     bocc_off = moinfo.bocc_off;
     avir_off = moinfo.avir_off;
@@ -400,15 +398,14 @@ void denom_rohf(const struct L_Params& L_params) {
     int h, i, j, a, b, ij, ab;
     int I, J, A, B;
     int isym, jsym, asym, bsym;
-    int *occpi, *virtpi;
     int *occ_off, *vir_off;
     int *openpi;
     double Fii, Fjj, Faa, Fbb;
 
     L_irr = L_params.irrep;
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    auto occpi = moinfo.occpi;
+    auto virtpi = moinfo.virtpi;
     openpi = moinfo.openpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;

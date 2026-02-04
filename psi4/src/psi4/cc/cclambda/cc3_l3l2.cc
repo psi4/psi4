@@ -65,8 +65,8 @@ void cc3_l3l2() {
 
 void cc3_l3l2_RHF_AAA() {
     int h, nirreps;
-    int *occ_off, *occpi;
-    int *vir_off, *virtpi;
+    int *occ_off;
+    int *vir_off;
     int Gijk;
     int Gi, Gj, Gk;
     int Ga, Gb, Gc;
@@ -96,9 +96,9 @@ void cc3_l3l2_RHF_AAA() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
+    auto occpi = moinfo.occpi;
     occ_off = moinfo.occ_off;
-    virtpi = moinfo.virtpi;
+    auto virtpi = moinfo.virtpi;
     vir_off = moinfo.vir_off;
 
     global_dpd_->buf4_init(&WMAFE, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
@@ -432,8 +432,8 @@ void cc3_l3l2_RHF_AAA() {
 
 void cc3_l3l2_RHF_AAB() {
     int h, nirreps;
-    int *occ_off, *occpi;
-    int *vir_off, *virtpi;
+    int *occ_off;
+    int *vir_off;
     int Gi, Gj, Gk, Gijk;
     int Ga, Gb, Gc, Gab;
     int i, j, k, I, J, K;
@@ -464,9 +464,9 @@ void cc3_l3l2_RHF_AAB() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
+    auto occpi = moinfo.occpi;
     occ_off = moinfo.occ_off;
-    virtpi = moinfo.virtpi;
+    auto virtpi = moinfo.virtpi;
     vir_off = moinfo.vir_off;
 
     global_dpd_->buf4_init(&L2AAnew, PSIF_CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIJAB");
