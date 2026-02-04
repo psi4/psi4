@@ -1111,7 +1111,7 @@ double Matrix::trace() {
 }
 
 SharedMatrix Matrix::transpose() const {
-    auto temp = std::make_shared<Matrix>(name_, nirrep_, colspi_, rowspi_, symmetry_);
+    auto temp = std::make_shared<Matrix>(name_, colspi_, rowspi_, symmetry_);
 
     if (symmetry_) {
         for (int rowsym = 0; rowsym < nirrep_; ++rowsym) {
@@ -2126,7 +2126,7 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot, 
     Dimension zero(nirrep_);
 
     if (upper) {
-        auto U = std::make_shared<Matrix>("Cholesky decomposed matrix", nirrep_, rowspi_, nchol);
+        auto U = std::make_shared<Matrix>("Cholesky decomposed matrix", rowspi_, nchol);
         U->zero();
         for (int h = 0; h < nirrep_; ++h) {
             for (int m = 0; m < rowspi_[h]; ++m) {
@@ -2139,7 +2139,7 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot, 
         // Switch to the properly sized matrix
         *this = *U;
     } else {
-        auto L = std::make_shared<Matrix>("Cholesky decomposed matrix", nirrep_, rowspi_, nchol);
+        auto L = std::make_shared<Matrix>("Cholesky decomposed matrix", rowspi_, nchol);
         L->zero();
         for (int h = 0; h < nirrep_; ++h) {
             for (int m = 0; m < rowspi_[h]; ++m) {
@@ -2160,7 +2160,7 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
     }
 
     // Temporary cholesky factor (full memory)
-    auto K = std::make_shared<Matrix>("L Temp", nirrep_, rowspi_, rowspi_);
+    auto K = std::make_shared<Matrix>("L Temp", rowspi_, rowspi_);
 
     // Significant Cholesky columns per irrep
     std::vector<int> sigpi(nirrep_, 0);
@@ -2236,7 +2236,7 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
     }
 
     // Copy out to properly sized array
-    auto L = std::make_shared<Matrix>("Partial Cholesky Factor", nirrep_, rowspi_, sigpi.data());
+    auto L = std::make_shared<Matrix>("Partial Cholesky Factor", rowspi_, sigpi);
 
     // K->print();
     // L->print();
@@ -3446,7 +3446,7 @@ SharedMatrix horzcat(const std::vector<SharedMatrix> &mats) {
         colspi += mats[a]->colspi();
     }
 
-    auto cat = std::make_shared<Matrix>("", nirrep, mats[0]->rowspi(), colspi);
+    auto cat = std::make_shared<Matrix>("", mats[0]->rowspi(), colspi);
 
     for (int h = 0; h < nirrep; ++h) {
         if (mats[0]->rowspi()[h] == 0 || colspi[h] == 0) continue;
@@ -3492,7 +3492,7 @@ SharedMatrix vertcat(const std::vector<SharedMatrix> &mats) {
         rowspi += mats[a]->rowspi();
     }
 
-    auto cat = std::make_shared<Matrix>("", nirrep, rowspi, mats[0]->colspi());
+    auto cat = std::make_shared<Matrix>("", rowspi, mats[0]->colspi());
 
     for (int h = 0; h < nirrep; ++h) {
         if (mats[0]->colspi()[h] == 0 || rowspi[h] == 0) continue;

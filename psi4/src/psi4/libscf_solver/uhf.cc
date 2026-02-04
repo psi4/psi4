@@ -276,14 +276,14 @@ void UHF::form_C(double shift) {
         auto shifted_F = SharedMatrix(factory_->create_matrix("F"));
 
         auto Cvir = Ca_subset("SO", "VIR");
-        auto SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
+        auto SCvir = std::make_shared<Matrix>(S_->rowspi(), Cvir->colspi());
         SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
         shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
         shifted_F->add(Fa_);
         diagonalize_F(shifted_F, Ca_, epsilon_a_);
 
         Cvir = Cb_subset("SO", "VIR");
-        SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
+        SCvir = std::make_shared<Matrix>(S_->rowspi(), Cvir->colspi());
         SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
         shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
         shifted_F->add(Fb_);
@@ -822,8 +822,8 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         // MO Fock Matrix (Inactive Fock in Helgaker's language)
         SharedMatrix IFock_a = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
         SharedMatrix IFock_b = linalg::triplet(Cb_, Fb_, Cb_, true, false, false);
-        Precon_so_a = std::make_shared<Matrix>("Alpha Precon", nirrep_, nalphapi_, virpi_a);
-        Precon_so_b = std::make_shared<Matrix>("Beta Precon", nirrep_, nbetapi_, virpi_b);
+        Precon_so_a = std::make_shared<Matrix>("Alpha Precon", nalphapi_, virpi_a);
+        Precon_so_b = std::make_shared<Matrix>("Beta Precon", nbetapi_, virpi_b);
 
         for (size_t h = 0; h < nirrep_; h++) {
             if (virpi_a[h] && nalphapi_[h]) {

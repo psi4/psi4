@@ -105,24 +105,24 @@ int MatrixFactory::ncol(int h) const { return colspi_[h]; }
 int MatrixFactory::norb() const { return nso_; }
 
 /// Returns a new Matrix object with default dimensions
-std::unique_ptr<Matrix> MatrixFactory::create_matrix(int symmetry) { return std::make_unique<Matrix>(nirrep_, rowspi_, colspi_, symmetry); }
+std::unique_ptr<Matrix> MatrixFactory::create_matrix(int symmetry) { return std::make_unique<Matrix>(rowspi_, colspi_, symmetry); }
 
 /// Returns a new Matrix object with default dimensions
-SharedMatrix MatrixFactory::create_shared_matrix() const { return std::make_shared<Matrix>(nirrep_, rowspi_, colspi_); }
+SharedMatrix MatrixFactory::create_shared_matrix() const { return std::make_shared<Matrix>(rowspi_, colspi_); }
 
 void MatrixFactory::create_matrix(Matrix& mat, int symmetry) { mat.init(rowspi_, colspi_, "", symmetry); }
 
 /// Returns a new Matrix object named name with default dimensions
 std::unique_ptr<Matrix> MatrixFactory::create_matrix(std::string name, int symmetry) {
-    return std::make_unique<Matrix>(name, nirrep_, rowspi_, colspi_, symmetry);
+    return std::make_unique<Matrix>(name, rowspi_, colspi_, symmetry);
 }
 
 SharedMatrix MatrixFactory::create_shared_matrix(const std::string& name) const {
-    return std::make_shared<Matrix>(name, nirrep_, rowspi_, colspi_);
+    return std::make_shared<Matrix>(name, rowspi_, colspi_);
 }
 
 SharedMatrix MatrixFactory::create_shared_matrix(const std::string& name, int symmetry) const {
-    return std::make_shared<Matrix>(name, nirrep_, rowspi_, colspi_, symmetry);
+    return std::make_shared<Matrix>(name, rowspi_, colspi_, symmetry);
 }
 
 SharedMatrix MatrixFactory::create_shared_matrix(const std::string& name, int rows, int cols) const {

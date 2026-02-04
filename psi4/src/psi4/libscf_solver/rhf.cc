@@ -267,7 +267,7 @@ void RHF::form_C(double shift) {
         auto shifted_F = SharedMatrix(factory_->create_matrix("F"));
         auto Cvir = Ca_subset("SO", "VIR");
 
-        auto SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
+        auto SCvir = std::make_shared<Matrix>(S_->rowspi(), Cvir->colspi());
         SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
         shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
         shifted_F->add(Fa_);
@@ -660,7 +660,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         // MO Fock Matrix (Inactive Fock in Helgaker's language)
         auto virpi = nmopi_ - nalphapi_;
         auto IFock_so = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
-        Precon_so = std::make_shared<Matrix>("Precon", nirrep_, nalphapi_, virpi);
+        Precon_so = std::make_shared<Matrix>("Precon", nalphapi_, virpi);
 
         for (size_t h = 0; h < nirrep_; h++) {
             if (!nalphapi_[h] || !virpi[h]) continue;

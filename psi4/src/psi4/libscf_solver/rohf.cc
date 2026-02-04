@@ -789,7 +789,7 @@ int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter
 
     auto Gradient = moFeff_->get_block({dim_zero, occpi}, {docc, nmopi_});
     Gradient->scale(-4.0);
-    auto Precon = std::make_shared<Matrix>("Precon", nirrep_, occpi, virpi);
+    auto Precon = std::make_shared<Matrix>("Precon", occpi, virpi);
 
     for (size_t h = 0; h < nirrep_; h++) {
         if (!occpi[h] || !virpi[h]) continue;
@@ -850,7 +850,7 @@ int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter
 
     // Calc hessian vector product, find residual and conditioned residual
     auto r = Gradient->clone();
-    auto Ap = std::make_shared<Matrix>("Ap", nirrep_, occpi, virpi);
+    auto Ap = std::make_shared<Matrix>("Ap", occpi, virpi);
     Hx(x, Ap);
     r->subtract(Ap);
 

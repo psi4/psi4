@@ -323,7 +323,7 @@ void HF::form_F() { throw PSIEXCEPTION("Sorry, the base HF wavefunction does not
 double HF::compute_E() { throw PSIEXCEPTION("Sorry, the base HF wavefunction does not understand Hall."); }
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     // => Rotate orbitals <= //
-    auto U = std::make_shared<Matrix>("Ck", nirrep_, nmopi_, nmopi_);
+    auto U = std::make_shared<Matrix>("Ck", nmopi_, nmopi_);
     std::string reference = options_.get_str("REFERENCE");
 
     // We guess occ x vir block size by the size of x to make this method easy to use
@@ -1350,7 +1350,7 @@ void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr
     auto diag_F_temp = linalg::triplet(X_, Fm, X_, true, false, false);
 
     // Form C' = eig(F')
-    auto diag_C_temp = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
+    auto diag_C_temp = std::make_shared<Matrix>(nmopi_, nmopi_);
     diag_F_temp->diagonalize(diag_C_temp, epsm);
 
     // Form C = XC'

@@ -311,14 +311,14 @@ void CUHF::form_C(double shift) {
         auto shifted_F = SharedMatrix(factory_->create_matrix("F"));
 
         auto Cvir = Ca_subset("SO", "VIR");
-        auto SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
+        auto SCvir = std::make_shared<Matrix>(S_->rowspi(), Cvir->colspi());
         SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
         shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
         shifted_F->add(Fa_);
         diagonalize_F(shifted_F, Ca_, epsilon_a_);
 
         Cvir = Cb_subset("SO", "VIR");
-        SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
+        SCvir = std::make_shared<Matrix>(S_->rowspi(), Cvir->colspi());
         SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
         shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
         shifted_F->add(Fb_);

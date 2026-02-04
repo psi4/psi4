@@ -523,7 +523,7 @@ class OCCWave : public Wavefunction {
     std::map<SpinType, int *> idpirr_;
     std::map<SpinType, int *> idprow_;
     std::map<SpinType, int *> idpcol_;
-    std::map<SpinType, int *> occpi_;
+    std::map<SpinType, Dimension> occpi_;
     std::map<SpinType, int> idp_count_;
     std::map<SpinType, SharedMatrix> C_;
     std::map<SpinType, SharedMatrix> C_ref_;

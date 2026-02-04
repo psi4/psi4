@@ -1051,8 +1051,8 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, 
     auto pet = std::make_shared<PetiteList>(new_basis, newfactory);
     SharedMatrix AO2USO(pet->aotoso());
 
-    auto SAB = std::make_shared<Matrix>("S_AB", C_A->nirrep(), C_A->rowspi(), AO2USO->colspi());
-    auto SBB = std::make_shared<Matrix>("S_BB", C_A->nirrep(), AO2USO->colspi(), AO2USO->colspi());
+    auto SAB = std::make_shared<Matrix>("S_AB", C_A->rowspi(), AO2USO->colspi());
+    auto SBB = std::make_shared<Matrix>("S_BB", AO2USO->colspi(), AO2USO->colspi());
 
     intAB->compute(SAB);
     intBB->compute(SBB);
@@ -1069,7 +1069,7 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, 
     pet.reset();
 
     // Constrained to the same symmetry at the moment, we can relax this soon
-    auto C_B = std::make_shared<Matrix>("C_B", C_A->nirrep(), AO2USO->colspi(), noccpi);
+    auto C_B = std::make_shared<Matrix>("C_B", AO2USO->colspi(), noccpi);
 
     // Block over irreps (soon united irreps)
     for (int h = 0; h < C_A->nirrep(); h++) {

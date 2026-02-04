@@ -126,7 +126,7 @@ void DCTSolver::run_simult_dct_RHF() {
         "\n\n\t*=================================================================================*\n"
         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
         "\t*---------------------------------------------------------------------------------*\n");
-    auto tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
+    auto tmp = std::make_shared<Matrix>("temp", nsopi_, nsopi_);
     // Set up the DIIS manager
     DIISManager diisManager(maxdiis_, "DCT DIIS vectors");
 
