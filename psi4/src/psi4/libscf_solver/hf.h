@@ -326,7 +326,7 @@ class HF : public Wavefunction {
     virtual double compute_E();
 
     /** Applies second-order convergence acceleration */
-    virtual int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print);
+    virtual int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print);
 
     /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
     void find_occupation();
