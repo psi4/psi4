@@ -188,6 +188,7 @@ def fisapt_fdrop(self, external_potentials=None):
     core.set_variable("FSAPT_QA", matrices["Qocc0A"])
     core.set_variable("FSAPT_QB", matrices["Qocc0B"])
     core.set_variable("FSAPT_ELST_AB", matrices["Elst_AB"])
+    core.set_variable("FSAPT_AB_SIZE", np.array(matrices["Elst_AB"].np.shape).reshape(1, -1))
     core.set_variable("FSAPT_EXCH_AB", matrices["Exch_AB"])
     core.set_variable("FSAPT_INDAB_AB", matrices["IndAB_AB"])
     core.set_variable("FSAPT_INDBA_AB", matrices["IndBA_AB"])
@@ -203,6 +204,9 @@ def fisapt_fdrop(self, external_potentials=None):
         _drop(matrices["IndBA_AB"], filepath)
 
     if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
+        # In SAPT(DFT) case, you might not do dispersion
+        if "Disp_AB" not in matrices:
+            matrices["Disp_AB"] = core.Matrix.from_array(np.zeros_like(matrices["Elst_AB"]))
         matrices["Disp_AB"].name = "Disp"
         core.set_variable("FSAPT_DISP_AB", matrices["Disp_AB"])
         if write_output_files:
@@ -323,6 +327,7 @@ def _drop(array, filepath):
 
     """
     filename = filepath + os.sep + array.name + ".dat"
+    print("    Writing F-SAPT output file: {}".format(filename))
     with open(filename, "wb") as handle:
         np.savetxt(handle, array.to_array(), fmt="%24.16E", delimiter=" ", newline="\n")
 

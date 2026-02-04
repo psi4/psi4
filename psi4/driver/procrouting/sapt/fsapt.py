@@ -186,6 +186,39 @@ def get_natoms(frags: Dict[str, Dict[str, List[int]]]) -> Dict[str, int]:
     return natoms
 
 
+def compute_closest_contact(
+    geom: List[List],
+    indices_a: List[int],
+    indices_b: List[int],
+) -> float:
+    """Compute the closest contact distance between two sets of atoms.
+
+    Arguments
+    ---------
+    geom : List[List]
+        Geometry as list of [element, x, y, z] for each atom.
+    indices_a : List[int]
+        Atom indices for fragment A (0-indexed).
+    indices_b : List[int]
+        Atom indices for fragment B (0-indexed).
+
+    Returns
+    -------
+    min_dist : float
+        Minimum distance between any atom in fragment A and any atom in
+        fragment B.
+    """
+    min_dist = float('inf')
+    for idx_a in indices_a:
+        xa, ya, za = geom[idx_a][1], geom[idx_a][2], geom[idx_a][3]
+        for idx_b in indices_b:
+            xb, yb, zb = geom[idx_b][1], geom[idx_b][2], geom[idx_b][3]
+            dist = np.sqrt((xa - xb)**2 + (ya - yb)**2 + (za - zb)**2)
+            if dist < min_dist:
+                min_dist = dist
+    return min_dist
+
+
 def read_d3_fragments(dirname: Optional[str] = ".") -> Dict[str, Dict[str, List[int]]]:
     """Creates a dictionary of fragments from fsapt fragment files for post-analysis
 
@@ -208,8 +241,8 @@ def read_d3_fragments(dirname: Optional[str] = ".") -> Dict[str, Dict[str, List[
             fraglines = f.readlines()
 
         # Iterate over lines, save into dict as <fragname>: [list of atom numbers]
-        for l in fraglines:
-            stuff = l.split()
+        for line in fraglines:
+            stuff = line.split()
             # Get number of atoms in each fragment
             fragdict[stuff[0]] = [int(i) for i in stuff[1:]]
 
@@ -229,9 +262,9 @@ def collapse_rows(vals):
 
 
 def check_fragments(geom, Zs, frags):
-
     # Uniqueness
     taken = []
+    other_fragment = []
     for key, value in frags.items():
         for index in value:
             if index in taken:
@@ -245,9 +278,13 @@ def check_fragments(geom, Zs, frags):
                 "Atom %d has charge 0.0, should not be in fragments." % (ind + 1)
             )
         elif (ind not in taken) and (Zs[ind] != 0.0):
-            raise Exception(
-                "Atom %d has charge >0.0, should be in fragments." % (ind + 1)
-            )
+            # AMW: instead of erroring out, accumulate the non-important atoms
+            # into a separate fragment
+            other_fragment.append(ind)
+            # raise Exception(
+            #     "Atom %d has charge >0.0, should be in fragments." % (ind + 1)
+            # )
+    return other_fragment
 
 
 def partition_fragments(fragkeys, frags, Z, Q, completeness=0.85):
@@ -437,14 +474,19 @@ def print_fragments(geom, Z, Q, fragkeys, frags, nuclear_ws, orbital_ws, filenam
     fh.close()
 
 
-def extract_osapt_data_from_vars():
+def extract_osapt_data_from_vars(print_output=True):
     """Reads the F-SAPT components
+
+    Parameters
+    ----------
+    print_output : bool
+        Whether to print output messages. Default: True.
 
     Returns
     -------
     vals : Dict[str, np.ndarray]
-        Dictionary of the F-SAPT0 components decomposed to orbital, nuclear, and external
-        potential contributions
+        Dictionary of the F-SAPT0 components decomposed to orbital, nuclear,
+        and external potential contributions
     """
 
     vals = {}
@@ -457,9 +499,11 @@ def extract_osapt_data_from_vars():
         # vals['Disp'] = read_block('%s/Disp.dat'  % filepath, H_to_kcal_)
         vals["Disp"] = core.variable("FSAPT_DISP_AB").to_array() * H_to_kcal_
     except Exception:
-        print(
-            "No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.\n"
-        )
+        if print_output:
+            print(
+                "No exact dispersion present.  Copying & zeroing "
+                "`Elst.dat`->`Disp.dat`, and proceeding.\n"
+            )
         vals["Disp"] = np.zeros_like(np.array(vals["Elst"]))
 
     # Read empirical F-SAPT0-D dispersion data
@@ -473,25 +517,26 @@ def extract_osapt_data_from_vars():
     vals["Total"] = [[0.0 for x in vals["Elst"][0]] for x2 in vals["Elst"]]
     for key in ["Elst", "Exch", "IndAB", "IndBA", "Disp"]:
         for k in range(len(vals["Total"])):
-            for l in range(len(vals["Total"][0])):
-                vals["Total"][k][l] += vals[key][k][l]
-
+            for idx in range(len(vals["Total"][0])):
+                vals["Total"][k][idx] += vals[key][k][idx]
     return vals
 
 
-def extract_osapt_data(filepath):
+def extract_osapt_data(filepath, print_output=True):
     """Reads the F-SAPT component files
 
     Arguments
     ---------
     filepath : str
         Path to directory containing the F-SAPT energy component files
+    print_output : bool
+        Whether to print output messages. Default: True.
 
     Returns
     -------
     vals : Dict[str, np.ndarray]
-        Dictionary of the F-SAPT0 components decomposed to orbital, nuclear, and external
-        potential contributions
+        Dictionary of the F-SAPT0 components decomposed to orbital, nuclear,
+        and external potential contributions
     """
 
     vals = {}
@@ -503,9 +548,11 @@ def extract_osapt_data(filepath):
     try:
         vals["Disp"] = read_block("%s/Disp.dat" % filepath, H_to_kcal_)
     except FileNotFoundError:
-        print(
-            "No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.\n"
-        )
+        if print_output:
+            print(
+                "No exact dispersion present.  Copying & zeroing "
+                "`Elst.dat`->`Disp.dat`, and proceeding.\n"
+            )
         vals["Disp"] = np.zeros_like(np.array(vals["Elst"]))
 
     # Read empirical F-SAPT0-D dispersion data
@@ -518,8 +565,8 @@ def extract_osapt_data(filepath):
     vals["Total"] = [[0.0 for x in vals["Elst"][0]] for x2 in vals["Elst"]]
     for key in ["Elst", "Exch", "IndAB", "IndBA", "Disp"]:
         for k in range(len(vals["Total"])):
-            for l in range(len(vals["Total"][0])):
-                vals["Total"][k][l] += vals[key][k][l]
+            for idx in range(len(vals["Total"][0])):
+                vals["Total"][k][idx] += vals[key][k][idx]
 
     return vals
 
@@ -791,9 +838,23 @@ def collapse_links(order2, frags, Qs, orbital_ws, links5050):
     return vals
 
 
-def print_order2(order2, fragkeys, saptkeys=saptkeys_):
-
-    data = {col: [] for col in ["Frag1", "Frag2"] + saptkeys}
+def print_order2(
+    order2,
+    fragkeys,
+    saptkeys=saptkeys_,
+    print_output=True,
+    frags=None,
+    closest_contacts=None,
+):
+    # Added Frag1_indices and Frag2_indices to output data for easier
+    # postprocessing of fragment indices for downstream applications like ML
+    # models
+    # data = {col: [] for col in ["Frag1", "Frag2"] + saptkeys + ["Frag1_indices", "Frag2_indices"]}
+    cols = ["Frag1", "Frag2", "Frag1_indices", "Frag2_indices"]
+    if closest_contacts is not None:
+        cols.append("ClosestContact")
+    cols.extend(saptkeys)
+    data = {col: [] for col in cols}
     order1A = {}
     order1B = {}
     for saptkey in saptkeys:
@@ -826,49 +887,157 @@ def print_order2(order2, fragkeys, saptkeys=saptkeys_):
                 val += 0.0
         order0[saptkey] = val
 
-    print("%-9s %-9s " % ("Frag1", "Frag2"), end="")
-    for saptkey in saptkeys:
-        print("%8s " % (saptkey), end="")
-    print("")
+    if print_output:
+        print("%-9s %-9s " % ("Frag1", "Frag2"), end="")
+        for saptkey in saptkeys:
+            print("%8s " % (saptkey), end="")
+        print("")
     for keyA in fragkeys["A"]:
         for keyB in fragkeys["B"]:
-            print("%-9s %-9s " % (keyA, keyB), end="")
+            data["Frag1"].append(keyA)
+            data["Frag2"].append(keyB)
+            if frags is not None and keyA in frags["A"]:
+                data["Frag1_indices"].append([x + 1 for x in frags["A"][keyA]])
+            else:
+                data["Frag1_indices"].append([])
+            if frags is not None and keyB in frags["B"]:
+                data["Frag2_indices"].append([x + 1 for x in frags["B"][keyB]])
+            else:
+                data["Frag2_indices"].append([])
+            # Add closest contact distance for this fragment pair
+            if closest_contacts is not None:
+                try:
+                    data["ClosestContact"].append(closest_contacts[keyA][keyB])
+                except KeyError:
+                    data["ClosestContact"].append(None)
+            if print_output:
+                print("%-9s %-9s " % (keyA, keyB), end="")
             for saptkey in saptkeys:
-                if saptkey == "EDisp" and ("Link" in keyA or "Link" in keyB):
-                    print("%8.3f" % 0.0, end="")
-                else:
-                    try:
-                        print("%8.3f " % (order2[saptkey][keyA][keyB]), end="")
-                    except KeyError:
-                        continue
-            print("")
+                if print_output:
+                    if saptkey == "EDisp" and ("Link" in keyA or "Link" in keyB):
+                        print("%8.3f" % 0.0, end="")
+                    else:
+                        try:
+                            print("%8.3f " % (order2[saptkey][keyA][keyB]), end="")
+                        except KeyError:
+                            continue
+                # Use the actual pairwise energy for the data dictionary
+                try:
+                    data[saptkey].append(order2[saptkey][keyA][keyB])
+                except KeyError:
+                    data[saptkey].append(0.0)
+            if print_output:
+                print("")
 
     for keyA in fragkeys["A"]:
-        print("%-9s %-9s " % (keyA, "All"), end="")
+        if print_output:
+            print("%-9s %-9s " % (keyA, "All"), end="")
         data["Frag1"].append(keyA)
         data["Frag2"].append("All")
+        if frags is not None and keyA in frags["A"]:
+            data["Frag1_indices"].append([x + 1 for x in frags["A"][keyA]])
+        else:
+            data["Frag1_indices"].append([])
+        if frags is not None:
+            all_b_indices = []
+            for key in fragkeys["B"]:
+                if "Link" not in key and key in frags["B"]:
+                    all_b_indices.extend([x + 1 for x in frags["B"][key]])
+            data["Frag2_indices"].append(all_b_indices)
+        else:
+            data["Frag2_indices"].append([])
+        # Closest contact for keyA vs All: min over all B fragments
+        if closest_contacts is not None:
+            min_dist = float('inf')
+            if keyA in closest_contacts:
+                for keyB_inner in fragkeys["B"]:
+                    if keyB_inner in closest_contacts[keyA]:
+                        min_dist = min(min_dist, closest_contacts[keyA][keyB_inner])
+            if min_dist == float('inf'):
+                data["ClosestContact"].append(None)
+            else:
+                data["ClosestContact"].append(min_dist)
         for saptkey in saptkeys:
             data[saptkey].append(order1A[saptkey][keyA])
-            print("%8.3f " % (order1A[saptkey][keyA]), end="")
-        print("")
+            if print_output:
+                print("%8.3f " % (order1A[saptkey][keyA]), end="")
+        if print_output:
+            print("")
 
     for keyB in fragkeys["B"]:
         data["Frag1"].append("All")
         data["Frag2"].append(keyB)
-        print("%-9s %-9s " % ("All", keyB), end="")
+        if frags is not None:
+            all_a_indices = []
+            for key in fragkeys["A"]:
+                if "Link" not in key and key in frags["A"]:
+                    all_a_indices.extend([x + 1 for x in frags["A"][key]])
+            data["Frag1_indices"].append(all_a_indices)
+        else:
+            data["Frag1_indices"].append([])
+        if frags is not None and keyB in frags["B"]:
+            data["Frag2_indices"].append([x + 1 for x in frags["B"][keyB]])
+        else:
+            data["Frag2_indices"].append([])
+        # Closest contact for All vs keyB: min over all A fragments
+        if closest_contacts is not None:
+            min_dist = float('inf')
+            for keyA_inner in fragkeys["A"]:
+                if keyA_inner in closest_contacts:
+                    if keyB in closest_contacts[keyA_inner]:
+                        min_dist = min(min_dist, closest_contacts[keyA_inner][keyB])
+            if min_dist == float('inf'):
+                data["ClosestContact"].append(None)
+            else:
+                data["ClosestContact"].append(min_dist)
+        if print_output:
+            print("%-9s %-9s " % ("All", keyB), end="")
         for saptkey in saptkeys:
             data[saptkey].append(order1B[saptkey][keyB])
-            print("%8.3f " % (order1B[saptkey][keyB]), end="")
-        print("")
+            if print_output:
+                print("%8.3f " % (order1B[saptkey][keyB]), end="")
+        if print_output:
+            print("")
 
     data["Frag1"].append("All")
     data["Frag2"].append("All")
-    print("%-9s %-9s " % ("All", "All"), end="")
+    if frags is not None:
+        all_a_indices = []
+        for key in fragkeys["A"]:
+            if "Link" not in key and key in frags["A"]:
+                all_a_indices.extend([x + 1 for x in frags["A"][key]])
+        data["Frag1_indices"].append(all_a_indices)
+        all_b_indices = []
+        for key in fragkeys["B"]:
+            if "Link" not in key and key in frags["B"]:
+                all_b_indices.extend([x + 1 for x in frags["B"][key]])
+        data["Frag2_indices"].append(all_b_indices)
+    else:
+        data["Frag1_indices"].append([])
+        data["Frag2_indices"].append([])
+    # Closest contact for All vs All: global minimum
+    if closest_contacts is not None:
+        min_dist = float('inf')
+        for keyA_inner in fragkeys["A"]:
+            if keyA_inner in closest_contacts:
+                for keyB_inner in fragkeys["B"]:
+                    if keyB_inner in closest_contacts[keyA_inner]:
+                        min_dist = min(
+                            min_dist, closest_contacts[keyA_inner][keyB_inner]
+                        )
+        if min_dist == float('inf'):
+            data["ClosestContact"].append(None)
+        else:
+            data["ClosestContact"].append(min_dist)
+    if print_output:
+        print("%-9s %-9s " % ("All", "All"), end="")
     for saptkey in saptkeys:
         data[saptkey].append(order0[saptkey])
-        print("%8.3f " % (order0[saptkey]), end="")
-    print("")
-    print("")
+        if print_output:
+            print("%8.3f " % (order0[saptkey]), end="")
+    if print_output:
+        print("")
+        print("")
     return data
 
 
@@ -895,8 +1064,9 @@ def compute_fsapt_qcvars(
     links5050=False,
     completeness=0.85,
     dirname=".",
+    print_output=True,
 ):
-    geom = geom.tolist()
+    # geom = geom.tolist()
 
     Zs = {
         "A": Z[monomer_slices[0][0] : monomer_slices[0][1]].tolist(),
@@ -920,8 +1090,26 @@ def compute_fsapt_qcvars(
     frags["A"] = holder["A"][0]
     frags["B"] = holder["B"][0]
 
-    check_fragments(geom, Zs["A"], frags["A"])
-    check_fragments(geom, Zs["B"], frags["B"])
+    other_fragment_A = check_fragments(geom, Zs["A"], frags["A"])
+    if len(other_fragment_A) > 0:
+        if print_output:
+            print(
+                "Warning: The following atoms in fragment A do not belong to "
+                "any user fragment and will be put into 'Other' fragment:",
+                other_fragment_A,
+            )
+        fragkeys["A"].append("Other")
+        frags["A"]["Other"] = other_fragment_A
+    other_fragment_B = check_fragments(geom, Zs["B"], frags["B"])
+    if len(other_fragment_B) > 0:
+        if print_output:
+            print(
+                "Warning: The following atoms in fragment B do not belong to "
+                "any user fragment and will be put into 'Other' fragment:",
+                other_fragment_B,
+            )
+        fragkeys["B"].append("Other")
+        frags["B"]["Other"] = other_fragment_B
 
     Qs = {}
     Qs["A"] = core.variable("FSAPT_QA").to_array()
@@ -962,7 +1150,7 @@ def compute_fsapt_qcvars(
     # nuclear_ws['B'], orbital_ws['B'], 'fragB.dat')
 
     # osapt = extract_osapt_data(dirname)
-    osapt = extract_osapt_data_from_vars()
+    osapt = extract_osapt_data_from_vars(print_output=print_output)
 
     # For I-SAPT/SAOn and I-SAPT/SIAOn, we need to add one extra orbital weight
     # for the reassigned link orbital. It belongs
@@ -979,13 +1167,14 @@ def compute_fsapt_qcvars(
             raise Exception("Invalid syntax of the link_siao.dat file")
         linkAC = fragsiao["A"][0]
         linkBC = fragsiao["B"][0]
-        print(
-            "\n Extra SAOn/SIAOn link orbitals assigned to atoms",
-            linkAC,
-            "and",
-            linkBC,
-            "\n",
-        )
+        if print_output:
+            print(
+                "\n Extra SAOn/SIAOn link orbitals assigned to atoms",
+                linkAC,
+                "and",
+                linkBC,
+                "\n",
+            )
 
         # We add zero entry for all the fragments, making place for the
         # reassigned link orbital
@@ -1042,7 +1231,6 @@ def compute_fsapt_qcvars(
         geom_extern_A = np.hstack(
             (np.zeros((len(geom_extern_A), 1)), geom_extern_A)
         ).tolist()
-        print(f"geom_extern_A: {geom_extern_A}")
         fragkeys["A"].append("Extern-A")
         fragkeysr["A"].append("Extern-A")
         orbital_ws["A"]["Extern-A"] = [0.0 for i in range(len(Qs["A"]))]
@@ -1054,7 +1242,7 @@ def compute_fsapt_qcvars(
             range(len(Zs["A"]), len(Zs["A"]) + len(geom_extern_A))
         )
     except KeyError:
-        print("No external potential data for A")
+        # print("No external potential data for A")
         pass
 
     try:
@@ -1082,7 +1270,7 @@ def compute_fsapt_qcvars(
             )
 
     except KeyError:
-        print("No external potential data for B")
+        # print("No external potential data for B")
         pass
 
     # Add external potential data for C
@@ -1095,11 +1283,26 @@ def compute_fsapt_qcvars(
         for c in geom_extern_C:
             geom.append(c)
     except KeyError:
-        print("No external potential data for C")
+        # print("No external potential data for C")
         pass
 
     order2 = extract_order2_fsapt(osapt, total_ws["A"], total_ws["B"], frags)
     order2r = collapse_links(order2, frags, Qs, orbital_ws, links5050)
+
+    # Compute closest contact distances for each fragment pair (reduced keys)
+    closest_contacts = {}
+    for keyA in fragkeysr["A"]:
+        closest_contacts[keyA] = {}
+        if keyA not in frags["A"] or "Link" in keyA:
+            continue
+        for keyB in fragkeysr["B"]:
+            if keyB not in frags["B"] or "Link" in keyB:
+                continue
+            indices_a = frags["A"][keyA]
+            indices_b = frags["B"][keyB]
+            closest_contacts[keyA][keyB] = compute_closest_contact(
+                geom, indices_a, indices_b
+            )
 
     stuff = {}
     stuff["order2"] = order2
@@ -1108,10 +1311,11 @@ def compute_fsapt_qcvars(
     stuff["fragkeysr"] = fragkeysr
     stuff["frags"] = frags
     stuff["geom"] = geom
+    stuff["closest_contacts"] = closest_contacts
     return stuff
 
 
-def compute_fsapt(dirname, links5050, completeness=0.85):
+def compute_fsapt(dirname, links5050, completeness=0.85, print_output=True):
 
     geom = read_xyz("%s/geom.xyz" % dirname)
 
@@ -1131,8 +1335,26 @@ def compute_fsapt(dirname, links5050, completeness=0.85):
     frags["A"] = holder["A"][0]
     frags["B"] = holder["B"][0]
 
-    check_fragments(geom, Zs["A"], frags["A"])
-    check_fragments(geom, Zs["B"], frags["B"])
+    other_fragment_A = check_fragments(geom, Zs["A"], frags["A"])
+    if len(other_fragment_A) > 0:
+        if print_output:
+            print(
+                "Warning: The following atoms in fragment A do not belong to "
+                "any user fragment and will be put into 'Other' fragment:",
+                other_fragment_A,
+            )
+        fragkeys["A"].append("Other")
+        frags["A"]["Other"] = other_fragment_A
+    other_fragment_B = check_fragments(geom, Zs["B"], frags["B"])
+    if len(other_fragment_B) > 0:
+        if print_output:
+            print(
+                "Warning: The following atoms in fragment B do not belong to "
+                "any user fragment and will be put into 'Other' fragment:",
+                other_fragment_B,
+            )
+        fragkeys["B"].append("Other")
+        frags["B"]["Other"] = other_fragment_B
 
     Qs = {}
     Qs["A"] = read_block("%s/QA.dat" % dirname)
@@ -1188,28 +1410,33 @@ def compute_fsapt(dirname, links5050, completeness=0.85):
         "%s/fragB.dat" % dirname,
     )
 
-    osapt = extract_osapt_data(dirname)
+    osapt = extract_osapt_data(dirname, print_output=print_output)
 
-    # For I-SAPT/SAOn and I-SAPT/SIAOn, we need to add one extra orbital weight for the reassigned link orbital. It belongs
-    # to the atom of A/B directly connected to the linker C. The user needs to supply a file link_siao.dat that has two lines
+    # For I-SAPT/SAOn and I-SAPT/SIAOn, we need to add one extra orbital
+    # weight for the reassigned link orbital. It belongs to the atom of A/B
+    # directly connected to the linker C. The user needs to supply a file
+    # link_siao.dat that has two lines
     #   A (atomnumber)
     #   B (atomnumber)
-    # to specify the numbers of atoms which are connected to C. We will now check if this file exists and read it.
+    # to specify the numbers of atoms which are connected to C. We will now
+    # check if this file exists and read it.
     if os.path.exists("%s/link_siao.dat" % dirname):
         (fragsiao, keyssiao) = read_fragments("%s/link_siao.dat" % dirname)
         if ("A" not in keyssiao) or ("B" not in keyssiao):
             raise Exception("Invalid syntax of the link_siao.dat file")
         linkAC = fragsiao["A"][0]
         linkBC = fragsiao["B"][0]
-        print(
-            "\n Extra SAOn/SIAOn link orbitals assigned to atoms",
-            linkAC,
-            "and",
-            linkBC,
-            "\n",
-        )
+        if print_output:
+            print(
+                "\n Extra SAOn/SIAOn link orbitals assigned to atoms",
+                linkAC,
+                "and",
+                linkBC,
+                "\n",
+            )
 
-        # We add zero entry for all the fragments, making place for the reassigned link orbital
+        # We add zero entry for all the fragments, making place for the
+        # reassigned link orbital
         for val in total_ws["A"].values():
             val.append(0.0)
 
@@ -1292,6 +1519,21 @@ def compute_fsapt(dirname, links5050, completeness=0.85):
     order2 = extract_order2_fsapt(osapt, total_ws["A"], total_ws["B"], frags)
     order2r = collapse_links(order2, frags, Qs, orbital_ws, links5050)
 
+    # Compute closest contact distances for each fragment pair (reduced keys)
+    closest_contacts = {}
+    for keyA in fragkeysr["A"]:
+        closest_contacts[keyA] = {}
+        if keyA not in frags["A"] or "Link" in keyA:
+            continue
+        for keyB in fragkeysr["B"]:
+            if keyB not in frags["B"] or "Link" in keyB:
+                continue
+            indices_a = frags["A"][keyA]
+            indices_b = frags["B"][keyB]
+            closest_contacts[keyA][keyB] = compute_closest_contact(
+                geom, indices_a, indices_b
+            )
+
     stuff = {}
     stuff["order2"] = order2
     stuff["fragkeys"] = fragkeys
@@ -1299,6 +1541,7 @@ def compute_fsapt(dirname, links5050, completeness=0.85):
     stuff["fragkeysr"] = fragkeysr
     stuff["frags"] = frags
     stuff["geom"] = geom
+    stuff["closest_contacts"] = closest_contacts
     return stuff
 
 
@@ -1307,10 +1550,10 @@ def compute_fsapt(dirname, links5050, completeness=0.85):
 
 class PDBAtom:
 
-    def __init__(self, I, Z, x, y, z, T=0.0):
+    def __init__(self, atom_idx, Z, x, y, z, T=0.0):
 
         key_key = "HETATM"
-        key_serial = I
+        key_serial = atom_idx
         key_name = Z
         key_altLoc = ""
         key_resName = "001"
@@ -1449,8 +1692,8 @@ def print_order1(
                 val = order2[saptkey][keyA][keyB]
                 for k in frags["A"][keyA]:
                     E[k] += val
-                for l in frags["B"][keyB]:
-                    E[l] += val
+                for idx in frags["B"][keyB]:
+                    E[idx] += val
 
         pdb2 = copy.deepcopy(pdb)
         for A in range(len(pdb.atoms)):
@@ -1467,28 +1710,65 @@ def run_fsapt_analysis(
     analysis_type: str = "reduced",
     links5050: bool = True,
     dirname: str = "./fsapt",
+    print_output: bool = True,
 ):
-    print("  ==> F-ISAPT: Analysis Start <==\n")
+    if print_output:
+        print("  ==> F-ISAPT: Analysis Start <==\n")
     if atomic_results is None and molecule is None:
         raise Exception(
             "Atomic results or molecule object after running psi4.energy('fisapt0') must be provided."
         )
     if atomic_results is not None:
         molecule = atomic_results.molecule
+        if print_output:
+            print(molecule, dir(molecule))
         R = molecule.geometry
         Z = molecule.atomic_numbers
-        geom = np.hstack((Z.reshape(-1, 1), R))
+        if hasattr(molecule, "atomic_symbols"):
+            Z_el = molecule.atomic_symbols
+        elif hasattr(molecule, "symbols"):
+            Z_el = molecule.symbols
+        else:
+            raise Exception("Cannot retrieve atomic symbols from molecule object.")
         monomer_slices = [
             (0, molecule.fragments_[1][0]),
             (molecule.fragments_[1][0], molecule.fragments_[1][-1] + 1),
         ]
-        qcvars = atomic_results.extras["qcvars"]
-        for key, value in qcvars.items():
-            core.set_variable(key, value)
+        # When running atomic_result directly from psi4, we have the right
+        # shape already for Felst, Fexch, etc... QCFractal flattens them.
+        if "qcvars" in atomic_results.extras:
+            qcvars = atomic_results.extras["qcvars"]
+            for key, value in qcvars.items():
+                if "fsapt" not in key.lower():
+                    continue
+                core.set_variable(key, value)
+        else:
+            qcvars = atomic_results.extras["extra_properties"]
+            # atomic_results back from QCFractal are stored in 1D array, so we
+            # need to reshape them properly. This is (nA_atoms + na + 1,
+            # nB_atoms + nb + 1) where na are from L0A/L0B, so we cannot
+            # directly infer the right shape without knowing some additional
+            # information from the calculation itself. 
+            fsapt_AB_array_shape = np.array(qcvars["fsapt_ab_size"], dtype=np.int32)
+            for key, value in qcvars.items():
+                if "fsapt" not in key.lower() or key.lower() in ["fsapt_ab_size"]:
+                    continue
+                v = np.array(value)
+                if key in ['fsapt_qa', 'fsapt_qb']:
+                    v = v.reshape(len(Z), -1)
+                elif key in ['fsapt_empirical_disp']:
+                    # need NA * NB from molecule
+                    v = v.reshape(len(Z), len(Z))
+                else:
+                    v = v.reshape(fsapt_AB_array_shape)
+                core.set_variable(key, v)
     else:
         monomer_slices = molecule.get_fragments()
-        R, _, _, Z, _ = molecule.to_arrays()
-        geom = np.hstack((Z.reshape(-1, 1), R))
+        R, _, Z_el, Z, _ = molecule.to_arrays()
+        # PDB writing later needs Z to be str (element symbols=Z_el)
+    geom = []
+    for i in range(len(Z)):
+        geom.append([str(Z_el[i]), R[i][0], R[i][1], R[i][2]])
 
     if fragments_a is None or fragments_b is None:
         raise Exception(
@@ -1508,35 +1788,51 @@ def run_fsapt_analysis(
     if dirname is None:
         dirname = "."
     if analysis_type == "full":
-        print("  ==> Full Analysis <==\n")
-        print(f"     Links 50-50: {links5050}\n")
+        if print_output:
+            print("  ==> Full Analysis <==\n")
+            print(f"     Links 50-50: {links5050}\n")
         results = compute_fsapt_qcvars(
-            geom, Z, monomer_slices, holder, links5050=links5050, dirname=dirname
+            geom, Z, monomer_slices, holder, links5050=links5050, dirname=dirname,
+            print_output=print_output
         )
-        data = print_order2(results["order2"], results["fragkeys"])
+        data = print_order2(
+            results["order2"],
+            results["fragkeys"],
+            print_output=print_output,
+            frags=results["frags"],
+            closest_contacts=results["closest_contacts"],
+        )
         results_tag = "order2"
     elif analysis_type == "reduced":
-        print("  ==> Reduced Analysis <==\n")
-        print(f"     Links 50-50: {links5050}\n")
+        if print_output:
+            print("  ==> Reduced Analysis <==\n")
+            print(f"     Links 50-50: {links5050}\n")
         results = compute_fsapt_qcvars(
-            geom, Z, monomer_slices, holder, links5050=links5050, dirname=dirname
+            geom, Z, monomer_slices, holder, links5050=links5050, dirname=dirname,
+            print_output=print_output
         )
         results_tag = "order2r"
-        data = print_order2(results["order2r"], results["fragkeysr"])
+        data = print_order2(
+            results["order2r"],
+            results["fragkeysr"],
+            print_output=print_output,
+            frags=results["frags"],
+            closest_contacts=results["closest_contacts"],
+        )
     else:
         raise Exception("Invalid analysis type. Please specify 'full' or 'reduced'.")
     if pdb_dir is not None:
-        print("  ==> Writing PDB Files <==\n")
-        print(f"     {pdb_dir = } \n")
+        if print_output:
+            print("  ==> Writing PDB Files <==\n")
+            print(f"     {pdb_dir = } \n")
         pdb = PDB.from_geom(results["geom"])
         print_order1(dirname, results[results_tag], pdb, results["frags"])
     return data
 
 
-def run_from_output(dirname="./fsapt"):
+def run_from_output(dirname="./fsapt", return_data="reduced_analysis"):
 
     # > Order-2 Analysis < #
-
     fh = open("%s/fsapt.dat" % dirname, "w")
     fh, sys.stdout = sys.stdout, fh
 
@@ -1544,19 +1840,41 @@ def run_from_output(dirname="./fsapt"):
     stuff = compute_fsapt(dirname, False)
 
     print("   => Full Analysis <=\n")
-    print_order2(stuff["order2"], stuff["fragkeys"])
+    print_order2(
+        stuff["order2"],
+        stuff["fragkeys"],
+        frags=stuff["frags"],
+        closest_contacts=stuff["closest_contacts"],
+    )
 
     print("   => Reduced Analysis <=\n")
-    print_order2(stuff["order2r"], stuff["fragkeysr"])
+    print_order2(
+        stuff["order2r"],
+        stuff["fragkeysr"],
+        frags=stuff["frags"],
+        closest_contacts=stuff["closest_contacts"],
+    )
 
     print("  ==> F-ISAPT: Links 50-50 <==\n")
     stuff = compute_fsapt(dirname, True)
 
     saptkeys_local = list(stuff["order2r"].keys())
     print("   => Full Analysis <=\n")
-    print_order2(stuff["order2"], stuff["fragkeys"], saptkeys=saptkeys_local)
+    data_full_analysis = print_order2(
+        stuff["order2"],
+        stuff["fragkeys"],
+        saptkeys=saptkeys_local,
+        frags=stuff["frags"],
+        closest_contacts=stuff["closest_contacts"],
+    )
     print("   => Reduced Analysis <=\n")
-    print_order2(stuff["order2r"], stuff["fragkeysr"], saptkeys=saptkeys_local)
+    data_reduced_analsysis = print_order2(
+        stuff["order2r"],
+        stuff["fragkeysr"],
+        saptkeys=saptkeys_local,
+        frags=stuff["frags"],
+        closest_contacts=stuff["closest_contacts"],
+    )
 
     fh, sys.stdout = sys.stdout, fh
     fh.close()
@@ -1567,7 +1885,12 @@ def run_from_output(dirname="./fsapt"):
     print_order1(
         dirname, stuff["order2r"], pdb, stuff["frags"], saptkeys=saptkeys_local
     )
-    return
+    if return_data == "full_analysis":
+        return data_full_analysis
+    elif return_data == "reduced_analysis":
+        return data_reduced_analsysis
+    else:
+        return
 
 
 if __name__ == "__main__":
