@@ -53,18 +53,32 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
    protected:
 
     /// Lambda Amplitudes
+
     std::vector<SharedMatrix> lambda_ia_; // Dimensions: [nocc * (npno_[ii], 1)]
     std::vector<SharedMatrix> lambda_iajb_; // Dimensions: [n_lmo_pairs * (n_pno_[ij], n_pno_[ij])]
 
-    // => Lambda CCSD Integrals <= //
+    // => Lambda CCSD Integrals (Fock matrices and ERIs) <= //
+    std::vector<SharedMatrix> delta_imae_tilde_; // Toth eq. 26a
+    SharedMatrix F_im_double_tilde_; // Toth Eq. 26b
+    std::vector<SharedMatrix> F_vv_double_tilde_;
+
+    std::vector<SharedMatrix> M_imae_; // M(i m | a_{mm} e_{mm})
+
+    // => Lambda CCSD Intermediates <= //
 
     std::vector<SharedMatrix> zizi_is_delinquent_;
     std::vector<SharedMatrix> john_bigback_;
+
+    SharedMatrix rho_oo_; // Toth Section IIIA
+    std::vector<SharedMatrix> rho_vv_; // Toth Section IIIA
+    std::vector<SharedMatrix> M_imae_tilde_; // Toth Eq. 24
 
     // => Computing integrals <= //
 
     /// A function to estimate memory costs for lambda CCSD
     void estimate_memory();
+    /// Compute some of the intermediates required in lambda DLPNO CCSD
+    void compute_lambda_intermediates();
     /// Computes the specific integral types needed for lambda CCSD (PNO basis)
     void compute_lambda_pno_integrals();
 
