@@ -77,9 +77,9 @@ void diagSS(int C_irr) {
     int pf, cnt, irr_occ, irr_virt;
 
     nirreps = moinfo.nirreps;
-    auto openpi = moinfo.openpi;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& openpi = moinfo.openpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
 
     if (params.eom_ref == 2) { /* UHF */
         aoccpi = moinfo.aoccpi;

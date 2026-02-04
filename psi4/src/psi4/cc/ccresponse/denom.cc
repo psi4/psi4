@@ -48,8 +48,8 @@ void denom1(dpdfile2 *X1, double omega) {
     dpdfile2 FAE, FMI;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
 
     irrep = X1->my_irrep;
 

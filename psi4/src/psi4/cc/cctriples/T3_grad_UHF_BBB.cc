@@ -78,10 +78,10 @@ double T3_grad_UHF_BBB() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.boccpi;
-    auto virtpi = moinfo.bvirtpi;
-    auto occ_off = moinfo.bocc_off;
-    auto vir_off = moinfo.bvir_off;
+    const auto& occpi = moinfo.boccpi;
+    const auto& virtpi = moinfo.bvirtpi;
+    const auto& occ_off = moinfo.bocc_off;
+    const auto& vir_off = moinfo.bvir_off;
 
     double ***WIJK = (double ***)malloc(nirreps * sizeof(double **));
     double ***VIJK = (double ***)malloc(nirreps * sizeof(double **));

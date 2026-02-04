@@ -51,10 +51,10 @@ void relax_I_UHF() {
     int h, nirreps, i, a;
 
     nirreps = moinfo.nirreps;
-    auto aoccpi = moinfo.aoccpi;
-    auto avirtpi = moinfo.avirtpi;
-    auto boccpi = moinfo.boccpi;
-    auto bvirtpi = moinfo.bvirtpi;
+    const auto& aoccpi = moinfo.aoccpi;
+    const auto& avirtpi = moinfo.avirtpi;
+    const auto& boccpi = moinfo.boccpi;
+    const auto& bvirtpi = moinfo.bvirtpi;
 
     /*** occupied-virtual relaxation terms */
 

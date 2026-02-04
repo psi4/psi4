@@ -72,10 +72,10 @@ double ET_UHF_AAA() {
     FILE *ijkfile;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.aoccpi;
-    auto virtpi = moinfo.avirtpi;
-    auto occ_off = moinfo.aocc_off;
-    auto vir_off = moinfo.avir_off;
+    const auto& occpi = moinfo.aoccpi;
+    const auto& virtpi = moinfo.avirtpi;
+    const auto& occ_off = moinfo.aocc_off;
+    const auto& vir_off = moinfo.avir_off;
 
     global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");

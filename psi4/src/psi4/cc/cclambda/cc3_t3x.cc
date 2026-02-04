@@ -62,9 +62,9 @@ void cc3_t3x() {
         int **W_offset, offset;
 
         nirreps = moinfo.nirreps;
-        auto occpi = moinfo.occpi;
+        const auto& occpi = moinfo.occpi;
         occ_off = moinfo.occ_off;
-        auto virtpi = moinfo.virtpi;
+        const auto& virtpi = moinfo.virtpi;
         vir_off = moinfo.vir_off;
 
         W_offset = init_int_matrix(nirreps, nirreps);

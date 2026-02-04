@@ -1453,13 +1453,13 @@ void purge_HC1(int C_irr) {
     int nirreps;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    auto openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     /* Purge FME matrix elements */
     global_dpd_->file2_init(&FME, PSIF_CC3_HC1, C_irr, 0, 1, "HC1 FME");
@@ -1748,13 +1748,13 @@ void purge_Wmnie(int C_irr) {
     int nirreps;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    auto openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file4_init(&W, PSIF_CC3_HC1, C_irr, 0, 11, "HC1 WMnIe (Mn,eI)");
     for (h = 0; h < nirreps; h++) {
@@ -1853,13 +1853,13 @@ void purge_Wmbij(int C_irr) {
     int nirreps;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    auto openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file4_init(&W, PSIF_CC3_HC1, C_irr, 10, 2, "HC1 WMBIJ (MB,I>J)");
     for (h = 0; h < nirreps; h++) {
@@ -1958,13 +1958,13 @@ void purge_Wabei(int C_irr) {
     int nirreps;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    auto openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file4_init(&W, PSIF_CC_TMP0, C_irr, 11, 7, "WABEI (EI,A>B)");
     for (h = 0; h < nirreps; h++) {

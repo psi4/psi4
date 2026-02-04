@@ -52,9 +52,9 @@ void relax_I_ROHF() {
     int h, nirreps, i, j, e;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
-    auto openpi = moinfo.openpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& openpi = moinfo.openpi;
 
     /*** occupied-virtual relaxation terms */
 

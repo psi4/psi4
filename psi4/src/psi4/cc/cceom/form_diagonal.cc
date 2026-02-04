@@ -56,7 +56,7 @@ void form_diagonal(int C_irr) {
     double tval;
 
     nirreps = moinfo.nirreps;
-    auto openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     if (params.eom_ref == 0) { /** RHF **/
         occpi = moinfo.occpi;

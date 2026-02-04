@@ -305,13 +305,13 @@ void CCEnergyWavefunction::purge_Wmnij() {
     int nirreps;
 
     nirreps = moinfo_.nirreps;
-    auto occpi = moinfo_.occpi;
-    auto virtpi = moinfo_.virtpi;
+    const auto& occpi = moinfo_.occpi;
+    const auto& virtpi = moinfo_.virtpi;
     occ_off = moinfo_.occ_off;
     vir_off = moinfo_.vir_off;
     occ_sym = moinfo_.occ_sym;
     vir_sym = moinfo_.vir_sym;
-    auto openpi = moinfo_.openpi;
+    const auto& openpi = moinfo_.openpi;
 
     /* Purge Wmnij matrix elements */
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 2, 2, "CC3 Wmnij (m>n,i>j)");

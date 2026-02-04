@@ -60,9 +60,9 @@ void build_Z_ROHF() {
     int num_ai, h, nirreps, a, i, count, lastcol, rank, ai;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto openpi = moinfo.openpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& openpi = moinfo.openpi;
+    const auto& virtpi = moinfo.virtpi;
 
     /*** Construct the ai transformation matrix which places all singly
          occupied orbital combinations at the end of the vector ***/

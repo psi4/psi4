@@ -95,9 +95,9 @@ void cc3_t3z_RHF_AAA() {
     int EE, e, eb;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
+    const auto& occpi = moinfo.occpi;
     occ_off = moinfo.occ_off;
-    auto virtpi = moinfo.virtpi;
+    const auto& virtpi = moinfo.virtpi;
     vir_off = moinfo.vir_off;
 
     global_dpd_->buf4_init(&ZIFLN, PSIF_CC3_MISC, 0, 10, 0, 10, 0, 0, "CC3 ZIFLN");
@@ -282,9 +282,9 @@ void cc3_t3z_RHF_AAB() {
     int Gij, ij, Gke, ke, eb;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
+    const auto& occpi = moinfo.occpi;
     occ_off = moinfo.occ_off;
-    auto virtpi = moinfo.virtpi;
+    const auto& virtpi = moinfo.virtpi;
     vir_off = moinfo.vir_off;
 
     global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");

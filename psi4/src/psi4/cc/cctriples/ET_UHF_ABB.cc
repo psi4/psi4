@@ -74,14 +74,14 @@ double ET_UHF_ABB() {
     int nijk, mijk;
 
     nirreps = moinfo.nirreps;
-    auto aoccpi = moinfo.aoccpi;
-    auto avirtpi = moinfo.avirtpi;
-    auto aocc_off = moinfo.aocc_off;
-    auto avir_off = moinfo.avir_off;
-    auto boccpi = moinfo.boccpi;
-    auto bvirtpi = moinfo.bvirtpi;
-    auto bocc_off = moinfo.bocc_off;
-    auto bvir_off = moinfo.bvir_off;
+    const auto& aoccpi = moinfo.aoccpi;
+    const auto& avirtpi = moinfo.avirtpi;
+    const auto& aocc_off = moinfo.aocc_off;
+    const auto& avir_off = moinfo.avir_off;
+    const auto& boccpi = moinfo.boccpi;
+    const auto& bvirtpi = moinfo.bvirtpi;
+    const auto& bocc_off = moinfo.bocc_off;
+    const auto& bvir_off = moinfo.bvir_off;
 
     global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");

@@ -62,10 +62,10 @@ double ET_BBB() {
     dpdfile2 fIJ, fAB, T1;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
-    auto occ_off = moinfo.occ_off;
-    auto vir_off = moinfo.vir_off;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& occ_off = moinfo.occ_off;
+    const auto& vir_off = moinfo.vir_off;
 
     global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fij");
     global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fab");

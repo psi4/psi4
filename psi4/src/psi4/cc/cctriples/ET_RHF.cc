@@ -83,10 +83,10 @@ double ET_RHF() {
     timer_on("ET_RHF");
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
-    auto occ_off = moinfo.occ_off;
-    auto vir_off = moinfo.vir_off;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& occ_off = moinfo.occ_off;
+    const auto& vir_off = moinfo.vir_off;
 
     nthreads = params.nthreads;
 
@@ -305,10 +305,10 @@ void ET_RHF_thread(ET_RHF_thread_data *data) {
     int nijk, nthreads, first_ijk, last_ijk, thr_id;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
-    auto occ_off = moinfo.occ_off;
-    auto vir_off = moinfo.vir_off;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& occ_off = moinfo.occ_off;
+    const auto& vir_off = moinfo.vir_off;
 
     fIJ = data->fIJ;
     fAB = data->fAB;

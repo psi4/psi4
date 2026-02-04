@@ -77,10 +77,10 @@ double T3_grad_UHF_AAA() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.aoccpi;
-    auto virtpi = moinfo.avirtpi;
-    auto occ_off = moinfo.aocc_off;
-    auto vir_off = moinfo.avir_off;
+    const auto& occpi = moinfo.aoccpi;
+    const auto& virtpi = moinfo.avirtpi;
+    const auto& occ_off = moinfo.aocc_off;
+    const auto& vir_off = moinfo.avir_off;
 
     double ***WIJK = (double ***)malloc(nirreps * sizeof(double **));
     double ***VIJK = (double ***)malloc(nirreps * sizeof(double **));

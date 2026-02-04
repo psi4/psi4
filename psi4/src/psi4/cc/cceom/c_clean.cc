@@ -55,13 +55,13 @@ void c_clean(dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbu
 
     C_irr = CME->my_irrep;
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    auto openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file2_mat_init(CME);
     global_dpd_->file2_mat_rd(CME);
@@ -148,13 +148,13 @@ void c_cleanSS(dpdfile2 *CME, dpdfile2 *Cme) {
 
     C_irr = CME->my_irrep;
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    auto openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file2_mat_init(CME);
     global_dpd_->file2_mat_rd(CME);

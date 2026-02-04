@@ -53,8 +53,8 @@ double cc2_LHX1Y2(const char *pert_x, int irrep_x, double omega_x, const char *p
     int **W_col_offset, **Z_col_offset, offset;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
 
     sprintf(lbl, "Z_%s_MI", pert_y);
     global_dpd_->file2_init(&z1, PSIF_CC_TMP0, irrep_y, 0, 0, lbl);

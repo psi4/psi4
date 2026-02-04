@@ -60,9 +60,9 @@ void Fai_build() {
     double dotval;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
-    auto openpi = moinfo.openpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& openpi = moinfo.openpi;
 
     Fme_for_Fai();
     Fae_for_Fai();

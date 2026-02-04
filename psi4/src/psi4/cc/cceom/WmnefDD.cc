@@ -55,9 +55,9 @@ void WmnefDD(int i, int C_irr) {
     int l, I, a, f, h, nC_irrs;
 
     nC_irrs = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
-    auto openpi = moinfo.openpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& openpi = moinfo.openpi;
 
     if (params.eom_ref == 0) { /* RHF */
         sprintf(CMnEf_lbl, "%s %d", "CMnEf", i);

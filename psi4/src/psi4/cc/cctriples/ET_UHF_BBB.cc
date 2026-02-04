@@ -71,10 +71,10 @@ double ET_UHF_BBB() {
     int nijk, mijk;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.boccpi;
-    auto virtpi = moinfo.bvirtpi;
-    auto occ_off = moinfo.bocc_off;
-    auto vir_off = moinfo.bvir_off;
+    const auto& occpi = moinfo.boccpi;
+    const auto& virtpi = moinfo.bvirtpi;
+    const auto& occ_off = moinfo.bocc_off;
+    const auto& vir_off = moinfo.bvir_off;
 
     global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 2, 2, "fij");
     global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 3, 3, "fab");

@@ -84,10 +84,10 @@ double EaT_RHF() {
     timer_on("ET_RHF");
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
-    auto occ_off = moinfo.occ_off;
-    auto vir_off = moinfo.vir_off;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& occ_off = moinfo.occ_off;
+    const auto& vir_off = moinfo.vir_off;
 
     nthreads = params.nthreads;
     std::vector<EaT_RHF_thread_data> thread_data_array(nthreads);
@@ -288,10 +288,10 @@ void EaT_RHF_thread(EaT_RHF_thread_data *data) {
     int nijk, nthreads, first_ijk, last_ijk, thr_id;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
-    auto occ_off = moinfo.occ_off;
-    auto vir_off = moinfo.vir_off;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& occ_off = moinfo.occ_off;
+    const auto& vir_off = moinfo.vir_off;
 
     fIJ = data->fIJ;
     fAB = data->fAB;

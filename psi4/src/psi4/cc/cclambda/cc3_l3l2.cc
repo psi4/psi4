@@ -96,9 +96,9 @@ void cc3_l3l2_RHF_AAA() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
+    const auto& occpi = moinfo.occpi;
     occ_off = moinfo.occ_off;
-    auto virtpi = moinfo.virtpi;
+    const auto& virtpi = moinfo.virtpi;
     vir_off = moinfo.vir_off;
 
     global_dpd_->buf4_init(&WMAFE, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
@@ -464,9 +464,9 @@ void cc3_l3l2_RHF_AAB() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
+    const auto& occpi = moinfo.occpi;
     occ_off = moinfo.occ_off;
-    auto virtpi = moinfo.virtpi;
+    const auto& virtpi = moinfo.virtpi;
     vir_off = moinfo.vir_off;
 
     global_dpd_->buf4_init(&L2AAnew, PSIF_CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIJAB");

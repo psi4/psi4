@@ -100,8 +100,8 @@ void get_largest_R2_amps(dpdbuf4 *R2, int namps, vector<R2_amp> &R2_stack);
 void amp_write_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int namps) {
     int m, i, j, a, b, Gi, Gj, Ga, Gb;
     char lbli[10], lblj[10], lbla[10], lblb[10];
-    auto frdocc = moinfo.frdocc;
-    auto clsdpi = moinfo.clsdpi;
+    const auto& frdocc = moinfo.frdocc;
+    const auto& clsdpi = moinfo.clsdpi;
 
     // Do RIA
     vector<R1_amp> R1_stack;
@@ -155,9 +155,9 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab,
     int m, i, j, a, b, Gi, Gj, Ga, Gb;
     char lbli[10], lblj[10], lbla[10], lblb[10];
 
-    auto frdocc = moinfo.frdocc;
-    auto clsdpi = moinfo.clsdpi;
-    auto openpi = moinfo.openpi;
+    const auto& frdocc = moinfo.frdocc;
+    const auto& clsdpi = moinfo.clsdpi;
+    const auto& openpi = moinfo.openpi;
 
     // Do RIA
     vector<R1_amp> R1_stack;
@@ -281,10 +281,10 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab
     int m, i, j, a, b, Gi, Gj, Ga, Gb;
     char lbli[10], lblj[10], lbla[10], lblb[10];
 
-    auto virtpi = moinfo.virtpi;
-    auto clsdpi = moinfo.clsdpi;
-    auto openpi = moinfo.openpi;
-    auto frdocc = moinfo.frdocc;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& clsdpi = moinfo.clsdpi;
+    const auto& openpi = moinfo.openpi;
+    const auto& frdocc = moinfo.frdocc;
 
     // Do RIA
     vector<R1_amp> R1_stack;

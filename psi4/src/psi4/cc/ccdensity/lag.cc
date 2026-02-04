@@ -161,9 +161,9 @@ void lag(const struct RHO_Params& rho_params) {
 
     if (params.ref == 1) { /** ROHF **/
         nirreps = moinfo.nirreps;
-        auto occpi = moinfo.occpi;
-        auto virtpi = moinfo.virtpi;
-        auto openpi = moinfo.openpi;
+        const auto& occpi = moinfo.occpi;
+        const auto& virtpi = moinfo.virtpi;
+        const auto& openpi = moinfo.openpi;
 
         global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'ij");
         global_dpd_->file2_mat_init(&I);

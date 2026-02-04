@@ -71,8 +71,8 @@ void denom_rhf(const struct L_Params& L_params) {
 
     L_irr = L_params.irrep;
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 
@@ -159,10 +159,10 @@ void denom_uhf(const struct L_Params& L_params) {
 
     L_irr = L_params.irrep;
     nirreps = moinfo.nirreps;
-    auto aoccpi = moinfo.aoccpi;
-    auto boccpi = moinfo.boccpi;
-    auto avirtpi = moinfo.avirtpi;
-    auto bvirtpi = moinfo.bvirtpi;
+    const auto& aoccpi = moinfo.aoccpi;
+    const auto& boccpi = moinfo.boccpi;
+    const auto& avirtpi = moinfo.avirtpi;
+    const auto& bvirtpi = moinfo.bvirtpi;
     aocc_off = moinfo.aocc_off;
     bocc_off = moinfo.bocc_off;
     avir_off = moinfo.avir_off;
@@ -404,8 +404,8 @@ void denom_rohf(const struct L_Params& L_params) {
 
     L_irr = L_params.irrep;
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     openpi = moinfo.openpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;

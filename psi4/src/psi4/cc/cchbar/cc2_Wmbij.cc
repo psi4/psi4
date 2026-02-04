@@ -521,13 +521,13 @@ void purge_cc2_Wmbij() {
     int nirreps;
 
     nirreps = moinfo.nirreps;
-    auto occpi = moinfo.occpi;
-    auto virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    auto openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file4_init(&W, PSIF_CC2_HET1, 0, 10, 2, "CC2 WMBIJ (MB,I>J)");
     for (h = 0; h < nirreps; h++) {
