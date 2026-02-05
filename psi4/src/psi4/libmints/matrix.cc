@@ -3620,7 +3620,7 @@ bool test_matrix_dpd_interface() {
     std::vector<int> sym_vec {0, 0, 3, 0, 2, 0, 3};
 
     std::vector<std::pair<Dimension, int *>> spaces;
-    spaces.push_back(std::make_pair(dimpi, sym_vec.data()));
+    spaces.emplace_back(dimpi, sym_vec.data());
     dpd_init(0, 4, 500e6, 0, cachefiles.data(), cachelist, nullptr, 1, spaces);
     dpd_list[0]->file2_init(&io, PSIF_OEI, 2, 0, 0, "Test Matrix");
     mat.write_to_dpdfile2(&io);

@@ -118,17 +118,17 @@ PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Op
         cachelist = cacheprep_rhf(2, cachefiles);
 
         std::vector<std::pair<Dimension, int *>> spaces;
-        spaces.push_back(std::make_pair(moinfo.occpi, moinfo.occ_sym));
-        spaces.push_back(std::make_pair(moinfo.virtpi, moinfo.vir_sym));
+        spaces.emplace_back(moinfo.occpi, moinfo.occ_sym);
+        spaces.emplace_back(moinfo.virtpi, moinfo.vir_sym);
         dpd_init(0, moinfo.nirreps, memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
     } else if (params.ref == 2) { /*** UHF ***/
         cachelist = cacheprep_uhf(2, cachefiles);
 
         std::vector<std::pair<Dimension, int *>> spaces;
-        spaces.push_back(std::make_pair(moinfo.aoccpi, moinfo.aocc_sym));
-        spaces.push_back(std::make_pair(moinfo.avirtpi, moinfo.avir_sym));
-        spaces.push_back(std::make_pair(moinfo.boccpi, moinfo.bocc_sym));
-        spaces.push_back(std::make_pair(moinfo.bvirtpi, moinfo.bvir_sym));
+        spaces.emplace_back(moinfo.aoccpi, moinfo.aocc_sym);
+        spaces.emplace_back(moinfo.avirtpi, moinfo.avir_sym);
+        spaces.emplace_back(moinfo.boccpi, moinfo.bocc_sym);
+        spaces.emplace_back(moinfo.bvirtpi, moinfo.bvir_sym);
 
         dpd_init(0, moinfo.nirreps, memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
     }
