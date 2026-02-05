@@ -46,6 +46,10 @@
 #include <algorithm>
 #include <memory>
 
+#ifdef USING_gauxc
+#include <gauxc/basisset.hpp>
+#endif
+
 namespace libint2 {
 struct Shell;
 }
@@ -407,6 +411,11 @@ class PSI_API BasisSet {
     // Converts the contraction to match the SAP approach.
     void convert_sap_contraction();
     
+#ifdef USING_gauxc
+template <typename T>
+GauXC::BasisSet<T> to_gauxc_basisset(double basis_tol, bool force_cartesian) const;
+#endif
+
    private:
     /// Helper functions for frozen core to reduce LOC
     int atom_to_period(int Z);
