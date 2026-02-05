@@ -66,7 +66,6 @@ void denom_rhf(const struct L_Params& L_params) {
     int I, J, A, B;
     int isym, jsym, asym, bsym;
     int *occ_off, *vir_off;
-    int *openpi;
     double Fii, Fjj, Faa, Fbb;
 
     L_irr = L_params.irrep;
@@ -399,14 +398,13 @@ void denom_rohf(const struct L_Params& L_params) {
     int I, J, A, B;
     int isym, jsym, asym, bsym;
     int *occ_off, *vir_off;
-    int *openpi;
     double Fii, Fjj, Faa, Fbb;
 
     L_irr = L_params.irrep;
     nirreps = moinfo.nirreps;
     const auto& occpi = moinfo.occpi;
     const auto& virtpi = moinfo.virtpi;
-    openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 
