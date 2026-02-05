@@ -551,7 +551,8 @@ def test_fsapt_indices():
 
     NOTE: This takes a bit longer to run due to size...
     """
-    # psi4.set_memory("32 GB")
+    # example testcase from tests/fsapt-allterms/input.dat
+    # psi4.set_memory("1 GB")
     # psi4.set_num_threads(12)
 
     mol = psi4.geometry(
@@ -594,19 +595,20 @@ no_com
     )
     psi4.set_options(
         {
-            # "basis": "sto-3g",
-            "basis": "aug-cc-pvdz",
+            "basis": "sto-3g",
             "scf_type": "df",
             "guess": "sad",
-            # "freeze_core": "true",
+            "freeze_core": "true",
         }
     )
     plan = psi4.energy("fisapt0", return_plan=True, molecule=mol)
     atomic_result = psi4.schema_wrapper.run_qcschema(
         plan.plan(wfn_qcvars_only=False),
-        clean=True,
-        postclean=True,
+        # clean=True,
+        # postclean=True,
     )
+    print(atomic_result)
+    print(dir(atomic_result))
     data = psi4.fsapt_analysis(
         # NOTE: 1-indexed for fragments_a and fragments_b
         fragments_a={
@@ -657,16 +659,18 @@ no_com
         # Assert lists are identical
         e = expected_frag1_indices[i]
         sorted_frag = sorted(indices)
-        assert sorted_frag == e, f"Frag1 indices do not match for fragment {
-            i
-        }: expected {e}, got {sorted_frag}"
+        assert sorted_frag == e, (
+            "Frag1 indices do not match for fragment "
+            f"{i}: expected {e}, got {sorted_frag}"
+        )
 
     for i, indices in enumerate(frag2_indices):
         e = expected_frag2_indices[i]
         sorted_frag = sorted(indices)
-        assert sorted_frag == e, f"Frag2 indices do not match for fragment {
-            i
-        }: expected {e}, got {sorted_frag}"
+        assert sorted_frag == e, (
+            "Frag2 indices do not match for fragment "
+            f"{i}: expected {e}, got {sorted_frag}"
+        )
     ref_dict = {
         "ClosestContact": [
             12.99840199731447,
@@ -680,38 +684,38 @@ no_com
             3.7293279474020324,
         ],
         "Disp": [
-            -0.02014331013167378,
-            -0.372273895991978,
-            -0.0741518363998009,
-            -2.432207594127432,
-            -0.39241720612365183,
-            -2.506359430527233,
-            -0.09429514653147468,
-            -2.80448149011941,
-            -2.898776636650885,
+            -0.003992035787563479,
+            -0.06726003034293386,
+            -0.013540224505783295,
+            -0.4109667131624368,
+            -0.07125206613049734,
+            -0.4245069376682201,
+            -0.017532260293346775,
+            -0.4782267435053707,
+            -0.49575900379871746,
         ],
         "EDisp": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         "Elst": [
-            0.8664961096130384,
-            -0.12491437414747963,
-            -1.0161642439176575,
-            -1.0168685763655532,
-            0.7415817354655587,
-            -2.0330328202832106,
-            -0.14966813430461912,
-            -1.1417829505130328,
-            -1.291451084817652,
+            0.7150992302947188,
+            -0.2042449764424319,
+            -0.8155064098920732,
+            -0.9356370086747248,
+            0.5108542538522869,
+            -1.751143418566798,
+            -0.10040717959735446,
+            -1.1398819851171567,
+            -1.2402891647145111,
         ],
         "Exch": [
-            -0.00016951134321586871,
-            0.06302818590927417,
-            0.04056059018694508,
-            4.214334017378195,
-            0.0628586745660583,
-            4.25489460756514,
-            0.04039107884372921,
-            4.277362203287469,
-            4.317753282131198,
+            0.00013680800590309906,
+            0.05310422532154325,
+            0.03094443957782037,
+            3.891362354110715,
+            0.05324103332744635,
+            3.922306793688535,
+            0.031081247583723468,
+            3.9444665794322584,
+            3.9755478270159816,
         ],
         "Frag1": [
             "Methyl1_A",
@@ -736,40 +740,50 @@ no_com
             "All",
         ],
         "IndAB": [
-            -0.027615863638335056,
-            -0.015567880312064623,
-            -0.09781659817652713,
-            -0.26487802957299955,
-            -0.04318374395039968,
-            -0.36269462774952665,
-            -0.12543246181486217,
-            -0.2804459098850642,
-            -0.40587837169992635,
+            -0.007088778360656281,
+            -0.015599345365187771,
+            -0.026015085738530286,
+            -0.17479907268235031,
+            -0.022688123725844053,
+            -0.2008141584208806,
+            -0.033103864099186565,
+            -0.1903984180475381,
+            -0.22350228214672466,
         ],
         "IndBA": [
-            0.0011573940269127988,
-            0.03052724256475823,
-            -0.002144092785043809,
-            -0.13667169442200203,
-            0.03168463659167103,
-            -0.13881578720704585,
-            -0.00098669875813101,
-            -0.1061444518572438,
-            -0.10713115061537481,
+            0.0003529407892942706,
+            0.014707144982080604,
+            -0.0017520016469106318,
+            -0.08067863336939138,
+            0.015060085771374875,
+            -0.082430635016302,
+            -0.0013990608576163613,
+            -0.06597148838731078,
+            -0.06737054924492714,
         ],
         "Total": [
-            0.8197248185264883,
-            -0.4192007219755354,
-            -1.1497161810927068,
-            0.3637081228885606,
-            0.4005240965509529,
-            -0.7860080582041462,
-            -0.3299913625662185,
-            -0.05549259908697479,
-            -0.3854839616531933,
+            0.7045081649423892,
+            -0.219292981846543,
+            -0.8258692822083376,
+            2.289280926225068,
+            0.4852151830958462,
+            1.4634116440167304,
+            -0.12136111726594834,
+            2.069987944378525,
+            1.9486268271125766,
         ],
     }
-    for key in ['ClosestContact', 'Elst', 'Exch', 'IndAB', 'IndBA', 'Disp', 'EDisp', 'Total']:
+
+    for key in [
+        "ClosestContact",
+        "Elst",
+        "Exch",
+        "IndAB",
+        "IndBA",
+        "Disp",
+        "EDisp",
+        "Total",
+    ]:
         for i, value in enumerate(data[key]):
             f1_f2 = f"{data['Frag1'][i]}-{data['Frag2'][i]}"
             print(
@@ -780,7 +794,7 @@ no_com
             compare_values(
                 ref_dict[key][i],
                 value,
-                6,
+                5,  # compares in kcal/mol, so looser tolerance
                 f"Fragment pair {f1_f2}:{i} for key {key}",
             )
     return
