@@ -697,7 +697,7 @@ void PKMgrDisk::form_J(std::vector<SharedMatrix> J, std::string exch, std::vecto
         size_t max_pq = batch_pq_max_[batch];
         double* j_block = new double[batch_size];
 
-        char* label;
+        std::string label;
         if (exch == "K") {
             label = PKWorker::get_label_K(batch);
         } else if (exch == "wK") {
@@ -819,7 +819,6 @@ void PKMgrDisk::form_J(std::vector<SharedMatrix> J, std::string exch, std::vecto
             }  // end of non-symmetric case
         }      // End of loop over J matrices
 
-        delete[] label;
         delete[] j_block;
     }  // End of batch loop
     get_results(J, exch);
@@ -934,13 +933,7 @@ void PKMgrReorder::finalize_PK() {
     timer_off("AIO synchronize");
 
     // Can get rid of the pre-striping labels
-    for (int i = 0; i < label_J_.size(); ++i) {
-        delete[] label_J_[i];
-    }
     label_J_.clear();
-    for (int i = 0; i < label_K_.size(); ++i) {
-        delete[] label_K_[i];
-    }
     label_K_.clear();
     for (int i = 0; i < nthreads(); ++i) {
         buffer(i).reset();
@@ -1315,14 +1308,13 @@ void PKMgrYoshimine::generate_J_PK(double* twoel_ints, size_t max_size) {
         lastbuf = inbuf.last_buffer();
         if (lastbuf) {
             // We just completed a batch, write it to disk
-            char* label = PKWorker::get_label_J(batch);
+            auto label = PKWorker::get_label_J(batch);
             // Divide diagonal elements by two
             for (size_t pq = batch_pq_min()[batch]; pq < batch_pq_max()[batch]; ++pq) {
                 pqrs = INDEX2(pq, pq);
                 twoel_ints[pqrs - offset] *= 0.5;
             }
             psio()->write_entry(pk_file(), label, (char*)twoel_ints, nintegrals * sizeof(double));
-            delete[] label;
             ++batch;
             if (batch < nbatches) {
                 ::memset((void*)twoel_ints, '\0', max_size * sizeof(double));
@@ -1395,14 +1387,13 @@ void PKMgrYoshimine::generate_K_PK(double* twoel_ints, size_t max_size) {
         lastbuf = inbuf.last_buffer();
         if (lastbuf) {
             // We just completed a batch, write it to disk
-            char* label = PKWorker::get_label_K(batch);
+            auto label = PKWorker::get_label_K(batch);
             // Divide by two diagonal elements
             for (size_t pq = batch_pq_min()[batch]; pq < batch_pq_max()[batch]; ++pq) {
                 pqrs = INDEX2(pq, pq);
                 twoel_ints[pqrs - offset] *= 0.5;
             }
             psio()->write_entry(pk_file(), label, (char*)twoel_ints, nintegrals * sizeof(double));
-            delete[] label;
             ++batch;
             if (batch < nbatches) {
                 ::memset((void*)twoel_ints, '\0', max_size * sizeof(double));
@@ -1452,14 +1443,13 @@ void PKMgrYoshimine::generate_wK_PK(double* twoel_ints, size_t max_size) {
         lastbuf = inbuf.last_buffer();
         if (lastbuf) {
             // We just completed a batch, write it to disk
-            char* label = PKWorker::get_label_wK(batch);
+            auto label = PKWorker::get_label_wK(batch);
             // Divide diagonal elements by two
             for (size_t pq = batch_pq_min()[batch]; pq < batch_pq_max()[batch]; ++pq) {
                 pqrs = INDEX2(pq, pq);
                 twoel_ints[pqrs - offset] *= 0.5;
             }
             psio()->write_entry(pk_file(), label, (char*)twoel_ints, nintegrals * sizeof(double));
-            delete[] label;
             ++batch;
             if (batch < nbatches) {
                 ::memset((void*)twoel_ints, '\0', max_size * sizeof(double));
