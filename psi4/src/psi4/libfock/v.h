@@ -35,6 +35,12 @@
 #include <unordered_map>
 #include <string>
 
+#ifdef USING_gauxc
+  #include <gauxc/xc_integrator.hpp>
+  #include <gauxc/xc_integrator/integrator_factory.hpp>
+  #include <eigen3/Eigen/Core>
+#endif
+
 namespace psi {
 class BasisSet;
 class Options;
@@ -78,6 +84,10 @@ class PSI_API VBase {
     std::vector<std::shared_ptr<PointFunctions>> point_workers_;
     /// Integration grid, built by KSPotential
     std::shared_ptr<DFTGrid> grid_;
+#ifdef USING_gauxc
+    /// Integrator object for GauXC based integration
+    std::shared_ptr<GauXC::XCIntegrator<Eigen::MatrixXd>> integrator_;
+#endif
     /// Quadrature values obtained during integration
     std::map<std::string, double> quad_values_;
     // Caches collocation grids
@@ -144,6 +154,7 @@ class PSI_API VBase {
     void set_debug(int debug) { debug_ = debug; }
 
     virtual void initialize();
+    void initialize_gauxc();
     virtual void finalize();
 
     virtual void print_header() const;

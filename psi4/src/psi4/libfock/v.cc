@@ -57,6 +57,10 @@
 #include <omp.h>
 #endif
 
+#ifdef USING_gauxc
+#include <gauxc/molgrid/defaults.hpp>
+#endif
+
 #ifdef USING_BrianQC
 
 #include <use_brian_wrapper.h>
@@ -174,6 +178,7 @@ void VBase::set_D(std::vector<SharedMatrix> Dvec) {
     }
 }
 void VBase::initialize() {
+    // TODO: This should only run if the compute_V mode is Psi.
     timer_on("V: Grid");
     grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, options_);
     timer_off("V: Grid");
@@ -182,7 +187,9 @@ void VBase::initialize() {
         // Need a functional worker per thread
         functional_workers_.push_back(functional_->build_worker());
     }
-    
+#ifdef USING_Gauxc
+    if (options_.get_int("GAUXC_INTEGRATE")) initialize_gauxc();
+#endif 
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT)
     {
@@ -669,6 +676,52 @@ void VBase::initialize() {
         checkBrian();
     }
 #endif
+}
+void VBase::initialize_gauxc() {
+#ifdef USING_gauxc
+    // TODO: Allow for Device execspace, depending on flags. This will add GPU support.
+    const auto gauxc_execspace = GauXC::ExecutionSpace::Host;
+    GauXC::LoadBalancerFactory lb_factory(gauxc_execspace, options_.get_str("SNLINK_LOAD_BALANCER_KERNEL"));
+    auto rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
+    auto gauxc_mol = primary_->molecule()->to_gauxc_molecule();
+
+    std::unordered_map<std::string, GauXC::PruningScheme> pruning_scheme_map = {
+      {"ROBUST", GauXC::PruningScheme::Robust},
+      {"TREUTLER", GauXC::PruningScheme::Treutler},
+      {"NONE", GauXC::PruningScheme::Unpruned}
+    };
+    auto pruning_scheme = options_.get_str("GAUXC_PRUNING_SCHEME");
+
+    // generate map for radial quadrature schemes 
+    std::unordered_map<std::string, GauXC::RadialQuad> radial_scheme_map = { 
+      {"TREUTLER", GauXC::RadialQuad::TreutlerAhlrichs},
+      {"MURA", GauXC::RadialQuad::MuraKnowles},
+      {"EM", GauXC::RadialQuad::MurrayHandyLaming}
+    };
+    auto radial_scheme = options_.get_str("GAUXC_RADIAL_SCHEME");
+    auto grid_batch_size = options_.get_int("GAUXC_GRID_BATCH_SIZE");
+    auto radial_points = options_.get_int("SNLINK_RADIAL_POINTS");
+    auto spherical_points = options_.get_int("SNLINK_SPHERICAL_POINTS");
+
+    auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
+        gauxc_mol, 
+        pruning_scheme_map[pruning_scheme],
+        GauXC::BatchSize(grid_batch_size), // TODO: Value taken from MPQC. Experimental.
+        radial_scheme_map[radial_scheme], 
+        GauXC::RadialSize(radial_points),
+        GauXC::AngularSize(spherical_points)
+    );
+    auto gauxc_primary = primary_->to_gauxc_basisset<double>(1.0e-10, false); // TODO: Allow customization 
+    auto load_balancer = lb_factory.get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
+    // TODO: Allow for more options here. This is quick-and-dirty.
+    GauXC::XCIntegratorFactory<Eigen::MatrixXd> integrator_factory(
+          gauxc_execspace, "Replicated", "Default", "Default", "Default");
+    // TODO: Build gxc_func_. This will be a little delicate.
+    /*
+    integrator_ =
+          integrator_factory.get_shared_instance(gxc_func_, load_balancer);
+    */
+# endif
 }
 SharedMatrix VBase::compute_gradient() { throw PSIEXCEPTION("VBase: gradient not implemented for this V instance."); }
 SharedMatrix VBase::compute_hessian() { throw PSIEXCEPTION("VBase: hessian not implemented for this V instance."); }
