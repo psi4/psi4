@@ -118,22 +118,6 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
     return permutation_matrix;
 }
 
-// converts a Psi4::Molecule object to a GauXC::Molecule object
-GauXC::Molecule snLinK::psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule) {
-    GauXC::Molecule gauxc_molecule;
-
-    for (size_t iatom = 0; iatom != psi4_molecule->natom(); ++iatom) {
-        auto atomic_number = psi4_molecule->true_atomic_number(iatom);
-        auto x_coord = psi4_molecule->x(iatom);
-        auto y_coord = psi4_molecule->y(iatom);
-        auto z_coord = psi4_molecule->z(iatom);
-        
-        gauxc_molecule.emplace_back(GauXC::AtomicNumber(atomic_number), x_coord, y_coord, z_coord);
-    }
-
-    return gauxc_molecule;
-}
-
 // converts a Psi4::BasisSet object to a GauXC::BasisSet object
 template <typename T>
 GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset, double basis_tol, bool force_cartesian) {
@@ -351,7 +335,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
     spherical_points_ = options_.get_int("SNLINK_SPHERICAL_POINTS");
 
     // convert Psi4 fundamental quantities to GauXC 
-    auto gauxc_mol = psi4_to_gauxc_molecule(primary_->molecule());
+    auto gauxc_mol = primary_->molecule()->to_gauxc_molecule();
     auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_, basis_tol_, force_cartesian);
 
     // create snLinK grid for GauXC
