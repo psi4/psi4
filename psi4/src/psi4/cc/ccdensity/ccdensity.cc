@@ -163,8 +163,8 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
         cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
         std::vector<std::pair<Dimension, int *>> spaces;
-        spaces.push_back(std::make_pair(moinfo.occpi, moinfo.occ_sym.data()));
-        spaces.push_back(std::make_pair(moinfo.virtpi, moinfo.vir_sym.data()));
+        spaces.emplace_back(moinfo.occpi, moinfo.occ_sym.data());
+        spaces.emplace_back(moinfo.virtpi, moinfo.vir_sym.data());
         delete dpd_list[0];
         dpd_list[0] = new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
         dpd_set_default(0);
@@ -173,10 +173,10 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
         cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
         std::vector<std::pair<Dimension, int *>> spaces;
-        spaces.push_back(std::make_pair(moinfo.aoccpi, moinfo.aocc_sym.data()));
-        spaces.push_back(std::make_pair(moinfo.avirtpi, moinfo.avir_sym.data()));
-        spaces.push_back(std::make_pair(moinfo.boccpi, moinfo.bocc_sym.data()));
-        spaces.push_back(std::make_pair(moinfo.bvirtpi, moinfo.bvir_sym.data()));
+        spaces.emplace_back(moinfo.aoccpi, moinfo.aocc_sym.data());
+        spaces.emplace_back(moinfo.avirtpi, moinfo.avir_sym.data());
+        spaces.emplace_back(moinfo.boccpi, moinfo.bocc_sym.data());
+        spaces.emplace_back(moinfo.bvirtpi, moinfo.bvir_sym.data());
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
     }
 

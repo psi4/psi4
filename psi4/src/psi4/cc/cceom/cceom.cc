@@ -98,18 +98,18 @@ PsiReturnType cceom(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn, Opt
         /* cachelist = init_int_matrix(32,32); */
 
         std::vector<std::pair<Dimension, int *>> spaces;
-        spaces.push_back(std::make_pair(moinfo.aoccpi, moinfo.aocc_sym));
-        spaces.push_back(std::make_pair(moinfo.avirtpi, moinfo.avir_sym));
-        spaces.push_back(std::make_pair(moinfo.boccpi, moinfo.bocc_sym));
-        spaces.push_back(std::make_pair(moinfo.bvirtpi, moinfo.bvir_sym));
+        spaces.emplace_back(moinfo.aoccpi, moinfo.aocc_sym);
+        spaces.emplace_back(moinfo.avirtpi, moinfo.avir_sym);
+        spaces.emplace_back(moinfo.boccpi, moinfo.bocc_sym);
+        spaces.emplace_back(moinfo.bvirtpi, moinfo.bvir_sym);
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
     } else { /* RHF or ROHF */
         cachelist = cacheprep_rhf(params.cachelev, cachefiles);
         /* cachelist = init_int_matrix(12,12); */
 
         std::vector<std::pair<Dimension, int *>> spaces;
-        spaces.push_back(std::make_pair(moinfo.occpi, moinfo.occ_sym));
-        spaces.push_back(std::make_pair(moinfo.virtpi, moinfo.vir_sym));
+        spaces.emplace_back(moinfo.occpi, moinfo.occ_sym);
+        spaces.emplace_back(moinfo.virtpi, moinfo.vir_sym);
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
     }
 

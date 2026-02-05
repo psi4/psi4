@@ -143,14 +143,14 @@ double CCLambdaWavefunction::compute_energy() {
         cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
         std::vector<std::pair<Dimension, int *>> spaces;
-        spaces.push_back(std::make_pair(moinfo.occpi, moinfo.occ_sym));
-        spaces.push_back(std::make_pair(moinfo.virtpi, moinfo.vir_sym));
+        spaces.emplace_back(moinfo.occpi, moinfo.occ_sym);
+        spaces.emplace_back(moinfo.virtpi, moinfo.vir_sym);
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
 
         if (params.aobasis) { /* Set up new DPD for AO-basis algorithm */
             std::vector<std::pair<Dimension, int *>> aospaces;
-            aospaces.push_back(std::make_pair(moinfo.occpi, moinfo.occ_sym));
-            aospaces.push_back(std::make_pair(moinfo.sopi, moinfo.sosym));
+            aospaces.emplace_back(moinfo.occpi, moinfo.occ_sym);
+            aospaces.emplace_back(moinfo.sopi, moinfo.sosym);
             dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, aospaces);
             dpd_set_default(0);
         }
@@ -159,19 +159,19 @@ double CCLambdaWavefunction::compute_energy() {
 
         cachelist = cacheprep_uhf(params.cachelev, cachefiles);
         std::vector<std::pair<Dimension, int *>> spaces;
-        spaces.push_back(std::make_pair(moinfo.aoccpi, moinfo.aocc_sym));
-        spaces.push_back(std::make_pair(moinfo.avirtpi, moinfo.avir_sym));
-        spaces.push_back(std::make_pair(moinfo.boccpi, moinfo.bocc_sym));
-        spaces.push_back(std::make_pair(moinfo.bvirtpi, moinfo.bvir_sym));
+        spaces.emplace_back(moinfo.aoccpi, moinfo.aocc_sym);
+        spaces.emplace_back(moinfo.avirtpi, moinfo.avir_sym);
+        spaces.emplace_back(moinfo.boccpi, moinfo.bocc_sym);
+        spaces.emplace_back(moinfo.bvirtpi, moinfo.bvir_sym);
 
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
 
         if (params.aobasis) { /* Set up new DPD's for AO-basis algorithm */
             std::vector<std::pair<Dimension, int *>> aospaces;
-            aospaces.push_back(std::make_pair(moinfo.aoccpi, moinfo.aocc_sym));
-            aospaces.push_back(std::make_pair(moinfo.sopi, moinfo.sosym));
-            aospaces.push_back(std::make_pair(moinfo.boccpi, moinfo.bocc_sym));
-            aospaces.push_back(std::make_pair(moinfo.sopi, moinfo.sosym));
+            aospaces.emplace_back(moinfo.aoccpi, moinfo.aocc_sym);
+            aospaces.emplace_back(moinfo.sopi, moinfo.sosym);
+            aospaces.emplace_back(moinfo.boccpi, moinfo.bocc_sym);
+            aospaces.emplace_back(moinfo.sopi, moinfo.sosym);
             dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, aospaces);
             dpd_set_default(0);
         }
