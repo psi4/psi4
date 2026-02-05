@@ -51,16 +51,12 @@ elseif (${MAX_AM_ERI} EQUAL 5)
 elseif (${MAX_AM_ERI} LESS_EQUAL 4)
     set(amchar "gggg")
 endif()
-find_package(Libint2  # edit in codedeps
-  CONFIG
-  COMPONENTS
-    ss
-    # CXX_ho
-    "eri_${amchar}_d0" eri_ggg_d0 eri_gg_d0 onebody_gg_d0
-     eri_dddd_d1       eri_fff_d1 eri_ff_d1 onebody_ff_d1
-                                            onebody_ff_d2
+find_package(Libint2 2.13.1 COMPONENTS ss eri_${amchar}_d0 eri_dddd_d1 eri_ggg_d0 eri_fff_d1 eri_gg_d0 eri_ff_d1 onebody_gg_d0 onebody_ff_d1 onebody_ff_d2 CONFIG  # edit in codedeps
+  # REQUIRED COMPONENTS: ss; 2-, 3-, & 4-center E & G, onebody E, G, & H
   OPTIONAL_COMPONENTS
-     eri_dddd_d2       eri_fff_d2 eri_ff_d2
+    eri_dddd_d2
+    eri_fff_d2
+    eri_ff_d2
   )
 
 if (TARGET Libint2::cxx)
@@ -94,12 +90,13 @@ else()
 
     if(NOT ${BUILD_Libint2_GENERATOR})
         if (${MAX_AM_ERI} GREATER 5)
-            set(_url_am_src "7-7-4-12-7-5")  # passes E&G 7z conv and 6z df, H Qz conv and df. covers all internal basis sets for energy and gradient
+            # set(_url_am_src "7-7-4-12-7-5")  # passes E&G 7z conv and 6z df, H Qz conv and df. covers all internal basis sets for energy and gradient
+            set(_url_am_src "7-6-3-7-7-4")
         elseif (${MAX_AM_ERI} LESS_EQUAL 5)
-            set(_url_am_src "5-4-3-6-5-4")  # passes full. production Mac, temp production Linux
+            set(_url_am_src "5-5-3-6-6-4")  # ~passes full tests
         endif()
 
-        set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/libint-2.8.1-${_url_am_src}_mm10f12ob2_0.tgz")
+        set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/libint-2.13.1-${_url_am_src}_mm10f12ob2_0.tgz")
 
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2 ${_url_am_src}${ColourReset} instead.")
 
@@ -146,7 +143,7 @@ else()
         # NOTE: active AM settings below will pass few tests, as they're set for 1st row triple-zeta ene and double-zeta ene/grad/hess for both conv/df. Please edit for desired use.
 
         ExternalProject_Add(libint2_external
-            URL https://github.com/loriab/libint/archive/new-cmake-2023-take2-b.zip
+            URL https://github.com/evaleev/libint/archive/v2.13.1.tar.gz  # edit in codedeps
             CMAKE_ARGS -GNinja
                        -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${_cmake_build_type}
