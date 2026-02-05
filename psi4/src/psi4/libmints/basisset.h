@@ -46,6 +46,10 @@
 #include <algorithm>
 #include <memory>
 
+#ifdef USING_gauxc
+#include <gauxc/basisset.hpp>
+#endif
+
 namespace libint2 {
 struct Shell;
 }
@@ -410,6 +414,11 @@ class PSI_API BasisSet {
     // Remove normalization from an s-function and negate.
     void negative_gaussian_normalization_to_coefficients();
     
+#ifdef USING_gauxc
+template <typename T>
+GauXC::BasisSet<T> to_gauxc_basisset(double basis_tol, bool force_cartesian) const;
+#endif
+
    private:
     /// Helper functions for frozen core to reduce LOC
     int atom_to_period(int Z);
