@@ -2812,4 +2812,21 @@ int Molecule::rotational_symmetry_number() const {
 
     return sigma;
 }
+
+#ifdef USING_gauxc
+GauXC::Molecule to_gauxc_molecule() const {
+    GauXC::Molecule gauxc_molecule;
+
+    for (size_t iatom = 0; iatom != natom(); ++iatom) {
+        auto atomic_number = true_atomic_number(iatom);
+        auto x_coord = x(iatom);
+        auto y_coord = y(iatom);
+        auto z_coord = z(iatom);
+        
+        gauxc_molecule.emplace_back(GauXC::AtomicNumber(atomic_number), x_coord, y_coord, z_coord);
+    }
+
+    return gauxc_molecule;
+}
+#endif
 }  // namespace psi
