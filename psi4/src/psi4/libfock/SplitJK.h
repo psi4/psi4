@@ -374,9 +374,6 @@ class PSI_API snLinK : public SplitJK {
     std::unique_ptr<GauXC::XCIntegratorFactory<matrix_type> > integrator_factory_;
     std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_;
   
-    // => Psi4 -> GauXC conversion functions <= // 
-    template<typename T> GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset, double basis_tol, bool force_cartesian);
-
     // => Psi4 -> GauXC enum mappings <= //
     std::tuple<
         std::unordered_map<std::string, GauXC::PruningScheme>, 
