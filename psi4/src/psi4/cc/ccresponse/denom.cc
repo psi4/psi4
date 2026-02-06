@@ -45,12 +45,11 @@ namespace ccresponse {
 void denom1(dpdfile2 *X1, double omega) {
     int nirreps, h, irrep;
     int i, a;
-    int *occpi, *virtpi;
     dpdfile2 FAE, FMI;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
 
     irrep = X1->my_irrep;
 

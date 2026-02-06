@@ -52,7 +52,6 @@ double ET_AAB() {
     int ab, ba, ac, ca, bc, cb;
     int ae, be, ec, ke, ie, je;
     int im, jm, km, mk, ma, mb, mc;
-    int *occpi, *virtpi, *occ_off, *vir_off;
     double value_c, value_d, denom, ET_AAB;
     double t_ijae, t_ijbe, t_jkae, t_jkbe, t_jkec, t_ikae, t_ikbe, t_ikec;
     double F_kecb, F_keca, F_iebc, F_ieac, F_ieab, F_jebc, F_jeac, F_jeab;
@@ -64,10 +63,10 @@ double ET_AAB() {
     dpdfile2 T1A, T1B, fIJ, fij, fAB, fab;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    occ_off = moinfo.occ_off;
-    vir_off = moinfo.vir_off;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& occ_off = moinfo.occ_off;
+    const auto& vir_off = moinfo.vir_off;
 
     global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");

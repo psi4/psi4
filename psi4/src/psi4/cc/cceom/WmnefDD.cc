@@ -52,12 +52,12 @@ void WmnefDD(int i, int C_irr) {
     dpdbuf4 CMNEF, Cmnef, CMnEf, F, tau, Z;
     char CMNEF_lbl[32], Cmnef_lbl[32], CMnEf_lbl[32];
     char SIJAB_lbl[32], Sijab_lbl[32], SIjAb_lbl[32];
-    int l, I, a, f, h, nC_irrs, *occpi, *virtpi, *openpi;
+    int l, I, a, f, h, nC_irrs;
 
     nC_irrs = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    openpi = moinfo.openpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& openpi = moinfo.openpi;
 
     if (params.eom_ref == 0) { /* RHF */
         sprintf(CMnEf_lbl, "%s %d", "CMnEf", i);
