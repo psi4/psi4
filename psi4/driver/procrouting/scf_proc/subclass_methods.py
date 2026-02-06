@@ -130,7 +130,7 @@ def _ROHF_diis(self, Dnorm):
     return self.diis_manager_.extrapolate(self.soFeff(), Dnorm=Dnorm)
 
 def _CGHF_diis(self, Dnorm):
-    ...
+    pass
 
 core.RHF.diis = _RHF_diis
 core.UHF.diis = core.CUHF.diis = _UHF_diis
