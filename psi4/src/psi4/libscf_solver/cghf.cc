@@ -156,11 +156,16 @@ void CGHF::common_init() {
     preiterations(); // CGHF preiterations() routine
 }
 
+void CGHF::remove_lin_dependencies(einsums::Tensor<std::complex<double>, 2>& A) {
+    // Loops through each column vector in the matrix A and checks if it is a multiple o 
+}
+
 
 // Needed for initializing the Einsums spin-blocked overlap matrix EINS_
 // and subsequently the orthogonalization matrix EINX_
 // Also builds the spin-blocked Hamiltonian as F0_
 void CGHF::preiterations() {
+    std::cout << "preiterations\n";
     // => FILL SPIN BLOCKED OVERLAP AND HAMILTONIAN MATRICES <=
     //
     // Note that nsopi_[h] will be HALF of irrep_sizes_[h]
@@ -185,23 +190,23 @@ void CGHF::preiterations() {
     // X = S^{-1/2}
     // 
     // where eigenvalues less than the threshold 1e-7 are set to 0, and the eigenvectors removed
-    auto X_real = einsums::linear_algebra::pow(EINS_, -0.5, 1e-7);
-
-    // Cannot do the pow operation on a complex matrix for whatever reason, so 
-    // simply transfer the real part to the complex matrix
-    //
-    // Apparently EINX_ could be real, but real/complex matrix-matrix multiplication
-    // doesn't appear to work for me unless they're both the same type
-    for (int i = 0; i < nirrep_; i++)
-    for (int j = 0; j < irrep_sizes_[i]; j++)
-    for (int k = 0; k < irrep_sizes_[i]; k++) {
-            EINX_[i].subscript(j, k) = std::complex<double> (X_real[i](j, k), 0.0);
+    HF::form_Shalf();
+    for (int h = 0; h < nirrep_; h++)
+    for (int j = 0; j < nsopi_[h]; j++)
+    for (int k = 0; k < nsopi_[h]; k++) {
+            EINX_[h].subscript(j, k) = X_->get(h, j, k);
+	    EINX_[h].subscript(j+nsopi_[h], k+nsopi_[h]) = X_->get(h, j, k);
         }
 
-    rotated_sad_guess(); // TODO modify the existing Psi4 SAD scheme (UHF, RHF, etc) since it causes errors otherwise
+  
+
+    //rotated_sad_guess(); // TODO modify the existing Psi4 SAD scheme (UHF, RHF, etc) since it causes errors otherwise
 			 // e.g. the only way for this to work is by using a CORE guess
 
-    //if (options_.get_str("GUESS") == "SAD") { rotated_sad_guess(); }; // Overwrites the D_ density matrix with the SAD initial guess
+    if (options_.get_str("GUESS") == "CORE") {
+        //form_F();
+    }
+
 }
 
 void CGHF::rotated_sad_guess() {
@@ -213,226 +218,13 @@ void CGHF::rotated_sad_guess() {
     // By itself, this would be completely meaningless (and extra costly), but combining them in a SAD fashion yields a nice non-collinear initial guess for the molecule
     //
     //
+    //
+    // STILL ON NORMAL SAD, ROTATED SAD HARD IN C++
+    //
     int total_atoms = molecule_->natom();
 
-    int start_idx = 0; // Where we will grab values from the molecular 1e Hamiltonian
-    for (int atom_idx = 0; atom_idx < total_atoms; ++atom_idx) {
-        int nshells = basisset_->nshell_on_center(atom_idx);
-        int atom_nbf = 0;
+    
 
-        // Get the nelec for the atom by itself
-	auto atom_nelec = molecule_->fZ(atom_idx); // Should subtract charge from this
-
-        // Iterate through all shells on this center
-        for (int shell_idx = 0; shell_idx < nshells; ++shell_idx) {
-            // Get the specific GaussianShell object
-            auto shell = basisset_->shell(atom_idx, shell_idx);
-            atom_nbf += shell.nfunction(); // Add number of functions in this shell
-        }
-
-
-	// Now to effectively do a GHF calculation for each individual atom
-        auto atom_F0_ = einsums::Tensor<std::complex<double>, 2>("F0", 2*atom_nbf, 2*atom_nbf);
-        auto atom_F_ = einsums::Tensor<std::complex<double>, 2>("F", 2*atom_nbf, 2*atom_nbf);  
-        auto atom_S_ = einsums::Tensor<double, 2>("Ovlp", 2*atom_nbf, 2*atom_nbf); 
-        auto atom_EINX_ = einsums::Tensor<std::complex<double>, 2>("EINX_", 2*atom_nbf, 2*atom_nbf);
-        auto atom_Fp_ = einsums::Tensor<std::complex<double>, 2>("EINX_", 2*atom_nbf, 2*atom_nbf); 
-        auto atom_C_ = einsums::Tensor<std::complex<double>, 2>("C", 2*atom_nbf, 2*atom_nbf);
-        auto atom_FDSmSDF_ = einsums::Tensor<std::complex<double>, 2>("C", 2*atom_nbf, 2*atom_nbf);  
-
-        auto atom_Fevecs_ = einsums::Tensor<std::complex<double>, 2>("Fock eigenvectors", 2*atom_nbf, 2*atom_nbf);
-        auto atom_Fevals_ = einsums::Tensor<std::complex<double>, 1>("Fock evals", 2*atom_nbf);
-
-        auto atom_Cocc_ = einsums::Tensor<std::complex<double>, 2>("Cocc_", 2*atom_nbf, 2*atom_nbf); 
-        auto atom_cCocc_ = einsums::Tensor<std::complex<double>, 2>("Cocc_", 2*atom_nbf, 2*atom_nbf);
-        auto atom_D_ = einsums::Tensor<std::complex<double>, 2>("D", 2*atom_nbf, 2*atom_nbf);
-        auto atom_J_ = einsums::Tensor<std::complex<double>, 2>("J", 2*atom_nbf, 2*atom_nbf);
-        auto atom_K_ = einsums::Tensor<std::complex<double>, 2>("K", 2*atom_nbf, 2*atom_nbf); 
-        auto atom_temp1_ = einsums::Tensor<std::complex<double>, 2>("temp1", 2*atom_nbf, 2*atom_nbf);
-        auto atom_temp2_ = einsums::Tensor<std::complex<double>, 2>("temp2", 2*atom_nbf, 2*atom_nbf);
-
-        atom_F0_.zero();
-	atom_F_.zero();
-	atom_S_.zero();
-	atom_EINX_.zero();
-	atom_Fp_.zero();
-	atom_C_.zero();
-	atom_FDSmSDF_.zero();
-	atom_Fevecs_.zero();
-	atom_Fevals_.zero();
-	atom_Cocc_.zero();
-	atom_cCocc_.zero();
-	atom_D_.zero();
-       
-	atom_temp1_.zero();
-	atom_temp2_.zero();
-
-	auto F0_mol = F0_[0];
-	auto S_mol = EINS_[0];
-
-	// NOTE: we are stealing values from the core Hamiltonian for the entire molecule
-	// I believe this should be legal since it's 1e, non-interacting, and in the AO basis
-
-	// Fill AA and BB spin blocks of atom_F0_
-	for (int p = 0; p < atom_nbf; p++)
-	for (int q = 0; q < atom_nbf; q++) {
-	    auto pshift = p + start_idx; // Shifted to map properly to the molecular 1e Hamiltonian
-	    auto qshift = q + start_idx; // These shifts ONLY WORK for C1 symmetry
-
-	    auto F0_AA = F0_mol.subscript(pshift, qshift);
-            auto F0_BB = F0_mol.subscript(pshift+nsopi_[0], qshift+nsopi_[0]);
-            auto F0_BA = F0_mol.subscript(pshift+nsopi_[0], qshift);
-            auto F0_AB = F0_mol.subscript(pshift, qshift+nsopi_[0]);
-
-            auto S_AA = S_mol.subscript(pshift, qshift);
-            auto S_BB = S_mol.subscript(pshift+nsopi_[0], qshift+nsopi_[0]);
-            auto S_BA = S_mol.subscript(pshift+nsopi_[0], qshift);
-            auto S_AB = S_mol.subscript(pshift, qshift+nsopi_[0]);
-
-	    atom_F0_.subscript(p, q) = F0_AA;
-            atom_F0_.subscript(p+atom_nbf, q+atom_nbf) = F0_BB;
-            atom_F0_.subscript(p+atom_nbf, q) = F0_BA;
-            atom_F0_.subscript(p, q+atom_nbf) = F0_AB;
-
-            atom_S_.subscript(p, q) = S_AA;
-            atom_S_.subscript(p+atom_nbf, q+atom_nbf) = S_BB;
-            atom_S_.subscript(p+atom_nbf, q) = S_BA;
-            atom_S_.subscript(p, q+atom_nbf) = S_AB;
-
-	}
-	start_idx += atom_nbf;
-
-    	auto X_real = einsums::linear_algebra::pow(atom_S_, -0.5, 1e-7);
-
-        for (int j = 0; j < 2*atom_nbf; j++)
-        for (int k = 0; k < 2*atom_nbf; k++) {
-                atom_EINX_.subscript(j, k) = std::complex<double> (X_real(j, k), 0.0);
-            }
-
-
-	atom_F_ = atom_F0_; // Use Core Hamiltonian as first Fock matrix
-
-	// Orthogonalize the Fock matrix
-        einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, atom_F_, atom_EINX_, std::complex<double>{0.0},  &atom_temp1_);
-        einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, atom_EINX_, atom_temp1_, std::complex<double>{0.0}, &atom_Fp_);
-
-	// Diagonalize Fock matrix and sort eigenpairs	
-        einsums::linear_algebra::geev(&atom_Fp_, &atom_Fevals_, &atom_temp1_, &atom_temp2_); // atom_temp1_ and atom_temp2_ are left and right eigenvectors, respectively
-        sort_eigenpairs(atom_Fevals_, atom_temp2_, 1e-10);
-        atom_Fp_ = atom_temp2_;
-
-	// Back transform to get the coefficients
-        einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, atom_EINX_, atom_Fp_, std::complex<double>{0.0}, &atom_C_);
-
-        //Do alpha-beta mixing on the occupied coefficients BEFORE using to make a density matrix
-	auto eps = 0.01; // Mixing parameter
-
-        println(atom_C_);	
-	for (int m = 0; m < atom_nbf; m++)
-	for (int i = 0; i < atom_nelec; i++) {
-	    auto alpha_coeff = atom_C_.subscript(m, i);
-	    auto beta_coeff = atom_C_.subscript(m+atom_nbf, i);
-
-	    atom_C_.subscript(m+atom_nbf, i) = beta_coeff + (eps * alpha_coeff); // Mixing happens here
-	}
-
-	// Loop through and grab the OCCUPIED coefficients and its conjugate matrix
-        for (int j = 0; j < 2*atom_nbf; j++)
-        for (int k = 0; k < atom_nelec; k++) {
-                atom_Cocc_(j,k) = atom_C_(j, k);
-                atom_cCocc_(j,k) = std::conj(atom_C_(j, k));
-            }
-
-        // Performs einsums contraction ui,vi->uv with (Cocc_, cCocc_ -> D_)
-        einsums::tensor_algebra::einsum(
-            einsums::Indices{einsums::index::u,
-                             einsums::index::v}, // D_ with uv
-            &atom_D_,
-            einsums::Indices{einsums::index::u,
-                             einsums::index::i}, // Cocc_ with ui
-            atom_Cocc_,
-            einsums::Indices{einsums::index::v,
-                             einsums::index::i}, // cCocc_ with vi
-            atom_cCocc_);
-
-	//// Get Sx, Sy, and Sz of atomic density matrix so we can know how much to rotate
-	//auto D_AA = einsums::Tensor<std::complex<double>, 2>("D_AA", atom_nbf, atom_nbf);
-        //auto D_BB = einsums::Tensor<std::complex<double>, 2>("D_BB", atom_nbf, atom_nbf);
-        //auto D_AB = einsums::Tensor<std::complex<double>, 2>("D_AB", atom_nbf, atom_nbf);
-        //auto D_BA = einsums::Tensor<std::complex<double>, 2>("D_BA", atom_nbf, atom_nbf);
-        //auto S_block = einsums::Tensor<std::complex<double>, 2>("Overlap matrix spin block", atom_nbf, atom_nbf);
-
-        //auto Cont = einsums::Tensor<std::complex<double>, 2>("S container", atom_nbf, atom_nbf);
-
-        //for (int p = 0; p < atom_nbf; p++)
-	//for (int q = 0; q < atom_nbf; q++) {
-	//    D_AA.subscript(p, q) = atom_D_.subscript(p, q);
-        //    D_BB.subscript(p, q) = atom_D_.subscript(p+atom_nbf, q+atom_nbf);
-        //    D_AB.subscript(p, q) = atom_D_.subscript(p, q+atom_nbf);
-        //    D_BA.subscript(p, q) = atom_D_.subscript(p+atom_nbf, q);
-	//    Cont.subscript(p, q) = atom_S_.subscript(p, q); // Since all spin-blocks will use the same overlap block
-	//}	
-
-	//// (D_AA - D_BB) @ S
-        //auto AABB = D_AA;
-	//AABB -= D_BB;
-
-        //einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, AABB, S_block, std::complex<double>{0.0}, &Cont);
-
-	//// Sz = 0.5 * Tr( (AA - BB) @ S).real
-	//
-	//// Get traces of AABB first
-	//double AABB_trace = 0.0;
-
-	//for (int p = 0; p < atom_nbf; p++) {
-	//    AABB_trace += Cont.subscript(p, p).real();
-	//}
-
-	//auto Sz = 0.5 * AABB_trace;
-
-
-	//// Sx = 0.5 * Tr( (AB - BA) @ S).real
-	//
-        //auto ABBA = D_AB;
-        //ABBA -= D_BA;
-        //
-	//Cont.zero();
-        //einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, ABBA, S_block, std::complex<double>{0.0}, &Cont);	
-
-        //double ABBA_trace = 0.0;
-        //for (int p = 0; p < atom_nbf; p++) {
-        //    ABBA_trace += Cont.subscript(p, p).real();
-        //}
-
-	//auto Sx = 0.5 * ABBA_trace;
-
-        //// Sy = 0.5 * Tr( (-1j * AB + 1j * BA) @ S).real
-	//std::complex<double> IMAG = std::complex<double>(0.0, 1.0);
-	//auto cAB = D_AB;
-	//cAB *= -IMAG;
-
-	//auto cBA = D_BA;
-	//cBA *= IMAG;
-
-	//auto cABBA = cAB;
-	//cABBA -= cBA;
-
-        //Cont.zero();
-        //einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, cABBA, S_block, std::complex<double>{0.0}, &Cont);
-
-	//double cABBA_trace = 0.0;
-	//for (int p = 0; p < atom_nbf; p++) {
-	//    cABBA_trace += Cont.subscript(p, p).real();
-	//}
-
-	//auto Sy = 0.5 * cABBA_trace;
-
-	//std::cout << "Spin magnitudes\n";
-	//std::cout << "Sz = " << Sz << "\n";
-        //std::cout << "Sy = " << Sy << "\n";
-        //std::cout << "Sx = " << Sx << "\n";
-
-    }
 
 }
 
@@ -465,28 +257,31 @@ void CGHF::form_V() {
 */
 
 void CGHF::form_G() {
+    std::cout << "form_G\n";
     J_.zero();
     K_.zero();
 
     int nso = nso_;
     int dim = 2*nso;
 
+
+
+    // TODO check G_mat dimensions
+
     for (int h = 0; h < nirrep_; h++)
     for (int p = 0; p < nsopi_[h]; p++)
-    for (int q = p; q < nsopi_[h]; q++) { //Note the q = p
+    for (int q = 0; q < nsopi_[h]; q++) {
         for (int s = 0; s < nsopi_[h]; s++) {
             for (int r = 0; r < nsopi_[h]; r++) {
                 auto g_pqrs = G_mat->get(h, p*nsopi_[h] + q, r*nsopi_[h] + s);
                 auto g_psrq = G_mat->get(h, p*nsopi_[h] + s, r*nsopi_[h] + q);
-                //int idx_pqrs  = ((p*nso + q)*nso + r)*nso + s;
-                //int idx_psrq  = ((p*nso + s)*nso + r)*nso + q;
-                //auto g_pqrs = Gp[idx_pqrs];
-                //auto g_psrq = Gp[idx_psrq];
-                if (std::abs(g_pqrs) < 1e-12 && std::abs(g_psrq) < 1e-12) { continue; };
+                //if (std::abs(g_pqrs) < 1e-12 && std::abs(g_psrq) < 1e-12) { continue; };
 
                 auto D_AA = D_[h].subscript(s, r);
                 auto D_BB = D_[h].subscript(s+nsopi_[h], r+nsopi_[h]);
-		auto D_BA = D_[h].subscript(s+nsopi_[h], r);
+		//auto D_BA = D_[h].subscript(s+nsopi_[h], r);
+
+		//std::cout << s << " " << r << "\t" << D_AA << " " << D_BB << "\n";
 
                 auto sum_D = D_AA + D_BB;
 
@@ -494,32 +289,31 @@ void CGHF::form_G() {
                 J_[h].subscript(p+nsopi_[h], q+nsopi_[h]) += g_pqrs * sum_D - g_psrq * D_BB;
             }
         }
+
+	//exit(0);
     }
 
     //Then fill in lower triangle
-    for (int h = 0; h < nirrep_; h++)
-    for (int i = 0; i < irrep_sizes_[h]; i++) {
-        for (int j = 0; j < i; j++) {
-            J_[h].subscript(i, j) = std::conj(J_[h].subscript(j, i));
-        }
-    }
-
-
-
+    //for (int h = 0; h < nirrep_; h++)
+    //for (int i = 0; i < irrep_sizes_[h]; i++) {
+    //    for (int j = 0; j < i; j++) {
+    //        J_[h].subscript(i, j) = std::conj(J_[h].subscript(j, i));
+    //    }
+    //}
 }
-
-
 
 // Combines F = H + J - K
 void CGHF::form_F() {
+    std::cout << "form_F\n";
     F_.zero();
     F_ += F0_;
     F_ += J_;
-    F_ -= K_;
+    F_ -= K_; //
 }
 
 void CGHF::sort_eigenpairs(
     einsums::Tensor<std::complex<double>, 1>& evals,
+    //einsums::Tensor<double, 1>& evals,
     einsums::Tensor<std::complex<double>, 2>& evecs,
     double tol)
 {
@@ -533,47 +327,35 @@ void CGHF::sort_eigenpairs(
     // Extract eigenvalues for sorting
     std::vector<double> vevals(dim);
     for (int i = 0; i < dim; i++)
-        vevals[i] = std::real(evals(i));
+        vevals[i] = evals(i).real();
+        //vevals[i] = evals(i);
 
     std::sort(idx.begin(), idx.end(),
               [&](int a, int b) { return vevals[a] < vevals[b]; });
 
+    println(Fevals_);
     // Output containers
     einsums::Tensor<std::complex<double>, 1> sorted_evals("Sorted evals", dim);
+    //einsums::Tensor<double, 1> sorted_evals("Sorted evals", dim);
+
     einsums::Tensor<std::complex<double>, 2> sorted_evecs("Sorted evecs", dim, dim);
     sorted_evecs.zero();
 
-    int i = 0;
-    while (i < dim) {
+    // Copy eigenvalues + eigenvectors for this block
+    for (int k = 0; k < dim; k++) {
+        int src_col = idx[k];
 
-        // Identify degenerate block
-        int j = i;
-        while (j + 1 < dim &&
-               std::abs(vevals[idx[j + 1]] - vevals[idx[i]]) < tol)
-        {
-            j++;
-        }
+        sorted_evals(k) = evals(src_col);
 
-        int block_size = j - i + 1;
-
-        // Copy eigenvalues + eigenvectors for this block
-        for (int k = 0; k < block_size; k++) {
-            int src_col = idx[i + k];
-
-            sorted_evals(i + k) = evals(src_col);
-
-            for (int row = 0; row < dim; row++)
-                sorted_evecs(row, i + k) = evecs(row, src_col);
-        }
-
-        // (Gram–Schmidt will go here later)
-
-        i += block_size;
+        for (int row = 0; row < dim; row++)
+            sorted_evecs(row, k) = evecs(row, src_col);
     }
 
     // Copy back
     evals = sorted_evals;
     evecs = sorted_evecs;
+
+    std::cout << "sort_eigenpairs\n";
 }
 
 /*
@@ -590,7 +372,8 @@ void CGHF::form_C(double shift) {
     // F_ @ EINX_ = temp1_
     //
 
-    if (options_.get_bool("DIIS") && iteration_ > 1) { 
+    std::cout << "form_C\n";
+    if (options_.get_bool("DIIS") && iteration_ > options_.get_int("DIIS_START")) {
         auto error_trace = do_diis();
     } else {
         einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, F_, EINX_, std::complex<double>{0.0},  &temp1_);
@@ -598,30 +381,86 @@ void CGHF::form_C(double shift) {
         //EINX_ @ temp1 = Fp_
         einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, EINX_, temp1_, std::complex<double>{0.0}, &Fp_);
     }
+
     // => DIAGONALIZE FOCK <=
     //Fevecs_ = Fp_;
 
     temp1_.zero();
     temp2_.zero();
+
+    for (int h = 0; h < nirrep_; h++) 
+    for (int p = 0; p < irrep_sizes_[h]; p++)
+    for (int q = 0; q < irrep_sizes_[h]; q++) {
+        temp2_[h].subscript(q, p) = std::conj(Fp_[h](p, q)); 
+    }
+    
+    // Fp = 0.5 * (Fp.conj().T + Fp_)
+    temp1_ = Fp_;
+    temp1_ += temp2_; // Fp.conj().T
+    temp1_ *= 0.5;
+
+    Fp_ = temp1_;
+    temp1_.zero();
+
     // Must be done in a loop over irreps -- cannot just do it with the BlockTensor
     for (int h = 0; h < nirrep_; h++) {
 	if (nsopi_[h] == 0) { continue ; }; // Cannot diagonalize a 0x0 matrix
         //einsums::linear_algebra::heev<true>(&Fp_[h], &Fevals_[h]); // Hermitian eigensolver SHOULD be legitimate over general eigensolver
 	einsums::linear_algebra::geev(&Fp_[h], &Fevals_[h], &temp1_[h], &temp2_[h]); // Where temp1 and temp2 are the left and right eigenvectors, respectively
-        sort_eigenpairs(Fevals_[h], temp2_[h], 1e-10); // Overwrites Fevals_ and temp2_ with the sorted eigenpairs
-	Fp_[h] = temp2_[h];
+        //sort_eigenpairs(Fevals_[h], Fp_[h], 1e-8); // Overwrites Fevals_ and temp2_ with the sorted eigenpairs
+
+        sort_eigenpairs(Fevals_[h], temp2_[h], 1e-8); // Overwrites Fevals_ and temp2_ with the sorted eigenpairs
+	Fp_[h] = temp2_[h]; // Since geev doesn't overwrite Fp_
     }
+
+    //for (int h = 0; h < nirrep_; h++)
+    //for (int n = 0; n < irrep_sizes_[n]; n++) { outfile->Printf("MO %s: %s", n+1, Fevals_[h].subscript(n)); }
 
     // => BACK TRANSFORM <=
     // EINX_ @ Fevecs_ = C_
     einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, EINX_, Fp_, std::complex<double>{0.0}, &C_);
+
+    find_occupation();
 }
+
+void CGHF::compute_SAD_guess(bool natorb) {
+    // Fills the density matrix with the precomputed SAD guess from sad.cc
+    // This seems to be more robust than SAP at the moment since SAP 
+    HF::compute_SAD_guess(natorb);
+
+    for (int h = 0; h < nirrep_; h++)
+    for (int p = 0; p < nsopi_[h]; p++)
+    for (int q = 0; q < nsopi_[h]; q++) {
+        auto Da_val = Da_->get(h, p, q);
+	auto Db_val = Db_->get(h, p, q);
+
+	D_[h].subscript(p, q) = Da_val;
+	D_[h].subscript(p+nsopi_[h], q+nsopi_[h]) = Db_val;
+    }
+
+    temp2_.zero();
+
+    temp1_.zero();
+
+    for (int h = 0; h < nirrep_; h++) 
+    for (int p = 0; p < irrep_sizes_[h]; p++)
+    for (int q = 0; q < irrep_sizes_[h]; q++) {
+        temp1_[h].subscript(p, q) = EINS_[h].subscript(p, q);
+    }
+
+    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, D_, temp1_, std::complex<double>{0.0}, &temp2_);
+    einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, temp2_, temp2_, std::complex<double>{0.0}, &D_);
+
+}
+
 
 /*
  * Fills the occupied coefficient matrix Cocc_ as well as the complex conjugate cCocc_
  * Then constructs the density matrix D_ with D_uv = C_ui * C_vi_{conj}
  */
 void CGHF::form_D() {
+    std::cout << "form_D\n";
+    D_.zero();
     Cocc_.zero();
     cCocc_.zero();
 
@@ -630,24 +469,27 @@ void CGHF::form_D() {
     // are all zeros and contribute nothing
     // This is just a minor inefficiency, since these matrices are larger than they should be
 
-    for (int i = 0; i < nirrep_; i++)
-    for (int j = 0; j < irrep_sizes_[i]; j++)
-    for (int k = 0; k < nelecpi_[i]; k++) {
-            Cocc_[i](j,k) = C_[i](j, k);
-            cCocc_[i](j,k) = std::conj(C_[i](j, k));
-        }
+    for (int h = 0; h < nirrep_; h++) { 
+	auto cocc = einsums::Tensor<std::complex<double>, 2>("cocc", irrep_sizes_[h], nelecpi_[h]);
+        for (int j = 0; j < irrep_sizes_[h]; j++) {
+            for (int k = 0; k < nelecpi_[h]; k++) {
+                cocc.subscript(j,k) = C_[h](j, k);
+	    }
+	}
 
-    // Performs einsums contraction ui,vi->uv with (Cocc_, cCocc_, D_)
-    einsums::tensor_algebra::einsum(
-        einsums::Indices{einsums::index::u,
-                         einsums::index::v}, // D_ with uv
-        &D_,
-        einsums::Indices{einsums::index::u,
-                         einsums::index::i}, // Cocc_ with ui
-        Cocc_,
-        einsums::Indices{einsums::index::v,
-                         einsums::index::i}, // cCocc_ with vi
-        cCocc_);
+        // Performs einsums contraction ui,vi->uv with (Cocc_, cCocc_, D_)
+        einsums::tensor_algebra::einsum(
+            einsums::Indices{einsums::index::u,
+                             einsums::index::v}, // D_ with uv
+            &D_[h],
+            einsums::Indices{einsums::index::u,
+                             einsums::index::i}, // Cocc_ with ui
+            cocc,
+            einsums::Indices{einsums::index::v,
+                             einsums::index::i}, // cCocc_ with vi
+            cocc);
+
+    }
 
 }
 
@@ -662,6 +504,7 @@ void CGHF::damping_update(double damping_percentage) {
  * E_2e = trace(D_ • 0.5*JK_)
  */
 double CGHF::compute_E() {
+    std::cout << "compute_E\n";
     double kinetic_E = 0.0;
     double one_electron_E = 0.0;
     double two_E = 0.0;
@@ -685,7 +528,7 @@ double CGHF::compute_E() {
     // Add these to the global energies struct
     // These are seen in the output.dat file
     energies_["Nuclear"] = nuclearrep_;
-    energies_["Kinetic"] = kinetic_E;
+    energies_["Kinetic"] = 1.0;
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = 0.5 * two_E;
 
@@ -693,6 +536,11 @@ double CGHF::compute_E() {
     Etotal += nuclearrep_;
     Etotal += one_electron_E;
     Etotal += 0.5 * two_E;
+
+    std::cout << "Core energy:" << one_electron_E << "\n";
+    std::cout << "JK energy:" << two_E << "\n";
+    std::cout << "Total energy:" << Etotal << "\n";
+    //exit(0);
     return Etotal;
 }
 
@@ -701,6 +549,7 @@ double CGHF::compute_E() {
  * Simply computes the 1e energy 
  */
 double CGHF::compute_initial_E() {
+    std::cout << "compute_initial_E\n";
     double one_electron_E = 0.0;
 
     for (int h = 0; h < nirrep_; h++)
@@ -710,12 +559,15 @@ double CGHF::compute_initial_E() {
         one_electron_E += (F0_[h].subscript(i, j) * Dji).real(); // F0_ij * D_ji
 
     }
-    
-    return one_electron_E;
+   
+    std::cout << "Core energy:" << one_electron_E << "\n";
+
+    return one_electron_E + nuclearrep_;
 }
 
 std::complex<double> CGHF::do_diis() {
-    int diis_max = 8;
+    std::cout << "Do_diis\n";
+    int diis_max = options_.get_int("DIIS_MAX_VECS");
     int diis_count = 0;
 
     //FDS-SDF
@@ -884,6 +736,8 @@ std::complex<double> CGHF::do_diis() {
     //F0_ = temp2;
     //
 
+
+    std::cout << "do_Diis\n";
     return error_trace;
 
 }
@@ -914,13 +768,18 @@ void CGHF::form_FDSmSDF() {
         }
     }
 
+    std::cout << "form_FDSmSDF\n";
 
 
 }
 
 double CGHF::compute_Dnorm() {
-    double dnorm = einsums::linear_algebra::norm(einsums::linear_algebra::Norm::Frobenius, FDSmSDF_[0]);
+    double dnorm = 0.0;
 
+    for (int h = 0; h < nirrep_; h++) {
+        dnorm += einsums::linear_algebra::norm(einsums::linear_algebra::Norm::Frobenius, FDSmSDF_[h]);
+    }
+    std::cout << "dnorm\n";
     return dnorm;
 }
 

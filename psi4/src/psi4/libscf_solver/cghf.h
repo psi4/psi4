@@ -18,13 +18,21 @@ class CGHF : public HF {
 		~CGHF() override;
 
 		void common_init();
+		void remove_lin_dependencies(einsums::Tensor<std::complex<double>, 2>& A);
+
 		void form_init_F();
 		void form_X();
 		void form_S();
 		//void sort_real_evals();
+		//     einsums::Tensor<double, 1>& evals,
+                //void sort_eigenpairs(einsums::Tensor<double, 1>& evals, einsums::Tensor<std::complex<double>, 2>& evecs, double tol);
+
 		void sort_eigenpairs(einsums::Tensor<std::complex<double>, 1>& evals, einsums::Tensor<std::complex<double>, 2>& evecs, double tol);
 		void evals_sanity_check();
 		void preiterations();
+		void sap_guess();
+		//void form_initial_C() override;
+		void compute_SAD_guess(bool natorb) override;
 		void rotated_sad_guess();
 		void zero_tensors();
 		void finalize() override;
