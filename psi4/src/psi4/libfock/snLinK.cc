@@ -118,47 +118,6 @@ Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permut
     return permutation_matrix;
 }
 
-// converts a Psi4::BasisSet object to a GauXC::BasisSet object
-template <typename T>
-GauXC::BasisSet<T> snLinK::psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset, double basis_tol, bool force_cartesian) {
-    using prim_array = typename GauXC::Shell<T>::prim_array;
-    using cart_array = typename GauXC::Shell<T>::cart_array;
-
-    GauXC::BasisSet<T> gauxc_basisset(psi4_basisset->nshell());
- 
-    for (size_t ishell = 0; ishell != psi4_basisset->nshell(); ++ishell) {
-        auto psi4_shell = psi4_basisset->shell(ishell);
-       
-        const auto nprim = GauXC::PrimSize(psi4_shell.nprimitive());
-        prim_array alpha; 
-        prim_array coeff;
-
-        for (size_t iprim = 0; iprim != psi4_shell.nprimitive(); ++iprim) {
-            alpha.at(iprim) = psi4_shell.exp(iprim);
-            coeff.at(iprim) = psi4_shell.coef(iprim);
-        }
-
-        auto psi4_shell_center = psi4_shell.center();
-        cart_array center = { psi4_shell_center[0], psi4_shell_center[1], psi4_shell_center[2] };
-
-        gauxc_basisset[ishell] = GauXC::Shell(
-            nprim,
-            GauXC::AngularMomentum(psi4_shell.am()), 
-            (force_cartesian ? GauXC::SphericalType(false) : GauXC::SphericalType( !(psi4_shell.is_cartesian()) ) ),
-            alpha,
-            coeff,
-            center,
-            false // do not normalize shell via GauXC; it is normalized via Psi4
-        );
-    }
-    
-    for (auto& sh : gauxc_basisset) {
-        sh.set_shell_tolerance(basis_tol); 
-    }
-
-    return gauxc_basisset;
-}
-
 #endif 
 
 // ==> SplitJK-inherited functions go here <== //
@@ -336,7 +295,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // convert Psi4 fundamental quantities to GauXC 
     auto gauxc_mol = primary_->molecule()->to_gauxc_molecule();
-    auto gauxc_primary = psi4_to_gauxc_basisset<double>(primary_, basis_tol_, force_cartesian);
+    auto gauxc_primary = primary_->to_gauxc_basisset<double>(basis_tol_, force_cartesian);
 
     // create snLinK grid for GauXC
     auto grid_batch_size = options_.get_int("SNLINK_GRID_BATCH_SIZE");
