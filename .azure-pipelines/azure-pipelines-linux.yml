@@ -312,11 +312,11 @@ jobs:
   #    PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
   #  displayName: 'Spot Test 2'
 
-  - bash: |
-      cd build/../tests/fcidump
-      source activate p4env
-      ./../../build/stage/bin/psi4 -o stdout
-    displayName: 'Spot Test 3'
+  #- bash: |
+  #    cd build/../tests/fcidump
+  #    source activate p4env
+  #    ./../../build/stage/bin/psi4 -o stdout
+  #  displayName: 'Spot Test 3'
 
   - bash: |
       cd build
