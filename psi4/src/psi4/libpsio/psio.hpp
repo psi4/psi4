@@ -274,7 +274,7 @@ class PSI_API PSIO {
      **
      */
     void zero_disk(size_t unit, const char *key, size_t rows, size_t cols);
-    void zero_disk(size_t unit, const std::string& key, size_t rows, size_t cols) { zero_disk(unit, key.c_str(), rows, cols); };
+    void zero_disk(size_t unit, const std::string& key, size_t rows, size_t cols);
 
     /** Central function for all reads and writes on a PSIO unit.
      **

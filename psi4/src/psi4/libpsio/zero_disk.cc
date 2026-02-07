@@ -55,4 +55,7 @@ void PSIO::zero_disk(size_t unit, const char *key, size_t rows, size_t cols) {
 
     delete[] buf;
 }
+
+void PSIO::zero_disk(size_t unit, const std::string& key, size_t rows, size_t cols) { zero_disk(unit, key.c_str(), rows, cols); };
+
 }  // namespace psi
