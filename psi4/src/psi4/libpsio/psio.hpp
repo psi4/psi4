@@ -258,7 +258,9 @@ class PSI_API PSIO {
     void write(size_t unit, const char *key, char *buffer, size_t size, psio_address start, psio_address *end);
 
     void read_entry(size_t unit, const char *key, char *buffer, size_t size);
+    void read_entry(size_t unit, const std::string& key, char *buffer, size_t size) { read_entry(unit, key.c_str(), buffer, size); };
     void write_entry(size_t unit, const char *key, char *buffer, size_t size);
+    void write_entry(size_t unit, const std::string& key, char *buffer, size_t size) { write_entry(unit, key.c_str(), buffer, size); };
 
     /** Zeros out a double precision array in a PSI file.
      ** Typically used before striping out a transposed array
@@ -272,6 +274,7 @@ class PSI_API PSIO {
      **
      */
     void zero_disk(size_t unit, const char *key, size_t rows, size_t cols);
+    void zero_disk(size_t unit, const std::string& key, size_t rows, size_t cols);
 
     /** Central function for all reads and writes on a PSIO unit.
      **
