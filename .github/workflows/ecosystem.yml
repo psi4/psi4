@@ -283,10 +283,9 @@ jobs:
       run: |
         sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /Users/runner/miniconda3/envs/p4build/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
 
-    - name: Special Config - Psi4 Dep
-      if: true
-      run: conda remove psi4 --force
-      # in case the conda package of a downstream addon (like resp) brings the psi4 conda package, which is not what we want to test
+    - name: Special Config - Wrong Psi4
+      run: conda remove psi4 --force || true
+      # in case the conda package of a downstream addon (like resp) brings the psi4 conda package, which is not the psi4 we want to test
 
     - name: Runtime Conda environment
       run: |

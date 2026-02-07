@@ -437,39 +437,34 @@ data:
       host: github
       account: evaleev
       name: libint
-      commit: v2.8.1
+      commit: v2.13.1
     cmake:
       name: Libint2
-      constraint: 2.8.1
+      constraint: 2.13.1
       target: Libint2::cxx
-    #  components:
-    #    - gss
-    #    - CXX_ho
-    #    - impure_sh
-    #    - "eri_c4_d0_l${MAX_AM_ERI}"
-    #    - eri_c4_d1_l2
-    #    - eri_c4_d2_l2
-    #    - eri_c3_d0_l4
-    #    - eri_c3_d1_l3
-    #    - eri_c3_d2_l3
-    #    - eri_c2_d0_l4
-    #    - eri_c2_d1_l3
-    #    - eri_c2_d2_l3
-    #    - onebody_d0_l4
-    #    - onebody_d1_l3
-    #    - onebody_d2_l3
+      components:
+        - ss
+        - "eri_${amchar}_d0"
+        - eri_dddd_d1
+        - eri_ggg_d0
+        - eri_fff_d1
+        - eri_gg_d0
+        - eri_ff_d1
+        - onebody_gg_d0
+        - onebody_ff_d1
+        - onebody_ff_d2
     conda:
       channel: conda-forge
       name: libint
       name_note: "On the psi4 channel, libint/libint2 were used c.2021-23 to distinguish v1/v2. c-f always used libint as the package name. Starting with the v2.8 reunification with upstream, the supplementary 'bigAM' packages published on the psi4 channel will use the name libint for consistency with c-f."
       constraint: null
-      constraint_note: "v2.8.0 provides rt-switchable ordering (src) and derivative integrals (build)."
+      constraint_note: "Provides rt-switchable ordering (v2.8.0 src), CMake and C++ codes for supported integrals (v2.13.0 src), and derivative integrals (build). It is possible to use >=2.8.1,<2.13.0 with Psi4 provided you revert the find_package() and libint2_citation interface sugar in https://github.com/psi4/psi4/pull/3353 ."
       aux_build_names:
-        - //psi4::libint
+        # - //psi4::libint
         - libboost-headers
         - eigen
-      aux_build_names_note:
-        "//psi4::libint": "Optionally for linux-64, an AM=7 build is available here."
+      # aux_build_names_note:
+        # "//psi4::libint": "Optionally for linux-64, an AM=7 build is available here."
       cmake:
         BOOST_ROOT:
           unix: ${CONDA_PREFIX}
