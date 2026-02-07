@@ -48,15 +48,15 @@ extern void T3_UHF_AAB(double ***W, double ***V, int disc, int nirreps, int I, i
                        dpdbuf4 *T2AA, dpdbuf4 *T2AB, dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
                        dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B, dpdbuf4 *DAA,
                        dpdbuf4 *DAB, dpdfile2 *fIA, dpdfile2 *fia, dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB,
-                       dpdfile2 *fab, int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off, int *avirtpi,
-                       int *avir_off, int *bvirtpi, int *bvir_off, double omega);
+                       dpdfile2 *fab, Dimension const& aoccpi, int *aocc_off, Dimension const& boccpi, int *bocc_off, Dimension const& avirtpi,
+                       int *avir_off, Dimension const& bvirtpi, int *bvir_off, double omega);
 
 extern void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk,
                            dpdbuf4 *T2AA, dpdbuf4 *T2AB, dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
                            dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B, dpdbuf4 *DAA,
                            dpdbuf4 *DAB, dpdfile2 *fIA, dpdfile2 *fia, dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB,
-                           dpdfile2 *fab, int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off, int *avirtpi,
-                           int *avir_off, int *bvirtpi, int *bvir_off, double omega);
+                           dpdfile2 *fab, Dimension const& aoccpi, int *aocc_off, Dimension const& boccpi, int *bocc_off, Dimension const& avirtpi,
+                           int *avir_off, Dimension const& bvirtpi, int *bvir_off, double omega);
 
 double T3_grad_UHF_AAB() {
     int cnt;
@@ -74,8 +74,6 @@ double T3_grad_UHF_AAB() {
     int lc, la, lb;
     int id, jd, kd;
     int il, jl, kl, li, lk;
-    int *aoccpi, *avirtpi, *aocc_off, *avir_off;
-    int *boccpi, *bvirtpi, *bocc_off, *bvir_off;
     double value_c, value_d, dijk, denom, ET;
     int nrows, ncols, nlinks;
     dpdbuf4 T2AB, T2AA, T2BA;
@@ -90,14 +88,14 @@ double T3_grad_UHF_AAB() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    aoccpi = moinfo.aoccpi;
-    avirtpi = moinfo.avirtpi;
-    aocc_off = moinfo.aocc_off;
-    avir_off = moinfo.avir_off;
-    boccpi = moinfo.boccpi;
-    bvirtpi = moinfo.bvirtpi;
-    bocc_off = moinfo.bocc_off;
-    bvir_off = moinfo.bvir_off;
+    auto aoccpi = moinfo.aoccpi;
+    auto avirtpi = moinfo.avirtpi;
+    auto aocc_off = moinfo.aocc_off;
+    auto avir_off = moinfo.avir_off;
+    auto boccpi = moinfo.boccpi;
+    auto bvirtpi = moinfo.bvirtpi;
+    auto bocc_off = moinfo.bocc_off;
+    auto bvir_off = moinfo.bvir_off;
 
     double ***WIJk = (double ***)malloc(nirreps * sizeof(double **));
     double ***VIJk = (double ***)malloc(nirreps * sizeof(double **));

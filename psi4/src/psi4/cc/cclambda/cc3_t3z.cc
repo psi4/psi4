@@ -76,8 +76,7 @@ void cc3_t3z() {
 
 void cc3_t3z_RHF_AAA() {
     int h, nirreps;
-    int *occ_off, *occpi;
-    int *vir_off, *virtpi;
+    int *occ_off, *vir_off;
     int Gi, Gj, Gk, Gijk;
     int Ga, Gb, Gc, Gab;
     int i, j, k, I, J, K;
@@ -96,9 +95,9 @@ void cc3_t3z_RHF_AAA() {
     int EE, e, eb;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
+    const auto& occpi = moinfo.occpi;
     occ_off = moinfo.occ_off;
-    virtpi = moinfo.virtpi;
+    const auto& virtpi = moinfo.virtpi;
     vir_off = moinfo.vir_off;
 
     global_dpd_->buf4_init(&ZIFLN, PSIF_CC3_MISC, 0, 10, 0, 10, 0, 0, "CC3 ZIFLN");
@@ -260,8 +259,7 @@ void cc3_t3z_RHF_AAA() {
 
 void cc3_t3z_RHF_AAB() {
     int h, nirreps;
-    int *occ_off, *occpi;
-    int *vir_off, *virtpi;
+    int *occ_off, *vir_off;
     int Gi, Gj, Gk, Gijk;
     int Ga, Gb, Gc, Gab;
     int i, j, k, I, J, K;
@@ -284,9 +282,9 @@ void cc3_t3z_RHF_AAB() {
     int Gij, ij, Gke, ke, eb;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
+    const auto& occpi = moinfo.occpi;
     occ_off = moinfo.occ_off;
-    virtpi = moinfo.virtpi;
+    const auto& virtpi = moinfo.virtpi;
     vir_off = moinfo.vir_off;
 
     global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");

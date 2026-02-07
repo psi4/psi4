@@ -58,7 +58,7 @@ namespace detci {
 #define FLAG_NONBLOCKS
 #define MIN_COEFF 1.0E-13
 
-std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, int *orbs_per_irr);
+std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, Dimension& orbs_per_irr);
 extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 
 /*
@@ -180,7 +180,7 @@ std::string CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el
 **    Allow it to handle more complex spaces...don't assume QT orbital order.
 **    It was getting labels all mixed up for RAS's.
 */
-std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, int *orbs_per_irr) {
+std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, Dimension& orbs_per_irr) {
     int ir, j, pitzer_orb, rel_orb;
 
     /* get Pitzer ordering */
