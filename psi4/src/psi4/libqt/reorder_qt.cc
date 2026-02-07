@@ -70,8 +70,8 @@ namespace psi {
 **
 ** \ingroup QT
 */
-PSI_API void reorder_qt(const int *docc_in, const int *socc_in, int *frozen_docc_in, int *frozen_uocc_in, int *order,
-                        int *orbs_per_irrep, int nirreps) {
+PSI_API void reorder_qt(Dimension const& docc_in, Dimension const& socc_in, Dimension const& frozen_docc_in,
+                        Dimension const& frozen_uocc_in, int *order, Dimension const& orbs_per_irrep, int nirreps) {
     int cnt = 0, irrep, point, tmpi;
     int *used, *offset;
     int *docc, *socc, *frozen_docc, *frozen_uocc;
@@ -193,8 +193,8 @@ PSI_API void reorder_qt(const int *docc_in, const int *socc_in, int *frozen_docc
 **
 ** \ingroup QT
 */
-PSI_API void reorder_qt_uhf(const int *docc, const int *socc, int *frozen_docc, int *frozen_uocc, int *order_alpha, int *order_beta,
-                            int *orbspi, int nirreps) {
+PSI_API void reorder_qt_uhf(Dimension const& docc, Dimension const& socc, Dimension const& frozen_docc,
+                            Dimension const& frozen_uocc, int *order_alpha, int *order_beta, Dimension const& orbspi, int nirreps) {
     int p, nmo;
     int cnt_alpha, cnt_beta, irrep, tmpi;
     int *offset, this_offset;
