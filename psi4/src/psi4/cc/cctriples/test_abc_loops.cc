@@ -64,10 +64,10 @@ void test_abc_loops_AAA() {
 
     double denom, ET;
     int nirreps = moinfo.nirreps;
-    const auto& occpi = moinfo.aoccpi;
+    const auto& occpi  = moinfo.aoccpi;
     const auto& virtpi = moinfo.avirtpi;
-    auto occ_off = moinfo.aocc_off;
-    auto vir_off = moinfo.avir_off;
+    const auto occ_off = moinfo.aocc_off;
+    const auto vir_off = moinfo.avir_off;
     double ***WIJK = (double ***)malloc(nirreps * sizeof(double **));
     double ***VIJK = (double ***)malloc(nirreps * sizeof(double **));
 

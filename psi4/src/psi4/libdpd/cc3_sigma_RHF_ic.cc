@@ -337,9 +337,9 @@ void cc3_sigma_RHF_ic_thread(thread_data &data) {
     FME = data.FME;
     WmAEf = data.WmAEf;
     WMnIe = data.WMnIe;
-    Dimension occpi = data.occpi;
+    const auto& occpi = data.occpi;
+    const auto& virtpi = data.virtpi;
     occ_off = data.occ_off;
-    Dimension virtpi = data.virtpi;
     vir_off = data.vir_off;
     omega = data.omega;
     fIJ = data.fIJ;
