@@ -44,10 +44,7 @@ namespace psi {
 
 class SlaterDeterminant {
    public:
-    //  SlaterDeterminant();
-    //  SlaterDeterminant(SlaterDeterminant& det);
     SlaterDeterminant(int alfa_sym_, int beta_sym_, std::vector<bool> alfa_bits_, std::vector<bool> beta_bits_);
-    ~SlaterDeterminant();
 
     // Get functions
     int get_alfa_sym() const { return alfa_sym; }
@@ -69,8 +66,6 @@ class SlaterDeterminant {
 
    private:
     // Class private functions
-    void startup();
-    void cleanup();
     char get_occupation_symbol(int i);
     // Class private data
     int alfa_sym;                 // Symmetry of the alfa string
