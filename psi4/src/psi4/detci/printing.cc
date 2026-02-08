@@ -114,28 +114,26 @@ void CIWavefunction::print_vec(size_t nprint, int *Ialist, int *Iblist, int *Iai
 */
 std::string CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el, struct stringwr *stralp,
                                          struct stringwr *strbet, int num_drc_orbs) {
-    int j, k;
-    int afound, bfound;
-
     std::ostringstream oss;
 
     /* loop over orbitals */
-    for (j = 0; j < nbf; j++) {
+    for (int j = 0; j < nbf; j++) {
+        bool afound = false, bfound = false;
         std::string olabel(orb2lbl(j + num_drc_orbs, CalcInfo_, nmopi_)); /* get label for orbital j */
 
-        for (k = 0, afound = 0; k < num_alp_el; k++) {
+        for (int k = 0; k < num_alp_el; k++) {
             if ((stralp->occs)[k] > j)
                 break;
             else if ((stralp->occs)[k] == j) {
-                afound = 1;
+                afound = true;
                 break;
             }
         }
-        for (k = 0, bfound = 0; k < num_bet_el; k++) {
+        for (int k = 0; k < num_bet_el; k++) {
             if ((strbet->occs)[k] > j)
                 break;
             else if ((strbet->occs)[k] == j) {
-                bfound = 1;
+                bfound = true;
                 break;
             }
         }
