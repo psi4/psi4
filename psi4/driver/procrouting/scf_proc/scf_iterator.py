@@ -420,6 +420,12 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if (self.iteration_ == 0) and self.sad_:
             self.form_initial_F()
         else:
+            # SOSCF orbital rotations invalidate incremental Fock linearity assumption
+            in_soscf_phase = (soscf_enabled and self.iteration_ >= 3
+                              and Dnorm < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))
+            if in_soscf_phase and hasattr(self.jk(), 'clear_D_prev'):
+                self.jk().clear_D_prev()
+
             self.form_F()
         core.timer_off("HF: Form F")
 
