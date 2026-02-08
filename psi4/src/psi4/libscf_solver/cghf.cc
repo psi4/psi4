@@ -1,16 +1,39 @@
-#include "cghf.h"
+/*
+ * @BEGIN LICENSE
+ *
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2025 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
+ *
+ * This file is part of Psi4.
+ *
+ * Psi4 is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * Psi4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along
+ * with Psi4; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * @END LICENSE
+ */
 
 #include <algorithm>
 #include <cmath>
-#include <cstdio>
 
 #include "psi4/physconst.h"
 
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/matrix.h"
@@ -18,16 +41,12 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#define PSI4_NO_TIMER
-#include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libpsi4util/process.h"
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
 
-#include "Einsums/LinearAlgebra.hpp"
-#include "Einsums/TensorAlgebra.hpp"
-#include <Einsums/Config.hpp>
+#include "cghf.h"
+
+#include <Einsums/LinearAlgebra.hpp>
+#include <Einsums/TensorAlgebra.hpp>
 
 namespace psi {
 namespace scf {
@@ -46,10 +65,14 @@ CGHF::CGHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Op
 CGHF::~CGHF() {}
 
 // Define global einsums::BlockTensors and variables needed throughout the CGHF class
+// Nathan: Hey Matt, I was getting weird timer issues because you call things inside here like
+// Form_H and find_occupation. This should be done later.
 void CGHF::common_init() {
-    // => HF REQUIREMENTS from hf.cc <=
-    // These are empty matrices to my knowledge and don't affect performance, but
-    // we will get a seg fault if they are not called
+    name_ = "CGHF";
+
+    /*** Begin useless definitions ***/
+    // Afaik, these are empty matrices and have no effect on CGHF.
+    // However, to avoid a segmentation fault, we must create them.
     Ca_ = SharedMatrix(factory_->create_matrix("alpha MO coefficients (C)"));
     Cb_ = SharedMatrix(factory_->create_matrix("beta MO coefficients (C)"));
     Fa_ = SharedMatrix(factory_->create_matrix("F alpha"));
@@ -64,6 +87,7 @@ void CGHF::common_init() {
     epsilon_b_->set_name("beta orbital energies");
     same_a_b_dens_ = false;
     same_a_b_orbs_ = false;
+    /*** End useless definitions ***/
 
     nuclearrep_ = molecule_->nuclear_repulsion_energy({0.0, 0.0, 0.0});
 
@@ -73,10 +97,10 @@ void CGHF::common_init() {
     diis_coeffs = std::vector<std::complex<double>>(0);
     error_doubles = std::vector<std::complex<double>>(0);
 
-    find_occupation();  // Fills size of epsilon_a_ and epsilon_b_ so we can compute nalphapi_ + nbetapi_ = nelecpi_
+    // Sets nalphapi_ and nbetapi_
+    find_occupation();
 
     form_H();         // Fills a single spin block (AA or BB) with the core Hamiltonian
-    subclass_init();  // This appears to set up DFT stuff and external potentials
 
     // Combine nalphapi_ and nbetapi_ to give nelecpi_ for forming the density matrix
     for (int h = 0; h < nirrep_; h++) {
@@ -84,7 +108,7 @@ void CGHF::common_init() {
     };
 
     // => GLOBAL VARS <=
-    // irrep_sizes_: number of spin orbitals per irrep. Cannot use nsopi_ here since Einsums requires a vector
+    // here since Einsums requires a vector
     // G_mat: two-electron ERI as a SharedMatrix
     // nelecpi_: nalphapi_ + nbetapi_
     G_mat = mintshelper()->ao_eri();
@@ -94,30 +118,34 @@ void CGHF::common_init() {
         irrep_sizes_.push_back(2 * nsopi_[h]);
     };
 
-    // Combine nalphapi_ and nbetapi_ to give nelecpi_ for forming the density matrix
-
     // => BLOCKTENSORS <= will be (2nsopi_ x 2nsopi_) unless listed otherwise
     // Note that all of these are complex except for EINS_, EINX_, and the Fock evals
-    F0_ = einsums::BlockTensor<std::complex<double>, 2>("F0", irrep_sizes_);  // Spin blocked core Hamiltonian
-    F_ = einsums::BlockTensor<std::complex<double>, 2>("F", irrep_sizes_);    // Fock matrix
-    EINS_ = einsums::BlockTensor<double, 2>( "Ovlp", irrep_sizes_);  // Spin blocked overlap matrix. Needed as metric to compute gradient with FDS - SDF
-    EINX_ = einsums::BlockTensor<std::complex<double>, 2>("EINX_", irrep_sizes_);  // Spin blocked orthogonalization matrix
-    Fp_ = einsums::BlockTensor<std::complex<double>, 2>("EINX_", irrep_sizes_);   // Orthogonalized Fock matrix
-    C_ = einsums::BlockTensor<std::complex<double>, 2>("C", irrep_sizes_);        // Coefficient matrix
-    FDSmSDF_ = einsums::BlockTensor<std::complex<double>, 2>("C", irrep_sizes_);  // Gradient FDS - SDF
+    // Core Hamiltonian, Fock, Orthogonalized Fock, and Coefficient Matrices
+    F0_ = einsums::BlockTensor<std::complex<double>, 2>("F0", irrep_sizes_);
+    F_ = einsums::BlockTensor<std::complex<double>, 2>("F", irrep_sizes_);
+    Fp_ = einsums::BlockTensor<std::complex<double>, 2>("EINX_", irrep_sizes_);
+    C_ = einsums::BlockTensor<std::complex<double>, 2>("C", irrep_sizes_);
 
-    Fevecs_ = einsums::BlockTensor<std::complex<double>, 2>("Fock eigenvectors", irrep_sizes_);  // Eigenvectors upon diagonalizing Fock matrix
-    // Fevals_ = einsums::BlockTensor<std::complex<double>, 1>("Fock evals", irrep_sizes_);  // Eigenvalues upon diagonalizing Fock matrix
-    Fevals_ = einsums::BlockTensor<double, 1>("Fock evals", irrep_sizes_);  // Eigenvalues upon diagonalizing Fock matrix
+    // Gradient FDS - SDF
+    FDSmSDF_ = einsums::BlockTensor<std::complex<double>, 2>("C", irrep_sizes_);
 
-    // => Deprecated since temp1_ and temp2_ already exist, and Cocc_ nor cCocc_ doesn't need to be permanently stored <=
-    //Cocc_ = einsums::BlockTensor<std::complex<double>, 2>("Cocc_", irrep_sizes_);  // Occupied coefficients matrix
-    //cCocc_ = einsums::BlockTensor<std::complex<double>, 2>("Cocc_", irrep_sizes_);  // Complex conjugate of occupied coefficients matrix
-    D_ = einsums::BlockTensor<std::complex<double>, 2>("D", irrep_sizes_);  // Density matrix
-    J_ = einsums::BlockTensor<std::complex<double>, 2>("J", irrep_sizes_);  // Coulombic matrix
-    K_ = einsums::BlockTensor<std::complex<double>, 2>("K", irrep_sizes_);  // Exchange matrix (might not need to be decomposed for efficiency reasons)
-    temp1_ = einsums::BlockTensor<std::complex<double>, 2>("temp1", irrep_sizes_);  // Temporary storage container
-    temp2_ = einsums::BlockTensor<std::complex<double>, 2>("temp2", irrep_sizes_);  // Temporary storage container
+    // Spin blocked overlap matrix and orthogonalization matrix.
+    // Needed as metric to compute gradient with FDS - SDF
+    EINS_ = einsums::BlockTensor<double, 2>("Ovlp", irrep_sizes_);
+    EINX_ = einsums::BlockTensor<std::complex<double>, 2>("Orth", irrep_sizes_);
+
+    // Eigenvalues and eigenvectors from diagonalized Fock matrix
+    Fevecs_ = einsums::BlockTensor<std::complex<double>, 2>("Fock eigenvectors", irrep_sizes_);
+    Fevals_ = einsums::BlockTensor<double, 1>("Fock evals", irrep_sizes_);
+
+    // Density, coulomb, exchange matrices
+    D_ = einsums::BlockTensor<std::complex<double>, 2>("D", irrep_sizes_);
+    J_ = einsums::BlockTensor<std::complex<double>, 2>("J", irrep_sizes_);
+    K_ = einsums::BlockTensor<std::complex<double>, 2>("K", irrep_sizes_);
+
+    // Temporary matrices for intermediate steps
+    temp1_ = einsums::BlockTensor<std::complex<double>, 2>("temp1", irrep_sizes_);
+    temp2_ = einsums::BlockTensor<std::complex<double>, 2>("temp2", irrep_sizes_);
 
     F0_.zero();
     F_.zero();
@@ -126,14 +154,14 @@ void CGHF::common_init() {
     C_.zero();
     Fevecs_.zero();
     Fevals_.zero();
-    //Cocc_.zero();
-    //cCocc_.zero();
     D_.zero();
     J_.zero();
     K_.zero();
     temp1_.zero();
     temp2_.zero();
     FDSmSDF_.zero();
+
+    subclass_init();  // This appears to set up DFT stuff and external potentials
 
     preiterations();  // CGHF preiterations() routine
 }
@@ -142,7 +170,6 @@ void CGHF::common_init() {
 // and subsequently the orthogonalization matrix EINX_
 // Also builds the spin-blocked Hamiltonian as F0_
 void CGHF::preiterations() {
-    std::cout << "preiterations\n";
     // => FILL SPIN BLOCKED OVERLAP AND HAMILTONIAN MATRICES <=
     //
     // Note that nsopi_[h] will be HALF of irrep_sizes_[h]
@@ -155,7 +182,8 @@ void CGHF::preiterations() {
                 int beta_q = q + nsopi_[h];
 
                 EINS_[h].subscript(p, q) = S_->get(h, p, q);  // overlap AA spin block
-                EINS_[h].subscript(beta_p, beta_q) = S_->get(h, p, q);  // overlap BB spin block is same as AA since same spatial orbitals
+                EINS_[h].subscript(beta_p, beta_q) =
+                    S_->get(h, p, q);  // overlap BB spin block is same as AA since same spatial orbitals
 
                 F0_[h].subscript(p, q) = H_->get(h, p, q);            // core Hamiltonian AA spin block
                 F0_[h].subscript(beta_p, beta_q) = H_->get(h, p, q);  // core Hamiltonian BB spin block
@@ -186,8 +214,6 @@ void CGHF::finalize() {
     HF::finalize();
 }
 
-void CGHF::save_density_and_energy() {}
-
 void CGHF::form_V() {}
 
 /*
@@ -209,7 +235,6 @@ void CGHF::form_V() {}
  */
 
 void CGHF::form_G() {
-    std::cout << "form_G\n";
     J_.zero();
     K_.zero();
 
@@ -240,7 +265,6 @@ void CGHF::form_G() {
 
 /* F = H + J - K */
 void CGHF::form_F() {
-    std::cout << "form_F\n";
     F_.zero();
     F_ += F0_;
     F_ += J_;
@@ -251,14 +275,15 @@ void CGHF::form_F() {
  * 1. Orthogonalizes the Fock matrix via Fp_ = X_dagger * F * X_
  * 2. Then diagonalizes Fp_ to give a eigenpairs in the MO basis
  * 3. the eigenvectors are back-transformed back to the AO basis
- *
- * Note, no E-shift for now. 
  */
 void CGHF::form_C(double shift) {
+    if (shift != 0.0) {
+        throw PSIEXCEPTION("CGHF does not support E-shift.");
+    }
+
     // => ORTHOGONALIZE FOCK <=
     // F_ @ EINX_ = temp1_
 
-    std::cout << "form_C\n";
     if (options_.get_bool("DIIS") && iteration_ > options_.get_int("DIIS_START")) {
         auto error_trace = do_diis();
     } else {
@@ -273,36 +298,29 @@ void CGHF::form_C(double shift) {
     // => DIAGONALIZE FOCK <=
     // Fevecs_ = Fp_;
 
-    temp1_.zero();
-    temp2_.zero();
-
     // Must be done in a loop over irreps -- cannot just do it with the BlockTensor
     // Nathan: Why?
     for (int h = 0; h < nirrep_; h++) {
         // Do not diagonalize 0x0 matrix
-        if (nsopi_[h] == 0) {
-            continue;
-        }
+        if (nsopi_[h] == 0) continue;
 
-        // HEEV
-        einsums::linear_algebra::heev<true>(&Fp_[h], &Fevals_[h]); // Hermitian eigensolver SHOULD be legitimate over
+        // Hermitian eigensolver
+        einsums::linear_algebra::heev<true>(&Fp_[h], &Fevals_[h]);
 
-	// heev retuns the wrong side, so we need to take the inverse (hermitian adjoint)
-	// i.e. einsums::linear_algebra::invert(&Fp_[h]);
-	// TODO: rework math so we don't have to do this step!
-	// Also, this can be done with a blas call
+        // heev retuns the wrong side, so we need to take the inverse (hermitian adjoint)
+        // i.e. einsums::linear_algebra::invert(&Fp_[h]);
+        // TODO: rework math so we don't have to do this step!
+        // Also, this can be done with a blas call
 
-	for (int p = 0; p < irrep_sizes_[h]; p++)
-	for (int q = 0; q < irrep_sizes_[h]; q++) {
-	    auto Fp_pq = Fp_[h].subscript(p, q);
+        temp1_[h].zero();
+        for (int p = 0; p < irrep_sizes_[h]; p++)
+            for (int q = 0; q < irrep_sizes_[h]; q++) {
+                auto Fp_pq = Fp_[h].subscript(p, q);
 
-	    temp1_[h].subscript(q, p) = std::conj(Fp_pq);
-	}
-	Fp_[h] = temp1_[h];
-
+                temp1_[h].subscript(q, p) = std::conj(Fp_pq);
+            }
+        Fp_[h] = temp1_[h];
     }
-
-    temp1_.zero();
 
     // => BACK TRANSFORM <=
     // EINX_ @ Fevecs_ = C_
@@ -347,10 +365,7 @@ void CGHF::compute_SAD_guess(bool natorb) {
  * Then constructs the density matrix D_ with D_uv = C_ui * C_vi_{conj}
  */
 void CGHF::form_D() {
-    std::cout << "form_D\n";
     D_.zero();
-    //Cocc_.zero();
-    //cCocc_.zero();
     temp1_.zero();
     temp2_.zero();
 
@@ -361,17 +376,18 @@ void CGHF::form_D() {
     for (int h = 0; h < nirrep_; h++) {
         for (int j = 0; j < irrep_sizes_[h]; j++) {
             for (int k = 0; k < nelecpi_[h]; k++) {
-		auto C_jk = C_[h].subscript(j, k);
+                auto C_jk = C_[h].subscript(j, k);
                 temp1_[h].subscript(j, k) = C_jk;
-		temp2_[h].subscript(j, k) = std::conj(C_jk);
+                temp2_[h].subscript(j, k) = std::conj(C_jk);
             }
         }
     }
+
     // Performs einsums contraction ui,vi->uv with temp1_, temp2_ -> D_)
     einsums::tensor_algebra::einsum(einsums::Indices{einsums::index::u, einsums::index::v}, &D_,     // D_uv
                                     einsums::Indices{einsums::index::u, einsums::index::i}, temp1_,  // Cocc_ui
                                     einsums::Indices{einsums::index::v, einsums::index::i}, temp2_   // Cocc.conj.T_vi
-                                    );
+    );
 }
 
 void CGHF::damping_update(double damping_percentage) {}
@@ -383,7 +399,6 @@ void CGHF::damping_update(double damping_percentage) {}
  * E_2e = trace(D_ • 0.5*JK_)
  */
 double CGHF::compute_E() {
-    std::cout << "compute_E\n";
     double kinetic_E = 0.0;
     double one_electron_E = 0.0;
     double two_E = 0.0;
@@ -392,17 +407,14 @@ double CGHF::compute_E() {
     // Because Psi4 likes these energies (me too) decomposed, it seems both easier and more
     // efficient to just knock them out in the same for loop
     for (int h = 0; h < nirrep_; h++) {
-        if (nsopi_[h] == 0) {
-            continue;
-        };
+        if (nsopi_[h] == 0) continue;
+
         for (int i = 0; i < irrep_sizes_[h]; i++)
             for (int j = 0; j < irrep_sizes_[h]; j++) {
                 auto Dji = D_[h].subscript(j, i);
 
-                // kinetic_E += (T_->get(h, i, j) * Dji).real();            // T_ij * Dji
                 one_electron_E += (F0_[h].subscript(i, j) * Dji).real();  // F0_ij * D_ji
                 two_E += (J_[h].subscript(i, j) * Dji).real();            // J_ij * D_ji
-                // exchange_E += (K_[h].subscript(i, j) * Dji).real();      // K_ij * D_ji
             }
     }
 
@@ -418,10 +430,9 @@ double CGHF::compute_E() {
     Etotal += one_electron_E;
     Etotal += 0.5 * two_E;
 
-    std::cout << "Core energy:" << one_electron_E << "\n";
-    std::cout << "JK energy:" << two_E << "\n";
-    std::cout << "Total energy:" << Etotal << "\n";
-    // exit(0);
+    // outfile->Printf("  Core energy : %.15f\n", one_electron_E);
+    // outfile->Printf("  JK energy   : %.15f\n", two_E);
+    // outfile->Printf("  Total energy: %.15f\n", Etotal);
     return Etotal;
 }
 
@@ -429,7 +440,6 @@ double CGHF::compute_E() {
  * Simply computes the 1e energy
  */
 double CGHF::compute_initial_E() {
-    std::cout << "compute_initial_E\n";
     double one_electron_E = 0.0;
 
     for (int h = 0; h < nirrep_; h++)
@@ -439,13 +449,11 @@ double CGHF::compute_initial_E() {
                 one_electron_E += (F0_[h].subscript(i, j) * Dji).real();  // F0_ij * D_ji
             }
 
-    std::cout << "Core energy:" << one_electron_E << "\n";
-
+    // outfile->Printf("  Core energy: %.15f\n", one_electron_E);
     return one_electron_E + nuclearrep_;
 }
 
 std::complex<double> CGHF::do_diis() {
-    std::cout << "Do_diis\n";
     int diis_max = options_.get_int("DIIS_MAX_VECS");
     int diis_count = 0;
 
@@ -592,7 +600,6 @@ std::complex<double> CGHF::do_diis() {
     if (err_vecs.size() == diis_max) {
         for (int i = 0; i < diis_coeffs.size(); i++) {
             einsums::linear_algebra::axpy(diis_coeffs[i], Fdiis[i], &Fp_);
-            // std::cout << diis_coeffs[i] << "\n";
         }
     } else {
         temp2_.zero();
@@ -630,8 +637,6 @@ void CGHF::form_FDSmSDF() {
             }
         }
     }
-
-    std::cout << "form_FDSmSDF\n";
 }
 
 double CGHF::compute_Dnorm() {
@@ -640,7 +645,7 @@ double CGHF::compute_Dnorm() {
     for (int h = 0; h < nirrep_; h++) {
         dnorm += einsums::linear_algebra::norm(einsums::linear_algebra::Norm::Frobenius, FDSmSDF_[h]);
     }
-    std::cout << "dnorm\n";
+
     return dnorm;
 }
 

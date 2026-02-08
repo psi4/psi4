@@ -947,7 +947,6 @@ void HF::print_orbitals() {
         print_orbital_pairs("Virtual:", vir);
     } else if (reference == "CGHF") {
         std::vector<std::pair<double, std::pair<std::string, int> > > docc;
-
     } else {
         throw PSIEXCEPTION("Unknown reference in HF::print_orbitals");
     }
