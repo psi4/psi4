@@ -144,16 +144,23 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional,
 
 import numpy as np
 
-from pydantic.v1 import Field, validator
+from pydantic import Field, field_validator
 
-from qcelemental.models import AtomicResult, DriverEnum
+from qcelemental.models.v2 import AtomicResult, DriverEnum
 
 from psi4 import core
 
 from . import p4util, qcdb
 from .constants import constants, nppp10, pp
 from .p4util.exceptions import ValidationError
-from .task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
+from .task_base import AtomicComputer, BaseComputer, ComputerEnum, EnergyGradientHessianWfnReturn
+from .driver_cbs import CompositeComputer
+
+FDTaskComputers = Union[AtomicComputer, CompositeComputer]
+
+class FDComputerEnum(ComputerEnum):
+    atomic = "atomic"
+    composite = "composite"
 
 if TYPE_CHECKING:
     import qcportal
@@ -1145,12 +1152,17 @@ class FiniteDifferenceComputer(BaseComputer):
     molecule: Any
     driver: DriverEnum
     metameta: Dict[str, Any] = {}
-    task_list: Dict[str, BaseComputer] = {}
+    task_list: Dict[str, FDTaskComputers] = {}
     findifrec: Dict[str, Any] = {}
-    computer: BaseComputer = AtomicComputer
+    # Field `computer` "holds" a computer class: AtomicComputer or CompositeComputer, *not* an instance of the class.
+    #   While pydantic v1 was ok with the class, pydantic v2 hates it, both at point of validation (it demands an
+    #   instance of stated class, not the class itself; avoidable by `computer: Any = AtomicComputer`) and at point of
+    #   serialization (it refuses to serialize the class/mappingproxy; avoidable by `plan.model_dump(...)` or
+    #   `plan.dict(exclude=["computer", "task_list"])`, esp. in driver.py. Enum plus func avoids both objections.
+    computer: FDComputerEnum = FDComputerEnum.atomic
     method: str
 
-    @validator('driver')
+    @field_validator('driver')
     def set_driver(cls, driver):
         egh = ['energy', 'gradient', 'hessian']
         if driver not in egh:
@@ -1158,7 +1170,7 @@ class FiniteDifferenceComputer(BaseComputer):
 
         return driver
 
-    @validator('molecule')
+    @field_validator('molecule')
     def set_molecule(cls, mol):
         mol.update_geometry()
         mol.fix_com(True)
@@ -1254,7 +1266,7 @@ class FiniteDifferenceComputer(BaseComputer):
         passalong = {k: v for k, v in data.items() if k not in packet}
         passalong.pop('ptype', None)
 
-        self.task_list["reference"] = self.computer(**packet, **passalong)
+        self.task_list["reference"] = self.computer.computer()(**packet, **passalong)
 
         parent_group = self.molecule.point_group()
         for label, displacement in self.findifrec["displacements"].items():
@@ -1286,7 +1298,7 @@ class FiniteDifferenceComputer(BaseComputer):
             if 'cbs_metadata' in data:
                 packet['cbs_metadata'] = data['cbs_metadata']
 
-            self.task_list[label] = self.computer(**packet, **passalong)
+            self.task_list[label] = self.computer.computer()(**packet, **passalong)
 
 
 #        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
@@ -1319,14 +1331,14 @@ class FiniteDifferenceComputer(BaseComputer):
         response = task.return_result
         reference["module"] = getattr(task.provenance, "module", None)
 
-        if task.driver == 'energy':
+        if task.input_data.specification.driver == 'energy':
             reference['energy'] = response
 
-        elif task.driver == 'gradient':
+        elif task.input_data.specification.driver == 'gradient':
             reference['gradient'] = response
             reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
 
-        elif task.driver == 'hessian':
+        elif task.input_data.specification.driver == 'hessian':
             reference['hessian'] = response
             reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
             if 'CURRENT GRADIENT' in task.extras['qcvars']:
@@ -1342,14 +1354,14 @@ class FiniteDifferenceComputer(BaseComputer):
             task = results_list[label]
             response = task.return_result
 
-            if task.driver == 'energy':
+            if task.input_data.specification.driver == 'energy':
                 displacement['energy'] = response
 
-            elif task.driver == 'gradient':
+            elif task.input_data.specification.driver == 'gradient':
                 displacement['gradient'] = response
                 displacement['energy'] = task.extras['qcvars']['CURRENT ENERGY']
 
-            elif task.driver == 'hessian':
+            elif task.input_data.specification.driver == 'hessian':
                 displacement['hessian'] = response
                 displacement['energy'] = task.extras['qcvars']['CURRENT ENERGY']
                 if 'CURRENT GRADIENT' in task.extras['qcvars']:
@@ -1442,12 +1454,17 @@ class FiniteDifferenceComputer(BaseComputer):
 
         findif_model = AtomicResult(
             **{
-                'driver': self.driver,
-                'model': {
-                    "basis": self.basis,
-                    'method': self.method,
+                'input_data': {
+                    'specification': {
+                        'driver': self.driver,
+                        'model': {
+                            "basis": self.basis,
+                            'method': self.method,
+                        },
+                    },
+                    'molecule': self.molecule.to_schema(dtype=3),
                 },
-                'molecule': self.molecule.to_schema(dtype=2),
+                'molecule': self.molecule.to_schema(dtype=3),
                 'properties': properties,
                 'provenance': p4util.provenance_stamp(__name__, module=self.findifrec["reference"]["module"]),
                 'extras': {
@@ -1458,7 +1475,7 @@ class FiniteDifferenceComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findif_model.dict()))
+        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findif_model.model_dump()))
 
         return findif_model
 
@@ -1508,8 +1525,10 @@ def _findif_schema_to_wfn(findif_model: AtomicResult) -> core.Wavefunction:
     """Helper function to produce Wavefunction and Psi4 files from a FiniteDifference-flavored AtomicResult."""
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    mol = core.Molecule.from_schema(findif_model.molecule.dict(), nonphysical=True)
-    sbasis = "def2-svp" if (findif_model.model.basis == "(auto)") else findif_model.model.basis
+    mol = core.Molecule.from_schema(findif_model.molecule.model_dump(), nonphysical=True)
+    sbasis = findif_model.input_data.specification.model.basis
+    if sbasis == "(auto)":
+        sbasis = "def2-svp"
     basis = core.BasisSet.build(mol, "ORBITAL", sbasis, quiet=True)
     wfn = core.Wavefunction(mol, basis)
     if hasattr(findif_model.provenance, "module"):
