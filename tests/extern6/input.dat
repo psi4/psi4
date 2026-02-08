@@ -1,0 +1,63 @@
+#! External potential calculation involving a TIP3P water and a QM water.
+#! Energies and gradients computed using analytic charge embedding
+#! through the external_potentials keyword are compared against those
+#! using a pre-computed one-electron potential matrix through the
+#! external_potentials keyword.
+
+molecule water {
+  0 1
+  O  -0.778803000000  0.000000000000  1.132683000000
+  H  -0.666682000000  0.764099000000  1.706291000000
+  H  -0.666682000000  -0.764099000000  1.706290000000
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+# Define a TIP3P water as the external potential
+import numpy as np
+external_potentials = np.array([
+-0.834,1.649232019048,0.0,-2.356023604706,
+0.417,0.544757019107,0.0,-3.799961446760,
+0.417,0.544757019107,0.0,-0.912085762652]).reshape((-1, 4))
+# convert coordinates columns to bohr
+external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
+
+set {
+    scf_type df
+    d_convergence 12
+    basis 6-31G*
+}
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
+# Calculate the total energy and gradient on the wavefunction in the
+# presence of the external potential charges, embedded analytically.
+e_charges, wfn = energy('scf', molecule=water, return_wfn=True,
+                        external_potentials=external_potentials)
+g_charges = gradient('scf', ref_wfn=wfn)
+
+extern = wfn.external_pot()
+V_matrix = extern.computePotentialMatrix(wfn.basisset()).np
+e_nuc = extern.computeNuclearEnergy(wfn.molecule())
+
+# Calculate the electronic contributions to the energy and gradient on
+# the wavefunction in the presence of the external potential charges as
+# a user-provided one-electron potential matrix.
+e_matrix, wfn = energy('scf', molecule=water, return_wfn=True,
+                       external_potentials=[None, None, V_matrix])
+e_matrix += e_nuc
+
+g_matrix = gradient('scf', ref_wfn=wfn)
+
+D = wfn.Da()
+D.add(wfn.Db())
+
+# Calculate the Hellmann-Feynman and nuclear contributions to the
+# gradient for the user-defined one-electron potential matrix.
+g_hf_nuc = extern.computePotentialGradients(wfn.basisset(), D)
+g_matrix.add(g_hf_nuc)
+
+compare_matrices(g_charges, g_matrix, 5, "Gradient with analytic point charge embedding vs. with a user-provided potential matrix") #TEST
+compare_values(e_charges, e_matrix, 6, "Energy with analytic point charge embedding vs. with a user-provided potential matrix")  #TEST
