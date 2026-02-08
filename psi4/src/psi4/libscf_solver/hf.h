@@ -37,6 +37,12 @@
 
 #include "psi4/pybind11.h"
 
+#ifdef USING_OpenTrustRegion
+namespace OTR {
+    #include "opentrustregion.h"
+}
+#endif
+
 namespace psi {
 using PerturbedPotentialFunction = std::function<SharedMatrix(SharedMatrix)>;
 using PerturbedPotentials = std::map<std::string, PerturbedPotentialFunction>;
@@ -251,6 +257,30 @@ class HF : public Wavefunction {
     /// Runs the SCF using OpenOrbitalOptimizer
     virtual void openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
 
+#ifdef USING_OpenTrustRegion
+    /// Runs SCF using OpenTrustRegion
+    void opentrustregion_scf();
+    virtual OTR::c_int otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
+                                       OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) {
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
+    };
+    virtual OTR::c_int otr_hess_x(const OTR::c_real* x, OTR::c_real* out) {
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
+    };
+    virtual OTR::c_int otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) {
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
+    };
+
+    /// The number non-redundant parameters
+    virtual int otr_n_param()  { 
+        throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
+    };
+    int otr_n_param_;
+
+    /// Temporary global pointer to the active instance
+    static inline HF* instance = nullptr;
+#endif
+
     /// Are we to do excited-state MOM?
     bool MOM_excited() const { return MOM_excited_; }
     void set_MOM_excited(bool tf) { MOM_excited_ = tf; }
@@ -440,6 +470,13 @@ class HF : public Wavefunction {
     void clear_external_cpscf_perturbations() { external_cpscf_perturbations_.clear(); }
     void compute_fvpi();
 };
+
+#ifdef USING_OpenTrustRegion
+extern "C" OTR::obj_func_fn otr_obj_func_wrapper;
+extern "C" OTR::hess_x_fn otr_hess_x_wrapper;
+extern "C" OTR::update_orbs_fn otr_update_orbs_wrapper;
+#endif
+
 }  // namespace scf
 }  // namespace psi
 
