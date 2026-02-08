@@ -17,42 +17,65 @@ class CGHF : public HF {
          std::shared_ptr<PSIO> psio);
     ~CGHF() override;
 
+    // Declares all BlockTensors, and some useful misc variables needed
     void common_init();
 
-    void form_X();
-    void form_S();
-
+    // Constructs the spin-blocked overlap (EINS_), core Hamiltonian (F0_), and orthogonalization (EINX_) matrices
     void preiterations();
+
+    // Allow SAP and SAD initial guesses
     void sap_guess();
-    // void form_initial_C() override;
     void compute_SAD_guess(bool natorb) override;
-    void zero_tensors();
+    
+    // Empty functions for now -- seems to be resetting and saving matrices, respectively
     void finalize() override;
     void save_density_and_energy() override;
-    void form_FDSmSDF();
-    double compute_Dnorm();
-    void form_V() override;
-    void form_G() override;
-    void form_F() override;
-    void form_C(double shift) override;
-    void form_D() override;
-    void set_init_D();
-    void redo_SCF();
-    std::tuple<SharedMatrix, SharedMatrix> einsums_to_numpy(std::string mat_str);
-    void form_numpy_D();
 
+    // Form orbital gradient FDSmSDF_ = [F, D]
+    void form_FDSmSDF();
+
+    // Compute the norm from the orbital gradient as a second test of convergence
+    double compute_Dnorm();
+
+    // Empty function for now -- needed for DFT later
+    void form_V() override;
+
+    // Computes J and K either explicitly (4-index) or with RI (3-index)
+    void form_G() override;
+
+    // Forms Fock matrix F = F0_ + J - K
+    void form_F() override;
+
+    // Orthogonalizes then diagonalizes the Fock matrix to form the coefficient matrix C_
+    void form_C(double shift) override;
+
+    // Constructs 1-particle density matrix using the occupied coefficients Cocc_ and the conjugate (stored in temp1_, not permanently stored)
+    void form_D() override;
+
+    // Empty function for now, but for UHF and RHF, scales the density matrix
     void damping_update(double damping_percentage) override;
+
+    // Compute the energy based purely off F0_ = T + V, with no J and K
     double compute_initial_E() override;
+
+    // Compute 1e and 2e energy separately, then combine with nuclear repulsion energy nuclearrep_ to return a total energy 
     double compute_E() override;
+
+    // Empty functions for now
     void setup_potential() override;
     void openorbital_scf() override;
 
     std::shared_ptr<CGHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
+
+    // Unsure of what these are, but needed otherwise seg fault
     virtual bool same_a_b_orbs() const { return false; }
     virtual bool same_a_b_dens() const { return false; }
+
+    // Empty functions for now -- sets up external potentials (TODO later)
     std::shared_ptr<UV> potential_;
     std::shared_ptr<VBase> V_potential() const override { return potential_; };
 
+    // If DIIS is enabled (which it always should be), then it will update the orthogonalized Fock matrix Fp_
     std::complex<double> do_diis();
 
    protected:
@@ -62,47 +85,39 @@ class CGHF : public HF {
     SharedMatrix G_mat;
     SharedMatrix F_mat;
 
-    std::deque<einsums::BlockTensor<std::complex<double>, 2>> Fdiis;
-    std::deque<einsums::BlockTensor<std::complex<double>, 2>> err_vecs;
-    einsums::BlockTensor<std::complex<double>, 2> F_vecs;
-    einsums::BlockTensor<std::complex<double>, 2> e_vecs;
-    std::vector<std::complex<double>> diis_coeffs;
-    std::vector<std::complex<double>> error_doubles;
+    // DIIS variables
+    // All 4 of these containers have a MAX size of DIIS_MAX_VECS
+    // TODO ascertain if there's anything different between real and complex DIIS outside of the containers (e.g. error_doubles could be error_complex)
+    std::deque<einsums::BlockTensor<std::complex<double>, 2>> Fdiis;     // Holds the grabbed Fock matrices to extrapolate
+    std::deque<einsums::BlockTensor<std::complex<double>, 2>> err_vecs;  // Holds FDSmSDF_ at each iteration (orbital gradients) 
+    std::vector<std::complex<double>> diis_coeffs;                       // Holds the coefficients for each Fock matrix in Fdiis
+    std::vector<std::complex<double>> error_doubles;                     // RMS errors (real)
 
-    double nuclearrep_;
+    double nuclearrep_; // Nuclear repulsion energy
 
-    einsums::BlockTensor<std::complex<double>, 2> F0_;
-    einsums::BlockTensor<std::complex<double>, 2> EINT_;
-    einsums::BlockTensor<std::complex<double>, 2> F_;
-    einsums::BlockTensor<std::complex<double>, 2> FDSmSDF_;
-    einsums::BlockTensor<std::complex<double>, 2> Fp_;
-    einsums::BlockTensor<double, 2> EINS_;
-    einsums::BlockTensor<std::complex<double>, 2> EINX_;
-    einsums::BlockTensor<std::complex<double>, 2> C_;
-    einsums::BlockTensor<std::complex<double>, 2> cCocc_;
-    einsums::BlockTensor<std::complex<double>, 2> Cocc_;
-    einsums::BlockTensor<std::complex<double>, 2> D_;
-    einsums::BlockTensor<std::complex<double>, 2> Fevecs_;
-    einsums::BlockTensor<double, 1> Fevals_;
-    // einsums::BlockTensor<std::complex<double>, 1> Fevals_;
-
-    einsums::BlockTensor<double, 1> RealEvals_;
-    einsums::BlockTensor<std::complex<double>, 2> J_;
-    einsums::BlockTensor<std::complex<double>, 2> K_;
-    einsums::BlockTensor<std::complex<double>, 2> temp1_;
+    // NOTE: EINS_ and EINX_ are spin-blocked variants of S_ and X_ from HF, respectively
+    // The change of variable names is intentional to avoid confusion
+    einsums::BlockTensor<std::complex<double>, 2> F0_;        // Core Hamilton F0 = T + V
+    einsums::BlockTensor<std::complex<double>, 2> F_;         // Non-orthogonal Fock matrix with F = T + V + J - K
+    einsums::BlockTensor<std::complex<double>, 2> FDSmSDF_;   // Fock gradient FDSmSDF_ = [F, D]
+    einsums::BlockTensor<std::complex<double>, 2> Fp_;        // Orthogonalized Fock matrix
+    einsums::BlockTensor<double, 2> EINS_;                    // Spin-blocked overlap matrix -- it is never complex
+    einsums::BlockTensor<std::complex<double>, 2> EINX_;      // Spin-blocked orthogonalization matrix -- also never complex, but cannot do real-complex matrix-matrix multiplication
+    einsums::BlockTensor<std::complex<double>, 2> C_;         // Coefficient matrix built after back-trasnformation C' = XC
+    
+    // Cocc_ and cCocc_ deprecated since there doesn't appear to be a reason to permanently store these (temp1_ and temp2_ are used instead)
+    //einsums::BlockTensor<std::complex<double>, 2> cCocc_; 
+    //einsums::BlockTensor<std::complex<double>, 2> Cocc_;      // Occupied coefficient matrix -- needed for forming density matrix
+    einsums::BlockTensor<std::complex<double>, 2> D_;         // 1-particle density matrix
+    einsums::BlockTensor<std::complex<double>, 2> Fevecs_;    // Eigenvectors of Fock matrix
+    einsums::BlockTensor<double, 1> Fevals_;                  // Eigenvalues of Fock matrix
+    einsums::BlockTensor<std::complex<double>, 2> J_;         // Coulomb matrix
+    einsums::BlockTensor<std::complex<double>, 2> K_;         // Exchange matrix   
+    einsums::BlockTensor<std::complex<double>, 2> temp1_;     // temp1_ and temp2_ are temporary storage containers for intermediate steps
     einsums::BlockTensor<std::complex<double>, 2> temp2_;
 
-    // size_t nirrep_;
-    std::vector<int> irrep_sizes_;
-    std::vector<int> nelecpi_;
-    // Dimension nsopi_;
-    // Dimension nbetapi_;
-    // Dimension nelecpi_;
-    // Dimension nvirtpi_;
-
-    // std::shared_ptr<psi::BasisSet> basisset_;
-
-    // einsums::BlockTensor<std::complex<double>, 2> F0_;
+    std::vector<int> irrep_sizes_;  // Since GHF is spin-blocked, each irrep (h) size will be 2*nsopi_[h]
+    std::vector<int> nelecpi_;      // Number of electrons per irrep
 };
 
 }  // namespace scf

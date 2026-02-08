@@ -48,6 +48,8 @@ CGHF::~CGHF() {}
 // Define global einsums::BlockTensors and variables needed throughout the CGHF class
 void CGHF::common_init() {
     // => HF REQUIREMENTS from hf.cc <=
+    // These are empty matrices to my knowledge and don't affect performance, but
+    // we will get a seg fault if they are not called
     Ca_ = SharedMatrix(factory_->create_matrix("alpha MO coefficients (C)"));
     Cb_ = SharedMatrix(factory_->create_matrix("beta MO coefficients (C)"));
     Fa_ = SharedMatrix(factory_->create_matrix("F alpha"));
@@ -56,14 +58,13 @@ void CGHF::common_init() {
     Db_ = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Va_ = SharedMatrix(factory_->create_matrix("G alpha"));
     Vb_ = SharedMatrix(factory_->create_matrix("G beta"));
-
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_a_->set_name("alpha orbital energies");
     epsilon_b_ = SharedVector(factory_->create_vector());
     epsilon_b_->set_name("beta orbital energies");
-
     same_a_b_dens_ = false;
     same_a_b_orbs_ = false;
+
     nuclearrep_ = molecule_->nuclear_repulsion_energy({0.0, 0.0, 0.0});
 
     // => DIIS variables <=
@@ -109,8 +110,9 @@ void CGHF::common_init() {
     // Fevals_ = einsums::BlockTensor<std::complex<double>, 1>("Fock evals", irrep_sizes_);  // Eigenvalues upon diagonalizing Fock matrix
     Fevals_ = einsums::BlockTensor<double, 1>("Fock evals", irrep_sizes_);  // Eigenvalues upon diagonalizing Fock matrix
 
-    Cocc_ = einsums::BlockTensor<std::complex<double>, 2>("Cocc_", irrep_sizes_);  // Occupied coefficients matrix
-    cCocc_ = einsums::BlockTensor<std::complex<double>, 2>("Cocc_", irrep_sizes_);  // Complex conjugate of occupied coefficients matrix
+    // => Deprecated since temp1_ and temp2_ already exist, and Cocc_ nor cCocc_ doesn't need to be permanently stored <=
+    //Cocc_ = einsums::BlockTensor<std::complex<double>, 2>("Cocc_", irrep_sizes_);  // Occupied coefficients matrix
+    //cCocc_ = einsums::BlockTensor<std::complex<double>, 2>("Cocc_", irrep_sizes_);  // Complex conjugate of occupied coefficients matrix
     D_ = einsums::BlockTensor<std::complex<double>, 2>("D", irrep_sizes_);  // Density matrix
     J_ = einsums::BlockTensor<std::complex<double>, 2>("J", irrep_sizes_);  // Coulombic matrix
     K_ = einsums::BlockTensor<std::complex<double>, 2>("K", irrep_sizes_);  // Exchange matrix (might not need to be decomposed for efficiency reasons)
@@ -124,8 +126,8 @@ void CGHF::common_init() {
     C_.zero();
     Fevecs_.zero();
     Fevals_.zero();
-    Cocc_.zero();
-    cCocc_.zero();
+    //Cocc_.zero();
+    //cCocc_.zero();
     D_.zero();
     J_.zero();
     K_.zero();
@@ -153,8 +155,7 @@ void CGHF::preiterations() {
                 int beta_q = q + nsopi_[h];
 
                 EINS_[h].subscript(p, q) = S_->get(h, p, q);  // overlap AA spin block
-                EINS_[h].subscript(beta_p, beta_q) =
-                    S_->get(h, p, q);  // overlap BB spin block is same as AA since same spatial orbitals
+                EINS_[h].subscript(beta_p, beta_q) = S_->get(h, p, q);  // overlap BB spin block is same as AA since same spatial orbitals
 
                 F0_[h].subscript(p, q) = H_->get(h, p, q);            // core Hamiltonian AA spin block
                 F0_[h].subscript(beta_p, beta_q) = H_->get(h, p, q);  // core Hamiltonian BB spin block
@@ -181,7 +182,9 @@ void CGHF::preiterations() {
     }
 }
 
-void CGHF::finalize() {}
+void CGHF::finalize() {
+    HF::finalize();
+}
 
 void CGHF::save_density_and_energy() {}
 
@@ -213,7 +216,7 @@ void CGHF::form_G() {
     int nso = nso_;
     int dim = 2 * nso;
 
-    // TODO check G_mat dimensions
+    // TODO check G_mat dimensions for irreps
 
     for (int h = 0; h < nirrep_; h++)
         for (int p = 0; p < nsopi_[h]; p++)
@@ -233,18 +236,9 @@ void CGHF::form_G() {
                     }
                 }
             }
-
-    // Then fill in lower triangle
-    for (int h = 0; h < nirrep_; h++) {
-        for (int i = 0; i < irrep_sizes_[h]; i++) {
-            for (int j = 0; j < i; j++) {
-                J_[h].subscript(i, j) = std::conj(J_[h].subscript(j, i));
-            }
-        }
-    }
 }
 
-// Combines F = H + J - K
+/* F = H + J - K */
 void CGHF::form_F() {
     std::cout << "form_F\n";
     F_.zero();
@@ -254,13 +248,11 @@ void CGHF::form_F() {
 }
 
 /*
- * Orthogonalizes the Fock matrix via Fp_ = X_dagger * F * X_
- * Then diagonalizes Fp_ to give a set of eigenpairs in the MO basis
- * e.g. the eigenvalues are the MO energies
- * Finally, the eigenvectors are back-transformed back to the AO basis
+ * 1. Orthogonalizes the Fock matrix via Fp_ = X_dagger * F * X_
+ * 2. Then diagonalizes Fp_ to give a eigenpairs in the MO basis
+ * 3. the eigenvectors are back-transformed back to the AO basis
  *
- * Ignores the shift for now
- *
+ * Note, no E-shift for now. 
  */
 void CGHF::form_C(double shift) {
     // => ORTHOGONALIZE FOCK <=
@@ -284,31 +276,33 @@ void CGHF::form_C(double shift) {
     temp1_.zero();
     temp2_.zero();
 
-    for (int h = 0; h < nirrep_; h++)
-        for (int p = 0; p < irrep_sizes_[h]; p++)
-            for (int q = 0; q < irrep_sizes_[h]; q++) {
-                temp2_[h].subscript(q, p) = std::conj(Fp_[h](p, q));
-            }
-
-    // Fp = 0.5 * (Fp.conj().T + Fp_)
-    temp1_ = Fp_;
-    temp1_ += temp2_;  // Fp.conj().T
-    temp1_ *= 0.5;
-
-    Fp_ = temp1_;
-    temp1_.zero();
-
     // Must be done in a loop over irreps -- cannot just do it with the BlockTensor
+    // Nathan: Why?
     for (int h = 0; h < nirrep_; h++) {
+        // Do not diagonalize 0x0 matrix
         if (nsopi_[h] == 0) {
             continue;
-        };  // Cannot diagonalize a 0x0 matrix
+        }
 
         // HEEV
         einsums::linear_algebra::heev<true>(&Fp_[h], &Fevals_[h]); // Hermitian eigensolver SHOULD be legitimate over
-		// TODO: HEY MATT CHANGE THIS
-		einsums::linear_algebra::invert(&Fp_[h]);
+
+	// heev retuns the wrong side, so we need to take the inverse (hermitian adjoint)
+	// i.e. einsums::linear_algebra::invert(&Fp_[h]);
+	// TODO: rework math so we don't have to do this step!
+	// Also, this can be done with a blas call
+
+	for (int p = 0; p < irrep_sizes_[h]; p++)
+	for (int q = 0; q < irrep_sizes_[h]; q++) {
+	    auto Fp_pq = Fp_[h].subscript(p, q);
+
+	    temp1_[h].subscript(q, p) = std::conj(Fp_pq);
+	}
+	Fp_[h] = temp1_[h];
+
     }
+
+    temp1_.zero();
 
     // => BACK TRANSFORM <=
     // EINX_ @ Fevecs_ = C_
@@ -355,29 +349,29 @@ void CGHF::compute_SAD_guess(bool natorb) {
 void CGHF::form_D() {
     std::cout << "form_D\n";
     D_.zero();
-    Cocc_.zero();
-    cCocc_.zero();
+    //Cocc_.zero();
+    //cCocc_.zero();
+    temp1_.zero();
+    temp2_.zero();
 
     // Simply fills Cocc_ and cCocc_ with the (2*nsopi_ x nelecpi_) matrix
     // Note that Cocc_ and cCocc_ are both (2*nsopi_ x 2*nsopi_), but the 'remainder'
     // are all zeros and contribute nothing
     // This is just a minor inefficiency, since these matrices are larger than they should be
-
     for (int h = 0; h < nirrep_; h++) {
-        auto cocc = einsums::Tensor<std::complex<double>, 2>("cocc", irrep_sizes_[h], nelecpi_[h]);
         for (int j = 0; j < irrep_sizes_[h]; j++) {
             for (int k = 0; k < nelecpi_[h]; k++) {
-                cocc.subscript(j, k) = C_[h](j, k);
+		auto C_jk = C_[h].subscript(j, k);
+                temp1_[h].subscript(j, k) = C_jk;
+		temp2_[h].subscript(j, k) = std::conj(C_jk);
             }
         }
-
-        // Performs einsums contraction ui,vi->uv with (Cocc_, cCocc_, D_)
-        einsums::tensor_algebra::einsum(einsums::Indices{einsums::index::u, einsums::index::v},  // D_ with uv
-                                        &D_[h],
-                                        einsums::Indices{einsums::index::u, einsums::index::i},        // Cocc_ with ui
-                                        cocc, einsums::Indices{einsums::index::v, einsums::index::i},  // cCocc_ with vi
-                                        cocc);
     }
+    // Performs einsums contraction ui,vi->uv with temp1_, temp2_ -> D_)
+    einsums::tensor_algebra::einsum(einsums::Indices{einsums::index::u, einsums::index::v}, &D_,     // D_uv
+                                    einsums::Indices{einsums::index::u, einsums::index::i}, temp1_,  // Cocc_ui
+                                    einsums::Indices{einsums::index::v, einsums::index::i}, temp2_   // Cocc.conj.T_vi
+                                    );
 }
 
 void CGHF::damping_update(double damping_percentage) {}
@@ -520,8 +514,6 @@ std::complex<double> CGHF::do_diis() {
         Fdiis.at(max_error_ind) = Fp_;
         err_vecs.at(max_error_ind) = FDSmSDF_;
 
-        // std::cout << "DIIS vector being replaced at index " << max_error_ind << "\n";
-        // std::cout << "Current DIIS subspace size: " << Fdiis.size() << "\n";
         // Norm for the replacement error vector, which is why the index is different here compared to below
         auto norm = einsums::linear_algebra::dot(err_vecs.at(max_error_ind), err_vecs.at(max_error_ind));
         error_doubles.at(max_error_ind) = norm;  // This is set to real for now, not sure what to do about this
@@ -563,13 +555,6 @@ std::complex<double> CGHF::do_diis() {
 
     // Actually populate it with the overlaps
 
-    // for (int i = 0; i < err_vecs.size(); i++) {
-    //     for (int j = 0; j <= i; j++) { //Had to consult Connor's UHF for this little trick as I tried 80 million
-    //     things
-    //         B_(i, j) = einsums::linear_algebra::dot(err_vecs[i], err_vecs[j]);
-    //         B_(j, i) = B_(i, j); //Which makes perfect sense actually
-    //     }
-    // }
     for (int i = 0; i < err_vecs.size(); i++) {
         for (int j = 0; j < err_vecs.size(); j++) {
             B_(i, j) = {0.0, 0.0};
@@ -588,8 +573,6 @@ std::complex<double> CGHF::do_diis() {
 
     C_temp.zero();
 
-    // C_temp(0, err_vecs.size()+1) = std::complex<double> {1.0, 0.0};
-
     for (int i = 0; i < err_vecs.size() + 1; i++) {
         C_temp(0, i) = std::complex<double>{1.0, 0.0};
     }
@@ -604,9 +587,6 @@ std::complex<double> CGHF::do_diis() {
     }
 
     // Then we can extrapolate the Fock matrix!
-
-    // println(Fdiis[0]);
-    //
     Fp_.zero();
 
     if (err_vecs.size() == diis_max) {
@@ -622,12 +602,6 @@ std::complex<double> CGHF::do_diis() {
                                                    &Fp_);
     }
 
-    // Fp_ = temp2;
-
-    // F0_ = temp2;
-    //
-
-    std::cout << "do_Diis\n";
     return error_trace;
 }
 
