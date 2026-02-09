@@ -1389,17 +1389,17 @@ data:
       host: github
       account: Einsums
       name: Einsums
-      commit: v1.0.6
+      commit: v1.1.2
     cmake:
       name: Einsums
-      constraint: 1.0.6
+      constraint: 1.1.2
       target: Einsums::Einsums
     #  components:
     #  ENABLE_Einsums
     conda:
       channel: conda-forge
-      name: einsums
-      constraint: ">=1.0.6"
+      name: pyeinsums
+      constraint: ">=1.1.2"
       constraint_note: "v1 changes interface, and 1.0.3 needed for Linux to compile against."
       aux_build_names:
         - range-v3

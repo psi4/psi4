@@ -92,6 +92,7 @@ _programs = {
     "qcportal": which_import("qcportal", return_bool=True),
     "bse": which_import("basis_set_exchange", return_bool=True),
     "einsums": psi4.addons("einsums"),
+    "pyeinsums": which_import("einsums", return_bool=True),
     "gauxc": psi4.addons("gauxc"),
     "ooo": psi4.addons("ooo"),
     "pandas": which_import("pandas", return_bool=True),
