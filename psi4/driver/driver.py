@@ -543,10 +543,10 @@ def energy(name, **kwargs):
 
         # TODO place this with the associated call, very awkward to call this in other areas at the moment
         if lowername in ['efp', 'mrcc', 'dmrg']:
-            core.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
+            core.print_out("\n\nWarning! %s does not have an associated derived wavefunction. " % name)
             core.print_out("The returned wavefunction is the incoming reference wavefunction.\n\n")
         elif 'sapt' in lowername:
-            core.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
+            core.print_out("\n\nWarning! %s does not have an associated derived wavefunction. " % name)
             core.print_out("The returned wavefunction is the dimer SCF wavefunction.\n\n")
 
         return (core.variable('CURRENT ENERGY'), wfn)

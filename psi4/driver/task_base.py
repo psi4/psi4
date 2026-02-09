@@ -111,7 +111,7 @@ class AtomicComputer(BaseComputer):
     def set_keywords(cls, keywords):
         return copy.deepcopy(keywords)
 
-    def plan(self, wfn_qcvars_only=True) -> AtomicInput:
+    def plan(self) -> AtomicInput:
         """Form QCSchema input from member data."""
 
         atomic_model = AtomicInput(**{
@@ -125,7 +125,7 @@ class AtomicComputer(BaseComputer):
             "protocols": self.protocols,
             "extras": {
                 "psiapi": True,
-                "wfn_qcvars_only": wfn_qcvars_only,
+                "wfn_qcvars_only": True,
             },
         })
 

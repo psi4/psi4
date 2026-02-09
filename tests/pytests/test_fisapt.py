@@ -68,7 +68,7 @@ no_com"""
     }
 
     for key in keys:
-        compare_values(Eref[key], Epsi[key], 6, key)
+        assert compare_values(Eref[key], Epsi[key], 6, key)
     fEnergies = psi4.fsapt_analysis(
         molecule=mol,
         # NOTE: 1-indexed for fragments_a and fragments_b
@@ -101,7 +101,7 @@ no_com"""
 
     # python iterate over zip dictionary keys and values
     for key1, key2 in zip(fEref.keys(), fEnergies.keys()):
-        compare_values(fEref[key1], fEnergies[key2][0], 2, key1)
+        assert compare_values(fEref[key1], fEnergies[key2][0], 2, key1)
 
 
 @pytest.mark.fsapt
@@ -185,7 +185,7 @@ no_com
     }
 
     for key in keys:
-        compare_values(Eref[key], Epsi[key], 6, key)
+        assert compare_values(Eref[key], Epsi[key], 6, key)
     fEnergies = psi4.fsapt_analysis(
         molecule=mol,
         # NOTE: 1-indexed for fragments_a and fragments_b
@@ -216,7 +216,7 @@ no_com
     }
 
     for key1, key2 in zip(fEref.keys(), fEnergies.keys()):
-        compare_values(fEref[key1], fEnergies[key2][-1], 2, key1)
+        assert compare_values(fEref[key1], fEnergies[key2][-1], 2, key1)
 
 
 @pytest.mark.fsapt
@@ -267,7 +267,11 @@ no_com"""
             "FISAPT_FSAPT_FILEPATH": "none",
         }
     )
-    psi4.energy("fisapt0")
+    e, wfn = psi4.energy("fisapt0", return_wfn=True)
+    print(wfn)
+    from pprint import pprint as pp
+    pp(dir(wfn))
+    pp(wfn.variables())
     keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
     Eref = {
         "Enuc": 35.07529824960602,
@@ -279,15 +283,15 @@ no_com"""
     }
     Epsi = {
         "Enuc": mol.nuclear_repulsion_energy(),
-        "Eelst": variable("SAPT ELST ENERGY"),
-        "Eexch": variable("SAPT EXCH ENERGY"),
-        "Eind": variable("SAPT IND ENERGY"),
-        "Edisp": variable("SAPT DISP ENERGY"),
-        "Etot": variable("SAPT0 TOTAL ENERGY"),
+        "Eelst": wfn.variable("SAPT ELST ENERGY"),
+        "Eexch": wfn.variable("SAPT EXCH ENERGY"),
+        "Eind": wfn.variable("SAPT IND ENERGY"),
+        "Edisp": wfn.variable("SAPT DISP ENERGY"),
+        "Etot": wfn.variable("SAPT0 TOTAL ENERGY"),
     }
 
     for key in keys:
-        compare_values(Eref[key], Epsi[key], 6, key)
+        assert compare_values(Eref[key], Epsi[key], 6, key)
     data = psi4.fsapt_analysis(
         molecule=mol,
         # NOTE: 1-indexed for fragments_a and fragments_b
@@ -339,7 +343,7 @@ no_com"""
 
     for key in fkeys:
         print(fEnergies[key], fEref[key])
-        compare_values(fEref[key], fEnergies[key], 2, key)
+        assert compare_values(fEref[key], fEnergies[key], 2, key)
 
 
 @pytest.mark.fsapt
@@ -387,7 +391,8 @@ no_com"""
     )
     plan = psi4.energy("fisapt0", return_plan=True, molecule=mol)
     atomic_result = psi4.schema_wrapper.run_qcschema(
-        plan.plan(wfn_qcvars_only=False),
+        plan.plan(),
+        # plan.plan(wfn_qcvars_only=False), # Needed if SAPT data not stored on dimer_wfn.
         clean=True,
         postclean=True,
     )
@@ -423,7 +428,7 @@ no_com"""
 
     # python iterate over zip dictionary keys and values
     for key1, key2 in zip(fEref.keys(), fEnergies.keys()):
-        compare_values(fEref[key1], fEnergies[key2][0], 2, key1)
+        assert compare_values(fEref[key1], fEnergies[key2][0], 2, key1)
 
 
 @pytest.mark.fsapt
@@ -486,7 +491,7 @@ no_com"""
     }
 
     for key in keys:
-        compare_values(Eref[key], Epsi[key], 6, key)
+        assert compare_values(Eref[key], Epsi[key], 6, key)
     psi4.fsapt_analysis(
         fragments_a={
             "MethylA": [1, 2, 3, 4, 5],
@@ -516,7 +521,7 @@ no_com"""
     }
 
     for key in fkeys:
-        compare_values(fEref[key], fEnergies[key], 2, key)
+        assert compare_values(fEref[key], fEnergies[key], 2, key)
         print(fEnergies)
         fEref = {
             "fEelst": -0.002,
@@ -529,7 +534,7 @@ no_com"""
         }
 
     for key in fkeys:
-        compare_values(fEref[key], fEnergies[key], 2, key)
+        assert compare_values(fEref[key], fEnergies[key], 2, key)
 
 
 @pytest.mark.fsapt
@@ -603,7 +608,8 @@ no_com
     )
     plan = psi4.energy("fisapt0", return_plan=True, molecule=mol)
     atomic_result = psi4.schema_wrapper.run_qcschema(
-        plan.plan(wfn_qcvars_only=False),
+        plan.plan(),
+        # plan.plan(wfn_qcvars_only=False), # Needed if SAPT data not stored on dimer_wfn.
         # clean=True,
         # postclean=True,
     )
@@ -791,7 +797,7 @@ no_com
                 ref_dict[key][i],
                 value,
             )
-            compare_values(
+            assert compare_values(
                 ref_dict[key][i],
                 value,
                 5,  # compares in kcal/mol, so looser tolerance
@@ -803,10 +809,11 @@ no_com
 if __name__ == "__main__":
     # test_fsapt_psivars_dict()
     # test_fsapt_external_potentials()
+    # test_fsapt_AtomicOutput()
     # test_fsapt_psivars()
     # test_fsapt_psivars_dict()
     # test_fsapt_AtomicOutput()
     # test_fsapt_output_file()
     # test_fsapt_output_file()
-    test_fsapt_indices()
-    # pytest.main([__file__])
+    # test_fsapt_indices()
+    pytest.main([__file__])

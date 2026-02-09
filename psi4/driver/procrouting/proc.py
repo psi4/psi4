@@ -5332,6 +5332,7 @@ def run_fisapt(name, **kwargs):
     if "-d" in name.lower():
         proc_util.sapt_empirical_dispersion(name, ref_wfn)
 
+    fisapt_wfn.save_variables_to_wfn(ref_wfn, external_potentials=kwargs.get("external_potentials", None))
     core.timer_off("FISAPT")
     optstash.restore()
     return ref_wfn

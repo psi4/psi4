@@ -156,7 +156,6 @@ def fisapt_fdrop(self, external_potentials=None):
         for frag in "ABC":
             potential = external_potentials.get(frag, None)
             if potential is not None:
-                print(potential)
                 xyz = str(len(potential)) + "\n\n"
                 potential_lst = []
                 for qxyz in potential:
@@ -219,7 +218,7 @@ def fisapt_fdrop(self, external_potentials=None):
 
         if write_ssapt_files:
             os.makedirs(ssapt_filepath, exist_ok=True)
-            core.print_out("    sF-SAPT Data Filepath = {}\n\n".format(ssapt_filepath))
+            core.print_out("    F-sSAPT Data Filepath = {}\n\n".format(ssapt_filepath))
             geomfile = ssapt_filepath + os.sep + "geom.xyz"
             with open(geomfile, "w") as fh:
                 fh.write(xyz)
@@ -246,50 +245,65 @@ def fisapt_fdrop(self, external_potentials=None):
                 _drop(matrices["sDisp_AB"], ssapt_filepath)
 
 
-def fisapt_save_fsapt_variables(self, external_potentials=None):
-    core.print_out("  ==> F-SAPT Output (to psi vars) <==\n\n")
+def fisapt_variables_to_wfn(self, ref_wfn, external_potentials=None):
+    """
+    Stores FISAPT variables to the wavefunction for AtomicResults to
+    store results.
+    """
+    # First Scalars
+    scalars = self.scalars()
+    ref_wfn.set_variable("SAPT ELST ENERGY", scalars["Electrostatics"])
+    ref_wfn.set_variable("SAPT ELST10,R ENERGY", scalars["Elst10,r"])
+    if "Extern-Extern" in scalars:
+        ref_wfn.set_variable("SAPT ELST EXTERN-EXTERN ENERGY", scalars["Extern-Extern"])
+    ref_wfn.set_variable("SAPT EXCH ENERGY", scalars["Exchange"])
+    ref_wfn.set_variable("SAPT EXCH10 ENERGY", scalars["Exch10"])
+    ref_wfn.set_variable("SAPT EXCH10(S^2) ENERGY", scalars["Exch10(S^2)"])
+    ref_wfn.set_variable("SAPT IND ENERGY", scalars["Induction"])
+    ref_wfn.set_variable("SAPT IND20,R ENERGY", scalars["Ind20,r"])
+    ref_wfn.set_variable("SAPT EXCH-IND20,R ENERGY", scalars["Exch-Ind20,r"])
+    ref_wfn.set_variable("SAPT IND20,U ENERGY", scalars["Ind20,u"])
+    ref_wfn.set_variable("SAPT EXCH-IND20,U ENERGY", scalars["Exch-Ind20,u"])
+    ref_wfn.set_variable("SAPT DISP ENERGY", scalars["Dispersion"])
+    ref_wfn.set_variable("SAPT DISP20 ENERGY", scalars["Disp20"])
+    ref_wfn.set_variable("SAPT EXCH-DISP20 ENERGY", scalars["Exch-Disp20"])
+    ref_wfn.set_variable("SAPT0 TOTAL ENERGY", scalars["SAPT"])
+    ref_wfn.set_variable("SAPT TOTAL ENERGY", scalars["SAPT"])
+    ref_wfn.set_variable("CURRENT ENERGY", scalars["SAPT"])
+    # dHF to ref_wfn
+    ref_wfn.set_variable("SAPT HF(2) ENERGY ABC(HF)", scalars["E_ABC_HF"])
+    ref_wfn.set_variable("SAPT HF(2) ENERGY AC(0)", scalars["E_AC"])
+    ref_wfn.set_variable("SAPT HF(2) ENERGY BC(0)", scalars["E_BC"])
+    ref_wfn.set_variable("SAPT HF(2) ENERGY A(0)", scalars["E_A"])
+    ref_wfn.set_variable("SAPT HF(2) ENERGY B(0)", scalars["E_B"])
+    ref_wfn.set_variable("SAPT HF(2) ENERGY AC(HF)", scalars["E_AC_HF"])
+    ref_wfn.set_variable("SAPT HF(2) ENERGY BC(HF)", scalars["E_BC_HF"])
+    ref_wfn.set_variable("SAPT HF(2) ENERGY AB(HF)", scalars["E_AB_HF"])
+    ref_wfn.set_variable("SAPT HF(2) ENERGY A(HF)", scalars["E_A_HF"])
+    ref_wfn.set_variable("SAPT HF(2) ENERGY B(HF)", scalars["E_B_HF"])
+    ref_wfn.set_variable("SAPT HF(2) ENERGY C", scalars["E_C"])
+    ref_wfn.set_variable("SAPT HF(2) ENERGY HF", scalars["HF"])
 
-    # write external potential geometries
-    external_pot_str = ""
-    if external_potentials is not None and isinstance(external_potentials, dict):
-        for frag in "ABC":
-            potential = external_potentials.get(frag, None)
-            if potential is not None:
-                xyz = str(len(potential)) + "\n\n"
-                for qxyz in potential:
-                    if len(qxyz) == 2:
-                        xyz += "Ch %f %f %f\n" % (qxyz[1][0], qxyz[1][1], qxyz[1][2])
-                    elif len(qxyz) == 4:
-                        xyz += "Ch %f %f %f\n" % (qxyz[1], qxyz[2], qxyz[3])
-                    else:
-                        raise ValidationError(
-                            f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'"
-                        )
-                external_pot_str += xyz
-
+    # Then matrices
     matrices = self.matrices()
+    ref_wfn.set_variable("FSAPT_QA", matrices["Qocc0A"])
+    ref_wfn.set_variable("FSAPT_QB", matrices["Qocc0B"])
+    ref_wfn.set_variable("FSAPT_ELST_AB", matrices["Elst_AB"])
+    ref_wfn.set_variable("FSAPT_EXCH_AB", matrices["Exch_AB"])
+    ref_wfn.set_variable("FSAPT_INDAB_AB", matrices["IndAB_AB"])
+    ref_wfn.set_variable("FSAPT_INDBA_AB", matrices["IndBA_AB"])
 
-    # NOTE: removed to_array() and will need to do in fsapt
-    core.set_variable("FSAPT_QA", matrices["Qocc0A"])
-    core.set_variable("FSAPT_QB", matrices["Qocc0B"])
-    core.set_variable("FSAPT_ELST_AB", matrices["Elst_AB"])
-    core.set_variable("FSAPT_EXCH_AB", matrices["Exch_AB"])
-    core.set_variable("FSAPT_INDAB_AB", matrices["IndAB_AB"])
-    core.set_variable("FSAPT_INDBA_AB", matrices["IndBA_AB"])
-
+    # Handle conditional cases
     if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
-        matrices["FSAPT_DISP_AB"].name = "Disp"
-        core.set_variable("FSAPT_DISP_AB", matrices["Disp_AB"])
+        ref_wfn.set_variable("FSAPT_DISP_AB", matrices["Disp_AB"])
 
     if core.get_option("FISAPT", "SSAPT0_SCALE"):
-        matrices["sIndAB_AB"].name = "IndAB"
-        matrices["sIndBA_AB"].name = "IndBA"
-        core.set_variable("FSAPT_SINDAB_AB", matrices["sIndAB_AB"])
-        core.set_variable("FSAPT_SINDBA_AB", matrices["sIndBA_AB"])
+        ref_wfn.set_variable("FSAPT_SINDAB_AB", matrices["sIndAB_AB"])
+        ref_wfn.set_variable("FSAPT_SINDBA_AB", matrices["sIndBA_AB"])
 
         if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
-            matrices["sDisp_AB"].name = "Disp"
-            core.set_variable("FSAPT_SDISP_AB", matrices["sDisp_AB"])
+            ref_wfn.set_variable("FSAPT_SDISP_AB", matrices["sDisp_AB"])
+    return
 
 
 def fisapt_plot(self):
@@ -335,4 +349,4 @@ def _drop(array, filepath):
 core.FISAPT.compute_energy = fisapt_compute_energy
 core.FISAPT.fdrop = fisapt_fdrop
 core.FISAPT.plot = fisapt_plot
-core.FISAPT.save_fsapt_variables = fisapt_save_fsapt_variables
+core.FISAPT.save_variables_to_wfn = fisapt_variables_to_wfn
