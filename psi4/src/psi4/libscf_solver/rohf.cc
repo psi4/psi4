@@ -53,6 +53,19 @@
 
 #include "rohf.h"
 
+#ifdef USING_BrianQC
+
+#include <use_brian_wrapper.h>
+#include <brian_macros.h>
+#include <brian_types.h>
+
+extern void checkBrian();
+extern BrianCookie brianCookie;
+extern bool brianEnable;
+extern bool brianEnableDFT;
+
+#endif
+
 namespace psi {
 namespace scf {
 
@@ -496,6 +509,14 @@ double ROHF::compute_E() {
     // Compute exchange energy
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
+
+#ifdef USING_BrianQC
+    if (brianEnable and brianEnableDFT) {
+        // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
 
     double exchange_E = 0.0;
     if (functional_->is_x_hybrid()) {
@@ -1097,6 +1118,14 @@ void ROHF::form_G() {
     // Apply hybrid and long-range exchange
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
+
+#ifdef USING_BrianQC
+    if (brianEnable and brianEnableDFT) {
+        // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
 
     if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
         Ga_->axpy(-alpha, Ka_);
