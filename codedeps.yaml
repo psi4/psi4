@@ -1488,7 +1488,7 @@ data:
 
   - project: pandas
     use:
-      added: 1.10
+      added: 1.11
       required: false
       required_note: optional for extra tests
       buildable: false
