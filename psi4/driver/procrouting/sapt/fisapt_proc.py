@@ -33,7 +33,7 @@ import numpy as np
 from psi4 import core
 
 from .. import empirical_dispersion
-from psi4.driver.qcdb import ValidationError
+from ...p4util.exceptions import ValidationError
 
 
 def fisapt_compute_energy(self, jk_obj, *, external_potentials=None):
