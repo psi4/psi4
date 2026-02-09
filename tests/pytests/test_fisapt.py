@@ -268,10 +268,6 @@ no_com"""
         }
     )
     e, wfn = psi4.energy("fisapt0", return_wfn=True)
-    print(wfn)
-    from pprint import pprint as pp
-    pp(dir(wfn))
-    pp(wfn.variables())
     keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
     Eref = {
         "Enuc": 35.07529824960602,
