@@ -1,7 +1,7 @@
 if(${ENABLE_bse})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_bse}))
         include(FindPythonModule)
-        find_python_module(basis_set_exchange ATLEAST 0.9.0 QUIET)  # edit in codedeps
+        find_python_module(basis_set_exchange ATLEAST 0.9.0)  # edit in codedeps
     endif()
     
     if(${basis_set_exchange_FOUND})
