@@ -51,6 +51,7 @@ from .mdi_engine import mdi_run
 from .p4util.exceptions import *
 from .procrouting import *
 from .task_base import AtomicComputer
+from qcelemental.models import AtomicResult
 from .procrouting.sapt import fsapt
 
 # never import wrappers or aliases into this file
@@ -2090,12 +2091,10 @@ def tdscf(wfn, **kwargs):
 def fsapt_analysis(
     fragments_a: Dict,
     fragments_b: Dict,
-    molecule=None,
-    atomic_results=None,  # :AtomicResults,
+    source: Union[str, core.Molecule, AtomicResult] = None,
     pdb_dir: str = None,
     analysis_type: str = "reduced",
     links5050: bool = True,
-    dirname: str = "./fsapt",
     print_output: bool = True,
 ):
     r"""Runs fsapt.py either through qcvars or on fsapt output files.
@@ -2109,7 +2108,10 @@ def fsapt_analysis(
     """
 
     logger.debug('FSAPT ANALYSIS')
-    if atomic_results is None and molecule is None:
+    if isinstance(source, str):
+        if print_output:
+            print(f"Running fsapt_analysis through output files with {source = }")
+        dirname = source
         if print_output:
             print(f"Running fsapt_analysis through output files with {dirname = }")
         with open(f"{dirname}/fA.dat", "w") as f:
@@ -2118,21 +2120,42 @@ def fsapt_analysis(
         with open(f"{dirname}/fB.dat", "w") as f:
             for k, v in fragments_b.items():
                 f.write(f"{k} {' '.join([str(i) for i in v])}\n")
-        results = fsapt.run_from_output(dirname=dirname)
-    else:
+        return fsapt.run_from_output(dirname=dirname)
+
+    elif isinstance(source, AtomicResult):
         if print_output:
             print("Running fsapt_analysis through variables")
-        results = fsapt.run_fsapt_analysis(
-            fragments_a,
-            fragments_b,
-            molecule,
-            atomic_results,
-            pdb_dir,
-            analysis_type,
-            links5050,
-            print_output=print_output
+        atomic_results = source
+        molecule = None
+
+    elif isinstance(source, core.Molecule):
+        if print_output:
+            print("Running fsapt_analysis through variables")
+        atomic_results = None
+        molecule = source
+    elif source is None:
+        print(
+            "Warning: fsapt_analysis attempting to use core.active_molecule() for geometry!",
+            "To suppress this warning, explicitly provide source=Union[str, core.Molecule, AtomicResult],"
+            "   where str for output files, core.Molecule for geometry+qcvars, or AtomicResult",
+            sep="\n",
         )
-    return results
+        molecule = core.get_active_molecule()
+        atomic_results = None
+
+    if print_output:
+        print("Running fsapt_analysis through variables")
+
+    return fsapt.run_fsapt_analysis(
+        fragments_a,
+        fragments_b,
+        molecule,
+        atomic_results,
+        pdb_dir,
+        analysis_type,
+        links5050,
+        print_output=print_output
+    )
 
 
 # Aliases

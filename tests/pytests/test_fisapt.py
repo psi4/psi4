@@ -3,6 +3,8 @@ import psi4
 from psi4 import compare_values, variable
 from addons import uusing
 import numpy as np
+import os
+import shutil
 
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
@@ -70,7 +72,6 @@ no_com"""
     for key in keys:
         assert compare_values(Eref[key], Epsi[key], 6, key)
     fEnergies = psi4.fsapt_analysis(
-        molecule=mol,
         # NOTE: 1-indexed for fragments_a and fragments_b
         fragments_a={
             "MethylA": [1, 2, 3, 4, 5],
@@ -187,7 +188,6 @@ no_com
     for key in keys:
         assert compare_values(Eref[key], Epsi[key], 6, key)
     fEnergies = psi4.fsapt_analysis(
-        molecule=mol,
         # NOTE: 1-indexed for fragments_a and fragments_b
         fragments_a={
             "w1": [1, 2, 3],
@@ -289,7 +289,6 @@ no_com"""
     for key in keys:
         assert compare_values(Eref[key], Epsi[key], 6, key)
     data = psi4.fsapt_analysis(
-        molecule=mol,
         # NOTE: 1-indexed for fragments_a and fragments_b
         fragments_a={
             "MethylA": [1, 2, 3, 4, 5],
@@ -297,6 +296,7 @@ no_com"""
         fragments_b={
             "MethylB": [6, 7, 8, 9, 10],
         },
+        source=mol,
     )
     df = pd.DataFrame(data)
     print(df)
@@ -400,31 +400,31 @@ no_com"""
         fragments_b={
             "MethylB": [6, 7, 8, 9, 10],
         },
-        atomic_results=atomic_result,
+        source=atomic_result,
     )
     fEnergies = {
-        "Elst": fEnergies["Elst"],
-        "Exch": fEnergies["Exch"],
-        "IndAB": fEnergies["IndAB"],
-        "IndBA": fEnergies["IndBA"],
-        "Disp": fEnergies["Disp"],
-        "EDisp": fEnergies["EDisp"],
-        "Total": fEnergies["Total"],
+        "Elst": fEnergies["Elst"][0],
+        "Exch": fEnergies["Exch"][0],
+        "IndAB": fEnergies["IndAB"][0],
+        "IndBA": fEnergies["IndBA"][0],
+        "Disp": fEnergies["Disp"][0],
+        "EDisp": fEnergies["EDisp"][0],
+        "Total": fEnergies["Total"][0],
     }
     print(fEnergies)
     fEref = {
-        "fEelst": -0.002,
-        "fEexch": 0.000,
-        "fEindAB": -0.000,
-        "fEindBA": -0.000,
-        "fEdisp": -0.021,
-        "fEedisp": 0.000,
-        "fEtot": -0.023,
+        "Elst": -0.0023867836548276955,
+        "Exch": 0.00011242419533877543,
+        "IndAB": -1.2055155927787574e-05,
+        "IndBA": -1.1984667714276922e-05,
+        "Disp": -0.020636082319331096,
+        "EDisp": 0.0,
+        "Total": -0.02293448160273215,
     }
 
-    # python iterate over zip dictionary keys and values
-    for key1, key2 in zip(fEref.keys(), fEnergies.keys()):
-        assert compare_values(fEref[key1], fEnergies[key2][0], 2, key1)
+    # python iterate over dictionary keys
+    for k in fEref.keys():
+        compare_values(fEref[k], fEnergies[k], 2, k)
 
 
 @pytest.mark.fsapt
@@ -459,12 +459,14 @@ symmetry c1
 no_reorient
 no_com"""
     )
+    fsapt_dirname="./fsapt_dir_test_fsapt_output_file"
     psi4.set_options(
         {
             "basis": "jun-cc-pvdz",
             "scf_type": "df",
             "guess": "sad",
             "freeze_core": "true",
+            "FISAPT_FSAPT_FILEPATH": fsapt_dirname,
         }
     )
     psi4.energy("fisapt0")
@@ -495,12 +497,12 @@ no_com"""
         fragments_b={
             "MethylB": [6, 7, 8, 9, 10],
         },
-        dirname="./fsapt",
+        source=fsapt_dirname,
     )
     fEnergies = {}
     fkeys = ["fEelst", "fEexch", "fEindAB", "fEindBA", "fEdisp", "fEedisp", "fEtot"]
 
-    with open("./fsapt/fsapt.dat", "r") as fsapt:
+    with open(f"{fsapt_dirname}/fsapt.dat", "r") as fsapt:
         Energies = [float(x) for x in fsapt.readlines()[-2].split()[2:]]
 
     for pair in zip(fkeys, Energies):
@@ -511,26 +513,18 @@ no_com"""
         "fEexch": 0.000,
         "fEindAB": -0.000,
         "fEindBA": -0.000,
-        "fEdisp": 0.000,
-        "fEedisp": -0.033,
-        "fEtot": -0.036,
+        "fEdisp": -0.021,
+        "fEedisp": 0.000,
+        "fEtot": -0.023,
     }
 
+    # fsapt.dat only saves up to 3 decimal places, so use looser tolerance here
     for key in fkeys:
-        assert compare_values(fEref[key], fEnergies[key], 2, key)
-        print(fEnergies)
-        fEref = {
-            "fEelst": -0.002,
-            "fEexch": 0.000,
-            "fEindAB": -0.000,
-            "fEindBA": -0.000,
-            "fEdisp": -0.021,
-            "fEedisp": 0.000,
-            "fEtot": -0.023,
-        }
-
-    for key in fkeys:
-        assert compare_values(fEref[key], fEnergies[key], 2, key)
+        assert compare_values(fEref[key], fEnergies[key], 3, key)
+    # cleanup test directory
+    if os.path.exists(fsapt_dirname):
+        shutil.rmtree(fsapt_dirname)
+    return
 
 
 @pytest.mark.fsapt
@@ -621,9 +615,9 @@ no_com
             "Peptide_B": [9, 10, 11, 16, 26],
             "T-Butyl_B": [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
         },
+        source=atomic_result,
         links5050=True,
         print_output=False,
-        atomic_results=atomic_result,
     )
     from pprint import pprint
 
