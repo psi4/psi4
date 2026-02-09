@@ -88,14 +88,14 @@ double T3_grad_UHF_AAB() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    auto aoccpi = moinfo.aoccpi;
-    auto avirtpi = moinfo.avirtpi;
-    auto aocc_off = moinfo.aocc_off;
-    auto avir_off = moinfo.avir_off;
-    auto boccpi = moinfo.boccpi;
-    auto bvirtpi = moinfo.bvirtpi;
-    auto bocc_off = moinfo.bocc_off;
-    auto bvir_off = moinfo.bvir_off;
+    const auto& aoccpi = moinfo.aoccpi;
+    const auto& avirtpi = moinfo.avirtpi;
+    const auto& aocc_off = moinfo.aocc_off;
+    const auto& avir_off = moinfo.avir_off;
+    const auto& boccpi = moinfo.boccpi;
+    const auto& bvirtpi = moinfo.bvirtpi;
+    const auto& bocc_off = moinfo.bocc_off;
+    const auto& bvir_off = moinfo.bvir_off;
 
     double ***WIJk = (double ***)malloc(nirreps * sizeof(double **));
     double ***VIJk = (double ***)malloc(nirreps * sizeof(double **));
