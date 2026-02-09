@@ -229,7 +229,7 @@ warnings.formatwarning = custom_formatwarning
 
 # Import installed psi4
 sys.path.insert(1, lib_dir)
-import psi4  # isort:skip
+import psi4  # noqa: I001
 
 # Prevents a poor option combination
 if args['plugin_template'] and (not args['plugin_name']):

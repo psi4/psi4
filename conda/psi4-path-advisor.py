@@ -1034,7 +1034,7 @@ elif args.subparser_name in ["bulletin"]:
       psi4
       #>  Traceback (most recent call last):
       #>    File "/path/to/psi4/objdir/stage/bin/psi4", line 232, in <module>
-      #>      import psi4  # isort:skip
+      #>      import psi4  # noqa: I001
       #>      ^^^^^^^^^^^
       #>    File "/path/to/psi4/objdir/stage/lib/psi4/__init__.py", line 71, in <module>
       #>      from . import core

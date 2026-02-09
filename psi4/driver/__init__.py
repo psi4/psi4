@@ -26,7 +26,7 @@
 # @END LICENSE
 #
 
-# noqa: I001, I002
+# ruff: noqa: I001
 
 from . import psifiles as psif
 from .constants import *
