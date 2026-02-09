@@ -421,11 +421,11 @@ void ROHF::form_C(double shift) {
 
 void ROHF::prepare_canonical_orthogonalization() {
     // Some matrix size changes if we canonical orthogonalization
-    Ct_->init(nirrep_, nmopi_, nmopi_);
-    moFa_->init(nirrep_, nmopi_, nmopi_);
-    moFb_->init(nirrep_, nmopi_, nmopi_);
-    moFeff_->init(nirrep_, nmopi_, nmopi_);
-    soFeff_->init(nirrep_, nmopi_, nmopi_);  // This is in the "Orthogonalized SO" basis
+    Ct_->init(nmopi_, nmopi_);
+    moFa_->init(nmopi_, nmopi_);
+    moFb_->init(nmopi_, nmopi_);
+    moFeff_->init(nmopi_, nmopi_);
+    soFeff_->init(nmopi_, nmopi_);  // This is in the "Orthogonalized SO" basis
 }
 void ROHF::form_initial_C() {
     // In ROHF the creation of the C matrix depends on the previous iteration's C
@@ -877,7 +877,7 @@ void ROHF::damping_update(double damping_percentage) {
     Dt_->add(Db_);
 }
 
-int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
+int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) {
     std::time_t start, stop;
     start = std::time(nullptr);
 
@@ -892,7 +892,7 @@ int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter
 
     auto Gradient = moFeff_->get_block({dim_zero, occpi}, {docc, nmopi_});
     Gradient->scale(-4.0);
-    auto Precon = std::make_shared<Matrix>("Precon", nirrep_, occpi, virpi);
+    auto Precon = std::make_shared<Matrix>("Precon", occpi, virpi);
 
     for (size_t h = 0; h < nirrep_; h++) {
         if (!occpi[h] || !virpi[h]) continue;
@@ -953,7 +953,7 @@ int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter
 
     // Calc hessian vector product, find residual and conditioned residual
     auto r = Gradient->clone();
-    auto Ap = std::make_shared<Matrix>("Ap", nirrep_, occpi, virpi);
+    auto Ap = std::make_shared<Matrix>("Ap", occpi, virpi);
     Hx(x, Ap);
     r->subtract(Ap);
 
