@@ -59,10 +59,10 @@ double invert_matrix(double** a, double** y, int N, std::string out_fname);
 void solve_2x2_pep(double** H, double S, double* evals, double** evecs);
 PSI_API
 void reorder_qt(Dimension const& docc_in, Dimension const& socc_in, Dimension const& frozen_docc_in,
-                Dimension const& frozen_uocc_in, int* order, Dimension const& orbs_per_irrep, int nirreps);
+                Dimension const& frozen_uocc_in, int* order, Dimension const& orbs_per_irrep);
 PSI_API
 void reorder_qt_uhf(Dimension const& docc, Dimension const& socc, Dimension const& frozen_docc,
-                    Dimension const& frozen_uocc, int* order_alpha, int* order_beta, Dimension const& orbspi, int nirreps);
+                    Dimension const& frozen_uocc, int* order_alpha, int* order_beta, Dimension const& orbspi);
 int ras_set3(int nirreps, int nmo, int* orbspi, int* docc, int* socc, int* frdocc, int* fruocc, int* restrdocc,
              int* restruocc, int** ras_opi, int* core_guess, int* order, int ras_type, bool is_mcscf, Options& options);
 void newmm_rking(double** A, int transa, double** B, int transb, double** C, int num_rows, int num_links, int num_cols,

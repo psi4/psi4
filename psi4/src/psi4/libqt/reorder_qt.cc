@@ -66,17 +66,17 @@ namespace psi {
 ** \param frozen_docc_in = frozen occupied orbitals per irrep
 ** \param frozen_uocc_in = frozen unoccupied orbitals per irrep
 ** \param order          = reordering array (Pitzer->QT order)
-** \param nirreps        = number of irreducible representations
 **
 ** \ingroup QT
 */
 PSI_API void reorder_qt(Dimension const& docc_in, Dimension const& socc_in, Dimension const& frozen_docc_in,
-                        Dimension const& frozen_uocc_in, int *order, Dimension const& orbs_per_irrep, int nirreps) {
+                        Dimension const& frozen_uocc_in, int *order, Dimension const& orbs_per_irrep) {
     int cnt = 0, irrep, point, tmpi;
     int *used, *offset;
     int *docc, *socc, *frozen_docc, *frozen_uocc;
     int *uocc;
 
+    int nirreps = docc_in.n();
     used = init_int_array(nirreps);
     offset = init_int_array(nirreps);
 
@@ -189,16 +189,17 @@ PSI_API void reorder_qt(Dimension const& docc_in, Dimension const& socc_in, Dime
 ** \param frozen_uocc = frozen unoccupied orbitals per irrep
 ** \param order_alpha = reordering array for alpha (Pitzer->QT order)
 ** \param order_beta  = reordering array for beta  (Pitzer->QT order)
-** \param nirreps     = number of irreducible representations
 **
 ** \ingroup QT
 */
 PSI_API void reorder_qt_uhf(Dimension const& docc, Dimension const& socc, Dimension const& frozen_docc,
-                            Dimension const& frozen_uocc, int *order_alpha, int *order_beta, Dimension const& orbspi, int nirreps) {
+                            Dimension const& frozen_uocc, int *order_alpha, int *order_beta, Dimension const& orbspi) {
     int p, nmo;
     int cnt_alpha, cnt_beta, irrep, tmpi;
     int *offset, this_offset;
     int *uocc;
+
+    int nirreps = docc.n();
 
     Dimension nalphapi(nirreps, "Number of alpha electrons per irrep");
     Dimension nbetapi(nirreps, "Number of beta electrons per irrep");
