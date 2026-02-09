@@ -294,13 +294,12 @@ analysis as above, but directly within python::
         fragments_b={
             "MethylB": [6, 7, 8, 9, 10],
         },
-        atomic_results=atomic_result,
+        source=atomic_result, # AtomicResult from QCSchema
     )
     # Or you can use energy calls without QCSchema with this example below
     # using the same molecule and options as above.
     e, wfn = psi4.energy("fisapt0", return_wfn=True)
     data = psi4.fsapt_analysis(
-        molecule=mol,
         # NOTE: 1-indexed for fragments_a and fragments_b
         fragments_a={
             "MethylA": [1, 2, 3, 4, 5],
@@ -308,6 +307,7 @@ analysis as above, but directly within python::
         fragments_b={
             "MethylB": [6, 7, 8, 9, 10],
         },
+        source=mol, # qcvars/molecule object
     )
 
 Additionally, if you have F-SAPT data from saving results to
@@ -325,7 +325,7 @@ filepath as in::
         fragments_b={
             "MethylB": [6, 7, 8, 9, 10],
         },
-        dirname="./fsapt",
+        source="./fsapt",
     )
 
 
