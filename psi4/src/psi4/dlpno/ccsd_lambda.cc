@@ -172,10 +172,127 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
         auto john_big_back_buffer = linalg::doublet(S_PNO(ii, mm), lambda_ia_[m]);
         john_big_back_buffer->scale((*F_im_double_tilde_)(i, m));
         L_ia_buffer[thread][i]->subtract(john_big_back_buffer);
+        
+        /* l_{i}^{a_{ii}} += \widetilde{\widetilde{K}}_{ma_{ii}}^{e_{mi}f_{mi}} \widetilde{\lambda}_{mi}^{e_{mi}f_{mi}} (Toth Eq. 35a) */
+        // TODO: Define K_maef_dt_
+        auto lambda_mn_slice = lambda_iajb_[mn]->clone();
+        lambda_mn_slice->reshape(n_pno_[mn] * n_pno_[mn], 1);
+        L_ia_buffer[thread][i]->add(linalg::doublet(K_maef_dt_[mi], lambda_mn_slice)); // (a_{ii}, e_{mi} * f_{mi}) (e_{mi} * f_{mi}, 1)
 
     } // end im
 
+    // rip John Pork :( bigback = ibs (irritable bigback syndrome)
+    //    ^     ^
+    // (  *     *  )
+    // (  ( * * )  )
+    // (           )
+    // OINK!!! John Pork is calling...
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int mn = 0; mn < n_lmo_pairs; ++mn) {
 
+        int nlmo_mn = lmopair_to_lmos_[mn].size();
+
+        /* l_{i}^{a_{ii}} -= \widetilde{\widetilde{K}}_{e_{mn}i}^{mn} \widetilde{\lambda}_{mn}^{e_{mn}a_{mn}}S_{a_{mn}}^{a_{ii}} (Toth Eq. 35b) */
+        // TODO: K_eimn_dt has not been defined yet ()
+        auto bruvver = linalg::triplet(K_eimn_dt_[mn], lambda_iajb_[mn], S_PNO(mn, ii), true, false, false);
+
+        for (int i_mn = 0; i_mn < lmopair_to_lmos_[mn].size(); ++i_mn) {
+            int i = lmopair_to_lmos_[mn][i_mn];
+            auto antonios_slice = submatrix_rows(std::vector<int>(1, i_mn), *bruvver);
+            L_ia_buffer[thread][i]->subtract(antonios_slice->transpose());
+        }
+
+        // l_{i}^{a_{ii}} \mathrel{+}= \rho^{\mathrm{VV}}_{f_{mn}c_{mn}}\hat{F}^{ia_{ii}}_{f_{mn}c_{mn}} - \rho^{\mathrm{OO}}_{nm} \hat{F}_{mn}^{ia_{ii}} (Toth Eq. 36)
+        // TODO: Define F_iafc_hat_ and F_mnia_hat_
+        auto Gvv_slice = rho_vv_[mn]->clone();
+        Gvv_slice->reshape(n_pno_[mn] * n_pno_[mn], 1);
+        for (int i_mn = 0; i_mn < lmopair_to_lmos_[mn].size(); ++i_mn) {
+            int i = lmopair_to_lmos_[mn][i_mn];
+
+            auto Gvv_temp = linalg::doublet(F_iafc_hat_[mn][i_mn], Gvv_slice, false, false); // (a_ii, f_mn * c_mn) (f_mn * c_mn, 1) -> (a_ii, 1)
+            L_ia_buffer[thread][i]->add(Gvv_temp);
+
+            auto F_mnia_slice = F_mnia_hat_[mn][i_mn]->clone(); // (a_ii, 1)
+            F_mnia_slice->scale((*rho_oo_)(m, n));
+            L_ia_buffer[thread][i]->subtract(F_mnia_slice);
+        }
+
+        /* \textcolor{blue}{\begin{equation}
+            l^{a_{ii}}_{i} \mathrel{+}= [S^{a_{ii}}_{a_{km}}S^{a_{km}}_{a_{mn}}\overline{\lambda}^{a_{mn}f_{mn}}_{mn}S^{f_{kn}}_{f_{mn}}]T^{f_{kn}c_{kn}}_{kn}S^{c_{km}}_{c_{kn}}\overline{J}^{ic_{km}}_{km} (Toth Eq. 37)
+            \end{equation}}
+        */
+        for (int mn = 0; mn < n_lmo_pairs; ++mn) {
+            auto &[m, n] = ij_to_i_j_[mn];
+
+            for (int k_mn = 0; k_mn < lmopair_to_lmos_[mn].size(); ++k_mn) {
+                int k = lmopair_to_lmos_[mn][k_mn];
+                int km = i_j_to_ij_[k][m], kn = i_j_to_ij_[k][n];
+                auto gus = linalg::triplet(S_PNO(km, mn), lambda_iajb_[mn], S_PNO(mn, kn));
+                auto charlie = linalg::triplet(gus, T_iajb_[kn], S(kn, km));
+
+                // TODO: define J_kmic_bar_
+                auto airbuds = linalg::doublet(charlie, J_kmic_bar_[km], false, true); // (a, c) * (i, c)
+                
+                for (int i_km = 0; i_km < lmopair_to_lmos_[km].size(); ++i_km) {
+                    int i = lmopair_to_lmos_[km][i_km];
+                    int ii = i_j_to_ij_[i][i];
+                    auto ryan = submatrix_cols(std::vector<int>(1, i_km), *airbuds)->transpose();
+                    L_ia_buffer[thread][i]->add(linalg::doublet(S_PNO(ii, km), ryan)); // Acts like a (7)5-year old
+                } // end for
+
+            } // end for
+        } // end for
+
+
+        // l_{i}^{a_{ii}} -= (S^{e_{ki}}_{e_{in}}\overline{\lambda}^{e_{in}f_{in}}_{in}S^{f_{kn}}_{f_{in}})T^{f_{kn}c_{kn}}_{kn}S^{c_{ki}}_{c_{kn}}\overline{J}^{e_{ki}c_{ki}}_{ka_{ii}} (Toth Eq. 38)
+        for (int in = 0; in < n_lmo_pairs; ++in) {
+            auto &[i, n] = ij_to_i_j_[in];
+
+            for (int k_in = 0; k_in < lmopair_to_lmos_[in].size(); ++k_in) {
+                int k = lmopair_to_lmos_[in][k_in];
+                int kn = i_j_to_ij_[k][n], in = i_j_to_ij_[i][n];
+                auto garfield = linalg::triplet(S_PNO(ki, in), lambda_iajb_bar_[in], S_PNO(in, kn));
+                auto lasagne = linalg::triplet(garfield, T_iajb_[kn], S_PNO(kn, ki));
+
+                // TODO: Define J_kaec_bar_ (a, e * c)
+                lasagne->reshape(n_pno_[ki] * n_pno_[ki], 1);
+                auto steak = linalg::doublet(J_kaec_bar_[ki], lasagne); // (a, e * c) (e * c, 1) => (a, 1) (steak sauce)
+                L_ia_buffer[thread][i]->subtract(steak);
+            } // end k_in
+        } // end in
+
+        
+    }
+        
+    /*
+    \textcolor{blue}{\begin{equation}
+        l^{a_{ii}}_i \mathrel{+}= \frac{1}{2} \widetilde{\lambda}_{in}^{e_{in}f_{in}} [S^{e_{in}}_{e_{ik}}(S^{c_{nk}}_{c_{ik}}u^{f_{nk}c_{nk}}_{nk}S^{f_{in}}_{f_{nk}})]\overline{M}^{c_{ki}e_{ki}}_{ka_{ii}} (Toth Eq. 39)
+    \end{equation}}
+    */
+
+    for (int in = 0; in < n_lmo_pairs; ++in) {
+        auto &[i, n] = ij_to_i_j_[in];
+
+        for (int k_in = 0; k_in < lmopair_to_lmos_[in].size(); ++k_in) {
+            int k = lmopair_to_lmos_[in][k_in];
+            int nk = i_j_to_ij_[n][k], in = i_j_to_ij_[i][n];
+            auto homeslice = linalg::triplet(S_PNO(ki, in), lambda_iajb_[in], S_PNO(in, kn));
+            auto pizza = linalg::triplet(homeslice, Tt_iajb_[nk], S_PNO(nk, ki));
+
+            // TODO: Define M_kace_bar_ (a, c * e)
+            homeslice->transpose_this(); // (e, c) -> (c, e)
+            homeslice->reshape(n_pno_[ki] * n_pno_[ki], 1);
+            auto breadsticks = linalg::doublet(M_kace_bar_[ki], homeslice); // (a, c * e) (c * e, 1) => (a, 1) (steak sauce)
+            breadsticks->scale(0.5);
+            L_ia_buffer[thread][i]->add(breadsticks);
+        } // end k_in
+    } // end in
+
+    /*
+        \textcolor{blue}{\begin{equation}
+            l^{a_{ii}}_i \mathrel{-}= \frac{1}{2}[S^{a_{ii}}_{a_{mk}}(S^{a_{mk}}_{a_{mn}}\widetilde{\lambda}^{a_{mn}f_{mn}}_{mn}S^{f_{mn}}_{f_{nk}})]u^{f_{nk}c_{nk}}_{nk}S^{c_{nk}}_{c_{mk}}\overline{M}^{ic_{mk}}_{mk} (Toth Eq. 40)
+        \end{equation}}
+    */
 
     timer_off("DLPNO-CCSD Lambda : Compute L1");
 }
