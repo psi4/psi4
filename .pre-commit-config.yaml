@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: v2.1.0
     hooks:
       - id: check-case-conflict
       - id: check-merge-conflict
@@ -12,8 +12,7 @@ repos:
         exclude: "^(psi4/share/|psi4/driver/qcdb/|psi4/__init__.py|psi4/driver/__init__.py|samples/|tests/|doc/|devtools/|conda/)"
       - id: ruff-format
         exclude: "^(psi4/share/|psi4/driver/qcdb/|psi4/__init__.py|psi4/driver/__init__.py|samples/|tests/|doc/|devtools/|conda/)"
-# TODO: clang-format will be revived later on
-#  - repo: https://github.com/doublify/pre-commit-clang-format.git
-#    rev: master
-#    hooks:
-#      - id: clang-format
+  - repo: https://github.com/doublify/pre-commit-clang-format.git
+    rev: master
+    hooks:
+      - id: clang-format
