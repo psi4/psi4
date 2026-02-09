@@ -166,7 +166,7 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
         spaces.emplace_back(moinfo.occpi, moinfo.occ_sym.data());
         spaces.emplace_back(moinfo.virtpi, moinfo.vir_sym.data());
         delete dpd_list[0];
-        dpd_list[0] = new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
+        dpd_list[0] = new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, spaces);
         dpd_set_default(0);
 
     } else if (params.ref == 2) { /** UHF **/
@@ -177,7 +177,7 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
         spaces.emplace_back(moinfo.avirtpi, moinfo.avir_sym.data());
         spaces.emplace_back(moinfo.boccpi, moinfo.bocc_sym.data());
         spaces.emplace_back(moinfo.bvirtpi, moinfo.bvir_sym.data());
-        dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
+        dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, spaces);
     }
 
     for (i = 0; i < params.nstates; ++i) {

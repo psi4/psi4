@@ -120,7 +120,7 @@ PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Op
         std::vector<std::pair<Dimension, int *>> spaces;
         spaces.emplace_back(moinfo.occpi, moinfo.occ_sym);
         spaces.emplace_back(moinfo.virtpi, moinfo.vir_sym);
-        dpd_init(0, moinfo.nirreps, memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
+        dpd_init(0, moinfo.nirreps, memory, 0, cachefiles, cachelist, nullptr, spaces);
     } else if (params.ref == 2) { /*** UHF ***/
         cachelist = cacheprep_uhf(2, cachefiles);
 
@@ -130,7 +130,7 @@ PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Op
         spaces.emplace_back(moinfo.boccpi, moinfo.bocc_sym);
         spaces.emplace_back(moinfo.bvirtpi, moinfo.bvir_sym);
 
-        dpd_init(0, moinfo.nirreps, memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
+        dpd_init(0, moinfo.nirreps, memory, 0, cachefiles, cachelist, nullptr, spaces);
     }
 
     count_ijk();

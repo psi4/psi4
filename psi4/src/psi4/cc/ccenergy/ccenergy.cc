@@ -106,7 +106,7 @@ double CCEnergyWavefunction::compute_energy() {
         spaces.emplace_back(moinfo_.boccpi, moinfo_.bocc_sym);
         spaces.emplace_back(moinfo_.bvirtpi, moinfo_.bvir_sym);
         delete[] dpd_list[0];
-        dpd_list[0] = new DPD(0, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, 4, spaces);
+        dpd_list[0] = new DPD(0, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, spaces);
         dpd_set_default(0);
 
         if (params_.df) {
@@ -117,7 +117,7 @@ double CCEnergyWavefunction::compute_energy() {
             aospaces.emplace_back(moinfo_.sopi, moinfo_.sosym);
             aospaces.emplace_back(moinfo_.boccpi, moinfo_.bocc_sym);
             aospaces.emplace_back(moinfo_.sopi, moinfo_.sosym);
-            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, 4, aospaces);
+            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, aospaces);
             dpd_set_default(0);
         }
 
@@ -128,7 +128,7 @@ double CCEnergyWavefunction::compute_energy() {
         spaces.emplace_back(moinfo_.occpi, moinfo_.occ_sym);
         spaces.emplace_back(moinfo_.virtpi, moinfo_.vir_sym);
         dpd_init(0, moinfo_.nirreps, params_.memory, params_.cachetype, cachefiles.data(), cachelist,
-                 cache_priority_list_.data(), 2, spaces);
+                 cache_priority_list_.data(), spaces);
 
         if (params_.df) {
             form_df_ints(options_, cachelist, cachefiles.data());
@@ -136,7 +136,7 @@ double CCEnergyWavefunction::compute_energy() {
             std::vector<std::pair<Dimension, int *>> aospaces;
             aospaces.emplace_back(moinfo_.occpi, moinfo_.occ_sym);
             aospaces.emplace_back(moinfo_.sopi, moinfo_.sosym);
-            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, 2, aospaces);
+            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, aospaces);
             dpd_set_default(0);
         }
     }

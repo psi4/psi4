@@ -326,12 +326,13 @@ class PSI_API DPD {
 
     std::vector<DPDMOSpace> moSpaces;
 
+    PSI_DEPRECATED("int* spaceArrays are not preferred.")
     DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
     DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<DPDMOSpace> &moSpaces);
     DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-        dpd_file4_cache_entry *priority, int num_subspaces, std::vector<std::pair<Dimension, int *>> &spaceArrays);
+        dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaceArrays);
     DPD();
 
     ~DPD();
@@ -557,7 +558,7 @@ extern PSI_API int dpd_set_default(int dpd_num); // Set the default DPD to be id
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-                    dpd_file4_cache_entry *priority, int num_subspaces, std::vector<std::pair<Dimension, int *>> &spaceArrays);
+                    dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaceArrays);
 extern int dpd_close(int dpd_num);
 extern long int PSI_API dpd_memfree();
 extern void dpd_memset(long int memory);

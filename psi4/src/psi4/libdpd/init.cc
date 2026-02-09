@@ -62,6 +62,7 @@ int dpd_set_default(int dpd_num) {
     return 0;
 }
 
+PSI_DEPRECATED("int* spaceArrays are not preferred.")
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays) {
     if (dpd_list[dpd_num])
@@ -74,11 +75,11 @@ extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, in
 }
 
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-                    dpd_file4_cache_entry *priority, int num_subspaces, std::vector<std::pair<Dimension, int *>> &spaceArrays) {
+                    dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaceArrays) {
     if (dpd_list[dpd_num])
         throw PSIEXCEPTION("Attempting to initialize new DPD instance before the old one was freed.");
     dpd_list[dpd_num] =
-        new DPD(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
+        new DPD(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, spaceArrays);
     dpd_default = dpd_num;
     global_dpd_ = dpd_list[dpd_num];
     return 0;
@@ -141,7 +142,8 @@ DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefil
 }
 
 DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
-         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<std::pair<Dimension, int *>> &spaces) {
+         dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaces) {
+    int num_subspaces = spaces.size();
     std::vector<int *> spaceArrays;
     int *tmparray;
 

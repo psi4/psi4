@@ -117,7 +117,7 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     aospaces.emplace_back(dforbspi, dforbsym);
     aospaces.emplace_back(dummyorbspi, dummyorbsym);
 
-    dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, nullptr, aospaces.size() / 2, aospaces);
+    dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, nullptr, aospaces);
 
     delete[] dforbsym;
     delete[] dummyorbsym;

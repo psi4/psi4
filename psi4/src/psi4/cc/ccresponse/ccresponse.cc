@@ -97,14 +97,14 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
         spaces.emplace_back(moinfo.avirtpi, moinfo.avir_sym);
         spaces.emplace_back(moinfo.boccpi, moinfo.bocc_sym);
         spaces.emplace_back(moinfo.bvirtpi, moinfo.bvir_sym);
-        dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
+        dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, spaces);
     } else { /*** RHF/ROHF references ***/
         cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
         std::vector<std::pair<Dimension, int *>> spaces;
         spaces.emplace_back(moinfo.occpi, moinfo.occ_sym);
         spaces.emplace_back(moinfo.virtpi, moinfo.vir_sym);
-        dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
+        dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, spaces);
     }
 
     if (params.local) local_init();
