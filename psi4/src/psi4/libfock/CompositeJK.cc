@@ -369,7 +369,7 @@ void CompositeJK::compute_JK() {
             incfock_needs_full_build_ = false;
         }
 
-        if (k_algo_->name() == "sn-LinK") {
+        if (k_algo_ && k_algo_->name() == "sn-LinK") {
             auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_);
             k_algo_derived->set_incfock_iter(do_incfock_iter_);
         }
