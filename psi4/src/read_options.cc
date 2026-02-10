@@ -1930,7 +1930,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SAVE_UHF_NOS", false);
 
         /*- SUBSECTION GAUXCINT -*/
-        /*- Outsource all Kohn-Shame numerical integration to the GauXC program? -*/
+        /*- Outsource all Kohn-Sham numerical integration to the GauXC library? -*/
         options.add_bool("GAUXC_INTEGRATE", false);
         /*- Load Balancer kernel for KS !expert -*/
         options.add_str("GAUXC_LOAD_BALANCER_KERNEL", "DEFAULT", "DEFAULT REPLICATED REPLICATED-PETITE REPLICATED-FILLIN");

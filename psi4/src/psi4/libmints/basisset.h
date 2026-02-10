@@ -412,8 +412,53 @@ class PSI_API BasisSet {
     void convert_sap_contraction();
     
 #ifdef USING_gauxc
+// converts a Psi4::BasisSet object to a GauXC::BasisSet object
 template <typename T>
-GauXC::BasisSet<T> to_gauxc_basisset(double basis_tol, bool force_cartesian) const;
+GauXC::BasisSet<T> to_gauxc_basisset(double basis_tol, bool force_cartesian) const {
+    using prim_array = typename GauXC::Shell<T>::prim_array;
+    using cart_array = typename GauXC::Shell<T>::cart_array;
+
+    GauXC::BasisSet<T> gauxc_basisset(nshell());
+
+    for (size_t ishell = 0; ishell != nshell(); ++ishell) {
+        auto psi4_shell = shell(ishell);
+        if(psi4_shell.nprimitive() > GauXC::detail::shell_nprim_max) {
+            std::ostringstream oss;
+            oss << "Shell has " << psi4_shell.nprimitive() <<
+              " primitives but the shell datatype in GauXC is limited to " << GauXC::detail::shell_nprim_max <<
+              "!\nTo work around this issue, segment your basis set!\n";
+            throw std::runtime_error(oss.str());
+        }
+
+        const auto nprim = GauXC::PrimSize(psi4_shell.nprimitive());
+        prim_array alpha;
+        prim_array coeff;
+
+        for (size_t iprim = 0; iprim != psi4_shell.nprimitive(); ++iprim) {
+            alpha.at(iprim) = psi4_shell.exp(iprim);
+            coeff.at(iprim) = psi4_shell.coef(iprim);
+        }
+
+        auto psi4_shell_center = psi4_shell.center();
+        cart_array center = { psi4_shell_center[0], psi4_shell_center[1], psi4_shell_center[2] };
+
+        gauxc_basisset[ishell] = GauXC::Shell(
+            nprim,
+            GauXC::AngularMomentum(psi4_shell.am()),
+            (force_cartesian ? GauXC::SphericalType(false) : GauXC::SphericalType( !(psi4_shell.is_cartesian()) ) ),
+            alpha,
+            coeff,
+            center,
+            false // do not normalize shell via GauXC; it is normalized via Psi4
+        );
+    }
+
+    for (auto& sh : gauxc_basisset) {
+        sh.set_shell_tolerance(basis_tol);
+    }
+
+    return gauxc_basisset;
+}
 #endif
 
    private:

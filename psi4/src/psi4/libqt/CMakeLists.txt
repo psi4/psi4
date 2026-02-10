@@ -52,3 +52,11 @@ target_compile_definitions(qt
 unset(_has_daxpby)
 unset(_has_dggsvd3)
 unset(_has_dggsvp3)
+
+if(TARGET gauxc::gauxc)
+  target_include_directories(qt
+    PUBLIC
+      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+endif()
+
