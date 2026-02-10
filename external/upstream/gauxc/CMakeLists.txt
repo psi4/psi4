@@ -96,7 +96,7 @@ if(${ENABLE_gauxc})
                          # CMAKE_PREFIX_PATH propagates to GauXC's FetchContent builds (ExchCXX)
                          # allowing ExchCXX to find Psi4's LibXC without rebuilding from source
                          -DCMAKE_PREFIX_PATH:STRING=${STAGED_INSTALL_PREFIX};${CMAKE_PREFIX_PATH})
-        set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
+        set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
     endif()
 else()
     message(STATUS "Optional addon ${Blue}unsought: gauxc${ColourReset}")
