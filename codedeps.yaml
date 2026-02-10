@@ -99,10 +99,9 @@ data:
           - "//dpcpp_linux-64"
         win-64:
           - "libgcc<14.3"
-          - "clangdev=17.0.6"
       aux_build_names_note:
         "libgcc<14.3": "Avoid 'specified procedure could not be found' DLL error."
-        "clangdev=17.0.6": "Avoid omp problem with v19, v20."
+        "clangdev=17.0.6": "For win-64, this clang (avoid omp problem with v19, v20) intel-openmp for openmp, and =*=24*mkl for libblas constraint (MKL 2024.2.2 gives wrong results, so 24*mkl requests 2024.1.0.) worked well together."
       cmake:
         # {CMAKE_CXX_COMPILER_ID}_{Conda_platform}
         GNU_linux-64:
@@ -399,8 +398,7 @@ data:
         linux-64: "=*=*mkl"
         osx-64: "=*=*mkl"
         osx-arm64: "=*=*accelerate"
-        win-64: "=*=24*mkl"
-      constraint_note: "On Windows, MKL 2024.2.2 gives wrong results, so 24*mkl requests 2024.1.0."
+        win-64: "=*=*mkl"
       aux_build_names:
         - blas-devel
       aux_build_names_note:
@@ -550,7 +548,7 @@ data:
         linux-64: llvm-openmp
         osx-64: llvm-openmp
         osx-arm64: llvm-openmp
-        win-64: intel-openmp
+        win-64: llvm-openmp
       constraint: null
       cmake:
         ENABLE_OPENMP: true
@@ -959,6 +957,8 @@ data:
       constraint: null
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
+      skip_win: true
+      skip_win_note: "Temporary until a llvm-openmp psi4 package available on Windows to satisfy solving resp's deps."
 
   - project: openfermionpsi4
     use:
