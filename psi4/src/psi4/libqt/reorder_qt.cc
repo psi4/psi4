@@ -76,7 +76,11 @@ PSI_API void reorder_qt(Dimension const& docc_in, Dimension const& socc_in, Dime
     int *docc, *socc, *frozen_docc, *frozen_uocc;
     int *uocc;
 
-    int nirreps = docc_in.n();
+    auto nirreps = docc_in.n();
+    if (!(nirreps == socc_in.n() && nirreps == frozen_docc_in.n() &&
+        nirreps == frozen_uocc_in.n() && nirreps == orbs_per_irrep.n())) {
+        throw PSIEXCEPTION("Inconsistent number of irreps in Dimensions passed to reorder_qt.");
+    }
     used = init_int_array(nirreps);
     offset = init_int_array(nirreps);
 
@@ -199,7 +203,11 @@ PSI_API void reorder_qt_uhf(Dimension const& docc, Dimension const& socc, Dimens
     int *offset, this_offset;
     int *uocc;
 
-    int nirreps = docc.n();
+    auto nirreps = docc.n();
+    if (!(nirreps == socc.n() && nirreps == frozen_docc.n() &&
+        nirreps == frozen_uocc.n() && nirreps == orbspi.n())) {
+        throw PSIEXCEPTION("Inconsistent number of irreps in Dimensions passed to reorder_qt_uhf.");
+    }
 
     Dimension nalphapi(nirreps, "Number of alpha electrons per irrep");
     Dimension nbetapi(nirreps, "Number of beta electrons per irrep");
