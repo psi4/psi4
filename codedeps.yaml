@@ -668,6 +668,7 @@ data:
         - autodoc-pydantic=1
         - qcportal
         - "gxx_linux-64=14.3.0=hc876b51_14"
+        - "setuptools<82.0.0"
       aux_build_names_note:
         qcportal: "Required for docs to resolve objects in pydantic classes."
         "gxx_linux-64=14.3.0=hc876b51_14": "Temporary for Linux only; rm for Mac."
