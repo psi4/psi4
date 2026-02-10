@@ -2814,7 +2814,7 @@ int Molecule::rotational_symmetry_number() const {
 }
 
 #ifdef USING_gauxc
-GauXC::Molecule to_gauxc_molecule() const {
+GauXC::Molecule Molecule::to_gauxc_molecule() const {
     GauXC::Molecule gauxc_molecule;
 
     for (size_t iatom = 0; iatom != natom(); ++iatom) {
