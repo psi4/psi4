@@ -162,28 +162,22 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
     if (params.ref == 0 || params.ref == 1) { /** RHF or ROHF **/
         cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
-        std::vector<int *> spaces;
-        spaces.push_back(moinfo.occpi);
-        spaces.push_back(moinfo.occ_sym.data());
-        spaces.push_back(moinfo.virtpi);
-        spaces.push_back(moinfo.vir_sym.data());
+        std::vector<std::pair<Dimension, int *>> spaces;
+        spaces.emplace_back(moinfo.occpi, moinfo.occ_sym.data());
+        spaces.emplace_back(moinfo.virtpi, moinfo.vir_sym.data());
         delete dpd_list[0];
-        dpd_list[0] = new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
+        dpd_list[0] = new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, spaces);
         dpd_set_default(0);
 
     } else if (params.ref == 2) { /** UHF **/
         cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
-        std::vector<int *> spaces;
-        spaces.push_back(moinfo.aoccpi);
-        spaces.push_back(moinfo.aocc_sym.data());
-        spaces.push_back(moinfo.avirtpi);
-        spaces.push_back(moinfo.avir_sym.data());
-        spaces.push_back(moinfo.boccpi);
-        spaces.push_back(moinfo.bocc_sym.data());
-        spaces.push_back(moinfo.bvirtpi);
-        spaces.push_back(moinfo.bvir_sym.data());
-        dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
+        std::vector<std::pair<Dimension, int *>> spaces;
+        spaces.emplace_back(moinfo.aoccpi, moinfo.aocc_sym.data());
+        spaces.emplace_back(moinfo.avirtpi, moinfo.avir_sym.data());
+        spaces.emplace_back(moinfo.boccpi, moinfo.bocc_sym.data());
+        spaces.emplace_back(moinfo.bvirtpi, moinfo.bvir_sym.data());
+        dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, spaces);
     }
 
     for (i = 0; i < params.nstates; ++i) {
