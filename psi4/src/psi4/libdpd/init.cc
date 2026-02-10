@@ -62,7 +62,7 @@ int dpd_set_default(int dpd_num) {
     return 0;
 }
 
-PSI_DEPRECATED("int* spaceArrays are not preferred.")
+PSI_DEPRECATED("DPD construction via a vector of int* is being deprecated and will be removed as soon as 1.12.")
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays) {
     if (dpd_list[dpd_num])

@@ -326,7 +326,7 @@ class PSI_API DPD {
 
     std::vector<DPDMOSpace> moSpaces;
 
-    PSI_DEPRECATED("int* spaceArrays are not preferred.")
+    PSI_DEPRECATED("DPD construction via a vector of int* is being deprecated and will be removed as soon as 1.12.")
     DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
     DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
