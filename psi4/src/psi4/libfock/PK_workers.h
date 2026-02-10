@@ -287,9 +287,9 @@ class PKWorker {
     void set_do_wK(bool tmp) { do_wK_ = tmp; }
 
     /// Get TOC labels for J or K
-    static char* get_label_J(const int batch);
-    static char* get_label_K(const int batch);
-    static char* get_label_wK(const int batch);
+    static std::string get_label_J(const int batch);
+    static std::string get_label_K(const int batch);
+    static std::string get_label_wK(const int batch);
 
     /// Get max ijkl index included in current buffer
     /// Overloaded by specific derived classes
@@ -373,9 +373,9 @@ class PKWrkrReord : public PKWorker {
     /// In addition, each buffer can write to more than one PK entries
 
     /// TOC entry labels
-    std::vector<std::vector<char*>> labels_J_;
-    std::vector<std::vector<char*>> labels_K_;
-    std::vector<std::vector<char*>> labels_wK_;
+    std::vector<std::vector<std::string>> labels_J_;
+    std::vector<std::vector<std::string>> labels_K_;
+    std::vector<std::vector<std::string>> labels_wK_;
     /// Job IDs
     std::vector<std::vector<size_t>> jobID_J_;
     std::vector<std::vector<size_t>> jobID_K_;
