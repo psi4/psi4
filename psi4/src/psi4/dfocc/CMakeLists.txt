@@ -120,4 +120,11 @@ list(APPEND sources
   )
 psi4_add_module(bin dfocc sources)
 
+if(TARGET gauxc::gauxc)
+  target_include_directories(dfocc
+    PUBLIC
+      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+endif()
+
 target_link_libraries(dfocc PUBLIC diis)

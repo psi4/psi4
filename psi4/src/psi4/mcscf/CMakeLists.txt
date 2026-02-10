@@ -28,3 +28,10 @@ list(APPEND sources
   vector_base.cc
   )
 psi4_add_module(bin mcscf sources)
+
+if(TARGET gauxc::gauxc)
+  target_include_directories(mcscf
+    PUBLIC
+      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+endif()

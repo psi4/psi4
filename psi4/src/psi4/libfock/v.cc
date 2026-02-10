@@ -58,6 +58,7 @@
 #endif
 
 #ifdef USING_gauxc
+#include <gauxc/molecular_weights.hpp>
 #include <gauxc/molgrid/defaults.hpp>
 #endif
 
@@ -681,7 +682,7 @@ void VBase::initialize_gauxc() {
 #ifdef USING_gauxc
     // TODO: Allow for Device execspace, depending on flags. This will add GPU support.
     const auto gauxc_execspace = GauXC::ExecutionSpace::Host;
-    GauXC::LoadBalancerFactory lb_factory(gauxc_execspace, options_.get_str("SNLINK_LOAD_BALANCER_KERNEL"));
+    GauXC::LoadBalancerFactory lb_factory(gauxc_execspace, options_.get_str("GAUXC_LOAD_BALANCER_KERNEL"));
     auto rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
     auto gauxc_mol = primary_->molecule()->to_gauxc_molecule();
 
@@ -700,8 +701,8 @@ void VBase::initialize_gauxc() {
     };
     auto radial_scheme = options_.get_str("GAUXC_RADIAL_SCHEME");
     auto grid_batch_size = options_.get_int("GAUXC_GRID_BATCH_SIZE");
-    auto radial_points = options_.get_int("SNLINK_RADIAL_POINTS");
-    auto spherical_points = options_.get_int("SNLINK_SPHERICAL_POINTS");
+    auto radial_points = options_.get_int("GAUXC_RADIAL_POINTS");
+    auto spherical_points = options_.get_int("GAUXC_SPHERICAL_POINTS");
 
     auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
         gauxc_mol, 
@@ -711,8 +712,13 @@ void VBase::initialize_gauxc() {
         GauXC::RadialSize(radial_points),
         GauXC::AngularSize(spherical_points)
     );
-    auto gauxc_primary = primary_->to_gauxc_basisset<double>(1.0e-10, false); // TODO: Allow customization 
+    auto gauxc_primary = primary_->to_gauxc_basisset<double>(1.0e-10, false); // TODO: Allow customization
     auto load_balancer = lb_factory.get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
+    GauXC::MolecularWeightsFactory mw_factory(gauxc_execspace, "Default",
+                                          GauXC::MolecularWeightsSettings{});
+    auto mw = mw_factory.get_instance();
+    mw.modify_weights(load_balancer);
+
     // TODO: Allow for more options here. This is quick-and-dirty.
     GauXC::XCIntegratorFactory<Eigen::MatrixXd> integrator_factory(
           gauxc_execspace, "Replicated", "Default", "Default", "Default");
@@ -721,7 +727,7 @@ void VBase::initialize_gauxc() {
     integrator_ =
           integrator_factory.get_shared_instance(gxc_func_, load_balancer);
     */
-# endif
+#endif
 }
 SharedMatrix VBase::compute_gradient() { throw PSIEXCEPTION("VBase: gradient not implemented for this V instance."); }
 SharedMatrix VBase::compute_hessian() { throw PSIEXCEPTION("VBase: hessian not implemented for this V instance."); }

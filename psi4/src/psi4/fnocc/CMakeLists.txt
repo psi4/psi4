@@ -18,3 +18,10 @@ list(APPEND sources
   linear.cc
   )
 psi4_add_module(bin fnocc sources)
+
+if(TARGET gauxc::gauxc)
+  target_include_directories(fnocc
+    PUBLIC
+      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+endif()
