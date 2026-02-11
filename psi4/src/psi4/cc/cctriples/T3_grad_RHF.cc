@@ -59,7 +59,7 @@ void T3_grad_RHF() {
     int Gad, Gal, Gcl, Gbd, Gbl;
     int ad, kd, lk, il, jl, kl, cd, bd, di, id, ib, dj, jd, dk, aj;
     int nrows, ncols, nlinks;
-    int *occpi, *virtpi, *occ_off, *vir_off;
+    int *occ_off, *vir_off;
     double t_ia, t_jb, t_kc, D_jkbc, D_ikac, D_ijab;
     double f_ia, f_jb, f_kc, t_jkbc, t_ikac, t_ijab;
     double dijk, dabc, denom;
@@ -71,8 +71,8 @@ void T3_grad_RHF() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 

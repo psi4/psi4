@@ -323,7 +323,7 @@ void JK::compute_D() {
         for (size_t N = 0; N < C_left_.size(); ++N) {
             std::stringstream s;
             s << "D " << N << " (SO)";
-            D_.push_back(std::make_shared<Matrix>(s.str(), C_left_[N]->nirrep(), C_left_[N]->rowspi(),
+            D_.push_back(std::make_shared<Matrix>(s.str(), C_left_[N]->rowspi(),
                                                   C_right_[N]->rowspi(),
                                                   C_left_[N]->symmetry() ^ C_right_[N]->symmetry()));
         }
@@ -366,19 +366,19 @@ void JK::allocate_JK() {
         for (size_t N = 0; N < D_.size() && do_J_; ++N) {
             std::stringstream s;
             s << "J " << N << " (SO)";
-            J_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(),
+            J_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->rowspi(), D_[N]->rowspi(),
                                                   D_[N]->symmetry()));
         }
         for (size_t N = 0; N < D_.size() && do_K_; ++N) {
             std::stringstream s;
             s << "K " << N << " (SO)";
-            K_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(),
+            K_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->rowspi(), D_[N]->rowspi(),
                                                   D_[N]->symmetry()));
         }
         for (size_t N = 0; N < D_.size() && do_wK_; ++N) {
             std::stringstream s;
             s << "wK " << N << " (SO)";
-            wK_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(),
+            wK_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->rowspi(), D_[N]->rowspi(),
                                                    D_[N]->symmetry()));
         }
     }
