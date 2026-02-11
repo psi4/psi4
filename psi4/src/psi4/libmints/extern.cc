@@ -96,8 +96,9 @@ void ExternalPotential::print(const std::string& out) const {
     // Matrix
     if (matrix_) {
         printer->Printf("    > One-Electron Potential Matrix < \n\n");
+        printer->Printf("  Hellmann-Feynman contributions to the gradient from user-provided 1e potential"
+                        "\n  matrices cannot be calculated by Psi4 and must be calculated by the user.\n\n");
         matrix_->print();
-        printer->Printf("\n");
     }
 }
 
