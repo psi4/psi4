@@ -97,8 +97,8 @@ namespace cclambda {
 void L3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2AA, dpdbuf4 *T2AB,
             dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA, dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA,
             dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB, dpdfile2 *fab, dpdbuf4 *DAA, dpdbuf4 *DAB, dpdbuf4 *LIJAB,
-            dpdbuf4 *LIjAb, dpdfile2 *LIA, dpdfile2 *Lia, dpdfile2 *FME, dpdfile2 *Fme, int *aoccpi, int *aocc_off,
-            int *boccpi, int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off) {
+            dpdbuf4 *LIjAb, dpdfile2 *LIA, dpdfile2 *Lia, dpdfile2 *FME, dpdfile2 *Fme, Dimension const& aoccpi, int *aocc_off,
+            Dimension const& boccpi, int *bocc_off, Dimension const& avirtpi, int *avir_off, Dimension const& bvirtpi, int *bvir_off) {
     int h;
     int i, j, k;
     int Ga, Gb, Gc;

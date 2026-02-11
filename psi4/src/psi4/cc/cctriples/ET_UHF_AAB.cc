@@ -60,8 +60,8 @@ double ET_UHF_AAB() {
     int lc, la, lb;
     int id, jd, kd;
     int il, jl, kl;
-    int *aoccpi, *avirtpi, *aocc_off, *avir_off;
-    int *boccpi, *bvirtpi, *bocc_off, *bvir_off;
+    int *aocc_off, *avir_off;
+    int *bocc_off, *bvir_off;
     double value_c, value_d, dijk, denom, ET_AAB;
     double t_ia, t_ib, t_ja, t_jb, t_kc;
     double f_ia, f_ib, f_ja, f_jb, f_kc;
@@ -77,12 +77,12 @@ double ET_UHF_AAB() {
     int nijk, mijk;
 
     nirreps = moinfo.nirreps;
-    aoccpi = moinfo.aoccpi;
-    avirtpi = moinfo.avirtpi;
+    const auto& aoccpi = moinfo.aoccpi;
+    const auto& avirtpi = moinfo.avirtpi;
     aocc_off = moinfo.aocc_off;
     avir_off = moinfo.avir_off;
-    boccpi = moinfo.boccpi;
-    bvirtpi = moinfo.bvirtpi;
+    const auto& boccpi = moinfo.boccpi;
+    const auto& bvirtpi = moinfo.bvirtpi;
     bocc_off = moinfo.bocc_off;
     bvir_off = moinfo.bvir_off;
 

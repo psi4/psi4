@@ -91,7 +91,7 @@ class ROHF : public HF {
     void compute_SAD_guess(bool natorb) override;
 
     void damping_update(double) override;
-    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
+    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) override;
     bool stability_analysis() override;
 
     std::shared_ptr<VBase> V_potential() const override { return nullptr; };

@@ -94,6 +94,7 @@ class AIOHandler {
     size_t read(size_t unit, const char *key, char *buffer, size_t size, psio_address start, psio_address *end);
     /// Asynchronous write, same as PSIO::write, but nonblocking
     size_t write(size_t unit, const char *key, char *buffer, size_t size, psio_address start, psio_address *end);
+    size_t write(size_t unit, const std::string& key, char *buffer, size_t size, psio_address start, psio_address *end) { return write(unit, key.c_str(), buffer, size, start, end); };
     /// Asynchronous read_entry, same as PSIO::read_entry, but nonblocking
     size_t read_entry(size_t unit, const char *key, char *buffer, size_t size);
     /// Asynchronous read_entry, same as PSIO::write_entry, but nonblocking
@@ -125,6 +126,7 @@ class AIOHandler {
     /// Total fill size is rows*cols*sizeof(double)
     /// Buffer memory of cols*sizeof(double) is used
     size_t zero_disk(size_t unit, const char *key, size_t rows, size_t cols);
+    size_t zero_disk(size_t unit, const std::string& key, size_t rows, size_t cols) { return zero_disk(unit, key.c_str(), rows, cols); };
 
     /// Write IWL
     /// Write an IWL buffer, thus containing

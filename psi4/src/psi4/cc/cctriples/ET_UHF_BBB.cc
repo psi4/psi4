@@ -59,7 +59,7 @@ double ET_UHF_BBB() {
     int id, jd, kd;
     int il, jl, kl;
     int lc, la, lb;
-    int *occpi, *virtpi, *occ_off, *vir_off;
+    int *occ_off, *vir_off;
     double value_c, value_d, dijk, denom, ET;
     double t_ia, t_ib, t_ic, t_ja, t_jb, t_jc, t_ka, t_kb, t_kc;
     double f_ia, f_ib, f_ic, f_ja, f_jb, f_jc, f_ka, f_kb, f_kc;
@@ -72,8 +72,8 @@ double ET_UHF_BBB() {
     int nijk, mijk;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.boccpi;
-    virtpi = moinfo.bvirtpi;
+    const auto& occpi = moinfo.boccpi;
+    const auto& virtpi = moinfo.bvirtpi;
     occ_off = moinfo.bocc_off;
     vir_off = moinfo.bvir_off;
 
