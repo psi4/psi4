@@ -53,16 +53,16 @@ using namespace psi;
 
 namespace psi {
 
-CompositeJK::CompositeJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : JK(primary), auxiliary_(auxiliary), options_(options) {
+CompositeJK::CompositeJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options)
+    : JK(primary), auxiliary_(auxiliary), options_(options) {
     timer_on("CompositeJK: Setup");
-    common_init(); 
+    common_init();
     timer_off("CompositeJK: Setup");
 }
 
 CompositeJK::~CompositeJK() {}
 
 void CompositeJK::common_init() {
-
     // => General Setup <= //
 
     // thread count
@@ -80,7 +80,7 @@ void CompositeJK::common_init() {
     }
 
     computed_shells_per_iter_["Quartets"] = {};
-    
+
     // derive separate J+K algorithms from scf_type
     auto jk_type = options_.get_str("SCF_TYPE");
     auto j_type = jk_type.substr(0, jk_type.find("+"));
@@ -88,7 +88,7 @@ void CompositeJK::common_init() {
 
     // occurs if no composite K algorithm was specified; useful for LDA/GGA DFT runs
     if (k_type == j_type) {
-      k_type = "NONE";
+        k_type = "NONE";
     }
 
     // other options
@@ -116,7 +116,7 @@ void CompositeJK::common_init() {
     if (!eri_computers_["4-Center"][0]->sieve_initialized()) eri_computers_["4-Center"][0]->initialize_sieve();
 
     // create each threads' ERI computers
-    for(int rank = 1; rank < nthreads_; rank++) {
+    for (int rank = 1; rank < nthreads_; rank++) {
         eri_computers_["4-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["4-Center"].front()->clone());
     }
 
@@ -139,8 +139,9 @@ void CompositeJK::common_init() {
 
         computed_shells_per_iter_["Triplets"] = {};
 
-        for(int rank = 1; rank < nthreads_; rank++) {
-            eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["3-Center"].front()->clone());
+        for (int rank = 1; rank < nthreads_; rank++) {
+            eri_computers_["3-Center"][rank] =
+                std::shared_ptr<TwoBodyAOInt>(eri_computers_["3-Center"].front()->clone());
         }
     } else {
         throw PSIEXCEPTION("Invalid Composite J algorithm selected!");
@@ -152,19 +153,19 @@ void CompositeJK::common_init() {
     if (k_type == "LINK") {
         k_algo_ = std::make_shared<LinK>(primary_, options_);
 
-    // COSX
+        // COSX
     } else if (k_type == "COSX") {
         k_algo_ = std::make_shared<COSK>(primary_, options_);
 
-    // sn-LinK (via GauXC) 
+        // sn-LinK (via GauXC)
     } else if (k_type == "SNLINK") {
         k_algo_ = std::make_shared<snLinK>(primary_, options_);
- 
-    // No K algorithm specified in SCF_TYPE
+
+        // No K algorithm specified in SCF_TYPE
     } else if (k_type == "NONE") {
         k_algo_ = nullptr;
-    
-    // Invalid K algorithm selected
+
+        // Invalid K algorithm selected
     } else {
         throw PSIEXCEPTION("Invalid Composite K algorithm selected!");
     }
@@ -173,7 +174,9 @@ void CompositeJK::common_init() {
 void CompositeJK::set_do_K(bool do_K) {
     // if doing K, we need an associated composite K build algorithm
     if (do_K && k_algo_ == nullptr) {
-        std::string error_message = "No composite K build algorithm was specified, but K matrix is required for current method! Please specify a composite K build algorithm by setting SCF_TYPE to ";
+        std::string error_message =
+            "No composite K build algorithm was specified, but K matrix is required for current method! Please specify "
+            "a composite K build algorithm by setting SCF_TYPE to ";
         error_message += j_algo_->name();
         error_message += "+{K_ALGO}.";
 
@@ -190,9 +193,7 @@ void CompositeJK::set_do_K(bool do_K) {
     do_K_ = do_K;
 }
 
-size_t CompositeJK::num_computed_shells() {
-    return num_computed_shells_;
-}
+size_t CompositeJK::num_computed_shells() { return num_computed_shells_; }
 
 size_t CompositeJK::memory_estimate() {
     return 0;  // Memory is O(N^2), which psi4 counts as effectively 0
@@ -210,7 +211,7 @@ void CompositeJK::print_header() const {
         outfile->Printf("    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_) outfile->Printf("    Omega:             %11.3E\n", omega_);
         outfile->Printf("    Integrals threads: %11d\n", nthreads_);
-        outfile->Printf("    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        outfile->Printf("    Memory [MiB]:      %11ld\n", (memory_ * 8L) / (1024L * 1024L));
         outfile->Printf("    Incremental Fock:  %11s\n", (incfock_ ? "Yes" : "No"));
         outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
 
@@ -236,7 +237,7 @@ void CompositeJK::incfock_setup() {
 
             D_ref_ = D_ao_;
             zero();
-        } else { // Otherwise, the iteration is incremental
+        } else {  // Otherwise, the iteration is incremental
             for (size_t jki = 0; jki < njk; jki++) {
                 D_ref_[jki] = D_ao_[jki]->clone();
                 D_ref_[jki]->subtract(D_prev_[jki]);
@@ -251,7 +252,7 @@ void CompositeJK::incfock_setup() {
 void CompositeJK::incfock_postiter() {
     // Save a copy of the density for the next iteration
     D_prev_.clear();
-    for(auto const &Di : D_ao_) {
+    for (auto const& Di : D_ao_) {
         D_prev_.push_back(Di->clone());
     }
 }
@@ -263,7 +264,7 @@ void CompositeJK::compute_JK() {
 
     // set compute()-specific parameters
     j_algo_->set_lr_symmetric(lr_symmetric_);
-    
+
     if (do_K_) {
         k_algo_->set_lr_symmetric(lr_symmetric_);
     }
@@ -279,14 +280,14 @@ void CompositeJK::compute_JK() {
         do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
 
         if (k_algo_->name() == "sn-LinK") {
-            auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_); 
+            auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_);
             k_algo_derived->set_incfock_iter(do_incfock_iter_);
         }
 
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
 
         incfock_setup();
-        
+
         timer_off("CompositeJK: INCFOCK Preprocessing");
     } else {
         D_ref_ = D_ao_;
@@ -317,7 +318,7 @@ void CompositeJK::compute_JK() {
         if (get_bench()) {
             computed_shells_per_iter_["Triplets"].push_back(j_algo_->num_computed_shells());
         }
- 
+
         timer_off("CompositeJK: " + j_algo_->name());
     }
 
@@ -359,28 +360,28 @@ void CompositeJK::postiterations() {}
 
 // => Method-specific knobs go here <= //
 
-void CompositeJK::set_COSX_grid(std::string current_grid) { 
+void CompositeJK::set_COSX_grid(std::string current_grid) {
     if (k_algo_->name() == "COSX") {
-        auto k_algo_derived = std::dynamic_pointer_cast<COSK>(k_algo_); 
-        k_algo_derived->set_grid(current_grid); 
+        auto k_algo_derived = std::dynamic_pointer_cast<COSK>(k_algo_);
+        k_algo_derived->set_grid(current_grid);
     } else {
         throw PSIEXCEPTION("CompositeJK::set_COSX_grid() was called, but COSX is not selected in SCF_TYPE!");
     }
 }
 
-std::string CompositeJK::get_COSX_grid() { 
+std::string CompositeJK::get_COSX_grid() {
     if (k_algo_->name() == "COSX") {
-        auto k_algo_derived = std::dynamic_pointer_cast<COSK>(k_algo_); 
-        return k_algo_derived->get_grid(); 
+        auto k_algo_derived = std::dynamic_pointer_cast<COSK>(k_algo_);
+        return k_algo_derived->get_grid();
     } else {
         throw PSIEXCEPTION("CompositeJK::get_COSX_grid() was called, but COSX is not selected in SCF_TYPE!");
     }
 }
 
-int CompositeJK::get_snLinK_max_am() { 
+int CompositeJK::get_snLinK_max_am() {
     if (k_algo_->name() == "sn-LinK") {
-        auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_); 
-        return k_algo_derived->get_max_am(); 
+        auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_);
+        return k_algo_derived->get_max_am();
     } else {
         throw PSIEXCEPTION("CompositeJK::get_snLinK_max_am() was called, but snLinK is not selected in SCF_TYPE!");
     }

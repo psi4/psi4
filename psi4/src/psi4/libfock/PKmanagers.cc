@@ -87,7 +87,7 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
                                                       size_t memory, Options& options, bool dowK, double omega_in) {
     // read in subalgorithm choice
     std::string subalgo = "AUTO";
-    if(options["SCF_SUBTYPE"].has_changed()) {
+    if (options["SCF_SUBTYPE"].has_changed()) {
         subalgo = options.get_str("SCF_SUBTYPE");
     }
 
@@ -120,7 +120,7 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
     } else if (subalgo == "YOSHIMINE_OUT_OF_CORE") {
         do_yosh = true;
 
-    // ...or automatically select an out-of-core subalgorithm...
+        // ...or automatically select an out-of-core subalgorithm...
     } else if (subalgo == "OUT_OF_CORE") {
         if (algo_factor * memory > pk_size) {
             do_reord = true;
@@ -128,16 +128,18 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
             do_yosh = true;
         }
 
-    // ...or force the in-core algorithm...
+        // ...or force the in-core algorithm...
     } else if (subalgo == "INCORE") {
         // throw an exception if in-core is forced, but not enough memory is allocated
         if (ncorebuf * pk_size > memory) {
-            throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
+            throw PSIEXCEPTION(
+                "SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount "
+                "of memory allocated to Psi4 or allow for out-of-core to be used.\n");
         } else {
             do_incore = true;
         }
 
-    // ...or just let psi4 pick any subalgorithm
+        // ...or just let psi4 pick any subalgorithm
     } else if (subalgo == "AUTO") {
         if (ncorebuf * pk_size < memory) {
             do_incore = true;
@@ -147,9 +149,11 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
             do_yosh = true;
         }
 
-    // throw an exception on an invalid SCF_SUBTYPE
+        // throw an exception on an invalid SCF_SUBTYPE
     } else {
-        throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The valid choices of SCF_SUBTYPE for SCF_TYPE=PK are AUTO, INCORE, OUT_OF_CORE, YOSHIMINE_OUT_OF_CORE, and REORDER_OUT_OF_CORE.");
+        throw PSIEXCEPTION(
+            "Invalid SCF_SUBTYPE option! The valid choices of SCF_SUBTYPE for SCF_TYPE=PK are AUTO, INCORE, "
+            "OUT_OF_CORE, YOSHIMINE_OUT_OF_CORE, and REORDER_OUT_OF_CORE.");
     }
 
     std::shared_ptr<PKManager> pkmgr;
@@ -817,7 +821,7 @@ void PKMgrDisk::form_J(std::vector<SharedMatrix> J, std::string exch, std::vecto
                     }
                 }
             }  // end of non-symmetric case
-        }      // End of loop over J matrices
+        }  // End of loop over J matrices
 
         delete[] j_block;
     }  // End of batch loop
@@ -1648,7 +1652,7 @@ void PKMgrInCore::form_J(std::vector<SharedMatrix> J, std::string exch, std::vec
             }
 
         }  // End of non-symmetric condition
-    }      // End of loop over J/K matrices
+    }  // End of loop over J/K matrices
 
     get_results(J, exch);
 }

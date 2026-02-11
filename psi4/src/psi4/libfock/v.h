@@ -183,7 +183,9 @@ class RV : public VBase {
     /// A convenience function to call compute_Vx_full for singlets.
     /// And no, we can't just make singlet a default argument. Then compute_Vx has different signatures for
     /// different VBase subclasses, so we can't call compute_Vx from VBase, which breaks the hessian code.
-    void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override { compute_Vx_full(Dx, ret, true); };
+    void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override {
+        compute_Vx_full(Dx, ret, true);
+    };
     std::vector<SharedMatrix> compute_fock_derivatives() override;
     SharedMatrix compute_gradient() override;
     SharedMatrix compute_hessian() override;
@@ -211,5 +213,5 @@ class UV : public VBase {
 
     void print_header() const override;
 };
-}
+}  // namespace psi
 #endif

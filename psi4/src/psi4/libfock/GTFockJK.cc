@@ -44,10 +44,9 @@ struct MinimalInterface {
 namespace psi {
 GTFockJK::GTFockJK(std::shared_ptr<psi::BasisSet> Primary) : JK(Primary), Impl_(new MinimalInterface()) {}
 size_t GTFockJK::estimate_memory() {
-    return 0; // Effectively
+    return 0;  // Effectively
 }
 void GTFockJK::compute_JK() {
-
     // zero out J, K, and wK matrices
     zero();
 

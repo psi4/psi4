@@ -650,7 +650,6 @@ SharedMatrix PointFunctions::orbital_value(const std::string& key) { return orbi
 
 BasisFunctions::BasisFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
     : primary_(primary), max_points_(max_points), max_functions_(max_functions) {
-    
     puream_ = primary_->has_puream();
     set_deriv(0);
 }
@@ -766,7 +765,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
 #elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
         const int order = (int)puream_ ? GG_SPHERICAL_GAUSSIAN : GG_CARTESIAN_CCA;
 #else
-#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
+#error "unknown value of macro psi4_SHGSHELL_ORDERING"
 #endif
 
         // Compute collocation

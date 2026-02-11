@@ -84,8 +84,7 @@ void CDJK::initialize_JK_core() {
     }
 
     /// If user does not want to read from disk, recompute the cholesky integrals
-    auto Ch = std::make_shared<CholeskyERI>(cderi_, 0.0, cholesky_tolerance_,
-                                            memory_);
+    auto Ch = std::make_shared<CholeskyERI>(cderi_, 0.0, cholesky_tolerance_, memory_);
     Ch->choleskify();
     ncholesky_ = Ch->Q();
     size_t three_memory = ncholesky_ * ntri;

@@ -68,33 +68,33 @@ class Hamiltonian {
     // => Accessors <= //
 
     /**
-    * Pointer to the JK object
-    * @return current JK object
-    */
+     * Pointer to the JK object
+     * @return current JK object
+     */
     std::shared_ptr<JK> jk() const { return jk_; }
     /**
-    * Pointer to the V object
-    * @return current VBase object
-    */
+     * Pointer to the V object
+     * @return current VBase object
+     */
     std::shared_ptr<VBase> v() const { return v_; }
 
     /**
-    * Print header information regarding Hamiltonian
-    * type on output file
-    */
+     * Print header information regarding Hamiltonian
+     * type on output file
+     */
     virtual void print_header() const = 0;
 
     // => Knobs <= //
 
     /**
-    * Knob to swap out a JK object
-    * @param jk new JK object
-    */
+     * Knob to swap out a JK object
+     * @param jk new JK object
+     */
     void set_JK(std::shared_ptr<JK> jk) { jk_ = jk; }
     /**
-    * Knob to swap out a V object
-    * @param v new V object
-    */
+     * Knob to swap out a V object
+     * @param v new V object
+     */
     void set_V(std::shared_ptr<VBase> v) { v_ = v; }
     /// Print flag (defaults to 1)
     void set_print(int print) { print_ = print; }
@@ -118,22 +118,22 @@ class RHamiltonian : public Hamiltonian {
     // => Required Methods <= //
 
     /**
-    * Return the approximate diagonal of the Hamiltonian
-    * (typically orbital energy differences). This is used
-    * for vector guess, eigenvector occupation, and preconditioning.
-    * @return diagonal approximation, blocked by symmetry
-    */
+     * Return the approximate diagonal of the Hamiltonian
+     * (typically orbital energy differences). This is used
+     * for vector guess, eigenvector occupation, and preconditioning.
+     * @return diagonal approximation, blocked by symmetry
+     */
     virtual std::shared_ptr<Vector> diagonal() = 0;
     /**
-    * Form the product Hx for each x found in the argument, placing in second argument
-    * @param x vector of state functions, blocked by symmetry
-    * @param b vector of product functions, blocked by symmetry (preallocated)
-    */
+     * Form the product Hx for each x found in the argument, placing in second argument
+     * @param x vector of state functions, blocked by symmetry
+     * @param b vector of product functions, blocked by symmetry (preallocated)
+     */
     virtual void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b) = 0;
 
     /**
-    * Form the explicit hamiltonian for debugging purposes
-    */
+     * Form the explicit hamiltonian for debugging purposes
+     */
     SharedMatrix explicit_hamiltonian();
 };
 
@@ -158,5 +158,5 @@ class CPHFRHamiltonian : public RHamiltonian {
     virtual std::map<std::string, SharedVector> pack(const std::map<std::string, std::shared_ptr<Matrix> >& b);
     virtual std::vector<SharedMatrix> unpack(const std::vector<SharedVector>& x);
 };
-}
+}  // namespace psi
 #endif

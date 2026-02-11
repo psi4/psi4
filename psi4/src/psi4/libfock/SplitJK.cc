@@ -57,10 +57,12 @@ SplitJK::SplitJK(std::shared_ptr<BasisSet> primary, Options& options) : primary_
 SplitJK::~SplitJK() {}
 
 size_t SplitJK::num_computed_shells() {
-    outfile->Printf("WARNING: SplitJK::num_computed_shells() was called, but benchmarking is disabled for the chosen SplitJK algorithm.");
+    outfile->Printf(
+        "WARNING: SplitJK::num_computed_shells() was called, but benchmarking is disabled for the chosen SplitJK "
+        "algorithm.");
     outfile->Printf(" Returning 0 as computed shells count.\n");
 
     return 0;
 }
 
-}
+}  // namespace psi
