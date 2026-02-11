@@ -432,6 +432,109 @@ no_com"""
 
 
 @pytest.mark.fsapt
+def test_fsapt_AtomicOutput_external_potentials():
+    """
+    Test F-SAPT analysis using QCSchema AtomicResult output with external
+    potentials (no pandas).
+
+    This test verifies that fsapt_analysis works with QCSchema AtomicResult
+    objects returned from run_qcschema, using dictionary output format instead
+    of pandas. This approach is useful for integration with QCArchive and
+    other QCSchema-compatible workflows. Note, QCArchive will flatten
+    arrays, so fsapt_ab_size handles reshaping.
+
+    The test validates:
+    1. QCSchema plan generation and execution via run_qcschema
+    2. F-SAPT analysis from atomic_results parameter
+    3. Dictionary output format without pandas dependency
+    """
+    mol = psi4.geometry(
+        """
+H 0.0290 -1.1199 -1.5243
+O 0.9481 -1.3990 -1.3587
+H 1.4371 -0.5588 -1.3099
+--
+H 1.0088 -1.5240 0.5086
+O 1.0209 -1.1732 1.4270
+H 1.5864 -0.3901 1.3101
+--
+H -1.0231 1.6243 -0.8743
+O -0.5806 2.0297 -0.1111
+H -0.9480 1.5096 0.6281
+symmetry c1
+no_reorient
+no_com"""
+    )
+    psi4.set_options(
+        {
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+            "FISAPT_FSAPT_FILEPATH": "none",
+        }
+    )
+    psi_bohr2angstroms = psi4.constants.bohr2angstroms
+    external_potentials = {
+        "A": [
+            [0.417, np.array([-0.5496, -0.6026, 1.5720]) / psi_bohr2angstroms],
+            [-0.834, np.array([-1.4545, -0.1932, 1.4677]) / psi_bohr2angstroms],
+            [0.417, np.array([-1.9361, -0.4028, 2.2769]) / psi_bohr2angstroms],
+        ],
+        "B": [
+            [0.417, np.array([-2.5628, -0.8269, -1.6696]) / psi_bohr2angstroms],
+            [-0.834, np.array([-1.7899, -0.4027, -1.2768]) / psi_bohr2angstroms],
+            [0.417, np.array([-1.8988, -0.4993, -0.3072]) / psi_bohr2angstroms],
+        ],
+        "C": [
+            [0.417, np.array([1.1270, 1.5527, -0.1658]) / psi_bohr2angstroms],
+            [-0.834, np.array([1.9896, 1.0738, -0.1673]) / psi_bohr2angstroms],
+            [0.417, np.array([2.6619, 1.7546, -0.2910]) / psi_bohr2angstroms],
+        ],
+    }
+    plan = psi4.energy("fisapt0", return_plan=True, molecule=mol,
+                       external_potentials=external_potentials
+    )
+    atomic_result = psi4.schema_wrapper.run_qcschema(
+        plan.plan(),
+        # plan.plan(wfn_qcvars_only=False), # Needed if SAPT data not stored on dimer_wfn.
+        clean=True,
+        postclean=True,
+    )
+    fEnergies = psi4.fsapt_analysis(
+        source=atomic_result,
+        # NOTE: 1-indexed for fragments_a and fragments_b
+        fragments_a={
+            "w1": [1, 2, 3],
+        },
+        fragments_b={
+            "w3": [4, 5, 6],
+        },
+    )
+    fEnergies = {
+        "Elst": fEnergies["Elst"],
+        "Exch": fEnergies["Exch"],
+        "IndAB": fEnergies["IndAB"],
+        "IndBA": fEnergies["IndBA"],
+        "Disp": fEnergies["Disp"],
+        "EDisp": fEnergies["EDisp"],
+        "Total": fEnergies["Total"],
+    }
+    fEref = {
+        "fEelst": -30.867,
+        "fEexch": 11.445,
+        "fEindAB": -3.138,
+        "fEindBA": -1.863,
+        "fEdisp": -1.754,
+        "fEedisp": 0.000,
+        "fEtot": -26.177,
+    }
+
+    for key1, key2 in zip(fEref.keys(), fEnergies.keys()):
+        assert compare_values(fEref[key1], fEnergies[key2][-1], 2, key1)
+
+
+@pytest.mark.fsapt
 def test_fsapt_output_file():
     """
     Test F-SAPT analysis with file output (writes fsapt.dat).
@@ -873,6 +976,7 @@ def test_fisapt_link_siao():
 if __name__ == "__main__":
     # test_fsapt_psivars_dict()
     # test_fsapt_external_potentials()
+    test_fsapt_AtomicOutput_external_potentials()
     # test_fsapt_AtomicOutput()
     # test_fsapt_psivars()
     # test_fsapt_psivars_dict()

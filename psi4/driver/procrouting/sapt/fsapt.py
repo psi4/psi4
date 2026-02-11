@@ -1763,8 +1763,6 @@ def run_fsapt_analysis(
         )
     if atomic_results is not None:
         molecule = atomic_results.molecule
-        if print_output:
-            print(molecule, dir(molecule))
         R = molecule.geometry
         Z = molecule.atomic_numbers
         if hasattr(molecule, "atomic_symbols"):
@@ -1808,12 +1806,12 @@ def run_fsapt_analysis(
                 fsapt_vars[key] = v
         osapt, Qs = extract_osapt_data_from_fsapt_vars(fsapt_vars, print_output=print_output)
         external_potentials = {}
-        if ext_pot_A := qcvars.get("FSAPT_EXTERNAL_POTENTIAL_A"):
-            external_potentials['FSAPT_EXTERN_POTENTIAL_A'] = ext_pot_A
-        if ext_pot_B := qcvars.get("FSAPT_EXTERNAL_POTENTIAL_B"):
-            external_potentials['FSAPT_EXTERN_POTENTIAL_B'] = ext_pot_B
-        if ext_pot_C := qcvars.get("FSAPT_EXTERNAL_POTENTIAL_C"):
-            external_potentials['FSAPT_EXTERN_POTENTIAL_C'] = ext_pot_C
+        if "FSAPT_EXTERN_POTENTIAL_A" in qcvars:
+            external_potentials['FSAPT_EXTERN_POTENTIAL_A'] = qcvars.get("FSAPT_EXTERN_POTENTIAL_A")
+        if "FSAPT_EXTERN_POTENTIAL_B" in qcvars:
+            external_potentials['FSAPT_EXTERN_POTENTIAL_B'] = qcvars.get("FSAPT_EXTERN_POTENTIAL_B")
+        if "FSAPT_EXTERN_POTENTIAL_C" in qcvars:
+            external_potentials['FSAPT_EXTERN_POTENTIAL_C'] = qcvars.get("FSAPT_EXTERN_POTENTIAL_C")
     else:
         mol = wfn.molecule()
         monomer_slices = mol.get_fragments()
