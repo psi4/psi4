@@ -9,9 +9,9 @@ repos:
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix, --preview]
-        exclude: "^(psi4/share/|psi4/driver/qcdb/|psi4/__init__.py|psi4/metadata.py|psi4/driver/__init__.py|samples/|tests/|doc/|devtools/|conda/)"
+        exclude: "^(psi4/share/|psi4/driver/qcdb/|psi4/__init__.py|psi4/driver/__init__.py|samples/|tests/|doc/|devtools/|conda/)"
       - id: ruff-format
-        exclude: "^(psi4/share/|psi4/driver/qcdb/|psi4/__init__.py|psi4/metadata.py|psi4/driver/__init__.py|samples/|tests/|doc/|devtools/|conda/)"
+        exclude: "^(psi4/share/|psi4/driver/qcdb/|psi4/__init__.py|psi4/driver/__init__.py|samples/|tests/|doc/|devtools/|conda/)"
   - repo: https://github.com/doublify/pre-commit-clang-format.git
     rev: master
     hooks:
