@@ -137,6 +137,31 @@ void handleBrianOption(bool value) {
 }
 #endif
 
+#ifdef USING_cuEST
+#include <cuest.h>
+
+cuestHandle_t cuest_handle = 0;
+
+void cuest_init() {
+    if (cuest_handle != 0) {
+        throw PSIEXCEPTION("Attempting to reinitialize the cuEST module when it hasn't been released\n");
+    }
+    // Declare & create the cuEST parameters and handle with reasonable defaults. Destroy param promptly.
+    cuestHandleParameters_t handle_parameters;
+    cuestParametersCreate(CUEST_HANDLE_PARAMETERS, &handle_parameters);
+    cuestCreate(handle_parameters, &cuest_handle);
+    cuestParametersDestroy(CUEST_HANDLE_PARAMETERS, handle_parameters);
+}
+
+void cuest_release() {
+    if (cuest_handle == 0) {
+        throw PSIEXCEPTION("Attempting to release the cuEST module when it hasn't been initialized\n");
+    }
+    cuestDestroy(cuest_handle);
+    cuest_handle = 0;
+}
+#endif
+
 // Python helper wrappers
 void export_benchmarks(py::module&);
 void export_blas_lapack(py::module&);
@@ -1147,6 +1172,10 @@ bool psi4_python_module_initialize() {
     brianEnableDFT = brianEnableDFTEnv ? (bool)atoi(brianEnableDFTEnv) : true;
 #endif
 
+#ifdef USING_cuEST
+    cuest_init();
+#endif
+
     initialized = true;
 
     return true;
@@ -1157,6 +1186,10 @@ void psi4_python_module_finalize() {
     if (brianCookie != 0) {
         brianRelease();
     }
+#endif
+
+#ifdef USING_cuEST
+    if (cuest_handle != 0) { cuest_release(); }
 #endif
 
 #ifdef INTEL_Fortran_ENABLED

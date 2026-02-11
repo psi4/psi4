@@ -180,6 +180,8 @@ _addons_ = {
     "gauxc": _CMake_to_Py_boolean("@ENABLE_gauxc@"),
     "integratorxx": _CMake_to_Py_boolean("@ENABLE_IntegratorXX@"),
     "ooo": _CMake_to_Py_boolean("@ENABLE_OpenOrbitalOptimizer@"),
+    "cuest": _CMake_to_Py_boolean("@ENABLE_cuEST@"),
+    "pycuest": which_import("cuest", return_bool=True),
 }
 
 

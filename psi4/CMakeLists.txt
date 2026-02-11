@@ -248,6 +248,15 @@ else()
     message(STATUS "Disabled BrianQC ${BrianQC_DIR}")
 endif()
 
+if(${ENABLE_cuEST})
+    find_package(cuEST MODULE REQUIRED)
+    get_property(_loc TARGET cuEST::cuEST PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using cuEST${ColourReset}: ${cuEST_DIR}")
+else()
+    message(STATUS "Disabled cuEST ${cuEST_DIR}")
+endif()
+
 find_package(Libxc 7.0.0 COMPONENTS C CONFIG QUIET)  # edit in codedeps
 if(NOT ${Libxc_FOUND})
     find_package( Libxc 6.1.0 COMPONENTS C CONFIG REQUIRED)
