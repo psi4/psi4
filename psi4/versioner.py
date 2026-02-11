@@ -42,7 +42,7 @@ def collect_version_input_from_fallback(meta_file='metadata.py'):
 
     """
     cwd = os.path.dirname(os.path.abspath(__file__))
-    res = dict(re.findall(r"__version_([a-z_]+)\s*=\s*'([^']+)'", open(cwd + '/' + meta_file).read()))
+    res = dict(re.findall(r"__version_([a-z_]+)\s*=\s*['\"]([^'\"]+)['\"]", open(cwd + '/' + meta_file).read()))
     res.pop('_', None)
     return res
 
@@ -296,7 +296,7 @@ if __name__ == '__main__':
 """
     with open(os.path.abspath(outfile), 'w') as handle:
         for k in sorted(versdata):
-            handle.write("""{} = '{}'\n""".format(k, versdata[k]))
+            handle.write("""{} = "{}"\n""".format(k, versdata[k]))
         handle.write(formatter_fn)
         handle.write(main_fn)
 
