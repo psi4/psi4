@@ -142,6 +142,7 @@ option(ENABLE_cct3 "Enables cct3 plugin (requires Fortran; can also be added at 
 option(ENABLE_gpu_dfcc "Enables GPU_DFCC plugin for gpu-accelerated df-cc (requires CUDA; can also be added at runtime)" OFF)
 option(ENABLE_mdi "Enables MolSSI driver interface" OFF)
 option(ENABLE_BrianQC "Enables the BrianQC GPU module (requires CUDA; requires separate installation and licensing of the BrianQC module)" OFF)
+option(ENABLE_cuEST "Enables the cuEST GPU module (requires CUDA; requires separate installation and licensing of the cuEST module)" OFF)
 # These options are relevant to pasture, expert only
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
 option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
@@ -277,7 +278,8 @@ ExternalProject_Add(psi4-core
            brianqc_external
            integratorxx_external
            gauxc_external
-
+           cuest_external
+ 
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -335,6 +337,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DENABLE_mdi=${ENABLE_mdi}
               -DENABLE_BrianQC=${ENABLE_BrianQC}
+              -DENABLE_cuEST=${ENABLE_cuEST}
               -DENABLE_OpenOrbitalOptimizer=${ENABLE_OpenOrbitalOptimizer}
               -DENABLE_OPENMP=${ENABLE_OPENMP}
               -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
@@ -359,6 +362,7 @@ ExternalProject_Add(psi4-core
               -Dsimint_DIR=${simint_DIR}
               -DLibxc_DIR=${Libxc_DIR}
               -DBrianQC_DIR=${BrianQC_DIR}
+              -DcuEST_ROOT=${cuEST_ROOT}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
