@@ -1,3 +1,6 @@
+#ifndef PLUGIN_SCF_H
+#define PLUGIN_SCF_H
+
 /*
  * @BEGIN LICENSE
  *
@@ -89,3 +92,5 @@ class SCF : public Wavefunction {
 };
 
 }} //End namespaces
+
+#endif
