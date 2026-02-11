@@ -2089,12 +2089,13 @@ def tdscf(wfn, **kwargs):
 
 
 def fsapt_analysis(
+    source: Union[str, core.Wavefunction, AtomicResult],
     fragments_a: Dict,
     fragments_b: Dict,
-    source: Union[str, core.Molecule, AtomicResult] = None,
     pdb_dir: str = None,
     analysis_type: str = "reduced",
     links5050: bool = True,
+    link_siao: Dict = None,
     print_output: bool = True,
 ):
     r"""Runs fsapt.py either through qcvars or on fsapt output files.
@@ -2120,28 +2121,25 @@ def fsapt_analysis(
         with open(f"{dirname}/fB.dat", "w") as f:
             for k, v in fragments_b.items():
                 f.write(f"{k} {' '.join([str(i) for i in v])}\n")
+        if link_siao is not None:
+            with open(f"{dirname}/link_siao.dat", "w") as f:
+                for k, v in link_siao.items():
+                    f.write(f"{k} {' '.join([str(i) for i in v])}\n")
         return fsapt.run_from_output(dirname=dirname)
 
     elif isinstance(source, AtomicResult):
         if print_output:
             print("Running fsapt_analysis through variables")
         atomic_results = source
-        molecule = None
+        wfn = None
 
-    elif isinstance(source, core.Molecule):
+    elif isinstance(source, core.Wavefunction):
         if print_output:
             print("Running fsapt_analysis through variables")
         atomic_results = None
-        molecule = source
-    elif source is None:
-        print(
-            "Warning: fsapt_analysis attempting to use core.active_molecule() for geometry!",
-            "To suppress this warning, explicitly provide source=Union[str, core.Molecule, AtomicResult],"
-            "   where str for output files, core.Molecule for geometry+qcvars, or AtomicResult",
-            sep="\n",
-        )
-        molecule = core.get_active_molecule()
-        atomic_results = None
+        wfn = source
+    else:
+        raise ValidationError("fsapt_analysis requires a string, AtomicResult, or Wavefunction as input")
 
     if print_output:
         print("Running fsapt_analysis through variables")
@@ -2149,11 +2147,13 @@ def fsapt_analysis(
     return fsapt.run_fsapt_analysis(
         fragments_a,
         fragments_b,
-        molecule,
+        wfn,
         atomic_results,
         pdb_dir,
         analysis_type,
         links5050,
+        link_siao=link_siao,
+        dirname=None,
         print_output=print_output
     )
 

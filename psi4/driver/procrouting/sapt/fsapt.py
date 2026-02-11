@@ -474,11 +474,13 @@ def print_fragments(geom, Z, Q, fragkeys, frags, nuclear_ws, orbital_ws, filenam
     fh.close()
 
 
-def extract_osapt_data_from_vars(print_output=True):
-    """Reads the F-SAPT components
+def extract_osapt_data_from_fsapt_vars(fsapt_vars, print_output=True):
+    """Reads the F-SAPT components from fsapt_vars pulled off AtomicResult
 
     Parameters
     ----------
+    fsapt_vars : Dict[str, np.ndarray]
+        Dictionary of F-SAPT variables pulled from AtomicResult
     print_output : bool
         Whether to print output messages. Default: True.
 
@@ -490,14 +492,66 @@ def extract_osapt_data_from_vars(print_output=True):
     """
 
     vals = {}
-    vals["Elst"] = core.variable("FSAPT_ELST_AB").to_array() * H_to_kcal_
-    vals["Exch"] = core.variable("FSAPT_EXCH_AB").to_array() * H_to_kcal_
-    vals["IndAB"] = core.variable("FSAPT_INDAB_AB").to_array() * H_to_kcal_
-    vals["IndBA"] = core.variable("FSAPT_INDBA_AB").to_array() * H_to_kcal_
+    vals["Elst"] = fsapt_vars.get("FSAPT_ELST_AB") * H_to_kcal_
+    vals["Exch"] = fsapt_vars.get("FSAPT_EXCH_AB") * H_to_kcal_
+    vals["IndAB"] = fsapt_vars.get("FSAPT_INDAB_AB") * H_to_kcal_
+    vals["IndBA"] = fsapt_vars.get("FSAPT_INDBA_AB") * H_to_kcal_
     # Read exact F-SAPT0 dispersion data
     try:
         # vals['Disp'] = read_block('%s/Disp.dat'  % filepath, H_to_kcal_)
-        vals["Disp"] = core.variable("FSAPT_DISP_AB").to_array() * H_to_kcal_
+        vals["Disp"] = fsapt_vars.get("FSAPT_DISP_AB") * H_to_kcal_
+    except Exception:
+        if print_output:
+            print(
+                "No exact dispersion present.  Copying & zeroing "
+                "`Elst.dat`->`Disp.dat`, and proceeding.\n"
+            )
+        vals["Disp"] = np.zeros_like(np.array(vals["Elst"]))
+
+    # Read empirical F-SAPT0-D dispersion data
+    try:
+        vals["EDisp"] = fsapt_vars.get("FSAPT_EMPIRICAL_DISP") * H_to_kcal_
+    except Exception:
+        vals["EDisp"] = np.zeros_like(np.array(vals["Elst"]))
+
+    # For total, only include exact terms
+    vals["Total"] = [[0.0 for x in vals["Elst"][0]] for x2 in vals["Elst"]]
+    for key in ["Elst", "Exch", "IndAB", "IndBA", "Disp"]:
+        for k in range(len(vals["Total"])):
+            for idx in range(len(vals["Total"][0])):
+                vals["Total"][k][idx] += vals[key][k][idx]
+    Qs = {}
+    Qs["A"] = fsapt_vars.get("FSAPT_QA")
+    Qs["B"] = fsapt_vars.get("FSAPT_QB")
+    return vals, Qs
+
+
+def extract_osapt_data_from_wfn(wfn, print_output=True):
+    """Reads the F-SAPT components
+
+    Parameters
+    ----------
+    wfn : psi4.core.Wavefunction
+        dimer wfn from SAPT energy calculation
+    print_output : bool
+        Whether to print output messages. Default: True.
+
+    Returns
+    -------
+    vals : Dict[str, np.ndarray]
+        Dictionary of the F-SAPT0 components decomposed to orbital, nuclear,
+        and external potential contributions
+    """
+
+    vals = {}
+    vals["Elst"] = wfn.variable("FSAPT_ELST_AB").to_array() * H_to_kcal_
+    vals["Exch"] = wfn.variable("FSAPT_EXCH_AB").to_array() * H_to_kcal_
+    vals["IndAB"] = wfn.variable("FSAPT_INDAB_AB").to_array() * H_to_kcal_
+    vals["IndBA"] = wfn.variable("FSAPT_INDBA_AB").to_array() * H_to_kcal_
+    # Read exact F-SAPT0 dispersion data
+    try:
+        # vals['Disp'] = read_block('%s/Disp.dat'  % filepath, H_to_kcal_)
+        vals["Disp"] = wfn.variable("FSAPT_DISP_AB").to_array() * H_to_kcal_
     except Exception:
         if print_output:
             print(
@@ -509,7 +563,7 @@ def extract_osapt_data_from_vars(print_output=True):
     # Read empirical F-SAPT0-D dispersion data
     try:
         # vals['EDisp'] = read_block('%s/Empirical_Disp.dat'  % filepath, H_to_kcal_)
-        vals["EDisp"] = core.variable("FSAPT_EMPIRICAL_DISP").to_array() * H_to_kcal_
+        vals["EDisp"] = wfn.variable("FSAPT_EMPIRICAL_DISP").to_array() * H_to_kcal_
     except Exception:
         vals["EDisp"] = np.zeros_like(np.array(vals["Elst"]))
 
@@ -519,7 +573,18 @@ def extract_osapt_data_from_vars(print_output=True):
         for k in range(len(vals["Total"])):
             for idx in range(len(vals["Total"][0])):
                 vals["Total"][k][idx] += vals[key][k][idx]
-    return vals
+    Qs = {}
+    Qs["A"] = wfn.variable("FSAPT_QA").to_array()
+    Qs["B"] = wfn.variable("FSAPT_QB").to_array()
+
+    external_potentials = {}
+    if wfn.has_variable("FSAPT_EXTERN_POTENTIAL_A"):
+        external_potentials['FSAPT_EXTERN_POTENTIAL_A'] = wfn.variable("FSAPT_EXTERN_POTENTIAL_A").to_array()
+    if wfn.has_variable("FSAPT_EXTERN_POTENTIAL_B"):
+        external_potentials['FSAPT_EXTERN_POTENTIAL_B'] = wfn.variable("FSAPT_EXTERN_POTENTIAL_B").to_array()
+    if wfn.has_variable("FSAPT_EXTERN_POTENTIAL_C"):
+        external_potentials['FSAPT_EXTERN_POTENTIAL_C'] = wfn.variable("FSAPT_EXTERN_POTENTIAL_C").to_array()
+    return vals, Qs, external_potentials
 
 
 def extract_osapt_data(filepath, print_output=True):
@@ -1061,9 +1126,13 @@ def compute_fsapt_qcvars(
     Z,
     monomer_slices,
     holder,
+    osapt,
+    Qs,
     links5050=False,
     completeness=0.85,
     dirname=".",
+    link_siao: Dict = None,
+    external_potentials: Dict = {},
     print_output=True,
 ):
     # geom = geom.tolist()
@@ -1111,9 +1180,6 @@ def compute_fsapt_qcvars(
         fragkeys["B"].append("Other")
         frags["B"]["Other"] = other_fragment_B
 
-    Qs = {}
-    Qs["A"] = core.variable("FSAPT_QA").to_array()
-    Qs["B"] = core.variable("FSAPT_QB").to_array()
 
     holder1 = partition_fragments(
         fragkeys["A"], frags["A"], Zs["A"], Qs["A"], completeness
@@ -1144,37 +1210,24 @@ def compute_fsapt_qcvars(
     total_ws["A"] = holder1[4]
     total_ws["B"] = holder2[4]
 
-    # print_fragments(geom, Zs['A'], Qs['A'], fragkeys['A'], frags['A'],
-    # nuclear_ws['A'], orbital_ws['A'], 'fragA.dat')
-    # print_fragments(geom, Zs['B'], Qs['B'], fragkeys['B'], frags['B'],
-    # nuclear_ws['B'], orbital_ws['B'], 'fragB.dat')
-
-    # osapt = extract_osapt_data(dirname)
-    osapt = extract_osapt_data_from_vars(print_output=print_output)
-
     # For I-SAPT/SAOn and I-SAPT/SIAOn, we need to add one extra orbital weight
     # for the reassigned link orbital. It belongs
     # to the atom of A/B directly connected to the linker C. The user needs to
     # supply a file link_siao.dat that has two lines
     #   A (atomnumber)
     #   B (atomnumber)
-    # to specify the numbers of atoms which are connected to C. We will now
-    # check if this file exists and read it.
-    dirname = "."
-    if os.path.exists("%s/link_siao.dat" % dirname):
-        (fragsiao, keyssiao) = read_fragments("%s/link_siao.dat" % dirname)
-        if ("A" not in keyssiao) or ("B" not in keyssiao):
-            raise Exception("Invalid syntax of the link_siao.dat file")
-        linkAC = fragsiao["A"][0]
-        linkBC = fragsiao["B"][0]
-        if print_output:
-            print(
-                "\n Extra SAOn/SIAOn link orbitals assigned to atoms",
-                linkAC,
-                "and",
-                linkBC,
-                "\n",
-            )
+    # to specify the numbers of atoms which are connected to C.
+    if link_siao is not None:
+        linkAC = link_siao["A"][0]
+        linkBC = link_siao["B"][0]
+        # if print_output:
+        print(
+            "\n Extra SAOn/SIAOn link orbitals assigned to atoms",
+            linkAC,
+            "and",
+            linkBC,
+            "\n",
+        )
 
         # We add zero entry for all the fragments, making place for the
         # reassigned link orbital
@@ -1226,8 +1279,8 @@ def compute_fsapt_qcvars(
     geom_extern_A = None
     geom_extern_B = None
     geom_extern_C = None
-    try:
-        geom_extern_A = core.variable("FSAPT_EXTERN_POTENTIAL_A").to_array()
+    if "FSAPT_EXTERN_POTENTIAL_A" in external_potentials.keys():
+        geom_extern_A = external_potentials.get("FSAPT_EXTERN_POTENTIAL_A")
         geom_extern_A = np.hstack(
             (np.zeros((len(geom_extern_A), 1)), geom_extern_A)
         ).tolist()
@@ -1241,12 +1294,8 @@ def compute_fsapt_qcvars(
         frags["A"]["Extern-A"] = list(
             range(len(Zs["A"]), len(Zs["A"]) + len(geom_extern_A))
         )
-    except KeyError:
-        # print("No external potential data for A")
-        pass
-
-    try:
-        geom_extern_B = core.variable("FSAPT_EXTERN_POTENTIAL_B").to_array()
+    if "FSAPT_EXTERN_POTENTIAL_B" in external_potentials.keys():
+        geom_extern_B = external_potentials.get("FSAPT_EXTERN_POTENTIAL_B")
         geom_extern_B = np.hstack(
             (np.zeros((len(geom_extern_B), 1)), geom_extern_B)
         ).tolist()
@@ -1269,22 +1318,15 @@ def compute_fsapt_qcvars(
                 range(len(Zs["B"]), len(Zs["B"]) + len(geom_extern_B))
             )
 
-    except KeyError:
-        # print("No external potential data for B")
-        pass
-
     # Add external potential data for C
     # The point charges in C do not explicitly enter the SAPT0 interaction energy
-    try:
-        geom_extern_C = core.variable("FSAPT_EXTERN_POTENTIAL_C").to_array()
+    if "FSAPT_EXTERN_POTENTIAL_C" in external_potentials.keys():
+        geom_extern_C = external_potentials.get("FSAPT_EXTERN_POTENTIAL_C")
         geom_extern_C = np.hstack(
             (np.zeros((len(geom_extern_C), 1)), geom_extern_C)
         ).tolist()
         for c in geom_extern_C:
             geom.append(c)
-    except KeyError:
-        # print("No external potential data for C")
-        pass
 
     order2 = extract_order2_fsapt(osapt, total_ws["A"], total_ws["B"], frags)
     order2r = collapse_links(order2, frags, Qs, orbital_ws, links5050)
@@ -1704,19 +1746,20 @@ def print_order1(
 def run_fsapt_analysis(
     fragments_a: Dict,
     fragments_b: Dict,
-    molecule=None,
+    wfn=None,
     atomic_results=None,
     pdb_dir: str = None,
     analysis_type: str = "reduced",
     links5050: bool = True,
     dirname: str = "./fsapt",
+    link_siao: Dict = None,
     print_output: bool = True,
 ):
     if print_output:
         print("  ==> F-ISAPT: Analysis Start <==\n")
-    if atomic_results is None and molecule is None:
+    if atomic_results is None and wfn is None:
         raise Exception(
-            "Atomic results or molecule object after running psi4.energy('fisapt0') must be provided."
+            "Atomic results or SAPT wfn object after running `_, wfn = psi4.energy('fisapt0', return_wfn=True)` must be provided."
         )
     if atomic_results is not None:
         molecule = atomic_results.molecule
@@ -1736,12 +1779,13 @@ def run_fsapt_analysis(
         ]
         # When running atomic_result directly from psi4, we have the right
         # shape already for Felst, Fexch, etc... QCFractal flattens them.
+        fsapt_vars = {}
         if "qcvars" in atomic_results.extras:
             qcvars = atomic_results.extras["qcvars"]
             for key, value in qcvars.items():
                 if "fsapt" not in key.lower():
                     continue
-                core.set_variable(key, value)
+                fsapt_vars[key] = value
         else:
             qcvars = atomic_results.extras["extra_properties"]
             # atomic_results back from QCFractal are stored in 1D array, so we
@@ -1761,10 +1805,21 @@ def run_fsapt_analysis(
                     v = v.reshape(len(Z), len(Z))
                 else:
                     v = v.reshape(fsapt_AB_array_shape)
-                core.set_variable(key, v)
+                fsapt_vars[key] = v
+        osapt, Qs = extract_osapt_data_from_fsapt_vars(fsapt_vars, print_output=print_output)
+        external_potentials = {}
+        if ext_pot_A := qcvars.get("FSAPT_EXTERNAL_POTENTIAL_A"):
+            external_potentials['FSAPT_EXTERN_POTENTIAL_A'] = ext_pot_A
+        if ext_pot_B := qcvars.get("FSAPT_EXTERNAL_POTENTIAL_B"):
+            external_potentials['FSAPT_EXTERN_POTENTIAL_B'] = ext_pot_B
+        if ext_pot_C := qcvars.get("FSAPT_EXTERNAL_POTENTIAL_C"):
+            external_potentials['FSAPT_EXTERN_POTENTIAL_C'] = ext_pot_C
     else:
-        monomer_slices = molecule.get_fragments()
-        R, _, Z_el, Z, _ = molecule.to_arrays()
+        mol = wfn.molecule()
+        monomer_slices = mol.get_fragments()
+        R, _, Z_el, Z, _ = mol.to_arrays()
+        osapt, Qs, external_potentials = extract_osapt_data_from_wfn(wfn, print_output=print_output)
+
         # PDB writing later needs Z to be str (element symbols=Z_el)
     geom = []
     for i in range(len(Z)):
@@ -1784,7 +1839,6 @@ def run_fsapt_analysis(
         "A": [fragments_a, list(fragments_a.keys())],
         "B": [fragments_b, list(fragments_b.keys())],
     }
-    dirname = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
     if dirname is None:
         dirname = "."
     if analysis_type == "full":
@@ -1792,8 +1846,9 @@ def run_fsapt_analysis(
             print("  ==> Full Analysis <==\n")
             print(f"     Links 50-50: {links5050}\n")
         results = compute_fsapt_qcvars(
-            geom, Z, monomer_slices, holder, links5050=links5050, dirname=dirname,
-            print_output=print_output
+            geom, Z, monomer_slices, holder, osapt, Qs, links5050=links5050,
+            dirname=dirname, external_potentials=external_potentials,
+            link_siao=link_siao, print_output=print_output
         )
         data = print_order2(
             results["order2"],
@@ -1808,8 +1863,9 @@ def run_fsapt_analysis(
             print("  ==> Reduced Analysis <==\n")
             print(f"     Links 50-50: {links5050}\n")
         results = compute_fsapt_qcvars(
-            geom, Z, monomer_slices, holder, links5050=links5050, dirname=dirname,
-            print_output=print_output
+            geom, Z, monomer_slices, holder, osapt, Qs, links5050=links5050,
+            dirname=dirname, external_potentials=external_potentials,
+            link_siao=link_siao, print_output=print_output
         )
         results_tag = "order2r"
         data = print_order2(

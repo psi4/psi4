@@ -256,6 +256,12 @@ def fisapt_variables_to_wfn(self, ref_wfn, external_potentials=None):
     ref_wfn.set_variable("SAPT ELST10,R ENERGY", scalars["Elst10,r"])
     if "Extern-Extern" in scalars:
         ref_wfn.set_variable("SAPT ELST EXTERN-EXTERN ENERGY", scalars["Extern-Extern"])
+    if core.has_variable("FSAPT_EXTERN_POTENTIAL_A"):
+        ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_A", core.variable("FSAPT_EXTERN_POTENTIAL_A"))
+    if core.has_variable("FSAPT_EXTERN_POTENTIAL_B"):
+        ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_B", core.variable("FSAPT_EXTERN_POTENTIAL_B"))
+    if core.has_variable("FSAPT_EXTERN_POTENTIAL_C"):
+        ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_C", core.variable("FSAPT_EXTERN_POTENTIAL_C"))
     ref_wfn.set_variable("SAPT EXCH ENERGY", scalars["Exchange"])
     ref_wfn.set_variable("SAPT EXCH10 ENERGY", scalars["Exch10"])
     ref_wfn.set_variable("SAPT EXCH10(S^2) ENERGY", scalars["Exch10(S^2)"])

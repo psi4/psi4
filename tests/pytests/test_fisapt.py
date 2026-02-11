@@ -50,7 +50,9 @@ no_com"""
             "FISAPT_FSAPT_FILEPATH": "none",
         }
     )
-    psi4.energy("fisapt0")
+    # NOTE: wfn used for keeping SAPT data together, but the wavefunction is
+    # just the dimer SCF wavefunction.
+    _, wfn = psi4.energy("fisapt0", return_wfn=True)
     keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
     Eref = {
         "Enuc": 35.07529824960602,
@@ -72,6 +74,7 @@ no_com"""
     for key in keys:
         assert compare_values(Eref[key], Epsi[key], 6, key)
     fEnergies = psi4.fsapt_analysis(
+        source=wfn,
         # NOTE: 1-indexed for fragments_a and fragments_b
         fragments_a={
             "MethylA": [1, 2, 3, 4, 5],
@@ -165,8 +168,8 @@ no_com
             [0.417, np.array([2.6619, 1.7546, -0.2910]) / psi_bohr2angstroms],
         ],
     }
-    psi4.energy("fisapt0", external_potentials=external_potentials)
-    print(psi4.core.variables())
+    _, wfn = psi4.energy("fisapt0", external_potentials=external_potentials, return_wfn=True)
+    print(wfn.variables())
     keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
     Eref = {
         "Enuc": 74.2330370461897,
@@ -188,6 +191,7 @@ no_com
     for key in keys:
         assert compare_values(Eref[key], Epsi[key], 6, key)
     fEnergies = psi4.fsapt_analysis(
+        source=wfn,
         # NOTE: 1-indexed for fragments_a and fragments_b
         fragments_a={
             "w1": [1, 2, 3],
@@ -289,6 +293,7 @@ no_com"""
     for key in keys:
         assert compare_values(Eref[key], Epsi[key], 6, key)
     data = psi4.fsapt_analysis(
+        source=wfn,
         # NOTE: 1-indexed for fragments_a and fragments_b
         fragments_a={
             "MethylA": [1, 2, 3, 4, 5],
@@ -296,7 +301,6 @@ no_com"""
         fragments_b={
             "MethylB": [6, 7, 8, 9, 10],
         },
-        source=mol,
     )
     df = pd.DataFrame(data)
     print(df)
@@ -393,6 +397,7 @@ no_com"""
         postclean=True,
     )
     fEnergies = psi4.fsapt_analysis(
+        source=atomic_result,
         # NOTE: 1-indexed for fragments_a and fragments_b
         fragments_a={
             "MethylA": [1, 2, 3, 4, 5],
@@ -400,7 +405,6 @@ no_com"""
         fragments_b={
             "MethylB": [6, 7, 8, 9, 10],
         },
-        source=atomic_result,
     )
     fEnergies = {
         "Elst": fEnergies["Elst"][0],
@@ -459,7 +463,7 @@ symmetry c1
 no_reorient
 no_com"""
     )
-    fsapt_dirname="./fsapt_dir_test_fsapt_output_file"
+    fsapt_dirname = "./fsapt_dir_test_fsapt_output_file"
     psi4.set_options(
         {
             "basis": "jun-cc-pvdz",
@@ -491,13 +495,13 @@ no_com"""
     for key in keys:
         assert compare_values(Eref[key], Epsi[key], 6, key)
     psi4.fsapt_analysis(
+        source=fsapt_dirname,
         fragments_a={
             "MethylA": [1, 2, 3, 4, 5],
         },
         fragments_b={
             "MethylB": [6, 7, 8, 9, 10],
         },
-        source=fsapt_dirname,
     )
     fEnergies = {}
     fkeys = ["fEelst", "fEexch", "fEindAB", "fEindBA", "fEdisp", "fEedisp", "fEtot"]
@@ -606,6 +610,7 @@ no_com
     print(atomic_result)
     print(dir(atomic_result))
     data = psi4.fsapt_analysis(
+        source=atomic_result,
         # NOTE: 1-indexed for fragments_a and fragments_b
         fragments_a={
             "Methyl1_A": [1, 2, 7, 8],
@@ -615,13 +620,9 @@ no_com
             "Peptide_B": [9, 10, 11, 16, 26],
             "T-Butyl_B": [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
         },
-        source=atomic_result,
         links5050=True,
         print_output=False,
     )
-    from pprint import pprint
-
-    pprint(data)
     mol_qcel_dict = mol.to_schema(dtype=2)
     frag1_indices = data["Frag1_indices"]
     frag2_indices = data["Frag2_indices"]
@@ -796,6 +797,79 @@ no_com
     return
 
 
+def test_fisapt_link_siao():
+    """
+    Test FISAPT link assignment using SIAO1 method.
+
+    This test verifies that FISAPT calculations with link atoms assigned
+    using the SIAO1 method produce correct interaction energies for a
+    system with multiple fragments and link atoms.
+    """
+    
+    mol = psi4.core.Molecule.from_arrays(
+        elez=[6, 6, 1, 1, 1, 8, 1, 1, 6, 6, 1, 1, 1, 8, 1, 1, 6, 1, 1],
+        fragment_separators=[8, 16],
+        fix_com=True,
+        fix_orientation=True,
+        fix_symmetry="c1",
+        fragment_multiplicities=[2, 2, 1],
+        molecular_charge=0,
+        molecular_multiplicity=1,
+        geom=[2.51268, -0.79503, -0.22006, 1.23732, 0.03963, -0.27676,
+              2.46159, -1.62117, -0.94759, 2.64341, -1.21642, 0.78902, 3.39794,
+              -0.18468, -0.46590, 1.26614, 1.11169, 0.70005, 2.10603, 1.58188,
+              0.59592, 1.13110, 0.48209, -1.28412, -1.26007, 0.07291, 0.27398,
+              -2.53390, -0.75742, 0.20501, -2.48461, -1.59766, 0.91610,
+              -2.65872, -1.16154, -0.81233, -3.41092, -0.13922, 0.44665,
+              -1.38660, 1.11180, -0.71748, -1.17281, 0.53753, 1.27129,
+              -0.70002, 1.76332, -0.50799, -0.01090, -0.78649, 0.02607,
+              0.17071, -1.41225, 0.91863, -0.19077, -1.46135, -0.82966],
+    )
+    psi4.activate(mol)
+    psi4.set_options(
+        {
+            "basis": "sto-3g",
+            "scf_type": "disk_df",
+            "guess": "sad",
+            "freeze_core": "true",
+            "fisapt_link_assignment": "SIAO1",
+            "fisapt_link_ortho": "fragment",
+        }
+    )
+    _, wfn = psi4.energy("fisapt0", return_wfn=True)
+    data = psi4.fsapt_analysis(
+        source=wfn,
+        fragments_a={
+            "OH_A": [1, 2],
+            "Rest_A": [3, 4, 5, 8],
+        },
+        fragments_b={
+            "OH_B": [14, 16],
+            "Rest_B": [9, 10, 11, 12, 13, 15],
+        },
+        link_siao={
+            "A": [2],
+            "B": [9],
+        },
+    )
+    ref_data = {
+         'Disp': [-0.07730013703756884],
+         'Elst': [11.240080594756975],
+         'Exch': [1.004180374688547],
+         'IndAB': [-0.33791373473933195],
+         'IndBA': [-0.1882806003666028],
+         'Total': [11.640766497303076],
+    }
+    for key in ref_data.keys():
+        assert compare_values(
+            float(ref_data[key][0]),
+            float(data[key][0]),
+            5,  # compares in kcal/mol, so looser tolerance
+            f"Fragment pair {data['Frag1'][0]}-{data['Frag2'][0]} for key {key}",
+        )
+    return
+
+
 if __name__ == "__main__":
     # test_fsapt_psivars_dict()
     # test_fsapt_external_potentials()
@@ -806,4 +880,5 @@ if __name__ == "__main__":
     # test_fsapt_output_file()
     # test_fsapt_output_file()
     # test_fsapt_indices()
+    # test_fisapt_link_siao()
     pytest.main([__file__])
