@@ -149,8 +149,8 @@ class CGHF : public HF {
     einsums::BlockTensor<double, 1> Fevals_;                // Eigenvalues of Fock matrix
 
     SharedBlockTensor D_;       // 1-particle density matrix
-    SharedBlockTensor J_;       // Coulomb matrix
-    SharedBlockTensor K_;       // Exchange matrix
+    SharedBlockTensor JK_;       // Combined Coulomb and exchange matrix
+    //SharedBlockTensor K_;       // Exchange matrix
 
     // ortho_error and ecurr are specific to DIIS
     SharedBlockTensor ortho_error;    // Orthogonalized gradient error

@@ -150,10 +150,9 @@ void CGHF::common_init() {
     Fevecs_ = MakeSharedBlockTensor("Fock eigenvectors", irrep_sizes_);
     Fevals_ = einsums::BlockTensor<double, 1>("Fock evals", irrep_sizes_);
 
-    // Density, coulomb, exchange matrices
+    // Density and combined Coulomb/ exchange matrices
     D_ = MakeSharedBlockTensor("D", irrep_sizes_);
-    J_ = MakeSharedBlockTensor("J", irrep_sizes_);
-    K_ = MakeSharedBlockTensor("K", irrep_sizes_);
+    JK_ = MakeSharedBlockTensor("J", irrep_sizes_);
 
     // Orthogonalized gradient [F, D], gradient error at the current iteration
     ortho_error = MakeSharedBlockTensor("Orthogonalized FDSmSDF", irrep_sizes_);
@@ -171,8 +170,7 @@ void CGHF::common_init() {
     Fevecs_->zero();
     Fevals_.zero();
     D_->zero();
-    J_->zero();
-    K_->zero();
+    JK_->zero();
     temp1_->zero();
     temp2_->zero();
     FDSmSDF_->zero();
@@ -247,8 +245,7 @@ void CGHF::form_V() {}
  */
 
 void CGHF::form_G() {
-    J_->zero();
-    K_->zero();
+    JK_->zero();
 
     int nso = nso_;
     int dim = 2 * nso;
@@ -268,8 +265,9 @@ void CGHF::form_G() {
 
         auto sum_D = D_AA + D_BB;
 
-        (*J_)[h].subscript(p, q) += g_pqrs * sum_D - g_psrq * D_AA;
-        (*J_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) += g_pqrs * sum_D - g_psrq * D_BB;
+        // Each line will be Coulomb (J) - exchange (K) contributions
+        (*JK_)[h].subscript(p, q) += g_pqrs * sum_D - g_psrq * D_AA;
+        (*JK_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) += g_pqrs * sum_D - g_psrq * D_BB;
     }
 }
 
@@ -277,8 +275,7 @@ void CGHF::form_G() {
 void CGHF::form_F() {
     F_->zero();
     (*F_) += (*F0_);
-    (*F_) += (*J_);
-    (*F_) -= (*K_);
+    (*F_) += (*JK_);
 }
 
 /*
@@ -437,7 +434,7 @@ double CGHF::compute_E() {
                 auto Dji = (*D_)[h].subscript(j, i);
 
                 one_electron_E += ((*F0_)[h].subscript(i, j) * Dji).real();  // F0_ij * D_ji
-                two_E += ((*J_)[h].subscript(i, j) * Dji).real();            // J_ij * D_ji
+                two_E += ((*JK_)[h].subscript(i, j) * Dji).real();            // J_ij * D_ji
             }
     }
 
