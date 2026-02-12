@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-"""
-isort:skip_file
-"""
+# ruff: noqa: I001
 import collections
 import importlib
 import math
