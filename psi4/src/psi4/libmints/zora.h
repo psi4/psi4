@@ -64,11 +64,24 @@ class PSI_API ZORA {
 	ZORA(std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&);
 	~ZORA();
 
+	/// Builds grid, sets up pworkers and computes veff
+	void setup();
+
     /*! @{
      * Fills an empty SharedMatrix with the computed ZORA kinetic integral.
      * @param T Shared matrix object that will hold the ZORA kinetic integrals.
      */
-    void compute(SharedMatrix);
+	void compute_TSR(SharedMatrix&);
+    /*! @} */
+
+    /*! @{
+     * Fills three empty SharedMatrix objects with the real x, y, and z components
+     * of the spin-orbit coupling Hamiltonian.
+     * @param Hx SharedMatrix object
+     * @param Hy SharedMatrix object
+     * @param Hz SharedMatrix object
+     */
+    void compute_HSO(SharedMatrix&, SharedMatrix&, SharedMatrix&);
     /*! @} */
 
    private:
@@ -76,20 +89,19 @@ class PSI_API ZORA {
     std::shared_ptr<BasisSet> primary_;
 	std::shared_ptr<DFTGrid> grid_;
 	Options& options_;
+    std::vector<std::shared_ptr<BasisFunctions>> pworkers_;
     /*! Purpose of the map: the ``block->index()`` does not index like ``grid_->blocks()``.
      *  For multithreading to work, this is a solution.
      */
     std::shared_ptr<std::map<int, SharedVector>> veff_;
 
 
-	/// Initializes grid_ with options, prints details
-	void setup();
+    /// Initializes grid_ with options, prints details
+    void build_grid();
 	/// Fills veff_ with effective potential for each point in a block.
 	void compute_veff();
 	/// Creates same structure as above but all zeros. TSR->T as veff->0
 	void compute_debug_veff();
-	/// Uses veff_ to compute the Scalar Relativistic Kinetic Energy Matrix
-	void compute_TSR(std::vector<std::shared_ptr<BasisFunctions>>, SharedMatrix&);
 
     /*! I'm so sorry.
      *  These are the contraction coefficients and exponents of the model basis. The
