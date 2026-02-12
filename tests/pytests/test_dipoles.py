@@ -1,5 +1,6 @@
 import pytest
 
+import numpy as np
 import qcelemental as qcel
 import psi4
 
@@ -45,11 +46,20 @@ def test_dipole(inp):
     mol = h2o_singlet if inp["options"].get("reference", "rhf") == "rhf" else h2o_doublet
     psi4.set_options({'perturb_h': True, 'perturb_with': 'dipole', 'basis': 'cc-pvdz'})
     psi4.set_options(inp['options'])
+    
+    # Compute finite difference dipole (at coordinate origin)
     energies = dict()
     for l in [1, -1, 2, -2]:
         psi4.set_options({'perturb_dipole': [0, 0, l * perturbation_strength]})
         energies[l] = psi4.energy(inp['name'], molecule=mol)
     findif_dipole = [0, 0, (8 * energies[1] - 8 * energies[-1] - energies[2] + energies[-2]) / (12 * perturbation_strength)]
+
+    # Transform to nuclear charge center to match analytic calculation
+    nuclear_charges = [mol.Z(i) for i in range(mol.natom())]
+    coords = np.array([[mol.x(i), mol.y(i), mol.z(i)] for i in range(mol.natom())])
+    total_nuclear_charge = sum(nuclear_charges)
+    nuclear_charge_center = np.sum([nuclear_charges[i] * coords[i] for i in range(mol.natom())], axis=0) / total_nuclear_charge
+    findif_dipole += mol.molecular_charge() * nuclear_charge_center
 
     psi4.set_options({'perturb_h': False})
     wfn = psi4.properties(inp['name'], properties=['dipole'], molecule=mol, return_wfn=True)[1]
