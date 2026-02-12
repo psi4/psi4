@@ -1517,9 +1517,6 @@ def _set_external_potentials_to_wavefunction(external_potential: Union[List, Dic
     total_ep = core.ExternalPotential()
 
     for frag, ep_spec in vep.items():
-        if "diffuse" in ep_spec:
-            raise ValidationError("Diffuse charges not yet supported")
-
         if "matrix" in ep_spec:
             raise ValidationError("Matrix potential not yet supported")
 
@@ -1528,6 +1525,48 @@ def _set_external_potentials_to_wavefunction(external_potential: Union[List, Dic
         if "points" in ep_spec:
             frag_ep.appendCharges(ep_spec["points"])
             total_ep.appendCharges(ep_spec["points"])
+
+        if "diffuse" in ep_spec:
+            qXYZw = np.array(ep_spec["diffuse"])
+            ndiff = len(qXYZw)
+            charges = core.Vector.from_array(qXYZw[:, [0]].ravel())
+            geom = qXYZw[:, [1, 2, 3]]
+            widths = qXYZw[:, [4]].ravel()
+
+            # * element choice & ghostiness in mol don't affect values. mind all-caps in shell_map
+            # * elbl in molecule and first of list in shell_map connect widths to fake heliums
+            # * second of list in shell_map is hash used to acct for BS in mol sym.
+            #   here, explicitly c1, so crude hash substitute. alter if multi-s-functions used
+            # * puream irrelevant since only s-functions
+
+            puream = True
+            diffmol = core.Molecule.from_arrays(
+                units="Bohr",
+                geom=geom,
+                elem = ["He" for _ in widths],
+                real = [False for _ in widths],
+                elbl = [f"@He_{iat+1}" for iat in range(len(widths))],
+                fix_symmetry="c1",
+                fix_com=True,
+                fix_orientation=True)
+            diffbas = {
+                "blend": "Diffuse Charges",
+                "key": "(none)",
+                "message": "",
+                "name": "Diffuse Charges",
+                "puream": bool(puream),
+                "shell_map": [
+                    [f"HE_{iwd+1}", f"{wd:.2f}", [0, (wd, 1.0)]]
+                    for iwd, wd in enumerate(widths)],
+            }
+
+            # charges smeared over space as a Gaussian fn are conveniently computed
+            #   with BS machinery, but need to undo ordinary BS normalization
+            corediffbasis = core.BasisSet.construct_from_pydict(diffmol, diffbas, puream)
+            corediffbasis.convert_sap_contraction()
+
+            frag_ep.addBasis(corediffbasis, charges)
+            total_ep.addBasis(corediffbasis, charges)
 
         wfn.set_potential_variable(frag, frag_ep)
     wfn.set_external_potential(total_ep)
