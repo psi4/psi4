@@ -321,6 +321,9 @@
 #define PSIF_AO_TYY              "AO-basis T-YY Ints"        /* Traceless electric quadrupole moment integrals */
 #define PSIF_AO_TYZ              "AO-basis T-YZ Ints"        /* Traceless electric quadrupole moment integrals */
 #define PSIF_AO_TZZ              "AO-basis T-ZZ Ints"        /* Traceless electric quadrupole moment integrals */
+#define PSIF_AO_SOCX             "AO-basis spin-orbit X"
+#define PSIF_AO_SOCY             "AO-basis spin-orbit Y"
+#define PSIF_AO_SOCZ             "AO-basis spin-orbit Z"
 
 // These integrals are anti-Hermitian -- upper triangle has sign opposite of that of the lower triangle
 #define PSIF_AO_NablaX           "AO-basis Nabla-X Ints"     /* integrals of nabla operator */
