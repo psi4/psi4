@@ -51,6 +51,8 @@ from .mdi_engine import mdi_run
 from .p4util.exceptions import *
 from .procrouting import *
 from .task_base import AtomicComputer
+import qcelemental
+from .procrouting.sapt import fsapt
 
 # never import wrappers or aliases into this file
 
@@ -542,10 +544,10 @@ def energy(name, **kwargs):
 
         # TODO place this with the associated call, very awkward to call this in other areas at the moment
         if lowername in ['efp', 'mrcc', 'dmrg']:
-            core.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
+            core.print_out("\n\nWarning! %s does not have an associated derived wavefunction. " % name)
             core.print_out("The returned wavefunction is the incoming reference wavefunction.\n\n")
         elif 'sapt' in lowername:
-            core.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
+            core.print_out("\n\nWarning! %s does not have an associated derived wavefunction. " % name)
             core.print_out("The returned wavefunction is the dimer SCF wavefunction.\n\n")
 
         return (core.variable('CURRENT ENERGY'), wfn)
@@ -803,6 +805,7 @@ def properties(*args, **kwargs):
         return (core.variable('CURRENT ENERGY'), wfn)
     else:
         return core.variable('CURRENT ENERGY')
+
 
 
 def optimize_geometric(name, **kwargs):
@@ -2080,8 +2083,76 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
         wfn_.write_molden(filename, dovirtual, True)
 
 
+
 def tdscf(wfn, **kwargs):
-    return proc.run_tdscf_excitations(wfn,**kwargs)
+    return proc.run_tdscf_excitations(wfn, **kwargs)
+
+
+def fsapt_analysis(
+    source: Union[str, core.Wavefunction, qcelemental.models.AtomicResult],
+    fragments_a: Dict,
+    fragments_b: Dict,
+    pdb_dir: str = None,
+    analysis_type: str = "reduced",
+    links5050: bool = True,
+    link_siao: Dict = None,
+    print_output: bool = True,
+):
+    r"""Runs fsapt.py either through QCVariables or on FSAPT output files.
+
+    To run through QCVariables, you must have just run fisapt0 (having qcvars stored
+    on your dimer wavefunction) or provide an atomic_results=AtomicResults() object
+    from QCSchema format.
+
+    Running this function through output files requires the directory where
+    fsapt wrote its files (dirname which is defaulted to './fsapt')
+    """
+
+    logger.debug('FSAPT ANALYSIS')
+    if isinstance(source, str):
+        if print_output:
+            print(f"Running fsapt_analysis through output files with {source = }")
+        if pathlib.Path(f"{source}/Elst.dat").is_file() is False:
+            raise ValidationError(f"fsapt_analysis {source=} is not a suitable fsapt/ directory.")
+        with open(f"{source}/fA.dat", "w") as f:
+            for k, v in fragments_a.items():
+                f.write(f"{k} {' '.join([str(i) for i in v])}\n")
+        with open(f"{source}/fB.dat", "w") as f:
+            for k, v in fragments_b.items():
+                f.write(f"{k} {' '.join([str(i) for i in v])}\n")
+        if link_siao is not None:
+            with open(f"{source}/link_siao.dat", "w") as f:
+                for k, v in link_siao.items():
+                    f.write(f"{k} {' '.join([str(i) for i in v])}\n")
+        return fsapt.run_from_output(dirname=source)
+
+    elif isinstance(source, qcelemental.models.AtomicResult):
+        if print_output:
+            print("Running fsapt_analysis through QCVariables extracted from schema")
+        atomic_results = source
+        wfn = None
+
+    elif isinstance(source, core.Wavefunction):
+        if print_output:
+            print("Running fsapt_analysis through QCVariables extracted from wavefunction")
+        atomic_results = None
+        wfn = source
+    else:
+        raise ValidationError("fsapt_analysis requires a string, AtomicResult, or Wavefunction as input")
+
+
+    return fsapt.run_fsapt_analysis(
+        fragments_a=fragments_a,
+        fragments_b=fragments_b,
+        wfn=wfn,
+        atomic_results=atomic_results,
+        pdb_dir=pdb_dir,
+        analysis_type=analysis_type,
+        links5050=links5050,
+        link_siao=link_siao,
+        dirname=None,
+        print_output=print_output
+    )
 
 
 # Aliases
