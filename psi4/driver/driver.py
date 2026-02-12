@@ -2098,10 +2098,10 @@ def fsapt_analysis(
     link_siao: Dict = None,
     print_output: bool = True,
 ):
-    r"""Runs fsapt.py either through qcvars or on fsapt output files.
+    r"""Runs fsapt.py either through QCVariables or on FSAPT output files.
 
-    To run through qcvars, you must have just run fisapt0 (having qcvars stored
-    in core.variables()) or provide an atomic_results=AtomicResults() object
+    To run through QCVariables, you must have just run fisapt0 (having qcvars stored
+    on your dimer wavefunction) or provide an atomic_results=AtomicResults() object
     from QCSchema format.
 
     Running this function through output files requires the directory where
@@ -2112,30 +2112,29 @@ def fsapt_analysis(
     if isinstance(source, str):
         if print_output:
             print(f"Running fsapt_analysis through output files with {source = }")
-        dirname = source
-        if print_output:
-            print(f"Running fsapt_analysis through output files with {dirname = }")
-        with open(f"{dirname}/fA.dat", "w") as f:
+        if pathlib.Path(f"{source}/Elst.dat").is_file() is False:
+            raise ValidationError(f"fsapt_analysis {source=} is not a suitable fsapt/ directory.")
+        with open(f"{source}/fA.dat", "w") as f:
             for k, v in fragments_a.items():
                 f.write(f"{k} {' '.join([str(i) for i in v])}\n")
-        with open(f"{dirname}/fB.dat", "w") as f:
+        with open(f"{source}/fB.dat", "w") as f:
             for k, v in fragments_b.items():
                 f.write(f"{k} {' '.join([str(i) for i in v])}\n")
         if link_siao is not None:
-            with open(f"{dirname}/link_siao.dat", "w") as f:
+            with open(f"{source}/link_siao.dat", "w") as f:
                 for k, v in link_siao.items():
                     f.write(f"{k} {' '.join([str(i) for i in v])}\n")
-        return fsapt.run_from_output(dirname=dirname)
+        return fsapt.run_from_output(dirname=source)
 
     elif isinstance(source, qcelemental.models.AtomicResult):
         if print_output:
-            print("Running fsapt_analysis through variables")
+            print("Running fsapt_analysis through QCVariables extracted from schema")
         atomic_results = source
         wfn = None
 
     elif isinstance(source, core.Wavefunction):
         if print_output:
-            print("Running fsapt_analysis through variables")
+            print("Running fsapt_analysis through QCVariables extracted from wavefunction")
         atomic_results = None
         wfn = source
     else:
