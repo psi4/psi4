@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 #include "psi4/physconst.h"
 
@@ -119,7 +120,7 @@ void CGHF::common_init() {
     };
 
     // => BLOCKTENSORS <= will be (2nsopi_ x 2nsopi_) unless listed otherwise
-    // Note that all of these are complex except for EINS_, EINX_, and the Fock evals
+    // Note that all of these are complex except for the Fock evals
     // Core Hamiltonian, Fock, Orthogonalized Fock, and Coefficient Matrices
     F0_ = einsums::BlockTensor<std::complex<double>, 2>("F0", irrep_sizes_);
     F_ = einsums::BlockTensor<std::complex<double>, 2>("F", irrep_sizes_);
@@ -131,7 +132,7 @@ void CGHF::common_init() {
 
     // Spin blocked overlap matrix and orthogonalization matrix.
     // Needed as metric to compute gradient with FDS - SDF
-    EINS_ = einsums::BlockTensor<double, 2>("Ovlp", irrep_sizes_);
+    EINS_ = einsums::BlockTensor<std::complex<double>, 2>("Ovlp", irrep_sizes_);
     EINX_ = einsums::BlockTensor<std::complex<double>, 2>("Orth", irrep_sizes_);
 
     // Eigenvalues and eigenvectors from diagonalized Fock matrix
@@ -142,6 +143,10 @@ void CGHF::common_init() {
     D_ = einsums::BlockTensor<std::complex<double>, 2>("D", irrep_sizes_);
     J_ = einsums::BlockTensor<std::complex<double>, 2>("J", irrep_sizes_);
     K_ = einsums::BlockTensor<std::complex<double>, 2>("K", irrep_sizes_);
+
+    // Orthogonalized gradient [F, D], gradient error at the current iteration
+    ortho_error = einsums::BlockTensor<std::complex<double>, 2>("Orthogonalized FDSmSDF", irrep_sizes_);
+    ecurr = einsums::BlockTensor<std::complex<double>, 2>("Current error", irrep_sizes_);
 
     // Temporary matrices for intermediate steps
     temp1_ = einsums::BlockTensor<std::complex<double>, 2>("temp1", irrep_sizes_);
@@ -182,8 +187,7 @@ void CGHF::preiterations() {
                 int beta_q = q + nsopi_[h];
 
                 EINS_[h].subscript(p, q) = S_->get(h, p, q);  // overlap AA spin block
-                EINS_[h].subscript(beta_p, beta_q) =
-                    S_->get(h, p, q);  // overlap BB spin block is same as AA since same spatial orbitals
+                EINS_[h].subscript(beta_p, beta_q) = S_->get(h, p, q);  // overlap BB spin block is same as AA since same spatial orbitals
 
                 F0_[h].subscript(p, q) = H_->get(h, p, q);            // core Hamiltonian AA spin block
                 F0_[h].subscript(beta_p, beta_q) = H_->get(h, p, q);  // core Hamiltonian BB spin block
@@ -198,16 +202,13 @@ void CGHF::preiterations() {
     for (int h = 0; h < nirrep_; h++)
         for (int j = 0; j < nsopi_[h]; j++)
             for (int k = 0; k < nsopi_[h]; k++) {
-                EINX_[h].subscript(j, k) = X_->get(h, j, k);
-                EINX_[h].subscript(j + nsopi_[h], k + nsopi_[h]) = X_->get(h, j, k);
+                EINX_[h].subscript(j, k) = X_->get(h, j, k); // AA spin block
+                EINX_[h].subscript(j + nsopi_[h], k + nsopi_[h]) = X_->get(h, j, k); // BB spin block
             }
 
-    // rotated_sad_guess(); // TODO modify the existing Psi4 SAD scheme (UHF, RHF, etc) since it causes errors otherwise
-    //  e.g. the only way for this to work is by using a CORE guess
-
-    if (options_.get_str("GUESS") == "CORE") {
-        // form_F();
-    }
+    //if (options_.get_str("GUESS") == "CORE") {
+    //    // form_F();
+    //}
 }
 
 void CGHF::finalize() {
@@ -277,6 +278,8 @@ void CGHF::form_F() {
  * 3. the eigenvectors are back-transformed back to the AO basis
  */
 void CGHF::form_C(double shift) {
+    // TODO: allow shift as we should be able to do it within one of the gemm calls below by
+    // replacing std::complex<double>{0.0} with the shift
     if (shift != 0.0) {
         throw PSIEXCEPTION("CGHF does not support E-shift.");
     }
@@ -289,8 +292,6 @@ void CGHF::form_C(double shift) {
     } else {
         einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, F_, EINX_, std::complex<double>{0.0},
                                                     &temp1_);
-
-        // EINX_ @ temp1 = Fp_
         einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, EINX_, temp1_, std::complex<double>{0.0},
                                                    &Fp_);
     }
@@ -300,6 +301,7 @@ void CGHF::form_C(double shift) {
 
     // Must be done in a loop over irreps -- cannot just do it with the BlockTensor
     // Nathan: Why?
+    // Matt: Einsums limitation
     for (int h = 0; h < nirrep_; h++) {
         // Do not diagonalize 0x0 matrix
         if (nsopi_[h] == 0) continue;
@@ -313,12 +315,18 @@ void CGHF::form_C(double shift) {
         // Also, this can be done with a blas call
 
         temp1_[h].zero();
-        for (int p = 0; p < irrep_sizes_[h]; p++)
-            for (int q = 0; q < irrep_sizes_[h]; q++) {
-                auto Fp_pq = Fp_[h].subscript(p, q);
 
-                temp1_[h].subscript(q, p) = std::conj(Fp_pq);
-            }
+        // Takes the conjugate transpose of Fp_[h] (e.g. ij -> ji) to give us the proper eigenvectors
+        // NOTE: the template parameters <true> states to take the conjugate
+        einsums::tensor_algebra::permute<true>(std::complex<double>{0.0}, einsums::Indices{einsums::index::i, einsums::index::j}, &temp1_[h],
+                      std::complex<double>{1.0}, einsums::Indices{einsums::index::j, einsums::index::i}, Fp_[h]);
+
+        //for (int p = 0; p < irrep_sizes_[h]; p++)
+        //    for (int q = 0; q < irrep_sizes_[h]; q++) {
+        //        auto Fp_pq = Fp_[h].subscript(p, q);
+
+        //        temp1_[h].subscript(q, p) = std::conj(Fp_pq);
+        //    }
         Fp_[h] = temp1_[h];
     }
 
@@ -345,19 +353,23 @@ void CGHF::compute_SAD_guess(bool natorb) {
             }
 
     temp2_.zero();
-
     temp1_.zero();
 
-    for (int h = 0; h < nirrep_; h++)
-        for (int p = 0; p < irrep_sizes_[h]; p++)
-            for (int q = 0; q < irrep_sizes_[h]; q++) {
-                temp1_[h].subscript(p, q) = EINS_[h].subscript(p, q);
-            }
+    // Matt: do not think this is necessary as this should already be handled on the SAD backend,
+    //       and this is not required for cUHF or other methods
+    // Keeping below converges the calculation in 16 iterations compared to 13 without for water.dat/cc-pVDZ/SAD
+    // and keeps the other 4 tests unchanged either way
 
-    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, D_, temp1_, std::complex<double>{0.0},
-                                                &temp2_);
-    einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, temp2_, temp2_, std::complex<double>{0.0},
-                                               &D_);
+    //for (int h = 0; h < nirrep_; h++)
+    //     for (int p = 0; p < irrep_sizes_[h]; p++)
+    //         for (int q = 0; q < irrep_sizes_[h]; q++) {
+    //             temp1_[h].subscript(p, q) = EINS_[h].subscript(p, q);
+    //         }
+
+    // einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, D_, temp1_, std::complex<double>{0.0},
+    //                                             &temp2_);
+    // einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, temp2_, temp2_, std::complex<double>{0.0},
+    //                                            &D_);
 }
 
 /*
@@ -460,26 +472,28 @@ std::complex<double> CGHF::do_diis() {
     // FDS-SDF
     form_FDSmSDF();
 
-    auto ortho_error =
-        einsums::BlockTensor<std::complex<double>, 2>("Orthogonalized FDSmSDF", irrep_sizes_);  // eorth_it
-    auto temp1 = einsums::BlockTensor<std::complex<double>, 2>("Temp FDSmSDF", irrep_sizes_);
-    auto ecurr = einsums::BlockTensor<std::complex<double>, 2>("Current error", irrep_sizes_);
+    //auto ortho_error = einsums::BlockTensor<std::complex<double>, 2>("Orthogonalized FDSmSDF", irrep_sizes_);  // eorth_it
+    //auto temp1 = einsums::BlockTensor<std::complex<double>, 2>("Temp FDSmSDF", irrep_sizes_);
+    //auto ecurr = einsums::BlockTensor<std::complex<double>, 2>("Current error", irrep_sizes_);
 
     temp1_.zero();
     ortho_error.zero();
     ecurr.zero();
     temp2_.zero();
 
+    // Orthogonalize Fock matrix
     einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, F_, EINX_, std::complex<double>{0.0},
                                                 &temp2_);
     einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, EINX_, temp2_, std::complex<double>{0.0},
                                                &Fp_);
 
+    // Orthogonalize gradient [F, D]
     einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, FDSmSDF_, EINX_, std::complex<double>{0.0},
                                                 &temp1_);
     einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, EINX_, temp1_, std::complex<double>{0.0},
                                                &ortho_error);
 
+    // Computes the error at the current iteration
     einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, ortho_error, ortho_error,
                                                std::complex<double>{0.0}, &ecurr);
 
@@ -488,7 +502,7 @@ std::complex<double> CGHF::do_diis() {
     // Get collective trace of all irreps
     for (int i = 0; i < nirrep_; i++) {
         for (int j = 0; j < irrep_sizes_[i]; j++) {
-            error_trace = ecurr[i](j, j);
+            error_trace += ecurr[i](j, j);
         }
     }
 
@@ -537,14 +551,13 @@ std::complex<double> CGHF::do_diis() {
         err_vecs.push_back(error_);
         */
     }
-
     // If not, add the Fock matrix and error matrix to memory
     else {
         err_vecs.push_back(FDSmSDF_);
         Fdiis.push_back(Fp_);
-        // Calculate the norm for the last error vector
+	// Calculate the norm for the last error vector
         auto norm = einsums::linear_algebra::dot(err_vecs.at(err_vecs.size() - 1), err_vecs.at(err_vecs.size() - 1));
-        error_doubles.push_back(norm);  // See above comment with norm
+	error_doubles.push_back(norm);  // See above comment with norm
     }
 
     // Next form the 'base' B matrix
@@ -562,7 +575,8 @@ std::complex<double> CGHF::do_diis() {
     B_(err_vecs.size(), err_vecs.size()) = std::complex<double>{0.0, 0.0};
 
     // Actually populate it with the overlaps
-
+    // Ideally this would be done with an einsums call, but we must
+    // take the conjugate whicn Einsums cannot do (to my knowledge)
     for (int i = 0; i < err_vecs.size(); i++) {
         for (int j = 0; j < err_vecs.size(); j++) {
             B_(i, j) = {0.0, 0.0};
@@ -594,49 +608,46 @@ std::complex<double> CGHF::do_diis() {
         diis_coeffs.at(i) = C_temp(0, i);
     }
 
-    // Then we can extrapolate the Fock matrix!
-    Fp_.zero();
-
+    // If we have enough vectors stored (e.g. DIIS_MAX_VECS), then we can extrapolate a new 
+    // orthogonalized Fock matrix Fp_. Otherwise, the Fp_ formed in the beginning of this
+    // routine will be used for the calculation
     if (err_vecs.size() == diis_max) {
+        Fp_.zero();
         for (int i = 0; i < diis_coeffs.size(); i++) {
             einsums::linear_algebra::axpy(diis_coeffs[i], Fdiis[i], &Fp_);
         }
-    } else {
-        temp2_.zero();
-        einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, F_, EINX_, std::complex<double>{0.0},
-                                                    &temp2_);
-        einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, EINX_, temp2_, std::complex<double>{0.0},
-                                                   &Fp_);
     }
 
     return error_trace;
 }
 
 void CGHF::form_FDSmSDF() {
-    auto SComplex = einsums::BlockTensor<std::complex<double>, 2>("Complex overlap matrix", irrep_sizes_);
-    SComplex.zero();
+    // Computes orbital gradient [F, D] with the overlap matrix EINS_ as the metric by
+    // first taking F @ D @ S and storing it in FDSmSDF_
+    // S @ D @ F then gets stored in temp2_ and subtracted from FDSmSDF_
 
-    for (int i = 0; i < nirrep_; i++) {
-        for (int j = 0; j < irrep_sizes_[i]; j++) {
-            for (int k = 0; k < irrep_sizes_[i]; k++) {
-                SComplex[i].subscript(j, k) = EINS_[i].subscript(j, k);
-            }
-        }
-    }
+    FDSmSDF_.zero();
+    temp1_.zero();
+    temp2_.zero();
 
-    for (int i = 0; i < nirrep_; i++) {
-        for (int j = 0; j < irrep_sizes_[i]; j++) {
-            for (int k = 0; k < irrep_sizes_[i]; k++) {
-                FDSmSDF_[i](j, k) = 0.;
-                for (int p = 0; p < irrep_sizes_[i]; p++) {
-                    for (int q = 0; q < irrep_sizes_[i]; q++) {
-                        FDSmSDF_[i](j, k) += F_[i](j, p) * D_[i](p, q) * SComplex[i](q, k);
-                        FDSmSDF_[i](j, k) -= std::conj(F_[i](k, p) * D_[i](p, q) * SComplex[i](q, j));
-                    }
-                }
-            }
-        }
-    }
+    // F @ D @ S
+    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, D_, EINS_, std::complex<double>{0.0},
+                                                &temp1_);
+    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, F_, temp1_, std::complex<double>{0.0},
+                                                &FDSmSDF_);
+
+    // S @ D @ F
+    temp1_.zero();
+    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, D_, F_, std::complex<double>{0.0},
+                                                &temp1_);
+    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, EINS_, temp1_, std::complex<double>{0.0},
+                                                &temp2_);
+
+    FDSmSDF_ -= temp2_;
+
+    // Maybe below 2 zeros can be deprecated since I always zero BEFORE doing anything, but for safety:
+    temp1_.zero();
+    temp2_.zero();
 }
 
 double CGHF::compute_Dnorm() {

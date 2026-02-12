@@ -138,7 +138,7 @@ class CGHF : public HF {
     einsums::BlockTensor<std::complex<double>, 2> C_;  // Coefficient matrix built after back-trasnformation C' = XC
 
     // NOTE: EINS_ and EINX_ are spin-blocked variants of S_ and X_ from HF, respectively
-    einsums::BlockTensor<double, 2> EINS_;                 // Spin-blocked overlap matrix -- it is never complex
+    einsums::BlockTensor<std::complex<double>, 2> EINS_;                 // Spin-blocked overlap matrix -- it is never complex
     einsums::BlockTensor<std::complex<double>, 2> EINX_;   // Spin-blocked orthogonalization matrix
 
     einsums::BlockTensor<std::complex<double>, 2> Fevecs_;  // Eigenvectors of Fock matrix
@@ -147,6 +147,11 @@ class CGHF : public HF {
     einsums::BlockTensor<std::complex<double>, 2> D_;       // 1-particle density matrix
     einsums::BlockTensor<std::complex<double>, 2> J_;       // Coulomb matrix
     einsums::BlockTensor<std::complex<double>, 2> K_;       // Exchange matrix
+
+    // ortho_error and ecurr are specific to DIIS
+    einsums::BlockTensor<std::complex<double>, 2> ortho_error;    // Orthogonalized gradient error
+    einsums::BlockTensor<std::complex<double>, 2> ecurr;          // Error at current iteration
+
 
     // temp1_ and temp2_ are temporary storage containers for intermediate steps
     // Cocc_ and cCocc_ are not preferred as variable names since there doesn't
