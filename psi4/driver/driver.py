@@ -51,7 +51,7 @@ from .mdi_engine import mdi_run
 from .p4util.exceptions import *
 from .procrouting import *
 from .task_base import AtomicComputer
-from qcelemental.models import AtomicResult
+import qcelemental
 from .procrouting.sapt import fsapt
 
 # never import wrappers or aliases into this file
@@ -2089,7 +2089,7 @@ def tdscf(wfn, **kwargs):
 
 
 def fsapt_analysis(
-    source: Union[str, core.Wavefunction, AtomicResult],
+    source: Union[str, core.Wavefunction, qcelemental.models.AtomicResult],
     fragments_a: Dict,
     fragments_b: Dict,
     pdb_dir: str = None,
@@ -2127,7 +2127,7 @@ def fsapt_analysis(
                     f.write(f"{k} {' '.join([str(i) for i in v])}\n")
         return fsapt.run_from_output(dirname=dirname)
 
-    elif isinstance(source, AtomicResult):
+    elif isinstance(source, qcelemental.models.AtomicResult):
         if print_output:
             print("Running fsapt_analysis through variables")
         atomic_results = source
