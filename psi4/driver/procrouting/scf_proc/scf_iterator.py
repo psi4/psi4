@@ -221,6 +221,7 @@ def scf_initialize(self):
         core.timer_off("HF: Form S/X")
 
         core.print_out("\n  ==> Pre-Iterations <==\n\n")
+        if core.get_option('SCF', "REFERENCE") == 'CGHF': self.preiterations()
 
         # force SCF_SUBTYPE to AUTO during SCF guess
         optstash = p4util.OptionsState(["SCF", "SCF_SUBTYPE"])

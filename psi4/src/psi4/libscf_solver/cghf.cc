@@ -108,7 +108,7 @@ void CGHF::common_init() {
     // Sets nalphapi_ and nbetapi_
     find_occupation();
 
-    form_H();         // Fills a single spin block (AA or BB) with the core Hamiltonian
+    //form_H();         // Fills a single spin block (AA or BB) with the core Hamiltonian
 
     // Combine nalphapi_ and nbetapi_ to give nelecpi_ for forming the density matrix
     for (int h = 0; h < nirrep_; h++) {
@@ -177,7 +177,7 @@ void CGHF::common_init() {
 
     subclass_init();  // This appears to set up DFT stuff and external potentials
 
-    preiterations();  // CGHF preiterations() routine
+    //preiterations();  // CGHF preiterations() routine
 }
 
 // Needed for initializing the Einsums spin-blocked overlap matrix EINS_
@@ -207,7 +207,7 @@ void CGHF::preiterations() {
     // X = S^{-1/2}
     //
     // where eigenvalues less than the threshold 1e-7 are set to 0, and the eigenvectors removed
-    HF::form_Shalf();
+    //HF::form_Shalf();
     for (int h = 0; h < nirrep_; h++)
         for (int j = 0; j < nsopi_[h]; j++)
             for (int k = 0; k < nsopi_[h]; k++) {
@@ -262,12 +262,17 @@ void CGHF::form_G() {
 
         auto D_AA = (*D_)[h].subscript(s, r);
         auto D_BB = (*D_)[h].subscript(s + nsopi_[h], r + nsopi_[h]);
+        auto D_AB = (*D_)[h].subscript(s, r + nsopi_[h]);
+        auto D_BA = (*D_)[h].subscript(s + nsopi_[h], r);
 
         auto sum_D = D_AA + D_BB;
 
         // Each line will be Coulomb (J) - exchange (K) contributions
-        (*JK_)[h].subscript(p, q) += g_pqrs * sum_D - g_psrq * D_AA;
-        (*JK_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) += g_pqrs * sum_D - g_psrq * D_BB;
+        // NOTE: the off-diagonal AB/BA blocks have no Coulomb contributions, only exchange
+        (*JK_)[h].subscript(p, q) += g_pqrs * sum_D - g_psrq * D_AA;  // AA
+        (*JK_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) += g_pqrs * sum_D - g_psrq * D_BB; // BB
+        (*JK_)[h].subscript(p, q + nsopi_[h]) -= D_AB * g_psrq; // AB (exchange only)
+        (*JK_)[h].subscript(p + nsopi_[h], q) -= D_BA * g_psrq; // BA (exchange only)
     }
 }
 
@@ -291,8 +296,7 @@ void CGHF::form_C(double shift) {
     }
 
     // => ORTHOGONALIZE FOCK <=
-    // F_ @ EINX_ = temp1_
-
+    // Fp_ = X_.conj().T @ F_ @ X_
     if (options_.get_bool("DIIS") && iteration_ > options_.get_int("DIIS_START")) {
         auto error_trace = do_diis();
     } else {
@@ -303,11 +307,11 @@ void CGHF::form_C(double shift) {
     }
 
     // => DIAGONALIZE FOCK <=
-    // Fevecs_ = Fp_;
-
     // Must be done in a loop over irreps -- cannot just do it with the BlockTensor
     // Nathan: Why?
     // Matt: Einsums limitation
+
+    temp1_->zero();
     for (int h = 0; h < nirrep_; h++) {
         // Do not diagonalize 0x0 matrix
         if (nsopi_[h] == 0) continue;
@@ -316,24 +320,13 @@ void CGHF::form_C(double shift) {
         einsums::linear_algebra::heev<true>(&(*Fp_)[h], &Fevals_[h]); // cursed
 
         // heev retuns the wrong side, so we need to take the inverse (hermitian adjoint)
-        // i.e. einsums::linear_algebra::invert(&Fp_[h]);
         // TODO: rework math so we don't have to do this step!
         // Also, this can be done with a blas call
-
-        (*temp1_)[h].zero();
 
         // Takes the conjugate transpose of Fp_[h] (e.g. ij -> ji) to give us the proper eigenvectors
         // NOTE: the template parameters <true> states to take the conjugate
         einsums::tensor_algebra::permute<true>(std::complex<double>{0.0}, einsums::Indices{einsums::index::i, einsums::index::j}, &(*temp1_)[h],
                       std::complex<double>{1.0}, einsums::Indices{einsums::index::j, einsums::index::i}, (*Fp_)[h]);
-
-        //for (int p = 0; p < irrep_sizes_[h]; p++)
-        //    for (int q = 0; q < irrep_sizes_[h]; q++) {
-        //        auto Fp_pq = Fp_[h].subscript(p, q);
-
-        //        temp1_[h].subscript(q, p) = std::conj(Fp_pq);
-        //    }
-        //(*Fp_)[h] = (*temp1_)[h];
     }
 
     Fp_ = MakeSharedBlockTensor(*temp1_);
@@ -351,17 +344,14 @@ void CGHF::compute_SAD_guess(bool natorb) {
     HF::compute_SAD_guess(natorb);
 
     for (int h = 0; h < nirrep_; h++)
-        for (int p = 0; p < nsopi_[h]; p++)
-            for (int q = 0; q < nsopi_[h]; q++) {
-                auto Da_val = Da_->get(h, p, q);
-                auto Db_val = Db_->get(h, p, q);
+    for (int p = 0; p < nsopi_[h]; p++)
+    for (int q = 0; q < nsopi_[h]; q++) {
+        (*D_)[h].subscript(p, q) = Da_->get(h, p, q);
+        (*D_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) = Db_->get(h, p, q);
+    }
 
-                (*D_)[h].subscript(p, q) = Da_val;
-                (*D_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) = Db_val;
-            }
-
-    temp2_->zero();
-    temp1_->zero();
+    //temp2_->zero();
+    //temp1_->zero();
 
     // Matt: do not think this is necessary as this should already be handled on the SAD backend,
     //       and this is not required for cUHF or other methods
@@ -389,10 +379,12 @@ void CGHF::form_D() {
     temp1_->zero();
     temp2_->zero();
 
-    // Simply fills Cocc_ and cCocc_ with the (2*nsopi_ x nelecpi_) matrix
-    // Note that Cocc_ and cCocc_ are both (2*nsopi_ x 2*nsopi_), but the 'remainder'
+    // Simply fills temp1_ and temp2_ with the occupied (2*nsopi_ x nelecpi_) and conjugate
+    // occupied matrices (e.g. Cocc)
+    // Note that temp1_ and temp2_ are both (2*nsopi_ x 2*nsopi_), but the 'remainder'
     // are all->zeros and contribute nothing
     // This is just a minor inefficiency, since these matrices are larger than they should be
+    // NOTE: this is done like this because BlockTensors cannot handle rectangular matrices
     for (int h = 0; h < nirrep_; h++) {
         for (int j = 0; j < irrep_sizes_[h]; j++) {
             for (int k = 0; k < nelecpi_[h]; k++) {
@@ -450,9 +442,6 @@ double CGHF::compute_E() {
     Etotal += one_electron_E;
     Etotal += 0.5 * two_E;
 
-    // outfile->Printf("  Core energy : %.15f\n", one_electron_E);
-    // outfile->Printf("  JK energy   : %.15f\n", two_E);
-    // outfile->Printf("  Total energy: %.15f\n", Etotal);
     return Etotal;
 }
 
@@ -469,20 +458,30 @@ double CGHF::compute_initial_E() {
                 one_electron_E += ((*F0_)[h].subscript(i, j) * Dji).real();  // F0_ij * D_ji
             }
 
-    // outfile->Printf("  Core energy: %.15f\n", one_electron_E);
     return one_electron_E + nuclearrep_;
 }
 
+
+/*
+ * Direct inversion of the iterative subspace (DIIS) for improved convergence
+ * 
+ * The approach taken here is to accumulate Fock matrices until DIIS_MAX_VECS is reached.
+ * Like usual, a new Fock matrix is extrapolated at this point. To obtain new vectors and
+ * replace an old one, the Fock matrix with the largest error according to [F, D] is
+ * substituted for the Fock matrix at the current iteration
+ *
+ * This differs from the other approach in which, once DIIS_MAX_VECS is reached
+ * and a new Fock matrix is obtained, the subspace is completely reset 
+ * (e.g. Fdiis and err_vecs would have a size of 0)
+ *
+ * NOTE: ADIIS is not yet available
+ */
 std::complex<double> CGHF::do_diis() {
     int diis_max = options_.get_int("DIIS_MAX_VECS");
     int diis_count = 0;
 
     // FDS-SDF
     form_FDSmSDF();
-
-    //auto ortho_error = MakeSharedBlockTensor("Orthogonalized FDSmSDF", irrep_sizes_);  // eorth_it
-    //auto temp1 = MakeSharedBlockTensor("Temp FDSmSDF", irrep_sizes_);
-    //auto ecurr = MakeSharedBlockTensor("Current error", irrep_sizes_);
 
     temp1_->zero();
     ortho_error->zero();
@@ -516,7 +515,8 @@ std::complex<double> CGHF::do_diis() {
 
     auto abs_trace = std::abs(error_trace);
 
-    // If we have enough error vectors in storage, check for the worst one to remove
+    // If we have enough error vectors in storage, remove the one with the largest error
+    // And replace it with the Fock matrix at the current iteration
     if (err_vecs.size() == diis_max) {
         // Find the one with the max error to eliminate from storage
         // Give it some ludicrously low error so that anything is larger
@@ -550,17 +550,6 @@ std::complex<double> CGHF::do_diis() {
         // Norm for the replacement error vector, which is why the index is different here compared to below
         auto norm = einsums::linear_algebra::dot(err_vecs.at(max_error_ind), err_vecs.at(max_error_ind));
         error_doubles.at(max_error_ind) = norm;  // This is set to real for now, not sure what to do about this
-
-        /*
-         * Use this to reset the subspace at every nth iteration
-         * Might be more useful for generally converging
-         * energies rather than longer geometries
-         *
-        Fdiis.clear();
-        err_vecs.clear();
-        Fdiis.push_back(Fp_);
-        err_vecs.push_back(error_);
-        */
     }
     // If not, add the Fock matrix and error matrix to memory
     else {

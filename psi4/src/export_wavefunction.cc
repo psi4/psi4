@@ -439,6 +439,7 @@ void export_wavefunction(py::module& m) {
     py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, scf::HF>(m, "CGHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("compute_Dnorm", &scf::CGHF::compute_Dnorm)
+        .def("preiterations", &scf::CGHF::preiterations)
         .def("c1_deep_copy", &scf::CGHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
              "BasisSet *basis*",
