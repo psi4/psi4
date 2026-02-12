@@ -36,6 +36,10 @@
 #include <Einsums/Config.hpp>
 #include <Einsums/Tensor.hpp>
 
+#ifndef SharedBlockTensor
+#define SharedBlockTensor std::shared_ptr<einsums::BlockTensor<std::complex<double>, 2>>
+#endif
+
 namespace psi {
 namespace scf {
 
@@ -120,7 +124,7 @@ class CGHF : public HF {
     // All 4 of these containers have a MAX size of DIIS_MAX_VECS
     // TODO: Determine if there's anything different between real and complex DIIS
     // outside of the containers (e.g. error_doubles could be error_complex)
-
+    
     // Holds the grabbed Fock matrices to extrapolate
     std::deque<einsums::BlockTensor<std::complex<double>, 2>> Fdiis;
     // Holds FDSmSDF_ at each iteration (orbital gradients)
@@ -131,33 +135,33 @@ class CGHF : public HF {
     double nuclearrep_;  // Nuclear repulsion energy
 
     // Core Hamiltonian, Fock, Orthogonalized Fock, and Coefficient Matrices
-    einsums::BlockTensor<std::complex<double>, 2> F0_;     // Core Hamilton F0 = T + V
-    einsums::BlockTensor<std::complex<double>, 2> F_;      // Non-orthogonal Fockl: F = T + V + J - K
-    einsums::BlockTensor<std::complex<double>, 2> FDSmSDF_;// Fock gradient [F,D]
-    einsums::BlockTensor<std::complex<double>, 2> Fp_;     // Orthogonalized Fock matrix
-    einsums::BlockTensor<std::complex<double>, 2> C_;  // Coefficient matrix built after back-trasnformation C' = XC
+    SharedBlockTensor F0_;     // Core Hamilton F0 = T + V
+    SharedBlockTensor F_;      // Non-orthogonal Fockl: F = T + V + J - K
+    SharedBlockTensor FDSmSDF_;// Fock gradient [F,D]
+    SharedBlockTensor Fp_;     // Orthogonalized Fock matrix
+    SharedBlockTensor C_;  // Coefficient matrix built after back-trasnformation C' = XC
 
     // NOTE: EINS_ and EINX_ are spin-blocked variants of S_ and X_ from HF, respectively
-    einsums::BlockTensor<std::complex<double>, 2> EINS_;                 // Spin-blocked overlap matrix -- it is never complex
-    einsums::BlockTensor<std::complex<double>, 2> EINX_;   // Spin-blocked orthogonalization matrix
+    SharedBlockTensor EINS_;                 // Spin-blocked overlap matrix -- it is never complex
+    SharedBlockTensor EINX_;   // Spin-blocked orthogonalization matrix
 
-    einsums::BlockTensor<std::complex<double>, 2> Fevecs_;  // Eigenvectors of Fock matrix
+    SharedBlockTensor Fevecs_;  // Eigenvectors of Fock matrix
     einsums::BlockTensor<double, 1> Fevals_;                // Eigenvalues of Fock matrix
 
-    einsums::BlockTensor<std::complex<double>, 2> D_;       // 1-particle density matrix
-    einsums::BlockTensor<std::complex<double>, 2> J_;       // Coulomb matrix
-    einsums::BlockTensor<std::complex<double>, 2> K_;       // Exchange matrix
+    SharedBlockTensor D_;       // 1-particle density matrix
+    SharedBlockTensor J_;       // Coulomb matrix
+    SharedBlockTensor K_;       // Exchange matrix
 
     // ortho_error and ecurr are specific to DIIS
-    einsums::BlockTensor<std::complex<double>, 2> ortho_error;    // Orthogonalized gradient error
-    einsums::BlockTensor<std::complex<double>, 2> ecurr;          // Error at current iteration
+    SharedBlockTensor ortho_error;    // Orthogonalized gradient error
+    SharedBlockTensor ecurr;          // Error at current iteration
 
 
     // temp1_ and temp2_ are temporary storage containers for intermediate steps
     // Cocc_ and cCocc_ are not preferred as variable names since there doesn't
     // appear to be a reason to permanently store these (temp1_ and temp2_ are used instead)
-    einsums::BlockTensor<std::complex<double>, 2> temp1_;
-    einsums::BlockTensor<std::complex<double>, 2> temp2_;
+    SharedBlockTensor temp1_;
+    SharedBlockTensor temp2_;
 
     // Number of spin orbitals per irrep. Cannot use nsopi_ because Einsums requires a vector.
     std::vector<int> irrep_sizes_;  // Since GHF is spin-blocked, each irrep (h) size will be 2*nsopi_[h]
