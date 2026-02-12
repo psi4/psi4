@@ -34,8 +34,7 @@ if(${ENABLE_gauxc})
         endif()
 
         #== normal print-out and library addition ==#
-        get_property(_loc TARGET gauxc::gauxc PROPERTY IMPORTED_LOCATION_RELWITHDEBINFO)
-        #get_property(_loc TARGET gauxc::gauxc PROPERTY IMPORTED_LOCATION)
+        get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
         message(STATUS "${Cyan}Found gauxc ${ColourReset}: ${_loc} (found version ${gauxc_VERSION})")
         add_library(gauxc_external INTERFACE)  # dummy
 
