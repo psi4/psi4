@@ -1746,6 +1746,7 @@ def print_order1(
 def run_fsapt_analysis(
     fragments_a: Dict,
     fragments_b: Dict,
+    *,
     wfn=None,
     atomic_results=None,
     pdb_dir: str = None,
