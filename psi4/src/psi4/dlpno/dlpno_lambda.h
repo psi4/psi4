@@ -84,6 +84,8 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
 
     // => Lambda CCSD intermediates <= //
 
+    /// New defined intermediate in Toth Eq. 50b
+    std::vector<SharedMatrix> compute_alpha_ijkl();
     /// Toth Eq. XX
     std::vector<SharedMatrix> weird_stuff();
     /// Toth Eq. XY
