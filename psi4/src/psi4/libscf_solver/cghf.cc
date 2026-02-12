@@ -188,6 +188,27 @@ void CGHF::preiterations() {
                 F_->block(h)(p, q) = Fa_->get(h, p, q);
                 F_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
             }
+
+    // If SOC, then add Hx, Hy, Hz to F0_
+    if (options_.get_bool("ZORA_SPIN_ORBIT_COUPLING")) {
+        outfile->Printf("\n  CGHF: ZORA Spin-orbit coupling selected.\n");
+        auto H_SO = mintshelper()->ao_zora_spin_orbit();
+        std::complex<double> i(0, 1);
+
+        for (int h = 0; h < nirrep_; h++) {
+            int nso = nsopi_[h];
+            for (int p = 0; p < nso; p++) {
+                for (int q = 0; q < nso; q++) {
+                    F0_->block(h)(p, q)        += H_SO[2]->get(p,q); // +Hz [0,0]
+                    F0_->block(h)(p+nso, q+nso) -= H_SO[2]->get(p,q); // -Hz [1,1]
+                    F0_->block(h)(p, q+nso)     += H_SO[0]->get(p,q); // +Hx [0,1]
+                    F0_->block(h)(p+nso, q)     += H_SO[0]->get(p,q); // +Hx [1,0]
+                    F0_->block(h)(p, q+nso)     += H_SO[1]->get(p,q)*i; // +iHy [0,1]
+                    F0_->block(h)(p+nso, q)     -= H_SO[1]->get(p,q)*i; // -iHy [1,0]
+                }
+            }
+        }
+    }
 }
 
 /*

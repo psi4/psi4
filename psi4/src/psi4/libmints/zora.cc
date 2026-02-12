@@ -54,16 +54,8 @@ ZORA::ZORA(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis, 
 
 ZORA::~ZORA() {}
 
-void ZORA::setup() {
-    outfile->Printf("\n        ____  ____  ___  ___\n");
-    outfile->Printf("       /_  / / __ \\/ _ \\/ _ |\n");
-    outfile->Printf("        / /_/ /_/ / , _/ __ |\n");
-    outfile->Printf("       /___/\\____/_/|_/_/ |_|\n");
-    outfile->Printf("        by Nathan Gillispie\n");
-    outfile->Printf("      ========================\n");
-
+void ZORA::build_grid() {
     timer_on("ZORA: Build Grid");
-
     // Initialize grid with options
     std::map<std::string, std::string> grid_str_options = {
         {"DFT_RADIAL_SCHEME",  "BECKE"},
@@ -89,7 +81,6 @@ void ZORA::setup() {
     };
 
     grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_int_options, grid_str_options, grid_double_options, options_);
-
     timer_off("ZORA: Build Grid");
 
     auto npoints = grid_->npoints();
@@ -100,10 +91,15 @@ void ZORA::setup() {
     outfile->Printf("    Total number of batches: %d\n", nblocks);
 }
 
-void ZORA::compute(SharedMatrix T_SR) {
-    timer_on("ZORA");
+void ZORA::setup() {
+    outfile->Printf("\n        ____  ____  ___  ___\n");
+    outfile->Printf("       /_  / / __ \\/ _ \\/ _ |\n");
+    outfile->Printf("        / /_/ /_/ / , _/ __ |\n");
+    outfile->Printf("       /___/\\____/_/|_/_/ |_|\n");
+    outfile->Printf("        by Nathan Gillispie\n");
+    outfile->Printf("      ========================\n");
 
-    setup();
+    build_grid();
 
     int nblocks = grid_->blocks().size();
     int max_points = grid_->max_points();
@@ -116,11 +112,10 @@ void ZORA::compute(SharedMatrix T_SR) {
     outfile->Printf("    Using %d thread(s)\n\n", nthreads);
 
     // Basis function computer on each thread
-    std::vector<std::shared_ptr<BasisFunctions>> pworkers;
     for (int i = 0; i < nthreads; i++) {
         auto p_tmp = std::make_shared<BasisFunctions>(primary_, max_points, max_funcs);
         p_tmp->set_deriv(1);
-        pworkers.push_back(p_tmp);
+        pworkers_.push_back(p_tmp);
     }
 
     timer_on("ZORA: Effective Potential");
@@ -131,12 +126,6 @@ void ZORA::compute(SharedMatrix T_SR) {
         compute_veff();
     }
     timer_off("ZORA: Effective Potential");
-
-    timer_on("ZORA: Scalar Relativistic Kinetic");
-    compute_TSR(pworkers, T_SR);
-    timer_off("ZORA: Scalar Relativistic Kinetic");
-
-    timer_off("ZORA");
 }
 
 // Fill veff_ with zeros so that `compute` creates non-relativistic kinetic
@@ -213,7 +202,8 @@ void ZORA::compute_veff()
 
 // Compute the scalar relativistic kinetic energy integral in the AO basis.
 // See header for equation.
-void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, SharedMatrix &T_SR) {
+void ZORA::compute_TSR(SharedMatrix &T_SR) {
+    timer_on("ZORA: Scalar Relativistic Kinetic");
     // Speed of light in atomic units squared
     const double C2 = pc_c_au*pc_c_au;
 
@@ -242,10 +232,10 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
             thread = omp_get_thread_num();
 #endif
 
-            pworkers[thread]->compute_functions(block);
-            auto phi_x = pworkers[thread]->basis_value("PHI_X");
-            auto phi_y = pworkers[thread]->basis_value("PHI_Y");
-            auto phi_z = pworkers[thread]->basis_value("PHI_Z");
+            pworkers_[thread]->compute_functions(block);
+            auto phi_x = pworkers_[thread]->basis_value("PHI_X");
+            auto phi_y = pworkers_[thread]->basis_value("PHI_Y");
+            auto phi_z = pworkers_[thread]->basis_value("PHI_Z");
 
             // Preprocess kernel c²/(2c²-veff) * weight
             double* w = block->w();
@@ -278,6 +268,93 @@ void ZORA::compute_TSR(std::vector<std::shared_ptr<BasisFunctions>> pworkers, Sh
     }
 
     T_SR->copy_upper_to_lower();
+    timer_off("ZORA: Scalar Relativistic Kinetic");
 }
+
+// Compute the spin-orbit coupling Hamiltonian in the AO basis.
+void ZORA::compute_HSO(SharedMatrix &Hx, SharedMatrix &Hy, SharedMatrix &Hz) {
+    outfile->Printf("\n\n    ZORA: You called compute_HSO. Rejoice!\n");
+    // Speed of light in atomic units squared
+    const double C2 = pc_c_au*pc_c_au;
+
+    int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
+    int max_points = grid_->max_points(); //Set in grid_int_options
+#pragma omp parallel num_threads(nthreads)
+    {
+        // Give each thread their own scratch space
+        std::vector<double> kernel(max_points);
+        auto tmp_x = std::make_shared<Matrix>(Hx->nrow(), Hx->ncol());
+        auto tmp_y = std::make_shared<Matrix>(Hy->nrow(), Hy->ncol());
+        auto tmp_z = std::make_shared<Matrix>(Hz->nrow(), Hz->ncol());
+        tmp_x->zero();
+        tmp_y->zero();
+        tmp_z->zero();
+
+#pragma omp for schedule(auto)
+        for (const auto &block : grid_->blocks()) {
+            const auto &bf_map = block->functions_local_to_global();
+            auto local_nbf = bf_map.size();
+            int npoints = block->npoints();
+
+            auto veff_block = veff_->at(block->index());
+
+            int thread = 0;
+#ifdef _OPENMP
+            thread = omp_get_thread_num();
+#endif
+
+            pworkers_[thread]->compute_functions(block);
+            auto phi_x = pworkers_[thread]->basis_value("PHI_X");
+            auto phi_y = pworkers_[thread]->basis_value("PHI_Y");
+            auto phi_z = pworkers_[thread]->basis_value("PHI_Z");
+
+            // Preprocess kernel veff/(4c²-2veff) * weight
+            double* w = block->w();
+            for (int p = 0; p < npoints; p++) {
+                kernel[p] = veff_block->get(p) /(4.*C2 - 2.*veff_block->get(p)) * w[p];
+            }
+
+            for (int l_mu = 0; l_mu < local_nbf; l_mu++) {
+                int mu = bf_map[l_mu];
+                // We ignore mu==nu because these matricies are anti-symmetric.
+                for (int l_nu = l_mu+1; l_nu < local_nbf; l_nu++) {
+                    int nu = bf_map[l_nu];
+                    for (int p = 0; p < npoints; p++) {
+                        auto x = kernel[p]*(
+                            phi_y->get(p,l_mu)*phi_z->get(p,l_nu) -
+                            phi_z->get(p,l_mu)*phi_y->get(p,l_nu)
+                        );
+                        auto y = kernel[p]*(
+                            phi_z->get(p,l_mu)*phi_x->get(p,l_nu) -
+                            phi_x->get(p,l_mu)*phi_z->get(p,l_nu)
+                        );
+                        auto z = kernel[p]*(
+                            phi_x->get(p,l_mu)*phi_y->get(p,l_nu) -
+                            phi_y->get(p,l_mu)*phi_x->get(p,l_nu)
+                        );
+
+                        tmp_x->add(mu,nu, x);
+                        tmp_x->add(nu,mu,-x);
+                        tmp_y->add(mu,nu, y);
+                        tmp_y->add(nu,mu,-y);
+                        tmp_z->add(mu,nu, z);
+                        tmp_z->add(nu,mu,-z);
+                    }
+                }
+            }
+        }
+#pragma omp critical
+        {
+            Hx->add(tmp_x);
+            Hy->add(tmp_y);
+            Hz->add(tmp_z);
+        }
+    }
+}
+
 
 }  // namespace psi

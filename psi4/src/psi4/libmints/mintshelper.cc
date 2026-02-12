@@ -788,6 +788,25 @@ SharedMatrix MintsHelper::so_dkh(int dkh_order) {
     return dkh;
 }
 
+std::vector<SharedMatrix> MintsHelper::ao_zora_spin_orbit() {
+    bool include_perturbations = true;
+
+    std::string socx(PSIF_AO_SOCX);
+    std::string socy(PSIF_AO_SOCY);
+    std::string socz(PSIF_AO_SOCZ);
+
+    if (!are_ints_cached(socx, include_perturbations)) {
+        throw PSIEXCEPTION("ZORA Spin-orbit integrals not cached. Have you called so_kinetic yet?");
+    }
+
+    std::vector<SharedMatrix> H_SO_zora(3);
+    H_SO_zora[0] = cached_oe_ints_[std::make_pair(socx, include_perturbations)];
+    H_SO_zora[1] = cached_oe_ints_[std::make_pair(socy, include_perturbations)];
+    H_SO_zora[2] = cached_oe_ints_[std::make_pair(socz, include_perturbations)];
+
+    return H_SO_zora;
+}
+
 SharedMatrix MintsHelper::ao_helper(const std::string &label, std::shared_ptr<TwoBodyAOInt> ints) {
     std::shared_ptr<BasisSet> bs1 = ints->basis1();
     std::shared_ptr<BasisSet> bs2 = ints->basis2();
@@ -1455,14 +1474,21 @@ void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
 
 void MintsHelper::compute_so_zora_ints(bool include_perturbations) {
     outfile->Printf(" OEINTS: Using relativistic (ZORA) kinetic integrals.\n");
+    bool spin_orbit = options_.get_bool("ZORA_SPIN_ORBIT_COUPLING");
 
     if (include_perturbations && options_.get_bool("PERTURB_H")) {
 		throw PSIEXCEPTION("Perturbations of the ZORA hamiltonian are not implemented.");
     }
 
+    if (spin_orbit && options_.get_str("REFERENCE") != "CGHF") {
+        throw PSIEXCEPTION("ZORA spin-orbit coupling is only possible with CGHF reference.");
+    }
+
     ZORA zoraint(molecule_, basisset_, options_);
 	auto ao_kinetic_zora = std::make_shared<Matrix>("Kinetic", basisset_->nbf(), basisset_->nbf());
-    zoraint.compute(ao_kinetic_zora);
+    zoraint.setup();
+
+    zoraint.compute_TSR(ao_kinetic_zora);
 
     std::string label(PSIF_SO_S);
     SharedMatrix so_kinetic_zora;
@@ -1476,6 +1502,18 @@ void MintsHelper::compute_so_zora_ints(bool include_perturbations) {
 
     // Overwrite cached integrals
     cached_oe_ints_[std::make_pair(PSIF_SO_T, include_perturbations)] = so_kinetic_zora;
+
+    if (spin_orbit) {
+        auto ao_Hx = std::make_shared<Matrix>("Spin-orbit Hx", basisset_->nbf(), basisset_->nbf());
+        auto ao_Hy = std::make_shared<Matrix>("Spin-orbit Hy", basisset_->nbf(), basisset_->nbf());
+        auto ao_Hz = std::make_shared<Matrix>("Spin-orbit Hz", basisset_->nbf(), basisset_->nbf());
+
+        zoraint.compute_HSO(ao_Hx, ao_Hy, ao_Hz);
+
+        cached_oe_ints_[std::make_pair(PSIF_AO_SOCX, include_perturbations)] = ao_Hx;
+        cached_oe_ints_[std::make_pair(PSIF_AO_SOCY, include_perturbations)] = ao_Hy;
+        cached_oe_ints_[std::make_pair(PSIF_AO_SOCZ, include_perturbations)] = ao_Hz;
+    }
 }
 
 void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
@@ -1579,6 +1617,8 @@ std::vector<SharedMatrix> MintsHelper::so_angular_momentum() const {
 
     return am;
 }
+
+
 
 std::vector<SharedMatrix> MintsHelper::ao_angular_momentum() {
     // Create a vector of matrices with the proper symmetry
