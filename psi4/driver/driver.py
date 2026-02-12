@@ -2142,13 +2142,13 @@ def fsapt_analysis(
 
 
     return fsapt.run_fsapt_analysis(
-        fragments_a,
-        fragments_b,
-        wfn,
-        atomic_results,
-        pdb_dir,
-        analysis_type,
-        links5050,
+        fragments_a=fragments_a,
+        fragments_b=fragments_b,
+        wfn=wfn,
+        atomic_results=atomic_results,
+        pdb_dir=pdb_dir,
+        analysis_type=analysis_type,
+        links5050=links5050,
         link_siao=link_siao,
         dirname=None,
         print_output=print_output
