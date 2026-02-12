@@ -2140,8 +2140,6 @@ def fsapt_analysis(
     else:
         raise ValidationError("fsapt_analysis requires a string, AtomicResult, or Wavefunction as input")
 
-    if print_output:
-        print("Running fsapt_analysis through variables")
 
     return fsapt.run_fsapt_analysis(
         fragments_a,
