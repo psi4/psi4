@@ -200,8 +200,12 @@ void CGHF::preiterations() {
 
                 (*F0_)[h].subscript(p, q) = H_->get(h, p, q);            // core Hamiltonian AA spin block
                 (*F0_)[h].subscript(beta_p, beta_q) = H_->get(h, p, q);  // core Hamiltonian BB spin block
+
+                (*F_)[h].subscript(p, q) = Fa_->get(h, p, q);
+                (*F_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
             }
 
+    println(*F_);
     // Constructs orthogonalization matrix X_ using Lowdin symmetric orthogonalization
     //
     // X = S^{-1/2}
@@ -215,10 +219,33 @@ void CGHF::preiterations() {
                 (*EINX_)[h].subscript(j + nsopi_[h], k + nsopi_[h]) = X_->get(h, j, k); // BB spin block
             }
 
-    //if (options_.get_str("GUESS") == "CORE") {
-    //    // form_F();
-    //}
+    //form_init_F();
 }
+
+/*
+ * Constructs the initial Fock matrix using the initial guess supplied.
+ *
+ * This routine is unique to cGHF and the justification for its existence is that the
+ * Fa_ and Fb_ SharedMatrix objects are ubiquitous to all of the other HF methods
+ * except cGHF. The initial guesses supplied by HF (and derivative routines)
+ * populate Fa_ and Fb_ in which the other HF methods naturally use in their
+ * first form_C call.
+ * 
+ * However, due to the spinor nature of CGHF, Fa_ and Fb_ are not (and shouldn't be) used
+ * with the EXCEPTION of the very first iteration and/or initial guess. This is the only
+ * occurence in which Fa_ and Fb_ are valid, and thus this only gets called once, on
+ * the first iteration within form_C()
+ *
+ * This cannot be populated in preiterations() as it has not been populated at this point 
+ */
+//void CGHF::form_init_F() {
+//    for (int h = 0; h < nirrep_; h++)
+//    for (int p = 0; p < nsopi_[h]; p++)
+//    for (int q = 0; q < nsopi_[h]; q++) {
+//        (*F_)[h].subscript(p, q) = Fa_->get(h, p, q);
+//        (*F_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
+//    }
+//}
 
 void CGHF::finalize() {
     HF::finalize();
@@ -292,9 +319,12 @@ void CGHF::form_C(double shift) {
     // TODO: allow shift as we should be able to do it within one of the gemm calls below by
     // replacing std::complex<double>{0.0} with the shift
     if (shift != 0.0) {
-        throw PSIEXCEPTION("CGHF does not support E-shift.");
+        throw PSIEXCEPTION("CGHF does not support energy shifting.");
     }
 
+    //if (iteration_ <= 0) {
+    //    form_init_F();
+    //}
     // => ORTHOGONALIZE FOCK <=
     // Fp_ = X_.conj().T @ F_ @ X_
     if (options_.get_bool("DIIS") && iteration_ > options_.get_int("DIIS_START")) {
@@ -337,6 +367,23 @@ void CGHF::form_C(double shift) {
 
     find_occupation();
 }
+
+// Constructs the initial Fock matrix computed from some initial guess other than CORE or SAD
+// Then calls form_C() to orthogonalize, diagonalize, and back-transform
+// This seems to be identical to what ROHF does, except here we include Fb as well
+//void CGHF::form_initial_C() {
+//    find_occupation();
+//
+//    for (int h = 0; h < nirrep_; h++)
+//    for (int p = 0; p < nsopi_[h]; p++)
+//    for (int q = 0; q < nsopi_[h]; q++) {
+//        (*F_)[h].subscript(p, q) = Fa_->get(h, p, q);
+//        (*F_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
+//    }
+//
+//    form_C(0.0);
+//}
+
 
 void CGHF::compute_SAD_guess(bool natorb) {
     // Fills the density matrix with the precomputed SAD guess from sad.cc

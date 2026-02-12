@@ -79,8 +79,12 @@ class CGHF : public HF {
     // Forms Fock matrix F = F0_ + J - K
     void form_F() override;
 
+    void form_init_F();
     // Orthogonalizes then diagonalizes the Fock matrix to form the coefficient matrix C_
     void form_C(double shift) override;
+
+    // Sets up coefficient matrix computed from Fock initial guesses (SAD, SAP, etc)
+    //void form_initial_C() override;
 
     // Constructs 1-particle density matrix using the occupied coefficients Cocc_ and the conjugate (stored in temp1_,
     // not permanently stored)
