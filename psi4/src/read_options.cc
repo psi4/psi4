@@ -260,6 +260,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     Useful when comparing analytic and grid-based methods. !expert -*/
     options.add_bool("ZORA_NR_DEBUG", false);
 
+    /*- Add the spin-orbit coupling Hamiltonian to the potential at each step
+    of the SCF iteration. Only available with CGHF. -*/
+    options.add_bool("ZORA_SPIN_ORBIT_COUPLING", false);
+
     /*- Directory (case sensitive) to which to write cube files. Default is the input file
     directory. -*/
     options.add_str_i("CUBEPROP_FILEPATH", ".");

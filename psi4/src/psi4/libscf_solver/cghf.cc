@@ -263,6 +263,27 @@ void CGHF::form_H() {
     H_->add(*T_);
     H_->add(*V_);
 
+    // If SOC, then add Hx, Hy, Hz to core Hamiltonian
+    if (options_.get_bool("ZORA_SPIN_ORBIT_COUPLING")) {
+        outfile->Printf("\n  CGHF: ZORA Spin-orbit coupling selected.\n");
+        auto H_SOC = mintshelper()->ao_zora_spin_orbit();
+        std::complex<double> i(0, 1);
+
+        for (int h = 0; h < nirrep_; h++) {
+            int nso = nsopi_[h];
+            for (int p = 0; p < nso; p++) {
+                for (int q = 0; q < nso; q++) {
+                    H_->get(h)(p, q)         += H_SOC[2]->get(p,q); // +Hz [0,0]
+                    H_->get(h)(p+nso, q+nso) -= H_SOC[2]->get(p,q); // -Hz [1,1]
+                    H_->get(h)(p, q+nso)     += H_SOC[0]->get(p,q); // +Hx [0,1]
+                    H_->get(h)(p+nso, q)     += H_SOC[0]->get(p,q); // +Hx [1,0]
+                    H_->get(h)(p, q+nso)     += H_SOC[1]->get(p,q)*i; // +iHy [0,1]
+                    H_->get(h)(p+nso, q)     -= H_SOC[1]->get(p,q)*i; // -iHy [1,0]
+                }
+            }
+        }
+    }
+
     if (print_ > 3) H_->print("outfile");
 }
 
