@@ -164,17 +164,9 @@ if(TARGET PCMSolver::pcm)
 endif()
 
 if(TARGET gauxc::gauxc)
-  target_compile_definitions(mints
-    PUBLIC
-      USING_gauxc
-    )
   target_link_libraries(mints
     PUBLIC
       gauxc::gauxc
-    )
-  target_include_directories(l2intf
-    PUBLIC
-      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
     )
 endif()
 
