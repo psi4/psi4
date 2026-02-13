@@ -53,11 +53,4 @@ if (psi4_ENABLE_PRECOMPILE_HEADERS)
     target_precompile_headers(dct REUSE_FROM psio)
 endif()
 
-if(TARGET gauxc::gauxc)
-  target_include_directories(dct
-    PUBLIC
-      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-endif()
-
 target_link_libraries(dct PUBLIC diis)
