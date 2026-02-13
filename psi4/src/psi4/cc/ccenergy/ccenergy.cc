@@ -389,11 +389,12 @@ double CCEnergyWavefunction::compute_energy() {
         set_scalar_variable("CC2 CORRELATION ENERGY", moinfo_.ecc);
         set_scalar_variable("CC2 TOTAL ENERGY", moinfo_.eref + moinfo_.ecc);
 
-        if (params_.local && local_.weakp == "MP2")
+        if (params_.local && local_.weakp == "MP2") {
             outfile->Printf("      * LCC2 (+LMP2) total energy             = %20.15f\n",
                             moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy);
-        Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] =
-            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+            Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] =
+                            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+        }
     } else {
         if (params_.scscc) {
             outfile->Printf("\n    OS SCS-CCSD correlation energy            = %20.15f\n",
@@ -434,11 +435,12 @@ double CCEnergyWavefunction::compute_energy() {
         set_scalar_variable("CCSD TOTAL ENERGY", moinfo_.ecc + moinfo_.eref);
         set_scalar_variable("CCSD ITERATIONS", moinfo_.iter);
 
-        if (params_.local && local_.weakp == "MP2")
+        if (params_.local && local_.weakp == "MP2") {
             outfile->Printf("      * LCCSD (+LMP2) total energy            = %20.15f\n",
                             moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy);
-        Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] =
-            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+            Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] =
+                            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+        }
     }
     outfile->Printf("\n");
 
