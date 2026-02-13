@@ -26,13 +26,6 @@ if(TARGET ECPINT::ecpint)
     )
 endif()
 
-if(TARGET gauxc::gauxc)
-  target_include_directories(scf_solver
-    PUBLIC
-      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-endif()
-
 if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(scf_solver
     PUBLIC

@@ -43,10 +43,6 @@ target_link_libraries(fock
   )
 
 if(TARGET gauxc::gauxc)
-  target_compile_definitions(fock
-    PUBLIC
-      USING_gauxc
-    )
   target_link_libraries(fock
     PUBLIC 
       gauxc::gauxc 
