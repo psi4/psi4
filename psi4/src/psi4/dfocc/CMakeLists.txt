@@ -123,11 +123,4 @@ if (psi4_ENABLE_PRECOMPILE_HEADERS)
     target_precompile_headers(dfocc REUSE_FROM psio)
 endif()
 
-if(TARGET gauxc::gauxc)
-  target_include_directories(dfocc
-    PUBLIC
-      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-endif()
-
 target_link_libraries(dfocc PUBLIC diis)
