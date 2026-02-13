@@ -62,12 +62,6 @@ target_include_directories(l2export
   PRIVATE
     $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
   )
-if(TARGET gauxc::gauxc)
-  target_include_directories(l2export
-    PUBLIC
-      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-endif()
 target_link_libraries(
   l2export
   PRIVATE

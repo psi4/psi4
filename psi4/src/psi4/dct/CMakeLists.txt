@@ -50,11 +50,4 @@ endif ()
 
 psi4_add_module(bin dct sources)
 
-if(TARGET gauxc::gauxc)
-  target_include_directories(dct
-    PUBLIC
-      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-endif()
-
 target_link_libraries(dct PUBLIC diis)
