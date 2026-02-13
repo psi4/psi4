@@ -1,12 +1,5 @@
 psi4_add_module(bin cc "")
 
-if(TARGET gauxc::gauxc)
-  target_include_directories(cc
-    PUBLIC
-      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-endif()
-
 # FIXME Remove once done
 list(APPEND _Clang_debug_flags
   "-Wall"
