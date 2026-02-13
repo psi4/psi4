@@ -188,7 +188,7 @@ void VBase::initialize() {
         // Need a functional worker per thread
         functional_workers_.push_back(functional_->build_worker());
     }
-#ifdef USING_Gauxc
+#ifdef USING_gauxc
     if (options_.get_int("GAUXC_INTEGRATE")) initialize_gauxc();
 #endif 
 #ifdef USING_BrianQC
