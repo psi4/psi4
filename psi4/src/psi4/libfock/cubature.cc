@@ -80,7 +80,7 @@ struct BrianBlock {
 };
 
 static std::array<std::vector<std::vector<BrianBlock>>, 4> brianStandardGrids;
-std::vector<BrianBlock> *brianStoreGridDataInto = nullptr;
+std::vector<BrianBlock>* brianStoreGridDataInto = nullptr;
 
 struct BrianGrid {
     std::vector<brianInt> atomBlockCounts;
@@ -498,59 +498,59 @@ int LebedevGridMgr::addPoints6(MassPoint point[], double v, double a, double b) 
     return 48;
 }
 
-MassPoint const *LebedevGridMgr::mk1ptGrid() {
+MassPoint const* LebedevGridMgr::mk1ptGrid() {
     static MassPoint grid[1];
     grid[0] = MASSPOINT(0, 0, 1, 4 * M_PI);
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk6ptGrid() {
+MassPoint const* LebedevGridMgr::mk6ptGrid() {
     static MassPoint grid[6];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 1 / 6.);
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk14ptGrid() {
+MassPoint const* LebedevGridMgr::mk14ptGrid() {
     static MassPoint grid[14];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 1 / 15.);
     it += addPoints3(it, 3 / 40.);
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk18ptGrid_nonstandard() {
+MassPoint const* LebedevGridMgr::mk18ptGrid_nonstandard() {
     // This non-Lebedev grid is used in SG-0.
     // SG-0 is defined in Chien and Gill, J. Comput. Chem. 27 (2006) 730-739.
     // The 18-point grid can be found on page 894 of Abramowitz and Stegun.
     static MassPoint grid[18];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 1 / 30.);
     it += addPoints2(it, 1 / 15.);
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk26ptGrid() {
+MassPoint const* LebedevGridMgr::mk26ptGrid() {
     static MassPoint grid[26];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 1 / 21.);
     it += addPoints2(it, 4 / 105.);
     it += addPoints3(it, 9 / 280.);
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk38ptGrid() {
+MassPoint const* LebedevGridMgr::mk38ptGrid() {
     static MassPoint grid[38];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 1 / 105.);
     it += addPoints3(it, 9 / 280.);
     it += addPoints5(it, 1 / 35., 0.4597008433809831E+0);  // 0.4597... = sqrt((1-sqrt(1/3.))/2) = 1/sqrt(3+sqrt(3))
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk50ptGrid() {
+MassPoint const* LebedevGridMgr::mk50ptGrid() {
     static MassPoint grid[50];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.1269841269841270E-1);
     it += addPoints2(it, 0.2257495590828924E-1);
     it += addPoints3(it, 0.2109375000000000E-1);
@@ -558,9 +558,9 @@ MassPoint const *LebedevGridMgr::mk50ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk74ptGrid() {
+MassPoint const* LebedevGridMgr::mk74ptGrid() {
     static MassPoint grid[74];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.5130671797338464E-3);
     it += addPoints2(it, 0.1660406956574204E-1);
     it += addPoints3(it, -0.2958603896103896E-1);
@@ -569,9 +569,9 @@ MassPoint const *LebedevGridMgr::mk74ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk86ptGrid() {
+MassPoint const* LebedevGridMgr::mk86ptGrid() {
     static MassPoint grid[86];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.1154401154401154E-1);
     it += addPoints3(it, 0.1194390908585628E-1);
     it += addPoints4(it, 0.1111055571060340E-1, 0.3696028464541502E+0);
@@ -580,9 +580,9 @@ MassPoint const *LebedevGridMgr::mk86ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk110ptGrid() {
+MassPoint const* LebedevGridMgr::mk110ptGrid() {
     static MassPoint grid[110];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.3828270494937162E-2);
     it += addPoints3(it, 0.9793737512487512E-2);
     it += addPoints4(it, 0.8211737283191111E-2, 0.1851156353447362E+0);
@@ -592,9 +592,9 @@ MassPoint const *LebedevGridMgr::mk110ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk146ptGrid() {
+MassPoint const* LebedevGridMgr::mk146ptGrid() {
     static MassPoint grid[146];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.5996313688621381E-3);
     it += addPoints2(it, 0.7372999718620756E-2);
     it += addPoints3(it, 0.7210515360144488E-2);
@@ -605,9 +605,9 @@ MassPoint const *LebedevGridMgr::mk146ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk170ptGrid() {
+MassPoint const* LebedevGridMgr::mk170ptGrid() {
     static MassPoint grid[170];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.5544842902037365E-2);
     it += addPoints2(it, 0.6071332770670752E-2);
     it += addPoints3(it, 0.6383674773515093E-2);
@@ -619,9 +619,9 @@ MassPoint const *LebedevGridMgr::mk170ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk194ptGrid() {
+MassPoint const* LebedevGridMgr::mk194ptGrid() {
     static MassPoint grid[194];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.1782340447244611E-2);
     it += addPoints2(it, 0.5716905949977102E-2);
     it += addPoints3(it, 0.5573383178848738E-2);
@@ -634,9 +634,9 @@ MassPoint const *LebedevGridMgr::mk194ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk230ptGrid() {
+MassPoint const* LebedevGridMgr::mk230ptGrid() {
     static MassPoint grid[230];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, -0.5522639919727325E-1);
     it += addPoints3(it, 0.4450274607445226E-2);
     it += addPoints4(it, 0.4496841067921404E-2, 0.4492044687397611E+0);
@@ -650,9 +650,9 @@ MassPoint const *LebedevGridMgr::mk230ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk266ptGrid() {
+MassPoint const* LebedevGridMgr::mk266ptGrid() {
     static MassPoint grid[266];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, -0.1313769127326952E-2);
     it += addPoints2(it, -0.2522728704859336E-2);
     it += addPoints3(it, 0.4186853881700583E-2);
@@ -667,9 +667,9 @@ MassPoint const *LebedevGridMgr::mk266ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk302ptGrid() {
+MassPoint const* LebedevGridMgr::mk302ptGrid() {
     static MassPoint grid[302];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.8545911725128148E-3);
     it += addPoints3(it, 0.3599119285025571E-2);
     it += addPoints4(it, 0.3449788424305883E-2, 0.3515640345570105E+0);
@@ -685,9 +685,9 @@ MassPoint const *LebedevGridMgr::mk302ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk350ptGrid() {
+MassPoint const* LebedevGridMgr::mk350ptGrid() {
     static MassPoint grid[350];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.3006796749453936E-2);
     it += addPoints3(it, 0.3050627745650771E-2);
     it += addPoints4(it, 0.1621104600288991E-2, 0.7068965463912316E+0);
@@ -704,9 +704,9 @@ MassPoint const *LebedevGridMgr::mk350ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk434ptGrid() {
+MassPoint const* LebedevGridMgr::mk434ptGrid() {
     static MassPoint grid[434];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.5265897968224436E-3);
     it += addPoints2(it, 0.2548219972002607E-2);
     it += addPoints3(it, 0.2512317418927307E-2);
@@ -726,9 +726,9 @@ MassPoint const *LebedevGridMgr::mk434ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk590ptGrid() {
+MassPoint const* LebedevGridMgr::mk590ptGrid() {
     static MassPoint grid[590];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.3095121295306187E-3);
     it += addPoints3(it, 0.1852379698597489E-2);
     it += addPoints4(it, 0.1871790639277744E-2, 0.7040954938227469E+0);
@@ -752,9 +752,9 @@ MassPoint const *LebedevGridMgr::mk590ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk770ptGrid() {
+MassPoint const* LebedevGridMgr::mk770ptGrid() {
     static MassPoint grid[770];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.2192942088181184E-3);
     it += addPoints2(it, 0.1436433617319080E-2);
     it += addPoints3(it, 0.1421940344335877E-2);
@@ -783,9 +783,9 @@ MassPoint const *LebedevGridMgr::mk770ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk974ptGrid() {
+MassPoint const* LebedevGridMgr::mk974ptGrid() {
     static MassPoint grid[974];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.1438294190527431E-3);
     it += addPoints3(it, 0.1125772288287004E-2);
     it += addPoints4(it, 0.4948029341949241E-3, 0.4292963545341347E-1);
@@ -819,9 +819,9 @@ MassPoint const *LebedevGridMgr::mk974ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk1202ptGrid() {
+MassPoint const* LebedevGridMgr::mk1202ptGrid() {
     static MassPoint grid[1202];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.1105189233267572E-3);
     it += addPoints2(it, 0.9205232738090741E-3);
     it += addPoints3(it, 0.9133159786443561E-3);
@@ -861,9 +861,9 @@ MassPoint const *LebedevGridMgr::mk1202ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk1454ptGrid() {
+MassPoint const* LebedevGridMgr::mk1454ptGrid() {
     static MassPoint grid[1454];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.7777160743261247E-4);
     it += addPoints3(it, 0.7557646413004701E-3);
     it += addPoints4(it, 0.2841633806090617E-3, 0.3229290663413854E-1);
@@ -909,9 +909,9 @@ MassPoint const *LebedevGridMgr::mk1454ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk1730ptGrid() {
+MassPoint const* LebedevGridMgr::mk1730ptGrid() {
     static MassPoint grid[1730];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.6309049437420976E-4);
     it += addPoints2(it, 0.6398287705571748E-3);
     it += addPoints3(it, 0.6357185073530720E-3);
@@ -964,9 +964,9 @@ MassPoint const *LebedevGridMgr::mk1730ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk2030ptGrid() {
+MassPoint const* LebedevGridMgr::mk2030ptGrid() {
     static MassPoint grid[2030];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.4656031899197431E-4);
     it += addPoints3(it, 0.5421549195295507E-3);
     it += addPoints4(it, 0.1778522133346553E-3, 0.2540835336814348E-1);
@@ -1026,9 +1026,9 @@ MassPoint const *LebedevGridMgr::mk2030ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk2354ptGrid() {
+MassPoint const* LebedevGridMgr::mk2354ptGrid() {
     static MassPoint grid[2354];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.3922616270665292E-4);
     it += addPoints2(it, 0.4703831750854424E-3);
     it += addPoints3(it, 0.4678202801282136E-3);
@@ -1096,9 +1096,9 @@ MassPoint const *LebedevGridMgr::mk2354ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk2702ptGrid() {
+MassPoint const* LebedevGridMgr::mk2702ptGrid() {
     static MassPoint grid[2702];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.2998675149888161E-4);
     it += addPoints3(it, 0.4077860529495355E-3);
     it += addPoints4(it, 0.1185349192520667E-3, 0.2065562538818703E-1);
@@ -1174,9 +1174,9 @@ MassPoint const *LebedevGridMgr::mk2702ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk3074ptGrid() {
+MassPoint const* LebedevGridMgr::mk3074ptGrid() {
     static MassPoint grid[3074];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.2599095953754734E-4);
     it += addPoints2(it, 0.3603134089687541E-3);
     it += addPoints3(it, 0.3586067974412447E-3);
@@ -1261,9 +1261,9 @@ MassPoint const *LebedevGridMgr::mk3074ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk3470ptGrid() {
+MassPoint const* LebedevGridMgr::mk3470ptGrid() {
     static MassPoint grid[3470];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.2040382730826330E-4);
     it += addPoints3(it, 0.3178149703889544E-3);
     it += addPoints4(it, 0.8288115128076110E-4, 0.1721420832906233E-1);
@@ -1357,9 +1357,9 @@ MassPoint const *LebedevGridMgr::mk3470ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk3890ptGrid() {
+MassPoint const* LebedevGridMgr::mk3890ptGrid() {
     static MassPoint grid[3890];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.1807395252196920E-4);
     it += addPoints2(it, 0.2848008782238827E-3);
     it += addPoints3(it, 0.2836065837530581E-3);
@@ -1463,9 +1463,9 @@ MassPoint const *LebedevGridMgr::mk3890ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk4334ptGrid() {
+MassPoint const* LebedevGridMgr::mk4334ptGrid() {
     static MassPoint grid[4334];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.1449063022537883E-4);
     it += addPoints3(it, 0.2546377329828424E-3);
     it += addPoints4(it, 0.6018432961087496E-4, 0.1462896151831013E-1);
@@ -1579,9 +1579,9 @@ MassPoint const *LebedevGridMgr::mk4334ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk4802ptGrid() {
+MassPoint const* LebedevGridMgr::mk4802ptGrid() {
     static MassPoint grid[4802];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.9687521879420705E-4);
     it += addPoints2(it, 0.2307897895367918E-3);
     it += addPoints3(it, 0.2297310852498558E-3);
@@ -1706,9 +1706,9 @@ MassPoint const *LebedevGridMgr::mk4802ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk5294ptGrid() {
+MassPoint const* LebedevGridMgr::mk5294ptGrid() {
     static MassPoint grid[5294];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.9080510764308163E-4);
     it += addPoints3(it, 0.2084824361987793E-3);
     it += addPoints4(it, 0.5011105657239616E-4, 0.2303261686261450E-1);
@@ -1844,9 +1844,9 @@ MassPoint const *LebedevGridMgr::mk5294ptGrid() {
     return grid;
 }
 
-MassPoint const *LebedevGridMgr::mk5810ptGrid() {
+MassPoint const* LebedevGridMgr::mk5810ptGrid() {
     static MassPoint grid[5810];
-    MassPoint *it = &grid[0];
+    MassPoint* it = &grid[0];
     it += addPoints1(it, 0.9735347946175486E-5);
     it += addPoints2(it, 0.1907581241803167E-3);
     it += addPoints3(it, 0.1901059546737578E-3);
@@ -2065,7 +2065,7 @@ class RadialGridMgr {
     static void GolombWelsch(int n, double a[], double b[], double q[]);
 
     struct SchemeTable {
-        const char *name;
+        const char* name;
         void (*getRoots)(int n, double r[], double w[]);
         double (*rFn)(double x);
         double (*drdxFn)(double x);
@@ -2073,8 +2073,8 @@ class RadialGridMgr {
     static SchemeTable radialschemes[];
 
    public:
-    static int WhichScheme(const char *schemename);
-    static const char *SchemeName(int which) { return radialschemes[which].name; }
+    static int WhichScheme(const char* schemename);
+    static const char* SchemeName(int which) { return radialschemes[which].name; }
     static int MuraKnowlesHack(int scheme, int Z);
     static void makeRadialGrid(int n, int whichScheme, double r[], double w[], double Rparam);
 };
@@ -2100,9 +2100,9 @@ void RadialGridMgr::getChebychevRootsKind2(int n, double r[], double w[]) {
         double x = cos(i * piOverNPlusOne);
         r[i - 1] = x;
         w[i - 1] = piOverNPlusOne * sqrt(1.0 - x * x);
-        // raw weight for 2nd Kind = piOverNPlusOne * sin^2 (i * piOverNPlusOne) = piOverNPlusOne * (1 - cos^2 (i * piOverNPlusOne)) = piOverNPlusOne * (1 - x^2)
-        // for unit form, scale weight by /= sqrt(1 - x^2):
-        // final weight = piOverNplusOne * sqrt(1 - x^2) = piOverNPlusOne * sin(i * piOverNPlusOne)
+        // raw weight for 2nd Kind = piOverNPlusOne * sin^2 (i * piOverNPlusOne) = piOverNPlusOne * (1 - cos^2 (i *
+        // piOverNPlusOne)) = piOverNPlusOne * (1 - x^2) for unit form, scale weight by /= sqrt(1 - x^2): final weight =
+        // piOverNplusOne * sqrt(1 - x^2) = piOverNPlusOne * sin(i * piOverNPlusOne)
     }
 }
 
@@ -2196,7 +2196,7 @@ void RadialGridMgr::GolombWelsch(int n, double a[], double b[], double q[]) {
 
 void RadialGridMgr::getLegendreRoots(int n, double r[], double w[]) {
     std::vector<double> a(n), bhack(n + 1);
-    double *const b = &(bhack.data()[1]);  // Note that b[n-1] is unused.
+    double* const b = &(bhack.data()[1]);  // Note that b[n-1] is unused.
     for (int i = 0; i < n; i++) {
         a[i] = 0;
         int k = i + 1;  // Easier to read
@@ -2224,7 +2224,7 @@ void RadialGridMgr::getLaguerreRoots(int n, double r[], double w[]) {
     // starts one element forward. That is, b[0] = bhack[1]. Then
     // b[-1] = bhack[0] is a valid memory location.
     std::vector<double> a(n), bhack(n + 1);
-    double *const b =
+    double* const b =
         &(bhack.data()[1]);  // Note that b[n-1] is unused; it's almost enough to make you want to renumber the arrays.
     for (int i = 0; i < n; i++) {
         a[i] = 2 * i + 1;
@@ -2379,7 +2379,7 @@ void RadialGridMgr::getMultiExpRoots(int n, double r[], double w[]) {
     if (n > TABSIZE) throw PSIEXCEPTION("Psi4 does not support MultiExp radial grids for n > 200.");
 
     std::vector<double> a(n), bhack(n + 1);
-    double *const b = &(bhack.data()[1]);  // Note that b[n-1] is unused.
+    double* const b = &(bhack.data()[1]);  // Note that b[n-1] is unused.
     for (int i = 0; i < n; i++) {
         a[i] = alphas[i];
         b[i] = betas[i];
@@ -2418,7 +2418,7 @@ RadialGridMgr::SchemeTable RadialGridMgr::radialschemes[] = {
 // I almost created an enumeration to keep track of the schemes, but if we do that the different scheme types end up
 // stored in several different places that must all get updated at once if someone adds a new radial grid type. With
 // the current system, you only have to add your new scheme to the RadialGridMgr::radialschemes table and you're done.
-int RadialGridMgr::WhichScheme(const char *schemename) {
+int RadialGridMgr::WhichScheme(const char* schemename) {
     for (size_t i = 0; i < sizeof(radialschemes) / sizeof(radialschemes[0]); i++)
         if (strcmp(radialschemes[i].name, schemename) == 0) return i;
     outfile->Printf("Unrecognized radial scheme %s!\n", schemename);
@@ -2467,30 +2467,30 @@ class StandardGridMgr {
         short nreps;
     };
     struct PruneSpec {
-        const PruneGroup *group;
+        const PruneGroup* group;
         short nrad;     // Number of points for the radial grid
         short npts;     // Total number of points at all
         double rparam;  // Oftentimes the Bragg-Slater radius of the atom
     };
 
-    static void makeCubatureGridFromPruneSpec(PruneSpec const &spec, int radscheme, MassPoint *grid_out);
+    static void makeCubatureGridFromPruneSpec(PruneSpec const& spec, int radscheme, MassPoint* grid_out);
     static void Initialize_SG0();
     static void Initialize_SG1();
 
-    static const MassPoint *SG0_grids_[18];
+    static const MassPoint* SG0_grids_[18];
     static int SG0_sizes_[18];
 
-    static const MassPoint *SG1_grids_[19];
+    static const MassPoint* SG1_grids_[19];
     static int SG1_sizes_[19];
 
    public:
     static void Initialize();
     static void ReleaseMemory();
-    static int WhichGrid(const char *name);
+    static int WhichGrid(const char* name);
     static int GetSG0size(int Z);
     static int GetSG1size(int Z);
-    static const MassPoint *GetSG0grid(int Z);
-    static const MassPoint *GetSG1grid(int Z);
+    static const MassPoint* GetSG0grid(int Z);
+    static const MassPoint* GetSG1grid(int Z);
 };
 
 // The MagicInitializer calls various initialization routines at program startup
@@ -2500,12 +2500,12 @@ static class MagicInitializer2 {
     ~MagicInitializer2() { StandardGridMgr::ReleaseMemory(); }
 } s_magic2;
 
-const MassPoint *StandardGridMgr::SG0_grids_[18];
+const MassPoint* StandardGridMgr::SG0_grids_[18];
 int StandardGridMgr::SG0_sizes_[18];
-const MassPoint *StandardGridMgr::SG1_grids_[19];
+const MassPoint* StandardGridMgr::SG1_grids_[19];
 int StandardGridMgr::SG1_sizes_[19];
 
-int StandardGridMgr::WhichGrid(const char *name) {
+int StandardGridMgr::WhichGrid(const char* name) {
     if (strcmp(name, "") == 0) return -1;
     if (strcmp(name, "SG0") == 0) return 0;
     if (strcmp(name, "SG1") == 0) return 1;
@@ -2529,14 +2529,14 @@ int StandardGridMgr::GetSG1size(int Z) {
     return SG1_sizes_[Z];
 }
 
-const MassPoint *StandardGridMgr::GetSG0grid(int Z) {
+const MassPoint* StandardGridMgr::GetSG0grid(int Z) {
     if ((size_t)Z >= sizeof(SG0_grids_) / sizeof(SG0_grids_[0]) || SG0_grids_[Z] == 0) {
         outfile->Printf("There is no SG-0 grid defined for atomic number %d!\n", Z);
         throw PSIEXCEPTION("There is no SG-0 grid defined for the requested atomic number!");
     }
     return SG0_grids_[Z];
 }
-const MassPoint *StandardGridMgr::GetSG1grid(int Z) {
+const MassPoint* StandardGridMgr::GetSG1grid(int Z) {
     if ((size_t)Z >= sizeof(SG1_grids_) / sizeof(SG1_grids_[0]) || SG1_grids_[Z] == 0) {
         outfile->Printf("There is no SG-1 grid defined for atomic number %d!\n", Z);
         throw PSIEXCEPTION("There is no SG-1 grid defined for the requested atomic number!");
@@ -2544,7 +2544,7 @@ const MassPoint *StandardGridMgr::GetSG1grid(int Z) {
     return SG1_grids_[Z];
 }
 
-void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const &spec, int radscheme, MassPoint *grid_out) {
+void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const& spec, int radscheme, MassPoint* grid_out) {
     std::vector<double> r(spec.nrad), wr(spec.nrad);
     RadialGridMgr::makeRadialGrid(spec.nrad, radscheme, r.data(), wr.data(), spec.rparam);
 #ifdef USING_BrianQC
@@ -2561,7 +2561,7 @@ void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const &spec, int r
     int k_rad = 0;   // Will index into `r' and `wr'
     for (int i_grp = 0; spec.group[i_grp].npts != 0; i_grp++) {
         int numAngPoints = spec.group[i_grp].npts;
-        const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPoints);
+        const MassPoint* anggrid = LebedevGridMgr::findGridByNPoints(numAngPoints);
 #ifdef USING_BrianQC
         if (brianStoreGridDataInto != nullptr) {
             (*brianStoreGridDataInto)[i_grp].radialPoints.resize(spec.group[i_grp].nreps);
@@ -2602,12 +2602,12 @@ void StandardGridMgr::Initialize() {
 void StandardGridMgr::ReleaseMemory() {
     for (size_t i = 0; i < sizeof(SG0_grids_) / sizeof(SG0_grids_[0]); i++)
         if (SG0_grids_[i]) {
-            free((void *)SG0_grids_[i]);
+            free((void*)SG0_grids_[i]);
             SG0_grids_[i] = nullptr;
         }
     for (size_t i = 0; i < sizeof(SG1_grids_) / sizeof(SG1_grids_[0]); i++)
         if (SG1_grids_[i]) {
-            free((void *)SG1_grids_[i]);
+            free((void*)SG1_grids_[i]);
             SG1_grids_[i] = nullptr;
         }
 }
@@ -2685,7 +2685,7 @@ void StandardGridMgr::Initialize_SG0() {
                 brianStoreGridDataInto = &(brianStandardGrids[0][Z]);
             }
 #endif
-            MassPoint *grid = (MassPoint *)malloc(SG0specs[Z].npts * sizeof(MassPoint));
+            MassPoint* grid = (MassPoint*)malloc(SG0specs[Z].npts * sizeof(MassPoint));
             makeCubatureGridFromPruneSpec(SG0specs[Z], RadialGridMgr::WhichScheme("MULTIEXP"), grid);
             SG0_grids_[Z] = grid;
             SG0_sizes_[Z] = SG0specs[Z].npts;
@@ -2757,7 +2757,7 @@ void StandardGridMgr::Initialize_SG1() {
         PruneSpec spec = SG1specs[whichRow - 1];
         spec.rparam = SG1radii[Z];
         // Make the grid
-        MassPoint *grid = (MassPoint *)malloc(spec.npts * sizeof(MassPoint));
+        MassPoint* grid = (MassPoint*)malloc(spec.npts * sizeof(MassPoint));
         makeCubatureGridFromPruneSpec(spec, RadialGridMgr::WhichScheme("EM"), grid);
         SG1_grids_[Z] = grid;
         SG1_sizes_[Z] = spec.npts;
@@ -2771,13 +2771,13 @@ void StandardGridMgr::Initialize_SG1() {
 
 class NuclearWeightMgr {
     enum NuclearSchemes { NAIVE, BECKE, TREUTLER, STRATMANN, SBECKE };  // Must match the nuclearschemenames array!
-    static const char *nuclearschemenames[];
+    static const char* nuclearschemenames[];
 
     //// These are the member variables
     enum NuclearSchemes scheme_;
     std::shared_ptr<Molecule> molecule_;
-    double **inv_dist_;
-    double **amatrix_;
+    double** inv_dist_;
+    double** amatrix_;
     ////
 
     inline double distToAtom(MassPoint mp, int A) const {
@@ -2799,8 +2799,8 @@ class NuclearWeightMgr {
     }
 
    public:
-    static int WhichScheme(const char *schemename);
-    static const char *SchemeName(int which) { return nuclearschemenames[which]; }
+    static int WhichScheme(const char* schemename);
+    static const char* SchemeName(int which) { return nuclearschemenames[which]; }
 
     NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme);
     ~NuclearWeightMgr();
@@ -2808,7 +2808,7 @@ class NuclearWeightMgr {
     double computeNuclearWeight(MassPoint mp, int A, double stratmannCutoff) const;
 };
 
-const char *NuclearWeightMgr::nuclearschemenames[] = {"NAIVE", "BECKE", "TREUTLER", "STRATMANN",
+const char* NuclearWeightMgr::nuclearschemenames[] = {"NAIVE", "BECKE", "TREUTLER", "STRATMANN",
                                                       "SBECKE"};  // Must match `enum NuclearSchemes' !
 
 NuclearWeightMgr::NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme) {
@@ -2850,7 +2850,7 @@ NuclearWeightMgr::~NuclearWeightMgr() {
     free_block(inv_dist_);
     free_block(amatrix_);
 }
-int NuclearWeightMgr::WhichScheme(const char *schemename) {
+int NuclearWeightMgr::WhichScheme(const char* schemename) {
     for (size_t i = 0; i < sizeof(nuclearschemenames) / sizeof(nuclearschemenames[0]); i++)
         if (strcmp(nuclearschemenames[i], schemename) == 0) return i;
     outfile->Printf("Unrecognized nuclear scheme %s!\n", schemename);
@@ -3017,7 +3017,7 @@ class OrientationMgr {
         SYMMETRIC_TOP,
         ASYMMETRIC
     };
-    static const char *symmetryNames[];  // symmetryNames must match SymmetryType!
+    static const char* symmetryNames[];  // symmetryNames must match SymmetryType!
 
     // Some handy vector operations
     static inline double vdot(LVector v, LVector w) { return v.x * w.x + v.y * w.y + v.z * w.z; }
@@ -3041,13 +3041,13 @@ class OrientationMgr {
     }
     static inline LVector normalToTriangle(LVector a, LVector b, LVector c) { return vcross(vsub(b, a), vsub(c, a)); }
 
-    static inline LVector mvtimes(const LMatrix &Q, const LVector &v) {
+    static inline LVector mvtimes(const LMatrix& Q, const LVector& v) {
         LVector out = {Q.xx * v.x + Q.xy * v.y + Q.xz * v.z, Q.yx * v.x + Q.yy * v.y + Q.yz * v.z,
                        Q.zx * v.x + Q.zy * v.y + Q.zz * v.z};
         return out;
     }
 
-    static inline LMatrix mmtimes(const LMatrix &A, const LMatrix &B) {
+    static inline LMatrix mmtimes(const LMatrix& A, const LMatrix& B) {
         LMatrix C;
         C.xx = A.xx * B.xx + A.xy * B.yx + A.xz * B.zx;
         C.xy = A.xx * B.xy + A.xy * B.yy + A.xz * B.zy;
@@ -3061,7 +3061,7 @@ class OrientationMgr {
         return C;
     }
 
-    static inline LMatrix cycleXtoZ(const LMatrix &in) {
+    static inline LMatrix cycleXtoZ(const LMatrix& in) {
         // We want to swap the x-row with the z-row, but that
         // can interfere with chirality, so we instead rotate
         // x->z, z->x, x->y.
@@ -3108,18 +3108,18 @@ class OrientationMgr {
     static LMatrix RotMatrixFromTwoAxes(LVector ax1, LVector ax2);
     static LVector someUnitVectorPerpendicularTo(LVector v);
     static LMatrix RotMatrixFromOneAxis(LVector axis3);
-    static void diagonalize(LMatrix const &M, LMatrix *Q_out, LVector *D_out);
-    static LMatrix buildRotationMatrix(LVector const &axis, double angle);
+    static void diagonalize(LMatrix const& M, LMatrix* Q_out, LVector* D_out);
+    static LMatrix buildRotationMatrix(LVector const& axis, double angle);
 
-    static bool isAnAtomLocatedAt(LMolecule mol, int natom, LVector const &position, int true_atomic_number);
+    static bool isAnAtomLocatedAt(LMolecule mol, int natom, LVector const& position, int true_atomic_number);
     static bool bothAnglesResultInEquivalentGrids(LMolecule mol, int natoms, double angle1, double angle2);
-    static LMatrix symmetricTopMatrix(std::shared_ptr<Molecule> mol, LMatrix const &Q, LVector const &center);
-    static bool TestAxis(LMolecule mol, int natom, LVector const &axis, int n);
+    static LMatrix symmetricTopMatrix(std::shared_ptr<Molecule> mol, LMatrix const& Q, LVector const& center);
+    static bool TestAxis(LMolecule mol, int natom, LVector const& axis, int n);
 
-    static bool LookForIcosahedralSymmetry(LMolecule mol, int natom, LMatrix *Q_out);
-    static bool LookForOctahedralSymmetry(LMolecule mol, int natom, LMatrix *Q_out);
-    static bool LookForTetrahedralSymmetry(LMolecule mol, int natom, LMatrix *Q_out);
-    static SymmetryType sphericalTopMatrix(std::shared_ptr<Molecule> origmol, LVector const &center, LMatrix *Q_out);
+    static bool LookForIcosahedralSymmetry(LMolecule mol, int natom, LMatrix* Q_out);
+    static bool LookForOctahedralSymmetry(LMolecule mol, int natom, LMatrix* Q_out);
+    static bool LookForTetrahedralSymmetry(LMolecule mol, int natom, LMatrix* Q_out);
+    static SymmetryType sphericalTopMatrix(std::shared_ptr<Molecule> origmol, LVector const& center, LMatrix* Q_out);
 
    public:
     // Use the constructor to determine the standard orientation, and use `MoveIntoPosition' to apply it to a
@@ -3137,7 +3137,7 @@ class OrientationMgr {
     // Or we could use Matrix like smart people
     std::shared_ptr<Matrix> orientation() const {
         auto O = std::make_shared<Matrix>("O", 3, 3);
-        double **Op = O->pointer();
+        double** Op = O->pointer();
         Op[0][0] = rotation_.xx;
         Op[0][1] = rotation_.xy;
         Op[0][2] = rotation_.xz;
@@ -3153,7 +3153,7 @@ class OrientationMgr {
 
 const OrientationMgr::LMatrix OrientationMgr::lIdentityMatrix = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 
-const char *OrientationMgr::symmetryNames[] = {
+const char* OrientationMgr::symmetryNames[] = {
     "Single atom",       "Linear",        "Icosahedral",   "Octahedral", "Tetrahedral",
     "Spherical mystery", "Symmetric top", "Asymmetric top"};  // Warning: Must match enum SymmetryType!
 
@@ -3199,11 +3199,11 @@ OrientationMgr::LMatrix OrientationMgr::RotMatrixFromOneAxis(LVector axis3) {
 
 #define EPSILON 1e-14
 // I hate to write wrapper functions, but it's easier this way...
-void OrientationMgr::diagonalize(LMatrix const &M, LMatrix *Q_out, LVector *D_out) {
+void OrientationMgr::diagonalize(LMatrix const& M, LMatrix* Q_out, LVector* D_out) {
     // This is the easiest way to get the eigensystem right now.
     // The eigenvalues are returned in ascending order.
     Matrix I("Matrix to be diagonalized", 3, 3);
-    double **Ip = I.pointer();
+    double** Ip = I.pointer();
     // Clean matrix by setting tiny values arising from numerical errors to zero
     // to prevent generation of weird eigenvectors
     Ip[0][0] = (std::fabs(M.xx) < EPSILON ? 0.0 : M.xx);
@@ -3215,11 +3215,11 @@ void OrientationMgr::diagonalize(LMatrix const &M, LMatrix *Q_out, LVector *D_ou
     Matrix VV("Eigenvectors", 3, 3);
     Vector DD("Eigenvalues", 3);
     I.diagonalize(VV, DD);  // Note: This line ONLY works for symmetric matrices!
-    double *evals = DD.pointer();
+    double* evals = DD.pointer();
     D_out->x = evals[0];
     D_out->y = evals[1];
     D_out->z = evals[2];
-    double **evects = VV.pointer();
+    double** evects = VV.pointer();
     // Strictly speaking, diagonalization gives us M = VDV^{-1}.
     // But the rotation matrix we want is V^{-1} = V^T since it's orthogonal.
     Q_out->xx = evects[0][0];
@@ -3234,7 +3234,7 @@ void OrientationMgr::diagonalize(LMatrix const &M, LMatrix *Q_out, LVector *D_ou
 }
 #undef EPSILON
 
-OrientationMgr::LMatrix OrientationMgr::buildRotationMatrix(LVector const &axis, double angle) {
+OrientationMgr::LMatrix OrientationMgr::buildRotationMatrix(LVector const& axis, double angle) {
     // See http://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
     double n = vnorm(axis);
     double x = axis.x / n;
@@ -3256,7 +3256,7 @@ OrientationMgr::LMatrix OrientationMgr::buildRotationMatrix(LVector const &axis,
     return Q;
 }
 
-bool OrientationMgr::isAnAtomLocatedAt(LMolecule mol, int natom, LVector const &position, int true_atomic_number) {
+bool OrientationMgr::isAnAtomLocatedAt(LMolecule mol, int natom, LVector const& position, int true_atomic_number) {
     for (int j = 0; j < natom; j++)
         if (true_atomic_number == mol[j].atomicNumber && fvequ(position, mol[j].pos)) return true;
     return false;
@@ -3281,8 +3281,8 @@ bool OrientationMgr::bothAnglesResultInEquivalentGrids(LMolecule mol, int natoms
     return true;
 }
 
-OrientationMgr::LMatrix OrientationMgr::symmetricTopMatrix(std::shared_ptr<Molecule> mol, LMatrix const &Q,
-                                                           LVector const &center) {
+OrientationMgr::LMatrix OrientationMgr::symmetricTopMatrix(std::shared_ptr<Molecule> mol, LMatrix const& Q,
+                                                           LVector const& center) {
     // First we build a copy of the molecule in which we've rotated the z-axis to where we want it.
     int natom = mol->natom();
     std::vector<LAtom> rotmol(natom);
@@ -3355,7 +3355,7 @@ OrientationMgr::LMatrix OrientationMgr::symmetricTopMatrix(std::shared_ptr<Molec
 // Consider a rotation of 2pi/n radians about some axis. Is it the case that
 // when I apply this rotation to each atom in the molecule, I find that there's already an atom
 // of that type in the new position?
-bool OrientationMgr::TestAxis(LMolecule mol, int natom, LVector const &axis, int n) {
+bool OrientationMgr::TestAxis(LMolecule mol, int natom, LVector const& axis, int n) {
     if (fvIsZero(axis)) return false;
     LMatrix Q = buildRotationMatrix(axis, 2 * M_PI / n);
     for (int i = 0; i < natom; i++)
@@ -3363,7 +3363,7 @@ bool OrientationMgr::TestAxis(LMolecule mol, int natom, LVector const &axis, int
     return true;
 }
 
-bool OrientationMgr::LookForIcosahedralSymmetry(LMolecule mol, int natom, LMatrix *Q_out) {
+bool OrientationMgr::LookForIcosahedralSymmetry(LMolecule mol, int natom, LMatrix* Q_out) {
     // An icosahedral system has a bunch of C5 axes but they aren't mutually perpendicular.
     // So what we do is find one C5 axis and make it our Z-axis; then we treat the
     // system as a symmetric (but not spherical) top to pick x- and y- axes. This
@@ -3403,7 +3403,7 @@ bool OrientationMgr::LookForIcosahedralSymmetry(LMolecule mol, int natom, LMatri
     return false;
 }
 
-bool OrientationMgr::LookForOctahedralSymmetry(LMolecule mol, int natom, LMatrix *Q_out) {
+bool OrientationMgr::LookForOctahedralSymmetry(LMolecule mol, int natom, LMatrix* Q_out) {
     // An octahedral system has three mutually-perpendicular C_4 axes. If we can find
     // two of them, we get the third for free. The rules about C_4 axes are like the
     // rules for C_5 axes outlined in LookForIcosahedralSymmetry; the only real difference
@@ -3452,7 +3452,7 @@ bool OrientationMgr::LookForOctahedralSymmetry(LMolecule mol, int natom, LMatrix
     return false;
 }
 
-bool OrientationMgr::LookForTetrahedralSymmetry(LMolecule mol, int natom, LMatrix *Q_out) {
+bool OrientationMgr::LookForTetrahedralSymmetry(LMolecule mol, int natom, LMatrix* Q_out) {
     // A tetrahedral system has three mutually-perpendicular C_2 axes. If we can find
     // two of them, we get the third for free. We also know that every axis passes through
     // the midpoint of two atoms, so our search is a bit simpler this time.
@@ -3480,7 +3480,7 @@ bool OrientationMgr::LookForTetrahedralSymmetry(LMolecule mol, int natom, LMatri
 }
 
 OrientationMgr::SymmetryType OrientationMgr::sphericalTopMatrix(std::shared_ptr<Molecule> origmol,
-                                                                LVector const &center, LMatrix *Q_out) {
+                                                                LVector const& center, LMatrix* Q_out) {
     // Build a copy of the molecule where all the atoms are shifted to the center.
     int natom = origmol->natom();
     std::vector<LAtom> mol(natom);
@@ -3610,15 +3610,15 @@ class RadialPruneMgr {
     static double log_gaussian(double rho, double alpha) { return exp(-alpha * log(rho) * log(rho)); }
 
     struct PruneFunctionTable {
-        const char *name;
+        const char* name;
         double (*scalFn)(double, double);
     };
     static PruneFunctionTable prunefunctions[];
 
    public:
-    static int WhichPruneFunction(const char *functionname);
-    static const char *FunctionName(int which) { return prunefunctions[which].name; }
-    RadialPruneMgr(MolecularGrid::MolecularGridOptions const &opt);
+    static int WhichPruneFunction(const char* functionname);
+    static const char* FunctionName(int which) { return prunefunctions[which].name; }
+    RadialPruneMgr(MolecularGrid::MolecularGridOptions const& opt);
     int GetPrunedNumAngPts(double rho);
     int ShellPruning(int ri, int Z, int radial_pts);
     int TreutlerShellPruning(int ri, int Z, int radial_pts);
@@ -3633,14 +3633,14 @@ RadialPruneMgr::PruneFunctionTable RadialPruneMgr::prunefunctions[] = {{"FLAT", 
                                                                        {"LOG_GAUSSIAN", log_gaussian},
                                                                        {nullptr, nullptr}};
 
-int RadialPruneMgr::WhichPruneFunction(const char *functionname) {
+int RadialPruneMgr::WhichPruneFunction(const char* functionname) {
     for (size_t i = 0; i < sizeof(prunefunctions) / sizeof(prunefunctions[0]); i++)
         if (strcmp(prunefunctions[i].name, functionname) == 0) return i;
     outfile->Printf("Unrecognized pruning function name  %s!\n", functionname);
     throw PSIEXCEPTION("Unrecognized pruning function name!");
 }
 
-RadialPruneMgr::RadialPruneMgr(MolecularGrid::MolecularGridOptions const &opt) {
+RadialPruneMgr::RadialPruneMgr(MolecularGrid::MolecularGridOptions const& opt) {
     nominal_order_ = LebedevGridMgr::findOrderByNPoints(opt.nangpts);
     pruneFn_ = prunefunctions[opt.prunefunction].scalFn;
     alpha_ = opt.pruning_alpha;
@@ -3721,7 +3721,7 @@ int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
 }
 
-void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
+void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt) {
     options_ = opt;  // Save a copy
     atomic_grids_.clear();
     atomic_grids_.resize(molecule_->natom());
@@ -3793,7 +3793,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                     numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);
                 }
                 assert(numAngPts > 0);
-                const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
+                const MassPoint* anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
 
 #ifdef USING_BrianQC
                 if (brianEnable and brianEnableDFT) {
@@ -3834,7 +3834,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             }
 #endif
             int npts = (opt.namedGrid == 0) ? StandardGridMgr::GetSG0size(Z) : StandardGridMgr::GetSG1size(Z);
-            const MassPoint *sg =
+            const MassPoint* sg =
                 (opt.namedGrid == 0) ? StandardGridMgr::GetSG0grid(Z) : StandardGridMgr::GetSG1grid(Z);
 
             for (int i = 0; i < npts; i++) {
@@ -3907,7 +3907,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 #endif
 
     npoints_ = 0;
-    for (const auto &grid_per_atom : atomic_grids_) {
+    for (const auto& grid_per_atom : atomic_grids_) {
         npoints_ += grid_per_atom.size();
     }
 
@@ -3917,8 +3917,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
     w_ = new double[npoints_];
 
     int grid_vector_index = 0;
-    for (const auto &grid_per_atom : atomic_grids_) {  // loop over all atoms
-        for (const auto &Q : grid_per_atom) {          // grid points of a given atom
+    for (const auto& grid_per_atom : atomic_grids_) {  // loop over all atoms
+        for (const auto& Q : grid_per_atom) {          // grid points of a given atom
             x_[grid_vector_index] = Q.x;
             y_[grid_vector_index] = Q.y;
             z_[grid_vector_index] = Q.z;
@@ -3931,7 +3931,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 // the third parameter of from_string() should be
 // one of std::hex, std::dec or std::oct
 template <class T>
-bool from_string(T &t, const std::string &s, std::ios_base &(*f)(std::ios_base &)) {
+bool from_string(T& t, const std::string& s, std::ios_base& (*f)(std::ios_base&)) {
     std::istringstream iss(s);
     return !(iss >> f >> t).fail();
 }
@@ -3951,7 +3951,7 @@ void BasisExtents::computeExtents() {
     // Bisection is used to avoid accidentally finding the
     // nuclear cusp for p and higher functions
 
-    double *Rp = shell_extents_->pointer();
+    double* Rp = shell_extents_->pointer();
     maxR_ = 0.0;
 
     // Compute each shell in turn
@@ -3964,11 +3964,11 @@ void BasisExtents::computeExtents() {
         }
 
         // Stage 1: Collect information on the shell
-        const GaussianShell &Pshell = primary_->shell(P);
+        const GaussianShell& Pshell = primary_->shell(P);
         int l = Pshell.am();
         int nprim = Pshell.nprimitive();
-        const double *alpha = Pshell.exps();
-        const double *norm = Pshell.coefs();
+        const double* alpha = Pshell.exps();
+        const double* norm = Pshell.coefs();
 
         double norm_max = norm[0];
         double alpha_max = alpha[0];
@@ -4058,7 +4058,7 @@ void BasisExtents::print(std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => BasisExtents: Cutoff = %11.3E <=\n\n", delta_);
 
-    double *Rp = shell_extents_->pointer();
+    double* Rp = shell_extents_->pointer();
     printer->Printf("   Shell Extents:\n");
     printer->Printf("   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "R");
     for (int Q = 0; Q < primary_->nshell(); Q++) {
@@ -4083,7 +4083,7 @@ BlockOPoints::BlockOPoints(SharedVector x, SharedVector y, SharedVector z, Share
     bound();
     populate();
 }
-BlockOPoints::BlockOPoints(size_t index, size_t npoints, double *x, double *y, double *z, double *w,
+BlockOPoints::BlockOPoints(size_t index, size_t npoints, double* x, double* y, double* z, double* w,
                            std::shared_ptr<BasisExtents> extents)
     : index_(index), npoints_(npoints), x_(x), y_(y), z_(z), w_(w), extents_(extents) {
     bound();
@@ -4119,7 +4119,7 @@ void BlockOPoints::populate() {
     functions_local_to_global_.clear();
 
     std::shared_ptr<BasisSet> primary = extents_->basis();
-    double *Rp = extents_->shell_extents()->pointer();
+    double* Rp = extents_->shell_extents()->pointer();
 
     // Determine significant shell/functions
     for (int P = 0; P < primary->nshell(); P++) {
@@ -4182,7 +4182,7 @@ void BlockOPoints::print(std::string out, int print) {
         printer->Printf("\n\n");
     }
 }
-DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options &options)
+DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options)
     : MolecularGrid(molecule), primary_(primary), options_(options) {
     std::map<std::string, std::string> str_opts_map;
     std::map<std::string, int> int_opts_map;
@@ -4190,14 +4190,15 @@ DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> p
     buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
 }
 DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
-                 std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, Options &options)
+                 std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map,
+                 Options& options)
     : MolecularGrid(molecule), primary_(primary), options_(options) {
     std::map<std::string, double> float_opts_map;
     buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
 }
 DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
                  std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map,
-                 std::map<std::string, double> float_opts_map, Options &options)
+                 std::map<std::string, double> float_opts_map, Options& options)
     : MolecularGrid(molecule), primary_(primary), options_(options) {
     buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
 }
@@ -4236,11 +4237,8 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     }
 
     std::map<std::string, double> full_float_options;
-    std::vector<std::string> float_keys = {"DFT_BS_RADIUS_ALPHA",
-                                           "DFT_PRUNING_ALPHA",
-                                           "DFT_WEIGHTS_TOLERANCE",
-                                           "DFT_BLOCK_MAX_RADIUS",
-                                           "DFT_BASIS_TOLERANCE"};
+    std::vector<std::string> float_keys = {"DFT_BS_RADIUS_ALPHA", "DFT_PRUNING_ALPHA", "DFT_WEIGHTS_TOLERANCE",
+                                           "DFT_BLOCK_MAX_RADIUS", "DFT_BASIS_TOLERANCE"};
     for (const auto& key : float_keys) {
         if (float_opts_map.find(key) != float_opts_map.end()) {
             full_float_options[key] = float_opts_map[key];
@@ -4315,7 +4313,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
 
 // REFACTOR NOTE: PS grids are not used. Not all possible MolecularGridOptions are being set.
 PseudospectralGrid::PseudospectralGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
-                                       Options &options)
+                                       Options& options)
     : MolecularGrid(molecule), primary_(primary), filename_(""), options_(options) {
     buildGridFromOptions();
 }
@@ -4363,11 +4361,14 @@ MolecularGrid::~MolecularGrid() {
 void MolecularGrid::block(int max_points, int min_points, double max_radius) {
     std::shared_ptr<GridBlocker> blocker;
     if (options_.blockscheme == "NAIVE") {
-        blocker = std::make_shared<NaiveGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_);
+        blocker =
+            std::make_shared<NaiveGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_);
     } else if (options_.blockscheme == "OCTREE") {
-        blocker = std::make_shared<OctreeGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_);
+        blocker =
+            std::make_shared<OctreeGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_);
     } else if (options_.blockscheme == "ATOMIC") {
-        blocker = std::make_shared<AtomicGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_, molecule_, atomic_grids_);
+        blocker = std::make_shared<AtomicGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius,
+                                                      extents_, molecule_, atomic_grids_);
     }
 
     blocker->set_print(options_.print);
@@ -4433,7 +4434,7 @@ void MolecularGrid::remove_distant_points(double Rmax) {
     npoints_ = npoints2;
     atomic_grids_ = temp_grids;
     // free up allocated storage capacity.
-    for (size_t i = 0; i < atomic_grids_.size(); i++){
+    for (size_t i = 0; i < atomic_grids_.size(); i++) {
         atomic_grids_[i].shrink_to_fit();
     }
 }
@@ -4495,8 +4496,8 @@ void MolecularGrid::print_details(std::string out, int /*print*/) const {
     printer->Printf("\n");
 }
 
-GridBlocker::GridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref, double const *z_ref,
-                         double const *w_ref, const int max_points, const int min_points, const double max_radius,
+GridBlocker::GridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
+                         double const* w_ref, const int max_points, const int min_points, const double max_radius,
                          std::shared_ptr<BasisExtents> extents)
     : debug_(0),
       print_(1),
@@ -4511,8 +4512,8 @@ GridBlocker::GridBlocker(const int npoints_ref, double const *x_ref, double cons
       extents_(extents) {}
 GridBlocker::~GridBlocker() {}
 
-AtomicGridBlocker::AtomicGridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref,
-                                     double const *z_ref, double const *w_ref, const int max_points,
+AtomicGridBlocker::AtomicGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref,
+                                     double const* z_ref, double const* w_ref, const int max_points,
                                      const int min_points, const double max_radius,
                                      std::shared_ptr<BasisExtents> extents, const std::shared_ptr<Molecule> molecule,
                                      const std::vector<std::vector<MassPoint>> atomic_grids)
@@ -4573,11 +4574,10 @@ void AtomicGridBlocker::block() {
             max_functions_ = blocks_[A]->local_nbf();
         }
     }
-
 }
 
-NaiveGridBlocker::NaiveGridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref, double const *z_ref,
-                                   double const *w_ref, const int max_points, const int min_points,
+NaiveGridBlocker::NaiveGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
+                                   double const* w_ref, const int max_points, const int min_points,
                                    const double max_radius, std::shared_ptr<BasisExtents> extents)
     : GridBlocker(npoints_ref, x_ref, y_ref, z_ref, w_ref, max_points, min_points, max_radius, extents) {}
 NaiveGridBlocker::~NaiveGridBlocker() {}
@@ -4590,10 +4590,10 @@ void NaiveGridBlocker::block() {
     z_ = new double[npoints_];
     w_ = new double[npoints_];
 
-    ::memcpy((void *)x_, (void *)x_ref_, sizeof(double) * npoints_);
-    ::memcpy((void *)y_, (void *)y_ref_, sizeof(double) * npoints_);
-    ::memcpy((void *)z_, (void *)z_ref_, sizeof(double) * npoints_);
-    ::memcpy((void *)w_, (void *)w_ref_, sizeof(double) * npoints_);
+    ::memcpy((void*)x_, (void*)x_ref_, sizeof(double) * npoints_);
+    ::memcpy((void*)y_, (void*)y_ref_, sizeof(double) * npoints_);
+    ::memcpy((void*)z_, (void*)z_ref_, sizeof(double) * npoints_);
+    ::memcpy((void*)w_, (void*)w_ref_, sizeof(double) * npoints_);
 
     blocks_.clear();
     for (size_t Q = 0; Q < npoints_; Q += max_points_) {
@@ -4613,10 +4613,9 @@ void NaiveGridBlocker::block() {
             max_functions_ = blocks_[A]->local_nbf();
         }
     }
-
 }
-OctreeGridBlocker::OctreeGridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref,
-                                     double const *z_ref, double const *w_ref, const int max_points,
+OctreeGridBlocker::OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref,
+                                     double const* z_ref, double const* w_ref, const int max_points,
                                      const int min_points, const double max_radius,
                                      std::shared_ptr<BasisExtents> extents)
     : GridBlocker(npoints_ref, x_ref, y_ref, z_ref, w_ref, max_points, min_points, max_radius, extents) {}
@@ -4628,10 +4627,10 @@ void OctreeGridBlocker::block() {
     max_points_ = tol_max_points_;
     max_functions_ = extents_->basis()->nbf();
 
-    double const *x = x_ref_;
-    double const *y = y_ref_;
-    double const *z = z_ref_;
-    double const *w = w_ref_;
+    double const* x = x_ref_;
+    double const* y = y_ref_;
+    double const* z = z_ref_;
+    double const* w = w_ref_;
 
     std::vector<std::vector<int>> active_tree(1);
     std::vector<std::vector<int>> completed_tree(0);
@@ -4651,7 +4650,7 @@ void OctreeGridBlocker::block() {
     }
     int tree_level = 0;
 
-    double const *dims[3];
+    double const* dims[3];
     dims[0] = x;
     dims[1] = y;
     dims[2] = z;
@@ -4661,7 +4660,7 @@ void OctreeGridBlocker::block() {
         bool completed = false;
         for (int k = 0; k < 3; k++) {
             new_leaves.clear();
-            double const *X = dims[k];
+            double const* X = dims[k];
             for (size_t A = 0; A < active_tree.size(); A++) {
                 // Block to subdivide
                 std::vector<int> block = active_tree[A];
@@ -4675,7 +4674,7 @@ void OctreeGridBlocker::block() {
 
                 if (bench_) {
                     double XC[3];
-                    ::memset((void *)XC, '\0', 3 * sizeof(double));
+                    ::memset((void*)XC, '\0', 3 * sizeof(double));
                     for (size_t Q = 0; Q < block.size(); Q++) {
                         XC[0] += x[block[Q]];
                         XC[1] += y[block[Q]];
@@ -4704,7 +4703,7 @@ void OctreeGridBlocker::block() {
                     completed_tree.push_back(left);
                 } else {
                     double XC[3];
-                    ::memset((void *)XC, '\0', 3 * sizeof(double));
+                    ::memset((void*)XC, '\0', 3 * sizeof(double));
                     for (size_t Q = 0; Q < left.size(); Q++) {
                         XC[0] += x[left[Q]];
                         XC[1] += y[left[Q]];
@@ -4739,7 +4738,7 @@ void OctreeGridBlocker::block() {
                     completed_tree.push_back(right);
                 } else {
                     double XC[3];
-                    ::memset((void *)XC, '\0', 3 * sizeof(double));
+                    ::memset((void*)XC, '\0', 3 * sizeof(double));
                     for (size_t Q = 0; Q < right.size(); Q++) {
                         XC[0] += x[right[Q]];
                         XC[1] += y[right[Q]];
@@ -4891,7 +4890,7 @@ void RadialGrid::print(std::string out, int level) const {
         printer->Printf("\n");
     }
 }
-std::shared_ptr<RadialGrid> RadialGrid::build(const std::string &scheme, int npoints, double alpha, int Z) {
+std::shared_ptr<RadialGrid> RadialGrid::build(const std::string& scheme, int npoints, double alpha, int Z) {
     if (scheme == "BECKE") {
         return RadialGrid::build_becke(npoints, alpha, Z);
     } else if (scheme == "TREUTLER") {
@@ -4900,9 +4899,9 @@ std::shared_ptr<RadialGrid> RadialGrid::build(const std::string &scheme, int npo
         throw PSIEXCEPTION("RadialGrid::build: Unrecognized radial grid.");
     }
 }
-std::shared_ptr<RadialGrid> RadialGrid::build(const std::string &scheme, int npoints, double *r, double *wr,
+std::shared_ptr<RadialGrid> RadialGrid::build(const std::string& scheme, int npoints, double* r, double* wr,
                                               double alpha, int Z) {
-    RadialGrid *grid = new RadialGrid();
+    RadialGrid* grid = new RadialGrid();
 
     grid->scheme_ = scheme;
     grid->npoints_ = npoints;
@@ -4916,7 +4915,7 @@ std::shared_ptr<RadialGrid> RadialGrid::build(const std::string &scheme, int npo
     return std::shared_ptr<RadialGrid>(grid);
 }
 std::shared_ptr<RadialGrid> RadialGrid::build_becke(int npoints, double alpha, int Z) {
-    RadialGrid *grid = new RadialGrid();
+    RadialGrid* grid = new RadialGrid();
 
     grid->scheme_ = "BECKE";
     grid->npoints_ = npoints;
@@ -4937,7 +4936,7 @@ std::shared_ptr<RadialGrid> RadialGrid::build_becke(int npoints, double alpha, i
     return std::shared_ptr<RadialGrid>(grid);
 }
 std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha, int Z) {
-    RadialGrid *grid = new RadialGrid();
+    RadialGrid* grid = new RadialGrid();
 
     // Treutler/Ahlrichs 1995 mapping parameters
     // clang-format off
@@ -4980,12 +4979,10 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
 
 /// Grid npoints to order map
 std::map<int, int> SphericalGrid::lebedev_mapping_ = {
-    {6,1}, {14,2}, {26,3}, {38,4}, {50,5}, {74,6}, {86,7}, {110,8}, {146,9},
-    {170,10}, {194,11}, {230,12}, {266,13}, {302,14}, {350,15}, {434,17},
-    {590,20}, {770,23}, {974,26}, {1202,29}, {1454,32}, {1730,35}, {2030,38},
-    {2354,41}, {2702,44}, {3074,47}, {3470,50}, {3890,53}, {4334,56},
-    {4802,59}, {5294,62}, {5810,65}
-};
+    {6, 1},     {14, 2},    {26, 3},    {38, 4},    {50, 5},    {74, 6},    {86, 7},    {110, 8},
+    {146, 9},   {170, 10},  {194, 11},  {230, 12},  {266, 13},  {302, 14},  {350, 15},  {434, 17},
+    {590, 20},  {770, 23},  {974, 26},  {1202, 29}, {1454, 32}, {1730, 35}, {2030, 38}, {2354, 41},
+    {2702, 44}, {3074, 47}, {3470, 50}, {3890, 53}, {4334, 56}, {4802, 59}, {5294, 62}, {5810, 65}};
 
 SphericalGrid::SphericalGrid() : npoints_(0) {}
 SphericalGrid::~SphericalGrid() {
@@ -5023,8 +5020,8 @@ void SphericalGrid::build_angles() {
         theta_[i] = acos(zv / sqrt(xv * xv + yv * yv + zv * zv));
     }
 }
-std::shared_ptr<SphericalGrid> SphericalGrid::build(const std::string &scheme, int npoints, const MassPoint *points) {
-    auto *s = new SphericalGrid();
+std::shared_ptr<SphericalGrid> SphericalGrid::build(const std::string& scheme, int npoints, const MassPoint* points) {
+    auto* s = new SphericalGrid();
     s->scheme_ = scheme;
     if (lebedev_mapping_.count(npoints)) {
         s->order_ = lebedev_mapping_.at(npoints);

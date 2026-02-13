@@ -81,7 +81,9 @@ size_t DiskDFJK::memory_estimate() {
     size_t three_memory = ((size_t)auxiliary_->nbf()) * n_function_pairs_;
     size_t two_memory = 2 * ((size_t)auxiliary_->nbf()) * auxiliary_->nbf();
 
-    if (do_wK_) { three_memory *= 3; }
+    if (do_wK_) {
+        three_memory *= 3;
+    }
 
     size_t memory = three_memory + two_memory;
     memory += memory_overhead();
@@ -294,7 +296,7 @@ bool DiskDFJK::is_core() {
     if (subalgo_ == "AUTO") {
         do_core = memory_estimate() < memory_;
 
-    // .. or forcibly disable do_core if user specifies ...
+        // .. or forcibly disable do_core if user specifies ...
     } else if (subalgo_ == "OUT_OF_CORE") {
         if (print_ > 0) {
             outfile->Printf("  SCF_SUBTYPE = OUT_OF_CORE selected. Out-of-core DISK_DF algorithm will be used.\n\n");
@@ -302,10 +304,12 @@ bool DiskDFJK::is_core() {
 
         do_core = false;
 
-   // .. or force do_core if user specifies
+        // .. or force do_core if user specifies
     } else if (subalgo_ == "INCORE") {
         if (memory_estimate() > memory_) {
-            throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
+            throw PSIEXCEPTION(
+                "SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount "
+                "of memory allocated to Psi4 or allow for out-of-core to be used.\n");
         } else {
             if (print_ > 0) {
                 outfile->Printf("  SCF_SUBTYPE=INCORE selected. In-core DISK_DF algorithm will be used.\n\n");
@@ -313,7 +317,8 @@ bool DiskDFJK::is_core() {
             do_core = true;
         }
     } else {
-        throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The choices for SCF_SUBTYPE are AUTO, INCORE, and OUT_OF_CORE.");
+        throw PSIEXCEPTION(
+            "Invalid SCF_SUBTYPE option! The choices for SCF_SUBTYPE are AUTO, INCORE, and OUT_OF_CORE.");
     }
 
     return do_core;
@@ -469,7 +474,6 @@ void DiskDFJK::preiterations() {
 }
 
 void DiskDFJK::compute_JK() {
-
     // zero out J, K, and wK matrices
     zero();
 
@@ -520,7 +524,8 @@ void DiskDFJK::initialize_JK_core() {
     // Try to load
     if (df_ints_io_ == "LOAD") {
         psio_->open(unit_, PSIO_OPEN_OLD);
-        psio_->read_entry(unit_, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
+        psio_->read_entry(unit_, "(Q|mn) Integrals", (char*)Qmnp[0],
+                          sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
         psio_->close(unit_, 1);
         return;
     }
@@ -539,30 +544,30 @@ void DiskDFJK::initialize_JK_core() {
 
     timer_on("JK: (A|mn)");
 
-// We are calculting integrals of (p|mn). Note that mn is on the ket side.
-// Integrals may be vectorized over the ket shells, so we want more of the
-// work to be on that side.
-//
-// Variable description:
-// mn = mu nu (in old terminology)
-// p_block_idx = index of what block of p we are doing
-// mn_block_idx = index of what block of mn we are doing
-// p_block = The block of p we are doing (a vector of std::pair<int, int>)
-// mn_block = The block of mn we are doing
-// mn_pair = a single pair of indicies, corresponding to the indicies of the
-//           m and n shells in the primary basis set
-// p_pair = a single pair of indicies, corresponding to the indicies of the
-//          p shell in the auxiliary basis set
-// num_m, num_n, num_p = number of basis functions in shell m, n, and p
-// m_start, n_start, p_start = starting index of the basis functions of this shell
-//                             relative to the beginning of their corresponding basis
-//                             sets.
-// im, in, ip = indices for looping over all the basis functions of the shells
-// im_idx, in_idx, ip_idx = indices of a particular basis function in a shell
-//                          relative to the start of the basis set
-//                          (ie, m_start + im)
-// sfp = screen function pair. The actual output index, taking into account
-//                             whether or not functions have been screened.
+    // We are calculting integrals of (p|mn). Note that mn is on the ket side.
+    // Integrals may be vectorized over the ket shells, so we want more of the
+    // work to be on that side.
+    //
+    // Variable description:
+    // mn = mu nu (in old terminology)
+    // p_block_idx = index of what block of p we are doing
+    // mn_block_idx = index of what block of mn we are doing
+    // p_block = The block of p we are doing (a vector of std::pair<int, int>)
+    // mn_block = The block of mn we are doing
+    // mn_pair = a single pair of indicies, corresponding to the indicies of the
+    //           m and n shells in the primary basis set
+    // p_pair = a single pair of indicies, corresponding to the indicies of the
+    //          p shell in the auxiliary basis set
+    // num_m, num_n, num_p = number of basis functions in shell m, n, and p
+    // m_start, n_start, p_start = starting index of the basis functions of this shell
+    //                             relative to the beginning of their corresponding basis
+    //                             sets.
+    // im, in, ip = indices for looping over all the basis functions of the shells
+    // im_idx, in_idx, ip_idx = indices of a particular basis function in a shell
+    //                          relative to the start of the basis set
+    //                          (ie, m_start + im)
+    // sfp = screen function pair. The actual output index, taking into account
+    //                             whether or not functions have been screened.
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
     for (size_t mn_block_idx = 0; mn_block_idx < mn_blocks.size(); mn_block_idx++) {
@@ -571,7 +576,7 @@ void DiskDFJK::initialize_JK_core() {
 #else
         const int rank = 0;
 #endif
-        const auto &buffers = eri_[rank]->buffers();
+        const auto& buffers = eri_[rank]->buffers();
         const auto& mn_block = mn_blocks[mn_block_idx];
 
         // loop over all the blocks of P
@@ -603,8 +608,8 @@ void DiskDFJK::initialize_JK_core() {
                         for (int in = 0; in < num_n; ++in) {
                             const int in_idx = n_start + in;
                             const int imn_idx = im * num_n + in;
-                            const int sfp_idx = im_idx > in_idx ? (im_idx * (im_idx + 1)) / 2 + in_idx :
-                                               (in_idx * (in_idx + 1))/2 + im_idx;
+                            const int sfp_idx = im_idx > in_idx ? (im_idx * (im_idx + 1)) / 2 + in_idx
+                                                                : (in_idx * (in_idx + 1)) / 2 + im_idx;
 
                             int sfp;
 
@@ -615,7 +620,6 @@ void DiskDFJK::initialize_JK_core() {
                                     Qmnp[ip_idx][sfp] = buffer[ip * num_mn + imn_idx];
                                 }
                             }
-
                         }
                     }
 
@@ -667,7 +671,8 @@ void DiskDFJK::initialize_JK_core() {
 
     if (df_ints_io_ == "SAVE") {
         psio_->open(unit_, PSIO_OPEN_NEW);
-        psio_->write_entry(unit_, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
+        psio_->write_entry(unit_, "(Q|mn) Integrals", (char*)Qmnp[0],
+                           sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
         psio_->close(unit_, 1);
     }
 }
@@ -916,7 +921,7 @@ void DiskDFJK::initialize_JK_disk() {
 #ifdef _OPENMP
             rank = omp_get_thread_num();
 #endif
-            const auto &buffers = eri_[rank]->buffers();
+            const auto& buffers = eri_[rank]->buffers();
             int MU = schwarz_shell_pairs[MUNU + 0].first;
             int NU = schwarz_shell_pairs[MUNU + 0].second;
             int nummu = primary_->shell(MU).nfunction();
@@ -927,13 +932,12 @@ void DiskDFJK::initialize_JK_disk() {
                 int nump = auxiliary_->shell(P).nfunction();
                 int p = auxiliary_->shell(P).function_index();
                 eri_[rank]->compute_shell(P, 0, MU, NU);
-                const auto *buffer = buffers[0];
+                const auto* buffer = buffers[0];
                 for (int dm = 0; dm < nummu; dm++) {
                     int omu = mu + dm;
                     for (int dn = 0; dn < numnu; dn++) {
                         int onu = nu + dn;
-                        size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
-                                                  onu * (onu + 1) / 2 + omu;
+                        size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu : onu * (onu + 1) / 2 + omu;
                         if (schwarz_fun_pairs_r[addr] >= 0) {
                             int delta = schwarz_fun_pairs_r[addr] - mn_start_val;
                             for (int dp = 0; dp < nump; dp++) {
@@ -1010,7 +1014,8 @@ void DiskDFJK::initialize_wK_core() {
     // Try to load
     if (df_ints_io_ == "LOAD") {
         psio_->open(unit_, PSIO_OPEN_OLD);
-        psio_->read_entry(unit_, "Left (Q|w|mn) Integrals", (char*)Qmnp[0], sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
+        psio_->read_entry(unit_, "Left (Q|w|mn) Integrals", (char*)Qmnp[0],
+                          sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
         psio_->read_entry(unit_, "Right (Q|w|mn) Integrals", (char*)Qmn2p[0],
                           sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
         psio_->close(unit_, 1);
@@ -1027,8 +1032,8 @@ void DiskDFJK::initialize_wK_core() {
 
     timer_on("JK: (A|mn)^L");
 
-#pragma omp parallel for private(numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, \
-                                 rank) schedule(dynamic) num_threads(nthread)
+#pragma omp parallel for private(numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule(dynamic) \
+    num_threads(nthread)
     for (MU = 0; MU < primary_->nshell(); ++MU) {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -1042,18 +1047,16 @@ void DiskDFJK::initialize_wK_core() {
                 for (Pshell = 0; Pshell < auxiliary_->nshell(); ++Pshell) {
                     numP = auxiliary_->shell(Pshell).nfunction();
                     eri_[rank]->compute_shell(Pshell, 0, MU, NU);
-                    const auto *buffer = buffers[0];
+                    const auto* buffer = buffers[0];
                     for (mu = 0; mu < nummu; ++mu) {
                         omu = primary_->shell(MU).function_index() + mu;
                         for (nu = 0; nu < numnu; ++nu) {
                             onu = primary_->shell(NU).function_index() + nu;
-                            size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
-                                                      onu * (onu + 1) / 2 + omu;
+                            size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu : onu * (onu + 1) / 2 + omu;
                             if (schwarz_fun_pairs[addr] > -1) {
                                 for (P = 0; P < numP; ++P) {
                                     PHI = auxiliary_->shell(Pshell).function_index() + P;
-                                    Qmn2p[PHI][schwarz_fun_pairs[addr]] =
-                                        buffer[P * nummu * numnu + mu * numnu + nu];
+                                    Qmn2p[PHI][schwarz_fun_pairs[addr]] = buffer[P * nummu * numnu + mu * numnu + nu];
                                 }
                             }
                         }
@@ -1079,7 +1082,8 @@ void DiskDFJK::initialize_wK_core() {
     timer_on("JK: (Q|mn)^L");
 
     // Fitting in one GEMM (being a clever bastard)
-    C_DGEMM('N', 'N', naux, n_function_pairs_, naux, 1.0, Jinvp[0], naux, Qmn2p[0], n_function_pairs_, 0.0, Qmnp[0], n_function_pairs_);
+    C_DGEMM('N', 'N', naux, n_function_pairs_, naux, 1.0, Jinvp[0], naux, Qmn2p[0], n_function_pairs_, 0.0, Qmnp[0],
+            n_function_pairs_);
 
     timer_off("JK: (Q|mn)^L");
 
@@ -1087,8 +1091,8 @@ void DiskDFJK::initialize_wK_core() {
 
     timer_on("JK: (A|mn)^R");
 
-#pragma omp parallel for private(numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, \
-                                 rank) schedule(dynamic) num_threads(nthread)
+#pragma omp parallel for private(numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule(dynamic) \
+    num_threads(nthread)
     for (MU = 0; MU < primary_->nshell(); ++MU) {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -1102,18 +1106,16 @@ void DiskDFJK::initialize_wK_core() {
                 for (Pshell = 0; Pshell < auxiliary_->nshell(); ++Pshell) {
                     numP = auxiliary_->shell(Pshell).nfunction();
                     erf_eri_[rank]->compute_shell(Pshell, 0, MU, NU);
-                    const auto *buffer = buffers[0];
+                    const auto* buffer = buffers[0];
                     for (mu = 0; mu < nummu; ++mu) {
                         omu = primary_->shell(MU).function_index() + mu;
                         for (nu = 0; nu < numnu; ++nu) {
                             onu = primary_->shell(NU).function_index() + nu;
-                            size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
-                                                      onu * (onu + 1) / 2 + omu;
+                            size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu : onu * (onu + 1) / 2 + omu;
                             if (schwarz_fun_pairs[addr] > -1) {
                                 for (P = 0; P < numP; ++P) {
                                     PHI = auxiliary_->shell(Pshell).function_index() + P;
-                                    Qmn2p[PHI][schwarz_fun_pairs[addr]] =
-                                        buffer[P * nummu * numnu + mu * numnu + nu];
+                                    Qmn2p[PHI][schwarz_fun_pairs[addr]] = buffer[P * nummu * numnu + mu * numnu + nu];
                                 }
                             }
                         }
@@ -1128,7 +1130,8 @@ void DiskDFJK::initialize_wK_core() {
     // Try to save
     if (df_ints_io_ == "SAVE") {
         psio_->open(unit_, PSIO_OPEN_OLD);
-        psio_->write_entry(unit_, "Left (Q|w|mn) Integrals", (char*)Qmnp[0], sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
+        psio_->write_entry(unit_, "Left (Q|w|mn) Integrals", (char*)Qmnp[0],
+                           sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
         psio_->write_entry(unit_, "Right (Q|w|mn) Integrals", (char*)Qmn2p[0],
                            sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
         psio_->write_entry(unit_, "Omega", (char*)&omega_, sizeof(double));
@@ -1393,13 +1396,12 @@ void DiskDFJK::initialize_wK_disk() {
                 int nump = auxiliary_->shell(P).nfunction();
                 int p = auxiliary_->shell(P).function_index();
                 eri_[rank]->compute_shell(P, 0, MU, NU);
-                const auto *buffer = buffers[0];
+                const auto* buffer = buffers[0];
                 for (int dm = 0; dm < nummu; dm++) {
                     int omu = mu + dm;
                     for (int dn = 0; dn < numnu; dn++) {
                         int onu = nu + dn;
-                        size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
-                                                  onu * (onu + 1) / 2 + omu;
+                        size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu : onu * (onu + 1) / 2 + omu;
                         if (schwarz_fun_pairs_r[addr] >= 0) {
                             int delta = schwarz_fun_pairs_r[addr] - mn_start_val;
                             for (int dp = 0; dp < nump; dp++) {
@@ -1492,7 +1494,7 @@ void DiskDFJK::initialize_wK_disk() {
 #ifdef _OPENMP
             thread = omp_get_thread_num();
 #endif
-            const auto &buffers = erf_eri_[thread]->buffers();
+            const auto& buffers = erf_eri_[thread]->buffers();
             int Q = QMN / npairs + Qstart;
             int MN = QMN % npairs;
 
@@ -1509,7 +1511,7 @@ void DiskDFJK::initialize_wK_disk() {
             int sn = primary_->shell(N).function_index();
 
             erf_eri_[thread]->compute_shell(Q, 0, M, N);
-            const auto *buffer = buffers[0];
+            const auto* buffer = buffers[0];
 
             for (int om = 0; om < nm; om++) {
                 for (int on = 0; on < nn; on++) {
@@ -1531,8 +1533,8 @@ void DiskDFJK::initialize_wK_disk() {
         // Dump block to disk
         timer_on("JK: (Q|mn)^R Write");
 
-        psio_->write(unit_, "Right (Q|w|mn) Integrals", (char*)Amn2p[0], sizeof(double) * nrows * n_function_pairs_, next_AIA,
-                     &next_AIA);
+        psio_->write(unit_, "Right (Q|w|mn) Integrals", (char*)Amn2p[0], sizeof(double) * nrows * n_function_pairs_,
+                     next_AIA, &next_AIA);
 
         timer_off("JK: (Q|mn)^R Write");
     }
@@ -1607,7 +1609,7 @@ void DiskDFJK::rebuild_wK_disk() {
 #ifdef _OPENMP
             thread = omp_get_thread_num();
 #endif
-            const auto &buffers = erf_eri_[thread]->buffers();
+            const auto& buffers = erf_eri_[thread]->buffers();
             int Q = QMN / npairs + Qstart;
             int MN = QMN % npairs;
 
@@ -1624,7 +1626,7 @@ void DiskDFJK::rebuild_wK_disk() {
             int sn = primary_->shell(N).function_index();
 
             erf_eri_[thread]->compute_shell(Q, 0, M, N);
-            const auto *buffer = buffers[0];
+            const auto* buffer = buffers[0];
 
             for (int om = 0; om < nm; om++) {
                 for (int on = 0; on < nn; on++) {
@@ -1646,8 +1648,8 @@ void DiskDFJK::rebuild_wK_disk() {
         // Dump block to disk
         timer_on("JK: (Q|mn)^R Write");
 
-        psio_->write(unit_, "Right (Q|w|mn) Integrals", (char*)Amn2p[0], sizeof(double) * nrows * n_function_pairs_, next_AIA,
-                     &next_AIA);
+        psio_->write(unit_, "Right (Q|w|mn) Integrals", (char*)Amn2p[0], sizeof(double) * nrows * n_function_pairs_,
+                     next_AIA, &next_AIA);
 
         timer_off("JK: (Q|mn)^R Write");
     }
@@ -1679,7 +1681,8 @@ void DiskDFJK::manage_JK_disk() {
         psio_address addr = psio_get_address(PSIO_ZERO, (Q * (size_t)n_function_pairs_) * sizeof(double));
 
         timer_on("JK: (Q|mn) Read");
-        psio_->read(unit_, "(Q|mn) Integrals", (char*)(Qmn_->pointer()[0]), sizeof(double) * naux * n_function_pairs_, addr, &addr);
+        psio_->read(unit_, "(Q|mn) Integrals", (char*)(Qmn_->pointer()[0]), sizeof(double) * naux * n_function_pairs_,
+                    addr, &addr);
         timer_off("JK: (Q|mn) Read");
 
         if (do_J_) {
@@ -1718,15 +1721,15 @@ void DiskDFJK::manage_wK_disk() {
         psio_address addr = psio_get_address(PSIO_ZERO, (Q * (size_t)n_function_pairs_) * sizeof(double));
 
         timer_on("JK: (Q|mn)^L Read");
-        psio_->read(unit_, "Left (Q|w|mn) Integrals", (char*)(Qlmn_->pointer()[0]), sizeof(double) * naux * n_function_pairs_, addr,
-                    &addr);
+        psio_->read(unit_, "Left (Q|w|mn) Integrals", (char*)(Qlmn_->pointer()[0]),
+                    sizeof(double) * naux * n_function_pairs_, addr, &addr);
         timer_off("JK: (Q|mn)^L Read");
 
         addr = psio_get_address(PSIO_ZERO, (Q * (size_t)n_function_pairs_) * sizeof(double));
 
         timer_on("JK: (Q|mn)^R Read");
-        psio_->read(unit_, "Right (Q|w|mn) Integrals", (char*)(Qrmn_->pointer()[0]), sizeof(double) * naux * n_function_pairs_, addr,
-                    &addr);
+        psio_->read(unit_, "Right (Q|w|mn) Integrals", (char*)(Qrmn_->pointer()[0]),
+                    sizeof(double) * naux * n_function_pairs_, addr, &addr);
         timer_off("JK: (Q|mn)^R Read");
 
         timer_on("JK: wK");

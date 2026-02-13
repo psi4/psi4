@@ -32,20 +32,20 @@
 #include <vector>
 
 #ifdef USING_gauxc
-  #include <gauxc/types.hpp>
-  #include <gauxc/util/environment.hpp>
+#include <gauxc/types.hpp>
+#include <gauxc/util/environment.hpp>
 
-  #include <gauxc/xc_integrator.hpp>
-  #include <gauxc/xc_integrator/impl.hpp>
-  #include <gauxc/xc_integrator/integrator_factory.hpp>
+#include <gauxc/xc_integrator.hpp>
+#include <gauxc/xc_integrator/impl.hpp>
+#include <gauxc/xc_integrator/integrator_factory.hpp>
 
-  #include <gauxc/molgrid/defaults.hpp>
+#include <gauxc/molgrid/defaults.hpp>
 
-  #include <gauxc/molecular_weights.hpp>
+#include <gauxc/molecular_weights.hpp>
 
-  #include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Core>
 
-  #include <optional>
+#include <optional>
 #endif
 
 #include "psi4/pragma.h"
@@ -82,7 +82,6 @@ class DFTGrid;
  */
 class PSI_API SplitJK {
    protected:
-
     /// The number of threads to be used for integral computation
     int nthreads_;
     /// Options object
@@ -118,8 +117,8 @@ class PSI_API SplitJK {
     /// Build either the coulomb (J) matrix or the exchange (K) matrix
     /// using a given algorithm
     virtual void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& G_comp,
-         std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) = 0;
+                                   std::vector<std::shared_ptr<Matrix> >& G_comp,
+                                   std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) = 0;
 
     // => Knobs <= //
 
@@ -129,24 +128,24 @@ class PSI_API SplitJK {
     int get_bench() const { return bench_; }
 
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     virtual void print_header() const = 0;
 
     /**
-    * Return number of ERI shell quartets computed during the SplitJK build process.
-    */
+     * Return number of ERI shell quartets computed during the SplitJK build process.
+     */
     virtual size_t num_computed_shells();
 
     /**
-    * print name of method
-    */
+     * print name of method
+     */
     virtual std::string name() = 0;
 
     /**
-    * Method-specific knobs, if necessary
-    */
+     * Method-specific knobs, if necessary
+     */
 };
 
 // ==> Start SplitJK Coulomb (J) Algorithms here <== //
@@ -175,25 +174,24 @@ class PSI_API DirectDFJ : public SplitJK {
     /// Destructor
     ~DirectDFJ() override;
 
-    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& G_comp,
-         std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
+    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D, std::vector<std::shared_ptr<Matrix> >& G_comp,
+                           std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
 
     // => Knobs <= //
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     void print_header() const override;
 
     /**
-    * Return number of ERI shell quartets computed during the SplitJK build process.
-    */
+     * Return number of ERI shell quartets computed during the SplitJK build process.
+     */
     size_t num_computed_shells() override;
 
     /**
-    * print name of method
-    */
+     * print name of method
+     */
     std::string name() override { return "DF-DirJ"; }
 };
 
@@ -226,26 +224,25 @@ class PSI_API LinK : public SplitJK {
     ~LinK() override;
 
     /// Build the exchange (K) matrix using LinK
-    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& G_comp,
-         std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
+    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D, std::vector<std::shared_ptr<Matrix> >& G_comp,
+                           std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
 
     // => Knobs <= //
 
     /**
-    * Print header information regarding SplitJK
-    * type on output file
-    */
+     * Print header information regarding SplitJK
+     * type on output file
+     */
     void print_header() const override;
 
     /**
-    * Return number of ERI shell quartets computed during the SplitJK build process.
-    */
+     * Return number of ERI shell quartets computed during the SplitJK build process.
+     */
     size_t num_computed_shells() override;
 
     /**
-    * print name of method
-    */
+     * print name of method
+     */
     std::string name() override { return "LinK"; }
 };
 
@@ -255,7 +252,6 @@ class PSI_API LinK : public SplitJK {
  * doi: 10.1016/j.chemphys.2008.10.036
  */
 class PSI_API COSK : public SplitJK {
-
     // => Semi-Numerical Stuff <= //
 
     /// COSX grids
@@ -295,25 +291,24 @@ class PSI_API COSK : public SplitJK {
     /// Build the exchange (K) matrix using COSX
     /// primary reference is https://doi.org/10.1016/j.chemphys.2008.10.036
     /// overlap fitting is discussed in https://doi.org/10.1063/1.3646921
-    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& G_comp,
-         std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
+    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D, std::vector<std::shared_ptr<Matrix> >& G_comp,
+                           std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
 
     // => Knobs <= //
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     void print_header() const override;
 
     /**
-    * Return number of ERI shell quartets computed during the SplitJK build process.
-    */
+     * Return number of ERI shell quartets computed during the SplitJK build process.
+     */
     size_t num_computed_shells() override;
 
     /**
-    * print name of method
-    */
+     * print name of method
+     */
     std::string name() override { return "COSX"; }
 
     // setter/getter for the COSX grid used for this SCF iteration
@@ -321,23 +316,22 @@ class PSI_API COSK : public SplitJK {
     std::string get_grid() { return current_grid_; };
 };
 
-
 /**
- * @brief constructs the K matrix using the GauXC implementation of the 
- * seminumerical Linear Exchange (sn-LinK) algorithm, 
- * doi: https://doi.org/10.1063/5.0151070 
+ * @brief constructs the K matrix using the GauXC implementation of the
+ * seminumerical Linear Exchange (sn-LinK) algorithm,
+ * doi: https://doi.org/10.1063/5.0151070
  */
 class PSI_API snLinK : public SplitJK {
     // => general Psi4 settings <= //
     // are we doing an incremental Fock build this iteration?
     bool incfock_iter_;
 
-  #ifdef USING_gauxc
+#ifdef USING_gauxc
     // use Eigen for matrix inputs to GauXC
     // perhaps this can be changed later
     using matrix_type = Eigen::MatrixXd;
 
-    // => Cartesian-Spherical Transformation stuff <= // 
+    // => Cartesian-Spherical Transformation stuff <= //
     /// The AO->CartAO transformation matrix, which is used for transforming
     /// matrices between pure and Cartesian representations.
     SharedMatrix sph_to_cart_matrix_;
@@ -351,18 +345,18 @@ class PSI_API snLinK : public SplitJK {
 
     // => Semi-Numerical Stuff <= //
     // are we running snLinK on GPUs?
-    bool use_gpu_; 
+    bool use_gpu_;
     // what grid pruning scheme is being used?
     std::string pruning_scheme_;
     // what radial quadrature scheme is being used?
     std::string radial_scheme_;
     // how many radial points for the grid?
-    size_t radial_points_; 
+    size_t radial_points_;
     // how many spherical/angular points for the grid?
-    size_t spherical_points_; 
+    size_t spherical_points_;
     // basis cutoff
     double basis_tol_;
-   
+
     /// Factory for generating GauXC "Load Balancer" objects
     std::unique_ptr<GauXC::LoadBalancerFactory> gauxc_load_balancer_factory_;
 
@@ -373,26 +367,27 @@ class PSI_API snLinK : public SplitJK {
     GauXC::IntegratorSettingsSNLinK integrator_settings_;
     std::unique_ptr<GauXC::XCIntegratorFactory<matrix_type> > integrator_factory_;
     std::shared_ptr<GauXC::XCIntegrator<matrix_type> > integrator_;
-  
-    // => Psi4 -> GauXC conversion functions <= // 
+
+    // => Psi4 -> GauXC conversion functions <= //
     GauXC::Molecule psi4_to_gauxc_molecule(std::shared_ptr<Molecule> psi4_molecule);
-    template<typename T> GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset, double basis_tol, bool force_cartesian);
+    template <typename T>
+    GauXC::BasisSet<T> psi4_to_gauxc_basisset(std::shared_ptr<BasisSet> psi4_basisset, double basis_tol,
+                                              bool force_cartesian);
 
     // => Psi4 -> GauXC enum mappings <= //
-    std::tuple<
-        std::unordered_map<std::string, GauXC::PruningScheme>, 
-        std::unordered_map<std::string, GauXC::RadialQuad> 
-    > generate_enum_mappings();
-    
+    std::tuple<std::unordered_map<std::string, GauXC::PruningScheme>,
+               std::unordered_map<std::string, GauXC::RadialQuad> >
+    generate_enum_mappings();
+
     // => Other useful stuff <= //
-    /// Eigen matrix printout format    
+    /// Eigen matrix printout format
     Eigen::IOFormat format_;
 
     // maximum supported AM for current GauXC instance
     int gauxc_max_am_;
-  #endif
+#endif
 
-  public:
+   public:
     // => Constructors < = //
 
     /**
@@ -406,38 +401,35 @@ class PSI_API snLinK : public SplitJK {
     /// Destructor
     ~snLinK() override;
 
-    /// Build the exchange (K) matrix using sn-LinK 
-    /// primary reference is https://doi.org/10.1063/5.0151070 
-    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& G_comp,
-         std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
+    /// Build the exchange (K) matrix using sn-LinK
+    /// primary reference is https://doi.org/10.1063/5.0151070
+    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D, std::vector<std::shared_ptr<Matrix> >& G_comp,
+                           std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
 
     // => Knobs <= //
     /**
-    * Print header information regarding JK
-    * type on output file
-    */
+     * Print header information regarding JK
+     * type on output file
+     */
     void print_header() const override;
 
     /**
-    * print name of method
-    */
+     * print name of method
+     */
     std::string name() override { return "sn-LinK"; }
 
     // setters and getters
     void set_incfock_iter(bool incfock_iter) { incfock_iter_ = incfock_iter; }
 
     int get_max_am() {
-      #ifdef USING_gauxc
+#ifdef USING_gauxc
         return gauxc_max_am_;
-      #else
+#else
         throw PSIEXCEPTION("Psi4 is not installed with GauXC support!");
-      #endif
+#endif
     }
 };
 
-}
+}  // namespace psi
 
 #endif
-
-

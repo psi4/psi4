@@ -89,7 +89,8 @@ std::shared_ptr<CGRSolver> CGRSolver::build_solver(Options& options, std::shared
     if (options["SOLVER_PRECONDITION"].has_changed()) {
         if (options.get_str("SOLVER_PRECONDITION") == "SUBSPACE") {
             outfile->Printf("  !!!Warning!!!\n");
-            outfile->Printf("  The subspace preconditioner has been broken for some time and was removed in Psi4 1.4.\n");
+            outfile->Printf(
+                "  The subspace preconditioner has been broken for some time and was removed in Psi4 1.4.\n");
             outfile->Printf("  Setting preconditioner to Jacobi instead.\n\n");
             solver->set_precondition("JACOBI");
         } else {
@@ -217,7 +218,6 @@ void CGRSolver::setup() {
             shifts_[h] = std::vector<double>(b_.size(), 0.0);
         }
     }
-
 }
 void CGRSolver::guess() {
     for (size_t N = 0; N < b_.size(); ++N) {

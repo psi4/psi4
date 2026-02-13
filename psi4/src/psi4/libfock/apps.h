@@ -171,5 +171,5 @@ class RCPHF : public RBase {
     void add_task(const std::string& task);
 };
 
-}
+}  // namespace psi
 #endif
