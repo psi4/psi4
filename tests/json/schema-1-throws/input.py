@@ -6,7 +6,7 @@ import json
 
 # Generate JSON data
 json_data = {
-    "schema_name": "qc_schema_input",
+    "schema_name": "qcschema_input",
     "schema_version": 1,
     "molecule": {
         "schema_name": "qcschema_molecule",
@@ -30,6 +30,7 @@ json_data = {
 }
 
 # Check non-contiguous fragment throws
+# don't need run_dict=True b/c py314 returns v2 FailedOp
 json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
 psi4.compare_integers(False, json_ret.success, "JSON Failure")                           #TEST
@@ -47,7 +48,7 @@ psi4.compare_integers("dropped atoms!" in json_ret.error.error_message, True, "S
 json_data["molecule"]["symbols"] = ["O", "H", "H"]
 json_data["model"] = {"method": "SCF", "basis": "sto-3g"}
 json_data["keywords"] = {"scf_type": "super_df"}
-json_ret = psi4.schema_wrapper.run_qcschema(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data, return_dict=True)
 
-psi4.compare_integers(False, json_ret.success, "JSON Failure")                           #TEST
-psi4.compare_integers("valid choice" in json_ret.error.error_message, True, "Keyword Error")  #TEST
+psi4.compare_integers(False, json_ret["success"], "JSON Failure")                           #TEST
+psi4.compare_integers("valid choice" in json_ret["error"]["error_message"], True, "Keyword Error")  #TEST

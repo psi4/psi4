@@ -18,6 +18,13 @@ def test_psi4_basic():
     """)
 
     psi4.set_options({'basis': "cc-pVDZ"})
+
+    # schver = 2
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="scf", molecule=h2o, dtype=schver)
+    # with open(f"jatin1-{schver}.ref", 'w') as handle:
+    #     handle.write(atin.serialize("json"))
+    # assert 0
+
     psi4.energy('scf')
 
     assert psi4.compare_values(-76.0266327341067125, psi4.variable('SCF TOTAL ENERGY'), 6, 'SCF energy')
@@ -39,6 +46,13 @@ def test_psi4_cc():
 
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
         psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
+
+    # schver = 2
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="ccsd", molecule=h2o, dtype=schver)
+    # with open(f"jatin2-{schver}.ref", 'w') as handle:
+    #     # edit to driver=optimize
+    #     handle.write(atin.serialize("json"))
+    # assert 0
 
     psi4.optimize('ccsd')
 
@@ -72,6 +86,12 @@ def test_psi4_cas():
         "qc_module"       : 'detci',
         "nat_orbs"        : True})
 
+    # schver = 2
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="CISD", molecule=geom, dtype=schver)
+    # with open(f"jatin3-{schver}.ref", 'w') as handle:
+    #     handle.write(atin.serialize("json"))
+    # assert 0
+
     cisd_energy, cisd_wfn = psi4.energy("CISD", return_wfn=True)
 
     assert psi4.compare_values(-76.2198474477531, cisd_energy, 6, 'CISD Energy')
@@ -79,6 +99,13 @@ def test_psi4_cas():
     psi4.set_options({
         "restricted_docc": [1, 0, 0, 0],
         "active":          [3, 0, 1, 2]})
+
+    # schver = 2
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="casscf", molecule=geom, dtype=schver)
+    # with open(f"jatin4-{schver}.ref", 'w') as handle:
+    #     # rm ints_tol
+    #     handle.write(atin.serialize("json"))
+    # assert 0
 
     casscf_energy = psi4.energy('casscf', ref_wfn=cisd_wfn)
 
@@ -125,6 +152,12 @@ def test_psi4_dfmp2():
 
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
         psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
+    # schver = 2
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="mp2", molecule=formic_dim, function_kwargs={"bsse_type": "cp"}, dtype=schver)
+    # with open(f"jatin5-{schver}.ref", 'w') as handle:
+    #     handle.write(atin.serialize("json"))
+    # assert 0
 
     e_cp = psi4.energy('mp2', bsse_type='cp')
 
@@ -176,6 +209,13 @@ def test_psi4_sapt():
 
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
         psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
+    # schver = 2
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="sapt0", molecule=ethene_ethyne, dtype=schver)
+    # with open(f"jatin6-{schver}.ref", 'w') as handle:
+    #     # rm "wfn_qcvars_only"
+    #     handle.write(atin.serialize("json"))
+    # assert 0
 
     psi4.energy('sapt0', molecule=ethene_ethyne)
 
@@ -236,11 +276,25 @@ def test_psi4_scfproperty():
              'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
              'MULTIPOLE(5)', 'NO_OCCUPATIONS']
 
+    # schver = 2
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="properties", method="scf", molecule=ch2, dtype=schver, function_kwargs={"properties": props})
+    # with open(f"jatin7-{schver}.ref", 'w') as handle:
+    #     # add native_files and extra_infiles
+    #     handle.write(atin.serialize("json"))
+    # assert 0
+
     psi4.properties('scf', properties=props)
 
     assert psi4.compare_values(-38.91591819679808, psi4.variable("CURRENT ENERGY"), 6, "SCF energy")
     assert psi4.compare_values(ref_hf_di_au, psi4.variable('SCF DIPOLE'), 4, "SCF DIPOLE")
     assert psi4.compare_values(ref_hf_quad_au, psi4.variable('SCF QUADRUPOLE'), 4, "SCF QUADRUPOLE")
+
+    # schver = 2
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="properties", method="b3lyp", molecule=ch2, dtype=schver, function_kwargs={"properties": props})
+    # with open(f"jatin8-{schver}.ref", 'w') as handle:
+    #     # add native_files and extra_infiles
+    #     handle.write(atin.serialize("json"))
+    # assert 0
 
     psi4.properties('B3LYP', properties=props)
 

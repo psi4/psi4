@@ -37,15 +37,15 @@ import logging
 import os
 from typing import Dict, Tuple, Union
 
-from qcelemental.models import DriverEnum
+from qcelemental.models.v2 import DriverEnum
 
 from psi4 import core
 
 from . import p4util
 from .constants import pp
-from .driver_cbs import CompositeComputer, cbs_text_parser, composite_procedures
 from .driver_findif import FiniteDifferenceComputer
 from .driver_nbody import ManyBodyComputer
+from .driver_cbs import CompositeComputer, composite_procedures, cbs_text_parser
 from .driver_util import negotiate_convergence_criterion, negotiate_derivative_type
 from .task_base import AtomicComputer
 
@@ -197,7 +197,7 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
                                      **packet,
                                      mc_level_idx=mc_level_idx,
                                      findif_mode=dermode,
-                                     computer=CompositeComputer,
+                                     computer="composite",
                                      **cbsmeta,
                                      **current_findif_kwargs,
                                      **kwargs)
@@ -245,7 +245,7 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
                 f'PLANNING FD(CBS):  dermode={dermode} packet={packet} findif_kw={current_findif_kwargs} kw={kwargs}')
             plan = FiniteDifferenceComputer(**packet,
                                             findif_mode=dermode,
-                                            computer=CompositeComputer,
+                                            computer="composite",
                                             **current_findif_kwargs,
                                             **kwargs)
             return plan
