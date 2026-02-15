@@ -1517,13 +1517,15 @@ def _set_external_potentials_to_wavefunction(external_potential: Union[List, Dic
     total_ep = core.ExternalPotential()
 
     for frag, ep_spec in vep.items():
+        frag_ep = core.ExternalPotential()
+
         if "diffuse" in ep_spec:
             raise ValidationError("Diffuse charges not yet supported")
 
         if "matrix" in ep_spec:
-            raise ValidationError("Matrix potential not yet supported")
-
-        frag_ep = core.ExternalPotential()
+            matrix = core.Matrix.from_array(np.array(ep_spec["matrix"]))
+            frag_ep.setMatrix(matrix)
+            total_ep.setMatrix(matrix)
 
         if "points" in ep_spec:
             frag_ep.appendCharges(ep_spec["points"])
