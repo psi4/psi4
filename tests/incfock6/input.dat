@@ -1,0 +1,48 @@
+#! Test INCFOCK with ROKS (Restricted Open-Shell Kohn-Sham)
+#! Validates IncFock for ROKS (open-shell DFT)
+#! Uses screening=DENSITY, validates energy AND iteration count
+
+print(' INCFOCK with ROKS') #TEST
+
+molecule oxygen {
+    0 3
+    O
+}
+
+# Reference values from incfock=false, screening=density runs
+# Note: iteration count may vary by +-1 across compilers due to floating-point differences
+Eref_b3lyp = -75.066562484773
+Iref_b3lyp = 13
+Eref_camb3lyp = -75.043022167614
+Iref_camb3lyp = 14
+Itol = 1  # allowed iteration tolerance
+
+def compare_iterations(expected, computed, label):
+    """Compare iteration counts with tolerance for compiler differences."""
+    diff = abs(computed - expected)
+    if diff > Itol:
+        raise TestComparisonError(f"{label}: computed ({computed}) differs from expected ({expected}) by {diff} iterations (tolerance: {Itol})")
+    compare_integers(1, 1, label)  # Record pass in test output
+
+set {
+    basis cc-pvdz
+    scf_type direct
+    screening density
+    incfock true
+    incfock_convergence 1e-10
+    e_convergence 1e-10
+    d_convergence 1e-8
+    reference rohf
+}
+
+# ROKS B3LYP
+E, wfn = energy('b3lyp', return_wfn=True)
+compare_values(Eref_b3lyp, E, 6, 'ROKS B3LYP INCFOCK DENSITY: Energy') #TEST
+compare_iterations(Iref_b3lyp, wfn.iteration_, 'ROKS B3LYP INCFOCK DENSITY: Iterations') #TEST
+
+clean()
+
+# ROKS CAM-B3LYP
+E, wfn = energy('cam-b3lyp', return_wfn=True)
+compare_values(Eref_camb3lyp, E, 6, 'ROKS CAM-B3LYP INCFOCK DENSITY: Energy') #TEST
+compare_iterations(Iref_camb3lyp, wfn.iteration_, 'ROKS CAM-B3LYP INCFOCK DENSITY: Iterations') #TEST

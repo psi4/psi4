@@ -31,6 +31,7 @@
 
 #include <vector>
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libfock/v.h"
 #include "hf.h"
 
 namespace psi {
@@ -50,8 +51,15 @@ class ROHF : public HF {
     SharedMatrix Gb_;
     SharedMatrix Ka_;
     SharedMatrix Kb_;
+    SharedMatrix wKa_;
+    SharedMatrix wKb_;
+    SharedMatrix Va_;
+    SharedMatrix Vb_;
     SharedMatrix moFa_;
     SharedMatrix moFb_;
+
+    // DFT potential computer for exchange-correlation
+    std::shared_ptr<UV> potential_;
 
     void form_initial_F() override;
     void form_initial_C() override;
@@ -85,6 +93,7 @@ class ROHF : public HF {
     void form_D() override;
     void form_F() override;
     void form_G() override;
+    void form_V() override;
     double compute_E() override;
     void finalize() override;
 
@@ -94,7 +103,7 @@ class ROHF : public HF {
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) override;
     bool stability_analysis() override;
 
-    std::shared_ptr<VBase> V_potential() const override { return nullptr; };
+    std::shared_ptr<VBase> V_potential() const override { return potential_; };
 
     std::shared_ptr<ROHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };

@@ -209,14 +209,15 @@ def test_schwarz_vs_density_vs_none_quartets_direct():
     """)
 
     # run schwarz screening calculation
-    psi4.set_options({ 
-        "scf_type": "direct", 
-        "screening" : 'schwarz', 
+    psi4.set_options({
+        "scf_type": "direct",
+        "screening" : 'schwarz',
         "df_scf_guess" : False,
-        "integral_package": 'libint2', 
-        "ints_tolerance" : 1e-12, 
+        "integral_package": 'libint2',
+        "ints_tolerance" : 1e-12,
         "save_jk": True,
-        "bench" : 1 
+        "bench" : 1,
+        "incfock": False,
 
     })
     if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
@@ -225,14 +226,15 @@ def test_schwarz_vs_density_vs_none_quartets_direct():
     schwarz_energy, schwarz_wfn = psi4.energy('hf/DZ', return_wfn=True)
 
     # run density screening calculation
-    psi4.set_options({ 
-        "scf_type": "direct", 
-        "screening" : 'density', 
+    psi4.set_options({
+        "scf_type": "direct",
+        "screening" : 'density',
         "df_scf_guess" : False,
-        "integral_package": 'libint2', 
+        "integral_package": 'libint2',
         "ints_tolerance" : 1e-12,
         "save_jk": True,
-        "bench" : 1
+        "bench" : 1,
+        "incfock": False,
     })
     density_energy, density_wfn = psi4.energy('hf/DZ', return_wfn=True)
 
@@ -244,7 +246,8 @@ def test_schwarz_vs_density_vs_none_quartets_direct():
         "integral_package": 'libint2',
         "ints_tolerance" : 1e-12,
         "save_jk": True,
-        "bench" : 1
+        "bench" : 1,
+        "incfock": False,
     })
     none_energy, none_wfn = psi4.energy('hf/DZ', return_wfn=True)
 
@@ -285,16 +288,17 @@ def test_rhf_vs_uhf_screening():
         no_com
     """)
 
-    # run rhf calculation 
-    psi4.set_options({ 
-        "scf_type": "direct", 
-        "screening" : 'density', 
+    # run rhf calculation
+    psi4.set_options({
+        "scf_type": "direct",
+        "screening" : 'density',
         "df_scf_guess" : False,
-        "integral_package": 'libint2', 
-        "ints_tolerance" : 1e-12, 
+        "integral_package": 'libint2',
+        "ints_tolerance" : 1e-12,
         "reference" : "rhf",
         "save_jk": True,
-        "bench" : 1 
+        "bench" : 1,
+        "incfock": False,
 
     })
     if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
@@ -302,16 +306,17 @@ def test_rhf_vs_uhf_screening():
 
     rhf_energy, rhf_wfn = psi4.energy('hf/DZ', return_wfn=True)
 
-    # run uhf calculation 
-    psi4.set_options({ 
-        "scf_type": "direct", 
-        "screening" : 'density', 
+    # run uhf calculation
+    psi4.set_options({
+        "scf_type": "direct",
+        "screening" : 'density',
         "df_scf_guess" : False,
-        "integral_package": 'libint2', 
-        "ints_tolerance" : 1e-12, 
+        "integral_package": 'libint2',
+        "ints_tolerance" : 1e-12,
         "reference" : "uhf",
         "save_jk": True,
-        "bench" : 1
+        "bench" : 1,
+        "incfock": False,
 
     })
     uhf_energy, uhf_wfn = psi4.energy('hf/DZ', return_wfn=True)
@@ -332,6 +337,134 @@ def test_rhf_vs_uhf_screening():
     # actually compare results with expected values
     assert compare(computed_shells_expected, rhf_computed_shells, 'Schwarz Computed Shells Count, Cutoff 1.0e-12')
     assert compare(computed_shells_expected, uhf_computed_shells, 'Density Computed Shells Count, Cutoff 1.0e-12')
+
+
+def test_schwarz_vs_density_vs_none_quartets_direct_incfock():
+    """Checks shell quartet counts with IncFock enabled.
+    With IncFock, delta-density screening reduces computed quartets as SCF converges."""
+
+    mol = psi4.geometry("""
+        0 1
+        O  -1.551007  -0.114520   0.000000
+        H  -1.934259   0.762503   0.000000
+        H  -0.599677   0.040712   0.000000
+        O   1.350625   0.111469   0.000000
+        H   1.680398  -0.373741  -0.758561
+        H   1.680398  -0.373741   0.758561
+        symmetry c1
+        no_reorient
+        no_com
+    """)
+
+    # Reference energy from non-IncFock calculation
+    psi4.set_options({
+        "scf_type": "direct",
+        "screening" : 'schwarz',
+        "df_scf_guess" : False,
+        "integral_package": 'libint2',
+        "ints_tolerance" : 1e-12,
+        "incfock": False,
+    })
+    if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"orbital_optimizer_package": "internal"})
+    ref_energy = psi4.energy('hf/DZ')
+
+    # run schwarz screening with IncFock
+    psi4.set_options({
+        "scf_type": "direct",
+        "screening" : 'schwarz',
+        "df_scf_guess" : False,
+        "integral_package": 'libint2',
+        "ints_tolerance" : 1e-12,
+        "save_jk": True,
+        "bench" : 1,
+        "incfock": True,
+    })
+    schwarz_energy, schwarz_wfn = psi4.energy('hf/DZ', return_wfn=True)
+
+    # run density screening with IncFock
+    psi4.set_options({
+        "scf_type": "direct",
+        "screening" : 'density',
+        "df_scf_guess" : False,
+        "integral_package": 'libint2',
+        "ints_tolerance" : 1e-12,
+        "save_jk": True,
+        "bench" : 1,
+        "incfock": True,
+    })
+    density_energy, density_wfn = psi4.energy('hf/DZ', return_wfn=True)
+
+    schwarz_computed_shells = schwarz_wfn.jk().computed_shells_per_iter("Quartets")
+    density_computed_shells = density_wfn.jk().computed_shells_per_iter("Quartets")
+
+    # Energy should match reference (IncFock doesn't affect final energy)
+    assert compare_values(ref_energy, schwarz_energy, 8, 'Schwarz IncFock Energy')
+    assert compare_values(ref_energy, density_energy, 8, 'Density IncFock Energy')
+
+    # With IncFock, shell counts should generally decrease as SCF converges
+    # Check that later iterations compute fewer quartets than early iterations
+    assert schwarz_computed_shells[-1] < schwarz_computed_shells[1], 'Schwarz IncFock: shell count should decrease'
+    assert density_computed_shells[-1] < density_computed_shells[1], 'Density IncFock: shell count should decrease'
+
+
+def test_rhf_vs_uhf_screening_incfock():
+    """Checks RHF vs UHF screening equivalence with IncFock enabled.
+    For closed-shell systems, RHF and UHF should compute identical shell quartets."""
+
+    mol = psi4.geometry("""
+        0 1
+        O  -1.551007  -0.114520   0.000000
+        H  -1.934259   0.762503   0.000000
+        H  -0.599677   0.040712   0.000000
+        O   1.350625   0.111469   0.000000
+        H   1.680398  -0.373741  -0.758561
+        H   1.680398  -0.373741   0.758561
+        symmetry c1
+        no_reorient
+        no_com
+    """)
+
+    # run rhf calculation with IncFock
+    psi4.set_options({
+        "scf_type": "direct",
+        "screening" : 'density',
+        "df_scf_guess" : False,
+        "integral_package": 'libint2',
+        "ints_tolerance" : 1e-12,
+        "reference" : "rhf",
+        "save_jk": True,
+        "bench" : 1,
+        "incfock": True,
+    })
+    if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+        psi4.set_options({"orbital_optimizer_package": "internal"})
+
+    rhf_energy, rhf_wfn = psi4.energy('hf/DZ', return_wfn=True)
+
+    # run uhf calculation with IncFock
+    psi4.set_options({
+        "scf_type": "direct",
+        "screening" : 'density',
+        "df_scf_guess" : False,
+        "integral_package": 'libint2',
+        "ints_tolerance" : 1e-12,
+        "reference" : "uhf",
+        "save_jk": True,
+        "bench" : 1,
+        "incfock": True,
+    })
+    uhf_energy, uhf_wfn = psi4.energy('hf/DZ', return_wfn=True)
+
+    rhf_computed_shells = rhf_wfn.jk().computed_shells_per_iter("Quartets")
+    uhf_computed_shells = uhf_wfn.jk().computed_shells_per_iter("Quartets")
+
+    # Energies should match
+    assert compare_values(rhf_energy, uhf_energy, 10, 'RHF vs UHF IncFock Energy')
+
+    # RHF and UHF should compute same number of quartets (closed-shell equivalence)
+    assert compare(rhf_computed_shells, uhf_computed_shells, 'RHF vs UHF IncFock Shell Quartets')
+
 
 def test_schwarz_vs_density_energy():
     """Checks difference in Hartree-Fock energy between Schwarz and Density screening (with and without IFB), 
