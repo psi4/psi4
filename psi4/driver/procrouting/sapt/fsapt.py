@@ -1784,7 +1784,7 @@ def run_fsapt_analysis(
             for key, value in qcvars.items():
                 if "fsapt" not in key.lower():
                     continue
-                fsapt_vars[key] = value
+                fsapt_vars[key.upper()] = value
         else:
             qcvars = atomic_results.extras["extra_properties"]
             # atomic_results back from QCFractal are stored in 1D array, so we
@@ -1804,7 +1804,7 @@ def run_fsapt_analysis(
                     v = v.reshape(len(Z), len(Z))
                 else:
                     v = v.reshape(fsapt_AB_array_shape)
-                fsapt_vars[key] = v
+                fsapt_vars[key.upper()] = v
         osapt, Qs = extract_osapt_data_from_fsapt_vars(fsapt_vars, print_output=print_output)
         external_potentials = {}
         if "FSAPT_EXTERN_POTENTIAL_A" in qcvars:
