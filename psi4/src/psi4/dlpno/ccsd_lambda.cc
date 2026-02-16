@@ -132,7 +132,59 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
 
     } // end im
     */
-}
+
+    // Toth Eq. 31
+    // \overline{J}_{km}^{ic} = (km | i c_{km}) + \widetilde{T}_{m}^{f_{ki}} (k f_{ki} | i c_{ki})
+    //  S_{c_{ki}}^{c_{km}}
+#pragma omp parallel for
+    for (int km = 0; km < n_lmo_pairs; ++km) {
+        auto &[k, m] = ij_to_i_j_[km];
+        int mm = i_j_to_ij_[m][m];
+
+        J_kmic_bar_[km] = J_ijmb_[km]->clone();
+
+        for (int i_km = 0; i_km < lmopair_to_lmos_[km].size(); ++i_km) {
+            int i = lmopair_to_lmos_[km][i_km];
+            int ki = i_j_to_ij_[k][i];
+
+            auto T_m_ki = linalg::doublet(S_PNO(ki, mm), T_ia_[m]);
+            auto f_steak_university = linalg::triplet(T_m_ki, K_iajb_[ki], S_PNO(ki, km), true, false, false); // a column vector of dimension (1, n_pno_[km])
+
+            for (int c_km = 0; c_km < n_pno_[km]; ++c_km) {
+                (*J_kmic_bar_[km])(i_km, c_km) += (*f_steak_university)(0, c_km);
+            } // end c_km
+        } // end i_km
+    } // end km
+
+    // Toth Eq. 32
+    // \overline{J}_{ka_{ii}}^{e_{ki}c_{ki}} = S^{a_{ii}}_{a_{ki}} (ka_{ki}|e_{ki}c_{ki}) -
+    // S_{a_{ii}}^{a_{kl}} (k a_{kl} | l c_{kl}) S_{c_{kl}}^{c_{ki}} \widetilde{T}_{l}^{e_{ki}}
+#pragma omp parallel for
+    for (int ki = 0; ki < n_lmo_pairs; ++ki) {
+        auto &[k, i] = ij_to_i_j_[ki];
+        int ii = i_j_to_ij_[i][i];
+
+        auto J_kaec_bar_[ki] = linalg::doublet(S_PNO(ii, ki), K_ivvv_[ki]); // (a, e * c)
+
+        for (int l_ki = 0; l_ki < lmopair_to_lmos_[ki].size(); ++l_ki) {
+            int l = lmopair_to_lmos_[ki][l_ki];
+            int kl = i_j_to_ij_[k][l];
+
+            // S_{a_{ii}}^{a_{kl}} (k a_{kl} | l c_{kl}) S_{c_{kl}}^{c_{ki}}
+            auto south_ohio = linalg::triplet(S_PNO(ii, kl), K_iajb_[kl], S_PNO(kl, ki));
+            auto T_l_ki = linalg::doublet(S_PNO(ki, ll), T_ia_[l]); // \widetilde{T}_{l}^{e_{ki}} (Jiang Eq. 70?)
+
+            for (int a_ki = 0; a_ki < n_pno_[ki]; ++a_ki) {
+                for (int e_ki = 0; e_ki < n_pno_[ki]; ++e_ki) {
+                    for (int c_ki = 0; c_ki < n_pno_[ki]; ++c_ki) {
+                        (*J_kaec_bar_[ki])(a_ki, e_ki * n_pno_[ki] + c_ki) -= (*south_ohio)(a_ki, c_ki) * (*T_l_ki)(e_ki, 0);
+                    } // end c_ki
+                } // end e_ki
+            } // end a_ki
+
+        } // end l_ki
+    } // end for ki
+}   
 
 void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::vector<SharedMatrix>> &L_ia_buffer) {
 
@@ -232,7 +284,7 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
                 auto gus = linalg::triplet(S_PNO(km, mn), lambda_iajb_[mn], S_PNO(mn, kn));
                 auto charlie = linalg::triplet(gus, T_iajb_[kn], S(kn, km));
 
-                // TODO: define J_kmic_bar_
+                // Done! (From Toth Eq. 31)
                 auto airbuds = linalg::doublet(charlie, J_kmic_bar_[km], false, true); // (a, c) * (i, c)
                 
                 for (int i_km = 0; i_km < lmopair_to_lmos_[km].size(); ++i_km) {
@@ -256,7 +308,6 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
                 auto garfield = linalg::triplet(S_PNO(ki, in), lambda_iajb_bar_[in], S_PNO(in, kn));
                 auto lasagne = linalg::triplet(garfield, T_iajb_[kn], S_PNO(kn, ki));
 
-                // TODO: Define J_kaec_bar_ (a, e * c)
                 lasagne->reshape(n_pno_[ki] * n_pno_[ki], 1);
                 auto steak = linalg::doublet(J_kaec_bar_[ki], lasagne); // (a, e * c) (e * c, 1) => (a, 1) (steak sauce)
                 L_ia_buffer[thread][i]->subtract(steak);
