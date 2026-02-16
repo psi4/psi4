@@ -78,25 +78,6 @@ def run_sapt_dft(name, **kwargs):
 
     ein.initialize()
     core.timer_on("SAPT(DFT) Energy")
-    # einsum_example()
-    if name.upper() == "SAPT(DFT)":
-        pass
-    elif "DFT-D" in name.upper():
-        if not core.has_option_changed("SAPT", "SAPT_DFT_DO_DISP"):
-            core.set_local_option("SAPT", "SAPT_DFT_DO_DISP", False)
-        core.set_local_option("SAPT", "SAPT_DFT_D4_IE", True)
-        core.set_local_option("SAPT", "SAPT_DFT_D4_TYPE", "gd4_supermolecular")
-    elif "D4(I)" in name.upper():
-        if not core.has_option_changed("SAPT", "SAPT_DFT_DO_DISP"):
-            core.set_local_option("SAPT", "SAPT_DFT_DO_DISP", False)
-        core.set_local_option("SAPT", "SAPT_DFT_D4_IE", True)
-        core.set_local_option("SAPT", "SAPT_DFT_D4_TYPE", "intermolecular")
-    elif "D4(S)" in name.upper():
-        if not core.has_option_changed("SAPT", "SAPT_DFT_DO_DISP"):
-            core.set_local_option("SAPT", "SAPT_DFT_DO_DISP", False)
-        core.set_local_option("SAPT", "SAPT_DFT_D4_IE", True)
-        core.set_local_option("SAPT", "SAPT_DFT_D4_TYPE", "supermolecular")
-
 
     # Alter default algorithm
     if not core.has_global_option_changed("SCF_TYPE"):
@@ -148,11 +129,20 @@ def run_sapt_dft(name, **kwargs):
     if "-d4" in name.lower():
         d4_type = core.get_option("SAPT", "SAPT_DFT_D4_TYPE").lower()
         if d4_type == "supermolecular":
-            core.set_local_option("SAPT", "SAPT_DFT_D4_IE", True)
+            core.print_out(r"SAPT(DFT)-D4(S): -D4(S) for dispersion")
             core.set_local_option("SAPT", "SAPT_DFT_DO_DISP", False)
+            core.set_local_option("SAPT", "SAPT_DFT_D4_IE", True)
+            core.set_local_option("SAPT", "SAPT_DFT_D4_TYPE", "supermolecular")
         elif d4_type == "intermolecular":
-            core.set_local_option("SAPT", "SAPT_DFT_D4_IE", True)
+            core.print_out(r"SAPT(DFT)-D4(I): -D4(I) for dispersion")
             core.set_local_option("SAPT", "SAPT_DFT_DO_DISP", False)
+            core.set_local_option("SAPT", "SAPT_DFT_D4_IE", True)
+            core.set_local_option("SAPT", "SAPT_DFT_D4_TYPE", "intermolecular")
+        elif d4_type == "gd4_supermolecular":
+            core.print_out(r"DFT-D4(SAPT): $\Delta$-DFT+D4 for dispersion")
+            core.set_local_option("SAPT", "SAPT_DFT_DO_DISP", False)
+            core.set_local_option("SAPT", "SAPT_DFT_D4_IE", True)
+            core.set_local_option("SAPT", "SAPT_DFT_D4_TYPE", "gd4_supermolecular")
         else:
             raise ValueError(
                 "SAPT(DFT)-D4 must be specified as 'SAPT(DFT)-D4(S)' or 'SAPT(DFT)-D4(I)' through setting SAPT_DFT_D4_TYPE to 'supermolecular' or 'intermolecular'."
@@ -160,7 +150,10 @@ def run_sapt_dft(name, **kwargs):
 
     do_delta_hf = core.get_option("SAPT", "SAPT_DFT_DO_DHF")
     do_delta_dft = core.get_option("SAPT", "SAPT_DFT_DO_DDFT")
-    do_disp = core.get_option("SAPT", "SAPT_DFT_DO_DISP")
+    do_disp = core.get_local_option("SAPT", "SAPT_DFT_DO_DISP")
+    print("do_disp = ", do_disp)
+    if do_disp:
+        print("do_disp = ", do_disp)
     sapt_dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
     sapt_dft_D4_IE = core.get_option("SAPT", "SAPT_DFT_D4_IE")
     do_dft = sapt_dft_functional != "HF"
@@ -1381,7 +1374,7 @@ def sapt_dft(
 
     # Print out final data
     core.print_out("\n")
-    core.print_out(print_sapt_dft_summary(data, "SAPT(DFT)", dimer_wfn=dimer_wfn, do_dft=do_dft))
+    core.print_out(print_sapt_dft_summary(data, "SAPT(DFT)", dimer_wfn=dimer_wfn, do_dft=do_dft, do_disp=do_disp))
 
     # because FISAPT_obj drop sets core variables, avoid setting them twice
     if core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH") != "NONE" and do_fsapt:

@@ -89,7 +89,7 @@ procedures = {
         'ccd'           : proc.select_ccd,
         'sf-sapt'       : sapt.run_sf_sapt,
         'sapt(dft)'     : sapt.run_sapt_dft,
-        'dft-d(sapt)'   : sapt.run_sapt_dft,
+        'dft-d4(sapt)'  : sapt.run_sapt_dft,
         'sapt0'         : proc.run_sapt,
         'ssapt0'        : proc.run_sapt,
         'sapt2'         : proc.run_sapt,
@@ -250,7 +250,7 @@ for key in functionals:
         disp = key.split('-')[-1]
         procedures['energy']['sapt0-' + disp] = proc.run_sapt
         procedures['energy']['fisapt0-' + disp] = proc.run_fisapt
-        procedures['energy']['sapt(dft)-' + disp] = sapt.run_sapt_dft
+        # procedures['energy']['sapt(dft)-' + disp] = sapt.run_sapt_dft
 
 # Will complete modelchem spec with basis='(auto)' for following methods
 integrated_basis_methods = [
