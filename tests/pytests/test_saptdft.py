@@ -126,8 +126,8 @@ def test_sapt_dft_compute_ddft_d4():
 @pytest.mark.parametrize(
     "method, d4_type, expected_disp",
     [
-        ("SAPT(DFT)-D4(I)", "intermolecular", -0.000416647650),
-        ("SAPT(DFT)-D4(S)", "supermolecular", -0.000303920719),
+        ("SAPT(DFT)-D4(I)", "intermolecular", -0.0041772889),
+        ("SAPT(DFT)-D4(S)", "supermolecular", -0.0036056912),
         ("DFT-D4(SAPT)", "gd4_supermolecular", -0.005731715146359108),
     ],
 )
@@ -1327,19 +1327,22 @@ symmetry c1
 if __name__ == "__main__":
     psi4.set_memory("32 GB")
     psi4.set_num_threads(12)
-    # test_saptdft_disp_methods()
     # test_einsum_terms()
 
     # pytest this file
-    # pytest.main(
-    #     [
-    #         __file__,
-    #         "-v",
-    #         "-s",
-    #         "-k=test_saptdft_disp_methods",
-    #         "--disable-warnings",
-    #         # "--maxfail=1",
-    #     ]
-    # )
+    pytest.main(
+        [
+            __file__,
+            "-v",
+            "-s",
+            "-k=test_saptdft_disp_methods",
+            "--disable-warnings",
+            # "--maxfail=1",
+        ]
+    )
     # test_dftd4()
-    test_saptdft_disp_methods("DFT-D4(SAPT)", "gd4_supermolecular", -0.005731715146359108)
+    # test_saptdft_disp_methods("DFT-D4(SAPT)", "gd4_supermolecular", -0.005731715146359108)
+    # test_saptdft_disp_methods(
+    #     "SAPT(DFT)-D4(I)", "intermolecular", -0.0041772889
+    #     "SAPT(DFT)-D4(S)", "supermolecular", -0.0036056912
+    # )

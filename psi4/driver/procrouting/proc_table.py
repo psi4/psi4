@@ -89,6 +89,8 @@ procedures = {
         'ccd'           : proc.select_ccd,
         'sf-sapt'       : sapt.run_sf_sapt,
         'sapt(dft)'     : sapt.run_sapt_dft,
+        'sapt(dft)-d4(i)': sapt.run_sapt_dft,
+        'sapt(dft)-d4(s)': sapt.run_sapt_dft,
         'dft-d4(sapt)'  : sapt.run_sapt_dft,
         'sapt0'         : proc.run_sapt,
         'ssapt0'        : proc.run_sapt,
