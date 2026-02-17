@@ -1444,23 +1444,22 @@ void HC1_Wabei(int i, int C_irr) {
 void purge_HC1(int C_irr) {
     dpdfile2 FAE, Fmi, FME, Fme;
     dpdfile4 W;
-    int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;
     int A, B, E, F, I, J, M, N;
     int mn, ei, ma, ef, me, jb, mb, ij, ab;
     int asym, bsym, esym, fsym, isym, jsym, msym, nsym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int nirreps;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     /* Purge FME matrix elements */
     global_dpd_->file2_init(&FME, PSIF_CC3_HC1, C_irr, 0, 1, "HC1 FME");
@@ -1740,23 +1739,22 @@ void purge_HC1(int C_irr) {
 /* Purge Wmnie matrix elements */
 void purge_Wmnie(int C_irr) {
     dpdfile4 W;
-    int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;
     int A, B, E, F, I, J, M, N;
     int mn, ei, ma, ef, me, jb, mb, ij, ab;
     int asym, bsym, esym, fsym, isym, jsym, msym, nsym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int nirreps;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file4_init(&W, PSIF_CC3_HC1, C_irr, 0, 11, "HC1 WMnIe (Mn,eI)");
     for (h = 0; h < nirreps; h++) {
@@ -1846,23 +1844,22 @@ void purge_Wmnie(int C_irr) {
 /* Purge WMBIJ matrix elements */
 void purge_Wmbij(int C_irr) {
     dpdfile4 W;
-    int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;
     int A, B, E, F, I, J, M, N;
     int mn, ei, ma, ef, me, jb, mb, ij, ab;
     int asym, bsym, esym, fsym, isym, jsym, msym, nsym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int nirreps;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file4_init(&W, PSIF_CC3_HC1, C_irr, 10, 2, "HC1 WMBIJ (MB,I>J)");
     for (h = 0; h < nirreps; h++) {
@@ -1952,23 +1949,22 @@ void purge_Wmbij(int C_irr) {
 /* Purge Wabei matrix elements */
 void purge_Wabei(int C_irr) {
     dpdfile4 W;
-    int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;
     int A, B, E, F, I, J, M, N;
     int mn, ei, ma, ef, me, jb, mb, ij, ab;
     int asym, bsym, esym, fsym, isym, jsym, msym, nsym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int nirreps;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file4_init(&W, PSIF_CC_TMP0, C_irr, 11, 7, "WABEI (EI,A>B)");
     for (h = 0; h < nirreps; h++) {

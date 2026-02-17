@@ -308,20 +308,16 @@ void CUHF::form_C(double shift) {
         diagonalize_F(Fa_, Ca_, epsilon_a_);
         diagonalize_F(Fb_, Cb_, epsilon_b_);
     } else {
-        auto shifted_F = SharedMatrix(factory_->create_matrix("F"));
-
         auto Cvir = Ca_subset("SO", "VIR");
-        auto SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
-        SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
-        shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
-        shifted_F->add(Fa_);
+        auto SCvir = linalg::doublet(S_, Cvir, false, false);
+        auto shifted_F = Fa_->clone();
+        shifted_F->gemm(false, true, shift, SCvir, SCvir, 1.0);
         diagonalize_F(shifted_F, Ca_, epsilon_a_);
 
         Cvir = Cb_subset("SO", "VIR");
-        SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
-        SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
-        shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
-        shifted_F->add(Fb_);
+        SCvir = linalg::doublet(S_, Cvir, false, false);
+        shifted_F->copy(Fb_);
+        shifted_F->gemm(false, true, shift, SCvir, SCvir, 1.0);
         diagonalize_F(shifted_F, Cb_, epsilon_b_);
     }
     find_occupation();

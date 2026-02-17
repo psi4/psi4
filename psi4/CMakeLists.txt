@@ -141,7 +141,7 @@ else()
 endif()
 
 if(${ENABLE_Einsums})
-    find_package(Einsums 1.0.6 CONFIG REQUIRED)  # edit in codedeps
+    find_package(Einsums 1.1.2 CONFIG REQUIRED)  # edit in codedeps
     get_property(_loc TARGET Einsums::Einsums PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using Einsums${ColourReset}: ${_loc} (version ${Einsums_VERSION})")
@@ -261,9 +261,13 @@ elseif(UNIX)
 endif()
 
 # add -pedantic-errors flag here, if FORCE_PEDANTIC is enabled 
-if(${FORCE_PEDANTIC}) 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic-errors")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
+if(${FORCE_PEDANTIC})
+  if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")
+  else()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic-errors")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
+  endif()
 endif()
 
 # <<<  Build  >>>

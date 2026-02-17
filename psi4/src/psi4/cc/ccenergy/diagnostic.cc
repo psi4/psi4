@@ -50,7 +50,7 @@ double CCEnergyWavefunction::diagnostic() {
     auto uoccpi = moinfo_.uoccpi;
     auto openpi = moinfo_.openpi;
 
-    int *occpi, *virtpi;
+    Dimension occpi, virtpi;
     int *occ_sym, *vir_sym;
     if (params_.ref != 2) {
         occpi = moinfo_.occpi;

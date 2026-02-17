@@ -273,20 +273,16 @@ void UHF::form_C(double shift) {
         diagonalize_F(Fb_, Cb_, epsilon_b_);
 
     } else {
-        auto shifted_F = SharedMatrix(factory_->create_matrix("F"));
-
         auto Cvir = Ca_subset("SO", "VIR");
-        auto SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
-        SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
-        shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
-        shifted_F->add(Fa_);
+        auto SCvir = linalg::doublet(S_, Cvir, false, false);
+        auto shifted_F = Fa_->clone();
+        shifted_F->gemm(false, true, shift, SCvir, SCvir, 1.0);
         diagonalize_F(shifted_F, Ca_, epsilon_a_);
 
         Cvir = Cb_subset("SO", "VIR");
-        SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
-        SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
-        shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
-        shifted_F->add(Fb_);
+        SCvir = linalg::doublet(S_, Cvir, false, false);
+        shifted_F->copy(Fb_);
+        shifted_F->gemm(false, true, shift, SCvir, SCvir, 1.0);
         diagonalize_F(shifted_F, Cb_, epsilon_b_);
     }
     if (options_.get_bool("GUESS_MIX") && !mix_performed_) {
@@ -788,12 +784,12 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     if (needs_ao) {
         // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
-        auto Caocc_ao = Ca_subset("AO", "ALL");
-        auto Cbocc_ao = Cb_subset("AO", "ALL");
-        auto Fa_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
-        auto Fb_ao = matrix_subset_helper(Fb_, Cb_, "AO", "Fock");
-        auto IFock_ao_a = linalg::triplet(Caocc_ao, Fa_ao, Caocc_ao, true, false, false);
-        auto IFock_ao_b = linalg::triplet(Cbocc_ao, Fb_ao, Cbocc_ao, true, false, false);
+        const auto Caocc_ao = Ca_subset("AO", "ALL");
+        const auto Cbocc_ao = Cb_subset("AO", "ALL");
+        const auto Fa_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
+        const auto Fb_ao = matrix_subset_helper(Fb_, Cb_, "AO", "Fock");
+        const auto IFock_ao_a = linalg::triplet(Caocc_ao, Fa_ao, Caocc_ao, true, false, false);
+        const auto IFock_ao_b = linalg::triplet(Cbocc_ao, Fb_ao, Cbocc_ao, true, false, false);
         Precon_ao_a = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
         Precon_ao_b = std::make_shared<Matrix>("Precon", nbeta_, nmo_ - nbeta_);
 
@@ -816,14 +812,14 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     if (needs_so) {
         // Grab occ and vir orbitals
-        Dimension virpi_a = nmopi_ - nalphapi_;
-        Dimension virpi_b = nmopi_ - nbetapi_;
+        const auto virpi_a = nmopi_ - nalphapi_;
+        const auto virpi_b = nmopi_ - nbetapi_;
 
         // MO Fock Matrix (Inactive Fock in Helgaker's language)
-        SharedMatrix IFock_a = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
-        SharedMatrix IFock_b = linalg::triplet(Cb_, Fb_, Cb_, true, false, false);
-        Precon_so_a = std::make_shared<Matrix>("Alpha Precon", nirrep_, nalphapi_, virpi_a);
-        Precon_so_b = std::make_shared<Matrix>("Beta Precon", nirrep_, nbetapi_, virpi_b);
+        const auto IFock_a = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
+        const auto IFock_b = linalg::triplet(Cb_, Fb_, Cb_, true, false, false);
+        Precon_so_a = std::make_shared<Matrix>("Alpha Precon", nalphapi_, virpi_a);
+        Precon_so_b = std::make_shared<Matrix>("Beta Precon", nbetapi_, virpi_b);
 
         for (size_t h = 0; h < nirrep_; h++) {
             if (virpi_a[h] && nalphapi_[h]) {
@@ -1060,7 +1056,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     return ret_vec;
 }
-int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
+int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) {
     std::time_t start, stop;
     start = std::time(nullptr);
 

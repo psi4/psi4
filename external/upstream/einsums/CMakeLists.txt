@@ -1,5 +1,5 @@
 if(${ENABLE_Einsums})
-    find_package(Einsums 1.0.6 CONFIG)  # edit in codedeps
+    find_package(Einsums 1.1.2 CONFIG)  # edit in codedeps
 
     if(TARGET Einsums::Einsums)
         get_property(_loc TARGET Einsums::Einsums PROPERTY LOCATION)
@@ -32,7 +32,7 @@ if(${ENABLE_Einsums})
         ExternalProject_Add(einsums_external
             DEPENDS lapack_external
                     hdf5_external
-            URL https://github.com/Einsums/Einsums/archive/v1.0.6.tar.gz  # edit in codedeps
+            URL https://github.com/Einsums/Einsums/archive/v1.1.2.tar.gz  # edit in codedeps
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -52,6 +52,11 @@ if(${ENABLE_Einsums})
                        -DTargetHDF5_DIR=${TargetHDF5_DIR}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+                       -DEINSUMS_WITH_TESTS=OFF
+                       -DEINSUMS_WITH_DOCUMENTATION=OFF
+                       -DEINSUMS_BUILD_PYTHON=ON
+                       -DEINSUMS_INSTALL_PYMODDIR=${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}
+                       -DEINSUMS_WITH_EXAMPLES=OFF
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}

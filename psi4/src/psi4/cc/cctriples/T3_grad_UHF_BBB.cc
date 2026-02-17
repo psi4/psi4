@@ -45,15 +45,14 @@ namespace cctriples {
 
 extern void T3_UHF_AAA(double ***W, double ***V, int disc, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk,
                        dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ,
-                       dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega);
+                       dpdfile2 *fAB, Dimension const& occpi, int *occ_off, Dimension const& virtpi, int *vir_off, double omega);
 
 extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int Ga, int B, int Gb, int C, int Gc,
                            dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ,
-                           dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega);
+                           dpdfile2 *fAB, Dimension const& occpi, int *occ_off, Dimension const& virtpi, int *vir_off, double omega);
 
 double T3_grad_UHF_BBB() {
     int h, nirreps;
-    int *occpi, *virtpi, *occ_off, *vir_off;
     int i, j, k, a, b, c, d, l;
     int I, J, K, A, B, C, D, L;
     int ij, ji, ik, ki, jk, kj;
@@ -79,10 +78,10 @@ double T3_grad_UHF_BBB() {
     double **Z;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.boccpi;
-    virtpi = moinfo.bvirtpi;
-    occ_off = moinfo.bocc_off;
-    vir_off = moinfo.bvir_off;
+    const auto& occpi = moinfo.boccpi;
+    const auto& virtpi = moinfo.bvirtpi;
+    auto occ_off = moinfo.bocc_off;
+    auto vir_off = moinfo.bvir_off;
 
     double ***WIJK = (double ***)malloc(nirreps * sizeof(double **));
     double ***VIJK = (double ***)malloc(nirreps * sizeof(double **));

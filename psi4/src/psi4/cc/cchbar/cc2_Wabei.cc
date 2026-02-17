@@ -420,23 +420,22 @@ void cc2_Wabei_build() {
 
 void purge_cc2_Wabei() {
     dpdfile4 W;
-    int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;
     int A, B, E, F, I, J, M, N;
     int mn, ei, ma, ef, me, jb, mb, ij, ab;
     int asym, bsym, esym, fsym, isym, jsym, msym, nsym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int nirreps;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     /* Purge Wabei matrix elements */
     global_dpd_->file4_init(&W, PSIF_CC_TMP2, 0, 11, 7, "CC2 WABEI (EI,A>B)");
