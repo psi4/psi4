@@ -205,7 +205,7 @@ void CGHF::preiterations() {
                 (*F_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
             }
 
-    println(*F_);
+    //println(*F_);
     // Constructs orthogonalization matrix X_ using Lowdin symmetric orthogonalization
     //
     // X = S^{-1/2}
@@ -550,6 +550,9 @@ std::complex<double> CGHF::do_diis() {
     // Computes the error at the current iteration
     einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, *ortho_error, *ortho_error,
                                                std::complex<double>{0.0}, ecurr.get());
+    
+    //einsums::linear_algebra::direct_product(std::complex<double>{1.0}, *ortho_error, *ortho_error, std::complex<double>{0.0}, ecurr.get());
+
 
     auto error_trace = std::complex<double>{0.0, 0.0};
 
@@ -560,7 +563,7 @@ std::complex<double> CGHF::do_diis() {
         }
     }
 
-    auto abs_trace = std::abs(error_trace);
+    //auto abs_trace = std::abs(error_trace);
 
     // If we have enough error vectors in storage, remove the one with the largest error
     // And replace it with the Fock matrix at the current iteration
@@ -569,7 +572,7 @@ std::complex<double> CGHF::do_diis() {
         // Give it some ludicrously low error so that anything is larger
         // C++ isn't like Python where we can assign the var in the loop
         // at least not at first
-        auto max_error = std::complex<double>{-10000000000, -10000000000};
+        auto max_error = std::complex<double>{0.0, 0.0};
         int max_error_ind = 0;
 
         for (int i = 0; i < diis_max; i++) {
@@ -578,7 +581,7 @@ std::complex<double> CGHF::do_diis() {
             // You can't compare two complex numbers directly, so I compare the real parts
             // Doing it with imaginary is very tricky since these are very very close to 0
             // When I checked imag as well, we were converging at 17 iterations instead of 14
-            if (curr_error.real() > max_error.real()) {
+            if (std::abs(curr_error) > std::abs(max_error)) {
                 max_error = curr_error;
                 max_error_ind = i;
             }
@@ -589,10 +592,10 @@ std::complex<double> CGHF::do_diis() {
          */
         // Then make the replacement based off the index
         Fdiis.at(max_error_ind) = *Fp_;
-        err_vecs.at(max_error_ind) = *FDSmSDF_;
+        err_vecs.at(max_error_ind) = *ortho_error;
 
         // Matt: unsure if we should add the shared_ptrs to the deques, or the BlockTensors themselves
-        //       for now, we have the MakeSharedBlockTensors
+        //       for now, we have the BlockTensors
 
         // Norm for the replacement error vector, which is why the index is different here compared to below
         auto norm = einsums::linear_algebra::dot(err_vecs.at(max_error_ind), err_vecs.at(max_error_ind));
@@ -600,7 +603,7 @@ std::complex<double> CGHF::do_diis() {
     }
     // If not, add the Fock matrix and error matrix to memory
     else {
-        err_vecs.push_back(*FDSmSDF_);
+        err_vecs.push_back(*ortho_error);
         Fdiis.push_back(*Fp_);
 	    
         // Calculate the norm for the last error vector
@@ -615,8 +618,8 @@ std::complex<double> CGHF::do_diis() {
     // I do it in a weird way by filling the bottom row and
     // the right column with the 1.0+0i
     for (int i = 0; i < err_vecs.size() + 1; i++) {
-        B_(i, err_vecs.size()) = std::complex<double>{1.0, 0.0};
-        B_(err_vecs.size(), i) = std::complex<double>{1.0, 0.0};
+        B_(i, err_vecs.size()) = std::complex<double>{-1.0, 0.0};
+        B_(err_vecs.size(), i) = std::complex<double>{-1.0, 0.0};
     }
 
     // Then simply->zero out the last element in the matrix
@@ -626,16 +629,33 @@ std::complex<double> CGHF::do_diis() {
     // Ideally this would be done with an einsums call, but we must
     // take the conjugate whicn Einsums cannot do (to my knowledge)
     // TODO make this work for irreps
-    for (int i = 0; i < err_vecs.size(); i++) {
-        for (int j = 0; j < err_vecs.size(); j++) {
-            B_(i, j) = {0.0, 0.0};
-            for (int p = 0; p < irrep_sizes_[0]; p++) {
-                for (int q = 0; q < irrep_sizes_[0]; q++) {
-                    B_(i, j) += std::conj(err_vecs[i](q, p)) * err_vecs[j](p, q);
-                }
+    for (int i = 0; i < err_vecs.size(); i++)
+    for (int j = 0; j < err_vecs.size(); j++) {
+        B_(i, j) = {0.0, 0.0};
+        auto ei = err_vecs[i];
+        auto ej = err_vecs[j];
+
+        for (int h = 0; h < nirrep_; h++)
+        for (int p = 0; p < irrep_sizes_[h]; p++)
+        for (int q = 0; q < irrep_sizes_[h]; q++) {
+            B_(i, j) += std::conj(ei[h].subscript(q, p)) * ej[h].subscript(p, q);
             }
         }
-    }
+
+    // Since the linear matrix equations tend to become fairly ill-conditioned as we get close
+    // to convergence, it is imperative to check the condition number of the B_ matrix
+    // If it is above a given threshold, we must completely reset the DIIS subspace
+    double threshold = 1e+5;
+
+    // Condition number is given by || B_ || || B_^-1 ||, so give a container for the inverted B_ matrix
+    auto Binv_ = B_;
+    einsums::linear_algebra::invert(&Binv_);
+
+    auto Binv_norm = einsums::linear_algebra::norm(einsums::linear_algebra::Norm::One, Binv_);
+    auto B_norm = einsums::linear_algebra::norm(einsums::linear_algebra::Norm::One, B_);
+    auto condition_number = Binv_norm * B_norm;
+
+    std::cout << "Condition number = " << condition_number << "\n";
 
     // Container for the coefficients after gesv
     // This is a weird artifact of gesv. This should be a column vector
@@ -644,10 +664,15 @@ std::complex<double> CGHF::do_diis() {
 
     C_temp.zero();
 
-    for (int i = 0; i < err_vecs.size() + 1; i++) {
-        C_temp(0, i) = std::complex<double>{1.0, 0.0};
-    }
+    //for (int i = 0; i < err_vecs.size() + 1; i++) {
+    //    C_temp(0, i) = std::complex<double>{1.0, 0.0};
+    //}
 
+
+    // Fill the last element of the RHS vector to add the constraint
+    C_temp(0, err_vecs.size()) = std::complex<double>{-1.0, 0.0};
+
+    // Solves for the DIIS coefficients which get temporarily stored in C_temp
     einsums::linear_algebra::gesv(&B_, &C_temp);
 
     // Increase the size of the subspace
@@ -656,6 +681,9 @@ std::complex<double> CGHF::do_diis() {
     for (int i = 0; i < err_vecs.size(); i++) {
         diis_coeffs.at(i) = C_temp(0, i);
     }
+
+    // Increase the size of the subspace
+    diis_coeffs.resize(err_vecs.size());
 
     // If we have enough vectors stored (e.g. DIIS_MAX_VECS), then we can extrapolate a new 
     // orthogonalized Fock matrix Fp_. Otherwise, the Fp_ formed in the beginning of this
@@ -694,9 +722,18 @@ void CGHF::form_FDSmSDF() {
 
     (*FDSmSDF_) -= (*temp2_);
 
-    // Maybe below 2->zeros can be deprecated since I always->zero BEFORE doing anything, but for safety:
     temp1_->zero();
     temp2_->zero();
+
+    // Orthogonalize and store in FDSmSDF_
+    //einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, *FDSmSDF_, *EINX_, std::complex<double>{0.0},
+    //                                            temp1_.get());
+    //einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, *EINX_, *temp1_, std::complex<double>{0.0},
+    //                                           temp2_.get());
+ 
+
+    //(*FDSmSDF_) = (*temp2_);
+
 }
 
 double CGHF::compute_Dnorm() {
@@ -705,7 +742,7 @@ double CGHF::compute_Dnorm() {
     for (int h = 0; h < nirrep_; h++) {
         dnorm += einsums::linear_algebra::norm(einsums::linear_algebra::Norm::Frobenius, (*FDSmSDF_)[h]);
     }
-
+    
     return dnorm;
 }
 
