@@ -49,12 +49,7 @@
 #include <Einsums/LinearAlgebra.hpp>
 #include <Einsums/TensorAlgebra.hpp>
 
-#define MakeSharedBlockTensor std::make_shared<einsums::BlockTensor<std::complex<double>, 2>>
-
-#ifndef SharedBlockTensor
-#define SharedBlockTensor std::shared_ptr<einsums::BlockTensor<std::complex<double>, 2>>
-
-#endif
+using ComplexMatrix=einsums::BlockTensor<std::complex<double>, 2>;
 
 namespace psi {
 namespace scf {
@@ -129,38 +124,38 @@ void CGHF::common_init() {
     // => BLOCKTENSORS <= will be (2nsopi_ x 2nsopi_) unless listed otherwise
     // Note that all of these are complex except for the Fock evals
     // Core Hamiltonian, Fock, Orthogonalized Fock, and Coefficient Matrices
-    F0_ = MakeSharedBlockTensor("F0", irrep_sizes_);
-    F_ = MakeSharedBlockTensor("F", irrep_sizes_);
-    Fp_ = MakeSharedBlockTensor("EINX_", irrep_sizes_);
-    C_ = MakeSharedBlockTensor("C", irrep_sizes_);
-    //F0_ = MakeSharedBlockTensor("F0", irrep_sizes_);
-    //F_ = MakeSharedBlockTensor("F", irrep_sizes_);
-    //Fp_ = MakeSharedBlockTensor("EINX_", irrep_sizes_);
-    //C_ = MakeSharedBlockTensor("C", irrep_sizes_);
+    F0_ = std::make_shared<ComplexMatrix>("F0", irrep_sizes_);
+    F_ = std::make_shared<ComplexMatrix>("F", irrep_sizes_);
+    Fp_ = std::make_shared<ComplexMatrix>("EINX_", irrep_sizes_);
+    C_ = std::make_shared<ComplexMatrix>("C", irrep_sizes_);
+    //F0_ = std::make_shared<ComplexMatrix>("F0", irrep_sizes_);
+    //F_ = std::make_shared<ComplexMatrix>("F", irrep_sizes_);
+    //Fp_ = std::make_shared<ComplexMatrix>("EINX_", irrep_sizes_);
+    //C_ = std::make_shared<ComplexMatrix>("C", irrep_sizes_);
 
     // Gradient FDS - SDF
-    FDSmSDF_ = MakeSharedBlockTensor("C", irrep_sizes_);
+    FDSmSDF_ = std::make_shared<ComplexMatrix>("C", irrep_sizes_);
 
     // Spin blocked overlap matrix and orthogonalization matrix.
     // Needed as metric to compute gradient with FDS - SDF
-    EINS_ = MakeSharedBlockTensor("Ovlp", irrep_sizes_);
-    EINX_ = MakeSharedBlockTensor("Orth", irrep_sizes_);
+    EINS_ = std::make_shared<ComplexMatrix>("Ovlp", irrep_sizes_);
+    EINX_ = std::make_shared<ComplexMatrix>("Orth", irrep_sizes_);
 
     // Eigenvalues and eigenvectors from diagonalized Fock matrix
-    Fevecs_ = MakeSharedBlockTensor("Fock eigenvectors", irrep_sizes_);
+    Fevecs_ = std::make_shared<ComplexMatrix>("Fock eigenvectors", irrep_sizes_);
     Fevals_ = einsums::BlockTensor<double, 1>("Fock evals", irrep_sizes_);
 
     // Density and combined Coulomb/ exchange matrices
-    D_ = MakeSharedBlockTensor("D", irrep_sizes_);
-    JK_ = MakeSharedBlockTensor("J", irrep_sizes_);
+    D_ = std::make_shared<ComplexMatrix>("D", irrep_sizes_);
+    JK_ = std::make_shared<ComplexMatrix>("J", irrep_sizes_);
 
     // Orthogonalized gradient [F, D], gradient error at the current iteration
-    ortho_error = MakeSharedBlockTensor("Orthogonalized FDSmSDF", irrep_sizes_);
-    ecurr = MakeSharedBlockTensor("Current error", irrep_sizes_);
+    ortho_error = std::make_shared<ComplexMatrix>("Orthogonalized FDSmSDF", irrep_sizes_);
+    ecurr = std::make_shared<ComplexMatrix>("Current error", irrep_sizes_);
 
     // Temporary matrices for intermediate steps
-    temp1_ = MakeSharedBlockTensor("temp1", irrep_sizes_);
-    temp2_ = MakeSharedBlockTensor("temp2", irrep_sizes_);
+    temp1_ = std::make_shared<ComplexMatrix>("temp1", irrep_sizes_);
+    temp2_ = std::make_shared<ComplexMatrix>("temp2", irrep_sizes_);
 
     F0_->zero();
     F_->zero();
@@ -195,14 +190,14 @@ void CGHF::preiterations() {
                 int beta_p = p + nsopi_[h];
                 int beta_q = q + nsopi_[h];
 
-                (*EINS_)[h].subscript(p, q) = S_->get(h, p, q);  // overlap AA spin block
-                (*EINS_)[h].subscript(beta_p, beta_q) = S_->get(h, p, q);  // overlap BB spin block is same as AA since same spatial orbitals
+                EINS_->block(h)(p, q) = S_->get(h, p, q);  // overlap AA spin block
+                EINS_->block(h)(beta_p, beta_q) = S_->get(h, p, q);  // overlap BB spin block is same as AA since same spatial orbitals
 
-                (*F0_)[h].subscript(p, q) = H_->get(h, p, q);            // core Hamiltonian AA spin block
-                (*F0_)[h].subscript(beta_p, beta_q) = H_->get(h, p, q);  // core Hamiltonian BB spin block
+                F0_->block(h)(p, q) = H_->get(h, p, q);            // core Hamiltonian AA spin block
+                F0_->block(h)(beta_p, beta_q) = H_->get(h, p, q);  // core Hamiltonian BB spin block
 
-                (*F_)[h].subscript(p, q) = Fa_->get(h, p, q);
-                (*F_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
+                F_->block(h)(p, q) = Fa_->get(h, p, q);
+                F_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
             }
 
     //println(*F_);
@@ -215,8 +210,8 @@ void CGHF::preiterations() {
     for (int h = 0; h < nirrep_; h++)
         for (int j = 0; j < nsopi_[h]; j++)
             for (int k = 0; k < nsopi_[h]; k++) {
-                (*EINX_)[h].subscript(j, k) = X_->get(h, j, k); // AA spin block
-                (*EINX_)[h].subscript(j + nsopi_[h], k + nsopi_[h]) = X_->get(h, j, k); // BB spin block
+                EINX_->block(h)(j, k) = X_->get(h, j, k); // AA spin block
+                EINX_->block(h)(j + nsopi_[h], k + nsopi_[h]) = X_->get(h, j, k); // BB spin block
             }
 
     //form_init_F();
@@ -242,8 +237,8 @@ void CGHF::preiterations() {
 //    for (int h = 0; h < nirrep_; h++)
 //    for (int p = 0; p < nsopi_[h]; p++)
 //    for (int q = 0; q < nsopi_[h]; q++) {
-//        (*F_)[h].subscript(p, q) = Fa_->get(h, p, q);
-//        (*F_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
+//        F_->block(h)(p, q) = Fa_->get(h, p, q);
+//        F_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
 //    }
 //}
 
@@ -287,19 +282,19 @@ void CGHF::form_G() {
         auto g_pqrs = G_mat->get(h, p * nsopi_[h] + q, r * nsopi_[h] + s);
         auto g_psrq = G_mat->get(h, p * nsopi_[h] + s, r * nsopi_[h] + q);
 
-        auto D_AA = (*D_)[h].subscript(s, r);
-        auto D_BB = (*D_)[h].subscript(s + nsopi_[h], r + nsopi_[h]);
-        auto D_AB = (*D_)[h].subscript(s, r + nsopi_[h]);
-        auto D_BA = (*D_)[h].subscript(s + nsopi_[h], r);
+        auto D_AA = D_->block(h)(s, r);
+        auto D_BB = D_->block(h)(s + nsopi_[h], r + nsopi_[h]);
+        auto D_AB = D_->block(h)(s, r + nsopi_[h]);
+        auto D_BA = D_->block(h)(s + nsopi_[h], r);
 
         auto sum_D = D_AA + D_BB;
 
         // Each line will be Coulomb (J) - exchange (K) contributions
         // NOTE: the off-diagonal AB/BA blocks have no Coulomb contributions, only exchange
-        (*JK_)[h].subscript(p, q) += g_pqrs * sum_D - g_psrq * D_AA;  // AA
-        (*JK_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) += g_pqrs * sum_D - g_psrq * D_BB; // BB
-        (*JK_)[h].subscript(p, q + nsopi_[h]) -= D_AB * g_psrq; // AB (exchange only)
-        (*JK_)[h].subscript(p + nsopi_[h], q) -= D_BA * g_psrq; // BA (exchange only)
+        JK_->block(h)(p, q) += g_pqrs * sum_D - g_psrq * D_AA;  // AA
+        JK_->block(h)(p + nsopi_[h], q + nsopi_[h]) += g_pqrs * sum_D - g_psrq * D_BB; // BB
+        JK_->block(h)(p, q + nsopi_[h]) -= D_AB * g_psrq; // AB (exchange only)
+        JK_->block(h)(p + nsopi_[h], q) -= D_BA * g_psrq; // BA (exchange only)
     }
 }
 
@@ -359,7 +354,7 @@ void CGHF::form_C(double shift) {
                       std::complex<double>{1.0}, einsums::Indices{einsums::index::j, einsums::index::i}, (*Fp_)[h]);
     }
 
-    Fp_ = MakeSharedBlockTensor(*temp1_);
+    Fp_ = std::make_shared<ComplexMatrix>(*temp1_);
 
     // => BACK TRANSFORM <=
     // EINX_ @ Fevecs_ = C_
@@ -377,8 +372,8 @@ void CGHF::form_C(double shift) {
 //    for (int h = 0; h < nirrep_; h++)
 //    for (int p = 0; p < nsopi_[h]; p++)
 //    for (int q = 0; q < nsopi_[h]; q++) {
-//        (*F_)[h].subscript(p, q) = Fa_->get(h, p, q);
-//        (*F_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
+//        F_->block(h)(p, q) = Fa_->get(h, p, q);
+//        F_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
 //    }
 //
 //    form_C(0.0);
@@ -393,8 +388,8 @@ void CGHF::compute_SAD_guess(bool natorb) {
     for (int h = 0; h < nirrep_; h++)
     for (int p = 0; p < nsopi_[h]; p++)
     for (int q = 0; q < nsopi_[h]; q++) {
-        (*D_)[h].subscript(p, q) = Da_->get(h, p, q);
-        (*D_)[h].subscript(p + nsopi_[h], q + nsopi_[h]) = Db_->get(h, p, q);
+        D_->block(h)(p, q) = Da_->get(h, p, q);
+        D_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Db_->get(h, p, q);
     }
 
     //temp2_->zero();
@@ -435,9 +430,9 @@ void CGHF::form_D() {
     for (int h = 0; h < nirrep_; h++) {
         for (int j = 0; j < irrep_sizes_[h]; j++) {
             for (int k = 0; k < nelecpi_[h]; k++) {
-                auto C_jk = (*C_)[h].subscript(j, k);
-                (*temp1_)[h].subscript(j, k) = C_jk;
-                (*temp2_)[h].subscript(j, k) = std::conj(C_jk);
+                auto C_jk = C_->block(h)(j, k);
+                temp1_->block(h)(j, k) = C_jk;
+                temp2_->block(h)(j, k) = std::conj(C_jk);
             }
         }
     }
@@ -470,10 +465,10 @@ double CGHF::compute_E() {
 
         for (int i = 0; i < irrep_sizes_[h]; i++)
             for (int j = 0; j < irrep_sizes_[h]; j++) {
-                auto Dji = (*D_)[h].subscript(j, i);
+                auto Dji = D_->block(h)(j, i);
 
-                one_electron_E += ((*F0_)[h].subscript(i, j) * Dji).real();  // F0_ij * D_ji
-                two_E += ((*JK_)[h].subscript(i, j) * Dji).real();            // J_ij * D_ji
+                one_electron_E += (F0_->block(h)(i, j) * Dji).real();  // F0_ij * D_ji
+                two_E += (JK_->block(h)(i, j) * Dji).real();            // J_ij * D_ji
             }
     }
 
@@ -501,8 +496,8 @@ double CGHF::compute_initial_E() {
     for (int h = 0; h < nirrep_; h++)
         for (int i = 0; i < irrep_sizes_[h]; i++)
             for (int j = 0; j < irrep_sizes_[h]; j++) {
-                auto Dji = (*D_)[h].subscript(j, i);
-                one_electron_E += ((*F0_)[h].subscript(i, j) * Dji).real();  // F0_ij * D_ji
+                auto Dji = D_->block(h)(j, i);
+                one_electron_E += (F0_->block(h)(i, j) * Dji).real();  // F0_ij * D_ji
             }
 
     return one_electron_E + nuclearrep_;
