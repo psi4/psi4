@@ -129,6 +129,7 @@ def run_sapt_dft(name, **kwargs):
     if "-d4" in name.lower():
         d4_type = core.get_option("SAPT", "SAPT_DFT_D4_TYPE").lower()
         if "-D4(S)" in name.upper():
+        # if "-D3(S)" in name.upper():
             core.print_out(r"SAPT(DFT)-D4(S): -D4(S) for dispersion")
             core.set_global_option("SAPT_DFT_DO_DISP", 0)
             core.set_global_option("SAPT_DFT_D4_IE", 1)
@@ -635,6 +636,8 @@ def run_sapt_dft(name, **kwargs):
         core.print_out("\n")
         core.timer_on("SAPT(DFT):D4 Interaction Energy")
         d4_type = core.get_option("SAPT", "SAPT_DFT_D4_TYPE").lower()
+        # TODO AMW; Suupport -d in the same waay. Seems like a beetter choice
+        # for long term usage
         if d4_type == "supermolecular":
             core.print_out(
                 "         "
