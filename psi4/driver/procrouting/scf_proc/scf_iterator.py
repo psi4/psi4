@@ -230,7 +230,10 @@ def scf_initialize(self):
         self.guess()
         core.timer_off("HF: Guess")
 
-        if core.get_option('SCF', "REFERENCE") == 'CGHF': self.preiterations()
+        if core.get_option('SCF', "REFERENCE") == 'CGHF':
+            core.timer_on("CGHF: Preiterations")
+            self.preiterations()
+            core.timer_off("CGHF: Preiterations")
 
         optstash.restore()
 

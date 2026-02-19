@@ -81,13 +81,13 @@ class CGHF : public HF {
 
     void form_init_F();
     // Orthogonalizes then diagonalizes the Fock matrix to form the coefficient matrix C_
-    void form_C(double shift) override;
+    void form_C(double shift=0.0) override;
 
-    // Sets up coefficient matrix computed from Fock initial guesses (SAD, SAP, etc)
-    //void form_initial_C() override;
+    // Form coefficient matrix from Fock guess (SAP, CORE, etc.)
+    void form_initial_C() override;
 
-    // Constructs 1-particle density matrix using the occupied coefficients Cocc_ and the conjugate (stored in temp1_,
-    // not permanently stored)
+    // Constructs 1-particle density matrix using the occupied coefficients Cocc_
+    // and its conjugate. Stored in temp1_.
     void form_D() override;
 
     // Empty function for now, but for UHF and RHF, scales the density matrix
@@ -96,8 +96,8 @@ class CGHF : public HF {
     // Compute the energy based purely off F0_ = T + V, with no J and K
     double compute_initial_E() override;
 
-    // Compute 1e and 2e energy separately, then combine with nuclear repulsion energy nuclearrep_ to return a total
-    // energy
+    // Compute 1e and 2e energy separately, then combine with nuclear repulsion
+    // energy nuclearrep_ to return a total energy.
     double compute_E() override;
 
     // Empty functions for now

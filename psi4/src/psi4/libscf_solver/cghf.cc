@@ -48,6 +48,7 @@
 
 #include <Einsums/LinearAlgebra.hpp>
 #include <Einsums/TensorAlgebra.hpp>
+#include <Einsums/Runtime.hpp>
 
 using ComplexMatrix=einsums::BlockTensor<std::complex<double>, 2>;
 
@@ -92,19 +93,15 @@ void CGHF::common_init() {
     same_a_b_orbs_ = false;
     /*** End useless definitions ***/
 
-    nuclearrep_ = molecule_->nuclear_repulsion_energy({0.0, 0.0, 0.0});
-
     // => DIIS variables <=
     err_vecs = std::deque<einsums::BlockTensor<std::complex<double>, 2>>(0);
     Fdiis = std::deque<einsums::BlockTensor<std::complex<double>, 2>>(0);
     diis_coeffs = std::vector<std::complex<double>>(0);
     error_doubles = std::vector<std::complex<double>>(0);
 
-    // Sets nalphapi_ and nbetapi_
+    // nelecpi_ is needed to form_C which is called after every guess. Preiterations
+    // is called after guess so this needs to go here.
     find_occupation();
-
-    //form_H();         // Fills a single spin block (AA or BB) with the core Hamiltonian
-
     // Combine nalphapi_ and nbetapi_ to give nelecpi_ for forming the density matrix
     for (int h = 0; h < nirrep_; h++) {
         nelecpi_.push_back(nalphapi_[h] + nbetapi_[h]);
@@ -113,8 +110,6 @@ void CGHF::common_init() {
     // => GLOBAL VARS <=
     // here since Einsums requires a vector
     // G_mat: two-electron ERI as a SharedMatrix
-    // nelecpi_: nalphapi_ + nbetapi_
-    G_mat = mintshelper()->ao_eri();
 
     // Double size of nsopi_ for GHF
     for (int h = 0; h < nirrep_; h++) {
@@ -172,13 +167,21 @@ void CGHF::common_init() {
 
     subclass_init();  // This appears to set up DFT stuff and external potentials
 
-    //preiterations();  // CGHF preiterations() routine
+    const char* ein_argv[2] = {
+        "psi4\0",
+        "--einsums:no-profiler-report\0"
+    };
+    einsums::initialize(4, ein_argv);
 }
 
 // Needed for initializing the Einsums spin-blocked overlap matrix EINS_
 // and subsequently the orthogonalization matrix EINX_
 // Also builds the spin-blocked Hamiltonian as F0_
 void CGHF::preiterations() {
+
+    nuclearrep_ = molecule_->nuclear_repulsion_energy({0.0, 0.0, 0.0});
+    G_mat = mintshelper()->ao_eri();
+
     // => FILL SPIN BLOCKED OVERLAP AND HAMILTONIAN MATRICES <=
     //
     // Note that nsopi_[h] will be HALF of irrep_sizes_[h]
@@ -313,9 +316,7 @@ void CGHF::form_F() {
 void CGHF::form_C(double shift) {
     // TODO: allow shift as we should be able to do it within one of the gemm calls below by
     // replacing std::complex<double>{0.0} with the shift
-    if (shift != 0.0) {
-        throw PSIEXCEPTION("CGHF does not support energy shifting.");
-    }
+    if (shift != 0.0) throw PSIEXCEPTION("CGHF does not support energy shifting.");
 
     //if (iteration_ <= 0) {
     //    form_init_F();
@@ -354,30 +355,31 @@ void CGHF::form_C(double shift) {
                       std::complex<double>{1.0}, einsums::Indices{einsums::index::j, einsums::index::i}, (*Fp_)[h]);
     }
 
-    Fp_ = std::make_shared<ComplexMatrix>(*temp1_);
-
     // => BACK TRANSFORM <=
     // EINX_ @ Fevecs_ = C_
-    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, *EINX_, *Fp_, std::complex<double>{0.0}, C_.get());
+    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, *EINX_, *temp1_, std::complex<double>{0.0}, C_.get());
 
     find_occupation();
 }
 
-// Constructs the initial Fock matrix computed from some initial guess other than CORE or SAD
-// Then calls form_C() to orthogonalize, diagonalize, and back-transform
-// This seems to be identical to what ROHF does, except here we include Fb as well
-//void CGHF::form_initial_C() {
-//    find_occupation();
-//
-//    for (int h = 0; h < nirrep_; h++)
-//    for (int p = 0; p < nsopi_[h]; p++)
-//    for (int q = 0; q < nsopi_[h]; q++) {
-//        F_->block(h)(p, q) = Fa_->get(h, p, q);
-//        F_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
-//    }
-//
-//    form_C(0.0);
-//}
+/*
+ * Certain guesses in HF:guess() put the initial Fock matrix in SharedMatrix Fa_/Fb_.
+ * This puts it in BlockTensor F_ then calls form_C() (which expects F_).
+ */
+void CGHF::form_initial_C() {
+    // find_occupation();
+
+    for (int h = 0; h < nirrep_; h++) {
+        for (int p = 0; p < nsopi_[h]; p++) {
+            for (int q = 0; q < nsopi_[h]; q++) {
+                F_->block(h)(p, q) = Fa_->get(h, p, q);
+                F_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
+            }
+        }
+    }
+
+    form_C();
+}
 
 
 void CGHF::compute_SAD_guess(bool natorb) {
@@ -420,6 +422,40 @@ void CGHF::form_D() {
     D_->zero();
     temp1_->zero();
     temp2_->zero();
+
+    if (nirrep_ > 1) throw PSIEXCEPTION("USE C1 SYMMETRY!");
+
+    if (options_.get_bool("DEBUG_CGHF")) {
+        std::vector<std::pair<bool, bool>> abmos;
+
+        int nmo = irrep_sizes_[0]/2;
+        for (int j = 0; j < nmo*2; j++) {
+            bool Ca_nonzero = false;
+            bool Cb_nonzero = false;
+            for (int k = 0; k < nmo; k++) {
+                auto Ca = C_->block(0)(k, j);
+                auto Cb = C_->block(0)(k+nmo, j);
+
+                double Ca_abs = (Ca*std::conj(Ca)).real();
+                double Cb_abs = (Cb*std::conj(Cb)).real();
+
+                if (Ca_abs >= 1e-10) Ca_nonzero = true;
+                if (Cb_abs >= 1e-10) Cb_nonzero = true;
+            }
+            abmos.emplace_back(Ca_nonzero, Cb_nonzero);
+        }
+
+        std::cout << "C ALPHA/BETA\n";
+        for (int j = 0; j < nmo*2; j++) {
+            std::cout << (int)(abmos[j].first);
+        }
+        std::cout << "\n";
+        for (int j = 0; j < nmo*2; j++) {
+            std::cout << (int)(abmos[j].second);
+        }
+        std::cout << std::endl;
+    }
+
 
     // Simply fills temp1_ and temp2_ with the occupied (2*nsopi_ x nelecpi_) and conjugate
     // occupied matrices (e.g. Cocc)
@@ -600,14 +636,14 @@ std::complex<double> CGHF::do_diis() {
     else {
         err_vecs.push_back(*ortho_error);
         Fdiis.push_back(*Fp_);
-	    
+	
         // Calculate the norm for the last error vector
         auto norm = einsums::linear_algebra::dot(err_vecs.at(err_vecs.size() - 1), err_vecs.at(err_vecs.size() - 1));
         error_doubles.push_back(norm);  // See above comment with norm
     }
 
     // Next form the 'base' B matrix
-    auto B_ = einsums::Tensor<std::complex<double>, 2>("Overlap matrix", err_vecs.size() + 1, err_vecs.size() + 1);
+    auto B_ = einsums::Tensor<std::complex<double>, 2>("DIIS Error matrix", err_vecs.size() + 1, err_vecs.size() + 1);
     B_.zero();
 
     // I do it in a weird way by filling the bottom row and
@@ -621,9 +657,7 @@ std::complex<double> CGHF::do_diis() {
     B_(err_vecs.size(), err_vecs.size()) = std::complex<double>{0.0, 0.0};
 
     // Actually populate it with the overlaps
-    // Ideally this would be done with an einsums call, but we must
-    // take the conjugate whicn Einsums cannot do (to my knowledge)
-    // TODO make this work for irreps
+    // TODO: Replace with Einsums call when it supports conjugates.
     for (int i = 0; i < err_vecs.size(); i++)
     for (int j = 0; j < err_vecs.size(); j++) {
         B_(i, j) = {0.0, 0.0};
@@ -634,35 +668,34 @@ std::complex<double> CGHF::do_diis() {
         for (int p = 0; p < irrep_sizes_[h]; p++)
         for (int q = 0; q < irrep_sizes_[h]; q++) {
             B_(i, j) += std::conj(ei[h].subscript(q, p)) * ej[h].subscript(p, q);
-            }
         }
+    }
 
-    // Since the linear matrix equations tend to become fairly ill-conditioned as we get close
-    // to convergence, it is imperative to check the condition number of the B_ matrix
-    // If it is above a given threshold, we must completely reset the DIIS subspace
-    double threshold = 1e+5;
+    if (options_.get_bool("DEBUG_CGHF")) {
+        // Since the linear matrix equations tend to become fairly ill-conditioned as we get close
+        // to convergence, it is imperative to check the condition number of the B_ matrix
+        // If it is above a given threshold, we must completely reset the DIIS subspace
+        double threshold = 1e+8;
 
-    // Condition number is given by || B_ || || B_^-1 ||, so give a container for the inverted B_ matrix
-    auto Binv_ = B_;
-    einsums::linear_algebra::invert(&Binv_);
+        // Condition number is given by || B_ || || B_^-1 ||, so give a container for the inverted B_ matrix
+        auto Binv_ = B_;
+        einsums::linear_algebra::invert(&Binv_);
 
-    auto Binv_norm = einsums::linear_algebra::norm(einsums::linear_algebra::Norm::One, Binv_);
-    auto B_norm = einsums::linear_algebra::norm(einsums::linear_algebra::Norm::One, B_);
-    auto condition_number = Binv_norm * B_norm;
+        auto Binv_norm = einsums::linear_algebra::norm(einsums::linear_algebra::Norm::One, Binv_);
+        auto B_norm = einsums::linear_algebra::norm(einsums::linear_algebra::Norm::One, B_);
+        auto condition_number = Binv_norm * B_norm;
 
-    std::cout << "Condition number = " << condition_number << "\n";
+        std::cout << "Condition number = " << condition_number << "\n";
+
+        // TODO: if condition number > threshold, ->zero() all errors
+    }
 
     // Container for the coefficients after gesv
     // This is a weird artifact of gesv. This should be a column vector
     // But it doesn't accept the type? IDK
-    auto C_temp = einsums::Tensor<std::complex<double>, 2>("Temp coefficient matrix", 1, err_vecs.size() + 1);
+    auto C_temp = einsums::Tensor<std::complex<double>, 2>("Temp coefficient vector", 1, err_vecs.size() + 1);
 
     C_temp.zero();
-
-    //for (int i = 0; i < err_vecs.size() + 1; i++) {
-    //    C_temp(0, i) = std::complex<double>{1.0, 0.0};
-    //}
-
 
     // Fill the last element of the RHS vector to add the constraint
     C_temp(0, err_vecs.size()) = std::complex<double>{-1.0, 0.0};

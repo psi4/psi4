@@ -1317,6 +1317,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Reference wavefunction type -*/
         options.add_str("REFERENCE", "RHF", "UHF RHF ROHF CGHF");
+        /*- Debug CGHF (print statements) !expert -*/
+        options.add_bool("DEBUG_CGHF", false);
         /*- Algorithm to use for the density cumulant and orbital updates in the DCT energy computation.
         Two-step algorithm is usually more efficient for small
         systems, but for large systems simultaneous algorithm (default) is recommended.
