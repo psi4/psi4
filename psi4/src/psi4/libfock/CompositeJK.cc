@@ -377,6 +377,16 @@ std::string CompositeJK::get_COSX_grid() {
     }
 }
 
+void CompositeJK::set_COSX_gradient(bool do_gradient) { 
+    if (k_algo_->name() == "COSX") {
+        auto k_algo_derived = std::dynamic_pointer_cast<COSK>(k_algo_);
+        k_algo_derived->set_gradient(do_gradient);
+    }
+    else {
+        throw PSIEXCEPTION("CompositeJK::set_COSX_gradient() was called, but COSX is not selected in SCF_TYPE!");
+    }
+}
+
 int CompositeJK::get_snLinK_max_am() { 
     if (k_algo_->name() == "sn-LinK") {
         auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_); 

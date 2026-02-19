@@ -2686,6 +2686,11 @@ def run_scf_gradient(name, **kwargs):
 
     optstash = proc_util.scf_set_reference_local(name, is_dft=dft_func)
 
+    if "COSX" in core.get_global_option("SCF_TYPE"):
+        core.set_global_option("COSX_DO_GRADIENT", True)
+        if core.get_option("SCF", "COSX_MAXITER_FINAL") == 0:
+            raise ValidationError("COSX gradients require a final grid to be defined.")
+
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:

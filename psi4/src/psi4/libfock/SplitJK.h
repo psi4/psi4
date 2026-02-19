@@ -277,6 +277,9 @@ class PSI_API COSK : public SplitJK {
     double basis_tol_;
     /// use overlap-fitted COSX algo?
     bool overlap_fitted_;
+    // do gradients (COSX gradients live here for performace reasons)
+    bool do_gradient_;
+
 
    public:
     // => Constructors < = //
@@ -319,6 +322,9 @@ class PSI_API COSK : public SplitJK {
     // setter/getter for the COSX grid used for this SCF iteration
     void set_grid(std::string current_grid) { current_grid_ = current_grid; };
     std::string get_grid() { return current_grid_; };
+    
+    // set whether to compute COSX gradients
+    void set_gradient(bool do_gradient) { do_gradient_ = do_gradient; };
 };
 
 

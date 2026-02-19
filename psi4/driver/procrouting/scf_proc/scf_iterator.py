@@ -576,6 +576,14 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             scf_iter_post_screening += 1
             if scf_iter_post_screening >= scf_maxiter_post_screening and scf_maxiter_post_screening > 0:
                 break
+            
+            if cosx_enabled:
+                # Compute gradient terms on last iteration on final grid if COSX_MAXITER_FINAL > 1
+                # WARNING: SCF can converge on final grid before hitting COSX_MAXITER_FINAL,
+                # which is not covered by this logic
+                if scf_iter_post_screening == (scf_maxiter_post_screening - 1):
+                    if core.get_option("SCF", "COSX_DO_GRADIENT"):
+                        self.jk().set_COSX_gradient(True)
 
         # Call any postiteration callbacks
         if not ((self.iteration_ == 0) and self.sad_) and _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
@@ -591,6 +599,11 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 # cosx uses the largest grid for its final SCF iteration(s)
                 if cosx_enabled:
                     self.jk().set_COSX_grid("Final")
+
+                    # Compute gradients terms if one or undetermined number of final iterations in COSX_MAXITER_FINAL
+                    if scf_maxiter_post_screening in [-1, 1]:
+                        if core.get_option("SCF", "COSX_DO_GRADIENT"):
+                            self.jk().set_COSX_gradient(True)
 
                 # clear any cached matrices associated with incremental fock construction
                 # the change in the screening spoils the linearity in the density matrix
