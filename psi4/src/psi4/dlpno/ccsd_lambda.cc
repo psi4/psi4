@@ -184,7 +184,166 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
 
         } // end l_ki
     } // end for ki
-}   
+
+    // Toth Eq. 33
+    F_fcia_hat_.resize(n_lmo_pairs);
+
+#pragma omp parallel for
+    for (int mn = 0; mn < n_lmo_pairs; ++mn) {
+        auto &[m, n] = ij_to_i_j_[mn];
+
+        int naux_mn = lmopair_to_ribfs_[mn].size();
+        int nlmo_mn = lmopair_to_lmos_[mn].size();
+        int npno_mn = n_pno_[mn];
+
+        F_fcia_hat_[mn].resize(nlmo_mn);
+
+        auto qia_mn = QIA_PNO(mn); // naux_mn * (nlmo_mn, npno_mn)
+        auto qab_mn = QAB_PNO(mn); // naux_mn * (npno_mn, npno_mn)
+
+        SharedMatrix F_fcia_temp = std::make_shared<Matrix>("F_fcia_temp", nlmo_mn * npno_mn, npno_mn * npno_mn);
+
+        for (int q_mn = 0; q_mn < naux_mn; ++q_mn) {
+            auto q_vv = qab_mn[q_mn]; // (npno_mn, npno_mn)
+            auto q_ov = qia_mn[q_mn]; // (nlmo_mn, npno_mn)
+
+            // This performs a "T1-dressing" on Qvv, 
+            // B^{Q_{mn}}_{f_{mn}c_{mn}} -= \widetilde{T}_{k_{mn}}^{f_{mn}} B^{Q_{mn}}_{k_{mn}c_{mn}}
+            q_vv->subtract(linalg::doublet(T_n_ij_[mn], q_ov, true, false));
+
+            for (int i_mn = 0; i_mn < nlmo_mn; ++i_mn) {
+                for (int a_mn = 0; a_mn < npno_mn; ++a_mn) {
+                    for (int f_mn = 0; f_mn < npno_mn; ++f_mn) {
+                        for (int c_mn = 0; c_mn < npno_mn; ++c_mn) {
+                            (*F_fcia_temp)(i_mn * npno_mn + a_mn, f_mn * npno_mn + c_mn) = 2.0 * (*q_vv)(f_mn, c_mn) * (*q_ov)(i_mn, a_mn)
+                                - (*q_vv)(f_mn, a_mn) * (*q_ov)(i_mn, c_mn);
+                        } // end c_mn
+                    } // end f_mn
+                } // end a_mn
+            } // end i_mn
+        }
+
+        // Change the dimensions of F_fcia_temp to be (i_mn, a_mn * f_mn * c_mn)
+        F_fcia_temp->reshape(nlmo_mn, npno_mn * npno_mn * npno_mn); // (i_mn, a_mn * f_mn * c_mn)
+
+        // Package it up into F_fcia_hat_[mn][i_mn]
+        for (int i_mn = 0; i_mn < nlmo_mn; ++i_mn) {
+            int i = lmopair_to_lmos_[mn][i_mn];
+            int ii = i_j_to_ij_[i][i];
+
+            // This is the slice of F_fcia_temp corresponding to the current i_mn
+            F_fcia_hat_[mn][i_mn] = submatrix_rows(std::vector<int>(1, i_mn), *F_fcia_temp); // (1, a_mn * f_mn * c_mn)
+            F_fcia_hat_[mn][i_mn]->reshape(npno_mn, npno_mn * npno_mn); // (a_mn, f_mn * c_mn)
+            F_fcia_hat_[mn][i_mn] = linalg::doublet(S_PNO(ii, mn), F_fcia_hat_[mn][i_mn]); // (a_ii, f_mn * c_mn)
+        } // end i_mn
+    } // end mn
+
+    // Toth Eq. 34a
+    F_knia_hat_.resize(n_lmo_pairs);
+#pragma omp parallel for
+    for (int kn = 0; kn < n_lmo_pairs; ++kn) {
+        auto &[k, n] = ij_to_i_j_[kn];
+        int nk = ij_to_ji_[kn];
+
+        int naux_kn = lmopair_to_ribfs_[kn].size();
+        int nlmo_kn = lmopair_to_lmos_[kn].size();
+        int npno_kn = n_pno_[kn];
+
+        F_knia_hat_[kn].resize(nlmo_kn);
+
+        auto F_knia_temp = J_ijmb_[kn]->clone(); // (i_kn, a_kn)
+        F_knia_temp->scale(2.0);
+        F_knia_temp->subtract(K_mibj_[nk]); // (i_kn, a_kn)
+
+        for (int i_kn = 0; i_kn < nlmo_kn; ++i_kn) {
+            int i = lmopair_to_lmos_[kn][i_kn];
+            int ii = i_j_to_ij_[i][i];
+
+            F_knia_hat_[kn][i_kn] = submatrix_rows(std::vector<int>(1, i_kn), *F_knia_temp); // (1, a_kn)
+            F_knia_hat_[kn][i_kn]->reshape(npno_kn, 1); // (a_kn, 1)
+            F_knia_hat_[kn][i_kn] = linalg::doublet(S_PNO(ii, kn), F_knia_hat_[kn][i_kn]); // (a_ii, 1)
+        } // end i_kn
+    } // end kn
+
+    // Toth Eq. 34b
+#pragma omp parallel for
+    for (int n = 0; n < naocc; ++n) {
+        int nn = i_j_to_ij_[n][n];
+
+        int naux_nn = lmopair_to_ribfs_[nn].size(); // Number of auxiliary functions in domain of nn
+        int nlmo_nn = lmopair_to_lmos_[nn].size(); // Number of LMOs in domain of pair nn
+        int npno_nn = n_pno_[nn];
+
+        auto qov_nn = QIA_PNO(nn); // naux_nn * (nlmo_nn, npno_nn)
+
+        for (int q_nn = 0; q_nn < naux_nn; ++q_nn) {
+            auto qov = qov_nn[q_nn]; // (nlmo_nn, npno_nn)
+            auto qov_contracted = linalg::doublet(qov, T_ia_[n], false, false); // (nlmo_nn, npno_nn) * (npno_nn, 1) -> (nlmo_nn, 1)
+
+            for (int k_nn = 0; k_nn < nlmo_nn; ++k_nn) {
+                int k = lmopair_to_lmos_[nn][k_nn];
+                int kn = i_j_to_ij_[k][n];
+                for (int i_nn = 0; i_nn < nlmo_nn; ++i_nn) {
+                    int i = lmopair_to_lmos_[nn][i_nn];
+                    int ii = i_j_to_ij_[i][i];
+                    int i_kn = lmopair_to_lmos_dense_[kn][i]; // Index of i in the domain of kn
+                    if (i_kn == -1) continue; // If i is not in the domain of kn, skip
+
+                    auto F_knia_temp = std::make_shared<Matrix>("F_knia_temp", npno_nn, 1);
+
+                    for (int a_nn = 0; a_nn < npno_nn; ++a_nn) {
+                        (*F_knia_temp)(a_nn, 0) = 2.0 * (*qov_contracted)(k_nn, 0) * (*qov)(i_nn, a_nn) - 
+                            (*qov_contracted)(i_nn, 0) * (*qov)(k_nn, a_nn);
+                    }
+
+                    F_knia_hat_[kn][i_kn]->add(linalg::doublet(S_PNO(ii, nn), F_knia_temp)); // (a_ii, 1)
+                } // end i_nn
+            } // end k_nn
+        } // q_nn
+
+    } // end n
+
+    L_ieab_bar_.resize(n_lmo_pairs);
+
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+        int jj = i_j_to_ij_[j][j];
+
+        int naux_ij = lmopair_to_ribfs_[ij].size();
+        int nlmo_ij = lmopair_to_lmos_[ij].size();
+        int npno_ij = n_pno_[ij];
+
+        L_ieab_bar_[ij] = std::make_shared<Matrix>("L_ieab_bar", npno_ij, npno_ij * npno_ij); // (e_ij, a_ij * b_ij)
+
+        for (int a_ij = 0; a_ij < npno_ij; ++a_ij) {
+            for (int e_ij = 0; e_ij < npno_ij; ++e_ij) {
+                for (int b_ij = 0; b_ij < npno_ij; ++b_ij) {
+                    // L_{ie_{ij}}^{a_{ij} b_{ij}} = 2 (i a_{ij} | e_{ij} b_{ij}) - (i b_{ij} | e_{ij} a_{ij})
+                    (*L_ieab_bar)(e_ij, a_ij * npno_ij + b_ij) = 2.0 * (*K_ivvv_[ij])(a_ij, e_ij * n_pno_[ij] + b_ij)
+                            - (*K_ivvv_[ij])(b_ij, e_ij * n_pno_[ij] + a_ij);
+                } // end b_ij
+            } // end e_ij
+        } // end a_ij
+
+        L_ieab_bar_[ij] = linalg::doublet(S_PNO(jj, ij), L_ieab_bar_[ij]); // (e_ij, a_ij * b_ij) -> (e_jj, a_ij * b_ij)
+
+        for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
+            int l = lmopair_to_lmos_[ij][l_ij];
+            int il = i_j_to_ij_[i][l], ll = i_j_to_ij_[l][l];
+
+            auto T_l_j = linalg::doublet(S_PNO(jj, ll), T_ia_[l]); // (e_ll, 1) -> (e_jj, 1)
+            auto jon_arbuckle = linalg::triplet(S_PNO(ij, il), L_iajb_[il], S_PNO(il, ij)); // (a_ij, b_ij)
+            
+            for (int e_jj = 0; e_jj < n_pno_[jj]; ++e_jj) {
+                for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
+                    for (int b_ij = 0; b_ij < n_pno_[ij]; ++b_ij) {
+                        (*L_ieab_bar_[ij])(e_jj, a_ij * n_pno_[ij] + b_ij) -= (*T_l_j)(e_jj, 0) * (*jon_arbuckle)(a_ij, b_ij);
+                    } // end b_ij
+                } // end a_ij
+            } // end e_jj
+        } // end l_ij
+    } // end ij
+}
 
 void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::vector<SharedMatrix>> &L_ia_buffer) {
 
@@ -257,7 +416,7 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
         }
 
         // l_{i}^{a_{ii}} \mathrel{+}= \rho^{\mathrm{VV}}_{f_{mn}c_{mn}}\hat{F}^{ia_{ii}}_{f_{mn}c_{mn}} - \rho^{\mathrm{OO}}_{nm} \hat{F}_{mn}^{ia_{ii}} (Toth Eq. 36)
-        // TODO: Define F_iafc_hat_ and F_mnia_hat_
+        // TODO: Define F_knia_hat_
         auto Gvv_slice = rho_vv_[mn]->clone();
         Gvv_slice->reshape(n_pno_[mn] * n_pno_[mn], 1);
         for (int i_mn = 0; i_mn < lmopair_to_lmos_[mn].size(); ++i_mn) {
@@ -266,7 +425,7 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
             auto Gvv_temp = linalg::doublet(F_iafc_hat_[mn][i_mn], Gvv_slice, false, false); // (a_ii, f_mn * c_mn) (f_mn * c_mn, 1) -> (a_ii, 1)
             L_ia_buffer[thread][i]->add(Gvv_temp);
 
-            auto F_mnia_slice = F_mnia_hat_[mn][i_mn]->clone(); // (a_ii, 1)
+            auto F_mnia_slice = F_knia_hat_[mn][i_mn]->clone(); // (a_ii, 1)
             F_mnia_slice->scale((*rho_oo_)(m, n));
             L_ia_buffer[thread][i]->subtract(F_mnia_slice);
         }
