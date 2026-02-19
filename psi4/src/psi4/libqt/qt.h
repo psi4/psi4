@@ -41,6 +41,8 @@
 #include <cstdint>
 #include <string>
 
+#include "psi4/pybind11.h"
+
 #include "psi4/pragma.h"
 #include "psi4/psi4-dec.h"
 
@@ -80,6 +82,7 @@ void parallel_timer_off(const std::string& key, int thread_rank);
 void start_skip_timers();
 void stop_skip_timers();
 void clean_timers();
+pybind11::tuple collect_timers();
 
 int cc_excited(const char* wfn);
 int cc_excited(std::string wfn);
