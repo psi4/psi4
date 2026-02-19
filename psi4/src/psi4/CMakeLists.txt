@@ -6,6 +6,7 @@ foreach(dir_name
   libdisp
   libdpd
   libfilesystem
+  libfmm
   libfock
   libfunctional
   libiwl
