@@ -233,16 +233,35 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
 #ifdef USING_dkh
     /*- Relativistic Hamiltonian type !expert -*/
-    options.add_str("RELATIVISTIC", "NO", "NO X2C DKH");
+    options.add_str("RELATIVISTIC", "NO", "NO X2C ZORA DKH");
 #else
     /*- Relativistic Hamiltonian type !expert -*/
-    options.add_str("RELATIVISTIC", "NO", "NO X2C");
+    options.add_str("RELATIVISTIC", "NO", "NO X2C ZORA");
 #endif
     /*- Auxiliary basis set for solving Dirac equation in X2C and DKH
         calculations. Defaults to decontracted orbital basis. -*/
     options.add_str("BASIS_RELATIVISTIC", "");
     /*- Order of Douglas-Kroll-Hess !expert -*/
     options.add_int("DKH_ORDER", 2);
+
+    /*- Number of radial points for the ZORA effective potential grid. The ZORA calculation is 
+    relatively fast, and only happens once, so don't cheap out on the radial points! -*/
+    options.add_int("ZORA_RADIAL_POINTS", 140);
+
+	/*- Number of spherical points for the ZORA effective potential grid -*/
+    options.add_int("ZORA_SPHERICAL_POINTS", 2030);
+
+    /*- Pruning scheme for the ZORA effective potential grid. ``P_slater`` is the best option if
+    you must prune, but ``none`` is recommended. ``Robust`` and ``Treutler`` are not recommended
+    for the ZORA grid as they cut too many points near the nuclear cusp. !expert -*/
+    options.add_str("ZORA_PRUNING_SCHEME", "NONE", "NONE P_SLATER ROBUST LOG_SLATER TREUTLER");
+	
+	/*- Basis tolerance for the ZORA effective potential grid !expert -*/
+    options.add_double("ZORA_BASIS_TOLERANCE", 1e-12);
+
+    /*- Compute the non-relativistic kinetic energy with the ZORA code.
+    Useful when comparing analytic and grid-based methods. !expert -*/
+    options.add_bool("ZORA_NR_DEBUG", false);
 
     /*- Directory to which to write cube files. Default is the input file
     directory. -*/
@@ -2615,52 +2634,131 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("EP2_MAXITER", 20);
     }
     if (name == "DLPNO" || options.read_globals()) {
-        /*- MODULEDESCRIPTION Performs DLPNO-MP2 computations for RHF reference wavefunctions. -*/
+        /*- MODULEDESCRIPTION Performs DLPNO-MP2/CCSD/CCSD(T) computations for RHF reference wavefunctions. -*/
 
         /*- SUBSECTION General Options -*/
 
+        /*- Occupation number threshold for removing PNOs -*/
+        options.add_double("T_CUT_PNO", 1e-8);
+        /*- DOI threshold for including PAO (u) in domain of LMO (i) -*/
+        options.add_double("T_CUT_DO", 1e-2);
+        /*- Mulliken charge threshold for including aux BFs on atom (a) in domain of LMO (i) -*/
+        options.add_double("T_CUT_MKN", 1e-3);
         /*- Auxiliary basis set for MP2 density fitting computations.
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
         options.add_str("DF_BASIS_MP2", "");
+        /*- Auxiliary basis set for density-fitted coupled cluster computations.
+        :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
+        options.add_str("DF_BASIS_CC", "");
         /*- General convergence criteria for DLPNO methods -*/
-        options.add_str("PNO_CONVERGENCE", "NORMAL", "LOOSE NORMAL TIGHT");
+        options.add_str("PNO_CONVERGENCE", "NORMAL", "LOOSE NORMAL TIGHT VERY_TIGHT");
         /*- Convergence criteria for the Foster-Boys orbital localization -*/
         options.add_double("LOCAL_CONVERGENCE", 1.0E-12);
         /*- Maximum iterations in Foster-Boys localization -*/
         options.add_int("LOCAL_MAXITER", 1000);
-        /*- Energy convergence criteria for local MP2 iterations -*/
+        /*- Energy convergence criteria for local MP2/CCSD/CCSD(T) iterations -*/
         options.add_double("E_CONVERGENCE", 1e-6);
-        /*- Residual convergence criteria for local MP2 iterations -*/
+        /*- Residual convergence criteria for local MP2/CCSD/CCSD(T) iterations -*/
         options.add_double("R_CONVERGENCE", 1e-6);
         /*- Orbital localizer -*/
         options.add_str("DLPNO_LOCAL_ORBITALS", "BOYS", "BOYS PIPEK_MEZEY");
-        /*- Maximum number of iterations to determine the MP2 amplitudes. -*/
+        /*- Maximum number of iterations to determine the MP2/CCSD/CCSD(T) amplitudes. -*/
         options.add_int("DLPNO_MAXITER", 50);
+        /*- Perform automatic memory checks to toggle between core and disk? 
+            (NOT recommended to change this for average user). -*/
+        options.add_bool("DLPNO_TOGGLE_MEMORY", true);
 
         /*- SUBSECTION Expert Options -*/
 
         /*- Which DLPNO Algorithm to run (not set by user) !expert -*/
-        options.add_str("DLPNO_ALGORITHM", "MP2", "MP2");
-        /*- Occupation number threshold for removing PNOs !expert -*/
-        options.add_double("T_CUT_PNO", 1e-8);
-        /*- DOI threshold for including PAO (u) in domain of LMO (i) !expert -*/
-        options.add_double("T_CUT_DO", 1e-2);
+        options.add_str("DLPNO_ALGORITHM", "CCSD(T)", "MP2 CCSD CCSD(T)");
+        /*- Use T0 approximation for DLPNO-CCSD(T)? (not set explicitly), 
+        triggered by indicating 'dlpno-ccsd(t0)' rather than 'dlpno-ccsd(t)' !expert -*/
+        options.add_bool("T0_APPROXIMATION", false);
         /*- DOI threshold for treating LMOs (i,j) as interacting !expert -*/
-        options.add_double("T_CUT_DO_ij", 1e-5);
+        options.add_double("T_CUT_DO_IJ", 1e-5);
+        /*- DOI threshold for treating PAOs (u,v) as interacting !expert -*/
+        options.add_double("T_CUT_DO_UV", 1e-5);
         /*- Pair energy threshold (dipole approximation) for treating LMOs (i, j) as interacting !expert -*/
         options.add_double("T_CUT_PRE", 1e-6); 
         /*- DOI threshold for including PAO (u) in domain of LMO (i) during pre-screening !expert -*/
         options.add_double("T_CUT_DO_PRE", 3e-2);
-        /*- Mulliken charge threshold for including aux BFs on atom (a) in domain of LMO (i) !expert -*/
-        options.add_double("T_CUT_MKN", 1e-3);
         /*- Basis set coefficient threshold for including basis function (m) in domain of LMO (i) !expert -*/
-        options.add_double("T_CUT_CLMO", 1e-2);
+        options.add_double("T_CUT_CLMO", 1e-4);
         /*- Basis set coefficient threshold for including basis function (n) in domain of PAO (u) !expert -*/
-        options.add_double("T_CUT_CPAO", 1e-3);
+        options.add_double("T_CUT_CPAO", 1e-4);
         /*- Overlap matrix threshold for removing linear dependencies !expert -*/
         options.add_double("S_CUT", 1e-8);
         /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations !expert -*/
         options.add_double("F_CUT", 1e-5);
+        /*- AO ERI Schwarz Screening tolerance for building DF ints in DLPNO !expert -*/
+        options.add_double("DLPNO_AO_INTS_TOL", 1.0e-10);
+        /*- Minimum number of PNOs required in each pair !expert -*/
+        options.add_int("MIN_PNOS", 5);
+
+        /*- SUBSECTION DLPNO-CCSD Specific Options -*/
+
+        /*- The tolerance to decide between "Weak Pairs" and "Strong Pairs" after the initial pair prescreening -*/
+        options.add_double("T_CUT_PAIRS", 1e-5);
+        /*- How much to scale T_CUT_PNO by for diagonal PNOs !expert */
+        options.add_double("T_CUT_PNO_DIAG_SCALE", 3e-2);
+        /*- How much to scale T_CUT_PNO for core pairs !expert */
+        options.add_double("T_CUT_PNO_CORE_SCALE", 1e-2);
+        /*- Occupation trace sum threshold for removing PNOs !expert -*/
+        options.add_double("T_CUT_TRACE", 0.999);
+        /*- MP2 pair energy tolerance for removing PNOs !expert -*/
+        options.add_double("T_CUT_ENERGY", 0.997);
+        /*- The tolerance to decide between "Weak Pairs" and "SC-MP2 Pairs" after dipole screening !expert -*/
+        options.add_double("T_CUT_PAIRS_MP2", 1e-6);
+        /*- Occupation number threshold for removing PNOs (for preceeding DLPNO-MP2 computation) !expert -*/
+        options.add_double("T_CUT_PNO_MP2", 1e-10);
+        /*- Occupation trace sum threshold for removing PNOs (for preceeding DLPNO-MP2 computation) !expert -*/
+        options.add_double("T_CUT_TRACE_MP2", 0.9999);
+        /*- Pair energy tolerance for removing PNOs (for preceeding DLPNO-MP2 computation) !expert -*/
+        options.add_double("T_CUT_ENERGY_MP2", 0.999);
+
+
+        /*- SUBSECTION DLPNO-CCSD(T) Specific Options -*/
+
+        /*- Occupation number threshold for removing TNOs -*/
+        options.add_double("T_CUT_TNO", 1e-9);
+        /*- Maximum number of weak pairs in (ij, jk, ik) to consider when forming triplet ijk !expert -*/
+        options.add_int("TRIPLES_MAX_WEAK_PAIRS", 1);
+        /*- T_CUT_TNO scaling for strong triplets in the iterative (T) algorithm !expert -*/
+        options.add_double("T_CUT_TNO_STRONG_SCALE", 10.0);
+        /*- T_CUT_TNO scaling for weak triplets in the iterative (T) algorithm !expert -*/
+        options.add_double("T_CUT_TNO_WEAK_SCALE", 100.0);
+        /*- Occupation number threshold used in the prescreening step !expert -*/
+        options.add_double("T_CUT_TNO_PRE", 1e-7);
+        /*- Local density fitting tolerance for the prescreening portion of the (T) algorithm !expert -*/
+        options.add_double("T_CUT_MKN_TRIPLES_PRE", 0.1);
+        /*- LMO/PAO threshold for the prescreening portion of the (T) algorithm !expert -*/
+        options.add_double("T_CUT_DO_TRIPLES_PRE", 2e-2);
+        /*- Triples energy threshold for a triplet (ijk) to not be further considered !expert -*/
+        options.add_double("T_CUT_TRIPLES_WEAK", 1e-8);
+        /*- Local density fitting tolerance for the (T) algorithm !expert -*/
+        options.add_double("T_CUT_MKN_TRIPLES", 1e-2);
+        /*- LMO/PAO threshold for the (T) algorithm !expert -*/
+        options.add_double("T_CUT_DO_TRIPLES", 1e-2);
+        /*- Fock matrix threshold for treating ampltudes as coupled during local (T) iterations !expert -*/
+        options.add_double("F_CUT_T", 1e-3);
+        /*- Energy difference in which to stop considering triples in iterative (T) !expert -*/
+        options.add_double("T_CUT_ITER", 1e-5);
+        /*- Minimum number of TNOs required in each triplet !expert -*/
+        options.add_int("MIN_TNOS", 9);
+
+        /*- SUBSECTION Memory Control Options -*/
+
+        /*- Use low memory PNO overlap algorithm? !expert -*/
+        options.add_bool("LOW_MEMORY_OVERLAP", false);
+        /*- Write (Q_{ij} | m_{ij} a_{ij}) integrals to disk? !expert -*/
+        options.add_bool("WRITE_QIA_PNO", false);
+        /*- Write (Q_{ij} | a_{ij} b_{ij}) integrals to disk? !expert -*/
+        options.add_bool("WRITE_QAB_PNO", false);
+        /*- Write triples (W and V intermediates) to disk? !expert -*/
+        options.add_bool("WRITE_TRIPLES_INTERMEDIATES", false);
+        /*- Write triples amplitudes to disk? !expert -*/
+        options.add_bool("WRITE_TRIPLES_AMPLITUDES", false);
 
         /*- SUBSECTION DOI Grid Options -*/
 

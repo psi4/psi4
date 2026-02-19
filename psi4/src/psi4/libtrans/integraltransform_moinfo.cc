@@ -482,10 +482,17 @@ void IntegralTransform::process_spaces() {
 
     // End by adding the AO orbital space - this is always needed
     spacesUsed_.push_back(MOSPACE_NIL);
-    spaceArray_.push_back(sopi_);
+
+    int *sopi_data = new int[sopi_.n()];
+
+    for(int i = 0; i < sopi_.n(); i++) {
+        sopi_data[i] = sopi_.get(i);
+    }
+
+    spaceArray_.push_back(sopi_data);
     spaceArray_.push_back(sosym_);
-    aOrbsPI_[MOSPACE_NIL] = sopi_;
-    bOrbsPI_[MOSPACE_NIL] = sopi_;
+    aOrbsPI_[MOSPACE_NIL] = sopi_data;
+    bOrbsPI_[MOSPACE_NIL] = sopi_data;
 
     /* Populate the DPD indexing map.  The string class is used instead of a char*
      * because I can't be bothered to roll my own char* container with comparison

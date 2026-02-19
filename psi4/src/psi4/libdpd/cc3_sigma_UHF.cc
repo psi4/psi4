@@ -52,11 +52,11 @@ namespace psi {
 
 void DPD::cc3_sigma_UHF_AAA(dpdbuf4 *CMNEF, dpdbuf4 *WABEI, dpdbuf4 *WMBIJ, int do_singles, dpdbuf4 *Dints_anti,
                             dpdfile2 *SIA, int do_doubles, dpdfile2 *FME, dpdbuf4 *WMAFE, dpdbuf4 *WMNIE,
-                            dpdbuf4 *SIJAB, int *aoccpi, int *aocc_off, int *avirtpi, int *avir_off, double omega,
+                            dpdbuf4 *SIJAB, Dimension const& aoccpi, int *aocc_off, Dimension const& avirtpi, int *avir_off, double omega,
                             std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     int h, nirreps;
-    int *occ_off, *occpi, *vir_off, *virtpi;
+    int *occ_off, *vir_off;
     int Gi, Gj, Gk, Gijk, Ga, Gb, Gc;
     int i, j, k, I, J, K;
     int a, b, c, A, B, C;
@@ -82,9 +82,9 @@ void DPD::cc3_sigma_UHF_AAA(dpdbuf4 *CMNEF, dpdbuf4 *WABEI, dpdbuf4 *WMBIJ, int 
     GX3 = GU ^ GC;
 
     nirreps = CMNEF->params->nirreps;
-    occpi = aoccpi;
+    const auto& occpi = aoccpi;
     occ_off = aocc_off;
-    virtpi = avirtpi;
+    const auto& virtpi = avirtpi;
     vir_off = avir_off;
 
     file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
@@ -279,11 +279,11 @@ void DPD::cc3_sigma_UHF_AAA(dpdbuf4 *CMNEF, dpdbuf4 *WABEI, dpdbuf4 *WMBIJ, int 
 
 void DPD::cc3_sigma_UHF_BBB(dpdbuf4 *Cmnef, dpdbuf4 *Wabei, dpdbuf4 *Wmbij, int do_singles, dpdbuf4 *Dijab_anti,
                             dpdfile2 *Sia, int do_doubles, dpdfile2 *Fme, dpdbuf4 *Wmafe, dpdbuf4 *Wmnie,
-                            dpdbuf4 *Sijab, int *boccpi, int *bocc_off, int *bvirtpi, int *bvir_off, double omega,
+                            dpdbuf4 *Sijab, Dimension const& boccpi, int *bocc_off, Dimension const& bvirtpi, int *bvir_off, double omega,
                             std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     int h, nirreps;
-    int *occ_off, *occpi, *vir_off, *virtpi;
+    int *occ_off, *vir_off;
     int Gi, Gj, Gk, Gijk, Ga, Gb, Gc;
     int i, j, k, I, J, K;
     int a, b, c, A, B, C;
@@ -307,9 +307,9 @@ void DPD::cc3_sigma_UHF_BBB(dpdbuf4 *Cmnef, dpdbuf4 *Wabei, dpdbuf4 *Wmbij, int 
     GX3 = GU ^ GC;
 
     nirreps = Cmnef->params->nirreps;
-    occpi = boccpi;
+    const auto& occpi = boccpi;
     occ_off = bocc_off;
-    virtpi = bvirtpi;
+    const auto& virtpi = bvirtpi;
     vir_off = bvir_off;
 
     file2_init(&fIJ, PSIF_CC_OEI, 0, 2, 2, "fij");
@@ -505,8 +505,8 @@ void DPD::cc3_sigma_UHF_AAB(dpdbuf4 *C2AA, dpdbuf4 *C2AB, dpdbuf4 *C2BA, dpdbuf4
                             dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, int do_singles, dpdbuf4 *DAA, dpdbuf4 *DAB,
                             dpdfile2 *SIA, dpdfile2 *Sia, int do_doubles, dpdfile2 *FME, dpdfile2 *Fme, dpdbuf4 *WMAFE,
                             dpdbuf4 *WMaFe, dpdbuf4 *WmAfE, dpdbuf4 *WMNIE, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
-                            dpdbuf4 *SIJAB, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off,
-                            int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, double omega, std::string out) {
+                            dpdbuf4 *SIJAB, dpdbuf4 *SIjAb, Dimension const& aoccpi, int *aocc_off, Dimension const& boccpi, int *bocc_off,
+                            Dimension const& avirtpi, int *avir_off, Dimension const& bvirtpi, int *bvir_off, double omega, std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     int h, nirreps;
     int Gi, Gj, Gk, Gijk;
@@ -1035,8 +1035,8 @@ void DPD::cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA, dpdbuf4
                             dpdbuf4 *EBB, dpdbuf4 *EAB, dpdbuf4 *EBA, int do_singles, dpdbuf4 *DBB, dpdbuf4 *DBA,
                             dpdfile2 *SIA, dpdfile2 *Sia, int do_doubles, dpdfile2 *FME, dpdfile2 *Fme, dpdbuf4 *Wmafe,
                             dpdbuf4 *WMaFe, dpdbuf4 *WmAfE, dpdbuf4 *Wmnie, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
-                            dpdbuf4 *Sijab, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off,
-                            int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, double omega, std::string out) {
+                            dpdbuf4 *Sijab, dpdbuf4 *SIjAb, Dimension const& aoccpi, int *aocc_off, Dimension const& boccpi, int *bocc_off,
+                            Dimension const& avirtpi, int *avir_off, Dimension const& bvirtpi, int *bvir_off, double omega, std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     int h, nirreps, S_irr;
     int Gi, Gj, Gk, Gijk;

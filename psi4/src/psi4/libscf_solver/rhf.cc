@@ -264,13 +264,10 @@ void RHF::form_C(double shift) {
     if (shift == 0.0) {
         diagonalize_F(Fa_, Ca_, epsilon_a_);
     } else {
-        auto shifted_F = SharedMatrix(factory_->create_matrix("F"));
         auto Cvir = Ca_subset("SO", "VIR");
-
-        auto SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
-        SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
-        shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
-        shifted_F->add(Fa_);
+        auto SCvir = linalg::doublet(S_, Cvir, false, false);
+        auto shifted_F = Fa_->clone();
+        shifted_F->gemm(false, true, shift, SCvir, SCvir, 1.0);
         diagonalize_F(shifted_F, Ca_, epsilon_a_);
     }
     find_occupation();
@@ -641,9 +638,9 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     if (needs_ao) {
         // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
-        auto Cocc_ao = Ca_subset("AO", "ALL");
-        auto F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
-        auto IFock_ao = linalg::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
+        const auto Cocc_ao = Ca_subset("AO", "ALL");
+        const auto F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
+        const auto IFock_ao = linalg::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
         Precon_ao = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
 
         auto denomp = Precon_ao->pointer()[0];
@@ -658,9 +655,9 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     if (needs_so) {
         // MO Fock Matrix (Inactive Fock in Helgaker's language)
-        auto virpi = nmopi_ - nalphapi_;
-        auto IFock_so = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
-        Precon_so = std::make_shared<Matrix>("Precon", nirrep_, nalphapi_, virpi);
+        const auto virpi = nmopi_ - nalphapi_;
+        const auto IFock_so = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
+        Precon_so = std::make_shared<Matrix>("Precon", nalphapi_, virpi);
 
         for (size_t h = 0; h < nirrep_; h++) {
             if (!nalphapi_[h] || !virpi[h]) continue;
@@ -857,7 +854,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     return ret_vec;
 }
 
-int RHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
+int RHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) {
     int fock_builds;
     std::time_t start, stop;
     start = std::time(nullptr);

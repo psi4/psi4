@@ -1,6 +1,7 @@
 list(APPEND sources
   local.cc
   x2cint.cc
+  zora.cc
   orbitalspace.cc
   maketab.cc
   oeprop.cc

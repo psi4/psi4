@@ -67,6 +67,11 @@ class NumIntHelper {
     /// f is represented for each block of points of the DFT integration grid as
     /// the vector (n_points). The output has (n_bas, n_bas)
     SharedMatrix potential_integral(const std::vector<SharedVector>& grid_data) const;
+
+    /// Compute a Hellmann-Feynman gradient 2 D \int \nabla \chi_\mu(r) \chi_\nu(r) f(r)
+    /// where f is a scalar function. f is represented for each block of points of the DFT
+    /// integration grid as the vector (n_points). The output has (n_atom, 3)
+    SharedMatrix potential_gradient(const std::vector<SharedVector>& grid_data, const SharedMatrix& D) const;
 };
 
 }  // namespace psi

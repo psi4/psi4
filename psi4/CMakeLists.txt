@@ -141,7 +141,7 @@ else()
 endif()
 
 if(${ENABLE_Einsums})
-    find_package(Einsums 1.0.6 CONFIG REQUIRED)  # edit in codedeps
+    find_package(Einsums 1.1.2 CONFIG REQUIRED)  # edit in codedeps
     get_property(_loc TARGET Einsums::Einsums PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using Einsums${ColourReset}: ${_loc} (version ${Einsums_VERSION})")
@@ -216,6 +216,15 @@ if(${ENABLE_OpenOrbitalOptimizer})
     message(STATUS "${Cyan}Using OpenOrbitalOptimizer${ColourReset}: ${_loc} (version ${OpenOrbitalOptimizer_VERSION})")
 else()
     message(STATUS "Disabled OpenOrbitalOptimizer ${OpenOrbitalOptimizer_DIR}")
+endif()
+
+if(${ENABLE_OpenTrustRegion})
+    find_package(OpenTrustRegion COMPONENTS int32 CONFIG REQUIRED)
+    get_property(_loc TARGET OpenTrustRegion::OpenTrustRegion PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using OpenTrustRegion${ColourReset}: ${_loc} (version ${OpenTrustRegion_VERSION})")
+else()
+    message(STATUS "Disabled OpenTrustRegion ${OpenTrustRegion_DIR}")
 endif ()
 
 if(${ENABLE_OpenTrustRegion})
@@ -270,9 +279,13 @@ elseif(UNIX)
 endif()
 
 # add -pedantic-errors flag here, if FORCE_PEDANTIC is enabled 
-if(${FORCE_PEDANTIC}) 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic-errors")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
+if(${FORCE_PEDANTIC})
+  if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")
+  else()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic-errors")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
+  endif()
 endif()
 
 # <<<  Build  >>>

@@ -76,7 +76,7 @@ void EaT_RHF_thread(EaT_RHF_thread_data *);
 double EaT_RHF() {
     int i, j, k, I, J, K, Gi, Gj, Gk, h, nirreps, cnt;
     int nijk, nthreads, thread, *ijk_part;
-    int *occpi, *virtpi, *occ_off, *vir_off;
+    int *occ_off, *vir_off;
     double ET, *ET_array;
     dpdfile2 fIJ, fAB, fIA, L1;
     dpdbuf4 T2, L2, Eints, Dints, *Fints_array;
@@ -85,8 +85,8 @@ double EaT_RHF() {
     timer_on("ET_RHF");
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 
@@ -280,7 +280,7 @@ void EaT_RHF_thread(EaT_RHF_thread_data *data) {
     int I, J, K, A, B, C, D, L;
     int i, j, k, a, b, c, d, l;
     int ij, ji, ik, ki, jk, kj;
-    int *occpi, *virtpi, *occ_off, *vir_off;
+    int *occ_off, *vir_off;
     double t_ia, t_jb, t_kc, D_jkbc, D_ikac, D_ijab;
     double f_ia, f_jb, f_kc, t_jkbc, t_ikac, t_ijab;
     double dijk, value1, value2, value3, value4, value5, value6, denom, *ET_local;
@@ -290,8 +290,8 @@ void EaT_RHF_thread(EaT_RHF_thread_data *data) {
     int nijk, nthreads, first_ijk, last_ijk, thr_id;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 

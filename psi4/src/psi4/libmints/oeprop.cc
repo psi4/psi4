@@ -1785,20 +1785,27 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
     int num_atoms = mol->natom();
     size_t total_points = grid->npoints();
 
+    size_t max_points = 0;
+    size_t max_nbf = 0;
+
+    std::vector<std::shared_ptr<BlockOPoints>> blocks = grid->blocks();
+    for (int b = 0; b < blocks.size(); b++) {
+        max_points = std::max(max_points, blocks[b]->npoints());
+        max_nbf = std::max(max_nbf, blocks[b]->local_nbf());
+    }
     SharedMatrix Da = wfn_->Da_subset("AO");
     SharedMatrix Db;
-    auto point_func = (std::shared_ptr<PointFunctions>)(std::make_shared<RKSFunctions>(basisset_, total_points, nbf));
+    auto point_func = (std::shared_ptr<PointFunctions>)(std::make_shared<RKSFunctions>(basisset_, max_points, max_nbf));
 
     if (same_dens_) {
         Db = Da->clone();
         point_func->set_pointers(Da);
     } else {
         Db = wfn_->Db_subset("AO");
-        point_func = (std::shared_ptr<PointFunctions>)(std::make_shared<UKSFunctions>(basisset_, total_points, nbf));
+        point_func = (std::shared_ptr<PointFunctions>)(std::make_shared<UKSFunctions>(basisset_, max_points, max_nbf));
         point_func->set_pointers(Da, Db);
     }
 
-    std::vector<std::shared_ptr<BlockOPoints>> blocks = grid->blocks();
     size_t running_points = 0;
 
     // Coordinates, weights, and rho (molecular electron density) at each grid point

@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef __rohf_psi_h__
-#define __rohf_psi_h__
+#ifndef PSI4_LIBSCF_SOLVER_ROHF_H
+#define PSI4_LIBSCF_SOLVER_ROHF_H
 
 #include <vector>
 #include "psi4/libpsio/psio.hpp"
@@ -94,7 +94,7 @@ class ROHF : public HF {
     void compute_SAD_guess(bool natorb) override;
 
     void damping_update(double) override;
-    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
+    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) override;
     bool stability_analysis() override;
 
 #ifdef USING_OpenTrustRegion

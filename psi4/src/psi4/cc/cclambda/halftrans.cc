@@ -58,7 +58,7 @@ namespace cclambda {
 */
 
 void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C, int nirreps, int **mo_row,
-               int **so_row, int *mospi, int *sospi, int type, double alpha, double beta) {
+               int **so_row, Dimension const& mospi, Dimension const& sospi, int type, double alpha, double beta) {
     int h, Gc, Gd, cd, pq, ij;
     double **X;
 
