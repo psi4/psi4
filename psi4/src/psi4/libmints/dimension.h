@@ -90,6 +90,9 @@ class PSI_API Dimension {
     /// @brief Get a const reference to the std::vector storing the block numbers inside the Dimension object.
     const std::vector<int>& blocks() const { return blocks_; }
 
+    /// @brief Copy the block data
+    void copy(const Dimension& other) { blocks_ = other.blocks(); }
+
     /// @brief Casting operator to int*
     PSI_DEPRECATED(
         "Cast-to-pointer operators for psi::Dimension are being deprecated. Unless someone speaks up, 1.10 may be the "
