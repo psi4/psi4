@@ -1547,3 +1547,32 @@ data:
         //CMAKE_INSIST_FIND_PACKAGE_OpenOrbitalOptimizer: true
         //CMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer: true
 
+  - project: opentrustregion
+    use:
+      added: "1.11"
+      required: false
+      buildable: true
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: eriksen-lab
+      name: OpenTrustRegion
+      commit: v2.0.0
+    cmake:
+      name: OpenTrustRegion
+      constraint: "2.0.0"
+      components:
+        - int32
+      target: OpenTrustRegion::OpenTrustRegion
+    conda:
+      channel: conda-forge
+      name: OpenTrustRegion
+      constraint: null
+      cmake:
+        ENABLE_OpenTrustRegion: true
+        OpenTrustRegion_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/OpenTrustRegion
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/OpenTrustRegion
+        //CMAKE_INSIST_FIND_PACKAGE_OpenTrustRegion: true
+        //CMAKE_DISABLE_FIND_PACKAGE_OpenTrustRegion: true

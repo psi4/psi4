@@ -1561,5 +1561,230 @@ void UHF::openorbital_scf() {
 #endif
 }
 
+#ifdef USING_OpenTrustRegion
+std::pair<SharedMatrix, SharedMatrix> UHF::unpack(const OTR::c_real* matrix, const std::string name, 
+                                                  const Dimension occpi_a, const Dimension virpi_a, 
+                                                  const Dimension occpi_b, const Dimension virpi_b) {
+    // create shared matrix
+    auto shared_matrix_a = std::make_shared<Matrix>(name + "_a", occpi_a, virpi_a);
+    auto shared_matrix_b = std::make_shared<Matrix>(name + "_b", occpi_b, virpi_b);
+
+    // loop over irreps
+    for (size_t h = 0, counter = 0; h < nirrep_; h++) {
+        // skip if dimensions are zero
+        if (occpi_a[h] && virpi_a[h]) {
+            // get the pointer to the memory block for this irrep in shared matrix
+            auto block = shared_matrix_a->pointer(h);
+
+            // copy matrix to shared matrix
+            for (size_t i = 0; i < occpi_a[h]; i++) {
+                for (size_t a = 0; a < virpi_a[h]; a++) {
+                    block[i][a] = matrix[counter++];
+                }
+            }
+        }
+
+        // skip if dimensions are zero
+        if (occpi_b[h] && virpi_b[h]) {
+            // get the pointer to the memory block for this irrep in shared matrix
+            auto block = shared_matrix_b->pointer(h);
+
+            // copy matrix to shared matrix
+            for (size_t i = 0; i < occpi_b[h]; i++) {
+                for (size_t a = 0; a < virpi_b[h]; a++) {
+                    block[i][a] = matrix[counter++];
+                }
+            }
+        }
+    }
+
+    return {shared_matrix_a, shared_matrix_b};
+}
+
+OTR::c_int UHF::otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) {
+    // get occupied and virtual dimensions per spin type and irrep
+    auto occpi_a = nalphapi_;
+    auto occpi_b = nbetapi_;
+    auto virpi_a = nmopi_ - nalphapi_;
+    auto virpi_b = nmopi_ - nbetapi_;
+
+    // unpack kappa
+    auto [kappa_shared_a, kappa_shared_b] = unpack(kappa, "kappa", occpi_a, virpi_a, occpi_b, virpi_b);
+
+    // save density matrix and other quantities
+    auto Ca_save = std::make_shared<Matrix>(Ca_);
+    auto Cb_save = std::make_shared<Matrix>(Cb_);
+    auto Da_save = std::make_shared<Matrix>(Da_);
+    auto Db_save = std::make_shared<Matrix>(Db_);
+    auto Ga_save = std::make_shared<Matrix>(Ga_);
+    auto Gb_save = std::make_shared<Matrix>(Gb_);
+    auto Va_save = std::make_shared<Matrix>(Va_);
+    auto Vb_save = std::make_shared<Matrix>(Vb_);
+    auto J_save = std::make_shared<Matrix>(J_);
+    auto Ka_save = std::make_shared<Matrix>(Ka_);
+    auto Kb_save = std::make_shared<Matrix>(Kb_);
+    auto wKa_save = std::make_shared<Matrix>(wKa_);
+    auto wKb_save = std::make_shared<Matrix>(wKb_);
+
+    // apply orbital rotation
+    rotate_orbitals(Ca_, kappa_shared_a);
+    rotate_orbitals(Cb_, kappa_shared_b);
+    
+    // form density matrix
+    form_D();
+
+    // form two-electron contribution to Fock matrix (also forms Coulomb and exchange contributions separately)
+    form_G();
+
+    // compute energy
+    *func = compute_E();
+
+    // get back previous quantities
+    Ca_->copy(Ca_save);
+    Cb_->copy(Cb_save);
+    Da_->copy(Da_save);
+    Db_->copy(Db_save);
+    Ga_->copy(Ga_save);
+    Gb_->copy(Gb_save);
+    Va_->copy(Va_save);
+    Vb_->copy(Vb_save);
+    J_->copy(J_save);
+    Ka_->copy(Ka_save);
+    Kb_->copy(Kb_save);
+    wKa_->copy(wKa_save);
+    wKb_->copy(wKb_save);
+    if (functional_->needs_xc()) {
+        potential_->set_D({Da_, Db_});
+    }
+
+    return 0;
+}
+
+OTR::c_int UHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
+    // get doubly occupied and virtual dimensions per irrep
+    auto occpi_a = nalphapi_;
+    auto occpi_b = nbetapi_;
+    auto virpi_a = nmopi_ - nalphapi_;
+    auto virpi_b = nmopi_ - nbetapi_;
+
+    // unpack x
+    auto [x_shared_a, x_shared_b] = unpack(x, "x", occpi_a, virpi_a, occpi_b, virpi_b);
+
+    // apply Hessian linear transformation
+    auto hess_x_shared = cphf_Hx({x_shared_a, x_shared_b});
+
+    // loop over irreps
+    for (size_t h = 0, counter = 0; h < nirrep_; h++) {
+        // skip if dimensions are zero
+        if (occpi_a[h] && virpi_a[h]) {
+            // get the pointer to the memory block for this irrep in shared matrix
+            auto hess_x_irrep = hess_x_shared[0]->pointer(h);
+
+            // copy shared matrix to Hessian linear transformation
+            for (size_t i = 0; i < occpi_a[h]; i++) {
+                for (size_t a = 0; a < virpi_a[h]; a++) {
+                    hess_x[counter++] = -2 * hess_x_irrep[i][a];
+                }
+            }
+        }
+
+        // skip if dimensions are zero
+        if (occpi_b[h] && virpi_b[h]) {
+            // get the pointer to the memory block for this irrep in shared matrix
+            auto hess_x_irrep = hess_x_shared[1]->pointer(h);
+
+            // copy shared matrix to Hessian linear transformation, factor 2 to account 
+            // for redundant parameters
+            for (size_t i = 0; i < occpi_b[h]; i++) {
+                for (size_t a = 0; a < virpi_b[h]; a++) {
+                    hess_x[counter++] = -2 * hess_x_irrep[i][a];
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+OTR::c_int UHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
+                                OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) {
+    // get occupied and virtual dimensions per spin type and irrep
+    auto occpi_a = nalphapi_;
+    auto occpi_b = nbetapi_;
+    auto virpi_a = nmopi_ - nalphapi_;
+    auto virpi_b = nmopi_ - nbetapi_;
+
+    // unpack kappa
+    auto [kappa_shared_a, kappa_shared_b] = unpack(kappa, "kappa", occpi_a, virpi_a, occpi_b, virpi_b);
+
+    // apply orbital rotation
+    rotate_orbitals(Ca_, kappa_shared_a);
+    rotate_orbitals(Cb_, kappa_shared_b);
+
+    // form density matrix
+    form_D();
+
+    // form two-electron contribution to Fock matrix (also forms Coulomb and exchange contributions separately)
+    form_G();
+
+    // compute energy
+    *func = compute_E();
+
+    // form Fock matrix
+    form_F();
+
+    // compute Fock matrix
+    auto fock_a = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
+    auto fock_b = linalg::triplet(Cb_, Fb_, Cb_, true, false, false);
+
+    // loop over irreps
+    for (size_t h = 0, counter = 0; h < nirrep_; h++) {
+        // skip if dimensions are zero
+        if (occpi_a[h] && virpi_a[h]) {
+            // get the pointer to the memory block for this irrep in shared matrix
+            auto fp = fock_a->pointer(h);
+
+            // construct gradient and Hessian diagonal, factor 2 to account for 
+            // redundant parameters
+            for (size_t i = 0; i < occpi_a[h]; i++) {
+                for (size_t a = occpi_a[h]; a < nmopi_[h]; a++) {
+                    grad[counter] = 2 * fp[i][a];
+                    h_diag[counter++] = 2 * (-fp[i][i] + fp[a][a]);
+                }
+            }
+        }
+
+        // skip if dimensions are zero
+        if (occpi_b[h] && virpi_b[h]) {
+            // get the pointer to the memory block for this irrep in shared matrix
+            auto fp = fock_b->pointer(h);
+
+            // construct gradient and Hessian diagonal, factor 2 to account for 
+            // redundant parameters
+            for (size_t i = 0; i < occpi_b[h]; i++) {
+                for (size_t a = occpi_b[h]; a < nmopi_[h]; a++) {
+                    grad[counter] = 2 * fp[i][a];
+                    h_diag[counter++] = 2 * (-fp[i][i] + fp[a][a]);
+                }
+            }
+        }
+    }
+
+    // set pointer
+    *hess_x_fp = otr_hess_x_wrapper;
+
+    return 0;
+}
+
+int UHF::otr_n_param() {
+    Dimension nparampi_a = nalphapi_;
+    Dimension nparampi_b = nbetapi_;
+    for (size_t i = 0, maxi = nalphapi_.n(); i < maxi; ++i) nparampi_a[i] *= (nmopi_ - nalphapi_)[i];
+    for (size_t i = 0, maxi = nbetapi_.n(); i < maxi; ++i) nparampi_b[i] *= (nmopi_ - nbetapi_)[i];
+
+    return (nparampi_a + nparampi_b).sum();
+}
+#endif
+
 }  // namespace scf
 }  // namespace psi
