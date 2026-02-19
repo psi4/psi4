@@ -329,22 +329,16 @@ PKWorker::PKWorker(std::shared_ptr<BasisSet> primary, SharedInt eri, std::shared
     do_wK_ = false;
 }
 
-char *PKWorker::get_label_J(const int batch) {
-    auto *label = new char[100];
-    sprintf(label, "J Block (Batch %d)", batch);
-    return label;
+std::string PKWorker::get_label_J(const int batch) {
+    return "J Block (Batch " + std::to_string(batch) + ")";
 }
 
-char *PKWorker::get_label_K(const int batch) {
-    auto *label = new char[100];
-    sprintf(label, "K Block (Batch %d)", batch);
-    return label;
+std::string PKWorker::get_label_K(const int batch) {
+    return "K Block (Batch " + std::to_string(batch) + ")";
 }
 
-char *PKWorker::get_label_wK(const int batch) {
-    auto *label = new char[100];
-    sprintf(label, "wK Block (Batch %d)", batch);
-    return label;
+std::string PKWorker::get_label_wK(const int batch) {
+    return "wK Block (Batch " + std::to_string(batch) + ")";
 }
 
 void PKWorker::first_quartet(size_t i) {
@@ -468,8 +462,8 @@ PKWrkrReord::PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedInt eri, std::
         J_bufs_.push_back(mem);
         mem = new double[buf_size()];
         K_bufs_.push_back(mem);
-        std::vector<char *> labelJ;
-        std::vector<char *> labelK;
+        std::vector<std::string> labelJ;
+        std::vector<std::string> labelK;
         labels_J_.push_back(labelJ);
         labels_K_.push_back(labelK);
         std::vector<size_t> idJ;
@@ -498,27 +492,6 @@ PKWrkrReord::~PKWrkrReord() {
         delete[] * it;
     }
     wK_bufs_.clear();
-    for (int i = 0; i < labels_J_.size(); ++i) {
-        for (int j = 0; j < labels_J_[i].size(); ++j) {
-            delete[] labels_J_[i][j];
-        }
-        labels_J_[i].clear();
-    }
-    labels_J_.clear();
-    for (int i = 0; i < labels_K_.size(); ++i) {
-        for (int j = 0; j < labels_K_[i].size(); ++j) {
-            delete[] labels_K_[i][j];
-        }
-        labels_K_[i].clear();
-    }
-    labels_K_.clear();
-    for (int i = 0; i < labels_wK_.size(); ++i) {
-        for (int j = 0; j < labels_wK_[i].size(); ++j) {
-            delete[] labels_wK_[i][j];
-        }
-        labels_wK_[i].clear();
-    }
-    labels_wK_.clear();
 }
 
 void PKWrkrReord::allocate_wK(size_t bufsize, size_t buf_per_thread) {
@@ -527,16 +500,12 @@ void PKWrkrReord::allocate_wK(size_t bufsize, size_t buf_per_thread) {
     for (int i = 0; i < nbuf(); ++i) {
         for (int j = 0; j < jobID_J_[i].size(); ++j) {
             AIO()->wait_for_job(jobID_J_[i][j]);
-            delete[] labels_J_[i][j];
         }
-        labels_J_[i].clear();
         jobID_J_[i].clear();
         delete[] J_bufs_[i];
         for (int j = 0; j < jobID_K_[i].size(); ++j) {
             AIO()->wait_for_job(jobID_K_[i][j]);
-            delete[] labels_K_[i][j];
         }
-        labels_K_[i].clear();
         jobID_K_[i].clear();
         delete[] K_bufs_[i];
     }
@@ -554,7 +523,7 @@ void PKWrkrReord::allocate_wK(size_t bufsize, size_t buf_per_thread) {
 
     for (int i = 0; i < nbuf(); ++i) {
         wK_bufs_.push_back(new double[buf_size()]);
-        std::vector<char *> labelwK;
+        std::vector<std::string> labelwK;
         labels_wK_.push_back(labelwK);
         std::vector<size_t> idwK;
         jobID_wK_.push_back(idwK);
@@ -659,13 +628,6 @@ void PKWrkrReord::write(std::vector<size_t> min_ind, std::vector<size_t> max_ind
         AIO()->wait_for_job(jobID_K_[buf_][i]);
     }
     jobID_K_[buf_].clear();
-    // We can delete the labels for these buffers
-    for (int i = 0; i < labels_J_[buf_].size(); ++i) {
-        delete[] labels_J_[buf_][i];
-    }
-    for (int i = 0; i < labels_K_[buf_].size(); ++i) {
-        delete[] labels_K_[buf_][i];
-    }
     labels_J_[buf_].clear();
     labels_K_[buf_].clear();
     // Make sure the buffer in which we are going to write is set to zero
@@ -725,10 +687,6 @@ void PKWrkrReord::write_wK(std::vector<size_t> min_ind, std::vector<size_t> max_
         AIO()->wait_for_job(jobID_wK_[buf_][i]);
     }
     jobID_wK_[buf_].clear();
-    // We can delete the labels for these buffers
-    for (int i = 0; i < labels_wK_[buf_].size(); ++i) {
-        delete[] labels_wK_[buf_][i];
-    }
     labels_wK_[buf_].clear();
     // Make sure the buffer in which we are going to write is set to zero
     ::memset((void *)wK_bufs_[buf_], '\0', buf_size() * sizeof(double));

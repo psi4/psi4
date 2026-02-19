@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef __psi4_src_lib_libplugin_plugin_h
-#define __psi4_src_lib_libplugin_plugin_h
+#ifndef PSI4_LIBPLUGIN_PLUGIN_H
+#define PSI4_LIBPLUGIN_PLUGIN_H
 
 #include "psi4/libmints/typedefs.h"
 #include "psi4/liboptions/liboptions.h"

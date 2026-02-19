@@ -1,0 +1,78 @@
+#! External potential calculation involving a TIP3P water and a QM water.
+#! Energies and gradients computed using analytic charge embedding
+#! through the external_potentials keyword are compared against those
+#! evaluated numerically through the EMBPOT functionality.
+
+molecule water {
+  0 1
+  O  -0.778803000000  0.000000000000  1.132683000000
+  H  -0.666682000000  0.764099000000  1.706291000000
+  H  -0.666682000000  -0.764099000000  1.706290000000
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+# Define a TIP3P water as the external potential
+import numpy as np
+external_potentials = np.array([
+-0.834,1.649232019048,0.0,-2.356023604706,
+0.417,0.544757019107,0.0,-3.799961446760,
+0.417,0.544757019107,0.0,-0.912085762652]).reshape((-1, 4))
+# convert coordinates columns to bohr
+external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
+
+set {
+    scf_type df
+    d_convergence 12
+    basis 6-31G*
+    print 5
+    dft_spherical_points 1202
+    dft_radial_points 300
+}
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
+# Calculate the total energy and gradient on the wavefunction in the
+# presence of the external potential charges, embedded analytically.
+_, wfn = energy('scf', molecule=water, return_wfn=True,
+                external_potentials=external_potentials)
+
+for i in range(3):
+    wfn.molecule().set_nuclear_charge(i, 0)
+g_analytic = gradient('scf', ref_wfn=wfn)
+
+extern = wfn.external_pot()
+V_analytic = extern.computePotentialMatrix(wfn.basisset())
+
+wfn.set_external_potential(None)
+g_wo_extern = gradient('scf', ref_wfn=wfn)
+g_analytic.subtract(g_wo_extern)
+D = wfn.Da()
+D.add(wfn.Db())
+
+# Construct quadrature grid and potential at each point.
+grid = DFTGrid.build(water, wfn.basisset())
+data = []
+for block in grid.blocks():
+    x = np.asarray(block.x())
+    y = np.asarray(block.y())
+    z = np.asarray(block.z())
+    v = np.zeros_like(x)
+    for i in range(block.npoints()):
+        for charge in external_potentials:
+            r = np.array(
+                [x[i] - charge[1],
+                 y[i] - charge[2],
+                 z[i] - charge[3]],
+            )
+            v[i] += -charge[0] / np.linalg.norm(r)
+    data.append(Vector.from_array(v))
+
+numint = NumIntHelper(grid)
+V_numerical = numint.potential_integral(data)
+g_numerical = numint.potential_gradient(data, D)
+
+compare_matrices(V_analytic, V_numerical, 5, "Potential integral with analytic point charge embedding vs. with numerical embedding") #TEST
+compare_matrices(g_analytic, g_numerical, 5, "Potential gradient with analytic point charge embedding vs. with numerical embedding") #TEST
