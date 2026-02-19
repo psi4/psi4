@@ -3254,7 +3254,7 @@ def run_cc_property(name, **kwargs):
 
     oneel_properties = core.OEProp.valid_methods
     twoel_properties = []
-    response_properties = ['POLARIZABILITY', 'ROTATION', 'ROA', 'ROA_TENSOR']
+    response_properties = ['POLARIZABILITY','HYPERPOLARIZABILITY', 'ROTATION', 'ROA', 'ROA_TENSOR']
     excited_properties = ['OSCILLATOR_STRENGTH', 'ROTATIONAL_STRENGTH']
 
     one = []

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccresponse {
 
-double LCX(const char *pert_c, int irrep_c, const char *pert_x, int irrep_x, double omega) {
+double LCX_with_Y(const char *pert_c, int irrep_c, const char *pert_x, int irrep_x, double omega) {
     double polar = 0.0;
     dpdfile2 X1, mu1, z1, l1, mu, lt, xc;
     dpdbuf4 X2, mu2, z2, l2, Z;
@@ -86,12 +86,11 @@ double LCX(const char *pert_c, int irrep_c, const char *pert_x, int irrep_x, dou
     global_dpd_->file2_close(&mu1);
 
     global_dpd_->file2_init(&l1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
-    polar += 2.0 * global_dpd_->file2_dot(&z1, &l1);
+    
+    //polar += 2.0 * global_dpd_->file2_dot(&z1, &l1);
+    polar += global_dpd_->file2_dot(&z1, &l1);
+    
     global_dpd_->file2_close(&l1);
-
-    outfile->Printf("\n\tNorm of the polar.... %20.15f\n", polar);
-
-
     global_dpd_->file2_close(&z1);
 
     /*** L2 * MuBAR * X1 + L2 * MuBAR * X2 ***/
@@ -108,7 +107,10 @@ double LCX(const char *pert_c, int irrep_c, const char *pert_x, int irrep_x, dou
 
     global_dpd_->file2_init(&lt, PSIF_CC_OEI, 0, 0, 0, "Lt_IJ");
     global_dpd_->file2_init(&xc, PSIF_CC_TMP0, 0, 0, 0, "XC_IJ");
+
+    //polar += 2*global_dpd_->file2_dot(&lt, &xc);
     polar += global_dpd_->file2_dot(&lt, &xc);
+
     global_dpd_->file2_close(&xc);
     global_dpd_->file2_close(&lt);
 
@@ -167,12 +169,11 @@ double LCX(const char *pert_c, int irrep_c, const char *pert_x, int irrep_x, dou
     global_dpd_->buf4_close(&X2);
 
     global_dpd_->buf4_init(&l2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
-    polar += global_dpd_->buf4_dot(&l2, &z2);
+
+    //polar += global_dpd_->buf4_dot(&l2, &z2);
+    polar += 0.5 * global_dpd_->buf4_dot(&l2, &z2);
+
     global_dpd_->buf4_close(&l2);
-
-
-   //outfile->Printf("\n\tNorm of the polar2.... %20.15f\n", polar); 
-
     global_dpd_->buf4_close(&z2);
 
     if (params.sekino) { /* disconnected piece for Sekino-Bartlett modelIII */

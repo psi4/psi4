@@ -69,13 +69,24 @@ void hbar_extra();
 void cc2_hbar_extra();
 void sort_lamps();
 void lambda_residuals();
+void lambda_2();
+void sort_lamps_quadratic_resp();
+void sort_integrals_quadratic_resp();
 
 void local_init();
 void local_done();
 
+<<<<<<< HEAD
 void polar(std::shared_ptr<Wavefunction> ref_wfn);
 void optrot(std::shared_ptr<Wavefunction> ref_wfn);
 void roa(std::shared_ptr<Wavefunction> ref_wfn);
+=======
+//void polar();
+void polar_with_Yampl();
+void hyper();
+void optrot(std::shared_ptr<Molecule> molecule);
+void roa();
+>>>>>>> Initial commit.
 
 void preppert(std::shared_ptr<BasisSet> primary);
 
@@ -126,9 +137,22 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
 
     preppert(ref_wfn->basisset());
 
-    if (params.prop == "POLARIZABILITY") polar(ref_wfn);
-    if (params.prop == "ROTATION") optrot(ref_wfn);
-    if (params.prop == "ROA_TENSOR") roa(ref_wfn);
+    //if (params.prop == "POLARIZABILITY") polar_with_Yampl(); //polar();
+    if (params.prop == "POLARIZABILITY") {
+       lambda_2();
+       sort_lamps_quadratic_resp();
+       sort_integrals_quadratic_resp();
+       polar_with_Yampl();
+       } 
+
+    if (params.prop == "HYPERPOLARIZABILITY") {
+       lambda_2();
+       sort_lamps_quadratic_resp();
+       sort_integrals_quadratic_resp();
+       hyper();	
+       }
+    if (params.prop == "ROTATION") optrot(ref_wfn->molecule());
+    if (params.prop == "ROA_TENSOR") roa();
 
     if (params.local) local_done();
 

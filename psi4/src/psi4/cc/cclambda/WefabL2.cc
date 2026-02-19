@@ -110,7 +110,7 @@ namespace cclambda {
 
 void WefabL2(int L_irr) {
     dpdbuf4 Lijab, LIJAB, LIjAb;
-    dpdbuf4 newLijab, newLIJAB, newLIjAb;
+    dpdbuf4 newLijab, newLIJAB, newLIjAb, WefabL2;
     dpdbuf4 Tau, T2, Z, Z1, Z2, L, L2, B, D, F, Ltmp;
     dpdfile2 tIA, tia;
     dpdbuf4 tau_a, tau_s, tau;
@@ -197,7 +197,7 @@ void WefabL2(int L_irr) {
                 row_start = m * rows_per_bucket;
                 nrows = rows_per_bucket;
                 if (nrows && ncols && nlinks) {
-                    psio_read(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *)B_diag[0],sizeof(double) * nrows * nlinks, next,
+                    psio_read(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *)B_diag[0], nrows * nlinks * sizeof(double), next,
                               &next);
                     C_DGEMM('n', 't', nrows, ncols, nlinks, -0.25, B_diag[0], nlinks, tau_diag[0], nlinks, 1,
                             S.matrix[0][row_start], ncols);
@@ -207,7 +207,7 @@ void WefabL2(int L_irr) {
                 row_start = m * rows_per_bucket;
                 nrows = rows_left;
                 if (nrows && ncols && nlinks) {
-                    psio_read(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *)B_diag[0], sizeof(double) * nrows * nlinks, next,
+                    psio_read(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *)B_diag[0], nrows * nlinks * sizeof(double), next,
                               &next);
                     C_DGEMM('n', 't', nrows, ncols, nlinks, -0.25, B_diag[0], nlinks, tau_diag[0], nlinks, 1,
                             S.matrix[0][row_start], ncols);
@@ -234,15 +234,29 @@ void WefabL2(int L_irr) {
             timer_on("ABCD:axpy");
             global_dpd_->buf4_init(&S, PSIF_CC_TMP0, L_irr, 5, 0, 8, 3, 0, "S(ab,ij)");
             global_dpd_->buf4_sort_axpy(&S, PSIF_CC_LAMBDA, rspq, 0, 5, "New LIjAb", 1);
+
+            //Added here...
+            global_dpd_->buf4_init(&WefabL2, PSIF_CC_LAMPS, L_irr, 0, 5, 0, 5, 0, "WefabL2");
+            global_dpd_->buf4_scm(&WefabL2,0);
+            global_dpd_->buf4_close(&WefabL2);
+            global_dpd_->buf4_sort_axpy(&S, PSIF_CC_LAMPS, rspq, 0, 5, "WefabL2", 1);
+
             global_dpd_->buf4_close(&S);
             global_dpd_->buf4_init(&A, PSIF_CC_TMP0, L_irr, 5, 0, 9, 4, 0, "A(ab,ij)");
             global_dpd_->buf4_sort_axpy(&A, PSIF_CC_LAMBDA, rspq, 0, 5, "New LIjAb", 1);
+
+            //Added here...
+            global_dpd_->buf4_sort_axpy(&A, PSIF_CC_LAMPS, rspq, 0, 5, "WefabL2", 1);
+        
             global_dpd_->buf4_close(&A);
             timer_off("ABCD:axpy");
             timer_off("ABCD:new");
         }
 
         global_dpd_->buf4_init(&newLIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+
+        //Added here....
+        global_dpd_->buf4_init(&WefabL2, PSIF_CC_LAMPS, L_irr, 0, 5, 0, 5, 0, "WefabL2");
 
         global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
         global_dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
@@ -262,6 +276,13 @@ void WefabL2(int L_irr) {
         global_dpd_->buf4_sort_axpy(&Z1, PSIF_CC_LAMBDA, srqp, 0, 5, "New LIjAb", 1);
         global_dpd_->buf4_sort_axpy(&Z1, PSIF_CC_LAMBDA, rspq, 0, 5, "New LIjAb", 1);
         global_dpd_->buf4_init(&newLIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+        
+        //Added here....
+        global_dpd_->buf4_close(&WefabL2);
+        global_dpd_->buf4_sort_axpy(&Z1, PSIF_CC_LAMPS, srqp, 0, 5, "WefabL2", 1);
+        global_dpd_->buf4_sort_axpy(&Z1, PSIF_CC_LAMPS, rspq, 0, 5, "WefabL2", 1);
+        global_dpd_->buf4_init(&WefabL2, PSIF_CC_LAMPS, L_irr, 0, 5, 0, 5, 0, "WefabL2");
+
         global_dpd_->buf4_close(&Z1);
 
         global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, L_irr, 0, 0, 0, 0, 0, "Z(Ij,Mn)");
@@ -272,6 +293,11 @@ void WefabL2(int L_irr) {
         global_dpd_->buf4_close(&Tau);
         global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
         global_dpd_->contract444(&Z, &D, &newLIjAb, 0, 1, 1.0, 1.0);
+
+        //Added here....
+        global_dpd_->contract444(&Z, &D, &WefabL2, 0, 1, 1.0, 1.0);        
+        global_dpd_->buf4_close(&WefabL2);
+
         global_dpd_->buf4_close(&D);
         global_dpd_->buf4_close(&Z);
 
