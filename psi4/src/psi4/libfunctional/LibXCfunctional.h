@@ -32,6 +32,8 @@
 #include "psi4/libfunctional/functional.h"
 #include "psi4/libmints/typedefs.h"
 
+#include <xc.h>
+
 #include <map>
 
 struct xc_func_type;
@@ -54,6 +56,15 @@ class LibXCFunctional : public Functional {
     bool fxc_; // Can we compute second derivative at a point?
 
     // **ONLY** Used to pass information up the chain.
+    // Is GGA?
+    bool gga_;
+    // Is Meta?
+    bool meta_;
+    // Is LRC?
+    bool lrc_;
+    // Unpolarized? (restricted)
+    bool unpolarized_;
+
     // Exchange
     double global_exch_;
     double lr_exch_;
@@ -62,8 +73,6 @@ class LibXCFunctional : public Functional {
     bool needs_vv10_;
     double vv10_b_;
     double vv10_c_;
-    // LibXC density setting
-    double density_cutoff_;
 
     // User defined tweakers
     // * Libxc needs all set at once as list c. v5.1.0, but store as richer map anyways
@@ -83,14 +92,20 @@ class LibXCFunctional : public Functional {
     std::shared_ptr<Functional> build_worker() override;
 
     // Setters and getters
+    void set_gga(bool gga) { gga_ = gga; }
+    void set_meta(bool meta) { meta_ = meta; }
     void set_density_cutoff(double cut) override;
     void set_omega(double omega);
     void set_tweak(std::map<std::string, double>, bool);
     std::vector<std::tuple<std::string, int, double>> get_mix_data();
 
+    bool is_meta() const override { return meta_; }
+    bool is_gga() const override { return gga_; }
+    bool is_lrc() const override { return lrc_; }
+    bool is_unpolarized() const override { return unpolarized_; }
+
     // Make queries to libxc
     std::map<std::string, double> query_libxc(const std::string& functional);
-    double query_density_cutoff() override;
 
     // Only used to pass information up the chain
     double global_exchange() { return global_exch_; }
@@ -98,7 +113,10 @@ class LibXCFunctional : public Functional {
     double needs_vv10() { return needs_vv10_; }
     double vv10_b() { return vv10_b_; }
     double vv10_c() { return vv10_c_; }
-    double density_cutoff() { return density_cutoff_; }
+    double density_cutoff() const override { return xc_functional_->dens_threshold; }
+    
+    // Information about what type of LibXC functional this is
+    int kind() override { return xc_functional_->info->kind; }
 
     // Get libxc provenance stamp
     static std::string xclib_description();
