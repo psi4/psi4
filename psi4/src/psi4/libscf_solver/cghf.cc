@@ -167,9 +167,10 @@ void CGHF::common_init() {
 
     subclass_init();  // This appears to set up DFT stuff and external potentials
 
-    const char* ein_argv[2] = {
+    const char* ein_argv[4] = {
         "psi4\0",
-        "--einsums:no-profiler-report\0"
+        "--einsums:no-profiler-report\0",
+        "--einsums:log-level\0", "3\0"
     };
     einsums::initialize(4, ein_argv);
 }
