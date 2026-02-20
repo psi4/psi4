@@ -70,6 +70,8 @@ class CGHF : public HF {
     // Compute the norm from the orbital gradient as a second test of convergence
     double compute_Dnorm();
 
+    void form_Shalf() override;
+
     // Empty function for now -- needed for DFT later
     void form_V() override;
 

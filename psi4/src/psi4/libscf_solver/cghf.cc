@@ -203,22 +203,6 @@ void CGHF::preiterations() {
                 F_->block(h)(p, q) = Fa_->get(h, p, q);
                 F_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
             }
-
-    //println(*F_);
-    // Constructs orthogonalization matrix X_ using Lowdin symmetric orthogonalization
-    //
-    // X = S^{-1/2}
-    //
-    // where eigenvalues less than the threshold 1e-7 are set to 0, and the eigenvectors removed
-    //HF::form_Shalf();
-    for (int h = 0; h < nirrep_; h++)
-        for (int j = 0; j < nsopi_[h]; j++)
-            for (int k = 0; k < nsopi_[h]; k++) {
-                EINX_->block(h)(j, k) = X_->get(h, j, k); // AA spin block
-                EINX_->block(h)(j + nsopi_[h], k + nsopi_[h]) = X_->get(h, j, k); // BB spin block
-            }
-
-    //form_init_F();
 }
 
 /*
@@ -248,6 +232,22 @@ void CGHF::preiterations() {
 
 void CGHF::finalize() {
     HF::finalize();
+}
+
+/*
+ * Constructs orthogonalization matrix X_ using Lowdin symmetric orthogonalization
+ * X = S^{-1/2}
+ * Then places the result in an Einsums Matrix EINX_
+ */
+void CGHF::form_Shalf() {
+    HF::form_Shalf();
+
+    for (int h = 0; h < nirrep_; h++)
+        for (int j = 0; j < nsopi_[h]; j++)
+            for (int k = 0; k < nsopi_[h]; k++) {
+                EINX_->block(h)(j, k) = X_->get(h, j, k); // AA spin block
+                EINX_->block(h)(j + nsopi_[h], k + nsopi_[h]) = X_->get(h, j, k); // BB spin block
+            }
 }
 
 void CGHF::form_V() {}

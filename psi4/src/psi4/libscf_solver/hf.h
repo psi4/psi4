@@ -364,7 +364,7 @@ class HF : public Wavefunction {
     virtual void initialize_gtfock_jk();
 
     /// Formation of S^+1/2 and S^-1/2 are the same
-    void form_Shalf();
+    virtual void form_Shalf();
 
     /// Form the guess (guarantees C, D, and E)
     virtual void guess();
