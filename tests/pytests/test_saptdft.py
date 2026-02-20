@@ -254,6 +254,7 @@ def test_sapt_dft_diskdf():
 """
     )
     psi4.set_memory("280 MB")
+    psi4.core.set_num_threads(2)
     dft_functional = "pbe0"
     psi4.set_options(
         {
@@ -1340,7 +1341,8 @@ if __name__ == "__main__":
     #         # "--maxfail=1",
     #     ]
     # )
-    test_sapt_dft_compute_ddft_d4_diskdf()
+    # test_sapt_dft_compute_ddft_d4_diskdf()
+    test_sapt_dft_diskdf()
     # test_dftd4()
     # test_saptdft_disp_methods("DFT-D4(SAPT)", "gd4_supermolecular", -0.005731715146359108)
     # test_saptdft_disp_methods(
