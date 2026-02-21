@@ -189,7 +189,7 @@ void VBase::initialize() {
         functional_workers_.push_back(functional_->build_worker());
     }
 #ifdef USING_gauxc
-    if (options_.get_int("GAUXC_INTEGRATE")) initialize_gauxc();
+    if (options_.get_bool("GAUXC_INTEGRATE")) initialize_gauxc();
 #endif 
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT)
@@ -713,20 +713,39 @@ void VBase::initialize_gauxc() {
         GauXC::AngularSize(spherical_points)
     );
     auto gauxc_primary = primary_->to_gauxc_basisset<double>(1.0e-10, false); // TODO: Allow customization
-    auto load_balancer = lb_factory.get_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
+    auto load_balancer = lb_factory.get_shared_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
     GauXC::MolecularWeightsFactory mw_factory(gauxc_execspace, "Default",
                                           GauXC::MolecularWeightsSettings{});
     auto mw = mw_factory.get_instance();
-    mw.modify_weights(load_balancer);
+    mw.modify_weights(*load_balancer);
 
     // TODO: Allow for more options here. This is quick-and-dirty.
     GauXC::XCIntegratorFactory<Eigen::MatrixXd> integrator_factory(
           gauxc_execspace, "Replicated", "Default", "Default", "Default");
-    // TODO: Build gxc_func_. This will be a little delicate.
-    /*
+    std::vector<std::pair<double, ExchCXX::XCKernel>> init_vec;
+
+    for (const auto functionalComponent: functional_->x_functionals()) {
+        auto xcfunc = dynamic_pointer_cast<LibXCFunctional>(functionalComponent);
+        if (xcfunc == nullptr) {
+            throw PSIEXCEPTION("GauXC integration requires LibXC functionals.");
+        }
+        auto name = xcfunc->name();
+        auto alpha = xcfunc->alpha();
+        // TODO: Update Spin.
+        init_vec.emplace_back(alpha, ExchCXX::XCKernel(ExchCXX::libxc_name_string(name), ExchCXX::Spin::Unpolarized));
+    }
+    for (const auto functionalComponent: functional_->c_functionals()) {
+        auto xcfunc = dynamic_pointer_cast<LibXCFunctional>(functionalComponent);
+        if (xcfunc == nullptr) {
+            throw PSIEXCEPTION("GauXC integration requires LibXC functionals.");
+        }
+        auto name = xcfunc->name();
+        auto alpha = xcfunc->alpha();
+        init_vec.emplace_back(alpha, ExchCXX::XCKernel(ExchCXX::libxc_name_string(name), ExchCXX::Spin::Unpolarized));
+    }
+    auto gxc_func = std::make_shared<GauXC::functional_type>(init_vec);
     integrator_ =
-          integrator_factory.get_shared_instance(gxc_func_, load_balancer);
-    */
+          integrator_factory.get_shared_instance(gxc_func, load_balancer);
 #endif
 }
 SharedMatrix VBase::compute_gradient() { throw PSIEXCEPTION("VBase: gradient not implemented for this V instance."); }
