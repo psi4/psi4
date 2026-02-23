@@ -424,6 +424,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if (self.iteration_ == 0) and self.sad_:
             self.form_initial_F()
         else:
+            // IncFock is unreliable during large SOSCF iterations. Force a rebuild.
             if in_soscf_phase and hasattr(self.jk(), 'clear_D_prev'):
                 self.jk().clear_D_prev()
 
