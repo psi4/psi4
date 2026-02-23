@@ -47,6 +47,7 @@
 #include <memory>
 
 #ifdef USING_gauxc
+#include <eigen3/Eigen/Core>
 #include <gauxc/basisset.hpp>
 #endif
 
@@ -410,8 +411,12 @@ class PSI_API BasisSet {
     void compute_phi(double *phi_ao, double x, double y, double z);
     // Converts the contraction to match the SAP approach.
     void convert_sap_contraction();
-    
+
 #ifdef USING_gauxc
+    // Generates the PermutationMatrix that transforms AOs from Gaussian to standard basis.
+    // This will only build if GauXC is present to reduce Psi's external dependencies.
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_to_cca() const;
+
 // converts a Psi4::BasisSet object to a GauXC::BasisSet object
 template <typename T>
 GauXC::BasisSet<T> to_gauxc_basisset(double basis_tol, bool force_cartesian) const {
