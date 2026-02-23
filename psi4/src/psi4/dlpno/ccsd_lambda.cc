@@ -539,8 +539,6 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    // TODO: Add Crawford Line 471 from GitHub
-
     // \lambda_{i}^{e_{ii}} \widetilde{\widetilde{F}}_(e_{ii}, a_{ii})
 #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < naocc; ++i) {
@@ -548,6 +546,19 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
 
         L_ia[i] = linalg::doublet(F_vv_double_tilde_[ii], lambda_ia_[i], true, false); // TODO: Make this variable
     } // end for
+
+// Add Crawford Line 471 from GitHub (Andy is a massive idiot Eq. 343)
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int in = 0; in < n_lmo_pairs; ++in) {
+        auto &[i, n] = ij_to_i_j_[in];
+        int ii = i_j_to_ij_[i][i], nn = i_j_to_ij_[n][n];
+
+        auto chicken = linalg::triplet(S_PNO(ii, in), L_iajb[in], S_PNO(nn, in), false, false, true);
+        auto sandwich = linalg::doublet(chicken, T_ia_[n]);
+        sandwich->scale(2.0);
+
+        L_ia_buffer[thread][i]->add(sandwich);
+    } // end in
 
 #pragma omp parallel for schedule(dynamic, 1)
     for (int im = 0; im < n_lmo_pairs; ++im) {
@@ -568,11 +579,9 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
         L_ia_buffer[thread][i]->subtract(john_big_back_buffer);
         
         /* l_{i}^{a_{ii}} += \widetilde{\widetilde{K}}_{ma_{ii}}^{e_{mi}f_{mi}} \widetilde{\lambda}_{mi}^{e_{mi}f_{mi}} (Toth Eq. 35a) */
-        // TODO: Define K_maef_dt_
         auto lambda_mn_slice = lambda_iajb_[mn]->clone();
         lambda_mn_slice->reshape(n_pno_[mn] * n_pno_[mn], 1);
         L_ia_buffer[thread][i]->add(linalg::doublet(K_maef_dt_[mi], lambda_mn_slice)); // (a_{ii}, e_{mi} * f_{mi}) (e_{mi} * f_{mi}, 1)
-
     } // end im
 
     // rip John Pork :( bigback = ibs (irritable bigback syndrome)
@@ -768,10 +777,9 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
     } // end for
 
     auto alpha_ijkl = compute_alpha_ijkl();
+    auto beta = compute_beta();
     auto gamma = compute_gamma();
     auto delta = compute_delta();
-
-    // TODO: Add Crawford Line 516 from GitHub
 
 #pragma omp parallel for
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
@@ -782,6 +790,9 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
         const int naux_ij = lmopair_to_ribfs_[ij].size();
         const int nlmo_ij = lmopair_to_lmos_[ij].size();
         const int npno_ij = n_pno_[ij];
+
+        Ln_iajb[ij] = L_iajb_[ij]->clone();
+        Ln_iajb[ij]->scale(0.5);
 
         // l^{a_{ij}b_{ij}}_{ij} += \lambda^{e_{jj}}_j\overline{L}^{a_{ij}b_{ij}}_{ie_{jj}} (Toth Eq. 43a)
         L_temp = linalg::doublet(lambda_ia_[j], L_ijab_bar_[ij], false, false); // TODO: Define L_ijab_bar_
@@ -839,9 +850,10 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
             for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
                 int n = lmopair_to_lmos_[ij][n_ij];
                 int mn = i_j_to_ij_[m][n];
+                int i_mn = lmopair_to_lmos_dense_[mn][i], j_mn = lmopair_to_lmos_dense_[mn][j];
 
                 auto ethan = linalg::triplet(S_PNO(ij, mn), lambda_iajb_[mn], S_PNO(mn, ij));
-                ethan->scale(0.5 * (*beta_mnij_[ij])(m_ij, n_ij)); // TODO: Define beta_mnij_
+                ethan->scale(0.5 * (*beta_mnij_[mn])(i_mn, j_mn));
                 Ln_iajb[ij]->add(ethan);
             } // end n_ij
         } // end m_ij
@@ -852,7 +864,9 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
 
             // l_{ij}^{a_{ij}b_{ij}} -= \overline{\lambda}_{jn}^{a_{jn}f_{jn}}[S_{a_{nj}}^{a_{ij}}\widetilde{\gamma}_{in}^{f_{nj}b_{ij}} (Toth Eq. 52a) (TODO: Add J_ikac_non_proj_ next time)
             auto ron = linalg::triplet(S_PNO(ij, jn), lambda_iajb_bar_[jn], S_PNO(jn, in));
-            auto weasley = linalg::triplet(ron, gamma[in], S_PNO(in, ij));
+            auto uncle_andy = gamma[in]->clone();
+            uncle_andy->add(J_ikac_non_proj_[in][]); // Uncle Andy stays delinquent
+            auto weasley = linalg::triplet(ron, uncle_andy, S_PNO(in, ij));
             Ln_iajb[ij]->subtract(weasley);
 
             // l_{ij}^{a_{ij}b_{ij}} -= 0.5 * S_{a_{kj}}^{a_{jn}}(S_{a_{ij}}^{a_{kj}}S_{b_{ki}}^{b_{ij}} K_{ki}^{b_{ki}c_{ki}}S_{c_{ki}}^{c_{kj}})S_{c_{kj}}^{c_{kn}}T_{kn}^{f_{kn}c_{kn}}S_{f_{kn}}^{f_{jn}}] (Toth Eq. 52b)
