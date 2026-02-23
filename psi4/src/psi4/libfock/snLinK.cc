@@ -88,36 +88,6 @@ std::tuple<
     return std::make_tuple(pruning_scheme_map, radial_scheme_map);
 }
 
-// constructs a permutation matrix for converting matrices to and from GauXC's integral ordering standard 
-Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> snLinK::generate_permutation_matrix(
-    const std::shared_ptr<BasisSet> psi4_basisset) {
-
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(psi4_basisset->nbf());
-
-    // general array for how to reorder integrals
-    std::vector<int> cca_integral_order(2*gauxc_max_am_ + 1, 0);
-   
-    // p shells or larger
-    for (size_t l = 1, idx = 1; l != gauxc_max_am_; idx += 2, ++l) {
-        cca_integral_order[idx] = l;
-        cca_integral_order[idx + 1] = -l;
-    }
-
-    // actually construct permutation matrix
-    for (int ish = 0, ibf = 0; ish != psi4_basisset->nshell(); ++ish) {
-        auto& sh = psi4_basisset->shell(ish);
-        auto am = sh.am();
-  
-        auto ibf_base = ibf;
-        for (int ishbf = 0; ishbf != 2*am + 1; ++ishbf, ++ibf) {
-            permutation_matrix.indices()[ibf] = ibf_base + cca_integral_order[ishbf] + am;
-        }
-    }
-   
-    // we are done
-    return permutation_matrix;
-}
-
 #endif 
 
 // ==> SplitJK-inherited functions go here <== //
@@ -213,8 +183,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // create ERI ordering permutation matrix to handle integral ordering
     if (!is_cca_ && primary_->has_puream()) {
-        permutation_matrix_ = std::make_optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> >(
-            generate_permutation_matrix(primary_)
+        permutation_matrix_ = std::make_optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> >(primary_->generate_permutation_to_cca()
         );
     } else {
         permutation_matrix_ = std::nullopt;
