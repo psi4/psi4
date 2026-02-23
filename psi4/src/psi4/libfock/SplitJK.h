@@ -346,8 +346,6 @@ class PSI_API snLinK : public SplitJK {
     bool is_cca_;
 
     std::optional<Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> > permutation_matrix_;
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> generate_permutation_matrix(
-        const std::shared_ptr<BasisSet> psi4_basisset);
 
     // => Semi-Numerical Stuff <= //
     // are we running snLinK on GPUs?
