@@ -1381,7 +1381,34 @@ void RV::compute_V_brianqc(std::vector<SharedMatrix>& ret) {
 #endif
 }
 
-void RV::compute_V_gauxc(std::vector<SharedMatrix>& ret) { // TODO: populate
+void RV::compute_V_gauxc(std::vector<SharedMatrix>& ret) {
+    Eigen::MatrixXd eigen_d = D_AO_[0]->eigen_map();
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
+    if (primary_->has_puream()) {
+        auto permuter = primary_->generate_permutation_to_cca();
+        eigen_d = permuter * eigen_d * permuter.transpose();
+    }
+#endif
+    auto [e_xc, v_xc] = integrator_->eval_exc_vxc(eigen_d);
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
+    if (primary_->has_puream()) {
+        auto permuter = primary_->generate_permutation_to_cca();
+        v_xc = permuter.transpose() * v_xc * permuter;
+    }
+#endif
+
+    ret[0]->copy(Matrix(v_xc));
+
+    quad_values_["VV10"] = 0.0;
+    quad_values_["FUNCTIONAL"] = e_xc;
+    quad_values_["RHO_A"] = 0.0;
+    quad_values_["RHO_AX"] = 0.0;
+    quad_values_["RHO_AY"] = 0.0;
+    quad_values_["RHO_AZ"] = 0.0;
+    quad_values_["RHO_B"] = 0.0;
+    quad_values_["RHO_BX"] = 0.0;
+    quad_values_["RHO_BY"] = 0.0;
+    quad_values_["RHO_BZ"] = 0.0;
 }
 
 void RV::compute_V_psi(std::vector<SharedMatrix>& ret) {
