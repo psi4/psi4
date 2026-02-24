@@ -61,6 +61,8 @@ class PSI_API ExternalPotential {
     std::vector<std::tuple<double, double, double, double> > charges_;
     /// Auxiliary basis sets (with accompanying molecules and coefs) of diffuse charges
     std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > bases_;
+    /// A one-electron potential matrix provided by the user
+    SharedMatrix matrix_;
     /// Gradient, if available, as number of charges x 3 SharedMatrix
     SharedMatrix gradient_on_charges_;
 
@@ -89,6 +91,9 @@ class PSI_API ExternalPotential {
  
     /// Add a basis of S auxiliary functions with DF coefficients
     void addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs);
+
+    /// Add a one-electron potential matrix
+    void setMatrix(SharedMatrix V) { matrix_ = V; }
 
     /// Reset the field to zero (eliminates all entries)
     void clear();
