@@ -122,8 +122,8 @@ jobs:
         echo "  - psi4::gcp" >> env_p4env.yaml
         echo "  - psi4::dftd3" >> env_p4env.yaml
       fi
-      sed -i "s;- libint;#- libint;g" env_p4env.yaml
-      sed -i "s;#- psi4::libint;- psi4::libint=2.8.1;g" env_p4env.yaml
+      # sed -i "s;- libint;#- libint;g" env_p4env.yaml
+      # sed -i "s;#- psi4::libint;- psi4::libint=2.8.1;g" env_p4env.yaml
       echo "  - einsums>=1.0.6" >> env_p4env.yaml
       echo "  - range-v3" >> env_p4env.yaml
       echo "  - zlib" >> env_p4env.yaml
@@ -188,6 +188,12 @@ jobs:
   #    PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
   #    PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
   #  displayName: 'Spot Test 2'
+
+  #- bash: |
+  #    cd build/../tests/fcidump
+  #    source activate p4env
+  #    ./../../build/stage/bin/psi4 -o stdout
+  #  displayName: 'Spot Test 3'
 
   - bash: |
       cd build

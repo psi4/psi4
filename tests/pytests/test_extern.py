@@ -94,8 +94,8 @@ def test_nopotential(frame, deriv, molmode):
         molecule_ang = psi4.core.Molecule.from_schema({**qcsk_ang, **fixargs})
 
     nre = 9.14756
-    psi4.compare_values(nre, molecule_bohr.nuclear_repulsion_energy(), 5, f"{molmode}: [1b] Bohr geometry NRE")
-    psi4.compare_values(nre, molecule_ang.nuclear_repulsion_energy(), 5, f"{molmode}: [1a] Ang geometry NRE")
+    assert psi4.compare_values(nre, molecule_bohr.nuclear_repulsion_energy(), 5, f"{molmode}: [1b] Bohr geometry NRE")
+    assert psi4.compare_values(nre, molecule_ang.nuclear_repulsion_energy(), 5, f"{molmode}: [1a] Ang geometry NRE")
 
     external_potentials = [[0.00, np.array([10.0,10.0,10.0]) / b2a]]
 
@@ -121,8 +121,8 @@ def test_nopotential(frame, deriv, molmode):
     ene_ang_pure = psi4.variable("CURRENT ENERGY")
 
     # check energies (always available)
-    psi4.compare_values(refs[psi4.energy], ene_bohr_pure, atol, f"[2] {molmode} {deriv}: Bohr geometry, no charges vs reference equality")
-    psi4.compare_values(ene_ang_pure, ene_bohr_pure, atol, f"[3] {molmode} {deriv}: No charges, Bohr vs Angstrom geometry energy equality")
+    assert psi4.compare_values(refs[psi4.energy], ene_bohr_pure, atol, f"[2] {molmode} {deriv}: Bohr geometry, no charges vs reference equality")
+    assert psi4.compare_values(ene_ang_pure, ene_bohr_pure, atol, f"[3] {molmode} {deriv}: No charges, Bohr vs Angstrom geometry energy equality")
 
     if molmode == "from_dict" and deriv in ["0_0", "1_1"]:
         with pytest.raises(psi4.ValidationError) as err:
@@ -137,19 +137,19 @@ def test_nopotential(frame, deriv, molmode):
     ene_ang_charges = psi4.variable("CURRENT ENERGY")
 
     # check energies continued
-    psi4.compare_values(ene_bohr_charges, ene_bohr_pure, atol, f"[4] {molmode} {deriv}: Bohr geometry, charges vs no charges energy equality")
-    psi4.compare_values(ene_ang_charges, ene_ang_pure, atol, f"[5] {molmode} {deriv}: Angstrom geometry, charges vs no charges energy equality")
+    assert psi4.compare_values(ene_bohr_charges, ene_bohr_pure, atol, f"[4] {molmode} {deriv}: Bohr geometry, charges vs no charges energy equality")
+    assert psi4.compare_values(ene_ang_charges, ene_ang_pure, atol, f"[5] {molmode} {deriv}: Angstrom geometry, charges vs no charges energy equality")
 
     # check returns (redundant for driver=energy; new for gradients)
     # * driver should be imposing fix_*=True when EP specified
     charges_and_pure_frames_should_match = (driver == psi4.energy) or (frame == "fixed")
     if charges_and_pure_frames_should_match:
-        psi4.compare_values(refs[driver], ret_bohr_pure, atol, f"[6] {molmode} {deriv}: Bohr geometry, no charges vs reference equality")
-    psi4.compare_values(ret_ang_pure, ret_bohr_pure, atol, f"[7] {molmode} {deriv}: No charges, Bohr vs Angstrom geometry return equality")
-    psi4.compare_values(ret_ang_charges, ret_bohr_charges, atol, f"[8] {molmode} {deriv}: With charges, Bohr vs Angstrom geometry return equality")
+        assert psi4.compare_values(refs[driver], ret_bohr_pure, atol, f"[6] {molmode} {deriv}: Bohr geometry, no charges vs reference equality")
+    assert psi4.compare_values(ret_ang_pure, ret_bohr_pure, atol, f"[7] {molmode} {deriv}: No charges, Bohr vs Angstrom geometry return equality")
+    assert psi4.compare_values(ret_ang_charges, ret_bohr_charges, atol, f"[8] {molmode} {deriv}: With charges, Bohr vs Angstrom geometry return equality")
     if charges_and_pure_frames_should_match:
-        psi4.compare_values(ret_bohr_charges, ret_bohr_pure, atol, f"[9] {molmode} {deriv}: Bohr geometry, charges vs no charges return equality")
-        psi4.compare_values(ret_ang_charges, ret_ang_pure, atol, f"[10] {molmode} {deriv}: Angstrom geometry, charges vs no charges return equality")
+        assert psi4.compare_values(ret_bohr_charges, ret_bohr_pure, atol, f"[9] {molmode} {deriv}: Bohr geometry, charges vs no charges return equality")
+        assert psi4.compare_values(ret_ang_charges, ret_ang_pure, atol, f"[10] {molmode} {deriv}: Angstrom geometry, charges vs no charges return equality")
 
 
 _qxyz1a = [ [-0.5, 1.0, 1.0, 0.0] ]
