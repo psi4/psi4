@@ -125,7 +125,7 @@ class SOMCSCF {
      * @param Cvir Current virtual orbitals
      * @param OPDM Current active one-particle density matrix
      * @param TPDM Current active two-particle density matrix (symmetrized, dense)
-    */
+     */
     void update(SharedMatrix Cocc, SharedMatrix Cact, SharedMatrix Cvir, SharedMatrix OPDM, SharedMatrix TPDM);
 
     /**

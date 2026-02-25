@@ -54,11 +54,10 @@ using namespace psi;
 
 namespace psi {
 
-Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisSet> &primary) {
-
+Matrix compute_numeric_overlap(const DFTGrid& grid, const std::shared_ptr<BasisSet>& primary) {
     // DOI 10.1063/1.3646921, EQ. 9
 
-     // note that the S_num matrix is defined slightly differently in our code
+    // note that the S_num matrix is defined slightly differently in our code
     // to account for the possibility of negative grid weights
     // here, we use S_num = X_sign*(X_nosign)^T
     // where:
@@ -73,8 +72,7 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
     // This loop could be parallelized over blocks of grid points. However, the cost of the loop is
     // so small (< 10 seconds for a 200 heavy atom system), parallelism isn't necessary
 
-    for (const auto &block : grid.blocks()) {
-
+    for (const auto& block : grid.blocks()) {
         // grid points in this block
         int npoints_block = block->npoints();
         int nbf_block = block->local_nbf();
@@ -85,25 +83,23 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
         auto point_values = bf_computer.basis_values()["PHI"];
 
         // lambda for returning sign of double
-        auto sign = [ ](double val) {
-            return (val >= 0.0) ? 1.0 : -1.0;
-        };
+        auto sign = [](double val) { return (val >= 0.0) ? 1.0 : -1.0; };
 
         // resize the buffer of basis function values
         Matrix X_block_nosign("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
-        Matrix X_block_sign("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
+        Matrix X_block_sign("phi_g,u", npoints_block, nbf_block);    // points x nbf_block
 
         auto X_block_nosignp = X_block_nosign.pointer();
         auto X_block_signp = X_block_sign.pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
                 X_block_nosignp[p][k] = point_values->get(p, k) * std::sqrt(std::abs(w[p]));
-                X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k];
+                X_block_signp[p][k] = sign(w[p]) * X_block_nosignp[p][k];
             }
         }
 
         // significant basis functions at these grid points
-        const auto &bf_map = block->functions_local_to_global();
+        const auto& bf_map = block->functions_local_to_global();
 
         auto S_num_block = linalg::doublet(X_block_sign, X_block_nosign, true, false);
         auto S_num_blockp = S_num_block.pointer();
@@ -115,17 +111,14 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
                 S_nump[mu][nu] += S_num_blockp[mu_local][nu_local];
             }
         }
-
     }
 
     S_num.hermitivitize();
 
     return S_num;
-
 }
 
-Matrix compute_esp_bound(const BasisSet &primary) {
-
+Matrix compute_esp_bound(const BasisSet& primary) {
     // DOI 10.1016/j.chemphys.2008.10.036, EQ. 20
     // This is a pretty loose ESP bound, which should eventually be swapped out for something tighter
     // The bound is also only based on the overlap between the basis functions, not the distance
@@ -139,21 +132,22 @@ Matrix compute_esp_bound(const BasisSet &primary) {
     auto dist = primary.molecule()->distance_matrix();
     auto distp = dist.pointer();
 
-    for (size_t s1=0; s1 < nshell; s1++) {
+    for (size_t s1 = 0; s1 < nshell; s1++) {
         int c1 = primary.shell_to_center(s1);
         int np1 = primary.shell(s1).nprimitive();
-        for (size_t s2=0; s2 < nshell; s2++) {
+        for (size_t s2 = 0; s2 < nshell; s2++) {
             int c2 = primary.shell_to_center(s2);
             int np2 = primary.shell(s2).nprimitive();
 
-            double r2 = distp[c1][c2] * distp[c1][c2] ;
-            for(size_t pi1 = 0; pi1 < np1; pi1++) {
-                for(size_t pi2 = 0; pi2 < np2; pi2++) {
+            double r2 = distp[c1][c2] * distp[c1][c2];
+            for (size_t pi1 = 0; pi1 < np1; pi1++) {
+                for (size_t pi2 = 0; pi2 < np2; pi2++) {
                     double exp1 = primary.shell(s1).exp(pi1);
                     double exp2 = primary.shell(s2).exp(pi2);
                     double coef1 = primary.shell(s1).coef(pi1);
                     double coef2 = primary.shell(s2).coef(pi2);
-                    esp_boundp[s1][s2] += coef1 * coef2 * std::exp(-1 * r2 * exp1 * exp2 / (exp1 + exp2)) * 2 * M_PI / (exp1 + exp2);
+                    esp_boundp[s1][s2] +=
+                        coef1 * coef2 * std::exp(-1 * r2 * exp1 * exp2 / (exp1 + exp2)) * 2 * M_PI / (exp1 + exp2);
                 }
             }
 
@@ -189,7 +183,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
     overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
 
-    current_grid_ = "Final"; // default in case it is not explicitly set anywhere
+    current_grid_ = "Final";  // default in case it is not explicitly set anywhere
 
     timer_on("COSK: COSX Grid Construction");
 
@@ -199,7 +193,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     grids_["Initial"] = nullptr;
     grids_["Final"] = nullptr;
 
-    for (auto& [ gridname, grid ] : grids_) {
+    for (auto& [gridname, grid] : grids_) {
         std::string gridname_uppercase = gridname;
         std::transform(gridname.begin(), gridname.end(), gridname_uppercase.begin(), ::toupper);
 
@@ -210,27 +204,28 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
         // TODO: specify bool "DFT_REMOVE_DISTANT_POINTS" in the DFTGrid constructors
         std::map<std::string, std::string> grid_str_options = {
             {"DFT_PRUNING_SCHEME", options_.get_str("COSX_PRUNING_SCHEME")},
-            {"DFT_RADIAL_SCHEME",  "TREUTLER"},
+            {"DFT_RADIAL_SCHEME", "TREUTLER"},
             {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
-            {"DFT_GRID_NAME",      ""},
-            {"DFT_BLOCK_SCHEME",   "OCTREE"},
+            {"DFT_GRID_NAME", ""},
+            {"DFT_BLOCK_SCHEME", "OCTREE"},
         };
 
         std::map<std::string, int> grid_int_options = {
             {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS_" + gridname_uppercase)},
-            {"DFT_RADIAL_POINTS",    options_.get_int("COSX_RADIAL_POINTS_" + gridname_uppercase)},
+            {"DFT_RADIAL_POINTS", options_.get_int("COSX_RADIAL_POINTS_" + gridname_uppercase)},
             {"DFT_BLOCK_MIN_POINTS", 100},
             {"DFT_BLOCK_MAX_POINTS", 256},
         };
 
         std::map<std::string, double> grid_float_options = {
-            {"DFT_BASIS_TOLERANCE",   options_.get_double("COSX_BASIS_TOLERANCE")},
-            {"DFT_BS_RADIUS_ALPHA",   1.0},
-            {"DFT_PRUNING_ALPHA",     1.0},
-            {"DFT_BLOCK_MAX_RADIUS",  3.0},
+            {"DFT_BASIS_TOLERANCE", options_.get_double("COSX_BASIS_TOLERANCE")},
+            {"DFT_BS_RADIUS_ALPHA", 1.0},
+            {"DFT_PRUNING_ALPHA", 1.0},
+            {"DFT_BLOCK_MAX_RADIUS", 3.0},
             {"DFT_WEIGHTS_TOLERANCE", 1e-15},
         };
-        grid = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_int_options, grid_str_options, grid_float_options, options_);
+        grid = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_int_options, grid_str_options,
+                                         grid_float_options, options_);
 
         // Print out specific grid info upon request
         if (options_.get_int("DEBUG")) {
@@ -273,7 +268,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
 
     // compute the numeric overlap matrix for each grid
     std::unordered_map<std::string, Matrix> S_num;
-    for (auto& [ gridname, grid ] : grids_) {
+    for (auto& [gridname, grid] : grids_) {
         S_num[gridname] = compute_numeric_overlap(*grid, primary_);
     }
 
@@ -295,7 +290,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     std::vector<int> ipiv(nbf);
 
     // solve: Q_mat_ = S_an @ S_num_^{-1} for each grid
-    for (auto& [ gridname, grid ] : grids_) {
+    for (auto& [gridname, grid] : grids_) {
         Q_mat_[gridname] = S_an->clone();
         C_DGESV(nbf, nbf, S_num[gridname].pointer()[0], nbf, ipiv.data(), Q_mat_[gridname]->pointer()[0], nbf);
     }
@@ -307,9 +302,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
 
 COSK::~COSK() {}
 
-size_t COSK::num_computed_shells() {
-    return num_computed_shells_;
-}
+size_t COSK::num_computed_shells() { return num_computed_shells_; }
 
 void COSK::print_header() const {
     if (print_) {
@@ -327,8 +320,7 @@ void COSK::print_header() const {
 // algorithm is originally proposed in https://doi.org/10.1016/j.chemphys.2008.10.036
 // overlap fitting is discussed in https://doi.org/10.1063/1.3646921
 void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K,
-    std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
-
+                             std::vector<std::shared_ptr<TwoBodyAOInt>>& eri_computers) {
     // => Sizing <= //
     int njk = D.size();
     int nbf = primary_->nbf();
@@ -353,10 +345,11 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
     // initialize per-thread objects
     IntegralFactory factory(primary_);
-    for(size_t thread = 0; thread < nthreads_; thread++) {
-        int_computers[thread] = std::shared_ptr<ElectrostaticInt>(static_cast<ElectrostaticInt *>(factory.electrostatic().release()));
+    for (size_t thread = 0; thread < nthreads_; thread++) {
+        int_computers[thread] =
+            std::shared_ptr<ElectrostaticInt>(static_cast<ElectrostaticInt*>(factory.electrostatic().release()));
         bf_computers[thread] = std::make_shared<BasisFunctions>(primary_, grid->max_points(), grid->max_functions());
-        for(size_t jki = 0; jki < njk; jki++) {
+        for (size_t jki = 0; jki < njk; jki++) {
             KT[jki][thread] = std::make_shared<Matrix>(nbf, nbf);
         }
     }
@@ -368,9 +361,9 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     // inter-atom and inter-shell distances [Bohr]
     auto dist = primary_->molecule()->distance_matrix();
     auto shell_dist = std::make_shared<Matrix>(nshell, nshell);
-    for(size_t s1 = 0; s1 < nshell; s1++) {
+    for (size_t s1 = 0; s1 < nshell; s1++) {
         size_t c1 = primary_->shell_to_center(s1);
-        for(size_t s2 = 0; s2 < nshell; s2++) {
+        for (size_t s2 = 0; s2 < nshell; s2++) {
             size_t c2 = primary_->shell_to_center(s2);
             shell_dist->set(s1, s2, dist.get(c1, c2));
         }
@@ -381,8 +374,8 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
     // map of shell pairs with overlapping extents
     std::vector<std::vector<int>> shell_extent_map(nshell);
-    for(size_t s1 = 0; s1 < nshell; s1++) {
-        for(size_t s2 = 0; s2 < nshell; s2++) {
+    for (size_t s1 = 0; s1 < nshell; s1++) {
+        for (size_t s2 = 0; s2 < nshell; s2++) {
             if (shell_dist->get(s1, s2) <= shell_extents->get(s2) + shell_extents->get(s1)) {
                 shell_extent_map[s1].push_back(s2);
             }
@@ -401,7 +394,6 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     // The primary COSK loop over blocks of grid points
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads_) reduction(+ : int_shells_total, int_shells_computed)
     for (size_t bi = 0; bi < grid->blocks().size(); bi++) {
-
         int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -417,8 +409,8 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         // significant basis functions and shells at these grid points
         // significance determined via basis extent
-        const auto &bf_map = block->functions_local_to_global();
-        const auto &shell_map = block->shells_local_to_global();
+        const auto& bf_map = block->functions_local_to_global();
+        const auto& shell_map = block->shells_local_to_global();
         int nbf_block = bf_map.size();
         int ns_block = shell_map.size();
 
@@ -440,9 +432,10 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         std::vector<int> shell_map_all_to_bf_map_all;
         if (shell_map_all.size() > 0) {
             shell_map_all_to_bf_map_all.push_back(0);
-            for(size_t shell_map_ind = 0; (shell_map_ind + 1) < shell_map_all.size(); shell_map_ind++) {
+            for (size_t shell_map_ind = 0; (shell_map_ind + 1) < shell_map_all.size(); shell_map_ind++) {
                 size_t MU = shell_map_all[shell_map_ind];
-                shell_map_all_to_bf_map_all.push_back(primary_->shell(MU).nfunction() + shell_map_all_to_bf_map_all.back());
+                shell_map_all_to_bf_map_all.push_back(primary_->shell(MU).nfunction() +
+                                                      shell_map_all_to_bf_map_all.back());
             }
         }
 
@@ -450,7 +443,7 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         std::vector<int> shell_map_to_bf_map;
         if (shell_map.size() > 0) {
             shell_map_to_bf_map.push_back(0);
-            for(size_t shell_map_ind = 0; (shell_map_ind + 1) < shell_map.size(); shell_map_ind++) {
+            for (size_t shell_map_ind = 0; (shell_map_ind + 1) < shell_map.size(); shell_map_ind++) {
                 size_t MU = shell_map[shell_map_ind];
                 shell_map_to_bf_map.push_back(primary_->shell(MU).nfunction() + shell_map_to_bf_map.back());
             }
@@ -466,11 +459,11 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         // significant cols of D for this grid block
         std::vector<SharedMatrix> D_block(njk);
-        for(size_t jki = 0; jki < njk; jki++) {
+        for (size_t jki = 0; jki < njk; jki++) {
             D_block[jki] = std::make_shared<Matrix>(nbf_block_all, nbf_block);
         }
 
-        for(size_t jki = 0; jki < njk; jki++) {
+        for (size_t jki = 0; jki < njk; jki++) {
             auto Dp = D[jki]->pointer();
             auto D_blockp = D_block[jki]->pointer();
             for (size_t tau_ind = 0; tau_ind < nbf_block_all; tau_ind++) {
@@ -494,11 +487,12 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 size_t KAPPA = shell_map[KAPPA_ind];
                 size_t kappa_start = shell_map_to_bf_map[KAPPA_ind];
                 size_t num_kappa = primary_->shell(KAPPA).nfunction();
-                for(size_t jki = 0; jki < njk; jki++) {
+                for (size_t jki = 0; jki < njk; jki++) {
                     auto D_blockp = D_block[jki]->pointer();
                     for (size_t bf1 = tau_start; bf1 < tau_start + num_tau; bf1++) {
                         for (size_t bf2 = kappa_start; bf2 < kappa_start + num_kappa; bf2++) {
-                            D_block_shellp[TAU_ind][KAPPA_ind] = std::max(D_block_shellp[TAU_ind][KAPPA_ind], std::abs(D_blockp[bf1][bf2]));
+                            D_block_shellp[TAU_ind][KAPPA_ind] =
+                                std::max(D_block_shellp[TAU_ind][KAPPA_ind], std::abs(D_blockp[bf1][bf2]));
                         }
                     }
                 }
@@ -510,8 +504,8 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // as discussed in section 3.1 of DOI 10.1016/j.chemphys.2008.10.036
         std::vector<int> shell_map_tau;
 
-        for(size_t TAU = 0; TAU < ns_block_all; TAU++) {
-            for(size_t KAPPA_ind = 0; KAPPA_ind < ns_block; KAPPA_ind++) {
+        for (size_t TAU = 0; TAU < ns_block_all; TAU++) {
+            for (size_t KAPPA_ind = 0; KAPPA_ind < ns_block; KAPPA_ind++) {
                 size_t KAPPA = shell_map[KAPPA_ind];
                 if (D_block_shellp[TAU][KAPPA_ind] > dscreen_) {
                     shell_map_tau.push_back(TAU);
@@ -528,7 +522,7 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // to account for the possibility of negative grid weights
         // here, we define X using sqrt(abs(w)) instead of sqrt(w)
         // compute basis functions at these grid points
-        
+
         bf_computers[rank]->compute_functions(block);
         auto point_values = bf_computers[rank]->basis_values()["PHI"];
 
@@ -558,7 +552,7 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         // contract density with basis functions values at these grid points
         std::vector<SharedMatrix> F_block(njk);
-        for(size_t jki = 0; jki < njk; jki++) {
+        for (size_t jki = 0; jki < njk; jki++) {
             F_block[jki] = linalg::doublet(X_block, D_block[jki], false, true);
         }
 
@@ -575,10 +569,11 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 size_t TAU = shell_map_all[TAU_local];
                 size_t num_tau = primary_->shell(TAU).nfunction();
                 size_t tau_start = shell_map_all_to_bf_map_all[TAU_local];
-                for(size_t jki = 0; jki < njk; jki++) {
+                for (size_t jki = 0; jki < njk; jki++) {
                     auto F_blockp = F_block[jki]->pointer();
                     for (size_t tau = tau_start; tau < tau_start + num_tau; tau++) {
-                        F_block_shellp[p][TAU_local] = std::max(F_block_shellp[p][TAU_local], std::abs(F_blockp[p][tau]));
+                        F_block_shellp[p][TAU_local] =
+                            std::max(F_block_shellp[p][TAU_local], std::abs(F_blockp[p][tau]));
                         F_block_gmaxp[TAU_local] = std::max(F_block_gmaxp[TAU_local], std::abs(F_blockp[p][tau]));
                     }
                 }
@@ -591,9 +586,9 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         // slice of overlap metric (Q) made up of significant basis functions at this grid point
         auto Q_block = std::make_shared<Matrix>(nbf_block, nbf_block);
-        for(size_t mu_local = 0; mu_local < nbf_block; mu_local++) {
+        for (size_t mu_local = 0; mu_local < nbf_block; mu_local++) {
             size_t mu = bf_map[mu_local];
-            for(size_t nu_local = 0; nu_local < nbf_block; nu_local++) {
+            for (size_t nu_local = 0; nu_local < nbf_block; nu_local++) {
                 size_t nu = bf_map[nu_local];
                 Q_block->set(mu_local, nu_local, Q->get(mu, nu));
             }
@@ -607,19 +602,17 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // DOI 10.1016/j.chemphys.2008.10.036, EQ. 7
         // algorithm can be found in Scheme 1 of DOI 10.1016/j.chemphys.2008.10.036
         std::vector<SharedMatrix> G_block(njk);
-        for(size_t jki = 0; jki < njk; jki++) {
+        for (size_t jki = 0; jki < njk; jki++) {
             G_block[jki] = std::make_shared<Matrix>(nbf_block_all, npoints_block);
         }
 
-        if(rank == 0) timer_on("ESP Integrals");
+        if (rank == 0) timer_on("ESP Integrals");
 
-        const auto & int_buff = int_computers[rank]->buffers()[0];
+        const auto& int_buff = int_computers[rank]->buffers()[0];
 
         // lambda for returning sign of double
         // needed for formation of G
-        auto sign = [ ](double val) {
-            return (val >= 0.0) ? 1.0 : -1.0;
-        };
+        auto sign = [](double val) { return (val >= 0.0) ? 1.0 : -1.0; };
 
         // calculate A_NU_TAU at all grid points in this block
         // contract A_NU_TAU with F_TAU to get G_NU
@@ -656,17 +649,21 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 if (k_bound < kscreen_) continue;
 
                 for (size_t g = 0; g < npoints_block; g++) {
-
                     // grid-point specific screening
                     // account for the distance between the grid point and the shell pair
-                    double dist_TAU_g = std::sqrt((x_TAU - x[g]) * (x_TAU - x[g]) + (y_TAU - y[g]) * (y_TAU - y[g]) + (z_TAU - z[g]) * (z_TAU - z[g]));
-                    double dist_NU_g = std::sqrt((x_NU - x[g]) * (x_NU - x[g]) + (y_NU - y[g]) * (y_NU - y[g]) + (z_NU - z[g]) * (z_NU - z[g]));
-                    double dist_NUTAU_g = std::min(dist_TAU_g - shell_extents->get(TAU), dist_NU_g - shell_extents->get(NU));
+                    double dist_TAU_g = std::sqrt((x_TAU - x[g]) * (x_TAU - x[g]) + (y_TAU - y[g]) * (y_TAU - y[g]) +
+                                                  (z_TAU - z[g]) * (z_TAU - z[g]));
+                    double dist_NU_g = std::sqrt((x_NU - x[g]) * (x_NU - x[g]) + (y_NU - y[g]) * (y_NU - y[g]) +
+                                                 (z_NU - z[g]) * (z_NU - z[g]));
+                    double dist_NUTAU_g =
+                        std::min(dist_TAU_g - shell_extents->get(TAU), dist_NU_g - shell_extents->get(NU));
                     double dist_decay = 1.0 / std::max(1.0, dist_NUTAU_g);
 
                     // can we screen this single point over K_uv = (X_ug (A_vtg (F_tg))) upper bound?
                     k_bound = X_block_bfmaxp[g] * esp_boundp[NU][TAU] * dist_decay * F_block_shellp[g][TAU];
-                    if (symm) k_bound = std::max(k_bound, X_block_bfmaxp[g] * esp_boundp[TAU][NU] * dist_decay * F_block_shellp[g][NU]);
+                    if (symm)
+                        k_bound = std::max(
+                            k_bound, X_block_bfmaxp[g] * esp_boundp[TAU][NU] * dist_decay * F_block_shellp[g][NU]);
                     if (k_bound < kscreen_) continue;
 
                     // calculate pseudospectral integral shell pair (A_NU_TAU) at gridpoint g
@@ -679,7 +676,7 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                     // contract A_nu_tau with F_tau to get contribution to G_nu
                     // symmetry permitting, also contract A_nu_tau with F_nu to get contribution to G_tau
                     // we fold sign(w) into the formation of G to correct for the modified definition of X
-                    for(size_t jki = 0; jki < njk; jki++) {
+                    for (size_t jki = 0; jki < njk; jki++) {
                         auto F_blockp = F_block[jki]->pointer();
                         auto G_blockp = G_block[jki]->pointer();
                         for (size_t nu = nu_start, index = 0; nu < (nu_start + num_nu); ++nu) {
@@ -689,16 +686,14 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                             }
                         }
                     }
-
                 }
             }
-
         }
 
-        if(rank == 0) timer_off("ESP Integrals");
+        if (rank == 0) timer_off("ESP Integrals");
 
         // Contract X (or Q if overlap fitting) with G to get contribution to K
-        for(size_t jki = 0; jki < njk; jki++) {
+        for (size_t jki = 0; jki < njk; jki++) {
             SharedMatrix KT_block;
             if (overlap_fitted_) {
                 KT_block = linalg::doublet(Q_block, G_block[jki], true, true);
@@ -707,21 +702,20 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
             }
             auto KT_blockp = KT_block->pointer();
             auto KTp = KT[jki][rank]->pointer();
-            for(size_t mu_ind = 0; mu_ind < bf_map.size(); mu_ind++) {
+            for (size_t mu_ind = 0; mu_ind < bf_map.size(); mu_ind++) {
                 size_t mu = bf_map[mu_ind];
-                for(size_t nu_ind = 0; nu_ind < bf_map_all.size(); nu_ind++) {
+                for (size_t nu_ind = 0; nu_ind < bf_map_all.size(); nu_ind++) {
                     size_t nu = bf_map_all[nu_ind];
                     KTp[mu][nu] += KT_blockp[mu_ind][nu_ind];
                 }
             }
         }
-
     }
 
     timer_off("Grid Loop");
 
     // Reduce per-thread contributions
-    for(size_t jki = 0; jki < njk; jki++) {
+    for (size_t jki = 0; jki < njk; jki++) {
         for (size_t thread = 0; thread < nthreads_; thread++) {
             K[jki]->add(KT[jki][thread]);
         }

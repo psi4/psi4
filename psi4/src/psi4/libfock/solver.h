@@ -103,9 +103,9 @@ class Solver {
     /// Did the solver converge?
     bool converged() const { return converged_; }
     /**
-    * Print header information regarding Solver
-    * type on output file
-    */
+     * Print header information regarding Solver
+     * type on output file
+     */
     virtual void print_header() const = 0;
     /// Estimate of maximum memory usage (in doubles)
     virtual size_t memory_estimate() = 0;
@@ -144,15 +144,15 @@ class RSolver : public Solver {
     // => Accessors <= //
 
     /**
-    * Knob to swap out a Hamiltonian object
-    * @param H new RHamiltonian object
-    */
+     * Knob to swap out a Hamiltonian object
+     * @param H new RHamiltonian object
+     */
     void set_Hamiltonian(std::shared_ptr<RHamiltonian> H) { H_ = H; }
 
     /**
-    * Pointer to the Hamiltonian object
-    * @return current RHamiltonian object
-    */
+     * Pointer to the Hamiltonian object
+     * @return current RHamiltonian object
+     */
     std::shared_ptr<RHamiltonian> H() const { return H_; }
 };
 
@@ -236,5 +236,5 @@ class CGRSolver : public RSolver {
     }
     void set_nguess(int nguess) { nguess_ = nguess; }
 };
-}
+}  // namespace psi
 #endif

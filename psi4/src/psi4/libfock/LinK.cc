@@ -79,9 +79,7 @@ LinK::LinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
 
 LinK::~LinK() {}
 
-size_t LinK::num_computed_shells() {
-    return num_computed_shells_;
-}
+size_t LinK::num_computed_shells() { return num_computed_shells_; }
 
 void LinK::print_header() const {
     if (print_) {
@@ -95,8 +93,7 @@ void LinK::print_header() const {
 // build the K matrix using Ochsenfelds's Linear Exchange (LinK) algorithm
 // To follow this code, compare with figure 1 of DOI: 10.1063/1.476741
 void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K,
-    std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
-
+                             std::vector<std::shared_ptr<TwoBodyAOInt>>& eri_computers) {
     // LinK does not support non-symmetric matrices
     if (!lr_symmetric_) {
         throw PSIEXCEPTION("Non-symmetric K matrix builds are currently not supported in the LinK algorithm.");
@@ -144,8 +141,7 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 int size = primary_->shell(P).nfunction();
                 int off = primary_->shell(P).function_index();
                 int off2 = basis_endpoints_for_shell[P];
-                outfile->Printf("    Shell: %4d, Size: %4d, Offset: %4d, Offset2: %4d\n", P, size, off,
-                                off2);
+                outfile->Printf("    Shell: %4d, Size: %4d, Offset: %4d, Offset2: %4d\n", P, size, off, off2);
             }
         }
         outfile->Printf("\n");
@@ -177,8 +173,9 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     // ==> Prep Bra-Bra Shell Pairs <== //
 
     // A comparator used for sorting integral screening values
-    auto screen_compare = [](const std::pair<int, double> &a,
-                                    const std::pair<int, double> &b) { return a.second > b.second; };
+    auto screen_compare = [](const std::pair<int, double>& a, const std::pair<int, double>& b) {
+        return a.second > b.second;
+    };
 
     std::vector<std::vector<int>> significant_bras(nshell);
     double max_integral = eri_computers[0]->max_integral();
@@ -264,7 +261,7 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     // ==> Integral Formation Loop <== //
 
 #pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
-    for (size_t ipair = 0L; ipair < natom_pair; ipair++) { // O(N) shell-pairs in asymptotic limit
+    for (size_t ipair = 0L; ipair < natom_pair; ipair++) {  // O(N) shell-pairs in asymptotic limit
         int Patom = atom_pairs[ipair].first;
         int Qatom = atom_pairs[ipair].second;
 
@@ -292,7 +289,6 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         bool touched = false;
         for (int P = Pstart; P < Pstart + nPshell; P++) {
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
-
                 if (Q > P) continue;
                 if (!eri_computers[0]->shell_pair_significant(P, Q)) continue;
 
@@ -310,7 +306,8 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 for (const int R : significant_kets[P]) {
                     bool is_significant = false;
                     for (const int S : significant_bras[R]) {
-                        double screen_val = eri_computers[0]->shell_pair_max_density(P, R) * std::sqrt(eri_computers[0]->shell_ceiling2(P, Q, R, S));
+                        double screen_val = eri_computers[0]->shell_pair_max_density(P, R) *
+                                            std::sqrt(eri_computers[0]->shell_ceiling2(P, Q, R, S));
 
                         if (screen_val >= linK_ints_cutoff_) {
                             if (!is_significant) is_significant = true;
@@ -318,8 +315,8 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                             if (RS > P * nshell + Q) continue;
                             ML_PQ.emplace(RS);
                             Q_stripeout_list[dQ].emplace(S);
-                        }
-                        else break;
+                        } else
+                            break;
                     }
                     if (!is_significant) break;
                 }
@@ -328,7 +325,8 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 for (const int R : significant_kets[Q]) {
                     bool is_significant = false;
                     for (const int S : significant_bras[R]) {
-                        double screen_val = eri_computers[0]->shell_pair_max_density(Q, R) * std::sqrt(eri_computers[0]->shell_ceiling2(P, Q, R, S));
+                        double screen_val = eri_computers[0]->shell_pair_max_density(Q, R) *
+                                            std::sqrt(eri_computers[0]->shell_ceiling2(P, Q, R, S));
 
                         if (screen_val >= linK_ints_cutoff_) {
                             if (!is_significant) is_significant = true;
@@ -336,23 +334,21 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                             if (RS > P * nshell + Q) continue;
                             ML_PQ.emplace(RS);
                             P_stripeout_list[dP].emplace(S);
-                        }
-                        else break;
+                        } else
+                            break;
                     }
                     if (!is_significant) break;
                 }
 
                 // Loop over significant RS pairs
                 for (const int RS : ML_PQ) {
-
                     int R = RS / nshell;
                     int S = RS % nshell;
 
                     if (!eri_computers[0]->shell_pair_significant(R, S)) continue;
                     if (!eri_computers[0]->shell_significant(P, Q, R, S)) continue;
 
-                    if (eri_computers[thread]->compute_shell(P, Q, R, S) == 0)
-                        continue;
+                    if (eri_computers[thread]->compute_shell(P, Q, R, S) == 0) continue;
                     computed_shells++;
 
                     const double* buffer = eri_computers[thread]->buffer();
@@ -402,7 +398,6 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                             for (int q = 0; q < shell_Q_nfunc; q++) {
                                 for (int r = 0; r < shell_R_nfunc; r++) {
                                     for (int s = 0; s < shell_S_nfunc; s++) {
-
                                         K1p[(p + shell_P_offset) * nbf + r + shell_R_start] +=
                                             prefactor * (Dp[q + shell_Q_start][s + shell_S_start]) * (*buffer2);
                                         K2p[(p + shell_P_offset) * nbf + s + shell_S_start] +=
@@ -454,12 +449,13 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                     for (int p = 0; p < shell_P_nfunc; p++) {
                         for (int s = 0; s < shell_S_nfunc; s++) {
 #pragma omp atomic
-                            Kp[shell_P_start + p][shell_S_start + s] += K1p[(p + shell_P_offset) * nbf + s + shell_S_start];
+                            Kp[shell_P_start + p][shell_S_start + s] +=
+                                K1p[(p + shell_P_offset) * nbf + s + shell_S_start];
 #pragma omp atomic
-                            Kp[shell_P_start + p][shell_S_start + s] += K2p[(p + shell_P_offset) * nbf + s + shell_S_start];
+                            Kp[shell_P_start + p][shell_S_start + s] +=
+                                K2p[(p + shell_P_offset) * nbf + s + shell_S_start];
                         }
                     }
-
                 }
             }
 
@@ -476,12 +472,13 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                     for (int q = 0; q < shell_Q_nfunc; q++) {
                         for (int s = 0; s < shell_S_nfunc; s++) {
 #pragma omp atomic
-                            Kp[shell_Q_start + q][shell_S_start + s] += K3p[(q + shell_Q_offset) * nbf + s + shell_S_start];
+                            Kp[shell_Q_start + q][shell_S_start + s] +=
+                                K3p[(q + shell_Q_offset) * nbf + s + shell_S_start];
 #pragma omp atomic
-                            Kp[shell_Q_start + q][shell_S_start + s] += K4p[(q + shell_Q_offset) * nbf + s + shell_S_start];
+                            Kp[shell_Q_start + q][shell_S_start + s] +=
+                                K4p[(q + shell_Q_offset) * nbf + s + shell_S_start];
                         }
                     }
-
                 }
             }
 
