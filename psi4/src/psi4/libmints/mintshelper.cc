@@ -428,21 +428,15 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
     std::shared_ptr<BasisSet> bs1 = ints[0]->basis1();
     std::shared_ptr<BasisSet> bs2 = ints[0]->basis2();
 
-    // Limit to the number of incoming onebody ints
-    size_t nthread = nthread_;
-    if (nthread > ints.size()) {
-        nthread = ints.size();
-    }
-
     double **outp = out->pointer();
 
     const auto &shell_pairs = ints[0]->shellpairs();
     size_t n_pairs = shell_pairs.size();
 
     // Loop it
-#pragma omp parallel for schedule(guided) num_threads(nthread)
+#pragma omp parallel for schedule(guided) num_threads(nthread_)
     for (size_t p = 0; p < n_pairs; ++p) {
-        size_t rank = 0;
+        int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
@@ -501,7 +495,7 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
     // Loop it
 #pragma omp parallel for schedule(guided) num_threads(nthread)
     for (size_t p = 0; p < n_pairs; ++p) {
-        size_t rank = 0;
+        int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
@@ -788,11 +782,11 @@ SharedMatrix MintsHelper::so_dkh(int dkh_order) {
     return dkh;
 }
 
-SharedMatrix MintsHelper::ao_helper(const std::string &label, std::shared_ptr<TwoBodyAOInt> ints) {
-    std::shared_ptr<BasisSet> bs1 = ints->basis1();
-    std::shared_ptr<BasisSet> bs2 = ints->basis2();
-    std::shared_ptr<BasisSet> bs3 = ints->basis3();
-    std::shared_ptr<BasisSet> bs4 = ints->basis4();
+SharedMatrix MintsHelper::ao_helper(const std::string &label, std::vector<std::shared_ptr<TwoBodyAOInt>> ints) {
+    std::shared_ptr<BasisSet> bs1 = ints[0]->basis1();
+    std::shared_ptr<BasisSet> bs2 = ints[0]->basis2();
+    std::shared_ptr<BasisSet> bs3 = ints[0]->basis3();
+    std::shared_ptr<BasisSet> bs4 = ints[0]->basis4();
 
     int nbf1 = bs1->nbf();
     int nbf2 = bs2->nbf();
@@ -802,12 +796,17 @@ SharedMatrix MintsHelper::ao_helper(const std::string &label, std::shared_ptr<Tw
     auto I = std::make_shared<Matrix>(label, nbf1 * nbf2, nbf3 * nbf4);
     double **Ip = I->pointer();
 
+#pragma omp parallel for collapse(4) num_threads(nthread_)
     for (int M = 0; M < bs1->nshell(); M++) {
         for (int N = 0; N < bs2->nshell(); N++) {
             for (int P = 0; P < bs3->nshell(); P++) {
                 for (int Q = 0; Q < bs4->nshell(); Q++) {
-                    ints->compute_shell(M, N, P, Q);
-                    const double *buffer = ints->buffer();
+                    int rank = 0;
+#ifdef _OPENMP
+                    rank = omp_get_thread_num();
+#endif
+                    ints[rank]->compute_shell(M, N, P, Q);
+                    const double *buffer = ints[rank]->buffer();
 
                     for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
                         for (int n = 0; n < bs2->shell(N).nfunction(); n++) {
@@ -868,7 +867,13 @@ SharedMatrix MintsHelper::ao_erf_eri(double omega, std::shared_ptr<IntegralFacto
     } else {
         factory = integral_;
     }
-    return ao_helper("AO ERF ERI Integrals", std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega)));
+
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints_vec(nthread_);
+    ints_vec[0] = std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega));
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::shared_ptr<TwoBodyAOInt>(ints_vec.front()->clone());
+    }
+    return ao_helper("AO ERF ERI Integrals", ints_vec);
 }
 
 SharedMatrix MintsHelper::ao_eri(std::shared_ptr<IntegralFactory> input_factory) {
@@ -879,14 +884,23 @@ SharedMatrix MintsHelper::ao_eri(std::shared_ptr<IntegralFactory> input_factory)
         factory = integral_;
     }
 
-    return ao_helper("AO ERI Tensor", std::shared_ptr<TwoBodyAOInt>(factory->eri()));
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints_vec(nthread_);
+    ints_vec[0] = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::shared_ptr<TwoBodyAOInt>(ints_vec.front()->clone());
+    }
+    return ao_helper("AO ERI Tensor", ints_vec);
 }
 
 SharedMatrix MintsHelper::ao_eri(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                                  std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
     IntegralFactory intf(bs1, bs2, bs3, bs4);
-    std::shared_ptr<TwoBodyAOInt> ints(intf.eri());
-    return ao_helper("AO ERI Tensor", ints);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints_vec(nthread_);
+    ints_vec[0] = std::shared_ptr<TwoBodyAOInt>(intf.eri());
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::shared_ptr<TwoBodyAOInt>(ints_vec.front()->clone());
+    }
+    return ao_helper("AO ERI Tensor", ints_vec);
 }
 
 SharedMatrix MintsHelper::ao_eri_shell(int M, int N, int P, int Q) {
@@ -897,34 +911,96 @@ SharedMatrix MintsHelper::ao_eri_shell(int M, int N, int P, int Q) {
 }
 
 SharedMatrix MintsHelper::ao_erfc_eri(double omega) {
-    std::shared_ptr<TwoBodyAOInt> ints(integral_->erf_complement_eri(omega));
-    return ao_helper("AO ERFC ERI Tensor", ints);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints_vec(nthread_);
+    ints_vec[0] = std::shared_ptr<TwoBodyAOInt>(integral_->erf_complement_eri(omega));
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::shared_ptr<TwoBodyAOInt>(ints_vec.front()->clone());
+    }
+    return ao_helper("AO ERFC ERI Tensor", ints_vec);
 }
 
 SharedMatrix MintsHelper::ao_f12(std::vector<std::pair<double, double>> exp_coeff) {
-    std::shared_ptr<TwoBodyAOInt> ints(integral_->f12(exp_coeff));
-    return ao_helper("AO F12 Tensor", ints);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints_vec(nthread_);
+    ints_vec[0] = std::shared_ptr<TwoBodyAOInt>(integral_->f12(exp_coeff));
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::shared_ptr<TwoBodyAOInt>(ints_vec.front()->clone());
+    }
+    return ao_helper("AO F12 Tensor", ints_vec);
 }
 
 SharedMatrix MintsHelper::ao_f12(std::vector<std::pair<double, double>> exp_coeff, std::shared_ptr<BasisSet> bs1,
                                  std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
                                  std::shared_ptr<BasisSet> bs4) {
     IntegralFactory intf(bs1, bs2, bs3, bs4);
-    std::shared_ptr<TwoBodyAOInt> ints(intf.f12(exp_coeff));
-    return ao_helper("AO F12 Tensor", ints);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints_vec(nthread_);
+    ints_vec[0] = std::shared_ptr<TwoBodyAOInt>(intf.f12(exp_coeff));
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::shared_ptr<TwoBodyAOInt>(ints_vec.front()->clone());
+    }
+    return ao_helper("AO F12 Tensor", ints_vec);
 }
 
 SharedMatrix MintsHelper::ao_f12_squared(std::vector<std::pair<double, double>> exp_coeff) {
-    std::shared_ptr<TwoBodyAOInt> ints(integral_->f12_squared(exp_coeff));
-    return ao_helper("AO F12 Squared Tensor", ints);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints_vec(nthread_);
+    ints_vec[0] = std::shared_ptr<TwoBodyAOInt>(integral_->f12_squared(exp_coeff));
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::shared_ptr<TwoBodyAOInt>(ints_vec.front()->clone());
+    }
+    return ao_helper("AO F12 Squared Tensor", ints_vec);
 }
 
 SharedMatrix MintsHelper::ao_f12_squared(std::vector<std::pair<double, double>> exp_coeff,
                                          std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                                          std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
     IntegralFactory intf(bs1, bs2, bs3, bs4);
-    std::shared_ptr<TwoBodyAOInt> ints(intf.f12_squared(exp_coeff));
-    return ao_helper("AO F12 Squared Tensor", ints);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints_vec(nthread_);
+    ints_vec[0] = std::shared_ptr<TwoBodyAOInt>(intf.f12_squared(exp_coeff));
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::shared_ptr<TwoBodyAOInt>(ints_vec.front()->clone());
+    }
+    return ao_helper("AO F12 Squared Tensor", ints_vec);
+}
+
+SharedMatrix MintsHelper::ao_f12g12(std::vector<std::pair<double, double>> exp_coeff) {
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints_vec(nthread_);
+    ints_vec[0] = std::shared_ptr<TwoBodyAOInt>(integral_->f12g12(exp_coeff));
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::shared_ptr<TwoBodyAOInt>(ints_vec.front()->clone());
+    }
+    return ao_helper("AO F12G12 Tensor", ints_vec);
+}
+
+SharedMatrix MintsHelper::ao_f12g12(std::vector<std::pair<double, double>> exp_coeff,
+                                    std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                                    std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints_vec(nthread_);
+    ints_vec[0] = std::shared_ptr<TwoBodyAOInt>(intf.f12g12(exp_coeff));
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::shared_ptr<TwoBodyAOInt>(ints_vec.front()->clone());
+    }
+    return ao_helper("AO F12G12 Tensor", ints_vec);
+}
+
+SharedMatrix MintsHelper::ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff) {
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints_vec(nthread_);
+    ints_vec[0] = std::shared_ptr<TwoBodyAOInt>(integral_->f12_double_commutator(exp_coeff));
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::shared_ptr<TwoBodyAOInt>(ints_vec.front()->clone());
+    }
+    return ao_helper("AO F12 Double Commutator Tensor", ints_vec);
+}
+
+SharedMatrix MintsHelper::ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff,
+                                         std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                                         std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints_vec(nthread_);
+    ints_vec[0] = std::shared_ptr<TwoBodyAOInt>(intf.f12_double_commutator(exp_coeff));
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::shared_ptr<TwoBodyAOInt>(ints_vec.front()->clone());
+    }
+    return ao_helper("AO F12 Double Commutator Tensor", ints_vec);
 }
 
 std::vector<std::pair<double, double>> MintsHelper::f12_cgtg(double exponent) {
@@ -943,10 +1019,10 @@ std::vector<std::pair<double, double>> MintsHelper::f12_cgtg(double exponent) {
     return exp_coeff;
 }
 
-SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::shared_ptr<ThreeCenterOverlapInt> ints) {
-    std::shared_ptr<BasisSet> bs1 = ints->basis1();
-    std::shared_ptr<BasisSet> bs2 = ints->basis2();
-    std::shared_ptr<BasisSet> bs3 = ints->basis3();
+SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::vector<std::shared_ptr<ThreeCenterOverlapInt>> ints) {
+    std::shared_ptr<BasisSet> bs1 = ints[0]->basis1();
+    std::shared_ptr<BasisSet> bs2 = ints[0]->basis2();
+    std::shared_ptr<BasisSet> bs3 = ints[0]->basis3();
 
     int nbf1 = bs1->nbf();
     int nbf2 = bs2->nbf();
@@ -955,11 +1031,22 @@ SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::sha
     auto I = std::make_shared<Matrix>(label, nbf1 * nbf2, nbf3);
     double **Ip = I->pointer();
 
+    // Limit to the number of incoming two-body ints
+    size_t nthread = nthread_;
+    if (nthread > ints.size()) {
+        nthread = ints.size();
+    }
+
+#pragma omp parallel for collapse(3) num_threads(nthread)
     for (int M = 0; M < bs1->nshell(); M++) {
         for (int N = 0; N < bs2->nshell(); N++) {
             for (int P = 0; P < bs3->nshell(); P++) {
-                ints->compute_shell(M, N, P);
-                const double *buffer = ints->buffers()[0];
+                int rank = 0;
+#ifdef _OPENMP
+                rank = omp_get_thread_num();
+#endif
+                ints[rank]->compute_shell(M, N, P);
+                const double *buffer = ints[rank]->buffers()[0];
                 int Mfi = bs1->shell(M).function_index();
                 int Nfi = bs2->shell(N).function_index();
                 int Pfi = bs3->shell(P).function_index();
@@ -981,42 +1068,24 @@ SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::sha
 
     return I;
 }
+
 SharedMatrix MintsHelper::ao_3coverlap() {
-    std::shared_ptr<ThreeCenterOverlapInt> ints =
-        std::make_shared<ThreeCenterOverlapInt>(basisset_, basisset_, basisset_);
-    return ao_3coverlap_helper("AO 3-Center Overlap Tensor", ints);
+    std::vector<std::shared_ptr<ThreeCenterOverlapInt>> ints_vec(nthread_);
+    ints_vec[0] = std::make_shared<ThreeCenterOverlapInt>(basisset_, basisset_, basisset_);
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::make_shared<ThreeCenterOverlapInt>(basisset_, basisset_, basisset_);
+    }
+    return ao_3coverlap_helper("AO 3-Center Overlap Tensor", ints_vec);
 }
 
 SharedMatrix MintsHelper::ao_3coverlap(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                                        std::shared_ptr<BasisSet> bs3) {
-    auto ints = std::make_shared<ThreeCenterOverlapInt>(bs1, bs2, bs3);
-    return ao_3coverlap_helper("AO 3-Center Overlap Tensor", ints);
-}
-
-SharedMatrix MintsHelper::ao_f12g12(std::vector<std::pair<double, double>> exp_coeff) {
-    std::shared_ptr<TwoBodyAOInt> ints(integral_->f12g12(exp_coeff));
-    return ao_helper("AO F12G12 Tensor", ints);
-}
-
-SharedMatrix MintsHelper::ao_f12g12(std::vector<std::pair<double, double>> exp_coeff,
-                                    std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
-                                    std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
-    IntegralFactory intf(bs1, bs2, bs3, bs4);
-    std::shared_ptr<TwoBodyAOInt> ints(intf.f12g12(exp_coeff));
-    return ao_helper("AO F12G12 Tensor", ints);
-}
-
-SharedMatrix MintsHelper::ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff) {
-    std::shared_ptr<TwoBodyAOInt> ints(integral_->f12_double_commutator(exp_coeff));
-    return ao_helper("AO F12 Double Commutator Tensor", ints);
-}
-
-SharedMatrix MintsHelper::ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff,
-                                         std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
-                                         std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
-    IntegralFactory intf(bs1, bs2, bs3, bs4);
-    std::shared_ptr<TwoBodyAOInt> ints(intf.f12_double_commutator(exp_coeff));
-    return ao_helper("AO F12 Double Commutator Tensor", ints);
+    std::vector<std::shared_ptr<ThreeCenterOverlapInt>> ints_vec(nthread_);
+    ints_vec[0] = std::make_shared<ThreeCenterOverlapInt>(bs1, bs2, bs3);
+    for (size_t i = 1; i < nthread_; i++) {
+        ints_vec[i] = std::make_shared<ThreeCenterOverlapInt>(bs1, bs2, bs3);
+    }
+    return ao_3coverlap_helper("AO 3-Center Overlap Tensor", ints_vec);
 }
 
 SharedMatrix MintsHelper::mo_erf_eri(double omega, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4) {
@@ -2048,7 +2117,7 @@ SharedMatrix MintsHelper::potential_grad(SharedMatrix D) {
         size_t P = shell_pairs[PQ].first;
         size_t Q = shell_pairs[PQ].second;
 
-        size_t rank = 0;
+        int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
@@ -2226,7 +2295,7 @@ SharedMatrix MintsHelper::effective_core_potential_grad(SharedMatrix D) {
         size_t P = PQ_pairs[PQ].first;
         size_t Q = PQ_pairs[PQ].second;
 
-        size_t rank = 0;
+        int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
