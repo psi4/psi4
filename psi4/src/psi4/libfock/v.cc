@@ -1349,14 +1349,21 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         compute_V_brianqc(ret);
         timer_off("RV: Form V");
         return;
+    }
 #endif
-    if (options_.get_int("GAUXC_INTEGRATE")) compute_V_gauxc(ret);
-    else compute_V_psi(ret);
+#ifdef USING_gauxc
+    if (options_.get_int("GAUXC_INTEGRATE")) {
+        compute_V_gauxc(ret);
+        timer_off("RV: Form V");
+        return;
+    }
+#endif
+    compute_V_psi(ret);
     timer_off("RV: Form V");
 }
 
-void RV::compute_V_brianqc(std::vector<SharedMatrix>& ret) {
 #ifdef USING_BrianQC
+void RV::compute_V_brianqc(std::vector<SharedMatrix>& ret) {
     double DFTEnergy;
     
     brianSCFBuildFockDFT(&brianCookie,
@@ -1378,9 +1385,10 @@ void RV::compute_V_brianqc(std::vector<SharedMatrix>& ret) {
     quad_values_["RHO_BX"] = 0.0;
     quad_values_["RHO_BY"] = 0.0;
     quad_values_["RHO_BZ"] = 0.0;
-#endif
 }
+#endif
 
+#ifdef USING_gauxc
 void RV::compute_V_gauxc(std::vector<SharedMatrix>& ret) {
     Eigen::MatrixXd eigen_d = D_AO_[0]->eigen_map();
 #if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
@@ -1410,6 +1418,7 @@ void RV::compute_V_gauxc(std::vector<SharedMatrix>& ret) {
     quad_values_["RHO_BY"] = 0.0;
     quad_values_["RHO_BZ"] = 0.0;
 }
+#endif
 
 void RV::compute_V_psi(std::vector<SharedMatrix>& ret) {
     // => Initialize variables, esp. pointers and matrices <=
