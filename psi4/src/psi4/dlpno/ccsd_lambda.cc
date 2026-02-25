@@ -524,6 +524,48 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         K_ijmb_bar_[ij] = K_mibj_[ij]->clone();
         K_ijmb_bar_[ij]->add(linalg::doublet(T_n_ij_[ij], K_iajb_[ij]));
     } // end ij
+
+    F_vv_double_tilde_.resize(n_lmo_pairs);
+
+#pragma omp parallel for
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+
+        int nlmo_ij = lmopair_to_lmos_[ij].size();
+
+        F_vv_double_tilde_[ij] = Fab_[ij]->clone();
+
+        for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
+            int k = lmopair_to_lmos_[ij][k_ij];
+    
+            for (int l_ij = 0; l_ij < nlmo_ij; ++l_ij) {
+                int l = lmopair_to_lmos_[ij][l_ij];
+                int kl = i_j_to_ij_[k][l];
+
+                auto chilly_glizzy = linalg::doublet(Tt_iajb_[kl], K_iajb_[kl], false, true);
+                F_vv_double_tilde_[ij]->subtract(linalg::triplet(S_PNO(ij, kl), chilly_glizzy, S_PNO(kl, ij)));
+
+            } // end l_ij
+        } // end k_ij
+    } // end ij
+
+    F_im_double_tilde_ = Fkj_->clone();
+
+#pragma omp parallel for
+    for (int im = 0; im < n_lmo_pairs; ++im) {
+        auto &[i, m] = ij_to_i_j_[im];
+
+        int nlmo_im = lmopair_to_lmos_[im].size();
+        
+        for (int l_im = 0; l_im < nlmo_im; ++l_im) {
+            int l = lmopair_to_lmos_[im][l_im];
+            int li = i_j_to_ij_[l][i], lm = i_j_to_ij_[l][m];
+
+            auto sussy_baka = linalg::triplet(S_PNO(li, lm), Tt_iajb_[lm], S_PNO(li, lm), false, false, true);
+
+            F_im_double_tilde_(i, m) += sussy_baka->vector_dot(K_iajb_[li]);
+        } // end l_im
+    } // end ij
 }
 
 void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::vector<SharedMatrix>> &L_ia_buffer) {
@@ -860,12 +902,13 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
 
         for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
             int n = lmopair_to_lmos_[ij][n_ij];
-            int in = i_j_to_ij_[i][n], jn = i_j_to_ij_[j][n];
+            int in = i_j_to_ij_[i][n], jn = i_j_to_ij_[j][n], nj = i_j_to_ij_[n][j];
+            int i_nj = lmopair_to_lmos_dense_[nj][i];
 
-            // l_{ij}^{a_{ij}b_{ij}} -= \overline{\lambda}_{jn}^{a_{jn}f_{jn}}[S_{a_{nj}}^{a_{ij}}\widetilde{\gamma}_{in}^{f_{nj}b_{ij}} (Toth Eq. 52a) (TODO: Add J_ikac_non_proj_ next time)
+            // l_{ij}^{a_{ij}b_{ij}} -= \overline{\lambda}_{jn}^{a_{jn}f_{jn}}[S_{a_{nj}}^{a_{ij}}\widetilde{\gamma}_{in}^{f_{nj}b_{ij}} (Toth Eq. 52a)
             auto ron = linalg::triplet(S_PNO(ij, jn), lambda_iajb_bar_[jn], S_PNO(jn, in));
             auto uncle_andy = gamma[in]->clone();
-            uncle_andy->add(J_ikac_non_proj_[in][]); // Uncle Andy stays delinquent
+            uncle_andy->add(J_ikac_non_proj_[nj][i_nj]); // Uncle Andy stays delinquent
             auto weasley = linalg::triplet(ron, uncle_andy, S_PNO(in, ij));
             Ln_iajb[ij]->subtract(weasley);
 
@@ -885,12 +928,16 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
         
         for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
             int n = lmopair_to_lmos_[ij][n_ij];
-            int nj = i_j_to_ij_[n][j], in = i_j_to_ij_[i][n];
+            int nj = i_j_to_ij_[n][j], in = i_j_to_ij_[i][n], ni = i_j_to_ij_[n][i];
+            j_ni = lmopair_to_lmos_dense_[ni][j];
 
             // l^{a_{ij}b_{ij}}_{ij} += (2 - P_{ab}) [\frac{1}{2}\widetilde{\lambda}^{f_{ni}a_{ni}}_{ni}[\widetilde{\delta}^{f_{ni}b_{ij}}_{nj}S^{a_{ni}}_{a_{ij}} (Toth Eq. 53a) 
-            // (TODO: Add J_ikac_non_proj_ and K_ikac_non_proj_ next time)
             auto forg = linalg::triplet(S_PNO(ij, in), lambda_iajb_[in], S_PNO(in, nj));
-            auto parts = linalg::triplet(forg, delta[nj], S_PNO(nj, ij));
+            auto glizzy = K_iakc_non_proj_[ni][j_ni];
+            glizzy->scale(2.0);
+            glizzy->subtract(J_ikac_non_proj_[ni][j_ni]);
+            glizzy->add(delta[nj]);
+            auto parts = linalg::triplet(forg, glizzy, S_PNO(nj, ij));
             
             Ln_iajb[ij]->add(parts);
             parts->scale(-0.5);
@@ -913,7 +960,7 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
 
         // l^{a_{ij}b_{ij}}_{ij} += \widetilde{\lambda}^{a_{ij}f_{ij}}_{ij}\widetilde{\widetilde{F}}_{f_{ij}b_{ij}} - (2 - P_{ab}) \rho^{\mathrm{VV}}_{a_{mn}c_{mn}}
         // S^{a_{mn}}_{a_{ij}} K^{c_{ij}b_{ij}}_{ij}S^{c_{mn}}_{c_{ij}} (Toth Eq. 54)
-        Ln_iajb->add(linalg::doublet(lambda_iajb_[ij], F_vv_double_tilde_[ij])); // TODO: Make F_vv_double_tilde
+        Ln_iajb->add(linalg::doublet(lambda_iajb_[ij], F_vv_double_tilde_[ij]));
         for (int m_ij = 0; m_ij < nlmo_ij; ++m_ij) {
             int m = lmopair_to_lmos_[ij][m_ij];
             for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
