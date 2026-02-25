@@ -163,4 +163,4 @@ jobs:
         directory: ./docs
         repository: psi4/psi4docs
         github_token: ${{ secrets.psi4docs_from_psi4 }}
-
+        force: true
