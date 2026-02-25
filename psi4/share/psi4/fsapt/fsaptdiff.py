@@ -35,7 +35,7 @@ import psi4
 
 path = psi4.core.get_datadir()
 sys.path.append('%s/fsapt' % path)
-from fsapt import *  # isort:skip
+from fsapt import *  # noqa: I001
 
 
 # => Driver Code <= #

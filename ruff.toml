@@ -1,0 +1,12 @@
+line-length = 119
+indent-width = 4
+
+exclude = ["psi4/share", "psi4/driver/qcdb", "psi4/__init__.py", "psi4/metadata.py", "psi4/driver/__init__.py", "samples", "tests", "doc", "devtools", "conda", "venv"]
+
+[lint]
+select = ["I"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true

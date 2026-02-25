@@ -4,10 +4,14 @@ repos:
     hooks:
       - id: check-case-conflict
       - id: check-merge-conflict
-  - repo: https://github.com/google/yapf
-    rev: v0.43.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.0
     hooks:
-      - id: yapf
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix, --preview]
+        exclude: "^(psi4/share/|psi4/driver/qcdb/|psi4/__init__.py|psi4/driver/__init__.py|samples/|tests/|doc/|devtools/|conda/)"
+      - id: ruff-format
+        exclude: "^(psi4/share/|psi4/driver/qcdb/|psi4/__init__.py|psi4/driver/__init__.py|samples/|tests/|doc/|devtools/|conda/)"
   - repo: https://github.com/doublify/pre-commit-clang-format.git
     rev: master
     hooks:

@@ -26,9 +26,7 @@
 # @END LICENSE
 #
 
-"""
-isort:skip_file
-"""
+# ruff: noqa: I001
 
 # Figure out paths
 # * in figuring out psidatadir: envvar trumps staged/installed
