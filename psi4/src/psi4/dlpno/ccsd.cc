@@ -59,7 +59,7 @@ namespace dlpno {
 DLPNOCCSD::DLPNOCCSD(SharedWavefunction ref_wfn, Options& options) : DLPNO(ref_wfn, options) {}
 DLPNOCCSD::~DLPNOCCSD() {}
 
-inline SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
+SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
     int i, j, m, n;
     std::tie(i, j) = ij_to_i_j_[ij];
     std::tie(m, n) = ij_to_i_j_[mn];
@@ -107,7 +107,7 @@ inline SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
     }
 }
 
-inline std::vector<SharedMatrix> DLPNOCCSD::QIA_PNO(const int ij) {
+std::vector<SharedMatrix> DLPNOCCSD::QIA_PNO(const int ij) {
     auto &[i, j] = ij_to_i_j_[ij];
     int pair_idx = (i > j) ? ij_to_ji_[ij] : ij;
 
@@ -134,7 +134,7 @@ inline std::vector<SharedMatrix> DLPNOCCSD::QIA_PNO(const int ij) {
     }
 }
 
-inline std::vector<SharedMatrix> DLPNOCCSD::QAB_PNO(const int ij) {
+std::vector<SharedMatrix> DLPNOCCSD::QAB_PNO(const int ij) {
     auto &[i, j] = ij_to_i_j_[ij];
     int pair_idx = (i > j) ? ij_to_ji_[ij] : ij;
 
@@ -1798,7 +1798,7 @@ void DLPNOCCSD::t1_fock() {
     // => Step 1: Dressing over the contracted indices <= //
 
     SharedMatrix Fij_bar = F_lmo_->clone(); // (i, j)
-    std::vector<SharedMatrix> Fkc_bar(n_lmo_pairs); // (k_{ij}, c_{ij})
+    Fkc_bar_.resize(n_lmo_pairs); // (k_{ij}, c_{ij})
     std::vector<SharedMatrix> Fai_bar(naocc); // (a_{ii})
     std::vector<SharedMatrix> Fab_bar(n_lmo_pairs); // (a_{ij}, b_{ij})
 
@@ -1818,12 +1818,12 @@ void DLPNOCCSD::t1_fock() {
         (*Fij_bar)(i, j) += 2.0 * T_n_ij_[ij]->vector_dot(J_ijmb_[ij]);
         (*Fij_bar)(i, j) -= T_n_ij_[ij]->vector_dot(K_mibj_[ji]);
 
-        if (i > j || i_j_to_ij_strong_[i][j] == -1) continue;
+        if (i > j) continue; // || i_j_to_ij_strong_[i][j] == -1) continue;
 
         // Partially dress Fia and Fab (Jiang Eq. 99 and 101)
         // \overline{F}_{kc} = f_{kc} + [2(kc|me) - (ke|mc)] T_{m}^{e}
         // In closed-shell RHF reference, f_{kc} is zero
-        Fkc_bar[ij] = std::make_shared<Matrix>(nlmo_ij, npno_ij);
+        Fkc_bar_[ij] = std::make_shared<Matrix>(nlmo_ij, npno_ij);
 
         // \overline{F}_{ab} = f_{ab} + [2(ab|me) - (ae|mb)] T_{m}^{e}
         // In canonical PNO representation, f_{ab} is diagonal
@@ -1843,7 +1843,7 @@ void DLPNOCCSD::t1_fock() {
             // \overline{F}_{kc} += 2 B^{Q}_{kc} \Gamma_{Q}
             auto Jcont = Qma->clone();
             Jcont->scale(2.0 * gamma);
-            Fkc_bar[ij]->add(Jcont);
+            Fkc_bar_[ij]->add(Jcont);
 
             // \overline{F}_{ab} += 2 B^{Q}_{ab} \Gamma_{Q}
             Jcont = Qab->clone();
@@ -1853,7 +1853,7 @@ void DLPNOCCSD::t1_fock() {
             // K like contributions
             // \overline{F}_{ab} -= B^{Q}_{ke} T_{m}^{e} B^{Q}_{mc}
             auto Kcont = linalg::triplet(Qma, T_n_ij_[ij], Qma, false, true, false); // (k, e) (m, e) (m, c) -> (k, c)
-            Fkc_bar[ij]->subtract(Kcont);
+            Fkc_bar_[ij]->subtract(Kcont);
 
             // \overline{F}_{ab} -= B^{Q}_{ae} T_{m}^{e} B^{Q}_{mb}
             Kcont = linalg::triplet(Qab, T_n_ij_[ij], Qma, false, true, false); // (a, e) (m, e) (m, b) -> (a, b)
@@ -1911,7 +1911,7 @@ void DLPNOCCSD::t1_fock() {
         // \widetilde{F}_{ij} = \overline{F}_{ij} (initialized earlier) + \overline{F}_{ic} T_{j}^{c}
         int i_jj = lmopair_to_lmos_dense_[jj][i];
         for (int a_jj = 0; a_jj < n_pno_[jj]; ++a_jj) {
-            (*Fkj_)(i, j) += (*Fkc_bar[jj])(i_jj, a_jj) * (*T_ia_[j])(a_jj, 0);
+            (*Fkj_)(i, j) += (*Fkc_bar_[jj])(i_jj, a_jj) * (*T_ia_[j])(a_jj, 0);
         }
 
         // Fkc matrices (Jiang Eq. 95)
@@ -1936,7 +1936,7 @@ void DLPNOCCSD::t1_fock() {
         // Fully dress Fab matrices (Jiang Eq. 97)
         // \widetilde{F}_{ab} = \overline{F}_{ab} - T_{k}^{a} \overline{F}_{kb} 
         Fab_[ij] = Fab_bar[ij]->clone(); // (a, b)
-        Fab_[ij]->subtract(linalg::doublet(T_n_ij_[ij], Fkc_bar[ij], true, false)); // (k, a) (k, b) -> (a, b)
+        Fab_[ij]->subtract(linalg::doublet(T_n_ij_[ij], Fkc_bar_[ij], true, false)); // (k, a) (k, b) -> (a, b)
 
         // Fully dress Fai matrices (Jiang Eq. 96)
         // \widetilde{F}_{ai} = \overline{F}_{ai} - T_{k}^{a} \overline{F}_{ki}
@@ -1944,7 +1944,7 @@ void DLPNOCCSD::t1_fock() {
         if (i == j) {
             Fai_[i] = Fai_bar[i]->clone(); // (a, 1)
             Fai_[i]->add(linalg::doublet(Fab_bar[ij], T_ia_[i], false, false)); // (a, b) (i, b)
-            Fai_[i]->subtract(linalg::triplet(T_n_ij_[ij], Fkc_bar[ij], T_ia_[i], true, false, false)); // (k, a) (k, b) (i, b)
+            Fai_[i]->subtract(linalg::triplet(T_n_ij_[ij], Fkc_bar_[ij], T_ia_[i], true, false, false)); // (k, a) (k, b) (i, b)
 
             for (int a_i = 0; a_i < npno_ij; ++a_i) {
                 for (int k_i = 0; k_i < nlmo_ij; ++k_i) {

@@ -2669,7 +2669,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- SUBSECTION Expert Options -*/
 
         /*- Which DLPNO Algorithm to run (not set by user) !expert -*/
-        options.add_str("DLPNO_ALGORITHM", "CCSD(T)", "MP2 CCSD CCSD(T)");
+        options.add_str("DLPNO_ALGORITHM", "CCSD(T)", "MP2 CCSD CCSD(T) CCSD_Lambda");
         /*- Use T0 approximation for DLPNO-CCSD(T)? (not set explicitly), 
         triggered by indicating 'dlpno-ccsd(t0)' rather than 'dlpno-ccsd(t)' !expert -*/
         options.add_bool("T0_APPROXIMATION", false);

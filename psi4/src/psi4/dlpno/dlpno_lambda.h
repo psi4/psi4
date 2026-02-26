@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef PSI4_SRC_DLPNO_H_
-#define PSI4_SRC_DLPNO_H_
+#ifndef PSI4_SRC_DLPNO_LAMBDA_H_
+#define PSI4_SRC_DLPNO_LAMBDA_H_
 
 #include "sparse.h"
 #include "dlpno.h"
@@ -51,11 +51,10 @@ enum class DLPNOLambdaMethod { CCSD_L };
 
 class DLPNOCCSD_Lambda : public DLPNOCCSD {
    protected:
-
     /// Lambda Amplitudes
-
     std::vector<SharedMatrix> lambda_ia_; // Dimensions: [nocc * (npno_[ii], 1)]
     std::vector<SharedMatrix> lambda_iajb_; // Dimensions: [n_lmo_pairs * (n_pno_[ij], n_pno_[ij])]
+    std::vector<SharedMatrix> lambda_iajb_bar_;
 
     // => Lambda CCSD Integrals (Fock matrices and ERIs) <= //
     std::vector<SharedMatrix> delta_imae_tilde_; // Toth eq. 26a
@@ -66,7 +65,7 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
 
     // => Lambda CCSD Intermediates <= //
 
-    std::vector<SharedMatrix> zizi_is_delinquent_;
+    std::vector<SharedMatrix> zz_is_chud_;
     std::vector<SharedMatrix> john_bigback_;
 
     SharedMatrix rho_oo_; // Toth Section IIIA
@@ -74,26 +73,28 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
     std::vector<SharedMatrix> M_imae_tilde_; // Toth Eq. 24
     std::vector<std::vector<SharedMatrix>> F_fcia_hat_; // Toth Eq. 33
     std::vector<std::vector<SharedMatrix>> F_knia_hat_; // Toth Eq. 34
+    std::vector<SharedMatrix> K_maef_dt_;
+    std::vector<SharedMatrix> K_eimn_dt_;
+    std::vector<SharedMatrix> M_kace_bar_;
+    std::vector<SharedMatrix> M_mkic_bar_;
+    std::vector<SharedMatrix> J_kmic_bar_;
+    std::vector<SharedMatrix> J_kaec_bar_;
+    std::vector<SharedMatrix> L_ieab_bar_;
+    std::vector<SharedMatrix> K_ijmb_bar_;
 
     // => Computing integrals <= //
 
     /// A function to estimate memory costs for lambda CCSD
     void estimate_memory();
+    /// Compute rho density terms
+    void form_goo();
     /// Compute some of the intermediates required in lambda DLPNO CCSD
     void compute_lambda_intermediates();
-    /// Computes the specific integral types needed for lambda CCSD (PNO basis)
-    void compute_lambda_pno_integrals();
-
+    
     // => Lambda CCSD intermediates <= //
 
     /// New defined intermediate in Toth Eq. 50b
     std::vector<SharedMatrix> compute_alpha_ijkl();
-    /// Toth Eq. XX
-    std::vector<SharedMatrix> weird_stuff();
-    /// Toth Eq. XY
-    std::vector<SharedMatrix> strawberry_raspberry_shortcake();
-    /// Toth Eq. ZeeZee
-    std::vector<SharedMatrix> lasagne();
 
     /// compute singles residual in lambda CCSD equations, Toth Eq. 26-36
     void compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::vector<SharedMatrix>>& L_ia_buffer);
@@ -113,5 +114,7 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
     double compute_energy();
 };
 
-}
-}
+} // end dlpno
+} // end psi
+
+#endif

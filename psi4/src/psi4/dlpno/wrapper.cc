@@ -27,6 +27,7 @@
  */
 
 #include "dlpno.h"
+#include "dlpno_lambda.h"
 
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/exception.h"
@@ -44,8 +45,11 @@ SharedWavefunction dlpno(SharedWavefunction ref_wfn, Options& options) {
             dlpno = std::make_shared<DLPNOCCSD>(ref_wfn, options);
         } else if (options.get_str("DLPNO_ALGORITHM") == "CCSD(T)") {
             dlpno = std::make_shared<DLPNOCCSD_T>(ref_wfn, options);
+        } else if (options.get_str("DLPNO_ALGORITHM") == "CCSD_Lambda") {
+            dlpno = std::make_shared<DLPNOCCSD_Lambda>(ref_wfn, options);
         } else {
-            throw PSIEXCEPTION("Requested DLPNO method is not yet available!");
+            dlpno = std::make_shared<DLPNOCCSD_Lambda>(ref_wfn, options);
+            // throw PSIEXCEPTION("Requested DLPNO method is not yet available!");
         }
     } else {
         throw PSIEXCEPTION("DLPNO requires closed-shell reference"); 

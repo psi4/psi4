@@ -168,6 +168,7 @@ procedures = {
         'dlpno-ccsd'    : proc.run_dlpnoccsd,
         'dlpno-ccsd(t0)': proc.run_dlpnoccsd_t,
         'dlpno-ccsd(t)' : proc.run_dlpnoccsd_t,
+        'dlpno-ccsd_l'  : proc.run_dlpnoccsd_l,
         'efp'           : proc.run_efp,
         'dmrg-scf'      : proc.run_dmrgscf,
         'dmrg-caspt2'   : proc.run_dmrgscf,

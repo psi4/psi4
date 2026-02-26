@@ -367,16 +367,17 @@ class PSI_API DLPNOCCSD : public DLPNO {
     std::vector<SharedMatrix> Fkc_; // Jiang Eq. 95
     std::vector<SharedMatrix> Fai_; // Jiang Eq. 96
     std::vector<SharedMatrix> Fab_; // Jiang Eq. 97
+    std::vector<SharedMatrix> Fkc_bar_; // Extra Fock Matrix term needed for lambda!
 
     double e_lmp2_; ///< raw (uncorrected) local MP2 correlation energy
     double e_lccsd_; ///< raw (uncorrected) local CCSD correlation energy
 
     /// Returns the appropriate overlap matrix given two LMO pairs
-    inline SharedMatrix S_PNO(const int ij, const int mn);
+    SharedMatrix S_PNO(const int ij, const int mn);
     /// Encapsulates the reading in of (Q_{ij}|m_{ij} a_{ij}) integrals (regardless of core or disk)
-    inline std::vector<SharedMatrix> QIA_PNO(const int ij);
+    std::vector<SharedMatrix> QIA_PNO(const int ij);
     /// Encapsulates the reading in of (Q_{ij}|a_{ij} b_{ij}) integrals (regardless of core or disk)
-    inline std::vector<SharedMatrix> QAB_PNO(const int ij);
+    std::vector<SharedMatrix> QAB_PNO(const int ij);
 
     /// These functions split up pairs that survive the initial dipole screening
     // The "crude" pre-screening step splits up semi-canonical MP2 pairs from the rest,

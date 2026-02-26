@@ -88,12 +88,14 @@ void DLPNO::common_init() {
 
     if (options_.get_str("DLPNO_ALGORITHM") == "MP2") {
         algorithm_ = DLPNOMethod::MP2;
-    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD") {
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD" || 
+                options_.get_str("DLPNO_ALGORITHM") == "CCSD_Lambda") {
         algorithm_ = DLPNOMethod::CCSD;
     } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD(T)") {
         algorithm_ = DLPNOMethod::CCSD_T;
     } else {
-        throw PSIEXCEPTION("Requested DLPNO algorithm has NOT been implemented yet");
+        algorithm_ = DLPNOMethod::CCSD;
+        // throw PSIEXCEPTION("Requested DLPNO algorithm has NOT been implemented yet");
     }
 
     // did the user manually change expert level options?
