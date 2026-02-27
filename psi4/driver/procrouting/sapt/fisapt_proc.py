@@ -77,11 +77,11 @@ def fisapt_compute_energy(self, jk_obj, *, external_potentials=None):
     core.timer_on("FISAPT:SAPT:ind")
     self.ind()
     core.timer_off("FISAPT:SAPT:ind")
+
+    # FISAPT Dispersion is expensive, so only do if needed
     if not core.get_option("FISAPT", "FISAPT_DO_FSAPT"):
         core.timer_on("FISAPT:SAPT:disp")
-        # Expensive, only do if needed  # unteseted translation of below
         self.disp(self.matrices(), self.vectors(), True)
-        # self.disp(matrices_, vectors_, true)  # Expensive, only do if needed
         core.timer_off("FISAPT:SAPT:disp")
 
     # => F-SAPT0 <=

@@ -2098,14 +2098,43 @@ def fsapt_analysis(
     link_siao: Dict = None,
     print_output: bool = True,
 ):
-    r"""Runs fsapt.py either through QCVariables or on FSAPT output files.
+    r"""Run F-SAPT post-processing from in-memory results or an ``fsapt/`` directory.
 
-    To run through QCVariables, you must have just run fisapt0 (having qcvars stored
-    on your dimer wavefunction) or provide an atomic_results=AtomicResults() object
-    from QCSchema format.
+    Parameters
+    ----------
+    source
+        Source of data for the analysis. Accepted types are:
 
-    Running this function through output files requires the directory where
-    fsapt wrote its files (dirname which is defaulted to './fsapt')
+        - ``str``: path to a directory containing F-SAPT output files (for example,
+          the directory written by ``FISAPT_FSAPT_FILEPATH`` or the default
+          ``./fsapt``). In this mode, ``fA.dat`` and ``fB.dat`` are written to that
+          directory from ``fragments_a`` and ``fragments_b`` and analysis is run from
+          files (equivalent to ``fsapt.py`` style processing).
+        - :class:`~psi4.core.Wavefunction`: use QCVariables already stored on a
+          wavefunction from a recent ``energy('fisapt0', return_wfn=True)`` call.
+          No output-file parsing is required.
+        - :class:`qcelemental.models.AtomicResult`: use QCVariables extracted from a
+          QCSchema AtomicResult (for example, from ``return_plan=True`` workflows).
+
+        For ``Wavefunction`` and ``AtomicResult`` sources, analysis is performed
+        directly in Python from QCVariables. For ``str`` sources, analysis is
+        performed from the saved F-SAPT files on disk.
+    fragments_a
+        Mapping of fragment names to 1-indexed atom lists for subsystem A
+        (same semantics as ``fA.dat``).
+    fragments_b
+        Mapping of fragment names to 1-indexed atom lists for subsystem B
+        (same semantics as ``fB.dat``).
+    pdb_dir
+        Optional directory for order-1 visualization files.
+    analysis_type
+        Analysis verbosity/type passed through to the F-SAPT analyzer.
+    links5050
+        Whether to use 50-50 link assignment in link handling.
+    link_siao
+        Optional mapping for explicit SIAO link assignments.
+    print_output
+        Whether to print status/output text during analysis.
     """
 
     logger.debug('FSAPT ANALYSIS')
