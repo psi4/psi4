@@ -151,6 +151,12 @@ def fisapt_fdrop(self, external_potentials=None):
         with open(geomfile, "w") as fh:
             fh.write(xyz)
 
+        # Enable a user to recreate a valid qcelemental molecule from an fsapt
+        # output directory for downstream applications
+        psi4file = filepath + os.sep + "geom.psi4mol"
+        with open(psi4file, "w") as fh:
+            fh.write(self.molecule().to_string(dtype="psi4", units="Angstrom"))
+
     # write external potential geometries
     if external_potentials is not None and isinstance(external_potentials, dict):
         for frag in "ABC":
@@ -322,6 +328,12 @@ def fisapt_plot(self):
     xyz = self.molecule().to_string(dtype="xyz", units="Angstrom")
     with open(geomfile, "w") as fh:
         fh.write(xyz)
+
+    # Enable a user to recreate a valid qcelemental molecule from an fsapt
+    # output directory for downstream applications
+    psi4file = filepath + os.sep + "geom.psi4mol"
+    with open(psi4file, "w") as fh:
+        fh.write(self.molecule().to_string(dtype="psi4", units="Angstrom"))
 
     self.raw_plot(filepath)
 
