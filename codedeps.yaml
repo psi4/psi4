@@ -1547,3 +1547,20 @@ data:
         //CMAKE_INSIST_FIND_PACKAGE_OpenOrbitalOptimizer: true
         //CMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer: true
 
+  - project: pandas
+    use:
+      added: 1.11
+      required: false
+      required_note: optional for extra tests
+      buildable: false
+      buildtime: false
+      cms: false
+      test_required: false
+    repository: null
+    cmake: null
+    conda:
+      channel: conda-forge
+      name: pandas
+      constraint: null
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."

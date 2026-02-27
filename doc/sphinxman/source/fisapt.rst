@@ -225,6 +225,109 @@ triple, or aromatic bonding motifs when partitioning the molecule into fragments
    salvage them, so please contact the developers with the circumstances
    for guidance.
 
+Python F-SAPT Analysis
+^^^^^^^^^^^^^^^^^^^^^^
+
+Now F-SAPT post-processing can be performed within python without the need to
+use output files and ``fsapt.py``. The following code snippet performs the same
+analysis as above, but directly within python::
+
+    import psi4
+
+
+    mol = psi4.geometry(
+        """0 1
+    0 1
+    O    -1.3885044    1.9298523   -0.4431206
+    H    -0.5238121    1.9646519   -0.0064609
+    C    -2.0071056    0.7638459   -0.1083509
+    C    -1.4630807   -0.1519120    0.7949930
+    C    -2.1475789   -1.3295094    1.0883677
+    C    -3.3743208   -1.6031427    0.4895864
+    C    -3.9143727   -0.6838545   -0.4091028
+    C    -3.2370496    0.4929609   -0.7096126
+    H    -0.5106510    0.0566569    1.2642563
+    H    -1.7151135   -2.0321452    1.7878417
+    H    -3.9024664   -2.5173865    0.7197947
+    H    -4.8670730   -0.8822939   -0.8811319
+    H    -3.6431662    1.2134345   -1.4057590
+    --
+    0 1
+    O     1.3531168    1.9382724    0.4723133
+    H     1.7842846    2.3487495    1.2297110
+    C     2.0369747    0.7865043    0.1495491
+    C     1.5904026    0.0696860   -0.9574153
+    C     2.2417367   -1.1069765   -1.3128110
+    C     3.3315674   -1.5665603   -0.5748636
+    C     3.7696838   -0.8396901    0.5286439
+    C     3.1224836    0.3383498    0.8960491
+    H     0.7445512    0.4367983   -1.5218583
+    H     1.8921463   -1.6649726   -2.1701843
+    H     3.8330227   -2.4811537   -0.8566666
+    H     4.6137632   -1.1850101    1.1092635
+    H     3.4598854    0.9030376    1.7569489
+    symmetry c1
+    no_reorient
+    no_com
+    """
+    )
+    psi4.set_options(
+        {
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+            "FISAPT_FSAPT_FILEPATH": "none",
+        }
+    )
+    plan = psi4.energy("fisapt0", return_plan=True, molecule=mol)
+    atomic_result = psi4.schema_wrapper.run_qcschema(
+        plan.plan(),
+        clean=True,
+        postclean=True,
+    )
+    fEnergies = psi4.fsapt_analysis(
+        source=atomic_result, # AtomicResult from QCSchema
+        # NOTE: 1-indexed for fragments_a and fragments_b
+        fragments_a={
+            "MethylA": [1, 2, 3, 4, 5],
+        },
+        fragments_b={
+            "MethylB": [6, 7, 8, 9, 10],
+        },
+    )
+    # Or you can use energy calls without QCSchema with this example below
+    # using the same molecule and options as above.
+    e, wfn = psi4.energy("fisapt0", return_wfn=True)
+    data = psi4.fsapt_analysis(
+        source=wfn, # through wavefunction object
+        # NOTE: 1-indexed for fragments_a and fragments_b
+        fragments_a={
+            "MethylA": [1, 2, 3, 4, 5],
+        },
+        fragments_b={
+            "MethylB": [6, 7, 8, 9, 10],
+        },
+    )
+
+Additionally, if you have F-SAPT data from saving results to
+``FISAPT_FSAPT_FILEPATH``, you can use psi4.fsapt_analysis to read in the data
+and perform the analysis without needing to run ``fsapt.py`` by specifying the
+filepath as in::
+
+    import psi4
+
+
+    psi4.fsapt_analysis(
+        fragments_a={
+            "MethylA": [1, 2, 3, 4, 5],
+        },
+        fragments_b={
+            "MethylB": [6, 7, 8, 9, 10],
+        },
+        source="./fsapt",
+    )
+
 
 Order-1 Visualization with PyMol
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -408,7 +408,11 @@ install(DIRECTORY share/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
         MESSAGE_NEVER
         PATTERN "*.bin" EXCLUDE
-        PATTERN "*.pyc" EXCLUDE)
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "fsapt.py" EXCLUDE
+    )
+
+
 
 install(FILES share/psi4/quadratures/1_x/R_avail${_endian_ext}.bin
         RENAME quadratures/1_x/R_avail.bin
@@ -420,6 +424,11 @@ install(FILES share/psi4/quadratures/1_x/error${_endian_ext}.bin
 
 install(DIRECTORY include/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
+
+# install(FILES ${CMAKE_SOURCE_DIR}/driver/procrouting/sapt/fsapt.py 
+install(FILES driver/procrouting/sapt/fsapt.py 
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/fsapt
+)
 
     # <<<  install external's share/ to psi4 share/  >>>
 
@@ -464,3 +473,4 @@ configure_package_config_file(
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${psi4_INSTALL_CMAKEDIR}/psi4Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/${psi4_INSTALL_CMAKEDIR}/psi4ConfigVersion.cmake
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKECONFIG_INSTALL_DIR})
+

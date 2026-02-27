@@ -1259,8 +1259,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("FISAPT_DO_FSAPT", true);
         /*- Do F-SAPT Dispersion? -*/
         options.add_bool("FISAPT_DO_FSAPT_DISP", true);
-        /*- Filepath to drop F-SAPT data within input file directory -*/
-        options.add_str_i("FISAPT_FSAPT_FILEPATH", "fsapt/");
+        /*- Filepath to drop F-SAPT data within input file directory. To avoid files being written, set to 'none' -*/
+        options.add_str_i("FISAPT_FSAPT_FILEPATH", "fsapt/"); 
         /*- Do F-SAPT exchange scaling? (ratio of S^\infty to S^2) -*/
         options.add_bool("FISAPT_FSAPT_EXCH_SCALE", true);
         /*- Do F-SAPT induction scaling? (ratio of HF induction to F-SAPT induction) -*/
