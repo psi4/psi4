@@ -61,9 +61,6 @@ class CGHF : public HF {
     void sap_guess();
     void compute_SAD_guess(bool natorb) override;
 
-    // Empty functions for now -- seems to be resetting and saving matrices, respectively
-    void finalize() override;
-
     // Form orbital gradient FDSmSDF_ = [F, D]
     void form_FDSmSDF();
 
@@ -81,9 +78,8 @@ class CGHF : public HF {
     // Forms Fock matrix F = F0_ + J - K
     void form_F() override;
 
-    void form_init_F();
     // Orthogonalizes then diagonalizes the Fock matrix to form the coefficient matrix C_
-    void form_C(double shift=0.0) override;
+    void form_C(double shift = 0.0) override;
 
     // Form coefficient matrix from Fock guess (SAP, CORE, etc.)
     void form_initial_C() override;
@@ -102,21 +98,19 @@ class CGHF : public HF {
     // energy nuclearrep_ to return a total energy.
     double compute_E() override;
 
-    // Empty functions for now
-    void setup_potential() override;
-    void openorbital_scf() override;
+    void setup_potential() override {};
 
     std::shared_ptr<CGHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 
     // Unsure of what these are, but needed otherwise seg fault
-    virtual bool same_a_b_orbs() const { return false; }
-    virtual bool same_a_b_dens() const { return false; }
+    bool same_a_b_orbs() const { return false; }
+    bool same_a_b_dens() const { return false; }
 
-    // Empty functions for now -- sets up external potentials (TODO later)
+    // Empty functions for no (TODO later)
     std::shared_ptr<UV> potential_;
     std::shared_ptr<VBase> V_potential() const override { return potential_; };
 
-    // If DIIS is enabled (which it always should be), then it will update the orthogonalized Fock matrix Fp_
+    // If DIIS is enabled, this will update the orthogonalized Fock matrix Fp_
     std::complex<double> do_diis();
 
    protected:
@@ -128,9 +122,7 @@ class CGHF : public HF {
 
     // DIIS variables
     // All 4 of these containers have a MAX size of DIIS_MAX_VECS
-    // TODO: Determine if there's anything different between real and complex DIIS
-    // outside of the containers (e.g. error_doubles could be error_complex)
-    
+
     // Holds the grabbed Fock matrices to extrapolate
     std::deque<einsums::BlockTensor<std::complex<double>, 2>> Fdiis;
     // Holds FDSmSDF_ at each iteration (orbital gradients)
@@ -141,27 +133,25 @@ class CGHF : public HF {
     double nuclearrep_;  // Nuclear repulsion energy
 
     // Core Hamiltonian, Fock, Orthogonalized Fock, and Coefficient Matrices
-    SharedBlockTensor F0_;     // Core Hamilton F0 = T + V
-    SharedBlockTensor F_;      // Non-orthogonal Fockl: F = T + V + J - K
-    SharedBlockTensor FDSmSDF_;// Fock gradient [F,D]
-    SharedBlockTensor Fp_;     // Orthogonalized Fock matrix
-    SharedBlockTensor C_;  // Coefficient matrix built after back-trasnformation C' = XC
+    SharedBlockTensor F0_;       // Core Hamilton F0 = T + V
+    SharedBlockTensor F_;        // Non-orthogonal Fockl: F = T + V + J - K
+    SharedBlockTensor FDSmSDF_;  // Fock gradient [F,D]
+    SharedBlockTensor Fp_;       // Orthogonalized Fock matrix
+    SharedBlockTensor C_;        // Coefficient matrix built after back-trasnformation C' = XC
 
     // NOTE: EINS_ and EINX_ are spin-blocked variants of S_ and X_ from HF, respectively
-    SharedBlockTensor EINS_;                 // Spin-blocked overlap matrix -- it is never complex
-    SharedBlockTensor EINX_;   // Spin-blocked orthogonalization matrix
+    SharedBlockTensor EINS_;  // Spin-blocked overlap matrix -- it is never complex
+    SharedBlockTensor EINX_;  // Spin-blocked orthogonalization matrix
 
-    SharedBlockTensor Fevecs_;  // Eigenvectors of Fock matrix
-    einsums::BlockTensor<double, 1> Fevals_;                // Eigenvalues of Fock matrix
+    SharedBlockTensor Fevecs_;                // Eigenvectors of Fock matrix
+    einsums::BlockTensor<double, 1> Fevals_;  // Eigenvalues of Fock matrix
 
-    SharedBlockTensor D_;       // 1-particle density matrix
-    SharedBlockTensor JK_;       // Combined Coulomb and exchange matrix
-    //SharedBlockTensor K_;       // Exchange matrix
+    SharedBlockTensor D_;   // 1-particle density matrix
+    SharedBlockTensor JK_;  // Combined Coulomb and exchange matrix
 
     // ortho_error and ecurr are specific to DIIS
-    SharedBlockTensor ortho_error;    // Orthogonalized gradient error
-    SharedBlockTensor ecurr;          // Error at current iteration
-
+    SharedBlockTensor ortho_error;  // Orthogonalized gradient error
+    SharedBlockTensor ecurr;        // Error at current iteration
 
     // temp1_ and temp2_ are temporary storage containers for intermediate steps
     // Cocc_ and cCocc_ are not preferred as variable names since there doesn't
