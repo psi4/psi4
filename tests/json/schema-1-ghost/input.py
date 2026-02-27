@@ -6,7 +6,7 @@ import json
 
 # Generate JSON data
 json_data = {
-    "schema_name": "qc_schema_input",
+    "schema_name": "qcschema_input",
     "schema_version": 1,
     "molecule": {
         "geometry": [
@@ -47,14 +47,14 @@ expected_properties = {
     'return_energy': -2.85518836280515
 }
 
-json_ret = psi4.schema_wrapper.run_qcschema(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data, return_dict=True)
 
-with open("output.json", "w") as ofile:  #TEST
-    json.dump(json_ret.json(), ofile, indent=2)  #TEST
+# with open("output.json", "w") as ofile:  #TEST
+#     json.dump(json_ret.json(), ofile, indent=2)  #TEST
 
-psi4.compare_integers(True, json_ret.success, "JSON Success")  #TEST
-psi4.compare_values(expected_return_result, json_ret.return_result, 5, "Return Value")  #TEST
+psi4.compare_integers(True, json_ret["success"], "JSON Success")  #TEST
+psi4.compare_values(expected_return_result, json_ret["return_result"], 5, "Return Value")  #TEST
 
 for k in expected_properties.keys():                                                      #TEST
-    psi4.compare_values(expected_properties[k], getattr(json_ret.properties, k), 5, k.upper())  #TEST
+    psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())  #TEST
 

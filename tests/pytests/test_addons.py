@@ -578,6 +578,10 @@ def _test_scf5():
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet PK RHF energy')
 
     psi4.set_options({'scf__scf_type': 'direct'})
+    # dtype = 2  # for test_addons_qcschema.py
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="scf", molecule=singlet_o2, dtype=dtype)
+    # print(f'    jatin[{dtype}] = """{atin.serialize("json")}"""')
+    # assert 0
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet Direct RHF energy')
 
@@ -605,6 +609,10 @@ def _test_scf5():
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet Disk UHF energy')
 
     psi4.set_options({'scf__scf_type': 'df'})
+    # dtype = 2  # for test_addons_qcschema.py
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="scf", molecule=singlet_o2, dtype=dtype)
+    # print(f'    jatin[{dtype}] = """{atin.serialize("json")}"""')
+    # assert 0
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_df, E, 6, 'Singlet DF UHF energy')
 
@@ -668,6 +676,10 @@ def _test_scf5():
 
     psi4.set_options({'scf__scf_type': 'out_of_core'})
     E = psi4.energy('scf', molecule=triplet_o2)
+    # dtype = 2  # for test_addons_qcschema.py
+    # atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="scf", molecule=triplet_o2, dtype=dtype)
+    # print(f'    jatin[{dtype}] = """{atin.serialize("json")}"""')
+    # assert 0
     assert psi4.compare_values(Eref_rohf_can, E, 6, 'Triplet Disk ROHF energy')
     psi4.core.clean()
 
@@ -715,7 +727,7 @@ def test_openorbitaloptimizer():
     _test_scf5()
 
 
-def test_run_json():
+def test_run_qcschema_1():
     """json/energy"""
 
     import numpy as np
@@ -736,8 +748,11 @@ def test_run_json():
         "keywords": {}
     }
 
-    with pytest.warns(FutureWarning) as err:
-        json_ret = psi4.json_wrapper.run_json(json_input)
+    # with pytest.warns(FutureWarning) as err:
+    with pytest.raises(psi4.UpgradeHelper) as err:
+        json_ret = psi4.schema_wrapper.run_json(json_input)
+
+    json_ret = psi4.schema_wrapper.run_qcschema(json_input, return_dict=True)
 
     assert psi4.compare_integers(True, json_ret["success"], "Success")
     assert psi4.compare_values(-5.474227786274896, json_ret["properties"]["return_energy"], 4, "SCF ENERGY")
@@ -748,30 +763,32 @@ def test_run_json():
     assert psi4.compare_arrays(bench_gradient, cgradient, 4, "SCF RETURN GRADIENT")
 
 
-def test_run_qcschema():
+def test_run_qcschema_2():
     """json/energy"""
 
     import numpy as np
 
     # Generate JSON data
     json_input = {
-        "schema_name": "qc_schema_input",
-        "schema_version": 1,
+        "schema_name": "qcschema_atomic_input",
+        "schema_version": 2,
         "molecule": {
             "symbols": ["He", "He"],
             "geometry": [0, 0, -1, 0, 0, 1]
         },
+        "specification": {
         "driver": "gradient",
         "model": {
             "method": "SCF",
             "basis": "sto-3g"
         },
         "keywords": {}
+        }
     }
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
         json_input["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
 
-    json_ret = psi4.json_wrapper.run_qcschema(json_input)
+    json_ret = psi4.schema_wrapper.run_qcschema(json_input)
     print(json_ret.dict())
 
     assert psi4.compare(True, json_ret.success, "Success")

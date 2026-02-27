@@ -34,6 +34,7 @@ __all__ = [
     "run_qcschema",
 ]
 
+import inspect
 import atexit
 import copy
 import datetime
@@ -250,16 +251,16 @@ def _convert_basis(basis):
             # Build the shell
             coefs = [[shell.coef(x) for x in range(shell.nprimitive)]]
             exps = [shell.exp(x) for x in range(shell.nprimitive)]
-            qshell = qcel.models.basis.ElectronShell(angular_momentum=[shell.am],
+            qshell = qcel.models.v2.ElectronShell(angular_momentum=[shell.am],
                                                      harmonic_type=htype,
                                                      exponents=exps,
                                                      coefficients=coefs)
             center_shells.append(qshell)
 
-        centers.append(qcel.models.basis.BasisCenter(electron_shells=center_shells))
+        centers.append(qcel.models.v2.BasisCenter(electron_shells=center_shells))
 
     # Take unique to prevent duplicate data, doesn't matter too much
-    hashes = [hash(json.dumps(centers[x].dict(), sort_keys=True)) for x in range(len(centers))]
+    hashes = [hash(json.dumps(centers[x].model_dump(), sort_keys=True)) for x in range(len(centers))]
 
     uniques = {k: v for k, v in zip(hashes, centers)}
     name_map = {}
@@ -277,7 +278,7 @@ def _convert_basis(basis):
     center_data = {name_map[k]: v for k, v in uniques.items()}
     atom_map = [name_map[x] for x in hashes]
 
-    ret = qcel.models.BasisSet(name=basis.name(), center_data=center_data, atom_map=atom_map)
+    ret = qcel.models.v2.BasisSet(name=basis.name(), center_data=center_data, atom_map=atom_map)
     return ret
 
 
@@ -416,10 +417,13 @@ def _quiet_remove(filename):
 
 
 def run_qcschema(
-    input_data: Union[Dict[str, Any], qcel.models.AtomicInput],
+    input_data: Union[Dict[str, Any], qcel.models.v1.AtomicInput, qcel.models.v2.AtomicInput],
     clean: bool = True,
     postclean: bool = True,
-) -> Union[qcel.models.AtomicResult, qcel.models.FailedOperation]:
+    *,
+    return_dict: bool = False,
+    return_version: int = -1,
+) -> Union[qcel.models.v1.AtomicResult, qcel.models.v2.AtomicResult, qcel.models.v1.FailedOperation, qcel.models.v2.FailedOperation]:
     """Run a quantum chemistry job specified by :py:class:`qcelemental.models.AtomicInput` **input_data** in |PSIfour|.
 
     Parameters
@@ -432,13 +436,88 @@ def run_qcschema(
         When ``False``, *remove* the output file since absorbed into AtomicResult.
         When ``True``, simply *close* the output file. True is useful when calling
         from a Psi4 session to avoid removing the parent Psi4's output file.
+    return_dict
+        Returns a dict instead of qcelemental AtomicResult
+        This is a workaround for Python 3.14 and QCSchema v1, perhaps temporary.
+    return_version
+        The schema version to return. If -1, the input schema_version is used.
 
     Returns
     -------
-    qcelemental.models.AtomicResult
-        Full record of quantum chemistry calculation, including output text. Returned upon job success.
-    qcelemental.models.FailedOperation
-        Record to diagnose calculation failure, including output text and input specification. Returned upon job failure.
+    result
+        AtomicResult, FailedOperation, or Dict representation of any object type
+        A QCSchema representation of the requested output, type depends on return_dict key.
+
+        qcelemental.models.AtomicResult
+            Full record of quantum chemistry calculation, including output text. Returned upon job success.
+        qcelemental.models.FailedOperation
+            Record to diagnose calculation failure, including output text and input specification. Returned upon job failure.
+
+        .. _`table:compute_result`:
+
+        +------------+-------------+-------------+--------------------------------------------------+
+        | good_calc? | raise_error | return_dict | output                                           |
+        +============+=============+=============+==================================================+
+        | T          | F (def)     | F (def)     | ``AtomicResult`` object                          |
+        +------------+-------------+-------------+--------------------------------------------------+
+        | T          | T           | F (def)     | ``AtomicResult`` object                          |
+        +------------+-------------+-------------+--------------------------------------------------+
+        | T          | T           | T           | dict of ``AtomicResult``                         |
+        +------------+-------------+-------------+--------------------------------------------------+
+        | T          | F (def)     | T           | dict of ``AtomicResult``                         |
+        +------------+-------------+-------------+--------------------------------------------------+
+        | F          | F (def)     | F (def)     | ``FailedOperation`` object                       |
+        +------------+-------------+-------------+--------------------------------------------------+
+        | F          | T           | F (def)     | raises ``InputError`` (type encoded in FailedOp) |
+        +------------+-------------+-------------+--------------------------------------------------+
+        | F          | T           | T           | raises ``InputError`` (type encoded in FailedOp) |
+        +------------+-------------+-------------+--------------------------------------------------+
+        | F          | F (def)     | T           | dict of ``FailedOperation``                      |
+        +------------+-------------+-------------+--------------------------------------------------+
+
+        .. _`table:compute_result_schver`:
+
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | good_calc? | input_data ver | return_version | return_dict | output                                                 |
+        +============+================+================+=============+========================================================+
+        | T          | 1              | -1 (def) or 1  | F (def)     | ``v1.AtomicResult`` object (not avail. Py 3.14+)       |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | T          | 1              |  2             | F (def)     | ``v2.AtomicResult`` object                             |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | T          | 1              | -1 (def) or 1  | T           | dict of ``v1.AtomicResult``                            |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | T          | 1              |  2             | T           | dict of ``v2.AtomicResult``                            |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | T          | 2              | -1 (def) or 2  | F (def)     | ``v2.AtomicResult`` object                             |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | T          | 2              |  1             | F (def)     | ``v1.AtomicResult`` object (not avail. Py 3.14+)       |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | T          | 2              | -1 (def) or 2  | T           | dict of ``v2.AtomicResult``                            |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | T          | 2              |  1             | T           | dict of ``v1.AtomicResult``                            |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | F          | 1              | -1 (def) or 1  | F (def)     | ``v1.FailedOperation`` object (not avail. Py 3.14+) ** |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | F          | 1              |  2             | F (def)     | ``v2.FailedOperation`` object                          |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | F          | 1              | -1 (def) or 1  | T           | dict of ``v1.FailedOperation`` **                      |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | F          | 1              |  2             | T           | dict of ``v2.FailedOperation``                         |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | F          | 2              | -1 (def) or 2  | F (def)     | ``v2.FailedOperation`` object **                       |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | F          | 2              |  1             | F (def)     | ``v1.FailedOperation`` object (not avail. Py 3.14+ )   |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | F          | 2              | -1 (def) or 2  | T           | dict of ``v2.FailedOperation`` **                      |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | F          | 2              |  1             | T           | dict of ``v1.FailedOperation``                         |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+        | ** F       | 1, 2           | -1             | for errors *before* input ver detected, returns 2 if Py 3.14+ else 1 |
+        +------------+----------------+----------------+-------------+--------------------------------------------------------+
+
+    .. versionadded:: 1.11.0
+       The *return_version* parameter was added.
+       The *return_dict* parameter was added, perhaps temporarily.
 
     """
     outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".qcschema_tmpout")
@@ -449,97 +528,85 @@ def run_qcschema(
     start_time = datetime.datetime.now()
 
     try:
-        input_model = qcng.util.model_wrapper(input_data, qcel.models.AtomicInput)
+        # Build the model and validate
+        # * calls model_wrapper with the v2.AtomicInput which this file uses internally
+        # * input can be model or dict (1, 2) and return is model
+        # * uses QCEngine build_input_model but this is just to avoid code repeat. could be extracted
+        executor = qcng.get_program("psi4")
+        input_model, input_schema_version = executor.build_input_model(input_data, return_input_schema_version=True)
+        return_version = input_schema_version if return_version == -1 else return_version
+        # print(f"RETVER {input_model=} {input_schema_version=} {return_version=}")
+
+        if sys.version_info >= (3, 14) and return_version == 1:
+            if return_dict is True or inspect.stack()[1][3] == "_psi4_qcschema_cli":
+                # outer if is actually forbidden (see Error below). this (-12) signals to use the shim
+                #   classes that represent certain QCSchema v1 layout (only exist in pydantic.v1 API)
+                #   in pydantic v2 API. we never want to release these into the wild so only available
+                #   if returning dict or called from psi4 --qcschema (which serializes them before returning).
+                return_version = -12
+            else:
+                raise RuntimeError(
+            f"QCSchema v1 model 'AtomicResult' cannot be instantiated in this environment. "
+            "Reason: pydantic.v1 is unavailable on Python 3.14+. "
+            "You can: (a) use Python <3.14, (b) use QCSchema v2 (either input or ask for output "
+            "with `return_version=2`; note that QCSchema v2 not finalized until QCElemental v0.60), "
+            "or (c) ask for a QCSchema v1 dictionary back rather than the model with `return_dict=True`.")
 
         # Echo the infile on the outfile
         core.print_out("\n  ==> Input QCSchema <==\n")
         core.print_out("\n--------------------------------------------------------------------------\n")
-        core.print_out(pp.pformat(json.loads(input_model.json())))
+        core.print_out(pp.pformat(json.loads(input_model.model_dump_json())))
         core.print_out("\n--------------------------------------------------------------------------\n")
 
-        keep_wfn = input_model.protocols.wavefunction != 'none'
+        keep_wfn = input_model.specification.protocols.wavefunction != 'none'
 
         # qcschema should be copied
-        ret_data = run_json_qcschema(input_model.dict(), clean, False, keep_wfn=keep_wfn)
+        ret_data = run_json_qcschema(input_model.model_dump(), clean, False, keep_wfn=keep_wfn)
         ret_data["provenance"].update({
             "creator": "Psi4",
             "version": __version__,
             "routine": "psi4.schema_runner.run_qcschema"
         })
-        ret_data["native_files"]["input"] = json.dumps(json.loads(input_model.json()), indent=1)
+        ret_data["native_files"]["input"] = json.dumps(json.loads(input_model.model_dump_json()), indent=1)
 
         exit_printing(start_time=start_time, success=True)
 
-        ret = qcel.models.AtomicResult(**ret_data, stdout=_read_output(outfile))
+        atres = qcel.models.v2.AtomicResult(**ret_data, stdout=_read_output(outfile))
+        ret = atres.convert_v(return_version)
 
     except Exception as exc:
 
         if not isinstance(input_data, dict):
-            input_data = input_data.dict()
+            input_data = input_data.model_dump()
 
         input_data = input_data.copy()
         input_data["stdout"] = _read_output(outfile)
-        ret = qcel.models.FailedOperation(input_data=input_data,
+        ret = qcel.models.v2.FailedOperation(input_data=input_data,
                                           success=False,
                                           error={
                                               'error_type': type(exc).__name__,
                                               'error_message': input_data["stdout"] + ''.join(traceback.format_exception(*sys.exc_info())),
                                           })
+        if return_version == -1:
+            # handle case failing in executor.build_input_model
+            return_version = 2 if sys.version_info >= (3, 14) else 1
+
+        ret = ret.convert_v(return_version)
 
     _clean_psi_output(postclean, outfile)
 
-    return ret
+    if return_dict:
+        return ret.model_dump()
+    else:
+        return ret
 
 
 def run_json(json_data: Dict[str, Any], clean: bool = True) -> Dict[str, Any]:
 
-    warnings.warn(
-        "Using `psi4.schema_wrapper.run_json` or `psi4.json_wrapper.run_json` instead of `psi4.schema_wrapper.run_qcschema` is deprecated, and as soon as 1.5 it will stop working\n",
-        category=FutureWarning)
-
-    # Set scratch
-    if "scratch_location" in json_data:
-        psi4_io = core.IOManager.shared_object()
-        psi4_io.set_default_path(json_data["scratch_location"])
-
-    # Direct output
-    outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".json_out")
-    core.set_output_file(outfile, False)
-
-    # Set memory
-    if "memory" in json_data:
-        p4util.set_memory(json_data["memory"])
-
-    # Do we return the output?
-    return_output = json_data.pop("return_output", False)
-    if return_output:
-        json_data["raw_output"] = "Not yet run."
-
-    # Set a few flags
-    json_data["raw_output"] = None
-    json_data["success"] = False
-    json_data["provenance"] = {"creator": "Psi4", "version": __version__, "routine": "psi4.json_wrapper.run_json"}
-
-    # Attempt to run the computer
-    try:
-        # qcschema should be copied
-        json_data = run_json_qcschema(copy.deepcopy(json_data), clean, True)
-
-    except Exception as exc:
-        json_data["error"] = {
-            'error_type': type(exc).__name__,
-            'error_message': ''.join(traceback.format_exception(*sys.exc_info())),
-        }
-        json_data["success"] = False
-
-        json_data["raw_output"] = _read_output(outfile)
-
-    if return_output:
-        json_data["raw_output"] = _read_output(outfile)
-
-    atexit.register(_quiet_remove, outfile)
-
-    return json_data
+    # warnings.warn(
+    #     "Using `psi4.schema_wrapper.run_json` or `psi4.json_wrapper.run_json` instead of `psi4.schema_wrapper.run_qcschema` is deprecated, and as soon as 1.5 it will stop working\n",
+    #     category=FutureWarning)
+    raise p4util.UpgradeHelper("psi4.schema_wrapper.run_json", "psi4.schema_wrapper.run_qcschema", 1.11, f" Replace the function and update the schema layout.")
 
 
 def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
@@ -561,18 +628,15 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     --------
 
     """
-
     # Clean a few things
     _clean_psi_environ(clean)
 
-    # This is currently a forced override
-    if json_data["schema_name"] in ["qc_schema_input", "qcschema_input"]:
-        json_data["schema_name"] = "qcschema_input"
-    else:
-        raise KeyError("Schema name of '{}' not understood".format(json_data["schema_name"]))
+    input_data = copy.deepcopy(json_data)
+    input_schema_version = json_data["schema_version"]
 
-    if json_data["schema_version"] != 1:
-        raise KeyError("Schema version of '{}' not understood".format(json_data["schema_version"]))
+    # This function works entirely within QCSchema v2
+    if json_data["schema_name"] != "qcschema_atomic_input":
+        raise KeyError(f"Schema name of '{json_data['schema_name']}' not understood")
 
     if json_data.get("nthreads", False) is not False:
         core.set_num_threads(json_data["nthreads"], quiet=True)
@@ -605,48 +669,50 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         # Restore current module
         psi_options.set_current_module(current_module)
 
-    kwargs = json_data["keywords"].pop("function_kwargs", {})
-    p4util.set_options(json_data["keywords"])
+    spec_data = json_data["specification"]
+
+    kwargs = spec_data["keywords"].pop("function_kwargs", {})
+    p4util.set_options(spec_data["keywords"])
 
     # Setup the computation
-    method = json_data["model"]["method"]
-    core.set_global_option("BASIS", json_data["model"]["basis"])
+    method = spec_data["model"]["method"]
+    core.set_global_option("BASIS", spec_data["model"]["basis"])
     kwargs.update({"return_wfn": True, "molecule": mol})
 
     # Handle special properties case
-    if json_data["driver"] == "properties":
+    if spec_data["driver"] == "properties":
         if "properties" not in kwargs:
             kwargs["properties"] = list(default_properties_)
 
     # Handle extra files
-    if "extras" in json_data:
-        # remove conditional when run_json is retired
-        extra_infiles = json_data["extras"].get("extra_infiles", {})
-        for fl, contents in extra_infiles.items():
-            Path(fl).write_text(contents)
+    extra_infiles = spec_data["extras"].get("extra_infiles", {})
+    for fl, contents in extra_infiles.items():
+        Path(fl).write_text(contents)
 
     # Actual driver run
-    val, wfn = methods_dict_[json_data["driver"]](method, **kwargs)
+    val, wfn = methods_dict_[spec_data["driver"]](method, **kwargs)
+    result_data = {
+        "input_data": input_data,
+        "extras": {"qcvars": {}},
+        "provenance": {},
+        "molecule": mol.to_schema(dtype=3),
+    }
 
     # Pull out a standard set of SCF properties
-    if "extras" not in json_data:
-        json_data["extras"] = {}
-    json_data["extras"]["qcvars"] = {}
-
-    current_qcvars_only = json_data["extras"].get("current_qcvars_only", False)
-    if json_data["extras"].get("wfn_qcvars_only", False):
+    current_qcvars_only = spec_data["extras"].get("current_qcvars_only", False)
+    if spec_data["extras"].get("wfn_qcvars_only", False):
         psi_props = wfn.variables(include_deprecated_keys=(not current_qcvars_only))
     else:
         psi_props = core.variables(include_deprecated_keys=(not current_qcvars_only))
         for k, v in psi_props.items():
-            if k not in json_data["extras"]["qcvars"]:
-                json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
+            if k not in result_data["extras"]["qcvars"]:
+                result_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
 
     # Still a bit of a mess at the moment add in local vars as well.
     for k, v in wfn.variables().items():
-        if k not in json_data["extras"]["qcvars"]:
+        if k not in result_data["extras"]["qcvars"]:
             # interpreting wfn_qcvars_only as no deprecated qcvars either
-            if not (json_data["extras"].get("wfn_qcvars_only", False) and (
+            if not (spec_data["extras"].get("wfn_qcvars_only", False) and (
                 any([k.upper().endswith(" DIPOLE " + cart) for cart in ["X", "Y", "Z"]])
                 or any([k.upper().endswith(" QUADRUPOLE " + cart) for cart in ["XX", "YY", "ZZ", "XY", "XZ", "YZ"]])
                 or k.upper()
@@ -659,28 +725,27 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
                     "SCS-MP3 TOTAL ENERGY",
                 ]
             )):
-                json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
+                result_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
 
     # Add in handling of matrix arguments which need to be obtained by a
     # a function call.
 
-    if json_data["model"]["method"].lower() in ["ccsd"] :
-        if json_data["extras"].get("psi4:save_tamps", False):
+    if spec_data["model"]["method"].lower() in ["ccsd"] :
+        if spec_data["extras"].get("psi4:save_tamps", False):
             if type(wfn.reference_wavefunction()) is core.RHF :
-                json_data["extras"]["psi4:tamps"] = {}
-                json_data["extras"]["psi4:tamps"]["tIjAb"] = wfn.get_amplitudes()["tIjAb"].to_array().tolist()
-                json_data["extras"]["psi4:tamps"]["tIA"] = wfn.get_amplitudes()["tIA"].to_array().tolist()
-                json_data["extras"]["psi4:tamps"]["Da"] = wfn.Da().to_array().tolist()
+                result_data["extras"]["psi4:tamps"] = {}
+                result_data["extras"]["psi4:tamps"]["tIjAb"] = wfn.get_amplitudes()["tIjAb"].to_array().tolist()
+                result_data["extras"]["psi4:tamps"]["tIA"] = wfn.get_amplitudes()["tIA"].to_array().tolist()
+                result_data["extras"]["psi4:tamps"]["Da"] = wfn.Da().to_array().tolist()
 
-        
     # Handle the return result
-    if json_data["driver"] == "energy":
-        json_data["return_result"] = val
-    elif json_data["driver"] in ["gradient", "hessian"]:
-        json_data["return_result"] = _serial_translation(val, json=json_serialization)
-    elif json_data["driver"] == "properties":
+    if spec_data["driver"] == "energy":
+        result_data["return_result"] = val
+    elif spec_data["driver"] in ["gradient", "hessian"]:
+        result_data["return_result"] = _serial_translation(val, json=json_serialization)
+    elif spec_data["driver"] == "properties":
         ret = {}
-        mtd = json_data["model"]["method"].upper()
+        mtd = spec_data["model"]["method"].upper()
 
         # Dipole/quadrupole still special case
         if "dipole" in kwargs["properties"]:
@@ -689,9 +754,9 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
             ret["quadrupole"] = _serial_translation(psi_props[mtd + " QUADRUPOLE"], json=json_serialization)
         ret.update(_convert_variables(wfn.variables(), context="properties", json=json_serialization))
 
-        json_data["return_result"] = ret
+        result_data["return_result"] = ret
     else:
-        raise KeyError("Did not understand Driver key %s." % json_data["driver"])
+        raise KeyError(f"Did not understand Driver key {spec_data['driver']}.")
 
     props = {
         "calcinfo_nbasis": wfn.nso(),
@@ -702,7 +767,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         "nuclear_repulsion_energy": mol.nuclear_repulsion_energy(),  # use this b/c psivar is monomer for SAPT
     }
     props.update(_convert_variables(psi_props, context="generics", json=json_serialization))
-    if not list(set(['CBS NUMBER', 'NBODY NUMBER', 'FINDIF NUMBER']) & set(json_data["extras"]["qcvars"].keys())):
+    if not list(set(['CBS NUMBER', 'NBODY NUMBER', 'FINDIF NUMBER']) & set(result_data["extras"]["qcvars"].keys())):
         props.update(_convert_variables(psi_props, context="scf", json=json_serialization))
 
     # Write out post-SCF keywords
@@ -715,13 +780,13 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     if "CCSD(T) CORRELATION ENERGY" in psi_props:
         props.update(_convert_variables(psi_props, context="ccsd(t)", json=json_serialization))
 
-    json_data["properties"] = props
-    json_data["success"] = True
+    result_data["properties"] = props
+    result_data["success"] = True
 
-    json_data["provenance"]["module"] = wfn.module()
+    result_data["provenance"]["module"] = wfn.module()
 
     if keep_wfn:
-        json_data["wavefunction"] = _convert_wavefunction(wfn)
+        result_data["wavefunction"] = _convert_wavefunction(wfn)
 
     files = {
         "psi4.grad": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"),
@@ -731,11 +796,11 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         "grid_esp.dat": Path("grid_esp.dat"),
         "grid_field.dat": Path("grid_field.dat"),
     }
-    json_data["native_files"] = {fl: flpath.read_text() for fl, flpath in files.items() if flpath.exists()}
+    result_data["native_files"] = {fl: flpath.read_text() for fl, flpath in files.items() if flpath.exists()}
 
     # Reset state
     _clean_psi_environ(clean)
 
-    json_data["schema_name"] = "qcschema_output"
+    result_data["schema_name"] = "qcschema_atomic_result"
 
-    return json_data
+    return result_data

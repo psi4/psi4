@@ -104,7 +104,6 @@ __all__ = [
 import copy
 import logging
 import pprint
-# v2: from typing import TYPE_CHECKING, Any, ClassVar, Dict, Tuple, Union, Optional
 from typing import TYPE_CHECKING, Any, Dict, Tuple, Union, Optional
 
 from psi4 import core
@@ -116,11 +115,12 @@ from .driver_findif import FiniteDifferenceComputer
 from .p4util.exceptions import *
 from .task_base import AtomicComputer, EnergyGradientHessianWfnReturn
 
-from pydantic.v1 import validator
+from pydantic import field_validator
 
-from qcelemental.models import Molecule
-from qcmanybody.models.v1 import AtomicSpecification, ManyBodyInput, ManyBodyResult, BsseEnum
-from qcmanybody import ManyBodyCore, ManyBodyComputer as ManyBodyComputerQCNG
+from qcelemental.models.v2 import Molecule, AtomicSpecification
+from qcmanybody.models.v2 import ManyBodyInput, ManyBodyResult, BsseEnum
+from qcmanybody import ManyBodyCore
+from qcmanybody.v2 import ManyBodyComputer as ManyBodyComputerQCNG
 from qcmanybody.utils import delabeler, labeler, translate_qcvariables, modelchem_labels
 
 if TYPE_CHECKING:
@@ -130,7 +130,7 @@ logger = logging.getLogger(__name__)
 
 FragBasIndex = Tuple[Tuple[int], Tuple[int]]
 
-SubTaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer]
+MBETaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer]
 
 
 # nbody function is here for the docstring
@@ -398,12 +398,13 @@ def nbody():
 
 class ManyBodyComputer(ManyBodyComputerQCNG):
 
-    # v2, probably: @field_validator("molecule", mode="before")
-    @validator("molecule", pre=True)
+    task_list: Dict[str, MBETaskComputers] = {}
+
+    @field_validator("molecule", mode="before")
     @classmethod
     def set_molecule(cls, v: Any) -> Molecule:
         if isinstance(v, core.Molecule):
-            v = v.to_schema(dtype=2)
+            v = v.to_schema(dtype=3)
 
         return v
 
@@ -428,21 +429,19 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
                 "keywords": mbkwargs,
                 "driver": driver,
             },
-            molecule=molecule.to_schema(dtype=2),
+            molecule=molecule.to_schema(dtype=3),
         )
 
         computer_model = cls(
             molecule=input_model.molecule,
             driver=input_model.specification.driver,
-            # v2: **input_model.specification.keywords.model_dump(exclude_unset=True),
-            **input_model.specification.keywords.dict(exclude_unset=True),
+            **input_model.specification.keywords.model_dump(exclude_unset=True),
             input_data=input_model,  # storage, to reconstitute ManyBodyResult
         )
         nb_per_mc = computer_model.nbodies_per_mc_level
 
         # print("\n<<<  (ZZZ 1) Psi4 harness ManyBodyComputer.from_psi4_task_planner  >>>")
-        # v2: pprint.pprint(computer_model.model_dump(), width=200)
-        # pprint.pprint(computer_model.dict(), width=200)
+        # pprint.pprint(computer_model.model_dump(), width=200)
         # print(f"nbodies_per_mc_level={nb_per_mc}")
 
         comp_levels = {}
@@ -478,7 +477,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
     def build_tasks(
         self,
-        mb_computer: AtomicComputer,  # SubTaskComputers,
+        mb_computer: MBETaskComputers,
         mc_level_idx: int,
         **kwargs: Dict[str, Any],
     ) -> int:
@@ -636,8 +635,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         core.print_out(nbody_model.stdout)
         logger.info('\nQCManyBody:\n' + nbody_model.stdout)
 
-        # v2: nbody_model.model_dump()
-        logger.debug('\nManyBodyResult QCSchema:\n' + pp.pformat(nbody_model.dict()))
+        logger.debug('\nManyBodyResult QCSchema:\n' + pp.pformat(nbody_model.model_dump()))
 
         qmol = core.Molecule.from_schema(self.molecule.dict())  # nonphy
         wfn = core.Wavefunction.build(qmol, "def2-svp", quiet=True)
@@ -650,7 +648,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         mc_labels = modelchem_labels(self.qcmb_core.nbodies_per_mc_level)
         full_to_ordinal_mc_lbl = {v[0]: v[1] for v in mc_labels.values()}
 
-        for qcmb_label, dval in nbody_model.component_properties.items():
+        for qcmb_label, dval in nbody_model.cluster_properties.items():
             mckey, frag, bas = delabeler(qcmb_label)
             if len(full_to_ordinal_mc_lbl) == 1:
                 mc_lbl = None
