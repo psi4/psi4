@@ -1154,7 +1154,7 @@ def compute_fsapt_qcvars(
     holder : dict
         Fragment definitions from ``read_fragments`` for monomers A and B.
     osapt : dict
-        Orbital-space SAPT component matrices keyed by SAPT component name.
+        Component matrices keyed by SAPT component name.
     Qs : dict
         Orbital population matrices for monomers A and B.
     links5050 : bool, optional
