@@ -200,7 +200,7 @@ This final equation corresponds to the usual Newton-Raphson step.
 
 The REMP hybrid perturbation theory is a constrained mixture of the |MollerPlesset| perturbation theory and the
 Retaining the Excitation degree perturbation theory([Fink:2006:RE]_, [Behnle:2019:REMP]_).
-The mixing ratio is determined by the parameter :math':`A`:
+The mixing ratio is determined by the parameter :math:`A`:
 
 .. math::
    \widehat{H}^{(0)}_\text{REMP} = (1-A)\widehat{H}^{(0)}_\text{RE} + A\widehat{H}^{(0)}_\text{MP}
