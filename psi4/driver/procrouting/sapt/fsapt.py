@@ -208,12 +208,12 @@ def compute_closest_contact(
         Minimum distance between any atom in fragment A and any atom in
         fragment B.
     """
-    min_dist = float('inf')
+    min_dist = float("inf")
     for idx_a in indices_a:
         xa, ya, za = geom[idx_a][1], geom[idx_a][2], geom[idx_a][3]
         for idx_b in indices_b:
             xb, yb, zb = geom[idx_b][1], geom[idx_b][2], geom[idx_b][3]
-            dist = np.sqrt((xa - xb)**2 + (ya - yb)**2 + (za - zb)**2)
+            dist = np.sqrt((xa - xb) ** 2 + (ya - yb) ** 2 + (za - zb) ** 2)
             if dist < min_dist:
                 min_dist = dist
     return min_dist
@@ -579,11 +579,17 @@ def extract_osapt_data_from_wfn(wfn, print_output=True):
 
     external_potentials = {}
     if wfn.has_variable("FSAPT_EXTERN_POTENTIAL_A"):
-        external_potentials['FSAPT_EXTERN_POTENTIAL_A'] = wfn.variable("FSAPT_EXTERN_POTENTIAL_A").to_array()
+        external_potentials["FSAPT_EXTERN_POTENTIAL_A"] = wfn.variable(
+            "FSAPT_EXTERN_POTENTIAL_A"
+        ).to_array()
     if wfn.has_variable("FSAPT_EXTERN_POTENTIAL_B"):
-        external_potentials['FSAPT_EXTERN_POTENTIAL_B'] = wfn.variable("FSAPT_EXTERN_POTENTIAL_B").to_array()
+        external_potentials["FSAPT_EXTERN_POTENTIAL_B"] = wfn.variable(
+            "FSAPT_EXTERN_POTENTIAL_B"
+        ).to_array()
     if wfn.has_variable("FSAPT_EXTERN_POTENTIAL_C"):
-        external_potentials['FSAPT_EXTERN_POTENTIAL_C'] = wfn.variable("FSAPT_EXTERN_POTENTIAL_C").to_array()
+        external_potentials["FSAPT_EXTERN_POTENTIAL_C"] = wfn.variable(
+            "FSAPT_EXTERN_POTENTIAL_C"
+        ).to_array()
     return vals, Qs, external_potentials
 
 
@@ -1013,12 +1019,12 @@ def print_order2(
             data["Frag2_indices"].append([])
         # Closest contact for keyA vs All: min over all B fragments
         if closest_contacts is not None:
-            min_dist = float('inf')
+            min_dist = float("inf")
             if keyA in closest_contacts:
                 for keyB_inner in fragkeys["B"]:
                     if keyB_inner in closest_contacts[keyA]:
                         min_dist = min(min_dist, closest_contacts[keyA][keyB_inner])
-            if min_dist == float('inf'):
+            if min_dist == float("inf"):
                 data["ClosestContact"].append(None)
             else:
                 data["ClosestContact"].append(min_dist)
@@ -1046,12 +1052,12 @@ def print_order2(
             data["Frag2_indices"].append([])
         # Closest contact for All vs keyB: min over all A fragments
         if closest_contacts is not None:
-            min_dist = float('inf')
+            min_dist = float("inf")
             for keyA_inner in fragkeys["A"]:
                 if keyA_inner in closest_contacts:
                     if keyB in closest_contacts[keyA_inner]:
                         min_dist = min(min_dist, closest_contacts[keyA_inner][keyB])
-            if min_dist == float('inf'):
+            if min_dist == float("inf"):
                 data["ClosestContact"].append(None)
             else:
                 data["ClosestContact"].append(min_dist)
@@ -1082,7 +1088,7 @@ def print_order2(
         data["Frag2_indices"].append([])
     # Closest contact for All vs All: global minimum
     if closest_contacts is not None:
-        min_dist = float('inf')
+        min_dist = float("inf")
         for keyA_inner in fragkeys["A"]:
             if keyA_inner in closest_contacts:
                 for keyB_inner in fragkeys["B"]:
@@ -1090,7 +1096,7 @@ def print_order2(
                         min_dist = min(
                             min_dist, closest_contacts[keyA_inner][keyB_inner]
                         )
-        if min_dist == float('inf'):
+        if min_dist == float("inf"):
             data["ClosestContact"].append(None)
         else:
             data["ClosestContact"].append(min_dist)
@@ -1135,6 +1141,43 @@ def compute_fsapt_qcvars(
     external_potentials: Dict = {},
     print_output=True,
 ):
+    """Compute full and reduced F-SAPT analyses from QC variables.
+
+    Parameters
+    ----------
+    geom : list
+        Dimer geometry as ``[symbol, x, y, z]`` rows.
+    Z : numpy.ndarray
+        Nuclear charges for the full dimer.
+    monomer_slices : list
+        Two ``(start, stop)`` index pairs defining monomers A and B in ``Z``.
+    holder : dict
+        Fragment definitions from ``read_fragments`` for monomers A and B.
+    osapt : dict
+        Orbital-space SAPT component matrices keyed by SAPT component name.
+    Qs : dict
+        Orbital population matrices for monomers A and B.
+    links5050 : bool, optional
+        If ``True``, split link contributions equally between connected atoms.
+        If ``False``, use orbital populations as weights.
+    completeness : float, optional
+        Completeness threshold used when assigning orbitals to fragments.
+    dirname : str, optional
+        Working directory label retained for interface compatibility.
+    link_siao : dict, optional
+        Link reassignment information for SAOn/SIAOn workflows.
+    external_potentials : dict, optional
+        Optional external potential coordinates
+    print_output : bool, optional
+        Whether to print warnings and informational messages.
+
+    Returns
+    -------
+    dict
+        Dictionary containing intermediate and final analysis objects with keys
+        ``order2``, ``fragkeys``, ``order2r``, ``fragkeysr``, ``frags``,
+        ``geom``, and ``closest_contacts``.
+    """
     # geom = geom.tolist()
 
     Zs = {
@@ -1179,7 +1222,6 @@ def compute_fsapt_qcvars(
             )
         fragkeys["B"].append("Other")
         frags["B"]["Other"] = other_fragment_B
-
 
     holder1 = partition_fragments(
         fragkeys["A"], frags["A"], Zs["A"], Qs["A"], completeness
@@ -1591,7 +1633,6 @@ def compute_fsapt(dirname, links5050, completeness=0.85, print_output=True):
 
 
 class PDBAtom:
-
     def __init__(self, atom_idx, Z, x, y, z, T=0.0):
 
         key_key = "HETATM"
@@ -1667,7 +1708,6 @@ class PDBAtom:
 
 
 class PDB:
-
     def __init__(self, atoms, name):
 
         self.name = name
@@ -1756,6 +1796,46 @@ def run_fsapt_analysis(
     link_siao: Dict = None,
     print_output: bool = True,
 ):
+    r"""Run F-SAPT post-processing from in-memory results.
+
+    Parameters
+    ----------
+    fragments_a
+        Mapping of fragment names to 1-indexed atom lists for subsystem A
+        (same semantics as ``fA.dat``).
+    fragments_b
+        Mapping of fragment names to 1-indexed atom lists for subsystem B
+        (same semantics as ``fB.dat``).
+    wfn : :class:`~psi4.core.Wavefunction`, optional
+        Wavefunction containing F-SAPT QCVariables, from an example like
+        ``energy('fisapt0', return_wfn=True)``.
+    atomic_results : :class:`qcelemental.models.AtomicResult`, optional
+        QCSchema AtomicResult containing F-SAPT QCVariables.
+    pdb_dir
+        Optional directory label for order-1 visualization file generation.
+    analysis_type
+        Analysis mode. Supported values are ``"full"`` and ``"reduced"``.
+    links5050
+        Whether to use 50-50 link assignment in link handling.
+    dirname
+        Directory used for text/PDB analysis output.
+    link_siao
+        Optional mapping for explicit SIAO link assignments.
+    print_output
+        Whether to print status/output text during analysis.
+
+    Returns
+    -------
+    Dict[str, List]
+        Tabulated order-2 analysis data from :func:`print_order2`.
+
+    Notes
+    -----
+    Exactly one in-memory source should be provided through ``wfn`` or
+    ``atomic_results``. Note, ``atomic_results`` takes precedence. For
+    file-based post-processing from an existing ``fsapt/`` directory, use
+    :func:`run_from_output`.
+    """
     if print_output:
         print("  ==> F-ISAPT: Analysis Start <==\n")
     if atomic_results is None and wfn is None:
@@ -1791,33 +1871,43 @@ def run_fsapt_analysis(
             # need to reshape them properly. This is (nA_atoms + na + 1,
             # nB_atoms + nb + 1) where na are from L0A/L0B, so we cannot
             # directly infer the right shape without knowing some additional
-            # information from the calculation itself. 
+            # information from the calculation itself.
             fsapt_AB_array_shape = np.array(qcvars["fsapt_ab_size"], dtype=np.int32)
             for key, value in qcvars.items():
                 if "fsapt" not in key.lower() or key.lower() in ["fsapt_ab_size"]:
                     continue
                 v = np.array(value)
-                if key in ['fsapt_qa', 'fsapt_qb']:
+                if key in ["fsapt_qa", "fsapt_qb"]:
                     v = v.reshape(len(Z), -1)
-                elif key in ['fsapt_empirical_disp']:
+                elif key in ["fsapt_empirical_disp"]:
                     # need NA * NB from molecule
                     v = v.reshape(len(Z), len(Z))
                 else:
                     v = v.reshape(fsapt_AB_array_shape)
                 fsapt_vars[key.upper()] = v
-        osapt, Qs = extract_osapt_data_from_fsapt_vars(fsapt_vars, print_output=print_output)
+        osapt, Qs = extract_osapt_data_from_fsapt_vars(
+            fsapt_vars, print_output=print_output
+        )
         external_potentials = {}
         if "FSAPT_EXTERN_POTENTIAL_A" in qcvars:
-            external_potentials['FSAPT_EXTERN_POTENTIAL_A'] = qcvars.get("FSAPT_EXTERN_POTENTIAL_A")
+            external_potentials["FSAPT_EXTERN_POTENTIAL_A"] = qcvars.get(
+                "FSAPT_EXTERN_POTENTIAL_A"
+            )
         if "FSAPT_EXTERN_POTENTIAL_B" in qcvars:
-            external_potentials['FSAPT_EXTERN_POTENTIAL_B'] = qcvars.get("FSAPT_EXTERN_POTENTIAL_B")
+            external_potentials["FSAPT_EXTERN_POTENTIAL_B"] = qcvars.get(
+                "FSAPT_EXTERN_POTENTIAL_B"
+            )
         if "FSAPT_EXTERN_POTENTIAL_C" in qcvars:
-            external_potentials['FSAPT_EXTERN_POTENTIAL_C'] = qcvars.get("FSAPT_EXTERN_POTENTIAL_C")
+            external_potentials["FSAPT_EXTERN_POTENTIAL_C"] = qcvars.get(
+                "FSAPT_EXTERN_POTENTIAL_C"
+            )
     else:
         mol = wfn.molecule()
         monomer_slices = mol.get_fragments()
         R, _, Z_el, Z, _ = mol.to_arrays()
-        osapt, Qs, external_potentials = extract_osapt_data_from_wfn(wfn, print_output=print_output)
+        osapt, Qs, external_potentials = extract_osapt_data_from_wfn(
+            wfn, print_output=print_output
+        )
 
         # PDB writing later needs Z to be str (element symbols=Z_el)
     geom = []
@@ -1845,9 +1935,17 @@ def run_fsapt_analysis(
             print("  ==> Full Analysis <==\n")
             print(f"     Links 50-50: {links5050}\n")
         results = compute_fsapt_qcvars(
-            geom, Z, monomer_slices, holder, osapt, Qs, links5050=links5050,
-            dirname=dirname, external_potentials=external_potentials,
-            link_siao=link_siao, print_output=print_output
+            geom,
+            Z,
+            monomer_slices,
+            holder,
+            osapt,
+            Qs,
+            links5050=links5050,
+            dirname=dirname,
+            external_potentials=external_potentials,
+            link_siao=link_siao,
+            print_output=print_output,
         )
         data = print_order2(
             results["order2"],
@@ -1862,9 +1960,17 @@ def run_fsapt_analysis(
             print("  ==> Reduced Analysis <==\n")
             print(f"     Links 50-50: {links5050}\n")
         results = compute_fsapt_qcvars(
-            geom, Z, monomer_slices, holder, osapt, Qs, links5050=links5050,
-            dirname=dirname, external_potentials=external_potentials,
-            link_siao=link_siao, print_output=print_output
+            geom,
+            Z,
+            monomer_slices,
+            holder,
+            osapt,
+            Qs,
+            links5050=links5050,
+            dirname=dirname,
+            external_potentials=external_potentials,
+            link_siao=link_siao,
+            print_output=print_output,
         )
         results_tag = "order2r"
         data = print_order2(
