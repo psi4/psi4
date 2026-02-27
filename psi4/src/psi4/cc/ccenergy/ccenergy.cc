@@ -100,56 +100,43 @@ double CCEnergyWavefunction::compute_energy() {
 
     if (params_.ref == 2) { /** UHF **/
         cachelist = cacheprep_uhf(params_.cachelev, cachefiles.data());
-        std::vector<int *> spaces;
-        spaces.push_back(moinfo_.aoccpi);
-        spaces.push_back(moinfo_.aocc_sym);
-        spaces.push_back(moinfo_.avirtpi);
-        spaces.push_back(moinfo_.avir_sym);
-        spaces.push_back(moinfo_.boccpi);
-        spaces.push_back(moinfo_.bocc_sym);
-        spaces.push_back(moinfo_.bvirtpi);
-        spaces.push_back(moinfo_.bvir_sym);
+        std::vector<std::pair<Dimension, int *>> spaces;
+        spaces.emplace_back(moinfo_.aoccpi, moinfo_.aocc_sym);
+        spaces.emplace_back(moinfo_.avirtpi, moinfo_.avir_sym);
+        spaces.emplace_back(moinfo_.boccpi, moinfo_.bocc_sym);
+        spaces.emplace_back(moinfo_.bvirtpi, moinfo_.bvir_sym);
         delete[] dpd_list[0];
-        dpd_list[0] = new DPD(0, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, 4, spaces);
+        dpd_list[0] = new DPD(0, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, spaces);
         dpd_set_default(0);
 
         if (params_.df) {
             form_df_ints(options_, cachelist, cachefiles.data());
         } else if (params_.aobasis != "NONE") { /* Set up new DPD's for AO-basis algorithm */
-            std::vector<int *> aospaces;
-            aospaces.push_back(moinfo_.aoccpi);
-            aospaces.push_back(moinfo_.aocc_sym);
-            aospaces.push_back(moinfo_.sopi);
-            aospaces.push_back(moinfo_.sosym);
-            aospaces.push_back(moinfo_.boccpi);
-            aospaces.push_back(moinfo_.bocc_sym);
-            aospaces.push_back(moinfo_.sopi);
-            aospaces.push_back(moinfo_.sosym);
-            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, 4, aospaces);
+            std::vector<std::pair<Dimension, int *>> aospaces;
+            aospaces.emplace_back(moinfo_.aoccpi, moinfo_.aocc_sym);
+            aospaces.emplace_back(moinfo_.sopi, moinfo_.sosym);
+            aospaces.emplace_back(moinfo_.boccpi, moinfo_.bocc_sym);
+            aospaces.emplace_back(moinfo_.sopi, moinfo_.sosym);
+            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, aospaces);
             dpd_set_default(0);
         }
 
     } else { /** RHF or ROHF **/
         cachelist = cacheprep_rhf(params_.cachelev, cachefiles.data());
         init_priority_list();
-        std::vector<int *> spaces;
-        spaces.push_back(moinfo_.occpi);
-        spaces.push_back(moinfo_.occ_sym);
-        spaces.push_back(moinfo_.virtpi);
-        spaces.push_back(moinfo_.vir_sym);
-
+        std::vector<std::pair<Dimension, int *>> spaces;
+        spaces.emplace_back(moinfo_.occpi, moinfo_.occ_sym);
+        spaces.emplace_back(moinfo_.virtpi, moinfo_.vir_sym);
         dpd_init(0, moinfo_.nirreps, params_.memory, params_.cachetype, cachefiles.data(), cachelist,
-                 cache_priority_list_.data(), 2, spaces);
+                 cache_priority_list_.data(), spaces);
 
         if (params_.df) {
             form_df_ints(options_, cachelist, cachefiles.data());
         } else if (params_.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
-            std::vector<int *> aospaces;
-            aospaces.push_back(moinfo_.occpi);
-            aospaces.push_back(moinfo_.occ_sym);
-            aospaces.push_back(moinfo_.sopi);
-            aospaces.push_back(moinfo_.sosym);
-            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, 2, aospaces);
+            std::vector<std::pair<Dimension, int *>> aospaces;
+            aospaces.emplace_back(moinfo_.occpi, moinfo_.occ_sym);
+            aospaces.emplace_back(moinfo_.sopi, moinfo_.sosym);
+            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, aospaces);
             dpd_set_default(0);
         }
     }
@@ -389,11 +376,12 @@ double CCEnergyWavefunction::compute_energy() {
         set_scalar_variable("CC2 CORRELATION ENERGY", moinfo_.ecc);
         set_scalar_variable("CC2 TOTAL ENERGY", moinfo_.eref + moinfo_.ecc);
 
-        if (params_.local && local_.weakp == "MP2")
+        if (params_.local && local_.weakp == "MP2") {
             outfile->Printf("      * LCC2 (+LMP2) total energy             = %20.15f\n",
                             moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy);
-        Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] =
-            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+            Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] =
+                            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+        }
     } else {
         if (params_.scscc) {
             outfile->Printf("\n    OS SCS-CCSD correlation energy            = %20.15f\n",
@@ -434,11 +422,12 @@ double CCEnergyWavefunction::compute_energy() {
         set_scalar_variable("CCSD TOTAL ENERGY", moinfo_.ecc + moinfo_.eref);
         set_scalar_variable("CCSD ITERATIONS", moinfo_.iter);
 
-        if (params_.local && local_.weakp == "MP2")
+        if (params_.local && local_.weakp == "MP2") {
             outfile->Printf("      * LCCSD (+LMP2) total energy            = %20.15f\n",
                             moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy);
-        Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] =
-            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+            Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] =
+                            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+        }
     }
     outfile->Printf("\n");
 
