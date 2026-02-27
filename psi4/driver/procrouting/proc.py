@@ -1661,10 +1661,13 @@ def _set_external_potentials_to_wavefunction(external_potential: Union[List, Dic
             geom = qXYZw[:, [1, 2, 3]]
             widths = qXYZw[:, [4]].ravel()
 
-            # * element choice & ghostiness in mol don't affect values. mind all-caps in shell_map
-            # * elbl in molecule and first of list in shell_map connect widths to fake heliums
-            # * second of list in shell_map is hash used to acct for BS in mol sym.
-            #   here, explicitly c1, so crude hash substitute. alter if multi-s-functions used
+            # A diffuse external potential is simply a collection of Gaussians of certain widths at certain locations.
+            # We can re-use the machinery of a molecule, here, a dummy one of heliums, and a basis set of s-functions.
+            # Normally, all basis sets go through the gbs file -> shell_map -> qcdb.BasisSet -> dict -> `construct_basisset_from_pydict` -> wfn process, but this is simple enough to assemble outright, with a few notes:
+            # * element choice (helium) & ghostiness (True) in diffmol don't affect values. mind all-caps in shell_map
+            # * elbl in molecule (He_1, He_2, etc.) and first of list in shell_map assign a particular Gaussian width to a particular fake helium, analogous to a custom per-center basis set specification
+            # * second of list in shell_map is hash used to label the BasisSet in Molecule symmetry reckoning.
+            #    Here, molecule is explicitly c1, so it's crude hash substitute. Alter in future if multi-s-functions are used
             # * puream irrelevant since only s-functions
 
             puream = True
