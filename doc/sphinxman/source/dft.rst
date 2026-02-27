@@ -348,15 +348,21 @@ Unrestricted Kohn--Sham (UKS)
   UHF, as the spin contamination of the noninteracting quasiparticles (the
   :math:`S^2` metric printed in the output) is usually a severe overestimation
   of the spin contamination of the true electrons.
+Restricted Open-shell Kohn--Sham (ROKS)
+  The DFT analog of ROHF, appropriate for open-shell systems where spin symmetry
+  is desired. Uses the same spatial orbitals for alpha and beta electrons
+  (like ROHF), but computes separate alpha and beta exchange-correlation potentials
+  based on the separate spin densities. This maintains proper :math:`\hat S^2`
+  spin symmetry while allowing different occupation numbers for alpha and beta
+  electrons. ROKS is particularly useful for doublet and other low-spin open-shell
+  systems where spin contamination should be avoided.
 
 These are set in the |scf__reference| option.
 
-Note that there are not equivalents to ROHF or CUHF, *e.g.*, no ROKS or CUKS. This
-is because ROHF is implicitly assumed to be followed by a correlated method
-which can break the positive definiteness of the spin polarization. KS-DFT with
-the true functional is expected to be the final step, thus restricting the
-solution to positive definite spin polarization is  not physical. See the
-section in [Szabo:1982]_ on methyl radical for an example.
+Note that there is not an equivalent to CUHF, *e.g.*, no CUKS. This
+is because constraining the spin polarization to be positive definite in KS-DFT
+is not generally physical when the true functional is expected to be the final step.
+See the section in [Szabo:1982]_ on methyl radical for an example.
 
 Functional Selection
 ~~~~~~~~~~~~~~~~~~~~
@@ -367,10 +373,15 @@ is to use the functional name as the energy procedure call::
 
     energy('b3lyp')
 
-Note that if you are running an unrestricted computation, you should set the
-|scf__reference| option before the call to ``energy``::
+Note that if you are running an open-shell computation, you should set the
+|scf__reference| option before the call to ``energy``. For unrestricted::
 
     set reference uks
+    energy('b3lyp')
+
+or for restricted open-shell::
+
+    set reference roks
     energy('b3lyp')
 
 The functional may also be manually specified by calling ``energy`` (or any driver function)

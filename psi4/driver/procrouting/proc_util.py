@@ -58,7 +58,7 @@ def scf_set_reference_local(name, is_dft=False):
         elif (user_ref == 'UHF'):
             core.set_local_option('SCF', 'REFERENCE', 'UKS')
         elif (user_ref == 'ROHF'):
-            raise ValidationError('ROHF reference for DFT is not available.')
+            core.set_local_option('SCF', 'REFERENCE', 'ROKS')
         elif (user_ref == 'CUHF'):
             raise ValidationError('CUHF reference for DFT is not available.')
     # else we are doing HF and nothing needs to be overloaded

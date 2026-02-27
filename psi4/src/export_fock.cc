@@ -194,7 +194,8 @@ void export_fock(py::module &m) {
         .def("dfh", &MemDFJK::dfh, "Return the DFHelper object.");
 
     py::class_<DirectJK, std::shared_ptr<DirectJK>, JK>(m, "DirectJK", "docstring")
-        .def("do_incfock_iter", &DirectJK::do_incfock_iter, "Was the last Fock build incremental?");
+        .def("do_incfock_iter", &DirectJK::do_incfock_iter, "Was the last Fock build incremental?")
+        .def("clear_D_prev", &DirectJK::clear_D_prev, "Clear previous D matrices, forcing full Fock rebuild.");
 
     py::class_<CompositeJK, std::shared_ptr<CompositeJK>, JK>(m, "CompositeJK", "docstring")
         .def("do_incfock_iter", &CompositeJK::do_incfock_iter, "Was the last Fock build incremental?")

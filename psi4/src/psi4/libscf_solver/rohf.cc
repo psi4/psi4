@@ -53,6 +53,19 @@
 
 #include "rohf.h"
 
+#ifdef USING_BrianQC
+
+#include <use_brian_wrapper.h>
+#include <brian_macros.h>
+#include <brian_types.h>
+
+extern void checkBrian();
+extern BrianCookie brianCookie;
+extern bool brianEnable;
+extern bool brianEnableDFT;
+
+#endif
+
 namespace psi {
 namespace scf {
 
@@ -83,6 +96,8 @@ void ROHF::common_init() {
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian matrix"));
     Ka_ = SharedMatrix(factory_->create_matrix("K alpha"));
     Kb_ = SharedMatrix(factory_->create_matrix("K beta"));
+    wKa_ = SharedMatrix(factory_->create_matrix("wK alpha"));
+    wKb_ = SharedMatrix(factory_->create_matrix("wK beta"));
     Ga_ = SharedMatrix(factory_->create_matrix("G alpha"));
     Gb_ = SharedMatrix(factory_->create_matrix("G beta"));
     Dt_ = SharedMatrix(factory_->create_matrix("Total SCF density"));
@@ -483,25 +498,65 @@ double ROHF::compute_initial_E() { return nuclearrep_ + Dt_->vector_dot(H_); }
 double ROHF::compute_E() {
     double one_electron_E = Dt_->vector_dot(H_);
     double kinetic_E = Dt_->vector_dot(T_);
-    double two_electron_E = 0.5 * (Da_->vector_dot(Ga_) + Db_->vector_dot(Gb_));
+
+    // Compute Coulomb energy
+    SharedMatrix Jdocc = jk_->J()[0];
+    SharedMatrix Jsocc = jk_->J()[1];
+    double coulomb_E = 2.0 * Dt_->vector_dot(Jdocc);  // Dt = Da + Db
+    coulomb_E += Da_->vector_dot(Jsocc);
+    coulomb_E += Db_->vector_dot(Jsocc);
+
+    // Compute exchange energy
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
+
+#ifdef USING_BrianQC
+    if (brianEnable and brianEnableDFT) {
+        // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+
+    double exchange_E = 0.0;
+    if (functional_->is_x_hybrid()) {
+        exchange_E -= alpha * Da_->vector_dot(Ka_);
+        exchange_E -= alpha * Db_->vector_dot(Kb_);
+    }
+
+    if (functional_->is_x_lrc()) {
+        if (jk_->get_do_wK() && jk_->get_wcombine()) {
+            exchange_E -= Da_->vector_dot(wKa_);
+            exchange_E -= Db_->vector_dot(wKb_);
+        } else {
+            exchange_E -= beta * Da_->vector_dot(wKa_);
+            exchange_E -= beta * Db_->vector_dot(wKb_);
+        }
+    }
+
+    double two_electron_E = 0.5 * (coulomb_E + exchange_E);
+
+    // Compute XC energy for ROKS
+    double XC_E = 0.0;
+    double VV10_E = 0.0;
+    if (functional_->needs_xc()) {
+        XC_E = potential_->quadrature_values()["FUNCTIONAL"];
+        VV10_E = potential_->quadrature_values()["VV10"];
+    }
 
     energies_["Nuclear"] = nuclearrep_;
     energies_["Kinetic"] = kinetic_E;
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = two_electron_E;
-    energies_["XC"] = 0.0;
-    energies_["VV10_E"] = 0.0;
-    energies_["-D"] = 0.0;
+    energies_["XC"] = XC_E;
+    energies_["VV10"] = VV10_E;
+    energies_["-D"] = scalar_variable("-D Energy");
 
-    double Eelec = one_electron_E + two_electron_E;
-    double Etotal = nuclearrep_ + Eelec;
+    double Etotal = nuclearrep_ + one_electron_E + two_electron_E + XC_E + VV10_E + energies_["-D"];
     return Etotal;
 }
 
 void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
-    if (functional_->needs_xc()) {
-        throw PSIEXCEPTION("SCF: Cannot yet compute DFT Hessian-vector prodcuts.\n");
-    }
     // Index reference
     // left = IAJB + IAjb, right = iajb + iaJB
     // i = docc, a = socc, p = pure virtual
@@ -575,8 +630,13 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
     Cl.clear();
     Cr.clear();
 
-    // If scf_type is DF we can do some extra JK voodo
-    if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || (options_.get_str("SCF_TYPE") == "CD")) {
+    // Check actual JK object type (not SCF_TYPE option) to select correct Hx algorithm
+    std::string jk_name = jk_->name();
+    bool use_df_hx = (jk_name.find("DF") != std::string::npos) || (jk_name == "CDJK");
+    if (print_ > 2) {
+        outfile->Printf("    ROHF::Hx JK type: %s, using %s path\n", jk_name.c_str(), use_df_hx ? "DF" : "Direct");
+    }
+    if (use_df_hx) {
         auto Cdocc = Ca_->get_block({dim_zero, nsopi_}, {dim_zero, docc});
         Cdocc->set_name("Cdocc");
 
@@ -623,7 +683,31 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
         Cr.push_back(Cr_a);
         Cr.push_back(Csocc);
 
+        // Hx density differs from SCF density - force full build and preserve D_prev_
+        jk_->require_full_build();
         jk_->compute();
+
+        // XC contribution: build perturbation densities for ROHF orbital subspaces
+        //   Dx_a = Cocc * x[:, socc:] * Cpvir^T   (alpha virtual = pvir only)
+        //   Dx_b = Cdocc * x[0:docc, :] * Cvir_beta^T  (beta virtual = socc + pvir)
+        std::vector<SharedMatrix> Vx_xc;
+        if (functional_->needs_xc()) {
+            auto Cpvir = Ca_->get_block({dim_zero, nsopi_}, {occpi, nmopi_});
+            auto Cvir_beta = Ca_->get_block({dim_zero, nsopi_}, {docc, nmopi_});
+
+            auto x_pvir = x->get_block({dim_zero, occpi}, {socc, virpi});
+            auto Dx_a = linalg::triplet(Cocc, x_pvir, Cpvir, false, false, true);
+
+            auto x_docc = x->get_block({dim_zero, docc}, {dim_zero, virpi});
+            auto Dx_b = linalg::triplet(Cdocc, x_docc, Cvir_beta, false, false, true);
+
+            std::vector<SharedMatrix> Dx = {Dx_a, Dx_b};
+            auto Vx_a = std::make_shared<Matrix>("Vx alpha", nsopi_, nsopi_);
+            auto Vx_b = std::make_shared<Matrix>("Vx beta", nsopi_, nsopi_);
+            Vx_xc = {Vx_a, Vx_b};
+
+            potential_->compute_Vx(Dx, Vx_xc);
+        }
 
         // Just in case someone only clears out Cleft and gets very strange errors
         Cl.clear();
@@ -642,6 +726,15 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
         J[0]->add(J[1]);
         J[0]->add(J[2]);
         J[1]->copy(J[0]);
+
+        // Add XC contribution with -0.5 coefficient:
+        // - ROHF builds positive Dx, UHF builds negative Dx (via R->scale(-1.0))
+        // - Since compute_Vx is linear in Dx, opposite sign requires negation
+        // - Effective: -0.5 * 4.0 (from scale(4.0)) = -2.0, vs UHF's +2.0 on negative Dx
+        if (functional_->needs_xc()) {
+            J[0]->axpy(-0.5, Vx_xc[0]);
+            J[1]->axpy(-0.5, Vx_xc[1]);
+        }
 
         K[2]->add(K[0]);
         K[0]->add(K[1]);
@@ -700,7 +793,29 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
         Cr.push_back(Cr_a);
         Cr.push_back(Cr_b);
 
+        // Hx density differs from SCF density - force full build and preserve D_prev_
+        jk_->require_full_build();
         jk_->compute();
+
+        // XC contribution: same perturbation density logic as DF path
+        std::vector<SharedMatrix> Vx_xc;
+        if (functional_->needs_xc()) {
+            auto Cpvir = Ca_->get_block({dim_zero, nsopi_}, {occpi, nmopi_});
+            auto Cvir_beta = Ca_->get_block({dim_zero, nsopi_}, {docc, nmopi_});
+
+            auto x_pvir = x->get_block({dim_zero, occpi}, {socc, virpi});
+            auto Dx_a = linalg::triplet(Cocc, x_pvir, Cpvir, false, false, true);
+
+            auto x_docc = x->get_block({dim_zero, docc}, {dim_zero, virpi});
+            auto Dx_b = linalg::triplet(Cdocc, x_docc, Cvir_beta, false, false, true);
+
+            std::vector<SharedMatrix> Dx = {Dx_a, Dx_b};
+            auto Vx_a = std::make_shared<Matrix>("Vx alpha", nsopi_, nsopi_);
+            auto Vx_b = std::make_shared<Matrix>("Vx beta", nsopi_, nsopi_);
+            Vx_xc = {Vx_a, Vx_b};
+
+            potential_->compute_Vx(Dx, Vx_xc);
+        }
 
         // Just in case someone only clears out Cleft and gets very strange errors
         Cl.clear();
@@ -715,6 +830,15 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
         // Collect left terms
         J[0]->add(J[1]);
         J[1]->copy(J[0]);
+
+        // Add XC contribution with -0.5 coefficient:
+        // - ROHF builds positive Dx, UHF builds negative Dx (via R->scale(-1.0))
+        // - Since compute_Vx is linear in Dx, opposite sign requires negation
+        // - Effective: -0.5 * 4.0 (from scale(4.0)) = -2.0, vs UHF's +2.0 on negative Dx
+        if (functional_->needs_xc()) {
+            J[0]->axpy(-0.5, Vx_xc[0]);
+            J[1]->axpy(-0.5, Vx_xc[1]);
+        }
 
         K[0]->scale(0.5);
         J[0]->subtract(K[0]);
@@ -932,7 +1056,23 @@ int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter
     return fock_builds;
 }
 
+void ROHF::form_V() {
+    // Compute exchange-correlation potential from separate alpha/beta densities
+    potential_->set_D({Da_, Db_});
+    potential_->compute_V({Va_, Vb_});
+}
+
 void ROHF::form_G() {
+    // Initialize Ga_ and Gb_ with XC contribution if needed
+    if (functional_->needs_xc()) {
+        form_V();
+        Ga_->copy(Va_);
+        Gb_->copy(Vb_);
+    } else {
+        Ga_->zero();
+        Gb_->zero();
+    }
+
     Dimension dim_zero(nirrep_, "Zero Dim");
 
     auto& C = jk_->C_left();
@@ -952,17 +1092,61 @@ void ROHF::form_G() {
     // Pull the J and K matrices off
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
-    Ga_->copy(J[0]);
-    Ga_->scale(2.0);
+    const std::vector<SharedMatrix>& wK = jk_->wK();
+
+    // Add Coulomb contribution: J[0] from docc, J[1] from socc
+    // Both alpha and beta Fock matrices get the same Coulomb part
+    Ga_->axpy(2.0, J[0]);
     Ga_->add(J[1]);
+    Gb_->axpy(2.0, J[0]);
+    Gb_->add(J[1]);
 
-    Ka_->copy(K[0]);
-    Ka_->add(K[1]);
-    Kb_ = K[0];
+    // Build exchange matrices if hybrid functional: Ka from docc+socc, Kb from docc only
+    if (functional_->is_x_hybrid()) {
+        Ka_->copy(K[0]);
+        Ka_->add(K[1]);
+        Kb_->copy(K[0]);
+    }
 
-    Gb_->copy(Ga_);
-    Ga_->subtract(Ka_);
-    Gb_->subtract(Kb_);
+    // Pull wK matrices for long-range corrected functionals
+    if (functional_->is_x_lrc()) {
+        wKa_->copy(wK[0]);
+        wKa_->add(wK[1]);
+        wKb_->copy(wK[0]);
+    }
+
+    // Apply hybrid and long-range exchange
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
+
+#ifdef USING_BrianQC
+    if (brianEnable and brianEnableDFT) {
+        // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+
+    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
+        Ga_->axpy(-alpha, Ka_);
+        Gb_->axpy(-alpha, Kb_);
+    } else {
+        Ka_->zero();
+        Kb_->zero();
+    }
+
+    if (functional_->is_x_lrc()) {
+        if (jk_->get_wcombine()) {
+            Ga_->axpy(-1.0, wKa_);
+            Gb_->axpy(-1.0, wKb_);
+        } else {
+            Ga_->axpy(-beta, wKa_);
+            Gb_->axpy(-beta, wKb_);
+        }
+    } else {
+        wKa_->zero();
+        wKb_->zero();
+    }
 }
 
 bool ROHF::stability_analysis() {
@@ -1328,7 +1512,15 @@ void ROHF::compute_SAD_guess(bool natorb) {
 
 void ROHF::setup_potential() {
     if (functional_->needs_xc()) {
-        throw PSIEXCEPTION("ROHF: Cannot compute XC components!");
+        // ROKS: allocate Va_ and Vb_ for DFT exchange-correlation potentials
+        Va_ = SharedMatrix(factory_->create_matrix("V alpha"));
+        Vb_ = SharedMatrix(factory_->create_matrix("V beta"));
+
+        // ROKS uses unrestricted V (UV) since ROHF maintains separate alpha/beta densities
+        potential_ = std::make_shared<UV>(functional_, basisset_, options_);
+        potential_->initialize();
+    } else {
+        potential_ = nullptr;
     }
 }
 

@@ -104,6 +104,8 @@ TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_
     function_pair_values_ = rhs.function_pair_values_;
     shell_pair_values_ = rhs.shell_pair_values_;
     max_dens_shell_pair_ = rhs.max_dens_shell_pair_;
+    max_delta_dens_shell_pair_ = rhs.max_delta_dens_shell_pair_;
+    incfock_screening_active_ = rhs.incfock_screening_active_;
     shell_pair_exchange_values_ = rhs.shell_pair_exchange_values_;
     function_sqrt_ = rhs.function_sqrt_;
     function_pairs_ = rhs.function_pairs_;
@@ -158,6 +160,41 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
 
 }
 
+void TwoBodyAOInt::update_delta_density(const std::vector<SharedMatrix>& delta_D) {
+    // Initialize storage if needed
+    if (max_delta_dens_shell_pair_.size() == 0) {
+        max_delta_dens_shell_pair_.resize(delta_D.size());
+        for (auto& pair_vec : max_delta_dens_shell_pair_) {
+            pair_vec.resize(nshell_ * nshell_);
+        }
+    }
+
+    timer_on("Update Delta Density");
+
+#pragma omp parallel for
+    for (int M = 0; M < nshell_; M++) {
+        for (int N = M; N < nshell_; N++) {
+            int m_start = bs1_->shell(M).function_index();
+            int num_m = bs1_->shell(M).nfunction();
+            int n_start = bs1_->shell(N).function_index();
+            int num_n = bs1_->shell(N).nfunction();
+
+            for (size_t i = 0; i < delta_D.size(); i++) {
+                double** dDp = delta_D[i]->pointer();
+                double max_delta = 0.0;
+                for (int m = m_start; m < m_start + num_m; m++) {
+                    for (int n = n_start; n < n_start + num_n; n++) {
+                        max_delta = std::max(max_delta, std::abs(dDp[m][n]));
+                    }
+                }
+                max_delta_dens_shell_pair_[i][M * nshell_ + N] = max_delta;
+                if (M != N) max_delta_dens_shell_pair_[i][N * nshell_ + M] = max_delta;
+            }
+        }
+    }
+
+    timer_off("Update Delta Density");
+}
 
 double TwoBodyAOInt::shell_pair_max_density(int M, int N) const {
     if (max_dens_shell_pair_.empty()) {
@@ -201,6 +238,49 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 
     // The density screened ERI bound (Eq. 6)
     return (mn_mn * rs_rs * max_density * max_density >= screening_threshold_squared_);
+}
+
+// INCFOCK delta-density screening using Schwarz inequality with delta-D
+// Reference: Häser & Ahlrichs, J. Comput. Chem. 10 (1989) 104-111
+bool TwoBodyAOInt::shell_significant_delta_density(const int M, const int N, const int R, const int S) const {
+    if (!incfock_screening_active_ || max_delta_dens_shell_pair_.empty() || shell_pair_values_.empty()) {
+        return true;
+    }
+
+    // Max delta-density contribution for this quartet
+    double max_delta_density = 0.0;
+
+    if (max_delta_dens_shell_pair_.size() == 1) {
+        // RHF case
+        max_delta_density = std::max({
+            4.0 * max_delta_dens_shell_pair_[0][M * nshell_ + N],
+            4.0 * max_delta_dens_shell_pair_[0][R * nshell_ + S],
+            max_delta_dens_shell_pair_[0][M * nshell_ + R],
+            max_delta_dens_shell_pair_[0][M * nshell_ + S],
+            max_delta_dens_shell_pair_[0][N * nshell_ + R],
+            max_delta_dens_shell_pair_[0][N * nshell_ + S]
+        });
+    } else {
+        // UHF/ROHF case
+        double dD_MN = max_delta_dens_shell_pair_[0][M * nshell_ + N] +
+                       max_delta_dens_shell_pair_[1][M * nshell_ + N];
+        double dD_RS = max_delta_dens_shell_pair_[0][R * nshell_ + S] +
+                       max_delta_dens_shell_pair_[1][R * nshell_ + S];
+        double dD_MR = std::max(max_delta_dens_shell_pair_[0][M * nshell_ + R],
+                                max_delta_dens_shell_pair_[1][M * nshell_ + R]);
+        double dD_MS = std::max(max_delta_dens_shell_pair_[0][M * nshell_ + S],
+                                max_delta_dens_shell_pair_[1][M * nshell_ + S]);
+        double dD_NR = std::max(max_delta_dens_shell_pair_[0][N * nshell_ + R],
+                                max_delta_dens_shell_pair_[1][N * nshell_ + R]);
+        double dD_NS = std::max(max_delta_dens_shell_pair_[0][N * nshell_ + S],
+                                max_delta_dens_shell_pair_[1][N * nshell_ + S]);
+
+        max_delta_density = std::max({2.0 * dD_MN, 2.0 * dD_RS, dD_MR, dD_MS, dD_NR, dD_NS});
+    }
+
+    double mn_mn = shell_pair_values_[N * nshell_ + M];
+    double rs_rs = shell_pair_values_[S * nshell_ + R];
+    return (mn_mn * rs_rs * max_delta_density * max_delta_density >= screening_threshold_squared_);
 }
 
 bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) { 
@@ -256,7 +336,14 @@ void TwoBodyAOInt::setup_sieve() {
             throw PSIEXCEPTION("Unimplemented screening type in TwoBodyAOInt::setup_sieve()");
     }
 
-    if (screening_type_ != ScreeningType::None) create_sieve_pair_info_manager();
+    if (screening_type_ != ScreeningType::None) {
+        create_sieve_pair_info_manager();
+    } else {
+        // Even with NONE screening, initialize nshell_/nbf_/bs1_ for INCFOCK's update_density()
+        nshell_ = original_bs1_->nshell();
+        nbf_ = original_bs1_->nbf();
+        bs1_ = original_bs1_;
+    }
 }
 
 void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra) {

@@ -1,0 +1,50 @@
+#! Test INCFOCK with SOSCF (Second-Order SCF)
+#! Validates IncFock stability with SOSCF orbital rotations
+#! Uses screening=DENSITY, validates energy AND iteration count
+
+print(' INCFOCK with SOSCF') #TEST
+
+molecule water {
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+}
+
+# Reference values from incfock=TRUE, screening=density, soscf=true runs
+# Note: iteration count may vary by +-1 across compilers due to floating-point differences
+Eref_rhf = -76.026653661805
+Iref_rhf = 12
+Eref_uhf = -76.026653661888
+Iref_uhf = 12
+Itol = 1  # allowed iteration tolerance
+
+def compare_iterations(expected, computed, label):
+    """Compare iteration counts with tolerance for compiler differences."""
+    diff = abs(computed - expected)
+    if diff > Itol:
+        raise TestComparisonError(f"{label}: computed ({computed}) differs from expected ({expected}) by {diff} iterations (tolerance: {Itol})")
+    compare_integers(1, 1, label)  # Record pass in test output
+
+set {
+    basis cc-pvdz
+    scf_type direct
+    screening density
+    soscf true
+    incfock true
+    e_convergence 1e-10
+    d_convergence 1e-8
+}
+
+# RHF with SOSCF + INCFOCK
+set reference rhf
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref_rhf, E, 8, 'RHF SOSCF+INCFOCK DENSITY: Energy') #TEST
+compare_iterations(Iref_rhf, wfn.iteration_, 'RHF SOSCF+INCFOCK DENSITY: Iterations') #TEST
+
+clean()
+
+# UHF with SOSCF + INCFOCK
+set reference uhf
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref_uhf, E, 8, 'UHF SOSCF+INCFOCK DENSITY: Energy') #TEST
+compare_iterations(Iref_uhf, wfn.iteration_, 'UHF SOSCF+INCFOCK DENSITY: Iterations') #TEST

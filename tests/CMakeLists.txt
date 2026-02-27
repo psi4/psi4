@@ -53,7 +53,7 @@ foreach(test_name aediis-1
                   dforemp-grad1 dforemp-grad2 dfremp-1 dfremp-2
                   dft-grad-lr1 dft-grad-lr2 dft-grad-lr3 dft-grad-disk
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-grac dft-ghost dft-grad-meta
-                  dft-freq dft-freq-analytic1 dft-freq-analytic2 dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10
+                  dft-freq dft-freq-analytic1 dft-freq-analytic2 dft-grad1 dft-grad2 dft-psivar dft-b3lyp roks-dft dft1 dft-vv10
                   dft1-alt dft2 dft3 dft-omega dft-dens-cut dlpnocc-1 dlpnocc-2 dlpnocc-3 dlpnocc-4 dlpnomp2-1 dlpnomp2-2 
                   dlpnomp2-3 docs-bases docs-dft embpot1 explicit-am-basis
                   extern1 extern2 extern3 extern4 extern5 extern6
@@ -73,10 +73,10 @@ foreach(test_name aediis-1
                   mp2-property mp2f12-1 mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient
                   nbo nbody-cp-gradient nbody-vmfc-gradient nbody-vmfc-hessian nbody-hessian nbody-convergence
                   nbody-freq nbody-multi-level nbody-multi-level-2 numint1 numpy-array-interface
-                  olccd-freq1 olccd-grad1 olccd-grad2 olccd1 olccd2 olccd3
-                  omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp2-grad1 omp2-grad2
-                  omp2p5-1 omp2p5-2 omp2p5-grad1 omp2p5-grad2 omp3-1 omp3-2
-                  omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2 opt-lindep-change
+                  olccd-freq1 olccd-grad1 olccd-grad2 olccd1 olccd2 olccd3 olccd-roks1
+                  omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp2-grad1 omp2-grad2 omp2-roks1
+                  omp2p5-1 omp2p5-2 omp2p5-grad1 omp2p5-grad2 omp2p5-grad-roks1 omp2p5-roks1 omp3-1 omp3-2
+                  omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2 omp3-grad-roks1 omp3-roks1 opt-lindep-change
                   opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 opt8 opt9
                   opt11 opt12 opt13 opt14 opt15 opt16 opt-irc-1 opt-irc-2 opt-irc-3
                   opt-freeze-coords opt-full-hess-every
@@ -95,9 +95,9 @@ foreach(test_name aediis-1
                   sapt-exch-disp-inf sapt-exch-ind-inf sapt-exch-ind30-inf
                   sapt7 sapt8 scf-bz2 scf-dipder scf-guess scf-guess-read1 scf-upcast-custom-basis
                   scf-guess-read2 scf-guess-read3 scf1 scf-occ scf2 scf3 scf4 scf5 scf6
-                  scf7 scf-level-shift-rks scf-level-shift-uhf scf-level-shift-cuhf scf-level-shift-rohf
+                  scf7 incfock1 incfock2 incfock3 incfock4 incfock5 incfock6 scf-level-shift-rks scf-level-shift-uhf scf-level-shift-cuhf scf-level-shift-rohf
                   scf-property soscf-large soscf-ref
-                  soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
+                  soscf-dft roks-soscf-incfock stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
                   stability2 stability3 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 scf-response2 scf-response3
                   scf-cholesky-basis scf-auto-cholesky
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 x2c-perturb-h zaptn-nh2 zora

@@ -136,6 +136,148 @@ _std_suite_psi4_extension = [
             "CISD CORRELATION ENERGY": -0.21038651,  # detci != vcc ???
         },
     },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "pk",
+            "reference": "rohf",
+            "fcae": "ae",
+            "corl_type": "conv",
+            "sdsc": "sc",
+        },
+        "data": {
+            "SVWN TOTAL ENERGY": -25.882494535548,
+            "WB97X TOTAL ENERGY": -26.098570750064,
+            "B2PLYP FUNCTIONAL TOTAL ENERGY": -26.051694450307,
+            "B2PLYP TOTAL ENERGY": -26.072569267683,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "pk",
+            "reference": "rohf",
+            "fcae": "fc",
+            "corl_type": "conv",
+            "sdsc": "sc",
+        },
+        "data": {
+            "B2PLYP FUNCTIONAL TOTAL ENERGY": -26.051694450307,
+            "B2PLYP TOTAL ENERGY": -26.072237092520,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "pk",
+            "reference": "rohf",
+            "fcae": "ae",
+            "corl_type": "df",
+            "sdsc": "sc",
+        },
+        "data": {
+            "B2PLYP FUNCTIONAL TOTAL ENERGY": -26.051694450307,
+            "B2PLYP TOTAL ENERGY": -26.072569267683,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "pk",
+            "reference": "rohf",
+            "fcae": "fc",
+            "corl_type": "df",
+            "sdsc": "sc",
+        },
+        "data": {
+            "B2PLYP FUNCTIONAL TOTAL ENERGY": -26.051694450307,
+            "B2PLYP TOTAL ENERGY": -26.072237092520,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "df",
+            "reference": "rohf",
+            "fcae": "ae",
+            "corl_type": "df",
+            "sdsc": "sc",
+        },
+        "data": {
+            "SVWN TOTAL ENERGY": -25.882507298840,
+            "PBE TOTAL ENERGY": -26.046288802973,
+            "B3LYP TOTAL ENERGY": -26.113232120414,
+            "WB97X TOTAL ENERGY": -26.098567388746,
+            "B2PLYP FUNCTIONAL TOTAL ENERGY": -26.051697140240,
+            "B2PLYP TOTAL ENERGY": -26.072571133567,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rohf",
+            "fcae": "ae",
+            "corl_type": "cd",
+            "sdsc": "sc",
+        },
+        "data": {
+            "SVWN TOTAL ENERGY": -25.882521352428,
+            "PBE TOTAL ENERGY": -26.046301041298,
+            "B3LYP TOTAL ENERGY": -26.113238860673,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "df",
+            "reference": "rohf",
+            "fcae": "fc",
+            "corl_type": "df",
+            "sdsc": "sc",
+        },
+        "data": {
+            "B2PLYP FUNCTIONAL TOTAL ENERGY": -26.051697140240,
+            "B2PLYP TOTAL ENERGY": -26.072238963621,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rohf",
+            "fcae": "ae",
+            "corl_type": "df",
+            "sdsc": "sc",
+        },
+        "data": {
+            "B2PLYP FUNCTIONAL TOTAL ENERGY": -26.051695975090,
+            "B2PLYP TOTAL ENERGY": -26.072570158408,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rohf",
+            "fcae": "fc",
+            "corl_type": "df",
+            "sdsc": "sc",
+        },
+        "data": {
+            "B2PLYP FUNCTIONAL TOTAL ENERGY": -26.051695975090,
+            "B2PLYP TOTAL ENERGY": -26.072237984454,
+        },
+    },
 
     # <<<  CONV-FC-CONV  >>>
     {

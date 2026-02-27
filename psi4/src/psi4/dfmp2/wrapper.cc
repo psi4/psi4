@@ -57,7 +57,7 @@ SharedWavefunction dfmp2(SharedWavefunction ref_wfn, Options& options) {
         dfmp2 = std::make_shared<RDFMP2>(ref_wfn, options, psio);
     } else if (options.get_str("REFERENCE") == "UHF" || options.get_str("REFERENCE") == "UKS") {
         dfmp2 = std::make_shared<UDFMP2>(ref_wfn, options, psio);
-    } else if (options.get_str("REFERENCE") == "ROHF") {
+    } else if (options.get_str("REFERENCE") == "ROHF" || options.get_str("REFERENCE") == "ROKS") {
         dfmp2 = std::make_shared<RODFMP2>(ref_wfn, options, psio);
     } else {
         throw PSIEXCEPTION("DFMP2: Unrecognized reference");

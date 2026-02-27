@@ -76,7 +76,9 @@ using namespace psi;
 
 namespace psi {
 
-DirectJK::DirectJK(std::shared_ptr<BasisSet> primary, Options& options) : JK(primary), options_(options) { common_init(); }
+DirectJK::DirectJK(std::shared_ptr<BasisSet> primary, Options& options) : JK(primary), options_(options) {
+    common_init();
+}
 DirectJK::~DirectJK() {}
 void DirectJK::common_init() {
     df_ints_num_threads_ = 1;
@@ -92,15 +94,19 @@ void DirectJK::common_init() {
         throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
     }
 
+    // Auto-calculate INCFOCK_CONVERGENCE from D_CONVERGENCE if not explicitly set
+    if (incfock_ && !options_["INCFOCK_CONVERGENCE"].has_changed()) {
+        double d_conv = options_.get_double("D_CONVERGENCE");
+        Process::environment.options.set_double("SCF", "INCFOCK_CONVERGENCE", d_conv * INCFOCK_CONVERGENCE_FACTOR);
+    }
+
     // other options
     auto screening_type = options_.get_str("SCREENING");
     density_screening_ = screening_type == "DENSITY";
     computed_shells_per_iter_["Quartets"] = {};
 }
 
-size_t DirectJK::num_computed_shells() { 
-    return num_computed_shells_; 
-}
+size_t DirectJK::num_computed_shells() { return num_computed_shells_; }
 
 size_t DirectJK::memory_estimate() {
     return 0;  // Effectively
@@ -124,10 +130,9 @@ void DirectJK::print_header() const {
     }
 }
 void DirectJK::preiterations() {
-
 #ifdef USING_BrianQC
     if (brianEnable) {
-        double threshold = cutoff_ * (brianCPHFFlag ? 1e-3 : 1e-0); // CPHF needs higher precision
+        double threshold = cutoff_ * (brianCPHFFlag ? 1e-3 : 1e-0);  // CPHF needs higher precision
         brianCOMSetPrecisionThresholds(&brianCookie, &threshold);
         checkBrian();
     }
@@ -136,19 +141,12 @@ void DirectJK::preiterations() {
 
 void DirectJK::incfock_setup() {
     if (do_incfock_iter_) {
+        // Incremental iteration: compute delta-density
+        // D_prev_ guaranteed to be ready (checked in do_incfock_iter_ condition)
         size_t njk = D_ao_.size();
-
-        // If there is no previous pseudo-density, this iteration is normal
-        if (initial_iteration_ || D_prev_.size() != njk) {
-	        initial_iteration_ = true;
-
-            D_ref_ = D_ao_;
-            zero();
-        } else { // Otherwise, the iteration is incremental
-            for (size_t jki = 0; jki < njk; jki++) {
-                D_ref_[jki] = D_ao_[jki]->clone();
-                D_ref_[jki]->subtract(D_prev_[jki]);
-            }
+        for (size_t jki = 0; jki < njk; jki++) {
+            D_ref_[jki] = D_ao_[jki]->clone();
+            D_ref_[jki]->subtract(D_prev_[jki]);
         }
     } else {
         D_ref_ = D_ao_;
@@ -157,25 +155,81 @@ void DirectJK::incfock_setup() {
 }
 
 void DirectJK::incfock_postiter() {
-    // Save a copy of the density for the next iteration
-    D_prev_.clear();
-    for(auto const &Di : D_ao_) {
-        D_prev_.push_back(Di->clone());
+    // Skip saving D_prev_ if this was an Hx call (different density provenance)
+    if (incfock_skip_save_) {
+        incfock_skip_save_ = false;  // Clear flag for next call
+        return;
+    }
+
+    const auto njk = D_ao_.size();
+
+    // Save density for next iteration - reuse existing matrices if possible
+    if (D_prev_.size() == njk) {
+        for (size_t jki = 0; jki < njk; jki++) {
+            D_prev_[jki]->copy(D_ao_[jki]);
+        }
+    } else {
+        D_prev_.clear();
+        for (auto const& Di : D_ao_) {
+            D_prev_.push_back(Di->clone());
+        }
+    }
+
+    // Save J matrices for accumulation in next iteration
+    if (do_J_) {
+        if (J_prev_.size() == njk) {
+            for (size_t jki = 0; jki < njk; jki++) {
+                J_prev_[jki]->copy(J_ao_[jki]);
+            }
+        } else {
+            J_prev_.clear();
+            for (auto const& Ji : J_ao_) {
+                J_prev_.push_back(Ji->clone());
+            }
+        }
+    }
+
+    // Save K matrices for accumulation in next iteration
+    if (do_K_) {
+        if (K_prev_.size() == njk) {
+            for (size_t jki = 0; jki < njk; jki++) {
+                K_prev_[jki]->copy(K_ao_[jki]);
+            }
+        } else {
+            K_prev_.clear();
+            for (auto const& Ki : K_ao_) {
+                K_prev_.push_back(Ki->clone());
+            }
+        }
+    }
+
+    // Save wK matrices for accumulation in next iteration (range-separated exchange)
+    if (do_wK_) {
+        if (wK_prev_.size() == njk) {
+            for (size_t jki = 0; jki < njk; jki++) {
+                wK_prev_[jki]->copy(wK_ao_[jki]);
+            }
+        } else {
+            wK_prev_.clear();
+            for (auto const& wKi : wK_ao_) {
+                wK_prev_.push_back(wKi->clone());
+            }
+        }
     }
 }
 
 void DirectJK::compute_JK() {
-   
 #ifdef USING_BrianQC
     if (brianEnable) {
         // zero out J, K, and wK matrices
         zero();
-        
+
         brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
         brianBool computeExchange = ((do_K_ || do_wK_) ? BRIAN_TRUE : BRIAN_FALSE);
 
         if (do_wK_ and not brianEnableDFT) {
-            throw PSIEXCEPTION("Currently, BrianQC cannot compute range-separated exact exchange when Psi4 is handling the DFT terms");
+            throw PSIEXCEPTION(
+                "Currently, BrianQC cannot compute range-separated exact exchange when Psi4 is handling the DFT terms");
         }
 
         if (not brianCPHFFlag) {
@@ -204,15 +258,9 @@ void DirectJK::compute_JK() {
                 exchangeBeta = (D_ao_.size() > 1) ? wK_ao_[1]->get_pointer() : nullptr;
             }
 
-            brianSCFBuildFockRepulsion(&brianCookie,
-                &computeCoulomb,
-                &computeExchange,
-                D_ao_[0]->get_pointer(0),
-                (D_ao_.size() > 1 ? D_ao_[1]->get_pointer() : nullptr),
-                (do_J_ ? J_ao_[0]->get_pointer() : nullptr),
-                exchangeAlpha,
-                exchangeBeta
-            );
+            brianSCFBuildFockRepulsion(&brianCookie, &computeCoulomb, &computeExchange, D_ao_[0]->get_pointer(0),
+                                       (D_ao_.size() > 1 ? D_ao_[1]->get_pointer() : nullptr),
+                                       (do_J_ ? J_ao_[0]->get_pointer() : nullptr), exchangeAlpha, exchangeBeta);
             checkBrian();
 
             // BrianQC computes the sum of all Coulomb contributions into
@@ -256,7 +304,8 @@ void DirectJK::compute_JK() {
 
             brianInt derivativeCount = D_ao_.size() / densityCount;
 
-            for (brianInt segmentStartIndex = 0; segmentStartIndex < derivativeCount; segmentStartIndex += maxSegmentSize) {
+            for (brianInt segmentStartIndex = 0; segmentStartIndex < derivativeCount;
+                 segmentStartIndex += maxSegmentSize) {
                 brianInt segmentSize = std::min(maxSegmentSize, derivativeCount - segmentStartIndex);
 
                 std::vector<std::vector<SharedMatrix>> pseudoDensitySymmetrized(densityCount);
@@ -267,13 +316,17 @@ void DirectJK::compute_JK() {
                     pseudoDensityPointers[densityIndex].resize(segmentSize, nullptr);
                     pseudoExchangePointers[densityIndex].resize(segmentSize, nullptr);
                     for (brianInt i = 0; i < segmentSize; i++) {
-                        // Psi4's code computing the left- and right-hand side CPHF terms use different indexing conventions
-                        brianInt psi4Index = brianCPHFLeftSideFlag ? (densityIndex * derivativeCount + segmentStartIndex + i) : ((segmentStartIndex + i) * densityCount + densityIndex);
+                        // Psi4's code computing the left- and right-hand side CPHF terms use different indexing
+                        // conventions
+                        brianInt psi4Index = brianCPHFLeftSideFlag
+                                                 ? (densityIndex * derivativeCount + segmentStartIndex + i)
+                                                 : ((segmentStartIndex + i) * densityCount + densityIndex);
 
                         pseudoDensitySymmetrized[densityIndex][i] = D_ao_[psi4Index]->clone();
                         pseudoDensitySymmetrized[densityIndex][i]->add(D_ao_[psi4Index]->transpose());
                         pseudoDensitySymmetrized[densityIndex][i]->scale(0.5);
-                        pseudoDensityPointers[densityIndex][i] = pseudoDensitySymmetrized[densityIndex][i]->get_pointer();
+                        pseudoDensityPointers[densityIndex][i] =
+                            pseudoDensitySymmetrized[densityIndex][i]->get_pointer();
 
                         if (do_K_) {
                             pseudoExchangePointers[densityIndex][i] = K_ao_[psi4Index]->get_pointer();
@@ -286,22 +339,18 @@ void DirectJK::compute_JK() {
                 std::vector<double*> pseudoCoulombPointers(segmentSize, nullptr);
                 for (brianInt i = 0; i < segmentSize; i++) {
                     if (do_J_) {
-                        // we always write the total coulomb into the densityIndex == 0 matrix, and later divide it if necessary
-                        brianInt psi4Index = brianCPHFLeftSideFlag ? (0 * derivativeCount + segmentStartIndex + i) : ((segmentStartIndex + i) * densityCount + 0);
+                        // we always write the total coulomb into the densityIndex == 0 matrix, and later divide it if
+                        // necessary
+                        brianInt psi4Index = brianCPHFLeftSideFlag ? (0 * derivativeCount + segmentStartIndex + i)
+                                                                   : ((segmentStartIndex + i) * densityCount + 0);
                         pseudoCoulombPointers[i] = J_ao_[psi4Index]->get_pointer();
                     }
                 }
 
-                brianCPHFBuildRepulsion(&brianCookie,
-                    &computeCoulomb,
-                    &computeExchange,
-                    &segmentSize,
-                    pseudoDensityPointers[0].data(),
-                    (densityCount > 1) ? pseudoDensityPointers[1].data() : nullptr,
-                    pseudoCoulombPointers.data(),
-                    pseudoExchangePointers[0].data(),
-                    (densityCount > 1) ? pseudoExchangePointers[1].data() : nullptr
-                );
+                brianCPHFBuildRepulsion(
+                    &brianCookie, &computeCoulomb, &computeExchange, &segmentSize, pseudoDensityPointers[0].data(),
+                    (densityCount > 1) ? pseudoDensityPointers[1].data() : nullptr, pseudoCoulombPointers.data(),
+                    pseudoExchangePointers[0].data(), (densityCount > 1) ? pseudoExchangePointers[1].data() : nullptr);
                 checkBrian();
 
                 // BrianQC computes the sum of all Coulomb contributions into
@@ -312,12 +361,15 @@ void DirectJK::compute_JK() {
                 if (do_J_) {
                     for (brianInt i = 0; i < segmentSize; i++) {
                         if (brianRestrictionType == BRIAN_RESTRICTION_TYPE_RHF) {
-                            brianInt psi4Index = brianCPHFLeftSideFlag ? (0 * derivativeCount + segmentStartIndex + i) : ((segmentStartIndex + i) * densityCount + 0);
+                            brianInt psi4Index = brianCPHFLeftSideFlag ? (0 * derivativeCount + segmentStartIndex + i)
+                                                                       : ((segmentStartIndex + i) * densityCount + 0);
                             J_ao_[psi4Index]->scale(0.5);
                         }
 
                         for (brianInt densityIndex = 1; densityIndex < densityCount; densityIndex++) {
-                            brianInt psi4Index = brianCPHFLeftSideFlag ? (densityIndex * derivativeCount + segmentStartIndex + i) : ((segmentStartIndex + i) * densityCount + densityIndex);
+                            brianInt psi4Index = brianCPHFLeftSideFlag
+                                                     ? (densityIndex * derivativeCount + segmentStartIndex + i)
+                                                     : ((segmentStartIndex + i) * densityCount + densityIndex);
                             J_ao_[psi4Index]->zero();
                         }
                     }
@@ -334,13 +386,29 @@ void DirectJK::compute_JK() {
         int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
         double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
         double Dnorm = Process::environment.globals["SCF D NORM"];
-        // Do IFB on this iteration?
-        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
-        
+
+        // Incremental Fock build requires all conditions to be met:
+        // 1. Dnorm >= incfock_conv: density change above threshold for incremental to be worthwhile
+        // 2. Not initial iteration: first JK call must do full build to establish baseline
+        // 3. D_prev_ ready: previous density matrices available and correct size
+        // 4. Full build done: at least one full build since last clear_D_prev (ensures D_prev_ provenance)
+        // 5. Not periodic reset: every INCFOCK_FULL_FOCK_EVERY iterations, force full rebuild
+        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (D_prev_.size() == D_ao_.size()) &&
+                           !incfock_needs_full_build_ && (incfock_count_ % reset != reset - 1);
+
+        // After a full build in the IncFock regime, incremental builds can resume.
+        // Also clear after initial iteration (to enable IncFock on iter 2).
+        // But NOT when Dnorm < incfock_conv (SOSCF phase) - D_prev_ from SOSCF
+        // has different provenance and shouldn't seed DIIS incremental builds.
+        if (!do_incfock_iter_ && (initial_iteration_ || Dnorm >= incfock_conv)) {
+            incfock_needs_full_build_ = false;
+        }
+
+        // Count iterations for periodic reset
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
-        
+
         incfock_setup();
-	
+
         timer_off("DirectJK: INCFOCK Preprocessing");
     } else {
         D_ref_ = D_ao_;
@@ -348,37 +416,55 @@ void DirectJK::compute_JK() {
     }
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
-    
+
+    // Disable delta-density screening when Dnorm is small to prevent over-screening
+    // of diffuse shell quartets.
+    if (incfock_) {
+        double diffuse_cutoff = options_.get_double("INCFOCK_DIFFUSE_CUTOFF");
+        double screening_threshold = cutoff_ / diffuse_cutoff;
+        double Dnorm = Process::environment.globals["SCF D NORM"];
+        use_incfock_screening_ = (Dnorm >= screening_threshold);
+    }
+
     // Passed in as a dummy when J (and/or K) is not built
     std::vector<SharedMatrix> temp;
 
+    // Build wK (long-range exchange for range-separated functionals)
+    // NOTE: J is NOT built here - it will be built with standard ERI in the J/K block below.
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
-        if (density_screening_) ints[0]->update_density(D_ref_);
+        if (density_screening_) ints[0]->update_density(D_ao_);
+
+        // Setup incfock BEFORE cloning - clones inherit data via copy constructor
+        if (do_incfock_iter_) {
+            ints[0]->update_delta_density(D_ref_);
+            ints[0]->set_incfock_screening(use_incfock_screening_);
+        }
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
-        if (do_J_) {
-            build_JK_matrices(ints, D_ref_, J_ao_, wK_ao_);
-        } else {
-            build_JK_matrices(ints, D_ref_, temp, wK_ao_);
-        }
+        build_JK_matrices(ints, D_ref_, temp, wK_ao_, nullptr, &wK_prev_);
     }
 
     if (do_J_ || do_K_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
-        if (density_screening_) ints[0]->update_density(D_ref_);
+        if (density_screening_) ints[0]->update_density(D_ao_);
+
+        if (do_incfock_iter_) {
+            ints[0]->update_delta_density(D_ref_);
+            ints[0]->set_incfock_screening(use_incfock_screening_);
+        }
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
         if (do_J_ && do_K_) {
-            build_JK_matrices(ints, D_ref_, J_ao_, K_ao_);
+            build_JK_matrices(ints, D_ref_, J_ao_, K_ao_, &J_prev_, &K_prev_);
         } else if (do_J_) {
-            build_JK_matrices(ints, D_ref_, J_ao_, temp);
+            build_JK_matrices(ints, D_ref_, J_ao_, temp, &J_prev_, nullptr);
         } else {
-            build_JK_matrices(ints, D_ref_, temp, K_ao_);
+            build_JK_matrices(ints, D_ref_, temp, K_ao_, nullptr, &K_prev_);
         }
     }
 
@@ -393,26 +479,33 @@ void DirectJK::compute_JK() {
 void DirectJK::postiterations() {}
 
 void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
-                        std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K) {
-
+                                 std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K,
+                                 std::vector<SharedMatrix>* J_prev, std::vector<SharedMatrix>* K_prev) {
     bool build_J = (!J.empty());
     bool build_K = (!K.empty());
 
     if (!build_J && !build_K) return;
-    
     timer_on("build_JK_matrices()");
 
-    // => Zeroing... <= //
-    
-    // Ideally, this wouldnt be here at all
-    // It would be better covered in incfock_setup()
-    // But removing this causes a couple of tests to fail for some reason
-    
-    if (!do_incfock_iter_) {
+    // Initialize J and K matrices: copy from prev (IncFock) or zero (full build)
+    const bool have_J_prev = (J_prev != nullptr) && (J_prev->size() == J.size());
+    const bool have_K_prev = (K_prev != nullptr) && (K_prev->size() == K.size());
+
+    if (do_incfock_iter_ && have_J_prev) {
+        for (size_t jki = 0; jki < J.size(); jki++) {
+            J[jki]->copy((*J_prev)[jki]);
+        }
+    } else {
         for (auto& Jmat : J) {
             Jmat->zero();
         }
-    
+    }
+
+    if (do_incfock_iter_ && have_K_prev) {
+        for (size_t jki = 0; jki < K.size(); jki++) {
+            K[jki]->copy((*K_prev)[jki]);
+        }
+    } else {
         for (auto& Kmat : K) {
             Kmat->zero();
         }
@@ -478,7 +571,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
     // => Significant Task Pairs (PQ|-style <= //
 
-    std::vector<std::pair<int, int> > task_pairs;
+    std::vector<std::pair<int, int>> task_pairs;
     for (size_t Ptask = 0; Ptask < ntask; Ptask++) {
         for (size_t Qtask = 0; Qtask < ntask; Qtask++) {
             if (Qtask > Ptask) continue;
@@ -519,7 +612,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     std::vector<std::vector<SharedMatrix>> KT;
     if (build_K) {
         for (int thread = 0; thread < nthread; thread++) {
-            std::vector<SharedMatrix > K2;
+            std::vector<SharedMatrix> K2;
             for (size_t ind = 0; ind < D.size(); ind++) {
                 // The factor of 4 or 8 comes from exploiting ERI permutational symmetry
                 K2.push_back(std::make_shared<Matrix>("KT", (lr_symmetric_ ? 4 : 8) * max_task, max_task));
@@ -527,13 +620,13 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
             KT.push_back(K2);
         }
     }
-    
+
     // => Benchmarks <= //
 
     num_computed_shells_ = 0L;
     size_t computed_shells = 0L;
 
-// ==> Master Task Loop <== //
+    // ==> Master Task Loop <== //
 
 #pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
     for (size_t task = 0L; task < ntask_pair2; task++) {
@@ -592,6 +685,9 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
 
+                        // Delta-density screening for incremental Fock build
+                        if (do_incfock_iter_ && !ints[thread]->shell_significant_delta_density(P, Q, R, S)) continue;
+
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
                         // if (thread == 0) timer_on("JK: Ints");
                         if (ints[thread]->compute_shell(P, Q, R, S) == 0)
@@ -619,7 +715,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                         // if (thread == 0) timer_on("JK: GEMV");
                         for (size_t ind = 0; ind < D.size(); ind++) {
                             double** Dp = D[ind]->pointer();
-                            double** JTp; 
+                            double** JTp;
                             if (build_J) JTp = JT[thread][ind]->pointer();
                             double** KTp;
                             if (build_K) KTp = KT[thread][ind]->pointer();
@@ -692,7 +788,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                                                     prefactor * (Dp[p + Poff][q + Qoff] + Dp[q + Qoff][p + Poff]) *
                                                     (*buffer2);
                                             }
-                                            
+
                                             if (build_K) {
                                                 K1p[(p + Poff2) * dRsize + r + Roff2] +=
                                                     prefactor * (Dp[q + Qoff][s + Soff]) * (*buffer2);
@@ -713,7 +809,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                                                         prefactor * (Dp[r + Roff][p + Poff]) * (*buffer2);
                                                 }
                                             }
-                                            
+
                                             buffer2++;
                                         }
                                     }
@@ -731,15 +827,15 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
         // => Stripe out <= //
         if (build_J) {
-	    for (auto& JTmat : JT[thread]) {
+            for (auto& JTmat : JT[thread]) {
                 JTmat->scale(2.0);
-	    }
+            }
         }
-        
+
         if (build_K && lr_symmetric_) {
-	    for (auto& KTmat : KT[thread]) {
+            for (auto& KTmat : KT[thread]) {
                 KTmat->scale(2.0);
-	    }
+            }
         }
 
         // if (thread == 0) timer_on("JK: Atomic");
@@ -753,7 +849,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                 JTp = JT[thread][ind]->pointer();
                 Jp = J[ind]->pointer();
             }
-            
+
             if (build_K) {
                 KTp = KT[thread][ind]->pointer();
                 Kp = K[ind]->pointer();
@@ -789,7 +885,6 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
             }
 
             if (build_J) {
-
                 // > J_PQ < //
 
                 for (int P2 = 0; P2 < nPtask; P2++) {
@@ -834,7 +929,6 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
             }
 
             if (build_K) {
-
                 // > K_PR < //
 
                 for (int P2 = 0; P2 < nPtask; P2++) {

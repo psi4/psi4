@@ -43,6 +43,10 @@ PRAGMA_WARNING_POP
 #include "psi4/libfock/SplitJK.h"
 
 namespace psi {
+
+/// Factor for auto-calculating INCFOCK_CONVERGENCE from D_CONVERGENCE
+constexpr double INCFOCK_CONVERGENCE_FACTOR = 1e-2;
+
 class MinimalInterface;
 class BasisSet;
 class Matrix;
@@ -584,6 +588,12 @@ class PSI_API JK {
     * type on output file
     */
     virtual void print_header() const = 0;
+
+    /**
+     * Force the next compute() to build J/K from scratch, ignoring any cached D_prev_.
+     * Call this before computing J/K for a density unrelated to the SCF iteration sequence.
+     */
+    virtual void require_full_build() {}
 };
 
 // => APPLIED CLASSES <= //
@@ -735,18 +745,37 @@ class PSI_API DirectJK : public JK {
     bool density_screening_;
 
     // => Incremental Fock build variables <= //
-    
+
     /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
-    /// The number of times INCFOCK has been performed (includes resets)
+    /// The number of incremental Fock iterations performed (for periodic full rebuild)
     int incfock_count_;
+    /// Whether this iteration uses incremental Fock build
     bool do_incfock_iter_;
+    /// True when a full Fock build is required before IncFock can resume.
+    /// Set after clear_D_prev() or at initialization; cleared after a full build
+    /// in the IncFock regime (Dnorm >= incfock_conv). This ensures proper
+    /// D_prev_ provenance when transitioning between SCF phases (e.g., DIIS -> SOSCF -> DIIS).
+    bool incfock_needs_full_build_ = true;
+    /// Whether to use delta-density screening (disabled when Dnorm is small)
+    bool use_incfock_screening_ = true;
+    /// Skip saving D_prev_ in postiter (for Hx calls that use different density)
+    bool incfock_skip_save_ = false;
 
     /// Previous iteration pseudo-density matrix
     std::vector<SharedMatrix> D_prev_;
 
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
+
+    /// Previous iteration J matrix (for IncFock accumulation)
+    std::vector<SharedMatrix> J_prev_;
+
+    /// Previous iteration K matrix (for IncFock accumulation)
+    std::vector<SharedMatrix> K_prev_;
+
+    /// Previous iteration wK matrix (for IncFock accumulation, range-separated exchange)
+    std::vector<SharedMatrix> wK_prev_;
 
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
@@ -775,11 +804,14 @@ class PSI_API DirectJK : public JK {
      *
      * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
      * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
-     * @param J The list of AO J matrices to build (Same size as D, 0 if no matrices are to be built)
-     * @param K The list of AO K matrices to build (Same size as D, 0 if no matrices are to be built)
+     * @param J The list of AO J matrices to build (Same size as D, empty if no J to build)
+     * @param K The list of AO K matrices to build (Same size as D, empty if no K to build)
+     * @param J_prev Previous J matrices for INCFOCK accumulation (nullptr = start from zero)
+     * @param K_prev Previous K matrices for INCFOCK accumulation (nullptr = start from zero)
      */
     void build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
-                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K);
+                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K,
+                  std::vector<SharedMatrix>* J_prev = nullptr, std::vector<SharedMatrix>* K_prev = nullptr);
 
     /// Common initialization
     void common_init();
@@ -787,7 +819,7 @@ class PSI_API DirectJK : public JK {
     /**
     * Return number of ERI shell quartets computed during the JK build process.
     */
-    size_t num_computed_shells() override; 
+    size_t num_computed_shells() override;
 
    public:
     // => Constructors < = //
@@ -813,6 +845,26 @@ class PSI_API DirectJK : public JK {
 
     // => Accessors <= //
     bool do_incfock_iter() { return do_incfock_iter_; }
+
+    /**
+     * Clear previous density/Fock matrices and reset IncFock state.
+     * Forces a full Fock rebuild before incremental builds can resume.
+     * Called when density matrix provenance changes (e.g., entering SOSCF phase).
+     */
+    void clear_D_prev() {
+        D_prev_.clear();
+        J_prev_.clear();
+        K_prev_.clear();
+        wK_prev_.clear();
+        incfock_needs_full_build_ = true;
+        incfock_count_ = 0;
+    }
+
+    /// Force full build and skip D_prev_ save (preserves SCF density reference)
+    void require_full_build() override {
+        incfock_needs_full_build_ = true;
+        incfock_skip_save_ = true;
+    }
 
     /**
     * Print header information regarding JK
@@ -1228,9 +1280,16 @@ class PSI_API CompositeJK : public JK {
     
     /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
-    /// The number of times INCFOCK has been performed (includes resets)
+    /// The number of incremental Fock iterations performed (for periodic full rebuild)
     int incfock_count_;
+    /// Whether this iteration uses incremental Fock build
     bool do_incfock_iter_;
+    /// True when a full Fock build is required before IncFock can resume.
+    /// Set after clear_D_prev() or at initialization; cleared after a full build
+    /// in the IncFock regime (Dnorm >= incfock_conv).
+    bool incfock_needs_full_build_ = true;
+    /// Skip saving D_prev_ in postiter (for Hx calls that use different density)
+    bool incfock_skip_save_ = false;
 
     /// Previous iteration pseudo-density matrix
     std::vector<SharedMatrix> D_prev_;
@@ -1238,9 +1297,15 @@ class PSI_API CompositeJK : public JK {
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
 
+    /// Previous iteration J matrix (for IncFock accumulation)
+    std::vector<SharedMatrix> J_prev_;
+
+    /// Previous iteration K matrix (for IncFock accumulation)
+    std::vector<SharedMatrix> K_prev_;
+
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
-  
+
     size_t memory_estimate() override;
 
     // => Required Algorithm-Specific Methods <= //
@@ -1284,9 +1349,22 @@ class PSI_API CompositeJK : public JK {
     bool do_incfock_iter() { return do_incfock_iter_; }
 
     /**
-     * Clear D_prev_
+     * Clear previous density/Fock matrices and reset IncFock state.
+     * Forces a full Fock rebuild before incremental builds can resume.
      */
-    void clear_D_prev() { D_prev_.clear();}
+    void clear_D_prev() {
+        D_prev_.clear();
+        J_prev_.clear();
+        K_prev_.clear();
+        incfock_needs_full_build_ = true;
+        incfock_count_ = 0;
+    }
+
+    /// Force full build and skip D_prev_ save (preserves SCF density reference)
+    void require_full_build() override {
+        incfock_needs_full_build_ = true;
+        incfock_skip_save_ = true;
+    }
 
     // => Knobs <= //
     std::string name() override { return j_algo_->name() + "+" + k_algo_->name(); }
