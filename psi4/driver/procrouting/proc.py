@@ -1671,8 +1671,8 @@ def _set_external_potentials_to_wavefunction(external_potential: Union[List, Dic
             diffmol = core.Molecule.from_arrays(
                 units="Bohr",
                 geom=geom,
-                elem = ["He" for _ in widths],
-                real = [False for _ in widths],
+                elem = ["He"] * len(widths),
+                real = [False] * len(widths),
                 elbl = [f"@He_{iat+1}" for iat in range(len(widths))],
                 fix_symmetry="c1",
                 fix_com=True,

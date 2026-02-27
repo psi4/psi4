@@ -2141,7 +2141,7 @@ def fsapt_analysis(
     if isinstance(source, str):
         if print_output:
             print(f"Running fsapt_analysis through output files with {source = }")
-        if pathlib.Path(f"{source}/Elst.dat").is_file() is False:
+        if not pathlib.Path(f"{source}/Elst.dat").is_file():
             raise ValidationError(f"fsapt_analysis {source=} is not a suitable fsapt/ directory.")
         with open(f"{source}/fA.dat", "w") as f:
             for k, v in fragments_a.items():
