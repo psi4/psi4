@@ -3617,11 +3617,11 @@ bool test_matrix_dpd_interface() {
     std::vector<int> cachefiles(PSIO_MAXUNIT);
     auto cachelist = init_int_matrix(5, 5);
 
-    std::vector<int *> spaces;
-    spaces.push_back(dimpi);
     std::vector<int> sym_vec {0, 0, 3, 0, 2, 0, 3};
-    spaces.push_back(sym_vec.data());
-    dpd_init(0, 4, 500e6, 0, cachefiles.data(), cachelist, nullptr, 1, spaces);
+
+    std::vector<std::pair<Dimension, int *>> spaces;
+    spaces.emplace_back(dimpi, sym_vec.data());
+    dpd_init(0, 4, 500e6, 0, cachefiles.data(), cachelist, nullptr, spaces);
     dpd_list[0]->file2_init(&io, PSIF_OEI, 2, 0, 0, "Test Matrix");
     mat.write_to_dpdfile2(&io);
     Matrix mat2(&io);
