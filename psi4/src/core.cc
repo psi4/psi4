@@ -60,6 +60,10 @@
 
 #include "python_data_type.h"
 
+#ifdef USING_cuEST
+#include "psi4/libfock/cuESTCommon.h"
+#endif
+
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
@@ -148,16 +152,16 @@ void cuest_init() {
     }
     // Declare & create the cuEST parameters and handle with reasonable defaults. Destroy param promptly.
     cuestHandleParameters_t handle_parameters;
-    cuestParametersCreate(CUEST_HANDLE_PARAMETERS, &handle_parameters);
-    cuestCreate(handle_parameters, &cuest_handle);
-    cuestParametersDestroy(CUEST_HANDLE_PARAMETERS, handle_parameters);
+    CHECK_CUEST(cuestParametersCreate(CUEST_HANDLE_PARAMETERS, &handle_parameters));
+    CHECK_CUEST(cuestCreate(handle_parameters, &cuest_handle));
+    CHECK_CUEST(cuestParametersDestroy(CUEST_HANDLE_PARAMETERS, handle_parameters));
 }
 
 void cuest_release() {
     if (cuest_handle == 0) {
         throw PSIEXCEPTION("Attempting to release the cuEST module when it hasn't been initialized\n");
     }
-    cuestDestroy(cuest_handle);
+    CHECK_CUEST(cuestDestroy(cuest_handle));
     cuest_handle = 0;
 }
 #endif
