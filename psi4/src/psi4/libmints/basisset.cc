@@ -60,6 +60,12 @@
 #include <map>
 #include <list>
 
+#ifdef USING_cuEST
+#include <cuest.h>
+#include "psi4/libfock/cuESTCommon.h"
+extern cuestHandle_t cuest_handle;
+#endif
+
 using namespace psi;
 
 bool BasisSet::initialized_shared_ = false;
@@ -121,7 +127,11 @@ BasisSet::BasisSet() {
                                uerd_coefficients_.data(), uexponents_.data(), GaussianType(0), 0, xyz_.data(), 0);
 }
 
-BasisSet::~BasisSet() {}
+BasisSet::~BasisSet() {
+#ifdef USING_cuEST
+    cuest_basis_finalize();
+#endif
+}
 
 std::shared_ptr<BasisSet> BasisSet::build(std::shared_ptr<Molecule> /*molecule*/,
                                           const std::vector<ShellInfo> & /*shells*/) {
@@ -862,6 +872,10 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
             }
         }
     }
+
+#ifdef USING_cuEST
+    cuest_basis_initialize();
+#endif
 }
 
 void BasisSet::update_l2_shells(bool embed_normalization) {
@@ -1283,3 +1297,67 @@ void BasisSet::negative_gaussian_normalization_to_coefficients() {
   // the usual renormalization steps
   update_l2_shells(false);
 }
+
+#ifdef USING_cuEST
+void BasisSet::cuest_basis_initialize()
+{
+    int natom = molecule_->natom();
+
+    cuestAOShellParameters_t shell_params;
+    CHECK_CUEST(cuestParametersCreate(CUEST_AOSHELL_PARAMETERS, reinterpret_cast<void**>(&shell_params)));
+
+    std::vector<cuestAOShell_t> shells_out;
+    std::vector<uint64_t> shells_per_atom(natom);
+
+    for (int A = 0; A < natom; A++) {
+        int nshell_on_atom = nshell_on_center(A);
+        shells_per_atom[A] = static_cast<uint64_t>(nshell_on_atom);
+        for (int Q = 0; Q < nshell_on_atom; Q++) {
+            int shell_idx = shell_on_center(A, Q);
+            const GaussianShell& gshell = shell(shell_idx);
+            cuestAOShell_t cuest_shell;
+            CHECK_CUEST(cuestAOShellCreate(cuest_handle, gshell.is_pure() ? 1 : 0,
+                                           static_cast<uint64_t>(gshell.am()),
+                                           static_cast<uint64_t>(gshell.nprimitive()),
+                                           gshell.exps(), gshell.coefs(), shell_params, &cuest_shell));
+            shells_out.push_back(cuest_shell);
+        }
+    }
+    cuestParametersDestroy(CUEST_AOSHELL_PARAMETERS, shell_params);
+
+    cuestAOBasisParameters_t basis_params;
+    CHECK_CUEST(cuestParametersCreate(CUEST_AOBASIS_PARAMETERS, reinterpret_cast<void**>(&basis_params)));
+
+    cuestWorkspaceDescriptor_t persistent_desc = {}, temp_desc = {};
+    CHECK_CUEST(cuestAOBasisCreateWorkspaceQuery(cuest_handle, static_cast<uint64_t>(natom),
+        shells_per_atom.data(), shells_out.data(), basis_params, &persistent_desc, &temp_desc, nullptr));
+
+    cuest_basis_ws_ptr_ = new cuestWorkspace_t{};
+    cuest_common::alloc_workspace(persistent_desc, *cuest_basis_ws_ptr_);
+    cuestWorkspace_t temp_ws = {};
+    cuest_common::alloc_workspace(temp_desc, temp_ws);
+
+    CHECK_CUEST(cuestAOBasisCreate(cuest_handle, static_cast<uint64_t>(natom),
+        shells_per_atom.data(), shells_out.data(), basis_params, cuest_basis_ws_ptr_, &temp_ws, &cuest_basis_));
+
+    cuest_common::free_workspace(temp_ws);
+    cuestParametersDestroy(CUEST_AOBASIS_PARAMETERS, basis_params);
+
+    for (auto& s : shells_out) cuestAOShellDestroy(s);
+    shells_out.clear();
+}
+
+void BasisSet::cuest_basis_finalize()
+{
+    if (cuest_basis_ != nullptr) {
+        cuestAOBasisDestroy(cuest_basis_);
+        cuest_basis_ = nullptr;
+    }
+    if (cuest_basis_ws_ptr_ != nullptr) {
+        cuest_common::free_workspace(*cuest_basis_ws_ptr_);
+        delete cuest_basis_ws_ptr_;
+        cuest_basis_ws_ptr_ = nullptr;
+    }
+}
+#endif
+
