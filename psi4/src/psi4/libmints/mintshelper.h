@@ -35,6 +35,10 @@
 
 #include <vector>
 
+#ifdef USING_cuEST
+#include <cuest.h>
+#endif
+
 namespace psi {
 
 class CdSalcList;
@@ -118,6 +122,22 @@ class PSI_API MintsHelper {
     SharedMatrix so_kinetic_nr();
     /// Returns the non-relativistic potential integrals in the so basis
     SharedMatrix so_potential_nr(bool include_perturbations = true);
+
+#ifdef USING_cuEST
+   protected:
+    cuestAOPairList_t cuest_pair_list_ = nullptr;
+    cuestWorkspace_t* cuest_pair_list_ws_ptr_ = nullptr;
+
+    cuestOEIntPlan_t cuest_oeint_plan_ = nullptr;
+    cuestWorkspace_t* cuest_oeint_plan_ws_ptr_ = nullptr;
+
+    void cuest_initialize();
+    void cuest_finalize();
+
+   public:
+    cuestAOPairList_t cuest_pair_list() { return cuest_pair_list_; };
+    cuestOEIntPlan_t cuest_oeint_plan() { return cuest_oeint_plan_; };
+#endif
 
    public:
     /// Class initialization from Wavefunction

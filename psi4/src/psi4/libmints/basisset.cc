@@ -129,7 +129,7 @@ BasisSet::BasisSet() {
 
 BasisSet::~BasisSet() {
 #ifdef USING_cuEST
-    cuest_basis_finalize();
+    cuest_finalize();
 #endif
 }
 
@@ -874,7 +874,7 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
     }
 
 #ifdef USING_cuEST
-    cuest_basis_initialize();
+    cuest_initialize();
 #endif
 }
 
@@ -1299,7 +1299,7 @@ void BasisSet::negative_gaussian_normalization_to_coefficients() {
 }
 
 #ifdef USING_cuEST
-void BasisSet::cuest_basis_initialize()
+void BasisSet::cuest_initialize()
 {
     int natom = molecule_->natom();
 
@@ -1347,7 +1347,7 @@ void BasisSet::cuest_basis_initialize()
     shells_out.clear();
 }
 
-void BasisSet::cuest_basis_finalize()
+void BasisSet::cuest_finalize()
 {
     if (cuest_basis_ != nullptr) {
         cuestAOBasisDestroy(cuest_basis_);
