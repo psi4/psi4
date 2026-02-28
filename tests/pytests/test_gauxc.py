@@ -15,7 +15,7 @@ from addons import uusing
 ])
 @pytest.mark.parametrize("symmetry", [
     pytest.param({'on': True}, id='sym-true'),
-    pytest.param({'off': False}, id='sym-false', marks=pytest.mark.xfail),
+    pytest.param({'on': False}, id='sym-false'),
 ])
 @pytest.mark.parametrize("basis", [
     pytest.param({'name': "sto-6g"}, id='sto6g'),
