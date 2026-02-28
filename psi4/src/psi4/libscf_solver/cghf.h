@@ -33,15 +33,41 @@
 #include "psi4/libfock/v.h"
 #include "hf.h"
 
+#ifdef USING_Einsums
 #include <Einsums/Config.hpp>
 #include <Einsums/Tensor.hpp>
 
-#ifndef SharedBlockTensor
-#define SharedBlockTensor std::shared_ptr<einsums::BlockTensor<std::complex<double>, 2>>
+using SharedBlockTensor = std::shared_ptr<einsums::BlockTensor<std::complex<double>, 2>>;
 #endif
 
 namespace psi {
 namespace scf {
+
+#ifndef USING_Einsums
+class CGHF : public HF {
+   public:
+    CGHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func)
+      :HF(ref_wfn, func, Process::environment.options, PSIO::shared_object()) {
+        throw PSIEXCEPTION("Psi4 not built with Einsums. CGHF not available.");
+    };
+
+    CGHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Options& options, std::shared_ptr<PSIO> psio)
+      :HF(ref_wfn, func, options, psio) {
+        throw PSIEXCEPTION("Psi4 not built with Einsums. CGHF not available.");
+    }
+
+    // Required for export_wavefunction to build
+    double compute_Dnorm() {return 0.0;}
+    void preiterations() {};
+    void form_FDSmSDF() {};
+
+    // Required to build
+    std::shared_ptr<UV> potential_;
+    std::shared_ptr<VBase> V_potential() const override { return potential_; };
+
+    ~CGHF() override {};
+};
+#else
 
 class CGHF : public HF {
    public:
@@ -106,7 +132,7 @@ class CGHF : public HF {
     bool same_a_b_orbs() const { return false; }
     bool same_a_b_dens() const { return false; }
 
-    // Empty functions for no (TODO later)
+    // Empty functions for now (TODO later)
     std::shared_ptr<UV> potential_;
     std::shared_ptr<VBase> V_potential() const override { return potential_; };
 
@@ -163,6 +189,7 @@ class CGHF : public HF {
     std::vector<int> irrep_sizes_;  // Since GHF is spin-blocked, each irrep (h) size will be 2*nsopi_[h]
     std::vector<int> nelecpi_;      // Number of electrons per irrep
 };
+#endif
 
 }  // namespace scf
 }  // namespace psi

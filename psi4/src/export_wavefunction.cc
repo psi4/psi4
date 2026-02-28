@@ -441,10 +441,6 @@ void export_wavefunction(py::module& m) {
         .def("compute_Dnorm", &scf::CGHF::compute_Dnorm)
         .def("preiterations", &scf::CGHF::preiterations)
         .def("form_einsums_FDSmSDF", &scf::CGHF::form_FDSmSDF)
-        .def("c1_deep_copy", &scf::CGHF::c1_deep_copy,
-             "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
-             "BasisSet *basis*",
-             "basis"_a)
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")

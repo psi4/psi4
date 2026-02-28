@@ -45,14 +45,18 @@
 
 #include "cghf.h"
 
+#ifdef USING_Einsums
 #include <Einsums/LinearAlgebra.hpp>
 #include <Einsums/TensorAlgebra.hpp>
 #include <Einsums/Runtime.hpp>
 
 using ComplexMatrix = einsums::BlockTensor<std::complex<double>, 2>;
+#endif
 
 namespace psi {
 namespace scf {
+
+#ifdef USING_Einsums
 
 CGHF::CGHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func)
     : HF(ref_wfn, func, Process::environment.options, PSIO::shared_object()) {
@@ -636,6 +640,8 @@ std::shared_ptr<CGHF> CGHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
     return hf_wfn;
 }
+
+#endif
 
 }  // namespace scf
 }  // namespace psi
