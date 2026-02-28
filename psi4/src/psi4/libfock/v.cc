@@ -1405,7 +1405,13 @@ void RV::compute_V_gauxc(std::vector<SharedMatrix>& ret) {
     }
 #endif
 
-    ret[0]->copy(Matrix(v_xc));
+    // Set the result
+    auto ao_result = std::make_shared<Matrix>(v_xc);
+    if (AO2USO_) {
+        ret[0]->apply_symmetry(ao_result, AO2USO_);
+    } else {
+        ret[0]->copy(ao_result);
+    }
 
     quad_values_["VV10"] = 0.0;
     quad_values_["FUNCTIONAL"] = e_xc;
