@@ -38,7 +38,9 @@ foreach(test_name aediis-1
                   cc4 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc4a
                   cc50 cc51 cc52 cc53 cc54 cc55 cc56 cc5 cc6 cc7 cc8 cc8a cc8b cc8c
                   cc9 cc9a cdomp2-1 cdomp2-2 cdoremp-energy1 cdoremp-energy2 cdremp-1 cdremp-2 cepa1
-                  cepa2 cepa3 cepa-module ci-multi cisd-h2o+-0 cisd-h2o+-1
+                  cepa2 cepa3 cepa-module
+                  cghf1 cghf2 cghf3 cghf4 cghf5 cghf6
+                  ci-multi cisd-h2o+-0 cisd-h2o+-1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2
                   ci-property cubeprop cubeprop-frontier decontract dct-grad1 dct-grad2
                   dct-grad3 dct-grad4 dct1 dct2 dct3 dct4 dct5 dct6 dct7 dct8 dct9
@@ -97,7 +99,6 @@ foreach(test_name aediis-1
                   scf-guess-read2 scf-guess-read3 scf1 scf-occ scf2 scf3 scf4 scf5 scf6
                   scf7 scf-level-shift-rks scf-level-shift-uhf scf-level-shift-cuhf scf-level-shift-rohf
                   scf-property soscf-large soscf-ref
-		  cghf1 cghf2 cghf3 cghf4 cghf5
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
                   stability2 stability3 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 scf-response2 scf-response3
                   scf-cholesky-basis scf-auto-cholesky

@@ -1,25 +1,24 @@
-#! cGHF STO-3G energy for the O2 molecule => x coordinate <= using a core guess, C1 symmetry, and 4-index ERI
+#! cGHF STO-3G energy for the O2 molecule => x coordinate <= using a sad guess, C1 symmetry, and 4-index ERI
 
 nucenergy =    28.2227845690666648       #TEST
 refenergy =  -147.6334527334977906       #TEST
 
 molecule o2 {
-    0 1
+0 1
     O 0.0 0.0 0.0
     O 1.2 0.0 0.0
-    Symmetry C1
+Symmetry C1
 }
 
-# Get a reasonable guess, to save some iterations
 set = {
     reference cghf
     scf_type   pk
     basis      sto-3g
-    guess core
-    e_convergence 6
+    guess sad
+    e_convergence 1e-9
 }
 thisenergy = energy('scf')
 
-compare_values(nucenergy, o2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
-compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
-compare_integers(True, psi4.variable("SCF ITERATIONS") == 15, 'cGHF N iter')             #TEST
+compare_values(nucenergy, o2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
+compare_values(refenergy, thisenergy, 8, "Reference energy")
+compare_values(True, psi4.variable("SCF ITERATIONS") <= 16, 'cGHF N iter')

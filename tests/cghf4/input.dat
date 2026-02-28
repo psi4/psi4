@@ -1,25 +1,22 @@
-#! cGHF STO-3G energy for the O2 molecule => y coordinate <= using a core guess, C1 symmetry, and 4-index ERI
+#! cGHF 6-31g energy for F2 (stretched geom) using core guess, C1 symmetry, and 4-index ERI
 
-nucenergy =    28.2227845690666648       #TEST
-refenergy =  -147.6334527334979612       #TEST
+refenergy =  -198.5531476490012
 
-molecule o2 {
-    0 1
-    O 0.0 0.0 0.0
-    O 0.0 1.2 0.0
-    Symmetry C1
+molecule f2 {
+0 1
+    F 0.0 0.0 0.0
+    F 0.0 0.0 1.9
+Symmetry C1
 }
 
-# Get a reasonable guess, to save some iterations
-set = {
+set {
     reference cghf
-    scf_type   pk
-    basis      sto-3g
-    guess core
-    e_convergence 6
+    scf_type pk
+    diis false
+    basis 6-31g
+    e_convergence 1e-9
 }
 thisenergy = energy('scf')
 
-compare_values(nucenergy, o2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
-compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
-compare_integers(True, psi4.variable("SCF ITERATIONS") == 15, 'cGHF N iter')             #TEST
+compare_values(refenergy, thisenergy, 8, "Reference energy")
+compare_values(True, psi4.variable("SCF ITERATIONS") <= 16, 'cGHF N iter')

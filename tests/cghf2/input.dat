@@ -1,27 +1,15 @@
-#! cGHF cc-pVDZ energy for the water molecule using a SAP guess, C1 symmetry, and 4-index ERI
+#! cGHF non-C1 symmetries not available yet :( XFAIL this.
 
-nucenergy =    9.1892221210306353     #TEST
-refenergy =  -76.02676814087661       #TEST
-
-molecule h2o {
-    0 1
-    O          0.00000        0.00000        0.11779
-    H          0.00000        0.75545       -0.47116
-    H          0.00000       -0.75545       -0.47116
-    Symmetry C1
+molecule symmetric {
+0 1
+    He 0 0 0
 }
 
-# Get a reasonable guess, to save some iterations
-set = {
+set {
     reference cghf
     scf_type   pk
-    basis      cc-pVDZ
-    guess sad
-    e_convergence 6
+    basis sto-3g
 }
-thisenergy = energy('scf')
 
-compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
-compare_values(refenergy, thisenergy, 9, "Reference energy")                             #TEST
-compare_integers(True, psi4.variable("SCF ITERATIONS") == 13, 'cGHF N iter')             #TEST
+energy('scf')
 

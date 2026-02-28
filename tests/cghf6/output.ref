@@ -32,9 +32,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 27 February 2026 09:02PM
+    Psi4 started on: Friday, 27 February 2026 09:03PM
 
-    Process ID: 94470
+    Process ID: 94611
     Host:       
     PSIDATADIR: ./psi4/objdir_p4docs/stage/share/psi4
     Memory:     500.0 MiB
@@ -50,28 +50,30 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! cGHF 6-31g energy for F2 (stretched geom) using core guess, C1 symmetry, and 4-index ERI
+#! cGHF energy for stretched H2 SAD guess, C1 symmetry, and 4-index ERI
 
-refenergy =  -198.5531476490012
+refenergy = -0.82848721523919
 
-molecule f2 {
+molecule h2 {
 0 1
-    F 0.0 0.0 0.0
-    F 0.0 0.0 1.9
-Symmetry C1
+    H 0 0 0
+    H 0 0 3
+symmetry C1
 }
 
 set {
     reference cghf
-    scf_type pk
-    diis false
-    basis 6-31g
+    scf_type   pk
+    basis def2-SVPD
+    guess sad
+    diis_start 1
+    diis_max_vecs 8
     e_convergence 1e-9
 }
 thisenergy = energy('scf')
 
-compare_values(refenergy, thisenergy, 8, "Reference energy")
-compare_values(True, psi4.variable("SCF ITERATIONS") <= 16, 'cGHF N iter')
+compare_values(refenergy, thisenergy, 8, "Reference energy")                            #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") <= 15, 'cGHF N iter')             #TEST
 --------------------------------------------------------------------------
 
 Scratch directory: /tmp/
@@ -83,14 +85,14 @@ Scratch directory: /tmp/
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on dn5.dngroup.chem
-*** at Fri Feb 27 21:02:56 2026
+*** at Fri Feb 27 21:03:26 2026
 
    => Loading Basis Set <=
 
-    Name: 6-31G
+    Name: DEF2-SVPD
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry F          line   132 file ./psi4/objdir_p4docs/stage/share/psi4/basis/6-31g.gbs 
+    atoms 1-2 entry H          line    14 file ./psi4/objdir_p4docs/stage/share/psi4/basis/def2-svpd.gbs 
 
 
          ---------------------------------------------------------
@@ -110,25 +112,25 @@ Scratch directory: /tmp/
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         F            0.000000000000     0.000000000000    -0.950000000000    18.998403162730
-         F            0.000000000000     0.000000000000     0.950000000000    18.998403162730
+         H            0.000000000000     0.000000000000    -1.500000000000     1.007825032230
+         H            0.000000000000     0.000000000000     1.500000000000     1.007825032230
 
   Running in c1 symmetry.
 
-  Rotational constants: A = ************  B =      0.49159  C =      0.49159 [cm^-1]
-  Rotational constants: A = ************  B =  14737.46863  C =  14737.46863 [MHz]
-  Nuclear repulsion =   22.559660033826315
+  Rotational constants: A = ************  B =      3.71705  C =      3.71705 [cm^-1]
+  Rotational constants: A = ************  B = 111434.46811  C = 111434.46811 [MHz]
+  Nuclear repulsion =    0.176392403556667
 
   Charge       = 0
   Multiplicity = 1
-  Electrons    = 18
-  Nalpha       = 9
-  Nbeta        = 9
+  Electrons    = 2
+  Nalpha       = 1
+  Nbeta        = 1
 
   ==> Algorithm <==
 
   SCF Algorithm Type is PK.
-  DIIS disabled.
+  DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
   Guess Type is SAD.
@@ -138,31 +140,38 @@ Scratch directory: /tmp/
 
   ==> Primary Basis <==
 
-  Basis Set: 6-31G
-    Blend: 6-31G
-    Number of shells: 10
-    Number of basis functions: 18
-    Number of Cartesian functions: 18
-    Spherical Harmonics?: false
+  Basis Set: DEF2-SVPD
+    Blend: DEF2-SVPD
+    Number of shells: 8
+    Number of basis functions: 16
+    Number of Cartesian functions: 16
+    Spherical Harmonics?: true
     Max angular momentum: 1
+
+    Occupation by irrep:
+              A 
+    DOCC [     1 ]
+    SOCC [     0 ]
+    NA   [     1 ]
+    NB   [     1 ]
 
   ==> Integral Setup <==
 
   Using in-core PK algorithm.
    Calculation information:
       Number of atoms:                   2
-      Number of AO shells:              10
-      Number of primitives:             28
-      Number of atomic orbitals:        18
-      Number of basis functions:        18
+      Number of AO shells:               8
+      Number of primitives:             12
+      Number of atomic orbitals:        16
+      Number of basis functions:        16
 
       Integral cutoff                 1.00e-12
       Number of threads:                 1
 
   Performing in-core PK
-  Using 29412 doubles for integral storage.
-  We computed 1475 shell quartets total.
-  Whereas there are 1540 unique shell quartets.
+  Using 18632 doubles for integral storage.
+  We computed 666 shell quartets total.
+  Whereas there are 666 unique shell quartets.
 
   ==> DiskJK: Disk-Based J/K Matrices <==
 
@@ -174,8 +183,8 @@ Scratch directory: /tmp/
 
     OpenMP threads:              1
 
-  Minimum eigenvalue in the overlap matrix is 1.6368708659E-01.
-  Reciprocal condition number of the overlap matrix is 7.9959359809E-02.
+  Minimum eigenvalue in the overlap matrix is 1.8670626913E-01.
+  Reciprocal condition number of the overlap matrix is 9.2946989167E-02.
     Using symmetric orthogonalization.
 
   ==> Pre-Iterations <==
@@ -185,31 +194,26 @@ Scratch directory: /tmp/
    -------------------------
     Irrep   Nso     Nmo    
    -------------------------
-     A         18      18 
+     A         16      16 
    -------------------------
-    Total      18      18
+    Total      16      16
    -------------------------
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @CGHF iter SAD:  -198.26106016655913   -1.98261e+02   0.00000e+00 
-   @CGHF iter   1:  -198.48670218822406   -2.25642e-01   5.07770e-01 
-   @CGHF iter   2:  -198.54518029454141   -5.84781e-02   1.91526e-01 
-   @CGHF iter   3:  -198.55208298974503   -6.90270e-03   6.67826e-02 
-   @CGHF iter   4:  -198.55299952090016   -9.16531e-04   2.62038e-02 
-   @CGHF iter   5:  -198.55312663517165   -1.27114e-04   9.59122e-03 
-   @CGHF iter   6:  -198.55314464069050   -1.80055e-05   3.72283e-03 
-   @CGHF iter   7:  -198.55314721609432   -2.57540e-06   1.38898e-03 
-   @CGHF iter   8:  -198.55314758639287   -3.70299e-07   5.34645e-04 
-   @CGHF iter   9:  -198.55314763977535   -5.33825e-08   2.01247e-04 
-   @CGHF iter  10:  -198.55314764748246   -7.70711e-09   7.70776e-05 
-   @CGHF iter  11:  -198.55314764859605   -1.11359e-09   2.91441e-05 
-   @CGHF iter  12:  -198.55314764875675   -1.60696e-10   1.11296e-05 
-   @CGHF iter  13:  -198.55314764878034   -2.35900e-11   4.21860e-06 
-   @CGHF iter  14:  -198.55314764878344   -3.09797e-12   1.60826e-06 
-   @CGHF iter  15:  -198.55314764878398   -5.40012e-13   6.10439e-07 
+   @CGHF iter SAD:    -0.81755248534358   -8.17552e-01   0.00000e+00 
+   @CGHF iter   1:    -0.82280821426862   -5.25573e-03   9.29830e-02 
+   @CGHF iter   2:    -0.82817226243867   -5.36405e-03   2.28809e-02 
+   @CGHF iter   3:    -0.82846269499977   -2.90433e-04   6.63745e-03 
+   @CGHF iter   4:    -0.82848501745881   -2.23225e-05   2.02481e-03 
+   @CGHF iter   5:    -0.82848700903462   -1.99158e-06   6.25152e-04 
+   @CGHF iter   6:    -0.82848719556185   -1.86527e-07   1.93446e-04 
+   @CGHF iter   7:    -0.82848721328561   -1.77238e-08   5.98631e-05 
+   @CGHF iter   8:    -0.82848721497681   -1.69120e-09   1.85196e-05 
+   @CGHF iter   9:    -0.82848721513838   -1.61570e-10   5.72787e-06 
+   @CGHF iter  10:    -0.82848721515545   -1.70732e-11   4.15643e-13 
   Energy and wave function converged.
 
 
@@ -220,19 +224,19 @@ Scratch directory: /tmp/
 
     Final Occupation by Irrep:
               A 
-    DOCC [     9 ]
+    DOCC [     1 ]
     SOCC [     0 ]
-    NA   [     9 ]
-    NB   [     9 ]
+    NA   [     1 ]
+    NB   [     1 ]
 
-  @CGHF Final Energy:  -198.55314764878398
+  @CGHF Final Energy:    -0.82848721515545
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             22.5596600338263151
-    One-Electron Energy =                -322.9862241412643016
-    Two-Electron Energy =                 101.8734164586540061
-    Total Energy =                       -198.5531476487839768
+    Nuclear Repulsion Energy =              0.1763924035566667
+    One-Electron Energy =                  -1.3644715221976729
+    Two-Electron Energy =                   0.3595919034855514
+    Total Energy =                         -0.8284872151554548
 
 Computation Completed
 
@@ -249,26 +253,26 @@ Properties computed using the SCF density matrix
  ------------------------------------------------------------------------------------
 
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
- Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :         -0.0000000            0.0000000           -0.0000000
  Dipole Z            :          0.0000000            0.0000000            0.0000000
  Magnitude           :                                                    0.0000000
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on dn5.dngroup.chem at Fri Feb 27 21:02:56 2026
+*** tstop() called on dn5.dngroup.chem at Fri Feb 27 21:03:26 2026
 Module time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
     Reference energy......................................................................PASSED
     cGHF N iter...........................................................................PASSED
 
-    Psi4 stopped on: Friday, 27 February 2026 09:02PM
-    Psi4 wall time for execution: 0:00:00.14
+    Psi4 stopped on: Friday, 27 February 2026 09:03PM
+    Psi4 wall time for execution: 0:00:00.12
 
 *** Psi4 exiting successfully. Buy a developer a beer!
