@@ -1342,8 +1342,8 @@ if __name__ == "__main__":
     #     ]
     # )
     # test_sapt_dft_compute_ddft_d4_diskdf()
-    test_sapt_dft_diskdf()
-    # test_dftd4()
+    # test_sapt_dft_diskdf()
+    test_dftd4()
     # test_saptdft_disp_methods("DFT-D4(SAPT)", "gd4_supermolecular", -0.005731715146359108)
     # test_saptdft_disp_methods(
     #     "SAPT(DFT)-D4(I)", "intermolecular", -0.0041772889

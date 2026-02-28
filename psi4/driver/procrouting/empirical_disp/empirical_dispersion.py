@@ -35,8 +35,8 @@ from qcelemental.models import AtomicInput
 
 from psi4 import core
 
-from .. import p4util
-from ..p4util.exceptions import ValidationError, UpgradeHelper
+from ... import p4util
+from ...p4util.exceptions import ValidationError, UpgradeHelper
 
 _engine_can_do = collections.OrderedDict([
     # engine order establishes default for each disp
@@ -176,7 +176,7 @@ class EmpiricalDispersion():
 
     """
     def __init__(self, *, name_hint: str = None, level_hint: str = None, param_tweaks: Union[Dict, List] = None, engine: str = None, gcp_engine: str = None, save_pairwise_disp: bool = False):
-        from .dft import dashcoeff_supplement
+        from ..dft import dashcoeff_supplement
         self.dashcoeff_supplement = dashcoeff_supplement
         self.save_pairwise_disp = save_pairwise_disp
 
