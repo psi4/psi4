@@ -176,8 +176,10 @@ class PSI_API BasisSet {
 
 #ifdef USING_cuEST
    protected:
-    void* cuest_basis_ = nullptr;
+    cuestAOBasis_t cuest_basis_ = nullptr;
     cuestWorkspace_t* cuest_basis_ws_ptr_ = nullptr;
+
+    cuestAOBasis_t cuest_basis() { return cuest_basis_; };
 
     void cuest_basis_initialize();
     void cuest_basis_finalize();
