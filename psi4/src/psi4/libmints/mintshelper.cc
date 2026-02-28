@@ -96,6 +96,12 @@ extern brianInt brianRestrictionType;
 
 #endif
 
+#ifdef USING_cuEST
+#include <cuest.h>
+#include "psi4/libfock/cuESTCommon.h"
+extern cuestHandle_t cuest_handle;
+#endif
+
 namespace psi {
 
 /**
@@ -158,7 +164,11 @@ MintsHelper::MintsHelper(std::shared_ptr<Wavefunction> wavefunction)
     init_helper(wavefunction);
 }
 
-MintsHelper::~MintsHelper() {}
+MintsHelper::~MintsHelper() {
+#ifdef USING_cuEST
+    cuest_finalize();
+#endif
+}
 
 void MintsHelper::init_helper(std::shared_ptr<Wavefunction> wavefunction) {
     if (wavefunction->basisset().get() == 0) {
@@ -218,6 +228,10 @@ void MintsHelper::common_init() {
 
     // Integral cutoff
     cutoff_ = Process::environment.options.get_double("INTS_TOLERANCE");
+
+#ifdef USING_cuEST
+    cuest_initialize();
+#endif
 }
 
 std::shared_ptr<PetiteList> MintsHelper::petite_list() const {
@@ -4390,5 +4404,72 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv2(int atom1, int atom2, Share
         }
     return mo_grad;
 }
+
+#ifdef USING_cuEST
+void MintsHelper::cuest_initialize()
+{
+    auto mol = basisset_->molecule();
+    int natom = mol->natom();
+
+    cuestWorkspaceDescriptor_t p_desc = {}, t_desc = {};
+
+    // AO Pair List
+    cuestAOPairListParameters_t pair_params;
+    CHECK_CUEST(cuestParametersCreate(CUEST_AOPAIRLIST_PARAMETERS, reinterpret_cast<void**>(&pair_params)));
+
+    CHECK_CUEST(cuestAOPairListCreateWorkspaceQuery(cuest_handle, basisset_->cuest_basis(),
+        static_cast<uint64_t>(natom), mol->geometry().pointer()[0], cutoff_, pair_params, &p_desc, &t_desc, nullptr));
+
+    cuest_common::alloc_workspace(p_desc, *cuest_pair_list_ws_ptr_);
+    cuestWorkspace_t temp_pair_list_ws = {};
+    cuest_common::alloc_workspace(t_desc, temp_pair_list_ws);
+
+    CHECK_CUEST(cuestAOPairListCreate(cuest_handle, basisset_->cuest_basis(),
+        static_cast<uint64_t>(natom), mol->geometry().pointer()[0], cutoff_, pair_params, cuest_pair_list_ws_ptr_, &temp_pair_list_ws, &cuest_pair_list_));
+
+    cuest_common::free_workspace(temp_pair_list_ws);
+    cuestParametersDestroy(CUEST_AOPAIRLIST_PARAMETERS, pair_params);
+
+    // OEInt Plan
+
+    cuestOEIntPlanParameters_t plan_params;
+    CHECK_CUEST(cuestParametersCreate(CUEST_OEINTPLAN_PARAMETERS, reinterpret_cast<void**>(&plan_params)));
+
+    CHECK_CUEST(cuestOEIntPlanCreateWorkspaceQuery(cuest_handle, basisset_->cuest_basis(),
+        cuest_pair_list_, plan_params, &p_desc, &t_desc, nullptr));
+
+    cuest_common::alloc_workspace(p_desc, *cuest_oeint_plan_ws_ptr_);
+    cuestWorkspace_t temp_oeint_plan_ws = {};
+    cuest_common::alloc_workspace(t_desc, temp_oeint_plan_ws);
+
+    CHECK_CUEST(cuestOEIntPlanCreate(cuest_handle, basisset_->cuest_basis(),
+        cuest_pair_list_, plan_params, cuest_oeint_plan_ws_ptr_, &temp_oeint_plan_ws, &cuest_oeint_plan_));
+
+    cuest_common::free_workspace(temp_oeint_plan_ws);
+    cuestParametersDestroy(CUEST_OEINTPLAN_PARAMETERS, plan_params);
+}
+
+void MintsHelper::cuest_finalize()
+{
+    if (cuest_pair_list_ != nullptr) {
+        cuestAOPairListDestroy(cuest_pair_list_);
+        cuest_pair_list_ = nullptr;
+    }
+    if (cuest_oeint_plan_ != nullptr) {
+        cuestOEIntPlanDestroy(cuest_oeint_plan_);
+        cuest_oeint_plan_ = nullptr;
+    }
+    if (cuest_pair_list_ws_ptr_ != nullptr) {
+        cuest_common::free_workspace(*cuest_pair_list_ws_ptr_);
+        delete cuest_pair_list_ws_ptr_;
+        cuest_pair_list_ws_ptr_ = nullptr;
+    }
+    if (cuest_oeint_plan_ws_ptr_ != nullptr) {
+        cuest_common::free_workspace(*cuest_oeint_plan_ws_ptr_);
+        delete cuest_oeint_plan_ws_ptr_;
+        cuest_oeint_plan_ws_ptr_ = nullptr;
+    }
+}
+#endif
 
 }  // namespace psi
