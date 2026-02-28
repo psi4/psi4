@@ -46,6 +46,10 @@
 #include <algorithm>
 #include <memory>
 
+#ifdef USING_cuEST
+#include <cuest.h>
+#endif
+
 namespace libint2 {
 struct Shell;
 }
@@ -169,6 +173,15 @@ class PSI_API BasisSet {
 
     /// Update Libint2 shells
     void update_l2_shells(bool embed_normalization = true);
+
+#ifdef USING_cuEST
+   protected:
+    void* cuest_basis_ = nullptr;
+    cuestWorkspace_t* cuest_basis_ws_ptr_ = nullptr;
+
+    void cuest_basis_initialize();
+    void cuest_basis_finalize();
+#endif
 
    public:
     BasisSet();
