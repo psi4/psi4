@@ -140,3 +140,15 @@ if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
       USING_OpenOrbitalOptimizer
     )
 endif()
+
+if(TARGET cuEST::cuEST)
+  target_compile_definitions(mints
+    PUBLIC
+      USING_cuEST
+    )
+  target_link_libraries(mints
+    PUBLIC
+      cuEST::cuEST
+    )
+endif()
+
