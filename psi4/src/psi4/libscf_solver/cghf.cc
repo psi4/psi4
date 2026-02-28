@@ -298,8 +298,8 @@ void CGHF::form_C(double shift) {
         // Takes the conjugate transpose of Fp_[h] (e.g. ij -> ji) to give us the proper eigenvectors
         // NOTE: the template parameters <true> states to take the conjugate
         einsums::tensor_algebra::permute<true>(
-            std::complex<double>{0.0}, einsums::Indices{einsums::index::i, einsums::index::j}, &(*temp1_)[h],
-            std::complex<double>{1.0}, einsums::Indices{einsums::index::j, einsums::index::i}, (*Fp_)[h]);
+            std::complex<double>{0.0}, einsums::Indices{einsums::index::i, einsums::index::j}, &temp1_->block(h),
+            std::complex<double>{1.0}, einsums::Indices{einsums::index::j, einsums::index::i}, Fp_->block(h));
     }
 
     // => BACK TRANSFORM <=
@@ -316,12 +316,13 @@ void CGHF::form_C(double shift) {
  */
 void CGHF::form_initial_C() {
     // find_occupation();
-
-    for (int h = 0; h < nirrep_; h++) {
-        for (int p = 0; p < nsopi_[h]; p++) {
-            for (int q = 0; q < nsopi_[h]; q++) {
-                F_->block(h)(p, q) = Fa_->get(h, p, q);
-                F_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
+    if (!sad_) {
+        for (int h = 0; h < nirrep_; h++) {
+            for (int p = 0; p < nsopi_[h]; p++) {
+                for (int q = 0; q < nsopi_[h]; q++) {
+                    F_->block(h)(p, q) = Fa_->get(h, p, q);
+                    F_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
+                }
             }
         }
     }
@@ -341,6 +342,8 @@ void CGHF::compute_SAD_guess(bool natorb) {
             for (int q = 0; q < nsopi_[h]; q++) {
                 D_->block(h)(p, q) = Da_->get(h, p, q);
                 D_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Db_->get(h, p, q);
+                C_->block(h)(p, 2*q) = Ca_->get(h, p, q);
+                C_->block(h)(p + nsopi_[h], 2*q + 1) = Cb_->get(h, p, q);
             }
 }
 
@@ -418,6 +421,7 @@ double CGHF::compute_E() {
 }
 
 double CGHF::compute_initial_E() {
+    // TODO: F0_ is not yet populated
     double one_electron_E = 0.0;
 
     for (int h = 0; h < nirrep_; h++)
@@ -477,7 +481,7 @@ std::complex<double> CGHF::do_diis() {
     // Get collective trace of all irreps
     for (int i = 0; i < nirrep_; i++) {
         for (int j = 0; j < irrep_sizes_[i]; j++) {
-            error_trace += (*ecurr)[i].subscript(j, j);
+            error_trace += ecurr->block(i).subscript(j, j);
         }
     }
 
