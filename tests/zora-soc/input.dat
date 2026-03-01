@@ -1,0 +1,29 @@
+#! Test of ZORA Spin-orbit coupling.
+
+ref_e_so = -2787.5680652543642
+
+molecule kr {
+0 1
+    Kr 0 0 0
+symmetry C1
+}
+
+set {
+    reference cghf
+    scf_type pk
+    e_convergence 1e-9
+    basis 3-21g
+    relativistic zora
+}
+
+e = energy('scf')
+
+set {
+    zora_spin_orbit_coupling true
+}
+
+e_so = energy('scf')
+
+compare_values(True, e_so < e, "ZORA spin-orbit coupling lowers energy")
+compare_values(e_so, ref_e_so, 6, "ZORA spin-orbit energy")
+
