@@ -75,6 +75,9 @@ CGHF::~CGHF() {}
 void CGHF::common_init() {
     name_ = "CGHF";
 
+    // ao_eri lacks irreps and we have no JK object yet so we only support C1
+    if (nirrep_ > 1) throw PSIEXCEPTION("USE C1 SYMMETRY!");
+
     // Some of these are used to pass matrices from HF::guess.
     // However, we get segmentation faults when they are not all defined.
     Ca_ = SharedMatrix(factory_->create_matrix("alpha MO coefficients (C)"));
@@ -297,11 +300,17 @@ void CGHF::form_C(double shift) {
         // Hermitian eigensolver
         einsums::linear_algebra::heev<true>(&Fp_->block(h), &Fevals_[h]);
 
+        for (int i = 0; i < nsopi_[h]; i++) {
+            // Putting half the orbitals in alpha half in beta
+            epsilon_a_->set(h, i, Fevals_[h].subscript(2*i));
+            epsilon_b_->set(h, i, Fevals_[h].subscript(2*i+1));
+        }
+
         // heev retuns the wrong side, so we need to take the inverse (hermitian adjoint)
 
         // Takes the conjugate transpose of Fp_[h] (e.g. ij -> ji) to give us the proper eigenvectors
-        // NOTE: the template parameters <true> states to take the conjugate
-        einsums::tensor_algebra::permute<true>(
+        // NOTE: the template parameters <false> states to NOT take the conjugate
+        einsums::tensor_algebra::permute<false>(
             std::complex<double>{0.0}, einsums::Indices{einsums::index::i, einsums::index::j}, &temp1_->block(h),
             std::complex<double>{1.0}, einsums::Indices{einsums::index::j, einsums::index::i}, Fp_->block(h));
     }
@@ -360,7 +369,6 @@ void CGHF::form_D() {
     temp1_->zero();
     temp2_->zero();
 
-    if (nirrep_ > 1) throw PSIEXCEPTION("USE C1 SYMMETRY!");
 
     // Fills temp1_ and temp2_ with the occupied (2*nsopi_ x nelecpi_) and conjugate
     // occupied matrices (e.g. Cocc)
