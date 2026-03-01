@@ -6,3 +6,11 @@ target_link_libraries(mrcc
   PRIVATE
     pybind11::module
   )
+
+if(TARGET cuEST::cuEST)
+  target_link_libraries(mrcc
+    PUBLIC
+      cuEST::cuEST
+    )
+endif()
+
