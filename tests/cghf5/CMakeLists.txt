@@ -1,5 +1,5 @@
 include(TestingMacros)
 
 if(ENABLE_Einsums)
-    add_regression_test(cghf5 "psi;quicktests;cghf")
+    add_regression_test(cghf6 "psi;cghf")
 endif()

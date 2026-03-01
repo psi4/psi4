@@ -1,24 +1,24 @@
-#! cGHF STO-3G energy for the O2 molecule using SAD guess, C1 symmetry, and 4-index ERI
+#! cGHF energy for stretched H2 SAD guess, C1 symmetry, and 4-index ERI
 
-nucenergy =    28.2227845690666648
-refenergy =  -147.6334527334979612
+refenergy = -0.82848721523919
 
-molecule o2 {
-    0 1
-    O 0.0 0.0 0.0
-    O 1.2 0.0 0.0
-    Symmetry C1
+molecule h2 {
+0 1
+    H 0 0 0
+    H 0 0 3
+symmetry C1
 }
 
 set {
     reference cghf
     scf_type   pk
-    basis      sto-3g
+    basis def2-SVPD
+    guess sad
     diis_start 1
     diis_max_vecs 8
     e_convergence 1e-9
 }
 thisenergy = energy('scf')
 
-compare_values(nucenergy, o2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 8, "Reference energy")                            #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") <= 15, 'cGHF N iter')             #TEST

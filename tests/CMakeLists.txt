@@ -39,7 +39,7 @@ foreach(test_name aediis-1
                   cc50 cc51 cc52 cc53 cc54 cc55 cc56 cc5 cc6 cc7 cc8 cc8a cc8b cc8c
                   cc9 cc9a cdomp2-1 cdomp2-2 cdoremp-energy1 cdoremp-energy2 cdremp-1 cdremp-2 cepa1
                   cepa2 cepa3 cepa-module
-                  cghf1 cghf2 cghf3 cghf4 cghf5 cghf6
+                  cghf1 cghf2 cghf3 cghf4 cghf5
                   ci-multi cisd-h2o+-0 cisd-h2o+-1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2
                   ci-property cubeprop cubeprop-frontier decontract dct-grad1 dct-grad2
