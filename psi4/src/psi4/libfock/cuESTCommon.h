@@ -36,11 +36,19 @@ inline void alloc_workspace(cuestWorkspaceDescriptor_t& desc, cuestWorkspace_t& 
         ws.hostBuffer = reinterpret_cast<uintptr_t>(malloc(desc.hostBufferSizeInBytes));
         ws.hostBufferSizeInBytes = desc.hostBufferSizeInBytes;
     }
+    else {
+        ws.hostBuffer = 0;
+        ws.hostBufferSizeInBytes = 0;
+    }
     if (desc.deviceBufferSizeInBytes > 0) {
         void* dev_ptr = nullptr;
         cudaMalloc(&dev_ptr, desc.deviceBufferSizeInBytes);
         ws.deviceBuffer = reinterpret_cast<uintptr_t>(dev_ptr);
         ws.deviceBufferSizeInBytes = desc.deviceBufferSizeInBytes;
+    }
+    else {
+        ws.deviceBuffer = 0;
+        ws.deviceBufferSizeInBytes = 0;
     }
 }
 
@@ -129,6 +137,78 @@ inline cuestAOPairList_t build_cuest_pairlist(cuestAOBasis_t basis, int natom,
     free_workspace(temp_ws);
     cuestParametersDestroy(CUEST_AOPAIRLIST_PARAMETERS, pair_params);
     return pair_list;
+}
+
+inline cuestWorkspace_t* allocateWorkspace(const cuestWorkspaceDescriptor_t* workspaceDescriptor)
+{
+    /* Check that a valid workspace descriptor has been provided. */
+    if (workspaceDescriptor == NULL) {
+        fprintf(stderr, "Invalid argument: workspaceDescriptor must not be NULL\n");
+        exit(EXIT_FAILURE);
+    }
+
+    /* Allocate the workspace structure. */
+    cuestWorkspace_t* workspace = (cuestWorkspace_t*) malloc(sizeof(cuestWorkspace_t));
+    if (!workspace) {
+        fprintf(stderr, "Failed to allocate cuestWorkspace_t struct\n");
+        exit(EXIT_FAILURE);
+    }
+
+    /* Set the length of the host and device buffers. */
+    workspace->hostBufferSizeInBytes   = workspaceDescriptor->hostBufferSizeInBytes;
+    workspace->deviceBufferSizeInBytes = workspaceDescriptor->deviceBufferSizeInBytes;
+    workspace->hostBuffer              = (uintptr_t) NULL;
+    workspace->deviceBuffer            = (uintptr_t) NULL;
+
+    /* Allocate the host buffer if the size is non-zero. */
+    if (workspace->hostBufferSizeInBytes) {
+        void* hostPtr = (void*) malloc(workspace->hostBufferSizeInBytes);
+        if (!hostPtr) {
+            fprintf(stderr, "Failed to allocate host buffer\n");
+            free(workspace);
+            exit(EXIT_FAILURE);
+        }
+        workspace->hostBuffer = (uintptr_t) hostPtr;
+    }
+
+    /* Allocate the device buffer if the size is non-zero. */
+    if (workspace->deviceBufferSizeInBytes) {
+        void* devicePtr = NULL;
+        cudaError_t err = cudaMalloc(&devicePtr, workspace->deviceBufferSizeInBytes);
+        if (err != cudaSuccess) {
+            fprintf(stderr, "Failed to allocate device buffer: %s\n", cudaGetErrorString(err));
+            if (workspace->hostBuffer) free((void*) workspace->hostBuffer);
+            free(workspace);
+            exit(EXIT_FAILURE);
+        }
+        workspace->deviceBuffer = (uintptr_t) devicePtr;
+    }
+
+    /* Return the fully allocated workspace. */
+    return workspace;
+}
+
+inline void freeWorkspace(cuestWorkspace_t* workspace)
+{
+    if (!workspace) return;
+
+    /* Frss the host buffer if it is not NULL. */
+    if (workspace->hostBuffer) {
+        free((void*) workspace->hostBuffer);
+    }
+
+    /* Frss the device buffer if it is not NULL. */
+    if (workspace->deviceBuffer) {
+        cudaError_t err = cudaFree((void*) workspace->deviceBuffer);
+        if (err != cudaSuccess) {
+            fprintf(stderr, "cudaFree failed: %s\n", cudaGetErrorString(err));
+            free(workspace);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    /* Free the workspace structure. */
+    free(workspace);
 }
 
 }  // namespace cuest_common

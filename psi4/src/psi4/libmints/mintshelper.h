@@ -35,9 +35,9 @@
 
 #include <vector>
 
-#ifdef USING_cuEST
+//#ifdef USING_cuEST
 #include <cuest.h>
-#endif
+//#endif
 
 namespace psi {
 
@@ -123,21 +123,25 @@ class PSI_API MintsHelper {
     /// Returns the non-relativistic potential integrals in the so basis
     SharedMatrix so_potential_nr(bool include_perturbations = true);
 
-#ifdef USING_cuEST
-   protected:
-    cuestAOPairList_t cuest_pair_list_ = nullptr;
-    cuestWorkspace_t* cuest_pair_list_ws_ptr_ = nullptr;
+//#ifdef USING_cuEST
+   private:
+    cuestAOPairList_t cuest_pair_list_;
+    cuestWorkspace_t* cuest_pair_list_ws_ptr_;
 
-    cuestOEIntPlan_t cuest_oeint_plan_ = nullptr;
-    cuestWorkspace_t* cuest_oeint_plan_ws_ptr_ = nullptr;
+    cuestOEIntPlan_t cuest_oeint_plan_;
+    cuestWorkspace_t* cuest_oeint_plan_ws_ptr_;
 
     void cuest_initialize();
     void cuest_finalize();
 
+    void form_S_cuest(SharedMatrix hostS);
+    void form_T_cuest(SharedMatrix hostT);
+    void form_V_cuest(SharedMatrix hostV);
+
    public:
     cuestAOPairList_t cuest_pair_list() { return cuest_pair_list_; };
     cuestOEIntPlan_t cuest_oeint_plan() { return cuest_oeint_plan_; };
-#endif
+//#endif
 
    public:
     /// Class initialization from Wavefunction
