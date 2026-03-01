@@ -1,7 +1,7 @@
 #! cGHF STO-3G energy for the O2 molecule => x coordinate <= using a sad guess, C1 symmetry, and 4-index ERI
 
 nucenergy =    28.2227845690666648       #TEST
-refenergy =  -147.6334527334977906       #TEST
+refenergy =    -147.55043891007801       #TEST
 
 molecule o2 {
 0 1
