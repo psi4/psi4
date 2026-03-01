@@ -54,3 +54,11 @@ target_link_libraries(detci
   PRIVATE
     pybind11::module
   )
+
+if(TARGET cuEST::cuEST)
+  target_link_libraries(detci
+    PUBLIC
+      cuEST::cuEST
+    )
+endif()
+

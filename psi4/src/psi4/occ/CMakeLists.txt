@@ -60,3 +60,11 @@ if (psi4_ENABLE_PRECOMPILE_HEADERS)
 endif()
 
 target_link_libraries(occ PUBLIC diis)
+
+if(TARGET cuEST::cuEST)
+  target_link_libraries(occ
+    PUBLIC
+      cuEST::cuEST
+    )
+endif()
+

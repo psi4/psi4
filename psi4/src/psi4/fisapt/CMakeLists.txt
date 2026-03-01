@@ -8,3 +8,11 @@ if (psi4_ENABLE_PRECOMPILE_HEADERS)
 endif()
 
 target_link_libraries(fisapt PUBLIC diis)
+
+if(TARGET cuEST::cuEST)
+  target_link_libraries(fisapt
+    PUBLIC
+      cuEST::cuEST
+    )
+endif()
+
