@@ -52,3 +52,11 @@ target_compile_definitions(qt
 unset(_has_daxpby)
 unset(_has_dggsvd3)
 unset(_has_dggsvp3)
+
+if(TARGET cuEST::cuEST)
+  target_link_libraries(qt
+    PUBLIC
+      cuEST::cuEST
+    )
+endif()
+

@@ -60,11 +60,12 @@
 #include <map>
 #include <list>
 
-#ifdef USING_cuEST
+//#ifdef USING_cuEST
 #include <cuest.h>
+#include <cuda_runtime.h>
 #include "psi4/libfock/cuESTCommon.h"
 extern cuestHandle_t cuest_handle;
-#endif
+//#endif
 
 using namespace psi;
 
@@ -125,12 +126,16 @@ BasisSet::BasisSet() {
     target_ = "(Empty Basis Set)";
     shells_[0] = GaussianShell(Gaussian, 0, nprimitive_, uoriginal_coefficients_.data(), ucoefficients_.data(),
                                uerd_coefficients_.data(), uexponents_.data(), GaussianType(0), 0, xyz_.data(), 0);
+//#ifdef USING_cuEST
+    cuest_basis_ = nullptr;
+    cuest_basis_ws_ptr_ = nullptr;
+//#endif
 }
 
 BasisSet::~BasisSet() {
-#ifdef USING_cuEST
+//#ifdef USING_cuEST
     cuest_finalize();
-#endif
+//#endif
 }
 
 std::shared_ptr<BasisSet> BasisSet::build(std::shared_ptr<Molecule> /*molecule*/,
@@ -873,9 +878,9 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
         }
     }
 
-#ifdef USING_cuEST
+//#ifdef USING_cuEST
     cuest_initialize();
-#endif
+//#endif
 }
 
 void BasisSet::update_l2_shells(bool embed_normalization) {
@@ -1298,9 +1303,11 @@ void BasisSet::negative_gaussian_normalization_to_coefficients() {
   update_l2_shells(false);
 }
 
-#ifdef USING_cuEST
+//#ifdef USING_cuEST
 void BasisSet::cuest_initialize()
 {
+    printf("BasisSet::cuest_initialize start\n");
+
     int natom = molecule_->natom();
 
     cuestAOShellParameters_t shell_params;
@@ -1328,23 +1335,27 @@ void BasisSet::cuest_initialize()
     cuestAOBasisParameters_t basis_params;
     CHECK_CUEST(cuestParametersCreate(CUEST_AOBASIS_PARAMETERS, reinterpret_cast<void**>(&basis_params)));
 
-    cuestWorkspaceDescriptor_t persistent_desc = {}, temp_desc = {};
-    CHECK_CUEST(cuestAOBasisCreateWorkspaceQuery(cuest_handle, static_cast<uint64_t>(natom),
-        shells_per_atom.data(), shells_out.data(), basis_params, &persistent_desc, &temp_desc, nullptr));
+    cuestWorkspaceDescriptor_t* persistentWorkspaceDescriptor = (cuestWorkspaceDescriptor_t*) malloc(sizeof(cuestWorkspaceDescriptor_t));
+    cuestWorkspaceDescriptor_t* temporaryWorkspaceDescriptor = (cuestWorkspaceDescriptor_t*) malloc(sizeof(cuestWorkspaceDescriptor_t));
 
-    cuest_basis_ws_ptr_ = new cuestWorkspace_t{};
-    cuest_common::alloc_workspace(persistent_desc, *cuest_basis_ws_ptr_);
-    cuestWorkspace_t temp_ws = {};
-    cuest_common::alloc_workspace(temp_desc, temp_ws);
+    CHECK_CUEST(cuestAOBasisCreateWorkspaceQuery(cuest_handle, static_cast<uint64_t>(natom),
+        shells_per_atom.data(), shells_out.data(), basis_params, persistentWorkspaceDescriptor, temporaryWorkspaceDescriptor, nullptr));
+
+    cuest_basis_ws_ptr_ = cuest_common::allocateWorkspace(persistentWorkspaceDescriptor);
+    cuestWorkspace_t* temporaryBasisWorkspace = cuest_common::allocateWorkspace(temporaryWorkspaceDescriptor);
 
     CHECK_CUEST(cuestAOBasisCreate(cuest_handle, static_cast<uint64_t>(natom),
-        shells_per_atom.data(), shells_out.data(), basis_params, cuest_basis_ws_ptr_, &temp_ws, &cuest_basis_));
+        shells_per_atom.data(), shells_out.data(), basis_params, cuest_basis_ws_ptr_, temporaryBasisWorkspace, &cuest_basis_));
 
-    cuest_common::free_workspace(temp_ws);
+    cuest_common::freeWorkspace(temporaryBasisWorkspace);
     cuestParametersDestroy(CUEST_AOBASIS_PARAMETERS, basis_params);
 
+    free(persistentWorkspaceDescriptor);
+    free(temporaryWorkspaceDescriptor);
+
     for (auto& s : shells_out) cuestAOShellDestroy(s);
-    shells_out.clear();
+
+    printf("BasisSet::cuest_initialize end\n");
 }
 
 void BasisSet::cuest_finalize()
@@ -1354,10 +1365,9 @@ void BasisSet::cuest_finalize()
         cuest_basis_ = nullptr;
     }
     if (cuest_basis_ws_ptr_ != nullptr) {
-        cuest_common::free_workspace(*cuest_basis_ws_ptr_);
-        delete cuest_basis_ws_ptr_;
+        cuest_common::freeWorkspace(cuest_basis_ws_ptr_);
         cuest_basis_ws_ptr_ = nullptr;
     }
 }
-#endif
+//#endif
 

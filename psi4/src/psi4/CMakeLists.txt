@@ -71,6 +71,14 @@ endif()
 if(TARGET Einsums::Einsums)
   target_link_libraries(psi4_optional_deps INTERFACE Einsums::Einsums)
   target_compile_definitions(psi4_optional_deps INTERFACE USING_Einsums)
+
+if(TARGET cuEST::cuEST)
+  add_compile_definitions(USING_cuEST)
+endif()
+
+if(TARGET cuEST::cuEST)
+  target_link_libraries(cuEST::cuEST)
+
 endif()
 
 foreach(dir_name
@@ -124,3 +132,4 @@ foreach(dir_name
   )
   add_subdirectory(${dir_name})
 endforeach ()
+
