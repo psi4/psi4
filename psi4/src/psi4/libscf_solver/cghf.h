@@ -57,9 +57,8 @@ class CGHF : public HF {
     }
 
     // Required for export_wavefunction to build
-    double compute_Dnorm() {return 0.0;}
     void preiterations() {};
-    void form_FDSmSDF() {};
+    void get_shared_FDSmSDF() {};
 
     // Required to build
     std::shared_ptr<UV> potential_;
@@ -89,9 +88,8 @@ class CGHF : public HF {
 
     // Form orbital gradient FDSmSDF_ = [F, D]
     void form_FDSmSDF();
-
-    // Compute the norm from the orbital gradient as a second test of convergence
-    double compute_Dnorm();
+    // Turns Abs(FDSmSDF) into SharedMatrix
+    SharedMatrix get_shared_FDSmSDF();
 
     void form_Shalf() override;
 
@@ -137,7 +135,7 @@ class CGHF : public HF {
     std::shared_ptr<VBase> V_potential() const override { return potential_; };
 
     // If DIIS is enabled, this will update the orthogonalized Fock matrix Fp_
-    std::complex<double> do_diis();
+    void do_diis();
 
    protected:
     SharedMatrix V_mat;
@@ -153,8 +151,7 @@ class CGHF : public HF {
     std::deque<einsums::BlockTensor<std::complex<double>, 2>> Fdiis;
     // Holds FDSmSDF_ at each iteration (orbital gradients)
     std::deque<einsums::BlockTensor<std::complex<double>, 2>> err_vecs;
-    std::vector<std::complex<double>> diis_coeffs;    // Holds the coefficients for each Fock matrix in Fdiis
-    std::vector<std::complex<double>> error_doubles;  // RMS errors (real)
+    std::vector<double> error_doubles;  // RMS errors (real)
 
     double nuclearrep_;  // Nuclear repulsion energy
 
@@ -175,9 +172,8 @@ class CGHF : public HF {
     SharedBlockTensor D_;   // 1-particle density matrix
     SharedBlockTensor JK_;  // Combined Coulomb and exchange matrix
 
-    // ortho_error and ecurr are specific to DIIS
-    SharedBlockTensor ortho_error;  // Orthogonalized gradient error
-    SharedBlockTensor ecurr;        // Error at current iteration
+    SharedBlockTensor ortho_error;  // Orthogonalized gradient error for DIIS
+    SharedBlockTensor ortho_error_conj;  // Needed because Einsums can't do conjugation yet
 
     // temp1_ and temp2_ are temporary storage containers for intermediate steps
     // Cocc_ and cCocc_ are not preferred as variable names since there doesn't

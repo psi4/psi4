@@ -71,10 +71,12 @@ def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
         return max(gradient_a.absmax(), gradient_b.absmax())
 
 def _CGHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
-    #if not self.options().get_bool("DIIS"):
-    self.form_einsums_FDSmSDF()
+    gradient = self.form_FDSmSDF()
 
-    return self.compute_Dnorm()
+    if self.options().get_bool("DIIS_RMS_ERROR"):
+        return gradient.rms()
+    else:
+        return gradient.absmax()
 
 def _ROHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
     # Only the inact-act, inact-vir, and act-vir rotations are non-redundant
