@@ -37,6 +37,7 @@ import shutil
 import subprocess
 import sys
 import warnings
+import time
 from typing import Dict, List, Union
 
 import numpy as np
@@ -1931,12 +1932,14 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out('\n')
 
     # the SECOND scf call
+    _t_driver0 = time.perf_counter()
     base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
     if banner:
         core.print_out("\n         ---------------------------------------------------------\n")
         core.print_out("         " + banner.center(58))
 
     scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
+    _t_driver1 = time.perf_counter()
 
     # The wfn from_file routine adds the npy suffix if needed, but we add it here so that
     # we can use os.path.isfile to query whether the file exists before attempting to read
@@ -2044,7 +2047,9 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out("  Using user-supplied JK object.\n")
         scf_wfn.set_jk(jk_obj)
 
+    _t_driver2 = time.perf_counter()
     e_scf = scf_wfn.compute_energy()
+    _t_driver3 = time.perf_counter()
     for obj in [core, scf_wfn]:
         # set_variable("SCF TOTAL ENERGY")  # P::e SCF
         for pv in ["SCF TOTAL ENERGY", "CURRENT ENERGY", "CURRENT REFERENCE ENERGY"]:
@@ -2103,6 +2108,14 @@ def scf_helper(name, post_scf=True, **kwargs):
         filename = scf_wfn.get_scratch_filename(180)
         scf_wfn.to_file(filename)
         extras.register_numpy_file(filename) # retain with -m (messy) option
+
+    _t_driver4 = time.perf_counter()
+    core.print_out("\n  ==> SCF Driver Timing <==\n\n")
+    core.print_out("    Wfn.build:       %7.3fs\n" % (_t_driver1 - _t_driver0))
+    core.print_out("    Wfn factory:     %7.3fs\n" % (_t_driver2 - _t_driver1))
+    core.print_out("    compute_energy:  %7.3fs\n" % (_t_driver3 - _t_driver2))
+    core.print_out("    Post-SCF:        %7.3fs\n" % (_t_driver4 - _t_driver3))
+    core.print_out("    Total driver:    %7.3fs\n\n" % (_t_driver4 - _t_driver0))
 
     if do_timer:
         core.tstop()
