@@ -29,6 +29,8 @@ cuESTJK::cuESTJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
       cuest_auxiliary_basis_(nullptr),
       cuest_pair_list_(nullptr),
       cuest_df_plan_(nullptr),
+      cuest_coulomb_compute_params_(nullptr),
+      cuest_exchange_compute_params_(nullptr),
       initialized_(false) 
 {
     cuest_primary_basis_ = primary->cuest_basis();
@@ -89,6 +91,10 @@ void cuESTJK::preiterations()
     free(persistentWorkspaceDescriptor);
     free(temporaryWorkspaceDescriptor);
 
+    // Create J/K parameters
+    CHECK_CUEST(cuestParametersCreate(CUEST_DFCOULOMBCOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_coulomb_compute_params_)));
+    CHECK_CUEST(cuestParametersCreate(CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_exchange_compute_params_)));
+
     printf("cuESTJK::preiterations end\n");
 
     initialized_ = true;
@@ -103,9 +109,22 @@ void cuESTJK::destroy_cuest_objects() {
         CHECK_CUEST(cuestAOPairListDestroy(cuest_pair_list_));
         cuest_pair_list_ = nullptr;
     }
-
-    cuest_common::freeWorkspace(cuest_pair_list_ws_ptr_);
-    cuest_common::freeWorkspace(cuest_dfint_plan_ws_ptr_);
+    if (cuest_pair_list_ws_ptr_) {
+        cuest_common::freeWorkspace(cuest_pair_list_ws_ptr_);
+        cuest_pair_list_ws_ptr_ = nullptr;
+    }
+    if (cuest_dfint_plan_ws_ptr_) {
+        cuest_common::freeWorkspace(cuest_dfint_plan_ws_ptr_);
+        cuest_dfint_plan_ws_ptr_ = nullptr;
+    }
+    if (cuest_coulomb_compute_params_) {
+        CHECK_CUEST(cuestParametersDestroy(CUEST_DFCOULOMBCOMPUTE_PARAMETERS, cuest_coulomb_compute_params_));
+        cuest_coulomb_compute_params_ = nullptr;
+    }
+    if (cuest_exchange_compute_params_) {
+        CHECK_CUEST(cuestParametersDestroy(CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, cuest_exchange_compute_params_));
+        cuest_exchange_compute_params_ = nullptr;
+    }
 }
 
 size_t cuESTJK::memory_estimate() {
@@ -127,153 +146,164 @@ void cuESTJK::print_header() const {
 }
 
 void cuESTJK::compute_JK() {
-//     using clock = std::chrono::high_resolution_clock;
-//     auto t_total_start = clock::now();
-// 
-//     int nbf = primary_->nbf();
-//     size_t nbf2_bytes = static_cast<size_t>(nbf) * nbf * sizeof(double);
-// 
-//     auto t0 = clock::now();
-//     double* d_D = nullptr;
-//     double* d_J = nullptr;
-//     double* d_K = nullptr;
-//     double* d_C = nullptr;
-// 
-//     cudaMalloc(reinterpret_cast<void**>(&d_D), nbf2_bytes);
-//     cudaMalloc(reinterpret_cast<void**>(&d_J), nbf2_bytes);
-//     cudaMalloc(reinterpret_cast<void**>(&d_K), nbf2_bytes);
-//     auto t_alloc = clock::now();
-// 
-//     cuestWorkspaceDescriptor_t j_temp_desc = {};
-//     cuestWorkspaceDescriptor_t k_temp_desc = {};
-//     size_t max_host = 0, max_device = 0;
-// 
-//     if (do_J_) {
-//         CHECK_CUEST(cuestDFCoulombComputeWorkspaceQuery(
-//             cuest_handle,
-//             cuest_df_plan_,
-//             coulomb_compute_params_,
-//             &j_temp_desc,
-//             d_D,
-//             d_J));
-//         max_host = std::max(max_host, j_temp_desc.hostBufferSizeInBytes);
-//         max_device = std::max(max_device, j_temp_desc.deviceBufferSizeInBytes);
-//     }
-// 
-//     if (do_K_) {
-//         for (size_t N = 0; N < D_ao_.size(); N++) {
-//             int nocc = C_left_ao_[N]->ncol();
-//             if (nocc == 0) continue;
-// 
-//             CHECK_CUEST(cuestDFSymmetricExchangeComputeWorkspaceQuery(
-//                 cuest_handle,
-//                 cuest_df_plan_,
-//                 exchange_compute_params_,
-//                 &exchange_max_ws_desc_,
-//                 &k_temp_desc,
-//                 static_cast<uint64_t>(nocc),
-//                 nullptr,
-//                 d_K));
-//             max_host = std::max(max_host, k_temp_desc.hostBufferSizeInBytes);
-//             max_device = std::max(max_device, k_temp_desc.deviceBufferSizeInBytes);
-//         }
-//     }
-// 
-//     cuestWorkspaceDescriptor_t total_desc;
-//     total_desc.hostBufferSizeInBytes = max_host;
-//     total_desc.deviceBufferSizeInBytes = max_device;
-// 
-//     free_workspace(compute_temp_ws_);
-//     allocate_workspace(total_desc, compute_temp_ws_);
-//     auto t_ws = clock::now();
-// 
-//     double ms_J_compute = 0.0, ms_K_compute = 0.0;
-//     double ms_memcpy_h2d = 0.0, ms_memcpy_d2h = 0.0;
-//     double ms_transpose = 0.0;
-// 
-//     for (size_t N = 0; N < D_ao_.size(); N++) {
-//         if (do_J_) {
-//             auto tc0 = clock::now();
-//             cudaMemcpy(d_D, D_ao_[N]->get_pointer(), nbf2_bytes, cudaMemcpyHostToDevice);
-//             auto tc1 = clock::now();
-//             CHECK_CUEST(cuestDFCoulombCompute(
-//                 cuest_handle,
-//                 cuest_df_plan_,
-//                 coulomb_compute_params_,
-//                 &compute_temp_ws_,
-//                 d_D,
-//                 d_J));
-//             cudaDeviceSynchronize();
-//             auto tc2 = clock::now();
-//             cudaMemcpy(J_ao_[N]->get_pointer(), d_J, nbf2_bytes, cudaMemcpyDeviceToHost);
-//             auto tc3 = clock::now();
-//             ms_memcpy_h2d += std::chrono::duration<double, std::milli>(tc1 - tc0).count();
-//             ms_J_compute += std::chrono::duration<double, std::milli>(tc2 - tc1).count();
-//             ms_memcpy_d2h += std::chrono::duration<double, std::milli>(tc3 - tc2).count();
-//         }
-// 
-//         if (do_K_) {
-//             int nocc = C_left_ao_[N]->ncol();
-//             if (nocc > 0) {
-//                 size_t c_bytes = static_cast<size_t>(nocc) * nbf * sizeof(double);
-// 
-//                 auto tt0 = clock::now();
-//                 std::vector<double> C_row_major(nocc * nbf);
-//                 double** Cp = C_left_ao_[N]->pointer();
-//                 for (int i = 0; i < nocc; i++) {
-//                     for (int mu = 0; mu < nbf; mu++) {
-//                         C_row_major[i * nbf + mu] = Cp[mu][i];
-//                     }
-//                 }
-//                 auto tt1 = clock::now();
-//                 ms_transpose += std::chrono::duration<double, std::milli>(tt1 - tt0).count();
-// 
-//                 cudaFree(d_C);
-//                 cudaMalloc(reinterpret_cast<void**>(&d_C), c_bytes);
-// 
-//                 auto tk0 = clock::now();
-//                 cudaMemcpy(d_C, C_row_major.data(), c_bytes, cudaMemcpyHostToDevice);
-//                 auto tk1 = clock::now();
-// 
-//                 CHECK_CUEST(cuestDFSymmetricExchangeCompute(
-//                     cuest_handle,
-//                     cuest_df_plan_,
-//                     exchange_compute_params_,
-//                     &exchange_max_ws_desc_,
-//                     &compute_temp_ws_,
-//                     static_cast<uint64_t>(nocc),
-//                     d_C,
-//                     d_K));
-//                 cudaDeviceSynchronize();
-//                 auto tk2 = clock::now();
-// 
-//                 cudaMemcpy(K_ao_[N]->get_pointer(), d_K, nbf2_bytes, cudaMemcpyDeviceToHost);
-//                 auto tk3 = clock::now();
-// 
-//                 ms_memcpy_h2d += std::chrono::duration<double, std::milli>(tk1 - tk0).count();
-//                 ms_K_compute += std::chrono::duration<double, std::milli>(tk2 - tk1).count();
-//                 ms_memcpy_d2h += std::chrono::duration<double, std::milli>(tk3 - tk2).count();
-//             }
-//         }
-//     }
-// 
-//     auto t_free_start = clock::now();
-//     cudaFree(d_D);
-//     cudaFree(d_J);
-//     cudaFree(d_K);
-//     if (d_C) cudaFree(d_C);
-//     auto t_free_end = clock::now();
-// 
-//     double ms_alloc = std::chrono::duration<double, std::milli>(t_alloc - t0).count();
-//     double ms_wsquery = std::chrono::duration<double, std::milli>(t_ws - t_alloc).count();
-//     double ms_free = std::chrono::duration<double, std::milli>(t_free_end - t_free_start).count();
-//     double ms_total = std::chrono::duration<double, std::milli>(t_free_end - t_total_start).count();
-// 
-//     outfile->Printf("    cuESTJK compute_JK: total=%7.2fms | alloc=%5.2fms ws=%5.2fms "
-//                      "J=%6.2fms K=%6.2fms memcpy(H2D)=%5.2fms memcpy(D2H)=%5.2fms "
-//                      "transpose=%5.2fms free=%5.2fms\n",
-//                      ms_total, ms_alloc, ms_wsquery, ms_J_compute, ms_K_compute,
-//                      ms_memcpy_h2d, ms_memcpy_d2h, ms_transpose, ms_free);
+    using clock = std::chrono::high_resolution_clock;
+    auto t_total_start = clock::now();
+ 
+    int nbf = primary_->nbf();
+    size_t nbf2_bytes = static_cast<size_t>(nbf) * nbf * sizeof(double);
+ 
+    auto t0 = clock::now();
+    double* d_D = nullptr;
+    double* d_J = nullptr;
+    double* d_K = nullptr;
+    double* d_C = nullptr;
+ 
+    cudaMalloc(reinterpret_cast<void**>(&d_D), nbf2_bytes);
+    cudaMalloc(reinterpret_cast<void**>(&d_J), nbf2_bytes);
+    cudaMalloc(reinterpret_cast<void**>(&d_K), nbf2_bytes);
+    auto t_alloc = clock::now();
+ 
+    cuestWorkspaceDescriptor_t* j_temp_desc = (cuestWorkspaceDescriptor_t*) malloc(sizeof(cuestWorkspaceDescriptor_t));
+    cuestWorkspaceDescriptor_t* k_temp_desc = (cuestWorkspaceDescriptor_t*) malloc(sizeof(cuestWorkspaceDescriptor_t));
+
+    cuestWorkspaceDescriptor_t* variableBufferSize = (cuestWorkspaceDescriptor_t*) malloc(sizeof(cuestWorkspaceDescriptor_t));
+    variableBufferSize->hostBufferSizeInBytes = 0;
+    variableBufferSize->deviceBufferSizeInBytes = 8000000000;
+    
+    size_t max_host = 0, max_device = 0;
+ 
+    if (do_J_) {
+        CHECK_CUEST(cuestDFCoulombComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_df_plan_,
+            cuest_coulomb_compute_params_,
+            j_temp_desc,
+            d_D,
+            d_J));
+        max_host = std::max(max_host, j_temp_desc->hostBufferSizeInBytes);
+        max_device = std::max(max_device, j_temp_desc->deviceBufferSizeInBytes);
+    }
+ 
+    if (do_K_) {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            int nocc = C_left_ao_[N]->ncol();
+            if (nocc == 0) continue;
+ 
+            CHECK_CUEST(cuestDFSymmetricExchangeComputeWorkspaceQuery(
+                cuest_handle,
+                cuest_df_plan_,
+                cuest_exchange_compute_params_,
+                variableBufferSize,
+                k_temp_desc,
+                static_cast<uint64_t>(nocc),
+                nullptr,
+                d_K));
+            max_host = std::max(max_host, k_temp_desc->hostBufferSizeInBytes);
+            max_device = std::max(max_device, k_temp_desc->deviceBufferSizeInBytes);
+        }
+    }
+ 
+    cuestWorkspaceDescriptor_t* total_desc = (cuestWorkspaceDescriptor_t*) malloc(sizeof(cuestWorkspaceDescriptor_t));
+    total_desc->hostBufferSizeInBytes = max_host;
+    total_desc->deviceBufferSizeInBytes = max_device;
+ 
+    cuestWorkspace_t* temporaryJKWorkspace = cuest_common::allocateWorkspace(total_desc);
+
+    auto t_ws = clock::now();
+    double ms_J_compute = 0.0, ms_K_compute = 0.0;
+    double ms_memcpy_h2d = 0.0, ms_memcpy_d2h = 0.0;
+    double ms_transpose = 0.0;
+ 
+    for (size_t N = 0; N < D_ao_.size(); N++) {
+        if (do_J_) {
+            auto tc0 = clock::now();
+            cudaMemcpy(d_D, D_ao_[N]->get_pointer(), nbf2_bytes, cudaMemcpyHostToDevice);
+            auto tc1 = clock::now();
+            CHECK_CUEST(cuestDFCoulombCompute(
+                cuest_handle,
+                cuest_df_plan_,
+                cuest_coulomb_compute_params_,
+                temporaryJKWorkspace,
+                d_D,
+                d_J));
+            cudaDeviceSynchronize();
+            auto tc2 = clock::now();
+            cudaMemcpy(J_ao_[N]->get_pointer(), d_J, nbf2_bytes, cudaMemcpyDeviceToHost);
+            auto tc3 = clock::now();
+            ms_memcpy_h2d += std::chrono::duration<double, std::milli>(tc1 - tc0).count();
+            ms_J_compute += std::chrono::duration<double, std::milli>(tc2 - tc1).count();
+            ms_memcpy_d2h += std::chrono::duration<double, std::milli>(tc3 - tc2).count();
+        }
+ 
+        if (do_K_) {
+            int nocc = C_left_ao_[N]->ncol();
+            if (nocc > 0) {
+                size_t c_bytes = static_cast<size_t>(nocc) * nbf * sizeof(double);
+ 
+                auto tt0 = clock::now();
+                std::vector<double> C_row_major(nocc * nbf);
+                double** Cp = C_left_ao_[N]->pointer();
+                for (int i = 0; i < nocc; i++) {
+                    for (int mu = 0; mu < nbf; mu++) {
+                        C_row_major[i * nbf + mu] = Cp[mu][i];
+                    }
+                }
+                auto tt1 = clock::now();
+                ms_transpose += std::chrono::duration<double, std::milli>(tt1 - tt0).count();
+ 
+                cudaFree(d_C);
+                cudaMalloc(reinterpret_cast<void**>(&d_C), c_bytes);
+ 
+                auto tk0 = clock::now();
+                cudaMemcpy(d_C, C_row_major.data(), c_bytes, cudaMemcpyHostToDevice);
+                auto tk1 = clock::now();
+ 
+                CHECK_CUEST(cuestDFSymmetricExchangeCompute(
+                    cuest_handle,
+                    cuest_df_plan_,
+                    cuest_exchange_compute_params_,
+                    variableBufferSize,
+                    temporaryJKWorkspace,
+                    static_cast<uint64_t>(nocc),
+                    d_C,
+                    d_K));
+                cudaDeviceSynchronize();
+                auto tk2 = clock::now();
+ 
+                cudaMemcpy(K_ao_[N]->get_pointer(), d_K, nbf2_bytes, cudaMemcpyDeviceToHost);
+                auto tk3 = clock::now();
+ 
+                ms_memcpy_h2d += std::chrono::duration<double, std::milli>(tk1 - tk0).count();
+                ms_K_compute += std::chrono::duration<double, std::milli>(tk2 - tk1).count();
+                ms_memcpy_d2h += std::chrono::duration<double, std::milli>(tk3 - tk2).count();
+            }
+        }
+    }
+ 
+    free(j_temp_desc);
+    free(k_temp_desc);
+    free(total_desc);
+    free(variableBufferSize);
+
+    cuest_common::freeWorkspace(temporaryJKWorkspace);
+
+    auto t_free_start = clock::now();
+    cudaFree(d_D);
+    cudaFree(d_J);
+    cudaFree(d_K);
+    if (d_C) cudaFree(d_C);
+    auto t_free_end = clock::now();
+ 
+    double ms_alloc = std::chrono::duration<double, std::milli>(t_alloc - t0).count();
+    double ms_wsquery = std::chrono::duration<double, std::milli>(t_ws - t_alloc).count();
+    double ms_free = std::chrono::duration<double, std::milli>(t_free_end - t_free_start).count();
+    double ms_total = std::chrono::duration<double, std::milli>(t_free_end - t_total_start).count();
+ 
+    outfile->Printf("    cuESTJK compute_JK: total=%7.2fms | alloc=%5.2fms ws=%5.2fms "
+                     "J=%6.2fms K=%6.2fms memcpy(H2D)=%5.2fms memcpy(D2H)=%5.2fms "
+                     "transpose=%5.2fms free=%5.2fms\n",
+                     ms_total, ms_alloc, ms_wsquery, ms_J_compute, ms_K_compute,
+                     ms_memcpy_h2d, ms_memcpy_d2h, ms_transpose, ms_free);
 }
 
 void cuESTJK::postiterations() 
