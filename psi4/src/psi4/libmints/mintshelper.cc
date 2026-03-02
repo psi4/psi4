@@ -4509,17 +4509,16 @@ void MintsHelper::form_S_cuest(SharedMatrix hostS) {
         &temporary_workspace_descriptor, 
         d_overlap_matrix));
 
-    cuestWorkspace_t temporary_workspace = {};
-    cuest_common::alloc_workspace(temporary_workspace_descriptor, temporary_workspace);
+    cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
 
     CHECK_CUEST(cuestOverlapCompute(
         cuest_handle, 
         cuest_oeint_plan_, 
         overlap_compute_parameters,
-        &temporary_workspace, 
+        temporary_workspace, 
         d_overlap_matrix));
 
-    cuest_common::free_workspace(temporary_workspace);
+    cuest_common::freeWorkspace(temporary_workspace);
 
     CHECK_CUEST(cuestParametersDestroy(
         CUEST_OVERLAPCOMPUTE_PARAMETERS, 
@@ -4548,17 +4547,16 @@ void MintsHelper::form_T_cuest(SharedMatrix hostT) {
         &temporary_workspace_descriptor, 
         d_kinetic_matrix));
 
-    cuestWorkspace_t temporary_workspace = {};
-    cuest_common::alloc_workspace(temporary_workspace_descriptor, temporary_workspace);
+    cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
 
     CHECK_CUEST(cuestKineticCompute(
         cuest_handle, 
         cuest_oeint_plan_, 
         kinetic_compute_parameters,
-        &temporary_workspace, 
+        temporary_workspace, 
         d_kinetic_matrix));
 
-    cuest_common::free_workspace(temporary_workspace);
+    cuest_common::freeWorkspace(temporary_workspace);
 
     CHECK_CUEST(cuestParametersDestroy(
         CUEST_KINETICCOMPUTE_PARAMETERS, 
@@ -4605,20 +4603,19 @@ void MintsHelper::form_V_cuest(SharedMatrix hostV) {
         d_q_matrix,
         d_potential_matrix));
 
-    cuestWorkspace_t temporary_workspace = {};
-    cuest_common::alloc_workspace(temporary_workspace_descriptor, temporary_workspace);
+    cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
 
     CHECK_CUEST(cuestPotentialCompute(
         cuest_handle, 
         cuest_oeint_plan_, 
         potential_compute_parameters,
-        &temporary_workspace, 
+        temporary_workspace, 
         natom,
         d_xyz_matrix,
         d_q_matrix,
         d_potential_matrix));
 
-    cuest_common::free_workspace(temporary_workspace);
+    cuest_common::freeWorkspace(temporary_workspace);
 
     CHECK_CUEST(cuestParametersDestroy(
         CUEST_POTENTIALCOMPUTE_PARAMETERS, 
