@@ -30,6 +30,9 @@ class PSI_API cuESTJK : public JK {
     cuestAOPairList_t cuest_pair_list_;
     cuestDFIntPlan_t cuest_df_plan_;
 
+    cuestDFCoulombComputeParameters_t cuest_coulomb_compute_params_;
+    cuestDFSymmetricExchangeComputeParameters_t cuest_exchange_compute_params_;
+
     cuestWorkspace_t* cuest_pair_list_ws_ptr_;
     cuestWorkspace_t* cuest_dfint_plan_ws_ptr_;
 
