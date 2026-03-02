@@ -122,7 +122,7 @@ def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
         return ret
 
 
-def print_sapt_dft_summary(data, name, do_dft=True, short=False):
+def print_sapt_dft_summary(data, name, dimer_wfn, do_dft=True, short=False):
     ret = "   %s Results\n" % name
     ret += "  " + "-" * 105 + "\n"
 
@@ -131,6 +131,7 @@ def print_sapt_dft_summary(data, name, do_dft=True, short=False):
     ret += print_sapt_var("  Elst1,r", data["Elst10,r"]) + "\n"
     ret += "\n"
     core.set_variable("SAPT ELST ENERGY", data["Elst10,r"])
+    dimer_wfn.set_variable("SAPT ELST ENERGY", data["Elst10,r"])
 
     # Exchange
     ret += print_sapt_var("Exchange", data["Exch10"]) + "\n"
@@ -138,6 +139,7 @@ def print_sapt_dft_summary(data, name, do_dft=True, short=False):
     ret += print_sapt_var("  Exch1(S^2)", data["Exch10(S^2)"]) + "\n"
     ret += "\n"
     core.set_variable("SAPT EXCH ENERGY", data["Exch10"])
+    dimer_wfn.set_variable("SAPT EXCH ENERGY", data["Exch10"])
 
     # Induction
     ind = data["Ind20,r"] + data["Exch-Ind20,r"]
@@ -171,6 +173,7 @@ def print_sapt_dft_summary(data, name, do_dft=True, short=False):
         ret += print_sapt_var("  Exch-Disp2,u", data["Exch-Disp20,u"]) + "\n"
         ret += "\n"
         core.set_variable("SAPT DISP ENERGY", disp)
+        dimer_wfn.set_variable("SAPT DISP ENERGY", disp)
     else:
         disp = data["Disp20,u"] + data["Exch-Disp20,u"]
         ret += print_sapt_var("Dispersion", disp) + "\n"
@@ -178,6 +181,7 @@ def print_sapt_dft_summary(data, name, do_dft=True, short=False):
         ret += print_sapt_var("  Exch-Disp20", data["Exch-Disp20,u"]) + "\n"
         ret += "\n"
         core.set_variable("SAPT DISP ENERGY", disp)
+        dimer_wfn.set_variable("SAPT DISP ENERGY", disp)
     
     # Total energy
     total = data["Elst10,r"] + data["Exch10"] + ind + disp
@@ -185,6 +189,9 @@ def print_sapt_dft_summary(data, name, do_dft=True, short=False):
     core.set_variable("SAPT(DFT) TOTAL ENERGY", total)
     core.set_variable("SAPT TOTAL ENERGY", total)
     core.set_variable("CURRENT ENERGY", total)
+    dimer_wfn.set_variable("SAPT(DFT) TOTAL ENERGY", total)
+    dimer_wfn.set_variable("SAPT TOTAL ENERGY", total)
+    dimer_wfn.set_variable("CURRENT ENERGY", total)
 
     ret += "  " + "-" * 105 + "\n"
     return ret
