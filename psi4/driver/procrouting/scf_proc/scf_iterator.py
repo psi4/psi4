@@ -28,6 +28,7 @@
 """
 The SCF iteration functions
 """
+import time
 import numpy as np
 
 from psi4 import core
@@ -82,6 +83,7 @@ def scf_compute_energy(self):
         self.initialize()
     self.iteration_energies = []
 
+    _t_iter_start = time.perf_counter()
     try:
         self.iterations()
     except SCFConvergenceError as e:
@@ -96,7 +98,15 @@ def scf_compute_energy(self):
     else:
         core.print_out("  Energy and wave function converged.\n\n")
 
+    _t_final_start = time.perf_counter()
     scf_energy = self.finalize_energy()
+    _t_final_end = time.perf_counter()
+
+    core.print_out("\n  ==> SCF Phase Timing <==\n\n")
+    core.print_out("    Iterations:      %7.3fs\n" % (_t_final_start - _t_iter_start))
+    core.print_out("    Finalize:        %7.3fs\n" % (_t_final_end - _t_final_start))
+    core.print_out("\n")
+
     return scf_energy
 
 
@@ -131,6 +141,7 @@ def initialize_jk(self, memory, jk=None):
 
 def scf_initialize(self):
     """Specialized initialization, compute integrals and does everything to prepare for iterations"""
+    _t_init_start = time.perf_counter()
 
     # Figure out memory distributions
 
@@ -196,13 +207,16 @@ def scf_initialize(self):
     if self.attempt_number_ == 1:
         mints = core.MintsHelper(self.basisset())
 
+        _t0 = time.perf_counter()
         if initialize_jk_obj:
             self.initialize_jk(self.memory_jk_, jk=jk)
+        _t1 = time.perf_counter()
         if self.V_potential():
             self.V_potential().build_collocation_cache(self.memory_collocation_)
         core.timer_on("HF: Form core H")
         self.form_H()
         core.timer_off("HF: Form core H")
+        _t2 = time.perf_counter()
 
         if efp_enabled:
             # EFP: Add in permanent moment contribution and cache
@@ -219,6 +233,7 @@ def scf_initialize(self):
         core.timer_on("HF: Form S/X")
         self.form_Shalf()
         core.timer_off("HF: Form S/X")
+        _t3 = time.perf_counter()
 
         core.print_out("\n  ==> Pre-Iterations <==\n\n")
 
@@ -229,6 +244,7 @@ def scf_initialize(self):
         core.timer_on("HF: Guess")
         self.guess()
         core.timer_off("HF: Guess")
+        _t4 = time.perf_counter()
 
         optstash.restore()
 
@@ -240,6 +256,16 @@ def scf_initialize(self):
                 self.print_preiterations(small=lack_occupancy)
             else:
                 self.print_preiterations(small=lack_occupancy)
+
+        _t5 = time.perf_counter()
+        core.print_out("\n  ==> SCF Init Timing <==\n\n")
+        core.print_out("    Pre-JK setup:    %7.3fs\n" % (_t0 - _t_init_start))
+        core.print_out("    JK init:         %7.3fs\n" % (_t1 - _t0))
+        core.print_out("    Form core H:     %7.3fs\n" % (_t2 - _t1))
+        core.print_out("    Form S/X:        %7.3fs\n" % (_t3 - _t2))
+        core.print_out("    SAD guess:       %7.3fs\n" % (_t4 - _t3))
+        core.print_out("    Print/other:     %7.3fs\n" % (_t5 - _t4))
+        core.print_out("    Total init:      %7.3fs\n\n" % (_t5 - _t_init_start))
 
     else:
         # We're reading the orbitals from the previous set of iterations.
@@ -257,7 +283,7 @@ def scf_initialize(self):
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
     diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
     core.print_out("  ==> Iterations <==\n\n")
-    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
+    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|    Wall\n\n" %
                    ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
 
 
@@ -351,6 +377,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     Dnorm = 0.0
     scf_iter_post_screening = 0
     while True:
+        iter_t0 = time.perf_counter()
         self.iteration_ += 1
 
         diis_performed = False
@@ -372,10 +399,13 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         SCFE = 0.0
         self.clear_external_potentials()
 
+        _it0 = _it1 = _it2 = _it3 = _it4 = _it5 = _it6 = time.perf_counter()
+        _iter_detailed = False
         # Two-electron contribution to Fock matrix from self.jk()
         core.timer_on("HF: Form G")
         self.form_G()
         core.timer_off("HF: Form G")
+        _it1 = time.perf_counter()
 
         # Check if special J/K construction algorithms were used
         incfock_performed = hasattr(self.jk(), "do_incfock_iter") and self.jk().do_incfock_iter()
@@ -428,6 +458,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.Fb().print_out()
 
         SCFE += self.compute_E()
+        _it2 = time.perf_counter()
         if efp_enabled:
             global efp_Dt_psi4_yo
 
@@ -491,6 +522,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
             else:
                 # Run DIIS
+                _iter_detailed = True
+                _it3 = time.perf_counter()
                 core.timer_on("HF: DIIS")
                 diis_performed = False
                 add_to_diis_subspace = self.diis_enabled_ and self.iteration_ >= self.diis_start_
@@ -502,6 +535,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                         status.append(engine_used)
 
                 core.timer_off("HF: DIIS")
+                _it4 = time.perf_counter()
 
                 if verbose > 4 and diis_performed:
                     core.print_out("  After DIIS:\n")
@@ -517,6 +551,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 else:
                     self.form_C()
                 core.timer_off("HF: Form C")
+                _it5 = time.perf_counter()
 
                 if self.MOM_performed_:
                     status.append("MOM")
@@ -536,6 +571,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.timer_on("HF: Form D")
         self.form_D()
         core.timer_off("HF: Form D")
+        _it6 = time.perf_counter()
 
         self.set_variable("SCF ITERATION ENERGY", SCFE)
         core.set_variable("SCF D NORM", Dnorm)
@@ -557,10 +593,18 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.Db().print_out()
 
         # Print out the iteration
+        iter_wall = time.perf_counter() - iter_t0
         core.print_out(
-            "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
+            "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %7.2fs %s\n" %
             ("DF-" if is_dfjk else "", reference, "SAD" if
-             ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, '/'.join(status)))
+             ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, iter_wall, '/'.join(status)))
+
+        if _iter_detailed:
+            core.print_out(
+                "    iter breakdown: G=%5.1fms F+E=%5.1fms DIIS=%5.1fms C=%5.1fms D=%5.1fms other=%5.1fms\n" %
+                ((_it1 - _it0) * 1000, (_it2 - _it1) * 1000, (_it4 - _it3) * 1000,
+                 (_it5 - _it4) * 1000, (_it6 - _it5) * 1000,
+                 (iter_wall - (_it1 - _it0) - (_it2 - _it1) - (_it4 - _it3) - (_it5 - _it4) - (_it6 - _it5)) * 1000))
 
         # if a an excited MOM is requested but not started, don't stop yet
         # Note that MOM_performed_ just checks initialization, and our convergence measures used the pre-MOM orbitals
