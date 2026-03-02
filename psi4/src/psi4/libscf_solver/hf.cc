@@ -945,7 +945,30 @@ void HF::print_orbitals() {
         print_orbital_pairs("Doubly Occupied:", docc);
         print_orbital_pairs("Singly Occupied:", socc);
         print_orbital_pairs("Virtual:", vir);
+    } else if (reference == "CGHF") {
+        std::vector<std::pair<double, std::pair<std::string, int> > > occ;
+        std::vector<std::pair<double, std::pair<std::string, int> > > vir;
 
+        for (int h = 0; h < nirrep_; h++) {
+            std::vector<std::pair<double, int> > orb_e;
+            for (int a = 0; a < nsopi_[h]; a++) orb_e.emplace_back(epsilon_a_->get(h, a), a);
+            for (int a = 0; a < nsopi_[h]; a++) orb_e.emplace_back(epsilon_b_->get(h, a), a + nsopi_[h]);
+            std::sort(orb_e.begin(), orb_e.end());
+
+            std::vector<int> orb_order(2*nsopi_[h]);
+            for (int a = 0; a < 2*nsopi_[h]; a++) orb_order[orb_e[a].second] = a;
+
+            int nelec = nalphapi_[h] + nbetapi_[h];
+            for (int a = 0; a < nelec; a++)
+                occ.push_back(std::make_pair(orb_e[a].first, std::make_pair(labels[h], orb_order[a] + 1)));
+            for (int a = nelec; a < 2*nsopi_[h]; a++)
+                vir.push_back(std::make_pair(orb_e[a].first, std::make_pair(labels[h], orb_order[a] + 1)));
+        }
+        std::sort(occ.begin(), occ.end());
+        std::sort(vir.begin(), vir.end());
+
+        print_orbital_pairs("Occupied:", occ);
+        print_orbital_pairs("Virtual:", vir);
     } else {
         throw PSIEXCEPTION("Unknown reference in HF::print_orbitals");
     }

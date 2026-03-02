@@ -1,0 +1,15 @@
+#! cGHF non-C1 symmetries not available yet :( XFAIL this.
+
+molecule symmetric {
+0 1
+    He 0 0 0
+}
+
+set {
+    reference cghf
+    scf_type   pk
+    basis sto-3g
+}
+
+energy('scf')
+
