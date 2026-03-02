@@ -83,8 +83,8 @@ void DLPNOCCSD_Lambda::form_goo() {
             auto T_mk_to_mn = linalg::triplet(S_PNO(mn, mk), T_iajb_[mk], S_PNO(mk, mn)); // (e_{mn}, f_{mn})
 
             // \rho^{OO}_{nk} += \lambda_{mn}^{e_{mn} f_{mn}} T_mk_to_mn(e_{mn} f_{mn})
-            (*rho_oo_)(n, k) += lambda_iajb_[mn]->vector_dot(T_mk_to_mn);
-
+            double val = lambda_iajb_[mn]->vector_dot(T_mk_to_mn) + rho_oo_->get(n, k);
+            rho_oo_->set(n, k, val);
         } // end m_nk
     } // end nk
 
@@ -134,7 +134,9 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
                 for (int e_mi = 0; e_mi < n_pno_[mi]; ++e_mi) {
                     for (int f_mi = 0; f_mi < n_pno_[mi]; ++f_mi) {
-                        (*K_maef_dt_[mi])(a_ii, e_mi * n_pno_[mi] + f_mi) += (*q_vv_t1)(f_mi, a_ii) * (*q_vo_t1)(q_mi, e_mi);
+                        double val = K_maef_dt_[mi]->get(a_ii, e_mi * n_pno_[mi] + f_mi) + q_vv_t1->get(f_mi, a_ii) * q_vo_t1->get(q_mi, e_mi);
+                        K_maef_dt_[mi]->set(a_ii, e_mi * n_pno_[mi] + f_mi, val);
+                        // (*K_maef_dt_[mi])(a_ii, e_mi * n_pno_[mi] + f_mi) += (*q_vv_t1)(f_mi, a_ii) * (*q_vo_t1)(q_mi, e_mi);
                     } // end f_mi
                 } // end e_mi
             } // end a_ii
@@ -150,7 +152,9 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
                 for (int e_mi = 0; e_mi < n_pno_[mi]; ++e_mi) {
                     for (int f_mi = 0; f_mi < n_pno_[mi]; ++f_mi) {
-                        (*K_maef_dt_[mi])(a_ii, e_mi * npno_mi + f_mi) -= (*Fkc_bar_[ii])(k_ii, a_ii) * (*glizzy_sticker)(e_mi, f_mi) * (*Fkc_bar_[ii])(k_ii, a_ii);
+                        double val = K_maef_dt_[mi]->get(a_ii, e_mi * npno_mi + f_mi) - Fkc_bar_[ii]->get(k_ii, a_ii) * glizzy_sticker->get(k_ii, a_ii) * Fkc_bar_[ii]->get(k_ii, a_ii);
+                        K_maef_dt_[mi]->set(a_ii, e_mi * npno_mi + f_mi, val);
+                        // (*K_maef_dt_[mi])(a_ii, e_mi * npno_mi + f_mi) -= (*Fkc_bar_[ii])(k_ii, a_ii) * (*glizzy_sticker)(e_mi, f_mi) * (*Fkc_bar_[ii])(k_ii, a_ii);
                     } // end f_mi
                 } // end e_mi
             } // end a_ii
@@ -169,8 +173,11 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
                     for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
                         for (int e_mi = 0; e_mi < n_pno_[mi]; ++e_mi) {
                             for (int f_mi = 0; f_mi < n_pno_[mi]; ++f_mi) {
-                                (*K_maef_dt_[mi])(a_ii, e_mi * npno_mi + f_mi) -= (*ender_dragon)(e_mi, f_mi) 
-                                    * (*q_oo_t1)(q_mi, k_mi) * (*q_la_slice)(a_ii, 0);
+                                double val = K_maef_dt_[mi]->get(a_ii, e_mi * npno_mi + f_mi) 
+                                    - ender_dragon->get(e_mi, f_mi) * q_oo_t1->get(q_mi, k_mi) * q_la_slice->get(a_ii, 0);
+                                K_maef_dt_[mi]->set(a_ii, e_mi * npno_mi + f_mi, val);
+                                // (*K_maef_dt_[mi])(a_ii, e_mi * npno_mi + f_mi) -= (*ender_dragon)(e_mi, f_mi) 
+                                   // * (*q_oo_t1)(q_mi, k_mi) * (*q_la_slice)(a_ii, 0);
                             } // end f_mi
                         } // end e_mi
                     } // end a_ii
@@ -225,8 +232,10 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         for (int a_ki = 0; a_ki < n_pno_[ki]; ++a_ki) {
             for (int c_ki = 0; c_ki < n_pno_[ki]; ++c_ki) {
                 for (int e_ki = 0; e_ki < n_pno_[ki]; ++e_ki) {
-                    (*M_kace_bar_[ki])(a_ki, c_ki * n_pno_[ki] + e_ki) = 2.0 * (*K_ivvv_[ki])(c_ki, a_ki * n_pno_[ki] + e_ki)
-                            - (*K_ivvv_[ki])(a_ki, c_ki * n_pno_[ki] + e_ki);
+                    double val = 2.0 * K_ivvv_[ki]->get(c_ki, a_ki * n_pno_[ki] + e_ki) - K_ivvv_[ki]->get(a_ki, c_ki * n_pno_[ki] + e_ki);
+                    M_kace_bar_[ki]->set(a_ki, c_ki * n_pno_[ki] + e_ki, val);
+                    // (*M_kace_bar_[ki])(a_ki, c_ki * n_pno_[ki] + e_ki) = 2.0 * (*K_ivvv_[ki])(c_ki, a_ki * n_pno_[ki] + e_ki)
+                            // - (*K_ivvv_[ki])(a_ki, c_ki * n_pno_[ki] + e_ki);
                 } // end e_ki
             } // end c_i
         } // end a_ki
@@ -244,7 +253,10 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
                 for (int c_ki = 0; c_ki < n_pno_[ki]; ++c_ki) {
                     for (int e_ki = 0; e_ki < n_pno_[ki]; ++e_ki) {
-                        (*M_kace_bar_[ki])(a_ii, c_ki * n_pno_[ki] + e_ki) -= (*forg)(a_ii, c_ki) * (*T_l_ki)(e_ki, 0);
+                        double val = -forg->get(a_ii, c_ki) * T_l_ki->get(e_ki, 0)
+                            + M_kace_bar_[ki]->get(a_ii, c_ki * n_pno_[ki] + e_ki);
+                        M_kace_bar_[ki]->set(a_ii, c_ki * n_pno_[ki] + e_ki, val);
+                        // (*M_kace_bar_[ki])(a_ii, c_ki * n_pno_[ki] + e_ki) -= (*forg)(a_ii, c_ki) * (*T_l_ki)(e_ki, 0);
                     } // end e_ki
                 } // end c_ki
             } // end a_ki
@@ -276,7 +288,9 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             auto temp_m = linalg::triplet(T_m_ik, L_iajb_[ik], S_PNO(ik, mk), true, false, false);
 
             for (int c_mk = 0; c_mk < n_pno_[mk]; ++c_mk) {
-                (*M_mkic_bar_[mk])(i_mk, c_mk) += (*temp_m)(0, c_mk);
+                double val = temp_m->get(0, c_mk) + M_mkic_bar_[mk]->get(i_mk, c_mk);
+                M_mkic_bar_[mk]->set(i_mk, c_mk, val);
+                // (*M_mkic_bar_[mk])(i_mk, c_mk) += (*temp_m)(0, c_mk);
             }
         } // end i_mk
     } // end mk
@@ -301,7 +315,9 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             auto f_steak_university = linalg::triplet(T_m_ki, K_iajb_[ki], S_PNO(ki, km), true, false, false); // a column vector of dimension (1, n_pno_[km])
 
             for (int c_km = 0; c_km < n_pno_[km]; ++c_km) {
-                (*J_kmic_bar_[km])(i_km, c_km) += (*f_steak_university)(0, c_km);
+                double val = f_steak_university->get(0, c_km) + J_kmic_bar_[km]->get(i_km, c_km);
+                J_kmic_bar_[km]->set(i_km, c_km, val);
+                // (*J_kmic_bar_[km])(i_km, c_km) += (*f_steak_university)(0, c_km);
             } // end c_km
         } // end i_km
     } // end km
@@ -330,7 +346,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             for (int a_ki = 0; a_ki < n_pno_[ki]; ++a_ki) {
                 for (int e_ki = 0; e_ki < n_pno_[ki]; ++e_ki) {
                     for (int c_ki = 0; c_ki < n_pno_[ki]; ++c_ki) {
-                        (*J_kaec_bar_[ki])(a_ki, e_ki * n_pno_[ki] + c_ki) -= (*south_ohio)(a_ki, c_ki) * (*T_l_ki)(e_ki, 0);
+                        double val = J_kaec_bar_[ki]->get(a_ki, e_ki * n_pno_[ki] + c_ki) - south_ohio->get(a_ki, c_ki) * T_l_ki->get(e_ki, 0);
+                        J_kaec_bar_[ki]->set(a_ki, e_ki * n_pno_[ki] + c_ki, val);
                     } // end c_ki
                 } // end e_ki
             } // end a_ki
@@ -368,8 +385,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
                 for (int a_mn = 0; a_mn < npno_mn; ++a_mn) {
                     for (int f_mn = 0; f_mn < npno_mn; ++f_mn) {
                         for (int c_mn = 0; c_mn < npno_mn; ++c_mn) {
-                            (*F_fcia_temp)(i_mn * npno_mn + a_mn, f_mn * npno_mn + c_mn) = 2.0 * (*q_vv)(f_mn, c_mn) * (*q_ov)(i_mn, a_mn)
-                                - (*q_vv)(f_mn, a_mn) * (*q_ov)(i_mn, c_mn);
+                            double val = 2.0 * q_vv->get(f_mn, c_mn) * q_ov->get(i_mn, a_mn) - q_vv->get(f_mn, a_mn) * q_ov->get(i_mn, c_mn);
+                            F_fcia_temp->set(i_mn * npno_mn + a_mn, f_mn * npno_mn + c_mn, val);
                         } // end c_mn
                     } // end f_mn
                 } // end a_mn
@@ -445,8 +462,9 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
                     auto F_knia_temp = std::make_shared<Matrix>("F_knia_temp", npno_nn, 1);
 
                     for (int a_nn = 0; a_nn < npno_nn; ++a_nn) {
-                        (*F_knia_temp)(a_nn, 0) = 2.0 * (*qov_contracted)(k_nn, 0) * (*qov)(i_nn, a_nn) - 
-                            (*qov_contracted)(i_nn, 0) * (*qov)(k_nn, a_nn);
+                        double val = 2.0 * qov_contracted->get(k_nn, 0) * qov->get(i_nn, a_nn) - 
+                            qov_contracted->get(i_nn, 0) * qov->get(k_nn, a_nn);
+                        F_knia_temp->set(a_nn, 0, val);
                     }
 
                     F_knia_hat_[kn][i_kn]->add(linalg::doublet(S_PNO(ii, nn), F_knia_temp)); // (a_ii, 1)
@@ -475,8 +493,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             for (int e_ij = 0; e_ij < npno_ij; ++e_ij) {
                 for (int b_ij = 0; b_ij < npno_ij; ++b_ij) {
                     // L_{ie_{ij}}^{a_{ij} b_{ij}} = 2 (i a_{ij} | e_{ij} b_{ij}) - (i b_{ij} | e_{ij} a_{ij})
-                    (*L_ieab_bar_[ij])(e_ij, a_ij * npno_ij + b_ij) = 2.0 * (*K_ivvv_[ij])(a_ij, e_ij * n_pno_[ij] + b_ij)
-                            - (*K_ivvv_[ij])(b_ij, e_ij * n_pno_[ij] + a_ij);
+                    double val = 2.0 * K_ivvv_[ij]->get(a_ij, e_ij * n_pno_[ij] + b_ij) - K_ivvv_[ij]->get(b_ij, e_ij * n_pno_[ij] + a_ij);
+                    L_ieab_bar_[ij]->set(e_ij, a_ij * npno_ij + b_ij, val);
                 } // end b_ij
             } // end e_ij
         } // end a_ij
@@ -493,7 +511,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             for (int e_jj = 0; e_jj < n_pno_[jj]; ++e_jj) {
                 for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
                     for (int b_ij = 0; b_ij < n_pno_[ij]; ++b_ij) {
-                        (*L_ieab_bar_[ij])(e_jj, a_ij * n_pno_[ij] + b_ij) -= (*T_l_j)(e_jj, 0) * (*jon_arbuckle)(a_ij, b_ij);
+                        double val = (L_ieab_bar_[ij])->get(e_jj, a_ij * n_pno_[ij] + b_ij) - T_l_j->get(e_jj, 0) * jon_arbuckle->get(a_ij, b_ij);
+                        L_ieab_bar_[ij]->set(e_jj, a_ij * n_pno_[ij] + b_ij, val);
                     } // end b_ij
                 } // end a_ij
             } // end e_jj
@@ -541,8 +560,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             int li = i_j_to_ij_[l][i], lm = i_j_to_ij_[l][m];
 
             auto sussy_baka = linalg::triplet(S_PNO(li, lm), Tt_iajb_[lm], S_PNO(li, lm), false, false, true);
-
-            (*F_im_double_tilde_)(i, m) += sussy_baka->vector_dot(K_iajb_[li]);
+            double val = F_im_double_tilde_->get(i, m) + sussy_baka->vector_dot(K_iajb_[li]);
+            F_im_double_tilde_->set(i, m, val);
         } // end l_im
     } // end ij
 }
@@ -602,7 +621,7 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
 
         // - \widetilde{widetilde{F}}_{im} \lambda_{m}^{a_{mm}} S_{a_{mm}}^{a_{ii}}
         auto john_big_back_buffer = linalg::doublet(S_PNO(ii, mm), lambda_ia_[m]);
-        john_big_back_buffer->scale((*F_im_double_tilde_)(i, m));
+        john_big_back_buffer->scale(F_im_double_tilde_->get(i, m));
         L_ia_buffer[thread][i]->subtract(john_big_back_buffer);
         
         /* l_{i}^{a_{ii}} += \widetilde{\widetilde{K}}_{ma_{ii}}^{e_{mi}f_{mi}} \widetilde{\lambda}_{mi}^{e_{mi}f_{mi}} (Toth Eq. 35a) */
@@ -648,7 +667,7 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
             L_ia_buffer[thread][i]->add(Gvv_temp);
 
             auto F_mnia_slice = F_knia_hat_[mn][i_mn]->clone(); // (a_ii, 1)
-            F_mnia_slice->scale((*rho_oo_)(m, n));
+            F_mnia_slice->scale(rho_oo_->get(m, n));
             L_ia_buffer[thread][i]->subtract(F_mnia_slice);
         }
 
@@ -799,9 +818,8 @@ std::vector<SharedMatrix> DLPNOCCSD_Lambda::compute_alpha_ijkl() {
                 int l = lmopair_to_lmos_[ij][l_ij];
                 int kl = i_j_to_ij_[k][l];
                 auto gremlin = linalg::triplet(S_PNO(ij, kl), T_iajb_[kl], S_PNO(kl, ij));
-                
-                (*alpha_ijkl[ij])(k_ij, l_ij) = gremlin->vector_dot(lambda_iajb_[ij]);
-
+                double val = gremlin->vector_dot(lambda_iajb_[ij]);
+                alpha_ijkl[ij]->set(k_ij, l_ij, val);
             } // end l_ij
         } // end k_ij
     }
@@ -862,8 +880,9 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
             auto lambda_m_ij = linalg::doublet(S_PNO(ij, mm), lambda_ia_[m]);
             for (int a_ij = 0; a_ij < npno_ij; ++a_ij) {
                 for (int b_ij = 0; b_ij < npno_ij; ++b_ij) {
-                    (*Ln_iajb[ij])(a_ij, b_ij) -= 2.0 * (*lambda_m_ij)(a_ij, 0) * (*K_ijmb_bar_[ij])(m_ij, b_ij)
-                        - (*lambda_m_ij)(b_ij, 0) * (*K_ijmb_bar_[ij])(m_ij, a_ij);
+                    double val = Ln_iajb[ij]->get(a_ij, b_ij) - 2.0 * lambda_m_ij->get(a_ij, 0) * K_ijmb_bar_[ij]->get(m_ij, b_ij)
+                                    + lambda_m_ij->get(b_ij, 0) * K_ijmb_bar_[ij]->get(m_ij, a_ij);
+                    Ln_iajb[ij]->set(a_ij, b_ij, val);
                 } // end b_ij
             } // end a_ij
         } // end m_ij
@@ -872,8 +891,9 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
         auto lambda_i = linalg::doublet(S_PNO(ij, ii), lambda_ia_[i]);
         for (int a_ij = 0; a_ij < npno_ij; ++a_ij) {
             for (int b_ij = 0; b_ij < npno_ij; ++b_ij) {
-                (*Ln_iajb[ij])(a_ij, b_ij) += 2.0 * (*lambda_i)(a_ij, 0) * (*Fkc_[ji])(b_ij, 0) 
-                        - (*lambda_i)(b_ij, 0) * (*Fkc_[ji])(a_ij, 0);
+                double val = Ln_iajb[ij]->get(a_ij, b_ij) + 2.0 * lambda_i->get(a_ij, 0) * Fkc_[ji]->get(b_ij, 0)
+                                - lambda_i->get(b_ij, 0) * Fkc_[ji]->get(a_ij, 0);
+                Ln_iajb[ij]->set(a_ij, b_ij, val);
             } // end b_ij
         } // end a_ij
 
@@ -908,7 +928,7 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
                 int i_mn = lmopair_to_lmos_dense_[mn][i], j_mn = lmopair_to_lmos_dense_[mn][j];
 
                 auto ethan = linalg::triplet(S_PNO(ij, mn), lambda_iajb_[mn], S_PNO(mn, ij));
-                ethan->scale(0.5 * (*beta[mn])(i_mn, j_mn));
+                ethan->scale(0.5 * beta[mn]->get(i_mn, j_mn));
                 Ln_iajb[ij]->add(ethan);
             } // end n_ij
         } // end m_ij
@@ -996,11 +1016,11 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
             int n = lmopair_to_lmos_[ij][n_ij];
             int in = i_j_to_ij_[i][n];
             auto lambda_temp = linalg::triplet(S_PNO(ij, in), lambda_iajb_[in], S_PNO(in, ij));
-            lambda_temp->scale((*F_im_double_tilde_)(j, n));
+            lambda_temp->scale(F_im_double_tilde_->get(j, n));
             Ln_iajb[ij]->subtract(lambda_temp);
 
             auto ohio = linalg::triplet(S_PNO(ij, in), L_iajb_[in], S_PNO(in, ij));
-            ohio->scale((*rho_oo_)(j, n));
+            ohio->scale(rho_oo_->get(j, n));
             Ln_iajb[ij]->subtract(ohio);
         } // end n_ij
 
@@ -1120,7 +1140,8 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
         for (int i = 0; i < naocc; ++i) {
             int ii = i_j_to_ij_[i][i];
             for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
-                (*lambda_ia_[i])(a_ii, 0) -= (*L_ia[i])(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
+                double val = lambda_ia_[i]->get(a_ii, 0) - L_ia[i]->get(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
+                lambda_ia_[i]->set(a_ii, 0, val);
             }
         }
 
@@ -1131,8 +1152,9 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
 
             for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
                 for (int b_ij = 0; b_ij < n_pno_[ij]; ++b_ij) {
-                    (*lambda_iajb_[ij])(a_ij, b_ij) -= (*L_iajb[ij])(a_ij, b_ij) / 
+                    double val = lambda_iajb_[ij]->get(a_ij, b_ij) - L_iajb[ij]->get(a_ij, b_ij) /
                                     (e_pno_[ij]->get(a_ij) + e_pno_[ij]->get(b_ij) - F_lmo_->get(i,i) - F_lmo_->get(j,j));
+                    lambda_iajb_[ij]->set(a_ij, b_ij, val);
                 }
             }
             

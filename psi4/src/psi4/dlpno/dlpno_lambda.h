@@ -88,7 +88,7 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
     void estimate_memory();
     /// Compute rho density terms
     void form_goo();
-    /// Compute some of the intermediates required in lambda DLPNO CCSD
+    /// Compcondute some of the intermediates required in lambda DLPNO CCSD
     void compute_lambda_intermediates();
     
     // => Lambda CCSD intermediates <= //
