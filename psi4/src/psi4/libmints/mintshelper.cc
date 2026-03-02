@@ -796,7 +796,7 @@ std::vector<SharedMatrix> MintsHelper::ao_zora_spin_orbit() {
     std::string socz(PSIF_AO_SOCZ);
 
     if (!are_ints_cached(socx, include_perturbations)) {
-        throw PSIEXCEPTION("ZORA Spin-orbit integrals not cached. Have you called so_kinetic yet?");
+        compute_so_zora_ints(true, include_perturbations);
     }
 
     std::vector<SharedMatrix> H_SO_zora(3);
@@ -1371,8 +1371,11 @@ SharedMatrix MintsHelper::so_kinetic(bool include_perturbations) {
         if (options_.get_str("RELATIVISTIC") == "X2C") {
             // generate so_overlap, so_kinetic, so_potential and cache them
             compute_so_x2c_ints(include_perturbations);
-		} else if (options_.get_str("RELATIVISTIC") == "ZORA") {
-            compute_so_zora_ints(include_perturbations);
+        } else if (options_.get_str("RELATIVISTIC") == "ZORA") {
+            bool spin_orbit = options_.get_bool("ZORA_SPIN_ORBIT_COUPLING");
+            if (spin_orbit && options_.get_str("REFERENCE") != "CGHF")
+                throw PSIEXCEPTION("ZORA spin-orbit coupling is only possible with CGHF reference.");
+            compute_so_zora_ints(spin_orbit, include_perturbations);
         } else {
             cached_oe_ints_[p] = so_kinetic_nr();
         }
@@ -1472,16 +1475,11 @@ void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
     }
 }
 
-void MintsHelper::compute_so_zora_ints(bool include_perturbations) {
+void MintsHelper::compute_so_zora_ints(bool spin_orbit, bool include_perturbations) {
     outfile->Printf(" OEINTS: Using relativistic (ZORA) kinetic integrals.\n");
-    bool spin_orbit = options_.get_bool("ZORA_SPIN_ORBIT_COUPLING");
 
     if (include_perturbations && options_.get_bool("PERTURB_H")) {
 		throw PSIEXCEPTION("Perturbations of the ZORA hamiltonian are not implemented.");
-    }
-
-    if (spin_orbit && options_.get_str("REFERENCE") != "CGHF") {
-        throw PSIEXCEPTION("ZORA spin-orbit coupling is only possible with CGHF reference.");
     }
 
     ZORA zoraint(molecule_, basisset_, options_);
