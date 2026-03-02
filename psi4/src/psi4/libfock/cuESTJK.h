@@ -17,28 +17,21 @@ class Options;
 class PSI_API cuESTJK : public JK {
    protected:
     Options& options_;
+
     std::shared_ptr<BasisSet> auxiliary_;
+
     double condition_;
+    double pq_threshold_;
+
+    bool initialized_;
 
     cuestAOBasis_t cuest_primary_basis_;
     cuestAOBasis_t cuest_auxiliary_basis_;
     cuestAOPairList_t cuest_pair_list_;
     cuestDFIntPlan_t cuest_df_plan_;
 
-    std::vector<cuestAOShell_t> cuest_primary_shells_;
-    std::vector<cuestAOShell_t> cuest_auxiliary_shells_;
-
-    cuestWorkspace_t primary_persistent_ws_;
-    cuestWorkspace_t auxiliary_persistent_ws_;
-    cuestWorkspace_t pair_persistent_ws_;
-    cuestWorkspace_t df_persistent_ws_;
-
-    cuestDFCoulombComputeParameters_t coulomb_compute_params_;
-    cuestDFSymmetricExchangeComputeParameters_t exchange_compute_params_;
-    cuestWorkspace_t compute_temp_ws_;
-    cuestWorkspaceDescriptor_t exchange_max_ws_desc_;
-
-    bool plan_built_;
+    cuestWorkspace_t* cuest_pair_list_ws_ptr_;
+    cuestWorkspace_t* cuest_dfint_plan_ws_ptr_;
 
     std::string name() override { return "cuESTJK"; }
     size_t memory_estimate() override;
