@@ -30,6 +30,7 @@
 #include "cubature.h"
 #include "points.h"
 #include "dft_integrators.h"
+#include "gauxc_int.h"
 #include "sap.h"
 
 #include "psi4/libfunctional/LibXCfunctional.h"
@@ -177,6 +178,11 @@ void VBase::set_D(std::vector<SharedMatrix> Dvec) {
             D_AO_[i]->copy(Dvec[i]);
         }
     }
+
+#ifdef USING_gauxc
+    if (gauxc_integrator_) gauxc_integrator_->set_D(Dvec);
+#endif
+
 }
 void VBase::initialize() {
     // TODO: This should only run if the compute_V mode is Psi.
@@ -189,7 +195,10 @@ void VBase::initialize() {
         functional_workers_.push_back(functional_->build_worker());
     }
 #ifdef USING_gauxc
-    if (options_.get_bool("GAUXC_INTEGRATE")) initialize_gauxc();
+    if (options_.get_bool("GAUXC_INTEGRATE")) {
+        gauxc_integrator_ = std::make_shared<GauRV>(functional_, primary_, options_);
+        gauxc_integrator_->initialize();
+    }
 #endif 
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT)
@@ -676,76 +685,6 @@ void VBase::initialize() {
         brianCOMInitDFT(&brianCookie);
         checkBrian();
     }
-#endif
-}
-void VBase::initialize_gauxc() {
-#ifdef USING_gauxc
-    // TODO: Allow for Device execspace, depending on flags. This will add GPU support.
-    const auto gauxc_execspace = GauXC::ExecutionSpace::Host;
-    GauXC::LoadBalancerFactory lb_factory(gauxc_execspace, options_.get_str("GAUXC_LOAD_BALANCER_KERNEL"));
-    auto rt = std::make_unique<GauXC::RuntimeEnvironment>( GAUXC_MPI_CODE(MPI_COMM_WORLD) );
-    auto gauxc_mol = primary_->molecule()->to_gauxc_molecule();
-
-    std::unordered_map<std::string, GauXC::PruningScheme> pruning_scheme_map = {
-      {"ROBUST", GauXC::PruningScheme::Robust},
-      {"TREUTLER", GauXC::PruningScheme::Treutler},
-      {"NONE", GauXC::PruningScheme::Unpruned}
-    };
-    auto pruning_scheme = options_.get_str("GAUXC_PRUNING_SCHEME");
-
-    // generate map for radial quadrature schemes 
-    std::unordered_map<std::string, GauXC::RadialQuad> radial_scheme_map = { 
-      {"TREUTLER", GauXC::RadialQuad::TreutlerAhlrichs},
-      {"MURA", GauXC::RadialQuad::MuraKnowles},
-      {"EM", GauXC::RadialQuad::MurrayHandyLaming}
-    };
-    auto radial_scheme = options_.get_str("GAUXC_RADIAL_SCHEME");
-    auto grid_batch_size = options_.get_int("GAUXC_GRID_BATCH_SIZE");
-    auto radial_points = options_.get_int("GAUXC_RADIAL_POINTS");
-    auto spherical_points = options_.get_int("GAUXC_SPHERICAL_POINTS");
-
-    auto gauxc_grid = GauXC::MolGridFactory::create_default_molgrid(
-        gauxc_mol, 
-        pruning_scheme_map[pruning_scheme],
-        GauXC::BatchSize(grid_batch_size), // TODO: Value taken from MPQC. Experimental.
-        radial_scheme_map[radial_scheme], 
-        GauXC::RadialSize(radial_points),
-        GauXC::AngularSize(spherical_points)
-    );
-    auto gauxc_primary = primary_->to_gauxc_basisset<double>(1.0e-10, false); // TODO: Allow customization
-    auto load_balancer = lb_factory.get_shared_instance(*rt, gauxc_mol, gauxc_grid, gauxc_primary);
-    GauXC::MolecularWeightsFactory mw_factory(gauxc_execspace, "Default",
-                                          GauXC::MolecularWeightsSettings{});
-    auto mw = mw_factory.get_instance();
-    mw.modify_weights(*load_balancer);
-
-    // TODO: Allow for more options here. This is quick-and-dirty.
-    GauXC::XCIntegratorFactory<Eigen::MatrixXd> integrator_factory(
-          gauxc_execspace, "Replicated", "Default", "Default", "Default");
-    std::vector<std::pair<double, ExchCXX::XCKernel>> init_vec;
-
-    for (const auto functionalComponent: functional_->x_functionals()) {
-        auto xcfunc = dynamic_pointer_cast<LibXCFunctional>(functionalComponent);
-        if (xcfunc == nullptr) {
-            throw PSIEXCEPTION("GauXC integration requires LibXC functionals.");
-        }
-        auto name = xcfunc->name();
-        auto alpha = xcfunc->alpha();
-        // TODO: Update Spin.
-        init_vec.emplace_back(alpha, ExchCXX::XCKernel(ExchCXX::libxc_name_string(name), ExchCXX::Spin::Unpolarized));
-    }
-    for (const auto functionalComponent: functional_->c_functionals()) {
-        auto xcfunc = dynamic_pointer_cast<LibXCFunctional>(functionalComponent);
-        if (xcfunc == nullptr) {
-            throw PSIEXCEPTION("GauXC integration requires LibXC functionals.");
-        }
-        auto name = xcfunc->name();
-        auto alpha = xcfunc->alpha();
-        init_vec.emplace_back(alpha, ExchCXX::XCKernel(ExchCXX::libxc_name_string(name), ExchCXX::Spin::Unpolarized));
-    }
-    auto gxc_func = std::make_shared<GauXC::functional_type>(init_vec);
-    integrator_ =
-          integrator_factory.get_shared_instance(gxc_func, load_balancer);
 #endif
 }
 SharedMatrix VBase::compute_gradient() { throw PSIEXCEPTION("VBase: gradient not implemented for this V instance."); }
@@ -1353,7 +1292,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
 #endif
 #ifdef USING_gauxc
     if (options_.get_int("GAUXC_INTEGRATE")) {
-        compute_V_gauxc(ret);
+        quad_values_ = gauxc_integrator_->compute_V(ret);
         timer_off("RV: Form V");
         return;
     }
@@ -1377,44 +1316,6 @@ void RV::compute_V_brianqc(std::vector<SharedMatrix>& ret) {
     
     quad_values_["VV10"] = 0.0; // NOTE: BrianQC doesn't compute the VV10 term separately, it just includes it in the DFT energy term
     quad_values_["FUNCTIONAL"] = DFTEnergy;
-    quad_values_["RHO_A"] = 0.0;
-    quad_values_["RHO_AX"] = 0.0;
-    quad_values_["RHO_AY"] = 0.0;
-    quad_values_["RHO_AZ"] = 0.0;
-    quad_values_["RHO_B"] = 0.0;
-    quad_values_["RHO_BX"] = 0.0;
-    quad_values_["RHO_BY"] = 0.0;
-    quad_values_["RHO_BZ"] = 0.0;
-}
-#endif
-
-#ifdef USING_gauxc
-void RV::compute_V_gauxc(std::vector<SharedMatrix>& ret) {
-    Eigen::MatrixXd eigen_d = D_AO_[0]->eigen_map();
-#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
-    if (primary_->has_puream()) {
-        auto permuter = primary_->generate_permutation_to_cca();
-        eigen_d = permuter * eigen_d * permuter.transpose();
-    }
-#endif
-    auto [e_xc, v_xc] = integrator_->eval_exc_vxc(eigen_d);
-#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
-    if (primary_->has_puream()) {
-        auto permuter = primary_->generate_permutation_to_cca();
-        v_xc = permuter.transpose() * v_xc * permuter;
-    }
-#endif
-
-    // Set the result
-    auto ao_result = std::make_shared<Matrix>(v_xc);
-    if (AO2USO_) {
-        ret[0]->apply_symmetry(ao_result, AO2USO_);
-    } else {
-        ret[0]->copy(ao_result);
-    }
-
-    quad_values_["VV10"] = 0.0;
-    quad_values_["FUNCTIONAL"] = e_xc;
     quad_values_["RHO_A"] = 0.0;
     quad_values_["RHO_AX"] = 0.0;
     quad_values_["RHO_AY"] = 0.0;
