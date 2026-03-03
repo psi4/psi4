@@ -1368,16 +1368,25 @@ SharedMatrix MintsHelper::so_kinetic(bool include_perturbations) {
     std::string label(PSIF_SO_T);
     auto p = std::make_pair(label, include_perturbations);
     if (!are_ints_cached(label, include_perturbations)) {
-        if (options_.get_str("RELATIVISTIC") == "X2C") {
-            // generate so_overlap, so_kinetic, so_potential and cache them
-            compute_so_x2c_ints(include_perturbations);
-        } else if (options_.get_str("RELATIVISTIC") == "ZORA") {
-            bool spin_orbit = options_.get_bool("ZORA_SPIN_ORBIT_COUPLING");
-            if (spin_orbit && options_.get_str("REFERENCE") != "CGHF")
+        auto relativistic = options_.get_str("RELATIVISTIC");
+
+        if (options_.get_bool("ZORA_SPIN_ORBIT_COUPLING")) {
+            if (relativistic != "ZORA")
+                throw PSIEXCEPTION("RELATIVISTIC ZORA required with ZORA_SPIN_ORBIT_COUPLING TRUE.");
+
+            if (options_.get_str("REFERENCE") != "CGHF")
                 throw PSIEXCEPTION("ZORA spin-orbit coupling is only possible with CGHF reference.");
-            compute_so_zora_ints(spin_orbit, include_perturbations);
+
+            compute_so_zora_ints(true, include_perturbations);
         } else {
-            cached_oe_ints_[p] = so_kinetic_nr();
+            if (relativistic == "X2C") {
+                // generate so_overlap, so_kinetic, so_potential and cache them
+                compute_so_x2c_ints(include_perturbations);
+            } else if (relativistic == "ZORA") {
+                compute_so_zora_ints(false, include_perturbations);
+            } else {
+                cached_oe_ints_[p] = so_kinetic_nr();
+            }
         }
     }
     return cached_oe_ints_[p];
@@ -1615,8 +1624,6 @@ std::vector<SharedMatrix> MintsHelper::so_angular_momentum() const {
 
     return am;
 }
-
-
 
 std::vector<SharedMatrix> MintsHelper::ao_angular_momentum() {
     // Create a vector of matrices with the proper symmetry
