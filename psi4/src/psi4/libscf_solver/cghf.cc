@@ -375,16 +375,16 @@ void CGHF::form_D() {
         for (int j = 0; j < irrep_sizes_[h]; j++) {
             for (int k = 0; k < nelecpi_[h]; k++) {
                 auto C_jk = C_->block(h)(j, k);
-                temp1_->block(h)(j, k) = C_jk;
-                temp2_->block(h)(j, k) = std::conj(C_jk);
+                temp1_->block(h)(j, k) = std::conj(C_jk);
+                temp2_->block(h)(j, k) = C_jk;
             }
         }
     }
 
     // Performs einsums contraction ui,vi->uv with temp1_, temp2_ -> D_)
     einsums::tensor_algebra::einsum(einsums::Indices{einsums::index::u, einsums::index::v}, D_.get(),  // D_uv
-                                    einsums::Indices{einsums::index::u, einsums::index::i}, *temp1_,   // Cocc_ui
-                                    einsums::Indices{einsums::index::v, einsums::index::i}, *temp2_    // Cocc.conj.T_vi
+                                    einsums::Indices{einsums::index::u, einsums::index::i}, *temp1_,   // Cocc_ui.conj().T
+                                    einsums::Indices{einsums::index::v, einsums::index::i}, *temp2_    // Cocc_vi
     );
 }
 
