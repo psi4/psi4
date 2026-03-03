@@ -43,7 +43,7 @@ class BasisFunctions;
  *  \class ZORA
  *  \brief Scalar relativistic kinetic integral through zeroth-order regular approximation (ZORA).
  *
- *  \details Here we use the model potential proposed by van Wüllen in 
+ *  \details Here we use the model potential proposed by van Wüllen in
  *  *Molecular density functional calculations in the regular relativistic approximation*
  *  (https://doi.org/10.1063/1.476576/). The exact values of the model potential come from
  *  NWCHEM (https://www.nwchem-sw.org/). Given atomic orbital :math:`\chi`, we evaluate the
@@ -61,17 +61,17 @@ class BasisFunctions;
  */
 class PSI_API ZORA {
    public:
-	ZORA(std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&);
-	~ZORA();
+    ZORA(std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&);
+    ~ZORA();
 
-	/// Builds grid, sets up pworkers and computes veff
-	void setup();
+    /// Builds grid, sets up pworkers and computes veff
+    void setup();
 
     /*! @{
      * Fills an empty SharedMatrix with the computed ZORA kinetic integral.
      * @param T Shared matrix object that will hold the ZORA kinetic integrals.
      */
-	void compute_TSR(SharedMatrix&);
+    void compute_TSR(SharedMatrix&);
     /*! @} */
 
     /*! @{
