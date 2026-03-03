@@ -156,12 +156,6 @@ void VBase::initialize() {
         // Need a functional worker per thread
         functional_workers_.push_back(functional_->build_worker());
     }
-#ifdef USING_gauxc
-    if (options_.get_bool("GAUXC_INTEGRATE")) {
-        gauxc_integrator_ = std::make_shared<GauRV>(functional_, primary_, options_);
-        gauxc_integrator_->initialize();
-    }
-#endif 
 }
 SharedMatrix VBase::compute_gradient() { throw PSIEXCEPTION("VBase: gradient not implemented for this V instance."); }
 SharedMatrix VBase::compute_hessian() { throw PSIEXCEPTION("VBase: hessian not implemented for this V instance."); }
@@ -746,6 +740,12 @@ void RV::initialize() {
         brianqc_integrator_->initialize();
     }
 #endif
+#ifdef USING_gauxc
+    if (options_.get_bool("GAUXC_INTEGRATE")) {
+        gauxc_integrator_ = std::make_shared<GauRV>(functional_, primary_, options_);
+        gauxc_integrator_->initialize();
+    }
+#endif 
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions();
     for (size_t i = 0; i < num_threads_; i++) {
@@ -2069,6 +2069,19 @@ UV::UV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> pr
 UV::~UV() {}
 void UV::initialize() {
     VBase::initialize();
+#ifdef USING_BrianQC
+    if (brianEnable and brianEnableDFT)
+    {
+        brianqc_integrator_ = std::make_shared<BrianUV>(functional_, primary_, options_);
+        brianqc_integrator_->initialize();
+    }
+#endif
+#ifdef USING_gauxc
+    if (options_.get_bool("GAUXC_INTEGRATE")) {
+        gauxc_integrator_ = std::make_shared<GauUV>(functional_, primary_, options_);
+        gauxc_integrator_->initialize();
+    }
+#endif 
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions();
     for (size_t i = 0; i < num_threads_; i++) {
@@ -2096,6 +2109,13 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         quad_values_ = brianqc_integrator_->compute_V(ret);
+        timer_off("UV: Form V");
+        return;
+    }
+#endif
+#ifdef USING_gauxc
+    if (options_.get_int("GAUXC_INTEGRATE")) {
+        quad_values_ = gauxc_integrator_->compute_V(ret);
         timer_off("UV: Form V");
         return;
     }
