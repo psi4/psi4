@@ -43,7 +43,7 @@
 
 namespace psi {
 
-void GauRV::initialize() {
+void GauXCBase::initialize() {
     // TODO: Allow for Device execspace, depending on flags. This will add GPU support.
     const auto gauxc_execspace = GauXC::ExecutionSpace::Host;
     GauXC::LoadBalancerFactory lb_factory(gauxc_execspace, options_.get_str("GAUXC_LOAD_BALANCER_KERNEL"));
@@ -95,8 +95,7 @@ void GauRV::initialize() {
         }
         auto name = xcfunc->name();
         auto alpha = xcfunc->alpha();
-        // TODO: Update Spin.
-        init_vec.emplace_back(alpha, ExchCXX::XCKernel(ExchCXX::libxc_name_string(name), ExchCXX::Spin::Unpolarized));
+        init_vec.emplace_back(alpha, ExchCXX::XCKernel(ExchCXX::libxc_name_string(name), this->spin()));
     }
     for (const auto functionalComponent: functional_->c_functionals()) {
         auto xcfunc = dynamic_pointer_cast<LibXCFunctional>(functionalComponent);
@@ -105,7 +104,7 @@ void GauRV::initialize() {
         }
         auto name = xcfunc->name();
         auto alpha = xcfunc->alpha();
-        init_vec.emplace_back(alpha, ExchCXX::XCKernel(ExchCXX::libxc_name_string(name), ExchCXX::Spin::Unpolarized));
+        init_vec.emplace_back(alpha, ExchCXX::XCKernel(ExchCXX::libxc_name_string(name), this->spin()));
     }
     auto gxc_func = std::make_shared<GauXC::functional_type>(init_vec);
     integrator_ =
@@ -150,6 +149,55 @@ std::map<std::string, double> GauRV::compute_V(std::vector<SharedMatrix> ret) {
     return quad_values;
 }
 
+std::map<std::string, double> GauUV::compute_V(std::vector<SharedMatrix> ret) {
+    auto Ds = D_AO_[0]->clone();
+    Ds->add(D_AO_[1]);
+    auto Dz = D_AO_[0]->clone();
+    Dz->subtract(D_AO_[1]);
+    Eigen::MatrixXd eigen_ds = Ds->eigen_map();
+    Eigen::MatrixXd eigen_dz = Dz->eigen_map();
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
+    if (primary_->has_puream()) {
+        auto permuter = primary_->generate_permutation_to_cca();
+        eigen_ds = permuter * eigen_ds * permuter.transpose();
+        eigen_dz = permuter * eigen_dz * permuter.transpose();
+    }
+#endif
+    auto [e_xc, v_s, v_z] = integrator_->eval_exc_vxc(eigen_ds, eigen_dz);
+    auto v_a = static_cast<Eigen::MatrixXd>(v_s + v_z);
+    auto v_b = static_cast<Eigen::MatrixXd>(v_s - v_z);
+#if psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_STANDARD
+    if (primary_->has_puream()) {
+        auto permuter = primary_->generate_permutation_to_cca();
+        v_a = permuter.transpose() * v_a * permuter;
+        v_b = permuter.transpose() * v_b * permuter;
+    }
+#endif
+
+    // Set the result
+    auto ao_a = std::make_shared<Matrix>(v_a);
+    auto ao_b = std::make_shared<Matrix>(v_b);
+    if (AO2USO_) {
+        ret[0]->apply_symmetry(ao_a, AO2USO_);
+        ret[1]->apply_symmetry(ao_b, AO2USO_);
+    } else {
+        ret[0]->copy(ao_a);
+        ret[1]->copy(ao_b);
+    }
+
+    std::map<std::string, double> quad_values;
+    quad_values["VV10"] = 0.0;
+    quad_values["FUNCTIONAL"] = e_xc;
+    quad_values["RHO_A"] = 0.0;
+    quad_values["RHO_AX"] = 0.0;
+    quad_values["RHO_AY"] = 0.0;
+    quad_values["RHO_AZ"] = 0.0;
+    quad_values["RHO_B"] = 0.0;
+    quad_values["RHO_BX"] = 0.0;
+    quad_values["RHO_BY"] = 0.0;
+    quad_values["RHO_BZ"] = 0.0;
+    return quad_values;
+}
 
 } // namespace psi
 
