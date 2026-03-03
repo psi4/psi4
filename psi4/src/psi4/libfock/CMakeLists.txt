@@ -1,4 +1,5 @@
 list(APPEND sources
+  brianqc_int.cc
   CDJK.cc
   CompositeJK.cc
   COSK.cc
