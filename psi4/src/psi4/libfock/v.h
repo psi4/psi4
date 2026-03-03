@@ -79,6 +79,10 @@ class PSI_API VBase {
     std::vector<std::shared_ptr<PointFunctions>> point_workers_;
     /// Integration grid, built by KSPotential
     std::shared_ptr<DFTGrid> grid_;
+#ifdef USING_BrianQC
+    /// Integrator object for BrianCC based integration
+    std::shared_ptr<BrianQCBase> brianqc_integrator_;
+#endif
 #ifdef USING_gauxc
     /// Integrator object for GauXC based integration
     std::shared_ptr<GauXCBase> gauxc_integrator_;
@@ -179,9 +183,6 @@ class RV : public VBase {
 
     // compute_V assuming same orbitals for different spin. Computes V_alpha, not spin-summed V.
     void compute_V(std::vector<SharedMatrix> ret) override;
-#ifdef USING_BrianQC
-    void compute_V_brianqc(std::vector<SharedMatrix>& ret);
-#endif
     void compute_V_psi(std::vector<SharedMatrix>& ret);
     /// Compute the orbital derivative of the KS potential, contract against Dx, and
     /// putting the result in ret. ret[i] is Vx where x = Dx[i]. The "true" vector has
