@@ -2344,8 +2344,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- The response property desired.  Acceptable values are ``POLARIZABILITY``
         (default) for dipole polarizabilities, ``ROTATION`` for specific rotations,
         ``ROA`` for Raman Optical Activity (``ROA_TENSOR`` for each displacement),
-        and ``ALL`` for all of the above. -*/
-        options.add_str("PROPERTY", "POLARIZABILITY", "POLARIZABILITY ROTATION ROA ROA_TENSOR ALL");
+        `HYPERPOLARIZABILITY`` for hyperpolarizabilities and ``ALL`` for all of the above. -*/
+        options.add_str("PROPERTY", "POLARIZABILITY", "POLARIZABILITY ROTATION ROA ROA_TENSOR HYPERPOLARIZABILITY ALL"); 
         /*- Type of ABCD algorithm will be used -*/
         options.add_str("ABCD", "NEW");
         /*- Do restart from on-disk amplitudes? -*/
