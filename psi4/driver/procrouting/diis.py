@@ -202,6 +202,7 @@ class DIIS:
                 dot_product += Rix.vector_dot(Rjx)
 
             self.cached_dot_products[key] = dot_product
+            self.cached_dot_products[frozenset([j, i])] = dot_product
             return dot_product
 
 
