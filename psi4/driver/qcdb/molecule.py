@@ -1292,7 +1292,7 @@ class Molecule(LibmintsMolecule):
         """
         raise RuntimeError("Using `Molecule.run_dftd3` instead of `Molecule.run_sdftd3` is obsolete as of 1.10. Note that parameters do not translate directly -- see docstring. Also aliases are not available for dashlvl. The new run_sdftd3 is analogous to run_dftd4. Alternately, you could access these routines by running `qcengine.compute(atomicinput, 's-dftd3')` directly.")
 
-    def run_sdftd3(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
+    def run_sdftd3(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1, property: bool = False):
         """Compute dispersion correction via Grimme's new simple-dftd3 program, not the classic DFTD3 executable.
 
         Parameters
@@ -1318,6 +1318,8 @@ class Molecule(LibmintsMolecule):
             efficient. Influences return values, see below.
         verbose
             Amount of printing.
+        property
+            Whether to return DFTD3 extra properties.
 
         Returns
         -------
@@ -1377,6 +1379,8 @@ class Molecule(LibmintsMolecule):
             for k, qca in jobrec['extras']['qcvars'].items():
                 if not isinstance(qca, (list, np.ndarray)):
                     core.set_variable(k, float(qca))
+        from pprint import pprint as pp
+        pp(jobrec['extras']['qcvars'])
 
         if derint == -1:
             return (float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']),
@@ -1411,6 +1415,10 @@ class Molecule(LibmintsMolecule):
             efficient. Influences return values, see below.
         verbose
             Amount of printing.
+        property
+            Whether to return DFTD4 properties (currently only C6 coefficients
+            and polarizabilities) in qcvars. Note that these are not returned
+            by default for most users would not need them.
 
         Returns
         -------

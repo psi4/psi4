@@ -32,7 +32,6 @@ import numpy as np
 
 from psi4 import core
 
-from .. import empirical_dispersion
 from ...p4util.exceptions import ValidationError
 
 

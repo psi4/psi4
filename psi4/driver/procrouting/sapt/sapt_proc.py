@@ -45,6 +45,7 @@ from psi4 import core
 from ... import p4util
 from ...constants import constants
 from ...p4util.exceptions import ValidationError
+from ..empirical_disp import edisp_interaction_energy
 from .. import proc_util
 from ..proc import scf_helper, run_scf, _set_external_potentials_to_wavefunction
 from . import (
@@ -126,31 +127,56 @@ def run_sapt_dft(name, **kwargs):
     ):
         do_mon_grac_shift_B = True
 
-    if "-d4" in name.lower():
-        d4_type = core.get_option("SAPT", "SAPT_DFT_D4_TYPE").lower()
+    if "-D4" in name.upper():
+        d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
         if "-D4(S)" in name.upper():
-        # if "-D3(S)" in name.upper():
             core.print_out(r"SAPT(DFT)-D4(S): -D4(S) for dispersion")
             core.set_global_option("SAPT_DFT_DO_DISP", 0)
             core.set_global_option("SAPT_DFT_D4_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 0)
-            core.set_global_option("SAPT_DFT_D4_TYPE", "supermolecular")
+            core.set_global_option("SAPT_DFT_D_TYPE", "supermolecular")
         elif "-D4(I)" in name.upper():
             core.print_out(r"SAPT(DFT)-D4(I): -D4(I) for dispersion")
             core.set_global_option("SAPT_DFT_DO_DISP", 0)
             core.set_global_option("SAPT_DFT_D4_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 0)
-            core.set_global_option("SAPT_DFT_D4_TYPE", "intermolecular")
+            core.set_global_option("SAPT_DFT_D_TYPE", "intermolecular")
         elif "DFT-D4" in name.upper():
             core.print_out(r"DFT-D4(SAPT): $\Delta$-DFT+D4 for dispersion")
             core.set_global_option("SAPT_DFT_DO_DISP", 0)
             core.set_global_option("SAPT_DFT_D4_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 1)
-            core.set_global_option("SAPT_DFT_D4_TYPE", "gd4_supermolecular")
+            core.set_global_option("SAPT_DFT_D_TYPE", "gd4_supermolecular")
         else:
             raise ValueError(
                 "SAPT(DFT)-D4 must be specified as 'SAPT(DFT)-D4(S)' or "
-                "'SAPT(DFT)-D4(I)' through setting SAPT_DFT_D4_TYPE to "
+                "'SAPT(DFT)-D4(I)' through setting SAPT_DFT_D_TYPE to "
+                "'supermolecular' or 'intermolecular'."
+            )
+    elif "-D3" in name.upper():
+        d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
+        if "-D3(S)" in name.upper():
+            core.print_out(r"SAPT(DFT)-D4(S): -D4(S) for dispersion")
+            core.set_global_option("SAPT_DFT_DO_DISP", 0)
+            core.set_global_option("SAPT_DFT_D3_IE", 1)
+            core.set_global_option("SAPT_DFT_DO_DDFT", 0)
+            core.set_global_option("SAPT_DFT_D_TYPE", "supermolecular")
+        elif "-D3(I)" in name.upper():
+            core.print_out(r"SAPT(DFT)-D3(I): -D3(I) for dispersion")
+            core.set_global_option("SAPT_DFT_DO_DISP", 0)
+            core.set_global_option("SAPT_DFT_D3_IE", 1)
+            core.set_global_option("SAPT_DFT_DO_DDFT", 0)
+            core.set_global_option("SAPT_DFT_D_TYPE", "intermolecular")
+        elif "DFT-D3" in name.upper():
+            core.print_out(r"DFT-D3(SAPT): $\Delta$-DFT+D3 for dispersion")
+            core.set_global_option("SAPT_DFT_DO_DISP", 0)
+            core.set_global_option("SAPT_DFT_D3_IE", 1)
+            core.set_global_option("SAPT_DFT_DO_DDFT", 1)
+            core.set_global_option("SAPT_DFT_D_TYPE", "gd3_supermolecular")
+        else:
+            raise ValueError(
+                "SAPT(DFT)-D3 must be specified as 'SAPT(DFT)-D3(S)' or "
+                "'SAPT(DFT)-D3(I)' through setting SAPT_DFT_D_TYPE to "
                 "'supermolecular' or 'intermolecular'."
             )
         # # Re-prepare options after local option changes
@@ -161,6 +187,7 @@ def run_sapt_dft(name, **kwargs):
     do_disp = core.get_option("SAPT", "SAPT_DFT_DO_DISP")
     sapt_dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
     sapt_dft_D4_IE = core.get_option("SAPT", "SAPT_DFT_D4_IE")
+    sapt_dft_D3_IE = core.get_option("SAPT", "SAPT_DFT_D3_IE")
     do_dft = sapt_dft_functional != "HF"
     do_fsapt = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT") != "NONE"
 
@@ -635,93 +662,40 @@ def run_sapt_dft(name, **kwargs):
         )
         core.print_out("\n")
         core.timer_on("SAPT(DFT):D4 Interaction Energy")
-        d4_type = core.get_option("SAPT", "SAPT_DFT_D4_TYPE").lower()
-        # TODO AMW; Suupport -d in the same waay. Seems like a beetter choice
-        # for long term usage
-        if d4_type == "supermolecular":
-            core.print_out(
-                "         "
-                + "Supermolecular D4 Interaction Energy E_IE = E_IJ - E_I - E_J".center(
-                    58
-                )
-                + "\n"
-            )
-            params = {
-                "s6": 1.00000000e00,
-                "s8": 1.20417708e00,
-                "a1": 9.09018333e-01,
-                "a2": 3.24886637e-10,
-                "s9": 0.00000000e00,
-            }
-            dimer_d4, _ = sapt_dimer.run_dftd4(dashparam=params, dashlvl="d4bjeeqatm")
-            data["D4 DIMER"] = dimer_d4
-            monA_d4, _ = monomerA.run_dftd4(dashparam=params, dashlvl="d4bjeeqatm")
-            data["D4 MONOMER A"] = monA_d4
-            monB_d4, _ = monomerB.run_dftd4(dashparam=params, dashlvl="d4bjeeqatm")
-            data["D4 MONOMER B"] = monB_d4
-            data["D4 IE"] = dimer_d4 - monA_d4 - monB_d4
-        elif d4_type == "gd4_supermolecular":
-            # This uses the default Grimme -D4 parameters for the given
-            # functional with BJ damping and ATM three-body terms. Only use
-            # this option in compbination with another baseline form of
-            # dispersion like the delta_DFT correction:
-            # "SAPT_DFT_DO_DDFT = True"
-            core.print_out(
-                "         "
-                + "Supermolecular GD4(BJ)+ATM Interaction Energy E_IE = E_IJ - E_I - E_J".center(
-                    58
-                )
-                + "\n"
-            )
-            dimer_d4, _ = sapt_dimer.run_dftd4(
-                func=sapt_dft_functional, dashlvl="d4bjeeqatm"
-            )
-            data["D4 DIMER"] = dimer_d4
-            monA_d4, _ = monomerA.run_dftd4(
-                func=sapt_dft_functional, dashlvl="d4bjeeqatm"
-            )
-            data["D4 MONOMER A"] = monA_d4
-            monB_d4, _ = monomerB.run_dftd4(
-                func=sapt_dft_functional, dashlvl="d4bjeeqatm"
-            )
-            data["D4 MONOMER B"] = monB_d4
-            data["D4 IE"] = dimer_d4 - monA_d4 - monB_d4
-        elif d4_type == "intermolecular":
-            dimer_d4, _ = sapt_dimer.run_dftd4(sapt_dft_functional, property=True)
-            geom, _, _, elez, _ = sapt_dimer.to_arrays()
-            elez = np.array(elez, dtype=np.int32)
-            monAs = np.array([i for i in range(monomerA.natom()) if monomerA.Z(i) > 0])
-            monBs = np.array([i for i in range(monomerB.natom()) if monomerB.Z(i) > 0])
-            if sapt_dft_functional.lower() == "pbe0":
-                # SAPT_DFT_pbe0_adz_3_IE_supra
-                params = [1.0, 0.89529649, -0.82043591, 0.03264695]
-            elif sapt_dft_functional.lower() == "hf":
-                # SAPT0_adz_3_IE_2B_BJ_inter
-                params = [1.0, 0.56063068, 0.65540802, 1.06422537]
-                # sadz (supermolecular damping...)
-                # params = [1.0, 0.83055196, 0.70628586, 1.12379695]
-            else:
-                raise ValueError(
-                    "SAPT(DFT): DFTD4 parameters not available for functional %s"
-                    % sapt_dft_functional
-                )
-            v = dftd4_c6_intermolecular_dispersion(
-                elez,
-                geom,
-                C6s=core.variable("DFTD4 C6 COEFFICIENTS").np,
-                monAs=monAs,
-                monBs=monBs,
-                params=params,
-            )
-            data["D4 IE"] = v["D4 IE"]
-            data["FSAPT_EMPIRICAL_DISP"] = v["FSAPT_EMPIRICAL_DISP"]
-        else:
-            raise ValueError(
-                "SAPT(DFT): d4_type must be 'supermolecular' or 'intermolecular'."
-            )
-        core.timer_off("SAPT(DFT):D4 Interaction Energy")
-    core.set_global_option("SAVE_JK", False)
+        d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
 
+        edisp_interaction_energy.sapt_dft_d4_interaction_energy(
+            sapt_dimer=sapt_dimer,
+            monomerA=monomerA,
+            monomerB=monomerB,
+            sapt_dft_functional=sapt_dft_functional,
+            d4_type=d4_type,
+            data=data
+        )
+        core.timer_off("SAPT(DFT):D4 Interaction Energy")
+    elif sapt_dft_D3_IE:
+        core.print_out("\n")
+        core.print_out(
+            "         ---------------------------------------------------------\n"
+        )
+        core.print_out(
+            "         " + "SAPT(DFT): D3 Interaction Energy".center(58) + "\n"
+        )
+        core.print_out("\n")
+        core.timer_on("SAPT(DFT):D3 Interaction Energy")
+        d3_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
+
+        edisp_interaction_energy.sapt_dft_d3_interaction_energy(
+            sapt_dimer=sapt_dimer,
+            monomerA=monomerA,
+            monomerB=monomerB,
+            sapt_dft_functional=sapt_dft_functional,
+            d3_type=d3_type,
+            data=data
+        )
+        core.timer_off("SAPT(DFT):D3 Interaction Energy")
+
+    core.set_global_option("SAVE_JK", False)
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
     # Write out header
@@ -891,45 +865,6 @@ def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier, label, jk_obj=N
     optstash.restore()
     core.timer_off("SAPT(DFT):GRAC Shift " + label)
     return grac
-
-
-def dftd4_c6_intermolecular_dispersion(
-    atomic_numbers: np.ndarray,  # shape (n_atoms,)
-    geometry: np.ndarray,  # shape (n_atoms, 3)
-    C6s: np.ndarray,  # shape (n_atoms, n_atoms)
-    monAs: np.ndarray,  # shape (nA,)
-    monBs: np.ndarray,  # shape (nB,)
-    params: list,  # [s6, s8, a1, a2]
-) -> float:
-    s6, s8, a1, a2 = params
-    energy = 0.0
-    pairwise_energies = np.zeros_like(C6s)
-    for A in monAs:
-        el1 = atomic_numbers[A]
-        Q_A = np.sqrt(0.5 * np.sqrt(el1) * r4r2_dftd4[el1 - 1])
-
-        for B in monBs:
-            el2 = atomic_numbers[B]
-            Q_B = np.sqrt(0.5 * np.sqrt(el2) * r4r2_dftd4[el2 - 1])
-
-            rrij = 3.0 * Q_A * Q_B
-            r0ij = a1 * np.sqrt(rrij) + a2
-
-            rij_vec = geometry[A] - geometry[B]
-            dis2 = np.dot(rij_vec, rij_vec)
-
-            t6 = 1.0 / (dis2**3 + r0ij**6)
-            t8 = 1.0 / (dis2**4 + r0ij**8)
-
-            edisp = s6 * t6 + s8 * rrij * t8
-
-            de = -C6s[A, B] * edisp
-            energy += de
-            pairwise_energies[A, B] = de
-    return {
-        "D4 IE": energy,
-        "FSAPT_EMPIRICAL_DISP": pairwise_energies,
-    }
 
 
 def sapt_dft_header(
@@ -1381,8 +1316,9 @@ def sapt_dft(
         FISAPT_obj.fdrop(external_potentials)
 
     sapt_dft_D4_IE = core.get_option("SAPT", "SAPT_DFT_D4_IE")
-    # d4_type = core.get_option("SAPT", "SAPT_DFT_D4_TYPE").lower()
-    if do_fsapt and sapt_dft_D4_IE:  # and d4_type == 'intermolecular':
+    sapt_dft_D3_IE = core.get_option("SAPT", "SAPT_DFT_D3_IE")
+    # d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
+    if do_fsapt and (sapt_dft_D4_IE or sapt_dft_D3_IE):  # and d4_type == 'intermolecular':
         cache["FSAPT_EMPIRICAL_DISP"] = core.Matrix.from_array(
             data["FSAPT_EMPIRICAL_DISP"]
         )
@@ -1416,7 +1352,7 @@ def sapt_dft(
         core.set_variable("FSAPT_INDAB_AB", cache["IndAB_AB"])
         core.set_variable("FSAPT_INDBA_AB", cache["IndBA_AB"])
         core.set_variable("FSAPT_DISP_AB", cache["Disp_AB"])
-        if sapt_dft_D4_IE:  # and d4_type == 'intermolecular':
+        if sapt_dft_D4_IE or sapt_dft_D3_IE:  # and d4_type == 'intermolecular':
             core.set_variable("FSAPT_EMPIRICAL_DISP", data["FSAPT_EMPIRICAL_DISP"])
     return data
 

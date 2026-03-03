@@ -131,7 +131,7 @@ def test_sapt_dft_compute_ddft_d4():
         ("DFT-D4(SAPT)", "gd4_supermolecular", -0.005731715146359108),
     ],
 )
-def test_saptdft_disp_methods(method, d4_type, expected_disp):
+def test_saptdft_disp_methods_dftd4(method, d4_type, expected_disp):
     mol_dimer = psi4.geometry(
         """
   O -2.930978458   -0.216411437    0.000000000
@@ -144,6 +144,44 @@ def test_saptdft_disp_methods(method, d4_type, expected_disp):
 units bohr
 """
     )
+    psi4.set_options(
+        {
+            "basis": "STO-3G",
+            "sapt_dft_grac_shift_a": 0.136,
+            "sapt_dft_grac_shift_b": 0.136,
+            "SAPT_DFT_FUNCTIONAL": "pbe0",
+        }
+    )
+    psi4.energy(method)
+    vars = psi4.core.variables()
+    DISP = vars["SAPT DISP ENERGY"]
+    assert compare_values(expected_disp, DISP, 8, f"{method} DISP")
+
+
+@pytest.mark.saptdft
+@pytest.mark.dftd3
+@pytest.mark.parametrize(
+    "method, d3_type, expected_disp",
+    [
+        ("SAPT(DFT)-D3(I)", "intermolecular", -0.0041772889),
+        ("SAPT(DFT)-D3(S)", "supermolecular", -0.0036056912),
+    ],
+)
+def test_saptdft_disp_methods_dftd3(method, d3_type, expected_disp):
+    mol_dimer = psi4.geometry(
+        """
+  O -2.930978458   -0.216411437    0.000000000
+  H -3.655219777    1.440921844    0.000000000
+  H -1.133225297    0.076934530    0.000000000
+   --
+  O  2.552311356    0.210645882    0.000000000
+  H  3.175492012   -0.706268134   -1.433472544
+  H  3.175492012   -0.706268134    1.433472544
+units bohr
+"""
+    )
+    d3vars = mol_dimer.run_sdftd3(func='pbe0', dashlvl='d3bj')
+    print(d3vars)
     psi4.set_options(
         {
             "basis": "STO-3G",
@@ -1343,9 +1381,10 @@ if __name__ == "__main__":
     # )
     # test_sapt_dft_compute_ddft_d4_diskdf()
     # test_sapt_dft_diskdf()
-    test_dftd4()
+    # test_dftd4()
+
     # test_saptdft_disp_methods("DFT-D4(SAPT)", "gd4_supermolecular", -0.005731715146359108)
-    # test_saptdft_disp_methods(
-    #     "SAPT(DFT)-D4(I)", "intermolecular", -0.0041772889
-    #     "SAPT(DFT)-D4(S)", "supermolecular", -0.0036056912
-    # )
+    test_saptdft_disp_methods_dftd3(
+        "SAPT(DFT)-D3(I)", "intermolecular", -0.0041772889
+        # "SAPT(DFT)-D3(S)", "supermolecular", -0.0036056912
+    )
