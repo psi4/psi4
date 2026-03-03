@@ -96,12 +96,12 @@ extern brianInt brianRestrictionType;
 
 #endif
 
-//#ifdef USING_cuEST
+#ifdef USING_cuEST
 #include <cuest.h>
 #include <cuda_runtime.h>
 #include "psi4/libfock/cuESTCommon.h"
 extern cuestHandle_t cuest_handle;
-//#endif
+#endif
 
 namespace psi {
 
@@ -166,9 +166,9 @@ MintsHelper::MintsHelper(std::shared_ptr<Wavefunction> wavefunction)
 }
 
 MintsHelper::~MintsHelper() {
-//#ifdef USING_cuEST
+#ifdef USING_cuEST
     cuest_finalize();
-//#endif
+#endif
 }
 
 void MintsHelper::init_helper(std::shared_ptr<Wavefunction> wavefunction) {
@@ -230,9 +230,9 @@ void MintsHelper::common_init() {
     // Integral cutoff
     cutoff_ = Process::environment.options.get_double("INTS_TOLERANCE");
 
-//#ifdef USING_cuEST
+#ifdef USING_cuEST
     cuest_initialize();
-//#endif
+#endif
 }
 
 std::shared_ptr<PetiteList> MintsHelper::petite_list() const {
@@ -4390,7 +4390,7 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv2(int atom1, int atom2, Share
     return mo_grad;
 }
 
-//#ifdef USING_cuEST
+#ifdef USING_cuEST
 void MintsHelper::cuest_initialize()
 {
     printf("MintsHelper::cuest_initialize start\n");
@@ -4596,7 +4596,6 @@ void MintsHelper::form_V_cuest(SharedMatrix hostV) {
     cudaFree(d_xyz_matrix);
     cudaFree(d_q_matrix);
 }
-
-//#endif
+#endif
 
 }  // namespace psi
