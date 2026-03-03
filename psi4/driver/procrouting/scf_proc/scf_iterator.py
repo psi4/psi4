@@ -98,14 +98,16 @@ def scf_compute_energy(self):
     else:
         core.print_out("  Energy and wave function converged.\n\n")
 
-    _t_final_start = time.perf_counter()
-    scf_energy = self.finalize_energy()
-    _t_final_end = time.perf_counter()
+#    _t_final_start = time.perf_counter()
+#    scf_energy = self.finalize_energy()
+#    _t_final_end = time.perf_counter()
 
-    core.print_out("\n  ==> SCF Phase Timing <==\n\n")
-    core.print_out("    Iterations:      %7.3fs\n" % (_t_final_start - _t_iter_start))
-    core.print_out("    Finalize:        %7.3fs\n" % (_t_final_end - _t_final_start))
-    core.print_out("\n")
+#    core.print_out("\n  ==> SCF Phase Timing <==\n\n")
+#    core.print_out("    Iterations:      %7.3fs\n" % (_t_final_start - _t_iter_start))
+#    core.print_out("    Finalize:        %7.3fs\n" % (_t_final_end - _t_final_start))
+#    core.print_out("\n")
+
+    scf_energy = 0.0
 
     return scf_energy
 
