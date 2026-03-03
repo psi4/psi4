@@ -17,6 +17,11 @@
 #include <cstring>
 #include <vector>
 
+#include <cublas_v2.h>
+#include <cusolverDn.h>
+
+extern cublasHandle_t cublas_handle;
+
 namespace psi {
 
 cuESTJK::cuESTJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options)
