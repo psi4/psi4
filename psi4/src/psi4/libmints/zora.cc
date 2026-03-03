@@ -131,7 +131,7 @@ void ZORA::setup() {
 // Fill veff_ with zeros so that `compute` creates non-relativistic kinetic
 // energy integrals.
 void ZORA::compute_debug_veff() {
-    for (const auto &block : grid_->blocks()) {
+    for (const auto& block : grid_->blocks()) {
         int index = block->index();
         int npoints = block->npoints();
         auto veff_block = std::make_shared<Vector>(npoints);
@@ -143,8 +143,7 @@ void ZORA::compute_debug_veff() {
 // Compute the model potential proposed by van Wüllen in *Molecular density
 // functional calculations in the regular relativistic approximation*
 // (https://doi.org/10.1063/1.476576/).
-void ZORA::compute_veff()
-{
+void ZORA::compute_veff() {
     int nthreads = 1;
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
@@ -153,11 +152,12 @@ void ZORA::compute_veff()
     // Run check here because OMP blocks don't like PSIEXCEPTIONs
     int natoms = molecule_->natom();
     for (int a = 0; a < natoms; a++) {
-        if (molecule_->Z(a) > 104) throw PSIEXCEPTION("Too heavy atom for ZORA implementation. Tabulation only available to Z=104, Rf.\n");
+        if (molecule_->Z(a) > 104)
+            throw PSIEXCEPTION("Too heavy atom for ZORA implementation. Tabulation only available to Z=104, Rf.\n");
     }
 
 #pragma omp parallel for schedule(auto) num_threads(nthreads)
-    for (const auto &block : grid_->blocks()) {
+    for (const auto& block : grid_->blocks()) {
         int npoints = block->npoints();
         int index = block->index();
 
@@ -173,16 +173,16 @@ void ZORA::compute_veff()
         // "OCTREE". Below is not a bottleneck (and won't be due to scaling)
         for (int a = 0; a < natoms; a++) {
             const int Z = molecule_->Z(a);
-            if (Z == 0) continue; // avert ghost atom segfault
+            if (Z == 0) continue;  // avert ghost atom segfault
             auto pos_a = molecule_->xyz(a);
 
-            const double* coef_a  = &coeffs[c_aIndex[Z-1]];
-            const double* alpha_a = &alphas[c_aIndex[Z-1]];
-            int nc_a = c_aIndex[Z] - c_aIndex[Z-1];
+            const double* coef_a = &coeffs[c_aIndex[Z - 1]];
+            const double* alpha_a = &alphas[c_aIndex[Z - 1]];
+            int nc_a = c_aIndex[Z] - c_aIndex[Z - 1];
 
-            //einsums("i,ip->p", 𝕔[i], erf(α[i]⊗ r[p]))/r[p]
+            // einsums("i,ip->p", 𝕔[i], erf(α[i]⊗ r[p]))/r[p]
             for (int p = 0; p < npoints; p++) {
-                double dist = std::hypot(pos_a[0]-x[p], pos_a[1]-y[p], pos_a[2]-z[p]);
+                double dist = std::hypot(pos_a[0] - x[p], pos_a[1] - y[p], pos_a[2] - z[p]);
                 double outer = 0;
                 for (int i = 0; i < nc_a; i++) {
                     outer += std::erf(dist * alpha_a[i]) * coef_a[i];
@@ -202,17 +202,17 @@ void ZORA::compute_veff()
 
 // Compute the scalar relativistic kinetic energy integral in the AO basis.
 // See header for equation.
-void ZORA::compute_TSR(SharedMatrix &T_SR) {
+void ZORA::compute_TSR(SharedMatrix& T_SR) {
     timer_on("ZORA: Scalar Relativistic Kinetic");
     // Speed of light in atomic units squared
-    const double C2 = pc_c_au*pc_c_au;
+    const double C2 = pc_c_au * pc_c_au;
 
     int nthreads = 1;
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    int max_points = grid_->max_points(); //Set in grid_int_options
+    int max_points = grid_->max_points();  // Set in grid_int_options
 #pragma omp parallel num_threads(nthreads)
     {
         // Give each thread their own scratch space
@@ -220,8 +220,8 @@ void ZORA::compute_TSR(SharedMatrix &T_SR) {
         auto tmp = std::make_shared<Matrix>(T_SR->nrow(), T_SR->ncol());
         tmp->zero();
 #pragma omp for schedule(auto)
-        for (const auto &block : grid_->blocks()) {
-            const auto &bf_map = block->functions_local_to_global();
+        for (const auto& block : grid_->blocks()) {
+            const auto& bf_map = block->functions_local_to_global();
             auto local_nbf = bf_map.size();
             int npoints = block->npoints();
 
@@ -240,7 +240,7 @@ void ZORA::compute_TSR(SharedMatrix &T_SR) {
             // Preprocess kernel c²/(2c²-veff) * weight
             double* w = block->w();
             for (int p = 0; p < npoints; p++) {
-                kernel[p] = C2 /(2.*C2 - veff_block->get(p)) * w[p];
+                kernel[p] = C2 / (2. * C2 - veff_block->get(p)) * w[p];
             }
 
             // Compute kinetic integral using kernel above
@@ -252,11 +252,10 @@ void ZORA::compute_TSR(SharedMatrix &T_SR) {
                     int nu = bf_map[l_nu];
                     for (int p = 0; p < npoints; p++) {
                         // ∇²φ(r)*kernel
-                        tmp->add(mu,nu, kernel[p]*(
-                            phi_x->get(p,l_mu)*phi_x->get(p,l_nu) +
-                            phi_y->get(p,l_mu)*phi_y->get(p,l_nu) +
-                            phi_z->get(p,l_mu)*phi_z->get(p,l_nu)
-                        ));
+                        tmp->add(mu, nu,
+                                 kernel[p] * (phi_x->get(p, l_mu) * phi_x->get(p, l_nu) +
+                                              phi_y->get(p, l_mu) * phi_y->get(p, l_nu) +
+                                              phi_z->get(p, l_mu) * phi_z->get(p, l_nu)));
                     }
                 }
             }
@@ -272,17 +271,17 @@ void ZORA::compute_TSR(SharedMatrix &T_SR) {
 }
 
 // Compute the spin-orbit coupling Hamiltonian in the AO basis.
-void ZORA::compute_HSO(SharedMatrix &Hx, SharedMatrix &Hy, SharedMatrix &Hz) {
+void ZORA::compute_HSO(SharedMatrix& Hx, SharedMatrix& Hy, SharedMatrix& Hz) {
     outfile->Printf("\n\n    ZORA: You called compute_HSO. Rejoice!\n");
     // Speed of light in atomic units squared
-    const double C2 = pc_c_au*pc_c_au;
+    const double C2 = pc_c_au * pc_c_au;
 
     int nthreads = 1;
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    int max_points = grid_->max_points(); //Set in grid_int_options
+    int max_points = grid_->max_points();  // Set in grid_int_options
 #pragma omp parallel num_threads(nthreads)
     {
         // Give each thread their own scratch space
@@ -295,8 +294,8 @@ void ZORA::compute_HSO(SharedMatrix &Hx, SharedMatrix &Hy, SharedMatrix &Hz) {
         tmp_z->zero();
 
 #pragma omp for schedule(auto)
-        for (const auto &block : grid_->blocks()) {
-            const auto &bf_map = block->functions_local_to_global();
+        for (const auto& block : grid_->blocks()) {
+            const auto& bf_map = block->functions_local_to_global();
             auto local_nbf = bf_map.size();
             int npoints = block->npoints();
 
@@ -315,34 +314,28 @@ void ZORA::compute_HSO(SharedMatrix &Hx, SharedMatrix &Hy, SharedMatrix &Hz) {
             // Preprocess kernel veff/(4c²-2veff) * weight
             double* w = block->w();
             for (int p = 0; p < npoints; p++) {
-                kernel[p] = veff_block->get(p) /(4.*C2 - 2.*veff_block->get(p)) * w[p];
+                kernel[p] = veff_block->get(p) / (4. * C2 - 2. * veff_block->get(p)) * w[p];
             }
 
             for (int l_mu = 0; l_mu < local_nbf; l_mu++) {
                 int mu = bf_map[l_mu];
                 // We ignore mu==nu because these matricies are anti-symmetric.
-                for (int l_nu = l_mu+1; l_nu < local_nbf; l_nu++) {
+                for (int l_nu = l_mu + 1; l_nu < local_nbf; l_nu++) {
                     int nu = bf_map[l_nu];
                     for (int p = 0; p < npoints; p++) {
-                        auto x = kernel[p]*(
-                            phi_y->get(p,l_mu)*phi_z->get(p,l_nu) -
-                            phi_z->get(p,l_mu)*phi_y->get(p,l_nu)
-                        );
-                        auto y = kernel[p]*(
-                            phi_z->get(p,l_mu)*phi_x->get(p,l_nu) -
-                            phi_x->get(p,l_mu)*phi_z->get(p,l_nu)
-                        );
-                        auto z = kernel[p]*(
-                            phi_x->get(p,l_mu)*phi_y->get(p,l_nu) -
-                            phi_y->get(p,l_mu)*phi_x->get(p,l_nu)
-                        );
+                        auto x = kernel[p] * (phi_y->get(p, l_mu) * phi_z->get(p, l_nu) -
+                                              phi_z->get(p, l_mu) * phi_y->get(p, l_nu));
+                        auto y = kernel[p] * (phi_z->get(p, l_mu) * phi_x->get(p, l_nu) -
+                                              phi_x->get(p, l_mu) * phi_z->get(p, l_nu));
+                        auto z = kernel[p] * (phi_x->get(p, l_mu) * phi_y->get(p, l_nu) -
+                                              phi_y->get(p, l_mu) * phi_x->get(p, l_nu));
 
-                        tmp_x->add(mu,nu, x);
-                        tmp_x->add(nu,mu,-x);
-                        tmp_y->add(mu,nu, y);
-                        tmp_y->add(nu,mu,-y);
-                        tmp_z->add(mu,nu, z);
-                        tmp_z->add(nu,mu,-z);
+                        tmp_x->add(mu, nu, x);
+                        tmp_x->add(nu, mu, -x);
+                        tmp_y->add(mu, nu, y);
+                        tmp_y->add(nu, mu, -y);
+                        tmp_z->add(mu, nu, z);
+                        tmp_z->add(nu, mu, -z);
                     }
                 }
             }
@@ -355,6 +348,5 @@ void ZORA::compute_HSO(SharedMatrix &Hx, SharedMatrix &Hy, SharedMatrix &Hz) {
         }
     }
 }
-
 
 }  // namespace psi
