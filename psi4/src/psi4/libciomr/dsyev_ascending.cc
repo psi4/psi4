@@ -56,6 +56,8 @@ extern cusolverDnHandle_t cusolver_handle;
     } while (0)
 
 namespace psi {
+
+#ifdef USING_cuEST
 [[nodiscard]] int DSYEV_ascending(
     const int N,
     const double* const* const array,   // row-major 2D, CPU
@@ -151,46 +153,46 @@ namespace psi {
 
     return info;
 }
-}  // namespace psi
+#else
+/*!
+** DSYEV_ascending(): diagonalize a symmetric square matrix ('array') using LAPACK DSYEV
+**
+** \param n      = number of rows (and columns)
+** \param array  = matrix to diagonalize (2D row major array)
+** \param e_vals = array to hold eigenvalues (returned in ascending order)
+** \param e_vecs = (optional) matrix of eigenvectors (2D row major array, one column for each eigvector)
+**
+** \ingroup CIOMR
+*/
+[[nodiscard]] int DSYEV_ascending(const int N, const double* const* const array, double* e_vals,
+                                  double* const* const e_vecs /* = nullptr*/) {
+    // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
+    // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
+    // The new 1D array will correspond to a column-major array, suitable for LAPACK.
+    std::vector<double> tmp_matrix(N * N);
+    for (int64_t i = 0, ij = 0; i < N; i++) {
+        for (int64_t j = 0; j < N; j++, ij++) {
+            tmp_matrix[ij] = array[j][i];
+        }
+    }
+    // LAPACK also needs some extra memory to store temporaries in
+    // TODO: query C_DSYEV for optimal workspace size
+    const int64_t workspace_size = 3 * N;
+    std::vector<double> tmp_work(workspace_size);
+    const char jobtype = (e_vecs != nullptr) ? 'V' : 'N';
+    const int info = C_DSYEV(jobtype, 'U', N, tmp_matrix.data(), N, e_vals, tmp_work.data(), workspace_size);
+    if ((info == 0) && (e_vecs != nullptr)) {
+        // tmp_matrix has now been overwritten with the eigenvecs as the columns, flattened as column-major
+        // Copy them to the columns of a row-major 2D array
+        for (int64_t j = 0, ij = 0; j < N; j++) {
+            for (int64_t i = 0; i < N; i++, ij++) {
+                e_vecs[i][j] = tmp_matrix[ij];
+            }
+        }
+    }
+    return info;
+}
+#endif
 
-// namespace psi {
-// /*!
-// ** DSYEV_ascending(): diagonalize a symmetric square matrix ('array') using LAPACK DSYEV
-// **
-// ** \param n      = number of rows (and columns)
-// ** \param array  = matrix to diagonalize (2D row major array)
-// ** \param e_vals = array to hold eigenvalues (returned in ascending order)
-// ** \param e_vecs = (optional) matrix of eigenvectors (2D row major array, one column for each eigvector)
-// **
-// ** \ingroup CIOMR
-// */
-// [[nodiscard]] int DSYEV_ascending(const int N, const double* const* const array, double* e_vals,
-//                                   double* const* const e_vecs /* = nullptr*/) {
-//     // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
-//     // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
-//     // The new 1D array will correspond to a column-major array, suitable for LAPACK.
-//     std::vector<double> tmp_matrix(N * N);
-//     for (int64_t i = 0, ij = 0; i < N; i++) {
-//         for (int64_t j = 0; j < N; j++, ij++) {
-//             tmp_matrix[ij] = array[j][i];
-//         }
-//     }
-//     // LAPACK also needs some extra memory to store temporaries in
-//     // TODO: query C_DSYEV for optimal workspace size
-//     const int64_t workspace_size = 3 * N;
-//     std::vector<double> tmp_work(workspace_size);
-//     const char jobtype = (e_vecs != nullptr) ? 'V' : 'N';
-//     const int info = C_DSYEV(jobtype, 'U', N, tmp_matrix.data(), N, e_vals, tmp_work.data(), workspace_size);
-//     if ((info == 0) && (e_vecs != nullptr)) {
-//         // tmp_matrix has now been overwritten with the eigenvecs as the columns, flattened as column-major
-//         // Copy them to the columns of a row-major 2D array
-//         for (int64_t j = 0, ij = 0; j < N; j++) {
-//             for (int64_t i = 0; i < N; i++, ij++) {
-//                 e_vecs[i][j] = tmp_matrix[ij];
-//             }
-//         }
-//     }
-//     return info;
-// }
-// }  // namespace psi
+}  // namespace psi
 
