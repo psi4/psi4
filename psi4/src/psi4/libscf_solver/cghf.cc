@@ -275,13 +275,16 @@ void CGHF::form_C(double shift) {
 
     // => ORTHOGONALIZE FOCK <=
     // Fp_ = X_.conj().T @ F_ @ X_
+
+    temp2_->zero();
+    // Orthogonalize Fock matrix
+    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, *F_, *EINX_, std::complex<double>{0.0},
+                                                temp2_.get());
+    einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, *EINX_, *temp2_, std::complex<double>{0.0},
+                                               Fp_.get());
+
     if (options_.get_bool("DIIS") && iteration_ > options_.get_int("DIIS_START")) {
         do_diis();
-    } else {
-        einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, *F_, *EINX_, std::complex<double>{0.0},
-                                                    temp1_.get());
-        einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, *EINX_, *temp1_,
-                                                   std::complex<double>{0.0}, Fp_.get());
     }
 
     // => DIAGONALIZE FOCK <=
@@ -304,8 +307,8 @@ void CGHF::form_C(double shift) {
         // heev retuns the wrong side, so we need to take the inverse (hermitian adjoint)
 
         // Takes the conjugate transpose of Fp_[h] (e.g. ij -> ji) to give us the proper eigenvectors
-        // NOTE: the template parameters <false> states to NOT take the conjugate
-        einsums::tensor_algebra::permute<false>(
+        // NOTE: the template parameters <true> states to take the conjugate
+        einsums::tensor_algebra::permute<true>(
             std::complex<double>{0.0}, einsums::Indices{einsums::index::i, einsums::index::j}, &temp1_->block(h),
             std::complex<double>{1.0}, einsums::Indices{einsums::index::j, einsums::index::i}, Fp_->block(h));
     }
@@ -381,10 +384,10 @@ void CGHF::form_D() {
         }
     }
 
-    // Performs einsums contraction ui,vi->uv with temp1_, temp2_ -> D_)
+    // D_ = einsums("ui,vi->uv", temp1_, temp2_)
     einsums::tensor_algebra::einsum(einsums::Indices{einsums::index::u, einsums::index::v}, D_.get(),  // D_uv
-                                    einsums::Indices{einsums::index::u, einsums::index::i}, *temp1_,   // Cocc_ui.conj().T
-                                    einsums::Indices{einsums::index::v, einsums::index::i}, *temp2_    // Cocc_vi
+                                    einsums::Indices{einsums::index::u, einsums::index::i}, *temp1_,   // Cocc_ui
+                                    einsums::Indices{einsums::index::v, einsums::index::i}, *temp2_    // Cocc_vi.conj().T
     );
 }
 
@@ -453,18 +456,9 @@ double CGHF::compute_initial_E() {
  */
 void CGHF::do_diis() {
     int diis_max = options_.get_int("DIIS_MAX_VECS");
-    int diis_count = 0;
 
     // FDS-SDF
     form_FDSmSDF();
-
-    temp2_->zero();
-
-    // Orthogonalize Fock matrix
-    einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, *F_, *EINX_, std::complex<double>{0.0},
-                                                temp2_.get());
-    einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, *EINX_, *temp2_, std::complex<double>{0.0},
-                                               Fp_.get());
 
     // e.e for e = [F,D]
     double error = 0;
