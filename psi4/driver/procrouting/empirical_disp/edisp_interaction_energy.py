@@ -91,13 +91,29 @@ def sapt_dft_d4_interaction_energy(
             "a2": 3.24886637e-10,
             "s9": 0.00000000e00,
         }
-        dimer_d4, _ = sapt_dimer.run_dftd4(dashparam=params, dashlvl="d4bjeeqatm")
-        data["D4 DIMER"] = dimer_d4
-        monA_d4, _ = monomerA.run_dftd4(dashparam=params, dashlvl="d4bjeeqatm")
-        data["D4 MONOMER A"] = monA_d4
-        monB_d4, _ = monomerB.run_dftd4(dashparam=params, dashlvl="d4bjeeqatm")
-        data["D4 MONOMER B"] = monB_d4
-        data["D4 IE"] = dimer_d4 - monA_d4 - monB_d4
+        print(dftd4_functional_name)
+        dftd4_functional_name = 'sapt0'
+        # dimer_d4, _ = sapt_dimer.run_dftd4(func=dftd4_functional_name, dashlvl="d4bjeeqatm")
+        # data["D4 DIMER"] = dimer_d4
+        # monA_d4, _ = monomerA.run_dftd4(func=dftd4_functional_name, dashlvl="d4bjeeqatm")
+        # data["D4 MONOMER A"] = monA_d4
+        # monB_d4, _ = monomerB.run_dftd4(func=dftd4_functional_name, dashlvl="d4bjeeqatm")
+        # data["D4 MONOMER B"] = monB_d4
+        # data["D4 IE"] = dimer_d4 - monA_d4 - monB_d4
+        from ..proc import build_functional_and_disp
+        _, _disp_functor = build_functional_and_disp('hf-d4', restricted=True, save_pairwise_disp=True)
+
+        ## Dimer dispersion
+        dimer_disp_energy = _disp_functor.compute_energy(sapt_dimer)
+        ## Monomer dispersion
+        mon_disp_energy = _disp_functor.compute_energy(monomerA)
+        mon_disp_energy += _disp_functor.compute_energy(monomerB)
+
+        disp_interaction_energy = dimer_disp_energy - mon_disp_energy
+        core.set_variable(saptd_name + "-D DISP ENERGY", disp_interaction_energy)
+        core.set_variable("SAPT DISP ENERGY", disp_interaction_energy)
+        core.set_variable("DISPERSION CORRECTION ENERGY", disp_interaction_energy)
+        core.set_variable(saptd_name + " DISPERSION CORRECTION ENERGY", disp_interaction_energy)
     elif d4_type == "gd4_supermolecular":
         # This uses the default Grimme -D4 parameters for the given
         # functional with BJ damping and ATM three-body terms. Only use
@@ -121,7 +137,7 @@ def sapt_dft_d4_interaction_energy(
         data["D4 MONOMER B"] = monB_d4
         data["D4 IE"] = dimer_d4 - monA_d4 - monB_d4
     elif d4_type == "intermolecular":
-        dimer_d4, _ = sapt_dimer.run_dftd4(dftd4_functional_name, property=True)
+        dimer_d4, _ = sapt_dimer.run_dftd4(func=dftd4_functional_name, property=True)
         geom, _, _, elez, _ = sapt_dimer.to_arrays()
         elez = np.array(elez, dtype=np.int32)
         monAs = np.array([i for i in range(monomerA.natom()) if monomerA.Z(i) > 0])
@@ -162,7 +178,7 @@ def sapt_dft_d3_interaction_energy(
     if d3_type == "supermolecular":
         core.print_out(
             "         "
-            + "Supermolecular D3 Interaction Energy E_IE = E_IJ - E_I - E_J".center(58)
+            + "Supermolecular -D3MBJ Interaction Energy E_IE = E_IJ - E_I - E_J".center(58)
             + "\n"
         )
         params = {
@@ -172,10 +188,13 @@ def sapt_dft_d3_interaction_energy(
             "a2": 3.23886637e-10,
             "s9": 0.00000000e00,
         }
+        core.print_out("E_IJ")
         dimer_d3, _ = sapt_dimer.run_sdftd3(func=dftd3_functional_name, dashlvl="d3mbj", verbose=True)
         data["D3 DIMER"] = dimer_d3
+        core.print_out("E_I")
         monA_d3, _ = monomerA.run_sdftd3(func=dftd3_functional_name, dashlvl="d3mbj", verbose=True)
         data["D3 MONOMER A"] = monA_d3
+        core.print_out("E_J")
         monB_d3, _ = monomerB.run_sdftd3(func=dftd3_functional_name, dashlvl="d3mbj", verbose=True)
         data["D3 MONOMER B"] = monB_d3
         data["D3 IE"] = dimer_d3 - monA_d3 - monB_d3
@@ -193,17 +212,17 @@ def sapt_dft_d3_interaction_energy(
             + "\n"
         )
         dimer_d3, _ = sapt_dimer.run_sdftd3(
-            func=dftd3_functional_name, dashlvl="d3bjeeqatm"
+            func=dftd3_functional_name, dashlvl="d3mbj"
         )
         data["D3 DIMER"] = dimer_d3
-        monA_d3, _ = monomerA.run_sdftd3(func=dftd3_functional_name, dashlvl="d3bj2b")
+        monA_d3, _ = monomerA.run_sdftd3(func=dftd3_functional_name, dashlvl="d3mbj")
         data["D3 MONOMER A"] = monA_d3
-        monB_d3, _ = monomerB.run_sdftd3(func=dftd3_functional_name, dashlvl="d3bj2b")
+        monB_d3, _ = monomerB.run_sdftd3(func=dftd3_functional_name, dashlvl="d3mbj")
         data["D3 MONOMER B"] = monB_d3
         data["D3 IE"] = dimer_d3 - monA_d3 - monB_d3
     elif d3_type == "intermolecular":
         print(dftd3_functional_name)
-        dimer_d3, _ = sapt_dimer.run_sdftd3(dftd3_functional_name, dashlvl="d3bj2b", property=True)
+        dimer_d3, _ = sapt_dimer.run_sdftd3(dftd3_functional_name, dashlvl="d3mbj", property=True)
         geom, _, _, elez, _ = sapt_dimer.to_arrays()
         elez = np.array(elez, dtype=np.int32)
         monAs = np.array([i for i in range(monomerA.natom()) if monomerA.Z(i) > 0])
@@ -212,8 +231,9 @@ def sapt_dft_d3_interaction_energy(
         FSAPT_EMPIRICAL_DISP = np.zeros_like(core.variable("DFTD3 ADDITIVE PAIRWISE ENERGY").np)
         for A in monAs:
             for B in monBs:
-                E_disp += core.variable("DFTD3 ADDITIVE PAIRWISE ENERGY").np[A, B]
+                E_disp += 2 * core.variable("DFTD3 ADDITIVE PAIRWISE ENERGY").np[A, B]
                 FSAPT_EMPIRICAL_DISP[A, B] = core.variable("DFTD3 ADDITIVE PAIRWISE ENERGY").np[A, B]
+                FSAPT_EMPIRICAL_DISP[B, A] = core.variable("DFTD3 ADDITIVE PAIRWISE ENERGY").np[B, A]
         data["D3 IE"] = E_disp
         data["FSAPT_EMPIRICAL_DISP"] = FSAPT_EMPIRICAL_DISP
     else:

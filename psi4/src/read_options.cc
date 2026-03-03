@@ -1209,7 +1209,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
          as SAPT(DFT)-D4(I). For SAPT(DFT)-D3, either -D3(I) or -D3(S) can
          reliably be used.
           !expert -*/
-        options.add_str("SAPT_DFT_D_TYPE", "INTERMOLECULAR", "INTERMOLECULAR SUPERMOLECULAR GD4_SUPERMOLECULAR");
+        options.add_str("SAPT_DFT_D_TYPE", "INTERMOLECULAR", "INTERMOLECULAR SUPERMOLECULAR GD3_SUPERMOLECULAR GD4_SUPERMOLECULAR");
         /*- Scheme for approximating exchange-dispersion for SAPT-DFT.
         Previous to Nov 2022, default was ``FIXED`` with Hesselmann value.
         ``NONE`` Use unscaled ``Exch-Disp2,u`` .

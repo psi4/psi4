@@ -161,6 +161,7 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option("SAPT_DFT_D4_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 1)
             core.set_global_option("SAPT_DFT_D_TYPE", "gd4_supermolecular")
+            e_disp_param_name = sapt_dft_functional.lower()
         else:
             raise ValueError(
                 "SAPT(DFT)-D4 must be specified as 'SAPT(DFT)-D4(S)' or "
@@ -199,6 +200,7 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option("SAPT_DFT_D3_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 1)
             core.set_global_option("SAPT_DFT_D_TYPE", "gd3_supermolecular")
+            e_disp_param_name = sapt_dft_functional.lower()
         else:
             raise ValueError(
                 "SAPT(DFT)-D3 must be specified as 'SAPT(DFT)-D3(S)' or "
