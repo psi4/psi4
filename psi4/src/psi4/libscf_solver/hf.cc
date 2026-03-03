@@ -715,7 +715,9 @@ void HF::form_H() {
     }  // end external
 
     // Save perturbed V_ for future (e.g. correlated) calcs
-//    V_->save(psio_, PSIF_OEI);
+#ifndef USING_cuEST
+    V_->save(psio_, PSIF_OEI);
+#endif
 
     H_->copy(T_);
     H_->add(V_);
