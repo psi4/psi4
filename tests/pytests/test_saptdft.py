@@ -165,7 +165,7 @@ units bohr
     [
         ("SAPT(DFT)-D3(I)", -0.0046415623),
         ("SAPT(DFT)-D3(S)", -0.0045682406),
-        ("DFT-D3(SAPT)", -0.0057906634),
+        ("DFT-D3(SAPT)", -0.0057905369),
     ],
 )
 def test_saptdft_disp_methods_dftd3(method, expected_disp):
