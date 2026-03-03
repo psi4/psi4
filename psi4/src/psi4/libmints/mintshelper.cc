@@ -636,10 +636,6 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
 
 SharedMatrix MintsHelper::ao_overlap() {
     // Overlap
-    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
-    for (size_t i = 0; i < nthread_; i++) {
-        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap()));
-    }
     auto overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, basisset_->nbf(), basisset_->nbf());
 
 #ifdef USING_cuEST
@@ -657,6 +653,10 @@ SharedMatrix MintsHelper::ao_overlap() {
     }
 #endif
 
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++) {
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap()));
+    }
     one_body_ao_computer(ints_vec, overlap_mat, true);
     return overlap_mat;
 }
@@ -675,10 +675,6 @@ SharedMatrix MintsHelper::ao_overlap(std::shared_ptr<BasisSet> bs1, std::shared_
 }
 
 SharedMatrix MintsHelper::ao_kinetic() {
-    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
-    for (size_t i = 0; i < nthread_; i++) {
-        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic()));
-    }
     auto kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", basisset_->nbf(), basisset_->nbf());
 
 #ifdef USING_cuEST
@@ -696,6 +692,10 @@ SharedMatrix MintsHelper::ao_kinetic() {
     }
 #endif
 
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++) {
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic()));
+    }
     one_body_ao_computer(ints_vec, kinetic_mat, true);
     return kinetic_mat;
 }
@@ -712,10 +712,6 @@ SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr<BasisSet> bs1, std::shared_
 }
 
 SharedMatrix MintsHelper::ao_potential() {
-    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
-    for (size_t i = 0; i < nthread_; i++) {
-        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential()));
-    }
     SharedMatrix potential_mat =
         std::make_shared<Matrix>("AO-basis Potential Ints", basisset_->nbf(), basisset_->nbf());
 
@@ -734,6 +730,10 @@ SharedMatrix MintsHelper::ao_potential() {
     }
 #endif
 
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++) {
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential()));
+    }
     one_body_ao_computer(ints_vec, potential_mat, true);
     return potential_mat;
 }

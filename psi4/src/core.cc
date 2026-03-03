@@ -61,7 +61,9 @@
 #include "python_data_type.h"
 
 #ifdef USING_cuEST
+#include "cuest.h"
 #include "psi4/libfock/cuESTCommon.h"
+#include <cusolverDn.h>
 #endif
 
 #define STRINGIFY(x) #x
@@ -144,20 +146,80 @@ void handleBrianOption(bool value) {
 #ifdef USING_cuEST
 #include <cuest.h>
 
+cusolverDnHandle_t cusolver_handle = 0;
+cublasHandle_t cublas_handle = 0;
 cuestHandle_t cuest_handle = 0;
+cudaStream_t stream_handle = 0;
 
 void cuest_init() {
+    if (stream_handle != 0) {
+        throw PSIEXCEPTION("Attempting to reinitialize the stream_handle when it hasn't been released\n");
+    }
+    if (cublas_handle != 0) {
+        throw PSIEXCEPTION("Attempting to reinitialize the cublas_handle when it hasn't been released\n");
+    }
+    if (cusolver_handle != 0) {
+        throw PSIEXCEPTION("Attempting to reinitialize the cusolver_handle when it hasn't been released\n");
+    }
     if (cuest_handle != 0) {
         throw PSIEXCEPTION("Attempting to reinitialize the cuEST module when it hasn't been released\n");
     }
+
+    cudaError_t stream_err = cudaStreamCreate(&stream_handle);
+    if (stream_err != cudaSuccess) {
+        throw PSIEXCEPTION("cudaStreamCreate failed in cuest_init");
+    }
+    cublasStatus_t cublas_status = cublasCreate(&cublas_handle);
+    if (cublas_status != CUBLAS_STATUS_SUCCESS) {
+        throw PSIEXCEPTION("cublasCreate failed in cuest_init");
+    }
+    cusolverStatus_t cusolver_status = cusolverDnCreate(&cusolver_handle);
+    if (cusolver_status != CUSOLVER_STATUS_SUCCESS) {
+        throw PSIEXCEPTION("cusolverDnCreate failed in cuest_init");
+    }
+    cublasSetStream(cublas_handle, stream_handle);
+    cusolverDnSetStream(cusolver_handle, stream_handle);
     // Declare & create the cuEST parameters and handle with reasonable defaults. Destroy param promptly.
     cuestHandleParameters_t handle_parameters;
     CHECK_CUEST(cuestParametersCreate(CUEST_HANDLE_PARAMETERS, &handle_parameters));
+    CHECK_CUEST(cuestParametersConfigure(
+        CUEST_HANDLE_PARAMETERS,
+        handle_parameters,
+        CUEST_HANDLE_PARAMETERS_CUDASTREAM,
+        &stream_handle,
+        sizeof(stream_handle)
+    ));
+    CHECK_CUEST(cuestParametersConfigure(
+        CUEST_HANDLE_PARAMETERS,
+        handle_parameters,
+        CUEST_HANDLE_PARAMETERS_CUBLAS,
+        &cublas_handle,
+        sizeof(cublas_handle)
+    ));
+    CHECK_CUEST(cuestParametersConfigure(
+        CUEST_HANDLE_PARAMETERS,
+        handle_parameters,
+        CUEST_HANDLE_PARAMETERS_CUSOLVER,
+        &cusolver_handle,
+        sizeof(cusolver_handle)
+    ));
     CHECK_CUEST(cuestCreate(handle_parameters, &cuest_handle));
     CHECK_CUEST(cuestParametersDestroy(CUEST_HANDLE_PARAMETERS, handle_parameters));
 }
 
 void cuest_release() {
+    if (cublas_handle == 0) {
+        throw PSIEXCEPTION("Attempting to release the cublas_handle when it hasn't been initialized\n");
+    }
+    cublasDestroy(cublas_handle);
+    cublas_handle = 0;
+
+    if (cusolver_handle == 0) {
+        throw PSIEXCEPTION("Attempting to release the cusolver_handle when it hasn't been initialized\n");
+    }
+    cusolverDnDestroy(cusolver_handle);
+    cusolver_handle = 0;
+
     if (cuest_handle == 0) {
         throw PSIEXCEPTION("Attempting to release the cuEST module when it hasn't been initialized\n");
     }
