@@ -128,13 +128,14 @@ def run_sapt_dft(name, **kwargs):
         do_mon_grac_shift_B = True
 
     sapt_dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
-
+    e_disp_param_name = None
+    supported_functionals_edisp = ['hf', 'pbe0', 'b3lyp']
     if "-D4" in name.upper():
         d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
         if "-D4(S)" in name.upper():
             core.print_out(r"SAPT(DFT)-D4(S): -D4(S) for dispersion")
-            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(s)"
-            if sapt_dft_functional.lower() not in ['pbe0']:
+            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(s)" if sapt_dft_functional.lower() != "hf" else "hf"
+            if sapt_dft_functional.lower() not in ['pbe0', 'hf']:
                 raise ValueError(
                     "SAPT(DFT)-D4 with D4(S) parameters is currently only available for PBE0"
                     f" Functional {sapt_dft_functional.lower()} does not have D4(S) parameters defined."
@@ -145,8 +146,8 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option("SAPT_DFT_D_TYPE", "supermolecular")
         elif "-D4(I)" in name.upper():
             core.print_out(r"SAPT(DFT)-D4(I): -D4(I) for dispersion")
-            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(s)"
-            if sapt_dft_functional.lower() not in ['pbe0', 'b3lyp']:
+            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(s)" if sapt_dft_functional.lower() != "hf" else "hf"
+            if sapt_dft_functional.lower() not in supported_functionals_edisp:
                 raise ValueError(
                     "SAPT(DFT)-D4 with D4(I) parameters is currently only available for PBE0 and B3LYP."
                     f" Functional {sapt_dft_functional.lower()} does not have D4(I) parameters defined."
@@ -161,7 +162,7 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option("SAPT_DFT_D4_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 1)
             core.set_global_option("SAPT_DFT_D_TYPE", "gd4_supermolecular")
-            e_disp_param_name = sapt_dft_functional.lower()
+            e_disp_param_name = sapt_dft_functional.lower() if sapt_dft_functional.lower() != "hf" else "hf"
         else:
             raise ValueError(
                 "SAPT(DFT)-D4 must be specified as 'SAPT(DFT)-D4(S)' or "
@@ -172,8 +173,8 @@ def run_sapt_dft(name, **kwargs):
         d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
         if "-D3(S)" in name.upper():
             core.print_out(r"SAPT(DFT)-D3(S): -D3(S) for dispersion")
-            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(s)"
-            if sapt_dft_functional.lower() not in ['pbe0', 'b3lyp']:
+            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(s)" if sapt_dft_functional.lower() != "hf" else "hf"
+            if sapt_dft_functional.lower() not in supported_functionals_edisp:
                 raise ValueError(
                     "SAPT(DFT)-D3 with D3(S) parameters is currently only available for PBE0 and B3LYP."
                     f" Functional {sapt_dft_functional.lower()} does not have D3(S) parameters defined."
@@ -184,8 +185,8 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option("SAPT_DFT_D_TYPE", "supermolecular")
         elif "-D3(I)" in name.upper():
             core.print_out(r"SAPT(DFT)-D3(I): -D3(I) for dispersion")
-            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(i)"
-            if sapt_dft_functional.lower() not in ['pbe0', 'b3lyp']:
+            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(i)" if sapt_dft_functional.lower() != "hf" else "hf"
+            if sapt_dft_functional.lower() not in supported_functionals_edisp:
                 raise ValueError(
                     "SAPT(DFT)-D3 with D3(I) parameters is currently only available for PBE0 and B3LYP."
                     f" Functional {sapt_dft_functional.lower()} does not have D3(I) parameters defined."
@@ -200,7 +201,7 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option("SAPT_DFT_D3_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 1)
             core.set_global_option("SAPT_DFT_D_TYPE", "gd3_supermolecular")
-            e_disp_param_name = sapt_dft_functional.lower()
+            e_disp_param_name = sapt_dft_functional.lower() if sapt_dft_functional.lower() != "hf" else "hf"
         else:
             raise ValueError(
                 "SAPT(DFT)-D3 must be specified as 'SAPT(DFT)-D3(S)' or "

@@ -71,36 +71,19 @@ def test_sapt_dft_compute_ddft_d4():
             "sapt_dft_grac_shift_a": 0.136,
             "sapt_dft_grac_shift_b": 0.136,
             "SAPT_DFT_FUNCTIONAL": dft_functional,
-            "SAPT_DFT_DO_DDFT": True,
-            "SAPT_DFT_D4_IE": True,
-            "SAPT_DFT_D4_TYPE": "SUPERMOLECULAR",
-            "SAPT_DFT_DO_DISP": True,
         }
     )
     dft_IE = (
         psi4.energy(dft_functional, bsse_type="CP", molecule=mol_dimer)
         * hartree_to_kcalmol
     )
-    # many-body energies
-    # dimer    :-150.5070040376297698
-    # monomer A: -75.2534797048230359
-    # monomer B: -75.2469427300573841
-
-    psi4.energy("SAPT(DFT)")
-    # sapt(dft) DFT energies
-    # dimer    :-150.5070038696833024
-    # monomer A: -75.2469415558837937
-    # monomer B: -75.2534791716759486
-
+    psi4.energy("DFT-D4(SAPT)")
     ELST = psi4.core.variable("SAPT ELST ENERGY")
     EXCH = psi4.core.variable("SAPT EXCH ENERGY")
     IND = psi4.core.variable("SAPT IND ENERGY")
     DFT_MONA = psi4.core.variable("DFT MONOMER A ENERGY")
     DFT_MONB = psi4.core.variable("DFT MONOMER B ENERGY")
-    # DFT_MONA = psi4.core.variable("DFT MONOMERA")
-    # DFT_MONB = psi4.core.variable("DFT MONOMERB")
     DFT_DIMER = psi4.core.variable("DFT DIMER ENERGY")
-    # DFT_DIMER = psi4.core.variable("DFT DIMER")
 
     print(f"{DFT_DIMER=}\n{DFT_MONA=}\n{DFT_MONB=}")
     DFT_IE = (DFT_DIMER - DFT_MONA - DFT_MONB) * hartree_to_kcalmol
@@ -223,9 +206,6 @@ def test_sapt_dft_compute_ddft_d4_diskdf():
             "sapt_dft_grac_shift_a": 0.136,
             "sapt_dft_grac_shift_b": 0.136,
             "SAPT_DFT_FUNCTIONAL": dft_functional,
-            "SAPT_DFT_DO_DDFT": True,
-            "SAPT_DFT_D4_IE": True,
-            "SAPT_DFT_DO_DISP": True,
         }
     )
     dft_IE = (
@@ -237,7 +217,7 @@ def test_sapt_dft_compute_ddft_d4_diskdf():
     # monomer A: -75.2534797048230359
     # monomer B: -75.2469427300573841
 
-    psi4.energy("SAPT(DFT)")
+    psi4.energy("DFT-D4(SAPT)")
     # sapt(dft) DFT energies
     # dimer    :-150.5070038696833024
     # monomer A: -75.2469415558837937
@@ -302,9 +282,6 @@ def test_sapt_dft_diskdf():
             "sapt_dft_grac_shift_a": 0.136,
             "sapt_dft_grac_shift_b": 0.136,
             "SAPT_DFT_FUNCTIONAL": dft_functional,
-            "SAPT_DFT_DO_DDFT": True,
-            "SAPT_DFT_D4_IE": True,
-            "SAPT_DFT_DO_DISP": True,
         }
     )
     dft_IE = (
@@ -316,7 +293,7 @@ def test_sapt_dft_diskdf():
     # monomer A: -75.2534797048230359
     # monomer B: -75.2469427300573841
 
-    psi4.energy("SAPT(DFT)")
+    psi4.energy("DFT-D4(SAPT)")
     # sapt(dft) DFT energies
     # dimer    :-150.5070038696833024
     # monomer A: -75.2469415558837937
@@ -360,16 +337,13 @@ def test_sapt_dft_compute_ddft_d4_auto_grac():
             "d_convergence": 1e-8,
             "sapt_dft_grac_compute": "SINGLE",
             "SAPT_DFT_FUNCTIONAL": dft_functional,
-            "SAPT_DFT_DO_DDFT": True,
-            "SAPT_DFT_D4_IE": True,
-            "SAPT_DFT_DO_DISP": True,
         }
     )
     dft_IE = (
         psi4.energy(dft_functional, bsse_type="CP", molecule=mol_dimer)
         * hartree_to_kcalmol
     )
-    psi4.energy("SAPT(DFT)")
+    psi4.energy("DFT-D4(SAPT)")
     ELST = psi4.core.variable("SAPT ELST ENERGY")
     EXCH = psi4.core.variable("SAPT EXCH ENERGY")
     IND = psi4.core.variable("SAPT IND ENERGY")
@@ -414,41 +388,6 @@ def test_sapt_dft_compute_ddft_d4_auto_grac():
     )
     print(f"{psi4.core.variable('SAPT DFT GRAC SHIFT A')=}")
     print(f"{psi4.core.variable('SAPT DFT GRAC SHIFT B')=}")
-
-
-@pytest.mark.saptdft
-@pytest.mark.dftd4
-def test_dftd4():
-    """
-    Tests SAPT(DFT) module for computing DFT-D4 SAPT-decomposition of energy terms
-    """
-    mol_dimer = psi4.geometry(
-        """
-  O -2.930978458   -0.216411437    0.000000000
-  H -3.655219777    1.440921844    0.000000000
-  H -1.133225297    0.076934530    0.000000000
-   --
-  O  2.552311356    0.210645882    0.000000000
-  H  3.175492012   -0.706268134   -1.433472544
-  H  3.175492012   -0.706268134    1.433472544
-  units bohr
-"""
-    )
-    psi4.set_options(
-        {
-            "basis": "STO-3G",
-            "sapt_dft_grac_shift_a": 0.136,
-            "sapt_dft_grac_shift_b": 0.136,
-            "SAPT_DFT_FUNCTIONAL": "pbe0",
-            "SAPT_DFT_DO_DDFT": True,
-            "SAPT_DFT_D4_IE": True,
-            "SAPT_DFT_D4_TYPE": "GD4_SUPERMOLECULAR",
-            "SAPT_DFT_DO_DISP": False,
-        }
-    )
-    psi4.energy("SAPT(DFT)", molecule=mol_dimer)
-    DISP = psi4.core.variable("SAPT DISP ENERGY")
-    assert compare_values(-0.005731715146359108, DISP, 8, "DFT-D4 DISP")
 
 
 @pytest.mark.saptdft
@@ -1365,8 +1304,6 @@ symmetry c1
 if __name__ == "__main__":
     psi4.set_memory("32 GB")
     psi4.set_num_threads(12)
-    # test_einsum_terms()
-
     # pytest this file
     # pytest.main(
     #     [
@@ -1378,16 +1315,4 @@ if __name__ == "__main__":
     #         # "--maxfail=1",
     #     ]
     # )
-    # test_sapt_dft_compute_ddft_d4_diskdf()
-    # test_sapt_dft_diskdf()
-    # test_dftd4()
-
-    # test_saptdft_disp_methods("DFT-D4(SAPT)", "gd4_supermolecular", -0.005731715146359108)
-    # test_saptdft_disp_methods_dftd3(
-    #     "SAPT(DFT)-D3(I)", -0.0036056912,
-    # )
-    test_saptdft_disp_methods_dftd4(
-        # "SAPT(DFT)-D4(S)", -0.003605830,
-        # "SAPT(DFT)-D4(I)", -0.0040379796,
-        "DFT-D4(SAPT)", -0.0040379796,
-    )
+    test_qcng_embedded_saptdft()

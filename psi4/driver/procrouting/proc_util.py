@@ -291,6 +291,7 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
     dimer_disp_energy = _disp_functor.compute_energy(dimer_wfn.molecule(), dimer_wfn)
     ## Monomer dispersion
     mon_disp_energy = _disp_functor.compute_energy(monomerA)
+    print(f"{dimer_disp_energy=}, {mon_disp_energy=}")
     mon_disp_energy += _disp_functor.compute_energy(monomerB)
 
     disp_interaction_energy = dimer_disp_energy - mon_disp_energy

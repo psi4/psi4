@@ -714,21 +714,19 @@ no_com
             "SAPT_DFT_DO_DHF": True,
             "SAPT_DFT_DO_HYBRID": False,
             "SAPT_DFT_DO_FSAPT": "SAPTDFT",
-            "SAPT_DFT_D4_IE": True,
-            "SAPT_DFT_DO_DISP": False,
         }
     )
-    psi4.energy("sapt(dft)", molecule=mol)
+    _, wfn = psi4.energy("sapt(dft)-d4(s)", molecule=mol, return_wfn=True)
     from pprint import pprint as pp
 
     keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
     Eref = {
-        "Edisp": -0.004547795456380542,
+        "Edisp": -0.004568534767691285,
         "Eelst": -0.0019765266134612602,
         "Eexch": 0.006335438658900877,
         "Eind": -0.0004635353246623952,
         "Enuc": 474.74808217020274,
-        "Etot": -0.0006524187404918546,
+        "Etot": -0.0006731581723675157,
     }
     Epsi = {
         "Enuc": mol.nuclear_repulsion_energy(),
@@ -742,7 +740,7 @@ no_com
     for key in keys:
         compare_values(Eref[key], Epsi[key], 5, key)
     data = psi4.fsapt_analysis(
-        molecule=mol,
+        source=wfn,
         fragments_a={
             "Methyl1_A": [1, 2, 7, 8],
             "Methyl2_A": [3, 4, 5, 6],
@@ -2269,7 +2267,7 @@ if __name__ == "__main__":
     # test_fsaptdft_fsapt0_simple()
     # test_fsaptdftd4_psivars()
     # test_fsaptdft_disp0_fisapt0_psivars()
-    test_fsapthf_psivars()
+    test_fsaptdftd4_psivars()
     # test_fsaptdft_fsapt0()
     # test_fsaptdftd4_psivars_pbe0()
 
