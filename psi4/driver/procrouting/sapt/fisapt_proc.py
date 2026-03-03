@@ -250,50 +250,51 @@ def fisapt_fdrop(self, external_potentials=None):
                 _drop(matrices["sDisp_AB"], ssapt_filepath)
 
 
-def fisapt_variables_to_wfn(self, ref_wfn, external_potentials=None):
+def fisapt_variables_to_wfn(self, ref_wfn, external_potentials=None, sapt_type='fisapt0'):
     """
     Stores FISAPT variables to the wavefunction for AtomicResults to
     store results.
     """
     # First Scalars
-    scalars = self.scalars()
-    ref_wfn.set_variable("SAPT ELST ENERGY", scalars["Electrostatics"])
-    ref_wfn.set_variable("SAPT ELST10,R ENERGY", scalars["Elst10,r"])
-    if "Extern-Extern" in scalars:
-        ref_wfn.set_variable("SAPT ELST EXTERN-EXTERN ENERGY", scalars["Extern-Extern"])
-    if core.has_variable("FSAPT_EXTERN_POTENTIAL_A"):
-        ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_A", core.variable("FSAPT_EXTERN_POTENTIAL_A"))
-    if core.has_variable("FSAPT_EXTERN_POTENTIAL_B"):
-        ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_B", core.variable("FSAPT_EXTERN_POTENTIAL_B"))
-    if core.has_variable("FSAPT_EXTERN_POTENTIAL_C"):
-        ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_C", core.variable("FSAPT_EXTERN_POTENTIAL_C"))
-    ref_wfn.set_variable("SAPT EXCH ENERGY", scalars["Exchange"])
-    ref_wfn.set_variable("SAPT EXCH10 ENERGY", scalars["Exch10"])
-    ref_wfn.set_variable("SAPT EXCH10(S^2) ENERGY", scalars["Exch10(S^2)"])
-    ref_wfn.set_variable("SAPT IND ENERGY", scalars["Induction"])
-    ref_wfn.set_variable("SAPT IND20,R ENERGY", scalars["Ind20,r"])
-    ref_wfn.set_variable("SAPT EXCH-IND20,R ENERGY", scalars["Exch-Ind20,r"])
-    ref_wfn.set_variable("SAPT IND20,U ENERGY", scalars["Ind20,u"])
-    ref_wfn.set_variable("SAPT EXCH-IND20,U ENERGY", scalars["Exch-Ind20,u"])
-    ref_wfn.set_variable("SAPT DISP ENERGY", scalars["Dispersion"])
-    ref_wfn.set_variable("SAPT DISP20 ENERGY", scalars["Disp20"])
-    ref_wfn.set_variable("SAPT EXCH-DISP20 ENERGY", scalars["Exch-Disp20"])
-    ref_wfn.set_variable("SAPT0 TOTAL ENERGY", scalars["SAPT"])
-    ref_wfn.set_variable("SAPT TOTAL ENERGY", scalars["SAPT"])
-    ref_wfn.set_variable("CURRENT ENERGY", scalars["SAPT"])
-    # dHF to ref_wfn
-    ref_wfn.set_variable("SAPT HF(2) ENERGY ABC(HF)", scalars["E_ABC_HF"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY AC(0)", scalars["E_AC"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY BC(0)", scalars["E_BC"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY A(0)", scalars["E_A"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY B(0)", scalars["E_B"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY AC(HF)", scalars["E_AC_HF"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY BC(HF)", scalars["E_BC_HF"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY AB(HF)", scalars["E_AB_HF"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY A(HF)", scalars["E_A_HF"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY B(HF)", scalars["E_B_HF"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY C", scalars["E_C"])
-    ref_wfn.set_variable("SAPT HF(2) ENERGY HF", scalars["HF"])
+    if sapt_type.lower() == 'fisapt0':
+        scalars = self.scalars()
+        ref_wfn.set_variable("SAPT ELST ENERGY", scalars["Electrostatics"])
+        ref_wfn.set_variable("SAPT ELST10,R ENERGY", scalars["Elst10,r"])
+        if "Extern-Extern" in scalars:
+            ref_wfn.set_variable("SAPT ELST EXTERN-EXTERN ENERGY", scalars["Extern-Extern"])
+        if core.has_variable("FSAPT_EXTERN_POTENTIAL_A"):
+            ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_A", core.variable("FSAPT_EXTERN_POTENTIAL_A"))
+        if core.has_variable("FSAPT_EXTERN_POTENTIAL_B"):
+            ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_B", core.variable("FSAPT_EXTERN_POTENTIAL_B"))
+        if core.has_variable("FSAPT_EXTERN_POTENTIAL_C"):
+            ref_wfn.set_variable("FSAPT_EXTERN_POTENTIAL_C", core.variable("FSAPT_EXTERN_POTENTIAL_C"))
+        ref_wfn.set_variable("SAPT EXCH ENERGY", scalars["Exchange"])
+        ref_wfn.set_variable("SAPT EXCH10 ENERGY", scalars["Exch10"])
+        ref_wfn.set_variable("SAPT EXCH10(S^2) ENERGY", scalars["Exch10(S^2)"])
+        ref_wfn.set_variable("SAPT IND ENERGY", scalars["Induction"])
+        ref_wfn.set_variable("SAPT IND20,R ENERGY", scalars["Ind20,r"])
+        ref_wfn.set_variable("SAPT EXCH-IND20,R ENERGY", scalars["Exch-Ind20,r"])
+        ref_wfn.set_variable("SAPT IND20,U ENERGY", scalars["Ind20,u"])
+        ref_wfn.set_variable("SAPT EXCH-IND20,U ENERGY", scalars["Exch-Ind20,u"])
+        ref_wfn.set_variable("SAPT DISP ENERGY", scalars["Dispersion"])
+        ref_wfn.set_variable("SAPT DISP20 ENERGY", scalars["Disp20"])
+        ref_wfn.set_variable("SAPT EXCH-DISP20 ENERGY", scalars["Exch-Disp20"])
+        ref_wfn.set_variable("SAPT0 TOTAL ENERGY", scalars["SAPT"])
+        ref_wfn.set_variable("SAPT TOTAL ENERGY", scalars["SAPT"])
+        ref_wfn.set_variable("CURRENT ENERGY", scalars["SAPT"])
+        # dHF to ref_wfn
+        ref_wfn.set_variable("SAPT HF(2) ENERGY ABC(HF)", scalars["E_ABC_HF"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY AC(0)", scalars["E_AC"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY BC(0)", scalars["E_BC"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY A(0)", scalars["E_A"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY B(0)", scalars["E_B"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY AC(HF)", scalars["E_AC_HF"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY BC(HF)", scalars["E_BC_HF"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY AB(HF)", scalars["E_AB_HF"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY A(HF)", scalars["E_A_HF"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY B(HF)", scalars["E_B_HF"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY C", scalars["E_C"])
+        ref_wfn.set_variable("SAPT HF(2) ENERGY HF", scalars["HF"])
 
     # Then matrices
     matrices = self.matrices()

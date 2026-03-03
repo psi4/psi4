@@ -355,6 +355,7 @@ def drop_saptdft_variables(wfn, wfn_A, wfn_B, cache, scalars):
     fisapt.set_matrix(matrix_cache)
     fisapt.set_vector(vector_cache)
     fisapt.fdrop()
+    fisapt.save_variables_to_wfn(wfn, sapt_type='SAPT(DFT)')
     # Now drop empirical dispersion if computed
     if core.get_option("SAPT", "SAPT_DFT_D4_IE"):
         pw_disp = cache["FSAPT_EMPIRICAL_DISP"]
@@ -363,4 +364,4 @@ def drop_saptdft_variables(wfn, wfn_A, wfn_B, cache, scalars):
         if filepath.lower() != "none":
             fisapt_proc._drop(pw_disp, filepath)
         core.set_variable("FSAPT_" + pw_disp.name.upper(), pw_disp)
-    return
+    return wfn
