@@ -38,61 +38,6 @@ units angstrom
 }
 
 
-@pytest.mark.skip(reason="Not completed fsapt einsums")
-@pytest.mark.fsapt
-@pytest.mark.saptdft
-def test_fsaptdft():
-    """
-    built from sapt-dft1 ctest
-    """
-    Eref_nh = {
-        # mEh
-        "SAPT ELST ENERGY": -0.0033529619489769402,
-        "SAPT EXCH ENERGY": 1.2025482154546578e-05,
-        "SAPT IND ENERGY": -1.2227400973891604e-05,
-        "SAPT DISP ENERGY": 0.0000000000,
-    }  # TEST
-    mol = psi4.geometry("""
-0 1
-C 0.00000000 0.00000000 0.00000000
-H 1.09000000 0.00000000 0.00000000
-H -0.36333333 0.83908239 0.59332085
-H -0.36333333 0.09428973 -1.02332709
-H -0.36333333 -0.93337212 0.43000624
---
-0 1
-C 6.44536662 -0.26509169 -0.00000000
-H 7.53536662 -0.26509169 -0.00000000
-H 6.08203329 0.57399070 0.59332085
-H 6.08203329 -0.17080196 -1.02332709
-H 6.08203329 -1.19846381 0.43000624
-symmetry c1
-no_reorient
-no_com
-""")
-    psi4.set_options(
-        {
-            "basis": "sto-3g",
-            "scf_type": "df",
-            "sapt_dft_grac_shift_a": 0.203293,
-            "sapt_dft_grac_shift_b": 0.203293,
-            "SAPT_DFT_DO_DHF": False,
-            "SAPT_DFT_DO_DISP": False,
-            "SAPT_DFT_DO_HYBRID": False,
-            "SAPT_DFT_EXCH_DISP_SCALE_SCHEME": "None",
-            "SAPT_DFT_DO_FSAPT": "SAPTDFT",
-        }
-    )
-    psi4.energy("fisapt0", molecule=mol)
-    print("\n fisapt0 complete")
-    _, wfn = psi4.energy("sapt(dft)", molecule=mol, return_wfn=True)
-    for k, v in Eref_nh.items():  # TEST
-        ref = v
-        assert compare_values(
-            ref, psi4.variable(k) * 1000, 8, "!hyb, xd=none, !dHF: " + k
-        )
-
-
 @uusing("pandas")
 def test_fsaptdft_timer():
     """ """
@@ -120,113 +65,6 @@ def test_fsaptdft_timer():
     df = pd.read_csv("saptdft_fi_useEin_timers.csv")
     print(f"compute_time_fi_ein: {compute_time_saptdft_fi_ein['wall_time']:.2f}s\n")
     return
-
-
-@pytest.mark.skip(reason="Not completed fsapt einsums")
-@pytest.mark.fsapt
-@pytest.mark.saptdft
-@pytest.mark.saptdft
-def test_fsaptdft_fsapt0():
-    """
-    built from sapt-dft1 ctest
-    """
-    Eref_nh = {
-        # mEh
-        "SAPT ELST ENERGY": -0.00233320,
-        "SAPT EXCH ENERGY": 0.00001443,
-        "SAPT IND ENERGY": -0.00001103,
-        "SAPT DISP ENERGY": -0.00563062,
-    }  # TEST
-    mol = psi4.geometry("""
-0 1
-C 0.00000000 0.00000000 0.00000000
-H 1.09000000 0.00000000 0.00000000
-H -0.36333333 0.83908239 0.59332085
-H -0.36333333 0.09428973 -1.02332709
-H -0.36333333 -0.93337212 0.43000624
---
-0 1
-C 6.44536662 -0.26509169 -0.00000000
-H 7.53536662 -0.26509169 -0.00000000
-H 6.08203329 0.57399070 0.59332085
-H 6.08203329 -0.17080196 -1.02332709
-H 6.08203329 -1.19846381 0.43000624
-symmetry c1
-no_reorient
-no_com
-""")
-    psi4.set_options(
-        {
-            "basis": "sto-3g",
-            "scf_type": "df",
-            "SAPT_DFT_FUNCTIONAL": "HF",
-            "SAPT_DFT_DO_DHF": True,
-            "SAPT_DFT_DO_HYBRID": False,
-            "SAPT_DFT_DO_FSAPT": "SAPTDFT",
-        }
-    )
-    np.set_printoptions(precision=10, suppress=True)
-    _, wfn = psi4.energy("sapt(dft)", molecule=mol, return_wfn=True)
-    print("\n sapt(dft) complete")
-    psi4.energy("fisapt0", molecule=mol)
-    for k, v in Eref_nh.items():  # TEST
-        ref = v
-        assert compare_values(
-            ref, psi4.variable(k) * 1000, 8, "!hyb, xd=none, !dHF: " + k
-        )
-
-
-@pytest.mark.skip(reason="Not completed fsapt einsums")
-@pytest.mark.fsapt
-@pytest.mark.saptdft
-def test_fsapt0_fsaptdft():
-    """
-    built from sapt-dft1 ctest
-    """
-    Eref_nh = {
-        # mEh
-        "SAPT ELST ENERGY": -0.00233320,
-        "SAPT EXCH ENERGY": 0.00001443,
-        "SAPT IND ENERGY": -0.00001103,
-        "SAPT DISP ENERGY": -0.00563062,
-    }  # TEST
-    mol = psi4.geometry("""
-0 1
-C 0.00000000 0.00000000 0.00000000
-H 1.09000000 0.00000000 0.00000000
-H -0.36333333 0.83908239 0.59332085
-H -0.36333333 0.09428973 -1.02332709
-H -0.36333333 -0.93337212 0.43000624
---
-0 1
-C 6.44536662 -0.26509169 -0.00000000
-H 7.53536662 -0.26509169 -0.00000000
-H 6.08203329 0.57399070 0.59332085
-H 6.08203329 -0.17080196 -1.02332709
-H 6.08203329 -1.19846381 0.43000624
-symmetry c1
-no_reorient
-no_com
-""")
-    psi4.set_options(
-        {
-            "basis": "sto-3g",
-            "scf_type": "df",
-            "SAPT_DFT_FUNCTIONAL": "HF",
-            "SAPT_DFT_DO_DHF": True,
-            "SAPT_DFT_DO_HYBRID": False,
-            "SAPT_DFT_DO_FSAPT": "SAPTDFT",
-        }
-    )
-    np.set_printoptions(precision=10, suppress=True)
-    psi4.energy("fisapt0", molecule=mol)
-    print("\n fisapt0 complete")
-    _, wfn = psi4.energy("sapt(dft)", molecule=mol, return_wfn=True)
-    for k, v in Eref_nh.items():  # TEST
-        ref = v
-        assert compare_values(
-            ref, psi4.variable(k) * 1000, 8, "!hyb, xd=none, !dHF: " + k
-        )
 
 
 def test_fsaptdft_simple():
@@ -277,7 +115,6 @@ no_com
         )
 
 
-@pytest.mark.skip(reason="Not completed fsapt einsums")
 @pytest.mark.fsapt
 @pytest.mark.saptdft
 def test_fsaptdft_fsapt0_simple():
@@ -317,8 +154,14 @@ no_com
     )
     np.set_printoptions(precision=10, suppress=True)
     psi4.energy("fisapt0", molecule=mol)
-    print("\n fisapt0 complete")
+    # Check fisapt0 acquires reference results
+    for k, v in Eref_nh.items():  # TEST
+        ref = v
+        assert compare_values(
+            ref, psi4.variable(k) * 1000, 6, "!hyb, xd=none, !dHF: " + k
+        )
     _, wfn = psi4.energy("sapt(dft)", molecule=mol, return_wfn=True)
+    # Check sapt(hf) acquires reference results
     for k, v in Eref_nh.items():  # TEST
         ref = v
         assert compare_values(
@@ -828,6 +671,7 @@ no_reorient
 no_com
 """
     )
+    # Reference energies from FISAPT0/sto-3g
     data = {
         "Disp": [
             -0.003994502630897984,
@@ -930,116 +774,6 @@ no_com
         "Enuc": 474.74808217020274,
         "Etot": 0.003104160252285582,
     }
-    #     print("FISAPT0 (REF)")
-    #     psi4.set_options(
-    #         {
-    #             "basis": "sto-3g",
-    #             "scf_type": "df",
-    #             "guess": "sad",
-    #             "FISAPT_FSAPT_FILEPATH": "none",
-    #         }
-    #     )
-    #     psi4.energy("fisapt0", molecule=mol)
-    #     Epsi = {
-    #         "Enuc": mol.nuclear_repulsion_energy(),
-    #         "Eelst": core.variable("SAPT ELST ENERGY"),
-    #         "Eexch": core.variable("SAPT EXCH ENERGY"),
-    #         "Eind": core.variable("SAPT IND ENERGY"),
-    #         "Edisp": core.variable("SAPT DISP ENERGY"),
-    #         "Etot": core.variable("SAPT TOTAL ENERGY"),
-    #     }
-    #     for key in keys:
-    #         compare_values(Eref[key], Epsi[key], 5, key)
-    #     data = psi4.fsapt_analysis(
-    #         source=wfn,
-    #         fragments_a={
-    #             "Methyl1_A": [1, 2, 7, 8],
-    #             "Methyl2_A": [3, 4, 5, 6],
-    #         },
-    #         fragments_b={
-    #             "Peptide_B": [9, 10, 11, 16, 26],
-    #             "T-Butyl_B": [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-    #         },
-    #         links5050=True,
-    #         print_output=False,
-    #     )
-    #     df = pd.DataFrame(data)
-    #     print("COMPUTED DF")
-    #     print(df[['Frag1', 'Elst', 'IndAB', 'IndBA', 'Disp', 'Total']])
-    #     # data_tmp = {k: v.tolist() for k, v in dict(df).items()}
-    #     # pp(data_tmp)
-    #
-    #     print("REF")
-    #     print(ref_df[['Frag1', 'Elst', 'IndAB', 'IndBA', 'Disp', 'Total']])
-    #
-    #     for col in ["Elst", "Exch", "IndAB", "IndBA", "Disp", "EDisp", "Total"]:
-    #         for i in range(len(ref_df)):
-    #             compare_values(
-    #                 ref_df[col].iloc[i],
-    #                 df[col].iloc[i],
-    #                 4,
-    #                 f"{ref_df['Frag1'].iloc[i]} {ref_df['Frag2'].iloc[i]} {col}",
-    #             )
-    #     psi4.set_options(
-    #         {
-    #             "basis": "sto-3g",
-    #             "scf_type": "df",
-    #             "guess": "sad",
-    #             "FISAPT_FSAPT_FILEPATH": "none",
-    #             "SAPT_DFT_FUNCTIONAL": "HF",
-    #             "SAPT_DFT_DO_DHF": True,
-    #             "SAPT_DFT_DO_HYBRID": False,
-    #             "SAPT_DFT_DO_FSAPT": "SAPTDFT",
-    # # a1eb1c8f985f13b48a00c2751f7e751572f0a696
-    #             "SAPT_DFT_D4_IE": False,
-    #             "SAPT_DFT_DO_DISP": True,
-    #             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
-    #             # Normally on
-    #             "SAPT_DFT_USE_EINSUMS": True,
-    #         }
-    #     )
-    #     _, wfn = psi4.energy("sapt(dft)", molecule=mol, return_wfn=True)
-    #     Epsi = {
-    #         "Enuc": mol.nuclear_repulsion_energy(),
-    #         "Eelst": core.variable("SAPT ELST ENERGY"),
-    #         "Eexch": core.variable("SAPT EXCH ENERGY"),
-    #         "Eind": core.variable("SAPT IND ENERGY"),
-    #         "Edisp": core.variable("SAPT DISP ENERGY"),
-    #         "Etot": core.variable("SAPT TOTAL ENERGY"),
-    #     }
-    #     pp(Epsi)
-    #     for key in keys:
-    #         compare_values(Eref[key], Epsi[key], 5, key)
-    #     data = psi4.fsapt_analysis(
-    #         source=wfn,
-    #         fragments_a={
-    #             "Methyl1_A": [1, 2, 7, 8],
-    #             "Methyl2_A": [3, 4, 5, 6],
-    #         },
-    #         fragments_b={
-    #             "Peptide_B": [9, 10, 11, 16, 26],
-    #             "T-Butyl_B": [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-    #         },
-    #         links5050=True,
-    #         print_output=False,
-    #     )
-    #     df = pd.DataFrame(data)
-    #     print("COMPUTED DF")
-    #     print(df[['Frag1', 'Elst', 'IndAB', 'IndBA', 'Disp', 'Total']])
-    #     # data_tmp = {k: v.tolist() for k, v in dict(df).items()}
-    #     # pp(data_tmp)
-    #
-    #     print("REF")
-    #     print(ref_df[['Frag1', 'Elst', 'IndAB', 'IndBA', 'Disp', 'Total']])
-    #
-    #     for col in ["Elst", "Exch", "IndAB", "IndBA", "Disp", "EDisp", "Total"]:
-    #         for i in range(len(ref_df)):
-    #             compare_values(
-    #                 ref_df[col].iloc[i],
-    #                 df[col].iloc[i],
-    #                 4,
-    #                 f"{ref_df['Frag1'].iloc[i]} {ref_df['Frag2'].iloc[i]} {col}",
-    #             )
     print("SAPT_DFT_DO_FSAPT = FISAPT0 now testing")
     psi4.set_options(
         {
@@ -1102,7 +836,6 @@ no_com
 
 @pytest.mark.saptdft
 @pytest.mark.fsapt
-# @uusing("pandas")
 @pytest.mark.saptdft
 def test_fsaptdftd4_psivars_pbe0():
     import pandas as pd
@@ -1888,21 +1621,16 @@ no_com
     _, wfn = psi4.energy("fisapt0-d4", molecule=mol, return_wfn=True)
     with open("tmp_fisapt/fA.dat", "w") as fA:  # TEST
         fA.write("Methyl1_A 1 2 7 8\n")  # TEST
-        # fA.write("Methyl2_A 3 4 5 6")  # TEST
     with open("tmp_fisapt/fB.dat", "w") as fB:  # TEST
         fB.write("Peptide_B  9 10 11 16 26\n")  # TEST
         fB.write("T-Butyl_B  12 13 14 15 17 18 19 20 21 22 23 24 25")  # TEST
-    # import subprocess, sys, os                                          #TEST
-    # subprocess.run([sys.executable, os.path.join('..', 'fsapt.py')], check=True) #TEST
     data = psi4.fsapt_analysis(
         source=wfn,
         fragments_a={
-            # "Methyl1_A": [i for i in range(1, 6)],
             "Methyl1_A": [1, 2, 7, 8],
             "Methyl2_A": [3, 4, 5, 6],
         },
         fragments_b={
-            # "Methyl1_B": [j for j in range(6, 11)],
             "Peptide_B": [9, 10, 11, 16, 26],
             "T-Butyl_B": [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
         },
@@ -1992,12 +1720,9 @@ no_com
     data = psi4.fsapt_analysis(
         source=wfn,
         fragments_a={
-            # "Methyl1_A": [i for i in range(1, 6)],
             "Methyl1_A": [1, 2, 7, 8],
-            # "Methyl2_A": [3, 4, 5, 6],
         },
         fragments_b={
-            # "Methyl1_B": [j for j in range(6, 11)],
             "Peptide_B": [9, 10, 11, 16, 26],
             "T-Butyl_B": [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
         },
