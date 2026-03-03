@@ -35,8 +35,12 @@
 #include "psi4/libqt/qt.h"
 #include "libciomr.h"
 #include <vector>
-#include <cuda_runtime.h>
+
+#ifdef USING_cuEST
+#include <cublas_v2.h>
 #include <cusolverDn.h>
+extern cusolverDnHandle_t cusolver_handle;
+#endif
 
 // Helper macro for brevity (you may want a nicer error handler)
 #define CHECK_CUDA(call) \
@@ -66,10 +70,6 @@ namespace psi {
         }
     }
 
-    // 2. Create cuSOLVER handle
-    cusolverDnHandle_t handle = nullptr;
-    CHECK_CUSOLVER(cusolverDnCreate(&handle));
-
     // 3. Allocate device memory
     double* d_A = nullptr;  // N x N, column-major
     double* d_W = nullptr;  // eigenvalues
@@ -87,7 +87,7 @@ namespace psi {
     // 5. Query workspace size for Dsyevd
     int lwork = 0;
     CHECK_CUSOLVER(cusolverDnDsyevd_bufferSize(
-        handle,
+        cusolver_handle,
         CUSOLVER_EIG_MODE_VECTOR,      // we want eigenvectors always; we can discard later
         CUBLAS_FILL_MODE_UPPER,
         N,
@@ -101,7 +101,7 @@ namespace psi {
 
     // 6. Compute eigen-decomposition on device
     CHECK_CUSOLVER(cusolverDnDsyevd(
-        handle,
+        cusolver_handle,
         (e_vecs ? CUSOLVER_EIG_MODE_VECTOR : CUSOLVER_EIG_MODE_NOVECTOR),
         CUBLAS_FILL_MODE_UPPER,
         N,
@@ -121,7 +121,6 @@ namespace psi {
         cudaFree(d_W);
         cudaFree(d_work);
         cudaFree(d_info);
-        cusolverDnDestroy(handle);
         return info;
     }
 
@@ -149,7 +148,6 @@ namespace psi {
     cudaFree(d_W);
     cudaFree(d_work);
     cudaFree(d_info);
-    cusolverDnDestroy(handle);
 
     return info;
 }
