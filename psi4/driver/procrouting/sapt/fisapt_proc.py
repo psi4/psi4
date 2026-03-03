@@ -76,11 +76,11 @@ def fisapt_compute_energy(self, jk_obj, *, external_potentials=None):
     core.timer_on("FISAPT:SAPT:ind")
     self.ind()
     core.timer_off("FISAPT:SAPT:ind")
+
+    # FISAPT Dispersion is expensive, so only do if needed
     if not core.get_option("FISAPT", "FISAPT_DO_FSAPT"):
         core.timer_on("FISAPT:SAPT:disp")
-        # Expensive, only do if needed  # unteseted translation of below
         self.disp(self.matrices(), self.vectors(), True)
-        # self.disp(matrices_, vectors_, true)  # Expensive, only do if needed
         core.timer_off("FISAPT:SAPT:disp")
 
     # => F-SAPT0 <=
@@ -149,6 +149,12 @@ def fisapt_fdrop(self, external_potentials=None):
         xyz = self.molecule().to_string(dtype="xyz", units="Angstrom")
         with open(geomfile, "w") as fh:
             fh.write(xyz)
+
+        # Enable a user to recreate a valid qcelemental molecule from an fsapt
+        # output directory for downstream applications
+        psi4file = filepath + os.sep + "geom.psi4mol"
+        with open(psi4file, "w") as fh:
+            fh.write(self.molecule().to_string(dtype="psi4", units="Angstrom"))
 
     # write external potential geometries
     if external_potentials is not None and isinstance(external_potentials, dict):
@@ -321,6 +327,12 @@ def fisapt_plot(self):
     xyz = self.molecule().to_string(dtype="xyz", units="Angstrom")
     with open(geomfile, "w") as fh:
         fh.write(xyz)
+
+    # Enable a user to recreate a valid qcelemental molecule from an fsapt
+    # output directory for downstream applications
+    psi4file = filepath + os.sep + "geom.psi4mol"
+    with open(psi4file, "w") as fh:
+        fh.write(self.molecule().to_string(dtype="psi4", units="Angstrom"))
 
     self.raw_plot(filepath)
 
