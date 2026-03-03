@@ -375,8 +375,8 @@ void CGHF::form_D() {
         for (int j = 0; j < irrep_sizes_[h]; j++) {
             for (int k = 0; k < nelecpi_[h]; k++) {
                 auto C_jk = C_->block(h)(j, k);
-                temp1_->block(h)(j, k) = std::conj(C_jk);
-                temp2_->block(h)(j, k) = C_jk;
+                temp1_->block(h)(j, k) = C_jk;
+                temp2_->block(h)(j, k) = std::conj(C_jk);
             }
         }
     }
@@ -538,14 +538,16 @@ void CGHF::do_diis() {
             auto ej = err_vecs[j];
 
             std::complex<double> sum{0, 0};
-            for (int h = 0; h < nirrep_; h++)
-                for (int p = 0; p < irrep_sizes_[h]; p++)
-                    for (int q = 0; q < irrep_sizes_[h]; q++) {
-                        sum += std::conj(ei[h].subscript(p, q)) * ej[h].subscript(p, q);
-                    }
-            B_(i, j) = sum;
+            for (int h = 0; h < nirrep_; h++) {
+            //    for (int p = 0; p < irrep_sizes_[h]; p++)
+            //        for (int q = 0; q < irrep_sizes_[h]; q++) {
+            //            sum += std::conj(ei[h].subscript(p, q)) * ej[h].subscript(p, q);
+            //        }
+                sum += einsums::linear_algebra::true_dot(ei[h], ej[h]);
+            }
+            B_(j, i) = sum;
             // B_ is real and symmetric
-            if (i != j) B_(j, i) = sum;
+            if (i != j) B_(i, j) = sum;
         }
     }
 
