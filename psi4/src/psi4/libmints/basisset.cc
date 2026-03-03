@@ -60,12 +60,12 @@
 #include <map>
 #include <list>
 
-//#ifdef USING_cuEST
+#ifdef USING_cuEST
 #include <cuest.h>
 #include <cuda_runtime.h>
 #include "psi4/libfock/cuESTCommon.h"
 extern cuestHandle_t cuest_handle;
-//#endif
+#endif
 
 using namespace psi;
 
@@ -126,16 +126,16 @@ BasisSet::BasisSet() {
     target_ = "(Empty Basis Set)";
     shells_[0] = GaussianShell(Gaussian, 0, nprimitive_, uoriginal_coefficients_.data(), ucoefficients_.data(),
                                uerd_coefficients_.data(), uexponents_.data(), GaussianType(0), 0, xyz_.data(), 0);
-//#ifdef USING_cuEST
+#ifdef USING_cuEST
     cuest_basis_ = nullptr;
     cuest_basis_ws_ptr_ = nullptr;
-//#endif
+#endif
 }
 
 BasisSet::~BasisSet() {
-//#ifdef USING_cuEST
+#ifdef USING_cuEST
     cuest_finalize();
-//#endif
+#endif
 }
 
 std::shared_ptr<BasisSet> BasisSet::build(std::shared_ptr<Molecule> /*molecule*/,
@@ -878,9 +878,9 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
         }
     }
 
-//#ifdef USING_cuEST
+#ifdef USING_cuEST
     cuest_initialize();
-//#endif
+#endif
 }
 
 void BasisSet::update_l2_shells(bool embed_normalization) {
@@ -1303,7 +1303,7 @@ void BasisSet::negative_gaussian_normalization_to_coefficients() {
   update_l2_shells(false);
 }
 
-//#ifdef USING_cuEST
+#ifdef USING_cuEST
 void BasisSet::cuest_initialize()
 {
     printf("BasisSet::cuest_initialize start\n");
@@ -1369,5 +1369,5 @@ void BasisSet::cuest_finalize()
         cuest_basis_ws_ptr_ = nullptr;
     }
 }
-//#endif
+#endif
 

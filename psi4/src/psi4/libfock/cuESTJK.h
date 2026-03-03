@@ -3,16 +3,16 @@
 
 #include "jk.h"
 
-//#ifdef USING_cuEST
+#ifdef USING_cuEST
 #include <cuest.h>
-//#endif
+#endif
 
 namespace psi {
 
 class BasisSet;
 class Options;
 
-//#ifdef USING_cuEST
+#ifdef USING_cuEST
 
 class PSI_API cuESTJK : public JK {
    protected:
@@ -58,6 +58,6 @@ class PSI_API cuESTJK : public JK {
     void print_header() const override;
 };
 
-//#endif // USING_cuEST
+#endif // USING_cuEST
 } // namespace psi
 #endif // CUESTJK_H
