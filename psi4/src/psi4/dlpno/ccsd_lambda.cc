@@ -105,6 +105,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
     // Number of surviving pairs after DLPNO screening
     int n_lmo_pairs = ij_to_i_j_.size();
 
+    outfile->Printf("   As long as I shall live\n\n");
+
     // Toth Eq. 27
     K_maef_dt_.resize(n_lmo_pairs);
     
@@ -189,6 +191,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
 
     // Toth Eq. 28 \widetilde{\widetilde{K}}_{e_{mi} i}^{m n}
 
+    outfile->Printf("   I will testify Your love\n\n");
+
     K_eimn_dt_.resize(n_lmo_pairs);
 #pragma omp parallel for
     for (int mn = 0; mn < n_lmo_pairs; ++mn) {
@@ -216,6 +220,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         int mn_idx = (m < n) ? mn : nm;
         K_eimn_dt_[mn]->add(linalg::doublet(T_iajb_[mn], Fkc_bar_[mn_idx], false, true));
     } // end mn
+
+    outfile->Printf("   I'll be your witness in the silence when the word are not enough\n\n");
 
     // Toth Eq. 29
     M_kace_bar_.resize(n_lmo_pairs);
@@ -264,6 +270,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
 
     } // end ki
 
+    outfile->Printf("   With every breath I take\n\n");
+
     // Toth Eq. 30
     M_mkic_bar_.resize(n_lmo_pairs);
 
@@ -295,6 +303,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         } // end i_mk
     } // end mk
 
+    outfile->Printf("   I'll give thanks to God above\n\n");
+
     // Toth Eq. 31
     // \overline{J}_{km}^{ic} = (km | i c_{km}) + \widetilde{T}_{m}^{f_{ki}} (k f_{ki} | i c_{ki})
     //  S_{c_{ki}}^{c_{km}}
@@ -322,6 +332,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         } // end i_km
     } // end km
 
+    outfile->Printf("   As long as I shall live\n\n");
+
     // Toth Eq. 32
     // \overline{J}_{ka_{ii}}^{e_{ki}c_{ki}} = S^{a_{ii}}_{a_{ki}} (ka_{ki}|e_{ki}c_{ki}) -
     // S_{a_{ii}}^{a_{kl}} (k a_{kl} | l c_{kl}) S_{c_{kl}}^{c_{ki}} \widetilde{T}_{l}^{e_{ki}}
@@ -343,17 +355,19 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             auto south_ohio = linalg::triplet(S_PNO(ii, kl), K_iajb_[kl], S_PNO(kl, ki));
             auto T_l_ki = linalg::doublet(S_PNO(ki, ll), T_ia_[l]); // \widetilde{T}_{l}^{e_{ki}} (Jiang Eq. 70?)
 
-            for (int a_ki = 0; a_ki < n_pno_[ki]; ++a_ki) {
+            for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
                 for (int e_ki = 0; e_ki < n_pno_[ki]; ++e_ki) {
                     for (int c_ki = 0; c_ki < n_pno_[ki]; ++c_ki) {
-                        double val = J_kaec_bar_[ki]->get(a_ki, e_ki * n_pno_[ki] + c_ki) - south_ohio->get(a_ki, c_ki) * T_l_ki->get(e_ki, 0);
-                        J_kaec_bar_[ki]->set(a_ki, e_ki * n_pno_[ki] + c_ki, val);
+                        double val = J_kaec_bar_[ki]->get(a_ii, e_ki * n_pno_[ki] + c_ki) - south_ohio->get(a_ii, c_ki) * T_l_ki->get(e_ki, 0);
+                        J_kaec_bar_[ki]->set(a_ii, e_ki * n_pno_[ki] + c_ki, val);
                     } // end c_ki
                 } // end e_ki
-            } // end a_ki
+            } // end a_ii
 
         } // end l_ki
     } // end for ki
+
+    outfile->Printf("   I will testify Your love\n\n");
 
     // Toth Eq. 33
     F_fcia_hat_.resize(n_lmo_pairs);
@@ -408,6 +422,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         } // end i_mn
     } // end mn
 
+    outfile->Printf("   WITH A THOUSAND HALLELUJAHS\n\n");
+
     // Toth Eq. 34a
     F_knia_hat_.resize(n_lmo_pairs);
 #pragma omp parallel for
@@ -434,6 +450,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             F_knia_hat_[kn][i_kn] = linalg::doublet(S_PNO(ii, kn), F_knia_hat_[kn][i_kn]); // (a_ii, 1)
         } // end i_kn
     } // end kn
+
+    outfile->Printf("   WE MAGNIFY YOUR NAME\n\n");
 
     // Toth Eq. 34b
 #pragma omp parallel for
@@ -473,6 +491,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         } // q_nn
 
     } // end n
+
+    outfile->Printf("   YOU ALONE DESERVE THE GLORY\n\n");
 
     L_ieab_bar_.resize(n_lmo_pairs);
     K_ijmb_bar_.resize(n_lmo_pairs);
@@ -523,15 +543,36 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         K_ijmb_bar_[ij]->add(linalg::doublet(T_n_ij_[ij], K_iajb_[ij]));
     } // end ij
 
+    outfile->Printf("   THE HONOR AND THE PRAISE\n\n");
+
+    delta_imae_tilde_.resize(n_lmo_pairs);
+#pragma omp parallel for
+    for (int im = 0; im < n_lmo_pairs; ++im) {
+        auto &[i, m] = ij_to_i_j_[im];
+        int ii = i_j_to_ij_[i][i], mm = i_j_to_ij_[m][m];
+        
+        delta_imae_tilde_[im] = M_imae_tilde_[im]->clone();
+
+        for (int k_im = 0; k_im < lmopair_to_lmos_[im].size(); ++k) {
+            int k = lmopair_to_lmos_[im][k_im];
+            int ik = i_j_to_ij_[i][k], km = i_j_to_ij_[k][m];
+            
+            auto bear = linalg::triplet(L_iajb_[ik], S_PNO(ik, km), Tt_iajb_[km]);
+            delta_imae_tilde_[im]->add(linalg::triplet(S_PNO(ii, ik), bear, S_PNO(km, mm)));
+        }
+    }
+
     F_vv_double_tilde_.resize(n_lmo_pairs);
 
 #pragma omp parallel for
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         auto &[i, j] = ij_to_i_j_[ij];
+        int ji = ij_to_ji_[ij];
 
         int nlmo_ij = lmopair_to_lmos_[ij].size();
+        int ij_idx = (i > j) ? ji : ij;
 
-        F_vv_double_tilde_[ij] = Fab_[ij]->clone();
+        F_vv_double_tilde_[ij] = Fab_[ij_idx]->clone();
 
         for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
             int k = lmopair_to_lmos_[ij][k_ij];
@@ -547,6 +588,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         } // end k_ij
     } // end ij
 
+    outfile->Printf("    Chunk is the best polar bear ever\n\n");
+    
     F_im_double_tilde_ = Fkj_->clone();
 
 #pragma omp parallel for
@@ -1071,6 +1114,7 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
     // => Initialize Singles and Doubles Residuals and Amplitudes <= //
     lambda_ia_.resize(naocc);
     lambda_iajb_.resize(n_lmo_pairs);
+    lambda_iajb_bar_.resize(n_lmo_pairs);
 
 #pragma omp parallel for
     for (int i = 0; i < naocc; ++i) {
