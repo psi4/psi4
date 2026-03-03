@@ -40,19 +40,30 @@ namespace psi {
 class GauXCBase : public IntegratorManager {
    using IntegratorManager::IntegratorManager;
 
+   public:
+    void initialize() override;
+    virtual ExchCXX::Spin spin() const = 0;
+
    protected:
     /// Integrator object for GauXC based integration
     std::shared_ptr<GauXC::XCIntegrator<Eigen::MatrixXd>> integrator_;
+    
 
 };
 
 class GauRV : public GauXCBase {
     using GauXCBase::GauXCBase;
 
-    void initialize() override;
     std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
+    ExchCXX::Spin spin() const override { return ExchCXX::Spin::Unpolarized; };
 };
 
+class GauUV : public GauXCBase {
+    using GauXCBase::GauXCBase;
+
+    std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
+    ExchCXX::Spin spin() const override { return ExchCXX::Spin::Polarized; };
+};
 }
 
 #endif
