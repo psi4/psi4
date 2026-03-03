@@ -1363,8 +1363,13 @@ class Molecule(LibmintsMolecule):
             resinp['keywords']['level_hint'] = dashlvl
         if dashparam:
             resinp['keywords']['params_tweaks'] = dashparam
+        if property:
+            resinp['keywords']['property'] = True
+            resinp['keywords']['pair_resolved'] = True
         jobrec = qcng.compute(resinp, 's-dftd3', raise_error=True)
         jobrec = jobrec.dict()
+        # from pprint import pprint as pp
+        # pp(jobrec)
 
         # hack as not checking type GRAD
         for k, qca in jobrec['extras']['qcvars'].items():
@@ -1379,8 +1384,18 @@ class Molecule(LibmintsMolecule):
             for k, qca in jobrec['extras']['qcvars'].items():
                 if not isinstance(qca, (list, np.ndarray)):
                     core.set_variable(k, float(qca))
-        from pprint import pprint as pp
-        pp(jobrec['extras']['qcvars'])
+        if property:
+            from psi4 import core
+            d3pairs = np.array(jobrec['extras']['dftd3']['additive pairwise energy'])
+            core.set_variable('DFTD3 ADDITIVE PAIRWISE ENERGY', d3pairs)
+        if verbose:
+            from psi4 import core
+            params = jobrec['extras']['info']['dashparams'] # Dict
+            core.print_out(f"\n  DFT-D3 Parameters: {jobrec['extras']['info']['dashparams_citation']}\n")
+            for k, v in params.items():
+                core.print_out(f"    {k}: {v}\n")
+            # Disperion Energy
+            core.print_out(f"  DFT-D3 Dispersion Correction Energy: {jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']} Eh\n")
 
         if derint == -1:
             return (float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']),

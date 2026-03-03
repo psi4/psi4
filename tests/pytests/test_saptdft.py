@@ -163,7 +163,7 @@ units bohr
 @pytest.mark.parametrize(
     "method, d3_type, expected_disp",
     [
-        ("SAPT(DFT)-D3(I)", "intermolecular", -0.0041772889),
+        ("SAPT(DFT)-D3(I)", "intermolecular", -0.0002850638),
         ("SAPT(DFT)-D3(S)", "supermolecular", -0.0036056912),
     ],
 )
@@ -180,7 +180,7 @@ def test_saptdft_disp_methods_dftd3(method, d3_type, expected_disp):
 units bohr
 """
     )
-    d3vars = mol_dimer.run_sdftd3(func='pbe0', dashlvl='d3bj')
+    d3vars = mol_dimer.run_sdftd3(func='pbe0', dashlvl='d3bj', property=True)
     print(d3vars)
     psi4.set_options(
         {
@@ -1385,6 +1385,5 @@ if __name__ == "__main__":
 
     # test_saptdft_disp_methods("DFT-D4(SAPT)", "gd4_supermolecular", -0.005731715146359108)
     test_saptdft_disp_methods_dftd3(
-        "SAPT(DFT)-D3(I)", "intermolecular", -0.0041772889
-        # "SAPT(DFT)-D3(S)", "supermolecular", -0.0036056912
+        "SAPT(DFT)-D3(S)", "supermolecular", -0.0036056912,
     )

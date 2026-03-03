@@ -127,16 +127,30 @@ def run_sapt_dft(name, **kwargs):
     ):
         do_mon_grac_shift_B = True
 
+    sapt_dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
+
     if "-D4" in name.upper():
         d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
         if "-D4(S)" in name.upper():
             core.print_out(r"SAPT(DFT)-D4(S): -D4(S) for dispersion")
+            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(s)"
+            if sapt_dft_functional.lower() not in ['pbe0']:
+                raise ValueError(
+                    "SAPT(DFT)-D4 with D4(S) parameters is currently only available for PBE0"
+                    f" Functional {sapt_dft_functional.lower()} does not have D4(S) parameters defined."
+                )
             core.set_global_option("SAPT_DFT_DO_DISP", 0)
             core.set_global_option("SAPT_DFT_D4_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 0)
             core.set_global_option("SAPT_DFT_D_TYPE", "supermolecular")
         elif "-D4(I)" in name.upper():
             core.print_out(r"SAPT(DFT)-D4(I): -D4(I) for dispersion")
+            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(s)"
+            if sapt_dft_functional.lower() not in ['pbe0', 'b3lyp']:
+                raise ValueError(
+                    "SAPT(DFT)-D4 with D4(I) parameters is currently only available for PBE0 and B3LYP."
+                    f" Functional {sapt_dft_functional.lower()} does not have D4(I) parameters defined."
+                )
             core.set_global_option("SAPT_DFT_DO_DISP", 0)
             core.set_global_option("SAPT_DFT_D4_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 0)
@@ -156,13 +170,25 @@ def run_sapt_dft(name, **kwargs):
     elif "-D3" in name.upper():
         d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
         if "-D3(S)" in name.upper():
-            core.print_out(r"SAPT(DFT)-D4(S): -D4(S) for dispersion")
+            core.print_out(r"SAPT(DFT)-D3(S): -D3(S) for dispersion")
+            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(s)"
+            if sapt_dft_functional.lower() not in ['pbe0', 'b3lyp']:
+                raise ValueError(
+                    "SAPT(DFT)-D3 with D3(S) parameters is currently only available for PBE0 and B3LYP."
+                    f" Functional {sapt_dft_functional.lower()} does not have D3(S) parameters defined."
+                )
             core.set_global_option("SAPT_DFT_DO_DISP", 0)
             core.set_global_option("SAPT_DFT_D3_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 0)
             core.set_global_option("SAPT_DFT_D_TYPE", "supermolecular")
         elif "-D3(I)" in name.upper():
             core.print_out(r"SAPT(DFT)-D3(I): -D3(I) for dispersion")
+            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(i)"
+            if sapt_dft_functional.lower() not in ['pbe0', 'b3lyp']:
+                raise ValueError(
+                    "SAPT(DFT)-D3 with D3(I) parameters is currently only available for PBE0 and B3LYP."
+                    f" Functional {sapt_dft_functional.lower()} does not have D3(I) parameters defined."
+                )
             core.set_global_option("SAPT_DFT_DO_DISP", 0)
             core.set_global_option("SAPT_DFT_D3_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 0)
@@ -185,7 +211,6 @@ def run_sapt_dft(name, **kwargs):
     do_delta_hf = core.get_option("SAPT", "SAPT_DFT_DO_DHF")
     do_delta_dft = core.get_option("SAPT", "SAPT_DFT_DO_DDFT")
     do_disp = core.get_option("SAPT", "SAPT_DFT_DO_DISP")
-    sapt_dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
     sapt_dft_D4_IE = core.get_option("SAPT", "SAPT_DFT_D4_IE")
     sapt_dft_D3_IE = core.get_option("SAPT", "SAPT_DFT_D3_IE")
     do_dft = sapt_dft_functional != "HF"
@@ -668,7 +693,7 @@ def run_sapt_dft(name, **kwargs):
             sapt_dimer=sapt_dimer,
             monomerA=monomerA,
             monomerB=monomerB,
-            sapt_dft_functional=sapt_dft_functional,
+            dftd4_functional_name=e_disp_param_name,
             d4_type=d4_type,
             data=data
         )
@@ -689,7 +714,7 @@ def run_sapt_dft(name, **kwargs):
             sapt_dimer=sapt_dimer,
             monomerA=monomerA,
             monomerB=monomerB,
-            sapt_dft_functional=sapt_dft_functional,
+            dftd3_functional_name=e_disp_param_name,
             d3_type=d3_type,
             data=data
         )

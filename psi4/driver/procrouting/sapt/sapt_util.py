@@ -185,24 +185,30 @@ def print_sapt_dft_summary(data, name, dimer_wfn, do_dft=True, short=False, do_d
             ret += print_sapt_var("  Disp20", data["Disp20,u"]) + "\n"
             ret += print_sapt_var("  Exch-Disp20", data["Exch-Disp20,u"]) + "\n"
 
-    if "D4 IE" in list(data) and not do_disp and do_delta_dft:
-        disp = data["D4 IE"] + data["Delta DFT Correction"] - data['Delta HF Correction']
+    empirical_disp_key = None
+    if "D4 IE" in data:
+        empirical_disp_key = "D4 IE"
+    elif "D3 IE" in data:
+        empirical_disp_key = "D3 IE"
+
+    if empirical_disp_key and not do_disp and do_delta_dft:
+        disp = data[empirical_disp_key] + data["Delta DFT Correction"] - data['Delta HF Correction']
         ret += print_sapt_var("Dispersion", disp) + "\n"
         ret += print_sapt_var("  delta DFT,r (2)", data["Delta DFT Correction"]) + "\n"
         subtract_delta_hf_for_total_dispersion = -data["Delta HF Correction"]
         ret += print_sapt_var("  -delta HF,r (2)", subtract_delta_hf_for_total_dispersion) + "\n"
-        ret += print_sapt_var("  GD4 IE", data["D4 IE"]) + "\n"
-    elif "D4 IE" in list(data) and not do_disp:
-        disp = data["D4 IE"]
+        ret += print_sapt_var(f"  G{empirical_disp_key}", data[empirical_disp_key]) + "\n"
+    elif empirical_disp_key and not do_disp:
+        disp = data[empirical_disp_key]
         ret += print_sapt_var("Dispersion", disp) + "\n"
-        ret += print_sapt_var("  GD4 IE", data["D4 IE"]) + "\n"
+        ret += print_sapt_var(f"  G{empirical_disp_key}", data[empirical_disp_key]) + "\n"
     if "Delta DFT Correction" in list(data):
         ret += "      ---------------" + "\n"
         ret += print_sapt_var("  delta DFT,r (2)", data["Delta DFT Correction"]) + "\n"
 
-    if "D4 IE" in list(data) and do_disp:
+    if empirical_disp_key and do_disp:
         ret += "      ---------------" + "\n"
-        ret += print_sapt_var("  D4 IE", data["D4 IE"]) + "\n"
+        ret += print_sapt_var(f"  {empirical_disp_key}", data[empirical_disp_key]) + "\n"
 
 
     ret += "\n"
