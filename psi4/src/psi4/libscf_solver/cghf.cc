@@ -214,7 +214,7 @@ void CGHF::preiterations() {
             int nso = nsopi_[h];
             for (int p = 0; p < nso; p++) {
                 for (int q = 0; q < nso; q++) {
-                    // Note that I multiply by i to get H_SO Hermitiain
+                    // Note that I multiply by i to get H_SO Hermitian
                     F0_->block(h)(p, q)         += H_SO[2]->get(p,q)*i; // +Hz [0,0]
                     F0_->block(h)(p+nso, q+nso) -= H_SO[2]->get(p,q)*i; // -Hz [1,1]
                     F0_->block(h)(p, q+nso)     += H_SO[0]->get(p,q)*i; // +Hx [0,1]
