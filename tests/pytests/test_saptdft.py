@@ -126,9 +126,9 @@ def test_sapt_dft_compute_ddft_d4():
 @pytest.mark.parametrize(
     "method, expected_disp",
     [
-        ("SAPT(DFT)-D4(I)", -0.0041772889),
-        ("SAPT(DFT)-D4(S)", -0.00360569124),
-        ("DFT-D4(SAPT)", -0.005731715146359108),
+        ("SAPT(DFT)-D4(S)", -0.003605830),
+        ("SAPT(DFT)-D4(I)", -0.0040379796),
+        ("DFT-D4(SAPT)", -0.0057317156),
     ],
 )
 def test_saptdft_disp_methods_dftd4(method, expected_disp):
@@ -1387,6 +1387,7 @@ if __name__ == "__main__":
     #     "SAPT(DFT)-D3(I)", -0.0036056912,
     # )
     test_saptdft_disp_methods_dftd4(
-        "SAPT(DFT)-D4(S)", -0.00360569124,
-        # "dft-d3(sapt)", -0.00360569124,
+        # "SAPT(DFT)-D4(S)", -0.003605830,
+        # "SAPT(DFT)-D4(I)", -0.0040379796,
+        "DFT-D4(SAPT)", -0.0040379796,
     )

@@ -695,6 +695,7 @@ def run_sapt_dft(name, **kwargs):
             sapt_dimer=sapt_dimer,
             monomerA=monomerA,
             monomerB=monomerB,
+            dimer_wfn=dimer_wfn,
             dftd4_functional_name=e_disp_param_name,
             d4_type=d4_type,
             data=data

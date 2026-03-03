@@ -34,6 +34,7 @@ from ... import p4util
 from ...constants import constants
 from ...p4util.exceptions import ValidationError
 from .dftd4_r4r2 import r4r2_dftd4
+from . import empirical_dispersion
 
 
 def dftd4_c6_intermolecular_dispersion(
@@ -76,44 +77,57 @@ def dftd4_c6_intermolecular_dispersion(
 
 
 def sapt_dft_d4_interaction_energy(
-    sapt_dimer, monomerA, monomerB, dftd4_functional_name, d4_type, data
+    sapt_dimer, monomerA, monomerB, dimer_wfn, dftd4_functional_name, d4_type, data
 ):
+    if core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
+        modified_disp_params = core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
+    else:
+        modified_disp_params = None
     if d4_type == "supermolecular":
         core.print_out(
             "         "
             + "Supermolecular D4 Interaction Energy E_IE = E_IJ - E_I - E_J".center(58)
-            + "\n"
+            + "\n\n"
         )
-        params = {
-            "s6": 1.00000000e00,
-            "s8": 1.20417708e00,
-            "a1": 9.09018333e-01,
-            "a2": 3.24886637e-10,
-            "s9": 0.00000000e00,
-        }
-        print(dftd4_functional_name)
-        dftd4_functional_name = 'sapt0'
-        # dimer_d4, _ = sapt_dimer.run_dftd4(func=dftd4_functional_name, dashlvl="d4bjeeqatm")
-        # data["D4 DIMER"] = dimer_d4
-        # monA_d4, _ = monomerA.run_dftd4(func=dftd4_functional_name, dashlvl="d4bjeeqatm")
-        # data["D4 MONOMER A"] = monA_d4
-        # monB_d4, _ = monomerB.run_dftd4(func=dftd4_functional_name, dashlvl="d4bjeeqatm")
-        # data["D4 MONOMER B"] = monB_d4
-        # data["D4 IE"] = dimer_d4 - monA_d4 - monB_d4
-        from ..proc import build_functional_and_disp
-        _, _disp_functor = build_functional_and_disp('hf-d4', restricted=True, save_pairwise_disp=True)
-
-        ## Dimer dispersion
-        dimer_disp_energy = _disp_functor.compute_energy(sapt_dimer)
-        ## Monomer dispersion
-        mon_disp_energy = _disp_functor.compute_energy(monomerA)
-        mon_disp_energy += _disp_functor.compute_energy(monomerB)
-
-        disp_interaction_energy = dimer_disp_energy - mon_disp_energy
-        core.set_variable(saptd_name + "-D DISP ENERGY", disp_interaction_energy)
-        core.set_variable("SAPT DISP ENERGY", disp_interaction_energy)
-        core.set_variable("DISPERSION CORRECTION ENERGY", disp_interaction_energy)
-        core.set_variable(saptd_name + " DISPERSION CORRECTION ENERGY", disp_interaction_energy)
+        _disp_functor = empirical_dispersion.EmpiricalDispersion(
+            name_hint=dftd4_functional_name,
+            level_hint='d4bj2b',
+            param_tweaks=modified_disp_params,
+            save_pairwise_disp=True,
+        )
+        dimer_d4 = _disp_functor.compute_energy(sapt_dimer, dimer_wfn)
+        monA_d4 = _disp_functor.compute_energy(monomerA)
+        monB_d4 = _disp_functor.compute_energy(monomerB)
+        data["D4 DIMER"] = dimer_d4
+        data["D4 MONOMER A"] = monA_d4
+        data["D4 MONOMER B"] = monB_d4
+        data["D4 IE"] = dimer_d4 - monA_d4 - monB_d4
+        data['FSAPT_EMPIRICAL_DISP'] = dimer_wfn.variable("PAIRWISE DISPERSION CORRECTION ANALYSIS")
+        _disp_functor.print_out()
+    elif d4_type == "intermolecular":
+        geom, _, _, elez, _ = sapt_dimer.to_arrays()
+        elez = np.array(elez, dtype=np.int32)
+        monAs = np.array([i for i in range(monomerA.natom()) if monomerA.Z(i) > 0])
+        monBs = np.array([i for i in range(monomerB.natom()) if monomerB.Z(i) > 0])
+        _disp_functor = empirical_dispersion.EmpiricalDispersion(
+            name_hint=dftd4_functional_name,
+            level_hint='d4bj2b',
+            param_tweaks=modified_disp_params,
+            save_pairwise_disp=True,
+        )
+        E_disp = 0.0
+        _ = _disp_functor.compute_energy(sapt_dimer, dimer_wfn)
+        pairwise_energies = dimer_wfn.variable("PAIRWISE DISPERSION CORRECTION ANALYSIS").np
+        FSAPT_EMPIRICAL_DISP = np.zeros_like(pairwise_energies)
+        for A in monAs:
+            for B in monBs:
+                # account for A-B and B-A with factor of 2
+                E_disp += 2 * pairwise_energies[A, B]
+                FSAPT_EMPIRICAL_DISP[A, B] = pairwise_energies[A, B]
+                FSAPT_EMPIRICAL_DISP[B, A] = pairwise_energies[A, B]
+        data["D4 IE"] = E_disp
+        data['FSAPT_EMPIRICAL_DISP'] = FSAPT_EMPIRICAL_DISP
+        _disp_functor.print_out()
     elif d4_type == "gd4_supermolecular":
         # This uses the default Grimme -D4 parameters for the given
         # functional with BJ damping and ATM three-body terms. Only use
@@ -125,46 +139,24 @@ def sapt_dft_d4_interaction_energy(
             + "Supermolecular GD4(BJ)+ATM Interaction Energy E_IE = E_IJ - E_I - E_J".center(
                 58
             )
-            + "\n"
+            + "\n\n"
         )
-        dimer_d4, _ = sapt_dimer.run_dftd4(
-            func=dftd4_functional_name, dashlvl="d4bjeeqatm"
+        _disp_functor = empirical_dispersion.EmpiricalDispersion(
+            name_hint=dftd4_functional_name,
+            level_hint='d4bjeeqatm',
+            param_tweaks=modified_disp_params,
+            save_pairwise_disp=True,
         )
+
+        dimer_d4 = _disp_functor.compute_energy(sapt_dimer, dimer_wfn)
+        monA_d4 = _disp_functor.compute_energy(monomerA)
+        monB_d4 = _disp_functor.compute_energy(monomerB)
         data["D4 DIMER"] = dimer_d4
-        monA_d4, _ = monomerA.run_dftd4(func=dftd4_functional_name, dashlvl="d4bjeeqatm")
         data["D4 MONOMER A"] = monA_d4
-        monB_d4, _ = monomerB.run_dftd4(func=dftd4_functional_name, dashlvl="d4bjeeqatm")
         data["D4 MONOMER B"] = monB_d4
         data["D4 IE"] = dimer_d4 - monA_d4 - monB_d4
-    elif d4_type == "intermolecular":
-        dimer_d4, _ = sapt_dimer.run_dftd4(func=dftd4_functional_name, property=True)
-        geom, _, _, elez, _ = sapt_dimer.to_arrays()
-        elez = np.array(elez, dtype=np.int32)
-        monAs = np.array([i for i in range(monomerA.natom()) if monomerA.Z(i) > 0])
-        monBs = np.array([i for i in range(monomerB.natom()) if monomerB.Z(i) > 0])
-        if dftd4_functional_name.lower() == "pbe0":
-            # SAPT_DFT_pbe0_adz_3_IE_supra
-            params = [1.0, 0.89529649, -0.82043591, 0.03264695]
-        elif dftd4_functional_name.lower() == "hf":
-            # SAPT0_adz_3_IE_2B_BJ_inter
-            params = [1.0, 0.56063068, 0.65540802, 1.06422537]
-            # sadz (supermolecular damping...)
-            # params = [1.0, 0.83055196, 0.70628586, 1.12379695]
-        else:
-            raise ValueError(
-                "SAPT(DFT): DFTD4 parameters not available for functional %s"
-                % dftd4_functional_name
-            )
-        v = dftd4_c6_intermolecular_dispersion(
-            elez,
-            geom,
-            C6s=core.variable("DFTD4 C6 COEFFICIENTS").np,
-            monAs=monAs,
-            monBs=monBs,
-            params=params,
-        )
-        data["D4 IE"] = v["D4 IE"]
-        data["FSAPT_EMPIRICAL_DISP"] = v["FSAPT_EMPIRICAL_DISP"]
+        data['FSAPT_EMPIRICAL_DISP'] = dimer_wfn.variable("PAIRWISE DISPERSION CORRECTION ANALYSIS")
+        _disp_functor.print_out()
     else:
         raise ValueError(
             "SAPT(DFT): d4_type must be 'supermolecular' or 'intermolecular'."
