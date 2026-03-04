@@ -5,11 +5,8 @@ import numpy as np
 np.set_printoptions(suppress=True, linewidth=200, precision = 6)
 import pytest
 import psi4
-from pathlib import Path
-import json
 
 pytestmark = [pytest.mark.api, pytest.mark.quick]
-
 
 def test_zora_integrals():
     to_array = psi4.driver.p4util.numpy_helper._to_array
