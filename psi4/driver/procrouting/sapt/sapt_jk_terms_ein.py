@@ -527,8 +527,11 @@ def build_sapt_jk_cache(
     cache["wfn_A"] = wfn_A
     cache["wfn_B"] = wfn_B
 
+    # NOTE: scf_A from FISAPT0 and SAPT(DFT) wfn_A have slightly different
+    # coefficients, so numerical exactness is not achieved everywhere, but the
+    # pytests for final values are still quite robust
+
     # First grab the orbitals as psi4.core.Matrix objects
-    # NOTE: scf_A from FISAPT0 and SAPT(DFT) wfn_A have slightly different coefficients
     cache["Cocc_A"] = wfn_A.Ca_subset("AO", "OCC")
     cache["Cocc_A"].name = "Cocc_A"
     cache["Cvir_A"] = wfn_A.Ca_subset("AO", "VIR")
@@ -616,8 +619,7 @@ def build_sapt_jk_cache(
     cache["K_B"] = jk.K()[1].clone()
     cache["J_O"] = jk.J()[2].clone()
     # K_O needs transpose
-    K_O = jk.K()[2].clone().transpose()  # .np.T
-    # K_O.np = K_O.np.T
+    K_O = jk.K()[2].clone().transpose()
     cache["K_O"] = core.Matrix.from_array(K_O.np)
     cache["K_O"].name = "K_O"
 
@@ -755,8 +757,12 @@ def felst(cache, sapt_elst, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
 
     # Create DFHelper object
     dfh = core.DFHelper(dimer_basis, aux_basis)
-    # TODO: This memory estimate needs corrected...
-    dfh.set_memory(int(core.get_memory() * 0.5 / 8))
+
+    # Set memory following fisapt.cc logic
+    # Note: In C++, doubles_ is the total memory budget in doubles
+    # Here we use a reasonable default or get from options if available
+    memory_doubles = core.get_memory() // 8
+    dfh.set_memory(memory_doubles)
     dfh.set_method("DIRECT_iaQ")
     dfh.set_nthreads(core.get_num_threads())
     dfh.initialize()
@@ -983,11 +989,9 @@ def fexch(
 
     dfh.transform()
 
-    # W_A = V_A + 2.0 * J_A using core.Matrix operations
     W_A = V_A.clone()
     ein.core.axpy(2.0, J_A.np, W_A.np)
     W_A.name = "W_A"
-    # W_B = V_B + 2.0 * J_B
     W_B = V_B.clone()
     ein.core.axpy(2.0, J_B.np, W_B.np)
     W_B.name = "W_B"
@@ -1081,23 +1085,18 @@ def fexch(
         core.print_out("\n")
 
     if core.get_option("FISAPT", "FISAPT_FSAPT_EXCH_SCALE"):
-        # For now, scaling should be 1.0
         scale = sapt_exch10 / Exch10_2
         Exch_AB *= scale
         if do_print:
             core.print_out(
                 f"    Scaling F-SAPT Exch10(S^2) by {scale:11.3E} to match Exch10\n\n"
             )
-        # assert abs(scale - 1.0) < 1e-6, "Currently should only get scale factor of 1.0"
 
     cache["Exch_AB"] = core.Matrix.from_array(Exch_AB)
-
     dfh.clear_spaces()
-
     return cache
 
 
-# TODO: update induction to use this function as well as find()
 def build_ind_pot(vars):
     """
     Build the induction potential for monomer A due to monomer B.
@@ -1390,12 +1389,6 @@ def find(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     aux_basis = dimer_wfn.get_basisset("DF_BASIS_SCF")
     nQ = aux_basis.nbf()
 
-    # dfh = core.DFHelper(dimer_wfn.basisset(), aux_basis)
-    # TODO: This memory estimate needs corrected...
-    # dfh.set_memory(int(core.get_memory() * 0.9 / 8))  # Use 90% of available memory (in doubles)
-    # dfh.set_method("DIRECT")
-    # dfh.set_nthreads(core.get_num_threads())
-    # dfh.initialize()
     dfh = cache["dfh"]
 
     # ESPs - external potential entries
@@ -2151,10 +2144,8 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     # Set memory: total available minus space needed for orbital matrices
     # Note: In C++, doubles_ is the total memory budget in doubles
     # Here we use a reasonable default or get from options if available
-    memory_bytes = core.get_memory()  # in bytes
-    memory_doubles = memory_bytes // 8
+    memory_doubles = core.get_memory() // 8
     orbital_memory = nrows * ncol
-    print(orbital_memory)
     dfh.set_memory(memory_doubles - orbital_memory)
     # print set memory in GB
     core.print_out(
