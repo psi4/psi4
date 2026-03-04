@@ -43,7 +43,6 @@ import numpy as np
 from psi4 import core
 
 from .exceptions import ValidationError
-import einsums as ein
 
 """
 Generalized iterative solvers for Psi4.
@@ -244,6 +243,7 @@ def cg_solver_ein(
     it is advantageous to do so.
 
     """
+    import einsums as ein
 
     tstart = time.time()
     if printlvl:

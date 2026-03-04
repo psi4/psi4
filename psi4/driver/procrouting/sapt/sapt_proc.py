@@ -1095,7 +1095,7 @@ def sapt_dft(
     core.timer_off("SAPT(DFT):ind")
 
     # Use DFHelper before deleting the JK object for dispersion
-    if do_fsapt and fsapt_type == "SAPTDFT":
+    if do_fsapt and fsapt_type == "SAPTDFT" and use_einsums:
         core.timer_on("SAPT(DFT):Localize Orbitals")
         jk_terms.localization(cache, dimer_wfn, wfn_A, wfn_B)
         core.timer_off("SAPT(DFT):Localize Orbitals")
@@ -1137,13 +1137,9 @@ def sapt_dft(
         )
         core.timer_off("SAPT(DFT): F-SAPT Induction")
 
-    elif do_fsapt and fsapt_type == "FISAPT" and not use_einsums:
-        core.timer_on("SAPT(DFT):Localize Orbitals")
-        jk_terms.localization(cache, dimer_wfn, wfn_A, wfn_B)
-        core.timer_off("SAPT(DFT):Localize Orbitals")
-        core.timer_on("SAPT(DFT):Partition")
-        cache = jk_terms.partition(cache, dimer_wfn, wfn_A, wfn_B)
-        core.timer_off("SAPT(DFT):Partition")
+    elif do_fsapt:
+        if fsapt_type == "SAPTDFT":
+            core.print_out("\n  => Einsums is not available, switching to using FISAPT0 object for FSAPT <= \n\n")
 
         # Build auxiliary basis for FISAPT
         aux_basis = core.BasisSet.build(
@@ -1163,39 +1159,6 @@ def sapt_dft(
 
         core.timer_on("SAPT(DFT): F-SAPT Electrostatics")
         FISAPT_obj.felst()
-        core.timer_off("SAPT(DFT): F-SAPT Electrostatics")
-        core.timer_on("SAPT(DFT): F-SAPT Exchange")
-        FISAPT_obj.fexch()
-        core.timer_off("SAPT(DFT): F-SAPT Exchange")
-        core.timer_on("SAPT(DFT): F-SAPT Induction")
-        FISAPT_obj.find()
-        core.timer_off("SAPT(DFT): F-SAPT Induction")
-    elif do_fsapt and fsapt_type == "FISAPT" and use_einsums:
-        core.timer_on("SAPT(DFT):Localize Orbitals")
-        jk_terms.localization(cache, dimer_wfn, wfn_A, wfn_B)
-        core.timer_off("SAPT(DFT):Localize Orbitals")
-        core.timer_on("SAPT(DFT):Partition")
-        cache = jk_terms.partition(cache, dimer_wfn, wfn_A, wfn_B)
-        core.timer_off("SAPT(DFT):Partition")
-
-        # Build auxiliary basis for FISAPT
-        aux_basis = core.BasisSet.build(
-            dimer_wfn.molecule(),
-            "DF_BASIS_MP2",
-            core.get_option("DFMP2", "DF_BASIS_MP2"),
-            "RIFIT",
-            core.get_global_option("BASIS"),
-        )
-
-        # Create single FISAPT object with do_flocalize=True to handle IBO localization internally
-        core.timer_on("SAPT(DFT): F-SAPT Setup + Localization (IBO)")
-        FISAPT_obj = saptdft_fisapt.setup_fisapt_object(
-            dimer_wfn, wfn_A, wfn_B, cache, data, aux_basis, do_flocalize=True
-        )
-        core.timer_off("SAPT(DFT): F-SAPT Setup + Localization (IBO)")
-
-        core.timer_on("SAPT(DFT): F-SAPT Electrostatics")
-        FISAPT_obj.felst_einsums()
         core.timer_off("SAPT(DFT): F-SAPT Electrostatics")
         core.timer_on("SAPT(DFT): F-SAPT Exchange")
         FISAPT_obj.fexch()
@@ -1325,7 +1288,7 @@ def sapt_dft(
         core.timer_off("SAPT(DFT):disp")
 
     # Now do F-SAPT on dispersion if requested
-    if do_fsapt and fsapt_type == "SAPTDFT":
+    if do_fsapt and fsapt_type == "SAPTDFT" and use_einsums:
         # Because dispersion is defined differently between SAPT0
         # (E_disp20 = -4\sigma_{abrs} |(ar|bs)|^2 / (epsilon_a + epsilon_b))
         # and SAPT(DFT) with FDDS dispersion, we will only implement F-SAPT
@@ -1343,7 +1306,7 @@ def sapt_dft(
             data["Disp20,u"] = cache["Disp20,u"]
             core.timer_off("SAPT(DFT): F-SAPT Dispersion")
 
-    elif do_fsapt and fsapt_type == "FISAPT" and do_disp:
+    elif do_fsapt and do_disp:
         core.timer_on("SAPT(DFT): F-SAPT Dispersion")
         FISAPT_obj.fdisp()
         core.timer_off("SAPT(DFT): F-SAPT Dispersion")

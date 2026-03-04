@@ -1,6 +1,5 @@
 list(APPEND sources
   fisapt.cc
-  fisapt_einsums.cc
   local2.cc
   )
 psi4_add_module(bin fisapt sources)
