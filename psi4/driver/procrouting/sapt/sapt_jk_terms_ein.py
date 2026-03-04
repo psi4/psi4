@@ -1593,15 +1593,8 @@ def find(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     uBT.name = "uBT"
     wAT.name = "wAT"
     uAT.name = "uAT"
-    # V_A checks out
     V_B.name = "V_B"
     J_B.name = "J_B"
-    # print(J_B)
-    # print(V_B)
-    # print(wBT)
-    # print(uBT)
-    # print(wAT)
-    # print(uAT)
 
     Ind20u_AB_terms = core.Matrix("Ind20 [A<-B] (a x B)", na, nB + nb1 + 1)
     Ind20u_BA_terms = core.Matrix("Ind20 [B<-A] (A x b)", nA + na1 + 1, nb)
@@ -1871,17 +1864,11 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     Locc_B = cache["Locc_B"].clone()
     Locc_B.name = "LoccB"
 
-    Uocc_A = cache["Uocc_A"]
-    Uocc_B = cache["Uocc_B"]
-
     # Use active occupied orbitals (excluding frozen core) to match C++ FISAPT fdisp
     Cocc_A = cache["Caocc0A"]
     Cocc_B = cache["Caocc0B"]
     Cvir_A = cache["Cvir_A"]
     Cvir_B = cache["Cvir_B"]
-
-    # Cvir_A.set_name("Cvir_A")
-    # print(Cvir_A)
 
     # Use only active occupied orbital energies (skip frozen core)
     # nfa and nfb are already defined at the start of fdisp0
@@ -1902,10 +1889,7 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     V_B = cache["V_B"]
     J_B = cache["J_B"]
     K_B = cache["K_B"]
-    # J_O = cache["J_O"]
     K_O = cache["K_O"]
-    # J_P_A = cache["J_P_A"]
-    # J_P_B = cache["J_P_B"]
 
     aux_basis = dimer_wfn.get_basisset("DF_BASIS_SCF")
     nQ = aux_basis.nbf()
@@ -1926,16 +1910,6 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     Cb2 = chain_gemm_einsums([D_A, S, Cocc_B])
 
     # Cr3 = 2 * (D_B * S * Cvir_A - D_A * S * D_B * S * Cvir_A)  [C++ line 6775-6778]
-
-    # std::shared_ptr<Matrix> Cr3 = linalg::triplet(D_B, S, Cavir_A);
-    # Cr3->set_name("Cr3");
-    # Cr3->print();
-    # std::shared_ptr<Matrix> CrX = linalg::triplet(linalg::triplet(D_A, S, D_B), S, Cavir_A);
-    # CrX->set_name("CrX");
-    # CrX->print();
-    # Cr3->subtract(CrX);
-    # Cr3->scale(2.0);
-    # Cr3->print();
     Cr3 = chain_gemm_einsums([D_B, S, Cvir_A])
     CrX = chain_gemm_einsums([D_A, S, D_B, S, Cvir_A])
     Cr3.subtract(CrX)
@@ -2093,44 +2067,6 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
         core.Matrix.from_array(Ca4),  # 10: 'a4'
         core.Matrix.from_array(Cb4),  # 11: 'b4'
     ]
-
-    # orbital_spaces[0].set_name("Cocc_A")
-    # orbital_spaces[1].set_name("Cvir_A")
-    # orbital_spaces[2].set_name("Cocc_B")
-    # orbital_spaces[3].set_name("Cvir_B")
-    # orbital_spaces[4].set_name("Cr1")
-    # orbital_spaces[5].set_name("Cs1")
-    # orbital_spaces[6].set_name("Ca2")
-    # orbital_spaces[7].set_name("Cb2")
-    # orbital_spaces[8].set_name("Cr3")
-    # orbital_spaces[9].set_name("Cs3")
-    # orbital_spaces[10].set_name("Ca4")
-    # orbital_spaces[11].set_name("Cb4")
-
-    # print("Caocc_A\n", orbital_spaces[0].np)
-    # print("Cavir_A\n", orbital_spaces[1].np)
-    # print("Caocc_B\n", orbital_spaces[2].np)
-    # print("Cavir_B\n", orbital_spaces[3].np)
-    # print("Cr1\n", orbital_spaces[4].np)
-    # print("Cs1\n", orbital_spaces[5].np)
-    # print("Ca2\n", orbital_spaces[6].np)
-    # print("Cb2\n", orbital_spaces[7].np)
-    # print("Cr3\n", orbital_spaces[8].np)
-    # print("Cs3\n", orbital_spaces[9].np)
-    # print("Ca4\n", orbital_spaces[10].np)
-    # print("Cb4\n", orbital_spaces[11].np)
-    # orbital_spaces[0].print()
-    # orbital_spaces[1].print()
-    # orbital_spaces[2].print()
-    # orbital_spaces[3].print()
-    # orbital_spaces[4].print()
-    # orbital_spaces[5].print()
-    # orbital_spaces[6].print()
-    # orbital_spaces[7].print()
-    # orbital_spaces[8].print()
-    # orbital_spaces[9].print()
-    # orbital_spaces[10].print()
-    # orbital_spaces[11].print()
 
     # Calculate total columns for memory allocation  [C++ lines 6911-6915]
     ncol = sum(mat.shape[1] for mat in orbital_spaces)
