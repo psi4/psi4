@@ -545,15 +545,77 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
 
     outfile->Printf("   THE HONOR AND THE PRAISE\n\n");
 
+    M_imae_tilde_.resize(n_lmo_pairs);
     delta_imae_tilde_.resize(n_lmo_pairs);
+
 #pragma omp parallel for
+    for (int m = 0; m < naocc; ++m) {
+        int mm = i_j_to_ij_[m][m];
+        auto Qov = QIA_PNO(mm); // (Q_{mm} | i_{mm} a_{mm})
+        auto Qvv = QAB_PNO(mm); // (Q_{mm} | a_{mm} e_{mm})
+        auto Qme = i_Qa_ij_[mm]; // \tilde(Q_{mm} | m e_{mm})
+        auto Qmi = i_Qk_ij_[mm]; // \tilde(Q_{mm} | m i_{mm})
+
+        // TODO: This is only an approximate form, fix later
+        for (int i_mm = 0; i_mm < lmopair_to_lmos_[mm].size(); ++i_mm) {
+            int i = lmopair_to_lmos_[mm][i_mm];
+            int im = i_j_to_ij_[i][m], ii = i_j_to_ij_[i][i];
+
+            auto M_imae_tilde_temp = std::make_shared<Matrix>(n_pno_[mm], n_pno_[mm]);
+
+            for (int q_mm = 0; q_mm < lmopair_to_ribfs_[mm].size(); ++q_mm) {
+                for (int a_mm = 0; a_mm < n_pno_[mm]; ++a_mm) {
+                    for (int e_mm = 0; e_mm < n_pno_[mm]; ++e_mm) {
+                        double val = 2.0 * Qov[q_mm]->get(i_mm, a_mm) * Qme->get(q_mm, e_mm) 
+                            - Qmi->get(q_mm, i_mm) * Qvv[q_mm]->get(a_mm, e_mm);
+                        M_imae_tilde_temp->set(a_mm, e_mm, val);
+                    } // end e_mm
+                } // end a_mm
+            } // end q_mm
+
+            // Fock it, we ball!
+            M_imae_tilde_[im] = linalg::doublet(S_PNO(ii, mm), M_imae_tilde_temp);
+
+        } // end i_mm
+        
+    } // end m
+
     for (int im = 0; im < n_lmo_pairs; ++im) {
         auto &[i, m] = ij_to_i_j_[im];
         int ii = i_j_to_ij_[i][i], mm = i_j_to_ij_[m][m];
+        int i_mm = lmopair_to_lmos_dense_[mm][i];
+
+        /*
+        for (int q_mm = 0; q_mm < lmopair_to_ribfs_[mm].size(); ++q_mm) {
+            for (int a_mm = 0; a_mm < n_pno_[mm]; ++a_mm) {
+                for (int e_mm = 0; e_mm < n_pno_[mm]; ++e_mm) {
+                    double val = 2.0 * Qov[q_mm]->get(i_mm, a_mm) * Qov[q_mm]->get(m_mm, e_mm) 
+                        - Qov[q_mm]->get(q_mm, i_mm) * Qvv[q_mm]->get(a_mm, e_mm);
+                    M_imae_tilde->set(a_mm, e_mm, val);
+                } // end e_mm
+            } // end a_mm
+        } // end q_mm
+
+        // N_{mk}^{ia_{mk}} = 2(mk | ia_{mk}) - (mi | ka_{mk}) (24b)
+        // M_{if_{mm}}^{a_{mm}e_{mm}} = 2(ia_{mm} | f_{mm} e_{mm}) - (if_{mm} | a_{mm} e_{mm}) (24c)
+        // L_{ik}^{a_{mm}f_{mm}} = 2(ia_{mm} | kf_{mm})  - (if_{mm} | ka_{mm}) (24d)
+
+        double val = 2.0 * Qov[q_mm]->get(i_mm, a_mm) * Qvv[q_mm]->get(f_mm, e_mm)
+            - Qov[q_mm]->get(i_mm, f_mm) * Qvv[q_mm]->get(a_mm, e_mm);
+        M_imae_tilde_->set(i, m, val);
+
+        double val = 2.0 * Qov[q_mm]->get(i_mm, a_mm) * Qov[q_mm]->get(k_mm, f_mm)
+            - Qov[q_mm]->get(i_mm, f_mm) * Qov[q_mm]->get(k_mm, a_mm);
+        M_imae_tilde_->set(i, m, val);
+        */
+
+        // TODO: This is only an approximate form, fix later
+
+        // Compute delta_imae_tilde
         
         delta_imae_tilde_[im] = M_imae_tilde_[im]->clone();
 
-        for (int k_im = 0; k_im < lmopair_to_lmos_[im].size(); ++k) {
+        for (int k_im = 0; k_im < lmopair_to_lmos_[im].size(); ++k_im) {
             int k = lmopair_to_lmos_[im][k_im];
             int ik = i_j_to_ij_[i][k], km = i_j_to_ij_[k][m];
             
