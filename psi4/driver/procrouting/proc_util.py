@@ -213,10 +213,11 @@ def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str, clone_mole
     Prepares a dimer molecule for a SAPT computation. Returns the dimer, monomerA, and monomerB.
     """
 
-    # Shifting to C1 so we need to copy the active molecule
-    # This clone statement is making molecule incompatible with external
-    # potential for scf_helper dimer and monomers... what is not being cloned
-    # correctly? Cloning is resetting _initial_cartesians, need to block
+    # Shifting to C1 so we need to copy the active molecule This clone
+    # statement is making molecule incompatible with external potential for
+    # scf_helper dimer and monomers... what is not being cloned correctly?
+    # Cloning is resetting _initial_cartesians, need ability to block for
+    # sapt(dft) external potentials.
     if clone_molecule:
         sapt_dimer = sapt_dimer.clone()
     if sapt_dimer.schoenflies_symbol() != 'c1':
@@ -291,7 +292,6 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
     dimer_disp_energy = _disp_functor.compute_energy(dimer_wfn.molecule(), dimer_wfn)
     ## Monomer dispersion
     mon_disp_energy = _disp_functor.compute_energy(monomerA)
-    print(f"{dimer_disp_energy=}, {mon_disp_energy=}")
     mon_disp_energy += _disp_functor.compute_energy(monomerB)
 
     disp_interaction_energy = dimer_disp_energy - mon_disp_energy
