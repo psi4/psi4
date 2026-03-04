@@ -136,8 +136,7 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
     /* Compute spatial-orbital reordering arrays */
     moinfo.pitzer2qt = std::vector<int>(moinfo.nmo);
     moinfo.qt2pitzer = std::vector<int>(moinfo.nmo);
-    reorder_qt(moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc, moinfo.pitzer2qt.data(), moinfo.orbspi,
-               moinfo.nirreps);
+    reorder_qt(moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc, moinfo.pitzer2qt.data(), moinfo.orbspi);
     for (i = 0; i < moinfo.nmo; i++) {
         j = moinfo.pitzer2qt[i];
         moinfo.qt2pitzer[j] = i;
