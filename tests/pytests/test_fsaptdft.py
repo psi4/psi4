@@ -63,573 +63,19 @@ def test_fsaptdft_timer():
     compute_time_saptdft_fi_ein = psi4.core.get_timer_dict()["SAPT(DFT) Energy"]
     psi4.driver.p4util.write_timer_csv("saptdft_fi_useEin_timers.csv")
     df = pd.read_csv("saptdft_fi_useEin_timers.csv")
+    os.remove("saptdft_fi_useEin_timers.csv")
     print(f"compute_time_fi_ein: {compute_time_saptdft_fi_ein['wall_time']:.2f}s\n")
+    print(df)
+    timer_cols = ["timer_name", "wall_time", "user_time", "system_time", "n_calls"]
+    for col in timer_cols:
+        assert col in df.columns, f"Expected column '{col}' not found in timer CSV"
     return
 
 
-def test_fsaptdft_simple():
-    """
-    built from sapt-dft1 ctest
-    """
-    Eref_nh = {
-        # mEh
-        "SAPT ELST ENERGY": -0.00233320,
-        "SAPT EXCH ENERGY": 0.00001443,
-        "SAPT IND ENERGY": -0.00001103,
-        "SAPT DISP ENERGY": -0.0056304531,  # -0.00563062,
-    }  # TEST
-    mol = psi4.geometry("""
-0 1
-C 0.00000000 0.00000000 0.00000000
-H 1.09000000 0.00000000 0.00000000
-H -0.36333333 0.83908239 0.59332085
-H -0.36333333 0.09428973 -1.02332709
-H -0.36333333 -0.93337212 0.43000624
---
-0 1
-C 6.44536662 -0.26509169 -0.00000000
-H 7.53536662 -0.26509169 -0.00000000
-H 6.08203329 0.57399070 0.59332085
-H 6.08203329 -0.17080196 -1.02332709
-H 6.08203329 -1.19846381 0.43000624
-symmetry c1
-no_reorient
-no_com
-""")
-    psi4.set_options(
-        {
-            "basis": "sto-3g",
-            "scf_type": "df",
-            "SAPT_DFT_FUNCTIONAL": "HF",
-            "SAPT_DFT_DO_DHF": True,
-            "SAPT_DFT_DO_HYBRID": False,
-            "SAPT_DFT_DO_FSAPT": "SAPTDFT",
-        }
-    )
-    np.set_printoptions(precision=10, suppress=True)
-    _, wfn = psi4.energy("sapt(dft)", molecule=mol, return_wfn=True)
-    for k, v in Eref_nh.items():  # TEST
-        ref = v
-        assert compare_values(
-            ref, psi4.variable(k) * 1000, 8, "!hyb, xd=none, !dHF: " + k
-        )
-
-
-@pytest.mark.fsapt
-@pytest.mark.saptdft
-def test_fsaptdft_fsapt0_simple():
-    """
-    built from sapt-dft1 ctest
-    """
-    Eref_nh = {
-        # mEh
-        "SAPT ELST ENERGY": -0.00782717,
-        "SAPT EXCH ENERGY": 0.05953516,
-        "SAPT IND ENERGY": -0.00054743,
-        "SAPT DISP ENERGY": -0.00012075,
-    }  # TEST
-    mol = psi4.geometry("""
-0 1
-He 3.00000000 0.00000000 0.00000000
---
-0 1
-C 6.44536662 -0.26509169 -0.00000000
-H 7.53536662 -0.26509169 -0.00000000
-H 6.08203329 0.57399070 0.59332085
-H 6.08203329 -0.17080196 -1.02332709
-H 6.08203329 -1.19846381 0.43000624
-symmetry c1
-no_reorient
-no_com
-""")
-    psi4.set_options(
-        {
-            "basis": "sto-3g",
-            "scf_type": "df",
-            "SAPT_DFT_FUNCTIONAL": "HF",
-            "SAPT_DFT_DO_DHF": True,
-            "SAPT_DFT_DO_HYBRID": False,
-            "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
-        }
-    )
-    np.set_printoptions(precision=10, suppress=True)
-    psi4.energy("fisapt0", molecule=mol)
-    # Check fisapt0 acquires reference results
-    for k, v in Eref_nh.items():  # TEST
-        ref = v
-        assert compare_values(
-            ref, psi4.variable(k) * 1000, 6, "!hyb, xd=none, !dHF: " + k
-        )
-    _, wfn = psi4.energy("sapt(dft)", molecule=mol, return_wfn=True)
-    # Check sapt(hf) acquires reference results
-    for k, v in Eref_nh.items():  # TEST
-        ref = v
-        assert compare_values(
-            ref, psi4.variable(k) * 1000, 6, "!hyb, xd=none, !dHF: " + k
-        )
-
-
 @pytest.mark.saptdft
 @pytest.mark.fsapt
-# @uusing("pandas")
 @pytest.mark.saptdft
-def test_fsapthf_psivars():
-    """ """
-    import pandas as pd
-
-    mol = psi4.geometry(
-        """
-0 1
-C   11.54100       27.68600       13.69600
-H   12.45900       27.15000       13.44600
-C   10.79000       27.96500       12.40600
-H   10.55700       27.01400       11.92400
-H   9.879000       28.51400       12.64300
-H   11.44300       28.56800       11.76200
-H   10.90337       27.06487       14.34224
-H   11.78789       28.62476       14.21347
---
-0 1
-C   10.60200       24.81800       6.466000
-O   10.95600       23.84000       7.103000
-N   10.17800       25.94300       7.070000
-C   10.09100       26.25600       8.476000
-C   9.372000       27.59000       8.640000
-C   11.44600       26.35600       9.091000
-C   9.333000       25.25000       9.282000
-H   9.874000       26.68900       6.497000
-H   9.908000       28.37100       8.093000
-H   8.364000       27.46400       8.233000
-H   9.317000       27.84600       9.706000
-H   9.807000       24.28200       9.160000
-H   9.371000       25.57400       10.32900
-H   8.328000       25.26700       8.900000
-H   11.28800       26.57600       10.14400
-H   11.97000       27.14900       8.585000
-H   11.93200       25.39300       8.957000
-H   10.61998       24.85900       5.366911
-units angstrom
-
-symmetry c1
-no_reorient
-no_com
-"""
-    )
-    psi4.set_options(
-        {
-            "basis": "sto-3g",
-            "scf_type": "df",
-            "guess": "sad",
-            "FISAPT_FSAPT_FILEPATH": "none",
-            "SAPT_DFT_FUNCTIONAL": "HF",
-            "SAPT_DFT_DO_DHF": True,
-            "SAPT_DFT_DO_HYBRID": False,
-            "SAPT_DFT_DO_FSAPT": "SAPTDFT",
-        }
-    )
-    _, wfn = psi4.energy("sapt(dft)", source=wfn, return_wfn=True)
-    # psi4.energy("fisapt0", molecule=mol)
-    keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
-    Eref = {
-        "Edisp": -0.0007912165332922398,
-        "Eelst": -0.0019765266134612602,
-        "Eexch": 0.006335438658900877,
-        "Eind": -0.0004635353246623952,
-        "Enuc": 474.74808217020274,
-        "Etot": 0.003104160187484982,
-    }
-    Epsi = {
-        "Enuc": mol.nuclear_repulsion_energy(),
-        "Eelst": core.variable("SAPT ELST ENERGY"),
-        "Eexch": core.variable("SAPT EXCH ENERGY"),
-        "Eind": core.variable("SAPT IND ENERGY"),
-        "Edisp": core.variable("SAPT DISP ENERGY"),
-        "Etot": core.variable("SAPT TOTAL ENERGY"),
-    }
-    pp(Epsi)
-    for key in keys:
-        compare_values(Eref[key], Epsi[key], 5, key)
-    data = psi4.fsapt_analysis(
-        source=wfn,
-        fragments_a={
-            "Methyl1_A": [1, 2, 7, 8],
-            "Methyl2_A": [3, 4, 5, 6],
-        },
-        fragments_b={
-            "Peptide_B": [9, 10, 11, 16, 26],
-            "T-Butyl_B": [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-        },
-        links5050=True,
-        print_output=False,
-    )
-    df = pd.DataFrame(data)
-    print("COMPUTED DF")
-    print(
-        df[
-            [
-                "Frag1",
-                "Frag2",
-                "ClosestContact",
-                "Elst",
-                "IndAB",
-                "IndBA",
-                "Disp",
-                "EDisp",
-                "Total",
-            ]
-        ]
-    )
-    data_tmp = {k: v.tolist() for k, v in dict(df).items()}
-    pp(data_tmp)
-    data = {
-        "Disp": [
-            -0.00399436152159229,
-            -0.06741037189411032,
-            -0.013546524596044364,
-            -0.41148730370035314,
-            -0.07140473341570261,
-            -0.4250338282963975,
-            -0.017540886117636656,
-            -0.47889767559446345,
-            -0.4964385617121001,
-        ],
-        "EDisp": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-        "Elst": [
-            0.7173658712642776,
-            -0.20556512118969295,
-            -0.8178788514412361,
-            -0.9342087754091182,
-            0.5118007500745847,
-            -1.7520876268503542,
-            -0.10051298017695842,
-            -1.1397738965988111,
-            -1.2402868767757695,
-        ],
-        "Exch": [
-            0.00013545439373786606,
-            0.0471968221083766,
-            0.03161592765409533,
-            3.896597012155338,
-            0.04733227650211447,
-            3.928212939809433,
-            0.0317513820478332,
-            3.9437938342637144,
-            3.9755452163115477,
-        ],
-        "IndAB": [
-            -0.007097098270914404,
-            -0.015628832205804594,
-            -0.026071456661474337,
-            -0.1747049022073196,
-            -0.022725930476719,
-            -0.20077635886879394,
-            -0.03316855493238874,
-            -0.1903337344131242,
-            -0.22350228934551294,
-        ],
-        "IndBA": [
-            0.0003539943194493893,
-            0.014741295750793878,
-            -0.0017520923551549333,
-            -0.08071357456909534,
-            0.015095290070243267,
-            -0.08246566692425027,
-            -0.001398098035705544,
-            -0.06597227881830146,
-            -0.067370376854007,
-        ],
-        "Frag1": [
-            "Methyl1_A",
-            "Methyl1_A",
-            "Methyl2_A",
-            "Methyl2_A",
-            "Methyl1_A",
-            "Methyl2_A",
-            "All",
-            "All",
-            "All",
-        ],
-        "Frag2": [
-            "Peptide_B",
-            "T-Butyl_B",
-            "Peptide_B",
-            "T-Butyl_B",
-            "All",
-            "All",
-            "Peptide_B",
-            "T-Butyl_B",
-            "All",
-        ],
-        "Total": [
-            0.7067638601845871,
-            -0.22666620743385835,
-            -0.8276329973991707,
-            2.2954824562673153,
-            0.4800976527507288,
-            1.4678494588681446,
-            -0.12086913721458359,
-            2.068816248833457,
-            1.9479471116188734,
-        ],
-    }
-
-    ref_df = pd.DataFrame(data)
-    cols = [
-        "Frag1",
-        "Frag2",
-        "Elst",
-        "Exch",
-        "IndAB",
-        "IndBA",
-        "Disp",
-        "EDisp",
-        "Total",
-    ]
-    df = df[cols]
-    print("REF")
-    print(ref_df)
-
-    for col in cols[2:]:
-        for i in range(len(ref_df)):
-            print(col, ref_df[col].iloc[i], df[col].iloc[i])
-            compare_values(
-                ref_df[col].iloc[i],
-                df[col].iloc[i],
-                4,
-                f"{ref_df['Frag1'].iloc[i]} {ref_df['Frag2'].iloc[i]} {col}",
-            )
-
-
-@pytest.mark.saptdft
-@pytest.mark.fsapt
-# @uusing("pandas")
-@pytest.mark.saptdft
-def test_fsaptdftd4_psivars():
-    """ """
-    import pandas as pd
-
-    mol = psi4.geometry(
-        """
-0 1
-C   11.54100       27.68600       13.69600
-H   12.45900       27.15000       13.44600
-C   10.79000       27.96500       12.40600
-H   10.55700       27.01400       11.92400
-H   9.879000       28.51400       12.64300
-H   11.44300       28.56800       11.76200
-H   10.90337       27.06487       14.34224
-H   11.78789       28.62476       14.21347
---
-0 1
-C   10.60200       24.81800       6.466000
-O   10.95600       23.84000       7.103000
-N   10.17800       25.94300       7.070000
-C   10.09100       26.25600       8.476000
-C   9.372000       27.59000       8.640000
-C   11.44600       26.35600       9.091000
-C   9.333000       25.25000       9.282000
-H   9.874000       26.68900       6.497000
-H   9.908000       28.37100       8.093000
-H   8.364000       27.46400       8.233000
-H   9.317000       27.84600       9.706000
-H   9.807000       24.28200       9.160000
-H   9.371000       25.57400       10.32900
-H   8.328000       25.26700       8.900000
-H   11.28800       26.57600       10.14400
-H   11.97000       27.14900       8.585000
-H   11.93200       25.39300       8.957000
-H   10.61998       24.85900       5.366911
-units angstrom
-
-symmetry c1
-no_reorient
-no_com
-"""
-    )
-    psi4.set_options(
-        {
-            "basis": "sto-3g",
-            "scf_type": "df",
-            "guess": "sad",
-            "FISAPT_FSAPT_FILEPATH": "none",
-            "SAPT_DFT_FUNCTIONAL": "HF",
-            "SAPT_DFT_DO_DHF": True,
-            "SAPT_DFT_DO_HYBRID": False,
-            "SAPT_DFT_DO_FSAPT": "SAPTDFT",
-        }
-    )
-    _, wfn = psi4.energy("sapt(dft)-d4(s)", source=wfn, return_wfn=True)
-
-    keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
-    Eref = {
-        "Edisp": -0.004568534767691285,
-        "Eelst": -0.0019765266134612602,
-        "Eexch": 0.006335438658900877,
-        "Eind": -0.0004635353246623952,
-        "Enuc": 474.74808217020274,
-        "Etot": -0.0006731581723675157,
-    }
-    Epsi = {
-        "Enuc": mol.nuclear_repulsion_energy(),
-        "Eelst": core.variable("SAPT ELST ENERGY"),
-        "Eexch": core.variable("SAPT EXCH ENERGY"),
-        "Eind": core.variable("SAPT IND ENERGY"),
-        "Edisp": core.variable("SAPT DISP ENERGY"),
-        "Etot": core.variable("SAPT TOTAL ENERGY"),
-    }
-    pp(Epsi)
-    for key in keys:
-        compare_values(Eref[key], Epsi[key], 5, key)
-    data = psi4.fsapt_analysis(
-        source=wfn,
-        fragments_a={
-            "Methyl1_A": [1, 2, 7, 8],
-            "Methyl2_A": [3, 4, 5, 6],
-        },
-        fragments_b={
-            "Peptide_B": [9, 10, 11, 16, 26],
-            "T-Butyl_B": [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-        },
-        links5050=True,
-        print_output=False,
-    )
-    df = pd.DataFrame(data)
-    print("COMPUTED DF")
-    print(df)
-    pp({k: v.tolist() for k, v in dict(df).items()})
-    data = {
-        "Disp": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-        "EDisp": [
-            -0.01301450872859415,
-            -0.27084948543172516,
-            -0.04866416123143305,
-            -2.4459445415531187,
-            -0.2838639941603193,
-            -2.494608702784552,
-            -0.0616786699600272,
-            -2.716794026984844,
-            -2.778472696944871,
-        ],
-        "Elst": [
-            0.7173658713369733,
-            -0.20556512078896816,
-            -0.8178788520169107,
-            -0.9342087766410643,
-            0.5118007505480051,
-            -1.752087628657975,
-            -0.10051298067993741,
-            -1.1397738974300324,
-            -1.2402868781099698,
-        ],
-        "Exch": [
-            0.00013545439373716334,
-            0.047196822108368085,
-            0.031615927654092296,
-            3.8965970121551456,
-            0.047332276502105246,
-            3.928212939809238,
-            0.03175138204782946,
-            3.9437938342635137,
-            3.975545216311343,
-        ],
-        "Frag1": [
-            "Methyl1_A",
-            "Methyl1_A",
-            "Methyl2_A",
-            "Methyl2_A",
-            "Methyl1_A",
-            "Methyl2_A",
-            "All",
-            "All",
-            "All",
-        ],
-        "Frag1_indices": [
-            [1, 2, 7, 8],
-            [1, 2, 7, 8],
-            [3, 4, 5, 6],
-            [3, 4, 5, 6],
-            [1, 2, 7, 8],
-            [3, 4, 5, 6],
-            [1, 2, 7, 8, 3, 4, 5, 6],
-            [1, 2, 7, 8, 3, 4, 5, 6],
-            [1, 2, 7, 8, 3, 4, 5, 6],
-        ],
-        "Frag2": [
-            "Peptide_B",
-            "T-Butyl_B",
-            "Peptide_B",
-            "T-Butyl_B",
-            "All",
-            "All",
-            "Peptide_B",
-            "T-Butyl_B",
-            "All",
-        ],
-        "Frag2_indices": [
-            [9, 10, 11, 16, 26],
-            [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-            [9, 10, 11, 16, 26],
-            [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-            [9, 10, 11, 16, 26, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-            [9, 10, 11, 16, 26, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-            [9, 10, 11, 16, 26],
-            [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-            [9, 10, 11, 16, 26, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-        ],
-        "IndAB": [
-            -0.007097098275574362,
-            -0.01562883221584556,
-            -0.026071456678509793,
-            -0.17470490231988067,
-            -0.02272593049141992,
-            -0.20077635899839047,
-            -0.033168554954084155,
-            -0.19033373453572622,
-            -0.22350228948981038,
-        ],
-        "IndBA": [
-            0.0003539943196737901,
-            0.014741295760311841,
-            -0.001752092356286135,
-            -0.08071357462105197,
-            0.015095290079985632,
-            -0.0824656669773381,
-            -0.0013980980366123448,
-            -0.06597227886074013,
-            -0.06737037689735248,
-        ],
-        "Total": [
-            0.6977436680167427,
-            -0.4301052921347477,
-            -0.8627506894690783,
-            0.2610253266522511,
-            0.267638375881995,
-            -0.6017253628168272,
-            -0.1650070214523356,
-            -0.1690799654824966,
-            -0.3340869869348322,
-        ],
-    }
-
-    ref_df = pd.DataFrame(data)
-    print("REF")
-    print(ref_df)
-
-    for col in ["Elst", "Exch", "IndAB", "IndBA", "Disp", "EDisp", "Total"]:
-        for i in range(len(ref_df)):
-            compare_values(
-                ref_df[col].iloc[i],
-                df[col].iloc[i],
-                4,
-                f"{ref_df['Frag1'].iloc[i]} {ref_df['Frag2'].iloc[i]} {col}",
-            )
-
-
-@pytest.mark.saptdft
-@pytest.mark.fsapt
-# @uusing("pandas")
-@pytest.mark.saptdft
-def test_fsaptdft_disp0_fisapt0_psivars():
+def test_fsapthf_disp0_fisapt0_psivars():
     """ """
     import pandas as pd
 
@@ -836,8 +282,10 @@ no_com
 
 @pytest.mark.saptdft
 @pytest.mark.fsapt
+@uusing("pandas")
 @pytest.mark.saptdft
-def test_fsaptdftd4_psivars_pbe0():
+def test_fsaptdftd4_psivars():
+    """ """
     import pandas as pd
 
     mol = psi4.geometry(
@@ -884,26 +332,23 @@ no_com
             "scf_type": "df",
             "guess": "sad",
             "FISAPT_FSAPT_FILEPATH": "none",
-            "SAPT_DFT_FUNCTIONAL": "PBE0",
+            "SAPT_DFT_FUNCTIONAL": "HF",
             "SAPT_DFT_DO_DHF": True,
             "SAPT_DFT_DO_HYBRID": False,
             "SAPT_DFT_DO_FSAPT": "SAPTDFT",
-            "SAPT_DFT_GRAC_SHIFT_A": 0.11652342,
-            "SAPT_DFT_GRAC_SHIFT_B": 0.12724880,
         }
     )
-    _, wfn = psi4.energy("sapt(dft)-d4(s)", molecule=mol, return_wfn=True)
+    _, wfn = psi4.energy("sapt(dft)-d4(s)", return_wfn=True)
 
     keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
     Eref = {
-        "Edisp": -0.00594635567707974,
-        "Eelst": -0.002059138037395769,
-        "Eexch": 0.0065851134169729285,
-        "Eind": -0.0004940302733246239,
+        "Edisp": -0.004568534767691285,
+        "Eelst": -0.0019765266134612602,
+        "Eexch": 0.006335438658900877,
+        "Eind": -0.0004635353246623952,
         "Enuc": 474.74808217020274,
-        "Etot": -0.0019144107127034996,
+        "Etot": -0.0006731581723675157,
     }
-
     Epsi = {
         "Enuc": mol.nuclear_repulsion_energy(),
         "Eelst": core.variable("SAPT ELST ENERGY"),
@@ -913,7 +358,6 @@ no_com
         "Etot": core.variable("SAPT TOTAL ENERGY"),
     }
     pp(Epsi)
-    pp(core.variables())
     for key in keys:
         compare_values(Eref[key], Epsi[key], 5, key)
     data = psi4.fsapt_analysis(
@@ -931,56 +375,42 @@ no_com
     )
     df = pd.DataFrame(data)
     print("COMPUTED DF")
+    print(df)
     pp({k: v.tolist() for k, v in dict(df).items()})
-    print(
-        df[
-            [
-                "Frag1",
-                "Frag2",
-                "Elst",
-                "Exch",
-                "IndAB",
-                "IndBA",
-                "Disp",
-                "EDisp",
-                "Total",
-            ]
-        ]
-    )
     data = {
         "Disp": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         "EDisp": [
-            -0.013635081934517778,
-            -0.2986013898239719,
-            -0.052012447785209845,
-            -3.3086784527471322,
-            -0.3122364717584897,
-            -3.360690900532342,
-            -0.06564752971972762,
-            -3.607279842571104,
-            -3.6729273722908315,
+            -0.01301450872859415,
+            -0.27084948543172516,
+            -0.04866416123143305,
+            -2.4459445415531187,
+            -0.2838639941603193,
+            -2.494608702784552,
+            -0.0616786699600272,
+            -2.716794026984844,
+            -2.778472696944871,
         ],
         "Elst": [
-            0.6885820921201784,
-            -0.13402812525109908,
-            -0.7952454977917469,
-            -1.0514370963071045,
-            0.5545539668690793,
-            -1.8466825940988514,
-            -0.10666340567156851,
-            -1.1854652215582036,
-            -1.292128627229772,
+            0.7173658713369733,
+            -0.20556512078896816,
+            -0.8178788520169107,
+            -0.9342087766410643,
+            0.5118007505480051,
+            -1.752087628657975,
+            -0.10051298067993741,
+            -1.1397738974300324,
+            -1.2402868781099698,
         ],
         "Exch": [
-            0.0001588422784401242,
-            0.04729543674788192,
-            0.039013303978461124,
-            4.045753472045291,
-            0.047454279026322044,
-            4.084766776023752,
-            0.03917214625690125,
-            4.093048908793173,
-            4.132221055050074,
+            0.00013545439373716334,
+            0.047196822108368085,
+            0.031615927654092296,
+            3.8965970121551456,
+            0.047332276502105246,
+            3.928212939809238,
+            0.03175138204782946,
+            3.9437938342635137,
+            3.975545216311343,
         ],
         "Frag1": [
             "Methyl1_A",
@@ -993,6 +423,17 @@ no_com
             "All",
             "All",
         ],
+        "Frag1_indices": [
+            [1, 2, 7, 8],
+            [1, 2, 7, 8],
+            [3, 4, 5, 6],
+            [3, 4, 5, 6],
+            [1, 2, 7, 8],
+            [3, 4, 5, 6],
+            [1, 2, 7, 8, 3, 4, 5, 6],
+            [1, 2, 7, 8, 3, 4, 5, 6],
+            [1, 2, 7, 8, 3, 4, 5, 6],
+        ],
         "Frag2": [
             "Peptide_B",
             "T-Butyl_B",
@@ -1004,44 +445,56 @@ no_com
             "T-Butyl_B",
             "All",
         ],
+        "Frag2_indices": [
+            [9, 10, 11, 16, 26],
+            [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+            [9, 10, 11, 16, 26],
+            [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+            [9, 10, 11, 16, 26, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+            [9, 10, 11, 16, 26, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+            [9, 10, 11, 16, 26],
+            [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+            [9, 10, 11, 16, 26, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+        ],
         "IndAB": [
-            -0.008959884715800042,
-            -0.014829489445122575,
-            -0.029218977918922,
-            -0.17897054409715352,
-            -0.023789374160922618,
-            -0.20818952201607552,
-            -0.03817886263472205,
-            -0.1938000335422761,
-            -0.23197889617699813,
+            -0.007097098275574362,
+            -0.01562883221584556,
+            -0.026071456678509793,
+            -0.17470490231988067,
+            -0.02272593049141992,
+            -0.20077635899839047,
+            -0.033168554954084155,
+            -0.19033373453572622,
+            -0.22350228948981038,
         ],
         "IndBA": [
-            0.0006366759893452245,
-            0.019609289394822368,
-            -0.002498480707193879,
-            -0.09577726577398832,
-            0.02024596538416759,
-            -0.0982757464811822,
-            -0.0018618047178486545,
-            -0.07616797637916595,
-            -0.07802978109701461,
+            0.0003539943196737901,
+            0.014741295760311841,
+            -0.001752092356286135,
+            -0.08071357462105197,
+            0.015095290079985632,
+            -0.0824656669773381,
+            -0.0013980980366123448,
+            -0.06597227886074013,
+            -0.06737037689735248,
         ],
         "Total": [
-            0.6667826318422659,
-            -0.3805542948826641,
-            -0.8399621230200728,
-            -0.5891099228459296,
-            0.2862283369596018,
-            -1.4290720458660022,
-            -0.17317949117780684,
-            -0.9696642177285937,
-            -1.1428437089064003,
+            0.6977436680167427,
+            -0.4301052921347477,
+            -0.8627506894690783,
+            0.2610253266522511,
+            0.267638375881995,
+            -0.6017253628168272,
+            -0.1650070214523356,
+            -0.1690799654824966,
+            -0.3340869869348322,
         ],
     }
 
     ref_df = pd.DataFrame(data)
     print("REF")
     print(ref_df)
+
     for col in ["Elst", "Exch", "IndAB", "IndBA", "Disp", "EDisp", "Total"]:
         for i in range(len(ref_df)):
             compare_values(
@@ -1052,10 +505,8 @@ no_com
             )
 
 
-@pytest.mark.saptdft
 @pytest.mark.fsapt
 @pytest.mark.saptdft
-@uusing("pandas")
 def test_fsaptdftd4_psivars_pbe0_frozen_core():
     import pandas as pd
 
@@ -1097,6 +548,8 @@ no_reorient
 no_com
 """
     )
+    print("FSAPT(PBE0)-D4(I)")
+    functional = "HF"
     psi4.set_options(
         {
             "basis": "sto-3g",
@@ -1111,34 +564,13 @@ no_com
             "SAPT_DFT_GRAC_SHIFT_B": 0.12724880,
         }
     )
-    _, wfn = psi4.energy("sapt(dft)-d4(s)", molecule=mol, return_wfn=True)
-
-    keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
-    Eref = {
-        "Edisp": -0.005946355677079768,
-        "Eelst": -0.002059138272954897,
-        "Eexch": 0.0065851135315064075,
-        "Eind": -0.0004940302703933357,
-        "Enuc": 474.74808217020274,
-        "Etot": -0.001914410712959498,
-    }
-
-    Epsi = {
-        "Enuc": mol.nuclear_repulsion_energy(),
-        "Eelst": core.variable("SAPT ELST ENERGY"),
-        "Eexch": core.variable("SAPT EXCH ENERGY"),
-        "Eind": core.variable("SAPT IND ENERGY"),
-        "Edisp": core.variable("SAPT DISP ENERGY"),
-        "Etot": core.variable("SAPT TOTAL ENERGY"),
-    }
-    pp(Epsi)
-    for key in keys:
-        compare_values(Eref[key], Epsi[key], 5, key)
+    _, wfn = psi4.energy("sapt(dft)-d4(i)", molecule=mol, return_wfn=True)
     data = psi4.fsapt_analysis(
+        # NOTE: 1-indexed for fragments_a and fragments_b
         source=wfn,
         fragments_a={
             "Methyl1_A": [1, 2, 7, 8],
-            "Methyl2_A": [3, 4, 5, 6],
+            "Methyl2_A": range(3, 7),
         },
         fragments_b={
             "Peptide_B": [9, 10, 11, 16, 26],
@@ -1147,6 +579,53 @@ no_com
         links5050=True,
         print_output=False,
     )
+    df = pd.DataFrame(data)
+    print(df)
+    mol_qcel_dict = mol.to_schema(dtype=2)
+    frag1_indices = df["Frag1_indices"].tolist()
+    frag2_indices = df["Frag2_indices"].tolist()
+    # Using molecule object for all test to ensure right counts from each
+    # fragment are achieved. Note +1 for 1-indexing in fsapt_analysis
+    all_A = [i + 1 for i in mol_qcel_dict["fragments"][0]]
+    expected_frag1_indices = [
+        [1, 2, 7, 8],
+        [1, 2, 7, 8],
+        [3, 4, 5, 6],
+        [3, 4, 5, 6],
+        [1, 2, 7, 8],
+        [3, 4, 5, 6],
+        all_A,
+        all_A,
+        all_A,
+    ]
+    all_B = [j + 1 for j in mol_qcel_dict["fragments"][1]]
+    expected_frag2_indices = [
+        [9, 10, 11, 16, 26],
+        [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+        [9, 10, 11, 16, 26],
+        [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+        all_B,
+        all_B,
+        [9, 10, 11, 16, 26],
+        [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+        all_B,
+    ]
+    print(f"{all_A=}")
+    print(f"{all_B=}")
+    for i, indices in enumerate(frag1_indices):
+        # Assert lists are identical
+        e = expected_frag1_indices[i]
+        sorted_frag = sorted(indices)
+        assert sorted_frag == e, f"Frag1 indices do not match for fragment {
+            i
+        }: expected {e}, got {sorted_frag}"
+
+    for i, indices in enumerate(frag2_indices):
+        e = expected_frag2_indices[i]
+        sorted_frag = sorted(indices)
+        assert sorted_frag == e, f"Frag2 indices do not match for fragment {
+            i
+        }: expected {e}, got {sorted_frag}"
     df = pd.DataFrame(data)
     print("COMPUTED DF")
     print(df)
@@ -1267,185 +746,6 @@ no_com
                 4,
                 f"{ref_df['Frag1'].iloc[i]} {ref_df['Frag2'].iloc[i]} {col}",
             )
-
-
-@pytest.mark.fsapt
-@pytest.mark.saptdft
-def test_fsaptdft_indices():
-    import pandas as pd
-
-    mol = psi4.geometry(
-        """
-0 1
-C   11.54100       27.68600       13.69600
-H   12.45900       27.15000       13.44600
-C   10.79000       27.96500       12.40600
-H   10.55700       27.01400       11.92400
-H   9.879000       28.51400       12.64300
-H   11.44300       28.56800       11.76200
-H   10.90337       27.06487       14.34224
-H   11.78789       28.62476       14.21347
---
-0 1
-C   10.60200       24.81800       6.466000
-O   10.95600       23.84000       7.103000
-N   10.17800       25.94300       7.070000
-C   10.09100       26.25600       8.476000
-C   9.372000       27.59000       8.640000
-C   11.44600       26.35600       9.091000
-C   9.333000       25.25000       9.282000
-H   9.874000       26.68900       6.497000
-H   9.908000       28.37100       8.093000
-H   8.364000       27.46400       8.233000
-H   9.317000       27.84600       9.706000
-H   9.807000       24.28200       9.160000
-H   9.371000       25.57400       10.32900
-H   8.328000       25.26700       8.900000
-H   11.28800       26.57600       10.14400
-H   11.97000       27.14900       8.585000
-H   11.93200       25.39300       8.957000
-H   10.61998       24.85900       5.366911
-units angstrom
-
-symmetry c1
-no_reorient
-no_com
-"""
-    )
-    print("FSAPT(PBE0)-D4(I)")
-    functional = "HF"
-    psi4.set_options(
-        {
-            "basis": "sto-3g",
-            "scf_type": "df",
-            "guess": "sad",
-            "freeze_core": "true",
-            "FISAPT_FSAPT_FILEPATH": "none",
-            "SAPT_DFT_FUNCTIONAL": functional,
-            "SAPT_DFT_DO_DHF": True,
-            "SAPT_DFT_DO_FSAPT": "SAPTDFT",
-            "SAPT_DFT_D4_IE": True,
-            "SAPT_DFT_DO_DISP": False,
-            "SAPT_DFT_GRAC_SHIFT_A": 0.09605298,
-            "SAPT_DFT_GRAC_SHIFT_B": 0.073504,
-        }
-    )
-    _, wfn = psi4.energy("sapt(dft)-d4(i)", molecule=mol, return_wfn=True)
-    data = psi4.fsapt_analysis(
-        # NOTE: 1-indexed for fragments_a and fragments_b
-        source=wfn,
-        fragments_a={
-            "Methyl1_A": [1, 2, 7, 8],
-            "Methyl2_A": range(3, 7),
-        },
-        fragments_b={
-            "Peptide_B": [9, 10, 11, 16, 26],
-            "T-Butyl_B": [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-        },
-        links5050=True,
-        print_output=False,
-    )
-    df = pd.DataFrame(data)
-    print(df)
-    mol_qcel_dict = mol.to_schema(dtype=2)
-    frag1_indices = df["Frag1_indices"].tolist()
-    frag2_indices = df["Frag2_indices"].tolist()
-    # Using molecule object for all test to ensure right counts from each
-    # fragment are achieved. Note +1 for 1-indexing in fsapt_analysis
-    all_A = [i + 1 for i in mol_qcel_dict["fragments"][0]]
-    expected_frag1_indices = [
-        [1, 2, 7, 8],
-        [1, 2, 7, 8],
-        [3, 4, 5, 6],
-        [3, 4, 5, 6],
-        [1, 2, 7, 8],
-        [3, 4, 5, 6],
-        all_A,
-        all_A,
-        all_A,
-    ]
-    all_B = [j + 1 for j in mol_qcel_dict["fragments"][1]]
-    expected_frag2_indices = [
-        [9, 10, 11, 16, 26],
-        [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-        [9, 10, 11, 16, 26],
-        [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-        all_B,
-        all_B,
-        [9, 10, 11, 16, 26],
-        [12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25],
-        all_B,
-    ]
-    print(f"{all_A=}")
-    print(f"{all_B=}")
-    for i, indices in enumerate(frag1_indices):
-        # Assert lists are identical
-        e = expected_frag1_indices[i]
-        sorted_frag = sorted(indices)
-        assert sorted_frag == e, f"Frag1 indices do not match for fragment {
-            i
-        }: expected {e}, got {sorted_frag}"
-
-    for i, indices in enumerate(frag2_indices):
-        e = expected_frag2_indices[i]
-        sorted_frag = sorted(indices)
-        assert sorted_frag == e, f"Frag2 indices do not match for fragment {
-            i
-        }: expected {e}, got {sorted_frag}"
-    df["F-Induction"] = df["IndAB"] + df["IndBA"]
-    df.drop(columns=["IndAB", "IndBA"], inplace=True)
-    df = df.rename(
-        columns={
-            "Elst": "F-Electrostatics",
-            "Exch": "F-Exchange",
-            "Disp": "F-Dispersion",
-            "EDisp": "F-EDispersion",
-            "Total": "F-Total",
-        },
-    )
-    import qcelemental as qcel
-
-    qcel_mol = qcel.models.Molecule.from_data(
-        """
-0 1
-C   11.54100       27.68600       13.69600
-H   12.45900       27.15000       13.44600
-C   10.79000       27.96500       12.40600
-H   10.55700       27.01400       11.92400
-H   9.879000       28.51400       12.64300
-H   11.44300       28.56800       11.76200
-H   10.90337       27.06487       14.34224
-H   11.78789       28.62476       14.21347
---
-0 1
-C   10.60200       24.81800       6.466000
-O   10.95600       23.84000       7.103000
-N   10.17800       25.94300       7.070000
-C   10.09100       26.25600       8.476000
-C   9.372000       27.59000       8.640000
-C   11.44600       26.35600       9.091000
-C   9.333000       25.25000       9.282000
-H   9.874000       26.68900       6.497000
-H   9.908000       28.37100       8.093000
-H   8.364000       27.46400       8.233000
-H   9.317000       27.84600       9.706000
-H   9.807000       24.28200       9.160000
-H   9.371000       25.57400       10.32900
-H   8.328000       25.26700       8.900000
-H   11.28800       26.57600       10.14400
-H   11.97000       27.14900       8.585000
-H   11.93200       25.39300       8.957000
-H   10.61998       24.85900       5.366911
-units angstrom
-
-symmetry c1
-no_reorient
-no_com
-"""
-    )
-    df["qcel_molecule"] = [qcel_mol] * len(df)
-    # Save dataframe for future testing
-    df.to_pickle(f"fsapt_{functional}_train_simple.pkl")
 
 
 @pytest.mark.saptdft
@@ -1839,7 +1139,7 @@ if __name__ == "__main__":
     psi4.set_memory("220 GB")
     # psi4.set_num_threads(24)
     psi4.set_num_threads(12)
-    test_fsaptdft_fisapt0_d4()
+    test_fsaptdft_timer()
     # pytest.main([
     #     __file__,
     #     "-v",
