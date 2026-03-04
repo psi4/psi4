@@ -50,26 +50,29 @@ from .. import proc_util
 from ..proc import scf_helper, run_scf, _set_external_potentials_to_wavefunction
 from . import (
     sapt_jk_terms,
-    sapt_jk_terms_ein,
     sapt_mp2_terms,
-    sapt_mp2_terms_ein,
     sapt_sf_terms,
     saptdft_fisapt,
 )
 from .sapt_util import print_sapt_dft_summary, print_sapt_hf_summary, print_sapt_var
 import qcelemental as qcel
 from ...p4util.exceptions import ConvergenceError
-from .constants import r4r2_dftd4
-import einsums as ein
-
-# Import energy module for SAPT(DFT) delta DFT
-# from ... import energy
+try:
+    import einsums as ein
+    from . import (
+        sapt_jk_terms_ein,
+        sapt_mp2_terms_ein,
+    )
+    einsums_available = True
+except ImportError:
+    einsums_available = False
 
 # Only export the run_ scripts
 __all__ = ["run_sapt_dft", "sapt_dft", "run_sf_sapt"]
 
 
 def run_sapt_dft(name, **kwargs):
+    core.timer_on("SAPT(DFT) Energy")
     optstash = p4util.OptionsState(
         ["SCF_TYPE"],
         ["SCF", "REFERENCE"],
@@ -77,8 +80,17 @@ def run_sapt_dft(name, **kwargs):
         ["SCF", "SAVE_JK"],
     )
 
-    ein.initialize()
-    core.timer_on("SAPT(DFT) Energy")
+    use_einsums = core.get_option("SAPT", "SAPT_DFT_USE_EINSUMS")
+
+    # Build SAPT cache
+    if einsums_available and use_einsums:
+        jk_terms = sapt_jk_terms_ein
+        ein.initialize()
+    else:
+        # If einsums is not available, need to conditionally stop einsums
+        # without adding einsums_available and use_einsums to every check.
+        use_einsums = False
+        jk_terms = sapt_jk_terms
 
     # Alter default algorithm
     if not core.has_global_option_changed("SCF_TYPE"):
@@ -459,7 +471,7 @@ def run_sapt_dft(name, **kwargs):
                     _set_external_potentials_to_wavefunction(ext_pot_B, hf_wfn_B)
 
             # Build cache
-            hf_cache_ein = sapt_jk_terms_ein.build_sapt_jk_cache(
+            hf_cache_ein = jk_terms.build_sapt_jk_cache(
                 hf_wfn_dimer,
                 hf_wfn_A,
                 hf_wfn_B,
@@ -471,7 +483,7 @@ def run_sapt_dft(name, **kwargs):
             # Electrostatics
             core.timer_on("SAPT(HF):elst")
             # elst, extern_extern_IE = sapt_jk_terms.electrostatics(hf_cache, True)
-            elst, extern_extern_IE = sapt_jk_terms_ein.electrostatics(
+            elst, extern_extern_IE = jk_terms.electrostatics(
                 hf_cache_ein, True
             )
             hf_data["extern_extern_IE"] = extern_extern_IE
@@ -481,7 +493,7 @@ def run_sapt_dft(name, **kwargs):
             # Exchange
             core.timer_on("SAPT(HF):exch")
             # exch = sapt_jk_terms.exchange(hf_cache, sapt_jk, True)
-            exch = sapt_jk_terms_ein.exchange(hf_cache_ein, sapt_jk, True)
+            exch = jk_terms.exchange(hf_cache_ein, sapt_jk, True)
             hf_data.update(exch)
             core.timer_off("SAPT(HF):exch")
 
@@ -495,7 +507,7 @@ def run_sapt_dft(name, **kwargs):
             #     conv=core.get_option("SAPT", "CPHF_R_CONVERGENCE"),
             #     Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"),
             # )
-            ind = sapt_jk_terms_ein.induction(
+            ind = jk_terms.induction(
                 hf_cache_ein,
                 sapt_jk,
                 True,
@@ -1022,9 +1034,12 @@ def sapt_dft(
     use_einsums = core.get_option("SAPT", "SAPT_DFT_USE_EINSUMS")
 
     # Build SAPT cache
-    if use_einsums:
+    if einsums_available and use_einsums:
         jk_terms = sapt_jk_terms_ein
     else:
+        # If einsums is not available, need to conditionally stop einsums
+        # without adding einsums_available and use_einsums to every check.
+        use_einsums = False
         jk_terms = sapt_jk_terms
     cache = jk_terms.build_sapt_jk_cache(
         dimer_wfn, wfn_A, wfn_B, sapt_jk, True, external_potentials
@@ -1082,18 +1097,18 @@ def sapt_dft(
     # Use DFHelper before deleting the JK object for dispersion
     if do_fsapt and fsapt_type == "SAPTDFT":
         core.timer_on("SAPT(DFT):Localize Orbitals")
-        sapt_jk_terms_ein.localization(cache, dimer_wfn, wfn_A, wfn_B)
+        jk_terms.localization(cache, dimer_wfn, wfn_A, wfn_B)
         core.timer_off("SAPT(DFT):Localize Orbitals")
         core.timer_on("SAPT(DFT):Partition")
-        cache = sapt_jk_terms_ein.partition(cache, dimer_wfn, wfn_A, wfn_B)
+        cache = jk_terms.partition(cache, dimer_wfn, wfn_A, wfn_B)
         core.timer_off("SAPT(DFT):Partition")
 
         core.timer_on("SAPT(DFT): F-SAPT Localization (IBO)")
-        sapt_jk_terms_ein.flocalization(cache, dimer_wfn, wfn_A, wfn_B)
+        jk_terms.flocalization(cache, dimer_wfn, wfn_A, wfn_B)
         core.timer_off("SAPT(DFT): F-SAPT Localization (IBO)")
         # Primary return is stored as cache['Elst_AB']
         core.timer_on("SAPT(DFT): F-SAPT Electrostatics")
-        cache = sapt_jk_terms_ein.felst(
+        cache = jk_terms.felst(
             cache,
             elst["Elst10,r"] + extern_extern_IE,
             dimer_wfn,
@@ -1104,7 +1119,7 @@ def sapt_dft(
         )
         core.timer_off("SAPT(DFT): F-SAPT Electrostatics")
         core.timer_on("SAPT(DFT): F-SAPT Exchange")
-        cache = sapt_jk_terms_ein.fexch(
+        cache = jk_terms.fexch(
             cache,
             exch["Exch10(S^2)"],
             exch["Exch10"],
@@ -1117,17 +1132,17 @@ def sapt_dft(
         core.timer_off("SAPT(DFT): F-SAPT Exchange")
 
         core.timer_on("SAPT(DFT): F-SAPT Induction")
-        cache = sapt_jk_terms_ein.find(
+        cache = jk_terms.find(
             cache, data, dimer_wfn, wfn_A, wfn_B, sapt_jk, True
         )
         core.timer_off("SAPT(DFT): F-SAPT Induction")
 
     elif do_fsapt and fsapt_type == "FISAPT" and not use_einsums:
         core.timer_on("SAPT(DFT):Localize Orbitals")
-        sapt_jk_terms_ein.localization(cache, dimer_wfn, wfn_A, wfn_B)
+        jk_terms.localization(cache, dimer_wfn, wfn_A, wfn_B)
         core.timer_off("SAPT(DFT):Localize Orbitals")
         core.timer_on("SAPT(DFT):Partition")
-        cache = sapt_jk_terms_ein.partition(cache, dimer_wfn, wfn_A, wfn_B)
+        cache = jk_terms.partition(cache, dimer_wfn, wfn_A, wfn_B)
         core.timer_off("SAPT(DFT):Partition")
 
         # Build auxiliary basis for FISAPT
@@ -1157,10 +1172,10 @@ def sapt_dft(
         core.timer_off("SAPT(DFT): F-SAPT Induction")
     elif do_fsapt and fsapt_type == "FISAPT" and use_einsums:
         core.timer_on("SAPT(DFT):Localize Orbitals")
-        sapt_jk_terms_ein.localization(cache, dimer_wfn, wfn_A, wfn_B)
+        jk_terms.localization(cache, dimer_wfn, wfn_A, wfn_B)
         core.timer_off("SAPT(DFT):Localize Orbitals")
         core.timer_on("SAPT(DFT):Partition")
-        cache = sapt_jk_terms_ein.partition(cache, dimer_wfn, wfn_A, wfn_B)
+        cache = jk_terms.partition(cache, dimer_wfn, wfn_A, wfn_B)
         core.timer_off("SAPT(DFT):Partition")
 
         # Build auxiliary basis for FISAPT
@@ -1321,7 +1336,7 @@ def sapt_dft(
 
         if do_disp:
             core.timer_on("SAPT(DFT): F-SAPT Dispersion")
-            cache = sapt_jk_terms_ein.fdisp0(
+            cache = jk_terms.fdisp0(
                 cache, data, dimer_wfn, wfn_A, wfn_B, sapt_jk, do_print=True
             )
             data["Exch-Disp20,u"] = cache["Exch-Disp20,u"]
