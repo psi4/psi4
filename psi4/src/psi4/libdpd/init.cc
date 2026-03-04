@@ -62,12 +62,24 @@ int dpd_set_default(int dpd_num) {
     return 0;
 }
 
+PSI_DEPRECATED("DPD construction via a vector of int* is being deprecated and will be removed as soon as 1.12.")
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays) {
     if (dpd_list[dpd_num])
         throw PSIEXCEPTION("Attempting to initialize new DPD instance before the old one was freed.");
     dpd_list[dpd_num] =
         new DPD(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
+    dpd_default = dpd_num;
+    global_dpd_ = dpd_list[dpd_num];
+    return 0;
+}
+
+extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+                    dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaceArrays) {
+    if (dpd_list[dpd_num])
+        throw PSIEXCEPTION("Attempting to initialize new DPD instance before the old one was freed.");
+    dpd_list[dpd_num] =
+        new DPD(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, spaceArrays);
     dpd_default = dpd_num;
     global_dpd_ = dpd_list[dpd_num];
     return 0;
@@ -129,6 +141,22 @@ DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefil
     init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
 }
 
+DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+         dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaces) {
+    int num_subspaces = spaces.size();
+    std::vector<int *> spaceArrays;
+    int *tmparray;
+
+    for (int i = 0; i < num_subspaces; i++) {
+        tmparray = init_int_array(nirreps);
+        for (int j = 0; j < spaces[i].first.n(); j++) tmparray[j] = spaces[i].first[j];
+        spaceArrays.push_back(tmparray);
+
+        spaceArrays.push_back(spaces[i].second);
+    }
+
+    init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
+}
 
 /* This is the original function code, but modified to take a vector of the orbital
  * space information arrays, rather than a variable argument list; the former is

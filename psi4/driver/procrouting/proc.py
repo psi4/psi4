@@ -1511,17 +1511,140 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
     return wfn
 
 
+def validate_external_potential(external_potential) -> Dict:
+    """Validate and normalize the format of **external_potential** in preparation for class construction.
+
+    Parameters
+    ----------
+    external_potential
+        Specification for :py:class:`psi4.core.ExternalPotential`. Can be composed of point charges
+        (Q x y z), diffuse charges (Gaussian s-orbitals at a center; Q x y z width), or (Nao, Nao)
+        potential matrix. If only one of the three specified, it is assumed to be point charges for
+        backwards compatibility. Include diffuse charges as a dictionary with key "diffuse" or as the
+        second item in a list (None as first item if no point charges). Include a matrix as a dictionary
+        with key "matrix" or as the third item in a list. External potential will apply to the whole
+        molecule unless behind another dictionary key ("A", "B", or "C") to apply to portions of the
+        molecule for FI-SAPT. Most sensible list-of-lists, NumPy array, and
+        :py:class:`psi4.core.Matrix` formats are accepted. The points or diffuse array should be a
+        list-like structure where each row corresponds to a charge. Lines can be composed of
+        ``q, [x, y, z]`` or ``q, x, y, z`` (width as 3rd or 5th item for diffuse). Locations are in [a0].
+        See test_extern.py for many examples.
+
+    Returns
+    -------
+    dict
+        After some bounds, dimension, and shape checks, a normalized nested dict is returned with
+        outer keys of fragment labels, inner keys among {"points", "diffuse", "matrix"}, and inner
+        keys Python lists.
+
+    """
+    def validate_charge_list(lqxyz, diffuse: bool=False):
+        # check charge has form Q x y z, Q [x y z], Q x y z w, or Q [x y z] w
+
+        def validate_single_charge(chg):
+            try:
+                nchg = len(chg)
+            except TypeError:
+                return False
+
+            if (not diffuse) and nchg == 2:
+                return chg[0], chg[1][0], chg[1][1], chg[1][2]
+            elif diffuse and nchg == 3:
+                return chg[0], chg[1][0], chg[1][1], chg[1][2], chg[2]
+            elif (not diffuse) and nchg == 4:
+                return chg[0], chg[1], chg[2], chg[3]
+            elif diffuse and nchg == 5:
+                return chg[0], chg[1], chg[2], chg[3], chg[4]
+            else:
+                return False
+
+        flattened = [validate_single_charge(pt) for pt in lqxyz]
+
+        # reject if a charge line has wrong format or if spec is nested too deep or too shallow (can
+        #   happen due to flexible input format and backwards compatibility with points-only).
+        for itm in flattened:
+            if itm is False:
+                return False
+        try:
+            if np.array(flattened).ndim != 2:
+                return False
+        except ValueError:
+            return False
+        return flattened
+
+    def validate_potential_array(mat):
+        if isinstance(mat, core.Matrix):
+            npmat = mat.np
+        elif isinstance(mat, list):
+            npmat = np.array(mat)
+        elif isinstance(mat, np.ndarray):
+            npmat = mat
+        else:
+            return False
+
+        if npmat.ndim != 2 or npmat.shape[0] != npmat.shape[1]:
+            return False
+
+        return npmat.tolist()
+
+    frag_keys = set("ABC")
+    mode_keys_list = ["points", "diffuse", "matrix"]
+
+    if isinstance(external_potential, dict) and ({k.upper() for k in external_potential.keys()} <= frag_keys):
+        ep = {k.upper(): v for k, v in external_potential.items()}
+    else:
+        # assign "C" to mean whole molecule in the non-SAPT case
+        ep = {"C": external_potential}
+
+    # expand input structure: may be single points list or types list or types dict or fragments dict (for SAPT)
+    ep1 = {}
+    for frag, frag_ep in ep.items():
+        if isinstance(frag_ep, dict):
+            if frag_ep.keys() <= set(mode_keys_list):
+                ep1[frag] = frag_ep
+            else:
+                raise ValidationError(f"external_potential: primary or sec keys should be among {mode_keys_list}, not {frag_ep.keys()}. Full input: {external_potential}")
+        elif isinstance(frag_ep, list):
+            if (w := validate_charge_list(frag_ep)):
+                ep1[frag] = dict(zip(mode_keys_list, [w]))
+            else:
+                ep1[frag] = dict(zip(mode_keys_list, frag_ep))
+        elif isinstance(frag_ep, np.ndarray):
+                ep1[frag] = dict(zip(mode_keys_list, [frag_ep]))
+        else:
+            raise ValidationError(f"external_potential: ought to be dict, list, or np.ndarray, not {type(frag_ep)}. Full input: {external_potential}")
+
+    # validate each type of spec in each a/b/c fragment
+    ep2 = {abc: {} for abc in ep1}
+    for abc, frag_ep in ep1.items():
+        if (points := frag_ep.get("points")) is not None:
+            if (vpoints := validate_charge_list(points)):
+                ep2[abc]["points"] = vpoints
+            else:
+                raise ValidationError(f"external_potential: bad points (should be 2D, (npts, 4), and np.ndarray or list: {points}\nFull input: {external_potential}")
+
+        if (diffuse := frag_ep.get("diffuse")) is not None:
+            if (vdiffuse := validate_charge_list(diffuse, diffuse=True)):
+                ep2[abc]["diffuse"] = vdiffuse
+            else:
+                raise ValidationError(f"external_potential: bad diffuse (should be 2D, (npts, 5), and np.ndarray or list: {diffuse}\nFull input: {external_potential}")
+
+        if (matrix := frag_ep.get("matrix")) is not None:
+            if (vmatrix := validate_potential_array(matrix)):
+                ep2[abc]["matrix"] = vmatrix
+            else:
+                raise ValidationError(f"external_potential: bad matrix (should be 2D, square, and psi4.core.Matrix, np.ndarray or list): {matrix}\nFull input: {external_potential}")
+
+    return ep2
+
 def _set_external_potentials_to_wavefunction(external_potential: Union[List, Dict[str, List]], wfn: "core.Wavefunction"):
-    vep = p4util.validate_external_potential(external_potential)
+    vep = validate_external_potential(external_potential)
 
     total_ep = core.ExternalPotential()
 
     for frag, ep_spec in vep.items():
         frag_ep = core.ExternalPotential()
-
-        if "diffuse" in ep_spec:
-            raise ValidationError("Diffuse charges not yet supported")
-
+  
         if "matrix" in ep_spec:
             matrix = core.Matrix.from_array(np.array(ep_spec["matrix"]))
             frag_ep.setMatrix(matrix)
@@ -1530,6 +1653,51 @@ def _set_external_potentials_to_wavefunction(external_potential: Union[List, Dic
         if "points" in ep_spec:
             frag_ep.appendCharges(ep_spec["points"])
             total_ep.appendCharges(ep_spec["points"])
+
+        if "diffuse" in ep_spec:
+            qXYZw = np.array(ep_spec["diffuse"])
+            ndiff = len(qXYZw)
+            charges = core.Vector.from_array(qXYZw[:, [0]].ravel())
+            geom = qXYZw[:, [1, 2, 3]]
+            widths = qXYZw[:, [4]].ravel()
+
+            # A diffuse external potential is simply a collection of Gaussians of certain widths at certain locations.
+            # We can re-use the machinery of a molecule, here, a dummy one of heliums, and a basis set of s-functions.
+            # Normally, all basis sets go through the gbs file -> shell_map -> qcdb.BasisSet -> dict -> `construct_basisset_from_pydict` -> wfn process, but this is simple enough to assemble outright, with a few notes:
+            # * element choice (helium) & ghostiness (True) in diffmol don't affect values. mind all-caps in shell_map
+            # * elbl in molecule (He_1, He_2, etc.) and first of list in shell_map assign a particular Gaussian width to a particular fake helium, analogous to a custom per-center basis set specification
+            # * second of list in shell_map is hash used to label the BasisSet in Molecule symmetry reckoning.
+            #    Here, molecule is explicitly c1, so it's crude hash substitute. Alter in future if multi-s-functions are used
+            # * puream irrelevant since only s-functions
+
+            puream = True
+            diffmol = core.Molecule.from_arrays(
+                units="Bohr",
+                geom=geom,
+                elem = ["He"] * len(widths),
+                real = [False] * len(widths),
+                elbl = [f"@He_{iat+1}" for iat in range(len(widths))],
+                fix_symmetry="c1",
+                fix_com=True,
+                fix_orientation=True)
+            diffbas = {
+                "blend": "Diffuse Charges",
+                "key": "(none)",
+                "message": "",
+                "name": "Diffuse Charges",
+                "puream": bool(puream),
+                "shell_map": [
+                    [f"HE_{iwd+1}", f"{wd:.2f}", [0, (wd, 1.0)]]
+                    for iwd, wd in enumerate(widths)],
+            }
+
+            # charges smeared over space as a Gaussian fn are conveniently computed
+            #   with BS machinery, but need to undo ordinary BS normalization
+            corediffbasis = core.BasisSet.construct_from_pydict(diffmol, diffbas, puream)
+            corediffbasis.convert_sap_contraction()
+
+            frag_ep.addBasis(corediffbasis, charges)
+            total_ep.addBasis(corediffbasis, charges)
 
         wfn.set_potential_variable(frag, frag_ep)
     wfn.set_external_potential(total_ep)
@@ -5094,7 +5262,6 @@ def run_sapt_ct(name, **kwargs):
     core.print_out('    SAPT Charge Transfer          %12.4lf [mEh] %12.4lf [kcal/mol] %12.4lf [kJ/mol]\n\n' %
         tuple(CT * u for u in units))
     core.set_variable("SAPT CT ENERGY", CT)  # P::e SAPT
-
     optstash.restore()
     return dimer_wfn
 
@@ -5104,6 +5271,7 @@ def run_fisapt(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(['SCF_TYPE'], ['SCF', 'SAVE_JK'])
+    core.timer_on("FISAPT")
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -5169,6 +5337,8 @@ def run_fisapt(name, **kwargs):
     if "-d" in name.lower():
         proc_util.sapt_empirical_dispersion(name, ref_wfn)
 
+    fisapt_wfn.save_variables_to_wfn(ref_wfn, external_potentials=kwargs.get("external_potentials", None))
+    core.timer_off("FISAPT")
     optstash.restore()
     return ref_wfn
 
