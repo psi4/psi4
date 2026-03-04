@@ -1005,7 +1005,6 @@ SharedMatrix SCFDeriv::compute_hessian()
     if (options_.get_str("REFERENCE") == "RHF" || 
         options_.get_str("REFERENCE") == "RKS" || 
         options_.get_str("REFERENCE") == "UHF" ||
-        options_.get_str("REFERENCE") == "CGHF" ||
         options_.get_str("REFERENCE") == "UKS") {
         hessians_["Response"] = hessian_response();
     } else {
