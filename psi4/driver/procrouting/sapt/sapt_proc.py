@@ -26,18 +26,6 @@
 # @END LICENSE
 #
 
-"""
-Questions
-
-1. How can we avoid having to convert to psi4.Matrix for other function calls?
-    -
-2. jk C_left/C_right quetions
-    - (In exchange) I am getting the right answer, but I do not understand
-      exactly how this maps to equations 11, 12, 13, and 9... Shouldn't
-      jk_C_right_tmp be (Tmo_AA @ Cocc_A.T) instead of the (Cocc_A @ Tmo_AA)?
-      Also, does it matter if we put Tmo_AA on the left or right of Cocc_A?
-"""
-
 import numpy as np
 
 from psi4 import core
@@ -57,12 +45,14 @@ from . import (
 from .sapt_util import print_sapt_dft_summary, print_sapt_hf_summary, print_sapt_var
 import qcelemental as qcel
 from ...p4util.exceptions import ConvergenceError
+
 try:
     import einsums as ein
     from . import (
         sapt_jk_terms_ein,
         sapt_mp2_terms_ein,
     )
+
     einsums_available = True
 except ImportError:
     einsums_available = False
@@ -71,7 +61,27 @@ except ImportError:
 __all__ = ["run_sapt_dft", "sapt_dft", "run_sf_sapt"]
 
 
-def run_sapt_dft(name, **kwargs):
+def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
+    """Run the SAPT(DFT) interaction energy calculation.
+
+    Top-level driver function for SAPT(DFT). Sets up monomer SCF
+    calculations with optional GRAC shifts, builds the SAPT JK cache,
+    and calls :func:`sapt_dft` to compute the interaction energy
+    components.
+
+    Parameters
+    ----------
+    name : str
+        Name of the SAPT(DFT) method (e.g., ``'sapt(dft)'``).
+    **kwargs
+        Additional keyword arguments. Recognized keys include ``ref_wfn``
+        (reference wavefunction), ``molecule`` (molecular system).
+
+    Returns
+    -------
+    core.Wavefunction
+        The dimer wavefunction with SAPT(DFT) results stored as variables.
+    """
     core.timer_on("SAPT(DFT) Energy")
     optstash = p4util.OptionsState(
         ["SCF_TYPE"],
@@ -141,13 +151,17 @@ def run_sapt_dft(name, **kwargs):
 
     sapt_dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
     e_disp_param_name = None
-    supported_functionals_edisp = ['hf', 'pbe0', 'b3lyp']
+    supported_functionals_edisp = ["hf", "pbe0", "b3lyp"]
     if "-D4" in name.upper():
         d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
         if "-D4(S)" in name.upper():
             core.print_out(r"SAPT(DFT)-D4(S): -D4(S) for dispersion")
-            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(s)" if sapt_dft_functional.lower() != "hf" else "hf"
-            if sapt_dft_functional.lower() not in ['pbe0', 'hf']:
+            e_disp_param_name = (
+                f"sapt({sapt_dft_functional.lower()})(s)"
+                if sapt_dft_functional.lower() != "hf"
+                else "hf"
+            )
+            if sapt_dft_functional.lower() not in ["pbe0", "hf"]:
                 raise ValueError(
                     "SAPT(DFT)-D4 with D4(S) parameters is currently only available for PBE0"
                     f" Functional {sapt_dft_functional.lower()} does not have D4(S) parameters defined."
@@ -158,7 +172,11 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option("SAPT_DFT_D_TYPE", "supermolecular")
         elif "-D4(I)" in name.upper():
             core.print_out(r"SAPT(DFT)-D4(I): -D4(I) for dispersion")
-            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(s)" if sapt_dft_functional.lower() != "hf" else "hf"
+            e_disp_param_name = (
+                f"sapt({sapt_dft_functional.lower()})(s)"
+                if sapt_dft_functional.lower() != "hf"
+                else "hf"
+            )
             if sapt_dft_functional.lower() not in supported_functionals_edisp:
                 raise ValueError(
                     "SAPT(DFT)-D4 with D4(I) parameters is currently only available for PBE0 and B3LYP."
@@ -174,7 +192,11 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option("SAPT_DFT_D4_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 1)
             core.set_global_option("SAPT_DFT_D_TYPE", "gd4_supermolecular")
-            e_disp_param_name = sapt_dft_functional.lower() if sapt_dft_functional.lower() != "hf" else "hf"
+            e_disp_param_name = (
+                sapt_dft_functional.lower()
+                if sapt_dft_functional.lower() != "hf"
+                else "hf"
+            )
         else:
             raise ValueError(
                 "SAPT(DFT)-D4 must be specified as 'SAPT(DFT)-D4(S)' or "
@@ -185,7 +207,11 @@ def run_sapt_dft(name, **kwargs):
         d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
         if "-D3(S)" in name.upper():
             core.print_out(r"SAPT(DFT)-D3(S): -D3(S) for dispersion")
-            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(s)" if sapt_dft_functional.lower() != "hf" else "hf"
+            e_disp_param_name = (
+                f"sapt({sapt_dft_functional.lower()})(s)"
+                if sapt_dft_functional.lower() != "hf"
+                else "hf"
+            )
             if sapt_dft_functional.lower() not in supported_functionals_edisp:
                 raise ValueError(
                     "SAPT(DFT)-D3 with D3(S) parameters is currently only available for PBE0 and B3LYP."
@@ -197,7 +223,11 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option("SAPT_DFT_D_TYPE", "supermolecular")
         elif "-D3(I)" in name.upper():
             core.print_out(r"SAPT(DFT)-D3(I): -D3(I) for dispersion")
-            e_disp_param_name = f"sapt({sapt_dft_functional.lower()})(i)" if sapt_dft_functional.lower() != "hf" else "hf"
+            e_disp_param_name = (
+                f"sapt({sapt_dft_functional.lower()})(i)"
+                if sapt_dft_functional.lower() != "hf"
+                else "hf"
+            )
             if sapt_dft_functional.lower() not in supported_functionals_edisp:
                 raise ValueError(
                     "SAPT(DFT)-D3 with D3(I) parameters is currently only available for PBE0 and B3LYP."
@@ -213,7 +243,11 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option("SAPT_DFT_D3_IE", 1)
             core.set_global_option("SAPT_DFT_DO_DDFT", 1)
             core.set_global_option("SAPT_DFT_D_TYPE", "gd3_supermolecular")
-            e_disp_param_name = sapt_dft_functional.lower() if sapt_dft_functional.lower() != "hf" else "hf"
+            e_disp_param_name = (
+                sapt_dft_functional.lower()
+                if sapt_dft_functional.lower() != "hf"
+                else "hf"
+            )
         else:
             raise ValueError(
                 "SAPT(DFT)-D3 must be specified as 'SAPT(DFT)-D3(S)' or "
@@ -483,9 +517,7 @@ def run_sapt_dft(name, **kwargs):
             # Electrostatics
             core.timer_on("SAPT(HF):elst")
             # elst, extern_extern_IE = sapt_jk_terms.electrostatics(hf_cache, True)
-            elst, extern_extern_IE = jk_terms.electrostatics(
-                hf_cache_ein, True
-            )
+            elst, extern_extern_IE = jk_terms.electrostatics(hf_cache_ein, True)
             hf_data["extern_extern_IE"] = extern_extern_IE
             hf_data.update(elst)
             core.timer_off("SAPT(HF):elst")
@@ -711,7 +743,7 @@ def run_sapt_dft(name, **kwargs):
             dimer_wfn=dimer_wfn,
             dftd4_functional_name=e_disp_param_name,
             d4_type=d4_type,
-            data=data
+            data=data,
         )
         core.timer_off("SAPT(DFT):D4 Interaction Energy")
     elif sapt_dft_D3_IE:
@@ -733,7 +765,7 @@ def run_sapt_dft(name, **kwargs):
             dimer_wfn=dimer_wfn,
             dftd3_functional_name=e_disp_param_name,
             d3_type=d3_type,
-            data=data
+            data=data,
         )
         core.timer_off("SAPT(DFT):D3 Interaction Energy")
 
@@ -809,7 +841,35 @@ sapt_dft_grac_convergence_tier_options = {
 }
 
 
-def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier, label, jk_obj=None):
+def compute_GRAC_shift(
+    molecule: core.Molecule,
+    sapt_dft_grac_convergence_tier: str,
+    label: str,
+    jk_obj: core.JK | None = None,
+) -> float:
+    """Compute the GRAC (gradient-regulated asymptotic correction) shift for a monomer.
+
+    Estimates the ionization energy of the monomer by computing neutral
+    and cation SCF energies, then determines the GRAC shift as the
+    difference between the ionization energy and the DFT HOMO energy.
+    Uses a tiered convergence strategy for robustness.
+
+    Parameters
+    ----------
+    molecule : core.Molecule
+        The monomer molecule.
+    sapt_dft_grac_convergence_tier : str
+        Convergence tier for GRAC computation (controls SCF settings).
+    label : str
+        Label identifying the monomer (e.g., ``'A'`` or ``'B'``).
+    jk_obj : core.JK or None, optional
+        Pre-built JK object, by default None.
+
+    Returns
+    -------
+    float
+        The GRAC shift value in Hartree.
+    """
     optstash = p4util.OptionsState(
         ["SCF_TYPE"],
         ["SCF", "REFERENCE"],
@@ -910,12 +970,35 @@ def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier, label, jk_obj=N
 
 
 def sapt_dft_header(
-    sapt_dft_functional="unknown",
-    mon_a_shift=None,
-    mon_b_shift=None,
-    do_delta_hf="N/A",
-    jk_alg="N/A",
-):
+    sapt_dft_functional: str = "unknown",
+    mon_a_shift: float | None = None,
+    mon_b_shift: float | None = None,
+    do_delta_hf: str = "N/A",
+    jk_alg: str = "N/A",
+) -> None:
+    """Print the SAPT(DFT) calculation header and algorithm summary.
+
+    Outputs a formatted banner and algorithm settings to the Psi4 output
+    file, including the DFT functional, GRAC shifts, delta-HF flag, and
+    JK algorithm.
+
+    Parameters
+    ----------
+    sapt_dft_functional : str, optional
+        Name of the DFT functional, by default ``'unknown'``.
+    mon_a_shift : float or None, optional
+        GRAC shift for monomer A, by default None.
+    mon_b_shift : float or None, optional
+        GRAC shift for monomer B, by default None.
+    do_delta_hf : str, optional
+        Whether delta-HF correction is applied, by default ``'N/A'``.
+    jk_alg : str, optional
+        JK algorithm type, by default ``'N/A'``.
+
+    Returns
+    -------
+    None
+    """
     # Print out the title and some information
     core.print_out("\n")
     core.print_out(
@@ -944,51 +1027,78 @@ def sapt_dft_header(
 
 
 def sapt_dft(
-    dimer_wfn,
-    wfn_A,
-    wfn_B,
-    do_dft=True,
-    sapt_jk=None,
-    sapt_jk_B=None,
-    data=None,
-    print_header=True,
-    cleanup_jk=True,
-    delta_hf=False,
-    external_potentials=None,
-    do_delta_dft=False,
-    do_disp=True,
-):
-    """
-    The primary SAPT(DFT) algorithm to compute the interaction energy once the wavefunctions have been built.
+    dimer_wfn: core.Wavefunction,
+    wfn_A: core.Wavefunction,
+    wfn_B: core.Wavefunction,
+    do_dft: bool = True,
+    sapt_jk: core.JK | None = None,
+    sapt_jk_B: core.JK | None = None,
+    data: dict | None = None,
+    print_header: bool = True,
+    cleanup_jk: bool = True,
+    delta_hf: bool = False,
+    external_potentials: dict | None = None,
+    do_delta_dft: bool = False,
+    do_disp: bool = True,
+) -> dict:
+    """Compute the SAPT(DFT) interaction energy components.
 
-    Example
+    Primary algorithm for computing SAPT(DFT) interaction energy once
+    monomer wavefunctions have been built. Computes electrostatics,
+    exchange, induction, and dispersion components.
+
+    Parameters
+    ----------
+    dimer_wfn : core.Wavefunction
+        Dimer wavefunction providing the dimer basis set.
+    wfn_A : core.Wavefunction
+        Converged monomer A wavefunction.
+    wfn_B : core.Wavefunction
+        Converged monomer B wavefunction.
+    do_dft : bool, optional
+        Whether to use DFT-based exchange-correlation, by default True.
+    sapt_jk : core.JK or None, optional
+        Pre-built JK object for the dimer basis, by default None (built internally).
+    sapt_jk_B : core.JK or None, optional
+        Separate JK object for monomer B, by default None (uses ``sapt_jk``).
+    data : dict or None, optional
+        Pre-existing data dictionary to update, by default None.
+    print_header : bool, optional
+        Whether to print the SAPT(DFT) header, by default True.
+    cleanup_jk : bool, optional
+        Whether to finalize and clean up the JK object, by default True.
+    delta_hf : bool, optional
+        Whether to include the delta-HF correction, by default False.
+    external_potentials : dict or None, optional
+        External potentials for embedding calculations, by default None.
+    do_delta_dft : bool, optional
+        Whether to compute delta-DFT correction, by default False.
+    do_disp : bool, optional
+        Whether to compute dispersion, by default True.
+
+    Returns
     -------
+    dict
+        Dictionary of SAPT(DFT) interaction energy components (in Hartree).
 
-    dimer = psi4.geometry('''
-      Ne
-      --
-      Ar 1 6.5
-      units bohr
-    ''')
-
-    psi4.set_options({"BASIS": "aug-cc-pVDZ"})
-
-    # Prepare the fragments
-    sapt_dimer, monomerA, monomerB = psi4.proc_util.prepare_sapt_molecule(sapt_dimer, "dimer")
-
-    # Run the first monomer
-    set DFT_GRAC_SHIFT 0.203293
-    wfnA, energyA = psi4.energy("PBE0", monomer=monomerA, return_wfn=True)
-
-    # Run the second monomer
-    set DFT_GRAC_SHIFT 0.138264
-    wfnB, energyB = psi4.energy("PBE0", monomer=monomerB, return_wfn=True)
-
-    # Build the dimer wavefunction
-    wfnD = psi4.core.Wavefunction.build(sapt_dimer)
-
-    # Compute SAPT(DFT) from the provided wavefunctions
-    data = psi4.procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
+    Examples
+    --------
+    >>> dimer = psi4.geometry('''
+    ...   Ne
+    ...   --
+    ...   Ar 1 6.5
+    ...   units bohr
+    ... ''')
+    >>> psi4.set_options({"BASIS": "aug-cc-pVDZ"})
+    >>> sapt_dimer, monomerA, monomerB = psi4.proc_util.prepare_sapt_molecule(
+    ...     sapt_dimer, "dimer"
+    ... )
+    >>> psi4.set_options({"DFT_GRAC_SHIFT": 0.203293})
+    >>> wfnA, energyA = psi4.energy("PBE0", molecule=monomerA, return_wfn=True)
+    >>> psi4.set_options({"DFT_GRAC_SHIFT": 0.138264})
+    >>> wfnB, energyB = psi4.energy("PBE0", molecule=monomerB, return_wfn=True)
+    >>> wfnD = psi4.core.Wavefunction.build(sapt_dimer)
+    >>> data = psi4.procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
     """
 
     # Handle the input options
@@ -1097,14 +1207,14 @@ def sapt_dft(
     # Use DFHelper before deleting the JK object for dispersion
     if do_fsapt and fsapt_type == "SAPTDFT" and use_einsums:
         core.timer_on("SAPT(DFT):Localize Orbitals")
-        jk_terms.localization(cache, dimer_wfn, wfn_A, wfn_B)
+        jk_terms.localization(cache, dimer_wfn)
         core.timer_off("SAPT(DFT):Localize Orbitals")
         core.timer_on("SAPT(DFT):Partition")
-        cache = jk_terms.partition(cache, dimer_wfn, wfn_A, wfn_B)
+        cache = jk_terms.partition(cache, dimer_wfn)
         core.timer_off("SAPT(DFT):Partition")
 
         core.timer_on("SAPT(DFT): F-SAPT Localization (IBO)")
-        jk_terms.flocalization(cache, dimer_wfn, wfn_A, wfn_B)
+        jk_terms.flocalization(cache, dimer_wfn)
         core.timer_off("SAPT(DFT): F-SAPT Localization (IBO)")
         # Primary return is stored as cache['Elst_AB']
         core.timer_on("SAPT(DFT): F-SAPT Electrostatics")
@@ -1132,14 +1242,14 @@ def sapt_dft(
         core.timer_off("SAPT(DFT): F-SAPT Exchange")
 
         core.timer_on("SAPT(DFT): F-SAPT Induction")
-        cache = jk_terms.find(
-            cache, data, dimer_wfn, wfn_A, wfn_B, sapt_jk, True
-        )
+        cache = jk_terms.find(cache, data, dimer_wfn, wfn_A, wfn_B, sapt_jk, True)
         core.timer_off("SAPT(DFT): F-SAPT Induction")
 
     elif do_fsapt:
         if fsapt_type == "SAPTDFT":
-            core.print_out("\n  => Einsums is not available, switching to using FISAPT0 object for FSAPT <= \n\n")
+            core.print_out(
+                "\n  => Einsums is not available, switching to using FISAPT0 object for FSAPT <= \n\n"
+            )
 
         # Build auxiliary basis for FISAPT
         aux_basis = core.BasisSet.build(
@@ -1326,7 +1436,9 @@ def sapt_dft(
     sapt_dft_D4_IE = core.get_option("SAPT", "SAPT_DFT_D4_IE")
     sapt_dft_D3_IE = core.get_option("SAPT", "SAPT_DFT_D3_IE")
     # d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
-    if do_fsapt and (sapt_dft_D4_IE or sapt_dft_D3_IE):  # and d4_type == 'intermolecular':
+    if do_fsapt and (
+        sapt_dft_D4_IE or sapt_dft_D3_IE
+    ):
         cache["FSAPT_EMPIRICAL_DISP"] = core.Matrix.from_array(
             data["FSAPT_EMPIRICAL_DISP"]
         )
@@ -1360,12 +1472,31 @@ def sapt_dft(
         core.set_variable("FSAPT_INDAB_AB", cache["IndAB_AB"])
         core.set_variable("FSAPT_INDBA_AB", cache["IndBA_AB"])
         core.set_variable("FSAPT_DISP_AB", cache["Disp_AB"])
-        if sapt_dft_D4_IE or sapt_dft_D3_IE:  # and d4_type == 'intermolecular':
+        if sapt_dft_D4_IE or sapt_dft_D3_IE:
             core.set_variable("FSAPT_EMPIRICAL_DISP", data["FSAPT_EMPIRICAL_DISP"])
     return data
 
 
-def run_sf_sapt(name, **kwargs):
+def run_sf_sapt(name: str, **kwargs) -> core.Wavefunction:
+    """Run the spin-flip SAPT (SF-SAPT) interaction energy calculation.
+
+    Top-level driver for SF-SAPT calculations. Prepares the dimer
+    molecule, runs monomer SCF computations, and computes the SF-SAPT
+    interaction energy components.
+
+    Parameters
+    ----------
+    name : str
+        Name of the SF-SAPT method (e.g., ``'sf-sapt'``).
+    **kwargs
+        Additional keyword arguments. Recognized keys include ``ref_wfn``
+        (reference wavefunction), ``molecule`` (molecular system).
+
+    Returns
+    -------
+    core.Wavefunction
+        The dimer wavefunction with SF-SAPT results stored as variables.
+    """
     optstash = p4util.OptionsState(
         ["SCF_TYPE"],
         ["SCF", "REFERENCE"],

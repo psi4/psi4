@@ -39,7 +39,28 @@ import einsums as ein
 
 
 # Equations come from https://doi.org/10.1063/5.0090688
-def localization(cache, dimer_wfn, wfn_A, wfn_B, do_print=True):
+def localization(
+    cache: dict,
+    dimer_wfn: core.Wavefunction,
+    do_print: bool = True,
+) -> None:
+    r"""Localize dimer occupied orbitals via Intrinsic Bond Orbitals (IBO).
+
+    Performs IBO localization on the dimer occupied orbitals, separating
+    them into frozen-core and active localized subsets. The localized
+    orbitals, rotation matrices, and IAO projectors are stored in *cache*.
+
+    Parameters
+    ----------
+    cache : dict
+        SAPT data cache. Must already contain ``'Cocc'``, ``'eps_occ'``.
+        Updated in-place with ``'Locc'``, ``'Qocc'``, ``'IAO'``,
+        ``'Lfocc'``, and ``'Laocc'``.
+    dimer_wfn : core.Wavefunction
+        Dimer supermolecular wavefunction (provides basis set and molecule).
+    do_print : bool, optional
+        Whether to print status output, by default True.
+    """
     core.print_out("\n  ==> Localizing Orbitals 1 <== \n\n")
     # Extract monomers to compute frozen core counts
     mol = dimer_wfn.molecule()
@@ -96,7 +117,35 @@ def localization(cache, dimer_wfn, wfn_A, wfn_B, do_print=True):
     return
 
 
-def flocalization(cache, dimer_wfn, wfn_A, wfn_B, do_print=True):
+def flocalization(
+    cache: dict,
+    dimer_wfn: core.Wavefunction,
+    wfn_A: core.Wavefunction,
+    wfn_B: core.Wavefunction,
+    do_print: bool = True,
+) -> None:
+    r"""Localize monomer occupied orbitals separately for F-SAPT partitioning.
+
+    Performs IBO localization independently on monomer A and monomer B
+    occupied orbitals. Separates frozen-core and active localized orbitals
+    and stores them in *cache*. Handles link-orbital assignments for
+    three-body (A-C-B) fragmentation schemes even though I-SAPT is not
+    currently implemented for this module.
+
+    Parameters
+    ----------
+    cache : dict
+        SAPT data cache. Must already contain monomer orbital coefficients
+        (``'Cocc_A'``, ``'Cocc_B'``) and orbital energies (``'eps_occ_A'``,
+        ``'eps_occ_B'``). Updated in-place with ``'Locc_A'``, ``'Locc_B'``,
+        ``'Uocc_A'``, ``'Uocc_B'``, ``'Qocc0A'``, ``'Qocc0B'``,
+        ``'Lfocc0A'``, ``'Laocc0A'``, ``'Lfocc0B'``, ``'Laocc0B'``,
+        ``'Caocc0A'``, and ``'Caocc0B'``.
+    dimer_wfn : core.Wavefunction
+        Dimer supermolecular wavefunction (provides basis set and molecule).
+    do_print : bool, optional
+        Whether to print status output, by default True.
+    """
     link_assignment = core.get_option("FISAPT", "FISAPT_LINK_ASSIGNMENT").upper()
     core.print_out("  ==> F-SAPT Localization (IBO) <==\n\n")
     core.print_out("  ==> Local orbitals for Monomer A <==\n\n")
@@ -226,7 +275,28 @@ def flocalization(cache, dimer_wfn, wfn_A, wfn_B, do_print=True):
         cache["Locc_B"] = Locc_B
 
 
-def partition(cache, dimer_wfn, wfn_A, wfn_B, do_print=True):
+def partition(
+    cache: dict,
+    dimer_wfn: core.Wavefunction,
+    do_print: bool = True,
+) -> None:
+    r"""Partition localized orbitals into monomer A, monomer B, and link fragments.
+
+    Uses IBO charges to assign each localized orbital to a fragment (A, B,
+    or linker C). Handles automatic and manual link-orbital selection and
+    various link-assignment schemes (SAO, SIAO, etc.).
+
+    Parameters
+    ----------
+    cache : dict
+        SAPT data cache. Must contain ``'Locc'`` and ``'Qocc'`` from a prior
+        :func:`localization` call. Updated in-place with fragment-partitioned
+        orbitals and assignment vectors.
+    dimer_wfn : core.Wavefunction
+        Dimer supermolecular wavefunction (provides molecule and basis set).
+    do_print : bool, optional
+        Whether to print status output, by default True.
+    """
     core.print_out("\n  ==> Partitioning <== \n\n")
     # Sizing
     mol = dimer_wfn.molecule()
@@ -514,11 +584,49 @@ def build_sapt_jk_cache(
     wfn_A: core.Wavefunction,
     wfn_B: core.Wavefunction,
     jk: core.JK,
-    do_print=True,
-    external_potentials=None,
-):
-    """
-    Constructs the DCBS cache data required to compute ELST/EXCH/IND
+    do_print: bool = True,
+    external_potentials: dict = None,
+) -> dict:
+    r"""Construct the dimer-centered basis set (DCBS) cache of integrals and
+    matrices for SAPT(DFT).
+
+    Builds all one- and two-electron integrals needed for the electrostatics,
+    exchange, and induction components of SAPT(DFT). Density matrices (Eq. 5,
+    7), Coulomb/exchange matrices, nuclear potentials, and overlap integrals
+    are computed and stored in the returned dictionary.
+
+    .. math::
+
+        \mathbf{P}^X = \mathbf{C}^{X,\text{occ}}(\mathbf{C}^{X,\text{occ}})^\dagger
+        \quad (\text{Eq. 5})
+
+    .. math::
+
+        \mathbf{P}^{X,\text{vir}} = \mathbf{C}^{X,\text{vir}}(\mathbf{C}^{X,\text{vir}})^\dagger
+        \quad (\text{Eq. 7})
+
+    Parameters
+    ----------
+    wfn_dimer : core.Wavefunction
+        Dimer supermolecular wavefunction.
+    wfn_A : core.Wavefunction
+        Monomer A wavefunction in the dimer-centered basis set (DCBS).
+    wfn_B : core.Wavefunction
+        Monomer B wavefunction in the dimer-centered basis set (DCBS).
+    jk : core.JK
+        Psi4 JK integral engine for computing Coulomb and exchange matrices.
+    do_print : bool, optional
+        Whether to print status output, by default True.
+    external_potentials : dict, optional
+        Dictionary of external potential objects keyed by ``'A'`` and ``'B'``.
+
+    Returns
+    -------
+    dict
+        Cache dictionary containing orbital coefficients, density matrices,
+        Coulomb (``'J_A'``, ``'J_B'``, ``'J_O'``), exchange (``'K_A'``, ``'K_B'``,
+        ``'K_O'``), nuclear potential (``'V_A'``, ``'V_B'``), overlap (``'S'``),
+        orbital energies, and nuclear repulsion interaction energy.
     """
     core.print_out("\n  ==> Preparing SAPT Data Cache <== \n\n")
     jk.print_header()
@@ -648,11 +756,30 @@ def build_sapt_jk_cache(
     return cache
 
 
-def electrostatics(cache, do_print=True):
-    r"""
-    Computes the E10 electrostatics from a build_sapt_jk_cache datacache.
+def electrostatics(cache: dict, do_print: bool = True) -> tuple[dict, float]:
+    r"""Compute the first-order electrostatic interaction energy :math:`E^{(1)}_{\text{elst}}`.
 
-    Equation 4. E^{(1)}_{\rm elst} = 2P^A \cdot V^B + 2P^B \cdot V^A + 4P^B \cdot J^A + V_{\rm nuc}
+    Evaluates the Coulombic interaction between unperturbed monomer charge
+    distributions (Eq. 4 of Xie et al.):
+
+    .. math::
+
+        E^{(1)}_{\text{elst}} = 2\mathbf{P}^A \cdot \mathbf{V}^B
+        + 2\mathbf{P}^B \cdot \mathbf{V}^A
+        + 4\mathbf{P}^B \cdot \mathbf{J}^A + V_{\text{nuc}}
+
+    Parameters
+    ----------
+    cache : dict
+        SAPT data cache from :func:`build_sapt_jk_cache`.
+    do_print : bool, optional
+        Whether to print the result, by default True.
+
+    Returns
+    -------
+    tuple[dict, float]
+        A dictionary ``{'Elst10,r': float}`` and the extern-extern
+        interaction energy (zero if no external potentials).
     """
     if do_print:
         core.print_out("\n  ==> E10 Electrostatics <== \n\n")
@@ -677,10 +804,44 @@ def electrostatics(cache, do_print=True):
     return {"Elst10,r": Elst10}, extern_extern_ie
 
 
-def felst(cache, sapt_elst, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
-    r"""
-    Computes the F-SAPT electrostatics partitioning according to FISAPT::felst in C++.
-    Returns the total Elst10,r and stores the breakdown matrix in cache["Elst_AB"].
+def felst(
+    cache: dict,
+    sapt_elst: dict,
+    dimer_wfn: core.Wavefunction,
+    wfn_A: core.Wavefunction,
+    wfn_B: core.Wavefunction,
+    jk: core.JK,
+    do_print: bool = True,
+) -> dict:
+    r"""Compute F-SAPT partitioned electrostatic interaction energy.
+
+    Decomposes the total :math:`E^{(1)}_{\text{elst}}` (Eq. 4) into
+    atom-pair and orbital-pair contributions for functional-group
+    analysis (F-SAPT). Nuclear-nuclear, nuclear-electron, and
+    electron-electron terms are accumulated into the ``Elst_AB``
+    breakdown matrix stored in *cache*.
+
+    Parameters
+    ----------
+    cache : dict
+        SAPT data cache with localized orbitals from :func:`flocalization`.
+    sapt_elst : dict
+        Total SAPT electrostatic energies from :func:`electrostatics`.
+    dimer_wfn : core.Wavefunction
+        Dimer supermolecular wavefunction.
+    wfn_A : core.Wavefunction
+        Monomer A wavefunction.
+    wfn_B : core.Wavefunction
+        Monomer B wavefunction.
+    jk : core.JK
+        JK integral engine.
+    do_print : bool, optional
+        Whether to print output, by default True.
+
+    Returns
+    -------
+    dict
+        Updated *cache* dictionary with ``'Elst_AB'`` breakdown matrix.
     """
     core.timer_on("F-SAPT Elst Setup")
     if do_print:
@@ -923,22 +1084,49 @@ def felst(cache, sapt_elst, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
 
 
 def fexch(
-    cache, sapt_exch10_s2, sapt_exch10, dimer_wfn, wfn_A, wfn_B, jk, do_print=True
-):
-    """
-    Computes the F-SAPT exchange partitioning according to FISAPT::fexch in C++.
-    Uses the Exch10(S^2) approximation with orbital partitioning.
+    cache: dict,
+    sapt_exch10_s2: float,
+    sapt_exch10: float,
+    dimer_wfn: core.Wavefunction,
+    wfn_A: core.Wavefunction,
+    wfn_B: core.Wavefunction,
+    jk: core.JK,
+    do_print: bool = True,
+) -> dict:
+    r"""Compute the F-SAPT first-order exchange partitioning.
 
-    Args:
-        cache: Dictionary containing matrices and vectors
-        sapt_exch: Total SAPT Exch10(S^2) energy from the regular exch() calculation
-        dimer_wfn: Dimer wavefunction
-        wfn_A, wfn_B: Monomer wavefunctions
-        jk: JK object
-        do_print: Whether to print output
+    Uses the Exch10(S^2) approximation with orbital partitioning and
+    follows Eq. 6 of Xie et al. (2022). Note S = S^{AO}
 
-    Returns:
-        cache: Updated cache with Exch_AB matrix
+    .. math::
+
+        E^{(1)}_{\text{exch}}(S^2) = -2(\mathbf{P}^A \mathbf{S} \mathbf{P}^B \mathbf{S} \mathbf{P}^{A,\text{vir}}) \cdot \boldsymbol{\omega}^B
+          - 2(\mathbf{P}^B \mathbf{S} \mathbf{P}^A \mathbf{S} \mathbf{P}^{B,\text{vir}}) \cdot \boldsymbol{\omega}^A
+          - 2(\mathbf{P}^{A,\text{vir}} \mathbf{S} \mathbf{P}^B) \cdot \mathbf{K}[\mathbf{P}^A \mathbf{S} \mathbf{P}^{B,\text{vir}}]
+
+    Parameters
+    ----------
+    cache : dict
+        SAPT/F-SAPT cache containing localized orbitals and intermediates.
+    sapt_exch10_s2 : float
+        Total SAPT first-order exchange energy in the :math:`S^2` approximation.
+    sapt_exch10 : float
+        Total SAPT first-order exchange energy used for optional scaling.
+    dimer_wfn : core.Wavefunction
+        Dimer wavefunction used for basis and molecular metadata.
+    wfn_A : core.Wavefunction
+        Monomer A wavefunction.
+    wfn_B : core.Wavefunction
+        Monomer B wavefunction.
+    jk : core.JK
+        JK object for Coulomb/exchange intermediates.
+    do_print : bool, optional
+        Whether to print exchange diagnostics, by default True.
+
+    Returns
+    -------
+    dict
+        Updated cache with ``Exch_AB`` matrix.
     """
     if do_print:
         core.print_out("  ==> F-SAPT Exchange <==\n\n")
@@ -1097,11 +1285,27 @@ def fexch(
     return cache
 
 
-def build_ind_pot(vars):
-    """
-    Build the induction potential for monomer A due to monomer B.
-    By changing vars map to have B and A swapped, can get induction potential
-    for B due to A.
+def build_ind_pot(vars: dict) -> core.Matrix:
+    r"""Build the induction potential in the MO basis for one monomer due to the other.
+
+    Constructs :math:`\tilde{\boldsymbol{\omega}}^X` (Eq. 16 of Xie et al. 2022).
+    By swapping A/B labels in ``vars``, the potential for either monomer can
+    be computed.
+
+    .. math::
+
+        \tilde{\boldsymbol{\omega}}^X = (\mathbf{C}^{Y,\text{occ}})^\dagger \boldsymbol{\omega}^X \mathbf{C}^{Y,\text{vir}}
+
+    Parameters
+    ----------
+    vars : dict
+        Dictionary containing the matrices required for the induction
+        potential build, including ``V_B``, ``J_B``, ``Cocc_A``, and ``Cvir_A``.
+
+    Returns
+    -------
+    core.Matrix
+        Induction potential in the occupied-virtual MO block.
     """
     w_B = vars["V_B"].clone()
     ein.core.axpy(2.0, vars["J_B"].np, w_B.np)
@@ -1111,9 +1315,24 @@ def build_ind_pot(vars):
     )
 
 
-def build_exch_ind_pot_AB(vars):
-    """
-    Build the exchange-induction potential for monomer A due to monomer B
+def build_exch_ind_pot_AB(vars: dict) -> core.Matrix:
+    r"""Build the exchange-induction potential for monomer A due to monomer B.
+
+    Constructs the exchange-induction operator in the MO basis following
+    Eq. 17 of Xie et al. (2022), involving overlap-weighted density matrix
+    products and Coulomb/exchange contractions.
+
+    Parameters
+    ----------
+    vars : dict
+        Dictionary of AO and MO intermediates required for the A<-B
+        exchange-induction construction.
+
+    Returns
+    -------
+    core.Matrix
+        Exchange-induction potential for monomer A in the occupied-virtual
+        MO block.
     """
 
     K_B = vars["K_B"]
@@ -1169,9 +1388,23 @@ def build_exch_ind_pot_AB(vars):
     return EX_A_MO
 
 
-def build_exch_ind_pot_BA(vars):
-    """
-    Build the exchange-induction potential for monomer B due to monomer A
+def build_exch_ind_pot_BA(vars: dict) -> core.Matrix:
+    r"""Build the exchange-induction potential for monomer B due to monomer A.
+
+    Analogous to :func:`build_exch_ind_pot_AB` with A/B roles swapped,
+    following Eq. 17 of Xie et al. (2022).
+
+    Parameters
+    ----------
+    vars : dict
+        Dictionary of AO and MO intermediates required for the B<-A
+        exchange-induction construction.
+
+    Returns
+    -------
+    core.Matrix
+        Exchange-induction potential for monomer B in the occupied-virtual
+        MO block.
     """
 
     K_B = vars["K_B"]
@@ -1227,7 +1460,25 @@ def build_exch_ind_pot_BA(vars):
     return EX_B_MO
 
 
-def build_exch_ind_pot_avg(vars):
+def build_exch_ind_pot_avg(vars: dict) -> core.Matrix:
+    r"""Build the averaged exchange-induction potential for link-orbital SAO/SIAO methods.
+
+    Uses the older :func:`core.triplet` API for matrix triple products.
+    This variant handles the SAO/SIAO link-orbital partitioning where
+    average exchange-induction potentials are needed.
+
+    Parameters
+    ----------
+    vars : dict
+        Dictionary of AO and MO intermediates required to construct the
+        averaged exchange-induction potential.
+
+    Returns
+    -------
+    core.Matrix
+        Averaged exchange-induction potential in the occupied-virtual
+        MO block.
+    """
     Ca = vars["Cocc_A"]
     Cr = vars["Cvir_A"]
 
@@ -1327,7 +1578,43 @@ def build_exch_ind_pot_avg(vars):
     return core.triplet(Ca, W, Cr, True, False, False)
 
 
-def find(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
+def find(
+    cache: dict,
+    scalars: dict,
+    dimer_wfn: core.Wavefunction,
+    wfn_A: core.Wavefunction,
+    wfn_B: core.Wavefunction,
+    jk: core.JK,
+    do_print: bool = True,
+) -> dict:
+    r"""Compute the F-SAPT induction partitioning.
+
+    Partitions the second-order induction and exchange-induction energies into
+    atomic pair contributions for F-SAPT analysis. Computes both uncoupled and
+    (optionally) coupled induction using the CPSCF solver.
+
+    Parameters
+    ----------
+    cache : dict
+        SAPT data cache containing orbital coefficients, density matrices, and integrals.
+    scalars : dict
+        Reference scalar energies for validation.
+    dimer_wfn : core.Wavefunction
+        Dimer wavefunction.
+    wfn_A : core.Wavefunction
+        Monomer A wavefunction.
+    wfn_B : core.Wavefunction
+        Monomer B wavefunction.
+    jk : core.JK
+        JK integral engine.
+    do_print : bool, optional
+        Whether to print results, by default True.
+
+    Returns
+    -------
+    dict
+        Updated cache with ``Ind_AB`` and ``IndAB_AB``/``IndBA_AB`` matrices.
+    """
     if do_print:
         core.print_out("  ==> F-SAPT Induction <==\n\n")
 
@@ -1816,7 +2103,43 @@ def find(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     return cache
 
 
-def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
+def fdisp0(
+    cache: dict,
+    scalars: dict,
+    dimer_wfn: core.Wavefunction,
+    wfn_A: core.Wavefunction,
+    wfn_B: core.Wavefunction,
+    jk: core.JK,
+    do_print: bool = True,
+) -> dict:
+    r"""Compute the F-SAPT0 dispersion partitioning.
+
+    Partitions the second-order dispersion and exchange-dispersion energies
+    into atomic pair contributions for F-SAPT analysis. Note, this does not use
+    DFT energies and is a Hartree-Fock (SAPT0) dispersion energy only.
+
+    Parameters
+    ----------
+    cache : dict
+        SAPT data cache containing orbital coefficients, density matrices, and integrals.
+    scalars : dict
+        Reference scalar energies for validation.
+    dimer_wfn : core.Wavefunction
+        Dimer wavefunction.
+    wfn_A : core.Wavefunction
+        Monomer A wavefunction.
+    wfn_B : core.Wavefunction
+        Monomer B wavefunction.
+    jk : core.JK
+        JK integral engine.
+    do_print : bool, optional
+        Whether to print results, by default True.
+
+    Returns
+    -------
+    dict
+        Updated cache with ``Disp_AB`` matrix and ``Disp20,u``/``Exch-Disp20,u`` scalar energies.
+    """
     if do_print:
         core.print_out("  ==> F-SAPT0 Dispersion <==\n\n")
 
@@ -1895,127 +2218,127 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     nQ = aux_basis.nbf()
 
     # => Auxiliary C matrices <= //
-    # Cr1 = (I - D_B * S) * Cvir_A  [C++ line 6766-6768]
+    # Cr1 = (I - D_B * S) * Cvir_A
     Cr1 = chain_gemm_einsums([D_B, S, Cvir_A])
     ein.core.axpy(-1.0, Cvir_A.np, Cr1.np)
 
-    # Cs1 = (I - D_A * S) * Cvir_B  [C++ line 6769-6771]
+    # Cs1 = (I - D_A * S) * Cvir_B
     Cs1 = chain_gemm_einsums([D_A, S, Cvir_B])
     ein.core.axpy(-1.0, Cvir_B.np, Cs1.np)
 
-    # Ca2 = D_B * S * Cocc_A  [C++ line 6772]
+    # Ca2 = D_B * S * Cocc_A
     Ca2 = chain_gemm_einsums([D_B, S, Cocc_A])
 
-    # Cb2 = D_A * S * Cocc_B  [C++ line 6773]
+    # Cb2 = D_A * S * Cocc_B
     Cb2 = chain_gemm_einsums([D_A, S, Cocc_B])
 
-    # Cr3 = 2 * (D_B * S * Cvir_A - D_A * S * D_B * S * Cvir_A)  [C++ line 6775-6778]
+    # Cr3 = 2 * (D_B * S * Cvir_A - D_A * S * D_B * S * Cvir_A)
     Cr3 = chain_gemm_einsums([D_B, S, Cvir_A])
     CrX = chain_gemm_einsums([D_A, S, D_B, S, Cvir_A])
     Cr3.subtract(CrX)
     Cr3.scale(2.0)
 
-    # Cs3 = 2 * (D_A * S * Cvir_B - D_B * S * D_A * S * Cvir_B)  [C++ line 6779-6782]
+    # Cs3 = 2 * (D_A * S * Cvir_B - D_B * S * D_A * S * Cvir_B)
     Cs3 = chain_gemm_einsums([D_A, S, Cvir_B])
     CsX = chain_gemm_einsums([D_B, S, D_A, S, Cvir_B])
     Cs3.subtract(CsX)
     Cs3.scale(2.0)
 
-    # Ca4 = -2 * D_A * S * D_B * S * Cocc_A  [C++ line 6784-6785]
+    # Ca4 = -2 * D_A * S * D_B * S * Cocc_A
     Ca4 = chain_gemm_einsums([D_A, S, D_B, S, Cocc_A])
     Ca4.scale(-2.0)
 
-    # Cb4 = -2 * D_B * S * D_A * S * Cocc_B  [C++ line 6786-6787]
+    # Cb4 = -2 * D_B * S * D_A * S * Cocc_B
     Cb4 = chain_gemm_einsums([D_B, S, D_A, S, Cocc_B])
     Cb4.scale(-2.0)
 
-    # => Auxiliary V matrices <= #  [C++ lines 6789-6872]
+    # => Auxiliary V matrices <= #
 
-    # Jbr = 2.0 * Cocc_B.T @ J_A @ Cvir_A  [C++ lines 6791-6792]
+    # Jbr = 2.0 * Cocc_B.T @ J_A @ Cvir_A
     Jbr = chain_gemm_einsums([Cocc_B, J_A, Cvir_A], ["T", "N", "N"])
     Jbr.scale(2.0)
 
-    # Kbr = -1.0 * Cocc_B.T @ K_A @ Cvir_A  [C++ lines 6793-6794]
+    # Kbr = -1.0 * Cocc_B.T @ K_A @ Cvir_A
     Kbr = chain_gemm_einsums([Cocc_B, K_A, Cvir_A], ["T", "N", "N"])
     Kbr.scale(-1.0)
 
-    # Jas = 2.0 * Cocc_A.T @ J_B @ Cvir_B  [C++ lines 6796-6797]
+    # Jas = 2.0 * Cocc_A.T @ J_B @ Cvir_B
     Jas = chain_gemm_einsums([Cocc_A, J_B, Cvir_B], ["T", "N", "N"])
     Jas.scale(2.0)
 
-    # Kas = -1.0 * Cocc_A.T @ K_B @ Cvir_B  [C++ lines 6798-6799]
+    # Kas = -1.0 * Cocc_A.T @ K_B @ Cvir_B
     Kas = chain_gemm_einsums([Cocc_A, K_B, Cvir_B], ["T", "N", "N"])
     Kas.scale(-1.0)
 
-    # KOas = 1.0 * Cocc_A.T @ K_O @ Cvir_B  [C++ lines 6801-6802]
+    # KOas = 1.0 * Cocc_A.T @ K_O @ Cvir_B
     KOas = chain_gemm_einsums([Cocc_A, K_O, Cvir_B], ["T", "N", "N"])
 
-    # KObr = 1.0 * Cocc_B.T @ K_O.T @ Cvir_A  [C++ lines 6803-6804]
+    # KObr = 1.0 * Cocc_B.T @ K_O.T @ Cvir_A
     # Note: K_O is transposed (second 'T' in the transpose list)
     KObr = chain_gemm_einsums([Cocc_B, K_O, Cvir_A], ["T", "T", "N"])
 
-    # JBas = -2.0 * (Cocc_A.T @ S @ D_B) @ J_A @ Cvir_B  [C++ lines 6806-6807]
+    # JBas = -2.0 * (Cocc_A.T @ S @ D_B) @ J_A @ Cvir_B
     temp_JBas = chain_gemm_einsums([Cocc_A, S, D_B], ["T", "N", "N"])
     JBas = chain_gemm_einsums([temp_JBas, J_A, Cvir_B], ["N", "N", "N"])
     JBas.scale(-2.0)
 
-    # JAbr = -2.0 * (Cocc_B.T @ S @ D_A) @ J_B @ Cvir_A  [C++ lines 6808-6809]
+    # JAbr = -2.0 * (Cocc_B.T @ S @ D_A) @ J_B @ Cvir_A
     temp_JAbr = chain_gemm_einsums([Cocc_B, S, D_A], ["T", "N", "N"])
     JAbr = chain_gemm_einsums([temp_JAbr, J_B, Cvir_A], ["N", "N", "N"])
     JAbr.scale(-2.0)
 
-    # Jbs = 4.0 * Cocc_B.T @ J_A @ Cvir_B  [C++ lines 6811-6812]
+    # Jbs = 4.0 * Cocc_B.T @ J_A @ Cvir_B
     Jbs = chain_gemm_einsums([Cocc_B, J_A, Cvir_B], ["T", "N", "N"])
     Jbs.scale(4.0)
 
-    # Jar = 4.0 * Cocc_A.T @ J_B @ Cvir_A  [C++ lines 6813-6814]
+    # Jar = 4.0 * Cocc_A.T @ J_B @ Cvir_A
     Jar = chain_gemm_einsums([Cocc_A, J_B, Cvir_A], ["T", "N", "N"])
     Jar.scale(4.0)
 
-    # JAas = -2.0 * (Cocc_A.T @ J_B @ D_A) @ S @ Cvir_B  [C++ lines 6816-6817]
+    # JAas = -2.0 * (Cocc_A.T @ J_B @ D_A) @ S @ Cvir_B
     temp_JAas = chain_gemm_einsums([Cocc_A, J_B, D_A], ["T", "N", "N"])
     JAas = chain_gemm_einsums([temp_JAas, S, Cvir_B], ["N", "N", "N"])
     JAas.scale(-2.0)
 
-    # JBbr = -2.0 * (Cocc_B.T @ J_A @ D_B) @ S @ Cvir_A  [C++ lines 6818-6819]
+    # JBbr = -2.0 * (Cocc_B.T @ J_A @ D_B) @ S @ Cvir_A
     temp_JBbr = chain_gemm_einsums([Cocc_B, J_A, D_B], ["T", "N", "N"])
     JBbr = chain_gemm_einsums([temp_JBbr, S, Cvir_A], ["N", "N", "N"])
     JBbr.scale(-2.0)
 
-    # Get your signs right Hesselmann!  [C++ line 6821]
-    # Vbs = 2.0 * Cocc_B.T @ V_A @ Cvir_B  [C++ lines 6822-6823]
+    # Get your signs right Hesselmann!
+    # Vbs = 2.0 * Cocc_B.T @ V_A @ Cvir_B
     Vbs = chain_gemm_einsums([Cocc_B, V_A, Cvir_B], ["T", "N", "N"])
     Vbs.scale(2.0)
 
-    # Var = 2.0 * Cocc_A.T @ V_B @ Cvir_A  [C++ lines 6824-6825]
+    # Var = 2.0 * Cocc_A.T @ V_B @ Cvir_A
     Var = chain_gemm_einsums([Cocc_A, V_B, Cvir_A], ["T", "N", "N"])
     Var.scale(2.0)
 
-    # VBas = -1.0 * (Cocc_A.T @ S @ D_B) @ V_A @ Cvir_B  [C++ lines 6826-6827]
+    # VBas = -1.0 * (Cocc_A.T @ S @ D_B) @ V_A @ Cvir_B
     temp_VBas = chain_gemm_einsums([Cocc_A, S, D_B], ["T", "N", "N"])
     VBas = chain_gemm_einsums([temp_VBas, V_A, Cvir_B], ["N", "N", "N"])
     VBas.scale(-1.0)
 
-    # VAbr = -1.0 * (Cocc_B.T @ S @ D_A) @ V_B @ Cvir_A  [C++ lines 6828-6829]
+    # VAbr = -1.0 * (Cocc_B.T @ S @ D_A) @ V_B @ Cvir_A
     temp_VAbr = chain_gemm_einsums([Cocc_B, S, D_A], ["T", "N", "N"])
     VAbr = chain_gemm_einsums([temp_VAbr, V_B, Cvir_A], ["N", "N", "N"])
     VAbr.scale(-1.0)
 
-    # VRas = 1.0 * (Cocc_A.T @ V_B @ P_A) @ S @ Cvir_B  [C++ lines 6830-6831]
+    # VRas = 1.0 * (Cocc_A.T @ V_B @ P_A) @ S @ Cvir_B
     temp_VRas = chain_gemm_einsums([Cocc_A, V_B, P_A], ["T", "N", "N"])
     VRas = chain_gemm_einsums([temp_VRas, S, Cvir_B], ["N", "N", "N"])
 
-    # VSbr = 1.0 * (Cocc_B.T @ V_A @ P_B) @ S @ Cvir_A  [C++ lines 6832-6833]
+    # VSbr = 1.0 * (Cocc_B.T @ V_A @ P_B) @ S @ Cvir_A
     temp_VSbr = chain_gemm_einsums([Cocc_B, V_A, P_B], ["T", "N", "N"])
     VSbr = chain_gemm_einsums([temp_VSbr, S, Cvir_A], ["N", "N", "N"])
 
-    # Sas = Cocc_A.T @ S @ Cvir_B  [C++ line 6835]
+    # Sas = Cocc_A.T @ S @ Cvir_B
     Sas = chain_gemm_einsums([Cocc_A, S, Cvir_B], ["T", "N", "N"])
 
-    # Sbr = Cocc_B.T @ S @ Cvir_A  [C++ line 6836]
+    # Sbr = Cocc_B.T @ S @ Cvir_A
     Sbr = chain_gemm_einsums([Cocc_B, S, Cvir_A], ["T", "N", "N"])
 
-    # Qbr = Jbr + Kbr + KObr + JAbr + JBbr + VAbr + VSbr  [C++ lines 6838-6846]
+    # Qbr = Jbr + Kbr + KObr + JAbr + JBbr + VAbr + VSbr
     Qbr = Jbr.clone()
     Qbr.add(Kbr)
     Qbr.add(KObr)
@@ -2024,7 +2347,7 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     Qbr.add(VAbr)
     Qbr.add(VSbr)
 
-    # Qas = Jas + Kas + KOas + JAas + JBas + VBas + VRas  [C++ lines 6848-6856]
+    # Qas = Jas + Kas + KOas + JAas + JBas + VBas + VRas
     Qas = Jas.clone()
     Qas.add(Kas)
     Qas.add(KOas)
@@ -2033,23 +2356,23 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     Qas.add(VBas)
     Qas.add(VRas)
 
-    # SBar = Cocc_A.T @ S @ D_B @ S @ Cvir_A  [C++ line 6858]
+    # SBar = Cocc_A.T @ S @ D_B @ S @ Cvir_A
     SBar = chain_gemm_einsums([Cocc_A, S, D_B, S, Cvir_A], ["T", "N", "N", "N", "N"])
 
-    # SAbs = Cocc_B.T @ S @ D_A @ S @ Cvir_B  [C++ line 6859]
+    # SAbs = Cocc_B.T @ S @ D_A @ S @ Cvir_B
     SAbs = chain_gemm_einsums([Cocc_B, S, D_A, S, Cvir_B], ["T", "N", "N", "N", "N"])
 
-    # Qar = Jar + Var  [C++ lines 6861-6864]
+    # Qar = Jar + Var
     Qar = Jar.clone()
     Qar.add(Var)
 
-    # Qbs = Jbs + Vbs  [C++ lines 6866-6869]
+    # Qbs = Jbs + Vbs
     Qbs = Jbs.clone()
     Qbs.add(Vbs)
 
-    # => Integrals from DFHelper <= #  [C++ lines 6895-6946]
+    # => Integrals from DFHelper <= #
 
-    # Build list of orbital space matrices for DF transformations  [C++ lines 6897-6909]
+    # Build list of orbital space matrices for DF transformations
     # Order: Cocc_A, Cvir_A, Cocc_B, Cvir_B, Cr1, Cs1, Ca2, Cb2, Cr3, Cs3, Ca4, Cb4
     # Convert einsums RuntimeTensorD objects to core.Matrix objects for DFHelper
     # RuntimeTensorD supports buffer protocol, so np.asarray() can convert to numpy
@@ -2068,12 +2391,12 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
         core.Matrix.from_array(Cb4),  # 11: 'b4'
     ]
 
-    # Calculate total columns for memory allocation  [C++ lines 6911-6915]
+    # Calculate total columns for memory allocation
     ncol = sum(mat.shape[1] for mat in orbital_spaces)
     # All should have same number of rows (AO basis)
     nrows = orbital_spaces[0].shape[0]
 
-    # Initialize DFHelper  [C++ lines 6917-6922]
+    # Initialize DFHelper
     aux_basis = dimer_wfn.get_basisset("DF_BASIS_SCF")
     dfh = core.DFHelper(dimer_basis, aux_basis)
 
@@ -2094,7 +2417,7 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     dfh.initialize()
     dfh.print_header()
 
-    # Add orbital spaces  [C++ lines 6924-6935]
+    # Add orbital spaces
     dfh.add_space("a", orbital_spaces[0])  # Cocc_A
     dfh.add_space("r", orbital_spaces[1])  # Cvir_A
     dfh.add_space("b", orbital_spaces[2])  # Cocc_B
@@ -2108,7 +2431,7 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     dfh.add_space("a4", orbital_spaces[10])  # Ca4
     dfh.add_space("b4", orbital_spaces[11])  # Cb4
 
-    # Add DF transformations  [C++ lines 6937-6946]
+    # Add DF transformations
     # Format: (name, left_space, right_space) -> computes (left|right) integrals
     dfh.add_transformation("Aar", "r", "a")  # (r|a) virtuals_A x occupied_A
     dfh.add_transformation("Abs", "s", "b")  # (s|b) virtuals_B x occupied_B
@@ -2124,13 +2447,13 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     # TODO: Handle link orbital spaces for parallel/perpendicular coupling (lines 6950-7018)
     # For now, skip this and proceed with standard dispersion calculation
 
-    # Perform DF transformations  [C++ line 7020]
+    # Perform DF transformations
     dfh.transform()
 
-    # Clear spaces now that transformations are done  [C++ lines 7024-7033]
+    # Clear spaces now that transformations are done
     dfh.clear_spaces()
 
-    # => Memory blocking setup  [C++ lines 7035-7082]
+    # => Memory blocking setup
 
     # Number of threads (single-threaded in Python)
     nT = 1
@@ -2184,7 +2507,7 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
         f"    {ns} values of s processed in {nsblocks} blocks of {max_s}\n\n"
     )
 
-    # => Compute Far = Dar + Ear and Fbs = Dbs + Ebs  [C++ lines 7136-7168]
+    # => Compute Far = Dar + Ear and Fbs = Dbs + Ebs
     # These represent combined D and E DF integrals that will be reused in the main loop
 
     # Add disk tensor for Far
@@ -2232,7 +2555,7 @@ def fdisp0(cache, scalars, dimer_wfn, wfn_A, wfn_B, jk, do_print=True):
     E_disp20_comp = core.Matrix("E_disp20", na, nb)
     E_exch_disp20_comp = core.Matrix("E_exch_disp20", na, nb)
 
-    # => MO to LO Transformation [C++ lines 7192-7193]
+    # => MO to LO Transformation
     Uaocc_A = cache["Uaocc0A"]
     Uaocc_B = cache["Uaocc0B"]
     UAp = Uaocc_A.np
@@ -2431,7 +2754,7 @@ def chain_gemm_einsums(
     prefactors_C: list[float] = None,
     prefactors_AB: list[float] = None,
     return_tensors: list[bool] = None,
-):
+) -> core.Matrix | list[core.Matrix]:
     """
     Computes a chain of einsum matrix multiplications
 
@@ -2494,31 +2817,76 @@ def chain_gemm_einsums(
     return returned_tensors
 
 
-def exchange(cache, jk, do_print=True):
-    r"""
-    Computes the E10 exchange (S^2 and S^inf) from a build_sapt_jk_cache datacache.
+def exchange(cache: dict, jk: core.JK, do_print: bool = True) -> dict:
+    r"""Compute the first-order exchange energy :math:`E^{(1)}_{\text{exch}}`.
 
-    Equation E^{(1)}_{\rm exch}(S^2) =
-        -2(P^{A,occ} S^{AO} P^{B,occ} S^{AO} P^{A,vir}) \cdot \omega^{B}
-        -2(P^{B,occ} S^{AO} P^{A,occ} S^{AO} P^{B,vir}) \cdot \omega^{B}
-        -2(P^{A,vir} S^{AO} P^{B,occ}) \cdot K[P^{A,occ} S^{AO} P^{B,vir}]
+    Evaluates both the :math:`S^2` approximation (Eq. 6) and the
+    :math:`S^\infty` (Eq. 9) first-order exchange energies from
+    Xie et al. (2022).
+
+    The :math:`S^2` approximation is:
+
+    .. math::
+
+        E^{(1)}_{\text{exch}}(S^2) = -2(\mathbf{P}^A \mathbf{S} \mathbf{P}^B \mathbf{S} \mathbf{P}^{A,\text{vir}}) \cdot \boldsymbol{\omega}^B
+          - 2(\mathbf{P}^B \mathbf{S} \mathbf{P}^A \mathbf{S} \mathbf{P}^{B,\text{vir}}) \cdot \boldsymbol{\omega}^A
+          - 2(\mathbf{P}^{A,\text{vir}} \mathbf{S} \mathbf{P}^B) \cdot \mathbf{K}[\mathbf{P}^A \mathbf{S} \mathbf{P}^{B,\text{vir}}]
+
+    The :math:`S^\infty` exchange energy uses the full inverse overlap metric (Eq. 9):
+
+    .. math::
+
+        E^{(1)}_{\text{exch}} = -2\mathbf{P}^A \cdot \mathbf{K}^B
+          + 2\mathbf{T}^{AB} \cdot (\mathbf{h}^A + \mathbf{h}^B)
+          + 2\mathbf{T}^{AA} \cdot \mathbf{h}^B
+          + 2\mathbf{T}^{BB} \cdot \mathbf{h}^A
+          + 2\mathbf{T}^{BB} \cdot \mathbf{W}^{AB}
+          + 2\mathbf{T}^{AA} \cdot \mathbf{W}^{AB}
+          + 2\mathbf{T}^{BB} \cdot \mathbf{W}^{AA}
+          + 2\mathbf{T}^{AB} \cdot \mathbf{W}^{AB}
+
+    where the intermediates are (Eq. 8, 10):
+
+    .. math::
+
+        \boldsymbol{\omega}^X = 2\mathbf{J}^X + \mathbf{V}^X
+
+        \mathbf{h}^X = \mathbf{V}^X + 2\mathbf{J}^X - \mathbf{K}^X
+
+    Parameters
+    ----------
+    cache : dict
+        SAPT data cache from :func:`build_sapt_jk_cache`.
+    jk : core.JK
+        JK integral engine for computing Coulomb and exchange matrices.
+    do_print : bool, optional
+        Whether to print the result, by default True.
+
+    Returns
+    -------
+    dict
+        Dictionary with keys ``'Exch10(S^2)'`` and ``'Exch10'`` mapping to
+        the :math:`S^2` and :math:`S^\infty` exchange energies, respectively.
     """
 
     if do_print:
         core.print_out("\n  ==> E10 Exchange Einsums <== \n\n")
 
-    # Build potentials using psi4.core.Matrix operations
+    # Eq. 10: h^A = V^A + 2*J^A - K^A
     h_A = cache["V_A"].clone()
     ein.core.axpy(2.0, cache["J_A"].np, h_A.np)
     ein.core.axpy(-1.0, cache["K_A"].np, h_A.np)
 
+    # Eq. 10: h^B = V^B + 2*J^B - K^B
     h_B = cache["V_B"].clone()
     ein.core.axpy(2.0, cache["J_B"].np, h_B.np)
     ein.core.axpy(-1.0, cache["K_B"].np, h_B.np)
 
+    # Eq. 8: omega^A = V^A + 2*J^A
     w_A = cache["V_A"].clone()
     ein.core.axpy(2.0, cache["J_A"].np, w_A.np)
 
+    # Eq. 8: omega^B = V^B + 2*J^B
     w_B = cache["V_B"].clone()
     ein.core.axpy(2.0, cache["J_B"].np, w_B.np)
 
@@ -2579,7 +2947,7 @@ def exchange(cache, jk, do_print=True):
     JT_A, JT_AB, Jij = jk.J()
     KT_A, KT_AB, Kij = jk.K()
 
-    # Start S^2
+    # Eq. 6: E^(1)_exch(S^2) — three-term S^2 exchange
     Exch_s2 = 0.0
 
     # Save some intermediate tensors to avoid recomputation in the next steps
@@ -2594,7 +2962,7 @@ def exchange(cache, jk, do_print=True):
         core.print_out(print_sapt_var("Exch10(S^2) ", Exch_s2, short=True))
         core.print_out("\n")
 
-    # Start Sinf
+    # Eq. 9: E^(1)_exch(S^inf) — full inverse-overlap exchange
     Exch10 = 0.0
     Exch10 -= 2.0 * ein.core.dot(D_A.np, cache["K_B"].np)
     Exch10 += 2.0 * ein.core.dot(T_AA.np, h_B.np)
@@ -2614,17 +2982,68 @@ def exchange(cache, jk, do_print=True):
 
 
 def induction(
-    cache,
-    jk,
-    do_print=True,
-    maxiter=12,
-    conv=1.0e-8,
-    do_response=True,
-    Sinf=False,
-    sapt_jk_B=None,
-):
-    """
-    Compute Ind20 and Exch-Ind20 quantities from a SAPT cache and JK object.
+    cache: dict,
+    jk: core.JK,
+    do_print: bool = True,
+    maxiter: int = 12,
+    conv: float = 1.0e-8,
+    do_response: bool = True,
+    Sinf: bool = False,
+    sapt_jk_B: core.JK | None = None,
+) -> dict:
+    r"""Compute second-order induction and exchange-induction energies.
+
+    Evaluates the uncoupled and (optionally) coupled second-order induction
+    energy :math:`E^{(2)}_{\text{ind}}` and exchange-induction energy
+    :math:`E^{(2)}_{\text{exch-ind}}` from Xie et al. (2022).
+
+    The induction energy for monomer A polarized by B is (Eq. 14):
+
+    .. math::
+
+        E^{(2)}_{\text{ind}}(A \leftarrow B) = 2\mathbf{x}^A \cdot \tilde{\boldsymbol{\omega}}^B
+
+    where the induction potential :math:`\tilde{\omega}^B` is given by (Eq. 16):
+
+    .. math::
+
+        \tilde{\boldsymbol{\omega}}^A = (\mathbf{C}^{B,\text{occ}})^\dagger \boldsymbol{\omega}^A \mathbf{C}^{B,\text{vir}}
+
+    and the uncoupled response amplitudes are (Eq. 20):
+
+    .. math::
+
+        (x^A)^a_r = -(\tilde{\omega}^B)^a_r / (\epsilon_r - \epsilon_a)
+
+    For monomer B polarized by A, the formulas are analogous with A and B swapped.
+
+    Parameters
+    ----------
+    cache : dict
+        SAPT data cache from :func:`build_sapt_jk_cache`.
+    jk : core.JK
+        JK integral engine for Coulomb and exchange matrices.
+    do_print : bool, optional
+        Whether to print results, by default True.
+    maxiter : int, optional
+        Maximum CPSCF iterations for coupled induction, by default 12.
+    conv : float, optional
+        Convergence threshold for CPSCF solver, by default 1.0e-8.
+    do_response : bool, optional
+        Whether to compute coupled (CPSCF) induction, by default True.
+    Sinf : bool, optional
+        Whether to include :math:`S^\infty` exchange-induction, by default False.
+    sapt_jk_B : core.JK or None, optional
+        Separate JK object for monomer B, by default None (uses same as A).
+
+    Returns
+    -------
+    dict
+        Dictionary containing induction energies with keys such as
+        ``'Ind20,u (A<-B)'``, ``'Ind20,u (A->B)'``, ``'Ind20,u'``,
+        ``'Exch-Ind20,u (A<-B)'``, ``'Exch-Ind20,u (A->B)'``,
+        ``'Exch-Ind20,u'``, and coupled variants (``'Ind20,r'``, etc.)
+        when ``do_response=True``.
     """
 
     if do_print:
@@ -2680,7 +3099,7 @@ def induction(
     cache["J_P_A"] = J_P_A
     cache["J_P_B"] = J_P_B
 
-    # Exch-Ind Potential A
+    # Eq. 17: exchange-induction potential for A due to B
     EX_A = K_B.clone()
     EX_A.scale(-1.0)
     ein.core.axpy(-2.0, J_O.np, EX_A.np)
@@ -2739,7 +3158,7 @@ def induction(
     EX_A_MO = build_exch_ind_pot_AB(mapA)
     assert np.allclose(EX_A_MO, EX_A_MO_1), "EX_A_MO and EX_A_MO_1 do not match!"
 
-    # Exch-Ind Potential B
+    # Eq. 17: exchange-induction potential for B due to A
     EX_B = K_A.clone()
     EX_B.scale(-1.0)
     ein.core.axpy(-2.0, J_O.np, EX_B.np)
@@ -2782,11 +3201,12 @@ def induction(
     EX_B_MO = build_exch_ind_pot_BA(mapA)
     assert np.allclose(EX_B_MO, EX_B_MO_1), "EX_B_MO and EX_B_MO_1 do not match!"
 
-    # Build electrostatic potentials - $\omega_A$ = w_A, Eq. 8
+    # Eq. 8: omega^A = V^A + 2*J^A
     w_A = V_A.clone()
     w_A.name = "w_A"
     ein.core.axpy(2.0, J_A.np, w_A.np)
 
+    # Eq. 8: omega^B = V^B + 2*J^B
     w_B = V_B.clone()
     w_B.name = "w_B"
     ein.core.axpy(2.0, J_B.np, w_B.np)
@@ -2800,7 +3220,7 @@ def induction(
         ["T", "N", "N"],
     )
 
-    # Build electrostatic potentials - $\omega_A$ = w_A, Eq. 8
+    # Eq. 16: induction potential omega_B in MO basis of A
     w_B_MOA = build_ind_pot(
         {
             "V_B": V_B,
@@ -2810,7 +3230,7 @@ def induction(
         }
     )
     w_B_MOA.name = "w_B_MOA"
-    # Can re-use same function for w_A by swapping A and B labels
+    # Eq. 16: induction potential omega_A in MO basis of B
     w_A_MOB = build_ind_pot(
         {
             "V_B": V_A,
@@ -2845,7 +3265,7 @@ def induction(
         for a in range(unc_x_A_MOB.shape[1]):
             unc_x_A_MOB.np[r, a] /= eps_occ_B.np[r] - eps_vir_B.np[a]
 
-    # Compute uncoupled induction energies according to Eq. 14, 15
+    # Eq. 14: E^(2)_ind(A<-B) = 2 * x^A . omega_tilde^B
     unc_ind_ab = 2.0 * ein.core.dot(unc_x_B_MOA.np, w_B_MOA.np)
     unc_ind_ba = 2.0 * ein.core.dot(unc_x_A_MOB.np, w_A_MOB.np)
     unc_indexch_ab = 2.0 * ein.core.dot(unc_x_B_MOA.np, EX_A_MO.np)
@@ -3145,9 +3565,55 @@ def induction(
     return ret
 
 
-def _sapt_cpscf_solve(cache, jk, rhsA, rhsB, maxiter, conv, sapt_jk_B=None):
-    """
-    Solve the SAPT CPHF (or CPKS) equations.
+def _sapt_cpscf_solve(
+    cache: dict,
+    jk: core.JK,
+    rhsA: np.ndarray,
+    rhsB: np.ndarray,
+    maxiter: int,
+    conv: float,
+    sapt_jk_B: core.JK | None = None,
+) -> list:
+    r"""Solve the coupled-perturbed SCF (CPSCF) equations for SAPT induction.
+
+    Implements the coupled-perturbed Kohn-Sham (CPKS) or Hartree-Fock (CPHF)
+    equations using a conjugate-gradient solver. The CPSCF response
+    vectors :math:`\mathbf{x}^A` and :math:`\mathbf{x}^B` satisfy (Eq. 21-26
+    of Xie et al. 2022):
+
+    .. math::
+
+        \mathbf{H}^{(1)} \mathbf{x}^A = \mathbf{\omega}^{B}
+
+    and
+    .. math::
+
+        \mathbf{H}^{(1)} \mathbf{x}^B = \mathbf{\omega}^{A}
+
+    where :math:`\mathbf{H}^{(1)}` includes exchange-correlation
+    and exact exchange contributions.
+
+    Parameters
+    ----------
+    cache : dict
+        SAPT data cache containing wavefunctions and orbital energies.
+    jk : core.JK
+        JK integral engine for monomer A.
+    rhsA : np.ndarray
+        Right-hand side vector for monomer A response (:math:`-\tilde{\omega}^B`).
+    rhsB : np.ndarray
+        Right-hand side vector for monomer B response (:math:`-\tilde{\omega}^A`).
+    maxiter : int
+        Maximum number of CPSCF iterations.
+    conv : float
+        Convergence threshold (relative residual norm).
+    sapt_jk_B : core.JK or None, optional
+        Separate JK object for monomer B, by default None (uses same as A).
+
+    Returns
+    -------
+    list
+        Converged response vectors ``[x_A, x_B]`` as numpy arrays.
     """
 
     cache["wfn_A"].set_jk(jk)
