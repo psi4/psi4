@@ -40,7 +40,7 @@ units angstrom
 
 @uusing("pandas")
 def test_fsaptdft_timer():
-    """ """
+    """Ensure SAPT(DFT) timer CSV output contains expected timing columns."""
     import pandas as pd
 
     mol = psi4.geometry(_sapt_testing_mols["neutral_water_dimer"])
@@ -76,8 +76,7 @@ def test_fsaptdft_timer():
 @pytest.mark.fsapt
 @pytest.mark.saptdft
 def test_fsapthf_disp0_fisapt0_psivars():
-    """ """
-    import pandas as pd
+    """Validate HF SAPT(DFT)+FISAPT energies and fragment terms vs references."""
 
     mol = psi4.geometry(
         """
@@ -210,7 +209,7 @@ no_com
         ],
     }
 
-    ref_df = pd.DataFrame(data)
+    ref_data = data
     keys = ["Enuc", "Eelst", "Eexch", "Eind", "Edisp", "Etot"]
     Eref = {
         "Edisp": -0.0007912165332931369,
@@ -250,7 +249,7 @@ no_com
     pp(Epsi)
     for key in keys:
         compare_values(Eref[key], Epsi[key], 5, key)
-    data = psi4.fsapt_analysis(
+    fsapt_data = psi4.fsapt_analysis(
         source=wfn,
         fragments_a={
             "Methyl1_A": [1, 2, 7, 8],
@@ -263,20 +262,15 @@ no_com
         links5050=True,
         print_output=False,
     )
-    df = pd.DataFrame(data)
-    print("COMPUTED DF")
-    print(df[["Frag1", "Elst", "IndAB", "IndBA", "Disp", "Total"]])
-    # pp({k: v.tolist() for k, v in dict(df).items()})
-
-    print("REF")
-    print(ref_df[["Frag1", "Elst", "IndAB", "IndBA", "Disp", "Total"]])
+    for label_key in ["Frag1", "Frag2"]:
+        assert list(fsapt_data[label_key]) == ref_data[label_key]
     for col in ["Elst", "Exch", "IndAB", "IndBA", "Disp", "EDisp", "Total"]:
-        for i in range(len(ref_df)):
+        for i in range(len(ref_data[col])):
             compare_values(
-                ref_df[col].iloc[i],
-                df[col].iloc[i],
+                ref_data[col][i],
+                fsapt_data[col][i],
                 4,
-                f"{ref_df['Frag1'].iloc[i]} {ref_df['Frag2'].iloc[i]} {col}",
+                f"{ref_data['Frag1'][i]} {ref_data['Frag2'][i]} {col}",
             )
 
 
@@ -285,7 +279,7 @@ no_com
 @uusing("pandas")
 @pytest.mark.saptdft
 def test_fsaptdftd4_psivars():
-    """ """
+    """Validate SAPT(DFT)-D4(s) scalar variables and FSAPT terms vs references."""
     import pandas as pd
 
     mol = psi4.geometry(
@@ -377,7 +371,7 @@ no_com
     print("COMPUTED DF")
     print(df)
     pp({k: v.tolist() for k, v in dict(df).items()})
-    data = {
+    ref_data = {
         "Disp": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         "EDisp": [
             -0.01301450872859415,
@@ -491,7 +485,7 @@ no_com
         ],
     }
 
-    ref_df = pd.DataFrame(data)
+    ref_df = pd.DataFrame(ref_data)
     print("REF")
     print(ref_df)
 
@@ -508,7 +502,7 @@ no_com
 @pytest.mark.fsapt
 @pytest.mark.saptdft
 def test_fsaptdftd4_psivars_pbe0_frozen_core():
-    import pandas as pd
+    """Check PBE0 SAPT(DFT)-D4(i) fragment indices and per-fragment energies."""
 
     mol = psi4.geometry(
         """
@@ -549,7 +543,6 @@ no_com
 """
     )
     print("FSAPT(PBE0)-D4(I)")
-    functional = "HF"
     psi4.set_options(
         {
             "basis": "sto-3g",
@@ -565,7 +558,7 @@ no_com
         }
     )
     _, wfn = psi4.energy("sapt(dft)-d4(i)", molecule=mol, return_wfn=True)
-    data = psi4.fsapt_analysis(
+    fsapt_data = psi4.fsapt_analysis(
         # NOTE: 1-indexed for fragments_a and fragments_b
         source=wfn,
         fragments_a={
@@ -579,11 +572,9 @@ no_com
         links5050=True,
         print_output=False,
     )
-    df = pd.DataFrame(data)
-    print(df)
     mol_qcel_dict = mol.to_schema(dtype=2)
-    frag1_indices = df["Frag1_indices"].tolist()
-    frag2_indices = df["Frag2_indices"].tolist()
+    frag1_indices = fsapt_data["Frag1_indices"]
+    frag2_indices = fsapt_data["Frag2_indices"]
     # Using molecule object for all test to ensure right counts from each
     # fragment are achieved. Note +1 for 1-indexing in fsapt_analysis
     all_A = [i + 1 for i in mol_qcel_dict["fragments"][0]]
@@ -626,10 +617,6 @@ no_com
         assert sorted_frag == e, f"Frag2 indices do not match for fragment {
             i
         }: expected {e}, got {sorted_frag}"
-    df = pd.DataFrame(data)
-    print("COMPUTED DF")
-    print(df)
-    pp({k: v.tolist() for k, v in dict(df).items()})
     data = {
         "Frag1": [
             "Methyl1_A",
@@ -732,26 +719,25 @@ no_com
         "EDisp",
         "Total",
     ]
-    df = df[cols]
-    ref_df = pd.DataFrame(data)
-    print("REF")
-    print(ref_df)
+    ref_data = data
+
+    assert list(fsapt_data["Frag1"]) == ref_data["Frag1"]
+    assert list(fsapt_data["Frag2"]) == ref_data["Frag2"]
 
     for col in cols[2:]:
-        for i in range(len(ref_df)):
-            print(col, ref_df[col].iloc[i], df[col].iloc[i])
+        for i in range(len(ref_data[col])):
             compare_values(
-                ref_df[col].iloc[i],
-                df[col].iloc[i],
+                ref_data[col][i],
+                fsapt_data[col][i],
                 4,
-                f"{ref_df['Frag1'].iloc[i]} {ref_df['Frag2'].iloc[i]} {col}",
+                f"{ref_data['Frag1'][i]} {ref_data['Frag2'][i]} {col}",
             )
 
 
 @pytest.mark.saptdft
 @pytest.mark.fsapt
 def test_fsaptdft_fisapt0():
-    """ """
+    """Confirm fisapt0 and HF SAPT(DFT) produce matching SAPT energy components."""
     mol = psi4.geometry(
         """
 0 1
@@ -866,8 +852,7 @@ no_com
 @pytest.mark.saptdft
 @pytest.mark.fsapt
 def test_fsaptdft_fisapt0_d4():
-    """ """
-    import pandas as pd
+    """Compare fisapt0-d4 and SAPT(DFT)-D4(i)/FISAPT fragment decompositions."""
 
     mol = psi4.geometry(
         """
@@ -924,7 +909,7 @@ no_com
     with open("tmp_fisapt/fB.dat", "w") as fB:  # TEST
         fB.write("Peptide_B  9 10 11 16 26\n")  # TEST
         fB.write("T-Butyl_B  12 13 14 15 17 18 19 20 21 22 23 24 25")  # TEST
-    data = psi4.fsapt_analysis(
+    psi4.fsapt_analysis(
         source=wfn,
         fragments_a={
             "Methyl1_A": [1, 2, 7, 8],
@@ -955,24 +940,6 @@ no_com
     for pdb_file in pdb_files:
         if os.path.exists(pdb_file):
             os.remove(pdb_file)
-    df = pd.DataFrame(data)
-    print("COMPUTED DF FISAPT0")
-    print(
-        df[
-            [
-                "Frag1",
-                "Frag2",
-                "ClosestContact",
-                "Elst",
-                "IndAB",
-                "IndBA",
-                "Disp",
-                "EDisp",
-                "Total",
-            ]
-        ]
-    )
-
     # Collect FISAPT0 energies
     fisapt0_energies = {
         "Enuc": mol.nuclear_repulsion_energy(),
@@ -1017,7 +984,7 @@ no_com
     }
     print("SAPT(DFT) with FISAPT energies:")
     pp(saptdft_energies)
-    data = psi4.fsapt_analysis(
+    saptdft_fsapt_data = psi4.fsapt_analysis(
         source=wfn,
         fragments_a={
             "Methyl1_A": [1, 2, 7, 8],
@@ -1035,26 +1002,6 @@ no_com
     for pdb_file in pdb_files:
         if os.path.exists(pdb_file):
             os.remove(pdb_file)
-
-    df = pd.DataFrame(data)
-    print("COMPUTED DF")
-    print(
-        df[
-            [
-                "Frag1",
-                "Frag2",
-                "ClosestContact",
-                "Elst",
-                "IndAB",
-                "IndBA",
-                "Disp",
-                "EDisp",
-                "Total",
-            ]
-        ]
-    )
-    saptdft_energies = {k: v.tolist() for k, v in dict(df).items()}
-    pp(saptdft_energies)
     ref_data = {
         "Disp": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         "EDisp": [
@@ -1129,9 +1076,9 @@ no_com
         for i in range(len(ref_data[key])):
             compare_values(
                 ref_data[key][i],
-                saptdft_energies[key][i],
+                saptdft_fsapt_data[key][i],
                 6,
-                f"{df['Frag1'].tolist()[i]} {df['Frag2'].tolist()[i]} {key}",
+                f"{saptdft_fsapt_data['Frag1'][i]} {saptdft_fsapt_data['Frag2'][i]} {key}",
             )
 
 
