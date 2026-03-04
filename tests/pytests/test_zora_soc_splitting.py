@@ -4,6 +4,7 @@ This file tests the ZORA spin-orbit coupling 2p and 3d orbital energy splitting.
 import numpy as np
 import pytest
 import psi4
+from addons import uusing
 
 pytestmark = [pytest.mark.api, pytest.mark.quick]
 
@@ -48,6 +49,7 @@ def mo_energies():
 
     return (mo_e_2p, mo_e_3d, mo_e_2p_so, mo_e_3d_so)
 
+@uusing("einsums")
 def test_2p_splitting(mo_energies):
     """
     Demonstrates the lack of 2p orbital splitting without SOC and shows splitting with SOC.
@@ -56,6 +58,7 @@ def test_2p_splitting(mo_energies):
     assert np.allclose(mo_e_2p, mo_e_2p[0])
     assert not np.allclose(mo_e_2p_so, mo_e_2p_so[0])
 
+@uusing("einsums")
 def test_3d_splitting(mo_energies):
     """
     Demonstrates the lack of 3d orbital splitting without SOC and shows splitting with SOC.
@@ -64,6 +67,7 @@ def test_3d_splitting(mo_energies):
     assert np.allclose(mo_e_3d, mo_e_3d[0])
     assert not np.allclose(mo_e_3d_so, mo_e_3d_so[0])
 
+@uusing("einsums")
 def test_splitting(mo_energies):
     _, _, mo_e_2p_so, mo_e_3d_so = mo_energies
     assert np.allclose(mo_e_2p_so[1], mo_e_2p_so[0])  # 2p 1/2
