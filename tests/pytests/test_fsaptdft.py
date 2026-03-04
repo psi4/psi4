@@ -11,8 +11,14 @@ import os
 hartree_to_kcalmol = constants.conversion_factor("hartree", "kcal/mol")
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
-_sapt_testing_mols = {
-    "neutral_water_dimer": """
+
+@uusing("pandas")
+def test_fsaptdft_timer():
+    """Ensure SAPT(DFT) timer CSV output contains expected timing columns."""
+    import pandas as pd
+
+    mol = psi4.geometry(
+        """
 0 1
 8   -0.702196054   -0.056060256   0.009942262
 1   -1.022193224   0.846775782   -0.011488714
@@ -23,27 +29,8 @@ _sapt_testing_mols = {
 1   2.645502399   -0.412039965   0.766632411
 1   2.641145101   -0.449872874   -0.744894473
 units angstrom
-""",
-    "hydroxide": """
--1 1
-8   -0.702196054   -0.056060256   0.009942262
-1   -1.022193224   0.846775782   -0.011488714
---
-0 1
-8   2.268880784   0.026340101   0.000508029
-1   2.645502399   -0.412039965   0.766632411
-1   2.641145101   -0.449872874   -0.744894473
-units angstrom
-""",
-}
-
-
-@uusing("pandas")
-def test_fsaptdft_timer():
-    """Ensure SAPT(DFT) timer CSV output contains expected timing columns."""
-    import pandas as pd
-
-    mol = psi4.geometry(_sapt_testing_mols["neutral_water_dimer"])
+            """
+    )
     np.set_printoptions(precision=10, suppress=True)
     psi4.set_options(
         {
@@ -76,7 +63,12 @@ def test_fsaptdft_timer():
 @pytest.mark.fsapt
 @pytest.mark.saptdft
 def test_fsapthf_disp0_fisapt0_psivars():
-    """Validate HF SAPT(DFT)+FISAPT energies and fragment terms vs references."""
+    """
+    Validate HF SAPT(DFT)+FISAPT energies and fragment terms vs references.
+
+    NOTE: test use this larger molecular system for differently sized monA and
+    monB fragments to ensure code operates correctly.
+    """
 
     mol = psi4.geometry(
         """
@@ -1078,7 +1070,9 @@ no_com
                 ref_data[key][i],
                 saptdft_fsapt_data[key][i],
                 6,
-                f"{saptdft_fsapt_data['Frag1'][i]} {saptdft_fsapt_data['Frag2'][i]} {key}",
+                f"{saptdft_fsapt_data['Frag1'][i]} {saptdft_fsapt_data['Frag2'][i]} {
+                    key
+                }",
             )
 
 
