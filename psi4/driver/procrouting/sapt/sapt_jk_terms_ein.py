@@ -120,8 +120,6 @@ def localization(
 def flocalization(
     cache: dict,
     dimer_wfn: core.Wavefunction,
-    wfn_A: core.Wavefunction,
-    wfn_B: core.Wavefunction,
     do_print: bool = True,
 ) -> None:
     r"""Localize monomer occupied orbitals separately for F-SAPT partitioning.
