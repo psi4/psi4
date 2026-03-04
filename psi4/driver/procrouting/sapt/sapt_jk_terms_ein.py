@@ -1322,6 +1322,31 @@ def build_exch_ind_pot_AB(vars: dict) -> core.Matrix:
     Eq. 17 of Xie et al. (2022), involving overlap-weighted density matrix
     products and Coulomb/exchange contractions.
 
+    The :math:`S^2` exchange-induction energy for the A←B direction (Eq. 17):
+
+    .. math::
+
+        E^{(2)}_{\text{exch-ind}}(S^2)(A \leftarrow B)
+          = 2\mathbf{x}^A \cdot \bigl(
+            (\mathbf{C}^{A,\text{occ}})^\dagger
+            \bigl[
+              -\mathbf{K}^B
+              - 2\mathbf{J}[\mathbf{O}]
+              + \mathbf{K}[\mathbf{O}]
+              + 2\mathbf{J}[\mathbf{P}^B \mathbf{S} \mathbf{O}]
+              + \mathbf{S} \mathbf{P}^B
+               \times (-\mathbf{h}^A
+                 + \mathbf{S} \mathbf{P}^A \boldsymbol{\omega}^B
+                 + \boldsymbol{\omega}^A \mathbf{P}^B \mathbf{S}
+                 - \mathbf{K}[\mathbf{O}]^T)
+              + (-\mathbf{h}^B
+                 + \boldsymbol{\omega}^B \mathbf{P}^A \mathbf{S}
+                 - \mathbf{K}[\mathbf{O}])
+                \mathbf{P}^B \mathbf{S}
+            \bigr]
+            \mathbf{C}^{A,\text{vir}}
+          \bigr)
+
     Parameters
     ----------
     vars : dict
