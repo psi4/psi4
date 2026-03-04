@@ -162,15 +162,6 @@ def matrix_scale(A, alpha):
 
 def localization(cache, dimer_wfn, wfn_A, wfn_B, do_print=True):
     core.print_out("\n  ==> Localizing Orbitals 1 <== \n\n")
-    # localization_scheme = core.get_option("SAPT", "SAPT_DFT_LOCAL_ORBITALS")
-    # loc = core.Localizer.build(localization_scheme, wfn_A.basisset(), wfn_A.Ca_subset("AO", "OCC"))
-    # loc.localize()
-    # C_lmo_A = loc.L
-    # loc = core.Localizer.build(localization_scheme, wfn_B.basisset(), wfn_B.Ca_subset("AO", "OCC"))
-    # loc.localize()
-    # C_lmo_B = loc.L
-    # IBOLocalizer
-    
     # Extract monomers to compute frozen core counts
     mol = dimer_wfn.molecule()
     molA = mol.extract_subsets([1], [])
@@ -179,7 +170,6 @@ def localization(cache, dimer_wfn, wfn_A, wfn_B, do_print=True):
     nfocc0B = dimer_wfn.basisset().n_frozen_core(core.get_option("GLOBALS", "FREEZE_CORE"), molB)
     nfocc_dimer = nfocc0A + nfocc0B
     
-    N_eps_focc = cache["eps_focc"].dimpi()[0]
     N_eps_occ = cache["eps_occ"].dimpi()[0]
     Focc = core.Matrix("Focc", N_eps_occ, N_eps_occ)
     for i in range(N_eps_occ):
@@ -219,7 +209,6 @@ def localization(cache, dimer_wfn, wfn_A, wfn_B, do_print=True):
     Laocc = core.Matrix("Laocc", nn, na)
     Laocc.np[:, :] = ret['L'].np[:, nf:]
     cache['Laocc'] = Laocc
-    
     return
 
 

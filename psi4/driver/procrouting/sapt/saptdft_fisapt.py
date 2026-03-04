@@ -36,7 +36,6 @@ from ...p4util import solvers
 from ...p4util.exceptions import *
 from .sapt_util import print_sapt_var
 from pprint import pprint as pp
-import einsums as ein
 
 # Need to import FISAPT to set fdrop, plot, save_fsapt_variables methods
 from . import fisapt_proc
@@ -167,6 +166,33 @@ def setup_fisapt_object(
         "ZC",
         "ZC_orig",
     ]
+    # When not using einsums, we are using localization from the FISAPT object
+    if "ZA" not in cache:
+        mol = wfn.molecule()
+        natoms = mol.natom()
+        fragments = mol.get_fragments()
+        indA = np.arange(*fragments[0], dtype=int)
+        indB = np.arange(*fragments[1], dtype=int)
+        indC = np.arange(*fragments[2], dtype=int) if len(fragments) == 3 else np.array([], dtype=int)
+        # --- Z per fragment originals ---
+        ZA = core.Vector(natoms)
+        ZB = core.Vector(natoms)
+        ZC = core.Vector(natoms)
+        ZA.np[:] = 0.0
+        ZB.np[:] = 0.0
+        ZC.np[:] = 0.0
+
+        Z_all = np.array([mol.Z(i) for i in range(natoms)], dtype=float)
+        ZA.np[indA] = Z_all[indA]
+        ZB.np[indB] = Z_all[indB]
+        if indC.size:
+            ZC.np[indC] = Z_all[indC]
+        cache["ZA"] = ZA
+        cache["ZB"] = ZB
+        cache["ZC"] = ZC
+        cache["ZA_orig"] = core.Vector.from_array(ZA.np.copy())
+        cache["ZB_orig"] = core.Vector.from_array(ZB.np.copy())
+        cache["ZC_orig"] = core.Vector.from_array(ZC.np.copy())
     for key in other_vector_keys:
         vector_cache[key] = to_vector(cache[key])
 

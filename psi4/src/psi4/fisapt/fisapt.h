@@ -145,14 +145,6 @@ class FISAPT {
     void find();
     /// Dispersion
     void fdisp();
-    /// Electrostatics - einsums
-    void felst_einsums();
-    /// Exchange - einsums
-    void fexch_einsums();
-    /// Induction - einsums
-    void find_einsums();
-    /// Dispersion - einsums
-    void fdisp_einsums();
     /// Output
     //  fdrop() moved py-side
 
