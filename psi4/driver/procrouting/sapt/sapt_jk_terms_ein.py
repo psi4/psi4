@@ -760,7 +760,7 @@ def electrostatics(cache: dict, do_print: bool = True) -> tuple[dict, float]:
     r"""Compute the first-order electrostatic interaction energy :math:`E^{(1)}_{\text{elst}}`.
 
     Evaluates the Coulombic interaction between unperturbed monomer charge
-    distributions (Eq. 4 of Xie et al.):
+    distributions (Eq. 4 of Xie et al. 2022):
 
     .. math::
 

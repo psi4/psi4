@@ -312,11 +312,10 @@ def df_mp2_sapt_dispersion(dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, ca
     core.set_local_option("SAPT", "SAPT0_E20DISP", True)
     core.set_local_option("SAPT", "SAPT_QUIET", True)
 
-    if core.get_option('SCF', 'REFERENCE') == 'RHF':
-        core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
-        core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
-
-    core.IO.set_default_namespace('dimer')
+    # if core.get_option('SCF', 'REFERENCE') == 'RHF':
+    #     core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+    #     core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
+    # core.IO.set_default_namespace('dimer')
 
     dimer_wfn.set_basisset("DF_BASIS_SAPT", aux_basis)
     dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)

@@ -286,14 +286,13 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
     core.print_out("         " + "SAPT(DFT) Procedure".center(58) + "\n")
     core.print_out("\n")
     core.print_out(
-        "         " + "by Daniel G. A. Smith and Austin M. Wallace".center(58) + "\n"
+        "         " + "by Daniel G. A. Smith, Yi Xie, and Austin M. Wallace".center(58) + "\n"
     )
     core.print_out(
         "         ---------------------------------------------------------\n"
     )
     core.print_out("\n")
 
-    # core.print_out("  !!!  WARNING:  SAPT(DFT) capability is in beta. Please use with caution. !!!\n\n")
     core.print_out(
         "Warning! The default value of SAPT_DFT_EXCH_DISP_SCALE_SCHEME has changed from DISP to FIXED. Please be careful comparing results with earlier versions. \n\n"
     )
@@ -516,7 +515,6 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
 
             # Electrostatics
             core.timer_on("SAPT(HF):elst")
-            # elst, extern_extern_IE = sapt_jk_terms.electrostatics(hf_cache, True)
             elst, extern_extern_IE = jk_terms.electrostatics(hf_cache_ein, True)
             hf_data["extern_extern_IE"] = extern_extern_IE
             hf_data.update(elst)
@@ -524,21 +522,12 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
 
             # Exchange
             core.timer_on("SAPT(HF):exch")
-            # exch = sapt_jk_terms.exchange(hf_cache, sapt_jk, True)
             exch = jk_terms.exchange(hf_cache_ein, sapt_jk, True)
             hf_data.update(exch)
             core.timer_off("SAPT(HF):exch")
 
             # Induction
             core.timer_on("SAPT(HF):ind")
-            # ind = sapt_jk_terms.induction(
-            #     hf_cache,
-            #     sapt_jk,
-            #     True,
-            #     maxiter=core.get_option("SAPT", "MAXITER"),
-            #     conv=core.get_option("SAPT", "CPHF_R_CONVERGENCE"),
-            #     Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"),
-            # )
             ind = jk_terms.induction(
                 hf_cache_ein,
                 sapt_jk,
@@ -581,8 +570,6 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
     # If we did not compute HF wavefunction, we still need orbital coefficients
     # for IBOLocalizer2
     elif hf_wfn_dimer is None and core.get_option("SAPT", "SAPT_DFT_DO_FSAPT"):
-        # NOTE: this might need to be with functional and not HF when using
-        # DFT... Currently trying to match SAPT(HF), but remember this later!
         dimer_wfn = scf_helper(
             "SCF",
             molecule=sapt_dimer,
@@ -1323,7 +1310,6 @@ def sapt_dft(
             x_alpha = wfn_B.functional().x_alpha()
             if not is_hybrid:
                 x_alpha = 0.0
-            # fdds_disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache, is_hybrid, x_alpha)
             fdds_disp = sapt_mp2_terms_ein.df_fdds_dispersion(
                 primary_basis, aux_basis, cache, is_hybrid, x_alpha
             )
@@ -1399,13 +1385,14 @@ def sapt_dft(
 
     # Now do F-SAPT on dispersion if requested
     if do_fsapt and fsapt_type == "SAPTDFT" and use_einsums:
-        # Because dispersion is defined differently between SAPT0
-        # (E_disp20 = -4\sigma_{abrs} |(ar|bs)|^2 / (epsilon_a + epsilon_b))
-        # and SAPT(DFT) with FDDS dispersion, we will only implement F-SAPT
-        # for the SAPT0 case. Practically speaking, -D4 dispersion is preferred
-        # for SAPT(DFT) due to computational costs, so that is the only supported
-        # dispersion method for F-SAPT in SAPT(DFT). Hence, FSAPT_DISP_AB will be
-        # set to zero if SAPT(DFT) is requested with FDDS dispersion with DO_FSAPT.
+        # Because dispersion is defined differently between SAPT0 (E_disp20 =
+        # -4\sigma_{abrs} |(ar|bs)|^2 / (epsilon_a + epsilon_b)) and SAPT(DFT)
+        # with FDDS dispersion, we will only implement F-SAPT for the SAPT0
+        # case. Practically speaking, -D3/-D4 dispersion is preferred for
+        # SAPT(DFT) due to computational costs, so those are the only currently
+        # supported dispersion method for F-SAPT in SAPT(DFT). Hence,
+        # FSAPT_DISP_AB will be set to zero if SAPT(DFT) is requested with FDDS
+        # dispersion with DO_FSAPT.
 
         if do_disp:
             core.timer_on("SAPT(DFT): F-SAPT Dispersion")
@@ -1435,7 +1422,6 @@ def sapt_dft(
 
     sapt_dft_D4_IE = core.get_option("SAPT", "SAPT_DFT_D4_IE")
     sapt_dft_D3_IE = core.get_option("SAPT", "SAPT_DFT_D3_IE")
-    # d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
     if do_fsapt and (
         sapt_dft_D4_IE or sapt_dft_D3_IE
     ):
