@@ -1292,7 +1292,7 @@ class Molecule(LibmintsMolecule):
         """
         raise RuntimeError("Using `Molecule.run_dftd3` instead of `Molecule.run_sdftd3` is obsolete as of 1.10. Note that parameters do not translate directly -- see docstring. Also aliases are not available for dashlvl. The new run_sdftd3 is analogous to run_dftd4. Alternately, you could access these routines by running `qcengine.compute(atomicinput, 's-dftd3')` directly.")
 
-    def run_sdftd3(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1, property: bool = False):
+    def run_sdftd3(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
         """Compute dispersion correction via Grimme's new simple-dftd3 program, not the classic DFTD3 executable.
 
         Parameters
@@ -1318,8 +1318,6 @@ class Molecule(LibmintsMolecule):
             efficient. Influences return values, see below.
         verbose
             Amount of printing.
-        property
-            Whether to return DFTD3 extra properties.
 
         Returns
         -------
@@ -1363,13 +1361,8 @@ class Molecule(LibmintsMolecule):
             resinp['keywords']['level_hint'] = dashlvl
         if dashparam:
             resinp['keywords']['params_tweaks'] = dashparam
-        if property:
-            resinp['keywords']['property'] = True
-            resinp['keywords']['pair_resolved'] = True
         jobrec = qcng.compute(resinp, 's-dftd3', raise_error=True)
         jobrec = jobrec.dict()
-        # from pprint import pprint as pp
-        # pp(jobrec)
 
         # hack as not checking type GRAD
         for k, qca in jobrec['extras']['qcvars'].items():
@@ -1384,18 +1377,6 @@ class Molecule(LibmintsMolecule):
             for k, qca in jobrec['extras']['qcvars'].items():
                 if not isinstance(qca, (list, np.ndarray)):
                     core.set_variable(k, float(qca))
-        if property:
-            from psi4 import core
-            d3pairs = np.array(jobrec['extras']['dftd3']['additive pairwise energy'])
-            core.set_variable('DFTD3 ADDITIVE PAIRWISE ENERGY', d3pairs)
-        if verbose:
-            from psi4 import core
-            params = jobrec['extras']['info']['dashparams'] # Dict
-            core.print_out(f"\n  DFT-D3 Parameters: {jobrec['extras']['info']['dashparams_citation']}\n")
-            for k, v in params.items():
-                core.print_out(f"    {k}: {v}\n")
-            # Disperion Energy
-            core.print_out(f"  DFT-D3 Dispersion Correction Energy: {jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']} Eh\n")
 
         if derint == -1:
             return (float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']),
@@ -1497,12 +1478,6 @@ class Molecule(LibmintsMolecule):
                     core.set_variable(k, float(qca))
         if property:
             core.set_variable('DFTD4 C6 COEFFICIENTS', jobrec['extras']['dftd4']['c6 coefficients'])
-            # NOTE: DFTD4 doesn't provide polarizabilities in the qcvars
-            # anymore? Investigate before accepting these changes...
-            # from pprint import pprint as pp
-            # pp(jobrec['extras']['dftd4'])
-            # Only have c6 coefficients and coordination numbers now...
-            # core.set_variable('DFTD4 ATOMIC POLARIZIBILITIES', jobrec['extras']['dftd4']['polarizibilities'].reshape(-1, 1))
 
         if derint == -1:
             return (float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']),
