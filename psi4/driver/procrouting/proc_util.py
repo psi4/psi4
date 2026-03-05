@@ -336,6 +336,7 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
         core.print_out("\n  Warning: Use the `Empirical_Disp.dat` file only with `fsapt.py` from Psi4 v1.7.0 or later.\n")
         pw_disp.name = 'Empirical_Disp'
         filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
+        core.set_variable("FSAPT_" + pw_disp.name.upper(), pw_disp)
         fisapt_proc._drop(pw_disp, filepath)
 
     return dimer_wfn
