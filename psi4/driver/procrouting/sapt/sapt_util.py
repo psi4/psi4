@@ -110,6 +110,7 @@ def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
         ret += print_sapt_var("  Exch-Disp20", data["Exch-Disp20,u"]) + "\n"
         ret += "\n"
         core.set_variable("SAPT DISP ENERGY", disp)
+        dimer_wfn.set_variable("SAPT DISP ENERGY", disp)
 
         # Total energy
         total = data["Elst10,r"] + data["Exch10"] + ind + disp

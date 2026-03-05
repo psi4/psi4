@@ -49,7 +49,7 @@ PsiException::PsiException(std::string msg, const char *_file, int _line) noexce
 // Disable stack trace printing on Windows
 #ifndef _MSC_VER
 
-    constexpr size_t stacksize = 20;
+    constexpr size_t stacksize = 5;
     std::array<void *, stacksize> Stack;
     char **strings;
     int size = backtrace(Stack.data(), stacksize);

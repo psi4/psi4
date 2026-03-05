@@ -66,17 +66,21 @@ namespace psi {
 ** \param frozen_docc_in = frozen occupied orbitals per irrep
 ** \param frozen_uocc_in = frozen unoccupied orbitals per irrep
 ** \param order          = reordering array (Pitzer->QT order)
-** \param nirreps        = number of irreducible representations
 **
 ** \ingroup QT
 */
-PSI_API void reorder_qt(const int *docc_in, const int *socc_in, int *frozen_docc_in, int *frozen_uocc_in, int *order,
-                        int *orbs_per_irrep, int nirreps) {
+PSI_API void reorder_qt(Dimension const& docc_in, Dimension const& socc_in, Dimension const& frozen_docc_in,
+                        Dimension const& frozen_uocc_in, int *order, Dimension const& orbs_per_irrep) {
     int cnt = 0, irrep, point, tmpi;
     int *used, *offset;
     int *docc, *socc, *frozen_docc, *frozen_uocc;
     int *uocc;
 
+    auto nirreps = docc_in.n();
+    if (!(nirreps == socc_in.n() && nirreps == frozen_docc_in.n() &&
+        nirreps == frozen_uocc_in.n() && nirreps == orbs_per_irrep.n())) {
+        throw PSIEXCEPTION("Inconsistent number of irreps in Dimensions passed to reorder_qt.");
+    }
     used = init_int_array(nirreps);
     offset = init_int_array(nirreps);
 
@@ -189,16 +193,21 @@ PSI_API void reorder_qt(const int *docc_in, const int *socc_in, int *frozen_docc
 ** \param frozen_uocc = frozen unoccupied orbitals per irrep
 ** \param order_alpha = reordering array for alpha (Pitzer->QT order)
 ** \param order_beta  = reordering array for beta  (Pitzer->QT order)
-** \param nirreps     = number of irreducible representations
 **
 ** \ingroup QT
 */
-PSI_API void reorder_qt_uhf(const int *docc, const int *socc, int *frozen_docc, int *frozen_uocc, int *order_alpha, int *order_beta,
-                            int *orbspi, int nirreps) {
+PSI_API void reorder_qt_uhf(Dimension const& docc, Dimension const& socc, Dimension const& frozen_docc,
+                            Dimension const& frozen_uocc, int *order_alpha, int *order_beta, Dimension const& orbspi) {
     int p, nmo;
     int cnt_alpha, cnt_beta, irrep, tmpi;
     int *offset, this_offset;
     int *uocc;
+
+    auto nirreps = docc.n();
+    if (!(nirreps == socc.n() && nirreps == frozen_docc.n() &&
+        nirreps == frozen_uocc.n() && nirreps == orbspi.n())) {
+        throw PSIEXCEPTION("Inconsistent number of irreps in Dimensions passed to reorder_qt_uhf.");
+    }
 
     Dimension nalphapi(nirreps, "Number of alpha electrons per irrep");
     Dimension nbetapi(nirreps, "Number of beta electrons per irrep");

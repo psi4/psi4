@@ -1189,7 +1189,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("SAPT_DFT_GRAC_BASIS", "AUTO");
         /*- Compute the Delta-HF correction? -*/
         options.add_bool("SAPT_DFT_DO_DHF", true);
-        /*- Enables SAPT(DFT) to be run with experimental PyEinsums !expert -*/
+        /*- Enables SAPT(DFT) to be run with PyEinsums if available -*/
         options.add_bool("SAPT_DFT_USE_EINSUMS", true);
         /*- Enables the hybrid xc kernel in dispersion? !expert -*/
         options.add_bool("SAPT_DFT_DO_HYBRID", true);
@@ -1207,7 +1207,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
          SAPT0-D3 and SAPT0-D4; however, SAPT(DFT)-D4 performs better with
          respect to high-level SAPT dispersion when computed intermolecularly
          as SAPT(DFT)-D4(I). For SAPT(DFT)-D3, either -D3(I) or -D3(S) can
-         reliably be used.
+         reliably be used. This will be set by SAPT(DFT) based on name of the method.
           !expert -*/
         options.add_str("SAPT_DFT_D_TYPE", "INTERMOLECULAR", "INTERMOLECULAR SUPERMOLECULAR GD3_SUPERMOLECULAR GD4_SUPERMOLECULAR");
         /*- Scheme for approximating exchange-dispersion for SAPT-DFT.

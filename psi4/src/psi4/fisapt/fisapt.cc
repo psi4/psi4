@@ -557,13 +557,6 @@ void FISAPT::kinetic() {
     Tint->compute(matrices_["T"]);
 }
 
-// void sapt_test(){
-//     printf("Hello from sapt_test\n");
-// }
-// void sapt_test(){
-//     printf("Hello from sapt_test\n");
-// }
-
 
 void FISAPT::nuclear() {
     outfile->Printf("  ==> Nuclear Integrals <==\n\n");
@@ -2275,7 +2268,7 @@ void FISAPT::elst() {
 
     // External potential interactions
     if (reference_->has_potential_variable("A") && reference_->has_potential_variable("B")) {
-        // Add the interaction between the external potentials  in A and B
+        // Add the interaction between the external potentials in A and B
         // Multiply by 2 to get the full A-B + B-A interaction energy
         scalars_["Extern-Extern"] = matrices_["extern_extern_IE"]->get(0, 1)*2.0; 
         outfile->Printf("    Extern-Extern       = %18.12lf [Eh]\n", scalars_["Extern-Extern"]);
@@ -3300,9 +3293,6 @@ void FISAPT::ind() {
         }
     }
 
-    // V_A->set_name("V_A");
-    // V_A->print();
-
     // ==> Induction <== //
 
     double Ind20u_AB = 2.0 * xuA->vector_dot(wB);
@@ -4165,7 +4155,7 @@ std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot_avg(std::map<std::string, std
 // Compute total dispersion contribution
 // This definition is NOT appropriate for the SAOn/SIAOn ISAPT variants, but it is not called in an ISAPT workflow (FISAPT::fdisp is).
 void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
-                  bool do_print) {
+              bool do_print) {
     if (do_print) {
         outfile->Printf("  ==> Dispersion <==\n\n");
     }
@@ -5784,14 +5774,6 @@ void FISAPT::fexch() {
     double** Sbap = Sba->pointer();
     double** Sasp = Sas->pointer();
     double** Sbrp = Sbr->pointer();
-    // LoccA->set_name("LoccA");
-    // LoccA->print();
-
-    // Sas->set_name("Sas");
-    // Sbr->set_name("Sbr");
-    // Sab->set_name("Sab");
-    // Sas->print();
-    // Sab->print();
 
     auto WBab = std::make_shared<Matrix>("WBab", na, nb);
     double** WBabp = WBab->pointer();
@@ -6207,55 +6189,6 @@ void FISAPT::find() {
 
         K_O->transpose_this();
     }
-    // log the link assignment
-    // outfile->Printf("    F-SAPT Induction with link assignment: %s\n\n", link_assignment.c_str());
-
-    // V_A->set_name("V_A");
-    // V_A->print();
-    // Locc_B     ->set_name("Cocc_A") ;
-    // Cvir_B     ->set_name("Cvir_A") ;
-    // Locc_A     ->set_name("Cocc_B") ;
-    // Cvir_A     ->set_name("Cvir_B") ;
-    // S          ->set_name("S")      ;
-    // D_B        ->set_name("D_A")    ;
-    // V_B        ->set_name("V_A")    ;
-    // J_B        ->set_name("J_A")    ;
-    // K_B        ->set_name("K_A")    ;
-    // D_A        ->set_name("D_B")    ;
-    // V_A        ->set_name("V_B")    ;
-    // J_A        ->set_name("J_B")    ;
-    // K_A        ->set_name("K_B")    ;
-    // J_O        ->set_name("J_O")    ;
-    // K_O        ->set_name("K_O")    ;
-    // J_P_B      ->set_name("J_P_B")  ;
-    // J_P_A      ->set_name("J_P_A")  ;
-    // Locc_B     ->print()            ;
-    // Cvir_B     ->print()            ;
-    // Locc_A     ->print()            ;
-    // Cvir_A     ->print()            ;
-    // S          ->print()            ;
-    // D_B        ->print()            ;
-    // V_B        ->print()            ;
-    // J_B        ->print()            ;
-    // K_B        ->print()            ;
-    // D_A        ->print()            ;
-    // V_A        ->print()            ;
-    // J_A        ->print()            ;
-    // K_A        ->print()            ;
-    // J_O        ->print()            ;
-    // K_O        ->print()            ;
-    // J_P_B      ->print()            ;
-    // J_P_A      ->print()            ;
-
-    // Remove prints after debugging
-    // wBT->set_name("wBT");
-    // uBT->set_name("uBT");
-    // wAT->set_name("wAT");
-    // uAT->set_name("uAT");
-    // wBT->print();
-    // uBT->print();
-    // wAT->print();
-    // uAT->print();
 
     double** wATp = wAT->pointer();
     double** uATp = uAT->pointer();
@@ -6871,9 +6804,6 @@ void FISAPT::fdisp() {
 
     std::shared_ptr<Matrix> Qbr(Jbr->clone());
 
-    // Jbr->set_name("Jbr");
-    // Jbr->print();
-
     Qbr->zero();
     Qbr->add(Jbr);
     Qbr->add(Kbr);
@@ -6972,32 +6902,6 @@ void FISAPT::fdisp() {
     dfh->add_space("a4", Cs[10]);
     dfh->add_space("b4", Cs[11]);
 
-    // print all space Cs
-    // Cs[0]->set_name("Caocc_A");
-    // Cs[1]->set_name("Cavir_A");
-    // Cs[2]->set_name("Caocc_B");
-    // Cs[3]->set_name("Cavir_B");
-    // Cs[4]->set_name("Cr1");
-    // Cs[5]->set_name("Cs1");
-    // Cs[6]->set_name("Ca2");
-    // Cs[7]->set_name("Cb2");
-    // Cs[8]->set_name("Cr3");
-    // Cs[9]->set_name("Cs3");
-    // Cs[10]->set_name("Ca4");
-    // Cs[11]->set_name("Cb4");
-    // 
-    // Cs[0]->print();
-    // Cs[1]->print();
-    // Cs[2]->print();
-    // Cs[3]->print();
-    // Cs[4]->print();
-    // Cs[5]->print();
-    // Cs[6]->print();
-    // Cs[7]->print();
-    // Cs[8]->print();
-    // Cs[9]->print();
-    // Cs[10]->print();
-    // Cs[11]->print();
 
     dfh->add_transformation("Aar", "r", "a");
     dfh->add_transformation("Abs", "s", "b");

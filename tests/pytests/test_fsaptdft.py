@@ -1080,7 +1080,7 @@ if __name__ == "__main__":
     psi4.set_memory("220 GB")
     # psi4.set_num_threads(24)
     psi4.set_num_threads(12)
-    test_fsaptdft_fisapt0()
+    test_fsaptdft_timer()
     # pytest.main([
     #     __file__,
     #     "-v",

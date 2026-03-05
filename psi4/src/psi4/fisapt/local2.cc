@@ -513,8 +513,6 @@ std::map<std::string, std::shared_ptr<Matrix> > IBOLocalizer2::localize(std::sha
     ret["Q"] = Q;
     ret["A"] = A_;
 
-    // Locc3->print();
-
     ret["L"]->set_name("L");
     ret["U"]->set_name("U");
     ret["F"]->set_name("F");
