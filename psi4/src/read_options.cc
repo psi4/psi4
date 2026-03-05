@@ -1230,10 +1230,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SAPT_FDDS_V2_RHO_CUTOFF", 1.e-6);
         /*- Which MP2 Exch-Disp module to use? !expert -*/
         options.add_str("SAPT_DFT_MP2_DISP_ALG", "SAPT", "FISAPT SAPT");
-        /*- FISAPT localization? -*/
+        /*- FSAPT localization through SAPT(DFT)? Set SAPTDFT for PyEinsums
+         f-terms or use an FISAPT object (C++ side) for f-terms.
+        -*/
         options.add_str("SAPT_DFT_DO_FSAPT", "NONE", "NONE SAPTDFT FISAPT");
-        /*- FISAPT localization scheme -*/
-        // options.add_str("SAPT_DFT_FSAPT_LOCAL_ORBITALS", "IBO", "IBO BOYS PIPEK_MEZEY");
         /*- Interior option to clean up printing !expert -*/
         options.add_bool("SAPT_QUIET", false);
     }

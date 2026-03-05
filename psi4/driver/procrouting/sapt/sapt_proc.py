@@ -269,9 +269,8 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
     # case when FISAPT is requested with SAPT_DFT_DO_DISP false
     if do_fsapt and do_disp and sapt_dft_functional != "HF":
         raise ValidationError(
-            "SAPT(DFT) FISAPT currently requires dispersion calculations."
-            "Please set SAPT_DFT_DO_DISP to False."
-            "If you want -D4(I) Dispersion, set SAPT_DFT_D4_IE True."
+            "FSAPT(DFT) currently only supported with empircal dispersion methods"
+            "(like SAPT(DFT)-D4(I)) or with SAPT_DFT_FUNCTIONAL=HF."
         )
 
     if do_mon_grac_shift_A or do_mon_grac_shift_B:
