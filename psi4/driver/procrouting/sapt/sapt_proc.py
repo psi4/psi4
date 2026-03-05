@@ -1132,11 +1132,13 @@ def sapt_dft(
     # Build SAPT cache
     if einsums_available and use_einsums:
         jk_terms = sapt_jk_terms_ein
+        sapt_mp2 = sapt_mp2_terms_ein
     else:
         # If einsums is not available, need to conditionally stop einsums
         # without adding einsums_available and use_einsums to every check.
         use_einsums = False
         jk_terms = sapt_jk_terms
+        sapt_mp2 = sapt_mp2_terms
     cache = jk_terms.build_sapt_jk_cache(
         dimer_wfn, wfn_A, wfn_B, sapt_jk, True, external_potentials
     )
@@ -1309,7 +1311,7 @@ def sapt_dft(
             x_alpha = wfn_B.functional().x_alpha()
             if not is_hybrid:
                 x_alpha = 0.0
-            fdds_disp = sapt_mp2_terms_ein.df_fdds_dispersion(
+            fdds_disp = sapt_mp2.df_fdds_dispersion(
                 primary_basis, aux_basis, cache, is_hybrid, x_alpha
             )
             data.update(fdds_disp)
@@ -1331,7 +1333,7 @@ def sapt_dft(
         if not do_fsapt:
             core.timer_on("MP2 disp")
             if core.get_option("SAPT", "SAPT_DFT_MP2_DISP_ALG") == "FISAPT":
-                mp2_disp = sapt_mp2_terms.df_mp2_fisapt_dispersion(
+                mp2_disp = sapt_mp2.df_mp2_fisapt_dispersion(
                     wfn_A,
                     primary_basis,
                     aux_basis,
@@ -1341,7 +1343,7 @@ def sapt_dft(
                     do_print=True,
                 )
             else:
-                mp2_disp = sapt_mp2_terms.df_mp2_sapt_dispersion(
+                mp2_disp = sapt_mp2.df_mp2_sapt_dispersion(
                     dimer_wfn,
                     wfn_A,
                     wfn_B,
