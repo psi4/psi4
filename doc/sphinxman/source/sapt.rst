@@ -555,6 +555,48 @@ scaling and using the uncoupled exchange-dispersion energy directly.
              an older version of |PSIfour| to produce a different value of
              exchange-dispersion energy from the latest version.
 
+SAPT(DFT)-D3 and SAPT(DFT)-D4 variants
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to the baseline ``energy('sapt(dft)')`` driver, |PSIfour| supports
+SAPT(DFT) variants where the SAPT(DFT) dispersion term is replaced by semi-empirical
+-D3 or -D4 interaction-energy models. Available method names are::
+
+    energy('sapt(dft)-d3(i)')
+    energy('sapt(dft)-d3(s)')
+    energy('sapt(dft)-d4(i)')
+    energy('sapt(dft)-d4(s)')
+    energy('dft-d3(sapt)')
+    energy('dft-d4(sapt)')
+
+where ``(i)`` denotes an intermolecular pairwise dispersion treatment and ``(s)``
+denotes a supermolecular treatment. ``dft-d3(sapt)`` and ``dft-d4(sapt)`` enable
+the :math:`\Delta`-DFT correction together with -D3/-D4 dispersion.
+
+When an semi-empirical variant is used, the total SAPT(DFT) decomposition is
+still reported through standard SAPT variables (electrostatics, exchange,
+induction, dispersion, and total), and the corresponding -D3/-D4 interaction
+energy contribution is included in the printed SAPT(DFT) summary and stored in
+the dispersion QCVariable.
+
+SAPT(DFT) dispersion and FSAPT controls
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following options control new SAPT(DFT) workflows:
+
+- ``SAPT_DFT_DO_DDFT`` enables the :math:`\Delta`-DFT correction.
+- ``SAPT_DFT_DO_DISP`` toggles FDDS/MP2-style SAPT(DFT) dispersion evaluation.
+- ``SAPT_DFT_DO_FSAPT`` enables fragment decomposition from SAPT(DFT)
+  (``NONE``, ``SAPTDFT``, or ``FISAPT``). For more details on FSAPT, see the
+  :ref:`fisapt` documentation.
+- ``SAPT_DFT_USE_EINSUMS`` controls the usage of PyEinsums in SAPT(DFT) and
+  FSAPT(DFT) computations. By default, PyEinsums will be used if available, but
+  the user can disable their usage by setting this option to ``False``.
+
+For :math:`\Delta`-DFT jobs, additional scalar quantities such as
+``DFT DIMER ENERGY``, ``DFT MONOMER A ENERGY``, ``DFT MONOMER B ENERGY``, and
+``SAPT(DFT) DELTA DFT`` are available as Psi variables.
+
 Basic Keywords for SAPT(DFT) 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
