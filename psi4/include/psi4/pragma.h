@@ -142,7 +142,7 @@
 #else
 #if __GNUC__ >= 4
 #define PSI_HELPER_SO_EXPORT __attribute__((visibility("default")))
-#define PSI_HELPER_SO_LOCAL __attribute__((visibility("default")))
+#define PSI_HELPER_SO_LOCAL __attribute__((visibility("hidden")))
 #else
 #define PSI_HELPER_SO_EXPORT
 #define PSI_HELPER_SO_LOCAL

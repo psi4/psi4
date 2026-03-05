@@ -1412,9 +1412,7 @@ class Molecule(LibmintsMolecule):
         verbose
             Amount of printing.
         property
-            Whether to return DFTD4 properties (currently only C6 coefficients
-            and polarizabilities) in qcvars. Note that these are not returned
-            by default for most users would not need them.
+            Whether to return DFTD4 C6 coefficients in qcvars.
 
         Returns
         -------

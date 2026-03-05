@@ -38,7 +38,7 @@ F/I-SAPT: Functional Group and/or Intramolecular SAPT
 =====================================================
 
 .. codeauthor:: Robert M. Parrish
-.. sectionauthor:: Robert M. Parrish and Austin M. Wallace
+.. sectionauthor:: Robert M. Parrish
 
 *Module:* :ref:`Keywords <apdx:fisapt>`, :ref:`PSI Variables
 <apdx:fisapt_psivar>`, :source:`FISAPT <psi4/src/psi4/fisapt>`

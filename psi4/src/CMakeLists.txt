@@ -22,7 +22,7 @@ if(NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo)
     # Strip unnecessary sections of the binary on Linux/macOS
     pybind11_strip(core)
 endif()
-set_target_properties(core PROPERTIES CXX_VISIBILITY_PRESET "default" VISIBILITY_INLINES_HIDDEN 1)
+set_target_properties(core PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN 1)
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)
