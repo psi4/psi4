@@ -44,9 +44,6 @@ PRAGMA_WARNING_POP
 
 namespace psi {
 
-/// Factor for auto-calculating INCFOCK_CONVERGENCE from D_CONVERGENCE
-constexpr double INCFOCK_CONVERGENCE_FACTOR = 1e-2;
-
 class MinimalInterface;
 class BasisSet;
 class Matrix;

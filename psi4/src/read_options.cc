@@ -1645,7 +1645,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             Periodic rebuilds prevent error accumulation from the incremental procedure. -*/
         options.add_int("INCFOCK_FULL_FOCK_EVERY", 100);
         /*- The density threshold at which to stop building the Fock matrix incrementally -*/
-        options.add_double("INCFOCK_CONVERGENCE", 1.0e-10);
+        options.add_double("INCFOCK_CONVERGENCE", 1.0e-9);
         /*- Minimum Schwarz Q^2 estimate for diffuse shell pairs. Delta-density screening
             is disabled when Dnorm < |scf__ints_tolerance| / INCFOCK_DIFFUSE_CUTOFF to
             prevent over-screening of slowly-decaying integrals in diffuse basis sets. -*/
