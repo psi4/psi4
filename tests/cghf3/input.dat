@@ -14,8 +14,7 @@ set {
     scf_type   pk
     basis def2-SVPD
     guess sad
-    diis_start 1
-    diis_max_vecs 8
+    diis false
     e_convergence 1e-9
 }
 thisenergy = energy('scf')
