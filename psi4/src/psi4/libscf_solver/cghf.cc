@@ -454,6 +454,19 @@ double CGHF::compute_E() {
                 one_electron_E += (F0_->block(h)(i, j) * Dji).real();  // F0_ij * D_ji
                 two_E += (JK_->block(h)(i, j) * Dji).real();           // J_ij * D_ji
             }
+
+
+        auto one_electron_E = einsums::Tensor<std::complex<double>, 0>("One electron E");
+        auto two_electron_E = einsums::Tensor<std::complex<double>, 0>("Two electron E");
+
+        //einsums::tensor_algebra::einsum(einsums::Indices{}, &one_electron_E,  // D_uv
+        //                                einsums::Indices{einsums::index::i, einsums::index::j}, F0_->block(h),   // Cocc_ui
+        //                                einsums::Indices{einsums::index::j, einsums::index::i}, D_->block(h)    // Cocc_vi.conj()
+        //);
+
+        //net_one_electron_E += one_electron_E.real();
+
+
     }
 
     energies_["Nuclear"] = nuclearrep_;
@@ -655,6 +668,104 @@ SharedMatrix CGHF::get_shared_FDSmSDF() {
     }
 
     return out;
+}
+
+
+/*
+/ Equation for GHF S^2 expectation value taken from Nascimento, DePrince
+/ https://pubmed.ncbi.nlm.nih.gov/29595979/
+/ DOI:  10.1021/acs.jctc.7b01288 
+/ 
+/ <S^2> = (3/4)N + (1/4)[Tr(D_AA) - Tr(D_BB)]**2 
+/       - (1/4)Tr(D_AA @ D_AA) - (1/4)Tr(D_BB @ D_BB)
+        + (3/2)Tr(D_AB @ D_BA) - Tr(D_AA @ D_BB)
+/
+/ where N = Tr(D_AA + D_BB)
+*/
+void CGHF::s2_expectation_value() {
+    double S2 = 0.0;
+
+    for (int h = 0; h < nirrep_; h++) {
+        // Gather D_AA, D_BB, D_AB, and D_BA
+        einsums::TensorView D_AA = D_->block(h)(einsums::Range{0, nsopi_[h]}, einsums::Range{0, nsopi_[h]});
+        einsums::TensorView D_BB = D_->block(h)(einsums::Range{nsopi_[h], irrep_sizes_[h]}, einsums::Range{nsopi_[h], irrep_sizes_[h]});
+        einsums::TensorView D_AB = D_->block(h)(einsums::Range{0, nsopi_[h]}, einsums::Range{nsopi_[h], irrep_sizes_[h]});
+        einsums::TensorView D_BA = D_->block(h)(einsums::Range{nsopi_[h], irrep_sizes_[h]}, einsums::Range{0, nsopi_[h]});
+
+        double N = 0.0;
+
+        for (int p = 0; p < nsopi_[h]; p++) {
+            N += D_AA(p, p).real() + D_BB(p, p).real();
+        }
+
+        // Create buffer for matrix-matrix multiplications
+        auto mat_buffer = einsums::Tensor<std::complex<double>, 2>("Matrix-matrix container", nsopi_[h], nsopi_[h]);
+        mat_buffer.zero();
+
+        //Term 1
+        S2 += (3/4) * N;
+
+        //Term 2
+        double trAA_minus_trBB = 0.0;
+        for (int p = 0; p < nsopi_[h]; p++) {
+            trAA_minus_trBB += (D_AA(p, p) - D_BB(p, p)).real();
+        }
+        S2 += (1/4) * std::pow(trAA_minus_trBB, 2);
+
+        //Term 3: mat_buffer holds D_AA @ D_AA
+        einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, D_AA, D_AA, std::complex<double>{0.0},
+                                                &mat_buffer);
+        
+        double tr_AAAA = 0.0;
+        for (int p = 0; p < nsopi_[h]; p++) {
+            tr_AAAA += mat_buffer(p, p).real();
+        }
+        S2 -= (1/4) * tr_AAAA;
+
+        mat_buffer.zero();
+
+        //Term 4: mat_buffer holds D_BB @ D_BB
+        einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, D_BB, D_BB, std::complex<double>{0.0},
+                                                &mat_buffer);
+
+        double tr_BBBB = 0.0;
+        for (int p = 0; p < nsopi_[h]; p++) {
+            tr_BBBB += mat_buffer(p, p).real();
+        }
+        S2 -= (1/4) * tr_BBBB;
+
+        mat_buffer.zero();
+
+        //Term 5: mat_buffer holds D_AB @ D_BA
+        einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, D_AB, D_BA, std::complex<double>{0.0},
+                                                &mat_buffer);
+
+        double tr_ABBA = 0.0;
+        for (int p = 0; p < nsopi_[h]; p++) {
+            tr_ABBA += mat_buffer(p, p).real();
+        }
+        S2 += (3/2) * tr_ABBA;
+
+        mat_buffer.zero();
+
+        //Term 6: mat_buffer holds D_AA @ D_BB
+        einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, D_AA, D_BB, std::complex<double>{0.0},
+                                                &mat_buffer);
+
+        double tr_AABB = 0.0;
+        for (int p = 0; p < nsopi_[h]; p++) {
+            tr_AABB += mat_buffer(p, p).real();
+        }
+        S2 -= tr_AABB;
+    }
+
+    outfile->Printf("\n\t<S^2> = %.10f\n", S2);
+
+}
+
+void CGHF::finalize() {
+    s2_expectation_value();
+    HF::finalize();
 }
 
 std::shared_ptr<CGHF> CGHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {

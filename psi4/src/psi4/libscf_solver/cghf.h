@@ -138,6 +138,11 @@ class CGHF : public HF {
     // If DIIS is enabled, this will update the orthogonalized Fock matrix Fp_
     void do_diis();
 
+    // Computes <S^2> expectation value and prints to outfile
+    void s2_expectation_value();
+
+    void finalize() override;
+
    protected:
     SharedMatrix V_mat;
     SharedMatrix S_mat;
