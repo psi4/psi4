@@ -170,52 +170,47 @@ void CGHF::preiterations() {
 
     // => FILL SPIN BLOCKED OVERLAP AND HAMILTONIAN MATRICES <=
     // Note that nsopi_[h] will be HALF of irrep_sizes_[h]
-    for(int h = 0; h < nirrep_; h++) {
-       if(nsopi_[h] == 0) {
-           continue;
-       }
-       size_t n = nsopi_[h];
-       std::complex<double> *EINS_ptr = EINS_->block(h).data(0, 0);
-       std::complex<double> *F0_ptr = F0_->block(h).data(0, 0);
-       std::complex<double> *F_ptr = F_->block(h).data(0, 0);
+    for (int h = 0; h < nirrep_; h++) {
+        if (nsopi_[h] == 0) {
+            continue;
+        }
+        size_t n = nsopi_[h];
+        std::complex<double>* EINS_ptr = EINS_->block(h).data(0, 0);
+        std::complex<double>* F0_ptr = F0_->block(h).data(0, 0);
+        std::complex<double>* F_ptr = F_->block(h).data(0, 0);
 
-       double *S_ptr = S_->get_pointer(h);
-       double *H_ptr = H_->get_pointer(h);
-       double *Fa_ptr = Fa_->get_pointer(h);
-       double *Fb_ptr = Fb_->get_pointer(h);
+        double* S_ptr = S_->get_pointer(h);
+        double* H_ptr = H_->get_pointer(h);
+        double* Fa_ptr = Fa_->get_pointer(h);
+        double* Fb_ptr = Fb_->get_pointer(h);
 
-       //EINS_, F0_, and F_ will all have the same stride
-       size_t block_stride = EINS_->block(h).stride(0);
+        // EINS_, F0_, and F_ will all have the same stride
+        size_t block_stride = EINS_->block(h).stride(0);
 
-       for (size_t p = 0; p < n; p++,
-                  S_ptr  += n,
-                  H_ptr  += n,
-                  Fa_ptr += n,
-                  Fb_ptr += n) {
-   
-           std::complex<double>* EINS_alpha = EINS_ptr + p * block_stride;
-           std::complex<double>* EINS_beta  = EINS_ptr + (p + n) * block_stride;
-   
-           std::complex<double>* F0_alpha = F0_ptr + p * block_stride;
-           std::complex<double>* F0_beta  = F0_ptr + (p + n) * block_stride;
-   
-           std::complex<double>* F_alpha = F_ptr + p * block_stride;
-           std::complex<double>* F_beta  = F_ptr + (p + n) * block_stride;
-   
-           EINSUMS_OMP_PARALLEL_FOR
-           for(size_t q = 0; q < n; q++) {
-               // AA blocks
-               EINS_alpha[q] = S_ptr[q];
-               F0_alpha[q]   = H_ptr[q];
-               F_alpha[q]    = Fa_ptr[q];
-   
-               // BB blocks
-               EINS_beta[q + n] = S_ptr[q];
-               F0_beta[q + n]   = H_ptr[q];
-               F_beta[q + n]    = Fb_ptr[q];
-           }
-       }
-   }
+        for (size_t p = 0; p < n; p++, S_ptr += n, H_ptr += n, Fa_ptr += n, Fb_ptr += n) {
+            std::complex<double>* EINS_alpha = EINS_ptr + p * block_stride;
+            std::complex<double>* EINS_beta = EINS_ptr + (p + n) * block_stride;
+
+            std::complex<double>* F0_alpha = F0_ptr + p * block_stride;
+            std::complex<double>* F0_beta = F0_ptr + (p + n) * block_stride;
+
+            std::complex<double>* F_alpha = F_ptr + p * block_stride;
+            std::complex<double>* F_beta = F_ptr + (p + n) * block_stride;
+
+            EINSUMS_OMP_PARALLEL_FOR
+            for (size_t q = 0; q < n; q++) {
+                // AA blocks
+                EINS_alpha[q] = S_ptr[q];
+                F0_alpha[q] = H_ptr[q];
+                F_alpha[q] = Fa_ptr[q];
+
+                // BB blocks
+                EINS_beta[q + n] = S_ptr[q];
+                F0_beta[q + n] = H_ptr[q];
+                F_beta[q + n] = Fb_ptr[q];
+            }
+        }
+    }
 }
 
 /*
@@ -328,8 +323,8 @@ void CGHF::form_C(double shift) {
 
         for (int i = 0; i < nsopi_[h]; i++) {
             // Putting half the orbitals in alpha half in beta
-            epsilon_a_->set(h, i, Fevals_[h].subscript(2*i));
-            epsilon_b_->set(h, i, Fevals_[h].subscript(2*i+1));
+            epsilon_a_->set(h, i, Fevals_[h].subscript(2 * i));
+            epsilon_b_->set(h, i, Fevals_[h].subscript(2 * i + 1));
         }
 
         // heev retuns the wrong side, so we need to take the inverse (hermitian adjoint)
@@ -376,40 +371,35 @@ void CGHF::form_initial_C() {
 void CGHF::compute_SAD_guess(bool natorb) {
     HF::compute_SAD_guess(natorb);
 
-    for(int h = 0; h < nirrep_; h++) {
+    for (int h = 0; h < nirrep_; h++) {
         size_t n = nsopi_[h];
-        if(n == 0) continue;
-    
-        std::complex<double> *D_ptr = D_->block(h).data(0,0);
-        std::complex<double> *C_ptr = C_->block(h).data(0,0);
-    
-        double *Da_ptr = Da_->get_pointer(h);
-        double *Db_ptr = Db_->get_pointer(h);
-        double *Ca_ptr = Ca_->get_pointer(h);
-        double *Cb_ptr = Cb_->get_pointer(h);
-    
+        if (n == 0) continue;
+
+        std::complex<double>* D_ptr = D_->block(h).data(0, 0);
+        std::complex<double>* C_ptr = C_->block(h).data(0, 0);
+
+        double* Da_ptr = Da_->get_pointer(h);
+        double* Db_ptr = Db_->get_pointer(h);
+        double* Ca_ptr = Ca_->get_pointer(h);
+        double* Cb_ptr = Cb_->get_pointer(h);
+
         size_t D_stride = D_->block(h).stride(0);
         size_t C_stride = C_->block(h).stride(0);
-    
-        for(size_t p = 0; p < n; p++,
-                  Da_ptr += n,
-                  Db_ptr += n,
-                  Ca_ptr += n,
-                  Cb_ptr += n) {
-    
+
+        for (size_t p = 0; p < n; p++, Da_ptr += n, Db_ptr += n, Ca_ptr += n, Cb_ptr += n) {
             std::complex<double>* D_alpha = D_ptr + p * D_stride;
-            std::complex<double>* D_beta  = D_ptr + (p + n) * D_stride;
-    
+            std::complex<double>* D_beta = D_ptr + (p + n) * D_stride;
+
             std::complex<double>* C_alpha = C_ptr + p * C_stride;
-            std::complex<double>* C_beta  = C_ptr + (p + n) * C_stride;
-    
+            std::complex<double>* C_beta = C_ptr + (p + n) * C_stride;
+
             EINSUMS_OMP_PARALLEL_FOR
-            for(size_t q = 0; q < n; q++) {
-                D_alpha[q]       = Da_ptr[q];
-                D_beta [q + n]   = Db_ptr[q];
-    
-                C_alpha[2*q]     = Ca_ptr[q];
-                C_beta [2*q + 1] = Cb_ptr[q];
+            for (size_t q = 0; q < n; q++) {
+                D_alpha[q] = Da_ptr[q];
+                D_beta[q + n] = Db_ptr[q];
+
+                C_alpha[2 * q] = Ca_ptr[q];
+                C_beta[2 * q + 1] = Cb_ptr[q];
             }
         }
     }
@@ -425,7 +415,6 @@ void CGHF::form_D() {
     for (int h = 0; h < nirrep_; h++) {
         // Grab occupied coefficients and their conjugates with TensorViews
         einsums::TensorView Cocc = C_->block(h)(einsums::Range{0, irrep_sizes_[h]}, einsums::Range{0, nelecpi_[h]});
-        //einsums::TensorView cCocc = C_->block(h)(einsums::Range{0, irrep_sizes_[h]}, einsums::Range{0, nelecpi_[h]});
         einsums::TensorView cCocc = Cocc;
 
         // Permute to actually conjugate cCocc
@@ -435,8 +424,8 @@ void CGHF::form_D() {
 
         // D_ = einsums("ui,vi->uv", temp1_, temp2_)
         einsums::tensor_algebra::einsum(einsums::Indices{einsums::index::u, einsums::index::v}, &D_->block(h),  // D_uv
-                                        einsums::Indices{einsums::index::u, einsums::index::i}, Cocc,   // Cocc_ui
-                                        einsums::Indices{einsums::index::v, einsums::index::i}, cCocc    // Cocc_vi.conj()
+                                        einsums::Indices{einsums::index::u, einsums::index::i}, Cocc,  // Cocc_ui
+                                        einsums::Indices{einsums::index::v, einsums::index::i}, cCocc  // Cocc_vi.conj()
         );
     }
 }
@@ -514,7 +503,13 @@ void CGHF::do_diis() {
     double error = 0;
     for (int h = 0; h < nirrep_; h++) {
         auto o = FDSmSDF_->block(h);
-        error += einsums::linear_algebra::true_dot(o, o).real();
+        // Avoid using true_dot until einsums fixes segfault on M-intel runners.
+        // error += einsums::linear_algebra::true_dot(o, o).real();
+        for (int p = 0; p < irrep_sizes_[h]; p++) {
+            for (int q = 0; q < irrep_sizes_[h]; q++) {
+                error += (std::conj(o.subscript(p, q)) * o.subscript(p, q)).real();
+            }
+        }
     }
 
     // Only extrapolate Fp_ when enough vectors are stored
@@ -557,7 +552,6 @@ void CGHF::do_diis() {
     //
     // error_doubles.push_back(error);
 
-
     auto B_ = einsums::Tensor<std::complex<double>, 2>("DIIS Error matrix", diis_max + 1, diis_max + 1);
     B_.zero();
 
@@ -580,6 +574,8 @@ void CGHF::do_diis() {
 
             std::complex<double> sum{0, 0};
             for (int h = 0; h < nirrep_; h++)
+                // Avoid using true_dot until einsums fixes segfault on M-intel runners.
+                // sum += einsums::linear_algebra::true_dot(ei[h], ej[h]);
                 for (int p = 0; p < irrep_sizes_[h]; p++)
                     for (int q = 0; q < irrep_sizes_[h]; q++)
                         sum += std::conj(ei->block(h).subscript(p, q)) * ej->block(h).subscript(p, q);
@@ -637,7 +633,6 @@ void CGHF::form_FDSmSDF() {
                                                 temp1_.get());
     einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, *EINX_, *temp1_, std::complex<double>{0.0},
                                                FDSmSDF_.get());
-
 
     temp1_->zero();
     temp2_->zero();

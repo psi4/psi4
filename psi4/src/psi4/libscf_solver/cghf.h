@@ -47,12 +47,13 @@ namespace scf {
 class CGHF : public HF {
    public:
     CGHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func)
-      :HF(ref_wfn, func, Process::environment.options, PSIO::shared_object()) {
+        : HF(ref_wfn, func, Process::environment.options, PSIO::shared_object()) {
         throw PSIEXCEPTION("Psi4 not built with Einsums. CGHF not available.");
     };
 
-    CGHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Options& options, std::shared_ptr<PSIO> psio)
-      :HF(ref_wfn, func, options, psio) {
+    CGHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Options& options,
+         std::shared_ptr<PSIO> psio)
+        : HF(ref_wfn, func, options, psio) {
         throw PSIEXCEPTION("Psi4 not built with Einsums. CGHF not available.");
     }
 
@@ -172,7 +173,7 @@ class CGHF : public HF {
     SharedBlockTensor D_;   // 1-particle density matrix
     SharedBlockTensor JK_;  // Combined Coulomb and exchange matrix
 
-    SharedBlockTensor ortho_error;  // Orthogonalized gradient error for DIIS
+    SharedBlockTensor ortho_error;       // Orthogonalized gradient error for DIIS
     SharedBlockTensor ortho_error_conj;  // Needed because Einsums can't do conjugation yet
 
     // temp1_ and temp2_ are temporary storage containers for intermediate steps
