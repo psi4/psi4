@@ -170,24 +170,52 @@ void CGHF::preiterations() {
 
     // => FILL SPIN BLOCKED OVERLAP AND HAMILTONIAN MATRICES <=
     // Note that nsopi_[h] will be HALF of irrep_sizes_[h]
-    // EINS_ and F0_ filled within the same loop
-    for (int h = 0; h < nirrep_; h++)
-        for (int p = 0; p < nsopi_[h]; p++)
-            for (int q = 0; q < nsopi_[h]; q++) {
-                // Offset by nsopi_[h] to get the beta index for p and q
-                int beta_p = p + nsopi_[h];
-                int beta_q = q + nsopi_[h];
+    for(int h = 0; h < nirrep_; h++) {
+       if(nsopi_[h] == 0) {
+           continue;
+       }
+       size_t n = nsopi_[h];
+       std::complex<double> *EINS_ptr = EINS_->block(h).data(0, 0);
+       std::complex<double> *F0_ptr = F0_->block(h).data(0, 0);
+       std::complex<double> *F_ptr = F_->block(h).data(0, 0);
 
-                EINS_->block(h)(p, q) = S_->get(h, p, q);  // overlap AA spin block
-                EINS_->block(h)(beta_p, beta_q) =
-                    S_->get(h, p, q);  // overlap BB spin block is same as AA since same spatial orbitals
+       double *S_ptr = S_->get_pointer(h);
+       double *H_ptr = H_->get_pointer(h);
+       double *Fa_ptr = Fa_->get_pointer(h);
+       double *Fb_ptr = Fb_->get_pointer(h);
 
-                F0_->block(h)(p, q) = H_->get(h, p, q);            // core Hamiltonian AA spin block
-                F0_->block(h)(beta_p, beta_q) = H_->get(h, p, q);  // core Hamiltonian BB spin block
+       //EINS_, F0_, and F_ will all have the same stride
+       size_t block_stride = EINS_->block(h).stride(0);
 
-                F_->block(h)(p, q) = Fa_->get(h, p, q);
-                F_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
-            }
+       for (size_t p = 0; p < n; p++,
+                  S_ptr  += n,
+                  H_ptr  += n,
+                  Fa_ptr += n,
+                  Fb_ptr += n) {
+   
+           std::complex<double>* EINS_alpha = EINS_ptr + p * block_stride;
+           std::complex<double>* EINS_beta  = EINS_ptr + (p + n) * block_stride;
+   
+           std::complex<double>* F0_alpha = F0_ptr + p * block_stride;
+           std::complex<double>* F0_beta  = F0_ptr + (p + n) * block_stride;
+   
+           std::complex<double>* F_alpha = F_ptr + p * block_stride;
+           std::complex<double>* F_beta  = F_ptr + (p + n) * block_stride;
+   
+           EINSUMS_OMP_PARALLEL_FOR
+           for(size_t q = 0; q < n; q++) {
+               // AA blocks
+               EINS_alpha[q] = S_ptr[q];
+               F0_alpha[q]   = H_ptr[q];
+               F_alpha[q]    = Fa_ptr[q];
+   
+               // BB blocks
+               EINS_beta[q + n] = S_ptr[q];
+               F0_beta[q + n]   = H_ptr[q];
+               F_beta[q + n]    = Fb_ptr[q];
+           }
+       }
+   }
 }
 
 /*
@@ -348,47 +376,69 @@ void CGHF::form_initial_C() {
 void CGHF::compute_SAD_guess(bool natorb) {
     HF::compute_SAD_guess(natorb);
 
-    for (int h = 0; h < nirrep_; h++)
-        for (int p = 0; p < nsopi_[h]; p++)
-            for (int q = 0; q < nsopi_[h]; q++) {
-                D_->block(h)(p, q) = Da_->get(h, p, q);
-                D_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Db_->get(h, p, q);
-                C_->block(h)(p, 2*q) = Ca_->get(h, p, q);
-                C_->block(h)(p + nsopi_[h], 2*q + 1) = Cb_->get(h, p, q);
+    for(int h = 0; h < nirrep_; h++) {
+        size_t n = nsopi_[h];
+        if(n == 0) continue;
+    
+        std::complex<double> *D_ptr = D_->block(h).data(0,0);
+        std::complex<double> *C_ptr = C_->block(h).data(0,0);
+    
+        double *Da_ptr = Da_->get_pointer(h);
+        double *Db_ptr = Db_->get_pointer(h);
+        double *Ca_ptr = Ca_->get_pointer(h);
+        double *Cb_ptr = Cb_->get_pointer(h);
+    
+        size_t D_stride = D_->block(h).stride(0);
+        size_t C_stride = C_->block(h).stride(0);
+    
+        for(size_t p = 0; p < n; p++,
+                  Da_ptr += n,
+                  Db_ptr += n,
+                  Ca_ptr += n,
+                  Cb_ptr += n) {
+    
+            std::complex<double>* D_alpha = D_ptr + p * D_stride;
+            std::complex<double>* D_beta  = D_ptr + (p + n) * D_stride;
+    
+            std::complex<double>* C_alpha = C_ptr + p * C_stride;
+            std::complex<double>* C_beta  = C_ptr + (p + n) * C_stride;
+    
+            EINSUMS_OMP_PARALLEL_FOR
+            for(size_t q = 0; q < n; q++) {
+                D_alpha[q]       = Da_ptr[q];
+                D_beta [q + n]   = Db_ptr[q];
+    
+                C_alpha[2*q]     = Ca_ptr[q];
+                C_beta [2*q + 1] = Cb_ptr[q];
             }
+        }
+    }
 }
 
 /*
- * Fills the occupied coefficient matrix Cocc_ as well as the complex conjugate cCocc_
+ * Fills the occupied coefficient TensorView Cocc and its complex conjugate cCocc
  * Then constructs the density matrix D_ with D_uv = C_ui * C_vi_{conj}
  */
 void CGHF::form_D() {
     D_->zero();
-    temp1_->zero();
-    temp2_->zero();
 
-
-    // Fills temp1_ and temp2_ with the occupied (2*nsopi_ x nelecpi_) and conjugate
-    // occupied matrices (e.g. Cocc)
-    // Note that temp1_ and temp2_ are both (2*nsopi_ x 2*nsopi_), but the 'remainder'
-    // are all->zeros and contribute nothing
-    // This is just a minor inefficiency, since these matrices are larger than they should be
-    // NOTE: this is done like this because BlockTensors cannot handle rectangular matrices
     for (int h = 0; h < nirrep_; h++) {
-        for (int j = 0; j < irrep_sizes_[h]; j++) {
-            for (int k = 0; k < nelecpi_[h]; k++) {
-                auto C_jk = C_->block(h)(j, k);
-                temp1_->block(h)(j, k) = C_jk;
-                temp2_->block(h)(j, k) = std::conj(C_jk);
-            }
-        }
-    }
+        // Grab occupied coefficients and their conjugates with TensorViews
+        einsums::TensorView Cocc = C_->block(h)(einsums::Range{0, irrep_sizes_[h]}, einsums::Range{0, nelecpi_[h]});
+        //einsums::TensorView cCocc = C_->block(h)(einsums::Range{0, irrep_sizes_[h]}, einsums::Range{0, nelecpi_[h]});
+        einsums::TensorView cCocc = Cocc;
 
-    // D_ = einsums("ui,vi->uv", temp1_, temp2_)
-    einsums::tensor_algebra::einsum(einsums::Indices{einsums::index::u, einsums::index::v}, D_.get(),  // D_uv
-                                    einsums::Indices{einsums::index::u, einsums::index::i}, *temp1_,   // Cocc_ui
-                                    einsums::Indices{einsums::index::v, einsums::index::i}, *temp2_    // Cocc_vi.conj().T
-    );
+        // Permute to actually conjugate cCocc
+        einsums::tensor_algebra::permute<true>(
+            std::complex<double>{0.0}, einsums::Indices{einsums::index::i, einsums::index::j}, &cCocc,
+            std::complex<double>{1.0}, einsums::Indices{einsums::index::i, einsums::index::j}, Cocc);
+
+        // D_ = einsums("ui,vi->uv", temp1_, temp2_)
+        einsums::tensor_algebra::einsum(einsums::Indices{einsums::index::u, einsums::index::v}, &D_->block(h),  // D_uv
+                                        einsums::Indices{einsums::index::u, einsums::index::i}, Cocc,   // Cocc_ui
+                                        einsums::Indices{einsums::index::v, einsums::index::i}, cCocc    // Cocc_vi.conj()
+        );
+    }
 }
 
 void CGHF::damping_update(double damping_percentage) {}
@@ -464,11 +514,7 @@ void CGHF::do_diis() {
     double error = 0;
     for (int h = 0; h < nirrep_; h++) {
         auto o = FDSmSDF_->block(h);
-        for (int p = 0; p < irrep_sizes_[h]; p++) {
-            for (int q = 0; q < irrep_sizes_[h]; q++) {
-                error += (std::conj(o.subscript(p, q)) * o.subscript(p, q)).real();
-            }
-        }
+        error += einsums::linear_algebra::true_dot(o, o).real();
     }
 
     // Only extrapolate Fp_ when enough vectors are stored
