@@ -415,11 +415,19 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.set_energies("PE Energy", upe)
 
         core.timer_on("HF: Form F")
+        # SOSCF orbital rotations invalidate incremental Fock linearity assumption
+        in_soscf_phase = (soscf_enabled and self.iteration_ >= 3
+                          and Dnorm < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))
+
         # SAD: since we don't have orbitals yet, we might not be able
         # to form the real Fock matrix. Instead, build an initial one
         if (self.iteration_ == 0) and self.sad_:
             self.form_initial_F()
         else:
+            # IncFock is unreliable during large SOSCF iterations. Force a rebuild.
+            if in_soscf_phase and hasattr(self.jk(), 'clear_D_prev'):
+                self.jk().clear_D_prev()
+
             self.form_F()
         core.timer_off("HF: Form F")
 
@@ -446,7 +454,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         status = []
 
         # Check if we are doing SOSCF
-        if (soscf_enabled and (self.iteration_ >= 3) and (Dnorm < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
+        if in_soscf_phase:
             Dnorm = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
             diis_performed = False
             if self.functional().needs_xc():
