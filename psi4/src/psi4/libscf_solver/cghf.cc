@@ -50,6 +50,7 @@
 #include <Einsums/TensorAlgebra.hpp>
 #include <Einsums/Runtime.hpp>
 
+
 using ComplexMatrix = einsums::BlockTensor<std::complex<double>, 2>;
 #endif
 
@@ -573,12 +574,17 @@ void CGHF::do_diis() {
             auto ej = err_vecs[j];
 
             std::complex<double> sum{0, 0};
-            for (int h = 0; h < nirrep_; h++)
-                // Avoid using true_dot until einsums fixes segfault on M-intel runners.
-                // sum += einsums::linear_algebra::true_dot(ei[h], ej[h]);
-                for (int p = 0; p < irrep_sizes_[h]; p++)
-                    for (int q = 0; q < irrep_sizes_[h]; q++)
-                        sum += std::conj(ei->block(h).subscript(p, q)) * ej->block(h).subscript(p, q);
+//            for (int h = 0; h < nirrep_; h++)
+//                // Avoid using true_dot until einsums fixes segfault on M-intel runners.
+//                // sum += einsums::linear_algebra::true_dot(ei[h], ej[h]);
+//                for (int p = 0; p < irrep_sizes_[h]; p++)
+//                    for (int q = 0; q < irrep_sizes_[h]; q++)
+//                        sum += std::conj(ei->block(h).subscript(p, q)) * ej->block(h).subscript(p, q);
+
+            printf("ei pointer: %p, ej pointer: %p\n", (void *) ei.get(), (void *)ej.get());
+
+            sum += einsums::linear_algebra::true_dot(*ei, *ej);
+
             B_(j, i) = sum;
             // B_ is real and symmetric
             if (i != j) B_(i, j) = sum;
