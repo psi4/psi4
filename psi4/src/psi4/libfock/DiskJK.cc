@@ -53,7 +53,7 @@ DiskJK::DiskJK(std::shared_ptr<BasisSet> primary, Options& options) : JK(primary
 DiskJK::~DiskJK() {}
 void DiskJK::common_init() {}
 size_t DiskJK::memory_estimate() {
-    return 0; // Effectively zero
+    return 0;  // Effectively zero
 }
 void DiskJK::print_header() const {
     if (print_) {
@@ -74,8 +74,8 @@ void DiskJK::preiterations() {
 
     std::shared_ptr<SOBasisSet> bas = mints->sobasisset();
 
-    so2symblk_ = new int[primary_->nbf()]; // lgtm [cpp/resource-not-released-in-destructor]
-    so2index_ = new int[primary_->nbf()]; // lgtm [cpp/resource-not-released-in-destructor]
+    so2symblk_ = new int[primary_->nbf()];  // lgtm [cpp/resource-not-released-in-destructor]
+    so2index_ = new int[primary_->nbf()];   // lgtm [cpp/resource-not-released-in-destructor]
     size_t so_count = 0;
     size_t offset = 0;
     for (int h = 0; h < bas->nirrep(); ++h) {
@@ -89,7 +89,6 @@ void DiskJK::preiterations() {
     mints.reset();
 }
 void DiskJK::compute_JK() {
-
     // zero out J, K, and wK matrices
     zero();
 

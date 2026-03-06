@@ -508,7 +508,7 @@ class PKMgrInCore : public PKManager {
     /// Finalize PK, i.e. deallocate buffers
     void finalize_PK() override;
 };
-}
-}
+}  // namespace pk
+}  // namespace psi
 
 #endif

@@ -114,7 +114,6 @@ void PKJK::preiterations() {
 }
 
 void PKJK::compute_JK() {
-
     // zero out J, K, and wK matrices
     zero();
 

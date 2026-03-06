@@ -47,7 +47,8 @@ using namespace psi;
 
 namespace psi {
 
-DirectDFJ::DirectDFJ(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : SplitJK(primary, options), auxiliary_(auxiliary) {
+DirectDFJ::DirectDFJ(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options)
+    : SplitJK(primary, options), auxiliary_(auxiliary) {
     timer_on("DirectDFJ: Setup");
 
     // => General Setup <= //
@@ -72,9 +73,7 @@ DirectDFJ::DirectDFJ(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet
 
 DirectDFJ::~DirectDFJ() {}
 
-size_t DirectDFJ::num_computed_shells() {
-    return num_computed_shells_;
-}
+size_t DirectDFJ::num_computed_shells() { return num_computed_shells_; }
 
 void DirectDFJ::print_header() const {
     if (print_) {
@@ -88,8 +87,7 @@ void DirectDFJ::print_header() const {
 // build the J matrix using Weigend's integral-direct density fitting algorithm
 // algorithm is in Figure 1 of https://doi.org/10.1039/B204199P
 void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J,
-    std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
-
+                                  std::vector<std::shared_ptr<TwoBodyAOInt>>& eri_computers) {
     timer_on("Setup");
 
     // => Sizing <= //
@@ -118,8 +116,8 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
     std::vector<std::vector<SharedMatrix>> JT(njk, std::vector<SharedMatrix>(nthreads_));
 
     // initialize per-thread objects
-    for(size_t jki = 0; jki < njk; jki++) {
-        for(size_t thread = 0; thread < nthreads_; thread++) {
+    for (size_t jki = 0; jki < njk; jki++) {
+        for (size_t thread = 0; thread < nthreads_; thread++) {
             JT[jki][thread] = std::make_shared<Matrix>(nbf, nbf);
             GT[jki][thread] = std::make_shared<Vector>(nbf_aux);
         }
@@ -140,16 +138,16 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
     Matrix Dshell(nshell, nshell);
     auto Dshellp = Dshell.pointer();
 
-    for(size_t M = 0; M < nshell; M++) {
+    for (size_t M = 0; M < nshell; M++) {
         int nm = primary_->shell(M).nfunction();
         int mstart = primary_->shell(M).function_index();
-        for(size_t N = 0; N < nshell; N++) {
+        for (size_t N = 0; N < nshell; N++) {
             int nn = primary_->shell(N).nfunction();
             int nstart = primary_->shell(N).function_index();
-            for(size_t jki = 0; jki < njk; jki++) {
+            for (size_t jki = 0; jki < njk; jki++) {
                 auto Dp = D[jki]->pointer();
-                for(size_t m = mstart; m < mstart + nm; m++) {
-                    for(size_t n = nstart; n < nstart + nn; n++) {
+                for (size_t m = mstart; m < mstart + nm; m++) {
+                    for (size_t n = nstart; n < nstart + nn; n++) {
                         Dshellp[M][N] = std::max(Dshellp[M][N], std::abs(Dp[m][n]));
                     }
                 }
@@ -168,7 +166,6 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
     timer_on("ERI1");
 #pragma omp parallel for schedule(guided) num_threads(nthreads_) reduction(+ : computed_triplets1)
     for (size_t MNP = 0; MNP < nshelltriplet; MNP++) {
-
         size_t MN = MNP % nshellpair;
         size_t P = MNP / nshellpair;
         int rank = 0;
@@ -178,7 +175,8 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
         auto bra = eri_computers[rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        if(Dshellp[M][N] * Dshellp[M][N] * J_metric_shell_diag[P] * eri_computers[rank]->shell_pair_value(M,N) < thresh2) {
+        if (Dshellp[M][N] * Dshellp[M][N] * J_metric_shell_diag[P] * eri_computers[rank]->shell_pair_value(M, N) <
+            thresh2) {
             continue;
         }
         computed_triplets1++;
@@ -189,10 +187,9 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
         int nn = primary_->shell(N).nfunction();
         int nstart = primary_->shell(N).function_index();
         eri_computers[rank]->compute_shell(P, 0, M, N);
-        const auto & buffer = eri_computers[rank]->buffers()[0];
+        const auto& buffer = eri_computers[rank]->buffers()[0];
 
-        for(size_t jki = 0; jki < njk; jki++) {
-
+        for (size_t jki = 0; jki < njk; jki++) {
             auto GTp = GT[jki][rank]->pointer();
             auto Dp = D[jki]->pointer();
 
@@ -204,9 +201,7 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
                     }
                 }
             }
-
         }
-
     }
 
     timer_off("ERI1");
@@ -221,27 +216,26 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
 
     std::vector<int> ipiv(nbf_aux);
 
-    for(size_t jki = 0; jki < njk; jki++) {
-        for(size_t thread = 0; thread < nthreads_; thread++) {
+    for (size_t jki = 0; jki < njk; jki++) {
+        for (size_t thread = 0; thread < nthreads_; thread++) {
             H[jki]->add(*GT[jki][thread]);
         }
         C_DGESV(nbf_aux, 1, J_metric_->clone()->pointer()[0], nbf_aux, ipiv.data(), H[jki]->pointer(), nbf_aux);
     }
 
-
     // I believe C_DSYSV should be faster than C_GESV, but I've found the opposite to be true.
     // This performance issue should be investigated, but is not consequential here.
     // The cost of either linear solve is dwarfed by the actual integral computation.
     //
-    //std::vector<double> work(3 * nbf_aux);
-    //int errcode = C_DSYSV('U', nbf_aux, 1, J_metric_->clone()->pointer()[0], nbf_aux, ipiv.data(), H[jki]->pointer(), nbf_aux, work.data(), 3 * nbf_aux);
+    // std::vector<double> work(3 * nbf_aux);
+    // int errcode = C_DSYSV('U', nbf_aux, 1, J_metric_->clone()->pointer()[0], nbf_aux, ipiv.data(), H[jki]->pointer(),
+    // nbf_aux, work.data(), 3 * nbf_aux);
 
     // shell maxima of H for screening
     Vector H_shell_max(nshell_aux);
     auto H_shell_maxp = H_shell_max.pointer();
 
-    for(size_t jki = 0; jki < njk; jki++) {
-
+    for (size_t jki = 0; jki < njk; jki++) {
         auto Hp = H[jki]->pointer();
 
         for (int P = 0; P < nshell_aux; P++) {
@@ -251,7 +245,6 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
                 H_shell_maxp[P] = std::max(H_shell_maxp[P], std::abs(Hp[p]));
             }
         }
-
     }
 
     timer_off("Metric");
@@ -266,7 +259,6 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
 
 #pragma omp parallel for schedule(guided) num_threads(nthreads_) reduction(+ : computed_triplets2)
     for (size_t MNP = 0; MNP < nshelltriplet; MNP++) {
-
         size_t MN = MNP % nshellpair;
         size_t P = MNP / nshellpair;
         int rank = 0;
@@ -276,7 +268,8 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
         auto bra = eri_computers[rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        if(H_shell_maxp[P] * H_shell_maxp[P] * J_metric_shell_diag[P] * eri_computers[rank]->shell_pair_value(M,N) < thresh2) {
+        if (H_shell_maxp[P] * H_shell_maxp[P] * J_metric_shell_diag[P] * eri_computers[rank]->shell_pair_value(M, N) <
+            thresh2) {
             continue;
         }
         computed_triplets2++;
@@ -288,10 +281,9 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
         int nstart = primary_->shell(N).function_index();
 
         eri_computers[rank]->compute_shell(P, 0, M, N);
-        const auto & buffer = eri_computers[rank]->buffers()[0];
+        const auto& buffer = eri_computers[rank]->buffers()[0];
 
-        for(size_t jki = 0; jki < njk; jki++) {
-
+        for (size_t jki = 0; jki < njk; jki++) {
             auto JTp = JT[jki][rank]->pointer();
             auto Hp = H[jki]->pointer();
 
@@ -303,22 +295,19 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
                     }
                 }
             }
-
         }
-
     }
 
     timer_off("ERI2");
 
     num_computed_shells_ = computed_triplets1 + computed_triplets2;
 
-    for(size_t jki = 0; jki < njk; jki++) {
+    for (size_t jki = 0; jki < njk; jki++) {
         for (size_t thread = 0; thread < nthreads_; thread++) {
             J[jki]->add(JT[jki][thread]);
         }
         J[jki]->hermitivitize();
     }
-
 }
 
 }  // namespace psi

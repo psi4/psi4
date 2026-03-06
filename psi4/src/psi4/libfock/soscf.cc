@@ -491,7 +491,7 @@ SharedMatrix SOMCSCF::H_approx_diag() {
                         Hp[oi][a] += 2.0 * value;
 
                     }  // End i loop
-                }      // End a loop
+                }  // End a loop
                 offset_row += ras_size;
             }  // End ras loop
             offset_act += nactpi_[h];
@@ -630,7 +630,7 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x) {
                     IFk->pointer(h)[noccpi_[h]], nmopi_[h], 0.0, Fkp[noccpi_[h]], nmopi_[h]);
 
             // OPDM_vw += Qk
-            C_DAXPY( static_cast<size_t>(nmopi_[h]) * nactpi_[h], 1.0, Qkp[0], 1, Fkp[noccpi_[h]], 1);
+            C_DAXPY(static_cast<size_t>(nmopi_[h]) * nactpi_[h], 1.0, Qkp[0], 1, Fkp[noccpi_[h]], 1);
         }
 
         if (nvirpi_[h]) {
