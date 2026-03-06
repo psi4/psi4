@@ -54,6 +54,7 @@
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libscf_solver/uhf.h"
 #include "psi4/libscf_solver/rhf.h"
+#include "psi4/libscf_solver/cghf.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
@@ -1004,6 +1005,7 @@ SharedMatrix SCFDeriv::compute_hessian()
     if (options_.get_str("REFERENCE") == "RHF" || 
         options_.get_str("REFERENCE") == "RKS" || 
         options_.get_str("REFERENCE") == "UHF" ||
+        options_.get_str("REFERENCE") == "CGHF" ||
         options_.get_str("REFERENCE") == "UKS") {
         hessians_["Response"] = hessian_response();
     } else {

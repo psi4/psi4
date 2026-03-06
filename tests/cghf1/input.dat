@@ -1,0 +1,25 @@
+#! cGHF cc-pVDZ energy for the water molecule using a sad guess, C1 symmetry, and 4-index ERI
+
+nucenergy =    9.1892221210306353     #TEST
+refenergy =  -76.02676814088053       #TEST
+
+molecule h2o {
+    0 1
+    O          0.00000        0.00000        0.11779
+    H          0.00000        0.75545       -0.47116
+    H          0.00000       -0.75545       -0.47116
+    Symmetry C1
+}
+
+set = {
+    reference cghf
+    scf_type   pk
+    basis      cc-pVDZ
+    guess core
+    e_convergence 1e-9
+}
+thisenergy = energy('scf')
+
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 7, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 7, "Reference energy")                             #TEST
+
