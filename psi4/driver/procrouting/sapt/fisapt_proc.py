@@ -296,6 +296,10 @@ def fisapt_variables_to_wfn(self, ref_wfn, external_potentials=None, sapt_type='
         ref_wfn.set_variable("SAPT HF(2) ENERGY C", scalars["E_C"])
         ref_wfn.set_variable("SAPT HF(2) ENERGY HF", scalars["HF"])
 
+    # Check if doing FSAPT. If not, we do not have FSAPT vars to set so just
+    # return early
+    if not core.get_option("FISAPT", "FISAPT_DO_FSAPT"):
+        return
     # Then matrices
     matrices = self.matrices()
     ref_wfn.set_variable("FSAPT_QA", matrices["Qocc0A"])
