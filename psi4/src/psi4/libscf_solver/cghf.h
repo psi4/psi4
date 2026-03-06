@@ -148,9 +148,9 @@ class CGHF : public HF {
     // All 4 of these containers have a MAX size of DIIS_MAX_VECS
 
     // Holds the grabbed Fock matrices to extrapolate
-    std::deque<einsums::BlockTensor<std::complex<double>, 2>> Fdiis;
+    std::deque<std::shared_ptr<einsums::BlockTensor<std::complex<double>, 2>>> Fdiis;
     // Holds FDSmSDF_ at each iteration (orbital gradients)
-    std::deque<einsums::BlockTensor<std::complex<double>, 2>> err_vecs;
+    std::deque<std::shared_ptr<einsums::BlockTensor<std::complex<double>, 2>>> err_vecs;
     std::vector<double> error_doubles;  // RMS errors (real)
 
     double nuclearrep_;  // Nuclear repulsion energy

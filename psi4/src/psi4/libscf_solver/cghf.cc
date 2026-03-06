@@ -73,7 +73,6 @@ CGHF::~CGHF() {}
 
 // Define global einsums::BlockTensors and variables needed throughout the CGHF class
 void CGHF::common_init() {
-    std::cout << "   \033[46mCGHF::common_init()\033[0m" << std::endl;
     name_ = "CGHF";
 
     // ao_eri lacks irreps and we have no JK object yet so we only support C1
@@ -97,8 +96,8 @@ void CGHF::common_init() {
     same_a_b_orbs_ = false;
 
     // => DIIS variables <=
-    err_vecs = std::deque<einsums::BlockTensor<std::complex<double>, 2>>(0);
-    Fdiis = std::deque<einsums::BlockTensor<std::complex<double>, 2>>(0);
+    err_vecs = std::deque<std::shared_ptr<ComplexMatrix>>(0);
+    Fdiis = std::deque<std::shared_ptr<ComplexMatrix>>(0);
     error_doubles = std::vector<double>(0);
 
     // nelecpi_ is needed to form_C which is called after every guess. Preiterations
@@ -119,11 +118,11 @@ void CGHF::common_init() {
     // Core Hamiltonian, Fock, Orthogonalized Fock, and Coefficient Matrices
     F0_ = std::make_shared<ComplexMatrix>("F0", irrep_sizes_);
     F_ = std::make_shared<ComplexMatrix>("F", irrep_sizes_);
-    Fp_ = std::make_shared<ComplexMatrix>("EINX_", irrep_sizes_);
+    Fp_ = std::make_shared<ComplexMatrix>("Forth", irrep_sizes_);
     C_ = std::make_shared<ComplexMatrix>("C", irrep_sizes_);
 
     // Gradient FDS - SDF
-    FDSmSDF_ = std::make_shared<ComplexMatrix>("C", irrep_sizes_);
+    FDSmSDF_ = std::make_shared<ComplexMatrix>("DIIS error", irrep_sizes_);
 
     // Spin blocked overlap matrix and orthogonalization matrix.
     // Needed as metric to compute gradient with FDS - SDF
@@ -157,7 +156,6 @@ void CGHF::common_init() {
 
     subclass_init();
 
-    std::cout << "   \033[46mCGHF::common_init()\033[0m -- einsums::initialize" << std::endl;
     // Initialize einsums and turn off logging to stdout.
     const char* ein_argv[4] = {"psi4\0", "--einsums:no-profiler-report\0", "--einsums:log-level\0", "0\0"};
     einsums::initialize(4, ein_argv);
@@ -167,7 +165,6 @@ void CGHF::common_init() {
  * subsequently the orthogonalization matrix EINX_ Also builds the spin-blocked
  * Hamiltonian as F0_ */
 void CGHF::preiterations() {
-    std::cout << "   \033[46mCGHF::preiterations()\033[0m" << std::endl;
     nuclearrep_ = molecule_->nuclear_repulsion_energy({0.0, 0.0, 0.0});
     G_mat = mintshelper()->ao_eri();
 
@@ -221,7 +218,6 @@ void CGHF::preiterations() {
  * Then places the result in an Einsums Matrix EINX_
  */
 void CGHF::form_Shalf() {
-    std::cout << "   \033[46mCGHF::form_Shalf()\033[0m" << std::endl;
     HF::form_Shalf();
 
     for (int h = 0; h < nirrep_; h++)
@@ -251,7 +247,6 @@ void CGHF::form_V() {}
  * which are of course computed using their respective density spin block (e.g. K_aa is D_aa)
  */
 void CGHF::form_G() {
-    std::cout << "   \033[46mCGHF::form_G()\033[0m" << std::endl;
     JK_->zero();
 
     int nso = nso_;
@@ -285,7 +280,6 @@ void CGHF::form_G() {
 
 /* F = H + J - K */
 void CGHF::form_F() {
-    std::cout << "   \033[46mCGHF::form_F()\033[0m" << std::endl;
     F_->zero();
     (*F_) += (*F0_);
     (*F_) += (*JK_);
@@ -297,7 +291,6 @@ void CGHF::form_F() {
  * 3. the eigenvectors are back-transformed back to the AO basis
  */
 void CGHF::form_C(double shift) {
-    std::cout << "   \033[46mCGHF::form_C()\033[0m" << std::endl;
     // TODO: allow shift as we should be able to do it within one of the gemm calls below by
     // replacing std::complex<double>{0.0} with the shift
     if (shift != 0.0) throw PSIEXCEPTION("CGHF does not support energy shifting.");
@@ -355,7 +348,6 @@ void CGHF::form_C(double shift) {
  * This puts it in BlockTensor F_ then calls form_C() (which expects F_).
  */
 void CGHF::form_initial_C() {
-    std::cout << "   \033[46mCGHF::form_initial_C()\033[0m" << std::endl;
     // find_occupation();
     if (!sad_) {
         for (int h = 0; h < nirrep_; h++) {
@@ -376,7 +368,6 @@ void CGHF::form_initial_C() {
  * This seems to be more robust than SAP at the moment since SAP
  */
 void CGHF::compute_SAD_guess(bool natorb) {
-    std::cout << "   \033[46mCGHF::compute_SAD_guess()\033[0m" << std::endl;
     HF::compute_SAD_guess(natorb);
 
     for (int h = 0; h < nirrep_; h++)
@@ -394,7 +385,6 @@ void CGHF::compute_SAD_guess(bool natorb) {
  * Then constructs the density matrix D_ with D_uv = C_ui * C_vi_{conj}
  */
 void CGHF::form_D() {
-    std::cout << "   \033[46mCGHF::form_D()\033[0m" << std::endl;
     D_->zero();
     temp1_->zero();
     temp2_->zero();
@@ -432,7 +422,6 @@ void CGHF::damping_update(double damping_percentage) {}
  * E_2e = trace(D_ • 0.5*JK_)
  */
 double CGHF::compute_E() {
-    std::cout << "   \033[46mCGHF::compute_E()\033[0m" << std::endl;
     double kinetic_E = 0.0;
     double one_electron_E = 0.0;
     double two_E = 0.0;
@@ -464,7 +453,6 @@ double CGHF::compute_E() {
 }
 
 double CGHF::compute_initial_E() {
-    std::cout << "   \033[46mCGHF::compute_initial_E()\033[0m" << std::endl;
     // TODO: F0_ is not yet populated
     double one_electron_E = 0.0;
 
@@ -509,8 +497,14 @@ void CGHF::do_diis() {
     // Only extrapolate Fp_ when enough vectors are stored
     if (err_vecs.size() < diis_max) {
         error_doubles.push_back(error);
-        Fdiis.push_back(*Fp_);
-        err_vecs.push_back(*FDSmSDF_);
+        Fdiis.push_back(Fp_);
+        err_vecs.push_back(FDSmSDF_);
+
+        // We create the tensor here instead of diis_max tensors during common_init
+        // to account for future DIIS schemes where e.g. vectors are cleared when
+        // condition number is too high and so err_vecs.size() is a meaningful quantity.
+        Fp_ = std::make_shared<ComplexMatrix>(*Fdiis.back());
+        FDSmSDF_ = std::make_shared<ComplexMatrix>(*err_vecs.back());
 
         return;
     }
@@ -530,19 +524,19 @@ void CGHF::do_diis() {
 
     // Replace max_error with current error
     error_doubles.at(max_error_ind) = error;
-    Fdiis.at(max_error_ind) = *Fp_;
-    err_vecs.at(max_error_ind) = *FDSmSDF_;
+    std::cout << "   \033[46mCGHF::do_diis()\033[0m std::swap Fdiis[max_error_ind] with Fp_" << std::endl;
+    std::swap(Fdiis[max_error_ind], Fp_);
+    std::swap(err_vecs[max_error_ind], FDSmSDF_);
 
     /* Alternatively, we can do this to just replace the last vector */
     // error_doubles.erase(error_doubles.begin());
-    // Fdiis.pop_front();
-    // err_vecs.pop_front();
+    // std::swap(Fdiis[0], Fp_);
+    // std::swap(err_vecs[0], FDSmSDF_);
     //
     // error_doubles.push_back(error);
-    // Fdiis.push_back(*Fp_);
-    // err_vecs.push_back(*FDSmSDF_);
 
 
+    std::cout << "   \033[46mCGHF::do_diis()\033[0m creating B_" << std::endl;
     auto B_ = einsums::Tensor<std::complex<double>, 2>("DIIS Error matrix", diis_max + 1, diis_max + 1);
     B_.zero();
 
@@ -552,34 +546,36 @@ void CGHF::do_diis() {
      *   |  e  e  e -1  |
      *   \ -1 -1 -1  0  /
      */
-    for (int i = 0; i < diis_max + 1; i++) {
+    for (int i = 0; i < diis_max; i++) {
         B_(i, diis_max) = -1;
         B_(diis_max, i) = -1;
     }
-    B_(diis_max, diis_max) = 0;
 
-
+    std::cout << "   \033[46mCGHF::do_diis()\033[0m filling B_" << std::endl;
     // Actually populate it with the errors
     for (int i = 0; i < diis_max; i++) {
         for (int j = i; j < diis_max; j++) {
-            B_(i, j) = 0;
+            B_(i, j) = std::complex<double>{0, 0};
+            if ((i == 0) && (j == 0))
+                std::cout << "   \033[46mCGHF::do_diis()\033[0m getting err_vecs" << std::endl;
             auto ei = err_vecs[i];
             auto ej = err_vecs[j];
 
             std::complex<double> sum{0, 0};
-            for (int h = 0; h < nirrep_; h++) {
-            //    for (int p = 0; p < irrep_sizes_[h]; p++)
-            //        for (int q = 0; q < irrep_sizes_[h]; q++) {
-            //            sum += std::conj(ei[h].subscript(p, q)) * ej[h].subscript(p, q);
-            //        }
-                sum += einsums::linear_algebra::true_dot(ei[h], ej[h]);
-            }
+            if ((i == 0) && (j == 0))
+                std::cout << "   \033[46mCGHF::do_diis()\033[0m computing B(0, 0)" << std::endl;
+            for (int h = 0; h < nirrep_; h++)
+                // sum += einsums::linear_algebra::true_dot(ei[h], ej[h]);
+                for (int p = 0; p < irrep_sizes_[h]; p++)
+                   for (int q = 0; q < irrep_sizes_[h]; q++)
+                       sum += std::conj(ei->block(h).subscript(p, q)) * ej->block(h).subscript(p, q);
             B_(j, i) = sum;
             // B_ is real and symmetric
             if (i != j) B_(i, j) = sum;
         }
     }
 
+    std::cout << "   \033[46mCGHF::do_diis()\033[0m Creating C_temp" << std::endl;
     // Container for the column vector solution of gesv. It should be a column vector
     // but has rank == 2. This is a weird artifact of gesv.
     auto C_temp = einsums::Tensor<std::complex<double>, 2>("solution vector", 1, diis_max + 1);
@@ -587,20 +583,19 @@ void CGHF::do_diis() {
     // Fill the last element of the RHS vector to add the constraint
     C_temp(0, diis_max) = -1;
 
-    std::cout << "   \033[46mCGHF::do_diis()\033[0m -- starting sussy gesv call..." << std::endl;
+    std::cout << "   \033[46mCGHF::do_diis()\033[0m sussy gesv call..." << std::endl;
     // Solves for the DIIS coefficients
     einsums::linear_algebra::gesv(&B_, &C_temp);
-    std::cout << "   \033[46mCGHF::do_diis()\033[0m -- finished sussy gesv call..." << std::endl;
 
+    std::cout << "   \033[46mCGHF::do_diis()\033[0m extrapolating Fp_" << std::endl;
     // Extrapolate Fp_ from solution coefficients
     Fp_->zero();
     for (int i = 0; i < diis_max; i++) {
-        einsums::linear_algebra::axpy(C_temp(0, i), Fdiis[i], Fp_.get());
+        einsums::linear_algebra::axpy(C_temp(0, i), *Fdiis[i], Fp_.get());
     }
 }
 
 void CGHF::form_FDSmSDF() {
-    std::cout << "   \033[46mCGHF::form_FDSmSDF()\033[0m" << std::endl;
     // Computes orbital gradient [F, D] with the overlap matrix EINS_ as the metric by
     // first taking F @ D @ S and storing it in FDSmSDF_
     // S @ D @ F then gets stored in temp2_ and subtracted from FDSmSDF_
@@ -640,7 +635,6 @@ void CGHF::form_FDSmSDF() {
 /* Helper function to return SharedMatrix
  */
 SharedMatrix CGHF::get_shared_FDSmSDF() {
-    std::cout << "   \033[46mCGHF::get_shared_FDSmSDF()\033[0m" << std::endl;
     CGHF::form_FDSmSDF();
 
     Dimension sizes(irrep_sizes_);
