@@ -17,6 +17,7 @@ set = {
     basis      cc-pVDZ
     guess core
     e_convergence 1e-9
+    DIIS ON
 }
 thisenergy = energy('scf')
 
