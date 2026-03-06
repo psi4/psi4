@@ -241,11 +241,6 @@ void CompositeJK::incfock_setup() {
                 D_ref_.push_back(D_ao_[jki]->clone());
             }
             zero();
-
-            // Clear J_prev_/K_prev_ - they will be properly saved in incfock_postiter()
-            // after compute completes. No need to clone zero matrices here.
-            J_prev_.clear();
-            K_prev_.clear();
         } else { // Otherwise, the iteration is incremental
             // Compute delta-density: D_ref_ = D_ao_ - D_prev_
             // Check if D_ref_ shares storage with D_ao_ (from non-incfock iteration)
@@ -263,13 +258,8 @@ void CompositeJK::incfock_setup() {
                     D_ref_[jki]->subtract(D_prev_[jki]);
                 }
             }
-
-            // Restore baseline J/K from previous iteration for accumulation
-            // Sub-algorithms use +=, so J = J_prev + Delta_J, K = K_prev + Delta_K
-            for (size_t jki = 0; jki < njk; jki++) {
-                if (do_J_ && J_prev_.size() > jki) J_ao_[jki]->copy(J_prev_[jki]);
-                if (do_K_ && K_prev_.size() > jki) K_ao_[jki]->copy(K_prev_[jki]);
-            }
+            // J_ao_/K_ao_ already hold previous values (they persist between compute() calls),
+            // so sub-algorithms accumulate delta directly on top. No restore needed.
         }
     } else {
         D_ref_ = D_ao_;
@@ -286,7 +276,9 @@ void CompositeJK::incfock_postiter() {
 
     const auto njk = D_ao_.size();
 
-    // Save density for next iteration - reuse existing matrices if possible
+    // Save density for next iteration - reuse existing matrices if possible.
+    // J_ao_/K_ao_ persist between compute() calls and retain their values,
+    // so no explicit save is needed for them (IncFock accumulates in-place).
     if (D_prev_.size() == njk) {
         for (size_t jki = 0; jki < njk; jki++) {
             D_prev_[jki]->copy(D_ao_[jki]);
@@ -295,34 +287,6 @@ void CompositeJK::incfock_postiter() {
         D_prev_.clear();
         for (auto const &Di : D_ao_) {
             D_prev_.push_back(Di->clone());
-        }
-    }
-
-    // Save J matrices for accumulation in next iteration
-    if (do_J_) {
-        if (J_prev_.size() == njk) {
-            for (size_t jki = 0; jki < njk; jki++) {
-                J_prev_[jki]->copy(J_ao_[jki]);
-            }
-        } else {
-            J_prev_.clear();
-            for (auto const &Ji : J_ao_) {
-                J_prev_.push_back(Ji->clone());
-            }
-        }
-    }
-
-    // Save K matrices for accumulation in next iteration
-    if (do_K_) {
-        if (K_prev_.size() == njk) {
-            for (size_t jki = 0; jki < njk; jki++) {
-                K_prev_[jki]->copy(K_ao_[jki]);
-            }
-        } else {
-            K_prev_.clear();
-            for (auto const &Ki : K_ao_) {
-                K_prev_.push_back(Ki->clone());
-            }
         }
     }
 }

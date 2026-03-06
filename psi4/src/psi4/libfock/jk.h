@@ -765,15 +765,6 @@ class PSI_API DirectJK : public JK {
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
 
-    /// Previous iteration J matrix (for IncFock accumulation)
-    std::vector<SharedMatrix> J_prev_;
-
-    /// Previous iteration K matrix (for IncFock accumulation)
-    std::vector<SharedMatrix> K_prev_;
-
-    /// Previous iteration wK matrix (for IncFock accumulation, range-separated exchange)
-    std::vector<SharedMatrix> wK_prev_;
-
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
 
@@ -803,12 +794,9 @@ class PSI_API DirectJK : public JK {
      * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
      * @param J The list of AO J matrices to build (Same size as D, empty if no J to build)
      * @param K The list of AO K matrices to build (Same size as D, empty if no K to build)
-     * @param J_prev Previous J matrices for INCFOCK accumulation (nullptr = start from zero)
-     * @param K_prev Previous K matrices for INCFOCK accumulation (nullptr = start from zero)
      */
     void build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
-                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K,
-                  std::vector<SharedMatrix>* J_prev = nullptr, std::vector<SharedMatrix>* K_prev = nullptr);
+                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K);
 
     /// Common initialization
     void common_init();
@@ -850,9 +838,6 @@ class PSI_API DirectJK : public JK {
      */
     void clear_D_prev() {
         D_prev_.clear();
-        J_prev_.clear();
-        K_prev_.clear();
-        wK_prev_.clear();
         incfock_needs_full_build_ = true;
         incfock_count_ = 0;
     }
@@ -1294,12 +1279,6 @@ class PSI_API CompositeJK : public JK {
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
 
-    /// Previous iteration J matrix (for IncFock accumulation)
-    std::vector<SharedMatrix> J_prev_;
-
-    /// Previous iteration K matrix (for IncFock accumulation)
-    std::vector<SharedMatrix> K_prev_;
-
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
 
@@ -1351,8 +1330,6 @@ class PSI_API CompositeJK : public JK {
      */
     void clear_D_prev() {
         D_prev_.clear();
-        J_prev_.clear();
-        K_prev_.clear();
         incfock_needs_full_build_ = true;
         incfock_count_ = 0;
     }
