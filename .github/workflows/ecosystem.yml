@@ -232,7 +232,6 @@ jobs:
         #
         # Note: using the cache file (-C below) is optional. See cmargs above.
         #   The cache file is doing the -D ENABLE_<addon>=ON work.
-        git pull master --tags
         cmake \
           -S. \
           -B objdir \
