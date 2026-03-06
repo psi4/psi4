@@ -214,7 +214,6 @@ def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[c
     """
 
     # Shifting to C1 so we need to copy the active molecule
-    sapt_dimer = sapt_dimer.clone()
     if sapt_dimer.schoenflies_symbol() != 'c1':
         core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
         sapt_dimer.reset_point_group('c1')

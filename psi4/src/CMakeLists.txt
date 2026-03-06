@@ -87,7 +87,7 @@ target_compile_definitions(l2export
 # set_target_properties(core
    # PROPERTIES
      # implicit in pybind11_add_module
-     # CXX_VISIBILITY_PRESET hidden
+     # CXX_VISIBILITY_PRESET default
      # implicit in add_library MODULE called by pybind11_add_module
      # POSITION_INDEPENDENT_CODE 1
      # VISIBILITY_INLINES_HIDDEN 1

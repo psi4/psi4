@@ -41,4 +41,5 @@ void export_misc(py::module &m) {
     m.def("tstart", tstart, "Start module-level timer. Only one active at once.");
     m.def("tstop", tstop, "Stop module-level timer. Prints user, system, and total times to outfile.");
     m.def("clean_timers", clean_timers, "Reinitialize timers for independent ``timer.dat`` entries. Vital when earlier independent calc finished improperly.");
+    m.def("get_timer_dict", get_timer_dict, "Get timing information as a nested dictionary. Returns a dict with timer names as keys and timing data (wall_time, user_time, system_time, n_calls) as values.");
 }

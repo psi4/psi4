@@ -30,8 +30,9 @@ Only contains extensions to the :py:class:`psi4.core.Wavefunction` class.
 
 """
 
-__all__ = []
+__all__ = ["write_timer_csv"]
 
+import csv
 from typing import Optional
 
 from psi4 import core
@@ -434,3 +435,57 @@ def _write_molden(
         fn.write(mol_string)
 
 core.Wavefunction.write_molden = _write_molden
+
+
+def write_timer_csv(filename: Optional[str] = None):
+    """Write timing information from Psi4 timers to a CSV file.
+
+    Parameters
+    ----------
+    filename : str, optional
+        Destination file name for CSV file. If unspecified (None),
+        defaults to "timer.csv".
+
+    Returns
+    -------
+    return_str : str
+        A string containing the timer information in CSV format.
+
+    Examples
+    --------
+    >>> energy('scf')
+    >>> write_timer_csv('my_timing.csv')
+
+    """
+    if filename is None:
+        filename = "timer.csv"
+
+    # Get the timer dictionary from core
+    timer_dict = core.get_timer_dict()
+
+    # Write to CSV file
+    with open(filename, 'w', newline='') as csvfile:
+        fieldnames = [
+            'timer_name',
+            'wall_time',
+            'user_time',
+            'system_time',
+            'n_calls'
+        ]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        return_str = "timer_name,wall_time,user_time,system_time,n_calls\n"
+
+        writer.writeheader()
+        for timer_name, timer_data in sorted(timer_dict.items()):
+            row = {
+                'timer_name': timer_name,
+                'wall_time': timer_data['wall_time'],
+                'user_time': timer_data['user_time'],
+                'system_time': timer_data['system_time'],
+                'n_calls': int(timer_data['n_calls'])
+            }
+            writer.writerow(row)
+            return_str += f"{timer_name},{timer_data['wall_time']},{timer_data['user_time']},{timer_data['system_time']},{int(timer_data['n_calls'])}\n"
+
+    core.print_out(f"\nTimer data written to {filename}\n")
+    return return_str
