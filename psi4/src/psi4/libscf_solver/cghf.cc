@@ -575,13 +575,14 @@ void CGHF::do_diis() {
     // Actually populate it with the errors
     for (int i = 0; i < diis_max; i++) {
         for (int j = i; j < diis_max; j++) {
-            B_(i, j) = 0;
             auto ei = err_vecs[i];
             auto ej = err_vecs[j];
 
             std::complex<double> sum{0, 0};
             for (int h = 0; h < nirrep_; h++)
-                sum += einsums::linear_algebra::true_dot(ei->block(h), ej->block(h));
+                for (int p = 0; p < irrep_sizes_[h]; p++)
+                    for (int q = 0; q < irrep_sizes_[h]; q++)
+                        sum += std::conj(ei->block(h).subscript(p, q)) * ej->block(h).subscript(p, q);
             B_(j, i) = sum;
             // B_ is real and symmetric
             if (i != j) B_(i, j) = sum;
