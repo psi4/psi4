@@ -96,8 +96,8 @@ void CGHF::common_init() {
     same_a_b_orbs_ = false;
 
     // => DIIS variables <=
-    err_vecs = std::deque<einsums::BlockTensor<std::complex<double>, 2>>(0);
-    Fdiis = std::deque<einsums::BlockTensor<std::complex<double>, 2>>(0);
+    err_vecs = std::deque<std::shared_ptr<ComplexMatrix>>(0);
+    Fdiis = std::deque<std::shared_ptr<ComplexMatrix>>(0);
     error_doubles = std::vector<double>(0);
 
     // nelecpi_ is needed to form_C which is called after every guess. Preiterations
@@ -118,11 +118,11 @@ void CGHF::common_init() {
     // Core Hamiltonian, Fock, Orthogonalized Fock, and Coefficient Matrices
     F0_ = std::make_shared<ComplexMatrix>("F0", irrep_sizes_);
     F_ = std::make_shared<ComplexMatrix>("F", irrep_sizes_);
-    Fp_ = std::make_shared<ComplexMatrix>("EINX_", irrep_sizes_);
+    Fp_ = std::make_shared<ComplexMatrix>("Forth", irrep_sizes_);
     C_ = std::make_shared<ComplexMatrix>("C", irrep_sizes_);
 
     // Gradient FDS - SDF
-    FDSmSDF_ = std::make_shared<ComplexMatrix>("C", irrep_sizes_);
+    FDSmSDF_ = std::make_shared<ComplexMatrix>("DIIS error", irrep_sizes_);
 
     // Spin blocked overlap matrix and orthogonalization matrix.
     // Needed as metric to compute gradient with FDS - SDF
@@ -520,8 +520,14 @@ void CGHF::do_diis() {
     // Only extrapolate Fp_ when enough vectors are stored
     if (err_vecs.size() < diis_max) {
         error_doubles.push_back(error);
-        Fdiis.push_back(*Fp_);
-        err_vecs.push_back(*FDSmSDF_);
+        Fdiis.push_back(Fp_);
+        err_vecs.push_back(FDSmSDF_);
+
+        // We create the tensor here instead of diis_max tensors during common_init
+        // to account for future DIIS schemes where e.g. vectors are cleared when
+        // condition number is too high and so err_vecs.size() is a meaningful quantity.
+        Fp_ = std::make_shared<ComplexMatrix>(*Fdiis.back());
+        FDSmSDF_ = std::make_shared<ComplexMatrix>(*err_vecs.back());
 
         return;
     }
@@ -541,17 +547,15 @@ void CGHF::do_diis() {
 
     // Replace max_error with current error
     error_doubles.at(max_error_ind) = error;
-    Fdiis.at(max_error_ind) = *Fp_;
-    err_vecs.at(max_error_ind) = *FDSmSDF_;
+    std::swap(Fdiis[max_error_ind], Fp_);
+    std::swap(err_vecs[max_error_ind], FDSmSDF_);
 
     /* Alternatively, we can do this to just replace the last vector */
     // error_doubles.erase(error_doubles.begin());
-    // Fdiis.pop_front();
-    // err_vecs.pop_front();
+    // std::swap(Fdiis[0], Fp_);
+    // std::swap(err_vecs[0], FDSmSDF_);
     //
     // error_doubles.push_back(error);
-    // Fdiis.push_back(*Fp_);
-    // err_vecs.push_back(*FDSmSDF_);
 
 
     auto B_ = einsums::Tensor<std::complex<double>, 2>("DIIS Error matrix", diis_max + 1, diis_max + 1);
@@ -563,12 +567,10 @@ void CGHF::do_diis() {
      *   |  e  e  e -1  |
      *   \ -1 -1 -1  0  /
      */
-    for (int i = 0; i < diis_max + 1; i++) {
+    for (int i = 0; i < diis_max; i++) {
         B_(i, diis_max) = -1;
         B_(diis_max, i) = -1;
     }
-    B_(diis_max, diis_max) = 0;
-
 
     // Actually populate it with the errors
     for (int i = 0; i < diis_max; i++) {
@@ -578,13 +580,8 @@ void CGHF::do_diis() {
             auto ej = err_vecs[j];
 
             std::complex<double> sum{0, 0};
-            for (int h = 0; h < nirrep_; h++) {
-            //    for (int p = 0; p < irrep_sizes_[h]; p++)
-            //        for (int q = 0; q < irrep_sizes_[h]; q++) {
-            //            sum += std::conj(ei[h].subscript(p, q)) * ej[h].subscript(p, q);
-            //        }
-                sum += einsums::linear_algebra::true_dot(ei[h], ej[h]);
-            }
+            for (int h = 0; h < nirrep_; h++)
+                sum += einsums::linear_algebra::true_dot(ei->block(h), ej->block(h));
             B_(j, i) = sum;
             // B_ is real and symmetric
             if (i != j) B_(i, j) = sum;
@@ -604,7 +601,7 @@ void CGHF::do_diis() {
     // Extrapolate Fp_ from solution coefficients
     Fp_->zero();
     for (int i = 0; i < diis_max; i++) {
-        einsums::linear_algebra::axpy(C_temp(0, i), Fdiis[i], Fp_.get());
+        einsums::linear_algebra::axpy(C_temp(0, i), *Fdiis[i], Fp_.get());
     }
 }
 
