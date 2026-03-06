@@ -111,9 +111,6 @@ jobs:
         fetch-depth: 0
         fetch-tags: true
 
-    - name: Get tags.
-      run: git fetch upstream "refs/tags/*:refs/tags/*"
-
       # see CMAKE_OSX_SYSROOT and CMAKE_Fortran_FLAGS for use
       # mac_ver line returns, e.g., "10.15" for Catalina & "11.6" for Big Sur. but phracker doesn't support all minor, so some logic to hardcode.
     - name: Prepare compiler environment, SDK (M)
@@ -235,6 +232,7 @@ jobs:
         #
         # Note: using the cache file (-C below) is optional. See cmargs above.
         #   The cache file is doing the -D ENABLE_<addon>=ON work.
+        git fetch upstream "refs/tags*:refs/tags/*"
         cmake \
           -S. \
           -B objdir \
