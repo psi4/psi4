@@ -152,7 +152,7 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
                 for (int e_mi = 0; e_mi < n_pno_[mi]; ++e_mi) {
                     for (int f_mi = 0; f_mi < n_pno_[mi]; ++f_mi) {
-                        double val = K_maef_dt_[mi]->get(a_ii, e_mi * npno_mi + f_mi) - Fkc_bar_[ii]->get(k_ii, a_ii) * glizzy_sticker->get(e_mi, f_mi) * Fkc_bar_[ii]->get(k_ii, a_ii);
+                        double val = K_maef_dt_[mi]->get(a_ii, e_mi * npno_mi + f_mi) - Fkc_bar_[ii]->get(k_ii, a_ii) * glizzy_sticker->get(e_mi, f_mi);
                         K_maef_dt_[mi]->set(a_ii, e_mi * npno_mi + f_mi, val);
                         // (*K_maef_dt_[mi])(a_ii, e_mi * npno_mi + f_mi) -= (*Fkc_bar_[ii])(k_ii, a_ii) * (*glizzy_sticker)(e_mi, f_mi) * (*Fkc_bar_[ii])(k_ii, a_ii);
                     } // end f_mi
@@ -374,8 +374,8 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         // Eq 33a and b
         // TODO: Add tilde to B^{Q}_{fc} term
         for (int q_mn = 0; q_mn < naux_mn; ++q_mn) {
-            auto q_vv = qab_mn[q_mn]; // (npno_mn, npno_mn)
-            auto q_ov = qia_mn[q_mn]; // (nlmo_mn, npno_mn)
+            auto q_vv = qab_mn[q_mn]->clone(); // (npno_mn, npno_mn)
+            auto q_ov = qia_mn[q_mn]->clone(); // (nlmo_mn, npno_mn)
 
             // This performs a "T1-dressing" on Qvv, 
             // B^{Q_{mn}}_{f_{mn}c_{mn}} -= \widetilde{T}_{k_{mn}}^{f_{mn}} B^{Q_{mn}}_{k_{mn}c_{mn}}
@@ -448,7 +448,7 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         auto qov_nn = QIA_PNO(nn); // naux_nn * (nlmo_nn, npno_nn)
 
         for (int q_nn = 0; q_nn < naux_nn; ++q_nn) {
-            auto qov = qov_nn[q_nn]; // (nlmo_nn, npno_nn)
+            auto qov = qov_nn[q_nn]->clone(); // (nlmo_nn, npno_nn)
             auto qov_contracted = linalg::doublet(qov, T_ia_[n], false, false); // (nlmo_nn, npno_nn) * (npno_nn, 1) -> (nlmo_nn, 1)
 
             for (int k_nn = 0; k_nn < nlmo_nn; ++k_nn) {
@@ -631,6 +631,7 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         } // end i_mm
     } // end m
 
+#pragma omp parallel for
     for (int im = 0; im < n_lmo_pairs; ++im) {
         auto &[i, m] = ij_to_i_j_[im];
         int ii = i_j_to_ij_[i][i], mm = i_j_to_ij_[m][m];
@@ -1100,8 +1101,15 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
 
             // l^{a_{ij}b_{ij}}_{ij} += (2 - P_{ab}) [\frac{1}{2}\widetilde{\lambda}^{f_{ni}a_{ni}}_{ni}[\widetilde{\delta}^{f_{ni}b_{ij}}_{nj}S^{a_{ni}}_{a_{ij}} (Toth Eq. 53a) 
             auto forg = linalg::doublet(S_PNO(ij, in), lambda_iajb_[in]);
-            auto glizzy = K_iakc_non_proj_[ni][j_ni];
+            /// [ij][k_ij] => (i a_{ij} | k c_{kj}) 
+            /// [ij][k_ij] => (i k | a_{ij} c_{kj})
+
+            /// [ni][j_ni] => (n a_{ni} | j c_{ji})
+
+            /// (n f_{ni} | j b_{ij})
+            auto glizzy = K_iakc_non_proj_[ni][j_ni]->clone(); // I forgor a clone :)
             glizzy->scale(2.0);
+            /// (n j | f_{ni} b_{ij})
             glizzy->subtract(J_ikac_non_proj_[ni][j_ni]);
             glizzy->add(linalg::triplet(S_PNO(ni, nj), delta[nj], S_PNO(nj, ij))); // (f_{ni}, b_{ij})
             auto parts = linalg::doublet(forg, glizzy);
@@ -1165,16 +1173,9 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
         int ji = ij_to_ji_[ij];
-
-        L_iajb[ij]->zero();
-
-        if (i_j_to_ij_strong_[i][j] != -1) {
-            L_iajb[ij]->add(Ln_iajb[ij]);
-            L_iajb[ij]->add(Ln_iajb[ji]->transpose());
-        } else {
-            L_iajb[ij] = std::make_shared<Matrix>(n_pno_[ij], n_pno_[ij]);
-            L_iajb[ij]->zero();
-        }
+        
+        L_iajb[ij] = Ln_iajb[ij]->clone();
+        L_iajb[ij]->add(Ln_iajb[ji]->transpose());
     }
 
     timer_off("DLPNO-CCSD Lambda : Compute L2");
@@ -1295,7 +1296,6 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
         }
 
         // DIIS Extrapolation
-        /*
         std::vector<SharedMatrix> lambda_vecs;
         lambda_vecs.reserve(lambda_ia_.size() + lambda_iajb_.size());
         lambda_vecs.insert(lambda_vecs.end(), lambda_ia_.begin(), lambda_ia_.end());
@@ -1318,7 +1318,6 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
         diis.extrapolate(L_vecs_flat.get());
 
         copy_flat_mats(lambda_vecs_flat, lambda_vecs);
-        */
         
         // Compute lambda CCSD pseudoenergy (and remake lambda_ijab_bar)
         e_curr = 0.0;
