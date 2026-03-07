@@ -390,6 +390,15 @@ def libint2_print_out() -> None:
 def libint2_supports(am: int, der: int = 0, centers: int = 4) -> bool:
     """Does the linked Libint2 support 2-, 3-, or 4-*centers* ERIs of angular momentum *am* and derivative *der*."""
 
-    amstr = "SPDFGHIKLMNOQRTUVWXYZ"
-    amcode = amstr[int(am)].lower() * centers
-    return core.libint2_supports(f"eri_{amcode}_d{der}")
+    amstr = "spdfghiklmnoqrtuvwxyz"
+
+    try:
+        iam, ider, icenters = int(am), int(der), int(centers)
+    except (TypeError, ValueError):
+        raise ValueError(f"Invalid non-integer 'am'={am!r}, 'der'={der!r}, or 'centers'={centers!r}.")
+
+    if iam < 0 or ider < 0 or icenters not in [2, 3, 4]:
+        raise ValueError(f"Negative or angular momentum ({iam}) or derivative ({ider}) or non-[2, 3, 4] centers ({icenters}).")
+
+    amcode = amstr[iam] * icenters
+    return core.libint2_supports(f"eri_{amcode}_d{ider}")

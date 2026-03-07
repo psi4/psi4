@@ -40,16 +40,15 @@
 # * With Libint2 v2.13 (cmake+cmake), some variables gained LIBINT2_ prefixes, CMake components are available for
 #   `find_package(Libint2 ... COMPONENTS ...)`, and components are available from C++ without patching.
 
-if (${MAX_AM_ERI} GREATER 8)
-    set(amchar "llll")
-elseif (${MAX_AM_ERI} EQUAL 7)
-    set(amchar "kkkk")
-elseif (${MAX_AM_ERI} EQUAL 6)
-    set(amchar "iiii")
-elseif (${MAX_AM_ERI} EQUAL 5)
-    set(amchar "hhhh")
-elseif (${MAX_AM_ERI} LESS_EQUAL 4)
+set(_libint_am_letters "spdfghiklmnoqrtuvwxyz")
+string(LENGTH "${_libint_am_letters}" _libint_am_len)
+if (${MAX_AM_ERI} LESS_EQUAL 4)
     set(amchar "gggg")
+elseif (${MAX_AM_ERI} GREATER_EQUAL _libint_am_len)
+    set(amchar "zzzz")
+else()
+    string(SUBSTRING "${_libint_am_letters}" ${MAX_AM_ERI} 1 _libint_am_letter)
+    string(REPEAT "${_libint_am_letter}" 4 amchar)
 endif()
 find_package(Libint2 2.13.1 COMPONENTS ss eri_${amchar}_d0 eri_dddd_d1 eri_ggg_d0 eri_fff_d1 eri_gg_d0 eri_ff_d1 onebody_gg_d0 onebody_ff_d1 onebody_ff_d2 CONFIG  # edit in codedeps
   # REQUIRED COMPONENTS: ss; 2-, 3-, & 4-center E & G, onebody E, G, & H

@@ -455,7 +455,7 @@ data:
       channel: conda-forge
       name: libint
       name_note: "On the psi4 channel, libint/libint2 were used c.2021-23 to distinguish v1/v2. c-f always used libint as the package name. Starting with the v2.8 reunification with upstream, the supplementary 'bigAM' packages published on the psi4 channel will use the name libint for consistency with c-f."
-      constraint: null
+      constraint: ">=2.13.1"
       constraint_note: "Provides rt-switchable ordering (v2.8.0 src), CMake and C++ codes for supported integrals (v2.13.0 src), and derivative integrals (build). It is possible to use >=2.8.1,<2.13.0 with Psi4 provided you revert the find_package() and libint2_citation interface sugar in https://github.com/psi4/psi4/pull/3353 ."
       aux_build_names:
         # - //psi4::libint
