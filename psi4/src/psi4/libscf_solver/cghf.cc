@@ -79,7 +79,7 @@ void CGHF::common_init() {
     auto &singleton = einsums::GlobalConfigMap::get_singleton();
     singleton.lock();
 
-    auto &bool_map = singleton.get_bool_map().get_value();
+    auto &bool_map = singleton.get_bool_map()->get_value();
 
     bool_map["attach-debugger"] = false;
     singleton.unlock();
