@@ -880,6 +880,7 @@ def compute_GRAC_shift(
     grac_options = sapt_dft_grac_convergence_tier_options[
         sapt_dft_grac_convergence_tier
     ]
+    grac = None
     for options in grac_options:
         for key, val in options.items():
             core.set_local_option("SCF", key, val)
@@ -944,10 +945,14 @@ def compute_GRAC_shift(
         E_cation = wfn_cation.energy()
         grac = E_cation - E_given + HOMO
         if grac >= 1 or grac <= -1:
-            raise Exception(
+            raise ValueError(
                 f"The computed GRAC shift ({grac} [E_h]) for {label} exceeds the bounds of -1 < x < 1 and should not be used to approximate the ionization potential."
             )
         break
+    if grac is None:
+        raise ValueError(
+            "Failed to converge the input monomer or its cation for computing the GRAC shift for Monomer" + label
+        )
     core.print_out(f" GRAC shift {label}: {grac:.8f}\n")
     core.print_out(f" {E_given = :.8f}, {E_cation = :.8f}, {HOMO = :.8f}\n")
     optstash.restore()

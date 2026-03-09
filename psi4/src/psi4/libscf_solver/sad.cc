@@ -1171,12 +1171,11 @@ void SADGuess::form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, Shar
     }
     // Scale by sqrt(occ)
     for (int i = 0; i < nocc; i++) {
-        // C_DSCAL(nbf, std::sqrt(occ->get(i)), &Coccp[0][i], nocc);
+        C_DSCAL(nbf, std::sqrt(occ->get(i)), &Coccp[0][i], nocc);
         // AMW: https://github.com/psi4/psi4/pull/3138 changed SAD guess but it
         // hurts convergence especially for GRAC shifts in SAPT(DFT) for larger
-        // molecular systems... Reverting this to agree with original SAPT(DFT)
-        // timing tests using SAD guess
-        C_DSCAL(nbf, occ->get(i), &Coccp[0][i], nocc);
+        // molecular systems... Reverting this change might be nice.
+        // C_DSCAL(nbf, occ->get(i), &Coccp[0][i], nocc);
     }
     // Form D = Cocc*Cocc'
     D->gemm(false, true, 1.0, Cocc, Cocc, 0.0);
