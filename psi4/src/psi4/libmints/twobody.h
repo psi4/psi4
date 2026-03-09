@@ -134,10 +134,6 @@ class PSI_API TwoBodyAOInt {
     std::vector<double> function_sqrt_;
     /// Max density per matrix (Outer loop over density matrices, inner loop over shell pairs)
     std::vector<std::vector<double>> max_dens_shell_pair_;
-    /// Max delta-density per shell pair for INCFOCK screening (Outer: density matrix, Inner: shell pairs)
-    std::vector<std::vector<double>> max_delta_dens_shell_pair_;
-    /// Flag indicating INCFOCK delta-density screening is active
-    bool incfock_screening_active_ = false;
     /// Significant unique function pairs, in row-major, lower triangular indexing
     PairList function_pairs_;
     /// Significant unique shell pairs, in row-major, lower triangular indexing
@@ -162,8 +158,6 @@ class PSI_API TwoBodyAOInt {
     bool shell_significant_csam(int M, int N, int R, int S);
     /// Implements Schwarz inequality screening of a shell quartet
     bool shell_significant_schwarz(int M, int N, int R, int S);
-    /// Asks whether this shell quartet contributes by the density test (Haser 1989)
-    bool shell_significant_density(int M, int N, int R, int S);
     /// Implements the null screening of a shell quartet - always true
     bool shell_significant_none(int M, int N, int R, int S);
 
@@ -216,6 +210,8 @@ class PSI_API TwoBodyAOInt {
     void update_density(const std::vector<SharedMatrix>& D);
     /// Ask the built in sieve whether this quartet contributes
     bool shell_significant(int M, int N, int R, int S) const { return sieve_impl_(M, N, R, S); };
+    /// Density-based screening test (Haser 1989 Eq. 6); public for IncFock delta-D screening
+    bool shell_significant_density(int M, int N, int R, int S);
     /// Are any of the quartets within a given shellpair list significant
     bool shell_block_significant(int shellpair12, int shellpair34) const;
     /// Does a given shell pair contribute to any significant integrals?
@@ -242,16 +238,6 @@ class PSI_API TwoBodyAOInt {
     double shell_pair_value(int m, int n) { return shell_pair_values_[m * nshell_ + n]; };
     /// Return the maximum density matrix element per shell pair. Maximum is over density matrices, if multiple set
     double shell_pair_max_density(int M, int N) const;
-
-    /// Update delta-density data for INCFOCK screening
-    /// @param delta_D The delta density matrices (D_current - D_previous)
-    void update_delta_density(const std::vector<SharedMatrix>& delta_D);
-    /// Enable/disable INCFOCK delta-density screening
-    void set_incfock_screening(bool active) { incfock_screening_active_ = active; }
-    /// Check if INCFOCK delta-density screening is active
-    bool incfock_screening_active() const { return incfock_screening_active_; }
-    /// Delta-density screening for INCFOCK
-    bool shell_significant_delta_density(const int M, const int N, const int R, const int S) const;
 
     /// For a given PQ shellpair index, what's the first RS pair that should be processed such
     /// that loops may be processed generating only permutationally unique PQ<=RS.  For engines

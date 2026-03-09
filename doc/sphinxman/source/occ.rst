@@ -271,7 +271,7 @@ these methods may default to implementations in :ref:`other modules
 .. table:: Spin-Component-Scaled Orbital-Optimized MP capabilities of OCC/DFOCC modules
 
     +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
-    | name                    | calls method                                                 |  Energy                   | Gradient             |
+    | name                    | calls method                                                 |  Energy\ [#f1]_           | Gradient             |
     +=========================+==============================================================+===========================+======================+
     | scs-omp3                | Spin-Component Scaled Orbital-Optimized MP3                  | RHF/UHF/ROHF/RKS/UKS/ROKS | ---                  |
     +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
@@ -293,6 +293,8 @@ these methods may default to implementations in :ref:`other modules
     +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
     | sos-pi-omp2             | A special version of SOS-OMP2 for :math:`\pi`-systems        | RHF/UHF/ROHF/RKS/UKS/ROKS | ---                  |
     +-------------------------+--------------------------------------------------------------+---------------------------+----------------------+
+
+.. [#f1] These are the allowed initial guess references. Allowed orbitals are restricted or unrestricted.
 
 .. comment    | scs-ocepa               | Spin-Component Scaled Orbital-Optimized CEPA                 | RHF/UHF/ROHF/RKS/UKS | ---                  |
 .. comment    | sos-ocepa               | Spin-Opposite Scaled Orbital-Optimized CEPA                  | RHF/UHF/ROHF/RKS/UKS | ---                  |

@@ -660,10 +660,10 @@ void Wavefunction::common_init() {
             // CUHF is different from UHF, but Fock building works the same, so for the time being we just set BrianQC
             // to UHF
             brianRestrictionType = BRIAN_RESTRICTION_TYPE_UHF;
-        } else if (options_.get_str("REFERENCE") == "ROHF" or options_.get_str("REFERENCE") == "ROKS") {
+        } else if (options_.get_str("REFERENCE") == "ROHF") {
             brianRestrictionType = BRIAN_RESTRICTION_TYPE_ROHF;
         } else {
-            throw PSIEXCEPTION("Currently, BrianQC can only handle RHF, RKS, UHF, UKS, CUHF, ROHF and ROKS calculations");
+            throw PSIEXCEPTION("Currently, BrianQC can only handle RHF, RKS, UHF, UKS, CUHF and ROHF calculations");
         }
 
         brianCOMSetRestriction(&brianCookie, &brianRestrictionType);

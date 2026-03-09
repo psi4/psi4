@@ -157,9 +157,7 @@ void DirectJK::incfock_postiter() {
 
     const auto njk = D_ao_.size();
 
-    // Save density for next iteration - reuse existing matrices if possible
-    // J_ao_/K_ao_/wK_ao_ persist between compute() calls and retain their values,
-    // so no explicit save is needed for them (IncFock accumulates in-place).
+    // Save density for next iteration, reuse existing matrices if possible
     if (D_prev_.size() == njk) {
         for (size_t jki = 0; jki < njk; jki++) {
             D_prev_[jki]->copy(D_ao_[jki]);
@@ -341,19 +339,12 @@ void DirectJK::compute_JK() {
         double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
         double Dnorm = Process::environment.globals["SCF D NORM"];
 
-        // Incremental Fock build requires all conditions to be met:
-        // 1. Dnorm >= incfock_conv: density change above threshold for incremental to be worthwhile
-        // 2. Not initial iteration: first JK call must do full build to establish baseline
-        // 3. D_prev_ ready: previous density matrices available and correct size
-        // 4. Full build done: at least one full build since last clear_D_prev (ensures D_prev_ provenance)
-        // 5. Not periodic reset: every INCFOCK_FULL_FOCK_EVERY iterations, force full rebuild
+        // IncFock requires: converging, not first iter, D_prev_ ready, no pending full build, not periodic reset
         do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (D_prev_.size() == D_ao_.size()) &&
                            !incfock_needs_full_build_ && (incfock_count_ % reset != reset - 1);
 
-        // After a full build in the IncFock regime, incremental builds can resume.
-        // Also clear after initial iteration (to enable IncFock on iter 2).
-        // But NOT when Dnorm < incfock_conv (SOSCF phase) - D_prev_ from SOSCF
-        // has different provenance and shouldn't seed DIIS incremental builds.
+        // Clear full-build requirement after a full build, but not during SOSCF phase
+        // (Dnorm < incfock_conv) where D_prev_ provenance differs from DIIS.
         if (!do_incfock_iter_ && (initial_iteration_ || Dnorm >= incfock_conv)) {
             incfock_needs_full_build_ = false;
         }
@@ -371,15 +362,6 @@ void DirectJK::compute_JK() {
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
 
-    // Disable delta-density screening when Dnorm is small to prevent over-screening
-    // of diffuse shell quartets.
-    if (incfock_) {
-        double diffuse_cutoff = options_.get_double("INCFOCK_DIFFUSE_CUTOFF");
-        double screening_threshold = cutoff_ / diffuse_cutoff;
-        double Dnorm = Process::environment.globals["SCF D NORM"];
-        use_incfock_screening_ = (Dnorm >= screening_threshold);
-    }
-
     // Passed in as a dummy when J (and/or K) is not built
     std::vector<SharedMatrix> temp;
 
@@ -388,13 +370,7 @@ void DirectJK::compute_JK() {
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
-        if (density_screening_) ints[0]->update_density(D_ao_);
-
-        // Setup incfock BEFORE cloning - clones inherit data via copy constructor
-        if (do_incfock_iter_) {
-            ints[0]->update_delta_density(D_ref_);
-            ints[0]->set_incfock_screening(use_incfock_screening_);
-        }
+        if (density_screening_ || do_incfock_iter_) ints[0]->update_density(D_ref_);
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
@@ -404,12 +380,7 @@ void DirectJK::compute_JK() {
     if (do_J_ || do_K_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
-        if (density_screening_) ints[0]->update_density(D_ao_);
-
-        if (do_incfock_iter_) {
-            ints[0]->update_delta_density(D_ref_);
-            ints[0]->set_incfock_screening(use_incfock_screening_);
-        }
+        if (density_screening_ || do_incfock_iter_) ints[0]->update_density(D_ref_);
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
@@ -623,7 +594,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
 
                         // Delta-density screening for incremental Fock build
-                        if (do_incfock_iter_ && !ints[thread]->shell_significant_delta_density(P, Q, R, S)) continue;
+                        if (do_incfock_iter_ && !ints[thread]->shell_significant_density(P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
                         // if (thread == 0) timer_on("JK: Ints");
