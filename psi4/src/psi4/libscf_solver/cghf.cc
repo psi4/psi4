@@ -76,14 +76,6 @@ CGHF::~CGHF() {}
 void CGHF::common_init() {
     name_ = "CGHF";
 
-    auto &singleton = einsums::GlobalConfigMap::get_singleton();
-    singleton.lock();
-
-    auto &bool_map = singleton.get_bool_map()->get_value();
-
-    bool_map["attach-debugger"] = false;
-    singleton.unlock();
-
 
 
     // ao_eri lacks irreps and we have no JK object yet so we only support C1
@@ -168,8 +160,8 @@ void CGHF::common_init() {
     subclass_init();
 
     // Initialize einsums and turn off logging to stdout.
-    const char* ein_argv[4] = {"psi4\0", "--einsums:no-profiler-report\0", "--einsums:log-level\0", "3\0"};
-    einsums::initialize(4, ein_argv);
+    std::vector<std::string> ein_argv{"psi4", "--einsums:no-profiler-report", "--einsums:log-level", "3", "--einsums:no-attach-debugger"};
+    einsums::initialize(ein_argv);
 }
 
 /* Needed for initializing the Einsums spin-blocked overlap matrix EINS_ and
