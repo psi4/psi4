@@ -485,6 +485,8 @@ std::vector<SharedMatrix> RHF::twoel_Hx_full(std::vector<SharedMatrix> x_vec, bo
     }
 
     // Compute JK
+    // Hx density differs from SCF density - force full build and preserve D_prev_
+    jk_->require_full_build();
     jk_->compute();
 
     const std::vector<SharedMatrix>& J = jk_->J();

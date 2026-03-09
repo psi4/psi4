@@ -601,6 +601,8 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
 
     // Compute JK
     // J_mn = I_mnpq Ca_pi Ca_qa Xa_ai, I_mnpq Cb_pi Cb_qa Xb_ai pairs
+    // Hx density differs from SCF density - force full build and preserve D_prev_
+    jk_->require_full_build();
     jk_->compute();
 
     const std::vector<SharedMatrix>& J = jk_->J();

@@ -676,6 +676,9 @@ def scf_finalize_energy(self):
 
             if self.initialized_diis_manager_:
                 self.diis_manager_.reset_subspace()
+            # Reset IncFock state: rotated orbitals invalidate previous density
+            if hasattr(self.jk(), 'clear_D_prev'):
+                self.jk().clear_D_prev()
             # reading the rotated orbitals in before starting iterations
             self.form_D()
             self.set_energies("Total Energy", self.compute_initial_E())

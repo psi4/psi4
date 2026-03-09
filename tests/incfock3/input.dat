@@ -13,9 +13,9 @@ molecule water {
 # Reference values from incfock=TRUE, screening=density, soscf=true runs
 # Note: iteration count may vary by +-1 across compilers due to floating-point differences
 Eref_rhf = -76.026653661805
-Iref_rhf = 12
+Iref_rhf = 10
 Eref_uhf = -76.026653661888
-Iref_uhf = 12
+Iref_uhf = 10
 Itol = 1  # allowed iteration tolerance
 
 def compare_iterations(expected, computed, label):
