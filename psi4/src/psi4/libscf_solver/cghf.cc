@@ -76,6 +76,16 @@ CGHF::~CGHF() {}
 void CGHF::common_init() {
     name_ = "CGHF";
 
+    auto &singleton = einsums::GlobalConfigMap::get_singleton();
+    singleton.lock();
+
+    auto &bool_map = singleton.get_bool_map().get();
+
+    bool_map["attach-debugger"] = false;
+    singleton.unlock();
+
+
+
     // ao_eri lacks irreps and we have no JK object yet so we only support C1
     if (nirrep_ > 1) throw PSIEXCEPTION("USE C1 SYMMETRY!");
 
