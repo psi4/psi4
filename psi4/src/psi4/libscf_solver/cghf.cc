@@ -61,12 +61,14 @@ namespace scf {
 
 CGHF::CGHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func)
     : HF(ref_wfn, func, Process::environment.options, PSIO::shared_object()) {
+    print_ = ref_wfn->get_print();
     common_init();
 }
 
 CGHF::CGHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Options& options,
            std::shared_ptr<PSIO> psio)
     : HF(ref_wfn, func, options, psio) {
+    print_ = ref_wfn->get_print();
     common_init();
 }
 
@@ -76,7 +78,8 @@ CGHF::~CGHF() {}
 void CGHF::common_init() {
     name_ = "CGHF";
 
-
+    this->MOM_performed_ = false;
+    this->iteration_ = 0;
 
     // ao_eri lacks irreps and we have no JK object yet so we only support C1
     if (nirrep_ > 1) throw PSIEXCEPTION("USE C1 SYMMETRY!");
@@ -162,6 +165,25 @@ void CGHF::common_init() {
     // Initialize einsums and turn off logging to stdout.
     std::vector<std::string> ein_argv{"psi4", "--einsums:no-profiler-report", "--einsums:log-level", "3", "--einsums:no-attach-debugger"};
     einsums::initialize(ein_argv);
+
+
+    {
+        auto &singleton = einsums::GlobalConfigMap::get_singleton();
+
+        {
+            auto lock = std::lock_guard(singleton);
+
+            auto &bool_map = singleton.get_bool_map()->get_value();
+
+            bool_map["attach-debugger"] = false;
+        }
+
+        if(singleton.get_bool("attach-debugger", true)) {
+            perror("Debugger will still be attached.");
+            std::exit(-1);
+        }
+
+    }
 }
 
 /* Needed for initializing the Einsums spin-blocked overlap matrix EINS_ and
