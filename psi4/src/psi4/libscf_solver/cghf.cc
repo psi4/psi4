@@ -49,6 +49,7 @@
 #include <Einsums/LinearAlgebra.hpp>
 #include <Einsums/TensorAlgebra.hpp>
 #include <Einsums/Runtime.hpp>
+#include <csignal>
 
 
 using ComplexMatrix = einsums::BlockTensor<std::complex<double>, 2>;
@@ -80,6 +81,8 @@ void CGHF::common_init() {
 
     this->MOM_performed_ = false;
     this->iteration_ = 0;
+
+
 
     // ao_eri lacks irreps and we have no JK object yet so we only support C1
     if (nirrep_ > 1) throw PSIEXCEPTION("USE C1 SYMMETRY!");
@@ -166,6 +169,14 @@ void CGHF::common_init() {
     std::vector<std::string> ein_argv{"psi4", "--einsums:no-profiler-report", "--einsums:log-level", "3", "--einsums:no-attach-debugger"};
     einsums::initialize(ein_argv);
 
+    sigaction(SIGINT, SIG_DFL, nullptr);  // Interrupted
+    sigaction(SIGBUS, SIG_DFL, nullptr);  // Bus error
+    sigaction(SIGFPE, SIG_DFL, nullptr);  // Floating point exception
+    sigaction(SIGILL, SIG_DFL, nullptr);  // Illegal instruction
+    sigaction(SIGPIPE, SIG_DFL, nullptr); // Bad pipe
+    sigaction(SIGSEGV, SIG_DFL, nullptr); // Segmentation fault
+    sigaction(SIGSYS, SIG_DFL, nullptr);  // Bad syscall
+
 
     {
         auto &singleton = einsums::GlobalConfigMap::get_singleton();
@@ -180,7 +191,6 @@ void CGHF::common_init() {
 
         if(singleton.get_bool("attach-debugger", true)) {
             perror("Debugger will still be attached.");
-            std::exit(-1);
         }
 
     }
