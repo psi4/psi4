@@ -169,13 +169,18 @@ void CGHF::common_init() {
     std::vector<std::string> ein_argv{"psi4", "--einsums:no-profiler-report", "--einsums:log-level", "3", "--einsums:no-attach-debugger"};
     einsums::initialize(ein_argv);
 
-    sigaction(SIGINT, SIG_DFL, nullptr);  // Interrupted
-    sigaction(SIGBUS, SIG_DFL, nullptr);  // Bus error
-    sigaction(SIGFPE, SIG_DFL, nullptr);  // Floating point exception
-    sigaction(SIGILL, SIG_DFL, nullptr);  // Illegal instruction
-    sigaction(SIGPIPE, SIG_DFL, nullptr); // Bad pipe
-    sigaction(SIGSEGV, SIG_DFL, nullptr); // Segmentation fault
-    sigaction(SIGSYS, SIG_DFL, nullptr);  // Bad syscall
+    struct sigaction new_action;
+    new_action.sa_handler = SIG_DFL;
+    sigemptyset(&new_action.sa_mask);
+    new_action.sa_flags = 0;
+
+    sigaction(SIGINT, &new_action, nullptr);  // Interrupted
+    sigaction(SIGBUS, &new_action, nullptr);  // Bus error
+    sigaction(SIGFPE, &new_action, nullptr);  // Floating point exception
+    sigaction(SIGILL, &new_action, nullptr);  // Illegal instruction
+    sigaction(SIGPIPE, &new_action, nullptr); // Bad pipe
+    sigaction(SIGSEGV, &new_action, nullptr); // Segmentation fault
+    sigaction(SIGSYS, &new_action, nullptr);  // Bad syscall
 
 
     {
