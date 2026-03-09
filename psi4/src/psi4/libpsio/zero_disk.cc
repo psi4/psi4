@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -55,4 +55,7 @@ void PSIO::zero_disk(size_t unit, const char *key, size_t rows, size_t cols) {
 
     delete[] buf;
 }
+
+void PSIO::zero_disk(size_t unit, const std::string& key, size_t rows, size_t cols) { zero_disk(unit, key.c_str(), rows, cols); };
+
 }  // namespace psi

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -43,7 +43,7 @@ namespace psi {
 IWL::~IWL() { close(); }
 
 void IWL::close() {
-    if (psio_->open_check(itap_)) psio_->close(itap_, keep_);
+    if (psio_ != nullptr && psio_->open_check(itap_)) psio_->close(itap_, keep_);
     if (labels_) delete[](labels_);
     if (values_) delete[](values_);
     labels_ = nullptr;

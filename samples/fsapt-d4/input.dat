@@ -1,0 +1,72 @@
+#! Tests SAPT0-D corrections, with a variety of damping functions/parameters
+
+# ref values are [disp, total]
+memory 1 GB
+
+ref_d4     = -0.0341589
+ref_d4m    = -0.0306317
+
+molecule eneyne {
+0 1
+C 0.00000000 0.00000000 0.00000000
+H 1.09000000 0.00000000 0.00000000
+H -0.36333333 0.83908239 0.59332085
+H -0.36333333 0.09428973 -1.02332709
+H -0.36333333 -0.93337212 0.43000624
+--
+0 1
+C 6.44536662 -0.26509169 -0.00000000
+H 7.53536662 -0.26509169 -0.00000000
+H 6.08203329 0.57399070 0.59332085
+H 6.08203329 -0.17080196 -1.02332709
+H 6.08203329 -1.19846381 0.43000624
+symmetry c1
+no_reorient
+no_com
+}
+
+set {
+basis         jun-cc-pvdz
+scf_type df
+guess sad
+freeze_core true
+}
+
+import qcelemental as qcel
+
+au2kcal = qcel.constants.conversion_factor('hartree', 'kcal/mol')
+
+e_d4_total = energy('fisapt0-d4')
+e_d4_disp = core.variable('FISAPT0-D DISP ENERGY') * au2kcal
+
+e_d4m = energy('fisapt0-d4bj2b')
+e_d4m_disp = core.variable('FISAPT0-D DISP ENERGY') * au2kcal
+print("Ethyne-Ethene -d4: ", e_d4_total)
+
+
+
+final_Eedisp_compare = core.variable('FISAPT0-D DISP ENERGY') * au2kcal
+final_total_energy = core.variable('FISAPT0-D TOTAL ENERGY') * au2kcal
+print("Final Dispersion Energy: ", final_Eedisp_compare)
+print("Final Total Energy: ", final_total_energy)
+
+import os
+import sys
+import subprocess
+
+os.chdir('fsapt')
+print("Active directory is now:", os.getcwd())
+print(os.getcwd())
+with open('fA.dat', 'w') as fA: fA.write("MethylA 1 2 3 4 5")
+with open('fB.dat', 'w') as fB: fB.write("MethylB 6 7 8 9 10")
+subprocess.run([sys.executable, os.path.join('..', 'fsapt.py')], check=True)
+
+fEnergies = {}
+
+
+
+
+# compare_values(fEref['fEedisp'])
+
+
+fEref = { 

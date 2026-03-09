@@ -18,6 +18,8 @@ foreach(dir
   pylibefp
   qcelemental
   qcengine
+  qcmanybody
+  openorbitaloptimizer
   optking
   simint
   libxc

@@ -20,20 +20,52 @@ symmetry c1
 units bohr
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 g, wfn = psi4.gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='vmfc',
                                       return_total_data=True, return_wfn=True)
 core.clean()
 
 
+vmfc_scheme_3b = {
+     "((1,), (1, 2, 3))": 1,
+     "((1, 2), (1, 2, 3))": -1,
+     "((1, 2, 3), (1, 2, 3))": 1,
+     "((1, 3), (1, 2, 3))": -1,
+     "((2,), (1, 2, 3))": 1,
+     "((2, 3), (1, 2, 3))": -1,
+     "((3,), (1, 2, 3))": 1,
+}
+
+sz_dict = {1: 3, 2: 3, 3: 3}
+sl_dict = {1: slice(0, 3), 2: slice(3, 6), 3: slice(6, 9)}
+
+
+    evar = wfn.variable(f"N-BODY {eval(i)[0]}@{eval(i)[1]} TOTAL ENERGY".replace(",)", ")"))
+    gvar = wfn.variable(f"N-BODY {eval(i)[0]}@{eval(i)[1]} TOTAL GRADIENT".replace(",)", ")"))
+    contracted_gradient = qcmb.resize_gradient(gvar.np, eval(i)[1], sz_dict, sl_dict, reverse=True)
+
+
+    evar = wfn.variable(f"N-BODY {eval(i)[0]}@{eval(i)[1]} TOTAL ENERGY".replace(",)", ")"))
+    gvar = wfn.variable(f"N-BODY {eval(i)[0]}@{eval(i)[1]} TOTAL GRADIENT".replace(",)", ")"))
 
 
 
+# renamed for v1.10
+# * '2' -> 'VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY'
+# * 'GRADIENT 1' -> 'VMFC-CORRECTED TOTAL GRADIENT THROUGH 1-BODY'
+# * 'GRADIENT 2' -> 'VMFC-CORRECTED TOTAL GRADIENT THROUGH 2-BODY'
+# * 'GRADIENT 3' -> 'VMFC-CORRECTED TOTAL GRADIENT THROUGH 3-BODY'
+
+
+    print(key, i, i*3, ":", i*3+3)
 
 
 
  
 
-grad_maxnb2 = np.array(
+grad_maxnb2 = np.array(  # grad1b + grad2b
      [[ 0.002155804191, -0.029634185797,  0.032376607396],
       [-0.003170680084,  0.014254859601, -0.006078802815],
       [ 0.012483476168,  0.023203573171, -0.025365946635],
@@ -43,7 +75,7 @@ grad_maxnb2 = np.array(
       [-0.024435013809,  0.009777336603, -0.035394108341],
       [ 0.012544129973, -0.004104715215,  0.008163796645],
       [ 0.012926928671, -0.019819150657,  0.026894167812]])
-grad_maxnb3 = np.array(
+old_grad_maxnb3 = np.array(  # grad 2b + grad 3b
      [[ 0.002219694063,  0.009321053605, -0.006605392323],
       [ 0.004716622541, -0.000932172428,  0.004496896826],
       [ 0.001311905336, -0.002455421929,  0.003035312701],
@@ -53,3 +85,14 @@ grad_maxnb3 = np.array(
       [ 0.006639093791, -0.006637441486,  0.005420065144],
       [-0.003115962895, -0.004227261417, -0.002455116289],
       [-0.002491725232,  0.000538845348, -0.003216771551]])
+grad_maxnb3 = np.array(  # grad1b + grad2b + grad3b
+     [[ 0.00209757, -0.03193087,  0.03215398],
+      [-0.00614372,  0.01497593, -0.00602056],
+      [ 0.01229437,  0.0228884 , -0.0252066 ],
+      [ 0.02716011,  0.01757155,  0.03135191],
+      [-0.0266962 , -0.00140618, -0.02472782],
+      [-0.00974354, -0.01177298, -0.00729909],
+      [-0.02658095,  0.0110038 , -0.03520583],
+      [ 0.01481033, -0.00176671,  0.00820086],
+      [ 0.01280202, -0.01956295,  0.02675315]])
+

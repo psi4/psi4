@@ -12,6 +12,9 @@ set {
    basis cc-pVDZ
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
+
 wfn = properties('ccsd', properties=['polarizability'], return_wfn=True)[1]
 
 refnuc = 46.780362058359806     #TEST

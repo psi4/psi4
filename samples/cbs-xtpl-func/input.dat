@@ -22,6 +22,9 @@ E2 = energy('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]
 # analytic
 
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
 G1 = gradient("cbs", cbs_metadata=[{"wfn": "mp2", "basis": 'cc-pV[DT]Z'}, {"wfn": 'ccsd(t)', "basis": '3-21g', "options": {'qc_module': 'ccenergy'}}])
 G2 = gradient('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g', delta_options={'qc_module': 'ccenergy'})
 

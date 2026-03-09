@@ -17,6 +17,9 @@ set cubeprop_tasks ['esp']
 set e_convergence 12
 set d_convergence 12
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 e, wfn = energy('scf', return_wfn=True)
 cubeprop(wfn)
 

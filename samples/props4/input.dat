@@ -10,6 +10,9 @@ molecule h2o {
 
 set basis cc-pvdz
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 # Make a regular grid to evaluate properties on
 with open('grid.dat', 'w') as fp:
     for x in range(3):

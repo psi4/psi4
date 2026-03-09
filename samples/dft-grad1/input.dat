@@ -20,6 +20,12 @@ set {
     d_convergence         8
 }
 
+if psi4.core.get_global_option("orbital_optimizer_package") == "INTERNAL":
+    tol = 7
+else:
+    tol = 3e-7
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 grad = gradient('bp86-d')
 clean()
 

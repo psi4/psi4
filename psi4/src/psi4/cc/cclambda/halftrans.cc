@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -58,7 +58,7 @@ namespace cclambda {
 */
 
 void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C, int nirreps, int **mo_row,
-               int **so_row, int *mospi, int *sospi, int type, double alpha, double beta) {
+               int **so_row, Dimension const& mospi, Dimension const& sospi, int type, double alpha, double beta) {
     int h, Gc, Gd, cd, pq, ij;
     double **X;
 

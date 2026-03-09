@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -117,6 +117,10 @@ double PSIMRCCWfn::compute_energy() {
     outfile->Printf("\n  GEMM Time = %20.6f s", moinfo_->get_dgemm_timing());
 
     _default_psio_lib_->close(PSIF_PSIMRCC_INTEGRALS, 1);
+
+    // Break cyclic dependencies causing nothing to be freed. (caused a huge memory leak.)
+    ccmanybody.reset();
+    blas_.reset();
 
     return energy;
 }

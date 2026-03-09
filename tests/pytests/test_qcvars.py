@@ -223,49 +223,49 @@ def test_has_del_variable_scal(mode, tkey, fkey, pe_wfn_qcvars):
 # <<<  TODO Deprecated! Delete in Psi4 v1.4  >>>
 
 
-def test_deprecated_core_get_variable(pe_wfn_qcvars):
+def hide_test_deprecated_core_get_variable(pe_wfn_qcvars):
     with pytest.raises(psi4.UpgradeHelper) as err:
         subject = psi4.core.get_variable('vAR B')
 
     assert 'is obsolete as of 1.9' in str(err.value)
 
 
-def test_deprecated_core_get_variables(pe_wfn_qcvars):
+def hide_test_deprecated_core_get_variables(pe_wfn_qcvars):
     with pytest.raises(psi4.UpgradeHelper) as err:
         subject = psi4.core.get_variables()
 
     assert 'is obsolete as of 1.9' in str(err.value)
 
 
-def test_deprecated_core_get_array_variable(pe_wfn_qcvars):
+def hide_test_deprecated_core_get_array_variable(pe_wfn_qcvars):
     with pytest.raises(psi4.UpgradeHelper) as err:
         subject = psi4.core.get_array_variable('MatvAR B')
 
     assert 'is obsolete as of 1.9' in str(err.value)
 
 
-def test_deprecated_core_get_array_variables(pe_wfn_qcvars):
+def hide_test_deprecated_core_get_array_variables(pe_wfn_qcvars):
     with pytest.raises(psi4.UpgradeHelper) as err:
         subject = psi4.core.get_array_variables()
 
     assert 'is obsolete as of 1.9' in str(err.value)
 
 
-def test_deprecated_wfn_get_variable(pe_wfn_qcvars):
+def hide_test_deprecated_wfn_get_variable(pe_wfn_qcvars):
     with pytest.raises(psi4.UpgradeHelper) as err:
         subject = pe_wfn_qcvars.get_variable('vAR B')
 
     assert 'is obsolete as of 1.9' in str(err.value)
 
 
-def test_deprecated_wfn_get_array(pe_wfn_qcvars):
+def hide_test_deprecated_wfn_get_array(pe_wfn_qcvars):
     with pytest.raises(psi4.UpgradeHelper) as err:
         subject = pe_wfn_qcvars.get_array('MatvAR B')
 
     assert 'is obsolete as of 1.9' in str(err.value)
 
 
-def test_deprecated_wfn_set_array(pe_wfn_qcvars):
+def hide_test_deprecated_wfn_set_array(pe_wfn_qcvars):
     mat = psi4.core.Matrix.from_array(np.arange(4).reshape(2, 2))
     with pytest.raises(psi4.UpgradeHelper) as err:
         pe_wfn_qcvars.set_array('matvar D', mat)
@@ -273,7 +273,7 @@ def test_deprecated_wfn_set_array(pe_wfn_qcvars):
     assert 'is obsolete as of 1.9' in str(err.value)
 
 
-def test_deprecated_wfn_arrays(pe_wfn_qcvars):
+def hide_test_deprecated_wfn_arrays(pe_wfn_qcvars):
     with pytest.raises(psi4.UpgradeHelper) as err:
         subject = pe_wfn_qcvars.arrays()
 

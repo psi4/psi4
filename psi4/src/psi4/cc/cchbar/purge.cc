@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -44,23 +44,22 @@ namespace cchbar {
 void purge() {
     dpdfile2 FAE, Fmi, FME, Fme;
     dpdfile4 W;
-    int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;
     int A, B, E, F, I, J, M, N;
     int mn, ei, ma, ef, me, jb, mb, ij, ab;
     int asym, bsym, esym, fsym, isym, jsym, msym, nsym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int nirreps;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     /* Purge FME matrix elements */
     global_dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
@@ -663,23 +662,22 @@ void purge() {
 /* Purge Wmnie matrix elements */
 void purge_Wmnie() {
     dpdfile4 W;
-    int *occpi, *virtpi;
     int h, a, b, e, f, i, j, m, n;
     int A, B, E, F, I, J, M, N;
     int mn, ei, ma, ef, me, jb, mb, ij, ab;
     int asym, bsym, esym, fsym, isym, jsym, msym, nsym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int nirreps;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 0, 11, "WMnIe (Mn,eI)");
     for (h = 0; h < nirreps; h++) {

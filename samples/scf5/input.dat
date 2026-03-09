@@ -7,10 +7,14 @@ psi4_io.set_specific_retention(32,False)
 Eref = {  
     "Singlet": {
         "Composite": {
+          "DFDirJ+COSX"    : {
+            },
         } 
     },
     "Triplet UHF": {
         "Composite": {
+          "DFDirJ+COSX"    : {
+            },
         }
     },
     "Triplet ROHF": {
@@ -69,6 +73,9 @@ for method in Eref["Singlet"]["Composite"].keys():
       set screening density
 
     E = energy('scf')
+    ans = Eref["Singlet"]["Composite"][method]
+    if isinstance(ans, dict):
+        ans = ans[get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE")]
 
 set scf reference uhf
 set screening csam
@@ -96,6 +103,9 @@ for method in Eref["Singlet"]["Composite"].keys():
       set screening density
 
     E = energy('scf')
+    ans = Eref["Singlet"]["Composite"][method]
+    if isinstance(ans, dict):
+        ans = ans[get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE")]
 
 set scf reference cuhf
 set screening csam
@@ -123,6 +133,9 @@ for method in Eref["Singlet"]["Composite"].keys():
       set screening density
 
     E = energy('scf')
+    ans = Eref["Singlet"]["Composite"][method]
+    if isinstance(ans, dict):
+        ans = ans["INTERNAL"]  # no OOO for CUHF
 
 activate(triplet_o2)
 set {
@@ -158,6 +171,9 @@ for method in Eref["Triplet UHF"]["Composite"].keys():
       set screening density
 
     E = energy('scf')
+    ans = Eref["Triplet UHF"]["Composite"][method]
+    if isinstance(ans, dict):
+        ans = ans[get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE")]
 
 clean()
 

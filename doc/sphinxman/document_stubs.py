@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -46,10 +46,6 @@ def pts(category, pyfile):
 Path("source/api/").mkdir(parents=True, exist_ok=True)
 
 for stub in ["psi4.core.del_variable",
-             "psi4.core.get_array_variable",
-             "psi4.core.get_array_variables",
-             "psi4.core.get_variable",
-             "psi4.core.get_variables",
              "psi4.core.has_variable",
              "psi4.core.set_global_option_python",
              "psi4.core.set_variable",

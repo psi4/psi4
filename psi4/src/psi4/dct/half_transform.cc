@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -54,8 +54,8 @@ namespace dct {
  * double beta:        Multiplicative factor for the target
  */
 
-void DCTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, SharedMatrix &C1, SharedMatrix &C2, int *mospi_left,
-                                int *mospi_right, int **so_row, int **mo_row, bool backwards, double alpha,
+void DCTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, SharedMatrix &C1, SharedMatrix &C2, Dimension const& mospi_left,
+                                Dimension const& mospi_right, int **so_row, int **mo_row, bool backwards, double alpha,
                                 double beta) {
     dct_timer_on("DCTSolver::half_transform");
 

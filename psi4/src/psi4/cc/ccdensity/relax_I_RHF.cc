@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -49,12 +49,12 @@ namespace ccdensity {
 void relax_I_RHF() {
     dpdfile2 I, D, f, I1, I2, I3;
     dpdbuf4 E, A, C, D4;
-    int h, nirreps, i, j, e, *occpi, *virtpi, *openpi;
+    int h, nirreps, i, j, e;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    openpi = moinfo.openpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& openpi = moinfo.openpi;
 
     /* I(I,A) = I'(I,A) - sum_M f(I,M) D(orb)(A,M) */
     global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");

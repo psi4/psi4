@@ -29,6 +29,10 @@ set {
   df_basis_scf cc-pVDZ-JKfit
   df_basis_sad cc-pVDZ-JKfit
 }
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 energy('scf')
 
 set {

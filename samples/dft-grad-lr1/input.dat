@@ -19,6 +19,11 @@ set {
     points 5
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    grad_tol = 7
+else:
+    grad_tol = 3e-7
+
 anl_grad = gradient('wB97X-D', dertype=1)
 # fd_grad = gradient('wB97X-D', dertype=0)
 

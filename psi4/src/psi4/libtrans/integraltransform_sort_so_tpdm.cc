@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -129,10 +129,11 @@ void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_r
     size_t last_row = first_row + num_rows;
     size_t pq_pair_count = 0;
     auto PQIter = std::make_shared<SO_PQ_Iterator>(sobasis_);
+    char *toc = new char[40];
     for (PQIter->first(); PQIter->is_done() == false; PQIter->next()) {
         int p = PQIter->p();
         int q = PQIter->q();
-        char *toc = new char[40];
+        
         sprintf(toc, "SO_TPDM_FOR_PAIR_%zd", pq_pair_count);
         size_t buffer_size = tpdm_buffer_sizes_[pq_pair_count];
         if (first_run)
@@ -262,7 +263,7 @@ void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_r
             }
         }  // End rs iterator
         psio_->write_entry(PSIF_AO_TPDM, toc, (char *)tpdm_buffer_, buffer_size * sizeof(double));
-        delete[] toc;
     }  // End pq iterator
+    delete[] toc;
 }
 }  // namespace psi

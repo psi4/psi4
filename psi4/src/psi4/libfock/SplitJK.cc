@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,13 +41,17 @@ SplitJK::SplitJK(std::shared_ptr<BasisSet> primary, Options& options) : primary_
     print_ = 1;
     bench_ = 0;
     debug_ = 0;
-    cutoff_ = 0.0;
+    cutoff_ = 1e-12;
 
     // change defaults based on options
     if (options["PRINT"].has_changed()) bench_ = options_.get_int("PRINT");
     if (options["BENCH"].has_changed()) bench_ = options_.get_int("BENCH");
     if (options["DEBUG"].has_changed()) debug_ = options_.get_int("DEBUG");
     if (options["INTS_TOLERANCE"].has_changed()) cutoff_ = options_.get_double("INTS_TOLERANCE");
+
+    if (options.get_str("SCREENING") == "NONE") {
+        cutoff_ = 0.0;
+    }
 }
 
 SplitJK::~SplitJK() {}

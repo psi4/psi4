@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -506,7 +506,7 @@ def sort_derivative_type(
         core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
         dertype = 0
 
-    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
+    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH", "ZORA"]:
         core.print_out("\nRelativistic analytic gradients are not implemented yet, re-routing to finite differences.\n")
         dertype = 0
 

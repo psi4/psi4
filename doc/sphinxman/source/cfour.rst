@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -249,7 +249,7 @@ Below is an example of a geometry optimization::
 
 Note that the primary change is the exchange of :py:func:`~psi4.driver.energy`
 for :py:func:`~psi4.driver.optimize` to trigger an optimization.  Setting
-|optking__g_convergence|\ =CFOUR provides a good imitation of Cfour
+:py:attr:`~optking.v1.optparams.OptParams.g_convergence`\ =CFOUR provides a good imitation of Cfour
 default convergence criteria. Although Cfour produces gradients only in
 its standard orientation and atom ordering, these are transformed back to
 input orientation by the P4C4 interface. Several sample inputs in
@@ -541,9 +541,9 @@ For instance, to compute the MBPT 2 3/4 energy from MBPT 3 results, the
 following could be used. ::
 
    energy('c4-mp3')
-   mp2p75_corl = 0.75 * get_variable('mp3 correlation energy') + \
-                 0.25 * get_variable('MP2 correlation energy')
-   print mp2p75_corl + get_variable('scf total energy')
+   mp2p75_corl = 0.75 * variable('mp3 correlation energy') + \
+                 0.25 * variable('MP2 correlation energy')
+   print mp2p75_corl + variable('scf total energy')
 
 .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
@@ -837,7 +837,7 @@ arise, here are the specifics, the governing laws.
   straightforward. Unless the optimization is invoked in sandwich mode,
   all Cfour optimization keywords (*e.g.*, |cfour__cfour_geo_maxcyc|) are
   ineffective, as the Cfour optimizer is never invoked. |PSIfour|
-  optimization keywords (*e.g.*, |optking__geom_maxiter|) instead fill
+  optimization keywords (*e.g.*, :py:attr:`~optking.v1.optparams.OptParams.geom_maxiter`) instead fill
   these roles.
 
 * Specifying the computational method (through, for instance,

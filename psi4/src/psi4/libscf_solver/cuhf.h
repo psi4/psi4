@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef __math_test_cuhf_h__
-#define __math_test_cuhf_h__
+#ifndef PSI4_LIBSCF_SOLVER_CUHF_H
+#define PSI4_LIBSCF_SOLVER_CUHF_H
 
 #include "hf.h"
 #include "psi4/libpsio/psio.hpp"

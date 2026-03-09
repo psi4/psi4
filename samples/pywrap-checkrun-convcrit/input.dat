@@ -25,6 +25,9 @@ convmat = [
     [0, 4, 5,  4, 4, 5],
     ]
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 set qc_module detci
 for convcrit in convmat:
     if convcrit[0] != 0:

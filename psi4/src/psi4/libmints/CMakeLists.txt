@@ -1,6 +1,7 @@
 list(APPEND sources
   local.cc
   x2cint.cc
+  zora.cc
   orbitalspace.cc
   maketab.cc
   oeprop.cc
@@ -170,5 +171,12 @@ if(TARGET BrianQC::static_wrapper)
   target_include_directories(mints
     PUBLIC
       $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+endif()
+
+if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
+  target_compile_definitions(mints
+    PUBLIC
+      USING_OpenOrbitalOptimizer
     )
 endif()

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -50,11 +50,11 @@ double cc2_LHX1Y2(const char *pert_x, int irrep_x, double omega_x, const char *p
     char lbl[32];
     double polar;
     int nirreps, Gbm, Gef, Gjf, Ge, Gf, Gj, bm, ef, jf;
-    int *occpi, *virtpi, **W_col_offset, **Z_col_offset, offset;
+    int **W_col_offset, **Z_col_offset, offset;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
 
     sprintf(lbl, "Z_%s_MI", pert_y);
     global_dpd_->file2_init(&z1, PSIF_CC_TMP0, irrep_y, 0, 0, lbl);

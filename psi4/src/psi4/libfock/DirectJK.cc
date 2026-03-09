@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -91,15 +91,17 @@ void DirectJK::common_init() {
     if (options_.get_int("INCFOCK_FULL_FOCK_EVERY") <= 0) {
         throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
     }
-    density_screening_ = options_.get_str("SCREENING") == "DENSITY";
 
+    // other options
+    auto screening_type = options_.get_str("SCREENING");
+    density_screening_ = screening_type == "DENSITY";
     computed_shells_per_iter_["Quartets"] = {};
-    
-    set_cutoff(options_.get_double("INTS_TOLERANCE"));
 }
+
 size_t DirectJK::num_computed_shells() { 
     return num_computed_shells_; 
 }
+
 size_t DirectJK::memory_estimate() {
     return 0;  // Effectively
 }
@@ -352,9 +354,10 @@ void DirectJK::compute_JK() {
 
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
-        for (int thread = 0; thread < df_ints_num_threads_; thread++) {
-            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
-            if (density_screening_) ints[thread]->update_density(D_ref_);
+        ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
+        if (density_screening_) ints[0]->update_density(D_ref_);
+        for (int thread = 1; thread < df_ints_num_threads_; thread++) {
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
         if (do_J_) {
             build_JK_matrices(ints, D_ref_, J_ao_, wK_ao_);

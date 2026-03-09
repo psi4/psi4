@@ -23,6 +23,8 @@ set {
     GUESS CORE
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
 banner('Test [1] optimize(cbs(energy()))')
 E, wfn = optimize('cbs', corl_wfn='mp2', corl_basis='cc-pv[dt]z', delta_wfn='ccsd', delta_basis='3-21g', return_wfn=True, dertype=0)
@@ -30,7 +32,8 @@ wfn.gradient().print_out()
 h2.rHH = 0.743524
 
 banner('Test [2] database(energy())')
-set basis_guess sto-3g
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    set basis_guess sto-3g
 set mp2_type conv
 set df_scf_guess false
 db('mp2','RGC10',subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 total energy'])

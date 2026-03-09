@@ -16,6 +16,9 @@ set {
     basis dz
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 # cc-pv5z-jkfit with the d orbitals and above removed, to allow testing with minimal libint.
 df_basis_scf  {
    assign myribasis

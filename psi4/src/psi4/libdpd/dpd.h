@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -55,6 +55,13 @@ class Matrix;
 /* #define ALL_BUF4_SORT_OOC */
 
 struct dpdparams4 {
+    /*
+      How are p < q handled? If All, they're stored explicitly. This is the default.
+      If p and q are the same space, you can only store p < q. Symm / AntiSymm relates
+      element (p, q) to the implicit element (q, p).
+    */
+    enum class DiagPolicy { All, Symm, AntiSymm};
+
     int nirreps;   /* No. of irreps */
     int pqnum;     /* Pair number for the row indices */
     int rsnum;     /* Pair number for the column indices */
@@ -76,10 +83,10 @@ struct dpdparams4 {
     int *qsym;     /* Orbital symmetry for index q */
     int *rsym;     /* Orbital symmetry for index r */
     int *ssym;     /* Orbital symmetry for index s */
-    int perm_pq;   /* Can p and q be permuted? */
-    int perm_rs;   /* Can r and s be permuted? */
-    int peq;       /* Can p and q be equal? */
-    int res;       /* Can r and s be equal? */
+    DiagPolicy perm_pq;   /* Can p and q be permuted? */
+    DiagPolicy perm_rs;   /* Can r and s be permuted? */
+    bool peq;       /* Can p and q be equal? */
+    bool res;       /* Can r and s be equal? */
     int **start13; /* returns the starting row of irrep matrix h for orbital index p */
 };
 
@@ -90,7 +97,7 @@ struct dpdfile4 {
     int my_irrep;         /* Total irrep of this quantity */
     psio_address *lfiles; /* File address for each submatrix by ROW irrep */
     dpdparams4 *params;
-    int incore;
+    bool incore;
     double ***matrix;
 };
 
@@ -103,7 +110,7 @@ struct dpdshift4 {
 
 struct dpdbuf4 {
     int dpdnum; /* dpd structure reference */
-    int anti;   /* Is this buffer antisymmetric? */
+    bool anti;   /* Is this buffer antisymmetric? */
     dpdparams4 *params;
     dpdfile4 file;
     dpdshift4 shift;
@@ -146,7 +153,7 @@ struct dpdfile2 {
     int my_irrep;
     psio_address *lfiles;
     dpdparams2 *params;
-    int incore;
+    bool incore;
     double ***matrix;
 
     int axpy_matrix(const Matrix& MatX, double alpha);
@@ -166,8 +173,8 @@ struct dpd_file4_cache_entry {
     size_t access;               /* access time */
     size_t usage;                /* number of accesses */
     size_t priority;             /* priority level */
-    int lock;                    /* auto-deletion allowed? */
-    int clean;                   /* has this file4 changed? */
+    bool lock;                    /* auto-deletion allowed? */
+    bool clean;                   /* has this file4 changed? */
     dpd_file4_cache_entry *next; /* pointer to next cache entry */
     dpd_file4_cache_entry *last; /* pointer to previous cache entry */
 };
@@ -183,7 +190,7 @@ struct dpd_file2_cache_entry {
     char label[PSIO_KEYLEN];     /* libpsio TOC keyword */
     double ***matrix;            /* pointer to irrep blocks */
     int size;                    /* size of entry in double words */
-    int clean;                   /* has this file2 changed? */
+    bool clean;                   /* has this file2 changed? */
     dpd_file2_cache_entry *next; /* pointer to next cache entry */
     dpd_file2_cache_entry *last; /* pointer to previous cache entry */
 };
@@ -218,9 +225,9 @@ struct thread_data {
     dpdbuf4 *WmAEf;
     dpdbuf4 *WMnIe;
     dpdbuf4 *SIjAb;
-    int *occpi;
+    Dimension occpi;
     int *occ_off;
-    int *virtpi;
+    Dimension virtpi;
     int *vir_off;
     double omega;
     dpdfile2 *fIJ;
@@ -319,10 +326,13 @@ class PSI_API DPD {
 
     std::vector<DPDMOSpace> moSpaces;
 
+    PSI_DEPRECATED("DPD construction via a vector of int* is being deprecated and will be removed as soon as 1.12.")
     DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
     DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
         dpd_file4_cache_entry *priority, int num_subspaces, std::vector<DPDMOSpace> &moSpaces);
+    DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+        dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaceArrays);
     DPD();
 
     ~DPD();
@@ -482,58 +492,58 @@ class PSI_API DPD {
     void file4_cache_unlock(dpdfile4 *File);
 
     void sort_3d(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx, int ***roworb, int *asym,
-                 int *bsym, int *aoff, int *boff, int *cpi, int *coff, int **rowidx_out, enum pattern index, int sum);
+                 int *bsym, int *aoff, int *boff, Dimension const& cpi, int *coff, int **rowidx_out, enum pattern index, int sum);
 
     void T3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2, dpdbuf4 *F,
-                dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off,
+                dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, Dimension const& occpi, int *occ_off, Dimension const& virtpi, int *vir_off,
                 double omega);
 
     void T3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2AA, dpdbuf4 *T2AB,
                 dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA, dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA,
-                dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB, dpdfile2 *fab, int *aoccpi, int *aocc_off, int *boccpi,
-                int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, double omega);
+                dpdfile2 *fIJ, dpdfile2 *fij, dpdfile2 *fAB, dpdfile2 *fab, Dimension const& aoccpi, int *aocc_off, Dimension const& boccpi,
+                int *bocc_off, Dimension const& avirtpi, int *avir_off, Dimension const& bvirtpi, int *bvir_off, double omega);
 
     void T3_RHF(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2, dpdbuf4 *F,
-                dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off,
+                dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, Dimension const& occpi, int *occ_off, Dimension const& virtpi, int *vir_off,
                 double omega);
 
     void T3_RHF_ic(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2, dpdbuf4 *F,
-                   dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off,
+                   dpdbuf4 *E, dpdfile2 *fIJ, dpdfile2 *fAB, Dimension const& occpi, int *occ_off, Dimension const& virtpi, int *vir_off,
                    double omega);
 
     void cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj, int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
-                       int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe, dpdbuf4 *SIjAb, int *occpi,
-                       int *occ_off, int *virtpi, int *vir_off, double omega, std::string out_fname, int newtrips);
+                       int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe, dpdbuf4 *SIjAb, Dimension const& occpi,
+                       int *occ_off, Dimension const& virtpi, int *vir_off, double omega, std::string out_fname, int newtrips);
 
     void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj, int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
-                          int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe, dpdbuf4 *SIjAb, int *occpi,
-                          int *occ_off, int *virtpi, int *vir_off, double omega, std::string out_fname, int nthreads,
+                          int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe, dpdbuf4 *SIjAb, Dimension const& occpi,
+                          int *occ_off, Dimension const& virtpi, int *vir_off, double omega, std::string out_fname, int nthreads,
                           int newtrips);
 
     void cc3_sigma_UHF_AAA(dpdbuf4 *CMNEF, dpdbuf4 *WABEI, dpdbuf4 *WMBIJ, int do_singles, dpdbuf4 *Dints_anti,
                            dpdfile2 *SIA, int do_doubles, dpdfile2 *FME, dpdbuf4 *WMAFE, dpdbuf4 *WMNIE, dpdbuf4 *SIJAB,
-                           int *aoccpi, int *aocc_off, int *avirtpi, int *avir_off, double omega,
+                           Dimension const& aoccpi, int *aocc_off, Dimension const& avirtpi, int *avir_off, double omega,
                            std::string out_fname);
 
     void cc3_sigma_UHF_BBB(dpdbuf4 *Cmnef, dpdbuf4 *Wabei, dpdbuf4 *Wmbij, int do_singles, dpdbuf4 *Dijab_anti,
                            dpdfile2 *Sia, int do_doubles, dpdfile2 *Fme, dpdbuf4 *Wmafe, dpdbuf4 *Wmnie, dpdbuf4 *Sijab,
-                           int *boccpi, int *bocc_off, int *bvirtpi, int *bvir_off, double omega,
+                           Dimension const& boccpi, int *bocc_off, Dimension const& bvirtpi, int *bvir_off, double omega,
                            std::string out_fname);
 
     void cc3_sigma_UHF_AAB(dpdbuf4 *C2AA, dpdbuf4 *C2AB, dpdbuf4 *C2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
                            dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, int do_singles, dpdbuf4 *DAA, dpdbuf4 *DAB,
                            dpdfile2 *SIA, dpdfile2 *Sia, int do_doubles, dpdfile2 *FME, dpdfile2 *Fme, dpdbuf4 *WMAFE,
                            dpdbuf4 *WMaFe, dpdbuf4 *WmAfE, dpdbuf4 *WMNIE, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
-                           dpdbuf4 *SIJAB, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off,
-                           int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, double omega,
+                           dpdbuf4 *SIJAB, dpdbuf4 *SIjAb, Dimension const& aoccpi, int *aocc_off, Dimension const& boccpi, int *bocc_off,
+                           Dimension const& avirtpi, int *avir_off, Dimension const& bvirtpi, int *bvir_off, double omega,
                            std::string out_fname);
 
     void cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA, dpdbuf4 *FBB, dpdbuf4 *FAB, dpdbuf4 *FBA,
                            dpdbuf4 *EBB, dpdbuf4 *EAB, dpdbuf4 *EBA, int do_singles, dpdbuf4 *DBB, dpdbuf4 *DBA,
                            dpdfile2 *SIA, dpdfile2 *Sia, int do_doubles, dpdfile2 *FME, dpdfile2 *Fme, dpdbuf4 *Wmafe,
                            dpdbuf4 *WMaFe, dpdbuf4 *WmAfE, dpdbuf4 *Wmnie, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
-                           dpdbuf4 *Sijab, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off,
-                           int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, double omega,
+                           dpdbuf4 *Sijab, dpdbuf4 *SIjAb, Dimension const& aoccpi, int *aocc_off, Dimension const& boccpi, int *bocc_off,
+                           Dimension const& avirtpi, int *avir_off, Dimension const& bvirtpi, int *bvir_off, double omega,
                            std::string out_fname);
 };  // Dpd class
 
@@ -547,6 +557,8 @@ extern DPD *dpd_list[2]; // The array of selectable DPD objects.
 extern PSI_API int dpd_set_default(int dpd_num); // Set the default DPD to be idx dpd_num of dpd_list.
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays);
+extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+                    dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaceArrays);
 extern int dpd_close(int dpd_num);
 extern long int PSI_API dpd_memfree();
 extern void dpd_memset(long int memory);

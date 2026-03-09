@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -68,7 +68,7 @@ LinK::LinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     lr_symmetric_ = true;
 
     // set up LinK integral tolerance
-    if (options["LINK_INTS_TOLERANCE"].has_changed()) {
+    if (options["LINK_INTS_TOLERANCE"].has_changed() && options.get_str("SCREENING") != "NONE") {
         linK_ints_cutoff_ = options.get_double("LINK_INTS_TOLERANCE");
     } else {
         linK_ints_cutoff_ = cutoff_;

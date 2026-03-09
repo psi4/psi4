@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -247,7 +247,8 @@ if args['plugin_name']:
     sys.exit()
 
 if args["test"] is not None:
-    if args["test"] not in ['smoke', 'quick', 'full', 'long', 'smoke_not_d2ints', 'quick_not_d2ints']:
+    test_labels = ['smoke', 'quick', 'full', 'long', 'smoke_not_d2ints', 'quick_not_d2ints', 'opt']
+    if args["test"] not in test_labels:
         raise KeyError("The test category {} does not exist.".format(args["test"]))
 
     nthread = int(args["nthread"])

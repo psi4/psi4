@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -58,7 +58,7 @@ namespace detci {
 #define FLAG_NONBLOCKS
 #define MIN_COEFF 1.0E-13
 
-std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, int *orbs_per_irr);
+std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, Dimension& orbs_per_irr);
 extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 
 /*
@@ -180,7 +180,7 @@ std::string CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el
 **    Allow it to handle more complex spaces...don't assume QT orbital order.
 **    It was getting labels all mixed up for RAS's.
 */
-std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, int *orbs_per_irr) {
+std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, Dimension& orbs_per_irr) {
     int ir, j, pitzer_orb, rel_orb;
 
     /* get Pitzer ordering */

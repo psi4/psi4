@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -719,3 +719,8 @@ These environment variables will influence |PSIfours| behavior.
    non-standard location. Value should be set
    to directory containing driver, basis, *etc.* directories, generally
    ending in ``share/psi4``.
+
+.. envvar:: QCMANYBODY_EMBEDDING_CHARGES
+
+   Set to allow embedding charges with many-body/counterpoise computations.
+

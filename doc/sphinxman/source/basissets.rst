@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -219,7 +219,7 @@ of the primary basis set (*e.g.* :srcsample:`decontract`). ::
 
 Obviously this will add significantly to the computational cost of any given calculation, however it can
 be useful when checking the basis set dependence of a particular calculated property or in certain situations
-where a large basis set is critical. Currently it is recommended that a decontracted basis is always used when performing relativistic calculations using the :ref:`X2C Hamiltonian <sec:relativistic>`.
+where a large basis set is critical. Currently it is recommended that a decontracted basis is always used when performing relativistic calculations using the :ref:`X2C Hamiltonian <sec:x2c>`.
 
 .. index::
    pair: basis set; adding new

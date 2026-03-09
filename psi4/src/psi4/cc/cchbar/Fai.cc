@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -57,13 +57,12 @@ void Fai_build() {
     dpdbuf4 tIJAB, tijab, tIjAb, tiJaB, T2;
     dpdbuf4 C, C_anti, D, F_anti, F, E_anti, E, Z;
     int Gma, Gmi, Gm, Gi, Ga, ma, m, a, A, nrows, ncols, h, e, nirreps;
-    int *occpi, *virtpi, *openpi;
     double dotval;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    openpi = moinfo.openpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& openpi = moinfo.openpi;
 
     Fme_for_Fai();
     Fae_for_Fai();

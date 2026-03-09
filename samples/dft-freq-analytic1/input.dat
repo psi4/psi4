@@ -13,6 +13,12 @@ set {
   scf_type pk
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    tol = 0.1
+else:
+    psi4.set_options({"e_convergence": 9, "d_convergence": 7e-8})
+    tol = 0.12
+
 method = 'SVWN/sto-3g'
 
 Efd, fdwfn = freq(method, dertype=1, return_wfn=True)

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -66,9 +66,9 @@ void HF::MOM_start() {
     MOM_performed_ = true;  // Gets printed next iteration
 
     // Build Ca_old_ matrices
-    Ca_old_ = std::make_shared<Matrix>("C Alpha Old (SO Basis)", nirrep_, nsopi_, nmopi_);
+    Ca_old_ = std::make_shared<Matrix>("C Alpha Old (SO Basis)", nsopi_, nmopi_);
     if (!same_a_b_orbs()) {
-        Cb_old_ = std::make_shared<Matrix>("C Beta Old (SO Basis)", nirrep_, nsopi_, nmopi_);
+        Cb_old_ = std::make_shared<Matrix>("C Beta Old (SO Basis)", nsopi_, nmopi_);
     } else {
         Cb_old_ = Ca_old_;
     }

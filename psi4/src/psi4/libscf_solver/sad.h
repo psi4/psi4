@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -29,10 +29,21 @@
 #ifndef LIBSCF_SAD_H
 #define LIBSCF_SAD_H
 
+#ifdef USING_OpenOrbitalOptimizer
+#include "psi4/libmints/matrix.h"
+#include <openorbitaloptimizer/scfsolver.hpp>
+#endif
+
+//namespace arma {
+// class mat;
+// class uvec;
+//}
+
 namespace psi {
 
 class BasisSet;
 class Molecule;
+class JK;
 
 namespace scf {
 
@@ -54,6 +65,8 @@ class SADGuess {
     SharedMatrix Ca_;
     SharedMatrix Cb_;
 
+    std::unique_ptr<JK> jk;
+
     void common_init();
 
     void run_atomic_calculations(SharedMatrix& D_AO, SharedMatrix& Huckel_C, SharedVector& Huckel_E);
@@ -61,11 +74,18 @@ class SADGuess {
     void get_uhf_atomic_density(std::shared_ptr<BasisSet> atomic_basis, std::shared_ptr<BasisSet> fit_basis,
                                 SharedVector occ_a, SharedVector occ_b, SharedMatrix D, SharedMatrix Chuckel,
                                 SharedVector Ehuckel);
+    void get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> atomic_basis, std::shared_ptr<BasisSet> fit_basis,
+                                SharedVector occ_a, SharedVector occ_b, SharedMatrix D, SharedMatrix Chuckel,
+                                SharedVector Ehuckel);
     void form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedVector E, SharedMatrix Cocc,
                       SharedVector occ, SharedMatrix D);
 
     void form_D();
     void form_C();
+
+#ifdef USING_OpenOrbitalOptimizer
+    std::pair<double, std::vector<arma::mat>> fock_builder(const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm, const std::vector<std::vector<arma::uvec>> & lm_indices, const std::vector<arma::mat> & X, const arma::mat & S, const arma::mat & coreH);
+#endif
 
    public:
     SADGuess(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, Options& options);
@@ -83,6 +103,7 @@ class SADGuess {
     void set_atomic_fit_bases(std::vector<std::shared_ptr<BasisSet>> fit_bases) { atomic_fit_bases_ = fit_bases; }
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
+
 };
 }  // namespace scf
 }  // namespace psi

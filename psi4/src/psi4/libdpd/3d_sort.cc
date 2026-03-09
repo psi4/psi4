@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -82,7 +82,7 @@
 namespace psi {
 
 void DPD::sort_3d(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx, int ***roworb,
-                  int *asym, int *bsym, int *aoff, int *boff, int *cpi, int *coff, int **rowidx_out, enum pattern index,
+                  int *asym, int *bsym, int *aoff, int *boff, Dimension const& cpi, int *coff, int **rowidx_out, enum pattern index,
                   int sum) {
     int Ga, Gb, Gc;
     int Gab, Gac, Gca, Gcb, Gbc, Gba;

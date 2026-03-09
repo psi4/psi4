@@ -25,6 +25,9 @@ set {
     d_convergence 1.e-8
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 V11 = energy('scf', dft_functional="svwn")
 
 V12 = energy('scf', dft_functional="b3lyp")

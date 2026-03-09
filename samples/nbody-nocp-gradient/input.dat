@@ -20,11 +20,18 @@ symmetry c1
 units bohr
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 g, wfn = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='nocp', max_nbody=2,
                                       return_total_data=True, return_wfn=True)
 core.clean()
 
 
+
+    expanded_gradient_dict[i] = qcmb.utils.resize_gradient(gradient_dict[i].np, eval(i)[1], {1: 3, 2: 3, 3: 3}, {1: slice(0, 3), 2: slice(3, 6), 3: slice(6, 9)})
+    evar = wfn.variable(f"N-BODY {eval(i)[0]}@{eval(i)[1]} TOTAL ENERGY".replace(",)", ")"))
+    gvar = wfn.variable(f"N-BODY {eval(i)[0]}@{eval(i)[1]} TOTAL GRADIENT".replace(",)", ")"))
 
 
 

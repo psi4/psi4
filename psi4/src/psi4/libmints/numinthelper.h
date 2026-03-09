@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -67,6 +67,11 @@ class NumIntHelper {
     /// f is represented for each block of points of the DFT integration grid as
     /// the vector (n_points). The output has (n_bas, n_bas)
     SharedMatrix potential_integral(const std::vector<SharedVector>& grid_data) const;
+
+    /// Compute a Hellmann-Feynman gradient 2 D \int \nabla \chi_\mu(r) \chi_\nu(r) f(r)
+    /// where f is a scalar function. f is represented for each block of points of the DFT
+    /// integration grid as the vector (n_points). The output has (n_atom, 3)
+    SharedMatrix potential_gradient(const std::vector<SharedVector>& grid_data, const SharedMatrix& D) const;
 };
 
 }  // namespace psi

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -108,6 +108,17 @@ class BasisSetNotFound(QcdbException):
         self.msg = msg
         if not silent:
             print('\nQcdbException BasisSetNotFound: %s\n\n' % (msg))
+
+
+class BasisSetNotFoundDeprecated(QcdbException):
+    """
+
+    """
+    def __init__(self, msg, deprecation, silent=False):
+        QcdbException.__init__(self, deprecation + msg)
+        self.msg = deprecation + msg
+        if not silent:
+            print('\nQcdbException BasisSetNotFoundDeprecated: %s\n\n' % (msg))
 
 
 class BasisSetNotDefined(QcdbException):

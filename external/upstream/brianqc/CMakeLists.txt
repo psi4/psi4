@@ -1,4 +1,4 @@
-find_package(BrianQC 1.1 CONFIG QUIET)
+find_package(BrianQC 1.1 CONFIG QUIET)  # edit in codedeps
 
 if(${BrianQC_FOUND})
     get_property(_loc TARGET BrianQC::static_wrapper PROPERTY LOCATION)

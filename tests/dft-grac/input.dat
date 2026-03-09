@@ -13,6 +13,9 @@ eps_ref = np.array([-31.2934, -1.69773, -0.78812, -0.78812, -0.78812, -0.00242, 
 set basis aug-cc-pVDZ
 set dft_grac_shift 0.203293
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-5})
+
 scf_e, scf_wfn = energy("PBE0", return_wfn=True)
 eps = scf_wfn.epsilon_a_subset("AO", "ALL")
 

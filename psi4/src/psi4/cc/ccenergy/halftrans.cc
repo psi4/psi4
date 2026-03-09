@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -61,8 +61,8 @@ namespace ccenergy {
 */
 
 void CCEnergyWavefunction::halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C1, double ***C2,
-                                     int nirreps, int **mo_row, int **so_row, int *mospi_left, int *mospi_right,
-                                     int *sospi, int type, double alpha, double beta) {
+                                     int nirreps, int **mo_row, int **so_row, Dimension const& mospi_left, Dimension const& mospi_right,
+                                     Dimension const& sospi, int type, double alpha, double beta) {
     int Gd, cd, pq;
     double **X;
 

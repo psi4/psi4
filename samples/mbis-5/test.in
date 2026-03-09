@@ -38,6 +38,10 @@ vwidths_ref = psi4.Matrix.from_list([  #TEST
  [0.70558769],     #TEST
  [0.40965805]])    #TEST
 
+vcharges_ref = psi4.Matrix.from_list([  #TEST
+ [-2.455785],      #TEST
+ [-6.935246]])     #TEST
+
 vratios_ref = psi4.Matrix.from_list([  #TEST
 [0.652824],
 [1.379211]])
@@ -60,6 +64,12 @@ set {
   max_radial_moment 4
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    pole_tol = 5
+else:
+    pole_tol = 3e-5
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
 oeprop(wfn, 'MBIS_VOLUME_RATIOS', title='ZnO SCF')
 
@@ -70,12 +80,14 @@ quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
 vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vcharges = wfn.array_variable('MBIS VALENCE CHARGES')
 vratios = wfn.array_variable('MBIS VOLUME RATIOS')
 
 compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
 compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
-compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
+compare_matrices(octupoles_ref, octupoles, pole_tol, "MBIS Octupoles")       #TEST
 compare_matrices(avols_ref, avols, 5, "MBIS Radial Moments <r^3>")    #TEST
 compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
+compare_matrices(vcharges_ref, vcharges, 5, "MBIS Valence Charges")   #TEST
 compare_matrices(vratios_ref, vratios, 5, "MBIS Volume Ratios")      #TEST

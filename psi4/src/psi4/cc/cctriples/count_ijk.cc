@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -48,10 +48,10 @@ void count_ijk() {
     int Ga, Gb, Gc;
     int a, b, c;
     int A, B, C;
-    int *occpi, *aoccpi, *boccpi;
-    int *virtpi, *avirtpi, *bvirtpi;
-    int *occ_off, *aocc_off, *bocc_off;
-    int *vir_off, *avir_off, *bvir_off;
+    Dimension occpi, aoccpi, boccpi;
+    Dimension virtpi, avirtpi, bvirtpi;
+    const int *occ_off, *aocc_off, *bocc_off;
+    const int *vir_off, *avir_off, *bvir_off;
     int nijk;
     int nabc;
 

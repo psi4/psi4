@@ -18,6 +18,9 @@ set {
   reference       uhf
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 #AO_BASIS = NONE
 set ao_basis        none
 set dct_functional dc-06

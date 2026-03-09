@@ -23,6 +23,12 @@ set {
   d_convergence 10
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    tol = 9
+else:
+    tol = 2e-9
+    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-9})
+
 energy('ccsd(t)')
 
 refnuc   =  135.092128488419604 #TEST
@@ -40,7 +46,7 @@ reftotal = -208.915761026658572 #TEST
 #reftotal = -209.149032822278599  #TEST
 
 compare_values(refnuc,   C4NH4.nuclear_repulsion_energy(),        9, "Nuclear repulsion energy")  #TEST
-compare_values(refscf,   variable("SCF total energy"),              9, "SCF energy")                   #TEST
-compare_values(refccsd,  variable("CCSD correlation energy"), 9, "CCSD contribution")            #TEST
-compare_values(ref_t,    variable("(T) correction energy"),   9, "(T) contribution")             #TEST
-compare_values(reftotal, variable("Current energy"),          9, "Total energy")                 #TEST
+compare_values(refscf,   variable("SCF total energy"),        tol, "SCF energy")                   #TEST
+compare_values(refccsd,  variable("CCSD correlation energy"), tol, "CCSD contribution")            #TEST
+compare_values(ref_t,    variable("(T) correction energy"),   tol, "(T) contribution")             #TEST
+compare_values(reftotal, variable("Current energy"),          tol, "Total energy")                 #TEST

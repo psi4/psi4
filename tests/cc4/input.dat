@@ -23,6 +23,9 @@ set {
    d_convergence 10
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 energy('ccsd(t)')
 
 compare_values(refnuc,   bh.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST

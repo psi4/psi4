@@ -30,13 +30,19 @@ set {
     reference   uhf
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    dct_tol = 10
+else:
+    dct_tol = 5e-9
+    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
+
 set dct_functional odc-06
 energy('dct')
 
 compare_values(refscf, variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
-compare_values(refmp2, variable("MP2 TOTAL ENERGY"), 10, "MP2 Energy");                                             #TEST
-compare_values(refdctscf, variable("DCT SCF ENERGY"), 10, "ODC-06 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
-compare_values(refdct, variable("DCT TOTAL ENERGY"), 10, "ODC-06 Energy (simultaneous, ao_basis=disk)");                #TEST
+compare_values(refmp2, variable("MP2 TOTAL ENERGY"), dct_tol, "MP2 Energy");                                             #TEST
+compare_values(refdctscf, variable("DCT SCF ENERGY"), dct_tol, "ODC-06 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), dct_tol, "ODC-06 Energy (simultaneous, ao_basis=disk)");                #TEST
 
 set dct_functional odc-12
 energy('dct')

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -78,7 +78,7 @@ std::tuple<
 
     // generate map for radial quadrature schemes 
     std::unordered_map<std::string, GauXC::RadialQuad> radial_scheme_map; 
-    radial_scheme_map["TREUTLER"] = GauXC::RadialQuad::TreutlerAldrichs;
+    radial_scheme_map["TREUTLER"] = GauXC::RadialQuad::TreutlerAhlrichs;
     radial_scheme_map["MURA"] = GauXC::RadialQuad::MuraKnowles;
     // The Murray, Handy, Laming literature reference is mentioned in cubature.cc
     // with association to this keyword

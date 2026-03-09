@@ -16,6 +16,9 @@ set {
   scf_type pk
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 optimize('scf')
 frequencies('scf')
 compare_values( N2_321G_RHF_G, variable('GIBBS FREE ENERGY'), 6, "N2 Gibbs Free Energy") #TEST

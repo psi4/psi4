@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -106,6 +106,8 @@ class PSI_API MintsHelper {
     /// Returns true if an integral type is already computed and cached
     bool are_ints_cached(const std::string& label, bool include_perturbation);
 
+    /// Computes ZORA kinetic integrals
+    void compute_so_zora_ints(bool include_perturbations = true);
     /// Computes X2C overlap, kinetic, and potential integrals
     void compute_so_x2c_ints(bool include_perturbations = true);
     /// Add dipole perturbation to the potential integrals
@@ -378,6 +380,8 @@ class PSI_API MintsHelper {
     // Computes the electric dipole derivatives
     SharedMatrix dipole_grad(SharedMatrix D);
     SharedMatrix multipole_grad(SharedMatrix D, int order, const std::vector<double>& origin = {0.0, 0.0, 0.0});
+    // Computes the gradient due to an embedding potential
+    SharedMatrix embpot_grad(SharedMatrix D);
     // Computes the gradient due to external dipole perturbation
     SharedMatrix perturb_grad(SharedMatrix D);
     // Computes the gradient due to ECPs in the basis set

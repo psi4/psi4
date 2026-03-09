@@ -13,6 +13,8 @@ set basis cc-pVDZ
 energy('scf')
 
 compare_values(-76.02663273485877, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
+niter = int(variable('SCF ITERATIONS'))
+compare_values(True, niter > 5 and niter < 15, f'Iterations {niter} for 0 1')  #TEST
 
 clean()
 
@@ -23,3 +25,5 @@ set scf guess read
 energy('scf')
 
 compare_values(-75.63211086688469, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
+niter = int(variable('SCF ITERATIONS'))
+compare_values(True, niter > 5 and niter < 15, f'Iterations {niter}, read-in guess, for +1 2')  #TEST

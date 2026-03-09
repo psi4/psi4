@@ -56,6 +56,8 @@ compare(2, variable('cbs number'), "[4] cbs no.")  #TEST
 # scf_dtqz = gradient('SCF/cc-pV[DTQ]Z')
 # compare_matrices(ref_scf_dtqz, scf_dtqz, 6, "[5] SCF/cc-pV[DTQ]Z Gradient")  #TEST
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
 
 # MP2 TESTS
 mp2_dtz = gradient('MP2/cc-pV[DT]Z')

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -100,6 +100,7 @@ void HF::common_init() {
     reset_occ_ = false;
     sad_ = false;
     module_ = "scf";
+    frac_performed_ = false;
 
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
@@ -291,7 +292,7 @@ void HF::damping_update(double damping_percentage) {
         "type of SCF wavefunction yet.");
 }
 
-int HF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
+int HF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) {
     throw PSIEXCEPTION(
         "Sorry, second-order convergence has not been implemented for this "
         "type of SCF wavefunction yet.");
@@ -322,7 +323,7 @@ void HF::form_F() { throw PSIEXCEPTION("Sorry, the base HF wavefunction does not
 double HF::compute_E() { throw PSIEXCEPTION("Sorry, the base HF wavefunction does not understand Hall."); }
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     // => Rotate orbitals <= //
-    auto U = std::make_shared<Matrix>("Ck", nirrep_, nmopi_, nmopi_);
+    auto U = std::make_shared<Matrix>("Ck", nmopi_, nmopi_);
     std::string reference = options_.get_str("REFERENCE");
 
     // We guess occ x vir block size by the size of x to make this method easy to use
@@ -572,24 +573,37 @@ void HF::form_H() {
 
             if (dipole_field_type_ == embpot) {
                 FILE* input = fopen("EMBPOT", "r");
-                int npoints;
-                int statusvalue = fscanf(input, "%d", &npoints);
-                outfile->Printf("  npoints = %d\n", npoints);
+                size_t npoints;
+                int statusvalue = fscanf(input, "%zu", &npoints);
+                if (statusvalue != 1) {
+                    throw PSIEXCEPTION("HF::form_H error: EOF or wrong number of inputs read from EMBPOT header, return=" +
+                                       std::to_string(statusvalue) + " (expected 1)");
+                }
+                if (npoints*5*8 > memory_) {
+                    throw PSIEXCEPTION("HF::form_H error: Size of EMBPOT file exceeds memory allocation, " +
+                                       std::to_string(npoints*5*8) + " bytes > " + std::to_string(memory_) + " bytes");
+                }
+                outfile->Printf("  npoints = %zu\n", npoints);
                 double x, y, z, w, v;
                 double max = 0;
-                for (int k = 0; k < npoints; k++) {
+                for (size_t k = 0; k < npoints; k++) {
                     statusvalue = fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
+                    if (statusvalue != 5) {
+                        throw PSIEXCEPTION("HF::form_H error: EOF or wrong number of inputs read from EMBPOT, return=" +
+                                           std::to_string(statusvalue) + " (expected 5)");
+                    }
                     if (std::fabs(v) > max) max = std::fabs(v);
 
-                    basisset_->compute_phi(phi_ao.pointer(), x, y, z);
-                    // Transform phi_ao to SO basis
-                    phi_so.gemv(true, 1.0, u, phi_ao, 0.0);
-                    for (int i = 0; i < nso; i++)
-                        for (int j = 0; j < nso; j++) V_eff.add(i, j, w * v * phi_so[i] * phi_so[j]);
+                    basisset_->compute_phi(phi_so.pointer(), x, y, z);
+                    for (int i = 0; i < nso; i++) {
+                        for (int j = 0; j < nso; j++) {
+                            V_eff.add(i, j, w * v * phi_so[i] * phi_so[j]);
+                        }
+                    }
                 }  // npoints
-
                 outfile->Printf("  Max. embpot value = %20.10f\n", max);
                 fclose(input);
+
 
             }  // embpot
             else if (dipole_field_type_ == dx) {
@@ -714,7 +728,7 @@ void HF::form_Shalf() {
         brianInt computeOverlapRoot = BRIAN_FALSE;
         brianInt computeOverlapInverseRoot = BRIAN_TRUE;
         brianInt basisRank;
-        SharedMatrix buffer = std::make_shared<Matrix>(nirrep_, nsopi_, nsopi_);
+        SharedMatrix buffer = std::make_shared<Matrix>(nsopi_, nsopi_);
         brianSCFComputeOverlapRoot(&brianCookie, &computeOverlapRoot, &computeOverlapInverseRoot, S_->get_pointer(),
                                    &S_cutoff, &basisRank, nullptr, buffer->get_pointer());
         checkBrian();
@@ -722,7 +736,7 @@ void HF::form_Shalf() {
         nmo_ = basisRank;
         nmopi_[0] = basisRank;
 
-        X_->init(nirrep_, nsopi_, nmopi_, "X (Canonical Orthogonalization)");
+        X_->init(nsopi_, nmopi_, "X (Canonical Orthogonalization)");
         for (int i = 0; i < nso_; i++) {
             for (int j = 0; j < nmo_; j++) {
                 X_->set(i, j, buffer->get(nmo_ - 1 - j, i));
@@ -757,10 +771,10 @@ void HF::form_Shalf() {
     }
     // Refreshes twice in RHF, no big deal
     epsilon_a_->init(nmopi_);
-    Ca_->init(nirrep_, nsopi_, nmopi_, "Alpha MO coefficients");
+    Ca_->init(nsopi_, nmopi_, "Alpha MO coefficients");
     epsilon_b_->init(nmopi_);
     if (!same_a_b_orbs_) {
-        Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
+        Cb_->init(nsopi_, nmopi_, "Beta MO coefficients");
     }
 
     // Extra matrix dimension changes for specific derived classes
@@ -1153,7 +1167,7 @@ void HF::guess() {
 
         Fa_->zero();  // Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
         int h, i, j;
-        const int* opi = S_->rowspi();
+        const auto& opi = S_->rowspi();
         int nirreps = S_->nirrep();
         for (h = 0; h < nirreps; ++h) {
             for (i = 0; i < opi[h]; ++i) {
@@ -1338,7 +1352,7 @@ void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr
     auto diag_F_temp = linalg::triplet(X_, Fm, X_, true, false, false);
 
     // Form C' = eig(F')
-    auto diag_C_temp = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
+    auto diag_C_temp = std::make_shared<Matrix>(nmopi_, nmopi_);
     diag_F_temp->diagonalize(diag_C_temp, epsm);
 
     // Form C = XC'
@@ -1355,14 +1369,12 @@ void HF::reset_occupation() {
     nbeta_ = original_nbeta_;
 }
 
-SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi) {
-    const int* nsopi = Cso->rowspi();
-    const int* nmopi = Cso->colspi();
-    int* nvirpi = new int[nirrep_];
+SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, const Dimension& noccpi) {
+    const auto& nsopi = Cso->rowspi();
+    const auto& nmopi = Cso->colspi();
+    const auto nvirpi = nmopi - noccpi;
 
-    for (int h = 0; h < nirrep_; h++) nvirpi[h] = nmopi[h] - noccpi[h];
-
-    auto Fia = std::make_shared<Matrix>("Fia (Some Basis)", nirrep_, noccpi, nvirpi);
+    auto Fia = std::make_shared<Matrix>("Fia (Some Basis)", noccpi, nvirpi);
 
     // Hack to get orbital e for this Fock
     auto C2 = std::make_shared<Matrix>("C2", Cso->rowspi(), Cso->colspi());
@@ -1396,8 +1408,6 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi) {
     }
 
     // Fia->print();
-
-    delete[] nvirpi;
 
     return Fia;
 }

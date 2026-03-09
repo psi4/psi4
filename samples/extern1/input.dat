@@ -29,7 +29,7 @@ try:
     Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-0.912085762652)
     psi4.set_global_option_python('EXTERN', Chrgfield.extern)
 except UpgradeHelper as e:
-    if "QMMMbohr" in str(e):
+    if "external_potentials" in str(e):
         upgrade_helper_raised = True
 compare(True, upgrade_helper_raised, "avert old QMMM syntax")
 
@@ -44,6 +44,9 @@ set {
     d_convergence 12
     basis 6-31G*
 }
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
 fd_grad = gradient('scf', molecule=water, dertype=0, external_potentials=external_potentials)
 fd_ener = psi4.variable('CURRENT ENERGY')

@@ -30,5 +30,8 @@ set {
    d_convergence 11
 }
 
+if get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    set_options({"e_convergence": 10, "d_convergence": 5e-8})
+
 e_cp = energy('mp2', bsse_type='cp')
 

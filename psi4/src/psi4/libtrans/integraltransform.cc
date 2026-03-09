@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -208,11 +208,11 @@ void IntegralTransform::initialize() {
 
     aQT_ = init_int_array(nmo_);
     if (transformationType_ == TransformationType::Restricted) {
-        reorder_qt(clsdpi_, openpi_, frzcpi_, frzvpi_, aQT_, mopi_, nirreps_);
+        reorder_qt(clsdpi_, openpi_, frzcpi_, frzvpi_, aQT_, mopi_);
         bQT_ = aQT_;
     } else {
         bQT_ = init_int_array(nmo_);
-        reorder_qt_uhf(clsdpi_, openpi_, frzcpi_, frzvpi_, aQT_, bQT_, mopi_, nirreps_);
+        reorder_qt_uhf(clsdpi_, openpi_, frzcpi_, frzvpi_, aQT_, bQT_, mopi_);
     }
     // Set up the correlated to Pitzer arrays.  These have to include the occupied core terms, because
     // the reference contributions are already folded into the TPDM.  However, they don't include frozen
@@ -298,6 +298,9 @@ IntegralTransform::~IntegralTransform() {
     if (initialized_) {
         dpd_close(myDPDNum_);
         free_int_matrix(cacheList_);
+        if(mosym_ != nullptr) {
+            free(mosym_);
+        }
         free(cacheFiles_);
         free(zeros_);
         free(aQT_);
@@ -308,6 +311,24 @@ IntegralTransform::~IntegralTransform() {
         }
     }
     if (tpdm_buffer_) delete[] tpdm_buffer_;
+
+    for(auto &pair : aIndices_) {
+        if(pair.second != nullptr) {
+            delete[] pair.second;
+        }
+    }
+
+    for(auto &pair : bIndices_) {
+        if(pair.second != nullptr) {
+            delete[] pair.second;
+        }
+    }
+
+    for(int i = 0; i < spaceArray_.size(); i++) {
+        if(spaceArray_[i] != nullptr) {
+            delete[] spaceArray_[i];
+        }
+    }
 }
 
 void IntegralTransform::check_initialized() {

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -53,8 +53,7 @@ namespace ccenergy {
 void CCEnergyWavefunction::BT2_AO() {
     double ***C;
     double ***Ca, ***Cb;
-    int *virtpi;
-    int *avirtpi, *bvirtpi;
+    Dimension virtpi, avirtpi, bvirtpi;
     int **T2_cd_row_start, **T2_pq_row_start;
     int **T2_CD_row_start, **T2_Cd_row_start;
     dpdbuf4 tau, t2, tau1_AO, tau2_AO;
@@ -65,7 +64,7 @@ void CCEnergyWavefunction::BT2_AO() {
     int counter = 0, counterAA = 0, counterBB = 0, counterAB = 0;
 
     auto nirreps = moinfo_.nirreps;
-    auto sopi = moinfo_.sopi;
+    const auto& sopi = moinfo_.sopi;
 
     T2_pq_row_start = init_int_matrix(nirreps, nirreps);
     for (int h = 0; h < nirreps; h++) {

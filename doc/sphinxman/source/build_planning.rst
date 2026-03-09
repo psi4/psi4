@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -241,6 +241,8 @@ build system will automatically download and build.
 
 * optking |w---w| `[what is optking] <https://optking.readthedocs.io/en/latest/>`_ (runtime dependency, required at build-time) 
 
+* QCManyBody |w---w| `[what is QCManyBody?] <https://molssi.github.io/QCManyBody/>`_ (August 2025; added by v1.10; runtime dependency, required at build-time)
+
 Additionally, there are runtime-only dependencies:
 
 * msgpack-python for MessagePack https://msgpack.org/ (transitive dependency of QCElemental; optional for QCElemental but required for |PSIfour|)
@@ -322,17 +324,19 @@ are available pre-built from conda.
 
 * :ref:`simint <cmake:simint>` |w---w| :ref:`[what is simint?] <sec:simint>` :source:`[simint min version] <external/upstream/simint/CMakeLists.txt#L2>`
 
+* :ref:`OpenOrbitalOptimizer <cmake:ooo>` |w---w| `[what is OpenOrbitalOptimizer?] <sec:ooo>` (August 2025; added by v1.10)
+
 Additionally, there are runtime-loaded capabilities:
 
 * :ref:`PylibEFP & libefp <cmake:libefp>` |w---w| :ref:`[what is LibEFP?] <sec:libefp>` :source:`[LibEFP min version] <external/upstream/libefp/CMakeLists.txt#L1>`
 
 * cfour |w---w| :ref:`[what is CFOUR?] <sec:cfour>`
 
-* dftd3 |w---w| :ref:`[what is DFTD3?] <sec:dftd3>`
+* dftd3 |w---w| :ref:`[what is DFTD3?] <sec:dftd3>` (Jun 2025; removed by v1.10)
 
 * simple-dftd3 |w---w| :ref:`[what is DFTD3?] <sec:dftd3>` (Nov 2022; added by v1.7) preferred alternative to dftd3 https://github.com/dftd3/simple-dftd3
 
-* gcp |w---w| :ref:`[what is gCP?] <sec:gcp>`
+* gcp |w---w| :ref:`[what is gCP?] <sec:gcp>` (Jun 2025; removed by v1.10)
 
 * mctc-gcp |w---w| :ref:`[what is gCP?] <sec:gcp>` (Nov 2022; added by v1.7) preferred alternative to gcp https://github.com/grimme-lab/gcp
 
@@ -759,7 +763,7 @@ Run |PSIfour|. ::
     He
     }
     energy('hf/cc-pvdz')
-    compare_values(-2.85518839, get_variable('current energy'), 5, 'SCF E')
+    compare_values(-2.85518839, variable('current energy'), 5, 'SCF E')
     >>> psi4 sample.in
     SCF E.............................................................PASSED
 
@@ -834,7 +838,7 @@ Run |PSIfour|. ::
     He
     """)
     psi4.energy('hf/cc-pvdz')
-    psi4.compare_values(-2.85518839, psi4.core.get_variable('current energy'), 5, 'SCF E')
+    psi4.compare_values(-2.85518839, psi4.core.variable('current energy'), 5, 'SCF E')
     >>> python sample.py
     SCF E.............................................................PASSED
 
@@ -894,7 +898,7 @@ Run |PSIfour| as executable. ::
     He
     }
     energy('hf/cc-pvdz')
-    compare_values(-2.85518839, get_variable('current energy'), 5, 'SCF E')
+    compare_values(-2.85518839, variable('current energy'), 5, 'SCF E')
     >>> psi4 sample.in
     SCF E.............................................................PASSED
 
@@ -906,7 +910,7 @@ Run |PSIfour| as executable. ::
     He
     """)
     psi4.energy('hf/cc-pvdz')
-    psi4.compare_values(-2.85518839, psi4.core.get_variable('current energy'), 5, 'SCF E')
+    psi4.compare_values(-2.85518839, psi4.core.variable('current energy'), 5, 'SCF E')
     >>> python sample.py
     SCF E.............................................................PASSED
 

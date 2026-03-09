@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -150,10 +150,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Un
 
 import numpy as np
 
-try:
-    from pydantic.v1 import Field, validator
-except ImportError:
-    from pydantic import Field, validator
+from pydantic.v1 import Field, validator
 
 from qcelemental.models import AtomicResult, DriverEnum
 
@@ -461,6 +458,20 @@ def return_energy_components():
                             'mp2': 'MP2 TOTAL ENERGY',
                        'fno-ccsd': 'CCSD TOTAL ENERGY',
                     'fno-ccsd(t)': 'CCSD(T) TOTAL ENERGY'}
+    VARH['dlpno-ccsd'] = {
+                             'hf': 'HF TOTAL ENERGY',
+                      'dlpno-mp2': 'MP2 TOTAL ENERGY',
+                     'dlpno-ccsd': 'CCSD TOTAL ENERGY'}
+    VARH['dlpno-ccsd(t0)'] = {
+                             'hf': 'HF TOTAL ENERGY',
+                      'dlpno-mp2': 'MP2 TOTAL ENERGY',
+                     'dlpno-ccsd': 'CCSD TOTAL ENERGY',
+                 'dlpno-ccsd(t0)': 'CCSD(T) TOTAL ENERGY'}
+    VARH['dlpno-ccsd(t)'] = {
+                             'hf': 'HF TOTAL ENERGY',
+                      'dlpno-mp2': 'MP2 TOTAL ENERGY',
+                     'dlpno-ccsd': 'CCSD TOTAL ENERGY',
+                  'dlpno-ccsd(t)': 'CCSD(T) TOTAL ENERGY'}
     VARH['qcisd(t)'] = {
                              'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
@@ -1603,7 +1614,7 @@ class CompositeComputer(BaseComputer):
         # uncalled function
         return [t.plan() for t in self.task_list]
 
-    def compute(self, client: Optional["qcportal.FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.client.PortalClient"] = None):
         label = self.metameta['label']
         instructions = "\n" + p4util.banner(f" CBS Computations{':' + label if label else ''} ",
                                             strNotOutfile=True) + "\n"
@@ -1614,7 +1625,7 @@ class CompositeComputer(BaseComputer):
             for t in reversed(self.task_list):
                 t.compute(client=client)
 
-    def _prepare_results(self, client: Optional["qcportal.FractalClient"] = None):
+    def _prepare_results(self, client: Optional["qcportal.client.PortalClient"] = None):
         results_list = [x.get_results(client=client) for x in self.task_list]
 
         modules = [getattr(v.provenance, "module", None) for v in results_list]
@@ -1681,7 +1692,7 @@ class CompositeComputer(BaseComputer):
         cbs_results["module"] = modules
         return cbs_results
 
-    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.client.PortalClient"] = None) -> AtomicResult:
         """Return results as Composite-flavored QCSchema."""
 
         assembled_results = self._prepare_results(client=client)
@@ -1757,7 +1768,7 @@ class CompositeComputer(BaseComputer):
 
     def get_psi_results(
         self,
-        client: Optional["qcportal.FractalClient"] = None,
+        client: Optional["qcportal.client.PortalClient"] = None,
         *,
         return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
         """Called by driver to assemble results into Composite-flavored QCSchema,

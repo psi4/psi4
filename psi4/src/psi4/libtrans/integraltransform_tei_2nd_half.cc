@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -98,7 +98,12 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
         }
     }
 
-    if (useIWL_) iwl = new IWL(psio_.get(), iwlAAIntFile_, tolerance_, 0, 0);
+    if (useIWL_) {
+    if (iwl != nullptr) {
+         delete iwl;
+    }
+        iwl = new IWL(psio_.get(), iwlAAIntFile_, tolerance_, 0, 0);
+    }
 
     psio_->open(dpdIntFile_, PSIO_OPEN_OLD);
     psio_->open(aHtIntFile_, PSIO_OPEN_OLD);

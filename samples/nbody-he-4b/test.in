@@ -21,6 +21,9 @@ set {
     d_convergence 1.e-10
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 if distributed:
     plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type=["nocp", "cp", "vmfc"], return_plan=True)
     plan.compute(client)
@@ -30,7 +33,7 @@ else:
     e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type=["nocp", "cp", "vmfc"], return_wfn=True)
 
 for k, v in sorted(psi4.core.variables().items()):
-    print("QCVariable:", k, v)
+    print("[1] All,4b QCVariable:", k, v)
 
 he4_refs = {
     "CP-CORRECTED TOTAL ENERGY THROUGH 1-BODY":          -11.530751941948,
@@ -67,6 +70,8 @@ he4_refs = {
     "VMFC-CORRECTED 4-BODY CONTRIBUTION TO ENERGY":        0.000063528063,
 }
 
+ans = he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"]
+
 for qcv, ref in he4_refs.items():
     compare_values(ref, variable(qcv), 8, "[1] core " + qcv)  #TEST
     compare_values(ref, wfn.variable(qcv), 8, "[1] wfn  " + qcv)  #TEST
@@ -78,10 +83,13 @@ for qcv, ref in {
     "CP-CORRECTED INTERACTION ENERGY": he4_refs["CP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"],
     "VMFC-CORRECTED TOTAL ENERGY": he4_refs["VMFC-CORRECTED TOTAL ENERGY THROUGH 4-BODY"],
     "VMFC-CORRECTED INTERACTION ENERGY": he4_refs["VMFC-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"],
-    "CURRENT ENERGY": he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"],
+    "CURRENT ENERGY": ans,
 }.items():
         compare_values(ref, variable(qcv), 8, "[1] core " + qcv)
         compare_values(ref, wfn.variable(qcv), 8, "[1] wfn  " + qcv)
+
+compare_values(ans, e, "[1] ans")
+compare(65, variable("NBODY NUMBER"), "[1] nmbe")
 
 clean_variables()
 
@@ -94,6 +102,11 @@ if distributed:
 else:
     e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="nocp", return_wfn=True, max_nbody=3)
 
+for k, v in sorted(psi4.core.variables().items()):
+    print("[2] NOCP,3b QCVariable:", k, v)
+
+ans = he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"]
+
 for qcv, ref in he4_refs.items():  #TEST
     if "4-BODY" not in qcv and qcv.startswith("NOCP-"):  #TEST
         compare_values(ref, variable(qcv), 8, "[2] core " + qcv)  #TEST
@@ -102,10 +115,13 @@ for qcv, ref in he4_refs.items():  #TEST
 for qcv, ref in {
     "NOCP-CORRECTED TOTAL ENERGY": he4_refs["NOCP-CORRECTED TOTAL ENERGY THROUGH 3-BODY"],
     "NOCP-CORRECTED INTERACTION ENERGY": he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
-    "CURRENT ENERGY": he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+    "CURRENT ENERGY": ans,
 }.items():
         compare_values(ref, variable(qcv), 8, "[2] core " + qcv)
         compare_values(ref, wfn.variable(qcv), 8, "[2] wfn  " + qcv)
+
+compare_values(ans, e, "[2] ans")
+compare(14, variable("NBODY NUMBER"), "[2] nmbe")
 
 clean_variables()
 
@@ -118,6 +134,11 @@ if distributed:
 else:
     e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="cp", return_wfn=True, max_nbody=3, return_total_data=True)
 
+for k, v in sorted(psi4.core.variables().items()):
+    print("[3] CP,3b,rtd=T QCVariable:", k, v)
+
+ans = he4_refs["CP-CORRECTED TOTAL ENERGY THROUGH 3-BODY"]
+
 for qcv, ref in he4_refs.items():  #TEST
     if "4-BODY" not in qcv and qcv.startswith("CP-"):  #TEST
         compare_values(ref, variable(qcv), 8, "[3] core " + qcv)  #TEST
@@ -126,10 +147,14 @@ for qcv, ref in he4_refs.items():  #TEST
 for qcv, ref in {
     "CP-CORRECTED TOTAL ENERGY": he4_refs["CP-CORRECTED TOTAL ENERGY THROUGH 3-BODY"],
     "CP-CORRECTED INTERACTION ENERGY": he4_refs["CP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
-    "CURRENT ENERGY": he4_refs["CP-CORRECTED TOTAL ENERGY THROUGH 3-BODY"],
+    "CURRENT ENERGY": ans,
 }.items():
         compare_values(ref, variable(qcv), 8, "[3] core " + qcv)  #TEST
         compare_values(ref, wfn.variable(qcv), 8, "[3] wfn  " + qcv)  #TEST
+
+compare_values(ans, e, "[3] ans")
+#compare(28, variable("NBODY NUMBER"), "[3] nmbe")  # was
+compare(18, variable("NBODY NUMBER"), "[3] nmbe")  # bugfix
 
 clean_variables()
 
@@ -142,6 +167,11 @@ if distributed:
 else:
     e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="cp", return_wfn=True, max_nbody=3, return_total_data=False)
 
+for k, v in sorted(psi4.core.variables().items()):
+    print("[4] CP,3b,rtd=F QCVariable:", k, v)
+
+ans = he4_refs["CP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"]
+
 for qcv, ref in he4_refs.items():  #TEST
     if "4-BODY" not in qcv and qcv.startswith("CP-") and "TOTAL ENERGY" not in qcv:  #TEST
         compare_values(ref, variable(qcv), 8, "[4] core " + qcv)  #TEST
@@ -149,21 +179,29 @@ for qcv, ref in he4_refs.items():  #TEST
 
 for qcv, ref in {
     "CP-CORRECTED INTERACTION ENERGY": he4_refs["CP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
-    "CURRENT ENERGY": he4_refs["CP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+    "CURRENT ENERGY": ans,
 }.items():
         compare_values(ref, variable(qcv), 8, "[4] core " + qcv)  #TEST
         compare_values(ref, wfn.variable(qcv), 8, "[4] wfn  " + qcv)  #TEST
+
+compare_values(ans, e, "[4] ans")
+compare(14, variable("NBODY NUMBER"), "[4] nmbe")
 
 clean_variables()
 
 ###
 if distributed:
-    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="vmfc", return_plan=True, max_nbody=3)
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="vmfc", return_plan=True, max_nbody=3, return_total_data=True)
     plan.compute(client)
     snowflake.await_results()
     e, wfn = plan.get_psi_results(client, return_wfn=True)
 else:
-    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="vmfc", return_wfn=True, max_nbody=3)
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="vmfc", return_wfn=True, max_nbody=3, return_total_data=True)
+
+for k, v in sorted(psi4.core.variables().items()):
+    print("[5] VMFC,3b,rtd=T QCVariable:", k, v)
+
+ans = he4_refs["VMFC-CORRECTED TOTAL ENERGY THROUGH 3-BODY"]
 
 for qcv, ref in he4_refs.items():
     if "4-BODY" not in qcv and qcv.startswith("VMFC-"):
@@ -173,10 +211,208 @@ for qcv, ref in he4_refs.items():
 for qcv, ref in {
     "VMFC-CORRECTED TOTAL ENERGY": he4_refs["VMFC-CORRECTED TOTAL ENERGY THROUGH 3-BODY"],
     "VMFC-CORRECTED INTERACTION ENERGY": he4_refs["VMFC-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
-    "CURRENT ENERGY": he4_refs["VMFC-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+    "CURRENT ENERGY": ans,
 }.items():
         compare_values(ref, variable(qcv), 8, "[5] core " + qcv)  #TEST
         compare_values(ref, wfn.variable(qcv), 8, "[5] wfn  " + qcv)  #TEST
 
+compare_values(ans, e, "[5] ans")
+compare(50, variable("NBODY NUMBER"), "[5] nmbe")
+
+
+###
+if distributed:
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="vmfc", return_plan=True, max_nbody=3, return_total_data=False)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="vmfc", return_wfn=True, max_nbody=3, return_total_data=False)
+
+for k, v in sorted(psi4.core.variables().items()):
+    print("[6] VMFC,3b,rtd=F QCVariable:", k, v)
+
+ans = he4_refs["VMFC-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"]
+
+for qcv, ref in he4_refs.items():
+    if "4-BODY" not in qcv and qcv.startswith("VMFC-"):  #TEST
+        compare_values(ref, variable(qcv), 8, "[6] core " + qcv)  #TEST
+        compare_values(ref, wfn.variable(qcv), 8, "[6] wfn  " + qcv)  #TEST
+
+for qcv, ref in {
+    "VMFC-CORRECTED TOTAL ENERGY": he4_refs["VMFC-CORRECTED TOTAL ENERGY THROUGH 3-BODY"],
+    "VMFC-CORRECTED INTERACTION ENERGY": he4_refs["VMFC-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+    "CURRENT ENERGY": ans,
+}.items():
+        compare_values(ref, variable(qcv), 8, "[6] core " + qcv)  #TEST
+        compare_values(ref, wfn.variable(qcv), 8, "[6] wfn  " + qcv)  #TEST
+
+compare_values(ans, e, "[6] ans")
+compare(50, variable("NBODY NUMBER"), "[6] nmbe")
+
+###
+if distributed:
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="nocp", return_plan=True, max_nbody=3, return_total_data=True)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="nocp", return_wfn=True, max_nbody=3, return_total_data=True)
+
+for k, v in sorted(psi4.core.variables().items()):
+    print("[7] NOCP,3b,rtd=T QCVariable:", k, v)
+
+ans = he4_refs["NOCP-CORRECTED TOTAL ENERGY THROUGH 3-BODY"]
+
+for qcv, ref in he4_refs.items():  #TEST
+    if "4-BODY" not in qcv and qcv.startswith("NOCP-"):  #TEST
+        compare_values(ref, variable(qcv), 8, "[7] core " + qcv)  #TEST
+        compare_values(ref, wfn.variable(qcv), 8, "[7] wfn  " + qcv)  #TEST
+
+for qcv, ref in {
+    "NOCP-CORRECTED TOTAL ENERGY": he4_refs["NOCP-CORRECTED TOTAL ENERGY THROUGH 3-BODY"],
+    "NOCP-CORRECTED INTERACTION ENERGY": he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+    "CURRENT ENERGY": ans,
+}.items():
+        compare_values(ref, variable(qcv), 8, "[7] core " + qcv)  #TEST
+        compare_values(ref, wfn.variable(qcv), 8, "[7] wfn  " + qcv)  #TEST
+
+compare_values(ans, e, "[7] ans")
+compare(14, variable("NBODY NUMBER"), "[7] nmbe")
+
+clean_variables()
+
+###
+if distributed:
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="nocp", return_plan=True, max_nbody=3, return_total_data=False)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="nocp", return_wfn=True, max_nbody=3, return_total_data=False)
+
+for k, v in sorted(psi4.core.variables().items()):
+    print("[8] NOCP,3b,rtd=F QCVariable:", k, v)
+
+ans = he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"]
+
+for qcv, ref in he4_refs.items():  #TEST
+    if "4-BODY" not in qcv and qcv.startswith("NOCP-"):  #TEST
+        compare_values(ref, variable(qcv), 8, "[8] core " + qcv)  #TEST
+        compare_values(ref, wfn.variable(qcv), 8, "[8] wfn  " + qcv)  #TEST
+
+for qcv, ref in {
+    "NOCP-CORRECTED INTERACTION ENERGY": he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY"],
+    "CURRENT ENERGY": ans,
+}.items():
+        compare_values(ref, variable(qcv), 8, "[8] core " + qcv)  #TEST
+        compare_values(ref, wfn.variable(qcv), 8, "[8] wfn  " + qcv)  #TEST
+
+compare_values(ans, e, "[8] ans")
+compare(14, variable("NBODY NUMBER"), "[8] nmbe")
+
+clean_variables()
+
+###
+if distributed:
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="nocp", return_total_data=False, supersystem_ie_only=True, return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="nocp", return_total_data=False, supersystem_ie_only=True, return_wfn=True)
+
+for k, v in sorted(psi4.core.variables().items()):
+    print("[9] NOCP,4b,rtd=F,sio=T QCVariable:", k, v)
+
+ans = he4_refs["NOCP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"]
+
+for qcv, ref in he4_refs.items():  #TEST
+    if "THROUGH 4-BODY" in qcv and qcv.startswith("NOCP-"):  #TEST
+        compare_values(ref, variable(qcv), 8, "[9] core " + qcv)  #TEST
+        compare_values(ref, wfn.variable(qcv), 8, "[9] wfn  " + qcv)  #TEST
+
+compare_values(ans, e, "[9] ans")
+compare(5, variable("NBODY NUMBER"), "[9] nmbe")
+
+clean_variables()
+
+###
+if distributed:
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="nocp", return_total_data=True, supersystem_ie_only=True, return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="nocp", return_total_data=True, supersystem_ie_only=True, return_wfn=True)
+
+for k, v in sorted(psi4.core.variables().items()):
+    print("[10] NOCP,4b,rtd=T,sio=T QCVariable:", k, v)
+
+ans = he4_refs["NOCP-CORRECTED TOTAL ENERGY THROUGH 4-BODY"]
+
+for qcv, ref in he4_refs.items():  #TEST
+    if ("THROUGH 4-BODY" in qcv or "THROUGH 1-BODY" in qcv) and qcv.startswith("NOCP-"):  #TEST
+        compare_values(ref, variable(qcv), 8, "[10] core " + qcv)  #TEST
+        compare_values(ref, wfn.variable(qcv), 8, "[10] wfn  " + qcv)  #TEST
+
+compare_values(ans, e, "[10] ans")
+compare(5, variable("NBODY NUMBER"), "[10] nmbe")
+
+clean_variables()
+
+###
+if distributed:
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="cp", return_total_data=False, supersystem_ie_only=True, return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="cp", return_total_data=False, supersystem_ie_only=True, return_wfn=True)
+
+for k, v in sorted(psi4.core.variables().items()):
+    print("[11] CP,4b,rtd=F,sio=T QCVariable:", k, v)
+
+ans = he4_refs["CP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY"]
+
+for qcv, ref in he4_refs.items():  #TEST
+    if "INTERACTION ENERGY THROUGH 4-BODY" in qcv and qcv.startswith("CP-"):  #TEST
+        compare_values(ref, variable(qcv), 8, "[11] core " + qcv)  #TEST
+        compare_values(ref, wfn.variable(qcv), 8, "[11] wfn  " + qcv)  #TEST
+
+compare_values(ans, e, "[11] ans")
+compare(5, variable("NBODY NUMBER"), "[11] nmbe")
+
+clean_variables()
+
+###
+if distributed:
+    plan = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="cp", return_total_data=True, supersystem_ie_only=True, return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('MP2/aug-cc-pVDZ', molecule=he_tetramer, bsse_type="cp", return_total_data=True, supersystem_ie_only=True, return_wfn=True)
+
+#ans = qcv
+for k, v in sorted(psi4.core.variables().items()):
+    print("[12] CP,4b,rtd=T,sio=T QCVariable:", k, v)
+
+ans = he4_refs["CP-CORRECTED TOTAL ENERGY THROUGH 4-BODY"]
+
+for qcv, ref in he4_refs.items():  #TEST
+    if ("THROUGH 4-BODY" in qcv or "THROUGH 1-BODY" in qcv) and qcv.startswith("CP-"):  #TEST
+        compare_values(ref, variable(qcv), 8, "[12] core " + qcv)  #TEST
+        compare_values(ref, wfn.variable(qcv), 8, "[12] wfn  " + qcv)  #TEST
+    #else:
+    #    compare(False, has_variable(qcv), "[12] absent core " + qcv)  #TEST
+    #    compare(False, wfn.has_variable(qcv), "[12] absent wfn " + qcv)  #TEST
+
+compare_values(ans, e, "[12] ans")
+compare(9, variable("NBODY NUMBER"), "[12] nmbe")
+
+clean_variables()
+
 if distributed:
     snowflake.stop()
+

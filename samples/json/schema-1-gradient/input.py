@@ -31,7 +31,7 @@ json_data = {
     "method": "HF",
     "basis": "cc-pVDZ"
   },
-  "keywords": {"scf_type": "df"}
+  "keywords": {"scf_type": "df", "d_convergence": 3e-8}
 }
 
 # Write expected output

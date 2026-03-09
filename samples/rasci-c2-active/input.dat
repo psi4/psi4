@@ -18,6 +18,9 @@ set {
   active          [2, 0, 1, 1, 0, 2, 1, 1]
 }
 
+if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 thisenergy = energy('detci')
 
 

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -61,7 +61,7 @@ RHamiltonian::~RHamiltonian() {}
 SharedMatrix RHamiltonian::explicit_hamiltonian() {
     std::shared_ptr<Vector> diag = diagonal();
 
-    auto H = std::make_shared<Matrix>("Explicit Hamiltonian", diag->nirrep(), diag->dimpi(), diag->dimpi());
+    auto H = std::make_shared<Matrix>("Explicit Hamiltonian", diag->dimpi(), diag->dimpi());
 
     auto b = std::make_shared<Vector>(std::move(diag->clone()));
     auto s = std::make_shared<Vector>(std::move(diag->clone()));
@@ -172,7 +172,7 @@ void CPHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
             std::stringstream ss;
             ss << "C_right, h = " << symm << ", N = " << N;
-            auto Cr = std::make_shared<Matrix>(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm);
+            auto Cr = std::make_shared<Matrix>(ss.str(), Caocc_->rowspi(), Caocc_->colspi(), symm);
 
             long int offset = 0L;
             for (int h = 0; h < Caocc_->nirrep(); ++h) {
@@ -260,7 +260,7 @@ std::vector<SharedMatrix> CPHFRHamiltonian::unpack(const std::vector<std::shared
     int nirrep = x[0]->nirrep();
     for (size_t i = 0; i < x.size(); i++) {
         for (int symm = 0; symm < nirrep; ++symm) {
-            auto t = std::make_shared<Matrix>("X", Caocc_->nirrep(), Caocc_->colspi(), Cavir_->colspi(), symm);
+            auto t = std::make_shared<Matrix>("X", Caocc_->colspi(), Cavir_->colspi(), symm);
             long int offset = 0L;
             for (int h = 0; h < nirrep; ++h) {
                 int nocc = Caocc_->colspi()[h];

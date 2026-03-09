@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -59,7 +59,7 @@ double ET_UHF_AAA() {
     int id, jd, kd;
     int il, jl, kl;
     int lc, la, lb;
-    int *occpi, *virtpi, *occ_off, *vir_off;
+    int *occ_off, *vir_off;
     double value_c, value_d, dijk, denom, ET;
     double t_ia, t_ib, t_ic, t_ja, t_jb, t_jc, t_ka, t_kb, t_kc;
     double f_ia, f_ib, f_ic, f_ja, f_jb, f_jc, f_ka, f_kb, f_kc;
@@ -73,8 +73,8 @@ double ET_UHF_AAA() {
     FILE *ijkfile;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.aoccpi;
-    virtpi = moinfo.avirtpi;
+    const auto& occpi = moinfo.aoccpi;
+    const auto& virtpi = moinfo.avirtpi;
     occ_off = moinfo.aocc_off;
     vir_off = moinfo.avir_off;
 

@@ -39,6 +39,9 @@ R = R_ana  #TEST
 A = A_ana  #TEST
 G0 = G0_ana  #TEST
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
 G1 = gradient("cbs", cbs_metadata=[{"wfn": "mp2", "basis": 'cc-pV[DT]Z'}, {"wfn": 'ccsd(t)', "basis": '3-21g', "options": {'qc_module': 'ccenergy'}}])
 compare_matrices(G0, G1, 5, '[2a] Match gold_standard gradient')  #TEST
 G2 = gradient('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g', delta_options={'qc_module': 'ccenergy'})

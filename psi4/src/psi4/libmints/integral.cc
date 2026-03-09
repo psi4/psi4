@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -221,7 +221,7 @@ std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pai
         outfile->Printf("ERI derivative integrals only available using Libint");
     if (integral_package == "SIMINT")
         outfile->Printf("Chosen integral package " + integral_package +
-                        " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
+                        " unavailable.\nRecompile with `-D ENABLE_simint=ON`.\nFalling back to Libint");
     throw PSIEXCEPTION("No ERI object to return.");
 }
 

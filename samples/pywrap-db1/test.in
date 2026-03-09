@@ -27,4 +27,5 @@ compare_values(refS22AmadSAPT0, S22mad, 5, "S22 with S22A subset mean absolute d
 #compare_values(refNBCmadDFMP2, NBCmad, 5, "NBC subset mean absolute deviation")             #TEST
 NBCmad = database('scF','nBc10',cp='on',SYMM='OfF',subset='sMall')  #TEST
 compare_values(refNBCmadSCF, NBCmad, 5, "NBC subset mean absolute deviation")               #TEST
-compare_strings('blank_molecule_psi4_yo', psi4.get_active_molecule().name(), 'user molecule unchanged')  #TEST
+#compare_strings('blank_molecule_psi4_yo', psi4.get_active_molecule().name(), 'user molecule unchanged')  #TEST
+compare(True, psi4.get_active_molecule() is None, 'no user molecule set')  #TEST

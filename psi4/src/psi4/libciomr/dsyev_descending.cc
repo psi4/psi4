@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -56,9 +56,11 @@ namespace psi {
         std::swap(e_vals[i], e_vals[N - i - 1]);
     }
     // Reverse the order of columns of the row-major 2D eigenvector array
-    for (int64_t i = 0; i < N; i++) {
-        for (int64_t j = 0; j < N / 2; j++) {
-            std::swap(e_vecs[i][j], e_vecs[i][N - j - 1]);
+    if (e_vecs != nullptr) {
+        for (int64_t i = 0; i < N; i++) {
+            for (int64_t j = 0; j < N / 2; j++) {
+                std::swap(e_vecs[i][j], e_vecs[i][N - j - 1]);
+            }
         }
     }
     return info;

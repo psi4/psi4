@@ -16,6 +16,9 @@ set perturb_h true
 set perturb_with dipole
 set perturb_dipole [0, 0, 0.05]
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 analytic = gradient('scf')
 
 set findif points 5

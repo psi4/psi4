@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -75,7 +75,7 @@ def get_ddx_options(molecule):
     elif solvent == "":
         raise ValidationError("Required option 'DDX_SOLVENT' is missing.")
     elif solvent not in pyddx.data.solvent_epsilon:
-        raise ValidationError("Unknown solvent {solvent}.")
+        raise ValidationError(f"Unknown solvent {solvent}.")
     else:
         solvent_epsilon = pyddx.data.solvent_epsilon[solvent]
 

@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -120,8 +120,8 @@ information.
 
 After running, two matrices of results can be accessed::
 
-    dma_results = get_array_variable('DMA DISTRIBUTED MULTIPOLES')
-    tot_results = get_array_variable('DMA TOTAL MULTIPOLES')
+    dma_results = variable('DMA DISTRIBUTED MULTIPOLES')
+    tot_results = variable('DMA TOTAL MULTIPOLES')
 
 The first contains distributed multipoles, in units given by
 |gdma__gdma_multipole_units|, with the row index corresponding to the site and

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -209,6 +209,10 @@ PSIF_DFOCC_MIABC_BBBB       =  291  # DFOCC M_iabc
 PSIF_DFOCC_MIABC_AABB       =  292  # DFOCC M_IAbc
 PSIF_DFOCC_MIABC_BBAA       =  293  # DFOCC M_iaBC
 PSIF_SAD                    =  300  # A SAD file (File for SAD related quantities
+PSIF_DLPNO_QAB_PAO          =  310  # DLPNO (Q|uv)
+PSIF_DLPNO_QIA_PNO          =  311  # DLPNO (Q_ij|m_ij a_ij)
+PSIF_DLPNO_QAB_PNO          =  312  # DLPNO (Q_ij|a_ij b_ij)
+PSIF_DLPNO_TRIPLES          =  313  # DLPNO X_{ijk}^{abc}
 PSIF_CI_HD_FILE             =  350  # DETCI H diagonal
 PSIF_CI_C_FILE              =  351  # DETCI CI coeffs
 PSIF_CI_S_FILE              =  352  # DETCI sigma coeffs

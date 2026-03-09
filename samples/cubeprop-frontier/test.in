@@ -27,6 +27,9 @@ set e_convergence 12
 set d_convergence 12
 set DOCC [3, 0, 0, 1]
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 set reference rhf
 scf_e, scf_wfn = energy('scf', return_wfn=True, molecule=ch2s)
 cubeprop(scf_wfn)

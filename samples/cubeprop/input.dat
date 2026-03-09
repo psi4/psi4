@@ -16,6 +16,9 @@ set cubic_grid_overage [1.0,1.0,1.0]
 set e_convergence 12
 set d_convergence 12
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 12, "d_convergence": 1e-9})
+
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 cubeprop(scf_wfn)
 

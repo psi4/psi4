@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -54,9 +54,10 @@ namespace psi {
 
 int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double alpha) {
     int h, row, col, rowtot, coltot, all_buf_irrep;
-    int nbuckets, incore, n;
+    int nbuckets, n;
     long int size, memoryd, rows_per_bucket, rows_left;
     dpdbuf4 OutBuf;
+    bool incore;
 
     all_buf_irrep = InBuf->file.my_irrep;
 
@@ -78,9 +79,9 @@ int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double 
 
             rows_left = InBuf->params->rowtot[h] % rows_per_bucket;
 
-            incore = 1;
+            incore = true;
             if (nbuckets > 1) {
-                incore = 0;
+                incore = false;
 #if DPD_DEBUG
                 outfile->Printf("buf4_scmcopy: memory information.\n");
                 outfile->Printf("buf4_scmcopy: rowtot[%d] = %d.\n", h, InBuf->params->rowtot[h]);
@@ -92,7 +93,7 @@ int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double 
             }
 
         } else
-            incore = 1;
+            incore = true;
 
         if (incore) {
             buf4_mat_irrep_init(InBuf, h);

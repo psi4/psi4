@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -596,7 +596,8 @@ that |PSIfour| expects the numpy file on disk to have the ``.npy`` extension, no
 Convergence Stabilization
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A summary of Psi's supported convergence stabilization techniques is presented below:
+A summary of Psi's supported convergence stabilization techniques is presented below.
+Alternatively, stabilization can run through the OpenOrbitalOptimizer library. See :ref:`options:ooo` for details.
 
 DIIS [On by Default]
     DIIS uses previous iterates of the Fock matrix together
@@ -792,6 +793,7 @@ sieving, set the |scf__ints_tolerance| keyword to your desired cutoff
 (1.0E-12 is recommended for most applications). To choose the type of sieving, set 
 the |globals__screening| keyword to your desired option. For Schwarz screening, set it
 to ``SCHWARZ``, for CSAM, ``CSAM``, and for density matrix-based screening, ``DENSITY``.
+See `comment <https://github.com/psi4/psi4/pull/3060#issuecomment-2331738677>`_ where 1. is currently implemented.
 
 SCHWARZ
     Uses the Cauchy-Schwarz inequality to calculate an upper bounded value of a shell quartet,
@@ -1148,6 +1150,13 @@ rows are composed of the atomic charge, x coordinate, y coordinate,
 and z coordinate in that order. The atomic charge and coordinates are
 specified in atomic units, [e] and [a0]. Add as many particle rows as
 needed to describe the full MM region.
+
+|PSIfour| v1.10 started expanded parsing to in future allow more types of potentials
+beyond point charges. See examples in the docstring below for specification or the
+``test_extern_parsing`` function in :source:`test_extern.py <tests/pytests/test_extern.py>` .
+
+.. autofunction:: psi4.driver.p4util.validate_external_potential(ep_spec)
+   :noindex:
 
 .. caution:: In |PSIfour| previous to Spring 2022 and v1.6, setting an
    external potential like the above looked like ::

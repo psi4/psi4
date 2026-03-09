@@ -40,7 +40,8 @@ molecule {
 }
 
 set optking {
-  ranged_distance = (" ")
+  # ranged_distance = (" ") No longer works. Expands to `" (  ) "` which won't pass optking's validation. Use below.
+  ranged_distance = ""
   ranged_bend = ("
     1 2 3 105.000 105.0001
     2 3 4 105.000 105.0001
@@ -58,7 +59,7 @@ molecule {
 }
 
 set optking {
-  ranged_bend = (" ")
+  ranged_bend = ""
   ranged_dihedral = ("
     1 2 3 4 120.000 120.0001
   ")

@@ -17,6 +17,12 @@ set {
    qc_module ccenergy
 }
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    tol = 8
+else:
+    tol = 5e-8
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)
              [ 0.0000000000, -0.0655653749, -0.0499834310],  # 
              [ 0.0000000000,  0.0000000000,  0.0999668620],  # CFOUR RESULTS
@@ -36,6 +42,12 @@ set {
    r_convergence 14
    d_convergence 14
 }
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    tol = 8
+else:
+    tol = 5e-8
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)
 	   ])

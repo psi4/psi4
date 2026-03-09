@@ -16,15 +16,26 @@ set {
 
 
 try:
-    energy('hf')
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+        energy('hf')
 except psi4.SCFConvergenceError as ex:
     SCF_iter_6 = ex.wfn.get_energies("Total Energy")
     SCF_error_iter = ex.iteration
     SCF_e_conv = ex.e_conv
     SCF_d_conv = ex.d_conv
-compare_values(-76.050986, SCF_iter_6, 5, "Energy at iter {}".format(SCF_error_iter))
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    compare_values(-76.050986, SCF_iter_6, 5, "Energy at iter {}".format(SCF_error_iter))
 
 set maxiter 24
 
 thisenergy = energy('scf')
 
+
+n_iter = int(variable("scf iterations"))
+ok_iter = (n_iter > 7) and (n_iter < 12)
+compare(True, ok_iter, f"Iteration Count {n_iter}")
+
+scf_enes = variable("scf total energies")
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    compare_values(refenergy, scf_enes[n_iter], 9, "Energies stored")

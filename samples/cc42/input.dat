@@ -23,6 +23,9 @@ set {
   omega [589, 355, nm]
 }
 
+if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-9})
+
 wfn = properties('cc2',properties=['rotation'], return_wfn=True)[1]
 
 

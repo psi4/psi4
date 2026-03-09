@@ -10,6 +10,9 @@ molecule mol {
 set BASIS      CC-PVDZ
 set EP2_NUM_EA 2
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
 energy('EP2')
 
 

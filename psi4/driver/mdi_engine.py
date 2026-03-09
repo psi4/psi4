@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2024 The Psi4 Developers.
+# Copyright (c) 2007-2025 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -103,7 +103,7 @@ class MDIEngine():
         self.nlattice = 0  # number of lattice point charges
         self.clattice = []  # list of lattice coordinates
         self.lattice = []  # list of lattice charges
-        self.lattice_field = psi4.QMMMbohr()  # Psi4 chargefield
+        self.lattice_field = psi4.core.ExternalPotential()  # Psi4 chargefield
 
         # MPI variables
         self.mpi_world = None

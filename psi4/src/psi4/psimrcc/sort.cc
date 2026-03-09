@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -106,7 +106,10 @@ CCSort::CCSort(std::shared_ptr<PSIMRCCWfn> wfn, SortAlgorithm algorithm)
     delete ints;
 }
 
-CCSort::~CCSort() {}
+CCSort::~CCSort() {
+    // trans.reset();
+    // wfn_.reset();
+}
 
 /**
  * Initialize the CCSort class

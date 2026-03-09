@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -376,7 +376,7 @@ aug-cc-pVQZ SCF followed by a :py:func:`~psi4.core.print_variables` command, the
 last will include :psivar:`SCF TOTAL ENERGY` but not
 :psivar:`FCI TOTAL ENERGY`.
 The entire dictionary of PSI variables can be obtained through
-:py:func:`~psi4.core.get_variables`.
+:py:func:`~psi4.core.variables`.
 
 .. _`sec:returnvals`:
 

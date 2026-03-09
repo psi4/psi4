@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -279,6 +279,11 @@
 #define PSIF_DFOCC_MIABC_BBAA    293  /*- DFOCC M_iaBC -*/
 
 #define PSIF_SAD                 300  /*- A SAD file (File for SAD related quantities -*/
+
+#define PSIF_DLPNO_QAB_PAO       310  /*- A PSIO file to store all (AUX | PAO PAO) integrals in a DLPNO computation -*/
+#define PSIF_DLPNO_QIA_PNO       311  /*- A PSIO file to store all (AUX | LMO PNO) integrals in a DLPNO computation -*/
+#define PSIF_DLPNO_QAB_PNO       312  /*- A PSIO file to store all (AUX | PNO PNO) integrals in a DLPNO computation -*/
+#define PSIF_DLPNO_TRIPLES       313  /*- A PSIO file to store all X_{ijk}^{abc} like terms in a DLPNO-CCSD(T) computation -*/
 
 // following four are not completely managed by PSIO and starting number resettable through CI_FILE_START option
 #define PSIF_CI_HD_FILE          350  /*- DETCI H diagonal -*/

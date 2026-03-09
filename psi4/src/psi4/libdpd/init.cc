@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -52,8 +52,8 @@ struct dpdpair {
     int *right_orbsym;
     int *left_orboff;
     int *right_orboff;
-    int permlr;
-    int ler;
+    dpdparams4::DiagPolicy permlr;
+    bool ler;
 };
 
 int dpd_set_default(int dpd_num) {
@@ -62,12 +62,24 @@ int dpd_set_default(int dpd_num) {
     return 0;
 }
 
+PSI_DEPRECATED("DPD construction via a vector of int* is being deprecated and will be removed as soon as 1.12.")
 extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
                     dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays) {
     if (dpd_list[dpd_num])
         throw PSIEXCEPTION("Attempting to initialize new DPD instance before the old one was freed.");
     dpd_list[dpd_num] =
         new DPD(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
+    dpd_default = dpd_num;
+    global_dpd_ = dpd_list[dpd_num];
+    return 0;
+}
+
+extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+                    dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaceArrays) {
+    if (dpd_list[dpd_num])
+        throw PSIEXCEPTION("Attempting to initialize new DPD instance before the old one was freed.");
+    dpd_list[dpd_num] =
+        new DPD(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, spaceArrays);
     dpd_default = dpd_num;
     global_dpd_ = dpd_list[dpd_num];
     return 0;
@@ -129,6 +141,22 @@ DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefil
     init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
 }
 
+DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
+         dpd_file4_cache_entry *priority, std::vector<std::pair<Dimension, int *>> &spaces) {
+    int num_subspaces = spaces.size();
+    std::vector<int *> spaceArrays;
+    int *tmparray;
+
+    for (int i = 0; i < num_subspaces; i++) {
+        tmparray = init_int_array(nirreps);
+        for (int j = 0; j < spaces[i].first.n(); j++) tmparray[j] = spaces[i].first[j];
+        spaceArrays.push_back(tmparray);
+
+        spaceArrays.push_back(spaces[i].second);
+    }
+
+    init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist, priority, num_subspaces, spaceArrays);
+}
 
 /* This is the original function code, but modified to take a vector of the orbital
  * space information arrays, rather than a variable argument list; the former is
@@ -211,8 +239,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
         pairs[5 * i].right_orbspi = orbspi[i];
         pairs[5 * i].right_orbsym = orbsym[i];
         pairs[5 * i].right_orboff = orboff[i];
-        pairs[5 * i].permlr = 0;
-        pairs[5 * i].ler = 0;
+        pairs[5 * i].permlr = dpdparams4::DiagPolicy::All;
+        pairs[5 * i].ler = false;
 
         pairs[5 * i + 1].left_orbspi = orbspi[i];
         pairs[5 * i + 1].left_orbsym = orbsym[i];
@@ -220,8 +248,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
         pairs[5 * i + 1].right_orbspi = orbspi[i];
         pairs[5 * i + 1].right_orbsym = orbsym[i];
         pairs[5 * i + 1].right_orboff = orboff[i];
-        pairs[5 * i + 1].permlr = 1;
-        pairs[5 * i + 1].ler = 0;
+        pairs[5 * i + 1].permlr = dpdparams4::DiagPolicy::Symm;
+        pairs[5 * i + 1].ler = false;
 
         pairs[5 * i + 2].left_orbspi = orbspi[i];
         pairs[5 * i + 2].left_orbsym = orbsym[i];
@@ -229,8 +257,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
         pairs[5 * i + 2].right_orbspi = orbspi[i];
         pairs[5 * i + 2].right_orbsym = orbsym[i];
         pairs[5 * i + 2].right_orboff = orboff[i];
-        pairs[5 * i + 2].permlr = -1;
-        pairs[5 * i + 2].ler = 0;
+        pairs[5 * i + 2].permlr = dpdparams4::DiagPolicy::AntiSymm;
+        pairs[5 * i + 2].ler = false;
 
         pairs[5 * i + 3].left_orbspi = orbspi[i];
         pairs[5 * i + 3].left_orbsym = orbsym[i];
@@ -238,8 +266,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
         pairs[5 * i + 3].right_orbspi = orbspi[i];
         pairs[5 * i + 3].right_orbsym = orbsym[i];
         pairs[5 * i + 3].right_orboff = orboff[i];
-        pairs[5 * i + 3].permlr = 1;
-        pairs[5 * i + 3].ler = 1;
+        pairs[5 * i + 3].permlr = dpdparams4::DiagPolicy::Symm;
+        pairs[5 * i + 3].ler = true;
 
         pairs[5 * i + 4].left_orbspi = orbspi[i];
         pairs[5 * i + 4].left_orbsym = orbsym[i];
@@ -247,8 +275,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
         pairs[5 * i + 4].right_orbspi = orbspi[i];
         pairs[5 * i + 4].right_orbsym = orbsym[i];
         pairs[5 * i + 4].right_orboff = orboff[i];
-        pairs[5 * i + 4].permlr = -1;
-        pairs[5 * i + 4].ler = 1;
+        pairs[5 * i + 4].permlr = dpdparams4::DiagPolicy::AntiSymm;
+        pairs[5 * i + 4].ler = true;
 
         for (j = 0; j < nirreps; j++)
             for (k = 0; k < nirreps; k++) {
@@ -289,8 +317,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
             pairs[cnt].right_orbspi = orbspi[j];
             pairs[cnt].right_orbsym = orbsym[j];
             pairs[cnt].right_orboff = orboff[j];
-            pairs[cnt].permlr = 0;
-            pairs[cnt].ler = 0;
+            pairs[cnt].permlr = dpdparams4::DiagPolicy::All;
+            pairs[cnt].ler = false;
 
             pairs[cnt + 1].left_orbspi = orbspi[j];
             pairs[cnt + 1].left_orbsym = orbsym[j];
@@ -298,8 +326,8 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
             pairs[cnt + 1].right_orbspi = orbspi[i];
             pairs[cnt + 1].right_orbsym = orbsym[i];
             pairs[cnt + 1].right_orboff = orboff[i];
-            pairs[cnt + 1].permlr = 0;
-            pairs[cnt + 1].ler = 0;
+            pairs[cnt + 1].permlr = dpdparams4::DiagPolicy::All;
+            pairs[cnt + 1].ler = false;
 
             for (k = 0; k < nirreps; k++)
                 for (l = 0; l < nirreps; l++) {

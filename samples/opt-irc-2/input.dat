@@ -42,14 +42,19 @@ set {
   basis           dzp
   opt_type        irc
   geom_maxiter    200
-  irc_direction   backward
+  irc_direction   forward
   cart_hess_read  true  # read hessian back in from output.hcn.hess
   max_disp_g_convergence 6e-6
   rms_disp_g_convergence 4e-6
-  irc_points 25
+  irc_points 20
 }
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
 
 energy = optimize('scf')
 
 # This test used to overshoot the endpoint. This should not longer be the case. Step 22 is now determined
 # to be the endpoint
+# AH 2025. Stop at point 20. Addition of linear bend by pyoptking affects termination of IRC
+# Test ends in 22 steps but energy is slightly different. Ref value is from point 20 from Psi4 1.6

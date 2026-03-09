@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -58,12 +58,11 @@ void build_Z_ROHF() {
     dpdfile2 X1, D;
     double **X, **T, **Y, **Z;
     int num_ai, h, nirreps, a, i, count, lastcol, rank, ai;
-    int *virtpi, *occpi, *openpi;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    openpi = moinfo.openpi;
-    virtpi = moinfo.virtpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& openpi = moinfo.openpi;
+    const auto& virtpi = moinfo.virtpi;
 
     /*** Construct the ai transformation matrix which places all singly
          occupied orbital combinations at the end of the vector ***/

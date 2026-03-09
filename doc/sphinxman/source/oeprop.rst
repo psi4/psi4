@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2024 The Psi4 Developers.
+.. # Copyright (c) 2007-2025 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -71,6 +71,8 @@ summarized in the table below.
    | Mulliken atomic charges            | MULLIKEN_CHARGES      |                                                                                   |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | L\ |o_dots|\ wdin atomic charges   | LOWDIN_CHARGES        |                                                                                   |
+   +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
+   | L\ |o_dots|\ wdin atomic spins     | LOWDIN_SPINS          | Scalar spin population: the fractional number of unpaired electrons [e].          |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Wiberg bond indices                | WIBERG_LOWDIN_INDICES | Uses (L\ |o_dots|\ wdin) symmetrically orthogonalized orbitals                    |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+

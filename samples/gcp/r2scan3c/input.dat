@@ -1,0 +1,31 @@
+# Any line starting with the # character is a comment line
+#! Sample r2scan-3c H2O computation
+
+memory 600 mb
+
+molecule h2o {
+  O
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+r2scan3c_biggrid_e = -76.41835894
+r2scan3c_biggrid_g = [
+ [ 0.,          0.        ,  0.00270896],
+ [ 0.,          0.00079913, -0.00135448],
+ [ 0.,         -0.00079913, -0.00135448]]
+
+
+set e_convergence 8
+set dft_radial_points 99
+set dft_spherical_points 590
+set basis cc-pVDZ
+
+ene = energy('r2scan3c/')  # slash unsets basis from above
+
+#fd = gradient('r2scan-3c/', dertype=0)
+#print(fd.np)
+
+grd = gradient('r2scan-3c/', dertype=1)
+print(grd.np)
+

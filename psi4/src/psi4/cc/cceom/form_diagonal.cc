@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -44,16 +44,19 @@ namespace cceom {
 void form_diagonal(int C_irr) {
     dpdfile2 DIA, Dia, FAE, FMI, Fae, Fmi;
     dpdbuf4 DIJAB, Dijab, DIjAb, Cmnef, CMnEf;
-    int *openpi, nirreps;
-    int *occpi, *virtpi, *occ_off, *vir_off, *occ_sym, *vir_sym;
-    int *aoccpi, *avirtpi, *aocc_off, *avir_off, *aocc_sym, *avir_sym;
-    int *boccpi, *bvirtpi, *bocc_off, *bvir_off, *bocc_sym, *bvir_sym;
+    int nirreps;
+    Dimension occpi, virtpi;
+    int *occ_off, *vir_off, *occ_sym, *vir_sym;
+    Dimension aoccpi, avirtpi;
+    int *aocc_off, *avir_off, *aocc_sym, *avir_sym;
+    Dimension boccpi, bvirtpi;
+    int *bocc_off, *bvir_off, *bocc_sym, *bvir_sym;
     int ij, ab, i, j, a, b, h, I, J, A, B;
     int isym, jsym, asym, bsym;
     double tval;
 
     nirreps = moinfo.nirreps;
-    openpi = moinfo.openpi;
+    const auto& openpi = moinfo.openpi;
 
     if (params.eom_ref == 0) { /** RHF **/
         occpi = moinfo.occpi;

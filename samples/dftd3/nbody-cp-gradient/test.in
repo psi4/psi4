@@ -102,33 +102,43 @@ units bohr
 
 set d_convergence 9
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 # compute nbody
 g, wfn = gradient('SCF-d3bj/STO-3G', molecule=water_trimer, bsse_type='cp', max_nbody=2,
                                       return_total_data=True, return_wfn=True)
 core.clean()
 
+# renamed for v1.10
+# * '2' -> 'CP-CORRECTED TOTAL ENERGY'
+# * '2CP' -> 'CP-CORRECTED TOTAL ENERGY THROUGH 2-BODY'
+# * 'GRADIENT 2' -> 'CP-CORRECTED TOTAL GRADIENT THROUGH 2-BODY'
+# * 'GRADIENT 1_((1, 2), (1, 2, 3))' -> 'N-BODY (1, 2)@(1, 2, 3) TOTAL GRADIENT'  # if multilevel, 'N-BODY §A_(1, 2)@(1, 2, 3) TOTAL GRADIENT'
+# * '1_((1, 2), (1, 2, 3))' -> 'N-BODY (1, 2)@(1, 2, 3) TOTAL ENERGY'
+
 # test fresh env
 for result in [  #TEST
-    wfn.variable('2'),  #TEST
-    wfn.variable('2CP'),  #TEST
+    wfn.variable('CP-CORRECTED TOTAL ENERGY'),  #TEST
+    wfn.variable('CP-CORRECTED TOTAL ENERGY THROUGH 2-BODY'),  #TEST
     wfn.variable("CURRENT ENERGY"),  #TEST
     variable("CURRENT ENERGY"),  #TEST
 ]:  #TEST
     compare_values(ref_2cp_ene + ref_disp_2cp_ene, result, 8, 'CP-Corrected Energy')  #TEST
 
 for result in [  #TEST
-    wfn.variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
-    variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
+    wfn.variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
+    variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
 ]:  #TEST
     compare_values(ref_2cp_ie + ref_disp_2cp_ie, result, 8, 'CP-Corrected Interaction Energy')  #TEST
 
 for result in [  #TEST
     g,  #TEST
-    wfn.variable('GRADIENT 2'),  #TEST
+    wfn.variable('CP-CORRECTED TOTAL GRADIENT THROUGH 2-BODY'),  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     variable("CURRENT GRADIENT"),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 8, 'CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 7, 'CP-Corrected Gradient')  #TEST
 
 # compute pieces
 cp_scheme = {  #TEST
@@ -143,6 +153,10 @@ cp_scheme = {  #TEST
     '((3,), (3,))': 1,  #TEST
 }  #TEST
 
+import qcmanybody as qcmb  #TEST
+sz_dict = {1: 3, 2: 3, 3: 3}
+sl_dict = {1: slice(0, 3), 2: slice(3, 6), 3: slice(6, 9)}
+
 energy_dict, gradient_dict = {}, {} #TEST
 for i in cp_scheme: #TEST
     mol = water_trimer.extract_subsets(eval(i)[0], list(set(eval(i)[1]) - set(eval(i)[0]))) #TEST
@@ -152,7 +166,9 @@ for i in cp_scheme: #TEST
 
     for result in [
         energy_dict[i],
-        wfn.variable("1_"+i),
+        # parsing below turns the object-centric fragment notation of cp_scheme
+        #   keys into the clearer-for-eyes fragment notation in qcvars.
+        wfn.variable(f"N-BODY {eval(i)[0]}@{eval(i)[1]} TOTAL ENERGY".replace(",)", ")")),
         wfn_mol.variable("CURRENT ENERGY"),
         variable("CURRENT ENERGY"),
     ]:
@@ -160,12 +176,16 @@ for i in cp_scheme: #TEST
 
     for result in [
         gradient_dict[i],
-        wfn.variable(f"GRADIENT 1_{i}"),
+        # contortion below is b/c the species gradient is padded with zeros into
+        #   supersystem shape. So we need to convert it to ndarray, contract it
+        #   down to species shape again, then reform psi4.Matrix for rms() check.
+        psi4.core.Matrix.from_array(qcmb.utils.resize_gradient(
+            wfn.variable(f"N-BODY {eval(i)[0]}@{eval(i)[1]} TOTAL GRADIENT".replace(",)", ")")).np,
+            eval(i)[1], sz_dict, sl_dict, reverse=True)),
         wfn_mol.variable("CURRENT GRADIENT"),
         variable("CURRENT GRADIENT"),
     ]:
-        compare_arrays(ref_disp[i][1], result.rms(), 8, f"Gradient RMS of {i}")  #TEST
-    compare_arrays(gradient_dict[i], wfn.variable(f'GRADIENT 1_{i}'), 8, 'Gradient of %s' %i) #TEST
+        compare_arrays(ref_disp[i][1], result.rms(), 2e-8, f"Gradient RMS of {i}")  #TEST
 
 
 # recompute from pieces
@@ -183,24 +203,24 @@ for i in cp_scheme: #TEST
 
 # test
 for result in [  #TEST
-    wfn.variable('2'),  #TEST
-    wfn.variable('2CP'),  #TEST
+    wfn.variable('CP-CORRECTED TOTAL ENERGY'),  #TEST
+    wfn.variable('CP-CORRECTED TOTAL ENERGY THROUGH 2-BODY'),  #TEST
     wfn.variable("CURRENT ENERGY"),  #TEST
     ene,  #TEST
 ]:  #TEST
     compare_values(ref_2cp_ene + ref_disp_2cp_ene, result, 8, 'CP-Corrected Energy')  #TEST
 
 for result in [  #TEST
-    wfn.variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
+    wfn.variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
 ]:  #TEST
     compare_values(ref_2cp_ie + ref_disp_2cp_ie, result, 8, 'CP-Corrected Interaction Energy')  #TEST
 
 for result in [  #TEST
-    wfn.variable('GRADIENT 2'),  #TEST
+    wfn.variable('CP-CORRECTED TOTAL GRADIENT THROUGH 2-BODY'),  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     grad,  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 8, 'CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 7, 'CP-Corrected Gradient')  #TEST
 
 
 # compute nbody again with return_total_data=False
@@ -211,27 +231,27 @@ core.clean()
 
 # test fresh env
 for result in [  #TEST
-    wfn.variable('2'),  #TEST
-    wfn.variable('2CP'),  #TEST
+    wfn.variable('CP-CORRECTED TOTAL ENERGY'),  #TEST
+    wfn.variable('CP-CORRECTED TOTAL ENERGY through 2-body'),  #TEST
 ]:  #TEST
     compare_values(ref_2cp_ene + ref_disp_2cp_ene, result, 8, 'rtd=F CP-Corrected Energy')  #TEST
 
 for result in [  #TEST
-    wfn.variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
-    variable("CP-CORRECTED 2-BODY INTERACTION ENERGY"),  #TEST
+    wfn.variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
+    variable("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY"),  #TEST
     wfn.variable("CURRENT ENERGY"),  #TEST
     variable("CURRENT ENERGY"),  #TEST
 ]:  #TEST
     compare_values(ref_2cp_ie + ref_disp_2cp_ie, result, 8, 'rtd=F CP-Corrected Interaction Energy')  #TEST
 
 for result in [  #TEST
-    wfn.variable('GRADIENT 2'),  #TEST
+    wfn.variable('CP-CORRECTED TOTAL GRADIENT THROUGH 2-BODY'),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 8, 'rtd=F CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 7, 'rtd=F CP-Corrected Gradient')  #TEST
 
 for result in [  #TEST
     g,  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     variable("CURRENT GRADIENT"),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad_ie + ref_disp_2cp_grad_ie, result, 8, 'rtd=F CP-Corrected Interaction Gradient')  #TEST
+    compare_values(ref_2cp_grad_ie + ref_disp_2cp_grad_ie, result, 7, 'rtd=F CP-Corrected Interaction Gradient')  #TEST

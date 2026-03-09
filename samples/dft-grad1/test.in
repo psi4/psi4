@@ -24,8 +24,14 @@ set {
     d_convergence         8
 }
 
+if psi4.core.get_global_option("orbital_optimizer_package") == "INTERNAL":
+    tol = 7
+else:
+    tol = 3e-7
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 grad = gradient('bp86-d')
-compare_matrices(ref, grad, 7, "Analytic dft gradients called by name")    #TEST
+compare_matrices(ref, grad, tol, "Analytic dft gradients called by name")    #TEST
 clean()
 
 
@@ -36,4 +42,4 @@ set {
 }
 
 grad = gradient('scf', dft_functional="bp86-d")
-compare_matrices(ref, grad, 7, "Analytic dft gradients called by options") #TEST
+compare_matrices(ref, grad, tol, "Analytic dft gradients called by options") #TEST

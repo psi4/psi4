@@ -36,6 +36,9 @@ set detci {
   nat_orbs true
 }
 
+if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-9})
+
 thisenergy, this_wfn = energy('detci', return_wfn=True)
 
 compare_values(refnuc, ne.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
@@ -78,6 +81,9 @@ set detci {
   # in this computation
   r4s true
 }
+
+if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-9})
 
 thisenergy = energy('detci', ref_wfn=this_wfn)
 

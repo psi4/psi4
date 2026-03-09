@@ -12,6 +12,9 @@ Rvals=[2.5, 3.0, 4.0]
 set basis aug-cc-pVDZ
 set freeze_core True
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+
 # Initialize a blank dictionary of counterpoise corrected energies
 # (Need this for the syntax below to work)
 ecp = {}

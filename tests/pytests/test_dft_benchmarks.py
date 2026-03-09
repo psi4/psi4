@@ -167,6 +167,8 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     if func.lower() in psi4.driver.procedures['energy']:
         mols = dft_bench_systems
         psi4.set_options({'basis': basis, 'reference': 'uks'})
+        if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+            psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
         cation  = psi4.energy(func, molecule=mols['h2o_plus'])
         psi4.set_options({'reference': 'rks'})
         neutral = psi4.energy(func, molecule=mols['h2o'])
@@ -292,6 +294,8 @@ def test_dft_bench_interaction(func, expected, basis, dft_bench_systems, request
     if func.lower() in psi4.driver.procedures['energy']:
         mols = dft_bench_systems
         psi4.set_options({'basis': basis})
+        if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+            psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
         psi4_ie = psi4.energy(func, molecule=mols['h2o_dimer'], bsse_type='nocp')
         assert compare_values(expected, psi4_ie, 4, request.node.name), (psi4_ie - expected)
     else:

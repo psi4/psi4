@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -322,22 +322,21 @@ void CCEnergyWavefunction::cc2_Wmnij_build() {
 
 void CCEnergyWavefunction::purge_cc2_Wmnij() {
     dpdfile4 W;
-    int *occpi, *virtpi;
     int i, j, m, n;
     int I, J, M, N;
     int isym, jsym, msym, nsym;
     int *occ_off, *vir_off;
     int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int nirreps;
 
     nirreps = moinfo_.nirreps;
-    occpi = moinfo_.occpi;
-    virtpi = moinfo_.virtpi;
+    const auto& occpi = moinfo_.occpi;
+    const auto& virtpi = moinfo_.virtpi;
     occ_off = moinfo_.occ_off;
     vir_off = moinfo_.vir_off;
     occ_sym = moinfo_.occ_sym;
     vir_sym = moinfo_.vir_sym;
-    openpi = moinfo_.openpi;
+    const auto& openpi = moinfo_.openpi;
 
     /* Purge Wmnij matrix elements */
     global_dpd_->file4_init(&W, PSIF_CC2_HET1, 0, 2, 2, "CC2 Wmnij (m>n,i>j)");

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -49,8 +49,6 @@ int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_
     int p, q, r, s;             /* orbital indices */
     int filepq, filers, filesr; /* Input dpdfile row and column indices */
     int rowtot, coltot;         /* dpdbuf row and column dimensions */
-    int b_perm_pq, b_perm_rs, b_peq, b_res;
-    int f_perm_pq, f_perm_rs, f_peq, f_res;
     int pq_permute, permute;
     double value;
 
@@ -62,14 +60,16 @@ int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_
     rowtot = Buf->params->rowtot[irrep];
     coltot = Buf->params->coltot[irrep ^ all_buf_irrep];
 
-    b_perm_pq = Buf->params->perm_pq;
-    b_perm_rs = Buf->params->perm_rs;
-    f_perm_pq = Buf->file.params->perm_pq;
-    f_perm_rs = Buf->file.params->perm_rs;
-    b_peq = Buf->params->peq;
-    b_res = Buf->params->res;
-    f_peq = Buf->file.params->peq;
-    f_res = Buf->file.params->res;
+    const auto& b_perm_pq = Buf->params->perm_pq;
+    const auto& b_perm_rs = Buf->params->perm_rs;
+    const auto& f_perm_pq = Buf->file.params->perm_pq;
+    const auto& f_perm_rs = Buf->file.params->perm_rs;
+    const auto& b_peq = Buf->params->peq;
+    const auto& b_res = Buf->params->res;
+    const auto& f_peq = Buf->file.params->peq;
+    const auto& f_res = Buf->file.params->res;
+
+    const auto& AllPolicy = dpdparams4::DiagPolicy::All;
 
     if ((b_perm_pq == f_perm_pq) && (b_perm_rs == f_perm_rs) && (b_peq == f_peq) && (b_res == f_res)) {
         if (Buf->anti)
@@ -77,13 +77,13 @@ int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_
         else
             method = 12;
     } else if ((b_perm_pq != f_perm_pq) && (b_perm_rs == f_perm_rs) && (b_res == f_res)) {
-        if (f_perm_pq && !b_perm_pq) {
+        if (b_perm_pq == AllPolicy) {
             if (Buf->anti) {
                 outfile->Printf("\n\tUnpack pq and antisymmetrize?\n");
                 throw PSIEXCEPTION("Unpack pq and antisymmetrize?");
             }
             method = 21;
-        } else if (!f_perm_pq && b_perm_pq) {
+        } else if (f_perm_pq == AllPolicy) {
             if (Buf->anti)
                 method = 22;
             else
@@ -93,13 +93,13 @@ int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_
             throw PSIEXCEPTION("Invalid second-level method!");
         }
     } else if ((b_perm_pq == f_perm_pq) && (b_perm_rs != f_perm_rs) && (b_peq == f_peq)) {
-        if (f_perm_rs && !b_perm_rs) {
+        if (b_perm_rs == AllPolicy) {
             if (Buf->anti) {
                 outfile->Printf("\n\tUnpack rs and antisymmetrize?\n");
                 throw PSIEXCEPTION("Unpack rs and antisymmetrize?");
             }
             method = 31;
-        } else if (!f_perm_rs && b_perm_rs) {
+        } else if (f_perm_rs == AllPolicy) {
             if (Buf->anti)
                 method = 32;
             else
@@ -109,28 +109,28 @@ int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_
             throw PSIEXCEPTION("Invalid third-level method!");
         }
     } else if ((b_perm_pq != f_perm_pq) && (b_perm_rs != f_perm_rs)) {
-        if (f_perm_pq && !b_perm_pq) {
-            if (f_perm_rs && !b_perm_rs) {
+        if (b_perm_pq == AllPolicy) {
+            if (b_perm_rs == AllPolicy) {
                 if (Buf->anti) {
                     outfile->Printf("\n\tUnpack pq and rs and antisymmetrize?\n");
                     throw PSIEXCEPTION("Unpack pq and rs and antisymmetrize?");
                 } else
                     method = 41;
-            } else if (!f_perm_rs && b_perm_rs) {
+            } else if (f_perm_rs == AllPolicy) {
                 if (Buf->anti) {
                     outfile->Printf("\n\tUnpack pq and antisymmetrize?\n");
                     throw PSIEXCEPTION("Unpack pq and antisymmetrize?");
                 } else
                     method = 42;
             }
-        } else if (!f_perm_pq && b_perm_pq) {
-            if (f_perm_rs && !b_perm_rs) {
+        } else if (f_perm_pq == AllPolicy) {
+            if (b_perm_rs == AllPolicy) {
                 if (Buf->anti) {
                     outfile->Printf("\n\tUnpack rs and antisymmetrize?\n");
                     throw PSIEXCEPTION("Unpack rs and antisymmetrize?");
                 } else
                     method = 43;
-            } else if (!f_perm_rs && b_perm_rs) {
+            } else if (f_perm_rs == AllPolicy) {
                 if (Buf->anti)
                     method = 44;
                 else
@@ -206,7 +206,7 @@ int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_
                 filerow = Buf->file.incore ? filepq : 0;
 
                 /* set the permutation operator's value */
-                permute = ((p < q) && (f_perm_pq < 0) ? -1 : 1);
+                permute = ((p < q) && (f_perm_pq == dpdparams4::DiagPolicy::AntiSymm) ? -1 : 1);
 
                 /* fill the buffer */
                 if (filepq >= 0)
@@ -315,7 +315,7 @@ int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_
                     filers = Buf->file.params->colidx[r][s];
 
                     /* rs permutation operator */
-                    permute = ((r < s) && (f_perm_rs < 0) ? -1 : 1);
+                    permute = ((r < s) && (f_perm_rs == dpdparams4::DiagPolicy::AntiSymm) ? -1 : 1);
 
                     /* is this fast enough? */
                     value = ((filers < 0) ? 0 : Buf->file.matrix[irrep][filerow][filers]);
@@ -406,7 +406,7 @@ int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_
                 filerow = Buf->file.incore ? filepq : 0;
 
                 /* Set the value of the pq permutation operator */
-                pq_permute = ((p < q) && (f_perm_pq < 0) ? -1 : 1);
+                pq_permute = ((p < q) && (f_perm_pq == dpdparams4::DiagPolicy::AntiSymm) ? -1 : 1);
 
                 /* Fill the buffer */
                 if (filepq >= 0)
@@ -421,7 +421,7 @@ int DPD::buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_
                     filers = Buf->file.params->colidx[r][s];
 
                     /* Set the value of the pqrs permutation operator */
-                    permute = ((r < s) && (f_perm_rs < 0) ? -1 : 1) * pq_permute;
+                    permute = ((r < s) && (f_perm_rs == dpdparams4::DiagPolicy::AntiSymm) ? -1 : 1) * pq_permute;
 
                     value = 0;
 

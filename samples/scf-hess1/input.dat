@@ -20,6 +20,9 @@ set {
   d_convergence 10
 }
 
+if get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    set_options({"d_convergence": 8})
+
 psi4_hess, wfn = hessian('hf', return_wfn=True)
 
 

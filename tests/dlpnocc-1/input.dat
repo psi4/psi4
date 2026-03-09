@@ -1,0 +1,48 @@
+#! comparison of DF-CCSD(T) and DLPNO-CCSD(T)
+#! In the limit of zero PNO cutoffs, DF and DLPNO should exactly match
+#! There should not be enough sparsity in water to affect the other parameters
+#! The reference DF-CCSD(T) values are stored and not rerun
+#! This is also a test of the completely in core DLPNO algorithm 
+#! (hence memory is NOT toggled)
+
+ref_scf                  =    -76.026787275597              #TEST
+
+ref_dfccsd_corl          =     -0.211297075553              #TEST
+ref_dfccsd_tot           =    -76.238084351147              #TEST
+ref_dfccsd_t_corl        =     -0.214333036603              #TEST
+ref_dfccsd_t_tot         =    -76.241120312197              #TEST
+
+molecule h2o {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis cc-pvdz
+set freeze_core True
+set scf_type df
+set e_convergence 1.0e-8
+set r_convergence 1.0e-8
+set t_cut_pno 0.0
+set t_cut_do 0.0
+set t_cut_mkn 0.0
+set t_cut_tno 0.0
+set t_cut_do_triples 0.0
+set t_cut_mkn_triples 0.0
+set dlpno_toggle_memory false
+
+print('   Testing DLPNO-CCSD(T) ...')
+val = energy('dlpno-ccsd(t)')
+
+# The DLPNO-CCSD(T) energy should exactly match DF-CCSD(T) with these parameters
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'scf ref')                           #TEST
+compare_values(ref_dfccsd_corl, variable('CCSD CORRELATION ENERGY'), 7, 'ccsd corl')          #TEST
+compare_values(ref_dfccsd_tot, variable('CCSD TOTAL ENERGY'), 7, 'ccsd tot')                  #TEST
+compare_values(ref_dfccsd_t_corl, variable('CCSD(T) CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
+compare_values(ref_dfccsd_t_tot, variable('CCSD(T) TOTAL ENERGY'), 7, 'ccsd(t) tot')          #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'scf ref')                   #TEST
+compare_values(ref_dfccsd_t_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'ccsd(t) corl')  #TEST
+compare_values(ref_dfccsd_t_tot, variable('CURRENT ENERGY'), 7, 'ccsd(t) tot')                #TEST
+compare_values(ref_dfccsd_t_tot, val, 7, 'ccsd(t) return')                                    #TEST
+clean()

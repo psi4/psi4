@@ -32,6 +32,9 @@ compare_values(nucenergy_ref, h2o_dz.nuclear_repulsion_energy(), 9, "Nuclear rep
 
 clean()
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+
 # SCF TESTS
 
 # reference frequencies: CFOUR v1.0 with:

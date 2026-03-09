@@ -14,6 +14,10 @@ set {
     d_convergence 1e-10
     r_convergence 1e-10
 }
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 10, "d_convergence": 1e-9})
+
 energy('qcisd(t)')
 refqcisd  = -76.267121113654 #TEST
 refqcisdt = -76.272102955182 #TEST

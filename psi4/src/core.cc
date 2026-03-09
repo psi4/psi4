@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2024 The Psi4 Developers.
+ * Copyright (c) 2007-2025 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -179,6 +179,9 @@ SharedWavefunction dfmp2(SharedWavefunction, Options&);
 }
 namespace dlpno {
 SharedWavefunction dlpno(SharedWavefunction, Options&);
+}
+namespace f12 {
+SharedWavefunction f12(SharedWavefunction, Options&);
 }
 namespace dfoccwave {
 SharedWavefunction dfoccwave(SharedWavefunction, Options&);
@@ -364,6 +367,17 @@ SharedWavefunction py_psi_dlpno(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("DLPNO");
     return dlpno::dlpno(ref_wfn, Process::environment.options);
 }
+
+#ifdef USING_Einsums
+SharedWavefunction py_psi_f12(SharedWavefunction ref_wfn) {
+    py_psi_prepare_options_for_module("F12");
+    return f12::f12(ref_wfn, Process::environment.options);
+}
+#else
+double py_psi_f12(SharedWavefunction ref_wfn) {
+    throw PSIEXCEPTION("Einsums not enabled. Recompile with -DENABLE_Einsums");
+}
+#endif
 
 double py_psi_sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB) {
     py_psi_prepare_options_for_module("SAPT");
@@ -1074,7 +1088,7 @@ bool psi4_python_module_initialize() {
     outfile = std::make_shared<PsiOutStream>();
     outfile_name = "stdout";
     std::string fprefix = PSI_DEFAULT_FILE_PREFIX;
-    psi_file_prefix = strdup(fprefix.c_str());
+    psi_file_prefix = strdup(fprefix.c_str()); // strdup mallocs the string. It needs to be freed later. Yes, it's only four bytes. Yes, it still needs to be freed.
 
     // There is only one timer:
     timer_init();
@@ -1151,6 +1165,9 @@ void psi4_python_module_finalize() {
     libint2::finalize();
 
     outfile = std::shared_ptr<PsiOutStream>();
+    if(psi_file_prefix != nullptr) {
+        free(psi_file_prefix);
+    }
     psi_file_prefix = nullptr;
 }
 
@@ -1366,6 +1383,7 @@ PYBIND11_MODULE(core, core) {
     core.def("dct", py_psi_dct, "ref_wfn"_a, "Runs the density cumulant (functional) theory code.");
     core.def("dfmp2", py_psi_dfmp2, "ref_wfn"_a, "Runs the DF-MP2 code.");
     core.def("dlpno", py_psi_dlpno, "Runs the DLPNO codes.");
+    core.def("f12", py_psi_f12, "Runs the F12 codes.");
     core.def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     core.def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
     core.def("mrcc_load_densities", py_psi_mrcc_load_densities,
