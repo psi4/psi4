@@ -563,16 +563,13 @@ def partition(
 
     core.print_out("   => Partition Summary <= \n\n")
     core.print_out(
-        f"    Monomer A: {ZA_int - YA:2d} charge, {ZA_int:3d} protons, {
-            YA:3d} electrons, {len(orbsA):3d} docc\n"
+        f"    Monomer A: {ZA_int - YA:2d} charge, {ZA_int:3d} protons, {YA:3d} electrons, {len(orbsA):3d} docc\n"
     )
     core.print_out(
-        f"    Monomer B: {ZB_int - YB:2d} charge, {ZB_int:3d} protons, {
-            YB:3d} electrons, {len(orbsB):3d} docc\n"
+        f"    Monomer B: {ZB_int - YB:2d} charge, {ZB_int:3d} protons, {YB:3d} electrons, {len(orbsB):3d} docc\n"
     )
     core.print_out(
-        f"    Monomer C: {ZC_int - YC:2d} charge, {ZC_int:3d} protons, {
-            YC:3d} electrons, {len(orbsC):3d} docc\n"
+        f"    Monomer C: {ZC_int - YC:2d} charge, {ZC_int:3d} protons, {YC:3d} electrons, {len(orbsC):3d} docc\n"
     )
     return cache
 
@@ -2043,12 +2040,10 @@ def find(
         )
         assert (
             abs(scalars["Exch-Ind20,u (A<-B)"] - ExchInd20u_AB) < 1e-8
-        ), f"ExchInd20u_AB mismatch: {1000 * scalars['Exch-Ind20,u (A<-B)']:.8f} vs {
-            1000 * ExchInd20u_AB:.8f}"
+        ), f"ExchInd20u_AB mismatch: {1000 * scalars['Exch-Ind20,u (A<-B)']:.8f} vs {1000 * ExchInd20u_AB:.8f}"
         assert (
             abs(scalars["Exch-Ind20,u (A->B)"] - ExchInd20u_BA) < 1e-8
-        ), f"ExchInd20u_BA mismatch: {1000 * scalars['Exch-Ind20,u (A->B)']:.8f} vs {
-            1000 * ExchInd20u_BA:.8f}"
+        ), f"ExchInd20u_BA mismatch: {1000 * scalars['Exch-Ind20,u (A->B)']:.8f} vs {1000 * ExchInd20u_BA:.8f}"
         core.print_out(
             f"    Exch-Ind20,u            = {ExchInd20u_AB + ExchInd20u_BA * 1000:18.8f} [mEh]\n\n"
         )
