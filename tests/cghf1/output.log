@@ -1,0 +1,3 @@
+2026-03-06:13:23:37,937 INFO     [psi4.driver.task_planner:259] PLANNING Atomic:  keywords={'DIIS': 1, 'E_CONVERGENCE': 1e-09, 'GUESS': 'CORE', 'REFERENCE': 'CGHF', 'SCF_TYPE': 'PK', 'function_kwargs': {}}
+2026-03-06:13:23:37,939 INFO     [psi4.driver.driver:529] Compute energy(): method=scf, basis=cc-pvdz, molecule=h2o, nre=9.189222121030635
+2026-03-06:13:23:38,50 INFO     [psi4.driver.driver:532] Return energy(): -76.0267681408668

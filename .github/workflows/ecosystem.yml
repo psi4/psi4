@@ -109,6 +109,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        fetch-tags: true
 
       # see CMAKE_OSX_SYSROOT and CMAKE_Fortran_FLAGS for use
       # mac_ver line returns, e.g., "10.15" for Catalina & "11.6" for Big Sur. but phracker doesn't support all minor, so some logic to hardcode.
@@ -312,7 +313,7 @@ jobs:
     - name: Test Addons with CTest (M)
       if: runner.os == 'macOS'
       working-directory: ./objdir
-      run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows
+      run: ctest -L cghf -j2 --output-on-failure  # `-LE d2ints` needed for Windows
 
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
     - name: Test Addons with Pytest (geomeTRIC)
