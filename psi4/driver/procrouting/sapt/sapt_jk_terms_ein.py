@@ -3084,9 +3084,6 @@ def induction(
     K_O = cache["K_O"]
     J_O = cache["J_O"]
 
-    # Set up matrix multiplication plans
-    plan_matmul_tt = ein.core.compile_plan("ij", "ik", "kj")
-
     # Prepare JK calculations
     jk.C_clear()
 
