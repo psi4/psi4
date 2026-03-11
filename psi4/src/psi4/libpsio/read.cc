@@ -60,6 +60,7 @@ void PSIO::read(size_t unit, const char *key, char *buffer, size_t size, psio_ad
 
     if (this_entry == nullptr) {
         fprintf(stderr, "PSIO_ERROR: Can't find TOC Entry %s\n", key);
+        fprintf(stderr, "PSIO_ERROR: tried accessing %s\n", this_unit->vol[0].path);
         psio_error(unit, PSIO_ERROR_NOTOCENT);
     } else {
         /* Compute the global starting page and offset for the data */

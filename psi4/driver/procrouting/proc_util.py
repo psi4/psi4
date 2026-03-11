@@ -214,7 +214,6 @@ def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[c
     """
 
     # Shifting to C1 so we need to copy the active molecule
-    sapt_dimer = sapt_dimer.clone()
     if sapt_dimer.schoenflies_symbol() != 'c1':
         core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
         sapt_dimer.reset_point_group('c1')
@@ -335,8 +334,9 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
         # by QCEngine v0.26.0, dftd3 interface corrected to match s-dftd3 and dftd4, so file dropped here changes, and fsapt.py script compensates
         core.print_out("\n  Warning: Use the `Empirical_Disp.dat` file only with `fsapt.py` from Psi4 v1.7.0 or later.\n")
         pw_disp.name = 'Empirical_Disp'
-        filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
         core.set_variable("FSAPT_" + pw_disp.name.upper(), pw_disp)
-        fisapt_proc._drop(pw_disp, filepath)
+        if core.get_option("FISAPT", "FISAPT_DO_FSAPT"):
+            filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
+            fisapt_proc._drop(pw_disp, filepath)
 
     return dimer_wfn

@@ -555,6 +555,71 @@ scaling and using the uncoupled exchange-dispersion energy directly.
              an older version of |PSIfour| to produce a different value of
              exchange-dispersion energy from the latest version.
 
+SAPT(DFT)-D3 and SAPT(DFT)-D4 variants
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to the baseline ``energy('sapt(dft)')`` driver, |PSIfour| supports
+SAPT(DFT) variants where the SAPT(DFT) dispersion term is replaced by semi-empirical
+-D3 or -D4 interaction-energy models. Available method names are::
+
+    energy('sapt(dft)-d3(i)')
+    energy('sapt(dft)-d3(s)')
+    energy('sapt(dft)-d4(i)')
+    energy('sapt(dft)-d4(s)')
+    energy('dft-d3(sapt)')
+    energy('dft-d4(sapt)')
+
+where ``(i)`` denotes an intermolecular pairwise dispersion treatment and
+``(s)`` denotes a supermolecular treatment both with their own damping function
+parameters. Currently support only exists for setting the `SAPT_DFT_FUNCTIONAL`
+equal to HF, PBE0, or B3LYP for these methods.
+
+When a semi-empirical variant is used, the total SAPT(DFT) decomposition is
+still reported through standard SAPT variables (electrostatics, exchange,
+induction, dispersion, and total), and the corresponding -D3/-D4 interaction
+energy contribution is included in the printed SAPT(DFT) summary and stored in
+the dispersion QCVariable.
+
+
+Approximate SAPT Decomposition of DFT-D Methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``dft-d3(sapt)`` and ``dft-d4(sapt)`` enable the :math:`\Delta`-DFT correction
+together with -D3BJATM/-D4BJATM dispersion using Grimme damping function
+parameters as a way to decompose a supermolecular DFT-D3/-D4 interaction energy
+into SAPT(DFT) components. This total interaction energy is theoretically
+equivalent to the DFT-D3/-D4 interaction energy and is different than the other
+`SAPT(DFT)-D` variants. These approaches work for any functional with damping
+function parameters available in `simple-dftd3` or `dftd4` Python packages.
+These DFT-D3/-D4 methods save additional scalar quantities such as ``DFT DIMER
+ENERGY``, ``DFT MONOMER A ENERGY``, ``DFT MONOMER B ENERGY``, and ``SAPT(DFT)
+DELTA DFT``.
+
+The stored scalar ``SAPT(DFT) DELTA DFT`` corresponds to the supermolecular DFT
+correction
+
+.. math::
+
+   \delta_{DFT}^{(2)} = E_{int}^{DFT} - \left(E_{elst,DFT}^{(1)} + E_{exch,DFT}^{(1)} + E_{ind,resp,DFT}^{(2)} + E_{exch-ind,resp,DFT}^{(2)}\right)
+
+and the reported component total for ``dft-d3(sapt)`` and ``dft-d4(sapt)`` is
+
+.. math::
+
+   \begin{aligned}
+   E_{int}^{DFT-D} &= E_{elst} + E_{exch} + E_{ind} + E_{disp} \\
+                   &= \left(E_{elst,DFT}^{(1)} + E_{exch,DFT}^{(1)} + E_{ind,resp,DFT}^{(2)} + E_{exch-ind,resp,DFT}^{(2)} + \delta_{HF}^{(2)}\right) \\
+                   &\quad + \left(\delta_{DFT}^{(2)} - \delta_{HF}^{(2)} + E_{int}^{D}\right)
+   \end{aligned}
+
+where :math:`E_{int}^{D}` is the corresponding -D3/-D4 interaction energy. The
+:math:`\Delta`-HF term is subtracted from the :math:`\Delta`-DFT term to avoid
+double counting of induction effects present in both of these terms. Overall,
+Psi4 keeps the SAPT-like electrostatics, exchange, and induction terms, then
+assigns the remaining supermolecular DFT-D correction to dispersion so that the
+summed components reproduce the supermolecular DFT-D interaction energy. 
+
+
 Basic Keywords for SAPT(DFT) 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -563,6 +628,9 @@ Basic Keywords for SAPT(DFT)
 .. include:: autodir_options_c/sapt__sapt_dft_do_dhf.rst
 .. include:: autodir_options_c/sapt__sapt_dft_exch_disp_scale_scheme.rst
 .. include:: autodir_options_c/sapt__sapt_dft_grac_compute.rst
+.. include:: autodir_options_c/sapt__sapt_dft_do_ddft.rst
+.. include:: autodir_options_c/sapt__sapt_dft_do_disp.rst
+.. include:: autodir_options_c/sapt__sapt_dft_use_einsums.rst
 
 Advanced Keywords for SAPT(DFT)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
