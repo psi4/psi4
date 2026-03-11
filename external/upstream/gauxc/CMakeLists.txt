@@ -34,8 +34,7 @@ if(${ENABLE_gauxc})
         endif()
 
         #== normal print-out and library addition ==#
-        get_property(_loc TARGET gauxc::gauxc PROPERTY IMPORTED_LOCATION_RELWITHDEBINFO)
-        #get_property(_loc TARGET gauxc::gauxc PROPERTY IMPORTED_LOCATION)
+        get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
         message(STATUS "${Cyan}Found gauxc ${ColourReset}: ${_loc} (found version ${gauxc_VERSION})")
         add_library(gauxc_external INTERFACE)  # dummy
 
@@ -95,7 +94,7 @@ if(${ENABLE_gauxc})
                          # CMAKE_PREFIX_PATH propagates to GauXC's FetchContent builds (ExchCXX)
                          # allowing ExchCXX to find Psi4's LibXC without rebuilding from source
                          -DCMAKE_PREFIX_PATH:STRING=${STAGED_INSTALL_PREFIX};${CMAKE_PREFIX_PATH})
-        set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
+        set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
     endif()
 else()
     add_library(gauxc_external INTERFACE)  # dummy

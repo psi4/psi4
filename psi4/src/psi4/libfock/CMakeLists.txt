@@ -1,4 +1,5 @@
 list(APPEND sources
+  brianqc_int.cc
   CDJK.cc
   CompositeJK.cc
   COSK.cc
@@ -6,7 +7,9 @@ list(APPEND sources
   DirectJK.cc
   DiskDFJK.cc
   DiskJK.cc
+  gauxc_int.cc
   GTFockJK.cc
+  integrator_manager.cc
   LinK.cc
   MemDFJK.cc
   PKJK.cc
@@ -43,10 +46,6 @@ target_link_libraries(fock
   )
 
 if(TARGET gauxc::gauxc)
-  target_compile_definitions(fock
-    PUBLIC
-      USING_gauxc
-    )
   target_link_libraries(fock
     PUBLIC 
       gauxc::gauxc 

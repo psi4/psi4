@@ -163,6 +163,13 @@ if(TARGET PCMSolver::pcm)
     )
 endif()
 
+if(TARGET gauxc::gauxc)
+  target_link_libraries(mints
+    PUBLIC
+      gauxc::gauxc
+    )
+endif()
+
 if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(mints
     PUBLIC
