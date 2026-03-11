@@ -53,6 +53,10 @@
 using ComplexMatrix = einsums::BlockTensor<std::complex<double>, 2>;
 #endif
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 namespace psi {
 namespace scf {
 
@@ -168,26 +172,37 @@ void CGHF::preiterations() {
     nuclearrep_ = molecule_->nuclear_repulsion_energy({0.0, 0.0, 0.0});
     G_mat = mintshelper()->ao_eri();
 
+    size_t nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
     // => FILL SPIN BLOCKED OVERLAP AND HAMILTONIAN MATRICES <=
     // Note that nsopi_[h] will be HALF of irrep_sizes_[h]
     // EINS_ and F0_ filled within the same loop
-    for (int h = 0; h < nirrep_; h++)
-        for (int p = 0; p < nsopi_[h]; p++)
-            for (int q = 0; q < nsopi_[h]; q++) {
+    for (int h = 0; h < nirrep_; h++) {
+        int dim = nsopi_[h];
+#pragma omp parallel for schedule(auto) num_threads(nthreads)
+        for (int p = 0; p < dim; p++) {
+            for (int q = 0; q < dim; q++) {
                 // Offset by nsopi_[h] to get the beta index for p and q
-                int beta_p = p + nsopi_[h];
-                int beta_q = q + nsopi_[h];
+                int beta_p = p + dim;
+                int beta_q = q + dim;
 
-                EINS_->block(h)(p, q) = S_->get(h, p, q);  // overlap AA spin block
-                EINS_->block(h)(beta_p, beta_q) =
-                    S_->get(h, p, q);  // overlap BB spin block is same as AA since same spatial orbitals
+                // EINS_: [[S_, 0],[0, S_]]
+                EINS_->block(h)(p, q) = S_->get(h, p, q);
+                EINS_->block(h)(beta_p, beta_q) = S_->get(h, p, q);
 
-                F0_->block(h)(p, q) = H_->get(h, p, q);            // core Hamiltonian AA spin block
-                F0_->block(h)(beta_p, beta_q) = H_->get(h, p, q);  // core Hamiltonian BB spin block
+                // F0_: [[H_, 0],[0, H_]]
+                F0_->block(h)(p, q) = H_->get(h, p, q);
+                F0_->block(h)(beta_p, beta_q) = H_->get(h, p, q);
 
+                // F_: [[Fa_, 0],[0, Fb_]]
                 F_->block(h)(p, q) = Fa_->get(h, p, q);
-                F_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Fb_->get(h, p, q);
+                F_->block(h)(beta_p, beta_q) = Fb_->get(h, p, q);
             }
+        }
+    }
 }
 
 /*
@@ -198,12 +213,20 @@ void CGHF::preiterations() {
 void CGHF::form_Shalf() {
     HF::form_Shalf();
 
-    for (int h = 0; h < nirrep_; h++)
-        for (int j = 0; j < nsopi_[h]; j++)
-            for (int k = 0; k < nsopi_[h]; k++) {
-                EINX_->block(h)(j, k) = X_->get(h, j, k);                          // AA spin block
-                EINX_->block(h)(j + nsopi_[h], k + nsopi_[h]) = X_->get(h, j, k);  // BB spin block
+    size_t nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
+    for (int h = 0; h < nirrep_; h++) {
+        int dim = nsopi_[h];
+#pragma omp parallel for schedule(auto) num_threads(nthreads)
+        for (int j = 0; j < dim; j++)
+            for (int k = 0; k < dim; k++) {
+                EINX_->block(h)(j, k) = X_->get(h, j, k);              // AA spin block
+                EINX_->block(h)(j + dim, k + dim) = X_->get(h, j, k);  // BB spin block
             }
+    }
 }
 
 void CGHF::form_V() {}
@@ -227,33 +250,44 @@ void CGHF::form_V() {}
 void CGHF::form_G() {
     JK_->zero();
 
-    int nso = nso_;
-    int dim = 2 * nso;
-
     // TODO check G_mat dimensions for irreps
 
-    for (int h = 0; h < nirrep_; h++)
-        for (int p = 0; p < nsopi_[h]; p++)
-            for (int q = 0; q < nsopi_[h]; q++)
-                for (int s = 0; s < nsopi_[h]; s++)
-                    for (int r = 0; r < nsopi_[h]; r++) {
-                        auto g_pqrs = G_mat->get(h, p * nsopi_[h] + q, r * nsopi_[h] + s);
-                        auto g_psrq = G_mat->get(h, p * nsopi_[h] + s, r * nsopi_[h] + q);
+    size_t nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
 
-                        auto D_AA = D_->block(h)(s, r);
-                        auto D_BB = D_->block(h)(s + nsopi_[h], r + nsopi_[h]);
-                        auto D_AB = D_->block(h)(s, r + nsopi_[h]);
-                        auto D_BA = D_->block(h)(s + nsopi_[h], r);
+    for (int h = 0; h < nirrep_; h++) {
+        int dim = nsopi_[h];
 
-                        auto sum_D = D_AA + D_BB;
+        auto alpha = einsums::Range{0, dim};
+        auto beta  = einsums::Range{dim, 2*dim};
+
+        einsums::TensorView D_AA = D_->block(h)(alpha, alpha);
+        einsums::TensorView D_AB = D_->block(h)(alpha, beta);
+        einsums::TensorView D_BA = D_->block(h)(beta, alpha);
+        einsums::TensorView D_BB = D_->block(h)(beta, beta);
+
+        auto sum_D = D_AA + D_BB;
+        auto &JK = JK_->block(h);
+
+        // collapse(2) gives each thread its own (p,q) pair meaning no race conditions on JK_.
+#pragma omp parallel for collapse(2) schedule(auto) num_threads(nthreads)
+        for (int p = 0; p < dim; p++)
+            for (int q = 0; q < dim; q++)
+                for (int s = 0; s < dim; s++)
+                    for (int r = 0; r < dim; r++) {
+                        auto g_pqrs = G_mat->get(h, p * dim + q, r * dim + s);
+                        auto g_psrq = G_mat->get(h, p * dim + s, r * dim + q);
 
                         // Each line will be Coulomb (J) - exchange (K) contributions
                         // NOTE: the off-diagonal AB/BA blocks have no Coulomb contributions, only exchange
-                        JK_->block(h)(p, q) += g_pqrs * sum_D - g_psrq * D_AA;                          // AA
-                        JK_->block(h)(p + nsopi_[h], q + nsopi_[h]) += g_pqrs * sum_D - g_psrq * D_BB;  // BB
-                        JK_->block(h)(p, q + nsopi_[h]) -= D_AB * g_psrq;  // AB (exchange only)
-                        JK_->block(h)(p + nsopi_[h], q) -= D_BA * g_psrq;  // BA (exchange only)
+                        JK(p, q) += g_pqrs * sum_D(s, r) - g_psrq * D_AA(s, r);
+                        JK(p + dim, q + dim) += g_pqrs * sum_D(s, r) - g_psrq * D_BB(s, r);  // BB
+                        JK(p, q + dim) -= D_AB(s, r) * g_psrq;  // AB (exchange only)
+                        JK(p + dim, q) -= D_BA(s, r) * g_psrq;  // BA (exchange only)
                     }
+    }
 }
 
 /* F = H + J - K */
