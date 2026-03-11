@@ -161,7 +161,7 @@ void CGHF::common_init() {
     subclass_init();
 
     // Initialize einsums and turn off logging to stdout.
-    const char* ein_argv[4] = {"psi4\0", "--einsums:no-profiler-report\0", "--einsums:log-level\0", "0\0"};
+    const char* ein_argv[4] = {"psi4\0", "--einsums:no-profiler-report\0", "--einsums:log-level\0", "3\0"};
     einsums::initialize(4, ein_argv);
 }
 
@@ -524,7 +524,6 @@ double CGHF::compute_initial_E() {
  * NOTE: ADIIS is not yet available
  */
 void CGHF::do_diis() {
-    std::cout << "   \033[46mCGHF::do_diis()\033[0m" << std::endl;
     int diis_max = options_.get_int("DIIS_MAX_VECS");
 
     // FDS-SDF
@@ -573,7 +572,6 @@ void CGHF::do_diis() {
 
     // Replace max_error with current error
     error_doubles.at(max_error_ind) = error;
-    std::cout << "   \033[46mCGHF::do_diis()\033[0m std::swap Fdiis[max_error_ind] with Fp_" << std::endl;
     std::swap(Fdiis[max_error_ind], Fp_);
     std::swap(err_vecs[max_error_ind], FDSmSDF_);
 
@@ -584,8 +582,6 @@ void CGHF::do_diis() {
     //
     // error_doubles.push_back(error);
 
-
-    std::cout << "   \033[46mCGHF::do_diis()\033[0m creating B_" << std::endl;
     auto B_ = einsums::Tensor<std::complex<double>, 2>("DIIS Error matrix", diis_max + 1, diis_max + 1);
     B_.zero();
 
@@ -600,31 +596,25 @@ void CGHF::do_diis() {
         B_(diis_max, i) = -1;
     }
 
-    std::cout << "   \033[46mCGHF::do_diis()\033[0m filling B_" << std::endl;
     // Actually populate it with the errors
     for (int i = 0; i < diis_max; i++) {
         for (int j = i; j < diis_max; j++) {
-            B_(i, j) = std::complex<double>{0, 0};
-            if ((i == 0) && (j == 0))
-                std::cout << "   \033[46mCGHF::do_diis()\033[0m getting err_vecs" << std::endl;
             auto ei = err_vecs[i];
             auto ej = err_vecs[j];
 
             std::complex<double> sum{0, 0};
-            if ((i == 0) && (j == 0))
-                std::cout << "   \033[46mCGHF::do_diis()\033[0m computing B(0, 0)" << std::endl;
             for (int h = 0; h < nirrep_; h++)
+                // Avoid using true_dot until einsums fixes segfault on M-intel runners.
                 // sum += einsums::linear_algebra::true_dot(ei[h], ej[h]);
                 for (int p = 0; p < irrep_sizes_[h]; p++)
-                   for (int q = 0; q < irrep_sizes_[h]; q++)
-                       sum += std::conj(ei->block(h).subscript(p, q)) * ej->block(h).subscript(p, q);
+                    for (int q = 0; q < irrep_sizes_[h]; q++)
+                        sum += std::conj(ei->block(h).subscript(p, q)) * ej->block(h).subscript(p, q);
             B_(j, i) = sum;
             // B_ is real and symmetric
             if (i != j) B_(i, j) = sum;
         }
     }
 
-    std::cout << "   \033[46mCGHF::do_diis()\033[0m Creating C_temp" << std::endl;
     // Container for the column vector solution of gesv. It should be a column vector
     // but has rank == 2. This is a weird artifact of gesv.
     auto C_temp = einsums::Tensor<std::complex<double>, 2>("solution vector", 1, diis_max + 1);
@@ -632,11 +622,9 @@ void CGHF::do_diis() {
     // Fill the last element of the RHS vector to add the constraint
     C_temp(0, diis_max) = -1;
 
-    std::cout << "   \033[46mCGHF::do_diis()\033[0m sussy gesv call..." << std::endl;
     // Solves for the DIIS coefficients
     einsums::linear_algebra::gesv(&B_, &C_temp);
 
-    std::cout << "   \033[46mCGHF::do_diis()\033[0m extrapolating Fp_" << std::endl;
     // Extrapolate Fp_ from solution coefficients
     Fp_->zero();
     for (int i = 0; i < diis_max; i++) {
