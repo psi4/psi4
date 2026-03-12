@@ -1,0 +1,201 @@
+#! External potential calculation involving a Hydrogen atom and diffuse
+#! charges.  Energies and gradients calculated analytically are compared
+#! against those evaluated with diffuse charges supplied to the 
+#! external_potentials keyword.  A minimal basis is used because this
+#! allows a direct comparison with results derived for point charge-
+#! Gaussian charge and Gaussian charge-Gaussian charge interactions.
+#! The point charge-Gaussian charge interaction is generally given by
+#! E = Q*q*erf(sqrt(z)*r), where Q is the total charge of the Gaussian
+#! charge, q is the point charge, z is the width of the Gaussian charge
+#! (au^-2), and r (au) is the distance between the point charge
+#! and the center of the Gaussian charge.  A similar formula exists for
+#! the interaction between two Gaussian charges, but where q is the
+#! total charge of the second Gaussian charge, z is the reduced width of
+#! both Gaussian charges ((z0*z1)/(z0+z1)), and r is the distance
+#! between the centers of the Gaussian charges.  Gradients can be
+#! further derived from these expressions.
+
+molecule hydrogen {
+  0 2
+  H 0 0 0
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+    scf_type df
+    d_convergence 12
+    basis sto-3g
+    reference uhf
+}
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
+# Calculate the energy and gradient in the absence of any charges.
+e_absent, wfn = energy('scf', molecule=hydrogen, return_wfn=True)
+g_absent = gradient('scf', ref_wfn=wfn)
+
+
+# Calculate the energy and gradient in the presence of a neutral diffuse
+# charge (width = 1 au^-2) 1 au away.  These should be comparable to
+# those calculated in the absence of any charges.
+diffuses = [[0, [1, 0, 0], 1]]
+external_neutral = [None, diffuses]
+e_neutral, wfn_neutral = energy(
+    'scf',
+    molecule=hydrogen,
+    return_wfn=True,
+    external_potentials=external_neutral,
+)
+g_neutral = gradient('scf', ref_wfn=wfn_neutral)
+
+compare_values(e_absent, e_neutral, 6, "Energy with no external_potential vs. with a neutral diffuse charge")  #TEST
+compare_matrices(g_absent, g_neutral, 5, "Gradient with no external_potential vs. with a neutral diffuse charge") #TEST
+
+
+# Calculate the energy and gradient in the presence of an
+# infintely-wide, positive diffuse charge (width = 1e-10 au^-2) 1 au
+# away.  These should be comparable to those calculated in the absence
+# of any charges.
+diffuses = [[1, [1, 0, 0], 1e-10]]
+external_wide = [None, diffuses]
+e_wide, wfn_wide = energy(
+    'scf',
+    molecule=hydrogen,
+    return_wfn=True,
+    external_potentials=external_wide,
+)
+g_wide = gradient('scf', ref_wfn=wfn_wide)
+
+compare_values(e_absent, e_wide, 6, "Energy with no external_potential vs. with an infinitely-wide diffuse charge")  #TEST
+compare_matrices(g_absent, g_wide, 5, "Gradient with no external_potential vs. with an infinitely-wide diffuse charge") #TEST
+
+
+# Calculate the energy and gradient in the presence of a positive point
+# charge 1 au away.
+external_point = [[1, [1, 0, 0]]]
+e_point, wfn_point = energy(
+    'scf',
+    molecule=hydrogen,
+    return_wfn=True,
+    external_potentials=external_point,
+)
+g_point = gradient('scf', ref_wfn=wfn_point)
+extern = wfn_point.external_pot()
+
+
+# Calculate the energy and gradient in the presence of a positive
+# diffuse charge with no width (width = 1e10 au^-2) 1 au away.  These
+# should be comparable to those calculated in the presence of a positive
+# point charge 1 au away.
+diffuses = [[1, [1, 0, 0], 1e10]]
+external_nowidth = [None, diffuses]
+e_nowidth, wfn_nowidth = energy(
+    'scf',
+    molecule=hydrogen,
+    return_wfn=True,
+    external_potentials=external_nowidth,
+)
+g_nowidth = gradient('scf', ref_wfn=wfn_nowidth)
+
+compare_values(e_point, e_nowidth, 6, "Energy with a point charge vs. with a zero-width diffuse charge")  #TEST
+compare_matrices(g_point, g_nowidth, 5, "Gradient with a point charge vs. with a zero-width diffuse charge") #TEST
+
+import numpy as np
+
+
+# The nuclear and electronic components of the interaction energy
+# and the gradient of the interaction energy between a hydrogen atom and
+# a Gaussian charge distribution (width = 1 au^-2) centered on the
+# hydrogen atom.  These results are derived from the formulae
+# desribed at the top of this input file.
+e_nuc_analytic_0 = 1.12837916710
+e_elec_analytic_0 = -0.78295596546
+g_analytic_0 = core.Matrix.from_array(np.array([[0, 0, 0]]))
+
+
+# Calculate the energy and gradient in the presence of a positive
+# diffuse charge (width = 1 au^-2) centered on the hydrogen atom. These
+# should agree with the analytical solutions.
+diffuses = [[1, [0, 0, 0], 1]]
+external_diffuse_0 = [None, diffuses]
+_, wfn_diffuse_0 = energy(
+    'scf',
+    molecule=hydrogen,
+    return_wfn=True,
+    external_potentials=external_diffuse_0,
+)
+extern_0 = wfn_diffuse_0.external_pot()
+V_diffuse_0 = extern_0.computePotentialMatrix(wfn.basisset()).np
+
+e_nuc_diffuse_0 = extern_0.computeNuclearEnergy(hydrogen)
+e_elec_diffuse_0 = np.einsum("ij,ij->", V_diffuse_0, wfn_diffuse_0.Da().np)
+g_diffuse_0 = gradient('scf', ref_wfn=wfn_diffuse_0)
+g_diffuse_extern_0 = extern_0.gradient_on_diffuses()
+
+compare_values(e_nuc_analytic_0, e_nuc_diffuse_0, 6, "Analytic Gaussian charge-proton ixn energy vs. with external_potential")  #TEST
+compare_values(e_elec_analytic_0, e_elec_diffuse_0, 6, "Analytic Gaussian charge-s electron ixn energy vs. with external_potential")  #TEST
+compare_matrices(g_analytic_0, g_diffuse_0, 5, "Analytic Gaussian charge-hydrogen gradient on hydrogen vs. with external_potential")  #TEST
+compare_matrices(g_analytic_0, g_diffuse_extern_0, 5, "Analytic Gaussian charge-hydrogen gradient on charge vs. with external_potential")  #TEST
+
+
+# The nuclear and electronic components of the interaction energy
+# and the gradient of the interaction energy between a hydrogen atom and
+# a Gaussian charge distribution (width = 1 au^-2) 1 au away.  These
+# results are derived from the formulae desribed at the top of this
+# input file.
+e_nuc_analytic_1 = 0.84270079295
+e_elec_analytic_1 = -0.66630714283
+g_analytic_1 = core.Matrix.from_array(np.array([[0.23042588824, 0, 0]]))
+g_analytic_extern_1 = core.Matrix.from_array(np.array([[-0.23042588824, 0, 0]]))
+
+
+# Calculate the energy and gradient in the presence of a positive
+# diffuse charge (width = 1 au^-2) 1 au away. These should agree with
+# the analytical solutions.
+diffuses = [[1, [1, 0, 0], 1]]
+external_diffuse_1 = [None, diffuses]
+_, wfn_diffuse_1 = energy(
+    'scf',
+    molecule=hydrogen,
+    return_wfn=True,
+    external_potentials=external_diffuse_1,
+)
+extern_1 = wfn_diffuse_1.external_pot()
+V_diffuse_1 = extern_1.computePotentialMatrix(wfn.basisset()).np
+
+e_nuc_diffuse_1 = extern_1.computeNuclearEnergy(hydrogen)
+e_elec_diffuse_1 = np.einsum("ij,ij->", V_diffuse_1, wfn_diffuse_1.Da().np)
+g_diffuse_1 = gradient('scf', ref_wfn=wfn_diffuse_1)
+g_diffuse_1_findif = gradient('scf', molecule=hydrogen, dertype=0, external_potentials=external_diffuse_1)
+g_diffuse_extern_1 = extern_1.gradient_on_diffuses()
+
+compare_values(e_nuc_analytic_1, e_nuc_diffuse_1, 6, "Analytic Gaussian charge-proton ixn energy vs. with external_potential")  #TEST
+compare_values(e_elec_analytic_1, e_elec_diffuse_1, 6, "Analytic Gaussian charge-s electron ixn energy vs. with external_potential")  #TEST
+compare_matrices(g_analytic_1, g_diffuse_1, 5, "Analytic Gaussian charge-hydrogen gradient on hydrogen vs. with external_potential")  #TEST
+compare_matrices(g_analytic_extern_1, g_diffuse_extern_1, 5, "Analytic Gaussian charge-hydrogen gradient on charge vs. with external_potential")  #TEST
+compare_matrices(g_diffuse_1, g_diffuse_1_findif, 5, "Diffuse charge-hydrogen gradient on hydrogen vs. with finite difference")  #TEST
+
+
+# The interaction energy between two Gaussian charge distributions
+# (width = 1 au^-2) 1 au apart and the interaction energy between a
+# point charge and a Gaussian charge distribution (width = 1 au^-2) 1 au
+# apart.  These results are derived from the formulae desribed at the
+# top of this input file.
+e_01_analytic = 0.68268949214
+e_0q_analytic = 0.84270079295
+
+
+# Calculate the extern-extern interaction between two positive Gaussian
+# charges (width = 1 au^-2) 1 au apart and between a positive point
+# charge and a positive Gaussian charge (width = 1 au^-2) 1 au apart.
+# These should agree with the analytical solutions.
+e_01 = extern_0.computeExternExternInteraction(extern_1)
+e_0q = extern_0.computeExternExternInteraction(extern)
+e_q0 = extern.computeExternExternInteraction(extern_0)
+
+compare_values(e_01_analytic, e_01, 6, "Analytic Gaussian charge-Gaussian charge ixn energy vs. extern-extern ixn energy")  #TEST
+compare_values(e_0q_analytic, e_0q, 6, "Analytic Gaussian charge-point charge ixn energy vs. extern-extern ixn energy")  #TEST
+compare_values(e_0q, e_q0, 6, "extern 0-extern 1 ixn energy vs. extern 1-extern 0 ixn energy")  #TEST

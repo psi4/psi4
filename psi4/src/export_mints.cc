@@ -1257,7 +1257,8 @@ void export_mints(py::module& m) {
             auto capsule = py::capsule(phi_ao, [](void *phi_ao) { delete reinterpret_cast<std::vector<double>*>(phi_ao); });
             basis.compute_phi(phi_ao->data(), x, y, z);
             return py::array(phi_ao->size(), phi_ao->data(), capsule);
-        }, "Calculate the value of all basis functions at a given point x, y, and z");
+        }, "Calculate the value of all basis functions at a given point x, y, and z")
+        .def("convert_sap_contraction", &BasisSet::convert_sap_contraction, "Remove normalization from a s-function basis set. Not idempotent");
 
     typedef void (OneBodyAOInt::*vecmatrix_version)(std::vector<SharedMatrix>&);
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(
@@ -1654,6 +1655,7 @@ void export_mints(py::module& m) {
              "basis"_a, "coefs"_a)
         .def("setMatrix", &ExternalPotential::setMatrix, "Add a one-electron potential matrix", "V"_a)
         .def("gradient_on_charges", &ExternalPotential::gradient_on_charges, "Get the gradient on the embedded charges")
+        .def("gradient_on_diffuses", &ExternalPotential::gradient_on_diffuses, "Get the gradient on the embedded diffuse charges")
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")
         .def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix,
              "Compute the external potential matrix in the given basis set", "basis"_a)
