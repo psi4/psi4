@@ -87,6 +87,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
     options.add("RAS4", new ArrayType());
 
+    /*- Control how much to rotate in CGHF for HOMO/LUMO mixing (in degrees) -*/
+    options.add("CGHF_MIXING_ANGLE", 20);
+
     /*- An array giving the number of restricted doubly-occupied orbitals per
     irrep (not excited in CI wavefunctions, but orbitals can be optimized
     in MCSCF) -*/

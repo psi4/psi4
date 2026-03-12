@@ -78,6 +78,8 @@ CGHF::~CGHF() {}
 // Define global einsums::BlockTensors and variables needed throughout the CGHF class
 void CGHF::common_init() {
     name_ = "CGHF";
+     
+    options_.add_int("CGHF_MIXING_ANGLE", 20);
 
     // ao_eri lacks irreps and we have no JK object yet so we only support C1
     if (nirrep_ > 1) throw PSIEXCEPTION("USE C1 SYMMETRY!");
@@ -107,6 +109,10 @@ void CGHF::common_init() {
     // nelecpi_ is needed to form_C which is called after every guess. Preiterations
     // is called after guess so this needs to go here.
     find_occupation();
+
+    // Has HOMO/LUMO mixing been done?
+    mix_performed_ = false;
+
     // Combine nalphapi_ and nbetapi_ to give nelecpi_ for forming the density matrix
     for (int h = 0; h < nirrep_; h++) {
         nelecpi_.push_back(nalphapi_[h] + nbetapi_[h]);
@@ -317,7 +323,7 @@ void CGHF::form_C(double shift) {
     einsums::linear_algebra::gemm<true, false>(std::complex<double>{1.0}, *EINX_, *temp2_, std::complex<double>{0.0},
                                                Fp_.get());
 
-    if (options_.get_bool("DIIS") && iteration_ > options_.get_int("DIIS_START")) {
+    if (options_.get_bool("DIIS") && iteration_ > options_.get_int("DIIS_START") && iteration_ > 0) {
         do_diis();
     }
 
@@ -352,7 +358,110 @@ void CGHF::form_C(double shift) {
     einsums::linear_algebra::gemm<false, false>(std::complex<double>{1.0}, *EINX_, *temp1_, std::complex<double>{0.0},
                                                 C_.get());
 
+    // Mixing the HOMO/LUMO orbitals in GHF also breaks the Sz spin symmetry
+    if (!mix_performed_ && options_.get_bool("GUESS_MIX")) {
+        bool have_orbitals = !sad_ || (sad_ && iteration_ > 0);
+
+        if (have_orbitals) {
+            for (int h = 0; h < nirrep_; h++) {
+                //int homo_idx = nelecpi_[h] - 1;
+                //int lumo_idx = nelecpi_[h];
+
+                auto [homo_idx, lumo_idx] = find_homo_lumo_idx();
+
+                if (lumo_idx != -1) { // A LUMO orbital of different pure spin than the HOMO orbital was able to be found
+                    outfile->Printf("\tMixing orbitals %d and %d\n", homo_idx, lumo_idx);
+                    //double theta_rads = 0.174533; // 20 degrees
+
+                    int theta_degs = options_.get_int("CGHF_MIXING_ANGLE");
+                    double theta_rads = theta_degs*(std::numbers::pi/180);
+
+                    // new_homo = cos(theta)*old_homo + sin(theta)*old_lumo
+                    // new_lumo = -sin(theta)*old_homo + cos(theta)*old_lumo
+                    auto cos_theta = std::cos(theta_rads);
+                    auto sin_theta = std::sin(theta_rads);
+
+                    for (int p = 0; p < irrep_sizes_[h]; p++) {
+                        auto old_homo = C_->block(h)(p, homo_idx);
+                        auto old_lumo = C_->block(h)(p, lumo_idx);
+
+                        auto new_homo = cos_theta*old_homo + sin_theta*old_lumo;
+                        auto new_lumo = cos_theta*old_lumo - sin_theta*old_homo;
+
+                        C_->block(h)(p, homo_idx) = new_homo;
+                        C_->block(h)(p, lumo_idx) = new_lumo;
+                    }
+                }
+            }
+            
+            mix_performed_ = true;
+        }
+    }
+
     find_occupation();
+}
+
+
+/*
+/ Returns the column indices of the HOMO and LUMO indices from the coefficient matrix, C_
+/ This is needed as the HOMO and LUMO index may be the same spin, so this searches
+/ LUMO+1, LUMO+2, etc until they are different to obtain alpha-beta mixing
+/
+/ Also TODO later, but the HOMO/LUMO may not exist in the same irrep, so this will search there.
+/ Cannot code/test this now since cGHF only supports C1 symmetry
+/
+/ returns {homo_idx, lumo_idx}
+/
+/ If lumo_idx = -1, then a LUMO orbital of different pure spin than the HOMO was unable to be found.
+*/
+std::tuple<int, int> CGHF::find_homo_lumo_idx() {
+    // Always set the homo_idx as nelecpi_[h] - 1 and look for a different pure spin with lumo_idx
+    int homo_idx = nelecpi_[0] - 1;
+
+    int h = 0; // Dummy irrep for now
+
+    // Get the occupation of the HOMO column vector as a tuple where
+    // {1, 0} is a pure ALPHA state
+    // {0, 1} is a pure BETA state
+    // This is done by summing over the BETA spin components
+    auto beta_homo_sum = std::complex<double>(0.0, 0.0);
+
+    for (int p = 0; p < nsopi_[h]; p++) {
+        beta_homo_sum += C_->block(h)(p+nsopi_[h], homo_idx);
+    }
+
+    std::tuple<int, int> homo_occ;
+    if (std::abs(beta_homo_sum) < 1e-10) { 
+       homo_occ = {1, 0};
+    } else {
+       homo_occ = {0, 1};
+    }
+
+    // Loop through all LUMO orbitals until we find one that has a different pure spin state than HOMO
+    std::complex<double> beta_lumo_sum;
+    std::tuple<int, int> lumo_occ;
+    int lumo_idx = -1;
+    for (int l = nelecpi_[h]; l < irrep_sizes_[h]; l++) {
+        beta_lumo_sum = std::complex<double>(0.0, 0.0);
+
+        for (int p = 0; p < nsopi_[h]; p++) {
+            beta_lumo_sum += C_->block(h)(p+nsopi_[h], l);
+        }
+
+        if (std::abs(beta_lumo_sum) < 1e-10) {
+           lumo_occ = {1, 0};
+        } else {
+           lumo_occ = {0, 1};
+        }
+
+        if (std::get<0>(homo_occ) != std::get<0>(lumo_occ)) {
+           lumo_idx = l;
+           break;
+        }
+    }
+
+    return std::make_tuple(homo_idx, lumo_idx);
+
 }
 
 /*
@@ -760,6 +869,15 @@ void CGHF::s2_expectation_value() {
 
 void CGHF::finalize() {
     s2_expectation_value();
+
+    //for (int h = 0; h < nirrep_; h++) {
+    //    for (int p = 0; p < nsopi_[h]; p++) {
+    //        for (int q = 0; q < nsopi_[h]; q++) {
+    //            auto dab = D_->block(h)(p, q+nsopi_[h]);
+    //            std::cout << dab << "\n";
+    //        }
+    //    }
+    //}
     HF::finalize();
 }
 

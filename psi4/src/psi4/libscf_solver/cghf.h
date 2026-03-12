@@ -141,6 +141,9 @@ class CGHF : public HF {
     // Computes <S^2> expectation value and prints to outfile
     void s2_expectation_value();
 
+    // Gets the HOMO and LUMO indices for HOMO/LUMO mixing
+    std::tuple<int, int> find_homo_lumo_idx();
+
     void finalize() override;
 
    protected:
@@ -190,6 +193,7 @@ class CGHF : public HF {
     // Number of spin orbitals per irrep. Cannot use nsopi_ because Einsums requires a vector.
     std::vector<int> irrep_sizes_;  // Since GHF is spin-blocked, each irrep (h) size will be 2*nsopi_[h]
     std::vector<int> nelecpi_;      // Number of electrons per irrep
+    bool mix_performed_; // Has HOMO/LUMO mixing been done?
 };
 #endif
 
