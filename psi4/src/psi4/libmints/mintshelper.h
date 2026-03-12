@@ -107,7 +107,7 @@ class PSI_API MintsHelper {
     bool are_ints_cached(const std::string& label, bool include_perturbation);
 
     /// Computes ZORA kinetic integrals
-    void compute_so_zora_ints(bool spin_orbit, bool include_perturbations = true);
+    void compute_so_zora_ints(bool include_perturbations = true, bool force_spin_orbit = false);
     /// Computes X2C overlap, kinetic, and potential integrals
     void compute_so_x2c_ints(bool include_perturbations = true);
     /// Add dipole perturbation to the potential integrals

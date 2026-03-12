@@ -22,13 +22,13 @@ def mo_energies():
         'basis': '3-21g',
         'e_convergence': 1e-9,
         'relativistic': 'zora',
-        'zora_spin_orbit_coupling': False
+        'spin_orbit_coupling': False
     })
 
     e, wfn = psi4.energy('scf', return_wfn=True)
 
     psi4.set_options({
-        'zora_spin_orbit_coupling': True
+        'spin_orbit_coupling': True
     })
 
     e_so, wfn_so = psi4.energy('scf', return_wfn=True)

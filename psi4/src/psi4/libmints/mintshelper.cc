@@ -796,7 +796,7 @@ std::vector<SharedMatrix> MintsHelper::ao_zora_spin_orbit() {
     std::string socz(PSIF_AO_SOCZ);
 
     if (!are_ints_cached(socx, include_perturbations)) {
-        compute_so_zora_ints(true, include_perturbations);
+        compute_so_zora_ints(include_perturbations, true);
     }
 
     std::vector<SharedMatrix> H_SO_zora(3);
@@ -1368,25 +1368,13 @@ SharedMatrix MintsHelper::so_kinetic(bool include_perturbations) {
     std::string label(PSIF_SO_T);
     auto p = std::make_pair(label, include_perturbations);
     if (!are_ints_cached(label, include_perturbations)) {
-        auto relativistic = options_.get_str("RELATIVISTIC");
-
-        if (options_.get_bool("ZORA_SPIN_ORBIT_COUPLING")) {
-            if (relativistic != "ZORA")
-                throw PSIEXCEPTION("RELATIVISTIC ZORA required with ZORA_SPIN_ORBIT_COUPLING TRUE.");
-
-            if (options_.get_str("REFERENCE") != "CGHF")
-                throw PSIEXCEPTION("ZORA spin-orbit coupling is only possible with CGHF reference.");
-
-            compute_so_zora_ints(true, include_perturbations);
+        if (options_.get_str("RELATIVISTIC") == "X2C") {
+            // generate so_overlap, so_kinetic, so_potential and cache them
+            compute_so_x2c_ints(include_perturbations);
+        } else if (options_.get_str("RELATIVISTIC") == "ZORA") {
+            compute_so_zora_ints(include_perturbations);
         } else {
-            if (relativistic == "X2C") {
-                // generate so_overlap, so_kinetic, so_potential and cache them
-                compute_so_x2c_ints(include_perturbations);
-            } else if (relativistic == "ZORA") {
-                compute_so_zora_ints(false, include_perturbations);
-            } else {
-                cached_oe_ints_[p] = so_kinetic_nr();
-            }
+            cached_oe_ints_[p] = so_kinetic_nr();
         }
     }
     return cached_oe_ints_[p];
@@ -1484,8 +1472,22 @@ void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
     }
 }
 
-void MintsHelper::compute_so_zora_ints(bool spin_orbit, bool include_perturbations) {
-    outfile->Printf(" OEINTS: Using relativistic (ZORA) kinetic integrals.\n");
+void MintsHelper::compute_so_zora_ints(bool include_perturbations, bool force_spin_orbit) {
+    bool spin_orbit = options_.get_bool("SPIN_ORBIT_COUPLING");
+
+    // force_spin_orbit is used when requesting SOC integrals from python.
+    if (force_spin_orbit) {
+        spin_orbit = true;
+    } else {
+        if (spin_orbit && (options_.get_str("REFERENCE") != "CGHF"))
+            throw PSIEXCEPTION("ZORA spin-orbit coupling is only possible with CGHF reference.");
+    }
+
+    if (spin_orbit) {
+        outfile->Printf(" OEINTS: Using relativistic (ZORA) kinetic integrals with spin-orbit coupling.\n");
+    } else {
+        outfile->Printf(" OEINTS: Using relativistic (ZORA) kinetic integrals.\n");
+    }
 
     if (include_perturbations && options_.get_bool("PERTURB_H")) {
 		throw PSIEXCEPTION("Perturbations of the ZORA hamiltonian are not implemented.");
@@ -1511,6 +1513,7 @@ void MintsHelper::compute_so_zora_ints(bool spin_orbit, bool include_perturbatio
     cached_oe_ints_[std::make_pair(PSIF_SO_T, include_perturbations)] = so_kinetic_zora;
 
     if (spin_orbit) {
+        // Don't consider SO integrals until CGHF supports point-group symmetry
         auto ao_Hx = std::make_shared<Matrix>("Spin-orbit Hx", basisset_->nbf(), basisset_->nbf());
         auto ao_Hy = std::make_shared<Matrix>("Spin-orbit Hy", basisset_->nbf(), basisset_->nbf());
         auto ao_Hz = std::make_shared<Matrix>("Spin-orbit Hz", basisset_->nbf(), basisset_->nbf());

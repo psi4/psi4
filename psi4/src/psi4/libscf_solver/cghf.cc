@@ -205,9 +205,14 @@ void CGHF::preiterations() {
     }
 
     // If SOC, then add Hx, Hy, Hz to F0_
-    if (options_.get_bool("ZORA_SPIN_ORBIT_COUPLING")) {
-        outfile->Printf("\n  CGHF: ZORA Spin-orbit coupling selected.\n");
-        auto H_SO = mintshelper()->ao_zora_spin_orbit();
+    if (options_.get_bool("SPIN_ORBIT_COUPLING")) {
+        outfile->Printf("\n  CGHF: Spin-orbit coupling selected.\n");
+        std::vector<SharedMatrix> H_SO(3);
+        if (options_.get_str("RELATIVISTIC") == "ZORA") {
+            H_SO = mintshelper()->ao_zora_spin_orbit();
+        } else {
+            throw PSIEXCEPTION("RELATIVISTIC option must be in [\"ZORA\"] when SPIN_ORBIT_COUPLING TRUE");
+        }
         std::complex<double> i(0, 1);
 
         for (int h = 0; h < nirrep_; h++) {

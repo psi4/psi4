@@ -19,7 +19,7 @@ set {
 e = energy('scf')
 
 set {
-    zora_spin_orbit_coupling true
+    spin_orbit_coupling true
 }
 
 e_so = energy('scf')
