@@ -1462,7 +1462,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("WFN", "SCF", "SCF");
         /*- Reference wavefunction type.
         **Cfour Interface:** Keyword translates into |cfour__cfour_reference|. -*/
-        options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
+        options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS ROKS");
         /*- Primary basis set -*/
         options.add_str("BASIS", "");
         /*- Auxiliary basis set for SCF density fitting computations.
@@ -1640,12 +1640,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             For |globals__orbital_optimizer_package| = `OOO`, sets diis_threshold. -*/
         options.add_double("SCF_INITIAL_FINISH_DIIS_TRANSITION", 1.0E-4);
         /*- Do perform incremental Fock build? -*/
-        options.add_bool("INCFOCK", false);
-        /*- Frequency with which to compute the full Fock matrix if using |scf__incfock| . 
-        N means rebuild every N SCF iterations to avoid accumulating error from the incremental procedure. -*/
-        options.add_int("INCFOCK_FULL_FOCK_EVERY", 5);
+        options.add_bool("INCFOCK", true);
+        /*- How often to rebuild the full Fock matrix when using incremental Fock (|scf__incfock|).
+            Periodic rebuilds prevent error accumulation from the incremental procedure. -*/
+        options.add_int("INCFOCK_FULL_FOCK_EVERY", 100);
         /*- The density threshold at which to stop building the Fock matrix incrementally -*/
-        options.add_double("INCFOCK_CONVERGENCE", 1.0e-5);
+        options.add_double("INCFOCK_CONVERGENCE", 1.0e-9);
 
         /*- The screening tolerance used for ERI/Density sparsity in the LinK algorithm -*/
         options.add_double("LINK_INTS_TOLERANCE", 1.0e-12);

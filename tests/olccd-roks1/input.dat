@@ -1,0 +1,24 @@
+#! OLCCD cc-pCVDZ energy with ROKS-B3LYP initial guess for the NO radical
+
+# OLCCD energy matches ROHF reference (DFT influence erased by orbital optimization)
+refnuc      =   25.59060766929188  #TEST
+refscf      = -129.90216315563447  #TEST
+refocepa    = -129.67618875068277  #TEST
+
+molecule no {
+0 2
+n
+o 1 1.158
+}
+
+set {
+  basis cc-pcvdz
+  reference roks
+  guess gwh
+}
+
+energy('olccd', dft_functional='b3lyp')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");                       #TEST
+compare_values(refocepa, variable("OLCCD TOTAL ENERGY"), 6, "OLCCD Total Energy (a.u.)");           #TEST
