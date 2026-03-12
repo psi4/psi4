@@ -90,6 +90,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Control how much to rotate in CGHF for HOMO/LUMO mixing (in degrees) -*/
     options.add("CGHF_MIXING_ANGLE", 20);
 
+    /*- Toggles whether to use the PySCF break_symm guess -*/
+    options.add("CGHF_BREAK_SZ_SYMM", false);
+
     /*- An array giving the number of restricted doubly-occupied orbitals per
     irrep (not excited in CI wavefunctions, but orbitals can be optimized
     in MCSCF) -*/

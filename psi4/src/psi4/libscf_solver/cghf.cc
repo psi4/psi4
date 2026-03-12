@@ -491,14 +491,26 @@ void CGHF::form_initial_C() {
 void CGHF::compute_SAD_guess(bool natorb) {
     HF::compute_SAD_guess(natorb);
 
-    for (int h = 0; h < nirrep_; h++)
-        for (int p = 0; p < nsopi_[h]; p++)
+    for (int h = 0; h < nirrep_; h++) {
+        for (int p = 0; p < nsopi_[h]; p++) {
             for (int q = 0; q < nsopi_[h]; q++) {
                 D_->block(h)(p, q) = Da_->get(h, p, q);
                 D_->block(h)(p + nsopi_[h], q + nsopi_[h]) = Db_->get(h, p, q);
                 C_->block(h)(p, 2*q) = Ca_->get(h, p, q);
                 C_->block(h)(p + nsopi_[h], 2*q + 1) = Cb_->get(h, p, q);
             }
+        }
+
+        if (options_.get_bool("CGHF_BREAK_SZ_SYMM")) {
+            for (int p = 0; p < nsopi_[h]; p++) {
+                auto AA_diag = D_->block(h)(p, p);
+                //auto BB_diag = D_->block(h)(p+nsopi_[h], q+nsopi_[h]);
+
+                D_->block(h)(p+nsopi_[h], p) = 0.05 * AA_diag;
+                D_->block(h)(p, p+nsopi_[h]) = 0.05 * AA_diag;
+            }
+        }
+    }
 }
 
 /*
