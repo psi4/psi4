@@ -82,13 +82,13 @@ the |globals__zora_radial_points| and |globals__zora_spherical_points| options. 
    The number of spherical points must be a Lebedev number.
    See :ref:`Grid Selection <sec:grid-selection>` for a list of all options.
 
-To add perturbative spin-orbit coupling, use the |globals__zora_spin_orbit_coupling| option. ::
+To add perturbative spin-orbit coupling, use the |globals__spin_orbit_coupling| option. ::
 
     set {
         reference cghf
         scf_type pk
         relativistic zora
-        zora_spin_orbit_coupling true
+        spin_orbit_coupling true
     }
 
 
@@ -155,7 +155,7 @@ The ZORA spin-orbit coupling term :math:`H^\text{SO}` is computed with
    \chi_\mu^\dagger(\mathbf{r})\times\nabla\chi_\nu(\mathbf{r})
 
 This is computed then added to the core Hamiltonian during the :ref:`CGHF <sec:cghf>`
-SCF procedure when |globals__zora_spin_orbit_coupling| is set to `true`.
+SCF procedure when |globals__spin_orbit_coupling| is set to `true`.
 
 Limitations
 ^^^^^^^^^^^
@@ -177,7 +177,7 @@ Keywords
 .. include:: autodir_options_c/globals__zora_pruning_scheme.rst
 .. include:: autodir_options_c/globals__zora_basis_tolerance.rst
 .. include:: autodir_options_c/globals__zora_nr_debug.rst
-.. include:: autodir_options_c/globals__zora_spin_orbit_coupling.rst
+.. include:: autodir_options_c/globals__spin_orbit_coupling.rst
 
 .. _`sec:x2c`:
 
