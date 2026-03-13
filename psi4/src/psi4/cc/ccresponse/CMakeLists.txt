@@ -41,4 +41,29 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/sort_lamps.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/sort_pert.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/update_X.cc
-  )
+    ${CMAKE_CURRENT_SOURCE_DIR}/hyper.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/quadresp.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/compute_Y.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/pseudopolar_Y.cc 
+    ${CMAKE_CURRENT_SOURCE_DIR}/init_Y.cc 
+    ${CMAKE_CURRENT_SOURCE_DIR}/sort_Y.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Y1.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Y2.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Y1_homogenous.cc  
+    ${CMAKE_CURRENT_SOURCE_DIR}/Y2_homogenous.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/update_Y.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/converged_Y.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/save_Y.cc 
+    ${CMAKE_CURRENT_SOURCE_DIR}/G.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/diis_Y.cc   
+    ${CMAKE_CURRENT_SOURCE_DIR}/LHXXX.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/YHXX.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/YCX.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/L2HX2.cc  
+    ${CMAKE_CURRENT_SOURCE_DIR}/LCXX.cc
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/linresp_with_Yampl.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/YC.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/polar_with_Yampl.cc 
+    ${CMAKE_CURRENT_SOURCE_DIR}/LCX_with_Y.cc
+)
