@@ -1,7 +1,7 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcelemental}))
     include(FindPythonModule)
     if(${Python_NumPy_VERSION} GREATER_EQUAL "2")
-        find_python_module(qcelemental ATLEAST 0.28.0 QUIET)  # edit in codedeps
+        find_python_module(qcelemental ATLEAST 0.49.0 QUIET)  # edit in codedeps
     else()
         find_python_module( qcelemental ATLEAST 0.26.0 QUIET)
     endif()
@@ -34,7 +34,7 @@ else()
         BUILD_IN_SOURCE 1
         # master: INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/ QCElemental.git#egg=proj
         #INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.50.0#egg=proj  # edit in codedeps
-        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/loriab/QCElemental.git@py314#egg=proj  # edit in codedeps
+        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.50.0rc3#egg=proj  # edit in codedeps
                                                       --target=${_install_lib}
                                                       --no-deps
                                                       #-v
