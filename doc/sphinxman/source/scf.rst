@@ -213,6 +213,8 @@ therefore the orbitals. Because of this, SCF is a nonlinear procedure, which
 terminates when the generating orbitals are self-consistent with the Fock matrix
 they generate.
 
+.. _`sec:cghf`:
+
 Generalized Hartree--Fock
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 

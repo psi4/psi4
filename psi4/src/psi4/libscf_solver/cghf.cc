@@ -263,6 +263,38 @@ void CGHF::form_H() {
     H_->add(*T_);
     H_->add(*V_);
 
+    // If SOC, then add iσ⋅(Hx, Hy, Hz) to core Hamiltonian
+    if (options_.get_bool("SPIN_ORBIT_COUPLING")) {
+        outfile->Printf("\n  CGHF: Spin-orbit coupling selected.\n");
+        std::vector<SharedMatrix> H_SOC(3);
+        if (options_.get_str("RELATIVISTIC") == "X2C") {
+            H_SOC = mintshelper()->so_x2c_spin_orbit();
+        } else {
+            throw PSIEXCEPTION("RELATIVISTIC option must be in [\"X2C\"] when SPIN_ORBIT_COUPLING TRUE");
+        }
+        std::complex<double> i{0, 1};
+
+        const auto& Hx = *H_SOC[0];
+        const auto& Hy = *H_SOC[1];
+        const auto& Hz = *H_SOC[2];
+
+        for (int h = 0; h < nirrep_; h++) {
+            int nso = nsopi_[h];
+            auto& Hb = H_->get(h);
+            for (int p = 0; p < nso; p++) {
+                for (int q = 0; q < nso; q++) {
+                    // Note that I multiply by i to get H_SO Hermitian
+                    Hb(p, q+nso)     += Hx.get(p,q)*i; // +Hx [0,1]
+                    Hb(p+nso, q)     += Hx.get(p,q)*i; // +Hx [1,0]
+                    Hb(p, q+nso)     += Hy.get(p,q);   //-iHy [0,1]
+                    Hb(p+nso, q)     -= Hy.get(p,q);   //+iHy [1,0]
+                    Hb(p, q)         += Hz.get(p,q)*i; // +Hz [0,0]
+                    Hb(p+nso, q+nso) -= Hz.get(p,q)*i; // -Hz [1,1]
+                }
+            }
+        }
+    }
+
     if (print_ > 3) H_->print("outfile");
 }
 

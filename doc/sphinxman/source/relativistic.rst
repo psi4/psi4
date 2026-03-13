@@ -33,9 +33,9 @@
 
 .. _`sec:relativistic`:
 
-================================
-Scalar Relativistic Hamiltonians
-================================
+=========================
+Relativistic Hamiltonians
+=========================
 
 .. _`sec:zora`:
 
@@ -138,9 +138,6 @@ time spent computing the ZORA Hamiltonian is relatively negligible.
 Limitations
 ^^^^^^^^^^^
 
-* Spin-orbit coupling effects are not available because they require a
-  complex generalized SCF procedure.
-
 * ZORA theory allows for adjustment of the molecular orbital energies.
   This provides an important correction for linear response calculations.
   Currently, this is not implemented in |PSIfour|.
@@ -158,6 +155,7 @@ Keywords
 .. include:: autodir_options_c/globals__zora_pruning_scheme.rst
 .. include:: autodir_options_c/globals__zora_basis_tolerance.rst
 .. include:: autodir_options_c/globals__zora_nr_debug.rst
+.. include:: autodir_options_c/globals__spin_orbit_coupling.rst
 
 .. _`sec:x2c`:
 
