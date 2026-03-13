@@ -34,7 +34,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libmints/rel_potential.h"
 #include "psi4/libmints/integral.h"
-#include "psi4/libmints/x2cint.h"
+#include "psi4/libmints/sfx2c1e.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/multipolesymmetry.h"
 #include "psi4/libmints/vector.h"
@@ -45,11 +45,11 @@
 
 namespace psi {
 
-X2CInt::X2CInt() {}
+SFX2C1e::SFX2C1e() {}
 
-X2CInt::~X2CInt() {}
+SFX2C1e::~SFX2C1e() {}
 
-void X2CInt::compute(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis,
+void SFX2C1e::compute(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis,
                      std::shared_ptr<BasisSet> x2c_basis, SharedMatrix S, SharedMatrix T, SharedMatrix V,
                      const std::vector<double> lambda) {
     // tstart();
@@ -75,7 +75,7 @@ void X2CInt::compute(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSe
     // tstop();
 }
 
-void X2CInt::setup(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> x2c_basis) {
+void SFX2C1e::setup(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> x2c_basis) {
     outfile->Printf(
         "         "
         "------------------------------------------------------------");
@@ -121,7 +121,7 @@ void X2CInt::setup(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> x2
     ssFactory_->init_with(nsspi, nsspi);
 }
 
-void X2CInt::compute_integrals() {
+void SFX2C1e::compute_integrals() {
     // Create the integral objects
     std::shared_ptr<OneBodySOInt> sOBI(integral_->so_overlap());
     std::shared_ptr<OneBodySOInt> tOBI(integral_->so_kinetic());
@@ -170,7 +170,7 @@ void X2CInt::compute_integrals() {
 #endif
 }
 
-void X2CInt::form_dirac_h() {
+void SFX2C1e::form_dirac_h() {
     // Form the Dirac Hamiltonian
     //      | V       T       |
     //  d = |                 |
@@ -216,7 +216,7 @@ void X2CInt::form_dirac_h() {
 #endif
 }
 
-void X2CInt::diagonalize_dirac_h() {
+void SFX2C1e::diagonalize_dirac_h() {
     /* Prakash
      * C_LS_Mat   Eigenvector that contains both large and small component
      * E_LS_Mat   EigenValues  if Dirac Hamiltonian
@@ -242,7 +242,7 @@ void X2CInt::diagonalize_dirac_h() {
 #endif
 }
 
-void X2CInt::form_X() {
+void SFX2C1e::form_X() {
     /* Prakash
      * Step 4.
      * Divide positive energy part C_LS_Mat into two parts C_Large and C_Small
@@ -285,7 +285,7 @@ void X2CInt::form_X() {
 #endif
 }
 
-void X2CInt::form_R() {
+void SFX2C1e::form_R() {
     /* Prakash
      * step 5
      * S_{tilda} = S + 1/2c**2  X^{dagger} T X
@@ -365,7 +365,7 @@ void X2CInt::form_R() {
 #endif
 }
 
-void X2CInt::form_h_FW_plus() {
+void SFX2C1e::form_h_FW_plus() {
     // Check if the matrices are allocated and have the correct size
     S_x2c_ = SharedMatrix(soFactory_->create_matrix(PSIF_SO_S));
     T_x2c_ = SharedMatrix(soFactory_->create_matrix(PSIF_SO_T));
@@ -427,7 +427,7 @@ void X2CInt::form_h_FW_plus() {
 #endif
 }
 
-void X2CInt::write_integrals_to_disk() {
+void SFX2C1e::write_integrals_to_disk() {
     /*
      *  Write T and V to disk
      */
@@ -436,7 +436,7 @@ void X2CInt::write_integrals_to_disk() {
     V_x2c_->save(_default_psio_lib_, PSIF_OEI);
 }
 
-void X2CInt::project() {
+void SFX2C1e::project() {
     // Integral factory for the BASIS/X2C_BASIS mixed basis
     std::shared_ptr<IntegralFactory> integral_contracted =
         std::make_shared<IntegralFactory>(aoBasis_contracted_, aoBasis_, aoBasis_, aoBasis_);
@@ -466,7 +466,7 @@ void X2CInt::project() {
     V_x2c_->transform(D);
 }
 
-void X2CInt::test_h_FW_plus() {
+void SFX2C1e::test_h_FW_plus() {
     /*
      * Diagonalize the Hamiltonian
      */

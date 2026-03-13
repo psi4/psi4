@@ -26,7 +26,7 @@
  * @END LICENSE
  */
 
-#include "x2cint.h"
+#include "sfx2c1e.h"
 #include "gau2grid/gau2grid.h"
 #include "zora.h"
 
@@ -1510,7 +1510,7 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
         }
     }
 
-    X2CInt x2cint;
+    SFX2C1e x2cint;
     x2cint.compute(molecule_, basisset_, get_basisset("BASIS_RELATIVISTIC"), so_overlap_x2c, so_kinetic_x2c,
                    so_potential_x2c, lambda);
 
