@@ -150,8 +150,9 @@ class AtomicComputer(BaseComputer):
             if self.priority is not None:
                 oldargs["priority"] = self.priority
 
+            # TODO sent to qcf 1 or 2 as appropriate
             meta, ids = client.add_singlepoints(
-                molecules=mol,
+                molecules=mol.convert_v(1),
                 program="psi4",
                 driver=self.driver,
                 method=self.method,

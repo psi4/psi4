@@ -424,7 +424,7 @@ def run_qcschema(
     return_dict: bool = False,
     return_version: int = -1,
 ) -> Union[qcel.models.v1.AtomicResult, qcel.models.v2.AtomicResult, qcel.models.v1.FailedOperation, qcel.models.v2.FailedOperation]:
-    """Run a quantum chemistry job specified by :py:class:`qcelemental.models.AtomicInput` **input_data** in |PSIfour|.
+    """Run a quantum chemistry job specified by :py:class:`qcelemental.models.v2.AtomicInput` (v1 or v2) **input_data** in |PSIfour|.
 
     Parameters
     ----------
@@ -448,9 +448,9 @@ def run_qcschema(
         AtomicResult, FailedOperation, or Dict representation of any object type
         A QCSchema representation of the requested output, type depends on return_dict key.
 
-        qcelemental.models.AtomicResult
+        qcelemental.models.v1.AtomicResult, qcelemental.models.v2.AtomicResult
             Full record of quantum chemistry calculation, including output text. Returned upon job success.
-        qcelemental.models.FailedOperation
+        qcelemental.models.v1.FailedOperation, qcelemental.models.v2.FailedOperation,
             Record to diagnose calculation failure, including output text and input specification. Returned upon job failure.
 
         .. _`table:compute_result`:

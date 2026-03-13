@@ -419,7 +419,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         )
 
         if mbkwargs.get("levels"):
-            specification = {v: atomic_spec.copy(deep=True) for v in mbkwargs["levels"].values()}
+            specification = {v: atomic_spec.model_copy(deep=True) for v in mbkwargs["levels"].values()}
         else:
             specification = atomic_spec  # will turn into {"(auto)": atomic_spec}
 
@@ -452,7 +452,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         specifications = {}
         for mtd, spec in computer_model.input_data.specification.specification.items():
-            spec = spec.dict()
+            spec = spec.model_dump()
             specifications[mtd] = {}
             specifications[mtd]["program"] = spec.pop("program")
             specifications[mtd]["specification"] = spec
@@ -574,7 +574,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             All MBE results collected into a QCSchema model.
 
         """
-        component_results = {k: v.get_results(client=client) for k, v in self.task_list.items()}
+        component_results = {k: v.get_results(client=client).convert_v(2) for k, v in self.task_list.items()}
         component_properties = {}
         props = {"energy", "gradient", "hessian"}
 
@@ -640,7 +640,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         qmol = core.Molecule.from_schema(self.molecule.dict())  # nonphy
         wfn = core.Wavefunction.build(qmol, "def2-svp", quiet=True)
 
-        qcvars = translate_qcvariables(nbody_model.properties.dict())
+        qcvars = translate_qcvariables(nbody_model.properties.model_dump())
         for qcv, val in qcvars.items():
             for obj in [core, wfn]:
                 obj.set_variable(qcv, val)
