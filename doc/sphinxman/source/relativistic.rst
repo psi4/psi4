@@ -33,9 +33,9 @@
 
 .. _`sec:relativistic`:
 
-================================
-Scalar Relativistic Hamiltonians
-================================
+=========================
+Relativistic Hamiltonians
+=========================
 
 .. _`sec:zora`:
 
@@ -46,6 +46,9 @@ Zeroth-order regular approximation (ZORA)
 .. sectionauthor:: Nathan Gillispie and Daniel R. Nascimento
 
 *Source*: :source:`zora.cc <psi4/src/psi4/libmints/zora.cc>` :source:`zora.h <psi4/src/psi4/libmints/zora.h>`
+
+.. note:: Spin-orbit coupling (SOC) is available with the :ref:`CGHF <sec:cghf>` reference only.
+   This requires |Psifour| be built with Einsums enabled (:code:`-DENABLE_Einsums=ON`).
 
 ZORA is a perturbative approximation of the full relativistic Hamiltonian for
 DFT and wavefunction-based methods. It is commonly used to provide a more
@@ -78,6 +81,16 @@ the |globals__zora_radial_points| and |globals__zora_spherical_points| options. 
 .. note::
    The number of spherical points must be a Lebedev number.
    See :ref:`Grid Selection <sec:grid-selection>` for a list of all options.
+
+To add perturbative spin-orbit coupling, use the |globals__spin_orbit_coupling| option. ::
+
+    set {
+        reference cghf
+        scf_type pk
+        relativistic zora
+        spin_orbit_coupling true
+    }
+
 
 It may be useful to compute the non-relativistic kinetic integral using the
 grid points to compare against the analytic kinetic integrals. To do this, use
@@ -135,11 +148,17 @@ non-relativistic kinetic energy. This is the basis behind the
 once before the SCF procedure, don't cheap out on the grid! In practice, the
 time spent computing the ZORA Hamiltonian is relatively negligible.
 
+The ZORA spin-orbit coupling term :math:`H^\text{SO}` is computed with
+
+.. math:: H_{\mu\nu}^\text{SO}=\sigma\cdot\int d\mathbf{r}^3
+   \frac{v_\text{eff}(\mathbf{r})}{4c^2-2v_\text{eff}(\mathbf{r})}\nabla
+   \chi_\mu^\dagger(\mathbf{r})\times\nabla\chi_\nu(\mathbf{r})
+
+This is computed then added to the core Hamiltonian during the :ref:`CGHF <sec:cghf>`
+SCF procedure when |globals__spin_orbit_coupling| is set to `true`.
+
 Limitations
 ^^^^^^^^^^^
-
-* Spin-orbit coupling effects are not available because they require a
-  complex generalized SCF procedure.
 
 * ZORA theory allows for adjustment of the molecular orbital energies.
   This provides an important correction for linear response calculations.
@@ -158,6 +177,7 @@ Keywords
 .. include:: autodir_options_c/globals__zora_pruning_scheme.rst
 .. include:: autodir_options_c/globals__zora_basis_tolerance.rst
 .. include:: autodir_options_c/globals__zora_nr_debug.rst
+.. include:: autodir_options_c/globals__spin_orbit_coupling.rst
 
 .. _`sec:x2c`:
 

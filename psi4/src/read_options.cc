@@ -261,6 +261,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     Useful when comparing analytic and grid-based methods. !expert -*/
     options.add_bool("ZORA_NR_DEBUG", false);
 
+    /*- Add the spin-orbit coupling Hamiltonian on top of (scalar-relativistic) Hamiltonians.
+    Only available with `REFERENCE CGHF`. Currently, only `RELATIVISTIC ZORA` is supported. -*/
+    options.add_bool("SPIN_ORBIT_COUPLING", false);
+
     /*- Directory to which to write cube files. Default is the input file
     directory. -*/
     options.add_str_i("CUBEPROP_FILEPATH", ".");
@@ -1462,7 +1466,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("WFN", "SCF", "SCF");
         /*- Reference wavefunction type.
         **Cfour Interface:** Keyword translates into |cfour__cfour_reference|. -*/
-        options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
+        options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CGHF CUHF RKS UKS");
         /*- Primary basis set -*/
         options.add_str("BASIS", "");
         /*- Auxiliary basis set for SCF density fitting computations.
