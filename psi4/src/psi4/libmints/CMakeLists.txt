@@ -1,6 +1,6 @@
 list(APPEND sources
   local.cc
-  x2cint.cc
+  sfx2c1e.cc
   zora.cc
   orbitalspace.cc
   maketab.cc
