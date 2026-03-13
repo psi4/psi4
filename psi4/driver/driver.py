@@ -1212,7 +1212,7 @@ def optimize(name, **kwargs):
     if core.get_option('OPTKING', 'OPT_RESTART'):
         # Recreate all of optking's internal classes to restart an optimization
         # This has not been well tested - Experimental
-        opt_object = optking.opt_helper.CustomHelper(molecule)
+        opt_object = optking.opt_helper.CustomHelper(molecule, dtype=2)
         with open(f"{core.get_writer_file_prefix(molecule.name())}.1.dat", 'r') as f:
             stashed_opt = json.load(f)
         opt_object.from_dict(stashed_opt)
@@ -1222,7 +1222,7 @@ def optimize(name, **kwargs):
         params = p4util.prepare_options_for_modules()
         optimizer_params = {k: v.get('value') for k, v in params.pop("OPTKING").items() if v.get('has_changed')}
         optimizer_params.update(kwargs.get("optimizer_keywords", {}))
-        opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params)
+        opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params, dtype=2)
 
     initial_sym = molecule.schoenflies_symbol()
     # Use optking's value so that validation can change value (e.g. IRC_POINTS sets max_iter based on number of points)

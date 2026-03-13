@@ -2983,6 +2983,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("INTRAFRAG_STEP_LIMIT_MIN", 0.001);
         /*- :py:attr:`intrafrag_step_limit_max <optking.v1.optparams.OptParams.intrafrag_trust_min>` -*/
         options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
+        /*- :py:attr:`intrafrag_hess <optking.v1.optparams.OptParams.intrafrag_hess>` -*/
+        options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE LINDH LINDH_SIMPLE");
         /*- :py:attr:`~optking.v1.optparams.OptParams.irc_convergence` -*/
         options.add_double("IRC_CONVERGENCE", -0.7);
         /*- :py:attr:`~optking.v1.optparams.OptParams.irc_direction` -*/

@@ -550,7 +550,7 @@ def run_qcschema(
             "Reason: pydantic.v1 is unavailable on Python 3.14+. "
             "You can: (a) use Python <3.14, (b) use QCSchema v2 (either input or ask for output "
             "with `return_version=2`; note that QCSchema v2 not finalized until QCElemental v0.60), "
-            "or (c) ask for a QCSchema v1 dictionary back rather than the model with `return_dict=True`.")
+            "or (c) use `return_dict=True` to ask for a QCSchema v1 dictionary back rather than the model.")
 
         # Echo the infile on the outfile
         core.print_out("\n  ==> Input QCSchema <==\n")
@@ -562,11 +562,6 @@ def run_qcschema(
 
         # qcschema should be copied
         ret_data = run_json_qcschema(input_model.model_dump(), clean, False, keep_wfn=keep_wfn)
-        ret_data["provenance"].update({
-            "creator": "Psi4",
-            "version": __version__,
-            "routine": "psi4.schema_runner.run_qcschema"
-        })
         ret_data["native_files"]["input"] = json.dumps(json.loads(input_model.model_dump_json()), indent=1)
 
         exit_printing(start_time=start_time, success=True)
@@ -783,7 +778,12 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     result_data["properties"] = props
     result_data["success"] = True
 
-    result_data["provenance"]["module"] = wfn.module()
+    result_data["provenance"].update({
+            "creator": "Psi4",
+            "version": __version__,
+            "routine": "psi4.schema_runner.run_qcschema",
+            "module": wfn.module(),
+        })
 
     if keep_wfn:
         result_data["wavefunction"] = _convert_wavefunction(wfn)

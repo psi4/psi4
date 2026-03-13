@@ -1469,9 +1469,10 @@ def test_dftd4():
     psi4.energy('b3lyp-d2')
     assert psi4.compare_values(ref_pbe_d2[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (alias)')
 
-    psi4.set_options({"dft_dispersion_parameters": [1.0,  0.722, 1.217, 14.0]})
-    psi4.energy('b3lyp-d3')
-    assert psi4.compare_values(ref_pbe_d3zero[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4 (alias)')
+    if "dftd3" in psi4.addons():
+        psi4.set_options({"dft_dispersion_parameters": [1.0,  0.722, 1.217, 14.0]})
+        psi4.energy('b3lyp-d3')
+        assert psi4.compare_values(ref_pbe_d3zero[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4 (alias)')
 
     psi4.set_options({"dft_dispersion_parameters": [0.38574991, 4.80688534, 16.0, 1.0, 0.95948085, 1.0]})  # pbe-d4
     psi4.energy('b3lyp-d4')
