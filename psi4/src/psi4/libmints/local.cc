@@ -643,11 +643,13 @@ void ERLocalizer::localize() {
     outfile->Printf("    @ER   %4d %24.16E %14s\n", 0, metric, "-");
 
     // => DIIS Setup <= //
-
-    /*
+    
     size_t max_vecs = Process::environment.options.get_int("DIIS_MAX_VECS");
     DIISManager diis(max_vecs, "ER DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
-    */
+
+    // Total rotation angle
+    auto Kappa = std::make_shared<Matrix>("Kappa", nmo, nmo);
+    Kappa->zero();
 
     // ==> Master Loop <== //
     
@@ -659,20 +661,25 @@ void ERLocalizer::localize() {
         dKappa->subtract(pppq);
         dKappa->scale(-4.0);
 
-        /*
-        // DIIS extrapolation (of the gradient)
-        if (iter == 1) {
-            diis.set_error_vector_size(delta_pppp.get());
-            diis.set_vector_size(dKappa.get());
-        }
+        auto Kappa_old = Kappa->clone();
+        Kappa->add(dKappa);
 
-        diis.add_entry(delta_pppp.get(), dKappa.get());
-        diis.extrapolate(dKappa.get());
-        */
+        // DIIS extrapolation (of dKappa, past iteration 100)
+        if (iter > 100) {
+            diis.set_error_vector_size(dKappa.get());
+            diis.set_vector_size(Kappa.get());
+
+            diis.add_entry(dKappa.get(), Kappa.get());
+            diis.extrapolate(Kappa.get());
+
+            // Compute dKappa from Kappa - Kappa_old
+            dKappa = Kappa->clone();
+            dKappa->subtract(Kappa_old);
+        }
 
         // Directly compute unitary transformation matrix
         auto dU = dKappa->clone();
-        dU->scale(-0.25); // negative for gradient "ascent", step size of 0.25
+        dU->scale(-0.25); // negative for gradient "ascent"
         dU->expm();
 
         // Form new U and L matrices
