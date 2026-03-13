@@ -663,7 +663,7 @@ data:
         - sphinx-automodapi
         - sphinx-autodoc-typehints
         - sphinx-tabs
-        - autodoc-pydantic=1
+        - autodoc-pydantic=2
         - qcportal
         - "gxx_linux-64=14.3.0=hc876b51_14"
         - "setuptools<82.0.0"
