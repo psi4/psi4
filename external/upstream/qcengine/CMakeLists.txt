@@ -38,12 +38,11 @@ else()
     ExternalProject_Add(qcengine_external
         DEPENDS qcelemental_external
         BUILD_ALWAYS 1
-        DOWNLOAD_COMMAND 1
+        DOWNLOAD_COMMAND ""
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ""
         BUILD_IN_SOURCE 1
-        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install <DOWNLOADED_FILE>
         # master: INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/ QCEngine.git#egg=proj
         #INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCEngine.git@v0.50.0#egg=proj  # edit in codedeps
         INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/loriab/QCEngine.git@py314_rb11#egg=proj  # edit in codedeps
