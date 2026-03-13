@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_optking}))
     include(FindPythonModule)
-    find_python_module(optking ATLEAST 0.5.0 QUIET)  # edit in codedeps
+    find_python_module(optking ATLEAST 0.4.3 QUIET)  # edit in codedeps
 endif()
 
 if(${optking_FOUND})
@@ -23,7 +23,7 @@ else()
 
     ExternalProject_Add(optking_external
         BUILD_ALWAYS 1
-        URL https://github.com/loriab/optking/archive/py314_v1v2.tar.gz  # edit in codedeps
+        URL https://github.com/loriab/optking/archive/0.4.3.tar.gz  # edit in codedeps
         DOWNLOAD_NO_EXTRACT 1
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
