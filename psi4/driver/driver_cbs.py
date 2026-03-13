@@ -1626,7 +1626,7 @@ class CompositeComputer(BaseComputer):
                 t.compute(client=client)
 
     def _prepare_results(self, client: Optional["qcportal.client.PortalClient"] = None):
-        results_list = [x.get_results(client=client) for x in self.task_list]
+        results_list = [x.get_results(client=client).convert_v(2) for x in self.task_list]
 
         modules = [getattr(v.provenance, "module", None) for v in results_list]
         if self.driver != "energy" and len(set(modules)) == 2 and modules.count("scf") == len(modules) / 2:

@@ -1323,7 +1323,7 @@ class FiniteDifferenceComputer(BaseComputer):
                 t.compute(client=client)
 
     def _prepare_results(self, client: Optional["qcportal.client.PortalClient"] = None):
-        results_list = {k: v.get_results(client=client) for k, v in self.task_list.items()}
+        results_list = {k: v.get_results(client=client).convert_v(2) for k, v in self.task_list.items()}
 
         # load AtomicComputer results into findifrec[reference]
         reference = self.findifrec["reference"]

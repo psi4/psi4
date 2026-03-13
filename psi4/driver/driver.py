@@ -2089,7 +2089,7 @@ def tdscf(wfn, **kwargs):
 
 
 def fsapt_analysis(
-    source: Union[str, core.Wavefunction, qcelemental.models.AtomicResult],
+    source: Union[str, core.Wavefunction, qcelemental.models.v1.AtomicResult, qcelemental.models.v2.AtomicResult],
     fragments_a: Dict,
     fragments_b: Dict,
     pdb_dir: str = None,
@@ -2155,7 +2155,7 @@ def fsapt_analysis(
                     f.write(f"{k} {' '.join([str(i) for i in v])}\n")
         return fsapt.run_from_output(dirname=source)
 
-    elif isinstance(source, qcelemental.models.AtomicResult):
+    elif isinstance(source, (qcelemental.models.v1.AtomicResult, qcelemental.models.v2.AtomicResult)):
         if print_output:
             print("Running fsapt_analysis through QCVariables extracted from schema")
         atomic_results = source
