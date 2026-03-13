@@ -375,12 +375,13 @@ from system 1.
 I-SAPT: A Representative Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. caution:: As of April 2018, you can't specify molecule fragments
-   with an unphysical multiplicity like the singlet OH fragments in
-   the molecule below, especially as (again in the example below) the
-   overall molecule needs to be a singlet, which |PSIfour| doesn't at
-   present let be set independently. For situations like this, use the
-   temporary input pattern in :srcsample:`isapt1` .
+.. note:: Molecule fragments must each have physically plausible multiplicity
+   (unlike the singlet OH fragments in the ``bad_mol`` example below), and the
+   overall molecule needs to be a singlet. For situations like this, you'll need
+   to specify the overall charge and multiplicity and set physical multiplicities
+   for each fragment, either through the usual string syntax (``good_mol`` below)
+   or through :py:func:`psi4.core.Molecule.from_arrays`. Examples are in
+   :srcsample:`isapt1` and :srcsample:`isapt-charged`.
 
 Below, we show an example of using I-SAPT0/jun-cc-pVDZ to analyze the
 interaction between the two phenol groups in a 2,4-pentanediol molecule.
@@ -393,7 +394,8 @@ the I-SAPT embedding procedure is available `I-SAPT#2 <https://www.youtube.com/w
 
     memory 1 GB
     
-    molecule mol {
+    # won't work with all singlets
+    molecule bad_mol {
     0 1
     O          0.39987        2.94222       -0.26535
     H          0.05893        2.05436       -0.50962
@@ -422,9 +424,42 @@ the I-SAPT embedding procedure is available `I-SAPT#2 <https://www.youtube.com/w
     no_reorient
     no_com
     }
-    
+
+    # will work with total and per-fragment charge and multiplicity
+    molecule good_mol {
+    0 1
+    --
+    0 2
+    O          0.39987        2.94222       -0.26535
+    H          0.05893        2.05436       -0.50962
+    --
+    0 2
+    O          0.48122        0.30277       -0.77763
+    H          0.26106       -0.50005       -1.28451
+    --
+    0 1
+    C          2.33048       -1.00269        0.03771
+    C          1.89725        0.31533       -0.59009
+    C          2.28232        1.50669        0.29709
+    C          1.82204        2.84608       -0.29432
+    C          2.37905        4.02099        0.49639
+    H          3.41246       -1.03030        0.19825
+    H          2.05362       -1.84372       -0.60709
+    H          1.82714       -1.16382        0.99734
+    H          2.36243        0.42333       -1.57636
+    H          3.36962        1.51414        0.43813
+    H          1.81251        1.38060        1.28140
+    H          2.14344        2.92967       -1.33843
+    H          3.47320        4.02400        0.48819
+    H          2.03535        3.99216        1.53635
+    H          2.02481        4.96785        0.07455
+    symmetry c1
+    no_reorient
+    no_com
+    }
+
     # => Standard Options <= #
-    
+
     set {
     basis jun-cc-pvdz
     scf_type df
@@ -432,7 +467,7 @@ the I-SAPT embedding procedure is available `I-SAPT#2 <https://www.youtube.com/w
     freeze_core true
     fisapt_do_plot true  # For extra analysis
     }
-    
+
     energy('fisapt0')
 
 This is essentially the same input as for F-SAPT, except that the molecular

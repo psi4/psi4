@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcmanybody}))
     include(FindPythonModule)
-    find_python_module(qcmanybody ATLEAST 0.5.1 QUIET)
+    find_python_module(qcmanybody ATLEAST 0.6.1 QUIET)
 endif()
 
 if(${qcmanybody_FOUND})
@@ -33,7 +33,7 @@ else()
         BUILD_COMMAND ""
         BUILD_IN_SOURCE 1
         # master: INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/ QCManyBody.git#egg=proj
-        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCManyBody.git@v0.5.1#egg=proj  # edit in codedeps
+        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCManyBody.git@v0.6.1#egg=proj  # edit in codedeps
                                                       --target=${_install_lib}
                                                       --no-deps
                                                       #-v

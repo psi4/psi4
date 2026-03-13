@@ -998,23 +998,23 @@ data:
       host: github
       account: MolSSI
       name: QCElemental
-      commit: v0.29.0
+      commit: next2026
     cmake:
       name: qcelemental
-      constraint: "ATLEAST 0.28.0"
+      constraint: "ATLEAST 0.49.0"
       target: null
     conda:
       channel: conda-forge
-      name: qcelemental
-      constraint: null
+      name: conda-forge/label/qcelemental_dev::qcelemental
+      constraint: ">=0.50.0rc3"
       aux_run_names:
         - msgpack-python
         - networkx
         - setuptools
-        - "pydantic>=1.10.17,!=1.10.22,<3"
+        - "pydantic>=2.11.0,<3"
       aux_run_names_note:
         "setuptools": "Needed for qcelemental cmake detection."
-        "pydantic>=1.10.17,!=1.10.22,<3": "Allow uniform access to Pydantic v1 API. Issues with 22 and autodoc."
+        "pydantic>=2.11.0,<3": "For v1.11, require Pydantic v2 API."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
@@ -1182,17 +1182,19 @@ data:
       cms: true
     repository:
       host: github
-      account: MolSSI
+      # account: MolSSI
+      account: loriab
       name: QCEngine
-      commit: v0.33.0
+      # commit: v0.33.0
+      commit: py314_rb11
     cmake:
       name: qcengine
-      constraint: ATLEAST 0.28.1
+      constraint: ATLEAST 0.49.0
       target:
     conda:
       channel: conda-forge
-      name: qcengine
-      constraint: null
+      name: conda-forge/label/qcengine_dev::qcengine
+      constraint: ">=0.50.0rc1"
       constraint_note: "v0.33 has SAPT0-D4 parameters"
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcengine: true
@@ -1335,18 +1337,20 @@ data:
       cms: true
     repository:
       host: github
-      account: psi-rking
+      # account: psi-rking
+      account: loriab
       name: optking
-      commit: 0.4.2
+      # commit: 0.4.2
+      commit: py314_v1v2
     cmake:
       name: optking
-      constraint: ATLEAST 0.4.2
+      constraint: ATLEAST 0.5.0
     conda:
       channel: conda-forge
       name: optking
       constraint: null
       cmake:
-        //CMAKE_INSIST_FIND_PACKAGE_optking: true
+        # //CMAKE_INSIST_FIND_PACKAGE_optking: true
         //CMAKE_DISABLE_FIND_PACKAGE_optking: true
       cmake_note: "Primarily OTF runtime detected."
 
@@ -1500,16 +1504,16 @@ data:
       host: github
       account: MolSSI
       name: QCManyBody
-      commit: v0.5.1
+      commit: v0.6.1
       githttps: true
     cmake:
       name: qcmanybody
-      constraint: "ATLEAST 0.5.1"
+      constraint: "ATLEAST 0.6.1"
       target: null
     conda:
       channel: conda-forge
       name: qcmanybody
-      constraint: ">=0.5.1"
+      constraint: ">=0.6.1"
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
