@@ -27,6 +27,7 @@
  */
 
 #include "sfx2c1e.h"
+#include "sox2c1e.h"
 #include "gau2grid/gau2grid.h"
 #include "zora.h"
 
@@ -788,6 +789,23 @@ SharedMatrix MintsHelper::so_dkh(int dkh_order) {
     return dkh;
 }
 
+std::vector<SharedMatrix> MintsHelper::ao_x2c_spin_orbit(bool include_perturbations) {
+    std::string socx(PSIF_AO_SOCX);
+    std::string socy(PSIF_AO_SOCY);
+    std::string socz(PSIF_AO_SOCZ);
+
+    if (!are_ints_cached(socx, include_perturbations)) {
+        compute_so_x2c_ints(include_perturbations, true);
+    }
+
+    std::vector<SharedMatrix> H_SO_x2c(3);
+    H_SO_x2c[0] = cached_oe_ints_[std::make_pair(socx, include_perturbations)];
+    H_SO_x2c[1] = cached_oe_ints_[std::make_pair(socy, include_perturbations)];
+    H_SO_x2c[2] = cached_oe_ints_[std::make_pair(socz, include_perturbations)];
+
+    return H_SO_x2c;
+}
+
 SharedMatrix MintsHelper::ao_helper(const std::string &label, std::shared_ptr<TwoBodyAOInt> ints) {
     std::shared_ptr<BasisSet> bs1 = ints->basis1();
     std::shared_ptr<BasisSet> bs2 = ints->basis2();
@@ -1478,7 +1496,7 @@ void MintsHelper::compute_so_zora_ints(bool include_perturbations) {
     cached_oe_ints_[std::make_pair(PSIF_SO_T, include_perturbations)] = so_kinetic_zora;
 }
 
-void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
+void MintsHelper::compute_so_x2c_ints(bool include_perturbations, bool force_spin_orbit) {
     outfile->Printf(" OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
 
     if (!basisset_exists("BASIS_RELATIVISTIC")) {
@@ -1488,10 +1506,22 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
     SharedMatrix so_kinetic_x2c = so_kinetic_nr();
     SharedMatrix so_potential_x2c = so_potential_nr(include_perturbations);
 
+    bool spin_orbit = options_.get_bool("SPIN_ORBIT_COUPLING");
+
+    if (force_spin_orbit) {
+        spin_orbit = true;
+    } else {
+        if (options_.get_str("REFERENCE") != "CGHF")
+            throw PSIEXCEPTION("X2C with spin-orbit coupling is only possible with CGHF reference.");
+    }
+
     std::vector<double> lambda(3, 0.0);
 
     if (include_perturbations) {
         if (options_.get_bool("PERTURB_H")) {
+            if (spin_orbit) {
+                throw PSIEXCEPTION("Perturbations of the spin-orbit X2C1e Hamiltonian are not implemented.");
+            }
             std::string perturb_with = options_.get_str("PERTURB_WITH");
             outfile->Printf("\n  perturb_with = %s", perturb_with.c_str());
             if (perturb_with == "DIPOLE_X")
@@ -1510,10 +1540,27 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
         }
     }
 
-    SFX2C1e x2cint;
-    x2cint.compute(molecule_, basisset_, get_basisset("BASIS_RELATIVISTIC"), so_overlap_x2c, so_kinetic_x2c,
-                   so_potential_x2c, lambda);
+    if (spin_orbit) {
+#ifndef USING_Einsums
+        throw PSIEXCEPTION("Psi4 not built with Einsums enabled! Spin-orbit X2C1e is not available.");
+#else
+        SharedMatrix Hso_x = factory_->create_shared_matrix(PSIF_AO_SOCX);
+        SharedMatrix Hso_y = factory_->create_shared_matrix(PSIF_AO_SOCY);
+        SharedMatrix Hso_z = factory_->create_shared_matrix(PSIF_AO_SOCZ);
+        SOX2C1e x2cint(basisset_, get_basisset("BASIS_RELATIVISTIC"));
+        x2cint.compute(so_overlap_x2c, so_kinetic_x2c, so_potential_x2c, Hso_x, Hso_y, Hso_z);
 
+        // Set spin-orbit integrals
+        cached_oe_ints_[std::make_pair(PSIF_AO_SOCX, include_perturbations)] = Hso_x;
+        cached_oe_ints_[std::make_pair(PSIF_AO_SOCY, include_perturbations)] = Hso_y;
+        cached_oe_ints_[std::make_pair(PSIF_AO_SOCZ, include_perturbations)] = Hso_z;
+#endif
+    } else {
+        SFX2C1e x2cint;
+        x2cint.compute(molecule_, basisset_, get_basisset("BASIS_RELATIVISTIC"), so_overlap_x2c, so_kinetic_x2c,
+                       so_potential_x2c, lambda);
+
+    }
     // Overwrite cached integrals
     cached_oe_ints_[std::make_pair(PSIF_SO_S, include_perturbations)] = so_overlap_x2c;
     cached_oe_ints_[std::make_pair(PSIF_SO_T, include_perturbations)] = so_kinetic_x2c;

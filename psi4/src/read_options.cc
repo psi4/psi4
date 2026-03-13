@@ -261,6 +261,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     Useful when comparing analytic and grid-based methods. !expert -*/
     options.add_bool("ZORA_NR_DEBUG", false);
 
+    /*- Add the spin-orbit coupling Hamiltonian on top of (scalar-relativistic) Hamiltonians.
+    Only available with `REFERENCE CGHF`. Currently, only `RELATIVISTIC X2C` is supported. -*/
+    options.add_bool("SPIN_ORBIT_COUPLING", false);
+
     /*- Directory to which to write cube files. Default is the input file
     directory. -*/
     options.add_str_i("CUBEPROP_FILEPATH", ".");

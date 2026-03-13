@@ -1,0 +1,24 @@
+#! Test of SOX2C-1e on uncontracted cc-pVDZ-DK
+#! TODO: Reference numbers from Lan Cheng's implementation in Cfour
+
+molecule ne_dimer {
+0 1
+    Zn 0 0 0
+    Zn 0 0 2
+symmetry C1
+}
+
+set {
+  reference cghf
+  scf_type pk
+  basis sto-3g
+  basis_relativistic sto-3g
+  relativistic x2c
+  e_convergence 8
+}
+
+e_sr = energy('scf')
+set spin_orbit_coupling true
+e_so = energy('scf')
+
+print(e_sr, e_so)

@@ -109,7 +109,7 @@ class PSI_API MintsHelper {
     /// Computes ZORA kinetic integrals
     void compute_so_zora_ints(bool include_perturbations = true);
     /// Computes X2C overlap, kinetic, and potential integrals
-    void compute_so_x2c_ints(bool include_perturbations = true);
+    void compute_so_x2c_ints(bool include_perturbations = true, bool force_spin_orbit = false);
     /// Add dipole perturbation to the potential integrals
     void add_dipole_perturbation(SharedMatrix potential_mat);
     /// Returns the non-relativistic overlap integrals in the so basis
@@ -305,6 +305,8 @@ class PSI_API MintsHelper {
     SharedMatrix ao_pvp();
     /// AO DKH Integrals
     SharedMatrix ao_dkh(int dkh_order = -1);
+    /// AO X2C Spin-Orbit Coupling Integrals
+    std::vector<SharedMatrix> ao_x2c_spin_orbit(bool include_perturbations = true);
     /// SO DKH Integrals
     SharedMatrix so_dkh(int dkh_order = -1);
     /// Vector AO Dipole Integrals
