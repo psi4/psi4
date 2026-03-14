@@ -50,7 +50,7 @@ import os
 import warnings
 from contextlib import contextmanager
 from types import ModuleType
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, TYPE_CHECKING, Union
 
 import numpy as np
 
@@ -64,6 +64,9 @@ from psi4.metadata import __version__
 
 from . import p4regex
 from .exceptions import ValidationError
+
+if TYPE_CHECKING:
+    import qcelemental
 
 
 def kwargs_lower(kwargs: Dict[str, Any]) -> Dict[str, Any]:
@@ -574,7 +577,7 @@ def state_to_atomicinput(
     method: str,
     basis: Optional[str] = None,
     molecule: Optional[core.Molecule] = None,
-    function_kwargs: Optional[Dict[str, Any]] = None) -> "AtomicInput":
+    function_kwargs: Optional[Dict[str, Any]] = None) -> "qcelemental.models.v2.AtomicInput":
     """Form a QCSchema for job input from the current state of |PSIfour| settings.
 
     Parameters
@@ -596,7 +599,7 @@ def state_to_atomicinput(
 
     Returns
     -------
-    ~qcelemental.models.AtomicInput
+    ~qcelemental.models.v1.AtomicInput, ~qcelemental.models.v2.AtomicInput
         QCSchema instance including current keyword set and provenance.
 
     """
