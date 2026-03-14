@@ -107,12 +107,12 @@ jobs:
       # Configure Miniconda
       #    conda config --append channels conda-forge
       #    conda=23.10 forced a bugfix at conda-build stage
+      #    conda config --set channel_priority strict
+      #    conda config --add channels psi4/label/testing
+      #    conda install conda=23.10 -n base -c conda-forge
       - script: |
           conda config --set always_yes yes
-          conda config --add channels psi4/label/testing
-          conda config --set channel_priority strict
           conda config --set solver libmamba
-          conda install conda=23.10 -n base -c conda-forge
           conda info
           conda list
         displayName: "Configure Miniconda"
@@ -147,8 +147,8 @@ jobs:
                         gau2grid ^
                         libxc-c ^
                         libint ^
-                        conda-forge/label/qcelemental_dev::qcelemental ^
-                        conda-forge/label/qcengine_dev::qcengine ^
+                        conda-forge/label/qcelemental_dev::qcelemental=0.50.0rc3 ^
+                        conda-forge/label/qcengine_dev::qcengine=0.50.0rc2 ^
                         qcmanybody ^
                         pydantic=2.11 ^
                         scipy

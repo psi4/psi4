@@ -41,7 +41,7 @@ json_data = {
 }
 
 if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    json_data["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
+    json_data["specification"]["keywords"].update({"e_convergence": 9, "d_convergence": 3e-8})
 
 # Load expected output (dipole & quadrupole in au)
 expected_response = {
