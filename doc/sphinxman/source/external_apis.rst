@@ -22,7 +22,7 @@ External API Objects
 
 .. autoclass:: psi4.driver.task_planner.TaskComputers
 
-.. autoclass:: psi4.driver.driver_nbody.SubTaskComputers
+.. autoclass:: psi4.driver.driver_nbody.MBETaskComputers
 
 .. autofunction:: psi4.driver.task_planner.expand_cbs_methods
 
