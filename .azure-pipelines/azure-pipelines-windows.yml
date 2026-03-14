@@ -121,6 +121,7 @@ jobs:
       # Note: conda activate doesn't work here, because it creates a new shell!
       # Note: c-f eigen has Config.cmake file
       # pydantic=1.10.17 ensures v1 pydantic still working
+      #                  optking
       - script: |
           conda install cmake ^
                         anaconda-project ^
@@ -146,11 +147,10 @@ jobs:
                         gau2grid ^
                         libxc-c ^
                         libint ^
-                        qcelemental ^
-                        qcengine ^
+                        conda-forge/label/qcelemental_dev::qcelemental ^
+                        conda-forge/label/qcengine_dev::qcengine ^
                         qcmanybody ^
-                        pydantic=1.10.17 ^
-                        optking ^
+                        pydantic=2.11 ^
                         scipy
           which anaconda
           conda list
