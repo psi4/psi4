@@ -998,7 +998,8 @@ data:
       host: github
       account: MolSSI
       name: QCElemental
-      commit: next2026
+      commit: v0.50.0rc3
+      githttps: true
     cmake:
       name: qcelemental
       constraint: "ATLEAST 0.49.0"
@@ -1182,11 +1183,10 @@ data:
       cms: true
     repository:
       host: github
-      # account: MolSSI
-      account: loriab
+      account: MolSSI
       name: QCEngine
-      # commit: v0.33.0
-      commit: py314_rb11
+      commit: v0.50.0rc2
+      githttps: true
     cmake:
       name: qcengine
       constraint: ATLEAST 0.49.0
@@ -1194,8 +1194,8 @@ data:
     conda:
       channel: conda-forge
       name: conda-forge/label/qcengine_dev::qcengine
-      constraint: ">=0.50.0rc1"
-      constraint_note: "v0.33 has SAPT0-D4 parameters"
+      constraint: ">=0.50.0rc2"
+      constraint_note: "v0.34.2 has SAPT*-D4 parameters"
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcengine: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcengine: true
@@ -1340,11 +1340,10 @@ data:
       # account: psi-rking
       account: loriab
       name: optking
-      # commit: 0.4.2
-      commit: py314_v1v2
+      commit: 0.4.3
     cmake:
       name: optking
-      constraint: ATLEAST 0.5.0
+      constraint: ATLEAST 0.4.3
     conda:
       channel: conda-forge
       name: optking

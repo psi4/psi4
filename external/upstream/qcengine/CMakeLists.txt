@@ -44,8 +44,7 @@ else()
         BUILD_COMMAND ""
         BUILD_IN_SOURCE 1
         # master: INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/ QCEngine.git#egg=proj
-        #INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCEngine.git@v0.50.0#egg=proj  # edit in codedeps
-        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/loriab/QCEngine.git@py314_rb11#egg=proj  # edit in codedeps
+        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCEngine.git@v0.50.0rc2#egg=proj  # edit in codedeps
                                                       --target=${_install_lib}
                                                       --no-deps
                                                       --upgrade
