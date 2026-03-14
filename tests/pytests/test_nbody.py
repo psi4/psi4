@@ -182,7 +182,10 @@ H   0.000000   0.000000   3.963929
         pytest.skip(reason="Py314+QCSk1")
 
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-MATCH
-        atin["keywords"].update({"d_convergence": 5e-10})
+        if schver == 1:
+            atin["keywords"].update({"d_convergence": 5e-10})
+        elif schver == 2:
+            atin["specification"]["keywords"].update({"d_convergence": 5e-10})
 
     ret = psi4.schema_wrapper.run_qcschema(atin)
 
