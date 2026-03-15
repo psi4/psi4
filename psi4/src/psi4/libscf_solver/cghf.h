@@ -190,9 +190,9 @@ class CGHF : public HF {
     SharedBlockTensor temp1_;
     SharedBlockTensor temp2_;
 
-    // Number of spin orbitals per irrep. Cannot use nsopi_ because Einsums requires a vector.
-    std::vector<int> irrep_sizes_;  // Since GHF is spin-blocked, each irrep (h) size will be 2*nsopi_[h]
-    std::vector<int> nelecpi_;      // Number of electrons per irrep
+    Dimension irrep_sizes_; // each irrep is 2*nsopi_
+    Dimension nelecpi_; // Number of electrons per irrep
+
     bool mix_performed_; // Has HOMO/LUMO mixing been done?
 };
 #endif

@@ -26,22 +26,16 @@
  * @END LICENSE
  */
 
-#include <algorithm>
-#include <cmath>
-
 #include "psi4/physconst.h"
 
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
-#include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/vector.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libqt/qt.h"
 
 #include "cghf.h"
 
@@ -78,7 +72,7 @@ CGHF::~CGHF() {}
 // Define global einsums::BlockTensors and variables needed throughout the CGHF class
 void CGHF::common_init() {
     name_ = "CGHF";
-     
+
     options_.add_int("CGHF_MIXING_ANGLE", 20);
 
     // ao_eri lacks irreps and we have no JK object yet so we only support C1
@@ -114,55 +108,52 @@ void CGHF::common_init() {
     mix_performed_ = false;
 
     // Combine nalphapi_ and nbetapi_ to give nelecpi_ for forming the density matrix
-    for (int h = 0; h < nirrep_; h++) {
-        nelecpi_.push_back(nalphapi_[h] + nbetapi_[h]);
-    }
+    nelecpi_ = nalphapi_ + nbetapi_;
 
-    // Double size of nsopi_ for GHF
-    for (int h = 0; h < nirrep_; h++) {
-        irrep_sizes_.push_back(2 * nsopi_[h]);
-    }
+    // Double size of nsopi_ for GHF spin blocks
+    irrep_sizes_ = nsopi_ + nsopi_;
+    std::vector<int> shape = irrep_sizes_.blocks();
 
-    // => BLOCKTENSORS <= will be (2nsopi_ x 2nsopi_) unless listed otherwise
     // Note that all of these are complex except for the Fock evals
     // Core Hamiltonian, Fock, Orthogonalized Fock, and Coefficient Matrices
-    F0_ = std::make_shared<ComplexMatrix>("F0", irrep_sizes_);
-    F_ = std::make_shared<ComplexMatrix>("F", irrep_sizes_);
-    Fp_ = std::make_shared<ComplexMatrix>("Forth", irrep_sizes_);
-    C_ = std::make_shared<ComplexMatrix>("C", irrep_sizes_);
+    F0_ = std::make_shared<ComplexMatrix>("F0", shape);
+    F_ = std::make_shared<ComplexMatrix>("F", shape);
+    Fp_ = std::make_shared<ComplexMatrix>("Forth", shape);
+    C_ = std::make_shared<ComplexMatrix>("C", shape);
 
     // Gradient FDS - SDF
-    FDSmSDF_ = std::make_shared<ComplexMatrix>("DIIS error", irrep_sizes_);
+    FDSmSDF_ = std::make_shared<ComplexMatrix>("DIIS error", shape);
 
     // Spin blocked overlap matrix and orthogonalization matrix.
     // Needed as metric to compute gradient with FDS - SDF
-    EINS_ = std::make_shared<ComplexMatrix>("Ovlp", irrep_sizes_);
-    EINX_ = std::make_shared<ComplexMatrix>("Orth", irrep_sizes_);
+    EINS_ = std::make_shared<ComplexMatrix>("Ovlp", shape);
+    EINX_ = std::make_shared<ComplexMatrix>("Orth", shape);
 
     // Eigenvalues and eigenvectors from diagonalized Fock matrix
-    Fevecs_ = std::make_shared<ComplexMatrix>("Fock eigenvectors", irrep_sizes_);
-    Fevals_ = einsums::BlockTensor<double, 1>("Fock evals", irrep_sizes_);
+    Fevals_ = einsums::BlockTensor<double, 1>("Fock evals", shape);
+    Fevecs_ = std::make_shared<ComplexMatrix>("Fock eigenvectors", shape);
 
-    // Density and combined Coulomb/ exchange matrices
-    D_ = std::make_shared<ComplexMatrix>("D", irrep_sizes_);
-    JK_ = std::make_shared<ComplexMatrix>("J", irrep_sizes_);
+    // Density and combined Coulomb/exchange matrices
+    D_ = std::make_shared<ComplexMatrix>("D", shape);
+    JK_ = std::make_shared<ComplexMatrix>("J", shape);
 
-    // Temporary matrices for intermediate steps
-    temp1_ = std::make_shared<ComplexMatrix>("temp1", irrep_sizes_);
-    temp2_ = std::make_shared<ComplexMatrix>("temp2", irrep_sizes_);
+    // Temporary matrices for BLAS calls
+    temp1_ = std::make_shared<ComplexMatrix>("temp1", shape);
+    temp2_ = std::make_shared<ComplexMatrix>("temp2", shape);
 
     F0_->zero();
     F_->zero();
+    Fp_->zero();
+    C_->zero();
+    FDSmSDF_->zero();
     EINS_->zero();
     EINX_->zero();
-    C_->zero();
-    Fevecs_->zero();
     Fevals_.zero();
+    Fevecs_->zero();
     D_->zero();
     JK_->zero();
     temp1_->zero();
     temp2_->zero();
-    FDSmSDF_->zero();
 
     subclass_init();
 
@@ -772,12 +763,11 @@ void CGHF::form_FDSmSDF() {
 SharedMatrix CGHF::get_shared_FDSmSDF() {
     CGHF::form_FDSmSDF();
 
-    Dimension sizes(irrep_sizes_);
-    auto out = std::make_shared<Matrix>("FDSmSDF orth", sizes, sizes);
+    auto out = std::make_shared<Matrix>("FDSmSDF orth", irrep_sizes_, irrep_sizes_);
 
-    for (int h = 0; h < sizes.n(); h++) {
-        for (int p = 0; p < sizes[h]; p++) {
-            for (int q = 0; q < sizes[h]; q++) {
+    for (int h = 0; h < irrep_sizes_.n(); h++) {
+        for (int p = 0; p < irrep_sizes_[h]; p++) {
+            for (int q = 0; q < irrep_sizes_[h]; q++) {
                 out->set(h, p, q, (FDSmSDF_->block(h).subscript(p, q)).real());
             }
         }
