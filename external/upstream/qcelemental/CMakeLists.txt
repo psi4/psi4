@@ -1,7 +1,7 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcelemental}))
     include(FindPythonModule)
     if(${Python_NumPy_VERSION} GREATER_EQUAL "2")
-        find_python_module(qcelemental ATLEAST 0.28.0 QUIET)  # edit in codedeps
+        find_python_module(qcelemental ATLEAST 0.49.0 QUIET)  # edit in codedeps
     else()
         find_python_module( qcelemental ATLEAST 0.26.0 QUIET)
     endif()
@@ -27,13 +27,13 @@ else()
 
     ExternalProject_Add(qcelemental_external
         BUILD_ALWAYS 1
-        URL https://github.com/MolSSI/QCElemental/archive/v0.29.0.tar.gz  # edit in codedeps
-        DOWNLOAD_NO_EXTRACT 1
+        DOWNLOAD_COMMAND ""
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ""
         BUILD_IN_SOURCE 1
-        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install <DOWNLOADED_FILE>
+        # master: INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/ QCElemental.git#egg=proj
+        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.50.0rc3#egg=proj  # edit in codedeps
                                                       --target=${_install_lib}
                                                       --no-deps
                                                       #-v

@@ -107,12 +107,12 @@ jobs:
       # Configure Miniconda
       #    conda config --append channels conda-forge
       #    conda=23.10 forced a bugfix at conda-build stage
+      #    conda config --set channel_priority strict
+      #    conda config --add channels psi4/label/testing
+      #    conda install conda=23.10 -n base -c conda-forge
       - script: |
           conda config --set always_yes yes
-          conda config --add channels psi4/label/testing
-          conda config --set channel_priority strict
           conda config --set solver libmamba
-          conda install conda=23.10 -n base -c conda-forge
           conda info
           conda list
         displayName: "Configure Miniconda"
@@ -121,6 +121,7 @@ jobs:
       # Note: conda activate doesn't work here, because it creates a new shell!
       # Note: c-f eigen has Config.cmake file
       # pydantic=1.10.17 ensures v1 pydantic still working
+      #                  optking
       - script: |
           conda install cmake ^
                         anaconda-project ^
@@ -146,11 +147,10 @@ jobs:
                         gau2grid ^
                         libxc-c ^
                         libint ^
-                        qcelemental ^
-                        qcengine ^
+                        conda-forge/label/qcelemental_dev::qcelemental=0.50.0rc3 ^
+                        conda-forge/label/qcengine_dev::qcengine=0.50.0rc2 ^
                         qcmanybody ^
-                        pydantic=1.10.17 ^
-                        optking ^
+                        pydantic=2.11 ^
                         scipy
           which anaconda
           conda list

@@ -42,6 +42,9 @@
 import sys, os
 import datetime
 
+# alters a QCElemental line (dt = _core_schema) that typing can't process
+os.environ["SPHINX_BUILD"] = "1"
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -454,8 +457,10 @@ intersphinx_mapping = {'python': ('https://docs.python.org/3.12', None),
                        "numpy": ("https://numpy.org/doc/stable/", None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
                        'matplotlib': ('https://matplotlib.org/stable/', None),
-                       "qcelemental": ("https://molssi.github.io/QCElemental/dev/", None),
-                       "qcengine": ("https://molssi.github.io/QCEngine/dev/", None),
+                       "qcelemental": ("https://molssi.github.io/QCElemental/v0.50.0rc3/", None),
+                       "qcelemental_v1": ("https://molssi.github.io/QCElemental/v0.30.2/", None),
+                       "qcengine": ("https://molssi.github.io/QCEngine/next/", None),
+                       "qcengine_v1": ("https://molssi.github.io/QCEngine/dev/", None),
                        "qcfractal": ("https://molssi.github.io/QCFractal/", None),
                        "qcmanybody": ("https://molssi.github.io/QCManyBody/dev/", None),
                        "optking": ("https://optking.readthedocs.io/en/latest", None),

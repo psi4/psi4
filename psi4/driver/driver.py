@@ -460,7 +460,7 @@ def energy(name, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("energy", lowername, molecule, **kwargs)
     logger.debug('ENERGY PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -609,7 +609,7 @@ def gradient(name, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("gradient", lowername, molecule, **kwargs)
     logger.debug('GRADIENT PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -768,7 +768,7 @@ def properties(*args, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("properties", lowername, molecule, **kwargs)
     logger.debug('PROPERTIES PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -1212,7 +1212,7 @@ def optimize(name, **kwargs):
     if core.get_option('OPTKING', 'OPT_RESTART'):
         # Recreate all of optking's internal classes to restart an optimization
         # This has not been well tested - Experimental
-        opt_object = optking.opt_helper.CustomHelper(molecule)
+        opt_object = optking.opt_helper.CustomHelper(molecule, dtype=2)
         with open(f"{core.get_writer_file_prefix(molecule.name())}.1.dat", 'r') as f:
             stashed_opt = json.load(f)
         opt_object.from_dict(stashed_opt)
@@ -1222,7 +1222,7 @@ def optimize(name, **kwargs):
         params = p4util.prepare_options_for_modules()
         optimizer_params = {k: v.get('value') for k, v in params.pop("OPTKING").items() if v.get('has_changed')}
         optimizer_params.update(kwargs.get("optimizer_keywords", {}))
-        opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params)
+        opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params, dtype=2)
 
     initial_sym = molecule.schoenflies_symbol()
     # Use optking's value so that validation can change value (e.g. IRC_POINTS sets max_iter based on number of points)
@@ -1435,7 +1435,7 @@ def hessian(name, **kwargs):
     # Are we planning?
     plan = task_planner.task_planner("hessian", lowername, molecule, **kwargs)
     logger.debug('HESSIAN PLAN')
-    logger.debug(pp.pformat(plan.dict()))
+    logger.debug(pp.pformat(plan.model_dump()))
 
     if kwargs.get("return_plan", False):
         # Plan-only requested
@@ -2089,7 +2089,7 @@ def tdscf(wfn, **kwargs):
 
 
 def fsapt_analysis(
-    source: Union[str, core.Wavefunction, qcelemental.models.AtomicResult],
+    source: Union[str, core.Wavefunction, qcelemental.models.v1.AtomicResult, qcelemental.models.v2.AtomicResult],
     fragments_a: Dict,
     fragments_b: Dict,
     pdb_dir: str = None,
@@ -2155,7 +2155,7 @@ def fsapt_analysis(
                     f.write(f"{k} {' '.join([str(i) for i in v])}\n")
         return fsapt.run_from_output(dirname=source)
 
-    elif isinstance(source, qcelemental.models.AtomicResult):
+    elif isinstance(source, (qcelemental.models.v1.AtomicResult, qcelemental.models.v2.AtomicResult)):
         if print_output:
             print("Running fsapt_analysis through QCVariables extracted from schema")
         atomic_results = source

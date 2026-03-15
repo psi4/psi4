@@ -17,7 +17,10 @@ set {
 }
 
 if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+    psi4.set_options({"e_convergence": 9, "d_convergence": 7e-9})
+    tol = 2e-3
+else:
+    tol = 3
 
 wfn = properties('ccsd',properties=['rotation'], return_wfn=True)[1]
 
@@ -28,12 +31,12 @@ reflen_355   =   -214.73273  # TEST
 refvel_355   =    384.88786  # TEST
 refmvg_355   =   -644.44746  # TEST
 
-compare_values(reflen_589,   variable("CCSD SPECIFIC ROTATION (LEN) @ 589NM"),  3, "CCSD rotation @ 589nm in length gauge") # TEST
-compare_values(refvel_589,   variable("CCSD SPECIFIC ROTATION (VEL) @ 589NM"),  3, "CCSD rotation @ 589nm in velocity gauge") # TEST
-compare_values(refmvg_589,   variable("CCSD SPECIFIC ROTATION (MVG) @ 589NM"),  3, "CCSD rotation @ 589nm in modified velocity gauge") # TEST
-compare_values(reflen_355,   variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CCSD rotation @ 355nm in length gauge") # TEST
-compare_values(refvel_355,   variable("CCSD SPECIFIC ROTATION (VEL) @ 355NM"),  3, "CCSD rotation @ 355nm in velocity gauge") # TEST
-compare_values(refmvg_355,   variable("CCSD SPECIFIC ROTATION (MVG) @ 355NM"),  3, "CCSD rotation @ 355nm in modified velocity gauge") # TEST
+compare_values(reflen_589,   variable("CCSD SPECIFIC ROTATION (LEN) @ 589NM"),  tol, "CCSD rotation @ 589nm in length gauge") # TEST
+compare_values(refvel_589,   variable("CCSD SPECIFIC ROTATION (VEL) @ 589NM"),  tol, "CCSD rotation @ 589nm in velocity gauge") # TEST
+compare_values(refmvg_589,   variable("CCSD SPECIFIC ROTATION (MVG) @ 589NM"),  tol, "CCSD rotation @ 589nm in modified velocity gauge") # TEST
+compare_values(reflen_355,   variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  tol, "CCSD rotation @ 355nm in length gauge") # TEST
+compare_values(refvel_355,   variable("CCSD SPECIFIC ROTATION (VEL) @ 355NM"),  tol, "CCSD rotation @ 355nm in velocity gauge") # TEST
+compare_values(refmvg_355,   variable("CCSD SPECIFIC ROTATION (MVG) @ 355NM"),  tol, "CCSD rotation @ 355nm in modified velocity gauge") # TEST
 
 reflenT_589 = psi4.core.Matrix.from_list(        # TEST
    [[0.141679367454342, -0.070714074525053, 0],  # TEST

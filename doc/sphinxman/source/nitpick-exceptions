@@ -41,6 +41,9 @@ py:obj qcmanybody.computer.ManyBodyComputer.set_supersystem_ie_only
 py:class mbres
 py:class qcmanybody.models.v1.manybody_input_pydv1.ManyBodyInput
 
+# ?
+py:class pathlib._local.Path
+
 ## numpy inherited docstrings
 #py:obj dtype
 #py:obj a
