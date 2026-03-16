@@ -77,15 +77,15 @@ void conj_T(ComplexMatrix const& A, std::shared_ptr<ComplexMatrix> B) {
  *   gemm(TensorView<ComplexMatrix> const& A, TensorView<ComplexMatrix> const& B,
  *        std::shared_ptr<ComplexMatrix> C);
  */
-template<einsums::TensorConcept T1, einsums::TensorConcept T2>
-  requires einsums::SameUnderlying<einsums::RemoveViewT<T1>, T2>
+template <einsums::TensorConcept T1, einsums::TensorConcept T2>
+    requires einsums::SameUnderlying<einsums::RemoveViewT<T1>, T2>
 void gemm(T1 const& A, T1 const& B, T2* C) {
     einsums::linear_algebra::gemm<false, false>(std::complex<double>(1.0), A, B, std::complex<double>(0.0), C);
 }
 
 /* std::shared_ptr version of above */
-template<einsums::TensorConcept T1, typename T2>
-  requires einsums::SameUnderlying<einsums::RemoveViewT<T1>, T2>
+template <einsums::TensorConcept T1, typename T2>
+    requires einsums::SameUnderlying<einsums::RemoveViewT<T1>, T2>
 void gemm(T1 const& A, T1 const& B, std::shared_ptr<T2> C) {
     einsums::linear_algebra::gemm<false, false>(std::complex<double>(1.0), A, B, std::complex<double>(0.0), C.get());
 }
@@ -169,7 +169,7 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     conj_T(*Hevec, tmp);       // necessary due to different conventions in BLAS & Einsums
     gemm(*orth, *tmp, Hevec);  // Back-transform Hevec
 
-    outfile->Printf("\033[41m   4. Form X\033[0m\n");
+    outfile->Printf("\033[41m   4. Form X & S\033[0m\n");
     Dimension nsspi_ = nsopi_ + nsopi_;
     auto X = std::make_shared<ComplexMatrix>("X", nsspi_.blocks());
     form_X(*Hevec, X);
@@ -187,6 +187,9 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     form_Stilde(*X_HTX, Stilde);
 
     outfile->Printf("\033[41m   5. Form R\033[0m\n");
+    auto R = std::make_shared<ComplexMatrix>("R", nsspi_.blocks());
+    form_R(*Stilde, *orth, R);
+
     outfile->Printf("\033[41m   6. Form hFW+\033[0m\n");
     outfile->Printf("\033[41m   7. Project\033[0m\n");
     outfile->Printf("\033[41m   8. Test hFW+\033[0m\n");
@@ -335,7 +338,7 @@ void SOX2C1e::form_X_HT(ComplexMatrix const& X_H, std::shared_ptr<ComplexMatrix>
         for (int p = 0; p < nc; p++) {
             for (int q = 0; q < nc; q++) {
                 Tblock(p, q) = tMat->get(h, p, q);
-                Tblock(p+nc, q+nc) = tMat->get(h, p, q);
+                Tblock(p + nc, q + nc) = tMat->get(h, p, q);
             }
         }
     }
@@ -343,7 +346,7 @@ void SOX2C1e::form_X_HT(ComplexMatrix const& X_H, std::shared_ptr<ComplexMatrix>
 }
 
 void SOX2C1e::form_Stilde(ComplexMatrix const& X_HTX, std::shared_ptr<ComplexMatrix> Stilde) {
-    const std::complex<double> C2{.5/(pc_c_au * pc_c_au)};
+    const std::complex<double> C2{.5 / (pc_c_au * pc_c_au)};
 
     Stilde->zero();
     Stilde->operator+=(X_HTX);
@@ -355,10 +358,49 @@ void SOX2C1e::form_Stilde(ComplexMatrix const& X_HTX, std::shared_ptr<ComplexMat
         for (int p = 0; p < nc; p++) {
             for (int q = 0; q < nc; q++) {
                 Sblock(p, q) += sMat->get(h, p, q);
-                Sblock(p+nc, q+nc) += sMat->get(h, p, q);
+                Sblock(p + nc, q + nc) += sMat->get(h, p, q);
             }
         }
     }
+}
+
+/* Form R = S^{-1/2}[S^{-1/2} \tilde S S^{-1/2}]^{-1/2} S^{1/2} */
+void SOX2C1e::form_R(ComplexMatrix const& Stilde, ComplexMatrix const& orth, std::shared_ptr<ComplexMatrix> R) {
+    Dimension nsspi_ = nsopi_ + nsopi_;
+
+    // Shalf == S^{1/2}
+    auto Shalf = std::make_shared<ComplexMatrix>(orth);
+    einsums::linear_algebra::invert(Shalf.get());
+
+    auto tmp = std::make_shared<ComplexMatrix>(Stilde);
+    auto evec = std::make_shared<ComplexMatrix>(Stilde);
+    auto eval = einsums::BlockTensor<double, 1>("eigenvalues", nsspi_.blocks());
+
+    // tmp <- [S^{-1/2} \tilde S S^{-1/2}]
+    gemm(orth, Stilde, evec);
+    gemm(*evec, orth, tmp);
+
+    // Computing [S^{-1/2} \tilde S S^{-1/2}]^{-1/2}
+    for (int h = 0; h < nsopi_.n(); h++) {
+        if (nsopi_[h] == 0) continue;
+
+        einsums::linear_algebra::heev<true>(&tmp->block(h), &eval[h]);
+    }
+    conj_T(*tmp, evec);
+
+    // R <- Σ Λ^{-1/2} Σ^\dagger == evec @ np.diag(eval) @ tmp
+    // scale each column in evec by eval: evec @ np.diag(eval)
+    for (int h = 0; h < nsspi_.n(); h++) {
+        auto& vecblock = evec->block(h);
+        for (int i = 0; i < nsspi_[h]; i++) {
+            einsums::linear_algebra::scale_column(i, std::pow(eval[h](i), -.5), &vecblock);
+        }
+    }
+    gemm(*evec, *tmp, R);
+
+    // S^{-1/2}...S^{1/2}
+    gemm(orth, *R, tmp);
+    gemm(*tmp, *Shalf, R);
 }
 
 }  // namespace psi

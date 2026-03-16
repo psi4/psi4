@@ -36,7 +36,7 @@
 #include <Einsums/Tensor.hpp>
 
 using ComplexMatrix = einsums::BlockTensor<std::complex<double>, 2>;
-using SharedBlockTensor = std::shared_ptr<einsums::BlockTensor<std::complex<double>, 2>>;
+using SharedComplexMatrix = std::shared_ptr<ComplexMatrix>;
 
 namespace psi {
 
@@ -54,11 +54,12 @@ class PSI_API SOX2C1e {
    private:
     /// Compute the S, T, V, and W integrals
     void compute_integrals(std::shared_ptr<IntegralFactory>, std::shared_ptr<MatrixFactory>);
-    void form_dirac_hamiltonian(SharedBlockTensor, SharedBlockTensor);
-    void form_orth(SharedBlockTensor);
-    void form_X(ComplexMatrix const&, SharedBlockTensor);
-    void form_X_HT(ComplexMatrix const&, SharedBlockTensor);
-    void form_Stilde(ComplexMatrix const&, std::shared_ptr<ComplexMatrix>);
+    void form_dirac_hamiltonian(SharedComplexMatrix, SharedComplexMatrix);
+    void form_orth(SharedComplexMatrix);
+    void form_X(ComplexMatrix const&, SharedComplexMatrix);
+    void form_X_HT(ComplexMatrix const&, SharedComplexMatrix);
+    void form_Stilde(ComplexMatrix const&, SharedComplexMatrix);
+    void form_R(ComplexMatrix const&, ComplexMatrix const&, SharedComplexMatrix);
 
     /// The contracted AO basis
     std::shared_ptr<BasisSet> contractedBasis_;
@@ -76,7 +77,7 @@ class PSI_API SOX2C1e {
     // 4-component relativistic potential W (\sigma\cdot p)V(\sigma\cdot p)
     std::vector<SharedMatrix> wMats;
     // Dirac Hamiltonian
-    // SharedBlockTensor dMat;
+    // SharedComplexMatrix dMat;
 };
 
 }  // namespace psi
