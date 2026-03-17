@@ -29,6 +29,7 @@
 #      aux_build_names: !!set          # Field optional. Use to list add'l packages needed to build Psi4 against dummy that aren't deps of dummy (e.g., mkl-devel for mkl).
 #      cmake: !!map                    # Field required. Use to specify CMake variables relevant to this package. Those starting with // aren't usually set. May involve substitutions.
 #      skip_win: !!bool                # Field optional. Use to list packages not adapted for Windows. Perhaps should be in 'use' block?
+#      brings_psi4: !!bool             # Field optional. Use to indicate its conda pkg brings Psi4 as a dep, so needs to be commented for a Psi4 *build* env.
 
 data:
 
@@ -959,6 +960,7 @@ data:
       cmake_note: "Primarily OTF runtime detected."
       skip_win: true
       skip_win_note: "Temporary until a llvm-openmp psi4 package available on Windows to satisfy solving resp's deps."
+      brings_psi4: true
 
   - project: openfermionpsi4
     use:

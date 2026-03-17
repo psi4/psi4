@@ -656,6 +656,11 @@ if args.subparser_name in ["conda", "env"]:
         else:
             primary = conda["name"]
 
+        if conda.get("brings_psi4", False):
+            msg = f"installs package psi4 that interferes with built psi4; Later, `conda install {primary} -c {conda['channel']} --no-deps`"
+            primary = "//" + primary
+            notes[primary] = msg
+
         if primary == "libblas":
             if args.lapack:
                 if args.lapack == "accelerate" and not conda_platform.startswith("osx-"):

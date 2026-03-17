@@ -52,7 +52,7 @@ jobs:
         ENABLE_GAUXC: "OFF"
         CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so'
 
-      clang_latest:
+      clang_py314:
         CXX_COMPILER: 'clang++'
         PYTHON_VER: '3.14'
         C_COMPILER: 'clang'
