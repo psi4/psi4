@@ -20,6 +20,16 @@ jobs:
 
           - label: "Conda GNU (L)"
             runs-on: ubuntu-latest
+            python-version: "3.14"
+            mkl-version: ""
+            platform: linux-64
+            pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
+            cmargs: >
+              -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
+
+          - label: "Conda GNU (L)"
+            runs-on: ubuntu-latest
             python-version: "3.13"
             mkl-version: ""
             platform: linux-64
