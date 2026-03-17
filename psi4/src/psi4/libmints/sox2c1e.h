@@ -57,7 +57,6 @@ class PSI_API SOX2C1e {
     void form_dirac_hamiltonian(SharedComplexMatrix, SharedComplexMatrix);
     void form_orth(SharedComplexMatrix);
     void form_X(ComplexMatrix const&, SharedComplexMatrix);
-    void form_X_HT(ComplexMatrix const&, SharedComplexMatrix);
     void form_Stilde(ComplexMatrix const&, SharedComplexMatrix);
     void form_R(ComplexMatrix const&, ComplexMatrix const&, SharedComplexMatrix);
 
@@ -65,19 +64,18 @@ class PSI_API SOX2C1e {
     std::shared_ptr<BasisSet> contractedBasis_;
     /// The uncontracted AO basis used to solve the Dirac equation
     std::shared_ptr<BasisSet> uncBasis_;
-    /// Dimension of the orbital basis
+    /// Dimension of the orbital basis and 2/4-component bases
     Dimension nsopi_;
+    Dimension nsopi2c_;
+    Dimension nsopi4c_;
 
-    // Overlap integral
-    SharedMatrix sMat;
-    // Non-relativistic kinetic energy integral
-    SharedMatrix tMat;
-    // Non-relativistic nuclear attraction integral
-    SharedMatrix vMat;
-    // 4-component relativistic potential W (\sigma\cdot p)V(\sigma\cdot p)
-    std::vector<SharedMatrix> wMats;
-    // Dirac Hamiltonian
-    // SharedComplexMatrix dMat;
+    // 1e Integrals in 2-component complex form
+    SharedComplexMatrix overlap_;
+    SharedComplexMatrix kinetic_;
+    SharedComplexMatrix nuclear_;
+    // relativistic potential W (\sigma\cdot p)V(\sigma\cdot p)
+    SharedComplexMatrix rel_pot_;
+
 };
 
 }  // namespace psi
