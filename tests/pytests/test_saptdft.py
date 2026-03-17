@@ -2,17 +2,9 @@ import pytest
 import psi4
 from qcelemental import constants
 from psi4 import compare_values
-from psi4 import core
 import numpy as np
 import qcelemental as qcel
 from pprint import pprint as pp
-# TODO: use logic below to check if einsums is available, then check optoins
-# optionally import einsums
-# psi4.addons()
-# "einsums" in psi4.addons()
-
-# from addons import uusing
-import pandas as pd
 
 hartree_to_kcalmol = constants.conversion_factor("hartree", "kcal/mol")
 pytestmark = [pytest.mark.psi, pytest.mark.api]

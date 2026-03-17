@@ -280,15 +280,19 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
     save_pair = (saptd_name == "FISAPT0")
 
     from .proc import build_functional_and_disp
-    _, _disp_functor = build_functional_and_disp('hf-' + disp_name, restricted=True, save_pairwise_disp=save_pair, **kwargs)
+    if '-d4' in disp_name.lower() and not disp_name.lower().endswith('(s)'):
+        # perform -D4(I)
+        pass
+    else:
+        _, _disp_functor = build_functional_and_disp('hf-' + disp_name, restricted=True, save_pairwise_disp=save_pair, **kwargs)
 
-    ## Dimer dispersion
-    dimer_disp_energy = _disp_functor.compute_energy(dimer_wfn.molecule(), dimer_wfn)
-    ## Monomer dispersion
-    mon_disp_energy = _disp_functor.compute_energy(monomerA)
-    mon_disp_energy += _disp_functor.compute_energy(monomerB)
+        ## Dimer dispersion
+        dimer_disp_energy = _disp_functor.compute_energy(dimer_wfn.molecule(), dimer_wfn)
+        ## Monomer dispersion
+        mon_disp_energy = _disp_functor.compute_energy(monomerA)
+        mon_disp_energy += _disp_functor.compute_energy(monomerB)
 
-    disp_interaction_energy = dimer_disp_energy - mon_disp_energy
+        disp_interaction_energy = dimer_disp_energy - mon_disp_energy
     core.set_variable(saptd_name + "-D DISP ENERGY", disp_interaction_energy)
     core.set_variable("SAPT DISP ENERGY", disp_interaction_energy)
     core.set_variable("DISPERSION CORRECTION ENERGY", disp_interaction_energy)

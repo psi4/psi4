@@ -255,6 +255,8 @@ for key in functionals:
         disp = key.split('-')[-1]
         procedures['energy']['sapt0-' + disp] = proc.run_sapt
         procedures['energy']['fisapt0-' + disp] = proc.run_fisapt
+from pprint import pprint as pp
+pp(procedures['energy'].keys())
 
 # Will complete modelchem spec with basis='(auto)' for following methods
 integrated_basis_methods = [

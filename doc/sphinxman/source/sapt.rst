@@ -574,6 +574,18 @@ where ``(i)`` denotes an intermolecular pairwise dispersion treatment and
 parameters. Currently support only exists for setting the `SAPT_DFT_FUNCTIONAL`
 equal to HF, PBE0, or B3LYP for these methods.
 
+When a semi-empirical variant is used, the total SAPT(DFT) decomposition is
+still reported through standard SAPT variables (electrostatics, exchange,
+induction, dispersion, and total), and the corresponding -D3/-D4 interaction
+energy contribution is included in the printed SAPT(DFT) summary and stored in
+the dispersion QCVariable.
+
+
+Approximate SAPT Decomposition of DFT-D Methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TODO: Update section, add Eq
+
 ``dft-d3(sapt)`` and ``dft-d4(sapt)`` enable the :math:`\Delta`-DFT correction
 together with -D3BJATM/-D4BJATM dispersion using Grimme damping function
 parameters as a way to decompose a supermolecular DFT-D3/-D4 interaction energy
@@ -584,12 +596,6 @@ function parameters available in `simple-dftd3` or `dftd4` Python packages.
 These DFT-D3/-D4 methods save additional scalar quantities such as ``DFT DIMER
 ENERGY``, ``DFT MONOMER A ENERGY``, ``DFT MONOMER B ENERGY``, and ``SAPT(DFT)
 DELTA DFT``.
-
-When a semi-empirical variant is used, the total SAPT(DFT) decomposition is
-still reported through standard SAPT variables (electrostatics, exchange,
-induction, dispersion, and total), and the corresponding -D3/-D4 interaction
-energy contribution is included in the printed SAPT(DFT) summary and stored in
-the dispersion QCVariable.
 
 
 Basic Keywords for SAPT(DFT) 
