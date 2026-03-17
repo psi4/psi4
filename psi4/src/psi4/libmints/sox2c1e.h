@@ -54,7 +54,7 @@ class PSI_API SOX2C1e {
    private:
     /// Compute the S, T, V, and W integrals
     void compute_integrals(std::shared_ptr<IntegralFactory>, std::shared_ptr<MatrixFactory>);
-    void form_dirac_hamiltonian(SharedComplexMatrix, SharedComplexMatrix);
+    void form_dirac_hamiltonian(SharedComplexMatrix);
     void form_orth(SharedComplexMatrix);
     void form_X(ComplexMatrix const&, SharedComplexMatrix);
     void form_Stilde(ComplexMatrix const&, SharedComplexMatrix);
@@ -76,6 +76,8 @@ class PSI_API SOX2C1e {
     // relativistic potential W (\sigma\cdot p)V(\sigma\cdot p)
     SharedComplexMatrix rel_pot_;
 
+    SharedMatrix sMat;
+    SharedMatrix tMat;
 };
 
 }  // namespace psi

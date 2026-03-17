@@ -136,8 +136,7 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
 
     outfile->Printf("\033[41m   2. Form Dirac Hamiltonian\033[0m\n");
     auto Hdirac = std::make_shared<ComplexMatrix>("Dirac Hamiltonian", nsopi4c_.blocks());
-    auto metric = std::make_shared<ComplexMatrix>("4c metric", nsopi4c_.blocks());
-    form_dirac_hamiltonian(Hdirac, metric);
+    form_dirac_hamiltonian(Hdirac);
 
     outfile->Printf("\033[41m   3. Diagonalize Dirac Hamiltonian\033[0m\n");
     auto orth = std::make_shared<ComplexMatrix>("4c metric^(-1/2)", nsopi4c_.blocks());
@@ -196,11 +195,61 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     (*hFW) = (*TX);
     (*hFW) += (*X_HT);
     (*hFW) -= (*X_HTX);
-    (*hFW) -= (*nuclear_);
-    // TODO: relativistic potential
+    (*hFW) += (*nuclear_);
+
+    // Now for 1/4c²X†WX term
+    tmp.reset();
+    tmp = std::make_shared<ComplexMatrix>("tmp", nsopi2c_.blocks()); // Different size tmp
+    gemm(*X_H, *rel_pot_, tmp);
+    gemm(*tmp, *X, rel_pot_);
+    (*hFW) += (*rel_pot_);
+
+    Hevec.reset();
+    Hevec = std::make_shared<ComplexMatrix>(*hFW);
+
+    conj_T(*R, tmp);
+    gemm(*tmp, *hFW, Hevec);
+    gemm(*Hevec, *R, hFW);
 
     outfile->Printf("\033[41m   7. Project\033[0m\n");
     outfile->Printf("\033[41m   8. Test hFW+\033[0m\n");
+    Heval = einsums::BlockTensor<double, 1>("X2C eigenvalues", nsopi2c_.blocks());
+
+    orth.reset();
+    orth = std::make_shared<ComplexMatrix>("none", nsopi2c_.blocks());
+    orth->zero();
+
+    for (int h = 0; h < nsopi_.n(); ++h) {
+        int dim = nsopi_[h];
+        auto& orth_block = orth->block(h);
+        for (int p = 0; p < dim; p++) {
+            for (int q = 0; q < dim; q++) {
+                orth_block(p, q) = sMat->get(h, p, q);
+                orth_block(p + dim, q + dim) = sMat->get(h, p, q);
+            }
+        }
+    }
+
+    orth_H.reset();
+    orth_H = std::make_shared<ComplexMatrix>("orthH", nsopi2c_.blocks());
+    conj_T(*orth, orth_H);
+    gemm(*orth_H, *hFW, tmp);
+    gemm(*tmp, *orth, Hevec);
+
+    for (int h = 0; h < nsopi_.n(); h++) {
+        if (nsopi_[h] == 0) continue;
+
+        einsums::linear_algebra::heev<true>(&Hevec->block(h), &Heval[h]);
+
+        for (int i = 0; i < nsopi2c_[h]; i++) {
+            if ((i % 5) == 0) {
+                outfile->Printf("\n  (%03d) ", i);
+            }
+            outfile->Printf("  %13.6f", Heval[h](i));
+        }
+        outfile->Printf("\n");
+    }
+
     outfile->Printf("\033[41m   9. Make real, set to original matrices\033[0m\n");
 }
 
@@ -214,8 +263,9 @@ void SOX2C1e::compute_integrals(std::shared_ptr<IntegralFactory> integral, std::
     std::unique_ptr<OneBodySOInt> vOBI(integral->so_potential());
     std::unique_ptr<OneBodySOInt> wOBI(integral->so_rel_potential());
 
-    auto sMat = soFactory->create_shared_matrix("Overlap");
-    auto tMat = soFactory->create_shared_matrix("Kinetic");
+    // Keeping sMat, tMat for later (computing metric/orth)
+    sMat = soFactory->create_shared_matrix("Overlap");
+    tMat = soFactory->create_shared_matrix("Kinetic");
     auto vMat = soFactory->create_shared_matrix("Potential");
     auto w0Mat = soFactory->create_shared_matrix("Relativistic Potential (scalar)");
     auto wxMat = soFactory->create_shared_matrix("Relativistic Potential (pauli-x)");
@@ -228,6 +278,11 @@ void SOX2C1e::compute_integrals(std::shared_ptr<IntegralFactory> integral, std::
     tOBI->compute(tMat);
     vOBI->compute(vMat);
     wOBI->compute(wMats);
+
+    const double C2 = .25 / (pc_c_au * pc_c_au);
+    for (auto& w : wMats) {
+        w->scale(C2);
+    }
 
     // Matrix to einsums conversion: block diag for most except rel_pot_.
     overlap_ = std::make_shared<ComplexMatrix>("Overlap 2c", nsopi2c_.blocks());
@@ -271,81 +326,49 @@ void SOX2C1e::compute_integrals(std::shared_ptr<IntegralFactory> integral, std::
  *        | V       T       |
  *    d = |                 |
  *        | T  1/4c^2 W - T |
- *
- *   and the metric
- *           | S        0 |
- *   SXMat=  |            |
- *           | 0  T/2c**2 |
  */
-void SOX2C1e::form_dirac_hamiltonian(std::shared_ptr<ComplexMatrix> Hdirac, std::shared_ptr<ComplexMatrix> metric) {
+void SOX2C1e::form_dirac_hamiltonian(std::shared_ptr<ComplexMatrix> Hdirac) {
     Hdirac->zero();
-    metric->zero();
 
-    const std::complex<double> i{0, 1};
-    const double C = .5 / (pc_c_au * pc_c_au);
-    const double C2 = C / 2;
+    auto tmp = std::make_shared<ComplexMatrix>(*rel_pot_);
+    // recall that rel_pot_ has already been scaled by .25 / (pc_c_au * pc_c_au)
+    (*tmp) -= (*kinetic_);
 
-    // TODO: use tensor views to set the blocks
     for (int h = 0; h < nsopi_.n(); h++) {
         int nc = nsopi2c_[h];
         auto& Hblock = Hdirac->block(h);
-        auto& mblock = metric->block(h);
-        for (int p = 0; p < nc; p++) {
-            for (int q = 0; q < nc; q++) {
-                // Top-left
-                Hblock(p, q) += nuclear_->block(h)(p, q);
 
-                // Top-right
-                Hblock(p, q + nc) += kinetic_->block(h)(p, q);
+        einsums::Range a{0, nsopi2c_[h]};
+        einsums::Range b{nsopi2c_[h], nsopi4c_[h]};
 
-                // Bottom-left
-                Hblock(p + nc, q) += kinetic_->block(h)(p, q);
-
-                // Bottom-right
-                Hblock(p + nc, q + nc) -= kinetic_->block(h)(p, q);
-                Hblock(p + nc, q + nc) += rel_pot_->block(h)(p, q) * C2;
-
-                mblock(p, q) += overlap_->block(h)(p, q);
-                mblock(p + nc, q + nc) += C * kinetic_->block(h)(p, q);
-            }
-        }
+        Hblock(a, a) = nuclear_->block(h);
+        Hblock(a, b) = kinetic_->block(h);
+        Hblock(b, a) = kinetic_->block(h);
+        Hblock(b, b) = tmp->block(h);
     }
 }
 
+/* Form metric^{-1/2}:
+ *    | S        0 |^-1/2
+ *    |            |
+ *    | 0  T/2c**2 |
+ */
 void SOX2C1e::form_orth(std::shared_ptr<ComplexMatrix> orth) {
-    // TODO: move to using einsums::linear_algebra::pow for this.
     orth->zero();
 
-    const double C = .5 / pc_c_au * pc_c_au;
-
-    auto SXMat = std::make_unique<Matrix>("real orth", nsopi2c_, nsopi2c_);
-
-    for (int h = 0; h < nsopi_.n(); ++h) {
-        int dim = nsopi_[h];
-        for (int p = 0; p < dim; p++) {
-            for (int q = 0; q < dim; q++) {
-                double Spq = overlap_->block(h)(p, q).real();
-                double Tpq = kinetic_->block(h)(p, q).real();
-
-                // Set the large-large component block
-                SXMat->set(h, p, q, Spq);
-                // Set the small-small component block
-                SXMat->set(h, p + dim, q + dim, 0.5 * Tpq / (pc_c_au * pc_c_au));
-            }
-        }
-    }
-
-    SXMat->power(-1.0 / 2.0);
+    tMat->scale(.5 / (pc_c_au * pc_c_au));
+    sMat->power(-.5);
+    tMat->power(-.5);
 
     for (int h = 0; h < nsopi_.n(); ++h) {
         int dim = nsopi_[h];
         auto& orth_block = orth->block(h);
         for (int p = 0; p < dim; p++) {
             for (int q = 0; q < dim; q++) {
-                orth_block(p, q) = SXMat->get(h, p, q);
-                orth_block(p + dim, q + dim) = SXMat->get(h, p, q);
-                orth_block(p + 2 * dim, q + 2 * dim) = SXMat->get(h, p + dim, q + dim);
-                orth_block(p + 3 * dim, q + 3 * dim) = SXMat->get(h, p + dim, q + dim);
+                orth_block(p, q) = sMat->get(h, p, q);
+                orth_block(p + dim, q + dim) = sMat->get(h, p, q);
+                orth_block(p + 2 * dim, q + 2 * dim) = tMat->get(h, p, q);
+                orth_block(p + 3 * dim, q + 3 * dim) = tMat->get(h, p, q);
             }
         }
     }
@@ -390,12 +413,14 @@ void SOX2C1e::form_R(ComplexMatrix const& Stilde, ComplexMatrix const& orth, std
     gemm(orth, Stilde, evec);
     gemm(*evec, orth, tmp);
 
-    // TODO: move to using einsums pow(-.5) for this
-
     // Computing [S^{-1/2} \tilde S S^{-1/2}]^{-1/2}
+
+    // TODO: when einsums pow bug is fixed, switch to this:
+    // (*R) = einsums::linear_algebra::pow(*tmp, -.5);
+    // For now, just do it the old-fashioned way.
+
     for (int h = 0; h < nsopi_.n(); h++) {
         if (nsopi_[h] == 0) continue;
-
         einsums::linear_algebra::heev<true>(&tmp->block(h), &eval[h]);
     }
     conj_T(*tmp, evec);
