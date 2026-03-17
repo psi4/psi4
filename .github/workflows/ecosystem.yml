@@ -176,6 +176,7 @@ jobs:
           --name p4build \
           --python ${{ matrix.cfg.python-version }} \
           --disable docs \
+          --disable addons \
           --offline-conda
         echo "::group::View Env Spec File for Conda (from advisor)"
         printf "\n<<<  env_p4build.yaml  >>>\n"
