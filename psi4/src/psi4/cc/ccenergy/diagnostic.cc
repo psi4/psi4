@@ -50,15 +50,6 @@ double CCEnergyWavefunction::diagnostic() {
     auto uoccpi = moinfo_.uoccpi;
     auto openpi = moinfo_.openpi;
 
-    Dimension occpi, virtpi;
-    int *occ_sym, *vir_sym;
-    if (params_.ref != 2) {
-        occpi = moinfo_.occpi;
-        virtpi = moinfo_.virtpi;
-        occ_sym = moinfo_.occ_sym;
-        vir_sym = moinfo_.vir_sym;
-    }
-
     /* Compute the number of electrons */
     auto num_elec_a = 0;
     auto num_elec_b = 0;
@@ -87,6 +78,9 @@ double CCEnergyWavefunction::diagnostic() {
         global_dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tia");
         global_dpd_->file2_mat_init(&T1B);
         global_dpd_->file2_mat_rd(&T1B);
+
+        Dimension const& occpi = moinfo_.occpi;
+        Dimension const& virtpi = moinfo_.virtpi;
 
         for (int h = 0; h < nirreps; h++) {
             for (int i = 0; i < (occpi[h] - openpi[h]); i++) {
