@@ -464,6 +464,7 @@ intersphinx_mapping = {'python': ('https://docs.python.org/3.12', None),
                        "qcfractal": ("https://molssi.github.io/QCFractal/", None),
                        "qcmanybody": ("https://molssi.github.io/QCManyBody/dev/", None),
                        "optking": ("https://optking.readthedocs.io/en/latest", None),
+                       "pydantic": ('https://docs.pydantic.dev/latest', None),
                       }
 
 
