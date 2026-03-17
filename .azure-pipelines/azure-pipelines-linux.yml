@@ -11,12 +11,12 @@ jobs:
     matrix:
 
       clang_py314:
-        CXX_COMPILER: 'clang++-15'
+        CXX_COMPILER: 'clang++-17'
         PYTHON_VER: '3.14'
-        C_COMPILER: 'clang-15'
+        C_COMPILER: 'clang-17'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran clang-15 clang++-15'
+        APT_INSTALL: 'gfortran clang-17 clang++-17'
         vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: 'quick'
         PYTEST_NAME_EXPR: 'not nonsense1'

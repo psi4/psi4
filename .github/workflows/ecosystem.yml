@@ -271,12 +271,14 @@ jobs:
       # in case the conda package of a downstream addon (like resp) brings the psi4 conda package, which is not the psi4 we want to test
 
     - name: Runtime Conda environment
+      working-directory: ./objdir
       run: |
         conda info
         conda list
         if [[ "${{ runner.os }}" != "Windows" ]]; then
           # on Windows, cmd varies: `qcengine.exe`
-          qcengine info
+          PYTHONPATH=stage/lib qcengine info
+          PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
         fi
 
     - name: Test OpenMP
