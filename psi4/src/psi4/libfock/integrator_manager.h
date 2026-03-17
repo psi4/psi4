@@ -29,6 +29,7 @@
 #ifndef LIBFOCK_INTEGRATOR_MANAGER_H
 #define LIBFOCK_INTEGRATOR_MANAGER_H
 
+#include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
 
 #include <map>
@@ -58,6 +59,7 @@ class IntegratorManager {
     virtual void initialize() = 0;
     /// Throws by default
     virtual std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) = 0;
+    const std::shared_ptr<Molecule> molecule();
 };
 
 }
