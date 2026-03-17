@@ -53,7 +53,9 @@ class BrianQCBase : public IntegratorManager {
    using IntegratorManager::IntegratorManager;
     
    void initialize() override;
-   void build_grid();
+   static void initialize_named_grids();
+   void grid_from_options(MolecularGridOptions const& opt, bool build_dft=true);
+   void grid_from_options(PruneSpec const& opt, int radscheme, std::vector<BrianBlock>& brian_blocks);
 
    protected:
     /// Integrator object for GauXC based integration

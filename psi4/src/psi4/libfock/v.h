@@ -80,7 +80,7 @@ class PSI_API VBase {
     /// Integration grid, built by KSPotential
     std::shared_ptr<DFTGrid> grid_;
 #ifdef USING_BrianQC
-    /// Integrator object for BrianCC based integration
+    /// Integrator object for BrianQC based integration
     std::shared_ptr<BrianQCBase> brianqc_integrator_;
 #endif
 #ifdef USING_gauxc
