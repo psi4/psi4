@@ -216,6 +216,13 @@ class DFTGrid : public MolecularGrid {
     /// The primary basis
     std::shared_ptr<BasisSet> primary_;
     /// Master builder methods
+    static std::tuple<MolecularGrid::MolecularGridOptions,
+                      std::map<std::string, int>,
+                      std::map<std::string, std::string>,
+                      std::map<std::string, double>> populateOptions(const Options& options,
+                                const std::map<std::string, int>& int_opts_map = {},
+                                const std::map<std::string, std::string>& str_opts_map = {},
+                                const std::map<std::string, double>& float_opts_map = {});
     void buildGridFromOptions(std::map<std::string, int> int_opts_map,
                               std::map<std::string, std::string> str_opts_map,
                               std::map<std::string, double> float_opts_map);
