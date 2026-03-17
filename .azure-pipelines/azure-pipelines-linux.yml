@@ -79,7 +79,7 @@ jobs:
         ADVISOR_ARGS: "--compiler IntelLLVM"
         ADVISOR_DISABLE_ARGS: ""
 
-      clang_latest:
+      clang_py314:
         CXX_COMPILER: 'clang++'
         PYTHON_VER: '3.14'
         C_COMPILER: 'clang'
