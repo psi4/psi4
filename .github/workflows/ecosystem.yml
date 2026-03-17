@@ -176,7 +176,6 @@ jobs:
           --name p4build \
           --python ${{ matrix.cfg.python-version }} \
           --disable docs \
-          --disable addons \
           --offline-conda
         echo "::group::View Env Spec File for Conda (from advisor)"
         printf "\n<<<  env_p4build.yaml  >>>\n"
@@ -185,6 +184,24 @@ jobs:
         #
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
+        fi
+        if [[ "${{ runner.os }}" == "Linux" && "${{ matrix.cfg.python-version }}" == "3.14" ]]; then
+          :
+          sed -i "s;- pyeinsums;#- pyeinsums;g" env_p4build.yaml
+          sed -i "s;- adcc;#- adcc;g" env_p4build.yaml
+          sed -i "s;- basis_set_exchange;#- basis_set_exchange;g" env_p4build.yaml
+          sed -i "s;- cppe;#- cppe;g" env_p4build.yaml
+          sed -i "s;- dftd3-python;#- dftd3-python;g" env_p4build.yaml
+          sed -i "s;- dftd4-python;#- dftd4-python;g" env_p4build.yaml
+          sed -i "s;- gcp-correction;#- gcp-correction;g" env_p4build.yaml
+          sed -i "s;- geometric;#- geometric;g" env_p4build.yaml
+          sed -i "s;- i-pi;#- i-pi;g" env_p4build.yaml
+          sed -i "s;- postgresql;#- postgresql;g" env_p4build.yaml
+          sed -i "s;- pyddx;#- pyddx;g" env_p4build.yaml
+          sed -i "s;- pygdma;#- pygdma;g" env_p4build.yaml
+          sed -i "s;- pylibefp;#- pylibefp;g" env_p4build.yaml
+          sed -i "s;- pymdi;#- pymdi;g" env_p4build.yaml
+          sed -i "s;- qcfractal;#- qcfractal;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
