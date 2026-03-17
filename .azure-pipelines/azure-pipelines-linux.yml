@@ -79,6 +79,21 @@ jobs:
         ADVISOR_ARGS: "--compiler IntelLLVM"
         ADVISOR_DISABLE_ARGS: ""
 
+      clang_latest:
+        CXX_COMPILER: 'clang++'
+        PYTHON_VER: '3.14'
+        C_COMPILER: 'clang'
+        F_COMPILER: 'gfortran'
+        BUILD_TYPE: 'release'
+        APT_INSTALL: 'gfortran clang clang++'
+        # needed by gauxc 'libomp-15-dev' leads to needing `export KMP_DUPLICATE_LIB_OK=TRUE`
+        vmImage: 'ubuntu-24.04'
+        PYTEST_MARKER_EXPR: 'quick'
+        PYTEST_NAME_EXPR: 'not nonsense1'
+        ENABLE_EINSUMS: "OFF"
+        ENABLE_GAUXC: "OFF"
+        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so'
+
   pool:
     vmImage: $(vmImage)
 
