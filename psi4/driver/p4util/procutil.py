@@ -599,7 +599,7 @@ def state_to_atomicinput(
 
     Returns
     -------
-    ~qcelemental.models.v1.AtomicInput, ~qcelemental.models.v2.AtomicInput
+    ~qcelemental.models.AtomicInput, ~qcelemental.models.v2.AtomicInput
         QCSchema instance including current keyword set and provenance.
 
     """
