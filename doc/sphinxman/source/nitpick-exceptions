@@ -14,6 +14,7 @@ py:class psi::PCM
 py:class pydantic.main.BaseModel
 py:class pydantic.utils.Representation
 py:class pydantic_core.core_schema.ValidationInfo
+py:class pydantic.v1.main.BaseModel
 
 # pybind11 & python
 # Annotated[... FixedSize]
@@ -31,6 +32,9 @@ py:class FixedSize
 #py:class qcportal.FractalClient
 #py:class qcportal.PortalClient
 py:class qcelemental.models.results.AtomicResultProtocols
+py:class qcelemental.models.v1.basemodels.ProtoModel
+py:class qcelemental.models.v1.basemodels.ProtoModel
+py:class qcelemental.models.v1.results.AtomicResult
 
 # QCManyBody
 py:obj qcmanybody.computer.ManyBodyComputer.set_bsse_type
