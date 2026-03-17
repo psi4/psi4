@@ -11,7 +11,7 @@ jobs:
     matrix:
 
       clang_py314:
-        CXX_COMPILER: 'clang++15'
+        CXX_COMPILER: 'clang++-15'
         PYTHON_VER: '3.14'
         C_COMPILER: 'clang-15'
         F_COMPILER: 'gfortran'
