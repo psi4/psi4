@@ -65,12 +65,176 @@ struct BrianGrid {
     std::vector<double> atomRotationMatrices;
 };
 
-extern bool brianBuildingNLCGrid;
-
 namespace psi {
 
+void BrianQCBase::grid_from_options(MolecularGridOptions const &opt, bool build_dft) {
+    if (!(brianEnable and brianEnableDFT)) continue;
+    std::vector<std::vector<double>> atomRotations(molecule->natom());
+    std::vector<std::vector<BrianBlock>> atomBlocks(molecule->natom());
+
+    if (opt.namedGrid != -1) {
+        atomBlocks[A] = brianStandardGrids.at(opt.namedGrid).at(Z);
+    };
+
+    const auto molecule = molecule();
+    OrientationMgr std_orientation(molecule);
+    const auto orientation = std_orientation.orientation();
+    const auto rotationMatrix = orientation->transpose();
+
+#pragma omp parallel for schedule(static)
+    for (int A = 0; A < molecule_->natom(); A++) {
+        int Z = molecule_->true_atomic_number(A);
+        atomRotations[A] = std::vector<double>(rotationMatrix->get_pointer(0), rotationMatrix->get_pointer(0) + 9);
+
+        if (opt.namedGrid == 0 || opt.namedGrid == 1) {
+            atomBlocks[A] = brianStandardGrids.at(opt.namedGrid).at(Z);
+        } else if (opt.namedGrid == -1) {
+            int currentBlockIndex = -1
+            for (int i = 0; i < opt.nradpts; i++) {
+                int numAngPts = 0;
+                if (opt.prunetype == "REGION") {
+                    if (opt.prunescheme == "TREUTLER") {
+                        numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);
+                    } else if (opt.prunescheme == "ROBUST") {
+                        numAngPts = prune.ShellPruning(i, Z, opt.nradpts);
+                    }
+                } else if (opt.prunetype == "FUNCTION" || opt.prunescheme == "NONE") {
+                    numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);
+                }
+                if (currentBlockIndex == -1 or atomBlocks[A][currentBlockIndex].angularPoints.size() != numAngPts) {
+                    atomBlocks[A].push_back(BrianBlock());
+                    currentBlockIndex++;
+
+                    for (int j = 0; j < numAngPts; j++) {
+                        // we compensate for an extra factor of 4*pi in Psi4's angular grid generation
+                        atomBlocks[A][currentBlockIndex].angularPoints.push_back(
+                            {anggrid[j].x, anggrid[j].y, anggrid[j].z, anggrid[j].w / (4.0 * M_PI)});
+                    }
+                }
+
+                atomBlocks[A][currentBlockIndex].radialPoints.push_back({r[i], wr[i]});
+            }
+        } else {
+            throw PSIEXCEPTION("Grid not recognized by BrianQC.")
+        }
+    }
+
+    BrianGrid brianGrid;
+    brianInt atomBlockOffset = 0;
+    brianInt radialOffset = 0;
+    brianInt angularOffset = 0;
+
+    for (int A = 0; A < molecule_->natom(); A++) {
+        brianGrid.atomRotationMatrices.insert(brianGrid.atomRotationMatrices.end(), atomRotations[A].begin(),
+                                              atomRotations[A].end());
+
+        brianGrid.atomBlockCounts.push_back(atomBlocks[A].size());
+        brianGrid.atomBlockOffsets.push_back(atomBlockOffset);
+        for (int blockIndex = 0; blockIndex < atomBlocks[A].size(); blockIndex++) {
+            brianGrid.blockRadialCounts.push_back(atomBlocks[A][blockIndex].radialPoints.size());
+            brianGrid.blockRadialOffsets.push_back(radialOffset);
+            for (int radialIndex = 0; radialIndex < atomBlocks[A][blockIndex].radialPoints.size(); radialIndex++) {
+                brianGrid.radialCoordinates.push_back(atomBlocks[A][blockIndex].radialPoints[radialIndex].r);
+                brianGrid.radialWeights.push_back(atomBlocks[A][blockIndex].radialPoints[radialIndex].w);
+            }
+            radialOffset += atomBlocks[A][blockIndex].radialPoints.size();
+
+            brianGrid.blockAngularCounts.push_back(atomBlocks[A][blockIndex].angularPoints.size());
+            brianGrid.blockAngularOffsets.push_back(angularOffset);
+            for (int angularIndex = 0; angularIndex < atomBlocks[A][blockIndex].angularPoints.size();
+                 angularIndex++) {
+                brianGrid.angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].x);
+                brianGrid.angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].y);
+                brianGrid.angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].z);
+                brianGrid.angularWeights.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].w);
+            }
+            angularOffset += atomBlocks[A][blockIndex].angularPoints.size();
+        }
+
+        atomBlockOffset += atomBlocks[A].size();
+    }
+
+    if (!build_dft) {
+        brianCOMSetNLCGrid(&brianCookie, brianGrid.atomBlockCounts.data(), brianGrid.atomBlockOffsets.data(),
+                           brianGrid.blockRadialCounts.data(), brianGrid.blockRadialOffsets.data(),
+                           brianGrid.radialCoordinates.data(), brianGrid.radialWeights.data(),
+                           brianGrid.blockAngularCounts.data(), brianGrid.blockAngularOffsets.data(),
+                           brianGrid.angularCoordinates.data(), brianGrid.angularWeights.data(),
+                           brianGrid.atomRotationMatrices.data());
+        checkBrian();
+    } else {
+        brianCOMSetDFTGrid(&brianCookie, brianGrid.atomBlockCounts.data(), brianGrid.atomBlockOffsets.data(),
+                           brianGrid.blockRadialCounts.data(), brianGrid.blockRadialOffsets.data(),
+                           brianGrid.radialCoordinates.data(), brianGrid.radialWeights.data(),
+                           brianGrid.blockAngularCounts.data(), brianGrid.blockAngularOffsets.data(),
+                           brianGrid.angularCoordinates.data(), brianGrid.angularWeights.data(),
+                           brianGrid.atomRotationMatrices.data());
+        checkBrian();
+    }
+
+}
+
+void BrianQCBase::grid_from_prune_spec(PruneSpec const& spec, int radscheme, std::vector<BrianBlock>& brian_blocks) {
+    std::vector<double> r(spec.nrad), wr(spec.nrad);
+    RadialGridMgr::makeRadialGrid(spec.nrad, radscheme, r.data(), wr.data(), spec.rparam);
+
+    int groupCount = 0;
+    for (groupCount = 0; spec.group[groupCount].npts != 0; groupCount++) {
+    }
+
+    brian_blocks.resize(groupCount);
+
+    auto first_radial_point = 0;
+    for (auto& brianBlock: brian_blocks) {
+        brianBlock.radialPoints.resize(spec.group[i_grp].nreps);
+        for (int i_rep = 0; i_rep < spec.group[i_grp].nreps; i_rep++) {
+           brianBlock.radialPoints[i_rep] = {r[first_radial_point + i_rep], wr[first_radial_point + i_rep]};
+        }
+        first_radial_point += spec.group[i_grp].nreps;
+
+        brian_block.angularPoints.resize(numAngPoints);
+        for (int i_ang = 0; i_ang < numAngPoints; i_ang++) {
+            // we compensate for an extra factor of 4*pi in Psi4's angular grid generation
+            brian_block.angularPoints[i_ang] = {
+                anggrid[i_ang].x, anggrid[i_ang].y, anggrid[i_ang].z, anggrid[i_ang].w / (4.0 * M_PI)};
+        }
+    }
+}
+
+void BrianQCBase::initialize_named_grids() {
+    if (!brianEnableDFT) return;
+    if (!brianStoredGrids[0].empty()) return;
+
+    // SG0
+    brianStandardGrids[0].resize(18);
+    for (int Z = 0; Z < 18; Z++) {
+        if (SG0specs[Z].rparam == 0) {
+            SG0_grids_[Z] = nullptr;
+            SG0_sizes_[Z] = 0;
+        } else {
+            brianStoreGridDataInto = &(brianStandardGrids[0][Z]);
+            MassPoint *grid = (MassPoint *)malloc(SG0specs[Z].npts * sizeof(MassPoint));
+            makeCubatureGridFromPruneSpec(SG0specs[Z], RadialGridMgr::WhichScheme("MULTIEXP"), grid);
+            brianStoreGridDataInto = nullptr;
+        }
+    }
+
+    brianStandardGrids[1].resize(19);
+    for (int Z = 0; Z <= 18; Z++) {
+        brianStoreGridDataInto = &(brianStandardGrids[1][Z]);
+        int whichRow = rows[Z];  // Which row of the periodic table are we looking at?
+        PruneSpec spec = SG1specs[whichRow - 1];
+        spec.rparam = SG1radii[Z];
+        // Make the grid
+        MassPoint *grid = (MassPoint *)malloc(spec.npts * sizeof(MassPoint));
+        makeCubatureGridFromPruneSpec(spec, RadialGridMgr::WhichScheme("EM"), grid);
+        brianStoreGridDataInto = nullptr;
+    }
+}
+
 void BrianQCBase::initialize() {
-        // TODO: Brian's grid initialization needs to be separated from Psi4's and moved in here.
+        initialize_named_grids();
+
         static const std::map<std::string, brianInt> functionalIDMap = {
             {"XC_GGA_X_AIRY", BRIAN_FUNCTIONAL_GGA_AIRY_X},
             {"XC_GGA_X_AK13", BRIAN_FUNCTIONAL_GGA_AK13_X},
@@ -511,9 +675,7 @@ void BrianQCBase::initialize() {
         checkBrian();
         
         if (functional_->needs_vv10()) {
-            // Psi4 would only generate the NLC grid when actually computing the NLC term
-            // (and that code path is not even called when BrianQC is active),
-            // but we need the NLC grid before initializing, so we replicate the grid building here
+            // Generate the NLC grid.
             {
                 std::map<std::string, std::string> opt_map;
                 opt_map["DFT_PRUNING_SCHEME"] = "FLAT";
@@ -522,9 +684,8 @@ void BrianQCBase::initialize() {
                 opt_int_map["DFT_RADIAL_POINTS"] = options_.get_int("DFT_VV10_RADIAL_POINTS");
                 opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("DFT_VV10_SPHERICAL_POINTS");
                 
-                brianBuildingNLCGrid = true;
-                DFTGrid nlgrid = DFTGrid(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
-                brianBuildingNLCGrid = false;
+                const auto grid_options = std::get<0>(DFTGrid::populateOptions(options_, opt_int_map, opt_map));
+                grid_from_options(grid_options, false);
             }
             
             std::vector<brianInt> NLCParameterIDs;

@@ -29,6 +29,7 @@
 #include "integrator_manager.h"
 
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/petitelist.h"
 
 namespace psi {
@@ -69,5 +70,7 @@ void IntegratorManager::set_D(std::vector<SharedMatrix> Dvec) {
         }
     }
 }
+
+const std::shared_ptr<Molecule> IntegratorManager::molecule() { return primary_->molecule(); }
 } // namespace psi
 
