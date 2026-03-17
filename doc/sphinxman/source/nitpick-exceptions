@@ -13,6 +13,7 @@ py:class psi::PCM
 # pydantic
 py:class pydantic.main.BaseModel
 py:class pydantic.utils.Representation
+py:class pydantic_core.core_schema.ValidationInfo
 
 # pybind11 & python
 # Annotated[... FixedSize]
