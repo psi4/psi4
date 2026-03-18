@@ -1012,8 +1012,8 @@ data:
       constraint: "ATLEAST 0.49.0"
       target: null
     conda:
-      channel: conda-forge
-      name: conda-forge/label/qcelemental_dev::qcelemental
+      channel: conda-forge/label/qcelemental_dev
+      name: qcelemental
       constraint: ">=0.50.0rc3"
       aux_run_names:
         - msgpack-python
@@ -1199,12 +1199,13 @@ data:
       constraint: ATLEAST 0.49.0
       target:
     conda:
-      channel: conda-forge
-      name: conda-forge/label/qcengine_dev::qcengine
-      constraint: ">=0.50.0rc2"
+      channel: conda-forge/label/qcengine_dev
+      name: qcengine
+      #constraint: ">=0.50.0rc2"
+      constraint: null
       constraint_note: "v0.34.2 has SAPT*-D4 parameters"
       cmake:
-        //CMAKE_INSIST_FIND_PACKAGE_qcengine: true
+        #//CMAKE_INSIST_FIND_PACKAGE_qcengine: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcengine: true
       cmake_note: "Primarily OTF runtime detected."
 

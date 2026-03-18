@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcengine}))
     include(FindPythonModule)
-    find_python_module(qcengine ATLEAST 0.49.0 QUIET)  # edit in codedeps
+    find_python_module(qcengine ATLEAST 0.50.0 QUIET)  # edit in codedeps
 endif()
 
 if(${qcengine_FOUND})
@@ -44,7 +44,8 @@ else()
         BUILD_COMMAND ""
         BUILD_IN_SOURCE 1
         # master: INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/ QCEngine.git#egg=proj
-        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCEngine.git@v0.50.0rc2#egg=proj  # edit in codedeps
+        #INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/MolSSI/QCEngine.git@v0.50.0rc2#egg=proj  # edit in codedeps
+        INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install git+https://github.com/loriab/QCEngine.git@grimme_v2_adapt#egg=proj  # edit in codedeps
                                                       --target=${_install_lib}
                                                       --no-deps
                                                       --upgrade
