@@ -641,12 +641,18 @@ def test_grimme_3c():
 
 
 @uusing("dkh")
-def test_dkh():
+@pytest.mark.parametrize("schver", [pytest.param(1, marks=[pytest.mark.skipif(_ispy314, reason="Py314+QCSk1")]), pytest.param(2)])
+def test_dkh(schver):
     """dkh/molpro-2order"""
 
-    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["Ne"], "geometry": [0.0, 0.0, 0.0], "name": "Ne", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [19.9924401762], "real": [true], "atom_labels": [""], "atomic_numbers": [10], "mass_numbers": [20], "fragments": [[0]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ-DK"}, "keywords": {"dkh_order": 2, "print": 2, "reference": "RHF", "relativistic": "DKH", "scf_type": "PK"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
+    jatin = {}
+    jatin[1] = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["Ne"], "geometry": [0.0, 0.0, 0.0], "name": "Ne", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [19.9924401762], "real": [true], "atom_labels": [""], "atomic_numbers": [10], "mass_numbers": [20], "fragments": [[0]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ-DK"}, "keywords": {"dkh_order": 2, "print": 2, "reference": "RHF", "relativistic": "DKH", "scf_type": "PK"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
+    jatin[2] = """{"id": null, "schema_name": "qcschema_atomic_input", "schema_version": 2, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 3, "validated": true, "symbols": ["Ne"], "geometry": [0.0, 0.0, 0.0], "name": "Ne", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [19.9924401762], "real": [true], "atom_labels": [""], "atomic_numbers": [10], "mass_numbers": [20], "fragments": [[0]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "specification": {"driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ-DK"}, "keywords": {"dkh_order": 2, "print": 2, "reference": "RHF", "relativistic": "DKH", "scf_type": "PK"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
-    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
+    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin[schver]))
+    assert atres.success, pprint.pprint(atres.model_dump(), width=200)
+    assert atres.schema_version == schver
+    assert atres.schema_name == _sch_name[schver]
 
     assert psi4.compare_values(-128.66891610, atres.return_result, 6, '2nd order vs Molpro')
 
