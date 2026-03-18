@@ -240,8 +240,11 @@ jobs:
       cd build
       source activate p4env
       python -V
+      qcengine info
+      PATH=$PATH:stage/bin python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
       python -c 'import numpy; print(numpy.version.version)'
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
+      python -c 'import qcengine as q; print(q.__version__, q.__file__)'
       ./stage/bin/psi4 ../tests/dfmp2-1/input.dat
     displayName: 'Spot Test 2'
 
