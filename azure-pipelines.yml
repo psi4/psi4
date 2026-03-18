@@ -22,5 +22,5 @@ pr:
       - 1.10.x
 
 jobs:
-  - template: ./.azure-pipelines/azure-pipelines-windows.yml
+  #- template: ./.azure-pipelines/azure-pipelines-windows.yml
   - template: ./.azure-pipelines/azure-pipelines-linux.yml

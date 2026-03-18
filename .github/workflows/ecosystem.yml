@@ -330,8 +330,10 @@ jobs:
         conda list
         if [[ "${{ runner.os }}" != "Windows" ]]; then
           # on Windows, cmd varies: `qcengine.exe`
-          PYTHONPATH=stage/lib qcengine info
-          PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+          PATH=$PATH:stage/bin PYTHONPATH=stage/lib qcengine info
+          PATH=$PATH:stage/bin PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+          stage/bin/psi4 --module || true
+          PYTHONPATH=stage/lib python -c "import psi4;print(psi4.executable)" || true
         fi
 
     - name: Test OpenMP
