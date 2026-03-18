@@ -27,7 +27,6 @@
  */
 
 #include "dlpno.h"
-#include "dlpno_lambda.h"
 #include "sparse.h"
 
 #include "psi4/lib3index/3index.h"

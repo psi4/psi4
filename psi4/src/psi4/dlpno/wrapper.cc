@@ -27,7 +27,6 @@
  */
 
 #include "dlpno.h"
-#include "dlpno_lambda.h"
 
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/exception.h"

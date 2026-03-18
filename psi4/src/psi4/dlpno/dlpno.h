@@ -47,6 +47,7 @@ namespace psi {
 namespace dlpno {
 
 enum class DLPNOMethod { MP2, CCSD, CCSD_T };
+enum class DLPNOLambdaMethod { CCSD_L };
 
 // Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
 
@@ -436,9 +437,74 @@ class PSI_API DLPNOCCSD : public DLPNO {
     double compute_energy() override;
 };
 
+class DLPNOCCSD_Lambda : public DLPNOCCSD {
+   protected:
+    /// Lambda Amplitudes
+    std::vector<SharedMatrix> lambda_ia_; // Dimensions: [nocc * (npno_[ii], 1)]
+    std::vector<SharedMatrix> lambda_iajb_; // Dimensions: [n_lmo_pairs * (n_pno_[ij], n_pno_[ij])]
+    std::vector<SharedMatrix> lambda_iajb_bar_;
+
+    // => Lambda CCSD Integrals (Fock matrices and ERIs) <= //
+    std::vector<SharedMatrix> delta_imae_tilde_; // Toth eq. 26a
+    SharedMatrix F_im_double_tilde_; // Toth Eq. 26b
+    std::vector<SharedMatrix> F_vv_double_tilde_;
+
+    std::vector<SharedMatrix> M_imae_; // M(i m | a_{mm} e_{mm})
+
+    // => Lambda CCSD Intermediates <= //
+
+    std::vector<SharedMatrix> zz_is_chud_;
+    std::vector<SharedMatrix> john_bigback_;
+
+    SharedMatrix rho_oo_; // Toth Section IIIA
+    std::vector<SharedMatrix> rho_vv_; // Toth Section IIIA
+    std::vector<SharedMatrix> M_imae_tilde_; // Toth Eq. 24
+    std::vector<std::vector<SharedMatrix>> F_fcia_hat_; // Toth Eq. 33
+    std::vector<std::vector<SharedMatrix>> F_knia_hat_; // Toth Eq. 34
+    std::vector<SharedMatrix> K_maef_dt_;
+    std::vector<SharedMatrix> K_eimn_dt_;
+    std::vector<SharedMatrix> M_kace_bar_;
+    std::vector<SharedMatrix> M_mkic_bar_;
+    std::vector<SharedMatrix> J_kmic_bar_;
+    std::vector<SharedMatrix> J_kaec_bar_;
+    std::vector<SharedMatrix> L_ieab_bar_;
+    std::vector<SharedMatrix> K_ijmb_bar_;
+
+    // => Computing integrals <= //
+
+    /// A function to estimate memory costs for lambda CCSD
+    void estimate_memory();
+    /// Compute rho density terms
+    void form_goo();
+    /// Compcondute some of the intermediates required in lambda DLPNO CCSD
+    void compute_lambda_intermediates();
+    
+    // => Lambda CCSD intermediates <= //
+
+    /// New defined intermediate in Toth Eq. 50b
+    std::vector<SharedMatrix> compute_alpha_ijkl();
+
+    /// compute singles residual in lambda CCSD equations, Toth Eq. 26-36
+    void compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::vector<SharedMatrix>>& L_ia_buffer);
+    /// compute doubles residual in lambda CCSD equations, Toth Eq. 37-55
+    void compute_L_iajb(std::vector<SharedMatrix> &L_iajb, std::vector<SharedMatrix>& Ln_iajb);
+
+    /// Solves lambda_ia and lambda_iajb in the PNO basis
+    void lambda_ccsd_iterations();
+
+    void print_header();
+    void print_results();
+
+   public:
+    DLPNOCCSD_Lambda(SharedWavefunction ref_wfn, Options& options);
+    ~DLPNOCCSD_Lambda() override;
+
+    double compute_energy();
+};
+
 // Equations refer to Jiang et al. (JCP 161, 082502, 2024; DOI: 10.1063/5.0219963)
 
-class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
+class PSI_API DLPNOCCSD_T : public DLPNOCCSD_Lambda {
    protected:
     // Sparsity information, NOTE: only unique triplets i <= j <= k are used
     SparseMap lmotriplet_to_ribfs_; ///< which ribfs are on an LMO triplet (i, j, k)
@@ -450,6 +516,7 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     /// triplet natural orbitals (TNOs)
     std::vector<SharedMatrix> W_iajbkc_; ///< W3 intermediate for each lmo triplet (Jiang Eq. 109)
     std::vector<SharedMatrix> V_iajbkc_; ///< V3 intermeidate for each lmo triplet (Jiang Eq. 110)
+    std::vector<SharedMatrix> L_iajbkc_; ///< L3 intermediate for CCSD(T)_Lambda
     std::vector<SharedMatrix> T_iajbkc_; ///< Triples amplitude for each lmo triplet
     std::vector<SharedMatrix> X_tno_; ///< global PAO -> canonical TNO transforms
     std::vector<SharedVector> e_tno_; ///< TNO orbital energies
@@ -468,6 +535,9 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     double e_lccsd_t_; ///< local (T) correlation energy
     double E_T_; ///< raw iterative (T) energy at weaker triples cutoffs
 
+    double e_lccsd_t_l_; ///< local (T)_Lambda correlation energy
+    double E_T_L_; ///< raw iterative (T)_Lambda energy at weaker triples cutoffs
+
     /// Create sparsity maps for triples
     void triples_sparsity(bool prescreening);
     /// Create TNOs (Triplet Natural Orbitals) for DLPNO-(T)
@@ -481,13 +551,15 @@ class PSI_API DLPNOCCSD_T : public DLPNOCCSD {
     SharedMatrix triples_permuter(const SharedMatrix& X, int i, int j, int k, bool reverse=false);
     /// compute (T) iteration energy (Jiang Eq. 53)
     double compute_t_iteration_energy();
+    /// compute (T)_L iteration energy
+    double compute_t_l_iteration_energy();
 
     /// L_CCSD(T0) energy (Jiang Eq. 53, 109-110)
-    double compute_lccsd_t0(bool save_memory=false);
+    std::pair<double, double> compute_lccsd_t0(bool save_memory=false);
     /// A function to estimate (T) memory costs
     void estimate_memory();
     /// L_CCSD(T) iterations (Jiang Eq. 111-112)
-    double lccsd_t_iterations();
+    std::pair<double, double> lccsd_t_iterations();
 
     void print_header();
 

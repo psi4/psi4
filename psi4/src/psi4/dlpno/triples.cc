@@ -56,7 +56,7 @@
 namespace psi {
 namespace dlpno {
 
-DLPNOCCSD_T::DLPNOCCSD_T(SharedWavefunction ref_wfn, Options &options) : DLPNOCCSD(ref_wfn, options) {}
+DLPNOCCSD_T::DLPNOCCSD_T(SharedWavefunction ref_wfn, Options &options) : DLPNOCCSD_Lambda(ref_wfn, options) {}
 DLPNOCCSD_T::~DLPNOCCSD_T() {}
 
 void DLPNOCCSD_T::print_header() {
@@ -500,17 +500,18 @@ void DLPNOCCSD_T::estimate_memory() {
     // Depending on which intermediates are written to disk, the RAM usage varies
     double W3_memory = tno_total_memory;
     double V3_memory = tno_total_memory;
+    double L3_memory = tno_total_memory;
     double T3_memory = tno_total_memory;
 
     // Write W and V intermediates to disk (this is more efficient than writing amplitudes)
     write_intermediates_ = options_.get_bool("WRITE_TRIPLES_INTERMEDIATES");
-    if (write_intermediates_) W3_memory = 0.0, V3_memory = 0.0;
+    if (write_intermediates_) W3_memory = 0.0, V3_memory = 0.0, L3_memory = 0.0;
 
     // Write T3 amplitudes to disk (this should only be turned on as a last resort)
     write_amplitudes_ = options_.get_bool("WRITE_TRIPLES_AMPLITUDES");
     if (write_amplitudes_) T3_memory = 0.0;
 
-    size_t total_memory = qij_memory_ + qia_memory_ + qab_memory_ + W3_memory + V3_memory + T3_memory;
+    size_t total_memory = qij_memory_ + qia_memory_ + qab_memory_ + W3_memory + V3_memory + L3_memory + T3_memory;
 
     // 1 GB = 1000^3 = 10^9 Bytes
     const double DOUBLES_TO_GB = pow(10.0, -9) * sizeof(double);
@@ -521,6 +522,7 @@ void DLPNOCCSD_T::estimate_memory() {
     outfile->Printf("    (q | a b) integrals    : %.3f [GB]\n", qab_memory_ * DOUBLES_TO_GB);
     outfile->Printf("    W_{ijk}^{abc}          : %.3f [GB]\n", W3_memory * DOUBLES_TO_GB);
     outfile->Printf("    V_{ijk}^{abc}          : %.3f [GB]\n", V3_memory * DOUBLES_TO_GB);
+    outfile->Printf("    L_{ijk}^{abc}          : %.3f [GB]\n", L3_memory * DOUBLES_TO_GB);
     outfile->Printf("    T_{ijk}^{abc}          : %.3f [GB]\n", T3_memory * DOUBLES_TO_GB);
     outfile->Printf("    Total Memory Required  : %.3f [GB]\n", total_memory * DOUBLES_TO_GB);
     outfile->Printf("    Total Memory Given     : %.3f [GB]\n\n", memory_ * WORDS_TO_GB);
@@ -584,18 +586,19 @@ void DLPNOCCSD_T::estimate_memory() {
     }
 }
 
-double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
+std::pair<double, double> DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
     timer_on("LCCSD(T0)");
 
     int naocc = nalpha_ - nfrzc();
     int n_lmo_triplets = ijk_to_i_j_k_.size();
 
-    double E_T0 = 0.0;
+    double E_T0 = 0.0, E_T_L0 = 0;
 
     if (save_memory) {
         W_iajbkc_.resize(n_lmo_triplets);
         V_iajbkc_.resize(n_lmo_triplets);
         T_iajbkc_.resize(n_lmo_triplets);
+        L_iajbkc_.resize(n_lmo_triplets);
     }
 
     e_ijk_.clear();
@@ -630,7 +633,7 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
         ijk_sorted_by_cost[ijk_idx] = ijk_cost_tuple[ijk_idx].first;
     }
 
-#pragma omp parallel for schedule(dynamic) reduction(+ : E_T0)
+#pragma omp parallel for schedule(dynamic) reduction(+ : E_T0) reduction(+ : E_T_L0)
     for (int ijk_idx = 0; ijk_idx < n_lmo_triplets; ++ijk_idx) {
         // Triplets assigned to threads dynamically, sorted in descending order of cost
         // This maximizes parallel efficiency
@@ -778,10 +781,16 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
         auto W_ijk = std::make_shared<Matrix>(w_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
         W_ijk->zero();
 
+        std::stringstream l_name;
+        l_name << "L " << (ijk);
+        auto L_ijk = std::make_shared<Matrix>(l_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
+        L_ijk->zero();
+
         std::vector<std::tuple<int, int, int>> perms = {std::make_tuple(i, j, k), std::make_tuple(i, k, j),
                                                         std::make_tuple(j, i, k), std::make_tuple(j, k, i),
                                                         std::make_tuple(k, i, j), std::make_tuple(k, j, i)};
         std::vector<SharedMatrix> Wperms(perms.size());
+        std::vector<SharedMatrix> Lperms(perms.size());
 
         std::vector<SharedMatrix> K_ovvv_list = {K_ivvv, K_ivvv, K_jvvv, K_jvvv, K_kvvv, K_kvvv};
         std::vector<SharedMatrix> K_ooov_list = {K_jokv, K_kojv, K_iokv, K_koiv, K_iojv, K_joiv};
@@ -800,12 +809,17 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
 
             Wperms[idx] = std::make_shared<Matrix>(ntno_ijk, ntno_ijk * ntno_ijk);
             Wperms[idx]->zero();
+
+            Lperms[idx] = std::make_shared<Matrix>(ntno_ijk, ntno_ijk * ntno_ijk);
+            Lperms[idx]->zero();
             
             // Compute overlap between TNOs of triplet ijk and PNOs of pair kj
             std::vector<int> kj_idx_list = index_list(triples_ext_domain, lmopair_to_paos_[kj]);
             auto S_kj_ijk = linalg::doublet(X_pno_[kj], submatrix_rows(*S_ijk, kj_idx_list), true, false);
             // (c_{kj}, d_{kj}) -> (c_{ijk}, d_{ijk})
             auto T_kj = linalg::triplet(S_kj_ijk, T_iajb_[kj], S_kj_ijk, true, false, false); 
+
+            auto lambda_kj = linalg::triplet(S_kj_ijk, lambda_iajb_[kj], S_kj_ijk, true, false, false); 
 
             auto K_ovvv = K_ovvv_list[idx]->clone(); // (i a | b d) stored as: (a, b * d)
 
@@ -816,6 +830,13 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
             K_ovvv->reshape(ntno_ijk, ntno_ijk * ntno_ijk); // (a * b, c) -> (a, b * c)
             Wperms[idx]->add(K_ovvv);
 
+            auto K_ovvv_lambda = K_ovvv_list[idx]->clone(); // (i a | b d) stored as: (a, b * d)
+
+            K_ovvv_lambda->reshape(ntno_ijk * ntno_ijk, ntno_ijk);  // (a, b * d) -> (a * b, d)
+            K_ovvv_lambda = linalg::doublet(K_ovvv_lambda, lambda_kj, false, true); // (a * b, d) (c, d) -> (a * b, c)
+            K_ovvv_lambda->reshape(ntno_ijk, ntno_ijk * ntno_ijk); // (a * b, c) -> (a, b * c)
+            Lperms[idx]->add(K_ovvv_lambda);
+
             for (int l_ijk = 0; l_ijk < lmotriplet_to_lmos_[ijk].size(); ++l_ijk) {
                 int l = lmotriplet_to_lmos_[ijk][l_ijk];
                 int il = i_j_to_ij_[i][l];
@@ -825,6 +846,9 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
                 auto S_il_ijk = linalg::doublet(X_pno_[il], submatrix_rows(*S_ijk, il_idx_list), true, false);
                 // (a_{il}, b_{il}) -> (a_{ijk}, b_{ijk})
                 auto T_il = linalg::triplet(S_il_ijk, T_iajb_[il], S_il_ijk, true, false, false);
+                
+                auto lambda_il = linalg::triplet(S_il_ijk, lambda_iajb_[il], S_il_ijk, true, false, false);
+
 
                 // Jiang Eq. 109b
                 // W_{ijk}^{abc} -= t_{il}^{ab}(jl|kc)
@@ -833,6 +857,8 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
                         for (int c_ijk = 0; c_ijk < ntno_ijk; c_ijk++) {
                             (*Wperms[idx])(a_ijk, b_ijk * ntno_ijk + c_ijk) -=
                                 (*T_il)(a_ijk, b_ijk) * (*K_ooov_list[idx])(l_ijk, c_ijk); // (a, b) * (c) -> (a, b * c)
+                            (*Lperms[idx])(a_ijk, b_ijk * ntno_ijk + c_ijk) -=
+                                (*lambda_il)(a_ijk, b_ijk) * (*K_ooov_list[idx])(l_ijk, c_ijk); // (a, b) * (c) -> (a, b * c)
                         }
                     }
                 }  // end a_ijk
@@ -849,6 +875,11 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
                         (*Wperms[0])(a_ijk, b_ijk * ntno_ijk + c_ijk) + (*Wperms[1])(a_ijk, c_ijk * ntno_ijk + b_ijk) +
                         (*Wperms[2])(b_ijk, a_ijk * ntno_ijk + c_ijk) + (*Wperms[3])(b_ijk, c_ijk * ntno_ijk + a_ijk) +
                         (*Wperms[4])(c_ijk, a_ijk * ntno_ijk + b_ijk) + (*Wperms[5])(c_ijk, b_ijk * ntno_ijk + a_ijk);
+
+                    (*L_ijk)(a_ijk, b_ijk *ntno_ijk + c_ijk) =
+                        (*Lperms[0])(a_ijk, b_ijk * ntno_ijk + c_ijk) + (*Lperms[1])(a_ijk, c_ijk * ntno_ijk + b_ijk) +
+                        (*Lperms[2])(b_ijk, a_ijk * ntno_ijk + c_ijk) + (*Lperms[3])(b_ijk, c_ijk * ntno_ijk + a_ijk) +
+                        (*Lperms[4])(c_ijk, a_ijk * ntno_ijk + b_ijk) + (*Lperms[5])(c_ijk, b_ijk * ntno_ijk + a_ijk);
                 }
             }
         }
@@ -883,11 +914,17 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
         auto T_j = linalg::doublet(S_jj_ijk, T_ia_[j], true, false); // (j, b_{ii}) -> (j, b_{ijk})
         auto T_k = linalg::doublet(S_kk_ijk, T_ia_[k], true, false); // (k, c_{ii}) -> (k, c_{ijk})
 
+        auto lambda_i = linalg::doublet(S_ii_ijk, lambda_ia_[i], true, false); // (i, a_{ii}) -> (i, a_{ijk})
+        auto lambda_j = linalg::doublet(S_jj_ijk, lambda_ia_[j], true, false); // (j, b_{ii}) -> (j, b_{ijk})
+        auto lambda_k = linalg::doublet(S_kk_ijk, lambda_ia_[k], true, false); // (k, c_{ii}) -> (k, c_{ijk})
+
         for (int a_ijk = 0; a_ijk < ntno_ijk; a_ijk++) {
             for (int b_ijk = 0; b_ijk < ntno_ijk; b_ijk++) {
                 for (int c_ijk = 0; c_ijk < ntno_ijk; c_ijk++) {
                     (*V_ijk)(a_ijk, b_ijk * ntno_ijk + c_ijk) += (*T_i)(a_ijk, 0) * (*K_jk)(b_ijk, c_ijk) +
                         (*T_j)(b_ijk, 0) * (*K_ik)(a_ijk, c_ijk) + (*T_k)(c_ijk, 0) * (*K_ij)(a_ijk, b_ijk);
+                    (*L_ijk)(a_ijk, b_ijk * ntno_ijk + c_ijk) += (*lambda_i)(a_ijk, 0) * (*K_jk)(b_ijk, c_ijk) +
+                        (*lambda_j)(b_ijk, 0) * (*K_ik)(a_ijk, c_ijk) + (*lambda_k)(c_ijk, 0) * (*K_ij)(a_ijk, b_ijk);
                 } // end c_ijk
             } // end b_ijk
         } // end a_ijk
@@ -931,6 +968,13 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
         e_ijk_[ijk] += 2.0 * prefactor * triples_permuter(V_ijk, j, k, i)->vector_dot(T_ijk);
         e_ijk_[ijk] += 2.0 * prefactor * triples_permuter(V_ijk, k, i, j)->vector_dot(T_ijk);
 
+        E_T_L0 += 8.0 * prefactor * L_ijk->vector_dot(T_ijk);
+        E_T_L0 -= 4.0 * prefactor * triples_permuter(L_ijk, k, j, i)->vector_dot(T_ijk);
+        E_T_L0 -= 4.0 * prefactor * triples_permuter(L_ijk, i, k, j)->vector_dot(T_ijk);
+        E_T_L0 -= 4.0 * prefactor * triples_permuter(L_ijk, j, i, k)->vector_dot(T_ijk);
+        E_T_L0 += 2.0 * prefactor * triples_permuter(L_ijk, j, k, i)->vector_dot(T_ijk);
+        E_T_L0 += 2.0 * prefactor * triples_permuter(L_ijk, k, i, j)->vector_dot(T_ijk);
+
         E_T0 += e_ijk_[ijk];
 
         // Step 4: Save Matrices (if doing full (T))
@@ -938,11 +982,14 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
         if (save_memory && !write_intermediates_) {
             W_iajbkc_[ijk] = W_ijk;
             V_iajbkc_[ijk] = V_ijk;
+            L_iajbkc_[ijk] = L_ijk;
         } else if (save_memory && write_intermediates_) {
 #pragma omp critical
             W_ijk->save(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
 #pragma omp critical
             V_ijk->save(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+#pragma omp critical
+            L_ijk->save(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
         }
 
         if (save_memory && !write_amplitudes_) {
@@ -969,7 +1016,7 @@ double DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
     int time_elapsed = (int) time_stop - (int) time_start;
     outfile->Printf("    (Relavent) Semicanonical LCCSD(T0) Computation Complete!!! Time Elapsed: %4d seconds\n\n", time_elapsed);
 
-    return E_T0;
+    return std::make_pair(E_T0, E_T_L0);
 }
 
 double DLPNOCCSD_T::compute_t_iteration_energy() {
@@ -1044,6 +1091,76 @@ double DLPNOCCSD_T::compute_t_iteration_energy() {
     return E_T;
 }
 
+double DLPNOCCSD_T::compute_t_l_iteration_energy() {
+    /* Jiang Eq. 53 */
+    /* E_{(T)} = prefactor * T_{ijk}^{abc} *(8 V_{ijk}^{abc} - 4 V_{ijk}^{bac} - 4 V_{ijk}^{acb}
+                    - 4 V_{ijk}^{cab} + 2 V_{ijk}^{bca} + 2 V_{ijk}^{cab}) */
+
+    timer_on("Compute (T)_L Energy");
+
+    int naocc = nalpha_ - nfrzc();
+    int n_lmo_triplets = ijk_to_i_j_k_.size();
+
+    double E_T_L = 0.0;
+
+#pragma omp parallel for schedule(dynamic) reduction(+ : E_T_L)
+    for (int ijk = 0; ijk < n_lmo_triplets; ++ijk) {
+        int i, j, k;
+        std::tie(i, j, k) = ijk_to_i_j_k_[ijk];
+
+        int ntno_ijk = n_tno_[ijk];
+        if (ntno_ijk == 0) continue;
+
+        int kji = i_j_k_to_ijk_[k * naocc * naocc + j * naocc + i];
+        int ikj = i_j_k_to_ijk_[i * naocc * naocc + k * naocc + j];
+        int jik = i_j_k_to_ijk_[j * naocc * naocc + i * naocc + k];
+        int jki = i_j_k_to_ijk_[j * naocc * naocc + k * naocc + i];
+        int kij = i_j_k_to_ijk_[k * naocc * naocc + i * naocc + j];
+
+        double prefactor = 1.0;
+        if (i == j && j == k) {
+            prefactor /= 6.0;
+        } else if (i == j || j == k || i == k) {
+            prefactor /= 2.0;
+        }
+
+        SharedMatrix L_ijk;
+        SharedMatrix T_ijk;
+
+        // Grab L3 and T3 as needed
+        if (write_intermediates_) {
+            std::stringstream l_name;
+            l_name << "L " << (ijk);
+            L_ijk = std::make_shared<Matrix>(l_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
+#pragma omp critical
+            L_ijk->load(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+        } else {
+            L_ijk = L_iajbkc_[ijk];
+        }
+
+        if (write_amplitudes_) {
+            std::stringstream t_name;
+            t_name << "T " << (ijk);
+            T_ijk = std::make_shared<Matrix>(t_name.str(), ntno_ijk, ntno_ijk * ntno_ijk);
+#pragma omp critical
+            T_ijk->load(psio_, PSIF_DLPNO_TRIPLES, psi::Matrix::SubBlocks);
+        } else {
+            T_ijk = T_iajbkc_[ijk];
+        }
+
+        E_T_L += 8.0 * prefactor * L_ijk->vector_dot(T_ijk);
+        E_T_L -= 4.0 * prefactor * triples_permuter(L_ijk, k, j, i)->vector_dot(T_ijk);
+        E_T_L -= 4.0 * prefactor * triples_permuter(L_ijk, i, k, j)->vector_dot(T_ijk);
+        E_T_L -= 4.0 * prefactor * triples_permuter(L_ijk, j, i, k)->vector_dot(T_ijk);
+        E_T_L += 2.0 * prefactor * triples_permuter(L_ijk, j, k, i)->vector_dot(T_ijk);
+        E_T_L += 2.0 * prefactor * triples_permuter(L_ijk, k, i, j)->vector_dot(T_ijk);
+    }
+
+    timer_off("Compute (T)_L Energy");
+
+    return E_T_L;
+}
+
 SharedMatrix DLPNOCCSD_T::triples_permuter(const SharedMatrix &X, int i, int j, int k, bool reverse) {
     /* A helper function that permutes the indices of a triples amplitude based on ordering i, j, k.
         This is helpful for getting the true permutation of the virtual indices for triples that are
@@ -1089,7 +1206,7 @@ SharedMatrix DLPNOCCSD_T::triples_permuter(const SharedMatrix &X, int i, int j, 
     return Xperm;
 }
 
-double DLPNOCCSD_T::lccsd_t_iterations() {
+std::pair<double, double> DLPNOCCSD_T::lccsd_t_iterations() {
     timer_on("LCCSD(T) Iterations");
 
     int naocc = nalpha_ - nfrzc();
@@ -1098,10 +1215,10 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
     outfile->Printf("\n  ==> Local CCSD(T) <==\n\n");
     outfile->Printf("    E_CONVERGENCE = %.2e\n", options_.get_double("E_CONVERGENCE"));
     outfile->Printf("    R_CONVERGENCE = %.2e\n\n", options_.get_double("R_CONVERGENCE"));
-    outfile->Printf("                         Corr. Energy    Delta E     Max R     Time (s)\n");
+    outfile->Printf("                         Corr. Energy    Lambda   Delta E     Max R     Time (s)\n");
 
     int iteration = 1, max_iteration = options_.get_int("DLPNO_MAXITER");
-    double e_curr = 0.0, e_prev = 0.0, r_curr = 0.0;
+    double e_curr = 0.0, e_t_lambda = 0.0, e_prev = 0.0, r_curr = 0.0;
     bool e_converged = false, r_converged = false;
 
     double F_CUT = options_.get_double("F_CUT_T");
@@ -1356,6 +1473,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
         e_ijk_old = e_ijk_;
         // Compute LCCSD(T) energy
         e_curr = compute_t_iteration_energy();
+        e_t_lambda = compute_t_l_iteration_energy();
 
         double r_curr = *max_element(R_iajbkc_rms.begin(), R_iajbkc_rms.end());
 
@@ -1364,7 +1482,7 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
 
         std::time_t time_stop = std::time(nullptr);
 
-        outfile->Printf("  @LCCSD(T) iter %3d: %16.12f %10.3e %10.3e %8d\n", iteration, e_curr, e_curr - e_prev, r_curr, (int)time_stop - (int)time_start);
+        outfile->Printf("  @LCCSD(T) iter %3d: %16.12f %16.12f %10.3e %10.3e %8d\n", iteration, e_curr, e_t_lambda, e_curr - e_prev, r_curr, (int)time_stop - (int)time_start);
 
         iteration++;
 
@@ -1375,14 +1493,43 @@ double DLPNOCCSD_T::lccsd_t_iterations() {
 
     timer_off("LCCSD(T) Iterations");
 
-    return e_curr;
+    return std::make_pair(e_curr, e_t_lambda);
 }
 
 double DLPNOCCSD_T::compute_energy() {
     timer_on("DLPNO-CCSD(T)");
 
-    // Run DLPNO-CCSD
-    double e_dlpno_ccsd = DLPNOCCSD::compute_energy();
+    // Run DLPNO-CCSD_Lambda
+    DLPNOCCSD_Lambda::compute_energy();
+
+    // Number of active occupied orbitals
+    int naocc = nalpha_ - nfrzc();
+    // Number of surviving pairs after DLPNO screening
+    int n_lmo_pairs = ij_to_i_j_.size();
+
+    // Renormalize Lambdas (10 delinquent quantum chemists)
+
+    // Update Singles Amplitude (Jiang Eq. 103)
+#pragma omp parallel for
+    for (int i = 0; i < naocc; ++i) {
+        int ii = i_j_to_ij_[i][i];
+
+        lambda_ia_[i]->scale(0.5);
+    }
+
+        // Update Doubles Amplitude (Jiang Eq. 104)
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+
+        auto lambda_buffer_a = lambda_iajb_[ij]->clone();
+        lambda_buffer_a->scale(1.0 / 3);
+        auto lambda_buffer_b = lambda_iajb_[ij]->transpose();
+        lambda_buffer_b->scale(1.0 / 6);
+
+        lambda_iajb_[ij] = lambda_buffer_a->clone();
+        lambda_iajb_[ij]->add(lambda_buffer_b);
+    }
 
     psio_->open(PSIF_DLPNO_TRIPLES, PSIO_OPEN_NEW);
 
@@ -1421,7 +1568,7 @@ double DLPNOCCSD_T::compute_energy() {
 
     triples_sparsity(true);
     tno_transform(t_cut_tno_pre);
-    double E_T0_pre = compute_lccsd_t0();
+    auto [E_T0_pre, E_T_L0_pre] = compute_lccsd_t0();
 
     // Step 2: Compute DLPNO-CCSD(T0) energy with surviving triplets
     outfile->Printf("\n   Continuing computation with surviving triplets...\n");
@@ -1434,14 +1581,19 @@ double DLPNOCCSD_T::compute_energy() {
     outfile->Printf("     T_CUT_MKN (re)set to %6.3e \n\n", options_.get_double("T_CUT_MKN_TRIPLES"));
     
     tno_transform(t_cut_tno);
-    double E_T0 = compute_lccsd_t0();
+    auto [E_T0, E_T_L0] = compute_lccsd_t0();
     e_lccsd_t_ = e_lccsd_ + E_T0 + de_lccsd_t_screened_;
+    e_lccsd_t_l_ = e_lccsd_ + E_T_L0 + de_lccsd_t_screened_;
 
     outfile->Printf("    DLPNO-CCSD(T0) Correlation Energy: %16.12f \n", e_lccsd_ + E_T0 + de_lccsd_t_screened_);
     outfile->Printf("    * DLPNO-CCSD Contribution:         %16.12f \n", e_lccsd_);
     outfile->Printf("    * DLPNO-(T0) Contribution:         %16.12f \n", E_T0);
     outfile->Printf("    * Screened Triplets Contribution:  %16.12f \n\n", de_lccsd_t_screened_);
 
+    outfile->Printf("    DLPNO-CCSD(T_L0) Correlation Energy: %16.12f \n", e_lccsd_ + E_T_L0 + de_lccsd_t_screened_);
+    outfile->Printf("    * DLPNO-CCSD Contribution:         %16.12f \n", e_lccsd_);
+    outfile->Printf("    * DLPNO-(T_L0) Contribution:       %16.12f \n", E_T_L0);
+    outfile->Printf("    * Screened Triplets Contribution:  %16.12f \n\n", de_lccsd_t_screened_);
 
     // Step 3: Compute full DLPNO-CCSD(T) energy if NOT using T0 approximation
 
@@ -1458,16 +1610,26 @@ double DLPNOCCSD_T::compute_energy() {
         tno_transform(t_cut_tno);
         estimate_memory();
 
-        double E_T0_crude = compute_lccsd_t0(true);
-        E_T_ = lccsd_t_iterations();
+        auto [E_T0_crude, E_T_L0_crude] = compute_lccsd_t0(true);
+        auto [E_T, E_T_L] = lccsd_t_iterations();
+        E_T_ = E_T;
+        E_T_L_ = E_T_L;
+
         double dE_T = E_T_ - E_T0_crude;
+        double dE_T_L = E_T_L_ - E_T_L0_crude;
 
         outfile->Printf("\n");
         outfile->Printf("    DLPNO-CCSD(T0) energy at looser tolerance: %16.12f\n", E_T0_crude);
         outfile->Printf("    DLPNO-CCSD(T)  energy at looser tolerance: %16.12f\n", E_T_);
         outfile->Printf("    * Net Iterative (T) contribution:          %16.12f\n\n", dE_T);
 
+        outfile->Printf("\n");
+        outfile->Printf("    DLPNO-CCSD(T0)_L energy at looser tolerance: %16.12f\n", E_T_L0_crude);
+        outfile->Printf("    DLPNO-CCSD(T)_L  energy at looser tolerance: %16.12f\n", E_T_L_);
+        outfile->Printf("    * Net Iterative (T)_L contribution:          %16.12f\n\n", dE_T_L);
+
         e_lccsd_t_ += dE_T;
+        e_lccsd_t_l_ += dE_T_L;
     }
 
     double e_scf = reference_wavefunction_->energy();
@@ -1504,6 +1666,16 @@ void DLPNOCCSD_T::print_results() {
     outfile->Printf("\n\n  @Total DLPNO-CCSD(T) Energy: %16.12f \n",
                     variables_["SCF TOTAL ENERGY"] + de_weak_ + de_lmp2_eliminated_ + e_lccsd_t_ + de_pno_total_ + de_dipole_);
     outfile->Printf("    *** Andy Jiang... FOR THREEEEEEEEEEE!!!\n\n");
+
+    double e_total_lambda = e_lccsd_t_l_ + de_weak_ + de_lmp2_eliminated_ + de_pno_total_ + de_dipole_;
+    outfile->Printf("  \n");
+    outfile->Printf("  Total DLPNO-CCSD(T)_L Correlation Energy: %16.12f \n", e_total);
+    outfile->Printf("    DLPNO-CCSD Contribution:                %16.12f \n", e_dlpno_ccsd);
+    outfile->Printf("    DLPNO-(T)_L Contribution:               %16.12f \n", e_lccsd_t_l_ - e_lccsd_ - de_lccsd_t_screened_);
+    outfile->Printf("    Screened Triplets Contribution:         %16.12f \n", de_lccsd_t_screened_);
+    outfile->Printf("\n\n  @Total DLPNO-CCSD(T)_L Energy: %16.12f \n",
+                    variables_["SCF TOTAL ENERGY"] + de_weak_ + de_lmp2_eliminated_ + e_lccsd_t_l_ + de_pno_total_ + de_dipole_);
+    outfile->Printf("    *** Oh yeah... it's all coming together -Zizi\n\n");
 }
 
 }  // namespace dlpno
