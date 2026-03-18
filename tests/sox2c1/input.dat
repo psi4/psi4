@@ -12,7 +12,7 @@ set {
   reference cghf
   scf_type pk
   basis sto-3g
-  basis_relativistic sto-3g
+  basis_relativistic sto-3g-decon
   relativistic x2c
   e_convergence 8
 }

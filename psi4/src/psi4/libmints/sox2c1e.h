@@ -54,29 +54,46 @@ class PSI_API SOX2C1e {
    private:
     /// Compute the S, T, V, and W integrals
     void compute_integrals(std::shared_ptr<IntegralFactory>, std::shared_ptr<MatrixFactory>);
-    void form_dirac_hamiltonian(SharedComplexMatrix);
-    void form_orth(SharedComplexMatrix);
-    void form_X(ComplexMatrix const&, SharedComplexMatrix);
-    void form_Stilde(ComplexMatrix const&, SharedComplexMatrix);
-    void form_R(ComplexMatrix const&, ComplexMatrix const&, SharedComplexMatrix);
+    void form_dirac_hamiltonian(SharedComplexMatrix Hdirac);
+    void form_orth(SharedComplexMatrix orth);
+    /// Takes Clarge and Csmall, Solves then sets result to X.
+    void form_X(ComplexMatrix const& Hevec, SharedComplexMatrix X);
+    /// Takes X†TX, forms Stilde and saves the result to Stilde
+    void form_Stilde(ComplexMatrix const& X_HTX, SharedComplexMatrix Stilde);
+    /// R = orth@[orth@Stilde@orth]^{-1/2}@orth^-1
+    void form_R(ComplexMatrix const& Stilde, ComplexMatrix const& orth, SharedComplexMatrix R);
+    /// Converts Tx2c and Vx2c to two scalar and 3 pauli real shared matrices.
+    void form_pauli(ComplexMatrix& T, ComplexMatrix& V, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix,
+                    SharedMatrix);
+    /// Gets uncontracted to contracted basis transformation
+    SharedMatrix get_projection();
+    /// Asserts that the X2C ints still reproduce the relevant 4c Dirac eigenvalues.
+    void test_hFW(einsums::BlockTensor<double, 1>&, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix,
+                  SharedMatrix, SharedMatrix);
 
     /// The contracted AO basis
-    std::shared_ptr<BasisSet> contractedBasis_;
+    std::shared_ptr<BasisSet> aoBasis_;
     /// The uncontracted AO basis used to solve the Dirac equation
-    std::shared_ptr<BasisSet> uncBasis_;
-    /// Dimension of the orbital basis and 2/4-component bases
+    std::shared_ptr<BasisSet> deconBasis_;
+    /// Dimension of the uncontracted orbital basis and 2/4-component bases
     Dimension nsopi_;
     Dimension nsopi2c_;
     Dimension nsopi4c_;
+    /// Dimension of the contracted orbital basis
+    Dimension nsopi_contracted_;
 
-    // 1e Integrals in 2-component complex form
+    /// 1e Integrals in 2-component complex form
     SharedComplexMatrix overlap_;
     SharedComplexMatrix kinetic_;
     SharedComplexMatrix nuclear_;
-    // relativistic potential W (\sigma\cdot p)V(\sigma\cdot p)
+    /// relativistic potential W = (σ⋅p)V(σ⋅p)
     SharedComplexMatrix rel_pot_;
 
+    /// Uncontracted AO overlap
     SharedMatrix sMat;
+    /// sMat^{-1/2}
+    SharedMatrix sOrth;
+    /// Uncontracted AO kinetic
     SharedMatrix tMat;
 };
 
