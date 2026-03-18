@@ -68,7 +68,7 @@ class PSI_API SOX2C1e {
     /// Gets uncontracted to contracted basis transformation
     SharedMatrix get_projection();
     /// Asserts that the X2C ints still reproduce the relevant 4c Dirac eigenvalues.
-    void test_hFW(einsums::BlockTensor<double, 1>&, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix,
+    bool test_hFW(einsums::BlockTensor<double, 1>&, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix,
                   SharedMatrix, SharedMatrix);
 
     /// The contracted AO basis

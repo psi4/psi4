@@ -46,9 +46,9 @@
 #include <Einsums/Runtime.hpp>
 #include <Einsums/Concepts/TensorConcepts.hpp>
 
+#include "psi4/libpsi4util/process.h"
 #ifdef _OPENMP
 #include <omp.h>
-#include "psi4/libpsi4util/process.h"
 #endif
 
 namespace {
@@ -98,18 +98,18 @@ SOX2C1e::SOX2C1e(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> x2c_
       deconBasis_(x2c_basis)  // BASIS_RELATIVISTIC
 {
     outfile->Printf(R"(
-      _____ ____ _  _____   ______    ___
-     / ___// __ \ |/ /__ \ / ____/   <  /__
-     \__ \/ / / /   /__/ // /  ______/ / _ \
-    ___/ / /_/ /   |/ __// /__/_____/ /  __/
-   /____/\____/_/|_/____/\____/    /_/\___/
-            by Nathan Gillispie
+     _____ ____ _  _____   ______    ___
+    / ___// __ \ |/ /__ \ / ____/   <  /__
+    \__ \/ / / /   /__/ // /  ______/ / _ \
+   ___/ / /_/ /   |/ __// /__/_____/ /  __/
+  /____/\____/_/|_/____/\____/    /_/\___/
+           by Nathan Gillispie
 )");
 
-    outfile->Printf("\n  ==> X2C Options <==");
-    outfile->Printf("\n    Ref Basis: " + aoBasis_->name());
-    outfile->Printf("\n    X2C Basis: " + deconBasis_->name());
-    outfile->Printf("\n    The X2C Hamiltonian will be computed in the X2C Basis.\n\n");
+    outfile->Printf("\n   ==> SOX2C-1e Options <==");
+    outfile->Printf("\n     Ref Basis: " + aoBasis_->name());
+    outfile->Printf("\n     X2C Basis: " + deconBasis_->name());
+    outfile->Printf("\n     The X2C Hamiltonian will be computed in the X2C Basis.\n\n");
 
     // Turn off non-critical einsums logs to stdout
     std::vector<std::string> ein_argv{"psi4", "--einsums:no-profiler-report", "--einsums:log-level", "3"};
@@ -118,13 +118,14 @@ SOX2C1e::SOX2C1e(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> x2c_
 
 SOX2C1e::~SOX2C1e() {}
 
+/*
+ * Main function called in mintshelper.cc. S, T, V, \vec{H} are set here.
+ */
 void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatrix Hx, SharedMatrix Hy,
                       SharedMatrix Hz) {
-    outfile->Printf("\033[41m   1. Compute integrals\033[0m\n");
-    // TODO: find out why we are using the uncontracted basis to get the SO integrals??
+    /* 1. Compute integrals. */
     auto integral = std::make_shared<IntegralFactory>(deconBasis_, deconBasis_, deconBasis_, deconBasis_);
 
-    // Obtain the dimension object to initialize the factory.
     auto deconSoBasis = std::make_shared<SOBasisSet>(deconBasis_, integral);
     nsopi_ = deconSoBasis->dimension();
     nsopi2c_ = nsopi_ + nsopi_;
@@ -134,11 +135,11 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     soFactory->init_with(deconSoBasis);
     compute_integrals(integral, soFactory);
 
-    outfile->Printf("\033[41m   2. Form Dirac Hamiltonian\033[0m\n");
+    /* 2. Form 1e Dirac Hamiltonian. */
     auto Hdirac = std::make_shared<ComplexMatrix>("Dirac Hamiltonian", nsopi4c_.blocks());
     form_dirac_hamiltonian(Hdirac);
 
-    outfile->Printf("\033[41m   3. Diagonalize Dirac Hamiltonian\033[0m\n");
+    /* 3. Diagonalize 1e Dirac Hamiltonian with metric */
     auto orth = std::make_shared<ComplexMatrix>("4c metric^(-1/2)", nsopi4c_.blocks());
     auto orth_H = std::make_shared<ComplexMatrix>("4c metric^(-1/2).conj().T", nsopi4c_.blocks());
     form_orth(orth);
@@ -157,18 +158,23 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
 
         einsums::linear_algebra::heev<true>(&Hevec->block(h), &Heval[h]);
 
-        for (int i = 0; i < nsopi4c_[h]; i++) {
-            if ((i % 5) == 0) {
-                outfile->Printf("\n  (%03d) ", i);
+        if (Process::environment.options.get_int("PRINT") > 3) {
+            outfile->Printf("  Eigenvalues of Dirac Hamiltonian. Irrep %d\n", h+1);
+            for (int i = 0; i < nsopi4c_[h]; i++) {
+                if ((i % 5) == 0) {
+                    outfile->Printf("\n  (%03d) ", i);
+                }
+                outfile->Printf("  %13.6f", Heval[h](i));
             }
-            outfile->Printf("  %13.6f", Heval[h](i));
+            outfile->Printf("\n");
         }
-        outfile->Printf("\n");
     }
-    conj_T(*Hevec, tmp);       // necessary due to different conventions in BLAS & Einsums
-    gemm(*orth, *tmp, Hevec);  // Back-transform Hevec
+    // Must do conj_T due to different conventions in BLAS & Einsums
+    conj_T(*Hevec, tmp);
+    gemm(*orth, *tmp, Hevec);  // Back-transform
+    tmp.reset(); // Last time using 4c matrices
 
-    outfile->Printf("\033[41m   4. Form X & S\033[0m\n");
+    /* 4. Form X and Stilde */
     auto X = std::make_shared<ComplexMatrix>("X", nsopi2c_.blocks());
     form_X(*Hevec, X);
 
@@ -184,11 +190,11 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     auto Stilde = std::make_shared<ComplexMatrix>("Stilde", nsopi2c_.blocks());
     form_Stilde(*X_HTX, Stilde);
 
-    outfile->Printf("\033[41m   5. Form R\033[0m\n");
+    /* 5. Form R */
     auto R = std::make_shared<ComplexMatrix>("R", nsopi2c_.blocks());
     form_R(*Stilde, *orth, R);
 
-    outfile->Printf("\033[41m   6. Form NESC hFW+\033[0m\n");
+    /* 6. Form NESC FW+ Hamiltonian (Split into V and T) */
     auto Vx2c = ComplexMatrix("Vx2c", nsopi2c_.blocks());
     auto Tx2c = ComplexMatrix("Tx2c", nsopi2c_.blocks());
     Tx2c = (*TX);
@@ -204,7 +210,7 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     gemm(*tmp, *X, rel_pot_);
     Vx2c += (*rel_pot_);
 
-    // NESC: F = R† hFW R
+    // F = R† hFW R
     conj_T(*R, X_H);
 
     gemm(*X_H, Vx2c, tmp);
@@ -213,7 +219,7 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     gemm(*X_H, Tx2c, tmp);
     gemm(*tmp, *R, &Tx2c);
 
-    outfile->Printf("\033[41m   7. Project\033[0m\n");
+    /* 7. Express Tx2c + Vx2c as real matrices */
     // Decontracted basis SharedMatrices
     auto S_x2c = std::make_shared<Matrix>(sMat);
     auto T_x2c = std::make_shared<Matrix>("Tx2c", nsopi_, nsopi_);
@@ -223,13 +229,19 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     auto Hz_x2c = std::make_shared<Matrix>("Hz", nsopi_, nsopi_);
     form_pauli(Tx2c, Vx2c, T_x2c, V_x2c, Hx_x2c, Hy_x2c, Hz_x2c);
 
-    SharedMatrix D = get_projection();
-    S_x2c->transform(D);
-    T_x2c->transform(D);
-    V_x2c->transform(D);
-    Hx_x2c->transform(D);
-    Hy_x2c->transform(D);
-    Hz_x2c->transform(D);
+    /* 8. Project? */
+    if (aoBasis_->name() != deconBasis_->name()) {
+        SharedMatrix D = get_projection();
+        S_x2c->transform(D);
+        T_x2c->transform(D);
+        V_x2c->transform(D);
+        Hx_x2c->transform(D);
+        Hy_x2c->transform(D);
+        Hz_x2c->transform(D);
+    } else {
+        outfile->Printf("  NOTE: Not projecting RELATIVISTIC_BASIS X2C integrals"
+                        " to BASIS. Basis sets appear to be the same.\n");
+    }
 
     S->copy(S_x2c);
     T->copy(T_x2c);
@@ -238,52 +250,15 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     Hy->copy(Hy_x2c);
     Hz->copy(Hz_x2c);
 
-    outfile->Printf("\033[41m   8. Test hFW+\033[0m\n");
-    test_hFW(Heval, S, T, V, Hx, Hy, Hz);
-    auto hFW = ComplexMatrix("hFW+", nsopi2c_.blocks());
-    hFW = Tx2c;
-    hFW += Vx2c;
-    Hevec.reset();
-    Hevec = std::make_shared<ComplexMatrix>(hFW);
+    /* 9. Test hFW+ */
+    bool same_evals = test_hFW(Heval, S, T, V, Hx, Hy, Hz);
 
-    auto X2Ceval = einsums::BlockTensor<double, 1>("X2C eigenvalues", nsopi2c_.blocks());
-
-    orth.reset();
-    orth = std::make_shared<ComplexMatrix>("none", nsopi2c_.blocks());
-    orth->zero();
-
-    for (int h = 0; h < nsopi_.n(); ++h) {
-        int dim = nsopi_[h];
-        auto& orth_block = orth->block(h);
-        for (int p = 0; p < dim; p++) {
-            for (int q = 0; q < dim; q++) {
-                orth_block(p, q) = sOrth->get(h, p, q);
-                orth_block(p + dim, q + dim) = sOrth->get(h, p, q);
-            }
-        }
+    if (!same_evals) {
+        outfile->Printf("\n  WARNING: The X2C and Dirac Hamiltonians have substatially different eigenvalues!\n");
+        outfile->Printf("           This is probably caused by the recontraction of the basis set.\n\n");
     }
 
-    orth_H.reset();
-    orth_H = std::make_shared<ComplexMatrix>("orthH", nsopi2c_.blocks());
-    conj_T(*orth, orth_H);
-    gemm(*orth_H, hFW, tmp);
-    gemm(*tmp, *orth, Hevec);
-
-    for (int h = 0; h < nsopi_.n(); h++) {
-        if (nsopi_[h] == 0) continue;
-
-        einsums::linear_algebra::heev<true>(&Hevec->block(h), &X2Ceval[h]);
-
-        for (int i = 0; i < nsopi2c_[h]; i++) {
-            if ((i % 5) == 0) {
-                outfile->Printf("\n  (%03d) ", i);
-            }
-            outfile->Printf("  %13.6f", X2Ceval[h](i));
-        }
-        outfile->Printf("\n");
-    }
-
-    outfile->Printf("\033[41m   9. Make real, set to original matrices\033[0m\n");
+    outfile->Printf("  ==> SOX2C-1e Integrals computed successfully! <==\n\n");
 }
 
 /*
@@ -529,12 +504,14 @@ void SOX2C1e::form_pauli(ComplexMatrix& Tx2c, ComplexMatrix& Vx2c, SharedMatrix 
         }
     }
 
-    outfile->Printf("\nFrobenius norms of form_pauli\n");
-    outfile->Printf("  T : %.13f\n", std::pow(Terr, .5));
-    outfile->Printf("  V : %.13f\n", std::pow(Verr, .5));
-    outfile->Printf("  Hx: %.13f\n", std::pow(Xerr, .5));
-    outfile->Printf("  Hy: %.13f\n", std::pow(Yerr, .5));
-    outfile->Printf("  Hz: %.13f\n", std::pow(Zerr, .5));
+    outfile->Printf("\n  Frobenius norms of form_pauli\n");
+    outfile->Printf("    T : %.13f\n", std::pow(Terr, .5));
+    outfile->Printf("    V : %.13f\n", std::pow(Verr, .5));
+    outfile->Printf("    Hx: %.13f\n", std::pow(Xerr, .5));
+    outfile->Printf("    Hy: %.13f\n", std::pow(Yerr, .5));
+    outfile->Printf("    Hz: %.13f\n", std::pow(Zerr, .5));
+    if ((Terr > 1e-9) || (Verr > 1e-9) || (Xerr > 1e-9) || (Yerr > 1e-9) || (Zerr > 1e-9))
+        outfile->Printf("  WARNING: Large error converting X2C ints to scalar and Pauli component form.");
 }
 
 /* Return the uncontracted to contracted basis transformation */
@@ -564,9 +541,69 @@ SharedMatrix SOX2C1e::get_projection() {
 }
 
 /* Asserts that the X2C ints still reproduce the relevant 4c Dirac eigenvalues. */
-void test_hFW(einsums::BlockTensor<double, 1>& Heval, SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatrix Hx,
+bool SOX2C1e::test_hFW(einsums::BlockTensor<double, 1>& Heval, SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatrix Hx,
               SharedMatrix Hy, SharedMatrix Hz) {
-    // TODO: this
+    using namespace std::literals::complex_literals;
+
+    Dimension nsopi2c_contracted = nsopi_contracted_ + nsopi_contracted_;
+
+    auto hFW = std::make_shared<ComplexMatrix>("Test hFW", nsopi2c_contracted.blocks());
+    auto _orth = std::make_shared<Matrix>("orthogonalization", nsopi_contracted_, nsopi_contracted_);
+    _orth = S->clone();
+    _orth->power(-.5);
+    hFW->zero();
+
+    auto orth = std::make_shared<ComplexMatrix>("orthogonalization", nsopi2c_contracted.blocks());
+    orth->zero();
+
+    for (int h = 0; h < nsopi_contracted_.n(); h++) {
+        int nc = nsopi_contracted_[h];
+
+        auto& Ob = orth->block(h);
+        auto& Hb = hFW->block(h);
+
+        for (int p = 0; p < nc; p++) {
+            for (int q = 0; q < nc; q++) {
+                Hb(p, q)           += T->get(h, p, q) + V->get(h, p, q) + 1i * Hz->get(h, p, q);
+                Hb(p, q + nc)      += Hx->get(h, p, q) + 1i * Hy->get(h, p, q);
+                Hb(p + nc, q)      += Hx->get(h, p, q) - 1i * Hy->get(h, p, q);
+                Hb(p + nc, q + nc) += T->get(h, p, q) + V->get(h, p, q) - 1i * Hz->get(h, p, q);
+
+                Ob(p, q) += _orth->get(h, p, q);
+                Ob(p + nc, q + nc) += _orth->get(h, p, q);
+            }
+        }
+    }
+
+    auto tmp = std::make_shared<ComplexMatrix>("tmp", nsopi2c_contracted.blocks());
+    auto orth_H = std::make_shared<ComplexMatrix>("orth.conj().T", nsopi2c_contracted.blocks());
+    conj_T(*orth, orth_H);
+
+    gemm(*orth_H, *hFW, tmp);
+    gemm(*tmp, *orth, hFW);
+
+    auto test_eval = einsums::BlockTensor<double, 1>("hFW eigenvalues", nsopi2c_contracted.blocks());
+    outfile->Printf("\n  Testing X2C Hamiltonian.\n");
+    double sum = 0.0;
+    for (int h = 0; h < nsopi_contracted_.n(); h++) {
+        if (nsopi_contracted_[h] == 0) continue;
+        if (nsopi_contracted_[h] > nsopi_[h])
+            throw PSIEXCEPTION("SOX2C1e: RELATIVISTIC_BASIS is smaller than BASIS.");
+
+        einsums::linear_algebra::heev<true>(&hFW->block(h), &test_eval[h]);
+
+        outfile->Printf("    Irrep %d: Comparing (%d/%d) eigenvalues of Dirac Hamiltonian.\n", h+1, nsopi_contracted_[h], nsopi_[h]);
+        outfile->Printf("      (eval)   |  H dirac  |   |   H X2C   |\n");
+        for (int i = 0; i < nsopi2c_contracted[h]; i++) {
+            sum += std::fabs(Heval[h](i + nsopi2c_[h]) - test_eval[h](i));
+
+            if (Process::environment.options.get_int("PRINT") > 3)
+                outfile->Printf("      (%4d)   %13.6f   %13.6f\n", i+1, Heval[h](i+nsopi2c_[h]), test_eval[h](i));
+        }
+    }
+
+    outfile->Printf("\n  The 1-norm of |H_X2C - H_Dirac| is %.12f.\n", sum);
+    return sum < 1.0e-6;
 }
 
 }  // namespace psi
