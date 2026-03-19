@@ -1,3 +1,4 @@
+import sys
 import copy
 
 import numpy as np
@@ -32,11 +33,11 @@ skipmac =  pytest.mark.skipif(platform.system().startswith("Darwin"), reason="Ma
     "b3lyp-d3mbj",
 ])
 def test_dftd3_task(method, program):
-    json_data = {"molecule": qcng.get_molecule("eneyne"), "driver": "energy", "model": {"method": method}}
+    json_data = {"molecule": qcng.get_molecule("eneyne", return_dict=True), "specification": {"driver": "energy", "model": {"method": method}}}
 
     ret = qcng.compute(json_data, program, raise_error=True, return_dict=True)
 
-    assert ret["driver"] == "energy"
+    assert ret["input_data"]["specification"]["driver"] == "energy"
     assert "provenance" in ret
     if program == "dftd3":
         assert "normal termination of dftd3" in ret["stdout"]
@@ -67,7 +68,7 @@ Ne 0 0 0
 """
 
 
-def eneyne_ne_qcdbmols():
+def eneyne_ne_qcdbmols(dummy=1):
     if not is_program_new_enough("psi4", "1.4a1.dev55"):
         pytest.skip("Psi4 requires at least Psi4 v1.3rc2")
     from psi4.driver import qcdb
@@ -89,7 +90,7 @@ def eneyne_ne_qcdbmols():
     return mols
 
 
-def eneyne_ne_psi4mols():
+def eneyne_ne_psi4mols(dummy=1):
     if not is_program_new_enough("psi4", "1.4a1.dev55"):
         pytest.skip("Psi4 requires at least Psi4 v1.3rc2")
     import psi4
@@ -111,21 +112,21 @@ def eneyne_ne_psi4mols():
     return mols
 
 
-def eneyne_ne_qcschemamols():
+def eneyne_ne_qcschemamols(schver=1):
 
-    eneyne = qcel.molparse.to_schema(qcel.molparse.from_string(seneyne)['qm'], dtype=2)
-    mA = qcel.molparse.to_schema(qcel.molparse.from_string('\n'.join(seneyne.splitlines()[:7]))['qm'], dtype=2)
-    mB = qcel.molparse.to_schema(qcel.molparse.from_string('\n'.join(seneyne.splitlines()[-4:]))['qm'], dtype=2)
-    ne = qcel.molparse.to_schema(qcel.molparse.from_string(sne)['qm'], dtype=2)
+    eneyne = qcel.molparse.to_schema(qcel.molparse.from_string(seneyne)['qm'], dtype=schver+1)
+    mA = qcel.molparse.to_schema(qcel.molparse.from_string('\n'.join(seneyne.splitlines()[:7]))['qm'], dtype=schver+1)
+    mB = qcel.molparse.to_schema(qcel.molparse.from_string('\n'.join(seneyne.splitlines()[-4:]))['qm'], dtype=schver+1)
+    ne = qcel.molparse.to_schema(qcel.molparse.from_string(sne)['qm'], dtype=schver+1)
 
     mAgB = qcel.molparse.from_string(seneyne)['qm']
     mAgB['real'] = [(iat < mAgB['fragment_separators'][0])
                     for iat in range(len(mAgB['elem']))]  # works b/c chgmult doesn't need refiguring
-    mAgB = qcel.molparse.to_schema(mAgB, dtype=2)
+    mAgB = qcel.molparse.to_schema(mAgB, dtype=schver+1)
 
     gAmB = qcel.molparse.from_string(seneyne)['qm']
     gAmB['real'] = [(iat >= gAmB['fragment_separators'][0]) for iat in range(len(gAmB['elem']))]
-    gAmB = qcel.molparse.to_schema(gAmB, dtype=2)
+    gAmB = qcel.molparse.to_schema(gAmB, dtype=schver+1)
 
     mols = {
         'eneyne': {
@@ -398,6 +399,7 @@ def test_mp2d__run_mp2d__2body(inp, subjects, request):
 
 
 @uusing("s-dftd3")
+@pytest.mark.parametrize("schver", [pytest.param(1, marks=[pytest.mark.skipif(sys.version_info >= (3, 14), reason="Py314+QCSk1")]), pytest.param(2)])
 @pytest.mark.parametrize(
     "subjects",
     [
@@ -413,31 +415,45 @@ def test_mp2d__run_mp2d__2body(inp, subjects, request):
     pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'gAmB', 'lbl': 'PBE-D3'}, "s-dftd3"),
     pytest.param({'parent': 'ne', 'name': 'd3-b3lyp-d3bj', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}, "s-dftd3"),
 ])  # yapf: disable
-def test_dftd3__run_dftd3__2body(inp, program, subjects, request):
-    subject = subjects()[inp['parent']][inp['subject']]
+def test_dftd3__run_dftd3__2body(inp, program, subjects, request, schver):
+    subject = subjects(schver)[inp['parent']][inp['subject']]
     expected = ref[inp['parent']][inp['lbl']][inp['subject']]
     gexpected = gref[inp['parent']][inp['lbl']][inp['subject']]
 
     if 'qcmol' in request.node.name:
         mol = subject
     else:
-        mol = subject.to_schema(dtype=2)
+        mol = subject.to_schema(dtype=schver + 1)
 
     if program == "s-dftd3":
         keywords = {'apply_qcengine_aliases': True, 'level_hint': inp['name'].split("-")[-1]}
     else:
         keywords = {}
 
-    resinp = {
-        'schema_name': 'qcschema_input',
-        'schema_version': 1,
-        'molecule': mol,
-        'driver': 'gradient',
-        'model': {
-            'method': inp['name']
-        },
-        'keywords': keywords,
-    }
+    if schver == 1:
+        resinp = {
+            'schema_name': 'qcschema_input',
+            'schema_version': 1,
+            'molecule': mol,
+            'driver': 'gradient',
+            'model': {
+                'method': inp['name']
+            },
+            'keywords': keywords,
+        }
+    elif schver == 2:
+        resinp = {
+            'schema_name': 'qcschema_atomic_input',
+            'schema_version': 2,
+            'molecule': mol,
+            "specification": {
+                'driver': 'gradient',
+                'model': {
+                    'method': inp['name']
+                },
+                'keywords': keywords,
+            }
+        }
     jrec = qcng.compute(resinp, program, raise_error=True)
     jrec = jrec.dict()
 
