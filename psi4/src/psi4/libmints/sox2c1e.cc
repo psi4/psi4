@@ -51,8 +51,6 @@
 #include <omp.h>
 #endif
 
-#include <stdexcept>
-
 namespace {
 
 /* Computes the conjugate transpose of const reference A and stores result in B */
@@ -84,78 +82,14 @@ void conj_T(ComplexMatrix const& A, SharedComplexMatrix B) {
 template <einsums::TensorConcept T1, einsums::TensorConcept T2>
     requires einsums::SameUnderlying<einsums::RemoveViewT<T1>, T2>
 void gemm(T1 const& A, T1 const& B, T2* C) {
-    // einsums::tensor_algebra::detail
-    //     ::einsum<true, false>(std::complex<double>(0.0), einsums::Indices{einsums::index::p, einsums::index::q}, C,
-    //                    std::complex<double>(1.0), einsums::Indices{einsums::index::p, einsums::index::a}, A,
-    //                    einsums::Indices{einsums::index::a, einsums::index::q}, B
-    // );
     einsums::linear_algebra::gemm<false, false>(std::complex<double>(1.0), A, B, std::complex<double>(0.0), C);
 }
 
 template <einsums::TensorConcept T1, typename T2>
     requires einsums::SameUnderlying<einsums::RemoveViewT<T1>, T2>
 void gemm(T1 const& A, T1 const& B, std::shared_ptr<T2> C) {
-    // einsums::tensor_algebra::detail
-    //     ::einsum<true, false>(std::complex<double>(0.0), einsums::Indices{einsums::index::p, einsums::index::q}, C.get(),
-    //                    std::complex<double>(1.0), einsums::Indices{einsums::index::p, einsums::index::a}, A,
-    //                    einsums::Indices{einsums::index::a, einsums::index::q}, B
-    // );
     einsums::linear_algebra::gemm<false, false>(std::complex<double>(1.0), A, B, std::complex<double>(0.0), C.get());
 }
-
-// template <einsums::TensorConcept T>
-// void test_nans(T& A) {
-//     using TDataType        = einsums::ValueTypeT<T>;
-//     constexpr size_t TRank = einsums::TensorRank<T>;
-//     if constexpr (TRank != 0) {
-//         einsums::Stride<TRank> index_strides;
-//
-//         size_t elements = einsums::dims_to_strides(A.dims(), index_strides);
-//
-//         for (size_t item = 0; item < elements; item++) {
-//             std::array<int64_t, TRank> target_combination;
-//
-//             einsums::sentinel_to_indices(item, index_strides, target_combination);
-//
-//             TDataType Avalue{einsums::subscript_tensor(A, target_combination)};
-//             if constexpr (!einsums::IsComplexV<TDataType>) {
-//                 if (std::isnan(Avalue)) {
-//                     einsums::println("NaN DETECTED!");
-//                     einsums::println("  {} ", A.name());
-//                     einsums::println(A);
-//
-//                     throw std::runtime_error("NAN detected in resulting tensor.");
-//                 } else {
-//                     if (std::isnan(Avalue.real()) || std::isnan(Avalue.imag())) {
-//                         einsums::println("NaN DETECTED!");
-//                         einsums::println("  {} ", A.name());
-//                         einsums::println(A);
-//
-//                         throw std::runtime_error("NAN detected in resulting tensor.");
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
-void test_nans(ComplexMatrix const& A) {
-    for (int h = 0; h < A.num_blocks(); h++) {
-        size_t dim = A.block_dims()[h];
-        for (int p = 0; p < dim; p++) {
-            for (int q = 0; q < dim; q++) {
-                std::complex<double> t = A.block(h)(p, q);
-                if (std::isnan(t.real()) || std::isnan(t.imag())) {
-                    std::cout << "\n\n\n\033[44m  WARNING: NAN \033[0m\n\n\n" << std::endl;
-                    einsums::println(A);
-                    throw std::runtime_error("NAN detected in resulting tensor.");
-                }
-            }
-        }
-    }
-}
-
-#define TEST_NAN(A) outfile->Printf("\n\033[42m  ===> TESTING NaNs in sox2c1e.cc:%d in %s <===\033[0m\n", __LINE__, __FUNCTION__); test_nans((A));
 
 }  // namespace
 
@@ -206,14 +140,12 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     /* 2. Form 1e Dirac Hamiltonian. */
     auto Hdirac = std::make_shared<ComplexMatrix>("Dirac Hamiltonian", nsopi4c_.blocks());
     form_dirac_hamiltonian(Hdirac);
-    TEST_NAN(*Hdirac);
 
     /* 3. Diagonalize 1e Dirac Hamiltonian with metric */
     auto orth = std::make_shared<ComplexMatrix>("4c metric^(-1/2)", nsopi4c_.blocks());
     auto orth_H = std::make_shared<ComplexMatrix>("4c metric^(-1/2).conj().T", nsopi4c_.blocks());
     form_orth(orth);
     conj_T(*orth, orth_H);
-    TEST_NAN(*orth);
 
     auto Hevec = std::make_shared<ComplexMatrix>("Dirac eigenvectors", nsopi4c_.blocks());
     auto Heval = einsums::BlockTensor<double, 1>("Dirac eigenvalues", nsopi4c_.blocks());
@@ -222,7 +154,6 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     // Orthogonalize Hdirac
     gemm(*orth_H, *Hdirac, tmp);
     gemm(*tmp, *orth, Hevec);
-    TEST_NAN(*Hevec);
 
     for (int h = 0; h < nsopi_.n(); h++) {
         if (nsopi_[h] == 0) continue;
@@ -244,14 +175,10 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
     conj_T(*Hevec, tmp);
     gemm(*orth, *tmp, Hevec);  // Back-transform
     tmp.reset(); // Last time using 4c matrices
-    TEST_NAN(*Hevec);
 
     /* 4. Form X and Stilde */
     auto X = std::make_shared<ComplexMatrix>("X", nsopi2c_.blocks());
     form_X(*Hevec, X);
-
-    // Now that we have X in 2-components, most of our matrices will be need to be reshaped
-    TEST_NAN(*X);
 
     auto X_H = std::make_shared<ComplexMatrix>("X.conj().T", nsopi2c_.blocks());
     auto X_HT = std::make_shared<ComplexMatrix>("X.conj().T @ T", nsopi2c_.blocks());
@@ -264,12 +191,10 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
 
     auto Stilde = std::make_shared<ComplexMatrix>("Stilde", nsopi2c_.blocks());
     form_Stilde(*X_HTX, Stilde);
-    TEST_NAN(*Stilde);
 
     /* 5. Form R */
     auto R = std::make_shared<ComplexMatrix>("R", nsopi2c_.blocks());
     form_R(*Stilde, *orth, R);
-    TEST_NAN(*R);
 
     /* 6. Form NESC FW+ Hamiltonian (Split into V and T) */
     auto Vx2c = ComplexMatrix("Vx2c", nsopi2c_.blocks());
@@ -296,9 +221,6 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
 
     gemm(*X_H, Tx2c, tmp);
     gemm(*tmp, *R, &Tx2c);
-
-    TEST_NAN(Tx2c);
-    TEST_NAN(Vx2c);
 
     /* 7. Express Tx2c + Vx2c as real matrices */
     // Decontracted basis SharedMatrices
@@ -475,20 +397,6 @@ void SOX2C1e::form_X(ComplexMatrix const& Hevec, SharedComplexMatrix X) {
         // TODO: replace this with lapack call
         einsums::linear_algebra::invert(&C_large);
         gemm(C_small, C_large, &X->block(h));
-
-        if (Process::environment.options.get_int("PRINT") > 1) {
-            for (int p = 0; p < nsopi2c_[h]; p++) {
-                for (int q = 0; q < nsopi2c_[h]; q++) {
-                    auto t = X->block(h)(p, q);
-                    if (std::fabs(t) > 1e30) {
-                        outfile->Printf("  WARNING: Large number detected in X");
-                    }
-                    if (std::isnan(t.imag()) || std::isinf(t.imag()) || std::isnan(t.real()) || std::isinf(t.real())) {
-                        throw PSIEXCEPTION("NaN or Inf detected in X");
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -526,10 +434,6 @@ void SOX2C1e::form_R(ComplexMatrix const& Stilde, ComplexMatrix const& orth, Sha
         einsums::Range a{0, nsopi2c_[h]};
         orth2c->block(h) = orth.block(h)(a, a);
     }
-    TEST_NAN(*Shalf);
-
-    TEST_NAN(Stilde);
-    TEST_NAN(*orth2c);
 
     auto tmp = std::make_shared<ComplexMatrix>("tmp", nsopi2c_.blocks());
     auto evec = std::make_shared<ComplexMatrix>("evec", nsopi2c_.blocks());
@@ -540,10 +444,7 @@ void SOX2C1e::form_R(ComplexMatrix const& Stilde, ComplexMatrix const& orth, Sha
 
     // tmp <- [S^{-1/2} \tilde S S^{-1/2}]
     gemm(*orth2c, Stilde, evec);
-    TEST_NAN(*evec);
     gemm(*evec, *orth2c, tmp);
-
-    TEST_NAN(*tmp);
 
     // Computing [S^{-1/2} \tilde S S^{-1/2}]^{-1/2}
 
@@ -556,7 +457,6 @@ void SOX2C1e::form_R(ComplexMatrix const& Stilde, ComplexMatrix const& orth, Sha
         einsums::linear_algebra::heev<true>(&tmp->block(h), &eval[h]);
     }
     conj_T(*tmp, evec);
-    TEST_NAN(*evec);
 
     // R <- Σ Λ^{-1/2} Σ^\dagger == evec @ np.diag(eval) @ tmp
     // scale each column in evec by eval: evec @ np.diag(eval)
@@ -569,7 +469,6 @@ void SOX2C1e::form_R(ComplexMatrix const& Stilde, ComplexMatrix const& orth, Sha
         }
     }
     gemm(*evec, *tmp, R);
-    TEST_NAN(*R);
 
     // S^{-1/2}...S^{1/2}
     gemm(*orth2c, *R, tmp);
@@ -626,11 +525,6 @@ void SOX2C1e::form_pauli(ComplexMatrix& Tx2c, ComplexMatrix& Vx2c, SharedMatrix 
                 Hx->set(h, p, q, tx.real() + vx.real());
             }
         }
-    }
-
-    if (std::isnan(Terr)) {
-        T->print();
-        throw PSIEXCEPTION("NaN detected in T");
     }
 
     outfile->Printf("  Frobenius norms of form_pauli\n");
