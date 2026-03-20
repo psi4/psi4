@@ -265,6 +265,7 @@ def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[c
 
 def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
     from .sapt import fisapt_proc
+    from .empirical_disp import edisp_interaction_energy
 
     sapt_dimer = dimer_wfn.molecule()
     sapt_dimer, monomerA, monomerB = prepare_sapt_molecule(sapt_dimer, "dimer")
@@ -279,12 +280,21 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
 
     save_pair = (saptd_name == "FISAPT0")
 
-    from .proc import build_functional_and_disp
-    if '-d4' in disp_name.lower() and not disp_name.lower().endswith('(s)'):
-        # perform -D4(I)
-        pass
+    if 'd4' in disp_name.lower() and not disp_name.lower().endswith('(s)'):
+        result = edisp_interaction_energy.sapt_dft_d4_interaction_energy(
+            sapt_dimer=sapt_dimer,
+            monomerA=monomerA,
+            monomerB=monomerB,
+            dimer_wfn=dimer_wfn,
+            dftd4_functional_name='hf-d4bjeeqtwo',
+            d4_type='intermolecular',
+            data={},
+        )
+        disp_interaction_energy = result['D4 IE']
     else:
-        _, _disp_functor = build_functional_and_disp('hf-' + disp_name, restricted=True, save_pairwise_disp=save_pair, **kwargs)
+        from .proc import build_functional_and_disp
+        core.print_out("   | Supermolecular Dispersion Interaction Energy E_IE = E_IJ - E_I - E_J |\n")
+        _, _disp_functor = build_functional_and_disp('hf-' + disp_name.replace("(s)", ""), restricted=True, save_pairwise_disp=save_pair, **kwargs)
 
         ## Dimer dispersion
         dimer_disp_energy = _disp_functor.compute_energy(dimer_wfn.molecule(), dimer_wfn)

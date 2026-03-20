@@ -255,8 +255,15 @@ for key in functionals:
         disp = key.split('-')[-1]
         procedures['energy']['sapt0-' + disp] = proc.run_sapt
         procedures['energy']['fisapt0-' + disp] = proc.run_fisapt
-from pprint import pprint as pp
-pp(procedures['energy'].keys())
+        # -D4 should be handled inermolecularly (i) instead of supermolecularly
+        # (s) due to incorrect long-range behavior of -D4 from charge
+        # equlibration. However, we still want legacy support for (s) which was
+        # the default prior to v1.10
+        if disp.startswith('d4'):
+            for suffix in ['(i)', '(s)']:
+                procedures['energy']['hf-' + disp + suffix] = proc.run_sapt
+                procedures['energy']['sapt0-' + disp + suffix] = proc.run_sapt
+                procedures['energy']['fisapt0-' + disp + suffix] = proc.run_fisapt
 
 # Will complete modelchem spec with basis='(auto)' for following methods
 integrated_basis_methods = [

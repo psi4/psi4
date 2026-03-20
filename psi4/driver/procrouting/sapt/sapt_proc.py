@@ -546,7 +546,12 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
 
             core.print_out("\n")
             core.print_out(
-                print_sapt_hf_summary(hf_data, "SAPT(HF)", delta_hf=dhf_value)
+                print_sapt_hf_summary(
+                    hf_data,
+                    "SAPT(HF)",
+                    dimer_wfn=hf_wfn_dimer,
+                    delta_hf=dhf_value,
+                )
             )
 
             data["Delta HF Correction"] = core.variable("SAPT(DFT) Delta HF")

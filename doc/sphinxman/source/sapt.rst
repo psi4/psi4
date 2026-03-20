@@ -1089,8 +1089,19 @@ function parameter adjustments with respect to basis set, the parameters are
 quite transferable at least between cc-pVDZ to aug-cc-pVTZ (see Fig S1 and S2
 from [Wallace:2024:114115]_ for more information). However, recommended usage
 is with the following levels of theory: SAPT0-D3/jun-cc-pVDZ,
-SAPT0-D3/aug-cc-pVDZ, and SAPT0-D4/aug-cc-pVDZ. A simple water dimer
-computation using SAPT0-D may look like::
+SAPT0-D3/aug-cc-pVDZ, and SAPT0-D4/aug-cc-pVDZ.
+
+.. warning:: Since March 2026, the default SAPT0-D4 treatment has changed from
+   the supermolecular ``sapt0-d4(s)`` variant to the intermolecular
+   ``sapt0-d4(i)`` variant because the supermolecular -D4 model can show
+   unphysical long-range behavior. To reproduce the former default explicitly,
+   pass ``(s)`` after the -D4 method, for example ``energy('sapt0-d4(s)')`` or
+   ``energy('sapt0-d4bjeeqtwo(s)')``. More information on the differences
+   between the supermolecular and intermolecular -D4 models can be found in
+   [Wallace:2024:114115]_, or above in the section ``SAPT(DFT)-D3 and
+   SAPT(DFT)-D4 variants``.
+
+A simple water dimer computation using SAPT0-D may look like::
 
     molecule water_dimer {
          0 1

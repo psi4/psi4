@@ -43,7 +43,7 @@ def print_sapt_var(name, value, short=False, start_spacer="    "):
         return start_spacer + "%-28s % 15.8f [mEh] % 15.8f [kcal/mol] % 15.8f [kJ/mol]" % vals
 
 
-def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
+def print_sapt_hf_summary(data, name, dimer_wfn, short=False, delta_hf=False):
 
     ret = "   Partial %s Results, to compute Delta HF (dHF)\n" % name
     ret += "  " + "-" * 105 + "\n"
@@ -118,6 +118,9 @@ def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
         core.set_variable("SAPT0 TOTAL ENERGY", total)
         core.set_variable("SAPT TOTAL ENERGY", total)
         core.set_variable("CURRENT ENERGY", total)
+        dimer_wfn.set_variable("SAPT0 TOTAL ENERGY", total)
+        dimer_wfn.set_variable("SAPT TOTAL ENERGY", total)
+        dimer_wfn.set_variable("CURRENT ENERGY", total)
 
         ret += "  " + "-" * 105 + "\n"
         return ret
