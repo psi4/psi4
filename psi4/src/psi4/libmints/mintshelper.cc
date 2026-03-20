@@ -1512,7 +1512,8 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations, bool force_spi
         spin_orbit = true;
     } else {
         if (options_.get_str("REFERENCE") != "CGHF")
-            throw PSIEXCEPTION("X2C with spin-orbit coupling is only possible with CGHF reference.");
+            outfile->Printf("  WARNING: X2C with spin-orbit coupling is only possible with CGHF reference.");
+            // throw PSIEXCEPTION("X2C with spin-orbit coupling is only possible with CGHF reference.");
     }
 
     std::vector<double> lambda(3, 0.0);
