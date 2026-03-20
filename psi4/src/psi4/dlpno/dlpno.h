@@ -448,13 +448,16 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
     std::vector<SharedMatrix> delta_imae_tilde_; // Toth eq. 26a
     SharedMatrix F_im_double_tilde_; // Toth Eq. 26b
     std::vector<SharedMatrix> F_vv_double_tilde_;
-
     std::vector<SharedMatrix> M_imae_; // M(i m | a_{mm} e_{mm})
 
     // => Lambda CCSD Intermediates <= //
 
     std::vector<SharedMatrix> zz_is_chud_;
     std::vector<SharedMatrix> john_bigback_;
+
+    std::vector<SharedMatrix> beta_;
+    std::vector<SharedMatrix> gamma_;
+    std::vector<SharedMatrix> delta_;
 
     SharedMatrix rho_oo_; // Toth Section IIIA
     std::vector<SharedMatrix> rho_vv_; // Toth Section IIIA

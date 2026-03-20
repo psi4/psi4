@@ -1241,7 +1241,7 @@ template<bool crude> double DLPNOCCSD::filter_pairs(const std::vector<double>& e
         int ij_strong = 0, ij_weak = 0;
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             auto &[i, j] = ij_to_i_j_[ij];
-            if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_ || i == j) { // Pair is strong pair, diagonal pairs are ALWAYS strong pairs
+            if (std::fabs(e_ijs[ij]) >= 0.0 || i == j) { // Pair is strong pair, diagonal pairs are ALWAYS strong pairs
                 i_j_to_ij_strong_[i][j] = ij_strong;
                 ij_to_i_j_strong_.push_back(std::make_pair(i, j));
                 ++ij_strong;

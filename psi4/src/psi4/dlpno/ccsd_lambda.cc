@@ -104,6 +104,39 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
     // Number of surviving pairs after DLPNO screening
     int n_lmo_pairs = ij_to_i_j_.size();
 
+    // Step 1: Create T_n intermediate (Jiang Eq. 70)
+    // T_{n_{ij}}^{a_{ij}} = S(a_{ij}, a_{nn}) T_{n}^{a_{nn}}
+    // n_{ij} is all n such that in and jn form valid pairs
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+
+        int nlmo_ij = lmopair_to_lmos_[ij].size();
+        int npno_ij = n_pno_[ij];
+        
+        T_n_ij_[ij] = std::make_shared<Matrix>(nlmo_ij, npno_ij);
+
+        for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
+            int n = lmopair_to_lmos_[ij][n_ij];
+            int nn = i_j_to_ij_[n][n];
+
+            // (a_{ij}, a_{nn}) (a_{nn}, 1) -> (a_{ij}, 1)
+            auto T_n_temp = linalg::doublet(S_PNO(ij, nn), T_ia_[n], false, false);
+            
+            for (int a_ij = 0; a_ij < npno_ij; ++a_ij) {
+                (*T_n_ij_[ij])(n_ij, a_ij) = (*T_n_temp)(a_ij, 0);
+            } // end a_ij
+        } // end n_ij
+    } // end ij
+
+    // Step 2: T1-dress integrals and Fock matrices
+    t1_ints();
+    t1_fock();
+    
+    beta_ = compute_beta();
+    gamma_ = compute_gamma();
+    delta_ = compute_delta();
+
     // Toth Eq. 27
     K_maef_dt_.resize(n_lmo_pairs);
     
@@ -353,6 +386,7 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
     } // end for ki
 
     // Toth Eq. 33
+    /*
     F_fcia_hat_.resize(n_lmo_pairs);
 
 #pragma omp parallel for
@@ -407,6 +441,7 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             F_fcia_hat_[mn][i_mn] = linalg::doublet(S_PNO(ii, mn), F_fcia_hat_[mn][i_mn]); // (a_ii, f_mn * c_mn)
         } // end i_mn
     } // end mn
+     */
 
     // Toth Eq. 34a
     F_knia_hat_.resize(n_lmo_pairs);
@@ -780,6 +815,10 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
 #endif
 
         int nlmo_mn = lmopair_to_lmos_[mn].size();
+	int naux_mn = lmopair_to_ribfs_[mn].size();
+
+        auto qia_mn = QIA_PNO(mn); // naux_mn * (nlmo_mn, npno_mn)
+        auto qab_mn = QAB_PNO(mn); // naux_mn * (npno_mn, npno_mn)
 
         /* l_{i}^{a_{ii}} -= \widetilde{\widetilde{K}}_{e_{mn}i}^{mn} \widetilde{\lambda}_{mn}^{e_{mn}a_{mn}}S_{a_{mn}}^{a_{ii}} (Toth Eq. 35b) */
         auto bruvver = linalg::doublet(K_eimn_dt_[mn], lambda_iajb_[mn], true, false);
@@ -792,13 +831,35 @@ void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector
         }
 
         // l_{i}^{a_{ii}} \mathrel{+}= \rho^{\mathrm{VV}}_{f_{mn}c_{mn}}\hat{F}^{ia_{ii}}_{f_{mn}c_{mn}} - \rho^{\mathrm{OO}}_{nm} \hat{F}_{mn}^{ia_{ii}} (Toth Eq. 36)
-        auto Gvv_slice = rho_vv_[mn]->clone();
-        Gvv_slice->reshape(n_pno_[mn] * n_pno_[mn], 1);
+        for (int q_mn = 0; q_mn < naux_mn; ++q_mn) {
+            auto q_vv = qab_mn[q_mn]->clone(); // (npno_mn, npno_mn)
+            auto q_ov = qia_mn[q_mn]->clone(); // (nlmo_mn, npno_mn)
+
+            // This performs a "T1-dressing" on Qvv, 
+            // B^{Q_{mn}}_{f_{mn}c_{mn}} -= \widetilde{T}_{k_{mn}}^{f_{mn}} B^{Q_{mn}}_{k_{mn}c_{mn}}
+            q_vv->subtract(linalg::doublet(T_n_ij_[mn], q_ov, true, false));
+
+	    auto Gvv_temp = q_ov->clone();
+	    Gvv_temp->scale(2.0 * rho_vv_[mn]->vector_dot(q_vv));
+	    Gvv_temp->subtract(linalg::triplet(q_ov, rho_vv_[mn], q_vv, false, true, false)); // (i, c) (f, c) (f, a) -> (i, a)
+
+	    for (int i_mn = 0; i_mn < lmopair_to_lmos_[mn].size(); ++i_mn) {
+		int i = lmopair_to_lmos_[mn][i_mn];
+		int ii = i_j_to_ij_[i][i];
+
+		auto Gvv_slice = submatrix_rows(*Gvv_temp, std::vector<int>(1, i_mn)); // (1, a)
+		L_ia_buffer[thread][i]->add(linalg::doublet(S_PNO(ii, mn), Gvv_slice, false, true));
+	    }
+        }
+
+
         for (int i_mn = 0; i_mn < lmopair_to_lmos_[mn].size(); ++i_mn) {
             int i = lmopair_to_lmos_[mn][i_mn];
 
+            /*
             auto Gvv_temp = linalg::doublet(F_fcia_hat_[mn][i_mn], Gvv_slice, false, false); // (a_ii, f_mn * c_mn) (f_mn * c_mn, 1) -> (a_ii, 1)
             L_ia_buffer[thread][i]->add(Gvv_temp);
+            */
 
             auto F_mnia_slice = F_knia_hat_[mn][i_mn]->clone(); // (a_ii, 1)
             F_mnia_slice->scale(rho_oo_->get(n, m)); // Needs to be (n, m) not mn
@@ -984,9 +1045,6 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
     } // end for
 
     auto alpha_ijkl = compute_alpha_ijkl();
-    auto beta = compute_beta();
-    auto gamma = compute_gamma();
-    auto delta = compute_delta();
 
 #pragma omp parallel for
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
@@ -1061,7 +1119,7 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
                 int i_mn = lmopair_to_lmos_dense_[mn][i], j_mn = lmopair_to_lmos_dense_[mn][j];
 
                 auto ethan = linalg::triplet(S_PNO(ij, mn), lambda_iajb_[mn], S_PNO(mn, ij));
-                ethan->scale(0.5 * beta[mn]->get(i_mn, j_mn));
+                ethan->scale(0.5 * beta_[mn]->get(i_mn, j_mn));
                 Ln_iajb[ij]->add(ethan);
             } // end n_ij
         } // end m_ij
@@ -1073,7 +1131,7 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
 
             // l_{ij}^{a_{ij}b_{ij}} -= \overline{\lambda}_{jn}^{a_{jn}f_{jn}}[S_{a_{nj}}^{a_{ij}}\widetilde{\gamma}_{in}^{f_{nj}b_{ij}} (Toth Eq. 52a)
             auto ron = linalg::doublet(S_PNO(ij, jn), lambda_iajb_bar_[jn]);
-            auto uncle_andy = linalg::triplet(S_PNO(nj, in), gamma[in], S_PNO(in, ij));
+            auto uncle_andy = linalg::triplet(S_PNO(nj, in), gamma_[in], S_PNO(in, ij));
             uncle_andy->add(J_ikac_non_proj_[nj][i_nj]); // Uncle Andy stays delinquent
             auto weasley = linalg::doublet(ron, uncle_andy);
             Ln_iajb[ij]->subtract(weasley);
@@ -1110,7 +1168,7 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
             glizzy->scale(2.0);
             /// (n j | f_{ni} b_{ij})
             glizzy->subtract(J_ikac_non_proj_[ni][j_ni]);
-            glizzy->add(linalg::triplet(S_PNO(ni, nj), delta[nj], S_PNO(nj, ij))); // (f_{ni}, b_{ij})
+            glizzy->add(linalg::triplet(S_PNO(ni, nj), delta_[nj], S_PNO(nj, ij))); // (f_{ni}, b_{ij})
             auto parts = linalg::doublet(forg, glizzy);
             
             Ln_iajb[ij]->add(parts);
@@ -1252,15 +1310,6 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
         // Form intermediates
         form_goo();
 
-        // Step 1: Compute R1 residual
-        compute_L_ia(L_ia, L_ia_buffer);
-
-        // Get rms of L_ia
-#pragma omp parallel for schedule(dynamic, 1)
-        for (int i = 0; i < naocc; ++i) {
-            L_ia_rms[i] = L_ia[i]->rms();
-        }
-
         // Step 4: Compute R2 residual
         compute_L_iajb(L_iajb, Ln_iajb);
 
@@ -1270,16 +1319,6 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
             L_iajb_rms[ij] = L_iajb[ij]->rms();
         }
 
-        // Update Singles Amplitude (Jiang Eq. 103)
-#pragma omp parallel for
-        for (int i = 0; i < naocc; ++i) {
-            int ii = i_j_to_ij_[i][i];
-            for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
-                double val = lambda_ia_[i]->get(a_ii, 0) - L_ia[i]->get(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
-                lambda_ia_[i]->set(a_ii, 0, val);
-            }
-        }
-
         // Update Doubles Amplitude (Jiang Eq. 104)
 #pragma omp parallel for schedule(dynamic, 1)
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
@@ -1287,10 +1326,29 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
 
             for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
                 for (int b_ij = 0; b_ij < n_pno_[ij]; ++b_ij) {
-                    double val = lambda_iajb_[ij]->get(a_ij, b_ij) - L_iajb[ij]->get(a_ij, b_ij) /
+                    double val = lambda_iajb_[ij]->get(a_ij, b_ij) - 0.5 * L_iajb[ij]->get(a_ij, b_ij) /
                                     (e_pno_[ij]->get(a_ij) + e_pno_[ij]->get(b_ij) - F_lmo_->get(i,i) - F_lmo_->get(j,j));
                     lambda_iajb_[ij]->set(a_ij, b_ij, val);
                 }
+            }
+        }
+
+        // Step 1: Compute R1 residual
+        compute_L_ia(L_ia, L_ia_buffer);
+
+        // Get rms of L_ia
+#pragma omp parallel for schedule(dynamic, 1)
+        for (int i = 0; i < naocc; ++i) {
+            L_ia_rms[i] = L_ia[i]->rms();
+        }
+
+        // Update Singles Amplitude (Jiang Eq. 103)
+#pragma omp parallel for
+        for (int i = 0; i < naocc; ++i) {
+            int ii = i_j_to_ij_[i][i];
+            for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
+                double val = lambda_ia_[i]->get(a_ii, 0) - 0.5 * L_ia[i]->get(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
+                lambda_ia_[i]->set(a_ii, 0, val);
             }
         }
 
