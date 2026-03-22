@@ -306,7 +306,7 @@ class PSI_API MintsHelper {
     /// AO DKH Integrals
     SharedMatrix ao_dkh(int dkh_order = -1);
     /// AO X2C Spin-Orbit Coupling Integrals
-    std::vector<SharedMatrix> ao_x2c_spin_orbit(bool include_perturbations = true);
+    std::vector<SharedMatrix> so_x2c_spin_orbit(bool include_perturbations = true);
     /// SO DKH Integrals
     SharedMatrix so_dkh(int dkh_order = -1);
     /// Vector AO Dipole Integrals

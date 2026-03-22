@@ -789,10 +789,10 @@ SharedMatrix MintsHelper::so_dkh(int dkh_order) {
     return dkh;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_x2c_spin_orbit(bool include_perturbations) {
-    std::string socx(PSIF_AO_SOCX);
-    std::string socy(PSIF_AO_SOCY);
-    std::string socz(PSIF_AO_SOCZ);
+std::vector<SharedMatrix> MintsHelper::so_x2c_spin_orbit(bool include_perturbations) {
+    std::string socx(PSIF_SO_SOCX);
+    std::string socy(PSIF_SO_SOCY);
+    std::string socz(PSIF_SO_SOCZ);
 
     if (!are_ints_cached(socx, include_perturbations)) {
         compute_so_x2c_ints(include_perturbations, true);
@@ -1544,16 +1544,16 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations, bool force_spi
 #ifndef USING_Einsums
         throw PSIEXCEPTION("Psi4 not built with Einsums enabled! Spin-orbit X2C1e is not available.");
 #else
-        SharedMatrix Hso_x = factory_->create_shared_matrix(PSIF_AO_SOCX);
-        SharedMatrix Hso_y = factory_->create_shared_matrix(PSIF_AO_SOCY);
-        SharedMatrix Hso_z = factory_->create_shared_matrix(PSIF_AO_SOCZ);
+        SharedMatrix Hso_x = factory_->create_shared_matrix(PSIF_SO_SOCX);
+        SharedMatrix Hso_y = factory_->create_shared_matrix(PSIF_SO_SOCY);
+        SharedMatrix Hso_z = factory_->create_shared_matrix(PSIF_SO_SOCZ);
         SOX2C1e x2cint(basisset_, get_basisset("BASIS_RELATIVISTIC"));
         x2cint.compute(so_overlap_x2c, so_kinetic_x2c, so_potential_x2c, Hso_x, Hso_y, Hso_z);
 
         // Set spin-orbit integrals
-        cached_oe_ints_[std::make_pair(PSIF_AO_SOCX, include_perturbations)] = Hso_x;
-        cached_oe_ints_[std::make_pair(PSIF_AO_SOCY, include_perturbations)] = Hso_y;
-        cached_oe_ints_[std::make_pair(PSIF_AO_SOCZ, include_perturbations)] = Hso_z;
+        cached_oe_ints_[std::make_pair(PSIF_SO_SOCX, include_perturbations)] = Hso_x;
+        cached_oe_ints_[std::make_pair(PSIF_SO_SOCY, include_perturbations)] = Hso_y;
+        cached_oe_ints_[std::make_pair(PSIF_SO_SOCZ, include_perturbations)] = Hso_z;
 #endif
     } else {
         SFX2C1e x2cint;

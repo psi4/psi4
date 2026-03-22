@@ -303,6 +303,9 @@
 #define PSIF_SO_H                "SO-basis Core Hamiltonian"
 #define PSIF_SO_ECP              "SO-basis ECP Ints"
 #define PSIF_AO_S                "AO-basis Overlap Ints"
+#define PSIF_SO_SOCX             "SO-basis Pauli-X"          /* For ZORA, this triple represents the spin-orbit */
+#define PSIF_SO_SOCY             "SO-basis Pauli-Y"          /* coupling integrals. For SOX2C-1e, it represents */
+#define PSIF_SO_SOCZ             "SO-basis Pauli-Z"          /* the non-scalar part of Tx2c + Vx2c              */
 #define PSIF_AO_MX               "AO-basis Mu-X Ints"
 #define PSIF_AO_MY               "AO-basis Mu-Y Ints"
 #define PSIF_AO_MZ               "AO-basis Mu-Z Ints"
@@ -321,9 +324,6 @@
 #define PSIF_AO_TYY              "AO-basis T-YY Ints"        /* Traceless electric quadrupole moment integrals */
 #define PSIF_AO_TYZ              "AO-basis T-YZ Ints"        /* Traceless electric quadrupole moment integrals */
 #define PSIF_AO_TZZ              "AO-basis T-ZZ Ints"        /* Traceless electric quadrupole moment integrals */
-#define PSIF_AO_SOCX             "AO-basis spin-orbit X"
-#define PSIF_AO_SOCY             "AO-basis spin-orbit Y"
-#define PSIF_AO_SOCZ             "AO-basis spin-orbit Z"
 
 // These integrals are anti-Hermitian -- upper triangle has sign opposite of that of the lower triangle
 #define PSIF_AO_NablaX           "AO-basis Nabla-X Ints"     /* integrals of nabla operator */

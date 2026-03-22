@@ -209,7 +209,7 @@ void CGHF::preiterations() {
         outfile->Printf("\n  CGHF: Spin-orbit coupling selected.\n");
         std::vector<SharedMatrix> H_SO(3);
         if (options_.get_str("RELATIVISTIC") == "X2C") {
-            H_SO = mintshelper()->ao_x2c_spin_orbit();
+            H_SO = mintshelper()->so_x2c_spin_orbit();
         } else {
             throw PSIEXCEPTION("RELATIVISTIC option must be in [\"X2C\"] when SPIN_ORBIT_COUPLING TRUE");
         }
