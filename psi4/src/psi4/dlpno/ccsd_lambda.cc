@@ -194,6 +194,7 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             for (int l_mi = 0; l_mi < nlmo_mi; ++l_mi) {
                 int l = lmopair_to_lmos_[mi][l_mi];
                 int kl = i_j_to_ij_[k][l];
+                if (kl == -1) continue; // checks to make sure kl is not a pair
 
                 auto ender_dragon = linalg::triplet(S_PNO(mi, kl), T_iajb_[kl], S_PNO(kl, mi));
 
@@ -773,6 +774,7 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
                 int k = lmopair_to_lmos_[ij][k_ij];
                 int nk = i_j_to_ij_[n][k], ik = i_j_to_ij_[i][k], kj = i_j_to_ij_[k][j];
+                if (nk == -1) continue;
 
                 auto U_nk = linalg::triplet(S_PNO(ni, nk), Tt_iajb_[nk], S_PNO(nk, ik));
                 auto L_kj = linalg::triplet(S_PNO(ik, kj), L_iajb_[kj], S_PNO(kj, ij));
@@ -1170,6 +1172,7 @@ void DLPNOCCSD_Lambda::compute_L_iajb(std::vector<SharedMatrix>& L_iajb, std::ve
             for (int n_ij = 0; n_ij < nlmo_ij; ++n_ij) {
                 int n = lmopair_to_lmos_[ij][n_ij];
                 int mn = i_j_to_ij_[m][n];
+                if (mn == -1) continue;
                 int i_mn = lmopair_to_lmos_dense_[mn][i], j_mn = lmopair_to_lmos_dense_[mn][j];
 
                 auto ethan = linalg::triplet(S_PNO(ij, mn), lambda_iajb_[mn], S_PNO(mn, ij));
