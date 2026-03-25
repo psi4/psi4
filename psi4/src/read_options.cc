@@ -168,6 +168,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Whether to enable using the BrianQC GPU module -*/
     options.add_bool("BRIANQC_ENABLE", false);
 #endif
+    /*- Whether to enable NVIDIA cuEST GPU acceleration (requires CUDA and cuEST libraries) -*/
+    options.add_bool("USE_CUEST", false);
 
     // Note that case-insensitive options are only functional as
     //   globals, not as module-level, and should be defined sparingly

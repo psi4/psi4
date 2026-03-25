@@ -52,6 +52,12 @@
 #include <omp.h>
 #endif
 
+#ifdef USING_cuEST
+#include <cuest.h>
+#include "psi4/libfock/cuESTCommon.h"
+extern cuestHandle_t cuest_handle;
+#endif
+
 #ifdef USING_BrianQC
 
 #include <use_brian_wrapper.h>
@@ -2479,10 +2485,15 @@ class StandardGridMgr {
 
     static const MassPoint *SG0_grids_[18];
     static int SG0_sizes_[18];
+    static std::vector<uint64_t> SG0_npoints_[18];
+    static std::vector<double> SG0_rparams_[18];
+    static std::vector<double> SG0_wparams_[18];
 
     static const MassPoint *SG1_grids_[19];
     static int SG1_sizes_[19];
-
+    static std::vector<uint64_t> SG1_npoints_[19];
+    static std::vector<double> SG1_rparams_[19];
+    static std::vector<double> SG1_wparams_[19];
    public:
     static void Initialize();
     static void ReleaseMemory();
@@ -2491,6 +2502,12 @@ class StandardGridMgr {
     static int GetSG1size(int Z);
     static const MassPoint *GetSG0grid(int Z);
     static const MassPoint *GetSG1grid(int Z);
+    static const std::vector<double> &GetSG0rparams(int Z);
+    static const std::vector<double> &GetSG0wparams(int Z);
+    static const std::vector<uint64_t> &GetSG0npoints(int Z);
+    static const std::vector<double> &GetSG1rparams(int Z);
+    static const std::vector<double> &GetSG1wparams(int Z);
+    static const std::vector<uint64_t> &GetSG1npoints(int Z);
 };
 
 // The MagicInitializer calls various initialization routines at program startup
@@ -2502,8 +2519,14 @@ static class MagicInitializer2 {
 
 const MassPoint *StandardGridMgr::SG0_grids_[18];
 int StandardGridMgr::SG0_sizes_[18];
+std::vector<uint64_t> StandardGridMgr::SG0_npoints_[18];
+std::vector<double> StandardGridMgr::SG0_rparams_[18];
+std::vector<double> StandardGridMgr::SG0_wparams_[18];
 const MassPoint *StandardGridMgr::SG1_grids_[19];
 int StandardGridMgr::SG1_sizes_[19];
+std::vector<uint64_t> StandardGridMgr::SG1_npoints_[19];
+std::vector<double> StandardGridMgr::SG1_rparams_[19];
+std::vector<double> StandardGridMgr::SG1_wparams_[19];
 
 int StandardGridMgr::WhichGrid(const char *name) {
     if (strcmp(name, "") == 0) return -1;
@@ -2542,6 +2565,24 @@ const MassPoint *StandardGridMgr::GetSG1grid(int Z) {
         throw PSIEXCEPTION("There is no SG-1 grid defined for the requested atomic number!");
     }
     return SG1_grids_[Z];
+}
+const std::vector<double> &StandardGridMgr::GetSG0rparams(int Z) {
+    return SG0_rparams_[Z];
+}
+const std::vector<double> &StandardGridMgr::GetSG0wparams(int Z) {
+    return SG0_wparams_[Z];
+}
+const std::vector<uint64_t> &StandardGridMgr::GetSG0npoints(int Z) {
+    return SG0_npoints_[Z];
+}
+const std::vector<double> &StandardGridMgr::GetSG1rparams(int Z) {
+    return SG1_rparams_[Z];
+}
+const std::vector<double> &StandardGridMgr::GetSG1wparams(int Z) {
+    return SG1_wparams_[Z];
+}
+const std::vector<uint64_t> &StandardGridMgr::GetSG1npoints(int Z) {
+    return SG1_npoints_[Z];
 }
 
 void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const &spec, int radscheme, MassPoint *grid_out) {
@@ -2686,6 +2727,20 @@ void StandardGridMgr::Initialize_SG0() {
             }
 #endif
             MassPoint *grid = (MassPoint *)malloc(SG0specs[Z].npts * sizeof(MassPoint));
+            SG0_rparams_[Z].resize(SG0specs[Z].nrad);
+            SG0_wparams_[Z].resize(SG0specs[Z].nrad);
+            RadialGridMgr::makeRadialGrid(SG0specs[Z].nrad, RadialGridMgr::WhichScheme("MULTIEXP"), SG0_rparams_[Z].data(), SG0_wparams_[Z].data(), SG0specs[Z].rparam);
+            SG0_npoints_[Z].resize(SG0specs[Z].nrad);
+            int count = 0;
+            for (int i_grp = 0; SG0specs[Z].group[i_grp].npts != 0; i_grp++) {
+                int npts = SG0specs[Z].group[i_grp].npts;
+                int nreps = SG0specs[Z].group[i_grp].nreps;
+                for (int i_rep = 0; i_rep < nreps; i_rep++) {
+                    SG0_npoints_[Z][count] = npts;
+                    count++;
+                }
+            }
+            assert (SG0specs[Z].nrad == count);
             makeCubatureGridFromPruneSpec(SG0specs[Z], RadialGridMgr::WhichScheme("MULTIEXP"), grid);
             SG0_grids_[Z] = grid;
             SG0_sizes_[Z] = SG0specs[Z].npts;
@@ -2758,6 +2813,20 @@ void StandardGridMgr::Initialize_SG1() {
         spec.rparam = SG1radii[Z];
         // Make the grid
         MassPoint *grid = (MassPoint *)malloc(spec.npts * sizeof(MassPoint));
+        SG1_rparams_[Z].resize(spec.nrad);
+        SG1_wparams_[Z].resize(spec.nrad);
+        RadialGridMgr::makeRadialGrid(spec.nrad, RadialGridMgr::WhichScheme("EM"), SG1_rparams_[Z].data(), SG1_wparams_[Z].data(), spec.rparam);
+        SG1_npoints_[Z].resize(spec.nrad);
+        int count = 0;
+        for (int i_grp = 0; spec.group[i_grp].npts != 0; i_grp++) {
+            int npts = spec.group[i_grp].npts;
+            int nreps = spec.group[i_grp].nreps;
+            for (int i_rep = 0; i_rep < nreps; i_rep++) {
+                SG1_npoints_[Z][count] = npts;
+                count++;
+            }
+        }
+        assert (count == spec.nrad);
         makeCubatureGridFromPruneSpec(spec, RadialGridMgr::WhichScheme("EM"), grid);
         SG1_grids_[Z] = grid;
         SG1_sizes_[Z] = spec.npts;
@@ -3721,8 +3790,87 @@ int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
 }
 
-void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
+void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, bool is_cuest) {
     options_ = opt;  // Save a copy
+
+#ifdef USING_cuEST
+    if (is_cuest) {
+        cuestAtomGridParameters_t atom_grid_params;
+        CHECK_CUEST(cuestParametersCreate(CUEST_ATOMGRID_PARAMETERS, &atom_grid_params));
+        uint64_t natom = molecule_->natom();
+        Matrix geom = molecule_->geometry();
+
+        std::vector<cuestAtomGrid_t> atom_grids(natom);
+        for (int A = 0; A < natom; A++) {
+            int Z = molecule_->true_atomic_number(A);
+            std::vector<double> rvalues;
+            std::vector<double> wvalues;
+            std::vector<uint64_t> nangpts;
+            assert (rvalues.size() == wvalues.size() && rvalues.size() == nangpts.size());
+            switch (opt.namedGrid) {
+                case -1:
+                    throw PSIEXCEPTION("Direct product grid not yet supported for CUEST");
+                    break;
+                case 0:
+                    rvalues = StandardGridMgr::GetSG0rparams(Z);
+                    wvalues = StandardGridMgr::GetSG0wparams(Z);
+                    nangpts = StandardGridMgr::GetSG0npoints(Z);
+                    break;
+                case 1:
+                    rvalues = StandardGridMgr::GetSG1rparams(Z);
+                    wvalues = StandardGridMgr::GetSG1wparams(Z);
+                    nangpts = StandardGridMgr::GetSG1npoints(Z);
+                    break;
+            }
+            uint64_t nradial = rvalues.size();
+            CHECK_CUEST(cuestAtomGridCreate(
+                cuest_handle,
+                nradial,
+                rvalues.data(),
+                wvalues.data(),
+                nangpts.data(),
+                atom_grid_params,
+                &atom_grids[A]
+            ));
+        }
+        CHECK_CUEST(cuestParametersDestroy(CUEST_ATOMGRID_PARAMETERS, atom_grid_params));
+        cuestMolecularGridParameters_t molecular_grid_params;
+        CHECK_CUEST(cuestParametersCreate(CUEST_MOLECULARGRID_PARAMETERS, &molecular_grid_params));
+        std::unique_ptr<cuestWorkspaceDescriptor_t> tmp_workspace_descriptor(new cuestWorkspaceDescriptor_t);
+        std::unique_ptr<cuestWorkspaceDescriptor_t> persistent_workspace_descriptor(new cuestWorkspaceDescriptor_t);
+        CHECK_CUEST(cuestMolecularGridCreateWorkspaceQuery(
+            cuest_handle,
+            natom,
+            atom_grids.data(),
+            geom.pointer()[0],
+            molecular_grid_params,
+            persistent_workspace_descriptor.get(),
+            tmp_workspace_descriptor.get(),
+            nullptr
+        ));
+        cuestWorkspace_t *tmp_workspace = cuest_common::allocateWorkspace(tmp_workspace_descriptor.get());
+        cuest_molecular_grid_ws_ptr_ = cuest_common::allocateWorkspace(persistent_workspace_descriptor.get());
+
+        CHECK_CUEST(cuestMolecularGridCreate(
+            cuest_handle,
+            natom,
+            atom_grids.data(),
+            geom.pointer()[0],
+            molecular_grid_params,
+            cuest_molecular_grid_ws_ptr_,
+            tmp_workspace,
+            &cuest_molecular_grid_
+        ));
+        CHECK_CUEST(cuestParametersDestroy(CUEST_MOLECULARGRID_PARAMETERS, molecular_grid_params));
+        for (int A = 0; A < natom; A++) {
+            CHECK_CUEST(cuestAtomGridDestroy(atom_grids[A]));
+        }
+        cuest_common::freeWorkspace(tmp_workspace);
+        // We don't need to build the rest of the psi4 data; only the cuEST grids will be needed.
+        return;
+    }
+#endif
+
     atomic_grids_.clear();
     atomic_grids_.resize(molecule_->natom());
 
@@ -4306,8 +4454,11 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     double epsilon = full_float_options["DFT_BASIS_TOLERANCE"];
     auto extents = std::make_shared<BasisExtents>(primary_, epsilon);
     timer_on("build grid");
-    MolecularGrid::buildGridFromOptions(opt);
+    // The options_ member is shadowed 
+    bool is_cuest = options_.get_bool("USE_CUEST");
+    MolecularGrid::buildGridFromOptions(opt, is_cuest);
     timer_off("build grid");
+    if (is_cuest) return;
     timer_on("post-process grid");
     postProcess(extents, max_points, min_points, max_radius);
     timer_off("post-process grid");
@@ -4352,6 +4503,16 @@ void PseudospectralGrid::buildGridFromOptions() {
 MolecularGrid::MolecularGrid(std::shared_ptr<Molecule> molecule)
     : debug_(0), molecule_(molecule), npoints_(0), max_points_(0), max_functions_(0) {}
 MolecularGrid::~MolecularGrid() {
+#ifdef USING_cuEST
+    if (cuest_molecular_grid_) {
+        CHECK_CUEST(cuestMolecularGridDestroy(cuest_molecular_grid_));
+        cuest_molecular_grid_ = nullptr;
+    }
+    if (cuest_molecular_grid_ws_ptr_) {
+        cuest_common::freeWorkspace(cuest_molecular_grid_ws_ptr_);
+        cuest_molecular_grid_ws_ptr_ = nullptr;
+    }
+#endif
     if (npoints_) {
         delete[] x_;
         delete[] y_;
