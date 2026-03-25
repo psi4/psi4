@@ -28,6 +28,7 @@
 
 #include "v.h"
 #include "cubature.h"
+#include "cuest/types/cuest_parameter_types.h"
 #include "points.h"
 #include "dft_integrators.h"
 #include "sap.h"
@@ -50,11 +51,17 @@
 #include <cstdlib>
 #include <numeric>
 #include <sstream>
+#include <cstdio>
 #include <string>
 #include <algorithm>
 
 #ifdef _OPENMP
 #include <omp.h>
+#endif
+
+#ifdef USING_cuEST
+#include "psi4/libfock/cuESTCommon.h"
+extern cuestHandle_t cuest_handle;
 #endif
 
 #ifdef USING_BrianQC
@@ -137,6 +144,41 @@ std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary, std::sh
 
     return v;
 }
+void VBase::set_Cocc(std::vector<SharedMatrix> Coccs) {
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        std::vector<uint64_t> d_Cocc_noccs_provided;
+        uint64_t d_Cocc_size_needed = 0;
+        for (SharedMatrix Cocc : Coccs) {
+            if (Cocc->nirrep() != 1) {
+                // This shouldn't be needed, as we call with the AO basis subset.  But just in case..
+                throw PSIEXCEPTION("cuEST V code doesn't support symmetric Cocc yet.");
+            }
+            d_Cocc_noccs_provided.push_back(Cocc->colspi()[0]);
+            d_Cocc_size_needed += Cocc->size();
+        }
+        if (d_Cocc_noccs_provided != d_Cocc_noccs_) {
+            cudaFree(d_Coccs_AO_);
+            cudaError_t err = cudaMalloc((void**)&d_Coccs_AO_, d_Cocc_size_needed * sizeof(double));
+            if (err != cudaSuccess) {
+                throw PSIEXCEPTION("cudaMalloc failed in VBase::set_Cocc");
+            }
+            d_Cocc_noccs_ = d_Cocc_noccs_provided;
+        }
+        uint64_t d_Cocc_offset = 0;
+        std::vector<uint64_t> noccs;
+        for (SharedMatrix Cocc : Coccs) {
+            noccs.push_back(Cocc->colspi()[0]);
+            auto CoccT = Cocc->transpose();
+            cudaError_t err = cudaMemcpy(d_Coccs_AO_ + d_Cocc_offset, CoccT->get_pointer(0), Cocc->size() * sizeof(double), cudaMemcpyHostToDevice);
+            if (err != cudaSuccess) {
+                throw PSIEXCEPTION("cudaMemcpy failed in VBase::set_Cocc");
+            }
+            d_Cocc_offset += Cocc->size();
+        }
+    }
+#endif
+}
 void VBase::set_D(std::vector<SharedMatrix> Dvec) {
     if (Dvec.size() > 2) {
         throw PSIEXCEPTION("VBase::set_D: Can only set up to two D vectors.");
@@ -177,12 +219,55 @@ void VBase::initialize() {
     timer_on("V: Grid");
     grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, options_);
     timer_off("V: Grid");
+#ifdef USING_cuEST
+    // No workers are needed for cuEST, so we can just create the XC Integral Plan here and return
+    if (options_.get_bool("USE_CUEST")) {
+        cuestXCIntPlanParameters_t xcint_params;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCINTPLAN_PARAMETERS, reinterpret_cast<void**>(&xcint_params)));
 
+        cuestWorkspaceDescriptor_t persistentWorkspaceDescriptor {};
+        cuestWorkspaceDescriptor_t temporaryWorkspaceDescriptor {};
+
+        std::map<std::string, cuestXCIntPlanParametersFunctional_t> functional_params_map{
+            {"B3LYP", {CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_B3LYP5}},
+            {"BLYP", {CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_BLYP}},
+            {"B97", {CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_B97}},
+            {"B97M-V", {CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_B97MV}}
+        };
+        if (functional_params_map.find(functional_->name()) == functional_params_map.end()) {
+            throw PSIEXCEPTION("Functional not supported for cuEST: " + functional_->name());
+        }
+        cuestXCIntPlanParametersFunctional_t cuest_func = functional_params_map[functional_->name()];
+        CHECK_CUEST(cuestXCIntPlanCreateWorkspaceQuery(
+            cuest_handle,
+            primary_->cuest_basis(),
+            grid_->cuest_grid(),
+            cuest_func,
+            xcint_params,
+            &persistentWorkspaceDescriptor,
+            &temporaryWorkspaceDescriptor,
+            nullptr));
+
+        cuest_xcint_ws_ptr_ = cuest_common::allocateWorkspace(&persistentWorkspaceDescriptor);
+        cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
+
+        CHECK_CUEST(cuestXCIntPlanCreate(
+            cuest_handle,
+            primary_->cuest_basis(),
+            grid_->cuest_grid(),
+            cuest_func,
+            xcint_params,
+            cuest_xcint_ws_ptr_,
+            temporary_workspace,
+            &cuest_xcint_plan_));
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCINTPLAN_PARAMETERS, xcint_params));
+        cuest_common::freeWorkspace(temporary_workspace);
+    }
+#endif
     for (size_t i = 0; i < num_threads_; i++) {
         // Need a functional worker per thread
         functional_workers_.push_back(functional_->build_worker());
     }
-    
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT)
     {
@@ -733,7 +818,23 @@ void VBase::print_header() const {
 }
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
-void VBase::finalize() { grid_.reset(); }
+void VBase::finalize() { grid_.reset();
+#ifdef USING_cuEST
+    if (d_Coccs_AO_ != nullptr) {
+        cudaFree(d_Coccs_AO_);
+        d_Coccs_AO_ = nullptr;
+        d_Cocc_noccs_.clear();
+    }
+    if (cuest_xcint_plan_ != nullptr) {
+        CHECK_CUEST(cuestXCIntPlanDestroy(cuest_xcint_plan_));
+        cuest_xcint_plan_ = nullptr;
+    }
+    if (cuest_xcint_ws_ptr_ != nullptr) {
+        cuest_common::freeWorkspace(cuest_xcint_ws_ptr_);
+        cuest_xcint_ws_ptr_ = nullptr;
+    }
+#endif
+}
 void VBase::build_collocation_cache(size_t memory) {
     // Figure out many blocks to skip
 
@@ -1262,10 +1363,65 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     // => Validate object <=
     timer_on("RV: Form V");
     
-    if ((D_AO_.size() != 1) || (ret.size() != 1)) {
-        throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
+    if ((ret.size() != 1)) {
+        throw PSIEXCEPTION("V: RKS should have only one V Matrix");
     }
-    
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        if ((d_Cocc_noccs_.size() != 1)) {
+            throw PSIEXCEPTION("V: RKS should have only one Cocc Matrix");
+        }
+        double *d_V = nullptr;
+        cudaError_t err = cudaMalloc((void**)&d_V, ret[0]->size() * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
+        }
+        cuestXCPotentialRKSComputeParameters_t rks_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCPOTENTIALRKSCOMPUTE_PARAMETERS, &rks_compute_parameters));
+
+        cuestWorkspaceDescriptor_t temporary_workspace_descriptor;
+        cuestWorkspaceDescriptor_t variable_buffersize_descriptor {
+            0,
+            2000000000
+        };
+        double Exc = 0.0;
+        CHECK_CUEST(cuestXCPotentialRKSComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            rks_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            &Exc,
+            d_V
+            ));
+
+        cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+
+        CHECK_CUEST(cuestXCPotentialRKSCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            rks_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            &Exc,
+            d_V
+            ));
+        err = cudaMemcpy(ret[0]->get_pointer(0), d_V, ret[0]->size() * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+        quad_values_["FUNCTIONAL"] = Exc;
+        cuest_common::freeWorkspace(temporary_workspace);
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCPOTENTIALRKSCOMPUTE_PARAMETERS, rks_compute_parameters));
+        cudaFree(d_V);
+        timer_off("RV: Form V");
+        return;
+    }
+#endif
     // => Special BrianQC Logic <=
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
@@ -1390,7 +1546,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         parallel_timer_off("V_xc", rank);
     }
 
-    // Do we need VV10?
+    // Do we need VV10?x    
     double vv10_e = 0.0;
     if (functional_->needs_vv10()) {
         vv10_e = vv10_nlc(D_AO_[0], V_AO);
@@ -1968,12 +2124,66 @@ SharedMatrix RV::compute_gradient() {
     // => Validation <= //
     if ((D_AO_.size() != 1)) throw PSIEXCEPTION("V: RKS should have only one D Matrix");
 
+    // => Setup <= //
+    int natom = primary_->molecule()->natom();
+
+#ifdef USING_cuEST
+    if (options_.get_bool("USE_CUEST")) {
+        SharedMatrix Gxc = std::make_shared<Matrix>("Gxc", natom, 3);
+        if ((d_Cocc_noccs_.size() != 1)) {
+            throw PSIEXCEPTION("V: RKS should have only one Cocc Matrix");
+        }
+        double *d_Gxc = nullptr;
+        cudaError_t err = cudaMalloc((void**)&d_Gxc, Gxc->size() * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_gradient");
+        }
+        cuestXCDerivativeRKSComputeParameters_t rks_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCDERIVATIVERKSCOMPUTE_PARAMETERS, &rks_compute_parameters));
+
+        cuestWorkspaceDescriptor_t temporary_workspace_descriptor;
+        cuestWorkspaceDescriptor_t variable_buffersize_descriptor {
+            0,
+            2000000000
+        };
+        CHECK_CUEST(cuestXCDerivativeRKSComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            rks_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_Gxc
+            ));
+
+        cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+
+        CHECK_CUEST(cuestXCDerivativeRKSCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            rks_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Cocc_noccs_[0],
+            d_Coccs_AO_,
+            d_Gxc
+            ));
+        err = cudaMemcpy(Gxc->get_pointer(0), d_Gxc, Gxc->size() * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_gradient");
+        }
+        cuest_common::freeWorkspace(temporary_workspace);
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCDERIVATIVERKSCOMPUTE_PARAMETERS, rks_compute_parameters));
+        cudaFree(d_Gxc);
+        return Gxc;
+    }
+#endif
+
     if (functional_->needs_vv10()) {
         throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.");
     }
 
-    // => Setup <= //
-    int natom = primary_->molecule()->natom();
 
     // Set Hessian derivative level in properties
     int old_deriv = point_workers_[0]->deriv();

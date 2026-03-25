@@ -34,6 +34,11 @@
 #include <map>
 #include <unordered_map>
 #include <string>
+#include <vector>
+
+#ifdef USING_cuEST
+#include <cuest.h>
+#endif
 
 namespace psi {
 class BasisSet;
@@ -78,6 +83,15 @@ class PSI_API VBase {
     std::vector<std::shared_ptr<PointFunctions>> point_workers_;
     /// Integration grid, built by KSPotential
     std::shared_ptr<DFTGrid> grid_;
+#ifdef USING_cuEST
+    /// XC Integral Plan
+    cuestXCIntPlan_t cuest_xcint_plan_ = nullptr;
+    /// XC Integral Plan Persistent Workspace
+    cuestWorkspace_t *cuest_xcint_ws_ptr_ = nullptr;
+    /// Vector of GPU matrices of occupied orbitals
+    double* d_Coccs_AO_ = nullptr;
+    std::vector<uint64_t> d_Cocc_noccs_;
+#endif
     /// Quadrature values obtained during integration
     std::map<std::string, double> quad_values_;
     // Caches collocation grids
@@ -126,6 +140,7 @@ class PSI_API VBase {
 
     // Set the D matrix, get it back if needed
     void set_D(std::vector<SharedMatrix> Dvec);
+    void set_Cocc(std::vector<SharedMatrix> Cocc);
     const std::vector<SharedMatrix>& Dao() const { return D_AO_; }
 
     // Set the site of the grac shift
