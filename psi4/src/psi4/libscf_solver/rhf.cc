@@ -181,6 +181,7 @@ void RHF::form_V() {
     // const std::vector<SharedMatrix> & V = potential_->V();
     // Va_ = V[0];
     potential_->set_D({Da_});
+    potential_->set_Cocc({Ca_subset("AO", "OCC")});
     potential_->compute_V({Va_});
     Vb_ = Va_;
 }
