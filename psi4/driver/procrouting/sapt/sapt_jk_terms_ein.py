@@ -2022,12 +2022,10 @@ def find(
         )
         assert (
             abs(scalars["Ind20,u (A<-B)"] - Ind20u_AB) < 1e-8
-        ), f"Ind20u_AB mismatch: {1000 * scalars['Ind20,u (A<-B)']:.8f} vs {
-            1000 * Ind20u_AB:.8f}"
+        ), f"Ind20u_AB mismatch: {1000 * scalars['Ind20,u (A<-B)']:.8f} vs {1000 * Ind20u_AB:.8f}"
         assert (
             abs(scalars["Ind20,u (A->B)"] - Ind20u_BA) < 1e-8
-        ), f"Ind20u_BA mismatch: {1000 * scalars['Ind20,u (A->B)']:.8f} vs {
-            1000 * Ind20u_BA:.8f}"
+        ), f"Ind20u_BA mismatch: {1000 * scalars['Ind20,u (A->B)']:.8f} vs {1000 * Ind20u_BA:.8f}"
         core.print_out(
             f"    Ind20,u                 = {
                 Ind20u_AB + Ind20u_BA * 1000:18.8f} [mEh]\n"
@@ -2426,8 +2424,7 @@ def fdisp0(
     dfh.set_memory(memory_doubles - orbital_memory)
     # print set memory in GB
     core.print_out(
-        f"    Setting DFHelper memory to {
-            (memory_doubles - orbital_memory) * 8 / 1e9:.3f} GB\n"
+        f"    Setting DFHelper memory to {(memory_doubles - orbital_memory) * 8 / 1e9:.3f} GB\n"
     )
 
     dfh.set_method("DIRECT_iaQ")
