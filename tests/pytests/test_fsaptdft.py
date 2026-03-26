@@ -1066,9 +1066,7 @@ no_com
                 ref_data[key][i],
                 saptdft_fsapt_data[key][i],
                 6,
-                f"{saptdft_fsapt_data['Frag1'][i]} {saptdft_fsapt_data['Frag2'][i]} {
-                    key
-                }",
+                f"{saptdft_fsapt_data['Frag1'][i]} {saptdft_fsapt_data['Frag2'][i]} {key}",
             )
 
 
