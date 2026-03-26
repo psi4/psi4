@@ -531,7 +531,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
                 continue
 
             data = copy.deepcopy(template)
-            data["molecule"] = core.Molecule.from_schema(imol.dict()) #nonphysical=True
+            data["molecule"] = core.Molecule.from_schema(imol.model_dump()) #nonphysical=True
             if self.embedding_charges:
                 charges = imol.extras.pop("embedding_charges")
                 data['keywords']['function_kwargs'].update({'external_potentials': charges})
@@ -628,7 +628,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
         nbody_model = self.get_results(client=client)
 
         # print("\n<<<  (RRR 4) Psi4 ManyBodyComputer.get_psi_results nbody_model  >>>")
-        # pprint.pprint(nbody_model.dict(), width=200)
+        # pprint.pprint(nbody_model.model_dump(), width=200)
 
         info = "\n" + p4util.banner(f" ManyBody Results ", strNotOutfile=True) + "\n"
         core.print_out(info)
@@ -637,11 +637,13 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         logger.debug('\nManyBodyResult QCSchema:\n' + pp.pformat(nbody_model.model_dump()))
 
-        qmol = core.Molecule.from_schema(self.molecule.dict())  # nonphy
+        qmol = core.Molecule.from_schema(self.molecule.model_dump())  # nonphy
         wfn = core.Wavefunction.build(qmol, "def2-svp", quiet=True)
 
         qcvars = translate_qcvariables(nbody_model.properties.model_dump())
         for qcv, val in qcvars.items():
+            if qcv.lower() in ["schema_name", "schema name"]:
+                continue
             for obj in [core, wfn]:
                 obj.set_variable(qcv, val)
 
@@ -656,7 +658,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
                 mc_lbl = full_to_ordinal_mc_lbl[mckey][1:]  # avoid §§
             viz_label = labeler(mc_lbl, frag, bas, opaque=False)
 
-            available_properties = dval.dict().keys()
+            available_properties = dval.model_dump()
             for obj in [core, wfn]:
                 if "return_energy" in available_properties:
                     obj.set_variable(f"N-BODY {viz_label} TOTAL ENERGY", dval.return_energy)
