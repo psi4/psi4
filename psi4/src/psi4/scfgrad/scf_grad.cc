@@ -88,7 +88,7 @@ SCFDeriv::SCFDeriv(std::shared_ptr<scf::HF> ref_wfn, Options& options) :
         hessians_["-D Hessian"] = ref_wfn->array_variable("-D Hessian");
         hessians_["-D Hessian"]->set_name("-D Hessian");
     }
-
+    jk_ = ref_wfn->jk();
 }
 SCFDeriv::~SCFDeriv()
 {
@@ -223,7 +223,21 @@ SharedMatrix SCFDeriv::compute_gradient()
     // => Two-Electron Gradient <= //
     timer_on("Grad: JK");
 
-    auto jk = JKGrad::build_JKGrad(1, mintshelper_);
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
+    
+#ifndef USING_cuEST
+    std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(1, mintshelper_);
+#else
+    std::shared_ptr<JKGrad> jk;
+    if (options_.get_str("SCF_TYPE").find("DF") != std::string::npos && options_.get_bool("USE_CUEST") && !functional_->is_x_lrc()) {
+        jk = JKGrad::build_cuESTJKGrad(1, jk_, -alpha, -beta);
+    } else {
+        jk = JKGrad::build_JKGrad(1, mintshelper_);
+    }
+    alpha = 1.0;
+    beta = 1.0;
+#endif
     jk->set_memory((size_t) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Ca_occ);
@@ -247,9 +261,6 @@ SharedMatrix SCFDeriv::compute_gradient()
 
     jk->print_header();
     jk->compute_gradient();
-    
-    double alpha = functional_->x_alpha();
-    double beta = functional_->x_beta();
     
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {

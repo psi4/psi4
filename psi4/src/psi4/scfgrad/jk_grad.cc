@@ -44,6 +44,7 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/libfock/jk.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -63,6 +64,16 @@ extern brianInt brianRestrictionType;
 
 #endif
 
+#ifdef USING_cuEST
+#include "psi4/libfock/cuESTJK.h"
+#include "psi4/libfock/cuESTCommon.h"
+
+#include <memory>
+
+#include <cublas_v2.h>
+#include <cusolverDn.h>
+#endif
+
 using namespace psi;
 
 namespace psi {
@@ -80,7 +91,7 @@ std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<MintsHel
 {
     Options& options = Process::environment.options;
 
-    if (options.get_str("SCF_TYPE").find("DF") != std::string::npos) {
+    if (options.get_str("SCF_TYPE").find("DF") != std::string::npos && !options.get_bool("USE_CUEST")) {
         DFJKGrad* jk = new DFJKGrad(deriv, mints);
 
         if (options["INTS_TOLERANCE"].has_changed())
@@ -118,6 +129,19 @@ std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<MintsHel
         throw PSIEXCEPTION("JKGrad::build_JKGrad: Unknown SCF Type");
     }
 }
+#ifdef USING_cuEST
+std::shared_ptr<JKGrad> JKGrad::build_cuESTJKGrad(int deriv, std::shared_ptr<JK> jk, double x_alpha, double x_beta)
+{
+    Options& options = Process::environment.options;
+
+    cuESTJKGrad* jkgrad = new cuESTJKGrad(deriv, jk);
+
+    jkgrad->set_x_alpha(x_alpha);
+    jkgrad->set_x_beta(x_beta);
+
+    return std::shared_ptr<JKGrad>(jkgrad);
+}
+#endif
 void JKGrad::common_init() {
     print_ = 1;
     debug_ = 0;
@@ -2982,6 +3006,199 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute2(
     val["K"] = Khess[0];
     return val;
 }
+#ifdef USING_cuEST
+cuESTJKGrad::cuESTJKGrad(int deriv, std::shared_ptr<JK> jk) : jk_(jk), x_alpha_(0.0), x_beta_(0.0), JKGrad(deriv, jk->basisset()) { common_init(); }
+cuESTJKGrad::~cuESTJKGrad() {}
+void cuESTJKGrad::common_init() {
+}
+void cuESTJKGrad::print_header() const {
+    if (print_) {
+        outfile->Printf("  ==> cuESTJKGrad: GPU-Accelerated DF-SCF Gradients <==\n\n");
 
+        outfile->Printf("    Gradient:          %11d\n", deriv_);
+        outfile->Printf("    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        outfile->Printf("    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        outfile->Printf("    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_) outfile->Printf("    Omega:             %11.3E\n", omega_);
+        outfile->Printf("    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        outfile->Printf("\n");
+    }
+}
+void cuESTJKGrad::compute_gradient() {
+    if (!do_J_ && !do_K_ && !do_wK_) return;
+
+    if (!(Ca_ && Cb_ && Da_ && Db_ && Dt_)) throw PSIEXCEPTION("Occupation/Density not set");
+
+    // => Set up gradients <= //
+    
+    int natom = primary_->molecule()->natom();
+    gradients_.clear();
+    if (do_J_) {
+        gradients_["Coulomb"] = std::make_shared<Matrix>("Coulomb Gradient", natom, 3);
+    }
+    if (do_K_) {
+        gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient", natom, 3);
+    }
+    if (do_wK_) {
+        throw PSIEXCEPTION("cuESTJKGrad does not support range-separated exchange");
+    }
+
+    // => Sizing <= //
+
+    int nao = primary_->nbf();
+    int na = Ca_->colspi()[0];
+    int nb = Cb_->colspi()[0];
+
+    std::vector<uint64_t> nocc(2);
+    nocc[0] = na;
+    nocc[1] = nb;
+
+    bool restricted = (Ca_ == Cb_);
+
+    double* d_grad = nullptr;
+    cudaMalloc(reinterpret_cast<void**>(&d_grad), sizeof(double) * 3 * natom);
+
+    double* d_D = nullptr;
+    cudaMalloc(reinterpret_cast<void**>(&d_D), sizeof(double) * nao * nao);
+    cudaMemcpy(d_D, Dt_->get_pointer(), sizeof(double) * nao * nao, cudaMemcpyHostToDevice);
+
+    cuestWorkspaceDescriptor_t* temporaryWorkspaceDescriptor = (cuestWorkspaceDescriptor_t*) malloc(sizeof(cuestWorkspaceDescriptor_t));
+    cuestWorkspaceDescriptor_t* variableBufferSize = (cuestWorkspaceDescriptor_t*) malloc(sizeof(cuestWorkspaceDescriptor_t));
+    variableBufferSize->hostBufferSizeInBytes = 0;
+    variableBufferSize->deviceBufferSizeInBytes = 4000000000;
+    
+    cuestDFSymmetricDerivativeComputeParameters_t df_grad_compute_parameters;
+    CHECK_CUEST(cuestParametersCreate(
+        CUEST_DFSYMMETRICDERIVATIVECOMPUTE_PARAMETERS, 
+        &df_grad_compute_parameters));
+
+    if (restricted) {
+        std::vector<double> Ca_row_major(na * nao);
+        double* Ca_ptr = Ca_->get_pointer();
+        for (int i = 0; i < na; i++) {
+            for (int mu = 0; mu < nao; mu++) {
+                Ca_row_major[i * nao + mu] = Ca_ptr[mu * na + i];
+            }
+        }
+
+        double* d_C = nullptr;
+        cudaMalloc(reinterpret_cast<void**>(&d_C), sizeof(double) * na * nao);
+        cudaMemcpy(d_C, Ca_row_major.data(), sizeof(double) * na * nao, cudaMemcpyHostToDevice);
+
+        std::shared_ptr<cuESTJK> cuest_jk = std::dynamic_pointer_cast<cuESTJK>(jk_);
+        cuestDFIntPlan_t cuest_df_plan = cuest_jk->cuest_df_plan();
+        
+        CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_df_plan,
+            df_grad_compute_parameters,
+            variableBufferSize, 
+            temporaryWorkspaceDescriptor, 
+            0.5,
+            d_D,
+            1.0 * x_alpha_,
+            1,
+            nocc.data(),
+            d_C,
+            d_grad));
+
+        cuestWorkspace_t* temporaryWorkspace = cuest_common::allocateWorkspace(temporaryWorkspaceDescriptor);
+
+        CHECK_CUEST(cuestDFSymmetricDerivativeCompute(
+            cuest_handle,
+            cuest_df_plan,
+            df_grad_compute_parameters,
+            variableBufferSize, 
+            temporaryWorkspace,
+            0.5,
+            d_D,
+            1.0 * x_alpha_,
+            1,
+            nocc.data(),
+            d_C,
+            d_grad));
+
+        cuest_common::freeWorkspace(temporaryWorkspace);
+
+        cudaFree(d_C);
+    } else {
+        std::vector<double> Ca_row_major(na * nao);
+        double* Ca_ptr = Ca_->get_pointer();
+        for (int i = 0; i < na; i++) {
+            for (int mu = 0; mu < nao; mu++) {
+                Ca_row_major[i * nao + mu] = Ca_ptr[mu * na + i];
+            }
+        }
+
+        std::vector<double> Cb_row_major(nb * nao);
+        double* Cb_ptr = Cb_->get_pointer();
+        for (int i = 0; i < nb; i++) {
+            for (int mu = 0; mu < nao; mu++) {
+                Cb_row_major[i * nao + mu] = Cb_ptr[mu * nb + i];
+            }
+        }
+
+        double* d_C = nullptr;
+        cudaMalloc(reinterpret_cast<void**>(&d_C), sizeof(double) * (na + nb) * nao);
+        cudaMemcpy(d_C, Ca_row_major.data(), sizeof(double) * na * nao, cudaMemcpyHostToDevice);
+        cudaMemcpy(d_C + na * nao, Cb_row_major.data(), sizeof(double) * nb * nao, cudaMemcpyHostToDevice);
+
+        std::shared_ptr<cuESTJK> cuest_jk = std::dynamic_pointer_cast<cuESTJK>(jk_);
+        cuestDFIntPlan_t cuest_df_plan = cuest_jk->cuest_df_plan();
+        
+        CHECK_CUEST(cuestDFSymmetricDerivativeComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_df_plan,
+            df_grad_compute_parameters,
+            variableBufferSize, 
+            temporaryWorkspaceDescriptor, 
+            0.5,
+            d_D,
+            0.5 * x_alpha_,
+            2,
+            nocc.data(),
+            d_C,
+            d_grad));
+
+        cuestWorkspace_t* temporaryWorkspace = cuest_common::allocateWorkspace(temporaryWorkspaceDescriptor);
+
+        CHECK_CUEST(cuestDFSymmetricDerivativeCompute(
+            cuest_handle,
+            cuest_df_plan,
+            df_grad_compute_parameters,
+            variableBufferSize, 
+            temporaryWorkspace,
+            0.5,
+            d_D,
+            0.5 * x_alpha_,
+            2,
+            nocc.data(),
+            d_C,
+            d_grad));
+
+        cuest_common::freeWorkspace(temporaryWorkspace);
+
+        cudaFree(d_C);
+    }
+
+    free(temporaryWorkspaceDescriptor);
+    free(variableBufferSize);
+
+    cudaMemcpy(gradients_["Coulomb"]->get_pointer(), d_grad, sizeof(double) * natom * 3, cudaMemcpyDeviceToHost);
+
+    gradients_["Coulomb"]->print();
+
+    CHECK_CUEST(cuestParametersDestroy(
+        CUEST_DFSYMMETRICDERIVATIVECOMPUTE_PARAMETERS,
+        df_grad_compute_parameters));
+
+    cudaFree(d_D);
+    cudaFree(d_grad);
+
+}
+void cuESTJKGrad::compute_hessian() {
+    throw PSIEXCEPTION("cuESTJKGrad does not support analytic hessians");
+}
+#endif
 }  // namespace scfgrad
 }  // namespace psi
