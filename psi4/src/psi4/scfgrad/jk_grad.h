@@ -40,6 +40,7 @@ class BasisSet;
 class PSIO;
 class TwoBodyAOInt;
 class MintsHelper;
+class JK;
 
 namespace scfgrad {
 
@@ -92,6 +93,14 @@ public:
     * @return abstract JK object, tuned in with preset options
     */
     static std::shared_ptr<JKGrad> build_JKGrad(int deriv, std::shared_ptr<MintsHelper> mints);
+
+    /**
+     * Special build method when using cuEST for the gradient to
+     * pass a shared pointer to the JK object.
+     */
+#ifdef USING_cuEST
+    static std::shared_ptr<JKGrad> build_cuESTJKGrad(int deriv, std::shared_ptr<JK> jk, double x_alpha, double x_beta);
+#endif
 
     void set_Ca(SharedMatrix Ca) { Ca_ = Ca; }
     void set_Cb(SharedMatrix Cb) { Cb_ = Cb; }
@@ -255,9 +264,40 @@ public:
      * @param val a positive integer
      */
     void set_ints_num_threads(int val) { ints_num_threads_ = val; }
+};
 
+#ifdef USING_cuEST
+class cuESTJKGrad : public JKGrad {
+
+protected:
+    void common_init();
+    std::shared_ptr<JK> jk_;
+
+    double x_alpha_;
+    double x_beta_;
+
+public:
+    cuESTJKGrad(int deriv, std::shared_ptr<JK> jk);
+    ~cuESTJKGrad() override;
+
+    void compute_gradient() override;
+    void compute_hessian() override;
+
+    void print_header() const override;
+
+    /**
+     * Sets the scaling for exact exchange
+     * Typically negative (i.e. -1.0 for HF).
+     */ 
+    void set_x_alpha(double x_alpha) { x_alpha_ = x_alpha; }
+
+    /**
+     * Sets the scaling for range-separated exchange
+     */ 
+    void set_x_beta(double x_beta) { x_beta_ = x_beta; }
 
 };
+#endif
 
 }} // Namespaces
 #endif

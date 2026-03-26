@@ -56,6 +56,8 @@ class PSI_API cuESTJK : public JK {
 
     void set_condition(double condition) { condition_ = condition; }
     void print_header() const override;
+
+    cuestDFIntPlan_t cuest_df_plan() { return cuest_df_plan_; }
 };
 
 #endif // USING_cuEST

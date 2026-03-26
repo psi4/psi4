@@ -51,8 +51,6 @@ cuESTJK::~cuESTJK() {
 
 void cuESTJK::preiterations()
 {
-    printf("cuESTJK::preiterations start\n");
-
     auto mol = primary_->molecule();
     size_t natom = mol->natom();
 
@@ -99,8 +97,6 @@ void cuESTJK::preiterations()
     // Create J/K parameters
     CHECK_CUEST(cuestParametersCreate(CUEST_DFCOULOMBCOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_coulomb_compute_params_)));
     CHECK_CUEST(cuestParametersCreate(CUEST_DFSYMMETRICEXCHANGECOMPUTE_PARAMETERS, reinterpret_cast<void**>(&cuest_exchange_compute_params_)));
-
-    printf("cuESTJK::preiterations end\n");
 
     initialized_ = true;
 }
@@ -313,9 +309,7 @@ void cuESTJK::compute_JK() {
 
 void cuESTJK::postiterations() 
 {
-    printf("cuESTJK::postiterations start\n");
     destroy_cuest_objects();
-    printf("cuESTJK::postiterations end\n");
 }
 
 } // namespace psi
