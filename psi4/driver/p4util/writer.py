@@ -442,7 +442,7 @@ def write_timer_csv(filename: Optional[str] = None):
 
     Parameters
     ----------
-    filename : str, optional
+    filename : Optional[str]
         Destination file name for CSV file. If unspecified (None),
         defaults to "timer.csv".
 

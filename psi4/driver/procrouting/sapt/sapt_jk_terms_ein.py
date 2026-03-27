@@ -2027,8 +2027,7 @@ def find(
             abs(scalars["Ind20,u (A->B)"] - Ind20u_BA) < 1e-8
         ), f"Ind20u_BA mismatch: {1000 * scalars['Ind20,u (A->B)']:.8f} vs {1000 * Ind20u_BA:.8f}"
         core.print_out(
-            f"    Ind20,u                 = {
-                Ind20u_AB + Ind20u_BA * 1000:18.8f} [mEh]\n"
+            f"    Ind20,u                 = {Ind20u_AB + Ind20u_BA * 1000:18.8f} [mEh]\n"
         )
         core.print_out(
             f"    Exch-Ind20,u (A<-B)     = {ExchInd20u_AB * 1000:18.8f} [mEh]\n"

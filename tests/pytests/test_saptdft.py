@@ -1297,6 +1297,10 @@ if __name__ == "__main__":
     psi4.set_memory("32 GB")
     psi4.set_num_threads(12)
     # pytest this file
+    test_saptdft_disp_methods_dftd4("SAPT(DFT)-D4(S)", -0.003605830)
+    test_saptdft_disp_methods_dftd4("SAPT(DFT)-D4(I)", -0.0040379796),
+    test_saptdft_disp_methods_dftd3("SAPT(DFT)-D3(I)", -0.0046415623)
+    test_saptdft_disp_methods_dftd3("SAPT(DFT)-D3(S)", -0.0045682406),
     # pytest.main(
     #     [
     #         __file__,

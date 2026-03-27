@@ -337,7 +337,7 @@ FSAPT(DFT)
 F-SAPT analysis can also be performed on SAPT(DFT) calculations, including
 SAPT(DFT)-D3 and SAPT(DFT)-D4 variants. The workflow is the same as for
 ``fisapt0``: run the interaction-energy method with ``return_wfn=True`` and
-pass that wavefunction to :func:`psi4.fsapt_analysis`.
+pass that wavefunction to :func:`~psi4.driver.fsapt_analysis`.
 
 To enable this in SAPT(DFT), set |sapt__sapt_dft_do_fsapt| to either:
 
@@ -367,7 +367,7 @@ Typical usage is::
     )
 
 For empirical SAPT(DFT)-D3/D4 runs, the FSAPT table separates conventional
-SAPT dispersion and empirical pairwise dispersion. In :func:`psi4.fsapt_analysis`
+SAPT dispersion and empirical pairwise dispersion. In :func:`~psi4.driver.fsapt_analysis`
 output, ``EDisp`` contains the empirical D3/D4 partition and can be nonzero
 even when ``Disp`` is zero.
 
