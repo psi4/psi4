@@ -60,6 +60,8 @@
 #endif
 
 #ifdef USING_cuEST
+#include <cuest.h>
+#include <xc.h>
 #include "psi4/libfock/cuESTCommon.h"
 extern cuestHandle_t cuest_handle;
 #endif
@@ -228,21 +230,15 @@ void VBase::initialize() {
         cuestWorkspaceDescriptor_t persistentWorkspaceDescriptor {};
         cuestWorkspaceDescriptor_t temporaryWorkspaceDescriptor {};
 
-        std::map<std::string, cuestXCIntPlanParametersFunctional_t> functional_params_map{
-            {"B3LYP", {CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_B3LYP5}},
-            {"BLYP", {CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_BLYP}},
-            {"B97", {CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_B97}},
-            {"B97M-V", {CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_B97MV}}
-        };
-        if (functional_params_map.find(functional_->name()) == functional_params_map.end()) {
-            throw PSIEXCEPTION("Functional not supported for cuEST: " + functional_->name());
-        }
-        cuestXCIntPlanParametersFunctional_t cuest_func = functional_params_map[functional_->name()];
+        // We're going to use the native Functional objects to figure out the x/c scale factors, omegas, etc.
+        // This involves using the advanced cuEST interface, wherein the rate-limiting collocation steps are done
+        // on the GPU, and the functional evaluation is done on the CPU using LibXC engines exracted from the Psi4
+        // functional objects.  Defined the plan's functional as HF here, just as an unused placeholder.
         CHECK_CUEST(cuestXCIntPlanCreateWorkspaceQuery(
             cuest_handle,
             primary_->cuest_basis(),
             grid_->cuest_grid(),
-            cuest_func,
+            CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_HF,
             xcint_params,
             &persistentWorkspaceDescriptor,
             &temporaryWorkspaceDescriptor,
@@ -255,7 +251,7 @@ void VBase::initialize() {
             cuest_handle,
             primary_->cuest_basis(),
             grid_->cuest_grid(),
-            cuest_func,
+            CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_HF,
             xcint_params,
             cuest_xcint_ws_ptr_,
             temporary_workspace,
@@ -1371,53 +1367,521 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         if ((d_Cocc_noccs_.size() != 1)) {
             throw PSIEXCEPTION("V: RKS should have only one Cocc Matrix");
         }
-        double *d_V = nullptr;
-        cudaError_t err = cudaMalloc((void**)&d_V, ret[0]->size() * sizeof(double));
+        double *d_Vxc = nullptr;
+        cudaError_t err = cudaMalloc((void**)&d_Vxc, ret[0]->size() * sizeof(double));
         if (err != cudaSuccess) {
             throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
         }
-        cuestXCPotentialRKSComputeParameters_t rks_compute_parameters;
-        CHECK_CUEST(cuestParametersCreate(CUEST_XCPOTENTIALRKSCOMPUTE_PARAMETERS, &rks_compute_parameters));
 
         cuestWorkspaceDescriptor_t temporary_workspace_descriptor;
         cuestWorkspaceDescriptor_t variable_buffersize_descriptor {
             0,
             2000000000
         };
-        double Exc = 0.0;
-        CHECK_CUEST(cuestXCPotentialRKSComputeWorkspaceQuery(
+//TODO check that functional doesn't need laplacian
+        uint64_t npoints;
+        CHECK_CUEST(cuestQuery(
+            cuest_handle,
+            CUEST_MOLECULARGRID,
+            grid_->cuest_grid(),
+            CUEST_MOLECULARGRID_NUM_POINT,
+            &npoints,
+            sizeof(uint64_t)
+            ));
+
+        // => Split the work among the threads <= //
+        std::vector<uint64_t> work_per_thread(num_threads_+1);
+        uint64_t chunk_size = npoints / num_threads_;    
+        if (chunk_size != 0) {
+            for (uint64_t i = 0; i < num_threads_; i++) {
+                work_per_thread[i] = i * chunk_size;
+            }
+            work_per_thread[num_threads_] = npoints;
+        } else {
+            // Edge case: more workers than points, so some workers will have no work.
+            for (uint64_t i = 0; i < npoints; i++) {
+                work_per_thread[i] = i;
+            }
+            for (uint64_t i = npoints; i <= num_threads_; i++) {
+                work_per_thread[i] = npoints;
+            }
+        }
+    
+        // => Compute integration weights <= //
+        double *d_weights = nullptr;
+        if (cudaMalloc((void**)&d_weights, npoints * sizeof(double)) != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
+        }
+        cuestXCIntegrationWeightComputeParameters_t weight_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCINTEGRATIONWEIGHTCOMPUTE_PARAMETERS, &weight_compute_parameters));
+        CHECK_CUEST(cuestXCIntegrationWeightComputeWorkspaceQuery(
             cuest_handle,
             cuest_xcint_plan_,
-            rks_compute_parameters,
+            CUEST_XCINTEGRATIONWEIGHT_PARAMETERS_WEIGHTTYPE_TOTAL,
+            weight_compute_parameters,
+            &temporary_workspace_descriptor,
+            d_weights
+            ));
+        cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCIntegrationWeightCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            CUEST_XCINTEGRATIONWEIGHT_PARAMETERS_WEIGHTTYPE_TOTAL,
+            weight_compute_parameters,
+            temporary_workspace,
+            d_weights
+            ));
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCINTEGRATIONWEIGHTCOMPUTE_PARAMETERS, weight_compute_parameters));
+        cuest_common::freeWorkspace(temporary_workspace);
+        SharedMatrix h_weights = std::make_shared<Matrix>("weights", 1, npoints);
+        double *p_weights = h_weights->pointer()[0];
+        err = cudaMemcpy(h_weights->pointer()[0], d_weights, npoints * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+
+        // => Compute grid density (and derivatives) <= //
+        cuestXCDensityComputeParameters_t density_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCDENSITYCOMPUTE_PARAMETERS, &density_compute_parameters));
+        cuestXCAdvancedComputeParametersApproximation_t ansatz_types[3] = {
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_LDA,
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_GGA,
+            CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_METAGGA
+            };
+        cuestXCAdvancedComputeParametersApproximation_t ansatz_type = ansatz_types[functional_->ansatz()];
+
+        uint64_t ncomponents_by_ansatz[] = {
+            1,
+            4,
+            5
+            };
+        uint64_t ncomponents = ncomponents_by_ansatz[functional_->ansatz()];
+
+        double *d_rho = nullptr;
+        err = cudaMalloc((void**)&d_rho, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
+        }
+        CHECK_CUEST(cuestXCDensityComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            density_compute_parameters,
             &variable_buffersize_descriptor,
             &temporary_workspace_descriptor,
             d_Cocc_noccs_[0],
             d_Coccs_AO_,
-            &Exc,
-            d_V
+            d_rho
             ));
-
-        cuestWorkspace_t* temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
-
-        CHECK_CUEST(cuestXCPotentialRKSCompute(
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCDensityCompute(
             cuest_handle,
             cuest_xcint_plan_,
-            rks_compute_parameters,
+            ansatz_type,
+            density_compute_parameters,
             &variable_buffersize_descriptor,
             temporary_workspace,
             d_Cocc_noccs_[0],
             d_Coccs_AO_,
-            &Exc,
-            d_V
+            d_rho
             ));
-        err = cudaMemcpy(ret[0]->get_pointer(0), d_V, ret[0]->size() * sizeof(double), cudaMemcpyDeviceToHost);
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCDENSITYCOMPUTE_PARAMETERS, density_compute_parameters));
+        cuest_common::freeWorkspace(temporary_workspace);
+        temporary_workspace = nullptr;
+
+        // Copy the density and its derivatives to host, then transpose it for easier access.
+        SharedMatrix h_rho_matrix = std::make_shared<Matrix>("rho", npoints, ncomponents);
+        err = cudaMemcpy(h_rho_matrix->pointer()[0], d_rho, npoints * ncomponents * sizeof(double), cudaMemcpyDeviceToHost);
         if (err != cudaSuccess) {
             throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
         }
-        quad_values_["FUNCTIONAL"] = Exc;
+        SharedMatrix h_rho_matrixT = h_rho_matrix->transpose();
+
+        SharedMatrix h_Vxc_grid = std::make_shared<Matrix>("Vxc_grid", npoints, ncomponents);
+        double* p_Vxc_grid = h_Vxc_grid->pointer()[0];
+        double* d_Vxc_grid;
+        SharedMatrix rho, gamma, tau;
+        double* p_rho, *p_gamma, *p_tau;
+        SharedMatrix f, f_rho, f_gamma, f_tau;
+        double* p_f, *p_f_rho, *p_f_gamma, *p_f_tau;
+        SharedMatrix full_f, full_f_rho, full_f_gamma, full_f_tau;
+        double *p_full_f, *p_full_f_rho, *p_full_f_gamma, *p_full_f_tau;
+        LibXCFunctional* libxc_functional;
+        double *rho_0, *rho_x, *rho_y, *rho_z, *tau_0;
+        switch (ansatz_type) {
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_LDA:
+                rho = std::make_shared<Matrix>("rho", 1, npoints);
+                p_rho = rho->pointer()[0];
+        
+                rho_0 = h_rho_matrixT->pointer()[0];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[point] = 2 * rho_0[point];
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", 1, npoints);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", 1, npoints);
+                full_f->zero();
+                full_f_rho->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                f = std::make_shared<Matrix>("f", 1, npoints);
+                f_rho = std::make_shared<Matrix>("f_rho", 1, npoints);
+                f_tau = std::make_shared<Matrix>("f_tau", 1, npoints);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_tau = f_tau->pointer()[0];
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+
+                    // => Exchange contribution(s) <= //
+                    for (const auto& functional : functional_->x_functionals()) {
+                        libxc_functional = dynamic_cast<LibXCFunctional*>(functional.get());
+                        if (libxc_functional == nullptr) {
+                            throw PSIEXCEPTION("RV::compute_V: Functional is not a LibXC functional, which is required by the CUEST Vxc interface.");
+                        }
+                        xc_lda_exc_vxc(
+                            libxc_functional->xc_functional(),
+                            end_point - start_point,
+                            p_rho + start_point,
+                            p_f + start_point,
+                            p_f_rho + start_point);
+                        // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
+                        for (size_t i = start_point; i < end_point; i++) {
+                            bool nan_found = false;
+                            if (!std::isfinite(p_f[i])) nan_found = true;
+                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
+                            if (!nan_found) {
+                                p_full_f[i] += p_f[i];
+                                p_full_f_rho[i] += p_f_rho[i];
+                            }
+                        }
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& functional : functional_->c_functionals()) {
+                        libxc_functional = dynamic_cast<LibXCFunctional*>(functional.get());
+                        if (libxc_functional == nullptr) {
+                            throw PSIEXCEPTION("RV::compute_V: Functional is not a LibXC functional, which is required by the CUEST Vxc interface.");
+                        }
+                        xc_lda_exc_vxc(
+                            libxc_functional->xc_functional(),
+                            end_point - start_point,
+                            p_rho + start_point,
+                            p_f + start_point,
+                            p_f_rho + start_point);
+
+                        // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
+                        for (size_t i = start_point; i < end_point; i++) {
+                            bool nan_found = false;
+                            if (!std::isfinite(p_f[i])) nan_found = true;
+                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
+                            if (!nan_found) {
+                                p_full_f[i] += p_f[i];
+                                p_full_f_rho[i] += p_f_rho[i];
+                            }
+                        }
+                    }
+                }
+                for (int point = 0; point < npoints; point++) {
+                    double w = p_weights[point];
+                    p_Vxc_grid[point] = w * p_full_f_rho[point];
+                }
+                break;
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_GGA:
+                rho = std::make_shared<Matrix>("rho", 1, npoints);
+                p_rho = rho->pointer()[0];
+                gamma = std::make_shared<Matrix>("gamma", 1, npoints);
+                p_gamma = gamma->pointer()[0];
+        
+                rho_0 = h_rho_matrixT->pointer()[0];
+                rho_x = h_rho_matrixT->pointer()[1];
+                rho_y = h_rho_matrixT->pointer()[2];
+                rho_z = h_rho_matrixT->pointer()[3];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[point] = 2 * rho_0[point];
+                    p_gamma[point] = 4 * (rho_x[point] * rho_x[point] + rho_y[point] * rho_y[point] + rho_z[point] * rho_z[point]);
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", 1, npoints);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", 1, npoints);
+                full_f_gamma = std::make_shared<Matrix>("full_f_gamma", 1, npoints);
+                full_f->zero();
+                full_f_rho->zero();
+                full_f_gamma->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                p_full_f_gamma = full_f_gamma->pointer()[0];
+                f = std::make_shared<Matrix>("f", 1, npoints);
+                f_rho = std::make_shared<Matrix>("f_rho", 1, npoints);
+                f_gamma = std::make_shared<Matrix>("f_gamma", 1, npoints);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_gamma = f_gamma->pointer()[0];
+
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+                    // => Exchange contribution(s) <= //
+                    for (const auto& functional : functional_->x_functionals()) {
+                        libxc_functional = dynamic_cast<LibXCFunctional*>(functional.get());
+                        if (libxc_functional == nullptr) {
+                            throw PSIEXCEPTION("RV::compute_V: Functional is not a LibXC functional, which is required by the CUEST Vxc interface.");
+                        }
+                        xc_gga_exc_vxc(
+                            libxc_functional->xc_functional(),
+                            end_point - start_point,
+                            p_rho + start_point,
+                            p_gamma + start_point,
+                            p_f + start_point,
+                            p_f_rho + start_point,
+                            p_f_gamma + start_point);
+                        // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
+                        for (size_t i = start_point; i < end_point; i++) {
+                            bool nan_found = false;
+                            if (!std::isfinite(p_f[i])) nan_found = true;
+                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
+                            if (!std::isfinite(p_f_gamma[i])) nan_found = true;
+                            if (!nan_found) {
+                                p_full_f[i] += p_f[i];
+                                p_full_f_rho[i] += p_f_rho[i];
+                                p_full_f_gamma[i] += p_f_gamma[i];
+                            }
+                        }
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& functional : functional_->c_functionals()) {
+                        libxc_functional = dynamic_cast<LibXCFunctional*>(functional.get());
+                        if (libxc_functional == nullptr) {
+                            throw PSIEXCEPTION("RV::compute_V: Functional is not a LibXC functional, which is required by the CUEST Vxc interface.");
+                        }
+                        xc_gga_exc_vxc(
+                            libxc_functional->xc_functional(),
+                            end_point - start_point,
+                            p_rho + start_point,
+                            p_gamma + start_point,
+                            p_f + start_point,
+                            p_f_rho + start_point,
+                            p_f_gamma + start_point);
+    
+                        // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
+                        for (size_t i = start_point; i < end_point; i++) {
+                            bool nan_found = false;
+                            if (!std::isfinite(p_f[i])) nan_found = true;
+                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
+                            if (!std::isfinite(p_f_gamma[i])) nan_found = true;
+                            if (!nan_found) {
+                                p_full_f[i] += p_f[i];
+                                p_full_f_rho[i] += p_f_rho[i];
+                                p_full_f_gamma[i] += p_f_gamma[i];
+                            }
+                        }
+                    }
+                }
+                for (int point = 0; point < npoints; point++) {
+                    double w = p_weights[point];
+                    p_Vxc_grid[4 * point + 0] = w * p_full_f_rho[point];
+                    p_Vxc_grid[4 * point + 1] = 4 * w * p_full_f_gamma[point] * rho_x[point];
+                    p_Vxc_grid[4 * point + 2] = 4 * w * p_full_f_gamma[point] * rho_y[point];
+                    p_Vxc_grid[4 * point + 3] = 4 * w * p_full_f_gamma[point] * rho_z[point];
+                }
+                break;
+            case CUEST_XCADVANCED_PARAMETERS_APPROXIMATION_METAGGA:
+                rho = std::make_shared<Matrix>("rho", 1, npoints);
+                p_rho = rho->pointer()[0];
+                gamma = std::make_shared<Matrix>("gamma", 1, npoints);
+                p_gamma = gamma->pointer()[0];
+                tau = std::make_shared<Matrix>("tau", 1, npoints);
+                p_tau = tau->pointer()[0];
+        
+                rho_0 = h_rho_matrixT->pointer()[0];
+                rho_x = h_rho_matrixT->pointer()[1];
+                rho_y = h_rho_matrixT->pointer()[2];
+                rho_z = h_rho_matrixT->pointer()[3];
+                tau_0 = h_rho_matrixT->pointer()[4];
+                for (int point = 0; point < npoints; point++) {
+                    p_rho[point] = 2 * rho_0[point];
+                    p_gamma[point] = 4 * (rho_x[point] * rho_x[point] + rho_y[point] * rho_y[point] + rho_z[point] * rho_z[point]);
+                    p_tau[point] = 2 * tau_0[point];
+                }
+        
+                full_f = std::make_shared<Matrix>("full_f", 1, npoints);
+                full_f_rho = std::make_shared<Matrix>("full_f_rho", 1, npoints);
+                full_f_gamma = std::make_shared<Matrix>("full_f_gamma", 1, npoints);
+                full_f_tau = std::make_shared<Matrix>("full_f_tau", 1, npoints);
+                full_f->zero();
+                full_f_rho->zero();
+                full_f_gamma->zero();
+                full_f_tau->zero();
+                p_full_f = full_f->pointer()[0];
+                p_full_f_rho = full_f_rho->pointer()[0];
+                p_full_f_gamma = full_f_gamma->pointer()[0];
+                p_full_f_tau = full_f_tau->pointer()[0];
+                f = std::make_shared<Matrix>("f", 1, npoints);
+                f_rho = std::make_shared<Matrix>("f_rho", 1, npoints);
+                f_gamma = std::make_shared<Matrix>("f_gamma", 1, npoints);
+                f_tau = std::make_shared<Matrix>("f_tau", 1, npoints);
+                p_f = f->pointer()[0];
+                p_f_rho = f_rho->pointer()[0];
+                p_f_gamma = f_gamma->pointer()[0];
+                p_f_tau = f_tau->pointer()[0];
+                #pragma omp parallel num_threads(num_threads_)
+                {
+                    #ifdef _OPENMP  
+                    int tid = omp_get_thread_num();
+                    uint64_t start_point = work_per_thread[tid];
+                    uint64_t end_point = work_per_thread[tid+1];
+                    #else
+                    int tid = 0;
+                    uint64_t start_point = 0;
+                    uint64_t end_point = npoints;
+                    #endif
+                    // => Exchange contribution(s) <= //
+                    for (const auto& functional : functional_->x_functionals()) {
+                        libxc_functional = dynamic_cast<LibXCFunctional*>(functional.get());
+                        if (libxc_functional == nullptr) {
+                            throw PSIEXCEPTION("RV::compute_V: Functional is not a LibXC functional, which is required by the CUEST Vxc interface.");
+                        }
+                        xc_mgga_exc_vxc(
+                            libxc_functional->xc_functional(),
+                            end_point - start_point,
+                            p_rho + start_point,
+                            p_gamma + start_point,
+                            nullptr,
+                            p_tau + start_point,
+                            p_f + start_point,
+                            p_f_rho + start_point,
+                            p_f_gamma + start_point,
+                            nullptr,
+                            p_f_tau + start_point);
+                        // Accumulate this exchange functional's contributions to the full values, ignoring NaNs
+                        for (size_t i = start_point; i < end_point; i++) {
+                            bool nan_found = false;
+                            if (!std::isfinite(p_f[i])) nan_found = true;
+                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
+                            if (!std::isfinite(p_f_gamma[i])) nan_found = true;
+                            if (!std::isfinite(p_f_tau[i])) nan_found = true;
+                            if (!nan_found) {
+                                p_full_f[i] += p_f[i];
+                                p_full_f_rho[i] += p_f_rho[i];
+                                p_full_f_gamma[i] += p_f_gamma[i];
+                                p_full_f_tau[i] += p_f_tau[i];
+                            }
+                        }
+                    }
+                    // => Correlation contribution(s) <= //
+                    for (const auto& functional : functional_->c_functionals()) {
+                        libxc_functional = dynamic_cast<LibXCFunctional*>(functional.get());
+                        if (libxc_functional == nullptr) {
+                            throw PSIEXCEPTION("RV::compute_V: Functional is not a LibXC functional, which is required by the CUEST Vxc interface.");
+                        }
+                        xc_mgga_exc_vxc(
+                            libxc_functional->xc_functional(),
+                            end_point - start_point,
+                            p_rho + start_point,
+                            p_gamma + start_point,
+                            nullptr,
+                            p_tau + start_point,
+                            p_f + start_point,
+                            p_f_rho + start_point,
+                            p_f_gamma + start_point,
+                            nullptr,
+                            p_f_tau + start_point);
+
+                        // Accumulate this correlation functional's contributions to the full values, ignoring NaNs
+                        for (size_t i = start_point; i < end_point; i++) {
+                            bool nan_found = false;
+                            if (!std::isfinite(p_f[i])) nan_found = true;
+                            if (!std::isfinite(p_f_rho[i])) nan_found = true;
+                            if (!std::isfinite(p_f_gamma[i])) nan_found = true;
+                            if (!std::isfinite(p_f_tau[i])) nan_found = true;
+                            if (!nan_found) {
+                                p_full_f[i] += p_f[i];
+                                p_full_f_rho[i] += p_f_rho[i];
+                                p_full_f_gamma[i] += p_f_gamma[i];
+                                p_full_f_tau[i] += p_f_tau[i];
+                            }
+                        }
+                    }
+                }
+                for (int point = 0; point < npoints; point++) {
+                    double w = p_weights[point];
+                    p_Vxc_grid[5 * point + 0] = w * p_full_f_rho[point];
+                    p_Vxc_grid[5 * point + 1] = 4 * w * p_full_f_gamma[point] * rho_x[point];
+                    p_Vxc_grid[5 * point + 2] = 4 * w * p_full_f_gamma[point] * rho_y[point];
+                    p_Vxc_grid[5 * point + 3] = 4 * w * p_full_f_gamma[point] * rho_z[point];
+                    p_Vxc_grid[5 * point + 4] = w * p_full_f_tau[point];
+                }
+                break;
+            default:
+                throw PSIEXCEPTION("RV::compute_V: Invalid ansatz type.");
+        }
+
+        err = cudaMalloc((void**)&d_Vxc_grid, npoints * ncomponents * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in RV::compute_V");
+        }
+        err = cudaMemcpy(d_Vxc_grid, p_Vxc_grid, npoints * ncomponents * sizeof(double), cudaMemcpyHostToDevice);
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+
+        // => Compute the potential matrix from its grid representation <= //
+        cuestXCPotentialComputeParameters_t potential_compute_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_XCPOTENTIALCOMPUTE_PARAMETERS, &potential_compute_parameters));
+        CHECK_CUEST(cuestXCPotentialComputeWorkspaceQuery(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            potential_compute_parameters,
+            &variable_buffersize_descriptor,
+            &temporary_workspace_descriptor,
+            d_Vxc_grid,
+            d_Vxc
+            ));
+        temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+        CHECK_CUEST(cuestXCPotentialCompute(
+            cuest_handle,
+            cuest_xcint_plan_,
+            ansatz_type,
+            potential_compute_parameters,
+            &variable_buffersize_descriptor,
+            temporary_workspace,
+            d_Vxc_grid,
+            d_Vxc
+        ));
         cuest_common::freeWorkspace(temporary_workspace);
-        CHECK_CUEST(cuestParametersDestroy(CUEST_XCPOTENTIALRKSCOMPUTE_PARAMETERS, rks_compute_parameters));
-        cudaFree(d_V);
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCPOTENTIALCOMPUTE_PARAMETERS, potential_compute_parameters));
+        cudaFree(d_rho);
+        cudaFree(d_weights);
+        cudaFree(d_Vxc_grid);
+        err = cudaMemcpy(ret[0]->get_pointer(0), d_Vxc, ret[0]->size() * sizeof(double), cudaMemcpyDeviceToHost);
+        if (err != cudaSuccess) {
+            cudaFree(d_Vxc);
+            throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+        }
+
+        double Exc = 0.0;
+        for (int point = 0; point < npoints; point++) {
+            Exc += 2 * p_weights[point] * p_full_f[point] * rho_0[point];
+        }        
+        quad_values_["FUNCTIONAL"] = Exc;
+        cudaFree(d_Vxc);
         timer_off("RV: Form V");
         return;
     }
