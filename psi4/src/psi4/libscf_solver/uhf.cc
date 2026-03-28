@@ -178,6 +178,7 @@ void UHF::form_V() {
     // Va_ = V[0];
     // Vb_ = V[1];
     potential_->set_D({Da_, Db_});
+    potential_->set_Cocc({Ca_subset("AO", "OCC"), Cb_subset("AO", "OCC")});
     potential_->compute_V({Va_, Vb_});
     // Vb_ = Va_;
 }
