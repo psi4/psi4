@@ -152,6 +152,8 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
     sapt_dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
     e_disp_param_name = None
     supported_functionals_edisp = ["hf", "pbe0", "b3lyp"]
+    core.set_global_option("SAPT_DFT_D4_IE", 0)
+    core.set_global_option("SAPT_DFT_D3_IE", 0)
     if "-D4" in name.upper():
         d4_type = core.get_option("SAPT", "SAPT_DFT_D_TYPE").lower()
         if "-D4(S)" in name.upper():
@@ -263,7 +265,7 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
     sapt_dft_D4_IE = core.get_option("SAPT", "SAPT_DFT_D4_IE")
     sapt_dft_D3_IE = core.get_option("SAPT", "SAPT_DFT_D3_IE")
     do_dft = sapt_dft_functional != "HF"
-    do_fsapt = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT") != "NONE"
+    do_fsapt = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT").upper() != "NONE"
 
     # Because SAPT(DFT) FDDS Dispersion doesn't have FSAPT support, catch this
     # case when FISAPT is requested with SAPT_DFT_DO_DISP false
@@ -1157,7 +1159,7 @@ def sapt_dft(
     # Electrostatics
     core.timer_on("SAPT(DFT):elst")
     fsapt_type = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT")
-    do_fsapt = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT") != "NONE"
+    do_fsapt = core.get_option("SAPT", "SAPT_DFT_DO_FSAPT").upper() != "NONE"
     elst, extern_extern_IE = jk_terms.electrostatics(cache, True)
     data["extern_extern_IE"] = extern_extern_IE
     data.update(elst)
@@ -1454,23 +1456,31 @@ def sapt_dft(
     )
 
     # because FISAPT_obj drop sets core variables, avoid setting them twice
-    if core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH") != "NONE" and do_fsapt:
+    if core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH").upper() != "NONE" and do_fsapt:
         FISAPT_obj = saptdft_fisapt.drop_saptdft_variables(
             dimer_wfn, wfn_A, wfn_B, cache, data
         )
     elif do_fsapt:
-        core.set_variable("FSAPT_QA", cache["Qocc0A"])
-        core.set_variable("FSAPT_QB", cache["Qocc0B"])
-        core.set_variable("FSAPT_ELST_AB", cache["Elst_AB"])
-        core.set_variable(
+        def _set_fsapt_var(label, value):
+            core.set_variable(label, value)
+            dimer_wfn.set_variable(label, value)
+
+        _set_fsapt_var("FSAPT_QA", cache["Qocc0A"])
+        _set_fsapt_var("FSAPT_QB", cache["Qocc0B"])
+        _set_fsapt_var("FSAPT_ELST_AB", cache["Elst_AB"])
+        _set_fsapt_var(
             "FSAPT_AB_SIZE", np.array(cache["Elst_AB"].np.shape).reshape(1, -1)
         )
-        core.set_variable("FSAPT_EXCH_AB", cache["Exch_AB"])
-        core.set_variable("FSAPT_INDAB_AB", cache["IndAB_AB"])
-        core.set_variable("FSAPT_INDBA_AB", cache["IndBA_AB"])
-        core.set_variable("FSAPT_DISP_AB", cache["Disp_AB"])
+        _set_fsapt_var("FSAPT_EXCH_AB", cache["Exch_AB"])
+        _set_fsapt_var("FSAPT_INDAB_AB", cache["IndAB_AB"])
+        _set_fsapt_var("FSAPT_INDBA_AB", cache["IndBA_AB"])
         if sapt_dft_D4_IE or sapt_dft_D3_IE:
-            core.set_variable("FSAPT_EMPIRICAL_DISP", data["FSAPT_EMPIRICAL_DISP"])
+            disp_ab = cache["Elst_AB"].clone()
+            disp_ab.zero()
+            _set_fsapt_var("FSAPT_DISP_AB", disp_ab)
+            _set_fsapt_var("FSAPT_EMPIRICAL_DISP", cache["FSAPT_EMPIRICAL_DISP"])
+        else:
+            _set_fsapt_var("FSAPT_DISP_AB", cache["Disp_AB"])
     return data
 
 
