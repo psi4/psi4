@@ -903,7 +903,17 @@ no_com
 
 @pytest.mark.extern
 @pytest.mark.saptdft
-def test_fisapt0_sapthf_external_potential():
+@pytest.mark.parametrize(
+    "use_einsums",
+    [
+        pytest.param(True, id="einsums"),
+        pytest.param(False, id="non-einsums"),
+    ],
+)
+def test_fisapt0_sapthf_external_potential(use_einsums):
+    if use_einsums:
+        pytest.importorskip("einsums")
+
     mol = psi4.geometry(
         """
 0 1
@@ -939,19 +949,17 @@ no_com
         ],
     }
 
-    # Set common options
-    psi4.set_options(
-        {
-            "e_convergence": 1e-8,
-            "d_convergence": 1e-8,
-            "basis": "jun-cc-pvdz",
-            "scf_type": "df",
-            "guess": "sad",
-            "freeze_core": "true",
-            "SAPT_DFT_FUNCTIONAL": "hf",
-            "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
-        }
-    )
+    options = {
+        "e_convergence": 1e-8,
+        "d_convergence": 1e-8,
+        "basis": "jun-cc-pvdz",
+        "scf_type": "df",
+        "guess": "sad",
+        "freeze_core": "true",
+        "SAPT_DFT_FUNCTIONAL": "hf",
+        "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
+    }
+    psi4.set_options(options)
 
     # Run the FISAPT0 energy calculation
     psi4.energy(
@@ -970,6 +978,10 @@ no_com
     ]
     calculated_fisapt0_energies = {k1: psi4.core.variable(k2) for k1, k2 in key_labels}
     calculated_fisapt0_energies["Enuc"] = mol.nuclear_repulsion_energy()
+
+    psi4.core.clean()
+    psi4.core.clean_variables()
+    psi4.set_options({**options, "SAPT_DFT_USE_EINSUMS": use_einsums})
 
     # Run the SAPT(HF) energy calculation
     psi4.energy(
@@ -992,7 +1004,7 @@ no_com
             calculated_fisapt0_energies[k1],
             calculated_sapthf_energies[k1],
             8,
-            k1,
+            f"{k1} use_einsums={use_einsums}",
         )
 
     # Also check nuclear repulsion energy
@@ -1000,7 +1012,7 @@ no_com
         calculated_fisapt0_energies["Enuc"],
         calculated_sapthf_energies["Enuc"],
         8,
-        "Enuc",
+        f"Enuc use_einsums={use_einsums}",
     )
 
 
@@ -1300,7 +1312,9 @@ if __name__ == "__main__":
     psi4.set_memory("32 GB")
     psi4.set_num_threads(12)
     # pytest this file
-    test_qcng_embedded_saptdft()
+    test_fisapt0_sapthf_external_potential(True)
+    test_fisapt0_sapthf_external_potential(False)
+    # test_qcng_embedded_saptdft()
     # test_saptdft_disp_methods_dftd4("SAPT(DFT)-D4(S)", -0.003605830)
     # test_saptdft_disp_methods_dftd4("SAPT(DFT)-D4(I)", -0.0040379796),
     # test_saptdft_disp_methods_dftd3("SAPT(DFT)-D3(I)", -0.0046415623)
