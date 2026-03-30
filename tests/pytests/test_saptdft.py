@@ -1016,6 +1016,9 @@ def test_qcng_embedded_saptdft():
             # "SAPT_DFT_GRAC_COMPUTE": "SINGLE"
             "SAPT_DFT_GRAC_SHIFT_A": 0.1307,
             "SAPT_DFT_GRAC_SHIFT_B": 0.1307,
+            # Up the convergence threshold to ensure same solution with openorbitaloptimizer.
+            "e_convergence": 1e-8,
+            "d_convergence": 1e-8,
         },
         "model": {"basis": "sto-3g", "method": "sapt(dft)"},
         "molecule": {
@@ -1297,10 +1300,11 @@ if __name__ == "__main__":
     psi4.set_memory("32 GB")
     psi4.set_num_threads(12)
     # pytest this file
-    test_saptdft_disp_methods_dftd4("SAPT(DFT)-D4(S)", -0.003605830)
-    test_saptdft_disp_methods_dftd4("SAPT(DFT)-D4(I)", -0.0040379796),
-    test_saptdft_disp_methods_dftd3("SAPT(DFT)-D3(I)", -0.0046415623)
-    test_saptdft_disp_methods_dftd3("SAPT(DFT)-D3(S)", -0.0045682406),
+    test_qcng_embedded_saptdft()
+    # test_saptdft_disp_methods_dftd4("SAPT(DFT)-D4(S)", -0.003605830)
+    # test_saptdft_disp_methods_dftd4("SAPT(DFT)-D4(I)", -0.0040379796),
+    # test_saptdft_disp_methods_dftd3("SAPT(DFT)-D3(I)", -0.0046415623)
+    # test_saptdft_disp_methods_dftd3("SAPT(DFT)-D3(S)", -0.0045682406),
     # pytest.main(
     #     [
     #         __file__,
@@ -1311,4 +1315,4 @@ if __name__ == "__main__":
     #         # "--maxfail=1",
     #     ]
     # )
-    test_qcng_embedded_saptdft()
+    # test_qcng_embedded_saptdft()
