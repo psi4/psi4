@@ -475,6 +475,12 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
     std::vector<SharedMatrix> L_ieab_bar_;
     std::vector<SharedMatrix> K_ijmb_bar_;
 
+    // => One Particle Density Matrices <= //
+    SharedMatrix Doo_; // D_{ij}
+    std::vector<SharedMatrix> Dov_; // D_{i}^{a_{ii}}
+    std::vector<SharedMatrix> Dvv_singles_; // D_{i}^{a_{ii}b_{ii}}
+    std::vector<SharedMatrix> Dvv_pair_; // D_{ij}^{a_{ij}b_{ij}}
+
     // => Computing integrals <= //
 
     /// A function to estimate memory costs for lambda CCSD
@@ -483,6 +489,8 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
     void form_goo();
     /// Compcondute some of the intermediates required in lambda DLPNO CCSD
     void compute_lambda_intermediates();
+    /// Compute the one-particle density matrix (OPDM) needed to compute dipole moments
+    void compute_opdm();
     
     // => Lambda CCSD intermediates <= //
 
@@ -505,6 +513,7 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
     ~DLPNOCCSD_Lambda() override;
 
     double compute_energy();
+    Vector3 compute_dipole_moment();
 };
 
 // Equations refer to Jiang et al. (JCP 161, 082502, 2024; DOI: 10.1063/5.0219963)

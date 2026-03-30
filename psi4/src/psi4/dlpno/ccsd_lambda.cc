@@ -1472,6 +1472,206 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
     } // end iter
 }
 
+void DLPNOCCSD_Lambda::compute_opdm() {
+
+    int naocc = i_j_to_ij_.size();
+    int n_lmo_pairs = ij_to_i_j_.size();
+
+    form_goo();
+
+    // Toth Eq. 65
+    Doo_ = rho_oo_->clone();
+    Doo_->scale(-1.0);
+#pragma omp parallel for
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+        int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j];
+
+        auto baby_shark = linalg::triplet(lambda_ia_[i], S_PNO(ii, jj), T_ia_[j], true, false, false);
+        (*Doo_)(i, j) -= baby_shark->get(0, 0);
+    } // end ij
+
+    // Zero out buffers
+
+    // Thread and OMP Parallel Info
+    int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
+    std::vector<std::vector<SharedMatrix>> D_ov_buffer(nthreads);
+    for (int thread = 0; thread < nthreads; ++thread) {
+        D_ov_buffer[thread].resize(naocc);
+        for (int i = 0; i < naocc; ++i) {
+            int ii = i_j_to_ij_[i][i];
+            D_ov_buffer[thread][i] = std::make_shared<Matrix>(n_pno_[ii], 1);
+        }
+    }
+
+    // Evil mf (Toth Eq. 66)
+    Dov_.resize(naocc);
+#pragma omp parallel for
+    for (int i = 0; i < naocc; ++i) {
+        int ii = i_j_to_ij_[i][i];
+        // 66a
+        Dov_[i] = T_ia_[i]->clone();
+        Dov_[i]->scale(2.0);
+    }
+
+#pragma omp parallel for
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+        int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j];
+
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+            
+        // 66b
+        auto sus = linalg::triplet(S_PNO(ii, ij), Tt_iajb_[ij], S_PNO(ij, jj));
+        D_ov_buffer[thread][i]->add(linalg::doublet(sus, lambda_ia_[j]));
+
+        // 66c
+        auto T_i_to_j = linalg::doublet(S_PNO(ii, jj), T_ia_[j]);
+        T_i_to_j->scale(rho_oo_->get(j, i));
+        D_ov_buffer[thread][i]->subtract(T_i_to_j);
+    }
+
+#pragma omp parallel for
+    for (int mn = 0; mn < n_lmo_pairs; ++mn) {
+        auto &[m, n] = ij_to_i_j_[mn];
+
+        int nlmo_mn = lmopair_to_lmos_[mn].size();
+
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+
+        for (int i_mn = 0; i_mn < nlmo_mn; ++i_mn) {
+            int i = lmopair_to_lmos_[mn][i_mn];
+            int ii = i_j_to_ij_[i][i];
+
+            // (e_{ii}, 1), (e_{ii}, e_{mn}), (e_{mn}, a_{mn})
+            auto bean = linalg::triplet(T_ia_[i], S_PNO(ii, mn), rho_vv_[mn], true, false, false); 
+            D_ov_buffer[thread][i]->subtract(linalg::doublet(bean, S_PNO(mn, ii)));
+        } // end i_mn
+    } // end mn
+
+    for (int i = 0; i < naocc; ++i) {
+        for (int thread = 0; thread < nthreads; ++thread) {
+            Dov_[i]->add(D_ov_buffer[thread][i]);
+        } // end thread
+    } // end int i
+
+    Dvv_pair_.resize(n_lmo_pairs);
+#pragma omp parallel for
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        Dvv_pair_[ij] = rho_vv_[ij]->clone();
+    }
+
+    Dvv_singles_.resize(naocc);
+#pragma omp parallel for
+    for (int i = 0; i < naocc; ++i) {
+        int ii = i_j_to_ij_[i][i];
+
+        Dvv_singles_[i] = std::make_shared<Matrix>(n_pno_[ii], n_pno_[ii]);
+
+        for (int a = 0; a < n_pno_[ii]; ++a) {
+            for (int b = 0; b < n_pno_[ii]; ++b) {
+                Dvv_singles_[i]->set(a, b, T_ia_[i]->get(a, 0) * lambda_ia_[i]->get(b, 0));
+            } // end b
+        } // end a
+    } // end i
+    
+} // end function
+
+Vector3 DLPNOCCSD_Lambda::compute_dipole_moment() {
+
+    int naocc = i_j_to_ij_.size();
+    int n_lmo_pairs = ij_to_i_j_.size();
+
+    // Nuclear contribution to the dipole moment
+    Vector3 nuclear_contribution(0.0, 0.0, 0.0);
+
+    for (int A = 0; A < molecule_->natom(); ++A) {
+        Vector3 R_A = molecule_->xyz(A);
+        nuclear_contribution[0] += molecule_->Z(A) * R_A[0];
+        nuclear_contribution[1] += molecule_->Z(A) * R_A[1];
+        nuclear_contribution[2] += molecule_->Z(A) * R_A[2];
+    } // end A
+
+    const auto ao_dipole = MintsHelper(basisset_, options_).ao_dipole();
+
+    // Compute AO density matrix (for Hartree-Fock electronic contribution)
+    auto C_occ = reference_wavefunction_->Ca_subset("AO", "OCC");
+    auto D_ao = linalg::doublet(C_occ, C_occ, false, true);
+
+    Vector3 hf_elec_contribution(0.0, 0.0, 0.0);
+    for (int soup = 0; soup < 3; ++soup) {
+        hf_elec_contribution[soup] += 2.0 * ao_dipole[soup]->vector_dot(D_ao);
+    }
+
+    // Correlated contribution
+    Vector3 ccsd_contribution(0.0, 0.0, 0.0);
+
+    for (int soup = 0; soup < 3; ++soup) {
+        auto mu_oo = linalg::triplet(C_lmo_, ao_dipole[soup], C_lmo_, true, false, false);
+        auto mu_ov = linalg::triplet(C_lmo_, ao_dipole[soup], C_pao_, true, false, false);
+        auto mu_vv = linalg::triplet(C_pao_, ao_dipole[soup], C_pao_, true, false, false);
+
+        double dipole_cont = 0.0;
+#pragma omp parallel for reduction(+ : dipole_cont)
+        for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+            auto &[i, j] = ij_to_i_j_[ij];
+
+            // Doo contributions (Toth Eq. 64a)
+            dipole_cont += Doo_->get(i, j) * mu_oo->get(i, j);
+
+            // Dvv (doubles) contributions (Toth Eq. 64c)
+            auto mu_vv_ij = linalg::triplet(X_pno_[ij], mu_vv, X_pno_[ij], true, false, false);
+            dipole_cont += Dvv_pair_[ij]->vector_dot(mu_vv_ij);
+        }
+
+        
+#pragma omp parallel for reduction(+ : dipole_cont)
+        for (int i = 0; i < naocc; ++i) {
+            int ii = i_j_to_ij_[i][i];
+
+            // Dov contributions (Toth Eq. 64b)
+            auto mu_ov_slice = submatrix_rows(*mu_ov, std::vector<int>(1, i));
+            auto mu_ov_ii = linalg::doublet(mu_ov_slice, X_pno_[ii], false, false); // <i|x|a_{ii}>
+            auto Dov_total = Dov_[i]->clone(); // D_{i}^{a_{ii}}
+            Dov_total->add(lambda_ia_[i]);
+
+            dipole_cont += Dov_total->vector_dot(mu_ov_ii->transpose());
+
+            // Dvv (singles) contributions (Toth Eq. 64d)
+            auto mu_vv_ii = linalg::triplet(X_pno_[ii], mu_vv, X_pno_[ii], true, false, false);
+            dipole_cont += Dvv_singles_[i]->vector_dot(mu_vv_ii);
+        }
+
+        ccsd_contribution[soup] += dipole_cont;
+    } // end soup
+
+    outfile->Printf("    Nuclear Contribution: \n");
+    outfile->Printf("    X: %.6f, Y: %.6f, Z: %.6f\n\n", nuclear_contribution[0], nuclear_contribution[1], nuclear_contribution[2]);
+    outfile->Printf("    SCF Electronic Contribution: \n");
+    outfile->Printf("    X: %.6f, Y: %.6f, Z: %.6f\n\n", hf_elec_contribution[0], hf_elec_contribution[1], hf_elec_contribution[2]);
+    outfile->Printf("    CCSD Correlated Contribution: \n");
+    outfile->Printf("    X: %.6f, Y: %.6f, Z: %.6f\n\n", ccsd_contribution[0], ccsd_contribution[1], ccsd_contribution[2]);
+
+    Vector3 total_dipole = nuclear_contribution;
+    total_dipole += hf_elec_contribution;
+    total_dipole += ccsd_contribution;
+
+    outfile->Printf("    ==> Total Dipole Moment <== \n");
+    outfile->Printf("    X: %.6f, Y: %.6f, Z: %.6f\n\n", total_dipole[0], total_dipole[1], total_dipole[2]);
+
+    return total_dipole;
+}
+
 void DLPNOCCSD_Lambda::print_header() {}
 void DLPNOCCSD_Lambda::print_results() {}
 
@@ -1482,6 +1682,9 @@ double DLPNOCCSD_Lambda::compute_energy() {
     compute_lambda_intermediates();
 
     lambda_ccsd_iterations();
+
+    compute_opdm();
+    compute_dipole_moment();
 
     return e_dlpno_ccsd;
 }
