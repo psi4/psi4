@@ -2,7 +2,7 @@
 #! FI-SAPT0/jun-cc-pvdz computation for 2,4-pentanediol (targeting the
 #! intramolecular hydrogen bond between the two hydroxyl groups)
 
-memory 32 GB
+memory 1 GB
 
 # Make sure that you specify the total charge/multiplicity with correct
 # fragment multiplicities. If total is neglected, you will run into an RHF
