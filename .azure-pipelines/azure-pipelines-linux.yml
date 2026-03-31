@@ -199,6 +199,12 @@ jobs:
   - bash: |
       cd build
       source activate p4env
+      PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 --durations-min=40 --strict-markers --color yes -n 2 -k "sapthf and saptdft" stage/lib/psi4/tests/
+    displayName: 'PyTest Tests SAPTDFT'
+
+  - bash: |
+      cd build
+      source activate p4env
       PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 --durations-min=40 --strict-markers --color yes -n 2 -m "$PYTEST_MARKER_EXPR" -k "$PYTEST_NAME_EXPR" stage/lib/psi4/tests/
     displayName: 'PyTest Tests'
 
