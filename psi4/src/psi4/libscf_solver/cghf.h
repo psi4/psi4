@@ -37,6 +37,9 @@
 #include <Einsums/Config.hpp>
 #include <Einsums/Tensor.hpp>
 
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+
 using SharedBlockTensor = std::shared_ptr<einsums::BlockTensor<std::complex<double>, 2>>;
 #endif
 
@@ -113,6 +116,10 @@ class CGHF : public HF {
     // and its conjugate. Stored in temp1_.
     void form_D() override;
 
+    // Prints out the density matrix to the terminal
+    void print_density();
+
+
     // Empty function for now, but for UHF and RHF, scales the density matrix
     void damping_update(double damping_percentage) override;
 
@@ -143,6 +150,12 @@ class CGHF : public HF {
 
     // Gets the HOMO and LUMO indices for HOMO/LUMO mixing
     std::tuple<int, int> find_homo_lumo_idx();
+
+    // Restart a calculation with a NumPy density matrix as input
+    void restart_with_guess_density(py::array_t<std::complex<double>>& matrix);
+
+    // Clears Fdiis, err_vecs, and error_doubles to give a brand new subspace
+    void reset_diis_subspace();
 
     void finalize() override;
 

@@ -440,6 +440,8 @@ void export_wavefunction(py::module& m) {
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("preiterations", &scf::CGHF::preiterations)
         .def("form_FDSmSDF", &scf::CGHF::get_shared_FDSmSDF)
+        .def("print_density", &scf::CGHF::print_density)
+        .def("restart_with_guess_density", &scf::CGHF::restart_with_guess_density)
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")

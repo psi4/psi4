@@ -27,7 +27,6 @@
  */
 
 #include "psi4/physconst.h"
-
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libmints/basisset.h"
@@ -43,6 +42,9 @@
 #include <Einsums/LinearAlgebra.hpp>
 #include <Einsums/TensorAlgebra.hpp>
 #include <Einsums/Runtime.hpp>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 using ComplexMatrix = einsums::BlockTensor<std::complex<double>, 2>;
 #endif
@@ -460,7 +462,6 @@ std::tuple<int, int> CGHF::find_homo_lumo_idx() {
  * This puts it in BlockTensor F_ then calls form_C() (which expects F_).
  */
 void CGHF::form_initial_C() {
-    // find_occupation();
     if (!sad_) {
         for (int h = 0; h < nirrep_; h++) {
             for (int p = 0; p < nsopi_[h]; p++) {
@@ -504,6 +505,20 @@ void CGHF::compute_SAD_guess(bool natorb) {
     }
 }
 
+
+/*
+ * DEPRECATE this once a standard way to read in guess densities for CGHF is developed
+ *
+ * Two global variables MUST be defined within the Python side to facilitate this guess:
+ *     1.) scf__cghf_real_density
+ *     2.) scf__cghf_imag_density
+ *
+ * which are both SharedMatrix objects
+*/
+void CGHF::print_density() {
+    println(*D_);
+}
+
 /*
  * Fills the occupied coefficient matrix Cocc_ as well as the complex conjugate cCocc_
  * Then constructs the density matrix D_ with D_uv = C_ui * C_vi_{conj}
@@ -520,6 +535,7 @@ void CGHF::form_D() {
     // are all->zeros and contribute nothing
     // This is just a minor inefficiency, since these matrices are larger than they should be
     // NOTE: this is done like this because BlockTensors cannot handle rectangular matrices
+
     for (int h = 0; h < nirrep_; h++) {
         for (int j = 0; j < irrep_sizes_[h]; j++) {
             for (int k = 0; k < nelecpi_[h]; k++) {
@@ -529,7 +545,6 @@ void CGHF::form_D() {
             }
         }
     }
-
     // D_ = einsums("ui,vi->uv", temp1_, temp2_)
     einsums::tensor_algebra::einsum(einsums::Indices{einsums::index::u, einsums::index::v}, D_.get(),  // D_uv
                                     einsums::Indices{einsums::index::u, einsums::index::i}, *temp1_,   // Cocc_ui
@@ -882,6 +897,42 @@ void CGHF::finalize() {
     //}
     HF::finalize();
 }
+
+void CGHF::restart_with_guess_density(py::array_t<std::complex<double>>& matrix) {
+    // Request buffer info
+    py::buffer_info info = matrix.request();
+
+    // Check dimensions
+    if (info.ndim != 2) {
+        throw std::runtime_error("Pass in a matrix. BlockTensors are not handled yet.");
+    }
+
+    // Get shape and strides
+    size_t rows = info.shape[0];
+    size_t cols = info.shape[1];
+    size_t row_stride = info.strides[0] / static_cast<size_t>(info.itemsize);
+    size_t col_stride = info.strides[1] / static_cast<size_t>(info.itemsize);
+
+    // Get a pointer to the data
+    std::complex<double>* data = static_cast<std::complex<double>*>(info.ptr);
+
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < cols; ++j) {
+            D_->block(0)(i, j) = data[i * row_stride + j * col_stride];
+        }
+    }
+
+    reset_diis_subspace();
+    form_G();
+    form_F();
+}
+
+void CGHF::reset_diis_subspace() {
+    Fdiis.clear();
+    err_vecs.clear();
+    error_doubles.clear();
+}
+
 
 std::shared_ptr<CGHF> CGHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     auto wfn = Wavefunction::c1_deep_copy(basis);
