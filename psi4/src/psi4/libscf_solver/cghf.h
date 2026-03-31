@@ -63,6 +63,8 @@ class CGHF : public HF {
     // Required for export_wavefunction to build
     void preiterations() {};
     void get_shared_FDSmSDF() {};
+    void print_density() {};
+    void restart_with_guess_density() {};
 
     // Required to build
     std::shared_ptr<UV> potential_;
