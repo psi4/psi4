@@ -164,8 +164,10 @@ SharedMatrix SCFDeriv::compute_gradient()
     if (functional_->needs_xc()) {
         if (options_.get_str("REFERENCE") == "RKS") {
             potential_->set_D({Da_});
+            potential_->set_Cocc({Ca_occ});
         } else {
             potential_->set_D({Da_, Db_});
+            potential_->set_Cocc({Ca_occ, Cb_occ});
         }
     }
 
@@ -231,6 +233,11 @@ SharedMatrix SCFDeriv::compute_gradient()
 #else
     std::shared_ptr<JKGrad> jk;
     if (options_.get_str("SCF_TYPE").find("DF") != std::string::npos && options_.get_bool("USE_CUEST") && !functional_->is_x_lrc()) {
+        if (!jk_) {
+            throw PSIEXCEPTION(
+                "cuESTJKGrad requires the SCF JK object to be preserved across finalization. "
+                "Set the SAVE_JK option to True before running the SCF calculation.");
+        }
         jk = JKGrad::build_cuESTJKGrad(1, jk_, -alpha, -beta);
     } else {
         jk = JKGrad::build_JKGrad(1, mintshelper_);
@@ -316,7 +323,6 @@ SharedMatrix SCFDeriv::compute_gradient()
     } else {
         gradients_["Total"]->print_atom_vector();
     }
-
 
     return gradients_["Total"];
 }

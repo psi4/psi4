@@ -403,12 +403,14 @@ void HF::finalize() {
     // Sphalf_.reset();
     X_.reset();
 #ifdef USING_cuEST
-    for (auto d_X : d_X_) {
-        if (d_X) {
-            cudaFree(d_X);
+    if (options_.get_bool("USE_CUEST")) {
+        for (auto d_X : d_X_) {
+            if (d_X) {
+                cudaFree(d_X);
+            }
         }
+        d_X_.clear();
     }
-    d_X_.clear();
 #endif
     T_.reset();
 }
@@ -802,24 +804,26 @@ void HF::form_Shalf() {
     prepare_canonical_orthogonalization();
 
 #ifdef USING_cuEST
-    if (d_X_.size()) {
-        throw PSIEXCEPTION("d_X_ already allocated in form Shalf");
-    }
-    for (int h = 0; h < nirrep_; ++h) {
-        auto dim = X_->rowspi()[h] * X_->colspi()[h];
-        if (dim > 0) {
-            double *ptr;
-            cudaError_t status = cudaMalloc((void**)&ptr, dim * sizeof(double));
-            if (status != cudaSuccess) {
-                throw PSIEXCEPTION("cudaMalloc failed in form Shalf");
+    if (options_.get_bool("USE_CUEST")) {
+        if (d_X_.size()) {
+            throw PSIEXCEPTION("d_X_ already allocated in form Shalf");
+        }
+        for (int h = 0; h < nirrep_; ++h) {
+            auto dim = X_->rowspi()[h] * X_->colspi()[h];
+            if (dim > 0) {
+                double *ptr;
+                cudaError_t status = cudaMalloc((void**)&ptr, dim * sizeof(double));
+                if (status != cudaSuccess) {
+                    throw PSIEXCEPTION("cudaMalloc failed in form Shalf");
+                }
+                status = cudaMemcpy(ptr, X_->get_pointer(h), dim * sizeof(double), cudaMemcpyHostToDevice);
+                if (status != cudaSuccess) {
+                    throw PSIEXCEPTION("cudaMemcpy failed in form Shalf");
+                }
+                d_X_.push_back(ptr);
+            } else {
+                d_X_.push_back(nullptr);
             }
-            status = cudaMemcpy(ptr, X_->get_pointer(h), dim * sizeof(double), cudaMemcpyHostToDevice);
-            if (status != cudaSuccess) {
-                throw PSIEXCEPTION("cudaMemcpy failed in form Shalf");
-            }
-            d_X_.push_back(ptr);
-        } else {
-            d_X_.push_back(nullptr);
         }
     }
 #endif
@@ -1391,147 +1395,149 @@ void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr
     }
 #endif
 #ifdef USING_cuEST
-    int max_nsopi = nsopi_.max();
-    int max_nmopi = nmopi_.max();
+    if (options_.get_bool("USE_CUEST")) {
+        int max_nsopi = nsopi_.max();
+        int max_nmopi = nmopi_.max();
 
-    double *d_F = nullptr;
-    cudaError_t err = cudaMalloc((void**)&d_F, max_nsopi * max_nsopi * sizeof(double));
-    if (err != cudaSuccess) {
-        throw PSIEXCEPTION("cudaMalloc failed in diagonalize_F");
-    }
-    double* d_eps = nullptr;
-    err = cudaMalloc((void**)&d_eps, max_nmopi * sizeof(double));
-    if (err != cudaSuccess) {
-        throw PSIEXCEPTION("cudaMalloc failed in diagonalize_F");
-    }
-    double* d_tmp = nullptr;
-    err = cudaMalloc((void**)&d_tmp, max_nsopi * max_nmopi * sizeof(double));
-    if (err != cudaSuccess) {
-        throw PSIEXCEPTION("cudaMalloc failed in diagonalize_F");
-    }
-    err = cudaMemset(d_tmp, 0, max_nsopi * max_nmopi * sizeof(double));
-    if (err != cudaSuccess) {
-        throw PSIEXCEPTION("cudaMemset failed in diagonalize_F");
-    }
-
-    auto cu_diag_F_temp = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
-
-    // Form F' = X'FX
-    for (int h = 0; h < nirrep_; ++h) {
-        int nso = X_->rowspi()[h];
-        int nmo = X_->colspi()[h];
-        if (nso == 0 || nmo == 0) continue;
-
-        double* d_X = d_X_[h];
-
-        err = cudaMemcpy(d_F, Fm->get_pointer(h), nso * nso * sizeof(double), cudaMemcpyHostToDevice);
+        double *d_F = nullptr;
+        cudaError_t err = cudaMalloc((void**)&d_F, max_nsopi * max_nsopi * sizeof(double));
         if (err != cudaSuccess) {
-            throw PSIEXCEPTION("cudaMemcpy failed in diagonalize_F");
+            throw PSIEXCEPTION("cudaMalloc failed in diagonalize_F");
         }
-
-        // tmp = X' F (don't forget to switch the order for Fortran storage convention)
-        // tmp = X' F
-        double alpha = 1.0;
-        double beta = 0.0;
-        cublasStatus_t status = cublasDgemm(
-            cublas_handle,
-            CUBLAS_OP_N,
-            CUBLAS_OP_T,
-            nso,
-            nmo,
-            nso,
-            &alpha,
-            d_F,
-            nso,
-            d_X,
-            nmo,
-            &beta,
-            d_tmp,
-            nso);
-        if (status != CUBLAS_STATUS_SUCCESS) {
-            throw PSIEXCEPTION("cublasDgemm failed in diagonalize_F 1" + std::to_string(status));
-        }
-        // F' = tmp X = (X' F) X
-        // overwrite F with F' to feed into the diagonalization
-        status = cublasDgemm(
-            cublas_handle,
-            CUBLAS_OP_N,
-            CUBLAS_OP_N,
-            nmo,
-            nmo,
-            nso,
-            &alpha,
-            d_X,
-            nmo,
-            d_tmp,
-            nso,
-            &beta,
-            d_F,
-            nmo);
-        if (status != CUBLAS_STATUS_SUCCESS) {
-            throw PSIEXCEPTION("cublasDgemm failed in diagonalize_F 2" + std::to_string(status));
-        }
-
-        err = cudaMemcpy(
-            cu_diag_F_temp->get_pointer(h),
-            d_F,
-            nmo * nmo * sizeof(double),
-            cudaMemcpyDeviceToHost);
+        double* d_eps = nullptr;
+        err = cudaMalloc((void**)&d_eps, max_nmopi * sizeof(double));
         if (err != cudaSuccess) {
-            throw PSIEXCEPTION("cudaMemcpyDeviceToHost failed in diagonalize_F");
+            throw PSIEXCEPTION("cudaMalloc failed in diagonalize_F");
         }
+        double* d_tmp = nullptr;
+        err = cudaMalloc((void**)&d_tmp, max_nsopi * max_nmopi * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMalloc failed in diagonalize_F");
+        }
+        err = cudaMemset(d_tmp, 0, max_nsopi * max_nmopi * sizeof(double));
+        if (err != cudaSuccess) {
+            throw PSIEXCEPTION("cudaMemset failed in diagonalize_F");
+        }
+
+        auto cu_diag_F_temp = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
+
+        // Form F' = X'FX
+        for (int h = 0; h < nirrep_; ++h) {
+            int nso = X_->rowspi()[h];
+            int nmo = X_->colspi()[h];
+            if (nso == 0 || nmo == 0) continue;
+
+            double* d_X = d_X_[h];
+
+            err = cudaMemcpy(d_F, Fm->get_pointer(h), nso * nso * sizeof(double), cudaMemcpyHostToDevice);
+            if (err != cudaSuccess) {
+                throw PSIEXCEPTION("cudaMemcpy failed in diagonalize_F");
+            }
+
+            // tmp = X' F (don't forget to switch the order for Fortran storage convention)
+            // tmp = X' F
+            double alpha = 1.0;
+            double beta = 0.0;
+            cublasStatus_t status = cublasDgemm(
+                cublas_handle,
+                CUBLAS_OP_N,
+                CUBLAS_OP_T,
+                nso,
+                nmo,
+                nso,
+                &alpha,
+                d_F,
+                nso,
+                d_X,
+                nmo,
+                &beta,
+                d_tmp,
+                nso);
+            if (status != CUBLAS_STATUS_SUCCESS) {
+                throw PSIEXCEPTION("cublasDgemm failed in diagonalize_F 1" + std::to_string(status));
+            }
+            // F' = tmp X = (X' F) X
+            // overwrite F with F' to feed into the diagonalization
+            status = cublasDgemm(
+                cublas_handle,
+                CUBLAS_OP_N,
+                CUBLAS_OP_N,
+                nmo,
+                nmo,
+                nso,
+                &alpha,
+                d_X,
+                nmo,
+                d_tmp,
+                nso,
+                &beta,
+                d_F,
+                nmo);
+            if (status != CUBLAS_STATUS_SUCCESS) {
+                throw PSIEXCEPTION("cublasDgemm failed in diagonalize_F 2" + std::to_string(status));
+            }
+
+            err = cudaMemcpy(
+                cu_diag_F_temp->get_pointer(h),
+                d_F,
+                nmo * nmo * sizeof(double),
+                cudaMemcpyDeviceToHost);
+            if (err != cudaSuccess) {
+                throw PSIEXCEPTION("cudaMemcpyDeviceToHost failed in diagonalize_F");
+            }
+        }
+
+        // TODO diagonalize on device to avoid the transfers above and below        
+        // Form C' = eig(F')
+        auto cu_diag_C_temp = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
+
+        cu_diag_F_temp->diagonalize(cu_diag_C_temp, epsm);
+
+        // Form C = XC', using F as temporary device storage
+        for (int h = 0; h < nirrep_; ++h) {
+            int nso = X_->rowspi()[h];
+            int nmo = X_->colspi()[h];
+            if (nso == 0 || nmo == 0) continue;
+
+            double* d_X = d_X_[h];
+
+            err = cudaMemcpy(d_tmp, cu_diag_C_temp->get_pointer(h), nmo * nmo * sizeof(double), cudaMemcpyHostToDevice);
+            if (err != cudaSuccess) {
+                throw PSIEXCEPTION("cudaMemcpy failed in diagonalize_F");
+            }
+
+            double alpha = 1.0;
+            double beta = 0.0;
+            cublasStatus_t status = cublasDgemm(
+                cublas_handle,
+                CUBLAS_OP_N,
+                CUBLAS_OP_N,
+                nmo,
+                nso,
+                nmo,
+                &alpha,
+                d_tmp,
+                nmo,
+                d_X,
+                nmo,
+                &beta,
+                d_F,
+                nmo);
+            if (status != CUBLAS_STATUS_SUCCESS) {
+                throw PSIEXCEPTION("cublasDgemm failed in diagonalize_F 3" + std::to_string(status));
+            }
+            err = cudaMemcpy(Cm->get_pointer(h), d_F, nso * nmo * sizeof(double), cudaMemcpyDeviceToHost);
+            if (err != cudaSuccess) {
+                throw PSIEXCEPTION("cudaMemcpy failed in diagonalize_F");
+            }
+        }
+
+        cudaFree(d_F);
+        cudaFree(d_eps);
+        cudaFree(d_tmp);
+
+        return;
     }
-
-    // TODO diagonalize on device to avoid the transfers above and below        
-    // Form C' = eig(F')
-    auto cu_diag_C_temp = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
-
-    cu_diag_F_temp->diagonalize(cu_diag_C_temp, epsm);
-
-    // Form C = XC', using F as temporary device storage
-    for (int h = 0; h < nirrep_; ++h) {
-        int nso = X_->rowspi()[h];
-        int nmo = X_->colspi()[h];
-        if (nso == 0 || nmo == 0) continue;
-
-        double* d_X = d_X_[h];
-
-        err = cudaMemcpy(d_tmp, cu_diag_C_temp->get_pointer(h), nmo * nmo * sizeof(double), cudaMemcpyHostToDevice);
-        if (err != cudaSuccess) {
-            throw PSIEXCEPTION("cudaMemcpy failed in diagonalize_F");
-        }
-
-        double alpha = 1.0;
-        double beta = 0.0;
-        cublasStatus_t status = cublasDgemm(
-            cublas_handle,
-            CUBLAS_OP_N,
-            CUBLAS_OP_N,
-            nmo,
-            nso,
-            nmo,
-            &alpha,
-            d_tmp,
-            nmo,
-            d_X,
-            nmo,
-            &beta,
-            d_F,
-            nmo);
-        if (status != CUBLAS_STATUS_SUCCESS) {
-            throw PSIEXCEPTION("cublasDgemm failed in diagonalize_F 3" + std::to_string(status));
-        }
-        err = cudaMemcpy(Cm->get_pointer(h), d_F, nso * nmo * sizeof(double), cudaMemcpyDeviceToHost);
-        if (err != cudaSuccess) {
-            throw PSIEXCEPTION("cudaMemcpy failed in diagonalize_F");
-        }
-    }
-
-    cudaFree(d_F);
-    cudaFree(d_eps);
-    cudaFree(d_tmp);
-
-    return;
 #endif
 
     // Form F' = X'FX for canonical orthogonalization
@@ -1600,108 +1606,110 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, const Dimension& n
 
 SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso) {
 #ifdef USING_cuEST
-    if (nirrep_ == 1) {
-        const int n = nsopi_[0];
-        const size_t bytes = size_t(n) * n * sizeof(double);
+    if (options_.get_bool("USE_CUEST")) {
+        if (nirrep_ == 1) {
+            const int n = nsopi_[0];
+            const size_t bytes = size_t(n) * n * sizeof(double);
 
-        double *d_F = nullptr, *d_D = nullptr, *d_S = nullptr, *d_X = nullptr;
-        double *d_A = nullptr, *d_tmp = nullptr;
+            double *d_F = nullptr, *d_D = nullptr, *d_S = nullptr, *d_X = nullptr;
+            double *d_A = nullptr, *d_tmp = nullptr;
 
-        size_t Fm = Fso->rowdim();
-        size_t Fn = Fso->coldim();
+            size_t Fm = Fso->rowdim();
+            size_t Fn = Fso->coldim();
 
-        size_t Dm = Fso->rowdim();
-        size_t Dn = Fso->coldim();
+            size_t Dm = Fso->rowdim();
+            size_t Dn = Fso->coldim();
 
-        size_t Sm = S_->rowdim();
-        size_t Sn = S_->coldim();
+            size_t Sm = S_->rowdim();
+            size_t Sn = S_->coldim();
 
-        size_t Xm = X_->rowdim();
-        size_t Xn = X_->coldim();
+            size_t Xm = X_->rowdim();
+            size_t Xn = X_->coldim();
 
-        cudaError_t err;
-        cublasStatus_t stat;
-        const double alpha = 1.0, beta = 0.0, minus_one = -1.0;
+            cudaError_t err;
+            cublasStatus_t stat;
+            const double alpha = 1.0, beta = 0.0, minus_one = -1.0;
 
-        // Allocate (row-major buffers as seen by Psi4; cuBLAS sees them as column-major)
-        err = cudaMalloc((void**)&d_F,  Fso->size() * sizeof(double)); if (err) throw PSIEXCEPTION("cudaMalloc d_F failed");
-        err = cudaMalloc((void**)&d_D,  Dso->size() * sizeof(double)); if (err) throw PSIEXCEPTION("cudaMalloc d_D failed");
-        err = cudaMalloc((void**)&d_S,  S_->size() * sizeof(double)); if (err) throw PSIEXCEPTION("cudaMalloc d_S failed");
-        err = cudaMalloc((void**)&d_X,  X_->size() * sizeof(double)); if (err) throw PSIEXCEPTION("cudaMalloc d_X failed");
-        err = cudaMalloc((void**)&d_A,  S_->size() * sizeof(double)); if (err) throw PSIEXCEPTION("cudaMalloc d_A failed");
-        err = cudaMalloc((void**)&d_tmp, S_->size() * sizeof(double)); if (err) throw PSIEXCEPTION("cudaMalloc d_tmp failed");
+            // Allocate (row-major buffers as seen by Psi4; cuBLAS sees them as column-major)
+            err = cudaMalloc((void**)&d_F,  Fso->size() * sizeof(double)); if (err) throw PSIEXCEPTION("cudaMalloc d_F failed");
+            err = cudaMalloc((void**)&d_D,  Dso->size() * sizeof(double)); if (err) throw PSIEXCEPTION("cudaMalloc d_D failed");
+            err = cudaMalloc((void**)&d_S,  S_->size() * sizeof(double)); if (err) throw PSIEXCEPTION("cudaMalloc d_S failed");
+            err = cudaMalloc((void**)&d_X,  X_->size() * sizeof(double)); if (err) throw PSIEXCEPTION("cudaMalloc d_X failed");
+            err = cudaMalloc((void**)&d_A,  S_->size() * sizeof(double)); if (err) throw PSIEXCEPTION("cudaMalloc d_A failed");
+            err = cudaMalloc((void**)&d_tmp, S_->size() * sizeof(double)); if (err) throw PSIEXCEPTION("cudaMalloc d_tmp failed");
 
-        // Copy inputs as-is (row-major in Psi4, interpreted as column-major by cuBLAS)
-        err = cudaMemcpy(d_F, Fso->get_pointer(0), Fso->size() * sizeof(double), cudaMemcpyHostToDevice); if (err) throw PSIEXCEPTION("cudaMemcpy Fso failed");
-        err = cudaMemcpy(d_D, Dso->get_pointer(0), Dso->size() * sizeof(double), cudaMemcpyHostToDevice); if (err) throw PSIEXCEPTION("cudaMemcpy Dso failed");
-        err = cudaMemcpy(d_S, S_->get_pointer(0), S_->size() * sizeof(double), cudaMemcpyHostToDevice); if (err) throw PSIEXCEPTION("cudaMemcpy S_ failed");
-        err = cudaMemcpy(d_X, X_->get_pointer(0), X_->size() * sizeof(double), cudaMemcpyHostToDevice); if (err) throw PSIEXCEPTION("cudaMemcpy X_ failed");
+            // Copy inputs as-is (row-major in Psi4, interpreted as column-major by cuBLAS)
+            err = cudaMemcpy(d_F, Fso->get_pointer(0), Fso->size() * sizeof(double), cudaMemcpyHostToDevice); if (err) throw PSIEXCEPTION("cudaMemcpy Fso failed");
+            err = cudaMemcpy(d_D, Dso->get_pointer(0), Dso->size() * sizeof(double), cudaMemcpyHostToDevice); if (err) throw PSIEXCEPTION("cudaMemcpy Dso failed");
+            err = cudaMemcpy(d_S, S_->get_pointer(0), S_->size() * sizeof(double), cudaMemcpyHostToDevice); if (err) throw PSIEXCEPTION("cudaMemcpy S_ failed");
+            err = cudaMemcpy(d_X, X_->get_pointer(0), X_->size() * sizeof(double), cudaMemcpyHostToDevice); if (err) throw PSIEXCEPTION("cudaMemcpy X_ failed");
 
-        stat = cublasDgemm(cublas_handle,
-                           CUBLAS_OP_N, CUBLAS_OP_N,
-                           n, n, n,
-                           &alpha,
-                           d_D, n,
-                           d_F, n,
-                           &beta,
-                           d_tmp, n);
-        if (stat != CUBLAS_STATUS_SUCCESS)
-            throw PSIEXCEPTION("cublasDgemm D*S failed in form_FDSmSDF");
+            stat = cublasDgemm(cublas_handle,
+                            CUBLAS_OP_N, CUBLAS_OP_N,
+                            n, n, n,
+                            &alpha,
+                            d_D, n,
+                            d_F, n,
+                            &beta,
+                            d_tmp, n);
+            if (stat != CUBLAS_STATUS_SUCCESS)
+                throw PSIEXCEPTION("cublasDgemm D*S failed in form_FDSmSDF");
 
-        stat = cublasDgemm(cublas_handle,
-                           CUBLAS_OP_N, CUBLAS_OP_N,
-                           n, n, n,
-                           &alpha,
-                           d_S,   n,
-                           d_tmp, n,
-                           &beta,
-                           d_A,   n);
-        if (stat != CUBLAS_STATUS_SUCCESS)
-            throw PSIEXCEPTION("cublasDgemm F*(D S) failed in form_FDSmSDF");
+            stat = cublasDgemm(cublas_handle,
+                            CUBLAS_OP_N, CUBLAS_OP_N,
+                            n, n, n,
+                            &alpha,
+                            d_S,   n,
+                            d_tmp, n,
+                            &beta,
+                            d_A,   n);
+            if (stat != CUBLAS_STATUS_SUCCESS)
+                throw PSIEXCEPTION("cublasDgemm F*(D S) failed in form_FDSmSDF");
 
-        stat = cublasDgeam(cublas_handle,
-                           CUBLAS_OP_N, CUBLAS_OP_T,
-                           n, n,
-                           &alpha,      d_A, n,
-                           &minus_one,  d_A, n,
-                           d_tmp, n);
-        if (stat != CUBLAS_STATUS_SUCCESS)
-            throw PSIEXCEPTION("cublasDgeam A-AT failed in form_FDSmSDF");
+            stat = cublasDgeam(cublas_handle,
+                            CUBLAS_OP_N, CUBLAS_OP_T,
+                            n, n,
+                            &alpha,      d_A, n,
+                            &minus_one,  d_A, n,
+                            d_tmp, n);
+            if (stat != CUBLAS_STATUS_SUCCESS)
+                throw PSIEXCEPTION("cublasDgeam A-AT failed in form_FDSmSDF");
 
-        stat = cublasDgemm(cublas_handle,
-                           CUBLAS_OP_N, CUBLAS_OP_T,
-                           n, Xn, Xm,
-                           &alpha,
-                           d_tmp, n,
-                           d_X,   Xn,
-                           &beta,
-                           d_A,   n);
-        if (stat != CUBLAS_STATUS_SUCCESS)
-            throw PSIEXCEPTION("cublasDgemm A*X failed in form_FDSmSDF");
+            stat = cublasDgemm(cublas_handle,
+                            CUBLAS_OP_N, CUBLAS_OP_T,
+                            n, Xn, Xm,
+                            &alpha,
+                            d_tmp, n,
+                            d_X,   Xn,
+                            &beta,
+                            d_A,   n);
+            if (stat != CUBLAS_STATUS_SUCCESS)
+                throw PSIEXCEPTION("cublasDgemm A*X failed in form_FDSmSDF");
 
-        stat = cublasDgemm(cublas_handle,
-                           CUBLAS_OP_N, CUBLAS_OP_N,
-                           Xn, Xn, n,
-                           &alpha,
-                           d_X,   Xn,
-                           d_A,   n,
-                           &beta,
-                           d_tmp, Xn);
-        if (stat != CUBLAS_STATUS_SUCCESS)
-            throw PSIEXCEPTION("cublasDgemm X^T*(A*X) failed in form_FDSmSDF");
+            stat = cublasDgemm(cublas_handle,
+                            CUBLAS_OP_N, CUBLAS_OP_N,
+                            Xn, Xn, n,
+                            &alpha,
+                            d_X,   Xn,
+                            d_A,   n,
+                            &beta,
+                            d_tmp, Xn);
+            if (stat != CUBLAS_STATUS_SUCCESS)
+                throw PSIEXCEPTION("cublasDgemm X^T*(A*X) failed in form_FDSmSDF");
 
-        auto FDSmSDF_host = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
-        err = cudaMemcpy(FDSmSDF_host->get_pointer(0), d_tmp, Xn * Xn * sizeof(double), cudaMemcpyDeviceToHost);
-        if (err) throw PSIEXCEPTION("cudaMemcpy result failed in form_FDSmSDF");
+            auto FDSmSDF_host = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
+            err = cudaMemcpy(FDSmSDF_host->get_pointer(0), d_tmp, Xn * Xn * sizeof(double), cudaMemcpyDeviceToHost);
+            if (err) throw PSIEXCEPTION("cudaMemcpy result failed in form_FDSmSDF");
 
-        cudaFree(d_F);
-        cudaFree(d_D);
-        cudaFree(d_S);
-        cudaFree(d_X);
-        cudaFree(d_A);
-        cudaFree(d_tmp);
+            cudaFree(d_F);
+            cudaFree(d_D);
+            cudaFree(d_S);
+            cudaFree(d_X);
+            cudaFree(d_A);
+            cudaFree(d_tmp);
 
-        return FDSmSDF_host;
+            return FDSmSDF_host;
+        }
     }
 #endif
 

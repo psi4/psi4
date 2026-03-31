@@ -2867,6 +2867,18 @@ def run_scf_gradient(name, **kwargs):
 
     optstash = proc_util.scf_set_reference_local(name, is_dft=dft_func)
 
+    # cuESTJKGrad reuses the SCF JK object (specifically its cuEST DF integral
+    # plan) rather than rebuilding integrals from scratch.  HF::finalize() resets
+    # jk_ to null by default (SAVE_JK=False), so SCFDeriv would receive a null
+    # JK pointer and segfault inside build_cuESTJKGrad.  Preserve the JK object
+    # across finalization so compute_gradient() can access it.
+    optstash_jk = None
+    if core.get_option('SCF', 'USE_CUEST') and \
+            'DF' in core.get_global_option('SCF_TYPE') and \
+            not core.get_option('SCF', 'SAVE_JK'):
+        optstash_jk = p4util.OptionsState(['SCF', 'SAVE_JK'])
+        core.set_local_option('SCF', 'SAVE_JK', True)
+
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
@@ -2894,6 +2906,8 @@ def run_scf_gradient(name, **kwargs):
         core.set_variable(k, v)
 
     optstash.restore()
+    if optstash_jk is not None:
+        optstash_jk.restore()
     return ref_wfn
 
 
