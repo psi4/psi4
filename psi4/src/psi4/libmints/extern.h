@@ -33,10 +33,7 @@
 #include <utility>
 #include <string>
 #include <tuple>
-#include <map>
 #include "typedefs.h"
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "psi4/pragma.h"
 

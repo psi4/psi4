@@ -246,6 +246,7 @@ def test_sapt_dft_compute_ddft_d4_diskdf():
 
 @pytest.mark.saptdft
 @pytest.mark.dftd4
+@pytest.mark.medlong
 def test_sapt_dft_diskdf():
     """
     Test SAPT(DFT) for correct delta-DFT and -D4 IE terms
@@ -1016,6 +1017,7 @@ no_com
     )
 
 
+@pytest.mark.saptdft
 def test_qcng_embedded_saptdft():
     import qcengine as qcng
 
@@ -1115,6 +1117,7 @@ def test_qcng_embedded_saptdft():
     return
 
 
+@pytest.mark.saptdft
 def test_charge_field_inputs():
     dimer = psi4.geometry("""
     0 1
@@ -1197,6 +1200,7 @@ def test_charge_field_inputs():
     assert compare_values(e_B, e_b, 7, "e_A==e_a")
 
 
+@pytest.mark.saptdft
 def test_einsum_terms():
     """
     built from sapt-dft1 ctest
@@ -1234,6 +1238,8 @@ def test_einsum_terms():
         )
 
 
+@pytest.mark.saptdft
+@pytest.mark.medlong
 def test_saptdft_inf():
     # implement this test
     Eref = {
