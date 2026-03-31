@@ -1,10 +1,6 @@
 #! cGHF STO-3G energy on a H5 pentagon (ring) with R = 1.0 Angstroms with a PySCF guess density matrix
 import numpy as np
-import os
 
-#print("YOU ARE HERE", os.getcwd())
-
-#guess_D = np.load("H3_density.npy")
 guess_D = np.load("density.dat")
 
 ref_energy         =  -2.46188756051316
