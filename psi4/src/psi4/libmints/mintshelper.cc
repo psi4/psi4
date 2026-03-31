@@ -167,7 +167,9 @@ MintsHelper::MintsHelper(std::shared_ptr<Wavefunction> wavefunction)
 
 MintsHelper::~MintsHelper() {
 #ifdef USING_cuEST
-    cuest_finalize();
+    if (options_.get_bool("USE_CUEST")) {
+        cuest_finalize();
+    }
 #endif
 }
 
@@ -231,7 +233,9 @@ void MintsHelper::common_init() {
     cutoff_ = Process::environment.options.get_double("INTS_TOLERANCE");
 
 #ifdef USING_cuEST
-    cuest_initialize();
+    if (options_.get_bool("USE_CUEST")) {
+        cuest_initialize();
+    }
 #endif
 }
 
@@ -639,8 +643,10 @@ SharedMatrix MintsHelper::ao_overlap() {
     auto overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, basisset_->nbf(), basisset_->nbf());
 
 #ifdef USING_cuEST
-    form_S_cuest(overlap_mat);
-    return overlap_mat;
+    if (options_.get_bool("USE_CUEST")) {
+        form_S_cuest(overlap_mat);
+        return overlap_mat;
+    }
 #endif
 
 #ifdef USING_BrianQC
@@ -678,8 +684,10 @@ SharedMatrix MintsHelper::ao_kinetic() {
     auto kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", basisset_->nbf(), basisset_->nbf());
 
 #ifdef USING_cuEST
-    form_T_cuest(kinetic_mat);
-    return kinetic_mat;
+    if (options_.get_bool("USE_CUEST")) {
+        form_T_cuest(kinetic_mat);
+        return kinetic_mat;
+    }
 #endif
 
 #ifdef USING_BrianQC
@@ -716,8 +724,10 @@ SharedMatrix MintsHelper::ao_potential() {
         std::make_shared<Matrix>("AO-basis Potential Ints", basisset_->nbf(), basisset_->nbf());
 
 #ifdef USING_cuEST
-    form_V_cuest(potential_mat);
-    return potential_mat;
+    if (options_.get_bool("USE_CUEST")) {
+        form_V_cuest(potential_mat);
+        return potential_mat;
+    }
 #endif
 
 #ifdef USING_BrianQC

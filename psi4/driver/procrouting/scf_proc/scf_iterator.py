@@ -98,16 +98,14 @@ def scf_compute_energy(self):
     else:
         core.print_out("  Energy and wave function converged.\n\n")
 
-#    _t_final_start = time.perf_counter()
-#    scf_energy = self.finalize_energy()
-#    _t_final_end = time.perf_counter()
+    _t_final_start = time.perf_counter()
+    scf_energy = self.finalize_energy()
+    _t_final_end = time.perf_counter()
 
-#    core.print_out("\n  ==> SCF Phase Timing <==\n\n")
-#    core.print_out("    Iterations:      %7.3fs\n" % (_t_final_start - _t_iter_start))
-#    core.print_out("    Finalize:        %7.3fs\n" % (_t_final_end - _t_final_start))
-#    core.print_out("\n")
-
-    scf_energy = 0.0
+    core.print_out("\n  ==> SCF Phase Timing <==\n\n")
+    core.print_out("    Iterations:      %7.3fs\n" % (_t_final_start - _t_iter_start))
+    core.print_out("    Finalize:        %7.3fs\n" % (_t_final_end - _t_final_start))
+    core.print_out("\n")
 
     return scf_energy
 
@@ -842,7 +840,6 @@ def scf_finalize_energy(self):
     for k, v in self.variables().items():
         core.set_variable(k, v)
 
-    # TODO re-enable
     self.finalize()
     if self.V_potential():
         self.V_potential().clear_collocation_cache()
@@ -1108,7 +1105,11 @@ def _validate_soscf():
 
     """
     enabled = core.get_option('SCF', 'SOSCF')
+
     if enabled:
+        if core.get_option('SCF', 'USE_CUEST'):
+            core.print_out("\nWARNING: SOSCF disabled because USE_CUEST is enabled\n")
+            return False
         start = core.get_option('SCF', 'SOSCF_START_CONVERGENCE')
         if start < 0.0:
             raise ValidationError('SCF SOSCF_START_CONVERGENCE ({}) must be positive'.format(start))
