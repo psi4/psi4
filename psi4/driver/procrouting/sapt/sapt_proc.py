@@ -427,12 +427,9 @@ def compute_GRAC_shift(molecule, sapt_dft_grac_convergence_tier, label):
         del mol_qcel_dict["molecular_multiplicity"]
         given_charge = mol_qcel_dict["molecular_charge"]
 
-        mol_qcel = qcel.models.v2.Molecule(**mol_qcel_dict)
-        mol_given = core.Molecule.from_schema(mol_qcel.model_dump())
-
+        mol_given = core.Molecule.from_schema(mol_qcel_dict)
         mol_qcel_dict["molecular_charge"] += 1
-        mol_qcel = qcel.models.v2.Molecule(**mol_qcel_dict)
-        mol_cation = core.Molecule.from_schema(mol_qcel.model_dump())
+        mol_cation = core.Molecule.from_schema(mol_qcel_dict)
 
         core.print_out(f"\n\n  ==> GRAC {label} Given Molecule: charge={mol_given.molecular_charge()} mult={mol_given.multiplicity()} <==\n\n")
         try:

@@ -221,6 +221,8 @@ def test_qcschema_wavefunction_scf_orbitals(result_data_fixture, schema_versions
     wfn = ret["wavefunction"]
 
     expected_keys = {'basis', 'restricted', 'scf_orbitals_a', 'scf_eigenvalues_a', 'orbitals_a', 'eigenvalues_a'}
+    if "v2" in request.node.name:
+        expected_keys.add("schema_name")
     assert wfn.keys() == expected_keys
 
 
