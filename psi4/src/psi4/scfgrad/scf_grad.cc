@@ -242,8 +242,6 @@ SharedMatrix SCFDeriv::compute_gradient()
     } else {
         jk = JKGrad::build_JKGrad(1, mintshelper_);
     }
-    alpha = 1.0;
-    beta = 1.0;
 #endif
     jk->set_memory((size_t) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
