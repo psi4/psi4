@@ -2167,7 +2167,7 @@ def fsapt_analysis(
         atomic_results = None
         wfn = source
     else:
-        raise ValidationError("fsapt_analysis requires a string, AtomicResult, or Wavefunction as input")
+        raise ValidationError(f"fsapt_analysis requires a string, AtomicResult, or Wavefunction as input, not {type(source)=}")
 
 
     return fsapt.run_fsapt_analysis(

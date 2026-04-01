@@ -741,7 +741,7 @@ data:
     conda:
       channel: conda-forge
       name: pybind11
-      constraint: null
+      constraint: "<3.0.3"
       constraint_note: "Numpy v2 needs >=2.12. For docs, '>=2.10.*,<2.12.0' has adv; search FixedSize."
       cmake:
         pybind11_DIR:
@@ -1005,7 +1005,7 @@ data:
       host: github
       account: MolSSI
       name: QCElemental
-      commit: v0.50.0rc3
+      commit: v0.50.0rc4
       githttps: true
     cmake:
       name: qcelemental
@@ -1014,7 +1014,7 @@ data:
     conda:
       channel: conda-forge/label/qcelemental_dev
       name: qcelemental
-      constraint: ">=0.50.0rc3"
+      constraint: ">=0.50.0rc4"
       aux_run_names:
         - msgpack-python
         - networkx
@@ -1511,16 +1511,16 @@ data:
       host: github
       account: MolSSI
       name: QCManyBody
-      commit: v0.6.1
+      commit: v0.7.0
       githttps: true
     cmake:
       name: qcmanybody
-      constraint: "ATLEAST 0.6.1"
+      constraint: "ATLEAST 0.7.0"
       target: null
     conda:
       channel: conda-forge
       name: qcmanybody
-      constraint: ">=0.6.1"
+      constraint: ">=0.7.0"
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
