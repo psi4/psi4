@@ -400,6 +400,7 @@ install(
     PATTERN "dftd3/psithon2/psiaux2/*"
     PATTERN "mints3/L*dat"
     PATTERN "mints3/P*dat"
+    PATTERN "cghf*/density.dat"
   )
 
     # <<<  install psi4 share/ & include/  >>>
