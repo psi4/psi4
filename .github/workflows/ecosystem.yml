@@ -179,6 +179,7 @@ jobs:
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
+          sed -E -i.bak "s;- ambit;- mctc-lib=0.4.1;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
@@ -298,6 +299,9 @@ jobs:
           PYTHONPATH=install/lib python -c "import qcengine as qcng; qcng.get_program('psi4')"
           qcengine info
         fi
+        if [[ "${{ runner.os }}" != "Linux" ]]; then
+          PATH=stage/bin:$PATH PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')"
+        fi
 
     - name: Test OpenMP
       working-directory: ./install/lib
@@ -319,7 +323,9 @@ jobs:
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
     - name: Test Addons with Pytest (geomeTRIC)
       working-directory: ./objdir
-      run: PATH=stage/bin:$PATH PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n 2 -m "geometric" stage/lib/psi4/tests/
+      run: |
+        eval $(stage/bin/psi4 --psiapi)
+        pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n 2 -m "geometric" stage/lib/psi4/tests/
 
     - name: Test Addons with Pytest
       working-directory: ./objdir
