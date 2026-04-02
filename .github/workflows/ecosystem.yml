@@ -27,6 +27,8 @@ jobs:
             pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
             cmargs: >
               -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
 
           - label: "Conda GNU (L)"
             runs-on: ubuntu-latest
@@ -36,6 +38,7 @@ jobs:
             pytest-marker-expr: "addon and not (medlong or long)"
             pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
             cmargs: >
+              -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
@@ -44,6 +47,44 @@ jobs:
             #    -D BUILD_SHARED_LIBS=ON
             #    -D ENABLE_XHOST=OFF
 
+          - label: "Conda Clang (M-Silicon)"
+            runs-on: macos-latest
+            python-version: "3.14"
+            mkl-version: ""
+            platform: osx-64
+            pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or snowflake)"
+            target-sdk: "10.10"
+            cmargs: >
+              -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+
+          - label: "Conda Clang (M-Silicon)"
+            runs-on: macos-latest
+            python-version: "3.10"
+            mkl-version: ""
+            platform: osx-64
+            pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or snowflake)"
+            target-sdk: "10.10"
+            cmargs: >
+              -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+
+          - label: "LLVM clang-cl (W)"
+            runs-on: windows-latest
+            python-version: "3.12"
+            mkl-version: ""
+            platform: win-64
+            pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
+            pytest-name-expr: "not pe_ecp"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D psi4_SKIP_ENABLE_Fortran=ON
  
             # Notes:
             # * When not using cache file, need to additionally specify the following:

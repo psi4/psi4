@@ -9,6 +9,19 @@ jobs:
   strategy:
     maxParallel: 8
     matrix:
+      gcc_latest:
+        CXX_COMPILER: 'g++'
+        PYTHON_VER: '3.14'
+        C_COMPILER: 'gcc'
+        F_COMPILER: 'gfortran'
+        BUILD_TYPE: 'release'
+        APT_INSTALL: 'gfortran'
+        vmImage: 'ubuntu-latest'
+        PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long)) or einsums)'
+        PYTEST_NAME_EXPR: 'not nonsense1'
+        ENABLE_EINSUMS: "ON"
+        ENABLE_GAUXC: "ON"
+        CMARGS: ""
 
       clang_py314:
         CXX_COMPILER: 'clang++-17'
