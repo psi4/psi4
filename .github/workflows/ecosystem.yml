@@ -77,12 +77,13 @@ jobs:
 
           - label: "LLVM clang-cl (W)"
             runs-on: windows-latest
-            python-version: "3.12"
+            python-version: "3.14"
             mkl-version: ""
             platform: win-64
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             pytest-name-expr: "not pe_ecp"
             cmargs: >
+              -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
  
@@ -195,6 +196,20 @@ jobs:
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
+        fi
+        if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Silicon)" && "${{ matrix.cfg.python-version }}" == "3.14" ]]; then
+          :
+          sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
+          sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
+          # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
+          sed -E -i.bak "s;- dftd3-python;#- dftd3-python;g" env_p4build.yaml
+          sed -E -i.bak "s;- dftd4-python;#- dftd4-python;g" env_p4build.yaml
+          sed -E -i.bak "s;- geometric;#- geometric;g" env_p4build.yaml
+          sed -E -i.bak "s;- i-pi;#- i-pi;g" env_p4build.yaml
+          sed -E -i.bak "s;- postgresql;#- postgresql;g" env_p4build.yaml
+          sed -E -i.bak "s;- pyddx;#- pyddx;g" env_p4build.yaml
+          sed -E -i.bak "s;- pymdi;#- pymdi;g" env_p4build.yaml
+          sed -E -i.bak "s;- qcfractal;#- qcfractal;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :

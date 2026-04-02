@@ -1226,6 +1226,7 @@ data:
       constraint: null
       aux_run_names:
         - toml
+        - "mctc-lib=0.4.1"
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."

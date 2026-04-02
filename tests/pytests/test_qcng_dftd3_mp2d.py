@@ -494,14 +494,15 @@ def test_dftd3__run_dftd3__2body(inp, program, subjects, request, schver):
     ({'parent': 'ne', 'name': 'd3-atmgr', 'subject': 'atom', 'lbl': 'ATM'}),
 ])  # yapf: disable
 def test_dftd3__run_dftd3__3body(inp, subjects, request):
-    subject = subjects()[inp['parent']][inp['subject']]
+    schver = 2
+    subject = subjects(schver)[inp['parent']][inp['subject']]
     expected = ref[inp['parent']][inp['lbl']][inp['subject']]
     gexpected = gref[inp['parent']][inp['lbl']][inp['subject']]
 
     if 'qcmol' in request.node.name:
         mol = subject
     else:
-        mol = subject.to_schema(dtype=3)
+        mol = subject.to_schema(dtype=schver + 1)
 
     resinp = {
         'schema_name': 'qcschema_atomic_input',
