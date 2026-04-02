@@ -1,24 +1,21 @@
-#! Test of SOX2C-1e on uncontracted cc-pVDZ-DK
-#! TODO: Reference numbers from Lan Cheng's implementation in Cfour
+#! Test of SOX2C-1e on Zn dyall-v2z. Reference numbers from ReSpect
 
-molecule ne_dimer {
+molecule zn {
 0 1
     Zn 0 0 0
-    Zn 0 0 2
 symmetry C1
 }
 
 set {
   reference cghf
   scf_type pk
-  basis sto-3g
-  basis_relativistic sto-3g-decon
+  basis dyall-v2z
+  basis_relativistic dyall-v2z
   relativistic x2c
+  spin_orbit_coupling true
   e_convergence 8
 }
 
-e_sr = energy('scf')
-set spin_orbit_coupling true
 e_so = energy('scf')
 
-print(e_sr, e_so)
+compare_values(e_so, -1794.316996918079, 7, "SOX2C-1e total energy")
