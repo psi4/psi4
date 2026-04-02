@@ -277,15 +277,17 @@ def test_3():
     sys = qcel.molparse.from_string(seneyne)['qm']
 
     resinp = {
-        'schema_name': 'qcschema_input',
-        'schema_version': 1,
-        'molecule': qcel.molparse.to_schema(sys, dtype=2),
-        'driver': 'energy',
-        'model': {
-            'method': 'b3lyp',
-        },
-        'keywords': {
-            'level_hint': 'd3bj'
+        'schema_name': 'qcschema_atomic_input',
+        'schema_version': 2,
+        'molecule': qcel.molparse.to_schema(sys, dtype=3),
+        'specification': {
+            'driver': 'energy',
+            'model': {
+                'method': 'b3lyp',
+            },
+            'keywords': {
+                'level_hint': 'd3bj'
+            },
         },
     }
     res = qcng.compute(resinp, 'dftd3', raise_error=True)
@@ -499,17 +501,19 @@ def test_dftd3__run_dftd3__3body(inp, subjects, request):
     if 'qcmol' in request.node.name:
         mol = subject
     else:
-        mol = subject.to_schema(dtype=2)
+        mol = subject.to_schema(dtype=3)
 
     resinp = {
-        'schema_name': 'qcschema_input',
-        'schema_version': 1,
+        'schema_name': 'qcschema_atomic_input',
+        'schema_version': 2,
         'molecule': mol,
-        'driver': 'gradient',
-        'model': {
-            'method': inp['name']
+        'specification': {
+            'driver': 'gradient',
+            'model': {
+                'method': inp['name']
+            },
+            'keywords': {},
         },
-        'keywords': {},
     }
     jrec = qcng.compute(resinp, 'dftd3', raise_error=True)
     jrec = jrec.dict()
