@@ -41,15 +41,12 @@
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/basisset.h"
 
+#include "psi4/libpsi4util/process.h"
+
 #include <Einsums/LinearAlgebra.hpp>
 #include <Einsums/TensorAlgebra.hpp>
 #include <Einsums/Runtime.hpp>
 #include <Einsums/Concepts/TensorConcepts.hpp>
-
-#include "psi4/libpsi4util/process.h"
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 namespace {
 
@@ -171,7 +168,8 @@ void SOX2C1e::compute(SharedMatrix S, SharedMatrix T, SharedMatrix V, SharedMatr
             outfile->Printf("\n\n");
         }
     }
-    // Must do conj_T due to different conventions in BLAS & Einsums
+    // Must do conj_T due to different conventions in BLAS & Einsums. NOTE: this
+    // is expected to change @ Einums v2.0.
     conj_T(*Hevec, tmp);
     gemm(*orth, *tmp, Hevec);  // Back-transform
     tmp.reset(); // Last time using 4c matrices
@@ -514,8 +512,8 @@ void SOX2C1e::form_pauli(ComplexMatrix& Tx2c, ComplexMatrix& Vx2c, SharedMatrix 
                 Zerr += tz.imag() * tz.imag() + vz.imag() * vz.imag();
                 Hz->set(h, p, q, tz.real() + vz.real());
 
-                std::complex<double>&& ty = .5 * (Tblock(a, b)(p, q) - Tblock(a, b)(p, q));
-                std::complex<double>&& vy = .5 * (Vblock(a, b)(p, q) - Vblock(a, b)(p, q));
+                std::complex<double>&& ty = .5 * (Tblock(a, b)(p, q) - Tblock(b, a)(p, q));
+                std::complex<double>&& vy = .5 * (Vblock(a, b)(p, q) - Vblock(b, a)(p, q));
                 Yerr += ty.imag() * ty.imag() + vy.imag() * vy.imag();
                 Hy->set(h, p, q, ty.real() + vy.real());
 

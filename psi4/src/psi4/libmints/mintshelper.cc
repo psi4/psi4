@@ -1535,7 +1535,7 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations, bool force_spi
                     throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
                 for (int n = 0; n < 3; ++n) lambda[n] = options_["PERTURB_DIPOLE"][n].to_double();
             } else {
-                outfile->Printf("  MintsHelper doesn't understand the requested perturbation, might be done in SCF.");
+                outfile->Printf("  MintsHelper doesn't understand the requested perturbation, might be done in SCF.\n");
             }
         }
     }
@@ -1544,6 +1544,10 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations, bool force_spi
 #ifndef USING_Einsums
         throw PSIEXCEPTION("Psi4 not built with Einsums enabled! Spin-orbit X2C1e is not available.");
 #else
+        if (sobasis_->nirrep() > 1)
+            outfile->Printf("  WARNING: SOX2C-1e called with point-group symmetry. 4c spinors are not invariant\n"
+                            "           under regular SO(3) spatial rotations! Calculation will continue, however,\n"
+                            "           your irreps will be wrecked. It is highly recommended to use C1 symmetry.\n");
         SharedMatrix Hso_x = factory_->create_shared_matrix(PSIF_SO_SOCX);
         SharedMatrix Hso_y = factory_->create_shared_matrix(PSIF_SO_SOCY);
         SharedMatrix Hso_z = factory_->create_shared_matrix(PSIF_SO_SOCZ);

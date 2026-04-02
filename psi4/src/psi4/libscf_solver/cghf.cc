@@ -204,7 +204,7 @@ void CGHF::preiterations() {
         }
     }
 
-    // If SOC, then add Hx, Hy, Hz to F0_
+    // If SOC, then F0_ += iσ⋅(Hx, Hy, Hz)
     if (options_.get_bool("SPIN_ORBIT_COUPLING")) {
         outfile->Printf("\n  CGHF: Spin-orbit coupling selected.\n");
         std::vector<SharedMatrix> H_SO(3);
@@ -213,19 +213,19 @@ void CGHF::preiterations() {
         } else {
             throw PSIEXCEPTION("RELATIVISTIC option must be in [\"X2C\"] when SPIN_ORBIT_COUPLING TRUE");
         }
-        std::complex<double> i(0, 1);
+        std::complex<double> i{0, 1};
 
         for (int h = 0; h < nirrep_; h++) {
             int nso = nsopi_[h];
+            auto & F0b = F0_->block(h);
             for (int p = 0; p < nso; p++) {
                 for (int q = 0; q < nso; q++) {
-                    // Note that I multiply by i to get H_SO Hermitian
-                    F0_->block(h)(p, q)         += H_SO[2]->get(p,q)*i; // +Hz [0,0]
-                    F0_->block(h)(p+nso, q+nso) -= H_SO[2]->get(p,q)*i; // -Hz [1,1]
-                    F0_->block(h)(p, q+nso)     += H_SO[0]->get(p,q)*i; // +Hx [0,1]
-                    F0_->block(h)(p+nso, q)     += H_SO[0]->get(p,q)*i; // +Hx [1,0]
-                    F0_->block(h)(p, q+nso)     += H_SO[1]->get(p,q);   //+iHy [0,1]
-                    F0_->block(h)(p+nso, q)     -= H_SO[1]->get(p,q);   //-iHy [1,0]
+                    F0b(p, q+nso)     += H_SO[0]->get(p,q)*i;
+                    F0b(p+nso, q)     += H_SO[0]->get(p,q)*i;
+                    F0b(p, q+nso)     += H_SO[1]->get(p,q);
+                    F0b(p+nso, q)     -= H_SO[1]->get(p,q);
+                    F0b(p, q)         += H_SO[2]->get(p,q)*i;
+                    F0b(p+nso, q+nso) -= H_SO[2]->get(p,q)*i;
                 }
             }
         }
