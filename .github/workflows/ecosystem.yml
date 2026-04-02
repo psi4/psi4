@@ -299,9 +299,6 @@ jobs:
           PYTHONPATH=install/lib python -c "import qcengine as qcng; qcng.get_program('psi4')"
           qcengine info
         fi
-        if [[ "${{ runner.os }}" != "Linux" ]]; then
-          PATH=stage/bin:$PATH PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')"
-        fi
 
     - name: Test OpenMP
       working-directory: ./install/lib
@@ -313,6 +310,12 @@ jobs:
         export PATH=../install/bin:$PATH
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+
+    - name: Test Run, Spot, Run 2
+      working-directory: ./objdir
+      run: |
+        eval $(stage/bin/psi4 --psiapi)
+        psi4 ../tests/ddd-deriv/input.dat -o stdout
 
       # step works but is redundant with next one; enable for debugging
     - name: Test Addons with CTest (M)
