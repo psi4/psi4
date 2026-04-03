@@ -4627,6 +4627,78 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         quad_values_["FUNCTIONAL"] = Exc;
         quad_values_["RHO_A"] = integrated_density_a;
         quad_values_["RHO_B"] = integrated_density_b;
+        quad_values_["VV10"] = 0.0;
+
+        if (functional_->needs_vv10()) {
+        
+            cuestNonlocalXCPotentialUKSComputeParameters_t vv10_potential_compute_parameters;
+            CHECK_CUEST(cuestParametersCreate(CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, &vv10_potential_compute_parameters));
+
+            double vv10_scale = 1.0;
+            double vv10_C = 0.01;
+            double vv10_b = 6.0;
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, 
+                vv10_potential_compute_parameters,
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS_VV10_SCALE,
+                &vv10_scale,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, 
+                vv10_potential_compute_parameters,
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS_VV10_C,
+                &vv10_C,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, 
+                vv10_potential_compute_parameters,
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS_VV10_B,
+                &vv10_b,
+                sizeof(double));
+            double Evv10 = 0.0;
+            CHECK_CUEST(cuestNonlocalXCPotentialUKSComputeWorkspaceQuery(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_potential_compute_parameters,
+                &variable_buffersize_descriptor,
+                &temporary_workspace_descriptor,
+                d_Cocc_noccs_[0],
+                d_Cocc_noccs_[1],
+                d_Coccs_AO_,
+                d_Coccs_AO_ + nbf_ * d_Cocc_noccs_[0],
+                &Evv10,
+                d_Vxc_a));
+
+            temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+            CHECK_CUEST(cuestNonlocalXCPotentialUKSCompute(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_potential_compute_parameters,
+                &variable_buffersize_descriptor,
+                temporary_workspace,
+                d_Cocc_noccs_[0],
+                d_Cocc_noccs_[1],
+                d_Coccs_AO_,
+                d_Coccs_AO_ + nbf_ * d_Cocc_noccs_[0],
+                &Evv10,
+                d_Vxc_a));
+
+            cuest_common::freeWorkspace(temporary_workspace);
+            CHECK_CUEST(cuestParametersDestroy(CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, vv10_potential_compute_parameters));
+
+            // Add the VV10 contribution to Vxc
+            SharedMatrix VV10 = ret[0]->clone();
+            err = cudaMemcpy(VV10->get_pointer(0), d_Vxc_a, ret[0]->size() * sizeof(double), cudaMemcpyDeviceToHost);
+            if (err != cudaSuccess) {
+                cudaFree(d_Vxc_a);
+                throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
+            }
+            VV10->scale(0.5);
+            ret[0]->add(VV10);
+            ret[1]->add(VV10);
+            quad_values_["VV10"] = Evv10;
+        }
+
         cudaFree(d_Vxc_a);
         cudaFree(d_Vxc_b);
         timer_off("UV: Form V");
