@@ -25,6 +25,8 @@ external_potentials = np.array([
 0.417,0.544757019107,0.0,-0.912085762652]).reshape((-1, 4))
 # convert coordinates columns to bohr
 external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
+# TODO UNDO qcel rc5
+external_potentials = external_potentials.tolist()
 
 
 set {
