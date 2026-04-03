@@ -83,11 +83,17 @@ class PSI_API VBase {
     std::vector<std::shared_ptr<PointFunctions>> point_workers_;
     /// Integration grid, built by KSPotential
     std::shared_ptr<DFTGrid> grid_;
+    /// VV10 Grid
+    std::shared_ptr<DFTGrid> vv10_grid_;
 #ifdef USING_cuEST
     /// XC Integral Plan
     cuestXCIntPlan_t cuest_xcint_plan_ = nullptr;
     /// XC Integral Plan Persistent Workspace
     cuestWorkspace_t *cuest_xcint_ws_ptr_ = nullptr;
+    /// VV10 Integral Plan
+    cuestXCIntPlan_t cuest_vv10_xcint_plan_ = nullptr;
+    /// VV10 Integral Plan Persistent Workspace
+    cuestWorkspace_t *cuest_vv10_xcint_ws_ptr_ = nullptr;
     /// Vector of GPU matrices of occupied orbitals
     double* d_Coccs_AO_ = nullptr;
     std::vector<uint64_t> d_Cocc_noccs_;
