@@ -3799,6 +3799,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, bool i
         CHECK_CUEST(cuestParametersCreate(CUEST_ATOMGRID_PARAMETERS, &atom_grid_params));
         uint64_t natom = molecule_->natom();
         Matrix geom = molecule_->geometry();
+        RadialPruneMgr prune(opt);
 
         std::vector<cuestAtomGrid_t> atom_grids(natom);
         for (int A = 0; A < natom; A++) {
@@ -3806,11 +3807,32 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, bool i
             std::vector<double> rvalues;
             std::vector<double> wvalues;
             std::vector<uint64_t> nangpts;
+            double alpha = 0;
             assert (rvalues.size() == wvalues.size() && rvalues.size() == nangpts.size());
             switch (opt.namedGrid) {
                 case -1:
-                    throw PSIEXCEPTION("Direct product grid not yet supported for CUEST");
-                    break;
+                    rvalues.resize(opt.nradpts);
+                    wvalues.resize(opt.nradpts);
+                    nangpts.resize(opt.nradpts);
+                    alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
+                    RadialGridMgr::makeRadialGrid(opt.nradpts,
+                        RadialGridMgr::MuraKnowlesHack(opt.radscheme, Z),
+                        rvalues.data(),
+                        wvalues.data(),
+                        alpha
+                        );
+                    for (int i = 0; i < opt.nradpts; i++) {
+                        if (opt.prunetype == "REGION") {
+                            if (opt.prunescheme == "TREUTLER") {
+                                nangpts[i] = prune.TreutlerShellPruning(i, Z, opt.nradpts);
+                            } else if (opt.prunescheme == "ROBUST") {
+                                nangpts[i] = prune.ShellPruning(i, Z, opt.nradpts);
+                            }
+                        } else if (opt.prunetype == "FUNCTION" || opt.prunescheme == "NONE") {
+                            nangpts[i] = prune.GetPrunedNumAngPts(rvalues[i] / alpha);
+                        }
+                    }
+                  break;
                 case 0:
                     rvalues = StandardGridMgr::GetSG0rparams(Z);
                     wvalues = StandardGridMgr::GetSG0wparams(Z);
