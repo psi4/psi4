@@ -223,6 +223,18 @@ void VBase::initialize() {
     timer_on("V: Grid");
     grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, options_);
     timer_off("V: Grid");
+    if (functional_->needs_vv10()) {
+        timer_on("V: VV10 Grid");
+        std::map<std::string, std::string> opt_map;
+        opt_map["DFT_PRUNING_SCHEME"] = "FLAT";
+
+        std::map<std::string, int> opt_int_map;
+        opt_int_map["DFT_RADIAL_POINTS"] = options_.get_int("DFT_VV10_RADIAL_POINTS");
+        opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("DFT_VV10_SPHERICAL_POINTS");
+
+        vv10_grid_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
+        timer_off("V: VV10 Grid");
+    }
 #ifdef USING_cuEST
     // No workers are needed for cuEST, so we can just create the XC Integral Plan here and return
     if (options_.get_bool("USE_CUEST")) {
@@ -258,8 +270,33 @@ void VBase::initialize() {
             cuest_xcint_ws_ptr_,
             temporary_workspace,
             &cuest_xcint_plan_));
-        CHECK_CUEST(cuestParametersDestroy(CUEST_XCINTPLAN_PARAMETERS, xcint_params));
         cuest_common::freeWorkspace(temporary_workspace);
+
+        if (functional_->needs_vv10()) {
+            CHECK_CUEST(cuestXCIntPlanCreateWorkspaceQuery(
+                cuest_handle,
+                primary_->cuest_basis(),
+                vv10_grid_->cuest_grid(),
+                CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_HF,
+                xcint_params,
+                &persistentWorkspaceDescriptor,
+                &temporaryWorkspaceDescriptor,
+                nullptr));
+            temporary_workspace = cuest_common::allocateWorkspace(&temporaryWorkspaceDescriptor);
+            cuest_vv10_xcint_ws_ptr_ = cuest_common::allocateWorkspace(&persistentWorkspaceDescriptor);
+            CHECK_CUEST(cuestXCIntPlanCreate(
+                cuest_handle,
+                primary_->cuest_basis(),
+                vv10_grid_->cuest_grid(),
+                CUEST_XCINTPLAN_PARAMETERS_FUNCTIONAL_HF,
+                xcint_params,
+                cuest_vv10_xcint_ws_ptr_,
+                temporary_workspace,
+                &cuest_vv10_xcint_plan_));
+            cuest_common::freeWorkspace(temporary_workspace);
+        }
+        CHECK_CUEST(cuestParametersDestroy(CUEST_XCINTPLAN_PARAMETERS, xcint_params));
+        return;
     }
 #endif
     for (size_t i = 0; i < num_threads_; i++) {
@@ -831,6 +868,14 @@ void VBase::finalize() { grid_.reset();
         cuest_common::freeWorkspace(cuest_xcint_ws_ptr_);
         cuest_xcint_ws_ptr_ = nullptr;
     }
+    if (cuest_vv10_xcint_plan_ != nullptr) {
+        CHECK_CUEST(cuestXCIntPlanDestroy(cuest_vv10_xcint_plan_));
+        cuest_vv10_xcint_plan_ = nullptr;
+    }
+    if (cuest_vv10_xcint_ws_ptr_ != nullptr) {
+        cuest_common::freeWorkspace(cuest_vv10_xcint_ws_ptr_);
+        cuest_vv10_xcint_ws_ptr_ = nullptr;
+    }
 #endif
 }
 void VBase::build_collocation_cache(size_t memory) {
@@ -995,14 +1040,7 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
     timer_on("Setup");
 
     // => VV10 Grid and Cache <=
-    std::map<std::string, std::string> opt_map;
-    opt_map["DFT_PRUNING_SCHEME"] = "FLAT";
-
-    std::map<std::string, int> opt_int_map;
-    opt_int_map["DFT_RADIAL_POINTS"] = options_.get_int("DFT_VV10_RADIAL_POINTS");
-    opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("DFT_VV10_SPHERICAL_POINTS");
-
-    DFTGrid nlgrid = DFTGrid(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
+    DFTGrid& nlgrid = *vv10_grid_;
     std::vector<std::map<std::string, SharedVector>> vv10_cache;
     std::vector<std::shared_ptr<PointFunctions>> nl_point_workers;
     prepare_vv10_cache(nlgrid, D, vv10_cache, nl_point_workers);
@@ -1875,6 +1913,8 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         CHECK_CUEST(cuestParametersDestroy(CUEST_XCPOTENTIALCOMPUTE_PARAMETERS, potential_compute_parameters));
         cudaFree(d_rho);
         cudaFree(d_weights);
+
+
         cudaFree(d_Vxc_grid);
         err = cudaMemcpy(ret[0]->get_pointer(0), d_Vxc, ret[0]->size() * sizeof(double), cudaMemcpyDeviceToHost);
         if (err != cudaSuccess) {
@@ -1887,10 +1927,76 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         for (int point = 0; point < npoints; point++) {
             Exc += 2 * p_weights[point] * p_full_f[point] * rho_0[point];
             integrated_density += 2 * p_weights[point] * rho_0[point];
-        }        
+        }  
         quad_values_["FUNCTIONAL"] = Exc;
         quad_values_["RHO_A"] = integrated_density;
         quad_values_["RHO_B"] = integrated_density;
+        quad_values_["VV10"] = 0.0;
+
+        if (functional_->needs_vv10()) {
+        
+            cuestNonlocalXCPotentialRKSComputeParameters_t vv10_potential_compute_parameters;
+            CHECK_CUEST(cuestParametersCreate(CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, &vv10_potential_compute_parameters));
+
+            double vv10_scale = 1.0;
+            double vv10_C = 0.01;
+            double vv10_b = 6.0;
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, 
+                vv10_potential_compute_parameters,
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS_VV10_SCALE,
+                &vv10_scale,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, 
+                vv10_potential_compute_parameters,
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS_VV10_C,
+                &vv10_C,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, 
+                vv10_potential_compute_parameters,
+                CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS_VV10_B,
+                &vv10_b,
+                sizeof(double));
+            double Evv10 = 0.0;
+            CHECK_CUEST(cuestNonlocalXCPotentialRKSComputeWorkspaceQuery(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_potential_compute_parameters,
+                &variable_buffersize_descriptor,
+                &temporary_workspace_descriptor,
+                d_Cocc_noccs_[0],
+                d_Coccs_AO_,
+                &Evv10,
+                d_Vxc));
+
+            temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+            CHECK_CUEST(cuestNonlocalXCPotentialRKSCompute(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_potential_compute_parameters,
+                &variable_buffersize_descriptor,
+                temporary_workspace,
+                d_Cocc_noccs_[0],
+                d_Coccs_AO_,
+                &Evv10,
+                d_Vxc
+            ));
+            cuest_common::freeWorkspace(temporary_workspace);
+            CHECK_CUEST(cuestParametersDestroy(CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, vv10_potential_compute_parameters));
+
+            // Add the VV10 contribution to Vxc
+            SharedMatrix VV10 = ret[0]->clone();
+            err = cudaMemcpy(VV10->get_pointer(0), d_Vxc, ret[0]->size() * sizeof(double), cudaMemcpyDeviceToHost);
+            if (err != cudaSuccess) {
+                cudaFree(d_Vxc);
+                throw PSIEXCEPTION("cudaMemcpy failed in RV::compute_V");
+            }
+            ret[0]->add(VV10);
+            quad_values_["VV10"] = Evv10;
+        }
+
         cudaFree(d_Vxc);
         timer_off("RV: Form V");
         return;
