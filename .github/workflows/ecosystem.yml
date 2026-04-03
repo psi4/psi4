@@ -177,7 +177,6 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "Linux" && "${{ matrix.cfg.python-version }}" == "3.14" ]]; then
           :
-          sed -i "s;- dftd3-python;#- dftd3-python;g" env_p4build.yaml
           sed -i "s;- dftd4-python;#- dftd4-python;g" env_p4build.yaml
           sed -i "s;- geometric;#- geometric;g" env_p4build.yaml
           sed -i "s;- i-pi;#- i-pi;g" env_p4build.yaml
@@ -202,7 +201,6 @@ jobs:
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
-          sed -E -i.bak "s;- dftd3-python;#- dftd3-python;g" env_p4build.yaml
           sed -E -i.bak "s;- dftd4-python;#- dftd4-python;g" env_p4build.yaml
           sed -E -i.bak "s;- geometric;#- geometric;g" env_p4build.yaml
           sed -E -i.bak "s;- i-pi;#- i-pi;g" env_p4build.yaml
@@ -214,6 +212,14 @@ jobs:
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
           # sed -i "s;#- dpcpp_linux-64;- clangdev ${{ matrix.cfg.llvm-version }};g" env_p4build.yaml
+        fi
+        if [[ "${{ runner.os }}" == "Windows" && "${{ matrix.cfg.python-version }}" == "3.14" ]]; then
+          :
+          sed -i "s;- dftd4-python;#- dftd4-python;g" env_p4build.yaml
+          sed -i "s;- geometric;#- geometric;g" env_p4build.yaml
+          sed -i "s;- i-pi;#- i-pi;g" env_p4build.yaml
+          sed -i "s;- pyddx;#- pyddx;g" env_p4build.yaml
+          sed -i "s;- pymdi;#- pymdi;g" env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
         echo "::group::View Env Spec File for Conda (Edited)"
