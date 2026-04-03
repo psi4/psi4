@@ -27,7 +27,9 @@
  */
 
 #include "sfx2c1e.h"
+#ifdef USING_Einsums
 #include "sox2c1e.h"
+#endif
 #include "gau2grid/gau2grid.h"
 #include "zora.h"
 
