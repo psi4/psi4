@@ -1225,7 +1225,16 @@ data:
       commit: v4.1.0
       commit_note: "v4.1.0 needed for QCSchema v2; v3.5.0 needed for r2scan3c, b97-3c"
     cmake: null
-    conda: null
+    conda:
+      channel: conda-forge
+      name: dftd4-python
+      constraint: ">=4.1.0"
+      constraint_note: "v4.1.0 provides QCSchema v2 compatibility."
+      aux_run_names:
+        - toml
+      cmake:
+        CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
+      cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
 
   - project: ecpint
     use:
