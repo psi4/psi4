@@ -554,7 +554,13 @@ void py_psi_clean_options() {
     Process::environment.options.set_read_globals(false);
 }
 
-void py_psi_print_out(std::string s) { (*outfile->stream()) << s << std::flush; }
+void py_psi_print_out(std::string s) {
+    if (!outfile || !outfile->stream()) {
+        std::cerr << s;
+        return;
+    }
+    (*outfile->stream()) << s << std::flush;
+}
 
 /**
  * @return whether key describes a convergence threshold or not
