@@ -1509,13 +1509,7 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations, bool force_spi
     SharedMatrix so_potential_x2c = so_potential_nr(include_perturbations);
 
     bool spin_orbit = options_.get_bool("SPIN_ORBIT_COUPLING");
-
-    if (force_spin_orbit) {
-        spin_orbit = true;
-    } else {
-        if (options_.get_str("REFERENCE") != "CGHF")
-            throw PSIEXCEPTION("X2C with spin-orbit coupling is only possible with CGHF reference.");
-    }
+    if (force_spin_orbit) spin_orbit = true;
 
     std::vector<double> lambda(3, 0.0);
 
@@ -1546,6 +1540,9 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations, bool force_spi
 #ifndef USING_Einsums
         throw PSIEXCEPTION("Psi4 not built with Einsums enabled! Spin-orbit X2C1e is not available.");
 #else
+        if (options_.get_str("REFERENCE") != "CGHF")
+            throw PSIEXCEPTION("X2C with spin-orbit coupling is only possible with CGHF reference.");
+
         if (sobasis_->nirrep() > 1)
             outfile->Printf("  WARNING: SOX2C-1e called with point-group symmetry. 4c spinors are not invariant\n"
                             "           under regular SO(3) spatial rotations! Calculation will continue, however,\n"

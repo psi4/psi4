@@ -1,4 +1,5 @@
-#! Test of SOX2C-1e on Zn dyall-v2z. Reference numbers from ReSpect
+#! Test of SOX2C-1e with Zn atom. Reference is from ReSpect (hf-1eX2C + ucc-pvdz).
+ref_e = -1794.353979962273
 
 molecule zn {
 0 1
@@ -9,8 +10,8 @@ symmetry C1
 set {
   reference cghf
   scf_type pk
-  basis dyall-v2z
-  basis_relativistic dyall-v2z
+  basis cc-pvdz-decon
+  basis_relativistic cc-pvdz-decon
   relativistic x2c
   spin_orbit_coupling true
   e_convergence 8
@@ -18,4 +19,4 @@ set {
 
 e_so = energy('scf')
 
-compare_values(e_so, -1794.316996918079, 7, "SOX2C-1e total energy")
+compare_values(e_so, ref_e, 7, "SOX2C-1e total energy")

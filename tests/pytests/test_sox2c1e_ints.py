@@ -6,6 +6,8 @@ from scipy.linalg import eigh, block_diag
 import pytest
 import psi4
 
+from addons import uusing
+
 ref_evals = numpy.array(
 [-463.66677, -463.66677, -463.65651, -463.65651, -121.0067, -121.0067,
  -120.97111, -120.97111, -119.40035, -119.40035, -119.40035, -119.40035,
@@ -37,8 +39,9 @@ ref_evals = numpy.array(
  -8.72301, -8.72301, -8.72301,   -8.72301, -8.41183,   -8.41183, -8.17735,
  -8.17735])
 
-pytestmark = [pytest.mark.api, pytest.mark.quick]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
+@uusing("einsums")
 def test_sox2c1e_integrals():
     psi4.set_options({
         'reference': 'cghf',
