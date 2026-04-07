@@ -1939,8 +1939,8 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
             CHECK_CUEST(cuestParametersCreate(CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, &vv10_potential_compute_parameters));
 
             double vv10_scale = 1.0;
-            double vv10_C = 0.01;
-            double vv10_b = 6.0;
+            double vv10_C = functional_->vv10_c();
+            double vv10_b = functional_->vv10_b();
             cuestParametersConfigure(
                 CUEST_NONLOCALXCPOTENTIALRKSCOMPUTE_PARAMETERS, 
                 vv10_potential_compute_parameters,
@@ -3277,6 +3277,65 @@ SharedMatrix RV::compute_gradient() {
         grad->add(grad_atom_from_grid);
         grad->scale(2.0);
 
+        if (functional_->needs_vv10()) {
+            // ACS: this could be relaxed to a warning about noisy gradient instead
+            if (options_.get_bool("DFT_VV10_POSTSCF")) {
+                throw PSIEXCEPTION("RV::compute_gradient: analytic gradient for DFT_VV10_POSTSCF=True is not supported.");
+            }
+            cuestNonlocalXCDerivativeRKSComputeParameters_t vv10_derivative_compute_parameters;
+            CHECK_CUEST(cuestParametersCreate(CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS, &vv10_derivative_compute_parameters));
+
+            double vv10_scale = 1.0;
+            double vv10_C = functional_->vv10_c();
+            double vv10_b = functional_->vv10_b();
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS, 
+                vv10_derivative_compute_parameters,
+                CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS_VV10_SCALE,
+                &vv10_scale,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS, 
+                vv10_derivative_compute_parameters,
+                CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS_VV10_C,
+                &vv10_C,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS, 
+                vv10_derivative_compute_parameters,
+                CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS_VV10_B,
+                &vv10_b,
+                sizeof(double));
+            CHECK_CUEST(cuestNonlocalXCDerivativeRKSComputeWorkspaceQuery(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_derivative_compute_parameters,
+                &variable_buffersize_descriptor,
+                &temporary_workspace_descriptor,
+                d_Cocc_noccs_[0],
+                d_Coccs_AO_,
+                d_Vxc_grad_atom));
+
+            temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+            CHECK_CUEST(cuestNonlocalXCDerivativeRKSCompute(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_derivative_compute_parameters,
+                &variable_buffersize_descriptor,
+                temporary_workspace,
+                d_Cocc_noccs_[0],
+                d_Coccs_AO_,
+                d_Vxc_grad_atom
+            ));
+            cuest_common::freeWorkspace(temporary_workspace);
+            CHECK_CUEST(cuestParametersDestroy(CUEST_NONLOCALXCDERIVATIVERKSCOMPUTE_PARAMETERS, vv10_derivative_compute_parameters));
+
+            // Add the VV10 contribution to Vxc
+            SharedMatrix VV10grad = grad->clone();
+            err = cudaMemcpy(VV10grad->get_pointer(0), d_Vxc_grad_atom, 3 * natom * sizeof(double), cudaMemcpyDeviceToHost);
+            grad->add(VV10grad);
+        }
+
         cudaFree(d_rho);
         cudaFree(d_weights);
         cudaFree(d_Vxc_grid);
@@ -3289,7 +3348,7 @@ SharedMatrix RV::compute_gradient() {
 #endif
 
     if (functional_->needs_vv10()) {
-        throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.");
+        throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.  Either use the cuEST module or set the dertype=0 as an argument to the gradient function.");
     }
 
 
@@ -4635,8 +4694,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
             CHECK_CUEST(cuestParametersCreate(CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, &vv10_potential_compute_parameters));
 
             double vv10_scale = 1.0;
-            double vv10_C = 0.01;
-            double vv10_b = 6.0;
+            double vv10_C = functional_->vv10_c();
+            double vv10_b = functional_->vv10_b();
             cuestParametersConfigure(
                 CUEST_NONLOCALXCPOTENTIALUKSCOMPUTE_PARAMETERS, 
                 vv10_potential_compute_parameters,
@@ -4690,10 +4749,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
             SharedMatrix VV10 = ret[0]->clone();
             err = cudaMemcpy(VV10->get_pointer(0), d_Vxc_a, ret[0]->size() * sizeof(double), cudaMemcpyDeviceToHost);
             if (err != cudaSuccess) {
-                cudaFree(d_Vxc_a);
                 throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_V");
             }
-            VV10->scale(0.5);
             ret[0]->add(VV10);
             ret[1]->add(VV10);
             quad_values_["VV10"] = Evv10;
@@ -6612,6 +6669,72 @@ SharedMatrix UV::compute_gradient() {
         cudaMemcpy(grad_tmp->get_pointer(0), d_Vxc_grad_atom_a, 3 * natom * sizeof(double), cudaMemcpyDeviceToHost);
         grad->add(grad_tmp);
 
+        if (functional_->needs_vv10()) {
+            // ACS: this could be relaxed to a warning about noisy gradient instead
+            if (options_.get_bool("DFT_VV10_POSTSCF")) {
+                throw PSIEXCEPTION("UV::compute_gradient: analytic gradient for DFT_VV10_POSTSCF=True is not supported.");
+            }
+        
+            cuestNonlocalXCDerivativeUKSComputeParameters_t vv10_derivative_compute_parameters;
+            CHECK_CUEST(cuestParametersCreate(CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS, &vv10_derivative_compute_parameters));
+
+            double vv10_scale = 1.0;
+            double vv10_C = functional_->vv10_c();
+            double vv10_b = functional_->vv10_b();
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS, 
+                vv10_derivative_compute_parameters,
+                CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS_VV10_SCALE,
+                &vv10_scale,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS, 
+                vv10_derivative_compute_parameters,
+                CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS_VV10_C,
+                &vv10_C,
+                sizeof(double));
+            cuestParametersConfigure(
+                CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS, 
+                vv10_derivative_compute_parameters,
+                CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS_VV10_B,
+                &vv10_b,
+                sizeof(double));
+            CHECK_CUEST(cuestNonlocalXCDerivativeUKSComputeWorkspaceQuery(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_derivative_compute_parameters,
+                &variable_buffersize_descriptor,
+                &temporary_workspace_descriptor,
+                d_Cocc_noccs_[0],
+                d_Cocc_noccs_[1],
+                d_Coccs_AO_,
+                d_Coccs_AO_ + nbf_ * d_Cocc_noccs_[0],
+                d_Vxc_grad_atom_a));
+
+            temporary_workspace = cuest_common::allocateWorkspace(&temporary_workspace_descriptor);
+            CHECK_CUEST(cuestNonlocalXCDerivativeUKSCompute(
+                cuest_handle,
+                cuest_vv10_xcint_plan_,
+                vv10_derivative_compute_parameters,
+                &variable_buffersize_descriptor,
+                temporary_workspace,
+                d_Cocc_noccs_[0],
+                d_Cocc_noccs_[1],
+                d_Coccs_AO_,
+                d_Coccs_AO_ + nbf_ * d_Cocc_noccs_[0],
+                d_Vxc_grad_atom_a));
+
+            cuest_common::freeWorkspace(temporary_workspace);
+            CHECK_CUEST(cuestParametersDestroy(CUEST_NONLOCALXCDERIVATIVEUKSCOMPUTE_PARAMETERS, vv10_derivative_compute_parameters));
+
+            // Add the VV10 contribution to the Vxc gradient
+            err = cudaMemcpy(grad_tmp->get_pointer(0), d_Vxc_grad_atom_a, 3 * natom * sizeof(double), cudaMemcpyDeviceToHost);
+            if (err != cudaSuccess) {
+                throw PSIEXCEPTION("cudaMemcpy failed in UV::compute_gradient");
+            }
+            grad->add(grad_tmp);
+        }
+
         cudaFree(d_rho_a);
         cudaFree(d_rho_b);
         cudaFree(d_weights);
@@ -6628,7 +6751,7 @@ SharedMatrix UV::compute_gradient() {
 #endif
 
     if (functional_->needs_vv10()) {
-        throw PSIEXCEPTION("V: UKS cannot compute VV10 gradient contribution.");
+        throw PSIEXCEPTION("V: UKS cannot compute VV10 gradient contribution.  Either use the cuEST module or set the dertype=0 as an argument to the gradient function.");
     }
 
     // => Setup <= //
