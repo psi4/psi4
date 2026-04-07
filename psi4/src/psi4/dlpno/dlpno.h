@@ -463,7 +463,6 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
 
     SharedMatrix rho_oo_; // Toth Section IIIA
     std::vector<SharedMatrix> rho_vv_; // Toth Section IIIA
-    std::vector<SharedMatrix> M_imae_tilde_; // Toth Eq. 24
     std::vector<std::vector<SharedMatrix>> F_fcia_hat_; // Toth Eq. 33
     std::vector<std::vector<SharedMatrix>> F_knia_hat_; // Toth Eq. 34
     std::vector<SharedMatrix> K_maef_dt_;

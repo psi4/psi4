@@ -87,7 +87,7 @@ void DLPNOCCSD_Lambda::form_goo() {
         } // end m_nk
     } // end nk
 
-    // \rho^{VV}_{f_{mn} c{mn}} = \sum_{e, m, n} \lambda_{mn}^{e_{mn} f_{mn}} T_{mn}^{e_{mn} c_{mn}}
+    // \rho^{VV}_{f_{mn} c{mn}} = \sum_{e_{mn}} \lambda_{mn}^{e_{mn} f_{mn}} T_{mn}^{e_{mn} c_{mn}}
     rho_vv_.resize(n_lmo_pairs);
 
 #pragma omp parallel for
@@ -137,7 +137,7 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
     gamma_ = compute_gamma();
     delta_ = compute_delta();
 
-    // Toth Eq. 27
+    // Toth Eq. 47
     K_maef_dt_.resize(n_lmo_pairs);
     
 #pragma omp parallel for
@@ -559,121 +559,102 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         K_ijmb_bar_[ij]->add(linalg::doublet(T_n_ij_[ij], K_iajb_[ij])); // (m, e) (e, b) -> (m, b)
     } // end ij
 
-    M_imae_tilde_.resize(n_lmo_pairs);
+    // Toth Eq. 44 and 45
     delta_imae_tilde_.resize(n_lmo_pairs);
-
-#pragma omp parallel for
-    for (int m = 0; m < naocc; ++m) {
-        int mm = i_j_to_ij_[m][m];
-        auto Qov = QIA_PNO(mm); // (Q_{mm} | i_{mm} a_{mm})
-        auto Qvv = QAB_PNO(mm); // (Q_{mm} | a_{mm} e_{mm})
-        auto Qme = i_Qa_ij_[mm]; // \tilde(Q_{mm} | m e_{mm})
-        auto Qmi = i_Qk_ij_[mm]; // \tilde(Q_{mm} | m i_{mm})
-        
-        for (int i_mm = 0; i_mm < lmopair_to_lmos_[mm].size(); ++i_mm) {
-            int i = lmopair_to_lmos_[mm][i_mm];
-            int im = i_j_to_ij_[i][m], ii = i_j_to_ij_[i][i];
-
-            int nlmo_im = lmopair_to_lmos_[im].size();
-            auto M_imae_tilde_temp = std::make_shared<Matrix>(n_pno_[mm], n_pno_[mm]);
-            M_imae_tilde_temp->zero();
-            
-            // M_{im}^{a_{mm}e_{mm}} = 2(ia_{mm}|me_{mm}) - (im|a_{mm}e_{mm})
-            for (int q_mm = 0; q_mm < lmopair_to_ribfs_[mm].size(); ++q_mm) {
-                for (int a_mm = 0; a_mm < n_pno_[mm]; ++a_mm) {
-                    for (int e_mm = 0; e_mm < n_pno_[mm]; ++e_mm) {
-                        double val = 2.0 * Qov[q_mm]->get(i_mm, a_mm) * Qme->get(q_mm, e_mm)
-                                        - Qmi->get(q_mm, i_mm) * Qvv[q_mm]->get(a_mm, e_mm);
-                        M_imae_tilde_temp->set(a_mm, e_mm, M_imae_tilde_temp->get(a_mm, e_mm) + val);
-                    } // end e_mm
-                } // end a_mm
-            } // end q_mm
-
-            M_imae_tilde_[im] = linalg::doublet(S_PNO(ii, mm), M_imae_tilde_temp);
-
-            // N_{mk}^{ia_{mk}} = 2 (mk | ia_{mk}) - (mi | ka_{mk}) (24b)
-            for (int k_im = 0; k_im < nlmo_im; ++k_im) {
-                int k = lmopair_to_lmos_[im][k_im];
-                int mk = i_j_to_ij_[m][k], kk = i_j_to_ij_[k][k];
-                int i_mk = lmopair_to_lmos_dense_[mk][i];
-
-                auto T_k_m = linalg::doublet(S_PNO(mm, kk), T_ia_[k]);
-
-                auto N_mkia = J_ijmb_[mk]->clone();
-                N_mkia->scale(2.0);
-                N_mkia->subtract(K_mibj_[mk]);
-                N_mkia = submatrix_rows(*N_mkia, std::vector<int>(1, i_mk))->transpose();
-
-                N_mkia = linalg::doublet(S_PNO(ii, mk), N_mkia);
-
-                for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
-                    for (int e_mm = 0; e_mm < n_pno_[mm]; ++e_mm) {
-                        double val = N_mkia->get(a_ii, 0) * T_k_m->get(e_mm, 0);
-                        M_imae_tilde_[im]->set(a_ii, e_mm, M_imae_tilde_[im]->get(a_ii, e_mm) - val);
-                    } // end e_mm
-                } // end a_ii
-            } // end k_im
-
-            // M_{if_{mm}}^{a_{mm}e_{mm}} = 2 (ia_{mm} | f_{mm} e_{mm}) - (if_{mm} | a_{mm} e_{mm}) (24c)
-            auto M_ifae = std::make_shared<Matrix>(n_pno_[mm], n_pno_[mm] * n_pno_[mm]);
-
-            for (int q_mm = 0; q_mm < lmopair_to_ribfs_[mm].size(); ++q_mm) {
-                for (int f_mm = 0; f_mm < n_pno_[mm]; ++f_mm) {
-                    for (int a_mm = 0; a_mm < n_pno_[mm]; ++a_mm) {
-                        for (int e_mm = 0; e_mm < n_pno_[mm]; ++e_mm) {
-                            double val = 2.0 * Qov[q_mm]->get(i_mm, a_mm) * Qvv[q_mm]->get(f_mm, e_mm)
-                                            - Qov[q_mm]->get(i_mm, f_mm) * Qvv[q_mm]->get(a_mm, e_mm);
-                            M_ifae->set(f_mm, a_mm * n_pno_[mm] + e_mm, M_ifae->get(f_mm, a_mm * n_pno_[mm] + e_mm) + val);
-                        } // end e_mm
-                    } // end a_mm
-                } // end f_mm
-            } // end q_mm
-            M_ifae = linalg::doublet(T_ia_[m], M_ifae, true, false);
-            M_ifae->reshape(n_pno_[mm], n_pno_[mm]);
-            M_imae_tilde_[im]->add(linalg::doublet(S_PNO(ii, mm), M_ifae));
-
-            // L_{ik}^{a_{mm}f_{mm}} = 2(ia_{mm} | kf_{mm})  - (if_{mm} | ka_{mm}) (24d)
-            for (int k_im = 0; k_im < nlmo_im; ++k_im) {
-                int k = lmopair_to_lmos_[im][k_im];
-                int mk = i_j_to_ij_[m][k], kk = i_j_to_ij_[k][k];
-                int i_mk = lmopair_to_lmos_dense_[mk][i];
-                int k_mm = lmopair_to_lmos_dense_[mm][k];
-
-                auto T_k_m = linalg::doublet(S_PNO(mm, kk), T_ia_[k]);
-
-                auto L_ikaf = std::make_shared<Matrix>(n_pno_[mm], n_pno_[mm]);
-
-                for (int q_mm = 0; q_mm < lmopair_to_ribfs_[mm].size(); ++q_mm) {
-                    for (int a_mm = 0; a_mm < n_pno_[mm]; ++a_mm) {
-                        for (int f_mm = 0; f_mm < n_pno_[mm]; ++f_mm) {
-                            double val = 2.0 * Qov[q_mm]->get(i_mm, a_mm) * Qov[q_mm]->get(k_mm, f_mm)
-                                - Qov[q_mm]->get(i_mm, f_mm) * Qov[q_mm]->get(k_mm, a_mm);
-                            
-                            L_ikaf->set(a_mm, f_mm, L_ikaf->get(a_mm, f_mm) + val);
-                        } // end f_mm
-                    } // end a_mm
-                } // end q_mm
-
-                L_ikaf = linalg::triplet(S_PNO(ii, mm), L_ikaf, T_ia_[m]);
-
-                for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
-                    for (int e_mm = 0; e_mm < n_pno_[mm]; ++e_mm) {
-                        double val = L_ikaf->get(a_ii, 0) * T_k_m->get(e_mm, 0);
-                        M_imae_tilde_[im]->set(a_ii, e_mm, M_imae_tilde_[im]->get(a_ii, e_mm) - val);
-                    } // end e_mm
-                } // end a_ii
-            } // end k_im
-        } // end i_mm
-    } // end m
 
 #pragma omp parallel for
     for (int im = 0; im < n_lmo_pairs; ++im) {
         auto &[i, m] = ij_to_i_j_[im];
         int ii = i_j_to_ij_[i][i], mm = i_j_to_ij_[m][m];
-        int i_mm = lmopair_to_lmos_dense_[mm][i];
+        int i_mm = lmopair_to_lmos_dense_[mm][i]; // Index of LMO (occupied) i in the domain of mm
+
+        int nlmo_im = lmopair_to_lmos_[im].size();
+
+        // The relavent density-fitted two-electron integrals needed
+        auto Qov = QIA_PNO(mm); // (Q_{mm} | i_{mm} a_{mm})
+        auto Qvv = QAB_PNO(mm); // (Q_{mm} | a_{mm} e_{mm})
+        auto Qme = i_Qa_ij_[mm]; // \tilde(Q_{mm} | m e_{mm})
+        auto Qmi = i_Qk_ij_[mm]; // \tilde(Q_{mm} | m i_{mm})
+
+        // => Toth Eq. 44a S(a_{ii}, a_{mm}) M_{im}^{a_{mm}e_{mm}} <= //
+        
+        auto M_imae_tilde = std::make_shared<Matrix>(n_pno_[mm], n_pno_[mm]);
+        M_imae_tilde->zero();
+        
+        // M_{im}^{a_{mm}e_{mm}} = 2(ia_{mm}|me_{mm}) - (im|a_{mm}e_{mm})
+        for (int q_mm = 0; q_mm < lmopair_to_ribfs_[mm].size(); ++q_mm) {
+            for (int a_mm = 0; a_mm < n_pno_[mm]; ++a_mm) {
+                for (int e_mm = 0; e_mm < n_pno_[mm]; ++e_mm) {
+                    double val = 2.0 * Qov[q_mm]->get(i_mm, a_mm) * Qme->get(q_mm, e_mm)
+                                    - Qmi->get(q_mm, i_mm) * Qvv[q_mm]->get(a_mm, e_mm);
+                    M_imae_tilde->set(a_mm, e_mm, M_imae_tilde->get(a_mm, e_mm) + val);
+                } // end e_mm
+            } // end a_mm
+        } // end q_mm
+
+        M_imae_tilde = linalg::doublet(S_PNO(ii, mm), M_imae_tilde);
+
+        // => Toth Eq. 44c S(a_{ii}, a_{mm}) M_{if_{mm}}^{a_{mm}e_{mm}} T_{m}^{f_{mm}} <= //
+
+        // M_{if_{mm}}^{a_{mm}e_{mm}} = 2 (ia_{mm} | f_{mm} e_{mm}) - (if_{mm} | a_{mm} e_{mm}) (24c)
+        auto M_ifae = std::make_shared<Matrix>(n_pno_[mm], n_pno_[mm] * n_pno_[mm]);
+
+        for (int q_mm = 0; q_mm < lmopair_to_ribfs_[mm].size(); ++q_mm) {
+            for (int f_mm = 0; f_mm < n_pno_[mm]; ++f_mm) {
+                for (int a_mm = 0; a_mm < n_pno_[mm]; ++a_mm) {
+                    for (int e_mm = 0; e_mm < n_pno_[mm]; ++e_mm) {
+                        double val = 2.0 * Qov[q_mm]->get(i_mm, a_mm) * Qvv[q_mm]->get(f_mm, e_mm)
+                                        - Qov[q_mm]->get(i_mm, f_mm) * Qvv[q_mm]->get(a_mm, e_mm);
+                        M_ifae->set(f_mm, a_mm * n_pno_[mm] + e_mm, M_ifae->get(f_mm, a_mm * n_pno_[mm] + e_mm) + val);
+                    } // end e_mm
+                } // end a_mm
+            } // end f_mm
+        } // end q_mm
+        M_ifae = linalg::doublet(T_ia_[m], M_ifae, true, false); // (f_mm, 1) x (f_mm, a_mm * e_mm) -> (1, a_mm * e_mm) 
+        M_ifae->reshape(n_pno_[mm], n_pno_[mm]); // (1, a_mm * e_mm) -> (a_mm, e_mm)
+        M_imae_tilde->add(linalg::doublet(S_PNO(ii, mm), M_ifae)); // (a_ii, a_mm) x (a_mm, e_mm) -> (a_ii, e_mm)
+
+        // Toth Eq. 44d -\widetilde{T}^{e_{mm}}_k L^{a_{mm}f_{mm}}_{ik} S^{a_{mm}}_{a_{ii}} T^{f_{mm}}_m
+
+        // L_{ik}^{a_{mm}f_{mm}} = 2(ia_{mm} | kf_{mm})  - (if_{mm} | ka_{mm})
+        for (int k_im = 0; k_im < nlmo_im; ++k_im) {
+            int k = lmopair_to_lmos_[im][k_im];
+            int mk = i_j_to_ij_[m][k], kk = i_j_to_ij_[k][k];
+            int i_mk = lmopair_to_lmos_dense_[mk][i];
+            int k_mm = lmopair_to_lmos_dense_[mm][k];
+
+            // \widetilde{T}^{e_{mm}}_k
+            auto T_k_m = submatrix_rows(*T_n_ij_[mm], std::vector<int>(1, k_mm)); // (1, e_mm)
+
+            auto L_ikaf = std::make_shared<Matrix>(n_pno_[mm], n_pno_[mm]);
+            L_ikaf->zero();
+
+            for (int q_mm = 0; q_mm < lmopair_to_ribfs_[mm].size(); ++q_mm) {
+                for (int a_mm = 0; a_mm < n_pno_[mm]; ++a_mm) {
+                    for (int f_mm = 0; f_mm < n_pno_[mm]; ++f_mm) {
+                        double val = 2.0 * Qov[q_mm]->get(i_mm, a_mm) * Qov[q_mm]->get(k_mm, f_mm)
+                            - Qov[q_mm]->get(i_mm, f_mm) * Qov[q_mm]->get(k_mm, a_mm);
+                        
+                        L_ikaf->set(a_mm, f_mm, L_ikaf->get(a_mm, f_mm) + val);
+                    } // end f_mm
+                } // end a_mm
+            } // end q_mm
+
+            // S_{a_{ii}}^{a_{mm}} L^{a_{mm}f_{mm}}_{ik}  T^{f_{mm}}_m
+            L_ikaf = linalg::triplet(S_PNO(ii, mm), L_ikaf, T_ia_[m]); // (a_ii, a_mm) x (a_mm, f_mm) x (f_mm, 1) -> (a_ii, 1)
+
+            for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
+                for (int e_mm = 0; e_mm < n_pno_[mm]; ++e_mm) {
+                    double val = L_ikaf->get(a_ii, 0) * T_k_m->get(0, e_mm);
+                    M_imae_tilde->set(a_ii, e_mm, M_imae_tilde->get(a_ii, e_mm) - val);
+                } // end e_mm
+            } // end a_ii
+        } // end k_im
+
+        // => Toth Eq. 45b S^{a_{ii}}_{a_{ik}} L_{ik}^{a_{ik}c_{ik}} S^{c_{ik}}_{c_{km}} U_{km}^{c_{km}e_{km}} S^{e_{km}}_{e_{mm}}
 
         // Compute delta_imae_tilde
-        delta_imae_tilde_[im] = M_imae_tilde_[im]->clone();
+        delta_imae_tilde_[im] = M_imae_tilde->clone();
 
         for (int k_im = 0; k_im < lmopair_to_lmos_[im].size(); ++k_im) {
             int k = lmopair_to_lmos_[im][k_im];
@@ -682,6 +663,39 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             auto bear = linalg::triplet(L_iajb_[ik], S_PNO(ik, km), Tt_iajb_[km]);
             delta_imae_tilde_[im]->add(linalg::triplet(S_PNO(ii, ik), bear, S_PNO(km, mm)));
         }
+        
+    } // end im
+
+#pragma omp parallel for
+    for (int mk = 0; mk < n_lmo_pairs; ++mk) {
+        auto &[m, k] = ij_to_i_j_[mk];
+        int mm = i_j_to_ij_[m][m], kk = i_j_to_ij_[k][k];
+        int nlmo_mk = lmopair_to_lmos_[mk].size();
+
+        // => Toth Eq. 44b -\widetilde{T}_{k}^{e_{mm}} N_{mk}^{i a_{mk}} S(a_{mk}, a_{ii}) <= //
+
+        // T_k_m = \widetilde{T}_{k}^{e_{mm}}
+        auto T_k_m = linalg::doublet(S_PNO(mm, kk), T_ia_[k]); // (e_{mm}, 1)
+
+        auto N_mkia = J_ijmb_[mk]->clone(); // (i_{mk}, a_{mk})
+        N_mkia->scale(2.0);
+        N_mkia->subtract(K_mibj_[mk]); // (i_{mk}, a_{mk})
+
+        // N_{mk}^{ia_{mk}} = 2 (mk | ia_{mk}) - (mi | ka_{mk})
+        for (int i_mk = 0; i_mk < nlmo_mk; ++i_mk) {
+            int i = lmopair_to_lmos_[mk][i_mk];
+            int ii = i_j_to_ij_[i][i], im = i_j_to_ij_[i][m];
+            
+            auto N_mkia_slice = submatrix_rows(*N_mkia, std::vector<int>(1, i_mk))->transpose();
+            N_mkia_slice = linalg::doublet(S_PNO(ii, mk), N_mkia_slice);
+
+            for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
+                for (int e_mm = 0; e_mm < n_pno_[mm]; ++e_mm) {
+#pragma omp atomic
+                    (*delta_imae_tilde_[im])(a_ii, e_mm) -= N_mkia_slice->get(a_ii, 0) * T_k_m->get(e_mm, 0);
+                } // end e_mm
+            } // end a_ii
+        } // end k_im
     }
 
     F_vv_double_tilde_.resize(n_lmo_pairs);
@@ -1293,7 +1307,7 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
     outfile->Printf("\n  ==> Lambda DLPNO-CCSD <==\n\n");
     outfile->Printf("    E_CONVERGENCE = %.2e\n", options_.get_double("E_CONVERGENCE"));
     outfile->Printf("    R_CONVERGENCE = %.2e\n\n", options_.get_double("R_CONVERGENCE"));
-    outfile->Printf("                      Corr. Energy    Delta E     Max L1     Max L2     Time (s)\n");
+    outfile->Printf("                            Corr. Energy    Delta E     Max L1     Max L2     Time (s)\n");
 
     // => Initialize Residuals and Amplitudes <= //
 

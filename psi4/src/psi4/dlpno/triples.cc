@@ -395,16 +395,16 @@ void DLPNOCCSD_T::tno_transform(double t_cut_tno) {
         size_t nvir_ijk = F_pao_ijk->nrow();
 
         // Construct pair densities from amplitudes
-        auto D_ij = linalg::doublet(Tt_iajb_[ij], lambda_iajb_[ij], false, true);
-        D_ij->add(linalg::doublet(Tt_iajb_[ij], lambda_iajb_[ij], true, false));
+        auto D_ij = linalg::doublet(Tt_iajb_[ij], T_iajb_[ij], false, true);
+        D_ij->add(linalg::doublet(Tt_iajb_[ij], T_iajb_[ij], true, false));
         if (i == j) D_ij->scale(0.5);
 
-        auto D_jk = linalg::doublet(Tt_iajb_[jk], lambda_iajb_[jk], false, true);
-        D_jk->add(linalg::doublet(Tt_iajb_[jk], lambda_iajb_[jk], true, false));
+        auto D_jk = linalg::doublet(Tt_iajb_[jk], T_iajb_[jk], false, true);
+        D_jk->add(linalg::doublet(Tt_iajb_[jk], T_iajb_[jk], true, false));
         if (j == k) D_jk->scale(0.5);
 
-        auto D_ik = linalg::doublet(Tt_iajb_[ik], lambda_iajb_[ik], false, true);
-        D_ik->add(linalg::doublet(Tt_iajb_[ik], lambda_iajb_[ik], true, false));
+        auto D_ik = linalg::doublet(Tt_iajb_[ik], T_iajb_[ik], false, true);
+        D_ik->add(linalg::doublet(Tt_iajb_[ik], T_iajb_[ik], true, false));
         if (i == k) D_ik->scale(0.5);
 
         // Project pair densities into combined PAO space of ijk
@@ -1593,9 +1593,9 @@ double DLPNOCCSD_T::compute_energy() {
     outfile->Printf("    * Screened Triplets Contribution:  %16.12f \n\n", de_lccsd_t_screened_);
 
     outfile->Printf("    DLPNO-CCSD(T_L0) Correlation Energy: %16.12f \n", e_lccsd_ + E_T_L0 + de_lccsd_t_screened_);
-    outfile->Printf("    * DLPNO-CCSD Contribution:         %16.12f \n", e_lccsd_);
-    outfile->Printf("    * DLPNO-(T_L0) Contribution:       %16.12f \n", E_T_L0);
-    outfile->Printf("    * Screened Triplets Contribution:  %16.12f \n\n", de_lccsd_t_screened_);
+    outfile->Printf("    * DLPNO-CCSD Contribution:           %16.12f \n", e_lccsd_);
+    outfile->Printf("    * DLPNO-(T_L0) Contribution:         %16.12f \n", E_T_L0);
+    outfile->Printf("    * Screened Triplets Contribution:    %16.12f \n\n", de_lccsd_t_screened_);
 
     // Step 3: Compute full DLPNO-CCSD(T) energy if NOT using T0 approximation
 
