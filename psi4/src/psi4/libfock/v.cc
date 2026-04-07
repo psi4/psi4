@@ -30,7 +30,12 @@
 #include "cubature.h"
 #include "points.h"
 #include "dft_integrators.h"
+#ifdef USING_BrianQC
+#include "brianqc_int.h"
+#endif
+#ifdef USING_gauxc
 #include "gauxc_int.h"
+#endif
 #include "sap.h"
 
 #include "psi4/libfunctional/LibXCfunctional.h"
@@ -56,6 +61,11 @@
 
 #ifdef _OPENMP
 #include <omp.h>
+#endif
+
+#ifdef USING_BrianQC
+extern bool brianEnable;
+extern bool brianEnableDFT;
 #endif
 
 namespace psi {
@@ -143,6 +153,9 @@ void VBase::set_D(std::vector<SharedMatrix> Dvec) {
 
 #ifdef USING_gauxc
     if (gauxc_integrator_) gauxc_integrator_->set_D(Dvec);
+#endif
+#ifdef USING_BrianQC
+    if (brianqc_integrator_) brianqc_integrator_->set_D(Dvec);
 #endif
 
 }
