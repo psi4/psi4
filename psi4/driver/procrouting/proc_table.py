@@ -290,7 +290,7 @@ for key in functionals:
         procedures['properties'][key] = proc.run_scf_property
 
     # Gradients
-    if not (ssuper.is_c_hybrid() or ssuper.is_c_lrc() or ssuper.needs_vv10()):
+    if not (ssuper.is_c_hybrid() or ssuper.is_c_lrc()):
         procedures['gradient'][key] = proc.select_scf_gradient
 
     # Hessians
