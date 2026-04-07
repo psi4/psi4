@@ -152,6 +152,28 @@ cuestHandle_t cuest_handle = 0;
 cudaStream_t stream_handle = 0;
 
 void cuest_init() {
+    // ACS:  Something like this might be useful to check the GPU capabilities.  The problem is that 
+    // at this point the options have not been parsed (this fires at psi4 module import time) so this kind
+    // of a check needs to be implemented as a singleton early in in the mints stack; the check is only necessary
+    // if USE_CUEST is set to true.  The brianQC solution is to use an environmental variable to toggle the GPU
+    // code path instead of a psi4 option. Should also check that psi4 was compiled with cuEST support if USE_CUEST is set to true
+    //
+    // int device_id;
+    // cudaError_t cuda_err = cudaGetDevice(&device_id);
+    // if (cuda_err != cudaSuccess) {
+    //     throw PSIEXCEPTION("cudaGetDevice failed in cuest_init");
+    // }
+    // struct cudaDeviceProp props;
+    // cuda_err = cudaGetDeviceProperties(&props, device_id);
+    // if (cuda_err != cudaSuccess) {
+    //     throw PSIEXCEPTION("cudaGetDeviceProperties failed in cuest_init");
+    // }
+    // if (props.major < 8) {
+    //     throw PSIEXCEPTION("cuEST requires a GPU with compute capability 8.0 or higher");
+    // }
+    // // check cuda_err to see if there's a GPU availabel at all here
+    // outfile->Printf("cuEST initialized on device %d (%s) with compute capability %d.%d\n", device_id, props.name, props.major, props.minor);
+
     if (stream_handle != 0) {
         throw PSIEXCEPTION("Attempting to reinitialize the stream_handle when it hasn't been released\n");
     }
