@@ -1,6 +1,6 @@
 #! Water with cc-pvqz
 
-refenergy = -76.06479161237
+refenergy = -76.0647916146145917
 
 molecule water {
     symmetry c1
@@ -16,6 +16,7 @@ set = {
     scf_type direct
     df_scf_guess False
     brianqc_enable True
+    d_convergence 9
 }
 
 thisenergy = energy('scf')
