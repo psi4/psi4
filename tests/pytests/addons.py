@@ -180,12 +180,12 @@ hardware_nvidia_gpu = pytest.mark.skipif(
     reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
 
 
-def ctest_runner(inputdatloc, 
+def ctest_runner(inputdatloc: str, 
                  *,
-                 extra_infiles: List = None,
-                 outfiles: List = None,
-                 setenv: List = None,
-                 extra_binary_infiles: List = None):
+                 extra_infiles: List[str] = None,
+                 outfiles: List[str] = None,
+                 setenv: List[str] = None,
+                 extra_binary_infiles: List[str] = None):
     """Called from a mock PyTest function, this takes a full path ``inputdatloc`` to an ``"input.dat"`` file set up for
     CTest and submits it to the ``psi4`` executable. Any auxiliary files with names listed in ``extra_infiles`` that reside
     alongside ``inputdatloc`` are placed in the Psi4 execution directory. Any strings listed in ``setenv`` are available
@@ -194,7 +194,6 @@ def ctest_runner(inputdatloc,
     """
     from qcengine.util import execute
     import psi4
-
     # Pass runtime env through to `execute`
     # * appending Psi4 import path (after all, it worked previous line) since partial/relative paths not robust
     psiimport = Path(psi4.__file__).parent.parent
