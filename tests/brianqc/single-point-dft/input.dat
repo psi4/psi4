@@ -1,6 +1,6 @@
 #! Water with sto-3g, b3lyp with sg1 grid
 
-refenergy = -75.31258673036
+refenergy = -75.3125863079899318
 
 molecule water {
     symmetry c1
@@ -17,6 +17,7 @@ set = {
     scf_type direct
     df_scf_guess False
     brianqc_enable True
+    d_convergence 9
 }
 
 thisenergy = energy('scf', dft_functional = 'b3lyp')

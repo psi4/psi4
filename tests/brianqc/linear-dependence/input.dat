@@ -57,6 +57,7 @@ set = {
     scf_type direct
     df_scf_guess False
     brianqc_enable True
+    d_convergence 9
 }
 
 thisenergy = energy('scf')

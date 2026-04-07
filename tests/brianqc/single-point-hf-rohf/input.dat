@@ -1,6 +1,6 @@
 #! Hydroxyl with sto-3g
 
-refenergy = -74.36156196571
+refenergy = -74.3615619657163052
 
 molecule hydroxyl {
     symmetry c1
@@ -15,6 +15,7 @@ set = {
     scf_type direct
     df_scf_guess False
     brianqc_enable True
+    d_convergence 9
 }
 
 thisenergy = energy('scf')
