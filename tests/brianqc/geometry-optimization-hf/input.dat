@@ -1,6 +1,6 @@
 #! Geometry optimization for ethane with sto-3g
 
-refenergy = -78.3061795497553
+refenergy = -78.3061796476801248
 
 molecule ethane {
     symmetry c1
@@ -21,6 +21,8 @@ set = {
     df_scf_guess False
     scf_type direct
     brianqc_enable True
+    d_convergence 9
+    g_convergence gau_tight
 }
 
 thisenergy = optimize('scf')
