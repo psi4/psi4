@@ -16,11 +16,13 @@ set = {
     scf_type direct
     df_scf_guess False
     brianqc_enable True
+    d_convergence 9
 }
 
-ref_freqs = np.array([2051.246352900409, 4500.504468103355, 4797.345578128214])
+ref_freqs = np.array([2051.2463522934686, 4500.504468925809, 4797.345578710552])
 
 scf_e, scf_wfn = frequencies('scf', project_trans = True, project_rot = True, return_wfn=True)
 
 this_freqs = scf_wfn.frequencies().to_array()                                            #TEST
+
 compare_arrays(ref_freqs, this_freqs, 6, "Reference frequencies")  #TEST
