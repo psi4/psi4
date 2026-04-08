@@ -2592,8 +2592,8 @@ void DLPNOCCSD::lccsd_iterations() {
 #endif
 
     outfile->Printf("\n  ==> Local CCSD <==\n\n");
-    outfile->Printf("    E_CONVERGENCE = %.2e\n", options_.get_double("E_CONVERGENCE"));
-    outfile->Printf("    R_CONVERGENCE = %.2e\n\n", options_.get_double("R_CONVERGENCE"));
+    outfile->Printf("    E_CONVERGENCE = %.2e\n", 0.01 * options_.get_double("E_CONVERGENCE"));
+    outfile->Printf("    R_CONVERGENCE = %.2e\n\n", 0.01 * options_.get_double("R_CONVERGENCE"));
     outfile->Printf("                      Corr. Energy    Delta E     Max R1     Max R2     Time (s)\n");
 
     // => Initialize Residuals and Amplitudes <= //
@@ -2789,9 +2789,9 @@ void DLPNOCCSD::lccsd_iterations() {
         double r_curr1 = *max_element(R_ia_rms.begin(), R_ia_rms.end());
         double r_curr2 = *max_element(R_iajb_rms.begin(), R_iajb_rms.end());
 
-        r_converged = (fabs(r_curr1) < options_.get_double("R_CONVERGENCE"));
-        r_converged &= (fabs(r_curr2) < options_.get_double("R_CONVERGENCE"));
-        e_converged = (fabs(e_curr - e_prev) < options_.get_double("E_CONVERGENCE"));
+        r_converged = (fabs(r_curr1) < 0.01 * options_.get_double("R_CONVERGENCE"));
+        r_converged &= (fabs(r_curr2) < 0.01 * options_.get_double("R_CONVERGENCE"));
+        e_converged = (fabs(e_curr - e_prev) < 0.01 * options_.get_double("E_CONVERGENCE"));
 
         std::time_t time_stop = std::time(nullptr);
 
