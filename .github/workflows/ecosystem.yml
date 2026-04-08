@@ -213,7 +213,6 @@ jobs:
           sed -i "s;- geometric;#- geometric;g" env_p4build.yaml
           sed -i "s;- i-pi;#- i-pi;g" env_p4build.yaml
           sed -i "s;- postgresql;#- postgresql;g" env_p4build.yaml
-          sed -i "s;- pyddx;#- pyddx;g" env_p4build.yaml
           sed -i "s;- qcfractal;#- qcfractal;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
@@ -237,7 +236,6 @@ jobs:
           sed -E -i.bak "s;- geometric;#- geometric;g" env_p4build.yaml
           sed -E -i.bak "s;- i-pi;#- i-pi;g" env_p4build.yaml
           sed -E -i.bak "s;- postgresql;#- postgresql;g" env_p4build.yaml
-          sed -E -i.bak "s;- pyddx;#- pyddx;g" env_p4build.yaml
           sed -E -i.bak "s;- qcfractal;#- qcfractal;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
@@ -250,7 +248,6 @@ jobs:
           #sed -i "s;- dftd4-python;#- dftd4-python;g" env_p4build.yaml
           sed -i "s;- geometric;#- geometric;g" env_p4build.yaml
           sed -i "s;- i-pi;#- i-pi;g" env_p4build.yaml
-          sed -i "s;- pyddx;#- pyddx;g" env_p4build.yaml
         fi
         echo "  - pygments" >> env_p4build.yaml
         echo "::group::View Env Spec File for Conda (Edited)"
