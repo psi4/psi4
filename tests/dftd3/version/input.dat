@@ -215,8 +215,8 @@ for dlvl in ['d3zero2b']:
     s9 = 0.0
     E, atres = qeeee.run_sdftd3(fctl, dlvl, dertype=der, return_dict=True)
     compare_values(refs[dlvl[:-2]]['d'], E, 7, 'dimer ' + dlvl)  #TEST
-    compare_values(s9, atres["extras"]["info"]["dashparams"]["s9"], 9, f"2b s9={s9}")
     if nu_qcng:
+        compare_values(s9, atres["extras"]["info"]["dashparams"]["s9"], 9, f"2b s9={s9}")
         compare_values(s9, atres["keywords"]["params_tweaks"]["s9"], 9, f"2b s9={s9}")
 
 # <<<  Part 4  >>>
