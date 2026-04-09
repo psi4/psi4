@@ -59,7 +59,105 @@ namespace dlpno {
 DLPNOCCSD_Lambda::DLPNOCCSD_Lambda(SharedWavefunction ref_wfn, Options& options) : DLPNOCCSD(ref_wfn, options) {}
 DLPNOCCSD_Lambda::~DLPNOCCSD_Lambda() {}
 
-void DLPNOCCSD_Lambda::estimate_memory() {}
+void DLPNOCCSD_Lambda::estimate_memory() {
+
+    int n_lmo_pairs = ij_to_i_j_.size();
+
+    outfile->Printf(" ==> CCSD_Lambda Memory Estimate <== \n\n");
+
+    size_t delta_imae_size = 0;
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : delta_imae_size)
+    for (int im = 0; im < n_lmo_pairs; ++im) {
+        auto &[i, m] = ij_to_i_j_[im];
+        int ii = i_j_to_ij_[i][i], mm = i_j_to_ij_[m][m];
+
+        delta_imae_size += n_pno_[ii] * n_pno_[mm];
+    } // end im
+
+    // Memory Estimate for K_{ma_{ii}}^{e_{mi} f_{mi}} intermediate
+    size_t K_maef_dt_size = 0;
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : K_maef_dt_size)
+    for (int mi = 0; mi < n_lmo_pairs; ++mi) {
+        auto &[m, i] = ij_to_i_j_[mi];
+        int ii = i_j_to_ij_[i][i];
+
+        int nlmo_mi = lmopair_to_lmos_[mi].size();
+        K_maef_dt_size += n_pno_[ii] * n_pno_[mi] * n_pno_[mi];
+    } // end mi
+
+    // Memory Estimate for K_{e_{mn} i}^{m n} intermediate
+    size_t K_eimn_dt_size = 0;
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : K_eimn_dt_size)
+    for (int mn = 0; mn < n_lmo_pairs; ++mn) {
+        auto &[m, n] = ij_to_i_j_[mn];
+        
+        int nlmo_mn = lmopair_to_lmos_[mn].size();
+        K_eimn_dt_size += nlmo_mn * n_pno_[mn];
+    } // end mn
+
+    size_t M_kace_bar_size = 0;
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : M_kace_bar_size)
+    for (int ki = 0; ki < n_lmo_pairs; ++ki) {
+        auto &[k, i] = ij_to_i_j_[ki];
+        int ii = i_j_to_ij_[i][i];
+        
+        M_kace_bar_size += n_pno_[ki] * n_pno_[ki] * n_pno_[ii];
+    } // end ki
+
+    size_t M_mkic_bar_size = 0;
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : M_mkic_bar_size)
+    for (int mk = 0; mk < n_lmo_pairs; ++mk) {
+        auto &[m, k] = ij_to_i_j_[mk];
+        
+        int nlmo_mk = lmopair_to_lmos_[mk].size();
+        M_mkic_bar_size += nlmo_mk * n_pno_[mk];
+    } // end mk
+
+    size_t F_knia_hat_size = 0;
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : F_knia_hat_size)
+    for (int kn = 0; kn < n_lmo_pairs; ++kn) {
+        auto &[k, n] = ij_to_i_j_[kn];
+        
+        int nlmo_kn = lmopair_to_lmos_[kn].size();
+
+        for (int i_kn = 0; i_kn < nlmo_kn; ++i_kn) {
+            int i = lmopair_to_lmos_[kn][i_kn];
+            int ii = i_j_to_ij_[i][i];
+
+            F_knia_hat_size += n_pno_[ii];
+        } // end i_kn
+    } // end kn
+
+    size_t L_ieab_bar_size = 0;
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : L_ieab_bar_size)
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+        int jj = i_j_to_ij_[j][j];
+
+        L_ieab_bar_size += n_pno_[jj] * n_pno_[ij] * n_pno_[ij];
+    } // end ij
+    
+    size_t K_mbij_bar_size = 0;
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : K_mbij_bar_size)
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        auto &[i, j] = ij_to_i_j_[ij];
+
+        int nlmo_ij = lmopair_to_lmos_[ij].size();
+
+        K_mbij_bar_size += nlmo_ij * n_pno_[ij];
+    } // end ij
+
+    // 1 GB = 1000^3 = 10^9 Bytes
+    const double DOUBLES_TO_GB = pow(10.0, -9) * sizeof(double);
+    size_t total_size = delta_imae_size + K_maef_dt_size + K_eimn_dt_size + 2 * M_kace_bar_size + 2 * M_mkic_bar_size + F_knia_hat_size + L_ieab_bar_size + K_mbij_bar_size;
+
+    outfile->Printf("     delta_{im}^{a_{ii} e_{mm}}   : %8.3f [GB]\n", delta_imae_size * DOUBLES_TO_GB);
+    outfile->Printf("    (a_{ii}, b_{ij}, c_{ij})-like : %8.3f [GB]\n", (K_maef_dt_size + 2 * M_kace_bar_size + L_ieab_bar_size) * DOUBLES_TO_GB);
+    outfile->Printf("    (k_{ij}, a_{ij})-like         : %8.3f [GB]\n", (K_eimn_dt_size + 2 * M_mkic_bar_size + K_mbij_bar_size) * DOUBLES_TO_GB);
+    outfile->Printf("    F_knia_hat                    : %8.3f [GB]\n", F_knia_hat_size * DOUBLES_TO_GB);
+    outfile->Printf("    Total Memory Required         : %8.3f [GB]\n\n", total_size * DOUBLES_TO_GB);
+
+} // end function
 
 void DLPNOCCSD_Lambda::form_goo() {
     // Number of active occupied orbitals
@@ -99,10 +197,17 @@ void DLPNOCCSD_Lambda::form_goo() {
 }
 
 void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
+
+    outfile->Printf("   ==> Computing Lambda Intermediates <== \n\n");
+
     // Number of active occupied orbitals
     int naocc = nalpha_ - nfrzc();
     // Number of surviving pairs after DLPNO screening
     int n_lmo_pairs = ij_to_i_j_.size();
+
+    outfile->Printf("   T1-dressing integrals and Fock matrices from converged T1...");
+
+    std::time_t time_start = std::time(nullptr);
 
     // Step 1: Create T_n intermediate (Jiang Eq. 70)
     // T_{n_{ij}}^{a_{ij}} = S(a_{ij}, a_{nn}) T_{n}^{a_{nn}}
@@ -132,11 +237,25 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
     // Step 2: T1-dress integrals and Fock matrices
     t1_ints();
     t1_fock();
+
+    std::time_t time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
+
+    outfile->Printf("   Computing beta, gamma, and delta from converged T2...");
+
+    time_start = std::time(nullptr);
     
     beta_ = compute_beta();
     gamma_ = compute_gamma();
     delta_ = compute_delta();
 
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
+
+    outfile->Printf("   Forming K_maef_dt...");
+
+    time_start = std::time(nullptr);
+    
     // Toth Eq. 47 (\widetilde{\widetilde{K}}_{m a_{ii}}^{e_{mi} f_{mi}})
     K_maef_dt_.resize(n_lmo_pairs);
     
@@ -155,7 +274,7 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         auto q_ov = QIA_PNO(mi);
         auto q_vv = QAB_PNO(mi);
 
-        K_maef_dt_[mi] = std::make_shared<Matrix>(n_pno_[ii], npno_mi * npno_mi);
+        K_maef_dt_[mi] = std::make_shared<Matrix>(npno_mi, npno_mi * npno_mi); // (a_{mi}, e_{mi} f_{mi}) -> (a_{ii}, e_{mi} f_{mi}) later
         K_maef_dt_[mi]->zero();
 
         // (Toth Eq. 47a) +1.0 \widetilde{B}^{Q_{mi}}_{e_{mi} m} \widetilde{B}^{Q_{mi}}_{f_{mi} a_{mi}} S^{a_{mi}}_{a_{ii}}
@@ -163,18 +282,19 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         for (int q_mi = 0; q_mi < naux_mi; ++q_mi) {
             auto q_vv_t1 = q_vv[q_mi]->clone();
             q_vv_t1->subtract(linalg::doublet(T_n_ij_[mi], q_ov[q_mi], true, false)); // (k_{mi}, f_{mi}) (k_{mi}, a_{mi})
-            q_vv_t1 = linalg::doublet(q_vv_t1, S_PNO(mi, ii)); // (f_{mi}, a_{mi}) -> (f_{mi}, a_{ii})
 
-            for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
+            for (int a_mi = 0; a_mi < n_pno_[mi]; ++a_mi) {
                 for (int e_mi = 0; e_mi < n_pno_[mi]; ++e_mi) {
                     for (int f_mi = 0; f_mi < n_pno_[mi]; ++f_mi) {
-                        double val = K_maef_dt_[mi]->get(a_ii, e_mi * n_pno_[mi] + f_mi) + q_vv_t1->get(f_mi, a_ii) * q_vo_t1->get(q_mi, e_mi);
-                        K_maef_dt_[mi]->set(a_ii, e_mi * n_pno_[mi] + f_mi, val);
-                        // (*K_maef_dt_[mi])(a_ii, e_mi * n_pno_[mi] + f_mi) += (*q_vv_t1)(f_mi, a_ii) * (*q_vo_t1)(q_mi, e_mi);
+                        double val = K_maef_dt_[mi]->get(a_mi, e_mi * n_pno_[mi] + f_mi) + q_vv_t1->get(f_mi, a_mi) * q_vo_t1->get(q_mi, e_mi);
+                        K_maef_dt_[mi]->set(a_mi, e_mi * n_pno_[mi] + f_mi, val);
+                        // (*K_maef_dt_[mi])(a_mi, e_mi * n_pno_[mi] + f_mi) += (*q_vv_t1)(f_mi, a_mi) * (*q_vo_t1)(q_mi, e_mi);
                     } // end f_mi
                 } // end e_mi
             } // end a_ii
         } // end q_mi
+
+        K_maef_dt_[mi] = linalg::doublet(S_PNO(ii, mi), K_maef_dt_[mi]); // (a_{mi}, e_{mi} f_{mi}) -> (a_{ii}, e_{mi} f_{mi})
 
         for (int k_mi = 0; k_mi < nlmo_mi; ++k_mi) {
             int k = lmopair_to_lmos_[mi][k_mi];
@@ -201,28 +321,41 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
                 if (kl == -1) continue; // checks to make sure kl is a pair
 
                 // (Toth Eq. 47b) +1.0 (S^{e_{mi}}_{e_{kl}} T_{kl}^{e_{kl} f_{kl}} S^{f_{mi}}_{f_{kl}}) \widetilde{B}^{Q_{mi}}_{k_{mi} m} B^{Q_{mi}}_{l_{mi} a_{mi}} S^{a_{mi}}_{a_{ii}}
-
                 auto ender_dragon = linalg::triplet(S_PNO(mi, kl), T_iajb_[kl], S_PNO(kl, mi));
 
-                for (int q_mi = 0; q_mi < naux_mi; ++q_mi) {
-                    auto q_la_slice = submatrix_rows(*q_ov[q_mi], std::vector<int>(1, l_mi)); // (1, a_{mi})
-                    // (S^{a_{ii}}_{a_{mi}}) * B^{Q_{mi}}_{l_{mi}a_{mi}} -> (a_{ii}, 1)
-                    q_la_slice = linalg::doublet(S_PNO(ii, mi), q_la_slice, false, true); 
+                // \widetilde{B}^{Q_{mi}}_{k_{mi} m} B^{Q_{mi}}_{l_{mi} a_{mi}}
+                auto lo_mein = std::make_shared<Matrix>(n_pno_[mi], 1);
+                lo_mein->zero();
 
-                    for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
-                        for (int e_mi = 0; e_mi < n_pno_[mi]; ++e_mi) {
-                            for (int f_mi = 0; f_mi < n_pno_[mi]; ++f_mi) {
-                                double val = K_maef_dt_[mi]->get(a_ii, e_mi * npno_mi + f_mi) 
-                                    + ender_dragon->get(e_mi, f_mi) * q_oo_t1->get(q_mi, k_mi) * q_la_slice->get(a_ii, 0);
-                                K_maef_dt_[mi]->set(a_ii, e_mi * npno_mi + f_mi, val);
-                            } // end f_mi
-                        } // end e_mi
-                    } // end a_ii
+                for (int q_mi = 0; q_mi < naux_mi; ++q_mi) {
+                    // (S^{a_{ii}}_{a_{mi}}) * B^{Q_{mi}}_{l_{mi}a_{mi}} -> (a_{ii}, 1)
+                    for (int a_mi = 0; a_mi < n_pno_[mi]; ++a_mi) {
+                        double val = lo_mein->get(a_mi, 0) + q_ov[q_mi]->get(l_mi, a_mi) * q_oo_t1->get(q_mi, k_mi);
+                        lo_mein->set(a_mi, 0, val);
+                    } // end a_mi
                 } // end q_mi
+
+                lo_mein = linalg::doublet(S_PNO(ii, mi), lo_mein); // (a_{mi}, 1) -> (a_{ii}, 1)
+
+                for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
+                    for (int e_mi = 0; e_mi < n_pno_[mi]; ++e_mi) {
+                        for (int f_mi = 0; f_mi < n_pno_[mi]; ++f_mi) {
+                                double val = K_maef_dt_[mi]->get(a_ii, e_mi * npno_mi + f_mi) + ender_dragon->get(e_mi, f_mi) * lo_mein->get(a_ii, 0);
+                                K_maef_dt_[mi]->set(a_ii, e_mi * npno_mi + f_mi, val);
+                        } // end f_mi
+                    } // end e_mi
+                } // end a_ii
 
             } // end l_mi
         } // end k_mi
     } // end mi
+
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
+
+    outfile->Printf("   Forming K_eimn_dt...");
+
+    time_start = std::time(nullptr);
 
     // Toth Eq. 48 \widetilde{\widetilde{K}}_{e_{mn} i}^{m n}
 
@@ -256,6 +389,13 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         int mn_idx = (m < n) ? mn : nm;
         K_eimn_dt_[mn]->add(linalg::doublet(T_iajb_[mn], Fkc_bar_[mn_idx], false, true)); // (e, c) (i, c) -> (e, i)
     } // end mn
+
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
+
+    outfile->Printf("   Forming M_kace_bar_...");
+
+    time_start = std::time(nullptr);
 
     // Toth Eq. 29
     M_kace_bar_.resize(n_lmo_pairs);
@@ -303,6 +443,13 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
 
     } // end ki
 
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
+
+    outfile->Printf("   Forming M_mkic_bar...");
+
+    time_start = std::time(nullptr);
+
     // Toth Eq. 30
     M_mkic_bar_.resize(n_lmo_pairs);
 
@@ -334,6 +481,13 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         } // end i_mk
     } // end mk
 
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
+
+    outfile->Printf("   Forming J_kmic_bar...");
+
+    time_start = std::time(nullptr);
+
     // Toth Eq. 31
     // \overline{J}_{km}^{ic} = (km | i c_{km}) + \widetilde{T}_{m}^{f_{ki}} (k f_{ki} | i c_{ki})
     //  S_{c_{ki}}^{c_{km}}
@@ -360,6 +514,12 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             } // end c_km
         } // end i_km
     } // end km
+
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
+
+    outfile->Printf("   Forming J_kaec_bar...");
+    time_start = std::time(nullptr);
 
     // Toth Eq. 32
     // \overline{J}_{ka_{ii}}^{e_{ki}c_{ki}} = S^{a_{ii}}_{a_{ki}} (ka_{ki}|e_{ki}c_{ki}) -
@@ -392,6 +552,9 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
 
         } // end l_ki
     } // end for ki
+
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
 
     // Toth Eq. 33
     /*
@@ -450,6 +613,9 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         } // end i_mn
     } // end mn
      */
+
+    outfile->Printf("   Forming F_knia_hat...");
+    time_start = std::time(nullptr);
 
     // Toth Eq. 34a
     F_knia_hat_.resize(n_lmo_pairs);
@@ -517,6 +683,12 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
 
     } // end n
 
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
+
+    outfile->Printf("   Forming L_ieab_bar_ and K_ijmb_bar_...");
+    time_start = std::time(nullptr);
+
     L_ieab_bar_.resize(n_lmo_pairs);
     K_ijmb_bar_.resize(n_lmo_pairs);
 
@@ -566,6 +738,12 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         K_ijmb_bar_[ij] = K_mibj_[ij]->clone();
         K_ijmb_bar_[ij]->add(linalg::doublet(T_n_ij_[ij], K_iajb_[ij])); // (m, e) (e, b) -> (m, b)
     } // end ij
+
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
+
+    outfile->Printf("   Forming delta_imae_tilde ...");
+    time_start = std::time(nullptr);
 
     // Toth Eq. 44 and 45
     delta_imae_tilde_.resize(n_lmo_pairs);
@@ -706,6 +884,12 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
         } // end k_im
     }
 
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
+
+    outfile->Printf("   Forming F_vv_double_tilde...");
+    time_start = std::time(nullptr);
+
     F_vv_double_tilde_.resize(n_lmo_pairs);
 
 #pragma omp parallel for schedule(dynamic, 1)
@@ -732,6 +916,12 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             } // end l_ij
         } // end k_ij
     } // end ij
+
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
+
+    outfile->Printf("   Forming F_im_double_tilde...");
+    time_start = std::time(nullptr);
     
     F_im_double_tilde_ = Fkj_->clone();
 
@@ -750,6 +940,12 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             F_im_double_tilde_->set(i, m, val);
         } // end l_im
     } // end im
+
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
+
+    outfile->Printf("   Forming gamma_double_tilde and delta_double_tilde...");
+    time_start = std::time(nullptr);
 
     gamma_double_tilde_.resize(n_lmo_pairs);
     delta_double_tilde_.resize(n_lmo_pairs);
@@ -805,6 +1001,9 @@ void DLPNOCCSD_Lambda::compute_lambda_intermediates() {
             } // end k_ij
         }
     } // end ij
+
+    time_stop = std::time(nullptr);
+    outfile->Printf("   %3d seconds\n\n", (int) time_stop - (int) time_start);
 }
 
 void DLPNOCCSD_Lambda::compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::vector<SharedMatrix>> &L_ia_buffer) {
@@ -1719,6 +1918,7 @@ double DLPNOCCSD_Lambda::compute_energy() {
     // Run DLPNO-CCSD
     double e_dlpno_ccsd = DLPNOCCSD::compute_energy();
 
+    estimate_memory();
     compute_lambda_intermediates();
 
     lambda_ccsd_iterations();
