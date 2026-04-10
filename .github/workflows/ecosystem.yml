@@ -24,7 +24,7 @@ jobs:
             mkl-version: ""
             platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
+            pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
               -D ENABLE_v2rdm_casscf=ON
@@ -36,7 +36,7 @@ jobs:
             mkl-version: ""
             platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
+            pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
               -D CMAKE_VERBOSE_MAKEFILE=OFF
