@@ -300,7 +300,7 @@ data:
       host: github
       account: dftd3
       name: simple-dftd3
-      commit: v1.3.0  # TODO not in psi src
+      commit: v1.3.0
     cmake: null
     conda:
       channel: conda-forge
@@ -1232,6 +1232,8 @@ data:
       constraint_note: "v4.1.0 provides QCSchema v2 compatibility."
       aux_run_names:
         - toml
+      aux_run_names_note:
+        toml: "Needed for qcengine/dftd4-python interface."
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
