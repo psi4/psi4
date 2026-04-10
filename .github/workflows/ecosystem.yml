@@ -47,6 +47,29 @@ jobs:
             #    -D BUILD_SHARED_LIBS=ON
             #    -D ENABLE_XHOST=OFF
 
+          - label: "Conda Clang (M-Intel)"
+            runs-on: macos-15-intel
+            python-version: "3.14"
+            mkl-version: ""
+            platform: osx-64
+            pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7)"
+            target-sdk: "10.10"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
+            # Notes:
+            # * libiomp5 is picking up naturally but left here as guide
+            #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
+            #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+            # * as long as we're using mac to test legacy QCFractal, stick with py39
+            # * Once upon a time, this GHA absolutely needed the SDK. I don't know
+            #   why not now, but left here in case it shows up again.
+            #    -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
+            #    -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
+            #    -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
+            # * numpy/_core in py310 vs numpy/core in py39 (or maybe a np v1/v2 thing)
+
           - label: "Conda Clang (M-Silicon)"
             runs-on: macos-latest
             python-version: "3.14"
@@ -205,6 +228,7 @@ jobs:
           :
         fi
         echo "  - pygments" >> env_p4build.yaml
+        echo "  - conda-tree" >> env_p4build.yaml
         echo "::group::View Env Spec File for Conda (Edited)"
         printf "\n<<<  env_p4build.yaml  >>>\n"
         cat env_p4build.yaml
@@ -318,6 +342,7 @@ jobs:
       run: |
         conda info
         conda list
+        conda-tree deptree
         if [[ "${{ runner.os }}" != "Windows" ]]; then
           # on Windows, cmd varies: `qcengine.exe`
           PATH=$PATH:stage/bin PYTHONPATH=stage/lib qcengine info
