@@ -2665,6 +2665,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Perform automatic memory checks to toggle between core and disk? 
             (NOT recommended to change this for average user). -*/
         options.add_bool("DLPNO_TOGGLE_MEMORY", true);
+        /*- How much to damp the lambda updates, recommend 0.3 for hard to converge cases !expert -*/
+        options.add_double("DLPNO_LAMBDA_DAMPING", 0.0);
 
         /*- SUBSECTION Expert Options -*/
 

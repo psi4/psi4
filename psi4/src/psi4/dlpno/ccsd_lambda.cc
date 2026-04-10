@@ -1576,6 +1576,7 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
     } // end thread
 
     int iteration = 1, max_iteration = options_.get_int("DLPNO_MAXITER");
+    double damping = options_.get_double("DLPNO_LAMBDA_DAMPING");
     double e_curr = 0.0, e_prev = 0.0, l1_curr = 0.0, l2_curr = 0.0;
     bool e_converged = false, l_converged = false;
 
@@ -1607,12 +1608,14 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
             auto &[i, j] = ij_to_i_j_[ij];
 
             // Dynamic Damping
-            double m = (iteration > 10) ? -L_iajb[ij]->vector_dot(K_iajb_[ij]) / L_iajb_prev[ij]->vector_dot(K_iajb_[ij]) : -0.5;
+            /*
+            double m = (iteration > 10) ? -L_iajb[ij]->vector_dot(K_iajb_[ij]) / L_iajb_prev[ij]->vector_dot(K_iajb_[ij]) : -0.3;
             double alpha = (m > 0.0) ? 1.0 : 1.0 / (1.0 - m);
+            */
 
             for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
                 for (int b_ij = 0; b_ij < n_pno_[ij]; ++b_ij) {
-                    double val = lambda_iajb_[ij]->get(a_ij, b_ij) - alpha * L_iajb[ij]->get(a_ij, b_ij) /
+                    double val = lambda_iajb_[ij]->get(a_ij, b_ij) - (1.0 - damping) * L_iajb[ij]->get(a_ij, b_ij) /
                                     (e_pno_[ij]->get(a_ij) + e_pno_[ij]->get(b_ij) - F_lmo_->get(i,i) - F_lmo_->get(j,j));
                     lambda_iajb_[ij]->set(a_ij, b_ij, val);
                 }
@@ -1639,12 +1642,14 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
             int ii = i_j_to_ij_[i][i];
 
             // Dynamic Damping
+            /*
             double m = (iteration > 10) ? -L_ia[i]->vector_dot(linalg::doublet(K_iajb_[ii], L_ia[i])) 
-                                            / L_ia_prev[i]->vector_dot(linalg::doublet(K_iajb_[ii], L_ia_prev[i])) : -0.5;
+                                            / L_ia_prev[i]->vector_dot(linalg::doublet(K_iajb_[ii], L_ia_prev[i])) : -0.3;
             double alpha = (m > 0.0) ? 1.0 : 1.0 / (1.0 - m);
+            */
 
             for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
-                double val = lambda_ia_[i]->get(a_ii, 0) - alpha * L_ia[i]->get(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
+                double val = lambda_ia_[i]->get(a_ii, 0) - (1.0 - damping) * L_ia[i]->get(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
                 lambda_ia_[i]->set(a_ii, 0, val);
             }
             L_ia_prev[i] = L_ia[i]->clone();
@@ -1794,7 +1799,7 @@ void DLPNOCCSD_Lambda::compute_opdm() {
 
             // (e_{ii}, 1), (e_{ii}, e_{mn}), (e_{mn}, a_{mn})
             auto bean = linalg::triplet(T_ia_[i], S_PNO(ii, mn), rho_vv_[mn], true, false, false); 
-            D_ov_buffer[thread][i]->subtract(linalg::doublet(bean, S_PNO(mn, ii)));
+            D_ov_buffer[thread][i]->subtract(linalg::doublet(S_PNO(ii, mn), bean, false, true));
         } // end i_mn
     } // end mn
 
@@ -1869,17 +1874,17 @@ Vector3 DLPNOCCSD_Lambda::compute_dipole_moment() {
             dipole_cont += Doo_->get(i, j) * mu_oo->get(i, j);
 
             // Dvv (doubles) contributions (Toth Eq. 64c)
-            auto mu_vv_ij = linalg::triplet(X_pno_[ij], mu_vv, X_pno_[ij], true, false, false);
+            auto mu_vv_ij = submatrix_rows_and_cols(*mu_vv, lmopair_to_paos_[ij], lmopair_to_paos_[ij]);
+            mu_vv_ij = linalg::triplet(X_pno_[ij], mu_vv_ij, X_pno_[ij], true, false, false);
             dipole_cont += Dvv_pair_[ij]->vector_dot(mu_vv_ij);
         }
-
         
 #pragma omp parallel for schedule(dynamic, 1) reduction(+ : dipole_cont)
         for (int i = 0; i < naocc; ++i) {
             int ii = i_j_to_ij_[i][i];
 
             // Dov contributions (Toth Eq. 64b)
-            auto mu_ov_slice = submatrix_rows(*mu_ov, std::vector<int>(1, i));
+            auto mu_ov_slice = submatrix_rows_and_cols(*mu_ov, std::vector<int>(1, i), lmopair_to_paos_[ii]);
             auto mu_ov_ii = linalg::doublet(mu_ov_slice, X_pno_[ii], false, false); // <i|x|a_{ii}>
             auto Dov_total = Dov_[i]->clone(); // D_{i}^{a_{ii}}
             Dov_total->add(lambda_ia_[i]);
@@ -1887,7 +1892,8 @@ Vector3 DLPNOCCSD_Lambda::compute_dipole_moment() {
             dipole_cont += Dov_total->vector_dot(mu_ov_ii->transpose());
 
             // Dvv (singles) contributions (Toth Eq. 64d)
-            auto mu_vv_ii = linalg::triplet(X_pno_[ii], mu_vv, X_pno_[ii], true, false, false);
+            auto mu_vv_ii = submatrix_rows_and_cols(*mu_vv, lmopair_to_paos_[ii], lmopair_to_paos_[ii]);
+            mu_vv_ii = linalg::triplet(X_pno_[ii], mu_vv_ii, X_pno_[ii], true, false, false);
             dipole_cont += Dvv_singles_[i]->vector_dot(mu_vv_ii);
         }
 
