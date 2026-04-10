@@ -61,6 +61,21 @@ jobs:
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
+      clang_latest:
+        CXX_COMPILER: 'clang++-15'
+        PYTHON_VER: '3.14'
+        C_COMPILER: 'clang-15'
+        F_COMPILER: 'gfortran'
+        BUILD_TYPE: 'release'
+        APT_INSTALL: 'gfortran clang-15 clang++-15'
+        # needed by gauxc 'libomp-15-dev' leads to needing `export KMP_DUPLICATE_LIB_OK=TRUE`
+        vmImage: 'ubuntu-22.04'
+        PYTEST_MARKER_EXPR: 'cli and not (smoke or quick or medlong or long)'
+        PYTEST_NAME_EXPR: 'not nonsense1'
+        ENABLE_EINSUMS: "OFF"
+        ENABLE_GAUXC: "OFF"
+        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so'
+
       clang_py314:
         CXX_COMPILER: 'clang++-17'
         PYTHON_VER: '3.14'
