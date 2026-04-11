@@ -62,8 +62,8 @@ jobs:
         vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: 'quick'
         PYTEST_NAME_EXPR: 'not nonsense1'
-        ENABLE_EINSUMS: "OFF"
-        ENABLE_GAUXC: "OFF"
+        ENABLE_EINSUMS: "ON"
+        ENABLE_GAUXC: "ON"
         CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so'
 
   pool:
