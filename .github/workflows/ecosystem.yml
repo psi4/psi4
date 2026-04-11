@@ -57,7 +57,7 @@ jobs:
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
+              -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.14/site-packages/numpy/_core/include"
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
             #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
@@ -391,6 +391,7 @@ jobs:
         git diff --color-words
 
     - name: Analyze Conda dependencies
+      if: runner.os != 'Windows'
       run: |
         conda install conda-tree -c conda-forge
         conda-tree deptree
