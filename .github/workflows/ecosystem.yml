@@ -236,7 +236,6 @@ jobs:
           :
         fi
         echo "  - pygments" >> env_p4build.yaml
-        echo "  - conda-tree" >> env_p4build.yaml
         echo "::group::View Env Spec File for Conda (Edited)"
         printf "\n<<<  env_p4build.yaml  >>>\n"
         cat env_p4build.yaml
@@ -351,7 +350,6 @@ jobs:
       run: |
         conda info
         conda list
-        conda-tree deptree
         if [[ "${{ runner.os }}" != "Windows" ]]; then
           # on Windows, cmd varies: `qcengine.exe`
           PATH=$PATH:stage/bin PYTHONPATH=stage/lib qcengine info
@@ -444,6 +442,11 @@ jobs:
         conda/psi4-path-advisor.py -vv
         cp env_p4build.yaml "devtools/conda-envs/${{ matrix.cfg.platform }}-buildrun.yaml"
         git diff --color-words
+
+    - name: Analyze Conda dependencies
+      run: |
+        conda install conda-tree -c conda-forge
+        conda-tree deptree
 
 # Notes
 # -----
