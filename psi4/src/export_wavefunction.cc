@@ -73,6 +73,9 @@
 #ifdef USING_PCMSolver
 #include "psi4/libpsipcm/psipcm.h"
 #endif
+#ifdef USING_cuEST
+#include "psi4/libpsipcm/cuestpcm.h"
+#endif
 
 using namespace psi;
 namespace py = pybind11;
@@ -315,6 +318,10 @@ void export_wavefunction(py::module& m) {
 #ifdef USING_PCMSolver
         .def("set_PCM", &Wavefunction::set_PCM, "Set the PCM object")
         .def("get_PCM", &Wavefunction::get_PCM, "Get the PCM object")
+#endif
+#ifdef USING_cuEST
+        .def("set_cuestPCM", &Wavefunction::set_cuestPCM, "Set the cuEST PCM object")
+        .def("get_cuestPCM", &Wavefunction::get_cuestPCM, "Get the cuEST PCM object")
 #endif
         .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation")
         .def("get_density", [](Wavefunction& wfn, std::string name) {return wfn.density_map_[name] ;}, "Experimental!");

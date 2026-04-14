@@ -554,10 +554,8 @@ void HF::print_header() {
 }
 
 void HF::form_H() {
-    printf("HF::form_H start\n");
     T_ = mintshelper()->so_kinetic()->clone();
     V_ = mintshelper()->so_potential()->clone();
-    printf("HF::form_H end\n");
 
     if (debug_ > 2) T_->print("outfile");
     if (debug_ > 2) V_->print("outfile");

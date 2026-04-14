@@ -75,6 +75,7 @@ class MatrixFactory;
 class Options;
 class SOBasisSet;
 class PCM;
+class cuestPCM;
 class PSIO;
 class OrbitalSpace;
 class ExternalPotential;
@@ -263,6 +264,8 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     // Polarizable continuum model
     bool PCM_enabled_;
     std::shared_ptr<PCM> PCM_;
+    std::shared_ptr<cuestPCM> cuestPCM_;
+
 
    private:
     // Wavefunction() {}
@@ -681,6 +684,10 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Get PCM object
     std::shared_ptr<PCM> get_PCM() const;
     bool PCM_enabled() const { return PCM_enabled_; }
+    /// Set cuestPCM object
+    void set_cuestPCM(const std::shared_ptr<cuestPCM>& cuestPCM);
+    /// Get cuestPCM object
+    std::shared_ptr<cuestPCM> get_cuestPCM() const; 
 
     /// The below members are experimental and are designed to hold densities when the
     /// "current density" is ambiguous, e.g., non-orbital optimized methods and multi-
