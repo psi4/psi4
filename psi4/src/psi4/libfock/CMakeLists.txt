@@ -45,27 +45,5 @@ target_link_libraries(fock
     Libint2::cxx  # for <libint2/config.h>
   )
 
-if(TARGET gauxc::gauxc)
-  target_link_libraries(fock
-    PUBLIC 
-      gauxc::gauxc 
-    )
-endif()
-
-if(TARGET IntegratorXX::IntegratorXX)
-  target_link_libraries(fock
-    PRIVATE
-      IntegratorXX::IntegratorXX
-    )
-endif()
-
-if(TARGET BrianQC::static_wrapper)
-  target_compile_definitions(fock
-    PUBLIC
-      USING_BrianQC
-    )
-  target_include_directories(fock
-    PUBLIC
-      $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-endif()
+# Link to common optional dependencies interface library
+target_link_libraries(fock PUBLIC psi4_optional_deps)

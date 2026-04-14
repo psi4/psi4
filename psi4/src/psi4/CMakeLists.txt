@@ -1,3 +1,44 @@
+# Create interface library for common optional dependencies to avoid repeating if(TARGET...) blocks
+add_library(psi4_optional_deps INTERFACE)
+
+if(TARGET gauxc::gauxc)
+  target_link_libraries(psi4_optional_deps INTERFACE gauxc::gauxc)
+endif()
+
+if(TARGET ECPINT::ecpint)
+  target_link_libraries(psi4_optional_deps INTERFACE ECPINT::ecpint)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_ecpint)
+endif()
+
+if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
+  target_link_libraries(psi4_optional_deps INTERFACE OpenOrbitalOptimizer::OpenOrbitalOptimizer)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_OpenOrbitalOptimizer)
+endif()
+
+if(TARGET BrianQC::static_wrapper)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_BrianQC)
+  target_include_directories(psi4_optional_deps INTERFACE
+    $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
+  )
+endif()
+
+if(TARGET IntegratorXX::IntegratorXX)
+  target_link_libraries(psi4_optional_deps INTERFACE IntegratorXX::IntegratorXX)
+endif()
+
+if(TARGET simint::simint)
+  target_link_libraries(psi4_optional_deps INTERFACE simint::simint)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_simint)
+endif()
+
+if(TARGET dkh::dkh)
+  target_link_libraries(psi4_optional_deps INTERFACE dkh::dkh)
+endif()
+
+if(TARGET PCMSolver::pcm)
+  target_link_libraries(psi4_optional_deps INTERFACE PCMSolver::pcm)
+endif()
+
 foreach(dir_name
   lib3index
   libciomr

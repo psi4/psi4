@@ -165,12 +165,10 @@ if(${ENABLE_gauxc})
     get_property(BLAS_LIBRARIES TARGET tgt::lapk PROPERTY INTERFACE_LINK_LIBRARIES)
 
     find_package(gauxc CONFIG REQUIRED COMPONENTS IntegratorXX ExchCXX)  # edit in codedeps
+    target_compile_definitions(gauxc::gauxc INTERFACE USING_gauxc=1)
     get_property(_loc TARGET gauxc::gauxc PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using gauxc${ColourReset}: ${_loc} (version ${gauxc_VERSION})")
-
-    add_compile_definitions(USING_gauxc)
-    include_directories($<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>)
 else()
     message(STATUS "Disabled GauXC ${gauxc_DIR}")
 endif()

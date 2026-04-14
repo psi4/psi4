@@ -6,22 +6,7 @@ list(APPEND sources
   )
 psi4_add_module(bin scfgrad sources)
 
-if(TARGET BrianQC::static_wrapper)
-  target_compile_definitions(scfgrad
-    PUBLIC
-      USING_BrianQC
-    )
-  target_include_directories(scfgrad
-    PUBLIC
-      $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-endif()
-
 target_link_libraries(scfgrad PUBLIC scf_solver)
 
-if(TARGET ECPINT::ecpint)
-  target_link_libraries(scfgrad
-    PUBLIC
-      ECPINT::ecpint
-    )
-endif()
+# Link to common optional dependencies interface library
+target_link_libraries(scfgrad PUBLIC psi4_optional_deps)

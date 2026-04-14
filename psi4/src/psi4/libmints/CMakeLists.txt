@@ -109,27 +109,16 @@ target_link_libraries(mints
   PUBLIC
     Libint2::cxx
   )
-# Conditionally linked-to external projects
+
+# Link to common optional dependencies interface library
+target_link_libraries(mints PUBLIC psi4_optional_deps)
+target_link_libraries(l2intf PUBLIC psi4_optional_deps)
+
+# Conditionally add sources that depend on optional dependencies
 if(TARGET ECPINT::ecpint)
   target_sources(mints
     PRIVATE
       ecpint.cc
-    )
-  target_compile_definitions(mints
-    PUBLIC
-      USING_ecpint
-    )
-  target_compile_definitions(l2intf
-    PUBLIC
-      USING_ecpint
-    )
-  target_link_libraries(mints
-    PUBLIC
-      ECPINT::ecpint
-    )
-  target_link_libraries(l2intf
-    PUBLIC
-      ECPINT::ecpint
     )
 endif()
 
@@ -137,53 +126,5 @@ if(TARGET simint::simint)
   target_sources(l2intf
     PRIVATE
       siminteri.cc
-    )
-  # Add USING_simint definition, which is not in simint::simint
-  target_compile_definitions(l2intf
-    PUBLIC
-      USING_simint
-    )
-  target_link_libraries(l2intf
-    PUBLIC
-      simint::simint
-    )
-endif()
-
-if(TARGET dkh::dkh)
-  target_link_libraries(mints
-    PUBLIC
-      dkh::dkh
-    )
-endif()
-
-if(TARGET PCMSolver::pcm)
-  target_link_libraries(mints
-    PUBLIC
-      PCMSolver::pcm
-    )
-endif()
-
-if(TARGET gauxc::gauxc)
-  target_link_libraries(mints
-    PUBLIC
-      gauxc::gauxc
-    )
-endif()
-
-if(TARGET BrianQC::static_wrapper)
-  target_compile_definitions(mints
-    PUBLIC
-      USING_BrianQC
-    )
-  target_include_directories(mints
-    PUBLIC
-      $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-endif()
-
-if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
-  target_compile_definitions(mints
-    PUBLIC
-      USING_OpenOrbitalOptimizer
     )
 endif()
