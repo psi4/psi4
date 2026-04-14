@@ -1306,8 +1306,6 @@ void BasisSet::negative_gaussian_normalization_to_coefficients() {
 #ifdef USING_cuEST
 void BasisSet::cuest_initialize()
 {
-    printf("BasisSet::cuest_initialize start\n");
-
     int natom = molecule_->natom();
 
     cuestAOShellParameters_t shell_params;
@@ -1354,8 +1352,6 @@ void BasisSet::cuest_initialize()
     free(temporaryWorkspaceDescriptor);
 
     for (auto& s : shells_out) cuestAOShellDestroy(s);
-
-    printf("BasisSet::cuest_initialize end\n");
 }
 
 void BasisSet::cuest_finalize()

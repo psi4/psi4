@@ -59,6 +59,10 @@
 
 #include "jk_grad.h"
 
+#ifdef USING_cuEST
+#include "psi4/libpsipcm/cuestpcm.h"
+#endif
+
 #ifdef USING_BrianQC
 
 #include <brian_types.h>
@@ -195,6 +199,16 @@ SharedMatrix SCFDeriv::compute_gradient()
         gradients_["External Potential"] = external_pot_->computePotentialGradients(basisset_, Dt);
         timer_off("Grad: External");
     }  // end external
+
+    // => PCM Gradient <= //
+    timer_on("Grad: PCM");
+#ifdef USING_cuEST
+    if (options_.get_bool("CUEST_PCM")) {
+        gradient_terms.push_back("PCM");
+        gradients_["PCM"] = this->get_cuestPCM()->compute_PCM_gradient(Dt);
+    }
+#endif
+    timer_off("Grad: PCM");
 
     // => Overlap Gradient <= //
     timer_on("Grad: S");

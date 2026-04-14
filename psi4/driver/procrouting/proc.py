@@ -2018,6 +2018,10 @@ def scf_helper(name, post_scf=True, **kwargs):
         pcm_print_level = core.get_option('SCF', "PRINT")
         scf_wfn.set_PCM(core.PCM(pcmsolver_parsed_fname, pcm_print_level, scf_wfn.basisset()))
 
+    # cuEST PCM preparation
+    if core.get_option('SCF', 'CUEST_PCM'):
+        scf_wfn.set_cuestPCM(core.cuestPCM(core.get_options(), scf_wfn.mintshelper()))
+
     # DDPCM preparation
     if core.get_option('SCF', 'DDX'):
         if not solvent._have_ddx:

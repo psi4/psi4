@@ -377,4 +377,4 @@ SharedMatrix PCM::compute_Vpcm(const SharedVector &ASC) const {
 }
 }  // namespace psi
 
-#endif
+#endif // USING_PCMSolver
