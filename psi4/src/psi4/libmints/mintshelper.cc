@@ -4429,8 +4429,6 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv2(int atom1, int atom2, Share
 #ifdef USING_cuEST
 void MintsHelper::cuest_initialize()
 {
-    printf("MintsHelper::cuest_initialize start\n");
-
     auto mol = basisset_->molecule();
     size_t natom = mol->natom();
 
@@ -4472,8 +4470,6 @@ void MintsHelper::cuest_initialize()
 
     free(persistentWorkspaceDescriptor);
     free(temporaryWorkspaceDescriptor);
-
-    printf("MintsHelper::cuest_initialize end\n");
 }
 
 void MintsHelper::cuest_finalize()
@@ -4497,8 +4493,6 @@ void MintsHelper::cuest_finalize()
 }
 
 void MintsHelper::form_S_cuest(SharedMatrix hostS) {
-    printf("  ==> Building overlap integrals with cuEST <==\n");
-
     double* d_overlap_matrix = NULL;
     cudaMalloc((void**) &d_overlap_matrix, basisset_->nbf() * basisset_->nbf() * sizeof(double));
 
@@ -4535,8 +4529,6 @@ void MintsHelper::form_S_cuest(SharedMatrix hostS) {
 }
 
 void MintsHelper::form_T_cuest(SharedMatrix hostT) {
-    printf("  ==> Building kinetic integrals with cuEST <==\n");
-
     double* d_kinetic_matrix = NULL;
     cudaMalloc((void**) &d_kinetic_matrix, basisset_->nbf() * basisset_->nbf() * sizeof(double));
 
@@ -4573,7 +4565,6 @@ void MintsHelper::form_T_cuest(SharedMatrix hostT) {
 }
 
 void MintsHelper::form_V_cuest(SharedMatrix hostV) {
-    printf("  ==> Building potential integrals with cuEST <==\n");
 
     auto mol = basisset_->molecule();
     size_t natom = mol->natom();

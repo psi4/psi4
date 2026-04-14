@@ -422,6 +422,15 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.set_variable("PCM POLARIZATION ENERGY", upcm)  # P::e PCM
         self.set_energies("PCM Polarization", upcm)
 
+        if core.get_option('SCF', 'CUEST_PCM'):
+            Dt = self.Da().clone()
+            Dt.add(self.Db())
+            upcm, Vpcm = self.get_cuestPCM().compute_PCM_terms(Dt)
+            SCFE += upcm
+            self.push_back_external_potential(Vpcm)
+        self.set_variable("PCM POLARIZATION ENERGY", upcm)  # P::e CUEST PCM
+        self.set_energies("PCM Polarization", upcm)
+
         uddx = 0.0
         if core.get_option('SCF', 'DDX'):
             Dt = self.Da().clone()
@@ -878,7 +887,7 @@ def scf_print_energies(self):
         core.print_out("    DFT Exchange-Correlation Energy = {:24.16f}\n".format(exc))
         core.print_out("    Empirical Dispersion Energy =     {:24.16f}\n".format(ed))
         core.print_out("    VV10 Nonlocal Energy =            {:24.16f}\n".format(evv10))
-    if core.get_option('SCF', 'PCM'):
+    if core.get_option('SCF', 'PCM') or core.get_option('SCF', 'CUEST_PCM'):
         core.print_out("    PCM Polarization Energy =         {:24.16f}\n".format(epcm))
     if core.get_option('SCF', 'DDX'):
         core.print_out("    DD Solvation Energy =            {:24.16f}\n".format(edd))
