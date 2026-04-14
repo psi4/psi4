@@ -3186,8 +3186,6 @@ void cuESTJKGrad::compute_gradient() {
 
     cudaMemcpy(gradients_["Coulomb"]->get_pointer(), d_grad, sizeof(double) * natom * 3, cudaMemcpyDeviceToHost);
 
-    gradients_["Coulomb"]->print();
-
     CHECK_CUEST(cuestParametersDestroy(
         CUEST_DFSYMMETRICDERIVATIVECOMPUTE_PARAMETERS,
         df_grad_compute_parameters));
