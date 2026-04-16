@@ -105,14 +105,23 @@ target_link_libraries(core
     tgt::lapack # OpenMP flags to core.cc
   )
 
-if(TARGET ECPINT::ecpint)
+if(ENABLE_ecpint_RUNTIME)
   target_compile_definitions(core
     PUBLIC
-      USING_ecpint
+      USING_ecpint_RUNTIME
     )
   target_compile_definitions(l2export
     PUBLIC
-      USING_ecpint
+      USING_ecpint_RUNTIME
+    )
+elseif(TARGET ECPINT::ecpint)
+  target_compile_definitions(core
+    PUBLIC
+      USING_ecpint_STATIC
+    )
+  target_compile_definitions(l2export
+    PUBLIC
+      USING_ecpint_STATIC
     )
 endif()
 

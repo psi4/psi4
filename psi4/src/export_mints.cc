@@ -76,6 +76,10 @@
 #include "psi4/libpsi4util/libpsi4util.h"
 #include <string>
 
+#ifdef USING_ecpint_RUNTIME
+#include "psi4/libmints/ecpint_loader.h"
+#endif
+
 using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -1748,6 +1752,12 @@ void export_mints(py::module& m) {
             .def("get_x3", &LS_THC_Computer::get_x3, "Returns x3 factor from LS-THC factorization")
             .def("get_x4", &LS_THC_Computer::get_x4, "Returns x4 factor from LS-THC factorization")
             .def("get_Z", &LS_THC_Computer::get_Z, "Returns Z factor from LS-THC factorization");
+
+#ifdef USING_ecpint_RUNTIME
+    m.def("ecpint_runtime_available", &ecpint_runtime::is_available, "Check if libecpint is available at runtime");
+    m.def("ecpint_runtime_path", &ecpint_runtime::get_library_path, "Get path to loaded libecpint library (empty if not loaded)");
+    m.def("ecpint_runtime_unload", &ecpint_runtime::unload, "Unload libecpint library (called at shutdown)");
+#endif
 
     m.def("libint2_supports", [](const std::string& comp) { return libint2::supports(comp); },
        "Whether the linked Libint2 supports a particular ordering or integral type/derivative/AM. Use maximally uniform AM for latter.");

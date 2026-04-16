@@ -19,7 +19,11 @@ endif()
 
 target_link_libraries(scfgrad PUBLIC scf_solver)
 
-if(TARGET ECPINT::ecpint)
+if(ENABLE_ecpint_RUNTIME)
+  # Runtime mode - no linking to ECPINT::ecpint
+  # Definitions already come from scf_solver
+elseif(TARGET ECPINT::ecpint)
+  # Static mode - link to ECPINT::ecpint
   target_link_libraries(scfgrad
     PUBLIC
       ECPINT::ecpint
