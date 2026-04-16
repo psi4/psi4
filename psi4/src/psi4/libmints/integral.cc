@@ -126,7 +126,7 @@ std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_ecp(int deriv) {
 std::unique_ptr<OneBodySOInt> IntegralFactory::so_ecp(int deriv) {
 #ifdef USING_ecpint
     std::shared_ptr<OneBodyAOInt> ao_int(ao_ecp(deriv));
-    return  std::make_unique<ECPSOInt>(ao_int, this);
+    return std::make_unique<ECPSOInt>(ao_int, this);
 #else
     throw PSIEXCEPTION("ECP shells requested but libecpint addon not enabled. Re-compile with `-D ENABLE_ecpint=ON`.");
 #endif

@@ -1,4 +1,5 @@
 import os
+import glob
 import pytest
 
 
@@ -38,8 +39,6 @@ def set_up():
 
 
 def tear_down():
-    import os
-    import glob
     import psi4
 
     psi4.core.close_outfile()

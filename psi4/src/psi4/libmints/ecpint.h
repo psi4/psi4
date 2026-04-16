@@ -49,7 +49,12 @@
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/sointegral_onebody.h"
 
-#include "libecpint/ecpint.hpp"
+#if defined(USING_ecpint_STATIC)
+    #include "libecpint/ecpint.hpp"
+#elif defined(USING_ecpint_RUNTIME)
+    #include "libecpint/ecpint.hpp"  // Available at build-time
+    #include "ecpint_loader.h"       // Runtime loading
+#endif
 
 namespace psi {
 
