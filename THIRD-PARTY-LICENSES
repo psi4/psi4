@@ -435,3 +435,18 @@ FAILURE OF THE LIBRARY TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
 SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
 DAMAGES.
 
+
+<< 6 >> psi4/src/psi4/libfock/cuESTJK.h
+        psi4/src/psi4/libfock/cuESTJK.cc
+        psi4/src/psi4/libfock/cuESTCommon.h
+        psi4/src/psi4/libpsipcm/cuestpcm.h
+        psi4/src/psi4/libpsipcm/cuestpcm.cc
+
+Interface to the cuEST library
+Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+GNU Lesser General Public License version 3.
+
+See the COPYING.LESSER file for license text.  Additional source files beyond
+those listed above have contributions implementing the cuEST interface and are
+marked with SPDX identifiers.
