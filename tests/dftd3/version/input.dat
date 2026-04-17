@@ -185,10 +185,39 @@ for dlvl in ['d3zero', 'd3bj', 'd3mzero', 'd3mbj']:
     compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
     E = qmBcp.run_sdftd3(fctl, dlvl, dertype=der)
     compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
-for dlvl in ['d3zeroatm']:
-    E = qeeee.run_sdftd3(fctl, dlvl, dertype=der)
-    compare_values(refs[dlvl[:-3]]['d'] + refs['3b']['d'], E, 7, 'dimer ' + dlvl)  #TEST
 
+# s-dftd3 v1.3.0 switches 3-body to False. QCEngine v0.50.0rc4 compensates. Some logic keeps the test working in the gap.
+from dftd3 import __version__ as d3ver
+from qcengine import __version__ as qcngver
+nu_qcng = qcel.util.parse_version(qcngver) >= qcel.util.parse_version("0.50.0rc4")
+atm_false = qcel.util.parse_version(d3ver) >= qcel.util.parse_version("1.3.0")
+badatm = atm_false and not nu_qcng
+
+for dlvl in ['d3zeroatm']:
+    s9 = 1.0
+    E, atres = qeeee.run_sdftd3(fctl, dlvl, dertype=der, return_dict=True)
+    if badatm:
+        compare_values(refs[dlvl[:-3]]['d'], E, 7, 'EXPECTED FAIL dimer ' + dlvl)  #TEST
+    else:
+        compare_values(refs[dlvl[:-3]]['d'] + refs['3b']['d'], E, 7, 'dimer ' + dlvl)  #TEST
+    compare_values(s9, atres["extras"]["info"]["dashparams"]["s9"], 9, f"atm s9={s9}")
+    if nu_qcng:
+        compare_values(s9, atres["keywords"]["params_tweaks"]["s9"], 9, f"atm s9={s9}")
+for dlvl in ['d3zeroatm']:
+    # note empty first param
+    s9 = 0.5
+    E, atres = qeeee.run_sdftd3("", dlvl, dertype=der, dashparam={'alpha6': 14.0, 's6': 1.0, 's8': 1.703, 's9': s9, 'sr6': 1.261, 'sr8': 1.0}, return_dict=True)
+    compare_values(refs[dlvl[:-3]]['d'] + s9 * refs['3b']['d'], E, 7, 'dimer ' + dlvl + f'-mod {s9}')  #TEST
+    compare_values(s9, atres["extras"]["info"]["dashparams"]["s9"], 9, f"atm-mod s9={s9}")
+    if nu_qcng:
+        compare_values(s9, atres["keywords"]["params_tweaks"]["s9"], 9, f"atm-mod s9={s9}")
+for dlvl in ['d3zero2b']:
+    s9 = 0.0
+    E, atres = qeeee.run_sdftd3(fctl, dlvl, dertype=der, return_dict=True)
+    compare_values(refs[dlvl[:-2]]['d'], E, 7, 'dimer ' + dlvl)  #TEST
+    if nu_qcng:
+        compare_values(s9, atres["extras"]["info"]["dashparams"]["s9"], 9, f"2b s9={s9}")
+        compare_values(s9, atres["keywords"]["params_tweaks"]["s9"], 9, f"2b s9={s9}")
 
 # <<<  Part 4  >>>
 
