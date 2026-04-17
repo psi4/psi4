@@ -121,3 +121,5 @@ list(APPEND sources
 psi4_add_module(bin dfocc sources)
 
 target_link_libraries(dfocc PUBLIC diis)
+
+set_target_properties(dfocc PROPERTIES UNITY_BUILD ON UNITY_BUILD_BATCH_SIZE 8)
