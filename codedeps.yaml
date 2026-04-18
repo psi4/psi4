@@ -1351,10 +1351,10 @@ data:
       # account: psi-rking
       account: loriab
       name: optking
-      commit: 0.4.5
+      commit: 0.5.0
     cmake:
       name: optking
-      constraint: ATLEAST 0.4.5
+      constraint: ATLEAST 0.5.0
     conda:
       channel: conda-forge
       name: optking
