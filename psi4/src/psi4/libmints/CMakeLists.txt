@@ -76,7 +76,6 @@ tracelessquadrupole.cc
   )
 set_property(TARGET l2intf PROPERTY CXX_STANDARD "${psi4_CXX_STANDARD_Libint2}")
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
-set_property(TARGET l2intf PROPERTY UNITY_BUILD OFF)
 
 # below are what l2intf files would ordinarily have gotten from psi4_add_module.
 # * first brings OpenMP headers
@@ -101,7 +100,6 @@ cmake_host_system_information(RESULT _numcore QUERY NUMBER_OF_PHYSICAL_CORES)
 math(EXPR _memrat "${_memfree} / ${_numcore}")
 message("AVAILABLE_PHYSICAL_MEMORY ${_memfree} / NUMBER_OF_PHYSICAL_CORES ${_numcore} = ${_memrat}")
 if(_numcore LESS 5)
-    #set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE two_jobs)
     set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE one_job)
 else()
     set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE four_jobs)
