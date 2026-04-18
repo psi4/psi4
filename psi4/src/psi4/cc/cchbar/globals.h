@@ -42,15 +42,8 @@ namespace psi {
 namespace cchbar {
 
 /* Global variables */
-#ifdef EXTERN
-#undef EXTERN
-#define EXTERN extern
-#else
-#define EXTERN
-#endif
-
-EXTERN struct MOInfo moinfo;
-EXTERN struct Params params;
+extern struct MOInfo moinfo;
+extern struct Params params;
 }
 }  // namespace psi
 
