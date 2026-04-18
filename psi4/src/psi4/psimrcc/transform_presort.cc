@@ -42,6 +42,10 @@
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/psifiles.h"
 
+#undef MAX
+#undef MIN
+#undef INDEX
+#undef four
 #define MAX(i, j) ((i > j) ? i : j)
 #define MIN(i, j) ((i > j) ? j : i)
 #define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
@@ -170,3 +174,8 @@ void CCTransform::presort_blocks(int first_irrep, int last_irrep) {
 
 }  // namespace psimrcc
 }  // namespace psi
+
+#undef MAX
+#undef MIN
+#undef INDEX
+#undef four
