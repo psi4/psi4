@@ -48,6 +48,7 @@ target_compile_definitions(qt
     $<$<BOOL:${_has_dggsvp3}>:BLAS_HAS_DGGSVP3>
     FC_SYMBOL=${FC_SYMBOL}
   )
+set_property(TARGET qt PROPERTY UNITY_BUILD OFF)
 
 unset(_has_daxpby)
 unset(_has_dggsvd3)
