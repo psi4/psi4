@@ -76,6 +76,8 @@ tracelessquadrupole.cc
   )
 set_property(TARGET l2intf PROPERTY CXX_STANDARD "${psi4_CXX_STANDARD_Libint2}")
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_property(TARGET l2intf PROPERTY UNITY_BUILD OFF)
+
 # below are what l2intf files would ordinarily have gotten from psi4_add_module.
 # * first brings OpenMP headers
 # * second brings l2. Linux needs only headers, but Windows needs headers and linking, so slight overkill here
