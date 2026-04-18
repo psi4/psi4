@@ -34,7 +34,6 @@
 #include "Params.h"
 #include "Frozen.h"
 #include "psi4/libmints/wavefunction.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
