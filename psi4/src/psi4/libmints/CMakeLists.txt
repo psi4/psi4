@@ -93,7 +93,6 @@ target_compile_definitions(mints
   PRIVATE
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
-set_property(TARGET mints PROPERTY UNITY_BUILD OFF)
 
 # limit to avoid OOM errors with Ninja parallelism
 # * finer control than `CMAKE_BUILD_PARALLEL_LEVEL=1 cmake --build`
