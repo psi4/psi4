@@ -41,18 +41,12 @@ namespace psi {
 namespace ccresponse {
 
 /* Global variables */
-#ifdef EXTERN
-#undef EXTERN
-#define EXTERN extern
-#else
-#define EXTERN
-#endif
+extern struct MOInfo moinfo;
+extern struct Params params;
+extern struct Local local;
 
-EXTERN struct MOInfo moinfo;
-EXTERN struct Params params;
-EXTERN struct Local local;
-
-#define MIN0(a, b) (((a) < (b)) ? (a) : (b))
+// Use inline function instead of unsafe macro
+inline constexpr int MIN0(int a, int b) { return ((a) < (b)) ? (a) : (b); }
 }
 }  // namespace psi
 

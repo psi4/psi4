@@ -38,7 +38,6 @@
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
 #include "globals.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {

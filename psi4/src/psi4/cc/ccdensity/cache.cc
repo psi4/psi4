@@ -37,7 +37,6 @@
 #include "psi4/psifiles.h"
 
 namespace psi {
-extern FILE *outfile;
 namespace ccdensity {
 
 void cache_abcd_rhf(int **cachelist);
