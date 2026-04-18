@@ -32,8 +32,12 @@
 #include "psi4/libmints/wavefunction.h"
 
 #include "psi4/libqt/qt.h"
+#ifndef START_TIMER
 #define START_TIMER(a) timer_on((a));
+#endif
+#ifndef END_TIMER
 #define END_TIMER(a) timer_off((a));
+#endif
 
 namespace psi {
 
