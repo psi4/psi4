@@ -1,7 +1,6 @@
 # Create interface library for common optional dependencies to avoid repeating if(TARGET...) blocks
 add_library(psi4_optional_deps INTERFACE)
 set(CMAKE_UNITY_BUILD ON)
-set(CMAKE_UNITY_BUILD_BATCH_SIZE 12)
 
 if(TARGET gauxc::gauxc)
   target_link_libraries(psi4_optional_deps INTERFACE gauxc::gauxc)
