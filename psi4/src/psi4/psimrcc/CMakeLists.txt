@@ -80,3 +80,4 @@ list(APPEND sources
   updater_mk.cc
   )
 psi4_add_module(bin psimrcc sources)
+set_property(TARGET psimrcc PROPERTY UNITY_BUILD OFF)
