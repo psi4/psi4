@@ -1036,6 +1036,12 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
         parallel_timer_on("V_xc gradient", rank);
 
         // => LSDA and GGA gradient contributions <= //
+        // VV10 only contributes to V_RHO_A and V_GAMMA_AA (GGA-level).
+        // Zero V_TAU_A to prevent stale values from the main gradient loop
+        // from contaminating the meta-GGA contribution in rks_gradient_integrator.
+        if (fworker->is_meta()) {
+            fworker->value("V_TAU_A")->zero();
+        }
         dft_integrators::rks_gradient_integrator(primary_, block, fworker, pworker, G_local[rank], U_local[rank]);
 
         // Grid-motion terms (point positions, partition weights, and the
