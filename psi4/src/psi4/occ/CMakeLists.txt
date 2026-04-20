@@ -55,5 +55,6 @@ list(APPEND sources
   z_vector.cc
   )
 psi4_add_module(bin occ sources)
+target_precompile_headers(occ REUSE_FROM mints)
 
 target_link_libraries(occ PUBLIC diis)

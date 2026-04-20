@@ -7,7 +7,6 @@ if(TARGET PCMSolver::pcm)
     PUBLIC
       PCMSolver::pcm
       mints
-      Libint2::cxx
     )
     # Because psipcm.cc includes potentialint.h, which includes libint2's engine.h
     # we have to make sure we reduce the optimization level to match libmints

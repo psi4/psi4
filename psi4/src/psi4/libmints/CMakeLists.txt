@@ -83,7 +83,6 @@ set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(l2intf
   PRIVATE
     tgt::lapack
-    Libint2::cxx
   )
 
 psi4_add_module(lib mints sources)
@@ -91,6 +90,24 @@ target_link_libraries(mints PRIVATE l2intf)
 target_compile_definitions(mints
   PRIVATE
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
+  )
+
+target_precompile_headers(mints PRIVATE
+  <vector>
+  <string>
+  "../libpsi4util/libpsi4util.h"
+  "../libciomr/libciomr.h"
+  "../libpsio/psio.hpp"
+  "../libiwl/iwl.hpp"
+  "../libqt/qt.h"
+  "matrix.h"
+  "vector.h"
+  "molecule.h"
+  "basisset.h"
+  "onebody.h"
+  "twobody.h"
+  "mintshelper.h"
+  "wavefunction.h"
   )
 
 # limit to avoid OOM errors with Ninja parallelism
@@ -108,10 +125,6 @@ else()
 endif()
 
 # Always linked-to external projects
-target_link_libraries(mints
-  PUBLIC
-    Libint2::cxx
-  )
 
 # Link to common optional dependencies interface library
 target_link_libraries(mints PUBLIC psi4_optional_deps)

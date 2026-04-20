@@ -7,6 +7,7 @@ list(APPEND sources
 
 if(TARGET Einsums::Einsums)
     psi4_add_module(bin f12 sources)
+    target_precompile_headers(f12 REUSE_FROM mints)
     target_link_libraries(
       f12
       PRIVATE

@@ -5,6 +5,7 @@ list(APPEND sources
   wrapper.cc
   )
 psi4_add_module(bin scfgrad sources)
+target_precompile_headers(scfgrad REUSE_FROM mints)
 
 target_link_libraries(scfgrad PUBLIC scf_solver)
 

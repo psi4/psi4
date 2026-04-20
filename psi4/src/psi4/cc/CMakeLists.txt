@@ -1,4 +1,5 @@
 psi4_add_module(bin cc "")
+target_precompile_headers(cc REUSE_FROM mints)
 
 # FIXME Remove once done
 list(APPEND _Clang_debug_flags

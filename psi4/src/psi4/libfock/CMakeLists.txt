@@ -30,19 +30,17 @@ list(APPEND sources
   )
 
 psi4_add_module(lib fock sources)
+target_precompile_headers(fock REUSE_FROM mints)
 
 target_compile_definitions(fock
   PRIVATE
-    "restrict=${RESTRICT_KEYWORD}"
     $<$<BOOL:${ENABLE_GTFOCK}>:ENABLE_GTFOCK>
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
 
 target_link_libraries(fock
   PRIVATE
     gau2grid::gg
     pybind11::headers
-    Libint2::cxx  # for <libint2/config.h>
   )
 
 # Link to common optional dependencies interface library

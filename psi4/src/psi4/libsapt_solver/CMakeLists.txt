@@ -31,3 +31,4 @@ list(APPEND sources
   utils.cc
   )
 psi4_add_module(lib sapt_solver sources)
+target_precompile_headers(sapt_solver REUSE_FROM mints)
