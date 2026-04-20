@@ -48,7 +48,3 @@ set_source_files_properties(
 psi4_add_module(bin detci sources)
 target_precompile_headers(detci REUSE_FROM mints)
 
-target_link_libraries(detci
-  PRIVATE
-    pybind11::module
-  )

@@ -32,16 +32,7 @@ list(APPEND sources
 psi4_add_module(lib fock sources)
 target_precompile_headers(fock REUSE_FROM mints)
 
-target_compile_definitions(fock
-  PRIVATE
-    $<$<BOOL:${ENABLE_GTFOCK}>:ENABLE_GTFOCK>
-  )
 
-target_link_libraries(fock
-  PRIVATE
-    gau2grid::gg
-    pybind11::headers
-  )
 
 # Link to common optional dependencies interface library
 target_link_libraries(fock PUBLIC psi4_optional_deps)

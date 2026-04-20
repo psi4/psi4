@@ -7,7 +7,21 @@ add_compile_definitions(
     restrict="${RESTRICT_KEYWORD}"
 )
 
-target_link_libraries(psi4_optional_deps INTERFACE Libint2::cxx)
+target_link_libraries(
+  psi4_optional_deps
+  INTERFACE
+    pybind11::headers  # ::module
+    tgt::lapack
+    gau2grid::gg
+    Libint2::cxx
+    Libxc::xc
+)
+
+# excluding from here tapering-support addons, namely ambit::ambit
+
+if(TARGET Einsums::Einsums)
+  target_link_libraries(psi4_optional_deps INTERFACE Einsums::Einsums)
+endif()
 
 if(TARGET gauxc::gauxc)
   target_link_libraries(psi4_optional_deps INTERFACE gauxc::gauxc)
@@ -45,6 +59,10 @@ endif()
 
 if(TARGET PCMSolver::pcm)
   target_link_libraries(psi4_optional_deps INTERFACE PCMSolver::pcm)
+endif()
+
+if(TARGET CheMPS2::chemps2)
+  target_link_libraries(psi4_optional_deps INTERFACE CheMPS2::chemps2)
 endif()
 
 link_libraries(psi4_optional_deps)

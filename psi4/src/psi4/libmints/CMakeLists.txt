@@ -80,10 +80,6 @@ set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
 # below are what l2intf files would ordinarily have gotten from psi4_add_module.
 # * first brings OpenMP headers
 # * second brings l2. Linux needs only headers, but Windows needs headers and linking, so slight overkill here
-target_link_libraries(l2intf
-  PRIVATE
-    tgt::lapack
-  )
 
 psi4_add_module(lib mints sources)
 target_link_libraries(mints PRIVATE l2intf)
@@ -127,8 +123,6 @@ endif()
 # Always linked-to external projects
 
 # Link to common optional dependencies interface library
-target_link_libraries(mints PUBLIC psi4_optional_deps)
-target_link_libraries(l2intf PUBLIC psi4_optional_deps)
 
 # Conditionally add sources that depend on optional dependencies
 if(TARGET ECPINT::ecpint)

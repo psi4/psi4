@@ -17,4 +17,3 @@ endif()
 target_link_libraries(scf_solver PUBLIC diis)
 
 # Link to common optional dependencies interface library
-target_link_libraries(scf_solver PUBLIC psi4_optional_deps)
