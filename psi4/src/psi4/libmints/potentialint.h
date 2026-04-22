@@ -94,7 +94,7 @@ class ContractOverDensityFunctor {
     void operator()(int bf1, int bf2, int center, double integral, int thread) { charges_[center] += pD_[bf1][bf2] * integral; }
 };
 
-class ContractOverChargesFunctor {
+class PSI_LOCAL ContractOverChargesFunctor {
     /**
      * A functor, to be used with PCMPotentialInt, that just contracts potential integrals over charges,
      * leaving a contribution to the Fock matrix

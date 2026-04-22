@@ -80,3 +80,7 @@ list(APPEND sources
   updater_mk.cc
   )
 psi4_add_module(bin psimrcc sources)
+
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+    target_precompile_headers(psimrcc REUSE_FROM psio)
+endif()

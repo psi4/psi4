@@ -43,7 +43,6 @@ if (${psi4_ENABLE_PRECOMPILE_HEADERS})
     #   "../libmints/integral.h" (92), "../libmints/wavefunction.h" (106), "../../../include/psi4/psifiles.h" (228),
     # Optimal pch Apr 2026: 173MB = libciomr, psio, qt, matrix, molecule, basisset
     target_precompile_headers(psio PRIVATE
-        "../../../include/psi4/psi4-dec.h"  # (226)
         "../libciomr/libciomr.h"  # (333)
         "psio.hpp"                # (198)
         "../libqt/qt.h"           # (529)
