@@ -363,7 +363,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.frac_performed_ = False
         #self.MOM_performed_ = False  # redundant from common_init()
 
-        self.save_density_and_energy()
+        if core.get_option("SCF", "DAMPING_PERCENTAGE") > 0.0:
+            self.save_density()
 
         if efp_enabled:
             # EFP: Add efp contribution to Fock matrix

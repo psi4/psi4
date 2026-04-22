@@ -316,7 +316,7 @@ class HF : public Wavefunction {
     std::shared_ptr<Vector> occupation_b() const;
 
     /// Save the current density and energy.
-    virtual void save_density_and_energy();
+    virtual void save_density();
 
     /// Reset to the user-specified DOCC/SOCC if any, and zero's otherwise.
     /// Fractional occupation requires this.

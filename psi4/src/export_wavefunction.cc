@@ -364,7 +364,7 @@ void export_wavefunction(py::module& m) {
         .def("compute_E", &scf::HF::compute_E, "docstring")
         .def("compute_initial_E", &scf::HF::compute_initial_E, "docstring")
         .def("rotate_orbitals", &scf::HF::rotate_orbitals, "docstring")
-        .def("save_density_and_energy", &scf::HF::save_density_and_energy, "docstring")
+        .def("save_density", &scf::HF::save_density, "docstring")
         .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
         .def("diis", &scf::HF::diis, "docstring")

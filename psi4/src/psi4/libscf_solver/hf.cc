@@ -315,7 +315,7 @@ std::vector<SharedMatrix> HF::cphf_solve(std::vector<SharedMatrix> x_vec, double
                                          int print_lvl) {
     throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot solve CPHF equations.");
 }
-void HF::save_density_and_energy() {
+void HF::save_density() {
     throw PSIEXCEPTION("Sorry, the base HF wavefunction does not understand a density equation.");
 }
 void HF::form_G() { throw PSIEXCEPTION("Sorry, the base HF wavefunction does not understand."); }

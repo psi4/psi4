@@ -86,7 +86,7 @@ class CGHF : public HF {
 
     // Constructs the spin-blocked overlap (EINS_), core Hamiltonian (F0_), and orthogonalization (EINX_) matrices
     void preiterations();
-    void save_density_and_energy() {}
+    void save_density() override;
 
     // Allow SAP and SAD initial guesses
     void sap_guess();
@@ -167,6 +167,8 @@ class CGHF : public HF {
     SharedMatrix T_mat;
     SharedMatrix G_mat;
     SharedMatrix F_mat;
+
+    std::shared_ptr<einsums::BlockTensor<std::complex<double>, 2>> D_old_;
 
     // DIIS variables
     // All 4 of these containers have a MAX size of DIIS_MAX_VECS

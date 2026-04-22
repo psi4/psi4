@@ -137,6 +137,12 @@ void CGHF::common_init() {
 
     // Density and combined Coulomb/exchange matrices
     D_ = std::make_shared<ComplexMatrix>("D", shape);
+
+    if (options_.get_double("DAMPING_PERCENTAGE") > 0.0) {
+        D_old_ = std::make_shared<ComplexMatrix>("D", shape);
+        D_old_->zero();
+    }
+
     JK_ = std::make_shared<ComplexMatrix>("J", shape);
 
     // Temporary matrices for BLAS calls
@@ -552,7 +558,25 @@ void CGHF::form_D() {
     );
 }
 
-void CGHF::damping_update(double damping_percentage) {}
+
+void CGHF::damping_update(double damping_percentage) {
+    double scale = 1.0 - damping_percentage;
+
+    (*D_) *= std::complex<double>(scale, 0.0);
+
+    for (int h = 0; h < nirrep_; h++) {
+        einsums::linear_algebra::axpy(damping_percentage, D_old_->block(h), &D_->block(h));
+    }
+}
+
+
+// No need to check if damping is done here since the check is done in scf_iterator.py
+// e.g. This function will only be called if a DAMPING_PERCENTAGE greater than 0.0 is applied
+void CGHF::save_density() {
+    for (int h = 0; h < nirrep_; h++) {
+        D_old_->block(h) = D_->block(h);
+    }
+}
 
 /*
  * E = E_1e + E_2e + E_nuc
