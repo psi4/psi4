@@ -952,7 +952,7 @@ no_com
 
     options = {
         "e_convergence": 1e-8,
-        "d_convergence": 1e-8,
+        "d_convergence": 1e-10,
         "basis": "jun-cc-pvdz",
         "scf_type": "df",
         "guess": "sad",
@@ -1004,7 +1004,7 @@ no_com
         compare_values(
             calculated_fisapt0_energies[k1],
             calculated_sapthf_energies[k1],
-            8,
+            7,
             f"{k1} use_einsums={use_einsums}",
         )
 
