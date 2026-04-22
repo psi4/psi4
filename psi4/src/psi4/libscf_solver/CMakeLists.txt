@@ -9,11 +9,11 @@ list(APPEND sources
   uhf.cc
   )
 psi4_add_module(lib scf_solver sources)
-target_precompile_headers(scf_solver REUSE_FROM mints)
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+    target_precompile_headers(scf_solver REUSE_FROM psio)
+endif()
 if(ENABLE_GTFOCK)
     add_dependencies(scf_solver INTERFACE GTFockInt GTFockCInt)
 endif()
 
 target_link_libraries(scf_solver PUBLIC diis)
-
-# Link to common optional dependencies interface library

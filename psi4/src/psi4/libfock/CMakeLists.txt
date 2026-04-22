@@ -30,9 +30,8 @@ list(APPEND sources
   )
 
 psi4_add_module(lib fock sources)
-target_precompile_headers(fock REUSE_FROM mints)
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+    target_precompile_headers(fock REUSE_FROM psio)
+endif()
 
 
-
-# Link to common optional dependencies interface library
-target_link_libraries(fock PUBLIC psi4_optional_deps)

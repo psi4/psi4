@@ -33,3 +33,17 @@ list(APPEND sources
   write_entry.cc
   )
 psi4_add_module(lib psio sources)
+
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+    # Clearly from the paths, libpsio is a weird place to be defining the pch. However, if one sensibly
+    #   puts it in mints, CMake creates a dependency of, say, fnocc on mints, and since mints is the
+    #   slowest to build, enabling pch slows the build. Revisit if https://gitlab.kitware.com/cmake/cmake/-/work_items/25392 solved.
+    target_precompile_headers(psio PRIVATE
+    "../libciomr/libciomr.h"  # 333
+    "psio.hpp"  # 198
+    "../libqt/qt.h"  # 529
+    "../libmints/matrix.h"  # 272
+    "../libmints/molecule.h"  # 116
+    "../libmints/basisset.h"  # 120
+    )
+endif()

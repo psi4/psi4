@@ -119,6 +119,8 @@ list(APPEND sources
   uccsd_triples_grad_hm.cc
   )
 psi4_add_module(bin dfocc sources)
-target_precompile_headers(dfocc REUSE_FROM mints)
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+    target_precompile_headers(dfocc REUSE_FROM psio)
+endif()
 
 target_link_libraries(dfocc PUBLIC diis)

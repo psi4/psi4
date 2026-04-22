@@ -7,7 +7,9 @@ list(APPEND sources
 
 if(TARGET Einsums::Einsums)
     psi4_add_module(bin f12 sources)
-    target_precompile_headers(f12 REUSE_FROM mints)
+    if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+        target_precompile_headers(f12 REUSE_FROM psio)
+    endif()
 
     if(DEFINED ENV{CONDA_TOOLCHAIN_BUILD})
         if(APPLE)

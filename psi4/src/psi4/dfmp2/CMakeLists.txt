@@ -4,4 +4,6 @@ list(APPEND sources
   wrapper.cc
   )
 psi4_add_module(bin dfmp2 sources)
-target_precompile_headers(dfmp2 REUSE_FROM mints)
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+    target_precompile_headers(dfmp2 REUSE_FROM psio)
+endif()

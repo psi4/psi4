@@ -46,5 +46,7 @@ set_source_files_properties(
     COMPILE_FLAGS -O3
   )
 psi4_add_module(bin detci sources)
-target_precompile_headers(detci REUSE_FROM mints)
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+    target_precompile_headers(detci REUSE_FROM psio)
+endif()
 
