@@ -200,6 +200,8 @@ option_with_default(BUILD_Libint2_GENERATOR "If prebuilt not found, don't build 
 option_with_default(psi4_SHGAUSS_ORDERING "Ordering for shells of solid harmonic Gaussians: standard -- standard ordering (-l, -l+1 ... l) -or- gaussian -- the Gaussian ordering (0, 1, -1, 2, -2, ... l, -l). Changing this is experimental, expert only, and not a future plan. Internal calculations should be correct and fchk files should be correct, but other exports like Molden and QCSchema.Wavefunction won't be." gaussian)
 option_with_default(gauxc_ENABLE_GPU "Enable GPU support for GauXC" OFF)
 option_with_default(gauxc_ENABLE_MAGMA "Enable MAGMA support for GauXC. Required GPU-enabled GauXC" OFF)
+option_with_print(psi4_CMAKE_UNITY_BUILD "Enable unity/jumbo build to reduce compile units. Effective to at least 20 cores" ON)
+option_with_default(psi4_CMAKE_UNITY_BUILD_BATCH_SIZE "Adjust unity build size from CMake default" 8)
 
 include(custom_int_orderings)
 
@@ -289,6 +291,8 @@ ExternalProject_Add(psi4-core
               -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
               -Dpsi4_INSTALL_CMAKEDIR=${psi4_INSTALL_CMAKEDIR}
               -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
+              -DCMAKE_UNITY_BUILD=${psi4_CMAKE_UNITY_BUILD}
+              -DCMAKE_UNITY_BUILD_BATCH_SIZE=${psi4_CMAKE_UNITY_BUILD_BATCH_SIZE}
               -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
               -DMAX_AM_ERI=${MAX_AM_ERI}
               -DPython_EXECUTABLE=${Python_EXECUTABLE}
