@@ -959,7 +959,7 @@ no_com
         "freeze_core": "true",
         "SAPT_DFT_FUNCTIONAL": "hf",
         "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
-        "ORBITAL_OPTIMIZER_PACAKGE": "INTERNAL",
+        "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
     }
     psi4.set_options(options)
 
