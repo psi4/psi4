@@ -31,8 +31,13 @@ if(TARGET ECPINT::ecpint)
 endif()
 
 if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
+  # Note: OpenOrbitalOptimizer is NOT added to psi4_optional_deps because:
+  # 1. USING_OpenOrbitalOptimizer causes armadillo headers to be included in matrix.h
+  # 2. Armadillo declares BLAS functions which conflict with libqt's BLAS declarations
+  # 3. Only libmints and libscf_solver actually need OpenOrbitalOptimizer
+  # Solution: libmints adds USING_OpenOrbitalOptimizer as PUBLIC, which propagates
+  # only to modules that link to libmints (not to unrelated modules like libqt)
   target_link_libraries(psi4_optional_deps INTERFACE OpenOrbitalOptimizer::OpenOrbitalOptimizer)
-  target_compile_definitions(psi4_optional_deps INTERFACE USING_OpenOrbitalOptimizer)
 endif()
 
 if(TARGET BrianQC::static_wrapper)

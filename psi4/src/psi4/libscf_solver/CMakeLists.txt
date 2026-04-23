@@ -17,3 +17,16 @@ if(ENABLE_GTFOCK)
 endif()
 
 target_link_libraries(scf_solver PUBLIC diis)
+
+# OpenOrbitalOptimizer support for SCF solver
+# PUBLIC because scf_solver headers may expose OpenOrbitalOptimizer types
+if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
+  target_compile_definitions(scf_solver
+    PUBLIC
+      USING_OpenOrbitalOptimizer
+    )
+  target_link_libraries(scf_solver
+    PUBLIC
+      OpenOrbitalOptimizer::OpenOrbitalOptimizer
+    )
+endif()
