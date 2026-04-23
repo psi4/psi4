@@ -9,6 +9,9 @@ list(APPEND sources
   uhf.cc
   )
 psi4_add_module(lib scf_solver sources)
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+    target_precompile_headers(scf_solver REUSE_FROM psio)
+endif()
 if(ENABLE_GTFOCK)
     add_dependencies(scf_solver INTERFACE GTFockInt GTFockCInt)
 endif()

@@ -1,6 +1,12 @@
 # Create interface library for common optional dependencies to avoid repeating if(TARGET...) blocks
 add_library(psi4_optional_deps INTERFACE)
 
+add_compile_definitions(
+    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
+    restrict="${RESTRICT_KEYWORD}"
+)
+
+
 if(TARGET gauxc::gauxc)
   target_link_libraries(psi4_optional_deps INTERFACE gauxc::gauxc)
 endif()

@@ -94,6 +94,11 @@ target_compile_definitions(mints
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
 
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+   target_precompile_headers(mints REUSE_FROM psio)
+   target_precompile_headers(l2intf REUSE_FROM psio)
+endif()
+
 # limit to avoid OOM errors with Ninja parallelism
 # * finer control than `CMAKE_BUILD_PARALLEL_LEVEL=1 cmake --build`
 cmake_host_system_information(RESULT _memfree QUERY AVAILABLE_PHYSICAL_MEMORY)

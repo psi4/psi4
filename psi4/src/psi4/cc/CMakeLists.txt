@@ -1,4 +1,7 @@
 psi4_add_module(bin cc "")
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+    target_precompile_headers(cc REUSE_FROM psio)
+endif()
 
 # FIXME Remove once done
 list(APPEND _Clang_debug_flags

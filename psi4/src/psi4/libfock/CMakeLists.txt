@@ -30,13 +30,9 @@ list(APPEND sources
   )
 
 psi4_add_module(lib fock sources)
-
-target_compile_definitions(fock
-  PRIVATE
-    "restrict=${RESTRICT_KEYWORD}"
-    $<$<BOOL:${ENABLE_GTFOCK}>:ENABLE_GTFOCK>
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-  )
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+    target_precompile_headers(fock REUSE_FROM psio)
+endif()
 
 target_link_libraries(fock
   PRIVATE
