@@ -97,8 +97,16 @@ target_compile_definitions(mints
   )
 
 if (${psi4_ENABLE_PRECOMPILE_HEADERS})
-   target_precompile_headers(mints REUSE_FROM psio)
-   target_precompile_headers(l2intf REUSE_FROM psio)
+   # When OpenOrbitalOptimizer is enabled, mints cannot reuse psio's PCH because:
+   # 1. matrix.h conditionally includes <armadillo> based on USING_OpenOrbitalOptimizer
+   # 2. psio's PCH sees matrix.h without USING_OpenOrbitalOptimizer (only forward decls)
+   # 3. mints sees matrix.h WITH USING_OpenOrbitalOptimizer (full armadillo)
+   # 4. This creates typedef conflicts and incomplete type errors
+   # Solution: Skip PCH for mints when OpenOrbitalOptimizer is enabled
+   if(NOT TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
+      target_precompile_headers(mints REUSE_FROM psio)
+      target_precompile_headers(l2intf REUSE_FROM psio)
+   endif()
 endif()
 
 # limit to avoid OOM errors with Ninja parallelism

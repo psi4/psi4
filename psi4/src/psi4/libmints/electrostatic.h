@@ -56,7 +56,7 @@ class ElectrostaticInt : public PotentialInt {
 
 // Intel C++ 12 thinks we're trying to overload the "void compute_shell(int, int)" and warns us about it.
 // The following line is to shut it up.
-#pragma warning disable 1125
+#pragma warning(disable : 1125)
     PRAGMA_WARNING_PUSH
     PRAGMA_WARNING_IGNORE_OVERLOADED_VIRTUAL
     /// Computes integrals and stores in result.
