@@ -51,5 +51,3 @@ if (${psi4_ENABLE_PRECOMPILE_HEADERS})
         "../libmints/basisset.h"  # (120)
     )
 endif()
-
-#target_link_libraries(psio PUBLIC psi4_optional_deps)

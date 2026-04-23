@@ -34,12 +34,8 @@ if (${psi4_ENABLE_PRECOMPILE_HEADERS})
     target_precompile_headers(fock REUSE_FROM psio)
 endif()
 
+# pybind11 headers needed for some fock code
 target_link_libraries(fock
   PRIVATE
-    gau2grid::gg
     pybind11::headers
-    Libint2::cxx  # for <libint2/config.h>
   )
-
-# Link to common optional dependencies interface library
-target_link_libraries(fock PUBLIC psi4_optional_deps)

@@ -1,3 +1,15 @@
+# Create interface library for required dependencies
+add_library(psi4_required_deps INTERFACE)
+
+# All modules need these dependencies
+target_link_libraries(psi4_required_deps
+  INTERFACE
+    tgt::lapack     # Provides OpenMP flags and BLAS/LAPACK headers
+    Libint2::cxx    # Required for integral engine
+    Libxc::xc       # Required for DFT functionals
+    gau2grid::gg    # Required for DFT grid generation
+)
+
 # Create interface library for common optional dependencies to avoid repeating if(TARGET...) blocks
 add_library(psi4_optional_deps INTERFACE)
 set (CMAKE_OPTIMIZE_DEPENDENCIES ON)
@@ -45,6 +57,21 @@ endif()
 
 if(TARGET PCMSolver::pcm)
   target_link_libraries(psi4_optional_deps INTERFACE PCMSolver::pcm)
+endif()
+
+if(TARGET CheMPS2::chemps2)
+  target_link_libraries(psi4_optional_deps INTERFACE CheMPS2::chemps2)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_CheMPS2)
+endif()
+
+if(TARGET ambit::ambit)
+  target_link_libraries(psi4_optional_deps INTERFACE ambit::ambit)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_ambit)
+endif()
+
+if(TARGET Einsums::Einsums)
+  target_link_libraries(psi4_optional_deps INTERFACE Einsums::Einsums)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_Einsums)
 endif()
 
 foreach(dir_name

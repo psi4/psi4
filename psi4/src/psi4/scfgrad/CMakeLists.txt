@@ -10,6 +10,3 @@ if (${psi4_ENABLE_PRECOMPILE_HEADERS})
 endif()
 
 target_link_libraries(scfgrad PUBLIC scf_solver)
-
-# Link to common optional dependencies interface library
-target_link_libraries(scfgrad PUBLIC psi4_optional_deps)

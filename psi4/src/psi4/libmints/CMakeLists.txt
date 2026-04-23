@@ -78,12 +78,14 @@ tracelessquadrupole.cc
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # below are what l2intf files would ordinarily have gotten from psi4_add_module.
-# * first brings OpenMP headers
-# * second brings l2. Linux needs only headers, but Windows needs headers and linking, so slight overkill here
+# l2intf is an OBJECT library, so it doesn't automatically get the dependencies from the macro.
+# We need to explicitly link the required and optional deps here.
+# Note: OBJECT libraries need PRIVATE for their own compilation but will still propagate
+# usage requirements to targets that link against them.
 target_link_libraries(l2intf
   PRIVATE
-    tgt::lapack
-    Libint2::cxx
+    psi4_required_deps
+    psi4_optional_deps
   )
 
 psi4_add_module(lib mints sources)
@@ -112,16 +114,6 @@ if(_numcore LESS 5)
 else()
     set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE four_jobs)
 endif()
-
-# Always linked-to external projects
-target_link_libraries(mints
-  PUBLIC
-    Libint2::cxx
-  )
-
-# Link to common optional dependencies interface library
-target_link_libraries(mints PUBLIC psi4_optional_deps)
-target_link_libraries(l2intf PUBLIC psi4_optional_deps)
 
 # Conditionally add sources that depend on optional dependencies
 if(TARGET ECPINT::ecpint)
