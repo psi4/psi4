@@ -190,7 +190,7 @@ option_with_default(psi4_INSTALL_CMAKEDIR "Directory to which psi4 CMake config 
 option_with_default(TargetLAPACK_INSTALL_CMAKEDIR "Directory to which psi4 CMake config files installed." share/cmake/TargetLAPACK)
 option_with_default(TargetHDF5_INSTALL_CMAKEDIR "Directory to which psi4 CMake config files installed." share/cmake/TargetHDF5)
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of language libraries for shared library" OFF)
-option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
+option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" NEVER)
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 20)
 option_with_default(psi4_CXX_STANDARD_Libint2 "Specify C++ standard for Psi4 files including Libint2 headers. Older (e.g., 2021.4) Intel compilers may need 14" 20)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
