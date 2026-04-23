@@ -7,6 +7,7 @@ add_compile_definitions(
     restrict="${RESTRICT_KEYWORD}"
 )
 
+#link_libraries(psi4_optional_deps)
 
 if(TARGET gauxc::gauxc)
   target_link_libraries(psi4_optional_deps INTERFACE gauxc::gauxc)
