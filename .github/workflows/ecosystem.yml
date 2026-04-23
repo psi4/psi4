@@ -294,7 +294,8 @@ jobs:
         conda list
         if [[ "${{ runner.os }}" != "Windows" ]]; then
           # on Windows, cmd varies: `qcengine.exe`
-          PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')"
+          export PATH=install/bin:$PATH
+          PYTHONPATH=objdir/stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')"
           qcengine info
         fi
 
