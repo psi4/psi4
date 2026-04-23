@@ -1,6 +1,5 @@
 # Create interface library for common optional dependencies to avoid repeating if(TARGET...) blocks
 add_library(psi4_optional_deps INTERFACE)
-set (CMAKE_OPTIMIZE_DEPENDENCIES ON)
 
 if(TARGET gauxc::gauxc)
   target_link_libraries(psi4_optional_deps INTERFACE gauxc::gauxc)
