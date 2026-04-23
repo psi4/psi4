@@ -34,6 +34,7 @@ add_subdirectory(psi4)
 
 target_sources(core
   PRIVATE
+    export_mints.cc
     export_benchmarks.cc
     export_blas_lapack.cc
     export_cubeprop.cc
@@ -55,33 +56,8 @@ target_sources(core
 
 # need to down-standard the Libint2 connection from c++17 for Intel as of 2021.4
 # See note at psi4/src/psi4/libmints/CMakeLists.txt
-add_library(l2export OBJECT export_mints.cc)
-set_property(TARGET l2export PROPERTY CXX_STANDARD "${psi4_CXX_STANDARD_Libint2}")
-set_property(TARGET l2export PROPERTY POSITION_INDEPENDENT_CODE ON)
-#set_property(TARGET l2export PROPERTY UNITY_BUILD OFF)
-#set_property(TARGET core PROPERTY UNITY_BUILD OFF)
-target_include_directories(l2export
-  PRIVATE
-    $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
-  )
-target_link_libraries(
-  l2export
-  PRIVATE
-    pybind11::headers
-  )
-if(MSVC)
-  target_link_libraries(
-    l2export
-    PRIVATE
-      pybind11::windows_extras
-    )
-endif()
-target_link_libraries(core PRIVATE l2export)
+set_property(TARGET core PROPERTY UNITY_BUILD_BATCH_SIZE 4)  #UNITY_BUILD OFF)
 target_compile_definitions(core
-  PRIVATE
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-  )
-target_compile_definitions(l2export
   PRIVATE
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
@@ -109,10 +85,6 @@ target_link_libraries(core
 
 if(TARGET ECPINT::ecpint)
   target_compile_definitions(core
-    PUBLIC
-      USING_ecpint
-    )
-  target_compile_definitions(l2export
     PUBLIC
       USING_ecpint
     )
