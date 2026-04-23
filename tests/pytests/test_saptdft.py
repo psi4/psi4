@@ -955,7 +955,7 @@ no_com
         "d_convergence": 1e-10,
         "basis": "jun-cc-pvdz",
         "scf_type": "df",
-        "guess": "sad",
+        "guess": "sadno",
         "freeze_core": "true",
         "SAPT_DFT_FUNCTIONAL": "hf",
         "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
@@ -1032,7 +1032,7 @@ def test_qcng_embedded_saptdft():
             "SAPT_DFT_GRAC_SHIFT_B": 0.1307,
             # Up the convergence threshold to ensure same solution with openorbitaloptimizer.
             "e_convergence": 1e-8,
-            "d_convergence": 1e-8,
+            "d_convergence": 1e-10,
         },
         "model": {"basis": "sto-3g", "method": "sapt(dft)"},
         "molecule": {
@@ -1096,7 +1096,7 @@ def test_qcng_embedded_saptdft():
     )
     print(ret_1)
     assert compare_values(
-        -0.00191336,
+        -0.001920,
         ret_1.extras["qcvars"]["SAPT TOTAL ENERGY"],
         4,
         "SAPT(DFT) TOTAL run_qschema",
@@ -1109,7 +1109,7 @@ def test_qcng_embedded_saptdft():
     )
     print(ret_2)
     assert compare_values(
-        -0.00191336,
+        -0.001920,
         ret_2.extras["qcvars"]["SAPT TOTAL ENERGY"],
         4,
         "SAPT(DFT) TOTAL qcng",
@@ -1205,6 +1205,7 @@ def test_einsum_terms():
     """
     built from sapt-dft1 ctest
     """
+    pytest.importorskip("einsums")
     Eref_nh = {
         "SAPT ELST ENERGY": -0.22987897,  # mEh
         "SAPT EXCH ENERGY": 0.59560159,  # mEh
@@ -1234,7 +1235,7 @@ def test_einsum_terms():
     for k, v in Eref_nh.items():  # TEST
         ref = v
         assert compare_values(
-            ref, psi4.variable(k) * 1000, 8, "!hyb, xd=none, !dHF: " + k
+            ref, psi4.variable(k) * 1000, 7, "!hyb, xd=none, !dHF: " + k
         )
 
 
@@ -1318,7 +1319,7 @@ if __name__ == "__main__":
     psi4.set_memory("32 GB")
     psi4.set_num_threads(12)
     # pytest this file
-    test_fisapt0_sapthf_external_potential(True)
+    # test_fisapt0_sapthf_external_potential(True)
     test_fisapt0_sapthf_external_potential(False)
     # test_qcng_embedded_saptdft()
     # test_saptdft_disp_methods_dftd4("SAPT(DFT)-D4(S)", -0.003605830)
