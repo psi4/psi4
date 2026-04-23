@@ -58,6 +58,8 @@ target_sources(core
 add_library(l2export OBJECT export_mints.cc)
 set_property(TARGET l2export PROPERTY CXX_STANDARD "${psi4_CXX_STANDARD_Libint2}")
 set_property(TARGET l2export PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_property(TARGET l2export PROPERTY UNITY_BUILD OFF)
+set_property(TARGET core PROPERTY UNITY_BUILD OFF)
 target_include_directories(l2export
   PRIVATE
     $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>

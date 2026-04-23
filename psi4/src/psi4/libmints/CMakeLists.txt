@@ -85,6 +85,7 @@ target_link_libraries(l2intf
     tgt::lapack
     Libint2::cxx
   )
+set_property(TARGET l2intf PROPERTY UNITY_BUILD OFF)
 
 psi4_add_module(lib mints sources)
 target_link_libraries(mints PRIVATE l2intf)
