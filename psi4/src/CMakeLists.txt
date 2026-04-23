@@ -54,9 +54,7 @@ target_sources(core
     python_data_type.cc
   )
 
-# need to down-standard the Libint2 connection from c++17 for Intel as of 2021.4
-# See note at psi4/src/psi4/libmints/CMakeLists.txt
-set_property(TARGET core PROPERTY UNITY_BUILD_BATCH_SIZE 4)  #UNITY_BUILD OFF)
+set_property(TARGET core PROPERTY UNITY_BUILD_BATCH_SIZE 4)
 target_compile_definitions(core
   PRIVATE
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
