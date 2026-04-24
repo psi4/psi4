@@ -265,20 +265,31 @@ jobs:
       run: |
         ls -l
         pwd
+        python -c "import sys;print(sys.path)"
         echo ROUND1
         python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
         python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
-        PATH=stage/bin:$PATH --module || true
-        PYTHONPATH=stage/lib python -c "import psi4; print(psi4.executable)" || true
-        PATH=stage/bin:$PATH PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        psi4 --module || true
+        python -c "import psi4; print(psi4.executable)" || true
         python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
-        echo ROUND2
+        echo ROUNDE
+        PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        PATH=stage/bin:$PATH psi4 --module || true
+        PATH=stage/bin:$PATH python -c "import psi4; print(psi4.executable)" || true
+        PATH=stage/bin:$PATH python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        echo ROUNDP
+        PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        PYTHONPATH=stage/lib psi4 --module || true
+        PYTHONPATH=stage/lib python -c "import psi4; print(psi4.executable)" || true
+        PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        echo ROUND4
         eval $(stage/bin/psi4 --psiapi)
         python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
         python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
-        PATH=stage/bin:$PATH --module || true
-        PYTHONPATH=stage/lib python -c "import psi4; print(psi4.executable)" || true
-        PATH=stage/bin:$PATH PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        psi4 --module || true
+        python -c "import psi4; print(psi4.executable)" || true
         python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
         ctest -L quick -E f12 -j2 --output-on-failure  # `-LE d2ints` needed for Windows
 
