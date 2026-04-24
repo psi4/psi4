@@ -299,6 +299,9 @@ jobs:
           PYTHONPATH=install/lib python -c "import qcengine as qcng; qcng.get_program('psi4')"
           qcengine info
         fi
+        #if [[ "${{ runner.os }}" != "Linux" ]]; then
+        #  PATH=stage/bin:$PATH PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')"
+        #fi
 
     - name: Test OpenMP
       working-directory: ./install/lib
