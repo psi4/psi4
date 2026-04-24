@@ -6,7 +6,7 @@ target_link_libraries(psi4_required_deps
   INTERFACE
     tgt::lapack     # Provides OpenMP flags and BLAS/LAPACK headers
     Libint2::cxx    # Required for integral engine
-    Libxc::xc       # Required for DFT functionals
+    Libxc::xc       # Required for DFT functionals; target provides USING_Libxc
     gau2grid::gg    # Required for DFT grid generation
 )
 
@@ -23,6 +23,7 @@ add_compile_definitions(
 
 if(TARGET gauxc::gauxc)
   target_link_libraries(psi4_optional_deps INTERFACE gauxc::gauxc)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_gauxc)
 endif()
 
 if(TARGET ECPINT::ecpint)
@@ -49,6 +50,7 @@ endif()
 
 if(TARGET IntegratorXX::IntegratorXX)
   target_link_libraries(psi4_optional_deps INTERFACE IntegratorXX::IntegratorXX)
+  target_compile_definitions(psi4_optional_deps INTERFACE USING_IntegratorXX)
 endif()
 
 if(TARGET simint::simint)
@@ -58,20 +60,22 @@ endif()
 
 if(TARGET dkh::dkh)
   target_link_libraries(psi4_optional_deps INTERFACE dkh::dkh)
+  # USING_dkh provided by dkh::dkh target itself
 endif()
 
 if(TARGET PCMSolver::pcm)
   target_link_libraries(psi4_optional_deps INTERFACE PCMSolver::pcm)
+  # USING_PCMSolver provided by PCMSolver::pcm target itself
 endif()
 
 if(TARGET CheMPS2::chemps2)
   target_link_libraries(psi4_optional_deps INTERFACE CheMPS2::chemps2)
-  target_compile_definitions(psi4_optional_deps INTERFACE USING_CheMPS2)
+  # USING_CheMPS2 provided by CheMPS2::chemps2 target itself
 endif()
 
 if(TARGET ambit::ambit)
   target_link_libraries(psi4_optional_deps INTERFACE ambit::ambit)
-  target_compile_definitions(psi4_optional_deps INTERFACE USING_ambit)
+  # USING_ambit provided by ambit::ambit target itself
 endif()
 
 if(TARGET Einsums::Einsums)
