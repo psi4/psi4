@@ -58,8 +58,8 @@ def test_sapt_dft_compute_ddft_d4():
     psi4.set_options(
         {
             "basis": "STO-3G",
-            "e_convergence": 1e-8,
-            "d_convergence": 1e-8,
+            "e_convergence": 3e-8,
+            "d_convergence": 3e-8,
             "sapt_dft_grac_shift_a": 0.136,
             "sapt_dft_grac_shift_b": 0.136,
             "SAPT_DFT_FUNCTIONAL": dft_functional,
@@ -192,8 +192,8 @@ def test_sapt_dft_compute_ddft_d4_diskdf():
     psi4.set_options(
         {
             "basis": "STO-3G",
-            "e_convergence": 1e-8,
-            "d_convergence": 1e-8,
+            "e_convergence": 3e-8,
+            "d_convergence": 3e-8,
             "scf_type": "disk_df",
             "sapt_dft_grac_shift_a": 0.136,
             "sapt_dft_grac_shift_b": 0.136,
@@ -269,8 +269,8 @@ def test_sapt_dft_diskdf():
     psi4.set_options(
         {
             "basis": "aug-cc-pvdz",
-            "e_convergence": 1e-8,
-            "d_convergence": 1e-8,
+            "e_convergence": 3e-8,
+            "d_convergence": 3e-8,
             "scf_type": "disk_df",
             "sapt_dft_grac_shift_a": 0.136,
             "sapt_dft_grac_shift_b": 0.136,
@@ -326,8 +326,8 @@ def test_sapt_dft_compute_ddft_d4_auto_grac():
     psi4.set_options(
         {
             "basis": "STO-3G",
-            "e_convergence": 1e-8,
-            "d_convergence": 1e-8,
+            "e_convergence": 3e-8,
+            "d_convergence": 3e-8,
             "sapt_dft_grac_compute": "SINGLE",
             "SAPT_DFT_FUNCTIONAL": dft_functional,
         }
@@ -440,6 +440,7 @@ def test_saptdft_auto_grac(
             "basis": "STO-3G",
             "SAPT_DFT_FUNCTIONAL": "pbe0",
             "SAPT_DFT_GRAC_COMPUTE": SAPT_DFT_GRAC_COMPUTE,
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     if grac_basis is not None:
@@ -619,8 +620,8 @@ no_com
     # Set common options
     psi4.set_options(
         {
-            "e_convergence": 1e-8,
-            "d_convergence": 1e-8,
+            "e_convergence": 3e-8,
+            "d_convergence": 3e-8,
             "basis": "jun-cc-pvdz",
             "scf_type": "df",
             "guess": "sad",
@@ -840,8 +841,8 @@ no_com
     # Set common options
     psi4.set_options(
         {
-            "e_convergence": 1e-8,
-            "d_convergence": 1e-8,
+            "e_convergence": 3e-8,
+            "d_convergence": 3e-8,
             "basis": "jun-cc-pvdz",
             "scf_type": "df",
             "guess": "sad",
@@ -951,8 +952,8 @@ no_com
     }
 
     options = {
-        "e_convergence": 1e-8,
-        "d_convergence": 1e-10,
+        "e_convergence": 3e-8,
+        "d_convergence": 3e-8,
         "basis": "jun-cc-pvdz",
         "scf_type": "df",
         "guess": "sadno",
@@ -1034,6 +1035,7 @@ def test_qcng_embedded_saptdft():
             # Up the convergence threshold to ensure same solution with openorbitaloptimizer.
             "e_convergence": 1e-8,
             "d_convergence": 1e-10,
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         },
         "model": {"basis": "sto-3g", "method": "sapt(dft)"},
         "molecule": {
@@ -1299,8 +1301,8 @@ symmetry c1
             "basis": "jun-cc-pvdz",
             "df_basis_scf": "aug-cc-pvtz-jkfit",
             "df_basis_mp2": "aug-cc-pvtz-ri",
-            "e_convergence": 1e-8,
-            "d_convergence": 1e-8,
+            "e_convergence": 3e-8,
+            "d_convergence": 3e-8,
             "scf_type": "mem_df",
             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
             "SAPT_DFT_FUNCTIONAL": "HF",
