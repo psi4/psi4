@@ -49,7 +49,7 @@ class MP2F12 : public Wavefunction {
     ~MP2F12() override;
 
     /* Compute the total MP2-F12/3C(FIX) Energy */
-    virtual double compute_energy();
+    double compute_energy() override;
 
    protected:
     /* Print level */
