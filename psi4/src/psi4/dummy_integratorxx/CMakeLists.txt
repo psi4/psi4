@@ -4,11 +4,6 @@ list(APPEND sources
 
 if(TARGET IntegratorXX::IntegratorXX)
     psi4_add_module(bin dummy_integratorxx sources)
-    target_link_libraries(
-      dummy_integratorxx
-      PRIVATE
-        IntegratorXX::IntegratorXX
-      )
 
     #if(DEFINED ENV{CONDA_TOOLCHAIN_BUILD})
     #    if(APPLE)
