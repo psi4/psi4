@@ -1031,7 +1031,6 @@ no_com"""
     }
 
     try:
-        psi4.energy("fisapt0-d4", molecule=mol)
         psi4.energy("fisapt0-d4(i)", molecule=mol)
         d4_disp = variable("FISAPT0-D DISP ENERGY") * au2kcal
         assert compare_values(ref_d4mi, d4_disp, 5, "Ethene-Ethyne -d4")
