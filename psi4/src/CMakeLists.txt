@@ -81,49 +81,6 @@ target_link_libraries(core
     tgt::lapack # OpenMP flags to core.cc
   )
 
-if(TARGET ECPINT::ecpint)
-  target_compile_definitions(core
-    PUBLIC
-      USING_ecpint
-    )
-endif()
-
-if(TARGET Einsums::Einsums)
-  target_compile_definitions(core
-    PRIVATE
-      USING_Einsums
-    )
-endif()
-
-if(TARGET BrianQC::static_wrapper)
-  target_compile_definitions(core
-    PRIVATE
-      USING_BrianQC
-    )
-  target_include_directories(core
-    PRIVATE
-      $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-  target_link_libraries(core
-    PRIVATE
-      BrianQC::static_wrapper
-    )
-endif()
-
-if(TARGET IntegratorXX::IntegratorXX)
-  target_link_libraries(core
-    PRIVATE
-      IntegratorXX::IntegratorXX
-    )
-endif()
-
-if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
-  target_link_libraries(core
-    PRIVATE
-      OpenOrbitalOptimizer::OpenOrbitalOptimizer
-    )
-endif()
-
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   # Enable call to for_rtl_init_() which is required if using the
   # Intel fortran compiler

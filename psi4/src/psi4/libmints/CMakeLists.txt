@@ -103,6 +103,8 @@ if (${psi4_ENABLE_PRECOMPILE_HEADERS})
    # 3. mints sees matrix.h WITH USING_OpenOrbitalOptimizer (full armadillo)
    # 4. This creates typedef conflicts and incomplete type errors
    # Solution: Skip PCH for mints when OpenOrbitalOptimizer is enabled
+   # Note: Adding USING_OpenOrbitalOptimizer to psio doesn't work because it causes
+   # BLAS symbol conflicts in unrelated modules (fnocc, libqt) that also use psio's PCH
    if(NOT TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
       target_precompile_headers(mints REUSE_FROM psio)
       target_precompile_headers(l2intf REUSE_FROM psio)
