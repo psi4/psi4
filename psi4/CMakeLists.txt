@@ -341,11 +341,14 @@ install(FILES ${CMAKE_BINARY_DIR}/__init__.py
               ${CMAKE_BINARY_DIR}/extras.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
-
 install(
   FILES ../pytest.ini
   DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
   )
+
+set(_save_CMAKE_INSTALL_MESSAGE "${CMAKE_INSTALL_MESSAGE}")
+set(CMAKE_INSTALL_MESSAGE NEVER)
+
 install(
   DIRECTORY
     ../tests/pytests/
@@ -412,8 +415,6 @@ install(DIRECTORY share/psi4/
         PATTERN "fsapt.py" EXCLUDE
     )
 
-
-
 install(FILES share/psi4/quadratures/1_x/R_avail${_endian_ext}.bin
         RENAME quadratures/1_x/R_avail.bin
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4)
@@ -421,6 +422,8 @@ install(FILES share/psi4/quadratures/1_x/R_avail${_endian_ext}.bin
 install(FILES share/psi4/quadratures/1_x/error${_endian_ext}.bin
         RENAME quadratures/1_x/error.bin
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4)
+
+set(CMAKE_INSTALL_MESSAGE "${_save_CMAKE_INSTALL_MESSAGE}")
 
 install(DIRECTORY include/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)

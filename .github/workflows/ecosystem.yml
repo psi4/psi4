@@ -314,8 +314,8 @@ jobs:
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
-      # step works but is redundant with next one; enable for debugging
-    - name: Test Addons with CTest (M)
+      # step works but for addons is redundant with next one; enable for debugging. enabled for Mac b/c core testing not covered by Azure DevOps
+    - name: Test Core with CTest (M)
       if: runner.os == 'macOS'
       working-directory: ./objdir
       run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows

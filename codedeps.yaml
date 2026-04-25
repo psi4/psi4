@@ -149,6 +149,9 @@ data:
       constraint: null
       skip_win: true
       skip_win_note: "Presently pulls in an old Flang."
+      aux_build_names:
+        linux-64:
+          - "//ifx_linux-64"
       cmake:
         # {CMAKE_CXX_COMPILER_ID}_{Conda_platform}
         GNU_linux-64:
@@ -170,7 +173,8 @@ data:
           LIBC_INTERJECT:         "\"-liomp5 -Wl,-Bstatic -lifport -lifcoremt_pic -Wl,-Bdynamic\""
           //CMAKE_Fortran_FLAGS:  null
         IntelLLVM_linux-64:
-          dummy: dummy
+          CMAKE_Fortran_COMPILER: "\"${CONDA_PREFIX}/bin/ifx;--target=${HOST};--gcc-toolchain=${CONDA_PREFIX};--sysroot=${CONDA_PREFIX}/${HOST}/sysroot\""
+          //CMAKE_Fortran_FLAGS:  null
         AppleClang_osx-arm64: null
         byo:
           //CMAKE_Fortran_COMPILER: null
