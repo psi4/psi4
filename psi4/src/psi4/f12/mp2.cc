@@ -427,6 +427,9 @@ double MP2F12::t_(const int& p, const int& q, const int& r, const int& s) {
     } else if (q == r && p == s) {
         return 0.125;
     }
+    else {
+        throw PsiException("Logic invalid for indices p, q, r, s", __FILE__, __LINE__);
+    }
 }
 
 std::pair<double, double> MP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, einsums::Tensor<double, 4>* C,
