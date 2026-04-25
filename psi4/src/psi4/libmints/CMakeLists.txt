@@ -74,7 +74,6 @@ rel_potential.cc
 tracelessquadrupole.cc
 3coverlap.cc
   )
-set_property(TARGET l2intf PROPERTY CXX_STANDARD "${psi4_CXX_STANDARD_Libint2}")
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
 # below are what l2intf files would ordinarily have gotten from psi4_add_module.
 # * first brings OpenMP headers

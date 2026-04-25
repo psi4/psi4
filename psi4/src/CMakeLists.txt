@@ -34,6 +34,7 @@ add_subdirectory(psi4)
 
 target_sources(core
   PRIVATE
+    export_mints.cc
     export_benchmarks.cc
     export_blas_lapack.cc
     export_cubeprop.cc
@@ -53,37 +54,10 @@ target_sources(core
     python_data_type.cc
   )
 
-# need to down-standard the Libint2 connection from c++17 for Intel as of 2021.4
-# See note at psi4/src/psi4/libmints/CMakeLists.txt
-add_library(l2export OBJECT export_mints.cc)
-set_property(TARGET l2export PROPERTY CXX_STANDARD "${psi4_CXX_STANDARD_Libint2}")
-set_property(TARGET l2export PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(l2export
-  PRIVATE
-    $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
-  )
-target_link_libraries(
-  l2export
-  PRIVATE
-    pybind11::headers
-  )
-if(MSVC)
-  target_link_libraries(
-    l2export
-    PRIVATE
-      pybind11::windows_extras
-    )
-endif()
-target_link_libraries(core PRIVATE l2export)
 target_compile_definitions(core
   PRIVATE
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
-target_compile_definitions(l2export
-  PRIVATE
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-  )
-
 # set_target_properties(core
    # PROPERTIES
      # implicit in pybind11_add_module
