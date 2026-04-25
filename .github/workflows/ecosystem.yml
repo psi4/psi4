@@ -285,7 +285,7 @@ jobs:
         PYTHONPATH=stage/lib python -c "import psi4; print(psi4.executable)" || true
         PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
         echo ROUND4
-        eval $(stage/bin/psi4 --psiapi)
+        #eval $(stage/bin/psi4 --psiapi)
         python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
         python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
         psi4 --module || true

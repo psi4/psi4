@@ -46,16 +46,11 @@ from .sapt_util import print_sapt_dft_summary, print_sapt_hf_summary, print_sapt
 import qcelemental as qcel
 from ...p4util.exceptions import ConvergenceError
 
-try:
-    import einsums as ein
-    from . import (
-        sapt_jk_terms_ein,
-        sapt_mp2_terms_ein,
-    )
-
-    einsums_available = True
-except ImportError:
-    einsums_available = False
+einsums_available = True
+from . import (
+            sapt_jk_terms_ein,
+            sapt_mp2_terms_ein,
+        )
 
 # Only export the run_ scripts
 __all__ = ["run_sapt_dft", "sapt_dft", "run_sf_sapt"]
@@ -82,6 +77,17 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
     core.Wavefunction
         The dimer wavefunction with SAPT(DFT) results stored as variables.
     """
+    try:
+        import einsums as ein
+        from . import (
+            sapt_jk_terms_ein,
+            sapt_mp2_terms_ein,
+        )
+    
+        einsums_available = True
+    except ImportError:
+        einsums_available = False
+
     core.timer_on("SAPT(DFT) Energy")
     optstash = p4util.OptionsState(
         ["SCF_TYPE"],

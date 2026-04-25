@@ -35,7 +35,6 @@ from psi4 import core
 
 from ...p4util import solvers
 from .sapt_util import print_sapt_var
-import einsums as ein
 
 
 # Equations come from https://doi.org/10.1063/5.0090688
@@ -776,6 +775,8 @@ def electrostatics(cache: dict, do_print: bool = True) -> tuple[dict, float]:
         A dictionary ``{'Elst10,r': float}`` and the extern-extern
         interaction energy (zero if no external potentials).
     """
+    import einsums as ein
+
     if do_print:
         core.print_out("\n  ==> E10 Electrostatics <== \n\n")
 
@@ -1123,6 +1124,8 @@ def fexch(
     dict
         Updated cache with ``Exch_AB`` matrix.
     """
+    import einsums as ein
+
     if do_print:
         core.print_out("  ==> F-SAPT Exchange <==\n\n")
 
@@ -1302,6 +1305,8 @@ def build_ind_pot(vars: dict) -> core.Matrix:
     core.Matrix
         Induction potential in the occupied-virtual MO block.
     """
+    import einsums as ein
+
     w_B = vars["V_B"].clone()
     ein.core.axpy(2.0, vars["J_B"].np, w_B.np)
     return chain_gemm_einsums(
@@ -1354,6 +1359,7 @@ def build_exch_ind_pot_AB(vars: dict) -> core.Matrix:
         Exchange-induction potential for monomer A in the occupied-virtual
         MO block.
     """
+    import einsums as ein
 
     K_B = vars["K_B"]
     J_O = vars["J_O"]
@@ -1426,6 +1432,7 @@ def build_exch_ind_pot_BA(vars: dict) -> core.Matrix:
         Exchange-induction potential for monomer B in the occupied-virtual
         MO block.
     """
+    import einsums as ein
 
     K_B = vars["K_B"]
     J_O = vars["J_O"]
@@ -2155,6 +2162,7 @@ def fdisp0(
     dict
         Updated cache with ``Disp_AB`` matrix and ``Disp20,u``/``Exch-Disp20,u`` scalar energies.
     """
+    import einsums as ein
     if do_print:
         core.print_out("  ==> F-SAPT0 Dispersion <==\n\n")
 
@@ -2788,6 +2796,7 @@ def chain_gemm_einsums(
         intermediate tensors and final tensor; hence, the length of this list
         should be one less than the number of tensors.
     """
+    import einsums as ein
     # initialization "computed_tensors" with the first tensor of the chain
     computed_tensors = [tensors[0]]
     N = len(tensors)
@@ -2882,6 +2891,7 @@ def exchange(cache: dict, jk: core.JK, do_print: bool = True) -> dict:
         Dictionary with keys ``'Exch10(S^2)'`` and ``'Exch10'`` mapping to
         the :math:`S^2` and :math:`S^\infty` exchange energies, respectively.
     """
+    import einsums as ein
 
     if do_print:
         core.print_out("\n  ==> E10 Exchange Einsums <== \n\n")
@@ -3059,6 +3069,7 @@ def induction(
         ``'Exch-Ind20,u'``, and coupled variants (``'Ind20,r'``, etc.)
         when ``do_response=True``.
     """
+    import einsums as ein
 
     if do_print:
         core.print_out("\n  ==> E20 Induction Einsums <== \n\n")
@@ -3626,6 +3637,7 @@ def _sapt_cpscf_solve(
     list
         Converged response vectors ``[x_A, x_B]`` as numpy arrays.
     """
+    import einsums as ein
 
     cache["wfn_A"].set_jk(jk)
     if sapt_jk_B:
