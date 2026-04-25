@@ -75,13 +75,12 @@ tracelessquadrupole.cc
 3coverlap.cc
   )
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 # below are what l2intf files would ordinarily have gotten from psi4_add_module.
-# * first brings OpenMP headers
-# * second brings l2. Linux needs only headers, but Windows needs headers and linking, so slight overkill here
 target_link_libraries(l2intf
   PRIVATE
-    tgt::lapack
-    Libint2::cxx
+    psi4_required_deps
+    psi4_optional_deps
   )
 
 psi4_add_module(lib mints sources)
@@ -121,32 +120,11 @@ else()
     set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE four_jobs)
 endif()
 
-# Always linked-to external projects
-target_link_libraries(mints
-  PUBLIC
-    Libint2::cxx
-  )
-# Conditionally linked-to external projects
+# Conditionally add sources that depend on optional dependencies
 if(TARGET ECPINT::ecpint)
   target_sources(mints
     PRIVATE
       ecpint.cc
-    )
-  target_compile_definitions(mints
-    PUBLIC
-      USING_ecpint
-    )
-  target_compile_definitions(l2intf
-    PUBLIC
-      USING_ecpint
-    )
-  target_link_libraries(mints
-    PUBLIC
-      ECPINT::ecpint
-    )
-  target_link_libraries(l2intf
-    PUBLIC
-      ECPINT::ecpint
     )
 endif()
 
@@ -154,40 +132,6 @@ if(TARGET simint::simint)
   target_sources(l2intf
     PRIVATE
       siminteri.cc
-    )
-  # Add USING_simint definition, which is not in simint::simint
-  target_compile_definitions(l2intf
-    PUBLIC
-      USING_simint
-    )
-  target_link_libraries(l2intf
-    PUBLIC
-      simint::simint
-    )
-endif()
-
-if(TARGET dkh::dkh)
-  target_link_libraries(mints
-    PUBLIC
-      dkh::dkh
-    )
-endif()
-
-if(TARGET PCMSolver::pcm)
-  target_link_libraries(mints
-    PUBLIC
-      PCMSolver::pcm
-    )
-endif()
-
-if(TARGET BrianQC::static_wrapper)
-  target_compile_definitions(mints
-    PUBLIC
-      USING_BrianQC
-    )
-  target_include_directories(mints
-    PUBLIC
-      $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
     )
 endif()
 

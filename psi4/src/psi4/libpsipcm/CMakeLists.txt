@@ -3,10 +3,4 @@ if(TARGET PCMSolver::pcm)
     psipcm.cc
     )
   psi4_add_module(lib psipcm sources)
-  target_link_libraries(psipcm
-    PUBLIC
-      PCMSolver::pcm
-      mints
-      Libint2::cxx
-    )
 endif()

@@ -32,11 +32,6 @@ list(APPEND sources
   )
 psi4_add_module(lib sapt_solver sources)
 
-if(TARGET gauxc::gauxc)
-  target_include_directories(sapt_solver
-    PUBLIC
-      $<TARGET_PROPERTY:gauxc::gauxc,INTERFACE_INCLUDE_DIRECTORIES>
-    )
 if (${psi4_ENABLE_PRECOMPILE_HEADERS})
     target_precompile_headers(sapt_solver REUSE_FROM psio)
 endif()

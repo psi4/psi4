@@ -5,10 +5,6 @@ list(APPEND sources
   superfunctional.cc
   )
 psi4_add_module(lib functional sources)
-target_link_libraries(functional
-  PUBLIC
-    Libxc::xc
-  )
 if (${psi4_ENABLE_PRECOMPILE_HEADERS})
     target_precompile_headers(functional REUSE_FROM psio)
 endif()
