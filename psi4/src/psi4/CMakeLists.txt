@@ -1,3 +1,5 @@
+set (CMAKE_OPTIMIZE_DEPENDENCIES ON)
+
 foreach(dir_name
   lib3index
   libciomr
