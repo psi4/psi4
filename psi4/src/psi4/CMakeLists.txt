@@ -1,5 +1,11 @@
 set (CMAKE_OPTIMIZE_DEPENDENCIES ON)
 
+  # Note: USING_OpenOrbitalOptimizer is NOT added to psi4_optional_deps because:
+  # 1. USING_OpenOrbitalOptimizer causes armadillo headers to be included in matrix.h
+  # 2. Armadillo declares BLAS functions which conflict with libqt's BLAS declarations
+  # 3. Only libmints, libscf_solver, scfgrad actually need OpenOrbitalOptimizer
+  # Solution: libmints adds USING_ as PUBLIC, which keeps it away from upstream modules like libqt
+
 foreach(dir_name
   lib3index
   libciomr

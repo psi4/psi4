@@ -92,6 +92,21 @@ target_compile_definitions(mints
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
 
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+   # When OpenOrbitalOptimizer is enabled, mints cannot reuse psio's PCH because:
+   # 1. matrix.h conditionally includes <armadillo> based on USING_OpenOrbitalOptimizer
+   # 2. psio's PCH sees matrix.h without USING_OpenOrbitalOptimizer (only forward decls)
+   # 3. mints sees matrix.h WITH USING_OpenOrbitalOptimizer (full armadillo)
+   # 4. This creates typedef conflicts and incomplete type errors
+   # Solution: Skip PCH for mints when OpenOrbitalOptimizer is enabled
+   # Note: Adding USING_OpenOrbitalOptimizer to psio doesn't work because it causes
+   # BLAS symbol conflicts in unrelated modules (fnocc, libqt) that also use psio's PCH
+   if(NOT TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
+      target_precompile_headers(mints REUSE_FROM psio)
+      target_precompile_headers(l2intf REUSE_FROM psio)
+   endif()
+endif()
+
 # limit to avoid OOM errors with Ninja parallelism
 # * finer control than `CMAKE_BUILD_PARALLEL_LEVEL=1 cmake --build`
 cmake_host_system_information(RESULT _memfree QUERY AVAILABLE_PHYSICAL_MEMORY)
@@ -176,6 +191,9 @@ if(TARGET BrianQC::static_wrapper)
     )
 endif()
 
+# OpenOrbitalOptimizer needs to be PUBLIC so USING_OpenOrbitalOptimizer propagates
+# to modules that link to libmints (this enables armadillo support in matrix.h)
+# but doesn't pollute unrelated modules like libqt (which would get BLAS conflicts)
 if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
   target_compile_definitions(mints
     PUBLIC
