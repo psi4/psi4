@@ -81,3 +81,7 @@ list(APPEND sources
   )
 psi4_add_module(bin psimrcc sources)
 set_property(TARGET psimrcc PROPERTY UNITY_BUILD OFF)
+
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+    target_precompile_headers(psimrcc REUSE_FROM psio)
+endif()

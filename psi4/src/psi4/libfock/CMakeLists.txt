@@ -27,6 +27,9 @@ list(APPEND sources
   )
 
 psi4_add_module(lib fock sources)
+if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+    target_precompile_headers(fock REUSE_FROM psio)
+endif()
 
 target_compile_definitions(fock
   PRIVATE

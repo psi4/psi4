@@ -12,6 +12,9 @@ if(TARGET Einsums::Einsums)
       PRIVATE
         Einsums::Einsums
       )
+    if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+        target_precompile_headers(f12 REUSE_FROM psio)
+    endif()
 
     if(DEFINED ENV{CONDA_TOOLCHAIN_BUILD})
         if(APPLE)

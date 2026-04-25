@@ -86,6 +86,7 @@ target_link_libraries(l2intf
 
 psi4_add_module(lib mints sources)
 target_link_libraries(mints PRIVATE l2intf)
+add_dependencies(mints l2intf)  # preserve build-order dependence allowing CMAKE_OPTIMIZE_DEPENDENCIES=ON
 target_compile_definitions(mints
   PRIVATE
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
