@@ -39,8 +39,8 @@ if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
 endif()
 
 if(TARGET BrianQC::static_wrapper)
+  target_link_libraries(psi4_optional_deps INTERFACE BrianQC::static_wrapper)
   target_compile_definitions(psi4_optional_deps INTERFACE USING_BrianQC)
-  target_include_directories(psi4_optional_deps INTERFACE $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>)
 endif()
 
 if(TARGET IntegratorXX::IntegratorXX)

@@ -18,6 +18,6 @@ list(APPEND sources
   linear.cc
   )
 psi4_add_module(bin fnocc sources)
-if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+if (psi4_ENABLE_PRECOMPILE_HEADERS)
     target_precompile_headers(fnocc REUSE_FROM psio)
 endif()

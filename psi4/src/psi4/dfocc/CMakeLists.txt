@@ -119,7 +119,7 @@ list(APPEND sources
   uccsd_triples_grad_hm.cc
   )
 psi4_add_module(bin dfocc sources)
-if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+if (psi4_ENABLE_PRECOMPILE_HEADERS)
     target_precompile_headers(dfocc REUSE_FROM psio)
 endif()
 

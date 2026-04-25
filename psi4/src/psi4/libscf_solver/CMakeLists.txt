@@ -9,9 +9,8 @@ list(APPEND sources
   uhf.cc
   )
 psi4_add_module(lib scf_solver sources)
-if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+if (psi4_ENABLE_PRECOMPILE_HEADERS)
     # Skip PCH when OpenOrbitalOptimizer is enabled to avoid conflicts with armadillo
-    # (see comment in libmints/CMakeLists.txt for full explanation)
     if(NOT TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
         target_precompile_headers(scf_solver REUSE_FROM psio)
     endif()

@@ -49,7 +49,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 endif ()
 
 psi4_add_module(bin dct sources)
-if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+if (psi4_ENABLE_PRECOMPILE_HEADERS)
     target_precompile_headers(dct REUSE_FROM psio)
 endif()
 

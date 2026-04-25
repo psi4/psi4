@@ -3,7 +3,7 @@ list(APPEND sources
   local2.cc
   )
 psi4_add_module(bin fisapt sources)
-if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+if (psi4_ENABLE_PRECOMPILE_HEADERS)
     target_precompile_headers(fisapt REUSE_FROM psio)
 endif()
 

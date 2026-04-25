@@ -72,6 +72,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - CMAKE_CXX_FLAGS "Additional C++ flags"
 #    - CMAKE_Fortran_COMPILER "Fortran compiler (required for some add-ons)"
 #    - CMAKE_Fortran_FLAGS "Additional Fortran flags"
+#    - CMAKE_SHARED_LINKER_FLAGS "Additional linking flags for core.so/dll library"
 
 #  <<<  Detecting dependencies and add-ons  >>>
 #
@@ -275,6 +276,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
               -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
               -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+              -DCMAKE_SHARED_LINKER_FLAGS=${CMAKE_SHARED_LINKER_FLAGS}
               -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
               -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
               -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}

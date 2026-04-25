@@ -91,7 +91,7 @@ target_compile_definitions(mints
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
 
-if (${psi4_ENABLE_PRECOMPILE_HEADERS})
+if (psi4_ENABLE_PRECOMPILE_HEADERS)
    # When OpenOrbitalOptimizer is enabled, mints cannot reuse psio's PCH because:
    # 1. matrix.h conditionally includes <armadillo> based on USING_OpenOrbitalOptimizer
    # 2. psio's PCH sees matrix.h without USING_OpenOrbitalOptimizer (only forward decls)
