@@ -48,11 +48,11 @@ list(APPEND sources
   thc_eri.cc
   )
 
-# l2intf is a listing of all the files that include libint2's boys.h include (which is included in L2's engine.h).  they must
-# all be built with the same C++ standard, which is currently chosen as C++14 due to
-# problems building with C++17 using Intel compilers on Linux.
-# These problems were seen at least through version 2021.4 but were relieved by 2021.8
-# Any files including the engine.h should be added here instead of the sources list above.
+# l2intf is a listing of all the files that include libint2's boys.h include (which is included in L2's engine.h).
+# These were originally separated so that a separate C++ standard could be applied, as Intel compilers were having problems at least through version 2021.4 (relieved by 2021.8)
+# If that ever needs to be revived, look for psi4_CXX_STANDARD_Libint2 in history.
+# Nowadays, these are files that take a lot of memory to compile and are prone to silently failing on CI,
+#   esp. with Ninja + Linux + CI-or-laptop, so they're segregated to throttle build concurrence.
 add_library(l2intf OBJECT 
 dipole.cc
 electricfield.cc
@@ -85,11 +85,7 @@ target_link_libraries(l2intf
 
 psi4_add_module(lib mints sources)
 target_link_libraries(mints PRIVATE l2intf)
-add_dependencies(mints l2intf)  # preserve build-order dependence allowing CMAKE_OPTIMIZE_DEPENDENCIES=ON
-target_compile_definitions(mints
-  PRIVATE
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-  )
+add_dependencies(mints l2intf)  # impose build-order dependence allowing CMAKE_OPTIMIZE_DEPENDENCIES=ON
 
 if (psi4_ENABLE_PRECOMPILE_HEADERS)
    # When OpenOrbitalOptimizer is enabled, mints cannot reuse psio's PCH because:

@@ -1,5 +1,11 @@
 set_property(GLOBAL PROPERTY JOB_POOLS one_job=1 two_jobs=2 four_jobs=4)
 
+# for core and psi4 modules
+add_compile_definitions(
+    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
+    restrict=${RESTRICT_KEYWORD}
+)
+
 ### >> Create core target, so we may link modules to it directly <<
 ### >> This allow to propagate dependencies upwards sanely
 ### >> See https://pybind11.readthedocs.io/en/stable/compiling.html#advanced-interface-library-targets for pybind11_add_module decomposition
@@ -58,11 +64,6 @@ target_sources(core
     create_new_plugin.cc
     read_options.cc
     python_data_type.cc
-  )
-
-target_compile_definitions(core
-  PRIVATE
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
 
 get_property(psi4_binmodules GLOBAL PROPERTY LINKBINLIST)

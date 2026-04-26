@@ -11,11 +11,6 @@ target_link_libraries(psi4_required_deps
 
 set (CMAKE_OPTIMIZE_DEPENDENCIES ON)
 
-add_compile_definitions(
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-    restrict="${RESTRICT_KEYWORD}"
-)
-
 # Create interface library for common optional dependencies to avoid repeating if(TARGET...) blocks
 add_library(psi4_optional_deps INTERFACE)
 

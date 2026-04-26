@@ -22,6 +22,7 @@ jobs:
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
         CMARGS: ""
+        CM_GENERATOR: "Unix Makefiles"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
@@ -37,7 +38,8 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
-        CMARGS: "-GNinja"
+        CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON"
+        CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
@@ -54,7 +56,8 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so -GNinja'
+        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON'
+        CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
@@ -71,7 +74,8 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        CMARGS: "-D ENABLE_XHOST=OFF -GNinja"
+        CMARGS: "-D ENABLE_XHOST=OFF -D psi4_ENABLE_PRECOMPILE_HEADERS=ON"
+        CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: "--compiler IntelLLVM"
         ADVISOR_DISABLE_ARGS: ""
 
@@ -180,6 +184,7 @@ jobs:
         -S. \
         -B build \
         -C $(Build.SourcesDirectory)/cache_p4env@build.cmake \
+        -G "${CM_GENERATOR}" \
         -D CMAKE_CXX_COMPILER=${CXX_COMPILER} \
         -D CMAKE_C_COMPILER=${C_COMPILER} \
         -D CMAKE_Fortran_COMPILER=${F_COMPILER} \
