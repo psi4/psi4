@@ -1,3 +1,26 @@
+# Psi4 + Nvidia cuEST Integration
+
+## Features
+
+* DFT energies and gradients (including Becke weight derivative terms) for UKS/RKS for all functionals, excepting long-range-correction/omega functionals
+* VV10 energies and gradients
+* PCM energies and gradients through `set cuest_pcm true` (no guardrails at present limiting PCMSolver/pyddx/cuEST solvation specification)
+* pytests to cover all cuEST features
+
+## Building and Running
+
+* Easiest Building: Create a conda env from https://github.com/loriab/psi4nv/blob/egh/cuest_restructure/devtools/conda-envs/linux-64-buildrun.yaml (Python <3.14) or add `nvidia::libcuest-dev` to an existing Psi4 development env. Activate the conda environment and run CMake configuration with `-DENABLE_cuEST=ON`. The building computer needs CUDA compilers but not a GPU card itself. Build Psi4 (no need to install as a complete installation is present in `<builddir>/stage/`) and connect to conda env with `eval $(stage/bin/psi4 --psiapi)`. Set envvar PSI_SCRATCH to a non-networked directory.
+* More building details:
+  * [cuEST installation here.](https://docs.nvidia.com/cuda/cuest/installation.html) For Psi4, the `conda install nvidia::libcuest-dev` is easiest.
+  * [General psi4 installation here.](https://github.com/psi4/psi4/blob/master/conda/psi4-path-advisor.py#L456-L482)
+  * To build with cuEST, configure with `-DENABLE_cuEST=ON` (if needed, specifiy cuEST installation with `-DcuEST_ROOT` or `-DcuEST_DIR`). Alternately, this branch can be compiled without cuEST support. It is based off a pre-v1.10 development version of Psi4.
+* Runtime:
+  * If built with cuEST support, initialization of the cuEST library occurs early, so Psi4 *must* be run on a computer with an eligible GPU. Compute capability >=8.0 https://developer.nvidia.com/cuda/gpus is needed (see also https://docs.nvidia.com/cuda/cuest/installation.html#tested-configurations)
+  * This branch will not check if a GPU is present or that a present GPU is suitable. For any errors, investigate the hardware.
+  * To turn on the cuEST library for calculations, use Psi4 option `USE_CUEST` via `set use_cuest true` or `psi4.set_options({"use_cuest": True})` (Psithon or PsiAPI, respectively).
+  * To test Psi4 + cuEST is operational, run (from the build directory) `pytest -v ../tests/pytests/test_cuest.py` .
+
+
 # <img src="https://github.com/psi4/psi4media/blob/master/logos-psi4/psi4square.png" height=150>
 
 | **Status** | [![Azure DevOps builds](https://img.shields.io/azure-devops/build/psi4/e80489d7-9619-4512-8e7b-255e355b3ab8/1?logo=azure%20devops)](https://dev.azure.com/psi4/psi4/_build?definitionId=1) [![Codecov coverage](https://img.shields.io/codecov/c/github/psi4/psi4.svg?logo=Codecov&logoColor=white)](https://codecov.io/gh/psi4/psi4) |
