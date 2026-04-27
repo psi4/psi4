@@ -2,18 +2,18 @@
 
 ## Features
 
-* DFT energies and gradients (including Becke weight derivative terms) for UKS/RKS for all functionals, excepting long-range-correction/omega functionals
+* DFT energies and gradients (including Becke weight derivative terms) for UKS/RKS for all functionals, excepting long-range-corrected/omega functionals
 * VV10 energies and gradients
 * PCM energies and gradients through `set cuest_pcm true` (no guardrails at present limiting PCMSolver/pyddx/cuEST solvation specification)
 * pytests to cover all cuEST features
 
 ## Building and Running
 
-* Easiest Building: Create a conda env from https://github.com/loriab/psi4nv/blob/egh/cuest_restructure/devtools/conda-envs/linux-64-buildrun.yaml (Python <3.14) or add `nvidia::libcuest-dev` to an existing Psi4 development env. Activate the conda environment and run CMake configuration with `-DENABLE_cuEST=ON`. The building computer needs CUDA compilers but not a GPU card itself. Build Psi4 (no need to install as a complete installation is present in `<builddir>/stage/`) and connect to conda env with `eval $(stage/bin/psi4 --psiapi)`. Set envvar PSI_SCRATCH to a non-networked directory.
+* Easiest Building: Create a conda env from https://github.com/loriab/psi4nv/blob/nvidia_cuest_xptl/devtools/conda-envs/linux-64-buildrun.yaml (specify Python to be <3.14) or add `nvidia::libcuest-dev` to an existing Psi4 development env. Activate the conda environment and run CMake configuration with `-DENABLE_cuEST=ON`. The building computer needs CUDA compilers but not a GPU card itself. Build Psi4 (no need to install as a complete installation is present in `<builddir>/stage/`) and connect to conda env with `eval $(stage/bin/psi4 --psiapi)`. Set envvar PSI_SCRATCH to a non-networked directory.
 * More building details:
   * [cuEST installation here.](https://docs.nvidia.com/cuda/cuest/installation.html) For Psi4, the `conda install nvidia::libcuest-dev` is easiest.
   * [General psi4 installation here.](https://github.com/psi4/psi4/blob/master/conda/psi4-path-advisor.py#L456-L482)
-  * To build with cuEST, configure with `-DENABLE_cuEST=ON` (if needed, specifiy cuEST installation with `-DcuEST_ROOT` or `-DcuEST_DIR`). Alternately, this branch can be compiled without cuEST support. It is based off a pre-v1.10 development version of Psi4.
+  * To build with cuEST, configure with `-DENABLE_cuEST=ON` (if needed, specify cuEST installation location with `-DcuEST_ROOT` or `-DcuEST_DIR`). Alternately, this branch can be compiled without cuEST support. It is based off a pre-v1.10 development version of Psi4.
 * Runtime:
   * If built with cuEST support, initialization of the cuEST library occurs early, so Psi4 *must* be run on a computer with an eligible GPU. Compute capability >=8.0 https://developer.nvidia.com/cuda/gpus is needed (see also https://docs.nvidia.com/cuda/cuest/installation.html#tested-configurations)
   * This branch will not check if a GPU is present or that a present GPU is suitable. For any errors, investigate the hardware.
