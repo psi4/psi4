@@ -50,8 +50,6 @@ MP2F12::MP2F12(SharedWavefunction ref_wfn, Options& options) : Wavefunction(opti
     common_init();
 }
 
-MP2F12::~MP2F12() {}
-
 void MP2F12::common_init() {
     if (options_.get_str("REFERENCE") != "RHF") {
         throw PsiException("Only a restricted reference may be used", __FILE__, __LINE__);
@@ -66,7 +64,6 @@ void MP2F12::common_init() {
     f12_subtype_ = options_.get_str("F12_SUBTYPE");
     f12_read_ints_ = options_.get_bool("F12_READ_INTS");
 
-    std::vector<OrbitalSpace> bs_ = {};
     nobs_ = reference_wavefunction_->basisset()->nbf();
     nocc_ = reference_wavefunction_->doccpi()[0];
     nvir_ = nobs_ - nocc_;
@@ -144,13 +141,17 @@ void MP2F12::form_basissets() {
 void MP2F12::form_D(einsums::Tensor<double, 4>* D, einsums::Tensor<double, 2>* f) {
     using namespace einsums;
 
-#pragma omp parallel for collapse(4) num_threads(nthreads_)
+    std::vector<double> e_vir(nvir_);
+    for (size_t a = 0; a < nvir_; a++) e_vir[a] = (*f)(nocc_ + a, nocc_ + a);
+
+#pragma omp parallel for collapse(2) num_threads(nthreads_)
     for (size_t i = nfrzn_; i < nocc_; i++) {
         for (size_t j = nfrzn_; j < nocc_; j++) {
-            for (size_t a = nocc_; a < nobs_; a++) {
-                for (size_t b = nocc_; b < nobs_; b++) {
-                    auto denom = (*f)(a, a) + (*f)(b, b) - (*f)(i, i) - (*f)(j, j);
-                    (*D)(i - nfrzn_, j - nfrzn_, a - nocc_, b - nocc_) = (1 / denom);
+            const double e_ij = (*f)(i, i) + (*f)(j, j);
+            for (size_t a = 0; a < nvir_; a++) {
+                const double e_a = e_vir[a];
+                for (size_t b = 0; b < nvir_; b++) {
+                    (*D)(i - nfrzn_, j - nfrzn_, a, b) = 1.0 / (e_vir[b] + e_a - e_ij);
                 }
             }
         }
@@ -167,7 +168,6 @@ void MP2F12::form_f12_energy(einsums::Tensor<double, 4>* V, einsums::Tensor<doub
 
     auto E_f12_s = 0.0;
     auto E_f12_t = 0.0;
-    int kd;
 
     outfile->Printf("  \n");
     outfile->Printf("  %1s   %1s  |     %14s     %14s     %12s \n", "i", "j", "E_F12(Singlet)", "E_F12(Triplet)",
@@ -191,16 +191,16 @@ void MP2F12::form_f12_energy(einsums::Tensor<double, 4>* V, einsums::Tensor<doub
                                             Stride<2>{(*G).stride(2), (*G).stride(3)}};
             auto D_ = TensorView<double, 2>{(*D), Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
                                             Stride<2>{(*D).stride(2), (*D).stride(3)}};
-            auto VT = V_Tilde(V_, C, G_, D_, i, j);
-            auto BT = B_Tilde(B_, C, D_, i, j);
+            auto [V_s, V_t] = V_Tilde(V_, C, G_, D_, i, j);
+            auto [B_s, B_t] = B_Tilde(B_, C, D_, i, j);
 
             // Computing the energy
-            (i == j) ? (kd = 1) : (kd = 2);
-            auto E_s = kd * (2 * VT.first + BT.first);
+            const int kd = (i == j) ? 1 : 2;
+            auto E_s = kd * (2 * V_s + B_s);
             E_f12_s += E_s;
             auto E_t = 0.0;
             if (i != j) {
-                E_t = 3.0 * kd * (2 * VT.second + BT.second);
+                E_t = 3.0 * kd * (2 * V_t + B_t);
                 E_f12_t += E_t;
             }
             auto E_f = E_s + E_t;
@@ -247,7 +247,7 @@ void MP2F12::form_cabs_singles(einsums::Tensor<double, 2>* f) {
 #pragma omp parallel for collapse(2) num_threads(nthreads_) reduction(+ : E_s)
     for (size_t A = 0; A < all_vir; A++) {
         for (size_t i = 0; i < nocc_; i++) {
-            E_s += 2 * pow(f_iA(i, A), 2) / (e_ij(i) - e_AB(A));
+            E_s += 2 * f_iA(i, A) * f_iA(i, A) / (e_ij(i) - e_AB(A));
         }
     }
 
@@ -419,7 +419,7 @@ void MP2F12::print_results() {
     set_scalar_variable("MP2-F12 DOUBLES ENERGY", E_mp2 + E_f12_);
 }
 
-double MP2F12::t_(const int& p, const int& q, const int& r, const int& s) {
+double MP2F12::t_(int p, int q, int r, int s) {
     if (p == q && p == r && p == s) {
         return 0.5;
     } else if (p == r && q == s) {
@@ -439,8 +439,7 @@ std::pair<double, double> MP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, eins
     using namespace einsums::tensor_algebra;
     using namespace einsums::index;
 
-    double V_s = 0.0, V_t = 0.0;  // clang needs these initialized
-    int kd;
+    double V_s = 0.0, V_t = 0.0;
 
     {
         Tensor<double, 2> GD{"G_ijab . D_ijab", nvir_, nvir_};
@@ -448,7 +447,7 @@ std::pair<double, double> MP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, eins
         einsum(1.0, Indices{k, l}, &V_ij, -1.0, Indices{k, l, a, b}, *C, Indices{a, b}, GD);
     }
 
-    (i == j) ? (kd = 1) : (kd = 2);
+    const int kd = (i == j) ? 1 : 2;
 
     V_s += 0.25 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd * (V_ij(i, j) + V_ij(j, i));
 
@@ -464,8 +463,7 @@ std::pair<double, double> MP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, eins
     using namespace einsums::tensor_algebra;
     using namespace einsums::index;
 
-    double B_s = 0.0, B_t = 0.0;  // clang needs these initialized
-    int kd;
+    double B_s = 0.0, B_t = 0.0;
 
     {
         Tensor<double, 4> CD{"C_klab . D_ijab", nact_, nact_, nvir_, nvir_};
@@ -473,7 +471,7 @@ std::pair<double, double> MP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, eins
         einsum(1.0, Indices{k, l, m, n}, &B_ij, -1.0, Indices{m, n, a, b}, *C, Indices{k, l, a, b}, CD);
     }
 
-    (i == j) ? (kd = 1) : (kd = 2);
+    const int kd = (i == j) ? 1 : 2;
 
     B_s += 0.125 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd * (B_ij(i, j, i, j) + B_ij(i, j, j, i)) *
            (t_(i, j, i, j) + t_(i, j, j, i)) * kd;
@@ -491,10 +489,7 @@ std::pair<double, double> MP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, eins
 
 DiskMP2F12::DiskMP2F12(SharedWavefunction reference_wavefunction, Options& options)
     : MP2F12(reference_wavefunction, options) {
-    common_init();
 }
-
-DiskMP2F12::~DiskMP2F12() {}
 
 void DiskMP2F12::form_D(einsums::DiskTensor<double, 4>* D, einsums::DiskTensor<double, 2>* f) {
     using namespace einsums;
@@ -527,7 +522,6 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double, 4>* V, einsums::Dis
 
     auto E_f12_s = 0.0;
     auto E_f12_t = 0.0;
-    int kd;
 
     auto f_act = (*f)(Range{nfrzn_, nocc_}, Range{nfrzn_, nocc_});
     f_act.set_read_only(true);
@@ -555,16 +549,16 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double, 4>* V, einsums::Dis
             Tensor V_ = ((*V)(i, j, All, All)).get();
             auto G_ = (*G)(i, j, Range{nocc_, nobs_}, Range{nocc_, nobs_});
             auto D_ = (*D)(i, j, All, All);
-            auto VT = V_Tilde(V_, C, G_, D_, i, j);
-            auto BT = B_Tilde(B_, C, D_, i, j);
+            auto [V_s, V_t] = V_Tilde(V_, C, G_, D_, i, j);
+            auto [B_s, B_t] = B_Tilde(B_, C, D_, i, j);
 
             // Computing the energy
-            (i == j) ? (kd = 1) : (kd = 2);
-            auto E_s = kd * (2 * VT.first + BT.first);
+            const int kd = (i == j) ? 1 : 2;
+            auto E_s = kd * (2 * V_s + B_s);
             E_f12_s += E_s;
             auto E_t = 0.0;
             if (i != j) {
-                E_t = 3.0 * kd * (2 * VT.second + BT.second);
+                E_t = 3.0 * kd * (2 * V_t + B_t);
                 E_f12_t += E_t;
             }
             auto E_f = E_s + E_t;
@@ -607,7 +601,7 @@ void DiskMP2F12::form_cabs_singles(einsums::DiskTensor<double, 2>* f) {
 #pragma omp parallel for collapse(2) num_threads(nthreads_) reduction(+ : E_s)
     for (size_t A = 0; A < all_vir; A++) {
         for (size_t i = 0; i < nocc_; i++) {
-            E_s += 2 * pow(f_iA(i, A), 2) / (e_ij(i) - e_AB(A));
+            E_s += 2 * f_iA(i, A) * f_iA(i, A) / (e_ij(i) - e_AB(A));
         }
     }
 
@@ -616,6 +610,7 @@ void DiskMP2F12::form_cabs_singles(einsums::DiskTensor<double, 2>* f) {
 }
 
 double DiskMP2F12::compute_energy() {
+    timer_on("MP2-F12 Compute Energy");
     using namespace einsums;
     einsums::profile::initialize();
 
@@ -812,6 +807,7 @@ double DiskMP2F12::compute_energy() {
         einsums::profile::report("timer_mp2f12.dat", false);
     }
     einsums::profile::finalize();
+    timer_off("MP2-F12 Compute Energy");
 
     // Typically you would build a new wavefunction and populate it with data
     return E_mp2f12_;
@@ -824,8 +820,7 @@ std::pair<double, double> DiskMP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, 
     using namespace einsums::tensor_algebra;
     using namespace einsums::index;
 
-    double V_s, V_t;
-    int kd;
+    double V_s = 0.0, V_t = 0.0;
 
     {
         Tensor<double, 2> GD{"G_ijab . D_ijab", nvir_, nvir_};
@@ -849,7 +844,7 @@ std::pair<double, double> DiskMP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, 
         }
     }
 
-    (i == j) ? (kd = 1) : (kd = 2);
+    const int kd = (i == j) ? 1 : 2;
 
     V_s = 0.25 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd * (V_ij(i, j) + V_ij(j, i));
 
@@ -865,8 +860,7 @@ std::pair<double, double> DiskMP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, 
     using namespace einsums::tensor_algebra;
     using namespace einsums::index;
 
-    double B_s, B_t;
-    int kd;
+    double B_s = 0.0, B_t = 0.0;
 
     {
         Tensor<double, 2> rank2{"Contraction 1", nvir_, nvir_};
@@ -889,7 +883,7 @@ std::pair<double, double> DiskMP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, 
         }
     }
 
-    (i == j) ? (kd = 1) : (kd = 2);
+    const int kd = (i == j) ? 1 : 2;
 
     B_s = 0.125 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd * (B_ij(i, j, i, j) + B_ij(i, j, j, i)) *
           (t_(i, j, i, j) + t_(i, j, j, i)) * kd;
