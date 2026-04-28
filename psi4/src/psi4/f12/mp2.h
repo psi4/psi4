@@ -46,7 +46,7 @@ namespace f12 {
 class MP2F12 : public Wavefunction {
    public:
     MP2F12(SharedWavefunction reference_wavefunction, Options &options);
-    ~MP2F12() override;
+    ~MP2F12() override = default;
 
     /* Compute the total MP2-F12/3C(FIX) Energy */
     double compute_energy() override;
@@ -181,7 +181,7 @@ class MP2F12 : public Wavefunction {
     void print_results();
 
     /* Returns the fixed amplitudes value */
-    double t_(const int &p, const int &q, const int &r, const int &s);
+    static double t_(int p, int q, int r, int s);
 
     /* Form the $T^{ij}_{ij}\Tilde{V}^{ij}_{ij}$ contirbution to the energy */
     virtual std::pair<double, double> V_Tilde(einsums::Tensor<double, 2> &V_, einsums::Tensor<double, 4> *C,
@@ -221,7 +221,7 @@ class MP2F12 : public Wavefunction {
 class DiskMP2F12 : public MP2F12 {
    public:
     DiskMP2F12(SharedWavefunction reference_wavefunction, Options &options);
-    ~DiskMP2F12() override;
+    ~DiskMP2F12() override = default;
 
     /* Compute the total MP2-F12/3C(FIX) Energy */
     double compute_energy() override;
