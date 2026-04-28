@@ -84,11 +84,11 @@ void MP2F12::set_ERI(einsums::TensorView<double, 4>& ERI_Slice, einsums::Tensor<
 
 void MP2F12::set_ERI(einsums::TensorView<double, 3>& ERI_Slice, einsums::Tensor<double, 3>* Slice) {
     auto& slice = *Slice;
-    const auto naux_ = slice.dim(0);
+    const auto nA = slice.dim(0);
     const auto dim1 = slice.dim(1);
     const auto dim2 = slice.dim(2);
 
-    for (int A = 0; A < naux_; A++) {
+    for (int A = 0; A < nA; A++) {
         for (int p = 0; p < dim1; p++) {
             for (int q = 0; q < dim2; q++) {
                 ERI_Slice(A, p, q) = slice(A, p, q);
@@ -226,8 +226,7 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
 
                                     for (size_t q = 0; q < numQ; q++, idx++) {
                                         *target = ints_buff[idx];
-
-                                        *target++;
+                                        target++;
                                     }
                                 }
                             }
