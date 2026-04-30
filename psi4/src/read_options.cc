@@ -2667,6 +2667,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("DLPNO_TOGGLE_MEMORY", true);
         /*- How much to damp the lambda updates, recommend 0.3 for hard to converge cases !expert -*/
         options.add_double("DLPNO_LAMBDA_DAMPING", 0.0);
+        /*- Use Brueckner orbitals? -*/
+        options.add_bool("DLPNO_BRUECKNER_ORBS", false);
 
         /*- SUBSECTION Expert Options -*/
 

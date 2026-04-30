@@ -55,6 +55,10 @@ class DLPNO : public Wavefunction {
    protected:
     /// what quantum chemistry module are we running
     DLPNOMethod algorithm_;
+    /// Using Brueckner orbitals?
+    bool brueckner_orbs_;
+    /// Performing a Brueckner iteration?
+    bool brueckner_iter_ = false;
     
     /// threshold for PAO domain size
     double T_CUT_DO_;
@@ -102,6 +106,7 @@ class DLPNO : public Wavefunction {
     /// projected atomic orbitals (PAOs)
     SharedMatrix C_pao_;
     SharedMatrix F_pao_;
+    SharedMatrix F_lmo_pao_; //< needed for non-canonical Brueckner orbitals
     SharedMatrix S_pao_;
 
     /// differential overlap integrals (EQ 4)
@@ -139,6 +144,10 @@ class DLPNO : public Wavefunction {
     std::vector<double> de_pno_;   ///< PNO truncation energy error
     std::vector<double> de_pno_os_;   ///< opposite-spin contributions to de_pno_
     std::vector<double> de_pno_ss_;   ///< same-spin contributions to de_pno_
+
+    /// singles amplitudes
+    std::vector<SharedMatrix> T_ia_; ///< singles amplitudes [naocc x (npno_ii, 1)]
+    std::vector<SharedMatrix> T_n_ij_; ///< projected singles amplitudes [n_lmo_pairs x (nlmo_ij, npno_ij)] (Jiang Eq. 70)
 
     /// pre-screening energies
     double de_dipole_; ///< energy correction for distant (LMO, LMO) pairs
@@ -226,6 +235,9 @@ class DLPNO : public Wavefunction {
     SharedVector flatten_mats(const std::vector<SharedMatrix>& mat_list);
 
     void copy_flat_mats(SharedVector flat, std::vector<SharedMatrix>& mat_list);
+
+    /// Performs a Brueckner rotation
+    void brueckner_rotation();
 
     /// Form LMOs, PAOs, etc.
     void setup_orbitals();
@@ -316,10 +328,6 @@ class PSI_API DLPNOCCSD : public DLPNO {
     std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
     std::vector<std::vector<SharedMatrix>> S_pno_ij_nn_; ///< pno overlaps
     std::vector<std::vector<SharedMatrix>> S_pno_ij_mn_; ///< pno overlaps
-
-    /// Coupled-cluster amplitudes
-    std::vector<SharedMatrix> T_ia_; ///< singles amplitudes [naocc x (npno_ii, 1)]
-    std::vector<SharedMatrix> T_n_ij_; ///< projected singles amplitudes [n_lmo_pairs x (nlmo_ij, npno_ij)] (Jiang Eq. 70)
 
     // => Strong and Weak Pair Info <=//
 
@@ -425,6 +433,8 @@ class PSI_API DLPNOCCSD : public DLPNO {
 
     /// iteratively solve local CCSD equations
     void lccsd_iterations();
+    /// computes DLPNO-CCSD energy (this function is kept separate from compute_energy function in case Brueckner orbitals are requested)
+    double compute_dlpno_ccsd_energy();
 
     void print_header();
     void print_results();

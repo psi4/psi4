@@ -66,6 +66,9 @@ void DLPNO::common_init() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 
+    // Using Brueckner orbitals?
+    brueckner_orbs_ = options_.get_bool("DLPNO_BRUECKNER_ORBS");
+
     // PNO Truncation Parameters
     T_CUT_PNO_ = options_.get_double("T_CUT_PNO");
     T_CUT_TRACE_ = options_.get_double("T_CUT_TRACE");
@@ -318,8 +321,6 @@ void DLPNO::setup_orbitals() {
     int nshellri = ribasis_->nshell();
     int naocc = nalpha_ - nfrzc();
 
-    auto C_occ = reference_wavefunction_->Ca_subset("AO", "OCC");
-
     // Compute number of core orbitals
     if (options_.get_str("FREEZE_CORE") == "TRUE" || options_.get_str("FREEZE_CORE") == "1") {
         ncore_ = 0;
@@ -330,15 +331,17 @@ void DLPNO::setup_orbitals() {
     }
 
     timer_on("Local MOs");
+    // Initialize C_lmo to active occupied space if not using Brueckner orbitals
+    if (!brueckner_iter_) C_lmo_ = reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC");
     // Localize active occupied orbitals
     if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "BOYS") {
-        BoysLocalizer localizer = BoysLocalizer(basisset_, reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
+        BoysLocalizer localizer = BoysLocalizer(basisset_, C_lmo_);
         localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
         localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
         localizer.localize();
         C_lmo_ = localizer.L();
     } else if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "PIPEK_MEZEY") {
-        PMLocalizer localizer = PMLocalizer(basisset_, reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
+        PMLocalizer localizer = PMLocalizer(basisset_, C_lmo_);
         localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
         localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
         localizer.localize();
@@ -355,7 +358,11 @@ void DLPNO::setup_orbitals() {
     // Form projected atomic orbitals by removing occupied space from the basis
     C_pao_ = std::make_shared<Matrix>("Projected Atomic Orbitals", nbf, nbf);
     C_pao_->identity();
-    C_pao_->subtract(linalg::triplet(C_occ, C_occ, reference_wavefunction_->S(), false, true, false));
+    C_pao_->subtract(linalg::triplet(C_lmo_, C_lmo_, reference_wavefunction_->S(), false, true, false));
+    if (ncore_ > 0) {
+        auto C_core = reference_wavefunction_->Ca_subset("AO", "FROZEN_OCC");
+        C_pao_->subtract(linalg::triplet(C_core, C_core, reference_wavefunction_->S(), false, true, false));
+    }
     S_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->S(), C_pao_, true, false, false);
 
     // normalize PAOs
@@ -364,6 +371,7 @@ void DLPNO::setup_orbitals() {
     }
     S_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->S(), C_pao_, true, false, false);
     F_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->Fa(), C_pao_, true, false, false);
+    F_lmo_pao_ = linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_pao_, true, false, false);
 
     timer_off("Projected AOs");
 
@@ -389,6 +397,19 @@ void DLPNO::setup_orbitals() {
     for (size_t s = 0; s < nshellri; s++) {
         atom_to_rishell_[ribasis_->shell_to_center(s)].push_back(s);
     }
+}
+
+void DLPNO::brueckner_rotation() {
+    // TODO: Zizi implements Brueckner orbital rotation
+    // C_lmo_ = 
+
+    // Normalize new LMOs after rotation
+    auto S_lmo = linalg::triplet(C_lmo_, reference_wavefunction_->S(), C_lmo_, true, false, false);
+    for (size_t i = 0; i < C_lmo_->ncol(); ++i) {
+        C_lmo_->scale_column(0, i, pow(S_lmo->get(i, i), -0.5));
+    }
+
+    return;
 }
 
 void DLPNO::compute_overlap_ints() {
