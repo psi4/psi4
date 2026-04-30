@@ -2964,7 +2964,7 @@ double DLPNOCCSD::compute_energy() {
             brueckner_iter_ = true;
 
             // Get new set of Brueckner orbitals through T1-rotations
-            compute_brueckner_orbitals();
+            brueckner_rotation();
 
             // recompute DLPNO-CCSD energy using new orbitals
             e_dlpno_ccsd = compute_dlpno_ccsd_energy();
