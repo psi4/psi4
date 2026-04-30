@@ -376,6 +376,10 @@ void DLPNO::setup_orbitals() {
     timer_off("Projected AOs");
 
     // map from atomic center to orbital/aux basis function/shell index
+    atom_to_bf_.clear();
+    atom_to_ribf_.clear();
+    atom_to_shell_.clear();
+    atom_to_rishell_.clear();
 
     atom_to_bf_.resize(natom);
     atom_to_ribf_.resize(natom);
@@ -400,8 +404,62 @@ void DLPNO::setup_orbitals() {
 }
 
 void DLPNO::brueckner_rotation() {
-    // TODO: Zizi implements Brueckner orbital rotation
-    // C_lmo_ = 
+
+#pragma omp parallel for
+    for (int i = 0; i < C_lmo_->ncol(); ++i) { // occupied MOs
+        int ii = i_j_to_ij_[i][i];
+
+        // => Step 1: Form canonical PAO basis <= //
+
+        // number of PAOs in the pair domain (before removing linear dependencies)
+        int npao_ii = lmopair_to_paos_[ii].size();  // X_pao_ij->rowspi(0);
+
+        // number of auxiliary basis in the domain
+        int naux_ii = lmopair_to_ribfs_[ii].size();
+
+        auto i_qa = std::make_shared<Matrix>("Three-index Integrals", naux_ii, npao_ii);
+
+        for (int q_ii = 0; q_ii < naux_ii; q_ii++) {
+            int q = lmopair_to_ribfs_[ii][q_ii];
+            int centerq = ribasis_->function_to_center(q);
+            for (int a_ii = 0; a_ii < npao_ii; a_ii++) {
+                int a = lmopair_to_paos_[ii][a_ii];
+                // riatom_to_lmos_ext_dense_ and riatom_to_paos_ext_dense are guaranteed to not be -1, by construction
+                // since the auxiliary index q is derived from the lmo pair ii, and corresponding PAOs of pair ii are guaranteed
+                // to be in the local, extended domain of the riatom
+                i_qa->set(q_ii, a_ii, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][i], riatom_to_paos_ext_dense_[centerq][a]));
+            }
+        }
+
+        auto A_solve = submatrix_rows_and_cols(*full_metric_, lmopair_to_ribfs_[ii], lmopair_to_ribfs_[ii]);
+        C_DGESV_wrapper(A_solve, i_qa);
+
+        auto K_pao_ii = linalg::doublet(i_qa, i_qa, true, false);
+
+        //                                      //
+        // ==> Canonicalize PAOs of pair ij <== //
+        //                                      //
+
+        auto S_pao_ii = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ii], lmopair_to_paos_[ii]);
+        auto F_pao_ii = submatrix_rows_and_cols(*F_pao_, lmopair_to_paos_[ii], lmopair_to_paos_[ii]);
+
+        SharedMatrix X_pao_ii;  // canonical transformation of this domain's PAOs to
+        SharedVector e_pao_ii;  // energies of the canonical PAOs
+        std::tie(X_pao_ii, e_pao_ii) = orthocanonicalizer(S_pao_ii, F_pao_ii);
+
+        // => Step 2: Project T1 amplitudes back to canonical PAO basis and perform Brueckner rotation <= //
+
+        auto C_pao_slice = submatrix_cols(*C_pao_, lmopair_to_paos_[ii]); // C_pao{\mu \mu_{ii}}
+        C_pao_slice = linalg::doublet(C_pao_slice, X_pao_ii, false, false); // canonicalizes and removes linear-dependencies
+        auto S_pao_pno_ii = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ii], lmopair_to_paos_[ii]);
+        S_pao_pno_ii = linalg::triplet(X_pao_ii, S_pao_pno_ii, X_pno_[ii], true, false, false);
+
+        // C_{\mu i} (new) += C_pao{\mu \mu_{ii}} S(\mu_{ii} a_{ii}) T_{i}^{a_{ii}}
+        auto gottem = linalg::triplet(C_pao_slice, S_pao_pno_ii, T_ia_[i]); // (\mu, 1)
+        for (int mu = 0; mu < C_lmo_->nrow(); ++mu) { // atomic orbitals
+            C_lmo_->add(mu, i, gottem->get(mu, 0));
+        } // end mu
+    } // end i
 
     // Normalize new LMOs after rotation
     auto S_lmo = linalg::triplet(C_lmo_, reference_wavefunction_->S(), C_lmo_, true, false, false);
@@ -409,7 +467,15 @@ void DLPNO::brueckner_rotation() {
         C_lmo_->scale_column(0, i, pow(S_lmo->get(i, i), -0.5));
     }
 
-    return;
+    // Canonicalize the new LMOs and update F_lmo
+    auto F_lmo = linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_lmo_, true, false, false);
+    S_lmo = linalg::triplet(C_lmo_, reference_wavefunction_->S(), C_lmo_, true, false, false);
+    
+    SharedMatrix X_lmo;  // canonical transformation of this domain's PAOs to
+    SharedVector e_lmo;  // energies of the canonical PAOs
+    std::tie(X_lmo, e_lmo) = orthocanonicalizer(S_lmo, F_lmo);
+
+    C_lmo_ = linalg::doublet(C_lmo_, X_lmo, false, false);
 }
 
 void DLPNO::compute_overlap_ints() {
@@ -713,6 +779,9 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
     // map from LMO to local virtual domain (PAOs)
     // locality determined via differential overlap integrals
 
+    lmo_to_paos_.clear();
+    lmo_to_paoatoms_.clear();
+
     lmo_to_paos_.resize(naocc);
     lmo_to_paoatoms_.resize(naocc);
     for (size_t i = 0; i < naocc; ++i) {
@@ -736,6 +805,10 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
     //   and also approximated pair energies from dipole integrals
     // This is only performed in the initial step to eliminate dipole pairs
     if (initial) {
+        i_j_to_ij_.clear();
+        ij_to_i_j_.clear();
+        ij_to_ji_.clear();
+
         i_j_to_ij_.resize(naocc);
         de_dipole_ = 0.0;
 
@@ -775,6 +848,11 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
 
     int n_lmo_pairs = ij_to_i_j_.size();
 
+    lmopair_to_paos_.clear();
+    lmopair_to_paoatoms_.clear();
+    lmopair_to_ribfs_.clear();
+    lmopair_to_riatoms_.clear();
+
     lmopair_to_paos_.resize(n_lmo_pairs);
     lmopair_to_paoatoms_.resize(n_lmo_pairs);
     lmopair_to_ribfs_.resize(n_lmo_pairs);
@@ -795,6 +873,8 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
     // Create a list of lmos that "interact" with a lmo_pair
     // This is defined by all LMOs m such that im and jm form valid pairs
     lmopair_to_lmos_.clear();
+    lmopair_to_lmos_dense_.clear();
+
     lmopair_to_lmos_.resize(n_lmo_pairs);
     lmopair_to_lmos_dense_.resize(n_lmo_pairs);
 
@@ -823,6 +903,8 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
 
     if (initial) {
         // => Coefficient Sparsity <= //
+        lmo_to_bfs_.clear();
+        lmo_to_atoms_.clear();
 
         // which basis functions (on which atoms) contribute to each local MO?
         lmo_to_bfs_.resize(naocc);
@@ -838,6 +920,9 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
         }
 
         // which basis functions (on which atoms) contribute to each projected AO?
+        pao_to_bfs_.clear();
+        pao_to_atoms_.clear();
+
         pao_to_bfs_.resize(nbf);
         pao_to_atoms_.resize(nbf);
 
@@ -873,6 +958,8 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
 
         // Need dense versions of previous maps for quick lookup
 
+        riatom_to_lmos_ext_dense_.clear();
+        riatom_to_paos_ext_dense_.clear();
         // riatom_to_lmos_ext_dense_[riatom][lmo] is the index of lmo in riatom_to_lmos_ext_[riatom]
         //   (if present), else -1
         riatom_to_lmos_ext_dense_.resize(natom);
@@ -880,6 +967,8 @@ void DLPNO::prep_sparsity(bool initial, bool final) {
         //   (if present), else -1
         riatom_to_paos_ext_dense_.resize(natom);
 
+        riatom_to_atoms1_dense_.clear();
+        riatom_to_atoms2_dense_.clear();
         // riatom_to_atoms1_dense_(1,2)[riatom][a] is true if the orbitals basis functions of atom A
         //   are needed for the (LMO,PAO) transform
         riatom_to_atoms1_dense_.resize(natom);
@@ -934,6 +1023,7 @@ void DLPNO::compute_qij() {
 
     auto SC_lmo = linalg::doublet(reference_wavefunction_->S(), C_lmo_, false, false);
 
+    qij_.clear();
     qij_.resize(naux);
 
     // LMO-LMO DF ints
@@ -1050,6 +1140,7 @@ void DLPNO::compute_qia() {
     auto SC_lmo =
         linalg::doublet(reference_wavefunction_->S(), C_lmo_, false, false);  // intermediate for coefficient fitting
 
+    qia_.clear();
     qia_.resize(naux);
 
 #pragma omp parallel for schedule(dynamic, 1)
@@ -1168,6 +1259,9 @@ void DLPNO::compute_qab() {
     double T_CUT_DO_UV = options_.get_double("T_CUT_DO_UV");
 
     // Prepare Sparsity info for QAB intergrals
+    riatom_to_pao_pairs_.clear();
+    riatom_to_pao_pairs_dense_.clear();
+
     riatom_to_pao_pairs_.resize(natom);
     riatom_to_pao_pairs_dense_.resize(natom);
 
@@ -1215,6 +1309,7 @@ void DLPNO::compute_qab() {
 
     outfile->Printf("\n  ==> Transforming 3-Index Integrals to PAO/PAO basis <==\n\n");
 
+    qab_.clear();
     qab_.resize(naux);
 
     size_t qab_doubles = 0L;
@@ -1347,6 +1442,16 @@ void DLPNO::pno_transform() {
     size_t MIN_PNO = options_.get_int("MIN_PNOS");
 
     outfile->Printf("\n  ==> Forming Pair Natural Orbitals <==\n");
+
+    K_iajb_.clear();     // exchange operators (i.e. (ia|jb) integrals)
+    T_iajb_.clear();     // amplitudes
+    Tt_iajb_.clear();    // antisymmetrized amplitudes
+    X_pno_.clear();      // global PAOs -> canonical PNOs
+    e_pno_.clear();      // PNO orbital energies
+    n_pno_.clear();      // number of pnos
+    de_pno_.clear();     // PNO truncation error
+    de_pno_os_.clear();  // opposite-spin contributions to de_pno_
+    de_pno_ss_.clear();  // same-spin contributions to de_pno_
 
     K_iajb_.resize(n_lmo_pairs);   // exchange operators (i.e. (ia|jb) integrals)
     T_iajb_.resize(n_lmo_pairs);   // amplitudes

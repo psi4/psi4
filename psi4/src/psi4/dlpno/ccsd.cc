@@ -164,6 +164,10 @@ void DLPNOCCSD::compute_pno_overlaps() {
 
     const int naocc = i_j_to_ij_.size();
     const int n_lmo_pairs = ij_to_i_j_.size();
+
+    S_pno_ij_kj_.clear();
+    S_pno_ij_nn_.clear();
+    if (!low_memory_overlap_) S_pno_ij_mn_.clear();
     
     S_pno_ij_kj_.resize(n_lmo_pairs);
     S_pno_ij_nn_.resize(n_lmo_pairs);
@@ -521,6 +525,18 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
 
     if constexpr (!crude) {
         outfile->Printf("\n  ==> Forming Pair Natural Orbitals (for LMP2) <==\n");
+
+        K_iajb_.clear();
+        T_iajb_.clear();
+        Tt_iajb_.clear();
+        X_pno_.clear();
+        e_pno_.clear();
+
+        n_pno_.clear();
+        occ_pno_.clear();
+        trace_pno_.clear();
+        e_ratio_pno_.clear();
+        de_pno_.clear();
 
         K_iajb_.resize(n_lmo_pairs);
         T_iajb_.resize(n_lmo_pairs);
@@ -1228,6 +1244,11 @@ template<bool crude> double DLPNOCCSD::filter_pairs(const std::vector<double>& e
         return delta_e_crude;
 
     } else {
+        i_j_to_ij_strong_.clear();
+        i_j_to_ij_weak_.clear();
+        ij_to_i_j_strong_.clear();
+        ij_to_i_j_weak_.clear();
+
         i_j_to_ij_strong_.resize(naocc);
         i_j_to_ij_weak_.resize(naocc);
 
@@ -1319,28 +1340,39 @@ void DLPNOCCSD::compute_pno_integrals() {
     int n_lmo_pairs = ij_to_i_j_.size();
     
     // 1 virtual
+    K_mibj_.clear();
+    J_ijmb_.clear();
+    L_mibj_.clear();
     K_mibj_.resize(n_lmo_pairs);
     J_ijmb_.resize(n_lmo_pairs);
     L_mibj_.resize(n_lmo_pairs);
 
     // 2 virtual
+    L_iajb_.clear();
     L_iajb_.resize(n_lmo_pairs);
 
     // 2-virtual non-projected
+    J_ikac_non_proj_.clear();
+    K_iakc_non_proj_.clear();
     J_ikac_non_proj_.resize(n_lmo_pairs);
     K_iakc_non_proj_.resize(n_lmo_pairs);
 
     // 3 virtual
+    K_ivvv_.clear();
     K_ivvv_.resize(n_lmo_pairs);
 
     // DF integrals (only allocate if writing to RAM)
     if (!write_qia_pno_) {
+        Qma_ij_.clear();
         Qma_ij_.resize(n_lmo_pairs);
     }
     if (!write_qab_pno_) {
+        Qab_ij_.clear();
         Qab_ij_.resize(n_lmo_pairs);
     }
 
+    i_Qa_ij_.clear();
+    i_Qk_ij_.clear();
     i_Qa_ij_.resize(n_lmo_pairs);
     i_Qk_ij_.resize(n_lmo_pairs);
 
@@ -1894,6 +1926,11 @@ void DLPNOCCSD::t1_fock() {
     // => Step 2: Dressing over the free/non-contracted indices <= //
 
     Fkj_ = Fij_bar->clone();
+
+    Fkc_.clear();
+    Fai_.clear();
+    Fab_.clear();
+
     Fkc_.resize(n_lmo_pairs);
     Fai_.resize(naocc);
     Fab_.resize(n_lmo_pairs);
@@ -1921,7 +1958,7 @@ void DLPNOCCSD::t1_fock() {
         // \widetilde{F}_{ia} = \overline{F}_{ia} = f_{ia} + [2(ia|kc) - (ic|ka)] T_{k}^{c}
         // => L_{ik}^{ac} T_{k}^{c}
         Fkc_[ij] = submatrix_rows_and_cols(*F_lmo_pao_, std::vector<int>(1, i), lmopair_to_paos_[ij]);
-        Fkc_[ij] = linalg::doublet(Fkc_[ij], X_pno_[ij], false, false);
+        Fkc_[ij] = linalg::doublet(Fkc_[ij], X_pno_[ij], false, false)->transpose();
 
         for (int k_ij = 0; k_ij < nlmo_ij; ++k_ij) {
             int k = lmopair_to_lmos_[ij][k_ij];
@@ -2606,7 +2643,7 @@ void DLPNOCCSD::lccsd_iterations() {
     std::vector<SharedMatrix> R_iajb(n_lmo_pairs);
 
     // => Initialize Singles Residuals and Amplitudes <= //
-
+    T_ia_.clear();
     T_ia_.resize(naocc);
 
 #pragma omp parallel for
@@ -2642,6 +2679,11 @@ void DLPNOCCSD::lccsd_iterations() {
     DIISManager diis(options_.get_int("DIIS_MAX_VECS"), "LCCSD DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
 
     double F_CUT = options_.get_double("F_CUT");
+
+    i_Qk_t1_.clear();
+    i_Qa_t1_.clear();
+
+    T_n_ij_.clear();
 
     i_Qk_t1_.resize(n_lmo_pairs);
     i_Qa_t1_.resize(n_lmo_pairs);
@@ -2955,7 +2997,7 @@ double DLPNOCCSD::compute_energy() {
         bool brueckner_converged = false;
         int iteration = 1;
         const int BRUECKNER_MAXITER = options_.get_int("BRUECKNER_MAXITER");
-        const int BRUECKNER_R_CONV = options_.get_double("BRUECKNER_R_CONV");
+        const int BRUECKNER_R_CONV = options_.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
 
         while (!brueckner_converged) {
             outfile->Printf("\n  ==> Brueckner Orbital Optimization Iteration %d <==\n\n", iteration);
@@ -2969,12 +3011,12 @@ double DLPNOCCSD::compute_energy() {
             // recompute DLPNO-CCSD energy using new orbitals
             e_dlpno_ccsd = compute_dlpno_ccsd_energy();
 
-            // Compute max R1 residual
-            std::vector<SharedMatrix> T1_vecs;
-            T1_vecs.reserve(T_ia_.size());
-            T1_vecs.insert(T1_vecs.end(), T_ia_.begin(), T_ia_.end());
-            auto T1_flat = flatten_mats(T1_vecs);
-            double T1_max = *max_element(T1_flat.begin(), T1_flat.end());
+            // Compute max T1
+            double T1_max = 0.0;
+
+            for (int i = 0; i < T_ia_.size(); ++i) {
+                T1_max = std::max(T1_max, T_ia_[i]->absmax());
+            }
 
             outfile->Printf("\n    Brueckner Iteration %d: Energy = %16.12f, Max R1 = %10.3e\n", iteration, e_dlpno_ccsd, T1_max);
 
