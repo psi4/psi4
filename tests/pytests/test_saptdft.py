@@ -481,7 +481,7 @@ def test_saptdft_auto_grac(
                 "Enuc": 37.565065473343004,
                 "Etot": -0.04168577098741776,
             },
-            7,
+            2.0e-8,
         ),
         (
             "abc",
@@ -661,7 +661,7 @@ no_com
 
     # Compare values
     for k1, k2 in key_labels:
-        compare_values(
+        assert compare_values(
             expected_values[k1],
             calculated_energies[k1],
             precision,
@@ -669,7 +669,7 @@ no_com
         )
 
     # Also check nuclear repulsion energy
-    compare_values(
+    assert compare_values(
         expected_values["Enuc"],
         calculated_energies["Enuc"],
         precision,

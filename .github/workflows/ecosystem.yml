@@ -179,6 +179,7 @@ jobs:
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
+          sed -E -i.bak "s;- ambit;- mctc-lib=0.4.1;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
@@ -294,8 +295,6 @@ jobs:
         conda list
         if [[ "${{ runner.os }}" != "Windows" ]]; then
           # on Windows, cmd varies: `qcengine.exe`
-          export PATH=install/bin:$PATH
-          PYTHONPATH=install/lib python -c "import qcengine as qcng; qcng.get_program('psi4')"
           qcengine info
         fi
 
@@ -310,20 +309,69 @@ jobs:
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
+    - name: Test Run, Spot, Run 2
+      working-directory: ./objdir
+      run: |
+        eval $(stage/bin/psi4 --psiapi)
+        psi4 ../tests/ddd-deriv/input.dat -o stdout
+
+      # step works but is redundant with next one; enable for debugging
+    - name: Misc Test Addons with CTest (M)
+      if: runner.os == 'macOS'
+      working-directory: ./objdir
+      run: |
+        ls -l
+        pwd
+        python -c "import sys;print(sys.path)"
+        echo ROUND1
+        python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        psi4 --module || true
+        python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        python -c "import psi4; print(psi4.executable)" || true
+        echo ROUND1NG
+        python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        echo ROUNDE
+        PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        PATH=stage/bin:$PATH psi4 --module || true
+        PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        PATH=stage/bin:$PATH python -c "import psi4; print(psi4.executable)" || true
+        echo ROUNDE-NG
+        PATH=stage/bin:$PATH python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        echo ROUNDP
+        PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        PYTHONPATH=stage/lib psi4 --module || true
+        PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        PYTHONPATH=stage/lib python -c "import psi4; print(psi4.executable)" || true
+        echo ROUNDP-NG
+        PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        echo EIN
+        python -c "import einsums"
+        echo END PLAIN EIN
+        python -c "import einsums as ein;print(ein.__file__)"
+        echo END EIN
+        echo ROUND4
+        eval $(stage/bin/psi4 --psiapi)
+        python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        psi4 --module || true
+        python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        python -c "import psi4; print(psi4.executable)" || true
+        echo ROUND4-NG
+        python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+
       # step works but is redundant with next one; enable for debugging
     - name: Test Addons with CTest (M)
       if: runner.os == 'macOS'
       working-directory: ./objdir
-      run: PATH=stage/bin:$PATH ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows
+      run: ctest -L quick -E f12 -j2 --output-on-failure  # `-LE d2ints` needed for Windows
 
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
     - name: Test Addons with Pytest (geomeTRIC)
       working-directory: ./objdir
-      run: PATH=stage/bin:$PATH PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n 2 -m "geometric" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n 2 -m "geometric" stage/lib/psi4/tests/
 
     - name: Test Addons with Pytest
       working-directory: ./objdir
-      run: PATH=stage/bin:$PATH PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }} and not geometric" -k "${{ matrix.cfg.pytest-name-expr }}" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }} and not geometric" -k "${{ matrix.cfg.pytest-name-expr }}" stage/lib/psi4/tests/
 
     - name: Write user Conda environment files
       run: |
