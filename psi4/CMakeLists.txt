@@ -346,6 +346,7 @@ install(
   DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
   )
 
+    # throttle the thousands of lines of bases, quadratures, and tests upon first install
 set(_save_CMAKE_INSTALL_MESSAGE "${CMAKE_INSTALL_MESSAGE}")
 set(CMAKE_INSTALL_MESSAGE NEVER)
 

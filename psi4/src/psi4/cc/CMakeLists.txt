@@ -43,8 +43,6 @@ endforeach ()
 
 set_property(GLOBAL APPEND PROPERTY BINLIST cc)
 
-# unity and pch after https://github.com/psi4/psi4/pull/3386
-set_property(TARGET cc PROPERTY UNITY_BUILD OFF)
-# if (psi4_ENABLE_PRECOMPILE_HEADERS)
-#     target_precompile_headers(cc REUSE_FROM psio)
-# endif()
+if (psi4_ENABLE_PRECOMPILE_HEADERS)
+    target_precompile_headers(cc REUSE_FROM psio)
+endif()

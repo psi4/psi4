@@ -81,9 +81,6 @@ list(APPEND sources
   )
 psi4_add_module(bin psimrcc sources)
 
-# unity after https://github.com/psi4/psi4/pull/3387
-set_property(TARGET psimrcc PROPERTY UNITY_BUILD OFF)
-
 if (psi4_ENABLE_PRECOMPILE_HEADERS)
     target_precompile_headers(psimrcc REUSE_FROM psio)
 endif()
