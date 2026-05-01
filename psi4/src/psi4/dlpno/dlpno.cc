@@ -333,15 +333,16 @@ void DLPNO::setup_orbitals() {
     timer_on("Local MOs");
     // Initialize C_lmo to active occupied space if not using Brueckner orbitals
     if (!brueckner_iter_) C_lmo_ = reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC");
+
     // Localize active occupied orbitals
     if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "BOYS") {
-        BoysLocalizer localizer = BoysLocalizer(basisset_, C_lmo_);
+        BoysLocalizer localizer = BoysLocalizer(basisset_, C_lmo_->clone());
         localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
         localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
         localizer.localize();
         C_lmo_ = localizer.L();
     } else if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "PIPEK_MEZEY") {
-        PMLocalizer localizer = PMLocalizer(basisset_, C_lmo_);
+        PMLocalizer localizer = PMLocalizer(basisset_, C_lmo_->clone());
         localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
         localizer.set_maxiter(options_.get_int("LOCAL_MAXITER"));
         localizer.localize();
@@ -349,6 +350,7 @@ void DLPNO::setup_orbitals() {
     } else {
         throw PSIEXCEPTION("Invalid option for DLPNO_LOCAL_ORBITALS");
     }
+
     timer_off("Local MOs");
 
     F_lmo_ = linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_lmo_, true, false, false);
@@ -414,28 +416,6 @@ void DLPNO::brueckner_rotation() {
         // number of PAOs in the pair domain (before removing linear dependencies)
         int npao_ii = lmopair_to_paos_[ii].size();  // X_pao_ij->rowspi(0);
 
-        // number of auxiliary basis in the domain
-        int naux_ii = lmopair_to_ribfs_[ii].size();
-
-        auto i_qa = std::make_shared<Matrix>("Three-index Integrals", naux_ii, npao_ii);
-
-        for (int q_ii = 0; q_ii < naux_ii; q_ii++) {
-            int q = lmopair_to_ribfs_[ii][q_ii];
-            int centerq = ribasis_->function_to_center(q);
-            for (int a_ii = 0; a_ii < npao_ii; a_ii++) {
-                int a = lmopair_to_paos_[ii][a_ii];
-                // riatom_to_lmos_ext_dense_ and riatom_to_paos_ext_dense are guaranteed to not be -1, by construction
-                // since the auxiliary index q is derived from the lmo pair ii, and corresponding PAOs of pair ii are guaranteed
-                // to be in the local, extended domain of the riatom
-                i_qa->set(q_ii, a_ii, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][i], riatom_to_paos_ext_dense_[centerq][a]));
-            }
-        }
-
-        auto A_solve = submatrix_rows_and_cols(*full_metric_, lmopair_to_ribfs_[ii], lmopair_to_ribfs_[ii]);
-        C_DGESV_wrapper(A_solve, i_qa);
-
-        auto K_pao_ii = linalg::doublet(i_qa, i_qa, true, false);
-
         //                                      //
         // ==> Canonicalize PAOs of pair ij <== //
         //                                      //
@@ -456,11 +436,15 @@ void DLPNO::brueckner_rotation() {
 
         // C_{\mu i} (new) += C_pao{\mu \mu_{ii}} S(\mu_{ii} a_{ii}) T_{i}^{a_{ii}}
         auto gottem = linalg::triplet(C_pao_slice, S_pao_pno_ii, T_ia_[i]); // (\mu, 1)
+        gottem->scale(0.5);
+
         for (int mu = 0; mu < C_lmo_->nrow(); ++mu) { // atomic orbitals
             C_lmo_->add(mu, i, gottem->get(mu, 0));
         } // end mu
     } // end i
+}
 
+void DLPNO::lmo_canonicalize() {
     // Normalize new LMOs after rotation
     auto S_lmo = linalg::triplet(C_lmo_, reference_wavefunction_->S(), C_lmo_, true, false, false);
     for (size_t i = 0; i < C_lmo_->ncol(); ++i) {

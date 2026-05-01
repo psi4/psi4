@@ -239,6 +239,9 @@ class DLPNO : public Wavefunction {
     /// Performs a Brueckner rotation
     void brueckner_rotation();
 
+    /// recanonicalize LMOs after Brueckner rotation
+    void lmo_canonicalize();
+
     /// Form LMOs, PAOs, etc.
     void setup_orbitals();
     

@@ -2997,7 +2997,9 @@ double DLPNOCCSD::compute_energy() {
         bool brueckner_converged = false;
         int iteration = 1;
         const int BRUECKNER_MAXITER = options_.get_int("BRUECKNER_MAXITER");
-        const int BRUECKNER_R_CONV = options_.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
+        const double BRUECKNER_R_CONV = options_.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
+
+        DIISManager diis(options_.get_int("DIIS_MAX_VECS"), "BRUECKNER DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
 
         while (!brueckner_converged) {
             outfile->Printf("\n  ==> Brueckner Orbital Optimization Iteration %d <==\n\n", iteration);
@@ -3007,6 +3009,29 @@ double DLPNOCCSD::compute_energy() {
 
             // Get new set of Brueckner orbitals through T1-rotations
             brueckner_rotation();
+
+            // Compute error vector for DIIS extrapolation
+            std::vector<SharedMatrix> T1_squared(T_ia_.size());
+#pragma omp parallel for
+            for (int i = 0; i < T_ia_.size(); ++i) {
+                T1_squared[i] = T_ia_[i]->clone();
+                for (int a = 0; a < T1_squared[i]->nrow(); ++a) {
+                    (*T1_squared[i])(a, 0) *= (*T1_squared[i])(a, 0);
+                } // end a
+            } // end i
+
+            auto T1_squared_flat = flatten_mats(T1_squared);
+
+            if (iteration == 1) {
+                diis.set_error_vector_size(T1_squared_flat);
+                diis.set_vector_size(C_lmo_);
+            }
+
+            diis.add_entry(T1_squared_flat.get(), C_lmo_.get());
+            diis.extrapolate(C_lmo_.get());
+
+            // Recanonicalize LMOs after extrapolation
+            lmo_canonicalize();
 
             // recompute DLPNO-CCSD energy using new orbitals
             e_dlpno_ccsd = compute_dlpno_ccsd_energy();
