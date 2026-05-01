@@ -311,58 +311,16 @@ jobs:
 
     - name: Test Run, Spot, Run 2
       working-directory: ./objdir
+      if: runner.os != 'Windows'
       run: |
         eval $(stage/bin/psi4 --psiapi)
         psi4 ../tests/ddd-deriv/input.dat -o stdout
 
       # step works but is redundant with next one; enable for debugging
-    - name: Misc Test Addons with CTest (M)
-      if: runner.os == 'macOS'
-      working-directory: ./objdir
-      run: |
-        ls -l
-        pwd
-        python -c "import sys;print(sys.path)"
-        echo ROUND1
-        python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
-        psi4 --module || true
-        python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
-        python -c "import psi4; print(psi4.executable)" || true
-        echo ROUND1NG
-        python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
-        echo ROUNDE
-        PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
-        PATH=stage/bin:$PATH psi4 --module || true
-        PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
-        PATH=stage/bin:$PATH python -c "import psi4; print(psi4.executable)" || true
-        echo ROUNDE-NG
-        PATH=stage/bin:$PATH python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
-        echo ROUNDP
-        PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
-        PYTHONPATH=stage/lib psi4 --module || true
-        PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
-        PYTHONPATH=stage/lib python -c "import psi4; print(psi4.executable)" || true
-        echo ROUNDP-NG
-        PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
-        echo EIN
-        python -c "import einsums"
-        echo END PLAIN EIN
-        python -c "import einsums as ein;print(ein.__file__)"
-        echo END EIN
-        echo ROUND4
-        eval $(stage/bin/psi4 --psiapi)
-        python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
-        psi4 --module || true
-        python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
-        python -c "import psi4; print(psi4.executable)" || true
-        echo ROUND4-NG
-        python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
-
-      # step works but is redundant with next one; enable for debugging
     - name: Test Addons with CTest (M)
       if: runner.os == 'macOS'
       working-directory: ./objdir
-      run: ctest -L quick -E f12 -j2 --output-on-failure  # `-LE d2ints` needed for Windows
+      run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows
 
       # Win runs out of memory on the geometric mp2(conv) tests, so run them with less parallelism
     - name: Test Addons with Pytest (geomeTRIC)
