@@ -31,7 +31,6 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#define EXTERN
 #include "globals.h"
 namespace psi {
 namespace ccdensity {
