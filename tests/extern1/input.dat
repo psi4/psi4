@@ -38,11 +38,6 @@ external_potentials = [
     [-0.834, np.array([1.649232019048,0.0,-2.356023604706]) / psi_bohr2angstroms],
     [ 0.417, np.array([0.544757019107,0.0,-3.799961446760]) / psi_bohr2angstroms],
     [ 0.417, np.array([0.544757019107,0.0,-0.912085762652]) / psi_bohr2angstroms]]
-# TEMP UNDO AFTER qcel rc5 serialization fix
-external_potentials = [
-    [-0.834, list(np.array([1.649232019048,0.0,-2.356023604706]) / psi_bohr2angstroms)],
-    [ 0.417, list(np.array([0.544757019107,0.0,-3.799961446760]) / psi_bohr2angstroms)],
-    [ 0.417, list(np.array([0.544757019107,0.0,-0.912085762652]) / psi_bohr2angstroms)]]
 
 set {
     scf_type df

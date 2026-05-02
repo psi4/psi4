@@ -1,3 +1,6 @@
+# TODO UNDO
+set(CMAKE_UNITY_BUILD ON)
+
 foreach(dir_name
   lib3index
   libciomr
