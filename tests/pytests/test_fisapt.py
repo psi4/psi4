@@ -431,9 +431,8 @@ no_com"""
         compare_values(fEref[k], fEnergies[k], 2, k)
 
 
-# TODO UNDO HIDE
 @pytest.mark.fsapt
-def hide_test_fsapt_AtomicOutput_external_potentials():
+def test_fsapt_AtomicOutput_external_potentials():
     """
     Test F-SAPT analysis using QCSchema AtomicResult output with external
     potentials (no pandas).

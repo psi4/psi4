@@ -1006,7 +1006,7 @@ data:
       host: github
       account: MolSSI
       name: QCElemental
-      commit: v0.50.0rc4
+      commit: v0.50.0rc5
       githttps: true
     cmake:
       name: qcelemental
@@ -1015,7 +1015,7 @@ data:
     conda:
       channel: conda-forge/label/qcelemental_dev
       name: qcelemental
-      constraint: ">=0.50.0rc4"
+      constraint: ">=0.50.0rc5"
       aux_run_names:
         - msgpack-python
         - networkx
