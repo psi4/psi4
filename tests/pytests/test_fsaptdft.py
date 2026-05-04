@@ -43,6 +43,7 @@ units angstrom
             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
             "SAPT_DFT_DO_FSAPT": "FISAPT",
             "SAPT_DFT_USE_EINSUMS": True,
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     psi4.core.clean_timers()
@@ -227,6 +228,7 @@ no_com
             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
             # Normally on
             "SAPT_DFT_USE_EINSUMS": True,
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     _, wfn = psi4.energy("sapt(dft)", molecule=mol, return_wfn=True)
@@ -270,6 +272,9 @@ no_com
 @pytest.mark.fsapt
 @uusing("pandas")
 @pytest.mark.saptdft
+@uusing("dftd4")
+@pytest.mark.dftd4
+@uusing("dftd4")
 def test_fsaptdftd4_psivars():
     """Validate SAPT(DFT)-D4(s) scalar variables and FSAPT terms vs references."""
     import pandas as pd
@@ -322,6 +327,7 @@ no_com
             "SAPT_DFT_DO_DHF": True,
             "SAPT_DFT_DO_HYBRID": False,
             "SAPT_DFT_DO_FSAPT": "SAPTDFT",
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     _, wfn = psi4.energy("sapt(dft)-d4(s)", return_wfn=True)
@@ -493,6 +499,8 @@ no_com
 
 @pytest.mark.fsapt
 @pytest.mark.saptdft
+@pytest.mark.dftd4
+@uusing("dftd4")
 def test_fsaptdftd4_psivars_pbe0_frozen_core():
     """Check PBE0 SAPT(DFT)-D4(i) fragment indices and per-fragment energies."""
 
@@ -547,6 +555,7 @@ no_com
             "SAPT_DFT_DO_FSAPT": "SAPTDFT",
             "SAPT_DFT_GRAC_SHIFT_A": 0.11652342,
             "SAPT_DFT_GRAC_SHIFT_B": 0.12724880,
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     _, wfn = psi4.energy("sapt(dft)-d4(i)", molecule=mol, return_wfn=True)
@@ -773,6 +782,7 @@ no_com
             "guess": "sad",
             "freeze_core": "true",
             "FISAPT_FSAPT_FILEPATH": "none",
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     psi4.energy("fisapt0", molecule=mol)
@@ -810,6 +820,7 @@ no_com
             "SAPT_DFT_DO_DISP": True,
             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
             "SAPT_DFT_USE_EINSUMS": False,
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     _, wfn = psi4.energy("sapt(dft)", molecule=mol, return_wfn=True)
@@ -839,6 +850,8 @@ no_com
 
 @pytest.mark.saptdft
 @pytest.mark.fsapt
+@pytest.mark.dftd4
+@uusing("dftd4")
 def test_fsaptdft_fisapt0_d4():
     """Compare fisapt0-d4 and SAPT(DFT)-D4(i)/FISAPT fragment decompositions."""
 
@@ -889,6 +902,7 @@ no_com
             "guess": "sad",
             "freeze_core": "true",
             "FISAPT_FSAPT_FILEPATH": "tmp_fisapt",
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     _, wfn = psi4.energy("fisapt0-d4", molecule=mol, return_wfn=True)
@@ -957,6 +971,7 @@ no_com
             "SAPT_DFT_DO_FSAPT": "FISAPT",
             "SAPT_DFT_USE_EINSUMS": True,
             "FISAPT_FSAPT_FILEPATH": "tmp",
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     _, wfn = psi4.energy("sapt(dft)-d4(i)", molecule=mol, return_wfn=True)

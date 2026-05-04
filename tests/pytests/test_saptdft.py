@@ -5,6 +5,7 @@ from psi4 import compare_values
 import numpy as np
 import qcelemental as qcel
 from pprint import pprint as pp
+from addons import uusing
 
 hartree_to_kcalmol = constants.conversion_factor("hartree", "kcal/mol")
 pytestmark = [pytest.mark.psi, pytest.mark.api]
@@ -38,6 +39,7 @@ units angstrom
 
 @pytest.mark.saptdft
 @pytest.mark.dftd4
+@uusing("dftd4")
 def test_sapt_dft_compute_ddft_d4():
     """
     Test SAPT(DFT) for correct delta-DFT and -D4 IE terms
@@ -63,6 +65,7 @@ def test_sapt_dft_compute_ddft_d4():
             "sapt_dft_grac_shift_a": 0.136,
             "sapt_dft_grac_shift_b": 0.136,
             "SAPT_DFT_FUNCTIONAL": dft_functional,
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     dft_IE = (
@@ -98,6 +101,7 @@ def test_sapt_dft_compute_ddft_d4():
 
 @pytest.mark.saptdft
 @pytest.mark.dftd4
+@uusing("dftd4")
 @pytest.mark.parametrize(
     "method, expected_disp",
     [
@@ -125,6 +129,7 @@ units bohr
             "sapt_dft_grac_shift_a": 0.136,
             "sapt_dft_grac_shift_b": 0.136,
             "SAPT_DFT_FUNCTIONAL": "pbe0",
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     psi4.energy(method)
@@ -162,6 +167,7 @@ units bohr
             "sapt_dft_grac_shift_a": 0.136,
             "sapt_dft_grac_shift_b": 0.136,
             "SAPT_DFT_FUNCTIONAL": "pbe0",
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     psi4.energy(method)
@@ -172,6 +178,7 @@ units bohr
 
 @pytest.mark.saptdft
 @pytest.mark.dftd4
+@uusing("dftd4")
 def test_sapt_dft_compute_ddft_d4_diskdf():
     """
     Test SAPT(DFT) for correct delta-DFT and -D4 IE terms
@@ -198,6 +205,7 @@ def test_sapt_dft_compute_ddft_d4_diskdf():
             "sapt_dft_grac_shift_a": 0.136,
             "sapt_dft_grac_shift_b": 0.136,
             "SAPT_DFT_FUNCTIONAL": dft_functional,
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     dft_IE = (
@@ -246,6 +254,7 @@ def test_sapt_dft_compute_ddft_d4_diskdf():
 
 @pytest.mark.saptdft
 @pytest.mark.dftd4
+@uusing("dftd4")
 @pytest.mark.medlong
 def test_sapt_dft_diskdf():
     """
@@ -275,6 +284,7 @@ def test_sapt_dft_diskdf():
             "sapt_dft_grac_shift_a": 0.136,
             "sapt_dft_grac_shift_b": 0.136,
             "SAPT_DFT_FUNCTIONAL": dft_functional,
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     dft_IE = (
@@ -306,6 +316,7 @@ def test_sapt_dft_diskdf():
 
 @pytest.mark.saptdft
 @pytest.mark.dftd4
+@uusing("dftd4")
 def test_sapt_dft_compute_ddft_d4_auto_grac():
     """
     Test SAPT(DFT) for correct delta-DFT and -D4 IE terms
@@ -330,6 +341,7 @@ def test_sapt_dft_compute_ddft_d4_auto_grac():
             "d_convergence": 3e-8,
             "sapt_dft_grac_compute": "SINGLE",
             "SAPT_DFT_FUNCTIONAL": dft_functional,
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     dft_IE = (
@@ -628,6 +640,7 @@ no_com
             "freeze_core": "true",
             "SAPT_DFT_FUNCTIONAL": "hf",
             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
 
@@ -851,6 +864,7 @@ no_com
             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
             "sapt_dft_grac_shift_a": 0.1307,
             "sapt_dft_grac_shift_b": 0.1307,
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
 
@@ -1033,11 +1047,11 @@ def test_qcng_embedded_saptdft():
             "SAPT_DFT_GRAC_SHIFT_A": 0.1307,
             "SAPT_DFT_GRAC_SHIFT_B": 0.1307,
             # Up the convergence threshold to ensure same solution with openorbitaloptimizer.
-            "e_convergence": 1e-8,
+            "e_convergence": 1e-10,
             "d_convergence": 1e-10,
             "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         },
-        "model": {"basis": "sto-3g", "method": "sapt(dft)"},
+        "model": {"basis": "cc-pvdz", "method": "sapt(dft)"},
         "molecule": {
             "extras": {},
             "fix_com": True,
@@ -1099,7 +1113,7 @@ def test_qcng_embedded_saptdft():
     )
     print(ret_1)
     assert compare_values(
-        -0.001920,
+        -0.006052,
         ret_1.extras["qcvars"]["SAPT TOTAL ENERGY"],
         4,
         "SAPT(DFT) TOTAL run_qschema",
@@ -1112,7 +1126,7 @@ def test_qcng_embedded_saptdft():
     )
     print(ret_2)
     assert compare_values(
-        -0.001920,
+        -0.006052,
         ret_2.extras["qcvars"]["SAPT TOTAL ENERGY"],
         4,
         "SAPT(DFT) TOTAL qcng",
@@ -1184,6 +1198,7 @@ def test_charge_field_inputs():
             "mp2_type": "df",
             "fisapt_do_fsapt": "false",
             "SAPT_DFT_GRAC_COMPUTE": "single",
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
 
@@ -1232,6 +1247,7 @@ def test_einsum_terms():
             "SAPT_DFT_DO_HYBRID": False,
             "SAPT_DFT_USE_EINSUMS": True,
             "SAPT_DFT_EXCH_DISP_SCALE_SCHEME": "None",
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     psi4.energy("sapt(dft)", molecule=mol)
@@ -1272,6 +1288,7 @@ def test_saptdft_inf():
             "scf_type": "df",
             "DO_IND_EXCH_SINF": True,
             "SAPT_DFT_FUNCTIONAL": "HF",
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     psi4.energy("sapt(dft)", molecule=mol)
@@ -1307,6 +1324,7 @@ symmetry c1
             "SAPT_DFT_MP2_DISP_ALG": "FISAPT",
             "SAPT_DFT_FUNCTIONAL": "HF",
             "DO_DISP_EXCH_SINF": True,
+            "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
         }
     )
     psi4.energy("sapt(dft)", molecule=mol)
@@ -1323,7 +1341,8 @@ if __name__ == "__main__":
     psi4.set_num_threads(12)
     # pytest this file
     # test_fisapt0_sapthf_external_potential(True)
-    test_fisapt0_sapthf_external_potential(False)
+    test_sapt_dft_compute_ddft_d4_auto_grac()
+    # test_fisapt0_sapthf_external_potential(False)
     # test_qcng_embedded_saptdft()
     # test_saptdft_disp_methods_dftd4("SAPT(DFT)-D4(S)", -0.003605830)
     # test_saptdft_disp_methods_dftd4("SAPT(DFT)-D4(I)", -0.0040379796),
