@@ -34,6 +34,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/libfock/jk.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
@@ -98,6 +99,12 @@ class DLPNO : public Wavefunction {
     std::shared_ptr<BasisSet> ribasis_;
     SharedMatrix full_metric_;
     std::vector<double> J_metric_shell_diag_; ///< used in AO ERI screening
+
+    /// JK object (used to form the Fock matrix if Brueckner orbitals are requested)
+    std::shared_ptr<JK> jk_;
+
+    /// AO Fock matrix (this changes with Brueckner orbitals)
+    SharedMatrix F_ao_;
 
     /// localized molecular orbitals (LMOs)
     SharedMatrix C_lmo_;
@@ -237,7 +244,7 @@ class DLPNO : public Wavefunction {
     void copy_flat_mats(SharedVector flat, std::vector<SharedMatrix>& mat_list);
 
     /// Performs a Brueckner rotation
-    void brueckner_rotation();
+    void brueckner_rotation(const SharedMatrix &T1_dense);
 
     /// recanonicalize LMOs after Brueckner rotation
     void lmo_canonicalize();

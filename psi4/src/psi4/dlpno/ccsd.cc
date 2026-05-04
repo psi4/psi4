@@ -526,18 +526,6 @@ template<bool crude> std::vector<double> DLPNOCCSD::compute_pair_energies() {
     if constexpr (!crude) {
         outfile->Printf("\n  ==> Forming Pair Natural Orbitals (for LMP2) <==\n");
 
-        K_iajb_.clear();
-        T_iajb_.clear();
-        Tt_iajb_.clear();
-        X_pno_.clear();
-        e_pno_.clear();
-
-        n_pno_.clear();
-        occ_pno_.clear();
-        trace_pno_.clear();
-        e_ratio_pno_.clear();
-        de_pno_.clear();
-
         K_iajb_.resize(n_lmo_pairs);
         T_iajb_.resize(n_lmo_pairs);
         Tt_iajb_.resize(n_lmo_pairs);
@@ -2746,13 +2734,20 @@ void DLPNOCCSD::lccsd_iterations() {
         }
 
         // Update Singles Amplitude (Jiang Eq. 103)
-#pragma omp parallel for
-        for (int i = 0; i < naocc; ++i) {
-            int ii = i_j_to_ij_[i][i];
-            for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
-                (*T_ia_[i])(a_ii, 0) -= (*R_ia[i])(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
-            }
-        }
+        if (!brueckner_orbs_) {
+    #pragma omp parallel for
+            for (int i = 0; i < naocc; ++i) {
+                int ii = i_j_to_ij_[i][i];
+                for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
+                    (*T_ia_[i])(a_ii, 0) -= (*R_ia[i])(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
+                } // end a_ii
+            } // end i
+        } else {
+    #pragma omp parallel for
+            for (int i = 0; i < naocc; ++i) {
+                R_ia[i]->zero();
+            } // end for
+        } // end else
 
         // Update Doubles Amplitude (Jiang Eq. 104)
 #pragma omp parallel for schedule(dynamic, 1)
@@ -2834,9 +2829,14 @@ void DLPNOCCSD::lccsd_iterations() {
         double r_curr1 = *max_element(R_ia_rms.begin(), R_ia_rms.end());
         double r_curr2 = *max_element(R_iajb_rms.begin(), R_iajb_rms.end());
 
-        r_converged = (fabs(r_curr1) < 0.01 * options_.get_double("R_CONVERGENCE"));
-        r_converged &= (fabs(r_curr2) < 0.01 * options_.get_double("R_CONVERGENCE"));
-        e_converged = (fabs(e_curr - e_prev) < 0.01 * options_.get_double("E_CONVERGENCE"));
+        if (!brueckner_orbs_) {
+            r_converged = (fabs(r_curr1) < options_.get_double("R_CONVERGENCE"));
+            r_converged &= (fabs(r_curr2) < options_.get_double("R_CONVERGENCE"));
+        } else {
+            r_converged = (fabs(r_curr2) < options_.get_double("R_CONVERGENCE"));
+        }
+
+        e_converged = (fabs(e_curr - e_prev) < options_.get_double("E_CONVERGENCE"));
 
         std::time_t time_stop = std::time(nullptr);
 
@@ -2848,6 +2848,18 @@ void DLPNOCCSD::lccsd_iterations() {
             throw PSIEXCEPTION("Maximum DLPNO iterations exceeded.");
         }
     }
+
+    if (brueckner_orbs_) { // T_ia is a proxy container for R_ia if Brueckner orbitals are used
+        compute_R_ia(R_ia, R_ia_buffer);
+
+#pragma omp parallel for
+        for (int i = 0; i < naocc; ++i) {
+            int ii = i_j_to_ij_[i][i];
+            for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
+                (*T_ia_[i])(a_ii, 0) = -(*R_ia[i])(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
+            }
+        }
+    } // end if
 
     e_lccsd_ = e_curr - e_weak;
     de_weak_ = e_weak;
@@ -2916,7 +2928,7 @@ double DLPNOCCSD::compute_dlpno_ccsd_energy() {
     timer_off("Refined Pair Prescreening");
 
     // Set variables from LMP2
-    double e_scf = reference_wavefunction_->energy();
+    double e_scf = variables_["SCF TOTAL ENERGY"];
     double e_lmp2_corr = e_lmp2_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
     double e_lmp2_total = e_scf + e_lmp2_corr;
 
@@ -2998,39 +3010,51 @@ double DLPNOCCSD::compute_energy() {
         int iteration = 1;
         const int BRUECKNER_MAXITER = options_.get_int("BRUECKNER_MAXITER");
         const double BRUECKNER_R_CONV = options_.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
+        const int BRUECKNER_DIIS_START = options_.get_int("BRUECKNER_DIIS_START");
 
         DIISManager diis(options_.get_int("DIIS_MAX_VECS"), "BRUECKNER DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
 
         while (!brueckner_converged) {
             outfile->Printf("\n  ==> Brueckner Orbital Optimization Iteration %d <==\n\n", iteration);
 
+            // Canonicalize PAOs (to create T1-error matrix)
+            SharedMatrix X_pao_canon;  // canonical transformation of this domain's PAOs to
+            SharedVector e_pao_canon;  // energies of the canonical PAOs
+            std::tie(X_pao_canon, e_pao_canon) = orthocanonicalizer(S_pao_, F_pao_);
+
+            // R1 and T1 for DIIS extrapolation
+            SharedMatrix R1_dense = std::make_shared<Matrix>("R1_dense", T_ia_.size(), X_pao_canon->ncol());
+            SharedMatrix T1_dense = std::make_shared<Matrix>("T1_dense", T_ia_.size(), X_pao_canon->ncol());
+
+    #pragma omp parallel for
+            for (int i = 0; i < C_lmo_->ncol(); ++i) { // occupied MOs
+                int ii = i_j_to_ij_[i][i];
+                auto S_pao_pno = submatrix_cols(*S_pao_, lmopair_to_paos_[ii]);
+                S_pao_pno = linalg::triplet(X_pao_canon, S_pao_pno, X_pno_[ii], true, false, false);
+                auto T1_chud = linalg::doublet(S_pao_pno, T_ia_[i]);
+                for (int a = 0; a < X_pao_canon->ncol(); ++a) {
+                    (*R1_dense)(i, a) = (*T1_chud)(a, 0) * (F_lmo_->get(i,i) - e_pao_canon->get(a));
+                    (*T1_dense)(i, a) = (*T1_chud)(a, 0);
+                } // end a
+            } // end i
+
+            if (iteration == BRUECKNER_DIIS_START) {
+                diis.set_error_vector_size(R1_dense);
+                diis.set_vector_size(T1_dense);
+            }
+
+            if (iteration >= BRUECKNER_DIIS_START) {
+                diis.add_entry(R1_dense.get(), T1_dense.get());
+                diis.extrapolate(T1_dense.get());
+            }
+
             // Set brueckner orbitals iteration control to true
             brueckner_iter_ = true;
 
             // Get new set of Brueckner orbitals through T1-rotations
-            brueckner_rotation();
+            brueckner_rotation(T1_dense);
 
-            // Compute error vector for DIIS extrapolation
-            std::vector<SharedMatrix> T1_squared(T_ia_.size());
-#pragma omp parallel for
-            for (int i = 0; i < T_ia_.size(); ++i) {
-                T1_squared[i] = T_ia_[i]->clone();
-                for (int a = 0; a < T1_squared[i]->nrow(); ++a) {
-                    (*T1_squared[i])(a, 0) *= (*T1_squared[i])(a, 0);
-                } // end a
-            } // end i
-
-            auto T1_squared_flat = flatten_mats(T1_squared);
-
-            if (iteration == 1) {
-                diis.set_error_vector_size(T1_squared_flat);
-                diis.set_vector_size(C_lmo_);
-            }
-
-            diis.add_entry(T1_squared_flat.get(), C_lmo_.get());
-            diis.extrapolate(C_lmo_.get());
-
-            // Recanonicalize LMOs after extrapolation
+            // Recanonicalize LMOs after rotation
             lmo_canonicalize();
 
             // recompute DLPNO-CCSD energy using new orbitals
