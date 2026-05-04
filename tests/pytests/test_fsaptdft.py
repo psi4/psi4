@@ -556,6 +556,8 @@ no_com
             "SAPT_DFT_GRAC_SHIFT_A": 0.11652342,
             "SAPT_DFT_GRAC_SHIFT_B": 0.12724880,
             "ORBITAL_OPTIMIZER_PACKAGE": "INTERNAL",
+            "e_convergence": 1e-10,
+            "d_convergence": 1e-10,
         }
     )
     _, wfn = psi4.energy("sapt(dft)-d4(i)", molecule=mol, return_wfn=True)
@@ -1089,7 +1091,8 @@ if __name__ == "__main__":
     psi4.set_memory("220 GB")
     # psi4.set_num_threads(24)
     psi4.set_num_threads(12)
-    test_fsaptdft_timer()
+    # test_fsaptdft_timer()
+    test_fsaptdftd4_psivars_pbe0_frozen_core()
     # pytest.main([
     #     __file__,
     #     "-v",
