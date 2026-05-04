@@ -140,6 +140,7 @@ units bohr
 
 @pytest.mark.saptdft
 @pytest.mark.dftd3
+@uusing('s-dftd3')
 @pytest.mark.parametrize(
     "method, expected_disp",
     [
