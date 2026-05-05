@@ -26,7 +26,6 @@ jobs:
             pytest-marker-expr: "addon and not (medlong or long)"
             pytest-name-expr: "not pe_ecp"
             cmargs: >
-              -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
 
@@ -38,7 +37,6 @@ jobs:
             pytest-marker-expr: "addon and not (medlong or long)"
             pytest-name-expr: "not pe_ecp"
             cmargs: >
-              -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
@@ -83,7 +81,6 @@ jobs:
             pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or snowflake)"
             target-sdk: "10.10"
             cmargs: >
-              -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
@@ -99,7 +96,6 @@ jobs:
             pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or snowflake)"
             target-sdk: "10.10"
             cmargs: >
-              -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
@@ -114,7 +110,6 @@ jobs:
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             pytest-name-expr: "not pe_ecp"
             cmargs: >
-              -D CMAKE_DISABLE_FIND_PACKAGE_optking=ON
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
  
@@ -320,7 +315,7 @@ jobs:
         python -m pip install git+https://github.com/loriab/QCManyBody.git@qcsk_v1v2_rearr --no-deps
 
     - name: Special Config - OptKing Dep
-      if: true
+      if: false
       run: |
         conda remove optking --force || true
 
