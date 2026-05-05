@@ -196,8 +196,10 @@ data:
       constraint: null
       aux_build_names:
         - pip
+        - python-gil
       aux_build_names_note:
         pip: "Package installer not strictly needed but needs to be tied to this python if used."
+        "python-gil": "Safety of free-threading uncertain, so avoid for now."
       cmake:
         Python_EXECUTABLE:
           unix: ${CONDA_PREFIX}/bin/python
