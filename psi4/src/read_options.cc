@@ -2672,9 +2672,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Scaling factor for orbital rotation for DLPNO Brueckner orbitals
             Make it small for systems with a large T1 (like 0.1-0.25) -*/
         options.add_double("DLPNO_BRUECKNER_ALPHA", 0.5);
-        /*- When to start applying DIIS for Brueckner optimizatons (delayed DIIS is helpful 
-            systems with large T1) -*/
-        options.add_double("BRUECKNER_DIIS_START", 1);
+        /*- When to end start applying DIIS for Brueckner optimizatons 
+            (turning on DIIS after a point (not initially) is helpful for stability) -*/
+        options.add_double("BRUECKNER_DIIS_START", 20);
 
         /*- SUBSECTION Expert Options -*/
 

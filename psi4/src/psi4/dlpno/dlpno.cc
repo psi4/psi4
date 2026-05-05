@@ -383,6 +383,8 @@ void DLPNO::setup_orbitals() {
 
     timer_off("Projected AOs");
 
+    if (brueckner_orbs_) delta_D_ao_ = linalg::doublet(C_lmo_, C_lmo_, false, true);
+
     // map from atomic center to orbital/aux basis function/shell index
     atom_to_bf_.clear();
     atom_to_ribf_.clear();
@@ -411,7 +413,7 @@ void DLPNO::setup_orbitals() {
     }
 }
 
-void DLPNO::brueckner_rotation(const SharedMatrix &T1_dense) {
+void DLPNO::brueckner_rotation(const SharedMatrix &kappa_ia) {
 
     const double alpha = options_.get_double("DLPNO_BRUECKNER_ALPHA");
 
@@ -430,14 +432,14 @@ void DLPNO::brueckner_rotation(const SharedMatrix &T1_dense) {
 #pragma omp parallel for
     for (int i = 0; i < naocc; ++i) {
         for (int a = 0; a < nvirt; ++a) {
-            (*kappa)(naocc + a, i) = -(*T1_dense)(i, a);
-            (*kappa)(i, naocc + a) = (*T1_dense)(i, a);
+            (*kappa)(naocc + a, i) = -(*kappa_ia)(i, a);
+            (*kappa)(i, naocc + a) = (*kappa_ia)(i, a);
         } // end a
     } // end i
     kappa->scale(alpha);
 
     // e^{\kappa} for the rotation
-    kappa->expm(4, true);
+    kappa->expm();
 
     auto kappa_oo = std::make_shared<Matrix>("kappa_oo", naocc, naocc);
     auto kappa_ov = std::make_shared<Matrix>("kappa_ov", naocc, nvirt);
@@ -470,10 +472,10 @@ void DLPNO::brueckner_rotation(const SharedMatrix &T1_dense) {
 
     auto C_lmo_new = C_lmo_->clone();
     auto C_pao_canon = linalg::doublet(C_pao_, X_pao_canon);
-    auto T1_oo = linalg::doublet(T1_dense, T1_dense, false, true);
+    auto T1_oo = linalg::doublet(kappa_ia, kappa_ia, false, true);
 
     // First order contribution: +1.0 * alpha * C_{ua}T_{i}^{a}
-    auto gottem = linalg::doublet(C_pao_canon, T1_dense, false, true);
+    auto gottem = linalg::doublet(C_pao_canon, kappa_ia, false, true);
     gottem->scale(1.0 * alpha);
     C_lmo_new->add(gottem);
 
@@ -483,7 +485,7 @@ void DLPNO::brueckner_rotation(const SharedMatrix &T1_dense) {
     C_lmo_new->add(gotham);
 
     // Third order contribution: +1.0 / 6.0 * alpha^{3} C_{ua}T_{j}^{a}(T_{j}^{b}T_{i}^{b}) T^{T}(TT^{T})
-    auto goalty = linalg::triplet(C_pao_canon, T1_dense, T1_oo, false, true, false);
+    auto goalty = linalg::triplet(C_pao_canon, kappa_ia, T1_oo, false, true, false);
     goalty->scale(-1.0 / 6 * alpha * alpha * alpha);
     C_lmo_new->add(goalty);
 
