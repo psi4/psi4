@@ -388,6 +388,7 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
 
     # Compute dimer wavefunction
     hf_wfn_dimer = None
+    hf_fisapt_scalars = None
     ext_pot_C = external_potentials.get("C")
     if isinstance(ext_pot_C, np.ndarray):
         ext_pot_C = [np.array(x) for x in ext_pot_C]
@@ -540,6 +541,10 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
             hf_data.update(ind)
             core.timer_off("SAPT(HF):ind")
 
+            # Keep the SAPT(HF) component subtotal available for F-SAPT
+            # induction scaling. The SAPT(DFT) component values overwrite
+            # data later for the final SAPT(DFT) report, but the dHF term is
+            # defined as HF IE minus the SAPT(HF) subtotal.
             dhf_value = (
                 hf_data["HF DIMER"] - hf_data["HF MONOMER A"] - hf_data["HF MONOMER B"]
             )
@@ -1184,8 +1189,10 @@ def sapt_dft(
     )
     data.update(ind)
 
-    # Set Delta HF for SAPT(HF)
-    if delta_hf:
+    # Delta HF is computed in the SAPT(HF) segment above. Do not recompute it
+    # from the SAPT(DFT) component subtotal here, as that changes the meaning
+    # of the dHF correction and the F-SAPT induction scaling.
+    if delta_hf and "Delta HF Correction" not in data:
         total_sapt = (
             data["Elst10,r"] + data["Exch10"] + data["Ind20,r"] + data["Exch-Ind20,r"]
         )
@@ -1260,7 +1267,7 @@ def sapt_dft(
             core.get_global_option("BASIS"),
         )
 
-        # Create single FISAPT object with do_flocalize=True to handle IBO localization internally
+        # Create single FISAPT object with do_flocalize=True to handle IBO localization internally.
         core.timer_on("SAPT(DFT): F-SAPT Setup + Localization (IBO)")
         FISAPT_obj = saptdft_fisapt.setup_fisapt_object(
             dimer_wfn, wfn_A, wfn_B, cache, data, aux_basis, do_flocalize=True

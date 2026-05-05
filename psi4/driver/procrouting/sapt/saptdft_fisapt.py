@@ -323,12 +323,15 @@ def setup_fisapt_object(
         "Ind20,r": "Ind20,r",
         "Exch-Ind20,r": "Exch-Ind20,r",
     }
-    # "DHF VALUE": "HF",
+    # We need to specifically set 'SAPT0 HF' for FISAPT::find() to ensure we do
+    # not recompute the dHF correction with SAPT(DFT) terms.
     if core.get_option("SAPT", "SAPT_DFT_DO_DHF"):
-        scalar_keys["DHF VALUE"] = "HF"
+        scalar_keys["Delta HF Correction"] = "SAPT0 dHF"
     scalar_cache = {
         fisapt_key: scalars[sdft_key] for sdft_key, fisapt_key in scalar_keys.items()
     }
+    from pprint import pprint as pp
+    pp(scalar_cache)
     fisapt.set_scalar(scalar_cache)
     return fisapt
 

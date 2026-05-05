@@ -6526,9 +6526,14 @@ void FISAPT::find() {
 
     if (ind_scale) {
         double dHF = 0.0;
-        if (scalars_["HF"] != 0.0) {
+        // When coming from SAPT(DFT), we want a dHF from SAPT0 terms, so check it this scalar, 'SAPT0 dHF' exists, and if not, compute, but log that we're doing so.
+        if (scalars_.find("SAPT0 dHF") != scalars_.end()) {
+            dHF = scalars_["SAPT0 dHF"];
+            outfile->Printf("    Using SAPT0 dHF for induction scaling: %11.3E [Eh]\n", dHF);
+        } else if (scalars_["HF"] != 0.0) {
             dHF = scalars_["HF"] - scalars_["Elst10,r"] - scalars_["Exch10"] - scalars_["Ind20,r"] -
                   scalars_["Exch-Ind20,r"];
+            outfile->Printf("    No provided dHF correction found; using (HF - Elst10,r - Exch10 - Ind20,r - Exch-Ind20,r) for induction scaling: %11.3E [Eh]\n", dHF);
         }
         double IndHF = scalars_["Ind20,r"] + scalars_["Exch-Ind20,r"] + dHF;
         double IndSAPT0 = scalars_["Ind20,r"] + scalars_["Exch-Ind20,r"];

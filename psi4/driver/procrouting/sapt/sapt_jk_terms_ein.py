@@ -1670,9 +1670,6 @@ def find(
     Cvir_A = cache["Cvir_A"]
     Cvir_B = cache["Cvir_B"]
 
-    # Cvir_A.set_name("Cvir_A")
-    # print(Cvir_A)
-
     eps_occ_A = cache["eps_occ_A"]
     eps_occ_B = cache["eps_occ_B"]
     eps_vir_A = cache["eps_vir_A"]
@@ -1713,7 +1710,6 @@ def find(
         Vbs = core.Matrix.from_array(
             chain_gemm_einsums([Cocc_B, Vtemp, Cvir_B], ["T", "N", "N"])
         )
-        # Vbs_A doesn't agree... Cocc_B and Cvir_B
         dfh.write_disk_tensor("WAbs", Vbs, (A, A + 1))
 
     ZB = cache["ZB"].np
@@ -1742,13 +1738,7 @@ def find(
 
     TsQ = core.Matrix("TsQ", ns, nQ)
     T1As = core.Matrix("T1As", na1, ns)
-    # print(f"{na1 = }, {nb1 = }, {ns = }, {nr = }")
-    # print(f"{na1 = }, {nb1 = }, {ns = }, {nQ = }")
     for B in range(nb):
-        # print(f"{TsQ.np.shape =}")
-        # TODO: CONTINUE HERE
-        # fill_tensor is not working properly with 2D slices yet...
-        # dfh.fill_tensor("Abs", TsQ, [B, B + 1])
         dfh.fill_tensor("Abs", TsQ, [B, B + 1], [0, ns], [0, nQ])
         TsQ = core.Matrix.from_array(TsQ.np[0, :, :])
         T1As.gemm(False, True, 2.0, RaC, TsQ, 0.0)
@@ -1759,8 +1749,6 @@ def find(
     TrQ = core.Matrix("TrQ", nr, nQ)
     T1Br = core.Matrix("T1Br", nb1, nr)
     for A in range(na):
-        # dfh.fill_tensor("Abs", TsQ, [B, B + 1], [0, ns], [0, nQ])
-        # TsQ = core.Matrix.from_array(TsQ.np[0, :, :])
         dfh.fill_tensor("Aar", TrQ, [A, A + 1], [0, nr], [0, nQ])
         TrQ = core.Matrix.from_array(TrQ.np[0, :, :])
         T1Br.gemm(False, True, 2.0, RbD, TrQ, 0.0)
@@ -1873,10 +1861,6 @@ def find(
             "K_B": K_B,
             "J_P_B": J_P_B,
         }
-
-        # V_B and J_B are equivalent, but Cocc_A and Cvir_A differ from FISAPT0... is there a critical disagreement that would only surface here? Seems unlikely.
-        # Locc_A magnitudes are about the same with different signs, but that is okay.
-        # Cvir_A does not have the same magnitude for most terms... This is an issue.
         wBT = build_ind_pot(
             {
                 "V_B": V_B,
@@ -1933,7 +1917,7 @@ def find(
     Indu_AB = 0.0
     Indu_BA = 0.0
 
-    # Commented out terms are for sSAPT0 scaling... do we really want this?
+    # Commented out terms are for sSAPT0 scaling... do we really want sSAPT0 support here?
     # sIndu_AB_terms = core.Matrix("sInd [A<-B] (a x B)", sna, snB + snb + 1)
     # sIndu_BA_terms = core.Matrix("sInd [B<-A] (A x b)", snA + sna + 1, snb)
     # sIndu_AB_termsp = sIndu_AB_terms.np
@@ -2012,7 +1996,6 @@ def find(
             Indu_BA_terms.np[A, b] = Jval + Kval
             Indu_BA += Jval + Kval
 
-    # Currently Ind20 and Exch-Ind are qualitatively coming out with wrong sign even...
     if do_print:
         core.print_out(
             f"    Ind20,u (A<-B)          = {Ind20u_AB * 1000:18.8f} [mEh]\n"
@@ -2085,13 +2068,17 @@ def find(
     IndAB_AB = core.Matrix("IndAB_AB", nA + na1 + 1, nB + nb1 + 1)
     IndBA_AB = core.Matrix("IndBA_AB", nA + na1 + 1, nB + nb1 + 1)
 
-    # Final assembly might be wrong... backtrace time
+    # Assemble from the total induction matrices, matching FISAPT::find().
+    # In particular, use the Matrix objects after any induction scaling has
+    # been applied.
+    Indu_AB_termsp = Indu_AB_terms.np
+    Indu_BA_termsp = Indu_BA_terms.np
     for a in range(na):
         for B in range(nB + nb1 + 1):
-            IndAB_AB.np[a + nA, B] = Ind20u_AB_termsp[a, B] + ExchInd20u_AB_termsp[a, B]
+            IndAB_AB.np[a + nA, B] = Indu_AB_termsp[a, B]
     for A in range(nA + na1 + 1):
         for b in range(nb):
-            IndBA_AB.np[A, b + nB] = Ind20u_BA_termsp[A, b] + ExchInd20u_BA_termsp[A, b]
+            IndBA_AB.np[A, b + nB] = Indu_BA_termsp[A, b]
 
     cache["IndAB_AB"] = IndAB_AB
     cache["IndBA_AB"] = IndBA_AB
@@ -2102,18 +2089,6 @@ def find(
     #     cache["sIndu_AB"] = sIndu_AB
     #     cache["sIndu_BA"] = sIndu_BA
 
-    """
-    Ind20,u (A<-B)      =    -0.000005862 [mEh]
-    Ind20,u (B<-A)      =    -0.000003086 [mEh]
-    Ind20,u             =    -0.000008949 [mEh]
-    Exch-Ind20,u (A<-B) =     0.000000887 [mEh]
-    Exch-Ind20,u (B<-A) =     0.000000291 [mEh]
-    Exch-Ind20,u        =     0.000001178 [mEh]
-    """
-
-    # NOT IMPLEMENTED YET
-    # if (ind_resp) {
-    #     outfile->Printf("  COUPLED INDUCTION (You asked for it!):\n\n");
     dfh.clear_all()
     return cache
 
@@ -2177,8 +2152,6 @@ def fdisp0(
 
     na1 = na
     nb1 = nb
-
-    # Disp_AB = core.Matrix("Disp_AB", nA + nfa + na1 + 1, nB + nfb + nb1 + 1)
     snA = 0
     snfa = 0
     sna = 0
@@ -2458,9 +2431,6 @@ def fdisp0(
     dfh.add_transformation("Ear", "r", "a4")  # (r|a4) virtuals_A x Ca4
     dfh.add_transformation("Ebs", "s", "b4")  # (s|b4) virtuals_B x Cb4
 
-    # TODO: Handle link orbital spaces for parallel/perpendicular coupling (lines 6950-7018)
-    # For now, skip this and proceed with standard dispersion calculation
-
     # Perform DF transformations
     dfh.transform()
 
@@ -2475,7 +2445,6 @@ def fdisp0(
     # Calculate overhead for work arrays
     overhead = 0
     overhead += 5 * nT * na * nb  # Tab, Vab, T2ab, V2ab, Iab work arrays
-    # For link orbitals with parperp, we'd need more, but we're skipping that
     overhead += (
         2 * na * ns + 2 * nb * nr + 2 * na * nr + 2 * nb * ns
     )  # S and Q matrices
@@ -2575,7 +2544,6 @@ def fdisp0(
     UAp = Uaocc_A.np
     UBp = Uaocc_B.np
 
-    # Orbital energies (already numpy arrays)
     # In the dispersion formula: indices a,b are occupied and r,s are virtual
     eap = eps_occ_A  # occupied energies for monomer A (index a)
     ebp = eps_occ_B  # occupied energies for monomer B (index b)
@@ -2729,28 +2697,18 @@ def fdisp0(
     E_disp20 = core.Matrix("E_disp20", nA + nfa + na1 + 1, nB + nfb + nb1 + 1)
     E_exch_disp20 = core.Matrix("E_exch_disp20", nA + nfa + na1 + 1, nB + nfb + nb1 + 1)
 
-    # Single-threaded, so just use the first (and only) thread result
-    # E_disp20.copy(E_disp20_comp)
-    # E_exch_disp20.copy(E_exch_disp20_comp)
     for a in range(na):
         for b in range(nb):
             E_disp20.np[a + nfa + nA, b + nfb + nB] = E_disp20_comp.np[a, b]
             E_exch_disp20.np[a + nfa + nA, b + nfb + nB] = E_exch_disp20_comp.np[a, b]
 
-    # => Populate cache['E'] matrix <= //
     # Store energy matrices and scalars
-    # cache['E_DISP20'] = E_disp20
-    # cache['E_EXCH_DISP20'] = E_exch_disp20
-    # add E_disp20 and E_exch_disp20
-    # Disp_AB = core.Matrix("DISP_AB", na, nb)
     Disp_AB = core.Matrix("Disp_AB", nA + nfa + na1 + 1, nB + nfb + nb1 + 1)
     Disp_AB.np[:, :] = E_disp20.np + E_exch_disp20.np
     cache["Disp_AB"] = Disp_AB
-    # => Output printing <= //
-    # {Elst10*1000:.8f} [mEh]
+
     Disp20 = np.sum(E_disp20.np)
     ExchDisp20 = np.sum(E_exch_disp20.np)
-
     cache["Exch-Disp20,u"] = ExchDisp20
     cache["Disp20,u"] = Disp20
     # if do_print:
@@ -3676,8 +3634,9 @@ def _sapt_cpscf_solve(
 
     # Hx function
     def hessian_vec(x_vec, act_mask):
-        # TODO: to convert to einsums fully here, would need to re-write
-        # cphf_HX, onel_Hx, and twoel_Hx functions in libscf_solver/uhf.cc
+        # NOTE: to fully convert induction to einsums here, would need to
+        # re-write cphf_HX, onel_Hx, and twoel_Hx functions in
+        # libscf_solver/uhf.cc
         if act_mask[0]:
             xA = cache["wfn_A"].cphf_Hx([core.Matrix.from_array(x_vec[0])])[0].np
         else:
