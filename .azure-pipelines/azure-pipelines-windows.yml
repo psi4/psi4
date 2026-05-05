@@ -137,7 +137,6 @@ jobs:
                         networkx ^
                         ninja ^
                         numpy ^
-                        optking ^
                         pint ^
                         pybind11 ^
                         pytest=7 ^
@@ -152,6 +151,7 @@ jobs:
                         conda-forge/label/qcengine_dev::qcengine=0.50.0rc4 ^
                         qcmanybody ^
                         pydantic=2.11 ^
+                        optking ^
                         scipy
           which anaconda
           conda list

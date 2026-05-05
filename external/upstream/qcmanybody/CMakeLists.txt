@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcmanybody}))
     include(FindPythonModule)
-    find_python_module(qcmanybody ATLEAST 0.7.0 QUIET)
+    find_python_module(qcmanybody ATLEAST 0.7.1 QUIET)
 endif()
 
 if(${qcmanybody_FOUND})
