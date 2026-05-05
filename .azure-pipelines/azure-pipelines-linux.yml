@@ -231,6 +231,7 @@ jobs:
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
+    # conda remove qcengine --force || true
   - bash: |
       cd build
       source activate p4env

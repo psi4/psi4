@@ -742,7 +742,7 @@ data:
     conda:
       channel: conda-forge
       name: pybind11
-      constraint: "<3.0.3"
+      constraint: null
       constraint_note: "Numpy v2 needs >=2.12. For docs, '>=2.10.*,<2.12.0' has adv; search FixedSize."
       cmake:
         pybind11_DIR:
@@ -1193,7 +1193,7 @@ data:
       host: github
       account: MolSSI
       name: QCEngine
-      commit: v0.50.0rc2
+      commit: v0.50.0rc4
       githttps: true
     cmake:
       name: qcengine
@@ -1202,11 +1202,10 @@ data:
     conda:
       channel: conda-forge/label/qcengine_dev
       name: qcengine
-      constraint: ">=0.50.0rc3"
-      #constraint: null
+      constraint: ">=0.50.0rc4"
       constraint_note: "v0.34.2 has SAPT*-D4 parameters"
       cmake:
-        #//CMAKE_INSIST_FIND_PACKAGE_qcengine: true
+        //CMAKE_INSIST_FIND_PACKAGE_qcengine: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcengine: true
       cmake_note: "Primarily OTF runtime detected."
 
@@ -1348,8 +1347,7 @@ data:
       cms: true
     repository:
       host: github
-      # account: psi-rking
-      account: loriab
+      account: psi-rking
       name: optking
       commit: 0.5.0
     cmake:
@@ -1360,7 +1358,7 @@ data:
       name: optking
       constraint: null
       cmake:
-        # //CMAKE_INSIST_FIND_PACKAGE_optking: true
+        //CMAKE_INSIST_FIND_PACKAGE_optking: true
         //CMAKE_DISABLE_FIND_PACKAGE_optking: true
       cmake_note: "Primarily OTF runtime detected."
 
@@ -1518,12 +1516,12 @@ data:
       githttps: true
     cmake:
       name: qcmanybody
-      constraint: "ATLEAST 0.7.0"
+      constraint: "ATLEAST 0.7.1"
       target: null
     conda:
       channel: conda-forge
       name: qcmanybody
-      constraint: ">=0.7.0"
+      constraint: ">=0.7.1"
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
