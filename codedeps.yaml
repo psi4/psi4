@@ -1222,7 +1222,7 @@ data:
       account: dftd4
       name: dftd4
       commit: v4.1.0
-      commit_note: "v4.1.0 needed for QCSchema v2; v3.5.0 needed for r2scan3c, b97-3c"
+      commit_note: "v4.1.0 needed for QCSchema v2, v3.5.0 needed for r2scan3c, b97-3c"
     cmake: null
     conda:
       channel: conda-forge
