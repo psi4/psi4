@@ -284,9 +284,11 @@ jobs:
   #    PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
   #  displayName: 'Spot Test 2'
 
+  # TODO undo eval
   - bash: |
       cd build
       source activate p4env
+      eval $(stage/bin/psi4)
       python ../devtools/scripts/ci_run_test.py
       python ../devtools/scripts/ci_print_failing.py
     displayName: 'CTest Tests'
