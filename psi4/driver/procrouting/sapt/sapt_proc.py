@@ -877,6 +877,7 @@ def compute_GRAC_shift(
         ["SCF", "LEVEL_SHIFT"],
         ["SCF", "LEVEL_SHIFT_CUTOFF"],
         ["SCF", "SCF_INITIAL_ACCELERATOR"],
+        ["ORBITAL_OPTIMIZER_PACKAGE"],
         ["BASIS"],
     )
 
@@ -896,6 +897,7 @@ def compute_GRAC_shift(
     for options in grac_options:
         for key, val in options.items():
             core.set_local_option("SCF", key, val)
+        core.set_local_option("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL")
         # Need to get the initial and cation to estimate ionization energy for
         # GRAC shift
         mol_qcel_dict = molecule.to_schema(dtype=2)
