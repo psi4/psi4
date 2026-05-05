@@ -277,6 +277,44 @@ jobs:
       psi4 ../tests/cc1/input.dat
     displayName: 'Spot Test 3'
 
+  - bash: |
+      cd build
+      source activate p4env
+      python -V
+      ls -l
+      pwd
+      python -c "import sys;print(sys.path)"
+      echo ROUND1
+      python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+      psi4 --module || true
+      python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+      python -c "import psi4; print(psi4.executable)" || true
+      echo ROUND1NG
+      python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+      echo ROUNDE
+      PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+      PATH=stage/bin:$PATH psi4 --module || true
+      PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+      PATH=stage/bin:$PATH python -c "import psi4; print(psi4.executable)" || true
+      echo ROUNDE-NG
+      PATH=stage/bin:$PATH python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+      echo ROUNDP
+      PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+      PYTHONPATH=stage/lib psi4 --module || true
+      PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+      PYTHONPATH=stage/lib python -c "import psi4; print(psi4.executable)" || true
+      echo ROUNDP-NG
+      PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+      echo ROUND4
+      eval $(stage/bin/psi4 --psiapi)
+      python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+      psi4 --module || true
+      python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+      python -c "import psi4; print(psi4.executable)" || true
+      echo ROUND4-NG
+      python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+    displayName: 'Diagnostics'
+
   #- bash: |
   #    cd build
   #    source activate p4env
