@@ -613,16 +613,12 @@ no_com
         # Assert lists are identical
         e = expected_frag1_indices[i]
         sorted_frag = sorted(indices)
-        assert sorted_frag == e, f"Frag1 indices do not match for fragment {
-            i
-        }: expected {e}, got {sorted_frag}"
+        assert sorted_frag == e, f"Frag1 indices do not match for fragment {i}: expected {e}, got {sorted_frag}"
 
     for i, indices in enumerate(frag2_indices):
         e = expected_frag2_indices[i]
         sorted_frag = sorted(indices)
-        assert sorted_frag == e, f"Frag2 indices do not match for fragment {
-            i
-        }: expected {e}, got {sorted_frag}"
+        assert sorted_frag == e, f"Frag2 indices do not match for fragment {i}: expected {e}, got {sorted_frag}"
     ref_data = {
         "Disp": [
             0.0,
