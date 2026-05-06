@@ -119,7 +119,13 @@ option(ENABLE_adcc "Enables adcc for algebraic-diagrammatic construction methods
 option(ENABLE_ddx "Enables ddx for domain-decomposition contiuum solvation models (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_ecpint "Enables libecpint for effective core potentials (ECP)" OFF)
+option(ENABLE_ecpint_RUNTIME "Enable runtime-optional ecpint (for binary distribution)" OFF)
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
+
+# Validation
+if(ENABLE_ecpint AND ENABLE_ecpint_RUNTIME)
+    message(FATAL_ERROR "Use ENABLE_ecpint for static linking or ENABLE_ecpint_RUNTIME for dynamic loading, not both.")
+endif()
 option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gauxc "Enables use of GauXC density functional library" OFF)
@@ -303,6 +309,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_IntegratorXX=${ENABLE_IntegratorXX}
               -DENABLE_gauxc=${ENABLE_gauxc}
               -DENABLE_ecpint=${ENABLE_ecpint}
+              -DENABLE_ecpint_RUNTIME=${ENABLE_ecpint_RUNTIME}
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_Einsums=${ENABLE_Einsums}
               -DENABLE_simint=${ENABLE_simint}

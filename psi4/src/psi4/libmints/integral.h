@@ -36,6 +36,9 @@
 #include "onebody.h"
 #include "twobody.h"
 
+#ifdef USING_ecpint_RUNTIME
+#include "psi4/libmints/ecpint_loader.h"
+#endif
 
 namespace psi {
 

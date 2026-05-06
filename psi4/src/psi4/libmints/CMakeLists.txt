@@ -110,27 +110,29 @@ target_link_libraries(mints
     Libint2::cxx
   )
 # Conditionally linked-to external projects
-if(TARGET ECPINT::ecpint)
-  target_sources(mints
-    PRIVATE
-      ecpint.cc
-    )
-  target_compile_definitions(mints
-    PUBLIC
-      USING_ecpint
-    )
-  target_compile_definitions(l2intf
-    PUBLIC
-      USING_ecpint
-    )
-  target_link_libraries(mints
-    PUBLIC
-      ECPINT::ecpint
-    )
-  target_link_libraries(l2intf
-    PUBLIC
-      ECPINT::ecpint
-    )
+if(ENABLE_ecpint_RUNTIME)
+    if(NOT TARGET ECPINT::ecpint)
+        message(FATAL_ERROR "ENABLE_ecpint_RUNTIME requires libecpint package in host environment")
+    endif()
+
+    target_sources(mints PRIVATE ecpint.cc ecpint_loader.cc)
+    target_compile_definitions(mints PUBLIC USING_ecpint USING_ecpint_RUNTIME)
+    target_compile_definitions(l2intf PUBLIC USING_ecpint USING_ecpint_RUNTIME)
+
+    # Include ecpint headers from target WITHOUT creating a dependency (avoid generator expression)
+    get_target_property(_ecpint_include_dirs ECPINT::ecpint INTERFACE_INCLUDE_DIRECTORIES)
+    target_include_directories(mints PRIVATE ${_ecpint_include_dirs})
+    message(VERBOSE "ECPINT: Using include directories: ${_ecpint_include_dirs}")
+
+    # Link libdl for dlopen/dlsym but do NOT link libecpint itself!
+    target_link_libraries(mints PUBLIC ${CMAKE_DL_LIBS})
+
+elseif(TARGET ECPINT::ecpint)
+    target_sources(mints PRIVATE ecpint.cc)
+    target_compile_definitions(mints PUBLIC USING_ecpint USING_ecpint_STATIC)
+    target_compile_definitions(l2intf PUBLIC USING_ecpint USING_ecpint_STATIC)
+    target_link_libraries(mints PUBLIC ECPINT::ecpint)
+    target_link_libraries(l2intf PUBLIC ECPINT::ecpint)
 endif()
 
 if(TARGET simint::simint)

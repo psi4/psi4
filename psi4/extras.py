@@ -147,7 +147,7 @@ _addons_ = {
     "ambit": _CMake_to_Py_boolean("@ENABLE_ambit@"),
     "chemps2": _CMake_to_Py_boolean("@ENABLE_CheMPS2@"),
     "dkh": _CMake_to_Py_boolean("@ENABLE_dkh@"),
-    "ecpint": _CMake_to_Py_boolean("@ENABLE_ecpint@"),
+    "ecpint": _CMake_to_Py_boolean("@ENABLE_ecpint@") or _CMake_to_Py_boolean("@ENABLE_ecpint_RUNTIME@"),  # runtime safe b/c lib preloaded in __init__.py
     "libefp": which_import("pylibefp", return_bool=True),
     "gdma": which_import("gdma", return_bool=True),  # package pygdma, import gdma
     "ipi": which_import("ipi", return_bool=True),

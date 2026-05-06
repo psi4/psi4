@@ -15,10 +15,19 @@ endif()
 
 target_link_libraries(scf_solver PUBLIC diis)
 
-if(TARGET ECPINT::ecpint)
+if(ENABLE_ecpint_RUNTIME)
+  # Runtime mode - only compile definitions, no linking
   target_compile_definitions(scf_solver
     PUBLIC
       USING_ecpint
+      USING_ecpint_RUNTIME
+    )
+elseif(TARGET ECPINT::ecpint)
+  # Static mode - compile definitions and linking
+  target_compile_definitions(scf_solver
+    PUBLIC
+      USING_ecpint
+      USING_ecpint_STATIC
     )
   target_link_libraries(scf_solver
     PUBLIC

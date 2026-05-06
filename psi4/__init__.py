@@ -67,8 +67,52 @@ if not data_dir.is_dir():
     raise KeyError(f"Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable - current value is {str(data_dir)}")
 data_dir = str(data_dir)
 
+# Load runtime-optional libraries BEFORE importing core
+# This ensures symbols are available when core.so loads
+import sys
+if "@ENABLE_ecpint_RUNTIME@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
+    # Try to preload libecpint using dlopen with RTLD_GLOBAL
+    _ecpint_loaded = False
+    try:
+        import ctypes
+        # Try different library names
+        lib_names = [
+            "libecpint.so.1",
+            "libecpint.so",
+            "libecpint.1.dylib",
+            "libecpint.dylib",
+        ]
+        for lib_name in lib_names:
+            try:
+                # RTLD_GLOBAL = 0x00100 on Linux, 0x8 on macOS
+                RTLD_GLOBAL = 0x00100 if sys.platform.startswith('linux') else 0x8
+                RTLD_LAZY = 0x00001
+                ctypes.CDLL(lib_name, mode=RTLD_LAZY | RTLD_GLOBAL)
+                _ecpint_loaded = True
+                break
+            except OSError:
+                continue
+    except Exception:
+        pass
+
 # Init core
-from . import core
+try:
+    from . import core
+except ImportError as e:
+    error_msg = str(e)
+    # Check if this is a missing ecpint symbol error
+    if "libecpint" in error_msg or "_ZN9libecpint" in error_msg or "_ZNK9libecpint" in error_msg:
+        raise ImportError(
+            "Psi4 was built with runtime-optional ECP support, but libecpint is not installed.\n"
+            "ECP calculations require libecpint. Install it with:\n"
+            "    conda install libecpint\n"
+            "or:\n"
+            "    pip install psi4[ecpint]\n"
+            "\nIf you don't need ECP calculations, rebuild Psi4 without ENABLE_ecpint_RUNTIME."
+        ) from e
+    else:
+        # Some other import error - reraise as-is
+        raise
 
 from psi4.core import get_num_threads, set_num_threads
 core.initialize()
@@ -124,3 +168,13 @@ if "@ENABLE_bse@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # bse
 # Create a custom logger
 import logging
 logger = logging.getLogger(__name__)  # create initial psi4 from root to be configured later in extras
+
+@atexit.register
+def _cleanup_runtime_libraries():
+    """Unload runtime-optional libraries on exit."""
+    try:
+        from . import core
+        if hasattr(core, 'ecpint_runtime_unload'):
+            core.ecpint_runtime_unload()
+    except:
+        pass
