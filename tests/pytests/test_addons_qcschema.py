@@ -562,7 +562,7 @@ def test_v2rdm_casscf():
 #    assert psi4.compare_values(en_gpu_dfcc, en_dfcc, 8, "CCSD total energy")
 
 
-@pytest.mark.nbody
+@uusing("qcmanybody")
 @uusing("dftd3")
 @uusing("gcp")
 def test_grimme_3c():
@@ -829,4 +829,3 @@ def test_ddx_tdscf_gaussian():
     for i in range(5):
         e_calc.append(atres.extras["qcvars"][f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'])
     psi4.compare_values(exc_energies[:5], e_calc, 4, 'PCM EXCITATION ENERGY ')
-

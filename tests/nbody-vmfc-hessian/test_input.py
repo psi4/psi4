@@ -1,7 +1,8 @@
 import pytest
 from addons import *
 
-@ctest_labeler("nbody;hessian;d2ints")
+@uusing("qcmanybody")
+@ctest_labeler("hessian;d2ints")
 
 @pytest.mark.parametrize("distributed", [
     pytest.param(False, id="internal"),
@@ -10,4 +11,3 @@ from addons import *
 def test_nbody_vmfc_hessian(distributed):
     setenv = ["_PSI4_USE_QCF"] if distributed else None
     ctest_runner(__file__, setenv=setenv)
-
