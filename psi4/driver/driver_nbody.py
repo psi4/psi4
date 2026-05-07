@@ -118,10 +118,31 @@ from .task_base import AtomicComputer, EnergyGradientHessianWfnReturn
 from pydantic import field_validator
 
 from qcelemental.models.v2 import Molecule, AtomicSpecification
-from qcmanybody.models.v2 import ManyBodyInput, ManyBodyResult, BsseEnum
-from qcmanybody import ManyBodyCore
-from qcmanybody.v2 import ManyBodyComputer as ManyBodyComputerQCNG
-from qcmanybody.utils import delabeler, labeler, translate_qcvariables, modelchem_labels
+
+_QCMANYBODY_IMPORT_ERROR = None
+try:
+    from qcmanybody.models.v2 import ManyBodyInput, ManyBodyResult, BsseEnum
+    from qcmanybody import ManyBodyCore
+    from qcmanybody.v2 import ManyBodyComputer as ManyBodyComputerQCNG
+    from qcmanybody.utils import delabeler, labeler, translate_qcvariables, modelchem_labels
+except ModuleNotFoundError as err:
+    _QCMANYBODY_IMPORT_ERROR = err
+    AtomicSpecification = Any
+    ManyBodyInput = Any
+    ManyBodyResult = Any
+    BsseEnum = Any
+    ManyBodyCore = Any
+    ManyBodyComputerQCNG = object
+
+
+def _ensure_qcmanybody() -> None:
+    if _QCMANYBODY_IMPORT_ERROR is None:
+        return
+
+    raise ModuleNotFoundError(
+        "Python module qcmanybody not found that is required for many-body/counterpoise (`bsse_type`) computations. "
+        "Solve by installing it: `conda install -c conda-forge qcmanybody` or `pip install qcmanybody`"
+    ) from _QCMANYBODY_IMPORT_ERROR
 
 if TYPE_CHECKING:
     import qcportal
@@ -411,6 +432,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
     @classmethod
     def from_psi4_task_planner(cls, *, molecule, method, basis, driver, keywords, **mbkwargs):
 
+        _ensure_qcmanybody()
+
         atomic_spec = AtomicSpecification(
             model={"method": method, "basis": basis},
             program="psi4",
@@ -505,6 +528,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             Number of new tasks planned by this call including any supersystem.
 
         """
+        _ensure_qcmanybody()
+
         # TODO method not coming from levels right
 
         # Get the n-body orders for this level. e.g., [1] or [2, 3] or ["supersystem"]
@@ -574,6 +599,8 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
             All MBE results collected into a QCSchema model.
 
         """
+        _ensure_qcmanybody()
+
         component_results = {k: v.get_results(client=client).convert_v(2) for k, v in self.task_list.items()}
         component_properties = {}
         props = {"energy", "gradient", "hessian"}

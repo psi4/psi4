@@ -4,9 +4,10 @@ import re
 import pytest
 import numpy as np
 from qcelemental.testing import compare, compare_values
+from addons import uusing
 import psi4
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.nbody]
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 _sch_name = {1: "qcschema_output", 2: "qcschema_atomic_result"}
 _ispy314 = sys.version_info >= (3, 14)
@@ -126,6 +127,7 @@ _stdouts["uncpcp"] = _stdouts["uncp"] + _stdouts["cp_T"]
     ("gradient", ["nocp", "cp"], None , 5, _tot_uncp_grad, "uncpcp"),  # return tot G          5
     ("gradient", ["nocp", "ssfc"], None , 5, _tot_uncp_grad, "uncpcp"),  # return tot G          5
 ])
+@uusing("qcmanybody")
 def test_nbody_number(driver, bsse_type, return_total_data, nbody_number, return_result, stdoutkey):
 
     eneyne = psi4.geometry("""

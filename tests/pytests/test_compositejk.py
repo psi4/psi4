@@ -111,7 +111,7 @@ def test_composite_call(j_algo, k_algo, mols, request):
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
                       },
-                      marks=pytest.mark.nbody,
+                      marks=using("qcmanybody"),
                       id="h2o/na+ (rhf ie)"),
     ],
 )
@@ -213,7 +213,7 @@ def test_seminum(inp, scf, mols, request):
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
                       },
-                      marks=pytest.mark.nbody,
+                      marks=using("qcmanybody"),
                       id="h2o/na+ (rhf ie)"),
     ],
 )
