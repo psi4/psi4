@@ -2,7 +2,7 @@ import numpy as np
 
 import pytest
 from utils import *
-from addons import using
+from addons import using, uusing
 
 import psi4
 
@@ -176,7 +176,7 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
 
 
 
-@pytest.mark.nbody
+@uusing("qcmanybody")
 @pytest.mark.scf
 @pytest.mark.dft
 @pytest.mark.long

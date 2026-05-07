@@ -4,10 +4,11 @@ import copy
 import pprint
 
 import pytest
+from addons import uusing
 
 import psi4
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.nbody]
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 _sch_name = {1: "qcschema_output", 2: "qcschema_atomic_result"}
 _ispy314 = sys.version_info >= (3, 14)
@@ -88,6 +89,7 @@ def base_schema():
                   'VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY': -224.943882712817},
                  id='nbody-embedded', marks=pytest.mark.extern),
 ])
+@uusing("qcmanybody")
 def test_nbody_levels(inp, expected, base_schema, monkeypatch, schver):
     monkeypatch.setenv("QCMANYBODY_EMBEDDING_CHARGES", "1")
     # reference for nbody-multilevel generated with this larger fitting basis for sto-3g. fails otherwise by 3.e-5
@@ -112,4 +114,3 @@ def test_nbody_levels(inp, expected, base_schema, monkeypatch, schver):
 
     for b, v in expected.items():
         assert psi4.compare_values(v, otp.extras["qcvars"][b], 6, b)
-

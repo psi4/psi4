@@ -680,7 +680,7 @@ def test_v2rdm_casscf(schver):
 #    assert psi4.compare_values(en_gpu_dfcc, en_dfcc, 8, "CCSD total energy")
 
 
-@pytest.mark.nbody
+@uusing("qcmanybody")
 @uusing("dftd3")
 @uusing("gcp")
 @pytest.mark.parametrize("schver", [pytest.param(1, marks=[pytest.mark.skipif(_ispy314, reason="Py314+QCSk1")]), pytest.param(2)])
