@@ -1483,6 +1483,8 @@ void UHF::openorbital_scf() {
         double e_conv = options_.get_double("E_CONVERGENCE");
         double d_conv = options_.get_double("D_CONVERGENCE");
         double e_delta = std::any_cast<double>(data.at("dE"));
+        // For UHF, just use the orthogonal-basis error from OOO for now
+        // TODO: Debug why recomputed error doesn't match
         double d_rms = std::any_cast<double>(data.at("diis_error"));
 
         bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
