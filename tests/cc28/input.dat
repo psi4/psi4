@@ -14,7 +14,7 @@ set {
   basis cc-pVDZ
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
     optrot_tol = 5
 else:
     optrot_tol = 5.e-4

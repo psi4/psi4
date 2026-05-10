@@ -12,7 +12,7 @@ Eref = {
         "DF"        : -149.58715054487624, #TEST
         "Composite": {
           "DFDirJ+COSX"    : {
-            "INTERNAL":      -149.58722317236171, #TEST
+            "INTERNAL":      -149.58722317236171, #TEST  # KP-STORE
             "OOO":           -149.58726907,       #TEST  # -0.00004645
             },
           "DFDirJ+LinK"    : -149.58726772171027  #TEST
@@ -23,7 +23,7 @@ Eref = {
         "DF"        : -149.67125624291961, #TEST
         "Composite": {
           "DFDirJ+COSX"    : {
-            "INTERNAL":      -149.67132922581225, #TEST
+            "INTERNAL":      -149.67132922581225, #TEST  # KP-STORE
             "OOO":           -149.67136954,       #TEST  # -0.00004031
             },
           "DFDirJ+LinK"    : -149.67137328005577  #TEST
@@ -174,7 +174,7 @@ for method in Eref["Singlet"]["Composite"].keys():
     E = energy('scf')
     ans = Eref["Singlet"]["Composite"][method]
     if isinstance(ans, dict):
-        ans = ans["INTERNAL"]  # no OOO for CUHF
+        ans = ans["INTERNAL"]  # no OOO for CUHF  # KP-LOGIC
     compare_values(ans, E, 6, f'Singlet {method} CUHF energy') #TEST
 
 activate(triplet_o2)

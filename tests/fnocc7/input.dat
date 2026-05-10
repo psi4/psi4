@@ -13,6 +13,8 @@ set {
   s_tolerance 1e-3
 }
 
+# "INTERNAL"  # not working, weird
+
 set fnocc maxiter 50
 energy = energy('ccsd')
 
