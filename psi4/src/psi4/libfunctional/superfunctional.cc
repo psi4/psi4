@@ -223,7 +223,7 @@ void SuperFunctional::print(std::string out, int level) const {
         int nxc = 0;
         int nexch = 0;
         int ncorr = 0;
-        for (const auto& [_, xc_code, __]: mix_data) {
+        for (const auto& [_1, xc_code, _2]: mix_data) {
             if (xc_code == 0) {
                 nexch++;
             } else if (xc_code == 1) {
