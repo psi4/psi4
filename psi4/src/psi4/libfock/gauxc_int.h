@@ -41,6 +41,7 @@ class GauXCBase : public IntegratorManager {
    using IntegratorManager::IntegratorManager;
 
    public:
+    GauXCBase(std::shared_ptr<Superfunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : IntegratorManager(primary, options), functional_(functional) {};
     void initialize() override;
     virtual ExchCXX::Spin spin() const = 0;
 
