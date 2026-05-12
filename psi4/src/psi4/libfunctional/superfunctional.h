@@ -83,7 +83,6 @@ class SuperFunctional {
     double c_omega_;
 
     // => Asymptotic corrections <= //
-    bool needs_grac_;
     std::shared_ptr<Functional> grac_x_functional_;
     std::shared_ptr<Functional> grac_c_functional_;
     double grac_shift_;
@@ -206,11 +205,9 @@ class SuperFunctional {
     void add_x_functional(std::shared_ptr<Functional> fun);
     void add_c_functional(std::shared_ptr<Functional> fun);
     void set_grac_x_functional(std::shared_ptr<Functional> fun) {
-        needs_grac_ = true;
         grac_x_functional_ = fun;
     }
     void set_grac_c_functional(std::shared_ptr<Functional> fun) {
-        needs_grac_ = true;
         grac_c_functional_ = fun;
     }
 
@@ -268,7 +265,7 @@ class SuperFunctional {
 
     bool needs_xc() const { return ((c_functionals_.size() + x_functionals_.size()) > 0); }
     bool needs_vv10() const { return needs_vv10_; };
-    bool needs_grac() const { return needs_grac_; };
+    bool needs_grac() const { return grac_x_functional_ != nullptr || grac_c_functional_ != nullptr; };
     bool PSI_API is_unpolarized() const;
     bool PSI_API is_meta() const;
     bool PSI_API is_gga() const;
