@@ -29,8 +29,8 @@
 #ifndef RHF_H
 #define RHF_H
 
+#include "psi4/libfock/integrator_dispatcher.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libfock/v.h"
 #include "hf.h"
 
 #include "psi4/pybind11.h"
@@ -47,7 +47,8 @@ class RHF : public HF {
     SharedMatrix K_;
     SharedMatrix wK_;
 
-    std::shared_ptr<RV> potential_;
+    // Should be restricted-type.
+    std::shared_ptr<IntegratorDispatcher> potential_;
 
     double compute_initial_E() override;
 
@@ -90,7 +91,7 @@ class RHF : public HF {
     double otr_orbital_gradient() override;
 #endif
 
-    std::shared_ptr<VBase> V_potential() const override { return potential_; };
+    std::shared_ptr<IntegratorDispatcher> V_potential() const override { return potential_; };
 
     /// Hessian-vector computers and solvers
     std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x) override;

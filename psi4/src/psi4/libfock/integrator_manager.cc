@@ -46,18 +46,17 @@ void IntegratorManager::set_D(std::vector<SharedMatrix> Dvec) {
         USO2AO_ = AO2USO_->transpose();
     }
 
-    size_t nbf;
     if (AO2USO_) {
-        nbf = AO2USO_->rowspi()[0];
+        nbf_ = AO2USO_->rowspi()[0];
     } else {
-        nbf = Dvec[0]->rowspi()[0];
+        nbf_ = Dvec[0]->rowspi()[0];
     }
 
     // Allocate the densities
     if (D_AO_.size() != Dvec.size()) {
         D_AO_.clear();
         for (size_t i = 0; i < Dvec.size(); i++) {
-            D_AO_.push_back(std::make_shared<Matrix>("D AO temp", nbf, nbf));
+            D_AO_.push_back(std::make_shared<Matrix>("D AO temp", nbf_, nbf_));
         }
     }
 
