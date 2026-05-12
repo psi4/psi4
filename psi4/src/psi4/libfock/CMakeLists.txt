@@ -9,6 +9,7 @@ list(APPEND sources
   DiskJK.cc
   gauxc_int.cc
   GTFockJK.cc
+  integrator_dispatcher.cc
   integrator_manager.cc
   LinK.cc
   MemDFJK.cc

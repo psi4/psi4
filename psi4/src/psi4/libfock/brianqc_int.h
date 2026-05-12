@@ -51,7 +51,7 @@ struct BrianBlock {
 };
 
 class BrianQCBase : public IntegratorManager {
-   using IntegratorManager::IntegratorManager;
+    BrianQCBase(std::shared_ptr<Superfunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : IntegratorManager(primary, options), functional_(functional) {};
     
    static void initialize_named_grids();
    void grid_from_options(MolecularGrid::MolecularGridOptions const& opt, bool build_dft=true);

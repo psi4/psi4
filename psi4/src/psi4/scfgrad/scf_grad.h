@@ -36,7 +36,7 @@
 
 namespace psi {
 class SuperFunctional;
-class VBase;
+class IntegratorManager;
 namespace scf {
     class RHF;
     class UHF;
@@ -51,7 +51,7 @@ protected:
     /// Common initialization
     void common_init();
     std::shared_ptr<SuperFunctional> functional_;
-    std::shared_ptr<VBase> potential_;
+    std::shared_ptr<IntegratorDispatcher> potential_;
     std::map<std::string, SharedMatrix> gradients_;
     std::map<std::string, SharedMatrix> hessians_;
 

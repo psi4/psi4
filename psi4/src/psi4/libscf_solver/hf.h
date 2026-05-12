@@ -44,7 +44,7 @@ class Vector;
 class JK;
 class PCM;
 class SuperFunctional;
-class VBase;
+class IntegratorDispatcher;
 class BasisSet;
 class DIISManager;
 class PSIO;
@@ -309,7 +309,7 @@ class HF : public Wavefunction {
     /// The DFT Potential object (or null if it has been deleted)
     /// This needs to be virtual so that subclasses can enforce their
     /// particular potential's derived class.
-    virtual std::shared_ptr<VBase> V_potential() const = 0;
+    virtual std::shared_ptr<IntegratorDispatcher> V_potential() const = 0;
 
     /// Returns the occupation vectors
     std::shared_ptr<Vector> occupation_a() const;
