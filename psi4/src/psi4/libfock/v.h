@@ -30,6 +30,7 @@
 #define LIBFOCK_DFT_H
 #include "psi4/libmints/typedefs.h"
 #include "psi4/pragma.h"
+#include "integrator_manager.h"
 #include <vector>
 #include <map>
 #include <unordered_map>
@@ -58,7 +59,7 @@ class GauXCBase;
  * K-matrix-vector products
  **/
 
-class PSI_API VBase {
+class PSI_API VBase: public IntegratorManager {
    protected:
     /// Debug flag
     int debug_;
@@ -66,16 +67,10 @@ class PSI_API VBase {
     int print_;
     /// Number of threads
     int num_threads_;
-    /// Number of basis functions;
-    int nbf_;
     /// Rho threshold for the second derivative;
     double v2_rho_cutoff_;
     /// VV10 interior kernel threshold
     double vv10_rho_cutoff_;
-    /// Options object, used to build grid
-    Options& options_;
-    /// Basis set used in the integration
-    std::shared_ptr<BasisSet> primary_;
     /// Desired superfunctional kernel
     std::shared_ptr<SuperFunctional> functional_;
     /// Desired superfunctional kernel
@@ -92,18 +87,9 @@ class PSI_API VBase {
     /// Integrator object for GauXC based integration
     std::shared_ptr<GauXCBase> gauxc_integrator_;
 #endif
-    /// Quadrature values obtained during integration
-    std::map<std::string, double> quad_values_;
     // Caches collocation grids
     std::unordered_map<size_t, std::map<std::string, SharedMatrix>> cache_map_;
     int cache_map_deriv_;
-
-    /// AO2USO matrix (if not C1)
-    SharedMatrix AO2USO_;
-    SharedMatrix USO2AO_;
-
-    /// Vector of C1 D matrices (built by USO2AO)
-    std::vector<SharedMatrix> D_AO_;
 
     // GRAC data
     bool grac_initialized_;
@@ -126,31 +112,20 @@ class PSI_API VBase {
                                           std::shared_ptr<SuperFunctional> functional, Options& options,
                                           const std::string& type = "RV");
 
-    std::shared_ptr<BasisSet> basis() const { return primary_; }
     std::shared_ptr<SuperFunctional> functional() const { return functional_; }
     std::vector<std::shared_ptr<PointFunctions>> properties() const { return point_workers_; }
     std::shared_ptr<DFTGrid> grid() const { return grid_; }
     std::shared_ptr<BlockOPoints> get_block(int block);
     size_t nblocks();
-    std::map<std::string, double>& quadrature_values() { return quad_values_; }
 
     // Creates a collocation cache map based on stride
+    size_t collocation_size() const override;
     void build_collocation_cache(size_t memory);
     void clear_collocation_cache() { cache_map_.clear(); }
-
-    // Set the D matrix, get it back if needed
-    void set_D(std::vector<SharedMatrix> Dvec);
-    const std::vector<SharedMatrix>& Dao() const { return D_AO_; }
 
     // Set the site of the grac shift
     void set_grac_shift(double value);
 
-    /// Throws by default
-    virtual void compute_V(std::vector<SharedMatrix> ret);
-    /// Throws by default. Compute the orbital derivative of the KS potential for each spin,
-    /// contract against Dx, and putting the result in ret.
-    virtual void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
-    virtual std::vector<SharedMatrix> compute_fock_derivatives();
     virtual SharedMatrix compute_gradient();
     virtual SharedMatrix compute_hessian();
 
@@ -160,7 +135,7 @@ class PSI_API VBase {
     virtual void initialize();
     virtual void finalize();
 
-    virtual void print_header() const;
+    void print_header() const override;
 };
 
 // => Derived Classes <= //
@@ -173,7 +148,7 @@ class SAP : public VBase {
     void initialize() override;
     void finalize() override;
 
-    void compute_V(std::vector<SharedMatrix> ret) override;
+    std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
     void print_header() const override;
 };
 
@@ -187,8 +162,8 @@ class RV : public VBase {
     void finalize() override;
 
     // compute_V assuming same orbitals for different spin. Computes V_alpha, not spin-summed V.
-    void compute_V(std::vector<SharedMatrix> ret) override;
-    void compute_V_psi(std::vector<SharedMatrix>& ret);
+    std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
+    bool can_compute_Vx() override { return true; };
     /// Compute the orbital derivative of the KS potential, contract against Dx, and
     /// putting the result in ret. ret[i] is Vx where x = Dx[i]. The "true" vector has
     /// 2^-0.5 Dx[i] for each input spin case and returns **half** the α component of the output.
@@ -199,11 +174,11 @@ class RV : public VBase {
     /// And no, we can't just make singlet a default argument. Then compute_Vx has different signatures for
     /// different VBase subclasses, so we can't call compute_Vx from VBase, which breaks the hessian code.
     void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override { compute_Vx_full(Dx, ret, true); };
-    std::vector<SharedMatrix> compute_fock_derivatives() override;
+    bool can_compute_gradient() override { return true; };
     SharedMatrix compute_gradient() override;
+    bool can_compute_hessian() override { return true; };
+    std::vector<SharedMatrix> compute_fock_derivatives() override;
     SharedMatrix compute_hessian() override;
-
-    void print_header() const override;
 };
 
 class UV : public VBase {
@@ -215,16 +190,17 @@ class UV : public VBase {
     void initialize() override;
     void finalize() override;
 
-    void compute_V(std::vector<SharedMatrix> ret) override;
+    std::map<std::string, double> compute_V(std::vector<SharedMatrix> ret) override;
+    bool can_compute_Vx() override { return true; };
     /// Compute the orbital derivative of the KS potential, contract against Dx, and
     /// putting the result in ret. ret[i] is Vx where x = Dx[i].
     /// ret[2n], ret[2n+1] are alpha and beta Vx where x concatenates Dx[2n] (α) and Dx[2n+1] (β).
     void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
-    std::vector<SharedMatrix> compute_fock_derivatives() override;
+    bool can_compute_gradient() override { return true; };
     SharedMatrix compute_gradient() override;
+    bool can_compute_hessian() override { return true; };
+    std::vector<SharedMatrix> compute_fock_derivatives() override;
     SharedMatrix compute_hessian() override;
-
-    void print_header() const override;
 };
 }
 #endif

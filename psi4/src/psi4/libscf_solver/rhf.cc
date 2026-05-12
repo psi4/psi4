@@ -498,7 +498,11 @@ std::vector<SharedMatrix> RHF::twoel_Hx_full(std::vector<SharedMatrix> x_vec, bo
             Dx.push_back(linalg::doublet(Cl[i], Cr[i], false, true));
             Vx.push_back(std::make_shared<Matrix>("Vx Temp", Dx[i]->rowspi(), Dx[i]->colspi(), Dx[i]->symmetry()));
         }
-        potential_->compute_Vx_full(Dx, Vx, singlet);
+        if (singlet) {
+            potential_->compute_Vx(Dx, Vx);
+        } else {
+            potential_->compute_Vx_triplet(Dx, Vx);
+        }
     }
 
     std::vector<SharedMatrix> V_ext_pert;
@@ -1039,7 +1043,7 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
 void RHF::setup_potential() {
     if (functional_->needs_xc()) {
-        potential_ = std::make_shared<RV>(functional_, basisset_, options_);
+        potential_ = std::make_shared<IntegratorDispatcher>(std::make_shared<RV>(functional_, basisset_, options_));
         potential_->initialize();
     } else {
         potential_ = nullptr;
