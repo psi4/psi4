@@ -1430,16 +1430,9 @@ void UHF::openorbital_scf() {
 
     // Compute AO-basis DIIS error for convergence checking
     // For UHF: compute separate FDS - SDF commutators for alpha and beta spins
-    // Build alpha and beta density matrices in AO basis (already done above in loop)
-    auto Pa_AO_mat = std::make_shared<Matrix>("Pa_AO", nsopi_, nsopi_);
-    auto Pb_AO_mat = std::make_shared<Matrix>("Pb_AO", nsopi_, nsopi_);
-    for(int h=0; h<nirrep_; h++) {
-      if(nsopi_[h]==0) continue;
-      arma::mat Cablock = Cadummy->to_armadillo_matrix(h);
-      arma::mat Cbblock = Cbdummy->to_armadillo_matrix(h);
-      Pa_AO_mat->from_armadillo_matrix(Cablock*Cablock.t(), h);
-      Pb_AO_mat->from_armadillo_matrix(Cbblock*Cbblock.t(), h);
-    }
+    // Build alpha and beta density matrices in AO basis directly from C matrices.
+    auto Pa_AO_mat = linalg::doublet(Cadummy, Cadummy, false, true);
+    auto Pb_AO_mat = linalg::doublet(Cbdummy, Cbdummy, false, true);
 
     // Build alpha Fock matrix in AO basis: Fa = H + J + Ka + Vxca
     auto Fa_AO = H_->clone();
@@ -1483,23 +1476,8 @@ void UHF::openorbital_scf() {
 
     // Compute RMS error combining both spins (stay in AO basis, don't transform by X)
     // For UHF: compute RMS for each spin, then take the max (like INTERNAL does)
-    double ao_diis_rms_sq_alpha = 0.0;
-    double ao_diis_rms_sq_beta = 0.0;
-    for(int h=0; h<nirrep_; h++) {
-      if(nsopi_[h]==0) continue;
-      double** cpa = FaDSmSDFa->pointer(h);
-      double** cpb = FbDSmSDFb->pointer(h);
-      int nso = nsopi_[h];
-      for(int i=0; i<nso; i++) {
-        for(int j=0; j<nso; j++) {
-          ao_diis_rms_sq_alpha += cpa[i][j] * cpa[i][j];
-          ao_diis_rms_sq_beta += cpb[i][j] * cpb[i][j];
-        }
-      }
-    }
-    int nso_total = FaDSmSDFa->nrow();
-    double ao_diis_rms_alpha = std::sqrt(ao_diis_rms_sq_alpha / nso_total);
-    double ao_diis_rms_beta = std::sqrt(ao_diis_rms_sq_beta / nso_total);
+    double ao_diis_rms_alpha = FaDSmSDFa->rms();
+    double ao_diis_rms_beta = FbDSmSDFb->rms();
     ao_basis_diis_error = std::max(ao_diis_rms_alpha, ao_diis_rms_beta);
 
     return std::make_pair(Etot,fock);

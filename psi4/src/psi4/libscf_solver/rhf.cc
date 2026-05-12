@@ -1221,19 +1221,7 @@ void RHF::openorbital_scf() {
     FDSmSDF->subtract(SDF);
 
     // Compute RMS error (stay in AO basis, don't transform by X)
-    double ao_diis_rms = 0.0;
-    for(int h=0; h<nirrep_; h++) {
-      if(nsopi_[h]==0) continue;
-      double** cp = FDSmSDF->pointer(h);
-      int nso = nsopi_[h];
-      for(int i=0; i<nso; i++) {
-        for(int j=0; j<nso; j++) {
-          ao_diis_rms += cp[i][j] * cp[i][j];
-        }
-      }
-    }
-    int nso_total = FDSmSDF->nrow();
-    ao_basis_diis_error = std::sqrt(ao_diis_rms / nso_total);
+    ao_basis_diis_error = FDSmSDF->rms();
 
     return std::make_pair(Etot,fock);
   };
