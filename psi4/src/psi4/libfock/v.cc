@@ -71,7 +71,7 @@ extern bool brianEnableDFT;
 namespace psi {
 
 VBase::VBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
-    : options_(options), primary_(primary), functional_(functional) {
+    : IntegratorManager(primary, options), functional_(functional) {
     common_init();
 }
 VBase::~VBase() {}
@@ -115,50 +115,6 @@ std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary, std::sh
 
     return v;
 }
-void VBase::set_D(std::vector<SharedMatrix> Dvec) {
-    if (Dvec.size() > 2) {
-        throw PSIEXCEPTION("VBase::set_D: Can only set up to two D vectors.");
-    }
-
-    // Build AO2USO matrix, if needed
-    if (!AO2USO_ && (Dvec[0]->nirrep() != 1)) {
-        auto integral = std::make_shared<IntegralFactory>(primary_);
-        PetiteList pet(primary_, integral);
-        AO2USO_ = SharedMatrix(pet.aotoso());
-        USO2AO_ = AO2USO_->transpose();
-    }
-
-    if (AO2USO_) {
-        nbf_ = AO2USO_->rowspi()[0];
-    } else {
-        nbf_ = Dvec[0]->rowspi()[0];
-    }
-
-    // Allocate the densities
-    if (D_AO_.size() != Dvec.size()) {
-        D_AO_.clear();
-        for (size_t i = 0; i < Dvec.size(); i++) {
-            D_AO_.push_back(std::make_shared<Matrix>("D AO temp", nbf_, nbf_));
-        }
-    }
-
-    // Copy over the AO
-    for (size_t i = 0; i < Dvec.size(); i++) {
-        if (Dvec[i]->nirrep() != 1) {
-            D_AO_[i]->remove_symmetry(Dvec[i], USO2AO_);
-        } else {
-            D_AO_[i]->copy(Dvec[i]);
-        }
-    }
-
-#ifdef USING_gauxc
-    if (gauxc_integrator_) gauxc_integrator_->set_D(Dvec);
-#endif
-#ifdef USING_BrianQC
-    if (brianqc_integrator_) brianqc_integrator_->set_D(Dvec);
-#endif
-
-}
 void VBase::initialize() {
     // TODO: This should only run if the compute_V mode is Psi.
     timer_on("V: Grid");
@@ -172,15 +128,6 @@ void VBase::initialize() {
 }
 SharedMatrix VBase::compute_gradient() { throw PSIEXCEPTION("VBase: gradient not implemented for this V instance."); }
 SharedMatrix VBase::compute_hessian() { throw PSIEXCEPTION("VBase: hessian not implemented for this V instance."); }
-void VBase::compute_V(std::vector<SharedMatrix> ret) {
-    throw PSIEXCEPTION("VBase: deriv not implemented for this V instance.");
-}
-void VBase::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
-    throw PSIEXCEPTION("VBase: deriv not implemented for this Vx instance.");
-}
-std::vector<SharedMatrix> VBase::compute_fock_derivatives() {
-    throw PSIEXCEPTION("VBase: compute_fock_derivatives not implemented for this Vx instance.");
-}
 void VBase::set_grac_shift(double grac_shift) {
     // Well this is a flaw in my plan
     if (!grac_initialized_) {
@@ -226,7 +173,7 @@ void VBase::set_grac_shift(double grac_shift) {
     }
 }
 void VBase::print_header() const {
-    outfile->Printf("  ==> DFT Potential <==\n\n");
+    outfile->Printf("  ===> DFT Potential <===\n\n");
     functional_->print("outfile", print_);
     grid_->print("outfile", print_);
     if (print_ > 2) grid_->print_details("outfile", print_);
@@ -234,9 +181,7 @@ void VBase::print_header() const {
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
 void VBase::finalize() { grid_.reset(); }
-void VBase::build_collocation_cache(size_t memory) {
-    // Figure out many blocks to skip
-
+size_t VBase::collocation_size() const {
     size_t collocation_size = grid_->collocation_size();
     if (functional_->ansatz() == 1) {
         collocation_size *= 4;  // For gradients
@@ -244,9 +189,11 @@ void VBase::build_collocation_cache(size_t memory) {
     if (functional_->ansatz() == 2) {
         collocation_size *= 10;  // For gradients and Hessians
     }
-
+    return collocation_size;
+};
+void VBase::build_collocation_cache(size_t memory) {
     // Figure out stride as closest whole number to amount we need
-    size_t stride = (size_t)(std::ceil(collocation_size / (double)memory));
+    size_t stride = (size_t)(std::ceil(collocation_size() / (double)memory));
 
     // More memory than needed
     if (stride == 0) {
@@ -614,13 +561,13 @@ void SAP::initialize() {
     USO2AO_ = AO2USO_->transpose();
     nbf_ = AO2USO_->rowspi()[0];
 }
-void SAP::finalize() { VBase::finalize(); }
 void SAP::print_header() const {
-    outfile->Printf("  ==> SAP guess <==\n\n");
+    outfile->Printf("  ===> SAP guess <===\n\n");
     grid_->print("outfile", print_);
     if (print_ > 2) grid_->print_details("outfile", print_);
 }
-void SAP::compute_V(std::vector<SharedMatrix> ret) {
+void SAP::finalize() { VBase::finalize(); }
+std::map<std::string, double> SAP::compute_V(std::vector<SharedMatrix> ret) {
     timer_on("SAP: Form V");
 
     if (ret.size() != 1) {
@@ -739,6 +686,8 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
         ret[0]->copy(V_AO);
     }
     timer_off("SAP: Form V");
+
+    return {};
 }
 
 RV::RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
@@ -770,34 +719,14 @@ void RV::initialize() {
     }
 }
 void RV::finalize() { VBase::finalize(); }
-void RV::print_header() const { VBase::print_header(); }
-void RV::compute_V(std::vector<SharedMatrix> ret) {
+
+std::map<std::string, double> RV::compute_V(std::vector<SharedMatrix> ret) {
     // => Validate object <=
     timer_on("RV: Form V");
-    
     if ((D_AO_.size() != 1) || (ret.size() != 1)) {
         throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
     }
-    
-#ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
-        quad_values_ = brianqc_integrator_->compute_V(ret);
-        timer_off("RV: Form V");
-        return;
-    }
-#endif
-#ifdef USING_gauxc
-    if (options_.get_int("GAUXC_INTEGRATE")) {
-        quad_values_ = gauxc_integrator_->compute_V(ret);
-        timer_off("RV: Form V");
-        return;
-    }
-#endif
-    compute_V_psi(ret);
-    timer_off("RV: Form V");
-}
 
-void RV::compute_V_psi(std::vector<SharedMatrix>& ret) {
     // => Initialize variables, esp. pointers and matrices <=
     // Thread info
     int rank = 0;
@@ -932,6 +861,8 @@ void RV::compute_V_psi(std::vector<SharedMatrix>& ret) {
         outfile->Printf("    <\\vec r\\rho_b> : <%24.16E,%24.16E,%24.16E>\n\n", quad_values_["RHO_BX"],
                         quad_values_["RHO_BY"], quad_values_["RHO_BZ"]);
     }
+    timer_off("RV: Form V");
+    return quad_values_;
 }
 
 std::vector<SharedMatrix> RV::compute_fock_derivatives() {
@@ -2106,8 +2037,7 @@ void UV::initialize() {
     }
 }
 void UV::finalize() { VBase::finalize(); }
-void UV::print_header() const { VBase::print_header(); }
-void UV::compute_V(std::vector<SharedMatrix> ret) {
+std::map<std::string, double> UV::compute_V(std::vector<SharedMatrix> ret) {
     // => Validate object <=
     timer_on("UV: Form V");
     if ((D_AO_.size() != 2) || (ret.size() != 2)) {
@@ -2117,22 +2047,6 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     if (functional_->needs_grac()) {
         throw PSIEXCEPTION("V: UKS cannot compute GRAC corrections.");
     }
-
-    // => Special BrianQC Logic <=
-#ifdef USING_BrianQC
-    if (brianEnable and brianEnableDFT) {
-        quad_values_ = brianqc_integrator_->compute_V(ret);
-        timer_off("UV: Form V");
-        return;
-    }
-#endif
-#ifdef USING_gauxc
-    if (options_.get_int("GAUXC_INTEGRATE")) {
-        quad_values_ = gauxc_integrator_->compute_V(ret);
-        timer_off("UV: Form V");
-        return;
-    }
-#endif
 
     // => Initialize variables, esp. pointers and matrices <=
     // Thread info
@@ -2420,6 +2334,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
                         quad_values_["RHO_BY"], quad_values_["RHO_BZ"]);
     }
     timer_off("UV: Form V");
+
+    return quad_values_;
 }
 std::vector<SharedMatrix> UV::compute_fock_derivatives() {
     timer_on("UV: Form Fx");

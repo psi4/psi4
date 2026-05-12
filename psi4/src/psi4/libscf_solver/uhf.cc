@@ -1236,7 +1236,7 @@ std::shared_ptr<UHF> UHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
 void UHF::setup_potential() {
     if (functional_->needs_xc()) {
-        potential_ = std::make_shared<UV>(functional_, basisset_, options_);
+        potential_ = std::make_shared<IntegratorDispatcher>(std::make_shared<UV>(functional_, basisset_, options_));
         potential_->initialize();
     } else {
         potential_ = nullptr;

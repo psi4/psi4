@@ -29,8 +29,9 @@
 #ifndef PSI4_LIBSCF_SOLVER_UHF_H
 #define PSI4_LIBSCF_SOLVER_UHF_H
 
+
+#include "psi4/libfock/integrator_dispatcher.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libfock/v.h"
 #include "hf.h"
 
 namespace psi {
@@ -41,7 +42,8 @@ class UHF : public HF {
     SharedMatrix Da_old_, Db_old_;
     SharedMatrix Ga_, Gb_, J_, Ka_, Kb_, wKa_, wKb_;
 
-    std::shared_ptr<UV> potential_;
+    // Should be unrestricted-type.
+    std::shared_ptr<IntegratorDispatcher> potential_;
 
     double compute_initial_E() override;
 
@@ -89,7 +91,7 @@ class UHF : public HF {
     void damping_update(double) override;
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) override;
 
-    std::shared_ptr<VBase> V_potential() const override { return potential_; };
+    std::shared_ptr<IntegratorDispatcher> V_potential() const override { return potential_; };
 
     /// Hessian-vector computers and solvers
     std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x) override;

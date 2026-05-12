@@ -49,6 +49,7 @@
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libfock/jk.h"
+#include "psi4/libfock/integrator_dispatcher.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
 
