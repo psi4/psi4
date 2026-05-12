@@ -1052,7 +1052,7 @@ void RHF::openorbital_scf() {
 #else
   // FIX: Store AO-basis DIIS error to use for convergence instead of orthogonal-basis error
   double ao_basis_diis_error = 1.0;
-  
+
   std::function<OpenOrbitalOptimizer::FockBuilderReturn<double, double>(const OpenOrbitalOptimizer::DensityMatrix<double, double> &)> fock_builder = [&](const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm) {
     // DIAGNOSTIC: Print X matrix condition numbers once
     static bool printed_X_cond = false;
@@ -1063,13 +1063,13 @@ void RHF::openorbital_scf() {
         const arma::mat Xblock(X_->to_armadillo_matrix(h));
         arma::vec singvals = arma::svd(Xblock);
         double cond = singvals(0) / singvals(singvals.n_elem - 1);
-        outfile->Printf("    Irrep %d: condition number = %.6e (max/min singular values: %.6e / %.6e)\n", 
+        outfile->Printf("    Irrep %d: condition number = %.6e (max/min singular values: %.6e / %.6e)\n",
                         h, cond, singvals(0), singvals(singvals.n_elem - 1));
       }
       outfile->Printf("\n");
       printed_X_cond = true;
     }
-    
+
     // Grab the orbitals and occupations
     std::vector<arma::mat> orbitals = dm.first;
     std::vector<arma::vec> occupations = dm.second;
@@ -1196,107 +1196,44 @@ void RHF::openorbital_scf() {
     }
     double Etot = Ecore+Ecoul+Eexch+nuclearrep_+XC_E+VV10_E;
 
-    // DIAGNOSTIC: Compute DIIS error in AO basis for comparison
-    static int fock_call_count = 0;
-    fock_call_count++;
-    if (fock_call_count >= 10 && fock_call_count <= 15) {
-      double ao_diis_rms = 0.0;
-      double orth_diis_rms = 0.0;
-      for(int h=0; h<nirrep_; h++) {
-        if(nsopi_[h]==0) continue;
-        const arma::mat Xblock(X_->to_armadillo_matrix(h));
-        const arma::mat Sblock(S_->to_armadillo_matrix(h));
-        const arma::mat Cblock(Cdummy->to_armadillo_matrix(h));
-        const arma::mat P_AO = Cblock * Cblock.t();
-        
-        // Fock in AO basis
-        arma::mat F_AO;
-        const arma::mat J_AO(Jvec[0]->to_armadillo_matrix(h));
-        const arma::mat coreH(H_->to_armadillo_matrix(h));
-        arma::mat K_AO;
-        if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
-          K_AO = -alpha*(Kvec[0]->to_armadillo_matrix(h));
-        } else {
-          K_AO.zeros(coreH.n_rows, coreH.n_cols);
-        }
-        if (functional_->is_x_lrc()) {
-          const arma::mat wK_AO(wKvec[0]->to_armadillo_matrix(h));
-          if (jk_->get_wcombine()) {
-            K_AO -= wK_AO;
-          } else {
-            K_AO -= beta*wK_AO;
-          }
-        }
-        if (functional_->needs_xc()) {
-          F_AO = coreH + J_AO + 0.5*K_AO + Vxc[h];
-        } else {
-          F_AO = coreH + J_AO + 0.5*K_AO;
-        }
-        
-        // AO basis commutator: FDS - SDF
-        arma::mat FDS = F_AO * P_AO * Sblock;
-        arma::mat SDF = Sblock * P_AO * F_AO;
-        arma::mat comm_AO = FDS - SDF;
-        double ao_norm = arma::norm(comm_AO, "fro") / std::sqrt(comm_AO.n_elem);
-        ao_diis_rms += ao_norm * ao_norm;
-        
-        // Orthogonal basis: [F_orth, P_orth] computed same way as OOO
-        arma::mat F_orth = Xblock.t() * F_AO * Xblock;
-        arma::mat P_orth = Xblock.t() * Sblock * Cblock * Cblock.t() * Sblock * Xblock;
-        arma::mat comm_orth = F_orth * P_orth - P_orth * F_orth;
-        // Project to MO basis like OOO does
-        arma::mat C_orth = Xblock.t() * Sblock * Cblock;
-        arma::mat comm_orth_mo = C_orth.t() * comm_orth * C_orth;
-        double orth_norm = arma::norm(comm_orth_mo, "fro") / std::sqrt(comm_orth_mo.n_elem);
-        orth_diis_rms += orth_norm * orth_norm;
-      }
-      ao_diis_rms = std::sqrt(ao_diis_rms);
-      orth_diis_rms = std::sqrt(orth_diis_rms);
-      outfile->Printf("   DIIS_AO vs DIIS_ORTH: call %2d: AO=%.6e  ORTH=%.6e  ratio=%.3f\n", 
-                      fock_call_count, ao_diis_rms, orth_diis_rms, orth_diis_rms/ao_diis_rms);
-      // FIX: Store AO error for convergence checking
-      ao_basis_diis_error = ao_diis_rms;
-    } else {
-      // FIX: Always compute AO-basis DIIS error for convergence
-      double ao_diis_rms = 0.0;
-      for(int h=0; h<nirrep_; h++) {
-        if(nsopi_[h]==0) continue;
-        const arma::mat Xblock(X_->to_armadillo_matrix(h));
-        const arma::mat Sblock(S_->to_armadillo_matrix(h));
-        const arma::mat Cblock(Cdummy->to_armadillo_matrix(h));
-        const arma::mat P_AO = Cblock * Cblock.t();
-        
-        arma::mat F_AO;
-        const arma::mat J_AO(Jvec[0]->to_armadillo_matrix(h));
-        const arma::mat coreH(H_->to_armadillo_matrix(h));
-        arma::mat K_AO;
-        if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
-          K_AO = -alpha*(Kvec[0]->to_armadillo_matrix(h));
-        } else {
-          K_AO.zeros(coreH.n_rows, coreH.n_cols);
-        }
-        if (functional_->is_x_lrc()) {
-          const arma::mat wK_AO(wKvec[0]->to_armadillo_matrix(h));
-          if (jk_->get_wcombine()) {
-            K_AO -= wK_AO;
-          } else {
-            K_AO -= beta*wK_AO;
-          }
-        }
-        if (functional_->needs_xc()) {
-          F_AO = coreH + J_AO + 0.5*K_AO + Vxc[h];
-        } else {
-          F_AO = coreH + J_AO + 0.5*K_AO;
-        }
-        
-        arma::mat FDS = F_AO * P_AO * Sblock;
-        arma::mat SDF = Sblock * P_AO * F_AO;
-        arma::mat comm_AO = FDS - SDF;
-        double ao_norm = arma::norm(comm_AO, "fro") / std::sqrt(comm_AO.n_elem);
-        ao_diis_rms += ao_norm * ao_norm;
-      }
-      ao_basis_diis_error = std::sqrt(ao_diis_rms);
+    // Compute AO-basis DIIS error for convergence checking
+    // Formula: RMS of FDS - SDF commutator in AO basis
+    // Build density matrix P = C * C^T in AO basis
+    auto P_AO = linalg::doublet(Cdummy, Cdummy, false, true);
+
+    // Build Fock matrix in AO basis: F = H + J + K + Vxc
+    auto F_AO = H_->clone();
+    F_AO->add(Jvec[0]);
+    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
+      F_AO->axpy(-alpha*0.5, Kvec[0]);
     }
+    if (functional_->is_x_lrc()) {
+      double scale = jk_->get_wcombine() ? -0.5 : -beta*0.5;
+      F_AO->axpy(scale, wKvec[0]);
+    }
+    if (functional_->needs_xc()) {
+      F_AO->add(Va_);
+    }
+
+    // Compute FDS - SDF commutator using triplet (like form_FDSmSDF)
+    auto FDSmSDF = linalg::triplet(F_AO, P_AO, S_, false, false, false);
+    auto SDF = FDSmSDF->transpose();
+    FDSmSDF->subtract(SDF);
+
+    // Compute RMS error (stay in AO basis, don't transform by X)
+    double ao_diis_rms = 0.0;
+    for(int h=0; h<nirrep_; h++) {
+      if(nsopi_[h]==0) continue;
+      double** cp = FDSmSDF->pointer(h);
+      int nso = nsopi_[h];
+      for(int i=0; i<nso; i++) {
+        for(int j=0; j<nso; j++) {
+          ao_diis_rms += cp[i][j] * cp[i][j];
+        }
+      }
+    }
+    int nso_total = FDSmSDF->nrow();
+    ao_basis_diis_error = std::sqrt(ao_diis_rms / nso_total);
 
     return std::make_pair(Etot,fock);
   };
@@ -1368,14 +1305,6 @@ void RHF::openorbital_scf() {
     double Dnorm_ao = 0.5 * ao_basis_diis_error;  // FIX: Also show AO-basis error
     // scale density norm to match internal algorithm
     std::string step = std::any_cast<std::string>(data.at("step"));
-    
-    // DIAGNOSTIC: Print orbital gradient if available
-    if (data.count("orbital_gradient")) {
-        double orb_grad = std::any_cast<double>(data.at("orbital_gradient"));
-        if (iteration_ >= 8 && iteration_ <= 15) {  // Around where it gets stuck
-            outfile->Printf("   DEBUG: iter %3i orbital_gradient = %.5e\n", iteration_, orb_grad);
-        }
-    }
 
     outfile->Printf("   @%s iter %3i: %20.14f   %12.5e   %-11.5e [AO: %-11.5e] %s\n", reference.c_str(), iteration_, E, dE, Dnorm_orth, Dnorm_ao, step.c_str());
   };
