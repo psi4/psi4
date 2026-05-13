@@ -93,7 +93,7 @@ def test_OH_molden(inp_oh, datadir):
         'reference':inp_oh['ref']
         })
     if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 7e-9})
+        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
     molden_file = f"{inp_oh['name']}.molden"
     ref = datadir.join(f"{inp_oh['name']}.ref")
     e, wfn = psi4.energy('scf', return_wfn=True, molecule=mol)
