@@ -43,9 +43,9 @@ def test_H2O_molden(inp_h2o, datadir):
         'basis': 'dz',
         'scf_type': 'pk',
         })
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 7e-9})
     psi4.set_options(inp_h2o['options'])
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-TIGHT
+        psi4.set_options({"d_convergence": 10})
     molden_file = f"{inp_h2o['name']}.molden"
     ref = datadir.join(f"{inp_h2o['name']}.ref")
     e, wfn = psi4.energy(inp_h2o['energy'], return_wfn=True, molecule=mol)
@@ -67,8 +67,6 @@ def test_H2O_density_molden(inp_h2o_density, datadir):
         'scf_type': 'pk',
         'e_convergence': 10
         })
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
     molden_file = f"{inp_h2o_density['name']}.molden"
     ref = datadir.join(f"{inp_h2o_density['name']}.ref")
     e, wfn = psi4.properties(inp_h2o_density['energy'], return_wfn=True, molecule=mol)
@@ -92,8 +90,8 @@ def test_OH_molden(inp_oh, datadir):
         'e_convergence': 11,
         'reference':inp_oh['ref']
         })
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-TIGHT
+        psi4.set_options({"d_convergence": 10})
     molden_file = f"{inp_oh['name']}.molden"
     ref = datadir.join(f"{inp_oh['name']}.ref")
     e, wfn = psi4.energy('scf', return_wfn=True, molecule=mol)
@@ -115,11 +113,11 @@ def test_H2S_molden(inp_h2s, datadir):
         'scf_type': 'pk',
         'e_convergence': 10
         })
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL-TIGHT
         tol = 7
     else:
         tol = 6
-        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
+        psi4.set_options({"d_convergence": 10})
     psi4.set_options(inp_h2s['options'])
     molden_file = f"{inp_h2s['name']}.molden"
     ref = datadir.join(f"{inp_h2s['name']}.ref")
@@ -145,11 +143,9 @@ def test_ClFHCOH_molden(inp_clfhcoh, datadir):
         'scf_type': 'pk',
         'e_convergence': 11
         })
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
-        tol = 7
-    else:
-        tol = 6
-        psi4.set_options({"e_convergence": 9, "d_convergence": 7e-9})
+    tol = 7
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-TIGHT
+        psi4.set_options({"d_convergence": 10})
     molden_file = f"{inp_clfhcoh['name']}.molden"
     ref = datadir.join(f"{inp_clfhcoh['name']}.ref")
     e, wfn = psi4.energy('scf', return_wfn=True, molecule=mol)

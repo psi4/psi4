@@ -1331,27 +1331,8 @@ void UHF::openorbital_scf() {
 
     std::vector<arma::mat> Vxca(nirrep_), Vxcb(nirrep_);
     if (functional_->needs_xc()) {
-      auto Padummy = std::make_shared<Matrix>("Dummy alpha density", nsopi_, nsopi_);
-      for(int h=0;h<nirrep_;h++) {
-        if(namopi[h]==0)
-          // Skip case of nothing to do
-          continue;
-        // Get the block of X
-        arma::mat Cablock = Cadummy->to_armadillo_matrix(h);
-        Padummy->from_armadillo_matrix(Cablock*Cablock.t(),h);
-      }
-
-      auto Pbdummy = std::make_shared<Matrix>("Dummy beta density", nsopi_, nsopi_);
-      for(int h=0;h<nirrep_;h++) {
-        if(nbmopi[h]==0)
-          // Skip case of nothing to do
-          continue;
-        // Get the block of X
-        const arma::mat Xblock(X_->to_armadillo_matrix(h));
-        int hd=h+nirrep_;
-        arma::mat Cbblock = Cbdummy->to_armadillo_matrix(h);
-        Pbdummy->from_armadillo_matrix(Cbblock*Cbblock.t(),h);
-      }
+      auto Padummy = linalg::doublet(Cadummy, Cadummy, false, true);
+      auto Pbdummy = linalg::doublet(Cbdummy, Cbdummy, false, true);
 
       potential_->set_D({Padummy, Pbdummy});
       potential_->compute_V({Va_, Vb_});
@@ -1564,6 +1545,7 @@ void UHF::openorbital_scf() {
   scfsolver.maximum_iterations(maxiter);
   scfsolver.verbosity(options_.get_int("OOO_PRINT"));
   scfsolver.maximum_history_length(maxvecs);
+  scfsolver.oda_restart_steps(options_.get_int("OOO_ODA_RESTART_STEPS"));
   scfsolver.callback_function(callback_function);
   scfsolver.callback_convergence_function(callback_convergence_function);  // replaces scfsolver.convergence_threshold()
   scfsolver.diis_epsilon(start_diis);

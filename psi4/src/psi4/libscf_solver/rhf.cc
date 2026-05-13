@@ -1126,15 +1126,9 @@ void RHF::openorbital_scf() {
 
     std::vector<arma::mat> Vxc(nirrep_);
     if (functional_->needs_xc()) {
-      auto Pdummy = std::make_shared<Matrix>("Dummy density", nsopi_, nsopi_);
-      for(int h=0;h<nirrep_;h++) {
-        if(nmopi[h]==0)
-          // Skip case of nothing to do
-          continue;
-        arma::mat Cblock = Cdummy->to_armadillo_matrix(h);
-        // Psi4 expects density matrices without the factor 2
-        Pdummy->from_armadillo_matrix(0.5*Cblock*Cblock.t(),h);
-      }
+      // Psi4 expects density matrices without the factor 2
+      auto Pdummy = linalg::doublet(Cdummy, Cdummy, false, true);
+      Pdummy->scale(0.5);
 
       potential_->set_D({Pdummy});
       potential_->compute_V({Va_});
@@ -1301,6 +1295,7 @@ void RHF::openorbital_scf() {
   scfsolver.maximum_iterations(maxiter);
   scfsolver.verbosity(options_.get_int("OOO_PRINT"));
   scfsolver.maximum_history_length(maxvecs);
+  scfsolver.oda_restart_steps(options_.get_int("OOO_ODA_RESTART_STEPS"));
   scfsolver.callback_function(callback_function);
   scfsolver.callback_convergence_function(callback_convergence_function);  // replaces scfsolver.convergence_threshold()
   scfsolver.diis_epsilon(start_diis);

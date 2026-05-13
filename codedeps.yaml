@@ -1156,8 +1156,8 @@ data:
     conda:
       channel: conda-forge
       name: pymdi
-      constraint: null
-      constraint_note: "v1.2 has breaking API change."
+      constraint: "=*=*nompi*"
+      constraint_note: "v1.2 has breaking API change. nompi variant not required."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_mdi is inconsequential."
 
