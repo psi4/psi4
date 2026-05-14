@@ -38,17 +38,18 @@
 namespace psi {
 
 class GauXCBase : public IntegratorManager {
-   using IntegratorManager::IntegratorManager;
+   protected:
+    std::shared_ptr<SuperFunctional> functional_;
+    /// Integrator object for GauXC based integration
+    std::shared_ptr<GauXC::XCIntegrator<Eigen::MatrixXd>> integrator_;
 
    public:
-    GauXCBase(std::shared_ptr<Superfunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : IntegratorManager(primary, options), functional_(functional) {};
+    GauXCBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options) : IntegratorManager(primary, options), functional_(functional) {};
+    std::shared_ptr<SuperFunctional> functional() const override { return functional_; }
     void initialize() override;
     virtual ExchCXX::Spin spin() const = 0;
 
-   protected:
-    /// Integrator object for GauXC based integration
-    std::shared_ptr<GauXC::XCIntegrator<Eigen::MatrixXd>> integrator_;
-    
+    void print_header() const override;
 
 };
 

@@ -83,10 +83,6 @@ class PSI_API VBase: public IntegratorManager {
     /// Integrator object for BrianQC based integration
     std::shared_ptr<BrianQCBase> brianqc_integrator_;
 #endif
-#ifdef USING_gauxc
-    /// Integrator object for GauXC based integration
-    std::shared_ptr<GauXCBase> gauxc_integrator_;
-#endif
     // Caches collocation grids
     std::unordered_map<size_t, std::map<std::string, SharedMatrix>> cache_map_;
     int cache_map_deriv_;

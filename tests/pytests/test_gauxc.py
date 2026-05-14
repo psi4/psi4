@@ -21,14 +21,14 @@ from addons import uusing
     pytest.param({'name': "sto-6g"}, id='sto6g'),
     pytest.param({'name': "cc-pvdz"}, id='dz'),
 ])
-def test_dft(inp, symmetry, basis):
+def test_rks(inp, symmetry, basis):
     h2o = psi4.geometry("""
         O
         H 1 1.0
         H 1 1.0 2 101.5
     """)
 
-    if symmetry["on"]: h2o.reset_point_group("c1")
+    if not symmetry["on"]: h2o.reset_point_group("c1")
 
     psi4.set_options({
         "gauxc_integrate": False,
@@ -40,7 +40,7 @@ def test_dft(inp, symmetry, basis):
 
     enPsi = psi4.energy(inp["name"])
 
-    psi4.set_options({"gauxc_integrate": True, "gauxc_radial_points": 80, "gauxc_spherical_points": 590})
+    psi4.set_options({"gauxc_integrate": True, "gauxc_radial_points": 80, "gauxc_spherical_points": 590, "dft_enable_psi": False})
 
     enGau = psi4.energy(inp["name"])
 
@@ -71,7 +71,7 @@ def test_uks(inp, symmetry, basis):
         H 1 1.0 2 101.5
     """)
 
-    if symmetry["on"]: h2o.reset_point_group("c1")
+    if not symmetry["on"]: h2o.reset_point_group("c1")
 
     psi4.set_options({
         "gauxc_integrate": False,
@@ -84,7 +84,7 @@ def test_uks(inp, symmetry, basis):
 
     enPsi = psi4.energy(inp["name"])
 
-    psi4.set_options({"gauxc_integrate": True, "gauxc_radial_points": 80, "gauxc_spherical_points": 590})
+    psi4.set_options({"gauxc_integrate": True, "gauxc_radial_points": 80, "gauxc_spherical_points": 590, "dft_enable_psi": False})
 
     enGau = psi4.energy(inp["name"])
 
