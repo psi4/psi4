@@ -48,7 +48,7 @@
 #include "psi4/libmints/extern.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libfock/v.h"
+#include "psi4/libfock/integrator_dispatcher.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libdisp/dispersion.h"
 #include "psi4/libscf_solver/hf.h"
@@ -403,7 +403,7 @@ SharedMatrix SCFDeriv::compute_hessian()
     }
 
     // => Potential/Functional <= //
-    std::shared_ptr<VBase> potential;
+    std::shared_ptr<IntegratorDispatcher> potential;
 
     if (functional_->needs_xc()) {
         if (options_.get_str("REFERENCE") == "RKS") {

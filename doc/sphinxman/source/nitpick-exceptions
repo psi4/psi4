@@ -9,6 +9,7 @@ py:class psi::Options
 py:class psi4.core.PCM.CalcType
 py:class psi4.core.PCM.get_PCM
 py:class psi::PCM
+py:class psi::VBase
 
 # pydantic
 py:class pydantic.main.BaseModel

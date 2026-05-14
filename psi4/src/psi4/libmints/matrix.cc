@@ -278,6 +278,20 @@ Matrix::Matrix(dpdbuf4 *inBuf)
     }
 }
 
+Matrix::Matrix(const Eigen::MatrixXd& eigen_mat, const std::string& name) {
+    name_ = name;
+    const std::vector<int> rowspi = {static_cast<int>(eigen_mat.rows())};
+    const std::vector<int> colspi = {static_cast<int>(eigen_mat.cols())};
+    rowspi_ = Dimension(rowspi);
+    colspi_ = Dimension(colspi);
+    nirrep_ = 1;
+    symmetry_ = 0;
+    matrix_ = nullptr;
+    alloc();
+    auto size = eigen_mat.size();
+    if (size) memcpy(&(matrix_[0][0][0]), eigen_mat.data(), size * sizeof(double));
+}
+
 Matrix::~Matrix() { release(); }
 
 void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const std::string &name, int symmetry) {
