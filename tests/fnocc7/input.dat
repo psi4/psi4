@@ -13,9 +13,6 @@ set {
   s_tolerance 1e-3
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-STOL-WEIRD
-    psi4.set_options({"d_convergence": 5e-5})
-
 set fnocc maxiter 50
 energy = energy('ccsd')
 

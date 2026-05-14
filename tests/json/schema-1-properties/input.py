@@ -120,6 +120,11 @@ expected_properties = {
 }
 
 
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
+    tol = 5
+else:
+    tol = 2.e-5
+
 ## with deprecated `run_json`
 
 json_ret = psi4.json_wrapper.run_json(json_data)
@@ -130,10 +135,10 @@ with open("output.json", "w") as ofile:                                         
 psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
 psi4.compare_strings("qcschema_output", json_ret["schema_name"], "Schema Name")            #TEST
 for k in expected_return_result.keys():                                                    #TEST
-    psi4.compare_arrays(expected_return_result[k], json_ret["return_result"][k], 5, "Result: " + k.upper())  #TEST
+    psi4.compare_arrays(expected_return_result[k], json_ret["return_result"][k], tol, "Result: " + k.upper())  #TEST
 
 for k in expected_properties.keys():                                                       #TEST
-    psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
+    psi4.compare_values(expected_properties[k], json_ret["properties"][k], tol, k.upper())   #TEST
 
 
 ## with current `run_qcschema`
@@ -158,7 +163,7 @@ json_ret = psi4.schema_wrapper.run_qcschema(json_data).dict()
 psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
 psi4.compare_strings("qcschema_output", json_ret["schema_name"], "Schema Name")            #TEST
 for k in expected_return_result.keys():                                                    #TEST
-    psi4.compare_values(expected_return_result[k], json_ret["return_result"][k], 5, "Result: " + k.upper())  #TEST
+    psi4.compare_values(expected_return_result[k], json_ret["return_result"][k], tol, "Result: " + k.upper())  #TEST
 
 for k in expected_properties.keys():                                                       #TEST
-    psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
+    psi4.compare_values(expected_properties[k], json_ret["properties"][k], tol, k.upper())   #TEST

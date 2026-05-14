@@ -1209,12 +1209,9 @@ void RHF::openorbital_scf() {
       F_AO->add(Va_);
     }
 
-    // Compute FDS - SDF commutator using triplet (like form_FDSmSDF)
-    auto FDSmSDF = linalg::triplet(F_AO, P_AO, S_, false, false, false);
-    auto SDF = FDSmSDF->transpose();
-    FDSmSDF->subtract(SDF);
-
-    // Compute RMS error (stay in AO basis, don't transform by X)
+    // Compute commutator RMS with the same projection used by INTERNAL
+    // (important when linear dependencies are removed through S_TOLERANCE).
+    auto FDSmSDF = form_FDSmSDF(F_AO, P_AO);
     ao_basis_diis_error = FDSmSDF->rms();
 
     return std::make_pair(Etot,fock);

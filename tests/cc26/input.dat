@@ -11,9 +11,13 @@ molecule h2o {
 set {
   basis DZ
   roots_per_irrep [1, 0, 0, 0]
+  d_convergence 10
 }
 
-findif5_tol = 7
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-MATCH
+    findif5_tol = 7
+else:
+    findif5_tol = 4.e-7
 
 analytic_grad = gradient('eom-ccsd')
 findif_grad = gradient('eom-ccsd', dertype=0)

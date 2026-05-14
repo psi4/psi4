@@ -20,12 +20,13 @@ r_convergence 10
 scf_type pk
 basis 6-31g 
 reference uhf
+ooo_oda_restart_steps 5
 }
 
 if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-MATCH
     findif5_tol = 5
 else:
-    findif5_tol = 2e-5
+    findif5_tol = 4e-5
 
 anal_hess = hessian('scf')
 

@@ -1445,17 +1445,12 @@ void UHF::openorbital_scf() {
       Fb_AO->add(Vb_);
     }
 
-    // Compute FDS - SDF commutator for alpha spin
-    auto FaDSmSDFa = linalg::triplet(Fa_AO, Pa_AO_mat, S_, false, false, false);
-    auto SDFa = FaDSmSDFa->transpose();
-    FaDSmSDFa->subtract(SDFa);
+    // Compute commutator RMS with the same projection used by INTERNAL
+    // (important when linear dependencies are removed through S_TOLERANCE).
+    auto FaDSmSDFa = form_FDSmSDF(Fa_AO, Pa_AO_mat);
+    auto FbDSmSDFb = form_FDSmSDF(Fb_AO, Pb_AO_mat);
 
-    // Compute FDS - SDF commutator for beta spin
-    auto FbDSmSDFb = linalg::triplet(Fb_AO, Pb_AO_mat, S_, false, false, false);
-    auto SDFb = FbDSmSDFb->transpose();
-    FbDSmSDFb->subtract(SDFb);
-
-    // Compute RMS error combining both spins (stay in AO basis, don't transform by X)
+    // Compute RMS error combining both spins
     // For UHF: compute RMS for each spin, then take the max (like INTERNAL does)
     double ao_diis_rms_alpha = FaDSmSDFa->rms();
     double ao_diis_rms_beta = FbDSmSDFb->rms();

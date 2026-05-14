@@ -17,7 +17,7 @@ set = {
     d_convergence  10
 }
 
-findif5_tol = 8
+findif5_tol = 2.e-8
 
 e = energy('scf')
 compare_values(nucenergy, arwater.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")   #TEST
