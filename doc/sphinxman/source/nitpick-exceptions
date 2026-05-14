@@ -7,4 +7,5 @@ py:class pybind11_builtins.pybind11_object
 py:class psi::Options
 py:class psi4.core.PCM.CalcType
 py:class psi::PCM
+py:class psi::VBase
 
