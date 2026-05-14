@@ -182,6 +182,9 @@ class PSI_API BasisSet {
              std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map,
              std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &ecp_shell_map);
 
+    BasisSet(const BasisSet&) = delete;
+    BasisSet& operator=(const BasisSet&) = delete;
+
     ~BasisSet();
 
     /** Builder factory method

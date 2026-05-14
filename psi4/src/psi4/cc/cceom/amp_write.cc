@@ -44,7 +44,6 @@
 
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
 #include "globals.h"
 
 // minimum magnitude of amplitude to include in output

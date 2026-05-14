@@ -21,6 +21,7 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/cache.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/count_ijk.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_moinfo.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/globals.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/test_abc_loops.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/transpose_integrals.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/triples.cc
