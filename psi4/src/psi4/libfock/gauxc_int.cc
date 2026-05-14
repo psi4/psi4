@@ -38,6 +38,8 @@
 
 #include "psi4/liboptions/liboptions.h"
 
+#include "psi4/libpsi4util/PsiOutStream.h"
+
 #include <gauxc/molecular_weights.hpp>
 #include <gauxc/molgrid/defaults.hpp>
 
@@ -109,6 +111,20 @@ void GauXCBase::initialize() {
     auto gxc_func = std::make_shared<GauXC::functional_type>(init_vec);
     integrator_ =
           integrator_factory.get_shared_instance(gxc_func, load_balancer);
+}
+
+void GauXCBase::print_header() const {
+    outfile->Printf("  ===> DFT Potential <===\n\n");
+    functional_->print("outfile", options_.get_int("PRINT"));
+    outfile->Printf("   => GauXC Quadrature <=\n\n");
+    outfile->Printf("    Radial Scheme          = %14s\n", options_.get_str("GAUXC_RADIAL_SCHEME").c_str());
+    outfile->Printf("    Pruning Scheme         = %14s\n", options_.get_str("GAUXC_PRUNING_SCHEME").c_str());
+    outfile->Printf("\n");
+    outfile->Printf("    Radial Points          = %14d\n", options_.get_int("GAUXC_RADIAL_POINTS"));
+    outfile->Printf("    Spherical Points       = %14d\n", options_.get_int("GAUXC_SPHERICAL_POINTS"));
+    outfile->Printf("    Grid Batch Size        = %14d\n", options_.get_int("GAUXC_GRID_BATCH_SIZE"));
+    outfile->Printf("\n");
+
 }
 
 std::map<std::string, double> GauRV::compute_V(std::vector<SharedMatrix> ret) {

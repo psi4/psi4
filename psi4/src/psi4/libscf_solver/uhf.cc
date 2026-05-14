@@ -64,6 +64,9 @@
 #include <openorbitaloptimizer/scfsolver.hpp>
 #endif
 
+#ifdef USING_gauxc
+#include "psi4/libfock/gauxc_int.h"
+#endif
 #ifdef USING_BrianQC
 
 #include <use_brian_wrapper.h>
@@ -1236,7 +1239,17 @@ std::shared_ptr<UHF> UHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
 void UHF::setup_potential() {
     if (functional_->needs_xc()) {
-        potential_ = std::make_shared<IntegratorDispatcher>(std::make_shared<UV>(functional_, basisset_, options_));
+	std::vector<std::shared_ptr<IntegratorManager>> managers;
+#ifdef USING_gauxc
+        if (options_.get_bool("GAUXC_INTEGRATE")) {
+            managers.push_back(std::make_shared<GauUV>(functional_, basisset_, options_));
+        }
+#endif
+        if (options_.get_bool("DFT_ENABLE_PSI")) {
+	    managers.push_back(std::make_shared<UV>(functional_, basisset_, options_));
+	}
+	if (managers.empty()) throw PSIEXCEPTION("No IntegratorManagers found, but request DFT.");
+        potential_ = std::make_shared<IntegratorDispatcher>(managers);
         potential_->initialize();
     } else {
         potential_ = nullptr;
