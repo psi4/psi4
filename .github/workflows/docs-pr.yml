@@ -117,6 +117,33 @@ jobs:
         cd objdir/doc/sphinxman
         tar -zcf sphinxman.tar.gz html/
 
+    - name: Dump Sphinx Object Inventory (if available)
+      if: (success() || failure()) && ${{ github.repository == 'psi4/psi4' }}
+      continue-on-error: true
+      working-directory: ./code
+      run: |
+        INV="objdir/doc/sphinxman/html/objects.inv"
+        if [[ ! -f "$INV" ]]; then
+          echo "No objects.inv found at $INV (build may have failed before inventory generation)."
+          exit 0
+        fi
+
+        python - <<'PY'
+from pathlib import Path
+
+inv = Path("objdir/doc/sphinxman/html/objects.inv")
+try:
+    import sphobjinv as soi
+except Exception as e:
+    print(f"sphobjinv not available ({e}); skipping inventory dump.")
+    raise SystemExit(0)
+
+print(f"Inventory: {inv}")
+objinv = soi.Inventory(str(inv))
+for obj in objinv.objects:
+    print(f"{obj.domain}:{obj.role} {obj.name} -> {obj.uri}")
+PY
+
     - name: Archive Docs Tarball
       if: (success() || failure()) && ${{ github.repository == 'psi4/psi4' }}
       uses: actions/upload-artifact@v4
