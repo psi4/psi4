@@ -95,6 +95,9 @@ H   0.000000   0.000000   0.627352
 H   0.000000   0.000000   3.963929
 }
 
+if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":  # KP-EXCUSE
+    psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO sometimes bad conv with ooo (Intel Mac)
+
 eneyne.update_geometry()
 E = energy("hf-d32b")
 compare_values(ref_hfd32b[0], E, 7, 'PSIPATH dftd3')              #TEST

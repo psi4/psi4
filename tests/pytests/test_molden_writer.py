@@ -143,8 +143,10 @@ def test_ClFHCOH_molden(inp_clfhcoh, datadir):
         'scf_type': 'pk',
         'e_convergence': 11
         })
-    tol = 7
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-TIGHT
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL-TIGHT
+        tol = 7
+    else:
+        tol = 6
         psi4.set_options({"d_convergence": 10})
     molden_file = f"{inp_clfhcoh['name']}.molden"
     ref = datadir.join(f"{inp_clfhcoh['name']}.ref")

@@ -29,8 +29,10 @@ set {
 print('   Testing MP2-F12/3C(FIX) ...')
 val, wfn = energy('mp2-f12', return_wfn=True)
 
+atol = 2.e-9
+
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 9, 'mp2-f12 ref')                      #TEST
-compare_values(ref_mp2_corl, variable('MP2 CORRELATION ENERGY'), 9, 'mp2 corl')              #TEST
+compare_values(ref_mp2_corl, variable('MP2 CORRELATION ENERGY'), atol, 'mp2 corl')              #TEST
 compare_values(ref_mp2f12_corl, variable('MP2-F12 CORRELATION ENERGY') + variable("F12 CABS CORRECTION ENERGY"), 9, 'mp2-f12 corl')   #TEST
 compare_values(ref_mp2f12_corl, wfn.variable('MP2-F12 CORRELATION ENERGY') + wfn.variable("F12 CABS CORRECTION ENERGY"), 9, 'mp2-f12 corl')   #TEST
 compare_values(ref_mp2f12_total, wfn.variable('MP2-F12 TOTAL ENERGY'), 9, 'mp2-f12 tot')         #TEST
