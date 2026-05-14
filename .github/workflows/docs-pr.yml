@@ -58,7 +58,7 @@ jobs:
 
     - name: Create Conda Environment
       if: ${{ github.repository == 'psi4/psi4' }}
-      uses: conda-incubator/setup-miniconda@v3
+      uses: conda-incubator/setup-miniconda@v4
       with:
         activate-environment: p4docs
         add-pip-as-python-dependency: true
@@ -118,12 +118,12 @@ jobs:
         tar -zcf sphinxman.tar.gz html/
 
     - name: Dump Sphinx Object Inventory (if available)
-      if: (success() || failure()) && ${{ github.repository == 'psi4/psi4' }}
+      if: (success() || failure()) && github.repository == 'psi4/psi4'
       continue-on-error: true
       working-directory: ./code
       run: |
         INV="objdir/doc/sphinxman/html/objects.inv"
-        if [[ ! -f "$INV" ]]; then
+        if [ ! -f "$INV" ]; then
           echo "No objects.inv found at $INV (build may have failed before inventory generation)."
           exit 0
         fi

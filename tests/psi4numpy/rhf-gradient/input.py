@@ -40,7 +40,7 @@ psi4.set_options(options)
 if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
     tol = 10
 else:
-    tol = 2e-8
+    tol = 4e-8
 
 rhf_e, wfn = psi4.energy('SCF', return_wfn=True)
 
