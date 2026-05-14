@@ -30,11 +30,7 @@ set {
     d_convergence 8
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
-    tol = 7
-else:
-    tol = 3e-7
-    psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
+tol = 7
 
 grad = gradient('bp86-d2', engine='libdisp')
 compare_matrices(ref, grad, tol, "Outsourced dft gradients called by name: libdisp")  #TEST

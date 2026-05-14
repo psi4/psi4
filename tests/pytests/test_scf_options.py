@@ -133,7 +133,7 @@ def test_scf_guess(inp, ref):
     assert compare_values(
         ref_final[ref], psi4.variable("SCF TOTAL ENERGY"), 6, "FINAL SCF ENERGY"
     )
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-DIFF-REF
       # until pyooo and SCF TOTAL ENERGIES filled out
       assert compare_values(
         vals[ref][inp["options"]["guess"]],

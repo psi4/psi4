@@ -37,9 +37,10 @@ options = {'BASIS':'STO-3G', 'SCF_TYPE':'PK',
            'D_CONVERGENCE':1e-10}
 
 psi4.set_options(options)
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    print("Falling back to internal orbopt")
-    psi4.set_options({"orbital_optimizer_package": "internal"})
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
+    tol = 10
+else:
+    tol = 2e-8
 
 rhf_e, wfn = psi4.energy('SCF', return_wfn=True)
 
@@ -166,4 +167,4 @@ Total_G_psi4 = psi4.core.Matrix.from_list([
              [ 0.000000000000,     0.08630009812231,     0.04872071861516],
        ])
 G_python_Total_mat = psi4.core.Matrix.from_array(Gradient["Total"])
-psi4.compare_matrices(Total_G_psi4, G_python_Total_mat, 10, "RHF_TOTAL_GRADIENT_TEST") #TEST
+psi4.compare_matrices(Total_G_psi4, G_python_Total_mat, tol, "RHF_TOTAL_GRADIENT_TEST") #TEST

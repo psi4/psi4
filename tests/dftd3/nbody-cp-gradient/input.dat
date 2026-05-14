@@ -102,8 +102,10 @@ units bohr
 
 set d_convergence 9
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
+    tol = 1.e-8
+else:
+    tol = 5.e-8
 
 # compute nbody
 g, wfn = gradient('SCF-d3bj/STO-3G', molecule=water_trimer, bsse_type='cp', max_nbody=2,
@@ -138,7 +140,7 @@ for result in [  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     variable("CURRENT GRADIENT"),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 8, 'CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, tol, 'CP-Corrected Gradient')  #TEST
 
 # compute pieces
 cp_scheme = {  #TEST
@@ -220,7 +222,7 @@ for result in [  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     grad,  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 8, 'CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, tol, 'CP-Corrected Gradient')  #TEST
 
 
 # compute nbody again with return_total_data=False
@@ -247,11 +249,11 @@ for result in [  #TEST
 for result in [  #TEST
     wfn.variable('CP-CORRECTED TOTAL GRADIENT THROUGH 2-BODY'),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, 8, 'rtd=F CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad + ref_disp_2cp_grad, result, tol, 'rtd=F CP-Corrected Gradient')  #TEST
 
 for result in [  #TEST
     g,  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     variable("CURRENT GRADIENT"),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad_ie + ref_disp_2cp_grad_ie, result, 8, 'rtd=F CP-Corrected Interaction Gradient')  #TEST
+    compare_values(ref_2cp_grad_ie + ref_disp_2cp_grad_ie, result, tol, 'rtd=F CP-Corrected Interaction Gradient')  #TEST

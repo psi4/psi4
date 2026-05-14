@@ -41,9 +41,9 @@ options = {'BASIS':'STO-3G', 'SCF_TYPE':'PK',
            }
 
 psi4.set_options(options)
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    print("Falling back to internal orbopt")
-    psi4.set_options({"orbital_optimizer_package": "internal"})
+tol = 10
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-TIGHT
+    psi4.set_options({"d_convergence": 12})
 
 rhf_e, wfn = psi4.energy('SCF', return_wfn=True)
 
@@ -280,4 +280,4 @@ H_psi4 = psi4.core.Matrix.from_list([
 ])
 
 H_python_mat = psi4.core.Matrix.from_array(Hessian)
-psi4.compare_matrices(H_psi4, H_python_mat, 10, "RHF-HESSIAN-TEST") #TEST
+psi4.compare_matrices(H_psi4, H_python_mat, tol, "RHF-HESSIAN-TEST") #TEST

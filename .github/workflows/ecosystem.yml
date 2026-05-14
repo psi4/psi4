@@ -29,6 +29,7 @@ jobs:
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+              -D ENABLE_OpenOrbitalOptimizer=ON
             # Notes:
             # * for all three lanes, can consider:
             #    -D BUILD_SHARED_LIBS=ON
@@ -47,6 +48,7 @@ jobs:
               -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
               -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
               -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
+              -D ENABLE_OpenOrbitalOptimizer=ON
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
             #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
@@ -75,6 +77,7 @@ jobs:
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
               -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
               -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
+              -D ENABLE_OpenOrbitalOptimizer=ON
 
           - label: "LLVM clang-cl (W)"
             runs-on: windows-latest
@@ -86,6 +89,7 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
+              -D ENABLE_OpenOrbitalOptimizer=ON
  
             # Notes:
             # * When not using cache file, need to additionally specify the following:

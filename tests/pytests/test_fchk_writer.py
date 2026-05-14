@@ -60,7 +60,7 @@ def test_uhf_fchk(inp2, datadir):
         'r_convergence': 1e-10,
         'pcg_convergence': 1e-10,
     })
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
         dens_tol = 9
         fchk_tol = 1.e-8
     else:
@@ -100,7 +100,7 @@ def test_rhf_fchk(inp, datadir):
         'r_convergence': 1e-10,
         'pcg_convergence': 1e-10,
     })
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
         dens_tol = 9
         fchk_tol = 1.e-8
     else:
