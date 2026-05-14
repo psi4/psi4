@@ -702,12 +702,6 @@ void RV::initialize() {
         brianqc_integrator_->initialize();
     }
 #endif
-#ifdef USING_gauxc
-    if (options_.get_bool("GAUXC_INTEGRATE")) {
-        gauxc_integrator_ = std::make_shared<GauRV>(functional_, primary_, options_);
-        gauxc_integrator_->initialize();
-    }
-#endif 
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions();
     for (size_t i = 0; i < num_threads_; i++) {
@@ -2020,12 +2014,6 @@ void UV::initialize() {
         brianqc_integrator_->initialize();
     }
 #endif
-#ifdef USING_gauxc
-    if (options_.get_bool("GAUXC_INTEGRATE")) {
-        gauxc_integrator_ = std::make_shared<GauUV>(functional_, primary_, options_);
-        gauxc_integrator_->initialize();
-    }
-#endif 
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions();
     for (size_t i = 0; i < num_threads_; i++) {

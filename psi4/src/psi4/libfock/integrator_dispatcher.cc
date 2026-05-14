@@ -45,7 +45,6 @@ void IntegratorDispatcher::print_header() const {
 }
 
 void IntegratorDispatcher::set_D(std::vector<SharedMatrix> Dvec) {
-  outfile->Printf("Setting vector of %d matrices.\n", Dvec.size());
   for (const auto& manager: managers_) manager->set_D(Dvec);
 }
 
