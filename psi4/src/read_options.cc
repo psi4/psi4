@@ -1920,6 +1920,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DFT_VV10_C", 0.0);
         /*- post-scf VV10 correction -*/
         options.add_bool("DFT_VV10_POSTSCF", false);
+        /*- Enable Psi's internal integration? Disable only if using an external integrator. !expert -*/
+        options.add_bool("DFT_ENABLE_PSI", true);
         /*- The convergence on the orbital localization procedure -*/
         options.add_double("LOCAL_CONVERGENCE", 1E-12);
         /*- The maxiter on the orbital localization procedure -*/
