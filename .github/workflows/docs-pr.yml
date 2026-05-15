@@ -121,7 +121,6 @@ jobs:
       if: (success() || failure()) && github.repository == 'psi4/psi4'
       continue-on-error: true
       working-directory: ./code
-      shell: bash
       run: |
         INV="objdir/doc/sphinxman/html/objects.inv"
         if [ ! -f "$INV" ]; then
@@ -144,7 +143,7 @@ jobs:
         PY
 
     - name: Archive Docs Tarball
-      if: (success() || failure()) && ${{ github.repository == 'psi4/psi4' }}
+      if: (success() || failure()) && github.repository == 'psi4/psi4'
       uses: actions/upload-artifact@v4
       with:
         name: sphinxman-html

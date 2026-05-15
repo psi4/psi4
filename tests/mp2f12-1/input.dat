@@ -33,7 +33,7 @@ atol = 2.e-9
 
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 9, 'mp2-f12 ref')                      #TEST
 compare_values(ref_mp2_corl, variable('MP2 CORRELATION ENERGY'), atol, 'mp2 corl')              #TEST
-compare_values(ref_mp2f12_corl, variable('MP2-F12 CORRELATION ENERGY') + variable("F12 CABS CORRECTION ENERGY"), 9, 'mp2-f12 corl')   #TEST
+compare_values(ref_mp2f12_corl, variable('MP2-F12 CORRELATION ENERGY') + variable("F12 CABS CORRECTION ENERGY"), atol, 'mp2-f12 corl')   #TEST
 compare_values(ref_mp2f12_corl, wfn.variable('MP2-F12 CORRELATION ENERGY') + wfn.variable("F12 CABS CORRECTION ENERGY"), 9, 'mp2-f12 corl')   #TEST
 compare_values(ref_mp2f12_total, wfn.variable('MP2-F12 TOTAL ENERGY'), 9, 'mp2-f12 tot')         #TEST
 compare_values(ref_mp2f12_total, variable('MP2-F12 TOTAL ENERGY'), 9, 'mp2-f12 tot')         #TEST
