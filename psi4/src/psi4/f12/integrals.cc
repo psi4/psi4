@@ -86,10 +86,22 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
     auto bs1_equiv_bs2 = (bs1 == bs2);
     auto bs3_equiv_bs4 = (bs3 == bs4);
 
-#pragma omp parallel for collapse(2) schedule(guided) num_threads(nthreads_)
+    // Pre-build the flat list of unique (M,N) shell pairs so that the parallel
+    // loop has no wasted iterations from triangular-skip branches.
+    std::vector<std::pair<size_t, size_t>> mn_pairs;
+    mn_pairs.reserve(bs1->nshell() * bs2->nshell());
     for (size_t M = 0; M < bs1->nshell(); M++) {
         for (size_t N = 0; N < bs2->nshell(); N++) {
-            if (bs1_equiv_bs2 && N < M) continue;  // Only loop over unique shells
+            if (bs1_equiv_bs2 && N < M) continue;
+            mn_pairs.emplace_back(M, N);
+        }
+    }
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads_)
+    for (size_t mn = 0; mn < mn_pairs.size(); mn++) {
+        const size_t M = mn_pairs[mn].first;
+        const size_t N = mn_pairs[mn].second;
+        {  // open brace to keep variable scope the same as before
 
             const auto numM = bs1->shell(M).nfunction();
             const auto numN = bs2->shell(N).nfunction();
