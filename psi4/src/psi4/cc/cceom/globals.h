@@ -43,26 +43,20 @@ namespace psi {
 namespace cceom {
 
 /* Global variables */
-#ifdef EXTERN
-#undef EXTERN
-#define EXTERN extern
-#else
-#define EXTERN
-#endif
-
-EXTERN void check_sum(const char *term_lbl, int index, int irrep);
+void check_sum(const char *term_lbl, int index, int irrep);
 
 //#define EOM_DEBUG (0)
 
-#define H_IRR (0)
-#define MAX(I, J) ((I > J) ? I : J)
-#define MIN(I, J) ((I < J) ? I : J)
+// Use constexpr variables and inline functions instead of unsafe macros
+inline constexpr int H_IRR = 0;
+inline constexpr int MAX(int I, int J) { return (I > J) ? I : J; }
+inline constexpr int MIN(int I, int J) { return (I < J) ? I : J; }
 
-EXTERN struct MOInfo moinfo;
-EXTERN struct Params params;
-EXTERN struct Eom_params eom_params;
-EXTERN struct Local local;
-EXTERN int ***dpd_dp;
+extern struct MOInfo moinfo;
+extern struct Params params;
+extern struct Eom_params eom_params;
+extern struct Local local;
+extern int ***dpd_dp;
 }
 }  // namespace psi
 

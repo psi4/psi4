@@ -34,7 +34,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "cclambda.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {

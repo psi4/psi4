@@ -24,6 +24,7 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/cchbar.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_moinfo.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_params.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/globals.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/norm_HET1.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/purge.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/reference.cc

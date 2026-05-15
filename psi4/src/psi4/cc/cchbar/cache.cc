@@ -37,7 +37,6 @@
 #include "psi4/libpsi4util/exception.h"
 
 namespace psi {
-extern FILE *outfile;
 namespace cchbar {
 
 void cache_abcd_rhf(int **cachelist);

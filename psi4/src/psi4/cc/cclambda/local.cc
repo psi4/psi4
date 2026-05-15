@@ -46,7 +46,6 @@
 #include "Params.h"
 #include "Local.h"
 #include "cclambda.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {

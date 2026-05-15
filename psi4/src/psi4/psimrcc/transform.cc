@@ -34,6 +34,10 @@
 
 #define CCTRANSFORM_USE_BLAS
 
+#undef MAX
+#undef MIN
+#undef INDEX
+#undef four
 #define MAX(i, j) ((i > j) ? i : j)
 #define MIN(i, j) ((i > j) ? j : i)
 #define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
@@ -143,3 +147,9 @@ void CCTransform::transform_oei_so_integrals() {
 
 }  // namespace psimrcc
 }  // namespace psi
+
+#undef MAX
+#undef MIN
+#undef INDEX
+#undef four
+#undef CCTRANSFORM_USE_BLAS
