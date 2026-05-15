@@ -493,6 +493,18 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3>* DF_ERI, bool is_fock) 
 
     const bool use_frzn = !is_fock;
 
+    // Build J^{-1/2} once; it is independent of the orbital-space block.
+    Tensor<double, 2> AB{"JinvAB", naux_, naux_};
+    {
+        auto metric = std::make_shared<FittingMetric>(DFBS_, true);
+        metric->form_full_eig_inverse(1.0e-12);
+        SharedMatrix Jm12 = metric->get_metric();
+        double** Jptr = Jm12->pointer();
+        for (size_t A = 0; A < naux_; A++) {
+            std::memcpy(&AB(A, 0), Jptr[A], naux_ * sizeof(double));
+        }
+    }
+
     for (int idx = 0; idx < (order.size() / 2); idx++) {
         const int i = idx * 2;
         const int o1 = (order[i] == 'C') ? 1 : 0;
@@ -533,20 +545,7 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3>* DF_ERI, bool is_fock) 
         timer_off("MO Transformation");
 
         auto APQ = std::make_unique<Tensor<double, 3>>("APQ", naux_, nmo1, nmo2);
-        {
-            auto metric = std::make_shared<FittingMetric>(DFBS_, true);
-            metric->form_full_eig_inverse(1.0e-12);
-            SharedMatrix Jm12 = metric->get_metric();
-
-            Tensor<double, 2> AB{"JinvAB", naux_, naux_};
-            for (size_t A = 0; A < naux_; A++) {
-                for (size_t B = 0; B < naux_; B++) {
-                    AB(A, B) = Jm12->get(A, B);
-                }
-            }
-
-            einsum(Indices{A, P, Q}, &APQ, Indices{A, B}, AB, Indices{B, P, Q}, BPQ);
-        }
+        einsum(Indices{A, P, Q}, &APQ, Indices{A, B}, AB, Indices{B, P, Q}, BPQ);
         BPQ.reset();
 
         {
@@ -657,9 +656,11 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
     }
 
-#pragma omp parallel for collapse(2) schedule(guided) num_threads(nthreads_)
+    // (A|op|B) is symmetric: exploit A >= B and copy the transposed block.
     for (size_t A = 0; A < DFBS_->nshell(); A++) {
         for (size_t B = 0; B < DFBS_->nshell(); B++) {
+            if (B > A) continue;  // lower-triangle only
+
             size_t rank = 0;
 #ifdef _OPENMP
             rank = omp_get_thread_num();
@@ -674,8 +675,10 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
 
             size_t index = 0;
             for (size_t a = 0; a < numA; a++) {
-                for (size_t b = 0; b < numB; b++) {
-                    (*DF_ERI)(index_A + a, index_B + b) = ints_buff[index++];
+                for (size_t b = 0; b < numB; b++, index++) {
+                    const double val = ints_buff[index];
+                    (*DF_ERI)(index_A + a, index_B + b) = val;
+                    if (A != B) (*DF_ERI)(index_B + b, index_A + a) = val;
                 }
             }
         }
