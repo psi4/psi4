@@ -45,6 +45,8 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
+              -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
+              -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
             #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
@@ -56,6 +58,8 @@ jobs:
             #    -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
             #    -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
             # * numpy/_core in py310 vs numpy/core in py39 (or maybe a np v1/v2 thing)
+            # * -Wno-deprecated-declarations suppresses sprintf -> snprintf warnings
+            # * -Wl,-w suppresses 9k warnings of mismatched visibility btwn L2 & psi4
 
           - label: "Conda Clang (M-Silicon)"
             runs-on: macos-latest
@@ -69,6 +73,8 @@ jobs:
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+              -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
+              -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
 
           - label: "LLVM clang-cl (W)"
             runs-on: windows-latest
@@ -237,6 +243,7 @@ jobs:
           -G Ninja \
           -C "${{ github.workspace }}/cache_p4build@objdir.cmake" \
           -D CMAKE_INSTALL_PREFIX=./install \
+          -D psi4_ENABLE_PRECOMPILE_HEADERS=ON \
           ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4
@@ -308,8 +315,8 @@ jobs:
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
-      # step works but is redundant with next one; enable for debugging
-    - name: Test Addons with CTest (M)
+      # step works but for addons is redundant with next one; enable for debugging. enabled for Mac b/c core testing not covered by Azure DevOps
+    - name: Test Core with CTest (M)
       if: runner.os == 'macOS'
       working-directory: ./objdir
       run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows

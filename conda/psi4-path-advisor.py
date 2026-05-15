@@ -107,6 +107,8 @@ if pm_available:
     conda_platform_native = conda_info_dict["platform"]
     conda_prefix = conda_info_dict["active_prefix"]
     conda_prefix_short = conda_info_dict["active_prefix_name"]
+    if conda_prefix_short and (cps := Path(conda_prefix_short)).is_absolute():
+        conda_prefix_short = cps.name
     conda_host = conda_info_dict["env_vars"].get("CONDA_TOOLCHAIN_HOST", None)  # None if no compilers in env
     conda_list_struct = conda_list()
     base_prefix = conda_info_dict["conda_prefix"]  # env with conda cmd

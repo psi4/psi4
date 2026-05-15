@@ -1,18 +1,23 @@
 set_property(GLOBAL PROPERTY JOB_POOLS one_job=1 two_jobs=2 four_jobs=4)
 
+# for core and psi4 modules
+add_compile_definitions(
+    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
+    restrict=${RESTRICT_KEYWORD}
+)
+
 ### >> Create core target, so we may link modules to it directly <<
 ### >> This allow to propagate dependencies upwards sanely
+### >> See https://pybind11.readthedocs.io/en/stable/compiling.html#advanced-interface-library-targets for pybind11_add_module decomposition
 add_library(core SHARED core.cc)
 
 include_directories(
+    # helps psi4 modules incl pb11 find Python headers
     ${Python_INCLUDE_DIRS}
 )
 target_link_libraries(core
   PRIVATE
-    Python::Module
-)
-target_link_libraries(core
-  PRIVATE
+    # pybind11::module includes Python headers, pybind11::headers, Python::Module
     pybind11::module
     pybind11::lto
     pybind11::windows_extras
@@ -22,7 +27,14 @@ if(NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo)
     # Strip unnecessary sections of the binary on Linux/macOS
     pybind11_strip(core)
 endif()
-set_target_properties(core PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN 1)
+set_target_properties(core
+  PROPERTIES
+    CXX_VISIBILITY_PRESET "hidden"
+    CUDA_VISIBILITY_PRESET "hidden"
+    VISIBILITY_INLINES_HIDDEN 1
+    # CI linking with unity build sometimes hangs w/o this slight suppression
+    UNITY_BUILD_BATCH_SIZE 5
+  )
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)
@@ -34,6 +46,7 @@ add_subdirectory(psi4)
 
 target_sources(core
   PRIVATE
+    export_mints.cc
     export_benchmarks.cc
     export_blas_lapack.cc
     export_cubeprop.cc
@@ -53,46 +66,6 @@ target_sources(core
     python_data_type.cc
   )
 
-# need to down-standard the Libint2 connection from c++17 for Intel as of 2021.4
-# See note at psi4/src/psi4/libmints/CMakeLists.txt
-add_library(l2export OBJECT export_mints.cc)
-set_property(TARGET l2export PROPERTY CXX_STANDARD "${psi4_CXX_STANDARD_Libint2}")
-set_property(TARGET l2export PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(l2export
-  PRIVATE
-    $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
-  )
-target_link_libraries(
-  l2export
-  PRIVATE
-    pybind11::headers
-  )
-if(MSVC)
-  target_link_libraries(
-    l2export
-    PRIVATE
-      pybind11::windows_extras
-    )
-endif()
-target_link_libraries(core PRIVATE l2export)
-target_compile_definitions(core
-  PRIVATE
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-  )
-target_compile_definitions(l2export
-  PRIVATE
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-  )
-
-# set_target_properties(core
-   # PROPERTIES
-     # implicit in pybind11_add_module
-     # CXX_VISIBILITY_PRESET hidden
-     # implicit in add_library MODULE called by pybind11_add_module
-     # POSITION_INDEPENDENT_CODE 1
-     # VISIBILITY_INLINES_HIDDEN 1
-   # )
-
 get_property(psi4_binmodules GLOBAL PROPERTY LINKBINLIST)
 get_property(psi4_libmodules GLOBAL PROPERTY LINKLIBLIST)
 target_link_libraries(core
@@ -104,53 +77,6 @@ target_link_libraries(core
     ${LIBC_INTERJECT}
     tgt::lapack # OpenMP flags to core.cc
   )
-
-if(TARGET ECPINT::ecpint)
-  target_compile_definitions(core
-    PUBLIC
-      USING_ecpint
-    )
-  target_compile_definitions(l2export
-    PUBLIC
-      USING_ecpint
-    )
-endif()
-
-if(TARGET Einsums::Einsums)
-  target_compile_definitions(core
-    PRIVATE
-      USING_Einsums
-    )
-endif()
-
-if(TARGET BrianQC::static_wrapper)
-  target_compile_definitions(core
-    PRIVATE
-      USING_BrianQC
-    )
-  target_include_directories(core
-    PRIVATE
-      $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-  target_link_libraries(core
-    PRIVATE
-      BrianQC::static_wrapper
-    )
-endif()
-
-if(TARGET IntegratorXX::IntegratorXX)
-  target_link_libraries(core
-    PRIVATE
-      IntegratorXX::IntegratorXX
-    )
-endif()
-
-if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
-  target_link_libraries(core
-    PRIVATE
-      OpenOrbitalOptimizer::OpenOrbitalOptimizer
-    )
-endif()
 
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   # Enable call to for_rtl_init_() which is required if using the
@@ -231,11 +157,15 @@ endforeach()
 list(REMOVE_DUPLICATES psi4_RPATH)
 message(STATUS "Psi4 rpath: ${psi4_RPATH}")
 
-set_target_properties(core PROPERTIES
-                           OUTPUT_NAME core
-                           EXPORT_NAME core
-                           # PREFIX/SUFFIX covered by pybind11_extension in pybind11_add_module
-                           # PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
-                           # SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
-                           INSTALL_RPATH "${psi4_RPATH}"
-                           BUILD_WITH_INSTALL_RPATH ON)
+set_target_properties(core
+  PROPERTIES
+    OUTPUT_NAME core
+    EXPORT_NAME core
+    # PREFIX/SUFFIX covered by pybind11_extension in pybind11_add_module
+    # PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
+    # SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
+    INSTALL_RPATH "${psi4_RPATH}"
+    BUILD_WITH_INSTALL_RPATH ON
+    # PIC covered by add_library(... MODULE
+    # POSITION_INDEPENDENT_CODE 1
+  )

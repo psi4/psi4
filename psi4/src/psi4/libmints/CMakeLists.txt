@@ -48,11 +48,11 @@ list(APPEND sources
   thc_eri.cc
   )
 
-# l2intf is a listing of all the files that include libint2's boys.h include (which is included in L2's engine.h).  they must
-# all be built with the same C++ standard, which is currently chosen as C++14 due to
-# problems building with C++17 using Intel compilers on Linux.
-# These problems were seen at least through version 2021.4 but were relieved by 2021.8
-# Any files including the engine.h should be added here instead of the sources list above.
+# l2intf is a listing of all the files that include libint2's boys.h include (which is included in L2's engine.h).
+# These were originally separated so that a separate C++ standard could be applied, as Intel compilers were having problems at least through version 2021.4 (relieved by 2021.8)
+# If that ever needs to be revived, look for psi4_CXX_STANDARD_Libint2 in history.
+# Nowadays, these are files that take a lot of memory to compile and are prone to silently failing on CI,
+#   esp. with Ninja + Linux + CI-or-laptop, so they're segregated to throttle build concurrence.
 add_library(l2intf OBJECT 
 dipole.cc
 electricfield.cc
@@ -74,23 +74,33 @@ rel_potential.cc
 tracelessquadrupole.cc
 3coverlap.cc
   )
-set_property(TARGET l2intf PROPERTY CXX_STANDARD "${psi4_CXX_STANDARD_Libint2}")
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 # below are what l2intf files would ordinarily have gotten from psi4_add_module.
-# * first brings OpenMP headers
-# * second brings l2. Linux needs only headers, but Windows needs headers and linking, so slight overkill here
 target_link_libraries(l2intf
   PRIVATE
-    tgt::lapack
-    Libint2::cxx
+    psi4_required_deps
+    psi4_optional_deps
   )
 
 psi4_add_module(lib mints sources)
 target_link_libraries(mints PRIVATE l2intf)
-target_compile_definitions(mints
-  PRIVATE
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-  )
+add_dependencies(mints l2intf)  # impose build-order dependence allowing CMAKE_OPTIMIZE_DEPENDENCIES=ON
+
+if (psi4_ENABLE_PRECOMPILE_HEADERS)
+   # When OpenOrbitalOptimizer is enabled, mints cannot reuse psio's PCH because:
+   # 1. matrix.h conditionally includes <armadillo> based on USING_OpenOrbitalOptimizer
+   # 2. psio's PCH sees matrix.h without USING_OpenOrbitalOptimizer (only forward decls)
+   # 3. mints sees matrix.h WITH USING_OpenOrbitalOptimizer (full armadillo)
+   # 4. This creates typedef conflicts and incomplete type errors
+   # Solution: Skip PCH for mints when OpenOrbitalOptimizer is enabled
+   # Note: Adding USING_OpenOrbitalOptimizer to psio doesn't work because it causes
+   # BLAS symbol conflicts in unrelated modules (fnocc, libqt) that also use psio's PCH
+   if(NOT TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
+      target_precompile_headers(mints REUSE_FROM psio)
+      target_precompile_headers(l2intf REUSE_FROM psio)
+   endif()
+endif()
 
 # limit to avoid OOM errors with Ninja parallelism
 # * finer control than `CMAKE_BUILD_PARALLEL_LEVEL=1 cmake --build`
@@ -99,37 +109,18 @@ cmake_host_system_information(RESULT _numcore QUERY NUMBER_OF_PHYSICAL_CORES)
 math(EXPR _memrat "${_memfree} / ${_numcore}")
 message("AVAILABLE_PHYSICAL_MEMORY ${_memfree} / NUMBER_OF_PHYSICAL_CORES ${_numcore} = ${_memrat}")
 if(_numcore LESS 5)
-    set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE two_jobs)
+    if (UNIX AND NOT APPLE)
+        set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE one_job)
+    endif()
 else()
     set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE four_jobs)
 endif()
 
-# Always linked-to external projects
-target_link_libraries(mints
-  PUBLIC
-    Libint2::cxx
-  )
-# Conditionally linked-to external projects
+# Conditionally add sources that depend on optional dependencies
 if(TARGET ECPINT::ecpint)
   target_sources(mints
     PRIVATE
       ecpint.cc
-    )
-  target_compile_definitions(mints
-    PUBLIC
-      USING_ecpint
-    )
-  target_compile_definitions(l2intf
-    PUBLIC
-      USING_ecpint
-    )
-  target_link_libraries(mints
-    PUBLIC
-      ECPINT::ecpint
-    )
-  target_link_libraries(l2intf
-    PUBLIC
-      ECPINT::ecpint
     )
 endif()
 
@@ -138,42 +129,11 @@ if(TARGET simint::simint)
     PRIVATE
       siminteri.cc
     )
-  # Add USING_simint definition, which is not in simint::simint
-  target_compile_definitions(l2intf
-    PUBLIC
-      USING_simint
-    )
-  target_link_libraries(l2intf
-    PUBLIC
-      simint::simint
-    )
 endif()
 
-if(TARGET dkh::dkh)
-  target_link_libraries(mints
-    PUBLIC
-      dkh::dkh
-    )
-endif()
-
-if(TARGET PCMSolver::pcm)
-  target_link_libraries(mints
-    PUBLIC
-      PCMSolver::pcm
-    )
-endif()
-
-if(TARGET BrianQC::static_wrapper)
-  target_compile_definitions(mints
-    PUBLIC
-      USING_BrianQC
-    )
-  target_include_directories(mints
-    PUBLIC
-      $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-endif()
-
+# OpenOrbitalOptimizer needs to be PUBLIC so USING_OpenOrbitalOptimizer propagates
+# to modules that link to libmints (this enables armadillo support in matrix.h)
+# but doesn't pollute unrelated modules like libqt (which would get BLAS conflicts)
 if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
   target_compile_definitions(mints
     PUBLIC
