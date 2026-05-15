@@ -2471,13 +2471,18 @@ SharedMatrix MintsHelper::embpot_grad(SharedMatrix D) {
     double **Dp = D->pointer();
 
     FILE* input = fopen("EMBPOT", "r");
+    if (input == nullptr) {
+        throw PSIEXCEPTION("MintsHelper::embpot_grad error: could not open EMBPOT file for reading");
+    }
     size_t npoints;
     int statusvalue = fscanf(input, "%zu", &npoints);
     if (statusvalue != 1) {
+        fclose(input);
         throw PSIEXCEPTION("MintsHelper::embpot_grad error: EOF or wrong number of inputs read from EMBPOT header, return=" +
                            std::to_string(statusvalue) + " (expected 1)");
     }
     if (npoints*5*8 > Process::environment.get_memory()) {
+        fclose(input);
         throw PSIEXCEPTION("MintsHelper::embpot_grad error: Size of EMBPOT file exceeds memory allocation, " +
                            std::to_string(npoints*5*8) + " bytes > " + std::to_string(Process::environment.get_memory()) + " bytes");
     }
@@ -2490,6 +2495,7 @@ SharedMatrix MintsHelper::embpot_grad(SharedMatrix D) {
     for (size_t k = 0; k < npoints; k++) {
         statusvalue = fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
         if (statusvalue != 5) {
+            fclose(input);
             throw PSIEXCEPTION("MintsHelper::embpot_grad error: EOF or wrong number of inputs read from EMBPOT, return=" +
                                std::to_string(statusvalue) + " (expected 5)");
         }
@@ -3514,10 +3520,9 @@ std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1_helper(int atom) {
 
     std::vector<SharedMatrix> grad;
     for (int p = 0; p < 3; p++) {
-        std::stringstream sstream;
-        sstream << "ao_mu" << cartcomp[p] << "_deriv1_";
         for (int q = 0; q < 3; q++) {
-            sstream << atom << cartcomp[q];
+            std::stringstream sstream;
+            sstream << "ao_mu" << cartcomp[p] << "_deriv1_" << atom << cartcomp[q];
             grad.push_back(std::make_shared<Matrix>(sstream.str(), nbf1, nbf2));
         }
     }
@@ -4314,12 +4319,15 @@ std::vector<SharedMatrix> MintsHelper::mo_elec_dip_deriv1(int atom, SharedMatrix
     int nbf2 = ao_grad[0]->coldim();
 
     std::vector<SharedMatrix> mo_grad;
-    for (int p = 0; p < 9; p++) {
-        std::stringstream sstream;
-        sstream << "mo_elec_dip_deriv1_" << atom << cartcomp[p];
-        auto temp = std::make_shared<Matrix>(sstream.str(), nbf1, nbf2);
-        temp->transform(C1, ao_grad[p], C2);
-        mo_grad.push_back(temp);
+    for (int mu_cart = 0; mu_cart < 3; mu_cart++) {
+        for (int atom_cart = 0; atom_cart < 3; atom_cart++) {
+            int p = 3 * mu_cart + atom_cart;
+            std::stringstream sstream;
+            sstream << "mo_mu" << cartcomp[mu_cart] << "_deriv1_" << atom << cartcomp[atom_cart];
+            auto temp = std::make_shared<Matrix>(sstream.str(), nbf1, nbf2);
+            temp->transform(C1, ao_grad[p], C2);
+            mo_grad.push_back(temp);
+        }
     }
 
     return mo_grad;

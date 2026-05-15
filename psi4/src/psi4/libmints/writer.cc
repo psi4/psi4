@@ -657,10 +657,11 @@ void MOWriter::write() {
     }
 
     delete[] skip;
-    delete occ;
-    delete sym;
-    delete eps;
-    delete Ca_pointer;
+    delete[] map;
+    delete[] occ;
+    delete[] sym;
+    delete[] eps;
+    delete[] Ca_pointer;
 }
 
 void MOWriter::write_mos(Molecule &mol) {
