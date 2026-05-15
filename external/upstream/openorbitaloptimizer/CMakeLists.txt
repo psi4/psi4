@@ -22,7 +22,7 @@ if(${ENABLE_OpenOrbitalOptimizer})
 
         ExternalProject_Add(openorbitaloptimizer_external
             DEPENDS lapack_external
-            URL https://github.com/loriab/OpenOrbitalOptimizer/archive/4a7d95c.tar.gz
+            URL https://github.com/loriab/OpenOrbitalOptimizer/archive/d0f6942.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
