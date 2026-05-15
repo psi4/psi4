@@ -195,11 +195,6 @@ class MP2F12 : public Wavefunction {
     /* Converts the AO to MO matrices to einsum::Tensors */
     void convert_C(einsums::Tensor<double, 2> *C, OrbitalSpace bs, const int &dim1, const int &dim2,
                    const bool use_frzn);
-    void convert_C(einsums::Tensor<double, 2> *C, OrbitalSpace bs, const int &dim1, const int &dim2);
-
-    /* Places the computed integral in the einsum::Tensor */
-    virtual void set_ERI(einsums::TensorView<double, 4> &ERI_Slice, einsums::Tensor<double, 4> *Slice);
-    void set_ERI(einsums::TensorView<double, 3> &ERI_Slice, einsums::Tensor<double, 3> *Slice);
 
     /* Computes the conventional two-body integrals */
     void two_body_ao_computer(const std::string &int_type, einsums::Tensor<double, 4> *GAO,
@@ -279,9 +274,6 @@ class DiskMP2F12 : public MP2F12 {
     /* Form the $T^{ij}_{ij}\Tilde{B}^{ij}_{ij}T^{ij}_{ij}$ contirbution to the energy */
     std::pair<double, double> B_Tilde(einsums::Tensor<double, 4> &B_ij, einsums::DiskTensor<double, 4> *C,
                                       einsums::DiskView<double, 2, 4> &D_ij, const int &i, const int &j);
-
-    /* Places the computed integral in the einsum::DiskTensor */
-    void set_ERI(einsums::DiskView<double, 2, 4> &ERI_Slice, einsums::TensorView<double, 2> &Slice);
 };
 
 }  // namespace f12
