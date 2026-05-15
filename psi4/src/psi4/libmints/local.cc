@@ -29,6 +29,7 @@
 #include "local.h"
 
 #include <algorithm>
+#include <random>
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
@@ -199,7 +200,7 @@ void BoysLocalizer::localize() {
 
     // => Seed the random idempotently <= //
 
-    srand(0L);
+    std::mt19937 rng(0);
 
     // => Metric <= //
 
@@ -226,7 +227,8 @@ void BoysLocalizer::localize() {
         }
         std::vector<int> order2;
         for (int i = 0; i < nmo; i++) {
-            int pivot = (1L * (nmo - i) * rand()) / RAND_MAX;
+            std::uniform_int_distribution<int> dist(0, nmo - i - 1);
+            int pivot = dist(rng);
             int i2 = order[pivot];
             order[pivot] = order[nmo - i - 1];
             order2.push_back(i2);
@@ -398,7 +400,7 @@ void PMLocalizer::localize() {
 
     // => Seed the random idempotently <= //
 
-    srand(0L);
+    std::mt19937 rng(0);
 
     // => Metric <= //
 
@@ -430,7 +432,8 @@ void PMLocalizer::localize() {
         }
         std::vector<int> order2;
         for (int i = 0; i < nmo; i++) {
-            int pivot = (1L * (nmo - i) * rand()) / RAND_MAX;
+            std::uniform_int_distribution<int> dist(0, nmo - i - 1);
+            int pivot = dist(rng);
             int i2 = order[pivot];
             order[pivot] = order[nmo - i - 1];
             order2.push_back(i2);
