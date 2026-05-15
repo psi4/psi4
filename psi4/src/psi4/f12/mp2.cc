@@ -166,47 +166,100 @@ void MP2F12::form_f12_energy(einsums::Tensor<double, 4>* V, einsums::Tensor<doub
     using namespace einsums::tensor_algebra;
     using namespace einsums::index;
 
-    auto E_f12_s = 0.0;
-    auto E_f12_t = 0.0;
+    // Pre-build triangular pair list for load-balanced parallel dispatch.
+    struct Pair { size_t i, j; };
+    std::vector<Pair> pairs;
+    pairs.reserve(nact_ * (nact_ + 1) / 2);
+    for (size_t i = 0; i < nact_; i++)
+        for (size_t j = i; j < nact_; j++)
+            pairs.push_back({i, j});
 
+    struct PairResult { size_t i, j; double E_s, E_t; };
+    std::vector<PairResult> results(pairs.size());
+
+    double E_f12_s = 0.0, E_f12_t = 0.0;
+
+#pragma omp parallel for schedule(dynamic) reduction(+:E_f12_s,E_f12_t) num_threads(nthreads_)
+    for (size_t p = 0; p < pairs.size(); p++) {
+        const size_t i = pairs[p].i;
+        const size_t j = pairs[p].j;
+
+        // B_tilde scalars: only the two elements consumed by the energy expression.
+        const double f_scale = (*f)(i + nfrzn_, i + nfrzn_) + (*f)(j + nfrzn_, j + nfrzn_);
+        double B_val_ijij = (*B)(i, j, i, j) - f_scale * (*X)(i, j, i, j);
+        double B_val_ijji = (*B)(i, j, j, i) - f_scale * (*X)(i, j, j, i);
+
+        // V_tilde scalars: only the two elements consumed by the energy expression.
+        double V_val_ij = (*V)(i, j, i, j);
+        double V_val_ji = (*V)(i, j, j, i);
+
+        // Apply C/D/G corrections in O(nvir^2) per pair, no rank-4 temporaries.
+        {
+            const auto G_ij = TensorView<double, 2>{*G, Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
+                                                     Stride<2>{(*G).stride(2), (*G).stride(3)}};
+            const auto D_ij = TensorView<double, 2>{*D, Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
+                                                     Stride<2>{(*D).stride(2), (*D).stride(3)}};
+            const auto C_ij = TensorView<double, 2>{*C, Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
+                                                     Stride<2>{(*C).stride(2), (*C).stride(3)}};
+
+            // GD = G_ij .* D_ij  (for V correction)
+            Tensor<double, 2> GD{"GD", nvir_, nvir_};
+            einsum(Indices{a, b}, &GD, Indices{a, b}, G_ij, Indices{a, b}, D_ij);
+
+            // CD_ij = C_ij .* D_ij  (for B correction)
+            Tensor<double, 2> CD_ij{"CD_ij", nvir_, nvir_};
+            einsum(Indices{a, b}, &CD_ij, Indices{a, b}, C_ij, Indices{a, b}, D_ij);
+
+            Tensor<double, 0> tmp;
+
+            // V(i,j,i,j) correction: sum_{a,b} C_ij(a,b) * G_ij(a,b) * D_ij(a,b)
+            einsum(Indices{}, &tmp, Indices{a, b}, C_ij, Indices{a, b}, GD);
+            V_val_ij -= tmp;
+
+            // B(i,j,i,j) correction: sum_{a,b} C_ij(a,b)^2 * D_ij(a,b)
+            einsum(Indices{}, &tmp, Indices{a, b}, C_ij, Indices{a, b}, CD_ij);
+            B_val_ijij -= tmp;
+
+            const auto C_ji = TensorView<double, 2>{*C, Dim<2>{nvir_, nvir_}, Offset<4>{j, i, 0, 0},
+                                                     Stride<2>{(*C).stride(2), (*C).stride(3)}};
+
+            // V(i,j,j,i) correction: sum_{a,b} C_ji(a,b) * G_ij(a,b) * D_ij(a,b)
+            einsum(Indices{}, &tmp, Indices{a, b}, C_ji, Indices{a, b}, GD);
+            V_val_ji -= tmp;
+
+            // B(i,j,j,i) correction: sum_{a,b} C_ji(a,b) * C_ij(a,b) * D_ij(a,b)
+            einsum(Indices{}, &tmp, Indices{a, b}, C_ji, Indices{a, b}, CD_ij);
+            B_val_ijji -= tmp;
+        }
+
+        // Fixed-amplitude energy expression (matches original formula exactly).
+        const int kd = (i == j) ? 1 : 2;
+        const double ts = t_(i, j, i, j) + t_(i, j, j, i);
+        const double V_s = 0.25 * ts * kd * (V_val_ij + V_val_ji);
+        const double B_s = 0.125 * ts * kd * (B_val_ijij + B_val_ijji) * ts * kd;
+        const double E_s = kd * (2.0 * V_s + B_s);
+        E_f12_s += E_s;
+
+        double E_t = 0.0;
+        if (i != j) {
+            const double tt = t_(i, j, i, j) - t_(i, j, j, i);
+            const double V_t = 0.25 * tt * kd * (V_val_ij - V_val_ji);
+            const double B_t = 0.125 * tt * kd * (B_val_ijij - B_val_ijji) * tt * kd;
+            E_t = 3.0 * kd * (2.0 * V_t + B_t);
+            E_f12_t += E_t;
+        }
+
+        results[p] = {i, j, E_s, E_t};
+    }
+
+    // Print pair energies in canonical (i,j) order.
     outfile->Printf("  \n");
     outfile->Printf("  %1s   %1s  |     %14s     %14s     %12s \n", "i", "j", "E_F12(Singlet)", "E_F12(Triplet)",
                     "E_F12");
     outfile->Printf(" ----------------------------------------------------------------------\n");
-    for (size_t i = 0; i < nact_; i++) {
-        for (size_t j = i; j < nact_; j++) {
-            // Allocations
-            Tensor B_ = (*B)(All, All, All, All);
-            {
-                Tensor X_ = (*X)(All, All, All, All);
-                auto f_scale = (*f)(i + nfrzn_, i + nfrzn_) + (*f)(j + nfrzn_, j + nfrzn_);
-                linear_algebra::scale(f_scale, &X_);
-                permute(1.0, Indices{k, l, m, n}, &B_, -1.0, Indices{k, l, m, n}, X_);
-            }
-
-            // Getting V_Tilde and B_Tilde
-            Tensor V_ = TensorView<double, 2>{(*V), Dim<2>{nact_, nact_}, Offset<4>{i, j, 0, 0},
-                                              Stride<2>{(*V).stride(2), (*V).stride(3)}};
-            auto G_ = TensorView<double, 2>{(*G), Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
-                                            Stride<2>{(*G).stride(2), (*G).stride(3)}};
-            auto D_ = TensorView<double, 2>{(*D), Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
-                                            Stride<2>{(*D).stride(2), (*D).stride(3)}};
-            auto [V_s, V_t] = V_Tilde(V_, C, G_, D_, i, j);
-            auto [B_s, B_t] = B_Tilde(B_, C, D_, i, j);
-
-            // Computing the energy
-            const int kd = (i == j) ? 1 : 2;
-            auto E_s = kd * (2 * V_s + B_s);
-            E_f12_s += E_s;
-            auto E_t = 0.0;
-            if (i != j) {
-                E_t = 3.0 * kd * (2 * V_t + B_t);
-                E_f12_t += E_t;
-            }
-            auto E_f = E_s + E_t;
-            outfile->Printf("%3d %3d  |   %16.12f   %16.12f     %16.12f \n", i + nfrzn_ + 1, j + nfrzn_ + 1, E_s, E_t,
-                            E_f);
-        }
+    for (const auto& r : results) {
+        outfile->Printf("%3d %3d  |   %16.12f   %16.12f     %16.12f \n",
+                        r.i + nfrzn_ + 1, r.j + nfrzn_ + 1, r.E_s, r.E_t, r.E_s + r.E_t);
     }
 
     set_scalar_variable("MP2-F12 OPPOSITE-SPIN CORRELATION ENERGY", E_f12_s + scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY"));
@@ -430,57 +483,6 @@ double MP2F12::t_(int p, int q, int r, int s) {
     return 0.0;
 }
 
-std::pair<double, double> MP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, einsums::Tensor<double, 4>* C,
-                                          einsums::TensorView<double, 2>& G_ij, einsums::TensorView<double, 2>& D_ij,
-                                          const int& i, const int& j) {
-    using namespace einsums;
-    using namespace einsums::tensor_algebra;
-    using namespace einsums::index;
-
-    double V_s = 0.0, V_t = 0.0;
-
-    {
-        Tensor<double, 2> GD{"G_ijab . D_ijab", nvir_, nvir_};
-        einsum(Indices{a, b}, &GD, Indices{a, b}, G_ij, Indices{a, b}, D_ij);
-        einsum(1.0, Indices{k, l}, &V_ij, -1.0, Indices{k, l, a, b}, *C, Indices{a, b}, GD);
-    }
-
-    const int kd = (i == j) ? 1 : 2;
-
-    V_s += 0.25 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd * (V_ij(i, j) + V_ij(j, i));
-
-    if (i != j) {
-        V_t += 0.25 * (t_(i, j, i, j) - t_(i, j, j, i)) * kd * (V_ij(i, j) - V_ij(j, i));
-    }
-    return {V_s, V_t};
-}
-
-std::pair<double, double> MP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, einsums::Tensor<double, 4>* C,
-                                          einsums::TensorView<double, 2>& D_ij, const int& i, const int& j) {
-    using namespace einsums;
-    using namespace einsums::tensor_algebra;
-    using namespace einsums::index;
-
-    double B_s = 0.0, B_t = 0.0;
-
-    {
-        Tensor<double, 4> CD{"C_klab . D_ijab", nact_, nact_, nvir_, nvir_};
-        einsum(Indices{k, l, a, b}, &CD, Indices{k, l, a, b}, *C, Indices{a, b}, D_ij);
-        einsum(1.0, Indices{k, l, m, n}, &B_ij, -1.0, Indices{m, n, a, b}, *C, Indices{k, l, a, b}, CD);
-    }
-
-    const int kd = (i == j) ? 1 : 2;
-
-    B_s += 0.125 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd * (B_ij(i, j, i, j) + B_ij(i, j, j, i)) *
-           (t_(i, j, i, j) + t_(i, j, j, i)) * kd;
-
-    if (i != j) {
-        B_t += 0.125 * (t_(i, j, i, j) - t_(i, j, j, i)) * kd * (B_ij(i, j, i, j) - B_ij(i, j, j, i)) *
-               (t_(i, j, i, j) - t_(i, j, j, i)) * kd;
-    }
-    return {B_s, B_t};
-}
-
 ////////////////////////////////
 //* Disk Algorithm (CONV/DF) *//
 ////////////////////////////////
@@ -495,7 +497,8 @@ void DiskMP2F12::form_D(einsums::DiskTensor<double, 4>* D, einsums::DiskTensor<d
     auto f_view = (*f)(Range{0, nobs_}, Range{0, nobs_});
     f_view.set_read_only(true);
 
-#pragma omp parallel for collapse(2) num_threads(nthreads_)
+    // HDF5 concurrent writes to the same dataset are not thread-safe; the
+    // O(nact^2 * nvir^2) arithmetic cost is negligible, so compute serially.
     for (size_t i = nfrzn_; i < nocc_; i++) {
         for (size_t j = nfrzn_; j < nocc_; j++) {
             auto D_view = (*D)(i - nfrzn_, j - nfrzn_, All, All);
@@ -523,10 +526,25 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double, 4>* V, einsums::Dis
 
     auto f_act = (*f)(Range{nfrzn_, nocc_}, Range{nfrzn_, nocc_});
     f_act.set_read_only(true);
-    auto X_klmn = (*X)(All, All, All, All);
-    X_klmn.set_read_only(true);
-    auto B_klmn = (*B)(All, All, All, All);
-    B_klmn.set_read_only(true);
+
+    // Load B, X, V once from HDF5 — they are nact^4 and fit in memory by
+    // assumption (the disk algorithm is chosen only when MO integrals fit).
+    Tensor<double, 4> B_mem{"B_mem", nact_, nact_, nact_, nact_};
+    Tensor<double, 4> X_mem{"X_mem", nact_, nact_, nact_, nact_};
+    Tensor<double, 4> V_mem{"V_mem", nact_, nact_, nact_, nact_};
+    {
+        auto Bv = (*B)(All, All, All, All);
+        Bv.set_read_only(true);
+        B_mem = Bv.get();
+
+        auto Xv = (*X)(All, All, All, All);
+        Xv.set_read_only(true);
+        X_mem = Xv.get();
+
+        auto Vv = (*V)(All, All, All, All);
+        Vv.set_read_only(true);
+        V_mem = Vv.get();
+    }
 
     outfile->Printf("  \n");
     outfile->Printf("  %1s   %1s  |     %14s     %14s     %12s \n", "i", "j", "E_F12(Singlet)", "E_F12(Triplet)",
@@ -534,33 +552,80 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double, 4>* V, einsums::Dis
     outfile->Printf(" ----------------------------------------------------------------------\n");
     for (size_t i = 0; i < nact_; i++) {
         for (size_t j = i; j < nact_; j++) {
-            // Building B
-            Tensor B_ = B_klmn.get();
+            const double f_scale = f_act(i, i) + f_act(j, j);
+
+            // B_tilde scalars: only the two elements consumed by the energy expression.
+            double B_val_ijij = B_mem(i, j, i, j) - f_scale * X_mem(i, j, i, j);
+            double B_val_ijji = B_mem(i, j, j, i) - f_scale * X_mem(i, j, j, i);
+
+            // V_tilde scalars.
+            double V_val_ij = V_mem(i, j, i, j);
+            double V_val_ji = V_mem(i, j, j, i);
+
+            // Read G and D for this pair from disk (nvir^2 each).
+            Tensor<double, 2> G_ij{"G_ij", nvir_, nvir_};
             {
-                Tensor X_ = X_klmn.get();
-                auto f_scale = f_act(i, i) + f_act(j, j);
-                einsums::linear_algebra::scale(f_scale, &X_);
-                permute(1.0, Indices{k, l, m, n}, &B_, -1.0, Indices{k, l, m, n}, X_);
+                auto Gv = (*G)(i, j, Range{nocc_, nobs_}, Range{nocc_, nobs_});
+                Gv.set_read_only(true);
+                G_ij = Gv.get();
+            }
+            Tensor<double, 2> D_ij{"D_ij", nvir_, nvir_};
+            {
+                auto Dv = (*D)(i, j, All, All);
+                Dv.set_read_only(true);
+                D_ij = Dv.get();
             }
 
-            // Getting V_Tilde and B_Tilde
-            Tensor V_ = ((*V)(i, j, All, All)).get();
-            auto G_ = (*G)(i, j, Range{nocc_, nobs_}, Range{nocc_, nobs_});
-            auto D_ = (*D)(i, j, All, All);
-            auto [V_s, V_t] = V_Tilde(V_, C, G_, D_, i, j);
-            auto [B_s, B_t] = B_Tilde(B_, C, D_, i, j);
+            // Apply C corrections reading only C(i,j) and C(j,i) from disk.
+            {
+                // GD = G_ij .* D_ij  (for V correction)
+                Tensor<double, 2> GD{"GD", nvir_, nvir_};
+                einsum(Indices{a, b}, &GD, Indices{a, b}, G_ij, Indices{a, b}, D_ij);
 
-            // Computing the energy
+                auto C_ij_view = (*C)(i, j, All, All);
+                C_ij_view.set_read_only(true);
+                Tensor<double, 2> C_ij = C_ij_view.get();
+
+                // CD_ij = C_ij .* D_ij  (for B correction)
+                Tensor<double, 2> CD_ij{"CD_ij", nvir_, nvir_};
+                einsum(Indices{a, b}, &CD_ij, Indices{a, b}, C_ij, Indices{a, b}, D_ij);
+
+                Tensor<double, 0> tmp;
+
+                einsum(Indices{}, &tmp, Indices{a, b}, C_ij, Indices{a, b}, GD);
+                V_val_ij -= tmp;
+
+                einsum(Indices{}, &tmp, Indices{a, b}, C_ij, Indices{a, b}, CD_ij);
+                B_val_ijij -= tmp;
+
+                auto C_ji_view = (*C)(j, i, All, All);
+                C_ji_view.set_read_only(true);
+                Tensor<double, 2> C_ji = C_ji_view.get();
+
+                einsum(Indices{}, &tmp, Indices{a, b}, C_ji, Indices{a, b}, GD);
+                V_val_ji -= tmp;
+
+                einsum(Indices{}, &tmp, Indices{a, b}, C_ji, Indices{a, b}, CD_ij);
+                B_val_ijji -= tmp;
+            }
+
+            // Fixed-amplitude energy expression (matches original formula exactly).
             const int kd = (i == j) ? 1 : 2;
-            auto E_s = kd * (2 * V_s + B_s);
+            const double ts = t_(i, j, i, j) + t_(i, j, j, i);
+            const double V_s = 0.25 * ts * kd * (V_val_ij + V_val_ji);
+            const double B_s = 0.125 * ts * kd * (B_val_ijij + B_val_ijji) * ts * kd;
+            const double E_s = kd * (2.0 * V_s + B_s);
             E_f12_s += E_s;
-            auto E_t = 0.0;
+
+            double E_t = 0.0;
             if (i != j) {
-                E_t = 3.0 * kd * (2 * V_t + B_t);
+                const double tt = t_(i, j, i, j) - t_(i, j, j, i);
+                const double V_t = 0.25 * tt * kd * (V_val_ij - V_val_ji);
+                const double B_t = 0.125 * tt * kd * (B_val_ijij - B_val_ijji) * tt * kd;
+                E_t = 3.0 * kd * (2.0 * V_t + B_t);
                 E_f12_t += E_t;
             }
-            auto E_f = E_s + E_t;
-            outfile->Printf("%3d %3d  |   %16.12f   %16.12f     %16.12f \n", i + 1, j + 1, E_s, E_t, E_f);
+            outfile->Printf("%3d %3d  |   %16.12f   %16.12f     %16.12f \n", i + 1, j + 1, E_s, E_t, E_s + E_t);
         }
     }
 
@@ -809,88 +874,6 @@ double DiskMP2F12::compute_energy() {
 
     // Typically you would build a new wavefunction and populate it with data
     return E_mp2f12_;
-}
-
-std::pair<double, double> DiskMP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, einsums::DiskTensor<double, 4>* C,
-                                              einsums::DiskView<double, 2, 4>& G_ij,
-                                              einsums::DiskView<double, 2, 4>& D_ij, const int& i, const int& j) {
-    using namespace einsums;
-    using namespace einsums::tensor_algebra;
-    using namespace einsums::index;
-
-    double V_s = 0.0, V_t = 0.0;
-
-    {
-        Tensor<double, 2> GD{"G_ijab . D_ijab", nvir_, nvir_};
-        einsum(Indices{a, b}, &GD, Indices{a, b}, G_ij.get(), Indices{a, b}, D_ij.get());
-
-        Tensor<double, 0> tmp{"tmp"};
-        for (int I = 0; I < nact_; I++) {
-            for (int J = I; J < nact_; J++) {
-                auto C_IJ = (*C)(I, J, All, All);
-                C_IJ.set_read_only(true);
-                einsum(Indices{}, &tmp, Indices{a, b}, C_IJ.get(), Indices{a, b}, GD);
-                V_ij(I, J) -= tmp;
-
-                if (I != J) {
-                    auto C_JI = (*C)(J, I, All, All);
-                    C_JI.set_read_only(true);
-                    einsum(Indices{}, &tmp, Indices{a, b}, C_JI.get(), Indices{a, b}, GD);
-                    V_ij(J, I) -= tmp;
-                }
-            }
-        }
-    }
-
-    const int kd = (i == j) ? 1 : 2;
-
-    V_s = 0.25 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd * (V_ij(i, j) + V_ij(j, i));
-
-    if (i != j) {
-        V_t = 0.25 * (t_(i, j, i, j) - t_(i, j, j, i)) * kd * (V_ij(i, j) - V_ij(j, i));
-    }
-    return {V_s, V_t};
-}
-
-std::pair<double, double> DiskMP2F12::B_Tilde(einsums::Tensor<double, 4>& B_ij, einsums::DiskTensor<double, 4>* C,
-                                              einsums::DiskView<double, 2, 4>& D_ij, const int& i, const int& j) {
-    using namespace einsums;
-    using namespace einsums::tensor_algebra;
-    using namespace einsums::index;
-
-    double B_s = 0.0, B_t = 0.0;
-
-    {
-        Tensor<double, 2> rank2{"Contraction 1", nvir_, nvir_};
-        Tensor<double, 0> tmp{"Contraction 2"};
-        for (int I = 0; I < nact_; I++) {
-            for (int J = I; J < nact_; J++) {
-                auto C_IJ = (*C)(I, J, All, All);
-                C_IJ.set_read_only(true);
-                einsum(Indices{a, b}, &rank2, Indices{a, b}, C_IJ.get(), Indices{a, b}, D_ij.get());
-                einsum(Indices{}, &tmp, Indices{a, b}, rank2, Indices{a, b}, C_IJ.get());
-                B_ij(I, J, I, J) -= tmp;
-
-                if (I != J) {
-                    auto C_JI = (*C)(J, I, All, All);
-                    C_JI.set_read_only(true);
-                    einsum(Indices{}, &tmp, Indices{a, b}, rank2, Indices{a, b}, C_JI.get());
-                    B_ij(I, J, J, I) -= tmp;
-                }
-            }
-        }
-    }
-
-    const int kd = (i == j) ? 1 : 2;
-
-    B_s = 0.125 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd * (B_ij(i, j, i, j) + B_ij(i, j, j, i)) *
-          (t_(i, j, i, j) + t_(i, j, j, i)) * kd;
-
-    if (i != j) {
-        B_t = 0.125 * (t_(i, j, i, j) - t_(i, j, j, i)) * kd * (B_ij(i, j, i, j) - B_ij(i, j, j, i)) *
-              (t_(i, j, i, j) - t_(i, j, j, i)) * kd;
-    }
-    return {B_s, B_t};
 }
 
 }  // namespace f12
