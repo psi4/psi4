@@ -183,15 +183,6 @@ class MP2F12 : public Wavefunction {
     /* Returns the fixed amplitudes value */
     static double t_(int p, int q, int r, int s);
 
-    /* Form the $T^{ij}_{ij}\Tilde{V}^{ij}_{ij}$ contirbution to the energy */
-    virtual std::pair<double, double> V_Tilde(einsums::Tensor<double, 2> &V_, einsums::Tensor<double, 4> *C,
-                                              einsums::TensorView<double, 2> &G_ij,
-                                              einsums::TensorView<double, 2> &D_ij, const int &i, const int &j);
-
-    /* Form the $T^{ij}_{ij}\Tilde{B}^{ij}_{ij}T^{ij}_{ij}$ contirbution to the energy */
-    virtual std::pair<double, double> B_Tilde(einsums::Tensor<double, 4> &B, einsums::Tensor<double, 4> *C,
-                                              einsums::TensorView<double, 2> &D_ij, const int &i, const int &j);
-
     /* Converts the AO to MO matrices to einsum::Tensors */
     void convert_C(einsums::Tensor<double, 2> *C, OrbitalSpace bs, const int &dim1, const int &dim2,
                    const bool use_frzn);
@@ -265,15 +256,6 @@ class DiskMP2F12 : public MP2F12 {
                 einsums::DiskTensor<double, 4> *F2, einsums::DiskTensor<double, 4> *F,
                 einsums::DiskTensor<double, 2> *f, einsums::DiskTensor<double, 2> *fk,
                 einsums::DiskTensor<double, 2> *kk);
-
-    /* Form the $T^{ij}_{ij}\Tilde{V}^{ij}_{ij}$ contirbution to the energy */
-    std::pair<double, double> V_Tilde(einsums::Tensor<double, 2> &V_ij, einsums::DiskTensor<double, 4> *C,
-                                      einsums::DiskView<double, 2, 4> &G_ij, einsums::DiskView<double, 2, 4> &D_ij,
-                                      const int &i, const int &j);
-
-    /* Form the $T^{ij}_{ij}\Tilde{B}^{ij}_{ij}T^{ij}_{ij}$ contirbution to the energy */
-    std::pair<double, double> B_Tilde(einsums::Tensor<double, 4> &B_ij, einsums::DiskTensor<double, 4> *C,
-                                      einsums::DiskView<double, 2, 4> &D_ij, const int &i, const int &j);
 };
 
 }  // namespace f12
