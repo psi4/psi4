@@ -12,7 +12,7 @@ Eref = {
         "DF"        : -149.58715054487624, #TEST
         "Composite": {
           "DFDirJ+COSX"    : {
-            "INTERNAL":      -149.58722317236171, #TEST  # KP-STORE
+            "INTERNAL":      -149.58722317236171, #TEST
             "OOO":           -149.58726907,       #TEST  # -0.00004645
             },
           "DFDirJ+LinK"    : -149.58726772171027  #TEST
@@ -23,7 +23,7 @@ Eref = {
         "DF"        : -149.67125624291961, #TEST
         "Composite": {
           "DFDirJ+COSX"    : {
-            "INTERNAL":      -149.67132922581225, #TEST  # KP-STORE
+            "INTERNAL":      -149.67132922581225, #TEST
             "OOO":           -149.67136954,       #TEST  # -0.00004031
             },
           "DFDirJ+LinK"    : -149.67137328005577  #TEST

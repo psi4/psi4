@@ -12,9 +12,6 @@ set {
   s_tolerance 1e-3
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-STOL-WEIRD
-    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-4})
-
 dct_energy = energy('dct')
 
 compare_values(-76.348218880997010, variable("DCT TOTAL ENERGY"), 8, "ODC-12 Energy")

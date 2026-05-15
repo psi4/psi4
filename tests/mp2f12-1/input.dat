@@ -29,17 +29,20 @@ set {
 print('   Testing MP2-F12/3C(FIX) ...')
 val, wfn = energy('mp2-f12', return_wfn=True)
 
-atol = 2.e-9
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
+    atol = 9
+else:
+    atol = 2.e-9
 
-compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 9, 'mp2-f12 ref')                      #TEST
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), atol, 'mp2-f12 ref')                      #TEST
 compare_values(ref_mp2_corl, variable('MP2 CORRELATION ENERGY'), atol, 'mp2 corl')              #TEST
 compare_values(ref_mp2f12_corl, variable('MP2-F12 CORRELATION ENERGY') + variable("F12 CABS CORRECTION ENERGY"), atol, 'mp2-f12 corl')   #TEST
 compare_values(ref_mp2f12_corl, wfn.variable('MP2-F12 CORRELATION ENERGY') + wfn.variable("F12 CABS CORRECTION ENERGY"), atol, 'mp2-f12 corl')   #TEST
-compare_values(ref_mp2f12_total, wfn.variable('MP2-F12 TOTAL ENERGY'), 9, 'mp2-f12 tot')         #TEST
-compare_values(ref_mp2f12_total, variable('MP2-F12 TOTAL ENERGY'), 9, 'mp2-f12 tot')         #TEST
-compare_values(ref_singles_corl, variable('F12 CABS CORRECTION energy'), 9, 'f12 singles')           #TEST
-compare_values(ref_f12_corl, variable('MP2-F12 DOUBLES ENERGY') - variable("MP2 DOUBLES ENERGY"), 9, 'f12 doubles')               #TEST
-compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY') - variable("F12 CABS CORRECTION ENERGY"), 9, 'mp2-f12 ref')              #TEST
+compare_values(ref_mp2f12_total, wfn.variable('MP2-F12 TOTAL ENERGY'), atol, 'mp2-f12 tot')         #TEST
+compare_values(ref_mp2f12_total, variable('MP2-F12 TOTAL ENERGY'), atol, 'mp2-f12 tot')         #TEST
+compare_values(ref_singles_corl, variable('F12 CABS CORRECTION energy'), atol, 'f12 singles')           #TEST
+compare_values(ref_f12_corl, variable('MP2-F12 DOUBLES ENERGY') - variable("MP2 DOUBLES ENERGY"), atol, 'f12 doubles')               #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY') - variable("F12 CABS CORRECTION ENERGY"), atol, 'mp2-f12 ref')              #TEST
 compare_values(ref_mp2f12_corl, variable('CURRENT CORRELATION ENERGY') + variable("F12 CABS CORRECTION ENERGY"), atol, 'mp2-f12 corl')   #TEST
-compare_values(ref_mp2f12_total, variable('CURRENT ENERGY'), 9, 'mp2-f12 tot')               #TEST
-compare_values(ref_mp2f12_total, val, 9, 'mp2-f12 return')                                   #TEST
+compare_values(ref_mp2f12_total, variable('CURRENT ENERGY'), atol, 'mp2-f12 tot')               #TEST
+compare_values(ref_mp2f12_total, val, atol, 'mp2-f12 return')                                   #TEST
