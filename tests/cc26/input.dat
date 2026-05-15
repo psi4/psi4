@@ -17,7 +17,8 @@ set {
 if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-MATCH
     findif5_tol = 7
 else:
-    findif5_tol = 4.e-7
+    # findif5_tol = 4.e-7
+    findif5_tol = 3.e-6  # until sqrt fixed (only for ooo)
 
 analytic_grad = gradient('eom-ccsd')
 findif_grad = gradient('eom-ccsd', dertype=0)

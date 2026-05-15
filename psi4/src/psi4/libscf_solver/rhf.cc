@@ -1054,21 +1054,6 @@ void RHF::openorbital_scf() {
   double ao_basis_diis_error = 1.0;
 
   std::function<OpenOrbitalOptimizer::FockBuilderReturn<double, double>(const OpenOrbitalOptimizer::DensityMatrix<double, double> &)> fock_builder = [&](const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm) {
-    // DIAGNOSTIC: Print X matrix condition numbers once
-    static bool printed_X_cond = false;
-    if (!printed_X_cond) {
-      outfile->Printf("\n  ==> X Matrix Condition Numbers (orthogonalization) <==\n\n");
-      for(int h=0; h<nirrep_; h++) {
-        if(nsopi_[h]==0) continue;
-        const arma::mat Xblock(X_->to_armadillo_matrix(h));
-        arma::vec singvals = arma::svd(Xblock);
-        double cond = singvals(0) / singvals(singvals.n_elem - 1);
-        outfile->Printf("    Irrep %d: condition number = %.6e (max/min singular values: %.6e / %.6e)\n",
-                        h, cond, singvals(0), singvals(singvals.n_elem - 1));
-      }
-      outfile->Printf("\n");
-      printed_X_cond = true;
-    }
 
     // Grab the orbitals and occupations
     std::vector<arma::mat> orbitals = dm.first;

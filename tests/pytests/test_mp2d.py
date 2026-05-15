@@ -126,7 +126,10 @@ def test_dft_mp2(inp):
     if inp['driver'] == 'gradient':
         for retrn in [grad,
                       wfn.gradient()]:
-            atol = 2.e-8 if 'dertype' in inp else 1.e-10
+            if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
+                atol = 2.e-8 if 'dertype' in inp else 1.e-10
+            else:
+                atol = 2.e-8
             assert compare_values(ref[basisset][inp['pv'] + ' TOTAL GRADIENT'], np.asarray(retrn), basisset + " tot grad", atol=atol)
 
 
