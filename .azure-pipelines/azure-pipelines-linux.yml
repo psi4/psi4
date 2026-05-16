@@ -312,6 +312,7 @@ jobs:
   #    PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
   #  displayName: 'Spot Test 2'
 
+  # example with COPY
   #- bash: |
   #    cd build/../tests/fcidump
   #    source activate p4env
