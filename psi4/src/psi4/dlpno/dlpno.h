@@ -464,43 +464,38 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
     /// Lambda Amplitudes
     std::vector<SharedMatrix> lambda_ia_; // Dimensions: [nocc * (npno_[ii], 1)]
     std::vector<SharedMatrix> lambda_iajb_; // Dimensions: [n_lmo_pairs * (n_pno_[ij], n_pno_[ij])]
-    std::vector<SharedMatrix> lambda_iajb_bar_;
+    std::vector<SharedMatrix> lambda_iajb_bar_; // 0.5\lambda_{ij}^{ab} + \lambda_{ij}^{ba} (Toth Eq. 55)
 
     // => Lambda CCSD Integrals (Fock matrices and ERIs) <= //
-    std::vector<SharedMatrix> delta_imae_tilde_; // Toth eq. 26a
-    SharedMatrix F_im_double_tilde_; // Toth Eq. 26b
-    std::vector<SharedMatrix> F_vv_double_tilde_;
-    std::vector<SharedMatrix> M_imae_; // M(i m | a_{mm} e_{mm})
+    std::vector<SharedMatrix> delta_imae_tilde_; // Toth Eq. 57
+    SharedMatrix F_im_double_tilde_; // Jiang Eq. 86
+    std::vector<SharedMatrix> F_vv_double_tilde_; // Jiang Eq. 85
 
     // => Lambda CCSD Intermediates <= //
+    std::vector<SharedMatrix> beta_; // Jiang Eq. 82
+    std::vector<SharedMatrix> gamma_; // Jiang Eq. 83
+    std::vector<SharedMatrix> delta_; // Jiang Eq. 84
+    std::vector<std::vector<SharedMatrix>> gamma_double_tilde_; // Toth Eq. 103
+    std::vector<std::vector<SharedMatrix>> delta_double_tilde_; // Toth Eq. 105
 
-    std::vector<SharedMatrix> zz_is_chud_;
-    std::vector<SharedMatrix> john_bigback_;
-
-    std::vector<SharedMatrix> beta_;
-    std::vector<SharedMatrix> gamma_;
-    std::vector<SharedMatrix> delta_;
-    std::vector<std::vector<SharedMatrix>> gamma_double_tilde_;
-    std::vector<std::vector<SharedMatrix>> delta_double_tilde_;
-
-    SharedMatrix rho_oo_; // Toth Section IIIA
-    std::vector<SharedMatrix> rho_vv_; // Toth Section IIIA
+    SharedMatrix rho_oo_; // Toth Eq. 53
+    std::vector<SharedMatrix> rho_vv_; // Toth Eq. 54
     std::vector<std::vector<SharedMatrix>> F_fcia_hat_; // Toth Eq. 33
     std::vector<std::vector<SharedMatrix>> F_knia_hat_; // Toth Eq. 34
-    std::vector<SharedMatrix> K_maef_dt_;
-    std::vector<SharedMatrix> K_eimn_dt_;
-    std::vector<SharedMatrix> M_kace_bar_;
-    std::vector<SharedMatrix> M_mkic_bar_;
-    std::vector<SharedMatrix> J_kmic_bar_;
-    std::vector<SharedMatrix> J_kaec_bar_;
-    std::vector<SharedMatrix> L_ieab_bar_;
-    std::vector<SharedMatrix> K_ijmb_bar_;
+    std::vector<SharedMatrix> K_maef_dt_; // Toth Eq. 59
+    std::vector<SharedMatrix> K_eimn_dt_; // Toth Eq. 60
+    std::vector<SharedMatrix> M_kace_bar_; // Toth Eq. 61
+    std::vector<SharedMatrix> M_mkic_bar_; // Toth Eq. 62
+    std::vector<SharedMatrix> J_kmic_bar_; // Toth Eq. 63
+    std::vector<SharedMatrix> J_kaec_bar_; // Toth Eq. 64
+    std::vector<SharedMatrix> L_ieab_bar_; // Toth Eq. 73
+    std::vector<SharedMatrix> K_ijmb_bar_; // Toth Eq. 74
 
     // => One Particle Density Matrices <= //
-    SharedMatrix Doo_; // D_{ij}
-    std::vector<SharedMatrix> Dov_; // D_{i}^{a_{ii}}
-    std::vector<SharedMatrix> Dvv_singles_; // D_{i}^{a_{ii}b_{ii}}
-    std::vector<SharedMatrix> Dvv_pair_; // D_{ij}^{a_{ij}b_{ij}}
+    SharedMatrix Doo_; // Toth Eq. A2
+    std::vector<SharedMatrix> Dov_; // Toth Eq. A3
+    std::vector<SharedMatrix> Dvv_singles_; // Toth Eq. A5
+    std::vector<SharedMatrix> Dvv_pair_; // Toth Eq. A4
 
     // => Computing integrals <= //
 
@@ -515,12 +510,12 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
     
     // => Lambda CCSD intermediates <= //
 
-    /// New defined intermediate in Toth Eq. 50b
+    /// Computes intermediate defined in Toth Eq. 81
     std::vector<SharedMatrix> compute_alpha_ijkl();
 
-    /// compute singles residual in lambda CCSD equations, Toth Eq. 26-36
+    /// compute singles residual in lambda CCSD equations, Toth Eq. 58, 67-72
     void compute_L_ia(std::vector<SharedMatrix>& L_ia, std::vector<std::vector<SharedMatrix>>& L_ia_buffer);
-    /// compute doubles residual in lambda CCSD equations, Toth Eq. 37-55
+    /// compute doubles residual in lambda CCSD equations, Toth Eq. 75, 86-91
     void compute_L_iajb(std::vector<SharedMatrix> &L_iajb, std::vector<SharedMatrix>& Ln_iajb);
 
     /// Solves lambda_ia and lambda_iajb in the PNO basis
@@ -534,6 +529,8 @@ class DLPNOCCSD_Lambda : public DLPNOCCSD {
     ~DLPNOCCSD_Lambda() override;
 
     double compute_energy();
+
+    /// Computes dipole moment as defined in Toth Eq. A1
     Vector3 compute_dipole_moment();
 };
 
