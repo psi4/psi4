@@ -1050,11 +1050,10 @@ void RHF::openorbital_scf() {
 #ifndef USING_OpenOrbitalOptimizer
   throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build! Reconfigure with `-D ENABLE_OpenOrbitalOptimizer=ON`.\n");
 #else
-  // FIX: Store AO-basis DIIS error to use for convergence instead of orthogonal-basis error
+  // Store AO-basis DIIS error to use for convergence instead of orthogonal-basis error
   double ao_basis_diis_error = 1.0;
 
   std::function<OpenOrbitalOptimizer::FockBuilderReturn<double, double>(const OpenOrbitalOptimizer::DensityMatrix<double, double> &)> fock_builder = [&](const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm) {
-
     // Grab the orbitals and occupations
     std::vector<arma::mat> orbitals = dm.first;
     std::vector<arma::vec> occupations = dm.second;
@@ -1247,13 +1246,13 @@ void RHF::openorbital_scf() {
         double e_conv = options_.get_double("E_CONVERGENCE");
         double d_conv = options_.get_double("D_CONVERGENCE");
         double e_delta = std::any_cast<double>(data.at("dE"));
-        // FIX: Use AO-basis DIIS error instead of orthogonal-basis error for convergence
-        double d_rms = 0.5 * ao_basis_diis_error;  // Use AO error, not data.at("diis_error")
+        // Use AO-basis DIIS error instead of orthogonal-basis error from data.at("diis_error")
+        double d_rms = 0.5 * ao_basis_diis_error;
         // scale density norm to match internal algorithm
 
         bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
         if (iteration_ == options_.get_int("MAXITER"))
-            printf("%d = |%e| < %e && %e < %e (using AO-basis DIIS)\n", converged, e_delta, e_conv, d_rms, d_conv);
+            printf("%d = |%e| < %e && %e < %e\n", converged, e_delta, e_conv, d_rms, d_conv);
         return converged;
   };
 
@@ -1266,11 +1265,12 @@ void RHF::openorbital_scf() {
     double E = std::any_cast<double>(data.at("E"));
     double dE = std::any_cast<double>(data.at("dE"));
     double Dnorm_orth = 0.5 * std::any_cast<double>(data.at("diis_error"));
-    double Dnorm_ao = 0.5 * ao_basis_diis_error;  // FIX: Also show AO-basis error
+    // show AO-basis error
+    double Dnorm = 0.5 * ao_basis_diis_error;
     // scale density norm to match internal algorithm
     std::string step = std::any_cast<std::string>(data.at("step"));
 
-    outfile->Printf("   @%s iter %3i: %20.14f   %12.5e   %-11.5e [AO: %-11.5e] %s\n", reference.c_str(), iteration_, E, dE, Dnorm_orth, Dnorm_ao, step.c_str());
+    outfile->Printf("   @%s iter %3i: %20.14f   %12.5e   %-11.5e %s\n", reference.c_str(), iteration_, E, dE, Dnorm, step.c_str());
   };
 
   OpenOrbitalOptimizer::SCFSolver<double, double> scfsolver(number_of_blocks_per_particle_type, maximum_occupation, number_of_particles, fock_builder, block_descriptions);

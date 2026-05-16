@@ -1247,6 +1247,7 @@ void UHF::openorbital_scf() {
 #ifndef USING_OpenOrbitalOptimizer
   throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build!\n");
 #else
+  // Store AO-basis DIIS error to use for convergence instead of orthogonal-basis error
   double ao_basis_diis_error = 1.0;
   std::function<OpenOrbitalOptimizer::FockBuilderReturn<double, double>(const OpenOrbitalOptimizer::DensityMatrix<double, double> &)> fock_builder = [&](const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm) {
     // Grab the orbitals and occupations
@@ -1512,7 +1513,7 @@ void UHF::openorbital_scf() {
         double e_conv = options_.get_double("E_CONVERGENCE");
         double d_conv = options_.get_double("D_CONVERGENCE");
         double e_delta = std::any_cast<double>(data.at("dE"));
-        // Use AO-basis DIIS error for convergence checking
+        // Use AO-basis DIIS error instead of orthogonal-basis error from data.at("diis_error")
         double d_rms = ao_basis_diis_error;
 
         bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
@@ -1529,7 +1530,7 @@ void UHF::openorbital_scf() {
     iteration_++;
     double E = std::any_cast<double>(data.at("E"));
     double dE = std::any_cast<double>(data.at("dE"));
-    // Display AO-basis DIIS error
+    // show AO-basis error
     double Dnorm = ao_basis_diis_error;
     std::string step = std::any_cast<std::string>(data.at("step"));
 

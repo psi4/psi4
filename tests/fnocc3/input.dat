@@ -13,7 +13,6 @@ set {
     e_convergence 1e-10
     d_convergence 1e-10
     r_convergence 1e-10
-    #orbital_optimizer_package internal
 }
 
 energy('qcisd(t)')

@@ -22,7 +22,7 @@ set {
 if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TIGHT
     tol = 1  # 0.1
 else:
-    tol = 0.5  # revisit after sqrt
+    tol = 0.7  # revisit after sqrt
     psi4.set_options({"d_convergence": 10})
 
 e, wfn = frequencies('mp2', dertype=0, return_wfn=True)

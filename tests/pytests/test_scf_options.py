@@ -67,7 +67,7 @@ def test_guess_mix_for_broken_symmetry(inp):
 def test_scf_guess(inp, ref):
     vals = {
         "rhf": {
-           "core": -85.33505416385,
+            "core": -85.33505416385,
             "gwh": -92.48691177199,
             "sad": -100.28117660005705,
             "sadno": -99.60935769112,
