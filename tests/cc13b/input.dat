@@ -19,7 +19,7 @@ set {
    qc_module ccenergy  # signals to use the analytic ccsd(t) gradients
 }
 
-tol = 8
+tol = 2.e-8
 if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-FD (precautionary)
     psi4.set_options({"d_convergence": 11})
 
