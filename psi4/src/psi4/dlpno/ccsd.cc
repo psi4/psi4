@@ -1843,8 +1843,8 @@ void DLPNOCCSD::t1_fock() {
         // Partially dress Fia and Fab (Jiang Eq. 99 and 101)
         // \overline{F}_{kc} = f_{kc} + [2(kc|me) - (ke|mc)] T_{m}^{e}
         // In closed-shell RHF reference, f_{kc} is zero
-        Fkc_bar[ij] = submatrix_rows_and_cols(*F_lmo_pao_, lmopair_to_lmos_[ij], lmopair_to_paos_[ij]);
-        Fkc_bar[ij] = linalg::doublet(Fkc_bar[ij], X_pno_[ij], false, false); // (k, c)
+        Fkc_bar_[ij] = submatrix_rows_and_cols(*F_lmo_pao_, lmopair_to_lmos_[ij], lmopair_to_paos_[ij]);
+        Fkc_bar_[ij] = linalg::doublet(Fkc_bar_[ij], X_pno_[ij], false, false); // (k, c)
 
         // \overline{F}_{ab} = f_{ab} + [2(ab|me) - (ae|mb)] T_{m}^{e}
         // In canonical PNO representation, f_{ab} is diagonal
@@ -2620,8 +2620,8 @@ void DLPNOCCSD::lccsd_iterations() {
 #endif
 
     outfile->Printf("\n  ==> Local CCSD <==\n\n");
-    outfile->Printf("    E_CONVERGENCE = %.2e\n", 0.01 * options_.get_double("E_CONVERGENCE"));
-    outfile->Printf("    R_CONVERGENCE = %.2e\n\n", 0.01 * options_.get_double("R_CONVERGENCE"));
+    outfile->Printf("    E_CONVERGENCE = %.2e\n", options_.get_double("E_CONVERGENCE"));
+    outfile->Printf("    R_CONVERGENCE = %.2e\n\n", options_.get_double("R_CONVERGENCE"));
     outfile->Printf("                      Corr. Energy    Delta E     Max R1     Max R2     Time (s)\n");
 
     // => Initialize Residuals and Amplitudes <= //
@@ -2989,7 +2989,7 @@ double DLPNOCCSD::compute_energy() {
         int iteration = 0;
         const int BRUECKNER_MAXITER = options_.get_int("BRUECKNER_MAXITER");
         const double BRUECKNER_R_CONV = options_.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
-        const int BRUECKNER_DIIS_START = options_.get_int("BRUECKNER_DIIS_START");
+        // const int BRUECKNER_DIIS_START = options_.get_int("BRUECKNER_DIIS_START");
 
         DIISManager diis(options_.get_int("DIIS_MAX_VECS"), "BRUECKNER DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
 
@@ -3021,6 +3021,7 @@ double DLPNOCCSD::compute_energy() {
 
             delta_D_ao_->subtract(linalg::doublet(C_lmo_, C_lmo_, false, true));
 
+            /*
             if (iteration == 0) {
                 diis.set_error_vector_size(delta_D_ao_);
                 diis.set_vector_size(kappa_ia);
@@ -3031,6 +3032,7 @@ double DLPNOCCSD::compute_energy() {
             if (iteration >= BRUECKNER_DIIS_START) {
                 diis.extrapolate(kappa_ia.get());
             }
+            */
 
             // Compute max T1
             double T1_max = 0.0;

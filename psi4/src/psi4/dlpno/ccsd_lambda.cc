@@ -1624,36 +1624,38 @@ void DLPNOCCSD_Lambda::lambda_ccsd_iterations() {
             // L_iajb[ij]->scale(alpha);
         }
 
-        // Form Goo a second time (using updated lambda)
-        form_goo();
+        if (!brueckner_orbs_) {
+            // Form Goo a second time (using updated lambda)
+            form_goo();
 
-        // Step 1: Compute R1 residual
-        compute_L_ia(L_ia, L_ia_buffer);
+            // Step 1: Compute R1 residual
+            compute_L_ia(L_ia, L_ia_buffer);
 
-        // Get rms of L_ia
+            // Get rms of L_ia
 #pragma omp parallel for schedule(dynamic, 1)
-        for (int i = 0; i < naocc; ++i) {
-            L_ia_rms[i] = L_ia[i]->rms();
-        }
-
-        // Update Singles Amplitude (Jiang Eq. 103)
-#pragma omp parallel for schedule(dynamic, 1)
-        for (int i = 0; i < naocc; ++i) {
-            int ii = i_j_to_ij_[i][i];
-
-            // Dynamic Damping
-            /*
-            double m = (iteration > 10) ? -L_ia[i]->vector_dot(linalg::doublet(K_iajb_[ii], L_ia[i])) 
-                                            / L_ia_prev[i]->vector_dot(linalg::doublet(K_iajb_[ii], L_ia_prev[i])) : -0.3;
-            double alpha = (m > 0.0) ? 1.0 : 1.0 / (1.0 - m);
-            */
-
-            for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
-                double val = lambda_ia_[i]->get(a_ii, 0) - (1.0 - damping) * L_ia[i]->get(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
-                lambda_ia_[i]->set(a_ii, 0, val);
+            for (int i = 0; i < naocc; ++i) {
+                L_ia_rms[i] = L_ia[i]->rms();
             }
-            L_ia_prev[i] = L_ia[i]->clone();
-            // L_ia[i]->scale(alpha);
+
+            // Update Singles Amplitude (Jiang Eq. 103)
+#pragma omp parallel for schedule(dynamic, 1)
+            for (int i = 0; i < naocc; ++i) {
+                int ii = i_j_to_ij_[i][i];
+
+                // Dynamic Damping
+                /*
+                double m = (iteration > 10) ? -L_ia[i]->vector_dot(linalg::doublet(K_iajb_[ii], L_ia[i])) 
+                                            / L_ia_prev[i]->vector_dot(linalg::doublet(K_iajb_[ii], L_ia_prev[i])) : -0.3;
+                double alpha = (m > 0.0) ? 1.0 : 1.0 / (1.0 - m);
+                */
+
+                for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
+                    double val = lambda_ia_[i]->get(a_ii, 0) - (1.0 - damping) * L_ia[i]->get(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
+                    lambda_ia_[i]->set(a_ii, 0, val);
+                }
+                L_ia_prev[i] = L_ia[i]->clone();
+                // L_ia[i]->scale(alpha);
+            }
         }
 
         // DIIS Extrapolation
