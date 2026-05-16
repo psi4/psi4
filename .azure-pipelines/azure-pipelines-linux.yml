@@ -56,7 +56,6 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-<<<<<<< HEAD
         CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON'
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
@@ -79,9 +78,6 @@ jobs:
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: "--compiler IntelLLVM"
         ADVISOR_DISABLE_ARGS: ""
-=======
-        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so'
->>>>>>> c2f745828 (full test again)
 
   pool:
     vmImage: $(vmImage)
@@ -230,6 +226,7 @@ jobs:
   #    PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
   #  displayName: 'Spot Test 2'
 
+  # example with COPY
   #- bash: |
   #    cd build/../tests/fcidump
   #    source activate p4env
