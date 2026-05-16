@@ -1455,7 +1455,7 @@ void UHF::openorbital_scf() {
     // For UHF: compute RMS for each spin, then take the max (like INTERNAL does)
     double ao_diis_rms_alpha = FaDSmSDFa->rms();
     double ao_diis_rms_beta = FbDSmSDFb->rms();
-    ao_basis_diis_error = std::max(ao_diis_rms_alpha, ao_diis_rms_beta);
+    ao_basis_diis_error = std::sqrt(0.5 * (ao_diis_rms_alpha * ao_diis_rms_alpha + ao_diis_rms_beta * ao_diis_rms_beta));
 
     return std::make_pair(Etot,fock);
   };

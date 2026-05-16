@@ -30,6 +30,7 @@
 #include <iomanip>
 #include <map>
 #include <sstream>
+#include <iostream>
 #include <sys/stat.h>
 
 #include <libint2/engine.h>
