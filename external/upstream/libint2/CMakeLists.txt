@@ -40,17 +40,17 @@
 # * With Libint2 v2.13 (cmake+cmake), some variables gained LIBINT2_ prefixes, CMake components are available for
 #   `find_package(Libint2 ... COMPONENTS ...)`, and components are available from C++ without patching.
 
-if (${MAX_AM_ERI} GREATER_EQUAL 8)
-    set(amchar "llll")
-elseif (${MAX_AM_ERI} EQUAL 7)
-    set(amchar "kkkk")
-elseif (${MAX_AM_ERI} EQUAL 6)
-    set(amchar "iiii")
-elseif (${MAX_AM_ERI} EQUAL 5)
-    set(amchar "hhhh")
-elseif (${MAX_AM_ERI} LESS_EQUAL 4)
-    set(amchar "gggg")
+#                          1    1    2
+#                0    5    0    5    0
+set(_am_letters "spdfghiklmnoqrtuvwxyz")
+if (MAX_AM_ERI LESS 2 OR MAX_AM_ERI GREATER_EQUAL 20)
+    message(FATAL_ERROR "MAX_AM_ERI=${MAX_AM_ERI} not within 2-20")
 endif()
+string(SUBSTRING "${_am_letters}" "${MAX_AM_ERI}" 1 amletter)
+string(REPEAT "${amletter}" 4 amchar)
+message(VERBOSE "AM LETTERS ${_am_letters} ${amletter} ${amchar}")
+unset(_am_letters)
+unset(amletter)
 find_package(Libint2 2.13.1 COMPONENTS ss eri_${amchar}_d0 eri_dddd_d1 eri_ggg_d0 eri_fff_d1 eri_gg_d0 eri_ff_d1 onebody_gg_d0 onebody_ff_d1 onebody_ff_d2 CONFIG  # edit in codedeps
   # REQUIRED COMPONENTS: ss; 2-, 3-, & 4-center E & G, onebody E, G, & H
   OPTIONAL_COMPONENTS
