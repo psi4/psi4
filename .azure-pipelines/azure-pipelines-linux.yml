@@ -22,7 +22,7 @@ jobs:
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
         CMARGS: ""
-        CM_GENERATOR: "Unix Makefiles"
+        CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
