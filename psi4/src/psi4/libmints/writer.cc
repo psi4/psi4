@@ -553,9 +553,8 @@ void MOWriter::write() {
     int minorb;
     nmo = mos.sum();
 
-    map = new int[nmo];
-    auto *skip = new bool[nmo];
-    for (int orb = 0; orb < nmo; orb++) skip[orb] = false;
+    map.assign(nmo, 0);
+    std::vector<bool> skip(nmo, false);
     for (int orb = 0; orb < nmo; orb++) {
         int count = 0;
         double minen = 1.0e9;
@@ -579,11 +578,10 @@ void MOWriter::write() {
 
     // reorder orbitals:
     nso = wavefunction_->nso();
-    eps = new double[nmo];
-    sym = new int[nmo];
-    occ = new int[nmo];
-    Ca_pointer = new double[nmo * nso];
-    for (int i = 0; i < nmo * nso; i++) Ca_pointer[i] = 0.0;
+    eps.assign(nmo, 0.0);
+    sym.assign(nmo, 0);
+    occ.assign(nmo, 0);
+    C_data.assign(nmo * nso, 0.0);
 
     int count = 0;
     int extra = restricted_ ? 1 : 0;
@@ -595,7 +593,7 @@ void MOWriter::write() {
             eps[count] = Ea.get(h, n);
             sym[count] = h;
             for (int mu = 0; mu < nso; mu++) {
-                Ca_pointer[mu * nmo + count] = Ca_old[mu][n];
+                C_data[mu * nmo + count] = Ca_old[mu][n];
             }
             count++;
         }
@@ -614,7 +612,7 @@ void MOWriter::write() {
     // now for beta spin
     if (!restricted_) {
         // order orbitals in terms of energy
-        for (int orb = 0; orb < nmo; orb++) skip[orb] = false;
+        std::fill(skip.begin(), skip.end(), false);
         for (int orb = 0; orb < nmo; orb++) {
             int count = 0;
             double minen = 1.0e9;
@@ -637,7 +635,7 @@ void MOWriter::write() {
         }
 
         // reorder orbitals:
-        for (int i = 0; i < nmo * nso; i++) Ca_pointer[i] = 0.0;
+        std::fill(C_data.begin(), C_data.end(), 0.0);
         count = 0;
         for (int h = 0; h < nirrep; h++) {
             double **Ca_old = Cb_ao_mo->pointer(h);
@@ -646,7 +644,7 @@ void MOWriter::write() {
                 eps[count] = Eb.get(h, n);
                 sym[count] = h;
                 for (int mu = 0; mu < nso; mu++) {
-                    Ca_pointer[mu * nmo + count] = Ca_old[mu][n];
+                    C_data[mu * nmo + count] = Ca_old[mu][n];
                 }
                 count++;
             }
@@ -658,13 +656,6 @@ void MOWriter::write() {
         outfile->Printf("\n");
         write_mos(mol);
     }
-
-    delete[] skip;
-    delete[] map;
-    delete[] occ;
-    delete[] sym;
-    delete[] eps;
-    delete[] Ca_pointer;
 }
 
 void MOWriter::write_mos(Molecule &mol) {
@@ -727,7 +718,7 @@ void MOWriter::write_mos(Molecule &mol) {
             // print ao labels
             outfile->Printf(" %-4d %-10s", mu + 1, ao_labels[mu].c_str());
             for (int j = 0; j < ncols; j++) {
-                outfile->Printf("%13.7lf", Ca_pointer[mu * nmo + map[count + j]]);
+                outfile->Printf("%13.7lf", C_data[mu * nmo + map[count + j]]);
             }
             outfile->Printf("\n");
         }
@@ -770,7 +761,7 @@ void MOWriter::write_mos(Molecule &mol) {
             // print ao labels
             outfile->Printf(" %-4d %-10s", mu + 1, ao_labels[mu].c_str());
             for (int j = 0; j < ncolsleft; j++) {
-                outfile->Printf("%13.7lf", Ca_pointer[mu * nmo + map[count + j]]);
+                outfile->Printf("%13.7lf", C_data[mu * nmo + map[count + j]]);
             }
             outfile->Printf("\n");
         }
