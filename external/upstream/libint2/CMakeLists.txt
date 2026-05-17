@@ -40,7 +40,7 @@
 # * With Libint2 v2.13 (cmake+cmake), some variables gained LIBINT2_ prefixes, CMake components are available for
 #   `find_package(Libint2 ... COMPONENTS ...)`, and components are available from C++ without patching.
 
-if (${MAX_AM_ERI} GREATER 8)
+if (${MAX_AM_ERI} GREATER_EQUAL 8)
     set(amchar "llll")
 elseif (${MAX_AM_ERI} EQUAL 7)
     set(amchar "kkkk")
