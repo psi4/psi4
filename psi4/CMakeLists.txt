@@ -183,7 +183,7 @@ else()
     message(STATUS "Disabled gdma ${gdma_DIR}")
 endif()
 
-if (${MAX_AM_ERI} GREATER 8)
+if (${MAX_AM_ERI} GREATER_EQUAL 8)
     set(amchar "llll")
 elseif (${MAX_AM_ERI} EQUAL 7)
     set(amchar "kkkk")
