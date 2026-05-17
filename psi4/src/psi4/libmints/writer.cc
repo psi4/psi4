@@ -129,6 +129,9 @@ void FCHKWriter::set_postscf_density_label(const std::string &label) {
 
 void FCHKWriter::write(const std::string &filename) {
     chk_ = fopen(filename.c_str(), "w");
+    if (chk_ == nullptr) {
+        throw PSIEXCEPTION("FCHKWriter::write: could not open " + filename + " for writing");
+    }
     std::shared_ptr<BasisSet> basis = wavefunction_->basisset();
     int maxam = basis->max_am();
     std::shared_ptr<Molecule> mol = wavefunction_->molecule();
