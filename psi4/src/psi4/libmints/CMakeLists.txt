@@ -111,11 +111,11 @@ message("AVAILABLE_PHYSICAL_MEMORY ${_memfree} / NUMBER_OF_PHYSICAL_CORES ${_num
 if(_numcore LESS 5)
     if (UNIX AND NOT APPLE)
         set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE one_job)
-        set_property(TARGET mints l2intf PROPERTY UNITY_BUILD_BATCH_SIZE 5)
     endif()
 else()
     set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE four_jobs)
 endif()
+set_property(TARGET mints l2intf PROPERTY UNITY_BUILD_BATCH_SIZE ${psi4_libmints_UNITY_BUILD_BATCH_SIZE})
 
 # Conditionally add sources that depend on optional dependencies
 if(TARGET ECPINT::ecpint)
