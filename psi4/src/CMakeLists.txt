@@ -33,8 +33,8 @@ set_target_properties(core
     CUDA_VISIBILITY_PRESET "hidden"
     VISIBILITY_INLINES_HIDDEN 1
     # CI linking with unity build sometimes hangs w/o this slight suppression
+    UNITY_BUILD_BATCH_SIZE 5
   )
-set_property(TARGET core PROPERTY UNITY_BUILD OFF)
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)

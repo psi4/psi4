@@ -21,10 +21,9 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        #CMARGS: ""
-        #CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF -Dpsi4_CMAKE_UNITY_BUILD=OFF"
-        CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON"
-        CM_GENERATOR: "Ninja"
+        # older GCC and newer L2 face OOM w/unity
+        CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON -Dpsi4_CMAKE_UNITY_BUILD=OFF"
+        CM_GENERATOR: "Unix Makefiles"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
