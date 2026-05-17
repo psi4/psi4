@@ -741,8 +741,7 @@ void DiskDFJK::initialize_JK_disk() {
     // MN_mem->print(outfile);
 
     // Figure out exactly how much memory per M row
-    size_t* M_memp = new size_t[nshell];
-    memset(static_cast<void*>(M_memp), '\0', nshell * sizeof(size_t));
+    std::vector<size_t> M_memp(nshell, 0);
 
     for (int M = 0; M < nshell; M++) {
         for (int N = 0; N <= M; N++) {
@@ -868,7 +867,6 @@ void DiskDFJK::initialize_JK_disk() {
     MN_col.reset();
     mn_start.reset();
     mn_col.reset();
-    delete[] M_memp;
 
     // ==> Buffer allocation <== //
     int max_cols = 0;
@@ -1211,8 +1209,7 @@ void DiskDFJK::initialize_wK_disk() {
     // MN_mem->print(outfile);
 
     // Figure out exactly how much memory per M row
-    size_t* M_memp = new size_t[nshell];
-    memset(static_cast<void*>(M_memp), '\0', nshell * sizeof(size_t));
+    std::vector<size_t> M_memp(nshell, 0);
 
     for (size_t M = 0; M < nshell; M++) {
         for (size_t N = 0; N <= M; N++) {
@@ -1339,7 +1336,6 @@ void DiskDFJK::initialize_wK_disk() {
     MN_col.reset();
     mn_start.reset();
     mn_col.reset();
-    delete[] M_memp;
 
     // ==> Buffer allocation <== //
     int max_cols = 0;
