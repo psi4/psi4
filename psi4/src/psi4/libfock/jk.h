@@ -954,7 +954,7 @@ class PSI_API DiskDFJK : public JK {
     /// Common initialization
     void common_init();
 
-    bool is_core();
+    virtual bool is_core();
     size_t memory_temp() const;
     int max_rows() const;
     int max_nocc() const;
@@ -1063,7 +1063,7 @@ class PSI_API CDJK : public DiskDFJK {
 
     // => Required Algorithm-Specific Methods <= //
 
-    virtual bool is_core() { return true; }
+    bool is_core() override { return true; }
 
     // => J <= //
     void initialize_JK_core() override;
