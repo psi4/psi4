@@ -89,6 +89,8 @@ Matrix::Matrix(const Matrix &c) : rowspi_(c.rowspi_), colspi_(c.colspi_) {
 }
 
 Matrix &Matrix::operator=(const Matrix &c) {
+    if (this == &c) return *this;
+
     release();
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
