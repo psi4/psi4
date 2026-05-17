@@ -115,6 +115,7 @@ if(_numcore LESS 5)
 else()
     set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE four_jobs)
 endif()
+set_target_properties(l2intf PROPERTIES UNITY_BUILD_BATCH_SIZE 5)
 
 # Conditionally add sources that depend on optional dependencies
 if(TARGET ECPINT::ecpint)
