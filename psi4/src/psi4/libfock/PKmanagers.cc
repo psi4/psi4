@@ -555,7 +555,10 @@ void PKMgrDisk::batch_sizing() {
     size_t nintpq = 0;
     size_t nintbatch = 0;
     size_t pq = 0;
-    size_t pb, qb, rb, sb;
+    // Initialized to zero so that the post-loop INDEX{2,4} calls at
+    // batch_index_max_ / batch_pq_max_ are defined even if the iterator
+    // produces no quartets (e.g. an empty basis set).
+    size_t pb = 0, qb = 0, rb = 0, sb = 0;
     int batch = 0;
 
     outfile->Printf("  Sizing the integral batches needed.\n");
