@@ -2500,19 +2500,17 @@ SharedMatrix MintsHelper::embpot_grad(SharedMatrix D) {
     double **Gp = ret->pointer();
     double **Dp = D->pointer();
 
-    FILE* input = fopen("EMBPOT", "r");
+    std::unique_ptr<FILE, decltype(&fclose)> input(fopen("EMBPOT", "r"), &fclose);
     if (input == nullptr) {
         throw PSIEXCEPTION("MintsHelper::embpot_grad error: could not open EMBPOT file for reading");
     }
     size_t npoints;
-    int statusvalue = fscanf(input, "%zu", &npoints);
+    int statusvalue = fscanf(input.get(), "%zu", &npoints);
     if (statusvalue != 1) {
-        fclose(input);
         throw PSIEXCEPTION("MintsHelper::embpot_grad error: EOF or wrong number of inputs read from EMBPOT header, return=" +
                            std::to_string(statusvalue) + " (expected 1)");
     }
     if (npoints*5*8 > Process::environment.get_memory()) {
-        fclose(input);
         throw PSIEXCEPTION("MintsHelper::embpot_grad error: Size of EMBPOT file exceeds memory allocation, " +
                            std::to_string(npoints*5*8) + " bytes > " + std::to_string(Process::environment.get_memory()) + " bytes");
     }
@@ -2523,9 +2521,8 @@ SharedMatrix MintsHelper::embpot_grad(SharedMatrix D) {
 
     // Pull out data
     for (size_t k = 0; k < npoints; k++) {
-        statusvalue = fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
+        statusvalue = fscanf(input.get(), "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
         if (statusvalue != 5) {
-            fclose(input);
             throw PSIEXCEPTION("MintsHelper::embpot_grad error: EOF or wrong number of inputs read from EMBPOT, return=" +
                                std::to_string(statusvalue) + " (expected 5)");
         }
@@ -2605,7 +2602,6 @@ SharedMatrix MintsHelper::embpot_grad(SharedMatrix D) {
             }
         }
     }
-    fclose(input);
     return ret;
 }
 
