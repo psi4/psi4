@@ -380,10 +380,10 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                         const double* buffer2 = buffer;
 
                         if (!touched) {
-                            ::memset((void*)KTp[0L * max_functions_per_atom], '\0', nPbasis * nbf * sizeof(double));
-                            ::memset((void*)KTp[1L * max_functions_per_atom], '\0', nPbasis * nbf * sizeof(double));
-                            ::memset((void*)KTp[2L * max_functions_per_atom], '\0', nQbasis * nbf * sizeof(double));
-                            ::memset((void*)KTp[3L * max_functions_per_atom], '\0', nQbasis * nbf * sizeof(double));
+                            ::memset((void*)KTp[0L * max_functions_per_atom], '\0', static_cast<size_t>(nPbasis) * nbf * sizeof(double));
+                            ::memset((void*)KTp[1L * max_functions_per_atom], '\0', static_cast<size_t>(nPbasis) * nbf * sizeof(double));
+                            ::memset((void*)KTp[2L * max_functions_per_atom], '\0', static_cast<size_t>(nQbasis) * nbf * sizeof(double));
+                            ::memset((void*)KTp[3L * max_functions_per_atom], '\0', static_cast<size_t>(nQbasis) * nbf * sizeof(double));
                         }
 
                         // Four pointers needed for PR, PS, QR, QS
