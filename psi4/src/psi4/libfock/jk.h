@@ -599,9 +599,9 @@ class PSI_API DiskJK : public JK {
     size_t memory_estimate() override;
 
     /// Absolute AO index to relative SO index
-    int* so2index_;
+    std::vector<int> so2index_;
     /// Absolute AO index to irrep
-    int* so2symblk_;
+    std::vector<int> so2symblk_;
 
     /// Options object
     Options& options_;
