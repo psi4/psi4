@@ -21,10 +21,9 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        #CMARGS: ""
-        #CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF -Dpsi4_CMAKE_UNITY_BUILD=OFF"
-        CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON"
-        CM_GENERATOR: "Ninja"
+        # older GCC and newer L2 face OOM w/unity
+        CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON -Dpsi4_CMAKE_UNITY_BUILD=OFF"
+        CM_GENERATOR: "Unix Makefiles"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
@@ -60,7 +59,7 @@ jobs:
         ENABLE_GAUXC: "OFF"
         CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp
 -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON -DMAX_AM_ERI=1'
-        CM_GENERATOR: "Unix Makefiles"
+        CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
