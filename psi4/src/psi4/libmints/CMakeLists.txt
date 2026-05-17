@@ -115,7 +115,8 @@ if(_numcore LESS 5)
 else()
     set_property(TARGET l2intf PROPERTY JOB_POOL_COMPILE four_jobs)
 endif()
-set_property(TARGET mints l2intf PROPERTY UNITY_BUILD_BATCH_SIZE ${psi4_libmints_UNITY_BUILD_BATCH_SIZE})
+#set_property(TARGET mints l2intf PROPERTY UNITY_BUILD_BATCH_SIZE ${psi4_libmints_UNITY_BUILD_BATCH_SIZE})
+set_property(TARGET mints l2intf PROPERTY UNITY_BUILD OFF)
 
 # Conditionally add sources that depend on optional dependencies
 if(TARGET ECPINT::ecpint)
