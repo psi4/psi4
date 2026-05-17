@@ -58,7 +58,8 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON'
+        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp
+-DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON -DMAX_AM_ERI=1'
         CM_GENERATOR: "Unix Makefiles"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
@@ -76,7 +77,7 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        CMARGS: "-D ENABLE_XHOST=OFF -D psi4_ENABLE_PRECOMPILE_HEADERS=ON"
+        CMARGS: "-D ENABLE_XHOST=OFF -D psi4_ENABLE_PRECOMPILE_HEADERS=ON -D MAX_AM_ERI=7"
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: "--compiler IntelLLVM"
         ADVISOR_DISABLE_ARGS: ""
