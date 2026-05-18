@@ -48,9 +48,7 @@
 namespace psi {
 class BasisSet;
 class Options;
-class Wavefunction;
 
-void dx_write(std::shared_ptr<Wavefunction> wfn, Options& options, double** D);
 void dx_read(std::shared_ptr<BasisSet> basis, double** V_eff, double* phi_ao, double* phi_so, int nao, int nso,
              double** u);
 void fill_sym_matrix(double** A, int size);
