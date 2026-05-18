@@ -617,7 +617,7 @@ void HF::form_H() {
                 std::vector<double> phi_ao(nao, 0);
                 std::vector<double> phi_so(nso, 0);
 
-                dx_read(V_eff.pointer(), phi_ao.data(), phi_so.data(), nao, nso, u.pointer());
+                dx_read(basisset_, V_eff.pointer(), phi_ao.data(), phi_so.data(), nao, nso, u.pointer());
 
             }  // dx file
             else if (dipole_field_type_ == sphere) {
