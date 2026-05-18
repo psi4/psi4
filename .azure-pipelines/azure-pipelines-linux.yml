@@ -14,7 +14,7 @@ jobs:
         PYTHON_VER: '3.12'
         C_COMPILER: 'gcc-11'
         F_COMPILER: 'gfortran'
-        BUILD_TYPE: 'Debug'
+        BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran gcc-11 g++-11'
         vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: "quick"
@@ -22,7 +22,7 @@ jobs:
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
         # older GCC and newer L2 face OOM w/unity
-        CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON -Dpsi4_CMAKE_UNITY_BUILD=OFF"
+        CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON -Dpsi4_CMAKE_UNITY_BUILD=OFF -DCMAKE_CXX_FLAGS='-O1' -D CMAKE_VERBOSE_MAKEFILE=ON"
         CM_GENERATOR: "Unix Makefiles"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
