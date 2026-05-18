@@ -11,7 +11,7 @@ jobs:
     matrix:
       gcc_11:
         CXX_COMPILER: 'g++-11'
-        PYTHON_VER: '3.10'
+        PYTHON_VER: '3.12'
         C_COMPILER: 'gcc-11'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
@@ -19,7 +19,7 @@ jobs:
         vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: "quick"
         PYTEST_NAME_EXPR: 'not nonsense1'
-        ENABLE_EINSUMS: "ON"
+        ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
         # older GCC and newer L2 face OOM w/unity
         CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON -Dpsi4_CMAKE_UNITY_BUILD=OFF"
