@@ -21,6 +21,7 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
+        ENABLE_OOO: "OFF"
         # older GCC and newer L2 face OOM w/unity
         CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF -Dpsi4_CMAKE_UNITY_BUILD=OFF -DCMAKE_CXX_FLAGS='-O1' -D CMAKE_VERBOSE_MAKEFILE=ON"
         CM_GENERATOR: "Unix Makefiles"
@@ -39,6 +40,7 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
+        ENABLE_OOO: "ON"
         CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON -Dpsi4_libmints_UNITY_BUILD_BATCH_SIZE=5"
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
@@ -57,6 +59,7 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
+        ENABLE_OOO: "ON"
         CMARGS: >-
           -DOpenMP_C_FLAGS=-fopenmp=libomp
           -DOpenMP_CXX_FLAGS=-fopenmp=libomp
@@ -80,6 +83,7 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
+        ENABLE_OOO: "ON"
         CMARGS: >-
           -DOpenMP_C_FLAGS=-fopenmp=libomp
           -DOpenMP_CXX_FLAGS=-fopenmp=libomp
@@ -103,6 +107,7 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
+        ENABLE_OOO: "ON"
         CMARGS: >-
           -DENABLE_XHOST=OFF
         CM_GENERATOR: "Ninja"
@@ -223,7 +228,7 @@ jobs:
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=OFF \
         -D ENABLE_gauxc="${ENABLE_GAUXC}" \
-        -D ENABLE_OpenOrbitalOptimizer=ON \
+        -D ENABLE_OpenOrbitalOptimizer="${ENABLE_OOO}" \
         -D FORCE_PEDANTIC=ON \
         $(CMARGS) \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
@@ -234,7 +239,7 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      cmake --build . -- -j 2
+      cmake --build .
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so
     displayName: 'Build Psi4'
