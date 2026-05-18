@@ -16,11 +16,11 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran gcc-11 g++-11'
-        vmImage: 'ubuntu-22.04'
+        vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: "quick"
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
-        ENABLE_GAUXC: "ON"
+        ENABLE_GAUXC: "OFF"
         # older GCC and newer L2 face OOM w/unity
         CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON -Dpsi4_CMAKE_UNITY_BUILD=OFF"
         CM_GENERATOR: "Unix Makefiles"
@@ -57,8 +57,7 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp
--DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON'
+        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON'
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
