@@ -301,7 +301,7 @@ data:
     conda:
       channel: conda-forge
       name: dftd3-python
-      constraint: ">=1.0"
+      constraint: ">=1.0,<1.3" # 1.3.0 and beyond requires changes from past the 1.10.0 release and QCEngine >=0.50.0
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."

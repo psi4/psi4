@@ -51,7 +51,7 @@ dependencies:
   - adcc
   - basis_set_exchange
   - cppe
-  - dftd3-python>=1.0
+  - dftd3-python>=1.0,<1.3    # 1.3.0 and beyond requires changes from past the 1.10.0 release and QCEngine >=0.50.0
   - dftd4-python
   - gcp-correction
   - geometric

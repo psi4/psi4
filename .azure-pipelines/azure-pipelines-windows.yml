@@ -121,6 +121,7 @@ jobs:
       # Note: conda activate doesn't work here, because it creates a new shell!
       # Note: c-f eigen has Config.cmake file
       # pydantic=1.10.17 ensures v1 pydantic still working
+      # dftd3-python 1.3.0 and beyond requires changes from past the 1.10.0 release and QCEngine >=0.50.0
       - script: |
           conda install cmake ^
                         anaconda-project ^
@@ -142,7 +143,7 @@ jobs:
                         pytest=7 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
-                        dftd3-python=0.6.0 ^
+                        dftd3-python<1.3 ^
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
