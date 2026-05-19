@@ -214,6 +214,15 @@ option_with_print(psi4_CMAKE_UNITY_BUILD "Enable unity/jumbo build to reduce com
 option_with_default(psi4_CMAKE_UNITY_BUILD_BATCH_SIZE "Adjust unity build size from CMake default. See also independent psi4_l2intf_UNITY_BUILD_BATCH_SIZE" 8)
 option_with_default(psi4_l2intf_UNITY_BUILD_BATCH_SIZE "Unity batch size for the libmints files that include libint2/engine.h (l2intf -- each TU costs 5-8 GB to compile with GCC 14, ~15+ with GCC 15+). 0 = one TU for all ~19 files (~3.5 min, least memory and CPU, default). 1 = per-file (~1 min to rebuild one edited file, pool-limited by memory). Independent of psi4_CMAKE_UNITY_BUILD" 0)
 option_with_print(psi4_ENABLE_PRECOMPILE_HEADERS "Enable reusing preprocessed libmints and other headers for build performance. 15-20% full rebuild speedup. For dev, can turn off for finer incr rebuild" OFF)
+option_with_print(psi4_ENABLE_IPO "Enable interprocedural / link-time optimization (LTO) for psi4 modules and core. Expensive: substantial extra link-time CPU and multi-GB linker memory. Off by default." OFF)
+if(psi4_ENABLE_IPO)
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT _psi4_ipo_supported OUTPUT _psi4_ipo_msg LANGUAGES CXX)
+    if(NOT _psi4_ipo_supported)
+        message(WARNING "psi4_ENABLE_IPO=ON requested but not supported by this toolchain — disabling. Reason: ${_psi4_ipo_msg}")
+        set(psi4_ENABLE_IPO OFF CACHE BOOL "" FORCE)
+    endif()
+endif()
 
 include(custom_int_orderings)
 
@@ -321,6 +330,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_UNITY_BUILD_BATCH_SIZE=${psi4_CMAKE_UNITY_BUILD_BATCH_SIZE}
               -Dpsi4_l2intf_UNITY_BUILD_BATCH_SIZE=${psi4_l2intf_UNITY_BUILD_BATCH_SIZE}
               -Dpsi4_ENABLE_PRECOMPILE_HEADERS=${psi4_ENABLE_PRECOMPILE_HEADERS}
+              -Dpsi4_ENABLE_IPO=${psi4_ENABLE_IPO}
               -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
               -DMAX_AM_ERI=${MAX_AM_ERI}
               -DPython_EXECUTABLE=${Python_EXECUTABLE}
