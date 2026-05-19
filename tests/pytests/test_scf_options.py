@@ -141,3 +141,45 @@ def test_scf_guess(inp, ref):
         6,
         "INITIAL ITERATION",
       )
+
+@pytest.mark.quick
+def test_sad_frac_occ_hydrogen_density_occupation():
+    """SAD fractional occupations should yield one electron for atomic hydrogen."""
+
+    h_atom = psi4.geometry(
+        """
+        0 2
+        H
+        symmetry c1
+        """
+    )
+
+    psi4.set_options(
+        {
+            "basis": "cc-pvdz",
+            "reference": "uhf",
+            "guess": "sad",
+            "sad_frac_occ": True,
+            "sad_spin_average": True,
+            "scf_type": "pk",
+        }
+    )
+
+    base_wfn = psi4.core.Wavefunction.build(h_atom, psi4.core.get_global_option("BASIS"))
+    hf_wfn = psi4.driver.scf_wavefunction_factory("HF", base_wfn, "UHF")
+    hf_wfn.initialize()
+    hf_wfn.guess()
+
+    S = hf_wfn.S()
+    Da = hf_wfn.Da()
+    Db = hf_wfn.Db()
+    na = Da.vector_dot(S)
+    nb = Db.vector_dot(S)
+
+    # PR        na      nb
+    # pre-3138  0.5     0.5
+    # 3138      0.707   0.707
+    # 3390      0.5     0.5
+    assert compare_values(1.0, na + nb, 10, "H SAD total density occupation")
+    assert compare_values(0.5, na, 10, "H SAD alpha density occupation")
+    assert compare_values(0.5, nb, 10, "H SAD beta density occupation")
