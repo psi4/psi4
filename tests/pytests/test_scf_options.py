@@ -143,16 +143,14 @@ def test_scf_guess(inp, ref):
       )
 
 @pytest.mark.quick
-def test_sad_frac_occ_hydrogen_density_occupation():
-    """SAD fractional occupations should yield one electron for atomic hydrogen."""
+@pytest.mark.parametrize("atom,geom,rna", [
+    ("hydrogen", "0 2\nH\nsymmetry c1\n", 0.5),
+    ("oxygen", "0 3\nO\nsymmetry c1\n", 4),
+])
+def test_sad_frac_occ_density_occupation(atom, geom, rna):
+    """SAD fractional occupations should conserve total electrons for atomic oxygen."""
 
-    h_atom = psi4.geometry(
-        """
-        0 2
-        H
-        symmetry c1
-        """
-    )
+    atom_mol = psi4.geometry(geom)
 
     psi4.set_options(
         {
@@ -165,7 +163,7 @@ def test_sad_frac_occ_hydrogen_density_occupation():
         }
     )
 
-    base_wfn = psi4.core.Wavefunction.build(h_atom, psi4.core.get_global_option("BASIS"))
+    base_wfn = psi4.core.Wavefunction.build(atom_mol, psi4.core.get_global_option("BASIS"))
     hf_wfn = psi4.driver.scf_wavefunction_factory("HF", base_wfn, "UHF")
     hf_wfn.initialize()
     hf_wfn.guess()
@@ -176,10 +174,13 @@ def test_sad_frac_occ_hydrogen_density_occupation():
     na = Da.vector_dot(S)
     nb = Db.vector_dot(S)
 
-    # PR        na      nb
-    # pre-3138  0.5     0.5
-    # 3138      0.707   0.707
-    # 3390      0.5     0.5
-    assert compare_values(1.0, na + nb, 10, "H SAD total density occupation")
-    assert compare_values(0.5, na, 10, "H SAD alpha density occupation")
-    assert compare_values(0.5, nb, 10, "H SAD beta density occupation")
+    #           H H H H H H H   O O O O O O O
+    # PR        na=nb   ntot    na=nb   ntot
+    # pre-3138  0.5     0.5     4       8
+    # 3138      0.707   0.707   4.464   8.928
+    # 3390      0.5     0.5     4       8
+
+    # SADGuess returns a spin-restricted density for HF guesses (Db == Da)
+    assert compare_values(2*rna, na + nb, 10, f"{atom} SAD total density occupation {na+nb}")
+    assert compare_values(rna, na, 10, f"{atom} SAD alpha density occupation {na}")
+    assert compare_values(rna, nb, 10, f"{atom} SAD beta density occupation {nb}")

@@ -458,6 +458,8 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
             nocc_a = nocc_b = nfzc + nact;
 
             // Fractional alpha and beta occupation numbers
+            // form_C_and_D applies the sqrt(occ) weighting internally when building
+            // the occupation-weighted Cocc, so we hand it the raw n_i here.
             double frac_a = (nalpha[index] - nfzc) / nact;
             double frac_b = (nbeta[index] - nfzc) / nact;
 
