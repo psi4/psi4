@@ -224,7 +224,7 @@ jobs:
       source activate p4env
       python -V
       export PYTHONPATH=stage/lib
-      export PATH=$PATH:stage/bin
+      export PATH=stage/bin:$PATH
       qcengine info
       python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
       python -c 'import numpy; print(numpy.version.version)'
