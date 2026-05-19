@@ -217,11 +217,10 @@ jobs:
     displayName: 'Configure Build'
 
     # conda remove qcengine --force || true
+    # conda remove optking --force || true
   - bash: |
       cd build
       source activate p4env
-      conda remove optking --force || true
-      conda remove qcengine --force || true
       cmake --build . -- -j 2
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so
