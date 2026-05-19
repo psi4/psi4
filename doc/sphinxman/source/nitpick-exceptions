@@ -39,6 +39,7 @@ py:obj qcmanybody.computer.ManyBodyComputer.set_max_nbody
 py:obj qcmanybody.computer.ManyBodyComputer.set_return_total_data
 py:obj qcmanybody.computer.ManyBodyComputer.set_supersystem_ie_only
 py:class mbres
+py:class qcmanybody.models.v1.manybody_input_pydv1.ManyBodyInput
 
 ## numpy inherited docstrings
 #py:obj dtype
