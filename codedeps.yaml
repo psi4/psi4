@@ -1548,13 +1548,13 @@ data:
       #   - armadillo
       skip_win: true
       skip_win_note: "OOO works on windows but not yet with Psi4."
-      cmake:
-        ENABLE_OpenOrbitalOptimizer: true
+      cmake: null
+        # ENABLE_OpenOrbitalOptimizer: true
         # OpenOrbitalOptimizer_DIR:
         #   unix: ${CONDA_PREFIX}/share/cmake/OpenOrbitalOptimizer
         #   win-64: ${CONDA_PREFIX}/Library/share/cmake/OpenOrbitalOptimizer
         # //CMAKE_INSIST_FIND_PACKAGE_OpenOrbitalOptimizer: true
-        //CMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer: true
+        # //CMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer: true
 
   - project: pandas
     use:
