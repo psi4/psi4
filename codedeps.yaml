@@ -1280,7 +1280,6 @@ data:
       constraint_note: "v0.60 includes new compute_tag syntax. v0.62 hangs for snowflake jobs."
       aux_run_names:
         - postgresql
-        - armadillo
       aux_run_names_note:
         postgresql: "Easy way to use QCFractal, but you can instead supply your own database."
       skip_win: true
@@ -1545,7 +1544,7 @@ data:
         - armadillo
       skip_win: true
       skip_win_note: "OOO works on windows but not yet with Psi4."
-      cmake: null
+      cmake:
         ENABLE_OpenOrbitalOptimizer: true
         OpenOrbitalOptimizer_DIR:
           unix: ${CONDA_PREFIX}/share/cmake/OpenOrbitalOptimizer
