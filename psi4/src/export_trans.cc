@@ -28,6 +28,7 @@
 
 #include <vector>
 
+#include <pybind11/native_enum.h>
 #include <pybind11/stl.h>
 #include <pybind11/pytypes.h>
 #include <pybind11/stl_bind.h>
@@ -74,30 +75,36 @@ void export_trans(py::module& m) {
         m, "IntegralTransform", "IntegralTransform transforms one- and two-electron integrals within general spaces",
         py::dynamic_attr());
 
-    py::enum_<IntegralTransform::HalfTrans>(int_trans_bind, "HalfTrans")
+    py::native_enum<IntegralTransform::HalfTrans>(int_trans_bind, "HalfTrans", "enum.Enum")
         .value("MakeAndKeep", IntegralTransform::HalfTrans::MakeAndKeep)
         .value("ReadAndKeep", IntegralTransform::HalfTrans::ReadAndKeep)
         .value("MakeAndNuke", IntegralTransform::HalfTrans::MakeAndNuke)
-        .value("ReadAndNuke", IntegralTransform::HalfTrans::ReadAndNuke);
-    py::enum_<IntegralTransform::TransformationType>(int_trans_bind, "TransformationType")
+        .value("ReadAndNuke", IntegralTransform::HalfTrans::ReadAndNuke)
+        .finalize();
+    py::native_enum<IntegralTransform::TransformationType>(int_trans_bind, "TransformationType", "enum.Enum")
         .value("Restricted", IntegralTransform::TransformationType::Restricted)
         .value("Unrestricted", IntegralTransform::TransformationType::Unrestricted)
-        .value("SemiCanonical", IntegralTransform::TransformationType::SemiCanonical);
-    py::enum_<IntegralTransform::MOOrdering>(int_trans_bind, "MOOrdering")
+        .value("SemiCanonical", IntegralTransform::TransformationType::SemiCanonical)
+        .finalize();
+    py::native_enum<IntegralTransform::MOOrdering>(int_trans_bind, "MOOrdering", "enum.Enum")
         .value("QTOrder", IntegralTransform::MOOrdering::QTOrder)
-        .value("PitzerOrder", IntegralTransform::MOOrdering::PitzerOrder);
-    py::enum_<IntegralTransform::OutputType>(int_trans_bind, "OutputType")
+        .value("PitzerOrder", IntegralTransform::MOOrdering::PitzerOrder)
+        .finalize();
+    py::native_enum<IntegralTransform::OutputType>(int_trans_bind, "OutputType", "enum.Enum")
         .value("DPDOnly", IntegralTransform::OutputType::DPDOnly)
         .value("IWLOnly", IntegralTransform::OutputType::IWLOnly)
-        .value("IWLAndDPD", IntegralTransform::OutputType::IWLAndDPD);
-    py::enum_<IntegralTransform::FrozenOrbitals>(int_trans_bind, "FrozenOrbitals")
+        .value("IWLAndDPD", IntegralTransform::OutputType::IWLAndDPD)
+        .finalize();
+    py::native_enum<IntegralTransform::FrozenOrbitals>(int_trans_bind, "FrozenOrbitals", "enum.Enum")
         .value("None", IntegralTransform::FrozenOrbitals::None)
         .value("OccOnly", IntegralTransform::FrozenOrbitals::OccOnly)
         .value("VirOnly", IntegralTransform::FrozenOrbitals::VirOnly)
-        .value("OccAndVir", IntegralTransform::FrozenOrbitals::OccAndVir);
-    py::enum_<IntegralTransform::SpinType>(int_trans_bind, "SpinType")
+        .value("OccAndVir", IntegralTransform::FrozenOrbitals::OccAndVir)
+        .finalize();
+    py::native_enum<IntegralTransform::SpinType>(int_trans_bind, "SpinType", "enum.Enum")
         .value("Alpha", IntegralTransform::SpinType::Alpha)
-        .value("Beta", IntegralTransform::SpinType::Beta);
+        .value("Beta", IntegralTransform::SpinType::Beta)
+        .finalize();
 
     int_trans_bind.def(py::init<std::shared_ptr<Wavefunction>, std::vector<std::shared_ptr<MOSpace>>,
                                 IntegralTransform::TransformationType, IntegralTransform::OutputType,

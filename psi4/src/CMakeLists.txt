@@ -162,8 +162,8 @@ set_target_properties(core
     OUTPUT_NAME core
     EXPORT_NAME core
     # PREFIX/SUFFIX covered by pybind11_extension in pybind11_add_module
-    # PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
-    # SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
+    # PREFIX "${Python_MODULE_PREFIX}"  # for python module
+    # SUFFIX "${Python_MODULE_EXTENSION}" # for python module
     INSTALL_RPATH "${psi4_RPATH}"
     BUILD_WITH_INSTALL_RPATH ON
     # PIC covered by add_library(... MODULE
