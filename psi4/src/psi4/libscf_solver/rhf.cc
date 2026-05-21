@@ -1264,7 +1264,8 @@ void RHF::openorbital_scf() {
     iteration_++;
     double E = std::any_cast<double>(data.at("E"));
     double dE = std::any_cast<double>(data.at("dE"));
-    double Dnorm_orth = 0.5 * std::any_cast<double>(data.at("diis_error"));
+    // orthogonal-basis error from OOO
+    // double Dnorm_orth = 0.5 * std::any_cast<double>(data.at("diis_error"));
     // show AO-basis error
     double Dnorm = 0.5 * ao_basis_diis_error;
     // scale density norm to match internal algorithm

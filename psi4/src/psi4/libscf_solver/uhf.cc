@@ -1452,7 +1452,7 @@ void UHF::openorbital_scf() {
     auto FbDSmSDFb = form_FDSmSDF(Fb_AO, Pb_AO_mat);
 
     // Compute RMS error combining both spins
-    // For UHF: compute RMS for each spin, then take the max (like INTERNAL does)
+    // See INTERNAL counterpart in `def _UHF_orbital_gradient`
     double ao_diis_rms_alpha = FaDSmSDFa->rms();
     double ao_diis_rms_beta = FbDSmSDFb->rms();
     ao_basis_diis_error = std::sqrt(0.5 * (ao_diis_rms_alpha * ao_diis_rms_alpha + ao_diis_rms_beta * ao_diis_rms_beta));
