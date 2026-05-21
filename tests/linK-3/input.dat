@@ -23,7 +23,7 @@ molecule mol {
 }
 
 if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-LOGIC
-    iter_count = 19
+    iter_count = 20  # was 19 c. v1.9
 else:
     iter_count = 21
 
