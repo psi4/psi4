@@ -1581,7 +1581,7 @@ data:
       host: github
       account: NASymmetry
       name: MolSym
-      commit: b27360f  # TODO tag: v0.5.1
+      commit: f9f93d1  # TODO tag: v0.5.1
       githttps: true
     cmake:
       name: molsym

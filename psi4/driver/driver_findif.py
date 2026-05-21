@@ -410,12 +410,12 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
     if engine == "molsym":
         asym_list = []
         for i, salc in enumerate(salcs):
-            asym_list.append(molsym.symtools.maps_to_negative(symtext, salc))
+            asym_list.append(molsym.salcs.salc_tools.maps_to_negative(symtext, salc))
         for h, salcs_h in enumerate(salcs.salcs_by_irrep):
             n_disp = 0
             for s in range(0, len(salcs_h) // symtext.irreps[h].d):
                 salc = salcs_h[s]
-                n_disp += 2 if not molsym.symtools.maps_to_negative(symtext, salcs[salc]) else 1
+                n_disp += 2 if not molsym.salcs.salc_tools.maps_to_negative(symtext, salcs[salc]) else 1
             if mode == "2_0":
                 # Either len(indices) or len(indices)-1 is even, so dividing by two is safe.
                 n_disp += (len(salcs_h) // symtext.irreps[h].d) * ((len(salcs_h) // symtext.irreps[h].d) - 1) // 2 * len(disps["off"])
@@ -915,10 +915,10 @@ def assemble_dipder_from_dipoles(findifrec: Dict, freq_irrep_only: int) -> np.nd
             for salc_index in salc_indices:
                 salc = salc_list[salc_index]
 
-                if molsym.symtools.maps_to_negative(symtext, salc):
+                if molsym.salcs.salc_tools.maps_to_negative(symtext, salc):
                     for j in range(1, max_disp + 1):
                         neg_dip = displacements[f"{salc_index}: {-j}"]["dipole"]
-                        pos_dip, _ = molsym.symtools.generate_symmetric_partner(
+                        pos_dip, _ = molsym.salcs.salc_tools.generate_symmetric_partner(
                             symtext, salc, neg_dip, data_type="dipole"
                         )
                         dipole[salc_index, max_disp - j] = neg_dip
@@ -1071,6 +1071,11 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
     
 
     if data["engine"] == "molsym":
+        if core.get_option("FINDIF", "molsym"):
+            try:
+                import molsym
+            except ImportError:
+                print("Download & install MolSym at: https://github.com/NASymmetry/MolSym")
 
         salcs = data["salc_list"][0]   # container holding SALC objects
         symtext = data["salc_list"][1]
@@ -1098,14 +1103,14 @@ def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np
 
                 grad_entries = []
 
-                if molsym.symtools.maps_to_negative(symtext, salc):
+                if molsym.salcs.salc_tools.maps_to_negative(symtext, salc):
                     # build negative displacements
                     for j in range(max_disp, 0, -1):
                         key_minus = f"{salc_index}: {-j}"
                         grad_raw = displacements[key_minus]["gradient"]
                         grad_mat = np.reshape(grad_raw, (N, 3))
                         grad_entries.append(grad_mat)
-                        pos_grad, _ = molsym.symtools.generate_symmetric_partner(symtext, salc, grad_mat, data_type = "gradient")
+                        pos_grad, _ = molsym.salcs.salc_tools.generate_symmetric_partner(symtext, salc, grad_mat, data_type = "gradient")
                         grad_entries.append(pos_grad)
 
                 else:
@@ -1372,7 +1377,7 @@ def assemble_hessian_from_energies(findifrec: Dict, freq_irrep_only: int) -> np.
                           12 * ref_energy) / (12 * findifrec["step"]["size"]**2)
                 H_irr[i, j] = fc
                 H_irr[j, i] = fc
-        if core.get_option("FINDIF", "EXPLOIT_DEGENERACY"):
+        if data["engine"] == "molsym" and core.get_option("FINDIF", "EXPLOIT_DEGENERACY"):
             H_irr = np.kron(np.eye(symtext.irreps[h].d), H_irr)
         if data["engine"] == "molsym":
             salcs = data["salc_list"][0]
