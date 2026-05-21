@@ -38,6 +38,7 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 #include "psi4/pybind11.h"
+#include <pybind11/native_enum.h>
 
 #include "psi4/cc/cclambda/cclambda.h"
 #include "psi4/cc/ccwave.h"
@@ -1198,10 +1199,11 @@ PYBIND11_MODULE(core, core) {
     core.def("initialize", &psi4_python_module_initialize, "Called upon psi4 module import to initialize timers, singletons, and I/O. Idempotent");
     core.def("finalize", &psi4_python_module_finalize, "Called upon psi4 module exit to closes timers and I/O.");
 
-    py::enum_<PsiReturnType>(core, "PsiReturnType", "Return status.")  // after C-OptKing, only Failure slightly used
+    py::native_enum<PsiReturnType>(core, "PsiReturnType", "enum.Enum", "Return status.")  // after C-OptKing, only Failure slightly used
         .value("Success", Success)
         .value("Failure", Failure)
-        .export_values();
+        .export_values()
+        .finalize();
 
     core.def("version", []() { PyErr_SetString(PyExc_AttributeError, "psi4.core.version removed since hasn't been working as intended."); }, ".. deprecated:: 1.4");
     core.def("git_version", []() { PyErr_SetString(PyExc_AttributeError, "psi4.core.git_version removed since hasn't been working as intended."); }, ".. deprecated:: 1.4");

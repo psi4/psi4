@@ -27,6 +27,7 @@
  */
 
 #include <pybind11/stl.h>
+#include <pybind11/native_enum.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pytypes.h>
 #include <pybind11/stl_bind.h>
@@ -487,21 +488,24 @@ void export_mints(py::module& m) {
         .def("set_block", &IntVector::set_block, "Set a vector block", "slice"_a, "block"_a)
         .def_static("iota", &IntVector::iota);
 
-    py::enum_<diagonalize_order>(m, "DiagonalizeOrder", "Defines ordering of eigenvalues after diagonalization")
+    py::native_enum<diagonalize_order>(m, "DiagonalizeOrder", "enum.Enum", "Defines ordering of eigenvalues after diagonalization")
         .value("Ascending", ascending)
         .value("Descending", descending)
-        .export_values();
+        .export_values()
+        .finalize();
 
-    py::enum_<Molecule::GeometryUnits>(m, "GeometryUnits", "The units used to define the geometry")
+    py::native_enum<Molecule::GeometryUnits>(m, "GeometryUnits", "enum.Enum", "The units used to define the geometry")
         .value("Angstrom", Molecule::Angstrom)
         .value("Bohr", Molecule::Bohr)
-        .export_values();
+        .export_values()
+        .finalize();
 
-    py::enum_<Molecule::FragmentType>(m, "FragmentType", "Fragment activation status")
+    py::native_enum<Molecule::FragmentType>(m, "FragmentType", "enum.Enum", "Fragment activation status")
         .value("Absent", Molecule::Absent)  // Neglect completely
         .value("Real", Molecule::Real)      // Include, as normal
         .value("Ghost", Molecule::Ghost)    // Include, but with ghost atoms
-        .export_values();
+        .export_values()
+        .finalize();
 
     typedef void (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
     typedef void (Matrix::*matrix_diagonalize)(SharedMatrix&, std::shared_ptr<Vector>&, diagonalize_order);
@@ -522,10 +526,11 @@ void export_mints(py::module& m) {
     typedef void (Matrix::*set_block_shared)(const Slice&, const Slice&, SharedMatrix);
     typedef SharedMatrix (Matrix::*get_block_shared)(const Slice&, const Slice&) const;
 
-    py::enum_<Matrix::SaveType>(m, "SaveType", "The layout of the matrix for saving")
+    py::native_enum<Matrix::SaveType>(m, "SaveType", "enum.Enum", "The layout of the matrix for saving")
         .value("SubBlocks", Matrix::SaveType::SubBlocks)
         .value("LowerTriangle", Matrix::SaveType::LowerTriangle)
-        .export_values();
+        .export_values()
+        .finalize();
 
     py::class_<Matrix, std::shared_ptr<Matrix>>(m, "Matrix", "Class for creating and manipulating matrices",
                                                 py::dynamic_attr(), py::buffer_protocol())
@@ -743,9 +748,10 @@ void export_mints(py::module& m) {
             * If A, B, C not of the the same symmetry, always computed as ``(AB)C``.
             )pbdoc");
 
-    py::enum_<DerivCalcType>(m, "DerivCalcType")
+    py::native_enum<DerivCalcType>(m, "DerivCalcType", "enum.Enum")
         .value("Default", DerivCalcType::Default, "Use internal logic.")
-        .value("Correlated", DerivCalcType::Correlated, "Correlated methods that write RDMs and Lagrangian to disk.");
+        .value("Correlated", DerivCalcType::Correlated, "Correlated methods that write RDMs and Lagrangian to disk.")
+        .finalize();
 
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "Computes gradients of wavefunctions")
         .def(py::init<std::shared_ptr<Wavefunction>>())
@@ -1166,15 +1172,17 @@ void export_mints(py::module& m) {
         .def("erd_coef", &GaussianShell::erd_coef, "Return ERD normalized coefficient of pi'th primitive", "pi"_a)
         .def("coef", &GaussianShell::coef, "Return coefficient of the pi'th primitive", "pi"_a);
 
-    py::enum_<PrimitiveType>(m, "PrimitiveType", "May be Normalized or Unnormalized")
+    py::native_enum<PrimitiveType>(m, "PrimitiveType", "enum.Enum", "May be Normalized or Unnormalized")
         .value("Normalized", Normalized)
         .value("Unnormalized", Unnormalized)
-        .export_values();
+        .export_values()
+        .finalize();
 
-    py::enum_<GaussianType>(m, "GaussianType", "0 if Cartesian, 1 if Pure")
+    py::native_enum<GaussianType>(m, "GaussianType", "enum.IntEnum", "0 if Cartesian, 1 if Pure")
         .value("Cartesian", Cartesian, "(n+1)(n+2)/2 functions")
         .value("Pure", Pure, "2n+1 functions")
-        .export_values();
+        .export_values()
+        .finalize();
 
     py::class_<ShellInfo, std::shared_ptr<ShellInfo>>(m, "ShellInfo")
         .def(py::init<int, const std::vector<double>&, const std::vector<double>&, GaussianType, PrimitiveType>());
@@ -1254,7 +1262,7 @@ void export_mints(py::module& m) {
                     py::arg("mol"), py::arg("pybs"), py::arg("forced_puream"), py::arg("skip_ghost_ecps")=true)
         .def("compute_phi", [](BasisSet& basis, double x, double y, double z) {
             auto phi_ao = new std::vector<double>(basis.nbf());
-            auto capsule = py::capsule(phi_ao, [](void *phi_ao) { delete reinterpret_cast<std::vector<double>*>(phi_ao); });
+            auto capsule = py::capsule(phi_ao, "phi_ao", [](void *phi_ao) { delete reinterpret_cast<std::vector<double>*>(phi_ao); });
             basis.compute_phi(phi_ao->data(), x, y, z);
             return py::array(phi_ao->size(), phi_ao->data(), capsule);
         }, "Calculate the value of all basis functions at a given point x, y, and z");
