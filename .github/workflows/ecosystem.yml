@@ -47,7 +47,6 @@ jobs:
               -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
               -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
               -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
-              -D ENABLE_OpenOrbitalOptimizer=ON
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
             #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
@@ -264,7 +263,7 @@ jobs:
       run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
 
     - name: Special Config - QCElemental Dep
-      # if: false
+      if: false
       run: |
         conda remove qcelemental --force
         python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.50.1 --no-deps
@@ -343,11 +342,13 @@ jobs:
         PYTHONPATH=stage/lib python -c "import psi4; print(psi4.executable)" || true
         echo ROUNDP-NG
         PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
-        echo EIN
-        python -c "import einsums"
-        echo END PLAIN EIN
-        python -c "import einsums as ein;print(ein.__file__)"
-        echo END EIN
+        if [[ "${{ runner.os }}" != "Windows" ]]; then
+          echo EIN
+          python -c "import einsums"
+          echo END PLAIN EIN
+          python -c "import einsums as ein;print(ein.__file__)"
+          echo END EIN
+        fi
         echo ROUND4
         eval $(stage/bin/psi4 --psiapi)
         python -c "import qcelemental as q;print(q.util.which('psi4'))" || true

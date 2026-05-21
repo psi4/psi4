@@ -1011,7 +1011,6 @@ data:
     conda:
       channel: conda-forge
       name: qcelemental
-      #constraint: ">=0.50.1"
       constraint: null
       aux_run_names:
         - msgpack-python
@@ -1533,28 +1532,26 @@ data:
       host: github
       account: SusiLehtola
       name: OpenOrbitalOptimizer
-      commit: v0.2.0
+      commit: v0.3.0
     cmake:
       name: OpenOrbitalOptimizer
-      constraint: "0.2"
+      constraint: "0.3"
       target: OpenOrbitalOptimizer::OpenOrbitalOptimizer
     conda:
       channel: conda-forge
-      # name: openorbitaloptimizer
-      name: armadillo
-      name_note: "Compatible OOO not available at the moment, so dep listed as main temporarily."
+      name: openorbitaloptimizer
       constraint: null
-      # aux_build_names:
-      #   - armadillo
+      aux_build_names:
+        - armadillo
       skip_win: true
       skip_win_note: "OOO works on windows but not yet with Psi4."
       cmake: null
-        # ENABLE_OpenOrbitalOptimizer: true
-        # OpenOrbitalOptimizer_DIR:
-        #   unix: ${CONDA_PREFIX}/share/cmake/OpenOrbitalOptimizer
-        #   win-64: ${CONDA_PREFIX}/Library/share/cmake/OpenOrbitalOptimizer
-        # //CMAKE_INSIST_FIND_PACKAGE_OpenOrbitalOptimizer: true
-        # //CMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer: true
+        ENABLE_OpenOrbitalOptimizer: true
+        OpenOrbitalOptimizer_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/OpenOrbitalOptimizer
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/OpenOrbitalOptimizer
+        //CMAKE_INSIST_FIND_PACKAGE_OpenOrbitalOptimizer: true
+        //CMAKE_DISABLE_FIND_PACKAGE_OpenOrbitalOptimizer: true
 
   - project: pandas
     use:

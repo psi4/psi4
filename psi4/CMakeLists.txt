@@ -210,7 +210,7 @@ else()
 endif ()
 
 if(${ENABLE_OpenOrbitalOptimizer})
-    find_package(OpenOrbitalOptimizer 0.2 CONFIG REQUIRED)
+    find_package(OpenOrbitalOptimizer 0.3 CONFIG REQUIRED)  # edit in codedeps
     get_property(_loc TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using OpenOrbitalOptimizer${ColourReset}: ${_loc} (version ${OpenOrbitalOptimizer_VERSION})")
