@@ -143,12 +143,12 @@ def test_scf_guess(inp, ref):
       )
 
 @pytest.mark.quick
-@pytest.mark.parametrize("atom,geom,rna", [
+@pytest.mark.parametrize("atom,geom,expected_spin_electrons", [
     ("hydrogen", "0 2\nH\nsymmetry c1\n", 0.5),
-    ("oxygen", "0 3\nO\nsymmetry c1\n", 4),
+    ("oxygen", "0 3\nO\nsymmetry c1\n", 4.0),
 ])
-def test_sad_frac_occ_density_occupation(atom, geom, rna):
-    """SAD fractional occupations should conserve total electrons for atomic oxygen."""
+def test_sad_frac_occ_density_occupation(atom, geom, expected_spin_electrons):
+    """SAD fractional occupations should conserve total electrons for atomic systems."""
 
     atom_mol = psi4.geometry(geom)
 
@@ -176,11 +176,11 @@ def test_sad_frac_occ_density_occupation(atom, geom, rna):
 
     #           H H H H H H H   O O O O O O O
     # PR        na=nb   ntot    na=nb   ntot
-    # pre-3138  0.5     0.5     4       8
-    # 3138      0.707   0.707   4.464   8.928
-    # 3390      0.5     0.5     4       8
+    # pre-3138  0.5     1.0     4.0     8.0
+    # 3138      0.707   1.414   4.464   8.928
+    # 3390      0.5     1.0     4.0     8.0
 
     # SADGuess returns a spin-restricted density for HF guesses (Db == Da)
-    assert compare_values(2*rna, na + nb, 10, f"{atom} SAD total density occupation {na+nb}")
-    assert compare_values(rna, na, 10, f"{atom} SAD alpha density occupation {na}")
-    assert compare_values(rna, nb, 10, f"{atom} SAD beta density occupation {nb}")
+    assert compare_values(2 * expected_spin_electrons, na + nb, 10, f"{atom} SAD total density occupation")
+    assert compare_values(expected_spin_electrons, na, 10, f"{atom} SAD alpha density occupation")
+    assert compare_values(expected_spin_electrons, nb, 10, f"{atom} SAD beta density occupation")
