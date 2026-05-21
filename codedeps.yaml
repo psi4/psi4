@@ -1011,7 +1011,8 @@ data:
     conda:
       channel: conda-forge
       name: qcelemental
-      constraint: ">=0.50.1"
+      #constraint: ">=0.50.1"
+      constraint: null
       aux_run_names:
         - msgpack-python
         - networkx

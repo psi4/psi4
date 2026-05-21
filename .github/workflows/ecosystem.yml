@@ -263,10 +263,10 @@ jobs:
       run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
 
     - name: Special Config - QCElemental Dep
-      if: false
+      # if: false
       run: |
         conda remove qcelemental --force
-        python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.29.0.dev2 --no-deps
+        python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.50.1 --no-deps
 
     - name: Special Config - QCEngine Dep
       if: false  # needed for Windows + DFTD4
