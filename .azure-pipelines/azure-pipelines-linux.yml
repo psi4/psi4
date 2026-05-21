@@ -129,13 +129,13 @@ jobs:
         conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
     displayName: "Add Conda to PATH"
 
-  #- bash: |
-  #    grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
-  #    if [[ "$(Agent.JobName)" == "Linux Builds gcc_latest" ]]; then
-  #      sed -i 's;\(options\.add_str("ORBITAL_OPTIMIZER_PACKAGE", "\)INTERNAL\(", "INTERNAL OOO OPENORBITALOPTIMIZER"\);\1OOO\2;' psi4/src/read_options.cc
-  #    fi
-  #    grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
-  #  displayName: "Special Operation: test OpenOrbitalOptimizer"
+  - bash: |
+      grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
+      if [[ "$(Agent.JobName)" == "Linux Builds gcc_latest" ]]; then
+        sed -i 's;\(options\.add_str("ORBITAL_OPTIMIZER_PACKAGE", "\)INTERNAL\(", "INTERNAL OOO OPENORBITALOPTIMIZER"\);\1OOO\2;' psi4/src/read_options.cc
+      fi
+      grep OPENORBITALOPTIMIZER psi4/src/read_options.cc
+    displayName: "Special Operation: test OpenOrbitalOptimizer"
 
   - bash: |
       conda install pyyaml -c conda-forge
@@ -161,6 +161,7 @@ jobs:
       echo "  - range-v3" >> env_p4env.yaml
       echo "  - zlib" >> env_p4env.yaml
       echo "  - armadillo" >> env_p4env.yaml
+      #echo "  - openorbitaloptimizer" >> env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml

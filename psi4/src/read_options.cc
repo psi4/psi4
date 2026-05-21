@@ -195,7 +195,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK DFDIRJ+SNLINK");
 #ifdef USING_OpenOrbitalOptimizer
     /*- Orbital optimizer package to use for SCF. If compiled with OpenOrbitalOptimizer support, change this to use it or the internal code. -*/
-    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "OOO", "INTERNAL OOO OPENORBITALOPTIMIZER");
+    options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL OOO OPENORBITALOPTIMIZER");
 #else
     /*- Orbital optimizer package to use for SCF. -*/
     options.add_str("ORBITAL_OPTIMIZER_PACKAGE", "INTERNAL", "INTERNAL");
