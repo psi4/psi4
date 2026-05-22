@@ -1008,16 +1008,16 @@ data:
       host: github
       account: MolSSI
       name: QCElemental
-      commit: v0.50.0rc5
+      commit: v0.50.1
       githttps: true
     cmake:
       name: qcelemental
-      constraint: "ATLEAST 0.49.0"
+      constraint: "ATLEAST 0.50.1"
       target: null
     conda:
-      channel: conda-forge/label/qcelemental_dev
+      channel: conda-forge
       name: qcelemental
-      constraint: ">=0.50.0rc5"
+      constraint: ">=0.50.1"
       aux_run_names:
         - msgpack-python
         - networkx
@@ -1025,7 +1025,7 @@ data:
         - "pydantic>=2.11.0,<3"
       aux_run_names_note:
         "setuptools": "Needed for qcelemental cmake detection."
-        "pydantic>=2.11.0,<3": "For v1.11, require Pydantic v2 API."
+        "pydantic>=2.11.0,<3": "For Py v3.14, require Pydantic v2.12."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
