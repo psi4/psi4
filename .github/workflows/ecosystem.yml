@@ -197,7 +197,7 @@ jobs:
         echo "::endgroup::"
 
     - name: Setup Conda
-      uses: conda-incubator/setup-miniconda@v3
+      uses: conda-incubator/setup-miniconda@v4
       with:
         activate-environment: p4build
         environment-file: env_p4build.yaml
@@ -266,7 +266,7 @@ jobs:
       if: false
       run: |
         conda remove qcelemental --force
-        python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.29.0.dev2 --no-deps
+        python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.50.1 --no-deps
 
     - name: Special Config - QCEngine Dep
       if: false  # needed for Windows + DFTD4
@@ -314,6 +314,50 @@ jobs:
         export PATH=../install/bin:$PATH
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+
+    - name: Psi4 Path Setup Diagnostics
+      if: false
+      working-directory: ./objdir
+      run: |
+        ls -l
+        pwd
+        python -c "import sys;print(sys.path)"
+        echo ROUND1
+        python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        psi4 --module || true
+        python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        python -c "import psi4; print(psi4.executable)" || true
+        echo ROUND1NG
+        python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        echo ROUNDE
+        PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        PATH=stage/bin:$PATH psi4 --module || true
+        PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        PATH=stage/bin:$PATH python -c "import psi4; print(psi4.executable)" || true
+        echo ROUNDE-NG
+        PATH=stage/bin:$PATH python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        echo ROUNDP
+        PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        PYTHONPATH=stage/lib psi4 --module || true
+        PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        PYTHONPATH=stage/lib python -c "import psi4; print(psi4.executable)" || true
+        echo ROUNDP-NG
+        PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        if [[ "${{ runner.os }}" != "Windows" ]]; then
+          echo EIN
+          python -c "import einsums"
+          echo END PLAIN EIN
+          python -c "import einsums as ein;print(ein.__file__)"
+          echo END EIN
+        fi
+        echo ROUND4
+        eval $(stage/bin/psi4 --psiapi)
+        python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        psi4 --module || true
+        python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        python -c "import psi4; print(psi4.executable)" || true
+        echo ROUND4-NG
+        python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
 
       # step works but for addons is redundant with next one; enable for debugging. enabled for Mac b/c core testing not covered by Azure DevOps
     - name: Test Core with CTest (M)

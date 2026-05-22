@@ -29,6 +29,7 @@
 #      aux_build_names: !!set          # Field optional. Use to list add'l packages needed to build Psi4 against dummy that aren't deps of dummy (e.g., mkl-devel for mkl).
 #      cmake: !!map                    # Field required. Use to specify CMake variables relevant to this package. Those starting with // aren't usually set. May involve substitutions.
 #      skip_win: !!bool                # Field optional. Use to list packages not adapted for Windows. Perhaps should be in 'use' block?
+#      brings_psi4: !!bool             # Field optional. Use to indicate its conda pkg brings Psi4 as a dep, so needs to be commented for a Psi4 *build* env.
 
 data:
 
@@ -671,9 +672,10 @@ data:
         - qcportal
         - "gxx_linux-64=14.3.0=hc876b51_14"
         - "setuptools<82.0.0"
+        - sphobjinv
       aux_build_names_note:
         qcportal: "Required for docs to resolve objects in pydantic classes."
-        "gxx_linux-64=14.3.0=hc876b51_14": "Temporary for Linux only; rm for Mac."
+        sphobjinv: "Required for easy debugging in CI, not needed for local docs build."
       cmake:
         SPHINX_ROOT: ${CONDA_PREFIX}
         //SPHINXMAN_STRICT: OFF
@@ -963,6 +965,7 @@ data:
       cmake_note: "Primarily OTF runtime detected."
       skip_win: true
       skip_win_note: "Temporary until a llvm-openmp psi4 package available on Windows to satisfy solving resp's deps."
+      brings_psi4: true
 
   - project: openfermionpsi4
     use:
@@ -1156,8 +1159,8 @@ data:
     conda:
       channel: conda-forge
       name: pymdi
-      constraint: null
-      constraint_note: "v1.2 has breaking API change."
+      constraint: "=*=*nompi*"
+      constraint_note: "v1.2 has breaking API change. nompi variant not required."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_mdi is inconsequential."
 
@@ -1394,18 +1397,18 @@ data:
       host: github
       account: Einsums
       name: Einsums
-      commit: v1.1.2
+      commit: v1.1.3
     cmake:
       name: Einsums
-      constraint: 1.1.2
+      constraint: 1.1.3
       target: Einsums::Einsums
     #  components:
     #  ENABLE_Einsums
     conda:
       channel: conda-forge
       name: pyeinsums
-      constraint: ">=1.1.2"
-      constraint_note: "v1 changes interface, and 1.0.3 needed for Linux to compile against."
+      constraint: ">=1.1.3"
+      constraint_note: "v1 changes interface, and 1.1.3 needed for clean import (for qcengine)."
       aux_build_names:
         - range-v3
         - zlib
@@ -1530,15 +1533,15 @@ data:
       host: github
       account: SusiLehtola
       name: OpenOrbitalOptimizer
-      commit: v0.2.0
+      commit: v0.3.0
     cmake:
       name: OpenOrbitalOptimizer
-      constraint: "0.2"
+      constraint: "0.3"
       target: OpenOrbitalOptimizer::OpenOrbitalOptimizer
     conda:
       channel: conda-forge
       name: openorbitaloptimizer
-      constraint: null
+      constraint: ">=0.3.0"
       aux_build_names:
         - armadillo
       skip_win: true

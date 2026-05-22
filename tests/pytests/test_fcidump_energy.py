@@ -19,8 +19,6 @@ def test_fcidump_scf_energy():
                       'd_convergence': 1e-8,
                       'e_convergence': 1e-8
                      })
-    if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 8e-8})
 
     scf_e, scf_wfn = psi4.energy('scf', return_wfn=True)
 
@@ -45,8 +43,6 @@ def test_fcidump_mp2_energy():
                       'd_convergence': 1e-8,
                       'e_convergence': 1e-8
                      })
-    if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 8e-8})
 
     mp2_e, mp2_wfn = psi4.energy('mp2', return_wfn=True)
 
