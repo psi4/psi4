@@ -45,8 +45,8 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-void export_fock(py::module &m) {
-    py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
+void export_fock(py::module_ &m) {
+    py::classh<JK>(m, "JK", "docstring")
         .def_static("build_JK",
                     [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux) {
                         return JK::build_JK(basis, aux, Process::environment.options);
@@ -96,17 +96,17 @@ void export_fock(py::module &m) {
         .def("computed_shells_per_iter", py::overload_cast<const std::string&>(&JK::computed_shells_per_iter), "Array containing the number of ERI shell n-lets (triplets, quartets) computed (not screened out) during each compute call.")
         .def("print_header", &JK::print_header, "docstring");
 
-    py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "Computer class for a Laplace factorization of the four-index energy denominator in MP2 and coupled-cluster")
+    py::classh<LaplaceDenominator>(m, "LaplaceDenominator", "Computer class for a Laplace factorization of the four-index energy denominator in MP2 and coupled-cluster")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
         .def("denominator_occ", &LaplaceDenominator::denominator_occ, "Returns the occupied orbital Laplace weights of the factorized doubles denominator (nweights * nocc)")
         .def("denominator_vir", &LaplaceDenominator::denominator_vir, "Returns the virtual orbital Laplace weights of the factorized doubles denominator (nweights * nvirt)");
 
-    py::class_<TLaplaceDenominator, std::shared_ptr<TLaplaceDenominator>>(m, "TLaplaceDenominator", "Computer class for a Laplace factorization of the six-index energy denominator in coupled-cluster theory")
+    py::classh<TLaplaceDenominator>(m, "TLaplaceDenominator", "Computer class for a Laplace factorization of the six-index energy denominator in coupled-cluster theory")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
         .def("denominator_occ", &TLaplaceDenominator::denominator_occ, "Returns the occupied orbital Laplace weights of the factorized triples denominator (nweights * nocc)")
         .def("denominator_vir", &TLaplaceDenominator::denominator_vir, "Returns the virtual orbital Laplace weights of the factorized triples denominator (nweights * nvirt)");
 
-    py::class_<DFTensor, std::shared_ptr<DFTensor>>(m, "DFTensor", "docstring")
+    py::classh<DFTensor>(m, "DFTensor", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>, int, int>())
         .def("Qso", &DFTensor::Qso, "doctsring")
         .def("Qmo", &DFTensor::Qmo, "doctsring")
@@ -116,7 +116,7 @@ void export_fock(py::module &m) {
         .def("Imo", &DFTensor::Imo, "doctsring")
         .def("Idfmo", &DFTensor::Idfmo, "doctsring");
 
-    py::class_<FittingMetric, std::shared_ptr<FittingMetric>>(m, "FittingMetric", "docstring")
+    py::classh<FittingMetric>(m, "FittingMetric", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, bool>())
         .def("get_algorithm", &FittingMetric::get_algorithm, "docstring")
         .def("is_poisson", &FittingMetric::is_poisson, "docstring")
@@ -130,7 +130,7 @@ void export_fock(py::module &m) {
         .def("form_eig_inverse", &FittingMetric::form_eig_inverse, "docstring")
         .def("form_full_inverse", &FittingMetric::form_full_inverse, "docstring");
 
-    py::class_<SOMCSCF, std::shared_ptr<SOMCSCF>>(m, "SOMCSCF", "docstring")
+    py::classh<SOMCSCF>(m, "SOMCSCF", "docstring")
         // .def(init<std::shared_ptr<JK>, SharedMatrix, SharedMatrix >())
         .def("Ck", &SOMCSCF::Ck)
         .def("form_rotation_matrix", &SOMCSCF::form_rotation_matrix, "x"_a, "order"_a = 2)
@@ -152,15 +152,15 @@ void export_fock(py::module &m) {
         .def("gradient", &SOMCSCF::gradient)
         .def("gradient_rms", &SOMCSCF::gradient_rms);
 
-    py::class_<DFSOMCSCF, std::shared_ptr<DFSOMCSCF>, SOMCSCF>(m, "DFSOMCSCF", "docstring");
-    py::class_<DiskSOMCSCF, std::shared_ptr<DiskSOMCSCF>, SOMCSCF>(m, "DiskSOMCSCF", "docstring");
+    py::classh<DFSOMCSCF, SOMCSCF>(m, "DFSOMCSCF", "docstring");
+    py::classh<DiskSOMCSCF, SOMCSCF>(m, "DiskSOMCSCF", "docstring");
 
     // DF Helper
     typedef SharedMatrix (DFHelper::*take_string)(std::string);
     typedef SharedMatrix (DFHelper::*tensor_access3)(std::string, std::vector<size_t>, std::vector<size_t>,
                                                      std::vector<size_t>);
 
-    py::class_<DFHelper, std::shared_ptr<DFHelper>>(m, "DFHelper", "docstring")
+    py::classh<DFHelper>(m, "DFHelper", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >())
         .def("set_memory", &DFHelper::set_memory)
         .def("get_memory", &DFHelper::get_memory)
@@ -190,20 +190,20 @@ void export_fock(py::module &m) {
         .def("get_tensor", take_string(&DFHelper::get_tensor))
         .def("get_tensor", tensor_access3(&DFHelper::get_tensor));
 
-    py::class_<MemDFJK, std::shared_ptr<MemDFJK>, JK>(m, "MemDFJK", "docstring")
+    py::classh<MemDFJK, JK>(m, "MemDFJK", "docstring")
         .def("dfh", &MemDFJK::dfh, "Return the DFHelper object.");
 
-    py::class_<DirectJK, std::shared_ptr<DirectJK>, JK>(m, "DirectJK", "docstring")
+    py::classh<DirectJK, JK>(m, "DirectJK", "docstring")
         .def("do_incfock_iter", &DirectJK::do_incfock_iter, "Was the last Fock build incremental?");
 
-    py::class_<CompositeJK, std::shared_ptr<CompositeJK>, JK>(m, "CompositeJK", "docstring")
+    py::classh<CompositeJK, JK>(m, "CompositeJK", "docstring")
         .def("do_incfock_iter", &CompositeJK::do_incfock_iter, "Was the last Fock build incremental?")
         .def("clear_D_prev", &CompositeJK::clear_D_prev, "Clear previous D matrices.")
         .def("set_COSX_grid", &CompositeJK::set_COSX_grid, "Set grid to use for COSX for this SCF iteration.")
         .def("get_COSX_grid", &CompositeJK::get_COSX_grid, "Return grid used for COSX for this SCF iteration.")
         .def("get_snLinK_max_am", &CompositeJK::get_snLinK_max_am, "Return maximum AM supported by current GauXC instance, if GauXC support is enabled.");
 
-    py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
+    py::classh<scf::SADGuess>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
                     [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases) { return scf::SADGuess(basis, atomic_bases, Process::environment.options); })
         .def("compute_guess", &scf::SADGuess::compute_guess)

@@ -45,8 +45,8 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-void export_trans(py::module& m) {
-    py::class_<MOSpace, std::shared_ptr<MOSpace>>(m, "MOSpace",
+void export_trans(py::module_& m) {
+    py::classh<MOSpace>(m, "MOSpace",
                                                   "Defines orbital spaces in which to transform integrals")
         .def(py::init<const char>())
         .def(py::init<const char, const std::vector<int>, const std::vector<int>, const std::vector<int>,
@@ -71,7 +71,7 @@ void export_trans(py::module& m) {
         .def("aIndex", &MOSpace::aIndex, "Get the alpha orbital indexing array")
         .def("bIndex", &MOSpace::bIndex, "Get the beta orbital indexing array");
 
-    py::class_<IntegralTransform, std::shared_ptr<IntegralTransform>> int_trans_bind(
+    py::classh<IntegralTransform> int_trans_bind(
         m, "IntegralTransform", "IntegralTransform transforms one- and two-electron integrals within general spaces",
         py::dynamic_attr());
 

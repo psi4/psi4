@@ -240,7 +240,7 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // cross-check supported L2 and GauXC AMs
     // yoinking L2 AM from psi4/driver/p4util/util.py's libint2_configuration() function 
-    auto p4util = py::module::import("psi4").attr("p4util"); // from psi4 import p4util
+    auto p4util = py::module_::import("psi4").attr("p4util"); // from psi4 import p4util
     auto libint2_configuration = p4util.attr("libint2_configuration")(); // p4util.libint2_configuration
     int l2_max_am = libint2_configuration["eri"][py::int_(0)].cast<int>();
 
