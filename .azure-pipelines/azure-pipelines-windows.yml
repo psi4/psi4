@@ -147,7 +147,7 @@ jobs:
                         gau2grid ^
                         libxc-c ^
                         libint ^
-                        conda-forge/label/qcelemental_dev::qcelemental=0.50.0rc5 ^
+                        qcelemental ^
                         conda-forge/label/qcengine_dev::qcengine=0.50.0rc4 ^
                         qcmanybody ^
                         pydantic=2.11 ^

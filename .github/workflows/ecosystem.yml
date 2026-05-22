@@ -26,6 +26,7 @@ jobs:
             pytest-marker-expr: "addon and not (medlong or long)"
             pytest-name-expr: "not pe_ecp"
             cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
 
@@ -104,6 +105,17 @@ jobs:
 
           - label: "LLVM clang-cl (W)"
             runs-on: windows-latest
+            python-version: "3.12"
+            mkl-version: ""
+            platform: win-64
+            pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
+            pytest-name-expr: "not pe_ecp"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D psi4_SKIP_ENABLE_Fortran=ON
+
+          - label: "LLVM clang-cl (W)"
+            runs-on: windows-latest
             python-version: "3.14"
             mkl-version: ""
             platform: win-64
@@ -112,7 +124,7 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
- 
+
             # Notes:
             # * When not using cache file, need to additionally specify the following:
             #    -D CMAKE_C_COMPILER=clang-cl
