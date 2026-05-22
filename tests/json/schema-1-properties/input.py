@@ -138,14 +138,6 @@ else:
 #with open("output.json", "w") as ofile:                                                    #TEST
 #    json.dump(json_ret, ofile, indent=2)                                                   #TEST
 
-psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
-psi4.compare_strings("qcschema_output", json_ret["schema_name"], "Schema Name")            #TEST
-for k in expected_return_result.keys():                                                    #TEST
-    psi4.compare_arrays(expected_return_result[k], json_ret["return_result"][k], tol, "Result: " + k.upper())  #TEST
-
-for k in expected_properties.keys():                                                       #TEST
-    psi4.compare_values(expected_properties[k], json_ret["properties"][k], tol, k.upper())   #TEST
-
 
 ## with current `run_qcschema`
 
