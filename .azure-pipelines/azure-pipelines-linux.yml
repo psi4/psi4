@@ -22,7 +22,7 @@ jobs:
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
         ENABLE_OOO: "OFF"
-        # older GCC and newer L2 face OOM w/unity
+        # older GCC + newer L2 vulnerable to OOM w/unity build
         CMARGS: >-
           -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
           -Dpsi4_CMAKE_UNITY_BUILD=OFF
@@ -242,6 +242,7 @@ jobs:
 
     # conda remove qcengine --force || true
     # conda remove optking --force || true
+    # most lanes are Ninja which parallelizes by default. Makefiles lane (min GCC) needs single thread anyways
   - bash: |
       cd build
       source activate p4env
