@@ -599,9 +599,9 @@ class PSI_API DiskJK : public JK {
     size_t memory_estimate() override;
 
     /// Absolute AO index to relative SO index
-    int* so2index_;
+    std::vector<int> so2index_;
     /// Absolute AO index to irrep
-    int* so2symblk_;
+    std::vector<int> so2symblk_;
 
     /// Options object
     Options& options_;
@@ -954,7 +954,7 @@ class PSI_API DiskDFJK : public JK {
     /// Common initialization
     void common_init();
 
-    bool is_core();
+    virtual bool is_core();
     size_t memory_temp() const;
     int max_rows() const;
     int max_nocc() const;
@@ -1063,7 +1063,7 @@ class PSI_API CDJK : public DiskDFJK {
 
     // => Required Algorithm-Specific Methods <= //
 
-    virtual bool is_core() { return true; }
+    bool is_core() override { return true; }
 
     // => J <= //
     void initialize_JK_core() override;

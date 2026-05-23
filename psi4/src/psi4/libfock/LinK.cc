@@ -210,9 +210,15 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     for (int P = 0; P < nshell; P++) {
         for (int Q = 0; Q <= P; Q++) {
             double val = std::sqrt(eri_computers[0]->shell_ceiling2(P, Q, P, Q));
-            shell_ceilings[P] = std::max(shell_ceilings[P], val);
+            // Both updates must be in the same critical region. The
+            // shell_ceilings[P] write below races with shell_ceilings[Q] writes
+            // from other threads when Q in the other thread's inner loop
+            // happens to equal this P.
 #pragma omp critical
-            shell_ceilings[Q] = std::max(shell_ceilings[Q], val);
+            {
+                shell_ceilings[P] = std::max(shell_ceilings[P], val);
+                shell_ceilings[Q] = std::max(shell_ceilings[Q], val);
+            }
         }
     }
 
@@ -380,10 +386,10 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                         const double* buffer2 = buffer;
 
                         if (!touched) {
-                            ::memset((void*)KTp[0L * max_functions_per_atom], '\0', nPbasis * nbf * sizeof(double));
-                            ::memset((void*)KTp[1L * max_functions_per_atom], '\0', nPbasis * nbf * sizeof(double));
-                            ::memset((void*)KTp[2L * max_functions_per_atom], '\0', nQbasis * nbf * sizeof(double));
-                            ::memset((void*)KTp[3L * max_functions_per_atom], '\0', nQbasis * nbf * sizeof(double));
+                            ::memset((void*)KTp[0L * max_functions_per_atom], '\0', static_cast<size_t>(nPbasis) * nbf * sizeof(double));
+                            ::memset((void*)KTp[1L * max_functions_per_atom], '\0', static_cast<size_t>(nPbasis) * nbf * sizeof(double));
+                            ::memset((void*)KTp[2L * max_functions_per_atom], '\0', static_cast<size_t>(nQbasis) * nbf * sizeof(double));
+                            ::memset((void*)KTp[3L * max_functions_per_atom], '\0', static_cast<size_t>(nQbasis) * nbf * sizeof(double));
                         }
 
                         // Four pointers needed for PR, PS, QR, QS
