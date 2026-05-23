@@ -1,4 +1,5 @@
 list(APPEND sources
+  brianqc_int.cc
   CDJK.cc
   CompositeJK.cc
   COSK.cc
@@ -6,7 +7,10 @@ list(APPEND sources
   DirectJK.cc
   DiskDFJK.cc
   DiskJK.cc
+  gauxc_int.cc
   GTFockJK.cc
+  integrator_dispatcher.cc
+  integrator_manager.cc
   LinK.cc
   MemDFJK.cc
   PKJK.cc

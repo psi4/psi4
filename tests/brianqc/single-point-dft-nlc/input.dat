@@ -1,7 +1,7 @@
 #! Water with sto-3g, lc-vv10 with sg1 grid
 #! the vv10 b and c parameters are manually set to also check dft parameter passing through the BrianQC API
 
-refenergy = -75.24013997919
+refenergy = -75.2401429110187934
 
 molecule water {
     symmetry c1
@@ -20,6 +20,7 @@ set = {
     scf_type direct
     df_scf_guess False
     brianqc_enable True
+    d_convergence 9
 }
 
 thisenergy = energy('scf', dft_functional = 'lc-vv10')
