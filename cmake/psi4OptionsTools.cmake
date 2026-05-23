@@ -3,26 +3,67 @@
 ###functions/macros.  If you find repetitive code throughout the build scripts
 ###this is the place to add it (make sure you document it too).
 
-#Macro for printing an option in a consistent manner
+#Function for printing an option in a consistent manner
 #
 #Syntax: print_option(<option to print> <was specified>)
 #
-macro(print_option variable default)
+function(print_option variable default)
 if(NOT DEFINED ${variable} OR "${${variable}}" STREQUAL "")
 message(STATUS "Setting (unspecified) option ${variable}: ${default}")
 else()
 message(STATUS "Setting option ${variable}: ${${variable}}")
 endif()
+endfunction()
+
+#Macro for handling deprecated cache variables
+#
+#Note: We are doing shenanigans as macros to break out of the function
+#  caller if needed.
+#
+#Syntax: option_with_print(<option name pointer> <default value>)
+#
+macro(psi4_deprecated_variable variable_var default)
+    # Handle `BUILD_SHARED_LIBS`. This should be replaced with `FOO_SHARED_LIBS`
+    # in order to be able to control how each component is a shared/static library
+    #
+    # FIXME: for backwards compatibility, the default value is OFF, but maybe it should
+    #  be changed with this introduction, or when the subproject fixes this deprecation message
+    if(${variable_var} STREQUAL "BUILD_SHARED_LIBS")
+        string(TOUPPER "${PROJECT_NAME}" project_name_upper)
+        string(CONCAT
+            "Defining BUILD_SHARED_LIBS as a cache variable is deprecated.\n"
+            "This variable is ignored, instead use ${project_name_upper}_SHARED_LIBS.\n"
+            "${project_name_upper}_SHARED_LIBS is defined by Psi4, please report to ${PROJECT_NAME} to define it instead."
+        )
+        message(WARNING "${msg}")
+
+        set(_msg_shared_libs "${PROJECT_NAME}: Build the project's libraries as shared libraries")
+
+        # Try to set a compatible default value for `FOO_SHARED_LIBS`
+        set(_default_shared_libs ${default})
+        # The `BUILD_SHARED_LIBS` might have been passed by the user, try to use that as
+        # default insted
+        if(DEFINED CACHE{BUILD_SHARED_LIBS})
+            set(_default_shared_libs $CACHE{BUILD_SHARED_LIBS})
+        endif()
+        option(${project_name_upper}_SHARED_LIBS "${_msg_shared_libs}" "${_default_shared_libs}")
+
+        # Set BUILD_SHARED_LIBS as a local variable thus scoped to the current project
+        # and return to avoid the rest of the logic
+        set(BUILD_SHARED_LIBS "${${project_name_upper}_SHARED_LIBS}" PARENT_SCOPE)
+        return()
+    endif()
 endmacro()
 
 # Wraps an option with default ON/OFF. Adds nice messaging to option()
 #
 #Syntax: option_with_print(<option name> <description> <default value>)
 #
-macro(option_with_print variable msge default)
+function(option_with_print variable msge default)
+psi4_deprecated_variable(variable ${default})
 print_option(${variable} ${default})
 option(${variable} ${msge} ${default})
-endmacro(option_with_print)
+endfunction(option_with_print)
 
 #Wraps an option with a default other than ON/OFF and prints it
 #NOTE: Can't combine with above b/c CMake handles ON/OFF options specially
@@ -32,12 +73,13 @@ endmacro(option_with_print)
 #
 #Syntax: option_with_default(<option name> <description> <default value>)
 #
-macro(option_with_default variable msge default)
+function(option_with_default variable msge default)
+psi4_deprecated_variable(variable ${default})
 print_option(${variable} ${default})
 if(NOT DEFINED ${variable} OR "${${variable}}" STREQUAL "")
 set(${variable} ${default} CACHE STRING ${msge} FORCE)
 endif()
-endmacro(option_with_default)
+endfunction(option_with_default)
 
 # Common guts to adding a Psi4 library irrespective of bin vs. lib home
 #
