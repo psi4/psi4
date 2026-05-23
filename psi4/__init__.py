@@ -120,6 +120,8 @@ if "@ENABLE_gdma@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # gdma
     sys.path.insert(1, r"@gdma_PYMOD@")
 if "@ENABLE_bse@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # bse
     sys.path.insert(1, r"@bse_PYMOD@")
+if "@ENABLE_qcmanybody@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # qcmanybody
+    sys.path.insert(1, r"@qcmanybody_PYMOD@")
 
 # Create a custom logger
 import logging

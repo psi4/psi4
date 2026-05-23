@@ -113,7 +113,7 @@ s16_r2scanh_psi4 = np.array([-155.6812544, -78.4677956, -77.2110203])
 s16_r2scan50_psi4 = np.array([-155.6575747, -78.4586347, -77.1962996])
 
 
-@pytest.mark.nbody
+@uusing("qcmanybody")
 @pytest.mark.parametrize("mode", [
     pytest.param("abs", marks=pytest.mark.long),
     pytest.param("ie", marks=pytest.mark.quick),
@@ -185,4 +185,3 @@ def test_grimme_3c(mtdbas, ref, mode):
 
         ene = psi4.energy(mtdbas, bsse_type='nocp')
         assert psi4.compare_values(kcal * (ref[0] - ref[1] - ref[2]), kcal * ene, 1.1e-3, mtdbas)
-

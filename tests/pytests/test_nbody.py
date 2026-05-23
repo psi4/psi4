@@ -2,9 +2,10 @@ import re
 import pytest
 import numpy as np
 from qcelemental.testing import compare, compare_values
+from addons import uusing
 import psi4
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.nbody]
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 _tot_cp_ene = -155.40761029
 _ie_cp_ene = -0.00172611
@@ -121,6 +122,7 @@ _stdouts["uncpcp"] = _stdouts["uncp"] + _stdouts["cp_T"]
     ("gradient", ["nocp", "cp"], None , 5, _tot_uncp_grad, "uncpcp"),  # return tot G          5
     ("gradient", ["nocp", "ssfc"], None , 5, _tot_uncp_grad, "uncpcp"),  # return tot G          5
 ])
+@uusing("qcmanybody")
 def test_nbody_number(driver, bsse_type, return_total_data, nbody_number, return_result, stdoutkey):
 
     eneyne = psi4.geometry("""
@@ -160,4 +162,3 @@ H   0.000000   0.000000   3.963929
     assert compare_values(return_result, ret.return_result, atol=1.e-6, label="manybody")
     assert compare(nbody_number, ret.extras["qcvars"]["NBODY NUMBER"], label="nbody number")
     assert re.search(_stdouts[stdoutkey], ret.stdout, re.MULTILINE), f"N-Body pattern not found: {_stdouts[stdoutkey]}"
-
