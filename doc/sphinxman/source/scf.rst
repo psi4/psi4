@@ -185,7 +185,7 @@ the current value of the density,
 .. math:: F_{\mu\nu}^{\alpha} = H_{\mu\nu}
     + \underbrace{\left(D_{\lambda\sigma}^{\alpha} + D_{\lambda\sigma}^{\beta}\right)
     (\mu\nu|\lambda\sigma)}_{J}
-    + \underbrace{D_{\lambda\sigma}^{\alpha} (\mu\lambda|\sigma\nu)}_{K^{\alpha}}
+    - \underbrace{D_{\lambda\sigma}^{\alpha} (\mu\lambda|\sigma\nu)}_{K^{\alpha}}
 
 Here the tensor :math:`(\mu\nu|\lambda\sigma)` is an AO Electron-Repulsion
 Integral (ERI) in chemists' notation,
@@ -213,10 +213,37 @@ therefore the orbitals. Because of this, SCF is a nonlinear procedure, which
 terminates when the generating orbitals are self-consistent with the Fock matrix
 they generate.
 
+Generalized Hartree--Fock
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In generalized Hartree--Fock, the spinor formalism is used to represent the MO
+coefficients in which the MO can be a linear combination of alpha- and beta-spin. 
+
+.. math:: C_{\mu i}=\begin{pmatrix}C^\alpha \\ C^\beta\end{pmatrix}
+
+Consequently, matrices in the AO basis are spin-blocked to account for all spin-interactions,
+including opposite-spin, 
+
+.. math:: F=\begin{pmatrix} F^{\alpha\alpha}& F^{\alpha\beta}\\ F^{\beta\alpha}& F^{\beta\beta}\end{pmatrix}
+
+The basic SCF theory reminds effectively unchanged, with minor alterations to the Fock matrix.
+
+.. math:: F_{\mu\nu} = H_{\mu\nu} +\underbrace{D_{\lambda\sigma}
+	(\mu\nu|\lambda\sigma)}_{J}
+	- \underbrace{D_{\lambda\sigma} (\mu\lambda|\sigma\nu)}_{K}
+
+where the ERI is also in a spinor basis. To reduce computational storage, the ERI is left
+in the AO basis, and instead the spin-blocks of the density matrix are decomposed to 
+evaluate J and K. 
+
+.. math:: \text{J - K}=\begin{pmatrix}J^{\alpha\alpha}-K^{\alpha\alpha}& K^{\alpha\beta}
+    \\ K^{\beta\alpha}& J^{\beta\beta}-K^{\beta\beta}\end{pmatrix}
+
 The formation of the Coulomb matrix :math:`J` and the exchange matrix
 :math:`K^{\alpha}` dominate the computational effort of the SCF procedure. For
 very large systems, diagonalization of the Fock matrix can also present a
 significant hurdle.
+
 
 .. _`sec:scfinput`:
 
@@ -269,6 +296,19 @@ Restricted Open-Shell Hartree--Fock (ROHF)
 Constrained Unrestricted Hartree--Fock (CUHF)
   A variant of ROHF that starts from a UHF ansatz and is therefore often
   easier to converge.
+Complex Generalized Hartree--Fock (CGHF)
+  Appropriate for systems where a lower energy solution may exist when all 
+  spin symmetries are broken. Spinors are used to represent the molecular orbitals
+  which allows alpha- and beta-spins to freely mix, giving rise to impure spin
+  states. This allows even greater flexibility than UHF but at a greater
+  cost: the wavefunction does not need to be an eigenfunction of any spin operator, 
+  including the :math:`\hat S^2` and :math:`\hat Sz` operators. However, by
+  removing these constraints, non-collinear and/or non-coplanar states with
+  lower energies can be obtained, if one exists.
+
+.. note::
+   In order to use CGHF, you must compile |PSIfour| with
+   Einsums enabled (:code:`-DENABLE_Einsums=ON`).
 
 These can be invoked by the |scf__reference| keyword, which defaults to ``RHF``.
 The charge and multiplicity may either be specified in the molecule definition::
@@ -327,7 +367,7 @@ actually,::
 Broken Symmetry
 ~~~~~~~~~~~~~~~
 
-For certain problems, such diradicals, allowing the spin-up and spin-down
+For certain problems, such as diradicals, allowing the spin-up and spin-down
 orbitals to differ in closed-shell computations can be advantageous;
 this is known as symmetry breaking.  The resulting unrestricted wavefunction
 will often provide superior energetics, due to the increased flexibility,
@@ -339,6 +379,26 @@ keyword to true::
 
     set reference uhf
     set guess_mix true
+    energy('scf')
+
+In other cases, such as spin-frustrated systems or bond dissociation,
+constraining electrons to be purely spin-up or spin-down is insufficient.
+A common cause for this is near-degeneracies in which multiple states close
+in energy (but not perfectly identical) are in competition with one another,
+yet only a single solution can be obtained. Removing the constraint that
+electrons must be collinear is often enough to break these near-degeneracies
+yielding a lower energy, spin-broken solution.
+
+In even rarer cases, lower energy solutions are possible when complex 
+conjugation symmetry (:math:`\hat K`) is no longer enforced. While real orbitals
+can break collinearity, they are always coplanar; the wavefunction will always
+be an eigenfunction of one of the :math:`\hat Sx`, :math:`\hat Sy`, or :math:`\hat Sz` operators. 
+To obtain a completely spin-broken solution, complex orbitals must also
+be introduced to break the final two spin-symmetries enforced: :math:`\hat K` and :math:`\hat Sn`. 
+This is modeled using complex generalized Hartree-Fock (CGHF) and is available
+as an SCF reference with limited capabilities::
+
+    set reference cghf
     energy('scf')
 
 .. _`sec:scflindep`:

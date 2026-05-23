@@ -181,7 +181,12 @@ hardware_nvidia_gpu = pytest.mark.skipif(
     reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
 
 
-def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = None, setenv: List = None):
+def ctest_runner(inputdatloc: str, 
+                 *,
+                 extra_infiles: List[str] = None,
+                 outfiles: List[str] = None,
+                 setenv: List[str] = None,
+                 extra_binary_infiles: List[str] = None):
     """Called from a mock PyTest function, this takes a full path ``inputdatloc`` to an ``"input.dat"`` file set up for
     CTest and submits it to the ``psi4`` executable. Any auxiliary files with names listed in ``extra_infiles`` that reside
     alongside ``inputdatloc`` are placed in the Psi4 execution directory. Any strings listed in ``setenv`` are available
@@ -190,7 +195,6 @@ def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = No
     """
     from qcengine.util import execute
     import psi4
-
     # Pass runtime env through to `execute`
     # * appending Psi4 import path (after all, it worked previous line) since partial/relative paths not robust
     psiimport = Path(psi4.__file__).parent.parent
@@ -212,10 +216,18 @@ def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = No
         inputdat = "input.py"
 
     infiles = [inputdat]
+    binary_files: list[str] = []
+
     if extra_infiles:
         infiles.extend(extra_infiles)
-    infiles_with_contents = {(Path(fl).name if Path(fl).is_absolute() else fl): (ctestdir / fl).read_text() for fl in infiles}
+    if extra_binary_infiles:
+        binary_files.extend(extra_binary_infiles)
 
+    infiles_with_contents = {(Path(fl).name if Path(fl).is_absolute() else fl): (ctestdir / fl).read_text() for fl in infiles}
+    infiles_with_binaries = {(Path(fl).name if Path(fl).is_absolute() else fl): (ctestdir / fl).read_bytes() for fl in binary_files}
+   
+    infiles_with_contents = {**infiles_with_contents, **infiles_with_binaries}
+    
     # Note:  The simple `command = ["psi4", "input.dat"]` works fine for Linux and Mac but not for Windows.
     #   L/M/W   ok with `command = [which("psi4"), "input.dat"]` where `which` on Windows finds the psi4.bat file that points to the psi4 python script. -or-
     #   L/M/W   ok with `command = [sys.executable, psi4.executable, "input.dat"]` aka `python /full/path/bin/psi4 input.dat`.
@@ -229,7 +241,7 @@ def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = No
         command = [psi4.executable, inputdat]
     else:
         command = [sys.executable, psi4.executable, inputdat]
-    _, output = execute(command, infiles_with_contents, outfiles, environment=env, scratch_messy=False)
+    _, output = execute(command, infiles_with_contents, outfiles, environment=env, scratch_messy=False, as_binary=extra_binary_infiles)
 
     success = output["proc"].poll() == 0
     assert success, output["stdout"] + output["stderr"]
