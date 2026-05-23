@@ -233,88 +233,79 @@ PSI_API void reorder_qt_uhf(Dimension const& docc, Dimension const& socc, Dimens
         tmpi = frozen_uocc[irrep] + docc[irrep] + socc[irrep];
         if (tmpi > orbspi[irrep]) {
             outfile->Printf("(reorder_qt_uhf): orbitals don't add up for irrep %d\n", irrep);
+            free(offset);
+            free(uocc);
             return;
         }
-
-        /* construct the uocc array */
-        nmo = 0;
-        for (irrep = 0; irrep < nirreps; irrep++) {
-            nmo += orbspi[irrep];
-            tmpi = frozen_uocc[irrep] + docc[irrep] + socc[irrep];
-            if (tmpi > orbspi[irrep]) {
-                outfile->Printf("(reorder_qt_uhf): orbitals don't add up for irrep %d\n", irrep);
-                return;
-            } else
-                uocc[irrep] = orbspi[irrep] - tmpi;
-        }
-
-        cnt_alpha = cnt_beta = 0;
-
-        /* do the frozen core */
-        for (irrep = 0; irrep < nirreps; irrep++) {
-            this_offset = offset[irrep];
-            for (p = 0; p < frozen_docc[irrep]; p++) {
-                order_alpha[this_offset + p] = cnt_alpha++;
-                order_beta[this_offset + p] = cnt_beta++;
-            }
-        }
-
-        /* alpha occupied orbitals */
-        for (irrep = 0; irrep < nirreps; irrep++) {
-            this_offset = offset[irrep] + frozen_docc[irrep];
-            for (p = 0; p < nalphapi[irrep] - frozen_docc[irrep]; p++) {
-                order_alpha[this_offset + p] = cnt_alpha++;
-            }
-        }
-
-        /* beta occupied orbitals */
-        for (irrep = 0; irrep < nirreps; irrep++) {
-            this_offset = offset[irrep] + frozen_docc[irrep];
-            for (p = 0; p < nbetapi[irrep] - frozen_docc[irrep]; p++) {
-                order_beta[this_offset + p] = cnt_beta++;
-            }
-        }
-
-        /* alpha unoccupied orbitals */
-        for (irrep = 0; irrep < nirreps; irrep++) {
-            this_offset = offset[irrep] + nalphapi[irrep];
-            for (p = 0; p < orbspi[irrep] - nalphapi[irrep] - frozen_uocc[irrep]; p++) {
-                order_alpha[this_offset + p] = cnt_alpha++;
-            }
-        }
-
-        /* beta unoccupied orbitals */
-        for (irrep = 0; irrep < nirreps; irrep++) {
-            this_offset = offset[irrep] + nbetapi[irrep];
-            for (p = 0; p < orbspi[irrep] - nbetapi[irrep] - frozen_uocc[irrep]; p++) {
-                order_beta[this_offset + p] = cnt_beta++;
-            }
-        }
-
-        /* do the frozen uocc */
-        for (irrep = 0; irrep < nirreps; irrep++) {
-            this_offset = offset[irrep] + docc[irrep] + socc[irrep] + uocc[irrep];
-            for (p = 0; p < frozen_uocc[irrep]; p++) {
-                order_alpha[this_offset + p] = cnt_alpha++;
-                order_beta[this_offset + p] = cnt_beta++;
-            }
-        }
-
-        /* do a final check */
-        for (irrep = 0; irrep < nirreps; irrep++) {
-            if (cnt_alpha > nmo) {
-                outfile->Printf("(reorder_qt_uhf): on final check, used more orbitals");
-                outfile->Printf("   than were available (%d vs %d) for irrep %d\n", cnt_alpha, nmo, irrep);
-            }
-            if (cnt_beta > nmo) {
-                outfile->Printf("(reorder_qt_uhf): on final check, used more orbitals");
-                outfile->Printf("   than were available (%d vs %d) for irrep %d\n", cnt_beta, nmo, irrep);
-            }
-        }
-
-        free(offset);
-        free(uocc);
+        uocc[irrep] = orbspi[irrep] - tmpi;
     }
+
+    cnt_alpha = cnt_beta = 0;
+
+    /* do the frozen core */
+    for (irrep = 0; irrep < nirreps; irrep++) {
+        this_offset = offset[irrep];
+        for (p = 0; p < frozen_docc[irrep]; p++) {
+            order_alpha[this_offset + p] = cnt_alpha++;
+            order_beta[this_offset + p] = cnt_beta++;
+        }
+    }
+
+    /* alpha occupied orbitals */
+    for (irrep = 0; irrep < nirreps; irrep++) {
+        this_offset = offset[irrep] + frozen_docc[irrep];
+        for (p = 0; p < nalphapi[irrep] - frozen_docc[irrep]; p++) {
+            order_alpha[this_offset + p] = cnt_alpha++;
+        }
+    }
+
+    /* beta occupied orbitals */
+    for (irrep = 0; irrep < nirreps; irrep++) {
+        this_offset = offset[irrep] + frozen_docc[irrep];
+        for (p = 0; p < nbetapi[irrep] - frozen_docc[irrep]; p++) {
+            order_beta[this_offset + p] = cnt_beta++;
+        }
+    }
+
+    /* alpha unoccupied orbitals */
+    for (irrep = 0; irrep < nirreps; irrep++) {
+        this_offset = offset[irrep] + nalphapi[irrep];
+        for (p = 0; p < orbspi[irrep] - nalphapi[irrep] - frozen_uocc[irrep]; p++) {
+            order_alpha[this_offset + p] = cnt_alpha++;
+        }
+    }
+
+    /* beta unoccupied orbitals */
+    for (irrep = 0; irrep < nirreps; irrep++) {
+        this_offset = offset[irrep] + nbetapi[irrep];
+        for (p = 0; p < orbspi[irrep] - nbetapi[irrep] - frozen_uocc[irrep]; p++) {
+            order_beta[this_offset + p] = cnt_beta++;
+        }
+    }
+
+    /* do the frozen uocc */
+    for (irrep = 0; irrep < nirreps; irrep++) {
+        this_offset = offset[irrep] + docc[irrep] + socc[irrep] + uocc[irrep];
+        for (p = 0; p < frozen_uocc[irrep]; p++) {
+            order_alpha[this_offset + p] = cnt_alpha++;
+            order_beta[this_offset + p] = cnt_beta++;
+        }
+    }
+
+    /* do a final check */
+    for (irrep = 0; irrep < nirreps; irrep++) {
+        if (cnt_alpha > nmo) {
+            outfile->Printf("(reorder_qt_uhf): on final check, used more orbitals");
+            outfile->Printf("   than were available (%d vs %d) for irrep %d\n", cnt_alpha, nmo, irrep);
+        }
+        if (cnt_beta > nmo) {
+            outfile->Printf("(reorder_qt_uhf): on final check, used more orbitals");
+            outfile->Printf("   than were available (%d vs %d) for irrep %d\n", cnt_beta, nmo, irrep);
+        }
+    }
+
+    free(offset);
+    free(uocc);
 }
 
 }  // namespace psi

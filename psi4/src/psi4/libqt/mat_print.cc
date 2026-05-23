@@ -65,7 +65,7 @@ void mat_print(double **matrix, int rows, int cols, std::string out) {
     for (page = 0; page < num_pages; page++) {
         first_col = page * cols_per_page;
 
-        outfile->Printf("\n      ");
+        printer->Printf("\n      ");
         for (i = first_col; i < first_col + cols_per_page; i++) printer->Printf("         %5d        ", i);
 
         printer->Printf("\n");

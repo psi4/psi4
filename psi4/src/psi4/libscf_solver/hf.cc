@@ -607,7 +607,7 @@ void HF::form_H() {
 
             }  // embpot
             else if (dipole_field_type_ == dx) {
-                dx_read(V_eff.pointer(), phi_ao.pointer(), phi_so.pointer(), nao, nso, u.pointer());
+                dx_read(basisset_, V_eff.pointer(), phi_ao.pointer(), phi_so.pointer(), nao, nso, u.pointer());
 
             }  // dx file
             else if (dipole_field_type_ == sphere) {

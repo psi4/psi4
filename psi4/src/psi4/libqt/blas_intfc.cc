@@ -341,15 +341,21 @@ size_t C_IDAMAX(size_t length, double *x, int inc_x) {
     if (length == 0) return 0L;
 
     size_t reg = 0L;
-    size_t reg2 = 0L;
+    bool initialized = false;
 
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
         double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
-        reg2 = ::F_IDAMAX(&length_s, x_s, &inc_x) + static_cast<size_t>(block) * inc_x * INT_MAX;
-        if (std::fabs(x[reg]) > std::fabs(x[reg2])) reg = reg2;
+        if (length_s == 0) continue;
+        // F_IDAMAX returns a Fortran 1-based index; convert to 0-based for C indexing.
+        size_t reg2 = (static_cast<size_t>(::F_IDAMAX(&length_s, x_s, &inc_x)) - 1) +
+                      static_cast<size_t>(block) * inc_x * INT_MAX;
+        if (!initialized || std::fabs(x[reg]) < std::fabs(x[reg2])) {
+            reg = reg2;
+            initialized = true;
+        }
     }
 
     return reg;

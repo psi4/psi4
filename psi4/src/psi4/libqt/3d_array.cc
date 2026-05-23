@@ -29,6 +29,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "psi4/libpsi4util/exception.h"
+
 /*!
   \file
   \brief Routines for 3d arrays
@@ -54,10 +56,13 @@ double ***init_3d_array(int p, int q, int r) {
     int i, j, k;
 
     A = (double ***)malloc(p * sizeof(double **));
+    if (!A) throw PSIEXCEPTION("init_3d_array: allocation failed.");
     for (i = 0; i < p; i++) {
         A[i] = (double **)malloc(q * sizeof(double *));
+        if (!A[i]) throw PSIEXCEPTION("init_3d_array: allocation failed.");
         for (j = 0; j < q; j++) {
             A[i][j] = (double *)malloc(r * sizeof(double));
+            if (!A[i][j]) throw PSIEXCEPTION("init_3d_array: allocation failed.");
             for (k = 0; k < r; k++) {
                 A[i][j][k] = 0.0;
             }
