@@ -457,7 +457,7 @@ def test_dftd3__run_dftd3__2body(inp, program, subjects, request, schver):
             }
         }
     jrec = qcng.compute(resinp, program, raise_error=True)
-    jrec = jrec.dict()
+    jrec = jrec.model_dump()
 
     assert len(jrec['extras']['qcvars']) == (8 if program == "dftd3" else 6)
 

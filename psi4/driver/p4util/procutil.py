@@ -54,9 +54,7 @@ from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, TYPE
 
 import numpy as np
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    from qcelemental.models.v1 import AtomicInput as AtomicInput_v1
+from qcelemental.models.v1 import AtomicInput as AtomicInput_v1
 from qcelemental.models.v2 import AtomicInput as AtomicInput_v2
 
 from psi4 import core
