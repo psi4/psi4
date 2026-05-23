@@ -80,7 +80,7 @@ jobs:
 
       icpx_conda:
         CXX_COMPILER: 'icpx'
-        PYTHON_VER: '3.13'
+        PYTHON_VER: '3.14'
         C_COMPILER: 'icx'
         F_COMPILER: 'ifx'
         BUILD_TYPE: 'release'
