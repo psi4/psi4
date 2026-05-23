@@ -1257,7 +1257,9 @@ void export_mints(py::module& m) {
             auto capsule = py::capsule(phi_ao, [](void *phi_ao) { delete reinterpret_cast<std::vector<double>*>(phi_ao); });
             basis.compute_phi(phi_ao->data(), x, y, z);
             return py::array(phi_ao->size(), phi_ao->data(), capsule);
-        }, "Calculate the value of all basis functions at a given point x, y, and z");
+        }, "Calculate the value of all basis functions at a given point x, y, and z")
+        .def("convert_sap_contraction", &BasisSet::convert_sap_contraction,
+            "Remove normalization from a s-function basis set. Not idempotent");
 
     typedef void (OneBodyAOInt::*vecmatrix_version)(std::vector<SharedMatrix>&);
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(
