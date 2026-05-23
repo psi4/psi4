@@ -204,6 +204,15 @@ option_with_default(gauxc_ENABLE_MAGMA "Enable MAGMA support for GauXC. Required
 option_with_print(psi4_CMAKE_UNITY_BUILD "Enable unity/jumbo build to reduce compile units. Effective to at least 20 cores. 2-3x full rebuild speedup. For dev, can turn off overall or per-module" ON)
 option_with_default(psi4_CMAKE_UNITY_BUILD_BATCH_SIZE "Adjust unity build size from CMake default" 8)
 option_with_print(psi4_ENABLE_PRECOMPILE_HEADERS "Enable reusing preprocessed libmints and other headers for build performance. 15-20% full rebuild speedup. For dev, can turn off for finer incr rebuild" OFF)
+option_with_print(psi4_ENABLE_IPO "Enable interprocedural / link-time optimization (LTO) for psi4 modules and core. Expensive: substantial extra link-time CPU and multi-GB linker memory. Off by default." OFF)
+if(psi4_ENABLE_IPO)
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT _psi4_ipo_supported OUTPUT _psi4_ipo_msg LANGUAGES CXX)
+    if(NOT _psi4_ipo_supported)
+        message(WARNING "psi4_ENABLE_IPO=ON requested but not supported by this toolchain — disabling. Reason: ${_psi4_ipo_msg}")
+        set(psi4_ENABLE_IPO OFF CACHE BOOL "" FORCE)
+    endif()
+endif()
 
 include(custom_int_orderings)
 
@@ -308,6 +317,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_UNITY_BUILD=${psi4_CMAKE_UNITY_BUILD}
               -DCMAKE_UNITY_BUILD_BATCH_SIZE=${psi4_CMAKE_UNITY_BUILD_BATCH_SIZE}
               -Dpsi4_ENABLE_PRECOMPILE_HEADERS=${psi4_ENABLE_PRECOMPILE_HEADERS}
+              -Dpsi4_ENABLE_IPO=${psi4_ENABLE_IPO}
               -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
               -DMAX_AM_ERI=${MAX_AM_ERI}
               -DPython_EXECUTABLE=${Python_EXECUTABLE}
