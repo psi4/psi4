@@ -1,6 +1,7 @@
 list(APPEND sources
   local.cc
-  x2cint.cc
+  sfx2c1e.cc
+  sox2c1e.cc
   zora.cc
   orbitalspace.cc
   maketab.cc
@@ -140,3 +141,29 @@ if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
       USING_OpenOrbitalOptimizer
     )
 endif()
+
+if(TARGET Einsums::Einsums)
+  target_compile_definitions(mints
+    PUBLIC
+      USING_Einsums
+    )
+  target_link_libraries(mints PUBLIC Einsums::Einsums)
+
+  if(DEFINED ENV{CONDA_TOOLCHAIN_BUILD})
+    if(APPLE)
+      # * possibly these should be exported from Einsums somehow
+      # * when using conda clang, compiling against an old SDK &
+      #   an openmp symbols is absent
+      # * afaik, envvar above is defined when `conda activate envvar_w_compilers`.
+      #   There's a CONDA_BACKUP_CONDA_TOOLCHAIN_BUILD envvar when not activated.
+      #   So hopefully, this doesn't interfere with system compilers.
+      target_compile_definitions(
+        mints
+        PUBLIC
+          _LIBCPP_DISABLE_AVAILABILITY
+          H5CPP_USE_OMP_ALIGNED_ALLOC
+        )
+    endif()
+  endif()
+endif()
+

@@ -1489,6 +1489,7 @@ void export_mints(py::module& m) {
         // One-electron properties and
         .def("ao_pvp", &MintsHelper::ao_pvp, "AO pvp integrals")
         .def("ao_dkh", &MintsHelper::ao_dkh, "AO dkh integrals")
+        .def("so_x2c_spin_orbit", &MintsHelper::so_x2c_spin_orbit, "AO X2C Spin-orbit coupling integrals", "include_perturbations"_a = true)
         .def("so_dkh", &MintsHelper::so_dkh, "SO dkh integrals")
         .def("ao_dipole", &MintsHelper::ao_dipole, "Vector AO dipole integrals")
         .def("so_dipole", &MintsHelper::so_dipole, "Vector SO dipole integrals")

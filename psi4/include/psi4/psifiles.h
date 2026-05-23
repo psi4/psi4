@@ -303,6 +303,9 @@
 #define PSIF_SO_H                "SO-basis Core Hamiltonian"
 #define PSIF_SO_ECP              "SO-basis ECP Ints"
 #define PSIF_AO_S                "AO-basis Overlap Ints"
+#define PSIF_SO_SOCX             "SO-basis Pauli-X"          /* For ZORA, this triple represents the spin-orbit */
+#define PSIF_SO_SOCY             "SO-basis Pauli-Y"          /* coupling integrals. For SOX2C-1e, it represents */
+#define PSIF_SO_SOCZ             "SO-basis Pauli-Z"          /* the non-scalar part of Tx2c + Vx2c              */
 #define PSIF_AO_MX               "AO-basis Mu-X Ints"
 #define PSIF_AO_MY               "AO-basis Mu-Y Ints"
 #define PSIF_AO_MZ               "AO-basis Mu-Z Ints"
