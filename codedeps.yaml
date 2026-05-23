@@ -1358,7 +1358,8 @@ data:
     conda:
       channel: conda-forge
       name: optking
-      constraint: null
+      constraint: ">=0.5.0"
+      constraint_note: "v0.5.0 has QCSchema v2 compatibility."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_optking: true
         //CMAKE_DISABLE_FIND_PACKAGE_optking: true
@@ -1514,7 +1515,7 @@ data:
       host: github
       account: MolSSI
       name: QCManyBody
-      commit: v0.7.0
+      commit: v0.7.1
       githttps: true
     cmake:
       name: qcmanybody
