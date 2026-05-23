@@ -13,6 +13,13 @@ trigger:
   - 1.1.x
   - 1.0.x
 
+pr:
+  branches:
+    include:
+      - master
+      - gh-readonly-queue/master/*
+      - 1.10.x
+
 jobs:
   - template: ./.azure-pipelines/azure-pipelines-windows.yml
   - template: ./.azure-pipelines/azure-pipelines-linux.yml
