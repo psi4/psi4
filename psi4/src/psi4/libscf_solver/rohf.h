@@ -78,6 +78,7 @@ class ROHF : public HF {
     SharedMatrix moFa() const { return moFa_; }
     SharedMatrix moFb() const { return moFb_; }
     SharedMatrix Ct() const {return Ct_; }
+    SharedMatrix Dt() const { return Dt_; }
 
     void save_density_and_energy() override;
 
@@ -87,8 +88,6 @@ class ROHF : public HF {
     void form_G() override;
     double compute_E() override;
     void finalize() override;
-
-    void compute_SAD_guess(bool natorb) override;
 
     void damping_update(double) override;
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, bool soscf_print) override;

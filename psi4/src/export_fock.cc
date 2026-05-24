@@ -39,7 +39,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/libscf_solver/sad.h"
 
 using namespace psi;
 namespace py = pybind11;
@@ -203,15 +202,6 @@ void export_fock(py::module &m) {
         .def("get_COSX_grid", &CompositeJK::get_COSX_grid, "Return grid used for COSX for this SCF iteration.")
         .def("get_snLinK_max_am", &CompositeJK::get_snLinK_max_am, "Return maximum AM supported by current GauXC instance, if GauXC support is enabled.");
 
-    py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
-        .def_static("build_SAD",
-                    [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases) { return scf::SADGuess(basis, atomic_bases, Process::environment.options); })
-        .def("compute_guess", &scf::SADGuess::compute_guess)
-        .def("set_print", &scf::SADGuess::set_print)
-        .def("set_debug", &scf::SADGuess::set_debug)
-        .def("set_atomic_fit_bases", &scf::SADGuess::set_atomic_fit_bases)
-        .def("Da", &scf::SADGuess::Da)
-        .def("Db", &scf::SADGuess::Db)
-        .def("Ca", &scf::SADGuess::Ca)
-        .def("Cb", &scf::SADGuess::Cb);
+    // (The C++ SADGuess class has been retired; the SAD guess now lives in
+    //  psi4.driver.procrouting.scf_proc.sad_guess.)
 }

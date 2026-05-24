@@ -5,7 +5,6 @@ molecule li_anion {
 Li
 }
 
-set sad_frac_occ true
 set e_convergence 8
 set d_convergence 8
 set stability_analysis check

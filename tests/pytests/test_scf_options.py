@@ -159,8 +159,7 @@ def test_sad_frac_occ_density_occupation(atom, geom, expected_spin_electrons, ex
             "basis": "cc-pvdz",
             "reference": "uhf",
             "guess": "sad",
-            "sad_frac_occ": True,
-            "sad_spin_average": True,
+            "sad_functional": "HF",
             "scf_type": "pk",
         }
     )
@@ -232,8 +231,7 @@ def test_sad_frac_occ_atomic_natural_occupations(atom, geom, expected_spin_elect
             "basis": "cc-pvdz",
             "reference": "uhf",
             "guess": "sad",
-            "sad_frac_occ": True,
-            "sad_spin_average": True,
+            "sad_functional": "HF",
             "scf_type": "pk",
         }
     )

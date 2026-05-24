@@ -587,6 +587,14 @@ void export_mints(py::module& m) {
         .def("scale_column", &Matrix::scale_column, "Scales column n of irrep h by a", "h"_a, "n"_a, "a"_a)
         .def("transform", matrix_one(&Matrix::transform), "Transform this matrix with transformer", "transformer"_a)
         .def("transform", matrix_two(&Matrix::transform), "Transform A with transformer", "a"_a, "transformer"_a)
+        .def("apply_symmetry", &Matrix::apply_symmetry,
+             "Symmetrize a no-symmetry matrix A by transformer (typically AO->SO), storing the "
+             "irrep-blocked result in this matrix.",
+             "a"_a, "transformer"_a)
+        .def("remove_symmetry", &Matrix::remove_symmetry,
+             "Project an irrep-blocked matrix A through transformer (typically SO->AO), storing the "
+             "no-symmetry result in this matrix.",
+             "a"_a, "transformer"_a)
         .def("back_transform", matrix_one(&Matrix::back_transform), "Backtransform this with transformer",
              "transformer"_a)
         .def("back_transform", matrix_two(&Matrix::back_transform), "Backtransform A with transformer", "a"_a,

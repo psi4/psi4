@@ -66,6 +66,10 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/quadrupole.h"
 #include "psi4/libmints/sobasis.h"
+#include "psi4/liboptions/liboptions.h"
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "hf.h"
 
@@ -1078,18 +1082,13 @@ void HF::guess() {
     } else if (guess_type == "SAD") {
         if (print_)
             outfile->Printf(
-                "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation "
+                "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic SCF (no occupation "
                 "information).\n\n");
 
-        // Superposition of Atomic Density. Modified by Susi Lehtola
-        // 2018-12-15 to work also for ROHF, as well as to allow using
-        // SAD with predefined orbital occupations. The algorithm is
-        // the same as in van Lenthe et al, "Starting SCF Calculations
-        // by Superposition of Atomic Densities", J Comput Chem 27,
-        // 926 (2006).
-
-        // Build non-idempotent, spin-restricted SAD density matrix
-        compute_SAD_guess(false);
+        // SAD guess. Atomic SCFs, density assembly and the final orbital/occupation
+        // population live in psi4.driver.procrouting.scf_proc.sad_guess; we invoke
+        // it directly from here.
+        invoke_sad_python("populate_sad_guess", false);
 
         // This is a guess iteration: orbital occupations must be
         // reset in SCF.
@@ -1108,8 +1107,9 @@ void HF::guess() {
         // Like the above, but builds natural orbitals from the SAD
         // density matrix.
 
-        // Build non-idempotent, spin-restricted SAD density matrix
-        compute_SAD_guess(true);
+        // Build non-idempotent, spin-restricted SAD density matrix, then take its
+        // natural orbitals as the guess Ca/Cb.
+        invoke_sad_python("populate_sad_guess", true);
         // Find occupations
         find_occupation();
 
@@ -1119,41 +1119,21 @@ void HF::guess() {
 
     } else if (guess_type == "HUCKEL") {
         if (print_)
-            outfile->Printf("  SCF Guess: Huckel guess via on-the-fly atomic UHF (doi:10.1021/acs.jctc.8b01089).\n\n");
+            outfile->Printf("  SCF Guess: Huckel guess via on-the-fly atomic SCF (doi:10.1021/acs.jctc.8b01089).\n\n");
 
-        // Huckel guess, written by Susi Lehtola 2019-01-27.  See "An
-        // assessment of initial guesses for self-consistent field
-        // calculations. Superposition of Atomic Potentials: simple
-        // yet efficient", JCTC 2019, doi: 10.1021/acs.jctc.8b01089.
-
-        if (!options_.get_bool("SAD_SPIN_AVERAGE")) {
-            throw PSIEXCEPTION("  Huckel guess requires SAD_SPIN_AVERAGE = True!");
-        }
-        if (!options_.get_bool("SAD_FRAC_OCC")) {
-            throw PSIEXCEPTION("  Huckel guess requires SAD_FRAC_OCC = True!");
-        }
-        compute_huckel_guess(false);
+        invoke_sad_python("populate_huckel_guess", false);
 
         form_initial_C();
         form_D();
         guess_E = compute_initial_E();
 
     } else if (guess_type == "MODHUCKEL") {
-      if (print_)
-            outfile->Printf("  SCF Guess: Huckel guess via on-the-fly atomic UHF (doi:10.1021/acs.jctc.8b01089) with the updated GWH rule from doi:10.1021/ja00480a005.\n\n");
+        if (print_)
+            outfile->Printf(
+                "  SCF Guess: Huckel guess via on-the-fly atomic SCF (doi:10.1021/acs.jctc.8b01089) with the "
+                "updated GWH rule from doi:10.1021/ja00480a005.\n\n");
 
-        // Huckel guess, written by Susi Lehtola 2019-01-27.  See "An
-        // assessment of initial guesses for self-consistent field
-        // calculations. Superposition of Atomic Potentials: simple
-        // yet efficient", JCTC 2019, doi: 10.1021/acs.jctc.8b01089.
-
-        if (!options_.get_bool("SAD_SPIN_AVERAGE")) {
-            throw PSIEXCEPTION("  Huckel guess requires SAD_SPIN_AVERAGE = True!");
-        }
-        if (!options_.get_bool("SAD_FRAC_OCC")) {
-            throw PSIEXCEPTION("  Huckel guess requires SAD_FRAC_OCC = True!");
-        }
-        compute_huckel_guess(true);
+        invoke_sad_python("populate_huckel_guess", true);
 
         form_initial_C();
         form_D();
@@ -1446,5 +1426,22 @@ bool HF::stability_analysis() {
     throw PSIEXCEPTION("Stability analysis hasn't been implemented yet for this wfn type.");
     return false;
 }
+
+void HF::invoke_sad_python(const std::string& fn_name, bool flag) {
+    if (sad_basissets_.empty()) {
+        throw PSIEXCEPTION("  SCF guess was set to SAD, but sad_basissets_ was empty!\n\n");
+    }
+    namespace py = pybind11;
+    std::string jk_type = options_.get_str("SAD_SCF_TYPE");
+    bool use_fit = (jk_type == "DF" || jk_type == "MEM_DF" || jk_type == "DISK_DF");
+    if (use_fit && sad_fitting_basissets_.empty()) {
+        throw PSIEXCEPTION(
+            "  SCF guess was set to SAD with DF-style JK, but sad_fitting_basissets_ was empty!\n\n");
+    }
+    py::object py_fit = use_fit ? py::cast(sad_fitting_basissets_) : py::none();
+    auto mod = py::module::import("psi4.driver.procrouting.scf_proc.sad_guess");
+    mod.attr(fn_name.c_str())(shared_from_this(), sad_basissets_, py_fit, flag);
+}
+
 }  // namespace scf
 }  // namespace psi
