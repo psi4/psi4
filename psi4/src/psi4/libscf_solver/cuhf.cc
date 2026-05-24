@@ -410,16 +410,6 @@ std::shared_ptr<CUHF> CUHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     return hf_wfn;
 }
 
-void CUHF::compute_SAD_guess(bool natorb) {
-    // Form the SAD guess
-    HF::compute_SAD_guess(natorb);
-    if (!natorb) {
-        // Form the total density used in energy evaluation
-        Dt_->copy(Da_);
-        Dt_->add(Db_);
-    }
-}
-
 void CUHF::setup_potential() {
     if (functional_->needs_xc()) {
         throw PSIEXCEPTION("CUHF: Cannot compute XC components!");

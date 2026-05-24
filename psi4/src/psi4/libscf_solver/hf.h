@@ -210,12 +210,13 @@ class HF : public Wavefunction {
     /// The multiplicity of the system (specified as 2 Ms + 1)
     int multiplicity_;
 
-    /// SAD Guess and propagation
-    virtual void compute_SAD_guess(bool natorb);
-    /// Huckel guess
-    virtual void compute_huckel_guess(bool updated_rule);
     /// Forms the SAPGAU guess
     virtual void compute_sapgau_guess();
+
+    /// Invoke a function from psi4.driver.procrouting.scf_proc.sad_guess, handing
+    /// it (this_wavefunction, sad_basissets_, sad_fitting_basissets_ or None, flag).
+    /// Used by the SAD / SADNO / HUCKEL / MODHUCKEL paths in HF::guess().
+    void invoke_sad_python(const std::string& fn_name, bool flag);
 
     /** Transformation, diagonalization, and backtransform of Fock matrix */
     virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);

@@ -391,6 +391,16 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     const Dimension& nalphapi() const { return nalphapi_; }
     /// Returns the number of beta electrons per irrep array.
     const Dimension& nbetapi() const { return nbetapi_; }
+    /// Sets the alpha occupation (per-irrep and total). Total nalpha is taken to be d.sum().
+    void set_nalphapi(const Dimension& d) {
+        nalphapi_ = d;
+        nalpha_ = d.sum();
+    }
+    /// Sets the beta occupation (per-irrep and total). Total nbeta is taken to be d.sum().
+    void set_nbetapi(const Dimension& d) {
+        nbetapi_ = d;
+        nbeta_ = d.sum();
+    }
     /// Returns the frozen core orbitals per irrep array.
     const Dimension& frzcpi() const { return frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array.

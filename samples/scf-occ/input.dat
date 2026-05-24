@@ -11,7 +11,6 @@ activate(sodium)
 set basis STO-3G
 set reference rhf
 set guess sad
-set sad_frac_occ true
 
 if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
     psi4.set_options({"e_convergence": 9, "d_convergence": 7})

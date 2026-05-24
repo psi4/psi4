@@ -264,6 +264,10 @@ void export_wavefunction(py::module& m) {
              "Returns the number of alpha orbitals per irrep.")
         .def("nbetapi", &Wavefunction::nbetapi, py::return_value_policy::copy,
              "Returns the number of beta orbitals per irrep.")
+        .def("set_nalphapi", &Wavefunction::set_nalphapi,
+             "Set the per-irrep alpha occupation (and the total alpha electron count).", "nalphapi"_a)
+        .def("set_nbetapi", &Wavefunction::set_nbetapi,
+             "Set the per-irrep beta occupation (and the total beta electron count).", "nbetapi"_a)
         .def("frzcpi", &Wavefunction::frzcpi, py::return_value_policy::copy,
              "Returns the number of frozen core orbitals per irrep.")
         .def("frzvpi", &Wavefunction::frzvpi, py::return_value_policy::copy,

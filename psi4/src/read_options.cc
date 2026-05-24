@@ -1828,10 +1828,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("SAD_MAXITER", 50);
         /*- SCF type used for atomic calculations in SAD guess !expert -*/
         options.add_str("SAD_SCF_TYPE", "DF", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK");
-        /*- Do force an even distribution of occupations across the last partially occupied orbital shell? !expert -*/
-        options.add_bool("SAD_FRAC_OCC", true);
-        /*- Do use spin-averaged occupations instead of atomic ground spin state in fractional SAD? !expert -*/
-        options.add_bool("SAD_SPIN_AVERAGE", true);
+        /*- DFT functional used for the atomic SCF in the SAD guess. Spin-averaged spherical
+            atomic calculations benefit from a self-interaction-corrected functional because the
+            fractional occupations introduce ghost-interaction errors at the Hartree-Fock level.
+            Set to "HF" to recover Hartree-Fock atomic guesses. !expert -*/
+        options.add_str("SAD_FUNCTIONAL", "PBE");
         /*- SAD guess density decomposition threshold !expert -*/
         options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
 #ifdef USING_OpenOrbitalOptimizer
