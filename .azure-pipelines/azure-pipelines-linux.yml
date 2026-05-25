@@ -80,7 +80,7 @@ jobs:
 
       icpx_conda:
         CXX_COMPILER: 'icpx'
-        PYTHON_VER: '3.14'
+        PYTHON_VER: '3.10'
         C_COMPILER: 'icx'
         F_COMPILER: 'ifx'
         BUILD_TYPE: 'release'
@@ -249,17 +249,8 @@ jobs:
       python -c 'import numpy; print(numpy.version.version)'
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
       python -c 'import qcengine as q; print(q.__version__, q.__file__)'
-      ./stage/bin/psi4 ../tests/dfmp2-1/input.dat
+      ./stage/bin/psi4 ../tests/ddd-deriv/input.dat
     displayName: 'Spot Test 2'
-
-  - bash: |
-      cd build
-      source activate p4env
-      python -V
-      export PYTHONPATH=stage/lib
-      export PATH=$PATH:stage/bin
-      psi4 ../tests/cc1/input.dat
-    displayName: 'Spot Test 3'
 
   - bash: |
       cd build
@@ -297,7 +288,8 @@ jobs:
       python -c "import psi4; print(psi4.executable)" || true
       echo ROUND4-NG
       python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
-    displayName: 'Diagnostics'
+    condition: true
+    displayName: 'Psi4 Path Setup Diagnostics'
 
   #- bash: |
   #    cd build
@@ -306,12 +298,9 @@ jobs:
   #    PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
   #  displayName: 'Spot Test 2'
 
-  # TODO undo PYTHONPATH, PATH
   - bash: |
       cd build
       source activate p4env
-      export PYTHONPATH=stage/lib
-      export PATH=$PATH:stage/bin
       python ../devtools/scripts/ci_run_test.py
       python ../devtools/scripts/ci_print_failing.py
     displayName: 'CTest Tests'
