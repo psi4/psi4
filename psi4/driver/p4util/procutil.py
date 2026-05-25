@@ -575,7 +575,8 @@ def state_to_atomicinput(
     method: str,
     basis: Optional[str] = None,
     molecule: Optional[core.Molecule] = None,
-    function_kwargs: Optional[Dict[str, Any]] = None) -> "qcelemental.models.v2.AtomicInput":
+    function_kwargs: Optional[Dict[str, Any]] = None) -> Union["qcelemental.models.v1.AtomicInput",
+"qcelemental.models.v2.AtomicInput"]:
     """Form a QCSchema for job input from the current state of |PSIfour| settings.
 
     Parameters
@@ -644,7 +645,7 @@ def state_to_atomicinput(
             "provenance": provenance_stamp(__name__),
          })
     else:
-        raise ValidationError("QCSchema version {dtype} not recognized.")
+        raise ValidationError(f"QCSchema version {dtype} not recognized.")
 
     return resi
 

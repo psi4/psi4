@@ -84,7 +84,7 @@ parser.add_argument("-k", "--skip-preprocessor", action='store_true',
                     help="Skips input preprocessing. !Warning! expert option.")
 parser.add_argument("--qcschema", "--schema", action='store_true',
                     help="Runs input file as QCSchema. Can either be JSON or MessagePack input. Use `--output` to not overwrite schema input file.")
-parser.add_argument("--return-version", default=-1,
+parser.add_argument("--return-version", default=-1, type=int,
                     help="With --[qc]schema, return this schema version. If not supplied (or the default of -1), input schema_version of the input is returned.")
 parser.add_argument("-t", "--test", nargs='?', const='smoke', default=None,
                     help="Runs pytest tests (requires pytest installed). If `pytest-xdist` installed, parallel with `--nthread`.")
