@@ -148,9 +148,9 @@ jobs:
                         libxc-c ^
                         libint ^
                         qcelemental ^
-                        conda-forge/label/qcengine_dev::qcengine=0.50.0rc4 ^
+                        qcengine ^
                         qcmanybody ^
-                        pydantic=2.11 ^
+                        pydantic ^
                         optking ^
                         scipy
           which anaconda
