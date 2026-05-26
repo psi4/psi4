@@ -288,7 +288,7 @@ jobs:
       python -c "import psi4; print(psi4.executable)" || true
       echo ROUND4-NG
       python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
-    condition: true
+    condition: false
     displayName: 'Psi4 Path Setup Diagnostics'
 
   #- bash: |

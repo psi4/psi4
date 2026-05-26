@@ -51,12 +51,12 @@ __all__ = [
 
 import math
 import os
+import pathlib
 import re
 import uuid
 import warnings
 from collections import Counter
 from itertools import product
-from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -246,7 +246,7 @@ core.Wavefunction.get_scratch_filename = _core_wavefunction_get_scratch_filename
 
 
 @staticmethod
-def _core_wavefunction_from_file(wfn_data: Union[str, Dict, Path]) -> core.Wavefunction:
+def _core_wavefunction_from_file(wfn_data: Union[str, Dict, "pathlib.Path"]) -> core.Wavefunction:
     r"""Build Wavefunction from data laid out like
     :meth:`~psi4.core.Wavefunction.to_file`.
 
@@ -1611,5 +1611,4 @@ def _core_triplet(A, B, C, transA, transB, transC):
 # removed in v1.10 to reduce API footprint. deprecated 1.4 and no-op since 1.9
 core.Matrix.doublet = staticmethod(_core_doublet)
 core.Matrix.triplet = staticmethod(_core_triplet)
-
 
