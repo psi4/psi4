@@ -80,7 +80,7 @@ using namespace pybind11::literals;
 
 #include <pybind11/functional.h>
 
-void export_wavefunction(py::module& m) {
+void export_wavefunction(py::module_& m) {
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
     py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())

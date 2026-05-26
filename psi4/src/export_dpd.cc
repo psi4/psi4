@@ -35,7 +35,7 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-void export_dpd(py::module &m) {
+void export_dpd(py::module_ &m) {
     py::class_<dpdbuf4, std::shared_ptr<dpdbuf4>>(m, "dpdbuf4", "docstring")
         .def("axpy_matrix", &dpdbuf4::axpy_matrix, "Add 'a' times a Matrix to this.")
         .def("zero", &dpdbuf4::zero, "Fill all with entries.")

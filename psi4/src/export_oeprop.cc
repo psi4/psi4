@@ -37,7 +37,7 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-void export_oeprop(py::module &m) {
+void export_oeprop(py::module_ &m) {
     py::class_<Prop, std::shared_ptr<Prop> >(m, "Prop", "docstring");
 
     py::class_<ESPPropCalc, std::shared_ptr<ESPPropCalc>, Prop>(

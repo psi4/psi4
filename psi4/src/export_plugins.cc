@@ -151,7 +151,7 @@ void py_psi_plugin_close_all() {
  * End of Plug-In functions                                               *
  **************************************************************************/
 
-void export_plugins(py::module &m) {
+void export_plugins(py::module_ &m) {
     // plugins
     m.def("plugin_load", py_psi_plugin_load,
           "Load the plugin of name arg0. Returns 0 if not loaded, 1 if loaded, 2 if already loaded");

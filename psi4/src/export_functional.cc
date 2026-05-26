@@ -48,7 +48,7 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-void export_functional(py::module &m) {
+void export_functional(py::module_ &m) {
     py::class_<Functional, std::shared_ptr<Functional>>(m, "Functional", "docstring")
         .def_static("build_base", &Functional::build_base, "alias"_a, "docstring")
         .def("compute_functional", &Functional::compute_functional, "docstring")

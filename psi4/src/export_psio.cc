@@ -34,7 +34,7 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-void export_psio(py::module &m) {
+void export_psio(py::module_ &m) {
 
     py::class_<psio_entry, std::shared_ptr<psio_entry>>(m, "psio_entry", "docstring");
 
