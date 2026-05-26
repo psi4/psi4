@@ -38,9 +38,9 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 void export_oeprop(py::module_ &m) {
-    py::class_<Prop, std::shared_ptr<Prop> >(m, "Prop", "docstring");
+    py::classh<Prop>(m, "Prop", "docstring");
 
-    py::class_<ESPPropCalc, std::shared_ptr<ESPPropCalc>, Prop>(
+    py::classh<ESPPropCalc, Prop>(
         m, "ESPPropCalc", "ESPPropCalc gives access to routines calculating the ESP on a grid")
         .def(py::init<std::shared_ptr<Wavefunction> >())
         .def("compute_esp_over_grid_in_memory", &ESPPropCalc::compute_esp_over_grid_in_memory,
@@ -48,7 +48,7 @@ void export_oeprop(py::module_ &m) {
         .def("compute_field_over_grid_in_memory", &ESPPropCalc::compute_field_over_grid_in_memory,
              "Computes field on specified grid Nx3 (as SharedMatrix, in input units)");
 
-    py::class_<OEProp, std::shared_ptr<OEProp>>(m, "OEProp", "docstring")
+    py::classh<OEProp>(m, "OEProp", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction> >())
         .def("add", py::overload_cast<const std::string&>(&OEProp::add), "Append the given task to the list of properties to compute.")
         .def("compute", &OEProp::compute, "Compute the properties.")

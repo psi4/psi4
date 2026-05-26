@@ -36,9 +36,9 @@ using namespace pybind11::literals;
 
 void export_psio(py::module_ &m) {
 
-    py::class_<psio_entry, std::shared_ptr<psio_entry>>(m, "psio_entry", "docstring");
+    py::classh<psio_entry>(m, "psio_entry", "docstring");
 
-    py::class_<PSIO, std::shared_ptr<PSIO> >(m, "IO", "docstring")
+    py::classh<PSIO>(m, "IO", "docstring")
         .def("state", &PSIO::state, "Return 1 if PSIO library is activated")
         .def("open", &PSIO::open,
              "Open unit. Status can be PSIO_OPEN_OLD (if existing file is to be opened) or PSIO_OPEN_NEW if new file "
@@ -69,7 +69,7 @@ void export_psio(py::module_ &m) {
         .def_static("change_file_namespace", &PSIO::change_file_namespace, "Change file number from ns1 to ns2",
                     "fileno"_a, "ns1"_a, "ns2"_a);
 
-    py::class_<PSIOManager, std::shared_ptr<PSIOManager> >(m, "IOManager",
+    py::classh<PSIOManager>(m, "IOManager",
                                                            "PSIOManager is a class designed to be used as a static "
                                                            "object to track all PSIO operations in a given PSI4 "
                                                            "computation")

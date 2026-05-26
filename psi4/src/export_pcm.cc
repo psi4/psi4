@@ -39,12 +39,13 @@ using namespace pybind11::literals;
 #ifdef USING_PCMSolver
 
 void export_pcm(py::module_& m) {
-    py::class_<PCM, std::shared_ptr<PCM>> pcm(m, "PCM", "Class interfacing with PCMSolver");
+    py::classh<PCM> pcm(m, "PCM", "Class interfacing with PCMSolver");
 
-    py::enum_<PCM::CalcType>(pcm, "CalcType")
+    py::native_enum<PCM::CalcType>(pcm, "CalcType", "enum.IntEnum")
         .value("Total", PCM::CalcType::Total)
         .value("NucAndEle", PCM::CalcType::NucAndEle)
-        .value("EleOnly", PCM::CalcType::EleOnly);
+        .value("EleOnly", PCM::CalcType::EleOnly)
+        .finalize();
 
     pcm.def(py::init<std::string, int, std::shared_ptr<BasisSet>>())
         .def("compute_PCM_terms", &PCM::compute_PCM_terms, "Compute PCM contributions to energy and Fock matrix", "D"_a,
