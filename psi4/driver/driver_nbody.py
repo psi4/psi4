@@ -570,7 +570,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         Returns
         -------
-        mbres
+        mbres : qcmanybody.models.v2.ManyBodyResult
             All MBE results collected into a QCSchema model.
 
         """

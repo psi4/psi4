@@ -93,6 +93,7 @@ extensions = [
     # local
     "psidomain",  # for QCVariables
     "relbar_toc",  # specialized top bar
+    "intersphinx_aliases",
 ]
 if '@SPHINX_THEME@' == 'sphinx_psi_theme':
     extensions.extend([
@@ -460,7 +461,7 @@ intersphinx_mapping = {'python': ('https://docs.python.org/3.12', None),
                        "qcelemental": ("https://molssi.github.io/QCElemental/dev/", None),
                        "qcelemental_v1": ("https://molssi.github.io/QCElemental/v0.30.2/", None),
                        "qcengine": ("https://molssi.github.io/QCEngine/dev/", None),
-                       "qcengine_v1": ("https://molssi.github.io/QCEngine/v0.34.2/", None),
+                       "qcengine_v1": ("https://molssi.github.io/QCEngine/v0.34.1/", None),
                        "qcfractal": ("https://molssi.github.io/QCFractal/", None),
                        "qcmanybody": ("https://molssi.github.io/QCManyBody/dev/", None),
                        "optking": ("https://optking.readthedocs.io/en/latest", None),
