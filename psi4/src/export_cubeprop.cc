@@ -39,7 +39,7 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 void export_cubeprop(py::module_& m) {
-    py::class_<CubeProperties, std::shared_ptr<CubeProperties>>(m, "CubeProperties", "docstring")
+    py::classh<CubeProperties>(m, "CubeProperties", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("compute_density", &CubeProperties::compute_density, "Compute and dump a cube file for a density matrix",
              "D"_a, "key"_a)
