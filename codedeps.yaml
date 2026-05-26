@@ -667,6 +667,7 @@ data:
         - sphinx-tabs
         - autodoc-pydantic=1
         - qcportal
+        - "setuptools<82.0.0"
       aux_build_names_note:
         qcportal: "Required for docs to resolve objects in pydantic classes."
       cmake:
