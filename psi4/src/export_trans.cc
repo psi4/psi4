@@ -44,7 +44,7 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-void export_trans(py::module& m) {
+void export_trans(py::module_& m) {
     py::class_<MOSpace, std::shared_ptr<MOSpace>>(m, "MOSpace",
                                                   "Defines orbital spaces in which to transform integrals")
         .def(py::init<const char>())

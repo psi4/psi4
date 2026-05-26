@@ -138,21 +138,21 @@ void handleBrianOption(bool value) {
 #endif
 
 // Python helper wrappers
-void export_benchmarks(py::module&);
-void export_blas_lapack(py::module&);
-void export_cubeprop(py::module&);
-void export_dpd(py::module&);
-void export_fock(py::module&);
-void export_functional(py::module&);
-void export_mints(py::module&);
-void export_misc(py::module&);
-void export_oeprop(py::module&);
-void export_pcm(py::module&);
-void export_plugins(py::module&);
-void export_psio(py::module&);
-void export_wavefunction(py::module&);
-void export_options(py::module&);
-void export_trans(py::module&);
+void export_benchmarks(py::module_&);
+void export_blas_lapack(py::module_&);
+void export_cubeprop(py::module_&);
+void export_dpd(py::module_&);
+void export_fock(py::module_&);
+void export_functional(py::module_&);
+void export_mints(py::module_&);
+void export_misc(py::module_&);
+void export_oeprop(py::module_&);
+void export_pcm(py::module_&);
+void export_plugins(py::module_&);
+void export_psio(py::module_&);
+void export_wavefunction(py::module_&);
+void export_options(py::module_&);
+void export_trans(py::module_&);
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();

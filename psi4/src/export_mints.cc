@@ -327,7 +327,7 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     return mol;
 }
 
-void export_mints(py::module& m) {
+void export_mints(py::module_& m) {
     typedef void (Vector::*vector_setitem_1)(int, double);
     typedef void (Vector::*vector_setitem_2)(int, int, double);
     typedef double (Vector::*vector_getitem_1)(int) const;
