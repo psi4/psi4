@@ -336,7 +336,7 @@ void export_mints(py::module_& m) {
     typedef void (Vector::*vector_two)(double scale, const Vector& other);
     typedef void (Vector::*vector_three)(double alpha, double beta, const Vector &other);
 
-    py::class_<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
+    py::classh<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
         .def(py::init<size_t>())
         .def(py::init<size_t, const std::string&>())
         .def(py::init<const std::vector<int>&>())
@@ -361,7 +361,7 @@ void export_mints(py::module_& m) {
         .def("__getitem__", &Dimension::get, py::return_value_policy::copy, "Get the i'th value", "i"_a)
         .def("__setitem__", &Dimension::set, "Set element i to value val", "i"_a, "val"_a);
 
-    py::class_<Slice>(m, "Slice", "Slicing for Matrix and Vector objects")
+    py::classh<Slice>(m, "Slice", "Slicing for Matrix and Vector objects")
         .def(py::init<Dimension&, Dimension&>())
         .def("begin", &Slice::begin, "Get the first element of this slice")
         .def("end", &Slice::end, "Get the past-the-end element of this slice");
@@ -775,7 +775,7 @@ void export_mints(py::module_& m) {
              "Returns a new Matrix object named name with default dimensions");
     //              "name"_a, "symmetry"_a);
 
-    py::class_<Vector3>(m, "Vector3",
+    py::classh<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "
                         "and their common operations")
         .def(py::init<double>())
@@ -803,7 +803,7 @@ void export_mints(py::module_& m) {
     typedef void (SymmetryOperation::*intFunction)(int);
     typedef void (SymmetryOperation::*doubleFunction)(double);
 
-    py::class_<SymmetryOperation>(m, "SymmetryOperation",
+    py::classh<SymmetryOperation>(m, "SymmetryOperation",
                                   "Class to provide a 3 by 3 matrix representation of a symmetry "
                                   "operation, such as a rotation or reflection.")
         .def(py::init<const SymmetryOperation&>())
@@ -1334,8 +1334,8 @@ void export_mints(py::module_& m) {
         .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
              "Determines if the P,Q,R,S shell combination is significant");
 
-    py::class_<Libint2ERI, std::unique_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt,
-                                                        "Computes normal two electron repulsion integrals");
+    py::classh<Libint2ERI>(m, "ERI", pyTwoBodyAOInt,
+                          "Computes normal two electron repulsion integrals");
 
     py::classh<AOShellCombinationsIterator>(m,
                                                                                           "AOShellCombinationsIterator")
@@ -1621,7 +1621,7 @@ void export_mints(py::module_& m) {
              "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a);
 
 
-    py::class_<OrbitalSpace>(m, "OrbitalSpace", "Contains information about the orbitals")
+    py::classh<OrbitalSpace>(m, "OrbitalSpace", "Contains information about the orbitals")
         .def(py::init<const std::string&, const std::string&, const SharedMatrix&, const SharedVector&,
                       const std::shared_ptr<BasisSet>&, const std::shared_ptr<IntegralFactory>&>())
         .def(py::init<const std::string&, const std::string&, const SharedMatrix&, const std::shared_ptr<BasisSet>&,
