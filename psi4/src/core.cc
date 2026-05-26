@@ -557,7 +557,7 @@ void py_psi_clean_options() {
 
 void py_psi_print_out(std::string s) {
     if (!outfile || !outfile->stream()) {
-        std::cerr << s;Expand commentComment on line R560Resolved
+        std::cerr << s;
         return;
     }
     (*outfile->stream()) << s << std::flush;
