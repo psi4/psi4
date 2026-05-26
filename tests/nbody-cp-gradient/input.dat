@@ -71,8 +71,10 @@ units bohr
 
 set d_convergence 9
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 10, "d_convergence": 3e-8})
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
+    tol = 1.e-8
+else:
+    tol = 7.e-8  # perhaps 5.e-8 after sqrt
 
 # compute nbody
 if distributed:
@@ -114,7 +116,7 @@ for result in [  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     variable("CURRENT GRADIENT"),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad, result, 7, 'CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad, result, tol, 'CP-Corrected Gradient')  #TEST
 
 # compute pieces
 cp_scheme = {  #TEST
@@ -196,7 +198,7 @@ for result in [  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     grad,  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad, result, 7, 'CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad, result, tol, 'CP-Corrected Gradient')  #TEST
 
 # NBODY NUMBER=12 was a bug fixed in v1.10 where all nocp species were run just
 #   to get the nocp monomers for total energy
@@ -235,7 +237,7 @@ for result in [  #TEST
     wfn.variable('CP-CORRECTED TOTAL GRADIENT THROUGH 2-BODY'),  #TEST
     wfn.variable('CP-CORRECTED TOTAL GRADIENT'),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad, result, 7, 'rtd=F CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad, result, tol, 'rtd=F CP-Corrected Gradient')  #TEST
 
 for result in [  #TEST
     wfn.variable('CP-CORRECTED INTERACTION GRADIENT'),  #TEST
@@ -243,7 +245,7 @@ for result in [  #TEST
     wfn.variable("CURRENT GRADIENT"),  #TEST
     variable("CURRENT GRADIENT"),  #TEST
 ]:  #TEST
-    compare_values(ref_2cp_grad_ie, result, 7, 'rtd=F CP-Corrected Gradient')  #TEST
+    compare_values(ref_2cp_grad_ie, result, tol, 'rtd=F CP-Corrected Gradient')  #TEST
 
 compare(12, wfn.variable("NBODY NUMBER"), "rtd=F nbody number")  #TEST
 

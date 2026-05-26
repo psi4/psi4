@@ -38,9 +38,6 @@ def test_guess_mix_for_broken_symmetry(inp):
     psi4.set_options({"reference": "uhf", "e_convergence": 12, "basis": "cc-pvdz"})
     psi4.set_options(inp.get("options", {}))
 
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
-
     thisSCF = psi4.energy("scf")
     psi4.set_options(inp.get("late_options", {}))
     psi4.set_options({"guess_mix": True})
@@ -136,7 +133,7 @@ def test_scf_guess(inp, ref):
     assert compare_values(
         ref_final[ref], psi4.variable("SCF TOTAL ENERGY"), 6, "FINAL SCF ENERGY"
     )
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-DIFF-REF
       # until pyooo and SCF TOTAL ENERGIES filled out
       assert compare_values(
         vals[ref][inp["options"]["guess"]],
