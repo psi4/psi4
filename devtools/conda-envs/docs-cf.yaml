@@ -15,7 +15,7 @@ dependencies:
   - libboost-headers          # req'd with libint
   - llvm-openmp
   - numpy
-  - pybind11>=3.0.0
+  - pybind11>=2.10.*
   - python
     # qc buildtime required
   - gau2grid
