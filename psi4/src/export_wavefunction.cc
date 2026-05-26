@@ -82,7 +82,7 @@ using namespace pybind11::literals;
 
 void export_wavefunction(py::module_& m) {
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
-    py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr())
+    py::classh<Wavefunction>(m, "Wavefunction", "docstring", py::dynamic_attr())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>,
@@ -319,7 +319,7 @@ void export_wavefunction(py::module_& m) {
         .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation")
         .def("get_density", [](Wavefunction& wfn, std::string name) {return wfn.density_map_[name] ;}, "Experimental!");
 
-    py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
+    py::classh<scf::HF, Wavefunction>(m, "HF", "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.", "shift"_a = 0.0)
         .def("form_initial_C", &scf::HF::form_initial_C,
@@ -402,7 +402,7 @@ void export_wavefunction(py::module_& m) {
         .def("openorbital_scf", &scf::HF::openorbital_scf, "Runs the SCF with OpenOrbitalOptimizer");
 
     /// HF Functions
-    py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")
+    py::classh<scf::RHF, scf::HF>(m, "RHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("c1_deep_copy", &scf::RHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
@@ -411,7 +411,7 @@ void export_wavefunction(py::module_& m) {
         .def("twoel_Hx_full", &scf::RHF::twoel_Hx_full, "Two-electron Hessian-vector products. Triplet supported.")
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
-    py::class_<scf::ROHF, std::shared_ptr<scf::ROHF>, scf::HF>(m, "ROHF", "docstring")
+    py::classh<scf::ROHF, scf::HF>(m, "ROHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("soFeff", &scf::ROHF::soFeff,
              "Returns the effective Fock matrix in the orthogonalized SO basis. See libscf_solver/rohf.cc::form_C"
@@ -427,7 +427,7 @@ void export_wavefunction(py::module_& m) {
              "basis"_a)
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
-    py::class_<scf::UHF, std::shared_ptr<scf::UHF>, scf::HF>(m, "UHF", "docstring")
+    py::classh<scf::UHF, scf::HF>(m, "UHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("c1_deep_copy", &scf::UHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
@@ -435,7 +435,7 @@ void export_wavefunction(py::module_& m) {
              "basis"_a)
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
-    py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")
+    py::classh<scf::CUHF, scf::HF>(m, "CUHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("c1_deep_copy", &scf::CUHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
@@ -444,14 +444,14 @@ void export_wavefunction(py::module_& m) {
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
     /// EP2 functions
-    py::class_<dfep2::DFEP2Wavefunction, std::shared_ptr<dfep2::DFEP2Wavefunction>, Wavefunction>(
+    py::classh<dfep2::DFEP2Wavefunction, Wavefunction>(
         m, "DFEP2Wavefunction", "A density-fitted second-order Electron Propagator Wavefunction.")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("compute", &dfep2::DFEP2Wavefunction::compute,
              "Computes the density-fitted EP2 energy for the input orbitals");
 
     /// FISAPT functions
-    py::class_<fisapt::FISAPT, std::shared_ptr<fisapt::FISAPT>>(m, "FISAPT", "A Fragment-SAPT Wavefunction")
+    py::classh<fisapt::FISAPT>(m, "FISAPT", "A Fragment-SAPT Wavefunction")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("molecule", &fisapt::FISAPT::molecule, "Returns the FISAPT's molecule.")
         .def("scalars", &fisapt::FISAPT::scalars, "Return the interally computed scalars (not copied).")
@@ -488,7 +488,7 @@ void export_wavefunction(py::module_& m) {
     void (detci::CIvect::*py_civ_copy)(std::shared_ptr<psi::detci::CIvect>, int, int) = &detci::CIvect::copy;
     void (detci::CIvect::*py_civ_scale)(double, int) = &detci::CIvect::scale;
 
-    py::class_<detci::CIvect, std::shared_ptr<detci::CIvect>>(m, "CIVector", py::buffer_protocol(), "docstring")
+    py::classh<detci::CIvect>(m, "CIVector", py::buffer_protocol(), "docstring")
         .def("vdot", &detci::CIvect::vdot, "docstring")
         .def("axpy", &detci::CIvect::axpy, "docstring")
         .def("vector_multiply", &detci::CIvect::vector_multiply, "docstring")
@@ -516,7 +516,7 @@ void export_wavefunction(py::module_& m) {
     typedef std::vector<SharedMatrix> (detci::CIWavefunction::*form_density_sig)(
         std::shared_ptr<psi::detci::CIvect>, std::shared_ptr<psi::detci::CIvect>, int, int);
 
-    py::class_<detci::CIWavefunction, std::shared_ptr<detci::CIWavefunction>, Wavefunction>(m, "CIWavefunction",
+    py::classh<detci::CIWavefunction, Wavefunction>(m, "CIWavefunction",
                                                                                             "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("get_dimension", &detci::CIWavefunction::get_dimension, R"pbdoc(
@@ -603,7 +603,7 @@ void export_wavefunction(py::module_& m) {
         .def("cleanup_dpd", &detci::CIWavefunction::cleanup_dpd, "docstring")
         .def("set_ci_guess", &detci::CIWavefunction::set_ci_guess, "docstring");
 
-    py::class_<ccenergy::CCEnergyWavefunction, std::shared_ptr<ccenergy::CCEnergyWavefunction>, Wavefunction>(
+    py::classh<ccenergy::CCEnergyWavefunction, Wavefunction>(
         m, "CCWavefunction", "Specialized Wavefunction used by the ccenergy, cceom, ccgradient, etc. modules.")
         .def(py::init<std::shared_ptr<Wavefunction>, Options&>())
         .def("total_index", [](ccenergy::CCEnergyWavefunction& wfn, int i, int h) { return wfn.total_indices[{i, h}]; },
@@ -645,7 +645,7 @@ void export_wavefunction(py::module_& m) {
         )pbdoc");
 
 #ifdef USING_CheMPS2
-        py::class_<dmrg::DMRGSolver, std::shared_ptr<dmrg::DMRGSolver>, Wavefunction>(
+        py::classh<dmrg::DMRGSolver, Wavefunction>(
           m, "DMRGSolver", "Specialized Wavefunction used by CheMPS2.")
           .def(py::init<std::shared_ptr<Wavefunction>, Options&>())
           .def("occupation_a", &dmrg::DMRGSolver::occupation_a, "Returns the occupation numbers of the current alpha orbitals using the spin-averaged density.")

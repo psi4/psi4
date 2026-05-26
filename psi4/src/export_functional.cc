@@ -49,7 +49,7 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 void export_functional(py::module_ &m) {
-    py::class_<Functional, std::shared_ptr<Functional>>(m, "Functional", "docstring")
+    py::classh<Functional>(m, "Functional", "docstring")
         .def_static("build_base", &Functional::build_base, "alias"_a, "docstring")
         .def("compute_functional", &Functional::compute_functional, "docstring")
         .def("name", &Functional::name, "docstring")
@@ -77,7 +77,7 @@ void export_functional(py::module_ &m) {
         .def("print_out", &Functional::py_print, "docstring")
         .def("print_detail", &Functional::py_print_detail, "docstring");
 
-    py::class_<BasisExtents, std::shared_ptr<BasisExtents>>(m, "BasisExtents", "docstring")
+    py::classh<BasisExtents>(m, "BasisExtents", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, double>())
         .def("set_delta", &BasisExtents::set_delta, "docstring")
         .def("delta", &BasisExtents::delta, "docstring")
@@ -85,7 +85,7 @@ void export_functional(py::module_ &m) {
         .def("shell_extents", &BasisExtents::shell_extents, "docstring")
         .def("maxR", &BasisExtents::maxR, "docstring");
 
-    py::class_<BlockOPoints, std::shared_ptr<BlockOPoints>>(m, "BlockOPoints", "docstring")
+    py::classh<BlockOPoints>(m, "BlockOPoints", "docstring")
         .def(py::init<SharedVector, SharedVector, SharedVector, SharedVector, std::shared_ptr<BasisExtents>>())
         .def("x",
              [](BlockOPoints &grid) {
@@ -118,7 +118,7 @@ void export_functional(py::module_ &m) {
         .def("shells_local_to_global", &BlockOPoints::shells_local_to_global, "docstring")
         .def("functions_local_to_global", &BlockOPoints::functions_local_to_global, "docstring");
 
-    py::class_<SuperFunctional, std::shared_ptr<SuperFunctional>>(m, "SuperFunctional", "docstring")
+    py::classh<SuperFunctional>(m, "SuperFunctional", "docstring")
 
         .def(py::init<>())
         .def_static("blank", &SuperFunctional::blank, "Initialize a blank SuperFunctional.")
@@ -197,7 +197,7 @@ void export_functional(py::module_ &m) {
     typedef void (LibXCFunctional::*tweak_set1)(std::vector<double>, bool);
     typedef void (LibXCFunctional::*tweak_set2)(std::map<std::string, double>, bool);
 
-    py::class_<LibXCFunctional, std::shared_ptr<LibXCFunctional>, Functional>(m, "LibXCFunctional", "docstring")
+    py::classh<LibXCFunctional, Functional>(m, "LibXCFunctional", "docstring")
         .def(py::init<std::string, bool>())
         .def("get_mix_data", &LibXCFunctional::get_mix_data, "docstring")
         .def("set_tweak", tweak_set1(&LibXCFunctional::set_tweak), "tweaks"_a, "quiet"_a = false,
@@ -210,7 +210,7 @@ void export_functional(py::module_ &m) {
         .def("xclib_description", &LibXCFunctional::xclib_description, "query libxc for version and citation")
         .def("query_libxc", &LibXCFunctional::query_libxc, "query libxc regarding functional parameters.");
 
-    py::class_<BasisFunctions, std::shared_ptr<BasisFunctions>>(m, "BasisFunctions", "docstring")
+    py::classh<BasisFunctions>(m, "BasisFunctions", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, int, int>())
         .def("max_functions", &BasisFunctions::max_functions, "docstring")
         .def("max_points", &BasisFunctions::max_points, "docstring")
@@ -222,7 +222,7 @@ void export_functional(py::module_ &m) {
     typedef void (PointFunctions::*matrix_set1)(SharedMatrix);
     typedef void (PointFunctions::*matrix_set2)(SharedMatrix, SharedMatrix);
 
-    py::class_<PointFunctions, std::shared_ptr<PointFunctions>, BasisFunctions>(m, "PointFunctions", "docstring")
+    py::classh<PointFunctions, BasisFunctions>(m, "PointFunctions", "docstring")
         .def("print_out", &PointFunctions::print, "out_fname"_a = "outfile", "print"_a = 2, "docstring")
         .def("ansatz", &PointFunctions::ansatz, "docstring")
         .def("set_ansatz", &PointFunctions::set_ansatz, "docstring")
@@ -232,7 +232,7 @@ void export_functional(py::module_ &m) {
         .def("point_values", &PointFunctions::point_values, "docstring")
         .def("orbital_values", &PointFunctions::orbital_values, "docstring");
 
-    py::class_<MolecularGrid, std::shared_ptr<MolecularGrid>>(m, "MolecularGrid", "docstring")
+    py::classh<MolecularGrid>(m, "MolecularGrid", "docstring")
         .def("print", &MolecularGrid::print, "Prints grid information.")
         .def("orientation", &MolecularGrid::orientation, "Returns the orientation of the grid.")
         .def("npoints", &MolecularGrid::npoints, "Returns the number of grid points.")
@@ -242,7 +242,7 @@ void export_functional(py::module_ &m) {
         .def("blocks", &MolecularGrid::blocks, "Returns a list of blocks.")
         .def("atomic_blocks", &MolecularGrid::atomic_blocks, "Returns a list of blocks.");
 
-    py::class_<DFTGrid, std::shared_ptr<DFTGrid>, MolecularGrid>(m, "DFTGrid", "docstring")
+    py::classh<DFTGrid, MolecularGrid>(m, "DFTGrid", "docstring")
         .def_static("build",
                     [](std::shared_ptr<Molecule> &mol, std::shared_ptr<BasisSet> &basis) {
                         return std::make_shared<DFTGrid>(mol, basis, Process::environment.options);
@@ -252,7 +252,7 @@ void export_functional(py::module_ &m) {
             return std::make_shared<DFTGrid>(mol, basis, int_opts, string_opts, Process::environment.options);
         });
 
-    py::class_<VBase, std::shared_ptr<VBase>>(m, "VBase", "docstring")
+    py::classh<VBase>(m, "VBase", "docstring")
         .def_static("build",
                     [](std::shared_ptr<BasisSet> &basis, std::shared_ptr<SuperFunctional> &func, std::string type) {
                         return VBase::build_V(basis, func, Process::environment.options, type);
@@ -283,13 +283,13 @@ void export_functional(py::module_ &m) {
         .def("finalize", &VBase::finalize, "Finalizes the V object.")
         .def("print_header", &VBase::print_header, "Prints the objects header.");
 
-    py::class_<RKSFunctions, std::shared_ptr<RKSFunctions>, PointFunctions>(m, "RKSFunctions", "docstring")
+    py::classh<RKSFunctions, PointFunctions>(m, "RKSFunctions", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, int, int>());
 
-    py::class_<UKSFunctions, std::shared_ptr<UKSFunctions>, PointFunctions>(m, "UKSFunctions", "docstring")
+    py::classh<UKSFunctions, PointFunctions>(m, "UKSFunctions", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, int, int>());
 
-    py::class_<Dispersion, std::shared_ptr<Dispersion>>(m, "Dispersion", "docstring")
+    py::classh<Dispersion>(m, "Dispersion", "docstring")
         .def_static("build", &Dispersion::build, "type"_a, "s6"_a = 0.0, "alpha6"_a = 0.0, "sr6"_a = 0.0,
                     "Initialize instance capable of computing a dispersion correction of *type*")
         .def("name", &Dispersion::name, "docstring")
@@ -314,7 +314,7 @@ void export_functional(py::module_ &m) {
         .def("a2", &Dispersion::get_a2, "docstring")
         .def("print_out", &Dispersion::py_print, "docstring");
 
-    py::class_<sapt::FDDS_Dispersion, std::shared_ptr<sapt::FDDS_Dispersion>>(m, "FDDS_Dispersion", "docstring")
+    py::classh<sapt::FDDS_Dispersion>(m, "FDDS_Dispersion", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::map<std::string, SharedMatrix>,
                       std::map<std::string, SharedVector>, bool>())
         .def("metric", &sapt::FDDS_Dispersion::metric, "Obtains the FDDS metric.")
@@ -333,7 +333,7 @@ void export_functional(py::module_ &m) {
         .def("R_A", &sapt::FDDS_Dispersion::R_A, "Obtains (R^t)^-1 for monomer A.")
         .def("R_B", &sapt::FDDS_Dispersion::R_B, "Obtains (R^t)^-1 for monomer B.");
 
-     py::class_<NumIntHelper, std::shared_ptr<NumIntHelper>>(m, "NumIntHelper",
+     py::classh<NumIntHelper>(m, "NumIntHelper",
                                                              "Computes numerical integrals using a DFT grid.")
          .def(py::init<std::shared_ptr<DFTGrid>>())
          .def("numint_grid", &NumIntHelper::numint_grid)
