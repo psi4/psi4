@@ -65,7 +65,7 @@ endif()
 
 #  <<  Pybind11 & Python  >>
 find_package(Python 3.10 COMPONENTS Interpreter Development NumPy REQUIRED)
-find_package( pybind11 2.6.2 CONFIG REQUIRED)  # edit in codedeps (fix spacing when even lower bound)
+find_package(pybind11 3.0.0 CONFIG REQUIRED)  # edit in codedeps
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${Python_VERSION} and ${CMAKE_CXX_STANDARD})")
 message(STATUS "${Cyan}Using Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE}")
 
