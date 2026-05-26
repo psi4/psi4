@@ -1,4 +1,12 @@
-find_package(pybind11 3.0.0 CONFIG QUIET)  # edit in codedeps
+if(${Python_NumPy_VERSION} GREATER_EQUAL "2")
+        find_package(pybind11 3.0.0 CONFIG QUIET)  # edit in codedeps
+else()
+    if(${Python_VERSION_MINOR} GREATER_EQUAL "11")
+        find_package( pybind11 2.10.1 CONFIG QUIET)
+    else()
+        find_package( pybind11 2.6.2 CONFIG QUIET)
+    endif()
+endif()
 
 if(${pybind11_FOUND})
     message(STATUS "${Cyan}Found pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION})")

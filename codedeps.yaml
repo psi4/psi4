@@ -733,16 +733,16 @@ data:
       host: github
       account: pybind
       name: pybind11
-      commit: v3.0.0
+      commit: v2.13.1
     cmake:
       name: pybind11  # detect Python before pybind11
-      constraint: 3.0.0
+      constraint: 2.12.0
       target: pybind11::module
     conda:
       channel: conda-forge
       name: pybind11
-      constraint: ">=3.0.0"
-      constraint_note: "Numpy v2 needs >=2.12."
+      constraint: null
+      constraint_note: "Numpy v2 needs >=2.12. For docs, '>=2.10.*,<2.12.0' has adv; search FixedSize."
       cmake:
         pybind11_DIR:
           unix: ${CONDA_PREFIX}/share/cmake/pybind11
