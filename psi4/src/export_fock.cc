@@ -41,9 +41,39 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libscf_solver/sad.h"
 
+#ifdef USING_Einsums
+#include <Einsums/Tensor/RuntimeTensor.hpp>
+#include <algorithm>
+#endif
+
 using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
+
+#ifdef USING_Einsums
+namespace {
+// Reshape a flat DF block (naux x d2*d3, the matrix is row-major in p,q) into a
+// dense rank-3 einsums::RuntimeTensor (naux, d2, d3). DF integrals carry no
+// point-group symmetry, so a dense tensor (not a tiled one) is the natural
+// representation — and a dense RuntimeTensor is sliceable in Python, which the
+// pair/batch-driven DF correlation methods need. A directly-constructed
+// row-major RuntimeTensor matches the matrix's row-major layout, so each
+// auxiliary row copies contiguously.
+einsums::RuntimeTensor<double> df_block_to_tensor(const std::string &name, SharedMatrix M, int d2, int d3) {
+    const int    naux = M->nrow();
+    einsums::RuntimeTensor<double> T(
+        name, std::vector<size_t>{static_cast<size_t>(naux), static_cast<size_t>(d2), static_cast<size_t>(d3)},
+        /*row_major=*/true);
+    double      *td   = T.data();
+    double     **Mp   = M->pointer();
+    const size_t ncol = static_cast<size_t>(d2) * static_cast<size_t>(d3);
+    for (int Q = 0; Q < naux; ++Q) {
+        std::copy(Mp[Q], Mp[Q] + ncol, td + static_cast<size_t>(Q) * ncol);
+    }
+    return T;
+}
+} // namespace
+#endif
 
 void export_fock(py::module &m) {
     py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
@@ -114,7 +144,30 @@ void export_fock(py::module &m) {
         .def("Qov", &DFTensor::Qov, "doctsring")
         .def("Qvv", &DFTensor::Qvv, "doctsring")
         .def("Imo", &DFTensor::Imo, "doctsring")
-        .def("Idfmo", &DFTensor::Idfmo, "doctsring");
+        .def("Idfmo", &DFTensor::Idfmo, "doctsring")
+#ifdef USING_Einsums
+        // einsums variants of the 3-index blocks: dense rank-3
+        // einsums::RuntimeTensor (naux, d2, d3). DF carries no point-group
+        // symmetry, so these are plain dense tensors (sliceable for the
+        // pair/batch-driven DF correlation methods). Same fitted integrals as
+        // the matrix accessors.
+        .def(
+            "Qso_einsums", [](DFTensor &self) { return df_block_to_tensor("DF (Q|pq) SO", self.Qso(), self.nbf(), self.nbf()); },
+            "AO DF 3-index (Q|pq) as a dense rank-3 einsums RuntimeTensor (naux, nbf, nbf)")
+        .def(
+            "Qmo_einsums", [](DFTensor &self) { return df_block_to_tensor("DF (Q|pq) MO", self.Qmo(), self.nmo(), self.nmo()); },
+            "MO DF 3-index (Q|pq) as a dense rank-3 einsums RuntimeTensor (naux, nmo, nmo)")
+        .def(
+            "Qoo_einsums", [](DFTensor &self) { return df_block_to_tensor("DF (Q|ij) OO", self.Qoo(), self.naocc(), self.naocc()); },
+            "occ-occ DF 3-index as a dense rank-3 einsums RuntimeTensor (naux, naocc, naocc)")
+        .def(
+            "Qov_einsums", [](DFTensor &self) { return df_block_to_tensor("DF (Q|ia) OV", self.Qov(), self.naocc(), self.navir()); },
+            "occ-vir DF 3-index as a dense rank-3 einsums RuntimeTensor (naux, naocc, navir)")
+        .def(
+            "Qvv_einsums", [](DFTensor &self) { return df_block_to_tensor("DF (Q|ab) VV", self.Qvv(), self.navir(), self.navir()); },
+            "vir-vir DF 3-index as a dense rank-3 einsums RuntimeTensor (naux, navir, navir)")
+#endif
+        ;
 
     py::class_<FittingMetric, std::shared_ptr<FittingMetric>>(m, "FittingMetric", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, bool>())

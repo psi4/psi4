@@ -53,6 +53,16 @@ namespace arma {
 }
 #endif
 
+#ifdef USING_Einsums
+// Forward declaration only — keeps Einsums headers out of matrix.h (and the
+// shared PCH). Callers of to_einsums_tiled() include
+// <Einsums/Tensor/TiledRuntimeTensor.hpp> themselves.
+namespace einsums {
+template <typename T>
+struct TiledRuntimeTensor;
+}
+#endif
+
 
 namespace psi {
 
@@ -584,6 +594,17 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @returns the SharedMatrix
      */
     SharedMatrix to_block_sharedmatrix() const;
+#ifdef USING_Einsums
+    /**
+     * Expose this symmetry-blocked matrix as a rank-2 einsums::TiledRuntimeTensor
+     * that ALIASES the irrep blocks (zero-copy) — block h maps to tile
+     * (h, h^symmetry), aliasing the contiguous row-major buffer matrix_[h][0].
+     * The returned tensor borrows this matrix's storage, so the matrix must
+     * outlive it (and the data is shared: writes through either are visible to
+     * both). This is the zero-copy bridge toward an Einsums tensor backend.
+     */
+    einsums::TiledRuntimeTensor<double> to_einsums_tiled(const std::string &name = "");
+#endif
     /**
      * Returns a copy of the current matrix in lower triangle form.
      *

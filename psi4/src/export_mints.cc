@@ -52,6 +52,9 @@
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/sointegral_twobody.h"
 #include "psi4/libmints/mintshelper.h"
+#ifdef USING_Einsums
+#include <Einsums/Tensor/TiledRuntimeTensor.hpp>
+#endif
 #include "psi4/libmints/multipolesymmetry.h"
 #include "psi4/libmints/eri.h"
 #include "psi4/libmints/molecule.h"
@@ -537,6 +540,13 @@ void export_mints(py::module& m) {
         .def(py::init<dpdbuf4*>())
         .def(py::init<dpdfile2*>())
         .def("clone", &Matrix::clone, "Creates exact copy of the matrix and returns it")
+#ifdef USING_Einsums
+        .def("to_einsums_tiled", &Matrix::to_einsums_tiled, "name"_a = "",
+             "Alias this symmetry-blocked matrix as a rank-2 einsums TiledRuntimeTensor "
+             "(zero-copy; irrep block h -> tile (h, h^symmetry)). The matrix must outlive "
+             "the returned tensor; data is shared.",
+             py::keep_alive<0, 1>())
+#endif
         .def_property("name", py::cpp_function(&Matrix::name), py::cpp_function(&Matrix::set_name),
                       "The name of the Matrix. Used in printing.")
 
@@ -1480,6 +1490,22 @@ void export_mints(py::module& m) {
         .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "AO mixed basis potential integrals")
         .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals",
              "include_perturbations"_a = true)
+#ifdef USING_Einsums
+        .def("so_overlap_tiled", &MintsHelper::so_overlap_tiled,
+             "SO overlap integrals as an einsums TiledRuntimeTensor (irrep blocks -> tiles)")
+        .def("so_kinetic_tiled", &MintsHelper::so_kinetic_tiled, "SO kinetic integrals as an einsums TiledRuntimeTensor")
+        .def("so_potential_tiled", &MintsHelper::so_potential_tiled, "SO potential integrals as an einsums TiledRuntimeTensor")
+        .def("so_eri_tiled", &MintsHelper::so_eri_tiled,
+             "SO two-electron integrals (pq|rs) as a rank-4 einsums TiledRuntimeTensor (irrep quadruples -> tiles)")
+        .def("ao_eri_einsums", &MintsHelper::ao_eri_einsums,
+             "AO two-electron integrals (pq|rs) as a dense rank-4 einsums RuntimeTensor (shell-batched)")
+        .def("mo_bra_half_transform_einsums", &MintsHelper::mo_bra_half_transform_einsums,
+             "Integral-direct first-half (bra) MO transform (pq|ls) = sum_mn C1[m,p] C2[n,q] (mn|ls) as a dense "
+             "rank-4 einsums RuntimeTensor (n1, n2, nbf, nbf); the N^4 AO tensor is never materialized",
+             "C1"_a, "C2"_a)
+        .def("tiled_from_matrix", &MintsHelper::tiled_from_matrix,
+             "Copy a symmetry-blocked Matrix into an einsums TiledRuntimeTensor", "mat"_a, "name"_a)
+#endif
 #ifdef USING_ecpint
         .def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
         .def("ao_ecp", oneelectron_mixed_basis(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
