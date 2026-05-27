@@ -35,7 +35,7 @@ jobs:
             #    -D ENABLE_XHOST=OFF
 
           - label: "Conda Clang (M-Intel)"
-            runs-on: macos-13  # ensures py!=27 in base OS
+            runs-on: macos-15-intel
             python-version: "3.11"
             mkl-version: ""
             platform: osx-64
@@ -74,14 +74,12 @@ jobs:
             runs-on: windows-latest
             python-version: "3.12"
             mkl-version: ""
-            llvm-version: "17.0.6"  # known good: "17.0.6"; omp problem: 19, 20
             platform: win-64
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
-              -D CMAKE_CXX_FLAGS="-IC:\Miniconda\envs\p4build\opt\compiler\include"
 
             # Notes:
             # * When not using cache file, need to additionally specify the following:
@@ -170,6 +168,7 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
+          sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # sed -E -i.bak "s;;;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Silicon)" ]]; then
@@ -189,7 +188,7 @@ jobs:
         echo "::endgroup::"
 
     - name: Setup Conda
-      uses: conda-incubator/setup-miniconda@v3
+      uses: conda-incubator/setup-miniconda@v4
       with:
         activate-environment: p4build
         environment-file: env_p4build.yaml

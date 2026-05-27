@@ -58,7 +58,7 @@ jobs:
 
     - name: Create Conda Environment
       if: ${{ github.repository == 'psi4/psi4' }}
-      uses: conda-incubator/setup-miniconda@v3
+      uses: conda-incubator/setup-miniconda@v4
       with:
         activate-environment: p4docs
         add-pip-as-python-dependency: true
