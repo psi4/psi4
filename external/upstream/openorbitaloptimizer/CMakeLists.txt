@@ -1,5 +1,5 @@
 if(${ENABLE_OpenOrbitalOptimizer})
-    find_package(OpenOrbitalOptimizer CONFIG)
+    find_package(OpenOrbitalOptimizer 0.2...0.3 CONFIG)
 
     if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
         get_property(_loc TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer PROPERTY LOCATION)
