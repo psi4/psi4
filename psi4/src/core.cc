@@ -368,7 +368,9 @@ SharedWavefunction py_psi_dlpno(SharedWavefunction ref_wfn) {
     return dlpno::dlpno(ref_wfn, Process::environment.options);
 }
 
-#ifdef USING_Einsums
+// f12 subdir skipped (pre-2.0 Einsums API); gate on USING_f12 so its symbol is
+// never referenced even though USING_Einsums is now defined for the mints bridge.
+#if defined(USING_Einsums) && defined(USING_f12)
 SharedWavefunction py_psi_f12(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("F12");
     return f12::f12(ref_wfn, Process::environment.options);
@@ -513,7 +515,10 @@ SharedWavefunction py_psi_psimrcc(SharedWavefunction ref_wfn) {
     return psimrcc::psimrcc(ref_wfn, Process::environment.options);
 }
 
-#ifdef USING_Einsums
+// NOTE: USING_Einsums now signals the libmints TiledRuntimeTensor bridge, not the
+// old dummy_einsums placeholder module (skipped — it targets the pre-2.0 Einsums
+// API). Keep the disabled wrapper so the dummy_einsums symbol is never referenced.
+#if defined(USING_Einsums) && defined(USING_dummy_einsums)
 SharedWavefunction py_psi_dummy_einsums(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("EINSUMS");
     return dummy_einsums::dummy_einsums(ref_wfn, Process::environment.options);

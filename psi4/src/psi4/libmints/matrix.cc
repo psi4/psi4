@@ -41,6 +41,9 @@
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
+#ifdef USING_Einsums
+#include <Einsums/Tensor/TiledRuntimeTensor.hpp>
+#endif
 #include "psi4/libmints/integral.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -811,6 +814,28 @@ SharedMatrix Matrix::to_block_sharedmatrix() const {
     free_block(temp);
     return ret;
 }
+
+#ifdef USING_Einsums
+einsums::TiledRuntimeTensor<double> Matrix::to_einsums_tiled(const std::string &name) {
+    // Grid: one tile partition per axis, from the per-irrep row/column dims.
+    std::vector<int> rows(nirrep_), cols(nirrep_);
+    for (int h = 0; h < nirrep_; ++h) {
+        rows[h] = rowspi_[h];
+        cols[h] = colspi_[h];
+    }
+    einsums::TiledRuntimeTensor<double> T(name.empty() ? name_ : name, {rows, cols}, /*row_major=*/true);
+
+    // Block h has rowspi[h] rows and colspi[h^symmetry] columns and lives at tile
+    // (h, h^symmetry). Alias its contiguous row-major buffer (matrix_[h][0]) —
+    // no copy; the tensor shares this matrix's storage.
+    for (int h = 0; h < nirrep_; ++h) {
+        const int hc = h ^ symmetry_;
+        if (rowspi_[h] == 0 || colspi_[hc] == 0) continue;
+        T.add_alias_tile({h, hc}, matrix_[h][0], /*row_major=*/true);
+    }
+    return T;
+}
+#endif
 
 void Matrix::print_mat(const double *const *const a, int m, int n, std::string out) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));

@@ -34,6 +34,9 @@
 #include "psi4/libmints/molecule.h"
 
 #include "psi4/libmints/matrix.h"
+#ifdef USING_Einsums
+#include <Einsums/Tensor/TiledRuntimeTensor.hpp>
+#endif
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
@@ -1400,6 +1403,281 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations) {
     }
     return cached_oe_ints_[p];
 }
+
+#ifdef USING_Einsums
+namespace {
+// Fills a rank-4 einsums::TiledRuntimeTensor with SO two-electron integrals
+// (pq|rs), Mulliken/chemists' notation. TwoBodySOInt emits each integral once
+// in canonical (8-fold-reduced) form; we scatter it into all eight
+// permutation-equivalent positions so the resulting tensor is fully dense
+// within each symmetry-allowed block. Tiles are keyed by the (p,q,r,s) irrep
+// quadruple and created lazily — only symmetry-allowed, non-empty blocks ever
+// materialize. materialize() is idempotent and zero-initializes on first call,
+// so block entries the functor never visits remain true zeros.
+class TiledSOERIFiller {
+    einsums::TiledRuntimeTensor<double> &T_;
+
+    void put(int hp, int p, int hq, int q, int hr, int r, int hs, int s, double v) {
+        auto &tile = T_.tile({hp, hq, hr, hs});
+        tile.materialize();
+        tile(std::vector<size_t>{static_cast<size_t>(p), static_cast<size_t>(q), static_cast<size_t>(r),
+                                 static_cast<size_t>(s)}) = v;
+    }
+
+  public:
+    explicit TiledSOERIFiller(einsums::TiledRuntimeTensor<double> &T) : T_(T) {}
+
+    // Argument order matches TwoBodySOInt's functor convention: four absolute SO
+    // indices (unused here), then (irrep, within-irrep) for each of p,q,r,s, then
+    // the value. (pq|rs)=(qp|rs)=(pq|sr)=(qp|sr)=(rs|pq)=(sr|pq)=(rs|qp)=(sr|qp).
+    void operator()(int, int, int, int, int hp, int p, int hq, int q, int hr, int r, int hs, int s, double v) {
+        put(hp, p, hq, q, hr, r, hs, s, v);
+        put(hq, q, hp, p, hr, r, hs, s, v);
+        put(hp, p, hq, q, hs, s, hr, r, v);
+        put(hq, q, hp, p, hs, s, hr, r, v);
+        put(hr, r, hs, s, hp, p, hq, q, v);
+        put(hs, s, hr, r, hp, p, hq, q, v);
+        put(hr, r, hs, s, hq, q, hp, p, v);
+        put(hs, s, hr, r, hq, q, hp, p, v);
+    }
+};
+} // namespace
+
+einsums::TiledRuntimeTensor<double> MintsHelper::tiled_from_matrix(SharedMatrix mat, const std::string &name) {
+    const int        nirrep = mat->nirrep();
+    const Dimension &rowspi = mat->rowspi();
+    const Dimension &colspi = mat->colspi();
+    const int        sym    = mat->symmetry();
+
+    // One tile partition per axis, from the per-irrep row/column dimensions.
+    std::vector<int> rows(nirrep), cols(nirrep);
+    for (int h = 0; h < nirrep; ++h) {
+        rows[h] = rowspi[h];
+        cols[h] = colspi[h];
+    }
+
+    einsums::TiledRuntimeTensor<double> T(name, {rows, cols}, /*row_major=*/true);
+
+    // Block h has rowspi[h] rows and colspi[h ^ sym] columns; it lives at tile
+    // (h, h ^ sym). For a totally-symmetric operator (sym == 0) this is the
+    // block-diagonal (h, h).
+    for (int h = 0; h < nirrep; ++h) {
+        const int hc = h ^ sym;
+        if (rowspi[h] == 0 || colspi[hc] == 0) continue;
+        auto &tile = T.tile({h, hc});
+        tile.materialize();
+        for (int r = 0; r < rowspi[h]; ++r) {
+            for (int c = 0; c < colspi[hc]; ++c) {
+                tile(std::vector<size_t>{static_cast<size_t>(r), static_cast<size_t>(c)}) = mat->get(h, r, c);
+            }
+        }
+    }
+    return T;
+}
+
+einsums::TiledRuntimeTensor<double> MintsHelper::so_overlap_tiled() { return tiled_from_matrix(so_overlap(), "SO Overlap"); }
+
+einsums::TiledRuntimeTensor<double> MintsHelper::so_kinetic_tiled() { return tiled_from_matrix(so_kinetic(), "SO Kinetic"); }
+
+einsums::TiledRuntimeTensor<double> MintsHelper::so_potential_tiled() { return tiled_from_matrix(so_potential(), "SO Potential"); }
+
+einsums::TiledRuntimeTensor<double> MintsHelper::so_eri_tiled() {
+    const int       nirrep   = sobasis_->nirrep();
+    const Dimension sopi_dim = sobasis_->dimension();
+    std::vector<int> sopi(nirrep);
+    for (int h = 0; h < nirrep; ++h) sopi[h] = sopi_dim[h];
+
+    // Rank-4 tensor tiled by SO-per-irrep on every axis. A tile (the irrep
+    // quadruple p,q,r,s) is created only when an integral lands in it, i.e. for
+    // symmetry-allowed blocks whose direct product is totally symmetric.
+    einsums::TiledRuntimeTensor<double> T("SO ERI", {sopi, sopi, sopi, sopi}, /*row_major=*/true);
+
+    std::vector<std::shared_ptr<TwoBodyAOInt>> tb(1);
+    tb[0]      = std::shared_ptr<TwoBodyAOInt>(integral_->eri());
+    auto soeri = std::make_shared<TwoBodySOInt>(tb, integral_);
+
+    TiledSOERIFiller filler(T);
+    soeri->compute_integrals(filler);
+    return T;
+}
+
+einsums::RuntimeTensor<double> MintsHelper::ao_eri_einsums() {
+    auto                      ints = std::shared_ptr<TwoBodyAOInt>(integral_->eri());
+    std::shared_ptr<BasisSet> bs1  = ints->basis1();
+    std::shared_ptr<BasisSet> bs2  = ints->basis2();
+    std::shared_ptr<BasisSet> bs3  = ints->basis3();
+    std::shared_ptr<BasisSet> bs4  = ints->basis4();
+    const size_t              nbf1 = bs1->nbf();
+    const size_t              nbf2 = bs2->nbf();
+    const size_t              nbf3 = bs3->nbf();
+    const size_t              nbf4 = bs4->nbf();
+
+    // Dense, row-major, zero-initialized rank-4 tensor; write straight into its
+    // backing buffer at the row-major flat index for speed.
+    einsums::RuntimeTensor<double> T("AO ERI", std::vector<size_t>{nbf1, nbf2, nbf3, nbf4}, /*row_major=*/true);
+    double                        *data = T.data();
+
+    // Shell-batched fill: compute one shell quartet at a time and scatter its
+    // contiguous buffer into the tensor (same loop structure as ao_helper).
+    for (int M = 0; M < bs1->nshell(); ++M) {
+        for (int N = 0; N < bs2->nshell(); ++N) {
+            for (int P = 0; P < bs3->nshell(); ++P) {
+                for (int Q = 0; Q < bs4->nshell(); ++Q) {
+                    ints->compute_shell(M, N, P, Q);
+                    const double *buffer = ints->buffer();
+                    const size_t  om     = bs1->shell(M).function_index();
+                    const size_t  on     = bs2->shell(N).function_index();
+                    const size_t  op     = bs3->shell(P).function_index();
+                    const size_t  oq     = bs4->shell(Q).function_index();
+                    size_t        index  = 0;
+                    for (int m = 0; m < bs1->shell(M).nfunction(); ++m) {
+                        for (int n = 0; n < bs2->shell(N).nfunction(); ++n) {
+                            for (int p = 0; p < bs3->shell(P).nfunction(); ++p) {
+                                for (int q = 0; q < bs4->shell(Q).nfunction(); ++q, ++index) {
+                                    data[(((om + m) * nbf2 + (on + n)) * nbf3 + (op + p)) * nbf4 + (oq + q)] =
+                                        buffer[index];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return T;
+}
+
+einsums::RuntimeTensor<double> MintsHelper::mo_bra_half_transform_einsums(SharedMatrix C1, SharedMatrix C2) {
+    // (pq|ls) = sum_{mn} C1[m,p] C2[n,q] (mn|ls)  — chemists' notation.
+    //
+    // Integral-direct first-half (bra) transform. Each significant ket shell-pair
+    // (P,Q) gathers the AO bra block (mn|ls) over all (Schwarz-significant) bra
+    // shells into an nbf^2 * dP * dQ scratch, then collapses the bra with two
+    // GEMMs. The full N^4 AO tensor is never formed, so memory scales as the
+    // output (n1 * n2 * nbf^2).
+    //
+    // Tier-1 optimizations: Schwarz screening (skip negligible bra/ket pairs and
+    // quartets via the engine sieve) and OpenMP over ket shell-pairs (each pair
+    // writes a disjoint (l,s) slab of H, so threads never collide; each thread
+    // owns a cloned integral engine, the pattern used elsewhere in this file).
+    // Permutational symmetry (bra m<->n, ket l<->s) and shell-pair batching are
+    // the deferred Tier-2/3 wins.
+    auto                      ints = std::shared_ptr<TwoBodyAOInt>(integral_->eri());
+    std::shared_ptr<BasisSet> bs1  = ints->basis1(); // mu  (bra 1)
+    std::shared_ptr<BasisSet> bs2  = ints->basis2(); // nu  (bra 2)
+    std::shared_ptr<BasisSet> bs3  = ints->basis3(); // lambda (ket 1)
+    std::shared_ptr<BasisSet> bs4  = ints->basis4(); // sigma  (ket 2)
+    const size_t              nbf1 = bs1->nbf();
+    const size_t              nbf2 = bs2->nbf();
+    const size_t              nbf3 = bs3->nbf();
+    const size_t              nbf4 = bs4->nbf();
+
+    const size_t n1 = static_cast<size_t>(C1->colspi()[0]);
+    const size_t n2 = static_cast<size_t>(C2->colspi()[0]);
+    if (static_cast<size_t>(C1->rowspi()[0]) != nbf1 || static_cast<size_t>(C2->rowspi()[0]) != nbf2) {
+        throw PSIEXCEPTION("mo_bra_half_transform_einsums: C1/C2 row dimensions must match the bra AO basis (C1 single-irrep)");
+    }
+    double **C1p = C1->pointer();
+    double **C2p = C2->pointer();
+
+    // Dense, row-major output (n1, n2, nbf3, nbf4); write straight into the buffer.
+    einsums::RuntimeTensor<double> H("MO bra half-transform", std::vector<size_t>{n1, n2, nbf3, nbf4}, /*row_major=*/true);
+    double                        *Hdata = H.data();
+
+    // Per-thread integral engines (clone pattern, as elsewhere in this file).
+    std::vector<std::shared_ptr<TwoBodyAOInt>> tb(nthread_);
+    tb[0] = ints;
+    for (int t = 1; t < nthread_; ++t) tb[t] = std::shared_ptr<TwoBodyAOInt>(tb.front()->clone());
+
+    // Permutational symmetry of the AO ERI lets us touch each unique pair once:
+    //   bra:  (mn|ls) = (nm|ls)             -> loop N<=M, scatter into [m,n] and [n,m]
+    //   ket:  (pq|ls) = (pq|sl) (inherited)  -> loop Q<=P, write the (l,s) and (s,l) slabs
+    // ~4x fewer compute_shell calls. Requires the bra (resp. ket) AO bases to
+    // match, which they do for the primary-basis ERI used here.
+    if (bs1 != bs2 || bs3 != bs4) {
+        throw PSIEXCEPTION("mo_bra_half_transform_einsums: permutational symmetry assumes matching bra/ket bases");
+    }
+
+    // Significant, unique (P>=Q) ket shell-pairs are the unit of parallel work;
+    // each writes a disjoint set of (l,s) slabs, so threads never collide. An
+    // insignificant pair contributes nothing (its H slabs stay zero-initialized).
+    std::vector<std::pair<int, int>> ketpairs;
+    for (int P = 0; P < bs3->nshell(); ++P) {
+        for (int Q = 0; Q <= P; ++Q) {
+            if (ints->shell_pair_significant(P, Q)) ketpairs.emplace_back(P, Q);
+        }
+    }
+    const long npairs = static_cast<long>(ketpairs.size());
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthread_)
+    for (long kp = 0; kp < npairs; ++kp) {
+        const int     tid = omp_get_thread_num();
+        TwoBodyAOInt *eng = tb[tid].get();
+        const int     P   = ketpairs[kp].first;
+        const int     Q   = ketpairs[kp].second;
+        const size_t  dP  = bs3->shell(P).nfunction();
+        const size_t  oP  = bs3->shell(P).function_index();
+        const size_t  dQ  = bs4->shell(Q).nfunction();
+        const size_t  oQ  = bs4->shell(Q).function_index();
+        const size_t  npq = dP * dQ;
+
+        // AO bra block for this ket pair: [mu, nu, p_, q_], row-major (thread-local).
+        // Bra pairs are looped triangularly (N<=M); each is scattered into both
+        // [mu,nu] and (off-diagonal) [nu,mu] via (mn|ls) = (nm|ls).
+        std::vector<double> aobra(nbf1 * nbf2 * npq, 0.0);
+        for (int M = 0; M < bs1->nshell(); ++M) {
+            const size_t dM = bs1->shell(M).nfunction();
+            const size_t oM = bs1->shell(M).function_index();
+            for (int N = 0; N <= M; ++N) {
+                if (!eng->shell_significant(M, N, P, Q)) continue; // Schwarz quartet screen
+                const size_t dN = bs2->shell(N).nfunction();
+                const size_t oN = bs2->shell(N).function_index();
+                eng->compute_shell(M, N, P, Q);
+                const double *buf  = eng->buffer();
+                const bool    offd = (M != N);
+                size_t        idx  = 0;
+                for (size_t m = 0; m < dM; ++m) {
+                    for (size_t n = 0; n < dN; ++n) {
+                        for (size_t p_ = 0; p_ < dP; ++p_) {
+                            for (size_t q_ = 0; q_ < dQ; ++q_, ++idx) {
+                                const double v  = buf[idx];
+                                const size_t pq = p_ * dQ + q_;
+                                aobra[((oM + m) * nbf2 + (oN + n)) * npq + pq] = v;             // (mu,nu)
+                                if (offd) aobra[((oN + n) * nbf2 + (oM + m)) * npq + pq] = v;   // (nu,mu)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Quarter 1: half1[p, nu, p_q_] = sum_mu C1[mu,p] aobra[mu, nu, p_q_].
+        // C1 is (nbf1 x n1) row-major (lda n1); 'T' uses C1^T (n1 x nbf1).
+        std::vector<double> half1(n1 * nbf2 * npq, 0.0);
+        C_DGEMM('T', 'N', n1, nbf2 * npq, nbf1, 1.0, C1p[0], n1, aobra.data(), nbf2 * npq, 0.0, half1.data(),
+                nbf2 * npq);
+
+        // Quarter 2 (per surviving bra-1 index p): out[q, p_q_] = sum_nu C2[nu,q] half1[p, nu, p_q_].
+        const bool          offd_ket = (P != Q);
+        std::vector<double> outp(n2 * npq, 0.0);
+        for (size_t p = 0; p < n1; ++p) {
+            C_DGEMM('T', 'N', n2, npq, nbf2, 1.0, C2p[0], n2, half1.data() + p * nbf2 * npq, npq, 0.0, outp.data(), npq);
+            // Scatter into the (l,s) slab and, for off-diagonal ket pairs, its
+            // (s,l) partner via (pq|ls) = (pq|sl). Disjoint across ket pairs.
+            for (size_t q = 0; q < n2; ++q) {
+                for (size_t p_ = 0; p_ < dP; ++p_) {
+                    for (size_t q_ = 0; q_ < dQ; ++q_) {
+                        const double v = outp[q * npq + (p_ * dQ + q_)];
+                        Hdata[((p * n2 + q) * nbf3 + (oP + p_)) * nbf4 + (oQ + q_)] = v;              // (l in P, s in Q)
+                        if (offd_ket) Hdata[((p * n2 + q) * nbf3 + (oQ + q_)) * nbf4 + (oP + p_)] = v; // (l in Q, s in P)
+                    }
+                }
+            }
+        }
+    }
+    return H;
+}
+#endif
 
 void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
     std::string perturb_with = options_.get_str("PERTURB_WITH");
