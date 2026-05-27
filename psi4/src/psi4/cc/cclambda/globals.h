@@ -44,19 +44,12 @@ namespace psi {
 namespace cclambda {
 
 /* Global variables */
-#ifdef EXTERN
-#undef EXTERN
-#define EXTERN extern
-#else
-#define EXTERN
-#endif
-
 /* #define EOM_DEBUG (1) */
 
-EXTERN struct MOInfo moinfo;
-EXTERN struct Params params;
-EXTERN struct L_Params *pL_params;
-EXTERN struct Local local;
+extern struct MOInfo moinfo;
+extern struct Params params;
+extern struct L_Params *pL_params;
+extern struct Local local;
 void check_sum(char *lbl, int L_irr);
 }
 }  // namespace psi

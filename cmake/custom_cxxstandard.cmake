@@ -12,6 +12,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
         message(FATAL_ERROR "GCC version must be at least 10.0!")
     endif()
 
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+    set(_testfl "dummy")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.0.0")
         message(FATAL_ERROR "ICPC version must be at least 2019.0.0 to work with pybind11 2.1!")  # v1.2

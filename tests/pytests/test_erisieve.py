@@ -172,9 +172,6 @@ def test_schwarz_vs_csam_energy():
                       'screening' : 'schwarz',
                       'ints_tolerance' : 1.0e-12 })
 
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 6e-9})
-
     e_schwarz = psi4.energy('hf/DZ')
 
     psi4.core.clean()
@@ -183,9 +180,6 @@ def test_schwarz_vs_csam_energy():
                       'd_convergence' : 1e-12,
                       'screening' : 'csam',
                       'ints_tolerance' : 1.0e-12 })
-
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 6e-9})
 
     e_csam = psi4.energy('hf/DZ')
 
@@ -220,7 +214,7 @@ def test_schwarz_vs_density_vs_none_quartets_direct():
         "incfock": False,
 
     })
-    if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+    if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":  # KP-FOR-NOW
         psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO fix
 
     schwarz_energy, schwarz_wfn = psi4.energy('hf/DZ', return_wfn=True)
@@ -301,7 +295,7 @@ def test_rhf_vs_uhf_screening():
         "incfock": False,
 
     })
-    if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+    if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":  # KP-FOR-NOW
         psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO fix
 
     rhf_energy, rhf_wfn = psi4.energy('hf/DZ', return_wfn=True)
@@ -528,8 +522,6 @@ def test_schwarz_vs_none_energy():
     psi4.set_options({'d_convergence' : 1e-12,
                       'screening' : 'schwarz',
                       'ints_tolerance' : 1.0e-12 })
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 6e-9})
 
     e_schwarz = psi4.energy('hf/DZ')
 
@@ -538,11 +530,8 @@ def test_schwarz_vs_none_energy():
     psi4.set_options({'d_convergence' : 1e-12,
                       'screening' : 'none',
                       'ints_tolerance' : 1.0e-12 })
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
-        tol = 3e-11
-    else:
-        tol = 1e-10
-        psi4.set_options({"e_convergence": 9, "d_convergence": 6e-9})
+
+    tol = 3e-11
 
     e_none = psi4.energy('hf/DZ')
 
@@ -579,7 +568,7 @@ def test_schwarz_vs_none_quartets(scf_type):
         "save_jk": True,
         "bench" : 1
     })
-    if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
+    if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":  # KP-FOR-NOW
         psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO fix
 
     schwarz_energy, schwarz_wfn = psi4.energy('hf/DZ', return_wfn=True)

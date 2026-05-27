@@ -51,7 +51,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
-#define EXTERN
 #include "globals.h"
 #include "psi4/psi4-dec.h"
 

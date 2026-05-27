@@ -35,7 +35,6 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "MOInfo.h"
 #include "Params.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {

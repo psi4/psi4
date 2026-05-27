@@ -59,8 +59,6 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
         "df_basis_scf": "cc-pvtz-jkfit",
         "print": 2,
     })
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
  
     #== skip redundant option combinations based on type/subtype combination ==#   
     if scf_type not in [ "PK", "DISK_DF", "MEM_DF"] and scf_subtype != "AUTO":
@@ -95,7 +93,7 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
         elif scf_type in [ "MEM_DF", "DISK_DF" ]:
             E_ref = Eref["Singlet"]["DF"]
         elif scf_type in Eref["Singlet"]["Composite"].keys(): 
-            if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL" and scf_type == "DFDIRJ+COSX":
+            if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL" and scf_type == "DFDIRJ+COSX":  # KP-DIFF-ANS
                 E_ref = Eref["Singlet"]["Composite"][f"{scf_type}_OOO"]
             else:
                 E_ref = Eref["Singlet"]["Composite"][scf_type]

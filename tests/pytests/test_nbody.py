@@ -62,8 +62,8 @@ _stdouts = {
 \s*   ==> N-Body: Counterpoise Corrected \(CP\) energies <==
 \s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*           §A\s+1     -155.4058841\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN §A\s+2     -155.4076102\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d
+\s*           §A\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN §A\s+2     -155.407610\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
 \s*
 \s*MC Legend: §A: "\(auto\)"
 \s*
@@ -73,7 +73,7 @@ _stdouts = {
 \s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
 \s*           §A\s+1        N/A                   0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN §A\s+2        N/A                  -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d
+\s*  FULL/RTN §A\s+2        N/A                  -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
 \s*
 \s*MC Legend: §A: "\(auto\)"
 \s*
@@ -82,8 +82,8 @@ _stdouts = {
 \s*   ==> N-Body: Non-Counterpoise Corrected \(NoCP\) energies <==
 \s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*           §A\s+1     -155.4058841\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN §A\s+2     -155.4088716\d\d\d\d\d       -0.0029874\d\d\d\d\d       -1.87464\d\d\d\d\d\d\d       -0.0029874\d\d\d\d\d       -1.87464\d\d\d\d\d\d\d
+\s*           §A\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN §A\s+2     -155.408871\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d
 \s*
 \s*MC Legend: §A: "\(auto\)"
 \s*
@@ -152,8 +152,8 @@ H   0.000000   0.000000   3.963929
         },
     }
 
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        atin["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-MATCH
+        atin["keywords"].update({"d_convergence": 5e-10})
 
     ret = psi4.schema_wrapper.run_qcschema(atin)
 

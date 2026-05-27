@@ -43,7 +43,6 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
-#define EXTERN
 #include "globals.h"
 
 namespace psi {
