@@ -24,6 +24,7 @@ list(APPEND sources
   wrapper_database
   driver
   schema_wrapper
+  trexio
 )
 
 foreach(py ${sources})
