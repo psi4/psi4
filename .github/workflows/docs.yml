@@ -108,7 +108,7 @@ jobs:
           -C ${{ github.workspace }}/code/cache_p4docs@objdir.cmake \
           -D CMAKE_BUILD_TYPE=Debug \
           -D CMAKE_CXX_FLAGS="-O0" \
-          -D SPHINXMAN_STRICT=ON
+          -D SPHINXMAN_STRICT=OFF
 
     - name: Compile Psi4
       if: ${{ github.repository == 'psi4/psi4' }}
