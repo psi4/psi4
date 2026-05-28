@@ -1419,7 +1419,6 @@ data:
       constraint: ">=1.1.3"
       constraint_note: "v1 changes interface, and 1.1.3 needed for clean import (for qcengine)."
       aux_build_names:
-        - range-v3
         - zlib
         - hdf5
       aux_build_names_note:
