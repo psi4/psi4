@@ -1008,16 +1008,16 @@ data:
       host: github
       account: MolSSI
       name: QCElemental
-      commit: v0.50.1
+      commit: v0.50.2
       githttps: true
     cmake:
       name: qcelemental
-      constraint: "ATLEAST 0.50.1"
+      constraint: "ATLEAST 0.50.2"
       target: null
     conda:
       channel: conda-forge
       name: qcelemental
-      constraint: ">=0.50.1"
+      constraint: ">=0.50.2"
       constraint_note: "v0.50 needed for QCSchema v2."
       aux_run_names:
         - msgpack-python
