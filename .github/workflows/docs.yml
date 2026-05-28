@@ -158,7 +158,7 @@ jobs:
 
     - name: Push Changes to psi4/psi4docs
       if: github.repository == 'psi4/psi4'
-      uses: ad-m/github-push-action@master
+      uses: ad-m/github-push-action@v1
       with:
         directory: ./docs
         repository: psi4/psi4docs
