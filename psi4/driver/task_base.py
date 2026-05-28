@@ -88,9 +88,6 @@ class AtomicComputer(BaseComputer):
     computed: bool = Field(False, description="Whether quantum chemistry has been run on this task.")
     result: Any = Field(default_factory=dict, description=":py:class:`~qcelemental.models.v2.AtomicResult` return.")
     result_id: Optional[str] = Field(None, description="The optional ID for the computation.")
-    # remove 2026. QCFractal is showing the upgrade path
-    tag: str = Field(None, description="Deprecated version of compute_tag")
-    priority: Union[int, str] = Field(None, description="Deprecated version of compute_priority")
 
     #model_config = ProtoModel._merge_config_with()
 
@@ -143,12 +140,6 @@ class AtomicComputer(BaseComputer):
             # Build the molecule
             mol = Molecule(**self.molecule.to_schema(dtype=3))
 
-            # remove the bargaining in 2026. passing so that QCFractal's upgrade guidance is raised
-            oldargs = {}
-            if self.tag is not None:
-                oldargs["tag"] = self.tag
-            if self.priority is not None:
-                oldargs["priority"] = self.priority
 
             # TODO sent to qcf 1 or 2 as appropriate
             meta, ids = client.add_singlepoints(
@@ -162,7 +153,6 @@ class AtomicComputer(BaseComputer):
                 compute_tag=self.compute_tag,
                 compute_priority=self.compute_priority,
                 owner_group=self.owner_group,
-                **oldargs
             )
             self.result_id = ids[0]
             # NOTE: The following will re-run errored jobs by default

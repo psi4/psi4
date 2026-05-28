@@ -28,7 +28,7 @@ jobs:
           if "%PYTHON_VERSION%"=="3.13" set VALID=true
           if "%PYTHON_VERSION%"=="3.14" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.10" through "3.13".
+            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.10" through "3.14".
             exit 1
           )
         displayName: "Check Python version: $(python.version)"

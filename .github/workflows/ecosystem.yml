@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - '1.*.x'
   pull_request:
   merge_group:
 
@@ -336,6 +337,20 @@ jobs:
       run: |
         conda remove qcfractal --force
         python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@main#egg=qcfractal&subdirectory=qcfractal'
+
+    - name: Special Config - Download MolSSI/QCFractal Repo
+      if: runner.os == 'Linux'
+      uses: actions/checkout@v4
+      with:
+        repository: MolSSI/QCFractal
+        path: qca
+        ref: pydv2
+
+    - name: Install All QCArchive packages
+      if: runner.os == 'Linux'
+      working-directory: ./qca
+      run: |
+          pip install -e ./qcportal -e ./qcfractalcompute -e ./qcfractal[services,geoip,snowflake]
 
     - name: Special Config - Patch Legacy QCFractal for Python
       if: false
