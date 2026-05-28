@@ -116,7 +116,7 @@ def test_H2S_molden(inp_h2s, datadir):
         'e_convergence': 10
         })
     if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
-        tol = 7
+        tol = 2.e-7
     else:
         tol = 6
         psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
