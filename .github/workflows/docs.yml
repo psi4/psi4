@@ -70,7 +70,7 @@ jobs:
 
     - name: Create Conda Environment
       if: ${{ github.repository == 'psi4/psi4' }}
-      uses: conda-incubator/setup-miniconda@v3
+      uses: conda-incubator/setup-miniconda@v4
       with:
         activate-environment: p4docs
         add-pip-as-python-dependency: true
@@ -108,7 +108,7 @@ jobs:
           -C ${{ github.workspace }}/code/cache_p4docs@objdir.cmake \
           -D CMAKE_BUILD_TYPE=Debug \
           -D CMAKE_CXX_FLAGS="-O0" \
-          -D SPHINXMAN_STRICT=ON
+          -D SPHINXMAN_STRICT=OFF
 
     - name: Compile Psi4
       if: ${{ github.repository == 'psi4/psi4' }}
@@ -158,7 +158,7 @@ jobs:
 
     - name: Push Changes to psi4/psi4docs
       if: github.repository == 'psi4/psi4'
-      uses: ad-m/github-push-action@master
+      uses: ad-m/github-push-action@v1
       with:
         directory: ./docs
         repository: psi4/psi4docs

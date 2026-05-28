@@ -459,8 +459,8 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
 
             // Fractional alpha and beta occupation. Occupations are
             // squared in the density calculation, so take the root
-            double frac_a = std::sqrt((nalpha[index] - nfzc) / nact);
-            double frac_b = std::sqrt((nbeta[index] - nfzc) / nact);
+            double frac_a = (nalpha[index] - nfzc) / nact;
+            double frac_b = (nbeta[index] - nfzc) / nact;
 
             occ_a = std::make_shared<Vector>("Alpha fractional occupation", nocc_a);
             for (size_t x = 0; x < nfzc; x++) occ_a->set(x, 1.0);
