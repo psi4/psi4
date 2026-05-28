@@ -36,6 +36,7 @@ __all__ = [
 import abc
 import copy
 import logging
+import sys
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
@@ -43,6 +44,7 @@ from pydantic import Field, field_validator
 
 import qcelemental as qcel
 from qcelemental.models.v2 import AtomicInput, AtomicResult, DriverEnum, AtomicProtocols, ProtoModel
+from qcelemental.models import QCEL_V1V2_SHIM_CODE
 qcel.models.v2.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries for high-res findif
 import qcengine as qcng
 
@@ -81,7 +83,9 @@ class AtomicComputer(BaseComputer):
     driver: DriverEnum = Field(..., description="The resulting type of computation: energy, gradient, hessian, properties."
         "Note for finite difference that this should be the target driver, not the means driver.")
     keywords: Dict[str, Any] = Field(default_factory=dict, description="The keywords to use in the computation.")
-    protocols: Optional[Union[AtomicProtocols, Dict[str, Any]]] = Field({"stdout": True}, description="Output modifications.")
+    # ONCE protocols: Optional[Union[AtomicProtocols, Dict[str, Any]]] = Field({"stdout": True}, description="Output modifications.")
+    protocols: Optional[Dict[str, Any]] = Field({"stdout": True}, description="Output modifications.")
+    # FUTURE protocols: Optional[AtomicProtocols] = Field({"stdout": True}, description="Output modifications.")
     compute_tag: str = Field("*", description="The tags to pass along to compute managers.")
     compute_priority: Union[int, str] = Field(1, description="The priority of a Task; higher priority will be pulled first. {high:2, normal:1, low:0}")
     owner_group: Optional[str] = Field(None, description="group in the chown sense.")
@@ -140,15 +144,17 @@ class AtomicComputer(BaseComputer):
             # Build the molecule
             mol = Molecule(**self.molecule.to_schema(dtype=3))
 
+            # QCFractal as of 0.70 still wants QCSchema v1
+            target_version = QCEL_V1V2_SHIM_CODE if sys.version_info >= (3, 14) else 1
 
-            # TODO sent to qcf 1 or 2 as appropriate
             meta, ids = client.add_singlepoints(
-                molecules=mol.convert_v(1),
+                molecules=mol.convert_v(target_version),
                 program="psi4",
                 driver=self.driver,
                 method=self.method,
                 basis=self.basis,
                 keywords=self.keywords,
+                # protocols=self.protocols.convert_v(target_version),  # FUTURE
                 protocols=self.protocols,
                 compute_tag=self.compute_tag,
                 compute_priority=self.compute_priority,
