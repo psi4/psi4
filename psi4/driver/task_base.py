@@ -43,6 +43,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 from pydantic import Field, field_validator
 
 import qcelemental as qcel
+from qcelemental.util.importing import parse_version
 from qcelemental.models.v2 import AtomicInput, AtomicResult, DriverEnum, AtomicProtocols, ProtoModel
 from qcelemental.models import QCEL_V1V2_SHIM_CODE
 qcel.models.v2.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries for high-res findif
@@ -131,6 +132,7 @@ class AtomicComputer(BaseComputer):
 
     def compute(self, client: Optional["qcportal.client.PortalClient"] = None):
         """Run quantum chemistry."""
+        import qcportal
         from psi4.driver import pp
 
         if self.computed:
@@ -145,7 +147,10 @@ class AtomicComputer(BaseComputer):
             mol = Molecule(**self.molecule.to_schema(dtype=3))
 
             # QCFractal as of 0.70 still wants QCSchema v1
-            target_version = QCEL_V1V2_SHIM_CODE if sys.version_info >= (3, 14) else 1
+            if parse_version(qcportal.__version__) > parse_version("0.64.0"):
+                target_version = QCEL_V1V2_SHIM_CODE
+            else:
+                target_version = 1
 
             meta, ids = client.add_singlepoints(
                 molecules=mol.convert_v(target_version),
