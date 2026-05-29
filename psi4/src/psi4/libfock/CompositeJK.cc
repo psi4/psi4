@@ -228,19 +228,38 @@ void CompositeJK::preiterations() {}
 
 void CompositeJK::incfock_setup() {
     if (do_incfock_iter_) {
-        auto njk = D_ao_.size();
+        const auto njk = D_ao_.size();
 
         // If there is no previous pseudo-density, this iteration is normal
         if (initial_iteration_ || D_prev_.size() != njk) {
             initial_iteration_ = true;
 
-            D_ref_ = D_ao_;
+            // First iteration: allocate D_ref_ with its own matrices (not sharing with D_ao_)
+            // This avoids clone() overhead on subsequent iterations by reusing D_ref_
+            D_ref_.clear();
+            for (size_t jki = 0; jki < njk; jki++) {
+                D_ref_.push_back(D_ao_[jki]->clone());
+            }
             zero();
         } else { // Otherwise, the iteration is incremental
-            for (size_t jki = 0; jki < njk; jki++) {
-                D_ref_[jki] = D_ao_[jki]->clone();
-                D_ref_[jki]->subtract(D_prev_[jki]);
+            // Compute delta-density: D_ref_ = D_ao_ - D_prev_
+            // Check if D_ref_ shares storage with D_ao_ (from non-incfock iteration)
+            const bool sharing = (D_ref_.size() == njk && D_ref_[0].get() == D_ao_[0].get());
+            if (sharing) {
+                // D_ref_ shares pointers with D_ao_, must clone to avoid corrupting D_ao_
+                for (size_t jki = 0; jki < njk; jki++) {
+                    D_ref_[jki] = D_ao_[jki]->clone();
+                    D_ref_[jki]->subtract(D_prev_[jki]);
+                }
+            } else {
+                // D_ref_ has its own storage, can use copy+subtract (avoids allocation)
+                for (size_t jki = 0; jki < njk; jki++) {
+                    D_ref_[jki]->copy(D_ao_[jki]);
+                    D_ref_[jki]->subtract(D_prev_[jki]);
+                }
             }
+            // J_ao_/K_ao_ already hold previous values (they persist between compute() calls),
+            // so sub-algorithms accumulate delta directly on top. No restore needed.
         }
     } else {
         D_ref_ = D_ao_;
@@ -249,10 +268,26 @@ void CompositeJK::incfock_setup() {
 }
 
 void CompositeJK::incfock_postiter() {
-    // Save a copy of the density for the next iteration
-    D_prev_.clear();
-    for(auto const &Di : D_ao_) {
-        D_prev_.push_back(Di->clone());
+    // Skip saving D_prev_ if this was an Hx call (different density provenance)
+    if (incfock_skip_save_) {
+        incfock_skip_save_ = false;  // Clear flag for next call
+        return;
+    }
+
+    const auto njk = D_ao_.size();
+
+    // Save density for next iteration - reuse existing matrices if possible.
+    // J_ao_/K_ao_ persist between compute() calls and retain their values,
+    // so no explicit save is needed for them (IncFock accumulates in-place).
+    if (D_prev_.size() == njk) {
+        for (size_t jki = 0; jki < njk; jki++) {
+            D_prev_[jki]->copy(D_ao_[jki]);
+        }
+    } else {
+        D_prev_.clear();
+        for (auto const &Di : D_ao_) {
+            D_prev_.push_back(Di->clone());
+        }
     }
 }
 
@@ -275,14 +310,29 @@ void CompositeJK::compute_JK() {
         auto reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
         auto incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
         auto Dnorm = Process::environment.globals["SCF D NORM"];
-        // Do IFB on this iteration?
-        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
 
-        if (k_algo_->name() == "sn-LinK") {
-            auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_); 
+        // Incremental Fock build requires all conditions to be met:
+        // 1. Dnorm >= incfock_conv: density change above threshold for incremental to be worthwhile
+        // 2. Not initial iteration: first JK call must do full build to establish baseline
+        // 3. D_prev_ ready: previous density matrices available and correct size
+        // 4. Full build done: at least one full build since last clear_D_prev (ensures D_prev_ provenance)
+        // 5. Not periodic reset: every INCFOCK_FULL_FOCK_EVERY iterations, force full rebuild
+        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ &&
+                           (D_prev_.size() == D_ao_.size()) && !incfock_needs_full_build_ &&
+                           (incfock_count_ % reset != reset - 1);
+
+        // After a full build in the IncFock regime, incremental builds can resume.
+        // Also clear after initial iteration. But NOT during SOSCF (Dnorm < incfock_conv).
+        if (!do_incfock_iter_ && (initial_iteration_ || Dnorm >= incfock_conv)) {
+            incfock_needs_full_build_ = false;
+        }
+
+        if (k_algo_ && k_algo_->name() == "sn-LinK") {
+            auto k_algo_derived = std::dynamic_pointer_cast<snLinK>(k_algo_);
             k_algo_derived->set_incfock_iter(do_incfock_iter_);
         }
 
+        // Count iterations for periodic reset
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
 
         incfock_setup();

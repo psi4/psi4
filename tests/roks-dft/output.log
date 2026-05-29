@@ -1,0 +1,18 @@
+2026-01-05:10:51:20,217 INFO     [psi4.driver.task_planner:259] PLANNING Atomic:  keywords={'D_CONVERGENCE': 1e-08, 'E_CONVERGENCE': 1e-09, 'PRINT': 2, 'REFERENCE': 'ROHF', 'SCF_TYPE': 'DF', 'function_kwargs': {}}
+2026-01-05:10:51:20,219 INFO     [psi4.driver.driver:529] Compute energy(): method=b3lyp, basis=6-31g, molecule=li, nre=0.0
+2026-01-05:10:51:20,398 INFO     [psi4.driver.driver:532] Return energy(): -7.6470063385188745
+2026-01-05:10:51:20,415 INFO     [psi4.driver.task_planner:259] PLANNING Atomic:  keywords={'D_CONVERGENCE': 1e-08, 'E_CONVERGENCE': 1e-09, 'PRINT': 2, 'REFERENCE': 'ROHF', 'SCF_TYPE': 'DIRECT', 'function_kwargs': {}}
+2026-01-05:10:51:20,418 INFO     [psi4.driver.driver:529] Compute energy(): method=cam-b3lyp, basis=6-31g, molecule=li, nre=0.0
+2026-01-05:10:51:20,721 INFO     [psi4.driver.driver:532] Return energy(): -7.8414985029261475
+2026-01-05:10:51:20,739 INFO     [psi4.driver.task_planner:259] PLANNING Atomic:  keywords={'DFT_RADIAL_POINTS': 99, 'DFT_SPHERICAL_POINTS': 590, 'D_CONVERGENCE': 1e-08, 'E_CONVERGENCE': 1e-09, 'PRINT': 2, 'REFERENCE': 'ROHF', 'SCF_TYPE': 'PK', 'function_kwargs': {}}
+2026-01-05:10:51:20,741 INFO     [psi4.driver.driver:529] Compute energy(): method=b3lyp, basis=aug-cc-pvdz, molecule=oswater, nre=9.163830181985562
+2026-01-05:10:51:23,263 INFO     [psi4.driver.driver:532] Return energy(): -86.14756275430997
+2026-01-05:10:51:23,282 INFO     [psi4.driver.task_planner:259] PLANNING Atomic:  keywords={'DFT_RADIAL_POINTS': 99, 'DFT_SPHERICAL_POINTS': 590, 'D_CONVERGENCE': 1e-08, 'E_CONVERGENCE': 1e-09, 'SCF__INTS_TOLERANCE': 1e-12, 'PRINT': 2, 'REFERENCE': 'ROHF', 'SCF_TYPE': 'DIRECT', 'function_kwargs': {}}
+2026-01-05:10:51:23,284 INFO     [psi4.driver.driver:529] Compute energy(): method=cam-b3lyp, basis=aug-cc-pvdz, molecule=oswater, nre=9.163830181985562
+2026-01-05:10:51:28,221 INFO     [psi4.driver.driver:532] Return energy(): -86.7834592672323
+2026-01-05:10:51:28,240 INFO     [psi4.driver.task_planner:259] PLANNING Atomic:  keywords={'DFT_RADIAL_POINTS': 99, 'DFT_SPHERICAL_POINTS': 590, 'D_CONVERGENCE': 1e-08, 'E_CONVERGENCE': 1e-09, 'SCF__INTS_TOLERANCE': 1e-12, 'PRINT': 2, 'REFERENCE': 'ROHF', 'SCF_TYPE': 'DIRECT', 'function_kwargs': {}}
+2026-01-05:10:51:28,242 INFO     [psi4.driver.driver:529] Compute energy(): method=wb97x, basis=aug-cc-pvdz, molecule=oswater, nre=9.163830181985562
+2026-01-05:10:51:33,268 INFO     [psi4.driver.driver:532] Return energy(): -86.9915340247276
+2026-01-05:10:51:33,288 INFO     [psi4.driver.task_planner:259] PLANNING Atomic:  keywords={'DFT_RADIAL_POINTS': 99, 'DFT_SPHERICAL_POINTS': 590, 'D_CONVERGENCE': 1e-08, 'E_CONVERGENCE': 1e-09, 'SCF__INTS_TOLERANCE': 1e-12, 'PRINT': 2, 'REFERENCE': 'UKS', 'SCF_TYPE': 'PK', 'function_kwargs': {}}
+2026-01-05:10:51:33,290 INFO     [psi4.driver.driver:529] Compute energy(): method=b3lyp, basis=aug-cc-pvdz, molecule=oswater, nre=9.163830181985562
+2026-01-05:10:51:35,995 INFO     [psi4.driver.driver:532] Return energy(): -75.97415476879931

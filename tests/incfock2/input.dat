@@ -1,0 +1,35 @@
+#! Test INCFOCK with range-separated functionals (CAM-B3LYP, wB97X)
+#! Validates wK (long-range exchange) accumulation
+#! Uses screening=DENSITY, validates energy
+
+print(' INCFOCK with range-separated functionals') #TEST
+
+molecule water {
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+}
+
+# Reference values from incfock=false, screening=density runs
+Eref_camb3lyp = -76.391854905210
+Eref_wb97x = -76.400407871369
+
+set {
+    basis cc-pvdz
+    scf_type direct
+    screening density
+    incfock true
+    incfock_convergence 1e-10
+    e_convergence 1e-10
+    d_convergence 1e-8
+}
+
+# CAM-B3LYP with INCFOCK
+E, wfn = energy('cam-b3lyp', return_wfn=True)
+compare_values(Eref_camb3lyp, E, 8, 'CAM-B3LYP INCFOCK DENSITY: Energy') #TEST
+
+clean()
+
+# wB97X with INCFOCK
+E, wfn = energy('wb97x', return_wfn=True)
+compare_values(Eref_wb97x, E, 8, 'wB97X INCFOCK DENSITY: Energy') #TEST
