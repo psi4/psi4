@@ -23,6 +23,7 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build.")  # foil
 
 project(psi4
         LANGUAGES C CXX)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(psi4_URL "http://www.psicode.org/")
 set(psi4_EMAIL "psi4aiqc+cmake@gmail.com")
 set(psi4_LICENSE "GNU Lesser General Public License, version 3 (LGPL-3.0)")
