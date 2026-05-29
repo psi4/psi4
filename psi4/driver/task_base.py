@@ -132,13 +132,14 @@ class AtomicComputer(BaseComputer):
 
     def compute(self, client: Optional["qcportal.client.PortalClient"] = None):
         """Run quantum chemistry."""
-        import qcportal
         from psi4.driver import pp
 
         if self.computed:
             return
 
         if client:
+            import qcportal
+
             self.computed = True
 
             from qcelemental.models.v2 import Molecule
