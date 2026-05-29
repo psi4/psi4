@@ -1,0 +1,5039 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.11a1.dev33 
+
+                         Git: Rev {master} 2f61bbd dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 12 March 2026 11:08AM
+
+    Process ID: 1551441
+    Host:       atl1-1-02-002-21-2.pace.gatech.edu
+    PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶, dftd3,
+                d̶f̶t̶d̶4̶, d̶k̶h̶, ecpint, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, g̶c̶p̶,
+                g̶d̶m̶a̶, geometric, g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶,
+                l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶, o̶o̶o̶,
+                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶,
+                p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶,
+                v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! External potential calculation involving a Hydrogen atom and diffuse
+#! charges.  Energies and gradients calculated analytically are compared
+#! against those evaluated with diffuse charges supplied to the 
+#! external_potentials keyword.  A minimal basis is used because this
+#! allows a direct comparison with results derived for point charge-
+#! Gaussian charge and Gaussian charge-Gaussian charge interactions.
+#! The point charge-Gaussian charge interaction is generally given by
+#! E = Q*q*erf(sqrt(z)*r), where Q is the total charge of the Gaussian
+#! charge, q is the point charge, z is the width of the Gaussian charge
+#! (au^-2), and r (au) is the distance between the point charge
+#! and the center of the Gaussian charge.  A similar formula exists for
+#! the interaction between two Gaussian charges, but where q is the
+#! total charge of the second Gaussian charge, z is the reduced width of
+#! both Gaussian charges ((z0*z1)/(z0+z1)), and r is the distance
+#! between the centers of the Gaussian charges.  Gradients can be
+#! further derived from these expressions.
+
+molecule hydrogen {
+  0 2
+  H 0 0 0
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+    scf_type df
+    d_convergence 12
+    basis sto-3g
+    reference uhf
+}
+
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-9})
+
+# Calculate the energy and gradient in the absence of any charges.
+e_absent, wfn = energy('scf', molecule=hydrogen, return_wfn=True)
+g_absent = gradient('scf', ref_wfn=wfn)
+
+
+# Calculate the energy and gradient in the presence of a neutral diffuse
+# charge (width = 1 au^-2) 1 au away.  These should be comparable to
+# those calculated in the absence of any charges.
+diffuses = [[0, [1, 0, 0], 1]]
+external_neutral = [None, diffuses]
+e_neutral, wfn_neutral = energy(
+    'scf',
+    molecule=hydrogen,
+    return_wfn=True,
+    external_potentials=external_neutral,
+)
+g_neutral = gradient('scf', ref_wfn=wfn_neutral)
+
+compare_values(e_absent, e_neutral, 6, "Energy with no external_potential vs. with a neutral diffuse charge")  #TEST
+compare_matrices(g_absent, g_neutral, 5, "Gradient with no external_potential vs. with a neutral diffuse charge") #TEST
+
+
+# Calculate the energy and gradient in the presence of an
+# infintely-wide, positive diffuse charge (width = 1e-10 au^-2) 1 au
+# away.  These should be comparable to those calculated in the absence
+# of any charges.
+diffuses = [[1, [1, 0, 0], 1e-10]]
+external_wide = [None, diffuses]
+e_wide, wfn_wide = energy(
+    'scf',
+    molecule=hydrogen,
+    return_wfn=True,
+    external_potentials=external_wide,
+)
+g_wide = gradient('scf', ref_wfn=wfn_wide)
+
+compare_values(e_absent, e_wide, 6, "Energy with no external_potential vs. with an infinitely-wide diffuse charge")  #TEST
+compare_matrices(g_absent, g_wide, 5, "Gradient with no external_potential vs. with an infinitely-wide diffuse charge") #TEST
+
+
+# Calculate the energy and gradient in the presence of a positive point
+# charge 1 au away.
+external_point = [[1, [1, 0, 0]]]
+e_point, wfn_point = energy(
+    'scf',
+    molecule=hydrogen,
+    return_wfn=True,
+    external_potentials=external_point,
+)
+g_point = gradient('scf', ref_wfn=wfn_point)
+extern = wfn_point.external_pot()
+
+
+# Calculate the energy and gradient in the presence of a positive
+# diffuse charge with no width (width = 1e10 au^-2) 1 au away.  These
+# should be comparable to those calculated in the presence of a positive
+# point charge 1 au away.
+diffuses = [[1, [1, 0, 0], 1e10]]
+external_nowidth = [None, diffuses]
+e_nowidth, wfn_nowidth = energy(
+    'scf',
+    molecule=hydrogen,
+    return_wfn=True,
+    external_potentials=external_nowidth,
+)
+g_nowidth = gradient('scf', ref_wfn=wfn_nowidth)
+
+compare_values(e_point, e_nowidth, 6, "Energy with a point charge vs. with a zero-width diffuse charge")  #TEST
+compare_matrices(g_point, g_nowidth, 5, "Gradient with a point charge vs. with a zero-width diffuse charge") #TEST
+
+import numpy as np
+
+
+# The nuclear and electronic components of the interaction energy
+# and the gradient of the interaction energy between a hydrogen atom and
+# a Gaussian charge distribution (width = 1 au^-2) centered on the
+# hydrogen atom.  These results are derived from the formulae
+# desribed at the top of this input file.
+e_nuc_analytic_0 = 1.12837916710
+e_elec_analytic_0 = -0.78295596546
+g_analytic_0 = core.Matrix.from_array(np.array([[0, 0, 0]]))
+
+
+# Calculate the energy and gradient in the presence of a positive
+# diffuse charge (width = 1 au^-2) centered on the hydrogen atom. These
+# should agree with the analytical solutions.
+diffuses = [[1, [0, 0, 0], 1]]
+external_diffuse_0 = [None, diffuses]
+_, wfn_diffuse_0 = energy(
+    'scf',
+    molecule=hydrogen,
+    return_wfn=True,
+    external_potentials=external_diffuse_0,
+)
+extern_0 = wfn_diffuse_0.external_pot()
+V_diffuse_0 = extern_0.computePotentialMatrix(wfn.basisset()).np
+
+e_nuc_diffuse_0 = extern_0.computeNuclearEnergy(hydrogen)
+e_elec_diffuse_0 = np.einsum("ij,ij->", V_diffuse_0, wfn_diffuse_0.Da().np)
+g_diffuse_0 = gradient('scf', ref_wfn=wfn_diffuse_0)
+g_diffuse_extern_0 = extern_0.gradient_on_diffuses()
+
+compare_values(e_nuc_analytic_0, e_nuc_diffuse_0, 6, "Analytic Gaussian charge-proton ixn energy vs. with external_potential")  #TEST
+compare_values(e_elec_analytic_0, e_elec_diffuse_0, 6, "Analytic Gaussian charge-s electron ixn energy vs. with external_potential")  #TEST
+compare_matrices(g_analytic_0, g_diffuse_0, 5, "Analytic Gaussian charge-hydrogen gradient on hydrogen vs. with external_potential")  #TEST
+compare_matrices(g_analytic_0, g_diffuse_extern_0, 5, "Analytic Gaussian charge-hydrogen gradient on charge vs. with external_potential")  #TEST
+
+
+# The nuclear and electronic components of the interaction energy
+# and the gradient of the interaction energy between a hydrogen atom and
+# a Gaussian charge distribution (width = 1 au^-2) 1 au away.  These
+# results are derived from the formulae desribed at the top of this
+# input file.
+e_nuc_analytic_1 = 0.84270079295
+e_elec_analytic_1 = -0.66630714283
+g_analytic_1 = core.Matrix.from_array(np.array([[0.23042588824, 0, 0]]))
+g_analytic_extern_1 = core.Matrix.from_array(np.array([[-0.23042588824, 0, 0]]))
+
+
+# Calculate the energy and gradient in the presence of a positive
+# diffuse charge (width = 1 au^-2) 1 au away. These should agree with
+# the analytical solutions.
+diffuses = [[1, [1, 0, 0], 1]]
+external_diffuse_1 = [None, diffuses]
+_, wfn_diffuse_1 = energy(
+    'scf',
+    molecule=hydrogen,
+    return_wfn=True,
+    external_potentials=external_diffuse_1,
+)
+extern_1 = wfn_diffuse_1.external_pot()
+V_diffuse_1 = extern_1.computePotentialMatrix(wfn.basisset()).np
+
+e_nuc_diffuse_1 = extern_1.computeNuclearEnergy(hydrogen)
+e_elec_diffuse_1 = np.einsum("ij,ij->", V_diffuse_1, wfn_diffuse_1.Da().np)
+g_diffuse_1 = gradient('scf', ref_wfn=wfn_diffuse_1)
+g_diffuse_1_findif = gradient('scf', molecule=hydrogen, dertype=0, external_potentials=external_diffuse_1)
+g_diffuse_extern_1 = extern_1.gradient_on_diffuses()
+
+compare_values(e_nuc_analytic_1, e_nuc_diffuse_1, 6, "Analytic Gaussian charge-proton ixn energy vs. with external_potential")  #TEST
+compare_values(e_elec_analytic_1, e_elec_diffuse_1, 6, "Analytic Gaussian charge-s electron ixn energy vs. with external_potential")  #TEST
+compare_matrices(g_analytic_1, g_diffuse_1, 5, "Analytic Gaussian charge-hydrogen gradient on hydrogen vs. with external_potential")  #TEST
+compare_matrices(g_analytic_extern_1, g_diffuse_extern_1, 5, "Analytic Gaussian charge-hydrogen gradient on charge vs. with external_potential")  #TEST
+compare_matrices(g_diffuse_1, g_diffuse_1_findif, 5, "Diffuse charge-hydrogen gradient on hydrogen vs. with finite difference")  #TEST
+
+
+# The interaction energy between two Gaussian charge distributions
+# (width = 1 au^-2) 1 au apart and the interaction energy between a
+# point charge and a Gaussian charge distribution (width = 1 au^-2) 1 au
+# apart.  These results are derived from the formulae desribed at the
+# top of this input file.
+e_01_analytic = 0.68268949214
+e_0q_analytic = 0.84270079295
+
+
+# Calculate the extern-extern interaction between two positive Gaussian
+# charges (width = 1 au^-2) 1 au apart and between a positive point
+# charge and a positive Gaussian charge (width = 1 au^-2) 1 au apart.
+# These should agree with the analytical solutions.
+e_01 = extern_0.computeExternExternInteraction(extern_1)
+e_0q = extern_0.computeExternExternInteraction(extern)
+e_q0 = extern.computeExternExternInteraction(extern_0)
+
+compare_values(e_01_analytic, e_01, 6, "Analytic Gaussian charge-Gaussian charge ixn energy vs. extern-extern ixn energy")  #TEST
+compare_values(e_0q_analytic, e_0q, 6, "Analytic Gaussian charge-point charge ixn energy vs. extern-extern ixn energy")  #TEST
+compare_values(e_0q, e_q0, 6, "extern 0-extern 1 ixn energy vs. extern 1-extern 0 ixn energy")  #TEST
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:08:59 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.46658184955728   -4.66582e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.46658184955728    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -0.466582  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A      0.307730  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.46658184955728
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                  -0.4665818495572754
+    Two-Electron Energy =                   0.0000000000000000
+    Total Energy =                         -0.4665818495572754
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:08:59 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+Scratch directory: /tmp/
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:08:59 2026
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    0.000000000000000
+
+  ==> Basis Set <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> DFJKGrad: Density-Fitted SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.000000000000
+
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:08:59 2026
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.14 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:08:59 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    0.000000000000000
+  Total nuclear repulsion      =    0.000000000000000
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.46658184955728   -4.66582e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.46658184955728    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -0.466582  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A      0.307730  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.46658184955728
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                  -0.4665818495572754
+    Two-Electron Energy =                   0.0000000000000000
+    Total Energy =                         -0.4665818495572754
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:08:59 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+Scratch directory: /tmp/
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:08:59 2026
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    0.000000000000000
+
+  ==> Basis Set <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> DFJKGrad: Density-Fitted SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.000000000000
+
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:08:59 2026
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+    Energy with no external_potential vs. with a neutral diffuse charge...................PASSED
+    Gradient with no external_potential vs. with a neutral diffuse charge.................PASSED
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:08:59 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    0.000011283791671
+  Total nuclear repulsion      =    0.000011283791671
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.46658184955727   -4.66582e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.46658184955727    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -0.466593  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A      0.307719  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.46658184955727
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000112837916706
+    One-Electron Energy =                  -0.4665931333489454
+    Two-Electron Energy =                   0.0000000000000000
+    Total Energy =                         -0.4665818495572748
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:08:59 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+Scratch directory: /tmp/
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:08:59 2026
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    0.000000000000000
+
+  ==> Basis Set <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> DFJKGrad: Density-Fitted SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.000000000000
+
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:08:59 2026
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+    Energy with no external_potential vs. with an infinitely-wide diffuse charge..........PASSED
+    Gradient with no external_potential vs. with an infinitely-wide diffuse charge........PASSED
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:08:59 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Charges [e] [a0] < 
+
+              Z          x          y          z
+        1.00000    1.00000    0.00000    0.00000
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Charges [e] [a0] < 
+
+              Z          x          y          z
+        1.00000    1.00000    0.00000    0.00000
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    1.000000000000000
+  Total nuclear repulsion      =    1.000000000000000
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.27848868565682   -2.78489e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.27848868565682    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -1.278489  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A     -0.504177  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.27848868565682
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              1.0000000000000000
+    One-Electron Energy =                  -1.2784886856568245
+    Two-Electron Energy =                   0.0000000000000000
+    Total Energy =                         -0.2784886856568245
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:08:59 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.63 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+Scratch directory: /tmp/
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:08:59 2026
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    0.000000000000000
+
+  ==> Basis Set <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> DFJKGrad: Density-Fitted SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.550998882280     0.000000000000     0.000000000000
+
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:08:59 2026
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.67 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:08:59 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    1.000000000000001
+  Total nuclear repulsion      =    1.000000000000001
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.27848868564120   -2.78489e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.27848868564120    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -1.278489  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A     -0.504177  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.27848868564120
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              1.0000000000000007
+    One-Electron Energy =                  -1.2784886856411966
+    Two-Electron Energy =                   0.0000000000000000
+    Total Energy =                         -0.2784886856411959
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:00 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.80 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+Scratch directory: /tmp/
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:09:00 2026
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    0.000000000000000
+
+  ==> Basis Set <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> DFJKGrad: Density-Fitted SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.550998984294     0.000000000000     0.000000000000
+
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:00 2026
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.85 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    Energy with a point charge vs. with a zero-width diffuse charge.......................PASSED
+    Gradient with a point charge vs. with a zero-width diffuse charge.....................PASSED
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:09:00 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          0.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          0.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    1.128379167095513
+  Total nuclear repulsion      =    1.128379167095513
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.12115865505483   -1.21159e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.12115865505483    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -1.249538  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A     -0.475226  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.12115865505483
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              1.1283791670955130
+    One-Electron Energy =                  -1.2495378221503461
+    Two-Electron Energy =                   0.0000000000000000
+    Total Energy =                         -0.1211586550548331
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:00 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.98 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+Scratch directory: /tmp/
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:09:00 2026
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    0.000000000000000
+
+  ==> Basis Set <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> DFJKGrad: Density-Fitted SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.000000000000
+
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:00 2026
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.04 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    Analytic Gaussian charge-proton ixn energy vs. with external_potential................PASSED
+    Analytic Gaussian charge-s electron ixn energy vs. with external_potential............PASSED
+    Analytic Gaussian charge-hydrogen gradient on hydrogen vs. with external_potential....PASSED
+    Analytic Gaussian charge-hydrogen gradient on charge vs. with external_potential......PASSED
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:09:00 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    0.842700792949715
+  Total nuclear repulsion      =    0.842700792949715
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.29018820550379   -2.90188e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.29018820550379    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -1.132889  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A     -0.358577  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.29018820550379
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.8427007929497152
+    One-Electron Energy =                  -1.1328889984535038
+    Two-Electron Energy =                   0.0000000000000000
+    Total Energy =                         -0.2901882055037885
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:00 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.16 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+Scratch directory: /tmp/
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:09:00 2026
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    0.000000000000000
+
+  ==> Basis Set <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> DFJKGrad: Density-Fitted SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.230425886448     0.000000000000     0.000000000000
+
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:00 2026
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.22 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+Scratch directory: /tmp/
+
+         ----------------------------------------------------------
+                                   FINDIF
+                     R. A. King and Jonathon Misiewicz
+         ----------------------------------------------------------
+
+  Using finite-differences of energies to determine gradients.
+    Generating geometries for use with 3-point formula.
+    Displacement size will be 5.00e-03.
+    Number of atoms is 1.
+    Number of symmetric SALCs is 3.
+    Translations projected? 0. Rotations projected? 0.
+    Number of geometries (including reference) is 7.
+ 7 displacements needed ...
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    FiniteDifference Computations  //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.11a1.dev33 
+
+                         Git: Rev {master} 2f61bbd dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 12 March 2026 11:08AM
+
+    Process ID: 1551441
+    Host:       atl1-1-02-002-21-2.pace.gatech.edu
+    PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶, dftd3,
+                d̶f̶t̶d̶4̶, d̶k̶h̶, ecpint, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, g̶c̶p̶,
+                g̶d̶m̶a̶, geometric, g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶,
+                l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶, o̶o̶o̶,
+                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶,
+                p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶,
+                v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input QCSchema <==
+
+--------------------------------------------------------------------------
+{'driver': 'energy',
+ 'extras': {'psiapi': True, 'wfn_qcvars_only': True},
+ 'id': None,
+ 'keywords': {'D_CONVERGENCE': 1e-12,
+              'PARENT_SYMMETRY': 'C1',
+              'REFERENCE': 'UHF',
+              'SCF_TYPE': 'DF',
+              'SCF__E_CONVERGENCE': 1e-08,
+              'function_kwargs': {'external_potentials': [None, [[1, [1, 0, 0], 1]]]}},
+ 'model': {'basis': 'sto-3g', 'method': 'scf'},
+ 'molecule': {'atom_labels': [''],
+              'atomic_numbers': [1],
+              'extras': {},
+              'fix_com': True,
+              'fix_orientation': True,
+              'fix_symmetry': 'c1',
+              'fragment_charges': [0.0],
+              'fragment_multiplicities': [2],
+              'fragments': [[0]],
+              'geometry': [0.0, 0.0, 0.0],
+              'mass_numbers': [1],
+              'masses': [1.00782503223],
+              'molecular_charge': 0.0,
+              'molecular_multiplicity': 2,
+              'name': 'hydrogen',
+              'provenance': {'creator': 'QCElemental',
+                             'routine': 'qcelemental.molparse.from_string',
+                             'version': '0.29.0'},
+              'real': [True],
+              'schema_name': 'qcschema_molecule',
+              'schema_version': 2,
+              'symbols': ['H'],
+              'validated': True},
+ 'protocols': {'stdout': True},
+ 'provenance': {'creator': 'QCElemental', 'routine': 'qcelemental.models.results', 'version': '0.29.0'},
+ 'schema_name': 'qcschema_input',
+ 'schema_version': 1}
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:09:02 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    0.842700792949715
+  Total nuclear repulsion      =    0.842700792949715
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.29018820550379   -2.90188e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.29018820550379    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -1.132889  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A     -0.358577  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.29018820550379
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.8427007929497152
+    One-Electron Energy =                  -1.1328889984535038
+    Two-Electron Energy =                   0.0000000000000000
+    Total Energy =                         -0.2901882055037885
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:02 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.77 seconds =       0.03 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+    Psi4 stopped on: Thursday, 12 March 2026 11:09AM
+    Psi4 wall time for execution: 0:00:00.16
+
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.11a1.dev33 
+
+                         Git: Rev {master} 2f61bbd dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 12 March 2026 11:08AM
+
+    Process ID: 1551441
+    Host:       atl1-1-02-002-21-2.pace.gatech.edu
+    PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶, dftd3,
+                d̶f̶t̶d̶4̶, d̶k̶h̶, ecpint, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, g̶c̶p̶,
+                g̶d̶m̶a̶, geometric, g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶,
+                l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶, o̶o̶o̶,
+                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶,
+                p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶,
+                v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input QCSchema <==
+
+--------------------------------------------------------------------------
+{'driver': 'energy',
+ 'extras': {'psiapi': True, 'wfn_qcvars_only': True},
+ 'id': None,
+ 'keywords': {'D_CONVERGENCE': 1e-12,
+              'PARENT_SYMMETRY': 'C1',
+              'REFERENCE': 'UHF',
+              'SCF_TYPE': 'DF',
+              'SCF__E_CONVERGENCE': 1e-08,
+              'function_kwargs': {'external_potentials': [None, [[1, [1, 0, 0], 1]]], 'write_orbitals': False}},
+ 'model': {'basis': 'sto-3g', 'method': 'scf'},
+ 'molecule': {'atom_labels': [''],
+              'atomic_numbers': [1],
+              'extras': {},
+              'fix_com': True,
+              'fix_orientation': True,
+              'fix_symmetry': 'c1',
+              'fragment_charges': [0.0],
+              'fragment_multiplicities': [2],
+              'fragments': [[0]],
+              'geometry': [-0.0049805514842334, 0.0, 0.0],
+              'mass_numbers': [1],
+              'masses': [1.00782503223],
+              'molecular_charge': 0.0,
+              'molecular_multiplicity': 2,
+              'name': 'hydrogen',
+              'provenance': {'creator': 'QCElemental',
+                             'routine': 'qcelemental.molparse.from_string',
+                             'version': '0.29.0'},
+              'real': [True],
+              'schema_name': 'qcschema_molecule',
+              'schema_version': 2,
+              'symbols': ['H'],
+              'validated': True},
+ 'protocols': {'stdout': True},
+ 'provenance': {'creator': 'QCElemental', 'routine': 'qcelemental.models.results', 'version': '0.29.0'},
+ 'schema_name': 'qcschema_input',
+ 'schema_version': 1}
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:09:02 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H           -0.004980551484     0.000000000000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = 2407987.46702  C = 2407987.46702 [cm^-1]
+  Rotational constants: A = ************  B = 72189648157.17372  C = 72189648157.17372 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    0.840571467765982
+  Total nuclear repulsion      =    0.840571467765982
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.29133463360120   -2.91335e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.29133463360120    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -1.131906  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A     -0.357594  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.29133463360120
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.8405714677659817
+    One-Electron Energy =                  -1.1319061013671821
+    Two-Electron Energy =                  -0.0000000000000001
+    Total Energy =                         -0.2913346336012004
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0049806           -0.0049806           -0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:02 2026
+Module time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.91 seconds =       0.03 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+    Psi4 stopped on: Thursday, 12 March 2026 11:09AM
+    Psi4 wall time for execution: 0:00:00.14
+
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.11a1.dev33 
+
+                         Git: Rev {master} 2f61bbd dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 12 March 2026 11:08AM
+
+    Process ID: 1551441
+    Host:       atl1-1-02-002-21-2.pace.gatech.edu
+    PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶, dftd3,
+                d̶f̶t̶d̶4̶, d̶k̶h̶, ecpint, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, g̶c̶p̶,
+                g̶d̶m̶a̶, geometric, g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶,
+                l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶, o̶o̶o̶,
+                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶,
+                p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶,
+                v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input QCSchema <==
+
+--------------------------------------------------------------------------
+{'driver': 'energy',
+ 'extras': {'psiapi': True, 'wfn_qcvars_only': True},
+ 'id': None,
+ 'keywords': {'D_CONVERGENCE': 1e-12,
+              'PARENT_SYMMETRY': 'C1',
+              'REFERENCE': 'UHF',
+              'SCF_TYPE': 'DF',
+              'SCF__E_CONVERGENCE': 1e-08,
+              'function_kwargs': {'external_potentials': [None, [[1, [1, 0, 0], 1]]], 'write_orbitals': False}},
+ 'model': {'basis': 'sto-3g', 'method': 'scf'},
+ 'molecule': {'atom_labels': [''],
+              'atomic_numbers': [1],
+              'extras': {},
+              'fix_com': True,
+              'fix_orientation': True,
+              'fix_symmetry': 'c1',
+              'fragment_charges': [0.0],
+              'fragment_multiplicities': [2],
+              'fragments': [[0]],
+              'geometry': [0.0049805514842334, 0.0, 0.0],
+              'mass_numbers': [1],
+              'masses': [1.00782503223],
+              'molecular_charge': 0.0,
+              'molecular_multiplicity': 2,
+              'name': 'hydrogen',
+              'provenance': {'creator': 'QCElemental',
+                             'routine': 'qcelemental.molparse.from_string',
+                             'version': '0.29.0'},
+              'real': [True],
+              'schema_name': 'qcschema_molecule',
+              'schema_version': 2,
+              'symbols': ['H'],
+              'validated': True},
+ 'protocols': {'stdout': True},
+ 'provenance': {'creator': 'QCElemental', 'routine': 'qcelemental.models.results', 'version': '0.29.0'},
+ 'schema_name': 'qcschema_input',
+ 'schema_version': 1}
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:09:02 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.004980551484     0.000000000000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = 2407987.46702  C = 2407987.46702 [cm^-1]
+  Rotational constants: A = ************  B = 72189648157.17372  C = 72189648157.17372 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    0.844830737506418
+  Total nuclear repulsion      =    0.844830737506418
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.28903935765131   -2.89039e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.28903935765131    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -1.133870  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A     -0.359558  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.28903935765131
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.8448307375064180
+    One-Electron Energy =                  -1.1338700951577301
+    Two-Electron Energy =                  -0.0000000000000001
+    Total Energy =                         -0.2890393576513121
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0049806            0.0049806            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:02 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.06 seconds =       0.03 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+    Psi4 stopped on: Thursday, 12 March 2026 11:09AM
+    Psi4 wall time for execution: 0:00:00.14
+
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.11a1.dev33 
+
+                         Git: Rev {master} 2f61bbd dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 12 March 2026 11:08AM
+
+    Process ID: 1551441
+    Host:       atl1-1-02-002-21-2.pace.gatech.edu
+    PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶, dftd3,
+                d̶f̶t̶d̶4̶, d̶k̶h̶, ecpint, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, g̶c̶p̶,
+                g̶d̶m̶a̶, geometric, g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶,
+                l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶, o̶o̶o̶,
+                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶,
+                p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶,
+                v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input QCSchema <==
+
+--------------------------------------------------------------------------
+{'driver': 'energy',
+ 'extras': {'psiapi': True, 'wfn_qcvars_only': True},
+ 'id': None,
+ 'keywords': {'D_CONVERGENCE': 1e-12,
+              'PARENT_SYMMETRY': 'C1',
+              'REFERENCE': 'UHF',
+              'SCF_TYPE': 'DF',
+              'SCF__E_CONVERGENCE': 1e-08,
+              'function_kwargs': {'external_potentials': [None, [[1, [1, 0, 0], 1]]], 'write_orbitals': False}},
+ 'model': {'basis': 'sto-3g', 'method': 'scf'},
+ 'molecule': {'atom_labels': [''],
+              'atomic_numbers': [1],
+              'extras': {},
+              'fix_com': True,
+              'fix_orientation': True,
+              'fix_symmetry': 'c1',
+              'fragment_charges': [0.0],
+              'fragment_multiplicities': [2],
+              'fragments': [[0]],
+              'geometry': [0.0, -0.0049805514842334, 0.0],
+              'mass_numbers': [1],
+              'masses': [1.00782503223],
+              'molecular_charge': 0.0,
+              'molecular_multiplicity': 2,
+              'name': 'hydrogen',
+              'provenance': {'creator': 'QCElemental',
+                             'routine': 'qcelemental.molparse.from_string',
+                             'version': '0.29.0'},
+              'real': [True],
+              'schema_name': 'qcschema_molecule',
+              'schema_version': 2,
+              'symbols': ['H'],
+              'validated': True},
+ 'protocols': {'stdout': True},
+ 'provenance': {'creator': 'QCElemental', 'routine': 'qcelemental.models.results', 'version': '0.29.0'},
+ 'schema_name': 'qcschema_input',
+ 'schema_version': 1}
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:09:02 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000    -0.004980551484     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = 2407987.46702  C = 2407987.46702 [cm^-1]
+  Rotational constants: A = ************  B = 72189648157.17372  C = 72189648157.17372 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    0.842695489567738
+  Total nuclear repulsion      =    0.842695489567738
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.29019106343851   -2.90191e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.29019106343851    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -1.132887  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A     -0.358575  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.29019106343851
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.8426954895677381
+    One-Electron Energy =                  -1.1328865530062515
+    Two-Electron Energy =                   0.0000000000000001
+    Total Energy =                         -0.2901910634385134
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0049806           -0.0049806           -0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:03 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       2.20 seconds =       0.04 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+    Psi4 stopped on: Thursday, 12 March 2026 11:09AM
+    Psi4 wall time for execution: 0:00:00.14
+
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.11a1.dev33 
+
+                         Git: Rev {master} 2f61bbd dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 12 March 2026 11:08AM
+
+    Process ID: 1551441
+    Host:       atl1-1-02-002-21-2.pace.gatech.edu
+    PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶, dftd3,
+                d̶f̶t̶d̶4̶, d̶k̶h̶, ecpint, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, g̶c̶p̶,
+                g̶d̶m̶a̶, geometric, g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶,
+                l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶, o̶o̶o̶,
+                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶,
+                p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶,
+                v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input QCSchema <==
+
+--------------------------------------------------------------------------
+{'driver': 'energy',
+ 'extras': {'psiapi': True, 'wfn_qcvars_only': True},
+ 'id': None,
+ 'keywords': {'D_CONVERGENCE': 1e-12,
+              'PARENT_SYMMETRY': 'C1',
+              'REFERENCE': 'UHF',
+              'SCF_TYPE': 'DF',
+              'SCF__E_CONVERGENCE': 1e-08,
+              'function_kwargs': {'external_potentials': [None, [[1, [1, 0, 0], 1]]], 'write_orbitals': False}},
+ 'model': {'basis': 'sto-3g', 'method': 'scf'},
+ 'molecule': {'atom_labels': [''],
+              'atomic_numbers': [1],
+              'extras': {},
+              'fix_com': True,
+              'fix_orientation': True,
+              'fix_symmetry': 'c1',
+              'fragment_charges': [0.0],
+              'fragment_multiplicities': [2],
+              'fragments': [[0]],
+              'geometry': [0.0, 0.0049805514842334, 0.0],
+              'mass_numbers': [1],
+              'masses': [1.00782503223],
+              'molecular_charge': 0.0,
+              'molecular_multiplicity': 2,
+              'name': 'hydrogen',
+              'provenance': {'creator': 'QCElemental',
+                             'routine': 'qcelemental.molparse.from_string',
+                             'version': '0.29.0'},
+              'real': [True],
+              'schema_name': 'qcschema_molecule',
+              'schema_version': 2,
+              'symbols': ['H'],
+              'validated': True},
+ 'protocols': {'stdout': True},
+ 'provenance': {'creator': 'QCElemental', 'routine': 'qcelemental.models.results', 'version': '0.29.0'},
+ 'schema_name': 'qcschema_input',
+ 'schema_version': 1}
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:09:03 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.004980551484     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = 2407987.46702  C = 2407987.46702 [cm^-1]
+  Rotational constants: A = ************  B = 72189648157.17372  C = 72189648157.17372 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    0.842695489567738
+  Total nuclear repulsion      =    0.842695489567738
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.29019106343851   -2.90191e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.29019106343851    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -1.132887  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A     -0.358575  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.29019106343851
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.8426954895677381
+    One-Electron Energy =                  -1.1328865530062515
+    Two-Electron Energy =                   0.0000000000000001
+    Total Energy =                         -0.2901910634385134
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :         -0.0049806            0.0049806            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:03 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.35 seconds =       0.04 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+    Psi4 stopped on: Thursday, 12 March 2026 11:09AM
+    Psi4 wall time for execution: 0:00:00.14
+
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.11a1.dev33 
+
+                         Git: Rev {master} 2f61bbd dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 12 March 2026 11:08AM
+
+    Process ID: 1551441
+    Host:       atl1-1-02-002-21-2.pace.gatech.edu
+    PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶, dftd3,
+                d̶f̶t̶d̶4̶, d̶k̶h̶, ecpint, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, g̶c̶p̶,
+                g̶d̶m̶a̶, geometric, g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶,
+                l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶, o̶o̶o̶,
+                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶,
+                p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶,
+                v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input QCSchema <==
+
+--------------------------------------------------------------------------
+{'driver': 'energy',
+ 'extras': {'psiapi': True, 'wfn_qcvars_only': True},
+ 'id': None,
+ 'keywords': {'D_CONVERGENCE': 1e-12,
+              'PARENT_SYMMETRY': 'C1',
+              'REFERENCE': 'UHF',
+              'SCF_TYPE': 'DF',
+              'SCF__E_CONVERGENCE': 1e-08,
+              'function_kwargs': {'external_potentials': [None, [[1, [1, 0, 0], 1]]], 'write_orbitals': False}},
+ 'model': {'basis': 'sto-3g', 'method': 'scf'},
+ 'molecule': {'atom_labels': [''],
+              'atomic_numbers': [1],
+              'extras': {},
+              'fix_com': True,
+              'fix_orientation': True,
+              'fix_symmetry': 'c1',
+              'fragment_charges': [0.0],
+              'fragment_multiplicities': [2],
+              'fragments': [[0]],
+              'geometry': [0.0, 0.0, -0.0049805514842334],
+              'mass_numbers': [1],
+              'masses': [1.00782503223],
+              'molecular_charge': 0.0,
+              'molecular_multiplicity': 2,
+              'name': 'hydrogen',
+              'provenance': {'creator': 'QCElemental',
+                             'routine': 'qcelemental.molparse.from_string',
+                             'version': '0.29.0'},
+              'real': [True],
+              'schema_name': 'qcschema_molecule',
+              'schema_version': 2,
+              'symbols': ['H'],
+              'validated': True},
+ 'protocols': {'stdout': True},
+ 'provenance': {'creator': 'QCElemental', 'routine': 'qcelemental.models.results', 'version': '0.29.0'},
+ 'schema_name': 'qcschema_input',
+ 'schema_version': 1}
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:09:03 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000    -0.004980551484     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = 2407987.46702  C = 2407987.46702 [cm^-1]
+  Rotational constants: A = ************  B = 72189648157.17372  C = 72189648157.17372 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    0.842695489567738
+  Total nuclear repulsion      =    0.842695489567738
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.29019106343851   -2.90191e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.29019106343851    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -1.132887  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A     -0.358575  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.29019106343851
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.8426954895677381
+    One-Electron Energy =                  -1.1328865530062515
+    Two-Electron Energy =                   0.0000000000000001
+    Total Energy =                         -0.2901910634385134
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0049806           -0.0049806           -0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:03 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.49 seconds =       0.04 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+    Psi4 stopped on: Thursday, 12 March 2026 11:09AM
+    Psi4 wall time for execution: 0:00:00.14
+
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.11a1.dev33 
+
+                         Git: Rev {master} 2f61bbd dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 12 March 2026 11:08AM
+
+    Process ID: 1551441
+    Host:       atl1-1-02-002-21-2.pace.gatech.edu
+    PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶, dftd3,
+                d̶f̶t̶d̶4̶, d̶k̶h̶, ecpint, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, g̶c̶p̶,
+                g̶d̶m̶a̶, geometric, g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶,
+                l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶, o̶o̶o̶,
+                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶,
+                p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶,
+                v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input QCSchema <==
+
+--------------------------------------------------------------------------
+{'driver': 'energy',
+ 'extras': {'psiapi': True, 'wfn_qcvars_only': True},
+ 'id': None,
+ 'keywords': {'D_CONVERGENCE': 1e-12,
+              'PARENT_SYMMETRY': 'C1',
+              'REFERENCE': 'UHF',
+              'SCF_TYPE': 'DF',
+              'SCF__E_CONVERGENCE': 1e-08,
+              'function_kwargs': {'external_potentials': [None, [[1, [1, 0, 0], 1]]], 'write_orbitals': False}},
+ 'model': {'basis': 'sto-3g', 'method': 'scf'},
+ 'molecule': {'atom_labels': [''],
+              'atomic_numbers': [1],
+              'extras': {},
+              'fix_com': True,
+              'fix_orientation': True,
+              'fix_symmetry': 'c1',
+              'fragment_charges': [0.0],
+              'fragment_multiplicities': [2],
+              'fragments': [[0]],
+              'geometry': [0.0, 0.0, 0.0049805514842334],
+              'mass_numbers': [1],
+              'masses': [1.00782503223],
+              'molecular_charge': 0.0,
+              'molecular_multiplicity': 2,
+              'name': 'hydrogen',
+              'provenance': {'creator': 'QCElemental',
+                             'routine': 'qcelemental.molparse.from_string',
+                             'version': '0.29.0'},
+              'real': [True],
+              'schema_name': 'qcschema_molecule',
+              'schema_version': 2,
+              'symbols': ['H'],
+              'validated': True},
+ 'protocols': {'stdout': True},
+ 'provenance': {'creator': 'QCElemental', 'routine': 'qcelemental.models.results', 'version': '0.29.0'},
+ 'schema_name': 'qcschema_input',
+ 'schema_version': 1}
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+  PE does not make use of molecular symmetry: further calculations in C1 point group.
+  PE geometry must align with POTFILE keyword: resetting coordinates with fixed origin and orientation.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  6, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on atl1-1-02-002-21-2.pace.gatech.edu
+*** at Thu Mar 12 11:09:03 2026
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    19 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000     0.004980551484     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = 2407987.46702  C = 2407987.46702 [cm^-1]
+  Rotational constants: A = ************  B = 72189648157.17372  C = 72189648157.17372 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 1
+  Nalpha       = 1
+  Nbeta        = 0
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry H          line    18 file /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4/basis/def2-universal-jkfit.gbs 
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. 
+  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.
+  Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 6
+    Number of basis functions: 18
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => External Potential Field:  <= 
+
+    > Diffuse Bases < 
+
+    Molecule 1
+
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+      Gh(HE)          1.000000000000     0.000000000000     0.000000000000     4.002603254130
+
+    Basis 1
+
+  Basis Set: Diffuse Charges
+    Blend: Diffuse Charges
+    Number of shells: 1
+    Number of basis functions: 1
+    Number of Cartesian functions: 1
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  Old nuclear repulsion        =    0.000000000000000
+  Additional nuclear repulsion =    0.842695489567738
+  Total nuclear repulsion      =    0.842695489567738
+
+  Minimum eigenvalue in the overlap matrix is 1.0000000000E+00.
+  Reciprocal condition number of the overlap matrix is 1.0000000000E+00.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          1       1       1       0       0       1
+   -------------------------------------------------------
+    Total       1       1       1       0       0       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:    -0.29019106343851   -2.90191e-01   0.00000e+00 DIIS
+   @DF-UHF iter   2:    -0.29019106343851    0.00000e+00   0.00000e+00 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   0.000000000E+00
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.500000000E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -1.132887  
+
+    Alpha Virtual:                                                        
+
+    
+
+    Beta Occupied:                                                        
+
+    
+
+    Beta Virtual:                                                         
+
+       1A     -0.358575  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     0 ]
+    SOCC [     1 ]
+    NA   [     1 ]
+    NB   [     0 ]
+
+  @DF-UHF Final Energy:    -0.29019106343851
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.8426954895677381
+    One-Electron Energy =                  -1.1328865530062515
+    Two-Electron Energy =                   0.0000000000000001
+    Total Energy =                         -0.2901910634385134
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 1.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.0049806            0.0049806            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on atl1-1-02-002-21-2.pace.gatech.edu at Thu Mar 12 11:09:03 2026
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.63 seconds =       0.04 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+    Psi4 stopped on: Thursday, 12 March 2026 11:09AM
+    Psi4 wall time for execution: 0:00:00.14
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //      FiniteDifference Results     //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+  Computing gradient from energies.
+    Using 3-point formula.
+    Energy without displacement:   -0.2901882055
+    Check energies below for precision!
+    Forces are for mass-weighted, symmetry-adapted cartesians [a0].
+
+     Coord      Energy(-1)        Energy(+1)            Force
+        0     -0.2913346336     -0.2890393577      0.2295275950
+        1     -0.2901910634     -0.2901910634      0.0000000000
+        2     -0.2901910634     -0.2901910634      0.0000000000
+         -------------------------------------------------------------
+    Analytic Gaussian charge-proton ixn energy vs. with external_potential................PASSED
+    Analytic Gaussian charge-s electron ixn energy vs. with external_potential............PASSED
+    Analytic Gaussian charge-hydrogen gradient on hydrogen vs. with external_potential....PASSED
+    Analytic Gaussian charge-hydrogen gradient on charge vs. with external_potential......PASSED
+    Diffuse charge-hydrogen gradient on hydrogen vs. with finite difference...............PASSED
+    Analytic Gaussian charge-Gaussian charge ixn energy vs. extern-extern ixn energy......PASSED
+    Analytic Gaussian charge-point charge ixn energy vs. extern-extern ixn energy.........PASSED
+    extern 0-extern 1 ixn energy vs. extern 1-extern 0 ixn energy.........................PASSED
+
+    Psi4 stopped on: Thursday, 12 March 2026 11:09AM
+    Psi4 wall time for execution: 0:00:04.56
+
+*** Psi4 exiting successfully. Buy a developer a beer!
