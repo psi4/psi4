@@ -11,7 +11,7 @@ jobs:
     matrix:
       gcc_11:
         CXX_COMPILER: 'g++-11'
-        PYTHON_VER: '3.10'
+        PYTHON_VER: '3.14'
         C_COMPILER: 'gcc-11'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
@@ -28,7 +28,7 @@ jobs:
 
       gcc_latest:
         CXX_COMPILER: 'g++'
-        PYTHON_VER: '3.13'
+        PYTHON_VER: '3.14'
         C_COMPILER: 'gcc'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
@@ -61,9 +61,26 @@ jobs:
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
+      clang_py314:
+        CXX_COMPILER: 'clang++-17'
+        PYTHON_VER: '3.14'
+        C_COMPILER: 'clang-17'
+        F_COMPILER: 'gfortran'
+        BUILD_TYPE: 'release'
+        APT_INSTALL: 'gfortran clang-17 clang++-17'
+        vmImage: 'ubuntu-latest'
+        PYTEST_MARKER_EXPR: 'quick'
+        PYTEST_NAME_EXPR: 'not nonsense1'
+        ENABLE_EINSUMS: "ON"
+        ENABLE_GAUXC: "ON"
+        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so'
+        CM_GENERATOR: "Ninja"
+        ADVISOR_ARGS: ""
+        ADVISOR_DISABLE_ARGS: "compilers"
+
       icpx_conda:
         CXX_COMPILER: 'icpx'
-        PYTHON_VER: '3.13'
+        PYTHON_VER: '3.10'
         C_COMPILER: 'icx'
         F_COMPILER: 'ifx'
         BUILD_TYPE: 'release'
@@ -199,6 +216,8 @@ jobs:
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
+    # conda remove qcengine --force || true
+    # conda remove optking --force || true
   - bash: |
       cd build
       source activate p4env
@@ -218,6 +237,59 @@ jobs:
       qcengine info
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
+
+  - bash: |
+      cd build
+      source activate p4env
+      python -V
+      export PYTHONPATH=stage/lib
+      export PATH=$PATH:stage/bin
+      qcengine info
+      python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+      python -c 'import numpy; print(numpy.version.version)'
+      python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
+      python -c 'import qcengine as q; print(q.__version__, q.__file__)'
+      ./stage/bin/psi4 ../tests/ddd-deriv/input.dat
+    displayName: 'Spot Test 2'
+
+  - bash: |
+      cd build
+      source activate p4env
+      python -V
+      ls -l
+      pwd
+      python -c "import sys;print(sys.path)"
+      echo ROUND1
+      python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+      psi4 --module || true
+      python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+      python -c "import psi4; print(psi4.executable)" || true
+      echo ROUND1NG
+      python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+      echo ROUNDE
+      PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+      PATH=stage/bin:$PATH psi4 --module || true
+      PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+      PATH=stage/bin:$PATH python -c "import psi4; print(psi4.executable)" || true
+      echo ROUNDE-NG
+      PATH=stage/bin:$PATH python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+      echo ROUNDP
+      PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+      PYTHONPATH=stage/lib psi4 --module || true
+      PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+      PYTHONPATH=stage/lib python -c "import psi4; print(psi4.executable)" || true
+      echo ROUNDP-NG
+      PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+      echo ROUND4
+      eval $(stage/bin/psi4 --psiapi)
+      python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+      psi4 --module || true
+      python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+      python -c "import psi4; print(psi4.executable)" || true
+      echo ROUND4-NG
+      python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+    condition: false
+    displayName: 'Psi4 Path Setup Diagnostics'
 
   #- bash: |
   #    cd build

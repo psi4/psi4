@@ -31,7 +31,7 @@ from typing import Dict, List, Union
 
 import numpy as np
 import qcengine as qcng
-from qcelemental.models import AtomicInput
+from qcelemental.models.v2 import AtomicInput
 
 from psi4 import core
 
@@ -262,26 +262,29 @@ class EmpiricalDispersion():
         if self.engine in ["s-dftd3", 'dftd3', 'mp2d', "dftd4"]:
             resi = AtomicInput(
                 **{
-                    'driver': 'energy',
-                    'model': {
-                        'method': self.fctldash,
-                        'basis': '(auto)',
+                    "specification": {
+                        'driver': 'energy',
+                        'model': {
+                            'method': self.fctldash,
+                            'basis': '(auto)',
+                        },
+                        'keywords': {
+                            'level_hint': self.dashlevel,
+                            'params_tweaks': self.dashparams,
+                            'dashcoeff_supplement': self.dashcoeff_supplement,
+                            'pair_resolved': self.save_pairwise_disp,
+                            'apply_qcengine_aliases': True,  # for s-dftd3
+                            'verbose': 1,
+                        },
                     },
-                    'keywords': {
-                        'level_hint': self.dashlevel,
-                        'params_tweaks': self.dashparams,
-                        'dashcoeff_supplement': self.dashcoeff_supplement,
-                        'pair_resolved': self.save_pairwise_disp,
-                        'apply_qcengine_aliases': True,  # for s-dftd3
-                        'verbose': 1,
-                    },
-                    'molecule': molecule.to_schema(dtype=2),
+                    'molecule': molecule.to_schema(dtype=3),
                     'provenance': p4util.provenance_stamp(__name__),
                 })
             jobrec = qcng.compute(
                 resi,
                 self.engine,
                 raise_error=True,
+                return_version=2,
                 task_config={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
 
             dashd_part = float(jobrec.extras['qcvars']['DISPERSION CORRECTION ENERGY'])
@@ -300,6 +303,7 @@ class EmpiricalDispersion():
                     resi,
                     self.gcp_engine,
                     raise_error=True,
+                    return_version=2,
                     task_config={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
                 gcp_part = jobrec.return_result
                 dashd_part += gcp_part
@@ -334,25 +338,28 @@ class EmpiricalDispersion():
         if self.engine in ["s-dftd3", 'dftd3', 'mp2d', "dftd4"]:
             resi = AtomicInput(
                 **{
-                    'driver': 'gradient',
-                    'model': {
-                        'method': self.fctldash,
-                        'basis': '(auto)',
+                    "specification": {
+                        'driver': 'gradient',
+                        'model': {
+                            'method': self.fctldash,
+                            'basis': '(auto)',
+                        },
+                        'keywords': {
+                            'level_hint': self.dashlevel,
+                            'params_tweaks': self.dashparams,
+                            'dashcoeff_supplement': self.dashcoeff_supplement,
+                            'apply_qcengine_aliases': True,  # for s-dftd3
+                            'verbose': 1,
+                        },
                     },
-                    'keywords': {
-                        'level_hint': self.dashlevel,
-                        'params_tweaks': self.dashparams,
-                        'dashcoeff_supplement': self.dashcoeff_supplement,
-                        'apply_qcengine_aliases': True,  # for s-dftd3
-                        'verbose': 1,
-                    },
-                    'molecule': molecule.to_schema(dtype=2),
+                    'molecule': molecule.to_schema(dtype=3),
                     'provenance': p4util.provenance_stamp(__name__),
                 })
             jobrec = qcng.compute(
                 resi,
                 self.engine,
                 raise_error=True,
+                return_version=2,
                 task_config={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
 
             dashd_part = core.Matrix.from_array(jobrec.extras['qcvars']['DISPERSION CORRECTION GRADIENT'])
@@ -366,6 +373,7 @@ class EmpiricalDispersion():
                     resi,
                     self.gcp_engine,
                     raise_error=True,
+                return_version=2,
                     task_config={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
                 gcp_part = core.Matrix.from_array(jobrec.return_result)
                 dashd_part.add(gcp_part)

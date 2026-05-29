@@ -1809,7 +1809,7 @@ def run_fsapt_analysis(
     wfn : :class:`~psi4.core.Wavefunction`, optional
         Wavefunction containing F-SAPT QCVariables, from an example like
         ``energy('fisapt0', return_wfn=True)``.
-    atomic_results : :class:`qcelemental.models.AtomicResult`, optional
+    atomic_results : :class:`qcelemental.models.v1.AtomicResult` or :class:`qcelemental.models.v2.AtomicResult`, optional
         QCSchema AtomicResult containing F-SAPT QCVariables.
     pdb_dir
         Optional directory label for order-1 visualization file generation.
