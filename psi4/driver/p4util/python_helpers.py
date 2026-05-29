@@ -1057,7 +1057,7 @@ def plump_qcvar(
     elif "GRADIENT" in key.upper():
         reshaper = (-1, 3)
     elif "HESSIAN" in key.upper():
-        ndof = int(math.sqrt(len(tgt)))
+        ndof = int(math.sqrt(tgt.size))
         reshaper = (ndof, ndof)
     else:
         raise ValidationError(f'Uncertain how to reshape array: {key}')
@@ -1611,4 +1611,3 @@ def _core_triplet(A, B, C, transA, transB, transC):
 # removed in v1.10 to reduce API footprint. deprecated 1.4 and no-op since 1.9
 core.Matrix.doublet = staticmethod(_core_doublet)
 core.Matrix.triplet = staticmethod(_core_triplet)
-
