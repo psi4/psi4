@@ -44,7 +44,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    -- Build files have been written to: /current/dir/objdir
 #    >>> cmake --build objdir --target install -j`getconf _NPROCESSORS_ONLN`
 
-#  <<<  Required build dependencies that Psi4 can't build itself  >>>
+#  <<<  Required build dependencies that Psi4 can't build itself; see also codedeps.yaml  >>>
 #
 #    - CMake (e.g., `conda install cmake`)
 #    - C++ and C compilers (C++20 compliant)
@@ -56,7 +56,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - pydantic >=1.0 (runtime only; e.g., `conda install pydantic -c conda-forge`)
 #    - msgpack-python (runtime only; e.g., `conda install msgpack-python`)
 #    - Eigen (for Libint2; e.g., `conda install eigen`)
-#    - Boost (header-only libs for Libint2; e.g., `conda install boost-cpp`)
+#    - Boost (header-only libs for Libint2; e.g., `conda install libboost-headers`)
 #    - SciPy (runtime only; avoidable through keyword setting; e.g., `conda install scipy`)
 #    - py-cpuinfo (runtime only; e.g., `conda install py-cpuinfo`)
 #    - psutil (runtime only; e.g., `conda install psutil`)
@@ -69,16 +69,16 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - CMAKE_C_COMPILER "C compiler"
 #    - CMAKE_C_FLAGS "Additional C flags"
 #    - CMAKE_CXX_COMPILER "C++ compiler"
-#    - CMAKE_CXX_FLAGS "Additional C++ flags"
+#    - CMAKE_CXX_FLAGS "Additional C++ flags (use per-config (e.g., CMAKE_CXX_FLAGS_DEBUG) to override e.g., -O3)"
 #    - CMAKE_Fortran_COMPILER "Fortran compiler (required for some add-ons)"
 #    - CMAKE_Fortran_FLAGS "Additional Fortran flags"
 #    - CMAKE_SHARED_LINKER_FLAGS "Additional linking flags for core.so/dll library"
 
 #  <<<  Detecting dependencies and add-ons  >>>
 #
-#    - Python_EXECUTABLE "Python interpreter to use (e.g., /path/to/bin/python3.7)"
-#    - Python_LIBRARY "Python library that goes with the interpreter (e.g., /path/to/lib/python3.7.so)"
-#    - Python_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
+#    - Python_EXECUTABLE "Python interpreter to use (e.g., /path/to/bin/python3.13)"
+#    - Python_LIBRARY "Python library that goes with the interpreter (e.g., /path/to/lib/python3.13.so)"
+#    - Python_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.13)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
 #    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gauxc, gdma,
@@ -203,6 +203,7 @@ option_with_default(gauxc_ENABLE_GPU "Enable GPU support for GauXC" OFF)
 option_with_default(gauxc_ENABLE_MAGMA "Enable MAGMA support for GauXC. Required GPU-enabled GauXC" OFF)
 option_with_print(psi4_CMAKE_UNITY_BUILD "Enable unity/jumbo build to reduce compile units. Effective to at least 20 cores. 2-3x full rebuild speedup. For dev, can turn off overall or per-module" ON)
 option_with_default(psi4_CMAKE_UNITY_BUILD_BATCH_SIZE "Adjust unity build size from CMake default" 8)
+option_with_default(psi4_libmints_UNITY_BUILD_BATCH_SIZE "Adjust unity build size for libmints (prone to OOM errors) from CMake default" 8)
 option_with_print(psi4_ENABLE_PRECOMPILE_HEADERS "Enable reusing preprocessed libmints and other headers for build performance. 15-20% full rebuild speedup. For dev, can turn off for finer incr rebuild" OFF)
 
 include(custom_int_orderings)
@@ -307,6 +308,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
               -DCMAKE_UNITY_BUILD=${psi4_CMAKE_UNITY_BUILD}
               -DCMAKE_UNITY_BUILD_BATCH_SIZE=${psi4_CMAKE_UNITY_BUILD_BATCH_SIZE}
+              -Dpsi4_libmints_UNITY_BUILD_BATCH_SIZE=${psi4_libmints_UNITY_BUILD_BATCH_SIZE}
               -Dpsi4_ENABLE_PRECOMPILE_HEADERS=${psi4_ENABLE_PRECOMPILE_HEADERS}
               -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
               -DMAX_AM_ERI=${MAX_AM_ERI}

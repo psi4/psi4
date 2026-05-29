@@ -11,17 +11,23 @@ jobs:
     matrix:
       gcc_11:
         CXX_COMPILER: 'g++-11'
-        PYTHON_VER: '3.10'
+        PYTHON_VER: '3.12'
         C_COMPILER: 'gcc-11'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran gcc-11 g++-11'
-        vmImage: 'ubuntu-22.04'
+        vmImage: 'ubuntu-latest'
         PYTEST_MARKER_EXPR: "quick"
         PYTEST_NAME_EXPR: 'not nonsense1'
-        ENABLE_EINSUMS: "ON"
-        ENABLE_GAUXC: "ON"
-        CMARGS: ""
+        ENABLE_EINSUMS: "OFF"
+        ENABLE_GAUXC: "OFF"
+        ENABLE_OOO: "OFF"
+        # older GCC + newer L2 vulnerable to OOM w/unity build
+        CMARGS: >-
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=OFF
+          -Dpsi4_CMAKE_UNITY_BUILD=OFF
+          -DCMAKE_CXX_FLAGS_RELEASE:STRING='-O2 -DNDEBUG'
+          -DCMAKE_VERBOSE_MAKEFILE=ON
         CM_GENERATOR: "Unix Makefiles"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
@@ -38,7 +44,10 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
-        CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON"
+        ENABLE_OOO: "ON"
+        CMARGS: >-
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
+          -Dpsi4_libmints_UNITY_BUILD_BATCH_SIZE=5
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
@@ -56,7 +65,14 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON'
+        ENABLE_OOO: "ON"
+        CMARGS: >-
+          -DOpenMP_C_FLAGS=-fopenmp=libomp
+          -DOpenMP_CXX_FLAGS=-fopenmp=libomp
+          -DOpenMP_C_LIB_NAMES=omp
+          -DOpenMP_CXX_LIB_NAMES=omp
+          -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
@@ -74,7 +90,9 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        CMARGS: "-D ENABLE_XHOST=OFF -D psi4_ENABLE_PRECOMPILE_HEADERS=ON"
+        ENABLE_OOO: "ON"
+        CMARGS: >-
+          -DENABLE_XHOST=OFF
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: "--compiler IntelLLVM"
         ADVISOR_DISABLE_ARGS: ""
@@ -155,8 +173,8 @@ jobs:
         sed -i "s;#- dpcpp;- dpcpp;g" env_p4env.yaml
         sed -i "s;#- ifx;- ifx;g" env_p4env.yaml
       fi
-      sed -i "s;- libint;#- libint;g" env_p4env.yaml
-      sed -i "s;#- psi4::libint;- psi4::libint=2.8.1;g" env_p4env.yaml
+      # sed -i "s;- libint;#- libint;g" env_p4env.yaml
+      # sed -i "s;#- psi4::libint;- psi4::libint=2.8.1;g" env_p4env.yaml
       echo "  - einsums>=1.0.6" >> env_p4env.yaml
       echo "  - range-v3" >> env_p4env.yaml
       echo "  - zlib" >> env_p4env.yaml
@@ -193,16 +211,17 @@ jobs:
         -D ENABLE_Einsums="${ENABLE_EINSUMS}" \
         -D ENABLE_IntegratorXX=OFF \
         -D ENABLE_gauxc="${ENABLE_GAUXC}" \
-        -D ENABLE_OpenOrbitalOptimizer=ON \
+        -D ENABLE_OpenOrbitalOptimizer="${ENABLE_OOO}" \
         -D FORCE_PEDANTIC=ON \
-        ${CMARGS} \
+        $(CMARGS) \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
+    # most lanes are Ninja which parallelizes by default. Makefiles lane (min GCC) needs single thread anyways
   - bash: |
       cd build
       source activate p4env
-      cmake --build . -- -j 2
+      cmake --build .
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so
     displayName: 'Build Psi4'
@@ -225,6 +244,13 @@ jobs:
   #    PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
   #    PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
   #  displayName: 'Spot Test 2'
+
+  # example with COPY
+  #- bash: |
+  #    cd build/../tests/fcidump
+  #    source activate p4env
+  #    ./../../build/stage/bin/psi4 -o stdout
+  #  displayName: 'Spot Test 3'
 
   - bash: |
       cd build
