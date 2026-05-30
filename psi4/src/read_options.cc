@@ -1680,6 +1680,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("OOO_DIIS_RESTART_FACTOR", 1.0e-4);
         /*- For |globals__orbital_optimizer_package| = `OOO`, use optimal damping when max error bigger than this. -*/
         options.add_double("OOO_OPTIMAL_DAMPING_THRESHOLD", 1.0);
+        /*- For |globals__orbital_optimizer_package| = `OOO`, restart ODA steps when DIIS hasn't
+        improved energy for this many SCF iterations. This option is temporary. -*/
+        options.add_int("OOO_ODA_RESTART_STEPS", 10);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 

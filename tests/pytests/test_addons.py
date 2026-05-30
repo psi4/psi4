@@ -57,11 +57,7 @@ def test_gdma():
                        "gdma_limit": 2,
                        "gdma_origin": [ 0.000000,  0.000000,  0.117176 ]})
 
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
-        dma_tol = 6
-    else:
-        dma_tol = 2e-6
-        psi4.set_options({"e_convergence": 9, "d_convergence": 3e-8})
+    dma_tol = 6
 
     energy, wfn = psi4.energy('scf', return_wfn=True)
 
@@ -90,9 +86,6 @@ def test_ipi_broker1():
         'basis': 'sto-3g',
         'reference': 'rhf',
     })
-
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
 
     options = {}
 
@@ -271,8 +264,6 @@ def test_mp2d():
         },
         'keywords': {},
     }
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        resinp["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
 
     jrec = qcng.compute(resinp, 'mp2d', raise_error=True)
     jrec = jrec.dict()
@@ -768,8 +759,6 @@ def test_run_qcschema():
         },
         "keywords": {}
     }
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        json_input["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
 
     json_ret = psi4.json_wrapper.run_qcschema(json_input)
     print(json_ret.dict())
@@ -1173,7 +1162,7 @@ def test_resp_2(tmp_path):
     print("Difference")
     print(charges1[1]-reference_charges1)
 
-    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
+    if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
         atol = 1e-5
     else:
         atol = 1e-4
@@ -1401,9 +1390,6 @@ def test_dftd4():
     H   0.000000   0.000000   0.627352
     H   0.000000   0.000000   3.963929
     """)
-
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        psi4.set_options({"e_convergence": 9, "d_convergence": 2e-8})
 
     print('  -D correction from Py-side')
     eneyne.update_geometry()
