@@ -44,11 +44,8 @@ void form_diagonal(int C_irr) {
     dpdfile2 DIA, Dia, FAE, FMI, Fae, Fmi;
     dpdbuf4 DIJAB, Dijab, DIjAb, Cmnef, CMnEf;
     int nirreps;
-    Dimension occpi, virtpi;
     int *occ_off, *vir_off, *occ_sym, *vir_sym;
-    Dimension aoccpi, avirtpi;
     int *aocc_off, *avir_off, *aocc_sym, *avir_sym;
-    Dimension boccpi, bvirtpi;
     int *bocc_off, *bvir_off, *bocc_sym, *bvir_sym;
     int ij, ab, i, j, a, b, h, I, J, A, B;
     int isym, jsym, asym, bsym;
@@ -58,8 +55,8 @@ void form_diagonal(int C_irr) {
     const auto& openpi = moinfo.openpi;
 
     if (params.eom_ref == 0) { /** RHF **/
-        occpi = moinfo.occpi;
-        virtpi = moinfo.virtpi;
+        const Dimension& occpi = moinfo.occpi;
+        const Dimension& virtpi = moinfo.virtpi;
         occ_off = moinfo.occ_off;
         vir_off = moinfo.vir_off;
         occ_sym = moinfo.occ_sym;
@@ -113,8 +110,8 @@ void form_diagonal(int C_irr) {
         global_dpd_->file2_close(&FMI);
         global_dpd_->file2_close(&FAE);
     } else if (params.eom_ref == 1) { /* ROHF */
-        occpi = moinfo.occpi;
-        virtpi = moinfo.virtpi;
+        const Dimension& occpi = moinfo.occpi;
+        const Dimension& virtpi = moinfo.virtpi;
         occ_off = moinfo.occ_off;
         vir_off = moinfo.vir_off;
         occ_sym = moinfo.occ_sym;
@@ -248,10 +245,8 @@ void form_diagonal(int C_irr) {
     }
 
     else if (params.eom_ref == 2) { /* UHF */
-        aoccpi = moinfo.aoccpi;
-        boccpi = moinfo.boccpi;
-        avirtpi = moinfo.avirtpi;
-        bvirtpi = moinfo.bvirtpi;
+        const Dimension& boccpi = moinfo.boccpi;
+        const Dimension& avirtpi = moinfo.avirtpi;
         aocc_off = moinfo.aocc_off;
         bocc_off = moinfo.bocc_off;
         avir_off = moinfo.avir_off;
@@ -276,20 +271,26 @@ void form_diagonal(int C_irr) {
 
         global_dpd_->file2_init(&DIA, PSIF_EOM_D, C_irr, 0, 1, "DIA");
         global_dpd_->file2_mat_init(&DIA);
-        for (h = 0; h < nirreps; h++) {
-            for (i = 0; i < aoccpi[h]; i++)
-                for (a = 0; a < avirtpi[h ^ C_irr]; a++)
-                    DIA.matrix[h][i][a] = FAE.matrix[h ^ C_irr][a][a] - FMI.matrix[h][i][i];
+        {
+            const Dimension& aoccpi = moinfo.aoccpi;
+            for (h = 0; h < nirreps; h++) {
+                for (i = 0; i < aoccpi[h]; i++)
+                    for (a = 0; a < avirtpi[h ^ C_irr]; a++)
+                        DIA.matrix[h][i][a] = FAE.matrix[h ^ C_irr][a][a] - FMI.matrix[h][i][i];
+            }
         }
         global_dpd_->file2_mat_wrt(&DIA);
         global_dpd_->file2_close(&DIA);
 
         global_dpd_->file2_init(&Dia, PSIF_EOM_D, C_irr, 2, 3, "Dia");
         global_dpd_->file2_mat_init(&Dia);
-        for (h = 0; h < nirreps; h++) {
-            for (i = 0; i < boccpi[h]; i++)
-                for (a = 0; a < bvirtpi[h ^ C_irr]; a++)
-                    Dia.matrix[h][i][a] = Fae.matrix[h ^ C_irr][a][a] - Fmi.matrix[h][i][i];
+        {
+            const Dimension& bvirtpi = moinfo.bvirtpi;
+            for (h = 0; h < nirreps; h++) {
+                for (i = 0; i < boccpi[h]; i++)
+                    for (a = 0; a < bvirtpi[h ^ C_irr]; a++)
+                        Dia.matrix[h][i][a] = Fae.matrix[h ^ C_irr][a][a] - Fmi.matrix[h][i][i];
+            }
         }
         global_dpd_->file2_mat_wrt(&Dia);
         global_dpd_->file2_close(&Dia);
