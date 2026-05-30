@@ -169,12 +169,13 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
     }
 
     // Diffuse Bases
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     for (size_t ind = 0; ind < bases_.size(); ind++) {
         std::shared_ptr<BasisSet> aux = bases_[ind].first;
         SharedVector d = bases_[ind].second;
 
         // TODO thread this
-        auto fact2 = std::make_shared<IntegralFactory>(aux, BasisSet::zero_ao_basis_set(), basis, basis);
+        auto fact2 = std::make_shared<IntegralFactory>(aux, zero, basis, basis);
         std::shared_ptr<TwoBodyAOInt> eri(fact2->eri());
 
 

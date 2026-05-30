@@ -5,6 +5,7 @@ from addons import uusing
 import numpy as np
 import os
 import shutil
+from pprint import pprint as pp
 
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
@@ -908,7 +909,7 @@ def test_fisapt_link_siao():
     using the SIAO1 method produce correct interaction energies for a
     system with multiple fragments and link atoms.
     """
-    
+
     mol = psi4.core.Molecule.from_arrays(
         elez=[6, 6, 1, 1, 1, 8, 1, 1, 6, 6, 1, 1, 1, 8, 1, 1, 6, 1, 1],
         fragment_separators=[8, 16],
@@ -973,10 +974,108 @@ def test_fisapt_link_siao():
     return
 
 
+@pytest.mark.fsapt
+@uusing("dftd4")
+def test_fsapt_d4():
+    """
+    Test F-SAPT post-processing for fisapt0-d4 and fisapt0-d4bj2b.
+
+    This is the pytest conversion of ``tests/fsapt-d4/input.dat``. It checks
+    the total empirical dispersion correction for both D4 variants and verifies
+    the fragment-decomposed two-body D4 correction from ``fsapt_analysis``.
+    """
+    mol = psi4.geometry(
+        """0 1
+C 0.00000000 0.00000000 0.00000000
+H 1.09000000 0.00000000 0.00000000
+H -0.36333333 0.83908239 0.59332085
+H -0.36333333 0.09428973 -1.02332709
+H -0.36333333 -0.93337212 0.43000624
+--
+0 1
+C 6.44536662 -0.26509169 -0.00000000
+H 7.53536662 -0.26509169 -0.00000000
+H 6.08203329 0.57399070 0.59332085
+H 6.08203329 -0.17080196 -1.02332709
+H 6.08203329 -1.19846381 0.43000624
+symmetry c1
+no_reorient
+no_com"""
+    )
+    fsapt_dirname = "./fsapt_dir_test_fsapt_d4"
+    if os.path.exists(fsapt_dirname):
+        shutil.rmtree(fsapt_dirname)
+    os.makedirs(fsapt_dirname)
+    psi4.set_options(
+        {
+            "basis": "jun-cc-pvdz",
+            "scf_type": "df",
+            "guess": "sad",
+            "freeze_core": "true",
+            "FISAPT_FSAPT_FILEPATH": fsapt_dirname,
+        }
+    )
+
+    au2kcal = psi4.constants.hartree2kcalmol
+    ref_d4 = -0.0341589
+    ref_d4m = -0.0306317
+    ref_d4mi = -0.0307515
+    fEref_d4m = {
+        "Disp": 0.0,
+        "EDisp": -0.03075154988953616,
+        "Elst": -0.002386784037923917,
+        "Exch": 0.00011242418594963763,
+        "IndAB": -1.2055159739737895e-05,
+        "IndBA": -1.1984673456927851e-05,
+        "Total": -0.033049949574937065,
+    }
+
+    try:
+        psi4.energy("fisapt0-d4(i)", molecule=mol)
+        d4_disp = variable("FISAPT0-D DISP ENERGY") * au2kcal
+        assert compare_values(ref_d4mi, d4_disp, 5, "Ethene-Ethyne -d4")
+
+        psi4.energy("fisapt0-d4(s)", molecule=mol)
+        d4_disp = variable("FISAPT0-D DISP ENERGY") * au2kcal
+        assert compare_values(ref_d4, d4_disp, 5, "Ethene-Ethyne -d4")
+
+        psi4.energy("fisapt0-d4bj2b(s)", molecule=mol)
+        d4m_disp = variable("FISAPT0-D DISP ENERGY") * au2kcal
+        assert compare_values(ref_d4m, d4m_disp, 5, "Ethene-Ethyne -d4M")
+
+        fsapt_data = psi4.fsapt_analysis(
+            source=fsapt_dirname,
+            fragments_a={
+                "MethylA": [1, 2, 3, 4, 5],
+            },
+            fragments_b={
+                "MethylB": [6, 7, 8, 9, 10],
+            },
+            print_output=False,
+        )
+
+        f_energies = {
+            "Elst": float(fsapt_data["Elst"][0]),
+            "Exch": float(fsapt_data["Exch"][0]),
+            "IndAB": float(fsapt_data["IndAB"][0]),
+            "IndBA": float(fsapt_data["IndBA"][0]),
+            "Disp": float(fsapt_data["Disp"][0]),
+            "EDisp": float(fsapt_data["EDisp"][0]),
+            "Total": float(fsapt_data["Total"][0]),
+        }
+        pp(f_energies)
+        for key in ["Elst", "Exch", "IndAB", "IndBA", "Disp", "Total", "EDisp"]:
+            assert compare_values(fEref_d4m[key], f_energies[key], 6, key)
+    finally:
+        if os.path.exists(fsapt_dirname):
+            shutil.rmtree(fsapt_dirname)
+
+
 if __name__ == "__main__":
+    test_fsapt_d4()
     # test_fsapt_psivars_dict()
     # test_fsapt_external_potentials()
-    test_fsapt_AtomicOutput_external_potentials()
+    # test_fsapt_AtomicOutput_external_potentials()
     # test_fsapt_AtomicOutput()
     # test_fsapt_psivars()
     # test_fsapt_psivars_dict()
@@ -985,4 +1084,4 @@ if __name__ == "__main__":
     # test_fsapt_output_file()
     # test_fsapt_indices()
     # test_fisapt_link_siao()
-    pytest.main([__file__])
+    # pytest.main([__file__])

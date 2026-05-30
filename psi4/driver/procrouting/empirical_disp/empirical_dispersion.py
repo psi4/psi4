@@ -35,8 +35,8 @@ from qcelemental.models import AtomicInput
 
 from psi4 import core
 
-from .. import p4util
-from ..p4util.exceptions import ValidationError, UpgradeHelper
+from ... import p4util
+from ...p4util.exceptions import ValidationError, UpgradeHelper
 
 _engine_can_do = collections.OrderedDict([
     # engine order establishes default for each disp
@@ -108,21 +108,21 @@ class EmpiricalDispersion():
         `empirical_dispersion_resources.dashcoeff`.
     dashparams : dict
         Complete set of parameter values defining the flexible parts
-        of :py:attr:`dashlevel`. Number and parameter names vary by
-        :py:attr:`dashlevel`. Resolved into a complete set (keys of
+        of ``dashlevel``. Number and parameter names vary by
+        ``dashlevel``. Resolved into a complete set (keys of
         dashcoeff[dashlevel]['default']) from `name_hint` and/or
         `dashcoeff_supplement` and/or user `param_tweaks`.
     fctldash : str
-        If :py:attr:`dashparams` for :py:attr:`dashlevel` corresponds to a defined,
+        If ``dashparams`` for ``dashlevel`` corresponds to a defined,
         named, untweaked "functional-dashlevel" set, then that
         functional. Otherwise, empty string.
     description : str
-        Tagline for dispersion :py:attr:`dashlevel`.
+        Tagline for dispersion ``dashlevel``.
     dashlevel_citation : str
-        Literature reference for dispersion :py:attr:`dashlevel` in general,
-        *not necessarily* for :py:attr:`dashparams`.
+        Literature reference for dispersion ``dashlevel`` in general,
+        *not necessarily* for ``dashparams``.
     dashparams_citation : str
-        Literature reference for dispersion parameters, if :py:attr:`dashparams`
+        Literature reference for dispersion parameters, if ``dashparams``
         corresponds to a defined, named, untweaked "functional-dashlevel"
         set with a citation. Otherwise, empty string.
     dashcoeff_supplement : dict
@@ -131,16 +131,16 @@ class EmpiricalDispersion():
         the procedures/dft/<rung>_functionals-defined dictionaries
         as legit, non-custom, and of equal validity to
         `qcengine.programs.empirical_dispersion_resources.dashcoeff` itself for purposes of
-        validating :py:attr:`fctldash`.
+        validating ``fctldash``.
     engine : str
         {'libdisp', "s-dftd3", 'dftd3', 'nl', 'mp2d', "dftd4"}
         Compute engine for dispersion. One of Psi4's internal libdisp
         library, external Grimme or Beran projects, or nl.
     disp : Dispersion
-        Only present for :py:attr:`engine` `=libdisp`. Psi4 class instance prepared
+        Only present for ``engine == 'libdisp'``. Psi4 class instance prepared
         to compute dispersion.
     ordered_params : list
-        Fixed-order list of relevant parameters for :py:attr:`dashlevel`. Matches
+        Fixed-order list of relevant parameters for ``dashlevel``. Matches
         :rst:psivar:`DISPERSION CORRECTION ENERGY` ordering. Used for printing.
 
     Parameters
@@ -176,7 +176,7 @@ class EmpiricalDispersion():
 
     """
     def __init__(self, *, name_hint: str = None, level_hint: str = None, param_tweaks: Union[Dict, List] = None, engine: str = None, gcp_engine: str = None, save_pairwise_disp: bool = False):
-        from .dft import dashcoeff_supplement
+        from ..dft import dashcoeff_supplement
         self.dashcoeff_supplement = dashcoeff_supplement
         self.save_pairwise_disp = save_pairwise_disp
 

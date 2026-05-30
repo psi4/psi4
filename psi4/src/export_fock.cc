@@ -177,6 +177,31 @@ void export_fock(py::module &m) {
         .def("set_MO_core", &DFHelper::set_MO_core)
         .def("get_MO_core", &DFHelper::get_MO_core)
         .def("add_space", &DFHelper::add_space)
+        .def("add_disk_tensor", &DFHelper::add_disk_tensor)
+        .def("write_disk_tensor", 
+             py::overload_cast<std::string, SharedMatrix>(&DFHelper::write_disk_tensor),
+             "name"_a, "M"_a)
+        .def("write_disk_tensor", 
+             py::overload_cast<std::string, SharedMatrix, std::vector<size_t>>(&DFHelper::write_disk_tensor),
+             "name"_a, "M"_a, "a1"_a)
+        .def("write_disk_tensor", 
+             py::overload_cast<std::string, SharedMatrix, std::vector<size_t>, std::vector<size_t>>(&DFHelper::write_disk_tensor),
+             "name"_a, "M"_a, "a1"_a, "a2"_a)
+        .def("write_disk_tensor", 
+             py::overload_cast<std::string, SharedMatrix, std::vector<size_t>, std::vector<size_t>, std::vector<size_t>>(&DFHelper::write_disk_tensor),
+             "name"_a, "M"_a, "a1"_a, "a2"_a, "a3"_a)
+        .def("fill_tensor", 
+             py::overload_cast<std::string, SharedMatrix>(&DFHelper::fill_tensor),
+             "name"_a, "M"_a)
+        .def("fill_tensor", 
+             py::overload_cast<std::string, SharedMatrix, std::vector<size_t>>(&DFHelper::fill_tensor),
+             "name"_a, "M"_a, "a1"_a)
+        .def("fill_tensor", 
+             py::overload_cast<std::string, SharedMatrix, std::vector<size_t>, std::vector<size_t>>(&DFHelper::fill_tensor),
+             "name"_a, "M"_a, "a1"_a, "a2"_a)
+        .def("fill_tensor", 
+             py::overload_cast<std::string, SharedMatrix, std::vector<size_t>, std::vector<size_t>, std::vector<size_t>>(&DFHelper::fill_tensor),
+             "name"_a, "M"_a, "a1"_a, "a2"_a, "a3"_a)
         .def("initialize", &DFHelper::initialize)
         .def("print_header", &DFHelper::print_header)
         .def("add_transformation", &DFHelper::add_transformation, "name"_a, "key1"_a, "key2"_a, "order"_a = "Qpq")
