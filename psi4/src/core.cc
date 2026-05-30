@@ -38,6 +38,7 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 #include "psi4/pybind11.h"
+#include <pybind11/native_enum.h>
 
 #include "psi4/cc/cclambda/cclambda.h"
 #include "psi4/cc/ccwave.h"
@@ -138,21 +139,21 @@ void handleBrianOption(bool value) {
 #endif
 
 // Python helper wrappers
-void export_benchmarks(py::module&);
-void export_blas_lapack(py::module&);
-void export_cubeprop(py::module&);
-void export_dpd(py::module&);
-void export_fock(py::module&);
-void export_functional(py::module&);
-void export_mints(py::module&);
-void export_misc(py::module&);
-void export_oeprop(py::module&);
-void export_pcm(py::module&);
-void export_plugins(py::module&);
-void export_psio(py::module&);
-void export_wavefunction(py::module&);
-void export_options(py::module&);
-void export_trans(py::module&);
+void export_benchmarks(py::module_&);
+void export_blas_lapack(py::module_&);
+void export_cubeprop(py::module_&);
+void export_dpd(py::module_&);
+void export_fock(py::module_&);
+void export_functional(py::module_&);
+void export_mints(py::module_&);
+void export_misc(py::module_&);
+void export_oeprop(py::module_&);
+void export_pcm(py::module_&);
+void export_plugins(py::module_&);
+void export_psio(py::module_&);
+void export_wavefunction(py::module_&);
+void export_options(py::module_&);
+void export_trans(py::module_&);
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -1180,7 +1181,7 @@ void psi4_python_module_finalize() {
 
 PYBIND11_MODULE(core, core) {
     core.doc() = "C++ Innards of Psi4: Open-Source Quantum Chemistry";
-    //    py::module core("core", R"pbdoc(
+    //    py::module_ core("core", R"pbdoc(
     //
     //        Psi4: An Open-Source Ab Initio Electronic Structure Package
     //        -----------------------------------------------------------
@@ -1198,10 +1199,11 @@ PYBIND11_MODULE(core, core) {
     core.def("initialize", &psi4_python_module_initialize, "Called upon psi4 module import to initialize timers, singletons, and I/O. Idempotent");
     core.def("finalize", &psi4_python_module_finalize, "Called upon psi4 module exit to closes timers and I/O.");
 
-    py::enum_<PsiReturnType>(core, "PsiReturnType", "Return status.")  // after C-OptKing, only Failure slightly used
+    py::native_enum<PsiReturnType>(core, "PsiReturnType", "enum.Enum", "Return status.")  // after C-OptKing, only Failure slightly used
         .value("Success", Success)
         .value("Failure", Failure)
-        .export_values();
+        .export_values()
+        .finalize();
 
     core.def("version", []() { PyErr_SetString(PyExc_AttributeError, "psi4.core.version removed since hasn't been working as intended."); }, ".. deprecated:: 1.4");
     core.def("git_version", []() { PyErr_SetString(PyExc_AttributeError, "psi4.core.git_version removed since hasn't been working as intended."); }, ".. deprecated:: 1.4");
@@ -1438,9 +1440,9 @@ PYBIND11_MODULE(core, core) {
         // [](std::string fprefix) { psi_file_prefix = strdup(fprefix.c_str()); });  // doesn't always work
 
     // ??
-    // py::class_<Process::Environment>(core, "Environment")
+    // py::classh<Process::Environment>(core, "Environment")
     //        .def("__getitem__", [](const Process::Environment &p, const std::string key){ return p(key); });
 
-    // py::class_<Process>(core, "Process").
+    // py::classh<Process>(core, "Process").
     //        def_property_readonly_static("environment", [](py::object /*self*/) { return Process::environment; });
 }
