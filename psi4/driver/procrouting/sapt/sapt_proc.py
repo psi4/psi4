@@ -608,6 +608,9 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
             kwargs["external_potentials"]["C"] = (
                 construct_external_potential_in_field_C([ext_pot_C, ext_pot_A])
             )
+        elif do_ext_potential:
+            kwargs["external_potentials"] = {}
+
         wfn_A = scf_helper(
             sapt_dft_functional,
             post_scf=False,
