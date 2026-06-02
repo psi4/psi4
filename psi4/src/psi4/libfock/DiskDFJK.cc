@@ -477,6 +477,7 @@ void DiskDFJK::compute_JK() {
     max_rows_ = max_rows();
 
     if (do_J_ || do_K_) {
+        if(!Qmn_) throw PSIEXCEPTION("DiskDFJK tried to compute J or K in compute_JK with a Qmn_ that does not point to a Matrix object!");
         initialize_temps();
         if (is_core_)
             manage_JK_core();
