@@ -27,7 +27,6 @@
  */
 
 #include "psi4/pybind11.h"
-#include <pybind11/native_enum.h>
 
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"

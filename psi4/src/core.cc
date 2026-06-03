@@ -38,7 +38,6 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 #include "psi4/pybind11.h"
-#include <pybind11/native_enum.h>
 
 #include "psi4/cc/cclambda/cclambda.h"
 #include "psi4/cc/ccwave.h"

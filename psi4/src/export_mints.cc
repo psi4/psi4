@@ -27,7 +27,6 @@
  */
 
 #include <pybind11/stl.h>
-#include <pybind11/native_enum.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pytypes.h>
 #include <pybind11/stl_bind.h>
