@@ -96,6 +96,7 @@ _programs = {
     "gauxc": psi4.addons("gauxc"),
     "ooo": psi4.addons("ooo"),
     "pandas": which_import("pandas", return_bool=True),
+    "molsym": which_import("molsym", return_bool=True),
 }
 
 
