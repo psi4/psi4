@@ -132,6 +132,10 @@ void DLPNO::common_init() {
             if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-10;
             if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
+        } else if (options_.get_str("PNO_CONVERGENCE") == "GLACIER") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-12;
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 1e-4;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-5;
         }
     } else { // Coupled-cluster defaults
         if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
@@ -185,8 +189,24 @@ void DLPNO::common_init() {
             
             if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
+        } else if (options_.get_str("PNO_CONVERGENCE") == "GLACIER") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-10;
+            if (!T_CUT_TRACE_changed) T_CUT_TRACE_ = 0.9999;
+            if (!T_CUT_ENERGY_changed) T_CUT_ENERGY_ = 0.999;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-8;
+
+            if (!T_CUT_PNO_MP2_changed) T_CUT_PNO_MP2_ = 1e-12;
+            if (!T_CUT_TRACE_MP2_changed) T_CUT_TRACE_MP2_ = 0.9999;
+            if (!T_CUT_ENERGY_MP2_changed) T_CUT_ENERGY_MP2_ = 0.9995;
+            
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 1e-4;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-5;
         }
         if (!T_CUT_PRE_changed) T_CUT_PRE_ = std::min(T_CUT_PRE_, 0.01 * T_CUT_PAIRS_);
+
+        // Set T_CUT_PNO_MP2 to 1.0e-11 and T_CUT_PNO to 1.0e-9 if Brueckner is requested, for orbital stability
+        if (brueckner_orbs_ && !options_["T_CUT_PNO_MP2"].has_changed()) T_CUT_PNO_MP2_ = 1.0e-11;
+        if (brueckner_orbs_ && !options_["T_CUT_PNO"].has_changed()) T_CUT_PNO_ = 1.0e-9;
     }
 
     // TODO: Is this reasonable?

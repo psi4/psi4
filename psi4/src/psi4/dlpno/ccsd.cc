@@ -2987,14 +2987,21 @@ double DLPNOCCSD::compute_energy() {
         // After the initial set of T1s are computed, rotate the orbitals and recompute everything until convergence
         bool brueckner_converged = false;
         int iteration = 0;
+        double T1_max = 1.0;
         const int BRUECKNER_MAXITER = options_.get_int("BRUECKNER_MAXITER");
+        const double B_ALPHA = options_.get_double("DLPNO_BRUECKNER_ALPHA");
         const double BRUECKNER_R_CONV = options_.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
-        // const int BRUECKNER_DIIS_START = options_.get_int("BRUECKNER_DIIS_START");
+        const double BRUECKNER_GMIX_START = options_.get_double("BRUECKNER_GMIX_START");
+        const int BRUECKNER_DIIS_START = options_.get_int("BRUECKNER_DIIS_START");
+        const int BRUECKNER_DIIS_DELAY = options_.get_int("BRUECKNER_DIIS_DELAY");
+        const int BRUECKNER_DIIS_MAX_VECS = options_.get_int("BRUECKNER_DIIS_MAX_VECS");
 
-        DIISManager diis(options_.get_int("DIIS_MAX_VECS"), "BRUECKNER DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+        DIISManager diis(BRUECKNER_DIIS_MAX_VECS, "BRUECKNER DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
 
         // kappa_ia used for the rotation, kappa_ao is kappa_ia in AO
+        SharedMatrix kappa_ia_old = std::make_shared<Matrix>("kappa_ia_old", naocc, nvirt);
         SharedMatrix kappa_ia = std::make_shared<Matrix>("kappa_ia", naocc, nvirt);
+        SharedMatrix diis_error = std::make_shared<Matrix>("diis_error", naocc, nvirt);
 
         double e_dlpno_ccsd = 0.0;
 
@@ -3008,6 +3015,8 @@ double DLPNOCCSD::compute_energy() {
             SharedVector e_pao_canon;  // energies of the canonical PAOs
             std::tie(X_pao_canon, e_pao_canon) = orthocanonicalizer(S_pao_, F_pao_);
 
+            double alpha = (T1_max <= BRUECKNER_GMIX_START) ? B_ALPHA : 1.0;
+
     #pragma omp parallel for
             for (int i = 0; i < C_lmo_->ncol(); ++i) { // occupied MOs
                 int ii = i_j_to_ij_[i][i];
@@ -3015,28 +3024,31 @@ double DLPNOCCSD::compute_energy() {
                 S_pao_pno = linalg::triplet(X_pao_canon, S_pao_pno, X_pno_[ii], true, false, false);
                 auto T1_chud = linalg::doublet(S_pao_pno, T_ia_[i]);
                 for (int a = 0; a < X_pao_canon->ncol(); ++a) {
-                    (*kappa_ia)(i, a) = (*T1_chud)(a, 0);
+                    (*kappa_ia)(i, a) = alpha * (*T1_chud)(a, 0) + (1 - alpha) * (*kappa_ia_old)(i, a);
                 } // end a
             } // end i
 
-            delta_D_ao_->subtract(linalg::doublet(C_lmo_, C_lmo_, false, true));
+            kappa_ia_old = kappa_ia->clone();
 
             /*
-            if (iteration == 0) {
-                diis.set_error_vector_size(delta_D_ao_);
-                diis.set_vector_size(kappa_ia);
+            if (iteration == BRUECKNER_DIIS_START) {
+                diis.set_error_vector_size(diis_error); // kappa_ia = T_ia is the "orbital gradient"... we want this to be 0
+                diis.set_vector_size(kappa_ia); // We want to extrapolate the new occupied orbital coefficents
             }
 
-            diis.add_entry(delta_D_ao_.get(), kappa_ia.get());
-
             if (iteration >= BRUECKNER_DIIS_START) {
+                diis.add_entry(diis_error.get(), kappa_ia.get());
+            }
+
+            if (iteration > BRUECKNER_DIIS_START + BRUECKNER_DIIS_DELAY) {
                 diis.extrapolate(kappa_ia.get());
             }
             */
 
-            // Compute max T1
-            double T1_max = 0.0;
+            delta_D_ao_->subtract(linalg::doublet(C_lmo_, C_lmo_, false, true));
 
+            // Compute max T1
+            T1_max = 0.0;
             for (int i = 0; i < T_ia_.size(); ++i) {
                 T1_max = std::max(T1_max, T_ia_[i]->absmax());
             }

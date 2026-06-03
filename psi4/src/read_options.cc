@@ -2652,7 +2652,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
         options.add_str("DF_BASIS_CC", "");
         /*- General convergence criteria for DLPNO methods -*/
-        options.add_str("PNO_CONVERGENCE", "NORMAL", "LOOSE NORMAL TIGHT VERY_TIGHT");
+        options.add_str("PNO_CONVERGENCE", "NORMAL", "LOOSE NORMAL TIGHT VERY_TIGHT GLACIER");
         /*- Convergence criteria for the Foster-Boys orbital localization -*/
         options.add_double("LOCAL_CONVERGENCE", 1.0E-12);
         /*- Maximum iterations in Foster-Boys localization -*/
@@ -2675,9 +2675,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Scaling factor for orbital rotation for DLPNO Brueckner orbitals
             Make it small for systems with a large T1 (like 0.1-0.25) -*/
         options.add_double("DLPNO_BRUECKNER_ALPHA", 1.0);
+        /*- When to start gradient mixing for Brueckner orbital optimizations -*/
+        options.add_double("BRUECKNER_GMIX_START", 1.0e-4);
         /*- When to end start applying DIIS for Brueckner optimizatons 
             (turning on DIIS after a point (not initially) is helpful for stability) -*/
-        // options.add_double("BRUECKNER_DIIS_START", 20);
+        options.add_double("BRUECKNER_DIIS_START", 5);
+        /*- How long to delay the start of extrapolation after error vectors are set -*/
+        options.add_int("BRUECKNER_DIIS_DELAY", 2);
+        /*- How many DIIS vectors to use for Brueckner rotations -*/
+        options.add_int("BRUECKNER_DIIS_MAX_VECS", 3);
 
         /*- SUBSECTION Expert Options -*/
 
