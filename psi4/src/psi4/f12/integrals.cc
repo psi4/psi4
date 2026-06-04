@@ -451,27 +451,31 @@ void MP2F12::form_teints(const std::string& int_type, einsums::Tensor<double, 4>
             const auto off3 = (use_offset && o3) ? nobs_ : 0;
             const auto off4 = (use_offset && o4) ? nobs_ : 0;
 
-            (*ERI)(Range{off1, off1+nmo1}, Range{off3, off3+nmo3}, Range{off2, off2+nmo2}, Range{off4, off4+nmo4}) = *PRQS;
+            (*ERI)(Range{off1, off1 + nmo1}, Range{off3, off3 + nmo3}, Range{off2, off2 + nmo2},
+                   Range{off4, off4 + nmo4}) = *PRQS;
 
             if (nbf2 != nbf1 && nbf2 != nbf3 && nbf2 != nbf4 && int_type == "F") {
                 Tensor<double, 4> RPSQ{"RPSQ", nmo3, nmo1, nmo4, nmo2};
                 permute(Indices{R, P, index::S, Q}, &RPSQ, Indices{P, R, Q, index::S}, PRQS);
                 PRQS.reset();
-                (*ERI)(Range{off3, off3+nmo3}, Range{off1, off1+nmo1}, Range{off4, off4+nmo4}, Range{off2, off2+nmo2}) = RPSQ;
+                (*ERI)(Range{off3, off3 + nmo3}, Range{off1, off1 + nmo1}, Range{off4, off4 + nmo4},
+                       Range{off2, off2 + nmo2}) = RPSQ;
             }  // end of if statement
 
             if (nbf2 != nbf1 && nbf2 != nbf3 && nbf2 != nbf4 && int_type == "J") {
                 Tensor<double, 4> QSPR{"QSPR", nmo2, nmo4, nmo1, nmo3};
                 permute(Indices{Q, index::S, P, R}, &QSPR, Indices{P, R, Q, index::S}, PRQS);
                 PRQS.reset();
-                (*ERI)(Range{off2, off2+nmo2}, Range{off4, off4+nmo4}, Range{off1, off1+nmo1}, Range{off3, off3+nmo3}) = QSPR;
+                (*ERI)(Range{off2, off2 + nmo2}, Range{off4, off4 + nmo4}, Range{off1, off1 + nmo1},
+                       Range{off3, off3 + nmo3}) = QSPR;
             }  // end of if statement
 
             if (nbf4 != nbf1 && nbf4 != nbf2 && nbf4 != nbf3 && int_type == "K") {
                 Tensor<double, 4> SQRP{"SQRP", nmo4, nmo2, nmo3, nmo1};
                 permute(Indices{index::S, Q, R, P}, &SQRP, Indices{P, R, Q, index::S}, PRQS);
                 PRQS.reset();
-                (*ERI)(Range{off4, off4+nmo4}, Range{off2, off2+nmo2}, Range{off3, off3+nmo3}, Range{off1, off1+nmo1}) = SQRP;
+                (*ERI)(Range{off4, off4 + nmo4}, Range{off2, off2 + nmo2}, Range{off3, off3 + nmo3},
+                       Range{off1, off1 + nmo1}) = SQRP;
             }  // end of if statement
         }
         timer_off("Set in ERI");
@@ -552,7 +556,7 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3>* DF_ERI, bool is_fock) 
             const auto R = (o1) ? nobs_ : 0;
             const auto S = (o2) ? nobs_ : 0;
 
-            (*DF_ERI)(Range{0, naux_}, Range{R, R+nmo1}, Range{S, S+nmo2}) = *APQ;
+            (*DF_ERI)(Range{0, naux_}, Range{R, R + nmo1}, Range{S, S + nmo2}) = *APQ;
         }
     }  // end of for loop
 }
@@ -623,7 +627,7 @@ void MP2F12::form_oper_ints(const std::string& int_type, einsums::Tensor<double,
             const auto off1 = (o1 && use_offset) ? nobs_ : 0;
             const auto off2 = (o2 && use_offset) ? nobs_ : 0;
 
-            (*DF_ERI)(Range{0, naux_}, Range{off1, off1+nmo1}, Range{off2, off2+nmo2}) = *BPQ;
+            (*DF_ERI)(Range{0, naux_}, Range{off1, off1 + nmo1}, Range{off2, off2 + nmo2}) = *BPQ;
         }
         timer_off("Set in ERI");
     }  // end of for loop
@@ -769,7 +773,8 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
                 off4 = 0;
             }
 
-            (*ERI)(Range{off1, off1+nmo1}, Range{off3, off3+nmo3}, Range{off2, off2+nmo2}, Range{off4, off4+nmo4}) = *phys_robust;
+            (*ERI)(Range{off1, off1 + nmo1}, Range{off3, off3 + nmo3}, Range{off2, off2 + nmo2},
+                   Range{off4, off4 + nmo4}) = *phys_robust;
         }
         timer_off("Set in ERI");
     }  // end of for loop
@@ -778,7 +783,6 @@ void MP2F12::form_df_teints(const std::string& int_type, einsums::Tensor<double,
 ////////////////////////////////
 //* Disk Algorithm (CONV/DF) *//
 ////////////////////////////////
-
 
 void DiskMP2F12::form_oeints(einsums::DiskTensor<double, 2>* h) {
     using namespace einsums;
