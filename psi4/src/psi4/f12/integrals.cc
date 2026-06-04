@@ -62,7 +62,7 @@ void MP2F12::convert_C(einsums::Tensor<double, 2>* C, OrbitalSpace bs, const int
 void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<double, 4>* GAO,
                                   std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                                   std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
-    std::shared_ptr<IntegralFactory> intf(new IntegralFactory(bs1, bs2, bs3, bs4));
+    auto intf = std::make_shared<IntegralFactory>(bs1, bs2, bs3, bs4);
 
     std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
     if (int_type == "F") {
@@ -77,7 +77,6 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(intf->eri()));
     }
 
-    // Make ints vector
     for (size_t thread = 1; thread < nthreads_; thread++) {
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
     }
@@ -86,136 +85,125 @@ void MP2F12::two_body_ao_computer(const std::string& int_type, einsums::Tensor<d
     auto bs1_equiv_bs2 = (bs1 == bs2);
     auto bs3_equiv_bs4 = (bs3 == bs4);
 
-    // Pre-build the flat list of unique (M,N) shell pairs so that the parallel
-    // loop has no wasted iterations from triangular-skip branches.
-    std::vector<std::pair<size_t, size_t>> mn_pairs;
-    mn_pairs.reserve(bs1->nshell() * bs2->nshell());
-    for (size_t M = 0; M < bs1->nshell(); M++) {
-        for (size_t N = 0; N < bs2->nshell(); N++) {
-            if (bs1_equiv_bs2 && N < M) continue;
-            mn_pairs.emplace_back(M, N);
+    // Pre-build unique shell quartets (M,N|P,Q), applying bra and ket
+    // permutation symmetry at build time. Grouping all (P,Q) pairs under each
+    // (M,N) shell block keeps those AO integrals in memory when the MO
+    // transformation reads them immediately after. The overhead of the quartet
+    // vector is outweighed by the speed-up of the MO transformation, especially
+    // for large systems.
+    std::vector<std::tuple<size_t, size_t, size_t, size_t>> quartets;
+    {
+        std::vector<std::pair<size_t, size_t>> mn_pairs;
+        mn_pairs.reserve(bs1->nshell() * bs2->nshell());
+        for (size_t M = 0; M < bs1->nshell(); M++) {
+            for (size_t N = 0; N < bs2->nshell(); N++) {
+                if (bs1_equiv_bs2 && N < M) continue;
+                mn_pairs.emplace_back(M, N);
+            }
+        }
+
+        quartets.reserve(mn_pairs.size() * bs3->nshell() * bs4->nshell());
+        for (auto [M, N] : mn_pairs) {
+            for (size_t P = 0; P < bs3->nshell(); P++) {
+                for (size_t Q = (bs3_equiv_bs4 ? P : 0); Q < bs4->nshell(); Q++) {
+                    quartets.emplace_back(M, N, P, Q);
+                }
+            }
         }
     }
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads_)
-    for (size_t mn = 0; mn < mn_pairs.size(); mn++) {
-        const size_t M = mn_pairs[mn].first;
-        const size_t N = mn_pairs[mn].second;
-        {  // open brace to keep variable scope the same as before
-
-            const auto numM = bs1->shell(M).nfunction();
-            const auto numN = bs2->shell(N).nfunction();
-            const auto index_M = bs1->shell(M).function_index();
-            const auto index_N = bs2->shell(N).function_index();
-
-            for (size_t P = 0; P < bs3->nshell(); P++) {
-                for (size_t Q = 0; Q < bs4->nshell(); Q++) {
-                    if (bs3_equiv_bs4 && Q < P) continue;  // Only loop over unique shells
-
-                    size_t rank = 0;
+    for (size_t quartet_idx = 0; quartet_idx < quartets.size(); quartet_idx++) {
+        size_t rank = 0;
 #ifdef _OPENMP
-                    rank = omp_get_thread_num();
+        rank = omp_get_thread_num();
 #endif
-                    const auto numP = bs3->shell(P).nfunction();
-                    const auto numQ = bs4->shell(Q).nfunction();
-                    const auto index_P = bs3->shell(P).function_index();
-                    const auto index_Q = bs4->shell(Q).function_index();
+        auto [M, N, P, Q] = quartets[quartet_idx];
 
-                    ints[rank]->compute_shell(M, N, P, Q);
-                    const auto* ints_buff = ints[rank]->buffers()[0];
+        const auto numM = bs1->shell(M).nfunction();
+        const auto numN = bs2->shell(N).nfunction();
+        const auto numP = bs3->shell(P).nfunction();
+        const auto numQ = bs4->shell(Q).nfunction();
+        const auto index_M = bs1->shell(M).function_index();
+        const auto index_N = bs2->shell(N).function_index();
+        const auto index_P = bs3->shell(P).function_index();
+        const auto index_Q = bs4->shell(Q).function_index();
 
-                    if (bs1_equiv_bs2 && M != N && bs3_equiv_bs4 && P != Q) {
-                        for (size_t m = 0, idx = 0; m < numM; m++) {
-                            const auto fxnM = index_M + m;
-                            for (size_t n = 0; n < numN; n++) {
-                                const auto fxnN = index_N + n;
-                                for (size_t p = 0; p < numP; p++) {
-                                    const auto fxnP = index_P + p;
+        ints[rank]->compute_shell(M, N, P, Q);
+        const auto* ints_buff = ints[rank]->buffers()[0];
 
-                                    double* targetMNPQ = &gao(fxnM, fxnN, fxnP, index_Q);  // (mn|pq)
-                                    double* targetNMQP = &gao(fxnN, fxnM, index_Q, fxnP);  // (nm|qp)
-                                    double* targetNMPQ = &gao(fxnN, fxnM, fxnP, index_Q);  // (nm|pq)
-                                    double* targetMNQP = &gao(fxnM, fxnN, index_Q, fxnP);  // (mn|qp)
-
-                                    for (size_t q = 0; q < numQ; q++, idx++) {
-                                        *targetMNPQ = *targetNMQP = *targetNMPQ = *targetMNQP = ints_buff[idx];
-
-                                        targetMNPQ++;
-                                        targetNMQP += gao.dim(3);
-                                        targetNMPQ++;
-                                        targetMNQP += gao.dim(3);
-                                    }
-                                }
-                            }
-                        }
-                    } else if (bs1_equiv_bs2 && M != N) {
-                        for (size_t m = 0, idx = 0; m < numM; m++) {
-                            const auto fxnM = index_M + m;
-                            for (size_t n = 0; n < numN; n++) {
-                                const auto fxnN = index_N + n;
-                                for (size_t p = 0; p < numP; p++) {
-                                    const auto fxnP = index_P + p;
-
-                                    double* targetMN = &gao(fxnM, fxnN, fxnP, index_Q);  // (mn|pq)
-                                    double* targetNM = &gao(fxnN, fxnM, fxnP, index_Q);  // (nm|pq)
-
-                                    for (size_t q = 0; q < numQ; q++, idx++) {
-                                        *targetMN = *targetNM = ints_buff[idx];
-
-                                        targetMN++;
-                                        targetNM++;
-                                    }
-                                }
-                            }
-                        }
-                    } else if (bs3_equiv_bs4 && P != Q) {
-                        for (size_t m = 0, idx = 0; m < numM; m++) {
-                            const auto fxnM = index_M + m;
-                            for (size_t n = 0; n < numN; n++) {
-                                const auto fxnN = index_N + n;
-                                for (size_t p = 0; p < numP; p++) {
-                                    const auto fxnP = index_P + p;
-
-                                    double* targetPQ = &gao(fxnM, fxnN, fxnP, index_Q);  // (mn|pq)
-                                    double* targetQP = &gao(fxnM, fxnN, index_Q, fxnP);  // (mn|qp)
-
-                                    for (size_t q = 0; q < numQ; q++, idx++) {
-                                        *targetPQ = *targetQP = ints_buff[idx];
-
-                                        targetPQ++;
-                                        targetQP += gao.dim(3);
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        for (size_t m = 0, idx = 0; m < numM; m++) {
-                            const auto fxnM = index_M + m;
-                            for (size_t n = 0; n < numN; n++) {
-                                const auto fxnN = index_N + n;
-                                for (size_t p = 0; p < numP; p++) {
-                                    const auto fxnP = index_P + p;
-
-                                    double* target = &gao(fxnM, fxnN, fxnP, index_Q);  // (mn|pq)
-
-                                    for (size_t q = 0; q < numQ; q++, idx++) {
-                                        *target = ints_buff[idx];
-                                        target++;
-                                    }
-                                }
-                            }
+        if (bs1_equiv_bs2 && M != N && bs3_equiv_bs4 && P != Q) {
+            for (size_t m = 0, i = 0; m < numM; m++) {
+                const auto fxnM = index_M + m;
+                for (size_t n = 0; n < numN; n++) {
+                    const auto fxnN = index_N + n;
+                    for (size_t p = 0; p < numP; p++) {
+                        const auto fxnP = index_P + p;
+                        for (size_t q = 0; q < numQ; q++, i++) {
+                            const double val = ints_buff[i];
+                            gao(fxnM, fxnN, fxnP, index_Q + q) = val;  // (mn|pq)
+                            gao(fxnN, fxnM, fxnP, index_Q + q) = val;  // (nm|pq)
+                            gao(fxnM, fxnN, index_Q + q, fxnP) = val;  // (mn|qp)
+                            gao(fxnN, fxnM, index_Q + q, fxnP) = val;  // (nm|qp)
                         }
                     }
-                }  // bs4
-            }  // bs3
-        }  // bs2
-    }  // bs1
+                }
+            }
+        } else if (bs1_equiv_bs2 && M != N) {
+            for (size_t m = 0, i = 0; m < numM; m++) {
+                const auto fxnM = index_M + m;
+                for (size_t n = 0; n < numN; n++) {
+                    const auto fxnN = index_N + n;
+                    for (size_t p = 0; p < numP; p++) {
+                        const auto fxnP = index_P + p;
+                        double* targetMN = &gao(fxnM, fxnN, fxnP, index_Q);  // (mn|pq)
+                        double* targetNM = &gao(fxnN, fxnM, fxnP, index_Q);  // (nm|pq)
+                        for (size_t q = 0; q < numQ; q++, i++) {
+                            *targetMN = *targetNM = ints_buff[i];
+                            targetMN++;
+                            targetNM++;
+                        }
+                    }
+                }
+            }
+        } else if (bs3_equiv_bs4 && P != Q) {
+            for (size_t m = 0, i = 0; m < numM; m++) {
+                const auto fxnM = index_M + m;
+                for (size_t n = 0; n < numN; n++) {
+                    const auto fxnN = index_N + n;
+                    for (size_t p = 0; p < numP; p++) {
+                        const auto fxnP = index_P + p;
+                        for (size_t q = 0; q < numQ; q++, i++) {
+                            const double val = ints_buff[i];
+                            gao(fxnM, fxnN, fxnP, index_Q + q) = val;  // (mn|pq)
+                            gao(fxnM, fxnN, index_Q + q, fxnP) = val;  // (mn|qp)
+                        }
+                    }
+                }
+            }
+        } else {
+            for (size_t m = 0, i = 0; m < numM; m++) {
+                const auto fxnM = index_M + m;
+                for (size_t n = 0; n < numN; n++) {
+                    const auto fxnN = index_N + n;
+                    for (size_t p = 0; p < numP; p++) {
+                        const auto fxnP = index_P + p;
+                        double* target = &gao(fxnM, fxnN, fxnP, index_Q);  // (mn|pq)
+                        for (size_t q = 0; q < numQ; q++, i++) {
+                            *target = ints_buff[i];
+                            target++;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void MP2F12::three_index_ao_computer(const std::string& int_type, einsums::Tensor<double, 3>* Bpq,
                                      std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2) {
     std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
-    std::shared_ptr<IntegralFactory> intf(new IntegralFactory(DFBS_, zero, bs1, bs2));
+    auto intf = std::make_shared<IntegralFactory>(DFBS_, zero, bs1, bs2);
 
     std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
     if (int_type == "F") {
@@ -238,57 +226,68 @@ void MP2F12::three_index_ao_computer(const std::string& int_type, einsums::Tenso
     auto& bpq = *Bpq;
     auto bs1_equiv_bs2 = bs1 == bs2;
 
-#pragma omp parallel for collapse(3) schedule(guided) num_threads(nthreads_)
-    for (size_t B = 0; B < DFBS_->nshell(); B++) {
+    // Pre-build unique shell triplets (B|P,Q), applying P<=Q permutation symmetry
+    // at build time. Grouping all (P,Q) pairs under each auxiliary shell B keeps
+    // those AO integrals in memory when the MO transformation reads them
+    // immediately after. The overhead of the triplet vector is outweighed by the
+    // speed-up of the MO transformation, especially for large systems.
+    std::vector<std::tuple<size_t, size_t, size_t>> triplets;
+    {
+        std::vector<std::pair<size_t, size_t>> pq_pairs;
+        pq_pairs.reserve(bs1->nshell() * bs2->nshell());
         for (size_t P = 0; P < bs1->nshell(); P++) {
-            for (size_t Q = 0; Q < bs2->nshell(); Q++) {
-                if (bs1_equiv_bs2 && Q < P) continue;  // Only loop over unique shells
+            for (size_t Q = (bs1_equiv_bs2 ? P : 0); Q < bs2->nshell(); Q++) {
+                pq_pairs.emplace_back(P, Q);
+            }
+        }
 
-                size_t rank = 0;
+        triplets.reserve(DFBS_->nshell() * pq_pairs.size());
+        for (size_t B = 0; B < DFBS_->nshell(); B++) {
+            for (auto [P, Q] : pq_pairs) {
+                triplets.emplace_back(B, P, Q);
+            }
+        }
+    }
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads_)
+    for (size_t triplet_idx = 0; triplet_idx < triplets.size(); triplet_idx++) {
+        size_t rank = 0;
 #ifdef _OPENMP
-                rank = omp_get_thread_num();
+        rank = omp_get_thread_num();
 #endif
-                const auto numB = DFBS_->shell(B).nfunction();
-                const auto numP = bs1->shell(P).nfunction();
-                const auto numQ = bs2->shell(Q).nfunction();
-                const auto index_B = DFBS_->shell(B).function_index();
-                const auto index_P = bs1->shell(P).function_index();
-                const auto index_Q = bs2->shell(Q).function_index();
+        auto [B, P, Q] = triplets[triplet_idx];
 
-                ints[rank]->compute_shell(B, 0, P, Q);
-                const auto* ints_buff = ints[rank]->buffers()[0];
+        const auto numB = DFBS_->shell(B).nfunction();
+        const auto numP = bs1->shell(P).nfunction();
+        const auto numQ = bs2->shell(Q).nfunction();
+        const auto index_B = DFBS_->shell(B).function_index();
+        const auto index_P = bs1->shell(P).function_index();
+        const auto index_Q = bs2->shell(Q).function_index();
 
-                if (bs1_equiv_bs2 && P != Q) {
-                    for (size_t b = 0, idx = 0; b < numB; b++) {
-                        const auto fxnB = index_B + b;
-                        for (size_t p = 0; p < numP; p++) {
-                            const auto fxnP = index_P + p;
+        ints[rank]->compute_shell(B, 0, P, Q);
+        const auto* ints_buff = ints[rank]->buffers()[0];
 
-                            double* targetPQ = &bpq(fxnB, fxnP, index_Q);
-                            double* targetQP = &bpq(fxnB, index_Q, fxnP);
-
-                            for (size_t q = 0; q < numQ; q++, idx++) {
-                                *targetPQ = *targetQP = ints_buff[idx];
-
-                                targetPQ++;
-                                targetQP += bpq.dim(2);
-                            }
-                        }
+        if (bs1_equiv_bs2 && P != Q) {
+            for (size_t b = 0, idx = 0; b < numB; b++) {
+                const auto fxnB = index_B + b;
+                for (size_t p = 0; p < numP; p++) {
+                    const auto fxnP = index_P + p;
+                    for (size_t q = 0; q < numQ; q++, idx++) {
+                        const double val = ints_buff[idx];
+                        bpq(fxnB, fxnP, index_Q + q) = val;  // (B|PQ) stride-1
+                        bpq(fxnB, index_Q + q, fxnP) = val;  // (B|QP) strided — unavoidable
                     }
-                } else {
-                    for (size_t b = 0, index = 0; b < numB; b++) {
-                        const auto B_fxns = index_B + b;
-                        for (size_t p = 0; p < numP; p++) {
-                            const auto P_fxns = index_P + p;
-
-                            double* target = &bpq(B_fxns, P_fxns, index_Q);
-
-                            for (size_t q = 0; q < numQ; q++, index++) {
-                                *target = ints_buff[index];
-
-                                target++;
-                            }
-                        }
+                }
+            }
+        } else {
+            for (size_t b = 0, idx = 0; b < numB; b++) {
+                const auto fxnB = index_B + b;
+                for (size_t p = 0; p < numP; p++) {
+                    const auto fxnP = index_P + p;
+                    double* target = &bpq(fxnB, fxnP, index_Q);
+                    for (size_t q = 0; q < numQ; q++, idx++) {
+                        *target = ints_buff[idx];
+                        target++;
                     }
                 }
             }
