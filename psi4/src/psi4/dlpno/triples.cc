@@ -1634,7 +1634,7 @@ double DLPNOCCSD_T::compute_energy() {
         e_lccsd_t_l_ += dE_T_L;
     }
 
-    double e_scf = reference_wavefunction_->energy();
+    double e_scf = variables_["SCF TOTAL ENERGY"];
     double e_ccsd_t_corr = e_lccsd_t_ + de_weak_ + de_lmp2_eliminated_ + de_dipole_ + de_pno_total_;
     double e_ccsd_t_total = e_scf + e_ccsd_t_corr;
 

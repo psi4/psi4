@@ -205,8 +205,8 @@ void DLPNO::common_init() {
         if (!T_CUT_PRE_changed) T_CUT_PRE_ = std::min(T_CUT_PRE_, 0.01 * T_CUT_PAIRS_);
 
         // Set T_CUT_PNO_MP2 to 1.0e-11 and T_CUT_PNO to 1.0e-9 if Brueckner is requested, for orbital stability
-        if (brueckner_orbs_ && !options_["T_CUT_PNO_MP2"].has_changed()) T_CUT_PNO_MP2_ = 1.0e-11;
-        if (brueckner_orbs_ && !options_["T_CUT_PNO"].has_changed()) T_CUT_PNO_ = 1.0e-9;
+        if (brueckner_orbs_ && options_.get_str("PNO_CONVERGENCE") != "GLACIER" && !options_["T_CUT_PNO_MP2"].has_changed()) T_CUT_PNO_MP2_ = 1.0e-11;
+        if (brueckner_orbs_ && options_.get_str("PNO_CONVERGENCE") != "GLACIER" && !options_["T_CUT_PNO"].has_changed()) T_CUT_PNO_ = 1.0e-9;
     }
 
     // TODO: Is this reasonable?
