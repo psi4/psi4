@@ -157,6 +157,6 @@ void CDJK::print_header() const {
         outfile->Printf("    Cholesky tolerance:   %11.2E\n", cholesky_tolerance_);
         outfile->Printf("    No. Cholesky vectors: %11li\n\n", ncholesky_);
     }
-    if (do_wK_) throw PsiException("no wk for scf_type cd.", __FILE__, __LINE__);
+    if (do_wK_) throw PsiException("No wk for scf_type cd.", __FILE__, __LINE__);
 }
 }  // namespace psi
