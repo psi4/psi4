@@ -496,9 +496,9 @@ void MP2F12::form_metric_ints(einsums::Tensor<double, 3>* DF_ERI, bool is_fock) 
     // Build J^{-1/2} once; it is independent of the orbital-space block.
     Tensor<double, 2> AB{"JinvAB", naux_, naux_};
     {
-        auto metric = std::make_shared<FittingMetric>(DFBS_, true);
-        metric->form_full_eig_inverse(1.0e-12);
-        SharedMatrix Jm12 = metric->get_metric();
+        FittingMetric metric(DFBS_, true);
+        metric.form_full_eig_inverse(1.0e-12);
+        SharedMatrix Jm12 = metric.get_metric();
         double** Jptr = Jm12->pointer();
         for (size_t A = 0; A < naux_; A++) {
             std::memcpy(&AB(A, 0), Jptr[A], naux_ * sizeof(double));
