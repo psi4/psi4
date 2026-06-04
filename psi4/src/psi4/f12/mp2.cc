@@ -166,100 +166,82 @@ void MP2F12::form_f12_energy(einsums::Tensor<double, 4>* V, einsums::Tensor<doub
     using namespace einsums::tensor_algebra;
     using namespace einsums::index;
 
-    // Pre-build triangular pair list for load-balanced parallel dispatch.
-    struct Pair { size_t i, j; };
-    std::vector<Pair> pairs;
-    pairs.reserve(nact_ * (nact_ + 1) / 2);
-    for (size_t i = 0; i < nact_; i++)
-        for (size_t j = i; j < nact_; j++)
-            pairs.push_back({i, j});
-
-    struct PairResult { size_t i, j; double E_s, E_t; };
-    std::vector<PairResult> results(pairs.size());
-
     double E_f12_s = 0.0, E_f12_t = 0.0;
 
-#pragma omp parallel for schedule(dynamic) reduction(+:E_f12_s,E_f12_t) num_threads(nthreads_)
-    for (size_t p = 0; p < pairs.size(); p++) {
-        const size_t i = pairs[p].i;
-        const size_t j = pairs[p].j;
-
-        // B_tilde scalars: only the two elements consumed by the energy expression.
-        const double f_scale = (*f)(i + nfrzn_, i + nfrzn_) + (*f)(j + nfrzn_, j + nfrzn_);
-        double B_val_ijij = (*B)(i, j, i, j) - f_scale * (*X)(i, j, i, j);
-        double B_val_ijji = (*B)(i, j, j, i) - f_scale * (*X)(i, j, j, i);
-
-        // V_tilde scalars: only the two elements consumed by the energy expression.
-        double V_val_ij = (*V)(i, j, i, j);
-        double V_val_ji = (*V)(i, j, j, i);
-
-        // Apply C/D/G corrections in O(nvir^2) per pair, no rank-4 temporaries.
-        {
-            const auto G_ij = TensorView<double, 2>{*G, Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
-                                                     Stride<2>{(*G).stride(2), (*G).stride(3)}};
-            const auto D_ij = TensorView<double, 2>{*D, Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
-                                                     Stride<2>{(*D).stride(2), (*D).stride(3)}};
-            const auto C_ij = TensorView<double, 2>{*C, Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
-                                                     Stride<2>{(*C).stride(2), (*C).stride(3)}};
-
-            // GD = G_ij .* D_ij  (for V correction)
-            Tensor<double, 2> GD{"GD", nvir_, nvir_};
-            einsum(Indices{a, b}, &GD, Indices{a, b}, G_ij, Indices{a, b}, D_ij);
-
-            // CD_ij = C_ij .* D_ij  (for B correction)
-            Tensor<double, 2> CD_ij{"CD_ij", nvir_, nvir_};
-            einsum(Indices{a, b}, &CD_ij, Indices{a, b}, C_ij, Indices{a, b}, D_ij);
-
-            Tensor<double, 0> tmp;
-
-            // V(i,j,i,j) correction: sum_{a,b} C_ij(a,b) * G_ij(a,b) * D_ij(a,b)
-            einsum(Indices{}, &tmp, Indices{a, b}, C_ij, Indices{a, b}, GD);
-            V_val_ij -= tmp;
-
-            // B(i,j,i,j) correction: sum_{a,b} C_ij(a,b)^2 * D_ij(a,b)
-            einsum(Indices{}, &tmp, Indices{a, b}, C_ij, Indices{a, b}, CD_ij);
-            B_val_ijij -= tmp;
-
-            const auto C_ji = TensorView<double, 2>{*C, Dim<2>{nvir_, nvir_}, Offset<4>{j, i, 0, 0},
-                                                     Stride<2>{(*C).stride(2), (*C).stride(3)}};
-
-            // V(i,j,j,i) correction: sum_{a,b} C_ji(a,b) * G_ij(a,b) * D_ij(a,b)
-            einsum(Indices{}, &tmp, Indices{a, b}, C_ji, Indices{a, b}, GD);
-            V_val_ji -= tmp;
-
-            // B(i,j,j,i) correction: sum_{a,b} C_ji(a,b) * C_ij(a,b) * D_ij(a,b)
-            einsum(Indices{}, &tmp, Indices{a, b}, C_ji, Indices{a, b}, CD_ij);
-            B_val_ijji -= tmp;
-        }
-
-        // Fixed-amplitude energy expression (matches original formula exactly).
-        const int kd = (i == j) ? 1 : 2;
-        const double ts = t_(i, j, i, j) + t_(i, j, j, i);
-        const double V_s = 0.25 * ts * kd * (V_val_ij + V_val_ji);
-        const double B_s = 0.125 * ts * kd * (B_val_ijij + B_val_ijji) * ts * kd;
-        const double E_s = kd * (2.0 * V_s + B_s);
-        E_f12_s += E_s;
-
-        double E_t = 0.0;
-        if (i != j) {
-            const double tt = t_(i, j, i, j) - t_(i, j, j, i);
-            const double V_t = 0.25 * tt * kd * (V_val_ij - V_val_ji);
-            const double B_t = 0.125 * tt * kd * (B_val_ijij - B_val_ijji) * tt * kd;
-            E_t = 3.0 * kd * (2.0 * V_t + B_t);
-            E_f12_t += E_t;
-        }
-
-        results[p] = {i, j, E_s, E_t};
-    }
-
-    // Print pair energies in canonical (i,j) order.
     outfile->Printf("  \n");
     outfile->Printf("  %1s   %1s  |     %14s     %14s     %12s \n", "i", "j", "E_F12(Singlet)", "E_F12(Triplet)",
                     "E_F12");
     outfile->Printf(" ----------------------------------------------------------------------\n");
-    for (const auto& r : results) {
-        outfile->Printf("%3d %3d  |   %16.12f   %16.12f     %16.12f \n",
-                        r.i + nfrzn_ + 1, r.j + nfrzn_ + 1, r.E_s, r.E_t, r.E_s + r.E_t);
+    for (size_t i = 0; i < nact_; i++) {
+        for (size_t j = i; j < nact_; j++) {
+            // B_tilde scalars: only the two elements consumed by the energy expression.
+            const double f_scale = (*f)(i + nfrzn_, i + nfrzn_) + (*f)(j + nfrzn_, j + nfrzn_);
+            double B_val_ijij = (*B)(i, j, i, j) - f_scale * (*X)(i, j, i, j);
+            double B_val_ijji = (*B)(i, j, j, i) - f_scale * (*X)(i, j, j, i);
+
+            // V_tilde scalars: only the two elements consumed by the energy expression.
+            double V_val_ij = (*V)(i, j, i, j);
+            double V_val_ji = (*V)(i, j, j, i);
+
+            // Apply C/D/G corrections in O(nvir^2) per pair, no rank-4 temporaries.
+            {
+                const auto G_ij = TensorView<double, 2>{*G, Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
+                                                         Stride<2>{(*G).stride(2), (*G).stride(3)}};
+                const auto D_ij = TensorView<double, 2>{*D, Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
+                                                         Stride<2>{(*D).stride(2), (*D).stride(3)}};
+                const auto C_ij = TensorView<double, 2>{*C, Dim<2>{nvir_, nvir_}, Offset<4>{i, j, 0, 0},
+                                                         Stride<2>{(*C).stride(2), (*C).stride(3)}};
+
+                // GD = G_ij .* D_ij  (for V correction)
+                Tensor<double, 2> GD{"GD", nvir_, nvir_};
+                einsum(Indices{a, b}, &GD, Indices{a, b}, G_ij, Indices{a, b}, D_ij);
+
+                // CD_ij = C_ij .* D_ij  (for B correction)
+                Tensor<double, 2> CD_ij{"CD_ij", nvir_, nvir_};
+                einsum(Indices{a, b}, &CD_ij, Indices{a, b}, C_ij, Indices{a, b}, D_ij);
+
+                Tensor<double, 0> tmp;
+
+                // V(i,j,i,j) correction: sum_{a,b} C_ij(a,b) * G_ij(a,b) * D_ij(a,b)
+                einsum(Indices{}, &tmp, Indices{a, b}, C_ij, Indices{a, b}, GD);
+                V_val_ij -= tmp;
+
+                // B(i,j,i,j) correction: sum_{a,b} C_ij(a,b)^2 * D_ij(a,b)
+                einsum(Indices{}, &tmp, Indices{a, b}, C_ij, Indices{a, b}, CD_ij);
+                B_val_ijij -= tmp;
+
+                const auto C_ji = TensorView<double, 2>{*C, Dim<2>{nvir_, nvir_}, Offset<4>{j, i, 0, 0},
+                                                         Stride<2>{(*C).stride(2), (*C).stride(3)}};
+
+                // V(i,j,j,i) correction: sum_{a,b} C_ji(a,b) * G_ij(a,b) * D_ij(a,b)
+                einsum(Indices{}, &tmp, Indices{a, b}, C_ji, Indices{a, b}, GD);
+                V_val_ji -= tmp;
+
+                // B(i,j,j,i) correction: sum_{a,b} C_ji(a,b) * C_ij(a,b) * D_ij(a,b)
+                einsum(Indices{}, &tmp, Indices{a, b}, C_ji, Indices{a, b}, CD_ij);
+                B_val_ijji -= tmp;
+            }
+
+            // Fixed-amplitude energy expression (matches original formula exactly).
+            const int kd = (i == j) ? 1 : 2;
+            const double ts = t_(i, j, i, j) + t_(i, j, j, i);
+            const double V_s = 0.25 * ts * kd * (V_val_ij + V_val_ji);
+            const double B_s = 0.125 * ts * kd * (B_val_ijij + B_val_ijji) * ts * kd;
+            const double E_s = kd * (2.0 * V_s + B_s);
+            E_f12_s += E_s;
+
+            double E_t = 0.0;
+            if (i != j) {
+                const double tt = t_(i, j, i, j) - t_(i, j, j, i);
+                const double V_t = 0.25 * tt * kd * (V_val_ij - V_val_ji);
+                const double B_t = 0.125 * tt * kd * (B_val_ijij - B_val_ijji) * tt * kd;
+                E_t = 3.0 * kd * (2.0 * V_t + B_t);
+                E_f12_t += E_t;
+            }
+
+            outfile->Printf("%3d %3d  |   %16.12f   %16.12f     %16.12f \n",
+                            i + nfrzn_ + 1, j + nfrzn_ + 1, E_s, E_t, E_s + E_t);
+        }
     }
 
     set_scalar_variable("MP2-F12 OPPOSITE-SPIN CORRELATION ENERGY", E_f12_s + scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY"));
