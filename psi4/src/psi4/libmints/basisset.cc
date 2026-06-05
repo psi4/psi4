@@ -1262,7 +1262,7 @@ bool psi::fpeq(const double a, const double b, const double THR/* = 1.0E-14*/) {
     }
 }
 
-void BasisSet::convert_sap_contraction() {
+void BasisSet::negative_gaussian_normalization_to_coefficients() {
   if(max_am_ != 0) {
     throw PSIEXCEPTION("SAP potentials should be composed of a single S function per atom, and not contain higher angular momentum!");
   }

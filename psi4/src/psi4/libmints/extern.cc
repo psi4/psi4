@@ -64,7 +64,7 @@ void ExternalPotential::addBasis(std::shared_ptr<BasisSet> basis, SharedVector c
 
 SharedMatrix ExternalPotential::gradient_on_charges() { return gradient_on_charges_; }
 
-SharedMatrix ExternalPotential::gradient_on_diffuses() { return gradient_on_diffuses_; }
+const std::vector<SharedMatrix> ExternalPotential::gradients_on_bases() { return gradients_on_bases_; }
 
 void ExternalPotential::print(const std::string& out) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
@@ -106,7 +106,7 @@ void ExternalPotential::print(const std::string& out) const {
 }
 
 SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet> basis) {
-    int nbf = basis->nbf();
+    auto nbf = basis->nbf();
     auto V = std::make_shared<Matrix>("External Potential", nbf, nbf);
     auto fact = std::make_shared<IntegralFactory>(basis, basis, basis, basis);
 
@@ -119,11 +119,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
     // Monopoles
     if (charges_.size()) {
         std::vector<std::pair<double, std::array<double, 3>>> Qxyz;
-        for (size_t i=0; i< charges_.size(); ++i) {
-            Qxyz.push_back({std::get<0>(charges_[i]),{{std::get<1>(charges_[i]),
-                                                       std::get<2>(charges_[i]),
-                                                       std::get<3>(charges_[i])}}});
-        }
+        for (const auto& [Q, x, y, z] : charges_) {Qxyz.emplace_back(Q, std::array{x, y, z});}
 
         std::vector<SharedMatrix> V_charge;
         std::vector<std::shared_ptr<PotentialInt> > pot;
@@ -140,19 +136,18 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
         // Calculate monopole potential
 #pragma omp parallel for schedule(guided) num_threads(nthreads)
         for (size_t p = 0; p < ij_pairs.size(); ++p) {
-            size_t i = ij_pairs[p].first;
-            size_t j = ij_pairs[p].second;
-            size_t ni = basis->shell(i).nfunction();
-            size_t nj = basis->shell(j).nfunction();
-            size_t index_i = basis->shell(i).function_index();
-            size_t index_j = basis->shell(j).function_index();
+            auto [i, j] = ij_pairs[p];
+            auto ni = basis->shell(i).nfunction();
+            auto nj = basis->shell(j).nfunction();
+            auto index_i = basis->shell(i).function_index();
+            auto index_j = basis->shell(j).function_index();
 
             size_t rank = 0;
 #ifdef _OPENMP
             rank = omp_get_thread_num();
 #endif
 
-            double **Vp = V_charge[rank]->pointer();
+            auto **Vp = V_charge[rank]->pointer();
             pot[rank]->compute_shell(i, j);
             const auto* buffer = pot[rank]->buffers()[0];
 
@@ -172,10 +167,8 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
     }
 
     // Diffuse Bases
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    for (size_t ind = 0; ind < bases_.size(); ind++) {
-        std::shared_ptr<BasisSet> aux = bases_[ind].first;
-        SharedVector d = bases_[ind].second;
+    auto zero = BasisSet::zero_ao_basis_set();
+    for (const auto& [aux, d] : bases_) {
 
         auto fact2 = std::make_shared<IntegralFactory>(aux, zero, basis, basis);
         std::vector<SharedMatrix> V_diffuse;
@@ -187,8 +180,8 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
             V_diffuse[t]->zero();
         }
         const auto& shell_pairs = eri[0]->shell_pairs();
-        int npairs = shell_pairs.size();
-        double *dp = d->pointer();
+        auto npairs = shell_pairs.size();
+        auto *dp = d->pointer();
 
         // Lower Triangle
         for (int P = 0; P < aux->nshell(); P++) {
@@ -200,17 +193,16 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
                 rank = omp_get_thread_num();
 #endif
                 auto pair = shell_pairs[MN];
-                int M = pair.first;
-                int N = pair.second;
+                auto [M, N] = pair;
 
-                int nP = aux->shell(P).nfunction();
-                int oP = aux->shell(P).function_index();
+                auto nP = aux->shell(P).nfunction();
+                auto oP = aux->shell(P).function_index();
 
-                int nM = basis->shell(M).nfunction();
-                int oM = basis->shell(M).function_index();
+                auto nM = basis->shell(M).nfunction();
+                auto oM = basis->shell(M).function_index();
 
-                int nN = basis->shell(N).nfunction();
-                int oN = basis->shell(N).function_index();
+                auto nN = basis->shell(N).nfunction();
+                auto oN = basis->shell(N).function_index();
 
                 eri[rank]->compute_shell(P, 0, M, N);
                 const auto* buffer = eri[rank]->buffer();
@@ -218,7 +210,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
 
                 for (int p = 0, index = 0; p < nP; p++) {
                     for (int m = 0; m < nM; m++) {
-                        for (int n = 0; n < nN; n++, index++) {
+                        for (int n = 0; n < nN; n++, ++index) {
                             Vp[m + oM][n + oN] += dp[p + oP] * buffer[index];
                         }
                     }
@@ -228,7 +220,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
         for (size_t t = 0; t < nthreads; t++) {
             for (size_t i = 0; i < nbf; i++) {
                 for (size_t j = i+1; j < nbf; j++) {
-                    double **Vp = V_diffuse[t]->pointer();
+                    auto **Vp = V_diffuse[t]->pointer();
                     Vp[i][j] = Vp[j][i];
                 }
             }
@@ -251,33 +243,23 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
 SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisSet> basis, std::shared_ptr<Matrix> Dt) {
 
     SharedMolecule mol = basis->molecule();
-    int natom = mol->natom();
-    int nextc = charges_.size();
-    int nextd = bases_.size();
+    auto natom = mol->natom();
+    auto nextc = charges_.size();
 
     auto grad_on_atoms = std::make_shared<Matrix>("External Potential Gradient", natom, 3);
     auto grad_on_charges = std::make_shared<Matrix>("Gradient on External Charges", nextc, 3);
-    auto grad_on_diffuses = std::make_shared<Matrix>("Gradient on External Diffuse Charges", nextd, 3);
     grad_on_atoms->zero();
     grad_on_charges->zero();
-    grad_on_diffuses->zero();
 
-    double **Gp = grad_on_atoms->pointer();
-    double **EGp = grad_on_charges->pointer();
-    double **EdGp = grad_on_diffuses->pointer();
-    double **Dp = Dt->pointer();
+    auto **Gp = grad_on_atoms->pointer();
+    auto **EGp = grad_on_charges->pointer();
+    auto **Dp = Dt->pointer();
 
     std::vector<std::pair<double, std::array<double, 3>>> Qxyz;
-    for (size_t i=0; i< nextc; ++i) {
-        Qxyz.push_back({std::get<0>(charges_[i]),{{std::get<1>(charges_[i]),
-                                                   std::get<2>(charges_[i]),
-                                                   std::get<3>(charges_[i])}}});
-    }
+    for (const auto& [Q, x, y, z] : charges_) {Qxyz.emplace_back(Q, std::array{x, y, z});}
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
     for (int A = 0; A < natom; A++) {
-        Zxyz.push_back({mol->Z(A),{{mol->x(A),
-                                    mol->y(A),
-                                    mol->z(A)}}});
+        Zxyz.emplace_back(mol->Z(A), std::array{mol->x(A), mol->y(A), mol->z(A)});
     }
 
     // Thread count
@@ -291,24 +273,25 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
         // Start with the nuclear contribution from point charges.
         grad_on_atoms->zero();
         grad_on_charges->zero();
-        for (int cen = 0; cen < natom; ++cen) {
-            double xc = mol->x(cen);
-            double yc = mol->y(cen);
-            double zc = mol->z(cen);
-            double cencharge = mol->Z(cen);
-            for (int ext = 0; ext < nextc; ++ext) {
-                double charge = cencharge * Qxyz[ext].first;
-                double x = Qxyz[ext].second[0] - xc;
-                double y = Qxyz[ext].second[1] - yc;
-                double z = Qxyz[ext].second[2] - zc;
-                double r2 = x * x + y * y + z * z;
-                double r = sqrt(r2);
+        for (size_t cen = 0; cen < natom; ++cen) {
+            auto xc = mol->x(cen);
+            auto yc = mol->y(cen);
+            auto zc = mol->z(cen);
+            auto cencharge = mol->Z(cen);
+            for (size_t ext = 0; const auto& [Q, Qx, Qy, Qz] : charges_) {
+                auto charge = cencharge * Q;
+                auto x = Qx - xc;
+                auto y = Qy - yc;
+                auto z = Qz - zc;
+                auto r2 = x * x + y * y + z * z;
+                auto r = sqrt(r2);
                 Gp[cen][0] += charge * x / (r * r2);
                 Gp[cen][1] += charge * y / (r * r2);
                 Gp[cen][2] += charge * z / (r * r2);
                 EGp[ext][0] -= charge * x / (r * r2);
                 EGp[ext][1] -= charge * y / (r * r2);
                 EGp[ext][2] -= charge * z / (r * r2);
+                ext++;
             }
         }
 
@@ -333,8 +316,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
         for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-            int P = PQ_pairs[PQ].first;
-            int Q = PQ_pairs[PQ].second;
+            auto [P, Q] = PQ_pairs[PQ];
 
             int rank = 0;
 #ifdef _OPENMP
@@ -343,24 +325,24 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
             Vint[rank]->compute_shell_deriv1(P, Q);
             const auto& buffers = Vint[rank]->buffers();
 
-            int cP = basis->shell(P).ncenter();
-            int nP = basis->shell(P).nfunction();
-            int oP = basis->shell(P).function_index();
+            auto cP = basis->shell(P).ncenter();
+            auto nP = basis->shell(P).nfunction();
+            auto oP = basis->shell(P).function_index();
 
-            int cQ = basis->shell(Q).ncenter();
-            int nQ = basis->shell(Q).nfunction();
-            int oQ = basis->shell(Q).function_index();
+            auto cQ = basis->shell(Q).ncenter();
+            auto nQ = basis->shell(Q).nfunction();
+            auto oQ = basis->shell(Q).function_index();
 
             double perm = (P == Q ? 1.0 : 2.0);
 
-            double **Vp = Vtemps[rank]->pointer();
-            double **EVp = EVtemps[rank]->pointer();
-            const double *ref0 = buffers[0];
-            const double *ref1 = buffers[1];
-            const double *ref2 = buffers[2];
-            const double *ref3 = buffers[3];
-            const double *ref4 = buffers[4];
-            const double *ref5 = buffers[5];
+            auto **Vp = Vtemps[rank]->pointer();
+            auto **EVp = EVtemps[rank]->pointer();
+            const auto *ref0 = buffers[0];
+            const auto *ref1 = buffers[1];
+            const auto *ref2 = buffers[2];
+            const auto *ref3 = buffers[3];
+            const auto *ref4 = buffers[4];
+            const auto *ref5 = buffers[5];
             std::vector<const double*> refx(3*nextc);
             for (int ext = 0; ext < nextc; ext++) {
                 refx[ext*3] = buffers[ext*3 + 6];
@@ -369,14 +351,14 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
             }
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    double Vval = perm * Dp[p + oP][q + oQ];
+                    auto Vval = perm * Dp[p + oP][q + oQ];
                     Vp[cP][0] += Vval * (*ref0++);
                     Vp[cP][1] += Vval * (*ref1++);
                     Vp[cP][2] += Vval * (*ref2++);
                     Vp[cQ][0] += Vval * (*ref3++);
                     Vp[cQ][1] += Vval * (*ref4++);
                     Vp[cQ][2] += Vval * (*ref5++);
-                    const double** refxp = &refx[0];
+                    const auto** refxp = &refx[0];
                     for (int ext = 0; ext < nextc; ext++) {
                         EVp[ext][0] += Vval * (*refxp[ext*3]++);
                         EVp[ext][1] += Vval * (*refxp[ext*3 + 1]++);
@@ -391,30 +373,32 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
         }
     }
 
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    auto zero = BasisSet::zero_ao_basis_set();
     // Evaluate contributions from diffuse charges, if they exist.
-    for (size_t ind = 0; ind < nextd; ind++) {
-        std::shared_ptr<BasisSet> aux = bases_[ind].first;
-        SharedVector d = bases_[ind].second;
+    for (const auto& [aux, d] : bases_) {
+
+        auto grad_on_diffuses = std::make_shared<Matrix>("Gradient on External Diffuse Charges", aux->nshell(), 3);
+        grad_on_diffuses->zero();
+        auto **EdGp = grad_on_diffuses->pointer();
 
         auto fact = std::make_shared<IntegralFactory>(aux, zero, zero, zero);
         auto fact2 = std::make_shared<IntegralFactory>(aux, zero, basis, basis);
         std::shared_ptr<PotentialInt> pot(dynamic_cast<PotentialInt *>(fact->ao_potential(1).release()));
         pot->set_charge_field(Zxyz);
-        double *dp = d->pointer();
+        auto *dp = d->pointer();
 
         // Start with the interaction between diffuse charges and nuclei.
         for (int P = 0; P < aux->nshell(); P++) {
-            pot->compute_shell_deriv1(P, P);
+            pot->compute_shell_deriv1(P, 0);
             const auto& buffers = pot->buffers();
 
-            int cP = aux->shell(P).ncenter();
-            int nP = aux->shell(P).nfunction();
-            int oP = aux->shell(P).function_index();
+            auto cP = aux->shell(P).ncenter();
+            auto nP = aux->shell(P).nfunction();
+            auto oP = aux->shell(P).function_index();
 
-            const double *ref0 = buffers[0];
-            const double *ref1 = buffers[1];
-            const double *ref2 = buffers[2];
+            const auto *ref0 = buffers[0];
+            const auto *ref1 = buffers[1];
+            const auto *ref2 = buffers[2];
             std::vector<const double*> refa(3*natom);
             for (int A = 0; A < natom; A++) {
                 refa[A*3] = buffers[A*3 + 6];
@@ -422,11 +406,11 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
                 refa[A*3 + 2] = buffers[A*3 + 8];
             }
             for (int p = 0; p < nP; p++) {
-                double coef = dp[p + oP];
+                auto coef = dp[p + oP];
                 EdGp[cP][0] += coef * (*ref0++);
                 EdGp[cP][1] += coef * (*ref1++);
                 EdGp[cP][2] += coef * (*ref2++);
-                const double** refap = &refa[0];
+                const auto** refap = &refa[0];
                 for (int A = 0; A < natom; A++) {
                     Gp[A][0] += coef * (*refap[A*3]++);
                     Gp[A][1] += coef * (*refap[A*3 + 1]++);
@@ -447,7 +431,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
             EVtemps[t]->zero();
         }
         const auto& shell_pairs = eri[0]->shell_pairs();
-        int npairs = shell_pairs.size();
+        auto npairs = shell_pairs.size();
 
         // Now the interaction between diffuse charges and electrons.
         for (int P = 0; P < aux->nshell(); P++) {
@@ -459,42 +443,41 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
                 rank = omp_get_thread_num();
 #endif
                 auto pair = shell_pairs[MN];
-                int M = pair.first;
-                int N = pair.second;
+                auto [M, N] = pair;
 
                 eri[rank]->compute_shell_deriv1(P, 0, M, N);
                 const auto & buffers = eri[rank]->buffers();
-                double **Vp = Vtemps[rank]->pointer();
-                double **EdVp = EVtemps[rank]->pointer();
+                auto **Vp = Vtemps[rank]->pointer();
+                auto **EdVp = EVtemps[rank]->pointer();
 
-                int cP = aux->shell(P).ncenter();
-                int nP = aux->shell(P).nfunction();
-                int oP = aux->shell(P).function_index();
+                auto cP = aux->shell(P).ncenter();
+                auto nP = aux->shell(P).nfunction();
+                auto oP = aux->shell(P).function_index();
 
-                int cM = basis->shell(M).ncenter();
-                int nM = basis->shell(M).nfunction();
-                int oM = basis->shell(M).function_index();
+                auto cM = basis->shell(M).ncenter();
+                auto nM = basis->shell(M).nfunction();
+                auto oM = basis->shell(M).function_index();
 
-                int cN = basis->shell(N).ncenter();
-                int nN = basis->shell(N).nfunction();
-                int oN = basis->shell(N).function_index();
+                auto cN = basis->shell(N).ncenter();
+                auto nN = basis->shell(N).nfunction();
+                auto oN = basis->shell(N).function_index();
 
                 double perm = (M == N ? 1.0 : 2.0);
 
-                const double *ref0 = buffers[0];
-                const double *ref1 = buffers[1];
-                const double *ref2 = buffers[2];
-                const double *ref3 = buffers[3];
-                const double *ref4 = buffers[4];
-                const double *ref5 = buffers[5];
-                const double *ref6 = buffers[6];
-                const double *ref7 = buffers[7];
-                const double *ref8 = buffers[8];
+                const auto *ref0 = buffers[0];
+                const auto *ref1 = buffers[1];
+                const auto *ref2 = buffers[2];
+                const auto *ref3 = buffers[3];
+                const auto *ref4 = buffers[4];
+                const auto *ref5 = buffers[5];
+                const auto *ref6 = buffers[6];
+                const auto *ref7 = buffers[7];
+                const auto *ref8 = buffers[8];
 
                 for (int p = 0; p < nP; p++) {
                     for (int m = 0; m < nM; m++) {
                         for (int n = 0; n < nN; n++) {
-                            double coef = perm * dp[p + oP] * Dp[m + oM][n + oN];
+                            auto coef = perm * dp[p + oP] * Dp[m + oM][n + oN];
                             EdVp[cP][0] += coef * (*ref0++);
                             EdVp[cP][1] += coef * (*ref1++);
                             EdVp[cP][2] += coef * (*ref2++);
@@ -513,34 +496,35 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
             grad_on_atoms->add(Vtemps[t]);
             grad_on_diffuses->add(EVtemps[t]);
         }
+        gradients_on_bases_.push_back(grad_on_diffuses);
     }
 
     gradient_on_charges_ = grad_on_charges;
-    gradient_on_diffuses_ = grad_on_diffuses;
     return grad_on_atoms;
 }
 
 double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
     double E = 0.0;
+    auto natom = mol->natom();
 
     // Nucleus-charge interaction
-    for (int A = 0; A < mol->natom(); A++) {
-        double xA = mol->x(A);
-        double yA = mol->y(A);
-        double zA = mol->z(A);
-        double ZA = mol->Z(A);
+    for (int A = 0; A < natom; A++) {
+        auto xA = mol->x(A);
+        auto yA = mol->y(A);
+        auto zA = mol->z(A);
+        auto ZA = mol->Z(A);
 
         if (ZA > 0) { // skip Ghost interaction
             for (size_t B = 0; B < charges_.size(); B++) {
-                double ZB = std::get<0>(charges_[B]);
-                double xB = std::get<1>(charges_[B]);
-                double yB = std::get<2>(charges_[B]);
-                double zB = std::get<3>(charges_[B]);
+                auto ZB = std::get<0>(charges_[B]);
+                auto xB = std::get<1>(charges_[B]);
+                auto yB = std::get<2>(charges_[B]);
+                auto zB = std::get<3>(charges_[B]);
 
-                double dx = xA - xB;
-                double dy = yA - yB;
-                double dz = zA - zB;
-                double R = sqrt(dx * dx + dy * dy + dz * dz);
+                auto dx = xA - xB;
+                auto dy = yA - yB;
+                auto dz = zA - zB;
+                auto R = sqrt(dx * dx + dy * dy + dz * dz);
 
                 E += ZA * ZB / R;
             }
@@ -549,16 +533,12 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
 
     // Nucleus-diffuse interaction
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
-    for (int A = 0; A < mol->natom(); A++) {
-        Zxyz.push_back({mol->Z(A),{{mol->x(A),
-                                    mol->y(A),
-                                    mol->z(A)}}});
+    for (int A = 0; A < natom; A++) {
+        Zxyz.emplace_back(mol->Z(A), std::array{mol->x(A), mol->y(A), mol->z(A)});
     }
 
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    for (size_t ind = 0; ind < bases_.size(); ind++) {
-        std::shared_ptr<BasisSet> aux = bases_[ind].first;
-        SharedVector d = bases_[ind].second;
+    auto zero = BasisSet::zero_ao_basis_set();
+    for (const auto& [aux, d] : bases_) {
 
         auto V = std::make_shared<Matrix>("(Q|Z|0) Integrals", aux->nbf(), 1);
 
@@ -578,38 +558,32 @@ double ExternalPotential::computeExternExternInteraction(std::shared_ptr<Externa
 
     // charge-charge interaction
     for (auto self_charge: charges_) {
-        double ZA = std::get<0>(self_charge);
-        double xA = std::get<1>(self_charge);
-        double yA = std::get<2>(self_charge);
-        double zA = std::get<3>(self_charge);
+        auto ZA = std::get<0>(self_charge);
+        auto xA = std::get<1>(self_charge);
+        auto yA = std::get<2>(self_charge);
+        auto zA = std::get<3>(self_charge);
 
         for (auto other_charge: other_extern->charges_) {
-            double ZB = std::get<0>(other_charge);
-            double xB = std::get<1>(other_charge);
-            double yB = std::get<2>(other_charge);
-            double zB = std::get<3>(other_charge);
+            auto ZB = std::get<0>(other_charge);
+            auto xB = std::get<1>(other_charge);
+            auto yB = std::get<2>(other_charge);
+            auto zB = std::get<3>(other_charge);
 
-            double dx = xA - xB;
-            double dy = yA - yB;
-            double dz = zA - zB;
-            double R = sqrt(dx * dx + dy * dy + dz * dz);
+            auto dx = xA - xB;
+            auto dy = yA - yB;
+            auto dz = zA - zB;
+            auto R = sqrt(dx * dx + dy * dy + dz * dz);
 
             E += ZA * ZB / R;
         }
     }
 
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    auto zero = BasisSet::zero_ao_basis_set();
     // diffuse-charge interaction
     if (other_extern->charges_.size()) {
         std::vector<std::pair<double, std::array<double, 3>>> Qxyz;
-        for (size_t i=0; i< other_extern->charges_.size(); ++i) {
-            Qxyz.push_back({std::get<0>(other_extern->charges_[i]),{{std::get<1>(other_extern->charges_[i]),
-                                                                     std::get<2>(other_extern->charges_[i]),
-                                                                     std::get<3>(other_extern->charges_[i])}}});
-        }
-        for (size_t ind = 0; ind < bases_.size(); ind++) {
-            std::shared_ptr<BasisSet> aux = bases_[ind].first;
-            SharedVector d = bases_[ind].second;
+        for (const auto& [Q, x, y, z] : other_extern->charges_) {Qxyz.emplace_back(Q, std::array{x, y, z});}
+        for (const auto& [aux, d] : bases_) {
        
             auto V = std::make_shared<Matrix>("(Q|Z|0) Integrals", aux->nbf(), 1);
        
@@ -625,14 +599,8 @@ double ExternalPotential::computeExternExternInteraction(std::shared_ptr<Externa
     // charge-diffuse interaction
     if (charges_.size()) {
         std::vector<std::pair<double, std::array<double, 3>>> Qxyz;
-        for (size_t i=0; i< charges_.size(); ++i) {
-            Qxyz.push_back({std::get<0>(charges_[i]),{{std::get<1>(charges_[i]),
-                                                       std::get<2>(charges_[i]),
-                                                       std::get<3>(charges_[i])}}});
-        }
-        for (size_t ind = 0; ind < other_extern->bases_.size(); ind++) {
-            std::shared_ptr<BasisSet> aux = other_extern->bases_[ind].first;
-            SharedVector d = other_extern->bases_[ind].second;
+        for (const auto& [Q, x, y, z] : charges_) {Qxyz.emplace_back(Q, std::array{x, y, z});}
+        for (const auto& [aux, d] : other_extern->bases_) {
        
             auto V = std::make_shared<Matrix>("(Q|Z|0) Integrals", aux->nbf(), 1);
        
@@ -646,32 +614,28 @@ double ExternalPotential::computeExternExternInteraction(std::shared_ptr<Externa
     }
 
     // diffuse-diffuse interaction
-    for (size_t ind = 0; ind < bases_.size(); ind++) {
-        std::shared_ptr<BasisSet> aux0 = bases_[ind].first;
-        SharedVector d0 = bases_[ind].second;
-        double *dp0 = d0->pointer();
+    for (const auto& [aux0, d0] : bases_) {
+        auto *dp0 = d0->pointer();
 
-        for (size_t ind = 0; ind < other_extern->bases_.size(); ind++) {
-            std::shared_ptr<BasisSet> aux1 = other_extern->bases_[ind].first;
-            SharedVector d1 = other_extern->bases_[ind].second;
-            double *dp1 = d1->pointer();
+        for (const auto& [aux1, d1] : other_extern->bases_) {
+            auto *dp1 = d1->pointer();
         
             auto fact2 = std::make_shared<IntegralFactory>(aux0, zero, aux1, zero);
             std::shared_ptr<TwoBodyAOInt> eri(fact2->eri());
 
             for (int P = 0; P < aux0->nshell(); P++) {
-                for (int Q = 0; Q < aux0->nshell(); Q++) {
+                for (int Q = 0; Q < aux1->nshell(); Q++) {
                     eri->compute_shell(P, 0, Q, 0);
-                    const double *buffer = eri->buffer();
+                    const auto *buffer = eri->buffer();
 
-                    int nP = aux0->shell(P).nfunction();
-                    int oP = aux0->shell(P).function_index();
+                    auto nP = aux0->shell(P).nfunction();
+                    auto oP = aux0->shell(P).function_index();
 
-                    int nQ = aux1->shell(Q).nfunction();
-                    int oQ = aux1->shell(Q).function_index();
+                    auto nQ = aux1->shell(Q).nfunction();
+                    auto oQ = aux1->shell(Q).function_index();
 
                     for (int p = 0, index = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
+                        for (int q = 0; q < nQ; q++, ++index) {
                                 E += dp0[p + oP] * dp1[q + oQ] * buffer[index];
                         }
                     }

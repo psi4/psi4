@@ -958,7 +958,7 @@ void HF::compute_sapgau_guess() {
   // Build auxiliary basis set object
   auto sap_basis = get_basisset("SAPGAU");
   // Do the SAP magic to the basis
-  sap_basis->convert_sap_contraction();
+  sap_basis->negative_gaussian_normalization_to_coefficients();
 
   auto zero_basis = BasisSet::zero_ao_basis_set();
   auto nsap = sap_basis->nbf();

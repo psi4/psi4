@@ -1258,7 +1258,7 @@ void export_mints(py::module& m) {
             basis.compute_phi(phi_ao->data(), x, y, z);
             return py::array(phi_ao->size(), phi_ao->data(), capsule);
         }, "Calculate the value of all basis functions at a given point x, y, and z")
-        .def("convert_sap_contraction", &BasisSet::convert_sap_contraction, "Remove normalization from a s-function basis set. Not idempotent");
+        .def("negative_gaussian_normalization_to_coefficients", &BasisSet::negative_gaussian_normalization_to_coefficients, "Remove normalization from an s-function basis set and negate. Not idempotent");
 
     typedef void (OneBodyAOInt::*vecmatrix_version)(std::vector<SharedMatrix>&);
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(
@@ -1649,13 +1649,15 @@ void export_mints(py::module& m) {
         .def("setName", &ExternalPotential::setName, "Sets the name")
         .def("addCharge", &ExternalPotential::addCharge, "Add a charge Z at (x,y,z)", "Z"_a, "x"_a, "y"_a, "z"_a)
         .def("getCharges", &ExternalPotential::getCharges, "Get the vector of charge tuples")
+        .def("getBases", &ExternalPotential::getBases, "Get the vector of tuples of basis sets and coefficients")
+        .def("getMatrix", &ExternalPotential::getMatrix, "Get the vector one-electron potential matrix")
         .def("appendCharges", &ExternalPotential::appendCharges,
              "Append a vector of charge tuples to a current ExternalPotential")
         .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions with DF coefficients",
              "basis"_a, "coefs"_a)
         .def("setMatrix", &ExternalPotential::setMatrix, "Add a one-electron potential matrix", "V"_a)
         .def("gradient_on_charges", &ExternalPotential::gradient_on_charges, "Get the gradient on the embedded charges")
-        .def("gradient_on_diffuses", &ExternalPotential::gradient_on_diffuses, "Get the gradient on the embedded diffuse charges")
+        .def("gradients_on_bases", &ExternalPotential::gradients_on_bases, "Get the gradients on the embedded diffuse charges")
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")
         .def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix,
              "Compute the external potential matrix in the given basis set", "basis"_a)

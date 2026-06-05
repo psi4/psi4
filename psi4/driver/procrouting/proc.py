@@ -1694,7 +1694,7 @@ def _set_external_potentials_to_wavefunction(external_potential: Union[List, Dic
             # charges smeared over space as a Gaussian fn are conveniently computed
             #   with BS machinery, but need to undo ordinary BS normalization
             corediffbasis = core.BasisSet.construct_from_pydict(diffmol, diffbas, puream)
-            corediffbasis.convert_sap_contraction()
+            corediffbasis.negative_gaussian_normalization_to_coefficients()
 
             frag_ep.addBasis(corediffbasis, charges)
             total_ep.addBasis(corediffbasis, charges)

@@ -33,10 +33,7 @@
 #include <utility>
 #include <string>
 #include <tuple>
-#include <map>
 #include "typedefs.h"
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "psi4/pragma.h"
 
@@ -68,8 +65,9 @@ class PSI_API ExternalPotential {
     SharedMatrix matrix_;
     /// Gradient, if available, as number of charges x 3 SharedMatrix
     SharedMatrix gradient_on_charges_;
-    /// Gradient, if available, as number of diffuses x 3 SharedMatrix
-    SharedMatrix gradient_on_diffuses_;
+    /// Gradient, if available, as a vector of the number of bases containing
+    /// the number of diffuses per each basis x 3 SharedMatrix
+    std::vector<SharedMatrix> gradients_on_bases_;
 
    public:
     /// Constructur, does nothing
@@ -86,6 +84,12 @@ class PSI_API ExternalPotential {
 
     /// get the vector of charges
     const std::vector<std::tuple<double, double, double, double>> getCharges() const { return charges_; }
+
+    /// get the vector of bases
+    const std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector>> getBases() const { return bases_; }
+
+    /// get the one-electron potential matrix
+    const SharedMatrix getMatrix() const { return matrix_; }
 
     /// Append some charges
     void appendCharges(std::vector<std::tuple<double, double, double, double>> new_charges) {
@@ -115,7 +119,7 @@ class PSI_API ExternalPotential {
     SharedMatrix gradient_on_charges();
 
     /// Returns the gradient on the external potential diffuse charges from the wfn-extern interaction
-    SharedMatrix gradient_on_diffuses();
+    const std::vector<SharedMatrix> gradients_on_bases();
 
     /// Print a trace of the external potential
     void print(const std::string& out_fname = "outfile") const;
