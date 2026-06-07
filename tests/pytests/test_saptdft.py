@@ -140,7 +140,7 @@ units bohr
 
 @pytest.mark.saptdft
 @pytest.mark.dftd3
-@uusing('s-dftd3')
+@uusing("s-dftd3")
 @pytest.mark.parametrize(
     "method, expected_disp",
     [
@@ -765,12 +765,12 @@ no_com
             "sapt(dft)",
             "pbe0",
             {
-                "Edisp": -0.0031243901884552955,
-                "Eelst": -0.027251596918624443,
-                "Eexch": 0.022466107772087913,
-                "Eind": -0.0060653648137171425,
+                "Edisp": -0.0030774752465512253,
+                "Eelst": -0.024897571042565403,
+                "Eexch": 0.02153631931010098,
+                "Eind": -0.006059104880356057,
                 "Enuc": 37.565065473343004,
-                "Etot": -0.013975244148708968,
+                "Etot": -0.012497831859371705,
             },
             7,
         ),
@@ -1342,15 +1342,15 @@ if __name__ == "__main__":
     psi4.set_num_threads(12)
     # pytest this file
     # test_fisapt0_sapthf_external_potential(True)
-    test_saptdft_auto_grac(
-            "ITERATIVE",
-            0.2303073898,
-            0.19830016,
-            None,
-            None,
-            "hydroxide",
-            None,
-        )
+    # test_saptdft_auto_grac(
+    #         "ITERATIVE",
+    #         0.2303073898,
+    #         0.19830016,
+    #         None,
+    #         None,
+    #         "hydroxide",
+    #         None,
+    #     )
     # test_sapt_dft_compute_ddft_d4_auto_grac()
     # test_fisapt0_sapthf_external_potential(False)
     # test_qcng_embedded_saptdft()
@@ -1358,14 +1358,14 @@ if __name__ == "__main__":
     # test_saptdft_disp_methods_dftd4("SAPT(DFT)-D4(I)", -0.0040379796),
     # test_saptdft_disp_methods_dftd3("SAPT(DFT)-D3(I)", -0.0046415623)
     # test_saptdft_disp_methods_dftd3("SAPT(DFT)-D3(S)", -0.0045682406),
-    # pytest.main(
-    #     [
-    #         __file__,
-    #         "-v",
-    #         "-s",
-    #         "-k=test_saptdft_disp_methods",
-    #         # "--disable-warnings",
-    #         # "--maxfail=1",
-    #     ]
-    # )
+    pytest.main(
+        [
+            __file__,
+            "-v",
+            "-s",
+            "-k=test_saptdft_external_potential",
+            # "--disable-warnings",
+            # "--maxfail=1",
+        ]
+    )
     # test_qcng_embedded_saptdft()

@@ -1109,13 +1109,13 @@ if __name__ == "__main__":
     # psi4.set_num_threads(24)
     psi4.set_num_threads(12)
     # test_fsaptdft_timer()
-    test_fsaptdftd4_psivars_pbe0_frozen_core()
+    # test_fsaptdftd4_psivars_pbe0_frozen_core()
     # test_fsapthf_disp0_fisapt0_psivars()
-    # pytest.main([
-    #     __file__,
-    #     "-v",
-    #     "-s",
-    #     # "-k=test_saptdft_auto_grac",
-    #     "--disable-warnings",
-    #     # "--maxfail=1",
-    # ])
+    pytest.main([
+        __file__,
+        "-v",
+        "-s",
+        "-k=test_saptdft_auto_grac",
+        "--disable-warnings",
+        # "--maxfail=1",
+    ])
