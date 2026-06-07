@@ -272,7 +272,6 @@ def flocalization(
     else:
         cache["Locc_B"] = Locc_B
 
-
 def partition(
     cache: dict,
     dimer_wfn: core.Wavefunction,
@@ -631,8 +630,8 @@ def build_sapt_jk_cache(
     cache["wfn_B"] = wfn_B
 
     # NOTE: scf_A from FISAPT0 and SAPT(DFT) wfn_A have slightly different
-    # coefficients, so numerical exactness is not achieved everywhere, but the
-    # pytests for final values are still quite robust
+    # coefficients, so numerical exactness is not achieved everywhere, but
+    # the pytests for final values are still quite robust
 
     # First grab the orbitals as psi4.core.Matrix objects
     cache["Cocc_A"] = wfn_A.Ca_subset("AO", "OCC")
@@ -1512,11 +1511,7 @@ def build_exch_ind_pot_avg(vars: dict) -> core.Matrix:
     J_B = vars["J_B"]
     K_B = vars["K_B"]
     V_B = vars["V_B"]
-    D_X = vars["D_X"]
-    J_X = vars["J_X"]
-    K_X = vars["K_X"]
     D_Y = vars["D_Y"]
-    J_Y = vars["J_Y"]
     K_Y = vars["K_Y"]
 
     J_O = vars["J_O"]
@@ -2104,9 +2099,11 @@ def fdisp0(
 ) -> dict:
     r"""Compute the F-SAPT0 dispersion partitioning.
 
-    Partitions the second-order dispersion and exchange-dispersion energies
-    into atomic pair contributions for F-SAPT analysis. Note, this does not use
-    DFT energies and is a Hartree-Fock (SAPT0) dispersion energy only.
+    Partitions the second-order dispersion and exchange-dispersion
+    energies into atomic pair contributions for F-SAPT analysis. Note,
+    this does not use DFT energies and is a Hartree-Fock (SAPT0)
+    dispersion energy only. Ideally, this function should be optimized for
+    python (considerably slower than C++).
 
     Parameters
     ----------
@@ -2760,7 +2757,8 @@ def chain_gemm_einsums(
             A = computed_tensors[-1]
             B = tensors[i + 1]
 
-            # For intermediate results (i > 0), always use 'N' for T1 since A is a computed intermediate
+            # For intermediate results (i > 0), always use 'N' for T1
+            # since A is a computed intermediate
             T1 = transposes[i] if i == 0 else "N"
             T2 = transposes[i + 1]
             A_size = A.shape[0]
@@ -2774,7 +2772,9 @@ def chain_gemm_einsums(
             C = core.Matrix(A_size, B_size)
             C.zero()
             # Use ein.core.gemm to write to C.np
-            ein.core.gemm(T1, T2, prefactors_AB[i], A.np, B.np, prefactors_C[i], C.np)
+            ein.core.gemm(
+                T1, T2, prefactors_AB[i], A.np, B.np, prefactors_C[i], C.np,
+            )
             computed_tensors.append(C)
     except Exception as e:
         raise ValueError(
@@ -2922,7 +2922,8 @@ def exchange(cache: dict, jk: core.JK, do_print: bool = True) -> dict:
     # Eq. 6: E^(1)_exch(S^2) — three-term S^2 exchange
     Exch_s2 = 0.0
 
-    # Save some intermediate tensors to avoid recomputation in the next steps
+    # Save some intermediate tensors to avoid recomputation in the next
+    # steps
     DA_S_DB_S_PA = chain_gemm_einsums([D_A, S, D_B, S, P_A])
     Exch_s2 -= 2.0 * ein.core.dot(w_B.np, DA_S_DB_S_PA.np)
 
@@ -2951,7 +2952,6 @@ def exchange(cache: dict, jk: core.JK, do_print: bool = True) -> dict:
         core.print_out("\n")
 
     return {"Exch10(S^2)": Exch_s2, "Exch10": Exch10}
-
 
 def induction(
     cache: dict,

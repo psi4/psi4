@@ -26,20 +26,13 @@
 # @END LICENSE
 #
 
-import time
-
 import numpy as np
+from pprint import pprint as pp
 
 from psi4 import core
-
-from ...p4util import solvers
 from ...p4util.exceptions import *
-from .sapt_util import print_sapt_var
-from pprint import pprint as pp
-
 # Need to import FISAPT to set fdrop, plot, save_fsapt_variables methods
 from . import fisapt_proc
-from pprint import pprint as pp
 
 
 def to_matrix(obj):
@@ -56,7 +49,6 @@ def to_vector(obj):
         return obj.clone()
     else:
         return core.Vector.from_array(obj)
-
 
 def setup_fisapt_object(
     wfn, wfn_A, wfn_B, cache, scalars, basis_set=None, do_flocalize=False
@@ -135,9 +127,6 @@ def setup_fisapt_object(
         "V_B",
         "K_O",
         "J_O",
-        # "J_P_A",
-        # "J_P_B",
-        # fdisp
         "P_A",
         "P_B",
     ]
@@ -166,7 +155,8 @@ def setup_fisapt_object(
         "ZC",
         "ZC_orig",
     ]
-    # When not using einsums, we are using localization from the FISAPT object
+    # When not using einsums, we are using localization from the FISAPT
+    # object
     if "ZA" not in cache:
         mol = wfn.molecule()
         natoms = mol.natom()
@@ -228,7 +218,8 @@ def setup_fisapt_object(
         # Call C++ flocalize() to localize monomer orbitals
         # This populates the FISAPT object's internal matrices with:
         # Locc0A, Locc0B, Uocc0A, Uocc0B, Qocc0A, Qocc0B,
-        # Lfocc0A, Lfocc0B, Laocc0A, Laocc0B, Ufocc0A, Ufocc0B, Uaocc0A, Uaocc0B
+        # Lfocc0A, Lfocc0B, Laocc0A, Laocc0B, Ufocc0A, Ufocc0B, Uaocc0A,
+        # Uaocc0B
         fisapt.flocalize()
 
         # Get the localized matrices back from FISAPT object
@@ -323,14 +314,13 @@ def setup_fisapt_object(
         "Ind20,r": "Ind20,r",
         "Exch-Ind20,r": "Exch-Ind20,r",
     }
-    # We need to specifically set 'SAPT0 HF' for FISAPT::find() to ensure we do
-    # not recompute the dHF correction with SAPT(DFT) terms.
+    # We need to specifically set 'SAPT0 HF' for FISAPT::find() to ensure
+    # we do not recompute the dHF correction with SAPT(DFT) terms.
     if core.get_option("SAPT", "SAPT_DFT_DO_DHF"):
         scalar_keys["Delta HF Correction"] = "SAPT0 dHF"
     scalar_cache = {
         fisapt_key: scalars[sdft_key] for sdft_key, fisapt_key in scalar_keys.items()
     }
-    from pprint import pprint as pp
     pp(scalar_cache)
     fisapt.set_scalar(scalar_cache)
     return fisapt
@@ -354,7 +344,8 @@ def drop_saptdft_variables(wfn, wfn_A, wfn_B, cache, scalars):
         SAPT energy components dictionary
     """
     fisapt = core.FISAPT(wfn)
-    # iterate through cache and scalars to set these labels for fisapt_fdrop:
+    # iterate through cache and scalars to set these labels for
+    # fisapt_fdrop:
     cache_keys = {
         "Qocc0A": "Qocc0A",
         "Qocc0B": "Qocc0B",
@@ -363,8 +354,8 @@ def drop_saptdft_variables(wfn, wfn_A, wfn_B, cache, scalars):
         "IndAB_AB": "IndAB_AB",
         "IndBA_AB": "IndBA_AB",
     }
-    # Set whether to drop dispersion matrix... fisapt has specific option for
-    # this...
+    # Set whether to drop dispersion matrix... fisapt has specific option
+    # for this...
     core.set_local_option("FISAPT", "FISAPT_DO_FSAPT_DISP", core.get_option("SAPT", "SAPT_DFT_DO_DISP"))
     if core.get_option("SAPT", "SAPT_DFT_DO_DISP"):
         cache_keys["Disp_AB"] = "Disp_AB"

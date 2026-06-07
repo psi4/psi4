@@ -732,6 +732,8 @@ def run_sapt_dft(name: str, **kwargs) -> core.Wavefunction:
         raise ValueError(
             "SAPT(DFT): delta DFT correction requested when running HF. Set SAPT_DFT_DO_DDFT to False or use a DFT functional."
         )
+
+    # If a -D dispersion requested above, we now compute those values
     if sapt_dft_D4_IE:
         core.print_out("\n")
         core.print_out(
