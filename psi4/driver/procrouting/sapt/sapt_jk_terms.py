@@ -104,7 +104,9 @@ def build_sapt_jk_cache(
     mints = core.MintsHelper(wfn_B.basisset())
     cache["V_B"] = mints.ao_potential()
 
-    # External Potentials need to add to V_A and V_B
+    # External Potentials need to add to V_A and V_B. Note, external potential
+    # "C" should not be used in this function for SAPT is evaluating the
+    # interaction of A-B.
     if external_potentials:
         if external_potentials.get("A") is not None:
             ext_A = wfn_A.external_pot().computePotentialMatrix(wfn_A.basisset())
@@ -149,6 +151,8 @@ def build_sapt_jk_cache(
     monB_nr = wfn_B.molecule().nuclear_repulsion_energy()
     dimer_nr = wfn_A.molecule().extract_subsets([1, 2]).nuclear_repulsion_energy()
 
+    # exter_extern_IE will capture the external potential A interacting with
+    # external potential B.
     cache["extern_extern_IE"] = 0.0
     if external_potentials:
         dimer_nr += wfn_dimer.external_pot().computeNuclearEnergy(wfn_dimer.molecule()) 
