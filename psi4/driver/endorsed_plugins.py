@@ -63,6 +63,10 @@ try:
     import adcc
 except ImportError:
     pass
+except Exception:
+    # Some adcc versions evaluate sys.stdout at import time and can fail in
+    # redirected/headless worker contexts (e.g., QCFractal compute workers).
+    pass
 
 try:
     import psi4fockci
