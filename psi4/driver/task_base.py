@@ -148,7 +148,7 @@ class AtomicComputer(BaseComputer):
             mol = Molecule(**self.molecule.to_schema(dtype=3))
 
             # QCFractal as of 0.70 still wants QCSchema v1
-            if parse_version(qcportal.__version__) > parse_version("0.64.0"):
+            if parse_version(qcportal.__version__) > parse_version("0.65.0"):
                 target_version = QCEL_V1V2_SHIM_CODE
             else:
                 target_version = 1

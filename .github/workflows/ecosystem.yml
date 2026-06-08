@@ -344,7 +344,7 @@ jobs:
       with:
         repository: MolSSI/QCFractal
         path: qca
-        ref: pydv2
+        ref: main
         fetch-depth: 0
 
     - name: Install All QCArchive packages
