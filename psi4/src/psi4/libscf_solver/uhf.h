@@ -101,14 +101,6 @@ class UHF : public HF {
     int otr_n_param() override;
 #endif
 
-#ifdef USING_OpenTrustRegion
-    OTR::c_int otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
-                               OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) override;
-    OTR::c_int otr_hess_x(const OTR::c_real* x, OTR::c_real* out) override;
-    OTR::c_int otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) override;
-    int otr_n_param() override;
-#endif
-
     std::shared_ptr<VBase> V_potential() const override { return potential_; };
 
     /// Hessian-vector computers and solvers
