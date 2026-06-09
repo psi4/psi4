@@ -30,38 +30,33 @@
   \file
   \ingroup IWL
 */
-#include <cstdio>
-#include "psi4/libciomr/libciomr.h"
 #include "iwl.h"
 #include "iwl.hpp"
 
 namespace psi {
 
-void IWL::flush(int lastbuf) {
-    int idx;
-    Label *lblptr;
-    Value *valptr;
+namespace {
 
-    inbuf_ = idx_;
-    lblptr = labels_;
-    valptr = values_;
-
-    idx = 4 * idx_;
-
-    while (idx_ < ints_per_buf_) {
-        lblptr[idx++] = 0;
-        lblptr[idx++] = 0;
-        lblptr[idx++] = 0;
-        lblptr[idx++] = 0;
-        valptr[idx_] = 0.0;
-        idx_++;
+// Zero-fill the tail of a partially-filled bucket so that on-disk consumers
+// always read a well-defined bucket layout, then mark it written.
+void zero_fill_tail(Label *labels, Value *values, int &idx, int ints_per_buf, int lastbuf_flag,
+                    int &inbuf_out, int &lastbuf_out) {
+    inbuf_out = idx;
+    for (int i = idx; i < ints_per_buf; ++i) {
+        labels[4 * i + 0] = 0;
+        labels[4 * i + 1] = 0;
+        labels[4 * i + 2] = 0;
+        labels[4 * i + 3] = 0;
+        values[i] = 0.0;
     }
+    idx = ints_per_buf;
+    lastbuf_out = lastbuf_flag ? 1 : 0;
+}
 
-    if (lastbuf)
-        lastbuf_ = 1;
-    else
-        lastbuf_ = 0;
+}  // namespace
 
+void IWL::flush(int lastbuf) {
+    zero_fill_tail(labels_, values_, idx_, ints_per_buf_, lastbuf, inbuf_, lastbuf_);
     put();
     idx_ = 0;
 }
@@ -78,30 +73,7 @@ void IWL::flush(int lastbuf) {
 ** \ingroup IWL
 */
 void iwl_buf_flush(struct iwlbuf *Buf, int lastbuf) {
-    int idx;
-    Label *lblptr;
-    Value *valptr;
-
-    Buf->inbuf = Buf->idx;
-    lblptr = Buf->labels;
-    valptr = Buf->values;
-
-    idx = 4 * Buf->idx;
-
-    while (Buf->idx < Buf->ints_per_buf) {
-        lblptr[idx++] = 0;
-        lblptr[idx++] = 0;
-        lblptr[idx++] = 0;
-        lblptr[idx++] = 0;
-        valptr[Buf->idx] = 0.0;
-        Buf->idx++;
-    }
-
-    if (lastbuf)
-        Buf->lastbuf = 1;
-    else
-        Buf->lastbuf = 0;
-
+    zero_fill_tail(Buf->labels, Buf->values, Buf->idx, Buf->ints_per_buf, lastbuf, Buf->inbuf, Buf->lastbuf);
     iwl_buf_put(Buf);
     Buf->idx = 0;
 }
