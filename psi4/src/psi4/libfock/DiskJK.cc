@@ -33,6 +33,7 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 #include "psi4/libiwl/iwl.hpp"
+#include "psi4/libiwl/iwl_reader.h"
 #include "jk.h"
 
 #include "psi4/libmints/matrix.h"
@@ -94,21 +95,16 @@ void DiskJK::compute_JK() {
     zero();
 
     auto psio = std::make_shared<PSIO>();
-    IWL* iwl = new IWL(psio.get(), PSIF_SO_TEI, cutoff_, 1, 1);
-    Label* lblptr = iwl->labels();
-    Value* valptr = iwl->values();
-    int labelIndex, pabs, qabs, rabs, sabs, prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
+    int pabs, qabs, rabs, sabs, prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
     double value;
-    bool lastBuffer;
     if (J_.size() == K_.size()) {
-        do {
-            lastBuffer = iwl->last_buffer();
-            for (int index = 0; index < iwl->buffer_count(); ++index) {
-                labelIndex = 4 * index;
-                pabs = std::abs((int)lblptr[labelIndex++]);
-                qabs = (int)lblptr[labelIndex++];
-                rabs = (int)lblptr[labelIndex++];
-                sabs = (int)lblptr[labelIndex++];
+        IWLReader eri(psio, PSIF_SO_TEI);
+        for (const auto& integral : eri) {
+            {
+                pabs = std::abs(integral.p);
+                qabs = integral.q;
+                rabs = integral.r;
+                sabs = integral.s;
                 prel = so2index_[pabs];
                 qrel = so2index_[qabs];
                 rrel = so2index_[rabs];
@@ -117,7 +113,7 @@ void DiskJK::compute_JK() {
                 qsym = so2symblk_[qabs];
                 rsym = so2symblk_[rabs];
                 ssym = so2symblk_[sabs];
-                value = (double)valptr[index];
+                value = integral.value;
 
                 int pqsym = psym ^ qsym;
                 int rssym = rsym ^ ssym;
@@ -263,9 +259,8 @@ void DiskJK::compute_JK() {
                         }
                     }
                 }
-            } /* end loop through current buffer */
-            if (!lastBuffer) iwl->fetch();
-        } while (!lastBuffer);
+            }
+        } /* end loop over SO integrals */
 
         for (size_t N = 0; N < J_.size(); N++) {
             J_[N]->copy_lower_to_upper();
@@ -273,14 +268,13 @@ void DiskJK::compute_JK() {
         }
     } else {
         // J and K to be handled separately
-        do {
-            lastBuffer = iwl->last_buffer();
-            for (int index = 0; index < iwl->buffer_count(); ++index) {
-                labelIndex = 4 * index;
-                pabs = std::abs((int)lblptr[labelIndex++]);
-                qabs = (int)lblptr[labelIndex++];
-                rabs = (int)lblptr[labelIndex++];
-                sabs = (int)lblptr[labelIndex++];
+        IWLReader eri(psio, PSIF_SO_TEI);
+        for (const auto& integral : eri) {
+            {
+                pabs = std::abs(integral.p);
+                qabs = integral.q;
+                rabs = integral.r;
+                sabs = integral.s;
                 prel = so2index_[pabs];
                 qrel = so2index_[qabs];
                 rrel = so2index_[rabs];
@@ -289,7 +283,7 @@ void DiskJK::compute_JK() {
                 qsym = so2symblk_[qabs];
                 rsym = so2symblk_[rabs];
                 ssym = so2symblk_[sabs];
-                value = (double)valptr[index];
+                value = integral.value;
 
                 int pqsym = psym ^ qsym;
                 int rssym = rsym ^ ssym;
@@ -440,9 +434,8 @@ void DiskJK::compute_JK() {
                         }
                     }
                 }
-            } /* end loop through current buffer */
-            if (!lastBuffer) iwl->fetch();
-        } while (!lastBuffer);
+            }
+        } /* end loop over SO integrals */
 
         for (size_t N = 0; N < J_.size(); N++) {
             J_[N]->copy_lower_to_upper();
@@ -451,22 +444,15 @@ void DiskJK::compute_JK() {
             if (K_[N]->symmetry()) K_[N]->transpose_this();
         }
     }
-    iwl->set_keep_flag(true);
-    delete iwl;
 
     if (do_wK_) {
-        iwl = new IWL(psio.get(), PSIF_SO_ERF_TEI, cutoff_, 1, 1);
-        lblptr = iwl->labels();
-        valptr = iwl->values();
-
-        do {
-            lastBuffer = iwl->last_buffer();
-            for (int index = 0; index < iwl->buffer_count(); ++index) {
-                labelIndex = 4 * index;
-                pabs = std::abs((int)lblptr[labelIndex++]);
-                qabs = (int)lblptr[labelIndex++];
-                rabs = (int)lblptr[labelIndex++];
-                sabs = (int)lblptr[labelIndex++];
+        IWLReader eri(psio, PSIF_SO_ERF_TEI);
+        for (const auto& integral : eri) {
+            {
+                pabs = std::abs(integral.p);
+                qabs = integral.q;
+                rabs = integral.r;
+                sabs = integral.s;
                 prel = so2index_[pabs];
                 qrel = so2index_[qabs];
                 rrel = so2index_[rabs];
@@ -475,7 +461,7 @@ void DiskJK::compute_JK() {
                 qsym = so2symblk_[qabs];
                 rsym = so2symblk_[rabs];
                 ssym = so2symblk_[sabs];
-                value = (double)valptr[index];
+                value = integral.value;
 
                 int qrsym = qsym ^ rsym;
                 int pssym = psym ^ ssym;
@@ -569,15 +555,12 @@ void DiskJK::compute_JK() {
                         }
                     }
                 }
-            } /* end loop through current buffer */
-            if (!lastBuffer) iwl->fetch();
-        } while (!lastBuffer);
+            }
+        } /* end loop over SO integrals */
 
         for (size_t N = 0; N < wK_.size(); N++) {
             if (wK_[N]->symmetry()) wK_[N]->transpose_this();
         }
-        iwl->set_keep_flag(true);
-        delete iwl;
     }
 }
 void DiskJK::postiterations() {
