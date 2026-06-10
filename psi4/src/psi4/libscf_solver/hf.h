@@ -257,9 +257,12 @@ class HF : public Wavefunction {
     /// Runs the SCF using OpenOrbitalOptimizer
     virtual void openorbital_scf() { throw PSIEXCEPTION("openorbital_scf is virtual; it has not been implemented for your class"); };
 
-#ifdef USING_OpenTrustRegion
-    /// Runs SCF using OpenTrustRegion
+    /// Runs the SCF using OpenTrustRegion
     void opentrustregion_scf();
+
+#ifdef USING_OpenTrustRegion
+    void otr_record_iteration(OTR::c_real func, const OTR::c_real* grad);
+    bool otr_converged() const;
     virtual OTR::c_int otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
                                        OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) {
         throw PSIEXCEPTION("OpenTrustRegion interface has not been implemented for your class"); 
