@@ -34,6 +34,8 @@ list(APPEND sources
   )
 psi4_add_module(lib psio sources)
 
+add_subdirectory(test)
+
 if (psi4_ENABLE_PRECOMPILE_HEADERS)
     # Clearly from the paths, libpsio is a weird place to be defining the pch. However, if one sensibly
     #   puts it in mints, CMake creates a dependency of, say, fnocc on mints, and since mints is the
