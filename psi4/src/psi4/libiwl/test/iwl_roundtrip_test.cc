@@ -43,6 +43,7 @@
 
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl.hpp"
+#include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -112,6 +113,18 @@ std::vector<Quartet> read_all(int itap) {
     return out;
 }
 
+// Drive a read via the new range-for IWLReader (the phase-2 API). Reads the
+// same file the C-style read_all() does, so a per-entry comparison validates
+// the reader against the legacy loop.
+std::vector<Quartet> read_all_reader(int itap) {
+    std::vector<Quartet> out;
+    IWLReader reader(_default_psio_lib_, itap);
+    for (const auto &I : reader) {
+        out.push_back({I.p, I.q, I.r, I.s, I.value});
+    }
+    return out;
+}
+
 bool quartets_equal(const Quartet &a, const Quartet &b) {
     return a.p == b.p && a.q == b.q && a.r == b.r && a.s == b.s &&
            std::fabs(a.value - b.value) < 1.0e-12;
@@ -129,6 +142,9 @@ bool round_trip(std::size_t n, int itap) {
         buf.set_keep_flag(true);
     }
 
+    // Read once with the new range-for IWLReader (keep the file)...
+    auto got_reader = read_all_reader(itap);
+    // ...and once with the legacy C-style loop (which erases on close).
     auto got = read_all(itap);
 
     if (got.size() != data.size()) {
@@ -136,9 +152,18 @@ bool round_trip(std::size_t n, int itap) {
                   << got.size() << "\n";
         return false;
     }
+    if (got_reader.size() != data.size()) {
+        std::cerr << "  IWLReader size mismatch: wrote " << data.size()
+                  << " read " << got_reader.size() << "\n";
+        return false;
+    }
     for (std::size_t i = 0; i < data.size(); ++i) {
         if (!quartets_equal(data[i], got[i])) {
-            std::cerr << "  entry " << i << " mismatch\n";
+            std::cerr << "  entry " << i << " mismatch (C-API reader)\n";
+            return false;
+        }
+        if (!quartets_equal(data[i], got_reader[i])) {
+            std::cerr << "  entry " << i << " mismatch (IWLReader)\n";
             return false;
         }
     }
@@ -154,6 +179,12 @@ bool round_trip_empty(int itap) {
                      /*oldfile*/ 0, /*readflag*/ 0);
         buf.flush(/*lastbuf*/ 1);
         buf.set_keep_flag(true);
+    }
+    auto got_reader = read_all_reader(itap);
+    if (!got_reader.empty()) {
+        std::cerr << "  empty IWLReader round-trip returned "
+                  << got_reader.size() << " entries\n";
+        return false;
     }
     auto got = read_all(itap);
     if (!got.empty()) {
@@ -187,8 +218,11 @@ bool overflow_check_fires(int itap) {
 }  // namespace
 
 int main() {
-    // libpsio needs init before anything opens a unit.
-    psi::psio_init();
+    // Initialize the default libpsio instance the way psio_init() would.
+    // (psio_init() itself is not exported from the core shared library, so we
+    // populate the exported globals directly.)
+    if (!psi::_default_psio_lib_) psi::_default_psio_lib_ = std::make_shared<psi::PSIO>();
+    if (!psi::_default_psio_manager_) psi::_default_psio_manager_ = std::make_shared<psi::PSIOManager>();
 
     // Use tape unit numbers in a range unlikely to clash with the few entries
     // libpsio's filecfg might preset.
