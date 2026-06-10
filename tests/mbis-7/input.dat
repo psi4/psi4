@@ -1,0 +1,45 @@
+#! MBIS regression test on CH3I with iodine
+import numpy as np
+
+molecule mol {
+  0 1
+  C 0.000000 0.000000 0.000000
+  I 0.000000 0.000000 2.105000
+  H 0.000000 0.937000 -0.297000
+  H 0.811000 -0.469000 -0.297000
+  H -0.811000 -0.469000 -0.297000
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 10
+  mbis_radial_points 99
+  mbis_spherical_points 350
+  max_radial_moment 4
+}
+
+set scf_properties ['MBIS_CHARGES', 'MBIS_VOLUME_RATIOS']
+
+e, wfn = energy('hf/def2-SVP', return_wfn=True)
+oeprop(wfn, 'MBIS_CHARGES', 'MBIS_VOLUME_RATIOS', title='CH3I SCF')
+
+charges = wfn.array_variable('MBIS CHARGES').to_array()
+avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>').to_array()
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS').to_array()
+vcharges = wfn.array_variable('MBIS VALENCE CHARGES').to_array()
+vratios = wfn.array_variable('MBIS VOLUME RATIOS').to_array()
+
+assert charges.shape[0] == 5
+assert np.isfinite(charges).all()
+assert np.isfinite(avols).all()
+assert np.isfinite(vwidths).all()
+assert np.isfinite(vcharges).all()
+assert np.isfinite(vratios).all()
+assert np.all(vratios > 0.0)
+assert np.all(avols > 0.0)
+
+compare_values(0.0, np.sum(charges), 6, "CH3I MBIS total charge")  #TEST
