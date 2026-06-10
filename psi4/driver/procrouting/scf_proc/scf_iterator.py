@@ -338,6 +338,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.jk().set_COSX_grid("Initial")
 
     otr_scf = core.get_global_option('OTR_SCF')
+    if otr_scf and self.functional().needs_xc() and (self.functional().is_meta() or self.functional().needs_vv10()):
+        core.print_out("    Note: OpenTrustRegion unavailable for meta/VV10 functionals. Falling back to Internal.\n")
+        otr_scf = False
+
     if otr_scf:
         # SAD needs some special work since the guess doesn't actually make the orbitals in Psi4
         if self.sad_ and self.iteration_ <= 0:
@@ -347,7 +351,16 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.reset_occupation()
             self.find_occupation()
         self.opentrustregion_scf()
-        self.set_energies("Total Energy", self.compute_E())
+        SCFE = self.compute_E()
+        self.set_energies("Total Energy", SCFE)
+        self.set_variable("SCF ITERATION ENERGY", SCFE)
+        self.iteration_energies.append(SCFE)
+
+        # Ensure canonical orbitals/eigenvalues are ready for post-SCF methods.
+        self.form_G()
+        self.form_F()
+        self.form_C()
+        self.form_D()
         return
 
     # maximum number of scf iterations to run after early screening is disabled
