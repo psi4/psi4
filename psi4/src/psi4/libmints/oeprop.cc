@@ -1636,7 +1636,7 @@ double rho_ai_0(double n, double sigma, double distance) {
    https://github.com/theochem/denspart/blob/main/src/denspart/mbis.py by Toon Verstraelen.
    Covers Z=1-118 (H through Og). Shell counts vary due to merging of near-degenerate
    shells during the free-atom optimization; the maximum is 7 shells (Z=87, 88, 115-118). */
-std::vector<std::tuple<double, double>> get_mbis_params(int atomic_num) {
+const std::vector<std::tuple<double, double>>& get_mbis_params(int atomic_num) {
     static const std::map<int, std::vector<std::tuple<double, double>>> params = {
         // Period 1
         {1,  {{1.00000, 1.76216}}},
