@@ -31,6 +31,7 @@
 
 #include "psi4/psifiles.h"
 #include "psi4/libiwl/iwl.hpp"
+#include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
@@ -134,52 +135,42 @@ void SCF::read_so_tei_form_PK() {
 
         double value;
         size_t p, q, r, s, four_index;
-        int ilsti, nbuf, fi, index;
 
-        IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
-        ERIIN.set_keep_flag(true);
-        do {
-            ilsti = ERIIN.last_buffer();
-            nbuf = ERIIN.buffer_count();
+        IWLReader eri(psio_, PSIF_SO_TEI);
+        for (const auto &integral : eri) {
+            p = std::abs(integral.p);
+            q = integral.q;
+            r = integral.r;
+            s = integral.s;
+            value = integral.value;
 
-            fi = 0;
-            for (index = 0; index < nbuf; ++index) {
-                p = (ERIIN.labels()[fi] >= 0 ? ERIIN.labels()[fi] : -ERIIN.labels()[fi]);
-                q = ERIIN.labels()[fi + 1];
-                r = ERIIN.labels()[fi + 2];
-                s = ERIIN.labels()[fi + 3];
-                value = ERIIN.values()[index];
-
-                if (pair_sym[p][q] == 0) {
-                    four_index = INDEX(pair[p][q], pair[r][s]);
-                    if ((four_index >= min_index) && (four_index < max_index)) {
-                        PK[four_index - min_index] += value;
-                    }
+            if (pair_sym[p][q] == 0) {
+                four_index = INDEX(pair[p][q], pair[r][s]);
+                if ((four_index >= min_index) && (four_index < max_index)) {
+                    PK[four_index - min_index] += value;
                 }
-                if (pair_sym[p][r] == 0) {
-                    four_index = INDEX(pair[p][r], pair[q][s]);
-                    if ((four_index >= min_index) && (four_index < max_index)) {
-                        if ((p == r) || (q == s))
+            }
+            if (pair_sym[p][r] == 0) {
+                four_index = INDEX(pair[p][r], pair[q][s]);
+                if ((four_index >= min_index) && (four_index < max_index)) {
+                    if ((p == r) || (q == s))
+                        PK[four_index - min_index] -= 0.5 * value;
+                    else
+                        PK[four_index - min_index] -= 0.25 * value;
+                }
+            }
+            if (pair_sym[p][s] == 0) {
+                four_index = INDEX(pair[p][s], pair[q][r]);
+                if ((four_index >= min_index) && (four_index < max_index)) {
+                    if ((p != q) && (r != s)) {
+                        if ((p == s) || (q == r))
                             PK[four_index - min_index] -= 0.5 * value;
                         else
                             PK[four_index - min_index] -= 0.25 * value;
                     }
                 }
-                if (pair_sym[p][s] == 0) {
-                    four_index = INDEX(pair[p][s], pair[q][r]);
-                    if ((four_index >= min_index) && (four_index < max_index)) {
-                        if ((p != q) && (r != s)) {
-                            if ((p == s) || (q == r))
-                                PK[four_index - min_index] -= 0.5 * value;
-                            else
-                                PK[four_index - min_index] -= 0.25 * value;
-                        }
-                    }
-                }
-                fi += 4;
             }
-            if (!ilsti) ERIIN.fetch();
-        } while (!ilsti);
+        }
 
         // Half the diagonal elements held in core
         for (size_t pq = batch_pq_min[batch]; pq < batch_pq_max[batch]; ++pq) {
@@ -212,33 +203,38 @@ void SCF::read_so_tei_form_PK_and_K() {
 
         double value;
         size_t p, q, r, s, four_index;
-        int ilsti, nbuf, fi, index;
 
-        IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
-        ERIIN.set_keep_flag(true);
+        IWLReader eri(psio_, PSIF_SO_TEI);
+        for (const auto &integral : eri) {
+            p = std::abs(integral.p);
+            q = integral.q;
+            r = integral.r;
+            s = integral.s;
+            value = integral.value;
 
-        do {
-            ilsti = ERIIN.last_buffer();
-            nbuf = ERIIN.buffer_count();
-
-            fi = 0;
-            for (index = 0; index < nbuf; ++index) {
-                p = (ERIIN.labels()[fi] >= 0 ? ERIIN.labels()[fi] : -ERIIN.labels()[fi]);
-                q = ERIIN.labels()[fi + 1];
-                r = ERIIN.labels()[fi + 2];
-                s = ERIIN.labels()[fi + 3];
-                value = ERIIN.values()[index];
-
-                if (pair_sym[p][q] == 0) {
-                    four_index = INDEX(pair[p][q], pair[r][s]);
-                    if ((four_index >= min_index) && (four_index < max_index)) {
-                        PK[four_index - min_index] += value;
+            if (pair_sym[p][q] == 0) {
+                four_index = INDEX(pair[p][q], pair[r][s]);
+                if ((four_index >= min_index) && (four_index < max_index)) {
+                    PK[four_index - min_index] += value;
+                }
+            }
+            if (pair_sym[p][r] == 0) {
+                four_index = INDEX(pair[p][r], pair[q][s]);
+                if ((four_index >= min_index) && (four_index < max_index)) {
+                    if ((p == r) || (q == s)) {
+                        PK[four_index - min_index] -= 0.5 * value;
+                        K[four_index - min_index] -= 0.5 * value;
+                    } else {
+                        PK[four_index - min_index] -= 0.25 * value;
+                        K[four_index - min_index] -= 0.25 * value;
                     }
                 }
-                if (pair_sym[p][r] == 0) {
-                    four_index = INDEX(pair[p][r], pair[q][s]);
-                    if ((four_index >= min_index) && (four_index < max_index)) {
-                        if ((p == r) || (q == s)) {
+            }
+            if (pair_sym[p][s] == 0) {
+                four_index = INDEX(pair[p][s], pair[q][r]);
+                if ((four_index >= min_index) && (four_index < max_index)) {
+                    if ((p != q) && (r != s)) {
+                        if ((p == s) || (q == r)) {
                             PK[four_index - min_index] -= 0.5 * value;
                             K[four_index - min_index] -= 0.5 * value;
                         } else {
@@ -247,24 +243,8 @@ void SCF::read_so_tei_form_PK_and_K() {
                         }
                     }
                 }
-                if (pair_sym[p][s] == 0) {
-                    four_index = INDEX(pair[p][s], pair[q][r]);
-                    if ((four_index >= min_index) && (four_index < max_index)) {
-                        if ((p != q) && (r != s)) {
-                            if ((p == s) || (q == r)) {
-                                PK[four_index - min_index] -= 0.5 * value;
-                                K[four_index - min_index] -= 0.5 * value;
-                            } else {
-                                PK[four_index - min_index] -= 0.25 * value;
-                                K[four_index - min_index] -= 0.25 * value;
-                            }
-                        }
-                    }
-                }
-                fi += 4;
             }
-            if (!ilsti) ERIIN.fetch();
-        } while (!ilsti);
+        }
 
         // Half the diagonal elements held in core
         for (size_t pq = batch_pq_min[batch]; pq < batch_pq_max[batch]; ++pq) {

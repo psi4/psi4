@@ -34,6 +34,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libiwl/iwl.hpp"
+#include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/psifiles.h"
@@ -148,30 +149,17 @@ void IntegralTransform::presort_mo_tpdm_restricted() {
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
 
-        IWL *iwl = new IWL(psio_.get(), PSIF_MO_TPDM, tolerance_, 1, 0);
         DPDFillerFunctor dpdFiller(&I, n, bucketMap, bucketOffset, true, true);
 
-        Label *lblptr = iwl->labels();
-        Value *valptr = iwl->values();
-        int lastbuf;
         /* Now run through the IWL buffers */
-        do {
-            iwl->fetch();
-            lastbuf = iwl->last_buffer();
-            for (int index = 0; index < iwl->buffer_count(); ++index) {
-                int labelIndex = 4 * index;
-                int p = aCorrToPitzer_[std::abs((int)lblptr[labelIndex++])];
-                int q = aCorrToPitzer_[(int)lblptr[labelIndex++]];
-                int r = aCorrToPitzer_[(int)lblptr[labelIndex++]];
-                int s = aCorrToPitzer_[(int)lblptr[labelIndex++]];
-                auto value = (double)valptr[index];
-                // Check:
-                //                outfile->Printf("\t%4d %4d %4d %4d = %20.10f\n", p, q, r, s, value);
-                dpdFiller(p, q, r, s, value);
-            }               /* end loop through current buffer */
-        } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(true);
-        delete iwl;
+        IWLReader eri(psio_, PSIF_MO_TPDM);
+        for (const auto &integral : eri) {
+            int p = aCorrToPitzer_[std::abs(integral.p)];
+            int q = aCorrToPitzer_[integral.q];
+            int r = aCorrToPitzer_[integral.r];
+            int s = aCorrToPitzer_[integral.s];
+            dpdFiller(p, q, r, s, integral.value);
+        }
 
         for (int h = 0; h < nirreps_; ++h) {
             if (bucketSize[n][h])
@@ -300,28 +288,17 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
         for (int h = 0; h < nirreps_; h++) {
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
-        IWL *iwl = new IWL(psio_.get(), PSIF_MO_AA_TPDM, tolerance_, 1, 0);
         DPDFillerFunctor aaDpdFiller(&I, n, bucketMap, bucketOffset, true, true);
 
-        Label *lblptr = iwl->labels();
-        Value *valptr = iwl->values();
-        int lastbuf;
         /* Now run through the IWL buffers */
-        do {
-            iwl->fetch();
-            lastbuf = iwl->last_buffer();
-            for (int index = 0; index < iwl->buffer_count(); ++index) {
-                int labelIndex = 4 * index;
-                int p = aCorrToPitzer_[std::abs((int)lblptr[labelIndex++])];
-                int q = aCorrToPitzer_[(int)lblptr[labelIndex++]];
-                int r = aCorrToPitzer_[(int)lblptr[labelIndex++]];
-                int s = aCorrToPitzer_[(int)lblptr[labelIndex++]];
-                auto value = (double)valptr[index];
-                aaDpdFiller(p, q, r, s, value);
-            }               /* end loop through current buffer */
-        } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(true);
-        delete iwl;
+        IWLReader eri(psio_, PSIF_MO_AA_TPDM);
+        for (const auto &integral : eri) {
+            int p = aCorrToPitzer_[std::abs(integral.p)];
+            int q = aCorrToPitzer_[integral.q];
+            int r = aCorrToPitzer_[integral.r];
+            int s = aCorrToPitzer_[integral.s];
+            aaDpdFiller(p, q, r, s, integral.value);
+        }
 
         for (int h = 0; h < nirreps_; ++h) {
             if (bucketSize[n][h])
@@ -346,30 +323,17 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
         for (int h = 0; h < nirreps_; h++) {
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
-        IWL *iwl = new IWL(psio_.get(), PSIF_MO_AB_TPDM, tolerance_, 1, 0);
         DPDFillerFunctor abDpdFiller(&I, n, bucketMap, bucketOffset, true, false);
 
-        Label *lblptr = iwl->labels();
-        Value *valptr = iwl->values();
-        int lastbuf;
         /* Now run through the IWL buffers */
-        do {
-            iwl->fetch();
-            lastbuf = iwl->last_buffer();
-            for (int index = 0; index < iwl->buffer_count(); ++index) {
-                int labelIndex = 4 * index;
-                int p = aCorrToPitzer_[std::abs((int)lblptr[labelIndex++])];
-                int q = aCorrToPitzer_[(int)lblptr[labelIndex++]];
-                int r = bCorrToPitzer_[(int)lblptr[labelIndex++]];
-                int s = bCorrToPitzer_[(int)lblptr[labelIndex++]];
-                auto value = (double)valptr[index];
-                // Check:
-                //                outfile->Printf("\t%4d %4d %4d %4d = %20.10f\n", p, q, r, s, value);
-                abDpdFiller(p, q, r, s, value);
-            }               /* end loop through current buffer */
-        } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(true);
-        delete iwl;
+        IWLReader eri(psio_, PSIF_MO_AB_TPDM);
+        for (const auto &integral : eri) {
+            int p = aCorrToPitzer_[std::abs(integral.p)];
+            int q = aCorrToPitzer_[integral.q];
+            int r = bCorrToPitzer_[integral.r];
+            int s = bCorrToPitzer_[integral.s];
+            abDpdFiller(p, q, r, s, integral.value);
+        }
 
         for (int h = 0; h < nirreps_; ++h) {
             if (bucketSize[n][h])
@@ -394,28 +358,17 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
         for (int h = 0; h < nirreps_; h++) {
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
-        IWL *iwl = new IWL(psio_.get(), PSIF_MO_BB_TPDM, tolerance_, 1, 0);
         DPDFillerFunctor bbDpdFiller(&I, n, bucketMap, bucketOffset, true, true);
 
-        Label *lblptr = iwl->labels();
-        Value *valptr = iwl->values();
-        int lastbuf;
         /* Now run through the IWL buffers */
-        do {
-            iwl->fetch();
-            lastbuf = iwl->last_buffer();
-            for (int index = 0; index < iwl->buffer_count(); ++index) {
-                int labelIndex = 4 * index;
-                int p = bCorrToPitzer_[std::abs((int)lblptr[labelIndex++])];
-                int q = bCorrToPitzer_[(int)lblptr[labelIndex++]];
-                int r = bCorrToPitzer_[(int)lblptr[labelIndex++]];
-                int s = bCorrToPitzer_[(int)lblptr[labelIndex++]];
-                auto value = (double)valptr[index];
-                bbDpdFiller(p, q, r, s, value);
-            }               /* end loop through current buffer */
-        } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(true);
-        delete iwl;
+        IWLReader eri(psio_, PSIF_MO_BB_TPDM);
+        for (const auto &integral : eri) {
+            int p = bCorrToPitzer_[std::abs(integral.p)];
+            int q = bCorrToPitzer_[integral.q];
+            int r = bCorrToPitzer_[integral.r];
+            int s = bCorrToPitzer_[integral.s];
+            bbDpdFiller(p, q, r, s, integral.value);
+        }
 
         for (int h = 0; h < nirreps_; ++h) {
             if (bucketSize[n][h])

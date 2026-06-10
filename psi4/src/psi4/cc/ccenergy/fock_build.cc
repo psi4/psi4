@@ -158,11 +158,8 @@ void CCEnergyWavefunction::rhf_fock_build(double **fock, double **D) {
 }
 
 void CCEnergyWavefunction::uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b) {
-    int lastbuf, p, q, r, s, pq, rs;
+    int p, q, r, s, pq, rs;
     double value;
-    Value *valptr;
-    Label *lblptr;
-    struct iwlbuf InBuf;
 
     auto nso = moinfo_.nso;
 
@@ -181,26 +178,18 @@ void CCEnergyWavefunction::uhf_fock_build(double **fock_a, double **fock_b, doub
         }
     }
 
-    iwl_buf_init(&InBuf, PSIF_SO_TEI, 0.0, 1, 1);
-    do {
-        lastbuf = InBuf.lastbuf;
-        lblptr = InBuf.labels;
-        valptr = InBuf.values;
+    IWLReader eri(psio(), PSIF_SO_TEI);
+    for (const auto &integral : eri) {
+        p = std::abs(integral.p);  // sign of p is a writer sentinel; magnitude is the index
+        q = integral.q;
+        r = integral.r;
+        s = integral.s;
+        value = integral.value;
 
-        for (int idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-            p = std::abs((int)lblptr[idx++]);
-            q = (int)lblptr[idx++];
-            r = (int)lblptr[idx++];
-            s = (int)lblptr[idx++];
-            value = (double)valptr[InBuf.idx];
+        pq = INDEX(p, q);
+        rs = INDEX(r, s);
 
-            pq = INDEX(p, q);
-            rs = INDEX(r, s);
-
-            /*
-            outfile->Printf( "%d %d %d %d [%d] [%d] %20.15f\n", p, q, r, s, pq, rs, value);
-            */
-
+        {  // permutational expansion of (pq|rs) into the Fock matrices (unchanged)
             /* (pq|rs) */
             fock_a[p][q] += Dt[r][s] * value;
             fock_a[p][r] -= D_a[q][s] * value;
@@ -314,11 +303,7 @@ void CCEnergyWavefunction::uhf_fock_build(double **fock_a, double **fock_b, doub
                 fock_b[r][p] -= D_b[s][q] * value;
             }
         }
-
-        if (!lastbuf) iwl_buf_fetch(&InBuf);
-
-    } while (!lastbuf);
-    iwl_buf_close(&InBuf, 1);
+    }
 
     free_block(Dt);
 }

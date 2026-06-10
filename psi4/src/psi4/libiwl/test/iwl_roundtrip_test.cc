@@ -44,6 +44,7 @@
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libiwl/iwl_reader.h"
+#include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -85,6 +86,15 @@ void write_all(psi::IWL &buf, const std::vector<Quartet> &data) {
                         std::string("outfile"), /*dirac*/ 0);
     }
     buf.flush(/*lastbuf*/ 1);
+}
+
+// Write a file with the new RAII IWLWriter (the phase-2 write API). The flush
+// and close happen in the destructor when the writer goes out of scope.
+void write_all_writer(int itap, const std::vector<Quartet> &data) {
+    IWLWriter out(_default_psio_lib_, itap, 1.0e-14);
+    for (const auto &q : data) {
+        out.write(q.p, q.q, q.r, q.s, q.value);
+    }
 }
 
 // Drive an IWL read loop using the C-style API (the dominant in-tree pattern).
@@ -164,6 +174,22 @@ bool round_trip(std::size_t n, int itap) {
         }
         if (!quartets_equal(data[i], got_reader[i])) {
             std::cerr << "  entry " << i << " mismatch (IWLReader)\n";
+            return false;
+        }
+    }
+
+    // Independently round-trip through the RAII IWLWriter -> IWLReader on a
+    // separate unit, to exercise the phase-2 write path end to end.
+    write_all_writer(itap + 100, data);
+    auto got_writer = read_all_reader(itap + 100);
+    if (got_writer.size() != data.size()) {
+        std::cerr << "  IWLWriter size mismatch: wrote " << data.size()
+                  << " read " << got_writer.size() << "\n";
+        return false;
+    }
+    for (std::size_t i = 0; i < data.size(); ++i) {
+        if (!quartets_equal(data[i], got_writer[i])) {
+            std::cerr << "  entry " << i << " mismatch (IWLWriter)\n";
             return false;
         }
     }
