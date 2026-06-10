@@ -47,12 +47,8 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-// The libiwl write paths reach into the global `outfile` only when the caller
-// passes `printflag != 0`. We never do, but the symbol must exist for the
-// link. Provide a minimal stub.
-namespace psi {
-std::shared_ptr<PsiOutStream> outfile;
-}
+// Hosting globals (`outfile`, `restart_id`, `psi_file_prefix`, `global_dpd_`)
+// live in test/stubs.cc; the link line pulls that TU in.
 
 namespace {
 
