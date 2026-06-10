@@ -280,6 +280,13 @@ class HF : public Wavefunction {
     };
     int otr_n_param_;
 
+    /// Cached convergence quantities for OpenTrustRegion custom convergence checks
+    bool otr_has_prev_func_;
+    bool otr_has_curr_func_;
+    double otr_prev_func_;
+    double otr_curr_func_;
+    double otr_grad_rms_;
+
     /// Temporary global pointer to the active instance
     static inline HF* instance = nullptr;
 #endif
@@ -478,6 +485,7 @@ class HF : public Wavefunction {
 extern "C" OTR::obj_func_fn otr_obj_func_wrapper;
 extern "C" OTR::hess_x_fn otr_hess_x_wrapper;
 extern "C" OTR::update_orbs_fn otr_update_orbs_wrapper;
+extern "C" OTR::conv_check_fn otr_conv_check_wrapper;
 #endif
 
 }  // namespace scf
