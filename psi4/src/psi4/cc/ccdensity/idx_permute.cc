@@ -33,7 +33,6 @@
 #include <cstdio>
 #include <memory>
 #include <vector>
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libdpd/dpd.h"
 

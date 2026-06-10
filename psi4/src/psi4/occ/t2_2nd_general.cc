@@ -29,6 +29,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsio/psio.h"
 #include "defines.h"
 #include "occwave.h"
 

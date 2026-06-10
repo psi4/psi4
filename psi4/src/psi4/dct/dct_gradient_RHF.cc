@@ -34,7 +34,6 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl_writer.h"
 
 namespace psi {
@@ -572,7 +571,7 @@ void DCTSolver::compute_ewdm_odc_RHF() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "Gamma SF <OV|OV>:<Ov|Ov>");
-    global_dpd_->buf4_dump(&G, &AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
@@ -633,21 +632,21 @@ void DCTSolver::compute_ewdm_odc_RHF() {
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                            "Gamma <VV|VV>");
     global_dpd_->buf4_scm(&G, 2.0);  // Prefactor was 1.0. Use 2.0 because BB case = AA case
-    global_dpd_->buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OOOO
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
                            "Gamma <OO|OO>");
     global_dpd_->buf4_scm(&G, 2.0);  // Prefactor was 1.0. Use 2.0 because BB case = AA case
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OOVV
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "Gamma <OO|VV>");
     global_dpd_->buf4_scm(&G, 2.0);  // Prefactor was 1.0. Use 2.0 because BB case = AA case
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OVOV
@@ -657,7 +656,7 @@ void DCTSolver::compute_ewdm_odc_RHF() {
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "Gamma <OV|OV>");
     global_dpd_->buf4_scm(&G, 1.0);
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, avir_qt, aocc_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, avir_qt, aocc_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // -Г<ov|vo> contribution:

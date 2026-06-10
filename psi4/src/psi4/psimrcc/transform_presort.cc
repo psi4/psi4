@@ -37,7 +37,6 @@
 #include "psi4/pragma.h"
 #include <memory>
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"

@@ -41,7 +41,6 @@
 #include <string>
 #include <vector>
 
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libiwl/iwl_writer.h"
@@ -97,29 +96,29 @@ void write_all_writer(int itap, const std::vector<Quartet> &data) {
     }
 }
 
-// Drive an IWL read loop using the C-style API (the dominant in-tree pattern).
+// Drive an IWL read loop using the low-level IWL class accessors (the
+// fetch/last_buffer/buffer_count/labels/values pattern), distinct from the
+// IWLReader range-for path so the two can be cross-checked. Erases on close.
 std::vector<Quartet> read_all(int itap) {
     std::vector<Quartet> out;
-    iwlbuf B;
-    iwl_buf_init(&B, itap, 1.0e-14, /*oldfile*/ 1, /*readflag*/ 1);
+    IWL buf(_default_psio_lib_.get(), itap, 1.0e-14, /*oldfile*/ 1, /*readflag*/ 1);
+    buf.set_keep_flag(false);
 
-    int lastbuf = B.lastbuf;
+    int lastbuf = buf.last_buffer();
     while (true) {
-        for (int i = B.idx; i < B.inbuf; ++i) {
+        for (int i = 0; i < buf.buffer_count(); ++i) {
             const int j = 4 * i;
-            const int p = static_cast<int>(B.labels[j + 0]);
-            const int q = static_cast<int>(B.labels[j + 1]);
-            const int r = static_cast<int>(B.labels[j + 2]);
-            const int s = static_cast<int>(B.labels[j + 3]);
-            const double v = static_cast<double>(B.values[i]);
+            const int p = static_cast<int>(buf.labels()[j + 0]);
+            const int q = static_cast<int>(buf.labels()[j + 1]);
+            const int r = static_cast<int>(buf.labels()[j + 2]);
+            const int s = static_cast<int>(buf.labels()[j + 3]);
+            const double v = static_cast<double>(buf.values()[i]);
             out.push_back({p, q, r, s, v});
         }
-        B.idx = B.inbuf;
         if (lastbuf) break;
-        iwl_buf_fetch(&B);
-        lastbuf = B.lastbuf;
+        buf.fetch();
+        lastbuf = buf.last_buffer();
     }
-    iwl_buf_close(&B, /*keep*/ 0);
     return out;
 }
 

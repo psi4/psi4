@@ -30,7 +30,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl_writer.h"
 #include "occwave.h"
 #include "defines.h"
@@ -216,7 +215,7 @@ void OCCWave::dump_pdms() {
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                                "TPDM <OV|OV>");
         global_dpd_->buf4_scm(&G, 2.0);
-        global_dpd_->buf4_dump(&G, &AA, aocc_qt, avir_qt, aocc_qt, avir_qt, 0, 1);
+        global_dpd_->buf4_dump(&G, AA, aocc_qt, avir_qt, aocc_qt, avir_qt, 0, 1);
         global_dpd_->buf4_close(&G);
 
         // For the standard methods I need the following contribution
@@ -224,7 +223,7 @@ void OCCWave::dump_pdms() {
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), 0,
                                    "TPDM <VO|OO>");
             global_dpd_->buf4_scm(&G, 0.5);
-            global_dpd_->buf4_dump(&G, &AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+            global_dpd_->buf4_dump(&G, AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
             global_dpd_->buf4_close(&G);
         }  // if (orb_opt_ == "FALSE")
 
@@ -309,13 +308,13 @@ void OCCWave::dump_pdms() {
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
                                "TPDM <OO|OO>");
         // Dump tpdm in chemist notation, 0 means no pack, 1 means swap indices 23
-        global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+        global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
         global_dpd_->buf4_close(&G);
 
         // OOOO: Beta-Beta spin-case
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), 0,
                                "TPDM <oo|oo>");
-        global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
+        global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
         global_dpd_->buf4_close(&G);
 
         // OOOO: Alpha-Beta spin-case
@@ -347,13 +346,13 @@ void OCCWave::dump_pdms() {
             // VVVV: Alpha-Alpha spin-case
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                                    "TPDM <VV|VV>");
-            global_dpd_->buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
+            global_dpd_->buf4_dump(&G, AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
             global_dpd_->buf4_close(&G);
 
             // VVVV: Beta-Beta spin-case
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,v]"), ID("[v,v]"), ID("[v,v]"), ID("[v,v]"), 0,
                                    "TPDM <vv|vv>");
-            global_dpd_->buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
+            global_dpd_->buf4_dump(&G, BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
             global_dpd_->buf4_close(&G);
 
             // VVVV: Alpha-Beta spin-case
@@ -364,7 +363,7 @@ void OCCWave::dump_pdms() {
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[v,v]"), ID("[V,V]"), ID("[v,v]"), 0,
                                    "TPDM (VV|vv)");
             global_dpd_->buf4_scm(&G, 4.0);
-            global_dpd_->buf4_dump(&G, &AB, avir_qt, avir_qt, bvir_qt, bvir_qt, 0, 0);
+            global_dpd_->buf4_dump(&G, AB, avir_qt, avir_qt, bvir_qt, bvir_qt, 0, 0);
             global_dpd_->buf4_close(&G);
         }  // end if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") {
 
@@ -372,14 +371,14 @@ void OCCWave::dump_pdms() {
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "TPDM <OO|VV>");
         global_dpd_->buf4_scm(&G, 2.0);
-        global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
+        global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
         global_dpd_->buf4_close(&G);
 
         // OOVV: Beta-Beta spin-case
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                "TPDM <oo|vv>");
         global_dpd_->buf4_scm(&G, 2.0);
-        global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
+        global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
         global_dpd_->buf4_close(&G);
 
         // OOVV: Alpha-Beta spin-case
@@ -583,14 +582,14 @@ void OCCWave::dump_pdms() {
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), 0,
                                    "TPDM <VO|OO>");
             global_dpd_->buf4_scm(&G, 0.5);
-            global_dpd_->buf4_dump(&G, &AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+            global_dpd_->buf4_dump(&G, AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
             global_dpd_->buf4_close(&G);
 
             // VOOO: Beta-Beta Spin-Case
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,o]"), ID("[o,o]"), ID("[v,o]"), ID("[o,o]"), 0,
                                    "TPDM <vo|oo>");
             global_dpd_->buf4_scm(&G, 0.5);
-            global_dpd_->buf4_dump(&G, &BB, bvir_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
+            global_dpd_->buf4_dump(&G, BB, bvir_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
             global_dpd_->buf4_close(&G);
 
             // VOOO: Alpha-Beta Spin-Case

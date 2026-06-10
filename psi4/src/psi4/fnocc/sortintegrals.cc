@@ -31,7 +31,6 @@
 
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"

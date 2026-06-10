@@ -32,7 +32,6 @@
 */
 #include <cstdio>
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl_writer.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -42,7 +41,7 @@
 namespace psi {
 namespace ccdensity {
 
-void add_core_ROHF(IWLWriter *OutBuf) {
+void add_core_ROHF(IWLWriter &OutBuf) {
     const auto actpi = moinfo.occpi + moinfo.virtpi - moinfo.openpi;
     int mo_offset = 0;
 
@@ -54,8 +53,8 @@ void add_core_ROHF(IWLWriter *OutBuf) {
                 double p_qt = moinfo.pitzer2qt[p + mo_offset];
                 double q_qt = moinfo.pitzer2qt[q + mo_offset];
                 for (int m = 0; m < moinfo.nfzc; m++) {
-                    OutBuf->write(p_qt, q_qt, m, m, value);
-                    OutBuf->write(p_qt, m, m, q_qt, -0.5 * value);
+                    OutBuf.write(p_qt, q_qt, m, m, value);
+                    OutBuf.write(p_qt, m, m, q_qt, -0.5 * value);
                 }
             }
         }

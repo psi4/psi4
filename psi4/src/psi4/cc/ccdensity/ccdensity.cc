@@ -47,7 +47,6 @@
 #include "psi4/cc/ccwave.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/liboptions/liboptions.h"
@@ -85,14 +84,14 @@ void relax_D(const struct RHO_Params& rho_params);
 void sortI(Wavefunction& wfn);
 void fold(const struct RHO_Params& rho_params);
 void deanti(const struct RHO_Params& rho_params);
-void add_ref_RHF(IWLWriter *);
-void add_ref_ROHF(IWLWriter *);
-void add_ref_UHF(IWLWriter *, IWLWriter *, IWLWriter *);
-void add_core_ROHF(IWLWriter *);
-// void add_core_UHF(struct iwlbuf *, struct iwlbuf *, struct iwlbuf *);
-void dump_RHF(IWLWriter *, const struct RHO_Params& rho_params);
-void dump_ROHF(IWLWriter *, const struct RHO_Params& rho_params);
-void dump_UHF(IWLWriter *, IWLWriter *, IWLWriter *, const struct RHO_Params& rho_params);
+void add_ref_RHF(IWLWriter &);
+void add_ref_ROHF(IWLWriter &);
+void add_ref_UHF(IWLWriter &, IWLWriter &, IWLWriter &);
+void add_core_ROHF(IWLWriter &);
+// void add_core_UHF(IWLWriter &, IWLWriter &, IWLWriter &);
+void dump_RHF(IWLWriter &, const struct RHO_Params& rho_params);
+void dump_ROHF(IWLWriter &, const struct RHO_Params& rho_params);
+void dump_UHF(IWLWriter &, IWLWriter &, IWLWriter &, const struct RHO_Params& rho_params);
 void kinetic(std::shared_ptr<Wavefunction> wfn);
 void probable();
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -286,20 +285,20 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
 
             IWLWriter OutBuf(_default_psio_lib_, PSIF_MO_TPDM, params.tolerance);
 
-            add_core_ROHF(&OutBuf);
-            add_ref_RHF(&OutBuf);
+            add_core_ROHF(OutBuf);
+            add_ref_RHF(OutBuf);
 
-            dump_RHF(&OutBuf, rho_params[i]);
+            dump_RHF(OutBuf, rho_params[i]);
 
             OutBuf.close();
         } else if (params.ref == 1) { /** ROHF **/
 
             IWLWriter OutBuf(_default_psio_lib_, PSIF_MO_TPDM, params.tolerance);
 
-            add_core_ROHF(&OutBuf);
-            add_ref_ROHF(&OutBuf);
+            add_core_ROHF(OutBuf);
+            add_ref_ROHF(OutBuf);
 
-            dump_ROHF(&OutBuf, rho_params[i]);
+            dump_ROHF(OutBuf, rho_params[i]);
 
             OutBuf.close();
         } else if (params.ref == 2) { /** UHF **/
@@ -308,10 +307,10 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
             IWLWriter OutBuf_BB(_default_psio_lib_, PSIF_MO_BB_TPDM, params.tolerance);
             IWLWriter OutBuf_AB(_default_psio_lib_, PSIF_MO_AB_TPDM, params.tolerance);
 
-            /*    add_core_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB); */
-            add_ref_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB);
+            /*    add_core_UHF(OutBuf_AA, OutBuf_BB, OutBuf_AB); */
+            add_ref_UHF(OutBuf_AA, OutBuf_BB, OutBuf_AB);
 
-            dump_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB, rho_params[i]);
+            dump_UHF(OutBuf_AA, OutBuf_BB, OutBuf_AB, rho_params[i]);
 
             OutBuf_AA.close();
             OutBuf_BB.close();

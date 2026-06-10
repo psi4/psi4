@@ -31,7 +31,6 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libpsio/psio.hpp"
@@ -44,8 +43,8 @@
 namespace psi {
 namespace ccdensity {
 
-void classify(int p, int q, int r, int s, double value, IWLWriter *ABuf, IWLWriter *BBuf, IWLWriter *CBuf,
-              IWLWriter *DBuf, IWLWriter *EBuf, IWLWriter *FBuf);
+void classify(int p, int q, int r, int s, double value, IWLWriter &ABuf, IWLWriter &BBuf, IWLWriter &CBuf,
+              IWLWriter &DBuf, IWLWriter &EBuf, IWLWriter &FBuf);
 
 void distribute() {
     double tolerance = params.tolerance;
@@ -60,8 +59,8 @@ void distribute() {
     IWLReader eri(_default_psio_lib_, PSIF_MO_TEI);
     for (const auto &integral : eri) {
         /* Check integral into each class */
-        classify(integral.p, integral.q, integral.r, integral.s, integral.value, &ABuf, &BBuf, &CBuf, &DBuf, &EBuf,
-                 &FBuf);
+        classify(integral.p, integral.q, integral.r, integral.s, integral.value, ABuf, BBuf, CBuf, DBuf, EBuf,
+                 FBuf);
     }
     // IWLReader/IWLWriter close (and the writers flush the last buffer) on scope exit.
 }

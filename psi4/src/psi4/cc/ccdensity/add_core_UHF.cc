@@ -32,7 +32,6 @@
 */
 #include <cstdio>
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl_writer.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -44,7 +43,7 @@ namespace ccdensity {
 
 /* doesn't work yet */
 
-void add_core_UHF(IWLWriter *OutBuf) {
+void add_core_UHF(IWLWriter &OutBuf) {
     int p, q, m, n;
     int nmo, nfzv, nfzc;
     double value;
@@ -59,8 +58,8 @@ void add_core_UHF(IWLWriter *OutBuf) {
         for (q = nfzc; q < (nmo - nfzv); q++) {
             value = moinfo.opdm_a[p][q];
             for (m = 0; m < nfzc; m++) {
-                OutBuf->write(p, q, m, m, value);
-                OutBuf->write(p, m, m, q, -0.5 * value);
+                OutBuf.write(p, q, m, m, value);
+                OutBuf.write(p, m, m, q, -0.5 * value);
             }
         }
     }

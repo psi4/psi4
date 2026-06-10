@@ -42,7 +42,6 @@ namespace psi {
 class Options;
 struct dpdfile2;
 struct dpdbuf4;
-struct iwlbuf;
 class IWLReader;
 }  // namespace psi
 

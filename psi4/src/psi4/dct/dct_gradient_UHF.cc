@@ -32,7 +32,6 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/liboptions/liboptions.h"
@@ -4045,7 +4044,7 @@ void DCTSolver::compute_ewdm_dc() {
     // before calling dpd_buf4_dump - check that with swap23 = 0 (AYS)
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V>V]-"), ID("[V>V]-"), 0,
                            "Gamma <VV|VV>");
-    global_dpd_->buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), 0,
@@ -4073,13 +4072,13 @@ void DCTSolver::compute_ewdm_dc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"), ID("[v>v]-"), ID("[v>v]-"), 0,
                            "Gamma <vv|vv>");
-    global_dpd_->buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OOOO
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O>O]-"), ID("[O>O]-"), 0,
                            "Gamma <OO|OO>");
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0,
@@ -4108,13 +4107,13 @@ void DCTSolver::compute_ewdm_dc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"), ID("[o>o]-"), ID("[o>o]-"), 0,
                            "Gamma <oo|oo>");
-    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OOVV
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Gamma <OO|VV>");
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
@@ -4142,7 +4141,7 @@ void DCTSolver::compute_ewdm_dc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Gamma <oo|vv>");
-    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OVOV
@@ -4197,7 +4196,7 @@ void DCTSolver::compute_ewdm_dc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), 0,
                            "Gamma <Ov|Ov>");
-    global_dpd_->buf4_dump(&G, &AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), 0,
@@ -4299,7 +4298,7 @@ void DCTSolver::compute_ewdm_dc() {
     // OOOV
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,V]"), ID("[O>O]-"), ID("[O,V]"), 0,
                            "Gamma <OO|OV>");
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, aocc_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[O,v]"), ID("[O,o]"), ID("[O,v]"), 0,
@@ -4352,13 +4351,13 @@ void DCTSolver::compute_ewdm_dc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[o,v]"), ID("[o>o]-"), ID("[o,v]"), 0,
                            "Gamma <oo|ov>");
-    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bocc_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OVVV
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V>V]-"), 0,
                            "Gamma <OV|VV>");
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, avir_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,v]"), ID("[V,v]"), ID("[O,v]"), ID("[V,v]"), 0,
@@ -4411,7 +4410,7 @@ void DCTSolver::compute_ewdm_dc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,v]"), ID("[v,v]"), ID("[o,v]"), ID("[v>v]-"), 0,
                            "Gamma <ov|vv>");
-    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bocc_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     psio_->close(PSIF_DCT_DENSITY, 1);
@@ -4623,7 +4622,7 @@ void DCTSolver::compute_ewdm_odc() {
     // before calling dpd_buf4_dump - check that with swap23 = 0 (AYS)
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V>V]-"), ID("[V>V]-"), 0,
                            "Gamma <VV|VV>");
-    global_dpd_->buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), 0,
@@ -4651,13 +4650,13 @@ void DCTSolver::compute_ewdm_odc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"), ID("[v>v]-"), ID("[v>v]-"), 0,
                            "Gamma <vv|vv>");
-    global_dpd_->buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OOOO
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O>O]-"), ID("[O>O]-"), 0,
                            "Gamma <OO|OO>");
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0,
@@ -4686,13 +4685,13 @@ void DCTSolver::compute_ewdm_odc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"), ID("[o>o]-"), ID("[o>o]-"), 0,
                            "Gamma <oo|oo>");
-    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OOVV
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Gamma <OO|VV>");
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
@@ -4720,7 +4719,7 @@ void DCTSolver::compute_ewdm_odc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Gamma <oo|vv>");
-    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OVOV
@@ -4775,7 +4774,7 @@ void DCTSolver::compute_ewdm_odc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), 0,
                            "Gamma <Ov|Ov>");
-    global_dpd_->buf4_dump(&G, &AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), 0,

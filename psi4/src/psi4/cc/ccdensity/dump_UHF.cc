@@ -33,7 +33,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"
@@ -59,7 +58,7 @@ namespace ccdensity {
 
 #define INDEX(i, j) ((i) >= (j) ? EXPLICIT_IOFF(i) + (j) : EXPLICIT_IOFF(j) + (i))
 
-void dump_UHF(IWLWriter *AA, IWLWriter *BB, IWLWriter *AB, const struct RHO_Params& rho_params) {
+void dump_UHF(IWLWriter &AA, IWLWriter &BB, IWLWriter &AB, const struct RHO_Params& rho_params) {
     int nirreps, nmo, h, row, col;
     int p, q, r, s, P, Q, R, S, pr, qs;
     double value;
@@ -113,7 +112,7 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = 2.0 * G.matrix[h][row][col];
 
-                    AB->write(P, R, Q, S, value);
+                    AB.write(P, R, Q, S, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -137,7 +136,7 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = G.matrix[h][row][col];
 
-                    AA->write(P, R, Q, S, value);
+                    AA.write(P, R, Q, S, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -161,7 +160,7 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = G.matrix[h][row][col];
 
-                    BB->write(P, R, Q, S, value);
+                    BB.write(P, R, Q, S, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -185,8 +184,8 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = G.matrix[h][row][col];
 
-                    AB->write(P, R, Q, S, value);
-                    AB->write(P, R, S, Q, value);
+                    AB.write(P, R, Q, S, value);
+                    AB.write(P, R, S, Q, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -210,8 +209,8 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = G.matrix[h][row][col];
 
-                    AB->write(Q, S, P, R, value);
-                    AB->write(S, Q, P, R, value);
+                    AB.write(Q, S, P, R, value);
+                    AB.write(S, Q, P, R, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -251,7 +250,7 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = 2.0 * G.matrix[h][row][col];
 
-                    AB->write(P, R, Q, S, value);
+                    AB.write(P, R, Q, S, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -275,7 +274,7 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = 0.5 * G.matrix[h][row][col];
 
-                    AA->write(P, R, Q, S, value);
+                    AA.write(P, R, Q, S, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -299,7 +298,7 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = 0.5 * G.matrix[h][row][col];
 
-                    BB->write(P, R, Q, S, value);
+                    BB.write(P, R, Q, S, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -323,7 +322,7 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = G.matrix[h][row][col];
 
-                    AB->write(P, R, Q, S, value);
+                    AB.write(P, R, Q, S, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -347,7 +346,7 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = G.matrix[h][row][col];
 
-                    AB->write(Q, S, P, R, value);
+                    AB.write(Q, S, P, R, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -371,7 +370,7 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = G.matrix[h][row][col];
 
-                    AA->write(P, R, Q, S, value);
+                    AA.write(P, R, Q, S, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -395,7 +394,7 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = G.matrix[h][row][col];
 
-                    BB->write(P, R, Q, S, value);
+                    BB.write(P, R, Q, S, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -419,8 +418,8 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = G.matrix[h][row][col];
 
-                    AB->write(P, R, Q, S, value);
-                    AB->write(P, R, S, Q, value);
+                    AB.write(P, R, Q, S, value);
+                    AB.write(P, R, S, Q, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -444,8 +443,8 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = G.matrix[h][row][col];
 
-                    AB->write(Q, S, P, R, value);
-                    AB->write(S, Q, P, R, value);
+                    AB.write(Q, S, P, R, value);
+                    AB.write(S, Q, P, R, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -485,7 +484,7 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
 
                     value = 2.0 * G.matrix[h][row][col];
 
-                    AB->write(P, R, Q, S, value);
+                    AB.write(P, R, Q, S, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
