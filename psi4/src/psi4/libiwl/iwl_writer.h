@@ -65,10 +65,18 @@ class PSI_API IWLWriter {
         buf_.set_keep_flag(keep);
     }
 
-    ~IWLWriter() {
-        // Emit whatever is left in the partial bucket with the last-buffer
-        // marker set, then let IWL's destructor close (honoring keep).
-        buf_.flush(/*lastbuf*/ 1);
+    ~IWLWriter() { close(); }
+
+    // Flush the partial bucket (with the last-buffer marker) and close the
+    // underlying file now. Idempotent; the destructor calls it if you don't.
+    // Use this when the same psio unit must be reopened before the writer
+    // would otherwise go out of scope.
+    void close() {
+        if (!closed_) {
+            buf_.flush(/*lastbuf*/ 1);
+            buf_.close();
+            closed_ = true;
+        }
     }
 
     void set_keep(bool keep) { buf_.set_keep_flag(keep); }
@@ -82,6 +90,7 @@ class PSI_API IWLWriter {
 
    private:
     IWL buf_;
+    bool closed_ = false;
 };
 
 }  // namespace psi
