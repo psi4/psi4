@@ -65,7 +65,8 @@ expected_properties = {
 json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
 with open("output.json", "w") as ofile:
-    json.dump(json_ret.json(), ofile, indent=2)
+    json.dump(json_ret.model_dump_json(), ofile, indent=2)
+    psi4.compare(True, True, "json-able")
 #pprint.pprint(json_ret.model_dump(), width=200)
 
 psi4.compare_integers(True, json_ret.success, "JSON Success")                           #TEST

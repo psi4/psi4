@@ -75,7 +75,8 @@ tIA = wfn.get_amplitudes()["tIA"].to_array()
 Da = wfn.Da().to_array()
 
 with open("output.json", "w") as ofile:
-    json.dump(json_ret.json(), ofile, indent=2)
+    json.dump(json_ret.model_dump_json(), ofile, indent=2)
+    psi4.compare(True, True, "json-able")
 
 # Make sure the amplitudes compted from h2o_test are actually assigned.
 if all(map(lambda x: x == 0, tIJAB.flatten())) or \
@@ -86,4 +87,3 @@ else :
     psi4.compare_values(tIJAB, np.array(json_ret.extras["psi4:tamps"]["tIjAb"]))
     psi4.compare_values(tIA, np.array(json_ret.extras["psi4:tamps"]["tIA"]))
     psi4.compare_values(Da, np.array(json_ret.extras["psi4:tamps"]["Da"]))
-

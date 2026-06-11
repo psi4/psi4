@@ -49,12 +49,15 @@ expected_properties = {
 
 json_ret = psi4.schema_wrapper.run_qcschema(json_data, return_dict=True)
 
-# with open("output.json", "w") as ofile:  #TEST
-#     json.dump(json_ret.json(), ofile, indent=2)  #TEST
+with open("output.json", "w") as ofile:  #TEST
+    from qcelemental.models._v1v2 import AtomicResult  #TEST
+
+    json_model = AtomicResult(**json_ret)  #TEST
+    json.dump(json_model.model_dump_json(), ofile, indent=2)  #TEST
+    psi4.compare(True, True, "json-able")  #TEST
 
 psi4.compare_integers(True, json_ret["success"], "JSON Success")  #TEST
 psi4.compare_values(expected_return_result, json_ret["return_result"], 5, "Return Value")  #TEST
 
 for k in expected_properties.keys():                                                      #TEST
     psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())  #TEST
-
