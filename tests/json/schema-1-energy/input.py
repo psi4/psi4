@@ -2,7 +2,6 @@
 
 import numpy as np
 import psi4
-import json
 
 # Generate JSON data
 json_data = {
@@ -99,11 +98,11 @@ if sys.version_info >= (3, 14):
 
     json_ret = psi4.schema_wrapper.run_qcschema(json_data, return_dict=True)
 
-    with open("output.json", "w") as ofile:                                                    #TEST
+    with open("output.json", "w", encoding="utf-8") as ofile:                                   #TEST
         from qcelemental.models._v1v2 import AtomicResult  # avert your eyes - not public API!  #TEST
 
         json_model = AtomicResult(**json_ret)  #TEST
-        json.dump(json_model.model_dump_json(), ofile, indent=2)  #TEST
+        ofile.write(json_model.model_dump_json(indent=2))  #TEST
         psi4.compare(True, True, "json-able")  #TEST
 
 else:
@@ -111,8 +110,8 @@ else:
     json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
     with open("output.json", "w") as ofile:                                                    #TEST
-        json.dump(json_ret.json(), ofile, indent=2)                                                   #TEST
-        psi4.compare(True, True, "json-able")
+        ofile.write(json_ret.json())  #TEST
+        psi4.compare(True, True, "json-able")  #TEST
 
     json_ret = json_ret.dict()
 
@@ -164,13 +163,13 @@ if sys.version_info >= (3, 14):
         from qcelemental.models._v1v2 import AtomicResult  #TEST
 
         json_model = AtomicResult(**json_ret)  #TEST
-        json.dump(json_model.model_dump_json(), ofile, indent=2)  #TEST
+        ofile.write(json_model.model_dump_json(indent=2))  #TEST
         psi4.compare(True, True, "json-able")  #TEST
 else:
     json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
     with open("output.json", "w") as ofile:                                                    #TEST
-        json.dump(json_ret.json(), ofile, indent=2)                                                   #TEST
+        ofile.write(json_ret.json())  #TEST
         psi4.compare(True, True, "json-able")  #TEST
 
     json_ret = json_ret.dict()

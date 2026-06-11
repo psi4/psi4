@@ -2,7 +2,6 @@
 
 import numpy as np
 import psi4
-import json
 import pprint
 
 # Generate JSON data
@@ -134,9 +133,6 @@ except psi4.driver.p4util.exceptions.UpgradeHelper:
     psi4.compare(True, True, "run_json failed")
 else:
     psi4.compare(True, False, "run_json failed")
-
-#with open("output.json", "w") as ofile:                                                    #TEST
-#    json.dump(json_ret, ofile, indent=2)                                                   #TEST
 
 
 ## with current `run_qcschema`

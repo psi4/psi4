@@ -2,7 +2,6 @@
 
 import numpy as np
 import psi4
-import json
 
 # Generate JSON data
 json_data = {

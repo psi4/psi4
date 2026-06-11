@@ -2,7 +2,6 @@
 
 import psi4
 import numpy as np
-import json
 import os
 
 

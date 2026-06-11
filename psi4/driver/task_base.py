@@ -273,20 +273,25 @@ def _drink_filter(stdout: str) -> str:
     stdout = stdout.replace("\n*** Psi4 encountered an error. Buy a developer more coffee!", "")
     return stdout
 
+
 class ComputerEnum(str, Enum):
     """Allowed driver compute layers."""
 
-    def computer(self) -> BaseComputer:
-        """Return class specified by enum."""
+    def computer(self) -> type[BaseComputer]:
+        """Return class specified by enum value."""
 
-        if self == "atomic":
+        value = self.value
+
+        if value == "atomic":
             return AtomicComputer
-        elif self == "composite":
+        elif value == "composite":
             from .driver_cbs import CompositeComputer
             return CompositeComputer
-        elif self == "finitedifference":
+        elif value == "finitedifference":
             from .driver_findif import FiniteDifferenceComputer
             return FiniteDifferenceComputer
-        elif self == "manybody":
+        elif value == "manybody":
             from .driver_nbody import ManyBodyComputer
             return ManyBodyComputer
+        else:
+            raise ValueError(f"Unknown computer layer {value!r}")

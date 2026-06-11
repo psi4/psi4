@@ -2,7 +2,6 @@
 
 import numpy as np
 import psi4
-import json
 import copy
 
 # Generate JSON data
@@ -54,6 +53,13 @@ psi4.compare_values(1.732, dist, 4, "HF Bond Distance")  #TEST
 
 
 json_ret = psi4.schema_wrapper.run_qcschema(noorient_data, return_dict=True)
+
+with open("out.json", "w", encoding="utf-8") as ofile:
+    from qcelemental.models._v1v2 import AtomicResult  #TEST
+
+    json_model = AtomicResult(**json_ret)  #TEST
+    ofile.write(json_model.model_dump_json(indent=2))  #TEST
+    psi4.compare(True, True, "json-able")  #TEST
 
 # Orients to Z axis
 psi4.compare_integers(True, json_ret["success"], "JSON Success")  #TEST

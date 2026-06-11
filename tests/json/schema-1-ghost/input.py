@@ -2,7 +2,6 @@
 
 import numpy as np
 import psi4
-import json
 
 # Generate JSON data
 json_data = {
@@ -53,7 +52,7 @@ with open("output.json", "w") as ofile:  #TEST
     from qcelemental.models._v1v2 import AtomicResult  #TEST
 
     json_model = AtomicResult(**json_ret)  #TEST
-    json.dump(json_model.model_dump_json(), ofile, indent=2)  #TEST
+    ofile.write(json_model.model_dump_json(indent=2))  #TEST
     psi4.compare(True, True, "json-able")  #TEST
 
 psi4.compare_integers(True, json_ret["success"], "JSON Success")  #TEST

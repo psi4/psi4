@@ -2,7 +2,6 @@
 
 import numpy as np
 import psi4
-import json
 import sys
 
 #Generate JSON data
@@ -66,17 +65,17 @@ psi4.compare_values(h2o_test.geometry().to_array(),
 if sys.version_info >= (3, 14):
     json_ret = psi4.schema_wrapper.run_qcschema(json_data, True, return_dict=True)
 
-    with open("output.json", "w") as ofile:
+    with open("output.json", "w", encoding="utf-8") as ofile:
         from qcelemental.models._v1v2 import AtomicResult
 
         json_model = AtomicResult(**json_ret)
-        json.dump(json_model.model_dump_json(), ofile, indent=2)
+        ofile.write(json_model.model_dump_json(indent=2))
         psi4.compare(True, True, "json-able")
 else:
     json_ret = psi4.schema_wrapper.run_qcschema(json_data, True)
 
     with open("output.json", "w") as ofile:
-        json.dump(json_ret.json(), ofile, indent=2)
+        ofile.write(json_ret.json())
         psi4.compare(True, True, "json-able")
 
     json_ret = json_ret.dict()

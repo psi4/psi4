@@ -2,7 +2,6 @@
 
 import numpy as np
 import psi4
-import json
 
 #Generate JSON data
 
@@ -74,8 +73,8 @@ tIJAB = wfn.get_amplitudes()["tIjAb"].to_array()
 tIA = wfn.get_amplitudes()["tIA"].to_array()
 Da = wfn.Da().to_array()
 
-with open("output.json", "w") as ofile:
-    json.dump(json_ret.model_dump_json(), ofile, indent=2)
+with open("output.json", "w", encoding="utf-8") as ofile:
+    ofile.write(json_ret.model_dump_json(indent=2))
     psi4.compare(True, True, "json-able")
 
 # Make sure the amplitudes compted from h2o_test are actually assigned.

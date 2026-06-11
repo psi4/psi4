@@ -27,6 +27,16 @@ INTERSPHINX_ALIASES = {
         "py:class",
         "pathlib.Path",
     ),
+    ("py", "class", "qcelemental.models.v1.results.AtomicInput"): (
+        "qcelemental_v1",
+        "py:pydantic_model",
+        "qcelemental.models.results.AtomicInput",
+    ),
+    ("py", "class", "qcelemental.models.v1.common_models.FailedOperation"): (
+        "qcelemental_v1",
+        "py:pydantic_model",
+        "qcelemental.models.common_models.FailedOperation",
+    ),
 }
 
 

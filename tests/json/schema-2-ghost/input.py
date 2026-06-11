@@ -2,7 +2,6 @@
 
 import numpy as np
 import psi4
-import json
 
 # Generate JSON data
 json_data = {
@@ -51,8 +50,8 @@ expected_properties = {
 
 json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
-with open("output.json", "w") as ofile:  #TEST
-    json.dump(json_ret.model_dump_json(), ofile, indent=2)  #TEST
+with open("output.json", "w", encoding="utf-8") as ofile:  #TEST
+    ofile.write(json_ret.model_dump_json(indent=2))  #TEST
     psi4.compare(True, True, "json-able")  #TEST
 
 psi4.compare_integers(True, json_ret.success, "JSON Success")  #TEST

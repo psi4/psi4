@@ -2,7 +2,6 @@
 
 import numpy as np
 import psi4
-import json
 import pprint
 
 # Generate JSON data
@@ -86,8 +85,8 @@ expected_properties = {
 
 json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
-with open("output.json", "w") as ofile:                                                    #TEST
-    json.dump(json_ret.model_dump_json(), ofile, indent=2)                                                   #TEST
+with open("output.json", "w", encoding="utf-8") as ofile:                                                    #TEST
+    ofile.write(json_ret.model_dump_json(indent=2))                                                   #TEST
     psi4.compare(True, True, "json-able")
 #pprint.pprint(json_ret.model_dump(), width=200)
 
@@ -134,8 +133,8 @@ json_data["specification"]["keywords"]["mp2_type"] = "conv"
 json_data["specification"]["extras"] = {"current_qcvars_only": True}
 json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
-with open("output.json", "w") as ofile:                                                    #TEST
-    json.dump(json_ret.model_dump_json(), ofile, indent=2)                                                   #TEST
+with open("output.json", "w", encoding="utf-8") as ofile:                                                    #TEST
+    ofile.write(json_ret.model_dump_json(indent=2))                                                   #TEST
     psi4.compare(True, True, "json-able")
 
 psi4.compare_integers(True, json_ret.success, "JSON Success")                           #TEST
