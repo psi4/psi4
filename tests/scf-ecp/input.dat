@@ -10,6 +10,9 @@ molecule arwater {
     H   0.000000000000     0.758215806856     0.564545805801
 }
 
+oopkg = "ooo" if os.environ.get("_PSI4_USE_OOPKG") else "otr" if os.environ.get("_PSI4_USE_OTRPKG") else "internal"
+psi4.set_options({"orbital_optimizer_package": oopkg})
+
 set = {
     scf_type       pk
     basis          lanl2dz
@@ -22,6 +25,7 @@ findif5_tol = 2.e-8
 e = energy('scf')
 compare_values(nucenergy, arwater.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")   #TEST
 compare_values(refenergy, e, 9, "SCF energy with ECP")                                        #TEST
+compare(oopkg.upper(), psi4.core.get_global_option("ORBITAL_OPTIMIZER_PACKAGE"), f"{oopkg=}")  #TEST
 
 agrad = gradient('scf')
 set points 5
