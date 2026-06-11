@@ -90,12 +90,6 @@ if sys.version_info >= (3, 14):
     else:
         psi4.compare(True, False, "wrong err")
 
-    #json_ret = psi4.schema_wrapper.run_qcschema(json_data)
-    #print(json_ret)
-    ## note this is a v2 FailedOp
-    #psi4.compare(True, json_ret.error.error_type == "RuntimeError", "Py314 fail object")
-    #psi4.compare(True, "pydantic.v1 is unavailable" in json_ret.error.error_message, "Py314 fail reason")
-
     json_ret = psi4.schema_wrapper.run_qcschema(json_data, return_dict=True)
 
     with open("output.json", "w", encoding="utf-8") as ofile:                                   #TEST

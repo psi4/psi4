@@ -373,7 +373,7 @@ class EmpiricalDispersion():
                     resi,
                     self.gcp_engine,
                     raise_error=True,
-                return_version=2,
+                    return_version=2,
                     task_config={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
                 gcp_part = core.Matrix.from_array(jobrec.return_result)
                 dashd_part.add(gcp_part)

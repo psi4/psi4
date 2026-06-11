@@ -37,6 +37,11 @@ INTERSPHINX_ALIASES = {
         "py:pydantic_model",
         "qcelemental.models.common_models.FailedOperation",
     ),
+    ("py", "class", "qcelemental.models.v1.AtomicInput"): (
+        "qcelemental_v1",
+        "py:pydantic_model",
+        "qcelemental.models.results.AtomicInput",
+    ),
 }
 
 

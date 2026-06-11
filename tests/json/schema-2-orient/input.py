@@ -61,6 +61,10 @@ psi4.compare_values(1.732, dist, 4, "HF Bond Distance")  #TEST
 
 json_ret = psi4.schema_wrapper.run_qcschema(noorient_data)
 
+with open("output.json", "w", encoding="utf-8") as ofile:
+    ofile.write(json_ret.model_dump_json(indent=2))
+    psi4.compare(True, True, "json-able")
+
 # Orients to Z axis
 psi4.compare_integers(True, json_ret.success, "JSON Success")  #TEST
 psi4.compare_values(expected_return_result, json_ret.return_result, 5, "Return Value")  #TEST

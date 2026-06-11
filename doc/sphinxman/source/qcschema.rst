@@ -7,8 +7,8 @@ This is useful when you want a stable, machine-friendly interface for single-poi
 energies, gradients, and related data. It is not appropriate for geometry optimizations,
 multi-stage computations, or accessing detailed data like integrals.
 
-Psi4 supports both QCSchema v1 (:py:obj:`qcelemental.models.v1.AtomicInput` / :py:obj:`qcelemental.models.v1.AtomicResult`) and
-QCSchema v2 (:py:obj:`qcelemental.models.v2.AtomicInput` / :py:obj:`qcelemental.models.v2.AtomicResult`).
+Psi4 supports both QCSchema v1 (:py:class:`qcelemental.models.v1.AtomicInput` / :py:class:`qcelemental.models.v1.AtomicResult` ) and
+QCSchema v2 (:py:class:`qcelemental.models.v2.AtomicInput` / :py:class:`qcelemental.models.v2.AtomicResult`).
 
 
 Command-Line Usage

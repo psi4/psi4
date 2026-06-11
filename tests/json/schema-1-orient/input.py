@@ -54,7 +54,7 @@ psi4.compare_values(1.732, dist, 4, "HF Bond Distance")  #TEST
 
 json_ret = psi4.schema_wrapper.run_qcschema(noorient_data, return_dict=True)
 
-with open("out.json", "w", encoding="utf-8") as ofile:
+with open("out.json", "w", encoding="utf-8") as ofile:  #TEST
     from qcelemental.models._v1v2 import AtomicResult  #TEST
 
     json_model = AtomicResult(**json_ret)  #TEST

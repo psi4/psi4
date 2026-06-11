@@ -93,7 +93,7 @@ extensions = [
     # local
     "psidomain",  # for QCVariables
     "relbar_toc",  # specialized top bar
-    "intersphinx_aliases",
+    "intersphinx_aliases",  # since QCSchema v1 & v2 intersphinx-able docs can't be built together, hard-code some v1 address aliases
 ]
 if '@SPHINX_THEME@' == 'sphinx_psi_theme':
     extensions.extend([
