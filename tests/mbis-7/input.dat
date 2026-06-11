@@ -86,10 +86,10 @@ charges = wfn.array_variable('MBIS CHARGES').to_array()
 dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
-avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>').to_array()
-vwidths = wfn.array_variable('MBIS VALENCE WIDTHS').to_array()
-vcharges = wfn.array_variable('MBIS VALENCE CHARGES').to_array()
-vratios = wfn.array_variable('MBIS VOLUME RATIOS').to_array()
+avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vcharges = wfn.array_variable('MBIS VALENCE CHARGES')
+vratios = wfn.array_variable('MBIS VOLUME RATIOS')
 
 compare_values(0.0, np.sum(charges), 5, "CH3I MBIS total charge")  #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
