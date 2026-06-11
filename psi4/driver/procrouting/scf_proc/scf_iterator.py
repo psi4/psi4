@@ -337,7 +337,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         early_screening = True
         self.jk().set_COSX_grid("Initial")
 
-    otr_scf = core.get_global_option('OTR_SCF')
+    otr_scf = core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") in ["OTR", "OPENTRUSTREGION"]
     if otr_scf and self.functional().needs_xc() and (self.functional().is_meta() or self.functional().needs_vv10()):
         core.print_out("    Note: OpenTrustRegion unavailable for meta/VV10 functionals. Falling back to Internal.\n")
         otr_scf = False
