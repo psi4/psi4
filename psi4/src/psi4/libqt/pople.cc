@@ -72,6 +72,7 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance, 
     double *dvec;
     int llast = 0, last = 0, maxdimen;
     int quit = 0;
+    int retcode = 0;
 
     maxdimen = 200;
     /* initialize working array */
@@ -221,7 +222,8 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance, 
 
             if (L + 1 > dimen) {
                 printer->Printf("POPLE: Too many vectors in expansion space.\n");
-                return 1;
+                retcode = 1;
+                break;
             }
 
             /* place residual in b vector space */
@@ -230,7 +232,8 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance, 
                     "POPLE (LIBQT): Number of expansion vectors exceeds"
                     " maxdimen (%d)\n",
                     L + 1);
-                return 1;
+                retcode = 1;
+                break;
             }
             for (i = 0; i < dimen; i++) Bmat[L + 1][i] = Ab[L][i];
             /*
@@ -283,7 +286,8 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance, 
     free(r);
     free(b);
     free(dotprod);
+    free(sign);
 
-    return 0;
+    return retcode;
 }
 }

@@ -949,6 +949,7 @@ void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> pri
             break;
         case PARALLEL:
             printer->Printf("%s: %10.3fp                         %6zu calls\n", key.c_str(), wtime, timer.get_n_calls());
+            break;
         default:
             break;
     }
@@ -1121,7 +1122,7 @@ PSI_API void timer_off(const std::string &key) {
     extern Timer_Structure parallel_timer;
     extern std::list<Timer_Structure *> ser_on_timers;
     if (parallel_timer.get_parent() != nullptr) {
-        std::string str = "Unable to turn on serial Timer ";
+        std::string str = "Unable to turn off serial Timer ";
         str += key;
         str += " when parallel timers are not all off.";
         throw PsiException(str, __FILE__, __LINE__);
