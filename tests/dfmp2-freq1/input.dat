@@ -19,10 +19,8 @@ set {
   qc_module occ
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TIGHT
-    tol = 1  # 0.1
-else:
-    tol = 1
+tol = 1  # 0.1
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-TIGHT
     psi4.set_options({"d_convergence": 10})
 
 e, wfn = frequencies('mp2', dertype=0, return_wfn=True)
