@@ -290,6 +290,7 @@ jobs:
       python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
     condition: false
     displayName: 'Psi4 Path Setup Diagnostics'
+    # when "psi4 not found", use this to figure out what's wrong with QCEngine detection
 
   #- bash: |
   #    cd build

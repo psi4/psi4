@@ -53,7 +53,7 @@ def test_psi4_basic(datadir, schver):
     with open(ref_file) as f:
         jatin = json.load(f)
 
-    atres = psi4.schema_wrapper.run_qcschema(jatin)
+    atres = psi4.run_qcschema(jatin)
     assert atres.success, pprint.pprint(atres.dict(), width=200)
     assert atres.schema_version == schver
     assert atres.schema_name == _sch_name[schver]
