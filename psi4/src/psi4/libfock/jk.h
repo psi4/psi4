@@ -1052,7 +1052,10 @@ class PSI_API DiskDFJK : public JK {
  */
 class PSI_API CDJK : public DiskDFJK {
    private:
+    /// @brief Tolarence used in the Cholesky decomposition. Set by the ctor.
     const double cholesky_tolerance_;
+    /// @brief The number of cholesky vectors.
+    long int ncholesky_;
 
    protected:
     std::string name() override { return "CDJK"; }
@@ -1060,9 +1063,6 @@ class PSI_API CDJK : public DiskDFJK {
 
     /// integral engine for computing CD integrals
     std::shared_ptr<TwoBodyAOInt> cderi_;
-
-    // the number of cholesky vectors
-    long int ncholesky_;
 
     // => Required Algorithm-Specific Methods <= //
 
@@ -1082,7 +1082,7 @@ class PSI_API CDJK : public DiskDFJK {
     void print_header() const override;
 
    public:
-    // => Constructors < = //
+    // => Constructor and destructor < = //
 
     /// @brief Constructor for CDJK (Coulomb and exchange matrices via Cholesky decomposition) objects
     /// @param primary Primary basis set for this system. AO2USO transforms will be built with the molecule contained in
