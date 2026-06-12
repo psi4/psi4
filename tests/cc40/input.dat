@@ -19,7 +19,7 @@ set {
 if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
     optrot_tol = 5
 else:
-    optrot_tol = 7e-4  # 5e-4 (perhaps until after sqrt)
+    optrot_tol = 5e-4
 
 wfn = properties('cc2',properties=['rotation'], return_wfn=True)[1]
 
