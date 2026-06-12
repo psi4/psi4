@@ -66,6 +66,13 @@ size_t CDJK::memory_estimate() {
 
 void CDJK::initialize_JK_core() {
     timer_on("CD: cholesky decomposition");
+    // TODO: Fix after the cderi_ deprecation is out in v1.11
+    // this should probably be
+    //      IntegralFactory factory(primary_, primary_, primary_, primary_);
+    //      const std::shared_ptr<TwoBodyAOInt> cderi = factory.eri();
+    // in the future. A TwoBodyAOInt object keeps the factory as a raw non-owning back-pointer (const IntegralFactory
+    // *integral_) and is therefore probably quite a dangerous thing if it ever outlives the IntegralFactory that was
+    // used for contructing the TwoBodyAOInt.
     auto integral = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     cderi_ = std::shared_ptr<TwoBodyAOInt>(integral->eri());
     int ntri = cderi_->function_pairs().size();
