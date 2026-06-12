@@ -1093,8 +1093,16 @@ class PSI_API CDJK : public DiskDFJK {
      */
     CDJK(std::shared_ptr<BasisSet> primary, Options& options, double cholesky_tolerance);
 
-    /// Destructor
-    ~CDJK() override;
+    /// Explicitly saying we want to override the inherited dtor with the default dtor for this object is not strictly
+    /// necessary, but it helps disarm a footgun.
+    /// Since this is an override, the corresponding base class function must be virtual. Hypotetically, someone
+    /// could try to change ~JK() to not be virtual, which would turn std::unique_ptr<JK> objects into UB hazards. For
+    /// example if std::unique_ptr<JK> is given a DirectJK* to hold onto, when unique_ptr destructs it would execute
+    /// delete JK*, which would only call ~JK(), leaking everything that ~DFJK() would have cleaned up. Currently since
+    /// ~JK() is virtual, delete JK* on a DirectJK* actually starts at ~DFJK(), which then eventually also calls ~JK().
+    /// Which this override below in place, changing ~JK() to not be virtual would give a compile error, hopefully
+    /// leading the developer to reconsider.
+    ~CDJK() override = default;
 };
 
 /**
