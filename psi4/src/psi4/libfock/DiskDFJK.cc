@@ -469,20 +469,23 @@ void DiskDFJK::preiterations() {
 }
 
 void DiskDFJK::compute_JK() {
-
     // zero out J, K, and wK matrices
     zero();
-
     max_nocc_ = max_nocc();
     max_rows_ = max_rows();
 
     if (do_J_ || do_K_) {
-        if(!Qmn_) throw PSIEXCEPTION("DiskDFJK tried to compute J or K in compute_JK with a Qmn_ that does not point to a Matrix object!");
         initialize_temps();
-        if (is_core_)
+        if (is_core_) {
+            if (!Qmn_ || Qmn_.use_count() == 0) {
+                throw PSIEXCEPTION(
+                    "DiskDFJK(in-core mode) tried to compute J or K in compute_JK with a Qmn_ that does not point to a "
+                    "Matrix object!");
+            }
             manage_JK_core();
-        else
+        } else {
             manage_JK_disk();
+        }
         free_temps();
     }
 
