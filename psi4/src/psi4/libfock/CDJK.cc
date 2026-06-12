@@ -67,7 +67,9 @@ size_t CDJK::memory_estimate() {
 void CDJK::initialize_JK_core() {
     timer_on("CD: cholesky decomposition");
     auto integral = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
-    cderi_ = std::shared_ptr<TwoBodyAOInt>(integral->eri());
+    // Integral engine for computing CD integrals. Note that this is a a "shallow const", only the shared_ptr is const,
+    // but the TwoBodyAOInt it is holding is still mutable
+    const auto cderi_ = std::shared_ptr<TwoBodyAOInt>(integral->eri());
     int ntri = cderi_->function_pairs().size();
     /// If user asks to read integrals from disk, just read them from disk.
     /// Qmn is only storing upper triangle.

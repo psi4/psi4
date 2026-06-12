@@ -1059,13 +1059,9 @@ class PSI_API CDJK : public DiskDFJK {
 
    protected:
     std::string name() override { return "CDJK"; }
-    size_t memory_estimate() override;
-
-    /// integral engine for computing CD integrals
-    std::shared_ptr<TwoBodyAOInt> cderi_;
+    size_t memory_estimate() override;    
 
     // => Required Algorithm-Specific Methods <= //
-
     virtual bool is_core() { return true; }
 
     // => J <= //
