@@ -14,7 +14,7 @@ jobs:
       ctest.type: 'smoke'
       pytest.type: 'quick'
       MKL_CBWR: AVX
-      PYTHON_VERSION: '3.10'
+      PYTHON_VERSION: '3.14'
     steps:
 
       # Check Python
@@ -26,8 +26,9 @@ jobs:
           if "%PYTHON_VERSION%"=="3.11" set VALID=true
           if "%PYTHON_VERSION%"=="3.12" set VALID=true
           if "%PYTHON_VERSION%"=="3.13" set VALID=true
+          if "%PYTHON_VERSION%"=="3.14" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.10" through "3.13".
+            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.10" through "3.14".
             exit 1
           )
         displayName: "Check Python version: $(python.version)"
@@ -107,12 +108,12 @@ jobs:
       # Configure Miniconda
       #    conda config --append channels conda-forge
       #    conda=23.10 forced a bugfix at conda-build stage
+      #    conda config --set channel_priority strict
+      #    conda config --add channels psi4/label/testing
+      #    conda install conda=23.10 -n base -c conda-forge
       - script: |
           conda config --set always_yes yes
-          conda config --add channels psi4/label/testing
-          conda config --set channel_priority strict
           conda config --set solver libmamba
-          conda install conda=23.10 -n base -c conda-forge
           conda info
           conda list
         displayName: "Configure Miniconda"
@@ -149,7 +150,7 @@ jobs:
                         qcelemental ^
                         qcengine ^
                         qcmanybody ^
-                        pydantic=1.10.17 ^
+                        pydantic ^
                         optking ^
                         scipy
           which anaconda

@@ -222,3 +222,20 @@ def test_provenance_connectivity_setting():
     assert q2he3.to_dict()["connectivity"] == conn1
     assert p2he3.to_dict()["provenance"] == prov1
     assert q2he3.to_dict()["provenance"] == prov1
+
+
+@pytest.mark.parametrize(
+    "constructor",
+    [psi4.core.Molecule.from_string, qcdb.Molecule.from_string],
+    ids=["core", "qcdb"],
+)
+def test_molecule_from_string_nonphysical_masses(constructor, request):
+    with pytest.raises(qcelemental.ValidationError, match="Inconsistent or unspecified mass"):
+        constructor("He@100.0 0.0 0.0 0.0")
+
+    mol = constructor("He@100.0 0.0 0.0 0.0", nonphysical=True)
+    assert mol.mass(0) == pytest.approx(100.0)
+
+    if "core" in request.node.name:
+        _, wfn = psi4.energy("hf/cc-pvdz", molecule=mol, return_wfn=True)
+        assert wfn.molecule().to_dict()["mass"][0] == pytest.approx(100.0)

@@ -103,6 +103,7 @@ from .metadata import __version__, version_formatter
 # A few extraneous functions
 from .extras import get_input_directory, addons, test, set_output_file
 from psi4.core import variable, set_variable
+from .driver.schema_wrapper import run_qcschema
 
 # Python portions of compiled-in Add-Ons
 # * Note that this is a "battening down the hatches" for the many

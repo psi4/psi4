@@ -265,11 +265,11 @@ compare_cubes.__doc__ = """Comparison function for volumetric data in cube file 
     expected
         Reference cube file against which `computed` is compared.
         Read by :func:`numpy.genfromtxt` so `expected` can be any of file, str,
-        pathlib.Path, list of str, generator.
+        ``pathlib.Path``, list of str, generator.
     computed
         Input cube file to compare against `expected`.
         Read by :func:`numpy.genfromtxt` so `computed` can be any of file, str,
-        pathlib.Path, list of str, generator.
+        ``pathlib.Path``, list of str, generator.
 
 """
 

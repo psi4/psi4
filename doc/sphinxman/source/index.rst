@@ -43,6 +43,7 @@
    external
    index_tutorials
    psithoninput
+   qcschema
    methods
    interfacing
    psithonfunc

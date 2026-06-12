@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - '1.*.x'
   pull_request:
   merge_group:
 
@@ -20,11 +21,23 @@ jobs:
 
           - label: "Conda GNU (L)"
             runs-on: ubuntu-latest
+            python-version: "3.14"
+            mkl-version: ""
+            platform: linux-64
+            pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not pe_ecp"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+
+          - label: "Conda GNU (L)"
+            runs-on: ubuntu-latest
             python-version: "3.13"
             mkl-version: ""
             platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
+            pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
@@ -36,15 +49,15 @@ jobs:
 
           - label: "Conda Clang (M-Intel)"
             runs-on: macos-15-intel
-            python-version: "3.11"
+            python-version: "3.14"
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6 or v2rdm6 or v2rdm7)"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
+              -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.14/site-packages/numpy/_core/include"
               -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
               -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
             # Notes:
@@ -63,11 +76,26 @@ jobs:
 
           - label: "Conda Clang (M-Silicon)"
             runs-on: macos-latest
+            python-version: "3.14"
+            mkl-version: ""
+            platform: osx-64
+            pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7)"
+            target-sdk: "10.10"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+              -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
+              -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
+
+          - label: "Conda Clang (M-Silicon)"
+            runs-on: macos-latest
             python-version: "3.10"
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or snowflake)"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -86,7 +114,18 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
- 
+
+          - label: "LLVM clang-cl (W)"
+            runs-on: windows-latest
+            python-version: "3.14"
+            mkl-version: ""
+            platform: win-64
+            pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
+            pytest-name-expr: "not pe_ecp"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D psi4_SKIP_ENABLE_Fortran=ON
+
             # Notes:
             # * When not using cache file, need to additionally specify the following:
             #    -D CMAKE_C_COMPILER=clang-cl
@@ -174,6 +213,14 @@ jobs:
         #
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
+        fi
+        if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.python-version }}" == "3.14" ]]; then
+          :
+          sed -E -i.bak "s;- qcfractal;#- qcfractal;g" env_p4build.yaml
+        fi
+        if [[ "${{ runner.os }}" != "macOS" && "${{ matrix.cfg.python-version }}" == "3.14" ]]; then
+          :
+          sed -i "s;- qcfractal;#- qcfractal;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
@@ -280,11 +327,31 @@ jobs:
         conda remove qcmanybody --force
         python -m pip install git+https://github.com/loriab/QCManyBody.git@qcsk_v1v2_rearr --no-deps
 
+    - name: Special Config - OptKing Dep
+      if: false
+      run: |
+        conda remove optking --force || true
+
     - name: Special Config - QCFractal Dep
       if: false
       run: |
         conda remove qcfractal --force
         python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@main#egg=qcfractal&subdirectory=qcfractal'
+
+    - name: Special Config - Download MolSSI/QCFractal Repo
+      if: runner.os == 'Linux'
+      uses: actions/checkout@v4
+      with:
+        repository: MolSSI/QCFractal
+        path: qca
+        ref: main
+        fetch-depth: 0
+
+    - name: Install All QCArchive packages
+      if: runner.os == 'Linux'
+      working-directory: ./qca
+      run: |
+          pip install -e ./qcportal -e ./qcfractalcompute -e ./qcfractal[services,geoip,snowflake]
 
     - name: Special Config - Patch Legacy QCFractal for Python
       if: false
@@ -296,6 +363,7 @@ jobs:
       # in case the conda package of a downstream addon (like resp) brings the psi4 conda package, which is not the psi4 we want to test
 
     - name: Runtime Conda environment
+      working-directory: ./objdir
       run: |
         conda info
         conda list
@@ -388,6 +456,12 @@ jobs:
         conda/psi4-path-advisor.py -vv
         cp env_p4build.yaml "devtools/conda-envs/${{ matrix.cfg.platform }}-buildrun.yaml"
         git diff --color-words
+
+    - name: Analyze Conda dependencies
+      if: runner.os != 'Windows'
+      run: |
+        conda install conda-tree -c conda-forge
+        conda-tree deptree
 
 # Notes
 # -----
