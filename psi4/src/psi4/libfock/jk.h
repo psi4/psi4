@@ -1051,6 +1051,9 @@ class PSI_API DiskDFJK : public JK {
  * cholesky decomposition technology
  */
 class PSI_API CDJK : public DiskDFJK {
+   private:
+    const double cholesky_tolerance_;
+
    protected:
     std::string name() override { return "CDJK"; }
     size_t memory_estimate() override;
@@ -1069,8 +1072,6 @@ class PSI_API CDJK : public DiskDFJK {
     void initialize_JK_core() override;
     void initialize_JK_disk() override;
     void manage_JK_core() override;
-
-    double cholesky_tolerance_;
 
     // => Accessors <= //
 
