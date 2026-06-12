@@ -54,7 +54,7 @@ namespace psi {
 CDJK::CDJK(std::shared_ptr<BasisSet> primary, Options& options, double cholesky_tolerance)
     : DiskDFJK(primary, primary, options), cholesky_tolerance_(cholesky_tolerance) {}
 CDJK::~CDJK() {}
-void CDJK::initialize_JK_disk() { throw PsiException("Disk algorithm for CD JK not implemented.", __FILE__, __LINE__); }
+void CDJK::initialize_JK_disk() { throw PSIEXCEPTION("Disk algorithm for CD JK not implemented."); }
 size_t CDJK::memory_estimate() {
     // Size is unknown until actual evaluation
     size_t nbf = primary_->nbf();
@@ -94,7 +94,7 @@ void CDJK::initialize_JK_core() {
     /// Kinda silly to check for memory after you perform CD.
     /// Most likely redundant as cholesky also checks for memory.
     if (memory_ < ((size_t)sizeof(double) * three_memory + (size_t)sizeof(double) * ncholesky_ * nbf * nbf))
-        throw PsiException("Not enough memory for CD.", __FILE__, __LINE__);
+        throw PSIEXCEPTION("Not enough memory for CD.");
 
     std::shared_ptr<Matrix> L = Ch->L();
     double** Lp = L->pointer();
@@ -157,6 +157,6 @@ void CDJK::print_header() const {
         outfile->Printf("    Cholesky tolerance:   %11.2E\n", cholesky_tolerance_);
         outfile->Printf("    No. Cholesky vectors: %11li\n\n", ncholesky_);
     }
-    if (do_wK_) throw PsiException("No wk for scf_type cd.", __FILE__, __LINE__);
+    if (do_wK_) throw PSIEXCEPTION("No wk for scf_type cd.");
 }
 }  // namespace psi
