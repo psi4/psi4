@@ -34,7 +34,6 @@ __all__ = [
     "run_qcschema",
 ]
 
-import inspect
 import atexit
 import copy
 import datetime
@@ -52,6 +51,7 @@ from typing import Any, Dict, Union
 
 import numpy as np
 import qcelemental as qcel
+from qcelemental.models import QCEL_V1V2_SHIM_CODE
 import qcengine as qcng
 
 from psi4 import core
@@ -423,6 +423,7 @@ def run_qcschema(
     *,
     return_dict: bool = False,
     return_version: int = -1,
+    _allow_v1_dict_shim=False,
 ) -> Union[qcel.models.v1.AtomicResult, qcel.models.v2.AtomicResult, qcel.models.v1.FailedOperation, qcel.models.v2.FailedOperation]:
     """Run a quantum chemistry job specified by :py:class:`qcelemental.models.v2.AtomicInput` (v1 or v2) **input_data** in |PSIfour|.
 
@@ -535,15 +536,15 @@ def run_qcschema(
         executor = qcng.get_program("psi4")
         input_model, input_schema_version = executor.build_input_model(input_data, return_input_schema_version=True)
         return_version = input_schema_version if return_version == -1 else return_version
-        # print(f"RETVER {input_model=} {input_schema_version=} {return_version=}")
 
         if sys.version_info >= (3, 14) and return_version == 1:
-            if return_dict is True or inspect.stack()[1][3] == "_psi4_qcschema_cli":
-                # outer if is actually forbidden (see Error below). this (-12) signals to use the shim
-                #   classes that represent certain QCSchema v1 layout (only exist in pydantic.v1 API)
-                #   in pydantic v2 API. we never want to release these into the wild so only available
-                #   if returning dict or called from psi4 --qcschema (which serializes them before returning).
-                return_version = -12
+            if return_dict is True or _allow_v1_dict_shim is True:
+                # Outer "if" is actually forbidden (see Error below). This (QCEL_V1V2_SHIM_CODE=-12)
+                #   signals to use the shim classes that represent certain QCSchema v1 layout (only
+                #   exist in pydantic.v1 API) in pydantic v2 API. We never want to release these into
+                #   the wild so only available if returning dict or called from `psi4 --qcschema`
+                #   (which serializes them before returning).
+                return_version = QCEL_V1V2_SHIM_CODE
             else:
                 raise RuntimeError(
             f"QCSchema v1 model 'AtomicResult' cannot be instantiated in this environment. "

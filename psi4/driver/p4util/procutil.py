@@ -583,6 +583,7 @@ def state_to_atomicinput(
     ----------
     dtype
         QCSchema version to target.
+        Note that the default 1 (needed for optking compat) can't succeed with Python >=3.14 .
     driver
         {'energy', 'gradient', 'hessian'}
         Target derivative level.

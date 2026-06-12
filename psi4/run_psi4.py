@@ -324,7 +324,7 @@ def _psi4_qcschema_cli():
         for func in _clean_functions:
             atexit.unregister(func)
 
-    ret = psi4.schema_wrapper.run_qcschema(data, clean=clean, return_version=int(args["return_version"]))
+    ret = psi4.schema_wrapper.run_qcschema(data, clean=clean, return_version=int(args["return_version"]), _allow_v1_dict_shim=True)
 
     if args["output"] is not None:
         filename = args["output"]

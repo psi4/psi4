@@ -53,8 +53,8 @@ Minimal v2 Input (CLI or API)
      "specification": {
        "driver": "energy",
        "model": {"method": "scf", "basis": "cc-pVDZ"},
-        "keywords": {"scf_type": "df"},
-        "protocols": {"stdout": true}
+       "keywords": {"scf_type": "df"},
+       "protocols": {"stdout": true}
       }
     }
 
