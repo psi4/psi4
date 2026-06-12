@@ -1294,4 +1294,56 @@ void parallel_timer_off(const std::string &key, int thread_rank) {
     }
     omp_unset_lock(&lock_timer);
 }
+
+/*!
+** timer_to_dict_helper(): Helper function to convert a Timer_Structure to a nested map
+**
+** \param timer = Timer structure to convert
+**
+** \ingroup QT
+*/
+std::map<std::string, std::map<std::string, double>> timer_to_dict_helper(const Timer_Structure &timer) {
+    std::map<std::string, std::map<std::string, double>> result;
+    
+    const std::list<Timer_Structure> &children = timer.get_children();
+    for (auto child_iter = children.begin(), end_child_iter = children.end(); child_iter != end_child_iter;
+         ++child_iter) {
+        std::map<std::string, double> timer_data;
+        
+        // Get timing information
+        double wtime = std::chrono::duration_cast<std::chrono::duration<double>>(child_iter->get_total_wtime()).count();
+        double utime = child_iter->get_utime();
+        double stime = child_iter->get_stime();
+        size_t n_calls = child_iter->get_n_calls();
+        
+        timer_data["wall_time"] = wtime;
+        timer_data["user_time"] = utime;
+        timer_data["system_time"] = stime;
+        timer_data["n_calls"] = static_cast<double>(n_calls);
+        
+        result[child_iter->get_key()] = timer_data;
+        
+        // Recursively process children
+        auto nested_timers = timer_to_dict_helper(*child_iter);
+        for (auto &entry : nested_timers) {
+            result[child_iter->get_key() + "." + entry.first] = entry.second;
+        }
+    }
+    
+    return result;
+}
+
+/*!
+** get_timer_dict(): Get all timing information as a nested dictionary structure
+**
+** \ingroup QT
+*/
+PSI_API std::map<std::string, std::map<std::string, double>> get_timer_dict() {
+    omp_set_lock(&lock_timer);
+    extern Timer_Structure root_timer;
+    auto result = timer_to_dict_helper(root_timer);
+    omp_unset_lock(&lock_timer);
+    return result;
+}
+
 }  // namespace psi

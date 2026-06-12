@@ -1393,7 +1393,7 @@ class Molecule(LibmintsMolecule):
                 return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT'], jobrec
             return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']
 
-    def run_dftd4(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
+    def run_dftd4(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1, property: bool = False):
         """Compute dispersion correction via Grimme's DFTD4 program.
 
         Parameters
@@ -1418,6 +1418,8 @@ class Molecule(LibmintsMolecule):
             efficient. Influences return values, see below.
         verbose
             Amount of printing.
+        property
+            Whether to return DFTD4 C6 coefficients in qcvars.
 
         Returns
         -------
@@ -1446,13 +1448,18 @@ class Molecule(LibmintsMolecule):
             'molecule': self.to_schema(dtype=2),
             'driver': derdriver,
             'model': {
-                'method': func,
                 'basis': '(auto)',
             },
             'keywords': {
                 'verbose': verbose,
             },
         }
+        if func:
+            resinp['model']['method'] = func
+        else:
+            resinp['model']['method'] = ""
+        if property:
+            resinp['keywords']['property'] = True
         if dashlvl:
             resinp['keywords']['level_hint'] = dashlvl
         if dashparam:
@@ -1474,6 +1481,8 @@ class Molecule(LibmintsMolecule):
             for k, qca in jobrec['extras']['qcvars'].items():
                 if not isinstance(qca, (list, np.ndarray)):
                     core.set_variable(k, float(qca))
+        if property:
+            core.set_variable('DFTD4 C6 COEFFICIENTS', jobrec['extras']['dftd4']['c6 coefficients'])
 
         if derint == -1:
             return (float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']),

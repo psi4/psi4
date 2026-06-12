@@ -89,6 +89,12 @@ procedures = {
         'ccd'           : proc.select_ccd,
         'sf-sapt'       : sapt.run_sf_sapt,
         'sapt(dft)'     : sapt.run_sapt_dft,
+        'sapt(dft)-d4(i)': sapt.run_sapt_dft,
+        'sapt(dft)-d4(s)': sapt.run_sapt_dft,
+        'sapt(dft)-d3(i)': sapt.run_sapt_dft,
+        'sapt(dft)-d3(s)': sapt.run_sapt_dft,
+        'dft-d3(sapt)'  : sapt.run_sapt_dft,
+        'dft-d4(sapt)'  : sapt.run_sapt_dft,
         'sapt0'         : proc.run_sapt,
         'ssapt0'        : proc.run_sapt,
         'sapt2'         : proc.run_sapt,
@@ -249,6 +255,15 @@ for key in functionals:
         disp = key.split('-')[-1]
         procedures['energy']['sapt0-' + disp] = proc.run_sapt
         procedures['energy']['fisapt0-' + disp] = proc.run_fisapt
+        # -D4 should be handled inermolecularly (i) instead of supermolecularly
+        # (s) due to incorrect long-range behavior of -D4 from charge
+        # equlibration. However, we still want legacy support for (s) which was
+        # the default prior to v1.10
+        if disp.startswith('d4'):
+            for suffix in ['(i)', '(s)']:
+                procedures['energy']['hf-' + disp + suffix] = proc.run_sapt
+                procedures['energy']['sapt0-' + disp + suffix] = proc.run_sapt
+                procedures['energy']['fisapt0-' + disp + suffix] = proc.run_fisapt
 
 # Will complete modelchem spec with basis='(auto)' for following methods
 integrated_basis_methods = [
