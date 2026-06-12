@@ -504,6 +504,7 @@ void DiskDFJK::compute_JK() {
         }
     }
 }
+
 void DiskDFJK::postiterations() {
     Qmn_.reset();
     Qlmn_.reset();
