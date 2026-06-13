@@ -30,8 +30,17 @@
 #include "psi4/pybind11.h"
 
 #include <string>
-
 using namespace psi;
+
+class pb11_deprecated_call_guard {
+    std::string msg;
+public:
+    pb11_deprecated_call_guard(const char* m) : msg(m) {}
+    bool operator()(py::detail::function_call&) const {
+        PyErr_WarnEx(PyExc_DeprecationWarning, msg.c_str(), 1);
+        return true;
+    }
+};
 
 void export_options(py::module& m) {
     py::class_<Options>(m, "Options", "docstring", py::dynamic_attr())
@@ -53,7 +62,7 @@ void export_options(py::module& m) {
         .def("set_str_i", &Options::set_str_i, "set string option")
         .def("set_array", &Options::set_array, "set array option")
         .def("read_globals", &Options::read_globals, "expert")
-        .def("set_read_globals", &Options::set_read_globals, "expert")
+        .def("set_read_globals", &Options::set_read_globals, py::call_guard<deprecated_call_guard>("Options.set_read_globals is deprecated"),"expert - Deprecated");
         .def("set_current_module", &Options::set_current_module, "sets *arg0* (all CAPS) as current module")
         .def("get_current_module", &Options::get_current_module, "gets current module")
         .def("validate_options", &Options::validate_options, "validate options for *arg0* module")
