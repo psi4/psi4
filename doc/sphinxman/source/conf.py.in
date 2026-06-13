@@ -42,6 +42,9 @@
 import sys, os
 import datetime
 
+# alters a QCElemental line (dt = _core_schema) that typing can't process
+os.environ["SPHINX_BUILD"] = "1"
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -90,6 +93,7 @@ extensions = [
     # local
     "psidomain",  # for QCVariables
     "relbar_toc",  # specialized top bar
+    "intersphinx_aliases",  # since QCSchema v1 & v2 intersphinx-able docs can't be built together, hard-code some v1 address aliases
 ]
 if '@SPHINX_THEME@' == 'sphinx_psi_theme':
     extensions.extend([
@@ -455,10 +459,13 @@ intersphinx_mapping = {'python': ('https://docs.python.org/3.12', None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
                        'matplotlib': ('https://matplotlib.org/stable/', None),
                        "qcelemental": ("https://molssi.github.io/QCElemental/dev/", None),
+                       "qcelemental_v1": ("https://molssi.github.io/QCElemental/v0.30.2/", None),
                        "qcengine": ("https://molssi.github.io/QCEngine/dev/", None),
+                       "qcengine_v1": ("https://molssi.github.io/QCEngine/v0.34.1/", None),
                        "qcfractal": ("https://molssi.github.io/QCFractal/", None),
                        "qcmanybody": ("https://molssi.github.io/QCManyBody/dev/", None),
                        "optking": ("https://optking.readthedocs.io/en/latest", None),
+                       "pydantic": ('https://docs.pydantic.dev/latest', None),
                       }
 
 

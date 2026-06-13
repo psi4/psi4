@@ -132,3 +132,4 @@ API
 
 .. autopydantic_model:: psi4.driver.driver_findif.FiniteDifferenceComputer
 
+.. autoclass:: psi4.driver.driver_findif.FDComputerEnum

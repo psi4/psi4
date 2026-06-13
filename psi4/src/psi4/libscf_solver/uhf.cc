@@ -1247,6 +1247,8 @@ void UHF::openorbital_scf() {
 #ifndef USING_OpenOrbitalOptimizer
   throw PSIEXCEPTION("OpenOrbitalOptimizer support has not been enabled in this Psi4 build!\n");
 #else
+  // Store AO-basis DIIS error to use for convergence instead of orthogonal-basis error
+  double ao_basis_diis_error = 1.0;
   std::function<OpenOrbitalOptimizer::FockBuilderReturn<double, double>(const OpenOrbitalOptimizer::DensityMatrix<double, double> &)> fock_builder = [&](const OpenOrbitalOptimizer::DensityMatrix<double, double> & dm) {
     // Grab the orbitals and occupations
     std::vector<arma::mat> orbitals = dm.first;
@@ -1330,27 +1332,8 @@ void UHF::openorbital_scf() {
 
     std::vector<arma::mat> Vxca(nirrep_), Vxcb(nirrep_);
     if (functional_->needs_xc()) {
-      auto Padummy = std::make_shared<Matrix>("Dummy alpha density", nsopi_, nsopi_);
-      for(int h=0;h<nirrep_;h++) {
-        if(namopi[h]==0)
-          // Skip case of nothing to do
-          continue;
-        // Get the block of X
-        arma::mat Cablock = Cadummy->to_armadillo_matrix(h);
-        Padummy->from_armadillo_matrix(Cablock*Cablock.t(),h);
-      }
-
-      auto Pbdummy = std::make_shared<Matrix>("Dummy beta density", nsopi_, nsopi_);
-      for(int h=0;h<nirrep_;h++) {
-        if(nbmopi[h]==0)
-          // Skip case of nothing to do
-          continue;
-        // Get the block of X
-        const arma::mat Xblock(X_->to_armadillo_matrix(h));
-        int hd=h+nirrep_;
-        arma::mat Cbblock = Cbdummy->to_armadillo_matrix(h);
-        Pbdummy->from_armadillo_matrix(Cbblock*Cbblock.t(),h);
-      }
+      auto Padummy = linalg::doublet(Cadummy, Cadummy, false, true);
+      auto Pbdummy = linalg::doublet(Cbdummy, Cbdummy, false, true);
 
       potential_->set_D({Padummy, Pbdummy});
       potential_->compute_V({Va_, Vb_});
@@ -1427,6 +1410,53 @@ void UHF::openorbital_scf() {
     }
     double Etot = Ecore+Ecoul+Eexch+nuclearrep_+XC_E+VV10_E;
 
+    // Compute AO-basis DIIS error for convergence checking
+    // For UHF: compute separate FDS - SDF commutators for alpha and beta spins
+    // Build alpha and beta density matrices in AO basis directly from C matrices.
+    auto Pa_AO_mat = linalg::doublet(Cadummy, Cadummy, false, true);
+    auto Pb_AO_mat = linalg::doublet(Cbdummy, Cbdummy, false, true);
+
+    // Build alpha Fock matrix in AO basis: Fa = H + J + Ka + Vxca
+    auto Fa_AO = H_->clone();
+    Fa_AO->add(Jvec[0]);
+    Fa_AO->add(Jvec[1]);
+    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
+      Fa_AO->axpy(-alpha, Kvec[0]);
+    }
+    if (functional_->is_x_lrc()) {
+      double scale = jk_->get_wcombine() ? -1.0 : -beta;
+      Fa_AO->axpy(scale, wKvec[0]);
+    }
+    if (functional_->needs_xc()) {
+      Fa_AO->add(Va_);
+    }
+
+    // Build beta Fock matrix in AO basis: Fb = H + J + Kb + Vxcb
+    auto Fb_AO = H_->clone();
+    Fb_AO->add(Jvec[0]);
+    Fb_AO->add(Jvec[1]);
+    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
+      Fb_AO->axpy(-alpha, Kvec[1]);
+    }
+    if (functional_->is_x_lrc()) {
+      double scale = jk_->get_wcombine() ? -1.0 : -beta;
+      Fb_AO->axpy(scale, wKvec[1]);
+    }
+    if (functional_->needs_xc()) {
+      Fb_AO->add(Vb_);
+    }
+
+    // Compute commutator RMS with the same projection used by INTERNAL
+    // (important when linear dependencies are removed through S_TOLERANCE).
+    auto FaDSmSDFa = form_FDSmSDF(Fa_AO, Pa_AO_mat);
+    auto FbDSmSDFb = form_FDSmSDF(Fb_AO, Pb_AO_mat);
+
+    // Compute RMS error combining both spins
+    // See INTERNAL counterpart in `def _UHF_orbital_gradient`
+    double ao_diis_rms_alpha = FaDSmSDFa->rms();
+    double ao_diis_rms_beta = FbDSmSDFb->rms();
+    ao_basis_diis_error = std::sqrt(0.5 * (ao_diis_rms_alpha * ao_diis_rms_alpha + ao_diis_rms_beta * ao_diis_rms_beta));
+
     return std::make_pair(Etot,fock);
   };
 
@@ -1483,7 +1513,8 @@ void UHF::openorbital_scf() {
         double e_conv = options_.get_double("E_CONVERGENCE");
         double d_conv = options_.get_double("D_CONVERGENCE");
         double e_delta = std::any_cast<double>(data.at("dE"));
-        double d_rms = std::any_cast<double>(data.at("diis_error"));
+        // Use AO-basis DIIS error instead of orthogonal-basis error from data.at("diis_error")
+        double d_rms = ao_basis_diis_error;
 
         bool converged = (fabs(e_delta) < e_conv) && (d_rms < d_conv);
         if (iteration_ == options_.get_int("MAXITER"))
@@ -1499,7 +1530,8 @@ void UHF::openorbital_scf() {
     iteration_++;
     double E = std::any_cast<double>(data.at("E"));
     double dE = std::any_cast<double>(data.at("dE"));
-    double Dnorm = std::any_cast<double>(data.at("diis_error"));
+    // show AO-basis error
+    double Dnorm = ao_basis_diis_error;
     std::string step = std::any_cast<std::string>(data.at("step"));
 
     outfile->Printf("   @%s iter %3i: %20.14f   %12.5e   %-11.5e %s\n", reference.c_str(), iteration_, E, dE, Dnorm, step.c_str());
@@ -1509,6 +1541,7 @@ void UHF::openorbital_scf() {
   scfsolver.maximum_iterations(maxiter);
   scfsolver.verbosity(options_.get_int("OOO_PRINT"));
   scfsolver.maximum_history_length(maxvecs);
+  scfsolver.oda_restart_steps(options_.get_int("OOO_ODA_RESTART_STEPS"));
   scfsolver.callback_function(callback_function);
   scfsolver.callback_convergence_function(callback_convergence_function);  // replaces scfsolver.convergence_threshold()
   scfsolver.diis_epsilon(start_diis);

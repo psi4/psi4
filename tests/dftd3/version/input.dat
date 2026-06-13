@@ -200,24 +200,24 @@ for dlvl in ['d3zeroatm']:
         compare_values(refs[dlvl[:-3]]['d'], E, 7, 'EXPECTED FAIL dimer ' + dlvl)  #TEST
     else:
         compare_values(refs[dlvl[:-3]]['d'] + refs['3b']['d'], E, 7, 'dimer ' + dlvl)  #TEST
-    compare_values(s9, atres["extras"]["info"]["dashparams"]["s9"], 9, f"atm s9={s9}")
+    compare_values(s9, atres["input_data"]["specification"]["extras"]["info"]["dashparams"]["s9"], 9, f"atm s9={s9}")
     if nu_qcng:
-        compare_values(s9, atres["keywords"]["params_tweaks"]["s9"], 9, f"atm s9={s9}")
+        compare_values(s9, atres["input_data"]["specification"]["keywords"]["params_tweaks"]["s9"], 9, f"atm s9={s9}")
 for dlvl in ['d3zeroatm']:
     # note empty first param
     s9 = 0.5
     E, atres = qeeee.run_sdftd3("", dlvl, dertype=der, dashparam={'alpha6': 14.0, 's6': 1.0, 's8': 1.703, 's9': s9, 'sr6': 1.261, 'sr8': 1.0}, return_dict=True)
     compare_values(refs[dlvl[:-3]]['d'] + s9 * refs['3b']['d'], E, 7, 'dimer ' + dlvl + f'-mod {s9}')  #TEST
-    compare_values(s9, atres["extras"]["info"]["dashparams"]["s9"], 9, f"atm-mod s9={s9}")
+    compare_values(s9, atres["input_data"]["specification"]["extras"]["info"]["dashparams"]["s9"], 9, f"atm-mod s9={s9}")
     if nu_qcng:
-        compare_values(s9, atres["keywords"]["params_tweaks"]["s9"], 9, f"atm-mod s9={s9}")
+        compare_values(s9, atres["input_data"]["specification"]["keywords"]["params_tweaks"]["s9"], 9, f"atm-mod s9={s9}")
 for dlvl in ['d3zero2b']:
     s9 = 0.0
     E, atres = qeeee.run_sdftd3(fctl, dlvl, dertype=der, return_dict=True)
     compare_values(refs[dlvl[:-2]]['d'], E, 7, 'dimer ' + dlvl)  #TEST
     if nu_qcng:
-        compare_values(s9, atres["extras"]["info"]["dashparams"]["s9"], 9, f"2b s9={s9}")
-        compare_values(s9, atres["keywords"]["params_tweaks"]["s9"], 9, f"2b s9={s9}")
+        compare_values(s9, atres["input_data"]["specification"]["extras"]["info"]["dashparams"]["s9"], 9, f"2b s9={s9}")
+        compare_values(s9, atres["input_data"]["specification"]["keywords"]["params_tweaks"]["s9"], 9, f"2b s9={s9}")
 
 # <<<  Part 4  >>>
 

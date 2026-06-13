@@ -1,17 +1,25 @@
 trigger:
-  - master
-  - gh-readonly-queue/master/*
-  - 1.10.x
-  - 1.9.x
-  - 1.8.x
-  - 1.7.x
-  - 1.6.x
-  - 1.5.x
-  - 1.4.x
-  - 1.3.x
-  - 1.2.x
-  - 1.1.x
-  - 1.0.x
+  branches:
+    include:
+      - master
+      - gh-readonly-queue/master/*
+      - 1.10.x
+      - 1.9.x
+      - 1.8.x
+      - 1.7.x
+      - 1.6.x
+      - 1.5.x
+      - 1.4.x
+      - 1.3.x
+      - 1.2.x
+      - 1.1.x
+      - 1.0.x
+
+pr:
+  branches:
+    include:
+      - master
+      - 1.10.x
 
 jobs:
   - template: ./.azure-pipelines/azure-pipelines-windows.yml

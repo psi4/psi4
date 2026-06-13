@@ -2,11 +2,10 @@
 
 import numpy as np
 import psi4
-import json
 
 # Generate JSON data
 json_data = {
-  "schema_name": "qc_schema_input",
+  "schema_name": "qcschema_input",
   "schema_version": 1,
   "molecule": {
     "geometry": [
@@ -59,13 +58,17 @@ expected_properties = {
   "return_energy": -76.02139738600329
 }
 
-json_ret = psi4.schema_wrapper.run_qcschema(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data, return_dict=True)
 
-with open("output.json", "w") as ofile:
-    json.dump(json_ret.json(), ofile, indent=2)
+with open("output.json", "w") as ofile:  #TEST
+    from qcelemental.models._v1v2 import AtomicResult  #TEST
 
-psi4.compare_integers(True, json_ret.success, "JSON Success")                           #TEST
-psi4.compare_arrays(expected_return_result, json_ret.return_result.ravel(), 5, "Return Value")  #TEST
+    json_model = AtomicResult(**json_ret)  #TEST
+    ofile.write(json_model.model_dump_json(indent=2))  #TEST
+    psi4.compare(True, True, "json-able")  #TEST
+
+psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
+psi4.compare_arrays(expected_return_result, json_ret["return_result"].ravel(), 5, "Return Value")  #TEST
 
 for k in expected_properties.keys():                                                       #TEST
-    psi4.compare_values(expected_properties[k], getattr(json_ret.properties, k), 5, k.upper())   #TEST
+    psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
