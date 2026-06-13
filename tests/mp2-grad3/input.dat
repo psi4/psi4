@@ -1,12 +1,13 @@
-#! DF-MP2 gradient for charged open-shell system (N2+ doublet)
+#! DF-MP2 gradient for charged high-spin open-shell system (Fe2+ quintet)
 #! Regression test for Tensor2d::back_transform dimension mismatch fix
 #! Tests fix for bug where temp tensor was created as (nmo, nmo) instead of (nmo, nso)
-#! With N2+/cc-pVDZ: nso ~ 20, nmo ~ 10
+#! Transition metal provides significant nso vs nmo mismatch (nso >> nmo) with cc-pVDZ
 
-molecule n2plus {
-    1 2
-    N
-    N 1 1.1
+molecule fe2plus {
+    2 5
+    Fe
+    O 1 1.6
+    O 1 1.6 2 104.5
 }
 
 set {
@@ -15,9 +16,12 @@ set {
     reference          uhf
     e_convergence      10
     d_convergence      9
+    mp2_type           df
 }
 
 grad = gradient('mp2')
 
 # Expected: gradient computed without Tensor2d::gemm dimension errors
+# Fe2+ quintet [Ar]3d^6: high nso count (transition metal) > nmo → exposes dimension bug
 # The dimension mismatch bug would cause "Tensor2d::gemm dimensions are NOT consistent!" error
+# in DF-MP2 OPDM/TPDM backtransformation at tensors.cc:1819 and :1825
