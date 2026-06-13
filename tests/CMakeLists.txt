@@ -286,6 +286,7 @@ if(ENABLE_ecpint)
     add_subdirectory(scf-ecp2)
     add_subdirectory(scf-ecp3)
     add_subdirectory(mbis-7)
+    add_subdirectory(mp2-grad3)
     message(STATUS "Adding test cases: Psi4 + ecpint")
 endif()
 

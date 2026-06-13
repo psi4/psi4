@@ -1,0 +1,23 @@
+#! DF-MP2 gradient for charged open-shell system (N2+ doublet)
+#! Regression test for Tensor2d::back_transform dimension mismatch fix
+#! Tests fix for bug where temp tensor was created as (nmo, nmo) instead of (nmo, nso)
+#! With N2+/cc-pVDZ: nso ~ 20, nmo ~ 10
+
+molecule n2plus {
+    1 2
+    N
+    N 1 1.1
+}
+
+set {
+    basis              cc-pvdz
+    scf_type           df
+    reference          uhf
+    e_convergence      10
+    d_convergence      9
+}
+
+grad = gradient('mp2')
+
+# Expected: gradient computed without Tensor2d::gemm dimension errors
+# The dimension mismatch bug would cause "Tensor2d::gemm dimensions are NOT consistent!" error

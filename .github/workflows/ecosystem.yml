@@ -383,12 +383,12 @@ jobs:
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
-    - name: MBIS-7
+    - name: Tensor2D
       working-directory: ./objdir
       run: |
         export PATH=../install/bin:$PATH
         #export KMP_DUPLICATE_LIB_OK=TRUE
-        psi4 ../tests/mbis-7/input.dat -o stdout
+        psi4 ../tests/mp2-grad3/input.dat -o stdout
 
     - name: Psi4 Path Setup Diagnostics
       if: false
