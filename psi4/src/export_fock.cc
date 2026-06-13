@@ -94,7 +94,7 @@ void export_fock(py::module &m) {
         .def("D", &JK::D, py::return_value_policy::reference_internal)
         .def("computed_shells_per_iter", py::overload_cast<>(&JK::computed_shells_per_iter), "Array containing the number of ERI shell n-lets (triplets, quartets) computed (not screened out) during each compute call.")
         .def("computed_shells_per_iter", py::overload_cast<const std::string&>(&JK::computed_shells_per_iter), "Array containing the number of ERI shell n-lets (triplets, quartets) computed (not screened out) during each compute call.")
-        .def("print_header_2", &JK::print_header, "docstring");
+        .def("print_header", &JK::print_header, "docstring");
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "Computer class for a Laplace factorization of the four-index energy denominator in MP2 and coupled-cluster")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
