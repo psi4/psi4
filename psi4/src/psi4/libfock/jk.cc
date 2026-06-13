@@ -195,9 +195,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         return jk;
 
     } else {
-        std::stringstream message;
-        message << "JK::build_JK: Unkown SCF Type '" << jk_type << "'" << std::endl;
-        throw PSIEXCEPTION(message.str());
+        throw PSIEXCEPTION("JK::build_JK: Unkown SCF Type '" + jk_type + "'");
     }
 }
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
