@@ -47,8 +47,6 @@
 #include <omp.h>
 #endif
 
-using namespace psi;
-
 namespace psi {
 
 CDJK::CDJK(std::shared_ptr<BasisSet> primary, Options& options, double cholesky_tolerance)
