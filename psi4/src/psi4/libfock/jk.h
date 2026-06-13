@@ -964,7 +964,7 @@ class PSI_API DiskDFJK : public JK {
     void initialize_w_temps();
     void free_w_temps();
 
-    // => J <= //
+    // => J and K <= //
     virtual void initialize_JK_core();
     virtual void initialize_JK_disk();
     virtual void manage_JK_core();
@@ -1072,7 +1072,7 @@ class PSI_API CDJK : public DiskDFJK {
 
     virtual bool is_core() { return true; }
 
-    // => J <= //
+    // => J and K <= //
     void initialize_JK_core() override;
     void initialize_JK_disk() override;
     void manage_JK_core() override;
