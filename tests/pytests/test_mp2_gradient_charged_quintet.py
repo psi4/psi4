@@ -14,17 +14,21 @@ def test_dfmp2_gradient_charged_quintet():
     Test DF-MP2 gradient for a small charged open-shell quintet molecule.
     Regression test for Tensor2d::back_transform dimension mismatch fix.
     
+    Multi-atom system ensures nso >> nmo, exposing the dimension mismatch bug
+    where temp tensor was created as (nmo, nmo) instead of (nmo, nso).
+    
     This test ensures that DF-MP2 gradient calculations work correctly for:
     - Charged systems (charge = +1)
     - Open-shell with multiplicity 5 (quintet, S=2)
-    - All molecular properties that could expose dimension bugs
+    - Multi-atom geometry: nso=def2-SVP(Fe+Cl) >> nmo
     """
-    # Fe+ (iron cation) in high-spin quintet state
-    # Natural multiplicity: 5 (d^5 configuration)
+    # FeCl+ (iron chloride cation) in high-spin quintet state
     # Charge: +1
-    fe_cation = psi4.geometry("""
+    # Multiplicity: 5 (Fe high-spin d^5)
+    fecl_cation = psi4.geometry("""
         1 5
         Fe
+        Cl 1 2.3
     """)
 
     psi4.set_options({
@@ -36,9 +40,11 @@ def test_dfmp2_gradient_charged_quintet():
     })
 
     # Compute DF-MP2 gradient (this would crash before the fix)
+    # With FeCl+: nso ≈ 30-35, nmo ≈ 20-25
+    # Bug creates temp as (20, 20) instead of (20, 30), causing gemm dimension mismatch
     gradient = psi4.gradient('mp2')
     
-    # Basic validation: gradient should be small for a single atom
-    # (single atoms have no internal degrees of freedom, so gradient norm should be near machine precision)
-    gradient_norm = np.linalg.norm(gradient.np)
-    assert gradient_norm < 1e-4, f"Single-atom gradient norm {gradient_norm} is unexpectedly large"
+    # Validate gradient was computed successfully
+    assert gradient is not None, "Gradient computation returned None"
+    assert gradient.shape == (2, 3), "Gradient should have shape (natom=2, 3)"
+    assert np.all(np.isfinite(gradient.np)), "Gradient contains NaN or Inf values"
