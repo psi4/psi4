@@ -2,13 +2,11 @@ import numpy as np
 import pytest
 
 import psi4
-from utils import compare_values
 
-pytestmark = [pytest.mark.psi, pytest.mark.api]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.addon]
 
 
 @pytest.mark.findif
-@pytest.mark.slow
 def test_dfmp2_gradient_charged_quintet():
     """
     Test DF-MP2 gradient for a small charged open-shell quintet molecule.
