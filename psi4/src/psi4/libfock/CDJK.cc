@@ -56,8 +56,7 @@ void CDJK::initialize_JK_disk() { throw PSIEXCEPTION("Disk algorithm for CD JK n
 
 size_t CDJK::memory_estimate() {
     // Size is unknown until actual evaluation
-    size_t nbf = primary_->nbf();
-
+    const size_t nbf = primary_->nbf();
     // Assume cholesky index is ~4x of nbf.
     return nbf * nbf * nbf * 4;
 }
