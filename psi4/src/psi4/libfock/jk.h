@@ -1107,6 +1107,15 @@ class PSI_API CDJK : public DiskDFJK {
     /// at ~DFJK(), which then eventually also calls ~JK(). Which this override below in place, changing ~JK() to not be
     /// virtual would give a compile error, hopefully leading the developer to reconsider.
     ~CDJK() override = default;
+
+    // => Knobs <= //
+
+    /// @brief Configure range-separated exchange (wK) in CDJK.
+    /// @param do_wK Should CDJK compute range-separated exchange (wK)? Must always be false.
+    /// @note SCF_TYPE CD has no range-separated (wK) implementation yet. Therefore this function rejects attempts to
+    /// set_do_wK to true. If a linter complains: yes we do want both override and final. They are not exactly the same
+    /// thing, nor is final a strict superset of override.
+    void set_do_wK(bool do_wK) override final;
 };
 
 /**

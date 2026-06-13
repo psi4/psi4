@@ -54,6 +54,13 @@ CDJK::CDJK(std::shared_ptr<BasisSet> primary, Options& options, double cholesky_
 
 void CDJK::initialize_JK_disk() { throw PSIEXCEPTION("Disk algorithm for CD JK not implemented."); }
 
+void CDJK::set_do_wK(const bool do_wK) {
+    if (do_wK)
+        throw PSIEXCEPTION(
+            "CDJK (Coulomb and exchange via Cholesky decomposition) does not support range-separated (wK) exchange.");
+    DiskDFJK::set_do_wK(do_wK);
+}
+
 size_t CDJK::memory_estimate() {
     // Size is unknown until actual evaluation
     const size_t nbf = primary_->nbf();
@@ -162,6 +169,8 @@ void CDJK::print_header() const {
         outfile->Printf("    Cholesky tolerance:   %11.2E\n", cholesky_tolerance_);
         outfile->Printf("    No. Cholesky vectors: %11li\n\n", ncholesky_);
     }
-    if (do_wK_) throw PSIEXCEPTION("No wk for scf_type cd.");
+    if (do_wK_)
+        throw PSIEXCEPTION(
+            "CDJK (Coulomb and exchange via Cholesky decomposition) does not support range-separated (wK) exchange.");
 }
 }  // namespace psi
