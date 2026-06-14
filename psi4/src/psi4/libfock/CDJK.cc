@@ -79,6 +79,7 @@ void CDJK::initialize_JK_core() {
     // used for contructing the TwoBodyAOInt.
     auto integral = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     cderi_ = std::shared_ptr<TwoBodyAOInt>(integral->eri());
+    
     int ntri = cderi_->function_pairs().size();
     /// If user asks to read integrals from disk, just read them from disk.
     /// Qmn is only storing upper triangle.
