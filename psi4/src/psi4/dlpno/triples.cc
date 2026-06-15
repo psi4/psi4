@@ -918,13 +918,43 @@ std::pair<double, double> DLPNOCCSD_T::compute_lccsd_t0(bool save_memory) {
         auto lambda_j = linalg::doublet(S_jj_ijk, lambda_ia_[j], true, false); // (j, b_{ii}) -> (j, b_{ijk})
         auto lambda_k = linalg::doublet(S_kk_ijk, lambda_ia_[k], true, false); // (k, c_{ii}) -> (k, c_{ijk})
 
+        // Compute Fia couplings (in case non-HF or Brueckner orbitals are used)
+        auto Fia = submatrix_rows_and_cols(*F_lmo_pao_, std::vector<int>(1, i), lmotriplet_to_paos_[ijk]);
+        Fia = linalg::doublet(Fia, X_tno_[ijk])->transpose();
+        auto Fjb = submatrix_rows_and_cols(*F_lmo_pao_, std::vector<int>(1, j), lmotriplet_to_paos_[ijk]);
+        Fjb = linalg::doublet(Fjb, X_tno_[ijk])->transpose();
+        auto Fkc = submatrix_rows_and_cols(*F_lmo_pao_, std::vector<int>(1, k), lmotriplet_to_paos_[ijk]);
+        Fkc = linalg::doublet(Fkc, X_tno_[ijk])->transpose();
+
+        // TODO: Compute projected doubles amplitudes
+        std::vector<int> ij_idx_list = index_list(triples_ext_domain, lmopair_to_paos_[ij]);
+        auto S_ij_ijk = linalg::doublet(X_pno_[ij], submatrix_rows(*S_ijk, ij_idx_list), true, false);
+        auto T_ij = linalg::triplet(S_ij_ijk, T_iajb_[ij], S_ij_ijk, true, false, false);
+        auto lambda_ij = linalg::triplet(S_ij_ijk, lambda_iajb_[ij], S_ij_ijk, true, false, false);
+
+        std::vector<int> jk_idx_list = index_list(triples_ext_domain, lmopair_to_paos_[jk]);
+        auto S_jk_ijk = linalg::doublet(X_pno_[jk], submatrix_rows(*S_ijk, jk_idx_list), true, false);
+        auto T_jk = linalg::triplet(S_jk_ijk, T_iajb_[jk], S_jk_ijk, true, false, false);
+        auto lambda_jk = linalg::triplet(S_jk_ijk, lambda_iajb_[jk], S_jk_ijk, true, false, false);
+
+        std::vector<int> ik_idx_list = index_list(triples_ext_domain, lmopair_to_paos_[ik]);
+        auto S_ik_ijk = linalg::doublet(X_pno_[ik], submatrix_rows(*S_ijk, ik_idx_list), true, false);
+        auto T_ik = linalg::triplet(S_ik_ijk, T_iajb_[ik], S_ik_ijk, true, false, false);
+        auto lambda_ik = linalg::triplet(S_ik_ijk, lambda_iajb_[ik], S_ik_ijk, true, false, false);
+
         for (int a_ijk = 0; a_ijk < ntno_ijk; a_ijk++) {
             for (int b_ijk = 0; b_ijk < ntno_ijk; b_ijk++) {
                 for (int c_ijk = 0; c_ijk < ntno_ijk; c_ijk++) {
+                    // Now including the Fock terms
                     (*V_ijk)(a_ijk, b_ijk * ntno_ijk + c_ijk) += (*T_i)(a_ijk, 0) * (*K_jk)(b_ijk, c_ijk) +
-                        (*T_j)(b_ijk, 0) * (*K_ik)(a_ijk, c_ijk) + (*T_k)(c_ijk, 0) * (*K_ij)(a_ijk, b_ijk);
+                        (*T_j)(b_ijk, 0) * (*K_ik)(a_ijk, c_ijk) + (*T_k)(c_ijk, 0) * (*K_ij)(a_ijk, b_ijk) +
+                        (*Fia)(a_ijk, 0) * (*T_jk)(b_ijk, c_ijk) + (*Fjb)(b_ijk, 0) * (*T_ik)(a_ijk, c_ijk) + (*Fkc)(c_ijk, 0) * (*T_ij)(a_ijk, b_ijk);
+
+                    // Now including the Fock terms
                     (*L_ijk)(a_ijk, b_ijk * ntno_ijk + c_ijk) += (*lambda_i)(a_ijk, 0) * (*K_jk)(b_ijk, c_ijk) +
-                        (*lambda_j)(b_ijk, 0) * (*K_ik)(a_ijk, c_ijk) + (*lambda_k)(c_ijk, 0) * (*K_ij)(a_ijk, b_ijk);
+                        (*lambda_j)(b_ijk, 0) * (*K_ik)(a_ijk, c_ijk) + (*lambda_k)(c_ijk, 0) * (*K_ij)(a_ijk, b_ijk) +
+                        (*Fia)(a_ijk, 0) * (*lambda_jk)(b_ijk, c_ijk) + (*Fjb)(b_ijk, 0) * (*lambda_ik)(a_ijk, c_ijk) 
+                        + (*Fkc)(c_ijk, 0) * (*lambda_ij)(a_ijk, b_ijk);
                 } // end c_ijk
             } // end b_ijk
         } // end a_ijk
