@@ -1462,6 +1462,8 @@ void export_mints(py::module& m) {
              "Returns petite list which transforms AO basis functions to SO's, \
               setting argument to true is for Cartesian basis, false is for Spherical Harmonic basis",
              "include_pure_transform"_a)
+        .def("cartao_to_ao_transform", &MintsHelper::cartao_to_ao_transform,
+             "Returns CartAO->AO (cartesian->BF) transformation matrix")
 
         // Integral builders
         .def("integral", &MintsHelper::integral, "Integral factory being used")

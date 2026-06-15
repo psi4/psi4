@@ -153,6 +153,8 @@ class PSI_API MintsHelper {
      *  \param include_pure_transform Is either kFromCartesianAO or kFromBF.
      */
     std::shared_ptr<PetiteList> petite_list(bool include_pure_transform) const;
+    /// Returns CartAO->AO (cartesian->BF) transformation matrix of shape (nbf, nao).
+    SharedMatrix cartao_to_ao_transform() const;
     /// Basis set being used.
     std::shared_ptr<BasisSet> basisset() const;
     /// SO basis set being used.

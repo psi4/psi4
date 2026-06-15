@@ -303,7 +303,8 @@ class PSI_API PetiteList {
         */
     SharedMatrix aotoso();
 
-    /** @return the SO->AO coefficient matrix (the inverse of AO->SO; for Abelian point groups it
+    /** @return the SO->AO coefficient matrix (the inverse of AO->SO (unless
+        include_pure_transform_=true and basis_.puream()=true); for Abelian point groups it
         is a transpose of AO->SO matrix). The columns correspond to AOs (see AO_basisdim() )
         and rows to SOs (see SO_basisdim() ).
 

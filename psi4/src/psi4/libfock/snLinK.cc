@@ -37,7 +37,6 @@
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/integral.h"
-#include "psi4/libmints/petitelist.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -279,15 +278,14 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
     // create matrix for spherical-to-cartesian matrix transformations
     if (force_cartesian && primary_->has_puream()) {
-        const auto factory = std::make_shared<IntegralFactory>(primary, primary, primary, primary);
-        PetiteList petite(primary, factory, true);
-        sph_to_cart_matrix_ = petite.sotoao(); 
+        MintsHelper helper(primary_, options_, 0);
+        sph_to_cart_matrix_ = helper.cartao_to_ao_transform();
 
         // SNLINK_FORCE_CARTESIAN only works with C1 symmetry currently
         // TODO: Fix this!
-        if (sph_to_cart_matrix_->nirrep() != 1) {
-            auto point_group = primary->molecule()->point_group();
-            
+        auto point_group = primary_->molecule()->point_group();
+        auto point_group_symbol = point_group->symbol();
+        if (point_group_symbol != "c1" && point_group_symbol != "C1") {
             std::string message = "SNLINK_FORCE_CARTESIAN only works with C1 symmetry! ";
             message += "Current molecular point group is ";
             message += point_group->symbol();   

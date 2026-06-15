@@ -86,10 +86,6 @@ class PCM final {
     /// Current basis set (for puream and nao/nso info)
     std::shared_ptr<BasisSet> basisset_;
 
-    /// The AO->SO transformation matrix, which is used for transforming
-    /// matrices between pure and Cartesian representations.
-    SharedMatrix my_aotoso_;
-
     /// Factory for the electrostatic integrals
     PCMPotentialInt *potential_int_;
 

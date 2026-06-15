@@ -36,7 +36,6 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/potentialint.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -146,9 +145,6 @@ PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared
 
     auto integrals = std::make_shared<IntegralFactory>(basisset, basisset, basisset, basisset);
 
-    PetiteList petite(basisset, integrals, true);
-    my_aotoso_ = petite.aotoso();
-
     potential_int_ = static_cast<PCMPotentialInt *>(integrals->pcm_potentialint().release());
 
     context_ = detail::init_PCMSolver(pcmsolver_parsed_fname_, molecule);
@@ -209,7 +205,6 @@ PCM::PCM(const PCM *other) {
     tess_Zxyz_ = other->tess_Zxyz_->clone();
     MEP_n_ = std::make_shared<Vector>(std::move(other->MEP_n_->clone()));
     basisset_ = other->basisset_;
-    my_aotoso_ = other->my_aotoso_->clone();
     potential_int_ = other->potential_int_;
     context_ = detail::init_PCMSolver(other->pcmsolver_parsed_fname_, basisset_->molecule());
     pcm_print_ = other->pcm_print_;

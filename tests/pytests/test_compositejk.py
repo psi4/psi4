@@ -1,7 +1,7 @@
 import pytest
 
 from utils import compare_values, compare
-from addons import using
+from addons import using, uusing
 
 import psi4
 
@@ -180,6 +180,27 @@ def test_seminum(inp, scf, mols, request):
     psi4.set_options({"scf_type" : "pk"})
     energy_pk = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
     assert compare_values(energy_pk, energy_seminum, 4, f'{test_id} DFDIRJ+COSX accurate to PK (1e-4 threshold)')
+
+
+@uusing("gauxc")
+def test_snlink_force_cartesian_guard(mols):
+    """Sentinel for snLinK cartesian transform path."""
+
+    molecule = mols["h2o"]
+    molecule.reset_point_group("C1")
+
+    psi4.set_options(
+        {
+            "scf_type": "dfdirj+snlink",
+            "basis": "cc-pvdz",
+            "reference": "rhf",
+            "snlink_force_cartesian": True,
+        }
+    )
+
+    energy = psi4.energy("hf", molecule=molecule)
+    assert compare_values(-76.026788692185, energy, 6, "snlink force-cartesian sentinel energy")
+
 
 @pytest.mark.parametrize(
     "inp",

@@ -439,5 +439,3 @@ class PSI_API snLinK : public SplitJK {
 }
 
 #endif
-
-

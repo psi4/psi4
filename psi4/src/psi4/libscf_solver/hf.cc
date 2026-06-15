@@ -550,21 +550,23 @@ void HF::form_H() {
             int nso = 0;
             for (int h = 0; h < nirrep_; h++) nso += nsopi_[h];
             int nao = basisset_->nao();
+            int nbf = basisset_->nbf();
 
             // Set up AO->SO transformation matrix (u)
             MintsHelper helper(basisset_, options_, 0);
-            SharedMatrix aotoso = helper.petite_list(true)->aotoso();
+            SharedMatrix aotoso = helper.petite_list(false)->aotoso();
+            SharedMatrix cart_to_ao = helper.cartao_to_ao_transform();
             Matrix u(nao, nso);
-            int offset = 0;
+            auto up = u.pointer();
+            auto cp = cart_to_ao->pointer();
 
+            int offset = 0;
             for (int h = 0; h < nirrep_; h++) {
-                // These loops should be vectorized for a (small) efficiency gain.
-                for (int j = 0; j < aotoso->coldim(h); j++) {
-                    for (int i = 0; i < nao; i++) {
-                        u.set(i, j + offset, aotoso->get(h, i, j));
-                    }
-                }
-                offset += aotoso->coldim(h);
+                int nsol = aotoso->coldim(h);
+                if (!nsol) continue;
+                C_DGEMM('T', 'N', nao, nsol, nbf, 1.0, cp[0], nao, aotoso->pointer(h)[0], nsol, 0.0,
+                        &(up[0][offset]), nso);
+                offset += nsol;
             }
 
             Vector phi_ao(nao);
