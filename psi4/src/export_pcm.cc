@@ -41,7 +41,7 @@ using namespace pybind11::literals;
 void export_pcm(py::module_& m) {
     py::classh<PCM> pcm(m, "PCM", "Class interfacing with PCMSolver");
 
-    py::native_enum<PCM::CalcType>(pcm, "CalcType", "enum.Enum")
+    py::native_enum<PCM::CalcType>(pcm, "CalcType", "enum.IntEnum")
         .value("Total", PCM::CalcType::Total)
         .value("NucAndEle", PCM::CalcType::NucAndEle)
         .value("EleOnly", PCM::CalcType::EleOnly)

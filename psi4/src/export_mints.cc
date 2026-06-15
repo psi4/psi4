@@ -487,19 +487,19 @@ void export_mints(py::module_& m) {
         .def("set_block", &IntVector::set_block, "Set a vector block", "slice"_a, "block"_a)
         .def_static("iota", &IntVector::iota);
 
-    py::native_enum<diagonalize_order>(m, "DiagonalizeOrder", "enum.Enum", "Defines ordering of eigenvalues after diagonalization")
+    py::native_enum<diagonalize_order>(m, "DiagonalizeOrder", "enum.IntEnum", "Defines ordering of eigenvalues after diagonalization")
         .value("Ascending", ascending)
         .value("Descending", descending)
         .export_values()
         .finalize();
 
-    py::native_enum<Molecule::GeometryUnits>(m, "GeometryUnits", "enum.Enum", "The units used to define the geometry")
+    py::native_enum<Molecule::GeometryUnits>(m, "GeometryUnits", "enum.IntEnum", "The units used to define the geometry")
         .value("Angstrom", Molecule::Angstrom)
         .value("Bohr", Molecule::Bohr)
         .export_values()
         .finalize();
 
-    py::native_enum<Molecule::FragmentType>(m, "FragmentType", "enum.Enum", "Fragment activation status")
+    py::native_enum<Molecule::FragmentType>(m, "FragmentType", "enum.IntEnum", "Fragment activation status")
         .value("Absent", Molecule::Absent)  // Neglect completely
         .value("Real", Molecule::Real)      // Include, as normal
         .value("Ghost", Molecule::Ghost)    // Include, but with ghost atoms
@@ -525,7 +525,7 @@ void export_mints(py::module_& m) {
     typedef void (Matrix::*set_block_shared)(const Slice&, const Slice&, SharedMatrix);
     typedef SharedMatrix (Matrix::*get_block_shared)(const Slice&, const Slice&) const;
 
-    py::native_enum<Matrix::SaveType>(m, "SaveType", "enum.Enum", "The layout of the matrix for saving")
+    py::native_enum<Matrix::SaveType>(m, "SaveType", "enum.IntEnum", "The layout of the matrix for saving")
         .value("SubBlocks", Matrix::SaveType::SubBlocks)
         .value("LowerTriangle", Matrix::SaveType::LowerTriangle)
         .export_values()
@@ -747,7 +747,7 @@ void export_mints(py::module_& m) {
             * If A, B, C not of the the same symmetry, always computed as ``(AB)C``.
             )pbdoc");
 
-    py::native_enum<DerivCalcType>(m, "DerivCalcType", "enum.Enum")
+    py::native_enum<DerivCalcType>(m, "DerivCalcType", "enum.IntEnum")
         .value("Default", DerivCalcType::Default, "Use internal logic.")
         .value("Correlated", DerivCalcType::Correlated, "Correlated methods that write RDMs and Lagrangian to disk.")
         .finalize();
@@ -1171,7 +1171,7 @@ void export_mints(py::module_& m) {
         .def("erd_coef", &GaussianShell::erd_coef, "Return ERD normalized coefficient of pi'th primitive", "pi"_a)
         .def("coef", &GaussianShell::coef, "Return coefficient of the pi'th primitive", "pi"_a);
 
-    py::native_enum<PrimitiveType>(m, "PrimitiveType", "enum.Enum", "May be Normalized or Unnormalized")
+    py::native_enum<PrimitiveType>(m, "PrimitiveType", "enum.IntEnum", "May be Normalized or Unnormalized")
         .value("Normalized", Normalized)
         .value("Unnormalized", Unnormalized)
         .export_values()

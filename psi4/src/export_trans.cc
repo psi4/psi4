@@ -74,33 +74,33 @@ void export_trans(py::module_& m) {
         m, "IntegralTransform", "IntegralTransform transforms one- and two-electron integrals within general spaces",
         py::dynamic_attr());
 
-    py::native_enum<IntegralTransform::HalfTrans>(int_trans_bind, "HalfTrans", "enum.Enum")
+    py::native_enum<IntegralTransform::HalfTrans>(int_trans_bind, "HalfTrans", "enum.IntEnum")
         .value("MakeAndKeep", IntegralTransform::HalfTrans::MakeAndKeep)
         .value("ReadAndKeep", IntegralTransform::HalfTrans::ReadAndKeep)
         .value("MakeAndNuke", IntegralTransform::HalfTrans::MakeAndNuke)
         .value("ReadAndNuke", IntegralTransform::HalfTrans::ReadAndNuke)
         .finalize();
-    py::native_enum<IntegralTransform::TransformationType>(int_trans_bind, "TransformationType", "enum.Enum")
+    py::native_enum<IntegralTransform::TransformationType>(int_trans_bind, "TransformationType", "enum.IntEnum")
         .value("Restricted", IntegralTransform::TransformationType::Restricted)
         .value("Unrestricted", IntegralTransform::TransformationType::Unrestricted)
         .value("SemiCanonical", IntegralTransform::TransformationType::SemiCanonical)
         .finalize();
-    py::native_enum<IntegralTransform::MOOrdering>(int_trans_bind, "MOOrdering", "enum.Enum")
+    py::native_enum<IntegralTransform::MOOrdering>(int_trans_bind, "MOOrdering", "enum.IntEnum")
         .value("QTOrder", IntegralTransform::MOOrdering::QTOrder)
         .value("PitzerOrder", IntegralTransform::MOOrdering::PitzerOrder)
         .finalize();
-    py::native_enum<IntegralTransform::OutputType>(int_trans_bind, "OutputType", "enum.Enum")
+    py::native_enum<IntegralTransform::OutputType>(int_trans_bind, "OutputType", "enum.IntEnum")
         .value("DPDOnly", IntegralTransform::OutputType::DPDOnly)
         .value("IWLOnly", IntegralTransform::OutputType::IWLOnly)
         .value("IWLAndDPD", IntegralTransform::OutputType::IWLAndDPD)
         .finalize();
-    py::native_enum<IntegralTransform::FrozenOrbitals>(int_trans_bind, "FrozenOrbitals", "enum.Enum")
+    py::native_enum<IntegralTransform::FrozenOrbitals>(int_trans_bind, "FrozenOrbitals", "enum.IntEnum")
         .value("None", IntegralTransform::FrozenOrbitals::None)
         .value("OccOnly", IntegralTransform::FrozenOrbitals::OccOnly)
         .value("VirOnly", IntegralTransform::FrozenOrbitals::VirOnly)
         .value("OccAndVir", IntegralTransform::FrozenOrbitals::OccAndVir)
         .finalize();
-    py::native_enum<IntegralTransform::SpinType>(int_trans_bind, "SpinType", "enum.Enum")
+    py::native_enum<IntegralTransform::SpinType>(int_trans_bind, "SpinType", "enum.IntEnum")
         .value("Alpha", IntegralTransform::SpinType::Alpha)
         .value("Beta", IntegralTransform::SpinType::Beta)
         .finalize();

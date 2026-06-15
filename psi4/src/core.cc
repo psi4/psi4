@@ -1198,7 +1198,7 @@ PYBIND11_MODULE(core, core) {
     core.def("initialize", &psi4_python_module_initialize, "Called upon psi4 module import to initialize timers, singletons, and I/O. Idempotent");
     core.def("finalize", &psi4_python_module_finalize, "Called upon psi4 module exit to closes timers and I/O.");
 
-    py::native_enum<PsiReturnType>(core, "PsiReturnType", "enum.Enum", "Return status.")  // after C-OptKing, only Failure slightly used
+    py::native_enum<PsiReturnType>(core, "PsiReturnType", "enum.IntEnum", "Return status.")  // after C-OptKing, only Failure slightly used
         .value("Success", Success)
         .value("Failure", Failure)
         .export_values()
