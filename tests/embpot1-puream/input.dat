@@ -1,5 +1,5 @@
 #! External potential calculation involving a TIP3P water and a QM water.
-#! Pure-am sentinel variant (cc-pVDZ) of embpot1.
+#! Pure-am sentinel variant (cc-pVDZ that includes d-functions) of embpot1.
 
 molecule water {
   0 1

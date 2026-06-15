@@ -1,7 +1,6 @@
 add_subdirectory(dft)
 add_subdirectory(dipole)
 add_subdirectory(scf)
-add_subdirectory(scf-puream)
 add_subdirectory(opt-fd)
 add_subdirectory(ccsd-pte)
 add_subdirectory(ghost)
