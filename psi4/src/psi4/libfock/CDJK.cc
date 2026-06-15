@@ -76,7 +76,7 @@ void CDJK::initialize_JK_core() {
     //      const std::shared_ptr<TwoBodyAOInt> cderi = factory.eri();
     // in the future. A TwoBodyAOInt object keeps the factory as a raw non-owning back-pointer (const IntegralFactory
     // *integral_) and is therefore probably quite a dangerous thing if it ever outlives the IntegralFactory that was
-    // used for contructing the TwoBodyAOInt.
+    // used for constructing the TwoBodyAOInt.
     auto integral = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     cderi_ = std::shared_ptr<TwoBodyAOInt>(integral->eri());
     

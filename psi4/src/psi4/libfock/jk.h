@@ -1053,9 +1053,9 @@ class PSI_API DiskDFJK : public JK {
  */
 class PSI_API CDJK : public DiskDFJK {
    private:
-    /// @brief Tolarence used in the Cholesky decomposition. Set by the ctor.
+    /// @brief Tolerance used in the Cholesky decomposition. Set by the ctor.
     const double cholesky_tolerance_;
-    /// @brief The number of cholesky vectors.
+    /// @brief The number of Cholesky vectors.
     long int ncholesky_;
 
    protected:
@@ -1100,11 +1100,11 @@ class PSI_API CDJK : public DiskDFJK {
     /// @brief Destructor for CDJK (Coulomb and exchange matrices via Cholesky decomposition) objects
     /// @note Explicitly saying we want to override the inherited dtor with the default dtor for this object is not
     /// strictly necessary, but it helps disarm a footgun. Since this is an override, the corresponding base class
-    /// function must be virtual. Hypotetically, someone could try to change ~JK() to not be virtual, which would turn
-    /// std::unique_ptr<JK> objects into UB hazards. For example if std::unique_ptr<JK> is given a DirectJK* to hold
+    /// function must be virtual. Hypothetically, someone could try to change ~JK() to not be virtual, which would turn
+    /// std::unique_ptr<JK> objects into UB hazards. For example if std::unique_ptr<JK> is given a DiskDFJK* to hold
     /// onto, when unique_ptr destructs it would execute delete JK*, which would only call ~JK(), leaking everything
-    /// that ~DFJK() would have cleaned up. Currently since ~JK() is virtual, delete JK* on a DirectJK* actually starts
-    /// at ~DFJK(), which then eventually also calls ~JK(). Which this override below in place, changing ~JK() to not be
+    /// that ~DiskDFJK() would have cleaned up. Currently since ~JK() is virtual, delete JK* on a DiskDFJK* actually starts
+    /// at ~DiskDFJK(), which then eventually also calls ~JK(). With this override below in place, changing ~JK() to not be
     /// virtual would give a compile error, hopefully leading the developer to reconsider.
     ~CDJK() override = default;
 
