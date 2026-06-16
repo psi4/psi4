@@ -68,4 +68,11 @@ DPD stub_dpd_instance;
 
 DPD *global_dpd_ = &stub_dpd_instance;
 
+// libciomr's DSYEV_ascending lands in the same unity translation unit as the
+// print helpers libpsio pulls in, so the linker drags its reference to libqt's
+// C_DSYEV LAPACK wrapper even though the test never diagonalizes anything.
+// Linking libqt to satisfy it cascades into libmints/Libint; a no-op leaf stub
+// is the bounded fix. Never called by the test.
+void C_DSYEV(char, char, int, double *, int, double *, double *, int) {}
+
 }  // namespace psi

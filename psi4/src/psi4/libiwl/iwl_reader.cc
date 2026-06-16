@@ -30,29 +30,33 @@
   \file
   \ingroup IWL
 */
-#include <cstdio>
-#include "psi4/libpsio/psio.h"
-#include "iwl.hpp"
+#include "iwl_reader.h"
+#include "psi4/libpsio/psio.hpp"
 
 namespace psi {
 
-/*!
-** IWL_WRTONE()
-**
-** This function writes one-electron integrals.
-**
-**   itap       = tape to read ints from
-**   label      = the PSIO label
-**   ntri       = the size of the array (lower triangle)
-**   onel_ints  = array to hold the one-electron integrals.
-**
-** David Sherrill, March 1995
-** Revised by TDC, June 2001
-** \ingroup IWL
-*/
-void IWL::write_one(PSIO *psio, int itap, const char *label, int ntri, double *onel_ints) {
-    psio->open(itap, PSIO_OPEN_OLD);
-    psio->write_entry(itap, label, (char *)onel_ints, ntri * sizeof(double));
-    psio->close(itap, 1);
+IWLReader::IWLReader(std::shared_ptr<PSIO> psio, int unit)
+    : buf_(psio.get(), unit, /*cutoff*/ 0.0, /*oldfile*/ 1, /*readflag*/ 1) {}
+
+bool IWLReader::next(Entry& e) {
+    // Skip past any exhausted (or empty) buckets, fetching the next one until
+    // we either find an entry or run out of buckets. The empty-bucket loop
+    // guards the corner case the 1995 README warned about.
+    while (cur_ >= buf_.buffer_count()) {
+        if (buf_.last_buffer()) return false;
+        buf_.fetch();
+        cur_ = 0;
+    }
+
+    const Label* labels = buf_.labels();
+    const int j = 4 * cur_;
+    e.p = static_cast<int>(labels[j + 0]);
+    e.q = static_cast<int>(labels[j + 1]);
+    e.r = static_cast<int>(labels[j + 2]);
+    e.s = static_cast<int>(labels[j + 3]);
+    e.value = static_cast<double>(buf_.values()[cur_]);
+    ++cur_;
+    return true;
 }
-}
+
+}  // namespace psi

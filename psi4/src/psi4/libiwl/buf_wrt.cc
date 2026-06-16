@@ -32,7 +32,6 @@
 */
 #include <cmath>
 #include <memory>
-#include "iwl.h"
 #include "iwl.hpp"
 #include "iwl_impl.h"
 
