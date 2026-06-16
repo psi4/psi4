@@ -42,7 +42,7 @@ namespace psi {
 class Options;
 struct dpdfile2;
 struct dpdbuf4;
-struct iwlbuf;
+class IWLReader;
 }  // namespace psi
 
 namespace psi {
@@ -183,7 +183,7 @@ class CCEnergyWavefunction : public Wavefunction {
     void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C1, double ***C2, int nirreps,
                    int **mo_row, int **so_row, Dimension const& mospi_left, Dimension const& mospi_right,
 		           Dimension const& sospi, int type, double alpha, double beta);
-    int AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO);
+    int AO_contribute(IWLReader &eri, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO);
 
     double rhf_energy();
     double uhf_energy();

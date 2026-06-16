@@ -33,7 +33,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdpd/dpd.h"
@@ -527,7 +527,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
         int ntri_all = nmo * (nmo + 1) / 2;
         double *tmp_oei = init_array(ntri_all);
 
-        iwl_rdone(PSIF_OEI, PSIF_MO_A_FZC, tmp_oei, ntri_all, 0, 0, "outfile");
+        IWL::read_one(_default_psio_lib_.get(), PSIF_OEI, PSIF_MO_A_FZC, tmp_oei, ntri_all, 0, 0, "outfile");
 
         global_dpd_->file2_init(&H, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
         global_dpd_->file2_mat_init(&H);
@@ -574,7 +574,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
         global_dpd_->file2_mat_close(&H);
         global_dpd_->file2_close(&H);
 
-        iwl_rdone(PSIF_OEI, PSIF_MO_B_FZC, tmp_oei, ntri_all, 0, 0, "outfile");
+        IWL::read_one(_default_psio_lib_.get(), PSIF_OEI, PSIF_MO_B_FZC, tmp_oei, ntri_all, 0, 0, "outfile");
 
         global_dpd_->file2_init(&H, PSIF_CC_OEI, 0, 2, 2, "h(i,j)");
         global_dpd_->file2_mat_init(&H);
@@ -625,7 +625,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
         int ntri_all = nmo * (nmo + 1) / 2;
         double *tmp_oei = init_array(ntri_all);
 
-        iwl_rdone(PSIF_OEI, PSIF_MO_FZC, tmp_oei, ntri_all, 0, 0, "outfile");
+        IWL::read_one(_default_psio_lib_.get(), PSIF_OEI, PSIF_MO_FZC, tmp_oei, ntri_all, 0, 0, "outfile");
 
         global_dpd_->file2_init(&H, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
         global_dpd_->file2_mat_init(&H);
