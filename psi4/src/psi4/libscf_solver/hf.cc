@@ -558,13 +558,13 @@ void HF::form_H() {
             SharedMatrix cart_to_ao = helper.cartao_to_ao_transform();
             Matrix u(nao, nso);
             auto up = u.pointer();
-            auto cp = cart_to_ao->pointer();
+            auto cart_to_aop = cart_to_ao->pointer();
 
             int offset = 0;
             for (int h = 0; h < nirrep_; h++) {
                 int nsol = aotoso->coldim(h);
                 if (!nsol) continue;
-                C_DGEMM('T', 'N', nao, nsol, nbf, 1.0, cp[0], nao, aotoso->pointer(h)[0], nsol, 0.0,
+                C_DGEMM('T', 'N', nao, nsol, nbf, 1.0, cart_to_aop[0], nao, aotoso->pointer(h)[0], nsol, 0.0,
                         &(up[0][offset]), nso);
                 offset += nsol;
             }

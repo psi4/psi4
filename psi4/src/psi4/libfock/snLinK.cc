@@ -283,9 +283,8 @@ snLinK::snLinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(pr
 
         // SNLINK_FORCE_CARTESIAN only works with C1 symmetry currently
         // TODO: Fix this!
-        auto point_group = primary_->molecule()->point_group();
-        auto point_group_symbol = point_group->symbol();
-        if (point_group_symbol != "c1" && point_group_symbol != "C1") {
+        if (cartao_to_ao_matrix_->nirrep() != 1) {
+            auto point_group = primary_->molecule()->point_group();
             std::string message = "SNLINK_FORCE_CARTESIAN only works with C1 symmetry! ";
             message += "Current molecular point group is ";
             message += point_group->symbol();   

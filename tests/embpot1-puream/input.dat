@@ -11,11 +11,13 @@ molecule water {
   no_com
 }
 
+# Define a TIP3P water as the external potential
 import numpy as np
 external_potentials = np.array([
 -0.834,1.649232019048,0.0,-2.356023604706,
 0.417,0.544757019107,0.0,-3.799961446760,
 0.417,0.544757019107,0.0,-0.912085762652]).reshape((-1, 4))
+# convert coordinates columns to bohr
 external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
 
 set {
@@ -26,13 +28,16 @@ set {
     dft_radial_points 300
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-TIGHT
     psi4.set_options({"d_convergence": 1e-9})
 
+# Calculate the total energy and gradient on the wavefunction in the
+# presence of the external potential charges, embedded analytically.
 e_analytic, wfn = energy('scf', molecule=water, return_wfn=True,
                          external_potentials=external_potentials)
 grad_analytic = gradient('scf', ref_wfn=wfn)
 
+# Construct quadrature grid and potential at each point.
 grid = DFTGrid.build(water, wfn.basisset())
 data = []
 for block in grid.blocks():
@@ -43,10 +48,15 @@ for block in grid.blocks():
     v = np.zeros_like(w)
     for i in range(block.npoints()):
         for charge in external_potentials:
-            r = np.array([x[i] - charge[1], y[i] - charge[2], z[i] - charge[3]])
+            r = np.array(
+                [x[i] - charge[1],
+                 y[i] - charge[2],
+                 z[i] - charge[3]],
+            )
             v[i] += -charge[0] / np.linalg.norm(r)
     data.append(np.stack((x, y, z, w, v), axis=-1))
 
+# Write EMBPOT file, to be read in.
 data = np.concatenate(tuple(data), axis=0)
 np.savetxt("EMBPOT", data, header=f"{len(data)}", comments="")
 
@@ -55,26 +65,46 @@ set {
     perturb_with embpot
 }
 
+# Calculate the electronic contributions to the energy and gradient on
+# the wavefunction in the presence of the external potential charges,
+# embedded numerically via EMBPOT.
 e_embpot, wfn = energy('scf', molecule=water, return_wfn=True)
 grad_embpot = gradient('scf', ref_wfn=wfn)
 
+# Calculate the nuclear contributions to the energy and gradient on
+# the wavefunction in the presence of the external potential charges.
 e_nuc = 0
 grad_nuc = []
 for atom in range(water.natom()):
     grad_charge = []
     for charge in external_potentials:
-        r = np.array([water.x(atom) - charge[1], water.y(atom) - charge[2], water.z(atom) - charge[3]])
+        r = np.array(
+            [water.x(atom) - charge[1],
+             water.y(atom) - charge[2],
+             water.z(atom) - charge[3]],
+        )
         e_nuc += charge[0] * water.Z(atom) / np.linalg.norm(r)
         grad_charge.append(
             [-charge[0] * water.Z(atom) * r[0] * np.linalg.norm(r)**-3,
              -charge[0] * water.Z(atom) * r[1] * np.linalg.norm(r)**-3,
              -charge[0] * water.Z(atom) * r[2] * np.linalg.norm(r)**-3],
         )
-    grad_nuc.append([sum([grad[i] for grad in grad_charge]) for i in range(3)])
+    grad_nuc.append(
+        [sum([grad[i] for grad in grad_charge]) for i in range(3)],
+    )
 grad_nuc = Matrix.from_array(np.array(grad_nuc))
 
+# Add nuclear contributions to energy and gradient.
 e_embpot += e_nuc
 grad_embpot.add(grad_nuc)
 
-compare_matrices(grad_analytic, grad_embpot, 5, "Gradient with analytic embedding vs. EMBPOT embedding") #TEST
-compare_values(e_analytic, e_embpot, 6, "Energy with analytic embedding vs. EMBPOT embedding") #TEST
+compare_matrices(grad_analytic, grad_embpot, 5, "Gradient with analytic point charge embedding vs. with numerical EMBPOT embedding") #TEST
+compare_values(e_analytic, e_embpot, 6, "Energy with analytic point charge embedding vs. with numerical EMBPOT embedding")  #TEST
+
+ene_ref = -76.03496668314207  #TEST
+grad_ref = ([
+        [-6.62067965e-03, -4.94792810e-07, -1.36764679e-02],
+        [ 1.96382829e-03,  1.44553539e-02,  8.77452696e-03],
+        [ 1.96375728e-03, -1.44548575e-02,  8.77413174e-03]])
+compare_values(ene_ref, e_analytic, 6, "fixed compare ene")  #TEST
+compare_values(grad_ref, grad_analytic, 5e-5, "fixed compare grad")  #TEST
