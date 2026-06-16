@@ -47,7 +47,8 @@
 #include "psi4/cc/ccwave.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_writer.h"
+#include "psi4/libpsio/psio.hpp"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
@@ -83,14 +84,14 @@ void relax_D(const struct RHO_Params& rho_params);
 void sortI(Wavefunction& wfn);
 void fold(const struct RHO_Params& rho_params);
 void deanti(const struct RHO_Params& rho_params);
-void add_ref_RHF(struct iwlbuf *);
-void add_ref_ROHF(struct iwlbuf *);
-void add_ref_UHF(struct iwlbuf *, struct iwlbuf *, struct iwlbuf *);
-void add_core_ROHF(struct iwlbuf *);
-// void add_core_UHF(struct iwlbuf *, struct iwlbuf *, struct iwlbuf *);
-void dump_RHF(struct iwlbuf *, const struct RHO_Params& rho_params);
-void dump_ROHF(struct iwlbuf *, const struct RHO_Params& rho_params);
-void dump_UHF(struct iwlbuf *, struct iwlbuf *, struct iwlbuf *, const struct RHO_Params& rho_params);
+void add_ref_RHF(IWLWriter &);
+void add_ref_ROHF(IWLWriter &);
+void add_ref_UHF(IWLWriter &, IWLWriter &, IWLWriter &);
+void add_core_ROHF(IWLWriter &);
+// void add_core_UHF(IWLWriter &, IWLWriter &, IWLWriter &);
+void dump_RHF(IWLWriter &, const struct RHO_Params& rho_params);
+void dump_ROHF(IWLWriter &, const struct RHO_Params& rho_params);
+void dump_UHF(IWLWriter &, IWLWriter &, IWLWriter &, const struct RHO_Params& rho_params);
 void kinetic(std::shared_ptr<Wavefunction> wfn);
 void probable();
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -140,8 +141,6 @@ void ex_td_print(std::vector<struct XTD_Params>);
 PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn, Options &options) {
     int i;
     int **cachelist, *cachefiles;
-    struct iwlbuf OutBuf;
-    struct iwlbuf OutBuf_AA, OutBuf_BB, OutBuf_AB;
     dpdfile2 D;
     double tval;
 
@@ -284,43 +283,38 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
 
         if (params.ref == 0) { /** RHF **/
 
-            iwl_buf_init(&OutBuf, PSIF_MO_TPDM, params.tolerance, 0, 0);
+            IWLWriter OutBuf(_default_psio_lib_, PSIF_MO_TPDM, params.tolerance);
 
-            add_core_ROHF(&OutBuf);
-            add_ref_RHF(&OutBuf);
+            add_core_ROHF(OutBuf);
+            add_ref_RHF(OutBuf);
 
-            dump_RHF(&OutBuf, rho_params[i]);
+            dump_RHF(OutBuf, rho_params[i]);
 
-            iwl_buf_flush(&OutBuf, 1);
-            iwl_buf_close(&OutBuf, 1);
+            OutBuf.close();
         } else if (params.ref == 1) { /** ROHF **/
 
-            iwl_buf_init(&OutBuf, PSIF_MO_TPDM, params.tolerance, 0, 0);
+            IWLWriter OutBuf(_default_psio_lib_, PSIF_MO_TPDM, params.tolerance);
 
-            add_core_ROHF(&OutBuf);
-            add_ref_ROHF(&OutBuf);
+            add_core_ROHF(OutBuf);
+            add_ref_ROHF(OutBuf);
 
-            dump_ROHF(&OutBuf, rho_params[i]);
+            dump_ROHF(OutBuf, rho_params[i]);
 
-            iwl_buf_flush(&OutBuf, 1);
-            iwl_buf_close(&OutBuf, 1);
+            OutBuf.close();
         } else if (params.ref == 2) { /** UHF **/
 
-            iwl_buf_init(&OutBuf_AA, PSIF_MO_AA_TPDM, params.tolerance, 0, 0);
-            iwl_buf_init(&OutBuf_BB, PSIF_MO_BB_TPDM, params.tolerance, 0, 0);
-            iwl_buf_init(&OutBuf_AB, PSIF_MO_AB_TPDM, params.tolerance, 0, 0);
+            IWLWriter OutBuf_AA(_default_psio_lib_, PSIF_MO_AA_TPDM, params.tolerance);
+            IWLWriter OutBuf_BB(_default_psio_lib_, PSIF_MO_BB_TPDM, params.tolerance);
+            IWLWriter OutBuf_AB(_default_psio_lib_, PSIF_MO_AB_TPDM, params.tolerance);
 
-            /*    add_core_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB); */
-            add_ref_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB);
+            /*    add_core_UHF(OutBuf_AA, OutBuf_BB, OutBuf_AB); */
+            add_ref_UHF(OutBuf_AA, OutBuf_BB, OutBuf_AB);
 
-            dump_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB, rho_params[i]);
+            dump_UHF(OutBuf_AA, OutBuf_BB, OutBuf_AB, rho_params[i]);
 
-            iwl_buf_flush(&OutBuf_AA, 1);
-            iwl_buf_flush(&OutBuf_BB, 1);
-            iwl_buf_flush(&OutBuf_AB, 1);
-            iwl_buf_close(&OutBuf_AA, 1);
-            iwl_buf_close(&OutBuf_BB, 1);
-            iwl_buf_close(&OutBuf_AB, 1);
+            OutBuf_AA.close();
+            OutBuf_BB.close();
+            OutBuf_AB.close();
         }
         std::shared_ptr<Matrix> Ca = ref_wfn->Ca();
         std::shared_ptr<Matrix> Cb = ref_wfn->Cb();

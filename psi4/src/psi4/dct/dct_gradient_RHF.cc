@@ -34,7 +34,7 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_writer.h"
 
 namespace psi {
 namespace dct {
@@ -485,12 +485,11 @@ void DCTSolver::compute_ewdm_odc_RHF() {
 
     dpdbuf4 G;
 
-    struct iwlbuf AA, AB;
 
     // Dump the density to IWL
 
     // Initialize IWL buffer for AB case
-    iwl_buf_init(&AB, PSIF_MO_TPDM, 1.0E-15, 0, 0);
+    IWLWriter AB(_default_psio_lib_, PSIF_MO_TPDM, 1.0E-15);
 
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
     // VVVV
@@ -510,7 +509,7 @@ void DCTSolver::compute_ewdm_odc_RHF() {
                 int C = avir_qt[c];
                 int D = bvir_qt[d];
                 double value = 4.0 * G.matrix[h][ab][cd];
-                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, "outfile", 0);
+                AB.write(A, C, B, D, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -535,7 +534,7 @@ void DCTSolver::compute_ewdm_odc_RHF() {
                 int K = aocc_qt[k];
                 int L = bocc_qt[l];
                 double value = 4.0 * G.matrix[h][ij][kl];
-                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "outfile", 0);
+                AB.write(I, K, J, L, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -559,7 +558,7 @@ void DCTSolver::compute_ewdm_odc_RHF() {
                 int A = avir_qt[a];
                 int B = bvir_qt[b];
                 double value = 4.0 * G.matrix[h][ij][ab];
-                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "outfile", 0);
+                AB.write(I, A, J, B, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -572,7 +571,7 @@ void DCTSolver::compute_ewdm_odc_RHF() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "Gamma SF <OV|OV>:<Ov|Ov>");
-    global_dpd_->buf4_dump(&G, &AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
@@ -591,7 +590,7 @@ void DCTSolver::compute_ewdm_odc_RHF() {
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = 1.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "outfile", 0);
+                AB.write(A, B, I, J, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -615,40 +614,39 @@ void DCTSolver::compute_ewdm_odc_RHF() {
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = (-2.0) * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, "outfile", 0);
+                AB.write(I, B, J, A, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
     }
     global_dpd_->buf4_close(&G);
 
-    iwl_buf_flush(&AB, 1);
-    iwl_buf_close(&AB, 1);
+    AB.close();
 
     // Presort TPDM (MO, AB case) for Deriv use
     presort_mo_tpdm_AB();
 
     // Initialize IWL buffer for AA case
-    iwl_buf_init(&AA, PSIF_MO_TPDM, 1.0E-16, 0, 0);
+    IWLWriter AA(_default_psio_lib_, PSIF_MO_TPDM, 1.0E-16);
     // VVVV
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                            "Gamma <VV|VV>");
     global_dpd_->buf4_scm(&G, 2.0);  // Prefactor was 1.0. Use 2.0 because BB case = AA case
-    global_dpd_->buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OOOO
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
                            "Gamma <OO|OO>");
     global_dpd_->buf4_scm(&G, 2.0);  // Prefactor was 1.0. Use 2.0 because BB case = AA case
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OOVV
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "Gamma <OO|VV>");
     global_dpd_->buf4_scm(&G, 2.0);  // Prefactor was 1.0. Use 2.0 because BB case = AA case
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OVOV
@@ -658,7 +656,7 @@ void DCTSolver::compute_ewdm_odc_RHF() {
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "Gamma <OV|OV>");
     global_dpd_->buf4_scm(&G, 1.0);
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, avir_qt, aocc_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, avir_qt, aocc_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // -Г<ov|vo> contribution:
@@ -678,15 +676,14 @@ void DCTSolver::compute_ewdm_odc_RHF() {
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = -1.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "outfile", 0);
+                AA.write(I, B, A, J, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
     }
     global_dpd_->buf4_close(&G);
 
-    iwl_buf_flush(&AA, 1);
-    iwl_buf_close(&AA, 1);
+    AA.close();
 
     // Presort TPDM (MO) for Deriv use
     presort_mo_tpdm_AA();

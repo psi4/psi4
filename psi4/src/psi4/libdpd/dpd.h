@@ -48,6 +48,7 @@
 namespace psi {
 
 class Matrix;
+class IWLWriter;
 
 #define T3_TIMER_ON (0)
 
@@ -434,7 +435,7 @@ class PSI_API DPD {
     int buf4_mat_irrep_close_block(dpdbuf4 *Buf, int irrep, int num_pq);
     int buf4_mat_irrep_rd_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_pq);
     int buf4_mat_irrep_wrt_block(dpdbuf4 *Buf, int irrep, int start_pq, int num_pq);
-    int buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf, int *prel, int *qrel, int *rrel, int *srel, int bk_pack,
+    int buf4_dump(dpdbuf4 *DPDBuf, IWLWriter &IWLBuf, int *prel, int *qrel, int *rrel, int *srel, int bk_pack,
                   int swap23);
     int trans4_init(dpdtrans4 *Trans, dpdbuf4 *Buf);
     int trans4_close(dpdtrans4 *Trans);
