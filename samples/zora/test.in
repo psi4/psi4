@@ -1,0 +1,45 @@
+#! Test of ZORA
+#! Reference values computed with equivalent ZORA code in pyscf. Grid options were matched as close as possible.
+
+ref_nr_e = -254.069872200578
+ref_nr_e_grid = -254.069872216168
+ref_sr_e = -254.458634539285
+
+molecule neon_dimer {
+0 1
+    Ne 0 0 0
+    Ne 1 0 0
+}
+
+set {
+    reference rhf
+    scf_type pk
+    e_convergence 1e-10
+    basis 3-21g
+}
+
+nr_e = energy('scf')
+
+set {
+    relativistic zora
+    zora_nr_debug true
+    zora_radial_points 160
+    zora_spherical_points 1202
+}
+
+# Same as computing grid based non-relativistic kinetic integral
+nr_e_grid = energy('scf')
+
+set zora_nr_debug false
+
+sr_e = energy('scf')
+
+print(f'{nr_e}  {ref_nr_e}')
+print(f'{nr_e_grid} {ref_nr_e_grid}')
+print(f'{sr_e} {ref_sr_e}')
+
+compare_values(nr_e ,ref_nr_e , 7, "Non-relativistic RHF energy")  #TEST
+compare_values(nr_e_grid, ref_nr_e_grid , 7, "Grid NR-kinetic RHF energy")  #TEST
+compare_values(sr_e, ref_sr_e, 7, "ZORA relativistic RHF energy") #TEST
+
+
