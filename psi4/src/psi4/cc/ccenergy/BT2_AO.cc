@@ -36,7 +36,7 @@
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
@@ -58,9 +58,6 @@ void CCEnergyWavefunction::BT2_AO() {
     int **T2_CD_row_start, **T2_Cd_row_start;
     dpdbuf4 tau, t2, tau1_AO, tau2_AO;
     dpdfile4 T;
-    struct iwlbuf InBuf;
-    int lastbuf;
-    double tolerance = 1e-14;
     int counter = 0, counterAA = 0, counterBB = 0, counterAB = 0;
 
     auto nirreps = moinfo_.nirreps;
@@ -158,20 +155,10 @@ void CCEnergyWavefunction::BT2_AO() {
                     global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
                 }
 
-                iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
-
-                lastbuf = InBuf.lastbuf;
-
-                counter += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
-
-                while (!lastbuf) {
-                    iwl_buf_fetch(&InBuf);
-                    lastbuf = InBuf.lastbuf;
-
-                    counter += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
+                {
+                    IWLReader eri(psio(), PSIF_SO_TEI);
+                    counter += AO_contribute(eri, &tau1_AO, &tau2_AO);
                 }
-
-                iwl_buf_close(&InBuf, 1);
 
                 if (params_.print & 2)
                     outfile->Printf("     *** Processed %d SO integrals for <ab||cd> --> T2\n", counter);
@@ -253,20 +240,10 @@ void CCEnergyWavefunction::BT2_AO() {
             global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
         }
 
-        iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
-
-        lastbuf = InBuf.lastbuf;
-
-        counterAA += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
-
-        while (!lastbuf) {
-            iwl_buf_fetch(&InBuf);
-            lastbuf = InBuf.lastbuf;
-
-            counterAA += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
+        {
+            IWLReader eri(psio(), PSIF_SO_TEI);
+            counterAA += AO_contribute(eri, &tau1_AO, &tau2_AO);
         }
-
-        iwl_buf_close(&InBuf, 1);
 
         if (params_.print & 2) outfile->Printf("     *** Processed %d SO integrals for <AB||CD> --> T2\n", counterAA);
 
@@ -326,20 +303,10 @@ void CCEnergyWavefunction::BT2_AO() {
             global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
         }
 
-        iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
-
-        lastbuf = InBuf.lastbuf;
-
-        counterBB += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
-
-        while (!lastbuf) {
-            iwl_buf_fetch(&InBuf);
-            lastbuf = InBuf.lastbuf;
-
-            counterBB += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
+        {
+            IWLReader eri(psio(), PSIF_SO_TEI);
+            counterBB += AO_contribute(eri, &tau1_AO, &tau2_AO);
         }
-
-        iwl_buf_close(&InBuf, 1);
 
         if (params_.print & 2) outfile->Printf("     *** Processed %d SO integrals for <ab||cd> --> T2\n", counterBB);
 
@@ -399,20 +366,10 @@ void CCEnergyWavefunction::BT2_AO() {
             global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
         }
 
-        iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
-
-        lastbuf = InBuf.lastbuf;
-
-        counterAB += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
-
-        while (!lastbuf) {
-            iwl_buf_fetch(&InBuf);
-            lastbuf = InBuf.lastbuf;
-
-            counterAB += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
+        {
+            IWLReader eri(psio(), PSIF_SO_TEI);
+            counterAB += AO_contribute(eri, &tau1_AO, &tau2_AO);
         }
-
-        iwl_buf_close(&InBuf, 1);
 
         if (params_.print & 2) outfile->Printf("     *** Processed %d SO integrals for <Ab|Cd> --> T2\n", counterAB);
 
@@ -475,20 +432,10 @@ void CCEnergyWavefunction::BT2_AO() {
             global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
         }
 
-        iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
-
-        lastbuf = InBuf.lastbuf;
-
-        counterAA += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
-
-        while (!lastbuf) {
-            iwl_buf_fetch(&InBuf);
-            lastbuf = InBuf.lastbuf;
-
-            counterAA += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
+        {
+            IWLReader eri(psio(), PSIF_SO_TEI);
+            counterAA += AO_contribute(eri, &tau1_AO, &tau2_AO);
         }
-
-        iwl_buf_close(&InBuf, 1);
 
         if (params_.print & 2) outfile->Printf("     *** Processed %d SO integrals for <AB||CD> --> T2\n", counterAA);
 
@@ -548,20 +495,10 @@ void CCEnergyWavefunction::BT2_AO() {
             global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
         }
 
-        iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
-
-        lastbuf = InBuf.lastbuf;
-
-        counterBB += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
-
-        while (!lastbuf) {
-            iwl_buf_fetch(&InBuf);
-            lastbuf = InBuf.lastbuf;
-
-            counterBB += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
+        {
+            IWLReader eri(psio(), PSIF_SO_TEI);
+            counterBB += AO_contribute(eri, &tau1_AO, &tau2_AO);
         }
-
-        iwl_buf_close(&InBuf, 1);
 
         if (params_.print & 2) outfile->Printf("     *** Processed %d SO integrals for <ab||cd> --> T2\n", counterBB);
 
@@ -621,20 +558,10 @@ void CCEnergyWavefunction::BT2_AO() {
             global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
         }
 
-        iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
-
-        lastbuf = InBuf.lastbuf;
-
-        counterAB += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
-
-        while (!lastbuf) {
-            iwl_buf_fetch(&InBuf);
-            lastbuf = InBuf.lastbuf;
-
-            counterAB += AO_contribute(&InBuf, &tau1_AO, &tau2_AO);
+        {
+            IWLReader eri(psio(), PSIF_SO_TEI);
+            counterAB += AO_contribute(eri, &tau1_AO, &tau2_AO);
         }
-
-        iwl_buf_close(&InBuf, 1);
 
         if (params_.print & 2) outfile->Printf("     *** Processed %d SO integrals for <Ab|Cd> --> T2\n", counterAB);
 
