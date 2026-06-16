@@ -280,8 +280,8 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      cmake --build build --target plugin_skeletondfmp2 --verbose
-      ls -l tests/plugins/skeletondfmp2/
+      cmake --build . --target plugin_skeletondfmp2 --verbose
+      ls -lR tests/plugins/skeletondfmp2/
       ctest -R skeletondfmp2 --output-on-failure || true
       cat Testing/Temporary/L*log
     displayName: "Spot Test 3"
@@ -330,8 +330,8 @@ jobs:
       cd build
       source activate p4env
       PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
-      cmake --build build --target plugin_skeleton --verbose
-      ls -l tests/plugins/skeleton/
+      cmake --build . --target plugin_skeleton --verbose
+      ls -lR tests/plugins/skeleton/
       PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
     displayName: 'Spot Test 4'
 
