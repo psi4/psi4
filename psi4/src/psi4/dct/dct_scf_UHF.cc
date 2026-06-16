@@ -33,6 +33,7 @@
 #include <map>
 
 #include "psi4/libiwl/iwl.hpp"
+#include "psi4/libiwl/iwl_reader.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
@@ -253,11 +254,6 @@ double DCTSolver::update_scf_density(bool damp) {
 void DCTSolver::process_so_ints() {
     dct_timer_on("DCTSolver::process_so_ints");
 
-    IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, int_tolerance_, 1, 1);
-
-    Label *lblptr = iwl->labels();
-    Value *valptr = iwl->values();
-
     double *Da = init_array(ntriso_);
     double *Db = init_array(ntriso_);
     double *Ga = init_array(ntriso_);
@@ -283,7 +279,7 @@ void DCTSolver::process_so_ints() {
     int Gc, Gd;
     int pqArr, qpArr, rsArr, srArr, qrArr, rqArr;
     int qsArr, sqArr, psArr, spArr, prArr, rpArr;
-    int offset, labelIndex, p, q, r, s, h, counter;
+    int offset, p, q, r, s, h, counter;
     int **pq_row_start, **CD_row_start, **Cd_row_start, **cd_row_start;
     dpdbuf4 tau_temp, lambda;
     dpdbuf4 tau1_AO_aa, tau2_AO_aa;
@@ -414,16 +410,14 @@ void DCTSolver::process_so_ints() {
         }
     }
 
-    bool lastBuffer;
-    do {
-        lastBuffer = iwl->last_buffer();
-        for (int index = 0; index < iwl->buffer_count(); ++index) {
-            labelIndex = 4 * index;
-            p = std::abs((int)lblptr[labelIndex++]);
-            q = (int)lblptr[labelIndex++];
-            r = (int)lblptr[labelIndex++];
-            s = (int)lblptr[labelIndex++];
-            value = (double)valptr[index];
+    IWLReader eri(psio_, PSIF_SO_TEI);
+    for (const auto &integral : eri) {
+        {
+            p = std::abs(integral.p);
+            q = integral.q;
+            r = integral.r;
+            s = integral.s;
+            value = integral.value;
             if (buildTensors) {
                 AO_contribute(&tau1_AO_aa, &tau2_AO_aa, p, q, r, s, value);
                 AO_contribute(&tau1_AO_bb, &tau2_AO_bb, p, q, r, s, value);
@@ -616,11 +610,8 @@ void DCTSolver::process_so_ints() {
                     Gb[spArr] -= Db[rqArr] * value;
                 }
             }
-        } /* end loop through current buffer */
-        if (!lastBuffer) iwl->fetch();
-    } while (!lastBuffer);
-    iwl->set_keep_flag(true);
-    delete iwl;
+        }
+    } /* end loop over SO integrals */
     if (buildTensors) {
         if (print_ > 1) {
             outfile->Printf("Processed %d SO integrals each for AA, BB, and AB\n", counter);
@@ -780,14 +771,10 @@ void DCTSolver::update_fock() {
 void DCTSolver::build_AO_tensors() {
     dct_timer_on("DCTSolver::build_tensors");
 
-    IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, int_tolerance_, 1, 1);
-
-    Label *lblptr = iwl->labels();
-    Value *valptr = iwl->values();
 
     double value;
     int Gc, Gd;
-    int offset, labelIndex, p, q, r, s, h, counter;
+    int offset, p, q, r, s, h, counter;
     int **pq_row_start, **CD_row_start, **Cd_row_start, **cd_row_start;
     dpdbuf4 tau_temp, lambda;
     dpdbuf4 tau1_AO_aa, tau2_AO_aa;
@@ -949,26 +936,18 @@ void DCTSolver::build_AO_tensors() {
         global_dpd_->buf4_mat_irrep_init(&tau2_AO_ab, h);
     }
 
-    bool lastBuffer;
-    do {
-        lastBuffer = iwl->last_buffer();
-        for (int index = 0; index < iwl->buffer_count(); ++index) {
-            labelIndex = 4 * index;
-            p = std::abs((int)lblptr[labelIndex++]);
-            q = (int)lblptr[labelIndex++];
-            r = (int)lblptr[labelIndex++];
-            s = (int)lblptr[labelIndex++];
-            value = (double)valptr[index];
-            AO_contribute(&tau1_AO_aa, &tau2_AO_aa, p, q, r, s, value, &s_aa_1, &s_bb_1, &s_aa_2);
-            AO_contribute(&tau1_AO_bb, &tau2_AO_bb, p, q, r, s, value, &s_bb_1, &s_aa_1, &s_bb_2);
-            AO_contribute(&tau1_AO_ab, &tau2_AO_ab, p, q, r, s, value);
-            ++counter;
-
-        } /* end loop through current buffer */
-        if (!lastBuffer) iwl->fetch();
-    } while (!lastBuffer);
-    iwl->set_keep_flag(true);
-    delete iwl;
+    IWLReader eri(psio_, PSIF_SO_TEI);
+    for (const auto &integral : eri) {
+        p = std::abs(integral.p);
+        q = integral.q;
+        r = integral.r;
+        s = integral.s;
+        value = integral.value;
+        AO_contribute(&tau1_AO_aa, &tau2_AO_aa, p, q, r, s, value, &s_aa_1, &s_bb_1, &s_aa_2);
+        AO_contribute(&tau1_AO_bb, &tau2_AO_bb, p, q, r, s, value, &s_bb_1, &s_aa_1, &s_bb_2);
+        AO_contribute(&tau1_AO_ab, &tau2_AO_ab, p, q, r, s, value);
+        ++counter;
+    } /* end loop over SO integrals */
     if (print_ > 1) {
         outfile->Printf("Processed %d SO integrals each for AA, BB, and AB\n", counter);
     }

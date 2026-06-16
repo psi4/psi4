@@ -45,7 +45,7 @@
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 
@@ -82,9 +82,9 @@ void CCTransform::read_oei_mo_integrals() {
 
     std::vector<double> H(INDEX(nmo - 1, nmo - 1) + 1, 0);
 
-    iwl_rdone(PSIF_OEI, const_cast<char*>(PSIF_MO_FZC), H.data(), nmo * (nmo + 1) / 2, 0, 0, "outfile");
+    IWL::read_one(_default_psio_lib_.get(), PSIF_OEI, const_cast<char*>(PSIF_MO_FZC), H.data(), nmo * (nmo + 1) / 2, 0, 0, "outfile");
     //   else
-    //     iwl_rdone(PSIF_OEI,PSIF_MO_FZC,H,norbs*(norbs+1)/2,0,1,outfile); //TODO fix it!
+    //     IWL::read_one(_default_psio_lib_.get(), PSIF_OEI,PSIF_MO_FZC,H,norbs*(norbs+1)/2,0,1,outfile); //TODO fix it!
 
     for (int i = 0; i < nmo; i++)
         for (int j = 0; j < nmo; j++) oei_mo[i][j] = H[INDEX(i, j)];

@@ -33,7 +33,8 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/mospace.h"
 #include "psi4/libtrans/integraltransform.h"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_reader.h"
+#include "psi4/libpsio/psio.hpp"
 #include "psi4/psifiles.h"
 #ifdef _OPENMP
 #include <omp.h>
@@ -47,7 +48,7 @@
 using namespace psi;
 namespace psi {
 namespace fnocc {
-void SortOVOV(struct iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, int nvirt);
+void SortOVOV(IWLReader &eri, int nfzc, int nfzv, int norbs, int ndoccact, int nvirt);
 }
 }
 
@@ -82,10 +83,8 @@ void CoupledCluster::MP2() {
     outfile->Printf("\n");
     outfile->Printf("        ==> Sort (OV|OV) integrals <==\n");
     outfile->Printf("\n");
-    struct iwlbuf Buf;
-    iwl_buf_init(&Buf, PSIF_MO_TEI, 0.0, 1, 1);
-    SortOVOV(&Buf, nfzc, nfzv, nfzc + nfzv + ndoccact + nvirt, ndoccact, nvirt);
-    iwl_buf_close(&Buf, 1);
+    IWLReader eri(_default_psio_lib_, PSIF_MO_TEI);
+    SortOVOV(eri, nfzc, nfzv, nfzc + nfzv + ndoccact + nvirt, ndoccact, nvirt);
 
     // energy
     double *v2 = (double *)malloc(o * o * v * v * sizeof(double));
