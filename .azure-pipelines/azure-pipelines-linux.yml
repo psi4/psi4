@@ -280,6 +280,13 @@ jobs:
   - bash: |
       cd build
       source activate p4env
+      ctest -R skeletondfmp2 --output-on-failure || true
+      cat Testing/Temporary/L*log
+    displayName: "Spot Test 3"
+
+  - bash: |
+      cd build
+      source activate p4env
       python -V
       ls -l
       pwd
@@ -317,12 +324,12 @@ jobs:
     displayName: 'Psi4 Path Setup Diagnostics'
     # when "psi4 not found", use this to figure out what's wrong with QCEngine detection
 
-  #- bash: |
-  #    cd build
-  #    source activate p4env
-  #    PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
-  #    PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
-  #  displayName: 'Spot Test 2'
+  - bash: |
+      cd build
+      source activate p4env
+      PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
+      PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
+    displayName: 'Spot Test 4'
 
   # example with COPY
   #- bash: |
