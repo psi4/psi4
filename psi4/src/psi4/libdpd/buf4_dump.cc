@@ -31,12 +31,12 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_writer.h"
 #include "dpd.h"
 
 namespace psi {
 
-int DPD::buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf, int *prel, int *qrel, int *rrel, int *srel, int bk_pack,
+int DPD::buf4_dump(dpdbuf4 *DPDBuf, IWLWriter &IWLBuf, int *prel, int *qrel, int *rrel, int *srel, int bk_pack,
                    int swap23) {
     int h, row, col, p, q, r, s, P, Q, R, S, my_irrep;
     double value;
@@ -61,9 +61,9 @@ int DPD::buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf, int *prel, int *qrel,
                     value = DPDBuf->matrix[h][row][col];
 
                     if (swap23)
-                        iwl_buf_wrt_val(IWLBuf, P, R, Q, S, value, 0, "outfile", 0);
+                        IWLBuf.write(P, R, Q, S, value);
                     else
-                        iwl_buf_wrt_val(IWLBuf, P, Q, R, S, value, 0, "outfile", 0);
+                        IWLBuf.write(P, Q, R, S, value);
                 }
             } else {
                 for (col = 0; col < DPDBuf->params->coltot[h ^ my_irrep]; col++) {
@@ -75,9 +75,9 @@ int DPD::buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf, int *prel, int *qrel,
                     value = DPDBuf->matrix[h][row][col];
 
                     if (swap23)
-                        iwl_buf_wrt_val(IWLBuf, P, R, Q, S, value, 0, "outfile", 0);
+                        IWLBuf.write(P, R, Q, S, value);
                     else
-                        iwl_buf_wrt_val(IWLBuf, P, Q, R, S, value, 0, "outfile", 0);
+                        IWLBuf.write(P, Q, R, S, value);
                 }
             }
         }

@@ -31,7 +31,7 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libciomr/libciomr.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -41,8 +41,8 @@
 namespace psi {
 namespace ccdensity {
 
-void classify(int p, int q, int r, int s, double value, struct iwlbuf *ABuf, struct iwlbuf *BBuf, struct iwlbuf *CBuf,
-              struct iwlbuf *DBuf, struct iwlbuf *EBuf, struct iwlbuf *FBuf) {
+void classify(int p, int q, int r, int s, double value, IWLWriter &ABuf, IWLWriter &BBuf, IWLWriter &CBuf,
+              IWLWriter &DBuf, IWLWriter &EBuf, IWLWriter &FBuf) {
     int *occ, *vir, *socc;
     int *cc_occ, *cc_vir;
     int dirac = 1;
@@ -60,79 +60,79 @@ void classify(int p, int q, int r, int s, double value, struct iwlbuf *ABuf, str
 
     /* A (oo|oo) integrals */
     if ((occ[p] && occ[q] && occ[r] && occ[s]))
-        iwl_buf_wrt_val(ABuf, cc_occ[p], cc_occ[q], cc_occ[r], cc_occ[s], value, 0, "outfile", dirac);
+        ABuf.write(cc_occ[p], cc_occ[q], cc_occ[r], cc_occ[s], value, dirac);
 
     /* B (vv|vv) integrals */
     if ((vir[p] && vir[q] && vir[r] && vir[s]))
-        iwl_buf_wrt_val(BBuf, cc_vir[p], cc_vir[q], cc_vir[r], cc_vir[s], value, 0, "outfile", dirac);
+        BBuf.write(cc_vir[p], cc_vir[q], cc_vir[r], cc_vir[s], value, dirac);
 
     /* C (oo|vv) integrals */
     if (soccs > 1) {
         if ((occ[p] && occ[q] && vir[r] && vir[s]))
-            iwl_buf_wrt_val(CBuf, cc_occ[p], cc_occ[q], cc_vir[r], cc_vir[s], value, 0, "outfile", dirac);
+            CBuf.write(cc_occ[p], cc_occ[q], cc_vir[r], cc_vir[s], value, dirac);
         if ((occ[r] && occ[s] && vir[p] && vir[q]))
-            iwl_buf_wrt_val(CBuf, cc_occ[r], cc_occ[s], cc_vir[p], cc_vir[q], value, 0, "outfile", dirac);
+            CBuf.write(cc_occ[r], cc_occ[s], cc_vir[p], cc_vir[q], value, dirac);
     } else if ((occ[p] && occ[q] && vir[r] && vir[s]))
-        iwl_buf_wrt_val(CBuf, cc_occ[p], cc_occ[q], cc_vir[r], cc_vir[s], value, 0, "outfile", dirac);
+        CBuf.write(cc_occ[p], cc_occ[q], cc_vir[r], cc_vir[s], value, dirac);
     else if ((occ[r] && occ[s] && vir[p] && vir[q]))
-        iwl_buf_wrt_val(CBuf, cc_occ[r], cc_occ[s], cc_vir[p], cc_vir[q], value, 0, "outfile", dirac);
+        CBuf.write(cc_occ[r], cc_occ[s], cc_vir[p], cc_vir[q], value, dirac);
 
     /* D (ov|ov) integrals */
     if (soccs > 1) {
         if ((occ[p] && vir[q] && occ[r] && vir[s]))
-            iwl_buf_wrt_val(DBuf, cc_occ[p], cc_vir[q], cc_occ[r], cc_vir[s], value, 0, "outfile", dirac);
+            DBuf.write(cc_occ[p], cc_vir[q], cc_occ[r], cc_vir[s], value, dirac);
         if ((occ[q] && vir[p] && occ[r] && vir[s]))
-            iwl_buf_wrt_val(DBuf, cc_occ[q], cc_vir[p], cc_occ[r], cc_vir[s], value, 0, "outfile", dirac);
+            DBuf.write(cc_occ[q], cc_vir[p], cc_occ[r], cc_vir[s], value, dirac);
         if ((occ[p] && vir[q] && occ[s] && vir[r]))
-            iwl_buf_wrt_val(DBuf, cc_occ[p], cc_vir[q], cc_occ[s], cc_vir[r], value, 0, "outfile", dirac);
+            DBuf.write(cc_occ[p], cc_vir[q], cc_occ[s], cc_vir[r], value, dirac);
         if ((occ[q] && vir[p] && occ[s] && vir[r]))
-            iwl_buf_wrt_val(DBuf, cc_occ[q], cc_vir[p], cc_occ[s], cc_vir[r], value, 0, "outfile", dirac);
+            DBuf.write(cc_occ[q], cc_vir[p], cc_occ[s], cc_vir[r], value, dirac);
     } else if ((occ[p] && vir[q] && occ[r] && vir[s]))
-        iwl_buf_wrt_val(DBuf, cc_occ[p], cc_vir[q], cc_occ[r], cc_vir[s], value, 0, "outfile", dirac);
+        DBuf.write(cc_occ[p], cc_vir[q], cc_occ[r], cc_vir[s], value, dirac);
     else if ((occ[q] && vir[p] && occ[r] && vir[s]))
-        iwl_buf_wrt_val(DBuf, cc_occ[q], cc_vir[p], cc_occ[r], cc_vir[s], value, 0, "outfile", dirac);
+        DBuf.write(cc_occ[q], cc_vir[p], cc_occ[r], cc_vir[s], value, dirac);
     else if ((occ[p] && vir[q] && occ[s] && vir[r]))
-        iwl_buf_wrt_val(DBuf, cc_occ[p], cc_vir[q], cc_occ[s], cc_vir[r], value, 0, "outfile", dirac);
+        DBuf.write(cc_occ[p], cc_vir[q], cc_occ[s], cc_vir[r], value, dirac);
     else if ((occ[q] && vir[p] && occ[s] && vir[r]))
-        iwl_buf_wrt_val(DBuf, cc_occ[q], cc_vir[p], cc_occ[s], cc_vir[r], value, 0, "outfile", dirac);
+        DBuf.write(cc_occ[q], cc_vir[p], cc_occ[s], cc_vir[r], value, dirac);
 
     /* E (vo|oo) integrals */
     if (soccs > 1) {
         if ((vir[p] && occ[q] && occ[r] && occ[s]))
-            iwl_buf_wrt_val(EBuf, cc_vir[p], cc_occ[q], cc_occ[r], cc_occ[s], value, 0, "outfile", dirac);
+            EBuf.write(cc_vir[p], cc_occ[q], cc_occ[r], cc_occ[s], value, dirac);
         if ((vir[q] && occ[p] && occ[r] && occ[s]))
-            iwl_buf_wrt_val(EBuf, cc_vir[q], cc_occ[p], cc_occ[r], cc_occ[s], value, 0, "outfile", dirac);
+            EBuf.write(cc_vir[q], cc_occ[p], cc_occ[r], cc_occ[s], value, dirac);
         if ((vir[r] && occ[s] && occ[p] && occ[q]))
-            iwl_buf_wrt_val(EBuf, cc_vir[r], cc_occ[s], cc_occ[p], cc_occ[q], value, 0, "outfile", dirac);
+            EBuf.write(cc_vir[r], cc_occ[s], cc_occ[p], cc_occ[q], value, dirac);
         if ((vir[s] && occ[r] && occ[p] && occ[q]))
-            iwl_buf_wrt_val(EBuf, cc_vir[s], cc_occ[r], cc_occ[p], cc_occ[q], value, 0, "outfile", dirac);
+            EBuf.write(cc_vir[s], cc_occ[r], cc_occ[p], cc_occ[q], value, dirac);
     } else if ((vir[p] && occ[q] && occ[r] && occ[s]))
-        iwl_buf_wrt_val(EBuf, cc_vir[p], cc_occ[q], cc_occ[r], cc_occ[s], value, 0, "outfile", dirac);
+        EBuf.write(cc_vir[p], cc_occ[q], cc_occ[r], cc_occ[s], value, dirac);
     else if ((vir[p] && occ[q] && occ[s] && occ[r]))
-        iwl_buf_wrt_val(EBuf, cc_vir[q], cc_occ[p], cc_occ[r], cc_occ[s], value, 0, "outfile", dirac);
+        EBuf.write(cc_vir[q], cc_occ[p], cc_occ[r], cc_occ[s], value, dirac);
     else if ((vir[r] && occ[s] && occ[p] && occ[q]))
-        iwl_buf_wrt_val(EBuf, cc_vir[r], cc_occ[s], cc_occ[p], cc_occ[q], value, 0, "outfile", dirac);
+        EBuf.write(cc_vir[r], cc_occ[s], cc_occ[p], cc_occ[q], value, dirac);
     else if ((vir[r] && occ[s] && occ[q] && occ[p]))
-        iwl_buf_wrt_val(EBuf, cc_vir[s], cc_occ[r], cc_occ[p], cc_occ[q], value, 0, "outfile", dirac);
+        EBuf.write(cc_vir[s], cc_occ[r], cc_occ[p], cc_occ[q], value, dirac);
 
     /* F (ov|vv) integrals */
     if (soccs > 1) {
         if ((occ[p] && vir[q] && vir[r] && vir[s]))
-            iwl_buf_wrt_val(FBuf, cc_occ[p], cc_vir[q], cc_vir[r], cc_vir[s], value, 0, "outfile", dirac);
+            FBuf.write(cc_occ[p], cc_vir[q], cc_vir[r], cc_vir[s], value, dirac);
         if ((occ[q] && vir[p] && vir[r] && vir[s]))
-            iwl_buf_wrt_val(FBuf, cc_occ[q], cc_vir[p], cc_vir[r], cc_vir[s], value, 0, "outfile", dirac);
+            FBuf.write(cc_occ[q], cc_vir[p], cc_vir[r], cc_vir[s], value, dirac);
         if ((occ[r] && vir[s] && vir[p] && vir[q]))
-            iwl_buf_wrt_val(FBuf, cc_occ[r], cc_vir[s], cc_vir[p], cc_vir[q], value, 0, "outfile", dirac);
+            FBuf.write(cc_occ[r], cc_vir[s], cc_vir[p], cc_vir[q], value, dirac);
         if ((occ[s] && vir[r] && vir[p] && vir[q]))
-            iwl_buf_wrt_val(FBuf, cc_occ[s], cc_vir[r], cc_vir[p], cc_vir[q], value, 0, "outfile", dirac);
+            FBuf.write(cc_occ[s], cc_vir[r], cc_vir[p], cc_vir[q], value, dirac);
     } else if ((occ[p] && vir[q] && vir[r] && vir[s]))
-        iwl_buf_wrt_val(FBuf, cc_occ[p], cc_vir[q], cc_vir[r], cc_vir[s], value, 0, "outfile", dirac);
+        FBuf.write(cc_occ[p], cc_vir[q], cc_vir[r], cc_vir[s], value, dirac);
     else if ((occ[q] && vir[p] && vir[r] && vir[s]))
-        iwl_buf_wrt_val(FBuf, cc_occ[q], cc_vir[p], cc_vir[r], cc_vir[s], value, 0, "outfile", dirac);
+        FBuf.write(cc_occ[q], cc_vir[p], cc_vir[r], cc_vir[s], value, dirac);
     else if ((occ[r] && vir[s] && vir[p] && vir[q]))
-        iwl_buf_wrt_val(FBuf, cc_occ[r], cc_vir[s], cc_vir[p], cc_vir[q], value, 0, "outfile", dirac);
+        FBuf.write(cc_occ[r], cc_vir[s], cc_vir[p], cc_vir[q], value, dirac);
     else if ((occ[s] && vir[r] && vir[p] && vir[q]))
-        iwl_buf_wrt_val(FBuf, cc_occ[s], cc_vir[r], cc_vir[p], cc_vir[q], value, 0, "outfile", dirac);
+        FBuf.write(cc_occ[s], cc_vir[r], cc_vir[p], cc_vir[q], value, dirac);
 }
 
 }  // namespace ccdensity

@@ -32,7 +32,7 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -3789,10 +3789,9 @@ void DCTSolver::compute_ewdm_dc() {
 
     dpdbuf4 G;
 
-    struct iwlbuf AA, AB, BB;
-    iwl_buf_init(&AA, PSIF_MO_AA_TPDM, 1.0E-15, 0, 0);
-    iwl_buf_init(&AB, PSIF_MO_AB_TPDM, 1.0E-15, 0, 0);
-    iwl_buf_init(&BB, PSIF_MO_BB_TPDM, 1.0E-15, 0, 0);
+    IWLWriter AA(_default_psio_lib_, PSIF_MO_AA_TPDM, 1.0E-15);
+    IWLWriter AB(_default_psio_lib_, PSIF_MO_AB_TPDM, 1.0E-15);
+    IWLWriter BB(_default_psio_lib_, PSIF_MO_BB_TPDM, 1.0E-15);
 
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
 
@@ -4045,7 +4044,7 @@ void DCTSolver::compute_ewdm_dc() {
     // before calling dpd_buf4_dump - check that with swap23 = 0 (AYS)
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V>V]-"), ID("[V>V]-"), 0,
                            "Gamma <VV|VV>");
-    global_dpd_->buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), 0,
@@ -4064,7 +4063,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int C = avir_qt[c];
                 int D = bvir_qt[d];
                 double value = 4.0 * G.matrix[h][ab][cd];
-                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, "outfile", 0);
+                AB.write(A, C, B, D, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4073,13 +4072,13 @@ void DCTSolver::compute_ewdm_dc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"), ID("[v>v]-"), ID("[v>v]-"), 0,
                            "Gamma <vv|vv>");
-    global_dpd_->buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OOOO
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O>O]-"), ID("[O>O]-"), 0,
                            "Gamma <OO|OO>");
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0,
@@ -4099,7 +4098,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int K = aocc_qt[k];
                 int L = bocc_qt[l];
                 double value = 4.0 * G.matrix[h][ij][kl];
-                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "outfile", 0);
+                AB.write(I, K, J, L, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4108,13 +4107,13 @@ void DCTSolver::compute_ewdm_dc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"), ID("[o>o]-"), ID("[o>o]-"), 0,
                            "Gamma <oo|oo>");
-    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OOVV
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Gamma <OO|VV>");
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
@@ -4133,7 +4132,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int A = avir_qt[a];
                 int B = bvir_qt[b];
                 double value = 4.0 * G.matrix[h][ij][ab];
-                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "outfile", 0);
+                AB.write(I, A, J, B, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4142,7 +4141,7 @@ void DCTSolver::compute_ewdm_dc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Gamma <oo|vv>");
-    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OVOV
@@ -4164,7 +4163,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = 0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, "outfile", 0);
+                AA.write(I, J, A, B, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4188,7 +4187,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = -0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "outfile", 0);
+                AA.write(I, B, A, J, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4197,7 +4196,7 @@ void DCTSolver::compute_ewdm_dc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), 0,
                            "Gamma <Ov|Ov>");
-    global_dpd_->buf4_dump(&G, &AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), 0,
@@ -4216,7 +4215,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "outfile", 0);
+                AB.write(A, B, I, J, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4240,7 +4239,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = (-2.0) * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, "outfile", 0);
+                AB.write(I, B, J, A, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4265,7 +4264,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = 0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, "outfile", 0);
+                BB.write(I, J, A, B, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4289,7 +4288,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = -0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, "outfile", 0);
+                BB.write(I, B, A, J, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4299,7 +4298,7 @@ void DCTSolver::compute_ewdm_dc() {
     // OOOV
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,V]"), ID("[O>O]-"), ID("[O,V]"), 0,
                            "Gamma <OO|OV>");
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, aocc_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[O,v]"), ID("[O,o]"), ID("[O,v]"), 0,
@@ -4318,8 +4317,8 @@ void DCTSolver::compute_ewdm_dc() {
                 int K = aocc_qt[k];
                 int A = bvir_qt[a];
                 double value = G.matrix[h][ij][ka];
-                iwl_buf_wrt_val(&AB, I, K, J, A, value, 0, "outfile", 0);
-                iwl_buf_wrt_val(&AB, I, K, A, J, value, 0, "outfile", 0);
+                AB.write(I, K, J, A, value);
+                AB.write(I, K, A, J, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4342,8 +4341,8 @@ void DCTSolver::compute_ewdm_dc() {
                 int K = bocc_qt[k];
                 int A = avir_qt[a];
                 double value = G.matrix[h][ij][ka];
-                iwl_buf_wrt_val(&AB, A, J, K, I, value, 0, "outfile", 0);
-                iwl_buf_wrt_val(&AB, J, A, K, I, value, 0, "outfile", 0);
+                AB.write(A, J, K, I, value);
+                AB.write(J, A, K, I, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4352,13 +4351,13 @@ void DCTSolver::compute_ewdm_dc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[o,v]"), ID("[o>o]-"), ID("[o,v]"), 0,
                            "Gamma <oo|ov>");
-    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bocc_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OVVV
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V>V]-"), 0,
                            "Gamma <OV|VV>");
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, avir_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,v]"), ID("[V,v]"), ID("[O,v]"), ID("[V,v]"), 0,
@@ -4377,8 +4376,8 @@ void DCTSolver::compute_ewdm_dc() {
                 int B = avir_qt[b];
                 int C = bvir_qt[c];
                 double value = G.matrix[h][ia][bc];
-                iwl_buf_wrt_val(&AB, I, B, A, C, value, 0, "outfile", 0);
-                iwl_buf_wrt_val(&AB, B, I, A, C, value, 0, "outfile", 0);
+                AB.write(I, B, A, C, value);
+                AB.write(B, I, A, C, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4401,8 +4400,8 @@ void DCTSolver::compute_ewdm_dc() {
                 int B = bvir_qt[b];
                 int C = avir_qt[c];
                 double value = G.matrix[h][ia][bc];
-                iwl_buf_wrt_val(&AB, C, A, B, I, value, 0, "outfile", 0);
-                iwl_buf_wrt_val(&AB, C, A, I, B, value, 0, "outfile", 0);
+                AB.write(C, A, B, I, value);
+                AB.write(C, A, I, B, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4411,17 +4410,14 @@ void DCTSolver::compute_ewdm_dc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,v]"), ID("[v,v]"), ID("[o,v]"), ID("[v>v]-"), 0,
                            "Gamma <ov|vv>");
-    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bocc_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     psio_->close(PSIF_DCT_DENSITY, 1);
 
-    iwl_buf_flush(&AA, 1);
-    iwl_buf_flush(&AB, 1);
-    iwl_buf_flush(&BB, 1);
-    iwl_buf_close(&AA, 1);
-    iwl_buf_close(&AB, 1);
-    iwl_buf_close(&BB, 1);
+    AA.close();
+    AB.close();
+    BB.close();
 
     delete[] alpha_pitzer_to_corr;
     delete[] beta_pitzer_to_corr;
@@ -4611,10 +4607,9 @@ void DCTSolver::compute_ewdm_odc() {
 
     dpdbuf4 G;
 
-    struct iwlbuf AA, AB, BB;
-    iwl_buf_init(&AA, PSIF_MO_AA_TPDM, 1.0E-15, 0, 0);
-    iwl_buf_init(&AB, PSIF_MO_AB_TPDM, 1.0E-15, 0, 0);
-    iwl_buf_init(&BB, PSIF_MO_BB_TPDM, 1.0E-15, 0, 0);
+    IWLWriter AA(_default_psio_lib_, PSIF_MO_AA_TPDM, 1.0E-15);
+    IWLWriter AB(_default_psio_lib_, PSIF_MO_AB_TPDM, 1.0E-15);
+    IWLWriter BB(_default_psio_lib_, PSIF_MO_BB_TPDM, 1.0E-15);
 
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
 
@@ -4627,7 +4622,7 @@ void DCTSolver::compute_ewdm_odc() {
     // before calling dpd_buf4_dump - check that with swap23 = 0 (AYS)
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V>V]-"), ID("[V>V]-"), 0,
                            "Gamma <VV|VV>");
-    global_dpd_->buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), 0,
@@ -4646,7 +4641,7 @@ void DCTSolver::compute_ewdm_odc() {
                 int C = avir_qt[c];
                 int D = bvir_qt[d];
                 double value = 4.0 * G.matrix[h][ab][cd];
-                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, "outfile", 0);
+                AB.write(A, C, B, D, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4655,13 +4650,13 @@ void DCTSolver::compute_ewdm_odc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"), ID("[v>v]-"), ID("[v>v]-"), 0,
                            "Gamma <vv|vv>");
-    global_dpd_->buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OOOO
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O>O]-"), ID("[O>O]-"), 0,
                            "Gamma <OO|OO>");
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0,
@@ -4681,7 +4676,7 @@ void DCTSolver::compute_ewdm_odc() {
                 int K = aocc_qt[k];
                 int L = bocc_qt[l];
                 double value = 4.0 * G.matrix[h][ij][kl];
-                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "outfile", 0);
+                AB.write(I, K, J, L, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4690,13 +4685,13 @@ void DCTSolver::compute_ewdm_odc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"), ID("[o>o]-"), ID("[o>o]-"), 0,
                            "Gamma <oo|oo>");
-    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OOVV
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Gamma <OO|VV>");
-    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
@@ -4715,7 +4710,7 @@ void DCTSolver::compute_ewdm_odc() {
                 int A = avir_qt[a];
                 int B = bvir_qt[b];
                 double value = 4.0 * G.matrix[h][ij][ab];
-                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "outfile", 0);
+                AB.write(I, A, J, B, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4724,7 +4719,7 @@ void DCTSolver::compute_ewdm_odc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Gamma <oo|vv>");
-    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     // OVOV
@@ -4746,7 +4741,7 @@ void DCTSolver::compute_ewdm_odc() {
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = 0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, "outfile", 0);
+                AA.write(I, J, A, B, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4770,7 +4765,7 @@ void DCTSolver::compute_ewdm_odc() {
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = -0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "outfile", 0);
+                AA.write(I, B, A, J, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4779,7 +4774,7 @@ void DCTSolver::compute_ewdm_odc() {
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), 0,
                            "Gamma <Ov|Ov>");
-    global_dpd_->buf4_dump(&G, &AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_dump(&G, AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
     global_dpd_->buf4_close(&G);
 
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), 0,
@@ -4798,7 +4793,7 @@ void DCTSolver::compute_ewdm_odc() {
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "outfile", 0);
+                AB.write(A, B, I, J, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4822,7 +4817,7 @@ void DCTSolver::compute_ewdm_odc() {
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = (-2.0) * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, "outfile", 0);
+                AB.write(I, B, J, A, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4847,7 +4842,7 @@ void DCTSolver::compute_ewdm_odc() {
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = 0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, "outfile", 0);
+                BB.write(I, J, A, B, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4871,7 +4866,7 @@ void DCTSolver::compute_ewdm_odc() {
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = -0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, "outfile", 0);
+                BB.write(I, B, A, J, value);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4880,12 +4875,9 @@ void DCTSolver::compute_ewdm_odc() {
 
     psio_->close(PSIF_DCT_DENSITY, 1);
 
-    iwl_buf_flush(&AA, 1);
-    iwl_buf_flush(&AB, 1);
-    iwl_buf_flush(&BB, 1);
-    iwl_buf_close(&AA, 1);
-    iwl_buf_close(&AB, 1);
-    iwl_buf_close(&BB, 1);
+    AA.close();
+    AB.close();
+    BB.close();
 
     delete[] alpha_pitzer_to_corr;
     delete[] beta_pitzer_to_corr;

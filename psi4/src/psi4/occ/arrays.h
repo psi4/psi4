@@ -30,7 +30,6 @@
 #define _psi_src_bin_occ_arrays_h_
 
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libiwl/iwl.h"
 
 using namespace psi;
 

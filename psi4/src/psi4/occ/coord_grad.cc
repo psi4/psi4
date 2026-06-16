@@ -30,6 +30,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libiwl/iwl_writer.h"
 #include "occwave.h"
 #include "defines.h"
 
@@ -117,8 +118,7 @@ void OCCWave::dump_pdms() {
         }
 
         // Write TPDMs to psi files
-        struct iwlbuf AA;
-        iwl_buf_init(&AA, PSIF_MO_TPDM, 1.0E-15, 0, 0);
+        IWLWriter AA(_default_psio_lib_, PSIF_MO_TPDM, 1.0E-15);
 
         // OOOO block
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
@@ -142,7 +142,7 @@ void OCCWave::dump_pdms() {
                         double value = 2.0 * G.matrix[h][ij][kl];
                         if (I > K) value *= 2.0;
                         if (J > L) value *= 2.0;
-                        iwl_buf_wrt_val(&AA, I, K, J, L, value, 0, "outfile", 0);
+                        AA.write(I, K, J, L, value);
                     }
                 }
             }
@@ -173,7 +173,7 @@ void OCCWave::dump_pdms() {
                             double value = 2.0 * G.matrix[h][ab][cd];
                             if (A > C) value *= 2.0;
                             if (B > D) value *= 2.0;
-                            iwl_buf_wrt_val(&AA, A, C, B, D, value, 0, "outfile", 0);
+                            AA.write(A, C, B, D, value);
                         }
                     }
                 }
@@ -202,7 +202,7 @@ void OCCWave::dump_pdms() {
                     int JB = ((B - nooA) * nooA) + J;
                     if (IA >= JB) {
                         double value = 8.0 * G.matrix[h][ij][ab];
-                        iwl_buf_wrt_val(&AA, A, I, B, J, value, 0, "outfile", 0);
+                        AA.write(A, I, B, J, value);
                     }
                 }
             }
@@ -215,7 +215,7 @@ void OCCWave::dump_pdms() {
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                                "TPDM <OV|OV>");
         global_dpd_->buf4_scm(&G, 2.0);
-        global_dpd_->buf4_dump(&G, &AA, aocc_qt, avir_qt, aocc_qt, avir_qt, 0, 1);
+        global_dpd_->buf4_dump(&G, AA, aocc_qt, avir_qt, aocc_qt, avir_qt, 0, 1);
         global_dpd_->buf4_close(&G);
 
         // For the standard methods I need the following contribution
@@ -223,7 +223,7 @@ void OCCWave::dump_pdms() {
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), 0,
                                    "TPDM <VO|OO>");
             global_dpd_->buf4_scm(&G, 0.5);
-            global_dpd_->buf4_dump(&G, &AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+            global_dpd_->buf4_dump(&G, AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
             global_dpd_->buf4_close(&G);
         }  // if (orb_opt_ == "FALSE")
 
@@ -233,8 +233,7 @@ void OCCWave::dump_pdms() {
 
         psio_->close(PSIF_OCC_DENSITY, 1);
 
-        iwl_buf_flush(&AA, 1);
-        iwl_buf_close(&AA, 1);
+        AA.close();
 
     }  // end if (reference_ == "RESTRICTED")
 
@@ -301,22 +300,21 @@ void OCCWave::dump_pdms() {
         }
 
         // Write TPDMs to psi files
-        struct iwlbuf AA, AB, BB;
-        iwl_buf_init(&AA, PSIF_MO_AA_TPDM, 1.0E-15, 0, 0);
-        iwl_buf_init(&AB, PSIF_MO_AB_TPDM, 1.0E-15, 0, 0);
-        iwl_buf_init(&BB, PSIF_MO_BB_TPDM, 1.0E-15, 0, 0);
+        IWLWriter AA(_default_psio_lib_, PSIF_MO_AA_TPDM, 1.0E-15);
+        IWLWriter AB(_default_psio_lib_, PSIF_MO_AB_TPDM, 1.0E-15);
+        IWLWriter BB(_default_psio_lib_, PSIF_MO_BB_TPDM, 1.0E-15);
 
         // OOOO: Alpha-Alpha spin-case
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
                                "TPDM <OO|OO>");
         // Dump tpdm in chemist notation, 0 means no pack, 1 means swap indices 23
-        global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+        global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
         global_dpd_->buf4_close(&G);
 
         // OOOO: Beta-Beta spin-case
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), 0,
                                "TPDM <oo|oo>");
-        global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
+        global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
         global_dpd_->buf4_close(&G);
 
         // OOOO: Alpha-Beta spin-case
@@ -336,7 +334,7 @@ void OCCWave::dump_pdms() {
                     int K = aocc_qt[k];
                     int L = bocc_qt[l];
                     double value = 4.0 * G.matrix[h][ij][kl];
-                    iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "outfile", 0);
+                    AB.write(I, K, J, L, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -348,13 +346,13 @@ void OCCWave::dump_pdms() {
             // VVVV: Alpha-Alpha spin-case
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                                    "TPDM <VV|VV>");
-            global_dpd_->buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
+            global_dpd_->buf4_dump(&G, AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
             global_dpd_->buf4_close(&G);
 
             // VVVV: Beta-Beta spin-case
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,v]"), ID("[v,v]"), ID("[v,v]"), ID("[v,v]"), 0,
                                    "TPDM <vv|vv>");
-            global_dpd_->buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
+            global_dpd_->buf4_dump(&G, BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
             global_dpd_->buf4_close(&G);
 
             // VVVV: Alpha-Beta spin-case
@@ -365,7 +363,7 @@ void OCCWave::dump_pdms() {
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[v,v]"), ID("[V,V]"), ID("[v,v]"), 0,
                                    "TPDM (VV|vv)");
             global_dpd_->buf4_scm(&G, 4.0);
-            global_dpd_->buf4_dump(&G, &AB, avir_qt, avir_qt, bvir_qt, bvir_qt, 0, 0);
+            global_dpd_->buf4_dump(&G, AB, avir_qt, avir_qt, bvir_qt, bvir_qt, 0, 0);
             global_dpd_->buf4_close(&G);
         }  // end if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") {
 
@@ -373,14 +371,14 @@ void OCCWave::dump_pdms() {
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "TPDM <OO|VV>");
         global_dpd_->buf4_scm(&G, 2.0);
-        global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
+        global_dpd_->buf4_dump(&G, AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
         global_dpd_->buf4_close(&G);
 
         // OOVV: Beta-Beta spin-case
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                "TPDM <oo|vv>");
         global_dpd_->buf4_scm(&G, 2.0);
-        global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
+        global_dpd_->buf4_dump(&G, BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
         global_dpd_->buf4_close(&G);
 
         // OOVV: Alpha-Beta spin-case
@@ -400,7 +398,7 @@ void OCCWave::dump_pdms() {
                     int A = avir_qt[a];
                     int B = bvir_qt[b];
                     double value = 8.0 * G.matrix[h][ij][ab];
-                    iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "outfile", 0);
+                    AB.write(I, A, J, B, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -424,7 +422,7 @@ void OCCWave::dump_pdms() {
                     int J = aocc_qt[j];
                     int B = avir_qt[b];
                     double value = 2.0 * G.matrix[h][ia][jb];
-                    iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, "outfile", 0);
+                    AA.write(I, J, A, B, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -448,7 +446,7 @@ void OCCWave::dump_pdms() {
                     int J = bocc_qt[j];
                     int B = bvir_qt[b];
                     double value = 2.0 * G.matrix[h][ia][jb];
-                    iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, "outfile", 0);
+                    BB.write(I, J, A, B, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -472,7 +470,7 @@ void OCCWave::dump_pdms() {
                     int J = aocc_qt[j];
                     int B = bvir_qt[b];
                     double value = 4.0 * G.matrix[h][ia][jb];
-                    iwl_buf_wrt_val(&AB, I, J, A, B, value, 0, "outfile", 0);
+                    AB.write(I, J, A, B, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -496,7 +494,7 @@ void OCCWave::dump_pdms() {
                     int J = aocc_qt[j];
                     int B = avir_qt[b];
                     double value = -2.0 * G.matrix[h][ia][jb];
-                    iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "outfile", 0);
+                    AA.write(I, B, A, J, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -520,7 +518,7 @@ void OCCWave::dump_pdms() {
                     int J = bocc_qt[j];
                     int B = bvir_qt[b];
                     double value = -2.0 * G.matrix[h][ia][jb];
-                    iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, "outfile", 0);
+                    BB.write(I, B, A, J, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -546,7 +544,7 @@ void OCCWave::dump_pdms() {
                         int B = avir_qt[b];
                         int J = bocc_qt[j];
                         double value = 8.0 * G.matrix[h][ia][bj];
-                        iwl_buf_wrt_val(&AB, I, B, A, J, value, 0, "outfile", 0);
+                        AB.write(I, B, A, J, value);
                     }
                 }
                 global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -571,7 +569,7 @@ void OCCWave::dump_pdms() {
                     int B = avir_qt[b];
                     int J = bocc_qt[j];
                     double value = 4.0 * G.matrix[h][ai][bj];
-                    iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "outfile", 0);
+                    AB.write(A, B, I, J, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -584,14 +582,14 @@ void OCCWave::dump_pdms() {
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), 0,
                                    "TPDM <VO|OO>");
             global_dpd_->buf4_scm(&G, 0.5);
-            global_dpd_->buf4_dump(&G, &AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+            global_dpd_->buf4_dump(&G, AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
             global_dpd_->buf4_close(&G);
 
             // VOOO: Beta-Beta Spin-Case
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,o]"), ID("[o,o]"), ID("[v,o]"), ID("[o,o]"), 0,
                                    "TPDM <vo|oo>");
             global_dpd_->buf4_scm(&G, 0.5);
-            global_dpd_->buf4_dump(&G, &BB, bvir_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
+            global_dpd_->buf4_dump(&G, BB, bvir_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
             global_dpd_->buf4_close(&G);
 
             // VOOO: Alpha-Beta Spin-Case
@@ -611,7 +609,7 @@ void OCCWave::dump_pdms() {
                         int I = aocc_qt[i];
                         int N = bocc_qt[n];
                         double value = G.matrix[h][am][in];
-                        iwl_buf_wrt_val(&AB, A, I, M, N, value, 0, "outfile", 0);
+                        AB.write(A, I, M, N, value);
                     }
                 }
                 global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -636,7 +634,7 @@ void OCCWave::dump_pdms() {
                         int N = aocc_qt[n];
                         int I = bocc_qt[i];
                         double value = G.matrix[h][ma][ni];
-                        iwl_buf_wrt_val(&AB, M, N, A, I, value, 0, "outfile", 0);
+                        AB.write(M, N, A, I, value);
                     }
                 }
                 global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -654,12 +652,9 @@ void OCCWave::dump_pdms() {
 
         psio_->close(PSIF_OCC_DENSITY, 1);
 
-        iwl_buf_flush(&AA, 1);
-        iwl_buf_flush(&AB, 1);
-        iwl_buf_flush(&BB, 1);
-        iwl_buf_close(&AA, 1);
-        iwl_buf_close(&AB, 1);
-        iwl_buf_close(&BB, 1);
+        AA.close();
+        AB.close();
+        BB.close();
 
     }  // end if (reference_ == "UNRESTRICTED")
        // outfile->Printf("\n dump_pdms done. \n");

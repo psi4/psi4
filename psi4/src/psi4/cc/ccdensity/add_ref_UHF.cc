@@ -31,7 +31,7 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl_writer.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -57,7 +57,7 @@ namespace ccdensity {
 ** I use QT-standard ordering for the indices in these expressions.
 */
 
-void add_ref_UHF(struct iwlbuf *AA, struct iwlbuf *BB, struct iwlbuf *AB) {
+void add_ref_UHF(IWLWriter &AA, IWLWriter &BB, IWLWriter &AB) {
     int mo_offset = 0;
     for (int h = 0; h < moinfo.nirreps; h++) {
         auto clsd_h = moinfo.frdocc[h] + moinfo.clsdpi[h];
@@ -68,10 +68,10 @@ void add_ref_UHF(struct iwlbuf *AA, struct iwlbuf *BB, struct iwlbuf *AB) {
             // Two electron alpha-alpha
             auto qt_i = moinfo.pitzer2qt[i + mo_offset];
             for (int qt_j = 0; qt_j < qt_i; qt_j++) {
-                iwl_buf_wrt_val(AA, qt_i, qt_i, qt_j, qt_j, 0.5, 0, "outfile", 0);
-                iwl_buf_wrt_val(AA, qt_i, qt_j, qt_i, qt_j, -0.25, 0, "outfile", 0);
-                iwl_buf_wrt_val(AA, qt_j, qt_i, qt_j, qt_i, -0.25, 0, "outfile", 0);
-                iwl_buf_wrt_val(AA, qt_i, qt_j, qt_j, qt_i, -0.25, 0, "outfile", 0);
+                AA.write(qt_i, qt_i, qt_j, qt_j, 0.5);
+                AA.write(qt_i, qt_j, qt_i, qt_j, -0.25);
+                AA.write(qt_j, qt_i, qt_j, qt_i, -0.25);
+                AA.write(qt_i, qt_j, qt_j, qt_i, -0.25);
             }
         }
         // Beta
@@ -81,10 +81,10 @@ void add_ref_UHF(struct iwlbuf *AA, struct iwlbuf *BB, struct iwlbuf *AB) {
             // Two electron beta-beta
             auto qt_i = moinfo.pitzer2qt[i + mo_offset];
             for (int qt_j = 0; qt_j < qt_i; qt_j++) {
-                iwl_buf_wrt_val(BB, qt_i, qt_i, qt_j, qt_j, 0.5, 0, "outfile", 0);
-                iwl_buf_wrt_val(BB, qt_i, qt_j, qt_i, qt_j, -0.25, 0, "outfile", 0);
-                iwl_buf_wrt_val(BB, qt_j, qt_i, qt_j, qt_i, -0.25, 0, "outfile", 0);
-                iwl_buf_wrt_val(BB, qt_i, qt_j, qt_j, qt_i, -0.25, 0, "outfile", 0);
+                BB.write(qt_i, qt_i, qt_j, qt_j, 0.5);
+                BB.write(qt_i, qt_j, qt_i, qt_j, -0.25);
+                BB.write(qt_j, qt_i, qt_j, qt_i, -0.25);
+                BB.write(qt_i, qt_j, qt_j, qt_i, -0.25);
             }
         }
         mo_offset += moinfo.orbspi[h];
@@ -92,7 +92,7 @@ void add_ref_UHF(struct iwlbuf *AA, struct iwlbuf *BB, struct iwlbuf *AB) {
 
     // Two-electron alpha-beta
     for (int i = 0; i < (moinfo.nfzc + moinfo.nclsd + moinfo.nopen); i++)
-        for (int j = 0; j < (moinfo.nfzc + moinfo.nclsd); j++) iwl_buf_wrt_val(AB, i, i, j, j, 1.0, 0, "outfile", 0);
+        for (int j = 0; j < (moinfo.nfzc + moinfo.nclsd); j++) AB.write(i, i, j, j, 1.0);
 }
 }  // namespace ccdensity
 }  // namespace psi

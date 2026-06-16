@@ -31,7 +31,9 @@
     \brief Enter brief description of file here
 */
 #include <cstdio>
-#include "psi4/libiwl/iwl.h"
+#include <memory>
+#include <vector>
+#include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libdpd/dpd.h"
 
 namespace psi {
@@ -40,7 +42,7 @@ namespace ccdensity {
 void idx_error(const char *message, int p, int q, int r, int s, int pq, int rs, int pq_sym, int rs_sym,
                std::string out_fname);
 
-void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf, int **bucket_map, int p, int q, int r, int s, int perm_pr,
+void idx_permute(dpdfile4 *File, std::vector<std::unique_ptr<IWLWriter>> &OutBuf, int **bucket_map, int p, int q, int r, int s, int perm_pr,
                  int perm_qs, int perm_prqs, double value, std::string) {
     int p_sym, q_sym, r_sym, s_sym;
     int pq_sym, rs_sym, rq_sym, ps_sym, qp_sym, sp_sym, sr_sym, qr_sym;
@@ -72,7 +74,7 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf, int **bucket_map, int p,
         idx_error("Params_make: pq, rs", p, q, r, s, pq, rs, pq_sym, rs_sym, "outfile");
 
     this_bucket = bucket_map[p][q];
-    iwl_buf_wrt_val(&OutBuf[this_bucket], p, q, r, s, value, 0, "outfile", 0);
+    OutBuf[this_bucket]->write(p, q, r, s, value);
 
     if (perm_pr) {
         rq_sym = r_sym ^ q_sym;
@@ -83,7 +85,7 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf, int **bucket_map, int p,
             idx_error("Params_make: rq, ps", p, q, r, s, rq, ps, rq_sym, ps_sym, "outfile");
 
         this_bucket = bucket_map[r][q];
-        iwl_buf_wrt_val(&OutBuf[this_bucket], r, q, p, s, value, 0, "outfile", 0);
+        OutBuf[this_bucket]->write(r, q, p, s, value);
     }
 
     if (perm_qs) {
@@ -95,7 +97,7 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf, int **bucket_map, int p,
             idx_error("Params_make: ps, rq", p, q, r, s, ps, rq, ps_sym, rq_sym, "outfile");
 
         this_bucket = bucket_map[p][s];
-        iwl_buf_wrt_val(&OutBuf[this_bucket], p, s, r, q, value, 0, "outfile", 0);
+        OutBuf[this_bucket]->write(p, s, r, q, value);
     }
 
     if (perm_pr && perm_qs) {
@@ -107,7 +109,7 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf, int **bucket_map, int p,
             idx_error("Params_make: rs, pq", p, q, r, s, rs, pq, rs_sym, pq_sym, "outfile");
 
         this_bucket = bucket_map[r][s];
-        iwl_buf_wrt_val(&OutBuf[this_bucket], r, s, p, q, value, 0, "outfile", 0);
+        OutBuf[this_bucket]->write(r, s, p, q, value);
     }
 
     if (perm_prqs) {
@@ -119,7 +121,7 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf, int **bucket_map, int p,
             idx_error("Params_make: qp, sr", p, q, r, s, qp, sr, qp_sym, sr_sym, "outfile");
 
         this_bucket = bucket_map[q][p];
-        iwl_buf_wrt_val(&OutBuf[this_bucket], q, p, s, r, value, 0, "outfile", 0);
+        OutBuf[this_bucket]->write(q, p, s, r, value);
 
         if (perm_pr) {
             qr_sym = q_sym ^ r_sym;
@@ -130,7 +132,7 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf, int **bucket_map, int p,
                 idx_error("Params_make: qr, sp", p, q, r, s, qr, sp, qr_sym, sp_sym, "outfile");
 
             this_bucket = bucket_map[q][r];
-            iwl_buf_wrt_val(&OutBuf[this_bucket], q, r, s, p, value, 0, "outfile", 0);
+            OutBuf[this_bucket]->write(q, r, s, p, value);
         }
 
         if (perm_qs) {
@@ -142,7 +144,7 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf, int **bucket_map, int p,
                 idx_error("Params_make: sp, qr", p, q, r, s, sp, qr, sp_sym, qr_sym, "outfile");
 
             this_bucket = bucket_map[s][p];
-            iwl_buf_wrt_val(&OutBuf[this_bucket], s, p, q, r, value, 0, "outfile", 0);
+            OutBuf[this_bucket]->write(s, p, q, r, value);
         }
 
         if (perm_pr && perm_qs) {
@@ -154,7 +156,7 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf, int **bucket_map, int p,
                 idx_error("Params_make: sr, qp", p, q, r, s, sr, qp, sr_sym, qp_sym, "outfile");
 
             this_bucket = bucket_map[s][r];
-            iwl_buf_wrt_val(&OutBuf[this_bucket], s, r, q, p, value, 0, "outfile", 0);
+            OutBuf[this_bucket]->write(s, r, q, p, value);
         }
     }
 }
