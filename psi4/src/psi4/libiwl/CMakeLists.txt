@@ -7,6 +7,7 @@ list(APPEND sources
   buf_wrt.cc
   buf_wrt_mat.cc
   buf_wrt_val.cc
+  iwl_reader.cc
   rdone.cc
   wrtone.cc
   )
