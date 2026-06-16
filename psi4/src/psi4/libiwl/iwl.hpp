@@ -64,6 +64,12 @@ class PSI_API IWL {
     IWL(const IWL &) = delete;
     IWL &operator=(const IWL &) = delete;
 
+    // Movable so IWL (and IWLWriter/IWLReader) can live in std::vector. The
+    // moved-from object is left empty (null storage, no open unit) so its
+    // destructor is a no-op.
+    IWL(IWL &&other) noexcept;
+    IWL &operator=(IWL &&other) noexcept;
+
     int &itap() { return itap_; }
     psio_address &buffer_position() { return bufpos_; }
     int &ints_per_buffer() { return ints_per_buf_; }
