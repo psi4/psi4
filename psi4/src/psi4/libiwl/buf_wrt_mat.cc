@@ -33,7 +33,6 @@
 #include <cmath>
 #include <memory>
 #include <algorithm>
-#include "iwl.h"
 #include "iwl.hpp"
 #include "iwl_impl.h"
 

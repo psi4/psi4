@@ -49,8 +49,9 @@
 #include <string>
 #include <vector>
 
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libiwl/iwl.hpp"
+#include "psi4/libiwl/iwl_reader.h"
+#include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -109,29 +110,50 @@ void write_all(psi::IWL &buf, const std::vector<Quartet> &data) {
     buf.flush(/*lastbuf*/ 1);
 }
 
-// Drive an IWL read loop using the C-style API (the dominant in-tree pattern).
+// Write a file with the new RAII IWLWriter (the phase-2 write API). The flush
+// and close happen in the destructor when the writer goes out of scope.
+void write_all_writer(int itap, const std::vector<Quartet> &data) {
+    IWLWriter out(_default_psio_lib_, itap, 1.0e-14);
+    for (const auto &q : data) {
+        out.write(q.p, q.q, q.r, q.s, q.value);
+    }
+}
+
+// Drive an IWL read loop using the low-level IWL class accessors (the
+// fetch/last_buffer/buffer_count/labels/values pattern), distinct from the
+// IWLReader range-for path so the two can be cross-checked. Erases on close.
 std::vector<Quartet> read_all(int itap) {
     std::vector<Quartet> out;
-    iwlbuf B;
-    iwl_buf_init(&B, itap, 1.0e-14, /*oldfile*/ 1, /*readflag*/ 1);
+    IWL buf(_default_psio_lib_.get(), itap, 1.0e-14, /*oldfile*/ 1, /*readflag*/ 1);
+    buf.set_keep_flag(false);
 
-    int lastbuf = B.lastbuf;
+    int lastbuf = buf.last_buffer();
     while (true) {
-        for (int i = B.idx; i < B.inbuf; ++i) {
+        for (int i = 0; i < buf.buffer_count(); ++i) {
             const int j = 4 * i;
-            const int p = static_cast<int>(B.labels[j + 0]);
-            const int q = static_cast<int>(B.labels[j + 1]);
-            const int r = static_cast<int>(B.labels[j + 2]);
-            const int s = static_cast<int>(B.labels[j + 3]);
-            const double v = static_cast<double>(B.values[i]);
+            const int p = static_cast<int>(buf.labels()[j + 0]);
+            const int q = static_cast<int>(buf.labels()[j + 1]);
+            const int r = static_cast<int>(buf.labels()[j + 2]);
+            const int s = static_cast<int>(buf.labels()[j + 3]);
+            const double v = static_cast<double>(buf.values()[i]);
             out.push_back({p, q, r, s, v});
         }
-        B.idx = B.inbuf;
         if (lastbuf) break;
-        iwl_buf_fetch(&B);
-        lastbuf = B.lastbuf;
+        buf.fetch();
+        lastbuf = buf.last_buffer();
     }
-    iwl_buf_close(&B, /*keep*/ 0);
+    return out;
+}
+
+// Drive a read via the new range-for IWLReader (the phase-2 API). Reads the
+// same file the C-style read_all() does, so a per-entry comparison validates
+// the reader against the legacy loop.
+std::vector<Quartet> read_all_reader(int itap) {
+    std::vector<Quartet> out;
+    IWLReader reader(_default_psio_lib_, itap);
+    for (const auto &I : reader) {
+        out.push_back({I.p, I.q, I.r, I.s, I.value});
+    }
     return out;
 }
 
@@ -155,6 +177,9 @@ bool round_trip(std::size_t n, int itap) {
         buf.set_keep_flag(true);
     }
 
+    // Read once with the new range-for IWLReader (keep the file)...
+    auto got_reader = read_all_reader(itap);
+    // ...and once with the legacy C-style loop (which erases on close).
     auto got = read_all(itap);
 
     if (got.size() != data.size()) {
@@ -162,9 +187,34 @@ bool round_trip(std::size_t n, int itap) {
                   << got.size() << "\n";
         return false;
     }
+    if (got_reader.size() != data.size()) {
+        std::cerr << "  IWLReader size mismatch: wrote " << data.size()
+                  << " read " << got_reader.size() << "\n";
+        return false;
+    }
     for (std::size_t i = 0; i < data.size(); ++i) {
         if (!quartets_equal(data[i], got[i])) {
-            std::cerr << "  entry " << i << " mismatch\n";
+            std::cerr << "  entry " << i << " mismatch (C-API reader)\n";
+            return false;
+        }
+        if (!quartets_equal(data[i], got_reader[i])) {
+            std::cerr << "  entry " << i << " mismatch (IWLReader)\n";
+            return false;
+        }
+    }
+
+    // Independently round-trip through the RAII IWLWriter -> IWLReader on a
+    // separate unit, to exercise the phase-2 write path end to end.
+    write_all_writer(itap + 100, data);
+    auto got_writer = read_all_reader(itap + 100);
+    if (got_writer.size() != data.size()) {
+        std::cerr << "  IWLWriter size mismatch: wrote " << data.size()
+                  << " read " << got_writer.size() << "\n";
+        return false;
+    }
+    for (std::size_t i = 0; i < data.size(); ++i) {
+        if (!quartets_equal(data[i], got_writer[i])) {
+            std::cerr << "  entry " << i << " mismatch (IWLWriter)\n";
             return false;
         }
     }
@@ -180,6 +230,12 @@ bool round_trip_empty(int itap) {
                      /*oldfile*/ 0, /*readflag*/ 0);
         buf.flush(/*lastbuf*/ 1);
         buf.set_keep_flag(true);
+    }
+    auto got_reader = read_all_reader(itap);
+    if (!got_reader.empty()) {
+        std::cerr << "  empty IWLReader round-trip returned "
+                  << got_reader.size() << " entries\n";
+        return false;
     }
     auto got = read_all(itap);
     if (!got.empty()) {
@@ -249,8 +305,11 @@ bool overflow_check_fires(int itap) {
 }  // namespace
 
 int main() {
-    // libpsio needs init before anything opens a unit.
-    psi::psio_init();
+    // Initialize the default libpsio instance the way psio_init() would.
+    // (psio_init() itself is not exported from the core shared library, so we
+    // populate the exported globals directly.)
+    if (!psi::_default_psio_lib_) psi::_default_psio_lib_ = std::make_shared<psi::PSIO>();
+    if (!psi::_default_psio_manager_) psi::_default_psio_manager_ = std::make_shared<psi::PSIOManager>();
 
     // Use tape unit numbers in a range unlikely to clash with the few entries
     // libpsio's filecfg might preset.
