@@ -1,27 +1,33 @@
-#! DF-MP2 gradient for charged high-spin open-shell system (Fe2+ quintet)
+#! DF-MP2 gradient for zinc hydroxide cation
 #! Regression test for Tensor2d::back_transform dimension mismatch fix
-#! Tests fix for bug where temp tensor was created as (nmo, nmo) instead of (nmo, nso)
-#! Transition metal provides significant nso vs nmo mismatch (nso >> nmo) with cc-pVDZ
+#! Structure: [Zn(OH)]+ cation with linear dependence elimination
+#! Uses def2-qzvppd basis with s_tolerance=1e-4 to trigger nso > nmo
 
-molecule fe2plus {
-    2 5
-    Fe
-    O 1 1.6
-    O 1 1.6 2 104.5
+molecule zn_oh {
+    1 3
+    units bohr
+    ZN   0.0        0.0        0.0
+    O    2.0        0.0        0.0
+    H    3.8        0.0        0.0
 }
 
 set {
-    basis              cc-pvdz
+    basis              def2-qzvppd
     scf_type           df
     reference          uhf
     e_convergence      10
-    d_convergence      9
+    d_convergence      10
     mp2_type           df
+    freeze_core        false
+    s_orthogonalization canonical
+    s_tolerance         1e-4
 }
 
 grad = gradient('mp2')
 
-# Expected: gradient computed without Tensor2d::gemm dimension errors
-# Fe2+ quintet [Ar]3d^6: high nso count (transition metal) > nmo → exposes dimension bug
-# The dimension mismatch bug would cause "Tensor2d::gemm dimensions are NOT consistent!" error
-# in DF-MP2 OPDM/TPDM backtransformation at tensors.cc:1819 and :1825
+# [Zn(OH)]+ cation: 3-atom charged system with transition metal
+# Uses def2-qzvppd basis with canonical orthogonalization at s_tolerance=1e-4
+# This forces linear dependence elimination: nso=755 but nmo<755, creating
+# non-square tensors in DF-MP2 back_transform (temp allocated as (noccA, nmo)
+# but needs (noccA, nso)). Bug manifests as "gemm dimensions are NOT consistent!"
+# when back_transform allocates temp with dim2_ (nmo) instead of dim1_ (nso).
