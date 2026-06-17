@@ -43,13 +43,13 @@ class IntegralFactory;
 class BasisSet;
 
 /*! \ingroup MINTS
- *  \class X2CInt
- *  \brief Computes the 1e-X2C kinetic and potential integrals.
+ *  \class SFX2C1e
+ *  \brief Computes the Spin-Free 1e-X2C kinetic and potential integrals.
  */
-class PSI_API X2CInt {
+class PSI_API SFX2C1e {
    public:
-    X2CInt();
-    ~X2CInt();
+    SFX2C1e();
+    ~SFX2C1e();
 
     /*! @{
      * Computes the X2C kinetic and potential integrals

@@ -58,6 +58,7 @@
 #include "psi4/libscf_solver/uhf.h"
 #include "psi4/libscf_solver/rohf.h"
 #include "psi4/libscf_solver/cuhf.h"
+#include "psi4/libscf_solver/cghf.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfock/v.h"
 
@@ -433,6 +434,12 @@ void export_wavefunction(py::module& m) {
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
              "BasisSet *basis*",
              "basis"_a)
+        .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
+
+    py::class_<scf::CGHF, std::shared_ptr<scf::CGHF>, scf::HF>(m, "CGHF", "docstring")
+        .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
+        .def("preiterations", &scf::CGHF::preiterations)
+        .def("form_FDSmSDF", &scf::CGHF::get_shared_FDSmSDF)
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")

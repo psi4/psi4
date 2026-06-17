@@ -230,6 +230,11 @@ def scf_initialize(self):
         self.guess()
         core.timer_off("HF: Guess")
 
+        if core.get_option('SCF', "REFERENCE") == 'CGHF':
+            core.timer_on("CGHF: Preiterations")
+            self.preiterations()
+            core.timer_off("CGHF: Preiterations")
+
         optstash.restore()
 
         # Print out initial docc/socc/etc data
@@ -497,7 +502,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
                 Dnorm = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
 
-                if add_to_diis_subspace:
+                if add_to_diis_subspace and core.get_option("SCF", "REFERENCE") != "CGHF": #CGHF handles this in C++ due to Einsums
                     for engine_used in self.diis(Dnorm):
                         status.append(engine_used)
 
