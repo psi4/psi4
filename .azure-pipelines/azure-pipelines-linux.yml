@@ -280,6 +280,7 @@ jobs:
   - bash: |
       cd build
       source activate p4env
+      cat stage/share/cmake/psi4/psi4Config.cmake
       cmake --build . --target plugin_skeletondfmp2 --verbose
       ls -lR tests/plugins/skeletondfmp2/
       ctest -R skeletondfmp2 --output-on-failure || true
