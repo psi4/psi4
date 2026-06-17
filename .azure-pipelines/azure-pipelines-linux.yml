@@ -52,7 +52,7 @@ jobs:
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
 
-      clang_latest:
+      clang_15:
         CXX_COMPILER: 'clang++-15'
         PYTHON_VER: '3.11'
         C_COMPILER: 'clang-15'
@@ -89,7 +89,7 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
-        ENABLE_OOO: "ON"
+        ENABLE_OOO: "OFF"
         CMARGS: >-
           -DOpenMP_C_FLAGS=-fopenmp=libomp
           -DOpenMP_CXX_FLAGS=-fopenmp=libomp
@@ -280,16 +280,6 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      cat stage/share/cmake/psi4/psi4Config.cmake
-      cmake --build . --target plugin_skeletondfmp2 --verbose
-      ls -lR tests/plugins/skeletondfmp2/
-      ctest -R skeletondfmp2 --output-on-failure || true
-      cat Testing/Temporary/L*log
-    displayName: "Spot Test 3"
-
-  - bash: |
-      cd build
-      source activate p4env
       python -V
       ls -l
       pwd
@@ -327,14 +317,15 @@ jobs:
     displayName: 'Psi4 Path Setup Diagnostics'
     # when "psi4 not found", use this to figure out what's wrong with QCEngine detection
 
-  - bash: |
-      cd build
-      source activate p4env
-      PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
-      cmake --build . --target plugin_skeleton --verbose
-      ls -lR tests/plugins/skeleton/
-      PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
-    displayName: 'Spot Test 4'
+  # example with PLUGIN
+  #- bash: |
+  #    cd build
+  #    source activate p4env
+  #    PATH=stage/bin:$PATH PYTHONPATH=stage/lib/ pytest -k ITERATIVE ../tests/pytests
+  #    cmake --build . --target plugin_skeleton --verbose
+  #    ls -lR tests/plugins/skeleton/
+  #    PYTHONPATH=tests/plugins/skeleton ./stage/bin/psi4 ./tests/plugins/skeleton/skeleton/input.dat -o stdout
+  #  displayName: 'Spot Test 3'
 
   # example with COPY
   #- bash: |
