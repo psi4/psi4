@@ -618,10 +618,20 @@ def set_module_options(module: str, options_dict: Dict[str, Any]) -> None:
     for k, v, in options_dict.items():
         core.set_local_option(module.upper(), k.upper(), v)
 
+_original_read_globals = core.Options.read_globals  # capture first
+def _deprecated_read_globals(self, b):
+    warnings.warn(
+        "The Python export of Options.read_globals is deprecated due to disuse and to better hide C++ implementation details. Unless someone speaks up, 1.12 will be the last release to have it.",
+        category=FutureWarning,
+        stacklevel=2,
+    )
+    return _original_read_globals(self, b)
+core.Options.read_globals = _deprecated_read_globals
+
 _original_set_read_globals = core.Options.set_read_globals  # capture first
 def _deprecated_set_read_globals(self, b):
     warnings.warn(
-        "Options.set_read_globals is deprecated due to disuse and because it is slightly hazardous. Unless someone speaks up, 1.12 will be the last release to have it.",
+        "The Python export of Options.set_read_globals is deprecated due to disuse and because it is slightly hazardous. Unless someone speaks up, 1.12 will be the last release to have it.",
         category=FutureWarning,
         stacklevel=2,
     )
