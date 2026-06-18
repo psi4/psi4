@@ -55,6 +55,7 @@ import pathlib
 import re
 import uuid
 import warnings
+import functools
 from collections import Counter
 from itertools import product
 from tempfile import NamedTemporaryFile
@@ -68,6 +69,16 @@ from psi4 import core, extras
 from .. import qcdb
 from . import optproc
 from .exceptions import TestComparisonError, UpgradeHelper, ValidationError
+
+def _deprecate_method(cls, name, message):
+    original = getattr(cls, name)
+
+    @functools.wraps(original)
+    def wrapper(self, *args, **kwargs):
+        warnings.warn(message, category=FutureWarning, stacklevel=2)
+        return original(self, *args, **kwargs)
+
+    setattr(cls, name, wrapper)
 
 ## Python basis helps
 
@@ -618,6 +629,14 @@ def set_module_options(module: str, options_dict: Dict[str, Any]) -> None:
     for k, v, in options_dict.items():
         core.set_local_option(module.upper(), k.upper(), v)
 
+_deprecate_method(
+    core.Options, "set_read_globals",
+    "The Python export of Options.set_read_globals is deprecated due to disuse and because it is slightly hazardous. Unless someone speaks up, 1.12 will be the last release to have it."
+)
+_deprecate_method(
+    core.Options, "read_globals",
+    "The Python export of Options.read_globals is deprecated due to disuse and to better hide C++ implementation details. Unless someone speaks up, 1.12 will be the last release to have it."
+)
 
 ## OEProp helpers
 
