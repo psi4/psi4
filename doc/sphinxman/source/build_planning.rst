@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2025 The Psi4 Developers.
+.. # Copyright (c) 2007-2026 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -105,6 +105,8 @@ installing |PSIfour|. More detail is given :ref:`here
     >>> make install
     # -or- general
     >>> cmake --build objdir --target install -j`getconf _NPROCESSORS_ONLN`
+    # add `which psi4` and `import psi4` to envvars
+    >>> eval $(stage/bin/psi4 --psiapi)
 
 
 .. _`faq:builddetailed`:
@@ -163,6 +165,7 @@ How to build, test, and install Psi4, in detail
 
     >>> cd {objdir}
     >>> cmake --build . -j`getconf _NPROCESSORS_ONLN`
+    >>> eval $(stage/bin/psi4 --psiapi)
 
 **5. Test**
 

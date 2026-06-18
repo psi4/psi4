@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -145,14 +145,9 @@ void CDJK::manage_JK_core() {
 void CDJK::print_header() const {
     if (print_) {
         outfile->Printf("  ==> CDJK: Cholesky-decomposed J/K Matrices <==\n\n");
-
         outfile->Printf("    J tasked:             %11s\n", (do_J_ ? "Yes" : "No"));
         outfile->Printf("    K tasked:             %11s\n", (do_K_ ? "Yes" : "No"));
         outfile->Printf("    wK tasked:            %11s\n", (do_wK_ ? "Yes" : "No"));
-        if (do_wK_) {
-            throw PsiException("no wk for scf_type cd.", __FILE__, __LINE__);
-            // outfile->Printf( "    Omega:                %11.3E\n", omega_);
-        }
         outfile->Printf("    OpenMP threads:       %11d\n", omp_nthread_);
         outfile->Printf("    Integrals threads:    %11d\n", df_ints_num_threads_);
         outfile->Printf("    Memory [MiB]:         %11ld\n", (memory_ * 8L) / (1024L * 1024L));
@@ -162,5 +157,6 @@ void CDJK::print_header() const {
         outfile->Printf("    Cholesky tolerance:   %11.2E\n", cholesky_tolerance_);
         outfile->Printf("    No. Cholesky vectors: %11li\n\n", ncholesky_);
     }
+    if (do_wK_) throw PsiException("No wk for scf_type cd.", __FILE__, __LINE__);
 }
 }  // namespace psi

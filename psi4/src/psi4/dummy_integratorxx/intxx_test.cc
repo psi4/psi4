@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -36,7 +36,7 @@
 namespace psi {
 namespace dummy_integratorxx {
 
-SharedWavefunction dummy_intxx(SharedWavefunction ref_wfn, Options& options) {
+SharedWavefunction dummy_integratorxx(SharedWavefunction ref_wfn, Options& options) {
 
     return ref_wfn;
 }

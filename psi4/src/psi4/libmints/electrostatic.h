@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -54,9 +54,6 @@ class ElectrostaticInt : public PotentialInt {
 
     void set_origin(const Vector3& _origin) override;
 
-// Intel C++ 12 thinks we're trying to overload the "void compute_shell(int, int)" and warns us about it.
-// The following line is to shut it up.
-#pragma warning disable 1125
     PRAGMA_WARNING_PUSH
     PRAGMA_WARNING_IGNORE_OVERLOADED_VIRTUAL
     /// Computes integrals and stores in result.

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -45,21 +45,14 @@ namespace psi {
 namespace ccdensity {
 
 /* Global variables */
-#ifdef EXTERN
-#undef EXTERN
-#define EXTERN extern
-#else
-#define EXTERN
-#endif
-
 /* #define DEBUG_XI (1)*/
 
-EXTERN struct MOInfo moinfo;
-EXTERN struct Frozen frozen;
-EXTERN struct Params params;
-EXTERN struct RHO_Params *rho_params;
-EXTERN std::vector<TD_Params> td_params;
-// EXTERN std::vector<struct XTD_Params> xtd_params;
+extern struct MOInfo moinfo;
+extern struct Frozen frozen;
+extern struct Params params;
+extern struct RHO_Params *rho_params;
+extern std::vector<TD_Params> td_params;
+// extern std::vector<struct XTD_Params> xtd_params;
 }
 }  // namespace psi
 

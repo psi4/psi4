@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -176,6 +176,9 @@ class PSI_API BasisSet {
     BasisSet(const std::string &basistype, SharedMolecule mol,
              std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map,
              std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &ecp_shell_map);
+
+    BasisSet(const BasisSet&) = delete;
+    BasisSet& operator=(const BasisSet&) = delete;
 
     ~BasisSet();
 

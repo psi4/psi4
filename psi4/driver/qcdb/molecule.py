@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -1128,6 +1128,7 @@ class Molecule(LibmintsMolecule):
                     fix_com=None,
                     fix_orientation=None,
                     fix_symmetry=None,
+                    nonphysical=False,
                     return_dict=False,
                     enable_qm=True,
                     enable_efp=True,
@@ -1141,6 +1142,7 @@ class Molecule(LibmintsMolecule):
             fix_com=fix_com,
             fix_orientation=fix_orientation,
             fix_symmetry=fix_symmetry,
+            nonphysical=nonphysical,
             return_processed=False,
             enable_qm=enable_qm,
             enable_efp=enable_efp,
@@ -1292,7 +1294,7 @@ class Molecule(LibmintsMolecule):
         """
         raise RuntimeError("Using `Molecule.run_dftd3` instead of `Molecule.run_sdftd3` is obsolete as of 1.10. Note that parameters do not translate directly -- see docstring. Also aliases are not available for dashlvl. The new run_sdftd3 is analogous to run_dftd4. Alternately, you could access these routines by running `qcengine.compute(atomicinput, 's-dftd3')` directly.")
 
-    def run_sdftd3(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
+    def run_sdftd3(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1, return_dict: bool = False):
         """Compute dispersion correction via Grimme's new simple-dftd3 program, not the classic DFTD3 executable.
 
         Parameters
@@ -1346,23 +1348,25 @@ class Molecule(LibmintsMolecule):
             raise ValidationError("run_dftd3: no longer computes D2, only D3")
 
         resinp = {
-            'molecule': self.to_schema(dtype=2),
-            'driver': derdriver,
-            'model': {
-                'method': func,
-                'basis': '(auto)',
-            },
-            'keywords': {
-                'verbose': verbose,
-                "apply_qcengine_aliases": True,
+            'molecule': self.to_schema(dtype=3),
+            "specification": {
+                'driver': derdriver,
+                'model': {
+                    'method': func,
+                    'basis': '(auto)',
+                },
+                'keywords': {
+                    'verbose': verbose,
+                    "apply_qcengine_aliases": True,
+                },
             },
         }
         if dashlvl:
-            resinp['keywords']['level_hint'] = dashlvl
+            resinp["specification"]['keywords']['level_hint'] = dashlvl
         if dashparam:
-            resinp['keywords']['params_tweaks'] = dashparam
-        jobrec = qcng.compute(resinp, 's-dftd3', raise_error=True)
-        jobrec = jobrec.dict()
+            resinp["specification"]['keywords']['params_tweaks'] = dashparam
+        jobrec = qcng.compute(resinp, 's-dftd3', raise_error=True, return_version=2)
+        jobrec = jobrec.model_dump()
 
         # hack as not checking type GRAD
         for k, qca in jobrec['extras']['qcvars'].items():
@@ -1379,11 +1383,18 @@ class Molecule(LibmintsMolecule):
                     core.set_variable(k, float(qca))
 
         if derint == -1:
+            if return_dict:
+                return (float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']),
+                        jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT'], jobrec)
             return (float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']),
                     jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT'])
         elif derint == 0:
+            if return_dict:
+                return float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']), jobrec
             return float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
         elif derint == 1:
+            if return_dict:
+                return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT'], jobrec
             return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']
 
     def run_dftd4(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
@@ -1436,23 +1447,25 @@ class Molecule(LibmintsMolecule):
             derint, derdriver = parse_dertype(dertype, max_derivative=1)
 
         resinp = {
-            'molecule': self.to_schema(dtype=2),
-            'driver': derdriver,
-            'model': {
-                'method': func,
-                'basis': '(auto)',
-            },
-            'keywords': {
-                'verbose': verbose,
+            'molecule': self.to_schema(dtype=3),
+            "specification": {
+                'driver': derdriver,
+                'model': {
+                    'method': func,
+                    'basis': '(auto)',
+                },
+                'keywords': {
+                    'verbose': verbose,
+                },
             },
         }
         if dashlvl:
-            resinp['keywords']['level_hint'] = dashlvl
+            resinp["specification"]['keywords']['level_hint'] = dashlvl
         if dashparam:
-            resinp['keywords']['params_tweaks'] = dashparam
+            resinp["specification"]['keywords']['params_tweaks'] = dashparam
 
-        jobrec = qcng.compute(resinp, 'dftd4', raise_error=True)
-        jobrec = jobrec.dict()
+        jobrec = qcng.compute(resinp, 'dftd4', raise_error=True, return_version=2)
+        jobrec = jobrec.model_dump()
 
         # hack as not checking type GRAD
         for k, qca in jobrec['extras']['qcvars'].items():
@@ -1521,22 +1534,24 @@ class Molecule(LibmintsMolecule):
             derint, derdriver = parse_dertype(dertype, max_derivative=1)
 
         resinp = {
-            'molecule': self.to_schema(dtype=2),
-            'driver': derdriver,
-            'model': {
-                'method': func,
-                'basis': '(auto)',
-            },
-            'keywords': {
-                'verbose': verbose,
+            'molecule': self.to_schema(dtype=3),
+            "specification": {
+                'driver': derdriver,
+                'model': {
+                    'method': func,
+                    'basis': '(auto)',
+                },
+                'keywords': {
+                    'verbose': verbose,
+                },
             },
         }
         try:
-            jobrec = qcng.compute(resinp, 'mctc-gcp', raise_error=True)
+            jobrec = qcng.compute(resinp, 'mctc-gcp', raise_error=True, return_version=2)
         except qcng.exceptions.ResourceError:
-            jobrec = qcng.compute(resinp, 'gcp', raise_error=True)
+            jobrec = qcng.compute(resinp, 'gcp', raise_error=True, return_version=2)
 
-        jobrec = jobrec.dict()
+        jobrec = jobrec.model_dump()
 
         # hack (instead of checking dertype GRAD) to collect `(nat, 3)` ndarray of gradient if present
         for variable_name, qcv in jobrec['extras']['qcvars'].items():

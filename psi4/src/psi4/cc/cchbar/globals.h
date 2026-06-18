@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -42,15 +42,8 @@ namespace psi {
 namespace cchbar {
 
 /* Global variables */
-#ifdef EXTERN
-#undef EXTERN
-#define EXTERN extern
-#else
-#define EXTERN
-#endif
-
-EXTERN struct MOInfo moinfo;
-EXTERN struct Params params;
+extern struct MOInfo moinfo;
+extern struct Params params;
 }
 }  // namespace psi
 

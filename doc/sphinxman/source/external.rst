@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2025 The Psi4 Developers.
+.. # Copyright (c) 2007-2026 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -531,6 +531,11 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 .. option:: --qcschema, --schema
 
    Runs input files as QCSchema. Can either be JSON or MessagePack input.
+   Can be either QCSchema v1 or v2. See also ``--return-version``.
+
+.. option:: --return-version
+
+   QCSchema version to return, if not the version of the input schema.
 
 .. option:: -s <name>, --scratch <name>
 

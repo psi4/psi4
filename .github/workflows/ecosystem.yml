@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - '1.*.x'
   pull_request:
   merge_group:
 
@@ -20,11 +21,23 @@ jobs:
 
           - label: "Conda GNU (L)"
             runs-on: ubuntu-latest
+            python-version: "3.14"
+            mkl-version: ""
+            platform: linux-64
+            pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not pe_ecp"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+
+          - label: "Conda GNU (L)"
+            runs-on: ubuntu-latest
             python-version: "3.13"
             mkl-version: ""
             platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6)"
+            pytest-name-expr: "not pe_ecp"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
@@ -36,15 +49,17 @@ jobs:
 
           - label: "Conda Clang (M-Intel)"
             runs-on: macos-15-intel
-            python-version: "3.11"
+            python-version: "3.14"
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or pvdz_adc2_any_6 or v2rdm6 or v2rdm7)"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.11/site-packages/numpy/_core/include"
+              -D Python_NumPy_INCLUDE_DIR="/Users/runner/miniconda3/envs/p4build/lib/python3.14/site-packages/numpy/_core/include"
+              -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
+              -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
             # Notes:
             # * libiomp5 is picking up naturally but left here as guide
             #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
@@ -56,6 +71,23 @@ jobs:
             #    -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
             #    -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
             # * numpy/_core in py310 vs numpy/core in py39 (or maybe a np v1/v2 thing)
+            # * -Wno-deprecated-declarations suppresses sprintf -> snprintf warnings
+            # * -Wl,-w suppresses 9k warnings of mismatched visibility btwn L2 & psi4
+
+          - label: "Conda Clang (M-Silicon)"
+            runs-on: macos-latest
+            python-version: "3.14"
+            mkl-version: ""
+            platform: osx-64
+            pytest-marker-expr: "addon and not (medlong or long)"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7)"
+            target-sdk: "10.10"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+              -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
+              -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
 
           - label: "Conda Clang (M-Silicon)"
             runs-on: macos-latest
@@ -63,12 +95,14 @@ jobs:
             mkl-version: ""
             platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
-            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7 or snowflake)"
+            pytest-name-expr: "not (pe_ecp or v2rdm6 or v2rdm7)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
               -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
+              -D CMAKE_CXX_FLAGS="-Wno-deprecated-declarations"
+              -D CMAKE_SHARED_LINKER_FLAGS="-Wl,-w"
 
           - label: "LLVM clang-cl (W)"
             runs-on: windows-latest
@@ -80,7 +114,18 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
- 
+
+          - label: "LLVM clang-cl (W)"
+            runs-on: windows-latest
+            python-version: "3.14"
+            mkl-version: ""
+            platform: win-64
+            pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
+            pytest-name-expr: "not pe_ecp"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D psi4_SKIP_ENABLE_Fortran=ON
+
             # Notes:
             # * When not using cache file, need to additionally specify the following:
             #    -D CMAKE_C_COMPILER=clang-cl
@@ -169,6 +214,14 @@ jobs:
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
         fi
+        if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.python-version }}" == "3.14" ]]; then
+          :
+          sed -E -i.bak "s;- qcfractal;#- qcfractal;g" env_p4build.yaml
+        fi
+        if [[ "${{ runner.os }}" != "macOS" && "${{ matrix.cfg.python-version }}" == "3.14" ]]; then
+          :
+          sed -i "s;- qcfractal;#- qcfractal;g" env_p4build.yaml
+        fi
         if [[ "${{ runner.os }}" == "macOS" && "${{ matrix.cfg.label }}" == "Conda Clang (M-Intel)" ]]; then
           :
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
@@ -191,7 +244,7 @@ jobs:
         echo "::endgroup::"
 
     - name: Setup Conda
-      uses: conda-incubator/setup-miniconda@v3
+      uses: conda-incubator/setup-miniconda@v4
       with:
         activate-environment: p4build
         environment-file: env_p4build.yaml
@@ -237,6 +290,7 @@ jobs:
           -G Ninja \
           -C "${{ github.workspace }}/cache_p4build@objdir.cmake" \
           -D CMAKE_INSTALL_PREFIX=./install \
+          -D psi4_ENABLE_PRECOMPILE_HEADERS=ON \
           ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4
@@ -259,7 +313,7 @@ jobs:
       if: false
       run: |
         conda remove qcelemental --force
-        python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.29.0.dev2 --no-deps
+        python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.50.1 --no-deps
 
     - name: Special Config - QCEngine Dep
       if: false  # needed for Windows + DFTD4
@@ -273,11 +327,31 @@ jobs:
         conda remove qcmanybody --force
         python -m pip install git+https://github.com/loriab/QCManyBody.git@qcsk_v1v2_rearr --no-deps
 
+    - name: Special Config - OptKing Dep
+      if: false
+      run: |
+        conda remove optking --force || true
+
     - name: Special Config - QCFractal Dep
       if: false
       run: |
         conda remove qcfractal --force
         python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@main#egg=qcfractal&subdirectory=qcfractal'
+
+    - name: Special Config - Download MolSSI/QCFractal Repo
+      if: runner.os == 'Linux'
+      uses: actions/checkout@v4
+      with:
+        repository: MolSSI/QCFractal
+        path: qca
+        ref: main
+        fetch-depth: 0
+
+    - name: Install All QCArchive packages
+      if: runner.os == 'Linux'
+      working-directory: ./qca
+      run: |
+          pip install -e ./qcportal -e ./qcfractalcompute -e ./qcfractal[services,geoip,snowflake]
 
     - name: Special Config - Patch Legacy QCFractal for Python
       if: false
@@ -289,6 +363,7 @@ jobs:
       # in case the conda package of a downstream addon (like resp) brings the psi4 conda package, which is not the psi4 we want to test
 
     - name: Runtime Conda environment
+      working-directory: ./objdir
       run: |
         conda info
         conda list
@@ -308,8 +383,59 @@ jobs:
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
-      # step works but is redundant with next one; enable for debugging
-    - name: Test Addons with CTest (M)
+    - name: MBIS-7
+      working-directory: ./objdir
+      run: |
+        export PATH=../install/bin:$PATH
+        #export KMP_DUPLICATE_LIB_OK=TRUE
+        psi4 ../tests/mbis-7/input.dat -o stdout
+
+    - name: Psi4 Path Setup Diagnostics
+      if: false
+      working-directory: ./objdir
+      run: |
+        ls -l
+        pwd
+        python -c "import sys;print(sys.path)"
+        echo ROUND1
+        python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        psi4 --module || true
+        python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        python -c "import psi4; print(psi4.executable)" || true
+        echo ROUND1NG
+        python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        echo ROUNDE
+        PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        PATH=stage/bin:$PATH psi4 --module || true
+        PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        PATH=stage/bin:$PATH python -c "import psi4; print(psi4.executable)" || true
+        echo ROUNDE-NG
+        PATH=stage/bin:$PATH python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        echo ROUNDP
+        PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        PYTHONPATH=stage/lib psi4 --module || true
+        PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        PYTHONPATH=stage/lib python -c "import psi4; print(psi4.executable)" || true
+        echo ROUNDP-NG
+        PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+        if [[ "${{ runner.os }}" != "Windows" ]]; then
+          echo EIN
+          python -c "import einsums"
+          echo END PLAIN EIN
+          python -c "import einsums as ein;print(ein.__file__)"
+          echo END EIN
+        fi
+        echo ROUND4
+        eval $(stage/bin/psi4 --psiapi)
+        python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+        psi4 --module || true
+        python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+        python -c "import psi4; print(psi4.executable)" || true
+        echo ROUND4-NG
+        python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+
+      # step works but for addons is redundant with next one; enable for debugging. enabled for Mac b/c core testing not covered by Azure DevOps
+    - name: Test Core with CTest (M)
       if: runner.os == 'macOS'
       working-directory: ./objdir
       run: ctest -L quick -j2 --output-on-failure  # `-LE d2ints` needed for Windows
@@ -330,6 +456,12 @@ jobs:
         conda/psi4-path-advisor.py -vv
         cp env_p4build.yaml "devtools/conda-envs/${{ matrix.cfg.platform }}-buildrun.yaml"
         git diff --color-words
+
+    - name: Analyze Conda dependencies
+      if: runner.os != 'Windows'
+      run: |
+        conda install conda-tree -c conda-forge
+        conda-tree deptree
 
 # Notes
 # -----

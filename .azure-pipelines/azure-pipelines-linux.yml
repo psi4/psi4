@@ -11,7 +11,7 @@ jobs:
     matrix:
       gcc_11:
         CXX_COMPILER: 'g++-11'
-        PYTHON_VER: '3.10'
+        PYTHON_VER: '3.14'
         C_COMPILER: 'gcc-11'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
@@ -22,10 +22,13 @@ jobs:
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
         CMARGS: ""
+        CM_GENERATOR: "Unix Makefiles"
+        ADVISOR_ARGS: ""
+        ADVISOR_DISABLE_ARGS: "compilers"
 
       gcc_latest:
         CXX_COMPILER: 'g++'
-        PYTHON_VER: '3.13'
+        PYTHON_VER: '3.14'
         C_COMPILER: 'gcc'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
@@ -35,7 +38,10 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
-        CMARGS: ""
+        CMARGS: "-Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON"
+        CM_GENERATOR: "Ninja"
+        ADVISOR_ARGS: ""
+        ADVISOR_DISABLE_ARGS: "compilers"
 
       clang_latest:
         CXX_COMPILER: 'clang++-15'
@@ -50,7 +56,45 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
+        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON'
+        CM_GENERATOR: "Ninja"
+        ADVISOR_ARGS: ""
+        ADVISOR_DISABLE_ARGS: "compilers"
+
+      clang_py314:
+        CXX_COMPILER: 'clang++-17'
+        PYTHON_VER: '3.14'
+        C_COMPILER: 'clang-17'
+        F_COMPILER: 'gfortran'
+        BUILD_TYPE: 'release'
+        APT_INSTALL: 'gfortran clang-17 clang++-17'
+        vmImage: 'ubuntu-latest'
+        PYTEST_MARKER_EXPR: 'quick'
+        PYTEST_NAME_EXPR: 'not nonsense1'
+        ENABLE_EINSUMS: "ON"
+        ENABLE_GAUXC: "ON"
         CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so'
+        CM_GENERATOR: "Ninja"
+        ADVISOR_ARGS: ""
+        ADVISOR_DISABLE_ARGS: "compilers"
+
+      icpx_conda:
+        CXX_COMPILER: 'icpx'
+        PYTHON_VER: '3.10'
+        C_COMPILER: 'icx'
+        F_COMPILER: 'ifx'
+        BUILD_TYPE: 'release'
+        APT_INSTALL: ''
+        vmImage: 'ubuntu-latest'
+        # todo
+        PYTEST_MARKER_EXPR: '((api and not stdsuite and not (smoke or quick or medlong or long)) or einsums)'
+        PYTEST_NAME_EXPR: 'not nonsense1'
+        ENABLE_EINSUMS: "OFF"
+        ENABLE_GAUXC: "OFF"
+        CMARGS: "-D ENABLE_XHOST=OFF -D psi4_ENABLE_PRECOMPILE_HEADERS=ON"
+        CM_GENERATOR: "Ninja"
+        ADVISOR_ARGS: "--compiler IntelLLVM"
+        ADVISOR_DISABLE_ARGS: ""
 
   pool:
     vmImage: $(vmImage)
@@ -81,15 +125,17 @@ jobs:
       echo "" && echo "Nprocs:"
       getconf _NPROCESSORS_ONLN
 
-      echo "CXX Ver:"
-      ${CXX_COMPILER} --version
-      ${CXX_COMPILER} -v
+      if [[ "$(Agent.JobName)" != "Linux Builds icpx_conda" ]]; then
+        echo "CXX Ver:"
+        ${CXX_COMPILER} --version
+        ${CXX_COMPILER} -v
 
-      echo "F Ver:"
-      ${F_COMPILER} --version
+        echo "F Ver:"
+        ${F_COMPILER} --version
 
-      echo "C Ver:"
-      ${C_COMPILER} --version
+        echo "C Ver:"
+        ${C_COMPILER} --version
+      fi
     displayName: "Setup Information"
 
   - bash: |
@@ -114,13 +160,17 @@ jobs:
         env \
         --name p4env \
         --python $PYTHON_VER \
-        --disable compilers addons docs
+        --disable ${ADVISOR_DISABLE_ARGS} addons docs
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       # test some alternative packages
       if [[ "${PYTHON_VER}" != "3.12" ]]; then
         echo "  - psi4::gcp" >> env_p4env.yaml
         echo "  - psi4::dftd3" >> env_p4env.yaml
+      fi
+      if [[ "$(Agent.JobName)" == "Linux Builds icpx_conda" ]]; then
+        sed -i "s;#- dpcpp;- dpcpp;g" env_p4env.yaml
+        sed -i "s;#- ifx;- ifx;g" env_p4env.yaml
       fi
       sed -i "s;- libint;#- libint;g" env_p4env.yaml
       sed -i "s;#- psi4::libint;- psi4::libint=2.8.1;g" env_p4env.yaml
@@ -142,7 +192,7 @@ jobs:
       python -V
       python -c 'import numpy; print(numpy.version.version)'
       conda/psi4-path-advisor.py \
-        cmake \
+        cmake ${ADVISOR_ARGS} \
         --objdir build \
         --insist
       echo "\n<<<  cache_p4env@build.cmake  >>>\n"
@@ -151,6 +201,7 @@ jobs:
         -S. \
         -B build \
         -C $(Build.SourcesDirectory)/cache_p4env@build.cmake \
+        -G "${CM_GENERATOR}" \
         -D CMAKE_CXX_COMPILER=${CXX_COMPILER} \
         -D CMAKE_C_COMPILER=${C_COMPILER} \
         -D CMAKE_Fortran_COMPILER=${F_COMPILER} \
@@ -165,10 +216,12 @@ jobs:
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
+    # conda remove qcengine --force || true
+    # conda remove optking --force || true
   - bash: |
       cd build
       source activate p4env
-      ../devtools/scripts/ci_build.sh
+      cmake --build . -- -j 2
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so
     displayName: 'Build Psi4'
@@ -177,10 +230,67 @@ jobs:
       cd build
       source activate p4env
       python -V
+      python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
       python -c 'import numpy; print(numpy.version.version)'
       python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
+      python -c 'import qcengine as q; print(q.__version__, q.__file__)'
+      qcengine info
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
+
+  - bash: |
+      cd build
+      source activate p4env
+      python -V
+      export PYTHONPATH=stage/lib
+      export PATH=stage/bin:$PATH
+      qcengine info
+      python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+      python -c 'import numpy; print(numpy.version.version)'
+      python -c 'import qcelemental as q; print(q.__version__, q.__file__)'
+      python -c 'import qcengine as q; print(q.__version__, q.__file__)'
+      ./stage/bin/psi4 ../tests/ddd-deriv/input.dat
+    displayName: 'Spot Test 2'
+
+  - bash: |
+      cd build
+      source activate p4env
+      python -V
+      ls -l
+      pwd
+      python -c "import sys;print(sys.path)"
+      echo ROUND1
+      python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+      psi4 --module || true
+      python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+      python -c "import psi4; print(psi4.executable)" || true
+      echo ROUND1NG
+      python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+      echo ROUNDE
+      PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+      PATH=stage/bin:$PATH psi4 --module || true
+      PATH=stage/bin:$PATH python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+      PATH=stage/bin:$PATH python -c "import psi4; print(psi4.executable)" || true
+      echo ROUNDE-NG
+      PATH=stage/bin:$PATH python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+      echo ROUNDP
+      PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+      PYTHONPATH=stage/lib psi4 --module || true
+      PYTHONPATH=stage/lib python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+      PYTHONPATH=stage/lib python -c "import psi4; print(psi4.executable)" || true
+      echo ROUNDP-NG
+      PYTHONPATH=stage/lib python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+      echo ROUND4
+      eval $(stage/bin/psi4 --psiapi)
+      python -c "import qcelemental as q;print(q.util.which('psi4'))" || true
+      psi4 --module || true
+      python -c "import qcelemental as q;print(q.util.which_import('psi4'))" || true
+      python -c "import psi4; print(psi4.executable)" || true
+      echo ROUND4-NG
+      python -c "import qcengine as qcng; qcng.get_program('psi4')" || true
+    condition: false
+    displayName: 'Psi4 Path Setup Diagnostics'
+    # when "psi4 not found", use this to figure out what's wrong with QCEngine detection
 
   #- bash: |
   #    cd build
