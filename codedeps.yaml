@@ -98,8 +98,8 @@ data:
       aux_build_names:
         linux-64:
           - "//dpcpp_linux-64"
-        win-64:
-          - "libgcc<14.3"
+        # win-64:
+        #   - "libgcc<14.3"
       aux_build_names_note:
         "libgcc<14.3": "Avoid 'specified procedure could not be found' DLL error."
         "clangdev=17.0.6": "For win-64, this clang (avoid omp problem with v19, v20) intel-openmp for openmp, and =*=24*mkl for libblas constraint (MKL 2024.2.2 gives wrong results, so 24*mkl requests 2024.1.0.) worked well together."
@@ -196,8 +196,10 @@ data:
       constraint: null
       aux_build_names:
         - pip
+        - python-gil
       aux_build_names_note:
         pip: "Package installer not strictly needed but needs to be tied to this python if used."
+        "python-gil": "Safety of free-threading uncertain, so avoid for now."
       cmake:
         Python_EXECUTABLE:
           unix: ${CONDA_PREFIX}/bin/python
@@ -300,12 +302,13 @@ data:
       host: github
       account: dftd3
       name: simple-dftd3
-      commit: v0.7.0  # TODO not in psi src
+      commit: v1.3.0
     cmake: null
     conda:
       channel: conda-forge
       name: dftd3-python
-      constraint: ">=1.0"
+      constraint: ">=1.3.0"
+      constraint_note: "v1.3.0 provides QCSchema v2 compatibility."
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
@@ -668,7 +671,7 @@ data:
         - sphinx-automodapi
         - sphinx-autodoc-typehints
         - sphinx-tabs
-        - autodoc-pydantic=1
+        - autodoc-pydantic=2
         - qcportal
         - "gxx_linux-64=14.3.0=hc876b51_14"
         - "setuptools<82.0.0"
@@ -1005,23 +1008,25 @@ data:
       host: github
       account: MolSSI
       name: QCElemental
-      commit: v0.29.0
+      commit: v0.50.2
+      githttps: true
     cmake:
       name: qcelemental
-      constraint: "ATLEAST 0.28.0"
+      constraint: "ATLEAST 0.50.2"
       target: null
     conda:
       channel: conda-forge
       name: qcelemental
-      constraint: null
+      constraint: ">=0.50.2"
+      constraint_note: "v0.50 needed for QCSchema v2."
       aux_run_names:
         - msgpack-python
         - networkx
         - setuptools
-        - "pydantic>=1.10.17,!=1.10.22,<3"
+        - "pydantic>=2.11.0,<3"
       aux_run_names_note:
         "setuptools": "Needed for qcelemental cmake detection."
-        "pydantic>=1.10.17,!=1.10.22,<3": "Allow uniform access to Pydantic v1 API. Issues with 22 and autodoc."
+        "pydantic>=2.11.0,<3": "For Py v3.14, require Pydantic v2.12."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
@@ -1191,16 +1196,17 @@ data:
       host: github
       account: MolSSI
       name: QCEngine
-      commit: v0.33.0
+      commit: v0.50.0
+      githttps: true
     cmake:
       name: qcengine
-      constraint: ATLEAST 0.28.1
+      constraint: ATLEAST 0.50.0
       target:
     conda:
       channel: conda-forge
       name: qcengine
-      constraint: null
-      constraint_note: "v0.33 has SAPT0-D4 parameters"
+      constraint: ">=0.50.0"
+      constraint_note: "v0.50 needed for QCSchema v2. v0.34.2/v0.50.0 have SAPT*-D4 parameters"
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcengine: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcengine: true
@@ -1218,16 +1224,18 @@ data:
       host: github
       account: dftd4
       name: dftd4
-      commit: v3.5.0
-      commit_note: "v3.5.0 needed for r2scan3c, b97-3c"
+      commit: v4.1.0
+      commit_note: "v4.1.0 needed for QCSchema v2, v3.5.0 needed for r2scan3c, b97-3c"
     cmake: null
     conda:
       channel: conda-forge
       name: dftd4-python
-      name_note: "Equivalent to psi4::dftd4 . toml needed for qcengine/dftd4-python interface."
-      constraint: null
+      constraint: ">=4.1.0"
+      constraint_note: "v4.1.0 provides QCSchema v2 compatibility."
       aux_run_names:
         - toml
+      aux_run_names_note:
+        toml: "Needed for qcengine/dftd4-python interface."
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
@@ -1344,14 +1352,15 @@ data:
       host: github
       account: psi-rking
       name: optking
-      commit: 0.4.2
+      commit: 0.5.0
     cmake:
       name: optking
-      constraint: ATLEAST 0.4.2
+      constraint: ATLEAST 0.5.0
     conda:
       channel: conda-forge
       name: optking
-      constraint: null
+      constraint: ">=0.5.0"
+      constraint_note: "v0.5.0 has QCSchema v2 compatibility."
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_optking: true
         //CMAKE_DISABLE_FIND_PACKAGE_optking: true
@@ -1410,7 +1419,6 @@ data:
       constraint: ">=1.1.3"
       constraint_note: "v1 changes interface, and 1.1.3 needed for clean import (for qcengine)."
       aux_build_names:
-        - range-v3
         - zlib
         - hdf5
       aux_build_names_note:
@@ -1507,16 +1515,16 @@ data:
       host: github
       account: MolSSI
       name: QCManyBody
-      commit: v0.5.1
+      commit: v0.7.1
       githttps: true
     cmake:
       name: qcmanybody
-      constraint: "ATLEAST 0.5.1"
+      constraint: "ATLEAST 0.7.1"
       target: null
     conda:
       channel: conda-forge
       name: qcmanybody
-      constraint: ">=0.5.1"
+      constraint: ">=0.7.1"
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_qcmanybody: true
         //CMAKE_DISABLE_FIND_PACKAGE_qcmanybody: true
