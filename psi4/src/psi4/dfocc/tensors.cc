@@ -1816,13 +1816,13 @@ void Tensor2d::transform(const SharedTensor2d &a, const SharedTensor2d &transfor
 }  //
 
 void Tensor2d::back_transform(const SharedTensor2d &a, const SharedTensor2d &transformer) {
-    SharedTensor2d temp = std::make_shared<Tensor2d>(a->dim1_, transformer->dim2_);
+    SharedTensor2d temp = std::make_shared<Tensor2d>(a->dim1_, transformer->dim1_);
     temp->gemm(false, true, a, transformer, 1.0, 0.0);
     gemm(false, false, transformer, temp, 1.0, 0.0);
 }  //
 
 void Tensor2d::back_transform(const SharedTensor2d &a, const SharedTensor2d &transformer, double alpha, double beta) {
-    SharedTensor2d temp = std::make_shared<Tensor2d>(a->dim1_, transformer->dim2_);
+    SharedTensor2d temp = std::make_shared<Tensor2d>(a->dim1_, transformer->dim1_);
     temp->gemm(false, true, a, transformer, 1.0, 0.0);
     gemm(false, false, transformer, temp, alpha, beta);
 }  //
