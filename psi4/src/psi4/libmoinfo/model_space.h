@@ -43,12 +43,9 @@ class MOInfo;
 class ModelSpace {
    public:
     ModelSpace(MOInfo* moinfo_obj_);
-    ~ModelSpace();
     void print();
 
    private:
-    void startup();
-    void cleanup();
     void build();
     void classify();
 
@@ -56,8 +53,9 @@ class ModelSpace {
     std::vector<SlaterDeterminant> determinants;
     std::vector<int> closed_to_all;  // closed-shell determinants
     std::vector<int> opensh_to_all;  // open-shell   determinants
-    std::vector<int> unique_to_all;  // spin-unique  determinants
     MOInfo* moinfo_obj;
+    //Only used by commented-out code in model_space_build.cc
+    //std::vector<int> unique_to_all;  // spin-unique  determinants
 };
 }  // namespace psi
 

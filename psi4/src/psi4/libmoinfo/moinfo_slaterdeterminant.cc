@@ -33,8 +33,6 @@ namespace psi {
 
 MOInfo::SlaterDeterminant::SlaterDeterminant(const MOInfo* _moinfo) : moinfo(_moinfo) {}
 
-MOInfo::SlaterDeterminant::~SlaterDeterminant() {}
-
 /**
  * @fn MOInfo::SlaterDeterminant::is_closed_shell()
  */
