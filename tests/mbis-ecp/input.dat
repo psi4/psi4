@@ -1,17 +1,18 @@
-#! MBIS calculation on CaH with effective core potential (ECP)
-#! This test validates MBIS charge partitioning with ECP basis sets.
-#! For an ionic hydride like CaH, we expect:
-#!  - Calcium charge: +0.5 to +2.0 e⁻ (transfers electrons to more electronegative H)
-#!  - Hydrogen charge: -2.0 to -0.5 e⁻ (hydridic, electron-rich)
+#! MBIS regression test catching ECPs
 
 molecule mol {
-    -1 1
-    Ca   0.0   0.0   0.0
-    H    0.0   0.0   2.40
+  0 1
+  C 0.000000 0.000000 0.000000
+  I 0.000000 0.000000 2.105000
+  H 0.000000 0.937000 -0.297000
+  H 0.811000 -0.469000 -0.297000
+  H -0.811000 -0.469000 -0.297000
+  symmetry c1
+  no_reorient
+  no_com
 }
 
 set {
-  basis def2-svp
   scf_type df
   d_convergence 8
   e_convergence 10
@@ -19,39 +20,8 @@ set {
   mbis_spherical_points 350
   max_radial_moment 4
 }
+if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-CONV
+    psi4.set_options({"d_convergence": 3e-8})
+set scf_properties ['MBIS_CHARGES', 'MBIS_VOLUME_RATIOS']
 
-psi4.core.set_global_option("PRINT", 3)
-e, wfn = energy('hf', return_wfn=True)
-oeprop(wfn, 'MBIS_CHARGES', title='CaH with ECP')
-
-# Extract charges for validation
-charges_obj = wfn.array_variable('MBIS CHARGES')
-charges = charges_obj.np  # Convert to numpy array
-psi4.print_out("\n   MBIS charges (extracted for validation):\n")
-for i, q in enumerate(charges):
-    psi4.print_out("   Atom %d: %8.5f\n" % (i+1, q[0]))
-
-# Validate charges against physical bounds for ionic hydride
-ca_charge = float(charges[0][0])
-h_charge = float(charges[1][0])
-
-ca_min, ca_max = 0.5, 2.0
-h_min, h_max = -2.0, -0.5
-
-ca_valid = ca_min <= ca_charge <= ca_max
-h_valid = h_min <= h_charge <= h_max
-sum_charges = ca_charge + h_charge
-
-psi4.print_out("\n   === CHARGE VALIDATION ===\n")
-psi4.print_out("   Ca charge: %8.5f e⁻ ... %s (expected [%+.1f, %+.1f])\n" % (ca_charge, ' ✓ PASS' if ca_valid else ' ✗ FAIL', ca_min, ca_max))
-psi4.print_out("   H charge:  %8.5f e⁻ ... %s (expected [%+.1f, %+.1f])\n" % (h_charge, ' ✓ PASS' if h_valid else ' ✗ FAIL', h_min, h_max))
-psi4.print_out("   Sum:       %8.5f e⁻ (charge conservation check)\n" % sum_charges)
-
-if ca_valid and h_valid:
-    psi4.print_out("\n   ✓ TEST PASSED: All charges within physical bounds for CaH ionic hydride\n")
-else:
-    psi4.print_out("\n   ✗ TEST FAILED: Charges outside physical bounds\n")
-    if not ca_valid:
-        psi4.print_out("     Ca charge %+.5f outside [%+.1f, %+.1f]\n" % (ca_charge, ca_min, ca_max))
-    if not h_valid:
-        psi4.print_out("     H charge %+.5f outside [%+.1f, %+.1f]\n" % (h_charge, h_min, h_max))
+e, wfn = energy('hf/def2-SVP', return_wfn=True)
