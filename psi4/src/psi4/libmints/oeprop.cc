@@ -1986,6 +1986,14 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
         int atomic_num = static_cast<int>(mol->true_atomic_number(atom));
         auto shells = get_mbis_params(atomic_num);
 
+        // MBIS is incompatible with ECPs: requires all-electron density
+        int n_valence_electrons = static_cast<int>(mol->Z(atom));
+        if (n_valence_electrons != atomic_num) {
+            throw PsiException("MBIS incompatible with ECP. ECP detected on atom " + std::to_string(atom + 1) + " (" + 
+                               mol->symbol(atom) + "). Use all-electron basis or reconstruct density with denspart.",
+                               __FILE__, __LINE__);
+        }
+
         for (int m = 0; m < mA[atom]; m++) {
             Nai[atom][m] = std::get<0>(shells[m]);
             Sai[atom][m] = 1.0 / std::get<1>(shells[m]);
