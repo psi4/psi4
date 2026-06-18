@@ -12,9 +12,6 @@ set {
   freeze_core true
 }
 
-if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO various errors with ooo
-
 basis sadssejpvtz {
 # sl
 spherical
@@ -102,11 +99,7 @@ D 2 1.00
 ****
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":
-    dip_tol = 6
-else:
-    dip_tol = 5
-    psi4.set_options({"e_convergence": 10, "d_convergence": 2e-9})
+dip_tol = 6
 
 wfn = properties('eom-ccsd', properties=['dipole'], return_wfn=True)[1]
 
