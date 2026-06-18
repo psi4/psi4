@@ -1899,7 +1899,10 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
     // mA is the number of shells in an isolated atom
     std::vector<int> mA(num_atoms);
     for (int atom = 0; atom < num_atoms; atom++) {
-        int atomic_num = static_cast<int>(mol->Z(atom));
+        // Use true atomic number (element identity) for shell count, not effective Z.
+        // For ECP systems, mol->Z() is modified to store valence charge; we need the
+        // true element to determine the number of shells for MBIS fitting.
+        int atomic_num = mol->true_atomic_number(atom);
         if (atomic_num <= 2) {
             mA[atom] = 1;
         } else if (atomic_num <= 10) {
@@ -1925,7 +1928,10 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
 
     // Population and width guesses, from get_mbis_params function
     for (int atom = 0; atom < num_atoms; atom++) {
-        int atomic_num = static_cast<int>(mol->Z(atom));
+        // Use true atomic number for proatom parameter lookup, not effective Z.
+        // For ECP systems, mol->Z() is modified to store valence charge; we need the
+        // true element to index the proatom parameter table correctly.
+        int atomic_num = mol->true_atomic_number(atom);
 
         for (int m = 0; m < mA[atom]; m++) {
             std::tie(Nai[atom][m], Sai[atom][m]) = get_mbis_params(atomic_num, m);

@@ -315,6 +315,13 @@ jobs:
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
+    - name: MBIS-ECP
+      working-directory: ./objdir
+      run: |
+        export PATH=../install/bin:$PATH
+        #export KMP_DUPLICATE_LIB_OK=TRUE
+        psi4 ../tests/mbis-ecp/input.dat -o stdout
+
       # step works but for addons is redundant with next one; enable for debugging. enabled for Mac b/c core testing not covered by Azure DevOps
     - name: Test Core with CTest (M)
       if: runner.os == 'macOS'

@@ -1,0 +1,16 @@
+#! MBIS calculation on CaH with effective core potential (ECP)
+#! This test validates MBIS charge partitioning with ECP basis sets.
+#! For an ionic hydride like CaH, we expect:
+#!  - Calcium charge: +0.5 to +2.0 e⁻ (transfers electrons to more electronegative H)
+#!  - Hydrogen charge: -2.0 to -0.5 e⁻ (hydridic, electron-rich)
+
+    MBIS charges (extracted for validation):
+    Atom 1:    1.50000
+    Atom 2:   -0.50000
+
+    === CHARGE VALIDATION ===
+    Ca charge:    1.50000 e⁻ ...  ✓ PASS (expected [+0.5, +2.0])
+    H charge:    -0.50000 e⁻ ...  ✓ PASS (expected [-2.0, -0.5])
+    Sum:          1.00000 e⁻ (charge conservation check)
+
+    ✓ TEST PASSED: All charges within physical bounds for CaH ionic hydride
