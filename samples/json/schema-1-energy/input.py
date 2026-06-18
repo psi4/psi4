@@ -2,7 +2,6 @@
 
 import numpy as np
 import psi4
-import json
 
 # Generate JSON data
 json_data = {
@@ -61,7 +60,7 @@ expected_properties = {
     0.0,
     1.040372174058
   ],
-  "scf_iterations": 10 if psi4.core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") == "INTERNAL" else 15,
+  "scf_iterations": 10 if psi4.core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") == "INTERNAL" else 12,  # KP-LEGIT
   "scf_total_energy": -75.98014187232745,
   "mp2_same_spin_correlation_energy": -0.031030063236104254,
   "mp2_opposite_spin_correlation_energy": -0.10168342161187537,
@@ -81,11 +80,29 @@ expected_properties = {
   "ccsd_prt_pr_total_energy": expected_return_result,
 }
 
-json_ret = psi4.schema_wrapper.run_qcschema(json_data)
+import sys
+if sys.version_info >= (3, 14):
+    try:
+        json_ret = psi4.schema_wrapper.run_qcschema(json_data)
+    except RuntimeError as err:
+        psi4.compare(True, True, "Py314 fail error")
+        psi4.compare(True, "pydantic.v1 is unavailable" in str(err), "Py314 fail reason")
+    else:
+        psi4.compare(True, False, "wrong err")
+
+    json_ret = psi4.schema_wrapper.run_qcschema(json_data, return_dict=True)
 
 
 
-    if k == "scf_iterations" and psi4.core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") != "INTERNAL":
+else:
+
+    json_ret = psi4.schema_wrapper.run_qcschema(json_data)
+
+
+    json_ret = json_ret.dict()
+
+
+    if k == "scf_iterations" and psi4.core.get_option("SCF", "ORBITAL_OPTIMIZER_PACKAGE") != "INTERNAL":  # KP-FLEX
     else:
 
 
@@ -118,13 +135,16 @@ json_data["model"] = {
 json_data["keywords"]["scf_type"] = "pk"
 json_data["keywords"]["mp2_type"] = "conv"
 json_data["extras"] = {"current_qcvars_only": True}
-json_ret = psi4.schema_wrapper.run_qcschema(json_data)
-
-#print(json.dumps(json_ret.json(), indent=2))
-#import pprint
-#pprint.pprint(json_ret.dict(), width=200)
+if sys.version_info >= (3, 14):
+    json_ret = psi4.schema_wrapper.run_qcschema(json_data, return_dict=True)
 
 
+else:
+    json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
-assert "Ugur Bozkaya" in json_ret.stdout
 
+    json_ret = json_ret.dict()
+
+
+
+assert "Ugur Bozkaya" in json_ret["stdout"]

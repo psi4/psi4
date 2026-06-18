@@ -24,9 +24,6 @@ set {
   irc_points                 12
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
-
 energy = frequencies('scf', dertype=1)
 
 # Lower point group from C2v to C2

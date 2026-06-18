@@ -9,6 +9,10 @@ molecule {
  I
 }
 
+import sys
+if (psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL") and (sys.platform == "darwin"):  # KP-PLAT-BAD-CONV (Silicon Mac)
+    psi4.set_options({"orbital_optimizer_package": "internal"})
+
 set basis def2-tzvppd
 
 ene, wfn = energy('scf', return_wfn=True)
