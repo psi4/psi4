@@ -3,17 +3,18 @@
 #! against those evaluated with diffuse charges supplied to the 
 #! external_potentials keyword.  A minimal basis is used because this
 #! allows a direct comparison with results derived for point charge-
-#! Gaussian charge and Gaussian charge-Gaussian charge interactions.
-#! The point charge-Gaussian charge interaction is generally given by
-#! E = Q*q*erf(sqrt(z)*r), where Q is the total charge of the Gaussian
-#! charge, q is the point charge, z is the width of the Gaussian charge
-#! (au^-2), and r (au) is the distance between the point charge
-#! and the center of the Gaussian charge.  A similar formula exists for
-#! the interaction between two Gaussian charges, but where q is the
-#! total charge of the second Gaussian charge, z is the reduced width of
-#! both Gaussian charges ((z0*z1)/(z0+z1)), and r is the distance
-#! between the centers of the Gaussian charges.  Gradients can be
-#! further derived from these expressions.
+#! Gaussian charge and Gaussian charge-Gaussian charge interaction
+#! energies. The point charge-Gaussian charge interaction energy is
+#! generally given by E = Q*q*erf(sqrt(z)*r), where Q is the total
+#! charge of the Gaussian charge, q is the point charge, z is the width
+#! of the Gaussian charge (au^-2), and r (au) is the distance between
+#! the point charge and the center of the Gaussian charge.  A similar
+#! formula exists for the interaction energy between two Gaussian
+#! charges, but where q is the total charge of the second Gaussian
+#! charge, z is the reduced width of both Gaussian charges
+#! ((z0*z1)/(z0+z1)), and r is the distance between the centers of the
+#! Gaussian charges.  Gradients can be further derived from these
+#! expressions.
 
 molecule hydrogen {
   0 2
@@ -133,7 +134,7 @@ V_diffuse_0 = extern_0.computePotentialMatrix(wfn.basisset()).np
 e_nuc_diffuse_0 = extern_0.computeNuclearEnergy(hydrogen)
 e_elec_diffuse_0 = np.einsum("ij,ij->", V_diffuse_0, wfn_diffuse_0.Da().np)
 g_diffuse_0 = gradient('scf', ref_wfn=wfn_diffuse_0)
-g_diffuse_extern_0 = extern_0.gradients_on_bases()[0]
+g_diffuse_extern_0 = extern_0.gradients_on_gaussians()[0]
 
 compare_values(e_nuc_analytic_0, e_nuc_diffuse_0, 6, "Analytic Gaussian charge-proton ixn energy vs. with external_potential")  #TEST
 compare_values(e_elec_analytic_0, e_elec_diffuse_0, 6, "Analytic Gaussian charge-s electron ixn energy vs. with external_potential")  #TEST
@@ -170,7 +171,7 @@ e_nuc_diffuse_1 = extern_1.computeNuclearEnergy(hydrogen)
 e_elec_diffuse_1 = np.einsum("ij,ij->", V_diffuse_1, wfn_diffuse_1.Da().np)
 g_diffuse_1 = gradient('scf', ref_wfn=wfn_diffuse_1)
 g_diffuse_1_findif = gradient('scf', molecule=hydrogen, dertype=0, external_potentials=external_diffuse_1)
-g_diffuse_extern_1 = extern_1.gradients_on_bases()[0]
+g_diffuse_extern_1 = extern_1.gradients_on_gaussians()[0]
 
 compare_values(e_nuc_analytic_1, e_nuc_diffuse_1, 6, "Analytic Gaussian charge-proton ixn energy vs. with external_potential")  #TEST
 compare_values(e_elec_analytic_1, e_elec_diffuse_1, 6, "Analytic Gaussian charge-s electron ixn energy vs. with external_potential")  #TEST
@@ -188,10 +189,10 @@ e_01_analytic = 0.68268949214
 e_0q_analytic = 0.84270079295
 
 
-# Calculate the extern-extern interaction between two positive Gaussian
-# charges (width = 1 au^-2) 1 au apart and between a positive point
-# charge and a positive Gaussian charge (width = 1 au^-2) 1 au apart.
-# These should agree with the analytical solutions.
+# Calculate the extern-extern interaction energy between two positive
+# Gaussian charges (width = 1 au^-2) 1 au apart and between a positive
+# point charge and a positive Gaussian charge (width = 1 au^-2) 1 au
+# apart.  These should agree with the analytical solutions.
 e_01 = extern_0.computeExternExternInteraction(extern_1)
 e_0q = extern_0.computeExternExternInteraction(extern)
 e_q0 = extern.computeExternExternInteraction(extern_0)
@@ -233,7 +234,7 @@ V_diffuse_01 = extern_01.computePotentialMatrix(wfn.basisset()).np
 e_nuc_diffuse_01 = extern_01.computeNuclearEnergy(hydrogen)
 e_elec_diffuse_01 = np.einsum("ij,ij->", V_diffuse_01, wfn_diffuse_01.Da().np)
 g_diffuse_01 = gradient('scf', ref_wfn=wfn_diffuse_01)
-g_diffuse_extern_01 = extern_01.gradients_on_bases()[0]
+g_diffuse_extern_01 = extern_01.gradients_on_gaussians()[0]
 
 compare_values(e_nuc_analytic_01, e_nuc_diffuse_01, 6, "Analytic 2 Gaussian charges-proton ixn energy vs. with external_potential")  #TEST
 compare_values(e_elec_analytic_01, e_elec_diffuse_01, 6, "Analytic 2 Gaussian charges-s electron ixn energy vs. with external_potential")  #TEST
@@ -247,10 +248,10 @@ compare_matrices(g_analytic_extern_01, g_diffuse_extern_01, 5, "Analytic 2 Gauss
 # solutions, as well as the previous test.  In this test, the two
 # Gaussian charges are included on individual BasisSet objects.
 extern_10 = psi4.core.ExternalPotential()
-basis_0 = extern_0.getBases()[0]
-basis_1 = extern_1.getBases()[0]
-extern_10.addBasis(*basis_1)
-extern_10.addBasis(*basis_0)
+gauss_0 = extern_0.getGaussians()[0]
+gauss_1 = extern_1.getGaussians()[0]
+extern_10.addGaussian(*gauss_1)
+extern_10.addGaussian(*gauss_0)
 
 wfn.set_external_potential(extern_10)
 V_diffuse_10 = extern_10.computePotentialMatrix(wfn.basisset()).np
@@ -259,7 +260,7 @@ e_nuc_diffuse_10 = extern_10.computeNuclearEnergy(hydrogen)
 e_elec_diffuse_10 = np.einsum("ij,ij->", V_diffuse_10, wfn_diffuse_01.Da().np)
 g_diffuse_10 = gradient('scf', ref_wfn=wfn)
 g_diffuse_extern_10 = Matrix.from_array(
-    np.vstack([x.np for x in extern_10.gradients_on_bases()]),
+    np.vstack([x.np for x in extern_10.gradients_on_gaussians()]),
 )
 
 compare_values(e_nuc_analytic_01, e_nuc_diffuse_10, 6, "Analytic 2 Gaussian charges-proton ixn energy vs. with external_potential")  #TEST
@@ -274,7 +275,7 @@ compare_matrices(g_analytic_extern_01, g_diffuse_extern_10, 5, "Analytic 2 Gauss
 e_0110_analytic = 2.96114810588
 
 
-# Calculate the extern-extern interaction between two sets of two
+# Calculate the extern-extern interaction energy between two sets of two
 # positive Gaussian charges (width = 1 au^-2) 1 au apart.  These
 # should agree with the analytical solutions.
 e_0110 = extern_01.computeExternExternInteraction(extern_10)

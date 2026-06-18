@@ -1647,17 +1647,19 @@ void export_mints(py::module& m) {
         m, "ExternalPotential", "Stores external potential field, computes external potential matrix")
         .def(py::init<>())
         .def("setName", &ExternalPotential::setName, "Sets the name")
-        .def("addCharge", &ExternalPotential::addCharge, "Add a charge Z at (x,y,z)", "Z"_a, "x"_a, "y"_a, "z"_a)
+        .def("addCharge", &ExternalPotential::addCharge, "Add a charge Q at (x,y,z)", "Q"_a, "x"_a, "y"_a, "z"_a)
         .def("getCharges", &ExternalPotential::getCharges, "Get the vector of charge tuples")
-        .def("getBases", &ExternalPotential::getBases, "Get the vector of tuples of basis sets and coefficients")
+        .def("getGaussians", &ExternalPotential::getGaussians,
+             "Get the vector of tuples of basis sets representing diffuse charges and the charge coefficient")
         .def("getMatrix", &ExternalPotential::getMatrix, "Get the vector one-electron potential matrix")
         .def("appendCharges", &ExternalPotential::appendCharges,
              "Append a vector of charge tuples to a current ExternalPotential")
-        .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions with DF coefficients",
+        .def("addGaussian", &ExternalPotential::addGaussian, "Add a basis of S Gaussian functions with charge coefficients",
              "basis"_a, "coefs"_a)
         .def("setMatrix", &ExternalPotential::setMatrix, "Add a one-electron potential matrix", "V"_a)
         .def("gradient_on_charges", &ExternalPotential::gradient_on_charges, "Get the gradient on the embedded charges")
-        .def("gradients_on_bases", &ExternalPotential::gradients_on_bases, "Get the gradients on the embedded diffuse charges")
+        .def("gradients_on_gaussians", &ExternalPotential::gradients_on_gaussians,
+             "Get the gradients on the embedded diffuse charge densities")
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")
         .def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix,
              "Compute the external potential matrix in the given basis set", "basis"_a)

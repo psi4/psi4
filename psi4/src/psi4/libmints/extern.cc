@@ -51,20 +51,20 @@ ExternalPotential::~ExternalPotential() {}
 
 void ExternalPotential::clear() {
     charges_.clear();
-    bases_.clear();
+    gaussians_.clear();
 }
 
 void ExternalPotential::addCharge(double Z, double x, double y, double z) {
     charges_.push_back(std::make_tuple(Z, x, y, z));
 }
 
-void ExternalPotential::addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs) {
-    bases_.push_back(std::make_pair(basis, coefs));
+void ExternalPotential::addGaussian(std::shared_ptr<BasisSet> basis, SharedVector coefs) {
+    gaussians_.push_back(std::make_pair(basis, coefs));
 }
 
 SharedMatrix ExternalPotential::gradient_on_charges() { return gradient_on_charges_; }
 
-const std::vector<SharedMatrix> ExternalPotential::gradients_on_bases() { return gradients_on_bases_; }
+const std::vector<SharedMatrix> ExternalPotential::gradients_on_gaussians() { return gradients_on_gaussians_; }
 
 void ExternalPotential::print(const std::string& out) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
@@ -82,16 +82,16 @@ void ExternalPotential::print(const std::string& out) const {
     }
 
     // Bases
-    if (bases_.size()) {
+    if (gaussians_.size()) {
         printer->Printf("    > Diffuse Bases < \n\n");
-        for (size_t i = 0; i < bases_.size(); i++) {
+        for (size_t i = 0; i < gaussians_.size(); i++) {
             printer->Printf("    Molecule %zu\n\n", i + 1);
-            bases_[i].first->molecule()->print();
+            gaussians_[i].first->molecule()->print();
             printer->Printf("    Basis %zu\n\n", i + 1);
-            bases_[i].first->print_by_level(out, print_);
+            gaussians_[i].first->print_by_level(out, print_);
             if (print_ > 2) {
                 printer->Printf("    Density Coefficients %zu\n\n", i + 1);
-                bases_[i].second->print();
+                gaussians_[i].second->print();
             }
         }
     }
@@ -118,6 +118,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
 
     // Monopoles
     if (charges_.size()) {
+        // Make a vector of charge-coordinate pairs for the point charges.
         std::vector<std::pair<double, std::array<double, 3>>> Qxyz;
         for (const auto& [Q, x, y, z] : charges_) {Qxyz.emplace_back(Q, std::array{x, y, z});}
 
@@ -147,7 +148,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
             rank = omp_get_thread_num();
 #endif
 
-            auto **Vp = V_charge[rank]->pointer();
+            auto Vp = V_charge[rank]->pointer();
             pot[rank]->compute_shell(i, j);
             const auto* buffer = pot[rank]->buffers()[0];
 
@@ -168,7 +169,11 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
 
     // Diffuse Bases
     auto zero = BasisSet::zero_ao_basis_set();
-    for (const auto& [aux, d] : bases_) {
+    // This structured binding ranged loop does not currently pass with OpenMP on Windows and Mac.
+    //for (const auto& [aux, d] : gaussians_) {
+    for (int i = 0; i < gaussians_.size(); i++) {
+        const auto& aux = gaussians_[i].first;
+        const auto& d = gaussians_[i].second;
 
         auto fact2 = std::make_shared<IntegralFactory>(aux, zero, basis, basis);
         std::vector<SharedMatrix> V_diffuse;
@@ -179,9 +184,10 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
             V_diffuse.push_back(std::make_shared<Matrix>("External Potential (Diffuses)", nbf, nbf));
             V_diffuse[t]->zero();
         }
+        // Get the ERI shell pairs and the number of shell pairs.
         const auto& shell_pairs = eri[0]->shell_pairs();
         auto npairs = shell_pairs.size();
-        auto *dp = d->pointer();
+        auto dp = d->pointer();
 
         // Lower Triangle
         for (int P = 0; P < aux->nshell(); P++) {
@@ -206,7 +212,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
 
                 eri[rank]->compute_shell(P, 0, M, N);
                 const auto* buffer = eri[rank]->buffer();
-                double **Vp = V_diffuse[rank]->pointer();
+                auto Vp = V_diffuse[rank]->pointer();
 
                 for (int p = 0, index = 0; p < nP; p++) {
                     for (int m = 0; m < nM; m++) {
@@ -220,7 +226,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
         for (size_t t = 0; t < nthreads; t++) {
             for (size_t i = 0; i < nbf; i++) {
                 for (size_t j = i+1; j < nbf; j++) {
-                    auto **Vp = V_diffuse[t]->pointer();
+                    auto Vp = V_diffuse[t]->pointer();
                     Vp[i][j] = Vp[j][i];
                 }
             }
@@ -243,20 +249,26 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
 SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisSet> basis, std::shared_ptr<Matrix> Dt) {
 
     SharedMolecule mol = basis->molecule();
+    // Get the number of atoms.
     auto natom = mol->natom();
-    auto nextc = charges_.size();
+    // Get the number of embedded point charges.
+    auto ncharge = charges_.size();
 
     auto grad_on_atoms = std::make_shared<Matrix>("External Potential Gradient", natom, 3);
-    auto grad_on_charges = std::make_shared<Matrix>("Gradient on External Charges", nextc, 3);
+    auto grad_on_charges = std::make_shared<Matrix>("Gradient on Embedded Point Charges", ncharge, 3);
     grad_on_atoms->zero();
     grad_on_charges->zero();
+    // This must be cleared because it is a vector of gradients.
+    gradients_on_gaussians_.clear();
 
-    auto **Gp = grad_on_atoms->pointer();
-    auto **EGp = grad_on_charges->pointer();
-    auto **Dp = Dt->pointer();
+    auto Gap = grad_on_atoms->pointer();
+    auto Gcp = grad_on_charges->pointer();
+    auto Dp = Dt->pointer();
 
+    // Make a vector of charge-coordinate pairs for the embedded point charges.
     std::vector<std::pair<double, std::array<double, 3>>> Qxyz;
     for (const auto& [Q, x, y, z] : charges_) {Qxyz.emplace_back(Q, std::array{x, y, z});}
+    // Make a vector of charge-coordinate pairs for the point nuclei.
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
     for (int A = 0; A < natom; A++) {
         Zxyz.emplace_back(mol->Z(A), std::array{mol->x(A), mol->y(A), mol->z(A)});
@@ -268,47 +280,49 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    // Evaluate contributions from point charges, if they exist.
-    if (nextc > 0) {
-        // Start with the nuclear contribution from point charges.
+    // Evaluate contributions from embedded point charges, if they exist.
+    if (ncharge > 0) {
+        // Start with the nuclear contribution from embedded point charges.
         grad_on_atoms->zero();
         grad_on_charges->zero();
-        for (size_t cen = 0; cen < natom; ++cen) {
-            auto xc = mol->x(cen);
-            auto yc = mol->y(cen);
-            auto zc = mol->z(cen);
-            auto cencharge = mol->Z(cen);
-            for (size_t ext = 0; const auto& [Q, Qx, Qy, Qz] : charges_) {
-                auto charge = cencharge * Q;
-                auto x = Qx - xc;
-                auto y = Qy - yc;
-                auto z = Qz - zc;
+        for (size_t A = 0; A < natom; ++A) {
+            // Get the atom coordinates and atomic charge.
+            auto Ax = mol->x(A);
+            auto Ay = mol->y(A);
+            auto Az = mol->z(A);
+            auto Z = mol->Z(A);
+            // Get the embedded point charge coordinates and charge.
+            for (size_t q = 0; const auto& [Q, Qx, Qy, Qz] : charges_) {
+                auto charge_prod = Z * Q;
+                auto x = Qx - Ax;
+                auto y = Qy - Ay;
+                auto z = Qz - Az;
                 auto r2 = x * x + y * y + z * z;
                 auto r = sqrt(r2);
-                Gp[cen][0] += charge * x / (r * r2);
-                Gp[cen][1] += charge * y / (r * r2);
-                Gp[cen][2] += charge * z / (r * r2);
-                EGp[ext][0] -= charge * x / (r * r2);
-                EGp[ext][1] -= charge * y / (r * r2);
-                EGp[ext][2] -= charge * z / (r * r2);
-                ext++;
+                Gap[A][0] += charge_prod * x / (r * r2);
+                Gap[A][1] += charge_prod * y / (r * r2);
+                Gap[A][2] += charge_prod * z / (r * r2);
+                Gcp[q][0] -= charge_prod * x / (r * r2);
+                Gcp[q][1] -= charge_prod * y / (r * r2);
+                Gcp[q][2] -= charge_prod * z / (r * r2);
+                q++;
             }
         }
 
-        // Now the electronic contribution from point charges.
+        // Now the electronic contribution from embedded point charges.
         auto fact = std::make_shared<IntegralFactory>(basis, basis, basis, basis);
 
         // Potential derivatives
         std::vector<std::shared_ptr<PotentialInt> > Vint;
-        std::vector<SharedMatrix> Vtemps;
-        std::vector<SharedMatrix> EVtemps;
+        std::vector<SharedMatrix> Ga_temps;
+        std::vector<SharedMatrix> Gc_temps;
         for (int t = 0; t < nthreads; t++) {
             Vint.push_back(std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(fact->ao_potential(1).release())));
             Vint[t]->set_charge_field(Qxyz);
-            Vtemps.push_back(SharedMatrix(grad_on_atoms->clone()));
-            Vtemps[t]->zero();
-            EVtemps.push_back(SharedMatrix(grad_on_charges->clone()));
-            EVtemps[t]->zero();
+            Ga_temps.push_back(SharedMatrix(grad_on_atoms->clone()));
+            Ga_temps[t]->zero();
+            Gc_temps.push_back(SharedMatrix(grad_on_charges->clone()));
+            Gc_temps[t]->zero();
         }
 
         // Lower Triangle
@@ -335,16 +349,16 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 
             double perm = (P == Q ? 1.0 : 2.0);
 
-            auto **Vp = Vtemps[rank]->pointer();
-            auto **EVp = EVtemps[rank]->pointer();
+            auto Gap = Ga_temps[rank]->pointer();
+            auto Gcp = Gc_temps[rank]->pointer();
             const auto *ref0 = buffers[0];
             const auto *ref1 = buffers[1];
             const auto *ref2 = buffers[2];
             const auto *ref3 = buffers[3];
             const auto *ref4 = buffers[4];
             const auto *ref5 = buffers[5];
-            std::vector<const double*> refx(3*nextc);
-            for (int ext = 0; ext < nextc; ext++) {
+            std::vector<const double*> refx(3*ncharge);
+            for (int ext = 0; ext < ncharge; ext++) {
                 refx[ext*3] = buffers[ext*3 + 6];
                 refx[ext*3 + 1] = buffers[ext*3 + 7];
                 refx[ext*3 + 2] = buffers[ext*3 + 8];
@@ -352,40 +366,43 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
                     auto Vval = perm * Dp[p + oP][q + oQ];
-                    Vp[cP][0] += Vval * (*ref0++);
-                    Vp[cP][1] += Vval * (*ref1++);
-                    Vp[cP][2] += Vval * (*ref2++);
-                    Vp[cQ][0] += Vval * (*ref3++);
-                    Vp[cQ][1] += Vval * (*ref4++);
-                    Vp[cQ][2] += Vval * (*ref5++);
+                    Gap[cP][0] += Vval * (*ref0++);
+                    Gap[cP][1] += Vval * (*ref1++);
+                    Gap[cP][2] += Vval * (*ref2++);
+                    Gap[cQ][0] += Vval * (*ref3++);
+                    Gap[cQ][1] += Vval * (*ref4++);
+                    Gap[cQ][2] += Vval * (*ref5++);
                     const auto** refxp = &refx[0];
-                    for (int ext = 0; ext < nextc; ext++) {
-                        EVp[ext][0] += Vval * (*refxp[ext*3]++);
-                        EVp[ext][1] += Vval * (*refxp[ext*3 + 1]++);
-                        EVp[ext][2] += Vval * (*refxp[ext*3 + 2]++);
+                    for (int ext = 0; ext < ncharge; ext++) {
+                        Gcp[ext][0] += Vval * (*refxp[ext*3]++);
+                        Gcp[ext][1] += Vval * (*refxp[ext*3 + 1]++);
+                        Gcp[ext][2] += Vval * (*refxp[ext*3 + 2]++);
                     }
                 }
             }
         }
         for (int t = 0; t < nthreads; t++) {
-            grad_on_atoms->add(Vtemps[t]);
-            grad_on_charges->add(EVtemps[t]);
+            grad_on_atoms->add(Ga_temps[t]);
+            grad_on_charges->add(Gc_temps[t]);
         }
     }
 
     auto zero = BasisSet::zero_ao_basis_set();
-    // Evaluate contributions from diffuse charges, if they exist.
-    for (const auto& [aux, d] : bases_) {
+    // This structured binding ranged loop does not currently pass with OpenMP on Windows and Mac.
+    //for (const auto& [aux, d] : gaussians_) {
+    for (int i = 0; i < gaussians_.size(); i++) {
+        const auto& aux = gaussians_[i].first;
+        const auto& d = gaussians_[i].second;
 
-        auto grad_on_diffuses = std::make_shared<Matrix>("Gradient on External Diffuse Charges", aux->nshell(), 3);
+        auto grad_on_diffuses = std::make_shared<Matrix>("Gradient on Embedded Diffuse Charges", aux->nshell(), 3);
         grad_on_diffuses->zero();
-        auto **EdGp = grad_on_diffuses->pointer();
+        auto Gdp = grad_on_diffuses->pointer();
 
         auto fact = std::make_shared<IntegralFactory>(aux, zero, zero, zero);
         auto fact2 = std::make_shared<IntegralFactory>(aux, zero, basis, basis);
         std::shared_ptr<PotentialInt> pot(dynamic_cast<PotentialInt *>(fact->ao_potential(1).release()));
         pot->set_charge_field(Zxyz);
-        auto *dp = d->pointer();
+        auto dp = d->pointer();
 
         // Start with the interaction between diffuse charges and nuclei.
         for (int P = 0; P < aux->nshell(); P++) {
@@ -407,14 +424,14 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
             }
             for (int p = 0; p < nP; p++) {
                 auto coef = dp[p + oP];
-                EdGp[cP][0] += coef * (*ref0++);
-                EdGp[cP][1] += coef * (*ref1++);
-                EdGp[cP][2] += coef * (*ref2++);
+                Gdp[cP][0] += coef * (*ref0++);
+                Gdp[cP][1] += coef * (*ref1++);
+                Gdp[cP][2] += coef * (*ref2++);
                 const auto** refap = &refa[0];
                 for (int A = 0; A < natom; A++) {
-                    Gp[A][0] += coef * (*refap[A*3]++);
-                    Gp[A][1] += coef * (*refap[A*3 + 1]++);
-                    Gp[A][2] += coef * (*refap[A*3 + 2]++);
+                    Gap[A][0] += coef * (*refap[A*3]++);
+                    Gap[A][1] += coef * (*refap[A*3 + 1]++);
+                    Gap[A][2] += coef * (*refap[A*3 + 2]++);
                 }
             }
         }
@@ -422,14 +439,15 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
         std::vector<std::shared_ptr<TwoBodyAOInt> > eri(nthreads);
         eri[0] = std::shared_ptr<TwoBodyAOInt>(fact2->eri(1));
         for (int t = 1; t < nthreads; t++) eri[t] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
-        std::vector<SharedMatrix> Vtemps;
-        std::vector<SharedMatrix> EVtemps;
+        std::vector<SharedMatrix> Ga_temps;
+        std::vector<SharedMatrix> Gd_temps;
         for (int t = 0; t < nthreads; t++) {
-            Vtemps.push_back(SharedMatrix(grad_on_atoms->clone()));
-            Vtemps[t]->zero();
-            EVtemps.push_back(SharedMatrix(grad_on_diffuses->clone()));
-            EVtemps[t]->zero();
+            Ga_temps.push_back(SharedMatrix(grad_on_atoms->clone()));
+            Ga_temps[t]->zero();
+            Gd_temps.push_back(SharedMatrix(grad_on_diffuses->clone()));
+            Gd_temps[t]->zero();
         }
+        // Get the ERI shell pairs and the number of shell pairs.
         const auto& shell_pairs = eri[0]->shell_pairs();
         auto npairs = shell_pairs.size();
 
@@ -447,8 +465,8 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 
                 eri[rank]->compute_shell_deriv1(P, 0, M, N);
                 const auto & buffers = eri[rank]->buffers();
-                auto **Vp = Vtemps[rank]->pointer();
-                auto **EdVp = EVtemps[rank]->pointer();
+                auto Gap = Ga_temps[rank]->pointer();
+                auto Gdp = Gd_temps[rank]->pointer();
 
                 auto cP = aux->shell(P).ncenter();
                 auto nP = aux->shell(P).nfunction();
@@ -478,25 +496,25 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
                     for (int m = 0; m < nM; m++) {
                         for (int n = 0; n < nN; n++) {
                             auto coef = perm * dp[p + oP] * Dp[m + oM][n + oN];
-                            EdVp[cP][0] += coef * (*ref0++);
-                            EdVp[cP][1] += coef * (*ref1++);
-                            EdVp[cP][2] += coef * (*ref2++);
-                            Vp[cM][0] += coef * (*ref3++);
-                            Vp[cM][1] += coef * (*ref4++);
-                            Vp[cM][2] += coef * (*ref5++);
-                            Vp[cN][0] += coef * (*ref6++);
-                            Vp[cN][1] += coef * (*ref7++);
-                            Vp[cN][2] += coef * (*ref8++);
+                            Gdp[cP][0] += coef * (*ref0++);
+                            Gdp[cP][1] += coef * (*ref1++);
+                            Gdp[cP][2] += coef * (*ref2++);
+                            Gap[cM][0] += coef * (*ref3++);
+                            Gap[cM][1] += coef * (*ref4++);
+                            Gap[cM][2] += coef * (*ref5++);
+                            Gap[cN][0] += coef * (*ref6++);
+                            Gap[cN][1] += coef * (*ref7++);
+                            Gap[cN][2] += coef * (*ref8++);
                         }
                     }
                 }
             }
         }
         for (int t = 0; t < nthreads; t++) {
-            grad_on_atoms->add(Vtemps[t]);
-            grad_on_diffuses->add(EVtemps[t]);
+            grad_on_atoms->add(Ga_temps[t]);
+            grad_on_diffuses->add(Gd_temps[t]);
         }
-        gradients_on_bases_.push_back(grad_on_diffuses);
+        gradients_on_gaussians_.push_back(grad_on_diffuses);
     }
 
     gradient_on_charges_ = grad_on_charges;
@@ -505,40 +523,38 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 
 double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
     double E = 0.0;
+    // Get the number of atoms.
     auto natom = mol->natom();
 
     // Nucleus-charge interaction
     for (int A = 0; A < natom; A++) {
-        auto xA = mol->x(A);
-        auto yA = mol->y(A);
-        auto zA = mol->z(A);
-        auto ZA = mol->Z(A);
+        auto Ax = mol->x(A);
+        auto Ay = mol->y(A);
+        auto Az = mol->z(A);
+        auto Z = mol->Z(A);
 
-        if (ZA > 0) { // skip Ghost interaction
-            for (size_t B = 0; B < charges_.size(); B++) {
-                auto ZB = std::get<0>(charges_[B]);
-                auto xB = std::get<1>(charges_[B]);
-                auto yB = std::get<2>(charges_[B]);
-                auto zB = std::get<3>(charges_[B]);
-
-                auto dx = xA - xB;
-                auto dy = yA - yB;
-                auto dz = zA - zB;
+        if (Z > 0) { // skip Ghost interaction
+            for (size_t q = 0; const auto& [Q, Qx, Qy, Qz] : charges_) {
+                auto charge_prod = Z * Q;
+                auto dx = Ax - Qx;
+                auto dy = Ay - Qy;
+                auto dz = Az - Qz;
                 auto R = sqrt(dx * dx + dy * dy + dz * dz);
 
-                E += ZA * ZB / R;
+                E += charge_prod / R;
             }
         }
     }
 
-    // Nucleus-diffuse interaction
+    // Make a vector of charge-coordinate pairs for the point nuclei.
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
     for (int A = 0; A < natom; A++) {
         Zxyz.emplace_back(mol->Z(A), std::array{mol->x(A), mol->y(A), mol->z(A)});
     }
 
     auto zero = BasisSet::zero_ao_basis_set();
-    for (const auto& [aux, d] : bases_) {
+    // Nucleus-diffuse interaction
+    for (const auto& [aux, d] : gaussians_) {
 
         auto V = std::make_shared<Matrix>("(Q|Z|0) Integrals", aux->nbf(), 1);
 
@@ -556,37 +572,29 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
 double ExternalPotential::computeExternExternInteraction(std::shared_ptr<ExternalPotential> other_extern) {
     double E = 0.0;
 
-    // charge-charge interaction
-    for (auto self_charge: charges_) {
-        auto ZA = std::get<0>(self_charge);
-        auto xA = std::get<1>(self_charge);
-        auto yA = std::get<2>(self_charge);
-        auto zA = std::get<3>(self_charge);
-
-        for (auto other_charge: other_extern->charges_) {
-            auto ZB = std::get<0>(other_charge);
-            auto xB = std::get<1>(other_charge);
-            auto yB = std::get<2>(other_charge);
-            auto zB = std::get<3>(other_charge);
-
-            auto dx = xA - xB;
-            auto dy = yA - yB;
-            auto dz = zA - zB;
+    // this embedded point charge-other embedded point charge interaction
+    for (const auto& [QA, QAx, QAy, QAz] : charges_) {
+        for (const auto& [QB, QBx, QBy, QBz] : other_extern->charges_) {
+            auto charge_prod = QA * QB;
+            auto dx = QAx - QBx;
+            auto dy = QAy - QBy;
+            auto dz = QAz - QBz;
             auto R = sqrt(dx * dx + dy * dy + dz * dz);
-
-            E += ZA * ZB / R;
+            E += charge_prod / R;
         }
     }
 
     auto zero = BasisSet::zero_ao_basis_set();
-    // diffuse-charge interaction
+    // this embedded diffuse charge-other embedded point charge interaction
     if (other_extern->charges_.size()) {
+        // Make a vector of charge-coordinate pairs for the point charges in the
+        // other `ExternalPotential` object.
         std::vector<std::pair<double, std::array<double, 3>>> Qxyz;
         for (const auto& [Q, x, y, z] : other_extern->charges_) {Qxyz.emplace_back(Q, std::array{x, y, z});}
-        for (const auto& [aux, d] : bases_) {
-       
+        for (const auto& [aux, d] : gaussians_) {
+
             auto V = std::make_shared<Matrix>("(Q|Z|0) Integrals", aux->nbf(), 1);
-       
+
             auto fact = std::make_shared<IntegralFactory>(aux, zero, zero, zero);
             std::shared_ptr<PotentialInt> pot(static_cast<PotentialInt *>(fact->ao_potential().release()));
             pot->set_charge_field(Qxyz);
@@ -596,11 +604,13 @@ double ExternalPotential::computeExternExternInteraction(std::shared_ptr<Externa
         }
     }
 
-    // charge-diffuse interaction
+    // this embedded point charge-other embedded diffuse charge interaction
     if (charges_.size()) {
+        // Make a vector of charge-coordinate pairs for the point charges in this
+        // `ExternalPotential` object.
         std::vector<std::pair<double, std::array<double, 3>>> Qxyz;
         for (const auto& [Q, x, y, z] : charges_) {Qxyz.emplace_back(Q, std::array{x, y, z});}
-        for (const auto& [aux, d] : other_extern->bases_) {
+        for (const auto& [aux, d] : other_extern->gaussians_) {
        
             auto V = std::make_shared<Matrix>("(Q|Z|0) Integrals", aux->nbf(), 1);
        
@@ -613,12 +623,12 @@ double ExternalPotential::computeExternExternInteraction(std::shared_ptr<Externa
         }
     }
 
-    // diffuse-diffuse interaction
-    for (const auto& [aux0, d0] : bases_) {
-        auto *dp0 = d0->pointer();
+    // this embedded diffuse charge-other embedded diffuse charge interaction
+    for (const auto& [aux0, d0] : gaussians_) {
+        auto dp0 = d0->pointer();
 
-        for (const auto& [aux1, d1] : other_extern->bases_) {
-            auto *dp1 = d1->pointer();
+        for (const auto& [aux1, d1] : other_extern->gaussians_) {
+            auto dp1 = d1->pointer();
         
             auto fact2 = std::make_shared<IntegralFactory>(aux0, zero, aux1, zero);
             std::shared_ptr<TwoBodyAOInt> eri(fact2->eri());
