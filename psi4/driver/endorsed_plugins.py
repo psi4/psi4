@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2025 The Psi4 Developers.
+# Copyright (c) 2007-2026 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -63,6 +63,14 @@ try:
     import adcc
 except ImportError:
     pass
+except AttributeError as e:
+    if "'NoneType' object has no attribute 'isatty'" in str(e):
+        # Some adcc versions evaluate sys.stdout at import time and can fail in
+        # redirected/headless worker contexts (e.g., QCFractal compute workers).
+        # (originates from adcc/timings.py default arg evaluation during import adcc)
+        pass
+    else:
+        raise
 
 try:
     import psi4fockci
@@ -73,4 +81,3 @@ try:
     import cct3
 except ImportError:
     pass
-

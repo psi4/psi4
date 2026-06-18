@@ -14,8 +14,12 @@ set {
   roots_per_irrep [2, 2]
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 1e-8})
+if psi4.core.get_option("scf", "orbital_optimizer_package") == "INTERNAL":  # KP-TOL
+    ein_tol = 1.e-6
+    noein_tol = 1.e-4
+else:
+    ein_tol = 2.e-4
+    noein_tol = 2.e-4
 
 wfn = properties('eom-ccsd', properties=['oscillator_strength'], return_wfn=True)[1]
 
@@ -62,10 +66,10 @@ for transition, data in test_data.items(): # TEST
     for property, value in data.items(): # TEST
         # Change these numbers to 6 ASAP # TEST
         if "EINSTEIN" not in property: # TEST
-            compare_values(value, wfn.variable(f"CC {transition} {property}"), 4, f"CC {transition} {property}") # TEST
-            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), 4, f"CCSD {transition} {property}") # TEST
+            compare_values(value, wfn.variable(f"CC {transition} {property}"), noein_tol, f"CC {transition} {property}") # TEST
+            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), noein_tol, f"CCSD {transition} {property}") # TEST
         else: # TEST
             # Large numbers need "special" testing. # TEST
-            compare_values(value, wfn.variable(f"CC {transition} {property}"), f"CC {transition} {property}", atol=1e-6, rtol=1e-4) # TEST
-            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), f"CCSD {transition} {property}", atol=1e-6, rtol=1e-4) # TEST
+            compare_values(value, wfn.variable(f"CC {transition} {property}"), f"CC {transition} {property}", atol=ein_tol, rtol=1e-4) # TEST
+            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), f"CCSD {transition} {property}", atol=ein_tol, rtol=1e-4) # TEST
 

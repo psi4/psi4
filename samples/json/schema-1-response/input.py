@@ -2,7 +2,6 @@
 
 import psi4
 import numpy as np
-import json
 import os
 
 
@@ -37,9 +36,6 @@ json_data = {
         }
     }
 }
-
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    json_data["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
 
 # Load expected output (dipole & quadrupole in au)
 expected_response = {
@@ -301,5 +297,5 @@ expected_response = {
 
 expected_response = {k: (np.asarray(v) if isinstance(v, list) else v) for k, v in expected_response.items()}
 
-json_ret = psi4.schema_wrapper.run_qcschema(json_data).dict()
+json_ret = psi4.run_qcschema(json_data, return_dict=True)
 

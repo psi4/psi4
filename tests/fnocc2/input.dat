@@ -12,9 +12,6 @@ set {
     g_convergence gau_verytight
 }
 
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
-
 energy('g2')
 refg2    = -76.332048079709 #TEST
 refgibbs = -76.349644857811 #TEST

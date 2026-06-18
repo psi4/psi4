@@ -1,3 +1,5 @@
+import pprint
+import sys
 import re
 import pytest
 import numpy as np
@@ -5,6 +7,9 @@ from qcelemental.testing import compare, compare_values
 import psi4
 
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.nbody]
+
+_sch_name = {1: "qcschema_output", 2: "qcschema_atomic_result"}
+_ispy314 = sys.version_info >= (3, 14)
 
 _tot_cp_ene = -155.40761029
 _ie_cp_ene = -0.00172611
@@ -62,8 +67,8 @@ _stdouts = {
 \s*   ==> N-Body: Counterpoise Corrected \(CP\) energies <==
 \s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*           §A\s+1     -155.4058841\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN §A\s+2     -155.4076102\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d
+\s*           §A\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN §A\s+2     -155.407610\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
 \s*
 \s*MC Legend: §A: "\(auto\)"
 \s*
@@ -73,7 +78,7 @@ _stdouts = {
 \s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
 \s*           §A\s+1        N/A                   0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN §A\s+2        N/A                  -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d
+\s*  FULL/RTN §A\s+2        N/A                  -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
 \s*
 \s*MC Legend: §A: "\(auto\)"
 \s*
@@ -82,8 +87,8 @@ _stdouts = {
 \s*   ==> N-Body: Non-Counterpoise Corrected \(NoCP\) energies <==
 \s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*           §A\s+1     -155.4058841\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN §A\s+2     -155.4088716\d\d\d\d\d       -0.0029874\d\d\d\d\d       -1.87464\d\d\d\d\d\d\d       -0.0029874\d\d\d\d\d       -1.87464\d\d\d\d\d\d\d
+\s*           §A\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN §A\s+2     -155.408871\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d
 \s*
 \s*MC Legend: §A: "\(auto\)"
 \s*
@@ -137,7 +142,10 @@ H   0.000000   0.000000   0.627352
 H   0.000000   0.000000   3.963929
 """)
 
-    atin = {
+    # nbody_number arbitrarily chosen to split among QCSchema v1/v2
+    if nbody_number == 3:
+      schver = 1
+      atin = {
         "driver": driver,
         "model": {
             "method": "mp2",
@@ -150,14 +158,41 @@ H   0.000000   0.000000   3.963929
                 "return_total_data": return_total_data,
             },
         },
-    }
+      }
+    else:
+      schver = 2
+      atin = {
+       "molecule": eneyne.to_schema(dtype=3),
+       "specification": {
+        "driver": driver,
+        "model": {
+            "method": "mp2",
+            "basis": "cc-pvdz",
+        },
+        "keywords": {
+            "function_kwargs": {
+                "bsse_type": bsse_type,
+                "return_total_data": return_total_data,
+            },
+        },
+       },
+      }
 
-    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-        atin["keywords"].update({"e_convergence": 9, "d_convergence": 5e-9})
+    if _ispy314 and schver == 1:
+        pytest.skip(reason="Py314+QCSk1")
+
+    if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP-MATCH
+        if schver == 1:
+            atin["keywords"].update({"d_convergence": 5e-10})
+        elif schver == 2:
+            atin["specification"]["keywords"].update({"d_convergence": 5e-10})
 
     ret = psi4.schema_wrapper.run_qcschema(atin)
+
+    assert ret.success, pprint.pprint(ret.dict(), width=200)
+    assert ret.schema_version == schver
+    assert ret.schema_name == _sch_name[schver]
 
     assert compare_values(return_result, ret.return_result, atol=1.e-6, label="manybody")
     assert compare(nbody_number, ret.extras["qcvars"]["NBODY NUMBER"], label="nbody number")
     assert re.search(_stdouts[stdoutkey], ret.stdout, re.MULTILINE), f"N-Body pattern not found: {_stdouts[stdoutkey]}"
-

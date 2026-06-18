@@ -141,7 +141,7 @@ else()
 endif()
 
 if(${ENABLE_Einsums})
-    find_package(Einsums 1.1.2 CONFIG REQUIRED)  # edit in codedeps
+    find_package(Einsums 1.1.3 CONFIG REQUIRED)  # edit in codedeps
     get_property(_loc TARGET Einsums::Einsums PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using Einsums${ColourReset}: ${_loc} (version ${Einsums_VERSION})")
@@ -210,7 +210,7 @@ else()
 endif ()
 
 if(${ENABLE_OpenOrbitalOptimizer})
-    find_package(OpenOrbitalOptimizer 0.2 CONFIG REQUIRED)
+    find_package(OpenOrbitalOptimizer 0.3 CONFIG REQUIRED)  # edit in codedeps
     get_property(_loc TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using OpenOrbitalOptimizer${ColourReset}: ${_loc} (version ${OpenOrbitalOptimizer_VERSION})")

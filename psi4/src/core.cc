@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2025 The Psi4 Developers.
+ * Copyright (c) 2007-2026 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -30,6 +30,7 @@
 #include <iomanip>
 #include <map>
 #include <sstream>
+#include <iostream>
 #include <sys/stat.h>
 
 #include <libint2/engine.h>
@@ -554,7 +555,13 @@ void py_psi_clean_options() {
     Process::environment.options.set_read_globals(false);
 }
 
-void py_psi_print_out(std::string s) { (*outfile->stream()) << s << std::flush; }
+void py_psi_print_out(std::string s) {
+    if (!outfile || !outfile->stream()) {
+        std::cerr << s;
+        return;
+    }
+    (*outfile->stream()) << s << std::flush;
+}
 
 /**
  * @return whether key describes a convergence threshold or not
