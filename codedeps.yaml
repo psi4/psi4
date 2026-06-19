@@ -1478,10 +1478,24 @@ data:
       name: gauxc
       constraint: null
       target: gauxc::gauxc
-    #  components:
-    #  ENABLE_gauxc
+      components: null
     #  gauxc_ENABLE_GPU
     conda: null
+    conda:
+      channel: conda-forge
+      name: gauxc
+      constraint: null
+
+      skip_win: true
+      cmake:
+        ENABLE_gauxc: true
+        gauxc_DIR:
+          unix: ${CONDA_PREFIX}/lib/cmake/gauxc
+        //CMAKE_INSIST_FIND_PACKAGE_gauxc: true
+        //CMAKE_DISABLE_FIND_PACKAGE_gauxc: true
+      aux_build_names:
+        - exchcxx
+        - highfive
 
   - project: h5py
     use:
