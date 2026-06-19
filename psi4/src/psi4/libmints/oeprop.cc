@@ -1958,20 +1958,21 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
         }
     }
 
-    // MBIS is incompatible with ECPs: requires all-electron density
-    int n_valence_electrons = static_cast<int>(mol->Z(atom));
-    int atomic_num = static_cast<int>(mol->true_atomic_number(atom));
-    if (n_valence_electrons != atomic_num) {
-        throw PsiException("MBIS incompatible with ECP. ECP detected on atom " + std::to_string(atom + 1) + " (" + 
-                           mol->symbol(atom) + "). Use all-electron basis or reconstruct density with denspart.",
-                           __FILE__, __LINE__);
-    }
-
     // => Setup Proatom Basis Functions <= //
 
     // mA is the number of proatom shells per atom, read directly from the parameter table.
     std::vector<int> mA(num_atoms);
     for (int atom = 0; atom < num_atoms; atom++) {
+
+        // MBIS is incompatible with ECPs: requires all-electron density
+        int n_valence_electrons = static_cast<int>(mol->Z(atom));
+        int true_atomic_num = static_cast<int>(mol->true_atomic_number(atom));
+        if (n_valence_electrons != true_atomic_num) {
+            throw PsiException("MBIS incompatible with ECP. ECP detected on atom " + std::to_string(atom + 1) + " (" + 
+                               mol->symbol(atom) + "). Use all-electron basis or reconstruct density with denspart.",
+                               __FILE__, __LINE__);
+        }
+
         int atomic_num = static_cast<int>(mol->Z(atom));
         mA[atom] = static_cast<int>(get_mbis_params(atomic_num).size());
     }
