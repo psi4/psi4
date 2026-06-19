@@ -197,3 +197,7 @@ algorithm is controlled by |globals__mbis_maxiter| and |globals__mbis_d_converge
 that the density is partitioned on a molecular quadrature grid, the details of which can be
 controlled with the keywords |globals__mbis_radial_points|, |globals__mbis_spherical_points|, and 
 |globals__mbis_pruning_scheme|. (Associated Paper: [Verstraelen:2016]_)
+
+.. note::
+   MBIS is not supported for basis sets that use effective core potentials (ECPs).
+   Please use all-electron basis sets for MBIS calculations.
