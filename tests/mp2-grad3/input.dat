@@ -1,0 +1,33 @@
+#! DF-MP2 gradient for zinc hydroxide cation
+#! Regression test for Tensor2d::back_transform dimension mismatch fix
+#! Structure: [Zn(OH)]+ cation with linear dependence elimination
+#! Uses def2-qzvppd basis with s_tolerance=1e-4 to trigger nso > nmo
+
+molecule zn_oh {
+    1 3
+    units bohr
+    ZN   0.0        0.0        0.0
+    O    2.0        0.0        0.0
+    H    3.8        0.0        0.0
+}
+
+set {
+    basis              def2-qzvppd
+    scf_type           df
+    reference          uhf
+    e_convergence      10
+    d_convergence      10
+    mp2_type           df
+    freeze_core        false
+    s_orthogonalization canonical
+    s_tolerance         1e-4
+}
+
+grad = gradient('mp2')
+
+# [Zn(OH)]+ cation: 3-atom charged system with transition metal
+# Uses def2-qzvppd basis with canonical orthogonalization at s_tolerance=1e-4
+# This forces linear dependence elimination: nso=755 but nmo<755, creating
+# non-square tensors in DF-MP2 back_transform (temp allocated as (noccA, nmo)
+# but needs (noccA, nso)). Bug manifests as "gemm dimensions are NOT consistent!"
+# when back_transform allocates temp with dim2_ (nmo) instead of dim1_ (nso).
