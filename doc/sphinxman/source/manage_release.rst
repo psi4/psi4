@@ -578,10 +578,12 @@ are built through GHA on the https://github.com/psi4/psi4meta repository and get
   ``construct.yaml`` to retrigger.)
 * When all build successfully, look at the "Filter artifact IDs" GHA step, and copy the ``bash
   pull_gha_installers...`` line. These artifacts only linger for a day.
-* Log in to COS vergil root and cd to ``/projects/vergil/sherrill_website/cdsg/static/psicode-download``.
+* Log in to COS vergil.chemistry.gatech.edu (as self via hornet) and cd to
+  ``/projects/vergil/sherrill_website/cdsg/static/psicode-download``.
 * Use the ``pull_gha_installers_2025.sh`` script to download the installers from GH to COS vergil. First
-  argument is an auth token and remaining args are artifact numbers.
+  argument is an auth token and remaining args are artifact numbers. Check exact pull_gha script name.
   ``bash pull_gha_installers_2025.sh 715...4f3 3280468170 3280468226 3280468291 3280468500``.
+* Use notes to change group on new files and add 777 permissions.
 
 
 Build Docker images
@@ -597,6 +599,7 @@ environment specification and get served from DockerHub, https://hub.docker.com/
 
 * Edit the GHA control file https://github.com/psi4/psi4meta/blob/master/.github/workflows/Docker.yml
   ``matrix.cfg`` list for changed Python version and to label the tags with current Psi4 from c-f.
+* Toggle whether it uploads or not.
 * Commit ``environment.yaml`` or ``Docker.yml`` to trigger GHA Docker builds.
 * Check at DockerHub for new images.
 

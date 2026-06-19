@@ -1485,7 +1485,6 @@ data:
       channel: conda-forge
       name: gauxc
       constraint: null
-
       skip_win: true
       cmake:
         ENABLE_gauxc: true
