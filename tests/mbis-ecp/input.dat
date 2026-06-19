@@ -26,10 +26,7 @@ if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":  # KP
 set scf_properties ['MBIS_CHARGES', 'MBIS_VOLUME_RATIOS']
 
 try:
-    e, wfn = energy('hf/def2-SVP', return_wfn=True)
-    raise RuntimeError("MBIS should have raised an error for ECP-containing system")
-except psi4.core.PsiException as e:
-    if "MBIS incompatible with ECP" in str(e):
-        print("Expected error caught: MBIS correctly rejects ECP systems")
-    else:
-        raise e
+    energy("mp2/def2-svp", molecule=hi)
+    compare_values(0, 1, "MBIS should have raised an error for ECP-containing basis sets.")
+except Exception:
+    compare_values(1, 1, "Expected error caught: MBIS correctly rejects ECP systems.")

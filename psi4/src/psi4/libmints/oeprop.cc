@@ -1958,12 +1958,21 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
         }
     }
 
+    // MBIS is incompatible with ECPs: requires all-electron density
+    int n_valence_electrons = static_cast<int>(mol->Z(atom));
+    int atomic_num = static_cast<int>(mol->true_atomic_number(atom));
+    if (n_valence_electrons != atomic_num) {
+        throw PsiException("MBIS incompatible with ECP. ECP detected on atom " + std::to_string(atom + 1) + " (" + 
+                           mol->symbol(atom) + "). Use all-electron basis or reconstruct density with denspart.",
+                           __FILE__, __LINE__);
+    }
+
     // => Setup Proatom Basis Functions <= //
 
     // mA is the number of proatom shells per atom, read directly from the parameter table.
     std::vector<int> mA(num_atoms);
     for (int atom = 0; atom < num_atoms; atom++) {
-        int atomic_num = static_cast<int>(mol->true_atomic_number(atom));
+        int atomic_num = static_cast<int>(mol->Z(atom));
         mA[atom] = static_cast<int>(get_mbis_params(atomic_num).size());
     }
 
@@ -1980,19 +1989,8 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
 
     // Population and width guesses, from get_mbis_params function
     for (int atom = 0; atom < num_atoms; atom++) {
-        // Use true atomic number for proatom parameter lookup, not effective Z.
-        // For ECP systems, mol->Z() is modified to store valence charge; we need the
-        // true element to index the proatom parameter table correctly.
-        int atomic_num = static_cast<int>(mol->true_atomic_number(atom));
+        int atomic_num = static_cast<int>(mol->Z(atom));
         auto shells = get_mbis_params(atomic_num);
-
-        // MBIS is incompatible with ECPs: requires all-electron density
-        int n_valence_electrons = static_cast<int>(mol->Z(atom));
-        if (n_valence_electrons != atomic_num) {
-            throw PsiException("MBIS incompatible with ECP. ECP detected on atom " + std::to_string(atom + 1) + " (" + 
-                               mol->symbol(atom) + "). Use all-electron basis or reconstruct density with denspart.",
-                               __FILE__, __LINE__);
-        }
 
         for (int m = 0; m < mA[atom]; m++) {
             Nai[atom][m] = std::get<0>(shells[m]);
