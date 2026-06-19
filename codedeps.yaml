@@ -1480,7 +1480,6 @@ data:
       target: gauxc::gauxc
       components: null
     #  gauxc_ENABLE_GPU
-    conda: null
     conda:
       channel: conda-forge
       name: gauxc
