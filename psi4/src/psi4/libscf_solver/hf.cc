@@ -638,9 +638,7 @@ void HF::form_H() {
 
                             double jacobian = weight * r * r * sin(theta);
 
-                            basisset_->compute_phi(phi_ao.pointer(), x, y, z);
-
-                            phi_so.gemv(true, 1.0, u, phi_ao, 0.0);
+                            basisset_->compute_phi(phi_so.pointer(), x, y, z);
 
                             for (int i = 0; i < nso; i++)
                                 for (int j = 0; j < nso; j++)
