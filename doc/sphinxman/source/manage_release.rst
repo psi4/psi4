@@ -53,7 +53,6 @@ Pre-Release (e.g., ``v1.3rc1``)
 * `Anticipate next release`_
 * `Build Conda ecosystem stack`_
 * `Tag (pre)release`_
-.. * `Build extra Conda packages for Psi4 channel`_
 * `Build Psi4conda set`_
 * `Generate download page for psicode.org`_
 
@@ -71,7 +70,6 @@ Release (e.g., ``v1.3``)
 * `Do final pass before release tag`_
 * `Tag (pre)release`_
 * `Initialize release branch`_
-.. * `Build extra Conda packages for Psi4 channel`_
 * `Build Psi4conda set`_
 * `Generate download page for psicode.org`_
 * `Collect documentation snapshot`_
@@ -89,7 +87,6 @@ Post-Release (e.g., ``v1.8.2``)
 * `Tweak Conda for postrelease`_
 * `Tag postrelease`_
 * `Build Psi4conda set`_
-.. * `Build extra Conda packages for Psi4 channel`_
 * `Generate download page for psicode.org`_
 * `Collect documentation snapshot`_
 * `Publish GitHub postrelease`_
