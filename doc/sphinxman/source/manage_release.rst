@@ -53,7 +53,7 @@ Pre-Release (e.g., ``v1.3rc1``)
 * `Anticipate next release`_
 * `Build Conda ecosystem stack`_
 * `Tag (pre)release`_
-* `Build extra Conda packages for Psi4 channel`_
+.. * `Build extra Conda packages for Psi4 channel`_
 * `Build Psi4conda set`_
 * `Generate download page for psicode.org`_
 
@@ -71,7 +71,7 @@ Release (e.g., ``v1.3``)
 * `Do final pass before release tag`_
 * `Tag (pre)release`_
 * `Initialize release branch`_
-* `Build extra Conda packages for Psi4 channel`_
+.. * `Build extra Conda packages for Psi4 channel`_
 * `Build Psi4conda set`_
 * `Generate download page for psicode.org`_
 * `Collect documentation snapshot`_
@@ -89,7 +89,7 @@ Post-Release (e.g., ``v1.8.2``)
 * `Tweak Conda for postrelease`_
 * `Tag postrelease`_
 * `Build Psi4conda set`_
-* `Build extra Conda packages for Psi4 channel`_
+.. * `Build extra Conda packages for Psi4 channel`_
 * `Generate download page for psicode.org`_
 * `Collect documentation snapshot`_
 * `Publish GitHub postrelease`_
@@ -222,8 +222,15 @@ Build Conda ecosystem stack
   a fully featured Psi4 build and which we have some role in packaging.
 * These packages (e.g., ``libint``, ``gdma``) should already be updated and built on conda-forge.
   Survey them to check version tick and other key PRs have been merged.
-* Changes to targets' "source" and "version" in individual recipes should be edited in psi4
-  ``external/*/*/CMakeLists.txt`` files
+* Changes to targets' "source" and "version" in individual recipes should be edited in psi4 ``codedeps.yaml``
+* Run ``conda/psi4-path-advisor.py deploy``. It will write an "external" script and a "devtools"
+  script.
+
+  - Run the "external" script that copies codedeps data into ``psi4/CMakeLists.txt`` and
+    ``external/*/*/CMakeLists.txt`` files. If these haven't been updated in sync, you may need to
+    edit codedeps until generating and running the script doesn't change the src. Check in changes.
+  - Run the "devtools" script to make sure the environments for each architecture solve. Check in files.
+
 * Edit any added or dropped dependencies in main :source:`CMakeLists.txt` and docs
   :source:`doc/sphinxman/source/build_planning.rst` .
 
@@ -449,34 +456,35 @@ Initialize release branch
 * set up new branch as protected branch through GitHub psi4 org Settings. Should be already covered under 1.*.x rule.
 
 
-Build extra Conda packages for Psi4 channel
--------------------------------------------
-
-Once upon a time, "Psi4 stack", meant packages ``psi4``, ``psi4-rt``, ``psi4-dev``, and ``psi4-docs``.
-Package ``psi4-docs`` used to be in "Psi4 stack", but it's handled by GHA and netlify now, not Conda.
-Package ``psi4-rt`` used to be in "Psi4 stack", but a maximum ecosystem package isn't provided now, only a customizable env spec.
-Package ``psi4-dev`` used to be in "Psi4 stack", but now build environment and guidance is in-repo with ``psi4-path-advisor.py``.
-Other packages in the "ecosystem stack" (e.g., ``libint``, ``gdma``) should already be updated and
-built on conda-forge. Survey them to check version tick PRs have been merged.
-
-Conda-forge overwhelmingly handles the ``psi4`` package itself, with a full architecture and Python
-version matrix. What remains are specialty or development builds for the psi4 channel.
-
-* High AM and multiarch ``psi4`` builds for Linux
-
-  - Especially at tagged releases, update and reconcile c-f psi4/feedstock recipe with psinet
-    psi4meta/conda-recipes/psi4-cf recipe. Differences include:
-
-    * restricted to only even python versions
-    * c-f libint vs. psi4 libint2 packages (latter with high AM)
-    * smoke vs. full tests
-    * no git rev-parse lines
-    * load Intel compilers and specify them in compilers and flags CMake arguments
-
-* Prepare recipe, make sure ``psi4-cf`` is the only target uncommented in ``kitandkapoodle.py``, set
-  crontab, view in ``kpd-anom.log``.
-* Files will upload to ``psi4/label/dev``. For releases and postreleases, on the anaconda.org site
-  (logged in as psi4), *add*, not replace, ``main`` label, so accessible from ``psi4/label/main``.
+.. Build extra Conda packages for Psi4 channel (pre-2026)
+.. ------------------------------------------------------
+..
+.. Once upon a time, "Psi4 stack", meant packages ``psi4``, ``psi4-rt``, ``psi4-dev``, and ``psi4-docs``.
+.. Package ``psi4-docs`` used to be in "Psi4 stack", but it's handled by GHA and netlify now, not Conda.
+.. Package ``psi4-rt`` used to be in "Psi4 stack", but a maximum ecosystem package isn't provided now, only a customizable env spec.
+.. Package ``psi4-dev`` used to be in "Psi4 stack", but now build environment and guidance is in-repo with ``psi4-path-advisor.py``.
+.. Other packages in the "ecosystem stack" (e.g., ``libint``, ``gdma``) should already be updated and
+.. built on conda-forge. Survey them to check version tick PRs have been merged.
+.. All extra builds discontinued after L2 transition to cmake+cmake c.2026.
+..
+.. Conda-forge overwhelmingly handles the ``psi4`` package itself, with a full architecture and Python
+.. version matrix. What remains are specialty or development builds for the psi4 channel.
+..
+.. * High AM and multiarch ``psi4`` builds for Linux
+..
+..   - Especially at tagged releases, update and reconcile c-f psi4/feedstock recipe with psinet
+..     psi4meta/conda-recipes/psi4-cf recipe. Differences include:
+..
+..     * restricted to only even python versions
+..     * c-f libint vs. psi4 libint2 packages (latter with high AM)
+..     * smoke vs. full tests
+..     * no git rev-parse lines
+..     * load Intel compilers and specify them in compilers and flags CMake arguments
+..
+.. * Prepare recipe, make sure ``psi4-cf`` is the only target uncommented in ``kitandkapoodle.py``, set
+..   crontab, view in ``kpd-anom.log``.
+.. * Files will upload to ``psi4/label/dev``. For releases and postreleases, on the anaconda.org site
+..   (logged in as psi4), *add*, not replace, ``main`` label, so accessible from ``psi4/label/main``.
 
 
 .. Build Conda Psi4 stack at specific commit (pre-Spring 2023)

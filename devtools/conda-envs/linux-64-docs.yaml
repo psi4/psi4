@@ -19,35 +19,41 @@ dependencies:
   - pip                       # req'd with python; Package installer not strictly needed but needs to be tied to this python if used.
   - pybind11
   - python
+  - python-gil                # req'd with python; Safety of free-threading uncertain, so avoid for now.
     # qc buildtime required
   - gau2grid
   #- psi4::libint              # opt'l with libint; Optionally for linux-64, an AM=7 build is available here.
   - libint
   - libxc-c
-  - optking
-  - qcelemental
-  - qcengine
-  - qcmanybody>=0.5.1
+  - optking>=0.5.0
+  - qcelemental>=0.50.2
+  - qcengine>=0.50.0
+  - qcmanybody>=0.7.1
     # runtime required
   - msgpack-python            # req'd with qcelemental
   - networkx                  # req'd with qcelemental
-  - pydantic>=1.10.17,<3      # req'd with qcelemental; Allow uniform access to Pydantic v1 API.
+  - pydantic>=2.11.0,<3       # req'd with qcelemental; For Py v3.14, require Pydantic v2.12.
   - scipy
   - setuptools                # req'd with qcelemental; Needed for qcelemental cmake detection.
     # test
   - h5py
   - memory_profiler
+  - pandas
   - pytest
   - pytest-xdist              # req'd with pytest; Parallel runner not strictly needed but very handy.
+  - zstandard
     # docs
-  - autodoc-pydantic=1        # req'd with sphinx
+  - autodoc-pydantic=2        # req'd with sphinx
   - doxygen
+  - gxx_linux-64=14.3.0=hc876b51_14  # req'd with sphinx
   - ipykernel                 # req'd with nbsphinx
   - nbsphinx
   - python-graphviz
   - qcportal                  # req'd with sphinx; Required for docs to resolve objects in pydantic classes.
+  - setuptools<82.0.0         # req'd with sphinx
   - sphinx>=7,<8
   - sphinx-autodoc-typehints  # req'd with sphinx
   - sphinx-automodapi         # req'd with sphinx
   - psi4::sphinx-psi-theme
   - sphinx-tabs               # req'd with sphinx
+  - sphobjinv                 # req'd with sphinx; Required for easy debugging in CI, not needed for local docs build.

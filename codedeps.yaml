@@ -1287,7 +1287,7 @@ data:
       channel: conda-forge
       name: qcfractal
       constraint: ">=0.60,!=0.62"
-      constraint_note: "v0.60 includes new compute_tag syntax. v0.62 hangs for snowflake jobs."
+      constraint_note: "v0.60 includes new compute_tag syntax. v0.62 hangs for snowflake jobs. Not avail for Py 3.14 until v0.70 released."
       aux_run_names:
         - postgresql
       aux_run_names_note:
