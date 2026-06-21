@@ -110,4 +110,8 @@ compare(findif_numbers[5], variable('findif number'), '5-point stencil points') 
 compare_values(anal_freqs, fd_freqs,       #TEST
  "Analytic vs. 5-pt finite-diff freq from grad to 0.001 cm^-1", atol=findif5_tol) #TEST
 
+from pathlib import Path
+normcofile = Path(core.get_writer_file_prefix(scf_wfn.molecule().name()) + ".molden_normal_modes")
+compare(25, len(normcofile.read_text().splitlines()), "molden file written")
+
 clean()
