@@ -110,6 +110,13 @@ def test_slash_in_molecule_name_plus_dfhelper():
     assert compare_values(-1.00125358, ene, 5, 'weird mol name ok as file')
 
 
+def test_timer_label_rejects_separator():
+    psi4.core.clean_timers()
+
+    with pytest.raises(Exception, match="reserved separator ';'"):
+        psi4.core.timer_on("bad;label")
+
+
 # <<<  TODO Deprecated! Delete in Psi4 v1.5  >>>
 
 @uusing("networkx")

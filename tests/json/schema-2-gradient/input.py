@@ -78,5 +78,5 @@ for k in expected_properties.keys():                                            
 
 psi4.compare(7, len(json_ret.native_files["psi4.grad"].splitlines()), "grad file found")  #TEST
 
-wall_time = json_ret.native_files["timer.json"]["DFH: initialize()§Libint2ERI::Libint2ERI"]["wall_time"]
+wall_time = json_ret.native_files["timer.json"]["DFH: initialize();Libint2ERI::Libint2ERI"]["wall_time"]
 psi4.compare(True, wall_time < 1, "timer file found")

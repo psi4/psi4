@@ -127,6 +127,16 @@ typedef int omp_lock_t;
 namespace psi {
 
 using clock = std::chrono::high_resolution_clock;
+constexpr char kTimerPathSeparator = ';';
+
+void validate_timer_label(const std::string &key) {
+    if (key.find(kTimerPathSeparator) != std::string::npos) {
+        std::string msg = "Timer label '";
+        msg += key;
+        msg += "' contains reserved separator ';'.";
+        throw PsiException(msg, __FILE__, __LINE__);
+    }
+}
 
 enum Timer_Status { OFF, ON, PARALLEL };
 
@@ -1077,6 +1087,7 @@ void stop_skip_timers() {
 */
 PSI_API void timer_on(const std::string &key) {
     omp_set_lock(&lock_timer);
+    validate_timer_label(key);
     extern bool skip_timers;
     if (skip_timers) {
         omp_unset_lock(&lock_timer);
@@ -1113,6 +1124,7 @@ PSI_API void timer_on(const std::string &key) {
 */
 PSI_API void timer_off(const std::string &key) {
     omp_set_lock(&lock_timer);
+    validate_timer_label(key);
     extern bool skip_timers;
     if (skip_timers) {
         omp_unset_lock(&lock_timer);
@@ -1184,6 +1196,7 @@ PSI_API void timer_off(const std::string &key) {
 */
 void parallel_timer_on(const std::string &key, int thread_rank) {
     omp_set_lock(&lock_timer);
+    validate_timer_label(key);
     extern bool skip_timers;
     if (skip_timers) {
         omp_unset_lock(&lock_timer);
@@ -1227,6 +1240,7 @@ void parallel_timer_on(const std::string &key, int thread_rank) {
 */
 void parallel_timer_off(const std::string &key, int thread_rank) {
     omp_set_lock(&lock_timer);
+    validate_timer_label(key);
     extern bool skip_timers;
     if (skip_timers) {
         omp_unset_lock(&lock_timer);
@@ -1307,7 +1321,7 @@ std::string make_timer_id(const std::vector<std::string>& timer_path) {
     std::string timer_id;
     for (size_t i = 0; i < timer_path.size(); ++i) {
         if (i > 0) {
-            timer_id += "§";
+            timer_id += kTimerPathSeparator;
         }
         timer_id += timer_path[i];
     }
