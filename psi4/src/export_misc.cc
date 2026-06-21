@@ -44,12 +44,11 @@ void export_misc(py::module &m) {
     m.def("get_timer_records", [](bool compact) {
         auto records = get_timer_records();
 
-        py::list out;
+        py::dict out;
 
         for (const auto& rec : records) {
             py::dict d;
 
-            d["timer_id"] = rec.timer_id;
             d["wall_time"] = rec.wall_time;
             d["user_time"] = rec.user_time;
             d["system_time"] = rec.system_time;
@@ -68,10 +67,12 @@ void export_misc(py::module &m) {
                 d["level"] = rec.level;
             }
 
-            out.append(d);
+            out[py::str(rec.timer_id)] = d;
         }
         return out;
     },
     py::arg("compact") = false,
-    "Get timing information as structured timer records. Returns a list of dictionaries, where each dictionary represents one timer and contains hierarchy fields (timer_id, parent_id, timer_name, timer_path, level) and timing fields (wall_time, user_time, system_time, n_calls). compact=True includes only the summary hierarchy field timer_id.");
+    "Get timing information as structured timer records. Returns a dictionary keyed by timer_id. "
+    "Each value contains timing fields (wall_time, user_time, system_time, n_calls) and, when "
+    "compact=False, hierarchy fields (parent_id, timer_name, timer_path, level).");
 }
