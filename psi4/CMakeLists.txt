@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19...4.0)
+cmake_minimum_required(VERSION 3.19...4.2)
 cmake_policy(SET CMP0094 NEW)
 if (POLICY CMP0167)
     # L2 not prepared for BoostConfig instead of FindBoost
