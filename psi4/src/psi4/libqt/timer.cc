@@ -1294,4 +1294,78 @@ void parallel_timer_off(const std::string &key, int thread_rank) {
     }
     omp_unset_lock(&lock_timer);
 }
+
+/*!
+** make_timer_id(): Build a unique timer ID from a timer path that contains the names
+** of all timers from the top-level timer to the current timer.
+**
+** \param timer_path = Full hierarchy path for the timer
+**
+** \ingroup QT
+*/
+std::string make_timer_id(const std::vector<std::string>& timer_path) {
+    std::string timer_id;
+    for (size_t i = 0; i < timer_path.size(); ++i) {
+        if (i > 0) {
+            timer_id += "§";
+        }
+        timer_id += timer_path[i];
+    }
+    return timer_id;
+}
+
+/*!
+** timer_to_records_helper(): Helper function to convert a Timer_Structure to a list
+** of dictionaries.
+**
+** \param timer = Timer node whose children will be processed
+** \param parent_id = ID of the parent timer record
+** \param parent_path = Full hierarchy path of the parent timer
+** \param level = Depth of the child timers in the timer tree
+** \param records = Output vector filled with TimerRecord entries
+**
+** \ingroup QT
+*/
+void timer_to_records_helper(const Timer_Structure& timer, const std::string& parent_id, 
+                             const std::vector<std::string>& parent_path, int level, std::vector<TimerRecord>& records) {
+    const auto& children = timer.get_children();
+    for (auto child_iter = children.begin(); child_iter != children.end(); ++child_iter) {
+        std::vector<std::string> timer_path = parent_path;
+        timer_path.push_back(child_iter->get_key());
+        std::string timer_id = make_timer_id(timer_path);
+        double wtime = std::chrono::duration_cast<std::chrono::duration<double>>(child_iter->get_total_wtime()).count();
+        double utime = child_iter->get_utime();
+        double stime = child_iter->get_stime();
+        size_t n_calls = child_iter->get_n_calls();
+        TimerRecord record;
+        record.timer_id = timer_id;
+        record.parent_id = parent_id;
+        record.timer_name = child_iter->get_key();
+        record.timer_path = timer_path;
+        record.level = level;
+        record.wall_time = wtime;
+        record.user_time = utime;
+        record.system_time = stime;
+        record.n_calls = n_calls;
+        records.push_back(record);
+        timer_to_records_helper(*child_iter, timer_id, timer_path, level + 1, records);
+    }
+}
+
+/*!
+** get_timer_records(): Get all timing information as a list of dictionaries structure
+** 
+** \ingroup QT
+*/
+PSI_API std::vector<TimerRecord> get_timer_records() {
+    omp_set_lock(&lock_timer);
+    extern Timer_Structure root_timer;
+    std::vector<TimerRecord> result;
+    std::vector<std::string> empty_path;
+    std::string empty_parent_id = "";
+    timer_to_records_helper(root_timer, empty_parent_id, empty_path, 0, result);
+    omp_unset_lock(&lock_timer);
+    return result;
+}
+
 }  // namespace psi
