@@ -1462,9 +1462,9 @@ class FiniteDifferenceComputer(BaseComputer):
                             'method': self.method,
                         },
                     },
-                    'molecule': self.molecule.to_schema(dtype=3),
+                    'molecule': self.molecule.to_schema(dtype=3, quiet=True),
                 },
-                'molecule': self.molecule.to_schema(dtype=3),
+                'molecule': self.molecule.to_schema(dtype=3, quiet=True),
                 'properties': properties,
                 'provenance': p4util.provenance_stamp(__name__, module=self.findifrec["reference"]["module"]),
                 'extras': {

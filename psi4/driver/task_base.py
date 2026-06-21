@@ -111,7 +111,7 @@ class AtomicComputer(BaseComputer):
         """Form QCSchema input from member data."""
 
         atomic_model = AtomicInput(**{
-            "molecule": self.molecule.to_schema(dtype=3),
+            "molecule": self.molecule.to_schema(dtype=3, quiet=True),
             "specification": {
                 "driver": self.driver,
                 "model": {
@@ -144,7 +144,7 @@ class AtomicComputer(BaseComputer):
             from qcelemental.models.v2 import Molecule
 
             # Build the molecule
-            mol = Molecule(**self.molecule.to_schema(dtype=3))
+            mol = Molecule(**self.molecule.to_schema(dtype=3, quiet=True))
 
             # QCFractal as of 0.70 still wants QCSchema v1
             if parse_version(qcportal.__version__) > parse_version("0.65.0"):  # TODO change to 0.70.0 once minted FUTURE

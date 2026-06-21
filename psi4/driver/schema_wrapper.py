@@ -691,7 +691,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         "input_data": input_data,
         "extras": {"qcvars": {}},
         "provenance": {},
-        "molecule": mol.to_schema(dtype=3),
+        "molecule": mol.to_schema(dtype=3, quiet=True),
     }
 
     # Pull out a standard set of SCF properties
