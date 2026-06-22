@@ -113,7 +113,7 @@ def test_slash_in_molecule_name_plus_dfhelper():
 def test_timer_label_rejects_separator():
     psi4.core.clean_timers()
 
-    with pytest.raises(Exception, match="reserved separator ';'"):
+    with pytest.raises(RuntimeError, match="reserved separator ';'"):
         psi4.core.timer_on("bad;label")
 
 

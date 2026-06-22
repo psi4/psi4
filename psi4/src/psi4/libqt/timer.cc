@@ -134,7 +134,7 @@ void validate_timer_label(const std::string &key) {
         std::string msg = "Timer label '";
         msg += key;
         msg += "' contains reserved separator ';'.";
-        throw PsiException(msg, __FILE__, __LINE__);
+        throw PSIEXCEPTION(msg);
     }
 }
 
@@ -1086,8 +1086,8 @@ void stop_skip_timers() {
 ** \ingroup QT
 */
 PSI_API void timer_on(const std::string &key) {
-    omp_set_lock(&lock_timer);
     validate_timer_label(key);
+    omp_set_lock(&lock_timer);
     extern bool skip_timers;
     if (skip_timers) {
         omp_unset_lock(&lock_timer);
@@ -1123,8 +1123,8 @@ PSI_API void timer_on(const std::string &key) {
 ** \ingroup QT
 */
 PSI_API void timer_off(const std::string &key) {
-    omp_set_lock(&lock_timer);
     validate_timer_label(key);
+    omp_set_lock(&lock_timer);
     extern bool skip_timers;
     if (skip_timers) {
         omp_unset_lock(&lock_timer);
@@ -1195,8 +1195,8 @@ PSI_API void timer_off(const std::string &key) {
 ** \ingroup QT
 */
 void parallel_timer_on(const std::string &key, int thread_rank) {
-    omp_set_lock(&lock_timer);
     validate_timer_label(key);
+    omp_set_lock(&lock_timer);
     extern bool skip_timers;
     if (skip_timers) {
         omp_unset_lock(&lock_timer);
@@ -1239,8 +1239,8 @@ void parallel_timer_on(const std::string &key, int thread_rank) {
 ** \ingroup QT
 */
 void parallel_timer_off(const std::string &key, int thread_rank) {
-    omp_set_lock(&lock_timer);
     validate_timer_label(key);
+    omp_set_lock(&lock_timer);
     extern bool skip_timers;
     if (skip_timers) {
         omp_unset_lock(&lock_timer);
