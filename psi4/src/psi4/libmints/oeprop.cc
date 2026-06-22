@@ -1968,9 +1968,8 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
         int n_valence_electrons = static_cast<int>(mol->Z(atom));
         int true_atomic_num = static_cast<int>(mol->true_atomic_number(atom));
         if (n_valence_electrons != true_atomic_num) {
-            throw PsiException("MBIS incompatible with ECP. ECP detected on atom " + std::to_string(atom + 1) + " (" + 
-                               mol->symbol(atom) + "). Use all-electron basis or reconstruct density with denspart.",
-                               __FILE__, __LINE__);
+            throw PSIEXCEPTION("MBIS incompatible with ECP. ECP detected on atom " + std::to_string(atom + 1) + " (" + 
+                               mol->symbol(atom) + "). Use all-electron basis or reconstruct density with denspart.");
         }
 
         int atomic_num = static_cast<int>(mol->Z(atom));

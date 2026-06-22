@@ -808,7 +808,7 @@ data:
     conda:
       channel: conda-forge
       name: numpy
-      constraint: "<2.5.0"
+      constraint: null
       cmake: null
 
   - project: simint

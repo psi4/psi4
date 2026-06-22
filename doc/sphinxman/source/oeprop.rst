@@ -200,4 +200,4 @@ controlled with the keywords |globals__mbis_radial_points|, |globals__mbis_spher
 
 .. note::
    MBIS is not supported for basis sets that use effective core potentials (ECPs).
-   Please use all-electron basis sets for MBIS calculations.
+   Please use all-electron basis sets for MBIS calculations. See `this issue at denspart <https://github.com/theochem/denspart/issues/19>`_
