@@ -10,9 +10,6 @@ molecule h2o {
   H 1 0.96 2 104.5
 }
 
-if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO sometimes bad conv with ooo
-
 set basis cc-pVDZ
 energy('scf')
 
@@ -31,10 +28,6 @@ set globals {
     JOBTYPE SP
     GUESS CORE
 }
-
-if psi4.core.get_option("scf", "orbital_optimizer_package") != "INTERNAL":
-    psi4.set_options({"e_convergence": 9, "d_convergence": 5e-8})
-
 
 S22mad = database('sapt0','s44',subset=[2,8],BENCHMARK='s22A')
 S22mad = database('sapt0','s22',subset=[2,8],BENCHMARK='s22A')
@@ -92,6 +85,9 @@ C   0.000000   0.000000   1.693240
 H   0.000000   0.000000   0.627352
 H   0.000000   0.000000   3.963929
 }
+
+if psi4.core.get_global_option("orbital_optimizer_package") != "INTERNAL":  # KP-EXCUSE
+    psi4.set_options({"orbital_optimizer_package": "internal"})  # TODO sometimes bad conv with ooo (Intel Mac)
 
 eneyne.update_geometry()
 E = energy("hf-d32b")
