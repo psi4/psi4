@@ -36,9 +36,10 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/numinthelper.h"
 #include "psi4/libdisp/dispersion.h"
-#include "psi4/libfock/v.h"
-#include "psi4/libfock/points.h"
 #include "psi4/libfock/cubature.h"
+#include "psi4/libfock/integrator_dispatcher.h"
+#include "psi4/libfock/points.h"
+#include "psi4/libfock/v.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libsapt_solver/fdds_disp.h"
 #include "psi4/libqt/qt.h"
@@ -251,6 +252,16 @@ void export_functional(py::module &m) {
                                 std::map<std::string, int> int_opts, std::map<std::string, std::string> string_opts) {
             return std::make_shared<DFTGrid>(mol, basis, int_opts, string_opts, Process::environment.options);
         });
+
+    py::class_<IntegratorDispatcher, std::shared_ptr<IntegratorDispatcher>>(m, "IntegratorDispatcher",
+      "A list of integrators. If one fails, fallback to the next.")
+        .def("functional", &IntegratorDispatcher::functional, "Returns the interal superfunctional.")
+        .def("collocation_size", &IntegratorDispatcher::collocation_size, "Returns the maximum number of doubles stored as basis functions and their derivatives evaluated on the grid.")
+        .def("quadrature_values", &IntegratorDispatcher::quadrature_values, "Returns the quadrature values.")
+        .def("build_collocation_cache", &IntegratorDispatcher::build_collocation_cache,
+             "Constructs collocation caches to prevent recomputation.")
+        .def("clear_collocation_cache", &IntegratorDispatcher::clear_collocation_cache, "Clears the collocation cache.")
+        .def("psi_manager", &IntegratorDispatcher::psi_manager, "Return the first Psi4-native IntegrationManager (VBase), if any.");
 
     py::class_<VBase, std::shared_ptr<VBase>>(m, "VBase", "docstring")
         .def_static("build",

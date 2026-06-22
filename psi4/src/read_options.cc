@@ -1923,6 +1923,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DFT_VV10_C", 0.0);
         /*- post-scf VV10 correction -*/
         options.add_bool("DFT_VV10_POSTSCF", false);
+        /*- Enable Psi's internal integration? Disable only if using an external integrator. !expert -*/
+        options.add_bool("DFT_ENABLE_PSI", true);
         /*- The convergence on the orbital localization procedure -*/
         options.add_double("LOCAL_CONVERGENCE", 1E-12);
         /*- The maxiter on the orbital localization procedure -*/
@@ -1931,6 +1933,23 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("UHF_NOONS", "3");
         /*- Save the UHF NOs -*/
         options.add_bool("SAVE_UHF_NOS", false);
+
+        /*- SUBSECTION GAUXCINT -*/
+        /*- Outsource all Kohn-Sham numerical integration to the GauXC library? -*/
+        options.add_bool("GAUXC_INTEGRATE", false);
+        /*- Load Balancer kernel for KS !expert -*/
+        options.add_str("GAUXC_LOAD_BALANCER_KERNEL", "DEFAULT", "DEFAULT REPLICATED REPLICATED-PETITE REPLICATED-FILLIN");
+        /*- Pruning scheme for KS grids !expert -*/
+        options.add_str("GAUXC_PRUNING_SCHEME", "ROBUST", "ROBUST TREUTLER NONE");
+        /*- Radial Scheme for KS grid. 
+        MURA is default here as it matches the GauXC default option -*/
+        options.add_str("GAUXC_RADIAL_SCHEME", "MURA", "MURA TREUTLER EM");
+        /*- Maximum number of grid points per grid block for GauXC !expert -*/ 
+        options.add_int("GAUXC_GRID_BATCH_SIZE", 512);
+        /*- Number of spherical points in GauXC grid. -*/
+        options.add_int("GAUXC_SPHERICAL_POINTS", 302);
+        /*- Number of radial points in GauXC grid. -*/
+        options.add_int("GAUXC_RADIAL_POINTS", 70);
 
         /*- SUBSECTION TDSCF -*/
         /*- Number of roots (excited states) we should seek to converge. This

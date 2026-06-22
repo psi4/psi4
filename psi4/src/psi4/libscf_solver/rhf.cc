@@ -64,6 +64,9 @@
 
 #include "rhf.h"
 
+#ifdef USING_gauxc
+#include "psi4/libfock/gauxc_int.h"
+#endif
 #ifdef USING_BrianQC
 
 #include <use_brian_wrapper.h>
@@ -498,7 +501,11 @@ std::vector<SharedMatrix> RHF::twoel_Hx_full(std::vector<SharedMatrix> x_vec, bo
             Dx.push_back(linalg::doublet(Cl[i], Cr[i], false, true));
             Vx.push_back(std::make_shared<Matrix>("Vx Temp", Dx[i]->rowspi(), Dx[i]->colspi(), Dx[i]->symmetry()));
         }
-        potential_->compute_Vx_full(Dx, Vx, singlet);
+        if (singlet) {
+            potential_->compute_Vx(Dx, Vx);
+        } else {
+            potential_->compute_Vx_triplet(Dx, Vx);
+        }
     }
 
     std::vector<SharedMatrix> V_ext_pert;
@@ -1039,7 +1046,17 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
 void RHF::setup_potential() {
     if (functional_->needs_xc()) {
-        potential_ = std::make_shared<RV>(functional_, basisset_, options_);
+	std::vector<std::shared_ptr<IntegratorManager>> managers;
+#ifdef USING_gauxc
+        if (options_.get_bool("GAUXC_INTEGRATE")) {
+            managers.push_back(std::make_shared<GauRV>(functional_, basisset_, options_));
+        }
+#endif
+        if (options_.get_bool("DFT_ENABLE_PSI")) {
+	    managers.push_back(std::make_shared<RV>(functional_, basisset_, options_));
+	}
+	if (managers.empty()) throw PSIEXCEPTION("No IntegratorManagers found, but request DFT.");
+        potential_ = std::make_shared<IntegratorDispatcher>(managers);
         potential_->initialize();
     } else {
         potential_ = nullptr;

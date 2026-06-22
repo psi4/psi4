@@ -50,15 +50,16 @@
 #include "coordentry.h"
 #include "psi4/libpsi4util/process.h"
 
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <iomanip>
+#include <list>
+#include <map>
 #include <memory>
 #include <regex>
+#include <sstream>
 #include <stdexcept>
-#include <cstdio>
-#include <iomanip>
-#include <cstdlib>
-#include <cmath>
-#include <map>
-#include <list>
 
 using namespace psi;
 
@@ -1283,3 +1284,39 @@ void BasisSet::convert_sap_contraction() {
   // the usual renormalization steps
   update_l2_shells(false);
 }
+
+#ifdef USING_gauxc
+Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> BasisSet::generate_permutation_to_cca() const {
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permutation_matrix(nbf_);
+
+    bool needs_reorder = puream_;
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+    needs_reorder = false;
+#elif psi4_SHGSHELL_ORDERING != LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+    #error "unknown value of macro psi4_SHGSHELL_ORDERING"
+#endif
+
+    // maps an index to the am of the associated basis fn in
+    // CCA order
+    std::vector<int> cca_integral_order(2*max_am_ + 1, 0);
+
+    for (size_t l = 1, idx = 1; l <= max_am_; idx += 2, ++l) {
+        cca_integral_order[idx] = l;
+        cca_integral_order[idx + 1] = -l;
+    }
+
+    for (int ish = 0, ibf = 0; ish != n_shells_; ++ish) {
+        auto& sh = shell(ish);
+        auto am = sh.am();
+
+        auto ibf_base = ibf;
+        for (int ishbf = 0; ishbf != 2*am + 1; ++ishbf, ++ibf) {
+            auto tgt = needs_reorder ? ibf_base + cca_integral_order[ishbf] + am : ibf;
+            permutation_matrix.indices()[ibf] = tgt;
+        }
+    }
+
+    return permutation_matrix;
+
+}
+#endif

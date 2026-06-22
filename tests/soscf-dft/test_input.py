@@ -1,6 +1,6 @@
 from addons import *
 
-@ctest_labeler("shorttests;scf;dft")
+@ctest_labeler("quick;scf;dft")
 def test_soscf_dft():
     ctest_runner(__file__)
 
