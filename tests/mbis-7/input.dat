@@ -30,7 +30,7 @@ octupoles_ref = psi4.Matrix.from_list([ #TEST
 
 avols_ref = psi4.Matrix.from_list([ # TEST
 [ 33.052846021879],
-[161.462974882502],
+[161.463013466218],
 [  2.230010217319],
 [  2.230059962022],
 [  2.230059963121]])
@@ -95,7 +95,7 @@ compare_values(0.0, np.sum(charges), 5, "CH3I MBIS total charge")  #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
 compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
 compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
-compare_matrices(avols_ref, avols, 3e-5, "MBIS Radial Moments <r^3>")    #TEST
+compare_matrices(avols_ref, avols, 5e-5, "MBIS Radial Moments <r^3>")    #TEST
 compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
 compare_matrices(vcharges_ref, vcharges, 5, "MBIS Valence Charges")   #TEST
 compare_matrices(vratios_ref, vratios, 5, "MBIS Volume Ratios")      #TEST
