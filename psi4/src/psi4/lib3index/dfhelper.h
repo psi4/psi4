@@ -93,7 +93,7 @@ class PSI_API DFHelper {
 
     /// Returns the size of the in-core version in doubles
     size_t get_core_size() {
-        AO_core(true);
+        AO_core(false);
         return required_core_size_;
     }
 
