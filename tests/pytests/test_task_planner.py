@@ -101,6 +101,7 @@ def test_cbs_extrapolation_gradient_1_0(mtd, kw):
             assert plan3.driver == "energy"
 
 
+@uusing("qcmanybody")
 def test_nbody_dimer():
     mol = psi4.geometry(
         """
@@ -133,6 +134,7 @@ def test_nbody_dimer():
         assert kmol["real"] == ghostiness[k2][1]
 
 
+@uusing("qcmanybody")
 def test_nbody_dimer_gradient():
     mol = psi4.geometry(
         """
@@ -165,6 +167,7 @@ def test_nbody_dimer_gradient():
         assert kmol["real"] == ghostiness[k2][1]
 
 
+@uusing("qcmanybody")
 @pytest.mark.parametrize("mtd, kw", [("mp2", {"dertype": 0}), ("mp5", {})])
 def test_nbody_dimer_gradient_1_0(mtd, kw):
     mol = psi4.geometry(
@@ -231,6 +234,7 @@ def test_nbody_dimer_gradient_1_0(mtd, kw):
             # assert plan3.keywords['E_CONVERGENCE'] == 1.e-10
 
 
+@uusing("qcmanybody")
 def test_nbody_dimer_cbs():
     mol = psi4.geometry(
         """
@@ -255,6 +259,7 @@ def test_nbody_dimer_cbs():
             assert plan3.driver == "energy"
 
 
+@uusing("qcmanybody")
 def test_nbody_dimer_cbs_gradient():
     mol = psi4.geometry(
         """
@@ -279,6 +284,7 @@ def test_nbody_dimer_cbs_gradient():
             assert plan3.driver == "gradient"
 
 
+@uusing("qcmanybody")
 @pytest.mark.parametrize("mtd, kw", [("mp2", {"dertype": 0}), ("mp5", {})])
 def test_nbody_dimer_cbs_gradient_1_0(mtd, kw):
     mol = psi4.geometry(
