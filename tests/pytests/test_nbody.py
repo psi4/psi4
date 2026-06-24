@@ -68,30 +68,30 @@ _stdouts = {
 \s*   ==> N-Body: Counterpoise Corrected \(CP\) energies <==
 \s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*           §A\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN §A\s+2     -155.407610\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
+\s*           \SA\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN \SA\s+2     -155.407610\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
 \s*
-\s*MC Legend: §A: "\(auto\)"
+\s*MC Legend: \SA: "\(auto\)"
 \s*
 """,
     "cp_F": r"""
 \s*   ==> N-Body: Counterpoise Corrected \(CP\) energies <==
 \s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*           §A\s+1        N/A                   0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN §A\s+2        N/A                  -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
+\s*           \SA\s+1        N/A                   0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN \SA\s+2        N/A                  -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
 \s*
-\s*MC Legend: §A: "\(auto\)"
+\s*MC Legend: \SA: "\(auto\)"
 \s*
 """,
     "uncp": r"""
 \s*   ==> N-Body: Non-Counterpoise Corrected \(NoCP\) energies <==
 \s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*           §A\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN §A\s+2     -155.408871\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d
+\s*           \SA\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN \SA\s+2     -155.408871\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d
 \s*
-\s*MC Legend: §A: "\(auto\)"
+\s*MC Legend: \SA: "\(auto\)"
 \s*
 """,
 }

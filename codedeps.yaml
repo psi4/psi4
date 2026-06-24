@@ -1523,6 +1523,8 @@ data:
       buildtime: true
       buildtime_note: "buildtime for cmake checks; otherwise, runtime."
       cms: true
+      docs_required: true
+      docs_required_note: "needed to autodoc a class."
     repository:
       host: github
       account: MolSSI

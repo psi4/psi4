@@ -125,7 +125,7 @@ try:
     from qcmanybody import ManyBodyCore
     from qcmanybody.v2 import ManyBodyComputer as ManyBodyComputerQCNG
     from qcmanybody.utils import delabeler, labeler, translate_qcvariables, modelchem_labels
-except ModuleNotFoundError as err:
+except ImportError as err:
     _QCMANYBODY_IMPORT_ERROR = err
     AtomicSpecification = Any
     ManyBodyInput = Any
@@ -140,8 +140,10 @@ def _ensure_qcmanybody() -> None:
         return
 
     raise ModuleNotFoundError(
-        "Python module qcmanybody not found that is required for many-body/counterpoise (`bsse_type`) computations. "
-        "Solve by installing it: `conda install -c conda-forge qcmanybody` or `pip install qcmanybody`"
+        "Python module qcmanybody not found (or incompatible) that is required for many-body/counterpoise "
+        "(`bsse_type`) computations. Install/upgrade to `qcmanybody>=0.7.1` with "
+        "`conda install -c conda-forge qcmanybody` or `pip install -U qcmanybody`. "
+        f"Original import error: {_QCMANYBODY_IMPORT_ERROR}"
     ) from _QCMANYBODY_IMPORT_ERROR
 
 if TYPE_CHECKING:
