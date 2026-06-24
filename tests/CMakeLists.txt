@@ -32,7 +32,7 @@
 foreach(test_name aediis-1
                   casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp casscf-sp castup1
                   castup2 castup3 cbs-delta-energy cbs-parser cbs-xtpl-alpha cbs-xtpl-energy
-                  cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func cbs-xtpl-nbody
+                  cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func
                   cbs-xtpl-wrapper cbs-xtpl-dict cc1 cc10 cc11 cc12 cc13 cc13a cc13b cc13c
                   cc13d cc14 cc15 cc16 cc17 cc18 cc19 cc2 cc21 cc22 cc23 cc24 cc25 cc26 cc27 cc28
                   cc29 cc3 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39
@@ -46,7 +46,7 @@ foreach(test_name aediis-1
                   dct10 dct11 dct12 ao-dfcasscf-sp density-screen-1 density-screen-2 dfcasscf-sa-sp
                   dfcasscf-fzc-sp dfcasscf-sp dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1
                   dfccsd-t-grad1
-                  dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-5 dfmp2-fc dfmp2-freq1 dfmp2-freq2
+                  dfccsdt1 dfccsdat1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-5 dfmp2-freq1 dfmp2-freq2
                   dfccsd-grad2 dfccsd-t-grad2 dfccsdat2 dfccsdt2
                   dfmp2-grad1 dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp2-grad3 dfomp3-1 dfomp3-2
@@ -55,7 +55,7 @@ foreach(test_name aediis-1
                   dft-grad-lr1 dft-grad-lr2 dft-grad-lr3 dft-grad-disk
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-grac dft-ghost dft-grad-meta
                   dft-freq dft-freq-analytic1 dft-freq-analytic2 dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10
-                  dft1-alt dft2 dft3 dft-omega dft-dens-cut dlpnocc-1 dlpnocc-2 dlpnocc-3 dlpnocc-4 dlpnomp2-1 dlpnomp2-2 
+                  dft1-alt dft2 dft3 dft-omega dft-dens-cut dlpnocc-1 dlpnocc-2 dlpnocc-4 dlpnomp2-1 dlpnomp2-2 
                   dlpnomp2-3 docs-bases docs-dft embpot1 embpot1-puream explicit-am-basis
                   extern1 extern2 extern3 extern4 extern5 extern6 extern7
                   fsapt1 fsapt2 fsapt-terms fsapt-allterms fsapt-ext fsapt-ext-abc fsapt-ext-abc2
@@ -70,10 +70,8 @@ foreach(test_name aediis-1
                   mbis-1 mbis-2 mbis-3 mbis-4 mbis-5 mbis-6 mbis-7 mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
                   mints9 mints10 mints15 molden1 molden2 mom mom-h2o-3 mom-h2o-4
-                  mp2-1  mp2-def2 mp2-grad1 mp2-grad2 mp2-grad3 mp2-h mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
-                  mp2-property mp2f12-1 mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient
-                  nbo nbody-cp-gradient nbody-vmfc-gradient nbody-vmfc-hessian nbody-hessian nbody-convergence
-                  nbody-freq nbody-multi-level nbody-multi-level-2 numint1 numpy-array-interface
+                  mp2-1 mp2-grad1 mp2-grad2 mp2-grad3 mp2-h mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
+                  mp2-property mp2f12-1 mpn-bh nbo numint1 numpy-array-interface
                   olccd-freq1 olccd-grad1 olccd-grad2 olccd1 olccd2 olccd3
                   omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp2-grad1 omp2-grad2
                   omp2p5-1 omp2p5-2 omp2p5-grad1 omp2p5-grad2 omp3-1 omp3-2
@@ -101,14 +99,14 @@ foreach(test_name aediis-1
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
                   stability2 stability3 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 scf-response2 scf-response3
                   scf-cholesky-basis scf-auto-cholesky
-                  tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 x2c-perturb-h zaptn-nh2 zora
+                  tu4-h2o-freq tu5-sapt x2c1 x2c2 x2c3 x2c-perturb-h zaptn-nh2 zora
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-hess2 scf-hess3 scf-hess4 scf-hess5 scf-freq1 dft-jk scf-coverage
-                  dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
+                  dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
                   tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5 tdscf-6 tdscf-7
                   dft-pruning freq-masses sapt9 sapt10 sapt11 scf-uhf-grad-nobeta
                   linK-1 linK-2 linK-3
-                  cbs-xtpl-energy-conv ddd-deriv nbody-he-4b ddd-function-kwargs dfmp2f12-1
+                  cbs-xtpl-energy-conv ddd-deriv dfmp2f12-1
                   )
     add_subdirectory(${test_name})
 endforeach()
@@ -280,13 +278,41 @@ endif()
 if(ENABLE_ecpint)
     add_subdirectory(aediis-2)
     add_subdirectory(basis-ecp)
-    add_subdirectory(dfmp2-ecp)
+    if(ENABLE_qcmanybody)
+        add_subdirectory(dfmp2-ecp)
+    endif()
     add_subdirectory(sapt-ecp)
     add_subdirectory(scf-ecp)
     add_subdirectory(scf-ecp2)
     add_subdirectory(scf-ecp3)
     add_subdirectory(mbis-ecp)
     message(STATUS "Adding test cases: Psi4 + ecpint")
+endif()
+
+# <<<  QCManyBody  >>>
+
+if(ENABLE_qcmanybody)
+    add_subdirectory(cbs-xtpl-nbody)
+    add_subdirectory(ddd-function-kwargs)
+    add_subdirectory(dfmp2-1)
+    add_subdirectory(dfmp2-fc)
+    add_subdirectory(dft-custom-dhdf)
+    add_subdirectory(dlpnocc-3)
+    add_subdirectory(mp2-def2)
+    add_subdirectory(nbody-convergence)
+    add_subdirectory(nbody-cp-gradient)
+    add_subdirectory(nbody-freq)
+    add_subdirectory(nbody-he-4b)
+    add_subdirectory(nbody-he-cluster)
+    add_subdirectory(nbody-hessian)
+    add_subdirectory(nbody-intermediates)
+    add_subdirectory(nbody-multi-level)
+    add_subdirectory(nbody-multi-level-2)
+    add_subdirectory(nbody-nocp-gradient)
+    add_subdirectory(nbody-vmfc-gradient)
+    add_subdirectory(nbody-vmfc-hessian)
+    add_subdirectory(tu6-cp-ne2)
+    message(STATUS "Adding test cases: Psi4 + qcmanybody")
 endif()
 
 # plugin regime
