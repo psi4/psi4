@@ -375,7 +375,7 @@ Additionally, there are runtime-loaded capabilities:
 
 * :ref:`ddx <sec:ddx>` |w---w| https://github.com/ddsolvation/ddx
 
-* QCManyBody |w---w| `[what is QCManyBody?] <https://molssi.github.io/QCManyBody/>`_ (May 2025; optional by v1.11; * August 2025; added required by v1.10; runtime dependency, optional at build-time)
+* QCManyBody |w---w| `[what is QCManyBody?] <https://molssi.github.io/QCManyBody/>`_ (July 2026 - optional by v1.?; August 2025 - added required by v1.10; runtime dependency, optional at build-time)
 
 
 .. _`faq:condapsi4dev`:
