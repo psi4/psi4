@@ -261,6 +261,107 @@ funcs.append({
 })
 
 funcs.append({
+    "name": "CAM-QTP-00",
+    "x_functionals": {
+        "GGA_X_B88": {
+            "alpha": 0.09,
+        },
+        "GGA_X_ITYH": {
+            "alpha": 0.37,
+            "omega": 0.29,
+        },
+    },
+    "x_hf": {
+        "alpha": 0.54,
+        "beta": 0.37,
+        "omega": 0.29,
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {
+            "alpha": 0.80,
+        },
+        "LDA_C_VWN": {
+            "alpha": 0.20,
+        },
+    },
+    "description": '    Quantum Theory Project functional\n',
+    "citation": '    P. Verma, R. J. Bartlett, J. Chem. Phys. 140, 18A534, 2014\n',
+    "doi": "10.1063/1.4871409",
+})
+
+funcs.append({
+    "name": "CAM-QTP-01",
+    "x_functionals": {
+        "GGA_X_ITYH": {
+            "alpha": 0.77,
+            "omega": 0.31,
+        },
+    },
+    "x_hf": {
+        "alpha": 0.23,
+        "beta": 0.77,
+        "omega": 0.31,
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {
+            "alpha": 0.80,
+        },
+        "LDA_C_VWN": {
+            "alpha": 0.20,
+        },
+    },
+    "description": '    Quantum Theory Project functional\n',
+    "citation": '    Y. Jin, R. J. Bartlett, J. Chem. Phys. 145, 034107, 2016\n',
+    "doi": "10.1063/1.4955497",
+})
+
+funcs.append({
+    "name": "CAM-QTP-02",
+    "x_functionals": {
+        "GGA_X_ITYH": {
+            "alpha": 0.72,
+            "omega": 0.34,
+        },
+    },
+    "x_hf": {
+        "alpha": 0.28,
+        "beta": 0.72,
+        "omega": 0.34,  # 0.335, above, too?
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {
+            "alpha": 1.00,
+        },
+    },
+    "description": '    Quantum Theory Project functional\n',
+    "citation": '    R. L. A. Haiduke, R. J. Bartlett, J. Chem. Phys. 148, 184106, 2018.\n',
+    "doi": "10.1063/1.5025723",
+})
+
+funcs.append({
+    "name": "LC-QTP",
+    "x_functionals": {
+        "GGA_X_ITYH": {
+            "alpha": 1.00,
+            "omega": 0.475,
+        },
+    },
+    "x_hf": {
+        "alpha": 0.0,
+        "beta": 1.00,
+        "omega": 0.475,
+    },
+    "c_functionals": {
+        "GGA_C_LYP": {
+            "alpha": 1.00,
+        },
+    },
+    "description": '    Quantum Theory Project functional\n',
+    "citation": '    R. L. A. Haiduke, R. J. Bartlett, J. Chem. Phys. 148, 184106, 2018.\n',
+    "doi": "10.1063/1.5025723",
+})
+
+funcs.append({
     "name": "revPBE0",
     "x_functionals": {
         "GGA_X_PBE_R": {
