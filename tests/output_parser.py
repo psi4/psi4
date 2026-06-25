@@ -26,10 +26,15 @@ OPT_STEP_RE = re.compile(
     r"^\s+\d+\s+[-+]?\d+\.\d+\s+[-+]?\d+\.\d+e[-+]\d+\b.*~\s*$",
     re.IGNORECASE,
 )
+PSI4_VERSION_RE = re.compile(r"^\s*Psi4\s+(?P<version>\S+)(?:\s+(?P<suffix>\S+))?\s*$")
+PSI4_GIT_RE = re.compile(
+    r"^\s*Git:\s+Rev\s+(?:\{(?P<branch>[^}]*)\}\s+)?(?P<githash>[0-9a-f]{7,40})(?:\s+(?P<dirty>dirty))?\s*$",
+    re.IGNORECASE,
+)
 
 
 def extract_scf_iterations(output_file: PathLike) -> Dict:
-    """Extract SCF and optimization markers from a Psi4 output file.
+    """Extract Psi4 metadata, SCF, and optimization markers from a Psi4 output file.
 
     This ignores SAD guess lines such as::
 
@@ -58,11 +63,31 @@ def extract_scf_iterations(output_file: PathLike) -> Dict:
     scf_iterations_by_label = Counter()
     scf_accelerators = Counter()
     optimization = Counter()
+    psi4_version = None
+    psi4_branch = None
+    psi4_commit_hash = None
+    psi4_git_dirty = None
+    pending_psi4_version = None
     in_opt_convergence_check = False
     in_opt_step_table = False
 
     with output_path.open("r", encoding="utf-8", errors="replace") as infile:
         for line in infile:
+            if psi4_version is None:
+                version_match = PSI4_VERSION_RE.match(line)
+                if version_match:
+                    pending_psi4_version = version_match.group("version")
+                    continue
+
+                git_match = PSI4_GIT_RE.match(line)
+                if git_match and pending_psi4_version is not None:
+                    psi4_version = pending_psi4_version
+                    psi4_branch = git_match.group("branch")
+                    psi4_commit_hash = git_match.group("githash")
+                    psi4_git_dirty = bool(git_match.group("dirty"))
+                    pending_psi4_version = None
+                    continue
+
             if OPT_CONVERGENCE_CHECK_RE.match(line):
                 in_opt_convergence_check = True
                 in_opt_step_table = False
@@ -87,7 +112,10 @@ def extract_scf_iterations(output_file: PathLike) -> Dict:
 
     return {
         "test_name": output_path.parent.name,
-        "source_file": output_path.name,
+        "psi4_version": psi4_version,
+        "psi4_branch": psi4_branch,
+        "psi4_commit_hash": psi4_commit_hash,
+        "psi4_git_dirty": psi4_git_dirty,
         "scf": {
             "total_iterations": scf_total_iterations,
             "iterations_by_label": dict(sorted(scf_iterations_by_label.items())),
@@ -130,6 +158,8 @@ def main(argv=None) -> int:
         outfile.write("\n")
 
     print(f"Wrote {json_file}")
+    print(f"Psi4 version: {data['psi4_version']}")
+    print(f"Psi4 commit hash: {data['psi4_commit_hash']}")
     print(f"Total numeric SCF iterations: {data['scf']['total_iterations']}")
     print("SCF iterations by label:")
     for label, count in data["scf"]["iterations_by_label"].items():
