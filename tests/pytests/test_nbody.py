@@ -95,8 +95,8 @@ _stdouts = {
 \s*
 """,
 }
-_stdouts["cpuncp"] = _stdouts["cp_T"].rstrip('\n') + _stdouts["uncp"]
-_stdouts["uncpcp"] = _stdouts["uncp"].rstrip('\n') + _stdouts["cp_T"]
+_stdouts["cpuncp"] = _stdouts["cp_T"] + _stdouts["uncp"]
+_stdouts["uncpcp"] = _stdouts["uncp"] + _stdouts["cp_T"]
 
 
 @pytest.mark.parametrize("driver,bsse_type,return_total_data,nbody_number,return_result,stdoutkey", [
