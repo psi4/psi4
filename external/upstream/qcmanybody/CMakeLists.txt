@@ -41,5 +41,6 @@ if(${ENABLE_qcmanybody})
             )
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought qcmanybody${ColourReset}: `-D ENABLE_qcmanybody=ON` to detect or build")
     add_library(qcmanybody_external INTERFACE)  # dummy
 endif()
