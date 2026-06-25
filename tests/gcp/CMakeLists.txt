@@ -1,7 +1,6 @@
 add_subdirectory(pbeh3c)
 if (ENABLE_qcmanybody)
     add_subdirectory(hf3c)
-    message(STATUS "Adding test cases: Psi4 + gcp + qcmanybody")
 endif()
 add_subdirectory(hf3c-gradient)
 add_subdirectory(hf3c-hessian)
