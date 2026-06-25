@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.11a1.dev34 
+                               Psi4 1.11a1.dev36 
 
-                         Git: Rev {master} 3b6380e dirty
+                         Git: Rev {diffuse} 45969b8 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -32,10 +32,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 01 June 2026 11:48PM
+    Psi4 started on: Wednesday, 24 June 2026 09:17PM
 
-    Process ID: 232518
-    Host:       atl1-1-01-003-12-1.pace.gatech.edu
+    Process ID: 64588
+    Host:       atl1-1-02-002-4-2.pace.gatech.edu
     PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -55,17 +55,18 @@
 #! against those evaluated with diffuse charges supplied to the 
 #! external_potentials keyword.  A minimal basis is used because this
 #! allows a direct comparison with results derived for point charge-
-#! Gaussian charge and Gaussian charge-Gaussian charge interactions.
-#! The point charge-Gaussian charge interaction is generally given by
-#! E = Q*q*erf(sqrt(z)*r), where Q is the total charge of the Gaussian
-#! charge, q is the point charge, z is the width of the Gaussian charge
-#! (au^-2), and r (au) is the distance between the point charge
-#! and the center of the Gaussian charge.  A similar formula exists for
-#! the interaction between two Gaussian charges, but where q is the
-#! total charge of the second Gaussian charge, z is the reduced width of
-#! both Gaussian charges ((z0*z1)/(z0+z1)), and r is the distance
-#! between the centers of the Gaussian charges.  Gradients can be
-#! further derived from these expressions.
+#! Gaussian charge and Gaussian charge-Gaussian charge interaction
+#! energies. The point charge-Gaussian charge interaction energy is
+#! generally given by E = Q*q*erf(sqrt(z)*r), where Q is the total
+#! charge of the Gaussian charge, q is the point charge, z is the width
+#! of the Gaussian charge (au^-2), and r (au) is the distance between
+#! the point charge and the center of the Gaussian charge.  A similar
+#! formula exists for the interaction energy between two Gaussian
+#! charges, but where q is the total charge of the second Gaussian
+#! charge, z is the reduced width of both Gaussian charges
+#! ((z0*z1)/(z0+z1)), and r is the distance between the centers of the
+#! Gaussian charges.  Gradients can be further derived from these
+#! expressions.
 
 molecule hydrogen {
   0 2
@@ -156,7 +157,6 @@ compare_values(e_point, e_nowidth, 6, "Energy with a point charge vs. with a zer
 compare_matrices(g_point, g_nowidth, 5, "Gradient with a point charge vs. with a zero-width diffuse charge") #TEST
 
 import numpy as np
-from copy import deepcopy
 
 
 # The nuclear and electronic components of the interaction energy
@@ -186,7 +186,7 @@ V_diffuse_0 = extern_0.computePotentialMatrix(wfn.basisset()).np
 e_nuc_diffuse_0 = extern_0.computeNuclearEnergy(hydrogen)
 e_elec_diffuse_0 = np.einsum("ij,ij->", V_diffuse_0, wfn_diffuse_0.Da().np)
 g_diffuse_0 = gradient('scf', ref_wfn=wfn_diffuse_0)
-g_diffuse_extern_0 = extern_0.gradients_on_bases()[0]
+g_diffuse_extern_0 = extern_0.gradients_on_gaussians()[0]
 
 compare_values(e_nuc_analytic_0, e_nuc_diffuse_0, 6, "Analytic Gaussian charge-proton ixn energy vs. with external_potential")  #TEST
 compare_values(e_elec_analytic_0, e_elec_diffuse_0, 6, "Analytic Gaussian charge-s electron ixn energy vs. with external_potential")  #TEST
@@ -223,7 +223,7 @@ e_nuc_diffuse_1 = extern_1.computeNuclearEnergy(hydrogen)
 e_elec_diffuse_1 = np.einsum("ij,ij->", V_diffuse_1, wfn_diffuse_1.Da().np)
 g_diffuse_1 = gradient('scf', ref_wfn=wfn_diffuse_1)
 g_diffuse_1_findif = gradient('scf', molecule=hydrogen, dertype=0, external_potentials=external_diffuse_1)
-g_diffuse_extern_1 = extern_1.gradients_on_bases()[0]
+g_diffuse_extern_1 = extern_1.gradients_on_gaussians()[0]
 
 compare_values(e_nuc_analytic_1, e_nuc_diffuse_1, 6, "Analytic Gaussian charge-proton ixn energy vs. with external_potential")  #TEST
 compare_values(e_elec_analytic_1, e_elec_diffuse_1, 6, "Analytic Gaussian charge-s electron ixn energy vs. with external_potential")  #TEST
@@ -241,10 +241,10 @@ e_01_analytic = 0.68268949214
 e_0q_analytic = 0.84270079295
 
 
-# Calculate the extern-extern interaction between two positive Gaussian
-# charges (width = 1 au^-2) 1 au apart and between a positive point
-# charge and a positive Gaussian charge (width = 1 au^-2) 1 au apart.
-# These should agree with the analytical solutions.
+# Calculate the extern-extern interaction energy between two positive
+# Gaussian charges (width = 1 au^-2) 1 au apart and between a positive
+# point charge and a positive Gaussian charge (width = 1 au^-2) 1 au
+# apart.  These should agree with the analytical solutions.
 e_01 = extern_0.computeExternExternInteraction(extern_1)
 e_0q = extern_0.computeExternExternInteraction(extern)
 e_q0 = extern.computeExternExternInteraction(extern_0)
@@ -286,7 +286,7 @@ V_diffuse_01 = extern_01.computePotentialMatrix(wfn.basisset()).np
 e_nuc_diffuse_01 = extern_01.computeNuclearEnergy(hydrogen)
 e_elec_diffuse_01 = np.einsum("ij,ij->", V_diffuse_01, wfn_diffuse_01.Da().np)
 g_diffuse_01 = gradient('scf', ref_wfn=wfn_diffuse_01)
-g_diffuse_extern_01 = extern_01.gradients_on_bases()[0]
+g_diffuse_extern_01 = extern_01.gradients_on_gaussians()[0]
 
 compare_values(e_nuc_analytic_01, e_nuc_diffuse_01, 6, "Analytic 2 Gaussian charges-proton ixn energy vs. with external_potential")  #TEST
 compare_values(e_elec_analytic_01, e_elec_diffuse_01, 6, "Analytic 2 Gaussian charges-s electron ixn energy vs. with external_potential")  #TEST
@@ -300,10 +300,10 @@ compare_matrices(g_analytic_extern_01, g_diffuse_extern_01, 5, "Analytic 2 Gauss
 # solutions, as well as the previous test.  In this test, the two
 # Gaussian charges are included on individual BasisSet objects.
 extern_10 = psi4.core.ExternalPotential()
-basis_0 = extern_0.getBases()[0]
-basis_1 = extern_1.getBases()[0]
-extern_10.addBasis(*basis_1)
-extern_10.addBasis(*basis_0)
+gauss_0 = extern_0.getGaussians()[0]
+gauss_1 = extern_1.getGaussians()[0]
+extern_10.addGaussian(*gauss_1)
+extern_10.addGaussian(*gauss_0)
 
 wfn.set_external_potential(extern_10)
 V_diffuse_10 = extern_10.computePotentialMatrix(wfn.basisset()).np
@@ -312,7 +312,7 @@ e_nuc_diffuse_10 = extern_10.computeNuclearEnergy(hydrogen)
 e_elec_diffuse_10 = np.einsum("ij,ij->", V_diffuse_10, wfn_diffuse_01.Da().np)
 g_diffuse_10 = gradient('scf', ref_wfn=wfn)
 g_diffuse_extern_10 = Matrix.from_array(
-    np.vstack([x.np for x in extern_10.gradients_on_bases()]),
+    np.vstack([x.np for x in extern_10.gradients_on_gaussians()]),
 )
 
 compare_values(e_nuc_analytic_01, e_nuc_diffuse_10, 6, "Analytic 2 Gaussian charges-proton ixn energy vs. with external_potential")  #TEST
@@ -327,7 +327,7 @@ compare_matrices(g_analytic_extern_01, g_diffuse_extern_10, 5, "Analytic 2 Gauss
 e_0110_analytic = 2.96114810588
 
 
-# Calculate the extern-extern interaction between two sets of two
+# Calculate the extern-extern interaction energy between two sets of two
 # positive Gaussian charges (width = 1 au^-2) 1 au apart.  These
 # should agree with the analytical solutions.
 e_0110 = extern_01.computeExternExternInteraction(extern_10)
@@ -345,8 +345,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:12 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:09 2026
 
    => Loading Basis Set <=
 
@@ -535,21 +535,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:12 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:10 2026
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
 	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 Scratch directory: /tmp/
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:12 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:10 2026
 
 
          ------------------------------------------------------------
@@ -608,7 +608,7 @@ gradient() will perform analytic gradient computation.
        1        0.000000000000     0.000000000000     0.000000000000
 
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:12 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:10 2026
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
@@ -616,7 +616,7 @@ Module time:
 Total time:
 	user time   =       0.14 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 Scratch directory: /tmp/
   PE does not make use of molecular symmetry: further calculations in C1 point group.
@@ -628,8 +628,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:12 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:10 2026
 
    => Loading Basis Set <=
 
@@ -868,21 +868,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:13 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:10 2026
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.27 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 Scratch directory: /tmp/
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:13 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:10 2026
 
 
          ------------------------------------------------------------
@@ -941,14 +941,14 @@ gradient() will perform analytic gradient computation.
        1        0.000000000000     0.000000000000     0.000000000000
 
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:13 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:10 2026
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.32 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     Energy with no external_potential vs. with a neutral diffuse charge...................PASSED
     Gradient with no external_potential vs. with a neutral diffuse charge.................PASSED
@@ -963,8 +963,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:13 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:10 2026
 
    => Loading Basis Set <=
 
@@ -1203,21 +1203,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:13 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:10 2026
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 Scratch directory: /tmp/
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:13 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:10 2026
 
 
          ------------------------------------------------------------
@@ -1276,14 +1276,14 @@ gradient() will perform analytic gradient computation.
        1        0.000000000000     0.000000000000     0.000000000000
 
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:13 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:10 2026
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     Energy with no external_potential vs. with an infinitely-wide diffuse charge..........PASSED
     Gradient with no external_potential vs. with an infinitely-wide diffuse charge........PASSED
@@ -1298,8 +1298,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:13 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:10 2026
 
    => Loading Basis Set <=
 
@@ -1506,10 +1506,10 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:13 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:10 2026
 Module time:
 	user time   =       0.08 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.62 seconds =       0.01 minutes
@@ -1519,8 +1519,8 @@ Total time:
 Scratch directory: /tmp/
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:13 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:10 2026
 
 
          ------------------------------------------------------------
@@ -1579,9 +1579,9 @@ gradient() will perform analytic gradient computation.
        1        0.550998882280     0.000000000000     0.000000000000
 
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:13 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:10 2026
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
@@ -1599,8 +1599,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:13 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:10 2026
 
    => Loading Basis Set <=
 
@@ -1839,7 +1839,7 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:13 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:10 2026
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
@@ -1852,8 +1852,8 @@ Total time:
 Scratch directory: /tmp/
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:13 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:10 2026
 
 
          ------------------------------------------------------------
@@ -1912,7 +1912,7 @@ gradient() will perform analytic gradient computation.
        1        0.550998984294     0.000000000000     0.000000000000
 
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:13 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:10 2026
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
@@ -1934,8 +1934,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:13 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:10 2026
 
    => Loading Basis Set <=
 
@@ -2174,21 +2174,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:13 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:11 2026
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.97 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.98 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 Scratch directory: /tmp/
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:13 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:11 2026
 
 
          ------------------------------------------------------------
@@ -2247,15 +2247,15 @@ gradient() will perform analytic gradient computation.
        1        0.000000000000     0.000000000000     0.000000000000
 
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:13 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:11 2026
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.03 seconds =       0.02 minutes
+	user time   =       1.04 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          2 seconds =       0.03 minutes
     Analytic Gaussian charge-proton ixn energy vs. with external_potential................PASSED
     Analytic Gaussian charge-s electron ixn energy vs. with external_potential............PASSED
     Analytic Gaussian charge-hydrogen gradient on hydrogen vs. with external_potential....PASSED
@@ -2271,8 +2271,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:13 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:11 2026
 
    => Loading Basis Set <=
 
@@ -2511,21 +2511,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:14 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:11 2026
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.16 seconds =       0.02 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       1.17 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 Scratch directory: /tmp/
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:14 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:11 2026
 
 
          ------------------------------------------------------------
@@ -2584,14 +2584,14 @@ gradient() will perform analytic gradient computation.
        1        0.230425886448     0.000000000000     0.000000000000
 
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:14 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:11 2026
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.22 seconds =       0.02 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       1.23 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 Scratch directory: /tmp/
@@ -2617,9 +2617,9 @@ Scratch directory: /tmp/
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.11a1.dev34 
+                               Psi4 1.11a1.dev36 
 
-                         Git: Rev {master} 3b6380e dirty
+                         Git: Rev {diffuse} 45969b8 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -2648,10 +2648,10 @@ Scratch directory: /tmp/
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 01 June 2026 11:48PM
+    Psi4 started on: Wednesday, 24 June 2026 09:17PM
 
-    Process ID: 232518
-    Host:       atl1-1-01-003-12-1.pace.gatech.edu
+    Process ID: 64588
+    Host:       atl1-1-02-002-4-2.pace.gatech.edu
     PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -2715,8 +2715,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:16 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:13 2026
 
    => Loading Basis Set <=
 
@@ -2955,25 +2955,25 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:16 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:13 2026
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.77 seconds =       0.03 minutes
+	user time   =       1.78 seconds =       0.03 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
-    Psi4 stopped on: Monday, 01 June 2026 11:48PM
-    Psi4 wall time for execution: 0:00:00.15
+    Psi4 stopped on: Wednesday, 24 June 2026 09:17PM
+    Psi4 wall time for execution: 0:00:00.16
 
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.11a1.dev34 
+                               Psi4 1.11a1.dev36 
 
-                         Git: Rev {master} 3b6380e dirty
+                         Git: Rev {diffuse} 45969b8 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -3002,10 +3002,10 @@ Total time:
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 01 June 2026 11:48PM
+    Psi4 started on: Wednesday, 24 June 2026 09:17PM
 
-    Process ID: 232518
-    Host:       atl1-1-01-003-12-1.pace.gatech.edu
+    Process ID: 64588
+    Host:       atl1-1-02-002-4-2.pace.gatech.edu
     PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -3069,8 +3069,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:16 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:13 2026
 
    => Loading Basis Set <=
 
@@ -3309,25 +3309,25 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:16 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:13 2026
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.92 seconds =       0.03 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       1.93 seconds =       0.03 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
-    Psi4 stopped on: Monday, 01 June 2026 11:48PM
-    Psi4 wall time for execution: 0:00:00.14
+    Psi4 stopped on: Wednesday, 24 June 2026 09:17PM
+    Psi4 wall time for execution: 0:00:00.15
 
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.11a1.dev34 
+                               Psi4 1.11a1.dev36 
 
-                         Git: Rev {master} 3b6380e dirty
+                         Git: Rev {diffuse} 45969b8 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -3356,10 +3356,10 @@ Total time:
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 01 June 2026 11:48PM
+    Psi4 started on: Wednesday, 24 June 2026 09:17PM
 
-    Process ID: 232518
-    Host:       atl1-1-01-003-12-1.pace.gatech.edu
+    Process ID: 64588
+    Host:       atl1-1-02-002-4-2.pace.gatech.edu
     PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -3423,8 +3423,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:16 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:13 2026
 
    => Loading Basis Set <=
 
@@ -3663,25 +3663,25 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:16 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:13 2026
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.06 seconds =       0.03 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       2.08 seconds =       0.03 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
-    Psi4 stopped on: Monday, 01 June 2026 11:48PM
+    Psi4 stopped on: Wednesday, 24 June 2026 09:17PM
     Psi4 wall time for execution: 0:00:00.14
 
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.11a1.dev34 
+                               Psi4 1.11a1.dev36 
 
-                         Git: Rev {master} 3b6380e dirty
+                         Git: Rev {diffuse} 45969b8 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -3710,10 +3710,10 @@ Total time:
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 01 June 2026 11:48PM
+    Psi4 started on: Wednesday, 24 June 2026 09:17PM
 
-    Process ID: 232518
-    Host:       atl1-1-01-003-12-1.pace.gatech.edu
+    Process ID: 64588
+    Host:       atl1-1-02-002-4-2.pace.gatech.edu
     PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -3777,8 +3777,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:16 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:13 2026
 
    => Loading Basis Set <=
 
@@ -4017,25 +4017,25 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:16 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:13 2026
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.20 seconds =       0.04 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       2.22 seconds =       0.04 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
-    Psi4 stopped on: Monday, 01 June 2026 11:48PM
-    Psi4 wall time for execution: 0:00:00.15
+    Psi4 stopped on: Wednesday, 24 June 2026 09:17PM
+    Psi4 wall time for execution: 0:00:00.14
 
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.11a1.dev34 
+                               Psi4 1.11a1.dev36 
 
-                         Git: Rev {master} 3b6380e dirty
+                         Git: Rev {diffuse} 45969b8 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -4064,10 +4064,10 @@ Total time:
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 01 June 2026 11:48PM
+    Psi4 started on: Wednesday, 24 June 2026 09:17PM
 
-    Process ID: 232518
-    Host:       atl1-1-01-003-12-1.pace.gatech.edu
+    Process ID: 64588
+    Host:       atl1-1-02-002-4-2.pace.gatech.edu
     PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -4131,8 +4131,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:16 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:13 2026
 
    => Loading Basis Set <=
 
@@ -4371,25 +4371,25 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:16 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:13 2026
 Module time:
-	user time   =       0.09 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.35 seconds =       0.04 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       2.36 seconds =       0.04 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
-    Psi4 stopped on: Monday, 01 June 2026 11:48PM
+    Psi4 stopped on: Wednesday, 24 June 2026 09:17PM
     Psi4 wall time for execution: 0:00:00.14
 
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.11a1.dev34 
+                               Psi4 1.11a1.dev36 
 
-                         Git: Rev {master} 3b6380e dirty
+                         Git: Rev {diffuse} 45969b8 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -4418,10 +4418,10 @@ Total time:
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 01 June 2026 11:48PM
+    Psi4 started on: Wednesday, 24 June 2026 09:17PM
 
-    Process ID: 232518
-    Host:       atl1-1-01-003-12-1.pace.gatech.edu
+    Process ID: 64588
+    Host:       atl1-1-02-002-4-2.pace.gatech.edu
     PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -4485,8 +4485,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:16 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:14 2026
 
    => Loading Basis Set <=
 
@@ -4725,25 +4725,25 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:17 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:14 2026
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.49 seconds =       0.04 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       2.51 seconds =       0.04 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
-    Psi4 stopped on: Monday, 01 June 2026 11:48PM
+    Psi4 stopped on: Wednesday, 24 June 2026 09:17PM
     Psi4 wall time for execution: 0:00:00.14
 
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.11a1.dev34 
+                               Psi4 1.11a1.dev36 
 
-                         Git: Rev {master} 3b6380e dirty
+                         Git: Rev {diffuse} 45969b8 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -4772,10 +4772,10 @@ Total time:
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 01 June 2026 11:48PM
+    Psi4 started on: Wednesday, 24 June 2026 09:17PM
 
-    Process ID: 232518
-    Host:       atl1-1-01-003-12-1.pace.gatech.edu
+    Process ID: 64588
+    Host:       atl1-1-02-002-4-2.pace.gatech.edu
     PSIDATADIR: /storage/project/r-jmcdaniel43-0/jpederson6/rich_project_chem-mcdaniel/investigations/ongoing/psi4_diffuse/diffuse/build/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -4839,8 +4839,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:17 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:14 2026
 
    => Loading Basis Set <=
 
@@ -5079,17 +5079,17 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:17 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:14 2026
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.63 seconds =       0.04 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       2.65 seconds =       0.04 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
-    Psi4 stopped on: Monday, 01 June 2026 11:48PM
+    Psi4 stopped on: Wednesday, 24 June 2026 09:17PM
     Psi4 wall time for execution: 0:00:00.14
 
 
@@ -5127,8 +5127,8 @@ Scratch directory: /tmp/
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:17 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:14 2026
 
    => Loading Basis Set <=
 
@@ -5373,21 +5373,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:17 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:14 2026
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.81 seconds =       0.05 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       2.83 seconds =       0.05 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
 Scratch directory: /tmp/
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:17 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:14 2026
 
 
          ------------------------------------------------------------
@@ -5446,14 +5446,14 @@ gradient() will perform analytic gradient computation.
        1        0.230425886448     0.000000000000     0.000000000000
 
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:17 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:14 2026
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.87 seconds =       0.05 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       2.89 seconds =       0.05 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
     Analytic 2 Gaussian charges-proton ixn energy vs. with external_potential.............PASSED
     Analytic 2 Gaussian charges-s electron ixn energy vs. with external_potential.........PASSED
@@ -5463,8 +5463,8 @@ Total time:
 Scratch directory: /tmp/
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on atl1-1-01-003-12-1.pace.gatech.edu
-*** at Mon Jun  1 23:48:17 2026
+*** tstart() called on atl1-1-02-002-4-2.pace.gatech.edu
+*** at Wed Jun 24 21:17:14 2026
 
 
          ------------------------------------------------------------
@@ -5523,14 +5523,14 @@ gradient() will perform analytic gradient computation.
        1        0.230425886448     0.000000000000     0.000000000000
 
 
-*** tstop() called on atl1-1-01-003-12-1.pace.gatech.edu at Mon Jun  1 23:48:17 2026
+*** tstop() called on atl1-1-02-002-4-2.pace.gatech.edu at Wed Jun 24 21:17:14 2026
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.93 seconds =       0.05 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       2.95 seconds =       0.05 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
     Analytic 2 Gaussian charges-proton ixn energy vs. with external_potential.............PASSED
     Analytic 2 Gaussian charges-s electron ixn energy vs. with external_potential.........PASSED
@@ -5539,7 +5539,7 @@ Total time:
     Analytic 2 Gaussian charge-2 Gaussian charge ixn energy vs. extern-extern ixn energy..PASSED
     extern 01-extern 10 ixn energy vs. extern 10-extern 01 ixn energy.....................PASSED
 
-    Psi4 stopped on: Monday, 01 June 2026 11:48PM
-    Psi4 wall time for execution: 0:00:04.79
+    Psi4 stopped on: Wednesday, 24 June 2026 09:17PM
+    Psi4 wall time for execution: 0:00:04.78
 
 *** Psi4 exiting successfully. Buy a developer a beer!
