@@ -63,7 +63,7 @@ _ie_uncp_grad = np.array(
      [ 0.           ,   0.            ,  0.000044919089]])
 
 
-_SEC_A = re.escape("\u00a7A")
+_SEC_A = re.escape(chr(0xA7) + "A")
 
 _stdouts = {
     "cp_T": rf"""
@@ -192,6 +192,9 @@ H   0.000000   0.000000   3.963929
             atin["specification"]["keywords"].update({"d_convergence": 5e-10})
 
     ret = psi4.schema_wrapper.run_qcschema(atin)
+
+    print("SEC_A repr:", repr(_SEC_A), [hex(ord(c)) for c in _SEC_A])
+    print("stdout has section:", "§A" in ret.stdout, chr(0xA7) + "A" in ret.stdout)
 
     assert ret.success, pprint.pprint(ret.dict(), width=200)
     assert ret.schema_version == schver
