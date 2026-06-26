@@ -38,7 +38,7 @@ if(${ENABLE_bse})
             )
     endif()
 else()
-    message(STATUS "Optional addon ${Blue}unsought basis_set_exchange${ColourReset}: `-D ENABLE_bse=ON` to detect or build")
+    message(STATUS "Optional addon ${Blue}unsought: bse${ColourReset} (basis_set_exchange; deferrable to runtime)")
     add_library(bse_external INTERFACE)  # dummy
 endif()
 

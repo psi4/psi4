@@ -1520,7 +1520,7 @@ data:
     use:
       added: "1.10"
       required: false
-      required_note: "Allows BSSE treatments and MBE analyses. Optional for v1.??. Required for v1.10. Prior to v1.10, internal code was used."
+      required_note: "Allows BSSE treatments and MBE analyses. Optional for v1.12. Required for v1.10. Prior to v1.10, internal code was used."
       buildable: true
       buildtime: true
       buildtime_note: "buildtime for cmake checks; otherwise, runtime."

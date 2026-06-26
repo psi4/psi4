@@ -45,5 +45,6 @@ if(${ENABLE_mdi})
         set(mdi_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/mdi CACHE PATH "path to internally built mdiConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: mdi${ColourReset} (deferrable to runtime)")
     add_library(mdi_external INTERFACE)  # dummy
 endif()
