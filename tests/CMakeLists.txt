@@ -69,7 +69,7 @@ foreach(test_name aediis-1
                   lccd-grad1 lccd-grad2 matrix1 matrix2
                   mbis-1 mbis-2 mbis-3 mbis-4 mbis-5 mbis-6 mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
-                  mints9 mints10 mints15 molden1 molden2 mom mom-h2o-3 mom-h2o-4
+                  mints9 mints10 mints15 molden1 molden2 mom mom-h2o-3 mom-h2o-4 mom-roks
                   mp2-1  mp2-def2 mp2-grad1 mp2-grad2 mp2-grad3 mp2-h mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
                   mp2-property mp2f12-1 mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient
                   nbo nbody-cp-gradient nbody-vmfc-gradient nbody-vmfc-hessian nbody-hessian nbody-convergence

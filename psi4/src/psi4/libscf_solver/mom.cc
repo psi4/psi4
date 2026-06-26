@@ -544,8 +544,101 @@ void HF::MOM_start() {
             if (nalpha_ < nbeta_)
                 throw PSIEXCEPTION("PSI::MOM_start: Nbeta ends up being less than Nalpha, this is not supported");
 
-        } else if (options_.get_str("REFERENCE") == "ROHF") {
-            throw PSIEXCEPTION("SCF::MOM_start: MOM excited states are not implemented for ROHF");
+        } else if (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "ROKS") {
+            // For ROHF/ROKS, orbital position determines spin channel (sign is ignored):
+            // DOCC->SOCC: beta electron, SOCC->VIR: alpha electron, DOCC->VIR: both.
+
+            int hi = orbs_a[i].second.first;
+            int ha = orbs_a[a].second.first;
+            int pi = orbs_a[i].second.second;
+            int pa = orbs_a[a].second.second;
+
+            auto in_docc = [&](int h, int p) { return p < nbetapi_[h]; };
+            auto in_socc = [&](int h, int p) { return p >= nbetapi_[h] && p < nalphapi_[h]; };
+            auto in_vir  = [&](int h, int p) { return p >= nalphapi_[h]; };
+
+            auto swap_mo = [&](SharedMatrix C, SharedVector eps, int h, int p, int q) {
+                if (p == q) return;
+                int nso = nsopi_[h];
+                int nmo = nmopi_[h];
+                if (nso == 0 || nmo == 0) return;
+                double** Cp = C->pointer(h);
+                double* ep = eps->pointer(h);
+                auto* Ct = new double[nso];
+                double epst = ep[p];
+                ep[p] = ep[q];
+                ep[q] = epst;
+                C_DCOPY(nso, &Cp[0][p], nmo, Ct, 1);
+                C_DCOPY(nso, &Cp[0][q], nmo, &Cp[0][p], nmo);
+                C_DCOPY(nso, Ct, 1, &Cp[0][q], nmo);
+                delete[] Ct;
+            };
+
+            enum Case { DOCC_TO_SOCC, SOCC_TO_VIR, DOCC_TO_VIR };
+            Case excitation;
+            const char* tag = "";
+            if (in_docc(hi, pi) && in_socc(ha, pa)) {
+                excitation = DOCC_TO_SOCC;
+                tag = "D  -> S ";
+            } else if (in_socc(hi, pi) && in_vir(ha, pa)) {
+                excitation = SOCC_TO_VIR;
+                tag = "S  -> V ";
+            } else if (in_docc(hi, pi) && in_vir(ha, pa)) {
+                excitation = DOCC_TO_VIR;
+                tag = "D  -> V ";
+            } else {
+                throw PSIEXCEPTION(
+                    "SCF::MOM_start: ROHF excitation must be DOCC->SOCC, SOCC->VIR, or DOCC->VIR");
+            }
+
+            if (excitation == DOCC_TO_SOCC) {
+                if (hi == ha) {
+                    swap_mo(Ca_, epsilon_a_, hi, pi, pa);
+                } else {
+                    swap_mo(Ca_, epsilon_a_, hi, pi, nbetapi_[hi] - 1);
+                    nbetapi_[hi]--;
+                    nbeta_--;
+                    swap_mo(Ca_, epsilon_a_, ha, pa, nbetapi_[ha]);
+                    nbetapi_[ha]++;
+                    nbeta_++;
+                }
+            } else if (excitation == SOCC_TO_VIR) {
+                if (hi == ha) {
+                    swap_mo(Ca_, epsilon_a_, hi, pi, pa);
+                } else {
+                    swap_mo(Ca_, epsilon_a_, hi, pi, nalphapi_[hi] - 1);
+                    nalphapi_[hi]--;
+                    nalpha_--;
+                    swap_mo(Ca_, epsilon_a_, ha, pa, nalphapi_[ha]);
+                    nalphapi_[ha]++;
+                    nalpha_++;
+                }
+            } else {  // DOCC_TO_VIR
+                if (hi == ha) {
+                    swap_mo(Ca_, epsilon_a_, hi, pi, pa);
+                } else {
+                    // DOCC -> Vir via SOCC slot
+                    swap_mo(Ca_, epsilon_a_, hi, pi, nbetapi_[hi] - 1);
+                    nbetapi_[hi]--;
+                    nbeta_--;
+                    swap_mo(Ca_, epsilon_a_, hi, nbetapi_[hi], nalphapi_[hi] - 1);
+                    nalphapi_[hi]--;
+                    nalpha_--;
+                    // Vir -> DOCC via SOCC slot
+                    swap_mo(Ca_, epsilon_a_, ha, pa, nalphapi_[ha]);
+                    nalphapi_[ha]++;
+                    nalpha_++;
+                    swap_mo(Ca_, epsilon_a_, ha, nalphapi_[ha] - 1, nbetapi_[ha]);
+                    nbetapi_[ha]++;
+                    nbeta_++;
+                }
+            }
+
+            outfile->Printf("   %8s: %4d%-4s -> %4d%-4s \n", tag, pi + 1, ct.gamma(hi).symbol(), pa + 1,
+                            ct.gamma(ha).symbol());
+
+            if (nalpha_ < nbeta_)
+                throw PSIEXCEPTION("PSI::MOM_start: Nbeta ends up being less than Nalpha, this is not supported");
         }
     }
     Ca_old_->copy(Ca_);
@@ -554,12 +647,18 @@ void HF::MOM_start() {
     outfile->Printf("\n                        Total Energy        Delta E      Density RMS\n\n");
 }
 void HF::MOM() {
+    // ROHF/ROKS: track DOCC and SOCC via separate overlap pools so the DOCC/SOCC
+    // boundary is preserved when orbitals are near-degenerate.
+    const bool is_rohf_type =
+        (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "ROKS");
+
     // Alpha
     for (int h = 0; h < nirrep_; h++) {
         // Indexing
         int nso = nsopi_[h];
         int nmo = nmopi_[h];
         int nalpha = nalphapi_[h];
+        int nbeta = nbetapi_[h];
 
         if (nso == 0 || nmo == 0 || nalpha == 0) continue;
 
@@ -567,6 +666,96 @@ void HF::MOM() {
         double** Cnew = Ca_->pointer(h);
         double* eps = epsilon_a_->pointer(h);
         double** S = S_->pointer(h);
+
+        if (is_rohf_type && nbeta > 0 && nalpha > nbeta) {
+            int nsocc = nalpha - nbeta;
+            int nvir = nmo - nalpha;
+
+            // P[a,i] = (C_new^T S C_old)[a,i]; p_docc[a] = sum_{i<nbeta} P[a,i]^2,
+            // p_socc[a] = sum_{nbeta<=i<nalpha} P[a,i]^2.
+            double** SC = block_matrix(nso, nmo);
+            C_DGEMM('N', 'N', nso, nmo, nso, 1.0, S[0], nso, Cold[0], nmo, 0.0, SC[0], nmo);
+            double** P = block_matrix(nmo, nmo);
+            C_DGEMM('T', 'N', nmo, nmo, nso, 1.0, Cnew[0], nmo, SC[0], nmo, 0.0, P[0], nmo);
+
+            auto* p_docc = new double[nmo];
+            auto* p_socc = new double[nmo];
+            for (int a = 0; a < nmo; a++) {
+                double sd = 0.0, ss = 0.0;
+                for (int j = 0; j < nbeta; j++) sd += P[a][j] * P[a][j];
+                for (int j = nbeta; j < nalpha; j++) ss += P[a][j] * P[a][j];
+                p_docc[a] = sd;
+                p_socc[a] = ss;
+            }
+            free_block(SC);
+            free_block(P);
+
+            // Top nbeta by |p_docc| -> DOCC
+            std::vector<std::pair<double, int> > pvec_docc(nmo);
+            for (int a = 0; a < nmo; a++) pvec_docc[a] = std::make_pair(std::fabs(p_docc[a]), a);
+            sort(pvec_docc.begin(), pvec_docc.end(), std::greater<std::pair<double, int> >());
+
+            std::vector<bool> used(nmo, false);
+            std::vector<int> docc_idx(nbeta);
+            for (int a = 0; a < nbeta; a++) {
+                docc_idx[a] = pvec_docc[a].second;
+                used[pvec_docc[a].second] = true;
+            }
+
+            // Top nsocc by |p_socc| among remaining -> SOCC
+            std::vector<std::pair<double, int> > pvec_socc;
+            pvec_socc.reserve(nmo - nbeta);
+            for (int a = 0; a < nmo; a++) {
+                if (!used[a]) pvec_socc.push_back(std::make_pair(std::fabs(p_socc[a]), a));
+            }
+            sort(pvec_socc.begin(), pvec_socc.end(), std::greater<std::pair<double, int> >());
+
+            std::vector<int> socc_idx(nsocc);
+            for (int a = 0; a < nsocc; a++) {
+                socc_idx[a] = pvec_socc[a].second;
+                used[pvec_socc[a].second] = true;
+            }
+
+            std::vector<int> vir_idx;
+            vir_idx.reserve(nvir);
+            for (int a = 0; a < nmo; a++) {
+                if (!used[a]) vir_idx.push_back(a);
+            }
+
+            // Order each group by energy
+            std::vector<std::pair<double, int> > docc_vec(nbeta);
+            for (int a = 0; a < nbeta; a++) docc_vec[a] = std::make_pair(eps[docc_idx[a]], docc_idx[a]);
+            sort(docc_vec.begin(), docc_vec.end());
+
+            std::vector<std::pair<double, int> > socc_vec(nsocc);
+            for (int a = 0; a < nsocc; a++) socc_vec[a] = std::make_pair(eps[socc_idx[a]], socc_idx[a]);
+            sort(socc_vec.begin(), socc_vec.end());
+
+            std::vector<std::pair<double, int> > vir_vec(nvir);
+            for (int a = 0; a < nvir; a++) vir_vec[a] = std::make_pair(eps[vir_idx[a]], vir_idx[a]);
+            sort(vir_vec.begin(), vir_vec.end());
+
+            double** Ct = block_matrix(nso, nmo);
+            memcpy(static_cast<void*>(Ct[0]), static_cast<void*>(Cnew[0]), sizeof(double) * nso * nmo);
+
+            for (int a = 0; a < nbeta; a++) {
+                eps[a] = docc_vec[a].first;
+                C_DCOPY(nso, &Ct[0][docc_vec[a].second], nmo, &Cnew[0][a], nmo);
+            }
+            for (int a = 0; a < nsocc; a++) {
+                eps[a + nbeta] = socc_vec[a].first;
+                C_DCOPY(nso, &Ct[0][socc_vec[a].second], nmo, &Cnew[0][a + nbeta], nmo);
+            }
+            for (int a = 0; a < nvir; a++) {
+                eps[a + nalpha] = vir_vec[a].first;
+                C_DCOPY(nso, &Ct[0][vir_vec[a].second], nmo, &Cnew[0][a + nalpha], nmo);
+            }
+
+            free_block(Ct);
+            delete[] p_docc;
+            delete[] p_socc;
+            continue;
+        }
 
         auto* c = new double[nso];
         auto* d = new double[nso];

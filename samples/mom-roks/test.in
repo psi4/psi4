@@ -1,0 +1,33 @@
+#! ROKS MOM excited state: NH2 doublet, SOMO -> LUMO, B3LYP.
+
+ref_E = -55.568005548985  #TEST
+
+molecule nh2 {
+0 2
+N   0.000000   0.000000   0.000000
+H   0.000000   0.803700   0.634500
+H   0.000000  -0.803700   0.634500
+symmetry c1
+}
+
+set {
+    basis cc-pvdz
+    puream false
+    reference roks
+    scf_type pk
+    e_convergence 8
+    d_convergence 6
+    maxiter 300
+    guess sad
+}
+
+energy('b3lyp')
+
+set guess read
+set mom_start 5
+set mom_occ [5]
+set mom_vir [6]
+
+E = energy('b3lyp')
+
+compare_values(ref_E, E, 6, "ROKS MOM SOMO->LUMO Excited State Energy")  #TEST
