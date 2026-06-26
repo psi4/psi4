@@ -661,11 +661,7 @@ class ManyBodyComputer(ManyBodyComputerQCNG):
 
         info = "\n" + p4util.banner(f" ManyBody Results ", strNotOutfile=True) + "\n"
         core.print_out(info)
-        # Ensure section symbol is properly UTF-8 encoded for cross-platform compatibility
-        stdout_text = nbody_model.stdout
-        # Replace any mojibake or incorrectly encoded section symbols with properly encoded version
-        stdout_text = stdout_text.encode('utf-8', errors='replace').decode('utf-8', errors='replace')
-        core.print_out(stdout_text)
+        core.print_out(nbody_model.stdout)
         logger.info('\nQCManyBody:\n' + nbody_model.stdout)
 
         logger.debug('\nManyBodyResult QCSchema:\n' + pp.pformat(nbody_model.model_dump()))

@@ -384,7 +384,7 @@ jobs:
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
     - name: Psi4 Path Setup Diagnostics
-      if: true
+      if: false
       working-directory: ./objdir
       run: |
         ls -l
