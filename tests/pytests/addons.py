@@ -204,6 +204,10 @@ def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = No
     else:
         env["PYTHONPATH"] = str(psiimport)
 
+    # On Windows, ensure UTF-8 encoding for stdout to handle section symbols and other Unicode
+    if sys.platform.startswith("win"):
+        env["PYTHONIOENCODING"] = "utf-8"
+
     if setenv:
         for ev in setenv:
             env[ev] = "1"
