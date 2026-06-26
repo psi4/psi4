@@ -65,6 +65,16 @@ _ie_uncp_grad = np.array(
 
 _SEC_A = chr(0xA7) + "A"
 
+
+def _normalize_nbody_text(s: str) -> str:
+    """Normalize section symbol encoding on Windows to handle mojibake patterns."""
+    return (
+        s.replace("\ufffdA", "§A")   # '�A' -> '§A' (replacement char mojibake)
+         .replace("Â§", "§")         # Windows cp1252 double-encoding
+         .replace("\xa7", "§")       # Direct byte representation
+    )
+
+
 _stdouts = {
     "cp_T": rf"""
 \s*   ==> N-Body: Counterpoise Corrected \(CP\) energies <==
@@ -193,13 +203,10 @@ H   0.000000   0.000000   3.963929
 
     ret = psi4.schema_wrapper.run_qcschema(atin)
 
-    print("SEC_A repr:", repr(_SEC_A), [hex(ord(c)) for c in _SEC_A])
-    print("stdout has section:", "§A" in ret.stdout, chr(0xA7) + "A" in ret.stdout)
-
     assert ret.success, pprint.pprint(ret.dict(), width=200)
     assert ret.schema_version == schver
     assert ret.schema_name == _sch_name[schver]
 
     assert compare_values(return_result, ret.return_result, atol=1.e-6, label="manybody")
     assert compare(nbody_number, ret.extras["qcvars"]["NBODY NUMBER"], label="nbody number")
-    assert re.search(_stdouts[stdoutkey], ret.stdout, re.MULTILINE), f"N-Body pattern not found: {_stdouts[stdoutkey]}"
+    assert re.search(_stdouts[stdoutkey], _normalize_nbody_text(ret.stdout), re.MULTILINE), f"N-Body pattern not found: {_stdouts[stdoutkey]}"
