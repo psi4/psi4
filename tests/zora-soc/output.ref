@@ -1,0 +1,551 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.11a1.dev60 
+
+                         Git: Rev {spin_orbit_zora} d4dd95e dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Monday, 02 March 2026 05:49PM
+
+    Process ID: 213254
+    Host:       
+    PSIDATADIR: 
+    Memory:     500.0 MiB
+    Threads:    1
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, b̶s̶e̶, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶,
+                d̶f̶t̶d̶3̶, d̶f̶t̶d̶4̶, d̶k̶h̶, e̶c̶p̶i̶n̶t̶, einsums, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶,
+                g̶c̶p̶, g̶d̶m̶a̶, g̶e̶o̶m̶e̶t̶r̶i̶c̶, g̶p̶u̶_̶d̶f̶c̶c̶,
+                i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶, i̶p̶i̶, l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶,
+                o̶o̶o̶, o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶,
+                p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶, p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶,
+                s̶n̶s̶m̶p̶2̶, v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Test of ZORA Spin-orbit coupling.
+
+ref_e_so = -2787.5680652543642
+
+def get_2p3e_energies(wfn):
+    # We had to split the MO energy due to factory limitations.
+    mo_energy_a = wfn.epsilon_a().to_array()
+    mo_energy_b = wfn.epsilon_b().to_array()
+    mo_energies = np.sort(np.append(mo_energy_a, mo_energy_b))
+
+    mo_e_2p = mo_energies[4:10]
+    mo_e_3d = mo_energies[18:28]
+    return mo_e_2p, mo_e_3d
+
+molecule kr {
+0 1
+    Kr 0 0 0
+symmetry C1
+}
+
+set {
+    reference cghf
+    scf_type pk
+    e_convergence 1e-9
+    basis 3-21g
+    relativistic zora
+}
+
+e = energy('scf')
+
+set {
+    zora_spin_orbit_coupling true
+}
+
+e_so = energy('scf')
+
+compare_values(True, e_so < e, "ZORA spin-orbit coupling lowers energy")
+compare_values(e_so, ref_e_so, 6, "ZORA spin-orbit energy")
+
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+
+Relativistic analytic gradients are not implemented yet, re-routing to finite differences.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  7, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on 
+*** at Mon Mar  2 17:49:31 2026
+
+   => Loading Basis Set <=
+
+    Name: 3-21G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry KR         line   636 file 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                             CGHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         KR           0.000000000000     0.000000000000     0.000000000000    83.911497728200
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 36
+  Nalpha       = 18
+  Nbeta        = 18
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-09
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: 3-21G
+    Blend: 3-21G
+    Number of shells: 10
+    Number of basis functions: 23
+    Number of Cartesian functions: 23
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+    Occupation by irrep:
+              A 
+    DOCC [    18 ]
+    SOCC [     0 ]
+    NA   [    18 ]
+    NB   [    18 ]
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   1
+      Number of AO shells:              10
+      Number of primitives:             24
+      Number of atomic orbitals:        23
+      Number of basis functions:        23
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 76452 doubles for integral storage.
+  We computed 1540 shell quartets total.
+  Whereas there are 1540 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+ OEINTS: Using relativistic (ZORA) kinetic integrals.
+
+        ____  ____  ___  ___
+       /_  / / __ \/ _ \/ _ |
+        / /_/ /_/ / , _/ __ |
+       /___/\____/_/|_/_/ |_|
+        by Nathan Gillispie
+      ========================
+
+  ==> ZORA Details <==
+    Total number of grid points: 213150
+    Total number of batches: 1641
+    Using 1 thread(s)
+
+  Minimum eigenvalue in the overlap matrix is 3.8336369020E-03.
+  Reciprocal condition number of the overlap matrix is 1.1652196509E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23      18      18      18       0
+   -------------------------------------------------------
+    Total      23      23      18      18      18       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @CGHF iter   1: -2779.67039369077884   -2.77967e+03   3.20743e-01 
+   @CGHF iter   2: -2787.45463563155727   -7.78424e+00   1.66473e-02 
+   @CGHF iter   3: -2787.56303449581583   -1.08399e-01   2.52671e-03 
+   @CGHF iter   4: -2787.56555786494937   -2.52337e-03   3.39290e-04 
+   @CGHF iter   5: -2787.56561599799625   -5.81330e-05   5.91254e-05 
+   @CGHF iter   6: -2787.56561747513388   -1.47714e-06   8.31199e-06 
+   @CGHF iter   7: -2787.56561751658865   -4.14548e-08   1.62838e-06 
+   @CGHF iter   8: -2787.56561751787012   -1.28148e-09   2.56150e-07 
+   @CGHF iter   9: -2787.56561751791151   -4.13820e-11   5.23716e-08 
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Occupied:                                                             
+
+       1A   -533.812127     3A   -533.812127     5A    -71.883974  
+       7A    -71.883974     9A    -63.629006    11A    -63.629006  
+      13A    -63.629006    15A    -63.629006    17A    -63.629006  
+      19A    -63.629006    21A    -11.125274    23A    -11.125274  
+      25A     -8.374419    27A     -8.374419    29A     -8.374419  
+      31A     -8.374419    33A     -8.374419    35A     -8.374419  
+      37A     -3.700207    39A     -3.700207    41A     -3.700207  
+      43A     -3.700207    45A     -3.700207     2A     -3.700207  
+       4A     -3.700207     6A     -3.700207     8A     -3.700207  
+      10A     -3.700207    12A     -1.150559    14A     -1.150559  
+      16A     -0.501433    18A     -0.501433    20A     -0.501433  
+      22A     -0.501433    24A     -0.501433    26A     -0.501433  
+
+    Virtual:                                                              
+
+      28A      0.890931    30A      0.890931    32A      0.947051  
+      34A      0.947051    36A      0.947051    38A      0.947051  
+      40A      0.947051    42A      0.947051    44A     31.490261  
+      46A     31.490261  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [    18 ]
+    SOCC [     0 ]
+    NA   [    18 ]
+    NB   [    18 ]
+
+  @CGHF Final Energy: -2787.56561751791151
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =               -3867.1561514354521023
+    Two-Electron Energy =                1079.5905339175405970
+    Total Energy =                      -2787.5656175179115053
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on  at Mon Mar  2 17:49:31 2026
+Module time:
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+Scratch directory: /tmp/
+
+Relativistic analytic gradients are not implemented yet, re-routing to finite differences.
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  7, 6, 3
+    Auxiliary basis highest AM E, G, H:  7, 7, 4
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on 
+*** at Mon Mar  2 17:49:31 2026
+
+   => Loading Basis Set <=
+
+    Name: 3-21G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry KR         line   636 file 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                             CGHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         KR           0.000000000000     0.000000000000     0.000000000000    83.911497728200
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 36
+  Nalpha       = 18
+  Nbeta        = 18
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-09
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: 3-21G
+    Blend: 3-21G
+    Number of shells: 10
+    Number of basis functions: 23
+    Number of Cartesian functions: 23
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   1
+      Number of AO shells:              10
+      Number of primitives:             24
+      Number of atomic orbitals:        23
+      Number of basis functions:        23
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 76452 doubles for integral storage.
+  We computed 1540 shell quartets total.
+  Whereas there are 1540 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+ OEINTS: Using relativistic (ZORA) kinetic integrals.
+
+        ____  ____  ___  ___
+       /_  / / __ \/ _ \/ _ |
+        / /_/ /_/ / , _/ __ |
+       /___/\____/_/|_/_/ |_|
+        by Nathan Gillispie
+      ========================
+
+  ==> ZORA Details <==
+    Total number of grid points: 213150
+    Total number of batches: 1641
+    Using 1 thread(s)
+
+
+
+    ZORA: You called compute_HSO. Rejoice!
+  Minimum eigenvalue in the overlap matrix is 3.8336369020E-03.
+  Reciprocal condition number of the overlap matrix is 1.1652196509E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+
+  CGHF: ZORA Spin-orbit coupling selected.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23      18      18      18       0
+   -------------------------------------------------------
+    Total      23      23      18      18      18       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @CGHF iter   1: -2779.67039369077884   -2.77967e+03   3.20744e-01 
+   @CGHF iter   2: -2787.45685092586655   -7.78646e+00   1.66706e-02 
+   @CGHF iter   3: -2787.56547730419425   -1.08626e-01   2.52984e-03 
+   @CGHF iter   4: -2787.56800550237722   -2.52820e-03   3.39733e-04 
+   @CGHF iter   5: -2787.56806373230302   -5.82299e-05   5.91824e-05 
+   @CGHF iter   6: -2787.56806521152157   -1.47922e-06   8.31975e-06 
+   @CGHF iter   7: -2787.56806525303682   -4.15152e-08   1.62952e-06 
+   @CGHF iter   8: -2787.56806525430966   -1.27284e-09   2.56326e-07 
+   @CGHF iter   9: -2787.56806525436423   -5.45697e-11   5.24066e-08 
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Occupied:                                                             
+
+       1A   -533.813873     3A   -533.813873     5A    -71.885198  
+       7A    -71.885198     9A    -64.757975    11A    -64.757975  
+      13A    -63.069021    15A    -63.069021    17A    -63.069021  
+      19A    -63.069021    21A    -11.125906    23A    -11.125906  
+      25A     -8.535550    27A     -8.535550    29A     -8.292935  
+      31A     -8.292935    33A     -8.292935    35A     -8.292935  
+      37A     -3.726329    39A     -3.726329    41A     -3.726329  
+      43A     -3.726329    45A     -3.683912     2A     -3.683912  
+       4A     -3.683912     6A     -3.683912     8A     -3.683912  
+      10A     -3.683912    12A     -1.150740    14A     -1.150740  
+      16A     -0.514924    18A     -0.514924    20A     -0.494723  
+      22A     -0.494723    24A     -0.494723    26A     -0.494723  
+
+    Virtual:                                                              
+
+      28A      0.890759    30A      0.890759    32A      0.927406  
+      34A      0.927406    36A      0.957312    38A      0.957312  
+      40A      0.957312    42A      0.957312    44A     31.489888  
+      46A     31.489888  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [    18 ]
+    SOCC [     0 ]
+    NA   [    18 ]
+    NB   [    18 ]
+
+  @CGHF Final Energy: -2787.56806525436423
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =               -3867.1322889594634944
+    Two-Electron Energy =                1079.5642237050994936
+    Total Energy =                      -2787.5680652543642282
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on  at Mon Mar  2 17:49:32 2026
+Module time:
+	user time   =       0.42 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.69 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    ZORA spin-orbit coupling lowers energy................................................PASSED
+    ZORA spin-orbit energy................................................................PASSED
+
+    Psi4 stopped on: Monday, 02 March 2026 05:49PM
+    Psi4 wall time for execution: 0:00:00.76
+
+*** Psi4 exiting successfully. Buy a developer a beer!
