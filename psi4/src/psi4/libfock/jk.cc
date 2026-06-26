@@ -217,7 +217,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         jk.reset();
 
         // Use Disk DFJK
-        auto disk_jk = std::dynamic_pointer_cast<DiskDFJK>(build_JK(primary, auxiliary, options, "DISK_DF"));
+        auto disk_jk = std::static_pointer_cast<DiskDFJK>(build_JK(primary, auxiliary, options, "DISK_DF"));
         disk_jk->set_memdfjk_memory_estimate(memdfjk_memory);
         return disk_jk;
 
