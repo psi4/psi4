@@ -1525,7 +1525,6 @@ data:
       buildtime: true
       buildtime_note: "buildtime for cmake checks; otherwise, runtime."
       cms: true
-      test_required: true
     repository:
       host: github
       account: MolSSI
