@@ -24,7 +24,7 @@ units bohr
 set cc_type df
 set df_basis_mp2 def2-qzvpp-ri  # not a recommendation. present to compensate for change in default
 
-species_comparison_dict = {"§A_(2)@(2)": -74.9994424129044, "§B_(2)@(2)": -74.96344779297539}
+species_comparison_dict = {f"{chr(0xA7)}A_(2)@(2)": -74.9994424129044, f"{chr(0xA7)}B_(2)@(2)": -74.96344779297539}
 species_comparison_dict = {f"n-body {k} total energy": v for k, v in species_comparison_dict.items()}  #TEST
 
 # Compute 1-body contribution with ccsd(t) and 2-body contribution with mp2
