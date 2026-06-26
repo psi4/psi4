@@ -63,7 +63,7 @@ _ie_uncp_grad = np.array(
      [ 0.           ,   0.            ,  0.000044919089]])
 
 
-_SEC_A = re.escape(chr(0xA7) + "A")
+_SEC_A = chr(0xA7) + "A"
 
 _stdouts = {
     "cp_T": rf"""
