@@ -26,7 +26,7 @@ dependencies:
   - libint
   - libxc-c
   - optking>=0.5.0
-  - qcelemental>=0.50.2
+  - qcelemental>=0.50.4
   - qcengine>=0.50.0
   - qcmanybody>=0.7.1
     # buildtime optional
@@ -44,8 +44,7 @@ dependencies:
   - openorbitaloptimizer>=0.3.0
   - pcmsolver
   - pyeinsums>=1.1.3
-  - zlib                      # req'd with pyeinsums
-  - zlib                      # req'd with pyeinsums
+  - zlib                      # req'd with pcmsolver, pyeinsums
     # runtime required
   - msgpack-python            # req'd with qcelemental
   - networkx                  # req'd with qcelemental

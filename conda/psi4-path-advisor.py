@@ -628,7 +628,7 @@ if args.subparser_name in ["conda", "env"]:
         "test": [],
         "docs": [],
     }
-    notes = {}
+    notes = {}  # maps package name to dict with 'req', 'parents', and 'note' keys
     lapack_packages = []  # TODO: incl openmp, too?
 
     for ddep in ydict["data"]:
@@ -661,7 +661,7 @@ if args.subparser_name in ["conda", "env"]:
         if conda.get("brings_psi4", False):
             msg = f"installs package psi4 that interferes with built psi4; Later, `conda install {primary} -c {conda['channel']} --no-deps`"
             primary = "//" + primary
-            notes[primary] = msg
+            notes[primary] = {"req": None, "parents": set(), "note": msg}
 
         if primary == "libblas":
             if args.lapack:
@@ -688,15 +688,27 @@ if args.subparser_name in ["conda", "env"]:
 
         for pkg in aux_run:
             req = "opt'l" if pkg.startswith("//") else "req'd"
-            notes[pkg] = f"{req} with {conda['name']}"
-            if note := conda.get("aux_run_names_note", {}).get(pkg, None):
-                notes[pkg] += f"; {note}"
+            additional_note = conda.get("aux_run_names_note", {}).get(pkg, "")
+            if pkg not in notes:
+                notes[pkg] = {"req": req, "parents": set(), "note": additional_note}
+            else:
+                if notes[pkg]["req"] is None:
+                    notes[pkg]["req"] = req
+                if not notes[pkg]["note"]:
+                    notes[pkg]["note"] = additional_note
+            notes[pkg]["parents"].add(conda['name'])
 
         for pkg in aux_bld:
             req = "opt'l" if pkg.startswith("//") else "req'd"
-            notes[pkg] = f"{req} with {conda['name']}"
-            if note := conda.get("aux_build_names_note", {}).get(pkg, None):
-                notes[pkg] += f"; {note}"
+            additional_note = conda.get("aux_build_names_note", {}).get(pkg, "")
+            if pkg not in notes:
+                notes[pkg] = {"req": req, "parents": set(), "note": additional_note}
+            else:
+                if notes[pkg]["req"] is None:
+                    notes[pkg]["req"] = req
+                if not notes[pkg]["note"]:
+                    notes[pkg]["note"] = additional_note
+            notes[pkg]["parents"].add(conda['name'])
 
         # sort into categories
         if use.get("test_required", None) is not None:
@@ -748,7 +760,7 @@ if args.subparser_name in ["conda", "env"]:
                 stuff["runtime required"].append(primary)
                 stuff["runtime required"].extend(aux_run)
 
-    stuff = {k: sorted(v) for k, v in stuff.items()}
+    stuff = {k: sorted(set(v)) for k, v in stuff.items()}
 
     text = []
     text.append(f"name: {args.name}")
@@ -781,11 +793,23 @@ if args.subparser_name in ["conda", "env"]:
         for pkg in sorted(stuff[category], key=lambda x: re.match(re_pkgline, x).group("pkg")):
             commentout, chnl, barepkg, constraint = re.match(re_pkgline, pkg).groups()
 
-            if note := notes.get(pkg, ""):
+            if note_info := notes.get(pkg):
+                # Build the note string from parents and additional note
+                parents = sorted(note_info["parents"])
+                req = note_info["req"]
+                additional = note_info["note"]
+
+                note_parts = []
+                if req is not None:
+                    note_parts.append(f"{req} with {', '.join(parents)}")
+                if additional:
+                    note_parts.append(additional)
+                note_str = "; ".join(note_parts)
+
                 if commentout:
-                    text.append(f"  #- {pkg[2:]:<24}  # {note}")
+                    text.append(f"  #- {pkg[2:]:<24}  # {note_str}")
                 else:
-                    text.append(f"  - {pkg:<24}  # {note}")
+                    text.append(f"  - {pkg:<24}  # {note_str}")
             else:
                 if barepkg == "python" and args.python:
                     text.append(f"  - {pkg}={args.python}")
@@ -1087,7 +1111,9 @@ elif args.subparser_name in ["deploy"]:
 
     full_cmake_S = codedeps_yaml.parent
     full_conda_envs = f"{full_cmake_S}/devtools/conda-envs/"
-    script = f"""#!/usr/bin/env bash
+    stable_pyver = "3.13"
+    pyver = stable_pyver.replace(".", "")
+    script = rf"""#!/usr/bin/env bash
 
 set -euo pipefail
 
@@ -1119,30 +1145,33 @@ mv env_p4docs.yaml {full_conda_envs}/linux-64-docs.yaml
 
 ###  Eco  ###
 
+echo -e "dependencies:\n  - python={stable_pyver}" > temp_override.yaml
+
 {full_cmake_S}/conda/psi4-path-advisor.py env --platform linux-64 --lapack mkl --disable docs
-CONDA_SUBDIR=linux-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run \
-    | tee /tmp/env_p4dev_solve.out \
-    | sed -n '/^name:/,$p' > {full_conda_envs}/linux-64-buildrun-addons.lock.yaml
-mv env_p4dev.yaml {full_conda_envs}/linux-64-buildrun-addons.yaml
+CONDA_SUBDIR=linux-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+conda-lock -f env_p4dev.yaml -f temp_override.yaml --kind env -p linux-64
+mv conda-linux-64.lock.yml {full_conda_envs}/linux-64-buildrun-addons-py{pyver}.lock.yaml
+mv env_p4dev.yaml          {full_conda_envs}/linux-64-buildrun-addons.yaml
 
 {full_cmake_S}/conda/psi4-path-advisor.py env --platform osx-64 --lapack mkl --disable docs
-CONDA_OVERRIDE_OSX=13 CONDA_SUBDIR=osx-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run \
-    | tee /tmp/env_p4dev_solve.out \
-    | sed -n '/^name:/,$p' > {full_conda_envs}/osx-64-buildrun-addons.lock.yaml
-mv env_p4dev.yaml {full_conda_envs}/osx-64-buildrun-addons.yaml
+CONDA_OVERRIDE_OSX=13 CONDA_SUBDIR=osx-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+conda-lock -f env_p4dev.yaml -f temp_override.yaml --kind env -p osx-64
+mv conda-osx-64.lock.yml {full_conda_envs}/osx-64-buildrun-addons-py{pyver}.lock.yaml
+mv env_p4dev.yaml        {full_conda_envs}/osx-64-buildrun-addons.yaml
 
 {full_cmake_S}/conda/psi4-path-advisor.py env --platform osx-arm64 --lapack accelerate --disable docs
-CONDA_OVERRIDE_OSX=13 CONDA_SUBDIR=osx-arm64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run \
-    | tee /tmp/env_p4dev_solve.out \
-    | sed -n '/^name:/,$p' > {full_conda_envs}/osx-arm64-buildrun-addons.lock.yaml
-mv env_p4dev.yaml {full_conda_envs}/osx-arm64-buildrun-addons.yaml
+CONDA_OVERRIDE_OSX=13 CONDA_SUBDIR=osx-arm64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+conda-lock -f env_p4dev.yaml -f temp_override.yaml --kind env -p osx-arm64
+mv conda-osx-arm64.lock.yml {full_conda_envs}/osx-arm64-buildrun-addons-py{pyver}.lock.yaml
+mv env_p4dev.yaml           {full_conda_envs}/osx-arm64-buildrun-addons.yaml
 
 {full_cmake_S}/conda/psi4-path-advisor.py env --platform win-64 --lapack mkl --disable docs
-CONDA_SUBDIR=win-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run \
-    | tee /tmp/env_p4dev_solve.out \
-    | sed -n '/^name:/,$p' > {full_conda_envs}/win-64-buildrun-addons.lock.yaml
-mv env_p4dev.yaml {full_conda_envs}/win-64-buildrun-addons.yaml
+CONDA_SUBDIR=win-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+conda-lock -f env_p4dev.yaml -f temp_override.yaml --kind env -p win-64
+mv conda-win-64.lock.yml {full_conda_envs}/win-64-buildrun-addons-py{pyver}.lock.yaml
+mv env_p4dev.yaml        {full_conda_envs}/win-64-buildrun-addons.yaml
 
+rm temp_override.yaml
 """
 
     with open("deps_deploy_devtools.sh", "w") as fp:
