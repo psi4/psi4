@@ -338,6 +338,8 @@ ExternalProject_Add(psi4-core
               -DENABLE_mdi=${ENABLE_mdi}
               -DENABLE_BrianQC=${ENABLE_BrianQC}
               -DENABLE_OpenOrbitalOptimizer=${ENABLE_OpenOrbitalOptimizer}
+              -DENABLE_bse=${ENABLE_bse}
+              -DENABLE_qcmanybody=${ENABLE_qcmanybody}
               -DENABLE_OPENMP=${ENABLE_OPENMP}
               -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
               -DTargetHDF5_DIR=${TargetHDF5_DIR}
