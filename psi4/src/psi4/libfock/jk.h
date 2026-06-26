@@ -393,6 +393,7 @@ class PSI_API JK {
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const = 0;
     virtual std::string name() = 0;
+    // TODO: investigate if JK::memory_estimate and all of its derived variants could be made const
     virtual size_t memory_estimate() = 0;
 
     // => Knobs <= //
@@ -963,7 +964,7 @@ class PSI_API DiskDFJK : public JK {
     void initialize_w_temps();
     void free_w_temps();
 
-    // => J <= //
+    // => J and K <= //
     virtual void initialize_JK_core();
     virtual void initialize_JK_disk();
     virtual void manage_JK_core();
@@ -1051,26 +1052,30 @@ class PSI_API DiskDFJK : public JK {
  * cholesky decomposition technology
  */
 class PSI_API CDJK : public DiskDFJK {
+   private:
+    /// @brief Tolerance used in the Cholesky decomposition. Set by the ctor.
+    const double cholesky_tolerance_;
+    /// @brief The number of Cholesky vectors.
+    long int ncholesky_;
+
    protected:
     std::string name() override { return "CDJK"; }
     size_t memory_estimate() override;
 
     /// integral engine for computing CD integrals
+    PSI_DEPRECATED(
+        "CDJK::cderi_ is planned to be moved inside CDJK::initialize_JK_core. Unless someone speaks up, 1.11 may be "
+        "the last release to have it.")
     std::shared_ptr<TwoBodyAOInt> cderi_;
-
-    // the number of cholesky vectors
-    long int ncholesky_;
 
     // => Required Algorithm-Specific Methods <= //
 
     virtual bool is_core() { return true; }
 
-    // => J <= //
+    // => J and K <= //
     void initialize_JK_core() override;
     void initialize_JK_disk() override;
     void manage_JK_core() override;
-
-    double cholesky_tolerance_;
 
     // => Accessors <= //
 
@@ -1081,20 +1086,36 @@ class PSI_API CDJK : public DiskDFJK {
     void print_header() const override;
 
    public:
-    // => Constructors < = //
+    // => Constructor and destructor < = //
 
-    /**
-     * @param primary primary basis set for this system.
-     *        AO2USO transforms will be built with the molecule
-     *        contained in this basis object, so the incoming
-     *        C matrices must have the same spatial symmetry
-     *        structure as this molecule
-     * @param cholesky_tolerance tolerance for cholesky decomposition.
-     */
+    /// @brief Constructor for CDJK (Coulomb and exchange matrices via Cholesky decomposition) objects
+    /// @param primary Primary basis set for this system. AO2USO transforms will be built with the molecule contained in
+    /// this basis object, so the incoming C matrices must have the same spatial symmetry structure as this molecule.
+    /// @param options
+    /// @param cholesky_tolerance Tolerance for the cholesky decomposition.
+    /// @note Cholesky needs no auxiliary basis, but the parent constructor demands one, so the primary basis is passed
+    /// into the auxiliary_ slot as a placeholder.
     CDJK(std::shared_ptr<BasisSet> primary, Options& options, double cholesky_tolerance);
 
-    /// Destructor
-    ~CDJK() override;
+    /// @brief Destructor for CDJK (Coulomb and exchange matrices via Cholesky decomposition) objects
+    /// @note Explicitly saying we want to override the inherited dtor with the default dtor for this object is not
+    /// strictly necessary, but it helps disarm a footgun. Since this is an override, the corresponding base class
+    /// function must be virtual. Hypothetically, someone could try to change ~JK() to not be virtual, which would turn
+    /// std::unique_ptr<JK> objects into UB hazards. For example if std::unique_ptr<JK> is given a DiskDFJK* to hold
+    /// onto, when unique_ptr destructs it would execute delete JK*, which would only call ~JK(), leaking everything
+    /// that ~DiskDFJK() would have cleaned up. Currently since ~JK() is virtual, delete JK* on a DiskDFJK* actually starts
+    /// at ~DiskDFJK(), which then eventually also calls ~JK(). With this override below in place, changing ~JK() to not be
+    /// virtual would give a compile error, hopefully leading the developer to reconsider.
+    ~CDJK() override = default;
+
+    // => Knobs <= //
+
+    /// @brief Configure range-separated exchange (wK) in CDJK.
+    /// @param do_wK Should CDJK compute range-separated exchange (wK)? Must always be false.
+    /// @note SCF_TYPE CD has no range-separated (wK) implementation yet. Therefore this function rejects attempts to
+    /// set_do_wK to true. If a linter complains: yes we do want both override and final. They are not exactly the same
+    /// thing, nor is final a strict superset of override.
+    void set_do_wK(bool do_wK) override final;
 };
 
 /**

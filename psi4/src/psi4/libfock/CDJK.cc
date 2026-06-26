@@ -47,26 +47,39 @@
 #include <omp.h>
 #endif
 
-using namespace psi;
-
 namespace psi {
 
 CDJK::CDJK(std::shared_ptr<BasisSet> primary, Options& options, double cholesky_tolerance)
     : DiskDFJK(primary, primary, options), cholesky_tolerance_(cholesky_tolerance) {}
-CDJK::~CDJK() {}
-void CDJK::initialize_JK_disk() { throw PsiException("Disk algorithm for CD JK not implemented.", __FILE__, __LINE__); }
+
+void CDJK::initialize_JK_disk() { throw PSIEXCEPTION("Disk algorithm for CD JK not implemented."); }
+
+void CDJK::set_do_wK(const bool do_wK) {
+    if (do_wK)
+        throw PSIEXCEPTION(
+            "CDJK (Coulomb and exchange via Cholesky decomposition) does not support range-separated (wK) exchange.");
+    DiskDFJK::set_do_wK(do_wK);
+}
+
 size_t CDJK::memory_estimate() {
     // Size is unknown until actual evaluation
-    size_t nbf = primary_->nbf();
-
+    const size_t nbf = primary_->nbf();
     // Assume cholesky index is ~4x of nbf.
     return nbf * nbf * nbf * 4;
 }
 
 void CDJK::initialize_JK_core() {
     timer_on("CD: cholesky decomposition");
+    // TODO: Fix after the cderi_ deprecation is out in v1.11
+    // this should probably be
+    //      IntegralFactory factory(primary_, primary_, primary_, primary_);
+    //      const std::shared_ptr<TwoBodyAOInt> cderi = factory.eri();
+    // in the future. A TwoBodyAOInt object keeps the factory as a raw non-owning back-pointer (const IntegralFactory
+    // *integral_) and is therefore probably quite a dangerous thing if it ever outlives the IntegralFactory that was
+    // used for constructing the TwoBodyAOInt.
     auto integral = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     cderi_ = std::shared_ptr<TwoBodyAOInt>(integral->eri());
+    
     int ntri = cderi_->function_pairs().size();
     /// If user asks to read integrals from disk, just read them from disk.
     /// Qmn is only storing upper triangle.
@@ -94,7 +107,7 @@ void CDJK::initialize_JK_core() {
     /// Kinda silly to check for memory after you perform CD.
     /// Most likely redundant as cholesky also checks for memory.
     if (memory_ < ((size_t)sizeof(double) * three_memory + (size_t)sizeof(double) * ncholesky_ * nbf * nbf))
-        throw PsiException("Not enough memory for CD.", __FILE__, __LINE__);
+        throw PSIEXCEPTION("Not enough memory for CD.");
 
     std::shared_ptr<Matrix> L = Ch->L();
     double** Lp = L->pointer();
@@ -157,6 +170,8 @@ void CDJK::print_header() const {
         outfile->Printf("    Cholesky tolerance:   %11.2E\n", cholesky_tolerance_);
         outfile->Printf("    No. Cholesky vectors: %11li\n\n", ncholesky_);
     }
-    if (do_wK_) throw PsiException("No wk for scf_type cd.", __FILE__, __LINE__);
+    if (do_wK_)
+        throw PSIEXCEPTION(
+            "CDJK (Coulomb and exchange via Cholesky decomposition) does not support range-separated (wK) exchange.");
 }
 }  // namespace psi
