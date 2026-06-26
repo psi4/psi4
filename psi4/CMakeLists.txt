@@ -145,6 +145,16 @@ if(${ENABLE_Einsums})
     get_property(_loc TARGET Einsums::Einsums PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using Einsums${ColourReset}: ${_loc} (version ${Einsums_VERSION})")
+
+    # Add the h5cpp includes from Einsums::h5cpp target to Einsums::Einsums because
+    # Einsums headers that live under include/Einsums/h5cpp/ are included as <h5cpp/...>.
+    if(TARGET Einsums::h5cpp)
+        get_target_property(_h5cpp_inc Einsums::h5cpp INTERFACE_INCLUDE_DIRECTORIES)
+        if(_h5cpp_inc)
+            set_property(TARGET Einsums::Einsums APPEND PROPERTY
+                INTERFACE_INCLUDE_DIRECTORIES "${_h5cpp_inc}")
+        endif()
+    endif()
 else()
     message(STATUS "Disabled Einsums ${Einsums_DIR}")
 endif ()
