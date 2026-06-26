@@ -151,7 +151,7 @@ jobs:
 
       # fetch-depth: 0 gets git history so Psi4 version is computable
     - name: Checkout Psi4
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
@@ -340,7 +340,7 @@ jobs:
 
     - name: Special Config - Download MolSSI/QCFractal Repo
       if: runner.os == 'Linux'
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: MolSSI/QCFractal
         path: qca

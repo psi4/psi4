@@ -49,6 +49,7 @@ if(${ENABLE_dkh})
         set(dkh_DIR ${STAGED_INSTALL_PREFIX}/${_dkh_dir} CACHE PATH "path to internally built dkhConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: dkh${ColourReset}")
     add_library(dkh_external INTERFACE)  # dummy
 endif()
 

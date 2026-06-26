@@ -60,6 +60,7 @@ if(${ENABLE_libefp})
         set(pylibefp_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/pylibefp CACHE PATH "path to internally built pylibefpConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: libefp${ColourReset} (deferrable to runtime)")
     add_library(pylibefp_external INTERFACE)  # dummy
 endif()
 

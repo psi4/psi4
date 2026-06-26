@@ -54,5 +54,6 @@ if(${ENABLE_simint})
         set(simint_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/simint CACHE PATH "path to internally built simintConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: simint${ColourReset}")
     add_library(simint_external INTERFACE)  # dummy
 endif()

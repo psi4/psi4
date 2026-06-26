@@ -68,5 +68,6 @@
         set(PCMSolver_DIR ${STAGED_INSTALL_PREFIX}/${_pcmsolver_dir} CACHE PATH "path to internally built PCMSolverConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: PCMSolver${ColourReset}")
     add_library(pcmsolver_external INTERFACE)  # dummy
 endif()
