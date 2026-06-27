@@ -673,7 +673,6 @@ data:
         - sphinx-tabs
         - autodoc-pydantic=2
         - qcportal
-        - "gxx_linux-64=14.3.0=hc876b51_14"
         - "setuptools<82.0.0"
         - sphobjinv
       aux_build_names_note:
