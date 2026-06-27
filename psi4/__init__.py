@@ -112,18 +112,10 @@ import sys
 _enabled_choice = ("1", "ON", "YES", "TRUE", "Y")
 if "@ENABLE_PCMSolver@".upper() in _enabled_choice:  # PCMSolver
     sys.path.insert(1, r"@PCMSolver_PYMOD@")
-if "@ENABLE_cppe@".upper() in _enabled_choice:  # cppe
-    sys.path.insert(1, r"@cppe_PYMOD@")
-if "@ENABLE_ddx@".upper() in _enabled_choice:  # pyddx
-    sys.path.insert(1, r"@pyddx_PYMOD@")
-if "@ENABLE_libefp@".upper() in _enabled_choice:  # pylibefp
-    sys.path.insert(1, r"@pylibefp_PYMOD@")
+if "@ENABLE_libefp@".upper() in _enabled_choice):  # pylibefp
+    sys.path.insert(1, str(Path(r"@PY_pylibefp@").resolve().parent))
 if "@ENABLE_gdma@".upper() in _enabled_choice:  # gdma
     sys.path.insert(1, r"@gdma_PYMOD@")
-if "@ENABLE_bse@".upper() in _enabled_choice:  # bse
-    sys.path.insert(1, r"@bse_PYMOD@")
-if "@ENABLE_qcmanybody@".upper() in _enabled_choice:  # qcmanybody
-    sys.path.insert(1, r"@qcmanybody_PYMOD@")
 del _enabled_choice
 
 # Create a custom logger
