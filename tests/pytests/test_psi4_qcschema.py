@@ -115,7 +115,6 @@ def test_psi4_cas(datadir, schver):
 
 
 @uusing("qcmanybody")
-@pytest.mark.nbody
 @pytest.mark.parametrize("schver", [pytest.param(1, marks=[pytest.mark.skipif(_ispy314, reason="Py314+QCSk1")]), pytest.param(2)])
 def test_psi4_dfmp2(datadir, schver):
     """dfmp2-1"""
