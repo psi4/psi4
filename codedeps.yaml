@@ -736,7 +736,7 @@ data:
       host: github
       account: pybind
       name: pybind11
-      commit: v3.0.0
+      commit: v3.0.3
     cmake:
       name: pybind11  # detect Python before pybind11
       constraint: 3.0.0

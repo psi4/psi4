@@ -500,9 +500,9 @@ void export_mints(py::module_& m) {
         .finalize();
 
     py::native_enum<Molecule::FragmentType>(m, "FragmentType", "enum.IntEnum", "Fragment activation status")
-        .value("Absent", Molecule::Absent)
-        .value("Real", Molecule::Real)
-        .value("Ghost", Molecule::Ghost)
+        .value("Absent", Molecule::Absent, "Neglect completely")
+        .value("Real", Molecule::Real, "Include, as normal")
+        .value("Ghost", Molecule::Ghost, "Include, but with ghost atoms")
         .export_values()
         .finalize();
 

@@ -138,7 +138,7 @@ jobs:
                         ninja ^
                         numpy ^
                         pint ^
-                        pybind11>=3.0.0 ^
+                        "pybind11>=3.0.0" ^
                         pytest=7 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
