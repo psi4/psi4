@@ -13,6 +13,9 @@ if (POLICY CMP0167)
     # L2 not prepared for BoostConfig instead of FindBoost
     cmake_policy(SET CMP0167 OLD)
 endif ()
+if (POLICY CMP0190)
+    cmake_policy(SET CMP0190 OLD)
+endif()
                                               # 3.15: useable FindPython with NumPy component and LOCATION
                                               # 3.8: CXX_STANDARD recognizes C++17
                                               # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
@@ -366,6 +369,7 @@ ExternalProject_Add(psi4-core
               -DOpenMP_CXX_FLAGS=${OpenMP_CXX_FLAGS}
               -DOpenMP_omp_LIBRARY=${OpenMP_omp_LIBRARY}
               -DOpenMP_gomp_LIBRARY=${OpenMP_gomp_LIBRARY}
+              -DOpenMP_iomp5_LIBRARY=${OpenMP_iomp5_LIBRARY}
               -DOpenMP_libiomp5md_LIBRARY=${OpenMP_libiomp5md_LIBRARY}
               -DOpenMP_pthread_LIBRARY=${OpenMP_pthread_LIBRARY}
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
