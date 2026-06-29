@@ -172,16 +172,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     // Note that case-insensitive options are only functional as
     //   globals, not as module-level, and should be defined sparingly
 
-    /*- Base filename for text files written by PSI, such as the
-    MOLDEN output file, the Hessian file, the internal coordinate file,
-    etc. Use the add_str_i function to make this string case sensitive. -*/
+    /*- Base filename (case sensitive) for text files written by PSI, such as the
+    MOLDEN output file, the Hessian file, the internal coordinate file, etc. -*/
     options.add_str_i("WRITER_FILE_LABEL", "");
     /*- The density fitting basis to use in coupled cluster computations. -*/
     options.add_str("DF_BASIS_CC", "");
     /*- Assume external fields are arranged so that they have symmetry. It is up to the user to know what to do here.
        The code does NOT help you out in any way! !expert -*/
     options.add_bool("EXTERNAL_POTENTIAL_SYMMETRY", false);
-    /*- Text to be passed directly into CFOUR input files. May contain
+    /*- Text (case sensitive) to be passed directly into CFOUR input files. May contain
     molecule, options, percent blocks, etc. Access through ``cfour {...}``
     block. -*/
     options.add_str_i("LITERAL_CFOUR", "");
@@ -261,7 +260,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     Useful when comparing analytic and grid-based methods. !expert -*/
     options.add_bool("ZORA_NR_DEBUG", false);
 
-    /*- Directory to which to write cube files. Default is the input file
+    /*- Directory (case sensitive) to which to write cube files. Default is the input file
     directory. -*/
     options.add_str_i("CUBEPROP_FILEPATH", ".");
 
@@ -342,7 +341,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Use total or separate potentials and charges in the PCM-SCF step. !expert -*/
         options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
-        /*- Name of the PCMSolver input file as parsed by pcmsolver.py !expert -*/
+        /*- Name of the PCMSolver input file (case sensitive) as parsed by pcmsolver.py !expert -*/
         options.add_str_i("PCMSOLVER_PARSED_FNAME", "");
         /*- PCM-CCSD algorithm type. -*/
         options.add_str("PCM_CC_TYPE", "PTE", "PTE");
@@ -432,7 +431,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     if (name == "PE" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs polarizable embedding model (PE) computations. -*/
 
-        /*- Name of the potential file OR contents of potential file to be written anonymously on-the-fly. -*/
+        /*- Name of the potential file (case sensitive) OR contents of potential file to be written anonymously on-the-fly. -*/
         options.add_str_i("POTFILE", "potfile.pot");
         /*- Threshold for induced moments convergence -*/
         options.add_double("INDUCED_CONVERGENCE", 1e-8);
@@ -1259,7 +1258,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("FISAPT_DO_FSAPT", true);
         /*- Do F-SAPT Dispersion? -*/
         options.add_bool("FISAPT_DO_FSAPT_DISP", true);
-        /*- Filepath to drop F-SAPT data within input file directory. To avoid files being written, set to 'none' -*/
+        /*- Filepath (case sensitive) to drop F-SAPT data within input file directory. To avoid files being written, set to 'none'. -*/
         options.add_str_i("FISAPT_FSAPT_FILEPATH", "fsapt/"); 
         /*- Do F-SAPT exchange scaling? (ratio of S^\infty to S^2) -*/
         options.add_bool("FISAPT_FSAPT_EXCH_SCALE", true);
@@ -1269,7 +1268,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("FISAPT_FSAPT_IND_RESPONSE", false);
         /*- Do sSAPT0 exchange-scaling with F-SAPT -*/
         options.add_bool("SSAPT0_SCALE", false);
-        /*- Filepath to drop sSAPT0 exchange-scaling F-SAPT data within input file directory -*/
+        /*- Filepath (case sensitive) to drop sSAPT0 exchange-scaling F-SAPT data within input file directory. -*/
         options.add_str_i("FISAPT_FSSAPT_FILEPATH", "s-fsapt/");
 
         // => CubicScalarGrid options <= //
@@ -1287,7 +1286,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Plot a scalar-field analysis -*/
         options.add_bool("FISAPT_DO_PLOT", false);
-        /*- Filepath to drop scalar data within input file directory -*/
+        /*- Filepath (case sensitive) to drop scalar data within input file directory. -*/
         options.add_str_i("FISAPT_PLOT_FILEPATH", "plot/");
 
         // => Localization Tech <= //
@@ -3087,17 +3086,22 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do write a gradient output file?  If so, the filename will end in
         .grad, and the prefix is determined by |globals__writer_file_label|
         (if set), or else by the name of the output file plus the name of
-        the current molecule. -*/
+        the current molecule. This keyword applies to both analytic and
+        finite-difference gradient computations. -*/
         options.add_bool("GRADIENT_WRITE", false);
         /*- Do write a hessian output file?  If so, the filename will end in
         .hess, and the prefix is determined by |globals__writer_file_label|
         (if set), or else by the name of the output file plus the name of
-        the current molecule. -*/
+        the current molecule. This keyword applies to both analytic and
+        finite-difference Hessian computations. When a frequency analysis
+        is requested, a JSON file with extension .vibrec is also written
+        according to the same filename pattern. -*/
         options.add_bool("HESSIAN_WRITE", false);
         /*- Do write a file containing the normal modes in Molden format?
-       If so, the filename will end in .molden_normal_modes, and the prefix is
-       determined by |globals__writer_file_label| (if set), or else by the name
-       of the output file plus the name of the current molecule. -*/
+        If so, the filename will end in .molden_normal_modes, and the prefix is
+        determined by |globals__writer_file_label| (if set), or else by the name
+        of the output file plus the name of the current molecule. This keyword
+        applies to both analytic and finite-difference frequency analyses. -*/
         options.add_bool("NORMAL_MODES_WRITE", false);
         /*- Do discount rotational degrees of freedom in a finite difference
         frequency calculation. Turned off at non-stationary geometries and

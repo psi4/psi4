@@ -1479,6 +1479,7 @@ data:
       target: gauxc::gauxc
       components: null
     #  gauxc_ENABLE_GPU
+    #  zstandard for testing
     conda:
       channel: conda-forge
       name: gauxc

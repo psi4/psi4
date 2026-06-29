@@ -47,7 +47,7 @@ def tear_down():
         "cavity.*",
         "grid*",
         "pytest_output.*h5",
-        "pytest_output.dat",
+        "pytest_output.dat",  # comment this line to view output file after pytest run
         "pytest_output.log",
         "pytest_output.*grad",
         "*pcmsolver.inp",

@@ -259,13 +259,13 @@ void DFHelper::AO_core(bool set_AO_core=true) {
         } else if (subalgo_ == "INCORE") {
             if (memory_ < required_core_size_) {
                 throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
-	        } else {
+            } else {
                 AO_core_ = true;
 
-	        if (print_lvl_ > 0) {
+                if (print_lvl_ > 0) {
                     outfile->Printf("  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.\n");
                 }
-	    }
+            }
         } else {
             throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The choices for SCF_SUBTYPE are AUTO, INCORE, and OUT_OF_CORE.");
         }

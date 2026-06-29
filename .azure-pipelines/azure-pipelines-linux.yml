@@ -56,7 +56,13 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON'
+        CMARGS: >-
+          -DOpenMP_C_FLAGS=-fopenmp=libomp
+          -DOpenMP_CXX_FLAGS=-fopenmp=libomp
+          -DOpenMP_C_LIB_NAMES=omp
+          -DOpenMP_CXX_LIB_NAMES=omp
+          -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
@@ -73,7 +79,12 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "ON"
         ENABLE_GAUXC: "ON"
-        CMARGS: '-DOpenMP_C_FLAGS=-fopenmp=libomp -DOpenMP_CXX_FLAGS=-fopenmp=libomp -DOpenMP_C_LIB_NAMES=omp -DOpenMP_CXX_LIB_NAMES=omp -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so'
+        CMARGS: >-
+          -DOpenMP_C_FLAGS=-fopenmp=libomp
+          -DOpenMP_CXX_FLAGS=-fopenmp=libomp
+          -DOpenMP_C_LIB_NAMES=omp
+          -DOpenMP_CXX_LIB_NAMES=omp
+          -DOpenMP_omp_LIBRARY=/usr/share/miniconda/envs/p4env/lib/libomp.so
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: ""
         ADVISOR_DISABLE_ARGS: "compilers"
@@ -91,7 +102,9 @@ jobs:
         PYTEST_NAME_EXPR: 'not nonsense1'
         ENABLE_EINSUMS: "OFF"
         ENABLE_GAUXC: "OFF"
-        CMARGS: "-D ENABLE_XHOST=OFF -D psi4_ENABLE_PRECOMPILE_HEADERS=ON"
+        CMARGS: >-
+          -DENABLE_XHOST=OFF
+          -Dpsi4_ENABLE_PRECOMPILE_HEADERS=ON
         CM_GENERATOR: "Ninja"
         ADVISOR_ARGS: "--compiler IntelLLVM"
         ADVISOR_DISABLE_ARGS: ""
@@ -212,7 +225,7 @@ jobs:
         -D ENABLE_gauxc="${ENABLE_GAUXC}" \
         -D ENABLE_OpenOrbitalOptimizer=ON \
         -D FORCE_PEDANTIC=ON \
-        ${CMARGS} \
+        $(CMARGS) \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 

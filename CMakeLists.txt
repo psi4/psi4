@@ -50,7 +50,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    >>> cmake --build objdir --target install -j`getconf _NPROCESSORS_ONLN`
 #    >>> eval $(objdir/stage/bin/psi4 --psiapi)
 
-#  <<<  Required build dependencies that Psi4 can't build itself  >>>
+#  <<<  Required build dependencies that Psi4 can't build itself; see also codedeps.yaml  >>>
 #
 #    - CMake (e.g., `conda install cmake`)
 #    - C++ and C compilers (C++20 compliant)
@@ -62,7 +62,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - pydantic >=1.0 (runtime only; e.g., `conda install pydantic -c conda-forge`)
 #    - msgpack-python (runtime only; e.g., `conda install msgpack-python`)
 #    - Eigen (for Libint2; e.g., `conda install eigen`)
-#    - Boost (header-only libs for Libint2; e.g., `conda install boost-cpp`)
+#    - Boost (header-only libs for Libint2; e.g., `conda install libboost-headers`)
 #    - SciPy (runtime only; avoidable through keyword setting; e.g., `conda install scipy`)
 #    - py-cpuinfo (runtime only; e.g., `conda install py-cpuinfo`)
 #    - psutil (runtime only; e.g., `conda install psutil`)
@@ -75,16 +75,16 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - CMAKE_C_COMPILER "C compiler"
 #    - CMAKE_C_FLAGS "Additional C flags"
 #    - CMAKE_CXX_COMPILER "C++ compiler"
-#    - CMAKE_CXX_FLAGS "Additional C++ flags"
+#    - CMAKE_CXX_FLAGS "Additional C++ flags (use per-config (e.g., CMAKE_CXX_FLAGS_DEBUG) to override e.g., -O3)"
 #    - CMAKE_Fortran_COMPILER "Fortran compiler (required for some add-ons)"
 #    - CMAKE_Fortran_FLAGS "Additional Fortran flags"
 #    - CMAKE_SHARED_LINKER_FLAGS "Additional linking flags for core.so/dll library"
 
 #  <<<  Detecting dependencies and add-ons  >>>
 #
-#    - Python_EXECUTABLE "Python interpreter to use (e.g., /path/to/bin/python3.7)"
-#    - Python_LIBRARY "Python library that goes with the interpreter (e.g., /path/to/lib/python3.7.so)"
-#    - Python_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
+#    - Python_EXECUTABLE "Python interpreter to use (e.g., /path/to/bin/python3.13)"
+#    - Python_LIBRARY "Python library that goes with the interpreter (e.g., /path/to/lib/libpython3.13.so)"
+#    - Python_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.13)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
 #    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, gau2grid, gauxc, gdma,

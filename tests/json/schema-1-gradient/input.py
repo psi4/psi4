@@ -30,7 +30,9 @@ json_data = {
     "method": "HF",
     "basis": "cc-pVDZ"
   },
-  "keywords": {"scf_type": "df", "d_convergence": 3e-8}
+  "keywords": {"scf_type": "df", "d_convergence": 3e-8,
+    "gradient_write": True},
+  "protocols": {"native_files": "all"},
 }
 
 # Write expected output
@@ -72,3 +74,5 @@ psi4.compare_arrays(expected_return_result, json_ret["return_result"].ravel(), 5
 
 for k in expected_properties.keys():                                                       #TEST
     psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
+
+psi4.compare(7, len(json_ret["native_files"]["psi4.grad"].splitlines()), "grad file found")  #TEST

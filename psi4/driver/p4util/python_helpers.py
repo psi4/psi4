@@ -166,7 +166,7 @@ def _pybuild_basis(
     # if a string, they search for a gbs file with that name.
     # if a function, it needs to apply a basis to each atom.
 
-    bs, basisdict = qcdb.BasisSet.pyconstruct(mol.to_dict(),
+    bs, basisdict = qcdb.BasisSet.pyconstruct(mol.to_dict(quiet=True),
                                               key,
                                               resolved_target,
                                               fitrole,
@@ -365,7 +365,7 @@ def _core_wavefunction_to_file(wfn: core.Wavefunction, filename: str = None) -> 
         raise ValidationError("Cannot serialize wavefunction with custom basissets.")
 
     wfn_data = {
-        'molecule': wfn.molecule().to_dict(),
+        'molecule': wfn.molecule().to_dict(quiet=True),
         'matrix': {
             'Ca':       wfn.Ca().to_array()       if wfn.Ca()       else None,
             'Cb':       wfn.Cb().to_array()       if wfn.Cb()       else None,

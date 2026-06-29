@@ -32,7 +32,9 @@ json_data = {
     "method": "HF",
     "basis": "cc-pVDZ"
   },
-  "keywords": {"scf_type": "df"}
+  "keywords": {"scf_type": "df",
+     "gradient_write": True, "writer_file_label": "schemagrad"},
+  "protocols": {"native_files": "all"},
   },
 }
 
@@ -73,3 +75,8 @@ psi4.compare_arrays(expected_return_result, json_ret.return_result.ravel(), 5, "
 
 for k in expected_properties.keys():                                                       #TEST
     psi4.compare_values(expected_properties[k], getattr(json_ret.properties, k), 5, k.upper())   #TEST
+
+psi4.compare(7, len(json_ret.native_files["psi4.grad"].splitlines()), "grad file found")  #TEST
+
+wall_time = json_ret.native_files["timer.json"]["DFH: initialize();Libint2ERI::Libint2ERI"]["wall_time"]
+psi4.compare(True, wall_time < 1, "timer file found")
