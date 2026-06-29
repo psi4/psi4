@@ -37,6 +37,7 @@ Also, many Python extensions to core classes:
  - JK (constructor)
  - VBase (grid)
  - OEProp (avail prop)
+ - ExternalPotential (addBasis)
 """
 
 __all__ = [
@@ -1630,3 +1631,29 @@ def _core_triplet(A, B, C, transA, transB, transC):
 # removed in v1.10 to reduce API footprint. deprecated 1.4 and no-op since 1.9
 core.Matrix.doublet = staticmethod(_core_doublet)
 core.Matrix.triplet = staticmethod(_core_triplet)
+
+## ExternalPotential helps
+
+
+def _core_externalpotential_addbasis(self, basis, coefs):
+    """Add a basis of S Gaussian functions with charge coefficients.
+
+    .. deprecated:: 1.11
+       Use :py:func:`psi4.core.ExternalPotential.addGaussian` instead.
+
+    """
+    warnings.warn(
+        "Using `psi4.core.ExternalPotential.addBasis` instead of `psi4.core.ExternalPotential.addGaussian` is deprecated\n",
+        category=FutureWarning,
+        stacklevel=2)
+    self.addGaussian(basis, coefs)
+    # raise UpgradeHelper(
+    #     "psi4.core.ExternalPotential.addBasis",
+    #     "psi4.core.ExternalPotential.addGaussian",
+    #     1.xx,
+    #     f" Replace `psi4.core.ExternalPotential.addBasis` with `psi4.core.ExternalPotential.addGaussian`.",
+    # )
+
+
+# Deprecated in 1.11 for clarity.
+core.ExternalPotential.addBasis = _core_externalpotential_addbasis

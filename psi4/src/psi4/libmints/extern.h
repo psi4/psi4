@@ -57,14 +57,20 @@ class PSI_API ExternalPotential {
 
     /// Name of potential
     std::string name_;
-    /// <Z,x,y,z> array of charges
-    std::vector<std::tuple<double, double, double, double> > charges_;
-    /// Auxiliary basis sets (with accompanying molecules and coefs) of diffuse charges
-    std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > bases_;
+    /// <Q,x,y,z> array of point charges
+    std::vector<std::tuple<double, double, double, double>> charges_;
+    /// Auxiliary basis sets representing diffuse charge densities and a vector
+    /// of charge coefficients
+    std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector>> gaussians_;
     /// A one-electron potential matrix provided by the user
     SharedMatrix matrix_;
-    /// Gradient, if available, as number of charges x 3 SharedMatrix
+    /// Gradient, if available, of the interaction energy w.r.t. to moving the
+    /// point charges as number of charges x 3 SharedMatrix
     SharedMatrix gradient_on_charges_;
+    /// Gradient, if available, of the interaction energy w.r.t. to moving the
+    /// diffuse Gaussian charges as a vector of the number of bases applied,
+    /// each containing a number of diffuses for each basis x 3 SharedMatrix
+    std::vector<SharedMatrix> gradients_on_gaussians_;
 
    public:
     /// Constructur, does nothing
@@ -75,22 +81,26 @@ class PSI_API ExternalPotential {
     /// Set name
     void setName(const std::string& name) { name_ = name; }
 
-    /// Add a charge Z at (x,y,z)
+    /// Add a charge Q at (x,y,z)
     /// Apr 2022: now always [a0] rather than units of Molecule
-    void addCharge(double Z, double x, double y, double z);
+    void addCharge(double Q, double x, double y, double z);
 
     /// get the vector of charges
-    const std::vector<std::tuple<double, double, double, double>> getCharges() const {
-        return charges_;
-    }
+    const std::vector<std::tuple<double, double, double, double>> getCharges() const { return charges_; }
+
+    /// get the vector of diffuse charge densities
+    const std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector>> getGaussians() const { return gaussians_; }
+
+    /// get the one-electron potential matrix
+    const SharedMatrix getMatrix() const { return matrix_; }
 
     /// Append some charges
     void appendCharges(std::vector<std::tuple<double, double, double, double>> new_charges) {
         charges_.insert(charges_.end(), new_charges.begin(), new_charges.end());
     }
- 
-    /// Add a basis of S auxiliary functions with DF coefficients
-    void addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs);
+
+    /// Add a basis of S Gaussian functions with charge coefficients
+    void addGaussian(std::shared_ptr<BasisSet> basis, SharedVector coefs);
 
     /// Add a one-electron potential matrix
     void setMatrix(SharedMatrix V) { matrix_ = V; }
@@ -110,6 +120,9 @@ class PSI_API ExternalPotential {
 
     /// Returns the gradient on the external potential point charges from the wfn-extern interaction
     SharedMatrix gradient_on_charges();
+
+    /// Returns the gradient on the external potential diffuse charges from the wfn-extern interaction
+    const std::vector<SharedMatrix> gradients_on_gaussians();
 
     /// Print a trace of the external potential
     void print(const std::string& out_fname = "outfile") const;
