@@ -571,6 +571,7 @@ void Wavefunction::common_init() {
             } else if (perturb_with == "DX") {
                 dipole_field_type_ = dx;
             } else if (perturb_with == "SPHERE") {
+                outfile->Printf("  WARNING: Option PERTURB_WITH=SPHERE is deprecated and may be removed as soon as v1.13.\n");
                 dipole_field_type_ = sphere;
             } else {
                 outfile->Printf("Unknown PERTURB_WITH. Applying no perturbation.\n");
