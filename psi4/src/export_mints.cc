@@ -1650,7 +1650,7 @@ void export_mints(py::module& m) {
         .def("addCharge", &ExternalPotential::addCharge, "Add a charge Q at (x,y,z)", "Q"_a, "x"_a, "y"_a, "z"_a)
         .def("getCharges", &ExternalPotential::getCharges, "Get the vector of charge tuples")
         .def("getGaussians", &ExternalPotential::getGaussians,
-             "Get the vector of tuples of basis sets representing diffuse charges and the charge coefficient")
+             "Get the vector of tuples for diffuse charges, each being a paired basis set of S Gaussian functions and a vector of charge coefficients")
         .def("getMatrix", &ExternalPotential::getMatrix, "Get the vector one-electron potential matrix")
         .def("appendCharges", &ExternalPotential::appendCharges,
              "Append a vector of charge tuples to a current ExternalPotential")
