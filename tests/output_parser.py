@@ -10,8 +10,13 @@ from typing import Dict, Union
 
 PathLike = Union[str, Path]
 
+SCF_REFERENCES = ("RHF", "ROHF", "UHF", "CUHF", "RKS", "UKS")
+SCF_LABELS = set(SCF_REFERENCES) | {f"DF-{reference}" for reference in SCF_REFERENCES}
+CORRELATION_LABELS = {"LMP2", "PNO-LMP2", "LCCSD", "LCCSD(T)"}
+PROPERTY_LABELS = {"MBIS"}
 ITERATION_RE = re.compile(
-    r"^\s*@(?P<label>[A-Za-z0-9+\-]+)\s+iter\s+(?P<iteration>\d+):(?P<rest>.*)$"
+    r"^\s*@(?P<label>(?:DF-)?(?:RHF|ROHF|UHF|CUHF|RKS|UKS)|LMP2|PNO-LMP2|LCCSD(?:\(T\))?|MBIS)"
+    r"\s+iter\s+(?P<iteration>\d+):(?P<rest>.*)$"
 )
 SCF_ACCELERATOR_RE = re.compile(
     r"\b(?:A|E)?DIIS\b(?:/\b(?:A|E)?DIIS\b)*|\bSOSCF\b",
@@ -31,6 +36,15 @@ PSI4_GIT_RE = re.compile(
     r"^\s*Git:\s+Rev\s+(?:\{(?P<branch>[^}]*)\}\s+)?(?P<githash>[0-9a-f]{7,40})(?:\s+(?P<dirty>dirty))?\s*$",
     re.IGNORECASE,
 )
+SCF_ACCELERATOR_ORDER = ("ADIIS", "EDIIS", "DIIS", "SOSCF")
+
+
+def _accelerator_category(labels):
+    """Return one canonical, exclusive category for an SCF iteration."""
+    unique_labels = set(labels)
+    if not unique_labels:
+        return "NONE"
+    return "/".join(label for label in SCF_ACCELERATOR_ORDER if label in unique_labels)
 
 
 def extract_scf_iterations(output_file: PathLike) -> Dict:
@@ -46,13 +60,19 @@ def extract_scf_iterations(output_file: PathLike) -> Dict:
         @DF-RHF iter   1:
         @UHF iter   8:
 
+    Local-correlation iteration rows are counted separately under
+    ``correlation``, while MBIS density-partitioning iterations are counted
+    under ``properties``. Empty non-SCF sections are omitted.
+
     Numeric iteration ``0`` is counted because Psi4 emits it as a real SCF
     iteration row for some calculation paths.
 
     Per-iteration SCF accelerator labels are counted from SCF iteration rows.
     Mixed DIIS-family labels such as ``ADIIS/DIIS`` are split and counted under
-    both labels. SOSCF is counted when it appears on a numeric SCF iteration
-    row.
+    both labels in ``accelerators``. They are also counted once under the
+    canonical combined label in ``accelerator_raw``.
+    Iterations without a recognized accelerator are categorized as ``NONE``,
+    so the exclusive raw counts sum to ``total_iterations``.
 
     Explicit geometry optimization step rows from OptKing ``Convergence Check``
     sections are counted as ``optimization.cycles``. A bare trailing ``~`` is
@@ -62,6 +82,9 @@ def extract_scf_iterations(output_file: PathLike) -> Dict:
     scf_total_iterations = 0
     scf_iterations_by_label = Counter()
     scf_accelerators = Counter()
+    scf_accelerator_categories = Counter()
+    correlation_iterations_by_label = Counter()
+    property_iterations_by_label = Counter()
     optimization = Counter()
     psi4_version = None
     psi4_branch = None
@@ -104,13 +127,24 @@ def extract_scf_iterations(output_file: PathLike) -> Dict:
 
             label = match.group("label")
 
+            if label in CORRELATION_LABELS:
+                correlation_iterations_by_label[label] += 1
+                continue
+
+            if label in PROPERTY_LABELS:
+                property_iterations_by_label[label] += 1
+                continue
+
             scf_total_iterations += 1
             scf_iterations_by_label[label] += 1
+            accelerator_labels = []
             for accelerator_match in SCF_ACCELERATOR_RE.finditer(match.group("rest")):
                 for accelerator_label in accelerator_match.group(0).upper().split("/"):
+                    accelerator_labels.append(accelerator_label)
                     scf_accelerators[accelerator_label] += 1
+            scf_accelerator_categories[_accelerator_category(accelerator_labels)] += 1
 
-    return {
+    data = {
         "test_name": output_path.parent.name,
         "psi4_version": psi4_version,
         "psi4_branch": psi4_branch,
@@ -120,11 +154,24 @@ def extract_scf_iterations(output_file: PathLike) -> Dict:
             "total_iterations": scf_total_iterations,
             "iterations_by_label": dict(sorted(scf_iterations_by_label.items())),
             "accelerators": dict(sorted(scf_accelerators.items())),
+            "accelerator_raw": dict(sorted(scf_accelerator_categories.items())),
         },
         "optimization": {
             "cycles": optimization["cycles"],
         },
     }
+    if correlation_iterations_by_label:
+        data["correlation"] = {
+            "total_iterations": sum(correlation_iterations_by_label.values()),
+            "iterations_by_label": dict(sorted(correlation_iterations_by_label.items())),
+        }
+    if property_iterations_by_label:
+        data["properties"] = {
+            "total_iterations": sum(property_iterations_by_label.values()),
+            "iterations_by_label": dict(sorted(property_iterations_by_label.items())),
+        }
+
+    return data
 
 
 def write_scf_iterations_json(output_file: PathLike, json_file: PathLike = None) -> Path:
@@ -168,6 +215,15 @@ def main(argv=None) -> int:
         print("SCF accelerators:")
         for label, count in data["scf"]["accelerators"].items():
             print(f"  {label}: {count}")
+    if data["scf"]["accelerator_raw"]:
+        print("SCF accelerator raw counts:")
+        for label, count in data["scf"]["accelerator_raw"].items():
+            print(f"  {label}: {count}")
+    for section, heading in (("correlation", "Correlation iterations"), ("properties", "Property iterations")):
+        if section in data:
+            print(f"{heading}: {data[section]['total_iterations']}")
+            for label, count in data[section]["iterations_by_label"].items():
+                print(f"  {label}: {count}")
     if data["optimization"]["cycles"]:
         print("Optimization:")
         for label, count in data["optimization"].items():

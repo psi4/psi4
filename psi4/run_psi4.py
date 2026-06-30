@@ -231,6 +231,9 @@ warnings.formatwarning = custom_formatwarning
 sys.path.insert(1, lib_dir)
 import psi4  # isort:skip
 
+psi4_version = psi4.version_formatter("{version}")
+psi4_commit_hash = psi4.version_formatter("{githash}")
+
 # Prevents a poor option combination
 if args['plugin_template'] and (not args['plugin_name']):
     raise KeyError("Please specify a '--plugin-name' for your plugin template!")
@@ -374,7 +377,11 @@ atexit.register(psi4.extras.exit_printing, start_time=start_time)
 try:
     exec(content)
     try:
-        psi4.driver.p4util.write_timer_json("timer.json")
+        psi4.driver.p4util.write_timer_json(
+            "timer.json",
+            psi4_version=psi4_version,
+            psi4_commit_hash=psi4_commit_hash,
+        )
     except Exception as timer_exception:
         psi4.core.print_out(f"\nTimer JSON export failed: {timer_exception}\n")
     psi4.extras._success_flag_ = True

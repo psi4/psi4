@@ -436,7 +436,12 @@ def _write_molden(
 
 core.Wavefunction.write_molden = _write_molden
 
-def write_timer_json(filename: Optional[str] = None):
+def write_timer_json(
+    filename: Optional[str] = None,
+    *,
+    psi4_version: Optional[str] = None,
+    psi4_commit_hash: Optional[str] = None,
+):
     """Write timing information from Psi4 timers to a JSON file.
 
     Parameters
@@ -444,6 +449,10 @@ def write_timer_json(filename: Optional[str] = None):
     filename : Optional[str]
         Destination file name for JSON file. If unspecified (None), 
         defaults to "timer.json".
+    psi4_version : Optional[str]
+        Psi4 version associated with the timer records.
+    psi4_commit_hash : Optional[str]
+        Git commit hash associated with the timer records.
 
     Returns
     -------
@@ -465,6 +474,10 @@ def write_timer_json(filename: Optional[str] = None):
     data = {
         "timers": timer_records,
     }
+    if psi4_version is not None:
+        data["psi4_version"] = psi4_version
+    if psi4_commit_hash is not None:
+        data["psi4_commit_hash"] = psi4_commit_hash
 
     # Write to json file
     with open(filename, "w") as jsonfile:
