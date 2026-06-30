@@ -452,6 +452,13 @@ void DiskDFJK::preiterations() {
         }
     }
 
+    if (print_ > 0 && memdfjk_memory_estimate_) {
+        outfile->Printf("  MemDFJK Memory: AOs need %.3f GiB; user supplied %.3f GiB.\n",
+                        memdfjk_memory_estimate_ * 8 / (1024 * 1024 * 1024.0),
+                        memory_ * 8 / (1024 * 1024 * 1024.0));
+        outfile->Printf("  MemDFJK requires too much memory. DiskDFJK algorithm will be used.\n\n");
+    }
+
     // Core or disk?
     is_core_ = is_core();
 

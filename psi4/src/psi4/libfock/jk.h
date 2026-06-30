@@ -919,6 +919,8 @@ class PSI_API DiskDFJK : public JK {
     int max_nocc_;
     /// Number of significant function pairs that survive the sieve process
     size_t n_function_pairs_ = 0;
+    /// MemDFJK memory estimate retained when SCF_TYPE=DF falls back to DiskDFJK
+    size_t memdfjk_memory_estimate_ = 0;
     /// Integral engines for each thread
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri_;
     /// Integral engines for each thread for erf integrals
@@ -1036,6 +1038,7 @@ class PSI_API DiskDFJK : public JK {
     /// defaults to AUTO (Psi4 selects by default)
     ///
     void set_subalgo(std::string subalgo) { subalgo_ = subalgo; }
+    void set_memdfjk_memory_estimate(size_t memory) { memdfjk_memory_estimate_ = memory; }
 
     // => Accessors <= //
 
@@ -1342,4 +1345,3 @@ class PSI_API CompositeJK : public JK {
 }
 
 #endif
-
