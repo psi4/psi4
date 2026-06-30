@@ -70,6 +70,7 @@ if(${ENABLE_CheMPS2})
         set(CheMPS2_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/CheMPS2 CACHE PATH "path to internally built CheMPS2Config.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: CheMPS2${ColourReset}")
     add_library(chemps2_external INTERFACE)  # dummy
 endif()
 

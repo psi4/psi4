@@ -32,6 +32,7 @@ if(${ENABLE_IntegratorXX})
         set(IntegratorXX_DIR ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/cmake/IntegratorXX CACHE PATH "path to internally built IntegratorXXConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: IntegratorXX${ColourReset}")
     add_library(integratorxx_external INTERFACE)  # dummy
 endif()
 

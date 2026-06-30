@@ -244,8 +244,6 @@ build system will automatically download and build.
 
 * optking |w---w| `[what is optking] <https://optking.readthedocs.io/en/latest/>`_ (runtime dependency, required at build-time) 
 
-* QCManyBody |w---w| `[what is QCManyBody?] <https://molssi.github.io/QCManyBody/>`_ (August 2025; added by v1.10; runtime dependency, required at build-time)
-
 Additionally, there are runtime-only dependencies:
 
 * msgpack-python for MessagePack https://msgpack.org/ (transitive dependency of QCElemental; optional for QCElemental but required for |PSIfour|)
@@ -376,6 +374,8 @@ Additionally, there are runtime-loaded capabilities:
 * MDI |w---w| https://github.com/MolSSI-MDI/MDI_Library
 
 * :ref:`ddx <sec:ddx>` |w---w| https://github.com/ddsolvation/ddx
+
+* QCManyBody |w---w| `[what is QCManyBody?] <https://molssi.github.io/QCManyBody/>`_ (July 2026 - optional by v1.12; August 2025 - added required by v1.10; runtime dependency, optional at build-time)
 
 
 .. _`faq:condapsi4dev`:

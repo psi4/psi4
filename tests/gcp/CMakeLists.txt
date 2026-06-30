@@ -1,5 +1,7 @@
 add_subdirectory(pbeh3c)
-add_subdirectory(hf3c)
+if (ENABLE_qcmanybody)
+    add_subdirectory(hf3c)
+endif()
 add_subdirectory(hf3c-gradient)
 add_subdirectory(hf3c-hessian)
 add_subdirectory(dft-custom-hybrid)

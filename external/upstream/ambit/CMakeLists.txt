@@ -76,5 +76,6 @@ if(${ENABLE_ambit})
         set(ambit_DIR ${STAGED_INSTALL_PREFIX}/${_ambit_dir} CACHE PATH "path to internally built ambitConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: ambit${ColourReset}")
     add_library(ambit_external INTERFACE)  # dummy
 endif()

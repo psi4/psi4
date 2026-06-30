@@ -5,6 +5,7 @@ import pytest
 import pprint
 import os
 from shutil import copytree
+from addons import uusing
 
 import psi4
 
@@ -113,7 +114,7 @@ def test_psi4_cas(datadir, schver):
     assert psi4.compare_values(-76.073865006902, atres.return_result, 6, 'CASSCF Energy')
 
 
-@pytest.mark.nbody
+@uusing("qcmanybody")
 @pytest.mark.parametrize("schver", [pytest.param(1, marks=[pytest.mark.skipif(_ispy314, reason="Py314+QCSk1")]), pytest.param(2)])
 def test_psi4_dfmp2(datadir, schver):
     """dfmp2-1"""

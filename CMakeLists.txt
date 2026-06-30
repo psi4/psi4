@@ -134,6 +134,7 @@ option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can a
 option(ENABLE_IntegratorXX "Enables use of IntegratorXX density functional grids library" OFF)
 option(ENABLE_OpenOrbitalOptimizer "Enables the OpenOrbitalOptimizer library (requires Armadillo)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
+option(ENABLE_qcmanybody "Enables qcmanybody for n-body/BSSE workflows (can also be added at runtime)" OFF)
 option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
 option(ENABLE_v2rdm_casscf "Enables V2RDM_CASSCF plugin (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_psi4fockci "Enables Psi4FockCI plugin (can also be added at runtime)" OFF)
@@ -323,7 +324,6 @@ ExternalProject_Add(psi4-core
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DENABLE_ambit=${ENABLE_ambit}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
-              -DENABLE_cppe=${ENABLE_cppe}
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_IntegratorXX=${ENABLE_IntegratorXX}
               -DENABLE_gauxc=${ENABLE_gauxc}
@@ -333,7 +333,6 @@ ExternalProject_Add(psi4-core
               -DENABLE_simint=${ENABLE_simint}
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
-              -DENABLE_ddx=${ENABLE_ddx}
               -DENABLE_mdi=${ENABLE_mdi}
               -DENABLE_BrianQC=${ENABLE_BrianQC}
               -DENABLE_OpenOrbitalOptimizer=${ENABLE_OpenOrbitalOptimizer}

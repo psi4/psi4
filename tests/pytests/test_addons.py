@@ -913,7 +913,7 @@ def test_gpu_dfcc():
 
 
 
-@pytest.mark.nbody
+@uusing("qcmanybody")
 @uusing("dftd3")
 @uusing("gcp")
 def test_grimme_3c():
@@ -1621,4 +1621,3 @@ def test_pyeinsums_gemm(a, b, c, dtype, array):
     for i in range(a):
         for j in range(c):
             assert C[i, j] == pytest.approx(C_actual[i, j])
-

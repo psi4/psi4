@@ -49,5 +49,6 @@ if(${ENABLE_libefp})
         set(libefp_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/libefp CACHE PATH "path to internally built libefpConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: libefp${ColourReset} (deferrable to runtime)")
     add_library(libefp_external INTERFACE)  # dummy
 endif()

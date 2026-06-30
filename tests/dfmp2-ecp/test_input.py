@@ -2,7 +2,8 @@ import pytest
 from addons import *
 
 @uusing("ecpint")
-@ctest_labeler("quick;df;dfmp2;ecp;nbody")
+@uusing("qcmanybody")
+@ctest_labeler("quick;df;dfmp2;ecp")
 @pytest.mark.parametrize("oopkg", [
     pytest.param(False, id="internal"),
     pytest.param(True,  id="openorbitaloptimizer", marks=using("ooo")),

@@ -4,9 +4,10 @@ import re
 import pytest
 import numpy as np
 from qcelemental.testing import compare, compare_values
+from addons import uusing
 import psi4
 
-pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.nbody]
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 _sch_name = {1: "qcschema_output", 2: "qcschema_atomic_result"}
 _ispy314 = sys.version_info >= (3, 14)
@@ -62,35 +63,47 @@ _ie_uncp_grad = np.array(
      [ 0.           ,   0.            ,  0.000044919089]])
 
 
+_SEC_A = chr(0xA7) + "A"
+
+
+def _normalize_nbody_text(s: str) -> str:
+    """Normalize section symbol encoding on Windows to handle mojibake patterns."""
+    return (
+        s.replace("\ufffdA", "§A")   # '�A' -> '§A' (replacement char mojibake)
+         .replace("Â§", "§")         # Windows cp1252 double-encoding
+         .replace("\xa7", "§")       # Direct byte representation
+    )
+
+
 _stdouts = {
-    "cp_T": r"""
+    "cp_T": rf"""
 \s*   ==> N-Body: Counterpoise Corrected \(CP\) energies <==
 \s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*           §A\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN §A\s+2     -155.407610\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
+\s*           {_SEC_A}\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN {_SEC_A}\s+2     -155.407610\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
 \s*
-\s*MC Legend: §A: "\(auto\)"
+\s*MC Legend: {_SEC_A}: "\(auto\)"
 \s*
 """,
-    "cp_F": r"""
+    "cp_F": rf"""
 \s*   ==> N-Body: Counterpoise Corrected \(CP\) energies <==
 \s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*           §A\s+1        N/A                   0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN §A\s+2        N/A                  -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
+\s*           {_SEC_A}\s+1        N/A                   0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN {_SEC_A}\s+2        N/A                  -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d       -0.001726\d\d\d\d\d\d       -1.0831\d\d\d\d\d\d\d\d
 \s*
-\s*MC Legend: §A: "\(auto\)"
+\s*MC Legend: {_SEC_A}: "\(auto\)"
 \s*
 """,
-    "uncp": r"""
+    "uncp": rf"""
 \s*   ==> N-Body: Non-Counterpoise Corrected \(NoCP\) energies <==
 \s*     MC n-Body\s+Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
 \s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
-\s*           §A\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
-\s*  FULL/RTN §A\s+2     -155.408871\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d
+\s*           {_SEC_A}\s+1     -155.405884\d\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN {_SEC_A}\s+2     -155.408871\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d       -0.002987\d\d\d\d\d\d       -1.8746\d\d\d\d\d\d\d\d
 \s*
-\s*MC Legend: §A: "\(auto\)"
+\s*MC Legend: {_SEC_A}: "\(auto\)"
 \s*
 """,
 }
@@ -126,6 +139,7 @@ _stdouts["uncpcp"] = _stdouts["uncp"] + _stdouts["cp_T"]
     ("gradient", ["nocp", "cp"], None , 5, _tot_uncp_grad, "uncpcp"),  # return tot G          5
     ("gradient", ["nocp", "ssfc"], None , 5, _tot_uncp_grad, "uncpcp"),  # return tot G          5
 ])
+@uusing("qcmanybody")
 def test_nbody_number(driver, bsse_type, return_total_data, nbody_number, return_result, stdoutkey):
 
     eneyne = psi4.geometry("""
@@ -195,4 +209,4 @@ H   0.000000   0.000000   3.963929
 
     assert compare_values(return_result, ret.return_result, atol=1.e-6, label="manybody")
     assert compare(nbody_number, ret.extras["qcvars"]["NBODY NUMBER"], label="nbody number")
-    assert re.search(_stdouts[stdoutkey], ret.stdout, re.MULTILINE), f"N-Body pattern not found: {_stdouts[stdoutkey]}"
+    assert re.search(_stdouts[stdoutkey], _normalize_nbody_text(ret.stdout), re.MULTILINE), f"N-Body pattern not found: {_stdouts[stdoutkey]}"

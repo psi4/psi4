@@ -1,5 +1,6 @@
 from addons import *
 
+@uusing("qcmanybody")
 @uusing("gcp")
 @uusing("dftd3")
 @ctest_labeler("quick;smoke")

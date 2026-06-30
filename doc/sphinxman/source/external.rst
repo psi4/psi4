@@ -728,4 +728,5 @@ These environment variables will influence |PSIfours| behavior.
 .. envvar:: QCMANYBODY_EMBEDDING_CHARGES
 
    Set to allow embedding charges with many-body/counterpoise computations.
+   Relevant when QCManyBody addon is present.
 

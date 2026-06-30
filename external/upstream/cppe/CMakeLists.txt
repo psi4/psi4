@@ -55,5 +55,6 @@ if(${ENABLE_cppe})
 
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: cppe${ColourReset} (deferrable to runtime)")
     add_library(cppe_external INTERFACE)  # dummy
 endif()

@@ -99,5 +99,6 @@ if(${ENABLE_gauxc})
         set(gauxc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gauxc CACHE PATH "path to internally built gauxcConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: gauxc${ColourReset}")
     add_library(gauxc_external INTERFACE)  # dummy
 endif()

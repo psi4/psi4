@@ -55,6 +55,7 @@ if(${ENABLE_gdma})
         set(gdma_DIR ${STAGED_INSTALL_PREFIX}/${_gdma_dir} CACHE PATH "path to internally built gdmaConfig.cmake" FORCE)
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: gdma${ColourReset} (deferrable to runtime)")
     add_library(gdma_external INTERFACE)  # dummy
 endif()
 

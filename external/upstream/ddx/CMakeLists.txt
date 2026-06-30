@@ -37,5 +37,6 @@ if(${ENABLE_ddx})
             )
     endif()
 else()
+    message(STATUS "Optional addon ${Blue}unsought: ddx${ColourReset} (deferrable to runtime)")
     add_library(ddx_external INTERFACE)  # dummy
 endif()
