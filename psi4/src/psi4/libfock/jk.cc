@@ -445,7 +445,7 @@ void JK::USO2AO() {
     }
 
     // Transform D
-    double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
+    std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
     for (size_t N = 0; N < D_.size(); ++N) {
         // Input is already C1
         if (!input_symmetry_cast_map_[N]) {
@@ -467,11 +467,10 @@ void JK::USO2AO() {
             double** Urp = AO2USO_->pointer(h ^ symm);
             double** DSOp = D_[N]->pointer(h ^ symm);
             double** DAOp = D_ao_[N]->pointer();
-            C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, DSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
-            C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, DAOp[0], nao);
+            C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, DSOp[0], nsor, Urp[0], nsor, 0.0, temp.data(), nao);
+            C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp.data(), nao, 1.0, DAOp[0], nao);
         }
     }
-    delete[] temp;
 
     // Transform the left-index of all C matrices from SO basis to AO basis.
 

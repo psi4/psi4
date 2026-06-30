@@ -627,20 +627,20 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
                             if (!touched) {
                                 if (build_J) {
-                                    ::memset((void*)JTp[0L * max_task], '\0', dPsize * dQsize * sizeof(double));
-                                    ::memset((void*)JTp[1L * max_task], '\0', dRsize * dSsize * sizeof(double));
+                                    ::memset((void*)JTp[0L * max_task], '\0', static_cast<size_t>(dPsize) * dQsize * sizeof(double));
+                                    ::memset((void*)JTp[1L * max_task], '\0', static_cast<size_t>(dRsize) * dSsize * sizeof(double));
                                 }
 
                                 if (build_K) {
-                                    ::memset((void*)KTp[0L * max_task], '\0', dPsize * dRsize * sizeof(double));
-                                    ::memset((void*)KTp[1L * max_task], '\0', dPsize * dSsize * sizeof(double));
-                                    ::memset((void*)KTp[2L * max_task], '\0', dQsize * dRsize * sizeof(double));
-                                    ::memset((void*)KTp[3L * max_task], '\0', dQsize * dSsize * sizeof(double));
+                                    ::memset((void*)KTp[0L * max_task], '\0', static_cast<size_t>(dPsize) * dRsize * sizeof(double));
+                                    ::memset((void*)KTp[1L * max_task], '\0', static_cast<size_t>(dPsize) * dSsize * sizeof(double));
+                                    ::memset((void*)KTp[2L * max_task], '\0', static_cast<size_t>(dQsize) * dRsize * sizeof(double));
+                                    ::memset((void*)KTp[3L * max_task], '\0', static_cast<size_t>(dQsize) * dSsize * sizeof(double));
                                     if (!lr_symmetric_) {
-                                        ::memset((void*)KTp[4L * max_task], '\0', dRsize * dPsize * sizeof(double));
-                                        ::memset((void*)KTp[5L * max_task], '\0', dSsize * dPsize * sizeof(double));
-                                        ::memset((void*)KTp[6L * max_task], '\0', dRsize * dQsize * sizeof(double));
-                                        ::memset((void*)KTp[7L * max_task], '\0', dSsize * dQsize * sizeof(double));
+                                        ::memset((void*)KTp[4L * max_task], '\0', static_cast<size_t>(dRsize) * dPsize * sizeof(double));
+                                        ::memset((void*)KTp[5L * max_task], '\0', static_cast<size_t>(dSsize) * dPsize * sizeof(double));
+                                        ::memset((void*)KTp[6L * max_task], '\0', static_cast<size_t>(dRsize) * dQsize * sizeof(double));
+                                        ::memset((void*)KTp[7L * max_task], '\0', static_cast<size_t>(dSsize) * dQsize * sizeof(double));
                                     }
                                 }
                             }
