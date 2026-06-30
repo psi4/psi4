@@ -35,6 +35,22 @@
 
 #include <vector>
 
+#ifdef USING_Einsums
+#include <memory>  // std::allocator, for the RuntimeTensor alias below
+// Forward declarations only — keeps Einsums headers out of mintshelper.h (and the
+// shared PCH). Callers of these accessors include the relevant Einsums tensor
+// headers themselves (<Einsums/Tensor/TiledRuntimeTensor.hpp>, which also pulls
+// in RuntimeTensor).
+namespace einsums {
+template <typename T>
+struct TiledRuntimeTensor;
+template <typename T, typename Alloc>
+struct GeneralRuntimeTensor;
+template <typename T>
+using RuntimeTensor = GeneralRuntimeTensor<T, std::allocator<T>>;
+}
+#endif
+
 namespace psi {
 
 class CdSalcList;
@@ -340,6 +356,38 @@ class PSI_API MintsHelper {
 #endif
     /// SO Potential Integrals
     SharedMatrix so_potential(bool include_perturbations = true);
+#ifdef USING_Einsums
+    /// Copy a symmetry-blocked Matrix into a rank-2 einsums::TiledRuntimeTensor.
+    /// Each irrep block h becomes tile (h, h^symmetry); the global shape is the
+    /// matrix's rowspi x colspi. Owning copy (independent of the source Matrix).
+    einsums::TiledRuntimeTensor<double> tiled_from_matrix(SharedMatrix mat, const std::string &name);
+    /// SO overlap integrals as a (block-diagonal) tiled tensor.
+    einsums::TiledRuntimeTensor<double> so_overlap_tiled();
+    /// SO kinetic integrals as a tiled tensor.
+    einsums::TiledRuntimeTensor<double> so_kinetic_tiled();
+    /// SO potential (nuclear attraction) integrals as a tiled tensor.
+    einsums::TiledRuntimeTensor<double> so_potential_tiled();
+    /// SO two-electron integrals (pq|rs), chemists' notation, as a rank-4 tiled
+    /// tensor. Tiles are the symmetry-allowed irrep quadruples; each axis is
+    /// tiled by the SO-per-irrep dimension.
+    einsums::TiledRuntimeTensor<double> so_eri_tiled();
+    /// AO two-electron integrals (pq|rs), chemists' notation, as a dense rank-4
+    /// einsums::RuntimeTensor. AO integrals carry no point-group symmetry, so a
+    /// dense tensor (not a tiled one) is the natural representation. Built with
+    /// the performant shell-batched primitive (TwoBodyAOInt::compute_shell). N^4
+    /// storage — not recommended for large systems.
+    einsums::RuntimeTensor<double> ao_eri_einsums();
+    /// First-half (bra) MO transform of the AO two-electron integrals, integral-
+    /// direct: returns (pq|ls) = sum_{mn} C1[m,p] C2[n,q] (mn|ls) as a dense
+    /// rank-4 einsums::RuntimeTensor of shape (n1, n2, nbf, nbf), chemists'
+    /// notation. The bra is collapsed against C1/C2 one ket shell-pair at a
+    /// time, so the N^4 AO tensor is never materialized — memory scales as the
+    /// output (n1*n2*nbf^2), not N^4. The remaining ket (3rd/4th) quarter-
+    /// transforms are left to the caller (e.g. an einsums ComputeGraph). Assumes
+    /// C1/C2 carry no point-group symmetry (single irrep), matching the dense AO
+    /// representation. Schwarz screening / shell-pair batching are deferred.
+    einsums::RuntimeTensor<double> mo_bra_half_transform_einsums(SharedMatrix C1, SharedMatrix C2);
+#endif
     /// Vector SO Dipole Integrals
     std::vector<SharedMatrix> so_dipole() const;
     /// Vector SO Nabla Integrals

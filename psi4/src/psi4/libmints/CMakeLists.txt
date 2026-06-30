@@ -140,3 +140,34 @@ if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
       USING_OpenOrbitalOptimizer
     )
 endif()
+
+# Einsums tensor bridge: MintsHelper's so_*_tiled() / tiled_from_matrix() expose
+# psi4 integrals as einsums::TiledRuntimeTensor. PUBLIC so USING_Einsums and the
+# Einsums link propagate to modules that call these methods; guarded so libmints
+# still builds when Einsums is disabled. mintshelper.h only forward-declares the
+# tensor type, so non-Einsums consumers pay nothing.
+if(TARGET Einsums::Einsums)
+  # Einsums links HDF5 (DiskTensor/TensorIO), so consuming Einsums forces a real
+  # libhdf5 link. psi4's TargetHDF5 wrapper sets tgt::hdf5's interface to the bare
+  # name "hdf5-shared", but a config-less conda HDF5 never defines that target, so
+  # it leaks as a dangling `-lhdf5-shared`. Define it ourselves against the real
+  # library when nothing else has. (psi4 normally uses HDF5 header-only and never
+  # exercises this reference.)
+  if(NOT TARGET hdf5-shared)
+    find_library(EINSUMS_REAL_HDF5_LIB NAMES hdf5 hdf5-shared)
+    if(EINSUMS_REAL_HDF5_LIB)
+      add_library(hdf5-shared SHARED IMPORTED GLOBAL)
+      set_target_properties(hdf5-shared PROPERTIES
+        IMPORTED_LOCATION "${EINSUMS_REAL_HDF5_LIB}")
+    endif()
+  endif()
+  target_link_libraries(mints PUBLIC Einsums::Einsums)
+  target_compile_definitions(mints PUBLIC USING_Einsums)
+  if(DEFINED ENV{CONDA_TOOLCHAIN_BUILD} AND APPLE)
+    target_compile_definitions(mints
+      PUBLIC
+        _LIBCPP_DISABLE_AVAILABILITY
+        H5CPP_USE_OMP_ALIGNED_ALLOC
+      )
+  endif()
+endif()
