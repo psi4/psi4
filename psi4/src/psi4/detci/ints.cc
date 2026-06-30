@@ -50,7 +50,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
@@ -624,7 +624,7 @@ void CIWavefunction::read_dpd_ci_ints() {
     auto* tmp_onel_ints = new double[nmotri_full];
 
     // Read one electron integrals
-    iwl_rdone(PSIF_OEI, PSIF_MO_FZC, tmp_onel_ints, nmotri_full, 0, (print_ > 4), "outfile");
+    IWL::read_one(_default_psio_lib_.get(), PSIF_OEI, PSIF_MO_FZC, tmp_onel_ints, nmotri_full, 0, (print_ > 4), "outfile");
 
     // IntegralTransform does not properly order one electron integrals for
     // whatever reason

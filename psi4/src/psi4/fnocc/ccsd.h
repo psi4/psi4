@@ -30,7 +30,6 @@
 #define CCSD_H
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libmints/wavefunction.h"

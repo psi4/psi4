@@ -32,11 +32,15 @@
 */
 #include <cstdio>
 #include <cstdlib>
+#include <memory>
+#include <vector>
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libiwl/iwl.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libiwl/iwl_reader.h"
+#include "psi4/libiwl/iwl_writer.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psi4-dec.h"
 #include "MOInfo.h"
@@ -47,20 +51,15 @@
 namespace psi {
 namespace ccdensity {
 
-void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf, int **bucket_map, int p, int q, int r, int s, int perm_pr,
-                 int perm_qs, int perm_prqs, double value, std::string out);
+void idx_permute(dpdfile4 *File, std::vector<std::unique_ptr<IWLWriter>> &OutBuf, int **bucket_map, int p, int q, int r,
+                 int s, int perm_pr, int perm_qs, int perm_prqs, double value, std::string out);
 
 int file_build(dpdfile4 *File, int inputfile, double tolerance, int perm_pr, int perm_qs, int perm_prqs, int keep) {
-    struct iwlbuf InBuf;
-    int lastbuf;
     long int memoryb, memoryd;
     int h, nirreps, n, row, col, nump, numq, row_length, core_left, nbuckets;
     int **bucket_map, **bucket_offset, **bucket_rowdim, **bucket_size, offset;
-    Value *valptr;
-    Label *lblptr;
-    int idx, p, q, r, s;
+    int p, q, r, s;
     double value;
-    struct iwlbuf *SortBuf, *OutBuf;
     psio_address next;
 
     nirreps = File->params->nirreps;
@@ -136,51 +135,21 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance, int perm_pr, int
 
     outfile->Printf("\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
 
-    /* Set up IWL buffers for sorting */
-    SortBuf = (struct iwlbuf *)malloc(nbuckets * sizeof(struct iwlbuf));
-    for (n = 0; n < nbuckets; n++) iwl_buf_init(&SortBuf[n], PSIF_CC_MAX + 1 + n, tolerance, 0, 0);
+    /* Set up IWL buffers for sorting, one per bucket */
+    {
+        std::vector<std::unique_ptr<IWLWriter>> SortBuf;
+        SortBuf.reserve(nbuckets);
+        for (n = 0; n < nbuckets; n++)
+            SortBuf.push_back(std::make_unique<IWLWriter>(_default_psio_lib_, PSIF_CC_MAX + 1 + n, tolerance));
 
-    iwl_buf_init(&InBuf, inputfile, tolerance, 1, 1);
-
-    lblptr = InBuf.labels;
-    valptr = InBuf.values;
-    lastbuf = InBuf.lastbuf;
-
-    for (idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-        p = (int)lblptr[idx++];
-        q = (int)lblptr[idx++];
-        r = (int)lblptr[idx++];
-        s = (int)lblptr[idx++];
-
-        value = (double)valptr[InBuf.idx];
-
-        idx_permute(File, SortBuf, bucket_map, p, q, r, s, perm_pr, perm_qs, perm_prqs, value, "outfile");
-
-    } /* end loop through current buffer */
-
-    /* Now run through the rest of the buffers in the file */
-    while (!lastbuf) {
-        iwl_buf_fetch(&InBuf);
-        lastbuf = InBuf.lastbuf;
-
-        for (idx = 4 * InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-            p = (int)lblptr[idx++];
-            q = (int)lblptr[idx++];
-            r = (int)lblptr[idx++];
-            s = (int)lblptr[idx++];
-
-            value = (double)valptr[InBuf.idx];
-
-            idx_permute(File, SortBuf, bucket_map, p, q, r, s, perm_pr, perm_qs, perm_prqs, value, "outfile");
-
-        } /* end loop through current buffer */
-    }     /* end loop over reading buffers */
-
-    iwl_buf_close(&InBuf, keep);
-
-    for (n = 0; n < nbuckets; n++) {
-        iwl_buf_flush(&SortBuf[n], 1);
-        iwl_buf_close(&SortBuf[n], 1);
+        IWLReader eri(_default_psio_lib_, inputfile);
+        eri.set_keep(keep != 0);
+        for (const auto &integral : eri) {
+            idx_permute(File, SortBuf, bucket_map, integral.p, integral.q, integral.r, integral.s, perm_pr, perm_qs,
+                        perm_prqs, integral.value, "outfile");
+        }
+        // SortBuf writers flush the last buffer and close (keeping the temp
+        // files) when this scope ends; the input reader closes honoring `keep`.
     }
 
     free_int_matrix(bucket_map);
@@ -188,24 +157,19 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance, int perm_pr, int
     /* Now sort each buffer and send it to the final target */
     next = PSIO_ZERO;
     for (n = 0; n < nbuckets; n++) {
-        iwl_buf_init(&SortBuf[n], PSIF_CC_MAX + 1 + n, tolerance, 1, 0);
-        lastbuf = 0;
-
         for (h = 0; h < nirreps; h++) {
             File->matrix[h] = block_matrix(bucket_rowdim[n][h], File->params->coltot[h]);
         }
 
-        while (!lastbuf) {
-            iwl_buf_fetch(&SortBuf[n]);
-            lastbuf = SortBuf[n].lastbuf;
-
-            for (idx = 4 * SortBuf[n].idx; SortBuf[n].idx < SortBuf[n].inbuf; SortBuf[n].idx++) {
-                p = (int)SortBuf[n].labels[idx++];
-                q = (int)SortBuf[n].labels[idx++];
-                r = (int)SortBuf[n].labels[idx++];
-                s = (int)SortBuf[n].labels[idx++];
-
-                value = (double)SortBuf[n].values[SortBuf[n].idx];
+        {
+            IWLReader sortbuf(_default_psio_lib_, PSIF_CC_MAX + 1 + n);
+            sortbuf.set_keep(false);  // erase the temp bucket file once read
+            for (const auto &integral : sortbuf) {
+                p = integral.p;
+                q = integral.q;
+                r = integral.r;
+                s = integral.s;
+                value = integral.value;
 
                 h = File->params->psym[p] ^ File->params->qsym[q];
 
@@ -224,8 +188,6 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance, int perm_pr, int
                            next, &next);
             free_block(File->matrix[h]);
         }
-
-        iwl_buf_close(&SortBuf[n], 0);
     }
 
     for (n = 0; n < nbuckets; n++) {
@@ -236,8 +198,6 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance, int perm_pr, int
     free(bucket_offset);
     free(bucket_rowdim);
     free(bucket_size);
-
-    free(SortBuf);
 
     return 0;
 }
