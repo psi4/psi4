@@ -33,35 +33,38 @@
 
 namespace psi {
 
-#define PSIO_OPEN_NEW 0
-#define PSIO_OPEN_OLD 1
+// Names and values are unchanged from the historical macros (these are public
+// and consumed by downstream plugins); only the spelling is modernized so they
+// are typed, namespaced constants rather than preprocessor macros.
+inline constexpr int PSIO_OPEN_NEW = 0;
+inline constexpr int PSIO_OPEN_OLD = 1;
 
-#define PSIO_KEYLEN 80
-#define PSIO_MAXVOL 8
-#define PSIO_MAXUNIT 500
-#define PSIO_PAGELEN 65536
+inline constexpr int PSIO_KEYLEN = 80;
+inline constexpr int PSIO_MAXVOL = 8;
+inline constexpr int PSIO_MAXUNIT = 500;
+inline constexpr int PSIO_PAGELEN = 65536;
 
-#define PSIO_ERROR_INIT 1
-#define PSIO_ERROR_DONE 2
-#define PSIO_ERROR_MAXVOL 3
-#define PSIO_ERROR_NOVOLPATH 4
-#define PSIO_ERROR_OPEN 5
-#define PSIO_ERROR_REOPEN 6
-#define PSIO_ERROR_CLOSE 7
-#define PSIO_ERROR_RECLOSE 8
-#define PSIO_ERROR_OSTAT 9
-#define PSIO_ERROR_LSEEK 10
-#define PSIO_ERROR_READ 11
-#define PSIO_ERROR_WRITE 12
-#define PSIO_ERROR_NOTOCENT 13
-#define PSIO_ERROR_TOCENTSZ 14
-#define PSIO_ERROR_KEYLEN 15
-#define PSIO_ERROR_BLKSIZ 16
-#define PSIO_ERROR_BLKSTART 17
-#define PSIO_ERROR_BLKEND 18
-#define PSIO_ERROR_IDENTVOLPATH 19
-#define PSIO_ERROR_MAXUNIT 20
-#define PSIO_ERROR_UNOPENED 21
+inline constexpr int PSIO_ERROR_INIT = 1;
+inline constexpr int PSIO_ERROR_DONE = 2;
+inline constexpr int PSIO_ERROR_MAXVOL = 3;
+inline constexpr int PSIO_ERROR_NOVOLPATH = 4;
+inline constexpr int PSIO_ERROR_OPEN = 5;
+inline constexpr int PSIO_ERROR_REOPEN = 6;
+inline constexpr int PSIO_ERROR_CLOSE = 7;
+inline constexpr int PSIO_ERROR_RECLOSE = 8;
+inline constexpr int PSIO_ERROR_OSTAT = 9;
+inline constexpr int PSIO_ERROR_LSEEK = 10;
+inline constexpr int PSIO_ERROR_READ = 11;
+inline constexpr int PSIO_ERROR_WRITE = 12;
+inline constexpr int PSIO_ERROR_NOTOCENT = 13;
+inline constexpr int PSIO_ERROR_TOCENTSZ = 14;
+inline constexpr int PSIO_ERROR_KEYLEN = 15;
+inline constexpr int PSIO_ERROR_BLKSIZ = 16;
+inline constexpr int PSIO_ERROR_BLKSTART = 17;
+inline constexpr int PSIO_ERROR_BLKEND = 18;
+inline constexpr int PSIO_ERROR_IDENTVOLPATH = 19;
+inline constexpr int PSIO_ERROR_MAXUNIT = 20;
+inline constexpr int PSIO_ERROR_UNOPENED = 21;
 
 struct psio_address {
     /*! First page of entry */

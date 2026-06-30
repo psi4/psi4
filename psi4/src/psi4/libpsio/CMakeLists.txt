@@ -34,6 +34,15 @@ list(APPEND sources
   )
 psi4_add_module(lib psio sources)
 
+# The standalone round-trip test links a curated subset of static archives
+# plus a small stubs TU. That works with GNU/Clang on Linux/macOS but not with
+# Windows lld-link, where the unity+PCH build pulls in extra symbol references
+# (Molecule, DPDMOSpace, ...) the curated link line doesn't provide. Restrict
+# it to non-Windows rather than drag in the full dependency closure.
+if(NOT WIN32)
+    add_subdirectory(test)
+endif()
+
 if (psi4_ENABLE_PRECOMPILE_HEADERS)
     # Clearly from the paths, libpsio is a weird place to be defining the pch. However, if one sensibly
     #   puts it in mints, CMake creates a dependency of, say, fnocc on mints, and since mints is the
