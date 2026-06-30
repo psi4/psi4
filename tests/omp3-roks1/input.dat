@@ -1,0 +1,23 @@
+#! OMP3 cc-pCVDZ energy with ROKS-B3LYP initial guess for the NO radical
+
+# OMP3 energy matches ROHF/UKS reference (DFT influence erased by orbital optimization)
+refnuc      =   25.59060766929188  #TEST
+refscf      = -129.90216315563447  #TEST
+refomp3     = -129.66096119399774  #TEST
+
+molecule no {
+0 2
+n
+o 1 1.158
+}
+
+set {
+  basis cc-pcvdz
+  reference roks
+}
+
+energy('omp3', dft_functional='b3lyp')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");                       #TEST
+compare_values(refomp3, variable("OMP3 TOTAL ENERGY"), 6, "OMP3 Total Energy (a.u.)");              #TEST

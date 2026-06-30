@@ -811,9 +811,11 @@ DENSITY
 
 .. math:: DCON(PQ, RS) = max(4D_{PQ}, 4D_{RS}, D_{PR}, D_{PS}, D_{QR}, D_{QS})
 
-When using density-matrix based integral screening, it is useful to build the J and K matrices
-incrementally, also described in [Haser:1989:104]_, using the difference in the density matrix between iterations, rather than the
-full density matrix. To turn on this option, set |scf__incfock| to ``true``.
+Incremental Fock matrix construction (IncFock), described in [Haser:1989:104]_, builds the J and K matrices
+using the difference in the density matrix between iterations, rather than the full density matrix.
+This approach is enabled by default (|scf__incfock| = ``true``) and works with any screening method
+(SCHWARZ, CSAM, DENSITY, or NONE), applying delta-density screening to skip shell quartets with
+negligible density changes. For implementation details and benchmarks, see `PR #3348 <https://github.com/psi4/psi4/pull/3348>`_.
 
 We have added the automatic capability to use the extremely fast DF
 code for intermediate convergence of the orbitals, for |globals__scf_type|
@@ -884,10 +886,13 @@ a cutoff for the value of basis functions at grid points. This keyword is
 used to determine the radial extent of the each basis shell, and it is the
 COSX analogue to |scf__dft_basis_tolerance|.
 
-The |scf__incfock| keyword (defaults to ``false``) increases performance
+The |scf__incfock| keyword (defaults to ``true``) increases performance
 by constructing the Fock matrix from differences in the density matrix, which
-are more amenable to screening. This option is disabled by default because of
-potential SCF convergence issues, particularly when using diffuse basis functions.
+are more amenable to screening. For diffuse basis sets (e.g., aug-cc-pVXZ),
+delta-density screening is automatically disabled near convergence to prevent
+over-screening of slowly-decaying shell pairs. This is implemented
+with a granularity of shell quartets, therefore custom basis sets are
+also covered by it.
 The |scf__cosx_overlap_fitting| keyword (defaults to ``true``) reduces numerical
 integration errors using the method described in [Izsak:2011:144105]_ and is
 always recommended.

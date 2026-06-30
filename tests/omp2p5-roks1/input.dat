@@ -1,0 +1,24 @@
+#! OMP2.5 cc-pVDZ energy with ROKS-B3LYP initial guess for the NO radical
+
+# OMP2.5 energy matches ROHF reference (DFT influence erased by orbital optimization)
+refnuc      =  25.59060766929188   #TEST
+refscf      = -129.89942903618697  #TEST
+refomp3     = -129.58890164511720  #TEST
+
+molecule {
+0 2
+n
+o 1 1.158
+}
+
+set {
+  basis cc-pvdz
+  guess gwh
+  reference roks
+}
+
+energy('omp2.5', dft_functional='b3lyp')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 5, "Nuclear Repulsion Energy (a.u.)");  #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");                        #TEST
+compare_values(refomp3, variable("OMP2.5 TOTAL ENERGY"), 6, "OMP2.5 Total Energy (a.u.)");           #TEST

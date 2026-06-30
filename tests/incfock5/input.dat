@@ -1,0 +1,85 @@
+#! Test INCFOCK with all screening types (SCHWARZ, DENSITY, CSAM)
+#! Validates delta-density screening with all screening types
+#! Validates energy AND iteration count match IncFock OFF
+
+print(' INCFOCK with all screening types') #TEST
+
+molecule water {
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+}
+
+# Reference values from incfock=false runs (all screening types give same energy/iterations)
+# Note: iteration count may vary by +-1 across compilers due to floating-point differences
+Eref = -76.026653661889
+Iref = 16
+Itol = 1  # allowed iteration tolerance
+
+def compare_iterations(expected, computed, label):
+    """Compare iteration counts with tolerance for compiler differences."""
+    diff = abs(computed - expected)
+    if diff > Itol:
+        raise TestComparisonError(f"{label}: computed ({computed}) differs from expected ({expected}) by {diff} iterations (tolerance: {Itol})")
+    compare_integers(1, 1, label)  # Record pass in test output
+
+set {
+    basis cc-pvdz
+    scf_type direct
+    incfock true
+    incfock_convergence 1e-10
+    e_convergence 1e-10
+    d_convergence 1e-8
+}
+
+# === RHF Tests ===
+set reference rhf
+
+# Test 1: RHF + SCHWARZ + IncFock
+set screening schwarz
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'RHF INCFOCK SCHWARZ: Energy') #TEST
+compare_iterations(Iref, wfn.iteration_, 'RHF INCFOCK SCHWARZ: Iterations') #TEST
+
+clean()
+
+# Test 2: RHF + DENSITY + IncFock
+set screening density
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'RHF INCFOCK DENSITY: Energy') #TEST
+compare_iterations(Iref, wfn.iteration_, 'RHF INCFOCK DENSITY: Iterations') #TEST
+
+clean()
+
+# Test 3: RHF + CSAM + IncFock
+set screening csam
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'RHF INCFOCK CSAM: Energy') #TEST
+compare_iterations(Iref, wfn.iteration_, 'RHF INCFOCK CSAM: Iterations') #TEST
+
+clean()
+
+# === UHF Tests (closed-shell, same energy as RHF) ===
+set reference uhf
+
+# Test 4: UHF + SCHWARZ + IncFock
+set screening schwarz
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'UHF INCFOCK SCHWARZ: Energy') #TEST
+compare_iterations(Iref, wfn.iteration_, 'UHF INCFOCK SCHWARZ: Iterations') #TEST
+
+clean()
+
+# Test 5: UHF + DENSITY + IncFock
+set screening density
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'UHF INCFOCK DENSITY: Energy') #TEST
+compare_iterations(Iref, wfn.iteration_, 'UHF INCFOCK DENSITY: Iterations') #TEST
+
+clean()
+
+# Test 6: UHF + CSAM + IncFock
+set screening csam
+E, wfn = energy('scf', return_wfn=True)
+compare_values(Eref, E, 8, 'UHF INCFOCK CSAM: Energy') #TEST
+compare_iterations(Iref, wfn.iteration_, 'UHF INCFOCK CSAM: Iterations') #TEST

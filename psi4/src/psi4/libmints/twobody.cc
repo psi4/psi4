@@ -158,7 +158,6 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
 
 }
 
-
 double TwoBodyAOInt::shell_pair_max_density(int M, int N) const {
     if (max_dens_shell_pair_.empty()) {
         throw PSIEXCEPTION("The density matrix has not been set in the TwoBodyAOInt class!");
@@ -172,6 +171,7 @@ double TwoBodyAOInt::shell_pair_max_density(int M, int N) const {
 
 // Haser 1989 Equations 6 to 14
 bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
+    if (shell_pair_values_.empty()) return true;  // No Schwarz data (screening=NONE)
 
     // Maximum density matrix equation
     double max_density = 0.0;
@@ -256,7 +256,14 @@ void TwoBodyAOInt::setup_sieve() {
             throw PSIEXCEPTION("Unimplemented screening type in TwoBodyAOInt::setup_sieve()");
     }
 
-    if (screening_type_ != ScreeningType::None) create_sieve_pair_info_manager();
+    if (screening_type_ != ScreeningType::None) {
+        create_sieve_pair_info_manager();
+    } else {
+        // Even with NONE screening, initialize nshell_/nbf_/bs1_ for INCFOCK's update_density()
+        nshell_ = original_bs1_->nshell();
+        nbf_ = original_bs1_->nbf();
+        bs1_ = original_bs1_;
+    }
 }
 
 void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra) {

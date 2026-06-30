@@ -1,0 +1,40 @@
+#! DF-MP2 with ROKS-B3LYP reference for the methyl radical CH3.
+#! Validates ROKS support in DFMP2 wrapper and Python dispatchers.
+
+molecule ch3 {
+0 2
+C  0.0  0.0  0.0
+H  1.0  0.0  0.0
+H -0.5  0.866  0.0
+H -0.5 -0.866  0.0
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_mp2 cc-pvdz-ri
+  scf_type df
+  mp2_type df
+  reference roks
+  e_convergence 1e-10
+  d_convergence 1e-10
+}
+
+# Reference values (computed with this test)
+roks_scf_ref = -39.818423034027
+roks_mp2_corr_ref = -0.178036691059
+roks_mp2_total_ref = -39.996459725086
+
+# Run ROKS-B3LYP SCF
+roks_scf, roks_wfn = energy('b3lyp', return_wfn=True)
+
+# Run DF-MP2 on ROKS reference
+roks_mp2 = energy('mp2', ref_wfn=roks_wfn)
+roks_mp2_corr = variable("MP2 CORRELATION ENERGY")
+roks_mp2_total = variable("MP2 TOTAL ENERGY")
+
+# Validation tests
+compare_values(roks_scf_ref, roks_scf, 8, "ROKS-B3LYP SCF energy")           #TEST
+compare_values(roks_mp2_corr_ref, roks_mp2_corr, 6, "ROKS DF-MP2 correlation energy")  #TEST
+compare_values(roks_mp2_total_ref, roks_mp2_total, 6, "ROKS DF-MP2 total energy")      #TEST

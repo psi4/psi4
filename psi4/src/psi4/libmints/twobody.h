@@ -158,8 +158,6 @@ class PSI_API TwoBodyAOInt {
     bool shell_significant_csam(int M, int N, int R, int S);
     /// Implements Schwarz inequality screening of a shell quartet
     bool shell_significant_schwarz(int M, int N, int R, int S);
-    /// Asks whether this shell quartet contributes by the density test (Haser 1989)
-    bool shell_significant_density(int M, int N, int R, int S);
     /// Implements the null screening of a shell quartet - always true
     bool shell_significant_none(int M, int N, int R, int S);
 
@@ -212,6 +210,8 @@ class PSI_API TwoBodyAOInt {
     void update_density(const std::vector<SharedMatrix>& D);
     /// Ask the built in sieve whether this quartet contributes
     bool shell_significant(int M, int N, int R, int S) const { return sieve_impl_(M, N, R, S); };
+    /// Density-based screening test (Haser 1989 Eq. 6); public for IncFock delta-D screening
+    bool shell_significant_density(int M, int N, int R, int S);
     /// Are any of the quartets within a given shellpair list significant
     bool shell_block_significant(int shellpair12, int shellpair34) const;
     /// Does a given shell pair contribute to any significant integrals?
