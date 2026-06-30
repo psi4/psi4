@@ -95,6 +95,7 @@ psi4_component(einsums @ENABLE_Einsums@)
 psi4_component(integratorxx @ENABLE_IntegratorXX@)
 psi4_component(gauxc @ENABLE_gauxc@)
 psi4_component(openorbitaloptimizer @ENABLE_OpenOrbitalOptimizer@)
+psi4_component(opentrustregion @ENABLE_OpenTrustRegion@)
 
 foreach(_comp ${${PN}_FIND_COMPONENTS})
     if(${${PN}_${_comp}_FOUND})
