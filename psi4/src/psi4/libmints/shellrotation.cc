@@ -86,6 +86,8 @@ ShellRotation::ShellRotation(int a, SymmetryOperation& so, const IntegralFactory
 ShellRotation::~ShellRotation() { done(); }
 
 ShellRotation& ShellRotation::operator=(const ShellRotation& other) {
+    if (this == &other) return *this;
+
     done();
 
     n_ = other.n_;

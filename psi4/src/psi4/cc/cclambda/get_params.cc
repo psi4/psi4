@@ -103,7 +103,7 @@ void CCLambdaWavefunction::get_params(Options &options) {
     params.aobasis = 0; /* AO basis code not yet working for lambda */
 
     params.abcd = options.get_str("ABCD");
-    if (params.abcd == "NEW" && params.abcd == "OLD") {
+    if (params.abcd != "NEW" && params.abcd != "OLD") {
         outfile->Printf("Invalid ABCD algorithm: %s\n", params.abcd.c_str());
         throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
@@ -134,7 +134,7 @@ void CCLambdaWavefunction::get_params(Options &options) {
     local.cutoff = options.get_double("LOCAL_CUTOFF");
     if (options["LOCAL_METHOD"].has_changed()) {
         local.method = options.get_str("LOCAL_METHOD");
-        if (local.method == "AOBASIS" && local.method == "WERNER") {
+        if (local.method != "AOBASIS" && local.method != "WERNER") {
             outfile->Printf("Invalid local correlation method: %s\n", local.method.c_str());
             throw PsiException("cclambda: error", __FILE__, __LINE__);
         }
