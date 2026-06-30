@@ -1,5 +1,5 @@
 __version__ = '1.11'
-__version_long = '1.11+zzzzzzz'
+__version_long = '1.11+f16f4ea'
 __version_upcoming_annotated_v_tag = '1.12a1'
 
 def version_formatter(dummy):
