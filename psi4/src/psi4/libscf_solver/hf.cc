@@ -572,9 +572,12 @@ void HF::form_H() {
             Matrix V_eff(nso, nso);
 
             if (dipole_field_type_ == embpot) {
-                FILE* input = fopen("EMBPOT", "r");
+                std::unique_ptr<FILE, decltype(&fclose)> input(fopen("EMBPOT", "r"), &fclose);
+                if (input == nullptr) {
+                    throw PSIEXCEPTION("HF::form_H error: could not open EMBPOT file for reading");
+                }
                 size_t npoints;
-                int statusvalue = fscanf(input, "%zu", &npoints);
+                int statusvalue = fscanf(input.get(), "%zu", &npoints);
                 if (statusvalue != 1) {
                     throw PSIEXCEPTION("HF::form_H error: EOF or wrong number of inputs read from EMBPOT header, return=" +
                                        std::to_string(statusvalue) + " (expected 1)");
@@ -587,7 +590,7 @@ void HF::form_H() {
                 double x, y, z, w, v;
                 double max = 0;
                 for (size_t k = 0; k < npoints; k++) {
-                    statusvalue = fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
+                    statusvalue = fscanf(input.get(), "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
                     if (statusvalue != 5) {
                         throw PSIEXCEPTION("HF::form_H error: EOF or wrong number of inputs read from EMBPOT, return=" +
                                            std::to_string(statusvalue) + " (expected 5)");
@@ -602,9 +605,6 @@ void HF::form_H() {
                     }
                 }  // npoints
                 outfile->Printf("  Max. embpot value = %20.10f\n", max);
-                fclose(input);
-
-
             }  // embpot
             else if (dipole_field_type_ == dx) {
                 dx_read(V_eff.pointer(), phi_ao.pointer(), phi_so.pointer(), nao, nso, u.pointer());
