@@ -83,7 +83,6 @@ void parallel_timer_off(const std::string& key, int thread_rank);
 void start_skip_timers();
 void stop_skip_timers();
 void clean_timers();
-
 struct TimerRecord {
     std::string timer_id;
     std::string parent_id;
