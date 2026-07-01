@@ -468,7 +468,7 @@ def write_timer_json(
     if filename is None:
         filename = "timer.json"
 
-    # Get a list of timer dictionaries from core
+    # Get timer dictionaries keyed by their hierarchical timer IDs from core
     timer_records = core.get_timer_records()
 
     data = {
