@@ -337,10 +337,10 @@ class PSI_API snLinK : public SplitJK {
     // perhaps this can be changed later
     using matrix_type = Eigen::MatrixXd;
 
-    // => Cartesian-Spherical Transformation stuff <= // 
-    /// The AO->CartAO transformation matrix, which is used for transforming
-    /// matrices between pure and Cartesian representations.
-    SharedMatrix sph_to_cart_matrix_;
+    // => Cartesian-Spherical Transformation stuff <= //
+    /// Cartesian<->AO basis change matrix used for force-cartesian snLinK transforms. Stored as
+    /// CartAO->AO (nbf x nao); applied via transform/back_transform to move densities/K between representations.
+    SharedMatrix cartao_to_ao_matrix_;
 
     // => Gaussian-CCA Transformation stuff <= //
     bool is_cca_;
@@ -439,5 +439,3 @@ class PSI_API snLinK : public SplitJK {
 }
 
 #endif
-
-

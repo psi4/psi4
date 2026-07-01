@@ -1,7 +1,5 @@
 #! External potential calculation involving a TIP3P water and a QM water.
-#! Energies and gradients computed using analytic charge embedding
-#! through the external_potentials keyword are compared against those
-#! evaluated numerically through the EMBPOT functionality.
+#! Pure-am sentinel variant (cc-pVDZ that includes d-functions) of embpot1.
 
 molecule water {
   0 1
@@ -25,7 +23,7 @@ external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
 set {
     scf_type df
     d_convergence 12
-    basis 6-31G*
+    basis cc-pVDZ
     dft_spherical_points 1202
     dft_radial_points 300
 }
@@ -103,10 +101,10 @@ grad_embpot.add(grad_nuc)
 compare_matrices(grad_analytic, grad_embpot, 5, "Gradient with analytic point charge embedding vs. with numerical EMBPOT embedding") #TEST
 compare_values(e_analytic, e_embpot, 6, "Energy with analytic point charge embedding vs. with numerical EMBPOT embedding")  #TEST
 
-ene_ref = -76.0194112288343  #TEST
+ene_ref = -76.03496668314207  #TEST
 grad_ref = ([
-        [-6.82055788e-03, -4.91941583e-07, -1.37359568e-02],
-        [ 1.97327569e-03,  1.21536585e-02,  8.95300981e-03],
-        [ 1.97320516e-03, -1.21531649e-02,  8.95261948e-03]])
+        [-6.62067965e-03, -4.94792810e-07, -1.36764679e-02],
+        [ 1.96382829e-03,  1.44553539e-02,  8.77452696e-03],
+        [ 1.96375728e-03, -1.44548575e-02,  8.77413174e-03]])
 compare_values(ene_ref, e_analytic, 6, "fixed compare ene")  #TEST
 compare_values(grad_ref, grad_analytic, 5e-5, "fixed compare grad")  #TEST

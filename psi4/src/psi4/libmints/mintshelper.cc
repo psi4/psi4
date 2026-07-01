@@ -230,6 +230,36 @@ std::shared_ptr<PetiteList> MintsHelper::petite_list(bool val) const {
     return pt;
 }
 
+SharedMatrix MintsHelper::cartao_to_ao_transform() const {
+    const int nbf = basisset_->nbf();
+    const int nao = basisset_->nao();
+    auto transform = std::make_shared<Matrix>("CartAO -> AO transform", nbf, nao);
+
+    if (!basisset_->has_puream()) {
+        for (int i = 0; i < nbf; ++i) {
+            transform->set(i, i, 1.0);
+        }
+        return transform;
+    }
+
+    auto tp = transform->pointer();
+    for (int ish = 0; ish != basisset_->nshell(); ++ish) {
+        const auto &shell = basisset_->shell(ish);
+        const int shell_pure_start = basisset_->shell_to_basis_function(ish);
+        const int shell_cart_start = basisset_->shell_to_ao_function(ish);
+
+        const SphericalTransform &st = *integral_->spherical_transform(shell.am());
+        SphericalTransformIter iter(st);
+        for (iter.first(); !iter.is_done(); iter.next()) {
+            const int pure = shell_pure_start + iter.pureindex();
+            const int cart = shell_cart_start + iter.cartindex();
+            tp[pure][cart] += iter.coef();
+        }
+    }
+
+    return transform;
+}
+
 std::shared_ptr<BasisSet> MintsHelper::basisset() const { return basisset_; }
 
 std::shared_ptr<SOBasisSet> MintsHelper::sobasisset() const { return sobasis_; }

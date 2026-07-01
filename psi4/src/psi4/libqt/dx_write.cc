@@ -78,15 +78,20 @@ void dx_write(std::shared_ptr<Wavefunction> wfn, Options &options, double **D) {
 
     // Set up AO->SO transformation matrix (u)
     MintsHelper helper(basis, options, 0);
-    SharedMatrix aotoso = helper.petite_list(true)->aotoso();
+    SharedMatrix aotoso = helper.petite_list(false)->aotoso();
+    SharedMatrix cart_to_ao = helper.cartao_to_ao_transform();
     auto col_offset = std::vector<int>(wfn->nirrep());
     col_offset[0] = 0;
     for (int h = 1; h < wfn->nirrep(); h++) col_offset[h] = col_offset[h - 1] + aotoso->coldim(h - 1);
 
     u = block_matrix(nao, nso);
-    for (int h = 0; h < wfn->nirrep(); h++)
-        for (int j = 0; j < aotoso->coldim(h); j++)
-            for (int i = 0; i < nao; i++) u[i][j + col_offset[h]] = aotoso->get(h, i, j);
+    auto cp = cart_to_ao->pointer();
+    for (int h = 0; h < wfn->nirrep(); h++) {
+        int nsol = aotoso->coldim(h);
+        if (!nsol) continue;
+        C_DGEMM('T', 'N', nao, nsol, basis->nbf(), 1.0, cp[0], nao, aotoso->pointer(h)[0], nsol, 0.0,
+                &(u[0][col_offset[h]]), nso);
+    }
 
     // Scan along Cartesian axes to determine dimensions of box
     molecule->print();
