@@ -97,20 +97,6 @@ struct TimerRecord {
 PSI_API
 std::vector<TimerRecord> get_timer_records();
 
-struct TimerRecord {
-    std::string timer_id;
-    std::string parent_id;
-    std::string timer_name;
-    std::vector<std::string> timer_path;
-    int level;
-    double wall_time;
-    double user_time;
-    double system_time;
-    size_t n_calls;
-};
-PSI_API
-std::vector<TimerRecord> get_timer_records();
-
 int cc_excited(const char* wfn);
 int cc_excited(std::string wfn);
 void free_3d_array(double*** A, int p, int q);
