@@ -163,3 +163,6 @@ pytest_output.dat
 pytest_output.log
 profile.txt
 fsapt
+
+AGENTS.local.md
+.agents.local.md

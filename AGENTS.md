@@ -248,3 +248,7 @@ Pipelines + GitHub Actions) and require passing tests + core-developer review.
 **Rebase onto upstream is preferred over merge commits** to keep history linear.
 See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) and the
 [PR template](.github/PULL_REQUEST_TEMPLATE.md).
+
+# Local overrides
+
+Developers may create `AGENTS.local.md` for machine-, workflow-, or preference-specific notes. This file is ignored by git and should not contain instructions required for normal project development.
