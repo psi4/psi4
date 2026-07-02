@@ -1415,8 +1415,8 @@ data:
     conda:
       channel: conda-forge
       name: pyeinsums
-      constraint: ">=1.1.3"
-      constraint_note: "v1 changes interface, and 1.1.3 needed for clean import (for qcengine)."
+      constraint: ">=1.1.3,!=1.1.4"
+      constraint_note: "v1 changes interface, and 1.1.3 needed for clean import (for qcengine), and 1.1.4 has libatomic forced on mac."
       aux_build_names:
         - zlib
         - hdf5
