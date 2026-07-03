@@ -188,8 +188,6 @@ class PSI_API PSIOManager {
    Each instance can be configured using filecfg_kwd().
    The following example best demonstrates how to configure a PSIO instance Lib:
    Lib->filecfg_kwd("DEFAULT","NAME",-1,"newwfn")      // all modules will set filename prefix to newwfn for all units
-   Lib->filecfg_kwd("DEFAULT","NVOLUME",34,"2")        // all modules will stripe unit 34 over 2 volumes
-   Lib->filecfg_kwd("CINTS","VOLUME1",-1,"/scratch1/") // module CINTS will access volume 1 of all units under /scratch
    etc.
 
    */
@@ -207,10 +205,8 @@ class PSI_API PSIO {
        can be further overridden for some units). To specify a keyword that works for a specific unit, set unit to the
        appropriate number between 0 to PSIO_MAXUNIT.
 
-       PSIO understands the following keywords: "name" (specifies the prefix for the filename,
-       i.e. if name is set to "psi" then unit 35 will be named "psi.35"), "nvolume" (number of files over which
-       to stripe this unit, cannot be greater than PSIO_MAXVOL), "volumeX", where X is a positive integer less than or
-       equal to the value of "nvolume".
+       PSIO understands the following keyword: "name" (specifies the prefix for the filename,
+       i.e. if name is set to "psi" then unit 35 will be named "psi.35").
        */
     void filecfg_kwd(const char *kwdgrp, const char *kwd, int unit, const char *kwdval);
     /// returns the keyword value. If not defined, returns empty string.
@@ -311,7 +307,7 @@ class PSI_API PSIO {
     /// Return the global shared object
     static std::shared_ptr<PSIO> shared_object();
 
-    void rewind_toclen(const size_t unit);  // Seek the stream of the vol[0] of a unit to its beginning.
+    void rewind_toclen(const size_t unit);  // Seek the stream of the file backing a unit to its beginning.
     size_t rd_toclen(size_t unit);          // Read the length of the TOC for a given unit directly from the file.
 
     /// grab the filename of unit and strdup into name.
@@ -341,10 +337,6 @@ class PSI_API PSIO {
 
     /// Library state variable
     int state_;
-    /// return the number of volumes over which unit will be striped
-    size_t get_numvols(size_t unit);
-    /// grab the path to volume of unit and strdup into path.
-    void get_volpath(size_t unit, size_t volume, char **path);
     /// return the last TOC entry
     psio_tocentry *toclast(size_t unit);
 
