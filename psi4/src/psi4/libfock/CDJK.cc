@@ -70,17 +70,12 @@ size_t CDJK::memory_estimate() {
 
 void CDJK::initialize_JK_core() {
     timer_on("CD: cholesky decomposition");
-    // TODO: Fix after the cderi_ deprecation is out in v1.11
-    // this should probably be
-    //      IntegralFactory factory(primary_, primary_, primary_, primary_);
-    //      const std::shared_ptr<TwoBodyAOInt> cderi = factory.eri();
-    // in the future. A TwoBodyAOInt object keeps the factory as a raw non-owning back-pointer (const IntegralFactory
-    // *integral_) and is therefore probably quite a dangerous thing if it ever outlives the IntegralFactory that was
-    // used for constructing the TwoBodyAOInt.
-    auto integral = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
-    cderi_ = std::shared_ptr<TwoBodyAOInt>(integral->eri());
+    IntegralFactory factory(primary_, primary_, primary_, primary_);
+    // Integral engine for computing CD integrals.
+    // Note that this is shallow-const, the engine itself is mutable, only the shared_ptr isn't.
+    const std::shared_ptr<TwoBodyAOInt> cderi = factory.eri();
     
-    int ntri = cderi_->function_pairs().size();
+    int ntri = cderi->function_pairs().size();
     /// If user asks to read integrals from disk, just read them from disk.
     /// Qmn is only storing upper triangle.
     /// Ugur needs ncholesky_ in NAUX (SCF), but it can also be read from disk
@@ -97,7 +92,7 @@ void CDJK::initialize_JK_core() {
     }
 
     /// If user does not want to read from disk, recompute the cholesky integrals
-    auto Ch = std::make_shared<CholeskyERI>(cderi_, 0.0, cholesky_tolerance_,
+    auto Ch = std::make_shared<CholeskyERI>(cderi, 0.0, cholesky_tolerance_,
                                             memory_);
     Ch->choleskify();
     ncholesky_ = Ch->Q();
@@ -117,7 +112,7 @@ void CDJK::initialize_JK_core() {
 
     double** Qmnp = Qmn_->pointer();
 
-    const std::vector<long int>& schwarz_fun_pairs = cderi_->function_pairs_to_dense();
+    const std::vector<long int>& schwarz_fun_pairs = cderi->function_pairs_to_dense();
 
     timer_on("CD: schwarz");
     for (size_t mu = 0; mu < nbf; mu++) {

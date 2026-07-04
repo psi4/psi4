@@ -1062,12 +1062,6 @@ class PSI_API CDJK : public DiskDFJK {
     std::string name() override { return "CDJK"; }
     size_t memory_estimate() override;
 
-    /// integral engine for computing CD integrals
-    PSI_DEPRECATED(
-        "CDJK::cderi_ is planned to be moved inside CDJK::initialize_JK_core. Unless someone speaks up, 1.11 may be "
-        "the last release to have it.")
-    std::shared_ptr<TwoBodyAOInt> cderi_;
-
     // => Required Algorithm-Specific Methods <= //
 
     virtual bool is_core() { return true; }
