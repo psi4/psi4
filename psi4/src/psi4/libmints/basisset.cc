@@ -632,6 +632,11 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                    std::map<std::string, std::map<std::string, std::vector<ShellInfo>>> &shell_map,
                    std::map<std::string, std::map<std::string, std::vector<ShellInfo>>> &ecp_shell_map)
     : name_(basistype), molecule_(mol) {
+#ifdef USING_cuEST
+    cuest_basis_ = nullptr;
+    cuest_basis_ws_ptr_ = nullptr;
+#endif
+
     // Singletons
     initialize_singletons();
 
@@ -881,9 +886,6 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
         }
     }
 
-#ifdef USING_cuEST
-    cuest_initialize();
-#endif
 }
 
 void BasisSet::update_l2_shells(bool embed_normalization) {
@@ -1307,8 +1309,19 @@ void BasisSet::negative_gaussian_normalization_to_coefficients() {
 }
 
 #ifdef USING_cuEST
+cuestAOBasis_t BasisSet::cuest_basis()
+{
+    if (cuest_basis_ == nullptr) {
+        cuest_common::ensure_cuest_initialized();
+        cuest_initialize();
+    }
+    return cuest_basis_;
+}
+
 void BasisSet::cuest_initialize()
 {
+    cuest_common::ensure_cuest_initialized();
+
     int natom = molecule_->natom();
 
     cuestAOShellParameters_t shell_params;
@@ -1369,4 +1382,3 @@ void BasisSet::cuest_finalize()
     }
 }
 #endif
-

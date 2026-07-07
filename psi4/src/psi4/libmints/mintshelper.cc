@@ -207,6 +207,13 @@ void MintsHelper::init_helper(std::shared_ptr<BasisSet> basis,
 }
 
 void MintsHelper::common_init() {
+#ifdef USING_cuEST
+    cuest_pair_list_ = nullptr;
+    cuest_pair_list_ws_ptr_ = nullptr;
+    cuest_oeint_plan_ = nullptr;
+    cuest_oeint_plan_ws_ptr_ = nullptr;
+#endif
+
     // Print the molecule.
     if (print_) molecule_->print();
 
@@ -4436,6 +4443,8 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv2(int atom1, int atom2, Share
 #ifdef USING_cuEST
 void MintsHelper::cuest_initialize()
 {
+    cuest_common::ensure_cuest_initialized();
+
     auto mol = basisset_->molecule();
     size_t natom = mol->natom();
 

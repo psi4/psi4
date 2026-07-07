@@ -1595,3 +1595,34 @@ data:
       constraint: null
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
+
+  - project: cuest
+    use:
+      added: "1.12"
+      required: false
+      required_note: "Allow using the NVidia GPU library for DFT, etc."
+      buildable: false
+      buildtime: true
+      cms: true
+    repository: null
+    cmake:
+      name: cuEST
+      constraint: null
+      target: cuEST::cuEST
+      components: null
+    conda:
+      channel: nvidia
+      name: libcuest-dev
+      constraint: null
+      skip_win: true
+      skip_mac: true
+      cmake:
+        ENABLE_cuEST: true
+        # cuEST_DIR:
+        #  unix: ${CONDA_PREFIX}/lib/cmake/gauxc
+        //CMAKE_INSIST_FIND_PACKAGE_cuEST: true
+        #//CMAKE_DISABLE_FIND_PACKAGE_gauxc: true
+      #aux_build_names:
+      #  - exchcxx
+      #  - highfive
+
