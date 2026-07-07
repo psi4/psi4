@@ -57,6 +57,39 @@ extern cusolverDnHandle_t cusolver_handle;
 
 namespace psi {
 
+namespace {
+
+[[nodiscard]] int DSYEV_ascending_lapack(const int N, const double* const* const array, double* e_vals,
+                                         double* const* const e_vecs) {
+    // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
+    // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
+    // The new 1D array will correspond to a column-major array, suitable for LAPACK.
+    std::vector<double> tmp_matrix(N * N);
+    for (int64_t i = 0, ij = 0; i < N; i++) {
+        for (int64_t j = 0; j < N; j++, ij++) {
+            tmp_matrix[ij] = array[j][i];
+        }
+    }
+    // LAPACK also needs some extra memory to store temporaries in
+    // TODO: query C_DSYEV for optimal workspace size
+    const int64_t workspace_size = 3 * N;
+    std::vector<double> tmp_work(workspace_size);
+    const char jobtype = (e_vecs != nullptr) ? 'V' : 'N';
+    const int info = C_DSYEV(jobtype, 'U', N, tmp_matrix.data(), N, e_vals, tmp_work.data(), workspace_size);
+    if ((info == 0) && (e_vecs != nullptr)) {
+        // tmp_matrix has now been overwritten with the eigenvecs as the columns, flattened as column-major
+        // Copy them to the columns of a row-major 2D array
+        for (int64_t j = 0, ij = 0; j < N; j++) {
+            for (int64_t i = 0; i < N; i++, ij++) {
+                e_vecs[i][j] = tmp_matrix[ij];
+            }
+        }
+    }
+    return info;
+}
+
+}  // namespace
+
 #ifdef USING_cuEST
 [[nodiscard]] int DSYEV_ascending(
     const int N,
@@ -64,6 +97,10 @@ namespace psi {
     double* e_vals,                     // length N, CPU
     double* const* const e_vecs         // row-major 2D, CPU (optional)
 ) {
+    if (cusolver_handle == nullptr) {
+        return DSYEV_ascending_lapack(N, array, e_vals, e_vecs);
+    }
+
     // 1. Flatten input matrix from row-major array[i][j] to column-major tmp_A(j,i)
     std::vector<double> h_A(N * N);
     for (int i = 0, ij = 0; i < N; ++i) {
@@ -166,33 +203,8 @@ namespace psi {
 */
 [[nodiscard]] int DSYEV_ascending(const int N, const double* const* const array, double* e_vals,
                                   double* const* const e_vecs /* = nullptr*/) {
-    // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
-    // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
-    // The new 1D array will correspond to a column-major array, suitable for LAPACK.
-    std::vector<double> tmp_matrix(N * N);
-    for (int64_t i = 0, ij = 0; i < N; i++) {
-        for (int64_t j = 0; j < N; j++, ij++) {
-            tmp_matrix[ij] = array[j][i];
-        }
-    }
-    // LAPACK also needs some extra memory to store temporaries in
-    // TODO: query C_DSYEV for optimal workspace size
-    const int64_t workspace_size = 3 * N;
-    std::vector<double> tmp_work(workspace_size);
-    const char jobtype = (e_vecs != nullptr) ? 'V' : 'N';
-    const int info = C_DSYEV(jobtype, 'U', N, tmp_matrix.data(), N, e_vals, tmp_work.data(), workspace_size);
-    if ((info == 0) && (e_vecs != nullptr)) {
-        // tmp_matrix has now been overwritten with the eigenvecs as the columns, flattened as column-major
-        // Copy them to the columns of a row-major 2D array
-        for (int64_t j = 0, ij = 0; j < N; j++) {
-            for (int64_t i = 0; i < N; i++, ij++) {
-                e_vecs[i][j] = tmp_matrix[ij];
-            }
-        }
-    }
-    return info;
+    return DSYEV_ascending_lapack(N, array, e_vals, e_vecs);
 }
 #endif
 
 }  // namespace psi
-

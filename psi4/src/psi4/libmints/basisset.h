@@ -186,7 +186,7 @@ class PSI_API BasisSet {
     void cuest_finalize();
 
    public:
-    cuestAOBasis_t cuest_basis() { return cuest_basis_; };
+    cuestAOBasis_t cuest_basis();
 #endif
 
    public:
