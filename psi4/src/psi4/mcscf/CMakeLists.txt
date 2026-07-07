@@ -28,11 +28,3 @@ list(APPEND sources
   vector_base.cc
   )
 psi4_add_module(bin mcscf sources)
-
-if(TARGET cuEST::cuEST)
-  target_link_libraries(mcscf
-    PUBLIC
-      cuEST::cuEST
-    )
-endif()
-
