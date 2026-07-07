@@ -8,11 +8,3 @@ psi4_add_module(bin dfmp2 sources)
 if (psi4_ENABLE_PRECOMPILE_HEADERS)
     target_precompile_headers(dfmp2 REUSE_FROM psio)
 endif()
-
-if(TARGET cuEST::cuEST)
-  target_link_libraries(dfmp2
-    PUBLIC
-      cuEST::cuEST
-    )
-endif()
-
