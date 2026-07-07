@@ -3092,6 +3092,7 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute2(
 cuESTJKGrad::cuESTJKGrad(int deriv, std::shared_ptr<JK> jk) : jk_(jk), x_alpha_(0.0), x_beta_(0.0), JKGrad(deriv, jk->basisset()) { common_init(); }
 cuESTJKGrad::~cuESTJKGrad() {}
 void cuESTJKGrad::common_init() {
+    cuest_common::ensure_cuest_initialized();
 }
 void cuESTJKGrad::print_header() const {
     if (print_) {

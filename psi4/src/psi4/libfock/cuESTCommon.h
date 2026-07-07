@@ -51,6 +51,8 @@ extern cuestHandle_t cuest_handle;
 namespace psi {
 namespace cuest_common {
 
+void ensure_cuest_initialized();
+
 inline void check_cuest(cuestStatus_t status, const char* func) {
     if (status != CUEST_STATUS_SUCCESS) {
         std::ostringstream msg;
