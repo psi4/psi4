@@ -33,11 +33,3 @@ if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)
       OpenOrbitalOptimizer::OpenOrbitalOptimizer
     )
 endif()
-
-if(TARGET cuEST::cuEST)
-  target_link_libraries(scf_solver
-    PUBLIC
-      cuEST::cuEST
-    )
-endif()
-
