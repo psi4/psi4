@@ -19,11 +19,3 @@ list(APPEND sources
   zero.cc
   )
 psi4_add_module(lib ciomr sources)
-
-if(TARGET cuEST::cuEST)
-  target_link_libraries(ciomr
-    PUBLIC
-      cuEST::cuEST
-    )
-endif()
-

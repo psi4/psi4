@@ -10,11 +10,3 @@ psi4_add_module(lib 3index sources)
 if (psi4_ENABLE_PRECOMPILE_HEADERS)
     target_precompile_headers(3index REUSE_FROM psio)
 endif()
-
-if(TARGET cuEST::cuEST)
-  target_link_libraries(3index
-    PUBLIC
-      cuEST::cuEST
-    )
-endif()
-
