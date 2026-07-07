@@ -569,8 +569,6 @@ void HF::form_H() {
                 offset += nsol;
             }
 
-            Vector phi_ao(nao);
-            Vector phi_so(nso);
             Matrix V_eff(nso, nso);
 
             if (dipole_field_type_ == embpot) {
@@ -586,6 +584,7 @@ void HF::form_H() {
                                        std::to_string(npoints*5*8) + " bytes > " + std::to_string(memory_) + " bytes");
                 }
                 outfile->Printf("  npoints = %zu\n", npoints);
+                std::vector<double> phi_so(nso, 0);
                 double x, y, z, w, v;
                 double max = 0;
                 for (size_t k = 0; k < npoints; k++) {
@@ -596,7 +595,7 @@ void HF::form_H() {
                     }
                     if (std::fabs(v) > max) max = std::fabs(v);
 
-                    basisset_->compute_phi(phi_so.pointer(), x, y, z);
+                    basisset_->compute_phi(phi_so.data(), x, y, z);
                     for (int i = 0; i < nso; i++) {
                         for (int j = 0; j < nso; j++) {
                             V_eff.add(i, j, w * v * phi_so[i] * phi_so[j]);
@@ -609,7 +608,10 @@ void HF::form_H() {
 
             }  // embpot
             else if (dipole_field_type_ == dx) {
-                dx_read(V_eff.pointer(), phi_ao.pointer(), phi_so.pointer(), nao, nso, u.pointer());
+                std::vector<double> phi_ao(nao, 0);
+                std::vector<double> phi_so(nso, 0);
+
+                dx_read(V_eff.pointer(), phi_ao.data(), phi_so.data(), nao, nso, u.pointer());
 
             }  // dx file
             else if (dipole_field_type_ == sphere) {
@@ -624,6 +626,7 @@ void HF::form_H() {
                 outfile->Printf("  Number of colatitude integration points = %d\n", theta_points_);
                 outfile->Printf("  Number of azimuthal integration points  = %d\n", phi_points_);
 
+                std::vector<double> phi_so(nso, 0);
                 double r_step = thickness_ / r_points_;         // bohr
                 double theta_step = 2 * pc_pi / theta_points_;  // 1 degree in radians
                 double phi_step = 2 * pc_pi / phi_points_;      // 1 degree in radians
@@ -638,7 +641,7 @@ void HF::form_H() {
 
                             double jacobian = weight * r * r * sin(theta);
 
-                            basisset_->compute_phi(phi_so.pointer(), x, y, z);
+                            basisset_->compute_phi(phi_so.data(), x, y, z);
 
                             for (int i = 0; i < nso; i++)
                                 for (int j = 0; j < nso; j++)
