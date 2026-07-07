@@ -67,6 +67,7 @@
 #include "cuest.h"
 #include "psi4/libfock/cuESTCommon.h"
 #include <cusolverDn.h>
+#include <cuda_runtime.h>
 #endif
 
 #define STRINGIFY(x) #x
@@ -154,29 +155,26 @@ cublasHandle_t cublas_handle = 0;
 cuestHandle_t cuest_handle = 0;
 cudaStream_t stream_handle = 0;
 
-void cuest_init() {
-    // ACS:  Something like this might be useful to check the GPU capabilities.  The problem is that 
-    // at this point the options have not been parsed (this fires at psi4 module import time) so this kind
-    // of a check needs to be implemented as a singleton early in in the mints stack; the check is only necessary
-    // if USE_CUEST is set to true.  The brianQC solution is to use an environmental variable to toggle the GPU
-    // code path instead of a psi4 option. Should also check that psi4 was compiled with cuEST support if USE_CUEST is set to true
-    //
-    // int device_id;
-    // cudaError_t cuda_err = cudaGetDevice(&device_id);
-    // if (cuda_err != cudaSuccess) {
-    //     throw PSIEXCEPTION("cudaGetDevice failed in cuest_init");
-    // }
-    // struct cudaDeviceProp props;
-    // cuda_err = cudaGetDeviceProperties(&props, device_id);
-    // if (cuda_err != cudaSuccess) {
-    //     throw PSIEXCEPTION("cudaGetDeviceProperties failed in cuest_init");
-    // }
-    // if (props.major < 8) {
-    //     throw PSIEXCEPTION("cuEST requires a GPU with compute capability 8.0 or higher");
-    // }
-    // // check cuda_err to see if there's a GPU availabel at all here
-    // outfile->Printf("cuEST initialized on device %d (%s) with compute capability %d.%d\n", device_id, props.name, props.major, props.minor);
+void cuest_cleanup_noexcept() {
+    if (cuest_handle != 0) {
+        cuestDestroy(cuest_handle);
+        cuest_handle = 0;
+    }
+    if (cusolver_handle != 0) {
+        cusolverDnDestroy(cusolver_handle);
+        cusolver_handle = 0;
+    }
+    if (cublas_handle != 0) {
+        cublasDestroy(cublas_handle);
+        cublas_handle = 0;
+    }
+    if (stream_handle != 0) {
+        cudaStreamDestroy(stream_handle);
+        stream_handle = 0;
+    }
+}
 
+void cuest_init() {
     if (stream_handle != 0) {
         throw PSIEXCEPTION("Attempting to reinitialize the stream_handle when it hasn't been released\n");
     }
@@ -190,16 +188,53 @@ void cuest_init() {
         throw PSIEXCEPTION("Attempting to reinitialize the cuEST module when it hasn't been released\n");
     }
 
+    int device_count = 0;
+    cudaError_t cuda_err = cudaGetDeviceCount(&device_count);
+    if (cuda_err != cudaSuccess) {
+        throw PSIEXCEPTION(std::string("cuEST requested, but CUDA device discovery failed: ") +
+                           cudaGetErrorString(cuda_err));
+    }
+    if (device_count == 0) {
+        throw PSIEXCEPTION("cuEST requested, but no CUDA-capable GPU was found.");
+    }
+
+    int device_id = 0;
+    cuda_err = cudaGetDevice(&device_id);
+    if (cuda_err != cudaSuccess) {
+        throw PSIEXCEPTION(std::string("cuEST requested, but cudaGetDevice failed: ") +
+                           cudaGetErrorString(cuda_err));
+    }
+    if (device_id < 0 || device_id >= device_count) {
+        throw PSIEXCEPTION("cuEST requested, but CUDA reported an invalid active device.");
+    }
+
+    cudaDeviceProp props;
+    cuda_err = cudaGetDeviceProperties(&props, device_id);
+    if (cuda_err != cudaSuccess) {
+        throw PSIEXCEPTION(std::string("cuEST requested, but cudaGetDeviceProperties failed: ") +
+                           cudaGetErrorString(cuda_err));
+    }
+    if (props.major < 8) {
+        std::ostringstream msg;
+        msg << "cuEST requires an NVIDIA GPU with compute capability 8.0 or higher; device " << device_id << " ("
+            << props.name << ") has compute capability " << props.major << "." << props.minor << ".";
+        throw PSIEXCEPTION(msg.str());
+    }
+
     cudaError_t stream_err = cudaStreamCreate(&stream_handle);
     if (stream_err != cudaSuccess) {
-        throw PSIEXCEPTION("cudaStreamCreate failed in cuest_init");
+        cuest_cleanup_noexcept();
+        throw PSIEXCEPTION(std::string("cudaStreamCreate failed in cuest_init: ") +
+                           cudaGetErrorString(stream_err));
     }
     cublasStatus_t cublas_status = cublasCreate(&cublas_handle);
     if (cublas_status != CUBLAS_STATUS_SUCCESS) {
+        cuest_cleanup_noexcept();
         throw PSIEXCEPTION("cublasCreate failed in cuest_init");
     }
     cusolverStatus_t cusolver_status = cusolverDnCreate(&cusolver_handle);
     if (cusolver_status != CUSOLVER_STATUS_SUCCESS) {
+        cuest_cleanup_noexcept();
         throw PSIEXCEPTION("cusolverDnCreate failed in cuest_init");
     }
     cublasSetStream(cublas_handle, stream_handle);
@@ -233,24 +268,23 @@ void cuest_init() {
 }
 
 void cuest_release() {
-    if (cublas_handle == 0) {
-        throw PSIEXCEPTION("Attempting to release the cublas_handle when it hasn't been initialized\n");
-    }
-    cublasDestroy(cublas_handle);
-    cublas_handle = 0;
-
-    if (cusolver_handle == 0) {
-        throw PSIEXCEPTION("Attempting to release the cusolver_handle when it hasn't been initialized\n");
-    }
-    cusolverDnDestroy(cusolver_handle);
-    cusolver_handle = 0;
-
     if (cuest_handle == 0) {
         throw PSIEXCEPTION("Attempting to release the cuEST module when it hasn't been initialized\n");
     }
-    CHECK_CUEST(cuestDestroy(cuest_handle));
-    cuest_handle = 0;
+    cuest_cleanup_noexcept();
 }
+
+namespace psi {
+namespace cuest_common {
+
+void ensure_cuest_initialized() {
+    if (cuest_handle == 0) {
+        cuest_init();
+    }
+}
+
+}  // namespace cuest_common
+}  // namespace psi
 #endif
 
 // Python helper wrappers
@@ -1262,10 +1296,6 @@ bool psi4_python_module_initialize() {
 
     const char* brianEnableDFTEnv = getenv("BRIANQC_ENABLE_DFT");
     brianEnableDFT = brianEnableDFTEnv ? (bool)atoi(brianEnableDFTEnv) : true;
-#endif
-
-#ifdef USING_cuEST
-    cuest_init();
 #endif
 
     initialized = true;

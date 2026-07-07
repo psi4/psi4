@@ -75,6 +75,7 @@
 #include "psi4/psi4-dec.h"
 
 #ifdef USING_cuEST
+#include "psi4/libfock/cuESTCommon.h"
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 #include <cusolverDn.h>
@@ -803,6 +804,8 @@ void HF::form_Shalf() {
 
 #ifdef USING_cuEST
     if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
         if (d_X_.size()) {
             throw PSIEXCEPTION("d_X_ already allocated in form Shalf");
         }
@@ -1394,6 +1397,8 @@ void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr
 #endif
 #ifdef USING_cuEST
     if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
         int max_nsopi = nsopi_.max();
         int max_nmopi = nmopi_.max();
 
@@ -1605,6 +1610,8 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, const Dimension& n
 SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso) {
 #ifdef USING_cuEST
     if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
         if (nirrep_ == 1) {
             const int n = nsopi_[0];
             const size_t bytes = size_t(n) * n * sizeof(double);

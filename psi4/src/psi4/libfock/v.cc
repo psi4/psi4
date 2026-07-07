@@ -154,6 +154,8 @@ std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary, std::sh
 void VBase::set_Cocc(std::vector<SharedMatrix> Coccs) {
 #ifdef USING_cuEST
     if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
         std::vector<uint64_t> d_Cocc_noccs_provided;
         uint64_t d_Cocc_size_needed = 0;
         for (SharedMatrix Cocc : Coccs) {
@@ -241,6 +243,8 @@ void VBase::initialize() {
 #ifdef USING_cuEST
     // No workers are needed for cuEST, so we can just create the XC Integral Plan here and return
     if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
         cuestXCIntPlanParameters_t xcint_params;
         CHECK_CUEST(cuestParametersCreate(CUEST_XCINTPLAN_PARAMETERS, reinterpret_cast<void**>(&xcint_params)));
 
@@ -1407,6 +1411,8 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     }
 #ifdef USING_cuEST
     if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
         if ((d_Cocc_noccs_.size() != 1)) {
             throw PSIEXCEPTION("V: RKS should have only one Cocc Matrix");
         }
@@ -2711,6 +2717,8 @@ SharedMatrix RV::compute_gradient() {
     int natom = primary_->molecule()->natom();
 #ifdef USING_cuEST
     if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
         if ((d_Cocc_noccs_.size() != 1)) {
             throw PSIEXCEPTION("V: RKS should have only one Cocc Matrix");
         }
@@ -3984,6 +3992,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     }
 #ifdef USING_cuEST
     if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
         if ((d_Cocc_noccs_.size() != 2)) {
             throw PSIEXCEPTION("V: UKS should have only two Cocc Matrices");
         }
@@ -5909,6 +5919,8 @@ SharedMatrix UV::compute_gradient() {
 
 #ifdef USING_cuEST
     if (options_.get_bool("USE_CUEST")) {
+        cuest_common::ensure_cuest_initialized();
+
         if ((d_Cocc_noccs_.size() != 2)) {
             throw PSIEXCEPTION("gradient: UKS should have only two Cocc Matrices");
         }

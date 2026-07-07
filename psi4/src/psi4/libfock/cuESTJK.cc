@@ -69,6 +69,8 @@ cuESTJK::cuESTJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
       cuest_exchange_compute_params_(nullptr),
       initialized_(false) 
 {
+    cuest_common::ensure_cuest_initialized();
+
     cuest_primary_basis_ = primary->cuest_basis();
     cuest_auxiliary_basis_ = auxiliary->cuest_basis();
 

@@ -158,6 +158,8 @@ namespace detail {
 
 cuestPCM::cuestPCM(const Options &options, const std::shared_ptr<MintsHelper> &mintshelper) :
     mintshelper_(mintshelper) {
+    cuest_common::ensure_cuest_initialized();
+
     // Create the integral plan
     const std::shared_ptr<Molecule> molecule = mintshelper->basisset()->molecule();
     size_t natom = molecule->natom();
