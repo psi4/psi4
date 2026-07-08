@@ -210,14 +210,21 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         // Build exact estimate via Schwarz metrics
         auto jk = build_JK(primary, auxiliary, options, "MEM_DF");
         jk->set_do_wK(do_wK);
-        if (jk->memory_estimate() < doubles) {
+        size_t memdfjk_memory = jk->memory_estimate();
+
+        if (memdfjk_memory < doubles) {
             return jk;
         }
         jk.reset();
 
+        outfile->Printf("  MemDFJK Memory: AOs need %.3f GiB; user supplied %.3f GiB.\n",
+                    memdfjk_memory * 8 / (1024 * 1024 * 1024.0),
+                    doubles * 8 / (1024 * 1024 * 1024.0));
+        outfile->Printf("  MemDFJK requires too much memory. DiskDFJK algorithm will be used.\n\n");
+       
         // Use Disk DFJK
         return build_JK(primary, auxiliary, options, "DISK_DF");
-
+        
     } else {  // otherwise it has already been set
         return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
     }
