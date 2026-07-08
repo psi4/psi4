@@ -221,50 +221,68 @@ void cuest_init() {
         throw PSIEXCEPTION(msg.str());
     }
 
-    cudaError_t stream_err = cudaStreamCreate(&stream_handle);
-    if (stream_err != cudaSuccess) {
+    // Unlike the failure paths above, nothing previously reported which GPU
+    // was actually selected on success. On a multi-GPU node this is the only
+    // thing that tells a user (short of externally polling nvidia-smi) which
+    // physical device cuEST landed on -- e.g. via CUDA_VISIBLE_DEVICES/the
+    // job scheduler, cuEST always uses whichever is "the current device"
+    // (logical index 0 by default) and never scans device_count for others.
+    outfile->Printf("  cuEST initializing on GPU device %d of %d visible (%s), compute capability %d.%d\n",
+                    device_id, device_count, props.name, props.major, props.minor);
+
+    // Everything below this point can fail partway through (CUDA, cuBLAS,
+    // cuSOLVER, or cuEST's own CHECK_CUEST-wrapped calls). Any such failure
+    // must not leave stream_handle/cublas_handle/cusolver_handle non-null
+    // while cuest_handle stays null -- that combination would permanently
+    // "poison" cuest_init() for the rest of the process, since the
+    // reinitialize guards at the top of this function would trip on the very
+    // next attempt even after what may have been a transient failure.
+    try {
+        cudaError_t stream_err = cudaStreamCreate(&stream_handle);
+        if (stream_err != cudaSuccess) {
+            throw PSIEXCEPTION(std::string("cudaStreamCreate failed in cuest_init: ") +
+                               cudaGetErrorString(stream_err));
+        }
+        cublasStatus_t cublas_status = cublasCreate(&cublas_handle);
+        if (cublas_status != CUBLAS_STATUS_SUCCESS) {
+            throw PSIEXCEPTION("cublasCreate failed in cuest_init");
+        }
+        cusolverStatus_t cusolver_status = cusolverDnCreate(&cusolver_handle);
+        if (cusolver_status != CUSOLVER_STATUS_SUCCESS) {
+            throw PSIEXCEPTION("cusolverDnCreate failed in cuest_init");
+        }
+        cublasSetStream(cublas_handle, stream_handle);
+        cusolverDnSetStream(cusolver_handle, stream_handle);
+        // Declare & create the cuEST parameters and handle with reasonable defaults. Destroy param promptly.
+        cuestHandleParameters_t handle_parameters;
+        CHECK_CUEST(cuestParametersCreate(CUEST_HANDLE_PARAMETERS, &handle_parameters));
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_HANDLE_PARAMETERS,
+            handle_parameters,
+            CUEST_HANDLE_PARAMETERS_CUDASTREAM,
+            &stream_handle,
+            sizeof(stream_handle)
+        ));
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_HANDLE_PARAMETERS,
+            handle_parameters,
+            CUEST_HANDLE_PARAMETERS_CUBLAS,
+            &cublas_handle,
+            sizeof(cublas_handle)
+        ));
+        CHECK_CUEST(cuestParametersConfigure(
+            CUEST_HANDLE_PARAMETERS,
+            handle_parameters,
+            CUEST_HANDLE_PARAMETERS_CUSOLVER,
+            &cusolver_handle,
+            sizeof(cusolver_handle)
+        ));
+        CHECK_CUEST(cuestCreate(handle_parameters, &cuest_handle));
+        CHECK_CUEST(cuestParametersDestroy(CUEST_HANDLE_PARAMETERS, handle_parameters));
+    } catch (...) {
         cuest_cleanup_noexcept();
-        throw PSIEXCEPTION(std::string("cudaStreamCreate failed in cuest_init: ") +
-                           cudaGetErrorString(stream_err));
+        throw;
     }
-    cublasStatus_t cublas_status = cublasCreate(&cublas_handle);
-    if (cublas_status != CUBLAS_STATUS_SUCCESS) {
-        cuest_cleanup_noexcept();
-        throw PSIEXCEPTION("cublasCreate failed in cuest_init");
-    }
-    cusolverStatus_t cusolver_status = cusolverDnCreate(&cusolver_handle);
-    if (cusolver_status != CUSOLVER_STATUS_SUCCESS) {
-        cuest_cleanup_noexcept();
-        throw PSIEXCEPTION("cusolverDnCreate failed in cuest_init");
-    }
-    cublasSetStream(cublas_handle, stream_handle);
-    cusolverDnSetStream(cusolver_handle, stream_handle);
-    // Declare & create the cuEST parameters and handle with reasonable defaults. Destroy param promptly.
-    cuestHandleParameters_t handle_parameters;
-    CHECK_CUEST(cuestParametersCreate(CUEST_HANDLE_PARAMETERS, &handle_parameters));
-    CHECK_CUEST(cuestParametersConfigure(
-        CUEST_HANDLE_PARAMETERS,
-        handle_parameters,
-        CUEST_HANDLE_PARAMETERS_CUDASTREAM,
-        &stream_handle,
-        sizeof(stream_handle)
-    ));
-    CHECK_CUEST(cuestParametersConfigure(
-        CUEST_HANDLE_PARAMETERS,
-        handle_parameters,
-        CUEST_HANDLE_PARAMETERS_CUBLAS,
-        &cublas_handle,
-        sizeof(cublas_handle)
-    ));
-    CHECK_CUEST(cuestParametersConfigure(
-        CUEST_HANDLE_PARAMETERS,
-        handle_parameters,
-        CUEST_HANDLE_PARAMETERS_CUSOLVER,
-        &cusolver_handle,
-        sizeof(cusolver_handle)
-    ));
-    CHECK_CUEST(cuestCreate(handle_parameters, &cuest_handle));
-    CHECK_CUEST(cuestParametersDestroy(CUEST_HANDLE_PARAMETERS, handle_parameters));
 }
 
 void cuest_release() {
