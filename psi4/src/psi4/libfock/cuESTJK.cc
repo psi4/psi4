@@ -71,6 +71,18 @@ cuESTJK::cuESTJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
 {
     cuest_common::ensure_cuest_initialized();
 
+    // cuEST's density-fitting integral plan requires a spherical-harmonic
+    // auxiliary basis; the orbital (primary) basis may be Cartesian. Without
+    // this check, a Cartesian aux basis fails deep inside cuEST with an
+    // opaque "status code" error out of preiterations()/cuestDFIntPlan*.
+    if (!auxiliary->has_puream()) {
+        throw PSIEXCEPTION("cuESTJK requires a spherical-harmonic auxiliary (DF) basis set; "
+                           "the auxiliary basis set '" + auxiliary->name() +
+                           "' is Cartesian. Set DF_BASIS_SCF/DF_BASIS_MP2 to a basis with spherical "
+                           "harmonics, or add 'puream true' scoped to the auxiliary basis if supported; "
+                           "the orbital (primary) basis may remain Cartesian.");
+    }
+
     cuest_primary_basis_ = primary->cuest_basis();
     cuest_auxiliary_basis_ = auxiliary->cuest_basis();
 

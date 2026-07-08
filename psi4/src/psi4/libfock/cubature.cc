@@ -3798,6 +3798,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, bool i
 
 #ifdef USING_cuEST
     if (is_cuest) {
+        cuest_common::ensure_cuest_initialized();
         cuestAtomGridParameters_t atom_grid_params;
         CHECK_CUEST(cuestParametersCreate(CUEST_ATOMGRID_PARAMETERS, &atom_grid_params));
         uint64_t natom = molecule_->natom();
