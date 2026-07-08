@@ -110,7 +110,15 @@ VBase::VBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisS
     : options_(options), primary_(primary), functional_(functional) {
     common_init();
 }
-VBase::~VBase() {}
+VBase::~VBase() {
+    // finalize() is not (and per the empty RV/UV overrides below, need not be)
+    // virtually dispatched here -- it releases the cuEST GPU resources
+    // (d_Coccs_AO_, cuest_xcint_plan_/_ws_ptr_, VV10 equivalents) that
+    // otherwise leak permanently, since nothing else ever calls finalize()
+    // on a VBase/RV/UV object (it isn't even exposed to Python). Safe to
+    // call unconditionally: every branch inside is null-checked already.
+    VBase::finalize();
+}
 void VBase::common_init() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");

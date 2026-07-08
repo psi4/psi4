@@ -116,12 +116,12 @@ inline void freeWorkspace(cuestWorkspace_t* workspace)
 {
     if (!workspace) return;
 
-    /* Frss the host buffer if it is not NULL. */
+    /* Free the host buffer if it is not NULL. */
     if (workspace->hostBuffer) {
         free((void*) workspace->hostBuffer);
     }
 
-    /* Frss the device buffer if it is not NULL. */
+    /* Free the device buffer if it is not NULL. */
     if (workspace->deviceBuffer) {
         cudaError_t err = cudaFree((void*) workspace->deviceBuffer);
         if (err != cudaSuccess) {
