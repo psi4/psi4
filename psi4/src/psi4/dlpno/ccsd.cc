@@ -2660,6 +2660,10 @@ void DLPNOCCSD::lccsd_iterations() {
         }
     }
 
+    double t1_damping = options_.get_double("DLPNO_T1_DAMPING");
+    double t2_damping = options_.get_double("DLPNO_T2_DAMPING");
+    int BRUECKNER_N_MICRO_ITER = options_.get_int("DLPNO_BRUECKNER_N_MICRO_ITER");
+
     int iteration = 1, max_iteration = options_.get_int("DLPNO_MAXITER");
     double e_curr = 0.0, e_prev = 0.0, e_weak = 0.0, r1_curr = 0.0, r2_curr = 0.0;
     bool e_converged = false, r_converged = false;
@@ -2678,7 +2682,8 @@ void DLPNOCCSD::lccsd_iterations() {
 
     T_n_ij_.resize(n_lmo_pairs);
 
-    while (!(e_converged && r_converged)) {
+    // We only run the full set of iterations after Brueckner reaches "intermediate convergence"
+    while (((brueckner_intermediate_converged_) && !(e_converged && r_converged)) || (iteration < BRUECKNER_N_MICRO_ITER && !brueckner_intermediate_converged_)) {
         // RMS of residual per single LMO, for assesing convergence
         std::vector<double> R_ia_rms(naocc, 0.0);
         // RMS of residual per LMO pair, for assessing convergence
@@ -2738,7 +2743,7 @@ void DLPNOCCSD::lccsd_iterations() {
         for (int i = 0; i < naocc; ++i) {
             int ii = i_j_to_ij_[i][i];
             for (int a_ii = 0; a_ii < n_pno_[ii]; ++a_ii) {
-                (*T_ia_[i])(a_ii, 0) -= (*R_ia[i])(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
+                (*T_ia_[i])(a_ii, 0) -= (1.0 - t1_damping) * (*R_ia[i])(a_ii, 0) / (e_pno_[ii]->get(a_ii) - F_lmo_->get(i,i));
             } // end a_ii
         } // end i
 
@@ -2749,7 +2754,7 @@ void DLPNOCCSD::lccsd_iterations() {
 
             for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
                 for (int b_ij = 0; b_ij < n_pno_[ij]; ++b_ij) {
-                    (*T_iajb_[ij])(a_ij, b_ij) -= (*R_iajb[ij])(a_ij, b_ij) / 
+                    (*T_iajb_[ij])(a_ij, b_ij) -= (1.0 - t2_damping) * (*R_iajb[ij])(a_ij, b_ij) / 
                                     (e_pno_[ij]->get(a_ij) + e_pno_[ij]->get(b_ij) - F_lmo_->get(i,i) - F_lmo_->get(j,j));
                 }
             }
@@ -2833,7 +2838,7 @@ void DLPNOCCSD::lccsd_iterations() {
 
         iteration++;
 
-        if (iteration > max_iteration + 1) {
+        if (brueckner_intermediate_converged_ && iteration > max_iteration + 1) {
             throw PSIEXCEPTION("Maximum DLPNO iterations exceeded.");
         }
     }
@@ -2985,7 +2990,8 @@ double DLPNOCCSD::compute_energy() {
         int nvirt = nbf - nalpha_;
 
         // After the initial set of T1s are computed, rotate the orbitals and recompute everything until convergence
-        bool brueckner_converged = false;
+        brueckner_converged_ = false;
+        brueckner_intermediate_converged_ = false;
         int iteration = 0;
         double T1_max = 1.0;
         const int BRUECKNER_MAXITER = options_.get_int("BRUECKNER_MAXITER");
@@ -3005,7 +3011,7 @@ double DLPNOCCSD::compute_energy() {
 
         double e_dlpno_ccsd = 0.0;
 
-        while (!brueckner_converged) {
+        while (!brueckner_converged_) {
             outfile->Printf("\n  ==> Brueckner Orbital Optimization Iteration %d <==\n\n", iteration);
 
             e_dlpno_ccsd = compute_dlpno_ccsd_energy();
@@ -3055,9 +3061,15 @@ double DLPNOCCSD::compute_energy() {
 
             outfile->Printf("\n    Brueckner Iteration %d: Energy = %16.12f, Max R1 = %10.3e\n", iteration, e_dlpno_ccsd, T1_max);
 
+            if (fabs(T1_max) < BRUECKNER_R_CONV * 10.0) {
+                brueckner_intermediate_converged_ = true;
+                if (print_ > 1) outfile->Printf("    Brueckner orbital intermediate convergence satisfied in %d interations!\n", iteration);
+            }
+
             if (fabs(T1_max) < BRUECKNER_R_CONV) {
-                brueckner_converged = true;
+                brueckner_converged_ = true;
                 outfile->Printf("    Brueckner orbital optimization converged in %d iterations!\n", iteration);
+                break;
             } else if (iteration >= BRUECKNER_MAXITER) {
                 outfile->Printf("    WARNING: Brueckner orbital optimization did not converge in %d iterations! Max R1 = %10.3e\n", iteration, T1_max);
                 break;
@@ -3076,6 +3088,7 @@ double DLPNOCCSD::compute_energy() {
 
             iteration++;
         }
+
         return e_dlpno_ccsd;
 
     } else {

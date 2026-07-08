@@ -2668,13 +2668,19 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Perform automatic memory checks to toggle between core and disk? 
             (NOT recommended to change this for average user). -*/
         options.add_bool("DLPNO_TOGGLE_MEMORY", true);
+        /*- How much to damp T1 updates in DLPNO-CCSD -*/
+        options.add_double("DLPNO_T1_DAMPING", 0.0);
+        /*- How much to damp T2 updates in DLPNO-CCSD -*/
+        options.add_double("DLPNO_T2_DAMPING", 0.0);
         /*- How much to damp the lambda updates, recommend 0.3 for hard to converge cases !expert -*/
         options.add_double("DLPNO_LAMBDA_DAMPING", 0.0);
         /*- Use Brueckner orbitals? -*/
         options.add_bool("DLPNO_BRUECKNER_ORBS", false);
         /*- Scaling factor for orbital rotation for DLPNO Brueckner orbitals
-            Make it small for systems with a large T1 (like 0.1-0.25) -*/
+            Make it smaller for systems with a large T1 (like 0.6-0.9) -*/
         options.add_double("DLPNO_BRUECKNER_ALPHA", 1.0);
+        /*- How many iterations to run DLPNO-CCSD before performing a Brueckner rotation !expert -*/
+        options.add_int("DLPNO_BRUECKNER_N_MICRO_ITER", 10);
         /*- When to start gradient mixing for Brueckner orbital optimizations -*/
         options.add_double("BRUECKNER_GMIX_START", 1.0e-4);
         /*- When to end start applying DIIS for Brueckner optimizatons 

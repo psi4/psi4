@@ -60,6 +60,10 @@ class DLPNO : public Wavefunction {
     bool brueckner_orbs_;
     /// Performing a Brueckner iteration?
     bool brueckner_iter_ = false;
+    /// Has brueckner converged reached intermediate convergence yet?
+    bool brueckner_intermediate_converged_ = false;
+    /// Had brueckner converged yet?
+    bool brueckner_converged_ = false;
     
     /// threshold for PAO domain size
     double T_CUT_DO_;
