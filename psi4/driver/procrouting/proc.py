@@ -1797,6 +1797,20 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out("""  PE geometry must align with POTFILE keyword: """
                        """resetting coordinates with fixed origin and orientation.\n""")
 
+    # cuEST GPU-accelerated DFT (the XC potential/grid code path) does not yet
+    # support symmetry-adapted (non-C1) wavefunctions; only the JK (HF exchange)
+    # part of cuEST is symmetry-safe. Force C1 whenever cuEST is requested unless HF.
+    # This builds upon REFERENCE set by scf_set_reference_local that uses needs_xc().
+    _cuest_needs_c1 = (core.get_option("SCF", "USE_CUEST") and core.get_option('SCF', 'REFERENCE').endswith("KS"))
+    if _cuest_needs_c1 and scf_molecule.schoenflies_symbol() != 'c1':
+        c1_molecule = scf_molecule.clone()
+        c1_molecule.reset_point_group('c1')
+        c1_molecule.update_geometry()
+
+        scf_molecule = c1_molecule
+        core.print_out("""  cuEST GPU acceleration does not yet support molecular symmetry for DFT: """
+                       """further calculations in C1 point group.\n""")
+
     # SCF Banner data
     banner = kwargs.pop('banner', None)
     bannername = name
