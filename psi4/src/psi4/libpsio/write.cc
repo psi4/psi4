@@ -33,8 +33,6 @@
 
 #include <cstdlib>
 #include <cstring>
-#include "psi4/pragma.h"
-#include <memory>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 

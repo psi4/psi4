@@ -29,7 +29,6 @@
 // This code has not been completed yet
 // it does not work now.
 
-#include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
