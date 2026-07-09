@@ -27,24 +27,14 @@
  */
 
 /** Standard library includes */
-#include <iostream>
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-#include <sstream>
-#include <fstream>
 #include <string>
-#include <iomanip>
 #include <vector>
 
 /** Required PSI3 includes */
 #include "psi4/psifiles.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libtrans/mospace.h"
 #include "psi4/libtrans/integraltransform.h"
 
 /** Required libmints includes */
