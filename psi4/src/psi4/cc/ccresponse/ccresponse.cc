@@ -42,13 +42,11 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/physconst.h"
 #include "psi4/psifiles.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psi4-dec.h"
 #include "Params.h"
 #include "MOInfo.h"
-#include "Local.h"
 #include "globals.h"
 
 namespace psi {
