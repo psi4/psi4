@@ -27,13 +27,10 @@
  */
 
 #include "psi4/libtrans/integraltransform.h"
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libqt/qt.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libtrans/integraltransform_functors.h"
 #include "psi4/psifiles.h"
-#include "psi4/libtrans/mospace.h"
 #include "psi4/libpsi4util/process.h"
 
 #include "dct.h"

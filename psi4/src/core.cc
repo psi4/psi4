@@ -31,20 +31,17 @@
 #include <map>
 #include <sstream>
 #include <iostream>
-#include <sys/stat.h>
 
 #include <libint2/engine.h>
 
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
-#include "psi4/pybind11.h"
 
 #include "psi4/cc/cclambda/cclambda.h"
 #include "psi4/cc/ccwave.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/writer_file_prefix.h"
