@@ -35,7 +35,6 @@
 #include "psi4/psifiles.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdiis/diismanager.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 
 #include <algorithm>
