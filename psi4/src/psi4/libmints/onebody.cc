@@ -30,13 +30,11 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
 #include <libint2/engine.h>
 #include <libint2/shell.h>
 
-#include <stdexcept>
 
 namespace psi {
 
