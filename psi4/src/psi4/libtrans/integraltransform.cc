@@ -27,7 +27,6 @@
  */
 
 #include "integraltransform.h"
-#include "mospace.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
@@ -36,7 +35,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
 using namespace psi;
