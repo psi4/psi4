@@ -34,8 +34,6 @@
 #include <sstream>
 #include <cstring>
 #include <regex>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <climits>
 
 #include "libpsi4util.h"
