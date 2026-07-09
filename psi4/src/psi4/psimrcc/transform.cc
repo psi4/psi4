@@ -27,10 +27,8 @@
  */
 
 #include <cmath>
-#include <algorithm>
 
 #include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 
 #define CCTRANSFORM_USE_BLAS
 
@@ -43,16 +41,10 @@
 #define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
 #define four(i, j, k, l) INDEX(INDEX(i, j), INDEX(k, l))
 
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.h"
-#include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 
-#include "algebra_interface.h"
 #include "blas.h"
-#include "index.h"
-#include "matrix.h"
 #include "transform.h"
 
 namespace psi {
