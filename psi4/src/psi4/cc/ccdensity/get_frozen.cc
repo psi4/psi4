@@ -34,7 +34,6 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "MOInfo.h"
-#include "Params.h"
 #include "Frozen.h"
 #include "globals.h"
 
