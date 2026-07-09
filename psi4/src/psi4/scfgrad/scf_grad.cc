@@ -28,15 +28,11 @@
 
 #include "scf_grad.h"
 
-#include <algorithm>
 #include <numeric>
-#include <sstream>
 #ifdef _OPENMP
-#include <omp.h>
 #endif
 
 #include "psi4/libqt/qt.h"
-#include "psi4/libpsio/psio.hpp"
 #ifdef USING_ecpint
 #include "psi4/libmints/ecpint.h"
 #endif
@@ -50,11 +46,9 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
-#include "psi4/libdisp/dispersion.h"
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libscf_solver/uhf.h"
 #include "psi4/libscf_solver/rhf.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
 #include "jk_grad.h"
