@@ -32,7 +32,6 @@
 */
 #include <cstdio>
 #include <cmath>
-#include "psi4/libciomr/libciomr.h"
 #include "iwl.h"
 #include "iwl.hpp"
 #include "psi4/libpsi4util/PsiOutStream.h"

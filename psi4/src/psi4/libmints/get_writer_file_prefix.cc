@@ -32,7 +32,6 @@
  */
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libmints/molecule.h"
 #include "psi4/libpsi4util/process.h"
 
 #include <string>

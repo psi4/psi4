@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/psi4-dec.h"
 #include "psi4/libmints/multipolesymmetry.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/integral.h"
