@@ -32,7 +32,6 @@
  */
 
 #include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/psio.hpp"
 
 namespace psi {
 /*!

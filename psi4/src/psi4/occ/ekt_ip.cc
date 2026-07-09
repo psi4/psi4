@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"

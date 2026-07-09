@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/libmoinfo/libmoinfo.h"
 #include "scf.h"
 
 namespace psi {
