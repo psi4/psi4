@@ -42,7 +42,6 @@
 #include "ccdensity.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Frozen.h"
 #include "globals.h"
 #include "psi4/cc/ccwave.h"
 #include "psi4/libciomr/libciomr.h"
