@@ -35,12 +35,10 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <sstream>
 
 #ifdef _OPENMP
-#include <omp.h>
 #endif
 
 namespace psi {

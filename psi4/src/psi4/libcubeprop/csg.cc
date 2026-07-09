@@ -35,7 +35,6 @@
 
 #include "psi4/psi4-dec.h"
 
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libfilesystem/path.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
@@ -46,7 +45,6 @@
 #include "psi4/libmints/potential.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libqt/qt.h"
 

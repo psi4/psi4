@@ -36,11 +36,9 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/wavefunction.h"
 #include "dispersion.h"
 #include "dispersion_defines.h"
-#include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 

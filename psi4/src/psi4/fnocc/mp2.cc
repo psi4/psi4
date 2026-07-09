@@ -36,12 +36,10 @@
 #include "psi4/libiwl/iwl.h"
 #include "psi4/psifiles.h"
 #ifdef _OPENMP
-#include <omp.h>
 #else
 #define omp_get_wtime() 0.0
 #endif
 
-#include "blas.h"
 #include "ccsd.h"
 
 using namespace psi;
