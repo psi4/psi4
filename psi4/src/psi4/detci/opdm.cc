@@ -35,10 +35,7 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libmints/oeprop.h"
 #include "psi4/libfock/soscf.h"
-#include "psi4/psifiles.h"
-#include "psi4/physconst.h"
 #include "psi4/libpsi4util/process.h"
 
 #include "psi4/detci/structs.h"

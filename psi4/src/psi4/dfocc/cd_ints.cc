@@ -28,20 +28,16 @@
 
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/lib3index/cholesky.h"
 #include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
-#include "defines.h"
 #include "dfocc.h"
 #include "tensors.h"
 
 #ifdef _OPENMP
-#include <omp.h>
 #endif
 
 using namespace psi;
