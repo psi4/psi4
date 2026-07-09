@@ -28,9 +28,7 @@
 
 /** Standard library includes */
 #include "psi4/libqt/qt.h"
-#include "defines.h"
 #include "dfocc.h"
-#include "psi4/libmints/matrix.h"
 
 namespace psi {
 namespace dfoccwave {
