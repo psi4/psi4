@@ -27,15 +27,11 @@
  */
 
 /** Standard library includes */
-#include <fstream>
-#include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libmints/factory.h"
 #include "psi4/libmints/matrix.h"
 #include "dfocc.h"
 
 #ifdef _OPENMP
-#include <omp.h>
 #endif
 
 using namespace psi;

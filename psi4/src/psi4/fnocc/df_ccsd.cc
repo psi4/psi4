@@ -36,9 +36,7 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/times.h"
 
-#include "psi4/lib3index/3index.h"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/vector.h"

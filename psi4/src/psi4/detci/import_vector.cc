@@ -39,14 +39,11 @@
 
 #include <cstdlib>
 #include <cstdio>
-#include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libqt/slaterdset.h"
 
-#include "psi4/physconst.h"
 #include "psi4/detci/structs.h"
-#include "psi4/detci/ci_tol.h"
 #include "psi4/detci/ciwave.h"
 
 namespace psi {

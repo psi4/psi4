@@ -30,12 +30,8 @@
 #include <omp.h>
 #endif
 
-#include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/physconst.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.hpp"
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/matrix.h"
@@ -57,7 +53,6 @@
 #include "psi4/libmints/multipoles.h"
 #include "psi4/libmints/dipole.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
