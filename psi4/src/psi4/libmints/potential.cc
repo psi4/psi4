@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/cdsalclist.h"
 #include "psi4/libmints/potential.h"
 #include "psi4/libmints/integral.h"
@@ -34,7 +33,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/sobasis.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "typedefs.h"
 
 #include <libint2/engine.h>
