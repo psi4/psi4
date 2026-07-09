@@ -31,16 +31,9 @@
  *  @ingroup (PSIMRCC)
  */
 #include <cmath>
-#include <algorithm>
 
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libtrans/integraltransform.h"
-#include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/psifiles.h"
 
 #include "blas.h"
 #include "sort.h"
