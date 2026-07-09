@@ -32,7 +32,6 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include "psi4/libciomr/libciomr.h"
 #include "dpd.h"
 
 namespace psi {

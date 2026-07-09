@@ -36,7 +36,6 @@
 ** \ingroup CIOMR
 */
 
-#include "psi4/psifiles.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
