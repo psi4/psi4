@@ -273,10 +273,17 @@ jobs:
 
     - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
+        DLOPEN_ARGS=""
+        if [[ "${{ matrix.cfg.python-version }}" == "3.14" && "${{ runner.os }}" != "Windows" ]]; then
+          # py3.14 lanes (except Windows): build runtime-optional addons (e.g., ecpint) so they dlopen
+          # their library at runtime instead of linking at build time. Then uninstall and test at the end.
+          DLOPEN_ARGS="--dlopen"
+        fi
         conda/psi4-path-advisor.py \
           cache \
           --objdir objdir \
-          --insist
+          --insist \
+          $DLOPEN_ARGS
         echo "::group::View Cache File for CMake"
         printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
         pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
@@ -455,6 +462,41 @@ jobs:
       run: |
         conda install conda-tree -c conda-forge
         conda-tree deptree
+
+      ##############################################################################
+      # Runtime-optional ecpint: py3.14 lanes (except Windows; dlopen()/RTLD_* are
+      # POSIX-only, see --dlopen note above) were configured with --dlopen, so
+      # libecpint isn't linked into core.so; it's dlopen'd at runtime instead.
+      # Remove libecpint from the environment entirely and rerun the tests to
+      # confirm Psi4 still imports and runs (minus ECP support) rather than crashing,
+      # and that ECP-marked tests skip cleanly instead of failing.
+      ##############################################################################
+
+    - name: Remove dlopen Addons
+      if: matrix.cfg.python-version == '3.14' && runner.os != 'Windows'
+      run: conda remove libecpint --force -y
+
+    - name: Runtime Conda environment, no dlopen Addons
+      if: matrix.cfg.python-version == '3.14' && runner.os != 'Windows'
+      working-directory: ./objdir
+      run: |
+        conda info
+        conda list
+        PYTHONPATH=stage/lib python -c "import psi4; print(psi4.__file__)"
+        PYTHONPATH=stage/lib python -c "from psi4 import core; assert core.ecpint_available() is False"
+
+    - name: Run, Spot, Run, no dlopen Addons
+      if: matrix.cfg.python-version == '3.14' && runner.os != 'Windows'
+      working-directory: ./objdir
+      run: |
+        export PATH=../install/bin:$PATH
+        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+
+    - name: Test dlopen Addons with Pytest
+      if: matrix.cfg.python-version == '3.14' && runner.os != 'Windows'
+      working-directory: ./objdir
+      run: |
+        PYTHONPATH=stage/lib pytest --cache-clear -v -rws --color yes -n auto -m ecpint stage/lib/psi4/tests/
 
 # Notes
 # -----

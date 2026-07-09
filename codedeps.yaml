@@ -5,10 +5,11 @@
 #      deprecated: !!str               #                 Minor version at which <dummy> removed from Psi4 ecosystem. Further fields not present.
 #      required: !!bool                # Field required. Whether <dummy> is a required Psi4 dependency.
 #      buildable: !!bool               # Field required. If <dummy> is required or enabled, `true` if the Psi4 build system can supply it by building from source or `false` if it must be detectable pre-built.
-#      buildtime: !!bool               # Field required. Whether <dummy> is compile-linkage (`true`) or runtume-linkage (`false`); some runtime are marked `true` if required to detect at buildtime even if not used until runtime.
+#      buildtime: !!bool               # Field required. Whether <dummy> is compile-linkage (`true`) or runtume-linkage (`false`); some runtime are marked `true` if required to detect at buildtime even if not used until runtime; See also use/dlopen.
 #      cms: !!bool                     # Field required. Whether <dummy> is a computational molecular sciences project vs. generic compsci.
 #      test_required: !!bool           # Field required if used in Psi4 testing. Whether <dummy> is a required dependency for testing.
 #      docs_required: !!bool           # Field required if used in building Psi4 documentation. Whether <dummy> is a required dependency for docs build.
+#      dlopen: !!bool                  # Field optional. Whether <dummy> with buildtime=true aka compile-linkage offers a buildtime alternative allowing it to be runtime-optional; <dummy> is still required for compile.
 #####      dev_role: !!str                 # Field optional. (test | docs). Absence is normal QC capabilities role.
 #    repository: !!map               # Section required if use/buildable=true. Where to acquire source code to build.
 #      host: !!str                     # Field required. (github | gitlab | url)
@@ -1247,6 +1248,8 @@ data:
       buildable: true
       buildtime: true
       cms: true
+      dlopen: true
+      dlopen_note: "Runtime optional added v1.12."
     repository:
       host: github
       account: robashaw
@@ -1267,6 +1270,7 @@ data:
           win-64: ${CONDA_PREFIX}/Library/lib/cmake/ecpint
         //CMAKE_INSIST_FIND_PACKAGE_ecpint: true
         //CMAKE_DISABLE_FIND_PACKAGE_ecpint: true
+        //ENABLE_ecpint_RUNTIME: true
 
   - project: qcfractal
     use:
