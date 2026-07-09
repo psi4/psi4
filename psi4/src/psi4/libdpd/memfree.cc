@@ -35,6 +35,5 @@
 */
 
 #include <cstdio>
-#include "dpd.h"
 
 namespace psi {}
