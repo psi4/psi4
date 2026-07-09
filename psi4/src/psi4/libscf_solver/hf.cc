@@ -30,7 +30,6 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
-#include <fstream>
 #include <functional>
 #include <iostream>
 #include <sstream>
@@ -38,21 +37,17 @@
 #include <utility>
 #include <vector>
 #ifdef _OPENMP
-#include <omp.h>
 #endif
 
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
 
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
 
-#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/mintshelper.h"
@@ -64,7 +59,6 @@
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/orthog.h"
 #include "psi4/libmints/integral.h"
-#include "psi4/libmints/quadrupole.h"
 #include "psi4/libmints/sobasis.h"
 
 #include "hf.h"

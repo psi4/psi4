@@ -34,12 +34,8 @@
 #include <cmath>
 #include <cstdlib>
 
-#include "psi4/pragma.h"
-#include <memory>
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.h"
-#include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/psifiles.h"
 
 #undef MAX
@@ -51,7 +47,6 @@
 #define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
 #define four(i, j, k, l) INDEX(INDEX(i, j), INDEX(k, l))
 
-#include "algebra_interface.h"
 #include "blas.h"
 #include "matrix.h"
 #include "index.h"

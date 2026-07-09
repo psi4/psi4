@@ -33,16 +33,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libiwl/iwl.h"
-#include "psi4/psifiles.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/basisset.h"
 #include "MOInfo.h"
-#include "Params.h"
-#include "Local.h"
 #include "globals.h"
 
 namespace psi {

@@ -37,23 +37,18 @@
 #include <tuple>
 #include <utility>
 #include <vector>
-#include <any>
 
 #include "psi4/physconst.h"
 
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsio/psio.hpp"

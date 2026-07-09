@@ -30,11 +30,8 @@
 #include "jk_grad.h"
 
 #include "psi4/libqt/qt.h"
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
-#include "psi4/psi4-dec.h"
 #include "psi4/libmints/dipole.h"
-#include "psi4/libmints/cdsalclist.h"
 #include "psi4/libfock/v.h"
 //#include "psi4/libfock/jk.h"
 #include "psi4/libfunctional/superfunctional.h"
