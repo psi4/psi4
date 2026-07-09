@@ -38,7 +38,6 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/detci/structs.h"
 #include "psi4/detci/ciwave.h"

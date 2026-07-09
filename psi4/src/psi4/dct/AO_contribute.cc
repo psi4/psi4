@@ -29,7 +29,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include "psi4/libciomr/libciomr.h"
 #include "dct.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libdpd/dpd.h"
