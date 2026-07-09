@@ -31,11 +31,8 @@
  *  frank@ccc.uga.edu   andysim@ccc.uga.edu
  *  A multireference coupled cluster code
  ***************************************************************************/
-#include "psi4/libmoinfo/libmoinfo.h"
 #include "mrcc.h"
-#include "matrix.h"
 #include "blas.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 
 namespace psi {
 namespace psimrcc {
