@@ -38,7 +38,6 @@
 #include "psi4/psi4-dec.h"
 #include <cstdio>
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/process.h"
 
 using namespace psi;

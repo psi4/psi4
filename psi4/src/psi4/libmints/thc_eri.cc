@@ -35,7 +35,6 @@
 #include "psi4/libfock/cubature.h"
 #include "psi4/lib3index/dftensor.h"
 
-#include <algorithm>
 
 #ifdef _OPENMP
 #include <omp.h>

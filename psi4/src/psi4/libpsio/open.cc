@@ -40,7 +40,6 @@
 #include <sstream>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/psi4-dec.h"
 namespace psi {
 
 void PSIO::open(size_t unit, int status) {
