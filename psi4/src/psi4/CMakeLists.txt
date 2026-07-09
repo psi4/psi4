@@ -19,9 +19,32 @@ if(TARGET gauxc::gauxc)
   target_compile_definitions(psi4_optional_deps INTERFACE USING_gauxc)
 endif()
 
-if(TARGET ECPINT::ecpint)
-  target_link_libraries(psi4_optional_deps INTERFACE ECPINT::ecpint)
-  target_compile_definitions(psi4_optional_deps INTERFACE USING_ecpint)
+if(ENABLE_ecpint_RUNTIME)
+    if(NOT TARGET ECPINT::ecpint)
+        message(FATAL_ERROR "ENABLE_ecpint_RUNTIME requires libecpint package in host environment")
+    endif()
+
+    # Include ecpint headers from target WITHOUT creating a dependency (avoid generator expression)
+    get_target_property(_ecpint_include_dirs ECPINT::ecpint INTERFACE_INCLUDE_DIRECTORIES)
+    target_include_directories(ECPINT::ecpint INTERFACE ${_ecpint_include_dirs})
+    message(VERBOSE "ECPINT: Using include directories: ${_ecpint_include_dirs}")
+
+    # Link libdl for dlopen/dlsym but do NOT link libecpint itself!
+    target_link_libraries(psi4_optional_deps INTERFACE ${CMAKE_DL_LIBS})
+
+    target_compile_definitions(psi4_optional_deps
+      INTERFACE
+        USING_ecpint
+        USING_ecpint_RUNTIME
+      )
+
+elseif(TARGET ECPINT::ecpint)
+    target_link_libraries(psi4_optional_deps INTERFACE ECPINT::ecpint)
+    target_compile_definitions(psi4_optional_deps
+      INTERFACE
+        USING_ecpint
+        USING_ecpint_STATIC
+      )
 endif()
 
 if(TARGET OpenOrbitalOptimizer::OpenOrbitalOptimizer)

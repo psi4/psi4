@@ -131,7 +131,7 @@ option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 
 # Validation
 if(ENABLE_ecpint AND ENABLE_ecpint_RUNTIME)
-    message(FATAL_ERROR "Use ENABLE_ecpint for static linking or ENABLE_ecpint_RUNTIME for dynamic loading, not both.")
+    message(FATAL_ERROR "Use ENABLE_ecpint for ordinary linking or ENABLE_ecpint_RUNTIME for dynamic loading, not both.")
 endif()
 option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
