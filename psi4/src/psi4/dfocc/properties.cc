@@ -28,7 +28,6 @@
 
 /** Standard library includes */
 #include "psi4/libqt/qt.h"
-#include "defines.h"
 #include "dfocc.h"
 #include "ekt.h"
 #include "psi4/libmints/oeprop.h"
