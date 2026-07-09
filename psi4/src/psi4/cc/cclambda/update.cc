@@ -32,7 +32,6 @@
 */
 #include <cstdio>
 #include "MOInfo.h"
-#include "Params.h"
 #include "cclambda.h"
 #include "globals.h"
 

@@ -37,7 +37,6 @@
 #include <cmath>
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
-#include "Params.h"
 #include "globals.h"
 
 namespace psi {
