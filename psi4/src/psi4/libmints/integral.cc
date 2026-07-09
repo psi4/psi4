@@ -117,6 +117,16 @@ std::unique_ptr<OneBodySOInt> IntegralFactory::so_potential(int deriv) {
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_ecp(int deriv) {
 #ifdef USING_ecpint
+#ifdef USING_ecpint_RUNTIME
+    // Runtime-optional build: libecpint is NOT linked into core.so, so we must
+    // confirm it can actually be dlopen'd before touching any ECPInt/libecpint
+    // symbol. Constructing an ECPInt without this check would trigger an
+    // uncatchable dynamic-linker "symbol lookup error" abort instead of a
+    // normal C++ exception.
+    if (!ecpint_runtime::is_available()) {
+        throw PSIEXCEPTION(ecpint_runtime::get_unavailable_message());
+    }
+#endif
     return std::make_unique<ECPInt>(spherical_transforms_, bs1_, bs2_, deriv);
 #else
     throw PSIEXCEPTION("ECP shells requested but libecpint addon not enabled. Re-compile with `-D ENABLE_ecpint=ON`.");

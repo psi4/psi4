@@ -147,7 +147,11 @@ _addons_ = {
     "ambit": _CMake_to_Py_boolean("@ENABLE_ambit@"),
     "chemps2": _CMake_to_Py_boolean("@ENABLE_CheMPS2@"),
     "dkh": _CMake_to_Py_boolean("@ENABLE_dkh@"),
-    "ecpint": _CMake_to_Py_boolean("@ENABLE_ecpint@") or _CMake_to_Py_boolean("@ENABLE_ecpint_RUNTIME@"),  # runtime safe b/c lib preloaded in __init__.py
+    # `core.ecpint_available()` checks actual availability: for runtime-optional builds
+    # (ENABLE_ecpint_RUNTIME), libecpint isn't linked into core.so, so it's only truly usable
+    # if it can be dlopen'd at runtime (see psi4/src/psi4/libmints/ecpint_loader.cc). For
+    # statically-linked builds (ENABLE_ecpint) it's always available if compiled in at all.
+    "ecpint": core.ecpint_available(),
     "libefp": which_import("pylibefp", return_bool=True),
     "gdma": which_import("gdma", return_bool=True),  # package pygdma, import gdma
     "ipi": which_import("ipi", return_bool=True),
