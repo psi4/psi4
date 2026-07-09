@@ -33,11 +33,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "psi4/libdpd/dpd.h"
 #include "psi4/liboptions/liboptions.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Frozen.h"
 #include "globals.h"
 
 namespace psi {

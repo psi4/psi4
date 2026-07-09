@@ -30,9 +30,7 @@
     \ingroup CCDENSITY
     \brief Enter brief description of file here
 */
-#include "MOInfo.h"
 #include "Params.h"
-#include "Frozen.h"
 #include "globals.h"
 
 namespace psi {
