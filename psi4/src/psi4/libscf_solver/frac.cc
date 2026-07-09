@@ -58,14 +58,12 @@
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
 #include <algorithm>
 #include <vector>
-#include <utility>
 #include <tuple>
 
 namespace psi {

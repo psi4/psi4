@@ -35,10 +35,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/lib3index/3index.h"
 
-#include "psi4/libciomr/libciomr.h"
 #ifdef _OPENMP
 #include <omp.h>
 #else
