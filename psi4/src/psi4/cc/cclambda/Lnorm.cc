@@ -32,9 +32,7 @@
 */
 #include <cstdio>
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 
-#include "MOInfo.h"
 #include "Params.h"
 #include "globals.h"
 

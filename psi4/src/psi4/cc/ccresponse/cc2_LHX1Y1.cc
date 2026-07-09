@@ -39,8 +39,6 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"
-#include "Params.h"
-#include "Local.h"
 #include "globals.h"
 
 namespace psi {

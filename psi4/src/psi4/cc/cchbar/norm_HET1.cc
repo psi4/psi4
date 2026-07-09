@@ -33,7 +33,6 @@
 #include <cstdio>
 #include <cmath>
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "MOInfo.h"
 #include "Params.h"
 #include "globals.h"
 
