@@ -26,15 +26,17 @@
  * @END LICENSE
  */
 
+#ifdef USING_PCMSolver
+
 #include "psi4/pybind11.h"
 
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libpsipcm/psipcm.h"
 
 using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
-
-#ifdef USING_PCMSolver
 
 void export_pcm(py::module& m) {
     py::class_<PCM, std::shared_ptr<PCM>> pcm(m, "PCM", "Class interfacing with PCMSolver");
