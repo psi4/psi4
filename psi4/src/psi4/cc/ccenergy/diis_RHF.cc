@@ -39,7 +39,6 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "MOInfo.h"
-#include "Params.h"
 #include "psi4/cc/ccwave.h"
 
 namespace psi {
