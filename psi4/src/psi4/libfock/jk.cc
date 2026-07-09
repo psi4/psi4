@@ -224,7 +224,6 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
        
         // Use Disk DFJK
         return build_JK(primary, auxiliary, options, "DISK_DF");
-        
     } else {  // otherwise it has already been set
         return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
     }
