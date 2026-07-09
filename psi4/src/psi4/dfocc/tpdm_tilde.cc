@@ -28,7 +28,6 @@
 
 /** Standard library includes */
 #include "psi4/libqt/qt.h"
-#include "defines.h"
 #include "dfocc.h"
 
 using namespace psi;
