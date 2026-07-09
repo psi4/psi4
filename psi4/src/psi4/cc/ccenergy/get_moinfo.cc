@@ -39,7 +39,6 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
-#include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"

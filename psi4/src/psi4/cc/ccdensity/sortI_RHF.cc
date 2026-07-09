@@ -33,12 +33,8 @@
 #include <cstdio>
 #include "psi4/libdpd/dpd.h"
 #include <cmath>
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libiwl/iwl.h"
 #include "MOInfo.h"
-#include "Params.h"
-#include "Frozen.h"
 #include "globals.h"
 
 namespace psi {
