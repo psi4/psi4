@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-#include <any>
-#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -35,26 +33,20 @@
 #include <vector>
 #include <utility>
 #ifdef _OPENMP
-#include <omp.h>
 #endif
 
 #include "psi4/psifiles.h"
-#include "psi4/physconst.h"
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/pointgrp.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
 
