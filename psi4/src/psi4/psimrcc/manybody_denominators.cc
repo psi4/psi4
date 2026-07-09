@@ -32,15 +32,12 @@
  *  @brief The base class for all the many-body methods
  */
 
-#include <iostream>
 #include <cmath>
-#include <algorithm>
 
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 
-#include "algebra_interface.h"
 #include "blas.h"
 #include "manybody.h"
 #include "matrix.h"

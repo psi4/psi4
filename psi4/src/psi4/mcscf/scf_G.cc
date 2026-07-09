@@ -26,12 +26,9 @@
  * @END LICENSE
  */
 
-#include <iostream>
 
 #include "psi4/psifiles.h"
-#include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libpsi4util/libpsi4util.h"
 
 #include "scf.h"
 

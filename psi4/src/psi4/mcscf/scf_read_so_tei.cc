@@ -26,14 +26,10 @@
  * @END LICENSE
  */
 
-#include <iostream>
 #include <cmath>
 
 #include "psi4/psifiles.h"
 #include "psi4/libiwl/iwl.hpp"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 
 #include "scf.h"
 

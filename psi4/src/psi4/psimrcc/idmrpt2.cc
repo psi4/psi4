@@ -32,11 +32,8 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/process.h"
 
 #include "idmrpt2.h"
-#include "matrix.h"
-#include "blas.h"
 #include "sort.h"
 #include "updater.h"
 #include "psimrcc_wfn.h"
