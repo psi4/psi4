@@ -33,9 +33,7 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 
-#include "psi4/libmoinfo/libmoinfo.h"
 
-#include "blas.h"
 #include "idmrpt2.h"
 #include "psimrcc_wfn.h"
 

@@ -33,10 +33,8 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 
-#include "psi4/libpsi4util/libpsi4util.h"
 
 #include "idmrpt2.h"
-#include "blas.h"
 
 namespace psi {
 

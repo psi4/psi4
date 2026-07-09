@@ -26,10 +26,8 @@
  * @END LICENSE
  */
 
-#include <iostream>
 #include <cstdlib>
 #include <cstdio>
-#include "psi4/liboptions/liboptions.h"
 
 #include "scf.h"
 
