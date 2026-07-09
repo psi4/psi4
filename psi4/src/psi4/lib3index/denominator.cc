@@ -36,28 +36,21 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-#include <algorithm>
 #include <vector>
 #include <utility>
 
-#include "psi4/psifiles.h"
-#include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
 // MKL Header
 #ifdef USING_LAPACK_MKL
-#include <mkl.h>
 #endif
 
 // OpenMP Header
 //_OPENMP is defined by the compiler if it exists
 #ifdef _OPENMP
-#include <omp.h>
 #endif
 
 namespace psi {

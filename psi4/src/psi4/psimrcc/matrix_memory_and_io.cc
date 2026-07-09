@@ -35,16 +35,11 @@
 #include <iostream>
 #include <cstdio>
 #include <cmath>
-#include <algorithm>
 
 #include "psi4/psifiles.h"
-#include "psi4/pragma.h"
-#include <memory>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "matrix.h"
 
