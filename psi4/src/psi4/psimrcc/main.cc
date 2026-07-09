@@ -41,21 +41,14 @@
 
 #include "psi4/psi4-dec.h"
 // Standard libraries
-#include <iostream>
-#include <complex>
 #include <cstdlib>
 
 // PSI libraries
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libqt/qt.h"
 
 #include "blas.h"
-#include "main.h"
-#include "sort.h"
-#include "mrcc.h"
 #include "psimrcc_wfn.h"
-#include "transform.h"
 
 // PSI FILES
 
