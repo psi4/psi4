@@ -35,11 +35,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libdpd/dpd.h"
-#include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #include "globals.h"
 
 namespace psi {

@@ -34,9 +34,7 @@
 #include <cstdlib>
 #include <string>
 #include <cmath>
-#include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/pointgrp.h"
@@ -44,7 +42,6 @@
 #include "psi4/libmints/corrtab.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #include "globals.h"
 
 namespace psi {
