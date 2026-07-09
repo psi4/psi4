@@ -9,21 +9,26 @@ so the real build directory is never touched). A removal is kept only if the fil
 compiles; otherwise the line is restored and logged as a false positive / genuinely
 needed include.
 
-Successful files (>=1 include actually removed) are committed individually to git so
-the change is bisectable. Everything is logged to logs/<prefix>.json and
-logs/<prefix>.md for reproducibility.
+Files are processed in parallel (--jobs). Successfully-modified files (>=1 include
+actually removed) are committed to git in batches (--batch-size), with one commit per
+batch listing every included file + its removed/kept counts in the message body, so
+history stays bisectable without one commit per file. Everything is logged
+incrementally to logs/<prefix>.json and logs/<prefix>.md for reproducibility/resilience.
 
 Usage:
     python3 scripts/verify_and_remove_includes.py --top 20 --commit
+    python3 scripts/verify_and_remove_includes.py --skip 20 --jobs 12 --batch-size 15 --commit
     python3 scripts/verify_and_remove_includes.py --files path/to/a.cc path/to/b.cc
 """
 import argparse
+import hashlib
 import json
 import re
 import shlex
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 
@@ -86,7 +91,7 @@ def compile_check(entry, tmp_out):
     return ok, stderr_tail, elapsed
 
 
-def process_file(path, entry, cands, tmp_out, do_commit):
+def process_file(path, entry, cands, tmp_out):
     p = Path(path)
     original_text = p.read_text()
     lines = original_text.split("\n")
@@ -137,21 +142,34 @@ def process_file(path, entry, cands, tmp_out, do_commit):
         return record
 
     record["reverted_to_original"] = False
-
-    if record["removed"] and do_commit:
-        rel = str(p.relative_to(REPO_ROOT))
-        subprocess.run(["git", "add", rel], cwd=REPO_ROOT, check=True)
-        n = len(record["removed"])
-        msg = f"Remove {n} unused include{'s' if n != 1 else ''} from {rel} (clang-include-cleaner + compile-verified)"
-        commit = subprocess.run(["git", "commit", "-m", msg], cwd=REPO_ROOT, capture_output=True, text=True)
-        record["committed"] = commit.returncode == 0
-        if commit.returncode == 0:
-            sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True).stdout.strip()
-            record["commit_sha"] = sha
-    else:
-        record["committed"] = False
-
     return record
+
+
+def commit_batch(records_in_batch, do_commit):
+    """git add + a single commit covering every file in this batch. Returns commit sha or None."""
+    if not do_commit or not records_in_batch:
+        return None
+    rels = [str(Path(r["file"]).relative_to(REPO_ROOT)) for r in records_in_batch]
+    subprocess.run(["git", "add", *rels], cwd=REPO_ROOT, check=True)
+
+    n_files = len(records_in_batch)
+    subject = f"Remove unused includes from {n_files} file{'s' if n_files != 1 else ''} (clang-include-cleaner + compile-verified)"
+    body_lines = []
+    for r, rel in zip(records_in_batch, rels):
+        n_removed = len(r["removed"])
+        n_kept = len(r["kept"])
+        body_lines.append(f"{rel} ({n_removed} removed, {n_kept} kept)")
+    msg = subject + "\n\n" + "\n".join(body_lines)
+
+    commit = subprocess.run(["git", "commit", "-m", msg], cwd=REPO_ROOT, capture_output=True, text=True)
+    if commit.returncode != 0:
+        print(f"WARNING: batch commit failed: {commit.stderr}", file=sys.stderr)
+        return None
+    sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True).stdout.strip()
+    for r in records_in_batch:
+        r["committed"] = True
+        r["commit_sha"] = sha
+    return sha
 
 
 def write_logs(records, log_prefix):
@@ -201,12 +219,20 @@ def write_logs(records, log_prefix):
     return json_path, md_path
 
 
+def tmp_obj_path(f):
+    digest = hashlib.sha1(f.encode()).hexdigest()[:16]
+    return TMP_OBJ_DIR / f"{digest}.o"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--report", default=str(DEFAULT_REPORT))
     ap.add_argument("--top", type=int, default=None, help="process the top N worst-offender files")
+    ap.add_argument("--skip", type=int, default=0, help="skip the first N files in ranked order (e.g. already processed in a prior pass)")
     ap.add_argument("--files", nargs="*", default=None, help="explicit list of absolute file paths")
-    ap.add_argument("--commit", action="store_true", help="git commit each successfully cleaned file")
+    ap.add_argument("--commit", action="store_true", help="git commit modified files in batches")
+    ap.add_argument("--batch-size", type=int, default=15, help="number of modified files per commit")
+    ap.add_argument("--jobs", type=int, default=12, help="parallel worker threads")
     ap.add_argument("--log-prefix", default=None)
     args = ap.parse_args()
 
@@ -219,24 +245,51 @@ def main():
     elif args.top:
         target_files = ranked_order[: args.top]
     else:
-        target_files = ranked_order
+        target_files = ranked_order[args.skip:]
 
-    log_prefix = args.log_prefix or f"unused_includes_pass1_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    log_prefix = args.log_prefix or f"unused_includes_pass_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     records = []
-    for i, f in enumerate(target_files, 1):
-        if f not in compile_db:
-            print(f"[{i}/{len(target_files)}] {f} -> SKIP (not in compile_commands.json)", file=sys.stderr)
-            continue
-        entry = compile_db[f]
-        tmp_out = TMP_OBJ_DIR / (Path(f).name + ".o")
-        rec = process_file(f, entry, candidates[f], tmp_out, args.commit)
-        print(
-            f"[{i}/{len(target_files)}] {f} -> removed {len(rec['removed'])}, kept {len(rec['kept'])}"
-            + (f", COMMIT {rec.get('commit_sha')}" if rec.get("committed") else ""),
-            file=sys.stderr,
-        )
-        records.append(rec)
+    pending_batch = []
+    total = len(target_files)
+    done = 0
+
+    with ThreadPoolExecutor(max_workers=args.jobs) as ex:
+        futures = {}
+        for f in target_files:
+            if f not in compile_db:
+                print(f"SKIP {f} (not in compile_commands.json)", file=sys.stderr)
+                total -= 1
+                continue
+            entry = compile_db[f]
+            tmp_out = tmp_obj_path(f)
+            futures[ex.submit(process_file, f, entry, candidates[f], tmp_out)] = f
+
+        for fut in as_completed(futures):
+            f = futures[fut]
+            rec = fut.result()
+            done += 1
+            records.append(rec)
+            print(
+                f"[{done}/{total}] {f} -> removed {len(rec['removed'])}, kept {len(rec['kept'])}"
+                + (" REVERTED" if rec.get("reverted_to_original") else ""),
+                file=sys.stderr,
+            )
+
+            if rec["removed"]:
+                pending_batch.append(rec)
+
+            if len(pending_batch) >= args.batch_size:
+                sha = commit_batch(pending_batch, args.commit)
+                if sha:
+                    print(f"  -> committed batch of {len(pending_batch)} files as {sha}", file=sys.stderr)
+                pending_batch = []
+                json_path, md_path = write_logs(records, log_prefix)
+
+    if pending_batch:
+        sha = commit_batch(pending_batch, args.commit)
+        if sha:
+            print(f"  -> committed final batch of {len(pending_batch)} files as {sha}", file=sys.stderr)
 
     json_path, md_path = write_logs(records, log_prefix)
     print(f"\nLogs written to {json_path} and {md_path}", file=sys.stderr)
