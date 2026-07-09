@@ -33,7 +33,6 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/psi4-dec.h"
 
-#include "defines.h"
 #include "dfocc.h"
 #include "tensors.h"
 
