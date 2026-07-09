@@ -27,7 +27,6 @@
  */
 
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/aiohandler.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
@@ -39,10 +38,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/mintshelper.h"
-#include <sstream>
-#include "psi4/libpsi4util/PsiOutStream.h"
 #ifdef _OPENMP
-#include <omp.h>
 #endif
 
 using namespace psi;

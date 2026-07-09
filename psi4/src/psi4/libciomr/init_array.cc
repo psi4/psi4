@@ -32,11 +32,8 @@
 ** \ingroup CIOMR
 */
 
-#include "psi4/psifiles.h"
 #include <cstdio>
 #include <cstdlib>
-#include "psi4/psi4-dec.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 namespace psi {
 

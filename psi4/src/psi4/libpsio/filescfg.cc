@@ -26,16 +26,12 @@
  * @END LICENSE
  */
 
-#include "psi4/pragma.h"
-#include <memory>
-#include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/libpsi4util.h"
 
 #include <string>
 #include <map>
 #include <sstream>
-#include <algorithm>
 #include <cctype>
 
 #include <iostream>

@@ -30,7 +30,6 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
-#include "psi4/libmints/vector.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/electrostatic.h"
 #include "psi4/libmints/mintshelper.h"
@@ -40,13 +39,10 @@
 #include "psi4/lib3index/dftensor.h"
 
 #include <memory>
-#include <unordered_set>
 #include <vector>
 #include <map>
-#include <algorithm>
 #include <cctype>
 #ifdef _OPENMP
-#include <omp.h>
 #endif
 
 using namespace psi;
