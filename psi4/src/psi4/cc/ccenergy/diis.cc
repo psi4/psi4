@@ -34,11 +34,8 @@
 #include <cstdlib>
 #include <cmath>
 #include "psi4/libmints/matrix.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/psifiles.h"
 #include "Params.h"
 #include "psi4/cc/ccwave.h"
 
