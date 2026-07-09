@@ -26,11 +26,9 @@
  * @END LICENSE
  */
 
-#include <iostream>
 #include <cmath>
 
 #include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libciomr/libciomr.h"
 
 #include "blas.h"
 #include "index.h"

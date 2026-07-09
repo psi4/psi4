@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/liboptions/liboptions.h"
 
 #include "mp2_ccsd.h"

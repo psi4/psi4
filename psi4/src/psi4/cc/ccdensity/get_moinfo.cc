@@ -33,7 +33,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
@@ -43,7 +42,6 @@
 #include "psi4/libmints/matrix.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Frozen.h"
 #include "globals.h"
 
 namespace psi {
