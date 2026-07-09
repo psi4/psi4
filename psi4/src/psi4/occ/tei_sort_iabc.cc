@@ -29,7 +29,6 @@
 #include "psi4/libiwl/iwl.hpp"
 
 #include "occwave.h"
-#include "defines.h"
 
 using namespace psi;
 
