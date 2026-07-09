@@ -1,0 +1,166 @@
+[
+  {
+    "file": "/home/tamago/psi4/psi4/src/psi4/libmints/overlap.cc",
+    "candidates": [],
+    "removed": [
+      {
+        "line": 30,
+        "header": "\"psi4/libciomr/libciomr.h\"",
+        "text": "#include \"psi4/libciomr/libciomr.h\"",
+        "compile_seconds": 22.62
+      }
+    ],
+    "kept": [],
+    "errors": [],
+    "final_compile_ok": true,
+    "final_compile_seconds": 21.55,
+    "reverted_to_original": false,
+    "committed": true,
+    "commit_sha": "cf7fa19e1"
+  },
+  {
+    "file": "/home/tamago/psi4/psi4/src/psi4/libmints/tracelessquadrupole.cc",
+    "candidates": [],
+    "removed": [
+      {
+        "line": 32,
+        "header": "\"psi4/libciomr/libciomr.h\"",
+        "text": "#include \"psi4/libciomr/libciomr.h\"",
+        "compile_seconds": 71.25
+      }
+    ],
+    "kept": [],
+    "errors": [],
+    "final_compile_ok": true,
+    "final_compile_seconds": 67.28,
+    "reverted_to_original": false,
+    "committed": true,
+    "commit_sha": "cf7fa19e1"
+  },
+  {
+    "file": "/home/tamago/psi4/psi4/src/psi4/libmints/onebody.cc",
+    "candidates": [],
+    "removed": [
+      {
+        "line": 39,
+        "header": "<stdexcept>",
+        "text": "#include <stdexcept>",
+        "compile_seconds": 75.42
+      },
+      {
+        "line": 33,
+        "header": "\"psi4/libpsi4util/PsiOutStream.h\"",
+        "text": "#include \"psi4/libpsi4util/PsiOutStream.h\"",
+        "compile_seconds": 69.24
+      }
+    ],
+    "kept": [],
+    "errors": [],
+    "final_compile_ok": true,
+    "final_compile_seconds": 72.9,
+    "reverted_to_original": false,
+    "committed": true,
+    "commit_sha": "cf7fa19e1"
+  },
+  {
+    "file": "/home/tamago/psi4/psi4/src/psi4/libmints/electrostatic.cc",
+    "candidates": [],
+    "removed": [
+      {
+        "line": 30,
+        "header": "\"psi4/libciomr/libciomr.h\"",
+        "text": "#include \"psi4/libciomr/libciomr.h\"",
+        "compile_seconds": 19.98
+      }
+    ],
+    "kept": [],
+    "errors": [],
+    "final_compile_ok": true,
+    "final_compile_seconds": 19.68,
+    "reverted_to_original": false,
+    "committed": true,
+    "commit_sha": "cf7fa19e1"
+  },
+  {
+    "file": "/home/tamago/psi4/psi4/src/export_mints.cc",
+    "candidates": [],
+    "removed": [
+      {
+        "line": 35,
+        "header": "<libint2.hpp>",
+        "text": "#include <libint2.hpp>",
+        "compile_seconds": 38.83
+      },
+      {
+        "line": 29,
+        "header": "<pybind11/stl.h>",
+        "text": "#include <pybind11/stl.h>",
+        "compile_seconds": 36.42
+      }
+    ],
+    "kept": [],
+    "errors": [],
+    "final_compile_ok": true,
+    "final_compile_seconds": 33.99,
+    "reverted_to_original": false,
+    "committed": true,
+    "commit_sha": "cf7fa19e1"
+  },
+  {
+    "file": "/home/tamago/psi4/psi4/src/psi4/libmints/eri.cc",
+    "candidates": [],
+    "removed": [
+      {
+        "line": 32,
+        "header": "\"psi4/libmints/fjt.h\"",
+        "text": "#include \"psi4/libmints/fjt.h\"",
+        "compile_seconds": 47.73
+      }
+    ],
+    "kept": [],
+    "errors": [],
+    "final_compile_ok": true,
+    "final_compile_seconds": 50.24,
+    "reverted_to_original": false,
+    "committed": true,
+    "commit_sha": "cf7fa19e1"
+  },
+  {
+    "file": "/home/tamago/psi4/psi4/src/psi4/libmints/quadrupole.cc",
+    "candidates": [],
+    "removed": [
+      {
+        "line": 32,
+        "header": "\"psi4/libciomr/libciomr.h\"",
+        "text": "#include \"psi4/libciomr/libciomr.h\"",
+        "compile_seconds": 68.3
+      }
+    ],
+    "kept": [],
+    "errors": [],
+    "final_compile_ok": true,
+    "final_compile_seconds": 75.39,
+    "reverted_to_original": false,
+    "committed": true,
+    "commit_sha": "cf7fa19e1"
+  },
+  {
+    "file": "/home/tamago/psi4/psi4/src/psi4/libmints/3coverlap.cc",
+    "candidates": [],
+    "removed": [
+      {
+        "line": 32,
+        "header": "<stdexcept>",
+        "text": "#include <stdexcept>",
+        "compile_seconds": 73.24
+      }
+    ],
+    "kept": [],
+    "errors": [],
+    "final_compile_ok": true,
+    "final_compile_seconds": 63.65,
+    "reverted_to_original": false,
+    "committed": true,
+    "commit_sha": "cf7fa19e1"
+  }
+]
