@@ -49,7 +49,6 @@
 #include "psi4/physconst.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #include "globals.h"
 
 namespace psi {
