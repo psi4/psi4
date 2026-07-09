@@ -232,6 +232,8 @@ jobs:
           sed -E -i.bak "s;accelerate;openblas;g" env_p4build.yaml
           sed -E -i.bak "s;- memory_profiler;#- memory_profiler;g" env_p4build.yaml
           # memory leaks. accelerate is fine but openblas matches the scf-cholesky stored values
+          sed -E -i.bak "s;- opentrustregion;#- opentrustregion;g" env_p4build.yaml
+          # until new archs for otr
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :

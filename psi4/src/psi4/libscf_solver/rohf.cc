@@ -1332,5 +1332,202 @@ void ROHF::setup_potential() {
     }
 }
 
+#ifdef USING_OpenTrustRegion
+SharedMatrix ROHF::unpack(const OTR::c_real* matrix, const std::string name, const Dimension doccpi, 
+                          const Dimension soccpi, const Dimension virpi) {
+    // create shared matrix
+    auto shared_matrix = std::make_shared<Matrix>(name, doccpi + soccpi, soccpi + virpi);
+
+    // loop over irreps
+    for (size_t h = 0, counter = 0; h < nirrep_; h++) {
+        // get the pointer to the memory block for this irrep in shared matrix
+        auto block = shared_matrix->pointer(h);
+
+        // copy matrix to shared matrix
+        for (size_t i = 0; i < doccpi[h]; i++) {
+            for (size_t p = 0; p < soccpi[h]; p++) {
+                block[i][p] = matrix[counter++];
+            }
+        }
+        for (size_t i = 0; i < doccpi[h]; i++) {
+            for (size_t a = soccpi[h]; a < soccpi[h] + virpi[h]; a++) {
+                block[i][a] = matrix[counter++];
+            }
+        }
+        for (size_t p = doccpi[h]; p < doccpi[h] + soccpi[h]; p++) {
+            for (size_t a = soccpi[h]; a < soccpi[h] + virpi[h]; a++) {
+                block[p][a] = matrix[counter++];
+            }
+        }
+        for (size_t p = doccpi[h]; p < doccpi[h] + soccpi[h]; p++) {
+            for (size_t q = 0; q < soccpi[h]; q++) {
+                block[p][q] = 0.0;
+            }
+        }
+    }
+
+    return shared_matrix;
+}
+
+OTR::c_int ROHF::otr_obj_func(const OTR::c_real* kappa, OTR::c_real* func) {
+    // get doubly and singly occupied and virtual dimensions per irrep
+    auto doccpi = nbetapi_;
+    auto soccpi = nalphapi_ - nbetapi_;
+    auto virpi = nmopi_ - nalphapi_;
+
+    // unpack kappa
+    auto kappa_shared = unpack(kappa, "kappa", doccpi, soccpi, virpi);
+
+    // save density matrix and other quantities
+    auto Ca_save = std::make_shared<Matrix>(Ca_);
+    auto Cb_save = std::make_shared<Matrix>(Cb_);
+    auto Ct_save = std::make_shared<Matrix>(Ct_);
+    auto Da_save = std::make_shared<Matrix>(Da_);
+    auto Db_save = std::make_shared<Matrix>(Db_);
+    auto Dt_save = std::make_shared<Matrix>(Dt_);
+    auto Ga_save = std::make_shared<Matrix>(Ga_);
+    auto Gb_save = std::make_shared<Matrix>(Gb_);
+
+    // apply orbital rotation
+    rotate_orbitals(Ca_, kappa_shared);
+    rotate_orbitals(Ct_, kappa_shared);
+
+    // form density matrix
+    form_D();
+
+    // form two-electron contribution to Fock matrix (also forms Coulomb and exchange contributions separately)
+    form_G();
+
+    // compute energy
+    *func = compute_E();
+
+    // get back previous quantities
+    Ca_->copy(Ca_save);
+    Cb_->copy(Cb_save);
+    Ct_->copy(Ct_save);
+    Da_->copy(Da_save);
+    Db_->copy(Db_save);
+    Dt_->copy(Dt_save);
+    Ga_->copy(Ga_save);
+    Gb_->copy(Gb_save);
+
+    return 0;
+}
+
+OTR::c_int ROHF::otr_hess_x(const OTR::c_real* x, OTR::c_real* hess_x) {
+    // get doubly and singly occupied and virtual dimensions per irrep
+    auto doccpi = nbetapi_;
+    auto soccpi = nalphapi_ - nbetapi_;
+    auto virpi = nmopi_ - nalphapi_;
+
+    // unpack x
+    auto x_shared = unpack(x, "x", doccpi, soccpi, virpi);
+
+    // apply Hessian linear transformation
+    auto hess_x_shared = std::make_shared<Matrix>("hess_x_shared", doccpi + soccpi, soccpi + virpi);
+    Hx(x_shared, hess_x_shared);
+
+    // loop over irreps
+    for (size_t h = 0, counter = 0; h < nirrep_; h++) {
+        // skip if dimensions are zero
+        if (!doccpi[h] || !virpi[h]) continue;
+
+        // get the pointer to the memory block for this irrep in shared matrix
+        auto hess_x_irrep = hess_x_shared->pointer(h);
+
+        // copy shared matrix to Hessian linear transformation, factor 2 for redundant
+        // parameters implicitly included
+        for (size_t i = 0; i < doccpi[h]; i++) {
+            for (size_t p = 0; p < soccpi[h]; p++) {
+                hess_x[counter++] = hess_x_irrep[i][p];
+            }
+        }
+        for (size_t i = 0; i < doccpi[h]; i++) {
+            for (size_t a = soccpi[h]; a < soccpi[h] + virpi[h]; a++) {
+                hess_x[counter++] = hess_x_irrep[i][a];
+            }
+        }
+        for (size_t p = doccpi[h]; p < doccpi[h] + soccpi[h]; p++) {
+            for (size_t a = soccpi[h]; a < soccpi[h] + virpi[h]; a++) {
+                hess_x[counter++] = hess_x_irrep[p][a];
+            }
+        }
+    }
+
+    return 0;
+}
+
+OTR::c_int ROHF::otr_update_orbs(const OTR::c_real* kappa, OTR::c_real* func, OTR::c_real* grad, 
+                                 OTR::c_real* h_diag, OTR::hess_x_fp* hess_x_fp) {
+    // get doubly and singly occupied and virtual dimensions per irrep
+    auto doccpi = nbetapi_;
+    auto soccpi = nalphapi_ - nbetapi_;
+    auto virpi = nmopi_ - nalphapi_;
+
+    // unpack kappa
+    auto kappa_shared = unpack(kappa, "kappa", doccpi, soccpi, virpi);
+
+    // apply orbital rotation
+    rotate_orbitals(Ca_, kappa_shared);
+    rotate_orbitals(Ct_, kappa_shared);
+
+    // form density matrix
+    form_D();
+
+    // form two-electron contribution to Fock matrix (also forms Coulomb and exchange contributions separately)
+    form_G();
+
+    // compute energy
+    *func = compute_E();
+
+    // form Fock matrix
+    form_F();
+
+    // loop over irreps
+    for (size_t h = 0, counter = 0; h < nirrep_; h++) {
+        // skip if dimensions are zero
+        if (!doccpi[h] || !virpi[h]) continue;
+
+        // get the pointer to the memory block for this irrep in shared matrix
+        auto fp = moFeff_->pointer(h);
+
+        // construct gradient and Hessian diagonal, factor 2 to account for redundant 
+        // parameters
+        for (size_t i = 0; i < doccpi[h]; i++) {
+            for (size_t p = doccpi[h]; p < doccpi[h] + soccpi[h]; p++) {
+                grad[counter] = 2 * fp[i][p];
+                h_diag[counter++] = 2 * (-fp[i][i] + fp[p][p]);
+            }
+        }
+        for (size_t i = 0; i < doccpi[h]; i++) {
+            for (size_t a = doccpi[h] + soccpi[h]; a < nmopi_[h]; a++) {
+                grad[counter] = 4 * fp[i][a];
+                h_diag[counter++] = 4 * (-fp[i][i] + fp[a][a]);
+            }
+        }
+        for (size_t p = doccpi[h]; p < doccpi[h] + soccpi[h]; p++) {
+            for (size_t a = doccpi[h] + soccpi[h]; a < nmopi_[h]; a++) {
+                grad[counter] = 2 * fp[p][a];
+                h_diag[counter++] = 2 * (-fp[p][p] + fp[a][a]);
+            }
+        }
+    }
+
+    // set pointer
+    *hess_x_fp = otr_hess_x_wrapper;
+
+    return 0;
+}
+
+int ROHF::otr_n_param() {
+    Dimension nparampi_o_s = nbetapi_;
+    Dimension nparampi_os_v = nalphapi_;
+    for (size_t i = 0, maxi = nalphapi_.n(); i < maxi; ++i) nparampi_o_s[i] *= (nalphapi_ - nbetapi_)[i];
+    for (size_t i = 0, maxi = nbetapi_.n(); i < maxi; ++i) nparampi_os_v[i] *= (nmopi_ - nalphapi_)[i];
+
+    return (nparampi_o_s + nparampi_os_v).sum();
+}
+#endif
+
 }  // namespace scf
 }  // namespace psi
