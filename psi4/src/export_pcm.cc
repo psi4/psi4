@@ -29,8 +29,6 @@
 #include "psi4/pybind11.h"
 
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libpsipcm/psipcm.h"
 
 using namespace psi;
 namespace py = pybind11;

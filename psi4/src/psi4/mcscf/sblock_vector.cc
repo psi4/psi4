@@ -27,13 +27,11 @@
  */
 
 #include <cstdlib>
-#include "psi4/psifiles.h"
 #include <cstdio>
 
 #include "sblock_vector.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include "psi4/psi4-dec.h"
 
 namespace psi {
 namespace mcscf {
