@@ -31,8 +31,6 @@
   \ingroup IWL
 */
 #include <cstdio>
-#include "psi4/libpsio/psio.h"
-#include "iwl.h"
 #include "iwl.hpp"
 
 namespace psi {

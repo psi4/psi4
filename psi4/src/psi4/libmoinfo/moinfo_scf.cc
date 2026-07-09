@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include <iostream>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>

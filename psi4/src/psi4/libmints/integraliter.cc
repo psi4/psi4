@@ -26,14 +26,12 @@
  * @END LICENSE
  */
 
-#include "vector3.h"
 #include "integral.h"
 #include "gshell.h"
 #include "basisset.h"
 #include "sobasis.h"
 #include "sointegral_onebody.h"
 #include "sointegral_twobody.h"
-#include "psi4/pragma.h"
 #include <memory>
 #include <algorithm>
 

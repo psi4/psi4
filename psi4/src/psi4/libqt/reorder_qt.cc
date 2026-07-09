@@ -35,7 +35,6 @@
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libmints/wavefunction.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
