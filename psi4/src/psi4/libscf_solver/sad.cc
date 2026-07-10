@@ -632,6 +632,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     SharedMatrix ECP(mat.create_matrix("ECP"));
     if (bas->has_ECP()) {
         ECP_ints->compute(ECP);
+    } else {
+        ECP->zero();
     }
 #endif
     SharedMatrix H(mat.create_matrix("Core Hamiltonian Matrix H"));
@@ -903,6 +905,8 @@ void SADGuess::get_uhf_atomic_density_ooo(std::shared_ptr<BasisSet> bas, std::sh
     SharedMatrix ECP(mat.create_matrix("ECP"));
     if (bas->has_ECP()) {
         ECP_ints->compute(ECP);
+    } else {
+        ECP->zero();
     }
 #endif
     SharedMatrix H(mat.create_matrix("Core Hamiltonian Matrix H"));

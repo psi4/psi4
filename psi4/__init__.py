@@ -81,7 +81,9 @@ if _ecpint_runtime:
     # libmints/ecpint_loader.cc) the first time ECP integrals are actually
     # requested.
     _saved_dlopenflags = sys.getdlopenflags()
-    sys.setdlopenflags(os.RTLD_LAZY)
+    # Switch RTLD_NOW -> RTLD_LAZY but preserve any other bits already set
+    # (e.g. RTLD_GLOBAL), rather than clobbering the whole flag word.
+    sys.setdlopenflags((_saved_dlopenflags & ~(os.RTLD_LAZY | os.RTLD_NOW)) | os.RTLD_LAZY)
 try:
     try:
         from . import core

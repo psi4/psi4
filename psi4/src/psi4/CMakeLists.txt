@@ -26,7 +26,7 @@ if(ENABLE_ecpint_RUNTIME)
 
     # Include ecpint headers from target WITHOUT creating a dependency (avoid generator expression)
     get_target_property(_ecpint_include_dirs ECPINT::ecpint INTERFACE_INCLUDE_DIRECTORIES)
-    target_include_directories(ECPINT::ecpint INTERFACE ${_ecpint_include_dirs})
+    target_include_directories(psi4_optional_deps INTERFACE ${_ecpint_include_dirs})
     message(VERBOSE "ECPINT: Using include directories: ${_ecpint_include_dirs}")
 
     # Link libdl for dlopen/dlsym but do NOT link libecpint itself!
