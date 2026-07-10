@@ -2213,9 +2213,6 @@ SharedMatrix RV::compute_gradient() {
 
 SharedMatrix RV::compute_hessian() {
     // => Validation <=
-    if (functional_->is_gga() || functional_->is_meta())
-        throw PSIEXCEPTION("Hessians for GGA and meta GGA functionals are not yet implemented.");
-
     if ((D_AO_.size() != 1)) throw PSIEXCEPTION("V: RKS should have only one D Matrix");
 
     if (functional_->needs_vv10()) {
@@ -2239,14 +2236,18 @@ SharedMatrix RV::compute_hessian() {
     int max_functions = grid_->max_functions();
     int max_points = grid_->max_points();
 
-    int derivlev = (functional_->is_gga() || functional_->is_meta()) ? 3 : 2;
-    functional_->set_deriv(derivlev);
+    // The same-atom seed terms need one more collocation derivative than the
+    // potential: third derivatives for GGA/meta. The functional itself is
+    // only needed through second derivatives.
+    int ansatz = functional_->ansatz();
+    int derivlev = (ansatz >= 1) ? 3 : 2;
+    functional_->set_deriv(2);
 
     // ==> Setup the pointers <==
     for (size_t i = 0; i < num_threads_; i++) {
         point_workers_[i]->set_pointers(D_AO_[0]);
         point_workers_[i]->set_deriv(derivlev);
-        functional_workers_[i]->set_deriv(derivlev);
+        functional_workers_[i]->set_deriv(2);
         functional_workers_[i]->allocate();
     }
 
@@ -2492,6 +2493,229 @@ SharedMatrix RV::compute_hessian() {
                 pHXZ[ml][nl] += pTx2[ml][nl] * D;
                 pHYZ[ml][nl] += pTy2[ml][nl] * D;
                 pHZZ[ml][nl] += pTz2[ml][nl] * D;
+            }
+        }
+
+        // ==> GGA and meta-GGA contributions <== //
+        //
+        // Everything below is assembled so that ACC + ACC^T equals the true
+        // second derivative (the final scale(2)/hermitivitize pair applies
+        // H <- H + H^T): terms symmetric under (A,x,m) <-> (B,y,n) enter at
+        // half weight, transpose pairs enter once.
+        //
+        // Per-function field-derivative rows (TOTAL-density convention,
+        // fixed grid):  field^{Ax} = sum_{u in A} F_field^x(P, u) with
+        //   F_rho^x = -4 (phi D) o dphi_x
+        //   G_i^x   = -4 [(phi D) o d2phi_xi + (dphi_i D) o dphi_x]
+        //   F_sig^x = 2 sum_i grad_rho_i G_i^x
+        //   F_tau^x = -2 sum_i (dphi_i D) o d2phi_xi
+        if (ansatz >= 1) {
+            bool is_meta = (ansatz >= 2);
+            double** phi_i[3] = {phi_x, phi_y, phi_z};
+            double** phi_hess[6] = {phi_xx, phi_xy, phi_xz, phi_yy, phi_yz, phi_zz};
+            int hess_addr[3][3] = {{0, 1, 2}, {1, 3, 4}, {2, 4, 5}};
+            // packed third derivatives (xxx, xxy, xxz, xyy, xyz, xzz, yyy, yyz, yzz, zzz)
+            static const char* keys3[10] = {"PHI_XXX", "PHI_XXY", "PHI_XXZ", "PHI_XYY", "PHI_XYZ",
+                                            "PHI_XZZ", "PHI_YYY", "PHI_YYZ", "PHI_YZZ", "PHI_ZZZ"};
+            double** phi_3[10];
+            for (int k = 0; k < 10; k++) phi_3[k] = pworker->basis_value(keys3[k])->pointer();
+            // sorted-triple lookup into the packed third derivatives
+            static const int t3_addr[3][3][3] = {{{0, 1, 2}, {1, 3, 4}, {2, 4, 5}},
+                                                 {{1, 3, 4}, {3, 6, 7}, {4, 7, 8}},
+                                                 {{2, 4, 5}, {4, 7, 8}, {5, 8, 9}}};
+
+            double* rho_g[3];
+            rho_g[0] = pworker->point_value("RHO_AX")->pointer();
+            rho_g[1] = pworker->point_value("RHO_AY")->pointer();
+            rho_g[2] = pworker->point_value("RHO_AZ")->pointer();
+            auto v_gamma = vals["V_GAMMA_AA"]->pointer();
+            auto v2_rho_gamma = vals["V_RHO_A_GAMMA_AA"]->pointer();
+            auto v2_gamma_gamma = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
+            double* v_tau = nullptr;
+            double* v2_rho_tau = nullptr;
+            double* v2_gamma_tau = nullptr;
+            double* v2_tau_tau = nullptr;
+            if (is_meta) {
+                v_tau = vals["V_TAU_A"]->pointer();
+                v2_rho_tau = vals["V_RHO_A_TAU_A"]->pointer();
+                v2_gamma_tau = vals["V_GAMMA_AA_TAU_A"]->pointer();
+                v2_tau_tau = vals["V_TAU_A_TAU_A"]->pointer();
+            }
+
+            // density-contracted collocations
+            auto U0_mat(U_local->clone());
+            auto U0 = U0_mat->pointer();
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dp[0], max_functions, 0.0, U0[0],
+                    max_functions);
+            std::vector<SharedMatrix> Ui_mat;
+            double** Uip[3];
+            for (int i = 0; i < 3; i++) {
+                Ui_mat.push_back(U_local->clone());
+                Uip[i] = Ui_mat[i]->pointer();
+                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], coll_funcs, Dp[0], max_functions, 0.0,
+                        Uip[i][0], max_functions);
+            }
+
+            // per-function field-derivative rows and work arrays
+            std::vector<SharedMatrix> F_mat;
+            double **F_rho[3], **F_sig[3], **F_tau[3], **Gp[9];
+            for (int xd = 0; xd < 3; xd++) {
+                for (int j = 0; j < 3; j++) F_mat.push_back(U_local->clone());
+                F_rho[xd] = F_mat[3 * xd + 0]->pointer();
+                F_sig[xd] = F_mat[3 * xd + 1]->pointer();
+                F_tau[xd] = F_mat[3 * xd + 2]->pointer();
+            }
+            std::vector<SharedMatrix> G_mat;
+            for (int k = 0; k < 9; k++) {
+                G_mat.push_back(U_local->clone());
+                Gp[k] = G_mat[k]->pointer();
+            }
+            auto WL_mat(U_local->clone());
+            auto WL = WL_mat->pointer();
+            auto WR_mat(U_local->clone());
+            auto WR = WR_mat->pointer();
+
+            for (int xd = 0; xd < 3; xd++) {
+                for (int P = 0; P < npoints; P++) {
+                    bool live = std::fabs(rho_a[P]) > v2_rho_cutoff_;
+                    for (int ml = 0; ml < nlocal; ml++) {
+                        double frho = -4.0 * U0[P][ml] * phi_i[xd][P][ml];
+                        double fsig = 0.0, ftau = 0.0;
+                        for (int i = 0; i < 3; i++) {
+                            double g = -4.0 * (U0[P][ml] * phi_hess[hess_addr[xd][i]][P][ml]
+                                               + Uip[i][P][ml] * phi_i[xd][P][ml]);
+                            Gp[3 * xd + i][P][ml] = live ? g : 0.0;
+                            fsig += 2.0 * rho_g[i][P] * g;
+                            if (is_meta) ftau += Uip[i][P][ml] * phi_hess[hess_addr[xd][i]][P][ml];
+                        }
+                        F_rho[xd][P][ml] = live ? frho : 0.0;
+                        F_sig[xd][P][ml] = live ? fsig : 0.0;
+                        F_tau[xd][P][ml] = live ? -2.0 * ftau : 0.0;
+                    }
+                }
+            }
+
+            double** pH[3][3] = {{pHXX, pHXY, pHXZ}, {pHYX, pHYY, pHYZ}, {pHZX, pHZY, pHZZ}};
+
+            for (int xd = 0; xd < 3; xd++) {
+                // ==> Class I: field x field through the second functional
+                //     derivatives (all pairs except rho-rho, which the LSDA
+                //     block already covers), at half weight <== //
+                for (int P = 0; P < npoints; P++) {
+                    double wP = 0.5 * w[P];
+                    for (int ml = 0; ml < nlocal; ml++) {
+                        double lr = v2_rho_gamma[P] * F_sig[xd][P][ml];
+                        double ls = v2_rho_gamma[P] * F_rho[xd][P][ml]
+                                    + v2_gamma_gamma[P] * F_sig[xd][P][ml];
+                        double lt = 0.0;
+                        if (is_meta) {
+                            lr += 2.0 * v2_rho_tau[P] * F_tau[xd][P][ml];
+                            ls += 2.0 * v2_gamma_tau[P] * F_tau[xd][P][ml];
+                            lt = 2.0 * v2_rho_tau[P] * F_rho[xd][P][ml]
+                                 + 2.0 * v2_gamma_tau[P] * F_sig[xd][P][ml]
+                                 + 4.0 * v2_tau_tau[P] * F_tau[xd][P][ml];
+                        }
+                        WL[P][ml] = wP * lr;
+                        WR[P][ml] = wP * ls;
+                        Tp[P][ml] = wP * lt;
+                    }
+                }
+                for (int yd = 0; yd < 3; yd++) {
+                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions, F_rho[yd][0], max_functions,
+                            1.0, pH[xd][yd][0], max_functions);
+                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WR[0], max_functions, F_sig[yd][0], max_functions,
+                            1.0, pH[xd][yd][0], max_functions);
+                    if (is_meta) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, Tp[0], max_functions, F_tau[yd][0],
+                                max_functions, 1.0, pH[xd][yd][0], max_functions);
+                    }
+                }
+
+                // ==> Class I': vgamma gradient cross,
+                //     2 w vgamma sum_i G_i^x G_i^y, at half weight <== //
+                for (int i = 0; i < 3; i++) {
+                    for (int P = 0; P < npoints; P++) {
+                        double c = w[P] * v_gamma[P];
+                        for (int ml = 0; ml < nlocal; ml++) WL[P][ml] = c * Gp[3 * xd + i][P][ml];
+                    }
+                    for (int yd = 0; yd < 3; yd++) {
+                        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions, Gp[3 * yd + i][0],
+                                max_functions, 1.0, pH[xd][yd][0], max_functions);
+                    }
+                }
+
+                // ==> Class II: potential times the two-center part of the
+                //     seed second derivative <== //
+                // sigma (transpose pair, entered once):
+                //   sum_i (2 w vgamma grad_rho_i) 4 D_mn d2phi_xi(m) dphi_y(n)
+                for (int P = 0; P < npoints; P++) {
+                    bool live = std::fabs(rho_a[P]) > v2_rho_cutoff_;
+                    for (int ml = 0; ml < nlocal; ml++) {
+                        double acc = 0.0;
+                        if (live) {
+                            for (int i = 0; i < 3; i++)
+                                acc += 2.0 * w[P] * v_gamma[P] * rho_g[i][P]
+                                       * phi_hess[hess_addr[xd][i]][P][ml];
+                        }
+                        WL[P][ml] = acc;
+                    }
+                }
+                for (int yd = 0; yd < 3; yd++) {
+                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions, phi_i[yd][0], coll_funcs,
+                            0.0, WR[0], max_functions);
+                    for (int ml = 0; ml < nlocal; ml++) {
+                        for (int nl = 0; nl < nlocal; nl++) {
+                            pH[xd][yd][ml][nl] += 4.0 * WR[ml][nl] * Dp[ml][nl];
+                        }
+                    }
+                }
+                // tau (symmetric, at half weight):
+                //   2 w vtau D_mn sum_i d2phi_xi(m) d2phi_yi(n)
+                if (is_meta) {
+                    for (int i = 0; i < 3; i++) {
+                        for (int P = 0; P < npoints; P++) {
+                            double c = (std::fabs(rho_a[P]) > v2_rho_cutoff_) ? 2.0 * w[P] * v_tau[P] : 0.0;
+                            for (int ml = 0; ml < nlocal; ml++)
+                                WL[P][ml] = c * phi_hess[hess_addr[xd][i]][P][ml];
+                        }
+                        for (int yd = 0; yd < 3; yd++) {
+                            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, WL[0], max_functions,
+                                    phi_hess[hess_addr[yd][i]][0], coll_funcs, 0.0, WR[0], max_functions);
+                            for (int ml = 0; ml < nlocal; ml++) {
+                                for (int nl = 0; nl < nlocal; nl++) {
+                                    pH[xd][yd][ml][nl] += WR[ml][nl] * Dp[ml][nl];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ==> Class III: potential times the one-center part of the seed
+            //     second derivative (both displacements on the same function;
+            //     third-derivative collocation), at half weight, scattered to
+            //     the (A, A) diagonal blocks <== //
+            for (int xd = 0; xd < 3; xd++) {
+                for (int yd = xd; yd < 3; yd++) {
+                    for (int ml = 0; ml < nlocal; ml++) {
+                        double t = 0.0;
+                        for (int P = 0; P < npoints; P++) {
+                            if (std::fabs(rho_a[P]) <= v2_rho_cutoff_) continue;
+                            double s3 = 0.0, cu = 0.0, st = 0.0;
+                            for (int i = 0; i < 3; i++) {
+                                double ci = 4.0 * w[P] * v_gamma[P] * rho_g[i][P];
+                                s3 += ci * phi_3[t3_addr[xd][yd][i]][P][ml];
+                                cu += ci * Uip[i][P][ml];
+                                if (is_meta)
+                                    st += 2.0 * w[P] * v_tau[P] * phi_3[t3_addr[xd][yd][i]][P][ml] * Uip[i][P][ml];
+                            }
+                            t += s3 * U0[P][ml] + phi_hess[hess_addr[xd][yd]][P][ml] * cu + st;
+                        }
+                        int A = primary_->function_to_center(function_map[ml]);
+                        Hp[3 * A + xd][3 * A + yd] += t;
+                        if (yd != xd) Hp[3 * A + yd][3 * A + xd] += t;
+                    }
+                }
             }
         }
 
