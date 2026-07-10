@@ -3995,6 +3995,41 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             gamma_abk = R_gamma_abk[rank]->pointer();
         }
 
+        // GGA functional-derivative arrays (consumed by the generated
+        // contraction region below)
+        double* v_gamma_aa = nullptr;
+        double* v_gamma_ab = nullptr;
+        double* v_gamma_bb = nullptr;
+        double* v2_rho_a_gamma_aa = nullptr;
+        double* v2_rho_a_gamma_ab = nullptr;
+        double* v2_rho_a_gamma_bb = nullptr;
+        double* v2_rho_b_gamma_aa = nullptr;
+        double* v2_rho_b_gamma_ab = nullptr;
+        double* v2_rho_b_gamma_bb = nullptr;
+        double* v2_gamma_aa_gamma_aa = nullptr;
+        double* v2_gamma_aa_gamma_ab = nullptr;
+        double* v2_gamma_aa_gamma_bb = nullptr;
+        double* v2_gamma_ab_gamma_ab = nullptr;
+        double* v2_gamma_ab_gamma_bb = nullptr;
+        double* v2_gamma_bb_gamma_bb = nullptr;
+        if (ansatz >= 1) {
+            v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
+            v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
+            v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
+            v2_rho_a_gamma_aa = vals["V_RHO_A_GAMMA_AA"]->pointer();
+            v2_rho_a_gamma_ab = vals["V_RHO_A_GAMMA_AB"]->pointer();
+            v2_rho_a_gamma_bb = vals["V_RHO_A_GAMMA_BB"]->pointer();
+            v2_rho_b_gamma_aa = vals["V_RHO_B_GAMMA_AA"]->pointer();
+            v2_rho_b_gamma_ab = vals["V_RHO_B_GAMMA_AB"]->pointer();
+            v2_rho_b_gamma_bb = vals["V_RHO_B_GAMMA_BB"]->pointer();
+            v2_gamma_aa_gamma_aa = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
+            v2_gamma_aa_gamma_ab = vals["V_GAMMA_AA_GAMMA_AB"]->pointer();
+            v2_gamma_aa_gamma_bb = vals["V_GAMMA_AA_GAMMA_BB"]->pointer();
+            v2_gamma_ab_gamma_ab = vals["V_GAMMA_AB_GAMMA_AB"]->pointer();
+            v2_gamma_ab_gamma_bb = vals["V_GAMMA_AB_GAMMA_BB"]->pointer();
+            v2_gamma_bb_gamma_bb = vals["V_GAMMA_BB_GAMMA_BB"]->pointer();
+        }
+
         // Meta
         double** Dsum_a_localp = nullptr;
         double** Dsum_b_localp = nullptr;
@@ -4125,242 +4160,308 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             parallel_timer_off("Derivative Properties", rank);
 
             parallel_timer_on("V_XCd", rank);
-            // ===> LSDA contribution (symmetrized) <=== //
-            //                                                  ∂^2
-            // Ta, Tb := 1/2 einsum("p, pστ, pm, pτ -> pmσ", w, ---- f , ρk, φ)
-            //                                                  ∂ρ^2
-            double tmp_val = 0.0, tmp_ab_val = 0.0;
+            // ==> BEGIN GENERATED CODE [xckernel psi4backend: response_fock_spin(mgga_tau, order=2)] <==
+            // Reproduce with: python -m xckernel.psi4backend --uv
+            // Physics source: the symbolic derivative tower; every
+            // coefficient below is IR output, not hand-derived.
             for (int P = 0; P < npoints; P++) {
                 std::fill(Tap[P], Tap[P] + nlocal, 0.0);
                 std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
-
-                // Do a simple screen: ignore contributions where rho is too small.
-                if (rho_a[P] + rho_b[P] > v2_rho_cutoff_) {
-                    tmp_val = v2_rho2_aa[P] * rho_ak[P];
-                    tmp_val += v2_rho2_ab[P] * rho_bk[P];
-                    tmp_val *= 0.5 * w[P];
-                    C_DAXPY(nlocal, tmp_val, phi[P], 1, Tap[P], 1);
-
-                    tmp_val = v2_rho2_bb[P] * rho_bk[P];
-                    tmp_val += v2_rho2_ab[P] * rho_ak[P];
-                    tmp_val *= 0.5 * w[P];
-                    C_DAXPY(nlocal, tmp_val, phi[P], 1, Tbp[P], 1);
-
-                    // ===> Meta ρτ cross contribution, same shape with τk <===
-                    if (ansatz >= 2) {
-                        tmp_val = v2_rho_a_tau_a[P] * tau_ak[P];
-                        tmp_val += v2_rho_a_tau_b[P] * tau_bk[P];
-                        tmp_val *= w[P];
-                        C_DAXPY(nlocal, tmp_val, phi[P], 1, Tap[P], 1);
-
-                        tmp_val = v2_rho_b_tau_b[P] * tau_bk[P];
-                        tmp_val += v2_rho_b_tau_a[P] * tau_ak[P];
-                        tmp_val *= w[P];
-                        C_DAXPY(nlocal, tmp_val, phi[P], 1, Tbp[P], 1);
-                    }
+                if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
+                double c;
+                // spin a: (phi, phi) pattern at half weight
+                c = 0.0;
+                c += 0.5 * rho_ak[P] * v2_rho2_aa[P] * w[P];
+                c += 0.5 * rho_bk[P] * v2_rho2_ab[P] * w[P];
+                if (ansatz >= 1) {
+                    c += 0.5 * rho_ak_x[P] * rho_bx[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    c += 0.5 * rho_ak_y[P] * rho_by[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    c += 0.5 * rho_ak_z[P] * rho_bz[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    c += 0.5 * rho_ax[P] * rho_bk_x[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    c += 0.5 * rho_ay[P] * rho_bk_y[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    c += 0.5 * rho_az[P] * rho_bk_z[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    c += rho_ak_x[P] * rho_ax[P] * v2_rho_a_gamma_aa[P] * w[P];
+                    c += rho_ak_y[P] * rho_ay[P] * v2_rho_a_gamma_aa[P] * w[P];
+                    c += rho_ak_z[P] * rho_az[P] * v2_rho_a_gamma_aa[P] * w[P];
+                    c += rho_bk_x[P] * rho_bx[P] * v2_rho_a_gamma_bb[P] * w[P];
+                    c += rho_bk_y[P] * rho_by[P] * v2_rho_a_gamma_bb[P] * w[P];
+                    c += rho_bk_z[P] * rho_bz[P] * v2_rho_a_gamma_bb[P] * w[P];
                 }
+                if (ansatz >= 2) {
+                    c += tau_ak[P] * v2_rho_a_tau_a[P] * w[P];
+                    c += tau_bk[P] * v2_rho_a_tau_b[P] * w[P];
+                }
+                C_DAXPY(nlocal, c, phi[P], 1, Tap[P], 1);
+                // spin a: (phi, dphi_x) + transpose at full weight
+                c = 0.0;
+                if (ansatz >= 1) {
+                    c += rho_bk_x[P] * v_gamma_ab[P] * w[P];
+                    c += rho_ak[P] * rho_bx[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    c += rho_bk[P] * rho_bx[P] * v2_rho_b_gamma_ab[P] * w[P];
+                    c += rho_ak_x[P] * rho_bx[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ak_y[P] * rho_bx[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ak_z[P] * rho_bx[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ax[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ay[P] * rho_bk_y[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_az[P] * rho_bk_z[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_bx[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_y[P] * rho_ay[P] * rho_bx[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_z[P] * rho_az[P] * rho_bx[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_bk_x[P] * rho_bx[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_bk_y[P] * rho_bx[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_bk_z[P] * rho_bx[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak_x[P] * v_gamma_aa[P] * w[P];
+                    c += 2 * rho_ak[P] * rho_ax[P] * v2_rho_a_gamma_aa[P] * w[P];
+                    c += 2 * rho_ax[P] * rho_bk[P] * v2_rho_b_gamma_aa[P] * w[P];
+                    c += 2 * rho_ak_y[P] * rho_ax[P] * rho_by[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_z[P] * rho_ax[P] * rho_bz[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ax[P] * rho_ax[P] * rho_bk_x[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ax[P] * rho_ay[P] * rho_bk_y[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ax[P] * rho_az[P] * rho_bk_z[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_ax[P] * v2_gamma_aa_gamma_aa[P] * w[P];
+                    c += 4 * rho_ak_y[P] * rho_ax[P] * rho_ay[P] * v2_gamma_aa_gamma_aa[P] * w[P];
+                    c += 4 * rho_ak_z[P] * rho_ax[P] * rho_az[P] * v2_gamma_aa_gamma_aa[P] * w[P];
+                    c += 4 * rho_ax[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_ax[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_ax[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    c += 2 * rho_bx[P] * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
+                    c += 2 * rho_bx[P] * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
+                    c += 4 * rho_ax[P] * tau_ak[P] * v2_gamma_aa_tau_a[P] * w[P];
+                    c += 4 * rho_ax[P] * tau_bk[P] * v2_gamma_aa_tau_b[P] * w[P];
+                }
+                C_DAXPY(nlocal, c, phi_x[P], 1, Tap[P], 1);
+                // spin a: (phi, dphi_y) + transpose at full weight
+                c = 0.0;
+                if (ansatz >= 1) {
+                    c += rho_bk_y[P] * v_gamma_ab[P] * w[P];
+                    c += rho_ak[P] * rho_by[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    c += rho_bk[P] * rho_by[P] * v2_rho_b_gamma_ab[P] * w[P];
+                    c += rho_ak_x[P] * rho_bx[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ak_y[P] * rho_by[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ak_z[P] * rho_by[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ax[P] * rho_bk_x[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ay[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_az[P] * rho_bk_z[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_x[P] * rho_ax[P] * rho_by[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 4 * rho_ak_y[P] * rho_ay[P] * rho_by[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_z[P] * rho_az[P] * rho_by[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_bk_x[P] * rho_bx[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_bk_y[P] * rho_by[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_bk_z[P] * rho_by[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak_y[P] * v_gamma_aa[P] * w[P];
+                    c += 2 * rho_ak[P] * rho_ay[P] * v2_rho_a_gamma_aa[P] * w[P];
+                    c += 2 * rho_ay[P] * rho_bk[P] * v2_rho_b_gamma_aa[P] * w[P];
+                    c += 2 * rho_ak_x[P] * rho_ay[P] * rho_bx[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_z[P] * rho_ay[P] * rho_bz[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ax[P] * rho_ay[P] * rho_bk_x[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ay[P] * rho_ay[P] * rho_bk_y[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ay[P] * rho_az[P] * rho_bk_z[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_ay[P] * v2_gamma_aa_gamma_aa[P] * w[P];
+                    c += 4 * rho_ak_y[P] * rho_ay[P] * rho_ay[P] * v2_gamma_aa_gamma_aa[P] * w[P];
+                    c += 4 * rho_ak_z[P] * rho_ay[P] * rho_az[P] * v2_gamma_aa_gamma_aa[P] * w[P];
+                    c += 4 * rho_ay[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_ay[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_ay[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    c += 2 * rho_by[P] * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
+                    c += 2 * rho_by[P] * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
+                    c += 4 * rho_ay[P] * tau_ak[P] * v2_gamma_aa_tau_a[P] * w[P];
+                    c += 4 * rho_ay[P] * tau_bk[P] * v2_gamma_aa_tau_b[P] * w[P];
+                }
+                C_DAXPY(nlocal, c, phi_y[P], 1, Tap[P], 1);
+                // spin a: (phi, dphi_z) + transpose at full weight
+                c = 0.0;
+                if (ansatz >= 1) {
+                    c += rho_bk_z[P] * v_gamma_ab[P] * w[P];
+                    c += rho_ak[P] * rho_bz[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    c += rho_bk[P] * rho_bz[P] * v2_rho_b_gamma_ab[P] * w[P];
+                    c += rho_ak_x[P] * rho_bx[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ak_y[P] * rho_by[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ak_z[P] * rho_bz[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ax[P] * rho_bk_x[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ay[P] * rho_bk_y[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_az[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_x[P] * rho_ax[P] * rho_bz[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_y[P] * rho_ay[P] * rho_bz[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 4 * rho_ak_z[P] * rho_az[P] * rho_bz[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_bk_x[P] * rho_bx[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_bk_y[P] * rho_by[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_bk_z[P] * rho_bz[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak_z[P] * v_gamma_aa[P] * w[P];
+                    c += 2 * rho_ak[P] * rho_az[P] * v2_rho_a_gamma_aa[P] * w[P];
+                    c += 2 * rho_az[P] * rho_bk[P] * v2_rho_b_gamma_aa[P] * w[P];
+                    c += 2 * rho_ak_x[P] * rho_az[P] * rho_bx[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_y[P] * rho_az[P] * rho_by[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ax[P] * rho_az[P] * rho_bk_x[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ay[P] * rho_az[P] * rho_bk_y[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_az[P] * rho_az[P] * rho_bk_z[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_az[P] * v2_gamma_aa_gamma_aa[P] * w[P];
+                    c += 4 * rho_ak_y[P] * rho_ay[P] * rho_az[P] * v2_gamma_aa_gamma_aa[P] * w[P];
+                    c += 4 * rho_ak_z[P] * rho_az[P] * rho_az[P] * v2_gamma_aa_gamma_aa[P] * w[P];
+                    c += 4 * rho_az[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_az[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_az[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    c += 2 * rho_bz[P] * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
+                    c += 2 * rho_bz[P] * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
+                    c += 4 * rho_az[P] * tau_ak[P] * v2_gamma_aa_tau_a[P] * w[P];
+                    c += 4 * rho_az[P] * tau_bk[P] * v2_gamma_aa_tau_b[P] * w[P];
+                }
+                C_DAXPY(nlocal, c, phi_z[P], 1, Tap[P], 1);
+                // spin b: (phi, phi) pattern at half weight
+                c = 0.0;
+                c += 0.5 * rho_ak[P] * v2_rho2_ab[P] * w[P];
+                c += 0.5 * rho_bk[P] * v2_rho2_bb[P] * w[P];
+                if (ansatz >= 1) {
+                    c += 0.5 * rho_ak_x[P] * rho_bx[P] * v2_rho_b_gamma_ab[P] * w[P];
+                    c += 0.5 * rho_ak_y[P] * rho_by[P] * v2_rho_b_gamma_ab[P] * w[P];
+                    c += 0.5 * rho_ak_z[P] * rho_bz[P] * v2_rho_b_gamma_ab[P] * w[P];
+                    c += 0.5 * rho_ax[P] * rho_bk_x[P] * v2_rho_b_gamma_ab[P] * w[P];
+                    c += 0.5 * rho_ay[P] * rho_bk_y[P] * v2_rho_b_gamma_ab[P] * w[P];
+                    c += 0.5 * rho_az[P] * rho_bk_z[P] * v2_rho_b_gamma_ab[P] * w[P];
+                    c += rho_ak_x[P] * rho_ax[P] * v2_rho_b_gamma_aa[P] * w[P];
+                    c += rho_ak_y[P] * rho_ay[P] * v2_rho_b_gamma_aa[P] * w[P];
+                    c += rho_ak_z[P] * rho_az[P] * v2_rho_b_gamma_aa[P] * w[P];
+                    c += rho_bk_x[P] * rho_bx[P] * v2_rho_b_gamma_bb[P] * w[P];
+                    c += rho_bk_y[P] * rho_by[P] * v2_rho_b_gamma_bb[P] * w[P];
+                    c += rho_bk_z[P] * rho_bz[P] * v2_rho_b_gamma_bb[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    c += tau_ak[P] * v2_rho_b_tau_a[P] * w[P];
+                    c += tau_bk[P] * v2_rho_b_tau_b[P] * w[P];
+                }
+                C_DAXPY(nlocal, c, phi[P], 1, Tbp[P], 1);
+                // spin b: (phi, dphi_x) + transpose at full weight
+                c = 0.0;
+                if (ansatz >= 1) {
+                    c += rho_ak_x[P] * v_gamma_ab[P] * w[P];
+                    c += rho_ak[P] * rho_ax[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    c += rho_ax[P] * rho_bk[P] * v2_rho_b_gamma_ab[P] * w[P];
+                    c += rho_ak_x[P] * rho_ax[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ak_y[P] * rho_ax[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ak_z[P] * rho_ax[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ax[P] * rho_ax[P] * rho_bk_x[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ax[P] * rho_ay[P] * rho_bk_y[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ax[P] * rho_az[P] * rho_bk_z[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_x[P] * rho_ax[P] * rho_ax[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_y[P] * rho_ax[P] * rho_ay[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_z[P] * rho_ax[P] * rho_az[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 4 * rho_ax[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ax[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ax[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_bk_x[P] * v_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak[P] * rho_bx[P] * v2_rho_a_gamma_bb[P] * w[P];
+                    c += 2 * rho_bk[P] * rho_bx[P] * v2_rho_b_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak_x[P] * rho_bx[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak_y[P] * rho_bx[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak_z[P] * rho_bx[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ay[P] * rho_bk_y[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_az[P] * rho_bk_z[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_bx[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_ak_y[P] * rho_ay[P] * rho_bx[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_ak_z[P] * rho_az[P] * rho_bx[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_bk_x[P] * rho_bx[P] * rho_bx[P] * v2_gamma_bb_gamma_bb[P] * w[P];
+                    c += 4 * rho_bk_y[P] * rho_bx[P] * rho_by[P] * v2_gamma_bb_gamma_bb[P] * w[P];
+                    c += 4 * rho_bk_z[P] * rho_bx[P] * rho_bz[P] * v2_gamma_bb_gamma_bb[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    c += 2 * rho_ax[P] * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
+                    c += 2 * rho_ax[P] * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
+                    c += 4 * rho_bx[P] * tau_ak[P] * v2_gamma_bb_tau_a[P] * w[P];
+                    c += 4 * rho_bx[P] * tau_bk[P] * v2_gamma_bb_tau_b[P] * w[P];
+                }
+                C_DAXPY(nlocal, c, phi_x[P], 1, Tbp[P], 1);
+                // spin b: (phi, dphi_y) + transpose at full weight
+                c = 0.0;
+                if (ansatz >= 1) {
+                    c += rho_ak_y[P] * v_gamma_ab[P] * w[P];
+                    c += rho_ak[P] * rho_ay[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    c += rho_ay[P] * rho_bk[P] * v2_rho_b_gamma_ab[P] * w[P];
+                    c += rho_ak_x[P] * rho_ay[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ak_y[P] * rho_ay[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ak_z[P] * rho_ay[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ax[P] * rho_ay[P] * rho_bk_x[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ay[P] * rho_ay[P] * rho_bk_y[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ay[P] * rho_az[P] * rho_bk_z[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_x[P] * rho_ax[P] * rho_ay[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_y[P] * rho_ay[P] * rho_ay[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_z[P] * rho_ay[P] * rho_az[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ay[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 4 * rho_ay[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ay[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_bk_y[P] * v_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak[P] * rho_by[P] * v2_rho_a_gamma_bb[P] * w[P];
+                    c += 2 * rho_bk[P] * rho_by[P] * v2_rho_b_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak_x[P] * rho_bx[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak_y[P] * rho_by[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak_z[P] * rho_by[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ax[P] * rho_bk_x[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_az[P] * rho_bk_z[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_by[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_ak_y[P] * rho_ay[P] * rho_by[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_ak_z[P] * rho_az[P] * rho_by[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_bk_x[P] * rho_bx[P] * rho_by[P] * v2_gamma_bb_gamma_bb[P] * w[P];
+                    c += 4 * rho_bk_y[P] * rho_by[P] * rho_by[P] * v2_gamma_bb_gamma_bb[P] * w[P];
+                    c += 4 * rho_bk_z[P] * rho_by[P] * rho_bz[P] * v2_gamma_bb_gamma_bb[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    c += 2 * rho_ay[P] * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
+                    c += 2 * rho_ay[P] * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
+                    c += 4 * rho_by[P] * tau_ak[P] * v2_gamma_bb_tau_a[P] * w[P];
+                    c += 4 * rho_by[P] * tau_bk[P] * v2_gamma_bb_tau_b[P] * w[P];
+                }
+                C_DAXPY(nlocal, c, phi_y[P], 1, Tbp[P], 1);
+                // spin b: (phi, dphi_z) + transpose at full weight
+                c = 0.0;
+                if (ansatz >= 1) {
+                    c += rho_ak_z[P] * v_gamma_ab[P] * w[P];
+                    c += rho_ak[P] * rho_az[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    c += rho_az[P] * rho_bk[P] * v2_rho_b_gamma_ab[P] * w[P];
+                    c += rho_ak_x[P] * rho_az[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ak_y[P] * rho_az[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ak_z[P] * rho_az[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ax[P] * rho_az[P] * rho_bk_x[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_ay[P] * rho_az[P] * rho_bk_y[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += rho_az[P] * rho_az[P] * rho_bk_z[P] * v2_gamma_ab_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_x[P] * rho_ax[P] * rho_az[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_y[P] * rho_ay[P] * rho_az[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_ak_z[P] * rho_az[P] * rho_az[P] * v2_gamma_aa_gamma_ab[P] * w[P];
+                    c += 2 * rho_az[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_az[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 4 * rho_az[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_bk_z[P] * v_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak[P] * rho_bz[P] * v2_rho_a_gamma_bb[P] * w[P];
+                    c += 2 * rho_bk[P] * rho_bz[P] * v2_rho_b_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak_x[P] * rho_bx[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak_y[P] * rho_by[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ak_z[P] * rho_bz[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ax[P] * rho_bk_x[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 2 * rho_ay[P] * rho_bk_y[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
+                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_bz[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_ak_y[P] * rho_ay[P] * rho_bz[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_ak_z[P] * rho_az[P] * rho_bz[P] * v2_gamma_aa_gamma_bb[P] * w[P];
+                    c += 4 * rho_bk_x[P] * rho_bx[P] * rho_bz[P] * v2_gamma_bb_gamma_bb[P] * w[P];
+                    c += 4 * rho_bk_y[P] * rho_by[P] * rho_bz[P] * v2_gamma_bb_gamma_bb[P] * w[P];
+                    c += 4 * rho_bk_z[P] * rho_bz[P] * rho_bz[P] * v2_gamma_bb_gamma_bb[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    c += 2 * rho_az[P] * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
+                    c += 2 * rho_az[P] * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
+                    c += 4 * rho_bz[P] * tau_ak[P] * v2_gamma_bb_tau_a[P] * w[P];
+                    c += 4 * rho_bz[P] * tau_bk[P] * v2_gamma_bb_tau_b[P] * w[P];
+                }
+                C_DAXPY(nlocal, c, phi_z[P], 1, Tbp[P], 1);
             }
 
-            // ===> GGA contribution <=== //
-            if (ansatz >= 1) {
-                // ====> Define pointers for future use <====
-                auto gamma_aa = pworker->point_value("GAMMA_AA")->pointer();
-                auto gamma_ab = pworker->point_value("GAMMA_AB")->pointer();
-                auto gamma_bb = pworker->point_value("GAMMA_BB")->pointer();
-
-                auto v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
-                auto v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
-                auto v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
-
-                auto v2_gamma_aa_gamma_aa = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
-                auto v2_gamma_aa_gamma_ab = vals["V_GAMMA_AA_GAMMA_AB"]->pointer();
-                auto v2_gamma_aa_gamma_bb = vals["V_GAMMA_AA_GAMMA_BB"]->pointer();
-                auto v2_gamma_ab_gamma_ab = vals["V_GAMMA_AB_GAMMA_AB"]->pointer();
-                auto v2_gamma_ab_gamma_bb = vals["V_GAMMA_AB_GAMMA_BB"]->pointer();
-                auto v2_gamma_bb_gamma_bb = vals["V_GAMMA_BB_GAMMA_BB"]->pointer();
-
-                auto v2_rho_a_gamma_aa = vals["V_RHO_A_GAMMA_AA"]->pointer();
-                auto v2_rho_a_gamma_ab = vals["V_RHO_A_GAMMA_AB"]->pointer();
-                auto v2_rho_a_gamma_bb = vals["V_RHO_A_GAMMA_BB"]->pointer();
-                auto v2_rho_b_gamma_aa = vals["V_RHO_B_GAMMA_AA"]->pointer();
-                auto v2_rho_b_gamma_ab = vals["V_RHO_B_GAMMA_AB"]->pointer();
-                auto v2_rho_b_gamma_bb = vals["V_RHO_B_GAMMA_BB"]->pointer();
-
-                double tmp_val = 0.0, v2_val_aa = 0.0, v2_val_ab = 0.0, v2_val_bb = 0.0;
-
-                // There are lots of GGA terms.
-                for (int P = 0; P < npoints; P++) {
-                    if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
-                    // ====> Term 2b, V in DOI: 10.1063/1.466887 <====
-                    //                                                    ∂^2
-                    // Ta, Tb += 1/2 einsum("p, pτσυ, pσυ, pr -> prτ", w, ---- f, Γk, φ)[τ = α, β]
-                    //                                                    ∂ρ∂γ
-                    // V alpha contributions
-                    tmp_val = v2_rho_a_gamma_aa[P] * gamma_aak[P];
-                    tmp_val += v2_rho_a_gamma_ab[P] * gamma_abk[P];
-                    tmp_val += v2_rho_a_gamma_bb[P] * gamma_bbk[P];
-                    C_DAXPY(nlocal, (0.5 * w[P] * tmp_val), phi[P], 1, Tap[P], 1);
-
-                    // V beta contributions
-                    tmp_val = v2_rho_b_gamma_aa[P] * gamma_aak[P];
-                    tmp_val += v2_rho_b_gamma_ab[P] * gamma_abk[P];
-                    tmp_val += v2_rho_b_gamma_bb[P] * gamma_bbk[P];
-                    C_DAXPY(nlocal, (0.5 * w[P] * tmp_val), phi[P], 1, Tbp[P], 1);
-
-                    // ====> All other terms, W in above DOI  <==== //
-                    // Compute α block of final result.
-
-                    //                                  ∂^2
-                    // temp = einsum("pτσυ, pτ -> pσυ", ---- f, ρk)[συ = αα, αβ]
-                    //                                  ∂ρ∂γ
-
-                    // Define ρk[τ=α] terms in 2a intermediate
-                    v2_val_aa = v2_rho_a_gamma_aa[P] * rho_ak[P];
-                    v2_val_ab = v2_rho_a_gamma_ab[P] * rho_ak[P];
-
-                    // Define ρk[τ=β] terms in 2a intermediate
-                    v2_val_aa += v2_rho_b_gamma_aa[P] * rho_bk[P];
-                    v2_val_ab += v2_rho_b_gamma_ab[P] * rho_bk[P];
-                    
-                    //                                     ∂^2
-                    // temp += einsum("pσυτχ, pτχ -> pσυ", ---- f, Γk)[συ = αα, αβ]
-                    //                                     ∂γ∂γ
-
-                    // Define Γk[τχ=αα] terms in 3 intermediate
-                    v2_val_aa += v2_gamma_aa_gamma_aa[P] * gamma_aak[P];
-                    v2_val_ab += v2_gamma_aa_gamma_ab[P] * gamma_aak[P];
-
-                    // Define Γk[τχ=αβ] terms in 3 intermediate
-                    v2_val_aa += v2_gamma_aa_gamma_ab[P] * gamma_abk[P];
-                    v2_val_ab += v2_gamma_ab_gamma_ab[P] * gamma_abk[P];
-
-                    // Define Γk[τχ=ββ] terms in 3 intermediate
-                    v2_val_aa += v2_gamma_aa_gamma_bb[P] * gamma_bbk[P];
-                    v2_val_ab += v2_gamma_ab_gamma_bb[P] * gamma_bbk[P];
-
-                    //                                  ∂^2
-                    // temp += einsum("pσυτ, pτ -> pσυ", ---- f, τk)[συ = αα, αβ]
-                    //                                  ∂γ∂τ
-                    if (ansatz >= 2) {
-                        v2_val_aa += 2.0 * (v2_gamma_aa_tau_a[P] * tau_ak[P] + v2_gamma_aa_tau_b[P] * tau_bk[P]);
-                        v2_val_ab += 2.0 * (v2_gamma_ab_tau_a[P] * tau_ak[P] + v2_gamma_ab_tau_b[P] * tau_bk[P]);
-                    }
-
-                    // Compute W terms, first 1 and then 2a and 3 at once
-       
-                    //                                         ∂
-                    // temp2 = einsum("p, pστ, xpτ -> xpσ", w, -- f, ∇ρk)[σ = α]
-                    //                                         ∂Γ
-                    // temp2 += einsum("p, pσυ, xpυ -> xpσ", w, temp, ∇ρ)[σ = α]
-                    //   N.B. A prefactor of 2 on the same-spin terms accounts for using γ rather than Γ in defining temp.
-                    // Ta += einsum("xpσ, xpm -> pmσ", temp2, ∇φ)[σ = α]
-
-                    // Wx
-                    tmp_val = 2.0 * v_gamma_aa[P] * rho_ak_x[P];
-                    tmp_val += v_gamma_ab[P] * rho_bk_x[P];
-                    tmp_val += 2.0 * v2_val_aa * rho_ax[P];
-                    tmp_val += v2_val_ab * rho_bx[P];
-                    tmp_val *= w[P];
-
-                    C_DAXPY(nlocal, tmp_val, phi_x[P], 1, Tap[P], 1);
-
-                    // Wy
-                    tmp_val = 2.0 * v_gamma_aa[P] * rho_ak_y[P];
-                    tmp_val += v_gamma_ab[P] * rho_bk_y[P];
-                    tmp_val += 2.0 * v2_val_aa * rho_ay[P];
-                    tmp_val += v2_val_ab * rho_by[P];
-                    tmp_val *= w[P];
-
-                    C_DAXPY(nlocal, tmp_val, phi_y[P], 1, Tap[P], 1);
-
-                    // Wz
-                    tmp_val = 2.0 * v_gamma_aa[P] * rho_ak_z[P];
-                    tmp_val += v_gamma_ab[P] * rho_bk_z[P];
-                    tmp_val += 2.0 * v2_val_aa * rho_az[P];
-                    tmp_val += v2_val_ab * rho_bz[P];
-                    tmp_val *= w[P];
-
-                    C_DAXPY(nlocal, tmp_val, phi_z[P], 1, Tap[P], 1);
-
-                    // Compute β block of final result.
-                    
-                    //                                  ∂^2
-                    // temp = einsum("pτσυ, pτ -> pσυ", ---- f, ρk)[συ = ββ, αβ]
-                    //                                  ∂ρ∂γ
-
-                    // Define ρk[τ=α] terms in 2a intermediate
-                    v2_val_bb = v2_rho_a_gamma_bb[P] * rho_ak[P];
-                    v2_val_ab = v2_rho_a_gamma_ab[P] * rho_ak[P];
-
-                    // Define ρk[τ=β] terms in 2a intermediate
-                    v2_val_bb += v2_rho_b_gamma_bb[P] * rho_bk[P];
-                    v2_val_ab += v2_rho_b_gamma_ab[P] * rho_bk[P];
-
-                    // Define Γk[τχ=ββ] terms in 3 intermediate
-                    v2_val_bb += v2_gamma_bb_gamma_bb[P] * gamma_bbk[P];
-                    v2_val_ab += v2_gamma_ab_gamma_bb[P] * gamma_bbk[P];
-
-                    // Define Γk[τχ=αβ] terms in 3 intermediate
-                    v2_val_bb += v2_gamma_ab_gamma_bb[P] * gamma_abk[P];
-                    v2_val_ab += v2_gamma_ab_gamma_ab[P] * gamma_abk[P];
-
-                    // Define Γk[τχ=αα] terms in 3 intermediate
-                    v2_val_bb += v2_gamma_aa_gamma_bb[P] * gamma_aak[P];
-                    v2_val_ab += v2_gamma_aa_gamma_ab[P] * gamma_aak[P];
-
-                    //                                  ∂^2
-                    // temp += einsum("pσυτ, pτ -> pσυ", ---- f, τk)[συ = ββ, αβ]
-                    //                                  ∂γ∂τ
-                    if (ansatz >= 2) {
-                        v2_val_bb += 2.0 * (v2_gamma_bb_tau_b[P] * tau_bk[P] + v2_gamma_bb_tau_a[P] * tau_ak[P]);
-                        v2_val_ab += 2.0 * (v2_gamma_ab_tau_b[P] * tau_bk[P] + v2_gamma_ab_tau_a[P] * tau_ak[P]);
-                    }
-
-                    // Compute W terms, first 1 and then 2a and 3 at once
-       
-                    //                                         ∂
-                    // temp2 = einsum("p, pστ, xpτ -> xpσ", w, -- f, ∇ρk)[σ = β]
-                    //                                         ∂Γ
-                    // temp2 += einsum("p, pσυ, xpυ -> xpσ", w, temp, ∇ρ)[σ = β]
-                    //   N.B. That a prefactor of 2 on the same-spin terms accounts for using γ rather than Γ in defining temp.
-                    // Tb += einsum("xpσ, xpm -> pmσ", temp2, ∇φ)[σ = β]
-
-                    // Wx
-                    tmp_val = 2.0 * v_gamma_bb[P] * rho_bk_x[P];
-                    tmp_val += v_gamma_ab[P] * rho_ak_x[P];
-                    tmp_val += 2.0 * v2_val_bb * rho_bx[P];
-                    tmp_val += v2_val_ab * rho_ax[P];
-                    tmp_val *= w[P];
-
-                    C_DAXPY(nlocal, tmp_val, phi_x[P], 1, Tbp[P], 1);
-
-                    // Wy
-                    tmp_val = 2.0 * v_gamma_bb[P] * rho_bk_y[P];
-                    tmp_val += v_gamma_ab[P] * rho_ak_y[P];
-                    tmp_val += 2.0 * v2_val_bb * rho_by[P];
-                    tmp_val += v2_val_ab * rho_ay[P];
-                    tmp_val *= w[P];
-
-                    C_DAXPY(nlocal, tmp_val, phi_y[P], 1, Tbp[P], 1);
-
-                    // Wz
-                    tmp_val = 2.0 * v_gamma_bb[P] * rho_bk_z[P];
-                    tmp_val += v_gamma_ab[P] * rho_ak_z[P];
-                    tmp_val += 2.0 * v2_val_bb * rho_bz[P];
-                    tmp_val += v2_val_ab * rho_az[P];
-                    tmp_val *= w[P];
-
-                    C_DAXPY(nlocal, tmp_val, phi_z[P], 1, Tbp[P], 1);
-                }
-            }
-
-            // ===> Contract Ta and Tb aginst φ, replacing a point index with  an AO index <===
+            // ===> Contract Ta and Tb against phi, and complete with the adjoint <===
             C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tap[0], max_functions, 0.0,
                     Vax_localp[0], max_functions);
             C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tbp[0], max_functions, 0.0,
                     Vbx_localp[0], max_functions);
-
-            // ===> Add the adjoint to complete the LDA and GGA contributions  <===
             for (int m = 0; m < nlocal; m++) {
                 for (int n = 0; n <= m; n++) {
                     Vax_localp[m][n] = Vax_localp[n][m] = Vax_localp[m][n] + Vax_localp[n][m];
@@ -4368,47 +4469,65 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                 }
             }
 
-            // ===> Meta contribution: the (∇φ, ∇φ) pattern <===
-            //                                     ∂^2         ∂^2          ∂^2
-            // temp = einsum("p, pστ -> pσ", w, [ ---- f ρk + ---- f Γk + 2---- f τk ])
-            //                                     ∂ρ∂τ        ∂γ∂τ         ∂τ∂τ
-            // Va, Vb += einsum("xpm, pσ, xpn -> mnσ", ∇φ, temp, ∇φ)
-            //   Symmetric on its own, hence added after the adjoint completion.
+            // (dphi_i, dphi_i) diagonal patterns: symmetric on their own,
+            // contracted after the adjoint completion at full weight
             if (ansatz >= 2) {
                 double** phi_i[3] = {phi_x, phi_y, phi_z};
                 for (int i = 0; i < 3; i++) {
-                    double** phiw = phi_i[i];
                     for (int P = 0; P < npoints; P++) {
                         std::fill(Tap[P], Tap[P] + nlocal, 0.0);
                         std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
                         if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
-
-                        tmp_val = v2_rho_a_tau_a[P] * rho_ak[P];
-                        tmp_val += v2_rho_b_tau_a[P] * rho_bk[P];
-                        tmp_val += v2_gamma_aa_tau_a[P] * gamma_aak[P];
-                        tmp_val += v2_gamma_ab_tau_a[P] * gamma_abk[P];
-                        tmp_val += v2_gamma_bb_tau_a[P] * gamma_bbk[P];
-                        tmp_val += 2.0 * v2_tau_a_tau_a[P] * tau_ak[P];
-                        tmp_val += 2.0 * v2_tau_a_tau_b[P] * tau_bk[P];
-                        tmp_val *= w[P];
-                        C_DAXPY(nlocal, tmp_val, phiw[P], 1, Tap[P], 1);
-
-                        tmp_val = v2_rho_b_tau_b[P] * rho_bk[P];
-                        tmp_val += v2_rho_a_tau_b[P] * rho_ak[P];
-                        tmp_val += v2_gamma_bb_tau_b[P] * gamma_bbk[P];
-                        tmp_val += v2_gamma_ab_tau_b[P] * gamma_abk[P];
-                        tmp_val += v2_gamma_aa_tau_b[P] * gamma_aak[P];
-                        tmp_val += 2.0 * v2_tau_b_tau_b[P] * tau_bk[P];
-                        tmp_val += 2.0 * v2_tau_a_tau_b[P] * tau_ak[P];
-                        tmp_val *= w[P];
-                        C_DAXPY(nlocal, tmp_val, phiw[P], 1, Tbp[P], 1);
+                        double c;
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += rho_ak[P] * v2_rho_a_tau_a[P] * w[P];
+                            c += rho_bk[P] * v2_rho_b_tau_a[P] * w[P];
+                            c += 2 * tau_ak[P] * v2_tau_a_tau_a[P] * w[P];
+                            c += 2 * tau_bk[P] * v2_tau_a_tau_b[P] * w[P];
+                            c += rho_ak_x[P] * rho_bx[P] * v2_gamma_ab_tau_a[P] * w[P];
+                            c += rho_ak_y[P] * rho_by[P] * v2_gamma_ab_tau_a[P] * w[P];
+                            c += rho_ak_z[P] * rho_bz[P] * v2_gamma_ab_tau_a[P] * w[P];
+                            c += rho_ax[P] * rho_bk_x[P] * v2_gamma_ab_tau_a[P] * w[P];
+                            c += rho_ay[P] * rho_bk_y[P] * v2_gamma_ab_tau_a[P] * w[P];
+                            c += rho_az[P] * rho_bk_z[P] * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 2 * rho_ak_x[P] * rho_ax[P] * v2_gamma_aa_tau_a[P] * w[P];
+                            c += 2 * rho_ak_y[P] * rho_ay[P] * v2_gamma_aa_tau_a[P] * w[P];
+                            c += 2 * rho_ak_z[P] * rho_az[P] * v2_gamma_aa_tau_a[P] * w[P];
+                            c += 2 * rho_bk_x[P] * rho_bx[P] * v2_gamma_bb_tau_a[P] * w[P];
+                            c += 2 * rho_bk_y[P] * rho_by[P] * v2_gamma_bb_tau_a[P] * w[P];
+                            c += 2 * rho_bk_z[P] * rho_bz[P] * v2_gamma_bb_tau_a[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[i][P], 1, Tap[P], 1);
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += rho_ak[P] * v2_rho_a_tau_b[P] * w[P];
+                            c += rho_bk[P] * v2_rho_b_tau_b[P] * w[P];
+                            c += 2 * tau_ak[P] * v2_tau_a_tau_b[P] * w[P];
+                            c += 2 * tau_bk[P] * v2_tau_b_tau_b[P] * w[P];
+                            c += rho_ak_x[P] * rho_bx[P] * v2_gamma_ab_tau_b[P] * w[P];
+                            c += rho_ak_y[P] * rho_by[P] * v2_gamma_ab_tau_b[P] * w[P];
+                            c += rho_ak_z[P] * rho_bz[P] * v2_gamma_ab_tau_b[P] * w[P];
+                            c += rho_ax[P] * rho_bk_x[P] * v2_gamma_ab_tau_b[P] * w[P];
+                            c += rho_ay[P] * rho_bk_y[P] * v2_gamma_ab_tau_b[P] * w[P];
+                            c += rho_az[P] * rho_bk_z[P] * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 2 * rho_ak_x[P] * rho_ax[P] * v2_gamma_aa_tau_b[P] * w[P];
+                            c += 2 * rho_ak_y[P] * rho_ay[P] * v2_gamma_aa_tau_b[P] * w[P];
+                            c += 2 * rho_ak_z[P] * rho_az[P] * v2_gamma_aa_tau_b[P] * w[P];
+                            c += 2 * rho_bk_x[P] * rho_bx[P] * v2_gamma_bb_tau_b[P] * w[P];
+                            c += 2 * rho_bk_y[P] * rho_by[P] * v2_gamma_bb_tau_b[P] * w[P];
+                            c += 2 * rho_bk_z[P] * rho_bz[P] * v2_gamma_bb_tau_b[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[i][P], 1, Tbp[P], 1);
                     }
-                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], coll_funcs, Tap[0], max_functions, 1.0,
-                            Vax_localp[0], max_functions);
-                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], coll_funcs, Tbp[0], max_functions, 1.0,
-                            Vbx_localp[0], max_functions);
+                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi_i[i][0], coll_funcs, Tap[0],
+                            max_functions, 1.0, Vax_localp[0], max_functions);
+                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi_i[i][0], coll_funcs, Tbp[0],
+                            max_functions, 1.0, Vbx_localp[0], max_functions);
                 }
             }
+            // ==> END GENERATED CODE <==
+
 
             // => Unpacking <= //
             auto Vaxp = Vax_AO[dindex]->pointer();
