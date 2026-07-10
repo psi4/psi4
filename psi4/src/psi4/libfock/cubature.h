@@ -110,6 +110,14 @@ class MolecularGrid {
 
     /// Sieve and block
     void postProcess(std::shared_ptr<BasisExtents> extents, int max_points, int min_points, double max_radius);
+
+   public:
+    /// Total nuclear-position derivative dw/dR of the quadrature weights of
+    /// an atomic block (points ride their parent atom): out(3 natom, npoints).
+    /// Requires DFT_BLOCK_SCHEME = ATOMIC.
+    void compute_weight_gradient(std::shared_ptr<BlockOPoints> block, SharedMatrix out) const;
+
+   protected:
     void remove_distant_points(double Rcut);
     void block(int max_points, int min_points, double max_radius);
 
@@ -122,6 +130,7 @@ class MolecularGrid {
         short nucscheme;
         short namedGrid;  // -1 = None, 0 = SG-0, 1 = SG-1
         bool remove_distant_points;
+        bool orient_grid;
         int nradpts;
         int nangpts;
         int print;
