@@ -1,0 +1,41 @@
+#! TDA excitation energies of triplet methylene with meta-GGA functionals
+#! (UKS), exercising the spin-resolved tau second-derivative kernel.
+#! Reference values from PySCF 2.13.0 (same Libxc): 6-31G, identical geometry,
+#! grids.atom_grid = (99, 590), SCF conv_tol 1e-12, TD conv_tol 1e-9.
+
+tpss_scf = -39.1356185476                                     #TEST
+tpss_tda = [0.29577897, 0.29776197, 0.36820804]               #TEST
+r2scan_scf = -39.1002541060                                   #TEST
+r2scan_tda = [0.32571972, 0.32771938, 0.38072251]             #TEST
+
+molecule ch2 {
+0 3
+C  0.000  0.000  0.000
+H  0.000  0.980  0.100
+H  0.000 -0.980  0.100
+symmetry c1
+noreorient
+}
+
+set {
+    reference uks
+    basis 6-31G
+    scf_type pk
+    save_jk true
+    dft_spherical_points 590
+    dft_radial_points 99
+    e_convergence 10
+    d_convergence 9
+}
+
+from psi4.driver.procrouting.response.scf_response import tdscf_excitations
+
+for func, ref_scf, ref_tda in (("TPSS", tpss_scf, tpss_tda),
+                               ("R2SCAN", r2scan_scf, r2scan_tda)):
+    e, wfn = energy(func, return_wfn=True)
+    compare_values(ref_scf, e, 5, f"{func} SCF energy vs PySCF")              #TEST
+    res = tdscf_excitations(wfn, states=3, tda=True, r_convergence=1e-7)
+    for i, ref in enumerate(sorted(ref_tda)):                                 #TEST
+        compare_values(ref, sorted(r["EXCITATION ENERGY"] for r in res)[i], 4, #TEST
+                       f"{func} TDA root {i+1} vs PySCF")                     #TEST
+    clean()

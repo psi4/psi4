@@ -1,0 +1,689 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.12a1.dev3 
+
+                         Git: Rev {mgga-vx} a1c38bf dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, D. L. Poole, T. Győri, E. C. Mitchell, J. P. Pederson,
+    and A. M. Wallace
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    https://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Friday, 10 July 2026 03:57PM
+
+    Process ID: 100709
+    Host:       lenovo
+    PSIDATADIR: /home/work/psi4/objdir/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    6
+    Addons:     a̶d̶c̶c̶, a̶m̶b̶i̶t̶, bse, c̶c̶t̶3̶, c̶f̶o̶u̶r̶, c̶h̶e̶m̶p̶s̶2̶, c̶p̶p̶e̶, d̶d̶x̶, d̶f̶t̶d̶3̶,
+                dftd4, d̶k̶h̶, e̶c̶p̶i̶n̶t̶, e̶i̶n̶s̶u̶m̶s̶, f̶o̶r̶t̶e̶, g̶a̶u̶x̶c̶, g̶c̶p̶,
+                g̶d̶m̶a̶, g̶e̶o̶m̶e̶t̶r̶i̶c̶, g̶p̶u̶_̶d̶f̶c̶c̶, i̶n̶t̶e̶g̶r̶a̶t̶o̶r̶x̶x̶,
+                i̶p̶i̶, l̶i̶b̶e̶f̶p̶, m̶d̶i̶, m̶p̶2̶d̶, m̶r̶c̶c̶, o̶o̶o̶,
+                o̶p̶e̶n̶f̶e̶r̶m̶i̶o̶n̶p̶s̶i̶4̶, p̶c̶m̶s̶o̶l̶v̶e̶r̶, p̶s̶i̶4̶f̶o̶c̶k̶c̶i̶,
+                p̶s̶i̶x̶a̶s̶, p̶y̶e̶i̶n̶s̶u̶m̶s̶, r̶e̶s̶p̶, s̶i̶m̶i̶n̶t̶, s̶n̶s̶m̶p̶2̶,
+                v̶2̶r̶d̶m̶_̶c̶a̶s̶s̶c̶f̶
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! UKS stability analysis with a meta-GGA functional: the spin-symmetric
+#! solution of stretched H2 is internally unstable, triplet methylene is
+#! stable. The stable lowest electronic-Hessian eigenvalue is compared
+#! against PySCF 2.13.0 (same Libxc; exact diagonalization of the dense
+#! symmetrized newton_ah.gen_g_hop_uhf Hessian at the converged UKS
+#! TPSS/6-31G solution, grids.atom_grid = (99, 590)). For stretched H2 the
+#! exact lowest eigenvalue is -0.08289, but the Davidson stability solver
+#! under-converges this pathological negative mode (a pre-existing solver
+#! limitation, functional-independent), so only the sign is asserted.
+
+ch2_lowest = 0.28514476                                       #TEST
+
+set {
+    reference uks
+    basis 6-31G
+    scf_type pk
+    dft_spherical_points 590
+    dft_radial_points 99
+    e_convergence 10
+    d_convergence 9
+    stability_analysis check
+    solver_convergence 1.e-7
+}
+
+molecule h2 {
+0 1
+H 0 0 0
+H 0 0 1.8
+symmetry c1
+noreorient
+}
+
+e, wfn = energy("TPSS", return_wfn=True)
+evals = wfn.variable("SCF STABILITY EIGENVALUES").to_array()
+lowest = min(float(v) for v in evals.ravel())                                 #TEST
+compare(True, lowest < -0.01, "stretched H2 UKS TPSS flagged unstable")       #TEST
+
+clean()
+
+molecule ch2 {
+0 3
+C  0.000  0.000  0.000
+H  0.000  0.980  0.100
+H  0.000 -0.980  0.100
+symmetry c1
+noreorient
+}
+
+e, wfn = energy("TPSS", return_wfn=True)
+evals = wfn.variable("SCF STABILITY EIGENVALUES").to_array()
+lowest = min(float(v) for v in evals.ravel())                                 #TEST
+compare_values(ch2_lowest, lowest, 5, "CH2 UKS TPSS: lowest Hessian eigenvalue vs PySCF")  #TEST
+compare(True, lowest > 0, "CH2 UKS TPSS flagged stable")                      #TEST
+--------------------------------------------------------------------------
+
+Scratch directory: /home/work/scratch/
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  7, 6, 3
+    Auxiliary basis highest AM E, G, H:  12, 11, 10
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on lenovo
+*** at Fri Jul 10 15:57:48 2026
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry H          line    26 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UKS Reference
+                        6 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000    -0.900000000000     1.007825032230
+         H            0.000000000000     0.000000000000     0.900000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =     10.32515  C =     10.32515 [cm^-1]
+  Rotational constants: A = ************  B = 309540.18918  C = 309540.18918 [MHz]
+  Nuclear repulsion =    0.293987339261111
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 2
+  Nalpha       = 1
+  Nbeta        = 1
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-09
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 4
+    Number of basis functions: 4
+    Number of Cartesian functions: 4
+    Spherical Harmonics?: false
+    Max angular momentum: 0
+
+  ==> DFT Potential <==
+
+   => LibXC <=
+
+    Version 7.0.0
+    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
+
+   => Composite Functional: TPSS <= 
+
+    TPSS Meta-GGA XC Functional
+
+    J. Tao, et al., Phys. Rev. Lett., 91, 146401, 2003
+
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =           TRUE
+
+    Exchange Hybrid     =          FALSE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    1.0000   XC_MGGA_X_TPSS
+
+   => Correlation Functionals <=
+
+    1.0000   XC_MGGA_C_TPSS
+
+   => LibXC Density Thresholds  <==
+
+    XC_MGGA_C_TPSS:  1.00E-15 
+    XC_MGGA_X_TPSS:  1.00E-15 
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Scheme         =           NONE
+    Nuclear Scheme         =       TREUTLER
+
+    Blocking Scheme        =         OCTREE
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            590
+    Total Points           =         114328
+    Total Blocks           =            892
+    Max Points             =            256
+    Max Functions          =              4
+    Weights Tolerance      =       1.00E-15
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:               4
+      Number of primitives:              8
+      Number of atomic orbitals:         4
+      Number of basis functions:         4
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 6
+
+  Performing in-core PK
+  Using 110 doubles for integral storage.
+  We computed 89 shell quartets total.
+  Whereas there are 55 unique shell quartets.
+    61.82 percent of shell quartets recomputed by reordering.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    Memory [MiB]:              340
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              6
+
+  Cached 100.0% of DFT collocation blocks in 0.034 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 2.4742429167E-01.
+  Reciprocal condition number of the overlap matrix is 1.2191560520E-01.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A          4       4 
+   -------------------------
+    Total       4       4
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UKS iter SAD:    -0.92207775089992   -9.22078e-01   0.00000e+00 
+   @UKS iter   1:    -1.01957070363987   -9.74930e-02   1.24624e-03 DIIS/ADIIS
+   @UKS iter   2:    -1.01959399123684   -2.32876e-05   1.70648e-05 DIIS
+   @UKS iter   3:    -1.01959399539611   -4.15927e-09   3.02041e-06 DIIS
+   @UKS iter   4:    -1.01959399560826   -2.12143e-10   3.25025e-07 DIIS
+   @UKS iter   5:    -1.01959399561061   -2.35056e-12   4.14168e-09 DIIS
+   @UKS iter   6:    -1.01959399561061    2.22045e-16   5.53466e-11 DIIS
+  Energy and wave function converged.
+
+    Negative totally symmetric eigenvalue detected: -0.074938 
+    Wavefunction unstable!
+    Lowest UHF->UHF stability eigenvalues: 
+       A -0.074938     
+
+    Stability analysis over.
+
+  ==> Post-Iterations <==
+
+   Electrons on quadrature grid:
+      Nalpha   =    1.0000000002 ; deviation = 2.247e-10
+      Nbeta    =    1.0000000002 ; deviation = 2.247e-10
+      Ntotal   =    2.0000000004 ; deviation = 4.493e-10 
+
+   @Spin Contamination Metric:   8.881784197E-16
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:                8.881784197E-16
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -0.285462  
+
+    Alpha Virtual:                                                        
+
+       2A     -0.142377     3A      0.795191     4A      0.797196  
+
+    Beta Occupied:                                                        
+
+       1A     -0.285462  
+
+    Beta Virtual:                                                         
+
+       2A     -0.142377     3A      0.795191     4A      0.797196  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     1 ]
+    SOCC [     0 ]
+    NA   [     1 ]
+    NB   [     1 ]
+
+  @UKS Final Energy:    -1.01959399561061
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.2939873392611111
+    One-Electron Energy =                  -1.6898936399805504
+    Two-Electron Energy =                   0.9058504531150202
+    DFT Exchange-Correlation Energy =      -0.5295381480061888
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                         -1.0195939956106077
+
+  UHF NO Occupations:
+  HONO-0 :    1  A 2.0000000
+  LUNO+0 :    2  A 0.0000000
+  LUNO+1 :    3  A 0.0000000
+  LUNO+2 :    4  A -0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.0000000            0.0000000           -0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on lenovo at Fri Jul 10 15:57:56 2026
+Module time:
+	user time   =      12.81 seconds =       0.21 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
+Total time:
+	user time   =      12.81 seconds =       0.21 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
+    stretched H2 UKS TPSS flagged unstable................................................PASSED
+
+Scratch directory: /home/work/scratch/
+   => Libint2 <=
+
+    Primary   basis highest AM E, G, H:  7, 6, 3
+    Auxiliary basis highest AM E, G, H:  12, 11, 10
+    Onebody   basis highest AM E, G, H:  -, -, -
+    Solid Harmonics ordering:            Gaussian
+
+*** tstart() called on lenovo
+*** at Fri Jul 10 15:57:57 2026
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    87 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    26 file /home/work/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UKS Reference
+                        6 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000    -0.014381424017    12.000000000000
+         H            0.000000000000     0.980000000000     0.085618575983     1.007825032230
+         H            0.000000000000    -0.980000000000     0.085618575983     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =    976.81734  B =      8.70822  C =      8.63127 [cm^-1]
+  Rotational constants: A = 29284247.06425  B = 261065.75722  C = 258758.95039 [MHz]
+  Nuclear repulsion =    6.716236004921142
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-09
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 9
+    Number of basis functions: 13
+    Number of Cartesian functions: 13
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> DFT Potential <==
+
+   => LibXC <=
+
+    Version 7.0.0
+    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018) (10.1016/j.softx.2017.11.002)
+
+   => Composite Functional: TPSS <= 
+
+    TPSS Meta-GGA XC Functional
+
+    J. Tao, et al., Phys. Rev. Lett., 91, 146401, 2003
+
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =           TRUE
+
+    Exchange Hybrid     =          FALSE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    1.0000   XC_MGGA_X_TPSS
+
+   => Correlation Functionals <=
+
+    1.0000   XC_MGGA_C_TPSS
+
+   => LibXC Density Thresholds  <==
+
+    XC_MGGA_C_TPSS:  1.00E-15 
+    XC_MGGA_X_TPSS:  1.00E-15 
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Scheme         =           NONE
+    Nuclear Scheme         =       TREUTLER
+
+    Blocking Scheme        =         OCTREE
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            590
+    Total Points           =         167886
+    Total Blocks           =           1297
+    Max Points             =            256
+    Max Functions          =             13
+    Weights Tolerance      =       1.00E-15
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               9
+      Number of primitives:             22
+      Number of atomic orbitals:        13
+      Number of basis functions:        13
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 6
+
+  Performing in-core PK
+  Using 8372 doubles for integral storage.
+  We computed 1608 shell quartets total.
+  Whereas there are 1035 unique shell quartets.
+    55.36 percent of shell quartets recomputed by reordering.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    Memory [MiB]:              213
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              6
+
+  Cached 100.0% of DFT collocation blocks in 0.158 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 2.0394896392E-02.
+  Reciprocal condition number of the overlap matrix is 5.9702984690E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         13      13 
+   -------------------------
+    Total      13      13
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UKS iter SAD:   -38.77960830810174   -3.87796e+01   0.00000e+00 
+   @UKS iter   1:   -39.07323758072608   -2.93629e-01   2.42846e-02 DIIS/ADIIS
+   @UKS iter   2:   -39.09303456344639   -1.97970e-02   1.99671e-02 DIIS/ADIIS
+   @UKS iter   3:   -39.13540142919629   -4.23669e-02   1.28555e-03 DIIS/ADIIS
+   @UKS iter   4:   -39.13561309615321   -2.11667e-04   1.75486e-04 DIIS/ADIIS
+   @UKS iter   5:   -39.13561852895808   -5.43280e-06   1.57151e-05 DIIS
+   @UKS iter   6:   -39.13561857279084   -4.38328e-08   1.48706e-06 DIIS
+   @UKS iter   7:   -39.13561857327187   -4.81030e-10   3.10207e-07 DIIS
+   @UKS iter   8:   -39.13561857329107   -1.91989e-11   1.85364e-08 DIIS
+   @UKS iter   9:   -39.13561857329116   -9.23706e-14   1.29228e-09 DIIS
+   @UKS iter  10:   -39.13561857329114    2.13163e-14   1.21654e-10 DIIS
+  Energy and wave function converged.
+
+    Wavefunction stable under totally symmetric rotations.
+    Lowest totally symmetric eigenvalue: 0.285145 
+    Lowest UHF->UHF stability eigenvalues: 
+       A 0.285145      
+
+    Stability analysis over.
+
+  ==> Post-Iterations <==
+
+   Electrons on quadrature grid:
+      Nalpha   =    4.9999999996 ; deviation = -4.256e-10
+      Nbeta    =    2.9999999996 ; deviation = -4.064e-10
+      Ntotal   =    7.9999999992 ; deviation = -8.320e-10 
+
+   @Spin Contamination Metric:   9.216475999E-03
+   @S^2 Expected:                2.000000000E+00
+   @S^2 Observed:                2.009216476E+00
+   @S   Expected:                1.000000000E+00
+   @S   Observed:                1.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A    -10.006644     2A     -0.639134     3A     -0.454260  
+       4A     -0.199957     5A     -0.197547  
+
+    Alpha Virtual:                                                        
+
+       6A      0.099016     7A      0.203020     8A      0.503015  
+       9A      0.509608    10A      0.526353    11A      0.762307  
+      12A      0.958255    13A      1.149323  
+
+    Beta Occupied:                                                        
+
+       1A     -9.975462     2A     -0.563913     3A     -0.443337  
+
+    Beta Virtual:                                                         
+
+       4A     -0.052422     5A     -0.050613     6A      0.143181  
+       7A      0.215366     8A      0.564399     9A      0.618722  
+      10A      0.623552    11A      0.810980    12A      1.102114  
+      13A      1.349364  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     3 ]
+    SOCC [     2 ]
+    NA   [     5 ]
+    NB   [     3 ]
+
+  @UKS Final Energy:   -39.13561857329114
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              6.7162360049211420
+    One-Electron Energy =                 -64.9798289903864514
+    Two-Electron Energy =                  25.3089197582480345
+    DFT Exchange-Correlation Energy =      -6.1809453460738677
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -39.1356185732911399
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 1.9958849
+  HONO-1 :    4  A 1.0000000
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0041151
+  LUNO+1 :    7  A 0.0005005
+  LUNO+2 :    8  A 0.0000013
+  LUNO+3 :    9  A 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.0674529            0.1605296            0.0930767
+ Magnitude           :                                                    0.0930767
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on lenovo at Fri Jul 10 15:58:25 2026
+Module time:
+	user time   =      49.53 seconds =       0.83 minutes
+	system time =       0.61 seconds =       0.01 minutes
+	total time  =         28 seconds =       0.47 minutes
+Total time:
+	user time   =      62.47 seconds =       1.04 minutes
+	system time =       0.87 seconds =       0.01 minutes
+	total time  =         37 seconds =       0.62 minutes
+    CH2 UKS TPSS: lowest Hessian eigenvalue vs PySCF......................................PASSED
+    CH2 UKS TPSS flagged stable...........................................................PASSED
+
+    Psi4 stopped on: Friday, 10 July 2026 03:58PM
+    Psi4 wall time for execution: 0:00:37.09
+
+*** Psi4 exiting successfully. Buy a developer a beer!

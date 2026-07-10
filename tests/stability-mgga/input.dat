@@ -1,0 +1,53 @@
+#! UKS stability analysis with a meta-GGA functional: the spin-symmetric
+#! solution of stretched H2 is internally unstable, triplet methylene is
+#! stable. The stable lowest electronic-Hessian eigenvalue is compared
+#! against PySCF 2.13.0 (same Libxc; exact diagonalization of the dense
+#! symmetrized newton_ah.gen_g_hop_uhf Hessian at the converged UKS
+#! TPSS/6-31G solution, grids.atom_grid = (99, 590)). For stretched H2 the
+#! exact lowest eigenvalue is -0.08289, but the Davidson stability solver
+#! under-converges this pathological negative mode (a pre-existing solver
+#! limitation, functional-independent), so only the sign is asserted.
+
+ch2_lowest = 0.28514476                                       #TEST
+
+set {
+    reference uks
+    basis 6-31G
+    scf_type pk
+    dft_spherical_points 590
+    dft_radial_points 99
+    e_convergence 10
+    d_convergence 9
+    stability_analysis check
+    solver_convergence 1.e-7
+}
+
+molecule h2 {
+0 1
+H 0 0 0
+H 0 0 1.8
+symmetry c1
+noreorient
+}
+
+e, wfn = energy("TPSS", return_wfn=True)
+evals = wfn.variable("SCF STABILITY EIGENVALUES").to_array()
+lowest = min(float(v) for v in evals.ravel())                                 #TEST
+compare(True, lowest < -0.01, "stretched H2 UKS TPSS flagged unstable")       #TEST
+
+clean()
+
+molecule ch2 {
+0 3
+C  0.000  0.000  0.000
+H  0.000  0.980  0.100
+H  0.000 -0.980  0.100
+symmetry c1
+noreorient
+}
+
+e, wfn = energy("TPSS", return_wfn=True)
+evals = wfn.variable("SCF STABILITY EIGENVALUES").to_array()
+lowest = min(float(v) for v in evals.ravel())                                 #TEST
+compare_values(ch2_lowest, lowest, 5, "CH2 UKS TPSS: lowest Hessian eigenvalue vs PySCF")  #TEST
+compare(True, lowest > 0, "CH2 UKS TPSS flagged stable")                      #TEST
