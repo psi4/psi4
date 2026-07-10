@@ -401,8 +401,8 @@ def _validate_tdscf(*, wfn, states, triplets, guess) -> None:
     # determine how many states per irrep to seek and apportion them between singlets/triplets and irreps.
 
     # validate calculation
-    if wfn.functional().is_meta() or wfn.functional().needs_vv10():
-        raise ValidationError("TDSCF: Kohn-Sham Vx kernel does not support meta or VV10 functionals.")
+    if wfn.functional().needs_vv10():
+        raise ValidationError("TDSCF: Kohn-Sham Vx kernel does not support VV10 functionals.")
 
     if guess != "DENOMINATORS":
         raise ValidationError(f"TDSCF: Guess type {guess} is not valid")
