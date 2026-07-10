@@ -301,7 +301,9 @@ jobs:
           ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4
-      run: cmake --build objdir --config Release --target install
+      run: |
+        cmake --build objdir --config Release --target install
+        nm -D objdir/stage/lib/psi4/core.*.so | c++filt | grep -i libecpint && exit 1 || true
 
     - name: Linked dependencies, ldd (L)
       if: runner.os == 'Linux'

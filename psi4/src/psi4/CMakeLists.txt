@@ -32,6 +32,27 @@ if(ENABLE_ecpint_RUNTIME)
     # Link libdl for dlopen/dlsym but do NOT link libecpint itself!
     target_link_libraries(psi4_optional_deps INTERFACE ${CMAKE_DL_LIBS})
 
+    if(UNIX AND NOT APPLE)
+        # Calls into libecpint from ecpint.cc (and friends) are left as real
+        # *undefined* symbols in core.so; psi4/__init__.py imports core.so
+        # with RTLD_LAZY so they're only resolved on first actual ECP use
+        # (see libmints/ecpint_loader.cc), not at import time. But many Linux
+        # toolchains (notably conda-forge's default, hardened CFLAGS/CXXFLAGS)
+        # compile with `-fno-plt`, which makes calls to external functions
+        # bypass the PLT entirely and go through a GOT load instead. Those
+        # GOT-load relocations are R_X86_64_GLOB_DAT, not R_X86_64_JUMP_SLOT,
+        # and GLOB_DAT relocations are *always* resolved eagerly at dlopen()
+        # time -- the lazy-binding optimization only applies to PLT/JUMP_SLOT
+        # relocations. So under `-fno-plt`, RTLD_LAZY (and even `-Wl,-z,lazy`,
+        # see psi4/src/CMakeLists.txt) is silently defeated and `import psi4`
+        # crashes with "undefined symbol" again even though libecpint truly
+        # isn't installed. GCC/Clang flags are processed left-to-right for
+        # toggle options, so appending `-fplt` here (after any inherited
+        # `-fno-plt` from CMAKE_CXX_FLAGS) restores real PLT stubs -- and
+        # therefore lazy binding -- for calls into libecpint specifically.
+        target_compile_options(psi4_optional_deps INTERFACE -fplt)
+    endif()
+
     target_compile_definitions(psi4_optional_deps
       INTERFACE
         USING_ecpint
