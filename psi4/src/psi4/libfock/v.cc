@@ -1871,6 +1871,17 @@ void RV::compute_Vx_full(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix>
             rho_z = pworker->point_value("RHO_AZ")->pointer();
         }
 
+        // GGA functional-derivative arrays (consumed by the generated
+        // contraction region below)
+        double* v_gamma = nullptr;
+        double* v2_rho_gamma = nullptr;
+        double* v2_gamma_gamma = nullptr;
+        if (ansatz >= 1) {
+            v_gamma = vals["V_GAMMA_AA"]->pointer();
+            v2_rho_gamma = vals["V_RHO_A_GAMMA_AA"]->pointer();
+            v2_gamma_gamma = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
+        }
+
         // Meta
         double** Dsum_localp = nullptr;
         double* tau_k = nullptr;
@@ -1948,109 +1959,103 @@ void RV::compute_Vx_full(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix>
             }
             parallel_timer_off("Derivative Properties", rank);
 
-            // ===> LSDA contribution <=== //
-            //                                         ∂^2
-            // T := 1/2 einsum("p, p, pm, p -> pm", w, ---- f , ρk, φ)
-            //                                         ∂ρ^2
             parallel_timer_on("V_XCd", rank);
+            // ==> BEGIN GENERATED CODE [xckernel psi4backend: response_fock(mgga_tau, order=2), restricted] <==
+            // Reproduce with: python -m xckernel.psi4backend
+            // Physics source: the symbolic derivative tower; every
+            // coefficient below is IR output, not hand-derived.
             for (int P = 0; P < npoints; P++) {
                 std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                 // Do a simple screen: ignore contributions where rho is too small.
                 if (rho_a[P] < v2_rho_cutoff_) continue;
-                C_DAXPY(nlocal, 0.5 * v2_rho2[P] * w[P] * rho_k[P], phi[P], 1, Tp[P], 1);
-
-                // ===> Meta ρτ cross contribution, same shape with τk <===
+                double c;
+                // (phi, phi) pattern at half weight (adjoint completion doubles)
+                c = 0.0;
+                c += 0.5 * rho_k[P] * v2_rho2[P] * w[P];
+                if (ansatz >= 1) {
+                    c += rho_k_x[P] * rho_x[P] * v2_rho_gamma[P] * w[P];
+                    c += rho_k_y[P] * rho_y[P] * v2_rho_gamma[P] * w[P];
+                    c += rho_k_z[P] * rho_z[P] * v2_rho_gamma[P] * w[P];
+                }
                 if (ansatz >= 2) {
-                    C_DAXPY(nlocal, w[P] * v2_rho_tau[P] * tau_k[P], phi[P], 1, Tp[P], 1);
+                    c += tau_k[P] * v2_rho_tau[P] * w[P];
                 }
+                C_DAXPY(nlocal, c, phi[P], 1, Tp[P], 1);
+                // (phi, dphi_x) + transpose at full weight
+                c = 0.0;
+                if (ansatz >= 1) {
+                    c += 2 * rho_k_x[P] * v_gamma[P] * w[P];
+                    c += 2 * rho_k[P] * rho_x[P] * v2_rho_gamma[P] * w[P];
+                    c += 4 * rho_k_x[P] * rho_x[P] * rho_x[P] * v2_gamma_gamma[P] * w[P];
+                    c += 4 * rho_k_y[P] * rho_x[P] * rho_y[P] * v2_gamma_gamma[P] * w[P];
+                    c += 4 * rho_k_z[P] * rho_x[P] * rho_z[P] * v2_gamma_gamma[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    c += 4 * rho_x[P] * tau_k[P] * v2_gamma_tau[P] * w[P];
+                }
+                C_DAXPY(nlocal, c, phi_x[P], 1, Tp[P], 1);
+                // (phi, dphi_y) + transpose at full weight
+                c = 0.0;
+                if (ansatz >= 1) {
+                    c += 2 * rho_k_y[P] * v_gamma[P] * w[P];
+                    c += 2 * rho_k[P] * rho_y[P] * v2_rho_gamma[P] * w[P];
+                    c += 4 * rho_k_x[P] * rho_x[P] * rho_y[P] * v2_gamma_gamma[P] * w[P];
+                    c += 4 * rho_k_y[P] * rho_y[P] * rho_y[P] * v2_gamma_gamma[P] * w[P];
+                    c += 4 * rho_k_z[P] * rho_y[P] * rho_z[P] * v2_gamma_gamma[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    c += 4 * rho_y[P] * tau_k[P] * v2_gamma_tau[P] * w[P];
+                }
+                C_DAXPY(nlocal, c, phi_y[P], 1, Tp[P], 1);
+                // (phi, dphi_z) + transpose at full weight
+                c = 0.0;
+                if (ansatz >= 1) {
+                    c += 2 * rho_k_z[P] * v_gamma[P] * w[P];
+                    c += 2 * rho_k[P] * rho_z[P] * v2_rho_gamma[P] * w[P];
+                    c += 4 * rho_k_x[P] * rho_x[P] * rho_z[P] * v2_gamma_gamma[P] * w[P];
+                    c += 4 * rho_k_y[P] * rho_y[P] * rho_z[P] * v2_gamma_gamma[P] * w[P];
+                    c += 4 * rho_k_z[P] * rho_z[P] * rho_z[P] * v2_gamma_gamma[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    c += 4 * rho_z[P] * tau_k[P] * v2_gamma_tau[P] * w[P];
+                }
+                C_DAXPY(nlocal, c, phi_z[P], 1, Tp[P], 1);
             }
 
-            // ===> GGA contribution <=== //
-            if (ansatz >= 1) {
-                // ====> Define pointers for future use <====
-                auto v_gamma = vals["V_GAMMA_AA"]->pointer();
-                auto v2_gamma_gamma = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
-                auto v2_rho_gamma = vals["V_RHO_A_GAMMA_AA"]->pointer();
-                double tmp_val = 0.0, v2_val = 0.0;
-
-                // There are lots of GGA terms.
-                for (int P = 0; P < npoints; P++) {
-                    if (rho_a[P] < v2_rho_cutoff_) continue;
-
-                    // ====> Term 2b, V in DOI: 10.1063/1.466887 <====
-                    //                                         ∂^2
-                    // T += 1/2 einsum("p, p, p, pr -> pr", w, ---- f, Γk, φ)
-                    //                                         ∂ρ∂γ
-                    // V contributions
-                    C_DAXPY(nlocal, (0.5 * w[P] * v2_rho_gamma[P] * gamma_k[P]), phi[P], 1, Tp[P], 1);
-
-                    // ====> All other terms, W in above DOI  <==== //
-                    //                            ∂^2
-                    // temp = einsum("p, p -> p", ---- f, ρk)
-                    //                            ∂ρ∂γ
-                    //                             ∂^2
-                    // temp += einsum("p, p -> p", ---- f, Γk)
-                    //                             ∂γ∂γ
-                    
-                    // Define Γk terms in 3 intermediate
-                    v2_val = (v2_rho_gamma[P] * rho_k[P] + v2_gamma_gamma[P] * gamma_k[P]);
-
-                    //                             ∂^2
-                    // temp += einsum("p, p -> p", ---- f, τk)
-                    //                             ∂γ∂τ
-                    if (ansatz >= 2) {
-                        v2_val += 2.0 * v2_gamma_tau[P] * tau_k[P];
-                    }
-
-                    //                                      ∂
-                    // temp2 = einsum("p, p, xp -> xpσ", w, -- f, ∇ρk)
-                    //                                      ∂Γ
-                    // temp2 += einsum("p, p, x -> xp", w, temp, ∇ρ)
-                    // T += einsum("xp, xpm -> pm", temp2, ∇φ)
-
-                    tmp_val = 2.0 * w[P] * (v_gamma[P] * rho_k_x[P] + v2_val * rho_x[P]);
-                    C_DAXPY(nlocal, tmp_val, phi_x[P], 1, Tp[P], 1);
-
-                    tmp_val = 2.0 * w[P] * (v_gamma[P] * rho_k_y[P] + v2_val * rho_y[P]);
-                    C_DAXPY(nlocal, tmp_val, phi_y[P], 1, Tp[P], 1);
-
-                    tmp_val = 2.0 * w[P] * (v_gamma[P] * rho_k_z[P] + v2_val * rho_z[P]);
-                    C_DAXPY(nlocal, tmp_val, phi_z[P], 1, Tp[P], 1);
-                }
-            }
-
-            // ===> Contract Ta and Tb aginst φ, replacing a point index with  an AO index <===
-            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tp[0], max_functions, 0.0, Vx_localp[0],
-                    max_functions);
-
-            // ===> Add the adjoint to complete the LDA and GGA contributions  <===
+            // ===> Contract T against phi, and complete with the adjoint <===
+            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tp[0], max_functions, 0.0,
+                    Vx_localp[0], max_functions);
             for (int m = 0; m < nlocal; m++) {
                 for (int n = 0; n <= m; n++) {
                     Vx_localp[m][n] = Vx_localp[n][m] = Vx_localp[m][n] + Vx_localp[n][m];
                 }
             }
 
-            // ===> Meta contribution: the (∇φ, ∇φ) pattern <===
-            //                                 ∂^2         ∂^2          ∂^2
-            // temp = einsum("p, p -> p", w, [ ---- f ρk + ---- f Γk + 2---- f τk ])
-            //                                 ∂ρ∂τ        ∂γ∂τ         ∂τ∂τ
-            // Vx += einsum("xpm, p, xpn -> mn", ∇φ, temp, ∇φ)
-            //   Symmetric on its own, hence added after the adjoint completion.
+            // (dphi_i, dphi_i) diagonal patterns: symmetric on their own,
+            // contracted after the adjoint completion at full weight
             if (ansatz >= 2) {
                 double** phi_i[3] = {phi_x, phi_y, phi_z};
                 for (int i = 0; i < 3; i++) {
-                    double** phiw = phi_i[i];
                     for (int P = 0; P < npoints; P++) {
                         std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                         if (rho_a[P] < v2_rho_cutoff_) continue;
-                        double tmp_val = w[P] * (v2_rho_tau[P] * rho_k[P] + v2_gamma_tau[P] * gamma_k[P] +
-                                                 2.0 * v2_tau_tau[P] * tau_k[P]);
-                        C_DAXPY(nlocal, tmp_val, phiw[P], 1, Tp[P], 1);
+                        double c;
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += rho_k[P] * v2_rho_tau[P] * w[P];
+                            c += 2 * tau_k[P] * v2_tau_tau[P] * w[P];
+                            c += 2 * rho_k_x[P] * rho_x[P] * v2_gamma_tau[P] * w[P];
+                            c += 2 * rho_k_y[P] * rho_y[P] * v2_gamma_tau[P] * w[P];
+                            c += 2 * rho_k_z[P] * rho_z[P] * v2_gamma_tau[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[i][P], 1, Tp[P], 1);
                     }
-                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], coll_funcs, Tp[0], max_functions, 1.0,
-                            Vx_localp[0], max_functions);
+                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi_i[i][0], coll_funcs, Tp[0],
+                            max_functions, 1.0, Vx_localp[0], max_functions);
                 }
             }
+            // ==> END GENERATED CODE <==
+
 
             // => Unpacking <= //
             auto Vxp = Vx_AO[dindex]->pointer();
