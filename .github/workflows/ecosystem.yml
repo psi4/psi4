@@ -474,11 +474,11 @@ jobs:
       # and that ECP-marked tests skip cleanly instead of failing.
       ##############################################################################
 
-    - name: dlopen: Remove Addons
+    - name: dlopen -- Remove Addons
       if: matrix.cfg.python-version == '3.14' && runner.os != 'Windows'
       run: conda remove libecpint --force -y
 
-    - name: dlopen: Runtime Conda environment
+    - name: dlopen -- Runtime Conda environment
       if: matrix.cfg.python-version == '3.14' && runner.os != 'Windows'
       working-directory: ./objdir
       run: |
@@ -487,14 +487,14 @@ jobs:
         PYTHONPATH=stage/lib python -c "import psi4; print(psi4.__file__)"
         PYTHONPATH=stage/lib python -c "from psi4 import core; assert core.ecpint_available() is False"
 
-    - name: dlopen: Run, Spot, Run
+    - name: dlopen -- Run, Spot, Run
       if: matrix.cfg.python-version == '3.14' && runner.os != 'Windows'
       working-directory: ./objdir
       run: |
         export PATH=../install/bin:$PATH
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
-    - name: dlopen: Test Addons with Pytest
+    - name: dlopen -- Test Addons with Pytest
       if: matrix.cfg.python-version == '3.14' && runner.os != 'Windows'
       working-directory: ./objdir
       run: |
