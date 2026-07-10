@@ -69,7 +69,7 @@ data_dir = str(data_dir)
 
 # Init core
 import sys
-_ecpint_runtime = ("@ENABLE_ecpint_RUNTIME@".upper() in ["1", "ON", "YES", "TRUE", "Y"] and hasattr(sys, "setdlopenflags")
+_ecpint_runtime = ("@ENABLE_ecpint_RUNTIME@".upper() in ["1", "ON", "YES", "TRUE", "Y"] and hasattr(sys, "setdlopenflags"))
 if _ecpint_runtime:
     # core.so is built *without* linking libecpint (that's what makes ECP
     # support runtime-optional), so it contains undefined references to
