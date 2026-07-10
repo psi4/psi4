@@ -1905,6 +1905,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         Disable for analytic grid-response derivatives (the grid then translates
         rigidly with its parent atoms, matching the analytic weight Jacobian). -*/
         options.add_bool("DFT_GRID_ORIENTATION", true);
+        /*- Include quadrature grid response (weight derivatives and grid-point
+        motion) in analytic XC nuclear derivatives? Requires
+        DFT_BLOCK_SCHEME = ATOMIC and DFT_GRID_ORIENTATION = false for exact
+        consistency with finite differences. -*/
+        options.add_bool("DFT_GRID_RESPONSE", false);
         /*- Parameters defining the dispersion correction. See Table
         :ref:`-D Functionals <table:dft_disp>` for default values and Table
         :ref:`Dispersion Corrections <table:dashd>` for the order in which
