@@ -275,6 +275,14 @@ void export_functional(py::module &m) {
         .def("Dao", &VBase::set_D, "Returns internal AO density.")
         .def("compute_V", &VBase::compute_V, "doctsring")
         .def("compute_Vx", &VBase::compute_Vx, "doctsring")
+        .def(
+            "compute_Vx_full",
+            [](VBase& v, std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret, bool singlet) {
+                auto* rv = dynamic_cast<RV*>(&v);
+                if (!rv) throw PSIEXCEPTION("compute_Vx_full: only available for restricted (RV) potentials.");
+                rv->compute_Vx_full(Dx, ret, singlet);
+            },
+            "Computes the Vx contraction with singlet/triplet spin adaptation. Restricted potentials only.")
         .def("compute_gradient", &VBase::compute_gradient, "Compute the DFT nuclear gradient contribution.")
         .def("compute_hessain", &VBase::compute_hessian, "Compute the DFT nuclear Hessian contribution.")
 

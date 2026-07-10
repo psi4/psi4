@@ -687,6 +687,11 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
             UKS_vals["GAMMA_AB"] = UKS_vals["GAMMA_AA"];
             UKS_vals["GAMMA_BB"] = UKS_vals["GAMMA_AA"];
         }
+        if (is_meta()) {
+            UKS_vals["TAU_A"] = std::make_shared<Vector>(std::move(vals.at("TAU_A")->clone()));
+            UKS_vals["TAU_A"]->scale(0.5); // Un-spinsum
+            UKS_vals["TAU_B"] = UKS_vals["TAU_A"];
+        }
 
         auto temp = UKS->compute_functional(UKS_vals, npoints);
         values_ = std::move(UKS->compute_functional(UKS_vals, npoints));
@@ -715,6 +720,24 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
             values_.erase("V_GAMMA_BB_GAMMA_BB");
             values_.at("V_GAMMA_AA_GAMMA_AA")->axpby(-0.125, 0.125, *values_.at("V_GAMMA_AA_GAMMA_BB"));
             values_.erase("V_GAMMA_AA_GAMMA_BB");
+        }
+        if (is_meta()) {
+            values_.erase("V_TAU_B");
+            values_.at("V_TAU_A_TAU_A")->axpby(-0.5, 0.5, *values_.at("V_TAU_A_TAU_B"));
+            values_.erase("V_TAU_A_TAU_B");
+            values_.erase("V_TAU_B_TAU_B");
+
+            values_.at("V_RHO_A_TAU_A")->axpby(-0.5, 0.5, *values_.at("V_RHO_A_TAU_B"));
+            values_.erase("V_RHO_A_TAU_B");
+            values_.erase("V_RHO_B_TAU_A");
+            values_.erase("V_RHO_B_TAU_B");
+
+            values_.at("V_GAMMA_AA_TAU_A")->axpby(-0.25, 0.25, *values_.at("V_GAMMA_BB_TAU_A"));
+            values_.erase("V_GAMMA_AA_TAU_B");
+            values_.erase("V_GAMMA_AB_TAU_A");
+            values_.erase("V_GAMMA_AB_TAU_B");
+            values_.erase("V_GAMMA_BB_TAU_A");
+            values_.erase("V_GAMMA_BB_TAU_B");
         }
         return values_;
     }
