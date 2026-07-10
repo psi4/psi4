@@ -1901,6 +1901,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("DFT_REMOVE_DISTANT_POINTS",true);
         /*- The blocking scheme for DFT. !expert -*/
         options.add_str("DFT_BLOCK_SCHEME", "OCTREE", "NAIVE OCTREE ATOMIC");
+        /*- Rotate the atomic quadrature grids into the standard nuclear orientation?
+        Disable for analytic grid-response derivatives (the grid then translates
+        rigidly with its parent atoms, matching the analytic weight Jacobian). -*/
+        options.add_bool("DFT_GRID_ORIENTATION", true);
         /*- Parameters defining the dispersion correction. See Table
         :ref:`-D Functionals <table:dft_disp>` for default values and Table
         :ref:`Dispersion Corrections <table:dashd>` for the order in which

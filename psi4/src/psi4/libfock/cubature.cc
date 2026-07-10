@@ -2806,6 +2806,11 @@ class NuclearWeightMgr {
     ~NuclearWeightMgr();
     double GetStratmannCutoff(int A) const;
     double computeNuclearWeight(MassPoint mp, int A, double stratmannCutoff) const;
+    /// Nuclear-position gradient of the partition weight P_A at FIXED grid
+    /// point: fills grad (3 natom, xyz fastest) with dP_A/dR_C and returns
+    /// P_A. The riding term of a point attached to its parent atom is the
+    /// caller's business (translational closure).
+    double computeNuclearWeightGradient(MassPoint mp, int A, double stratmannCutoff, double* grad) const;
 };
 
 const char *NuclearWeightMgr::nuclearschemenames[] = {"NAIVE", "BECKE", "TREUTLER", "STRATMANN",
@@ -2978,6 +2983,155 @@ double NuclearWeightMgr::computeNuclearWeight(MassPoint mp, int A, double stratm
         denominator += prod;
     }
     return numerator / denominator;
+}
+
+double NuclearWeightMgr::computeNuclearWeightGradient(MassPoint mp, int A, double stratmannCutoff,
+                                                       double* grad) const {
+    int natom = molecule_->natom();
+    std::fill(grad, grad + 3 * natom, 0.0);
+
+    // Deep inside its own cell the Stratmann weight is identically one.
+    if (scheme_ == STRATMANN && distToAtom(mp, A) <= stratmannCutoff) return 1.0;
+
+    double (*stepFunction)(double) = (scheme_ == STRATMANN) ? StratmannStepFunction : BeckeStepFunction;
+
+    // Distances and unit vectors from every atom to the point.
+    std::vector<double> dist(natom);
+    std::vector<std::array<double, 3>> u(natom);
+    for (int l = 0; l < natom; l++) {
+        double dx = mp.x - molecule_->x(l);
+        double dy = mp.y - molecule_->y(l);
+        double dz = mp.z - molecule_->z(l);
+        double d = sqrt(dx * dx + dy * dy + dz * dz);
+        dist[l] = d;
+        if (d > 1.0e-14) {
+            u[l] = {dx / d, dy / d, dz / d};
+        } else {
+            u[l] = {0.0, 0.0, 0.0};
+        }
+    }
+
+    // Cell functions s(nu_ij) and the chain factor ds/dmu = s'(nu) (1 - 2 a mu),
+    // with the Stratmann/SBECKE plateaus handled by vanishing derivatives.
+    std::vector<double> sval(natom * natom), schain(natom * natom), muval(natom * natom);
+    std::vector<char> clipped(natom * natom, 0);
+    for (int i = 0; i < natom; i++) {
+        for (int j = 0; j < natom; j++) {
+            if (i == j) continue;
+            double mu, dmudraw = 1.0;
+            if (scheme_ == SBECKE) {
+                mu = SmoothBeckeMu(dist[i], dist[j], inv_dist_[i][j]);
+                double raw = (dist[i] - dist[j]) * std::max(inv_dist_[i][j], 0.2);
+                if (raw <= -1.0 || raw >= 1.0) {
+                    dmudraw = 0.0;
+                    clipped[i * natom + j] = 1;
+                }
+            } else {
+                mu = BeckeMu(dist[i], dist[j], inv_dist_[i][j]);
+            }
+            double a = amatrix_[i][j];
+            double nu = mu + a * (1 - mu * mu);
+            double sv = stepFunction(nu);
+            double sp;
+            if (scheme_ == STRATMANN) {
+                const double aa = 0.64;
+                if (nu <= -aa || nu >= aa) {
+                    sp = 0.0;
+                } else {
+                    double xx = nu / aa;
+                    double x2 = xx * xx;
+                    // z'(x) = 35 (1 - x^2)^3 / 16, s = (1 - z)/2
+                    sp = -35.0 * (1 - x2) * (1 - x2) * (1 - x2) / 32.0 / aa;
+                }
+            } else {
+                // Becke: s = (1 - p(p(p(nu))))/2
+                double p1 = nu * (3 - nu * nu) / 2;
+                double p2 = p1 * (3 - p1 * p1) / 2;
+                double dp = 1.5 * (1 - nu * nu) * 1.5 * (1 - p1 * p1) * 1.5 * (1 - p2 * p2);
+                sp = -0.5 * dp;
+            }
+            muval[i * natom + j] = mu;
+            sval[i * natom + j] = sv;
+            schain[i * natom + j] = sp * (1 - 2 * a * mu) * dmudraw;
+        }
+    }
+
+    // Cell products with explicit zero handling (Stratmann zeros are exact).
+    std::vector<double> prod(natom), prodnz(natom);
+    std::vector<int> nzero(natom), jzero(natom);
+    double Z = 0.0;
+    for (int i = 0; i < natom; i++) {
+        double pnz = 1.0;
+        int nz = 0, j0 = -1;
+        for (int j = 0; j < natom; j++) {
+            if (i == j) continue;
+            double sv = sval[i * natom + j];
+            if (sv == 0.0) {
+                nz++;
+                j0 = j;
+                if (nz > 1) break;
+            } else {
+                pnz *= sv;
+            }
+        }
+        prodnz[i] = pnz;
+        nzero[i] = nz;
+        jzero[i] = j0;
+        prod[i] = (nz == 0) ? pnz : 0.0;
+        Z += prod[i];
+    }
+    if (Z <= 0.0) return 0.0;
+    double P = prod[A] / Z;
+
+    // dmu_ij/dR_i = (-u_i + mu e_ij) / R_ij, dmu_ij/dR_j = (u_j - mu e_ij) / R_ij
+    // with e_ij the unit vector from j to i. For SBECKE beyond the 5 bohr
+    // cutoff the effective 1/R is constant, so the e_ij term drops.
+    auto add_dmu = [&](int i, int j, double coef, double* g) {
+        if (clipped[i * natom + j]) return;
+        double invr = inv_dist_[i][j];
+        double inveff = invr;
+        bool r_dep = true;
+        if (scheme_ == SBECKE && invr < 0.2) {
+            inveff = 0.2;
+            r_dep = false;
+        }
+        double mu = muval[i * natom + j];
+        double ex = (molecule_->x(i) - molecule_->x(j)) * invr;
+        double ey = (molecule_->y(i) - molecule_->y(j)) * invr;
+        double ez = (molecule_->z(i) - molecule_->z(j)) * invr;
+        double fac = coef * inveff;
+        double mfac = r_dep ? fac * mu : 0.0;
+        // d mu/dR_i = (-u_i - mu e_ij)/R_ij, d mu/dR_j = (u_j + mu e_ij)/R_ij
+        g[3 * i + 0] += fac * (-u[i][0]) - mfac * ex;
+        g[3 * i + 1] += fac * (-u[i][1]) - mfac * ey;
+        g[3 * i + 2] += fac * (-u[i][2]) - mfac * ez;
+        g[3 * j + 0] += fac * (u[j][0]) + mfac * ex;
+        g[3 * j + 1] += fac * (u[j][1]) + mfac * ey;
+        g[3 * j + 2] += fac * (u[j][2]) + mfac * ez;
+    };
+
+    // dprod_i/dR_C accumulated for the numerator (i == A) and the sum Z.
+    std::vector<double> dnum(3 * natom, 0.0), dZ(3 * natom, 0.0);
+    std::vector<double> dpi(3 * natom);
+    for (int i = 0; i < natom; i++) {
+        if (nzero[i] > 1) continue;
+        std::fill(dpi.begin(), dpi.end(), 0.0);
+        if (nzero[i] == 1) {
+            // Only the vanishing factor's derivative survives.
+            int j = jzero[i];
+            add_dmu(i, j, prodnz[i] * schain[i * natom + j], dpi.data());
+        } else {
+            for (int j = 0; j < natom; j++) {
+                if (i == j) continue;
+                double sv = sval[i * natom + j];
+                add_dmu(i, j, prod[i] * schain[i * natom + j] / sv, dpi.data());
+            }
+        }
+        for (int k = 0; k < 3 * natom; k++) dZ[k] += dpi[k];
+        if (i == A) std::copy(dpi.begin(), dpi.end(), dnum.begin());
+    }
+    for (int k = 0; k < 3 * natom; k++) grad[k] = (dnum[k] - P * dZ[k]) / Z;
+    return P;
 }
 
 class OrientationMgr {
@@ -3733,6 +3887,12 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 
     // RMP: Like, I want to keep this info, yo?
     orientation_ = std_orientation.orientation();
+    if (!opt.orient_grid) {
+        // Grid-response derivatives need the grid to translate rigidly with
+        // its parent atoms: skip the standard-orientation rotation.
+        orientation_ = std::make_shared<Matrix>("Orientation", 3, 3);
+        orientation_->identity();
+    }
     radial_grids_.clear();
     spherical_grids_.clear();
 
@@ -3817,7 +3977,14 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 for (int j = 0; j < numAngPts; j++) {
                     MassPoint mp = {r[i] * anggrid[j].x, r[i] * anggrid[j].y, r[i] * anggrid[j].z,
                                     wr[i] * anggrid[j].w};
-                    mp = std_orientation.MoveIntoPosition(mp, A);
+                    if (opt.orient_grid) {
+                        mp = std_orientation.MoveIntoPosition(mp, A);
+                    } else {
+                        // translate to the parent atom without the rotation
+                        mp.x += molecule_->x(A);
+                        mp.y += molecule_->y(A);
+                        mp.z += molecule_->z(A);
+                    }
                     mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff);
 
                     if (std::abs(mp.w) > weightcut) {
@@ -3838,7 +4005,14 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 (opt.namedGrid == 0) ? StandardGridMgr::GetSG0grid(Z) : StandardGridMgr::GetSG1grid(Z);
 
             for (int i = 0; i < npts; i++) {
-                MassPoint mp = std_orientation.MoveIntoPosition(sg[i], A);
+                MassPoint mp = sg[i];
+                if (opt.orient_grid) {
+                    mp = std_orientation.MoveIntoPosition(sg[i], A);
+                } else {
+                    mp.x += molecule_->x(A);
+                    mp.y += molecule_->y(A);
+                    mp.z += molecule_->z(A);
+                }
                 mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff);
                 if (std::abs(mp.w) > weightcut) {
                     atomic_grids_[A].push_back(mp);
@@ -4263,6 +4437,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     opt.weights_cutoff = full_float_options["DFT_WEIGHTS_TOLERANCE"];
     opt.blockscheme = full_str_options["DFT_BLOCK_SCHEME"];
     opt.remove_distant_points = options_.get_bool("DFT_REMOVE_DISTANT_POINTS");
+    opt.orient_grid = options_.get_bool("DFT_GRID_ORIENTATION");
 
     // printing and debug options
     opt.print = full_int_options["PRINT"];
@@ -4394,6 +4569,48 @@ void MolecularGrid::block(int max_points, int min_points, double max_radius) {
     blocks_ = blocker->blocks();
     if (options_.blockscheme == "ATOMIC") {
         atomic_blocks_ = blocker->atomic_blocks();
+    }
+}
+
+void MolecularGrid::compute_weight_gradient(std::shared_ptr<BlockOPoints> block, SharedMatrix out) const {
+    // Total derivative dw_g/dR_C of the quadrature weights of a block whose
+    // points ride their parent atom: the atomic (radial x angular) factor is
+    // translation invariant, so only the nuclear partition responds, and the
+    // parent-atom column closes the translational sum rule exactly.
+    int natom = molecule_->natom();
+    int A = block->parent_atom();  // throws for non-atomic blocking
+    int npoints = block->npoints();
+    if (out->rowdim() < 3 * natom || out->coldim() < npoints) {
+        throw PSIEXCEPTION("compute_weight_gradient: output matrix too small.");
+    }
+    NuclearWeightMgr mgr(molecule_, options_.nucscheme);
+    double stratmannCutoff = mgr.GetStratmannCutoff(A);
+    double* xp = block->x();
+    double* yp = block->y();
+    double* zp = block->z();
+    double* wp = block->w();
+    auto op = out->pointer();
+    std::vector<double> dP(3 * natom);
+    for (int g = 0; g < npoints; g++) {
+        MassPoint mp = {xp[g], yp[g], zp[g], wp[g]};
+        double P = mgr.computeNuclearWeightGradient(mp, A, stratmannCutoff, dP.data());
+        double w_atomic = (P > 1.0e-300) ? wp[g] / P : 0.0;
+        double sx = 0.0, sy = 0.0, sz = 0.0;
+        for (int C = 0; C < natom; C++) {
+            if (C == A) continue;
+            double gx = w_atomic * dP[3 * C + 0];
+            double gy = w_atomic * dP[3 * C + 1];
+            double gz = w_atomic * dP[3 * C + 2];
+            op[3 * C + 0][g] = gx;
+            op[3 * C + 1][g] = gy;
+            op[3 * C + 2][g] = gz;
+            sx += gx;
+            sy += gy;
+            sz += gz;
+        }
+        op[3 * A + 0][g] = -sx;
+        op[3 * A + 1][g] = -sy;
+        op[3 * A + 2][g] = -sz;
     }
 }
 
