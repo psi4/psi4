@@ -2310,58 +2310,67 @@ SharedMatrix RV::compute_gradient() {
             phi_i[1] = pworker->basis_value("PHI_Y")->pointer();
             phi_i[2] = pworker->basis_value("PHI_Z")->pointer();
             auto Dp = pworker->D_scratch()[0]->pointer();
-            if (ansatz == 0) {
-                // LDA: d_d e = vrho drho_d, with the density gradient built
-                // from the collocation (not among the LDA point values).
-                auto Up = U_local[rank]->pointer();
-                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dp[0], max_functions, 0.0,
-                        Up[0], max_functions);
-                for (int P = 0; P < npoints; P++) {
-                    double c = 0.5 * w[P] * v_rho[P];
-                    for (int d = 0; d < 3; d++) {
-                        double drho = 4.0 * C_DDOT(nlocal, Up[P], 1, phi_i[d][P], 1);
-                        Gp[A][d] += c * drho;
-                    }
-                }
-            } else {
-                double* rho_g[3];
+            double* rho_g[3] = {nullptr, nullptr, nullptr};
+            double** phi_hess[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+            int hess_addr[3][3] = {{0, 1, 2}, {1, 3, 4}, {2, 4, 5}};
+            double* v_gamma = nullptr;
+            double* v_tau = nullptr;
+            double** U0 = (ansatz >= 1) ? R_U0[rank]->pointer() : U_local[rank]->pointer();
+            double** Ui[3] = {nullptr, nullptr, nullptr};
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dp[0], max_functions, 0.0,
+                    U0[0], max_functions);
+            if (ansatz >= 1) {
                 rho_g[0] = pworker->point_value("RHO_AX")->pointer();
                 rho_g[1] = pworker->point_value("RHO_AY")->pointer();
                 rho_g[2] = pworker->point_value("RHO_AZ")->pointer();
-                double** phi_hess[6];
                 phi_hess[0] = pworker->basis_value("PHI_XX")->pointer();
                 phi_hess[1] = pworker->basis_value("PHI_XY")->pointer();
                 phi_hess[2] = pworker->basis_value("PHI_XZ")->pointer();
                 phi_hess[3] = pworker->basis_value("PHI_YY")->pointer();
                 phi_hess[4] = pworker->basis_value("PHI_YZ")->pointer();
                 phi_hess[5] = pworker->basis_value("PHI_ZZ")->pointer();
-                int hess_addr[3][3] = {{0, 1, 2}, {1, 3, 4}, {2, 4, 5}};
-                auto v_gamma = vals["V_GAMMA_AA"]->pointer();
-                double* v_tau = (ansatz >= 2) ? vals["V_TAU_A"]->pointer() : nullptr;
-                auto U0 = R_U0[rank]->pointer();
-                double** Ui[3] = {R_U1[rank]->pointer(), R_U2[rank]->pointer(), R_U3[rank]->pointer()};
-                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dp[0], max_functions, 0.0,
-                        U0[0], max_functions);
+                v_gamma = vals["V_GAMMA_AA"]->pointer();
+                if (ansatz >= 2) v_tau = vals["V_TAU_A"]->pointer();
+                Ui[0] = R_U1[rank]->pointer();
+                Ui[1] = R_U2[rank]->pointer();
+                Ui[2] = R_U3[rank]->pointer();
                 for (int i = 0; i < 3; i++) {
                     C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi_i[i][0], coll_funcs, Dp[0], max_functions,
                             0.0, Ui[i][0], max_functions);
                 }
-                for (int P = 0; P < npoints; P++) {
-                    for (int d = 0; d < 3; d++) {
-                        // d_d e = vrho drho_d + vgamma dsigma_d (+ vtau dtau_d)
-                        double de = v_rho[P] * rho_g[d][P];
-                        double dsig = 0.0, dtau = 0.0;
+            }
+            for (int P = 0; P < npoints; P++) {
+                for (int d = 0; d < 3; d++) {
+                    // plumbing: the spatial field gradients at this point
+                    double drho_g;
+                    double dgrad_g[3] = {0.0, 0.0, 0.0};
+                    double dtau_g = 0.0;
+                    if (ansatz >= 1) {
+                        drho_g = rho_g[d][P];
                         for (int i = 0; i < 3; i++) {
-                            double hrho = 4.0 * (C_DDOT(nlocal, U0[P], 1, phi_hess[hess_addr[d][i]][P], 1)
-                                                 + C_DDOT(nlocal, Ui[d][P], 1, phi_i[i][P], 1));
-                            dsig += 2.0 * rho_g[i][P] * hrho;
+                            dgrad_g[i] = 4.0 * (C_DDOT(nlocal, U0[P], 1, phi_hess[hess_addr[d][i]][P], 1)
+                                                + C_DDOT(nlocal, Ui[d][P], 1, phi_i[i][P], 1));
                             if (ansatz >= 2)
-                                dtau += C_DDOT(nlocal, Ui[i][P], 1, phi_hess[hess_addr[d][i]][P], 1);
+                                dtau_g += C_DDOT(nlocal, Ui[i][P], 1, phi_hess[hess_addr[d][i]][P], 1);
                         }
-                        de += v_gamma[P] * dsig;
-                        if (ansatz >= 2) de += 4.0 * v_tau[P] * dtau;
-                        Gp[A][d] += 0.5 * w[P] * de;
+                        dtau_g *= 2.0;
+                    } else {
+                        drho_g = 4.0 * C_DDOT(nlocal, U0[P], 1, phi_i[d][P], 1);
                     }
+                    // ==> BEGIN GENERATED CODE [xckernel psi4backend: spatial_energy_gradient(mgga_tau)] <==
+                    // Reproduce with: python -m xckernel.psi4backend --gridmotion
+                    double dot_dgrad_rho_g_grad_rho = 0.0;
+                    if (ansatz >= 1) dot_dgrad_rho_g_grad_rho = dgrad_g[0] * rho_g[0][P] + dgrad_g[1] * rho_g[1][P] + dgrad_g[2] * rho_g[2][P];
+                    double de = 0.0;
+                    de += drho_g * v_rho[P];
+                    if (ansatz >= 1) {
+                        de += 2 * dot_dgrad_rho_g_grad_rho * v_gamma[P];
+                    }
+                    if (ansatz >= 2) {
+                        de += 2 * dtau_g * v_tau[P];
+                    }
+                    // ==> END GENERATED CODE <==
+                    Gp[A][d] += 0.5 * w[P] * de;
                 }
             }
         }
