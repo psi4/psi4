@@ -1962,20 +1962,29 @@ void RV::compute_Vx_full(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix>
             parallel_timer_on("V_XCd", rank);
             // ==> BEGIN GENERATED CODE [xckernel psi4backend: response_fock(mgga_tau, order=2), restricted] <==
             // Reproduce with: python -m xckernel.psi4backend
-            // Physics source: the symbolic derivative tower; every
-            // coefficient below is IR output, not hand-derived.
+            // Physics source: the symbolic derivative tower; the
+            // intermediates below are IR compaction output (dot
+            // contraction + common-factor hoisting), not hand-derived.
             for (int P = 0; P < npoints; P++) {
                 std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                 // Do a simple screen: ignore contributions where rho is too small.
                 if (rho_a[P] < v2_rho_cutoff_) continue;
+                double dot_grad_rho_grad_rho_p1 = 0.0;
+                if (ansatz >= 1) dot_grad_rho_grad_rho_p1 = rho_x[P] * rho_k_x[P] + rho_y[P] * rho_k_y[P] + rho_z[P] * rho_k_z[P];
+                double hsum_grad_rho_0 = 0.0;
+                if (ansatz >= 1) {
+                    hsum_grad_rho_0 += 4 * dot_grad_rho_grad_rho_p1 * v2_gamma_gamma[P] * w[P];
+                    hsum_grad_rho_0 += 2 * rho_k[P] * v2_rho_gamma[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    hsum_grad_rho_0 += 4 * tau_k[P] * v2_gamma_tau[P] * w[P];
+                }
                 double c;
                 // (phi, phi) pattern at half weight (adjoint completion doubles)
                 c = 0.0;
                 c += 0.5 * rho_k[P] * v2_rho2[P] * w[P];
                 if (ansatz >= 1) {
-                    c += rho_k_x[P] * rho_x[P] * v2_rho_gamma[P] * w[P];
-                    c += rho_k_y[P] * rho_y[P] * v2_rho_gamma[P] * w[P];
-                    c += rho_k_z[P] * rho_z[P] * v2_rho_gamma[P] * w[P];
+                    c += dot_grad_rho_grad_rho_p1 * v2_rho_gamma[P] * w[P];
                 }
                 if (ansatz >= 2) {
                     c += tau_k[P] * v2_rho_tau[P] * w[P];
@@ -1985,39 +1994,21 @@ void RV::compute_Vx_full(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix>
                 c = 0.0;
                 if (ansatz >= 1) {
                     c += 2 * rho_k_x[P] * v_gamma[P] * w[P];
-                    c += 2 * rho_k[P] * rho_x[P] * v2_rho_gamma[P] * w[P];
-                    c += 4 * rho_k_x[P] * rho_x[P] * rho_x[P] * v2_gamma_gamma[P] * w[P];
-                    c += 4 * rho_k_y[P] * rho_x[P] * rho_y[P] * v2_gamma_gamma[P] * w[P];
-                    c += 4 * rho_k_z[P] * rho_x[P] * rho_z[P] * v2_gamma_gamma[P] * w[P];
-                }
-                if (ansatz >= 2) {
-                    c += 4 * rho_x[P] * tau_k[P] * v2_gamma_tau[P] * w[P];
+                    c += hsum_grad_rho_0 * rho_x[P];
                 }
                 C_DAXPY(nlocal, c, phi_x[P], 1, Tp[P], 1);
                 // (phi, dphi_y) + transpose at full weight
                 c = 0.0;
                 if (ansatz >= 1) {
                     c += 2 * rho_k_y[P] * v_gamma[P] * w[P];
-                    c += 2 * rho_k[P] * rho_y[P] * v2_rho_gamma[P] * w[P];
-                    c += 4 * rho_k_x[P] * rho_x[P] * rho_y[P] * v2_gamma_gamma[P] * w[P];
-                    c += 4 * rho_k_y[P] * rho_y[P] * rho_y[P] * v2_gamma_gamma[P] * w[P];
-                    c += 4 * rho_k_z[P] * rho_y[P] * rho_z[P] * v2_gamma_gamma[P] * w[P];
-                }
-                if (ansatz >= 2) {
-                    c += 4 * rho_y[P] * tau_k[P] * v2_gamma_tau[P] * w[P];
+                    c += hsum_grad_rho_0 * rho_y[P];
                 }
                 C_DAXPY(nlocal, c, phi_y[P], 1, Tp[P], 1);
                 // (phi, dphi_z) + transpose at full weight
                 c = 0.0;
                 if (ansatz >= 1) {
                     c += 2 * rho_k_z[P] * v_gamma[P] * w[P];
-                    c += 2 * rho_k[P] * rho_z[P] * v2_rho_gamma[P] * w[P];
-                    c += 4 * rho_k_x[P] * rho_x[P] * rho_z[P] * v2_gamma_gamma[P] * w[P];
-                    c += 4 * rho_k_y[P] * rho_y[P] * rho_z[P] * v2_gamma_gamma[P] * w[P];
-                    c += 4 * rho_k_z[P] * rho_z[P] * rho_z[P] * v2_gamma_gamma[P] * w[P];
-                }
-                if (ansatz >= 2) {
-                    c += 4 * rho_z[P] * tau_k[P] * v2_gamma_tau[P] * w[P];
+                    c += hsum_grad_rho_0 * rho_z[P];
                 }
                 C_DAXPY(nlocal, c, phi_z[P], 1, Tp[P], 1);
             }
@@ -2039,14 +2030,14 @@ void RV::compute_Vx_full(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix>
                     for (int P = 0; P < npoints; P++) {
                         std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                         if (rho_a[P] < v2_rho_cutoff_) continue;
+                        double dot_grad_rho_grad_rho_p1 = 0.0;
+                        if (ansatz >= 1) dot_grad_rho_grad_rho_p1 = rho_x[P] * rho_k_x[P] + rho_y[P] * rho_k_y[P] + rho_z[P] * rho_k_z[P];
                         double c;
                         c = 0.0;
                         if (ansatz >= 2) {
                             c += rho_k[P] * v2_rho_tau[P] * w[P];
                             c += 2 * tau_k[P] * v2_tau_tau[P] * w[P];
-                            c += 2 * rho_k_x[P] * rho_x[P] * v2_gamma_tau[P] * w[P];
-                            c += 2 * rho_k_y[P] * rho_y[P] * v2_gamma_tau[P] * w[P];
-                            c += 2 * rho_k_z[P] * rho_z[P] * v2_gamma_tau[P] * w[P];
+                            c += 2 * dot_grad_rho_grad_rho_p1 * v2_gamma_tau[P] * w[P];
                         }
                         C_DAXPY(nlocal, c, phi_i[i][P], 1, Tp[P], 1);
                     }
@@ -4162,30 +4153,79 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             parallel_timer_on("V_XCd", rank);
             // ==> BEGIN GENERATED CODE [xckernel psi4backend: response_fock_spin(mgga_tau, order=2)] <==
             // Reproduce with: python -m xckernel.psi4backend --uv
-            // Physics source: the symbolic derivative tower; every
-            // coefficient below is IR output, not hand-derived.
+            // Physics source: the symbolic derivative tower; the
+            // intermediates below are IR compaction output (dot
+            // contraction + common-factor hoisting), not hand-derived.
             for (int P = 0; P < npoints; P++) {
                 std::fill(Tap[P], Tap[P] + nlocal, 0.0);
                 std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
                 if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
+                double dot_grad_rho_a_grad_rho_a_p1 = 0.0;
+                if (ansatz >= 1) dot_grad_rho_a_grad_rho_a_p1 = rho_ax[P] * rho_ak_x[P] + rho_ay[P] * rho_ak_y[P] + rho_az[P] * rho_ak_z[P];
+                double dot_grad_rho_a_grad_rho_b_p1 = 0.0;
+                if (ansatz >= 1) dot_grad_rho_a_grad_rho_b_p1 = rho_ax[P] * rho_bk_x[P] + rho_ay[P] * rho_bk_y[P] + rho_az[P] * rho_bk_z[P];
+                double dot_grad_rho_a_p1_grad_rho_b = 0.0;
+                if (ansatz >= 1) dot_grad_rho_a_p1_grad_rho_b = rho_ak_x[P] * rho_bx[P] + rho_ak_y[P] * rho_by[P] + rho_ak_z[P] * rho_bz[P];
+                double dot_grad_rho_b_grad_rho_b_p1 = 0.0;
+                if (ansatz >= 1) dot_grad_rho_b_grad_rho_b_p1 = rho_bx[P] * rho_bk_x[P] + rho_by[P] * rho_bk_y[P] + rho_bz[P] * rho_bk_z[P];
+                double hsum_grad_rho_a_0_a = 0.0;
+                if (ansatz >= 1) {
+                    hsum_grad_rho_a_0_a += 4 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_gamma_aa[P] * w[P];
+                    hsum_grad_rho_a_0_a += 2 * dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_aa_gamma_ab[P] * w[P];
+                    hsum_grad_rho_a_0_a += 4 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_aa_gamma_bb[P] * w[P];
+                    hsum_grad_rho_a_0_a += 2 * rho_ak[P] * v2_rho_a_gamma_aa[P] * w[P];
+                    hsum_grad_rho_a_0_a += 2 * rho_bk[P] * v2_rho_b_gamma_aa[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    hsum_grad_rho_a_0_a += 4 * tau_ak[P] * v2_gamma_aa_tau_a[P] * w[P];
+                    hsum_grad_rho_a_0_a += 4 * tau_bk[P] * v2_gamma_aa_tau_b[P] * w[P];
+                }
+                double hsum_grad_rho_a_0_b = 0.0;
+                if (ansatz >= 1) {
+                    hsum_grad_rho_a_0_b += 2 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_gamma_ab[P] * w[P];
+                    hsum_grad_rho_a_0_b += dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_ab_gamma_ab[P] * w[P];
+                    hsum_grad_rho_a_0_b += dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_gamma_ab[P] * w[P];
+                    hsum_grad_rho_a_0_b += rho_ak[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    hsum_grad_rho_a_0_b += rho_bk[P] * v2_rho_b_gamma_ab[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    hsum_grad_rho_a_0_b += 2 * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
+                    hsum_grad_rho_a_0_b += 2 * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
+                }
+                double hsum_grad_rho_b_1_a = 0.0;
+                if (ansatz >= 1) {
+                    hsum_grad_rho_b_1_a += dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_ab_gamma_ab[P] * w[P];
+                    hsum_grad_rho_b_1_a += dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_gamma_ab[P] * w[P];
+                    hsum_grad_rho_b_1_a += 2 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_ab_gamma_bb[P] * w[P];
+                    hsum_grad_rho_b_1_a += rho_ak[P] * v2_rho_a_gamma_ab[P] * w[P];
+                    hsum_grad_rho_b_1_a += rho_bk[P] * v2_rho_b_gamma_ab[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    hsum_grad_rho_b_1_a += 2 * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
+                    hsum_grad_rho_b_1_a += 2 * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
+                }
+                double hsum_grad_rho_b_1_b = 0.0;
+                if (ansatz >= 1) {
+                    hsum_grad_rho_b_1_b += 4 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_gamma_bb[P] * w[P];
+                    hsum_grad_rho_b_1_b += 2 * dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_gamma_bb[P] * w[P];
+                    hsum_grad_rho_b_1_b += 4 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_bb_gamma_bb[P] * w[P];
+                    hsum_grad_rho_b_1_b += 2 * rho_ak[P] * v2_rho_a_gamma_bb[P] * w[P];
+                    hsum_grad_rho_b_1_b += 2 * rho_bk[P] * v2_rho_b_gamma_bb[P] * w[P];
+                }
+                if (ansatz >= 2) {
+                    hsum_grad_rho_b_1_b += 4 * tau_ak[P] * v2_gamma_bb_tau_a[P] * w[P];
+                    hsum_grad_rho_b_1_b += 4 * tau_bk[P] * v2_gamma_bb_tau_b[P] * w[P];
+                }
                 double c;
                 // spin a: (phi, phi) pattern at half weight
                 c = 0.0;
                 c += 0.5 * rho_ak[P] * v2_rho2_aa[P] * w[P];
                 c += 0.5 * rho_bk[P] * v2_rho2_ab[P] * w[P];
                 if (ansatz >= 1) {
-                    c += 0.5 * rho_ak_x[P] * rho_bx[P] * v2_rho_a_gamma_ab[P] * w[P];
-                    c += 0.5 * rho_ak_y[P] * rho_by[P] * v2_rho_a_gamma_ab[P] * w[P];
-                    c += 0.5 * rho_ak_z[P] * rho_bz[P] * v2_rho_a_gamma_ab[P] * w[P];
-                    c += 0.5 * rho_ax[P] * rho_bk_x[P] * v2_rho_a_gamma_ab[P] * w[P];
-                    c += 0.5 * rho_ay[P] * rho_bk_y[P] * v2_rho_a_gamma_ab[P] * w[P];
-                    c += 0.5 * rho_az[P] * rho_bk_z[P] * v2_rho_a_gamma_ab[P] * w[P];
-                    c += rho_ak_x[P] * rho_ax[P] * v2_rho_a_gamma_aa[P] * w[P];
-                    c += rho_ak_y[P] * rho_ay[P] * v2_rho_a_gamma_aa[P] * w[P];
-                    c += rho_ak_z[P] * rho_az[P] * v2_rho_a_gamma_aa[P] * w[P];
-                    c += rho_bk_x[P] * rho_bx[P] * v2_rho_a_gamma_bb[P] * w[P];
-                    c += rho_bk_y[P] * rho_by[P] * v2_rho_a_gamma_bb[P] * w[P];
-                    c += rho_bk_z[P] * rho_bz[P] * v2_rho_a_gamma_bb[P] * w[P];
+                    c += dot_grad_rho_a_grad_rho_a_p1 * v2_rho_a_gamma_aa[P] * w[P];
+                    c += 0.5 * dot_grad_rho_a_grad_rho_b_p1 * v2_rho_a_gamma_ab[P] * w[P];
+                    c += 0.5 * dot_grad_rho_a_p1_grad_rho_b * v2_rho_a_gamma_ab[P] * w[P];
+                    c += dot_grad_rho_b_grad_rho_b_p1 * v2_rho_a_gamma_bb[P] * w[P];
                 }
                 if (ansatz >= 2) {
                     c += tau_ak[P] * v2_rho_a_tau_a[P] * w[P];
@@ -4196,120 +4236,42 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                 c = 0.0;
                 if (ansatz >= 1) {
                     c += rho_bk_x[P] * v_gamma_ab[P] * w[P];
-                    c += rho_ak[P] * rho_bx[P] * v2_rho_a_gamma_ab[P] * w[P];
-                    c += rho_bk[P] * rho_bx[P] * v2_rho_b_gamma_ab[P] * w[P];
-                    c += rho_ak_x[P] * rho_bx[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ak_y[P] * rho_bx[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ak_z[P] * rho_bx[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ax[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ay[P] * rho_bk_y[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_az[P] * rho_bk_z[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
                     c += 4 * rho_ak_x[P] * rho_ax[P] * rho_bx[P] * v2_gamma_aa_gamma_ab[P] * w[P];
                     c += 2 * rho_ak_y[P] * rho_ay[P] * rho_bx[P] * v2_gamma_aa_gamma_ab[P] * w[P];
                     c += 2 * rho_ak_z[P] * rho_az[P] * rho_bx[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_bk_x[P] * rho_bx[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 2 * rho_bk_y[P] * rho_bx[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 2 * rho_bk_z[P] * rho_bx[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_ak_x[P] * v_gamma_aa[P] * w[P];
-                    c += 2 * rho_ak[P] * rho_ax[P] * v2_rho_a_gamma_aa[P] * w[P];
-                    c += 2 * rho_ax[P] * rho_bk[P] * v2_rho_b_gamma_aa[P] * w[P];
                     c += 2 * rho_ak_y[P] * rho_ax[P] * rho_by[P] * v2_gamma_aa_gamma_ab[P] * w[P];
                     c += 2 * rho_ak_z[P] * rho_ax[P] * rho_bz[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ax[P] * rho_ax[P] * rho_bk_x[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ax[P] * rho_ay[P] * rho_bk_y[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ax[P] * rho_az[P] * rho_bk_z[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_ax[P] * v2_gamma_aa_gamma_aa[P] * w[P];
-                    c += 4 * rho_ak_y[P] * rho_ax[P] * rho_ay[P] * v2_gamma_aa_gamma_aa[P] * w[P];
-                    c += 4 * rho_ak_z[P] * rho_ax[P] * rho_az[P] * v2_gamma_aa_gamma_aa[P] * w[P];
-                    c += 4 * rho_ax[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_ax[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_ax[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                }
-                if (ansatz >= 2) {
-                    c += 2 * rho_bx[P] * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
-                    c += 2 * rho_bx[P] * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
-                    c += 4 * rho_ax[P] * tau_ak[P] * v2_gamma_aa_tau_a[P] * w[P];
-                    c += 4 * rho_ax[P] * tau_bk[P] * v2_gamma_aa_tau_b[P] * w[P];
+                    c += hsum_grad_rho_a_0_a * rho_ax[P];
+                    c += hsum_grad_rho_b_1_a * rho_bx[P];
                 }
                 C_DAXPY(nlocal, c, phi_x[P], 1, Tap[P], 1);
                 // spin a: (phi, dphi_y) + transpose at full weight
                 c = 0.0;
                 if (ansatz >= 1) {
                     c += rho_bk_y[P] * v_gamma_ab[P] * w[P];
-                    c += rho_ak[P] * rho_by[P] * v2_rho_a_gamma_ab[P] * w[P];
-                    c += rho_bk[P] * rho_by[P] * v2_rho_b_gamma_ab[P] * w[P];
-                    c += rho_ak_x[P] * rho_bx[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ak_y[P] * rho_by[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ak_z[P] * rho_by[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ax[P] * rho_bk_x[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ay[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_az[P] * rho_bk_z[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
                     c += 2 * rho_ak_x[P] * rho_ax[P] * rho_by[P] * v2_gamma_aa_gamma_ab[P] * w[P];
                     c += 4 * rho_ak_y[P] * rho_ay[P] * rho_by[P] * v2_gamma_aa_gamma_ab[P] * w[P];
                     c += 2 * rho_ak_z[P] * rho_az[P] * rho_by[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_bk_x[P] * rho_bx[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 2 * rho_bk_y[P] * rho_by[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 2 * rho_bk_z[P] * rho_by[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_ak_y[P] * v_gamma_aa[P] * w[P];
-                    c += 2 * rho_ak[P] * rho_ay[P] * v2_rho_a_gamma_aa[P] * w[P];
-                    c += 2 * rho_ay[P] * rho_bk[P] * v2_rho_b_gamma_aa[P] * w[P];
                     c += 2 * rho_ak_x[P] * rho_ay[P] * rho_bx[P] * v2_gamma_aa_gamma_ab[P] * w[P];
                     c += 2 * rho_ak_z[P] * rho_ay[P] * rho_bz[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ax[P] * rho_ay[P] * rho_bk_x[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ay[P] * rho_ay[P] * rho_bk_y[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ay[P] * rho_az[P] * rho_bk_z[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_ay[P] * v2_gamma_aa_gamma_aa[P] * w[P];
-                    c += 4 * rho_ak_y[P] * rho_ay[P] * rho_ay[P] * v2_gamma_aa_gamma_aa[P] * w[P];
-                    c += 4 * rho_ak_z[P] * rho_ay[P] * rho_az[P] * v2_gamma_aa_gamma_aa[P] * w[P];
-                    c += 4 * rho_ay[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_ay[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_ay[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                }
-                if (ansatz >= 2) {
-                    c += 2 * rho_by[P] * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
-                    c += 2 * rho_by[P] * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
-                    c += 4 * rho_ay[P] * tau_ak[P] * v2_gamma_aa_tau_a[P] * w[P];
-                    c += 4 * rho_ay[P] * tau_bk[P] * v2_gamma_aa_tau_b[P] * w[P];
+                    c += hsum_grad_rho_a_0_a * rho_ay[P];
+                    c += hsum_grad_rho_b_1_a * rho_by[P];
                 }
                 C_DAXPY(nlocal, c, phi_y[P], 1, Tap[P], 1);
                 // spin a: (phi, dphi_z) + transpose at full weight
                 c = 0.0;
                 if (ansatz >= 1) {
                     c += rho_bk_z[P] * v_gamma_ab[P] * w[P];
-                    c += rho_ak[P] * rho_bz[P] * v2_rho_a_gamma_ab[P] * w[P];
-                    c += rho_bk[P] * rho_bz[P] * v2_rho_b_gamma_ab[P] * w[P];
-                    c += rho_ak_x[P] * rho_bx[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ak_y[P] * rho_by[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ak_z[P] * rho_bz[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ax[P] * rho_bk_x[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ay[P] * rho_bk_y[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_az[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
                     c += 2 * rho_ak_x[P] * rho_ax[P] * rho_bz[P] * v2_gamma_aa_gamma_ab[P] * w[P];
                     c += 2 * rho_ak_y[P] * rho_ay[P] * rho_bz[P] * v2_gamma_aa_gamma_ab[P] * w[P];
                     c += 4 * rho_ak_z[P] * rho_az[P] * rho_bz[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_bk_x[P] * rho_bx[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 2 * rho_bk_y[P] * rho_by[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 2 * rho_bk_z[P] * rho_bz[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_ak_z[P] * v_gamma_aa[P] * w[P];
-                    c += 2 * rho_ak[P] * rho_az[P] * v2_rho_a_gamma_aa[P] * w[P];
-                    c += 2 * rho_az[P] * rho_bk[P] * v2_rho_b_gamma_aa[P] * w[P];
                     c += 2 * rho_ak_x[P] * rho_az[P] * rho_bx[P] * v2_gamma_aa_gamma_ab[P] * w[P];
                     c += 2 * rho_ak_y[P] * rho_az[P] * rho_by[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ax[P] * rho_az[P] * rho_bk_x[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ay[P] * rho_az[P] * rho_bk_y[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_az[P] * rho_az[P] * rho_bk_z[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_az[P] * v2_gamma_aa_gamma_aa[P] * w[P];
-                    c += 4 * rho_ak_y[P] * rho_ay[P] * rho_az[P] * v2_gamma_aa_gamma_aa[P] * w[P];
-                    c += 4 * rho_ak_z[P] * rho_az[P] * rho_az[P] * v2_gamma_aa_gamma_aa[P] * w[P];
-                    c += 4 * rho_az[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_az[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_az[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                }
-                if (ansatz >= 2) {
-                    c += 2 * rho_bz[P] * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
-                    c += 2 * rho_bz[P] * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
-                    c += 4 * rho_az[P] * tau_ak[P] * v2_gamma_aa_tau_a[P] * w[P];
-                    c += 4 * rho_az[P] * tau_bk[P] * v2_gamma_aa_tau_b[P] * w[P];
+                    c += hsum_grad_rho_a_0_a * rho_az[P];
+                    c += hsum_grad_rho_b_1_a * rho_bz[P];
                 }
                 C_DAXPY(nlocal, c, phi_z[P], 1, Tap[P], 1);
                 // spin b: (phi, phi) pattern at half weight
@@ -4317,18 +4279,10 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                 c += 0.5 * rho_ak[P] * v2_rho2_ab[P] * w[P];
                 c += 0.5 * rho_bk[P] * v2_rho2_bb[P] * w[P];
                 if (ansatz >= 1) {
-                    c += 0.5 * rho_ak_x[P] * rho_bx[P] * v2_rho_b_gamma_ab[P] * w[P];
-                    c += 0.5 * rho_ak_y[P] * rho_by[P] * v2_rho_b_gamma_ab[P] * w[P];
-                    c += 0.5 * rho_ak_z[P] * rho_bz[P] * v2_rho_b_gamma_ab[P] * w[P];
-                    c += 0.5 * rho_ax[P] * rho_bk_x[P] * v2_rho_b_gamma_ab[P] * w[P];
-                    c += 0.5 * rho_ay[P] * rho_bk_y[P] * v2_rho_b_gamma_ab[P] * w[P];
-                    c += 0.5 * rho_az[P] * rho_bk_z[P] * v2_rho_b_gamma_ab[P] * w[P];
-                    c += rho_ak_x[P] * rho_ax[P] * v2_rho_b_gamma_aa[P] * w[P];
-                    c += rho_ak_y[P] * rho_ay[P] * v2_rho_b_gamma_aa[P] * w[P];
-                    c += rho_ak_z[P] * rho_az[P] * v2_rho_b_gamma_aa[P] * w[P];
-                    c += rho_bk_x[P] * rho_bx[P] * v2_rho_b_gamma_bb[P] * w[P];
-                    c += rho_bk_y[P] * rho_by[P] * v2_rho_b_gamma_bb[P] * w[P];
-                    c += rho_bk_z[P] * rho_bz[P] * v2_rho_b_gamma_bb[P] * w[P];
+                    c += dot_grad_rho_a_grad_rho_a_p1 * v2_rho_b_gamma_aa[P] * w[P];
+                    c += 0.5 * dot_grad_rho_a_grad_rho_b_p1 * v2_rho_b_gamma_ab[P] * w[P];
+                    c += 0.5 * dot_grad_rho_a_p1_grad_rho_b * v2_rho_b_gamma_ab[P] * w[P];
+                    c += dot_grad_rho_b_grad_rho_b_p1 * v2_rho_b_gamma_bb[P] * w[P];
                 }
                 if (ansatz >= 2) {
                     c += tau_ak[P] * v2_rho_b_tau_a[P] * w[P];
@@ -4339,120 +4293,42 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                 c = 0.0;
                 if (ansatz >= 1) {
                     c += rho_ak_x[P] * v_gamma_ab[P] * w[P];
-                    c += rho_ak[P] * rho_ax[P] * v2_rho_a_gamma_ab[P] * w[P];
-                    c += rho_ax[P] * rho_bk[P] * v2_rho_b_gamma_ab[P] * w[P];
-                    c += rho_ak_x[P] * rho_ax[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ak_y[P] * rho_ax[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ak_z[P] * rho_ax[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ax[P] * rho_ax[P] * rho_bk_x[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ax[P] * rho_ay[P] * rho_bk_y[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ax[P] * rho_az[P] * rho_bk_z[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += 2 * rho_ak_x[P] * rho_ax[P] * rho_ax[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ak_y[P] * rho_ax[P] * rho_ay[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ak_z[P] * rho_ax[P] * rho_az[P] * v2_gamma_aa_gamma_ab[P] * w[P];
                     c += 4 * rho_ax[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_ax[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_ax[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_bk_x[P] * v_gamma_bb[P] * w[P];
-                    c += 2 * rho_ak[P] * rho_bx[P] * v2_rho_a_gamma_bb[P] * w[P];
-                    c += 2 * rho_bk[P] * rho_bx[P] * v2_rho_b_gamma_bb[P] * w[P];
-                    c += 2 * rho_ak_x[P] * rho_bx[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 2 * rho_ak_y[P] * rho_bx[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 2 * rho_ak_z[P] * rho_bx[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_ay[P] * rho_bk_y[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_az[P] * rho_bk_z[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_bx[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_ak_y[P] * rho_ay[P] * rho_bx[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_ak_z[P] * rho_az[P] * rho_bx[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_bk_x[P] * rho_bx[P] * rho_bx[P] * v2_gamma_bb_gamma_bb[P] * w[P];
-                    c += 4 * rho_bk_y[P] * rho_bx[P] * rho_by[P] * v2_gamma_bb_gamma_bb[P] * w[P];
-                    c += 4 * rho_bk_z[P] * rho_bx[P] * rho_bz[P] * v2_gamma_bb_gamma_bb[P] * w[P];
-                }
-                if (ansatz >= 2) {
-                    c += 2 * rho_ax[P] * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
-                    c += 2 * rho_ax[P] * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
-                    c += 4 * rho_bx[P] * tau_ak[P] * v2_gamma_bb_tau_a[P] * w[P];
-                    c += 4 * rho_bx[P] * tau_bk[P] * v2_gamma_bb_tau_b[P] * w[P];
+                    c += hsum_grad_rho_a_0_b * rho_ax[P];
+                    c += hsum_grad_rho_b_1_b * rho_bx[P];
                 }
                 C_DAXPY(nlocal, c, phi_x[P], 1, Tbp[P], 1);
                 // spin b: (phi, dphi_y) + transpose at full weight
                 c = 0.0;
                 if (ansatz >= 1) {
                     c += rho_ak_y[P] * v_gamma_ab[P] * w[P];
-                    c += rho_ak[P] * rho_ay[P] * v2_rho_a_gamma_ab[P] * w[P];
-                    c += rho_ay[P] * rho_bk[P] * v2_rho_b_gamma_ab[P] * w[P];
-                    c += rho_ak_x[P] * rho_ay[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ak_y[P] * rho_ay[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ak_z[P] * rho_ay[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ax[P] * rho_ay[P] * rho_bk_x[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ay[P] * rho_ay[P] * rho_bk_y[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ay[P] * rho_az[P] * rho_bk_z[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += 2 * rho_ak_x[P] * rho_ax[P] * rho_ay[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ak_y[P] * rho_ay[P] * rho_ay[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ak_z[P] * rho_ay[P] * rho_az[P] * v2_gamma_aa_gamma_ab[P] * w[P];
                     c += 2 * rho_ay[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 4 * rho_ay[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_ay[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_bk_y[P] * v_gamma_bb[P] * w[P];
-                    c += 2 * rho_ak[P] * rho_by[P] * v2_rho_a_gamma_bb[P] * w[P];
-                    c += 2 * rho_bk[P] * rho_by[P] * v2_rho_b_gamma_bb[P] * w[P];
-                    c += 2 * rho_ak_x[P] * rho_bx[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 2 * rho_ak_y[P] * rho_by[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 2 * rho_ak_z[P] * rho_by[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_ax[P] * rho_bk_x[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_az[P] * rho_bk_z[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_by[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_ak_y[P] * rho_ay[P] * rho_by[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_ak_z[P] * rho_az[P] * rho_by[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_bk_x[P] * rho_bx[P] * rho_by[P] * v2_gamma_bb_gamma_bb[P] * w[P];
-                    c += 4 * rho_bk_y[P] * rho_by[P] * rho_by[P] * v2_gamma_bb_gamma_bb[P] * w[P];
-                    c += 4 * rho_bk_z[P] * rho_by[P] * rho_bz[P] * v2_gamma_bb_gamma_bb[P] * w[P];
-                }
-                if (ansatz >= 2) {
-                    c += 2 * rho_ay[P] * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
-                    c += 2 * rho_ay[P] * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
-                    c += 4 * rho_by[P] * tau_ak[P] * v2_gamma_bb_tau_a[P] * w[P];
-                    c += 4 * rho_by[P] * tau_bk[P] * v2_gamma_bb_tau_b[P] * w[P];
+                    c += hsum_grad_rho_a_0_b * rho_ay[P];
+                    c += hsum_grad_rho_b_1_b * rho_by[P];
                 }
                 C_DAXPY(nlocal, c, phi_y[P], 1, Tbp[P], 1);
                 // spin b: (phi, dphi_z) + transpose at full weight
                 c = 0.0;
                 if (ansatz >= 1) {
                     c += rho_ak_z[P] * v_gamma_ab[P] * w[P];
-                    c += rho_ak[P] * rho_az[P] * v2_rho_a_gamma_ab[P] * w[P];
-                    c += rho_az[P] * rho_bk[P] * v2_rho_b_gamma_ab[P] * w[P];
-                    c += rho_ak_x[P] * rho_az[P] * rho_bx[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ak_y[P] * rho_az[P] * rho_by[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ak_z[P] * rho_az[P] * rho_bz[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ax[P] * rho_az[P] * rho_bk_x[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_ay[P] * rho_az[P] * rho_bk_y[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += rho_az[P] * rho_az[P] * rho_bk_z[P] * v2_gamma_ab_gamma_ab[P] * w[P];
-                    c += 2 * rho_ak_x[P] * rho_ax[P] * rho_az[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ak_y[P] * rho_ay[P] * rho_az[P] * v2_gamma_aa_gamma_ab[P] * w[P];
-                    c += 2 * rho_ak_z[P] * rho_az[P] * rho_az[P] * v2_gamma_aa_gamma_ab[P] * w[P];
                     c += 2 * rho_az[P] * rho_bk_x[P] * rho_bx[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_az[P] * rho_bk_y[P] * rho_by[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 4 * rho_az[P] * rho_bk_z[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_bk_z[P] * v_gamma_bb[P] * w[P];
-                    c += 2 * rho_ak[P] * rho_bz[P] * v2_rho_a_gamma_bb[P] * w[P];
-                    c += 2 * rho_bk[P] * rho_bz[P] * v2_rho_b_gamma_bb[P] * w[P];
-                    c += 2 * rho_ak_x[P] * rho_bx[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 2 * rho_ak_y[P] * rho_by[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 2 * rho_ak_z[P] * rho_bz[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_ax[P] * rho_bk_x[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
                     c += 2 * rho_ay[P] * rho_bk_y[P] * rho_bz[P] * v2_gamma_ab_gamma_bb[P] * w[P];
-                    c += 4 * rho_ak_x[P] * rho_ax[P] * rho_bz[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_ak_y[P] * rho_ay[P] * rho_bz[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_ak_z[P] * rho_az[P] * rho_bz[P] * v2_gamma_aa_gamma_bb[P] * w[P];
-                    c += 4 * rho_bk_x[P] * rho_bx[P] * rho_bz[P] * v2_gamma_bb_gamma_bb[P] * w[P];
-                    c += 4 * rho_bk_y[P] * rho_by[P] * rho_bz[P] * v2_gamma_bb_gamma_bb[P] * w[P];
-                    c += 4 * rho_bk_z[P] * rho_bz[P] * rho_bz[P] * v2_gamma_bb_gamma_bb[P] * w[P];
-                }
-                if (ansatz >= 2) {
-                    c += 2 * rho_az[P] * tau_ak[P] * v2_gamma_ab_tau_a[P] * w[P];
-                    c += 2 * rho_az[P] * tau_bk[P] * v2_gamma_ab_tau_b[P] * w[P];
-                    c += 4 * rho_bz[P] * tau_ak[P] * v2_gamma_bb_tau_a[P] * w[P];
-                    c += 4 * rho_bz[P] * tau_bk[P] * v2_gamma_bb_tau_b[P] * w[P];
+                    c += hsum_grad_rho_a_0_b * rho_az[P];
+                    c += hsum_grad_rho_b_1_b * rho_bz[P];
                 }
                 C_DAXPY(nlocal, c, phi_z[P], 1, Tbp[P], 1);
             }
@@ -4478,6 +4354,14 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                         std::fill(Tap[P], Tap[P] + nlocal, 0.0);
                         std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
                         if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
+                        double dot_grad_rho_a_grad_rho_a_p1 = 0.0;
+                        if (ansatz >= 1) dot_grad_rho_a_grad_rho_a_p1 = rho_ax[P] * rho_ak_x[P] + rho_ay[P] * rho_ak_y[P] + rho_az[P] * rho_ak_z[P];
+                        double dot_grad_rho_a_grad_rho_b_p1 = 0.0;
+                        if (ansatz >= 1) dot_grad_rho_a_grad_rho_b_p1 = rho_ax[P] * rho_bk_x[P] + rho_ay[P] * rho_bk_y[P] + rho_az[P] * rho_bk_z[P];
+                        double dot_grad_rho_a_p1_grad_rho_b = 0.0;
+                        if (ansatz >= 1) dot_grad_rho_a_p1_grad_rho_b = rho_ak_x[P] * rho_bx[P] + rho_ak_y[P] * rho_by[P] + rho_ak_z[P] * rho_bz[P];
+                        double dot_grad_rho_b_grad_rho_b_p1 = 0.0;
+                        if (ansatz >= 1) dot_grad_rho_b_grad_rho_b_p1 = rho_bx[P] * rho_bk_x[P] + rho_by[P] * rho_bk_y[P] + rho_bz[P] * rho_bk_z[P];
                         double c;
                         c = 0.0;
                         if (ansatz >= 2) {
@@ -4485,18 +4369,10 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                             c += rho_bk[P] * v2_rho_b_tau_a[P] * w[P];
                             c += 2 * tau_ak[P] * v2_tau_a_tau_a[P] * w[P];
                             c += 2 * tau_bk[P] * v2_tau_a_tau_b[P] * w[P];
-                            c += rho_ak_x[P] * rho_bx[P] * v2_gamma_ab_tau_a[P] * w[P];
-                            c += rho_ak_y[P] * rho_by[P] * v2_gamma_ab_tau_a[P] * w[P];
-                            c += rho_ak_z[P] * rho_bz[P] * v2_gamma_ab_tau_a[P] * w[P];
-                            c += rho_ax[P] * rho_bk_x[P] * v2_gamma_ab_tau_a[P] * w[P];
-                            c += rho_ay[P] * rho_bk_y[P] * v2_gamma_ab_tau_a[P] * w[P];
-                            c += rho_az[P] * rho_bk_z[P] * v2_gamma_ab_tau_a[P] * w[P];
-                            c += 2 * rho_ak_x[P] * rho_ax[P] * v2_gamma_aa_tau_a[P] * w[P];
-                            c += 2 * rho_ak_y[P] * rho_ay[P] * v2_gamma_aa_tau_a[P] * w[P];
-                            c += 2 * rho_ak_z[P] * rho_az[P] * v2_gamma_aa_tau_a[P] * w[P];
-                            c += 2 * rho_bk_x[P] * rho_bx[P] * v2_gamma_bb_tau_a[P] * w[P];
-                            c += 2 * rho_bk_y[P] * rho_by[P] * v2_gamma_bb_tau_a[P] * w[P];
-                            c += 2 * rho_bk_z[P] * rho_bz[P] * v2_gamma_bb_tau_a[P] * w[P];
+                            c += 2 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_tau_a[P] * w[P];
+                            c += dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_ab_tau_a[P] * w[P];
+                            c += dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_tau_a[P] * w[P];
+                            c += 2 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_bb_tau_a[P] * w[P];
                         }
                         C_DAXPY(nlocal, c, phi_i[i][P], 1, Tap[P], 1);
                         c = 0.0;
@@ -4505,18 +4381,10 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                             c += rho_bk[P] * v2_rho_b_tau_b[P] * w[P];
                             c += 2 * tau_ak[P] * v2_tau_a_tau_b[P] * w[P];
                             c += 2 * tau_bk[P] * v2_tau_b_tau_b[P] * w[P];
-                            c += rho_ak_x[P] * rho_bx[P] * v2_gamma_ab_tau_b[P] * w[P];
-                            c += rho_ak_y[P] * rho_by[P] * v2_gamma_ab_tau_b[P] * w[P];
-                            c += rho_ak_z[P] * rho_bz[P] * v2_gamma_ab_tau_b[P] * w[P];
-                            c += rho_ax[P] * rho_bk_x[P] * v2_gamma_ab_tau_b[P] * w[P];
-                            c += rho_ay[P] * rho_bk_y[P] * v2_gamma_ab_tau_b[P] * w[P];
-                            c += rho_az[P] * rho_bk_z[P] * v2_gamma_ab_tau_b[P] * w[P];
-                            c += 2 * rho_ak_x[P] * rho_ax[P] * v2_gamma_aa_tau_b[P] * w[P];
-                            c += 2 * rho_ak_y[P] * rho_ay[P] * v2_gamma_aa_tau_b[P] * w[P];
-                            c += 2 * rho_ak_z[P] * rho_az[P] * v2_gamma_aa_tau_b[P] * w[P];
-                            c += 2 * rho_bk_x[P] * rho_bx[P] * v2_gamma_bb_tau_b[P] * w[P];
-                            c += 2 * rho_bk_y[P] * rho_by[P] * v2_gamma_bb_tau_b[P] * w[P];
-                            c += 2 * rho_bk_z[P] * rho_bz[P] * v2_gamma_bb_tau_b[P] * w[P];
+                            c += 2 * dot_grad_rho_a_grad_rho_a_p1 * v2_gamma_aa_tau_b[P] * w[P];
+                            c += dot_grad_rho_a_grad_rho_b_p1 * v2_gamma_ab_tau_b[P] * w[P];
+                            c += dot_grad_rho_a_p1_grad_rho_b * v2_gamma_ab_tau_b[P] * w[P];
+                            c += 2 * dot_grad_rho_b_grad_rho_b_p1 * v2_gamma_bb_tau_b[P] * w[P];
                         }
                         C_DAXPY(nlocal, c, phi_i[i][P], 1, Tbp[P], 1);
                     }
