@@ -1621,74 +1621,183 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
                 // This routine returns the FULL derivative of the alpha Fock
                 // matrix with respect to the perturbation, at fixed density
                 // and fixed grid. The accumulation below visits every (m, n)
-                // pair from both sides, doubling the (T + T^t) assembly, so
-                // each pattern is assembled here at a QUARTER of its full
-                // weight (symmetric patterns) or half (adjoint pairs).
+                // pair from both sides, doubling the (T + T^t) assembly.
                 for (int P = 0; P < npoints; P++) {
                     std::fill(T0p[P], T0p[P] + nlocal, 0.0);
-
-                    // perturbed TOTAL density: rho_k = -4 (phi D)_A . dphi_x
-                    double rho_k = -4.0 * C_DDOT(nfuncs, &U0p[P][off], 1, &phi_i[x][P][off], 1);
-
-                    //   (phi, phi) pattern, quarter weight
-                    double c0 = 0.25 * w[P] * v_rho_aa[P] * rho_k;
-
                     if (ansatz >= 1) {
-                        // perturbed density gradient and sigma
-                        double grad_k[3], sigma_k = 0.0;
+                        for (int i = 0; i < 3; i++) std::fill(Tip[i][P], Tip[i][P] + nlocal, 0.0);
+                    }
+
+                    // plumbing: the atom-restricted fixed-grid perturbed fields
+                    double rho_k = -4.0 * C_DDOT(nfuncs, &U0p[P][off], 1, &phi_i[x][P][off], 1);
+                    double grad_k[3] = {0.0, 0.0, 0.0};
+                    double tau_k = 0.0;
+                    if (ansatz >= 1) {
                         for (int i = 0; i < 3; i++) {
                             grad_k[i] = -4.0 * (C_DDOT(nfuncs, &U0p[P][off], 1, &phi_hess[hess_addr[x][i]][P][off], 1)
                                                 + C_DDOT(nfuncs, &Uip[i][P][off], 1, &phi_i[x][P][off], 1));
-                            sigma_k += 2.0 * rho_g[i][P] * grad_k[i];
-                        }
-
-                        // perturbed kinetic energy density (meta)
-                        double tau_k = 0.0;
-                        if (ansatz >= 2) {
-                            for (int i = 0; i < 3; i++)
-                                tau_k += C_DDOT(nfuncs, &Uip[i][P][off], 1, &phi_hess[hess_addr[x][i]][P][off], 1);
-                            tau_k *= -2.0;
-                            c0 += 0.25 * w[P] * 2.0 * v2_rho_tau[P] * tau_k;
-                        }
-                        c0 += 0.25 * w[P] * v2_rho_gamma[P] * sigma_k;
-
-                        // (dphi_i, phi) mixed pattern, half weight on the left factor
-                        double v2v = v2_rho_gamma[P] * rho_k + v2_gamma_gamma[P] * sigma_k;
-                        if (ansatz >= 2) v2v += 2.0 * v2_gamma_tau[P] * tau_k;
-                        for (int i = 0; i < 3; i++) {
-                            double ci = w[P] * (v_gamma[P] * grad_k[i] + v2v * rho_g[i][P]);
-                            C_DAXPY(nlocal, ci, phi_i[i][P], 1, T0p[P], 1);
-                        }
-
-                        // (dphi_i, dphi_i) pattern, quarter weight (meta)
-                        double cm = 0.0;
-                        if (ansatz >= 2)
-                            cm = 0.25 * w[P] * (v2_rho_tau[P] * rho_k + v2_gamma_tau[P] * sigma_k
-                                                + 2.0 * v2_tau_tau[P] * tau_k);
-                        for (int i = 0; i < 3; i++) {
-                            std::fill(Tip[i][P], Tip[i][P] + nlocal, 0.0);
-                            if (ansatz >= 2) C_DAXPY(nlocal, cm, phi_i[i][P], 1, Tip[i][P], 1);
-                        }
-
-                        // basis-derivative (seed) terms, atom-restricted, at half weight:
-                        //   -w vgamma 2 grad_rho_i d2phi_xi(A) against phi
-                        //   -w vgamma 2 grad_rho_i dphi_x(A)   against dphi_i
-                        //   -w vtau       d2phi_xi(A)          against dphi_i
-                        for (int i = 0; i < 3; i++) {
-                            C_DAXPY(nfuncs, -w[P] * v_gamma[P] * rho_g[i][P], &phi_hess[hess_addr[x][i]][P][off], 1,
-                                    &T0p[P][off], 1);
-                            C_DAXPY(nfuncs, -w[P] * v_gamma[P] * rho_g[i][P], &phi_i[x][P][off], 1, &Tip[i][P][off],
-                                    1);
                             if (ansatz >= 2)
-                                C_DAXPY(nfuncs, -0.5 * w[P] * v_tau[P], &phi_hess[hess_addr[x][i]][P][off], 1,
-                                        &Tip[i][P][off], 1);
+                                tau_k += C_DDOT(nfuncs, &Uip[i][P][off], 1, &phi_hess[hess_addr[x][i]][P][off], 1);
                         }
+                        tau_k *= -2.0;
                     }
 
-                    C_DAXPY(nlocal, c0, phi[P], 1, T0p[P], 1);
-
-                    //   -1/2 w vrho dphi_x(A) against phi (the LDA seed term)
-                    C_DAXPY(nfuncs, -0.5 * v_rho_a[P] * w[P], &phi_i[x][P][off], 1, &T0p[P][off], 1);
+                    // ==> BEGIN GENERATED CODE [xckernel psi4backend: geometric_fock(mgga_tau), restricted] <==
+                    // Reproduce with: python -m xckernel.psi4backend --fx
+                    // Physics source: the geometric derivative of the
+                    // symbolic tower (basis class, fixed grid); the
+                    // intermediates are IR compaction output.
+                    double dot_grad_rho_grad_rho_p1 = 0.0;
+                    if (ansatz >= 1) dot_grad_rho_grad_rho_p1 = rho_g[0][P] * grad_k[0] + rho_g[1][P] * grad_k[1] + rho_g[2][P] * grad_k[2];
+                    double hsum_grad_rho_0 = 0.0;
+                    if (ansatz >= 1) {
+                        hsum_grad_rho_0 += 4 * dot_grad_rho_grad_rho_p1 * v2_gamma_gamma[P] * w[P];
+                        hsum_grad_rho_0 += 2 * rho_k * v2_rho_gamma[P] * w[P];
+                    }
+                    if (ansatz >= 2) {
+                        hsum_grad_rho_0 += 4 * tau_k * v2_gamma_tau[P] * w[P];
+                    }
+                    double c;
+                    // field (phi, phi) pattern at quarter weight
+                    c = 0.0;
+                    c += 0.25 * rho_k * v_rho_aa[P] * w[P];
+                    if (ansatz >= 1) {
+                        c += 0.5 * dot_grad_rho_grad_rho_p1 * v2_rho_gamma[P] * w[P];
+                    }
+                    if (ansatz >= 2) {
+                        c += 0.5 * tau_k * v2_rho_tau[P] * w[P];
+                    }
+                    C_DAXPY(nlocal, c, phi[P], 1, T0p[P], 1);
+                    // field (dphi_x, phi) + transpose at half weight
+                    c = 0.0;
+                    if (ansatz >= 1) {
+                        c += grad_k[0] * v_gamma[P] * w[P];
+                        c += 0.5 * hsum_grad_rho_0 * rho_g[0][P];
+                    }
+                    C_DAXPY(nlocal, c, phi_i[0][P], 1, T0p[P], 1);
+                    // field (dphi_y, phi) + transpose at half weight
+                    c = 0.0;
+                    if (ansatz >= 1) {
+                        c += grad_k[1] * v_gamma[P] * w[P];
+                        c += 0.5 * hsum_grad_rho_0 * rho_g[1][P];
+                    }
+                    C_DAXPY(nlocal, c, phi_i[1][P], 1, T0p[P], 1);
+                    // field (dphi_z, phi) + transpose at half weight
+                    c = 0.0;
+                    if (ansatz >= 1) {
+                        c += grad_k[2] * v_gamma[P] * w[P];
+                        c += 0.5 * hsum_grad_rho_0 * rho_g[2][P];
+                    }
+                    C_DAXPY(nlocal, c, phi_i[2][P], 1, T0p[P], 1);
+                    // field (dphi_x, dphi_x) at quarter weight
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += 0.25 * rho_k * v2_rho_tau[P] * w[P];
+                            c += 0.5 * tau_k * v2_tau_tau[P] * w[P];
+                            c += 0.5 * dot_grad_rho_grad_rho_p1 * v2_gamma_tau[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[0][P], 1, Tip[0][P], 1);
+                    }
+                    // field (dphi_y, dphi_y) at quarter weight
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += 0.25 * rho_k * v2_rho_tau[P] * w[P];
+                            c += 0.5 * tau_k * v2_tau_tau[P] * w[P];
+                            c += 0.5 * dot_grad_rho_grad_rho_p1 * v2_gamma_tau[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[1][P], 1, Tip[1][P], 1);
+                    }
+                    // field (dphi_z, dphi_z) at quarter weight
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += 0.25 * rho_k * v2_rho_tau[P] * w[P];
+                            c += 0.5 * tau_k * v2_tau_tau[P] * w[P];
+                            c += 0.5 * dot_grad_rho_grad_rho_p1 * v2_gamma_tau[P] * w[P];
+                        }
+                        C_DAXPY(nlocal, c, phi_i[2][P], 1, Tip[2][P], 1);
+                    }
+                    // atom-restricted seed patterns at half weight;
+                    // each masked factor carries the -d/dr sign
+                    // seed (dchi_gA, chi)
+                    c = 0.0;
+                    c += -0.5 * v_rho_a[P] * w[P];
+                    C_DAXPY(nfuncs, c, &phi_i[x][P][off], 1, &T0p[P][off], 1);
+                    // seed (dchi_gA, dchi[0])
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -1 * rho_g[0][P] * v_gamma[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_i[x][P][off], 1, &Tip[0][P][off], 1);
+                    }
+                    // seed (dchi_gA, dchi[1])
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -1 * rho_g[1][P] * v_gamma[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_i[x][P][off], 1, &Tip[1][P][off], 1);
+                    }
+                    // seed (dchi_gA, dchi[2])
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -1 * rho_g[2][P] * v_gamma[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_i[x][P][off], 1, &Tip[2][P][off], 1);
+                    }
+                    // seed (ddchi_gA[0], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -1 * rho_g[0][P] * v_gamma[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][0]][P][off], 1, &T0p[P][off], 1);
+                    }
+                    // seed (ddchi_gA[0], dchi[0])
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += -0.5 * v_tau[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][0]][P][off], 1, &Tip[0][P][off], 1);
+                    }
+                    // seed (ddchi_gA[1], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -1 * rho_g[1][P] * v_gamma[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][1]][P][off], 1, &T0p[P][off], 1);
+                    }
+                    // seed (ddchi_gA[1], dchi[1])
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += -0.5 * v_tau[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][1]][P][off], 1, &Tip[1][P][off], 1);
+                    }
+                    // seed (ddchi_gA[2], chi)
+                    if (ansatz >= 1) {
+                        c = 0.0;
+                        if (ansatz >= 1) {
+                            c += -1 * rho_g[2][P] * v_gamma[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][2]][P][off], 1, &T0p[P][off], 1);
+                    }
+                    // seed (ddchi_gA[2], dchi[2])
+                    if (ansatz >= 2) {
+                        c = 0.0;
+                        if (ansatz >= 2) {
+                            c += -0.5 * v_tau[P] * w[P];
+                        }
+                        C_DAXPY(nfuncs, c, &phi_hess[hess_addr[x][2]][P][off], 1, &Tip[2][P][off], 1);
+                    }
+                    // ==> END GENERATED CODE <==
                 }
 
                 // => Contract the left factors against their right-side collocations <= //
